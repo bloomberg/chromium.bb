@@ -11,6 +11,7 @@
 #include "core/frame/Frame.h"
 #include "core/testing/DummyPageHolder.h"
 #include "public/platform/WebServiceWorkerRequest.h"
+#include "public/platform/WebURLRequest.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
 #include <gtest/gtest.h>
@@ -67,9 +68,11 @@ TEST_F(ServiceWorkerRequestTest, FromAndToWebRequest)
     } headers[] = { {"X-Foo", "bar"}, {"X-Quux", "foop"}, {0, 0} };
     const String referrer = "http://www.referrer.com/";
     const WebReferrerPolicy referrerPolicy = WebReferrerPolicyAlways;
+    const WebURLRequest::RequestContext context = WebURLRequest::RequestContextAudio;
 
     webRequest.setURL(url);
     webRequest.setMethod(method);
+    webRequest.setRequestContext(context);
     for (int i = 0; headers[i].key; ++i)
         webRequest.setHeader(WebString::fromUTF8(headers[i].key), WebString::fromUTF8(headers[i].value));
     webRequest.setReferrer(referrer, referrerPolicy);
@@ -78,6 +81,7 @@ TEST_F(ServiceWorkerRequestTest, FromAndToWebRequest)
     ASSERT(request);
     EXPECT_EQ(url, request->url());
     EXPECT_EQ(method, request->method());
+    EXPECT_EQ("audio", request->context());
     EXPECT_EQ(referrer, request->referrer());
 
     Headers* requestHeaders = request->headers();
@@ -96,6 +100,7 @@ TEST_F(ServiceWorkerRequestTest, FromAndToWebRequest)
     request->populateWebServiceWorkerRequest(secondWebRequest);
     EXPECT_EQ(url, KURL(secondWebRequest.url()));
     EXPECT_EQ(method, String(secondWebRequest.method()));
+    EXPECT_EQ(context, secondWebRequest.requestContext());
     EXPECT_EQ(referrer, KURL(secondWebRequest.referrerUrl()));
     EXPECT_EQ(referrerPolicy, secondWebRequest.referrerPolicy());
     EXPECT_EQ(webRequest.headers(), secondWebRequest.headers());

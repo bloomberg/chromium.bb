@@ -16,6 +16,9 @@ self.addEventListener('fetch', function(event) {
     }
     port.postMessage({
         url: url,
+        context: event.request.context,
+        context_clone: event.request.clone().context,
+        context_new: (new Request(event.request)).context,
         mode: event.request.mode,
         credentials: event.request.credentials
       });

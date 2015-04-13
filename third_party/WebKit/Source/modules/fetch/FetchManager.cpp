@@ -360,7 +360,7 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
     // We use ResourceRequest class for HTTPRequest.
     // FIXME: Support body.
     ResourceRequest request(m_request->url());
-    request.setRequestContext(WebURLRequest::RequestContextFetch);
+    request.setRequestContext(m_request->context());
     request.setHTTPMethod(m_request->method());
     const Vector<OwnPtr<FetchHeaderList::Header>>& list = m_request->headerList()->list();
     for (size_t i = 0; i < list.size(); ++i) {
@@ -468,6 +468,8 @@ ScriptPromise FetchManager::fetch(ScriptState* scriptState, FetchRequestData* re
 {
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
+
+    request->setContext(WebURLRequest::RequestContextFetch);
 
     OwnPtrWillBeRawPtr<Loader> ownLoader = Loader::create(m_executionContext, this, resolver.release(), request);
     Loader* loader = m_loaders.add(ownLoader.release()).storedValue->get();

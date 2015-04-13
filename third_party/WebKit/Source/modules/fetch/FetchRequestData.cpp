@@ -28,6 +28,7 @@ FetchRequestData* FetchRequestData::create(const WebServiceWorkerRequest& webReq
     for (HTTPHeaderMap::const_iterator it = webRequest.headers().begin(); it != webRequest.headers().end(); ++it)
         request->m_headerList->append(it->key, it->value);
     request->m_blobDataHandle = webRequest.blobDataHandle();
+    request->setContext(webRequest.requestContext());
     request->m_referrer.setURL(webRequest.referrer());
     request->setMode(webRequest.mode());
     request->setCredentials(webRequest.credentialsMode());

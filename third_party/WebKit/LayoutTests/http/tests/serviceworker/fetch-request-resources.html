@@ -7,11 +7,12 @@
 var url_count = 0;
 var expected_results = {};
 
-function image_test(frame, url, cross_origin,
+function image_test(frame, url, cross_origin, expected_context,
                     expexted_mode, expected_credentials) {
   var actual_url = url + (++url_count);
   expected_results[actual_url] = {
       cross_origin: cross_origin,
+      context: expected_context,
       mode: expexted_mode,
       credentials: expected_credentials,
       message: 'Image load (url:' +
@@ -20,11 +21,12 @@ function image_test(frame, url, cross_origin,
   return frame.contentWindow.load_image(actual_url, cross_origin);
 }
 
-function script_test(frame, url, cross_origin,
+function script_test(frame, url, cross_origin, expected_context,
                      expexted_mode, expected_credentials) {
   var actual_url = url + (++url_count);
   expected_results[actual_url] = {
       cross_origin: cross_origin,
+      context: expected_context,
       mode: expexted_mode,
       credentials: expected_credentials,
       message: 'Script load (url:' +
@@ -33,11 +35,12 @@ function script_test(frame, url, cross_origin,
   return frame.contentWindow.load_script(actual_url, cross_origin);
 }
 
-function css_test(frame, url, cross_origin,
+function css_test(frame, url, cross_origin, expected_context,
                   expexted_mode, expected_credentials) {
   var actual_url = url + (++url_count);
   expected_results[actual_url] = {
       cross_origin: cross_origin,
+      context: expected_context,
       mode: expexted_mode,
       credentials: expected_credentials,
       message: 'CSS load (url:' +
@@ -46,10 +49,12 @@ function css_test(frame, url, cross_origin,
   return frame.contentWindow.load_css(actual_url, cross_origin);
 }
 
-function font_face_test(frame, url, expexted_mode, expected_credentials) {
+function font_face_test(frame, url, expected_context, expexted_mode,
+                        expected_credentials) {
   var actual_url = url + (++url_count);
   expected_results[actual_url] = {
       url: actual_url,
+      context: expected_context,
       mode: expexted_mode,
       credentials: expected_credentials,
       message: 'FontFace load (url:' + actual_url + ')'
@@ -57,10 +62,12 @@ function font_face_test(frame, url, expexted_mode, expected_credentials) {
   return frame.contentWindow.load_font(actual_url);
 }
 
-function css_image_test(frame, url, type, expexted_mode, expected_credentials) {
+function css_image_test(frame, url, type, expected_context,
+                        expexted_mode, expected_credentials) {
   var actual_url = url + (++url_count);
   expected_results[actual_url] = {
       url: actual_url,
+      context: expected_context,
       mode: expexted_mode,
       credentials: expected_credentials,
       message: 'CSSImage load (url:' + actual_url + ' type:' + type + ')'
@@ -68,11 +75,12 @@ function css_image_test(frame, url, type, expexted_mode, expected_credentials) {
   return frame.contentWindow.load_css_image(actual_url, type);
 }
 
-function css_image_set_test(frame, url, type,
+function css_image_set_test(frame, url, type, expected_context,
                             expexted_mode, expected_credentials) {
   var actual_url = url + (++url_count);
   expected_results[actual_url] = {
       url: actual_url,
+      context: expected_context,
       mode: expexted_mode,
       credentials: expected_credentials,
       message: 'CSSImageSet load (url:' + actual_url + ' type:' + type + ')'
@@ -109,6 +117,17 @@ async_test(function(t) {
                   return;
                 }
                 assert_equals(
+                    result.context, expected.context,
+                    'context of ' + expected.message +  ' must be ' +
+                    expected.context + '.');
+                assert_equals(
+                    result.context_clone, expected.context,
+                    'context of clone() of' + expected.message +
+                    ' must be ' + expected.context + '.');
+                assert_equals(
+                    result.context_new, '',
+                    'context of new Request() must be the empty string');
+                assert_equals(
                     result.mode, expected.mode,
                     'mode of ' + expected.message +  ' must be ' +
                     expected.mode + '.');
@@ -130,43 +149,53 @@ async_test(function(t) {
       .then(function() { return with_iframe(SCOPE); })
       .then(function(f) {
         frame = f;
-        image_test(f, LOCAL_URL, '', 'no-cors', 'same-origin');
-        image_test(f, LOCAL_URL, 'anonymous', 'cors', 'omit');
-        image_test(f, LOCAL_URL, 'use-credentials', 'cors', 'include');
-        image_test(f, REMOTE_URL, '', 'no-cors', 'same-origin');
-        image_test(f, REMOTE_URL, 'anonymous', 'cors', 'omit');
-        image_test(f, REMOTE_URL, 'use-credentials', 'cors', 'include');
+        image_test(f, LOCAL_URL, '', 'image', 'no-cors', 'same-origin');
+        image_test(f, LOCAL_URL, 'anonymous', 'image', 'cors', 'omit');
+        image_test(f, LOCAL_URL, 'use-credentials', 'image', 'cors',
+                   'include');
+        image_test(f, REMOTE_URL, '', 'image', 'no-cors', 'same-origin');
+        image_test(f, REMOTE_URL, 'anonymous', 'image', 'cors', 'omit');
+        image_test(f, REMOTE_URL, 'use-credentials', 'image', 'cors',
+                   'include');
 
-        script_test(f, LOCAL_URL, '', 'no-cors', 'same-origin');
-        script_test(f, LOCAL_URL, 'anonymous', 'cors', 'omit');
-        script_test(f, LOCAL_URL, 'use-credentials', 'cors', 'include');
-        script_test(f, REMOTE_URL, '', 'no-cors', 'same-origin');
-        script_test(f, REMOTE_URL, 'anonymous', 'cors', 'omit');
-        script_test(f, REMOTE_URL, 'use-credentials', 'cors', 'include');
+        script_test(f, LOCAL_URL, '', 'script', 'no-cors', 'same-origin');
+        script_test(f, LOCAL_URL, 'anonymous', 'script', 'cors', 'omit');
+        script_test(f, LOCAL_URL, 'use-credentials', 'script', 'cors',
+                    'include');
+        script_test(f, REMOTE_URL, '', 'script', 'no-cors', 'same-origin');
+        script_test(f, REMOTE_URL, 'anonymous', 'script', 'cors', 'omit');
+        script_test(f, REMOTE_URL, 'use-credentials', 'script', 'cors',
+                    'include');
 
-        css_test(f, LOCAL_URL, '', 'no-cors', 'same-origin');
-        css_test(f, LOCAL_URL, 'anonymous', 'cors', 'omit');
-        css_test(f, LOCAL_URL, 'use-credentials', 'cors', 'include');
-        css_test(f, REMOTE_URL, '', 'no-cors', 'same-origin');
-        css_test(f, REMOTE_URL, 'anonymous', 'cors', 'omit');
-        css_test(f, REMOTE_URL, 'use-credentials', 'cors', 'include');
+        css_test(f, LOCAL_URL, '', 'style', 'no-cors', 'same-origin');
+        css_test(f, LOCAL_URL, 'anonymous', 'style', 'cors', 'omit');
+        css_test(f, LOCAL_URL, 'use-credentials', 'style', 'cors',
+                 'include');
+        css_test(f, REMOTE_URL, '', 'style', 'no-cors', 'same-origin');
+        css_test(f, REMOTE_URL, 'anonymous', 'style', 'cors', 'omit');
+        css_test(f, REMOTE_URL, 'use-credentials', 'style', 'cors',
+                 'include');
 
-        font_face_test(f, LOCAL_URL, 'no-cors', 'same-origin');
-        font_face_test(f, REMOTE_URL, 'cors', 'omit');
+        font_face_test(f, LOCAL_URL, 'font', 'no-cors', 'same-origin');
+        font_face_test(f, REMOTE_URL, 'font', 'cors', 'omit');
 
-        css_image_test(f, LOCAL_URL, 'backgroundImage',
+        css_image_test(f, LOCAL_URL, 'backgroundImage', 'image',
                        'no-cors', 'same-origin');
-        css_image_test(f, REMOTE_URL, 'backgroundImage',
+        css_image_test(f, REMOTE_URL, 'backgroundImage', 'image',
                        'no-cors', 'same-origin');
-        css_image_test(f, LOCAL_URL, 'shapeOutside', 'cors', 'omit');
-        css_image_test(f, REMOTE_URL, 'shapeOutside', 'cors', 'omit');
+        css_image_test(f, LOCAL_URL, 'shapeOutside', 'image', 'cors',
+                       'omit');
+        css_image_test(f, REMOTE_URL, 'shapeOutside', 'image', 'cors',
+                       'omit');
 
-        css_image_set_test(f, LOCAL_URL, 'backgroundImage',
+        css_image_set_test(f, LOCAL_URL, 'backgroundImage', 'image',
                            'no-cors', 'same-origin');
-        css_image_set_test(f, REMOTE_URL, 'backgroundImage',
+        css_image_set_test(f, REMOTE_URL, 'backgroundImage', 'image',
                            'no-cors', 'same-origin');
-        css_image_set_test(f, LOCAL_URL, 'shapeOutside', 'cors', 'omit');
-        css_image_set_test(f, REMOTE_URL, 'shapeOutside', 'cors', 'omit');
+        css_image_set_test(f, LOCAL_URL, 'shapeOutside', 'image', 'cors',
+                           'omit');
+        css_image_set_test(f, REMOTE_URL, 'shapeOutside', 'image', 'cors',
+                           'omit');
 
       })
       .catch(unreached_rejection(t));

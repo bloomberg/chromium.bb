@@ -34,7 +34,6 @@ FetchRequestData* createCopyOfFetchRequestDataForFetch(ExecutionContext* context
     // FIXME: Set ForceOriginHeaderFlag.
     request->setSameOriginDataURLFlag(true);
     request->mutableReferrer()->setClient();
-    request->setContext(WebURLRequest::RequestContextFetch);
     request->setMode(original->mode());
     request->setCredentials(original->credentials());
     // FIXME: Set cache mode.
@@ -294,6 +293,83 @@ KURL Request::url() const
     return url;
 }
 
+String Request::context() const
+{
+    // "The context attribute's getter must return request's context"
+    switch (m_request->context()) {
+    case WebURLRequest::RequestContextUnspecified:
+        return "";
+    case WebURLRequest::RequestContextAudio:
+        return "audio";
+    case WebURLRequest::RequestContextBeacon:
+        return "beacon";
+    case WebURLRequest::RequestContextCSPReport:
+        return "cspreport";
+    case WebURLRequest::RequestContextDownload:
+        return "download";
+    case WebURLRequest::RequestContextEmbed:
+        return "embed";
+    case WebURLRequest::RequestContextEventSource:
+        return "eventsource";
+    case WebURLRequest::RequestContextFavicon:
+        return "favicon";
+    case WebURLRequest::RequestContextFetch:
+        return "fetch";
+    case WebURLRequest::RequestContextFont:
+        return "font";
+    case WebURLRequest::RequestContextForm:
+        return "form";
+    case WebURLRequest::RequestContextFrame:
+        return "frame";
+    case WebURLRequest::RequestContextHyperlink:
+        return "hyperlink";
+    case WebURLRequest::RequestContextIframe:
+        return "iframe";
+    case WebURLRequest::RequestContextImage:
+        return "image";
+    case WebURLRequest::RequestContextImageSet:
+        return "imageset";
+    case WebURLRequest::RequestContextImport:
+        return "import";
+    case WebURLRequest::RequestContextInternal:
+        return "internal";
+    case WebURLRequest::RequestContextLocation:
+        return "location";
+    case WebURLRequest::RequestContextManifest:
+        return "manifest";
+    case WebURLRequest::RequestContextObject:
+        return "object";
+    case WebURLRequest::RequestContextPing:
+        return "ping";
+    case WebURLRequest::RequestContextPlugin:
+        return "plugin";
+    case WebURLRequest::RequestContextPrefetch:
+        return "prefetch";
+    case WebURLRequest::RequestContextScript:
+        return "script";
+    case WebURLRequest::RequestContextServiceWorker:
+        return "serviceworker";
+    case WebURLRequest::RequestContextSharedWorker:
+        return "sharedworker";
+    case WebURLRequest::RequestContextSubresource:
+        return "subresource";
+    case WebURLRequest::RequestContextStyle:
+        return "style";
+    case WebURLRequest::RequestContextTrack:
+        return "track";
+    case WebURLRequest::RequestContextVideo:
+        return "video";
+    case WebURLRequest::RequestContextWorker:
+        return "worker";
+    case WebURLRequest::RequestContextXMLHttpRequest:
+        return "xmlhttprequest";
+    case WebURLRequest::RequestContextXSLT:
+        return "xslt";
+    }
+    ASSERT_NOT_REACHED();
+    return "";
+}
+
 String Request::referrer() const
 {
     // "The referrer attribute's getter must return the empty string if
@@ -376,6 +452,7 @@ FetchRequestData* Request::passRequestData()
 void Request::populateWebServiceWorkerRequest(WebServiceWorkerRequest& webRequest) const
 {
     webRequest.setMethod(method());
+    webRequest.setRequestContext(m_request->context());
     // This strips off the fragment part.
     webRequest.setURL(url());
 

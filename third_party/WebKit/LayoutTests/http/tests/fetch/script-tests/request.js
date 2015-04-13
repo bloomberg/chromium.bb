@@ -570,4 +570,12 @@ promise_test(function(t) {
       });
   }, 'Consume and pass');
 
+// Tests for requests context.
+test(function() {
+    var request = new Request('http://localhost/', {method: 'POST', body: ''});
+    assert_equals(request.context, '',
+                  'Request.context should be empty string ' +
+                  'for synthetic Request object');
+  }, 'RequestContext of a synthetic Request object');
+
 done();
