@@ -136,14 +136,15 @@ void ReportInvalidReferrerSendOnUI() {
 
 void ReportInvalidReferrerSend(const GURL& target_url,
                                const GURL& referrer_url) {
+  LOG(ERROR) << "Cancelling request to " << target_url
+             << " with invalid referrer " << referrer_url;
   // Record information to help debug http://crbug.com/422871
   if (!target_url.SchemeIsHTTPOrHTTPS())
     return;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&ReportInvalidReferrerSendOnUI));
   base::debug::DumpWithoutCrashing();
-  NOTREACHED() << "Sending request to " << target_url
-               << " with invalid referrer " << referrer_url;
+  NOTREACHED();
 }
 
 // Record network errors that HTTP requests complete with, including OK and
