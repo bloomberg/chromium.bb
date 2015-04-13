@@ -306,19 +306,7 @@ bool DrmGpuDisplayManager::Configure(const DrmDisplaySnapshot& output,
               << " connector=" << output.connector();
       return false;
     }
-
-    if (output.dpms_property()) {
-      output.drm()->SetProperty(output.connector(),
-                                output.dpms_property()->prop_id,
-                                DRM_MODE_DPMS_ON);
-    }
   } else {
-    if (output.dpms_property()) {
-      output.drm()->SetProperty(output.connector(),
-                                output.dpms_property()->prop_id,
-                                DRM_MODE_DPMS_OFF);
-    }
-
     if (!screen_manager_->DisableDisplayController(output.drm(),
                                                    output.crtc())) {
       VLOG(1) << "Failed to disable device="

@@ -26,7 +26,6 @@ class DrmDisplaySnapshot : public DisplaySnapshot {
   // configuring this display.
   uint32_t connector() const { return connector_; }
   uint32_t crtc() const { return crtc_; }
-  drmModePropertyRes* dpms_property() const { return dpms_property_.get(); }
 
   // DisplaySnapshot overrides:
   std::string ToString() const override;
@@ -35,7 +34,6 @@ class DrmDisplaySnapshot : public DisplaySnapshot {
   scoped_refptr<DrmDevice> drm_;
   uint32_t connector_;
   uint32_t crtc_;
-  ScopedDrmPropertyPtr dpms_property_;
   std::string name_;
   bool overscan_flag_;
 
