@@ -14,10 +14,6 @@
 #include "extensions/common/features/feature_provider.h"
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
-#if defined(OS_ANDROID)
-#include "base/android/build_info.h"
-#endif  // defined(OS_ANDROID)
-
 namespace {
 
 const char kFieldTrialName[] = "EnhancedBookmarks";
@@ -75,10 +71,6 @@ bool IsEnhancedBookmarksEnabled(std::string* extension_id) {
 
   bool opt_out = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
                      switches::kEnhancedBookmarksExperiment) == "0";
-#if defined(OS_ANDROID)
-  opt_out |= base::android::BuildInfo::GetInstance()->sdk_int() <
-                 base::android::SdkVersion::SDK_VERSION_ICE_CREAM_SANDWICH_MR1;
-#endif  // defined(OS_ANDROID)
 
   if (opt_out)
     return false;

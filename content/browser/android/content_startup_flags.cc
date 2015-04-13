@@ -71,12 +71,6 @@ void SetContentCommandLineFlags(bool single_process,
   if (base::SysInfo::IsLowEndDevice())
     parsed_command_line->AppendSwitch(switches::kInProcessGPU);
 
-  // Web Notifications are only supported on Android JellyBean and beyond.
-  if (base::android::BuildInfo::GetInstance()->sdk_int() <
-      base::android::SDK_VERSION_JELLY_BEAN) {
-    parsed_command_line->AppendSwitch(switches::kDisableNotifications);
-  }
-
   parsed_command_line->AppendSwitch(switches::kEnableViewportMeta);
   parsed_command_line->AppendSwitch(
       switches::kMainFrameResizesAreOrientationChanges);
