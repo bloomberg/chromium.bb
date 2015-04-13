@@ -1190,7 +1190,7 @@ std::string WebAXObjectProxy::Name() {
 
 std::string WebAXObjectProxy::NameFrom() {
   accessibility_object_.updateLayoutAndCheckValidity();
-  blink::WebAXNameFrom nameFrom;
+  blink::WebAXNameFrom nameFrom = blink::WebAXNameFromContents;
   blink::WebVector<blink::WebAXObject> nameObjects;
   accessibility_object_.name(nameFrom, nameObjects);
   switch(nameFrom) {
