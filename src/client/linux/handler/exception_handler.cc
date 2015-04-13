@@ -200,7 +200,7 @@ void InstallDefaultHandler(int sig) {
   sigemptyset(&sa.sa_mask);
   sa.sa_handler = SIG_DFL;
   sa.sa_flags = SA_RESTART;
-  syscall(__NR_sigaction, sig, &sa, NULL);
+  syscall(__NR_rt_sigaction, sig, &sa, NULL);
 #else
   signal(sig, SIG_DFL);
 #endif
