@@ -3747,6 +3747,7 @@
             'dom/NthIndexCacheTest.cpp',
             'dom/RangeTest.cpp',
             'dom/ScriptRunnerTest.cpp',
+            'dom/TreeScopeStyleSheetCollectionTest.cpp',
             'dom/TreeScopeTest.cpp',
             'dom/shadow/ComposedTreeTraversalTest.cpp',
             'editing/CompositionUnderlineRangeFilterTest.cpp',

@@ -97,9 +97,12 @@ void DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine& engine, 
 
     if (change.styleResolverUpdateType == Reconstruct) {
         engine.clearMasterResolver();
-        // FIMXE: The following depends on whether StyleRuleFontFace was modified or not.
-        // No need to always-clear font cache.
-        engine.clearFontCache();
+        // TODO(rune@opera.com): The following depends on whether StyleRuleFontFace was modified or not.
+        // We should only remove modified/removed @font-face rules, or @font-face rules from removed
+        // stylesheets. We currently avoid clearing the font cache when we have had an analyzed update
+        // and no @font-face rules were removed, in which case requiresFullStyleRecalc will be false.
+        if (change.requiresFullStyleRecalc)
+            engine.clearFontCache();
     } else if (StyleResolver* styleResolver = engine.resolver()) {
         if (change.styleResolverUpdateType != Additive) {
             ASSERT(change.styleResolverUpdateType == Reset);

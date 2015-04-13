@@ -89,6 +89,8 @@ private:
     static StyleResolverUpdateType compareStyleSheets(const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>& oldStyleSheets, const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>& newStylesheets, WillBeHeapVector<RawPtrWillBeMember<StyleSheetContents>>& addedSheets);
     bool activeLoadingStyleSheetLoaded(const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>& newStyleSheets);
 
+    friend class TreeScopeStyleSheetCollectionTest;
+
 protected:
     RawPtrWillBeMember<TreeScope> m_treeScope;
     bool m_hadActiveLoadingStylesheet;
