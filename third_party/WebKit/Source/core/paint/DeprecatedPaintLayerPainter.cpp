@@ -199,6 +199,8 @@ void DeprecatedPaintLayerPainter::paintLayerContents(GraphicsContext* context, c
 
     if (m_renderLayer.compositingState() == PaintsIntoOwnBacking)
         offsetFromRoot.move(m_renderLayer.subpixelAccumulation());
+    else
+        offsetFromRoot.move(paintingInfo.subPixelAccumulation);
 
     LayoutRect rootRelativeBounds;
     bool rootRelativeBoundsComputed = false;
@@ -448,15 +450,6 @@ bool DeprecatedPaintLayerPainter::shouldPaintLayerInSoftwareMode(const Deprecate
         || paintForFixedRootBackground(&m_renderLayer, paintFlags);
 }
 
-static inline LayoutSize subPixelAccumulationIfNeeded(const LayoutSize& subPixelAccumulation, CompositingState compositingState)
-{
-    // Only apply the sub-pixel accumulation if we don't paint into our own backing layer, otherwise the position
-    // of the renderer already includes any sub-pixel offset.
-    if (compositingState == PaintsIntoOwnBacking)
-        return LayoutSize();
-    return subPixelAccumulation;
-}
-
 void DeprecatedPaintLayerPainter::paintOverflowControlsForFragments(const DeprecatedPaintLayerFragments& layerFragments, GraphicsContext* context, const DeprecatedPaintLayerPaintingInfo& localPaintingInfo, PaintLayerFlags paintFlags)
 {
     bool needsScope = layerFragments.size() > 1;
@@ -471,7 +464,7 @@ void DeprecatedPaintLayerPainter::paintOverflowControlsForFragments(const Deprec
             clipRecorder = adoptPtr(new LayerClipRecorder(*context, *m_renderLayer.layoutObject(), DisplayItem::ClipLayerOverflowControls, fragment.backgroundRect, &localPaintingInfo, fragment.paginationOffset, paintFlags));
         }
         if (DeprecatedPaintLayerScrollableArea* scrollableArea = m_renderLayer.scrollableArea())
-            ScrollableAreaPainter(*scrollableArea).paintOverflowControls(context, roundedIntPoint(toPoint(fragment.layerBounds.location() - m_renderLayer.layoutBoxLocation() + subPixelAccumulationIfNeeded(localPaintingInfo.subPixelAccumulation, m_renderLayer.compositingState()))), pixelSnappedIntRect(fragment.backgroundRect.rect()), true);
+            ScrollableAreaPainter(*scrollableArea).paintOverflowControls(context, roundedIntPoint(toPoint(fragment.layerBounds.location() - m_renderLayer.layoutBoxLocation())), pixelSnappedIntRect(fragment.backgroundRect.rect()), true);
     }
 }
 
@@ -633,7 +626,7 @@ void DeprecatedPaintLayerPainter::paintFragmentWithPhase(PaintPhase phase, const
     }
 
     PaintInfo paintInfo(context, pixelSnappedIntRect(clipRect.rect()), phase, paintBehavior, paintingRootForRenderer, 0, paintingInfo.rootLayer->layoutObject());
-    m_renderLayer.layoutObject()->paint(paintInfo, toPoint(fragment.layerBounds.location() - m_renderLayer.layoutBoxLocation() + subPixelAccumulationIfNeeded(paintingInfo.subPixelAccumulation, m_renderLayer.compositingState())));
+    m_renderLayer.layoutObject()->paint(paintInfo, toPoint(fragment.layerBounds.location() - m_renderLayer.layoutBoxLocation()));
 }
 
 void DeprecatedPaintLayerPainter::paintBackgroundForFragments(const DeprecatedPaintLayerFragments& layerFragments, GraphicsContext* context,

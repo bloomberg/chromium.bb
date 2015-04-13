@@ -1621,6 +1621,7 @@ void DeprecatedPaintLayer::collectFragments(DeprecatedPaintLayerFragments& fragm
         ancestorClipRect.intersect(dirtyRect);
     }
 
+    const LayoutSize subPixelAccumulationIfNeeded = compositingState() == PaintsIntoOwnBacking ? LayoutSize() : subPixelAccumulation;
     for (size_t i = 0; i < fragments.size(); ++i) {
         DeprecatedPaintLayerFragment& fragment = fragments.at(i);
 
@@ -1628,7 +1629,7 @@ void DeprecatedPaintLayer::collectFragments(DeprecatedPaintLayerFragments& fragm
         fragment.setRects(layerBoundsInFlowThread, backgroundRectInFlowThread, foregroundRectInFlowThread, outlineRectInFlowThread);
 
         // Shift to the root-relative physical position used when painting the flow thread in this fragment.
-        fragment.moveBy(fragment.paginationOffset + offsetOfPaginationLayerFromRoot);
+        fragment.moveBy(fragment.paginationOffset + offsetOfPaginationLayerFromRoot + subPixelAccumulationIfNeeded);
 
         // Intersect the fragment with our ancestor's background clip so that e.g., columns in an overflow:hidden block are
         // properly clipped by the overflow.
