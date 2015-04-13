@@ -145,15 +145,16 @@ class ExpireHistoryBackend {
   //
   // Assumes the main_db_ is non-NULL.
   //
-  // NOTE: If the url is bookmarked only the segments and text db are updated,
-  // everything else is unchanged. This is done so that bookmarks retain their
-  // favicons and thumbnails.
+  // NOTE: If the url is bookmarked, we keep the favicons and thumbnails.
   void DeleteOneURL(const URLRow& url_row,
                     bool is_bookmarked,
                     DeleteEffects* effects);
 
+  // Deletes all favicons associated with |gurl|.
+  void DeleteIcons(const GURL& gurl, DeleteEffects* effects);
+
   // Deletes all the URLs in the given vector and handles their dependencies.
-  // This will delete starred URLs
+  // This will delete starred URLs.
   void DeleteURLs(const URLRows& urls, DeleteEffects* effects);
 
   // Expiration involves removing visits, then propagating the visits out from

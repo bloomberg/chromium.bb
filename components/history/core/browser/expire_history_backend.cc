@@ -157,9 +157,15 @@ void ExpireHistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
   HistoryClient* history_client = GetHistoryClient();
   for (std::vector<GURL>::const_iterator url = urls.begin(); url != urls.end();
        ++url) {
+    const bool is_bookmarked =
+        history_client && history_client->IsBookmarked(*url);
     URLRow url_row;
-    if (!main_db_->GetRowForURL(*url, &url_row))
-      continue;  // Nothing to delete.
+    if (!main_db_->GetRowForURL(*url, &url_row) && !is_bookmarked) {
+      // If the URL isn't in the database and not bookmarked, we should still
+      // check to see if any favicons need to be deleted.
+      DeleteIcons(*url, &effects);
+      continue;
+    }
 
     // Collect all the visits and delete them. Note that we don't give up if
     // there are no visits, since the URL could still have an entry that we
@@ -173,9 +179,7 @@ void ExpireHistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
     // URL, and not starting with visits in a given time range). We
     // therefore need to call the deletion and favicon update
     // functions manually.
-    DeleteOneURL(url_row,
-                 history_client && history_client->IsBookmarked(*url),
-                 &effects);
+    DeleteOneURL(url_row, is_bookmarked, &effects);
   }
 
   DeleteFaviconsIfPossible(&effects);
@@ -346,25 +350,26 @@ void ExpireHistoryBackend::DeleteOneURL(const URLRow& url_row,
                                         bool is_bookmarked,
                                         DeleteEffects* effects) {
   main_db_->DeleteSegmentForURL(url_row.id());
+  effects->deleted_urls.push_back(url_row);
+  // If the URL is bookmarked we should still keep its favicon around to show
+  // in bookmark-related UI.  We'll delete this icon if the URL is unbookmarked.
+  // (See comments in DeleteURLs().)
+  if (!is_bookmarked)
+    DeleteIcons(url_row.url(), effects);
+  main_db_->DeleteURLRow(url_row.id());
+}
 
-  if (!is_bookmarked) {
-    effects->deleted_urls.push_back(url_row);
-
-    // Delete stuff that references this URL.
-    if (thumb_db_) {
-      // Collect shared information.
-      std::vector<IconMapping> icon_mappings;
-      if (thumb_db_->GetIconMappingsForPageURL(url_row.url(), &icon_mappings)) {
-        for (std::vector<IconMapping>::iterator m = icon_mappings.begin();
-             m != icon_mappings.end(); ++m) {
-          effects->affected_favicons.insert(m->icon_id);
-        }
-        // Delete the mapping entries for the url.
-        thumb_db_->DeleteIconMappings(url_row.url());
-      }
+void ExpireHistoryBackend::DeleteIcons(const GURL& gurl,
+                                       DeleteEffects* effects) {
+  // Collect shared information.
+  std::vector<IconMapping> icon_mappings;
+  if (thumb_db_ && thumb_db_->GetIconMappingsForPageURL(gurl, &icon_mappings)) {
+    for (std::vector<IconMapping>::iterator m = icon_mappings.begin();
+         m != icon_mappings.end(); ++m) {
+      effects->affected_favicons.insert(m->icon_id);
     }
-    // Last, delete the URL entry.
-    main_db_->DeleteURLRow(url_row.id());
+    // Delete the mapping entries for the url.
+    thumb_db_->DeleteIconMappings(gurl);
   }
 }
 

@@ -2373,13 +2373,13 @@ void HistoryBackend::URLsNoLongerBookmarked(const std::set<GURL>& urls) {
     return;
 
   for (std::set<GURL>::const_iterator i = urls.begin(); i != urls.end(); ++i) {
-    URLRow url_row;
-    if (!db_->GetRowForURL(*i, &url_row))
-      continue;  // The URL isn't in the db; nothing to do.
-
     VisitVector visits;
-    db_->GetVisitsForURL(url_row.id(), &visits);
-
+    URLRow url_row;
+    if (db_->GetRowForURL(*i, &url_row))
+      db_->GetVisitsForURL(url_row.id(), &visits);
+    // We need to call DeleteURL() even if the DB didn't contain this URL, so
+    // that we can delete all associated icons in the case of deleting an
+    // unvisited bookmarked URL.
     if (visits.empty())
       expirer_.DeleteURL(*i);  // There are no more visits; nuke the URL.
   }

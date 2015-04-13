@@ -463,8 +463,9 @@ TEST_F(ExpireHistoryTest, DeleteURLWithoutFavicon) {
   EXPECT_TRUE(HasFavicon(favicon_id));
 }
 
-// DeleteURL should not delete starred urls.
-TEST_F(ExpireHistoryTest, DontDeleteStarredURL) {
+// DeleteURL should delete the history of starred urls, but the URL should
+// remain starred and its favicon should remain too.
+TEST_F(ExpireHistoryTest, DeleteStarredVisitedURL) {
   URLID url_ids[3];
   Time visit_times[4];
   AddExampleData(url_ids, visit_times);
@@ -478,31 +479,44 @@ TEST_F(ExpireHistoryTest, DontDeleteStarredURL) {
   // Attempt to delete the url.
   expirer_.DeleteURL(url_row.url());
 
-  // Because the url is starred, it shouldn't be deleted.
+  // Verify it no longer exists.
   GURL url = url_row.url();
-  ASSERT_TRUE(main_db_->GetRowForURL(url, &url_row));
+  ASSERT_FALSE(main_db_->GetRowForURL(url, &url_row));
+  EnsureURLInfoGone(url_row, false);
 
-  // And the favicon should exist.
+  // Yet the favicon should exist.
   favicon_base::FaviconID favicon_id =
-      GetFavicon(url_row.url(), favicon_base::FAVICON);
+      GetFavicon(url, favicon_base::FAVICON);
   EXPECT_TRUE(HasFavicon(favicon_id));
-
-  // And no visits.
-  VisitVector visits;
-  main_db_->GetVisitsForURL(url_row.id(), &visits);
-  ASSERT_EQ(0U, visits.size());
 
   // Should still have the thumbnail.
   // TODO(sky): fix this, see comment in HasThumbnail.
   // ASSERT_TRUE(HasThumbnail(url_row.id()));
+}
 
-  // Unstar the URL and delete again.
-  history_client_.ClearAllBookmarks();
-  ClearLastNotifications();
+// DeleteURL should not delete the favicon of bookmarked URLs.
+TEST_F(ExpireHistoryTest, DeleteStarredUnvisitedURL) {
+  // Create a bookmark associated with a favicon.
+  const GURL url("http://www.google.com/starred");
+  favicon_base::FaviconID favicon =
+      thumb_db_->AddFavicon(GURL("http://favicon/url1"), favicon_base::FAVICON);
+  thumb_db_->AddIconMapping(url, favicon);
+  StarURL(url);
+
+  // Delete it.
   expirer_.DeleteURL(url);
 
-  // Now it should be completely deleted.
-  EnsureURLInfoGone(url_row, false);
+  // The favicon should exist.
+  favicon_base::FaviconID favicon_id = GetFavicon(url, favicon_base::FAVICON);
+  EXPECT_TRUE(HasFavicon(favicon_id));
+
+  // Unstar the URL and try again to delete it.
+  history_client_.ClearAllBookmarks();
+  expirer_.DeleteURL(url);
+
+  // The favicon should be gone.
+  favicon_id = GetFavicon(url, favicon_base::FAVICON);
+  EXPECT_FALSE(HasFavicon(favicon_id));
 }
 
 // Deletes multiple URLs at once.  The favicon for the third one but
@@ -533,8 +547,7 @@ TEST_F(ExpireHistoryTest, DeleteURLs) {
   // Delete the URLs and their dependencies.
   expirer_.DeleteURLs(urls);
 
-  // First one should still be around (since it was starred).
-  ASSERT_TRUE(main_db_->GetRowForURL(rows[0].url(), &rows[0]));
+  EnsureURLInfoGone(rows[0], false);
   EnsureURLInfoGone(rows[1], false);
   EnsureURLInfoGone(rows[2], false);
   EXPECT_TRUE(HasFavicon(favicon_ids[0]));

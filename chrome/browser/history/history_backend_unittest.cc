@@ -796,13 +796,9 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
   history_client_.AddBookmark(row1.url());
   history_client_.AddBookmark(row2.url());
 
-  // Delete url 2. Because url 2 is starred this won't delete the URL, only
-  // the visits.
+  // Delete url 2.
   backend_->expirer_.DeleteURL(row2.url());
-
-  // Make sure url 2 is still valid, but has no visits.
-  URLRow tmp_url_row;
-  EXPECT_EQ(row2_id, backend_->db_->GetRowForURL(row2.url(), NULL));
+  EXPECT_FALSE(backend_->db_->GetRowForURL(row2.url(), NULL));
   VisitVector visits;
   backend_->db_->GetVisitsForURL(row2_id, &visits);
   EXPECT_EQ(0U, visits.size());
@@ -820,8 +816,8 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
   unstarred_urls.insert(row2.url());
   backend_->URLsNoLongerBookmarked(unstarred_urls);
 
-  // The URL should no longer exist.
-  EXPECT_FALSE(backend_->db_->GetRowForURL(row2.url(), &tmp_url_row));
+  // The URL should still not exist.
+  EXPECT_FALSE(backend_->db_->GetRowForURL(row2.url(), NULL));
   // And the favicon should be deleted.
   EXPECT_EQ(0,
             backend_->thumbnail_db_->GetFaviconIDForFaviconURL(
