@@ -521,6 +521,8 @@
       'browser/device_sensors/sensor_manager_android.h',
       'browser/device_sensors/sensor_manager_chromeos.cc',
       'browser/device_sensors/sensor_manager_chromeos.h',
+      'browser/devtools/browser_devtools_agent_host.cc',
+      'browser/devtools/browser_devtools_agent_host.h',
       'browser/devtools/devtools_agent_host_impl.cc',
       'browser/devtools/devtools_agent_host_impl.h',
       'browser/devtools/devtools_frame_trace_recorder.cc',

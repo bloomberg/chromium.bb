@@ -27,7 +27,9 @@ ChromeDevToolsManagerDelegate::~ChromeDevToolsManagerDelegate() {
 void ChromeDevToolsManagerDelegate::Inspect(
     content::BrowserContext* browser_context,
     content::DevToolsAgentHost* agent_host) {
-  if (!agent_host->IsWorker()) {
+  content::DevToolsAgentHost::Type type = agent_host->GetType();
+  if (type != content::DevToolsAgentHost::TYPE_SHARED_WORKER &&
+      type != content::DevToolsAgentHost::TYPE_SERVICE_WORKER) {
     // TODO(horo): Support other types of DevToolsAgentHost when necessary.
     NOTREACHED() << "Inspect() only supports workers.";
   }

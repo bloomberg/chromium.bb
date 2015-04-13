@@ -18,8 +18,10 @@ namespace tethering {
 class TetheringHandler {
  public:
   using Response = DevToolsProtocolClient::Response;
+  using CreateServerSocketCallback =
+      base::Callback<scoped_ptr<net::ServerSocket>(std::string*)>;
 
-  TetheringHandler(DevToolsHttpHandler::ServerSocketFactory* delegate,
+  TetheringHandler(const CreateServerSocketCallback& socket_callback,
                    scoped_refptr<base::MessageLoopProxy> message_loop_proxy);
   ~TetheringHandler();
 
@@ -40,7 +42,7 @@ class TetheringHandler {
                          const std::string& message);
 
   scoped_ptr<Client> client_;
-  DevToolsHttpHandler::ServerSocketFactory* socket_factory_;
+  CreateServerSocketCallback socket_callback_;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   bool is_active_;
   base::WeakPtrFactory<TetheringHandler> weak_factory_;

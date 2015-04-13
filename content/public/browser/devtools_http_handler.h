@@ -15,7 +15,6 @@ class GURL;
 
 namespace net {
 class ServerSocket;
-class URLRequestContextGetter;
 }
 
 namespace content {

@@ -19,7 +19,6 @@ class WorkerDevToolsAgentHost : public IPCDevToolsAgentHost,
   typedef std::pair<int, int> WorkerId;
 
   // DevToolsAgentHost override.
-  bool IsWorker() const override;
   BrowserContext* GetBrowserContext() override;
 
   // IPCDevToolsAgentHost implementation.

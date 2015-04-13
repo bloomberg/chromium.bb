@@ -11,10 +11,6 @@
 
 namespace content {
 
-bool WorkerDevToolsAgentHost::IsWorker() const {
-  return true;
-}
-
 BrowserContext* WorkerDevToolsAgentHost::GetBrowserContext() {
   RenderProcessHost* rph = RenderProcessHost::FromID(worker_id_.first);
   return rph ? rph->GetBrowserContext() : nullptr;

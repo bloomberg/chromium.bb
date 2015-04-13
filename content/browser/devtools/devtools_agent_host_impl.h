@@ -45,7 +45,6 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   WebContents* GetWebContents() override;
   void DisconnectWebContents() override;
   void ConnectWebContents(WebContents* wc) override;
-  bool IsWorker() const override;
 
  protected:
   DevToolsAgentHostImpl();
@@ -53,6 +52,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
 
   scoped_ptr<DevToolsProtocolHandler> protocol_handler_;
 
+  void set_handle_all_protocol_commands() { handle_all_commands_ = true; }
   void HostClosed();
   void SendMessageToClient(const std::string& message);
   static void NotifyCallbacks(DevToolsAgentHostImpl* agent_host, bool attached);
@@ -62,6 +62,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
 
   const std::string id_;
   DevToolsAgentHostClient* client_;
+  bool handle_all_commands_;
 };
 
 }  // namespace content

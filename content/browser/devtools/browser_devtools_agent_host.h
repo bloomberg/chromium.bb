@@ -1,0 +1,44 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CONTENT_BROWSER_DEVTOOLS_BROWSER_DEVTOOLS_AGENT_HOST_H_
+#define CONTENT_BROWSER_DEVTOOLS_BROWSER_DEVTOOLS_AGENT_HOST_H_
+
+#include "content/browser/devtools/devtools_agent_host_impl.h"
+
+namespace content {
+
+namespace devtools {
+namespace system_info { class SystemInfoHandler; }
+namespace tethering { class TetheringHandler; }
+namespace tracing { class TracingHandler; }
+}  // namespace devtools
+
+class BrowserDevToolsAgentHost : public DevToolsAgentHostImpl {
+ private:
+  friend class DevToolsAgentHost;
+  BrowserDevToolsAgentHost(
+      scoped_refptr<base::MessageLoopProxy> tethering_message_loop,
+      const CreateServerSocketCallback& socket_callback);
+  ~BrowserDevToolsAgentHost() override;
+
+  // DevToolsAgentHostImpl implementation.
+  void Attach() override;
+  void Detach() override;
+
+  // DevToolsAgentHost implementation.
+  Type GetType() override;
+  std::string GetTitle() override;
+  GURL GetURL() override;
+  bool Activate() override;
+  bool Close() override;
+
+  scoped_ptr<devtools::system_info::SystemInfoHandler> system_info_handler_;
+  scoped_ptr<devtools::tethering::TetheringHandler> tethering_handler_;
+  scoped_ptr<devtools::tracing::TracingHandler> tracing_handler_;
+};
+
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_DEVTOOLS_BROWSER_DEVTOOLS_AGENT_HOST_H_

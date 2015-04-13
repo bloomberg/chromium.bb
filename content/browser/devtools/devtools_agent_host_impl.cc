@@ -35,6 +35,16 @@ base::LazyInstance<AgentStateCallbacks>::Leaky g_callbacks =
 }  // namespace
 
 // static
+std::string DevToolsAgentHost::GetProtocolVersion() {
+  return std::string(devtools::kProtocolVersion);
+}
+
+// static
+bool DevToolsAgentHost::IsSupportedProtocolVersion(const std::string& version) {
+  return devtools::IsSupportedProtocolVersion(version);
+}
+
+// static
 DevToolsAgentHost::List DevToolsAgentHost::GetOrCreateAll() {
   List result;
   SharedWorkerDevToolsAgentHost::List shared_list;
@@ -71,7 +81,8 @@ DevToolsAgentHostImpl::DevToolsAgentHostImpl()
           base::Bind(&DevToolsAgentHostImpl::SendMessageToClient,
                      base::Unretained(this)))),
       id_(base::GenerateGUID()),
-      client_(NULL) {
+      client_(NULL),
+      handle_all_commands_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   g_instances.Get()[id_] = this;
 }
@@ -142,10 +153,6 @@ void DevToolsAgentHostImpl::DisconnectWebContents() {
 }
 
 void DevToolsAgentHostImpl::ConnectWebContents(WebContents* wc) {
-}
-
-bool DevToolsAgentHostImpl::IsWorker() const {
-  return false;
 }
 
 void DevToolsAgentHostImpl::HostClosed() {
@@ -244,7 +251,10 @@ bool DevToolsAgentHostImpl::DispatchProtocolMessage(
     }
   }
 
-  return protocol_handler_->HandleOptionalCommand(command.Pass());
+  if (!handle_all_commands_)
+    return protocol_handler_->HandleOptionalCommand(command.Pass());
+  protocol_handler_->HandleCommand(command.Pass());
+  return true;
 }
 
 }  // namespace content

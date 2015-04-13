@@ -27,6 +27,8 @@ const int kMinTetheringPort = 1024;
 const int kMaxTetheringPort = 32767;
 
 using Response = DevToolsProtocolClient::Response;
+using CreateServerSocketCallback =
+    base::Callback<scoped_ptr<net::ServerSocket>(std::string*)>;
 
 class SocketPump {
  public:
@@ -36,9 +38,9 @@ class SocketPump {
         pending_destruction_(false) {
   }
 
-  std::string Init(DevToolsHttpHandler::ServerSocketFactory* socket_factory) {
+  std::string Init(const CreateServerSocketCallback& socket_callback) {
     std::string channel_name;
-    server_socket_ = socket_factory->CreateForTethering(&channel_name);
+    server_socket_ = socket_callback.Run(&channel_name);
     if (!server_socket_.get() || channel_name.empty())
       SelfDestruct();
 
@@ -157,9 +159,9 @@ class BoundSocket {
   typedef base::Callback<void(uint16, const std::string&)> AcceptedCallback;
 
   BoundSocket(AcceptedCallback accepted_callback,
-              DevToolsHttpHandler::ServerSocketFactory* socket_factory)
+              const CreateServerSocketCallback& socket_callback)
       : accepted_callback_(accepted_callback),
-        socket_factory_(socket_factory),
+        socket_callback_(socket_callback),
         socket_(new net::TCPServerSocket(NULL, net::NetLog::Source())),
         port_(0) {
   }
@@ -213,13 +215,13 @@ class BoundSocket {
       return;
 
     SocketPump* pump = new SocketPump(accept_socket_.release());
-    std::string name = pump->Init(socket_factory_);
+    std::string name = pump->Init(socket_callback_);
     if (!name.empty())
       accepted_callback_.Run(port_, name);
   }
 
   AcceptedCallback accepted_callback_;
-  DevToolsHttpHandler::ServerSocketFactory* socket_factory_;
+  CreateServerSocketCallback socket_callback_;
   scoped_ptr<net::ServerSocket> socket_;
   scoped_ptr<net::StreamSocket> accept_socket_;
   uint16 port_;
@@ -233,7 +235,7 @@ class TetheringHandler::TetheringImpl {
  public:
   TetheringImpl(
       base::WeakPtr<TetheringHandler> handler,
-      DevToolsHttpHandler::ServerSocketFactory* socket_factory);
+      const CreateServerSocketCallback& socket_callback);
   ~TetheringImpl();
 
   void Bind(DevToolsCommandId command_id, uint16 port);
@@ -245,7 +247,7 @@ class TetheringHandler::TetheringImpl {
                          const std::string& message);
 
   base::WeakPtr<TetheringHandler> handler_;
-  DevToolsHttpHandler::ServerSocketFactory* socket_factory_;
+  CreateServerSocketCallback socket_callback_;
 
   typedef std::map<uint16, BoundSocket*> BoundSockets;
   BoundSockets bound_sockets_;
@@ -253,9 +255,9 @@ class TetheringHandler::TetheringImpl {
 
 TetheringHandler::TetheringImpl::TetheringImpl(
     base::WeakPtr<TetheringHandler> handler,
-    DevToolsHttpHandler::ServerSocketFactory* socket_factory)
+    const CreateServerSocketCallback& socket_callback)
     : handler_(handler),
-      socket_factory_(socket_factory) {
+      socket_callback_(socket_callback) {
 }
 
 TetheringHandler::TetheringImpl::~TetheringImpl() {
@@ -272,7 +274,7 @@ void TetheringHandler::TetheringImpl::Bind(
   BoundSocket::AcceptedCallback callback = base::Bind(
       &TetheringHandler::TetheringImpl::Accepted, base::Unretained(this));
   scoped_ptr<BoundSocket> bound_socket(
-      new BoundSocket(callback, socket_factory_));
+      new BoundSocket(callback, socket_callback_));
   if (!bound_socket->Listen(port)) {
     SendInternalError(command_id, "Could not bind port");
     return;
@@ -327,9 +329,9 @@ void TetheringHandler::TetheringImpl::SendInternalError(
 TetheringHandler::TetheringImpl* TetheringHandler::impl_ = nullptr;
 
 TetheringHandler::TetheringHandler(
-    DevToolsHttpHandler::ServerSocketFactory* socket_factory,
+    const CreateServerSocketCallback& socket_callback,
     scoped_refptr<base::MessageLoopProxy> message_loop_proxy)
-    : socket_factory_(socket_factory),
+    : socket_callback_(socket_callback),
       message_loop_proxy_(message_loop_proxy),
       is_active_(false),
       weak_factory_(this) {
@@ -357,7 +359,7 @@ bool TetheringHandler::Activate() {
   if (impl_)
     return false;
   is_active_ = true;
-  impl_ = new TetheringImpl(weak_factory_.GetWeakPtr(), socket_factory_);
+  impl_ = new TetheringImpl(weak_factory_.GetWeakPtr(), socket_callback_);
   return true;
 }
 
