@@ -35,7 +35,7 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
                            int identifier) override;
   void DidAcceptSuggestion(const base::string16& value,
                            int identifier) override;
-  void RemoveSuggestion(const base::string16& value, int identifier) override;
+  bool RemoveSuggestion(const base::string16& value, int identifier) override;
   void ClearPreviewedForm() override;
 
   // Invoked when a password mapping is added.

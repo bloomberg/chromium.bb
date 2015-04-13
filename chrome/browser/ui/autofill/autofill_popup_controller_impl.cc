@@ -356,14 +356,6 @@ int AutofillPopupControllerImpl::GetIconResourceID(
   return -1;
 }
 
-bool AutofillPopupControllerImpl::CanDelete(size_t index) const {
-  // TODO(isherman): Native AddressBook suggestions on Mac and Android should
-  // not be considered to be deleteable.
-  int id = suggestions_[index].frontend_id;
-  return id > 0 || id == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY ||
-         id == POPUP_ITEM_ID_PASSWORD_ENTRY;
-}
-
 bool AutofillPopupControllerImpl::IsWarning(size_t index) const {
   return suggestions_[index].frontend_id == POPUP_ITEM_ID_WARNING_MESSAGE;
 }
@@ -508,11 +500,10 @@ bool AutofillPopupControllerImpl::RemoveSelectedLine() {
   DCHECK_GE(selected_line_, 0);
   DCHECK_LT(selected_line_, static_cast<int>(GetLineCount()));
 
-  if (!CanDelete(selected_line_))
+  if (!delegate_->RemoveSuggestion(suggestions_[selected_line_].value,
+                                   suggestions_[selected_line_].frontend_id)) {
     return false;
-
-  delegate_->RemoveSuggestion(suggestions_[selected_line_].value,
-                              suggestions_[selected_line_].frontend_id);
+  }
 
   // Remove the deleted element.
   suggestions_.erase(suggestions_.begin() + selected_line_);

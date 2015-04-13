@@ -47,7 +47,9 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
 
   void DidSelectSuggestion(const base::string16& value,
                            int identifier) override {}
-  void RemoveSuggestion(const base::string16& value, int identifier) override {}
+  bool RemoveSuggestion(const base::string16& value, int identifier) override {
+    return true;
+  }
   void ClearPreviewedForm() override {}
   base::WeakPtr<AutofillExternalDelegate> GetWeakPtr() {
     return AutofillExternalDelegate::GetWeakPtr();
@@ -247,12 +249,6 @@ TEST_F(AutofillPopupControllerUnitTest, RemoveLine) {
 
   // No line is selected so the removal should fail.
   EXPECT_FALSE(autofill_popup_controller_->RemoveSelectedLine());
-
-  // Try to remove the last entry and ensure it fails (it is an option).
-  autofill_popup_controller_->SetSelectedLine(
-      autofill_popup_controller_->GetLineCount() - 1);
-  EXPECT_FALSE(autofill_popup_controller_->RemoveSelectedLine());
-  EXPECT_LE(0, autofill_popup_controller_->selected_line());
 
   // Remove the first entry. The popup should be redrawn since its size has
   // changed.

@@ -42,7 +42,7 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
                            int identifier) override;
   void DidAcceptSuggestion(const base::string16& value,
                            int identifier) override;
-  void RemoveSuggestion(const base::string16& value, int identifier) override;
+  bool RemoveSuggestion(const base::string16& value, int identifier) override;
   void ClearPreviewedForm() override;
 
   // Records and associates a query_id with web form data.  Called

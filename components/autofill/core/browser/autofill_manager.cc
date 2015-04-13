@@ -705,27 +705,34 @@ void AutofillManager::OnHidePopup() {
   client_->HideAutofillPopup();
 }
 
-void AutofillManager::RemoveAutofillProfileOrCreditCard(int unique_id) {
+bool AutofillManager::RemoveAutofillProfileOrCreditCard(int unique_id) {
   std::string guid;
   size_t variant = 0;
   const CreditCard* credit_card = nullptr;
   const AutofillProfile* profile = nullptr;
   if (GetCreditCard(unique_id, &credit_card)) {
+    if (credit_card->record_type() != CreditCard::LOCAL_CARD)
+      return false;
+
     guid = credit_card->guid();
   } else if (GetProfile(unique_id, &profile, &variant)) {
+    if (profile->record_type() != AutofillProfile::LOCAL_PROFILE)
+      return false;
+
     guid = profile->guid();
   } else {
     NOTREACHED();
-    return;
+    return false;
   }
 
   // TODO(csharp): If we are dealing with a variant only the variant should
   // be deleted, instead of doing nothing.
   // http://crbug.com/124211
   if (variant != 0)
-    return;
+    return false;
 
   personal_data_->RemoveByGUID(guid);
+  return true;
 }
 
 void AutofillManager::RemoveAutocompleteEntry(const base::string16& name,

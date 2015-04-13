@@ -76,7 +76,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   void SelectionCleared() override;
   void AcceptSuggestion(size_t index) override;
   int GetIconResourceID(const base::string16& resource_name) const override;
-  bool CanDelete(size_t index) const override;
   bool IsWarning(size_t index) const override;
   gfx::Rect GetRowBounds(size_t index) override;
   void SetPopupBounds(const gfx::Rect& bounds) override;

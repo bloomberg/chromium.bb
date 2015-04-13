@@ -263,12 +263,17 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
   manager_->client()->HideAutofillPopup();
 }
 
-void AutofillExternalDelegate::RemoveSuggestion(const base::string16& value,
+bool AutofillExternalDelegate::RemoveSuggestion(const base::string16& value,
                                                 int identifier) {
   if (identifier > 0)
-    manager_->RemoveAutofillProfileOrCreditCard(identifier);
-  else
+    return manager_->RemoveAutofillProfileOrCreditCard(identifier);
+
+  if (identifier == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY) {
     manager_->RemoveAutocompleteEntry(query_field_.name, value);
+    return true;
+  }
+
+  return false;
 }
 
 void AutofillExternalDelegate::DidEndTextFieldEditing() {

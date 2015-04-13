@@ -124,8 +124,8 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   void OnDidPreviewAutofillFormData();
 
   // Remove the credit card or Autofill profile that matches |unique_id|
-  // from the database.
-  void RemoveAutofillProfileOrCreditCard(int unique_id);
+  // from the database. Returns true if deletion is allowed.
+  bool RemoveAutofillProfileOrCreditCard(int unique_id);
 
   // Remove the specified Autocomplete entry.
   void RemoveAutocompleteEntry(const base::string16& name,

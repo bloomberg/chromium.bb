@@ -2448,10 +2448,11 @@ void AutofillDialogControllerImpl::DidAcceptSuggestion(
   HidePopup();
 }
 
-void AutofillDialogControllerImpl::RemoveSuggestion(
+bool AutofillDialogControllerImpl::RemoveSuggestion(
     const base::string16& value,
     int identifier) {
   // TODO(estade): implement.
+  return false;
 }
 
 void AutofillDialogControllerImpl::ClearPreviewedForm() {

@@ -169,7 +169,7 @@ class AutofillDialogControllerImpl
                            int identifier) override;
   void DidAcceptSuggestion(const base::string16& value,
                            int identifier) override;
-  void RemoveSuggestion(const base::string16& value, int identifier) override;
+  bool RemoveSuggestion(const base::string16& value, int identifier) override;
   void ClearPreviewedForm() override;
 
   // content::NotificationObserver implementation.

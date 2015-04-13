@@ -34,9 +34,6 @@ class AutofillPopupController : public AutofillPopupViewDelegate {
   // resource isn't recognized.
   virtual int GetIconResourceID(const base::string16& resource_name) const = 0;
 
-  // Returns true if the given index refers to an element that can be deleted.
-  virtual bool CanDelete(size_t index) const = 0;
-
   // Returns true if the given index refers to an element that is a warning
   // rather than an Autofill suggestion.
   virtual bool IsWarning(size_t index) const = 0;

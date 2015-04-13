@@ -218,9 +218,11 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
   autofill_client_->HideAutofillPopup();
 }
 
-void PasswordAutofillManager::RemoveSuggestion(const base::string16& value,
+bool PasswordAutofillManager::RemoveSuggestion(const base::string16& value,
                                                int identifier) {
-  NOTREACHED();
+  // http://crbug.com/329038
+  NOTIMPLEMENTED();
+  return false;
 }
 
 void PasswordAutofillManager::ClearPreviewedForm() {

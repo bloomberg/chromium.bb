@@ -28,8 +28,9 @@ class AutofillPopupDelegate {
   virtual void DidAcceptSuggestion(const base::string16& value,
                                    int identifier) = 0;
 
-  // Delete the described suggestion.
-  virtual void RemoveSuggestion(const base::string16& value,
+  // Delete the described suggestion. Returns true if something was deleted,
+  // or false if deletion is not allowed.
+  virtual bool RemoveSuggestion(const base::string16& value,
                                 int identifier) = 0;
 
   // Informs the delegate that the Autofill previewed form should be cleared.
