@@ -18,6 +18,18 @@
 <include src="chromeos/kiosk_apps.js">
 </if>
 
+/**
+ * The type of the extension data object. The definition is based on
+ * chrome/browser/ui/webui/extensions/extension_settings_handler.cc:
+ *     ExtensionSettingsHandler::HandleRequestExtensionsData()
+ * @typedef {{developerMode: boolean,
+ *            enableAppInfoDialog: boolean,
+ *            incognitoAvailable: boolean,
+ *            loadUnpackedDisabled: boolean,
+ *            profileIsSupervised: boolean}}
+ */
+var ExtensionDataResponse;
+
 // Used for observing function of the backend datasource for this page by
 // tests.
 var webuiResponded = false;
@@ -138,18 +150,17 @@ cr.define('extensions', function() {
       var wrapper = $('extension-list-wrapper');
       wrapper.insertBefore(extensionList, wrapper.firstChild);
 
-      this.update_();
-      // TODO(devlin): Remove this once all notifications are moved to events on
-      // the developerPrivate api.
-      chrome.send('extensionSettingsRegister');
+      // This will request the data to show on the page and will get a response
+      // back in returnExtensionsData.
+      chrome.send('extensionSettingsRequestExtensionsData');
 
       var extensionLoader = extensions.ExtensionLoader.getInstance();
 
       $('toggle-dev-on').addEventListener('change', function(e) {
         this.updateDevControlsVisibility_(true);
         extensionList.updateFocusableElements();
-        chrome.developerPrivate.updateProfileConfiguration(
-            {inDeveloperMode: e.target.checked});
+        chrome.send('extensionSettingsToggleDeveloperMode',
+                    [$('toggle-dev-on').checked]);
       }.bind(this));
 
       window.addEventListener('resize', function() {
@@ -212,59 +223,6 @@ cr.define('extensions', function() {
         if (overlayName == 'configureCommands')
           this.showExtensionCommandsConfigUi_();
       }
-    },
-
-    /**
-     * Updates the extensions page to the latest profile and extensions
-     * configuration.
-     * @private
-     */
-    update_: function() {
-      chrome.developerPrivate.getProfileConfiguration(
-          this.returnProfileConfiguration_.bind(this));
-    },
-
-    /**
-     * [Re]-Populates the page with data representing the current state of
-     * installed extensions.
-     * @param {ProfileInfo} profileInfo
-     * @private
-     */
-    returnProfileConfiguration_: function(profileInfo) {
-      webuiResponded = true;
-      /** @const */
-      var supervised = profileInfo.isSupervised;
-
-      var pageDiv = $('extension-settings');
-      pageDiv.classList.toggle('profile-is-supervised', supervised);
-      pageDiv.classList.toggle('showing-banner', supervised);
-
-      var devControlsCheckbox = $('toggle-dev-on');
-      devControlsCheckbox.checked = profileInfo.inDeveloperMode;
-      devControlsCheckbox.disabled = supervised;
-
-      this.updateDevControlsVisibility_(false);
-
-      $('load-unpacked').disabled = !profileInfo.canLoadUnpacked;
-      var extensionList = $('extension-settings-list');
-      extensionList.updateExtensionsData(
-          profileInfo.isIncognitoAvailable,
-          profileInfo.appInfoDialogEnabled).then(function() {
-        // We can get called many times in short order, thus we need to
-        // be careful to remove the 'finished loading' timeout.
-        if (this.loadingTimeout_)
-          window.clearTimeout(this.loadingTimeout_);
-        document.documentElement.classList.add('loading');
-        this.loadingTimeout_ = window.setTimeout(function() {
-          document.documentElement.classList.remove('loading');
-        }, 0);
-
-        /** @const */
-        var hasExtensions = extensionList.getNumExtensions() != 0;
-        $('no-extensions').hidden = hasExtensions;
-        $('extension-list-wrapper').hidden = !hasExtensions;
-        $('extension-settings-list').updateFocusableElements();
-      }.bind(this));
     },
 
     /**
@@ -333,8 +291,44 @@ cr.define('extensions', function() {
     },
   };
 
-  ExtensionSettings.onExtensionsChanged = function() {
-    ExtensionSettings.getInstance().update_();
+  /**
+   * Called by the dom_ui_ to re-populate the page with data representing
+   * the current state of installed extensions.
+   * @param {ExtensionDataResponse} extensionsData
+   */
+  ExtensionSettings.returnExtensionsData = function(extensionsData) {
+    webuiResponded = true;
+
+    var supervised = extensionsData.profileIsSupervised;
+
+    var pageDiv = $('extension-settings');
+    pageDiv.classList.toggle('profile-is-supervised', supervised);
+    pageDiv.classList.toggle('showing-banner', supervised);
+
+    var devControlsCheckbox = $('toggle-dev-on');
+    devControlsCheckbox.checked = extensionsData.developerMode;
+    devControlsCheckbox.disabled = supervised;
+
+    ExtensionSettings.getInstance().updateDevControlsVisibility_(false);
+
+    $('load-unpacked').disabled = extensionsData.loadUnpackedDisabled;
+    var extensionList = $('extension-settings-list');
+    extensionList.updateExtensionsData(
+        extensionsData.incognitoAvailable,
+        extensionsData.enableAppInfoDialog).then(function() {
+      // We can get called many times in short order, thus we need to
+      // be careful to remove the 'finished loading' timeout.
+      if (this.loadingTimeout_)
+        window.clearTimeout(this.loadingTimeout_);
+      this.loadingTimeout_ = window.setTimeout(function() {
+        document.documentElement.classList.remove('loading');
+      }, 0);
+
+      var hasExtensions = extensionList.getNumExtensions() != 0;
+      $('no-extensions').hidden = hasExtensions;
+      $('extension-list-wrapper').hidden = !hasExtensions;
+      $('extension-settings-list').updateFocusableElements();
+    }.bind(this));
   };
 
   /**

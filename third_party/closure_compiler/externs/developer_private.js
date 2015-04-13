@@ -11,7 +11,6 @@ chrome.developerPrivate = {};
 
 /**
  * @enum {string}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-ItemType
  */
 chrome.developerPrivate.ItemType = {
   hosted_app: 'hosted_app',
@@ -29,7 +28,6 @@ chrome.developerPrivate.ItemType = {
  *   incognito: boolean,
  *   generatedBackgroundPage: boolean
  * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-ItemInspectView
  */
 var ItemInspectView;
 
@@ -40,7 +38,6 @@ var ItemInspectView;
  *   render_view_id: (string|number),
  *   incognito: boolean
  * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-InspectOptions
  */
 var InspectOptions;
 
@@ -48,13 +45,11 @@ var InspectOptions;
  * @typedef {{
  *   message: string
  * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-InstallWarning
  */
 var InstallWarning;
 
 /**
  * @enum {string}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-ExtensionType
  */
 chrome.developerPrivate.ExtensionType = {
   HOSTED_APP: 'HOSTED_APP',
@@ -67,7 +62,6 @@ chrome.developerPrivate.ExtensionType = {
 
 /**
  * @enum {string}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-Location
  */
 chrome.developerPrivate.Location = {
   FROM_STORE: 'FROM_STORE',
@@ -78,7 +72,6 @@ chrome.developerPrivate.Location = {
 
 /**
  * @enum {string}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-ViewType
  */
 chrome.developerPrivate.ViewType = {
   APP_WINDOW: 'APP_WINDOW',
@@ -94,7 +87,6 @@ chrome.developerPrivate.ViewType = {
 
 /**
  * @enum {string}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-ErrorType
  */
 chrome.developerPrivate.ErrorType = {
   MANIFEST: 'MANIFEST',
@@ -103,7 +95,6 @@ chrome.developerPrivate.ErrorType = {
 
 /**
  * @enum {string}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-ErrorLevel
  */
 chrome.developerPrivate.ErrorLevel = {
   LOG: 'LOG',
@@ -113,7 +104,6 @@ chrome.developerPrivate.ErrorLevel = {
 
 /**
  * @enum {string}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-ExtensionState
  */
 chrome.developerPrivate.ExtensionState = {
   ENABLED: 'ENABLED',
@@ -126,7 +116,6 @@ chrome.developerPrivate.ExtensionState = {
  *   isEnabled: boolean,
  *   isActive: boolean
  * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-AccessModifier
  */
 var AccessModifier;
 
@@ -137,7 +126,6 @@ var AccessModifier;
  *   url: string,
  *   functionName: string
  * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-StackFrame
  */
 var StackFrame;
 
@@ -151,7 +139,6 @@ var StackFrame;
  *   manifestKey: string,
  *   manifestSpecific: (string|undefined)
  * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-ManifestError
  */
 var ManifestError;
 
@@ -170,7 +157,6 @@ var ManifestError;
  *   canInspect: boolean,
  *   stackTrace: !Array<StackFrame>
  * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-RuntimeError
  */
 var RuntimeError;
 
@@ -180,7 +166,6 @@ var RuntimeError;
  *   corruptInstall: boolean,
  *   updateRequired: boolean
  * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-DisableReasons
  */
 var DisableReasons;
 
@@ -189,7 +174,6 @@ var DisableReasons;
  *   openInTab: boolean,
  *   url: string
  * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-OptionsPage
  */
 var OptionsPage;
 
@@ -198,7 +182,6 @@ var OptionsPage;
  *   url: string,
  *   specified: boolean
  * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-HomePage
  */
 var HomePage;
 
@@ -210,7 +193,6 @@ var HomePage;
  *   incognito: boolean,
  *   type: !chrome.developerPrivate.ViewType
  * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-ExtensionView
  */
 var ExtensionView;
 
@@ -250,21 +232,8 @@ var ExtensionView;
  *   version: string,
  *   views: !Array<ExtensionView>
  * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-ExtensionInfo
  */
 var ExtensionInfo;
-
-/**
- * @typedef {{
- *   appInfoDialogEnabled: boolean,
- *   canLoadUnpacked: boolean,
- *   inDeveloperMode: boolean,
- *   isIncognitoAvailable: boolean,
- *   isSupervised: boolean
- * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-ProfileInfo
- */
-var ProfileInfo;
 
 /**
  * @typedef {{
@@ -296,7 +265,6 @@ var ProfileInfo;
  *   offline_enabled: boolean,
  *   views: !Array<ItemInspectView>
  * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-ItemInfo
  */
 var ItemInfo;
 
@@ -305,7 +273,6 @@ var ItemInfo;
  *   includeDisabled: (boolean|undefined),
  *   includeTerminated: (boolean|undefined)
  * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-GetExtensionsInfoOptions
  */
 var GetExtensionsInfoOptions;
 
@@ -318,23 +285,13 @@ var GetExtensionsInfoOptions;
  *   runOnAllUrls: (boolean|undefined),
  *   showActionButton: (boolean|undefined)
  * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-ExtensionConfigurationUpdate
  */
 var ExtensionConfigurationUpdate;
 
 /**
  * @typedef {{
- *   inDeveloperMode: (boolean|undefined)
- * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-ProfileConfigurationUpdate
- */
-var ProfileConfigurationUpdate;
-
-/**
- * @typedef {{
  *   failQuietly: (boolean|undefined)
  * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-ReloadOptions
  */
 var ReloadOptions;
 
@@ -342,13 +299,11 @@ var ReloadOptions;
  * @typedef {{
  *   failQuietly: (boolean|undefined)
  * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-LoadUnpackedOptions
  */
 var LoadUnpackedOptions;
 
 /**
  * @enum {string}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-PackStatus
  */
 chrome.developerPrivate.PackStatus = {
   SUCCESS: 'SUCCESS',
@@ -358,7 +313,6 @@ chrome.developerPrivate.PackStatus = {
 
 /**
  * @enum {string}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-FileType
  */
 chrome.developerPrivate.FileType = {
   LOAD: 'LOAD',
@@ -367,7 +321,6 @@ chrome.developerPrivate.FileType = {
 
 /**
  * @enum {string}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-SelectType
  */
 chrome.developerPrivate.SelectType = {
   FILE: 'FILE',
@@ -376,7 +329,6 @@ chrome.developerPrivate.SelectType = {
 
 /**
  * @enum {string}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-EventType
  */
 chrome.developerPrivate.EventType = {
   INSTALLED: 'INSTALLED',
@@ -396,7 +348,6 @@ chrome.developerPrivate.EventType = {
  *   override_flags: number,
  *   status: !chrome.developerPrivate.PackStatus
  * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-PackDirectoryResponse
  */
 var PackDirectoryResponse;
 
@@ -404,7 +355,6 @@ var PackDirectoryResponse;
  * @typedef {{
  *   name: string
  * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-ProjectInfo
  */
 var ProjectInfo;
 
@@ -414,7 +364,6 @@ var ProjectInfo;
  *   item_id: string,
  *   extensionInfo: (ExtensionInfo|undefined)
  * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-EventData
  */
 var EventData;
 
@@ -427,7 +376,6 @@ var EventData;
  *   manifestSpecific: (string|undefined),
  *   lineNumber: (number|undefined)
  * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-RequestFileSourceProperties
  */
 var RequestFileSourceProperties;
 
@@ -439,7 +387,6 @@ var RequestFileSourceProperties;
  *   title: string,
  *   message: string
  * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-RequestFileSourceResponse
  */
 var RequestFileSourceResponse;
 
@@ -453,7 +400,6 @@ var RequestFileSourceResponse;
  *   lineNumber: (number|undefined),
  *   columnNumber: (number|undefined)
  * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-OpenDevToolsProperties
  */
 var OpenDevToolsProperties;
 
@@ -463,7 +409,6 @@ var OpenDevToolsProperties;
  *   errorIds: (!Array<number>|undefined),
  *   type: (!chrome.developerPrivate.ErrorType|undefined)
  * }}
- * @see https://developer.chrome.com/extensions/developerPrivate#type-DeleteExtensionErrorsProperties
  */
 var DeleteExtensionErrorsProperties;
 
@@ -471,7 +416,6 @@ var DeleteExtensionErrorsProperties;
  * Runs auto update for extensions and apps immediately.
  * @param {function(boolean):void=} callback Called with the boolean result,
  *     true if autoUpdate is successful.
- * @see https://developer.chrome.com/extensions/developerPrivate#method-autoUpdate
  */
 chrome.developerPrivate.autoUpdate = function(callback) {};
 
@@ -481,7 +425,6 @@ chrome.developerPrivate.autoUpdate = function(callback) {};
  *     returned.
  * @param {function(!Array<ExtensionInfo>):void=} callback Called with
  *     extensions info.
- * @see https://developer.chrome.com/extensions/developerPrivate#method-getExtensionsInfo
  */
 chrome.developerPrivate.getExtensionsInfo = function(options, callback) {};
 
@@ -489,7 +432,6 @@ chrome.developerPrivate.getExtensionsInfo = function(options, callback) {};
  * Returns information of a particular extension.
  * @param {string} id The id of the extension.
  * @param {function(ExtensionInfo):void=} callback Called with the result.
- * @see https://developer.chrome.com/extensions/developerPrivate#method-getExtensionInfo
  */
 chrome.developerPrivate.getExtensionInfo = function(id, callback) {};
 
@@ -499,32 +441,13 @@ chrome.developerPrivate.getExtensionInfo = function(id, callback) {};
  * @param {boolean} includeTerminated include terminated items.
  * @param {function(!Array<ItemInfo>):void} callback Called with items info.
  * @deprecated Use getExtensionsInfo
- * @see https://developer.chrome.com/extensions/developerPrivate#method-getItemsInfo
  */
 chrome.developerPrivate.getItemsInfo = function(includeDisabled, includeTerminated, callback) {};
-
-/**
- * Returns the current profile's configuration.
- * @param {function(ProfileInfo):void} callback
- * @see https://developer.chrome.com/extensions/developerPrivate#method-getProfileConfiguration
- */
-chrome.developerPrivate.getProfileConfiguration = function(callback) {};
-
-/**
- * Updates the active profile.
- * @param {ProfileConfigurationUpdate} update The parameters for updating the
- *     profile's configuration.  Any     properties omitted from |update| will
- *     not be changed.
- * @param {function():void=} callback
- * @see https://developer.chrome.com/extensions/developerPrivate#method-updateProfileConfiguration
- */
-chrome.developerPrivate.updateProfileConfiguration = function(update, callback) {};
 
 /**
  * Opens a permissions dialog.
  * @param {string} extensionId The id of the extension to show permissions for.
  * @param {function():void=} callback
- * @see https://developer.chrome.com/extensions/developerPrivate#method-showPermissionsDialog
  */
 chrome.developerPrivate.showPermissionsDialog = function(extensionId, callback) {};
 
@@ -533,7 +456,6 @@ chrome.developerPrivate.showPermissionsDialog = function(extensionId, callback) 
  * @param {string} extensionId The id of the extension to reload.
  * @param {ReloadOptions=} options Additional configuration parameters.
  * @param {function():void=} callback
- * @see https://developer.chrome.com/extensions/developerPrivate#method-reload
  */
 chrome.developerPrivate.reload = function(extensionId, options, callback) {};
 
@@ -543,7 +465,6 @@ chrome.developerPrivate.reload = function(extensionId, options, callback) {};
  *     extension's configuration.     Any properties omitted from |update| will
  *     not be changed.
  * @param {function():void=} callback
- * @see https://developer.chrome.com/extensions/developerPrivate#method-updateExtensionConfiguration
  */
 chrome.developerPrivate.updateExtensionConfiguration = function(update, callback) {};
 
@@ -551,7 +472,6 @@ chrome.developerPrivate.updateExtensionConfiguration = function(update, callback
  * Loads a user-selected unpacked item.
  * @param {LoadUnpackedOptions=} options Additional configuration parameters.
  * @param {function():void=} callback
- * @see https://developer.chrome.com/extensions/developerPrivate#method-loadUnpacked
  */
 chrome.developerPrivate.loadUnpacked = function(options, callback) {};
 
@@ -559,7 +479,6 @@ chrome.developerPrivate.loadUnpacked = function(options, callback) {};
  * Loads an extension / app.
  * @param {Object} directory The directory to load the extension from.
  * @param {function(string):void} callback
- * @see https://developer.chrome.com/extensions/developerPrivate#method-loadDirectory
  */
 chrome.developerPrivate.loadDirectory = function(directory, callback) {};
 
@@ -571,7 +490,6 @@ chrome.developerPrivate.loadDirectory = function(directory, callback) {};
  *     example, pem type is for private key and load type is for an unpacked
  *     item.
  * @param {function(string):void} callback called with selected item's path.
- * @see https://developer.chrome.com/extensions/developerPrivate#method-choosePath
  */
 chrome.developerPrivate.choosePath = function(selectType, fileType, callback) {};
 
@@ -582,14 +500,12 @@ chrome.developerPrivate.choosePath = function(selectType, fileType, callback) {}
  * @param {number=} flags Special flags to apply to the loading process, if any.
  * @param {function(PackDirectoryResponse):void=} callback called with the
  *     success result string.
- * @see https://developer.chrome.com/extensions/developerPrivate#method-packDirectory
  */
 chrome.developerPrivate.packDirectory = function(path, privateKeyPath, flags, callback) {};
 
 /**
  * Returns true if the profile is managed.
  * @param {function(boolean):void} callback
- * @see https://developer.chrome.com/extensions/developerPrivate#method-isProfileManaged
  */
 chrome.developerPrivate.isProfileManaged = function(callback) {};
 
@@ -598,7 +514,6 @@ chrome.developerPrivate.isProfileManaged = function(callback) {};
  * an error.
  * @param {RequestFileSourceProperties} properties
  * @param {function(RequestFileSourceResponse):void} callback
- * @see https://developer.chrome.com/extensions/developerPrivate#method-requestFileSource
  */
 chrome.developerPrivate.requestFileSource = function(properties, callback) {};
 
@@ -606,7 +521,6 @@ chrome.developerPrivate.requestFileSource = function(properties, callback) {};
  * Open the developer tools to focus on a particular error.
  * @param {OpenDevToolsProperties} properties
  * @param {function():void=} callback
- * @see https://developer.chrome.com/extensions/developerPrivate#method-openDevTools
  */
 chrome.developerPrivate.openDevTools = function(properties, callback) {};
 
@@ -614,7 +528,6 @@ chrome.developerPrivate.openDevTools = function(properties, callback) {};
  * Delete reported extension erors.
  * @param {DeleteExtensionErrorsProperties} properties
  * @param {function():void=} callback
- * @see https://developer.chrome.com/extensions/developerPrivate#method-deleteExtensionErrors
  */
 chrome.developerPrivate.deleteExtensionErrors = function(properties, callback) {};
 
@@ -623,7 +536,6 @@ chrome.developerPrivate.deleteExtensionErrors = function(properties, callback) {
  * @param {boolean} enabled
  * @param {function():void=} callback
  * @deprecated Use management.setEnabled
- * @see https://developer.chrome.com/extensions/developerPrivate#method-enable
  */
 chrome.developerPrivate.enable = function(id, enabled, callback) {};
 
@@ -632,7 +544,6 @@ chrome.developerPrivate.enable = function(id, enabled, callback) {};
  * @param {boolean} allow
  * @param {function():void=} callback
  * @deprecated Use updateExtensionConfiguration
- * @see https://developer.chrome.com/extensions/developerPrivate#method-allowIncognito
  */
 chrome.developerPrivate.allowIncognito = function(extensionId, allow, callback) {};
 
@@ -641,7 +552,6 @@ chrome.developerPrivate.allowIncognito = function(extensionId, allow, callback) 
  * @param {boolean} allow
  * @param {function():void=} callback
  * @deprecated Use updateExtensionConfiguration
- * @see https://developer.chrome.com/extensions/developerPrivate#method-allowFileAccess
  */
 chrome.developerPrivate.allowFileAccess = function(extensionId, allow, callback) {};
 
@@ -649,13 +559,8 @@ chrome.developerPrivate.allowFileAccess = function(extensionId, allow, callback)
  * @param {InspectOptions} options
  * @param {function():void=} callback
  * @deprecated Use openDevTools
- * @see https://developer.chrome.com/extensions/developerPrivate#method-inspect
  */
 chrome.developerPrivate.inspect = function(options, callback) {};
 
-/**
- * Fired when a item state is changed.
- * @type {!ChromeEvent}
- * @see https://developer.chrome.com/extensions/developerPrivate#event-onItemStateChanged
- */
+/** @type {!ChromeEvent} */
 chrome.developerPrivate.onItemStateChanged;

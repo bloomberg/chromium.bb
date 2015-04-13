@@ -84,23 +84,26 @@ class ExtensionSettingsHandler
   // Helper method that reloads all unpacked extensions.
   void ReloadUnpackedExtensions();
 
-  // Callback for "extensionSettingsLaunch" message.
+  // Callback for "requestExtensionsData" message.
+  void HandleRequestExtensionsData(const base::ListValue* args);
+
+  // Callback for "toggleDeveloperMode" message.
+  void HandleToggleDeveloperMode(const base::ListValue* args);
+
+  // Callback for "launch" message.
   void HandleLaunchMessage(const base::ListValue* args);
 
-  // Callback for "extensionSettingsRepair" message.
+  // Callback for "repair" message.
   void HandleRepairMessage(const base::ListValue* args);
 
-  // Callback for "extensionSettingsOptions" message.
+  // Callback for "options" message.
   void HandleOptionsMessage(const base::ListValue* args);
 
-  // Callback for "extensionSettingsAutoupdate" message.
+  // Callback for "autoupdate" message.
   void HandleAutoUpdateMessage(const base::ListValue* args);
 
-  // Callback for the "extensionSettingsShowPath" message.
+  // Callback for the "showPath" message.
   void HandleShowPath(const base::ListValue* args);
-
-  // Callback for the "extensionSettingsRegister" message.
-  void HandleRegisterMessage(const base::ListValue* args);
 
   // Utility for callbacks that get an extension ID as the sole argument.
   // Returns NULL if the extension isn't active.
@@ -108,6 +111,9 @@ class ExtensionSettingsHandler
 
   // Forces a UI update if appropriate after a notification is received.
   void MaybeUpdateAfterNotification();
+
+  // Register for notifications that we need to reload the page.
+  void MaybeRegisterForNotifications();
 
   // Called when the reinstallation is complete.
   void OnReinstallComplete(bool success,
@@ -131,6 +137,12 @@ class ExtensionSettingsHandler
   // Do the same for a deleting RenderWidgetHost ID and RenderProcessHost ID.
   int deleting_rwh_id_;
   int deleting_rph_id_;
+
+  // We want to register for notifications only after we've responded at least
+  // once to the page, otherwise we'd be calling JavaScript functions on objects
+  // that don't exist yet when notifications come in. This variable makes sure
+  // we do so only once.
+  bool registered_for_notifications_;
 
   content::NotificationRegistrar registrar_;
 

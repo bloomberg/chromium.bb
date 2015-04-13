@@ -119,18 +119,6 @@ BasicExtensionSettingsWebUITest.prototype = {
       });
     });
   },
-
-  /** @protected */
-  verifyDeveloperModeWorks: function() {
-    var extensionSettings = getRequiredElement('extension-settings');
-    assertFalse(extensionSettings.classList.contains('dev-mode'));
-    $('toggle-dev-on').click();
-    assertTrue(extensionSettings.classList.contains('dev-mode'));
-    chrome.developerPrivate.getProfileConfiguration(function(profileInfo) {
-      assertTrue(profileInfo.inDeveloperMode);
-      this.nextStep();
-    }.bind(this));
-  },
 };
 
 TEST_F('BasicExtensionSettingsWebUITest', 'testDisable', function() {
@@ -151,21 +139,6 @@ TEST_F('BasicExtensionSettingsWebUITest', 'testEnable', function() {
 TEST_F('BasicExtensionSettingsWebUITest', 'testUninstall', function() {
   this.steps = [this.waitForPageLoad,
                 this.verifyUninstallWorks,
-                testDone];
-  this.nextStep();
-});
-
-TEST_F('BasicExtensionSettingsWebUITest', 'testDeveloperMode', function() {
-  var next = this.nextStep.bind(this);
-  var checkDevModeIsOff = function() {
-    chrome.developerPrivate.getProfileConfiguration(function(profileInfo) {
-      assertFalse(profileInfo.inDeveloperMode);
-      next();
-    });
-  };
-  this.steps = [checkDevModeIsOff,
-                this.waitForPageLoad,
-                this.verifyDeveloperModeWorks,
                 testDone];
   this.nextStep();
 });
