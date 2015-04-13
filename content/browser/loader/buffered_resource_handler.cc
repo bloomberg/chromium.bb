@@ -110,16 +110,9 @@ bool BufferedResourceHandler::OnResponseStarted(ResourceResponse* response,
                                                 bool* defer) {
   response_ = response;
 
-  // TODO(darin): It is very odd to special-case 304 responses at this level.
-  // We do so only because the code always has, see r24977 and r29355.  The
-  // fact that 204 is no longer special-cased this way suggests that 304 need
-  // not be special-cased either.
-  //
-  // The network stack only forwards 304 responses that were not received in
-  // response to a conditional request (i.e., If-Modified-Since).  Other 304
-  // responses end up being translated to 200 or whatever the cached response
-  // code happens to be.  It should be very rare to see a 304 at this level.
-
+  // A 304 response should not contain a Content-Type header (RFC 7232 section
+  // 4.1). The following code may incorrectly attempt to add a Content-Type to
+  // the response, and so must be skipped for 304 responses.
   if (!(response_->head.headers.get() &&
         response_->head.headers->response_code() == 304)) {
     if (ShouldSniffContent()) {
