@@ -251,8 +251,7 @@ void WebSocketEncoder::ParseExtensions(const std::string& header_value,
     return;
 
   WebSocketExtensionParser parser;
-  parser.Parse(header_value);
-  if (parser.has_error())
+  if (!parser.Parse(header_value))
     return;
   const std::vector<WebSocketExtension>& extensions = parser.extensions();
   // TODO(tyoshino): Fail if this method is used for parsing a response and

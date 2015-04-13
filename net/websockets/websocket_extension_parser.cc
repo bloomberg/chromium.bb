@@ -12,100 +12,102 @@ WebSocketExtensionParser::WebSocketExtensionParser() {}
 
 WebSocketExtensionParser::~WebSocketExtensionParser() {}
 
-void WebSocketExtensionParser::Parse(const char* data, size_t size) {
+bool WebSocketExtensionParser::Parse(const char* data, size_t size) {
   current_ = data;
   end_ = data + size;
-  has_error_ = false;
   extensions_.clear();
+
+  bool failed = false;
 
   while (true) {
     WebSocketExtension extension;
-    ConsumeExtension(&extension);
-    if (has_error_)
+    if (!ConsumeExtension(&extension)) {
+      failed = true;
       break;
+    }
     extensions_.push_back(extension);
 
     ConsumeSpaces();
-    DCHECK(!has_error_);
 
     if (!ConsumeIfMatch(',')) {
       break;
     }
   }
 
-  has_error_ = has_error_ || current_ != end_;
-  if (has_error_)
-    extensions_.clear();
+  if (!failed && current_ == end_)
+    return true;
+
+  extensions_.clear();
+  return false;
 }
 
-void WebSocketExtensionParser::Consume(char c) {
-  DCHECK(!has_error_);
+bool WebSocketExtensionParser::Consume(char c) {
   ConsumeSpaces();
-  DCHECK(!has_error_);
   if (current_ == end_ || c != current_[0]) {
-    has_error_ = true;
-    return;
+    return false;
   }
   ++current_;
+  return true;
 }
 
-void WebSocketExtensionParser::ConsumeExtension(WebSocketExtension* extension) {
-  DCHECK(!has_error_);
+bool WebSocketExtensionParser::ConsumeExtension(WebSocketExtension* extension) {
   base::StringPiece name;
-  ConsumeToken(&name);
-  if (has_error_) return;
+  if (!ConsumeToken(&name))
+    return false;
   *extension = WebSocketExtension(name.as_string());
 
   while (ConsumeIfMatch(';')) {
     WebSocketExtension::Parameter parameter((std::string()));
-    ConsumeExtensionParameter(&parameter);
-    if (has_error_) return;
+    if (!ConsumeExtensionParameter(&parameter))
+      return false;
     extension->Add(parameter);
   }
+
+  return true;
 }
 
-void WebSocketExtensionParser::ConsumeExtensionParameter(
+bool WebSocketExtensionParser::ConsumeExtensionParameter(
     WebSocketExtension::Parameter* parameter) {
-  DCHECK(!has_error_);
   base::StringPiece name, value;
   std::string value_string;
 
-  ConsumeToken(&name);
-  if (has_error_) return;
+  if (!ConsumeToken(&name))
+    return false;
+
   if (!ConsumeIfMatch('=')) {
     *parameter = WebSocketExtension::Parameter(name.as_string());
-    return;
+    return true;
   }
 
   if (Lookahead('\"')) {
-    ConsumeQuotedToken(&value_string);
+    if (!ConsumeQuotedToken(&value_string))
+      return false;
   } else {
-    ConsumeToken(&value);
+    if (!ConsumeToken(&value))
+      return false;
     value_string = value.as_string();
   }
-  if (has_error_) return;
   *parameter = WebSocketExtension::Parameter(name.as_string(), value_string);
+  return true;
 }
 
-void WebSocketExtensionParser::ConsumeToken(base::StringPiece* token) {
-  DCHECK(!has_error_);
+bool WebSocketExtensionParser::ConsumeToken(base::StringPiece* token) {
   ConsumeSpaces();
-  DCHECK(!has_error_);
   const char* head = current_;
   while (current_ < end_ &&
          !IsControl(current_[0]) && !IsSeparator(current_[0]))
     ++current_;
   if (current_ == head) {
-    has_error_ = true;
-    return;
+    return false;
   }
   *token = base::StringPiece(head, current_ - head);
+  return true;
 }
 
-void WebSocketExtensionParser::ConsumeQuotedToken(std::string* token) {
-  DCHECK(!has_error_);
-  Consume('"');
-  if (has_error_) return;
+bool WebSocketExtensionParser::ConsumeQuotedToken(std::string* token) {
+  if (!Consume('"'))
+    return false;
+
   *token = "";
   while (current_ < end_ && !IsControl(current_[0])) {
     if (UnconsumedBytes() >= 2 && current_[0] == '\\') {
@@ -121,41 +123,34 @@ void WebSocketExtensionParser::ConsumeQuotedToken(std::string* token) {
     }
   }
   // We can't use Consume here because we don't want to consume spaces.
-  if (current_ < end_ && current_[0] == '"')
-    ++current_;
-  else
-    has_error_ = true;
-  has_error_ = has_error_ || token->empty();
+  if (current_ >= end_ || current_[0] != '"')
+    return false;
+
+  ++current_;
+
+  return !token->empty();
 }
 
 void WebSocketExtensionParser::ConsumeSpaces() {
-  DCHECK(!has_error_);
   while (current_ < end_ && (current_[0] == ' ' || current_[0] == '\t'))
     ++current_;
   return;
 }
 
 bool WebSocketExtensionParser::Lookahead(char c) {
-  DCHECK(!has_error_);
   const char* head = current_;
-
-  Consume(c);
-  bool result = !has_error_;
+  bool result = Consume(c);
   current_ = head;
-  has_error_ = false;
   return result;
 }
 
 bool WebSocketExtensionParser::ConsumeIfMatch(char c) {
-  DCHECK(!has_error_);
   const char* head = current_;
-
-  Consume(c);
-  if (has_error_) {
+  if (!Consume(c)) {
     current_ = head;
-    has_error_ = false;
     return false;
   }
+
   return true;
 }
 

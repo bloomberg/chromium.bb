@@ -15,9 +15,8 @@ namespace {
 
 TEST(WebSocketExtensionParserTest, ParseEmpty) {
   WebSocketExtensionParser parser;
-  parser.Parse("", 0);
+  EXPECT_FALSE(parser.Parse("", 0));
 
-  EXPECT_TRUE(parser.has_error());
   EXPECT_EQ(0U, parser.extensions().size());
 }
 
@@ -25,9 +24,8 @@ TEST(WebSocketExtensionParserTest, ParseSimple) {
   WebSocketExtensionParser parser;
   WebSocketExtension expected("foo");
 
-  parser.Parse("foo");
+  EXPECT_TRUE(parser.Parse("foo"));
 
-  ASSERT_FALSE(parser.has_error());
   ASSERT_EQ(1U, parser.extensions().size());
   EXPECT_TRUE(expected.Equals(parser.extensions()[0]));
 }
@@ -36,17 +34,14 @@ TEST(WebSocketExtensionParserTest, ParseMoreThanOnce) {
   WebSocketExtensionParser parser;
   WebSocketExtension expected("foo");
 
-  parser.Parse("foo");
-  ASSERT_FALSE(parser.has_error());
+  EXPECT_TRUE(parser.Parse("foo"));
   ASSERT_EQ(1U, parser.extensions().size());
   EXPECT_TRUE(expected.Equals(parser.extensions()[0]));
 
-  parser.Parse("");
-  EXPECT_TRUE(parser.has_error());
+  EXPECT_FALSE(parser.Parse(""));
   EXPECT_EQ(0U, parser.extensions().size());
 
-  parser.Parse("foo");
-  ASSERT_FALSE(parser.has_error());
+  EXPECT_TRUE(parser.Parse("foo"));
   ASSERT_EQ(1U, parser.extensions().size());
   EXPECT_TRUE(expected.Equals(parser.extensions()[0]));
 }
@@ -56,9 +51,8 @@ TEST(WebSocketExtensionParserTest, ParseOneExtensionWithOneParamWithoutValue) {
   WebSocketExtension expected("foo");
   expected.Add(WebSocketExtension::Parameter("bar"));
 
-  parser.Parse("\tfoo ; bar");
+  EXPECT_TRUE(parser.Parse("\tfoo ; bar"));
 
-  ASSERT_FALSE(parser.has_error());
   ASSERT_EQ(1U, parser.extensions().size());
   EXPECT_TRUE(expected.Equals(parser.extensions()[0]));
 }
@@ -68,9 +62,8 @@ TEST(WebSocketExtensionParserTest, ParseOneExtensionWithOneParamWithValue) {
   WebSocketExtension expected("foo");
   expected.Add(WebSocketExtension::Parameter("bar", "baz"));
 
-  parser.Parse("foo ; bar= baz\t");
+  EXPECT_TRUE(parser.Parse("foo ; bar= baz\t"));
 
-  ASSERT_FALSE(parser.has_error());
   ASSERT_EQ(1U, parser.extensions().size());
   EXPECT_TRUE(expected.Equals(parser.extensions()[0]));
 }
@@ -81,9 +74,8 @@ TEST(WebSocketExtensionParserTest, ParseOneExtensionWithParams) {
   expected.Add(WebSocketExtension::Parameter("bar", "baz"));
   expected.Add(WebSocketExtension::Parameter("hoge", "fuga"));
 
-  parser.Parse("foo ; bar= baz;\t \thoge\t\t=fuga");
+  EXPECT_TRUE(parser.Parse("foo ; bar= baz;\t \thoge\t\t=fuga"));
 
-  ASSERT_FALSE(parser.has_error());
   ASSERT_EQ(1U, parser.extensions().size());
   EXPECT_TRUE(expected.Equals(parser.extensions()[0]));
 }
@@ -97,9 +89,8 @@ TEST(WebSocketExtensionParserTest, ParseTwoExtensions) {
   WebSocketExtension expected1("bar");
   expected1.Add(WebSocketExtension::Parameter("beta", "y"));
 
-  parser.Parse(" foo ; alpha = x , bar ; beta = y ");
+  EXPECT_TRUE(parser.Parse(" foo ; alpha = x , bar ; beta = y "));
 
-  ASSERT_FALSE(parser.has_error());
   ASSERT_EQ(2U, parser.extensions().size());
 
   EXPECT_TRUE(expected0.Equals(parser.extensions()[0]));
@@ -113,6 +104,7 @@ TEST(WebSocketExtensionParserTest, InvalidPatterns) {
       "foo,",                 // second extension is incomplete (empty)
       "foo , ",               // second extension is incomplete (space)
       "foo,;",                // second extension is incomplete (semicolon)
+      "foo;, bar",            // first extension is incomplete
       "fo\ao",                // control in extension name
       "fo\x01o",              // control in extension name
       "fo<o",                 // separator in extension name
@@ -147,8 +139,7 @@ TEST(WebSocketExtensionParserTest, InvalidPatterns) {
 
   for (size_t i = 0; i < arraysize(patterns); ++i) {
     WebSocketExtensionParser parser;
-    parser.Parse(patterns[i]);
-    EXPECT_TRUE(parser.has_error());
+    EXPECT_FALSE(parser.Parse(patterns[i]));
     EXPECT_EQ(0U, parser.extensions().size());
   }
 }
@@ -158,9 +149,8 @@ TEST(WebSocketExtensionParserTest, QuotedParameterValue) {
   WebSocketExtension expected("foo");
   expected.Add(WebSocketExtension::Parameter("bar", "baz"));
 
-  parser.Parse("foo; bar = \"ba\\z\" ");
+  EXPECT_TRUE(parser.Parse("foo; bar = \"ba\\z\" "));
 
-  ASSERT_FALSE(parser.has_error());
   ASSERT_EQ(1U, parser.extensions().size());
   EXPECT_TRUE(expected.Equals(parser.extensions()[0]));
 }

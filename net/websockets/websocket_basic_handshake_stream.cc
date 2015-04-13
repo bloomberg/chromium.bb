@@ -315,8 +315,7 @@ bool ValidateExtensions(const HttpResponseHeaders* headers,
   while (headers->EnumerateHeader(&state, websockets::kSecWebSocketExtensions,
                                   &header_value)) {
     WebSocketExtensionParser parser;
-    parser.Parse(header_value);
-    if (parser.has_error()) {
+    if (!parser.Parse(header_value)) {
       // TODO(yhirano) Set appropriate failure message.
       *failure_message =
           "'Sec-WebSocket-Extensions' header value is "
