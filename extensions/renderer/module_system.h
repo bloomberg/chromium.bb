@@ -142,6 +142,7 @@ class ModuleSystem : public ObjectBackedNativeHandler,
   }
 
  protected:
+  friend class ModuleSystemTestEnvironment;
   friend class ScriptContext;
   void Invalidate() override;
 
@@ -205,6 +206,10 @@ class ModuleSystem : public ObjectBackedNativeHandler,
       const std::string& id,
       const std::vector<std::string>& dependencies) override;
 
+  // Marks any existing NativeHandler named |name| as clobbered.
+  // See |clobbered_native_handlers_|.
+  void ClobberExistingNativeHandler(const std::string& name);
+
   ScriptContext* context_;
 
   // A map from module names to the JS source for that module. GetSource()
@@ -222,7 +227,15 @@ class ModuleSystem : public ObjectBackedNativeHandler,
   // tests.
   scoped_ptr<ExceptionHandler> exception_handler_;
 
+  // A set of native handlers that should actually be require()d as non-native
+  // handlers. This is used for tests to mock out native handlers in JS.
   std::set<std::string> overridden_native_handlers_;
+
+  // A list of NativeHandlers that have been clobbered, either due to
+  // registering a NativeHandler when one was already registered with the same
+  // name, or due to OverrideNativeHandlerForTest. This is needed so that they
+  // can be later Invalidated. It should only happen in tests.
+  std::vector<linked_ptr<NativeHandler>> clobbered_native_handlers_;
 
   base::WeakPtrFactory<ModuleSystem> weak_factory_;
 
