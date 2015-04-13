@@ -198,18 +198,29 @@ static bool isPresentationalHTMLElement(const Node* node)
         || element.hasTagName(iTag) || element.hasTagName(emTag) || element.hasTagName(bTag) || element.hasTagName(strongTag);
 }
 
-static HTMLElement* highestAncestorToWrapMarkup(const Range* range, EAnnotateForInterchange shouldAnnotate, Node* constrainingAncestor)
+static bool areSameRanges(Node* node, const Position& startPosition, const Position& endPosition)
 {
-    Node* commonAncestor = range->commonAncestorContainer();
+    ASSERT(node);
+    Position otherStartPosition;
+    Position otherEndPosition;
+    VisibleSelection::selectionFromContentsOfNode(node).toNormalizedPositions(otherStartPosition, otherEndPosition);
+    return startPosition == otherStartPosition && endPosition == otherEndPosition;
+}
+
+static HTMLElement* highestAncestorToWrapMarkup(const Position& startPosition, const Position& endPosition, EAnnotateForInterchange shouldAnnotate, Node* constrainingAncestor)
+{
+    Node* firstNode = startPosition.nodeAsRangeFirstNode();
+    // For compatibility reason, we use container node of start and end
+    // positions rather than first node and last node in selection.
+    Node* commonAncestor = NodeTraversal::commonAncestor(*startPosition.containerNode(), *endPosition.containerNode());
     ASSERT(commonAncestor);
     HTMLElement* specialCommonAncestor = nullptr;
     if (shouldAnnotate == AnnotateForInterchange) {
         // Include ancestors that aren't completely inside the range but are required to retain
         // the structure and appearance of the copied markup.
         specialCommonAncestor = ancestorToRetainStructureAndAppearance(commonAncestor);
-
-        if (Node* parentListNode = enclosingNodeOfType(firstPositionInOrBeforeNode(range->firstNode()), isListItem)) {
-            if (blink::areRangesEqual(VisibleSelection::selectionFromContentsOfNode(parentListNode).toNormalizedRange().get(), range)) {
+        if (Node* parentListNode = enclosingNodeOfType(firstPositionInOrBeforeNode(firstNode), isListItem)) {
+            if (areSameRanges(parentListNode, startPosition, endPosition)) {
                 ContainerNode* ancestor = parentListNode->parentNode();
                 while (ancestor && !isHTMLListElement(ancestor))
                     ancestor = ancestor->parentNode();
@@ -218,7 +229,7 @@ static HTMLElement* highestAncestorToWrapMarkup(const Range* range, EAnnotateFor
         }
 
         // Retain the Mail quote level by including all ancestor mail block quotes.
-        if (HTMLQuoteElement* highestMailBlockquote = toHTMLQuoteElement(highestEnclosingNodeOfType(firstPositionInOrBeforeNode(range->firstNode()), isMailHTMLBlockquoteElement, CanCrossEditingBoundary)))
+        if (HTMLQuoteElement* highestMailBlockquote = toHTMLQuoteElement(highestEnclosingNodeOfType(firstPositionInOrBeforeNode(firstNode), isMailHTMLBlockquoteElement, CanCrossEditingBoundary)))
             specialCommonAncestor = highestMailBlockquote;
     }
 
@@ -246,34 +257,36 @@ static HTMLElement* highestAncestorToWrapMarkup(const Range* range, EAnnotateFor
 
 // FIXME: Shouldn't we omit style info when annotate == DoNotAnnotateForInterchange?
 // FIXME: At least, annotation and style info should probably not be included in range.markupString()
-static String createMarkupInternal(Document& document, const Range* range, const Range* updatedRange,
+static String createMarkupInternal(const Position& startPosition, const Position& endPosition,
     EAnnotateForInterchange shouldAnnotate, bool convertBlocksToInlines, EAbsoluteURLs shouldResolveURLs, Node* constrainingAncestor)
 {
-    ASSERT(range);
-    ASSERT(updatedRange);
+    ASSERT(startPosition.isNotNull());
+    ASSERT(endPosition.isNotNull());
+    ASSERT(startPosition.compareTo(endPosition) <= 0);
     DEFINE_STATIC_LOCAL(const String, interchangeNewlineString, ("<br class=\"" AppleInterchangeNewline "\">"));
 
-    bool collapsed = updatedRange->collapsed();
+    bool collapsed = startPosition == endPosition;
     if (collapsed)
         return emptyString();
-    Node* commonAncestor = updatedRange->commonAncestorContainer();
+    Node* commonAncestor = NodeTraversal::commonAncestor(*startPosition.containerNode(), *endPosition.containerNode());
     if (!commonAncestor)
         return emptyString();
 
-    document.updateLayoutIgnorePendingStylesheets();
+    Document* document = startPosition.document();
+    document->updateLayoutIgnorePendingStylesheets();
 
     HTMLBodyElement* body = toHTMLBodyElement(enclosingElementWithTag(firstPositionInNode(commonAncestor), bodyTag));
     HTMLBodyElement* fullySelectedRoot = nullptr;
     // FIXME: Do this for all fully selected blocks, not just the body.
-    if (body && areRangesEqual(VisibleSelection::selectionFromContentsOfNode(body).toNormalizedRange().get(), range))
+    if (body && areSameRanges(body, startPosition, endPosition))
         fullySelectedRoot = body;
-    HTMLElement* specialCommonAncestor = highestAncestorToWrapMarkup(updatedRange, shouldAnnotate, constrainingAncestor);
-    StyledMarkupAccumulator accumulator(shouldResolveURLs, shouldAnnotate, updatedRange->startPosition(), updatedRange->endPosition(), specialCommonAncestor);
-    Node* pastEnd = updatedRange->pastLastNode();
+    HTMLElement* specialCommonAncestor = highestAncestorToWrapMarkup(startPosition, endPosition, shouldAnnotate, constrainingAncestor);
+    StyledMarkupAccumulator accumulator(shouldResolveURLs, shouldAnnotate, startPosition, endPosition, specialCommonAncestor);
+    Node* pastEnd = endPosition.nodeAsRangePastLastNode();
 
-    Node* startNode = updatedRange->firstNode();
-    VisiblePosition visibleStart(updatedRange->startPosition(), VP_DEFAULT_AFFINITY);
-    VisiblePosition visibleEnd(updatedRange->endPosition(), VP_DEFAULT_AFFINITY);
+    Node* startNode = startPosition.nodeAsRangeFirstNode();
+    VisiblePosition visibleStart(startPosition, VP_DEFAULT_AFFINITY);
+    VisiblePosition visibleEnd(endPosition, VP_DEFAULT_AFFINITY);
     if (shouldAnnotate == AnnotateForInterchange && needInterchangeNewlineAfter(visibleStart)) {
         if (visibleStart == visibleEnd.previous())
             return interchangeNewlineString;
@@ -307,7 +320,7 @@ static String createMarkupInternal(Document& document, const Range* range, const
                         fullySelectedRootStyle->style()->setProperty(CSSPropertyTextDecoration, CSSValueNone);
                     if (!propertyMissingOrEqualToNone(fullySelectedRootStyle->style(), CSSPropertyWebkitTextDecorationsInEffect))
                         fullySelectedRootStyle->style()->setProperty(CSSPropertyWebkitTextDecorationsInEffect, CSSValueNone);
-                    accumulator.wrapWithStyleNode(fullySelectedRootStyle->style(), document, true);
+                    accumulator.wrapWithStyleNode(fullySelectedRootStyle->style(), *document, true);
                 }
             } else {
                 // Since this node and all the other ancestors are not in the selection we want to set RangeFullySelectsNode to DoesNotFullySelectNode
@@ -332,10 +345,7 @@ String createMarkup(const Range* range, EAnnotateForInterchange shouldAnnotate, 
     if (!range)
         return emptyString();
 
-    Document& document = range->ownerDocument();
-    const Range* updatedRange = range;
-
-    return createMarkupInternal(document, range, updatedRange, shouldAnnotate, convertBlocksToInlines, shouldResolveURLs, constrainingAncestor);
+    return createMarkupInternal(range->startPosition(), range->endPosition(), shouldAnnotate, convertBlocksToInlines, shouldResolveURLs, constrainingAncestor);
 }
 
 PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromMarkup(Document& document, const String& markup, const String& baseURL, ParserContentPolicy parserContentPolicy)
