@@ -25,10 +25,6 @@
 #include "ui/events/ozone/evdev/libgestures_glue/gesture_feedback.h"
 #include "ui/events/ozone/evdev/libgestures_glue/gesture_interpreter_libevdev_cros.h"
 
-// Severity level for general info logging purpose.
-#define GPROP_LOG DVLOG
-#define INFO_SEVERITY 1
-
 // GesturesProp implementation.
 //
 // Check the header file for its definition.
@@ -180,7 +176,7 @@ class TypedGesturesProp : public GesturesProp {
   void InitializeNumericalProperty(const T* init,
                                    const GesturesProp* default_property) {
     if (IsDefaultPropertyUsable(default_property)) {
-      GPROP_LOG(INFO_SEVERITY) << "Default property found. Using its value ...";
+      DVLOG(2) << "Default property found. Using its value ...";
       this->template SetNumericalValue(default_property->GetDoubleValue());
     } else {
       // To work with the interface exposed by the gesture lib, we have no
@@ -364,7 +360,7 @@ class GesturesStringProp : public TypedGesturesProp<std::string> {
                                 const GesturesProp* default_property) {
     // Initialize the property value similar to the numerical types.
     if (IsDefaultPropertyUsable(default_property)) {
-      GPROP_LOG(INFO_SEVERITY) << "Default property found. Using its value ...";
+      DVLOG(2) << "Default property found. Using its value ...";
       *value_ = default_property->GetStringValue();
     } else {
       *value_ = init;
@@ -1002,13 +998,13 @@ void GesturePropertyProvider::LoadDeviceConfigurations() {
        path = file_enum.Next()) {
     files.insert(path);
   }
-  GPROP_LOG(INFO_SEVERITY) << files.size() << " conf files were found";
+  DVLOG(2) << files.size() << " conf files were found";
 
   // Parse conf files one-by-one.
   for (std::set<base::FilePath>::iterator file_iter = files.begin();
        file_iter != files.end();
        ++file_iter) {
-    GPROP_LOG(INFO_SEVERITY) << "Parsing conf file: " << (*file_iter).value();
+    DVLOG(2) << "Parsing conf file: " << (*file_iter).value();
     std::string content;
     if (!base::ReadFileToString(*file_iter, &content)) {
       LOG(ERROR) << "Can't loading gestures conf file: "
@@ -1096,12 +1092,12 @@ void GesturePropertyProvider::ParseXorgConfFile(const std::string& content) {
               has_error = true;
               is_input_class_section = false;
             } else {
-              GPROP_LOG(INFO_SEVERITY) << "New InputClass section found";
+              DVLOG(2) << "New InputClass section found";
               has_checked_section_type = true;
             }
             break;
           } else if (next_is_identifier) {
-            GPROP_LOG(INFO_SEVERITY) << "Identifier: " << arg;
+            DVLOG(2) << "Identifier: " << arg;
             config->identifier = arg;
             next_is_identifier = false;
             break;
@@ -1191,8 +1187,7 @@ void GesturePropertyProvider::ParseXorgConfFile(const std::string& content) {
 internal::MatchCriteria* GesturePropertyProvider::CreateMatchCriteria(
     const std::string& match_type,
     const std::string& arg) {
-  GPROP_LOG(INFO_SEVERITY) << "Creating match criteria: (" << match_type << ", "
-                           << arg << ")";
+  DVLOG(2) << "Creating match criteria: (" << match_type << ", " << arg << ")";
   if (match_type == "MatchProduct")
     return new internal::MatchProduct(arg);
   if (match_type == "MatchDevicePath")
@@ -1222,8 +1217,7 @@ GesturesProp* GesturePropertyProvider::CreateDefaultProperty(
   // 5. The property is treated as numeric if and only if all of its elements
   //    (if any) are numerics. Otherwise, it will be treated as a string.
   // 6. A string property will be trimmed before storing its value.
-  GPROP_LOG(INFO_SEVERITY) << "Creating default property: (" << name << ", "
-                           << value << ")";
+  DVLOG(2) << "Creating default property: (" << name << ", " << value << ")";
 
   // Parse elements one-by-one.
   std::string delimiters(base::kWhitespaceASCII);
@@ -1264,7 +1258,7 @@ GesturesProp* GesturePropertyProvider::CreateDefaultProperty(
     property = new GesturesStringProp(name, NULL, value.c_str(), NULL);
   }
 
-  GPROP_LOG(INFO_SEVERITY) << "Prop: " << *property;
+  DVLOG(2) << "Prop: " << *property;
   // The function will always succeed for now but it may change later if we
   // specify some name or args as invalid.
   return property;
@@ -1272,18 +1266,16 @@ GesturesProp* GesturePropertyProvider::CreateDefaultProperty(
 
 void GesturePropertyProvider::SetupDefaultProperties(const DeviceId device_id,
                                                      const DevicePtr device) {
-  GPROP_LOG(INFO_SEVERITY) << "Setting up default properties for (" << device
-                           << ", " << device_id << ", " << device->info.name
-                           << ")";
+  DVLOG(2) << "Setting up default properties for (" << device << ", "
+           << device_id << ", " << device->info.name << ")";
 
   // Go through all parsed sections.
   internal::PropertiesMap& property_map =
       device_data_map_.get(device_id)->default_properties;
   for (size_t i = 0; i < configurations_.size(); ++i) {
     if (configurations_[i]->Match(device)) {
-      GPROP_LOG(INFO_SEVERITY) << "Conf section \""
-                               << configurations_[i]->identifier
-                               << "\" is matched";
+      DVLOG(2) << "Conf section \"" << configurations_[i]->identifier
+               << "\" is matched";
       for (size_t j = 0; j < configurations_[i]->properties.size(); j++) {
         GesturesProp* property = configurations_[i]->properties[j];
         // We can't use insert here because a property may be set for several
@@ -1366,7 +1358,7 @@ void GesturesPropFunctionsWrapper::Free(void* device_data,
 
   // No need to manually delete the prop pointer as it is implicitly handled
   // with scoped ptr.
-  GPROP_LOG(3) << "Freeing Property: \"" << property->name() << "\"";
+  DVLOG(3) << "Freeing Property: \"" << property->name() << "\"";
   provider->DeleteProperty(GetDeviceId(device_data), property->name());
 }
 
@@ -1478,7 +1470,7 @@ bool GesturesPropFunctionsWrapper::PreCreateProperty(
   provider->RegisterDevice(device_id, GetDevicePointer(device_data));
 
   // First, see if the GesturesProp already exists.
-  GPROP_LOG(3) << "Creating Property: \"" << name << "\"";
+  DVLOG(3) << "Creating Property: \"" << name << "\"";
   GesturesProp* property = provider->FindProperty(device_id, name);
 
   // If so, delete it as we can't reuse the data structure (newly-created
@@ -1504,7 +1496,7 @@ void GesturesPropFunctionsWrapper::PostCreateProperty(void* device_data,
   provider->AddProperty(GetDeviceId(device_data), name, property);
 
   // Log the creation.
-  GPROP_LOG(INFO_SEVERITY) << "Created active prop: " << *property;
+  DVLOG(3) << "Created active prop: " << *property;
 }
 
 GesturesProp* GesturesPropFunctionsWrapper::CreateIntSingle(void* device_data,
