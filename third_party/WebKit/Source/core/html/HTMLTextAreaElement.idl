@@ -73,5 +73,5 @@ interface HTMLTextAreaElement : HTMLElement {
 
     // HTML autocapitalize proposal
     // https://github.com/mounirlamouri/html-autocapitalize/blob/master/proposal.md
-    attribute DOMString autocapitalize;
+    [Measure] attribute DOMString autocapitalize;
 };

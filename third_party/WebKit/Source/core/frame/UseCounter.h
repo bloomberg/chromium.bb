@@ -685,6 +685,10 @@ public:
         LegacyCSSValueIntrinsic = 751,
         LegacyCSSValueMinIntrinsic = 752,
         WebkitCanvas = 753,
+        V8HTMLInputElement_Autocapitalize_AttributeGetter = 754,
+        V8HTMLInputElement_Autocapitalize_AttributeSetter = 755,
+        V8HTMLTextAreaElement_Autocapitalize_AttributeGetter = 756,
+        V8HTMLTextAreaElement_Autocapitalize_AttributeSetter = 757,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
