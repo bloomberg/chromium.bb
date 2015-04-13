@@ -30,9 +30,6 @@ struct DefaultContentSettingInfo {
 
   // The default value of this default setting.
   const ContentSetting default_value;
-
-  // Whether this preference should be synced.
-  const bool syncable;
 };
 
 // The corresponding preference, default value and syncability for each
@@ -40,32 +37,32 @@ struct DefaultContentSettingInfo {
 // |ContentSettingsType|.
 const DefaultContentSettingInfo kDefaultSettings[] = {
 
-  {prefs::kDefaultCookiesSetting, CONTENT_SETTING_ALLOW, true},
-  {prefs::kDefaultImagesSetting, CONTENT_SETTING_ALLOW, true},
-  {prefs::kDefaultJavaScriptSetting, CONTENT_SETTING_ALLOW, true},
-  {prefs::kDefaultPluginsSetting, CONTENT_SETTING_ALLOW, true},
-  {prefs::kDefaultPopupsSetting, CONTENT_SETTING_BLOCK, true},
-  {prefs::kDefaultGeolocationSetting, CONTENT_SETTING_ASK, false},
-  {prefs::kDefaultNotificationsSetting, CONTENT_SETTING_ASK, false},
-  {prefs::kDefaultAutoSelectCertificateSetting, CONTENT_SETTING_DEFAULT, false},
-  {prefs::kDefaultFullScreenSetting, CONTENT_SETTING_ASK, true},
-  {prefs::kDefaultMouseLockSetting, CONTENT_SETTING_ASK, true},
-  {prefs::kDefaultMixedScriptSetting, CONTENT_SETTING_DEFAULT, true},
-  {prefs::kDefaultMediaStreamSetting, CONTENT_SETTING_ASK, false},
-  {prefs::kDefaultMediaStreamMicSetting, CONTENT_SETTING_ASK, false},
-  {prefs::kDefaultMediaStreamCameraSetting, CONTENT_SETTING_ASK, false},
-  {prefs::kDefaultProtocolHandlersSetting, CONTENT_SETTING_DEFAULT, true},
-  {prefs::kDefaultPpapiBrokerSetting, CONTENT_SETTING_ASK, false},
-  {prefs::kDefaultAutomaticDownloadsSetting, CONTENT_SETTING_ASK, true},
-  {prefs::kDefaultMidiSysexSetting, CONTENT_SETTING_ASK, true},
-  {prefs::kDefaultPushMessagingSetting, CONTENT_SETTING_ASK, true},
-  {prefs::kDefaultSSLCertDecisionsSetting, CONTENT_SETTING_ALLOW, false},
+  {prefs::kDefaultCookiesSetting, CONTENT_SETTING_ALLOW},
+  {prefs::kDefaultImagesSetting, CONTENT_SETTING_ALLOW},
+  {prefs::kDefaultJavaScriptSetting, CONTENT_SETTING_ALLOW},
+  {prefs::kDefaultPluginsSetting, CONTENT_SETTING_ALLOW},
+  {prefs::kDefaultPopupsSetting, CONTENT_SETTING_BLOCK},
+  {prefs::kDefaultGeolocationSetting, CONTENT_SETTING_ASK},
+  {prefs::kDefaultNotificationsSetting, CONTENT_SETTING_ASK},
+  {prefs::kDefaultAutoSelectCertificateSetting, CONTENT_SETTING_DEFAULT},
+  {prefs::kDefaultFullScreenSetting, CONTENT_SETTING_ASK},
+  {prefs::kDefaultMouseLockSetting, CONTENT_SETTING_ASK},
+  {prefs::kDefaultMixedScriptSetting, CONTENT_SETTING_DEFAULT},
+  {prefs::kDefaultMediaStreamSetting, CONTENT_SETTING_ASK},
+  {prefs::kDefaultMediaStreamMicSetting, CONTENT_SETTING_ASK},
+  {prefs::kDefaultMediaStreamCameraSetting, CONTENT_SETTING_ASK},
+  {prefs::kDefaultProtocolHandlersSetting, CONTENT_SETTING_DEFAULT},
+  {prefs::kDefaultPpapiBrokerSetting, CONTENT_SETTING_ASK},
+  {prefs::kDefaultAutomaticDownloadsSetting, CONTENT_SETTING_ASK},
+  {prefs::kDefaultMidiSysexSetting, CONTENT_SETTING_ASK},
+  {prefs::kDefaultPushMessagingSetting, CONTENT_SETTING_ASK},
+  {prefs::kDefaultSSLCertDecisionsSetting, CONTENT_SETTING_ALLOW},
 #if defined(OS_WIN)
-  {prefs::kDefaultMetroSwitchToDesktopSetting, CONTENT_SETTING_ASK, true},
+  {prefs::kDefaultMetroSwitchToDesktopSetting, CONTENT_SETTING_ASK},
 #elif defined(OS_ANDROID) || defined(OS_CHROMEOS)
-  {prefs::kDefaultProtectedMediaIdentifierSetting, CONTENT_SETTING_ASK, false},
+  {prefs::kDefaultProtectedMediaIdentifierSetting, CONTENT_SETTING_ASK},
 #endif
-  {prefs::kDefaultAppBannerSetting, CONTENT_SETTING_DEFAULT, false}
+  {prefs::kDefaultAppBannerSetting, CONTENT_SETTING_DEFAULT}
 
 };
 static_assert(arraysize(kDefaultSettings) == CONTENT_SETTINGS_NUM_TYPES,
@@ -122,7 +119,7 @@ void DefaultProvider::RegisterProfilePrefs(
     registry->RegisterIntegerPref(
         kDefaultSettings[i].pref_name,
         kDefaultSettings[i].default_value,
-        kDefaultSettings[i].syncable
+        IsContentSettingsTypeSyncable(ContentSettingsType(i))
             ? user_prefs::PrefRegistrySyncable::SYNCABLE_PREF
             : user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   }
@@ -260,7 +257,7 @@ bool DefaultProvider::SetWebsiteSetting(
     // If the changed setting is syncable, write it to the old dictionary
     // preference as well, so it can be synced to older versions of Chrome.
     // TODO(msramek): Remove this after two stable releases.
-    if (kDefaultSettings[content_type].syncable)
+    if (IsContentSettingsTypeSyncable(content_type))
       WriteDictionaryPref(content_type, value.get());
   }
 
@@ -383,7 +380,7 @@ void DefaultProvider::OnPreferenceChanged(const std::string& name) {
     scoped_ptr<ValueMap> dictionary = ReadDictionaryPref();
 
     for (const auto& it : *dictionary) {
-      if (!kDefaultSettings[it.first].syncable)
+      if (!IsContentSettingsTypeSyncable(it.first))
         continue;
 
       DCHECK(default_settings_.find(it.first) != default_settings_.end());
@@ -414,7 +411,7 @@ void DefaultProvider::OnPreferenceChanged(const std::string& name) {
     base::AutoReset<bool> auto_reset(&updating_preferences_, true);
 
     ChangeSetting(content_type, ReadIndividualPref(content_type).get());
-    if (kDefaultSettings[content_type].syncable)
+    if (IsContentSettingsTypeSyncable(content_type))
       WriteDictionaryPref(content_type, default_settings_[content_type].get());
     to_notify.push_back(content_type);
   }
