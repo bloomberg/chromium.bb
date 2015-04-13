@@ -196,7 +196,7 @@ TEST_F(CustomFrameViewTest, LeadingButtonLayout) {
             title_bounds().x());
 }
 
-// Tests that layouts occuring while maximized swap the maximize button for the
+// Tests that layouts occurring while maximized swap the maximize button for the
 // restore button
 TEST_F(CustomFrameViewTest, MaximizeRevealsRestoreButton) {
   Widget* parent = widget();
@@ -211,8 +211,15 @@ TEST_F(CustomFrameViewTest, MaximizeRevealsRestoreButton) {
   parent->Maximize();
   view->Layout();
 
+#if defined(OS_MACOSX)
+  // Restore buttons do not exist on Mac. The maximize button is instead a kind
+  // of toggle, but has no effect on frame decorations.
+  EXPECT_FALSE(restore_button()->visible());
+  EXPECT_TRUE(maximize_button()->visible());
+#else
   EXPECT_TRUE(restore_button()->visible());
   EXPECT_FALSE(maximize_button()->visible());
+#endif
 }
 
 // Tests that when the parent cannot maximize that the maximize button is not
@@ -271,10 +278,18 @@ TEST_F(CustomFrameViewTest, LargerEdgeButtonsWhenMaximized) {
   parent->Maximize();
   view->Layout();
 
+#if defined(OS_MACOSX)
+  // On Mac, "Maximize" should not alter the frame. Only fullscreen does that.
+  EXPECT_EQ(close_button()->bounds().width(),
+            close_button_initial_bounds.width());
+  EXPECT_EQ(minimize_button()->bounds().width(),
+            minimize_button_initial_bounds.width());
+#else
   EXPECT_GT(close_button()->bounds().width(),
             close_button_initial_bounds.width());
   EXPECT_GT(minimize_button()->bounds().width(),
             minimize_button_initial_bounds.width());
+#endif
 }
 
 }  // namespace views
