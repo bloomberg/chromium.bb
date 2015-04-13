@@ -4,7 +4,7 @@
 
 """Presubmit script for Chromium browser code.
 
-This script currently only checks HTML/CSS/JS files in resources/.
+This script currently checks HTML/CSS/JS files in resources/ and ui/webui/.
 
 See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into depot_tools, and see
