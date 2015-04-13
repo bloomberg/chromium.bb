@@ -50,11 +50,12 @@
   ],
   'inputs': [
     '<!@pymod_do_main(grit_info <@(grit_defines) <@(grit_additional_defines) '
-        '--inputs <(grit_grd_file) -f "<(grit_resource_ids)")',
+        '<@(grit_whitelist_flag) --inputs <(grit_grd_file) '
+        '-f "<(grit_resource_ids)")',
   ],
   'outputs': [
     '<!@pymod_do_main(grit_info <@(grit_defines) <@(grit_additional_defines) '
-        '--outputs \'<(grit_out_dir)\' '
+        '<@(grit_whitelist_flag) --outputs \'<(grit_out_dir)\' '
         '<(grit_grd_file) -f "<(grit_resource_ids)")',
   ],
   'action': ['<@(grit_cmd)',
