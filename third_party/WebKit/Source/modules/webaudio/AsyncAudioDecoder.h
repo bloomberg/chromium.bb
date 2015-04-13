@@ -34,7 +34,9 @@ namespace blink {
 class AudioBuffer;
 class AudioBufferCallback;
 class AudioBus;
+class AudioContext;
 class DOMArrayBuffer;
+class ScriptPromiseResolver;
 
 // AsyncAudioDecoder asynchronously decodes audio file data from a DOMArrayBuffer in a worker thread.
 // Upon successful decoding, a completion callback will be invoked with the decoded PCM data in an AudioBuffer.
@@ -46,12 +48,12 @@ public:
     ~AsyncAudioDecoder();
 
     // Must be called on the main thread.
-    void decodeAsync(DOMArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback);
+    void decodeAsync(DOMArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ScriptPromiseResolver*, AudioContext*);
 
 private:
     AudioBuffer* createAudioBufferFromAudioBus(AudioBus*);
-    static void decode(DOMArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback);
-    static void notifyComplete(DOMArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, AudioBus*);
+    static void decode(DOMArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ScriptPromiseResolver*, AudioContext*);
+    static void notifyComplete(DOMArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, AudioBus*, ScriptPromiseResolver*, AudioContext*);
 
     OwnPtr<WebThread> m_thread;
 };
