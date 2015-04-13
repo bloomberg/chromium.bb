@@ -59,10 +59,8 @@
 #include "core/inspector/InspectorResourceContentLoader.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
-#include "core/loader/CookieJar.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
-#include "platform/Cookie.h"
 #include "platform/JSONValues.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/PlatformResourceLoader.h"
@@ -463,33 +461,6 @@ void InspectorPageAgent::navigate(ErrorString*, const String& url, String* outFr
     *outFrameId = frameId(inspectedFrame());
 }
 
-static PassRefPtr<TypeBuilder::Page::Cookie> buildObjectForCookie(const Cookie& cookie)
-{
-    return TypeBuilder::Page::Cookie::create()
-        .setName(cookie.name)
-        .setValue(cookie.value)
-        .setDomain(cookie.domain)
-        .setPath(cookie.path)
-        .setExpires(cookie.expires)
-        .setSize((cookie.name.length() + cookie.value.length()))
-        .setHttpOnly(cookie.httpOnly)
-        .setSecure(cookie.secure)
-        .setSession(cookie.session)
-        .release();
-}
-
-static PassRefPtr<TypeBuilder::Array<TypeBuilder::Page::Cookie>> buildArrayForCookies(ListHashSet<Cookie>& cookiesList)
-{
-    RefPtr<TypeBuilder::Array<TypeBuilder::Page::Cookie>> cookies = TypeBuilder::Array<TypeBuilder::Page::Cookie>::create();
-
-    ListHashSet<Cookie>::iterator end = cookiesList.end();
-    ListHashSet<Cookie>::iterator it = cookiesList.begin();
-    for (int i = 0; it != end; ++it, i++)
-        cookies->addItem(buildObjectForCookie(*it));
-
-    return cookies;
-}
-
 static void cachedResourcesForDocument(Document* document, Vector<Resource*>& result, bool skipXHRs)
 {
     const ResourceFetcher::DocumentResourceMap& allResources = document->fetcher()->allResources();
@@ -547,51 +518,6 @@ static Vector<Resource*> cachedResourcesForFrame(LocalFrame* frame, bool skipXHR
         cachedResourcesForDocument(loaders[i], result, skipXHRs);
 
     return result;
-}
-
-static Vector<KURL> allResourcesURLsForFrame(LocalFrame* frame)
-{
-    Vector<KURL> result;
-
-    result.append(urlWithoutFragment(frame->loader().documentLoader()->url()));
-
-    Vector<Resource*> allResources = cachedResourcesForFrame(frame, false);
-    for (const auto& resource : allResources)
-        result.append(urlWithoutFragment(resource->url()));
-
-    return result;
-}
-
-void InspectorPageAgent::getCookies(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Page::Cookie>>& cookies)
-{
-    ListHashSet<Cookie> rawCookiesList;
-
-    for (Frame* frame = inspectedFrame(); frame; frame = frame->tree().traverseNext(inspectedFrame())) {
-        if (!frame->isLocalFrame())
-            continue;
-        Document* document = toLocalFrame(frame)->document();
-        Vector<KURL> allURLs = allResourcesURLsForFrame(toLocalFrame(frame));
-        for (const auto& url : allURLs) {
-            Vector<Cookie> docCookiesList;
-            getRawCookies(document, url, docCookiesList);
-            int cookiesSize = docCookiesList.size();
-            for (int i = 0; i < cookiesSize; i++) {
-                if (!rawCookiesList.contains(docCookiesList[i]))
-                    rawCookiesList.add(docCookiesList[i]);
-            }
-        }
-    }
-
-    cookies = buildArrayForCookies(rawCookiesList);
-}
-
-void InspectorPageAgent::deleteCookie(ErrorString*, const String& cookieName, const String& url)
-{
-    KURL parsedURL(ParsedURLString, url);
-    for (Frame* frame = inspectedFrame(); frame; frame = frame->tree().traverseNext(inspectedFrame())) {
-        if (frame->isLocalFrame())
-            blink::deleteCookie(toLocalFrame(frame)->document(), parsedURL, cookieName);
-    }
 }
 
 void InspectorPageAgent::getResourceTree(ErrorString*, RefPtr<TypeBuilder::Page::FrameResourceTree>& object)
