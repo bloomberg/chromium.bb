@@ -39,12 +39,11 @@ namespace blink {
 
 class ExceptionState;
 
-class CORE_EXPORT TimeRanges : public RefCountedWillBeGarbageCollected<TimeRanges>, public ScriptWrappable {
+class CORE_EXPORT TimeRanges : public RefCountedWillBeGarbageCollectedFinalized<TimeRanges>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     // We consider all the Ranges to be semi-bounded as follow: [start, end[
     struct Range {
-        ALLOW_ONLY_INLINE_ALLOCATION();
     public:
         Range() { }
         Range(double start, double end)
@@ -84,8 +83,6 @@ public:
         {
             return range.m_start >= m_end;
         }
-
-        DEFINE_INLINE_TRACE() { }
     };
 
     static PassRefPtrWillBeRawPtr<TimeRanges> create()
@@ -112,7 +109,7 @@ public:
 
     double nearest(double newPlaybackPosition, double currentPlaybackPosition) const;
 
-    DECLARE_TRACE();
+    DEFINE_INLINE_TRACE() { }
 
 private:
     TimeRanges() { }
@@ -121,11 +118,9 @@ private:
 
     void invert();
 
-    WillBeHeapVector<Range> m_ranges;
+    Vector<Range> m_ranges;
 };
 
 } // namespace blink
-
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::TimeRanges::Range);
 
 #endif // TimeRanges_h
