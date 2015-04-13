@@ -38,8 +38,6 @@
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "platform/JSONValues.h"
-#include "platform/PlatformKeyboardEvent.h"
-#include "platform/PlatformMouseEvent.h"
 #include "platform/PlatformTouchEvent.h"
 #include "platform/PlatformTouchPoint.h"
 #include "platform/geometry/FloatSize.h"
@@ -89,107 +87,14 @@ void ConvertInspectorPoint(blink::LocalFrame* frame, const blink::IntPoint& poin
 
 namespace blink {
 
-InspectorInputAgent::InspectorInputAgent(InspectorPageAgent* pageAgent, Client* client)
+InspectorInputAgent::InspectorInputAgent(InspectorPageAgent* pageAgent)
     : InspectorBaseAgent<InspectorInputAgent, InspectorFrontend::Input>("Input")
     , m_pageAgent(pageAgent)
-    , m_client(client)
 {
 }
 
 InspectorInputAgent::~InspectorInputAgent()
 {
-}
-
-void InspectorInputAgent::dispatchKeyEvent(ErrorString* error, const String& type, const int* modifiers, const double* timestamp, const String* text, const String* unmodifiedText, const String* keyIdentifier, const String* code, const int* windowsVirtualKeyCode, const int* nativeVirtualKeyCode, const bool* autoRepeat, const bool* isKeypad, const bool* isSystemKey)
-{
-    PlatformEvent::Type convertedType;
-    if (type == "keyDown")
-        convertedType = PlatformEvent::KeyDown;
-    else if (type == "keyUp")
-        convertedType = PlatformEvent::KeyUp;
-    else if (type == "char")
-        convertedType = PlatformEvent::Char;
-    else if (type == "rawKeyDown")
-        convertedType = PlatformEvent::RawKeyDown;
-    else {
-        *error = "Unrecognized type: " + type;
-        return;
-    }
-
-    PlatformKeyboardEvent event(
-        convertedType,
-        text ? *text : "",
-        unmodifiedText ? *unmodifiedText : "",
-        keyIdentifier ? *keyIdentifier : "",
-        code ? *code : "",
-        windowsVirtualKeyCode ? *windowsVirtualKeyCode : 0,
-        nativeVirtualKeyCode ? *nativeVirtualKeyCode : 0,
-        asBool(autoRepeat),
-        asBool(isKeypad),
-        asBool(isSystemKey),
-        static_cast<PlatformEvent::Modifiers>(modifiers ? *modifiers : 0),
-        timestamp ? *timestamp : currentTime());
-
-    if (!m_client) {
-        *error = "Not supported";
-        return;
-    }
-    m_client->dispatchKeyEvent(event);
-}
-
-void InspectorInputAgent::dispatchMouseEvent(ErrorString* error, const String& type, int x, int y, const int* modifiers, const double* timestamp, const String* button, const int* clickCount)
-{
-    PlatformEvent::Type convertedType;
-    if (type == "mousePressed")
-        convertedType = PlatformEvent::MousePressed;
-    else if (type == "mouseReleased")
-        convertedType = PlatformEvent::MouseReleased;
-    else if (type == "mouseMoved")
-        convertedType = PlatformEvent::MouseMoved;
-    else {
-        *error = "Unrecognized type: " + type;
-        return;
-    }
-
-    int convertedModifiers = modifiers ? *modifiers : 0;
-
-    MouseButton convertedButton = NoButton;
-    if (button) {
-        if (*button == "left")
-            convertedButton = LeftButton;
-        else if (*button == "middle")
-            convertedButton = MiddleButton;
-        else if (*button == "right")
-            convertedButton = RightButton;
-        else if (*button != "none") {
-            *error = "Unrecognized button: " + *button;
-            return;
-        }
-    }
-
-    // Some platforms may have flipped coordinate systems, but the given coordinates
-    // assume the origin is in the top-left of the window. Convert.
-    IntPoint convertedPoint, globalPoint;
-    ConvertInspectorPoint(m_pageAgent->inspectedFrame(), IntPoint(x, y), &convertedPoint, &globalPoint);
-
-    PlatformMouseEvent event(
-        convertedPoint,
-        globalPoint,
-        convertedButton,
-        convertedType,
-        clickCount ? *clickCount : 0,
-        convertedModifiers & PlatformEvent::ShiftKey,
-        convertedModifiers & PlatformEvent::CtrlKey,
-        convertedModifiers & PlatformEvent::AltKey,
-        convertedModifiers & PlatformEvent::MetaKey,
-        PlatformMouseEvent::RealOrIndistinguishable,
-        timestamp ? *timestamp : currentTime());
-
-    if (!m_client) {
-        *error = "Not supported";
-        return;
-    }
-    m_client->dispatchMouseEvent(event);
 }
 
 void InspectorInputAgent::dispatchTouchEvent(ErrorString* error, const String& type, const RefPtr<JSONArray>& touchPoints, const int* modifiers, const double* timestamp)

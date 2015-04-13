@@ -98,12 +98,6 @@ public:
     // be set to Undefined.
     WebMouseEventBuilder(const Widget*, const LayoutObject*, const MouseEvent&);
     WebMouseEventBuilder(const Widget*, const LayoutObject*, const TouchEvent&);
-
-    // Converts a PlatformMouseEvent to a corresponding WebMouseEvent.
-    // NOTE: This is only implemented for mousepressed, mousereleased, and
-    // mousemoved. If the event mapping fails, the event type will be set to
-    // Undefined.
-    WebMouseEventBuilder(const Widget*, const PlatformMouseEvent&);
 };
 
 // Converts a WheelEvent to a corresponding WebMouseWheelEvent.
@@ -121,7 +115,6 @@ public:
 class WebKeyboardEventBuilder : public WebKeyboardEvent {
 public:
     WebKeyboardEventBuilder(const KeyboardEvent&);
-    WebKeyboardEventBuilder(const PlatformKeyboardEvent&);
 };
 
 // Converts a TouchEvent to a corresponding WebTouchEvent.

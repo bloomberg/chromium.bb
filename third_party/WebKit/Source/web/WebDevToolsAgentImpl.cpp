@@ -100,40 +100,6 @@
 
 namespace blink {
 
-namespace {
-
-class InspectorInputClient : public InspectorInputAgent::Client {
-public:
-    explicit InspectorInputClient(WebViewImpl* webViewImpl) : m_webViewImpl(webViewImpl) { }
-    ~InspectorInputClient() override { }
-
-    // InspectorInputAgent::Client implementation.
-    void dispatchKeyEvent(const PlatformKeyboardEvent& event) override
-    {
-        if (!m_webViewImpl->page()->focusController().isFocused())
-            m_webViewImpl->setFocus(true);
-
-        WebKeyboardEvent webEvent = WebKeyboardEventBuilder(event);
-        if (!webEvent.keyIdentifier[0] && webEvent.type != WebInputEvent::Char)
-            webEvent.setKeyIdentifierFromWindowsKeyCode();
-        m_webViewImpl->handleInputEvent(webEvent);
-    }
-
-    void dispatchMouseEvent(const PlatformMouseEvent& event) override
-    {
-        if (!m_webViewImpl->page()->focusController().isFocused())
-            m_webViewImpl->setFocus(true);
-
-        WebMouseEvent webEvent = WebMouseEventBuilder(m_webViewImpl->mainFrameImpl()->frameView(), event);
-        m_webViewImpl->handleInputEvent(webEvent);
-    }
-
-private:
-    WebViewImpl* m_webViewImpl;
-};
-
-} // namespace
-
 class ClientMessageLoopAdapter : public PageScriptDebugServer::ClientMessageLoop {
 public:
     ~ClientMessageLoopAdapter() override
@@ -290,9 +256,9 @@ PassOwnPtrWillBeRawPtr<WebDevToolsAgentImpl> WebDevToolsAgentImpl::create(WebLoc
     WebViewImpl* view = frame->viewImpl();
     bool isMainFrame = view && view->mainFrameImpl() == frame;
     if (!isMainFrame)
-        return adoptPtrWillBeNoop(new WebDevToolsAgentImpl(frame, client, frame->inspectorOverlay(), nullptr));
+        return adoptPtrWillBeNoop(new WebDevToolsAgentImpl(frame, client, frame->inspectorOverlay()));
 
-    WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, client, view->inspectorOverlay(), adoptPtr(new InspectorInputClient(view)));
+    WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, client, view->inspectorOverlay());
     agent->registerAgent(InspectorRenderingAgent::create(view));
     agent->registerAgent(InspectorEmulationAgent::create(view));
     // TODO(dgozman): migrate each of the following agents to frame once module is ready.
@@ -308,8 +274,7 @@ PassOwnPtrWillBeRawPtr<WebDevToolsAgentImpl> WebDevToolsAgentImpl::create(WebLoc
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     WebLocalFrameImpl* webLocalFrameImpl,
     WebDevToolsAgentClient* client,
-    InspectorOverlay* overlay,
-    PassOwnPtr<InspectorInputAgent::Client> inputClient)
+    InspectorOverlay* overlay)
     : m_client(client)
     , m_webLocalFrameImpl(webLocalFrameImpl)
     , m_attached(false)
@@ -320,7 +285,6 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_injectedScriptManager(InjectedScriptManager::createForPage())
     , m_state(adoptPtrWillBeNoop(new InspectorCompositeState(this)))
     , m_overlay(overlay)
-    , m_inputClient(inputClient)
     , m_cssAgent(nullptr)
     , m_resourceAgent(nullptr)
     , m_layerTreeAgent(nullptr)
@@ -465,7 +429,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
 
     m_agents.append(InspectorDOMDebuggerAgent::create(m_domAgent, debuggerAgent));
 
-    m_agents.append(InspectorInputAgent::create(m_pageAgent, m_inputClient.get()));
+    m_agents.append(InspectorInputAgent::create(m_pageAgent));
 
     m_agents.append(InspectorProfilerAgent::create(injectedScriptManager, m_overlay));
 

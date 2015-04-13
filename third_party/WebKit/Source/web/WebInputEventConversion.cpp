@@ -87,20 +87,6 @@ static FloatPoint convertHitPointToWindow(const Widget* widget, FloatPoint point
         (point.y() - offset.height()) / scale + pinchViewport.y() + overscrollOffset.height());
 }
 
-static int toWebEventModifiers(unsigned platformModifiers)
-{
-    int newModifiers = 0;
-    if (platformModifiers & PlatformEvent::ShiftKey)
-        newModifiers |= WebInputEvent::ShiftKey;
-    if (platformModifiers & PlatformEvent::CtrlKey)
-        newModifiers |= WebInputEvent::ControlKey;
-    if (platformModifiers & PlatformEvent::AltKey)
-        newModifiers |= WebInputEvent::AltKey;
-    if (platformModifiers & PlatformEvent::MetaKey)
-        newModifiers |= WebInputEvent::MetaKey;
-    return newModifiers;
-}
-
 static unsigned toPlatformEventModifiers(int webModifiers)
 {
     unsigned newModifiers = 0;
@@ -598,48 +584,6 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const LayoutObj
     y = localPoint.y();
 }
 
-WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const PlatformMouseEvent& event)
-{
-    switch (event.type()) {
-    case PlatformEvent::MouseMoved:
-        type = MouseMove;
-        break;
-    case PlatformEvent::MousePressed:
-        type = MouseDown;
-        break;
-    case PlatformEvent::MouseReleased:
-        type = MouseUp;
-        break;
-    default:
-        ASSERT_NOT_REACHED();
-        type = Undefined;
-        return;
-    }
-
-    modifiers = toWebEventModifiers(event.modifiers());
-    timeStampSeconds = event.timestamp();
-
-    // FIXME: Widget is always toplevel, unless it's a popup. We may be able
-    // to get rid of this once we abstract popups into a WebKit API.
-    IntPoint position = widget->convertToContainingWindow(event.position());
-    float scale = 1;
-    if (widget) {
-        FrameView* rootView = toFrameView(widget->root());
-        if (rootView)
-            scale = rootView->inputEventsScaleFactor();
-    }
-    position.scale(scale, scale);
-    x = position.x();
-    y = position.y();
-    globalX = event.globalPosition().x();
-    globalY = event.globalPosition().y();
-    movementX = event.movementDelta().x() * scale;
-    movementY = event.movementDelta().y() * scale;
-
-    button = static_cast<Button>(event.button());
-    clickCount = event.clickCount();
-}
-
 WebMouseWheelEventBuilder::WebMouseWheelEventBuilder(const Widget* widget, const LayoutObject* layoutObject, const WheelEvent& event)
 {
     if (event.type() != EventTypeNames::wheel && event.type() != EventTypeNames::mousewheel)
@@ -705,26 +649,6 @@ WebInputEvent::Type toWebKeyboardEventType(PlatformEvent::Type type)
     default:
         return WebInputEvent::Undefined;
     }
-}
-
-WebKeyboardEventBuilder::WebKeyboardEventBuilder(const PlatformKeyboardEvent& event)
-{
-    type = toWebKeyboardEventType(event.type());
-    modifiers = toWebEventModifiers(event.modifiers());
-    if (event.isAutoRepeat())
-        modifiers |= WebInputEvent::IsAutoRepeat;
-    if (event.isKeypad())
-        modifiers |= WebInputEvent::IsKeyPad;
-    isSystemKey = event.isSystemKey();
-    nativeKeyCode = event.nativeVirtualKeyCode();
-    domCode = Platform::current()->domEnumFromCodeString(event.code());
-
-    windowsKeyCode = windowsKeyCodeWithoutLocation(event.windowsVirtualKeyCode());
-    modifiers |= locationModifiersFromWindowsKeyCode(event.windowsVirtualKeyCode());
-
-    event.text().copyTo(text, 0, textLengthCap);
-    event.unmodifiedText().copyTo(unmodifiedText, 0, textLengthCap);
-    memcpy(keyIdentifier, event.keyIdentifier().ascii().data(), std::min(static_cast<unsigned>(keyIdentifierLengthCap), event.keyIdentifier().length()));
 }
 
 static WebTouchPoint toWebTouchPoint(const Touch* touch, const LayoutObject* layoutObject, WebTouchPoint::State state)
