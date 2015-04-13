@@ -5,7 +5,7 @@
 #include "cc/debug/unittest_only_benchmark.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/values.h"
 #include "cc/debug/unittest_only_benchmark_impl.h"
 
@@ -53,13 +53,12 @@ void UnittestOnlyBenchmark::RecordImplResults(scoped_ptr<base::Value> results) {
 }
 
 scoped_ptr<MicroBenchmarkImpl> UnittestOnlyBenchmark::CreateBenchmarkImpl(
-    scoped_refptr<base::MessageLoopProxy> origin_loop) {
+    scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner) {
   if (!create_impl_benchmark_)
     return make_scoped_ptr<MicroBenchmarkImpl>(nullptr);
 
   return make_scoped_ptr(new UnittestOnlyBenchmarkImpl(
-      origin_loop,
-      nullptr,
+      origin_task_runner, nullptr,
       base::Bind(&UnittestOnlyBenchmark::RecordImplResults,
                  weak_ptr_factory_.GetWeakPtr())));
 }

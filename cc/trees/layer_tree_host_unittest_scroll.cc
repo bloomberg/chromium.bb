@@ -4,7 +4,10 @@
 
 #include "cc/trees/layer_tree_host.h"
 
+#include "base/location.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/picture_layer.h"
@@ -1120,20 +1123,18 @@ TEST(LayerTreeHostFlingTest, DidStopFlingingThread) {
   LayerTreeSettings settings;
 
   ThreadCheckingInputHandlerClient input_handler_client(
-          impl_thread.message_loop_proxy().get(), &received_stop_flinging);
+      impl_thread.task_runner().get(), &received_stop_flinging);
   FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
 
-  ASSERT_TRUE(impl_thread.message_loop_proxy().get());
+  ASSERT_TRUE(impl_thread.task_runner().get());
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   scoped_ptr<LayerTreeHost> layer_tree_host = LayerTreeHost::CreateThreaded(
       &client, shared_bitmap_manager.get(), NULL, NULL, settings,
-      base::MessageLoopProxy::current(), impl_thread.message_loop_proxy(),
-      nullptr);
+      base::ThreadTaskRunnerHandle::Get(), impl_thread.task_runner(), nullptr);
 
-  impl_thread.message_loop_proxy()
-      ->PostTask(FROM_HERE,
-                 base::Bind(&BindInputHandlerOnCompositorThread,
+  impl_thread.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&BindInputHandlerOnCompositorThread,
                             layer_tree_host->GetInputHandler(),
                             base::Unretained(&input_handler_client)));
 

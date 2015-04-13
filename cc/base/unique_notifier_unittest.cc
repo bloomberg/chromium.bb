@@ -4,9 +4,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "cc/base/unique_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,7 +32,7 @@ class UniqueNotifierTest : public testing::Test {
 TEST_F(UniqueNotifierTest, Schedule) {
   {
     UniqueNotifier notifier(
-        base::MessageLoopProxy::current().get(),
+        base::ThreadTaskRunnerHandle::Get().get(),
         base::Bind(&UniqueNotifierTest::Notify, base::Unretained(this)));
 
     EXPECT_EQ(0, NotificationCount());

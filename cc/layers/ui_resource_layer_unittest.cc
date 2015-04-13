@@ -4,6 +4,7 @@
 
 #include "cc/layers/ui_resource_layer.h"
 
+#include "base/thread_task_runner_handle.h"
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/resource_update_queue.h"
@@ -53,9 +54,7 @@ class UIResourceLayerTest : public testing::Test {
   void SetUp() override {
     layer_tree_host_ = FakeLayerTreeHost::Create(&fake_client_);
     layer_tree_host_->InitializeSingleThreaded(
-        &fake_client_,
-        base::MessageLoopProxy::current(),
-        nullptr);
+        &fake_client_, base::ThreadTaskRunnerHandle::Get(), nullptr);
   }
 
   void TearDown() override {

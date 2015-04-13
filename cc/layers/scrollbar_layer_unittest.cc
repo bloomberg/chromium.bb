@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/containers/hash_tables.h"
+#include "base/thread_task_runner_handle.h"
 #include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/painted_scrollbar_layer.h"
@@ -68,7 +69,7 @@ class FakeResourceTrackingLayerTreeHost : public FakeLayerTreeHost {
         next_id_(1),
         total_ui_resource_created_(0),
         total_ui_resource_deleted_(0) {
-    InitializeSingleThreaded(client, base::MessageLoopProxy::current(),
+    InitializeSingleThreaded(client, base::ThreadTaskRunnerHandle::Get(),
                              nullptr);
   }
 

@@ -8,6 +8,10 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/debug/micro_benchmark.h"
 
+namespace base {
+class SingleThreadIdleTaskRunner;
+}
+
 namespace cc {
 
 class CC_EXPORT UnittestOnlyBenchmark : public MicroBenchmark {
@@ -21,7 +25,7 @@ class CC_EXPORT UnittestOnlyBenchmark : public MicroBenchmark {
 
  protected:
   scoped_ptr<MicroBenchmarkImpl> CreateBenchmarkImpl(
-      scoped_refptr<base::MessageLoopProxy> origin_loop) override;
+      scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner) override;
 
  private:
   void RecordImplResults(scoped_ptr<base::Value> results);

@@ -7,7 +7,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/values.h"
 #include "cc/debug/micro_benchmark_impl.h"
 
@@ -46,14 +46,14 @@ bool MicroBenchmark::ProcessedForBenchmarkImpl() const {
 }
 
 scoped_ptr<MicroBenchmarkImpl> MicroBenchmark::GetBenchmarkImpl(
-    scoped_refptr<base::MessageLoopProxy> origin_loop) {
+    scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner) {
   DCHECK(!processed_for_benchmark_impl_);
   processed_for_benchmark_impl_ = true;
-  return CreateBenchmarkImpl(origin_loop);
+  return CreateBenchmarkImpl(origin_task_runner);
 }
 
 scoped_ptr<MicroBenchmarkImpl> MicroBenchmark::CreateBenchmarkImpl(
-    scoped_refptr<base::MessageLoopProxy> origin_loop) {
+    scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner) {
   return make_scoped_ptr<MicroBenchmarkImpl>(nullptr);
 }
 

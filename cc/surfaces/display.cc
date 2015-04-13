@@ -4,7 +4,7 @@
 
 #include "cc/surfaces/display.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/debug/benchmark_instrumentation.h"
 #include "cc/output/compositor_frame.h"
@@ -34,9 +34,9 @@ Display::Display(DisplayClient* client,
       settings_(settings),
       device_scale_factor_(1.f),
       blocking_main_thread_task_runner_(
-          BlockingTaskRunner::Create(base::MessageLoopProxy::current())),
+          BlockingTaskRunner::Create(base::ThreadTaskRunnerHandle::Get())),
       texture_mailbox_deleter_(
-          new TextureMailboxDeleter(base::MessageLoopProxy::current())) {
+          new TextureMailboxDeleter(base::ThreadTaskRunnerHandle::Get())) {
   manager_->AddObserver(this);
 }
 

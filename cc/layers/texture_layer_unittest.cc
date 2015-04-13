@@ -9,7 +9,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "cc/layers/solid_color_layer.h"
@@ -53,8 +56,7 @@ class MockLayerTreeHost : public LayerTreeHost {
  public:
   explicit MockLayerTreeHost(FakeLayerTreeHostClient* client)
       : LayerTreeHost(client, nullptr, nullptr, nullptr, LayerTreeSettings()) {
-    InitializeSingleThreaded(client,
-                             base::MessageLoopProxy::current(),
+    InitializeSingleThreaded(client, base::ThreadTaskRunnerHandle::Get(),
                              nullptr);
   }
 
@@ -403,10 +405,9 @@ class TextureLayerMailboxHolderTest : public TextureLayerTest {
   TextureLayerMailboxHolderTest()
       : main_thread_("MAIN") {
     main_thread_.Start();
-    main_thread_.message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(&TextureLayerMailboxHolderTest::InitializeOnMain,
-                   base::Unretained(this)));
+    main_thread_.message_loop()->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&TextureLayerMailboxHolderTest::InitializeOnMain,
+                              base::Unretained(this)));
     Wait(main_thread_);
   }
 
@@ -414,7 +415,7 @@ class TextureLayerMailboxHolderTest : public TextureLayerTest {
     bool manual_reset = false;
     bool initially_signaled = false;
     base::WaitableEvent event(manual_reset, initially_signaled);
-    thread.message_loop()->PostTask(
+    thread.message_loop()->task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&base::WaitableEvent::Signal, base::Unretained(&event)));
     event.Wait();
@@ -445,7 +446,7 @@ class TextureLayerMailboxHolderTest : public TextureLayerTest {
  protected:
   void InitializeOnMain() {
     main_thread_task_runner_ =
-        BlockingTaskRunner::Create(main_thread_.message_loop_proxy());
+        BlockingTaskRunner::Create(main_thread_.task_runner());
   }
 
   scoped_ptr<TestMailboxHolder::MainThreadReference>
@@ -459,30 +460,25 @@ TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_BothReleaseThenMain) {
       TextureLayer::CreateForMailbox(nullptr);
   ASSERT_TRUE(test_layer.get());
 
-  main_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&TextureLayerMailboxHolderTest::CreateMainRef,
-                 base::Unretained(this)));
+  main_thread_.message_loop()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&TextureLayerMailboxHolderTest::CreateMainRef,
+                            base::Unretained(this)));
 
   Wait(main_thread_);
 
   // The texture layer is attached to compositor1, and passes a reference to its
   // impl tree.
   scoped_ptr<SingleReleaseCallbackImpl> compositor1;
-  main_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&TextureLayerMailboxHolderTest::CreateImplRef,
-                 base::Unretained(this),
-                 &compositor1));
+  main_thread_.message_loop()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&TextureLayerMailboxHolderTest::CreateImplRef,
+                            base::Unretained(this), &compositor1));
 
   // Then the texture layer is removed and attached to compositor2, and passes a
   // reference to its impl tree.
   scoped_ptr<SingleReleaseCallbackImpl> compositor2;
-  main_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&TextureLayerMailboxHolderTest::CreateImplRef,
-                 base::Unretained(this),
-                 &compositor2));
+  main_thread_.message_loop()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&TextureLayerMailboxHolderTest::CreateImplRef,
+                            base::Unretained(this), &compositor2));
 
   Wait(main_thread_);
   Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
@@ -502,10 +498,9 @@ TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_BothReleaseThenMain) {
   EXPECT_CALL(test_data_.mock_callback_,
               Release(test_data_.mailbox_name1_, 200, false)).Times(1);
 
-  main_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&TextureLayerMailboxHolderTest::ReleaseMainRef,
-                 base::Unretained(this)));
+  main_thread_.message_loop()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&TextureLayerMailboxHolderTest::ReleaseMainRef,
+                            base::Unretained(this)));
   Wait(main_thread_);
   Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
 }
@@ -515,30 +510,25 @@ TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_MainReleaseBetween) {
       TextureLayer::CreateForMailbox(nullptr);
   ASSERT_TRUE(test_layer.get());
 
-  main_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&TextureLayerMailboxHolderTest::CreateMainRef,
-                 base::Unretained(this)));
+  main_thread_.message_loop()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&TextureLayerMailboxHolderTest::CreateMainRef,
+                            base::Unretained(this)));
 
   Wait(main_thread_);
 
   // The texture layer is attached to compositor1, and passes a reference to its
   // impl tree.
   scoped_ptr<SingleReleaseCallbackImpl> compositor1;
-  main_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&TextureLayerMailboxHolderTest::CreateImplRef,
-                 base::Unretained(this),
-                 &compositor1));
+  main_thread_.message_loop()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&TextureLayerMailboxHolderTest::CreateImplRef,
+                            base::Unretained(this), &compositor1));
 
   // Then the texture layer is removed and attached to compositor2, and passes a
   // reference to its impl tree.
   scoped_ptr<SingleReleaseCallbackImpl> compositor2;
-  main_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&TextureLayerMailboxHolderTest::CreateImplRef,
-                 base::Unretained(this),
-                 &compositor2));
+  main_thread_.message_loop()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&TextureLayerMailboxHolderTest::CreateImplRef,
+                            base::Unretained(this), &compositor2));
 
   Wait(main_thread_);
   Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
@@ -547,10 +537,9 @@ TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_MainReleaseBetween) {
   compositor1->Run(100, false, main_thread_task_runner_.get());
 
   // Then the main thread reference is destroyed.
-  main_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&TextureLayerMailboxHolderTest::ReleaseMainRef,
-                 base::Unretained(this)));
+  main_thread_.message_loop()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&TextureLayerMailboxHolderTest::ReleaseMainRef,
+                            base::Unretained(this)));
 
   Wait(main_thread_);
 
@@ -572,39 +561,33 @@ TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_MainReleasedFirst) {
       TextureLayer::CreateForMailbox(nullptr);
   ASSERT_TRUE(test_layer.get());
 
-  main_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&TextureLayerMailboxHolderTest::CreateMainRef,
-                 base::Unretained(this)));
+  main_thread_.message_loop()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&TextureLayerMailboxHolderTest::CreateMainRef,
+                            base::Unretained(this)));
 
   Wait(main_thread_);
 
   // The texture layer is attached to compositor1, and passes a reference to its
   // impl tree.
   scoped_ptr<SingleReleaseCallbackImpl> compositor1;
-  main_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&TextureLayerMailboxHolderTest::CreateImplRef,
-                 base::Unretained(this),
-                 &compositor1));
+  main_thread_.message_loop()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&TextureLayerMailboxHolderTest::CreateImplRef,
+                            base::Unretained(this), &compositor1));
 
   // Then the texture layer is removed and attached to compositor2, and passes a
   // reference to its impl tree.
   scoped_ptr<SingleReleaseCallbackImpl> compositor2;
-  main_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&TextureLayerMailboxHolderTest::CreateImplRef,
-                 base::Unretained(this),
-                 &compositor2));
+  main_thread_.message_loop()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&TextureLayerMailboxHolderTest::CreateImplRef,
+                            base::Unretained(this), &compositor2));
 
   Wait(main_thread_);
   Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
 
   // The main thread reference is destroyed first.
-  main_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&TextureLayerMailboxHolderTest::ReleaseMainRef,
-                 base::Unretained(this)));
+  main_thread_.message_loop()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&TextureLayerMailboxHolderTest::ReleaseMainRef,
+                            base::Unretained(this)));
 
   // One compositor destroys their impl tree.
   compositor2->Run(200, false, main_thread_task_runner_.get());
@@ -629,39 +612,33 @@ TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_SecondImplRefShortcut) {
       TextureLayer::CreateForMailbox(nullptr);
   ASSERT_TRUE(test_layer.get());
 
-  main_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&TextureLayerMailboxHolderTest::CreateMainRef,
-                 base::Unretained(this)));
+  main_thread_.message_loop()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&TextureLayerMailboxHolderTest::CreateMainRef,
+                            base::Unretained(this)));
 
   Wait(main_thread_);
 
   // The texture layer is attached to compositor1, and passes a reference to its
   // impl tree.
   scoped_ptr<SingleReleaseCallbackImpl> compositor1;
-  main_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&TextureLayerMailboxHolderTest::CreateImplRef,
-                 base::Unretained(this),
-                 &compositor1));
+  main_thread_.message_loop()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&TextureLayerMailboxHolderTest::CreateImplRef,
+                            base::Unretained(this), &compositor1));
 
   // Then the texture layer is removed and attached to compositor2, and passes a
   // reference to its impl tree.
   scoped_ptr<SingleReleaseCallbackImpl> compositor2;
-  main_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&TextureLayerMailboxHolderTest::CreateImplRef,
-                 base::Unretained(this),
-                 &compositor2));
+  main_thread_.message_loop()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&TextureLayerMailboxHolderTest::CreateImplRef,
+                            base::Unretained(this), &compositor2));
 
   Wait(main_thread_);
   Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
 
   // The main thread reference is destroyed first.
-  main_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&TextureLayerMailboxHolderTest::ReleaseMainRef,
-                 base::Unretained(this)));
+  main_thread_.message_loop()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&TextureLayerMailboxHolderTest::ReleaseMainRef,
+                            base::Unretained(this)));
 
   EXPECT_CALL(test_data_.mock_callback_,
               Release(test_data_.mailbox_name1_, 200, true)).Times(1);
@@ -674,12 +651,10 @@ TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_SecondImplRefShortcut) {
 
   // Post a task to start capturing tasks on the main thread. This will block
   // the main thread until we signal the |stop_capture| event.
-  main_thread_.message_loop()->PostTask(
+  main_thread_.message_loop()->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&TextureLayerMailboxHolderTest::CapturePostTasksAndWait,
-                 base::Unretained(this),
-                 &begin_capture,
-                 &wait_for_capture,
+                 base::Unretained(this), &begin_capture, &wait_for_capture,
                  &stop_capture));
 
   // Before the main thread capturing starts, one compositor destroys their

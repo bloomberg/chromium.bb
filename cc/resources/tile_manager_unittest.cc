@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/thread_task_runner_handle.h"
 #include "cc/resources/eviction_tile_priority_queue.h"
 #include "cc/resources/raster_tile_priority_queue.h"
 #include "cc/resources/resource_pool.h"
@@ -39,7 +40,7 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
         max_tiles_(10000),
         ready_to_activate_(false),
         id_(7),
-        proxy_(base::MessageLoopProxy::current()),
+        proxy_(base::ThreadTaskRunnerHandle::Get()),
         host_impl_(LowResTilingsSettings(),
                    &proxy_,
                    &shared_bitmap_manager_,

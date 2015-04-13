@@ -4,6 +4,7 @@
 
 #include "cc/layers/picture_layer.h"
 
+#include "base/thread_task_runner_handle.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/resources/resource_update_queue.h"
@@ -130,12 +131,12 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
 
   scoped_ptr<LayerTreeHost> host1 = LayerTreeHost::CreateSingleThreaded(
       &host_client1, &host_client1, shared_bitmap_manager.get(), nullptr,
-      nullptr, settings, base::MessageLoopProxy::current(), nullptr);
+      nullptr, settings, base::ThreadTaskRunnerHandle::Get(), nullptr);
   host_client1.SetLayerTreeHost(host1.get());
 
   scoped_ptr<LayerTreeHost> host2 = LayerTreeHost::CreateSingleThreaded(
       &host_client2, &host_client2, shared_bitmap_manager.get(), nullptr,
-      nullptr, settings, base::MessageLoopProxy::current(), nullptr);
+      nullptr, settings, base::ThreadTaskRunnerHandle::Get(), nullptr);
   host_client2.SetLayerTreeHost(host2.get());
 
   // The PictureLayer is put in one LayerTreeHost.

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/location.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "cc/debug/lap_timer.h"
 #include "cc/resources/raster_buffer.h"
@@ -88,7 +90,7 @@ class TileManagerPerfTest : public testing::Test {
       : memory_limit_policy_(ALLOW_ANYTHING),
         max_tiles_(10000),
         id_(7),
-        proxy_(base::MessageLoopProxy::current()),
+        proxy_(base::ThreadTaskRunnerHandle::Get()),
         host_impl_(ImplSidePaintingSettings(10000),
                    &proxy_,
                    &shared_bitmap_manager_,

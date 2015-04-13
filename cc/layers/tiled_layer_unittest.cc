@@ -7,7 +7,10 @@
 #include <limits>
 #include <vector>
 
+#include "base/location.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "cc/resources/bitmap_content_layer_updater.h"
 #include "cc/resources/layer_painter.h"
 #include "cc/resources/prioritized_resource_manager.h"
@@ -51,10 +54,8 @@ class SynchronousOutputSurfaceClient : public FakeLayerTreeHostClient {
       : FakeLayerTreeHostClient(FakeLayerTreeHostClient::DIRECT_3D) {}
 
   bool EnsureOutputSurfaceCreated() {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        run_loop_.QuitClosure(),
-        base::TimeDelta::FromSeconds(5));
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop_.QuitClosure(), base::TimeDelta::FromSeconds(5));
     run_loop_.Run();
     return output_surface_created_;
   }
@@ -95,8 +96,8 @@ class TiledLayerTest : public testing::Test {
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     layer_tree_host_ = LayerTreeHost::CreateThreaded(
         &synchonous_output_surface_client_, shared_bitmap_manager_.get(),
-        nullptr, nullptr, settings_, base::MessageLoopProxy::current(),
-        impl_thread_.message_loop_proxy(), nullptr);
+        nullptr, nullptr, settings_, base::ThreadTaskRunnerHandle::Get(),
+        impl_thread_.task_runner(), nullptr);
     synchonous_output_surface_client_.SetLayerTreeHost(layer_tree_host_.get());
     proxy_ = layer_tree_host_->proxy();
     resource_manager_ = PrioritizedResourceManager::Create(proxy_);

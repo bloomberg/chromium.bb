@@ -10,8 +10,8 @@
 #include "cc/base/cc_export.h"
 
 namespace base {
+class SingleThreadTaskRunner;
 class Value;
-class MessageLoopProxy;
 }  // namespace base
 
 namespace cc {
@@ -39,13 +39,13 @@ class CC_EXPORT MicroBenchmark {
 
   bool ProcessedForBenchmarkImpl() const;
   scoped_ptr<MicroBenchmarkImpl> GetBenchmarkImpl(
-      scoped_refptr<base::MessageLoopProxy> origin_loop);
+      scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner);
 
  protected:
   void NotifyDone(scoped_ptr<base::Value> result);
 
   virtual scoped_ptr<MicroBenchmarkImpl> CreateBenchmarkImpl(
-      scoped_refptr<base::MessageLoopProxy> origin_loop);
+      scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner);
 
  private:
   DoneCallback callback_;

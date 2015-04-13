@@ -94,10 +94,9 @@ void RasterizeAndRecordBenchmark::RecordRasterResults(
 }
 
 scoped_ptr<MicroBenchmarkImpl> RasterizeAndRecordBenchmark::CreateBenchmarkImpl(
-    scoped_refptr<base::MessageLoopProxy> origin_loop) {
+    scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner) {
   return make_scoped_ptr(new RasterizeAndRecordBenchmarkImpl(
-      origin_loop,
-      settings_.get(),
+      origin_task_runner, settings_.get(),
       base::Bind(&RasterizeAndRecordBenchmark::RecordRasterResults,
                  weak_ptr_factory_.GetWeakPtr())));
 }

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "cc/debug/invalidation_benchmark.h"
 #include "cc/debug/picture_record_benchmark.h"
@@ -54,7 +54,9 @@ class IsDonePredicate {
 
 MicroBenchmarkController::MicroBenchmarkController(LayerTreeHost* host)
     : host_(host),
-      main_controller_message_loop_(base::MessageLoopProxy::current().get()) {
+      main_controller_task_runner_(base::ThreadTaskRunnerHandle::IsSet()
+                                       ? base::ThreadTaskRunnerHandle::Get()
+                                       : nullptr) {
   DCHECK(host_);
 }
 
@@ -102,8 +104,7 @@ void MicroBenchmarkController::ScheduleImplBenchmarks(
        ++it) {
     scoped_ptr<MicroBenchmarkImpl> benchmark_impl;
     if (!(*it)->ProcessedForBenchmarkImpl()) {
-      benchmark_impl =
-          (*it)->GetBenchmarkImpl(main_controller_message_loop_);
+      benchmark_impl = (*it)->GetBenchmarkImpl(main_controller_task_runner_);
     }
 
     if (benchmark_impl.get())

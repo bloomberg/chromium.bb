@@ -5,6 +5,9 @@
 #include "cc/test/layer_tree_test.h"
 
 #include "base/command_line.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_registrar.h"
 #include "cc/animation/layer_animation_controller.h"
@@ -663,12 +666,12 @@ void LayerTreeTest::DoBeginTest() {
     external_begin_frame_source_ = external_begin_frame_source.get();
   }
 
-  DCHECK(!impl_thread_ || impl_thread_->message_loop_proxy().get());
+  DCHECK(!impl_thread_ || impl_thread_->task_runner().get());
   layer_tree_host_ = LayerTreeHostForTesting::Create(
       this, client_.get(), shared_bitmap_manager_.get(),
       gpu_memory_buffer_manager_.get(), task_graph_runner_.get(), settings_,
-      base::MessageLoopProxy::current(),
-      impl_thread_ ? impl_thread_->message_loop_proxy() : NULL,
+      base::ThreadTaskRunnerHandle::Get(),
+      impl_thread_ ? impl_thread_->task_runner() : NULL,
       external_begin_frame_source.Pass());
   ASSERT_TRUE(layer_tree_host_);
 
@@ -792,7 +795,7 @@ void LayerTreeTest::RunTest(bool threaded,
     ASSERT_TRUE(impl_thread_->Start());
   }
 
-  main_task_runner_ = base::MessageLoopProxy::current();
+  main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
   shared_bitmap_manager_.reset(new TestSharedBitmapManager);
   gpu_memory_buffer_manager_.reset(new TestGpuMemoryBufferManager);

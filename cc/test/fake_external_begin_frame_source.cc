@@ -5,7 +5,8 @@
 #include "cc/test/fake_external_begin_frame_source.h"
 
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "cc/test/begin_frame_args_test.h"
 
@@ -45,7 +46,7 @@ void FakeExternalBeginFrameSource::TestOnBeginFrame() {
 }
 
 void FakeExternalBeginFrameSource::PostTestOnBeginFrame() {
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&FakeExternalBeginFrameSource::TestOnBeginFrame,
                             weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(milliseconds_per_frame_));

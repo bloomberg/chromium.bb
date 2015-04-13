@@ -5,9 +5,9 @@
 #include "cc/test/pixel_test.h"
 
 #include "base/command_line.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "cc/base/switches.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/copy_output_request.h"
@@ -37,7 +37,7 @@ PixelTest::PixelTest()
       disable_picture_quad_image_filtering_(false),
       output_surface_client_(new FakeOutputSurfaceClient),
       main_thread_task_runner_(
-          BlockingTaskRunner::Create(base::MessageLoopProxy::current())) {
+          BlockingTaskRunner::Create(base::ThreadTaskRunnerHandle::Get())) {
 }
 PixelTest::~PixelTest() {}
 
@@ -143,7 +143,7 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend,
                                1);
 
   texture_mailbox_deleter_ = make_scoped_ptr(
-      new TextureMailboxDeleter(base::MessageLoopProxy::current()));
+      new TextureMailboxDeleter(base::ThreadTaskRunnerHandle::Get()));
 
   renderer_ = GLRenderer::Create(
       this, &settings_.renderer_settings, output_surface_.get(),

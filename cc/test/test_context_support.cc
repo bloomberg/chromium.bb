@@ -5,7 +5,9 @@
 #include "cc/test/test_context_support.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 
 namespace cc {
 
@@ -18,19 +20,17 @@ TestContextSupport::~TestContextSupport() {}
 void TestContextSupport::SignalSyncPoint(uint32 sync_point,
                                          const base::Closure& callback) {
   sync_point_callbacks_.push_back(callback);
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&TestContextSupport::CallAllSyncPointCallbacks,
-                 weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&TestContextSupport::CallAllSyncPointCallbacks,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void TestContextSupport::SignalQuery(uint32 query,
                                      const base::Closure& callback) {
   sync_point_callbacks_.push_back(callback);
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&TestContextSupport::CallAllSyncPointCallbacks,
-                 weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&TestContextSupport::CallAllSyncPointCallbacks,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void TestContextSupport::SetSurfaceVisible(bool visible) {
@@ -41,8 +41,8 @@ void TestContextSupport::SetSurfaceVisible(bool visible) {
 
 void TestContextSupport::CallAllSyncPointCallbacks() {
   for (size_t i = 0; i < sync_point_callbacks_.size(); ++i) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE, sync_point_callbacks_[i]);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  sync_point_callbacks_[i]);
   }
   sync_point_callbacks_.clear();
 }

@@ -5,7 +5,9 @@
 #include <set>
 #include <vector>
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/surface_layer.h"
 #include "cc/test/fake_impl_proxy.h"
@@ -173,7 +175,7 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
   }
 
   void DidCommitAndDrawFrame() override {
-    base::MessageLoopProxy::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&SurfaceLayerSwapPromise::ChangeTree,
                               base::Unretained(this)));
   }

@@ -4,16 +4,17 @@
 
 #include "cc/debug/unittest_only_benchmark_impl.h"
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/values.h"
 
 namespace cc {
 
 UnittestOnlyBenchmarkImpl::UnittestOnlyBenchmarkImpl(
-    scoped_refptr<base::MessageLoopProxy> origin_loop,
+    scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner,
     base::Value* settings,
     const DoneCallback& callback)
-    : MicroBenchmarkImpl(callback, origin_loop) {}
+    : MicroBenchmarkImpl(callback, origin_task_runner) {
+}
 
 UnittestOnlyBenchmarkImpl::~UnittestOnlyBenchmarkImpl() {}
 

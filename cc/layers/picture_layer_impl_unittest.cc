@@ -9,6 +9,8 @@
 #include <set>
 #include <utility>
 
+#include "base/location.h"
+#include "base/thread_task_runner_handle.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/picture_layer.h"
@@ -71,7 +73,7 @@ class LowResTilingsSettings : public ImplSidePaintingSettings {
 class PictureLayerImplTest : public testing::Test {
  public:
   PictureLayerImplTest()
-      : proxy_(base::MessageLoopProxy::current()),
+      : proxy_(base::ThreadTaskRunnerHandle::Get()),
         host_impl_(LowResTilingsSettings(),
                    &proxy_,
                    &shared_bitmap_manager_,
@@ -85,7 +87,7 @@ class PictureLayerImplTest : public testing::Test {
   }
 
   explicit PictureLayerImplTest(const LayerTreeSettings& settings)
-      : proxy_(base::MessageLoopProxy::current()),
+      : proxy_(base::ThreadTaskRunnerHandle::Get()),
         host_impl_(settings,
                    &proxy_,
                    &shared_bitmap_manager_,

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "cc/debug/micro_benchmark_controller.h"
 #include "cc/resources/picture.h"
@@ -34,7 +35,7 @@ class RasterizeAndRecordBenchmark : public MicroBenchmark {
   void RunOnLayer(PictureLayer* layer) override;
 
   scoped_ptr<MicroBenchmarkImpl> CreateBenchmarkImpl(
-      scoped_refptr<base::MessageLoopProxy> origin_loop) override;
+      scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner) override;
 
  private:
   void RunOnDisplayListLayer(PictureLayer* layer,

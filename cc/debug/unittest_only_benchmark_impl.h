@@ -9,8 +9,8 @@
 #include "cc/debug/micro_benchmark_impl.h"
 
 namespace base {
+class SingleThreadTaskRunner;
 class Value;
-class MessageLoopProxy;
 }
 
 namespace cc {
@@ -18,9 +18,10 @@ namespace cc {
 class LayerTreeHostImpl;
 class CC_EXPORT UnittestOnlyBenchmarkImpl : public MicroBenchmarkImpl {
  public:
-  UnittestOnlyBenchmarkImpl(scoped_refptr<base::MessageLoopProxy> origin_loop,
-                            base::Value* settings,
-                            const DoneCallback& callback);
+  UnittestOnlyBenchmarkImpl(
+      scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner,
+      base::Value* settings,
+      const DoneCallback& callback);
   ~UnittestOnlyBenchmarkImpl() override;
 
   void DidCompleteCommit(LayerTreeHostImpl* host) override;

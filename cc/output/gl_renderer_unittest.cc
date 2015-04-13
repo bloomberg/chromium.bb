@@ -6,6 +6,9 @@
 
 #include <set>
 
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "cc/base/math_util.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/resources/resource_provider.h"
@@ -2032,7 +2035,7 @@ TEST_F(GLRendererTestSyncPoint, SignalSyncPointOnLostContext) {
   // Make the sync point happen.
   gl->Finish();
   // Post a task after the sync point.
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&OtherCallback, &other_callback_count));
 
   base::MessageLoop::current()->Run();
@@ -2061,7 +2064,7 @@ TEST_F(GLRendererTestSyncPoint, SignalSyncPoint) {
   // Make the sync point happen.
   gl->Finish();
   // Post a task after the sync point.
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&OtherCallback, &other_callback_count));
 
   base::MessageLoop::current()->Run();

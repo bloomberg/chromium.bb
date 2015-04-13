@@ -4,6 +4,7 @@
 
 #include "cc/layers/layer.h"
 
+#include "base/thread_task_runner_handle.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/layer_impl.h"
@@ -45,8 +46,7 @@ class MockLayerTreeHost : public LayerTreeHost {
  public:
   explicit MockLayerTreeHost(FakeLayerTreeHostClient* client)
       : LayerTreeHost(client, nullptr, nullptr, nullptr, LayerTreeSettings()) {
-    InitializeSingleThreaded(client,
-                             base::MessageLoopProxy::current(),
+    InitializeSingleThreaded(client, base::ThreadTaskRunnerHandle::Get(),
                              nullptr);
   }
 
@@ -941,14 +941,14 @@ class LayerTreeHostFactory {
     return LayerTreeHost::CreateSingleThreaded(
         &client_, &client_, shared_bitmap_manager_.get(),
         gpu_memory_buffer_manager_.get(), nullptr, LayerTreeSettings(),
-        base::MessageLoopProxy::current(), nullptr);
+        base::ThreadTaskRunnerHandle::Get(), nullptr);
   }
 
   scoped_ptr<LayerTreeHost> Create(LayerTreeSettings settings) {
     return LayerTreeHost::CreateSingleThreaded(
         &client_, &client_, shared_bitmap_manager_.get(),
         gpu_memory_buffer_manager_.get(), nullptr, settings,
-        base::MessageLoopProxy::current(), nullptr);
+        base::ThreadTaskRunnerHandle::Get(), nullptr);
   }
 
  private:

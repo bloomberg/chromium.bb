@@ -4,6 +4,7 @@
 
 #include "cc/layers/layer.h"
 
+#include "base/thread_task_runner_handle.h"
 #include "cc/debug/lap_timer.h"
 #include "cc/resources/layer_painter.h"
 #include "cc/test/fake_impl_proxy.h"
@@ -40,7 +41,7 @@ class LayerPerfTest : public testing::Test {
   void SetUp() override {
     layer_tree_host_ = FakeLayerTreeHost::Create(&fake_client_);
     layer_tree_host_->InitializeSingleThreaded(
-        &fake_client_, base::MessageLoopProxy::current(), nullptr);
+        &fake_client_, base::ThreadTaskRunnerHandle::Get(), nullptr);
   }
 
   void TearDown() override {

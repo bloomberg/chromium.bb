@@ -4,6 +4,7 @@
 
 #include "cc/layers/picture_layer_impl.h"
 
+#include "base/thread_task_runner_handle.h"
 #include "cc/debug/lap_timer.h"
 #include "cc/resources/tiling_set_raster_queue_all.h"
 #include "cc/test/fake_impl_proxy.h"
@@ -39,7 +40,7 @@ void AddTiling(float scale,
 class PictureLayerImplPerfTest : public testing::Test {
  public:
   PictureLayerImplPerfTest()
-      : proxy_(base::MessageLoopProxy::current()),
+      : proxy_(base::ThreadTaskRunnerHandle::Get()),
         host_impl_(ImplSidePaintingSettings(),
                    &proxy_,
                    &shared_bitmap_manager_,

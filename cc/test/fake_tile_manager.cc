@@ -8,6 +8,7 @@
 #include <limits>
 
 #include "base/lazy_instance.h"
+#include "base/thread_task_runner_handle.h"
 #include "cc/resources/raster_buffer.h"
 #include "cc/resources/tile_task_runner.h"
 
@@ -65,7 +66,7 @@ base::LazyInstance<FakeTileTaskRunnerImpl> g_fake_tile_task_runner =
 
 FakeTileManager::FakeTileManager(TileManagerClient* client)
     : TileManager(client,
-                  base::MessageLoopProxy::current(),
+                  base::ThreadTaskRunnerHandle::Get(),
                   nullptr,
                   g_fake_tile_task_runner.Pointer(),
                   std::numeric_limits<size_t>::max()) {
@@ -74,7 +75,7 @@ FakeTileManager::FakeTileManager(TileManagerClient* client)
 FakeTileManager::FakeTileManager(TileManagerClient* client,
                                  ResourcePool* resource_pool)
     : TileManager(client,
-                  base::MessageLoopProxy::current(),
+                  base::ThreadTaskRunnerHandle::Get(),
                   resource_pool,
                   g_fake_tile_task_runner.Pointer(),
                   std::numeric_limits<size_t>::max()) {

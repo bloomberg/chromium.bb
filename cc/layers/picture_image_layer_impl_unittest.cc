@@ -4,6 +4,7 @@
 
 #include "cc/layers/picture_image_layer_impl.h"
 
+#include "base/thread_task_runner_handle.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/resources/tile_priority.h"
@@ -35,7 +36,7 @@ class TestablePictureImageLayerImpl : public PictureImageLayerImpl {
 class PictureImageLayerImplTest : public testing::Test {
  public:
   PictureImageLayerImplTest()
-      : proxy_(base::MessageLoopProxy::current()),
+      : proxy_(base::ThreadTaskRunnerHandle::Get()),
         host_impl_(ImplSidePaintingSettings(),
                    &proxy_,
                    &shared_bitmap_manager_,

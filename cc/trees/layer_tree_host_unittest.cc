@@ -7,7 +7,10 @@
 #include <algorithm>
 
 #include "base/auto_reset.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_task_runner_handle.h"
 #include "cc/animation/timing_function.h"
 #include "cc/debug/frame_rate_counter.h"
 #include "cc/layers/content_layer.h"
@@ -2368,7 +2371,7 @@ TEST(LayerTreeHostTest, PartialUpdatesWithGLRenderer) {
       new TestSharedBitmapManager());
   scoped_ptr<LayerTreeHost> host = LayerTreeHost::CreateSingleThreaded(
       &client, &client, shared_bitmap_manager.get(), NULL, NULL, settings,
-      base::MessageLoopProxy::current(), nullptr);
+      base::ThreadTaskRunnerHandle::Get(), nullptr);
   client.SetLayerTreeHost(host.get());
   host->Composite(base::TimeTicks::Now());
 
@@ -2387,7 +2390,7 @@ TEST(LayerTreeHostTest, PartialUpdatesWithSoftwareRenderer) {
       new TestSharedBitmapManager());
   scoped_ptr<LayerTreeHost> host = LayerTreeHost::CreateSingleThreaded(
       &client, &client, shared_bitmap_manager.get(), NULL, NULL, settings,
-      base::MessageLoopProxy::current(), nullptr);
+      base::ThreadTaskRunnerHandle::Get(), nullptr);
   client.SetLayerTreeHost(host.get());
   host->Composite(base::TimeTicks::Now());
 
@@ -2406,7 +2409,7 @@ TEST(LayerTreeHostTest, PartialUpdatesWithDelegatingRendererAndGLContent) {
       new TestSharedBitmapManager());
   scoped_ptr<LayerTreeHost> host = LayerTreeHost::CreateSingleThreaded(
       &client, &client, shared_bitmap_manager.get(), NULL, NULL, settings,
-      base::MessageLoopProxy::current(), nullptr);
+      base::ThreadTaskRunnerHandle::Get(), nullptr);
   client.SetLayerTreeHost(host.get());
   host->Composite(base::TimeTicks::Now());
 
@@ -2426,7 +2429,7 @@ TEST(LayerTreeHostTest,
       new TestSharedBitmapManager());
   scoped_ptr<LayerTreeHost> host = LayerTreeHost::CreateSingleThreaded(
       &client, &client, shared_bitmap_manager.get(), NULL, NULL, settings,
-      base::MessageLoopProxy::current(), nullptr);
+      base::ThreadTaskRunnerHandle::Get(), nullptr);
   client.SetLayerTreeHost(host.get());
   host->Composite(base::TimeTicks::Now());
 

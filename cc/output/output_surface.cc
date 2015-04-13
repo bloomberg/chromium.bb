@@ -5,7 +5,9 @@
 #include "cc/output/output_surface.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface_client.h"
@@ -182,10 +184,9 @@ void OutputSurface::BindFramebuffer() {
 }
 
 void OutputSurface::PostSwapBuffersComplete() {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&OutputSurface::OnSwapBuffersComplete,
-                 weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&OutputSurface::OnSwapBuffersComplete,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 // We don't post tasks bound to the client directly since they might run

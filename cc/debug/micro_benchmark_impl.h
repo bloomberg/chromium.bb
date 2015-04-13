@@ -10,8 +10,8 @@
 #include "cc/base/cc_export.h"
 
 namespace base {
+class SingleThreadTaskRunner;
 class Value;
-class MessageLoopProxy;
 }  // namespace base
 
 namespace cc {
@@ -25,7 +25,7 @@ class CC_EXPORT MicroBenchmarkImpl {
 
   explicit MicroBenchmarkImpl(
       const DoneCallback& callback,
-      scoped_refptr<base::MessageLoopProxy> origin_loop);
+      scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner);
   virtual ~MicroBenchmarkImpl();
 
   bool IsDone() const;
@@ -40,7 +40,7 @@ class CC_EXPORT MicroBenchmarkImpl {
  private:
   DoneCallback callback_;
   bool is_done_;
-  scoped_refptr<base::MessageLoopProxy> origin_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
 };
 
 }  // namespace cc

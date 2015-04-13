@@ -4,7 +4,8 @@
 
 #include "cc/resources/texture_mailbox_deleter.h"
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_web_graphics_context_3d.h"
@@ -15,7 +16,7 @@ namespace {
 
 TEST(TextureMailboxDeleterTest, Destroy) {
   scoped_ptr<TextureMailboxDeleter> deleter(
-      new TextureMailboxDeleter(base::MessageLoopProxy::current()));
+      new TextureMailboxDeleter(base::ThreadTaskRunnerHandle::Get()));
 
   scoped_refptr<TestContextProvider> context_provider =
       TestContextProvider::Create();

@@ -13,8 +13,8 @@
 #include "cc/debug/micro_benchmark.h"
 
 namespace base {
+class SingleThreadTaskRunner;
 class Value;
-class MessageLoopProxy;
 }  // namespace base
 
 namespace cc {
@@ -44,7 +44,7 @@ class CC_EXPORT MicroBenchmarkController {
   LayerTreeHost* host_;
   ScopedPtrVector<MicroBenchmark> benchmarks_;
   static int next_id_;
-  scoped_refptr<base::MessageLoopProxy> main_controller_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_controller_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(MicroBenchmarkController);
 };

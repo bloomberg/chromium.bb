@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/simple_thread.h"
 #include "cc/layers/delegated_frame_provider.h"
 #include "cc/layers/delegated_frame_resource_collection.h"
@@ -92,9 +92,9 @@ class LayerTreeHostNoMessageLoopTest
 
   // base::DelegateSimpleThread::Delegate override.
   void Run() override {
-    ASSERT_FALSE(base::MessageLoopProxy::current().get());
+    ASSERT_FALSE(base::ThreadTaskRunnerHandle::IsSet());
     RunTestWithoutMessageLoop();
-    EXPECT_FALSE(base::MessageLoopProxy::current().get());
+    EXPECT_FALSE(base::ThreadTaskRunnerHandle::IsSet());
   }
 
  protected:

@@ -113,10 +113,10 @@ class FixedInvalidationPictureLayerTilingClient
 }  // namespace
 
 RasterizeAndRecordBenchmarkImpl::RasterizeAndRecordBenchmarkImpl(
-    scoped_refptr<base::MessageLoopProxy> origin_loop,
+    scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner,
     base::Value* value,
     const MicroBenchmarkImpl::DoneCallback& callback)
-    : MicroBenchmarkImpl(callback, origin_loop),
+    : MicroBenchmarkImpl(callback, origin_task_runner),
       rasterize_repeat_count_(kDefaultRasterizeRepeatCount) {
   base::DictionaryValue* settings = nullptr;
   value->GetAsDictionary(&settings);
