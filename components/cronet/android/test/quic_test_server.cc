@@ -25,19 +25,23 @@ static const int kServerPort = 6121;
 base::Thread* g_quic_server_thread = nullptr;
 net::tools::QuicSimpleServer* g_quic_server = nullptr;
 
-void ServeFilesFromDirectory(const base::FilePath& directory) {
+void ServeFilesFromDirectory(
+    const base::FilePath& directory,
+    base::android::ScopedJavaGlobalRef<jobject>* callback) {
   DCHECK(g_quic_server_thread->task_runner()->BelongsToCurrentThread());
   DCHECK(!g_quic_server);
   base::FilePath file_dir = directory.Append("quic_data");
   net::tools::QuicInMemoryCache::GetInstance()->InitializeFromDirectory(
       file_dir.value());
   net::IPAddressNumber ip;
-  DCHECK(net::ParseIPLiteralToNumber(kServerHost, &ip));
+  net::ParseIPLiteralToNumber(kServerHost, &ip);
   net::QuicConfig config;
   g_quic_server =
       new net::tools::QuicSimpleServer(config, net::QuicSupportedVersions());
-  DCHECK(g_quic_server->Listen(net::IPEndPoint(ip, kServerPort)) >= 0) <<
-      "Quic server fails to start";
+  int rv = g_quic_server->Listen(net::IPEndPoint(ip, kServerPort));
+  CHECK_GE(rv, 0) << "Quic server fails to start";
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_QuicTestServer_onServerStarted(env, callback->obj());
 }
 
 void ShutdownOnServerThread() {
@@ -57,11 +61,16 @@ void StartQuicTestServer(JNIEnv* env,
   g_quic_server_thread = new base::Thread("quic server thread");
   base::Thread::Options thread_options;
   thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
-  DCHECK(g_quic_server_thread->StartWithOptions(thread_options));
+  bool started = g_quic_server_thread->StartWithOptions(thread_options);
+  DCHECK(started);
   base::FilePath test_files_root(
       base::android::ConvertJavaStringToUTF8(env, jtest_files_root));
+  base::android::ScopedJavaGlobalRef<jobject>* callback =
+      new base::android::ScopedJavaGlobalRef<jobject>();
+  callback->Reset(env, jcaller);
   g_quic_server_thread->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&ServeFilesFromDirectory, test_files_root));
+      FROM_HERE, base::Bind(&ServeFilesFromDirectory, test_files_root,
+                            base::Owned(callback)));
 }
 
 void ShutdownQuicTestServer(JNIEnv* env, jclass jcaller) {

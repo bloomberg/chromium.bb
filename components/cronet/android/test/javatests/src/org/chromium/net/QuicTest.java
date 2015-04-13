@@ -32,7 +32,7 @@ public class QuicTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
-    public void disabled_testQuicLoadUrl() throws Exception {
+    public void testQuicLoadUrl() throws Exception {
         HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
         String quicURL = QuicTestServer.getServerURL() + "/simple.txt";
         config.enableQUIC(true);
@@ -47,9 +47,8 @@ public class QuicTest extends CronetTestBase {
         HashMap<String, String> headers = new HashMap<String, String>();
         TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
 
-        // Quic always races the first request with SPDY. Since our test server
-        // only supports Quic, request will either succeed with a 200 or fail
-        // with a 500.
+        // Quic always races the first request with SPDY, but the second request
+        // should go through Quic.
         for (int i = 0; i < 2; i++) {
             HttpUrlRequest request =
                     factory.createRequest(
@@ -59,8 +58,6 @@ public class QuicTest extends CronetTestBase {
                             listener);
             request.start();
             listener.blockForComplete();
-            assertTrue(listener.mHttpStatusCode == 200
-                    || listener.mHttpStatusCode == 500);
             if (listener.mHttpStatusCode == 200) break;
         }
         assertEquals(200, listener.mHttpStatusCode);

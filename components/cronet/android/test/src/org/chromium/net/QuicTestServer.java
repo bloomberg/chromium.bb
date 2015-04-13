@@ -5,7 +5,9 @@
 package org.chromium.net;
 
 import android.content.Context;
+import android.os.ConditionVariable;
 
+import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 
 /**
@@ -13,12 +15,16 @@ import org.chromium.base.JNINamespace;
  */
 @JNINamespace("cronet")
 public final class QuicTestServer {
+    private static final ConditionVariable sBlock = new ConditionVariable();
+
     public static void startQuicTestServer(Context context) {
         nativeStartQuicTestServer(TestFilesInstaller.getInstalledPath(context));
+        sBlock.block();
     }
 
     public static void shutdownQuicTestServer() {
         nativeShutdownQuicTestServer();
+        sBlock.close();
     }
 
     public static String getServerURL() {
@@ -31,6 +37,11 @@ public final class QuicTestServer {
 
     public static int getServerPort() {
         return nativeGetServerPort();
+    }
+
+    @CalledByNative
+    private void onServerStarted() {
+        sBlock.open();
     }
 
     private static native void nativeStartQuicTestServer(String filePath);
