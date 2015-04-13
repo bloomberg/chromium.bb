@@ -2,41 +2,54 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script>
+var promise_tests = Promise.resolve();
+// Helper function to run promise tests one after the other.
+// TODO(ortuno): Remove once https://github.com/w3c/testharness.js/pull/115/files
+// gets through.
+function sequential_promise_test(func, name) {
+  var test = async_test(name);
+  promise_tests = promise_tests.then(function() {
+    return Promise.resolve(test.step(func, test, test))
+      .then(function() {
+        test.done();
+      })
+      .catch(test.step_func(
+        function(value) {
+          throw value;
+        }));
+  });
+}
 
 test(function(t) { assert_exists(window, "testRunner"); t.done(); },
      "window.testRunner is required for the following tests.");
 
-async_test(function(t) {
+sequential_promise_test(function(t) {
   testRunner.setBluetoothMockDataSet('RejectRequestDevice_NotFoundError');
-  navigator.bluetooth.requestDevice()
-    .then(
-      t.step_func(function() { assert_unreached('Mock was set to reject.'); }),
-      t.step_func(function(e) {
+  return navigator.bluetooth.requestDevice()
+    .then(function() {
+      assert_unreached('Mock was set to reject.');
+    },
+      function(e) {
         assert_equals(e.name, 'NotFoundError');
-        t.done();
-  }));
+      });
 }, 'Reject with NotFoundError.');
 
-async_test(function(t) {
+sequential_promise_test(function(t) {
   testRunner.setBluetoothMockDataSet('RejectRequestDevice_SecurityError');
-  navigator.bluetooth.requestDevice()
-    .then(
-      t.step_func(function() { assert_unreached('Mock was set to reject.'); }),
-      t.step_func(function(e) {
+  return navigator.bluetooth.requestDevice()
+    .then(function() {
+      assert_unreached('Mock was set to reject.');
+    },
+      function(e) {
         assert_equals(e.name, 'SecurityError');
-        t.done();
-  }));
+      });
 }, 'Reject with SecurityError.');
 
-async_test(function(t) {
+sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('Single Empty Device');
-  navigator.bluetooth.requestDevice()
-    .then(
-      t.step_func(function(device) {
-        assert_equals(device.constructor.name, "BluetoothDevice");
-        t.done();
-      }),
-      t.step_func(function() { assert_unreached('Mock was set to resolve.'); }));
+  return navigator.bluetooth.requestDevice()
+    .then(function(device) {
+      assert_equals(device.constructor.name, "BluetoothDevice");
+    });
 }, 'Mock will resolve.');
-
 </script>
