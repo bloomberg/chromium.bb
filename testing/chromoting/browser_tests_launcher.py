@@ -21,15 +21,19 @@ NATIVE_MESSAGING_DIR = 'NativeMessagingHosts'
 CRD_ID = 'chrome-remote-desktop'  # Used in a few file/folder names
 CHROMOTING_HOST_PATH = '/opt/google/chrome-remote-desktop/chrome-remote-desktop'
 TEST_FAILURE = False
+FAILING_TESTS = ''
+HOST_READY_INDICATOR = 'Host ready to receive connections.'
 
 
 def LaunchBTCommand(command):
-  global TEST_FAILURE
+  global TEST_FAILURE, FAILING_TESTS
   results = RunCommandInSubProcess(command)
 
   # Check that the test passed.
   if SUCCESS_INDICATOR not in results:
     TEST_FAILURE = True
+    # Add this command-line to list of tests that failed.
+    FAILING_TESTS += command
 
 
 def RunCommandInSubProcess(command):
@@ -43,17 +47,17 @@ def RunCommandInSubProcess(command):
 
   cmd_line = [command]
   try:
-    p = subprocess.Popen(cmd_line, stdout=subprocess.PIPE, shell=True)
-    results, error = p.communicate()
+    results = subprocess.check_output(cmd_line, stderr=subprocess.STDOUT,
+                                      shell=True)
   except subprocess.CalledProcessError, e:
-    raise Exception('Exception %s running command %s\nError: %s' %
-                    (e, command, error))
+    raise Exception('Exception %s running command %s\n' %
+                    (e, command))
   else:
     print results
   return results
 
 
-def TestCleanUp(user_profile_dir):
+def TestMachineCleanup(user_profile_dir):
   """Cleans up test machine so as not to impact other tests.
 
   Args:
@@ -81,6 +85,9 @@ def InitialiseTestMachineForLinux(cfg_file):
 
   Args:
     cfg_file: location of test account's host-config file.
+
+  Raises:
+    Exception: if host did not start properly.
   """
 
   # First get home directory on current machine.
@@ -98,8 +105,31 @@ def InitialiseTestMachineForLinux(cfg_file):
       config_file_src,
       os.path.join(default_config_file_location, default_config_file_name))
 
-  # Finally, start chromoting host.
-  RunCommandInSubProcess(CHROMOTING_HOST_PATH + ' --start')
+  # Make sure chromoting host is running.
+  if not RestartMe2MeHost():
+    # Host start failed. Don't run any tests.
+    raise Exception('Host restart failed.')
+
+
+def RestartMe2MeHost():
+  """Stops and starts the Me2Me host on the test machine.
+
+  Waits to confirm that host is ready to receive connections before returning.
+
+  Returns:
+    True: if HOST_READY_INDICATOR is found in stdout, indicating host is ready.
+    False: if HOST_READY_INDICATOR not found in stdout.
+  """
+
+  # Stop chromoting host.
+  RunCommandInSubProcess(CHROMOTING_HOST_PATH + ' --stop')
+  # Start chromoting host.
+  results = RunCommandInSubProcess(CHROMOTING_HOST_PATH + ' --start')
+  # Confirm that the start process completed, and we got:
+  # "Host ready to receive connections." in the log.
+  if HOST_READY_INDICATOR not in results:
+    return False
+  return True
 
 
 def SetupUserProfileDir(me2me_manifest_file, it2me_manifest_file,
@@ -146,7 +176,12 @@ def main(args):
       # Replace the PROD_DIR value in the command-line with
       # the passed in value.
       line = line.replace(PROD_DIR_ID, args.prod_dir)
+      # Launch specified command line for test.
       LaunchBTCommand(line)
+      # After each test, stop+start me2me host process.
+      if not RestartMe2MeHost():
+        # Host restart failed. Don't run any more tests.
+        raise Exception('Host restart failed.')
 
   # All tests completed. Include host-logs in the test results.
   host_log_contents = ''
@@ -160,6 +195,9 @@ def main(args):
 
   # Was there any test failure?
   if TEST_FAILURE:
+    print '++++++++++AT LEAST 1 TEST FAILED++++++++++'
+    print FAILING_TESTS
+    print '++++++++++++++++++++++++++++++++++++++++++'
     raise Exception('At least one test failed.')
 
 if __name__ == '__main__':
@@ -183,5 +221,4 @@ if __name__ == '__main__':
     main(command_line_args)
   finally:
     # Stop host and cleanup user-profile-dir.
-    TestCleanUp(command_line_args.user_profile_dir)
-
+    TestMachineCleanup(command_line_args.user_profile_dir)
