@@ -828,7 +828,6 @@
         ['OS == "android"', {
           'sources/': [
             ['include', '^debug/proc_maps_linux_unittest\\.cc$'],
-            ['exclude', '^files/file_path_watcher_unittest\\.cc$'],
           ],
         }],
         # Enable more direct string conversions on platforms with native utf8

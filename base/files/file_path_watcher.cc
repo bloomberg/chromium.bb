@@ -32,7 +32,7 @@ bool FilePathWatcher::RecursiveWatchAvailable() {
   // FSEvents isn't available on iOS and is broken on OSX 10.6 and earlier.
   // See http://crbug.com/54822#c31
   return mac::IsOSLionOrLater();
-#elif defined(OS_WIN) || defined(OS_LINUX)
+#elif defined(OS_WIN) || defined(OS_LINUX) || defined(OS_ANDROID)
   return true;
 #else
   return false;

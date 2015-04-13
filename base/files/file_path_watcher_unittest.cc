@@ -31,6 +31,10 @@
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/path_utils.h"
+#endif  // defined(OS_ANDROID)
+
 namespace base {
 
 namespace {
@@ -150,7 +154,17 @@ class FilePathWatcherTest : public testing::Test {
     // Create a separate file thread in order to test proper thread usage.
     base::Thread::Options options(MessageLoop::TYPE_IO, 0);
     ASSERT_TRUE(file_thread_.StartWithOptions(options));
+#if defined(OS_ANDROID)
+    // Watching files is only permitted when all parent directories are
+    // accessible, which is not the case for the default temp directory
+    // on Android which is under /data/data.  Use /sdcard instead.
+    // TODO(pauljensen): Remove this when crbug.com/475568 is fixed.
+    FilePath parent_dir;
+    ASSERT_TRUE(android::GetExternalStorageDirectory(&parent_dir));
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDirUnderPath(parent_dir));
+#else   // defined(OS_ANDROID)
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+#endif  // defined(OS_ANDROID)
     collector_ = new NotificationCollector();
   }
 
@@ -526,9 +540,16 @@ TEST_F(FilePathWatcherTest, RecursiveWatch) {
   ASSERT_TRUE(WriteFile(child_dir_file1, "content"));
   ASSERT_TRUE(WaitForEvents());
 
+// Apps cannot change file attributes on Android in /sdcard as /sdcard uses the
+// "fuse" file system, while /data uses "ext4".  Running these tests in /data
+// would be preferable and allow testing file attributes and symlinks.
+// TODO(pauljensen): Re-enable when crbug.com/475568 is fixed and SetUp() places
+// the |temp_dir_| in /data.
+#if !defined(OS_ANDROID)
   // Modify "$dir/subdir/subdir_child_dir/child_dir_file1" attributes.
   ASSERT_TRUE(base::MakeFileUnreadable(child_dir_file1));
   ASSERT_TRUE(WaitForEvents());
+#endif
 
   // Delete "$dir/subdir/subdir_file1".
   ASSERT_TRUE(base::DeleteFile(subdir_file1, false));
@@ -541,6 +562,14 @@ TEST_F(FilePathWatcherTest, RecursiveWatch) {
 }
 
 #if defined(OS_POSIX)
+#if defined(OS_ANDROID)
+// Apps cannot create symlinks on Android in /sdcard as /sdcard uses the
+// "fuse" file system, while /data uses "ext4".  Running these tests in /data
+// would be preferable and allow testing file attributes and symlinks.
+// TODO(pauljensen): Re-enable when crbug.com/475568 is fixed and SetUp() places
+// the |temp_dir_| in /data.
+#define RecursiveWithSymLink DISABLED_RecursiveWithSymLink
+#endif  // defined(OS_ANDROID)
 TEST_F(FilePathWatcherTest, RecursiveWithSymLink) {
   if (!FilePathWatcher::RecursiveWatchAvailable())
     return;
@@ -610,6 +639,14 @@ TEST_F(FilePathWatcherTest, MoveChild) {
 }
 
 // Verify that changing attributes on a file is caught
+#if defined(OS_ANDROID)
+// Apps cannot change file attributes on Android in /sdcard as /sdcard uses the
+// "fuse" file system, while /data uses "ext4".  Running these tests in /data
+// would be preferable and allow testing file attributes and symlinks.
+// TODO(pauljensen): Re-enable when crbug.com/475568 is fixed and SetUp() places
+// the |temp_dir_| in /data.
+#define FileAttributesChanged DISABLED_FileAttributesChanged
+#endif  // defined(OS_ANDROID
 TEST_F(FilePathWatcherTest, FileAttributesChanged) {
   ASSERT_TRUE(WriteFile(test_file(), "content"));
   FilePathWatcher watcher;
