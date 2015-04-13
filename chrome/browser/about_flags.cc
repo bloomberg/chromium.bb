@@ -1939,7 +1939,7 @@ const Experiment kExperiments[] = {
     "answers-in-suggest",
     IDS_FLAGS_ENABLE_ANSWERS_IN_SUGGEST_NAME,
     IDS_FLAGS_ENABLE_ANSWERS_IN_SUGGEST_DESCRIPTION,
-    kOsAndroid | kOsWin | kOsLinux | kOsCrOS,
+    kOsAndroid | kOsDesktop,
     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableAnswersInSuggest,
                               switches::kDisableAnswersInSuggest)
   },
