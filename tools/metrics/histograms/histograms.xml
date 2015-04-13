@@ -11306,7 +11306,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="GPU.InitializeOneOffMediumTime" units="microseconds">
+<histogram name="GPU.InitializeOneOffMediumTime" units="milliseconds">
   <owner>jmadill@chromium.org</owner>
   <summary>
     The time that the GPU process spends in initializing the GL surface, and
