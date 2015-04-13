@@ -10,6 +10,7 @@
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "components/crx_file/id_util.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/features/simple_feature.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/switches.h"
@@ -32,8 +33,7 @@ class InitValueManifestTest : public ChromeManifestTest {
 };
 
 TEST_F(InitValueManifestTest, InitFromValueInvalid) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      extensions::switches::kWhitelistedExtensionID, kWhitelistID);
+  extensions::SimpleFeature::ScopedWhitelistForTest whitelist(kWhitelistID);
   Testcase testcases[] = {
       Testcase("init_invalid_version_missing.json", errors::kInvalidVersion),
       Testcase("init_invalid_version_invalid.json", errors::kInvalidVersion),

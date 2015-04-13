@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/test_extension_environment.h"
 #include "chrome/common/extensions/permissions/chrome_permission_message_provider.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/features/simple_feature.h"
 #include "extensions/common/permissions/permission_message_test_util.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
@@ -16,12 +17,15 @@
 
 namespace extensions {
 
+const char kWhitelistedExtensionID[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+
 // Tests that ChromePermissionMessageProvider produces the expected messages for
 // various combinations of app/extension permissions.
 class PermissionMessageCombinationsUnittest : public testing::Test {
  public:
   PermissionMessageCombinationsUnittest()
-      : message_provider_(new ChromePermissionMessageProvider()) {}
+      : message_provider_(new ChromePermissionMessageProvider()),
+        whitelisted_extension_id_(kWhitelistedExtensionID) {}
   ~PermissionMessageCombinationsUnittest() override {}
 
   // Overridden from testing::Test:
@@ -39,10 +43,8 @@ class PermissionMessageCombinationsUnittest : public testing::Test {
     std::replace(json_manifest_with_double_quotes.begin(),
                  json_manifest_with_double_quotes.end(), '\'', '"');
     app_ = env_.MakeExtension(
-        *base::test::ParseJson(json_manifest_with_double_quotes));
-    // Add the app to any whitelists so we can test all permissions.
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kWhitelistedExtensionID, app_->id());
+        *base::test::ParseJson(json_manifest_with_double_quotes),
+        kWhitelistedExtensionID);
   }
 
   // Checks whether the currently installed app or extension produces the given
@@ -197,6 +199,9 @@ class PermissionMessageCombinationsUnittest : public testing::Test {
   extensions::TestExtensionEnvironment env_;
   scoped_ptr<ChromePermissionMessageProvider> message_provider_;
   scoped_refptr<const Extension> app_;
+  // Whitelist a known extension id so we can test all permissions. This ID
+  // will be used for each test app.
+  extensions::SimpleFeature::ScopedWhitelistForTest whitelisted_extension_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionMessageCombinationsUnittest);
 };

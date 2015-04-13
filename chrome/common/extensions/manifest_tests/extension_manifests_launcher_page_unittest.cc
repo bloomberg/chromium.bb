@@ -6,6 +6,7 @@
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/features/simple_feature.h"
 #include "extensions/common/manifest_handlers/launcher_page_info.h"
 #include "extensions/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,8 +23,7 @@ const char kWhitelistID[] = "lmadimbbgapmngbiclpjjngmdickadpl";
 typedef ChromeManifestTest LauncherPageManifestTest;
 
 TEST_F(LauncherPageManifestTest, ValidLauncherPage) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      extensions::switches::kWhitelistedExtensionID, kWhitelistID);
+  extensions::SimpleFeature::ScopedWhitelistForTest whitelist(kWhitelistID);
   scoped_refptr<extensions::Extension> extension(
       LoadAndExpectSuccess("init_valid_launcher_page.json"));
   ASSERT_TRUE(extension.get());
