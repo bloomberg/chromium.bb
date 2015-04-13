@@ -242,6 +242,13 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
     params.SetString("chromeType", GetChromeDeviceTypeString());
     params.SetString("clientId",
                      GaiaUrls::GetInstance()->oauth2_chrome_client_id());
+
+    std::string email_domain;
+    if (CrosSettings::Get()->GetString(
+            kAccountsPrefLoginScreenDomainAutoComplete, &email_domain) &&
+        !email_domain.empty()) {
+      params.SetString("emailDomain", email_domain);
+    }
   } else {
     params.SetBoolean("useNewGaiaFlow", false);
   }
