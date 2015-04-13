@@ -177,6 +177,7 @@ per-file pdf.gypi=raymes@chromium.org
 per-file pdf.gypi=thestig@chromium.org
 
 per-file plugins.gypi=bauerb@chromium.org
+per-file plugins.gypi=tommycli@chromium.org
 
 per-file precache*=bengr@chromium.org
 per-file precache*=sclittle@chromium.org
