@@ -5,11 +5,13 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_PROTOCOL_NETWORK_HANDLER_H_
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_NETWORK_HANDLER_H_
 
+#include "base/memory/weak_ptr.h"
 #include "content/browser/devtools/protocol/devtools_protocol_handler.h"
+#include "net/cookies/canonical_cookie.h"
 
 namespace content {
 
-class RenderFrameHost;
+class RenderFrameHostImpl;
 
 namespace devtools {
 namespace network {
@@ -21,8 +23,8 @@ class NetworkHandler {
   NetworkHandler();
   virtual ~NetworkHandler();
 
-  void SetRenderFrameHost(RenderFrameHost* host);
-  void SetClient(scoped_ptr<DevToolsProtocolClient> client);
+  void SetRenderFrameHost(RenderFrameHostImpl* host);
+  void SetClient(scoped_ptr<Client> client);
 
   Response ClearBrowserCache();
   Response ClearBrowserCookies();
@@ -38,7 +40,14 @@ class NetworkHandler {
                                     double upload_throughput);
 
  private:
-  RenderFrameHost* host_;
+  void SendGetCookiesResponse(
+      DevToolsCommandId command_id,
+      const net::CookieList& cookie_list);
+  void SendDeleteCookieResponse(DevToolsCommandId command_id);
+
+  RenderFrameHostImpl* host_;
+  scoped_ptr<Client> client_;
+  base::WeakPtrFactory<NetworkHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkHandler);
 };
