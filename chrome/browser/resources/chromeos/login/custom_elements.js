@@ -7,3 +7,4 @@
 <include src="indeterminate-progress.js">
 <include src="controller-pairing-screen.js">
 <include src="host-pairing-screen.js">
+<include src="notification_card.js">

@@ -16,6 +16,9 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
   /** @const */ var HELP_TOPIC_ENTERPRISE_REPORTING = 2535613;
 
+  // The help topic regarding user not being in the whitelist.
+  /** @const */ var HELP_CANT_ACCESS_ACCOUNT = 188036;
+
   return {
     EXTERNAL_API: [
       'loadAuthExtension',
@@ -151,11 +154,20 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         $('back-button-item').hidden = true;
         $('signin-frame').back();
         e.preventDefault();
-      }.bind(this));
+      });
+
       $('close-button-item').addEventListener('click', function(e) {
         this.cancel();
         e.preventDefault();
       }.bind(this));
+
+      $('gaia-whitelist-error').addEventListener('buttonclick', function() {
+         this.showWhitelistCheckFailedError(false);
+      }.bind(this));
+
+      $('gaia-whitelist-error').addEventListener('linkclick', function() {
+        chrome.send('launchHelpApp', [HELP_CANT_ACCESS_ACCOUNT]);
+      });
 
       this.updateLocalizedContent();
     },
@@ -793,9 +805,11 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @param {!Object} opt_data Optional additional information.
      */
     showWhitelistCheckFailedError: function(show, opt_data) {
-      if (opt_data) {
-        $('gaia-whitelist-error').enterpriseManaged =
-            opt_data.enterpriseManaged;
+      if (show) {
+        var isManaged = opt_data && opt_data.enterpriseManaged;
+        $('gaia-whitelist-error').textContent =
+            loadTimeData.getValue(isManaged ? 'whitelistErrorEnterprise' :
+                                              'whitelistErrorConsumer');
       }
 
       this.classList.toggle('whitelist-error', show);

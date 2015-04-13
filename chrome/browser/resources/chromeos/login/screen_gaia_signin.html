@@ -31,13 +31,10 @@
     <div class="throbber"></div>
     <throbber-notice i18n-values="text:gaiaLoadingNewGaia"></throbber-notice>
   </div>
-  <gaia-whitelist-error
-      i18n-values="errorMsg:whitelistErrorConsumer;
-                   enterpriseErrorMsg:whitelistErrorEnterprise;
-                   tryAgainBtn:tryAgainButton;
-                   learnMoreBtn:learnMoreButton"
-      id="gaia-whitelist-error">
-  </gaia-whitelist-error>
+  <notification-card id="gaia-whitelist-error" type="fail"
+      i18n-values="buttonLabel:tryAgainButton;
+                   linkLabel:learnMoreButton">
+  </notification-card>
   <div id="enterprise-info-container" hidden>
     <include src="enterprise_info.html">
   </div>
