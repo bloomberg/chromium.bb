@@ -121,7 +121,6 @@ class Gtk2UI : public views::LinuxUI {
 
   // ui::Views::LinuxUI:
   void UpdateDeviceScaleFactor(float device_scale_factor) override;
-  float GetDeviceScaleFactor() const override;
 
  private:
   typedef std::map<int, SkColor> ColorMap;
