@@ -31,6 +31,10 @@ class CONTENT_EXPORT SchedulerHelper {
         base::TimeTicks now,
         base::TimeDelta* next_long_idle_period_delay_out) = 0;
 
+    // Signals that the Long Idle Period hasn't started yet because the system
+    // isn't quiescent.
+    virtual void IsNotQuiescent() = 0;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(SchedulerHelperDelegate);
   };
