@@ -69,7 +69,7 @@ public:
     SourceRange range;
 };
 
-struct CSSStyleSourceData : public RefCountedWillBeGarbageCollected<CSSStyleSourceData> {
+struct CSSStyleSourceData : public RefCountedWillBeGarbageCollectedFinalized<CSSStyleSourceData> {
     static PassRefPtrWillBeRawPtr<CSSStyleSourceData> create()
     {
         return adoptRefWillBeNoop(new CSSStyleSourceData());
@@ -91,7 +91,7 @@ public:
     SourceRange valueRange;
 };
 
-struct CSSMediaQuerySourceData : public RefCountedWillBeGarbageCollected<CSSMediaQuerySourceData> {
+struct CSSMediaQuerySourceData : public RefCountedWillBeGarbageCollectedFinalized<CSSMediaQuerySourceData> {
     static PassRefPtrWillBeRawPtr<CSSMediaQuerySourceData> create()
     {
         return adoptRefWillBeNoop(new CSSMediaQuerySourceData());
@@ -117,7 +117,7 @@ struct CSSRuleSourceData;
 typedef WillBeHeapVector<RefPtrWillBeMember<CSSRuleSourceData>> RuleSourceDataList;
 typedef WillBeHeapVector<SourceRange> SelectorRangeList;
 
-struct CSSRuleSourceData : public RefCountedWillBeGarbageCollected<CSSRuleSourceData> {
+struct CSSRuleSourceData : public RefCountedWillBeGarbageCollectedFinalized<CSSRuleSourceData> {
     static PassRefPtrWillBeRawPtr<CSSRuleSourceData> create(StyleRule::Type type)
     {
         return adoptRefWillBeNoop(new CSSRuleSourceData(type));

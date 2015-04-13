@@ -39,7 +39,7 @@ namespace blink {
 
 class ExceptionState;
 
-class CORE_EXPORT TimeRanges : public RefCountedWillBeGarbageCollected<TimeRanges>, public ScriptWrappable {
+class CORE_EXPORT TimeRanges : public RefCountedWillBeGarbageCollectedFinalized<TimeRanges>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     // We consider all the Ranges to be semi-bounded as follow: [start, end[
