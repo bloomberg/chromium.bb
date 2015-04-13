@@ -85,10 +85,6 @@ public:
 
     virtual WebScrollbarLayer* createSolidColorScrollbarLayer(WebScrollbar::Orientation, int thumbThickness, int trackStart, bool isLeftSideVerticalScrollbar) { return 0; }
 
-    // Display lists ------------------------------------------------
-
-    virtual WebDisplayItemList* createDisplayItemList() { return 0; }
-
     // Animation ----------------------------------------------------
 
     virtual WebCompositorAnimation* createAnimation(const WebCompositorAnimationCurve&, WebCompositorAnimation::TargetProperty, int groupId = 0, int animationId = 0) { return 0; }
