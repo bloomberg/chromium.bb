@@ -208,7 +208,7 @@ div.splitter {
 }
 
 #directory-tree .tree-row > paper-ripple {
-  color: rgb(33, 150, 243);
+  color: rgb(19, 120, 185);
 }
 
 #directory-tree .tree-item.accepts > .tree-row,
@@ -216,7 +216,7 @@ div.splitter {
 #directory-tree .tree-row[lead],
 #directory-tree .tree-row[selected],
 #directory-tree .tree-row[anchor] {
-  color: rgb(33, 150, 243);
+  color: rgb(19, 120, 185);
 }
 
 #directory-tree .tree-row > .root-eject {
