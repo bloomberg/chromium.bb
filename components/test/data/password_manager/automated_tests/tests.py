@@ -283,6 +283,15 @@ class Baidu(WebsiteTest):
     self.FillPasswordInto("[name='password']")
     self.Submit("[name='password']")
 
+# Chrome crashes.
+class Buzzfeed(WebsiteTest):
+
+  def Login(self):
+    self.GoTo("http://www.buzzfeed.com/signin")
+    self.FillUsernameInto("#login-username")
+    self.FillPasswordInto("#login-password")
+    self.Submit("#login-password")
+
 
 # http://crbug.com/368690
 class Cnn(WebsiteTest):
@@ -441,6 +450,7 @@ all_tests = {
   "amazon": Amazon("amazon"), # Bug not reproducible without test.
   "ask": Ask("ask"), # Password not saved.
   "baidu": Baidu("baidu"), # Password not saved.
+  "buzzfeed": Buzzfeed("buzzfeed"),
   "cnn": Cnn("cnn"), # http://crbug.com/368690
   "craigslist": Craigslist("craigslist"), # Too many failed logins per time.
   "dailymotion": Dailymotion("dailymotion"), # Crashes.
