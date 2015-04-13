@@ -27,6 +27,7 @@ from pylib import cmd_helper
 from pylib import constants
 from pylib.device import adb_wrapper
 from pylib.device import decorators
+from pylib.device import device_blacklist
 from pylib.device import device_errors
 from pylib.device import intent
 from pylib.device import logcat_monitor
@@ -71,6 +72,7 @@ _CONTROL_CHARGING_COMMANDS = [
         'echo 0 > /sys/class/power_supply/usb/online'),
   },
 ]
+
 
 @decorators.WithExplicitTimeoutAndRetries(
     _DEFAULT_TIMEOUT, _DEFAULT_RETRIES)
@@ -1505,7 +1507,7 @@ class DeviceUtils(object):
     """Creates a Parallelizer to operate over the provided list of devices.
 
     If |devices| is either |None| or an empty list, the Parallelizer will
-    operate over all attached devices.
+    operate over all attached devices that have not been blacklisted.
 
     Args:
       devices: A list of either DeviceUtils instances or objects from
@@ -1518,9 +1520,12 @@ class DeviceUtils(object):
       A Parallelizer operating over |devices|.
     """
     if not devices:
-      devices = adb_wrapper.AdbWrapper.GetDevices()
+      blacklist = device_blacklist.ReadBlacklist()
+      devices = [d for d in adb_wrapper.AdbWrapper.GetDevices()
+                 if d.GetDeviceSerial() not in blacklist]
       if not devices:
         raise device_errors.NoDevicesError()
+
     devices = [d if isinstance(d, cls) else cls(d) for d in devices]
     if async:
       return parallelizer.Parallelizer(devices)

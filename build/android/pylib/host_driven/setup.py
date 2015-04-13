@@ -195,7 +195,6 @@ def InstrumentationSetup(host_driven_test_root, official_build,
   def TestRunnerFactory(device, shard_index):
     return test_runner.HostDrivenTestRunner(
         device, shard_index,
-        instrumentation_options.tool,
-        instrumentation_options.cleanup_test_files)
+        instrumentation_options.tool)
 
   return (TestRunnerFactory, available_tests)

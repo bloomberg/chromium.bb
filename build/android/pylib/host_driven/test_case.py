@@ -50,8 +50,6 @@ class HostDrivenTestCase(object):
       instrumentation_options: An InstrumentationOptions object.
     """
     class_name = self.__class__.__name__
-    self.adb = None
-    self.cleanup_test_files = False
     self.device = None
     self.device_id = ''
     self.has_forwarded_ports = False
@@ -67,15 +65,12 @@ class HostDrivenTestCase(object):
 
   # TODO(bulach): make ports_to_forward not optional and move the Forwarder
   # mapping here.
-  def SetUp(self, device, shard_index,
-            cleanup_test_files, ports_to_forward=None):
+  def SetUp(self, device, shard_index, ports_to_forward=None):
     if not ports_to_forward:
       ports_to_forward = []
     self.device_id = device
     self.shard_index = shard_index
     self.device = device_utils.DeviceUtils(self.device_id)
-    self.adb = self.device.old_interface
-    self.cleanup_test_files = cleanup_test_files
     if ports_to_forward:
       self.ports_to_forward = ports_to_forward
 

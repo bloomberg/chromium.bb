@@ -49,8 +49,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       test_package: An instance of TestPackage class.
     """
 
-    super(TestRunner, self).__init__(device, test_options.tool,
-                                     test_options.cleanup_test_files)
+    super(TestRunner, self).__init__(device, test_options.tool)
 
     self.test_package = test_package
     self.test_package.tool = self.tool
