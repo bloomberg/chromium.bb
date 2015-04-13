@@ -46,6 +46,7 @@ private:
     void recalcColumn(unsigned effCol);
 
     int calcEffectiveLogicalWidth();
+    void shrinkCellWidth(const LengthType&, int& available);
 
     void insertSpanCell(LayoutTableCell*);
 
