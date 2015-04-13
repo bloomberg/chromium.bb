@@ -3324,4 +3324,49 @@ TEST_F(RenderWidgetHostViewAuraTest, CorrectNumberOfAcksAreDispatched) {
   EXPECT_EQ(2U, view_->dispatcher_->processed_touch_event_count());
 }
 
+// Tests that the scroll deltas stored within the overscroll controller get
+// reset at the end of the overscroll gesture even if the overscroll threshold
+// isn't surpassed and the overscroll mode stays OVERSCROLL_NONE.
+TEST_F(RenderWidgetHostViewAuraOverscrollTest, ScrollDeltasResetOnEnd) {
+  SetUpOverscrollEnvironment();
+  // Wheel event scroll ending with mouse move.
+  SimulateWheelEvent(-30, -10, 0, true);    // sent directly
+  SendInputEventACK(WebInputEvent::MouseWheel,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
+  EXPECT_EQ(-30.f, overscroll_delta_x());
+  EXPECT_EQ(-10.f, overscroll_delta_y());
+  SimulateMouseMove(5, 10, 0);
+  EXPECT_EQ(0.f, overscroll_delta_x());
+  EXPECT_EQ(0.f, overscroll_delta_y());
+
+  // Scroll gesture.
+  SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
+                       blink::WebGestureDeviceTouchscreen);
+  SimulateGestureScrollUpdateEvent(-30, -5, 0);
+  SendInputEventACK(WebInputEvent::GestureScrollUpdate,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
+  EXPECT_EQ(-30.f, overscroll_delta_x());
+  EXPECT_EQ(-5.f, overscroll_delta_y());
+  SimulateGestureEvent(WebInputEvent::GestureScrollEnd,
+                       blink::WebGestureDeviceTouchscreen);
+  EXPECT_EQ(0.f, overscroll_delta_x());
+  EXPECT_EQ(0.f, overscroll_delta_y());
+
+  // Wheel event scroll ending with a fling.
+  SimulateWheelEvent(5, 0, 0, true);
+  SendInputEventACK(WebInputEvent::MouseWheel,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SimulateWheelEvent(10, -5, 0, true);
+  SendInputEventACK(WebInputEvent::MouseWheel,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
+  EXPECT_EQ(15.f, overscroll_delta_x());
+  EXPECT_EQ(-5.f, overscroll_delta_y());
+  SimulateGestureFlingStartEvent(0.f, 0.1f, blink::WebGestureDeviceTouchpad);
+  EXPECT_EQ(0.f, overscroll_delta_x());
+  EXPECT_EQ(0.f, overscroll_delta_y());
+}
+
 }  // namespace content

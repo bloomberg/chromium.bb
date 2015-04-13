@@ -35,11 +35,13 @@ OverscrollController::~OverscrollController() {
 }
 
 bool OverscrollController::WillHandleEvent(const blink::WebInputEvent& event) {
-  if (scroll_state_ != STATE_UNKNOWN) {
+  bool reset_scroll_state = false;
+  if (scroll_state_ != STATE_UNKNOWN ||
+      overscroll_delta_x_ || overscroll_delta_y_) {
     switch (event.type) {
       case blink::WebInputEvent::GestureScrollEnd:
       case blink::WebInputEvent::GestureFlingStart:
-        scroll_state_ = STATE_UNKNOWN;
+        reset_scroll_state = true;
         break;
 
       case blink::WebInputEvent::MouseWheel: {
@@ -48,7 +50,7 @@ bool OverscrollController::WillHandleEvent(const blink::WebInputEvent& event) {
         if (!wheel.hasPreciseScrollingDeltas ||
             wheel.phase == blink::WebMouseWheelEvent::PhaseEnded ||
             wheel.phase == blink::WebMouseWheelEvent::PhaseCancelled) {
-          scroll_state_ = STATE_UNKNOWN;
+          reset_scroll_state = true;
         }
         break;
       }
@@ -56,11 +58,14 @@ bool OverscrollController::WillHandleEvent(const blink::WebInputEvent& event) {
       default:
         if (blink::WebInputEvent::isMouseEventType(event.type) ||
             blink::WebInputEvent::isKeyboardEventType(event.type)) {
-          scroll_state_ = STATE_UNKNOWN;
+          reset_scroll_state = true;
         }
         break;
     }
   }
+
+  if (reset_scroll_state)
+    scroll_state_ = STATE_UNKNOWN;
 
   if (DispatchEventCompletesAction(event)) {
     CompleteAction();
@@ -80,7 +85,10 @@ bool OverscrollController::WillHandleEvent(const blink::WebInputEvent& event) {
     // Consume the event only if it updates the overscroll state.
     if (ProcessEventForOverscroll(event))
       return true;
+  } else if (reset_scroll_state) {
+    overscroll_delta_x_ = overscroll_delta_y_ = 0.f;
   }
+
 
   return false;
 }
