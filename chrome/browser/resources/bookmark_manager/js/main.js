@@ -1029,13 +1029,13 @@ function newFolder(opt_target) {
   performGlobalUndo = null;  // This can't be undone, so disable global undo.
 
   var parentId = computeParentFolderForNewItem();
-  var selectedItem = bmm.list.selectedItem;
+  var selectedItems = bmm.list.selectedItems;
   var newIndex;
   // Callback is called after tree and list data model updated.
   function createFolder(callback) {
-    if (selectedItem && document.activeElement != bmm.tree &&
-        !bmm.isFolder(selectedItem) && selectedItem.id != 'new') {
-      newIndex = bmm.list.dataModel.indexOf(selectedItem) + 1;
+    if (selectedItems.length == 1 && document.activeElement != bmm.tree &&
+        !bmm.isFolder(selectedItems[0]) && selectedItems[0].id != 'new') {
+      newIndex = bmm.list.dataModel.indexOf(selectedItems[0]) + 1;
     }
     chrome.bookmarks.create({
       title: loadTimeData.getString('new_folder_name'),
@@ -1086,12 +1086,12 @@ function scrollIntoViewAndMakeEditable(index) {
  */
 function addPage() {
   var parentId = computeParentFolderForNewItem();
-  var selectedItem = bmm.list.selectedItem;
+  var selectedItems = bmm.list.selectedItems;
   var newIndex;
   function editNewBookmark() {
-    if (selectedItem && document.activeElement != bmm.tree &&
-        !bmm.isFolder(selectedItem)) {
-      newIndex = bmm.list.dataModel.indexOf(selectedItem) + 1;
+    if (selectedItems.length == 1 && document.activeElement != bmm.tree &&
+        !bmm.isFolder(selectedItems[0])) {
+      newIndex = bmm.list.dataModel.indexOf(selectedItems[0]) + 1;
     }
 
     var fakeNode = {
