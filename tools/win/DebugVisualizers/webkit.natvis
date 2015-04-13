@@ -3,21 +3,29 @@
     xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
   <Type Name="WTF::String">
     <DisplayString Condition="m_impl.m_ptr == 0">(null)</DisplayString>
+    <DisplayString IncludeView="bare">{*m_impl.m_ptr,view(bare)}</DisplayString>
     <DisplayString>{*m_impl.m_ptr}</DisplayString>
     <Expand>
       <Item Name="Impl">m_impl.m_ptr</Item>
     </Expand>
   </Type>
   <Type Name="WTF::StringImpl">
+    <DisplayString IncludeView="bare"
+        Condition="m_is8Bit">{(this+1),[m_length]sb}</DisplayString>
     <DisplayString
-        Condition="m_is8Bit">[{m_length}] {(this+1),[m_length]sb}</DisplayString>
+        Condition="m_is8Bit">[{m_length}] {(this+1),[m_length]s}</DisplayString>
+    <DisplayString IncludeView="bare">{(this+1),[m_length]sub}</DisplayString>
     <DisplayString>[{m_length}] {(this+1),[m_length]su}</DisplayString>
     <Expand>
       <Item Name="Length">m_length</Item>
       <Item Name="Hash">m_hash</Item>
-      <Item Name="AsciiText" Condition="m_is8Bit">(this+1),[m_length]sb</Item>
+      <Item Name="AsciiText" Condition="m_is8Bit">(this+1),[m_length]s</Item>
       <Item Name="UnicodeText" Condition="!m_is8Bit">(this+1),[m_length]su</Item>
     </Expand>
+  </Type>
+  <Type Name="WTF::AtomicString">
+    <DisplayString IncludeView="bare">{m_string,view(bare)}</DisplayString>
+    <DisplayString>{m_string}</DisplayString>
   </Type>
   <Type Name="WTF::Vector&lt;*&gt;">
     <DisplayString Condition="m_size==0">(empty)</DisplayString>
@@ -102,5 +110,28 @@
       <Item Name="x">x</Item>
       <Item Name="y">y</Item>
     </Expand>
+  </Type>
+  <Type Name="blink::QualifiedName">
+    <DisplayString Condition="m_impl.m_ptr == 0">(null)</DisplayString>
+    <DisplayString>{*m_impl.m_ptr}</DisplayString>
+  </Type>
+  <Type Name="blink::QualifiedName::QualifiedNameImpl">
+    <DisplayString>{m_localName,view(bare)}</DisplayString>
+  </Type>
+  <Type Name="blink::CharacterData">
+    <DisplayString>{m_data,view(bare)}</DisplayString>
+  </Type>
+  <Type Name="blink::ContainerNode">
+    <Expand>
+      <LinkedListItems>
+        <HeadPointer>m_firstChild.m_ptr</HeadPointer>
+        <NextPointer>m_next.m_ptr</NextPointer>
+        <ValueNode>this</ValueNode>
+      </LinkedListItems>
+    </Expand>
+  </Type>
+  <Type Name="blink::Element">
+    <DisplayString Condition="m_firstChild.m_ptr != 0">&lt;{m_tagName}>{*m_firstChild.m_ptr}</DisplayString>
+    <DisplayString>&lt;{m_tagName}></DisplayString>
   </Type>
 </AutoVisualizer>
