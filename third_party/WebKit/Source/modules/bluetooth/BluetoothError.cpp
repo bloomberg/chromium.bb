@@ -6,7 +6,7 @@
 #include "modules/bluetooth/BluetoothError.h"
 
 #include "core/dom/ExceptionCode.h"
-#include "public/platform/WebBluetoothError.h"
+#include "public/platform/modules/bluetooth/WebBluetoothError.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {

@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Heap.h"
-#include "public/platform/WebBluetoothDevice.h"
+#include "public/platform/modules/bluetooth/WebBluetoothDevice.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

@@ -13,7 +13,7 @@
 #include "modules/bluetooth/BluetoothDevice.h"
 #include "modules/bluetooth/BluetoothError.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebBluetooth.h"
+#include "public/platform/modules/bluetooth/WebBluetooth.h"
 
 namespace blink {
 
