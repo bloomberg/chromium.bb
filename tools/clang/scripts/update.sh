@@ -63,13 +63,6 @@ if [[ -n ${LLVM_FORCE_HEAD_REVISION:-''} ]]; then
   PACKAGE_VERSION="${CLANG_REVISION}-0"
 fi
 
-# Use both the clang revision and the plugin revisions to test for updates.
-BLINKGCPLUGIN_REVISION=\
-$(grep 'set(LIBRARYNAME' "$THIS_DIR"/../blink_gc_plugin/CMakeLists.txt \
-    | cut -d ' ' -f 2 | tr -cd '[0-9]')
-CLANG_AND_PLUGINS_REVISION="${CLANG_REVISION}-${BLINKGCPLUGIN_REVISION}"
-
-
 OS="$(uname -s)"
 
 # Parse command line options.
