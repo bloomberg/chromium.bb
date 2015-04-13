@@ -16,16 +16,16 @@ class DefaultCdmFactory : public CdmFactory {
   ~DefaultCdmFactory() final;
 
   // CdmFactory implementation.
-  scoped_ptr<MediaKeys> Create(
-      const std::string& key_system,
-      bool allow_distinctive_identifier,
-      bool allow_persistent_state,
-      const GURL& security_origin,
-      const SessionMessageCB& session_message_cb,
-      const SessionClosedCB& session_closed_cb,
-      const LegacySessionErrorCB& legacy_session_error_cb,
-      const SessionKeysChangeCB& session_keys_change_cb,
-      const SessionExpirationUpdateCB& session_expiration_update_cb) final;
+  void Create(const std::string& key_system,
+              bool allow_distinctive_identifier,
+              bool allow_persistent_state,
+              const GURL& security_origin,
+              const SessionMessageCB& session_message_cb,
+              const SessionClosedCB& session_closed_cb,
+              const LegacySessionErrorCB& legacy_session_error_cb,
+              const SessionKeysChangeCB& session_keys_change_cb,
+              const SessionExpirationUpdateCB& session_expiration_update_cb,
+              const CdmCreatedCB& cdm_created_cb) final;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultCdmFactory);

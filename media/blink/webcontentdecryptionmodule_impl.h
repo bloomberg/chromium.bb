@@ -52,6 +52,8 @@ class MEDIA_EXPORT WebContentDecryptionModuleImpl
   CdmContext* GetCdmContext();
 
  private:
+  friend CdmSessionAdapter;
+
   // Takes reference to |adapter|.
   WebContentDecryptionModuleImpl(scoped_refptr<CdmSessionAdapter> adapter);
 

@@ -39,7 +39,8 @@ class RenderCdmFactory : public media::CdmFactory, public RenderFrameObserver {
 
   ~RenderCdmFactory() override;
 
-  scoped_ptr<media::MediaKeys> Create(
+  // CdmFactory implementation.
+  void Create(
       const std::string& key_system,
       bool allow_distinctive_identifier,
       bool allow_persistent_state,
@@ -48,8 +49,8 @@ class RenderCdmFactory : public media::CdmFactory, public RenderFrameObserver {
       const media::SessionClosedCB& session_closed_cb,
       const media::LegacySessionErrorCB& legacy_session_error_cb,
       const media::SessionKeysChangeCB& session_keys_change_cb,
-      const media::SessionExpirationUpdateCB& session_expiration_update_cb)
-      override;
+      const media::SessionExpirationUpdateCB& session_expiration_update_cb,
+      const CdmCreatedCB& cdm_created_cb) override;
 
  private:
 #if defined(ENABLE_PEPPER_CDMS)

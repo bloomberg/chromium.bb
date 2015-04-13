@@ -224,7 +224,9 @@ class MEDIA_EXPORT WebMediaPlayerImpl
   // is not available.
   void OnWaitingForDecryptionKey();
 
-  void SetCdm(CdmContext* cdm_context, const CdmAttachedCB& cdm_attached_cb);
+  // Sets |cdm_context| on the pipeline and fires |cdm_attached_cb| when done.
+  // Parameter order is reversed for easy binding.
+  void SetCdm(const CdmAttachedCB& cdm_attached_cb, CdmContext* cdm_context);
 
   // Called when a CDM has been attached to the |pipeline_|.
   void OnCdmAttached(blink::WebContentDecryptionModuleResult result,

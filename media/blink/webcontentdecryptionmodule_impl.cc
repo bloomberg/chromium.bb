@@ -62,21 +62,15 @@ void WebContentDecryptionModuleImpl::Create(
   }
 
   GURL security_origin_as_gurl(security_origin.toString());
+
+  // CdmSessionAdapter::CreateCdm() will keep a reference to |adapter|. Then
+  // if WebContentDecryptionModuleImpl is successfully created (returned in
+  // |result|), it will keep a reference to |adapter|. Otherwise, |adapter| will
+  // be destructed.
   scoped_refptr<CdmSessionAdapter> adapter(new CdmSessionAdapter());
-
-  // TODO(jrummell): Pass WebContentDecryptionModuleResult (or similar) to
-  // Initialize() so that more specific errors can be reported.
-  if (!adapter->Initialize(cdm_factory, key_system_ascii,
-                           allow_distinctive_identifier,
-                           allow_persistent_state, security_origin_as_gurl)) {
-    result.completeWithError(
-        blink::WebContentDecryptionModuleExceptionNotSupportedError, 0,
-        "Failed to initialize CDM.");
-    return;
-  }
-
-  result.completeWithContentDecryptionModule(
-      new WebContentDecryptionModuleImpl(adapter));
+  adapter->CreateCdm(cdm_factory, key_system_ascii,
+                     allow_distinctive_identifier, allow_persistent_state,
+                     security_origin_as_gurl, result);
 }
 
 WebContentDecryptionModuleImpl::WebContentDecryptionModuleImpl(

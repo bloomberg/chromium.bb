@@ -116,12 +116,12 @@ EncryptedMediaPlayerSupport::EncryptedMediaPlayerSupport(
     CdmFactory* cdm_factory,
     blink::WebMediaPlayerClient* client,
     MediaPermission* media_permission,
-    const SetCdmContextCB& set_cdm_context_cb)
+    const CdmContextReadyCB& cdm_context_ready_cb)
     : cdm_factory_(cdm_factory),
       client_(client),
       media_permission_(media_permission),
       init_data_type_(EmeInitDataType::UNKNOWN),
-      set_cdm_context_cb_(set_cdm_context_cb) {
+      cdm_context_ready_cb_(cdm_context_ready_cb) {
 }
 
 EncryptedMediaPlayerSupport::~EncryptedMediaPlayerSupport() {
@@ -155,43 +155,32 @@ EncryptedMediaPlayerSupport::GenerateKeyRequestInternal(
   if (!PrefixedIsSupportedConcreteKeySystem(key_system))
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
-  // We do not support run-time switching between key systems for now.
-  if (current_key_system_.empty()) {
-    if (!proxy_decryptor_) {
-      proxy_decryptor_.reset(new ProxyDecryptor(
-          media_permission_,
-          BIND_TO_RENDER_LOOP(&EncryptedMediaPlayerSupport::OnKeyAdded),
-          BIND_TO_RENDER_LOOP(&EncryptedMediaPlayerSupport::OnKeyError),
-          BIND_TO_RENDER_LOOP(&EncryptedMediaPlayerSupport::OnKeyMessage)));
-    }
+  if (!proxy_decryptor_) {
+    DCHECK(current_key_system_.empty());
+    DCHECK(!cdm_context_ready_cb_.is_null());
+    proxy_decryptor_.reset(new ProxyDecryptor(
+        media_permission_,
+        BIND_TO_RENDER_LOOP(&EncryptedMediaPlayerSupport::OnKeyAdded),
+        BIND_TO_RENDER_LOOP(&EncryptedMediaPlayerSupport::OnKeyError),
+        BIND_TO_RENDER_LOOP(&EncryptedMediaPlayerSupport::OnKeyMessage)));
 
     GURL security_origin(frame->document().securityOrigin().toString());
-
-    if (!proxy_decryptor_->InitializeCDM(cdm_factory_, key_system,
-                                         security_origin)) {
-      return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
-    }
-
-    if (proxy_decryptor_ && !set_cdm_context_cb_.is_null()) {
-      base::ResetAndReturn(&set_cdm_context_cb_)
-          .Run(proxy_decryptor_->GetCdmContext(),
-               base::Bind(&IgnoreCdmAttached));
-    }
-
+    proxy_decryptor_->CreateCdm(cdm_factory_, key_system, security_origin,
+                                cdm_context_ready_cb_);
     current_key_system_ = key_system;
-  } else if (key_system != current_key_system_) {
-    return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
   }
+
+  // We do not support run-time switching between key systems for now.
+  DCHECK(!current_key_system_.empty());
+  if (key_system != current_key_system_)
+    return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
 
   EmeInitDataType init_data_type = init_data_type_;
   if (init_data_type == EmeInitDataType::UNKNOWN)
     init_data_type = GuessInitDataType(init_data, init_data_length);
 
-  if (!proxy_decryptor_->GenerateKeyRequest(init_data_type, init_data,
-                                            init_data_length)) {
-    current_key_system_.clear();
-    return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
-  }
+  proxy_decryptor_->GenerateKeyRequest(init_data_type, init_data,
+                                       init_data_length);
 
   return WebMediaPlayer::MediaKeyExceptionNoError;
 }

@@ -318,6 +318,9 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   MediaKeyException CancelKeyRequestInternal(const std::string& key_system,
                                              const std::string& session_id);
 
+  // Called when |cdm_context| is ready.
+  void OnCdmContextReady(media::CdmContext* cdm_context);
+
   // Sets the CDM. Should only be called when |is_player_initialized_| is true
   // and a new non-null |cdm_context_| is available. Fires |cdm_attached_cb_|
   // with the result after the CDM is attached.

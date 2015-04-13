@@ -13,6 +13,7 @@
 #include "media/base/cdm_promise.h"
 #include "media/base/key_systems.h"
 #include "media/base/media_keys.h"
+#include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/blink/webcontentdecryptionmodulesession_impl.h"
 #include "url/gurl.h"
 
@@ -26,33 +27,34 @@ CdmSessionAdapter::CdmSessionAdapter() : weak_ptr_factory_(this) {
 
 CdmSessionAdapter::~CdmSessionAdapter() {}
 
-bool CdmSessionAdapter::Initialize(CdmFactory* cdm_factory,
-                                   const std::string& key_system,
-                                   bool allow_distinctive_identifier,
-                                   bool allow_persistent_state,
-                                   const GURL& security_origin) {
-  key_system_ = key_system;
-  key_system_uma_prefix_ =
-      kMediaEME + GetKeySystemNameForUMA(key_system) + kDot;
-
+void CdmSessionAdapter::CreateCdm(
+    CdmFactory* cdm_factory,
+    const std::string& key_system,
+    bool allow_distinctive_identifier,
+    bool allow_persistent_state,
+    const GURL& security_origin,
+    blink::WebContentDecryptionModuleResult result) {
+  // Note: WebContentDecryptionModuleImpl::Create() calls this method without
+  // holding a reference to the CdmSessionAdapter. Bind OnCdmCreated() with
+  // |this| instead of |weak_this| to prevent |this| from being desctructed.
   base::WeakPtr<CdmSessionAdapter> weak_this = weak_ptr_factory_.GetWeakPtr();
-  media_keys_ = cdm_factory->Create(
+  cdm_factory->Create(
       key_system, allow_distinctive_identifier, allow_persistent_state,
       security_origin,
       base::Bind(&CdmSessionAdapter::OnSessionMessage, weak_this),
       base::Bind(&CdmSessionAdapter::OnSessionClosed, weak_this),
       base::Bind(&CdmSessionAdapter::OnLegacySessionError, weak_this),
       base::Bind(&CdmSessionAdapter::OnSessionKeysChange, weak_this),
-      base::Bind(&CdmSessionAdapter::OnSessionExpirationUpdate, weak_this));
-  return media_keys_.get() != nullptr;
+      base::Bind(&CdmSessionAdapter::OnSessionExpirationUpdate, weak_this),
+      base::Bind(&CdmSessionAdapter::OnCdmCreated, this, key_system, result));
 }
 
 void CdmSessionAdapter::SetServerCertificate(
     const uint8* server_certificate,
     int server_certificate_length,
     scoped_ptr<SimpleCdmPromise> promise) {
-  media_keys_->SetServerCertificate(
-      server_certificate, server_certificate_length, promise.Pass());
+  cdm_->SetServerCertificate(server_certificate, server_certificate_length,
+                             promise.Pass());
 }
 
 WebContentDecryptionModuleSessionImpl* CdmSessionAdapter::CreateSession() {
@@ -81,37 +83,35 @@ void CdmSessionAdapter::InitializeNewSession(
     int init_data_length,
     MediaKeys::SessionType session_type,
     scoped_ptr<NewSessionCdmPromise> promise) {
-  media_keys_->CreateSessionAndGenerateRequest(session_type, init_data_type,
-                                               init_data, init_data_length,
-                                               promise.Pass());
+  cdm_->CreateSessionAndGenerateRequest(session_type, init_data_type, init_data,
+                                        init_data_length, promise.Pass());
 }
 
 void CdmSessionAdapter::LoadSession(MediaKeys::SessionType session_type,
                                     const std::string& session_id,
                                     scoped_ptr<NewSessionCdmPromise> promise) {
-  media_keys_->LoadSession(session_type, session_id, promise.Pass());
+  cdm_->LoadSession(session_type, session_id, promise.Pass());
 }
 
 void CdmSessionAdapter::UpdateSession(const std::string& session_id,
                                       const uint8* response,
                                       int response_length,
                                       scoped_ptr<SimpleCdmPromise> promise) {
-  media_keys_->UpdateSession(session_id, response, response_length,
-                             promise.Pass());
+  cdm_->UpdateSession(session_id, response, response_length, promise.Pass());
 }
 
 void CdmSessionAdapter::CloseSession(const std::string& session_id,
                                      scoped_ptr<SimpleCdmPromise> promise) {
-  media_keys_->CloseSession(session_id, promise.Pass());
+  cdm_->CloseSession(session_id, promise.Pass());
 }
 
 void CdmSessionAdapter::RemoveSession(const std::string& session_id,
                                       scoped_ptr<SimpleCdmPromise> promise) {
-  media_keys_->RemoveSession(session_id, promise.Pass());
+  cdm_->RemoveSession(session_id, promise.Pass());
 }
 
 CdmContext* CdmSessionAdapter::GetCdmContext() {
-  return media_keys_->GetCdmContext();
+  return cdm_->GetCdmContext();
 }
 
 const std::string& CdmSessionAdapter::GetKeySystem() const {
@@ -120,6 +120,27 @@ const std::string& CdmSessionAdapter::GetKeySystem() const {
 
 const std::string& CdmSessionAdapter::GetKeySystemUMAPrefix() const {
   return key_system_uma_prefix_;
+}
+
+void CdmSessionAdapter::OnCdmCreated(
+    const std::string& key_system,
+    blink::WebContentDecryptionModuleResult result,
+    scoped_ptr<MediaKeys> cdm) {
+  DVLOG(2) << __FUNCTION__;
+  if (!cdm) {
+    result.completeWithError(
+        blink::WebContentDecryptionModuleExceptionNotSupportedError, 0,
+        "Failed to create the CDM instance.");
+    return;
+  }
+
+  key_system_ = key_system;
+  key_system_uma_prefix_ =
+      kMediaEME + GetKeySystemNameForUMA(key_system) + kDot;
+  cdm_ = cdm.Pass();
+
+  result.completeWithContentDecryptionModule(
+      new WebContentDecryptionModuleImpl(this));
 }
 
 void CdmSessionAdapter::OnSessionMessage(

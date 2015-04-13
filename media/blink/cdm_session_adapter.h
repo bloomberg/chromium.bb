@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/media_keys.h"
+#include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleSession.h"
 
 class GURL;
@@ -30,12 +31,14 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
  public:
   CdmSessionAdapter();
 
-  // Returns true on success.
-  bool Initialize(CdmFactory* cdm_factory,
-                  const std::string& key_system,
-                  bool allow_distinctive_identifier,
-                  bool allow_persistent_state,
-                  const GURL& security_origin);
+  // Creates the CDM for |key_system| using |cdm_factory| and returns the result
+  // via |result|.
+  void CreateCdm(CdmFactory* cdm_factory,
+                 const std::string& key_system,
+                 bool allow_distinctive_identifier,
+                 bool allow_persistent_state,
+                 const GURL& security_origin,
+                 blink::WebContentDecryptionModuleResult result);
 
   // Provides a server certificate to be used to encrypt messages to the
   // license server.
@@ -99,11 +102,18 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
 
  private:
   friend class base::RefCounted<CdmSessionAdapter>;
+
+  // Session ID to WebContentDecryptionModuleSessionImpl mapping.
   typedef base::hash_map<std::string,
                          base::WeakPtr<WebContentDecryptionModuleSessionImpl> >
       SessionMap;
 
   ~CdmSessionAdapter();
+
+  // Callback for CreateCdm().
+  void OnCdmCreated(const std::string& key_system,
+                    blink::WebContentDecryptionModuleResult result,
+                    scoped_ptr<MediaKeys> cdm);
 
   // Callbacks for firing session events.
   void OnSessionMessage(const std::string& session_id,
@@ -125,7 +135,7 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   WebContentDecryptionModuleSessionImpl* GetSession(
       const std::string& session_id);
 
-  scoped_ptr<MediaKeys> media_keys_;
+  scoped_ptr<MediaKeys> cdm_;
 
   SessionMap sessions_;
 

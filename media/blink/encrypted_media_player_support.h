@@ -37,13 +37,13 @@ class WebContentDecryptionModuleImpl;
 class EncryptedMediaPlayerSupport
     : public base::SupportsWeakPtr<EncryptedMediaPlayerSupport> {
  public:
-  typedef base::Callback<void(CdmContext*, const CdmAttachedCB&)>
-      SetCdmContextCB;
+  using CdmContextReadyCB = ProxyDecryptor::CdmContextReadyCB;
 
+  // |cdm_context_ready_cb| is called when the CDM instance creation completes.
   EncryptedMediaPlayerSupport(CdmFactory* cdm_factory,
                               blink::WebMediaPlayerClient* client,
                               MediaPermission* media_permission,
-                              const SetCdmContextCB& set_cdm_context_cb);
+                              const CdmContextReadyCB& cdm_context_ready_cb);
   ~EncryptedMediaPlayerSupport();
 
   blink::WebMediaPlayer::MediaKeyException GenerateKeyRequest(
@@ -109,7 +109,7 @@ class EncryptedMediaPlayerSupport
   // init data type.
   EmeInitDataType init_data_type_;
 
-  SetCdmContextCB set_cdm_context_cb_;
+  CdmContextReadyCB cdm_context_ready_cb_;
 
   // Manages decryption keys and decrypts encrypted frames.
   scoped_ptr<ProxyDecryptor> proxy_decryptor_;

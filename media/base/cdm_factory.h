@@ -17,10 +17,14 @@ namespace media {
 
 class MEDIA_EXPORT CdmFactory {
  public:
+  using CdmCreatedCB = base::Callback<void(scoped_ptr<MediaKeys>)>;
+
   CdmFactory();
   virtual ~CdmFactory();
 
-  virtual scoped_ptr<MediaKeys> Create(
+  // Creates a CDM for |key_system| and returns it through |cdm_created_cb|
+  // asynchronously.
+  virtual void Create(
       const std::string& key_system,
       bool allow_distinctive_identifier,
       bool allow_persistent_state,
@@ -29,7 +33,8 @@ class MEDIA_EXPORT CdmFactory {
       const SessionClosedCB& session_closed_cb,
       const LegacySessionErrorCB& legacy_session_error_cb,
       const SessionKeysChangeCB& session_keys_change_cb,
-      const SessionExpirationUpdateCB& session_expiration_update_cb) = 0;
+      const SessionExpirationUpdateCB& session_expiration_update_cb,
+      const CdmCreatedCB& cdm_created_cb) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CdmFactory);

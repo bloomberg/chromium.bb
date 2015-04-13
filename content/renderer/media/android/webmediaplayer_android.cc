@@ -1527,48 +1527,35 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
   if (!IsKeySystemSupported(key_system))
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
-  // We do not support run-time switching between key systems for now.
-  if (current_key_system_.empty()) {
-    if (!proxy_decryptor_) {
-      proxy_decryptor_.reset(new media::ProxyDecryptor(
-          media_permission_,
-          base::Bind(&WebMediaPlayerAndroid::OnKeyAdded,
-                     weak_factory_.GetWeakPtr()),
-          base::Bind(&WebMediaPlayerAndroid::OnKeyError,
-                     weak_factory_.GetWeakPtr()),
-          base::Bind(&WebMediaPlayerAndroid::OnKeyMessage,
-                     weak_factory_.GetWeakPtr())));
-    }
+  if (!proxy_decryptor_) {
+    DCHECK(current_key_system_.empty());
+    proxy_decryptor_.reset(new media::ProxyDecryptor(
+        media_permission_, base::Bind(&WebMediaPlayerAndroid::OnKeyAdded,
+                                      weak_factory_.GetWeakPtr()),
+        base::Bind(&WebMediaPlayerAndroid::OnKeyError,
+                   weak_factory_.GetWeakPtr()),
+        base::Bind(&WebMediaPlayerAndroid::OnKeyMessage,
+                   weak_factory_.GetWeakPtr())));
 
     GURL security_origin(frame_->document().securityOrigin().toString());
-    if (!proxy_decryptor_->InitializeCDM(cdm_factory_, key_system,
-                                         security_origin)) {
-      return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
-    }
-
-    // Set the CDM onto the media player.
-    cdm_context_ = proxy_decryptor_->GetCdmContext();
-
-    if (is_player_initialized_)
-      SetCdmInternal(base::Bind(&media::IgnoreCdmAttached));
-
+    proxy_decryptor_->CreateCdm(
+        cdm_factory_, key_system, security_origin,
+        base::Bind(&WebMediaPlayerAndroid::OnCdmContextReady,
+                   weak_factory_.GetWeakPtr()));
     current_key_system_ = key_system;
-  } else if (key_system != current_key_system_) {
-    return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
   }
+
+  // We do not support run-time switching between key systems for now.
+  DCHECK(!current_key_system_.empty());
+  if (key_system != current_key_system_)
+    return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
 
   media::EmeInitDataType init_data_type = init_data_type_;
   if (init_data_type == media::EmeInitDataType::UNKNOWN)
     init_data_type = GuessInitDataType(init_data, init_data_length);
 
-  // TODO(xhwang): We assume all streams are from the same container (thus have
-  // the same "type") for now. In the future, the "type" should be passed down
-  // from the application.
-  if (!proxy_decryptor_->GenerateKeyRequest(
-           init_data_type, init_data, init_data_length)) {
-    current_key_system_.clear();
-    return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
-  }
+  proxy_decryptor_->GenerateKeyRequest(init_data_type, init_data,
+                                       init_data_length);
 
   return WebMediaPlayer::MediaKeyExceptionNoError;
 }
@@ -1770,6 +1757,20 @@ void WebMediaPlayerAndroid::OnWaitingForDecryptionKey() {
   // when a key has been successfully added (e.g. OnSessionKeysChange() with
   // |has_additional_usable_key| = true). http://crbug.com/461903
   client_->didResumePlaybackBlockedForKey();
+}
+
+void WebMediaPlayerAndroid::OnCdmContextReady(media::CdmContext* cdm_context) {
+  DCHECK(!cdm_context_);
+
+  if (!cdm_context) {
+    LOG(ERROR) << "CdmContext not available (e.g. CDM creation failed).";
+    return;
+  }
+
+  cdm_context_ = cdm_context;
+
+  if (is_player_initialized_)
+    SetCdmInternal(base::Bind(&media::IgnoreCdmAttached));
 }
 
 void WebMediaPlayerAndroid::SetCdmInternal(

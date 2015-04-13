@@ -137,11 +137,12 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       compositor_(new VideoFrameCompositor(
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNaturalSizeChanged),
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnOpacityChanged))),
-      encrypted_media_support_(
-          cdm_factory,
-          client,
-          params.media_permission(),
-          base::Bind(&WebMediaPlayerImpl::SetCdm, AsWeakPtr())),
+      encrypted_media_support_(cdm_factory,
+                               client,
+                               params.media_permission(),
+                               base::Bind(&WebMediaPlayerImpl::SetCdm,
+                                          AsWeakPtr(),
+                                          base::Bind(&IgnoreCdmAttached))),
       renderer_factory_(renderer_factory.Pass()) {
   // Threaded compositing isn't enabled universally yet.
   if (!compositor_task_runner_.get())
@@ -151,9 +152,9 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       media_log_->CreateEvent(MediaLogEvent::WEBMEDIAPLAYER_CREATED));
 
   if (params.initial_cdm()) {
-    SetCdm(
-        ToWebContentDecryptionModuleImpl(params.initial_cdm())->GetCdmContext(),
-        base::Bind(&IgnoreCdmAttached));
+    SetCdm(base::Bind(&IgnoreCdmAttached),
+           ToWebContentDecryptionModuleImpl(params.initial_cdm())
+               ->GetCdmContext());
   }
 
   // TODO(xhwang): When we use an external Renderer, many methods won't work,
@@ -660,8 +661,8 @@ void WebMediaPlayerImpl::setContentDecryptionModule(
     return;
   }
 
-  SetCdm(ToWebContentDecryptionModuleImpl(cdm)->GetCdmContext(),
-         BIND_TO_RENDER_LOOP1(&WebMediaPlayerImpl::OnCdmAttached, result));
+  SetCdm(BIND_TO_RENDER_LOOP1(&WebMediaPlayerImpl::OnCdmAttached, result),
+         ToWebContentDecryptionModuleImpl(cdm)->GetCdmContext());
 }
 
 void WebMediaPlayerImpl::OnEncryptedMediaInitData(
@@ -695,8 +696,8 @@ void WebMediaPlayerImpl::OnWaitingForDecryptionKey() {
   client_->didResumePlaybackBlockedForKey();
 }
 
-void WebMediaPlayerImpl::SetCdm(CdmContext* cdm_context,
-                                const CdmAttachedCB& cdm_attached_cb) {
+void WebMediaPlayerImpl::SetCdm(const CdmAttachedCB& cdm_attached_cb,
+                                CdmContext* cdm_context) {
   pipeline_.SetCdm(cdm_context, cdm_attached_cb);
 }
 

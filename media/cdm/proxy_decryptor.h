@@ -11,7 +11,9 @@
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "media/base/cdm_context.h"
 #include "media/base/decryptor.h"
 #include "media/base/eme_constants.h"
 #include "media/base/media_export.h"
@@ -32,6 +34,10 @@ class MediaPermission;
 // TODO(xhwang): The ProxyDecryptor is not a Decryptor. Find a better name!
 class MEDIA_EXPORT ProxyDecryptor {
  public:
+  // Callback to provide a CdmContext when the CDM creation is finished.
+  // If CDM creation failed, |cdm_context| will be null.
+  typedef base::Callback<void(CdmContext* cdm_context)> CdmContextReadyCB;
+
   // These are similar to the callbacks in media_keys.h, but pass back the
   // session ID rather than the internal session ID.
   typedef base::Callback<void(const std::string& session_id)> KeyAddedCB;
@@ -48,16 +54,16 @@ class MEDIA_EXPORT ProxyDecryptor {
                  const KeyMessageCB& key_message_cb);
   virtual ~ProxyDecryptor();
 
-  // Returns the CdmContext associated with this object.
-  CdmContext* GetCdmContext();
+  // Creates the CDM and fires |cdm_created_cb|. This method should only be
+  // called once. If CDM creation failed, all following GenerateKeyRequest,
+  // AddKey and CancelKeyRequest calls will result in a KeyError.
+  void CreateCdm(CdmFactory* cdm_factory,
+                 const std::string& key_system,
+                 const GURL& security_origin,
+                 const CdmContextReadyCB& cdm_context_ready_cb);
 
-  // Only call this once.
-  bool InitializeCDM(CdmFactory* cdm_factory,
-                     const std::string& key_system,
-                     const GURL& security_origin);
-
-  // May only be called after InitializeCDM() succeeds.
-  bool GenerateKeyRequest(EmeInitDataType init_data_type,
+  // May only be called after CreateCDM().
+  void GenerateKeyRequest(EmeInitDataType init_data_type,
                           const uint8* init_data,
                           int init_data_length);
   void AddKey(const uint8* key, int key_length,
@@ -66,11 +72,14 @@ class MEDIA_EXPORT ProxyDecryptor {
   void CancelKeyRequest(const std::string& session_id);
 
  private:
-  // Helper function to create MediaKeys to handle the given |key_system|.
-  scoped_ptr<MediaKeys> CreateMediaKeys(
-      CdmFactory* cdm_factory,
-      const std::string& key_system,
-      const GURL& security_origin);
+  // Callback for CreateCdm().
+  void OnCdmCreated(const std::string& key_system,
+                    const GURL& security_origin,
+                    const CdmContextReadyCB& cdm_context_ready_cb,
+                    scoped_ptr<MediaKeys> cdm);
+
+  void GenerateKeyRequestInternal(EmeInitDataType init_data_type,
+                                  const std::vector<uint8>& init_data);
 
   // Callbacks for firing session events.
   void OnSessionMessage(const std::string& session_id,
@@ -106,6 +115,17 @@ class MEDIA_EXPORT ProxyDecryptor {
   void SetSessionId(SessionCreationType session_type,
                     const std::string& session_id);
 
+  struct PendingGenerateKeyRequestData {
+    PendingGenerateKeyRequestData(EmeInitDataType init_data_type,
+                                  const std::vector<uint8>& init_data);
+    ~PendingGenerateKeyRequestData();
+
+    const EmeInitDataType init_data_type;
+    const std::vector<uint8> init_data;
+  };
+
+  bool is_creating_cdm_;
+
   // The real MediaKeys that manages key operations for the ProxyDecryptor.
   scoped_ptr<MediaKeys> media_keys_;
 
@@ -123,6 +143,8 @@ class MEDIA_EXPORT ProxyDecryptor {
   base::hash_map<std::string, bool> active_sessions_;
 
   bool is_clear_key_;
+
+  ScopedVector<PendingGenerateKeyRequestData> pending_requests_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<ProxyDecryptor> weak_ptr_factory_;
