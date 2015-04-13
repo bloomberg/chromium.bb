@@ -22,7 +22,7 @@ paper-progress {
 }
 
 paper-progress::shadow #activeProgress {
-  background-color: rgb(33, 150, 243);
+  background-color: rgb(27, 168, 243);
 }
 
 paper-progress::shadow #progressContainer {
