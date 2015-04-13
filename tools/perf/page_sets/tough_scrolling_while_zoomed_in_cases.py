@@ -30,14 +30,13 @@ class ToughScrollingWhileZoomedInCasesPage(page_module.Page):
     # 10,000 was chosen to complete this pre-step quickly.
 
     # Then start measurements
-    interaction = action_runner.BeginGestureInteraction('ScrollAction')
-    # And begin the diagonal scroll
-    action_runner.ScrollPage(
-        direction='downright',
-        speed_in_pixels_per_second=10000)
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      # And begin the diagonal scroll
+      action_runner.ScrollPage(
+          direction='downright',
           # 10,000 was chosen because it is fast enough to completely stress the
           # rasterization (on a Nexus 5) without saturating results.
-    interaction.End()
+          speed_in_pixels_per_second=10000)
 
 
 class ToughScrollingWhileZoomedInCasesPageSet(page_set_module.PageSet):

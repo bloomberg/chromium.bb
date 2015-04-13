@@ -26,10 +26,8 @@ class SimpleScrollPage(SimplePage):
 
   def RunPageInteractions(self, action_runner):
     # Make the scroll longer to reduce noise.
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage(direction='down', speed_in_pixels_per_second=300)
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage(direction='down', speed_in_pixels_per_second=300)
 
 class SimpleMobileSitesPageSet(page_set_module.PageSet):
 

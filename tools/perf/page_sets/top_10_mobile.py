@@ -17,10 +17,8 @@ class Top10MobilePage(page_module.Page):
   def RunPageInteractions(self, action_runner):
     if self._run_no_page_interactions:
       return
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
 
 
 class Top10MobilePageSet(page_set_module.PageSet):

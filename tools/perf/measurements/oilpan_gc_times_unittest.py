@@ -19,9 +19,8 @@ class TestOilpanGCTimesPage(page_module.Page):
         'file://blank.html', page_set, page_set.base_dir)
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction('ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
 
 
 class OilpanGCTimesTestData(object):

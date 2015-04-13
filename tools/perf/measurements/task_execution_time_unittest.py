@@ -21,10 +21,8 @@ class TestTaskExecutionTimePage(page_module.Page):
         'file://blank.html', page_set, base_dir)
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
 
 
 class TaskExecutionTimeUnitTest(page_test_test_case.PageTestTestCase):

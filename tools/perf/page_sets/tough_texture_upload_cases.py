@@ -15,10 +15,8 @@ class ToughTextureUploadCasesPage(page_module.Page):
         page_set=page_set)
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
 
 
 class ToughTextureUploadCasesPageSet(page_set_module.PageSet):

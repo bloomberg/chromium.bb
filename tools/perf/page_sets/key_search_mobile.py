@@ -14,10 +14,8 @@ class KeySearchMobilePage(page_module.Page):
     self.archive_data_file = 'data/key_search_mobile.json'
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
 
 
 class KeySearchMobilePageSet(page_set_module.PageSet):
