@@ -30,6 +30,46 @@ using testing::ContainsRegex;
 using testing::HasSubstr;
 using testing::Not;
 
+namespace {
+
+// Helper class to know how far in the loading process the current WebContents
+// has come. It will call the callback either after
+// DidCommitProvisionalLoadForFrame or DocumentLoadedInFrame is called for the
+// main frame, based on the value of |wait_for_document_loaded|.
+class WebContentsMainFrameHelper : public content::WebContentsObserver {
+ public:
+  WebContentsMainFrameHelper(content::WebContents* web_contents,
+                             const base::Closure& callback,
+                             bool wait_for_document_loaded)
+      : WebContentsObserver(web_contents),
+        callback_(callback),
+        wait_for_document_loaded_(wait_for_document_loaded) {}
+
+  void DidCommitProvisionalLoadForFrame(
+      content::RenderFrameHost* render_frame_host,
+      const GURL& url,
+      ui::PageTransition transition_type) override {
+    if (wait_for_document_loaded_)
+      return;
+    if (!render_frame_host->GetParent())
+      callback_.Run();
+  }
+
+  void DocumentLoadedInFrame(
+      content::RenderFrameHost* render_frame_host) override {
+    if (wait_for_document_loaded_) {
+      if (!render_frame_host->GetParent())
+        callback_.Run();
+    }
+  }
+
+ private:
+  base::Closure callback_;
+  bool wait_for_document_loaded_;
+};
+
+}  // namespace
+
 namespace dom_distiller {
 
 const char* kSimpleArticlePath = "/simple_article.html";
@@ -128,42 +168,6 @@ class TestDistillerPageWebContents : public DistillerPageWebContents {
  private:
   bool expect_new_web_contents_;
   bool new_web_contents_created_;
-};
-
-// Helper class to know how far in the loading process the current WebContents
-// has come. It will call the callback either after
-// DidCommitProvisionalLoadForFrame or DocumentLoadedInFrame is called for the
-// main frame, based on the value of |wait_for_document_loaded|.
-class WebContentsMainFrameHelper : public content::WebContentsObserver {
- public:
-  WebContentsMainFrameHelper(content::WebContents* web_contents,
-                             const base::Closure& callback,
-                             bool wait_for_document_loaded)
-      : WebContentsObserver(web_contents),
-        callback_(callback),
-        wait_for_document_loaded_(wait_for_document_loaded) {}
-
-  void DidCommitProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& url,
-      ui::PageTransition transition_type) override {
-    if (wait_for_document_loaded_)
-      return;
-    if (!render_frame_host->GetParent())
-      callback_.Run();
-  }
-
-  void DocumentLoadedInFrame(
-      content::RenderFrameHost* render_frame_host) override {
-    if (wait_for_document_loaded_) {
-      if (!render_frame_host->GetParent())
-        callback_.Run();
-    }
-  }
-
- private:
-  base::Closure callback_;
-  bool wait_for_document_loaded_;
 };
 
 IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, BasicDistillationWorks) {
