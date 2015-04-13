@@ -2415,7 +2415,29 @@
     { "name": "yenniferallulli.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "yenniferallulli.es", "include_subdomains": true, "mode": "force-https" },
     { "name": "yenniferallulli.moda", "include_subdomains": true, "mode": "force-https" },
-    { "name": "yenniferallulli.nl", "include_subdomains": true, "mode": "force-https" }
+    { "name": "yenniferallulli.nl", "include_subdomains": true, "mode": "force-https" },
+
+    // Pinterest: https://crbug.com/474378
+    { "name": "www.pinterest.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "br.pinterest.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "de.pinterest.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "es.pinterest.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "fr.pinterest.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "gb.pinterest.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "gr.pinterest.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "in.pinterest.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "it.pinterest.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "jp.pinterest.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "kr.pinterest.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "nl.pinterest.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "no.pinterest.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "pl.pinterest.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "pt.pinterest.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "ru.pinterest.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "se.pinterest.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "sk.pinterest.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "tr.pinterest.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "uk.pinterest.com", "include_subdomains": true, "mode": "force-https" }
   ],
 
   // |ReportUMAOnPinFailure| uses these to report which domain was associated
