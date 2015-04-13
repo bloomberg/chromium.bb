@@ -1676,7 +1676,7 @@ private:
     static bool backingExpand(void*, size_t);
     PLATFORM_EXPORT static void backingShrink(void*, size_t quantizedCurrentSize, size_t quantizedShrunkSize);
 
-    template<typename T, size_t u, typename V, bool b> friend class WTF::Vector;
+    template<typename T, size_t u, typename V> friend class WTF::Vector;
     template<typename T, typename U, typename V, typename W> friend class WTF::HashSet;
     template<typename T, typename U, typename V, typename W, typename X, typename Y> friend class WTF::HashMap;
 };
@@ -1742,7 +1742,7 @@ public:
 // FIXME: These should just be template aliases:
 //
 // template<typename T, size_t inlineCapacity = 0>
-// using HeapVector = Vector<T, inlineCapacity, HeapAllocator, noDestructor>;
+// using HeapVector = Vector<T, inlineCapacity, HeapAllocator>;
 //
 // as soon as all the compilers we care about support that.
 // MSVC supports it only in MSVC 2013.
@@ -1778,64 +1778,55 @@ template<
     typename Traits = HashTraits<Value>>
 class HeapHashCountedSet : public HashCountedSet<Value, HashFunctions, Traits, HeapAllocator> { };
 
-template<typename T, size_t inlineCapacity>
-class NeedsDestructionTrait {
-public:
-    static const bool isMemberType = WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, Member>::value;
-    // We don't need to call a destructor for a HeapVector<Member<>>
-    // that does not have inline buffers.
-    static const bool value = inlineCapacity == 0 && isMemberType;
-};
-
 template<typename T, size_t inlineCapacity = 0>
-class HeapVector : public Vector<T, inlineCapacity, HeapAllocator, NeedsDestructionTrait<T, inlineCapacity>::value> {
+class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> {
 public:
     HeapVector() { }
 
-    explicit HeapVector(size_t size) : Vector<T, inlineCapacity, HeapAllocator, NeedsDestructionTrait<T, inlineCapacity>::value>(size)
+    explicit HeapVector(size_t size) : Vector<T, inlineCapacity, HeapAllocator>(size)
     {
     }
 
-    HeapVector(size_t size, const T& val) : Vector<T, inlineCapacity, HeapAllocator, NeedsDestructionTrait<T, inlineCapacity>::value>(size, val)
+    HeapVector(size_t size, const T& val) : Vector<T, inlineCapacity, HeapAllocator>(size, val)
     {
     }
 
     template<size_t otherCapacity>
     HeapVector(const HeapVector<T, otherCapacity>& other)
-        : Vector<T, inlineCapacity, HeapAllocator, NeedsDestructionTrait<T, inlineCapacity>::value>(other)
+        : Vector<T, inlineCapacity, HeapAllocator>(other)
     {
     }
 
     template<typename U>
     void append(const U* data, size_t dataSize)
     {
-        Vector<T, inlineCapacity, HeapAllocator, NeedsDestructionTrait<T, inlineCapacity>::value>::append(data, dataSize);
+        Vector<T, inlineCapacity, HeapAllocator>::append(data, dataSize);
     }
 
     template<typename U>
     void append(const U& other)
     {
-        Vector<T, inlineCapacity, HeapAllocator, NeedsDestructionTrait<T, inlineCapacity>::value>::append(other);
+        Vector<T, inlineCapacity, HeapAllocator>::append(other);
     }
 
     template<typename U, size_t otherCapacity>
     void appendVector(const HeapVector<U, otherCapacity>& other)
     {
-        const Vector<U, otherCapacity, HeapAllocator, NeedsDestructionTrait<U, otherCapacity>::value>& otherVector = other;
-        Vector<T, inlineCapacity, HeapAllocator, NeedsDestructionTrait<T, inlineCapacity>::value>::appendVector(otherVector);
+        const Vector<U, otherCapacity, HeapAllocator>& otherVector = other;
+        Vector<T, inlineCapacity, HeapAllocator>::appendVector(otherVector);
     }
 };
 
 template<typename T, size_t inlineCapacity = 0>
-class HeapDeque : public Deque<T, inlineCapacity, HeapAllocator, NeedsDestructionTrait<T, inlineCapacity>::value> {
+class HeapDeque : public Deque<T, inlineCapacity, HeapAllocator> {
 public:
     HeapDeque() { }
 
-    explicit HeapDeque(size_t size) : Deque<T, inlineCapacity, HeapAllocator, NeedsDestructionTrait<T, inlineCapacity>::value>(size)
+    explicit HeapDeque(size_t size) : Deque<T, inlineCapacity, HeapAllocator>(size)
     {
     }
 
-    HeapDeque(size_t size, const T& val) : Deque<T, inlineCapacity, HeapAllocator, NeedsDestructionTrait<T, inlineCapacity>::value>(size, val)
+    HeapDeque(size_t size, const T& val) : Deque<T, inlineCapacity, HeapAllocator>(size, val)
     {
     }
 
@@ -1850,19 +1841,19 @@ public:
     // FIXME: Doesn't work if there is an inline buffer, due to crbug.com/360572
     void swap(HeapDeque& other)
     {
-        Deque<T, inlineCapacity, HeapAllocator, NeedsDestructionTrait<T, inlineCapacity>::value>::swap(other);
+        Deque<T, inlineCapacity, HeapAllocator>::swap(other);
     }
 
     template<size_t otherCapacity>
     HeapDeque(const HeapDeque<T, otherCapacity>& other)
-        : Deque<T, inlineCapacity, HeapAllocator, NeedsDestructionTrait<T, inlineCapacity>::value>(other)
+        : Deque<T, inlineCapacity, HeapAllocator>(other)
     {
     }
 
     template<typename U>
     void append(const U& other)
     {
-        Deque<T, inlineCapacity, HeapAllocator, NeedsDestructionTrait<T, inlineCapacity>::value>::append(other);
+        Deque<T, inlineCapacity, HeapAllocator>::append(other);
     }
 };
 

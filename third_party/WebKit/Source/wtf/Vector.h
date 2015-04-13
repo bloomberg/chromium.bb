@@ -51,7 +51,7 @@ static const size_t kInitialVectorSize = 1;
 static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 #endif
 
-    template<typename T, size_t inlineBuffer, typename Allocator, bool noDestructor>
+    template<typename T, size_t inlineBuffer, typename Allocator>
     class Deque;
 
     template <bool needsDestruction, typename T>
@@ -561,13 +561,12 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         const T* inlineBuffer() const { return reinterpret_cast_ptr<const T*>(m_inlineBuffer.buffer); }
 
         AlignedBuffer<m_inlineBufferSize, WTF_ALIGN_OF(T)> m_inlineBuffer;
-        template<typename U, size_t otherInlineCapacity, typename OtherAllocator, bool otherNoDestructor>
+        template<typename U, size_t inlineBuffer, typename V>
         friend class Deque;
     };
 
-    template<typename T, size_t inlineCapacity = 0, typename Allocator = DefaultAllocator, bool noDestructor = false>
-    class Vector : private VectorBuffer<T, INLINE_CAPACITY, Allocator>
-        , public ConditionalDestructor<Vector<T, INLINE_CAPACITY, Allocator, noDestructor>, noDestructor> {
+    template<typename T, size_t inlineCapacity = 0, typename Allocator = DefaultAllocator> // Heap-allocated vectors with no inlineCapacity never need a destructor.
+    class Vector : private VectorBuffer<T, INLINE_CAPACITY, Allocator>, public ConditionalDestructor<Vector<T, INLINE_CAPACITY, Allocator>, (INLINE_CAPACITY == 0) && Allocator::isGarbageCollected> {
         WTF_USE_ALLOCATOR(Vector, Allocator);
     private:
         typedef VectorBuffer<T, INLINE_CAPACITY, Allocator> Base;
@@ -600,8 +599,9 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         }
 
         // Off-GC-heap vectors: Destructor should be called.
-        // On-GC-heap vectors: Destructor should be called if T needs
-        // a destructor or the vector has an inlined buffer.
+        // On-GC-heap vectors: Destructor should be called for inline buffers
+        // (if any) but destructor shouldn't be called for vector backing since
+        // it is managed by the traced GC heap.
         void finalize()
         {
             if (!INLINE_CAPACITY) {
@@ -609,7 +609,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
                     return;
             }
             ANNOTATE_DELETE_BUFFER(begin(), capacity(), m_size);
-            if (LIKELY(m_size) && (!Allocator::isGarbageCollected || VectorTraits<T>::needsDestruction || !this->hasOutOfLineBuffer())) {
+            if (LIKELY(m_size) && !(Allocator::isGarbageCollected && this->hasOutOfLineBuffer())) {
                 TypeOperations::destruct(begin(), end());
                 m_size = 0; // Partial protection against use-after-free.
             }
@@ -623,12 +623,12 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         }
 
         Vector(const Vector&);
-        template<size_t otherCapacity, bool otherNoDestructor>
-        explicit Vector(const Vector<T, otherCapacity, Allocator, otherNoDestructor>&);
+        template<size_t otherCapacity>
+        explicit Vector(const Vector<T, otherCapacity, Allocator>&);
 
         Vector& operator=(const Vector&);
-        template<size_t otherCapacity, bool otherNoDestructor>
-        Vector& operator=(const Vector<T, otherCapacity, Allocator, otherNoDestructor>&);
+        template<size_t otherCapacity>
+        Vector& operator=(const Vector<T, otherCapacity, Allocator>&);
 
         Vector(Vector&&);
         Vector& operator=(Vector&&);
@@ -690,15 +690,15 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         template<typename U> void append(const U*, size_t);
         template<typename U> void append(const U&);
         template<typename U> void uncheckedAppend(const U& val);
-        template<typename U, size_t otherCapacity, typename OtherAllocator, bool otherNoDestructor> void appendVector(const Vector<U, otherCapacity, OtherAllocator, otherNoDestructor>&);
+        template<typename U, size_t otherCapacity, typename V> void appendVector(const Vector<U, otherCapacity, V>&);
 
         template<typename U> void insert(size_t position, const U*, size_t);
         template<typename U> void insert(size_t position, const U&);
-        template<typename U, size_t otherInlineCapacity, typename OtherAllocator, bool otherNoDestructor> void insert(size_t position, const Vector<U, otherInlineCapacity, OtherAllocator, otherNoDestructor>&);
+        template<typename U, size_t c, typename V> void insert(size_t position, const Vector<U, c, V>&);
 
         template<typename U> void prepend(const U*, size_t);
         template<typename U> void prepend(const U&);
-        template<typename U, size_t otherInlineCapacity, typename OtherAllocator, bool otherNoDestructor> void prepend(const Vector<U, otherInlineCapacity, OtherAllocator, otherNoDestructor>&);
+        template<typename U, size_t c, typename V> void prepend(const Vector<U, c, V>&);
 
         void remove(size_t position);
         void remove(size_t position, size_t length);
@@ -748,8 +748,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         using Base::allocationSize;
     };
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor>
-    Vector<T, inlineCapacity, Allocator, noDestructor>::Vector(const Vector& other)
+    template<typename T, size_t inlineCapacity, typename Allocator>
+    Vector<T, inlineCapacity, Allocator>::Vector(const Vector& other)
         : Base(other.capacity())
     {
         ANNOTATE_NEW_BUFFER(begin(), capacity(), other.size());
@@ -757,9 +757,9 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         TypeOperations::uninitializedCopy(other.begin(), other.end(), begin());
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor>
-    template<size_t otherCapacity, bool otherNoDestructor>
-    Vector<T, inlineCapacity, Allocator, noDestructor>::Vector(const Vector<T, otherCapacity, Allocator, otherNoDestructor>& other)
+    template<typename T, size_t inlineCapacity, typename Allocator>
+    template<size_t otherCapacity>
+    Vector<T, inlineCapacity, Allocator>::Vector(const Vector<T, otherCapacity, Allocator>& other)
         : Base(other.capacity())
     {
         ANNOTATE_NEW_BUFFER(begin(), capacity(), other.size());
@@ -767,8 +767,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         TypeOperations::uninitializedCopy(other.begin(), other.end(), begin());
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor>
-    Vector<T, inlineCapacity, Allocator, noDestructor>& Vector<T, inlineCapacity, Allocator, noDestructor>::operator=(const Vector<T, inlineCapacity, Allocator, noDestructor>& other)
+    template<typename T, size_t inlineCapacity, typename Allocator>
+    Vector<T, inlineCapacity, Allocator>& Vector<T, inlineCapacity, Allocator>::operator=(const Vector<T, inlineCapacity, Allocator>& other)
     {
         if (UNLIKELY(&other == this))
             return *this;
@@ -791,9 +791,9 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
     inline bool typelessPointersAreEqual(const void* a, const void* b) { return a == b; }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor>
-    template<size_t otherCapacity, bool otherNoDestructor>
-    Vector<T, inlineCapacity, Allocator, noDestructor>& Vector<T, inlineCapacity, Allocator, noDestructor>::operator=(const Vector<T, otherCapacity, Allocator, otherNoDestructor>& other)
+    template<typename T, size_t inlineCapacity, typename Allocator>
+    template<size_t otherCapacity>
+    Vector<T, inlineCapacity, Allocator>& Vector<T, inlineCapacity, Allocator>::operator=(const Vector<T, otherCapacity, Allocator>& other)
     {
         // If the inline capacities match, we should call the more specific
         // template.  If the inline capacities don't match, the two objects
@@ -816,8 +816,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         return *this;
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor>
-    Vector<T, inlineCapacity, Allocator, noDestructor>::Vector(Vector<T, inlineCapacity, Allocator, noDestructor>&& other)
+    template<typename T, size_t inlineCapacity, typename Allocator>
+    Vector<T, inlineCapacity, Allocator>::Vector(Vector<T, inlineCapacity, Allocator>&& other)
     {
         m_size = 0;
         // It's a little weird to implement a move constructor using swap but this way we
@@ -825,23 +825,23 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         swap(other);
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor>
-    Vector<T, inlineCapacity, Allocator, noDestructor>& Vector<T, inlineCapacity, Allocator, noDestructor>::operator=(Vector<T, inlineCapacity, Allocator, noDestructor>&& other)
+    template<typename T, size_t inlineCapacity, typename Allocator>
+    Vector<T, inlineCapacity, Allocator>& Vector<T, inlineCapacity, Allocator>::operator=(Vector<T, inlineCapacity, Allocator>&& other)
     {
         swap(other);
         return *this;
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor>
+    template<typename T, size_t inlineCapacity, typename Allocator>
     template<typename U>
-    bool Vector<T, inlineCapacity, Allocator, noDestructor>::contains(const U& value) const
+    bool Vector<T, inlineCapacity, Allocator>::contains(const U& value) const
     {
         return find(value) != kNotFound;
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor>
+    template<typename T, size_t inlineCapacity, typename Allocator>
     template<typename U>
-    size_t Vector<T, inlineCapacity, Allocator, noDestructor>::find(const U& value) const
+    size_t Vector<T, inlineCapacity, Allocator>::find(const U& value) const
     {
         const T* b = begin();
         const T* e = end();
@@ -852,9 +852,9 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         return kNotFound;
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor>
+    template<typename T, size_t inlineCapacity, typename Allocator>
     template<typename U>
-    size_t Vector<T, inlineCapacity, Allocator, noDestructor>::reverseFind(const U& value) const
+    size_t Vector<T, inlineCapacity, Allocator>::reverseFind(const U& value) const
     {
         const T* b = begin();
         const T* iter = end();
@@ -866,8 +866,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         return kNotFound;
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor>
-    void Vector<T, inlineCapacity, Allocator, noDestructor>::fill(const T& val, size_t newSize)
+    template<typename T, size_t inlineCapacity, typename Allocator>
+    void Vector<T, inlineCapacity, Allocator>::fill(const T& val, size_t newSize)
     {
         if (size() > newSize)
             shrink(newSize);
@@ -883,16 +883,16 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         m_size = newSize;
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor>
+    template<typename T, size_t inlineCapacity, typename Allocator>
     template<typename Iterator>
-    void Vector<T, inlineCapacity, Allocator, noDestructor>::appendRange(Iterator start, Iterator end)
+    void Vector<T, inlineCapacity, Allocator>::appendRange(Iterator start, Iterator end)
     {
         for (Iterator it = start; it != end; ++it)
             append(*it);
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor>
-    void Vector<T, inlineCapacity, Allocator, noDestructor>::expandCapacity(size_t newMinCapacity)
+    template<typename T, size_t inlineCapacity, typename Allocator>
+    void Vector<T, inlineCapacity, Allocator>::expandCapacity(size_t newMinCapacity)
     {
         size_t oldCapacity = capacity();
         size_t expandedCapacity = oldCapacity;
@@ -913,8 +913,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         reserveCapacity(std::max(newMinCapacity, std::max(static_cast<size_t>(kInitialVectorSize), expandedCapacity)));
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor>
-    const T* Vector<T, inlineCapacity, Allocator, noDestructor>::expandCapacity(size_t newMinCapacity, const T* ptr)
+    template<typename T, size_t inlineCapacity, typename Allocator>
+    const T* Vector<T, inlineCapacity, Allocator>::expandCapacity(size_t newMinCapacity, const T* ptr)
     {
         if (ptr < begin() || ptr >= end()) {
             expandCapacity(newMinCapacity);
@@ -925,15 +925,15 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         return begin() + index;
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor> template<typename U>
-    inline U* Vector<T, inlineCapacity, Allocator, noDestructor>::expandCapacity(size_t newMinCapacity, U* ptr)
+    template<typename T, size_t inlineCapacity, typename Allocator> template<typename U>
+    inline U* Vector<T, inlineCapacity, Allocator>::expandCapacity(size_t newMinCapacity, U* ptr)
     {
         expandCapacity(newMinCapacity);
         return ptr;
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor>
-    inline void Vector<T, inlineCapacity, Allocator, noDestructor>::resize(size_t size)
+    template<typename T, size_t inlineCapacity, typename Allocator>
+    inline void Vector<T, inlineCapacity, Allocator>::resize(size_t size)
     {
         if (size <= m_size) {
             TypeOperations::destruct(begin() + size, end());
@@ -948,8 +948,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         m_size = size;
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor>
-    void Vector<T, inlineCapacity, Allocator, noDestructor>::shrink(size_t size)
+    template<typename T, size_t inlineCapacity, typename Allocator>
+    void Vector<T, inlineCapacity, Allocator>::shrink(size_t size)
     {
         ASSERT(size <= m_size);
         TypeOperations::destruct(begin() + size, end());
@@ -957,8 +957,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         m_size = size;
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor>
-    void Vector<T, inlineCapacity, Allocator, noDestructor>::grow(size_t size)
+    template<typename T, size_t inlineCapacity, typename Allocator>
+    void Vector<T, inlineCapacity, Allocator>::grow(size_t size)
     {
         ASSERT(size >= m_size);
         if (size > capacity())
@@ -968,8 +968,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         m_size = size;
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor>
-    void Vector<T, inlineCapacity, Allocator, noDestructor>::reserveCapacity(size_t newCapacity)
+    template<typename T, size_t inlineCapacity, typename Allocator>
+    void Vector<T, inlineCapacity, Allocator>::reserveCapacity(size_t newCapacity)
     {
         if (UNLIKELY(newCapacity <= capacity()))
             return;
@@ -996,8 +996,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         Base::deallocateBuffer(oldBuffer);
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor>
-    inline void Vector<T, inlineCapacity, Allocator, noDestructor>::reserveInitialCapacity(size_t initialCapacity)
+    template<typename T, size_t inlineCapacity, typename Allocator>
+    inline void Vector<T, inlineCapacity, Allocator>::reserveInitialCapacity(size_t initialCapacity)
     {
         ASSERT(!m_size);
         ASSERT(capacity() == INLINE_CAPACITY);
@@ -1008,8 +1008,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         }
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor>
-    void Vector<T, inlineCapacity, Allocator, noDestructor>::shrinkCapacity(size_t newCapacity)
+    template<typename T, size_t inlineCapacity, typename Allocator>
+    void Vector<T, inlineCapacity, Allocator>::shrinkCapacity(size_t newCapacity)
     {
         if (newCapacity >= capacity())
             return;
@@ -1051,8 +1051,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     // because for instance it allows a PassRefPtr to be appended to a RefPtr vector
     // without refcount thrash.
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor> template<typename U>
-    void Vector<T, inlineCapacity, Allocator, noDestructor>::append(const U* data, size_t dataSize)
+    template<typename T, size_t inlineCapacity, typename Allocator> template<typename U>
+    void Vector<T, inlineCapacity, Allocator>::append(const U* data, size_t dataSize)
     {
         ASSERT(Allocator::isAllocationAllowed());
         size_t newSize = m_size + dataSize;
@@ -1067,8 +1067,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         m_size = newSize;
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor> template<typename U>
-    ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator, noDestructor>::append(const U& val)
+    template<typename T, size_t inlineCapacity, typename Allocator> template<typename U>
+    ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator>::append(const U& val)
     {
         ASSERT(Allocator::isAllocationAllowed());
         if (LIKELY(size() != capacity())) {
@@ -1081,8 +1081,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         appendSlowCase(val);
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor> template<typename U>
-    NEVER_INLINE void Vector<T, inlineCapacity, Allocator, noDestructor>::appendSlowCase(const U& val)
+    template<typename T, size_t inlineCapacity, typename Allocator> template<typename U>
+    NEVER_INLINE void Vector<T, inlineCapacity, Allocator>::appendSlowCase(const U& val)
     {
         ASSERT(size() == capacity());
 
@@ -1098,8 +1098,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     // This version of append saves a branch in the case where you know that the
     // vector's capacity is large enough for the append to succeed.
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor> template<typename U>
-    ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator, noDestructor>::uncheckedAppend(const U& val)
+    template<typename T, size_t inlineCapacity, typename Allocator> template<typename U>
+    ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator>::uncheckedAppend(const U& val)
     {
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
         // Vectors in ASAN builds don't have inlineCapacity.
@@ -1113,14 +1113,14 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 #endif
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor> template<typename U, size_t otherCapacity, typename OtherAllocator, bool otherNoDestructor>
-    inline void Vector<T, inlineCapacity, Allocator, noDestructor>::appendVector(const Vector<U, otherCapacity, OtherAllocator, otherNoDestructor>& val)
+    template<typename T, size_t inlineCapacity, typename Allocator> template<typename U, size_t otherCapacity, typename OtherAllocator>
+    inline void Vector<T, inlineCapacity, Allocator>::appendVector(const Vector<U, otherCapacity, OtherAllocator>& val)
     {
         append(val.begin(), val.size());
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor> template<typename U>
-    void Vector<T, inlineCapacity, Allocator, noDestructor>::insert(size_t position, const U* data, size_t dataSize)
+    template<typename T, size_t inlineCapacity, typename Allocator> template<typename U>
+    void Vector<T, inlineCapacity, Allocator>::insert(size_t position, const U* data, size_t dataSize)
     {
         ASSERT(Allocator::isAllocationAllowed());
         RELEASE_ASSERT(position <= size());
@@ -1137,8 +1137,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         m_size = newSize;
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor> template<typename U>
-    inline void Vector<T, inlineCapacity, Allocator, noDestructor>::insert(size_t position, const U& val)
+    template<typename T, size_t inlineCapacity, typename Allocator> template<typename U>
+    inline void Vector<T, inlineCapacity, Allocator>::insert(size_t position, const U& val)
     {
         ASSERT(Allocator::isAllocationAllowed());
         RELEASE_ASSERT(position <= size());
@@ -1154,32 +1154,32 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         ++m_size;
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor> template<typename U, size_t otherInlineCapacity, typename OtherAllocator, bool otherNoDestructor>
-    inline void Vector<T, inlineCapacity, Allocator, noDestructor>::insert(size_t position, const Vector<U, otherInlineCapacity, OtherAllocator, otherNoDestructor>& val)
+    template<typename T, size_t inlineCapacity, typename Allocator> template<typename U, size_t c, typename OtherAllocator>
+    inline void Vector<T, inlineCapacity, Allocator>::insert(size_t position, const Vector<U, c, OtherAllocator>& val)
     {
         insert(position, val.begin(), val.size());
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor> template<typename U>
-    void Vector<T, inlineCapacity, Allocator, noDestructor>::prepend(const U* data, size_t dataSize)
+    template<typename T, size_t inlineCapacity, typename Allocator> template<typename U>
+    void Vector<T, inlineCapacity, Allocator>::prepend(const U* data, size_t dataSize)
     {
         insert(0, data, dataSize);
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor> template<typename U>
-    inline void Vector<T, inlineCapacity, Allocator, noDestructor>::prepend(const U& val)
+    template<typename T, size_t inlineCapacity, typename Allocator> template<typename U>
+    inline void Vector<T, inlineCapacity, Allocator>::prepend(const U& val)
     {
         insert(0, val);
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor> template<typename U, size_t otherInlineCapacity, typename OtherAllocator, bool otherNoDestructor>
-    inline void Vector<T, inlineCapacity, Allocator, noDestructor>::prepend(const Vector<U, otherInlineCapacity, OtherAllocator, otherNoDestructor>& val)
+    template<typename T, size_t inlineCapacity, typename Allocator> template<typename U, size_t c, typename V>
+    inline void Vector<T, inlineCapacity, Allocator>::prepend(const Vector<U, c, V>& val)
     {
         insert(0, val.begin(), val.size());
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor>
-    inline void Vector<T, inlineCapacity, Allocator, noDestructor>::remove(size_t position)
+    template<typename T, size_t inlineCapacity, typename Allocator>
+    inline void Vector<T, inlineCapacity, Allocator>::remove(size_t position)
     {
         RELEASE_ASSERT(position < size());
         T* spot = begin() + position;
@@ -1189,8 +1189,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         --m_size;
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor>
-    inline void Vector<T, inlineCapacity, Allocator, noDestructor>::remove(size_t position, size_t length)
+    template<typename T, size_t inlineCapacity, typename Allocator>
+    inline void Vector<T, inlineCapacity, Allocator>::remove(size_t position, size_t length)
     {
         ASSERT_WITH_SECURITY_IMPLICATION(position <= size());
         RELEASE_ASSERT(position + length <= size());
@@ -1202,30 +1202,30 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         m_size -= length;
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor>
-    inline void Vector<T, inlineCapacity, Allocator, noDestructor>::reverse()
+    template<typename T, size_t inlineCapacity, typename Allocator>
+    inline void Vector<T, inlineCapacity, Allocator>::reverse()
     {
         for (size_t i = 0; i < m_size / 2; ++i)
             std::swap(at(i), at(m_size - 1 - i));
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor>
-    void deleteAllValues(const Vector<T, inlineCapacity, Allocator, noDestructor>& collection)
+    template<typename T, size_t inlineCapacity, typename Allocator>
+    void deleteAllValues(const Vector<T, inlineCapacity, Allocator>& collection)
     {
-        typedef typename Vector<T, inlineCapacity, Allocator, noDestructor>::const_iterator iterator;
+        typedef typename Vector<T, inlineCapacity, Allocator>::const_iterator iterator;
         iterator end = collection.end();
         for (iterator it = collection.begin(); it != end; ++it)
             delete *it;
     }
 
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor>
-    inline void swap(Vector<T, inlineCapacity, Allocator, noDestructor>& a, Vector<T, inlineCapacity, Allocator, noDestructor>& b)
+    template<typename T, size_t inlineCapacity, typename Allocator>
+    inline void swap(Vector<T, inlineCapacity, Allocator>& a, Vector<T, inlineCapacity, Allocator>& b)
     {
         a.swap(b);
     }
 
-    template<typename T, size_t inlineCapacityA, size_t inlineCapacityB, typename Allocator, bool noDestructor>
-    bool operator==(const Vector<T, inlineCapacityA, Allocator, noDestructor>& a, const Vector<T, inlineCapacityB, Allocator, noDestructor>& b)
+    template<typename T, size_t inlineCapacityA, size_t inlineCapacityB, typename Allocator>
+    bool operator==(const Vector<T, inlineCapacityA, Allocator>& a, const Vector<T, inlineCapacityB, Allocator>& b)
     {
         if (a.size() != b.size())
             return false;
@@ -1233,17 +1233,17 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         return VectorTypeOperations<T>::compare(a.data(), b.data(), a.size());
     }
 
-    template<typename T, size_t inlineCapacityA, size_t inlineCapacityB, typename Allocator, bool noDestructor>
-    inline bool operator!=(const Vector<T, inlineCapacityA, Allocator, noDestructor>& a, const Vector<T, inlineCapacityB, Allocator, noDestructor>& b)
+    template<typename T, size_t inlineCapacityA, size_t inlineCapacityB, typename Allocator>
+    inline bool operator!=(const Vector<T, inlineCapacityA, Allocator>& a, const Vector<T, inlineCapacityB, Allocator>& b)
     {
         return !(a == b);
     }
 
     // This is only called if the allocator is a HeapAllocator. It is used when
     // visiting during a tracing GC.
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor>
+    template<typename T, size_t inlineCapacity, typename Allocator>
     template<typename VisitorDispatcher>
-    void Vector<T, inlineCapacity, Allocator, noDestructor>::trace(VisitorDispatcher visitor)
+    void Vector<T, inlineCapacity, Allocator>::trace(VisitorDispatcher visitor)
     {
         ASSERT(Allocator::isGarbageCollected); // Garbage collector must be enabled.
         const T* bufferBegin = buffer();

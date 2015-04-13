@@ -125,18 +125,14 @@ template<typename T, size_t inlineCapacity> class HeapVector;
 template<typename T, size_t inlineCapacity> class HeapDeque;
 template<typename T, typename U, typename V> class HeapHashCountedSet;
 
-template<typename T, size_t inlineCapacity>
-struct ThreadingTrait<HeapVector<T, inlineCapacity>> : public ThreadingTrait<Vector<T, inlineCapacity, HeapAllocator>> { };
-template<typename T, size_t inlineCapacity>
-struct ThreadingTrait<Vector<T, inlineCapacity, HeapAllocator, true>> : public ThreadingTrait<Vector<T, inlineCapacity, HeapAllocator>> { };
-template<typename T, size_t inlineCapacity>
-struct ThreadingTrait<HeapDeque<T, inlineCapacity>> : public ThreadingTrait<Deque<T, inlineCapacity, HeapAllocator>> { };
-template<typename T, size_t inlineCapacity>
-struct ThreadingTrait<Deque<T, inlineCapacity, HeapAllocator, true>> : public ThreadingTrait<Deque<T, inlineCapacity, HeapAllocator>> { };
 template<typename T, typename U, typename V, typename W, typename X>
 struct ThreadingTrait<HeapHashMap<T, U, V, W, X>> : public ThreadingTrait<HashMap<T, U, V, W, X, HeapAllocator>> { };
 template<typename T, typename U, typename V>
 struct ThreadingTrait<HeapHashSet<T, U, V>> : public ThreadingTrait<HashSet<T, U, V, HeapAllocator>> { };
+template<typename T, size_t inlineCapacity>
+struct ThreadingTrait<HeapVector<T, inlineCapacity>> : public ThreadingTrait<Vector<T, inlineCapacity, HeapAllocator>> { };
+template<typename T, size_t inlineCapacity>
+struct ThreadingTrait<HeapDeque<T, inlineCapacity>> : public ThreadingTrait<Deque<T, inlineCapacity, HeapAllocator>> { };
 template<typename T, typename U, typename V>
 struct ThreadingTrait<HeapHashCountedSet<T, U, V>> : public ThreadingTrait<HashCountedSet<T, U, V, HeapAllocator>> { };
 

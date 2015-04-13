@@ -29,7 +29,7 @@ namespace WTF {
     template<typename T> class PassOwnPtr;
     template<typename T> class PassRefPtr;
     template<typename T> class RefPtr;
-    template<typename T, size_t inlineCapacity, typename Allocator, bool noDestructor> class Vector;
+    template<typename T, size_t inlineCapacity, typename Allocator> class Vector;
     template<typename T> class WeakPtr;
 
     class ArrayBuffer;

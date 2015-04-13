@@ -32,7 +32,7 @@
 
 namespace blink {
 
-class CORE_EXPORT FormDataList : public RefCountedWillBeGarbageCollectedFinalized<FormDataList> {
+class CORE_EXPORT FormDataList : public RefCountedWillBeGarbageCollected<FormDataList> {
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(FormDataList);
 public:
     class Entry final {
