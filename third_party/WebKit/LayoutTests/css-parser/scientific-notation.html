@@ -57,6 +57,8 @@ assert_valid_value("opacity", "1e-600", "0");
 assert_valid_value("width", "1e600px", "0px");
 assert_valid_value("width", "1e-600px", "0px");
 
+assert_invalid_value("width", "1e+px");
+assert_invalid_value("width", "1e-px");
 assert_invalid_value("width", "1e1.0px");
 assert_invalid_value("width", "1e10.0px");
 assert_invalid_value("width", "1e1.0em");
