@@ -1080,6 +1080,8 @@ static void set_mode(struct device *dev, struct pipe_arg *pipes, unsigned int co
 	if (bo == NULL)
 		return;
 
+	dev->mode.bo = bo;
+
 	ret = drmModeAddFB2(dev->fd, dev->mode.width, dev->mode.height,
 			    pipes[0].fourcc, handles, pitches, offsets, &fb_id, 0);
 	if (ret) {
@@ -1087,6 +1089,8 @@ static void set_mode(struct device *dev, struct pipe_arg *pipes, unsigned int co
 			dev->mode.width, dev->mode.height, strerror(errno));
 		return;
 	}
+
+	dev->mode.fb_id = fb_id;
 
 	x = 0;
 	for (i = 0; i < count; i++) {
@@ -1115,9 +1119,6 @@ static void set_mode(struct device *dev, struct pipe_arg *pipes, unsigned int co
 			return;
 		}
 	}
-
-	dev->mode.bo = bo;
-	dev->mode.fb_id = fb_id;
 }
 
 static void clear_mode(struct device *dev)
@@ -1198,7 +1199,7 @@ static void test_page_flip(struct device *dev, struct pipe_arg *pipes, unsigned 
 			    &other_fb_id, 0);
 	if (ret) {
 		fprintf(stderr, "failed to add fb: %s\n", strerror(errno));
-		return;
+		goto err;
 	}
 
 	for (i = 0; i < count; i++) {
@@ -1212,7 +1213,7 @@ static void test_page_flip(struct device *dev, struct pipe_arg *pipes, unsigned 
 				      pipe);
 		if (ret) {
 			fprintf(stderr, "failed to page flip: %s\n", strerror(errno));
-			return;
+			goto err_rmfb;
 		}
 		gettimeofday(&pipe->start, NULL);
 		pipe->swap_count = 0;
@@ -1264,7 +1265,9 @@ static void test_page_flip(struct device *dev, struct pipe_arg *pipes, unsigned 
 		drmHandleEvent(dev->fd, &evctx);
 	}
 
+err_rmfb:
 	drmModeRmFB(dev->fd, other_fb_id);
+err:
 	bo_destroy(other_bo);
 }
 
