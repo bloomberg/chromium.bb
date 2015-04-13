@@ -23,7 +23,8 @@ cvox.ScriptInstaller.blacklistPattern = /chrome:\/\/|chrome-extension:\/\//;
  * @param {Array<string>} srcs An array of URLs of scripts.
  * @param {string} uid A unique id.  This function won't install the same set of
  *      scripts twice.
- * @param {function()=} opt_onload A function called when the script has loaded.
+ * @param {function()=} opt_onload A function called when the last script
+ *     has loaded.
  * @param {string=} opt_chromevoxScriptBase An optional chromevoxScriptBase
  *     attribute to add.
  * @return {boolean} False if the script already existed and this function
@@ -37,43 +38,72 @@ cvox.ScriptInstaller.installScript = function(srcs, uid, opt_onload,
   if (document.querySelector('script[' + uid + ']')) {
     return false;
   }
-  if (!srcs) {
+  if (!srcs || srcs.length == 0) {
     return false;
   }
-  for (var i = 0, scriptSrc; scriptSrc = srcs[i]; i++) {
-    // Directly write the contents of the script we are trying to inject into
-    // the page.
-    var xhr = new XMLHttpRequest();
-    var url = scriptSrc + '?' + new Date().getTime();
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4) {
-          var scriptText = xhr.responseText;
-          // Add a magic comment to the bottom of the file so that
-          // Chrome knows the name of the script in the JavaScript debugger.
-          scriptText += '\n//# sourceURL=' + scriptSrc + '\n';
 
-          var apiScript = document.createElement('script');
-          apiScript.type = 'text/javascript';
-          apiScript.setAttribute(uid, '1');
-          apiScript.textContent = scriptText;
-          if (opt_chromevoxScriptBase) {
-            apiScript.setAttribute('chromevoxScriptBase',
-                opt_chromevoxScriptBase);
-          }
-          cvox.DomUtil.addNodeToHead(apiScript);
-        }
-      };
-    try {
-      xhr.open('GET', url, false);
-      xhr.send(null);
-    } catch (exception) {
-      window.console.log('Warning: ChromeVox external script loading for ' +
-          document.location + ' stopped after failing to install ' + scriptSrc);
-      return false;
+  cvox.ScriptInstaller.installScriptHelper_(srcs, uid, opt_onload,
+                                            opt_chromevoxScriptBase);
+  return true;
+};
+
+/**
+ * Helper that installs one script and calls itself recursively when each
+ * script loads.
+ * @param {Array<string>} srcs An array of URLs of scripts.
+ * @param {string} uid A unique id.  This function won't install the same set of
+ *      scripts twice.
+ * @param {function()=} opt_onload A function called when the
+ *     last script has loaded.
+ * @param {string=} opt_chromevoxScriptBase An optional chromevoxScriptBase
+ *     attribute to add.
+ * @private
+ */
+cvox.ScriptInstaller.installScriptHelper_ = function(srcs, uid, opt_onload,
+    opt_chromevoxScriptBase) {
+  function next() {
+    if (srcs.length > 0) {
+      cvox.ScriptInstaller.installScriptHelper_(srcs, uid, opt_onload,
+                                                opt_chromevoxScriptBase);
+    } else if (opt_onload) {
+      opt_onload();
     }
   }
-  if (opt_onload) {
-    opt_onload();
+
+  var scriptSrc = srcs.shift();
+  if (!scriptSrc) {
+    next();
+    return;
   }
-  return true;
+
+  var xhr = new XMLHttpRequest();
+  var url = scriptSrc + '?' + new Date().getTime();
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4) {
+      var scriptText = xhr.responseText;
+      // Add a magic comment to the bottom of the file so that
+      // Chrome knows the name of the script in the JavaScript debugger.
+      scriptText += '\n//# sourceURL=' + scriptSrc + '\n';
+
+      var apiScript = document.createElement('script');
+      apiScript.type = 'text/javascript';
+      apiScript.setAttribute(uid, '1');
+      apiScript.textContent = scriptText;
+      if (opt_chromevoxScriptBase) {
+        apiScript.setAttribute('chromevoxScriptBase',
+                               opt_chromevoxScriptBase);
+      }
+      cvox.DomUtil.addNodeToHead(apiScript);
+      next();
+    }
+  };
+
+  try {
+    xhr.open('GET', url, true);
+    xhr.send(null);
+  } catch (exception) {
+    console.log('Warning: ChromeVox external script loading for ' +
+        document.location + ' stopped after failing to install ' + scriptSrc);
+    next();
+  }
 };

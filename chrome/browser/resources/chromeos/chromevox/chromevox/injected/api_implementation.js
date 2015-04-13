@@ -48,10 +48,10 @@ cvox.ApiImplementation.init = function(opt_onload) {
   scripts.push(cvox.ChromeVox.host.getApiSrc());
   scripts.push(cvox.ApiImplementation.siteSpecificScriptLoader);
 
-  var apiScript = cvox.ScriptInstaller.installScript(scripts,
+  var didInstall = cvox.ScriptInstaller.installScript(scripts,
       'cvoxapi', opt_onload, cvox.ApiImplementation.siteSpecificScriptBase);
 
-  if (!apiScript) {
+  if (!didInstall) {
     // If the API script is already installed, just re-enable it.
     window.location.href = 'javascript:cvox.Api.internalEnable();';
   }
