@@ -1466,6 +1466,7 @@ _x86_internal_release_boards = frozenset([
   'candy',
   'cid',
   'clapper',
+  'cranky',
   'enguarde',
   'expresso',
   'falco',
@@ -2887,6 +2888,11 @@ _AddGroupConfig('rambi-a', 'banjo', (
     'quawks',
 ))
 
+_AddGroupConfig('rambi-b', 'cranky', (
+),
+  important=False
+)
+
 # daisy-based boards
 _AddGroupConfig('daisy', 'daisy', (
     'daisy_spring',
@@ -3246,6 +3252,7 @@ _waterfall_config_map = {
       'jecht-release-group',
       'peach-freon-release-group',
       'pineview-freon-release-group',
+      'rambi-b-release-group',
       'veyron-b-release-group',
 
       # Experimental Canaries
