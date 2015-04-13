@@ -408,12 +408,12 @@ void RenderFrameDevToolsAgentHost::SetRenderFrameHost(RenderFrameHost* rfh) {
   DCHECK(ShouldCreateDevToolsFor(rfh));
   DCHECK(!render_frame_host_);
   render_frame_host_ = static_cast<RenderFrameHostImpl*>(rfh);
+  DCHECK(render_frame_host_);
 
   WebContentsObserver::Observe(WebContents::FromRenderFrameHost(rfh));
-  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      rfh->GetRenderViewHost());
   dom_handler_->SetRenderFrameHost(render_frame_host_);
-  input_handler_->SetRenderViewHost(rvh);
+  input_handler_->SetRenderWidgetHost(
+      render_frame_host_->GetRenderWidgetHost());
   network_handler_->SetRenderFrameHost(render_frame_host_);
   service_worker_handler_->SetRenderFrameHost(render_frame_host_);
 
@@ -429,7 +429,7 @@ void RenderFrameDevToolsAgentHost::ClearRenderFrameHost() {
   dom_handler_->SetRenderFrameHost(nullptr);
   if (emulation_handler_)
     emulation_handler_->SetRenderFrameHost(nullptr);
-  input_handler_->SetRenderViewHost(nullptr);
+  input_handler_->SetRenderWidgetHost(nullptr);
   network_handler_->SetRenderFrameHost(nullptr);
   if (page_handler_)
     page_handler_->SetRenderFrameHost(nullptr);

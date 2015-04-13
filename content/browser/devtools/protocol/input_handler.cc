@@ -6,7 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
 
@@ -93,7 +93,7 @@ InputHandler::InputHandler()
 InputHandler::~InputHandler() {
 }
 
-void InputHandler::SetRenderViewHost(RenderViewHostImpl* host) {
+void InputHandler::SetRenderWidgetHost(RenderWidgetHostImpl* host) {
   host_ = host;
 }
 

@@ -9,7 +9,7 @@
 
 namespace content {
 
-class RenderViewHostImpl;
+class RenderWidgetHostImpl;
 
 namespace devtools {
 namespace input {
@@ -21,7 +21,7 @@ class InputHandler {
   InputHandler();
   virtual ~InputHandler();
 
-  void SetRenderViewHost(RenderViewHostImpl* host);
+  void SetRenderWidgetHost(RenderWidgetHostImpl* host);
   void SetClient(scoped_ptr<DevToolsProtocolClient> client);
 
   Response DispatchKeyEvent(const std::string& type,
@@ -81,7 +81,7 @@ class InputHandler {
                                 const std::string* gesture_source_type);
 
  private:
-  RenderViewHostImpl* host_;
+  RenderWidgetHostImpl* host_;
 
   DISALLOW_COPY_AND_ASSIGN(InputHandler);
 };
