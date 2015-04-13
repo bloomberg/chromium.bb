@@ -173,19 +173,23 @@ public final class PrefServiceBridge {
             return;
         }
 
-        maybeCreatePermissionForDefaultSearchEngine(true, context);
+        maybeCreatePermissionForDefaultSearchEngine(true,  // Allowed permission.
+                                                    true,  // We are migrating prefs.
+                                                    context);
     }
 
     /**
      * Add a permission entry for Location for the default search engine.
      * @param allowed Whether to create an Allowed permission or a Denied permission.
+     * @param forMigration Whether this is being done as part of a one-time migration effort.
      * @param context The current context to use.
      */
     public static void maybeCreatePermissionForDefaultSearchEngine(
-            boolean allowed, Context context) {
+            boolean allowed, boolean forMigration, Context context) {
         TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
         String url = templateUrlService.getSearchEngineUrlFromTemplateUrl(
                 templateUrlService.getDefaultSearchEngineIndex());
+        if (forMigration && !url.startsWith("https:")) return;
         GeolocationInfo locationSettings = new GeolocationInfo(url, null);
         ContentSetting locationPermission = locationSettings.getContentSetting();
         if (locationPermission == null || locationPermission == ContentSetting.ASK) {

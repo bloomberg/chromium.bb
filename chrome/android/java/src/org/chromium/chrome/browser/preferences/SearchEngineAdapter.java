@@ -249,7 +249,9 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
         mCallback.currentSearchEngineDetermined(getSearchEngineNameAndDomain(
                 mContext.getResources(), templateUrl));
 
-        PrefServiceBridge.maybeCreatePermissionForDefaultSearchEngine(true, mContext);
+        PrefServiceBridge.maybeCreatePermissionForDefaultSearchEngine(true,   // Allowed permission.
+                                                                      false,  // Not migrating.
+                                                                      mContext);
         notifyDataSetChanged();
     }
 
@@ -258,7 +260,9 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
         // default search engine. If the user notices that Location is blocked for the current
         // search engine and clicks the link to enable then the Location record must exist
         // (otherwise it is seemingly impossible to enable after resetting a site).
-        PrefServiceBridge.maybeCreatePermissionForDefaultSearchEngine(false, mContext);
+        PrefServiceBridge.maybeCreatePermissionForDefaultSearchEngine(false,  // Not allowed.
+                                                                      false,  // Not migrating.
+                                                                      mContext);
 
         if (!LocationSettings.getInstance().isSystemLocationSettingEnabled()) {
             mContext.startActivity(

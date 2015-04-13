@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
+import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.shell.preferences.ChromeShellMainPreferences;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -28,6 +29,7 @@ import org.chromium.content.browser.test.util.UiUtils;
 
 import java.lang.reflect.Method;
 import java.text.NumberFormat;
+import java.util.List;
 
 /**
  * Tests for the Settings menu.
@@ -129,6 +131,40 @@ public class PreferencesTest extends ChromeShellTestBase {
     }
 
     /**
+     * Make sure that when a user switches to a search engine that uses HTTP, the location
+     * permission is added, just like with HTTPS search engines.
+     */
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testSearchEnginePreferenceHttp() throws Exception {
+        ensureTemplateUrlServiceLoaded();
+
+        final Preferences prefActivity = startPreferences(getInstrumentation(),
+                ChromeShellMainPreferences.class.getName());
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                // Ensure that the second search engine in the list is selected.
+                PreferenceFragment fragment = (PreferenceFragment)
+                        prefActivity.getFragmentForTest();
+                SearchEnginePreference pref = (SearchEnginePreference)
+                        fragment.findPreference(SearchEnginePreference.PREF_SEARCH_ENGINE);
+                assertNotNull(pref);
+                assertEquals("0", pref.getValueForTesting());
+
+                // Simulate selecting a search engine that uses HTTP.
+                int index = indexOfFirstHttpSearchEngine();
+                pref.setValueForTesting(Integer.toString(index));
+
+                TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
+                assertEquals(index, templateUrlService.getDefaultSearchEngineIndex());
+                assertEquals(ContentSetting.ALLOW, locationPermissionForSearchEngine(index));
+            }
+        });
+    }
+
+    /**
      * Test migration path to creating a search engine permission.
      */
     @SmallTest
@@ -141,7 +177,7 @@ public class PreferencesTest extends ChromeShellTestBase {
             @Override
             public void run() {
                 PrefServiceBridge.maybeCreatePermissionForDefaultSearchEngine(
-                        true, getInstrumentation().getTargetContext());
+                        true, true, getInstrumentation().getTargetContext());
                 assertEquals(ContentSetting.ALLOW, locationPermissionForSearchEngine(
                         TemplateUrlService.getInstance().getDefaultSearchEngineIndex()));
             }
@@ -169,11 +205,50 @@ public class PreferencesTest extends ChromeShellTestBase {
 
                 // See if it overwrites it with an Allowed record (spoiler-alert: it shouldn't).
                 PrefServiceBridge.maybeCreatePermissionForDefaultSearchEngine(
-                        true, getInstrumentation().getTargetContext());
+                        true, true, getInstrumentation().getTargetContext());
                 assertEquals(ContentSetting.BLOCK, locationPermissionForSearchEngine(
                         templateUrlService.getDefaultSearchEngineIndex()));
             }
         });
+    }
+
+    /**
+     * Test that migration path does NOT create a search engine permission for engines accessed
+     * over HTTP.
+     */
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testPrepopulateDoesNotAddForHttp() throws Exception {
+        ensureTemplateUrlServiceLoaded();
+
+        // Create the default permission from the UI thread.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                // Set a search engine that uses HTTP as default.
+                int index = indexOfFirstHttpSearchEngine();
+                TemplateUrlService.getInstance().setSearchEngine(index);
+
+                // Make sure location permission wasn't populated since HTTP is present.
+                PrefServiceBridge.maybeCreatePermissionForDefaultSearchEngine(
+                        true, true, getInstrumentation().getTargetContext());
+                assertEquals(ContentSetting.ASK, locationPermissionForSearchEngine(index));
+            }
+        });
+    }
+
+    private int indexOfFirstHttpSearchEngine() {
+        TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
+        List<TemplateUrl> urls = templateUrlService.getLocalizedSearchEngines();
+        int index;
+        for (index = 0; index < urls.size(); ++index) {
+            String url = templateUrlService.getSearchEngineUrlFromTemplateUrl(index);
+            if (url.startsWith("http:")) {
+                return index;
+            }
+        }
+        fail();
+        return index;
     }
 
     private void ensureTemplateUrlServiceLoaded() throws Exception {
