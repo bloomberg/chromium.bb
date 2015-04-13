@@ -589,43 +589,33 @@ static void slerp(double qa[4], const double qb[4], double t)
     double ax, ay, az, aw;
     double bx, by, bz, bw;
     double cx, cy, cz, cw;
-    double angle;
-    double th, invth, scale, invscale;
+    double product;
 
     ax = qa[0]; ay = qa[1]; az = qa[2]; aw = qa[3];
     bx = qb[0]; by = qb[1]; bz = qb[2]; bw = qb[3];
 
-    angle = ax * bx + ay * by + az * bz + aw * bw;
+    product = ax * bx + ay * by + az * bz + aw * bw;
 
-    if (angle < 0.0) {
-        ax = -ax; ay = -ay;
-        az = -az; aw = -aw;
-        angle = -angle;
+    // Clamp product to -1.0 <= product <= 1.0.
+    product = std::min(std::max(product, -1.0), 1.0);
+
+    const double epsilon = 1e-5;
+    if (std::abs(product - 1.0) < epsilon) {
+        // Result is qa, so just return
+        return;
     }
 
-    if (angle + 1.0 > .05) {
-        if (1.0 - angle >= .05) {
-            th = std::acos(angle);
-            invth = 1.0 / std::sin(th);
-            scale = std::sin(th * (1.0 - t)) * invth;
-            invscale = std::sin(th * t) * invth;
-        } else {
-            scale = 1.0 - t;
-            invscale = t;
-        }
-    } else {
-        bx = -ay;
-        by = ax;
-        bz = -aw;
-        bw = az;
-        scale = std::sin(piDouble * (.5 - t));
-        invscale = std::sin(piDouble * t);
-    }
+    double denom = std::sqrt(1.0 - product * product);
+    double theta = std::acos(product);
+    double w = std::sin(t * theta) * (1.0 / denom);
 
-    cx = ax * scale + bx * invscale;
-    cy = ay * scale + by * invscale;
-    cz = az * scale + bz * invscale;
-    cw = aw * scale + bw * invscale;
+    double scale1 = std::cos(t * theta) - product * w;
+    double scale2 = w;
+
+    cx = ax * scale1 + bx * scale2;
+    cy = ay * scale1 + by * scale2;
+    cz = az * scale1 + bz * scale2;
+    cw = aw * scale1 + bw * scale2;
 
     qa[0] = cx; qa[1] = cy; qa[2] = cz; qa[3] = cw;
 }
