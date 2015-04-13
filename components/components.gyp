@@ -76,6 +76,11 @@
     'webdata_services.gypi',
   ],
   'conditions': [
+    ['OS == "android"', {
+      'includes': [
+        'service_tab_launcher.gypi',
+      ],
+    }],
     ['OS != "ios"', {
       'includes': [
         'app_modal.gypi',

@@ -72,6 +72,7 @@ include_rules = [
   "+components/search",
   "+components/search_engines",
   "+components/search_provider_logos",
+  "+components/service_tab_launcher",
   "+components/session_manager",
   "+components/sessions",
   "+components/signin",

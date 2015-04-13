@@ -9,7 +9,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.provider.Browser;
 
-import org.chromium.chrome.browser.ServiceTabLauncher;
+import org.chromium.components.service_tab_launcher.ServiceTabLauncher;
 import org.chromium.ui.WindowOpenDisposition;
 
 /**

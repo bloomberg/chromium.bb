@@ -154,11 +154,11 @@
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif defined(OS_ANDROID)
 #include "chrome/browser/android/new_tab_page_url_handler.h"
-#include "chrome/browser/android/service_tab_launcher.h"
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "chrome/browser/chrome_browser_main_android.h"
 #include "chrome/common/descriptors_android.h"
 #include "components/crash/browser/crash_dump_manager_android.h"
+#include "components/service_tab_launcher/browser/android/service_tab_launcher.h"
 #elif defined(OS_POSIX)
 #include "chrome/browser/chrome_browser_main_posix.h"
 #endif
@@ -2350,7 +2350,7 @@ void ChromeContentBrowserClient::OpenURL(
   Navigate(&nav_params);
   callback.Run(nav_params.target_contents);
 #elif defined(OS_ANDROID)
-  chrome::android::ServiceTabLauncher::GetInstance()->LaunchTab(
+  service_tab_launcher::ServiceTabLauncher::GetInstance()->LaunchTab(
       browser_context, params, callback);
 #else
   NOTIMPLEMENTED();

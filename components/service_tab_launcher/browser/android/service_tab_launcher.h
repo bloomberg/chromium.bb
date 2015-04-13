@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_SERVICE_TAB_LAUNCHER_H_
-#define CHROME_BROWSER_ANDROID_SERVICE_TAB_LAUNCHER_H_
+#ifndef COMPONENTS_SERVICE_TAB_LAUNCHER_BROWSER_ANDROID_SERVICE_TAB_LAUNCHER_H_
+#define COMPONENTS_SERVICE_TAB_LAUNCHER_BROWSER_ANDROID_SERVICE_TAB_LAUNCHER_H_
 
 #include "base/android/jni_android.h"
 #include "base/callback_forward.h"
@@ -16,8 +16,7 @@ struct OpenURLParams;
 class WebContents;
 }
 
-namespace chrome {
-namespace android {
+namespace service_tab_launcher {
 
 // Launcher for creating new tabs on Android from a background service, where
 // there may not necessarily be an Activity or a tab model at all. When the
@@ -57,7 +56,6 @@ class ServiceTabLauncher {
   DISALLOW_COPY_AND_ASSIGN(ServiceTabLauncher);
 };
 
-}  // namespace android
-}  // namespace chrome
+}  // namespace service_tab_launcher
 
-#endif  // CHROME_BROWSER_ANDROID_SERVICE_TAB_LAUNCHER_H_
+#endif  // COMPONENTS_SERVICE_TAB_LAUNCHER_BROWSER_ANDROID_SERVICE_TAB_LAUNCHER_H_

@@ -50,7 +50,6 @@
 #include "chrome/browser/android/profiles/profile_downloader_android.h"
 #include "chrome/browser/android/provider/chrome_browser_provider.h"
 #include "chrome/browser/android/recently_closed_tabs_bridge.h"
-#include "chrome/browser/android/service_tab_launcher.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/signin/account_management_screen_helper.h"
 #include "chrome/browser/android/signin/signin_manager_android.h"
@@ -113,6 +112,7 @@
 #include "components/gcm_driver/android/component_jni_registrar.h"
 #include "components/invalidation/android/component_jni_registrar.h"
 #include "components/navigation_interception/component_jni_registrar.h"
+#include "components/service_tab_launcher/component_jni_registrar.h"
 #include "components/variations/android/component_jni_registrar.h"
 #include "components/web_contents_delegate_android/component_jni_registrar.h"
 
@@ -237,7 +237,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      remote_media::RemoteMediaPlayerBridge::RegisterRemoteMediaPlayerBridge},
     {"SavePasswordInfoBar", SavePasswordInfoBar::Register},
     {"SceneLayer", chrome::android::RegisterSceneLayer},
-    {"ServiceTabLauncher", ServiceTabLauncher::RegisterServiceTabLauncher},
+    {"ServiceTabLauncher", service_tab_launcher::RegisterServiceTabLauncherJni},
     {"SigninManager", SigninManagerAndroid::Register},
     {"SingleTabModel", RegisterSingleTabModel},
     {"SqliteCursor", SQLiteCursor::RegisterSqliteCursor},

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/service_tab_launcher.h"
+#include "components/service_tab_launcher/browser/android/service_tab_launcher.h"
 
 #include "base/android/jni_string.h"
 #include "base/callback.h"
@@ -18,13 +18,12 @@ using base::android::GetApplicationContext;
 // Called by Java when the WebContents instance for a request Id is available.
 void OnWebContentsForRequestAvailable(
     JNIEnv* env, jclass clazz, jint request_id, jobject android_web_contents) {
-  chrome::android::ServiceTabLauncher::GetInstance()->OnTabLaunched(
+  service_tab_launcher::ServiceTabLauncher::GetInstance()->OnTabLaunched(
       request_id,
       content::WebContents::FromJavaWebContents(android_web_contents));
 }
 
-namespace chrome {
-namespace android {
+namespace service_tab_launcher {
 
 // static
 ServiceTabLauncher* ServiceTabLauncher::GetInstance() {
@@ -99,5 +98,4 @@ bool ServiceTabLauncher::RegisterServiceTabLauncher(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-}  // namespace android
-}  // namespace chrome
+}  // namespace service_tab_launcher

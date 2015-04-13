@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.components.service_tab_launcher;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -22,11 +22,11 @@ import org.chromium.content_public.browser.WebContents;
 public abstract class ServiceTabLauncher {
     private static final String TAG = ServiceTabLauncher.class.getSimpleName();
     private static final String SERVICE_TAB_LAUNCHER_KEY =
-            "org.chromium.chrome.browser.SERVICE_TAB_LAUNCHER";
+            "org.chromium.components.service_tab_launcher.SERVICE_TAB_LAUNCHER";
 
     // Name of the extra containing the Id of a tab launch request id.
     public static final String LAUNCH_REQUEST_ID_EXTRA =
-            "org.chromium.chrome.browser.ServiceTabLauncher.LAUNCH_REQUEST_ID";
+            "org.chromium.components.service_tab_launcher.ServiceTabLauncher.LAUNCH_REQUEST_ID";
 
     private static ServiceTabLauncher sInstance;
 
