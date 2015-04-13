@@ -39,6 +39,7 @@
         '../provider/ios_provider_chrome.gyp:ios_provider_chrome_browser',
         '../web/ios_web.gyp:ios_web',
         'injected_js',
+        'ios_chrome_common',
         'ios_chrome_resources.gyp:ios_theme_resources_gen',
       ],
       'link_settings': {
@@ -197,6 +198,26 @@
         'browser/web_resource/ios_web_resource_service.cc',
         'browser/web_resource/ios_web_resource_service.h',
       ],
+    },
+    {
+      'target_name': 'ios_chrome_common',
+      'type': 'static_library',
+      'include_dirs': [
+        '../..',
+      ],
+      'dependencies': [
+        '../../base/base.gyp:base',
+      ],
+      'link_settings': {
+        'libraries': [
+          '$(SDKROOT)/System/Library/Frameworks/CoreGraphics.framework',
+          '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
+        ],
+      },
+      'sources': [
+        'common/string_util.h',
+        'common/string_util.mm',
+      ]
     },
     {
       'target_name': 'injected_js',
