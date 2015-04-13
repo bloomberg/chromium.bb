@@ -40924,6 +40924,42 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Tabs.TabCountActiveWindow" units="Tabs">
+  <owner>bruthig@chromium.org</owner>
+  <owner>tdanderson@chromium.org</owner>
+  <summary>
+    The number of tabs open in the active window when a load completes.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.TabCountPerLoad" units="Tabs">
+  <owner>bruthig@chromium.org</owner>
+  <owner>tdanderson@chromium.org</owner>
+  <summary>
+    The number of tabs open in all browsers (counting app-mode windows) when a
+    load completes.
+  </summary>
+  <details>
+    This is basically the average number of tabs over time.
+
+    See also MPArch.RPHCountPerLoad for the number of processes used by these
+    tabs.
+  </details>
+</histogram>
+
+<histogram name="Tabs.TabCountPerWindow" units="Tabs">
+  <owner>bruthig@chromium.org</owner>
+  <owner>tdanderson@chromium.org</owner>
+  <summary>
+    The number of tabs open per window (counting app-mode windows) when a load
+    completes.
+  </summary>
+  <details>
+    This value will be recorded multiple times per load if more than one window
+    is open.
+  </details>
+</histogram>
+
 <histogram name="ThreadWatcher.ResponseTime" units="milliseconds">
   <owner>rtenneti@chromium.org</owner>
   <summary>
@@ -45066,6 +45102,44 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Count of page loads in each of the 2 different environments (metro/desktop)
     on Windows 8.
+  </summary>
+</histogram>
+
+<histogram name="WindowManager.AppWindowCountPerLoad">
+  <owner>kuscher@chromium.org</owner>
+  <summary>
+    The number of app windows open when a load completes. This includes windows
+    opened by an app shortcut, or apps opened in a popup. This only counts v1
+    apps.
+  </summary>
+</histogram>
+
+<histogram name="WindowManager.PanelWindowCountPerLoad">
+  <obsolete>
+    Deprecated 4/2013. No longer tracked.
+  </obsolete>
+  <owner>kuscher@chromium.org</owner>
+  <summary>
+    The number of panel windows open when a load completes. Panels are windows
+    docked to the bottom of the OS desktop, which are visible to the user even
+    while the user is interacting with other applications.
+  </summary>
+</histogram>
+
+<histogram name="WindowManager.PopUpWindowCountPerLoad">
+  <owner>kuscher@chromium.org</owner>
+  <summary>
+    The number of popup windows open when a load completes. Popup windows only
+    have one content area (no multiple tabs) and a stripped down toolbar
+    consisting only of a read-only address bar.
+  </summary>
+</histogram>
+
+<histogram name="WindowManager.TabbedWindowCountPerLoad">
+  <owner>kuscher@chromium.org</owner>
+  <summary>
+    The number of tabbed windows open when a load completes. A tabbed window is
+    a normal browser window which can have one or more tabs.
   </summary>
 </histogram>
 
