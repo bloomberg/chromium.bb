@@ -1119,6 +1119,12 @@ static void set_mode(struct device *dev, struct pipe_arg *pipes, unsigned int co
 	dev->mode.fb_id = fb_id;
 }
 
+static void clear_mode(struct device *dev)
+{
+	if (dev->mode.bo)
+		bo_destroy(dev->mode.bo);
+}
+
 static void set_planes(struct device *dev, struct plane_arg *p, unsigned int count)
 {
 	unsigned int i;
@@ -1642,7 +1648,8 @@ int main(int argc, char **argv)
 		if (test_cursor)
 			clear_cursors(&dev);
 
-		bo_destroy(dev.mode.bo);
+		if (count)
+			clear_mode(&dev);
 	}
 
 	free_resources(dev.resources);
