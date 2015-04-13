@@ -87,29 +87,25 @@ remoting.MockHostDaemonFacade = function() {
 
 /**
  * @param {remoting.HostController.Feature} feature
- * @param {function(boolean):void} onDone
- * @return {boolean}
+ * @return {!Promise<boolean>}
  */
-remoting.MockHostDaemonFacade.prototype.hasFeature = function(feature, onDone) {
+remoting.MockHostDaemonFacade.prototype.hasFeature = function(feature) {
   var that = this;
-  Promise.resolve().then(function() {
-    onDone(that.features.indexOf(feature) >= 0);
+  return Promise.resolve().then(function() {
+    return that.features.indexOf(feature) >= 0;
   });
 };
 
 /**
- * @param {function(string):void} onDone
- * @param {function(!remoting.Error):void} onError
- * @return {void}
+ * @return {!Promise<string>}
  */
-remoting.MockHostDaemonFacade.prototype.getHostName =
-    function(onDone, onError) {
+remoting.MockHostDaemonFacade.prototype.getHostName = function() {
   var that = this;
-  Promise.resolve().then(function() {
+  return Promise.resolve().then(function() {
     if (that.hostName === null) {
-      onError(remoting.Error.unexpected('getHostName'));
+      throw remoting.Error.unexpected('getHostName');
     } else {
-      onDone(that.hostName);
+      return that.hostName;
     }
   });
 };
@@ -117,116 +113,102 @@ remoting.MockHostDaemonFacade.prototype.getHostName =
 /**
  * @param {string} hostId
  * @param {string} pin
- * @param {function(string):void} onDone
- * @param {function(!remoting.Error):void} onError
- * @return {void}
+ * @return {!Promise<string>}
  */
-remoting.MockHostDaemonFacade.prototype.getPinHash =
-    function(hostId, pin, onDone, onError) {
+remoting.MockHostDaemonFacade.prototype.getPinHash = function(hostId, pin) {
   var that = this;
-  Promise.resolve().then(function() {
+  return Promise.resolve().then(function() {
     if (that.pinHashFunc === null) {
-      onError(remoting.Error.unexpected('getPinHash'));
+      throw remoting.Error.unexpected('getPinHash');
     } else {
-      onDone(that.pinHashFunc(hostId, pin));
+      return that.pinHashFunc(hostId, pin);
     }
   });
 };
 
 /**
- * @param {function(string, string):void} onDone
- * @param {function(!remoting.Error):void} onError
- * @return {void}
+ * @return {!Promise<{privateKey:string, publicKey:string}>}
  */
-remoting.MockHostDaemonFacade.prototype.generateKeyPair =
-    function(onDone, onError) {
+remoting.MockHostDaemonFacade.prototype.generateKeyPair = function() {
   var that = this;
-  Promise.resolve().then(function() {
+  return Promise.resolve().then(function() {
     if (that.privateKey === null || that.publicKey === null) {
-      onError(remoting.Error.unexpected('generateKeyPair'));
+      throw remoting.Error.unexpected('generateKeyPair');
     } else {
-      onDone(that.privateKey, that.publicKey);
+      return {
+        privateKey: that.privateKey,
+        publicKey: that.publicKey
+      };
     }
   });
 };
 
 /**
- * @param {Object} config
- * @param {function(remoting.HostController.AsyncResult):void} onDone
- * @param {function(!remoting.Error):void} onError
- * @return {void}
+ * @param {Object} config The new config parameters.
+ * @return {!Promise<remoting.HostController.AsyncResult>}
  */
-remoting.MockHostDaemonFacade.prototype.updateDaemonConfig =
-    function(config, onDone, onError) {
+remoting.MockHostDaemonFacade.prototype.updateDaemonConfig = function(config) {
   var that = this;
-  Promise.resolve().then(function() {
+  return Promise.resolve().then(function() {
     if (that.daemonConfig === null ||
         that.updateDaemonConfigResult === null ||
         'host_id' in config ||
         'xmpp_login' in config) {
-      onError(remoting.Error.unexpected('updateDaemonConfig'));
+      throw remoting.Error.unexpected('updateDaemonConfig');
     } else if (that.updateDaemonConfigResult !=
                remoting.HostController.AsyncResult.OK) {
-      onDone(that.updateDaemonConfigResult);
+      return that.updateDaemonConfigResult;
     } else {
       base.mix(that.daemonConfig, config);
-      onDone(remoting.HostController.AsyncResult.OK);
+      return remoting.HostController.AsyncResult.OK;
     }
   });
 };
 
 /**
- * @param {function(Object):void} onDone
- * @param {function(!remoting.Error):void} onError
- * @return {void}
+ * @return {!Promise<Object>}
  */
-remoting.MockHostDaemonFacade.prototype.getDaemonConfig =
-    function(onDone, onError) {
+remoting.MockHostDaemonFacade.prototype.getDaemonConfig = function() {
   var that = this;
-  Promise.resolve().then(function() {
+  return Promise.resolve().then(function() {
     if (that.daemonConfig === null) {
-      onError(remoting.Error.unexpected('getDaemonConfig'));
+      throw remoting.Error.unexpected('getDaemonConfig');
     } else {
-      onDone(that.daemonConfig);
+      return that.daemonConfig;
     }
   });
 };
 
 /**
- * @param {function(string):void} onDone
- * @param {function(!remoting.Error):void} onError
- * @return {void}
+ * @return {!Promise<string>}
  */
-remoting.MockHostDaemonFacade.prototype.getDaemonVersion =
-    function(onDone, onError) {
+remoting.MockHostDaemonFacade.prototype.getDaemonVersion = function() {
   var that = this;
-  Promise.resolve().then(function() {
+  return Promise.resolve().then(function() {
     if (that.daemonVersion === null) {
-      onError(remoting.Error.unexpected('getDaemonVersion'));
+      throw remoting.Error.unexpected('getDaemonVersion');
     } else {
-      onDone(that.daemonVersion);
+      return that.daemonVersion;
     }
   });
 };
 
 /**
- * @param {function(boolean, boolean, boolean):void} onDone
- * @param {function(!remoting.Error):void} onError
- * @return {void}
+ * @return {!Promise<remoting.UsageStatsConsent>}
  */
-remoting.MockHostDaemonFacade.prototype.getUsageStatsConsent =
-    function(onDone, onError) {
+remoting.MockHostDaemonFacade.prototype.getUsageStatsConsent = function() {
   var that = this;
-  Promise.resolve().then(function() {
+  return Promise.resolve().then(function() {
     if (that.consentSupported === null ||
         that.consentAllowed === null ||
         that.consentSetByPolicy === null) {
-      onError(remoting.Error.unexpected('getUsageStatsConsent'));
+      throw remoting.Error.unexpected('getUsageStatsConsent');
     } else {
-      onDone(
-          that.consentSupported,
-          that.consentAllowed,
-          that.consentSetByPolicy);
+      return {
+        supported: that.consentSupported,
+        allowed: that.consentAllowed,
+        setByPolicy: that.consentSetByPolicy
+      };
     }
   });
 };
@@ -234,140 +216,127 @@ remoting.MockHostDaemonFacade.prototype.getUsageStatsConsent =
 /**
  * @param {Object} config
  * @param {boolean} consent Consent to report crash dumps.
- * @param {function(remoting.HostController.AsyncResult):void} onDone
- * @param {function(!remoting.Error):void} onError
- * @return {void}
+ * @return {!Promise<remoting.HostController.AsyncResult>}
  */
 remoting.MockHostDaemonFacade.prototype.startDaemon =
-    function(config, consent, onDone, onError) {
+    function(config, consent) {
   var that = this;
-  Promise.resolve().then(function() {
+  return Promise.resolve().then(function() {
     if (that.startDaemonResult === null) {
-      onError(remoting.Error.unexpected('startDaemon'));
+      throw remoting.Error.unexpected('startDaemon');
     } else {
-      onDone(that.startDaemonResult);
+      return that.startDaemonResult;
     }
   });
 };
 
 /**
- * @param {function(remoting.HostController.AsyncResult):void} onDone
- * @param {function(!remoting.Error):void} onError
- * @return {void}
+ * @return {!Promise<remoting.HostController.AsyncResult>}
  */
 remoting.MockHostDaemonFacade.prototype.stopDaemon =
-    function(onDone, onError) {
+    function() {
   var that = this;
-  Promise.resolve().then(function() {
+  return Promise.resolve().then(function() {
     if (that.stopDaemonResult === null) {
-      onError(remoting.Error.unexpected('stopDaemon'));
+      throw remoting.Error.unexpected('stopDaemon');
     } else {
-      onDone(that.stopDaemonResult);
+      return that.stopDaemonResult;
     }
   });
 };
 
 /**
- * @param {function(remoting.HostController.State):void} onDone
- * @param {function(!remoting.Error):void} onError
- * @return {void}
+ * @return {!Promise<remoting.HostController.State>}
  */
 remoting.MockHostDaemonFacade.prototype.getDaemonState =
-    function(onDone, onError) {
+    function() {
   var that = this;
-  Promise.resolve().then(function() {
+  return Promise.resolve().then(function() {
     if (that.daemonState === null) {
-      onError(remoting.Error.unexpected('getDaemonState'));
+      throw remoting.Error.unexpected('getDaemonState');
     } else {
-      onDone(that.daemonState);
+      return that.daemonState;
     }
   });
 };
 
 /**
- * @param {function(Array<remoting.PairedClient>):void} onDone
- * @param {function(!remoting.Error):void} onError
+ * @return {!Promise<Array<remoting.PairedClient>>}
  */
 remoting.MockHostDaemonFacade.prototype.getPairedClients =
-    function(onDone, onError) {
+    function() {
   var that = this;
-  Promise.resolve().then(function() {
+  return Promise.resolve().then(function() {
     if (that.pairedClients === null) {
-      onError(remoting.Error.unexpected('getPairedClients'));
+      throw remoting.Error.unexpected('getPairedClients');
     } else {
-      onDone(that.pairedClients);
+      return that.pairedClients;
     }
   });
 };
 
 /**
- * @param {function(boolean):void} onDone
- * @param {function(!remoting.Error):void} onError
+ * @return {!Promise<boolean>}
  */
-remoting.MockHostDaemonFacade.prototype.clearPairedClients =
-    function(onDone, onError) {
+remoting.MockHostDaemonFacade.prototype.clearPairedClients = function() {
   var that = this;
-  Promise.resolve().then(function() {
+  return Promise.resolve().then(function() {
     if (that.pairedClients === null) {
-      onError(remoting.Error.unexpected('clearPairedClients'));
+      throw remoting.Error.unexpected('clearPairedClients');
     } else {
       that.pairedClients = [];
-      onDone(true);
+      return true;  // TODO(jrw): Not always correct.
     }
   });
 };
 
 /**
  * @param {string} client
- * @param {function(boolean):void} onDone
- * @param {function(!remoting.Error):void} onError
+ * @return {!Promise<boolean>}
  */
-remoting.MockHostDaemonFacade.prototype.deletePairedClient =
-    function(client, onDone, onError) {
+remoting.MockHostDaemonFacade.prototype.deletePairedClient = function(client) {
   var that = this;
-  Promise.resolve().then(function() {
+  return Promise.resolve().then(function() {
     if (that.pairedClients === null) {
-      onError(remoting.Error.unexpected('deletePairedClient'));
+      throw remoting.Error.unexpected('deletePairedClient');
     } else {
-      that.pairedClients = that.pairedClients.filter(function(/** Object */ c) {
+      that.pairedClients = that.pairedClients.filter(function(c) {
         return c['clientId'] != client;
       });
-      onDone(true);
+      return true;  // TODO(jrw):  Not always correct.
     }
   });
 };
 
 /**
- * @param {function(string):void} onDone
- * @param {function(!remoting.Error):void} onError
- * @return {void}
+ * @return {!Promise<string>}
  */
-remoting.MockHostDaemonFacade.prototype.getHostClientId =
-    function(onDone, onError) {
+remoting.MockHostDaemonFacade.prototype.getHostClientId = function() {
   var that = this;
-  Promise.resolve().then(function() {
+  return Promise.resolve().then(function() {
     if (that.hostClientId === null) {
-      onError(remoting.Error.unexpected('getHostClientId'));
+      throw remoting.Error.unexpected('getHostClientId');
     } else {
-      onDone(that.hostClientId);
+      return that.hostClientId;
     }
   });
 };
 
 /**
  * @param {string} authorizationCode
- * @param {function(string, string):void} onDone
- * @param {function(!remoting.Error):void} onError
- * @return {void}
+ * @return {!Promise<{userEmail:string, refreshToken:string}>}
  */
 remoting.MockHostDaemonFacade.prototype.getCredentialsFromAuthCode =
-    function(authorizationCode, onDone, onError) {
+    function(authorizationCode) {
   var that = this;
-  Promise.resolve().then(function() {
+  return Promise.resolve().then(function() {
     if (that.userEmail === null || that.refreshToken === null) {
-      onError(remoting.Error.unexpected('getCredentialsFromAuthCode'));
+      throw remoting.Error.unexpected('getCredentialsFromAuthCode');
     } else {
-      onDone(that.userEmail, that.refreshToken);
+      return {
+        userEmail: that.userEmail,
+        refreshToken: that.refreshToken
+      };
     }
   });
 };

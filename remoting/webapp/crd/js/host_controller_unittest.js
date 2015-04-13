@@ -51,7 +51,6 @@ var FAKE_REFRESH_TOKEN = '<FAKE_REFRESH_TOKEN>';
 var FAKE_HOST_CLIENT_ID = '<FAKE_HOST_CLIENT_ID>';
 var FAKE_CLIENT_JID = '<FAKE_CLIENT_JID>';
 var FAKE_CLIENT_BASE_JID = '<FAKE_CLIENT_BASE_JID>';
-var FAKE_XMPP_LOGIN = '<FAKE_XMPP_LOGIN>';
 var FAKE_IDENTITY_TOKEN = '<FAKE_IDENTITY_TOKEN>';
 
 /** @type {sinon.Spy|Function} */
@@ -509,6 +508,40 @@ QUnit.test('start with startDaemon returning failure code', function(assert) {
   });
 });
 
+// Check alternative host registration without a registry-supplied
+// auth code.
+[false, true].forEach(function(/** boolean */ consent) {
+  QUnit.test('start succeeds(2) with consent=' + consent, function(assert) {
+    /** @const */
+    var fakePinHash = fakePinHashFunc(FAKE_HOST_ID, FAKE_HOST_PIN);
+    queueRegistryResponse(assert, false);
+    stubSignalStrategyConnect(true);
+    return new Promise(function(resolve, reject) {
+      controller.start(FAKE_HOST_PIN, consent, function() {
+        assert.equal(getCredentialsFromAuthCodeSpy.callCount, 0);
+        assert.equal(getPinHashSpy.callCount, 1);
+        assert.deepEqual(
+            getPinHashSpy.args[0].slice(0, 2),
+            [FAKE_HOST_ID, FAKE_HOST_PIN]);
+        assert.equal(unregisterHostByIdSpy.callCount, 0);
+        assert.equal(onLocalHostStartedSpy.callCount, 1);
+        assert.equal(startDaemonSpy.callCount, 1);
+        assert.deepEqual(
+            startDaemonSpy.args[0].slice(0, 2),
+            [{
+              xmpp_login: FAKE_USER_EMAIL,
+              oauth_refresh_token: FAKE_REFRESH_TOKEN,
+              host_id: FAKE_HOST_ID,
+              host_name: FAKE_HOST_NAME,
+              host_secret_hash: fakePinHash,
+              private_key: FAKE_PRIVATE_KEY
+            }, consent]);
+        resolve(null);
+      }, reject);
+    });
+  });
+});
+
 // Check what happens when stopDaemon calls onError.
 // TODO(jrw): Should stopDaemon even have an onError callback?
 QUnit.test('stop with stopDaemon failure', function(assert) {
@@ -674,8 +707,8 @@ QUnit.test('getLocalHostState with error', function(assert) {
 
 // Check what happens when getLocalHostState reports no plugin.
 QUnit.test('getLocalHostState with no plugin', function(assert) {
-  sinon.stub(mockHostDaemonFacade, 'getDaemonState').
-      callsArgWith(1, new remoting.Error(remoting.Error.Tag.MISSING_PLUGIN));
+  sinon.stub(mockHostDaemonFacade, 'getDaemonState').returns(
+      Promise.reject(new remoting.Error(remoting.Error.Tag.MISSING_PLUGIN)));
   return new Promise(function(resolve, reject) {
     controller.getLocalHostState(function(
         /** remoting.HostController.State */ state) {

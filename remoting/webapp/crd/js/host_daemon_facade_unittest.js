@@ -68,12 +68,9 @@ QUnit.test('initialize/hasFeature true', function(assert) {
     id: 0,
     type: 'hello'
   });
-  var done = assert.async();
-  it.hasFeature(
-      remoting.HostController.Feature.PAIRING_REGISTRY,
-      function onDone(arg) {
+  return it.hasFeature(remoting.HostController.Feature.PAIRING_REGISTRY).
+      then(function(arg) {
         assert.equal(arg, true);
-        done();
       });
 });
 
@@ -89,12 +86,9 @@ QUnit.test('initialize/hasFeature false', function(assert) {
     id: 0,
     type: 'hello'
   });
-  var done = assert.async();
-  it.hasFeature(
-      remoting.HostController.Feature.PAIRING_REGISTRY,
-      function onDone(arg) {
+  return it.hasFeature(remoting.HostController.Feature.PAIRING_REGISTRY).
+      then(function(arg) {
         assert.equal(arg, false);
-        done();
       });
 });
 
@@ -110,15 +104,9 @@ QUnit.test('initialize/getDaemonVersion', function(assert) {
     id: 0,
     type: 'hello'
   });
-  var done = assert.async();
-  it.getDaemonVersion(
-      function onDone(arg) {
+  return it.getDaemonVersion().
+      then(function onDone(arg) {
         assert.equal(arg, '<daemonVersion>');
-        done();
-      },
-      function onError() {
-        assert.ok(false);
-        done();
       });
 });
 
@@ -139,25 +127,10 @@ function postInitTest(description, callback) {
       id: 0,
       type: 'hello'
     });
-    return new Promise(function(resolve, reject) {
-      it.getDaemonVersion(resolve, reject);
-    }).then(function() {
+    it.getDaemonVersion().then(function() {
       return callback(assert);
     });
   });
-}
-
-/**
- * A combinator that turns an ordinary 1-argument resolve function
- * into a function that accepts multiple arguments and bundles them
- * into an array.
- * @param {function(*):void} resolve
- * @return {function(...*):void}
- */
-function resolveMulti(resolve) {
-  return function() {
-    resolve(Array.prototype.slice.call(arguments));
-  };
 }
 
 postInitTest('getHostName', function(assert) {
@@ -166,9 +139,7 @@ postInitTest('getHostName', function(assert) {
     type: 'getHostNameResponse',
     hostname: '<fakeHostName>'
   });
-  return new Promise(function (resolve, reject) {
-    it.getHostName(resolve, reject);
-  }).then(function(/** string */ hostName) {
+  return it.getHostName().then(function(hostName) {
     assert.deepEqual(postMessageStub.args[1][0], {
       id: 1,
       type: 'getHostName'
@@ -183,9 +154,7 @@ postInitTest('getPinHash', function(assert) {
     type: 'getPinHashResponse',
     hash: '<fakePinHash>'
   });
-  return new Promise(function (resolve, reject) {
-    it.getPinHash('<hostId>', '<pin>', resolve, reject);
-  }).then(function(/** string */ hostName) {
+  return it.getPinHash('<hostId>', '<pin>').then(function(hostName) {
     assert.deepEqual(postMessageStub.args[1][0], {
       id: 1,
       type: 'getPinHash',
@@ -203,14 +172,15 @@ postInitTest('generateKeyPair', function(assert) {
     privateKey: '<fakePrivateKey>',
     publicKey: '<fakePublicKey>'
   });
-  return new Promise(function (resolve, reject) {
-    it.generateKeyPair(resolveMulti(resolve), reject);
-  }).then(function(/** Array */ result) {
+  return it.generateKeyPair().then(function(pair) {
     assert.deepEqual(postMessageStub.args[1][0], {
       id: 1,
       type: 'generateKeyPair'
     });
-    assert.deepEqual(result, ['<fakePrivateKey>', '<fakePublicKey>']);
+    assert.deepEqual(pair, {
+      privateKey: '<fakePrivateKey>',
+      publicKey: '<fakePublicKey>'
+    });
   });
 });
 
@@ -220,9 +190,9 @@ postInitTest('updateDaemonConfig', function(assert) {
     type: 'updateDaemonConfigResponse',
     result: 'OK'
   });
-  return new Promise(function (resolve, reject) {
-    it.updateDaemonConfig({ fakeDaemonConfig: true }, resolve, reject);
-  }).then(function(/** * */ result) {
+  return it.updateDaemonConfig({
+    fakeDaemonConfig: true
+  }).then(function(result) {
     assert.deepEqual(postMessageStub.args[1][0], {
       id: 1,
       type: 'updateDaemonConfig',
@@ -238,9 +208,7 @@ postInitTest('getDaemonConfig', function(assert) {
     type: 'getDaemonConfigResponse',
     config: { fakeDaemonConfig: true }
   });
-  return new Promise(function (resolve, reject) {
-    it.getDaemonConfig(resolve, reject);
-  }).then(function(/** * */ result) {
+  return it.getDaemonConfig().then(function(result) {
     assert.deepEqual(postMessageStub.args[1][0], {
       id: 1,
       type: 'getDaemonConfig'
@@ -261,14 +229,16 @@ postInitTest('getDaemonConfig', function(assert) {
       allowed: allowed,
       setByPolicy: setByPolicy
     });
-    return new Promise(function (resolve, reject) {
-      it.getUsageStatsConsent(resolveMulti(resolve), reject);
-    }).then(function(/** * */ result) {
+    return it.getUsageStatsConsent().then(function(result) {
       assert.deepEqual(postMessageStub.args[1][0], {
         id: 1,
         type: 'getUsageStatsConsent'
       });
-      assert.deepEqual(result, [supported, allowed, setByPolicy]);
+      assert.deepEqual(result, {
+        supported: supported,
+        allowed: allowed,
+        setByPolicy: setByPolicy
+      });
     });
   });
 });
@@ -280,9 +250,9 @@ postInitTest('getDaemonConfig', function(assert) {
       type: 'startDaemonResponse',
       result: 'FAILED'
     });
-    return new Promise(function (resolve, reject) {
-      it.startDaemon({ fakeConfig: true }, consent, resolve, reject);
-    }).then(function(/** * */ result) {
+    return it.startDaemon({
+      fakeConfig: true
+    }, consent).then(function(result) {
       assert.deepEqual(postMessageStub.args[1][0], {
         id: 1,
         type: 'startDaemon',
@@ -300,9 +270,7 @@ postInitTest('stopDaemon', function(assert) {
     type: 'stopDaemonResponse',
     result: 'CANCELLED'
   });
-  return new Promise(function (resolve, reject) {
-    it.stopDaemon(resolve, reject);
-  }).then(function(/** * */ result) {
+  return it.stopDaemon().then(function(result) {
     assert.deepEqual(postMessageStub.args[1][0], {
       id: 1,
       type: 'stopDaemon'
@@ -331,9 +299,7 @@ postInitTest('getPairedClients', function(assert) {
     type: 'getPairedClientsResponse',
     pairedClients: [client0, client1]
   });
-  return new Promise(function (resolve, reject) {
-    it.getPairedClients(resolve, reject);
-  }).then(function(/** Array<remoting.PairedClient> */ result) {
+  return it.getPairedClients().then(function(result) {
     assert.deepEqual(postMessageStub.args[1][0], {
       id: 1,
       type: 'getPairedClients'
@@ -359,9 +325,7 @@ postInitTest('getPairedClients', function(assert) {
       type: 'clearPairedClientsResponse',
       result: deleted
     });
-    return new Promise(function (resolve, reject) {
-      it.clearPairedClients(resolve, reject);
-    }).then(function(/** * */ result) {
+    return it.clearPairedClients().then(function(result) {
       assert.deepEqual(postMessageStub.args[1][0], {
         id: 1,
         type: 'clearPairedClients'
@@ -378,9 +342,7 @@ postInitTest('getPairedClients', function(assert) {
       type: 'deletePairedClientResponse',
       result: deleted
     });
-    return new Promise(function (resolve, reject) {
-      it.deletePairedClient('<fakeClientId>', resolve, reject);
-    }).then(function(/** * */ result) {
+    return it.deletePairedClient('<fakeClientId>').then(function(result) {
       assert.deepEqual(postMessageStub.args[1][0], {
         id: 1,
         type: 'deletePairedClient',
@@ -397,9 +359,7 @@ postInitTest('getHostClientId', function(assert) {
     type: 'getHostClientIdResponse',
     clientId: '<fakeClientId>'
   });
-  return new Promise(function (resolve, reject) {
-    it.getHostClientId(resolve, reject);
-  }).then(function(/** * */ result) {
+  return it.getHostClientId().then(function(result) {
     assert.deepEqual(postMessageStub.args[1][0], {
       id: 1,
       type: 'getHostClientId'
@@ -415,16 +375,16 @@ postInitTest('getCredentialsFromAuthCode', function(assert) {
     userEmail: '<fakeUserEmail>',
     refreshToken: '<fakeRefreshToken>'
   });
-  return new Promise(function (resolve, reject) {
-    it.getCredentialsFromAuthCode(
-        '<fakeAuthCode>', resolveMulti(resolve), reject);
-  }).then(function(/** * */ result) {
+  return it.getCredentialsFromAuthCode('<fakeAuthCode>').then(function(result) {
     assert.deepEqual(postMessageStub.args[1][0], {
       id: 1,
       type: 'getCredentialsFromAuthCode',
       authorizationCode: '<fakeAuthCode>'
     });
-    assert.deepEqual(result, ['<fakeUserEmail>', '<fakeRefreshToken>']);
+    assert.deepEqual(result, {
+      userEmail: '<fakeUserEmail>',
+      refreshToken: '<fakeRefreshToken>'
+    });
   });
 });
 

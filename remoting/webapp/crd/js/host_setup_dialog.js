@@ -187,23 +187,20 @@ remoting.HostSetupDialog.prototype.showForStartWithToken_ =
   var that = this;
 
   /**
-   * @param {boolean} supported True if crash dump reporting is supported by
-   *     the host.
-   * @param {boolean} allowed True if crash dump reporting is allowed.
-   * @param {boolean} set_by_policy True if crash dump reporting is controlled
-   *     by policy.
+   * @param {remoting.UsageStatsConsent} consent
    */
-  function onGetConsent(supported, allowed, set_by_policy) {
+  function onGetConsent(consent) {
     // Hide the usage stats check box if it is not supported or the policy
     // doesn't allow usage stats collection.
     var checkBoxLabel = that.usageStats_.querySelector('.checkbox-label');
-    that.usageStats_.hidden = !supported || (set_by_policy && !allowed);
-    that.usageStatsCheckbox_.checked = allowed;
+    that.usageStats_.hidden = !consent.supported ||
+        (consent.setByPolicy && !consent.allowed);
+    that.usageStatsCheckbox_.checked = consent.allowed;
 
-    that.usageStatsCheckbox_.disabled = set_by_policy;
-    checkBoxLabel.classList.toggle('disabled', set_by_policy);
+    that.usageStatsCheckbox_.disabled = consent.setByPolicy;
+    checkBoxLabel.classList.toggle('disabled', consent.setByPolicy);
 
-    if (set_by_policy) {
+    if (consent.setByPolicy) {
       that.usageStats_.title = l10n.getTranslationOrError(
           /*i18n-content*/ 'SETTING_MANAGED_BY_POLICY');
     } else {
@@ -223,7 +220,8 @@ remoting.HostSetupDialog.prototype.showForStartWithToken_ =
   // known.
   this.usageStatsCheckbox_.disabled = true;
 
-  this.hostController_.getConsent(onGetConsent, onError);
+  this.hostController_.getConsent().then(
+      onGetConsent, remoting.Error.handler(onError));
 
   var flow = [
       remoting.HostSetupFlow.State.INSTALL_HOST,

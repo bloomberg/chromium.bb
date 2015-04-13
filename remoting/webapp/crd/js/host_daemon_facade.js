@@ -84,54 +84,46 @@ remoting.HostDaemonFacade.prototype.initialize_ = function() {
  * @private
  */
 remoting.HostDaemonFacade.prototype.connectNative_ = function() {
-  /**
-   * @this {remoting.HostDaemonFacade}
-   * @param {function(?):void} resolve
-   * @param {function(*):void} reject
-   */
-  var connect = function(resolve, reject) {
-    try {
-      this.port_ = chrome.runtime.connectNative(
-          'com.google.chrome.remote_desktop');
-      this.port_.onMessage.addListener(this.onIncomingMessageCallback_);
-      this.port_.onDisconnect.addListener(this.onDisconnectCallback_);
-      this.postMessageInternal_({type: 'hello'}, resolve, reject);
-    } catch (/** @type {*} */ err) {
-      console.log('Native Messaging initialization failed: ', err);
-      reject(false);
-    }
-  };
-
-  return new Promise(connect.bind(this));
+  try {
+    this.port_ = chrome.runtime.connectNative(
+        'com.google.chrome.remote_desktop');
+    this.port_.onMessage.addListener(this.onIncomingMessageCallback_);
+    this.port_.onDisconnect.addListener(this.onDisconnectCallback_);
+    return this.postMessageInternal_({type: 'hello'});
+  } catch (/** @type {*} */ err) {
+    console.log('Native Messaging initialization failed: ', err);
+    throw remoting.Error.unexpected();
+  }
 };
 
 /**
  * Type used for entries of |pendingReplies_| list.
  *
  * @param {string} type Type of the originating request.
- * @param {function(...):void} onDone Response callback. Parameters depend on
- *     the request type.
- * @param {function(!remoting.Error):void} onError Callback to call on error.
+ * @param {!base.Deferred} deferred Used to communicate returns back
+ *     to the caller.
  * @constructor
  */
-remoting.HostDaemonFacade.PendingReply = function(type, onDone, onError) {
+remoting.HostDaemonFacade.PendingReply = function(type, deferred) {
+  /** @const */
   this.type = type;
-  this.onDone = onDone;
-  this.onError = onError;
+
+  /** @const */
+  this.deferred = deferred;
 };
 
 /**
  * @param {remoting.HostController.Feature} feature The feature to test for.
- * @param {function(boolean):void} onDone Callback to return result.
- * @return {boolean} True if the implementation supports the named feature.
+ * @return {!Promise<boolean>} True if the implementation supports the
+ *     named feature.
  */
-remoting.HostDaemonFacade.prototype.hasFeature = function(feature, onDone) {
+remoting.HostDaemonFacade.prototype.hasFeature = function(feature) {
   /** @type {remoting.HostDaemonFacade} */
   var that = this;
-  this.initialize_().then(function() {
-    onDone(that.supportedFeatures_.indexOf(feature) >= 0);
-  }, function (){
-    onDone(false);
+  return this.initialize_().then(function() {
+    return that.supportedFeatures_.indexOf(feature) >= 0;
+  }, function () {
+    return false;
   });
 };
 
@@ -139,42 +131,38 @@ remoting.HostDaemonFacade.prototype.hasFeature = function(feature, onDone) {
  * Initializes that the Daemon if necessary and posts the supplied message.
  *
  * @param {{type: string}} message The message to post.
- * @param {function(...):void} onDone The callback, if any, to be triggered
- *     on response.
- * @param {function(!remoting.Error):void} onError Callback to call on error.
+ * @return {!Promise}
  * @private
  */
 remoting.HostDaemonFacade.prototype.postMessage_ =
-    function(message, onDone, onError) {
+    function(message) {
   /** @type {remoting.HostDaemonFacade} */
   var that = this;
-  this.initialize_().then(function() {
-    that.postMessageInternal_(message, onDone, onError);
+  return this.initialize_().then(function() {
+    return that.postMessageInternal_(message);
   }, function() {
-    onError(that.error_);
+    throw that.error_;
   });
 };
 
 /**
- * Attaches a new ID to the supplied message, and posts it to the Native
- * Messaging port, adding |onDone| to the list of pending replies.
- * |message| should have its 'type' field set, and any other fields set
- * depending on the message type.
+ * Attaches a new ID to the supplied message, and posts it to the
+ * Native Messaging port, adding a Deferred object to the list of
+ * pending replies.  |message| should have its 'type' field set, and
+ * any other fields set depending on the message type.
  *
  * @param {{type: string}} message The message to post.
- * @param {function(...):void} onDone The callback, if any, to be triggered
- *     on response.
- * @param {function(!remoting.Error):void} onError Callback to call on error.
- * @return {void} Nothing.
+ * @return {!Promise}
  * @private
  */
-remoting.HostDaemonFacade.prototype.postMessageInternal_ =
-    function(message, onDone, onError) {
+remoting.HostDaemonFacade.prototype.postMessageInternal_ = function(message) {
   var id = this.nextId_++;
   message['id'] = id;
+  var deferred = new base.Deferred();
   this.pendingReplies_[id] = new remoting.HostDaemonFacade.PendingReply(
-    message.type + 'Response', onDone, onError);
+    message.type + 'Response', deferred);
   this.port_.postMessage(message);
+  return deferred.promise();
 };
 
 /**
@@ -204,24 +192,34 @@ remoting.HostDaemonFacade.prototype.onIncomingMessage_ = function(message) {
       throw 'Expected reply type: ' + reply.type + ', got: ' + type;
     }
 
-    this.handleIncomingMessage_(message, reply.onDone);
+    reply.deferred.resolve(this.handleIncomingMessage_(message));
   } catch (/** @type {*} */ e) {
     console.error('Error while processing native message', e);
-    reply.onError(remoting.Error.unexpected());
+    reply.deferred.reject(remoting.Error.unexpected());
   }
-}
+};
 
 /**
  * Handler for incoming Native Messages.
  *
+ * TODO(jrw) Consider refactoring so each method handles its own
+ * response, e.g.:
+ *
+ * remoting.HostDaemonFacade.prototype.generateKeyPair = function() {
+ *   this.postMessage_({type: 'generateKeyPair'}).then(function(message) {
+ *     return {
+ *       privateKey: base.getStringAttr(message, 'privateKey'),
+ *       publicKey: base.getStringAttr(message, 'publicKey')
+ *     }
+ *   });
+ * };
+ *
  * @param {Object} message The received message.
- * @param {function(...):void} onDone Function to call when we're done
- *     processing the message.
- * @return {void} Nothing.
+ * @return {*}
  * @private
  */
 remoting.HostDaemonFacade.prototype.handleIncomingMessage_ =
-    function(message, onDone) {
+    function(message) {
   var type = base.getStringAttr(message, 'type');
 
   switch (type) {
@@ -231,81 +229,70 @@ remoting.HostDaemonFacade.prototype.handleIncomingMessage_ =
       // Those versions default to the empty list of supported features.
       this.supportedFeatures_ =
           base.getArrayAttr(message, 'supportedFeatures', []);
-      onDone();
-      break;
+      return null;
 
     case 'getHostNameResponse':
-      onDone(base.getStringAttr(message, 'hostname'));
-      break;
+      return base.getStringAttr(message, 'hostname');
 
     case 'getPinHashResponse':
-      onDone(base.getStringAttr(message, 'hash'));
-      break;
+      return base.getStringAttr(message, 'hash');
 
     case 'generateKeyPairResponse':
-      var privateKey = base.getStringAttr(message, 'privateKey');
-      var publicKey = base.getStringAttr(message, 'publicKey');
-      onDone(privateKey, publicKey);
-      break;
+      return {
+        privateKey: base.getStringAttr(message, 'privateKey'),
+        publicKey: base.getStringAttr(message, 'publicKey')
+      };
 
     case 'updateDaemonConfigResponse':
-      var result = remoting.HostController.AsyncResult.fromString(
+      return remoting.HostController.AsyncResult.fromString(
           base.getStringAttr(message, 'result'));
-      onDone(result);
-      break;
 
     case 'getDaemonConfigResponse':
-      onDone(base.getObjectAttr(message, 'config'));
-      break;
+      return base.getObjectAttr(message, 'config');
 
     case 'getUsageStatsConsentResponse':
-      var supported = base.getBooleanAttr(message, 'supported');
-      var allowed = base.getBooleanAttr(message, 'allowed');
-      var setByPolicy = base.getBooleanAttr(message, 'setByPolicy');
-      onDone(supported, allowed, setByPolicy);
-      break;
+      return {
+        supported: base.getBooleanAttr(message, 'supported'),
+        allowed: base.getBooleanAttr(message, 'allowed'),
+        setByPolicy: base.getBooleanAttr(message, 'setByPolicy')
+      };
 
     case 'startDaemonResponse':
     case 'stopDaemonResponse':
-      var result = remoting.HostController.AsyncResult.fromString(
+      return remoting.HostController.AsyncResult.fromString(
           base.getStringAttr(message, 'result'));
-      onDone(result);
-      break;
 
     case 'getDaemonStateResponse':
-      var state = remoting.HostController.State.fromString(
+      return remoting.HostController.State.fromString(
         base.getStringAttr(message, 'state'));
-      onDone(state);
-      break;
 
     case 'getPairedClientsResponse':
       var pairedClients = remoting.PairedClient.convertToPairedClientArray(
           message['pairedClients']);
       if (pairedClients != null) {
-        onDone(pairedClients);
+        return pairedClients;
       } else {
         throw 'No paired clients!';
       }
-      break;
 
     case 'clearPairedClientsResponse':
     case 'deletePairedClientResponse':
-      onDone(base.getBooleanAttr(message, 'result'));
-      break;
+      return base.getBooleanAttr(message, 'result');
 
     case 'getHostClientIdResponse':
-      onDone(base.getStringAttr(message, 'clientId'));
-      break;
+      return base.getStringAttr(message, 'clientId');
 
     case 'getCredentialsFromAuthCodeResponse':
       var userEmail = base.getStringAttr(message, 'userEmail');
       var refreshToken = base.getStringAttr(message, 'refreshToken');
       if (userEmail && refreshToken) {
-        onDone(userEmail, refreshToken);
+        return {
+          userEmail: userEmail,
+          refreshToken: refreshToken
+        };
       } else {
         throw 'Missing userEmail or refreshToken';
       }
-      break;
 
     default:
       throw 'Unexpected native message: ' + message;
@@ -334,20 +321,17 @@ remoting.HostDaemonFacade.prototype.onDisconnect_ = function() {
   this.pendingReplies_ = {};
   for (var id in pendingReplies) {
     var num_id = parseInt(id, 10);
-    pendingReplies[num_id].onError(this.error_);
+    pendingReplies[num_id].deferred.reject(this.error_);
   }
 }
 
 /**
  * Gets local hostname.
  *
- * @param {function(string):void} onDone Callback to return result.
- * @param {function(!remoting.Error):void} onError Callback to call on error.
- * @return {void} Nothing.
+ * @return {!Promise<string>}
  */
-remoting.HostDaemonFacade.prototype.getHostName =
-    function(onDone, onError) {
-  this.postMessage_({type: 'getHostName'}, onDone, onError);
+remoting.HostDaemonFacade.prototype.getHostName = function() {
+  return this.postMessage_({type: 'getHostName'});
 };
 
 /**
@@ -356,17 +340,14 @@ remoting.HostDaemonFacade.prototype.getHostName =
  *
  * @param {string} hostId The host ID.
  * @param {string} pin The PIN.
- * @param {function(string):void} onDone Callback to return result.
- * @param {function(!remoting.Error):void} onError Callback to call on error.
- * @return {void} Nothing.
+ * @return {!Promise<string>}
  */
-remoting.HostDaemonFacade.prototype.getPinHash =
-    function(hostId, pin, onDone, onError) {
-  this.postMessage_({
+remoting.HostDaemonFacade.prototype.getPinHash = function(hostId, pin) {
+  return this.postMessage_({
       type: 'getPinHash',
       hostId: hostId,
       pin: pin
-  }, onDone, onError);
+  });
 };
 
 /**
@@ -374,13 +355,10 @@ remoting.HostDaemonFacade.prototype.getPinHash =
  * when the key is generated. The key is returned in format understood by the
  * host (PublicKeyInfo structure encoded with ASN.1 DER, and then BASE64).
  *
- * @param {function(string, string):void} onDone Callback to return result.
- * @param {function(!remoting.Error):void} onError Callback to call on error.
- * @return {void} Nothing.
+ * @return {!Promise<{privateKey:string, publicKey:string}>}
  */
-remoting.HostDaemonFacade.prototype.generateKeyPair =
-    function(onDone, onError) {
-  this.postMessage_({type: 'generateKeyPair'}, onDone, onError);
+remoting.HostDaemonFacade.prototype.generateKeyPair = function() {
+  return this.postMessage_({type: 'generateKeyPair'});
 };
 
 /**
@@ -391,51 +369,40 @@ remoting.HostDaemonFacade.prototype.generateKeyPair =
  * includes these parameters. Changes take effect before the callback
  * is called.
  *
- * TODO(jrw): Consider eliminating onError callback.
+ * TODO(jrw): Consider conversion exceptions to AsyncResult values.
  *
  * @param {Object} config The new config parameters.
- * @param {function(remoting.HostController.AsyncResult):void} onDone
- *     Callback to be called when finished.
- * @param {function(!remoting.Error):void} onError Callback to call on error.
- * @return {void} Nothing.
+ * @return {!Promise<remoting.HostController.AsyncResult>}
  */
-remoting.HostDaemonFacade.prototype.updateDaemonConfig =
-    function(config, onDone, onError) {
-  this.postMessage_({
+remoting.HostDaemonFacade.prototype.updateDaemonConfig = function(config) {
+  return this.postMessage_({
       type: 'updateDaemonConfig',
       config: config
-  }, onDone, onError);
+  });
 };
 
 /**
  * Loads daemon config. The config is passed as a JSON formatted string to the
  * callback.
- *
- * @param {function(Object):void} onDone Callback to return result.
- * @param {function(!remoting.Error):void} onError Callback to call on error.
- * @return {void} Nothing.
+ * @return {!Promise<Object>}
  */
-remoting.HostDaemonFacade.prototype.getDaemonConfig =
-    function(onDone, onError) {
-  this.postMessage_({type: 'getDaemonConfig'}, onDone, onError);
+remoting.HostDaemonFacade.prototype.getDaemonConfig = function() {
+  return this.postMessage_({type: 'getDaemonConfig'});
 };
 
 /**
- * Retrieves daemon version. The version is passed to onDone as a dotted decimal
+ * Retrieves daemon version. The version is returned as a dotted decimal
  * string of the form major.minor.build.patch.
  *
- * @param {function(string):void} onDone Callback to be called to return result.
- * @param {function(!remoting.Error):void} onError Callback to call on error.
- * @return {void}
+ * @return {!Promise<string>}
  */
-remoting.HostDaemonFacade.prototype.getDaemonVersion =
-    function(onDone, onError) {
+remoting.HostDaemonFacade.prototype.getDaemonVersion = function() {
   /** @type {remoting.HostDaemonFacade} */
   var that = this;
-  this.initialize_().then(function() {
-    onDone(that.version_);
+  return this.initialize_().then(function() {
+    return that.version_;
   }, function() {
-    onError(that.error_);
+    throw that.error_;
   });
 };
 
@@ -443,126 +410,99 @@ remoting.HostDaemonFacade.prototype.getDaemonVersion =
  * Get the user's consent to crash reporting. The consent flags are passed to
  * the callback as booleans: supported, allowed, set-by-policy.
  *
- * @param {function(boolean, boolean, boolean):void} onDone Callback to return
- *     result.
- * @param {function(!remoting.Error):void} onError Callback to call on error.
- * @return {void} Nothing.
+ * @return {!Promise<remoting.UsageStatsConsent>}
  */
-remoting.HostDaemonFacade.prototype.getUsageStatsConsent =
-    function(onDone, onError) {
-  this.postMessage_({type: 'getUsageStatsConsent'}, onDone, onError);
+remoting.HostDaemonFacade.prototype.getUsageStatsConsent = function() {
+  return this.postMessage_({type: 'getUsageStatsConsent'});
 };
 
 /**
  * Starts the daemon process with the specified configuration.
  *
- * TODO(jrw): Consider eliminating onError callback.
+ * TODO(jrw): Consider conversion exceptions to AsyncResult values.
  *
  * @param {Object} config Host configuration.
  * @param {boolean} consent Consent to report crash dumps.
- * @param {function(remoting.HostController.AsyncResult):void} onDone
- *     Callback to return result.
- * @param {function(!remoting.Error):void} onError Callback to call on error.
- * @return {void} Nothing.
+ * @return {!Promise<remoting.HostController.AsyncResult>}
  */
-remoting.HostDaemonFacade.prototype.startDaemon =
-    function(config, consent, onDone, onError) {
-  this.postMessage_({
+remoting.HostDaemonFacade.prototype.startDaemon = function(config, consent) {
+  return this.postMessage_({
       type: 'startDaemon',
       config: config,
       consent: consent
-  }, onDone, onError);
+  });
 };
 
 /**
  * Stops the daemon process.
  *
- * TODO(jrw): Consider eliminating onError callback.
+ * TODO(jrw): Consider conversion exceptions to AsyncResult values.
  *
- * @param {function(remoting.HostController.AsyncResult):void} onDone
- *     Callback to return result.
- * @param {function(!remoting.Error):void} onError Callback to call on error.
- * @return {void} Nothing.
+ * @return {!Promise<remoting.HostController.AsyncResult>}
  */
 remoting.HostDaemonFacade.prototype.stopDaemon =
-    function(onDone, onError) {
-  this.postMessage_({type: 'stopDaemon'}, onDone, onError);
+    function() {
+  return this.postMessage_({type: 'stopDaemon'});
 };
 
 /**
  * Gets the installed/running state of the Host process.
  *
- * @param {function(remoting.HostController.State):void} onDone Callback to
-*      return result.
- * @param {function(!remoting.Error):void} onError Callback to call on error.
- * @return {void} Nothing.
+ * @return {!Promise<remoting.HostController.State>}
  */
-remoting.HostDaemonFacade.prototype.getDaemonState =
-    function(onDone, onError) {
-  this.postMessage_({type: 'getDaemonState'}, onDone, onError);
-}
+remoting.HostDaemonFacade.prototype.getDaemonState = function() {
+  return this.postMessage_({type: 'getDaemonState'});
+};
 
 /**
  * Retrieves the list of paired clients.
  *
- * @param {function(Array<remoting.PairedClient>):void} onDone Callback to
- *     return result.
- * @param {function(!remoting.Error):void} onError Callback to call on error.
+ * @return {!Promise<Array<remoting.PairedClient>>}
  */
-remoting.HostDaemonFacade.prototype.getPairedClients =
-    function(onDone, onError) {
-  this.postMessage_({type: 'getPairedClients'}, onDone, onError);
-}
+remoting.HostDaemonFacade.prototype.getPairedClients = function() {
+  return this.postMessage_({type: 'getPairedClients'});
+};
 
 /**
  * Clears all paired clients from the registry.
  *
- * @param {function(boolean):void} onDone Callback to be called when finished.
- * @param {function(!remoting.Error):void} onError Callback to call on error.
+ * @return {!Promise<boolean>}
  */
-remoting.HostDaemonFacade.prototype.clearPairedClients =
-    function(onDone, onError) {
-  this.postMessage_({type: 'clearPairedClients'}, onDone, onError);
-}
+remoting.HostDaemonFacade.prototype.clearPairedClients = function() {
+  return this.postMessage_({type: 'clearPairedClients'});
+};
 
 /**
  * Deletes a paired client referenced by client id.
  *
  * @param {string} client Client to delete.
- * @param {function(boolean):void} onDone Callback to be called when finished.
- * @param {function(!remoting.Error):void} onError Callback to call on error.
+ * @return {!Promise<boolean>}
  */
-remoting.HostDaemonFacade.prototype.deletePairedClient =
-    function(client, onDone, onError) {
-  this.postMessage_({
+remoting.HostDaemonFacade.prototype.deletePairedClient = function(client) {
+  return this.postMessage_({
     type: 'deletePairedClient',
     clientId: client
-  }, onDone, onError);
-}
+  });
+};
 
 /**
  * Gets the API keys to obtain/use service account credentials.
  *
- * @param {function(string):void} onDone Callback to return result.
- * @param {function(!remoting.Error):void} onError Callback to call on error.
- * @return {void} Nothing.
+ * @return {!Promise<string>}
  */
-remoting.HostDaemonFacade.prototype.getHostClientId =
-    function(onDone, onError) {
-  this.postMessage_({type: 'getHostClientId'}, onDone, onError);
+remoting.HostDaemonFacade.prototype.getHostClientId = function() {
+  return this.postMessage_({type: 'getHostClientId'});
 };
 
 /**
  *
  * @param {string} authorizationCode OAuth authorization code.
- * @param {function(string, string):void} onDone Callback to return result.
- * @param {function(!remoting.Error):void} onError Callback to call on error.
- * @return {void} Nothing.
+ * @return {!Promise<{userEmail:string, refreshToken:string}>}
  */
 remoting.HostDaemonFacade.prototype.getCredentialsFromAuthCode =
-    function(authorizationCode, onDone, onError) {
-  this.postMessage_({
+    function(authorizationCode) {
+  return this.postMessage_({
     type: 'getCredentialsFromAuthCode',
     authorizationCode: authorizationCode
-  }, onDone, onError);
+  });
 };
