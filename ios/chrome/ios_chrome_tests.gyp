@@ -20,7 +20,6 @@
         '../web/ios_web.gyp:ios_web',
         '../web/ios_web.gyp:test_support_ios_web',
         'ios_chrome.gyp:ios_chrome_browser',
-        'ios_chrome.gyp:ios_chrome_common',
         'ios_chrome_test_support',
       ],
       'sources': [
@@ -33,7 +32,6 @@
         'browser/ui/commands/set_up_for_testing_command_unittest.mm',
         'browser/ui/ui_util_unittest.mm',
         'browser/ui/uikit_ui_util_unittest.mm',
-        'common/string_util_unittest.mm',
       ],
     },
     {
