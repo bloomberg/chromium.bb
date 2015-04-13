@@ -195,6 +195,35 @@ function testLeadAndAnchor2() {
   assertEquals(-1, sm.anchorIndex, 'anchor');
 }
 
+function testSelectAll() {
+  var sm = createSelectionModel(10);
+
+  var changes = null;
+  sm.addEventListener('change', function(e) {
+    changes = e.changes;
+  });
+
+  sm.selectAll();
+
+  assertArrayEquals(range(0, 9), sm.selectedIndexes);
+  assertArrayEquals(range(0, 9),
+                    changes.map(function(change) { return change.index; }));
+}
+
+function testSelectAllOnEmptyList() {
+  var sm = createSelectionModel(0);
+
+  var changes = null;
+  sm.addEventListener('change', function(e) {
+    changes = e.changes;
+  });
+
+  sm.selectAll();
+
+  assertArrayEquals([], sm.selectedIndexes);
+  assertEquals(null, changes);
+}
+
 </script>
 
 </body>

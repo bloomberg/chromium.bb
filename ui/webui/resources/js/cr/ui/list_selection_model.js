@@ -143,6 +143,9 @@ cr.define('cr.ui', function() {
      * Selects all indexes.
      */
     selectAll: function() {
+      if (this.length === 0)
+        return;
+
       this.selectRange(0, this.length - 1);
     },
 
