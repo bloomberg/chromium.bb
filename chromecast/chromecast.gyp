@@ -215,6 +215,8 @@
         'browser/cast_network_delegate.h',
         'browser/cast_permission_manager.cc',
         'browser/cast_permission_manager.h',
+        'browser/cast_quota_permission_context.cc',
+        'browser/cast_quota_permission_context.h',
         'browser/cast_resource_dispatcher_host_delegate.cc',
         'browser/cast_resource_dispatcher_host_delegate.h',
         'browser/devtools/cast_dev_tools_delegate.cc',

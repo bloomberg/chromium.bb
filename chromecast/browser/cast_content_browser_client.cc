@@ -17,6 +17,7 @@
 #include "chromecast/browser/cast_browser_main_parts.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/cast_network_delegate.h"
+#include "chromecast/browser/cast_quota_permission_context.h"
 #include "chromecast/browser/cast_resource_dispatcher_host_delegate.h"
 #include "chromecast/browser/devtools/cast_dev_tools_delegate.h"
 #include "chromecast/browser/geolocation/cast_access_token_store.h"
@@ -195,6 +196,11 @@ void CastContentBrowserClient::ResourceDispatcherHostCreated() {
 std::string CastContentBrowserClient::GetApplicationLocale() {
   const std::string locale(base::i18n::GetConfiguredLocale());
   return locale.empty() ? "en-US" : locale;
+}
+
+content::QuotaPermissionContext*
+CastContentBrowserClient::CreateQuotaPermissionContext() {
+  return new CastQuotaPermissionContext();
 }
 
 void CastContentBrowserClient::AllowCertificateError(

@@ -55,6 +55,7 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
                            content::WebPreferences* prefs) override;
   void ResourceDispatcherHostCreated() override;
   std::string GetApplicationLocale() override;
+  content::QuotaPermissionContext* CreateQuotaPermissionContext() override;
   void AllowCertificateError(
       int render_process_id,
       int render_view_id,
