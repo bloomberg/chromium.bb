@@ -55,10 +55,9 @@ void TCPServerSocketImpl::OnAcceptCompleted(int result) {
     pending_receive_stream_.reset();
     pending_client_socket_ = InterfaceRequest<TCPConnectedSocket>();
   } else {
-    BindToRequest(new TCPConnectedSocketImpl(
-        accepted_socket_.Pass(),
-        pending_send_stream_.Pass(),
-        pending_receive_stream_.Pass()), &pending_client_socket_);
+    new TCPConnectedSocketImpl(
+        accepted_socket_.Pass(), pending_send_stream_.Pass(),
+        pending_receive_stream_.Pass(), pending_client_socket_.Pass());
     pending_callback_.Run(MakeNetworkError(net::OK),
                           NetAddress::From(accepted_address_));
   }

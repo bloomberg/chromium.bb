@@ -10,27 +10,33 @@
 #include "mojo/common/handle_watcher.h"
 #include "mojo/services/network/public/interfaces/tcp_connected_socket.mojom.h"
 #include "net/socket/tcp_socket.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace mojo {
 
 class MojoToNetPendingBuffer;
 class NetToMojoPendingBuffer;
 
-class TCPConnectedSocketImpl : public InterfaceImpl<TCPConnectedSocket> {
+class TCPConnectedSocketImpl : public TCPConnectedSocket, public ErrorHandler {
  public:
   TCPConnectedSocketImpl(scoped_ptr<net::TCPSocket> socket,
                          ScopedDataPipeConsumerHandle send_stream,
-                         ScopedDataPipeProducerHandle receive_stream);
+                         ScopedDataPipeProducerHandle receive_stream,
+                         InterfaceRequest<TCPConnectedSocket> request);
   ~TCPConnectedSocketImpl() override;
 
  private:
+    // ErrorHandler methods:
+    void OnConnectionError() override;
+
   // "Receiving" in this context means reading from TCPSocket and writing to
   // the Mojo receive_stream.
   void ReceiveMore();
   void OnReceiveStreamReady(MojoResult result);
   void DidReceive(bool completed_synchronously, int result);
   void ShutdownReceive();
+  void ListenForReceivePeerClosed();
+  void OnReceiveDataPipeClosed(MojoResult result);
 
   // "Writing" is reading from the Mojo send_stream and writing to the
   // TCPSocket.
@@ -38,6 +44,10 @@ class TCPConnectedSocketImpl : public InterfaceImpl<TCPConnectedSocket> {
   void OnSendStreamReady(MojoResult result);
   void DidSend(bool completed_asynchronously, int result);
   void ShutdownSend();
+  void ListenForSendPeerClosed();
+  void OnSendDataPipeClosed(MojoResult result);
+
+  void DeleteIfNeeded();
 
   scoped_ptr<net::TCPSocket> socket_;
 
@@ -47,13 +57,16 @@ class TCPConnectedSocketImpl : public InterfaceImpl<TCPConnectedSocket> {
 
   // For reading from the network and writing to Mojo pipe.
   ScopedDataPipeConsumerHandle send_stream_;
-  common::HandleWatcher receive_handle_watcher_;
   scoped_refptr<NetToMojoPendingBuffer> pending_receive_;
+  common::HandleWatcher receive_handle_watcher_;
 
   // For reading from the Mojo pipe and writing to the network.
   ScopedDataPipeProducerHandle receive_stream_;
-  common::HandleWatcher send_handle_watcher_;
   scoped_refptr<MojoToNetPendingBuffer> pending_send_;
+  common::HandleWatcher send_handle_watcher_;
+
+  // To bind to the message pipe.
+  Binding<TCPConnectedSocket> binding_;
 
   base::WeakPtrFactory<TCPConnectedSocketImpl> weak_ptr_factory_;
 };

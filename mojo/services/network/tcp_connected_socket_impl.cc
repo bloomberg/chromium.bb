@@ -13,17 +13,27 @@ namespace mojo {
 TCPConnectedSocketImpl::TCPConnectedSocketImpl(
     scoped_ptr<net::TCPSocket> socket,
     ScopedDataPipeConsumerHandle send_stream,
-    ScopedDataPipeProducerHandle receive_stream)
+    ScopedDataPipeProducerHandle receive_stream,
+    InterfaceRequest<TCPConnectedSocket> request)
     : socket_(socket.Pass()),
       send_stream_(send_stream.Pass()),
       receive_stream_(receive_stream.Pass()),
+      binding_(this, request.Pass()),
       weak_ptr_factory_(this) {
   // Queue up async communication.
+  binding_.set_error_handler(this);
+  ListenForReceivePeerClosed();
+  ListenForSendPeerClosed();
   ReceiveMore();
   SendMore();
 }
 
 TCPConnectedSocketImpl::~TCPConnectedSocketImpl() {
+}
+
+void TCPConnectedSocketImpl::OnConnectionError() {
+  binding_.Close();
+  DeleteIfNeeded();
 }
 
 void TCPConnectedSocketImpl::ReceiveMore() {
@@ -35,8 +45,7 @@ void TCPConnectedSocketImpl::ReceiveMore() {
   if (result == MOJO_RESULT_SHOULD_WAIT) {
     // The pipe is full. We need to wait for it to have more space.
     receive_handle_watcher_.Start(
-        receive_stream_.get(),
-        MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+        receive_stream_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
         MOJO_DEADLINE_INDEFINITE,
         base::Bind(&TCPConnectedSocketImpl::OnReceiveStreamReady,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -65,10 +74,10 @@ void TCPConnectedSocketImpl::ReceiveMore() {
   CHECK_GT(static_cast<uint32_t>(std::numeric_limits<int>::max()), num_bytes);
   scoped_refptr<net::IOBuffer> buf(
       new NetToMojoIOBuffer(pending_receive_.get()));
-  int read_result = socket_->Read(
-      buf.get(), static_cast<int>(num_bytes),
-      base::Bind(&TCPConnectedSocketImpl::DidReceive, base::Unretained(this),
-                 false));
+  int read_result =
+      socket_->Read(buf.get(), static_cast<int>(num_bytes),
+                    base::Bind(&TCPConnectedSocketImpl::DidReceive,
+                               weak_ptr_factory_.GetWeakPtr(), false));
   if (read_result == net::ERR_IO_PENDING) {
     // Pending I/O, wait for result in DidReceive().
   } else if (read_result > 0) {
@@ -90,11 +99,15 @@ void TCPConnectedSocketImpl::OnReceiveStreamReady(MojoResult result) {
     // net_result and mojo_result.
     return;
   }
+  ListenForReceivePeerClosed();
   ReceiveMore();
 }
 
 void TCPConnectedSocketImpl::DidReceive(bool completed_synchronously,
                                         int result) {
+  if (!pending_receive_)
+    return;
+
   if (result < 0) {
     // Error.
     ShutdownReceive();
@@ -110,17 +123,30 @@ void TCPConnectedSocketImpl::DidReceive(bool completed_synchronously,
   if (completed_synchronously) {
     // Don't recursively call ReceiveMore if this is a sync read.
     base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&TCPConnectedSocketImpl::ReceiveMore,
-                   weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::Bind(&TCPConnectedSocketImpl::ReceiveMore,
+                              weak_ptr_factory_.GetWeakPtr()));
   } else {
     ReceiveMore();
   }
 }
 
 void TCPConnectedSocketImpl::ShutdownReceive() {
+  receive_handle_watcher_.Stop();
   pending_receive_ = nullptr;
   receive_stream_.reset();
+  DeleteIfNeeded();
+}
+
+void TCPConnectedSocketImpl::ListenForReceivePeerClosed() {
+  receive_handle_watcher_.Start(
+      receive_stream_.get(), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+      MOJO_DEADLINE_INDEFINITE,
+      base::Bind(&TCPConnectedSocketImpl::OnReceiveDataPipeClosed,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void TCPConnectedSocketImpl::OnReceiveDataPipeClosed(MojoResult result) {
+  ShutdownReceive();
 }
 
 void TCPConnectedSocketImpl::SendMore() {
@@ -130,8 +156,7 @@ void TCPConnectedSocketImpl::SendMore() {
   if (result == MOJO_RESULT_SHOULD_WAIT) {
     // Data not ready, wait for it.
     send_handle_watcher_.Start(
-        send_stream_.get(),
-        MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+        send_stream_.get(), MOJO_HANDLE_SIGNAL_READABLE,
         MOJO_DEADLINE_INDEFINITE,
         base::Bind(&TCPConnectedSocketImpl::OnSendStreamReady,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -146,10 +171,10 @@ void TCPConnectedSocketImpl::SendMore() {
   // Got a buffer from Mojo, give it to the socket. Note that the sockets may
   // do partial writes.
   scoped_refptr<net::IOBuffer> buf(new MojoToNetIOBuffer(pending_send_.get()));
-  int write_result = socket_->Write(
-      buf.get(), static_cast<int>(num_bytes),
-      base::Bind(&TCPConnectedSocketImpl::DidSend, base::Unretained(this),
-                 false));
+  int write_result =
+      socket_->Write(buf.get(), static_cast<int>(num_bytes),
+                     base::Bind(&TCPConnectedSocketImpl::DidSend,
+                                weak_ptr_factory_.GetWeakPtr(), false));
   if (write_result == net::ERR_IO_PENDING) {
     // Pending I/O, wait for result in DidSend().
   } else if (write_result >= 0) {
@@ -170,11 +195,14 @@ void TCPConnectedSocketImpl::OnSendStreamReady(MojoResult result) {
     // net_result and mojo_result.
     return;
   }
+  ListenForSendPeerClosed();
   SendMore();
 }
 
-void TCPConnectedSocketImpl::DidSend(bool completed_synchronously,
-                                     int result) {
+void TCPConnectedSocketImpl::DidSend(bool completed_synchronously, int result) {
+  if (!pending_send_)
+    return;
+
   if (result < 0) {
     ShutdownSend();
     // TODO(johnmccutchan): Notify socket direction is closed along with
@@ -190,17 +218,37 @@ void TCPConnectedSocketImpl::DidSend(bool completed_synchronously,
   if (completed_synchronously) {
     // Don't recursively call SendMore if this is a sync read.
     base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&TCPConnectedSocketImpl::SendMore,
-                   weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::Bind(&TCPConnectedSocketImpl::SendMore,
+                              weak_ptr_factory_.GetWeakPtr()));
   } else {
     SendMore();
   }
 }
 
 void TCPConnectedSocketImpl::ShutdownSend() {
+  send_handle_watcher_.Stop();
   pending_send_ = nullptr;
   send_stream_.reset();
+  DeleteIfNeeded();
+}
+
+void TCPConnectedSocketImpl::ListenForSendPeerClosed() {
+  send_handle_watcher_.Start(
+      send_stream_.get(), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+      MOJO_DEADLINE_INDEFINITE,
+      base::Bind(&TCPConnectedSocketImpl::OnSendDataPipeClosed,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void TCPConnectedSocketImpl::OnSendDataPipeClosed(MojoResult result) {
+  ShutdownSend();
+}
+
+void TCPConnectedSocketImpl::DeleteIfNeeded() {
+  bool has_send = pending_send_ || send_stream_.is_valid();
+  bool has_receive = pending_receive_ || receive_stream_.is_valid();
+  if (!binding_.is_bound() && !has_send && !has_receive)
+    delete this;
 }
 
 }  // namespace mojo

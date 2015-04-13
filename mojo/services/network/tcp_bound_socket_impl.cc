@@ -104,11 +104,9 @@ void TCPBoundSocketImpl::Connect(
 
 void TCPBoundSocketImpl::OnConnected(int result) {
   if (result == net::OK) {
-    BindToRequest(new TCPConnectedSocketImpl(
-                      socket_.Pass(),
-                      pending_connect_send_stream_.Pass(),
-                      pending_connect_receive_stream_.Pass()),
-                  &pending_connect_socket_);
+    new TCPConnectedSocketImpl(
+        socket_.Pass(), pending_connect_send_stream_.Pass(),
+        pending_connect_receive_stream_.Pass(), pending_connect_socket_.Pass());
   } else {
     pending_connect_send_stream_.reset();
     pending_connect_receive_stream_.reset();
