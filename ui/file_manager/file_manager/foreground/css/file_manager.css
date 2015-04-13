@@ -682,6 +682,11 @@ html[dir='rtl'] #search-box .clear {
   z-index: 0;
 }
 
+.dialog-footer button {
+  /* Use bold until we get Roboto medium. crbug.com/368442. */
+  font-weight: bold;
+}
+
 .dialog-footer button:hover {
   border-image: none;  /* Overrides the definition of common.css. */
 }
@@ -813,6 +818,7 @@ body.check-select .breadcrumbs {
   cursor: pointer;
   flex: none;
   font-size: 14px;
+  /* Use bold until we get Roboto medium. crbug.com/368442. */
   font-weight: bold;
   margin-left: 0;
   margin-right: 0;
