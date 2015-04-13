@@ -18,6 +18,15 @@ namespace errors = manifest_errors;
 
 namespace {
 
+// Helper object that is implicitly constructible from both a PermissionID and
+// from an APIPermission::ID.
+struct PermissionIDCompareHelper {
+  PermissionIDCompareHelper(const PermissionID& id) : id(id.id()) {}
+  PermissionIDCompareHelper(const APIPermission::ID id) : id(id) {}
+
+  APIPermission::ID id;
+};
+
 bool CreateAPIPermission(
     const std::string& permission_str,
     const base::Value* permission_value,
@@ -196,7 +205,7 @@ PermissionID::PermissionID(APIPermission::ID id,
 PermissionID::~PermissionID() {
 }
 
-PermissionIDSet::PermissionIDSet() : permissions_() {
+PermissionIDSet::PermissionIDSet() {
 }
 
 PermissionIDSet::~PermissionIDSet() {
@@ -207,7 +216,7 @@ void PermissionIDSet::insert(APIPermission::ID permission_id) {
 }
 
 void PermissionIDSet::insert(APIPermission::ID permission_id,
-                             base::string16 permission_detail) {
+                             const base::string16& permission_detail) {
   permissions_.insert(PermissionID(permission_id, permission_detail));
 }
 
@@ -219,24 +228,21 @@ void PermissionIDSet::InsertAll(const PermissionIDSet& permission_set) {
 
 std::vector<base::string16> PermissionIDSet::GetAllPermissionParameters()
     const {
-  std::vector<base::string16> details;
+  std::vector<base::string16> params;
   for (const auto& permission : permissions_) {
-    details.push_back(permission.parameter());
+    params.push_back(permission.parameter());
   }
-  return details;
+  return params;
 }
 
 bool PermissionIDSet::ContainsAllIDs(
-    std::set<APIPermission::ID> permission_ids) {
-  // TODO(sashab): Find a more efficient way to implement this (e.g. store a set
-  // of IDs and use STLIncludes in base/stl_util.h).
-  PermissionIDSet subset;
-  for (const auto& permission_id : permission_ids) {
-    if (!ContainsID(permission_id)) {
-      return false;
-    }
-  }
-  return true;
+    const std::set<APIPermission::ID>& permission_ids) const {
+  return std::includes(permissions_.begin(), permissions_.end(),
+                       permission_ids.begin(), permission_ids.end(),
+                       [] (const PermissionIDCompareHelper& lhs,
+                           const PermissionIDCompareHelper& rhs) {
+                         return lhs.id < rhs.id;
+                       });
 }
 
 PermissionIDSet PermissionIDSet::GetAllPermissionsWithIDs(
@@ -251,8 +257,7 @@ PermissionIDSet PermissionIDSet::GetAllPermissionsWithIDs(
 }
 
 bool PermissionIDSet::Includes(const PermissionIDSet& subset) const {
-  return base::STLIncludes<std::set<PermissionID>>(permissions_,
-                                                   subset.permissions_);
+  return base::STLIncludes(permissions_, subset.permissions_);
 }
 
 bool PermissionIDSet::Equals(const PermissionIDSet& set) const {
@@ -292,15 +297,9 @@ PermissionIDSet::PermissionIDSet(const std::set<PermissionID>& permissions)
     : permissions_(permissions) {
 }
 
-bool PermissionIDSet::ContainsID(APIPermission::ID permission_id) {
-  // TODO(sashab): Find a more efficient way to implement this.
-  PermissionIDSet subset;
-  for (const auto& permission : permissions_) {
-    if (permission.id() == permission_id) {
-      return true;
-    }
-  }
-  return false;
+bool PermissionIDSet::ContainsID(APIPermission::ID permission_id) const {
+  auto it = permissions_.lower_bound(PermissionID(permission_id));
+  return it != permissions_.end() && it->id() == permission_id;
 }
 
 }  // namespace extensions

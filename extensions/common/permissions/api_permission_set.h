@@ -72,11 +72,14 @@ class APIPermissionSet : public BaseSetOperators<APIPermissionSet> {
 // read-only). Parameters are passed to the permission message rules for this
 // permission, so they can affect the displayed message.
 //
+// Note: Inheriting from std::pair automatically gives us an operator<
+// (required for putting these into an std::set).
+//
 // TODO(sashab): Move this to the same file as PermissionIDSet once that moves
 // to its own file.
 class PermissionID : public std::pair<APIPermission::ID, base::string16> {
  public:
-  PermissionID(APIPermission::ID id);
+  explicit PermissionID(APIPermission::ID id);
   PermissionID(APIPermission::ID id, const base::string16& parameter);
   virtual ~PermissionID();
 
@@ -85,8 +88,7 @@ class PermissionID : public std::pair<APIPermission::ID, base::string16> {
 };
 
 // A set of permissions for an app or extension. Used for passing around groups
-// of permissions, such as required or optional permissions. Has convenience
-// constructors so that it can be constructed inline.
+// of permissions, such as required or optional permissions.
 //
 // Each permission can also store a string, such as a hostname or device number,
 // as a parameter that helps identify the permission. This parameter can then
@@ -96,19 +98,17 @@ class PermissionID : public std::pair<APIPermission::ID, base::string16> {
 // may then be included in the permission message when it is generated later.
 //
 // Example:
-//   // Create a PermissionIDSet.
-//   PermissionIDSet p(APIPermission::kBluetooth, APIPermission::kFavicon);
+//   // Create an empty PermissionIDSet.
+//   PermissionIDSet p;
 //   // Add a permission to the set.
-//   p.insertPermission(APIPermission::kNetworkState);
+//   p.insert(APIPermission::kNetworkState);
 //   // Add a permission with a parameter to the set.
-//   p.insertPermission(APIPermission::kHostReadOnly,
-//           base::ASCIIToUTF16("http://www.google.com"));
+//   p.insert(APIPermission::kHostReadOnly,
+//            base::ASCIIToUTF16("http://www.google.com"));
 //
 // TODO(sashab): Move this to its own file and rename it to PermissionSet after
 // APIPermission is removed, the current PermissionSet is no longer used, and
 // APIPermission::ID is the only type of Permission ID.
-// TODO(sashab): Change BaseSetOperators to support storing plain objects
-// instead of pointers and change this to extend BaseSetOperators<PermissionID>.
 class PermissionIDSet {
  public:
   using const_iterator = std::set<PermissionID>::const_iterator;
@@ -119,14 +119,14 @@ class PermissionIDSet {
   // Adds the given permission, and an optional parameter, to the set.
   void insert(APIPermission::ID permission_id);
   void insert(APIPermission::ID permission_id,
-              base::string16 permission_parameter);
+              const base::string16& permission_parameter);
   void InsertAll(const PermissionIDSet& permission_set);
 
   // Returns the parameters for all PermissionIDs in this set.
   std::vector<base::string16> GetAllPermissionParameters() const;
 
   // Check if the set contains permissions with all the given IDs.
-  bool ContainsAllIDs(std::set<APIPermission::ID> permission_ids);
+  bool ContainsAllIDs(const std::set<APIPermission::ID>& permission_ids) const;
 
   // Returns all the permissions in this set with one of the given IDs.
   PermissionIDSet GetAllPermissionsWithIDs(
@@ -152,7 +152,7 @@ class PermissionIDSet {
   PermissionIDSet(const std::set<PermissionID>& permissions);
 
   // Check if the set contains a permission with the given ID.
-  bool ContainsID(APIPermission::ID permission_id);
+  bool ContainsID(APIPermission::ID permission_id) const;
 
   std::set<PermissionID> permissions_;
 };
