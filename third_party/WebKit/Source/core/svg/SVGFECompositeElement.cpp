@@ -81,21 +81,6 @@ DEFINE_TRACE(SVGFECompositeElement)
 
 DEFINE_NODE_FACTORY(SVGFECompositeElement)
 
-bool SVGFECompositeElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        supportedAttributes.add(SVGNames::inAttr);
-        supportedAttributes.add(SVGNames::in2Attr);
-        supportedAttributes.add(SVGNames::operatorAttr);
-        supportedAttributes.add(SVGNames::k1Attr);
-        supportedAttributes.add(SVGNames::k2Attr);
-        supportedAttributes.add(SVGNames::k3Attr);
-        supportedAttributes.add(SVGNames::k4Attr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 bool SVGFECompositeElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)
 {
     FEComposite* composite = static_cast<FEComposite*>(effect);
@@ -117,28 +102,23 @@ bool SVGFECompositeElement::setFilterEffectAttribute(FilterEffect* effect, const
 
 void SVGFECompositeElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
-        return;
-    }
-
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
     if (attrName == SVGNames::operatorAttr
         || attrName == SVGNames::k1Attr
         || attrName == SVGNames::k2Attr
         || attrName == SVGNames::k3Attr
         || attrName == SVGNames::k4Attr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
         primitiveAttributeChanged(attrName);
         return;
     }
 
     if (attrName == SVGNames::inAttr || attrName == SVGNames::in2Attr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
         invalidate();
         return;
     }
 
-    ASSERT_NOT_REACHED();
+    SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
 }
 
 PassRefPtrWillBeRawPtr<FilterEffect> SVGFECompositeElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)

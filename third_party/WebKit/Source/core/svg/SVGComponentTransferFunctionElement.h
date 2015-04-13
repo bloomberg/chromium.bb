@@ -50,7 +50,6 @@ public:
 protected:
     SVGComponentTransferFunctionElement(const QualifiedName&, Document&);
 
-    bool isSupportedAttribute(const QualifiedName&);
     virtual void svgAttributeChanged(const QualifiedName&) override final;
 
     virtual bool layoutObjectIsNeeded(const ComputedStyle&) override final { return false; }

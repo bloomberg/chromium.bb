@@ -48,29 +48,15 @@ DEFINE_TRACE(SVGFEComponentTransferElement)
 
 DEFINE_NODE_FACTORY(SVGFEComponentTransferElement)
 
-bool SVGFEComponentTransferElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty())
-        supportedAttributes.add(SVGNames::inAttr);
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 void SVGFEComponentTransferElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
-        return;
-    }
-
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
     if (attrName == SVGNames::inAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
         invalidate();
         return;
     }
 
-    ASSERT_NOT_REACHED();
+    SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
 }
 
 PassRefPtrWillBeRawPtr<FilterEffect> SVGFEComponentTransferElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)

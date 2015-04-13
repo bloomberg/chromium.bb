@@ -109,17 +109,6 @@ DEFINE_TRACE(SVGFEBlendElement)
 
 DEFINE_NODE_FACTORY(SVGFEBlendElement)
 
-bool SVGFEBlendElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        supportedAttributes.add(SVGNames::modeAttr);
-        supportedAttributes.add(SVGNames::inAttr);
-        supportedAttributes.add(SVGNames::in2Attr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 bool SVGFEBlendElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)
 {
     FEBlend* blend = static_cast<FEBlend*>(effect);
@@ -132,24 +121,19 @@ bool SVGFEBlendElement::setFilterEffectAttribute(FilterEffect* effect, const Qua
 
 void SVGFEBlendElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
-        return;
-    }
-
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
     if (attrName == SVGNames::modeAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
         primitiveAttributeChanged(attrName);
         return;
     }
 
     if (attrName == SVGNames::inAttr || attrName == SVGNames::in2Attr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
         invalidate();
         return;
     }
 
-    ASSERT_NOT_REACHED();
+    SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
 }
 
 PassRefPtrWillBeRawPtr<FilterEffect> SVGFEBlendElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)

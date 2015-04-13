@@ -53,7 +53,6 @@ private:
 
     virtual bool isStructurallyExternal() const override { return !hrefString().isNull(); }
 
-    bool isSupportedAttribute(const QualifiedName&);
     virtual bool isPresentationAttribute(const QualifiedName&) const override;
     virtual bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;

@@ -38,7 +38,6 @@ public:
 private:
     explicit SVGFEComponentTransferElement(Document&);
 
-    bool isSupportedAttribute(const QualifiedName&);
     virtual void svgAttributeChanged(const QualifiedName&) override;
     virtual PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 

@@ -55,18 +55,6 @@ DEFINE_TRACE(SVGForeignObjectElement)
 
 DEFINE_NODE_FACTORY(SVGForeignObjectElement)
 
-bool SVGForeignObjectElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        supportedAttributes.add(SVGNames::xAttr);
-        supportedAttributes.add(SVGNames::yAttr);
-        supportedAttributes.add(SVGNames::widthAttr);
-        supportedAttributes.add(SVGNames::heightAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 bool SVGForeignObjectElement::isPresentationAttribute(const QualifiedName& name) const
 {
     if (name == SVGNames::xAttr || name == SVGNames::yAttr
@@ -100,18 +88,13 @@ void SVGForeignObjectElement::collectStyleForPresentationAttribute(const Qualifi
 
 void SVGForeignObjectElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGGraphicsElement::svgAttributeChanged(attrName);
-        return;
-    }
-
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
     bool isWidthHeightAttribute = attrName == SVGNames::widthAttr
         || attrName == SVGNames::heightAttr;
     bool isXYAttribute = attrName == SVGNames::xAttr || attrName == SVGNames::yAttr;
 
     if (isXYAttribute || isWidthHeightAttribute) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
+
         invalidateSVGPresentationAttributeStyle();
         setNeedsStyleRecalc(LocalStyleChange,
             isWidthHeightAttribute ? StyleChangeReasonForTracing::create(StyleChangeReason::SVGContainerSizeChange) : StyleChangeReasonForTracing::fromAttribute(attrName));
@@ -119,7 +102,11 @@ void SVGForeignObjectElement::svgAttributeChanged(const QualifiedName& attrName)
         updateRelativeLengthsInformation();
         if (LayoutObject* renderer = this->layoutObject())
             markForLayoutAndParentResourceInvalidation(renderer);
+
+        return;
     }
+
+    SVGGraphicsElement::svgAttributeChanged(attrName);
 }
 
 LayoutObject* SVGForeignObjectElement::createLayoutObject(const ComputedStyle&)

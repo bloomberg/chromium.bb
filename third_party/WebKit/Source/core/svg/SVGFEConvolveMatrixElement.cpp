@@ -113,24 +113,6 @@ DEFINE_TRACE(SVGFEConvolveMatrixElement)
 
 DEFINE_NODE_FACTORY(SVGFEConvolveMatrixElement)
 
-bool SVGFEConvolveMatrixElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        supportedAttributes.add(SVGNames::inAttr);
-        supportedAttributes.add(SVGNames::orderAttr);
-        supportedAttributes.add(SVGNames::kernelMatrixAttr);
-        supportedAttributes.add(SVGNames::edgeModeAttr);
-        supportedAttributes.add(SVGNames::divisorAttr);
-        supportedAttributes.add(SVGNames::biasAttr);
-        supportedAttributes.add(SVGNames::targetXAttr);
-        supportedAttributes.add(SVGNames::targetYAttr);
-        supportedAttributes.add(SVGNames::kernelUnitLengthAttr);
-        supportedAttributes.add(SVGNames::preserveAlphaAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 bool SVGFEConvolveMatrixElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)
 {
     FEConvolveMatrix* convolveMatrix = static_cast<FEConvolveMatrix*>(effect);
@@ -155,13 +137,6 @@ bool SVGFEConvolveMatrixElement::setFilterEffectAttribute(FilterEffect* effect, 
 
 void SVGFEConvolveMatrixElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
-        return;
-    }
-
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
     if (attrName == SVGNames::edgeModeAttr
         || attrName == SVGNames::divisorAttr
         || attrName == SVGNames::biasAttr
@@ -169,6 +144,7 @@ void SVGFEConvolveMatrixElement::svgAttributeChanged(const QualifiedName& attrNa
         || attrName == SVGNames::targetYAttr
         || attrName == SVGNames::kernelUnitLengthAttr
         || attrName == SVGNames::preserveAlphaAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
         primitiveAttributeChanged(attrName);
         return;
     }
@@ -176,11 +152,12 @@ void SVGFEConvolveMatrixElement::svgAttributeChanged(const QualifiedName& attrNa
     if (attrName == SVGNames::inAttr
         || attrName == SVGNames::orderAttr
         || attrName == SVGNames::kernelMatrixAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
         invalidate();
         return;
     }
 
-    ASSERT_NOT_REACHED();
+    SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
 }
 
 PassRefPtrWillBeRawPtr<FilterEffect> SVGFEConvolveMatrixElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)

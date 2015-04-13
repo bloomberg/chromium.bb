@@ -187,42 +187,27 @@ AffineTransform* SVGGraphicsElement::animateMotionTransform()
     return ensureSVGRareData()->animateMotionTransform();
 }
 
-bool SVGGraphicsElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        SVGTests::addSupportedAttributes(supportedAttributes);
-        supportedAttributes.add(SVGNames::transformAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 void SVGGraphicsElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGElement::svgAttributeChanged(attrName);
-        return;
-    }
-
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
     // Reattach so the isValid() check will be run again during renderer creation.
     if (SVGTests::isKnownAttribute(attrName)) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
         lazyReattachIfAttached();
         return;
     }
 
-    LayoutObject* object = layoutObject();
-    if (!object)
-        return;
-
     if (attrName == SVGNames::transformAttr) {
+        LayoutObject* object = layoutObject();
+        if (!object)
+            return;
+
+        SVGElement::InvalidationGuard invalidationGuard(this);
         object->setNeedsTransformUpdate();
         markForLayoutAndParentResourceInvalidation(object);
         return;
     }
 
-    ASSERT_NOT_REACHED();
+    SVGElement::svgAttributeChanged(attrName);
 }
 
 SVGElement* SVGGraphicsElement::nearestViewportElement() const

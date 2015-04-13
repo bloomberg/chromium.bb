@@ -47,17 +47,6 @@ DEFINE_TRACE(SVGCircleElement)
 
 DEFINE_NODE_FACTORY(SVGCircleElement)
 
-bool SVGCircleElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        supportedAttributes.add(SVGNames::cxAttr);
-        supportedAttributes.add(SVGNames::cyAttr);
-        supportedAttributes.add(SVGNames::rAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 bool SVGCircleElement::isPresentationAttribute(const QualifiedName& attrName) const
 {
     if (attrName == SVGNames::cxAttr || attrName == SVGNames::cyAttr
@@ -89,24 +78,26 @@ void SVGCircleElement::collectStyleForPresentationAttribute(const QualifiedName&
 
 void SVGCircleElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGGeometryElement::svgAttributeChanged(attrName);
+    if (attrName == SVGNames::rAttr
+        || attrName == SVGNames::cxAttr
+        || attrName == SVGNames::cyAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
+
+        invalidateSVGPresentationAttributeStyle();
+        setNeedsStyleRecalc(LocalStyleChange,
+            StyleChangeReasonForTracing::fromAttribute(attrName));
+        updateRelativeLengthsInformation();
+
+        LayoutSVGShape* renderer = toLayoutSVGShape(this->layoutObject());
+        if (!renderer)
+            return;
+
+        renderer->setNeedsShapeUpdate();
+        markForLayoutAndParentResourceInvalidation(renderer);
         return;
     }
 
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
-    invalidateSVGPresentationAttributeStyle();
-    setNeedsStyleRecalc(LocalStyleChange,
-        StyleChangeReasonForTracing::fromAttribute(attrName));
-    updateRelativeLengthsInformation();
-
-    LayoutSVGShape* renderer = toLayoutSVGShape(this->layoutObject());
-    if (!renderer)
-        return;
-
-    renderer->setNeedsShapeUpdate();
-    markForLayoutAndParentResourceInvalidation(renderer);
+    SVGGraphicsElement::svgAttributeChanged(attrName);
 }
 
 bool SVGCircleElement::selfHasRelativeLengths() const

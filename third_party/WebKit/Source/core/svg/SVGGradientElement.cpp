@@ -63,30 +63,23 @@ DEFINE_TRACE(SVGGradientElement)
     SVGURIReference::trace(visitor);
 }
 
-bool SVGGradientElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        SVGURIReference::addSupportedAttributes(supportedAttributes);
-        supportedAttributes.add(SVGNames::gradientUnitsAttr);
-        supportedAttributes.add(SVGNames::gradientTransformAttr);
-        supportedAttributes.add(SVGNames::spreadMethodAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 void SVGGradientElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGElement::svgAttributeChanged(attrName);
+    if (attrName == SVGNames::gradientUnitsAttr
+        || attrName == SVGNames::gradientTransformAttr
+        || attrName == SVGNames::spreadMethodAttr
+        || SVGURIReference::isKnownAttribute(attrName))
+    {
+        SVGElement::InvalidationGuard invalidationGuard(this);
+
+        LayoutSVGResourceContainer* renderer = toLayoutSVGResourceContainer(this->layoutObject());
+        if (renderer)
+            renderer->invalidateCacheAndMarkForLayout();
+
         return;
     }
 
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
-    LayoutSVGResourceContainer* renderer = toLayoutSVGResourceContainer(this->layoutObject());
-    if (renderer)
-        renderer->invalidateCacheAndMarkForLayout();
+    SVGElement::svgAttributeChanged(attrName);
 }
 
 void SVGGradientElement::childrenChanged(const ChildrenChange& change)

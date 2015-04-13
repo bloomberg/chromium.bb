@@ -50,7 +50,6 @@ public:
 private:
     explicit SVGFEImageElement(Document&);
 
-    bool isSupportedAttribute(const QualifiedName&);
     virtual void svgAttributeChanged(const QualifiedName&) override;
     virtual void notifyFinished(Resource*) override;
 

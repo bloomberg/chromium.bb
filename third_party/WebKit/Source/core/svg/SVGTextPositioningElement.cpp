@@ -54,28 +54,8 @@ DEFINE_TRACE(SVGTextPositioningElement)
     SVGTextContentElement::trace(visitor);
 }
 
-bool SVGTextPositioningElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        supportedAttributes.add(SVGNames::xAttr);
-        supportedAttributes.add(SVGNames::yAttr);
-        supportedAttributes.add(SVGNames::dxAttr);
-        supportedAttributes.add(SVGNames::dyAttr);
-        supportedAttributes.add(SVGNames::rotateAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 void SVGTextPositioningElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGTextContentElement::svgAttributeChanged(attrName);
-        return;
-    }
-
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
     bool updateRelativeLengths = attrName == SVGNames::xAttr
                               || attrName == SVGNames::yAttr
                               || attrName == SVGNames::dxAttr
@@ -84,15 +64,20 @@ void SVGTextPositioningElement::svgAttributeChanged(const QualifiedName& attrNam
     if (updateRelativeLengths)
         updateRelativeLengthsInformation();
 
-    LayoutObject* renderer = this->layoutObject();
-    if (!renderer)
+    if (updateRelativeLengths || attrName == SVGNames::rotateAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
+
+        LayoutObject* renderer = this->layoutObject();
+        if (!renderer)
+            return;
+
+        if (LayoutSVGText* textRenderer = LayoutSVGText::locateLayoutSVGTextAncestor(renderer))
+            textRenderer->setNeedsPositioningValuesUpdate();
+        markForLayoutAndParentResourceInvalidation(renderer);
         return;
+    }
 
-    ASSERT(updateRelativeLengths || attrName == SVGNames::rotateAttr);
-
-    if (LayoutSVGText* textRenderer = LayoutSVGText::locateLayoutSVGTextAncestor(renderer))
-        textRenderer->setNeedsPositioningValuesUpdate();
-    markForLayoutAndParentResourceInvalidation(renderer);
+    SVGTextContentElement::svgAttributeChanged(attrName);
 }
 
 SVGTextPositioningElement* SVGTextPositioningElement::elementFromRenderer(LayoutObject& renderer)

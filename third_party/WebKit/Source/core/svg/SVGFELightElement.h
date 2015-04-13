@@ -67,7 +67,6 @@ protected:
     SVGFELightElement(const QualifiedName&, Document&);
 
 private:
-    bool isSupportedAttribute(const QualifiedName&);
     virtual void svgAttributeChanged(const QualifiedName&) override final;
     virtual void childrenChanged(const ChildrenChange&) override final;
 

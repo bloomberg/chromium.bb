@@ -42,7 +42,6 @@ public:
 private:
     explicit SVGFEOffsetElement(Document&);
 
-    bool isSupportedAttribute(const QualifiedName&);
     virtual void svgAttributeChanged(const QualifiedName&) override;
     virtual PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 

@@ -53,19 +53,6 @@ DEFINE_TRACE(SVGFEDiffuseLightingElement)
 
 DEFINE_NODE_FACTORY(SVGFEDiffuseLightingElement)
 
-bool SVGFEDiffuseLightingElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        supportedAttributes.add(SVGNames::inAttr);
-        supportedAttributes.add(SVGNames::diffuseConstantAttr);
-        supportedAttributes.add(SVGNames::surfaceScaleAttr);
-        supportedAttributes.add(SVGNames::kernelUnitLengthAttr);
-        supportedAttributes.add(SVGNames::lighting_colorAttr); // Even though it's a SVG-CSS property, we override its handling here.
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 bool SVGFEDiffuseLightingElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)
 {
     FEDiffuseLighting* diffuseLighting = static_cast<FEDiffuseLighting*>(effect);
@@ -111,27 +98,22 @@ bool SVGFEDiffuseLightingElement::setFilterEffectAttribute(FilterEffect* effect,
 
 void SVGFEDiffuseLightingElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
-        return;
-    }
-
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
     if (attrName == SVGNames::surfaceScaleAttr
         || attrName == SVGNames::diffuseConstantAttr
         || attrName == SVGNames::kernelUnitLengthAttr
         || attrName == SVGNames::lighting_colorAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
         primitiveAttributeChanged(attrName);
         return;
     }
 
     if (attrName == SVGNames::inAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
         invalidate();
         return;
     }
 
-    ASSERT_NOT_REACHED();
+    SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
 }
 
 void SVGFEDiffuseLightingElement::lightElementAttributeChanged(const SVGFELightElement* lightElement, const QualifiedName& attrName)

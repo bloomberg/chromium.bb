@@ -44,7 +44,6 @@ public:
 private:
     explicit SVGLineElement(Document&);
 
-    bool isSupportedAttribute(const QualifiedName&);
     virtual void svgAttributeChanged(const QualifiedName&) override;
 
     virtual bool selfHasRelativeLengths() const override;

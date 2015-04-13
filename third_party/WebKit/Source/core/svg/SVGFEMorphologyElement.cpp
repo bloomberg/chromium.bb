@@ -59,17 +59,6 @@ DEFINE_TRACE(SVGFEMorphologyElement)
 
 DEFINE_NODE_FACTORY(SVGFEMorphologyElement)
 
-bool SVGFEMorphologyElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        supportedAttributes.add(SVGNames::inAttr);
-        supportedAttributes.add(SVGNames::operatorAttr);
-        supportedAttributes.add(SVGNames::radiusAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 bool SVGFEMorphologyElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)
 {
     FEMorphology* morphology = static_cast<FEMorphology*>(effect);
@@ -88,24 +77,19 @@ bool SVGFEMorphologyElement::setFilterEffectAttribute(FilterEffect* effect, cons
 
 void SVGFEMorphologyElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
-        return;
-    }
-
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
     if (attrName == SVGNames::operatorAttr || attrName == SVGNames::radiusAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
         primitiveAttributeChanged(attrName);
         return;
     }
 
     if (attrName == SVGNames::inAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
         invalidate();
         return;
     }
 
-    ASSERT_NOT_REACHED();
+    SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
 }
 
 PassRefPtrWillBeRawPtr<FilterEffect> SVGFEMorphologyElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)

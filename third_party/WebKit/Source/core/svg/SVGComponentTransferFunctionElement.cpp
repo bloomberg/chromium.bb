@@ -73,31 +73,19 @@ DEFINE_TRACE(SVGComponentTransferFunctionElement)
     SVGElement::trace(visitor);
 }
 
-bool SVGComponentTransferFunctionElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        supportedAttributes.add(SVGNames::typeAttr);
-        supportedAttributes.add(SVGNames::tableValuesAttr);
-        supportedAttributes.add(SVGNames::slopeAttr);
-        supportedAttributes.add(SVGNames::interceptAttr);
-        supportedAttributes.add(SVGNames::amplitudeAttr);
-        supportedAttributes.add(SVGNames::exponentAttr);
-        supportedAttributes.add(SVGNames::offsetAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 void SVGComponentTransferFunctionElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGElement::svgAttributeChanged(attrName);
+    if (attrName == SVGNames::typeAttr || attrName == SVGNames::tableValuesAttr
+        || attrName == SVGNames::slopeAttr || attrName == SVGNames::interceptAttr
+        || attrName == SVGNames::amplitudeAttr || attrName == SVGNames::exponentAttr
+        || attrName == SVGNames::offsetAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
+
+        invalidateFilterPrimitiveParent(this);
         return;
     }
 
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
-    invalidateFilterPrimitiveParent(this);
+    SVGElement::svgAttributeChanged(attrName);
 }
 
 ComponentTransferFunction SVGComponentTransferFunctionElement::transferFunction() const

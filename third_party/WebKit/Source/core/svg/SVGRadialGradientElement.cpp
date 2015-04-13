@@ -67,34 +67,23 @@ DEFINE_TRACE(SVGRadialGradientElement)
 
 DEFINE_NODE_FACTORY(SVGRadialGradientElement)
 
-bool SVGRadialGradientElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        supportedAttributes.add(SVGNames::cxAttr);
-        supportedAttributes.add(SVGNames::cyAttr);
-        supportedAttributes.add(SVGNames::fxAttr);
-        supportedAttributes.add(SVGNames::fyAttr);
-        supportedAttributes.add(SVGNames::rAttr);
-        supportedAttributes.add(SVGNames::frAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 void SVGRadialGradientElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGGradientElement::svgAttributeChanged(attrName);
+    if (attrName == SVGNames::cxAttr || attrName == SVGNames::cyAttr
+        || attrName == SVGNames::fxAttr || attrName == SVGNames::fyAttr
+        || attrName == SVGNames::rAttr || attrName == SVGNames::frAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
+
+        updateRelativeLengthsInformation();
+
+        LayoutSVGResourceContainer* renderer = toLayoutSVGResourceContainer(this->layoutObject());
+        if (renderer)
+            renderer->invalidateCacheAndMarkForLayout();
+
         return;
     }
 
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
-    updateRelativeLengthsInformation();
-
-    LayoutSVGResourceContainer* renderer = toLayoutSVGResourceContainer(this->layoutObject());
-    if (renderer)
-        renderer->invalidateCacheAndMarkForLayout();
+    SVGGradientElement::svgAttributeChanged(attrName);
 }
 
 LayoutObject* SVGRadialGradientElement::createLayoutObject(const ComputedStyle&)

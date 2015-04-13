@@ -56,7 +56,6 @@ private:
 
     virtual bool isValid() const override { return SVGTests::isValid(document()); }
 
-    bool isSupportedAttribute(const QualifiedName&);
     virtual void svgAttributeChanged(const QualifiedName&) override;
 
     virtual bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }

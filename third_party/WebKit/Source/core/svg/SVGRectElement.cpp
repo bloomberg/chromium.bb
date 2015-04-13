@@ -56,20 +56,6 @@ DEFINE_TRACE(SVGRectElement)
 
 DEFINE_NODE_FACTORY(SVGRectElement)
 
-bool SVGRectElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        supportedAttributes.add(SVGNames::xAttr);
-        supportedAttributes.add(SVGNames::yAttr);
-        supportedAttributes.add(SVGNames::widthAttr);
-        supportedAttributes.add(SVGNames::heightAttr);
-        supportedAttributes.add(SVGNames::rxAttr);
-        supportedAttributes.add(SVGNames::ryAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 bool SVGRectElement::isPresentationAttribute(const QualifiedName& attrName) const
 {
     if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr
@@ -109,24 +95,27 @@ void SVGRectElement::collectStyleForPresentationAttribute(const QualifiedName& n
 
 void SVGRectElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGGeometryElement::svgAttributeChanged(attrName);
+    if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr
+        || attrName == SVGNames::widthAttr || attrName == SVGNames::heightAttr
+        || attrName == SVGNames::rxAttr || attrName == SVGNames::ryAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
+
+        invalidateSVGPresentationAttributeStyle();
+        setNeedsStyleRecalc(LocalStyleChange,
+            StyleChangeReasonForTracing::fromAttribute(attrName));
+        updateRelativeLengthsInformation();
+
+        LayoutSVGShape* renderer = toLayoutSVGShape(this->layoutObject());
+        if (!renderer)
+            return;
+
+        renderer->setNeedsShapeUpdate();
+        markForLayoutAndParentResourceInvalidation(renderer);
+
         return;
     }
 
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
-    invalidateSVGPresentationAttributeStyle();
-    setNeedsStyleRecalc(LocalStyleChange,
-        StyleChangeReasonForTracing::fromAttribute(attrName));
-    updateRelativeLengthsInformation();
-
-    LayoutSVGShape* renderer = toLayoutSVGShape(this->layoutObject());
-    if (!renderer)
-        return;
-
-    renderer->setNeedsShapeUpdate();
-    markForLayoutAndParentResourceInvalidation(renderer);
+    SVGGeometryElement::svgAttributeChanged(attrName);
 }
 
 bool SVGRectElement::selfHasRelativeLengths() const

@@ -76,7 +76,6 @@ private:
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
     virtual void removedFrom(ContainerNode*) override;
 
-    bool isSupportedAttribute(const QualifiedName&);
     virtual void svgAttributeChanged(const QualifiedName&) override;
 
     virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;

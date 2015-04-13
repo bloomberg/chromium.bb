@@ -66,19 +66,6 @@ DEFINE_TRACE(SVGFEDisplacementMapElement)
 
 DEFINE_NODE_FACTORY(SVGFEDisplacementMapElement)
 
-bool SVGFEDisplacementMapElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        supportedAttributes.add(SVGNames::inAttr);
-        supportedAttributes.add(SVGNames::in2Attr);
-        supportedAttributes.add(SVGNames::xChannelSelectorAttr);
-        supportedAttributes.add(SVGNames::yChannelSelectorAttr);
-        supportedAttributes.add(SVGNames::scaleAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 bool SVGFEDisplacementMapElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)
 {
     FEDisplacementMap* displacementMap = static_cast<FEDisplacementMap*>(effect);
@@ -95,24 +82,19 @@ bool SVGFEDisplacementMapElement::setFilterEffectAttribute(FilterEffect* effect,
 
 void SVGFEDisplacementMapElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
-        return;
-    }
-
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
     if (attrName == SVGNames::xChannelSelectorAttr || attrName == SVGNames::yChannelSelectorAttr || attrName == SVGNames::scaleAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
         primitiveAttributeChanged(attrName);
         return;
     }
 
     if (attrName == SVGNames::inAttr || attrName == SVGNames::in2Attr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
         invalidate();
         return;
     }
 
-    ASSERT_NOT_REACHED();
+    SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
 }
 
 PassRefPtrWillBeRawPtr<FilterEffect> SVGFEDisplacementMapElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)

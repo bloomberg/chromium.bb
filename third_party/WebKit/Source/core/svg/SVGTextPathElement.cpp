@@ -82,28 +82,10 @@ void SVGTextPathElement::clearResourceReferences()
     removeAllOutgoingReferences();
 }
 
-bool SVGTextPathElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        SVGURIReference::addSupportedAttributes(supportedAttributes);
-        supportedAttributes.add(SVGNames::startOffsetAttr);
-        supportedAttributes.add(SVGNames::methodAttr);
-        supportedAttributes.add(SVGNames::spacingAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 void SVGTextPathElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGTextContentElement::svgAttributeChanged(attrName);
-        return;
-    }
-
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
     if (SVGURIReference::isKnownAttribute(attrName)) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
         buildPendingResource();
         return;
     }
@@ -111,8 +93,17 @@ void SVGTextPathElement::svgAttributeChanged(const QualifiedName& attrName)
     if (attrName == SVGNames::startOffsetAttr)
         updateRelativeLengthsInformation();
 
-    if (LayoutObject* object = layoutObject())
-        markForLayoutAndParentResourceInvalidation(object);
+    if (attrName == SVGNames::startOffsetAttr
+        || attrName == SVGNames::methodAttr
+        || attrName == SVGNames::spacingAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
+        if (LayoutObject* object = layoutObject())
+            markForLayoutAndParentResourceInvalidation(object);
+
+        return;
+    }
+
+    SVGTextContentElement::svgAttributeChanged(attrName);
 }
 
 LayoutObject* SVGTextPathElement::createLayoutObject(const ComputedStyle&)

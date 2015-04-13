@@ -49,18 +49,6 @@ SVGCursorElement::~SVGCursorElement()
 #endif
 }
 
-bool SVGCursorElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        SVGTests::addSupportedAttributes(supportedAttributes);
-        SVGURIReference::addSupportedAttributes(supportedAttributes);
-        supportedAttributes.add(SVGNames::xAttr);
-        supportedAttributes.add(SVGNames::yAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 void SVGCursorElement::addClient(SVGElement* element)
 {
     m_clients.add(element);
@@ -85,16 +73,19 @@ void SVGCursorElement::removeReferencedElement(SVGElement* element)
 
 void SVGCursorElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGElement::svgAttributeChanged(attrName);
+    if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr
+        || SVGTests::isKnownAttribute(attrName)
+        || SVGURIReference::isKnownAttribute(attrName)) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
+
+        // Any change of a cursor specific attribute triggers this recalc.
+        for (const auto& client : m_clients)
+            client->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SVGCursor));
+
         return;
     }
 
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
-    // Any change of a cursor specific attribute triggers this recalc.
-    for (const auto& client : m_clients)
-        client->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SVGCursor));
+    SVGElement::svgAttributeChanged(attrName);
 }
 
 DEFINE_TRACE(SVGCursorElement)

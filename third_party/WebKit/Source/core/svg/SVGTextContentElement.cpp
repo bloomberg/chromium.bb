@@ -200,17 +200,6 @@ void SVGTextContentElement::selectSubString(unsigned charnum, unsigned nchars, E
     document().frame()->selection().setSelection(VisibleSelection(start, end));
 }
 
-bool SVGTextContentElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        supportedAttributes.add(SVGNames::lengthAdjustAttr);
-        supportedAttributes.add(SVGNames::textLengthAttr);
-        supportedAttributes.add(XMLNames::spaceAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 bool SVGTextContentElement::isPresentationAttribute(const QualifiedName& name) const
 {
     if (name.matches(XMLNames::spaceAttr))
@@ -220,9 +209,7 @@ bool SVGTextContentElement::isPresentationAttribute(const QualifiedName& name) c
 
 void SVGTextContentElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
 {
-    if (!isSupportedAttribute(name))
-        SVGGraphicsElement::collectStyleForPresentationAttribute(name, value, style);
-    else if (name.matches(XMLNames::spaceAttr)) {
+    if (name.matches(XMLNames::spaceAttr)) {
         DEFINE_STATIC_LOCAL(const AtomicString, preserveString, ("preserve", AtomicString::ConstructFromLiteral));
 
         if (value == preserveString) {
@@ -232,23 +219,28 @@ void SVGTextContentElement::collectStyleForPresentationAttribute(const Qualified
             UseCounter::count(document(), UseCounter::WhiteSpaceNowrapFromXMLSpace);
             addPropertyToPresentationAttributeStyle(style, CSSPropertyWhiteSpace, CSSValueNowrap);
         }
+    } else {
+        SVGGraphicsElement::collectStyleForPresentationAttribute(name, value, style);
     }
 }
 
 void SVGTextContentElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGGraphicsElement::svgAttributeChanged(attrName);
-        return;
-    }
-
     if (attrName == SVGNames::textLengthAttr)
         m_textLengthIsSpecifiedByUser = true;
 
-    SVGElement::InvalidationGuard invalidationGuard(this);
+    if (attrName == SVGNames::textLengthAttr
+        || attrName == SVGNames::lengthAdjustAttr
+        || attrName == XMLNames::spaceAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
 
-    if (LayoutObject* renderer = this->layoutObject())
-        markForLayoutAndParentResourceInvalidation(renderer);
+        if (LayoutObject* renderer = this->layoutObject())
+            markForLayoutAndParentResourceInvalidation(renderer);
+
+        return;
+    }
+
+    SVGGraphicsElement::svgAttributeChanged(attrName);
 }
 
 bool SVGTextContentElement::selfHasRelativeLengths() const

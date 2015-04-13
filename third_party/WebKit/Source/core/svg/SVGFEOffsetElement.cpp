@@ -49,26 +49,16 @@ DEFINE_TRACE(SVGFEOffsetElement)
 
 DEFINE_NODE_FACTORY(SVGFEOffsetElement)
 
-bool SVGFEOffsetElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        supportedAttributes.add(SVGNames::inAttr);
-        supportedAttributes.add(SVGNames::dxAttr);
-        supportedAttributes.add(SVGNames::dyAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 void SVGFEOffsetElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
+    if (attrName == SVGNames::inAttr || attrName == SVGNames::dxAttr
+        || attrName == SVGNames::dyAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
+        invalidate();
         return;
     }
 
-    SVGElement::InvalidationGuard invalidationGuard(this);
-    invalidate();
+    SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
 }
 
 PassRefPtrWillBeRawPtr<FilterEffect> SVGFEOffsetElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)

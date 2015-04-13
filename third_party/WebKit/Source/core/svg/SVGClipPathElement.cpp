@@ -44,16 +44,16 @@ DEFINE_NODE_FACTORY(SVGClipPathElement)
 
 void SVGClipPathElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (attrName != SVGNames::clipPathUnitsAttr) {
-        SVGGraphicsElement::svgAttributeChanged(attrName);
+    if (attrName == SVGNames::clipPathUnitsAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
+
+        LayoutSVGResourceContainer* renderer = toLayoutSVGResourceContainer(this->layoutObject());
+        if (renderer)
+            renderer->invalidateCacheAndMarkForLayout();
         return;
     }
 
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
-    LayoutSVGResourceContainer* renderer = toLayoutSVGResourceContainer(this->layoutObject());
-    if (renderer)
-        renderer->invalidateCacheAndMarkForLayout();
+    SVGGraphicsElement::svgAttributeChanged(attrName);
 }
 
 void SVGClipPathElement::childrenChanged(const ChildrenChange& change)

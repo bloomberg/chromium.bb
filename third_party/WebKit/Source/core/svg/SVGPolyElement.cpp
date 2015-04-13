@@ -42,19 +42,19 @@ DEFINE_TRACE(SVGPolyElement)
 
 void SVGPolyElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (attrName != SVGNames::pointsAttr) {
-        SVGGeometryElement::svgAttributeChanged(attrName);
+    if (attrName == SVGNames::pointsAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
+
+        LayoutSVGShape* renderer = toLayoutSVGShape(this->layoutObject());
+        if (!renderer)
+            return;
+
+        renderer->setNeedsShapeUpdate();
+        markForLayoutAndParentResourceInvalidation(renderer);
         return;
     }
 
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
-    LayoutSVGShape* renderer = toLayoutSVGShape(this->layoutObject());
-    if (!renderer)
-        return;
-
-    renderer->setNeedsShapeUpdate();
-    markForLayoutAndParentResourceInvalidation(renderer);
+    SVGGeometryElement::svgAttributeChanged(attrName);
 }
 
 }

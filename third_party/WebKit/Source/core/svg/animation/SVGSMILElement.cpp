@@ -507,24 +507,6 @@ void SVGSMILElement::parseBeginOrEnd(const String& parseString, BeginOrEnd begin
     sortTimeList(timeList);
 }
 
-bool SVGSMILElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        SVGTests::addSupportedAttributes(supportedAttributes);
-        supportedAttributes.add(SVGNames::beginAttr);
-        supportedAttributes.add(SVGNames::endAttr);
-        supportedAttributes.add(SVGNames::durAttr);
-        supportedAttributes.add(SVGNames::repeatDurAttr);
-        supportedAttributes.add(SVGNames::repeatCountAttr);
-        supportedAttributes.add(SVGNames::minAttr);
-        supportedAttributes.add(SVGNames::maxAttr);
-        supportedAttributes.add(SVGNames::attributeNameAttr);
-        supportedAttributes.add(XLinkNames::hrefAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 void SVGSMILElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (name == SVGNames::beginAttr) {
@@ -556,11 +538,6 @@ void SVGSMILElement::parseAttribute(const QualifiedName& name, const AtomicStrin
 
 void SVGSMILElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGElement::svgAttributeChanged(attrName);
-        return;
-    }
-
     if (attrName == SVGNames::durAttr)
         m_cachedDur = invalidCachedTime;
     else if (attrName == SVGNames::repeatDurAttr)
@@ -578,11 +555,16 @@ void SVGSMILElement::svgAttributeChanged(const QualifiedName& attrName)
         buildPendingResource();
         if (m_targetElement)
             clearAnimatedType();
-    } else if (inDocument()) {
-        if (attrName == SVGNames::beginAttr)
-            beginListChanged(elapsed());
-        else if (attrName == SVGNames::endAttr)
-            endListChanged(elapsed());
+    } else if (attrName == SVGNames::beginAttr || attrName == SVGNames::endAttr) {
+        if (inDocument()) {
+            if (attrName == SVGNames::beginAttr)
+                beginListChanged(elapsed());
+            else if (attrName == SVGNames::endAttr)
+                endListChanged(elapsed());
+        }
+    } else {
+        SVGElement::svgAttributeChanged(attrName);
+        return;
     }
 
     animationAttributeChanged();

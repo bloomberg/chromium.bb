@@ -101,7 +101,6 @@ public:
 private:
     explicit SVGPathElement(Document&);
 
-    bool isSupportedAttribute(const QualifiedName&);
     virtual void svgAttributeChanged(const QualifiedName&) override;
 
     virtual Node::InsertionNotificationRequest insertedInto(ContainerNode*) override;

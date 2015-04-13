@@ -69,42 +69,33 @@ DEFINE_TRACE(SVGPatternElement)
 
 DEFINE_NODE_FACTORY(SVGPatternElement)
 
-bool SVGPatternElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        SVGURIReference::addSupportedAttributes(supportedAttributes);
-        SVGTests::addSupportedAttributes(supportedAttributes);
-        SVGFitToViewBox::addSupportedAttributes(supportedAttributes);
-        supportedAttributes.add(SVGNames::patternUnitsAttr);
-        supportedAttributes.add(SVGNames::patternContentUnitsAttr);
-        supportedAttributes.add(SVGNames::patternTransformAttr);
-        supportedAttributes.add(SVGNames::xAttr);
-        supportedAttributes.add(SVGNames::yAttr);
-        supportedAttributes.add(SVGNames::widthAttr);
-        supportedAttributes.add(SVGNames::heightAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 void SVGPatternElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGElement::svgAttributeChanged(attrName);
+    bool isLengthAttr = attrName == SVGNames::xAttr
+        || attrName == SVGNames::yAttr
+        || attrName == SVGNames::widthAttr
+        || attrName == SVGNames::heightAttr;
+
+    if (isLengthAttr
+        || attrName == SVGNames::patternUnitsAttr
+        || attrName == SVGNames::patternContentUnitsAttr
+        || attrName == SVGNames::patternTransformAttr
+        || SVGFitToViewBox::isKnownAttribute(attrName)
+        || SVGURIReference::isKnownAttribute(attrName)
+        || SVGTests::isKnownAttribute(attrName)) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
+
+        if (isLengthAttr)
+            updateRelativeLengthsInformation();
+
+        LayoutSVGResourceContainer* renderer = toLayoutSVGResourceContainer(this->layoutObject());
+        if (renderer)
+            renderer->invalidateCacheAndMarkForLayout();
+
         return;
     }
 
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
-    if (attrName == SVGNames::xAttr
-        || attrName == SVGNames::yAttr
-        || attrName == SVGNames::widthAttr
-        || attrName == SVGNames::heightAttr)
-        updateRelativeLengthsInformation();
-
-    LayoutSVGResourceContainer* renderer = toLayoutSVGResourceContainer(this->layoutObject());
-    if (renderer)
-        renderer->invalidateCacheAndMarkForLayout();
+    SVGElement::svgAttributeChanged(attrName);
 }
 
 void SVGPatternElement::childrenChanged(const ChildrenChange& change)

@@ -50,18 +50,6 @@ DEFINE_TRACE(SVGEllipseElement)
 
 DEFINE_NODE_FACTORY(SVGEllipseElement)
 
-bool SVGEllipseElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        supportedAttributes.add(SVGNames::cxAttr);
-        supportedAttributes.add(SVGNames::cyAttr);
-        supportedAttributes.add(SVGNames::rxAttr);
-        supportedAttributes.add(SVGNames::ryAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 bool SVGEllipseElement::isPresentationAttribute(const QualifiedName& attrName) const
 {
     if (attrName == SVGNames::cxAttr || attrName == SVGNames::cyAttr
@@ -96,24 +84,25 @@ void SVGEllipseElement::collectStyleForPresentationAttribute(const QualifiedName
 
 void SVGEllipseElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGGeometryElement::svgAttributeChanged(attrName);
+    if (attrName == SVGNames::cxAttr || attrName == SVGNames::cyAttr
+        || attrName == SVGNames::rxAttr || attrName == SVGNames::ryAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
+
+        invalidateSVGPresentationAttributeStyle();
+        setNeedsStyleRecalc(LocalStyleChange,
+            StyleChangeReasonForTracing::fromAttribute(attrName));
+        updateRelativeLengthsInformation();
+
+        LayoutSVGShape* renderer = toLayoutSVGShape(this->layoutObject());
+        if (!renderer)
+            return;
+
+        renderer->setNeedsShapeUpdate();
+        markForLayoutAndParentResourceInvalidation(renderer);
         return;
     }
 
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
-    invalidateSVGPresentationAttributeStyle();
-    setNeedsStyleRecalc(LocalStyleChange,
-        StyleChangeReasonForTracing::fromAttribute(attrName));
-    updateRelativeLengthsInformation();
-
-    LayoutSVGShape* renderer = toLayoutSVGShape(this->layoutObject());
-    if (!renderer)
-        return;
-
-    renderer->setNeedsShapeUpdate();
-    markForLayoutAndParentResourceInvalidation(renderer);
+    SVGGeometryElement::svgAttributeChanged(attrName);
 }
 
 bool SVGEllipseElement::selfHasRelativeLengths() const

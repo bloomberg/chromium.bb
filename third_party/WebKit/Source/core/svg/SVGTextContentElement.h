@@ -70,7 +70,6 @@ public:
 protected:
     SVGTextContentElement(const QualifiedName&, Document&);
 
-    bool isSupportedAttribute(const QualifiedName&);
     virtual bool isPresentationAttribute(const QualifiedName&) const override final;
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override final;
     virtual void svgAttributeChanged(const QualifiedName&) override;

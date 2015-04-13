@@ -89,19 +89,6 @@ DEFINE_TRACE(SVGUseElement)
     SVGURIReference::trace(visitor);
 }
 
-bool SVGUseElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        SVGURIReference::addSupportedAttributes(supportedAttributes);
-        supportedAttributes.add(SVGNames::xAttr);
-        supportedAttributes.add(SVGNames::yAttr);
-        supportedAttributes.add(SVGNames::widthAttr);
-        supportedAttributes.add(SVGNames::heightAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 #if ENABLE(ASSERT)
 static inline bool isWellFormedDocument(Document* document)
 {
@@ -203,36 +190,33 @@ void SVGUseElement::collectStyleForPresentationAttribute(const QualifiedName& na
 
 void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGGraphicsElement::svgAttributeChanged(attrName);
-        return;
-    }
-
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
-    if (attrName == SVGNames::xAttr
-        || attrName == SVGNames::yAttr) {
-        invalidateSVGPresentationAttributeStyle();
-        setNeedsStyleRecalc(LocalStyleChange,
-            StyleChangeReasonForTracing::fromAttribute(attrName));
-    }
-
-    LayoutObject* renderer = this->layoutObject();
     if (attrName == SVGNames::xAttr
         || attrName == SVGNames::yAttr
         || attrName == SVGNames::widthAttr
         || attrName == SVGNames::heightAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
+
+        if (attrName == SVGNames::xAttr
+            || attrName == SVGNames::yAttr) {
+            invalidateSVGPresentationAttributeStyle();
+            setNeedsStyleRecalc(LocalStyleChange,
+                StyleChangeReasonForTracing::fromAttribute(attrName));
+        }
+
         updateRelativeLengthsInformation();
         if (m_targetElementInstance) {
             ASSERT(m_targetElementInstance->correspondingElement());
             transferUseWidthAndHeightIfNeeded(*this, m_targetElementInstance.get(), *m_targetElementInstance->correspondingElement());
         }
-        if (renderer)
-            markForLayoutAndParentResourceInvalidation(renderer);
+
+        LayoutObject* object = this->layoutObject();
+        if (object)
+            markForLayoutAndParentResourceInvalidation(object);
         return;
     }
 
     if (SVGURIReference::isKnownAttribute(attrName)) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
         bool isExternalReference = isExternalURIReference(hrefString(), document());
         if (isExternalReference) {
             KURL url = document().completeURL(hrefString());
@@ -249,10 +233,7 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
         return;
     }
 
-    if (!renderer)
-        return;
-
-    ASSERT_NOT_REACHED();
+    SVGGraphicsElement::svgAttributeChanged(attrName);
 }
 
 static bool isDisallowedElement(Node* node)

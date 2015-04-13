@@ -43,7 +43,6 @@ public:
 private:
     explicit SVGCircleElement(Document&);
 
-    bool isSupportedAttribute(const QualifiedName&);
     virtual void svgAttributeChanged(const QualifiedName&) override;
 
     virtual bool isPresentationAttribute(const QualifiedName&) const override;

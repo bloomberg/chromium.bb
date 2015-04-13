@@ -57,19 +57,6 @@ DEFINE_TRACE(SVGFESpecularLightingElement)
 
 DEFINE_NODE_FACTORY(SVGFESpecularLightingElement)
 
-bool SVGFESpecularLightingElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        supportedAttributes.add(SVGNames::inAttr);
-        supportedAttributes.add(SVGNames::specularConstantAttr);
-        supportedAttributes.add(SVGNames::specularExponentAttr);
-        supportedAttributes.add(SVGNames::surfaceScaleAttr);
-        supportedAttributes.add(SVGNames::kernelUnitLengthAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 bool SVGFESpecularLightingElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)
 {
     FESpecularLighting* specularLighting = static_cast<FESpecularLighting*>(effect);
@@ -117,27 +104,22 @@ bool SVGFESpecularLightingElement::setFilterEffectAttribute(FilterEffect* effect
 
 void SVGFESpecularLightingElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
-        return;
-    }
-
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
     if (attrName == SVGNames::surfaceScaleAttr
         || attrName == SVGNames::specularConstantAttr
         || attrName == SVGNames::specularExponentAttr
         || attrName == SVGNames::kernelUnitLengthAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
         primitiveAttributeChanged(attrName);
         return;
     }
 
     if (attrName == SVGNames::inAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
         invalidate();
         return;
     }
 
-    ASSERT_NOT_REACHED();
+    SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
 }
 
 void SVGFESpecularLightingElement::lightElementAttributeChanged(const SVGFELightElement* lightElement, const QualifiedName& attrName)

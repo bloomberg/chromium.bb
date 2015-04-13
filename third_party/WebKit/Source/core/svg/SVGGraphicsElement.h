@@ -79,7 +79,6 @@ protected:
 
     virtual bool supportsFocus() const override { return Element::supportsFocus() || hasFocusEventListeners(); }
 
-    bool isSupportedAttribute(const QualifiedName&);
     virtual void svgAttributeChanged(const QualifiedName&) override;
 
     RefPtrWillBeMember<SVGAnimatedTransformList> m_transform;

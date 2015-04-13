@@ -158,30 +158,8 @@ static bool parseKeySplines(const String& string, Vector<UnitBezier>& result)
     return true;
 }
 
-bool SVGAnimationElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        supportedAttributes.add(SVGNames::valuesAttr);
-        supportedAttributes.add(SVGNames::keyTimesAttr);
-        supportedAttributes.add(SVGNames::keyPointsAttr);
-        supportedAttributes.add(SVGNames::keySplinesAttr);
-        supportedAttributes.add(SVGNames::attributeTypeAttr);
-        supportedAttributes.add(SVGNames::calcModeAttr);
-        supportedAttributes.add(SVGNames::fromAttr);
-        supportedAttributes.add(SVGNames::toAttr);
-        supportedAttributes.add(SVGNames::byAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 void SVGAnimationElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (!isSupportedAttribute(name)) {
-        SVGSMILElement::parseAttribute(name, value);
-        return;
-    }
-
     if (name == SVGNames::valuesAttr) {
         if (!parseValues(value, m_values)) {
             reportAttributeParsingError(ParsingAttributeFailedError, name, value);
@@ -228,17 +206,25 @@ void SVGAnimationElement::parseAttribute(const QualifiedName& name, const Atomic
         return;
     }
 
-    ASSERT_NOT_REACHED();
+    SVGSMILElement::parseAttribute(name, value);
 }
 
 void SVGAnimationElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGSMILElement::svgAttributeChanged(attrName);
+    if (attrName == SVGNames::valuesAttr
+        || attrName == SVGNames::byAttr
+        || attrName == SVGNames::fromAttr
+        || attrName == SVGNames::toAttr
+        || attrName == SVGNames::calcModeAttr
+        || attrName == SVGNames::attributeTypeAttr
+        || attrName == SVGNames::keySplinesAttr
+        || attrName == SVGNames::keyPointsAttr
+        || attrName == SVGNames::keyTimesAttr) {
+        animationAttributeChanged();
         return;
     }
 
-    animationAttributeChanged();
+    SVGSMILElement::svgAttributeChanged(attrName);
 }
 
 void SVGAnimationElement::animationAttributeChanged()

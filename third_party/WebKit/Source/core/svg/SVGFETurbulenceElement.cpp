@@ -74,19 +74,6 @@ DEFINE_TRACE(SVGFETurbulenceElement)
 
 DEFINE_NODE_FACTORY(SVGFETurbulenceElement)
 
-bool SVGFETurbulenceElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        supportedAttributes.add(SVGNames::baseFrequencyAttr);
-        supportedAttributes.add(SVGNames::numOctavesAttr);
-        supportedAttributes.add(SVGNames::seedAttr);
-        supportedAttributes.add(SVGNames::stitchTilesAttr);
-        supportedAttributes.add(SVGNames::typeAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 bool SVGFETurbulenceElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)
 {
     FETurbulence* turbulence = static_cast<FETurbulence*>(effect);
@@ -110,23 +97,17 @@ bool SVGFETurbulenceElement::setFilterEffectAttribute(FilterEffect* effect, cons
 
 void SVGFETurbulenceElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
-        return;
-    }
-
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
     if (attrName == SVGNames::baseFrequencyAttr
         || attrName == SVGNames::numOctavesAttr
         || attrName == SVGNames::seedAttr
         || attrName == SVGNames::stitchTilesAttr
         || attrName == SVGNames::typeAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
         primitiveAttributeChanged(attrName);
         return;
     }
 
-    ASSERT_NOT_REACHED();
+    SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
 }
 
 PassRefPtrWillBeRawPtr<FilterEffect> SVGFETurbulenceElement::build(SVGFilterBuilder*, Filter* filter)

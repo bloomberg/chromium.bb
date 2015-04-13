@@ -47,7 +47,6 @@ public:
 private:
     explicit SVGFEDiffuseLightingElement(Document&);
 
-    bool isSupportedAttribute(const QualifiedName&);
     virtual bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
     virtual void svgAttributeChanged(const QualifiedName&) override;
     virtual PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;

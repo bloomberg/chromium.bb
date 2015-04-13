@@ -62,7 +62,6 @@ private:
 
     virtual bool needsPendingResourceHandling() const override { return false; }
 
-    bool isSupportedAttribute(const QualifiedName&);
     virtual void svgAttributeChanged(const QualifiedName&) override;
     virtual void childrenChanged(const ChildrenChange&) override;
 

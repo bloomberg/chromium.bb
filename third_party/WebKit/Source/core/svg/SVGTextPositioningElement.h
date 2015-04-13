@@ -45,7 +45,6 @@ public:
 protected:
     SVGTextPositioningElement(const QualifiedName&, Document&);
 
-    bool isSupportedAttribute(const QualifiedName&);
     virtual void svgAttributeChanged(const QualifiedName&) override final;
     virtual bool isTextPositioning() const override final { return true; }
 

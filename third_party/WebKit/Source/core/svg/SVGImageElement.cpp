@@ -74,20 +74,6 @@ bool SVGImageElement::currentFrameHasSingleSecurityOrigin() const
     return true;
 }
 
-bool SVGImageElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        SVGURIReference::addSupportedAttributes(supportedAttributes);
-        supportedAttributes.add(SVGNames::xAttr);
-        supportedAttributes.add(SVGNames::yAttr);
-        supportedAttributes.add(SVGNames::widthAttr);
-        supportedAttributes.add(SVGNames::heightAttr);
-        supportedAttributes.add(SVGNames::preserveAspectRatioAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 bool SVGImageElement::isPresentationAttribute(const QualifiedName& attrName) const
 {
     if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr
@@ -122,26 +108,35 @@ void SVGImageElement::collectStyleForPresentationAttribute(const QualifiedName& 
 
 void SVGImageElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGGraphicsElement::svgAttributeChanged(attrName);
-        return;
-    }
-
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
     bool isLengthAttribute = attrName == SVGNames::xAttr
                           || attrName == SVGNames::yAttr
                           || attrName == SVGNames::widthAttr
                           || attrName == SVGNames::heightAttr;
 
-    if (isLengthAttribute) {
-        invalidateSVGPresentationAttributeStyle();
-        setNeedsStyleRecalc(LocalStyleChange,
-            StyleChangeReasonForTracing::fromAttribute(attrName));
-        updateRelativeLengthsInformation();
+    if (isLengthAttribute || attrName == SVGNames::preserveAspectRatioAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
+
+        if (isLengthAttribute) {
+            invalidateSVGPresentationAttributeStyle();
+            setNeedsStyleRecalc(LocalStyleChange,
+                StyleChangeReasonForTracing::fromAttribute(attrName));
+            updateRelativeLengthsInformation();
+        }
+
+        LayoutObject* object = this->layoutObject();
+        if (!object)
+            return;
+
+        // FIXME: if isLengthAttribute then we should avoid this
+        // call if the viewport didn't change, however since we don't
+        // have the computed style yet we can't use updateImageViewport.
+        // See http://crbug.com/466200.
+        markForLayoutAndParentResourceInvalidation(object);
+        return;
     }
 
     if (SVGURIReference::isKnownAttribute(attrName)) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
         if (inDocument())
             imageLoader().updateFromElement(ImageLoader::UpdateIgnorePreviousError);
         else
@@ -149,20 +144,7 @@ void SVGImageElement::svgAttributeChanged(const QualifiedName& attrName)
         return;
     }
 
-    LayoutObject* renderer = this->layoutObject();
-    if (!renderer)
-        return;
-
-    if (isLengthAttribute || attrName == SVGNames::preserveAspectRatioAttr) {
-        // FIXME: if isLengthAttribute then we should avoid this
-        // call if the viewport didn't change, however since we don't
-        // have the computed style yet we can't use updateImageViewport.
-        // See http://crbug.com/466200.
-        markForLayoutAndParentResourceInvalidation(renderer);
-        return;
-    }
-
-    ASSERT_NOT_REACHED();
+    SVGGraphicsElement::svgAttributeChanged(attrName);
 }
 
 bool SVGImageElement::selfHasRelativeLengths() const

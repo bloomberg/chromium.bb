@@ -61,17 +61,6 @@ DEFINE_TRACE(SVGFEColorMatrixElement)
 
 DEFINE_NODE_FACTORY(SVGFEColorMatrixElement)
 
-bool SVGFEColorMatrixElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        supportedAttributes.add(SVGNames::typeAttr);
-        supportedAttributes.add(SVGNames::valuesAttr);
-        supportedAttributes.add(SVGNames::inAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 bool SVGFEColorMatrixElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)
 {
     FEColorMatrix* colorMatrix = static_cast<FEColorMatrix*>(effect);
@@ -90,24 +79,19 @@ bool SVGFEColorMatrixElement::setFilterEffectAttribute(FilterEffect* effect, con
 
 void SVGFEColorMatrixElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
-        return;
-    }
-
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
     if (attrName == SVGNames::typeAttr || attrName == SVGNames::valuesAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
         primitiveAttributeChanged(attrName);
         return;
     }
 
     if (attrName == SVGNames::inAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
         invalidate();
         return;
     }
 
-    ASSERT_NOT_REACHED();
+    SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
 }
 
 PassRefPtrWillBeRawPtr<FilterEffect> SVGFEColorMatrixElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)

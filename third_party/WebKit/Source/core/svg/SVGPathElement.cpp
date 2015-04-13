@@ -200,36 +200,27 @@ PassRefPtrWillBeRawPtr<SVGPathSegCurvetoQuadraticSmoothRel> SVGPathElement::crea
     return SVGPathSegCurvetoQuadraticSmoothRel::create(0, x, y);
 }
 
-bool SVGPathElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        supportedAttributes.add(SVGNames::dAttr);
-        supportedAttributes.add(SVGNames::pathLengthAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 void SVGPathElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGGeometryElement::svgAttributeChanged(attrName);
+    if (attrName == SVGNames::dAttr || attrName == SVGNames::pathLengthAttr) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
+
+        LayoutSVGShape* renderer = toLayoutSVGShape(this->layoutObject());
+
+        if (attrName == SVGNames::dAttr) {
+            if (renderer)
+                renderer->setNeedsShapeUpdate();
+
+            invalidateMPathDependencies();
+        }
+
+        if (renderer)
+            markForLayoutAndParentResourceInvalidation(renderer);
+
         return;
     }
 
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
-    LayoutSVGShape* renderer = toLayoutSVGShape(this->layoutObject());
-
-    if (attrName == SVGNames::dAttr) {
-        if (renderer)
-            renderer->setNeedsShapeUpdate();
-
-        invalidateMPathDependencies();
-    }
-
-    if (renderer)
-        markForLayoutAndParentResourceInvalidation(renderer);
+    SVGGeometryElement::svgAttributeChanged(attrName);
 }
 
 void SVGPathElement::invalidateMPathDependencies()

@@ -81,39 +81,28 @@ AffineTransform SVGMarkerElement::viewBoxToViewTransform(float viewWidth, float 
     return SVGFitToViewBox::viewBoxToViewTransform(viewBox()->currentValue()->value(), preserveAspectRatio()->currentValue(), viewWidth, viewHeight);
 }
 
-bool SVGMarkerElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        SVGFitToViewBox::addSupportedAttributes(supportedAttributes);
-        supportedAttributes.add(SVGNames::markerUnitsAttr);
-        supportedAttributes.add(SVGNames::refXAttr);
-        supportedAttributes.add(SVGNames::refYAttr);
-        supportedAttributes.add(SVGNames::markerWidthAttr);
-        supportedAttributes.add(SVGNames::markerHeightAttr);
-        supportedAttributes.add(SVGNames::orientAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 void SVGMarkerElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGElement::svgAttributeChanged(attrName);
+    bool isLengthAttr = attrName == SVGNames::refXAttr
+        || attrName == SVGNames::refYAttr
+        || attrName == SVGNames::markerWidthAttr
+        || attrName == SVGNames::markerHeightAttr;
+
+    if (isLengthAttr)
+        updateRelativeLengthsInformation();
+
+    if (isLengthAttr || attrName == SVGNames::markerUnitsAttr
+        || attrName == SVGNames::orientAttr
+        || SVGFitToViewBox::isKnownAttribute(attrName)) {
+        SVGElement::InvalidationGuard invalidationGuard(this);
+        LayoutSVGResourceContainer* renderer = toLayoutSVGResourceContainer(this->layoutObject());
+        if (renderer)
+            renderer->invalidateCacheAndMarkForLayout();
+
         return;
     }
 
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
-    if (attrName == SVGNames::refXAttr
-        || attrName == SVGNames::refYAttr
-        || attrName == SVGNames::markerWidthAttr
-        || attrName == SVGNames::markerHeightAttr)
-        updateRelativeLengthsInformation();
-
-    LayoutSVGResourceContainer* renderer = toLayoutSVGResourceContainer(this->layoutObject());
-    if (renderer)
-        renderer->invalidateCacheAndMarkForLayout();
+    SVGElement::svgAttributeChanged(attrName);
 }
 
 void SVGMarkerElement::childrenChanged(const ChildrenChange& change)
