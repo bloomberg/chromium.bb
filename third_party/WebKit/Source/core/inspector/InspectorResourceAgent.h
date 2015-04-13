@@ -151,6 +151,8 @@ private:
     void delayedRemoveReplayXHR(XMLHttpRequest*);
     void removeFinishedReplayXHRFired(Timer<InspectorResourceAgent>*);
 
+    bool getResponseBodyBlob(const String& requestId, PassRefPtrWillBeRawPtr<GetResponseBodyCallback>);
+
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     String m_userAgentOverride;
     String m_hostId;

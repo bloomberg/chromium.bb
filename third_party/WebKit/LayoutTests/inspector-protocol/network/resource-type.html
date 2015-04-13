@@ -39,13 +39,18 @@ function test()
         { url: '/test.wav', type: "Media" },
         { url: '/test.ogv', type: "Media" },
         { url: '/simple-captions.vtt', type: "TextTrack" },
+        { url: '/greenbox.png', type: "XHR" }
     ];
     var resourcesLeft = resources.length;
 
     function onResponseReceived(event)
     {
         var url = event.params.response.url;
+        if (url.indexOf("blob") === 0)
+            return;
+
         var type = event.params.type;
+        var requestId = event.params.requestId;
         for (var i = 0; i < resources.length; ++i) {
             var resource = resources[i];
             if (url.substring(url.length - resource.url.length) === resource.url) {
@@ -55,9 +60,7 @@ function test()
                 }
                 resource.gotType = type;
                 resource.gotUrl = url;
-                resourcesLeft -= 1;
-                if (resourcesLeft === 0)
-                    receivedAllResources();
+                InspectorTest.sendCommand("Network.getResponseBody", { "requestId": requestId }, onResponseBody.bind(null, resource));
                 return;
             }
         }
@@ -65,11 +68,27 @@ function test()
         InspectorTest.completeTest();
     }
 
+    function onResponseBody(resource, protocolResponse)
+    {
+        if (protocolResponse.error) {
+            resource.responseAvailable = false;
+        } else {
+            resource.responseAvailable = true;
+            resource.responseEncoded = protocolResponse.result.base64Encoded;
+        }
+        resourcesLeft -= 1;
+        if (resourcesLeft === 0)
+            receivedAllResources();
+    }
+
     function receivedAllResources()
     {
         for (var i = 0; i < resources.length; ++i) {
             var resource = resources[i];
-            InspectorTest.log("Resource " + resource.url + " got type: " + resource.gotType +  ", type: " + resource.type);
+            var description = "Resource " + resource.url + " got type: " + resource.gotType +  ", type: " + resource.type + ", responseAvailable: " + resource.responseAvailable;
+            if (resource.responseAvailable)
+                description += ", responseEncoded: " + resource.responseEncoded;
+            InspectorTest.log(description);
         }
         InspectorTest.completeTest();
     }
