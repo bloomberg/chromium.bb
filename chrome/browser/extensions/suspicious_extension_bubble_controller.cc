@@ -53,7 +53,6 @@ class SuspiciousExtensionBubbleDelegate
   base::string16 GetActionButtonLabel() const override;
   base::string16 GetDismissButtonLabel() const override;
   bool ShouldShowExtensionList() const override;
-  bool ShouldHighlightExtensions() const override;
   void LogExtensionCount(size_t count) override;
   void LogAction(
       ExtensionMessageBubbleController::BubbleAction action) override;
@@ -127,12 +126,9 @@ SuspiciousExtensionBubbleDelegate::GetDismissButtonLabel() const {
   return l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNSUPPORTED_DISABLED_BUTTON);
 }
 
-bool SuspiciousExtensionBubbleDelegate::ShouldShowExtensionList() const {
+bool
+SuspiciousExtensionBubbleDelegate::ShouldShowExtensionList() const {
   return true;
-}
-
-bool SuspiciousExtensionBubbleDelegate::ShouldHighlightExtensions() const {
-  return false;
 }
 
 void SuspiciousExtensionBubbleDelegate::LogExtensionCount(

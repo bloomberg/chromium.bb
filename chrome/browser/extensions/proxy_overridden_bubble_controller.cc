@@ -51,7 +51,6 @@ class ProxyOverriddenBubbleDelegate
   base::string16 GetActionButtonLabel() const override;
   base::string16 GetDismissButtonLabel() const override;
   bool ShouldShowExtensionList() const override;
-  bool ShouldHighlightExtensions() const override;
   void RestrictToSingleExtension(const std::string& extension_id) override;
   void LogExtensionCount(size_t count) override;
   void LogAction(
@@ -160,10 +159,6 @@ base::string16 ProxyOverriddenBubbleDelegate::GetDismissButtonLabel() const {
 
 bool ProxyOverriddenBubbleDelegate::ShouldShowExtensionList() const {
   return false;
-}
-
-bool ProxyOverriddenBubbleDelegate::ShouldHighlightExtensions() const {
-  return true;
 }
 
 void ProxyOverriddenBubbleDelegate::RestrictToSingleExtension(

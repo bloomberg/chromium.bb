@@ -198,9 +198,6 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer,
   // Sets |overflowed_action_wants_to_run_| to the proper value.
   void SetOverflowedActionWantsToRun();
 
-  // Shows an extension message bubble, if any should be shown.
-  void MaybeShowExtensionBubble();
-
   bool in_overflow_mode() const { return main_bar_ != nullptr; }
 
   // The delegate for this object (in a real build, this is the view).
@@ -249,10 +246,6 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer,
 
   // True if an action in the overflow menu wants to run.
   bool overflowed_action_wants_to_run_;
-
-  // True if we have checked to see if there is an extension bubble that should
-  // be displayed, and, if there is, shown that bubble.
-  bool checked_extension_bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBar);
 };

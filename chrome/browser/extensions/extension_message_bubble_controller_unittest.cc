@@ -33,12 +33,6 @@
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
-#endif
-
 namespace {
 
 const char kId1[] = "iccfkkhkfiphcjdakkmcjmkfboccmndk";
@@ -213,29 +207,39 @@ class FakeExtensionMessageBubble : public ExtensionMessageBubble {
     BUBBLE_ACTION_CLICK_LINK,
   };
 
-  FakeExtensionMessageBubble() : controller_(nullptr) {}
+  FakeExtensionMessageBubble() {}
 
   void set_action_on_show(ExtensionBubbleAction action) {
     action_ = action;
   }
-  void set_controller(ExtensionMessageBubbleController* controller) {
-    controller_ = controller;
-  }
 
   void Show() override {
     if (action_ == BUBBLE_ACTION_CLICK_ACTION_BUTTON)
-      controller_->OnBubbleAction();
+      action_callback_.Run();
     else if (action_ == BUBBLE_ACTION_CLICK_DISMISS_BUTTON)
-      controller_->OnBubbleDismiss();
+      dismiss_callback_.Run();
     else if (action_ == BUBBLE_ACTION_CLICK_LINK)
-      controller_->OnLinkClicked();
+      link_callback_.Run();
+  }
+
+  void OnActionButtonClicked(const base::Closure& callback) override {
+    action_callback_ = callback;
+  }
+
+  void OnDismissButtonClicked(const base::Closure& callback) override {
+    dismiss_callback_ = callback;
+  }
+
+  void OnLinkClicked(const base::Closure& callback) override {
+    link_callback_ = callback;
   }
 
  private:
   ExtensionBubbleAction action_;
-  ExtensionMessageBubbleController* controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeExtensionMessageBubble);
+  base::Closure action_callback_;
+  base::Closure dismiss_callback_;
+  base::Closure link_callback_;
 };
 
 class ExtensionMessageBubbleTest : public testing::Test {
@@ -386,6 +390,7 @@ class ExtensionMessageBubbleTest : public testing::Test {
   void Init() {
     // The two lines of magical incantation required to get the extension
     // service to work inside a unit test and access the extension prefs.
+    thread_bundle_.reset(new content::TestBrowserThreadBundle);
     profile_.reset(new TestingProfile);
     static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile()))
         ->CreateExtensionService(base::CommandLine::ForCurrentProcess(),
@@ -418,22 +423,21 @@ class ExtensionMessageBubbleTest : public testing::Test {
   ExtensionService* service_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<base::CommandLine> command_line_;
+  scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
-
-#if defined OS_CHROMEOS
-  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
-  chromeos::ScopedTestCrosSettings test_cros_settings_;
-  chromeos::ScopedTestUserManager test_user_manager_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleTest);
 };
 
-// The feature this is meant to test is only enacted on Windows, but it should
-// pass on all platforms.
-TEST_F(ExtensionMessageBubbleTest, WipeoutControllerTest) {
+// The feature this is meant to test is only implemented on Windows.
+#if defined(OS_WIN)
+#define MAYBE_WipeoutControllerTest WipeoutControllerTest
+#else
+#define MAYBE_WipeoutControllerTest DISABLED_WipeoutControllerTest
+#endif
+
+TEST_F(ExtensionMessageBubbleTest, MAYBE_WipeoutControllerTest) {
   Init();
   // Add three extensions, and control two of them in this test (extension 1
   // and 2).
@@ -470,7 +474,6 @@ TEST_F(ExtensionMessageBubbleTest, WipeoutControllerTest) {
   suspicious_extensions = controller->GetExtensionList();
   ASSERT_EQ(1U, suspicious_extensions.size());
   EXPECT_TRUE(base::ASCIIToUTF16("Extension 1") == suspicious_extensions[0]);
-  bubble.set_controller(controller.get());
   controller->Show(&bubble);  // Simulate showing the bubble.
   EXPECT_EQ(0U, controller->link_click_count());
   EXPECT_EQ(1U, controller->dismiss_click_count());
@@ -494,16 +497,20 @@ TEST_F(ExtensionMessageBubbleTest, WipeoutControllerTest) {
   ASSERT_EQ(2U, suspicious_extensions.size());
   EXPECT_TRUE(base::ASCIIToUTF16("Extension 1") == suspicious_extensions[1]);
   EXPECT_TRUE(base::ASCIIToUTF16("Extension 2") == suspicious_extensions[0]);
-  bubble.set_controller(controller.get());
   controller->Show(&bubble);  // Simulate showing the bubble.
   EXPECT_EQ(1U, controller->link_click_count());
   EXPECT_EQ(0U, controller->dismiss_click_count());
   EXPECT_TRUE(controller->delegate()->HasBubbleInfoBeenAcknowledged(kId1));
 }
 
-// The feature this is meant to test is only enacted on Windows, but it should
-// pass on all platforms.
-TEST_F(ExtensionMessageBubbleTest, DevModeControllerTest) {
+// The feature this is meant to test is only implemented on Windows.
+#if defined(OS_WIN)
+#define MAYBE_DevModeControllerTest DevModeControllerTest
+#else
+#define MAYBE_DevModeControllerTest DISABLED_DevModeControllerTest
+#endif
+
+TEST_F(ExtensionMessageBubbleTest, MAYBE_DevModeControllerTest) {
   FeatureSwitch::ScopedOverride force_dev_mode_highlighting(
       FeatureSwitch::force_dev_mode_highlighting(), true);
   Init();
@@ -532,7 +539,6 @@ TEST_F(ExtensionMessageBubbleTest, DevModeControllerTest) {
   FakeExtensionMessageBubble bubble;
   bubble.set_action_on_show(
       FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_DISMISS_BUTTON);
-  bubble.set_controller(controller.get());
   controller->Show(&bubble);
   EXPECT_EQ(0U, controller->link_click_count());
   EXPECT_EQ(0U, controller->action_click_count());
@@ -550,7 +556,6 @@ TEST_F(ExtensionMessageBubbleTest, DevModeControllerTest) {
   EXPECT_TRUE(controller->ShouldShow());
   dev_mode_extensions = controller->GetExtensionList();
   EXPECT_EQ(2U, dev_mode_extensions.size());
-  bubble.set_controller(controller.get());
   controller->Show(&bubble);  // Simulate showing the bubble.
   EXPECT_EQ(0U, controller->link_click_count());
   EXPECT_EQ(1U, controller->action_click_count());
@@ -571,7 +576,6 @@ TEST_F(ExtensionMessageBubbleTest, DevModeControllerTest) {
   EXPECT_TRUE(controller->ShouldShow());
   dev_mode_extensions = controller->GetExtensionList();
   EXPECT_EQ(2U, dev_mode_extensions.size());
-  bubble.set_controller(controller.get());
   controller->Show(&bubble);  // Simulate showing the bubble.
   EXPECT_EQ(1U, controller->link_click_count());
   EXPECT_EQ(0U, controller->action_click_count());
@@ -639,7 +643,7 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_SettingsApiControllerTest) {
             profile(), static_cast<SettingsApiOverrideType>(i)));
 
     // The list will contain one enabled unpacked extension (ext 2).
-    EXPECT_TRUE(controller->ShouldShow());
+    EXPECT_TRUE(controller->ShouldShow(kId2));
     std::vector<base::string16> override_extensions =
         controller->GetExtensionList();
     ASSERT_EQ(1U, override_extensions.size());
@@ -653,7 +657,6 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_SettingsApiControllerTest) {
     FakeExtensionMessageBubble bubble;
     bubble.set_action_on_show(
         FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_DISMISS_BUTTON);
-    bubble.set_controller(controller.get());
     controller->Show(&bubble);
     EXPECT_EQ(0U, controller->link_click_count());
     EXPECT_EQ(0U, controller->action_click_count());
@@ -675,7 +678,6 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_SettingsApiControllerTest) {
         FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_LINK);
     controller.reset(new TestSettingsApiBubbleController(
         profile(), static_cast<SettingsApiOverrideType>(i)));
-    bubble.set_controller(controller.get());
     controller->Show(&bubble);
     EXPECT_EQ(1U, controller->link_click_count());
     EXPECT_EQ(0U, controller->action_click_count());
@@ -696,10 +698,9 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_SettingsApiControllerTest) {
         FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_ACTION_BUTTON);
     controller.reset(new TestSettingsApiBubbleController(
         profile(), static_cast<SettingsApiOverrideType>(i)));
-    EXPECT_TRUE(controller->ShouldShow());
+    EXPECT_TRUE(controller->ShouldShow(kId2));
     override_extensions = controller->GetExtensionList();
     EXPECT_EQ(1U, override_extensions.size());
-    bubble.set_controller(controller.get());
     controller->Show(&bubble);  // Simulate showing the bubble.
     EXPECT_EQ(0U, controller->link_click_count());
     EXPECT_EQ(1U, controller->action_click_count());
@@ -729,9 +730,14 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_SettingsApiControllerTest) {
   }
 }
 
-// The feature this is meant to test is only enacted on Windows, but it should
-// pass on all platforms.
-TEST_F(ExtensionMessageBubbleTest, NtpOverriddenControllerTest) {
+// The feature this is meant to test is only implemented on Windows.
+#if defined(OS_WIN)
+#define MAYBE_NtpOverriddenControllerTest NtpOverriddenControllerTest
+#else
+#define MAYBE_NtpOverriddenControllerTest DISABLED_NtpOverriddenControllerTest
+#endif
+
+TEST_F(ExtensionMessageBubbleTest, MAYBE_NtpOverriddenControllerTest) {
   Init();
   // Load two extensions overriding new tab page and one overriding something
   // unrelated (to check for interference). Extension 2 should still win
@@ -759,7 +765,6 @@ TEST_F(ExtensionMessageBubbleTest, NtpOverriddenControllerTest) {
   bubble.set_action_on_show(
       FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_DISMISS_BUTTON);
   EXPECT_TRUE(controller->ShouldShow(kId2));
-  bubble.set_controller(controller.get());
   controller->Show(&bubble);
   EXPECT_EQ(0U, controller->link_click_count());
   EXPECT_EQ(0U, controller->action_click_count());
@@ -781,7 +786,6 @@ TEST_F(ExtensionMessageBubbleTest, NtpOverriddenControllerTest) {
       FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_LINK);
   controller.reset(new TestNtpOverriddenBubbleController(profile()));
   EXPECT_TRUE(controller->ShouldShow(kId2));
-  bubble.set_controller(controller.get());
   controller->Show(&bubble);
   EXPECT_EQ(1U, controller->link_click_count());
   EXPECT_EQ(0U, controller->action_click_count());
@@ -804,7 +808,6 @@ TEST_F(ExtensionMessageBubbleTest, NtpOverriddenControllerTest) {
   EXPECT_TRUE(controller->ShouldShow(kId2));
   override_extensions = controller->GetExtensionList();
   EXPECT_EQ(1U, override_extensions.size());
-  bubble.set_controller(controller.get());
   controller->Show(&bubble);  // Simulate showing the bubble.
   EXPECT_EQ(0U, controller->link_click_count());
   EXPECT_EQ(1U, controller->action_click_count());
@@ -892,7 +895,6 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_ProxyOverriddenControllerTest) {
   FakeExtensionMessageBubble bubble;
   bubble.set_action_on_show(
       FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_DISMISS_BUTTON);
-  bubble.set_controller(controller.get());
   controller->Show(&bubble);
   EXPECT_EQ(0U, controller->link_click_count());
   EXPECT_EQ(0U, controller->action_click_count());
@@ -914,7 +916,6 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_ProxyOverriddenControllerTest) {
       FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_LINK);
   controller.reset(new TestProxyOverriddenBubbleController(profile()));
   EXPECT_TRUE(controller->ShouldShow(kId2));
-  bubble.set_controller(controller.get());
   controller->Show(&bubble);
   EXPECT_EQ(1U, controller->link_click_count());
   EXPECT_EQ(0U, controller->action_click_count());
@@ -937,7 +938,6 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_ProxyOverriddenControllerTest) {
   EXPECT_TRUE(controller->ShouldShow(kId2));
   override_extensions = controller->GetExtensionList();
   EXPECT_EQ(1U, override_extensions.size());
-  bubble.set_controller(controller.get());
   controller->Show(&bubble);  // Simulate showing the bubble.
   EXPECT_EQ(0U, controller->link_click_count());
   EXPECT_EQ(1U, controller->action_click_count());

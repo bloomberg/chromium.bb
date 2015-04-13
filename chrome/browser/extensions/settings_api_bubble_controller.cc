@@ -54,7 +54,6 @@ class SettingsApiBubbleDelegate
   base::string16 GetActionButtonLabel() const override;
   base::string16 GetDismissButtonLabel() const override;
   bool ShouldShowExtensionList() const override;
-  bool ShouldHighlightExtensions() const override;
   void LogExtensionCount(size_t count) override;
   void LogAction(
       ExtensionMessageBubbleController::BubbleAction action) override;
@@ -245,10 +244,6 @@ bool SettingsApiBubbleDelegate::ShouldShowExtensionList() const {
   return false;
 }
 
-bool SettingsApiBubbleDelegate::ShouldHighlightExtensions() const {
-  return type_ == BUBBLE_TYPE_STARTUP_PAGES;
-}
-
 void SettingsApiBubbleDelegate::LogExtensionCount(size_t count) {
 }
 
@@ -295,27 +290,11 @@ SettingsApiBubbleController::SettingsApiBubbleController(
 
 SettingsApiBubbleController::~SettingsApiBubbleController() {}
 
-bool SettingsApiBubbleController::ShouldShow() {
-  const Extension* extension = nullptr;
-  switch (type_) {
-    case BUBBLE_TYPE_HOME_PAGE:
-      extension = GetExtensionOverridingHomepage(profile_);
-      break;
-    case BUBBLE_TYPE_SEARCH_ENGINE:
-      extension = GetExtensionOverridingSearchEngine(profile_);
-      break;
-    case BUBBLE_TYPE_STARTUP_PAGES:
-      extension = GetExtensionOverridingStartupPages(profile_);
-      break;
-  }
-
-  if (!extension)
+bool SettingsApiBubbleController::ShouldShow(const std::string& extension_id) {
+  if (delegate()->HasBubbleInfoBeenAcknowledged(extension_id))
     return false;
 
-  if (delegate()->HasBubbleInfoBeenAcknowledged(extension->id()))
-    return false;
-
-  if (!delegate()->ShouldIncludeExtension(extension->id()))
+  if (!delegate()->ShouldIncludeExtension(extension_id))
     return false;
 
   // If the browser is showing the 'Chrome crashed' infobar, it won't be showing
