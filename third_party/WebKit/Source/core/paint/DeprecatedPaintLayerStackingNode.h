@@ -65,7 +65,8 @@ public:
 
     int zIndex() const { return layoutObject()->style()->zIndex(); }
 
-    bool isStackingContext() const { return layoutObject()->style()->isStackingContext(); }
+    // A stacking context is a layer that has a non-auto z-index.
+    bool isStackingContext() const { return !layoutObject()->style()->hasAutoZIndex(); }
 
     // Update our normal and z-index lists.
     void updateLayerListsIfNeeded();
