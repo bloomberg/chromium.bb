@@ -813,12 +813,6 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
     profile->GetPrefs()->SetString(prefs::kSupervisedUserId,
                                    supervised_user_id);
   }
-
-#if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
-  // If the lock enabled algorithm changed, update this profile's lock status.
-  if (switches::IsNewProfileManagement())
-    profiles::UpdateIsProfileLockEnabledIfNeeded(profile);
-#endif
 }
 
 void ProfileManager::RegisterTestingProfile(Profile* profile,
@@ -1032,6 +1026,13 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   // initializing the supervised flag if necessary).
   ChildAccountServiceFactory::GetForProfile(profile)->Init();
   SupervisedUserServiceFactory::GetForProfile(profile)->Init();
+#endif
+#if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
+  // If the lock enabled algorithm changed, update this profile's lock status.
+  // This depends on services which shouldn't be initialized until
+  // DoFinalInitForServices.
+  if (switches::IsNewProfileManagement())
+    profiles::UpdateIsProfileLockEnabledIfNeeded(profile);
 #endif
   // Start the deferred task runners once the profile is loaded.
   StartupTaskRunnerServiceFactory::GetForProfile(profile)->

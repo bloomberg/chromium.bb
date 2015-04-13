@@ -81,14 +81,14 @@ State GetProcessState() {
   } else if (not_new_profile_management) {
     return STATE_NEW_AVATAR_MENU;
   } else if (not_consistent_identity) {
-    return STATE_NEW_AVATAR_MENU;
+    return STATE_NEW_PROFILE_MANAGEMENT;
   }
 
   // Set the default state
 #if defined(OS_ANDROID) || defined(OS_IOS)
   State state = STATE_ACCOUNT_CONSISTENCY;
 #else
-  State state = STATE_NEW_AVATAR_MENU;
+  State state = STATE_NEW_PROFILE_MANAGEMENT;
 #endif
 
   if (!trial_type.empty()) {
@@ -99,7 +99,7 @@ State GetProcessState() {
     } else if (trial_type == "NewAvatarMenu") {
       state = STATE_NEW_AVATAR_MENU;
     } else {
-      state = STATE_NEW_AVATAR_MENU;
+      state = STATE_NEW_PROFILE_MANAGEMENT;
     }
   }
 
@@ -134,7 +134,7 @@ bool IsEnableWebviewBasedSignin() {
 
 bool IsExtensionsMultiAccount() {
   return CheckFlag(switches::kExtensionsMultiAccount,
-                   STATE_NEW_PROFILE_MANAGEMENT);
+                   STATE_ACCOUNT_CONSISTENCY);
 }
 
 bool IsFastUserSwitching() {
