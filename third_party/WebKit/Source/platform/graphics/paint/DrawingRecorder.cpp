@@ -53,9 +53,8 @@ DrawingRecorder::~DrawingRecorder()
 #if ENABLE(ASSERT)
     ASSERT(m_checkedCachedDrawing);
     m_context.setInDrawingRecorder(false);
+    ASSERT(m_displayItemPosition == m_context.displayItemList()->newDisplayItemsSize());
 #endif
-
-    OwnPtr<DisplayItem> displayItem;
 
     if (m_canUseCachedDrawing) {
 #ifndef NDEBUG
@@ -65,15 +64,10 @@ DrawingRecorder::~DrawingRecorder()
                 m_displayItemClient.debugName().utf8().data());
         }
 #endif
-        displayItem = CachedDisplayItem::create(m_displayItemClient, DisplayItem::drawingTypeToCachedType(m_displayItemType));
+        m_context.displayItemList()->add(CachedDisplayItem::create(m_displayItemClient, DisplayItem::drawingTypeToCachedType(m_displayItemType)));
     } else {
-        displayItem = DrawingDisplayItem::create(m_displayItemClient, m_displayItemType, m_context.endRecording());
+        m_context.displayItemList()->add(DrawingDisplayItem::create(m_displayItemClient, m_displayItemType, m_context.endRecording()));
     }
-
-#if ENABLE(ASSERT)
-    ASSERT(m_displayItemPosition == m_context.displayItemList()->newDisplayItemsSize());
-#endif
-    m_context.displayItemList()->add(displayItem.release());
 }
 
 } // namespace blink
