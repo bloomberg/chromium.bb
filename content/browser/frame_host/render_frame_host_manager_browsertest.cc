@@ -834,6 +834,50 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_EQ(orig_site_instance, revisit_site_instance);
 }
 
+// Test that subframes do not crash when sending a postMessage to the top frame
+// from an unload handler while the top frame is being swapped out as part of
+// navigating cross-process.  https://crbug.com/475651.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       PostMessageFromSubframeUnloadHandler) {
+  StartServer();
+
+  GURL frame_url(test_server()->GetURL("files/post_message.html"));
+  GURL main_url("data:text/html,<iframe name='foo' src='" + frame_url.spec() +
+                "'></iframe>");
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Get the original SiteInstance for later comparison.
+  scoped_refptr<SiteInstance> orig_site_instance(
+      shell()->web_contents()->GetSiteInstance());
+  EXPECT_NE(nullptr, orig_site_instance.get());
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+  EXPECT_EQ(frame_url, root->child_at(0)->current_url());
+
+  // Register an unload handler that sends a postMessage to the top frame.
+  EXPECT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(),
+                            "registerUnload();"));
+
+  // Navigate the top frame cross-site.  This will cause the top frame to be
+  // swapped out and run unload handlers, and the original renderer process
+  // should then terminate since it's not rendering any other frames.
+  RenderProcessHostWatcher exit_observer(
+      root->current_frame_host()->GetProcess(),
+      RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
+  EXPECT_TRUE(NavigateToURL(shell(), GetCrossSiteURL("files/title1.html")));
+  scoped_refptr<SiteInstance> new_site_instance(
+      shell()->web_contents()->GetSiteInstance());
+  EXPECT_NE(orig_site_instance, new_site_instance);
+
+  // Ensure that the original renderer process exited cleanly without crashing.
+  exit_observer.Wait();
+  EXPECT_EQ(true, exit_observer.did_exit_normally());
+}
+
 // Test that opening a new window in the same SiteInstance and then navigating
 // both windows to a different SiteInstance allows the first process to exit.
 // See http://crbug.com/126333.

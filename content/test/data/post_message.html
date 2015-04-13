@@ -34,6 +34,12 @@
     return true;
   }
 
+  function registerUnload() {
+    window.addEventListener('unload', function(e) {
+	postToParent("message-from-unload", "*");
+    });
+  }
+
   // Listen to incoming messages.
   var receivedMessages = 0;
   var receivedMessagesWithPort = 0;

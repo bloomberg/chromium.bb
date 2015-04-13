@@ -324,6 +324,11 @@ class RenderProcessHostWatcher : public RenderProcessHostObserver {
   // Waits until the renderer process exits.
   void Wait();
 
+  // Returns true if a renderer process exited cleanly (without hitting
+  // RenderProcessExited with an abnormal TerminationStatus). This should be
+  // called after Wait().
+  bool did_exit_normally() { return did_exit_normally_; }
+
  private:
   // Overridden RenderProcessHost::LifecycleObserver methods.
   void RenderProcessExited(RenderProcessHost* host,
@@ -333,6 +338,7 @@ class RenderProcessHostWatcher : public RenderProcessHostObserver {
 
   RenderProcessHost* render_process_host_;
   WatchType type_;
+  bool did_exit_normally_;
 
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
 
