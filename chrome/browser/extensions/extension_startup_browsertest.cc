@@ -198,20 +198,17 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
 // extensions installed and see them run and do basic things.
 typedef ExtensionStartupTestBase ExtensionsStartupTest;
 
-IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, Test) {
+// Broken in official builds, http://crbug.com/474659
+IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, DISABLED_Test) {
   WaitForServicesToStart(num_expected_extensions_, true);
   TestInjection(true, true);
 }
 
+// Broken in official builds, http://crbug.com/474659
 // Sometimes times out on Mac.  http://crbug.com/48151
-#if defined(OS_MACOSX)
-#define MAYBE_NoFileAccess DISABLED_NoFileAccess
-#else
-#define MAYBE_NoFileAccess NoFileAccess
-#endif
 // Tests that disallowing file access on an extension prevents it from injecting
 // script into a page with a file URL.
-IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, MAYBE_NoFileAccess) {
+IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, DISABLED_NoFileAccess) {
   WaitForServicesToStart(num_expected_extensions_, true);
 
   // Keep a separate list of extensions for which to disable file access, since
