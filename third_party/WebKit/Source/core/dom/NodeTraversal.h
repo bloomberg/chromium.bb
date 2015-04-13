@@ -96,6 +96,7 @@ public:
     static Node* commonAncestor(const Node& nodeA, const Node& nodeB);
     static unsigned index(const Node& node) { return node.nodeIndex(); }
     static unsigned countChildren(const Node& parent) { return parent.countChildren(); }
+    static ContainerNode* parentOrShadowHostNode(const Node& node) { return node.parentOrShadowHostNode(); }
 
     static TraversalRange<TraversalChildrenIterator<NodeTraversal>> childrenOf(const Node&);
     static TraversalRange<TraversalDescendantIterator<NodeTraversal>> descendantsOf(const Node&);

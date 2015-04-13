@@ -7,7 +7,6 @@
 
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Node.h"
-#include "core/editing/iterators/TextIteratorStrategy.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
 
@@ -88,6 +87,6 @@ void FullyClippedStateStackAlgorithm<Strategy>::setUpFullyClippedStack(Node* nod
     ASSERT(size() == 1 + depthCrossingShadowBoundaries<Strategy>(*node));
 }
 
-template class FullyClippedStateStackAlgorithm<TextIteratorStrategy>;
+template class FullyClippedStateStackAlgorithm<EditingStrategy>;
 
 } // namespace blink

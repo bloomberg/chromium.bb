@@ -37,7 +37,6 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/editing/iterators/CharacterIterator.h"
-#include "core/editing/iterators/TextIteratorStrategy.h"
 #include "core/editing/iterators/WordAwareIterator.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLElement.h"
@@ -61,6 +60,7 @@ namespace blink {
 using namespace HTMLNames;
 
 namespace {
+
 // This function is like Range::pastLastNode, except for the fact that it can
 // climb up out of shadow trees.
 template <typename Strategy>
@@ -76,6 +76,23 @@ Node* pastLastNode(const Node& rangeEndContainer, int rangeEndOffset)
     }
     return nullptr;
 }
+
+// Figure out the initial value of m_shadowDepth: the depth of startContainer's
+// tree scope from the common ancestor tree scope.
+template <typename Strategy>
+int shadowDepthOf(const Node& startContainer, const Node& endContainer);
+
+template <>
+int shadowDepthOf<EditingStrategy>(const Node& startContainer, const Node& endContainer)
+{
+    const TreeScope* commonAncestorTreeScope = startContainer.treeScope().commonAncestorTreeScope(endContainer.treeScope());
+    ASSERT(commonAncestorTreeScope);
+    int shadowDepth = 0;
+    for (const TreeScope* treeScope = &startContainer.treeScope(); treeScope != commonAncestorTreeScope; treeScope = treeScope->parentTreeScope())
+        ++shadowDepth;
+    return shadowDepth;
+}
+
 } // namespace
 
 template<typename Strategy>
@@ -119,7 +136,7 @@ void TextIteratorAlgorithm<Strategy>::initialize(Node* startContainer, int start
     m_endContainer = endContainer;
     m_endOffset = endOffset;
 
-    m_shadowDepth = Strategy::shadowDepthOf(*startContainer, *endContainer);
+    m_shadowDepth = shadowDepthOf<Strategy>(*startContainer, *endContainer);
 
     // Set up the current node for processing.
     if (startContainer->offsetInCharacters())
@@ -1061,6 +1078,6 @@ String plainText(const Position& start, const Position& end, TextIteratorBehavio
     return createPlainText(it);
 }
 
-template class CORE_EXPORT TextIteratorAlgorithm<TextIteratorStrategy>;
+template class CORE_EXPORT TextIteratorAlgorithm<EditingStrategy>;
 
 } // namespace blink

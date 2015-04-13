@@ -183,9 +183,9 @@ private:
     TextIteratorTextState m_textState;
 };
 
-extern template class CORE_TEMPLATE_EXPORT TextIteratorAlgorithm<TextIteratorStrategy>;
+extern template class CORE_TEMPLATE_EXPORT TextIteratorAlgorithm<EditingStrategy>;
 
-using TextIterator = TextIteratorAlgorithm<TextIteratorStrategy>;
+using TextIterator = TextIteratorAlgorithm<EditingStrategy>;
 
 } // namespace blink
 
