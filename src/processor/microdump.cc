@@ -49,7 +49,7 @@
 #include "processor/range_map-inl.h"
 
 namespace {
-static const char kGoogleBreakpadKey[] = "/google-breakpad(";
+static const char kGoogleBreakpadKey[] = "google-breakpad";
 static const char kMicrodumpBegin[] = "-----BEGIN BREAKPAD MICRODUMP-----";
 static const char kMicrodumpEnd[] = "-----END BREAKPAD MICRODUMP-----";
 static const char kOsKey[] = ": O ";
