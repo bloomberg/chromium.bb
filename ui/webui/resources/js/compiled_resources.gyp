@@ -50,7 +50,7 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js.gypi'],
     },
     {
-      'target_name': 'i18n_template2',
+      'target_name': 'i18n_template',
       'variables': {
         'depends': ['compiled_resources.gyp:load_time_data'],
       },
