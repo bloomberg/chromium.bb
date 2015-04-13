@@ -177,9 +177,8 @@ TEST_F(LabelTest, ObscuredSurrogatePair) {
   Label label;
   base::string16 test_text = base::UTF8ToUTF16("\xF0\x9D\x84\x9E");
   label.SetText(test_text);
-  label.SizeToPreferredSize();
-
   label.SetObscured(true);
+  label.SizeToPreferredSize();
   EXPECT_EQ(ASCIIToUTF16("*"), label.GetDisplayTextForTesting());
   EXPECT_EQ(test_text, label.text());
 }
