@@ -107,8 +107,8 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
         # builders, but we need to clean up existing cases first.
         pfq_compat_id = self.COMPAT_IDS[key]
         err = self.GetCompatIdDiff(compat_id, pfq_compat_id)
-        msg = '%s uses mismatched Chrome prebuilts -- %s'
-        self.Complain(msg % (config.name, err), fatal=False)
+        msg = '%s uses mismatched Chrome prebuilts from %s -- %s'
+        self.Complain(msg % (config.name, key.board, err), fatal=False)
         pfqs.add(key)
 
     if not pfqs:
@@ -204,16 +204,17 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
           # If two configs in the same group have mismatched Chrome binaries
           # (e.g. different use flags), Chrome may be built twice in parallel
           # and this may result in flaky, slow, and possibly incorrect builds.
-          msg = '%s: Child configs have mismatched Chrome binaries -- %s'
+          msg = '%s: %s and %s have mismatched Chrome binaries -- %s'
           fatal = True
         else:
           # TODO(davidjames): This should be marked fatal once the
           # ivybridge-freon-release-group is cleaned up.
-          msg = '%s: Child configs have mismatched cflags -- %s'
+          msg = '%s: %s and %s have mismatched cflags -- %s'
           fatal = False
-        ids = list(compat_ids_for_config)
+        ids, board_sets = zip(*compat_ids_for_config.iteritems())
+        boards = [next(iter(x)) for x in board_sets]
         err = self.GetCompatIdDiff(ids[0], ids[1])
-        msg %= (config.name, err)
+        msg %= (config.name, boards[0], boards[1], err)
         self.Complain(msg, fatal=fatal)
 
   def testDumping(self):
