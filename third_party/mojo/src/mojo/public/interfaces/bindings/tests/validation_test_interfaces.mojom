@@ -54,6 +54,7 @@ interface ConformanceTestInterface {
   Method9(array<array<handle?>>? param0);
   Method10(map<string, uint8> param0);
   Method11(StructG param0);
+  Method12(float param0) => (float param0);
 };
 
 struct BasicStruct {

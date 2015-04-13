@@ -110,15 +110,24 @@ class CONTENT_EXPORT PresentationServiceImpl
   };
 
   // Context for a StartSession request.
-  struct CONTENT_EXPORT StartSessionRequest {
+  class CONTENT_EXPORT StartSessionRequest {
+   public:
     StartSessionRequest(const std::string& presentation_url,
                         const std::string& presentation_id,
                         const NewSessionMojoCallback& callback);
     ~StartSessionRequest();
 
-    const std::string presentation_url;
-    const std::string presentation_id;
-    const NewSessionMojoCallback callback;
+    // Retrieves the pending callback from this request, transferring ownership
+    // to the caller.
+    NewSessionMojoCallback PassCallback();
+
+    const std::string& presentation_url() const { return presentation_url_; }
+    const std::string& presentation_id() const { return presentation_id_; }
+
+   private:
+    const std::string presentation_url_;
+    const std::string presentation_id_;
+    NewSessionMojoCallback callback_;
   };
 
   friend class PresentationServiceImplTest;
@@ -235,8 +244,11 @@ class CONTENT_EXPORT PresentationServiceImpl
   int RegisterNewSessionCallback(
     const NewSessionMojoCallback& callback);
 
+  // Flushes all pending new session callbacks with error responses.
+  void FlushNewSessionCallbacks();
+
   // Invokes |callback| with an error.
-  void InvokeNewSessionMojoCallbackWithError(
+  static void InvokeNewSessionMojoCallbackWithError(
       const NewSessionMojoCallback& callback);
 
   // Gets the ScreenAvailabilityContext for |presentation_url|, or creates one
@@ -258,6 +270,9 @@ class CONTENT_EXPORT PresentationServiceImpl
   // StartSession requests are queued here. When a request has been processed,
   // it is removed from head of the queue.
   std::deque<linked_ptr<StartSessionRequest>> queued_start_session_requests_;
+
+  // Indicates that a StartSession request is currently being processed.
+  bool is_start_session_pending_;
 
   int next_request_session_id_;
   base::hash_map<int, linked_ptr<NewSessionMojoCallback>> pending_session_cbs_;

@@ -18,4 +18,5 @@ interface Provider {
   EchoStrings(string a, string b) => (string a, string b);
   EchoMessagePipeHandle(handle<message_pipe> a) => (handle<message_pipe> a);
   EchoEnum(Enum a) => (Enum a);
+  EchoInt(int32 a) => (int32 a);
 };

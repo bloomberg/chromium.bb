@@ -70,6 +70,8 @@ struct Event {
   EventType action;
   // TODO(sky): parts of this should move to PointerData.
   EventFlags flags;
+  // Time the event was delivered. The time is in milliseconds and corresponds
+  // to the uptime of the machine.
   int64 time_stamp;
   KeyData? key_data;
   PointerData? pointer_data;

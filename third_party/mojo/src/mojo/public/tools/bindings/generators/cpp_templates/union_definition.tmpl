@@ -9,7 +9,8 @@
 
 // static
 bool {{class_name}}::Validate(const void* data,
-                              mojo::internal::BoundsChecker* bounds_checker) {
+                              mojo::internal::BoundsChecker* bounds_checker,
+                              bool inlined) {
   if (!data) {
     return true;
   }
@@ -19,7 +20,10 @@ bool {{class_name}}::Validate(const void* data,
     return false;
   }
 
-  if (!bounds_checker->ClaimMemory(data, sizeof({{class_name}}))) {
+  // If the union is inlined in another structure its memory was already claimed.
+  // This ONLY applies to the union itself, NOT anything which the union points
+  // to.
+  if (!inlined && !bounds_checker->ClaimMemory(data, sizeof({{class_name}}))) {
     ReportValidationError(
         mojo::internal::VALIDATION_ERROR_ILLEGAL_MEMORY_RANGE);
     return false;
@@ -38,6 +42,12 @@ bool {{class_name}}::Validate(const void* data,
           "unknown tag in {{union.name}}");
       return false;
   }
+}
+
+void {{class_name}}::set_null() {
+  size = 0U;
+  tag = static_cast<{{enum_name}}>(0);
+  data.unknown = 0U;
 }
 
 {{class_name}}::{{class_name}}() {

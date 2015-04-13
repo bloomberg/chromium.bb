@@ -305,6 +305,8 @@ func (e *Encoder) WriteString(value string) error {
 
 // WritePointer writes a pointer to first unclaimed byte index.
 func (e *Encoder) WritePointer() error {
+	e.state().alignOffsetToBytes()
+	e.state().offset = align(e.state().offset, 8)
 	return e.WriteUint64(uint64(e.end - e.state().offset))
 }
 

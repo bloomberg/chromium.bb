@@ -18,7 +18,7 @@
 {{struct.name}}Ptr {{struct.name}}::Clone() const {
   {{struct.name}}Ptr rv(New());
 {%-   for field in struct.fields %}
-{%-     if field.kind|is_struct_kind or field.kind|is_array_kind or field.kind|is_map_kind %}
+{%-     if field.kind|is_object_kind and not field.kind|is_string_kind %}
   rv->{{field.name}} = {{field.name}}.Clone();
 {%-     else %}
   rv->{{field.name}} = {{field.name}};

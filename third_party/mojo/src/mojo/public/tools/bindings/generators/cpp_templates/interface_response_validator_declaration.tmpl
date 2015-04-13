@@ -2,5 +2,5 @@ class {{interface.name}}ResponseValidator : public mojo::MessageFilter {
  public:
   explicit {{interface.name}}ResponseValidator(mojo::MessageReceiver* sink = nullptr);
 
-  virtual bool Accept(mojo::Message* message) override;
+  bool Accept(mojo::Message* message) override;
 };

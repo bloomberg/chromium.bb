@@ -1,8 +1,12 @@
-size_t GetSerializedSize_(const {{union.name}}Ptr& input) {
-  if (!input)
-    return 0;
+size_t GetSerializedSize_(const {{union.name}}Ptr& input, bool inlined) {
+  size_t size = 0U;
+  if (!inlined) {
+    size += sizeof(internal::{{union.name}}_Data);
+  }
 
-  size_t size = sizeof(internal::{{union.name}}_Data);
+  if (!input)
+    return size;
+
   switch (input->which()) {
 {%  for field in union.fields %}
 {%    if field.kind|is_string_kind %}
@@ -17,14 +21,17 @@ size_t GetSerializedSize_(const {{union.name}}Ptr& input) {
   return size;
 }
 
-
-void Serialize_({{union.name}}Ptr input, mojo::internal::Buffer* buf,
-                internal::{{union.name}}_Data** output) {
+void SerializeUnion_({{union.name}}Ptr input, mojo::internal::Buffer* buf,
+                     internal::{{union.name}}_Data** output, bool inlined) {
+  internal::{{union.name}}_Data* result = *output;
   if (input) {
+    if (!inlined) {
+      result = internal::{{union.name}}_Data::New(buf);
+    }
     mojo::internal::UnionAccessor<{{union.name}}> input_acc(input.get());
-    internal::{{union.name}}_Data* result =
-        internal::{{union.name}}_Data::New(buf);
     // TODO(azani): Handle unknown and objects.
+    // Set the not-null flag.
+    result->size = 16;
     result->tag = input->which();
     switch (input->which()) {
 {%  for field in union.fields %}
@@ -38,15 +45,17 @@ void Serialize_({{union.name}}Ptr input, mojo::internal::Buffer* buf,
         break;
 {%- endfor %}
     }
-    *output = result;
+  } else if (inlined) {
+    result->set_null();
   } else {
-    *output = nullptr;
+    result = nullptr;
   }
+  *output = result;
 }
 
 void Deserialize_(internal::{{union.name}}_Data* input,
                   {{union.name}}Ptr* output) {
-  if (input) {
+  if (input && !input->is_null()) {
     {{union.name}}Ptr result({{union.name}}::New());
     mojo::internal::UnionAccessor<{{union.name}}> result_acc(result.get());
     switch (input->tag) {

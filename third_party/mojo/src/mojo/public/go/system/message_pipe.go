@@ -49,7 +49,7 @@ func (h *messagePipe) WriteMessage(bytes []byte, handles []UntypedHandle, flags 
 	if len(handles) != 0 {
 		rawHandles = make([]uint32, len(handles))
 		for i := 0; i < len(handles); i++ {
-			rawHandles[i] = uint32(handles[i].NativeHandle())
+			rawHandles[i] = uint32(handles[i].ReleaseNativeHandle())
 		}
 	}
 	h.core.mu.Lock()

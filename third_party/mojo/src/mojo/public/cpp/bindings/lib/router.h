@@ -24,7 +24,7 @@ class Router : public MessageReceiverWithResponder {
 
   // Sets the receiver to handle messages read from the message pipe that do
   // not have the kMessageIsResponse flag set.
-  void set_incoming_receiver(MessageReceiverWithResponder* receiver) {
+  void set_incoming_receiver(MessageReceiverWithResponderStatus* receiver) {
     incoming_receiver_ = receiver;
   }
 
@@ -37,6 +37,9 @@ class Router : public MessageReceiverWithResponder {
   // Returns true if an error was encountered while reading from the pipe or
   // waiting to read from the pipe.
   bool encountered_error() const { return connector_.encountered_error(); }
+
+  // Is the router bound to a MessagePipe handle?
+  bool is_valid() const { return connector_.is_valid(); }
 
   void CloseMessagePipe() { connector_.CloseMessagePipe(); }
 
@@ -81,7 +84,7 @@ class Router : public MessageReceiverWithResponder {
   FilterChain filters_;
   Connector connector_;
   SharedData<Router*> weak_self_;
-  MessageReceiverWithResponder* incoming_receiver_;
+  MessageReceiverWithResponderStatus* incoming_receiver_;
   ResponderMap responders_;
   uint64_t next_request_id_;
   bool testing_mode_;

@@ -11,17 +11,23 @@
 {%-   set kind = packed_field.field.kind %}
 {%-   set wrapper_type = kind|cpp_wrapper_type %}
 {%-   if not kind|is_nullable_kind %}
+{%-     if kind|is_union_kind %}
+  if (object->{{name}}.is_null()) {
+{%-     else %}
   if (!object->{{name}}.offset) {
+{%-     endif %}
     ReportValidationError(
         mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
         "null {{name}} field in {{struct.name}} struct");
     return false;
   }
 {%-   endif %}
+{%-   if not kind|is_union_kind %}
   if (!mojo::internal::ValidateEncodedPointer(&object->{{name}}.offset)) {
     ReportValidationError(mojo::internal::VALIDATION_ERROR_ILLEGAL_POINTER);
     return false;
   }
+{%-   endif %}
 {%-   if kind|is_array_kind or kind|is_string_kind %}
   if (!{{wrapper_type}}::Data_::Validate<
           {{kind|get_array_validate_params|indent(10)}}>(
@@ -36,6 +42,9 @@
   if (!{{kind|get_name_for_kind}}::Data_::Validate(
           mojo::internal::DecodePointerRaw(&object->{{name}}.offset),
           bounds_checker)) {
+{%-   elif kind|is_union_kind %}
+  if (!{{kind|get_name_for_kind}}::Data_::Validate(
+          &object->{{name}}, bounds_checker, true)) {
 {%-   else %}
   if (!{{wrapper_type}}::Data_::Validate(
           mojo::internal::DecodePointerRaw(&object->{{name}}.offset),
@@ -139,7 +148,7 @@ void {{class_name}}::EncodePointersAndHandles(
     std::vector<mojo::Handle>* handles) {
   MOJO_CHECK(header_.version == {{struct.versions[-1].version}});
 {%- for pf in struct.packed.packed_fields_in_ordinal_order %}
-{%-   if pf.field.kind|is_object_kind %}
+{%-   if pf.field.kind|is_object_kind and not pf.field.kind|is_union_kind %}
   mojo::internal::Encode(&{{pf.field.name}}, handles);
 {%-   elif pf.field.kind|is_any_handle_kind %}
   mojo::internal::EncodeHandle(&{{pf.field.name}}, handles);
@@ -165,7 +174,9 @@ void {{class_name}}::DecodePointersAndHandles(
   if (header_.version < {{pf.min_version}})
     return;
 {%-     endif %}
-{%-     if kind|is_object_kind %}
+{%-     if kind|is_union_kind %}
+  // TODO(azani): Decode handles in union.
+{%-     elif kind|is_object_kind %}
   mojo::internal::Decode(&{{name}}, handles);
 {%-     else %}
   mojo::internal::DecodeHandle(&{{name}}, handles);
