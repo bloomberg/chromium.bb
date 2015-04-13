@@ -16,6 +16,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/files/file.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -1578,6 +1579,11 @@ void RenderProcessHostImpl::OnBadMessageReceived(const IPC::Message& message) {
   LOG(ERROR) << "bad message " << message.type() << " terminating renderer.";
   BrowserChildProcessHostImpl::HistogramBadMessageTerminated(
       PROCESS_TYPE_RENDERER);
+
+  // Create a memory dump. This will contain enough stack frames to work out
+  // what the bad message was.
+  base::debug::DumpWithoutCrashing();
+
   bad_message::ReceivedBadMessage(this,
                                   bad_message::RPH_DESERIALIZATION_FAILED);
 }
