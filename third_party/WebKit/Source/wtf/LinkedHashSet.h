@@ -246,7 +246,9 @@ public:
     template<typename Collection>
     void removeAll(const Collection& other) { WTF::removeAll(*this, other); }
 
-    void trace(typename Allocator::Visitor* visitor) { m_impl.trace(visitor); }
+    using HasInlinedTraceMethodMarker = int;
+    template<typename VisitorDispatcher>
+    void trace(VisitorDispatcher visitor) { m_impl.trace(visitor); }
 
     int64_t modifications() const { return m_impl.modifications(); }
     void checkModifications(int64_t mods) const { m_impl.checkModifications(mods); }
