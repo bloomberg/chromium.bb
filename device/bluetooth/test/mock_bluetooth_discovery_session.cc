@@ -15,8 +15,10 @@ namespace device {
 // test code.
 MockBluetoothDiscoverySession::MockBluetoothDiscoverySession()
     : BluetoothDiscoverySession(
-        scoped_refptr<BluetoothAdapter>(
-            new testing::NiceMock<MockBluetoothAdapter>())) {}
+          scoped_refptr<BluetoothAdapter>(
+              new testing::NiceMock<MockBluetoothAdapter>()),
+          nullptr) {
+}
 MockBluetoothDiscoverySession::~MockBluetoothDiscoverySession() {}
 
 }  // namespace device

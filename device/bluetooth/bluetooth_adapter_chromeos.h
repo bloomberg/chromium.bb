@@ -23,6 +23,7 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_audio_sink.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_export.h"
 
 namespace device {
@@ -263,10 +264,17 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
                                  bool success);
 
   // BluetoothAdapter:
-  void AddDiscoverySession(const base::Closure& callback,
+  void AddDiscoverySession(device::BluetoothDiscoveryFilter* discovery_filter,
+                           const base::Closure& callback,
                            const ErrorCallback& error_callback) override;
-  void RemoveDiscoverySession(const base::Closure& callback,
-                              const ErrorCallback& error_callback) override;
+  void RemoveDiscoverySession(
+      device::BluetoothDiscoveryFilter* discovery_filter,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) override;
+  void SetDiscoveryFilter(
+      scoped_ptr<device::BluetoothDiscoveryFilter> discovery_filter,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) override;
 
   // Called by dbus:: on completion of the D-Bus method call to start discovery.
   void OnStartDiscovery(const base::Closure& callback,

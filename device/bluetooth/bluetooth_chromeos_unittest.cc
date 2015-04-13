@@ -3251,11 +3251,13 @@ TEST_F(BluetoothChromeOSTest, Shutdown) {
   EXPECT_EQ(0, callback_count_) << "OnPropertyChangeCompleted error";
   EXPECT_EQ(1, error_callback_count_--) << "OnPropertyChangeCompleted error";
 
-  adapter_chrome_os->AddDiscoverySession(GetCallback(), GetErrorCallback());
+  adapter_chrome_os->AddDiscoverySession(nullptr, GetCallback(),
+                                         GetErrorCallback());
   EXPECT_EQ(0, callback_count_) << "AddDiscoverySession error";
   EXPECT_EQ(1, error_callback_count_--) << "AddDiscoverySession error";
 
-  adapter_chrome_os->RemoveDiscoverySession(GetCallback(), GetErrorCallback());
+  adapter_chrome_os->RemoveDiscoverySession(nullptr, GetCallback(),
+                                            GetErrorCallback());
   EXPECT_EQ(0, callback_count_) << "RemoveDiscoverySession error";
   EXPECT_EQ(1, error_callback_count_--) << "RemoveDiscoverySession error";
 
@@ -3321,7 +3323,8 @@ TEST_F(BluetoothChromeOSTest, Shutdown_OnStartDiscovery) {
       static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
 
   for (int i = 0; i < kNumberOfDiscoverySessions; i++) {
-    adapter_chrome_os->AddDiscoverySession(GetCallback(), GetErrorCallback());
+    adapter_chrome_os->AddDiscoverySession(nullptr, GetCallback(),
+                                           GetErrorCallback());
   }
   adapter_->Shutdown();
   adapter_chrome_os->OnStartDiscovery(GetCallback(), GetErrorCallback());
@@ -3338,7 +3341,8 @@ TEST_F(BluetoothChromeOSTest, Shutdown_OnStartDiscoveryError) {
       static_cast<BluetoothAdapterChromeOS*>(adapter_.get());
 
   for (int i = 0; i < kNumberOfDiscoverySessions; i++) {
-    adapter_chrome_os->AddDiscoverySession(GetCallback(), GetErrorCallback());
+    adapter_chrome_os->AddDiscoverySession(nullptr, GetCallback(),
+                                           GetErrorCallback());
   }
   adapter_->Shutdown();
   adapter_chrome_os->OnStartDiscoveryError(GetCallback(), GetErrorCallback(),
@@ -3357,14 +3361,17 @@ TEST_F(BluetoothChromeOSTest, Shutdown_OnStopDiscovery) {
 
   // In order to queue up discovery sessions before an OnStopDiscovery call
   // RemoveDiscoverySession must be called, so Add, Start, and Remove:
-  adapter_chrome_os->AddDiscoverySession(GetCallback(), GetErrorCallback());
+  adapter_chrome_os->AddDiscoverySession(nullptr, GetCallback(),
+                                         GetErrorCallback());
   adapter_chrome_os->OnStartDiscovery(GetCallback(), GetErrorCallback());
-  adapter_chrome_os->RemoveDiscoverySession(GetCallback(), GetErrorCallback());
+  adapter_chrome_os->RemoveDiscoverySession(nullptr, GetCallback(),
+                                            GetErrorCallback());
   callback_count_ = 0;
   error_callback_count_ = 0;
   // Can now queue discovery sessions while waiting for OnStopDiscovery.
   for (int i = 0; i < kNumberOfDiscoverySessions; i++) {
-    adapter_chrome_os->AddDiscoverySession(GetCallback(), GetErrorCallback());
+    adapter_chrome_os->AddDiscoverySession(nullptr, GetCallback(),
+                                           GetErrorCallback());
   }
   adapter_->Shutdown();
   adapter_chrome_os->OnStopDiscovery(GetCallback());
@@ -3384,14 +3391,17 @@ TEST_F(BluetoothChromeOSTest, Shutdown_OnStopDiscoveryError) {
 
   // In order to queue up discovery sessions before an OnStopDiscoveryError call
   // RemoveDiscoverySession must be called, so Add, Start, and Remove:
-  adapter_chrome_os->AddDiscoverySession(GetCallback(), GetErrorCallback());
+  adapter_chrome_os->AddDiscoverySession(nullptr, GetCallback(),
+                                         GetErrorCallback());
   adapter_chrome_os->OnStartDiscovery(GetCallback(), GetErrorCallback());
-  adapter_chrome_os->RemoveDiscoverySession(GetCallback(), GetErrorCallback());
+  adapter_chrome_os->RemoveDiscoverySession(nullptr, GetCallback(),
+                                            GetErrorCallback());
   callback_count_ = 0;
   error_callback_count_ = 0;
   // Can now queue discovery sessions while waiting for OnStopDiscoveryError.
   for (int i = 0; i < kNumberOfDiscoverySessions; i++) {
-    adapter_chrome_os->AddDiscoverySession(GetCallback(), GetErrorCallback());
+    adapter_chrome_os->AddDiscoverySession(nullptr, GetCallback(),
+                                           GetErrorCallback());
   }
   adapter_->Shutdown();
   adapter_chrome_os->OnStopDiscoveryError(GetErrorCallback(), "", "");

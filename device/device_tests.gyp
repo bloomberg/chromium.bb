@@ -40,6 +40,7 @@
         'bluetooth/bluetooth_chromeos_unittest.cc',
         'bluetooth/bluetooth_device_unittest.cc',
         'bluetooth/bluetooth_device_win_unittest.cc',
+        'bluetooth/bluetooth_discovery_filter_unittest.cc',
         'bluetooth/bluetooth_gatt_chromeos_unittest.cc',
         'bluetooth/bluetooth_low_energy_win_unittest.cc',
         'bluetooth/bluetooth_service_record_win_unittest.cc',

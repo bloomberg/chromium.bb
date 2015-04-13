@@ -11,6 +11,7 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_audio_sink.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_discovery_session.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace device {
@@ -87,10 +88,15 @@ class MockBluetoothAdapter : public BluetoothAdapter {
 
  protected:
   void DeleteOnCorrectThread() const override;
-  virtual void AddDiscoverySession(const base::Closure& callback,
-                                   const ErrorCallback& error_callback);
-  virtual void RemoveDiscoverySession(const base::Closure& callback,
-                                      const ErrorCallback& error_callback);
+  void AddDiscoverySession(BluetoothDiscoveryFilter* discovery_filter,
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback) override;
+  void RemoveDiscoverySession(BluetoothDiscoveryFilter* discovery_filter,
+                              const base::Closure& callback,
+                              const ErrorCallback& error_callback) override;
+  void SetDiscoveryFilter(scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+                          const base::Closure& callback,
+                          const ErrorCallback& error_callback) override;
   virtual ~MockBluetoothAdapter();
 
   MOCK_METHOD1(RemovePairingDelegateInternal,

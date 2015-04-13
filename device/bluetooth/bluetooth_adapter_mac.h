@@ -95,10 +95,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
 
   // BluetoothAdapter:
   void DeleteOnCorrectThread() const override;
-  void AddDiscoverySession(const base::Closure& callback,
+  void AddDiscoverySession(BluetoothDiscoveryFilter* discovery_filter,
+                           const base::Closure& callback,
                            const ErrorCallback& error_callback) override;
-  void RemoveDiscoverySession(const base::Closure& callback,
+  void RemoveDiscoverySession(BluetoothDiscoveryFilter* discovery_filter,
+                              const base::Closure& callback,
                               const ErrorCallback& error_callback) override;
+  void SetDiscoveryFilter(scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+                          const base::Closure& callback,
+                          const ErrorCallback& error_callback) override;
 
   void Init();
   void InitForTest(scoped_refptr<base::SequencedTaskRunner> ui_task_runner);

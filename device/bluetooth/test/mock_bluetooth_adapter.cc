@@ -24,11 +24,21 @@ void MockBluetoothAdapter::DeleteOnCorrectThread() const {
 };
 
 void MockBluetoothAdapter::AddDiscoverySession(
+    BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {}
+    const ErrorCallback& error_callback) {
+}
 
 void MockBluetoothAdapter::RemoveDiscoverySession(
+    BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {}
+    const ErrorCallback& error_callback) {
+}
+
+void MockBluetoothAdapter::SetDiscoveryFilter(
+    scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+}
 
 }  // namespace device

@@ -20,6 +20,7 @@
 
 namespace device {
 
+class BluetoothDiscoveryFilter;
 class BluetoothDiscoverySession;
 class BluetoothGattCharacteristic;
 class BluetoothGattDescriptor;
@@ -273,6 +274,19 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
       DiscoverySessionCallback;
   virtual void StartDiscoverySession(const DiscoverySessionCallback& callback,
                                      const ErrorCallback& error_callback);
+  virtual void StartDiscoverySessionWithFilter(
+      scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+      const DiscoverySessionCallback& callback,
+      const ErrorCallback& error_callback);
+
+  // Return all discovery filters assigned to this adapter merged together.
+  scoped_ptr<BluetoothDiscoveryFilter> GetMergedDiscoveryFilter() const;
+
+  // Works like GetMergedDiscoveryFilter, but doesn't take |masked_filter| into
+  // account. |masked_filter| is compared by pointer, and must be a member of
+  // active session.
+  scoped_ptr<BluetoothDiscoveryFilter> GetMergedDiscoveryFilterMasked(
+      BluetoothDiscoveryFilter* masked_filter) const;
 
   // Requests the list of devices from the adapter. All devices are returned,
   // including those currently connected and those paired. Use the returned
@@ -395,12 +409,22 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   //    - If the count is greater than 1, decrement the count and return
   //      success.
   //
+  // |discovery_filter| passed to AddDiscoverySession and RemoveDiscoverySession
+  // is owned by other objects and shall not be freed.
+  //
   // These methods invoke |callback| for success and |error_callback| for
   // failures.
-  virtual void AddDiscoverySession(const base::Closure& callback,
+  virtual void AddDiscoverySession(BluetoothDiscoveryFilter* discovery_filter,
+                                   const base::Closure& callback,
                                    const ErrorCallback& error_callback) = 0;
-  virtual void RemoveDiscoverySession(const base::Closure& callback,
-                                      const ErrorCallback& error_callback) = 0;
+  virtual void RemoveDiscoverySession(
+      BluetoothDiscoveryFilter* discovery_filter,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) = 0;
+  virtual void SetDiscoveryFilter(
+      scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) = 0;
 
   // Called by RemovePairingDelegate() in order to perform any class-specific
   // internal functionality necessary to remove the pairing delegate, such as
@@ -409,7 +433,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
       BluetoothDevice::PairingDelegate* pairing_delegate) = 0;
 
   // Success callback passed to AddDiscoverySession by StartDiscoverySession.
-  void OnStartDiscoverySession(const DiscoverySessionCallback& callback);
+  void OnStartDiscoverySession(
+      scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+      const DiscoverySessionCallback& callback);
 
   // Marks all known DiscoverySession instances as inactive. Called by
   // BluetoothAdapter in the event that the adapter unexpectedly stops
@@ -435,6 +461,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   std::list<PairingDelegatePair> pairing_delegates_;
 
  private:
+  // Return all discovery filters assigned to this adapter merged together.
+  // If |omit| is true, |discovery_filter| will not be processed.
+  scoped_ptr<BluetoothDiscoveryFilter> GetMergedDiscoveryFilterHelper(
+      const BluetoothDiscoveryFilter* discovery_filter,
+      bool omit) const;
+
   // List of active DiscoverySession objects. This is used to notify sessions to
   // become inactive in case of an unexpected change to the adapter discovery
   // state. We keep raw pointers, with the invariant that a DiscoverySession

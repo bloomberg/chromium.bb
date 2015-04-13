@@ -8,11 +8,67 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_export.h"
 
 namespace device {
 
-class BluetoothAdapter;
+// used to keep discovery filter that might be Used to limit reported devices.
+class DEVICE_BLUETOOTH_EXPORT BluetoothDiscoveryFilter {
+ public:
+  // Possible transports to use for scan filter.
+  enum Transport {
+    TRANSPORT_CLASSIC = 0x01,
+    TRANSPORT_LE = 0x02,
+    TRANSPORT_DUAL = (TRANSPORT_CLASSIC | TRANSPORT_LE)
+  };
+  using TransportMask = uint8_t;
+
+  BluetoothDiscoveryFilter(TransportMask transport);
+  ~BluetoothDiscoveryFilter();
+
+  // These getters return true when given field is set in filter, and copy this
+  // value to |out_*| parameter. If value is not set, returns false.
+  // Thes setters assign given value to proper filter field.
+  bool GetRSSI(int16_t* out_rssi) const;
+  void SetRSSI(int16_t rssi);
+  bool GetPathloss(uint16_t* out_pathloss) const;
+  void SetPathloss(uint16_t pathloss);
+
+  // Return and set transport field of this filter.
+  TransportMask GetTransport() const;
+  void SetTransport(TransportMask transport);
+
+  // Make |out_uuids| represent all uuids assigned to this filter.
+  void GetUUIDs(std::set<device::BluetoothUUID>& out_uuids) const;
+
+  // Add UUID to internal UUIDs filter. If UUIDs filter doesn't exist, it will
+  // be created.
+  void AddUUID(const device::BluetoothUUID& uuid);
+
+  // Copy content of |filter| and assigns it to this filter.
+  void CopyFrom(const BluetoothDiscoveryFilter& filter);
+
+  // Check if two filters are equal.
+  bool Equals(const BluetoothDiscoveryFilter& filter) const;
+
+  // Returns true if all fields in filter are empty
+  bool IsDefault() const;
+
+  // Returns result of merging two filters together. If at least one of the
+  // filters is NULL this will return an empty filter
+  static scoped_ptr<device::BluetoothDiscoveryFilter> Merge(
+      const device::BluetoothDiscoveryFilter* filter_a,
+      const device::BluetoothDiscoveryFilter* filter_b);
+
+ private:
+  scoped_ptr<int16_t> rssi_;
+  scoped_ptr<uint16_t> pathloss_;
+  TransportMask transport_;
+  ScopedVector<device::BluetoothUUID> uuids_;
+
+  DISALLOW_COPY_AND_ASSIGN(BluetoothDiscoveryFilter);
+};
 
 // BluetoothDiscoverySession represents a current active or inactive device
 // discovery session. Instances of this class are obtained by calling
@@ -58,8 +114,17 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDiscoverySession {
   virtual void Stop(const base::Closure& callback,
                     const ErrorCallback& error_callback);
 
+  virtual void SetDiscoveryFilter(
+      scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback);
+
+  virtual const BluetoothDiscoveryFilter* GetDiscoveryFilter() const;
+
  protected:
-  explicit BluetoothDiscoverySession(scoped_refptr<BluetoothAdapter> adapter);
+  explicit BluetoothDiscoverySession(
+      scoped_refptr<BluetoothAdapter> adapter,
+      scoped_ptr<BluetoothDiscoveryFilter> discovery_filter);
 
  private:
   friend class BluetoothAdapter;
@@ -77,6 +142,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDiscoverySession {
 
   // The adapter that created this instance.
   scoped_refptr<BluetoothAdapter> adapter_;
+
+  // Filter assigned to this session, if any
+  scoped_ptr<BluetoothDiscoveryFilter> discovery_filter_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

@@ -300,6 +300,7 @@ void BluetoothAdapterWin::DeleteOnCorrectThread() const {
 // If the method is called when |discovery_status_| is DISCOVERY_STOPPING,
 // starting again is handled by BluetoothAdapterWin::DiscoveryStopped().
 void BluetoothAdapterWin::AddDiscoverySession(
+    BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   if (discovery_status_ == DISCOVERING) {
@@ -313,6 +314,7 @@ void BluetoothAdapterWin::AddDiscoverySession(
 }
 
 void BluetoothAdapterWin::RemoveDiscoverySession(
+    BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   if (discovery_status_ == NOT_DISCOVERING) {
@@ -321,6 +323,14 @@ void BluetoothAdapterWin::RemoveDiscoverySession(
   }
   on_stop_discovery_callbacks_.push_back(callback);
   MaybePostStopDiscoveryTask();
+}
+
+void BluetoothAdapterWin::SetDiscoveryFilter(
+    scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  NOTIMPLEMENTED();
+  error_callback.Run();
 }
 
 void BluetoothAdapterWin::Init() {

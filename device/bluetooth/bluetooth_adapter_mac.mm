@@ -180,6 +180,7 @@ void BluetoothAdapterMac::DeleteOnCorrectThread() const {
 }
 
 void BluetoothAdapterMac::AddDiscoverySession(
+    BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   DVLOG(1) << __func__;
@@ -207,6 +208,7 @@ void BluetoothAdapterMac::AddDiscoverySession(
 }
 
 void BluetoothAdapterMac::RemoveDiscoverySession(
+    BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   DVLOG(1) << __func__;
@@ -234,6 +236,14 @@ void BluetoothAdapterMac::RemoveDiscoverySession(
   DVLOG(1) << "Discovery stopped";
   num_discovery_sessions_--;
   callback.Run();
+}
+
+void BluetoothAdapterMac::SetDiscoveryFilter(
+    scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  NOTIMPLEMENTED();
+  error_callback.Run();
 }
 
 void BluetoothAdapterMac::RemovePairingDelegateInternal(

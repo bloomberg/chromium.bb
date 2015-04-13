@@ -36,6 +36,7 @@
 using device::BluetoothAdapter;
 using device::BluetoothAudioSink;
 using device::BluetoothDevice;
+using device::BluetoothDiscoveryFilter;
 using device::BluetoothSocket;
 using device::BluetoothUUID;
 
@@ -1091,6 +1092,7 @@ void BluetoothAdapterChromeOS::OnPropertyChangeCompleted(
 }
 
 void BluetoothAdapterChromeOS::AddDiscoverySession(
+    BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   if (!IsPresent()) {
@@ -1131,6 +1133,7 @@ void BluetoothAdapterChromeOS::AddDiscoverySession(
 }
 
 void BluetoothAdapterChromeOS::RemoveDiscoverySession(
+    BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   if (!IsPresent()) {
@@ -1179,6 +1182,13 @@ void BluetoothAdapterChromeOS::RemoveDiscoverySession(
           base::Bind(&BluetoothAdapterChromeOS::OnStopDiscoveryError,
                      weak_ptr_factory_.GetWeakPtr(),
                      error_callback));
+}
+
+void BluetoothAdapterChromeOS::SetDiscoveryFilter(
+    scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  // TODO(jpawlowski): Implement
 }
 
 void BluetoothAdapterChromeOS::OnStartDiscovery(
@@ -1263,7 +1273,7 @@ void BluetoothAdapterChromeOS::ProcessQueuedDiscoveryRequests() {
     VLOG(1) << "Process queued discovery request.";
     DiscoveryCallbackPair callbacks = discovery_request_queue_.front();
     discovery_request_queue_.pop();
-    AddDiscoverySession(callbacks.first, callbacks.second);
+    AddDiscoverySession(nullptr, callbacks.first, callbacks.second);
 
     // If the queued request resulted in a pending call, then let it
     // asynchonously process the remaining queued requests once the pending

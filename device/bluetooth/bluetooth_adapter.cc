@@ -42,14 +42,70 @@ base::WeakPtr<BluetoothAdapter> BluetoothAdapter::GetWeakPtrForTesting() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
+void BluetoothAdapter::StartDiscoverySessionWithFilter(
+    scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+    const DiscoverySessionCallback& callback,
+    const ErrorCallback& error_callback) {
+  AddDiscoverySession(discovery_filter.get(),
+                      base::Bind(&BluetoothAdapter::OnStartDiscoverySession,
+                                 weak_ptr_factory_.GetWeakPtr(),
+                                 base::Passed(&discovery_filter), callback),
+                      error_callback);
+}
+
 void BluetoothAdapter::StartDiscoverySession(
     const DiscoverySessionCallback& callback,
     const ErrorCallback& error_callback) {
-  AddDiscoverySession(
-      base::Bind(&BluetoothAdapter::OnStartDiscoverySession,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback),
-      error_callback);
+  StartDiscoverySessionWithFilter(nullptr, callback, error_callback);
+}
+
+scoped_ptr<BluetoothDiscoveryFilter>
+BluetoothAdapter::GetMergedDiscoveryFilterHelper(
+    const BluetoothDiscoveryFilter* masked_filter,
+    bool omit) const {
+  scoped_ptr<BluetoothDiscoveryFilter> result;
+  bool first_merge = true;
+
+  std::set<BluetoothDiscoverySession*> temp(discovery_sessions_);
+  for (const auto& iter : temp) {
+    const BluetoothDiscoveryFilter* curr_filter = iter->GetDiscoveryFilter();
+
+    if (!iter->IsActive())
+      continue;
+
+    if (omit && curr_filter == masked_filter) {
+      // if masked_filter is pointing to empty filter, and there are
+      // multiple empty filters in discovery_sessions_, make sure we'll
+      // process next empty sessions.
+      omit = false;
+      continue;
+    }
+
+    if (first_merge) {
+      first_merge = false;
+      if (curr_filter) {
+        result.reset(new BluetoothDiscoveryFilter(
+            BluetoothDiscoveryFilter::Transport::TRANSPORT_DUAL));
+        result->CopyFrom(*curr_filter);
+      }
+      continue;
+    }
+
+    result = BluetoothDiscoveryFilter::Merge(result.get(), curr_filter);
+  }
+
+  return result.Pass();
+}
+
+scoped_ptr<BluetoothDiscoveryFilter>
+BluetoothAdapter::GetMergedDiscoveryFilter() const {
+  return GetMergedDiscoveryFilterHelper(nullptr, false);
+}
+
+scoped_ptr<BluetoothDiscoveryFilter>
+BluetoothAdapter::GetMergedDiscoveryFilterMasked(
+    BluetoothDiscoveryFilter* masked_filter) const {
+  return GetMergedDiscoveryFilterHelper(masked_filter, true);
 }
 
 BluetoothAdapter::DeviceList BluetoothAdapter::GetDevices() {
@@ -128,10 +184,12 @@ BluetoothDevice::PairingDelegate* BluetoothAdapter::DefaultPairingDelegate() {
 }
 
 void BluetoothAdapter::OnStartDiscoverySession(
+    scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
     const DiscoverySessionCallback& callback) {
   VLOG(1) << "Discovery session started!";
   scoped_ptr<BluetoothDiscoverySession> discovery_session(
-      new BluetoothDiscoverySession(scoped_refptr<BluetoothAdapter>(this)));
+      new BluetoothDiscoverySession(scoped_refptr<BluetoothAdapter>(this),
+                                    discovery_filter.Pass()));
   discovery_sessions_.insert(discovery_session.get());
   callback.Run(discovery_session.Pass());
 }

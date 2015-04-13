@@ -154,13 +154,13 @@ class BluetoothAdapterWinTest : public testing::Test {
   void CallAddDiscoverySession(
       const base::Closure& callback,
       const BluetoothAdapter::ErrorCallback& error_callback) {
-    adapter_win_->AddDiscoverySession(callback, error_callback);
+    adapter_win_->AddDiscoverySession(nullptr, callback, error_callback);
   }
 
   void CallRemoveDiscoverySession(
       const base::Closure& callback,
       const BluetoothAdapter::ErrorCallback& error_callback) {
-    adapter_win_->RemoveDiscoverySession(callback, error_callback);
+    adapter_win_->RemoveDiscoverySession(nullptr, callback, error_callback);
   }
 
  protected:
