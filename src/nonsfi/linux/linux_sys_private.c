@@ -499,31 +499,13 @@ int poll(struct pollfd *fds, nfds_t nfds, int timeout) {
 }
 
 int prctl(int option, ...) {
-  uintptr_t arg2 = 0;
-  uintptr_t arg3 = 0;
-  uintptr_t arg4 = 0;
-  uintptr_t arg5 = 0;
-
-  int unknown_option = 0;
   va_list ap;
   va_start(ap, option);
-  switch (option) {
-    case PR_SET_DUMPABLE:
-    case PR_GET_NAME:
-      arg2 = va_arg(ap, uintptr_t);
-      break;
-    case PR_GET_DUMPABLE:
-      break;
-    default:
-      unknown_option = 1;
-      break;
-  }
+  uintptr_t arg2 = va_arg(ap, uintptr_t);
+  uintptr_t arg3 = va_arg(ap, uintptr_t);
+  uintptr_t arg4 = va_arg(ap, uintptr_t);
+  uintptr_t arg5 = va_arg(ap, uintptr_t);
   va_end(ap);
-
-  if (unknown_option) {
-    errno = EINVAL;
-    return -1;
-  }
 
   return errno_value_call(
       linux_syscall5(__NR_prctl, option, arg2, arg3, arg4, arg5));
