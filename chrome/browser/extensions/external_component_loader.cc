@@ -4,12 +4,14 @@
 
 #include "chrome/browser/extensions/external_component_loader.h"
 
+#include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "extensions/common/extension.h"
@@ -78,6 +80,16 @@ void ExternalComponentLoader::StartLoading() {
     }
   }
 #endif
+
+
+#if defined(ENABLE_MEDIA_ROUTER)
+  if (switches::MediaRouterEnabled()) {
+    std::string media_router_extension_id(
+        extension_misc::kMediaRouterStableExtensionId);
+    prefs_->SetString(media_router_extension_id + ".external_update_url",
+                      extension_urls::GetWebstoreUpdateUrl().spec());
+  }
+#endif  // defined(ENABLE_MEDIA_ROUTER)
 
 #if defined(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
   std::string google_now_extension_id;

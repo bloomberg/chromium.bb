@@ -109,6 +109,9 @@ static_library("common") {
       "//extensions/strings",
       "//media/cast:net",
     ]
+    if (enable_media_router) {
+      defines += [ "ENABLE_MEDIA_ROUTER=1" ]
+    }
   }
 
   if (is_win || is_mac) {
