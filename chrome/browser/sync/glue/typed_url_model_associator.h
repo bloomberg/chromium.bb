@@ -174,7 +174,9 @@ class TypedUrlModelAssociator : public sync_driver::AssociatorInterface {
  private:
 
   // Helper routine that actually does the work of associating models.
-  syncer::SyncError DoAssociateModels();
+  syncer::SyncError DoAssociateModels(
+      syncer::SyncMergeResult* local_merge_result,
+      syncer::SyncMergeResult* syncer_merge_result);
 
   // Helper function that determines if we should ignore a URL for the purposes
   // of sync, based on the visits the URL had.

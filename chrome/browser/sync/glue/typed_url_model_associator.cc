@@ -162,7 +162,8 @@ syncer::SyncError TypedUrlModelAssociator::AssociateModels(
     syncer::SyncMergeResult* local_merge_result,
     syncer::SyncMergeResult* syncer_merge_result) {
   ClearErrorStats();
-  syncer::SyncError error = DoAssociateModels();
+  syncer::SyncError error =
+      DoAssociateModels(local_merge_result, syncer_merge_result);
   UMA_HISTOGRAM_PERCENTAGE("Sync.TypedUrlModelAssociationErrors",
                            GetErrorPercentage());
   ClearErrorStats();
@@ -178,7 +179,9 @@ int TypedUrlModelAssociator::GetErrorPercentage() const {
   return num_db_accesses_ ? (100 * num_db_errors_ / num_db_accesses_) : 0;
 }
 
-syncer::SyncError TypedUrlModelAssociator::DoAssociateModels() {
+syncer::SyncError TypedUrlModelAssociator::DoAssociateModels(
+    syncer::SyncMergeResult* local_merge_result,
+    syncer::SyncMergeResult* syncer_merge_result) {
   DVLOG(1) << "Associating TypedUrl Models";
   DCHECK(expected_loop_ == base::MessageLoop::current());
 
@@ -207,6 +210,7 @@ syncer::SyncError TypedUrlModelAssociator::DoAssociateModels() {
           "Could not get the typed_url entries.",
           model_type());
     }
+    local_merge_result->set_num_items_before_association(typed_urls.size());
 
     // Get all the visits.
     std::map<history::URLID, history::VisitVector> visit_vectors;
@@ -234,6 +238,8 @@ syncer::SyncError TypedUrlModelAssociator::DoAssociateModels() {
           "might be running against an out-of-date server.",
           model_type());
     }
+    syncer_merge_result->set_num_items_before_association(
+        typed_url_root.GetTotalNodeCount());
 
     std::set<std::string> current_urls;
     for (history::URLRows::iterator ix = typed_urls.begin();
@@ -288,6 +294,8 @@ syncer::SyncError TypedUrlModelAssociator::DoAssociateModels() {
           DCHECK_EQ(new_url.last_visit().ToInternalValue(),
                     visits.back().visit_time.ToInternalValue());
           WriteToSyncNode(new_url, visits, &write_node);
+          syncer_merge_result->set_num_items_modified(
+              syncer_merge_result->num_items_modified() + 1);
         }
         if (difference & DIFF_LOCAL_ROW_CHANGED) {
           DCHECK_EQ(ix->id(), new_url.id());
@@ -313,6 +321,8 @@ syncer::SyncError TypedUrlModelAssociator::DoAssociateModels() {
 
         node.SetTitle(tag);
         WriteToSyncNode(*ix, visits, &node);
+        syncer_merge_result->set_num_items_added(
+            syncer_merge_result->num_items_added() + 1);
       }
 
       current_urls.insert(tag);
@@ -373,6 +383,8 @@ syncer::SyncError TypedUrlModelAssociator::DoAssociateModels() {
                          NULL,
                          &updated_urls,
                          &new_urls);
+        local_merge_result->set_num_items_added(
+            local_merge_result->num_items_added() + 1);
       }
     }
 
@@ -392,6 +404,8 @@ syncer::SyncError TypedUrlModelAssociator::DoAssociateModels() {
         sync_node.Tombstone();
       }
     }
+    syncer_merge_result->set_num_items_after_association(
+        typed_url_root.GetTotalNodeCount());
   }
 
   // Since we're on the history thread, we don't have to worry about updating
@@ -400,6 +414,10 @@ syncer::SyncError TypedUrlModelAssociator::DoAssociateModels() {
   // to worry about the sync model getting out of sync, because changes are
   // propagated to the ChangeProcessor on this thread.
   WriteToHistoryBackend(&new_urls, &updated_urls, &new_visits, NULL);
+  local_merge_result->set_num_items_modified(updated_urls.size());
+  local_merge_result->set_num_items_after_association(
+      local_merge_result->num_items_before_association() +
+      local_merge_result->num_items_added());
   return syncer::SyncError();
 }
 
