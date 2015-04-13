@@ -488,15 +488,15 @@ void FrameLoader::checkCompleted()
 
     m_frame->navigationScheduler().startTimer();
 
-    // Retry restoring scroll offset since finishing the load event disables content
-    // size clamping.
-    restoreScrollPositionAndViewState();
     if (m_frame->view())
         m_frame->view()->handleLoadCompleted();
 
     if (shouldSendCompleteNotifications(m_frame)) {
         m_loadType = FrameLoadTypeStandard;
         m_progressTracker->progressCompleted();
+        // Retry restoring scroll offset since finishing loading disables content
+        // size clamping.
+        restoreScrollPositionAndViewState();
         m_frame->localDOMWindow()->finishedLoading();
 
         // Report mobile vs. desktop page statistics. This will only report on Android.
@@ -1022,7 +1022,7 @@ void FrameLoader::restoreScrollPositionAndViewState()
     // because that may be because the page will never reach its previous
     // height.
     bool canRestoreWithoutClamping = view->clampOffsetAtScale(m_currentItem->scrollPoint(), 1) == m_currentItem->scrollPoint();
-    bool canRestoreWithoutAnnoyingUser = !view->wasScrolledByUser() && (canRestoreWithoutClamping || m_frame->document()->loadEventFinished());
+    bool canRestoreWithoutAnnoyingUser = !view->wasScrolledByUser() && (canRestoreWithoutClamping || m_frame->isLoading());
     if (!canRestoreWithoutAnnoyingUser)
         return;
 
