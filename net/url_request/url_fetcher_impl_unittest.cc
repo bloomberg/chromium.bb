@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -64,24 +65,34 @@ base::FilePath GetUploadFileTestPath() {
 // Can only be used once.
 class WaitingURLFetcherDelegate : public URLFetcherDelegate {
  public:
-  WaitingURLFetcherDelegate() : fetcher_(nullptr) {}
+  WaitingURLFetcherDelegate() {}
 
-  void StartFetcherAndWait(URLFetcher* fetcher) {
-    EXPECT_FALSE(fetcher_);
-    fetcher_ = fetcher;
+  // Creates a URLFetcher that runs network tasks on the current message loop.
+  void CreateFetcherWithContext(const GURL& url,
+                                URLFetcher::RequestType request_type,
+                                net::URLRequestContext* context) {
+    fetcher_.reset(new URLFetcherImpl(url, request_type, this));
+    fetcher_->SetRequestContext(new TrivialURLRequestContextGetter(
+        context, base::MessageLoopProxy::current()));
+  }
+
+  URLFetcher* fetcher() const { return fetcher_.get(); }
+
+  void StartFetcherAndWait() {
     fetcher_->Start();
     run_loop_.Run();
-    fetcher_ = nullptr;
   }
 
   void OnURLFetchComplete(const URLFetcher* source) override {
-    EXPECT_EQ(fetcher_, source);
+    EXPECT_EQ(fetcher_.get(), source);
     run_loop_.Quit();
   }
 
  private:
-  URLFetcher* fetcher_;
+  scoped_ptr<URLFetcherImpl> fetcher_;
   base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(WaitingURLFetcherDelegate);
 };
 
 class ThrottlingTestURLRequestContext : public TestURLRequestContext {
@@ -350,70 +361,6 @@ class URLFetcherUploadProgressTest : public URLFetcherTest {
   int64 number_of_chunks_added_;
 };
 
-// Version of URLFetcherTest that tests headers.
-class URLFetcherHeadersTest : public URLFetcherTest {
- public:
-  // URLFetcherDelegate:
-  void OnURLFetchComplete(const URLFetcher* source) override;
-};
-
-// Version of URLFetcherTest that tests SocketAddress.
-class URLFetcherSocketAddressTest : public URLFetcherTest {
- public:
-  // URLFetcherDelegate:
-  void OnURLFetchComplete(const URLFetcher* source) override;
-
- protected:
-  std::string expected_host_;
-  uint16 expected_port_;
-};
-
-// Version of URLFetcherTest that tests stopping on a redirect.
-class URLFetcherStopOnRedirectTest : public URLFetcherTest {
- public:
-  URLFetcherStopOnRedirectTest();
-  ~URLFetcherStopOnRedirectTest() override;
-
-  // URLFetcherTest:
-  void CreateFetcher(const GURL& url) override;
-
-  // URLFetcherDelegate:
-  void OnURLFetchComplete(const URLFetcher* source) override;
-
- protected:
-  // The URL we should be redirected to.
-  static const char* kRedirectTarget;
-
-  bool callback_called_;  // Set to true in OnURLFetchComplete().
-};
-
-// Version of URLFetcherTest that tests overload protection.
-class URLFetcherProtectTest : public URLFetcherTest {
- public:
-  // URLFetcherTest:
-  void CreateFetcher(const GURL& url) override;
-
-  // URLFetcherDelegate:
-  void OnURLFetchComplete(const URLFetcher* source) override;
-
- private:
-  Time start_time_;
-};
-
-// Version of URLFetcherTest that tests overload protection, when responses
-// passed through.
-class URLFetcherProtectTestPassedThrough : public URLFetcherTest {
- public:
-  // URLFetcherTest:
-  void CreateFetcher(const GURL& url) override;
-
-  // URLFetcherDelegate:
-  void OnURLFetchComplete(const URLFetcher* source) override;
-
- private:
-  Time start_time_;
-};
-
 // Version of URLFetcherTest that tests bad HTTPS requests.
 class URLFetcherBadHTTPSTest : public URLFetcherTest {
  public:
@@ -618,121 +565,6 @@ void URLFetcherUploadProgressTest::OnURLFetchUploadProgress(
     fetcher_->AppendChunkToUpload(chunk_, true);
   }
 }
-
-void URLFetcherHeadersTest::OnURLFetchComplete(
-    const URLFetcher* source) {
-  std::string header;
-  EXPECT_TRUE(source->GetResponseHeaders()->GetNormalizedHeader("cache-control",
-                                                                &header));
-  EXPECT_EQ("private", header);
-  URLFetcherTest::OnURLFetchComplete(source);
-}
-
-void URLFetcherSocketAddressTest::OnURLFetchComplete(
-    const URLFetcher* source) {
-  EXPECT_EQ("127.0.0.1", source->GetSocketAddress().host());
-  EXPECT_EQ(expected_port_, source->GetSocketAddress().port());
-  URLFetcherTest::OnURLFetchComplete(source);
-}
-
-// static
-const char* URLFetcherStopOnRedirectTest::kRedirectTarget =
-    "http://redirect.target.com";
-
-URLFetcherStopOnRedirectTest::URLFetcherStopOnRedirectTest()
-    : callback_called_(false) {
-}
-
-URLFetcherStopOnRedirectTest::~URLFetcherStopOnRedirectTest() {
-}
-
-void URLFetcherStopOnRedirectTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
-  fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
-      io_message_loop_proxy().get(), request_context()));
-  fetcher_->SetStopOnRedirect(true);
-  fetcher_->Start();
-}
-
-void URLFetcherStopOnRedirectTest::OnURLFetchComplete(
-    const URLFetcher* source) {
-  callback_called_ = true;
-  EXPECT_EQ(GURL(kRedirectTarget), source->GetURL());
-  EXPECT_EQ(URLRequestStatus::CANCELED, source->GetStatus().status());
-  EXPECT_EQ(ERR_ABORTED, source->GetStatus().error());
-  EXPECT_EQ(301, source->GetResponseCode());
-  CleanupAfterFetchComplete();
-}
-
-void URLFetcherProtectTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
-  fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
-      io_message_loop_proxy().get(), request_context()));
-  start_time_ = Time::Now();
-  fetcher_->SetMaxRetriesOn5xx(11);
-  fetcher_->Start();
-}
-
-void URLFetcherProtectTest::OnURLFetchComplete(const URLFetcher* source) {
-  const TimeDelta one_second = TimeDelta::FromMilliseconds(1000);
-  if (source->GetResponseCode() >= 500) {
-    // Now running ServerUnavailable test.
-    // It takes more than 1 second to finish all 11 requests.
-    EXPECT_TRUE(Time::Now() - start_time_ >= one_second);
-    EXPECT_TRUE(source->GetStatus().is_success());
-    std::string data;
-    EXPECT_TRUE(source->GetResponseAsString(&data));
-    EXPECT_FALSE(data.empty());
-    CleanupAfterFetchComplete();
-  } else {
-    // Now running Overload test.
-    static int count = 0;
-    count++;
-    if (count < 20) {
-      fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
-          io_message_loop_proxy().get(), request_context()));
-      fetcher_->Start();
-    } else {
-      // We have already sent 20 requests continuously. And we expect that
-      // it takes more than 1 second due to the overload protection settings.
-      EXPECT_TRUE(Time::Now() - start_time_ >= one_second);
-      URLFetcherTest::OnURLFetchComplete(source);
-    }
-  }
-}
-
-void URLFetcherProtectTestPassedThrough::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
-  fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
-      io_message_loop_proxy().get(), request_context()));
-  fetcher_->SetAutomaticallyRetryOn5xx(false);
-  start_time_ = Time::Now();
-  fetcher_->SetMaxRetriesOn5xx(11);
-  fetcher_->Start();
-}
-
-void URLFetcherProtectTestPassedThrough::OnURLFetchComplete(
-    const URLFetcher* source) {
-  const TimeDelta one_minute = TimeDelta::FromMilliseconds(60000);
-  if (source->GetResponseCode() >= 500) {
-    // Now running ServerUnavailable test.
-    // It should get here on the first attempt, so almost immediately and
-    // *not* to attempt to execute all 11 requests (2.5 minutes).
-    EXPECT_TRUE(Time::Now() - start_time_ < one_minute);
-    EXPECT_TRUE(source->GetStatus().is_success());
-    // Check that suggested back off time is bigger than 0.
-    EXPECT_GT(fetcher_->GetBackoffDelay().InMicroseconds(), 0);
-    std::string data;
-    EXPECT_TRUE(source->GetResponseAsString(&data));
-    EXPECT_FALSE(data.empty());
-  } else {
-    // We should not get here!
-    ADD_FAILURE();
-  }
-
-  CleanupAfterFetchComplete();
-}
-
 
 URLFetcherBadHTTPSTest::URLFetcherBadHTTPSTest() {
   PathService::Get(base::DIR_SOURCE_ROOT, &cert_dir_);
@@ -1005,17 +837,16 @@ TEST_F(URLFetcherTest, PostString) {
   const char kUploadData[] = "bobsyeruncle";
 
   WaitingURLFetcherDelegate delegate;
-  URLFetcherImpl fetcher(test_server_->GetURL("echo"), URLFetcher::POST,
-                         &delegate);
-  fetcher.SetRequestContext(new TrivialURLRequestContextGetter(
-      request_context(), base::MessageLoopProxy::current()));
-  fetcher.SetUploadData("application/x-www-form-urlencoded", kUploadData);
-  delegate.StartFetcherAndWait(&fetcher);
+  delegate.CreateFetcherWithContext(test_server_->GetURL("echo"),
+                                    URLFetcher::POST, request_context());
+  delegate.fetcher()->SetUploadData("application/x-www-form-urlencoded",
+                                    kUploadData);
+  delegate.StartFetcherAndWait();
 
-  EXPECT_TRUE(fetcher.GetStatus().is_success());
-  EXPECT_EQ(200, fetcher.GetResponseCode());
+  EXPECT_TRUE(delegate.fetcher()->GetStatus().is_success());
+  EXPECT_EQ(200, delegate.fetcher()->GetResponseCode());
   std::string data;
-  EXPECT_TRUE(fetcher.GetResponseAsString(&data));
+  ASSERT_TRUE(delegate.fetcher()->GetResponseAsString(&data));
   EXPECT_EQ(kUploadData, data);
 }
 
@@ -1023,17 +854,16 @@ TEST_F(URLFetcherTest, PostEmptyString) {
   const char kUploadData[] = "";
 
   WaitingURLFetcherDelegate delegate;
-  URLFetcherImpl fetcher(test_server_->GetURL("echo"), URLFetcher::POST,
-                         &delegate);
-  fetcher.SetRequestContext(new TrivialURLRequestContextGetter(
-      request_context(), base::MessageLoopProxy::current()));
-  fetcher.SetUploadData("application/x-www-form-urlencoded", kUploadData);
-  delegate.StartFetcherAndWait(&fetcher);
+  delegate.CreateFetcherWithContext(test_server_->GetURL("echo"),
+                                    URLFetcher::POST, request_context());
+  delegate.fetcher()->SetUploadData("application/x-www-form-urlencoded",
+                                    kUploadData);
+  delegate.StartFetcherAndWait();
 
-  EXPECT_TRUE(fetcher.GetStatus().is_success());
-  EXPECT_EQ(200, fetcher.GetResponseCode());
+  EXPECT_TRUE(delegate.fetcher()->GetStatus().is_success());
+  EXPECT_EQ(200, delegate.fetcher()->GetResponseCode());
   std::string data;
-  EXPECT_TRUE(fetcher.GetResponseAsString(&data));
+  ASSERT_TRUE(delegate.fetcher()->GetResponseAsString(&data));
   EXPECT_EQ(kUploadData, data);
 }
 
@@ -1041,21 +871,20 @@ TEST_F(URLFetcherTest, PostEntireFile) {
   base::FilePath upload_path = GetUploadFileTestPath();
 
   WaitingURLFetcherDelegate delegate;
-  URLFetcherImpl fetcher(test_server_->GetURL("echo"), URLFetcher::POST,
-                         &delegate);
-  fetcher.SetRequestContext(new TrivialURLRequestContextGetter(
-      request_context(), base::MessageLoopProxy::current()));
-  fetcher.SetUploadFilePath("application/x-www-form-urlencoded", upload_path, 0,
-                            kuint64max, base::MessageLoopProxy::current());
-  delegate.StartFetcherAndWait(&fetcher);
+  delegate.CreateFetcherWithContext(test_server_->GetURL("echo"),
+                                    URLFetcher::POST, request_context());
+  delegate.fetcher()->SetUploadFilePath("application/x-www-form-urlencoded",
+                                        upload_path, 0, kuint64max,
+                                        base::MessageLoopProxy::current());
+  delegate.StartFetcherAndWait();
 
-  EXPECT_TRUE(fetcher.GetStatus().is_success());
-  EXPECT_EQ(200, fetcher.GetResponseCode());
+  EXPECT_TRUE(delegate.fetcher()->GetStatus().is_success());
+  EXPECT_EQ(200, delegate.fetcher()->GetResponseCode());
 
   std::string expected;
   ASSERT_TRUE(base::ReadFileToString(upload_path, &expected));
   std::string data;
-  EXPECT_TRUE(fetcher.GetResponseAsString(&data));
+  ASSERT_TRUE(delegate.fetcher()->GetResponseAsString(&data));
   EXPECT_EQ(expected, data);
 }
 
@@ -1065,61 +894,55 @@ TEST_F(URLFetcherTest, PostFileRange) {
   base::FilePath upload_path = GetUploadFileTestPath();
 
   WaitingURLFetcherDelegate delegate;
-  URLFetcherImpl fetcher(test_server_->GetURL("echo"), URLFetcher::POST,
-                         &delegate);
-  fetcher.SetRequestContext(new TrivialURLRequestContextGetter(
-      request_context(), base::MessageLoopProxy::current()));
-  fetcher.SetUploadFilePath("application/x-www-form-urlencoded", upload_path,
-                            kRangeStart, kRangeLength,
-                            base::MessageLoopProxy::current());
-  delegate.StartFetcherAndWait(&fetcher);
+  delegate.CreateFetcherWithContext(test_server_->GetURL("echo"),
+                                    URLFetcher::POST, request_context());
+  delegate.fetcher()->SetUploadFilePath("application/x-www-form-urlencoded",
+                                        upload_path, kRangeStart, kRangeLength,
+                                        base::MessageLoopProxy::current());
+  delegate.StartFetcherAndWait();
 
-  EXPECT_TRUE(fetcher.GetStatus().is_success());
-  EXPECT_EQ(200, fetcher.GetResponseCode());
+  EXPECT_TRUE(delegate.fetcher()->GetStatus().is_success());
+  EXPECT_EQ(200, delegate.fetcher()->GetResponseCode());
 
   std::string expected;
   ASSERT_TRUE(base::ReadFileToString(upload_path, &expected));
   std::string data;
-  EXPECT_TRUE(fetcher.GetResponseAsString(&data));
+  ASSERT_TRUE(delegate.fetcher()->GetResponseAsString(&data));
   EXPECT_EQ(expected.substr(kRangeStart, kRangeLength), data);
 }
 
 TEST_F(URLFetcherTest, PostWithUploadStreamFactory) {
   WaitingURLFetcherDelegate delegate;
-  URLFetcherImpl fetcher(test_server_->GetURL("echo"), URLFetcher::POST,
-                         &delegate);
-  fetcher.SetRequestContext(new TrivialURLRequestContextGetter(
-      request_context(), base::MessageLoopProxy::current()));
-  fetcher.SetUploadStreamFactory(
+  delegate.CreateFetcherWithContext(test_server_->GetURL("echo"),
+                                    URLFetcher::POST, request_context());
+  delegate.fetcher()->SetUploadStreamFactory(
       "text/plain",
       base::Bind(&URLFetcherTest::CreateUploadStream, base::Unretained(this)));
-  delegate.StartFetcherAndWait(&fetcher);
+  delegate.StartFetcherAndWait();
 
-  EXPECT_TRUE(fetcher.GetStatus().is_success());
-  EXPECT_EQ(200, fetcher.GetResponseCode());
+  EXPECT_TRUE(delegate.fetcher()->GetStatus().is_success());
+  EXPECT_EQ(200, delegate.fetcher()->GetResponseCode());
   std::string data;
-  EXPECT_TRUE(fetcher.GetResponseAsString(&data));
+  ASSERT_TRUE(delegate.fetcher()->GetResponseAsString(&data));
   EXPECT_EQ(kCreateUploadStreamBody, data);
   EXPECT_EQ(1u, num_upload_streams_created());
 }
 
 TEST_F(URLFetcherTest, PostWithUploadStreamFactoryAndRetries) {
   WaitingURLFetcherDelegate delegate;
-  URLFetcherImpl fetcher(test_server_->GetURL("echo?status=500"),
-                         URLFetcher::POST, &delegate);
-  fetcher.SetRequestContext(new TrivialURLRequestContextGetter(
-      request_context(), base::MessageLoopProxy::current()));
-  fetcher.SetAutomaticallyRetryOn5xx(true);
-  fetcher.SetMaxRetriesOn5xx(1);
-  fetcher.SetUploadStreamFactory(
+  delegate.CreateFetcherWithContext(test_server_->GetURL("echo?status=500"),
+                                    URLFetcher::POST, request_context());
+  delegate.fetcher()->SetAutomaticallyRetryOn5xx(true);
+  delegate.fetcher()->SetMaxRetriesOn5xx(1);
+  delegate.fetcher()->SetUploadStreamFactory(
       "text/plain",
       base::Bind(&URLFetcherTest::CreateUploadStream, base::Unretained(this)));
-  delegate.StartFetcherAndWait(&fetcher);
+  delegate.StartFetcherAndWait();
 
-  EXPECT_TRUE(fetcher.GetStatus().is_success());
-  EXPECT_EQ(500, fetcher.GetResponseCode());
+  EXPECT_TRUE(delegate.fetcher()->GetStatus().is_success());
+  EXPECT_EQ(500, delegate.fetcher()->GetResponseCode());
   std::string data;
-  EXPECT_TRUE(fetcher.GetResponseAsString(&data));
+  ASSERT_TRUE(delegate.fetcher()->GetResponseAsString(&data));
   EXPECT_EQ(kCreateUploadStreamBody, data);
   EXPECT_EQ(2u, num_upload_streams_created());
 }
@@ -1155,28 +978,54 @@ TEST_F(URLFetcherDownloadProgressCancelTest, CancelWhileProgressReport) {
   base::MessageLoop::current()->Run();
 }
 
-TEST_F(URLFetcherHeadersTest, Headers) {
-  CreateFetcher(test_server_->GetURL("set-header?cache-control: private"));
-  base::MessageLoop::current()->Run();
-  // The actual tests are in the URLFetcherHeadersTest fixture.
+TEST_F(URLFetcherTest, Headers) {
+  WaitingURLFetcherDelegate delegate;
+  delegate.CreateFetcherWithContext(
+      test_server_->GetURL("set-header?cache-control: private"),
+      URLFetcher::GET, request_context());
+  delegate.StartFetcherAndWait();
+
+  EXPECT_TRUE(delegate.fetcher()->GetStatus().is_success());
+  EXPECT_EQ(200, delegate.fetcher()->GetResponseCode());
+  std::string header;
+  ASSERT_TRUE(delegate.fetcher()->GetResponseHeaders()->GetNormalizedHeader(
+      "cache-control", &header));
+  EXPECT_EQ("private", header);
 }
 
-TEST_F(URLFetcherSocketAddressTest, SocketAddress) {
-  expected_port_ = test_server_->host_port_pair().port();
+TEST_F(URLFetcherTest, SocketAddress) {
+  WaitingURLFetcherDelegate delegate;
+  delegate.CreateFetcherWithContext(test_server_->GetURL("defaultresponse"),
+                                    URLFetcher::GET, request_context());
+  delegate.StartFetcherAndWait();
 
-  CreateFetcher(test_server_->GetURL("defaultresponse"));
-  base::MessageLoop::current()->Run();
-  // The actual tests are in the URLFetcherSocketAddressTest fixture.
+  EXPECT_TRUE(delegate.fetcher()->GetStatus().is_success());
+  EXPECT_EQ(200, delegate.fetcher()->GetResponseCode());
+  EXPECT_EQ(test_server_->host_port_pair().port(),
+            delegate.fetcher()->GetSocketAddress().port());
+  EXPECT_EQ(test_server_->host_port_pair().host(),
+            delegate.fetcher()->GetSocketAddress().host());
 }
 
-TEST_F(URLFetcherStopOnRedirectTest, StopOnRedirect) {
-  CreateFetcher(
-      test_server_->GetURL(std::string("server-redirect?") + kRedirectTarget));
-  base::MessageLoop::current()->Run();
-  EXPECT_TRUE(callback_called_);
+TEST_F(URLFetcherTest, StopOnRedirect) {
+  const char kRedirectTarget[] = "http://redirect.target.com";
+
+  WaitingURLFetcherDelegate delegate;
+  delegate.CreateFetcherWithContext(
+      test_server_->GetURL(std::string("server-redirect?") + kRedirectTarget),
+      URLFetcher::GET, request_context());
+  delegate.fetcher()->SetStopOnRedirect(true);
+  delegate.StartFetcherAndWait();
+
+  EXPECT_EQ(GURL(kRedirectTarget), delegate.fetcher()->GetURL());
+  EXPECT_EQ(URLRequestStatus::CANCELED,
+            delegate.fetcher()->GetStatus().status());
+  EXPECT_EQ(ERR_ABORTED, delegate.fetcher()->GetStatus().error());
+  EXPECT_EQ(301, delegate.fetcher()->GetResponseCode());
 }
 
-TEST_F(URLFetcherProtectTest, Overload) {
+TEST_F(URLFetcherTest, ThrottleOnRepeatedFetches) {
+  base::Time start_time = Time::Now();
   GURL url(test_server_->GetURL("defaultresponse"));
 
   // Registers an entry for test url. It only allows 3 requests to be sent
@@ -1190,15 +1039,24 @@ TEST_F(URLFetcherProtectTest, Overload) {
                                    2.0,
                                    0.0,
                                    256));
+
   request_context()->throttler_manager()
       ->OverrideEntryForTests(url, entry.get());
 
-  CreateFetcher(url);
+  for (int i = 0; i < 20; ++i) {
+    WaitingURLFetcherDelegate delegate;
+    delegate.CreateFetcherWithContext(url, URLFetcher::GET, request_context());
+    delegate.StartFetcherAndWait();
 
-  base::MessageLoop::current()->Run();
+    EXPECT_TRUE(delegate.fetcher()->GetStatus().is_success());
+    EXPECT_EQ(200, delegate.fetcher()->GetResponseCode());
+  }
+
+  EXPECT_GE(Time::Now() - start_time, base::TimeDelta::FromSeconds(1));
 }
 
-TEST_F(URLFetcherProtectTest, ServerUnavailable) {
+TEST_F(URLFetcherTest, ThrottleOn5xxRetries) {
+  base::Time start_time = Time::Now();
   GURL url(test_server_->GetURL("files/server-unavailable.html"));
 
   // Registers an entry for test url. The backoff time is calculated by:
@@ -1217,35 +1075,55 @@ TEST_F(URLFetcherProtectTest, ServerUnavailable) {
   request_context()->throttler_manager()
       ->OverrideEntryForTests(url, entry.get());
 
-  CreateFetcher(url);
+  request_context()->throttler_manager()->OverrideEntryForTests(url,
+                                                                entry.get());
 
-  base::MessageLoop::current()->Run();
+  WaitingURLFetcherDelegate delegate;
+  delegate.CreateFetcherWithContext(url, URLFetcher::GET, request_context());
+  delegate.fetcher()->SetAutomaticallyRetryOn5xx(true);
+  delegate.fetcher()->SetMaxRetriesOn5xx(11);
+  delegate.StartFetcherAndWait();
+
+  EXPECT_TRUE(delegate.fetcher()->GetStatus().is_success());
+  EXPECT_EQ(503, delegate.fetcher()->GetResponseCode());
+  std::string data;
+  ASSERT_TRUE(delegate.fetcher()->GetResponseAsString(&data));
+  EXPECT_FALSE(data.empty());
+
+  EXPECT_GE(Time::Now() - start_time, base::TimeDelta::FromSeconds(1));
 }
 
-TEST_F(URLFetcherProtectTestPassedThrough, ServerUnavailablePropagateResponse) {
+// Tests overload protection, when responses passed through.
+TEST_F(URLFetcherTest, ProtectTestPassedThrough) {
+  base::Time start_time = Time::Now();
   GURL url(test_server_->GetURL("files/server-unavailable.html"));
 
   // Registers an entry for test url. The backoff time is calculated by:
   //     new_backoff = 2.0 * old_backoff + 0
   // and maximum backoff time is 150000 milliseconds.
   // Maximum retries allowed is set to 11.
-  scoped_refptr<URLRequestThrottlerEntry> entry(
-      new URLRequestThrottlerEntry(request_context()->throttler_manager(),
-                                   std::string(),
-                                   200,
-                                   3,
-                                   100,
-                                   2.0,
-                                   0.0,
-                                   150000));
+  scoped_refptr<URLRequestThrottlerEntry> entry(new URLRequestThrottlerEntry(
+      request_context()->throttler_manager(), std::string(), 200, 3, 10000, 2.0,
+      0.0, 150000));
   // Total time if *not* for not doing automatic backoff would be 150s.
   // In reality it should be "as soon as server responds".
   request_context()->throttler_manager()
       ->OverrideEntryForTests(url, entry.get());
 
-  CreateFetcher(url);
+  WaitingURLFetcherDelegate delegate;
+  delegate.CreateFetcherWithContext(url, URLFetcher::GET, request_context());
+  delegate.fetcher()->SetAutomaticallyRetryOn5xx(false);
+  delegate.fetcher()->SetMaxRetriesOn5xx(11);
+  delegate.StartFetcherAndWait();
 
-  base::MessageLoop::current()->Run();
+  EXPECT_TRUE(delegate.fetcher()->GetStatus().is_success());
+  EXPECT_EQ(503, delegate.fetcher()->GetResponseCode());
+  std::string data;
+  ASSERT_TRUE(delegate.fetcher()->GetResponseAsString(&data));
+  EXPECT_FALSE(data.empty());
+  EXPECT_GT(delegate.fetcher()->GetBackoffDelay().InMicroseconds(), 0);
+
+  EXPECT_TRUE(Time::Now() - start_time < TimeDelta::FromMinutes(1));
 }
 
 TEST_F(URLFetcherBadHTTPSTest, BadHTTPSTest) {
