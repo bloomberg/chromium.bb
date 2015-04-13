@@ -488,6 +488,10 @@ WebAXObjectProxy::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetProperty("childrenCount", &WebAXObjectProxy::ChildrenCount)
       .SetProperty("selectionStart", &WebAXObjectProxy::SelectionStart)
       .SetProperty("selectionEnd", &WebAXObjectProxy::SelectionEnd)
+      .SetProperty("selectionStartLineNumber",
+                   &WebAXObjectProxy::SelectionStartLineNumber)
+      .SetProperty("selectionEndLineNumber",
+                   &WebAXObjectProxy::SelectionEndLineNumber)
       .SetProperty("insertionPointLineNumber",
                    &WebAXObjectProxy::InsertionPointLineNumber)
       .SetProperty("selectedTextRange", &WebAXObjectProxy::SelectedTextRange)
@@ -727,6 +731,17 @@ int WebAXObjectProxy::SelectionEnd() {
   return accessibility_object_.selectionEnd();
 }
 
+int WebAXObjectProxy::SelectionStartLineNumber() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.selectionStartLineNumber();
+}
+
+int WebAXObjectProxy::SelectionEndLineNumber() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.selectionEndLineNumber();
+}
+
+// TODO(nektar): Remove this function after updating tests.
 int WebAXObjectProxy::InsertionPointLineNumber() {
   accessibility_object_.updateLayoutAndCheckValidity();
   if (!accessibility_object_.isFocused())
@@ -734,6 +749,7 @@ int WebAXObjectProxy::InsertionPointLineNumber() {
   return accessibility_object_.selectionEndLineNumber();
 }
 
+// TODO(nektar): Remove this function after updating tests.
 std::string WebAXObjectProxy::SelectedTextRange() {
   accessibility_object_.updateLayoutAndCheckValidity();
   unsigned selection_start = accessibility_object_.selectionStart();
