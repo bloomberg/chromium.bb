@@ -1061,6 +1061,7 @@ static void set_mode(struct device *dev, struct pipe_arg *pipes, unsigned int co
 
 	dev->mode.width = 0;
 	dev->mode.height = 0;
+	dev->mode.fb_id = 0;
 
 	for (i = 0; i < count; i++) {
 		struct pipe_arg *pipe = &pipes[i];
@@ -1121,6 +1122,8 @@ static void set_mode(struct device *dev, struct pipe_arg *pipes, unsigned int co
 
 static void clear_mode(struct device *dev)
 {
+	if (dev->mode.fb_id)
+		drmModeRmFB(dev->fd, dev->mode.fb_id);
 	if (dev->mode.bo)
 		bo_destroy(dev->mode.bo);
 }
@@ -1261,6 +1264,7 @@ static void test_page_flip(struct device *dev, struct pipe_arg *pipes, unsigned 
 		drmHandleEvent(dev->fd, &evctx);
 	}
 
+	drmModeRmFB(dev->fd, other_fb_id);
 	bo_destroy(other_bo);
 }
 
