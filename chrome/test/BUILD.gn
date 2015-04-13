@@ -1673,7 +1673,7 @@ if (!is_android) {
     }
   }
 
-  if (is_linux && !is_chromeos) {
+  if (is_win || (is_linux && !is_chromeos)) {
     # TODO(GYP): Figure out which of these work and are needed on other
     # platforms.
     test("chrome_app_unittests") {
@@ -1694,6 +1694,7 @@ if (!is_android) {
 
       deps = [
         ":test_support",
+        "//breakpad:client",
         "//chrome/browser",
         "//chrome/child",
         "//base/test:run_all_unittests",

@@ -254,6 +254,12 @@
              '../remoting/remoting.gyp:remoting_key_tester',
           ],
         }],
+        ['toolkit_views==1', {
+          'dependencies': [
+            '../ui/app_list/app_list.gyp:app_list_demo',
+            '../ui/views/views.gyp:views_unittests',
+          ],
+        }],
         ['use_x11==1', {
           'dependencies': [
             '../media/media.gyp:player_x11',
@@ -265,12 +271,6 @@
                 '../gpu/tools/tools.gyp:compositor_model_bench',
               ],
             }],
-          ],
-        }],
-        ['toolkit_views==1', {
-          'dependencies': [
-            '../ui/app_list/app_list.gyp:app_list_demo',
-            '../ui/views/views.gyp:views_unittests',
           ],
         }],
         ['use_ash==1', {
@@ -295,7 +295,9 @@
         }],
         ['OS=="win" or OS=="mac" or chromeos==1', {
           'dependencies': [
+            '../rlz/rlz.gyp:rlz_id',
             '../rlz/rlz.gyp:rlz_lib',
+            '../rlz/rlz.gyp:rlz_unittests',
           ],
         }],
         ['OS=="android"', {
@@ -362,6 +364,11 @@
             '../tools/gn/gn.gyp:gn_unittests',
             '../ui/app_list/app_list.gyp:app_list_unittests',
             '../url/url.gyp:url_unittests',
+          ],
+        }],
+        ['OS=="android" or OS=="linux"', {
+          'dependencies': [
+            '../net/net.gyp:disk_cache_memory_test',
           ],
         }],
         ['OS=="linux"', {
@@ -443,17 +450,26 @@
         }],
         ['OS=="win"', {
           'dependencies': [
+            '../base/base.gyp:pe_image_test',
+            '../chrome_elf/chrome_elf.gyp:chrome_elf_unittests',
+            '../chrome_elf/chrome_elf.gyp:dll_hash_main',
+            '../components/components.gyp:wifi_test',
+            '../net/net.gyp:quic_client',
+            '../net/net.gyp:quic_server',
+            '../sandbox/sandbox.gyp:pocdll',
+            '../sandbox/sandbox.gyp:sandbox_poc',
+            '../sandbox/sandbox.gyp:sbox_integration_tests',
+            '../sandbox/sandbox.gyp:sbox_unittests',
+            '../sandbox/sandbox.gyp:sbox_validation_tests',
+            '../testing/gtest.gyp:gtest_main',
             '../third_party/codesighs/codesighs.gyp:msdump2symdb',
+            '../third_party/codesighs/codesighs.gyp:msmap2tsv',
+            '../third_party/pdfium/samples/samples.gyp:pdfium_diff',
             '../win8/win8.gyp:metro_viewer',
           ],
         }, {
           'dependencies': [
             '../third_party/codesighs/codesighs.gyp:nm2tsv',
-          ],
-        }],
-        ['OS=="android" or OS=="linux"', {
-          'dependencies': [
-            '../net/net.gyp:disk_cache_memory_test',
           ],
         }],
       ],
@@ -462,7 +478,7 @@
       'target_name': 'gyp_only',
       'type': 'none',
       'conditions': [
-        ['OS=="linux"', {
+        ['OS=="linux" or OS=="win"', {
           'conditions': [
             ['disable_nacl==0 and disable_nacl_untrusted==0', {
               'dependencies': [
@@ -529,6 +545,7 @@
         }],
         ['use_openssl==1', {
           'dependencies': [
+            # TODO(GYP): All of these targets still need to be converted.
             '../third_party/boringssl/boringssl_tests.gyp:boringssl_ecdsa_test',
             '../third_party/boringssl/boringssl_tests.gyp:boringssl_bn_test',
             '../third_party/boringssl/boringssl_tests.gyp:boringssl_pqueue_test',
@@ -558,16 +575,17 @@
             '../third_party/boringssl/boringssl_tests.gyp:boringssl_unittests',
           ],
         }],
-        ['OS=="linux"', {
+        ['OS=="linux" or OS=="win"', {
           'dependencies': [
+            # TODO(GYP): in progress - see tfarina.
             '../third_party/webrtc/tools/tools.gyp:frame_analyzer',
             '../third_party/webrtc/tools/tools.gyp:rgba_to_i420_converter',
           ],
         }],
         ['OS=="win"', {
           'dependencies': [
+            # TODO(GYP): All of these targets still need to be converted.
             '../base/base.gyp:debug_message',
-            '../base/base.gyp:pe_image_test',
             '../chrome/chrome.gyp:app_installer',
             '../chrome/chrome.gyp:app_installer_unittests',
             '../chrome/chrome.gyp:app_shim',
@@ -581,11 +599,6 @@
             '../chrome/chrome.gyp:setup_unittests',
             '../chrome/installer/mini_installer.gyp:mini_installer',
             '../chrome/tools/crash_service/caps/caps.gyp:caps',
-            '../chrome_elf/chrome_elf.gyp:blacklist_test_dll_2',
-            '../chrome_elf/chrome_elf.gyp:blacklist_test_dll_3',
-            '../chrome_elf/chrome_elf.gyp:blacklist_test_main_dll',
-            '../chrome_elf/chrome_elf.gyp:chrome_elf_unittests',
-            '../chrome_elf/chrome_elf.gyp:dll_hash_main',
             '../cloud_print/gcp20/prototype/gcp20_device.gyp:gcp20_device',
             '../cloud_print/gcp20/prototype/gcp20_device.gyp:gcp20_device_unittests',
             '../cloud_print/service/service.gyp:cloud_print_service',
@@ -593,33 +606,18 @@
             '../cloud_print/service/service.gyp:cloud_print_service_setup',
             '../cloud_print/virtual_driver/win/install/virtual_driver_install.gyp:virtual_driver_setup',
             '../cloud_print/virtual_driver/win/virtual_driver.gyp:gcp_portmon',
-            '../components/components.gyp:wifi_test',
             '../content/content_shell_and_tests.gyp:content_shell_crash_service',
             '../content/content_shell_and_tests.gyp:layout_test_helper',
             '../content/content_shell_and_tests.gyp:video_decode_accelerator_unittest',
             '../gpu/gpu.gyp:angle_end2end_tests',
             '../gpu/gpu.gyp:angle_perftests',
             '../net/net.gyp:net_docs',
-            '../net/net.gyp:quic_client',
-            '../net/net.gyp:quic_server',
             '../ppapi/ppapi_internal.gyp:ppapi_perftests',
             '../remoting/app_remoting_test.gyp:ar_sample_test_driver',
             '../remoting/remoting.gyp:remoting_breakpad_tester',
             '../remoting/remoting.gyp:remoting_console',
             '../remoting/remoting.gyp:remoting_desktop',
             '../rlz/rlz.gyp:rlz',
-            '../rlz/rlz.gyp:rlz_id',
-            '../rlz/rlz.gyp:rlz_unittests',
-            '../sandbox/sandbox.gyp:pocdll',
-            '../sandbox/sandbox.gyp:sandbox_poc',
-            '../sandbox/sandbox.gyp:sbox_integration_tests',
-            '../sandbox/sandbox.gyp:sbox_unittests',
-            '../sandbox/sandbox.gyp:sbox_validation_tests',
-            '../testing/gtest.gyp:gtest_main',
-            '../third_party/codesighs/codesighs.gyp:msmap2tsv',
-            '../third_party/pdfium/samples/samples.gyp:pdfium_diff',
-            '../third_party/webrtc/tools/tools.gyp:frame_analyzer',
-            '../third_party/webrtc/tools/tools.gyp:rgba_to_i420_converter',
             '../tools/win/static_initializers/static_initializers.gyp:static_initializers',
           ],
         }],
@@ -630,6 +628,7 @@
         }],
         ['OS=="win" and target_arch=="ia32"', {
           'dependencies': [
+            # TODO(GYP): All of these targets need to be ported over.
             '../base/base.gyp:base_win64',
             '../base/base.gyp:base_i18n_nacl_win64',
             '../chrome/chrome.gyp:crash_service_win64',
@@ -645,6 +644,7 @@
         }],
         ['OS=="win" and target_arch=="ia32" and configuration_policy==1', {
           'dependencies': [
+            # TODO(GYP): All of these targets need to be ported over.
             '../components/components.gyp:policy_win64',
           ]
         }],
@@ -666,6 +666,17 @@
         'chromium_builder_webrtc',
         'chromium_gpu_builder',
         'chromium_gpu_debug_builder',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'dependencies': [
+            'chromium_builder',
+            'chromium_builder_dbg_drmemory_win',
+            'chromium_builder_nacl_sdk',
+            'chromium_builder_lkgr_drmemory_win',
+            'chromium_builder_dbg_tsan_win',
+          ],
+        }],
       ],
     },
   ]

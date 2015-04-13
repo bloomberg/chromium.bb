@@ -8,8 +8,10 @@
 # you add a new build file, there must be some path of dependencies from this
 # file to your new one or GN won't know about it.
 
+import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//build/module_args/v8.gni")
 import("//remoting/remoting_host.gni")
 
 if (is_android) {
@@ -118,6 +120,7 @@ group("gn_all") {
     "//tools/imagediff($host_toolchain)",
     "//tools/gn",
     "//tools/gn:gn_unittests",
+    "//tools/gn:generate_test_gn_data",
     "//tools/telemetry:bitmaptools($host_toolchain)",
     "//ui/accessibility:accessibility_unittests",
     "//ui/app_list:app_list_unittests",
@@ -131,9 +134,20 @@ group("gn_all") {
 
   deps += root_extra_deps
 
-  # TODO(GYP): Get this working on the mac?
   if (enable_extensions && !is_mac) {
+    # TODO(GYP): Get this working on the mac?
     deps += [ "//extensions/shell:app_shell_unittests" ]
+  }
+
+  if (enable_me2me_host) {
+    deps += [ "//remoting/host:remoting_me2me_host" ]
+  }
+
+  if (enable_media_router) {
+    deps += [
+      "//chrome/browser/media/router/",
+      "//chrome/browser/media/router:unit_tests",
+    ]
   }
 
   if (enable_remoting_host) {
@@ -144,18 +158,6 @@ group("gn_all") {
       "//remoting/host:remoting_start_host",
       "//remoting/host/it2me:remote_assistance_host",
     ]
-  }
-
-  if (enable_me2me_host) {
-    deps += [ "//remoting/host:remoting_me2me_host" ]
-  }
-
-  if (!is_win) {
-    deps += [ "//breakpad:symupload" ]
-  }
-
-  if (use_x11) {
-    deps += [ "//tools/xdisplaycheck" ]
   }
 
   if (toolkit_views) {
@@ -170,17 +172,12 @@ group("gn_all") {
     deps += [ "//ui/ozone" ]
   }
 
-  if (enable_media_router) {
-    deps += [
-      "//chrome/browser/media/router/",
-      "//chrome/browser/media/router:unit_tests",
-    ]
+  if (use_x11) {
+    deps += [ "//tools/xdisplaycheck" ]
   }
 
-  if (is_win || is_mac || is_chromeos) {
-    # RLZ works on these platforms.
-    # TODO(GYP): Is this target needed, or pulled in automatically?
-    deps += [ "//rlz:rlz_lib" ]
+  if (v8_use_external_startup_data) {
+    deps += [ "//gin:gin_v8_snapshot_fingerprint" ]
   }
 
   if (is_android) {
@@ -221,7 +218,6 @@ group("gn_all") {
       "//ui/message_center:test_support",
     ]
     deps -= [
-      "//breakpad:symupload",  # TODO(GYP) ??
       "//chrome",  # TODO(GYP) ??
       "//chrome/test:browser_tests",  # TODO(GYP) ??
       "//chrome/test:interactive_ui_tests",  # TODO(GYP) ??
@@ -270,6 +266,7 @@ group("gn_all") {
       "//ppapi/examples/video_encode",
       "//third_party/pdfium/samples:pdfium_test",
       "//tools/gn",
+      "//tools/gn:generate_test_gn_data",
       "//tools/gn:gn_unittests",
       "//ui/app_list:app_list_unittests",
       "//url:url_unittests",
@@ -278,6 +275,21 @@ group("gn_all") {
     if (has_chrome_android_internal) {
       deps += [ "//clank" ]  # TODO(GYP) ??
     }
+  }
+
+  if (is_linux) {  # TODO(GYP): || is_android || is_bsd?
+    deps += [
+      "//breakpad:core-2-minidump",
+      "//breakpad:minidump-2-core",
+    ]
+  }
+
+  if (is_chromeos || is_mac || is_win) {
+    deps += [
+      "//rlz:rlz_id",
+      "//rlz:rlz_lib",
+      "//rlz:rlz_unittests",
+    ]
   }
 
   if (is_linux) {
@@ -302,33 +314,24 @@ group("gn_all") {
     }
   }
 
-  if (is_linux && !is_chromeos) {
+  if (is_win || (is_linux && !is_chromeos)) {
+    # TODO(GYP): Figure out which of these should (and can) build
+    # for android/chromeos/mac/ios.
     deps += [
-      # TODO(GYP): Figure out which of these should (and can) build
-      # under which other conditions.
       "//base:base_perftests",
       "//base:base_i18n_perftests",
       "//base:check_example",
       "//base:protect_file_posix",
       "//base:build_utf8_validator_tables",
-      "//breakpad:core-2-minidump",
-      "//breakpad:minidump-2-core",
-      "//build/sanitizers:copy_llvm_symbolizer",
-      "//cc/blink:cc_blink_unittests",
       "//cc:cc_perftests",
-      "//chrome/test:chrome_app_unittests",
+      "//cc/blink:cc_blink_unittests",
       "//chrome/test:load_library_perf_tests",
       "//chrome/test:performance_browser_tests",
       "//chrome/test:sync_performance_tests",
       "//chrome/test/chromedriver:chromedriver",
       "//chrome/test/chromedriver:chromedriver_tests",
       "//chrome/tools/profile_reset:jtl_compiler",
-      "//cloud_print:cloud_print_unittests",
       "//components:components_perftests",
-      "//components/network_hints/browser",
-      "//components/webui_generator",
-      "//content/public/app:browser",
-      "//content/public/app:child",
       "//content/test:content_gl_tests",
       "//content/test:content_gl_benchmark",
       "//courgette:courgette",
@@ -337,92 +340,48 @@ group("gn_all") {
       "//courgette:courgette_unittests",
       "//device:device_unittests",
       "//gin:gin_shell",
-      "//gin:gin_v8_snapshot_fingerprint",
       "//gin:gin_unittests",
       "//google_apis:google_apis_unittests",
       "//google_apis/gcm:mcs_probe",
       "//gpu:angle_unittests",
-      "//gpu:gl_tests",
-
-      # TODO(GYP): Remove this when the gles2 tests work
-      "//gpu/command_buffer/client:gles2_implementation_no_check",
-
       "//gpu:gpu_perftests",
-      "//gpu/khronos_glcts_support:khronos_glcts_test",  # TODO(GYP) crbug.com/471903 to make this complete.
+      "//gpu:gl_tests",
       "//ipc:ipc_perftests",
       "//media:ffmpeg_regression_tests",  # TODO(GYP) this should be conditional on media_use_ffmpeg
       "//media:media_perftests",
-      "//media/cast:cast_benchmarks",
       "//media/cast:generate_barcode_video",
       "//media/cast:generate_timecode_audio",
-      "//media/cast:tap_proxy",
-      "//mojo/application",
       "//net:crash_cache",
       "//net:crl_set_dump",
       "//net:dns_fuzz_stub",
+      "//net:dump_cache",
       "//net:gdig",
       "//net:get_server_time",
       "//net:net_watcher",  # TODO(GYP): This should be conditional on use_v8_in_net
+      "//net:run_testserver",
       "//net:stress_cache",
       "//net:tld_cleanup",
-      "//net:run_testserver",
-      "//net:dump_cache",
       "//ppapi:pepper_hash_for_uma",
-      "//ppapi:ppapi_perftests",  # TODO(GYP): Are there other ppapi_* test targets?
-      "//skia:filter_fuzz_stub",
-      "//skia:image_operations_bench",
+      "//ppapi:ppapi_perftests",
       "//sync:run_sync_testserver",
       "//sync:sync_endtoend_tests",
-      "//sync/tools:sync_client",
-      "//sync/tools:sync_listen_notifications",
-      "//testing/gmock:gmock_main",
       "//third_party/codesighs:maptsvdifftool",
-      "//third_party/libphonenumber:libphonenumber_unittests",
-      "//third_party/mojo/src/mojo/edk/test:mojo_public_system_perftests",
-      "//tools/gn:generate_test_gn_data",
-      "//tools/perf/clear_system_cache",
-      "//ui/keyboard:keyboard_unittests",
-      "//ui/message_center:message_center_unittests",
-      "//ui/snapshot:snapshot_unittests",
-      "//ui/views/examples:views_examples_with_content_exe",
-
-      # "//v8:v8_snapshot",  # TODO(GYP): visibility?
-      # "//v8:postmortem-metadata",  # TODO(GYP): visibility?
-
-      "//third_party/codesighs:nm2tsv",
       "//third_party/leveldatabase:env_chromium_unittests",
       "//third_party/libaddressinput:libaddressinput_unittests",
-      "//third_party/sqlite:sqlite_shell",
+      "//third_party/libphonenumber:libphonenumber_unittests",
       "//ui/compositor:compositor_unittests",
     ]
-
-    if (current_toolchain == host_toolchain) {
-      # Do not build the breakpad utilities in cross-compiles.
-      deps += [
-        "//breakpad:dump_syms",
-        "//breakpad:microdump_stackwalk",
-        "//breakpad:minidump_dump",
-        "//breakpad:minidump_stackwalk",
-      ]
-    }
 
     if (enable_extensions) {
       deps += [ "//extensions/shell:app_shell" ]
     }
 
     if (enable_nacl) {
-      deps += [
-        "//components/nacl:nacl_loader_unittests",
-        "//remoting:remoting_key_tester",
-      ]
+      deps += [ "//components/nacl:nacl_loader_unittests" ]
     }
 
-    if (!is_debug && !is_component_build) {
-      deps += [ "//chrome/tools/service_discovery_sniffer" ]
-    }
-
-    if (toolkit_views) {
-      deps += [ "//ui/app_list:app_list_demo" ]
+    if (enable_nacl && enable_remoting) {
+      deps += [ "//remoting:remoting_key_tester" ]
     }
 
     if (use_ash) {
@@ -440,6 +399,63 @@ group("gn_all") {
         "//ui/aura:demo",
       ]
     }
+  }
+
+  if (is_linux && !is_chromeos) {
+    deps += [
+      # TODO(GYP): Figure out which of these should (and can) build
+      # under which other conditions.
+      "//build/sanitizers:copy_llvm_symbolizer",
+      "//chrome/test:chrome_app_unittests",
+      "//cloud_print:cloud_print_unittests",
+      "//components/network_hints/browser",
+      "//components/webui_generator",
+      "//content/public/app:browser",
+      "//content/public/app:child",
+
+      # TODO(GYP): Remove this when the gles2 tests work
+      "//gpu/command_buffer/client:gles2_implementation_no_check",
+
+      "//gpu/khronos_glcts_support:khronos_glcts_test",  # TODO(GYP) crbug.com/471903 to make this complete.
+      "//media/cast:cast_benchmarks",
+      "//media/cast:tap_proxy",
+      "//mojo/application",
+      "//skia:filter_fuzz_stub",
+      "//skia:image_operations_bench",
+      "//sync/tools:sync_client",
+      "//sync/tools:sync_listen_notifications",
+      "//testing/gmock:gmock_main",
+      "//third_party/mojo/src/mojo/edk/test:mojo_public_system_perftests",
+      "//tools/perf/clear_system_cache",
+      "//ui/keyboard:keyboard_unittests",
+      "//ui/message_center:message_center_unittests",
+      "//ui/snapshot:snapshot_unittests",
+      "//ui/views/examples:views_examples_with_content_exe",
+
+      # "//v8:v8_snapshot",  # TODO(GYP): visibility?
+      # "//v8:postmortem-metadata",  # TODO(GYP): visibility?
+
+      "//third_party/codesighs:nm2tsv",
+      "//third_party/sqlite:sqlite_shell",
+    ]
+
+    if (current_toolchain == host_toolchain) {
+      # Do not build the breakpad utilities in cross-compiles.
+      deps += [
+        "//breakpad:dump_syms",
+        "//breakpad:microdump_stackwalk",
+        "//breakpad:minidump_dump",
+        "//breakpad:minidump_stackwalk",
+      ]
+    }
+
+    if (!is_debug && !is_component_build) {
+      deps += [ "//chrome/tools/service_discovery_sniffer" ]
+    }
+
+    if (toolkit_views) {
+      deps += [ "//ui/app_list:app_list_demo" ]
+    }
 
     if (use_x11) {
       deps += [ "//media:player_x11" ]
@@ -453,7 +469,6 @@ group("gn_all") {
     deps += [
       "//breakpad:crash_inspector",
       "//breakpad:dump_syms",
-      "//breakpad:symupload",
       "//third_party/apple_sample_code",
       "//third_party/molokocacao",
     ]
@@ -506,12 +521,37 @@ group("gn_all") {
       "//ui/app_list:app_list_unittests",  # TODO(GYP)
       "//ui/gfx:gfx_unittests",  # TODO(GYP)
     ]
-  } else if (is_win) {
-    deps += [ "//ui/metro_viewer" ]
+  }
+
+  if (is_win) {
+    deps += [
+      "//base:pe_image_test",
+      "//chrome_elf:chrome_elf_unittests",
+      "//chrome_elf:dll_hash_main",
+
+      # "//components/crash/tools:crash_service", TODO(GYP) - doesn't fully build yet.
+      "//components/wifi:wifi_test",
+      "//net:quic_client",
+      "//net:quic_server",
+      "//sandbox/win:pocdll",
+      "//sandbox/win:sandbox_poc",
+      "//sandbox/win:sbox_integration_tests",
+      "//sandbox/win:sbox_unittests",
+      "//sandbox/win:sbox_validation_tests",
+      "//testing/gtest:gtest_main",
+      "//third_party/codesighs:msmap2tsv",
+      "//third_party/pdfium/samples:pdfium_diff",
+      "//ui/metro_viewer",
+    ]
     deps -= [
       "//crypto:crypto_unittests",  # TODO(GYP)
       "//net:net_unittests",  # TODO(GYP)
     ]
+  } else {
+    if (!is_android) {
+      # TODO(GYP): Make this work on android also.
+      deps += [ "//breakpad:symupload" ]
+    }
   }
 }
 

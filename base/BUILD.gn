@@ -894,7 +894,7 @@ component("i18n") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
 
-if (is_linux && !is_chromeos) {
+if (is_win || (is_linux && !is_chromeos)) {
   # TODO(GYP): Figure out which of these work and are needed on other platforms.
   test("base_perftests") {
     sources = [
