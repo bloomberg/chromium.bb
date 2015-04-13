@@ -150,7 +150,7 @@ class SignalFDWatcher : public MessageLoopForIO::Watcher {
     KillSpawnedTestProcesses();
 
     // The signal would normally kill the process, so exit now.
-    exit(1);
+    _exit(1);
   }
 
   void OnFileCanWriteWithoutBlocking(int fd) override { NOTREACHED(); }
