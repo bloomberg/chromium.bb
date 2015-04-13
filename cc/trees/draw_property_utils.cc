@@ -267,14 +267,34 @@ void ComputeClips(ClipTree* clip_tree, const TransformTree& transform_tree) {
     gfx::Transform clip_to_target;
     gfx::Transform target_to_clip;
 
-    bool success =
-        transform_tree.ComputeTransform(parent_transform_node->id,
-                                        clip_node->data.target_id,
-                                        &parent_to_target) &&
-        transform_tree.ComputeTransform(
-            transform_node->id, clip_node->data.target_id, &clip_to_target) &&
-        transform_tree.ComputeTransform(clip_node->data.target_id,
-                                        transform_node->id, &target_to_clip);
+    const bool target_is_root_surface = clip_node->data.target_id == 1;
+    // When the target is the root surface, we need to include the root
+    // transform by walking up to the root of the transform tree.
+    const int target_id =
+        target_is_root_surface ? 0 : clip_node->data.target_id;
+
+    bool success = true;
+    if (parent_transform_node->data.content_target_id ==
+        clip_node->data.target_id) {
+      parent_to_target = parent_transform_node->data.to_target;
+    } else {
+      success &= transform_tree.ComputeTransformWithDestinationSublayerScale(
+          parent_transform_node->id, target_id, &parent_to_target);
+    }
+
+    if (transform_node->data.content_target_id == clip_node->data.target_id) {
+      clip_to_target = transform_node->data.to_target;
+    } else {
+      success &= transform_tree.ComputeTransformWithDestinationSublayerScale(
+          transform_node->id, target_id, &clip_to_target);
+    }
+
+    if (transform_node->data.content_target_id == clip_node->data.target_id &&
+        transform_node->data.ancestors_are_invertible) {
+      target_to_clip = transform_node->data.from_target;
+    } else {
+      success &= clip_to_target.GetInverse(&target_to_clip);
+    }
 
     // If we can't compute a transform, it's because we had to use the inverse
     // of a singular transform. We won't draw in this case, so there's no need
