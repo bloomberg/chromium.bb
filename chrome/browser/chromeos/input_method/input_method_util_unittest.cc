@@ -414,6 +414,42 @@ TEST_F(InputMethodUtilTest, TestGetFirstLoginInputMethodIds_Us_And_Vi) {
   EXPECT_EQ(Id("vkd_vi_tcvn"), input_method_ids[1]);  // TCVN6064.
 }
 
+// US keyboard + Japanese = US keyboard + mozc(us).
+TEST_F(InputMethodUtilTest, TestGetFirstLoginInputMethodIds_Us_And_Jp) {
+  const InputMethodDescriptor* descriptor =
+      util_.GetInputMethodDescriptorFromId(Id("xkb:us::eng"));  // US keyboard.
+  ASSERT_TRUE(NULL != descriptor);  // ASSERT_NE doesn't compile.
+  std::vector<std::string> input_method_ids;
+  util_.GetFirstLoginInputMethodIds("ja", *descriptor, &input_method_ids);
+  ASSERT_EQ(2U, input_method_ids.size());
+  EXPECT_EQ(Id("xkb:us::eng"), input_method_ids[0]);
+  EXPECT_EQ(Id("nacl_mozc_us"), input_method_ids[1]);
+}
+
+// JP keyboard + Japanese = JP keyboard + mozc(jp).
+TEST_F(InputMethodUtilTest, TestGetFirstLoginInputMethodIds_Jp_And_Jp) {
+  const InputMethodDescriptor* descriptor =
+      util_.GetInputMethodDescriptorFromId(Id("xkb:jp::jpn"));  // JP keyboard.
+  ASSERT_TRUE(NULL != descriptor);  // ASSERT_NE doesn't compile.
+  std::vector<std::string> input_method_ids;
+  util_.GetFirstLoginInputMethodIds("ja", *descriptor, &input_method_ids);
+  ASSERT_EQ(2U, input_method_ids.size());
+  EXPECT_EQ(Id("xkb:jp::jpn"), input_method_ids[0]);
+  EXPECT_EQ(Id("nacl_mozc_jp"), input_method_ids[1]);
+}
+
+// US keyboard + Hebrew = US keyboard + Hebrew keyboard.
+TEST_F(InputMethodUtilTest, TestGetFirstLoginInputMethodIds_Us_And_He) {
+  const InputMethodDescriptor* descriptor =
+      util_.GetInputMethodDescriptorFromId(Id("xkb:us::eng"));  // US keyboard.
+  ASSERT_TRUE(NULL != descriptor);  // ASSERT_NE doesn't compile.
+  std::vector<std::string> input_method_ids;
+  util_.GetFirstLoginInputMethodIds("he", *descriptor, &input_method_ids);
+  ASSERT_EQ(2U, input_method_ids.size());
+  EXPECT_EQ(Id("xkb:us::eng"), input_method_ids[0]);
+  EXPECT_EQ(Id("xkb:il::heb"), input_method_ids[1]);
+}
+
 TEST_F(InputMethodUtilTest, TestGetLanguageCodesFromInputMethodIds) {
   std::vector<std::string> input_method_ids;
   input_method_ids.push_back(Id("xkb:us::eng"));        // English US.

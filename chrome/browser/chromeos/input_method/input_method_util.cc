@@ -58,7 +58,7 @@ const size_t kMappingImeIdToMediumLenNameResourceIdLen =
     arraysize(kMappingImeIdToMediumLenNameResourceId);
 
 // Due to asynchronous initialization of component extension manager,
-// GetFirstLogingInputMethodIds may miss component extension IMEs. To enable
+// GetFirstLoginInputMethodIds may miss component extension IMEs. To enable
 // component extension IME as the first loging input method, we have to prepare
 // component extension IME IDs.
 // Note: empty layout means the rule applies for all layouts.
@@ -402,41 +402,13 @@ void InputMethodUtil::GetFirstLoginInputMethodIds(
     }
   }
 
-  // Second, find the most popular input method associated with the
-  // current UI language. The input method IDs returned from
-  // GetInputMethodIdsFromLanguageCode() are sorted by popularity, hence
-  // our basic strategy is to pick the first one, but it's a bit more
-  // complicated as shown below.
-  std::string most_popular_id;
   std::vector<std::string> input_method_ids;
-  // This returns the input methods sorted by popularity.
   GetInputMethodIdsFromLanguageCode(
       language_code, kAllInputMethods, &input_method_ids);
-  for (size_t i = 0; i < input_method_ids.size(); ++i) {
-    const std::string& input_method_id = input_method_ids[i];
-    // Pick the first one.
-    if (most_popular_id.empty())
-      most_popular_id = input_method_id;
-
-    // Check if there is one that matches the current keyboard layout, but
-    // not the current keyboard itself. This is useful if there are
-    // multiple keyboard layout choices for one input method. For
-    // instance, Mozc provides three choices: mozc (US keyboard), mozc-jp
-    // (JP keyboard), mozc-dv (Dvorak).
-    const InputMethodDescriptor* descriptor =
-        GetInputMethodDescriptorFromId(input_method_id);
-    if (descriptor &&
-        descriptor->id() != current_input_method.id() &&
-        descriptor->GetPreferredKeyboardLayout() ==
-        current_input_method.GetPreferredKeyboardLayout()) {
-      most_popular_id = input_method_id;
-      break;
-    }
-  }
-  // Add the most popular input method ID, if it's different from the
-  // current input method.
-  if (most_popular_id != current_input_method.id()) {
-    out_input_method_ids->push_back(most_popular_id);
+  // Uses the first input method as the most popular one.
+  if (input_method_ids.size() > 0 &&
+      current_input_method.id() != input_method_ids[0]) {
+    out_input_method_ids->push_back(input_method_ids[0]);
   }
 }
 
