@@ -49,13 +49,15 @@ void LayoutButton::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
 
 void LayoutButton::removeChild(LayoutObject* oldChild)
 {
-    // m_inner should be the only child, but checking for direct children who
-    // are not m_inner prevents security problems when that assumption is
-    // violated.
-    if (oldChild == m_inner || !m_inner || oldChild->parent() == this) {
-        ASSERT(oldChild == m_inner || !m_inner);
+    if (oldChild == m_inner || !m_inner) {
         LayoutFlexibleBox::removeChild(oldChild);
         m_inner = 0;
+
+    } else if (oldChild->parent() == this) {
+        // We aren't the inner node, but we're getting removed from the button, this
+        // can happen with things like scrollable area resizer's.
+        LayoutFlexibleBox::removeChild(oldChild);
+
     } else {
         m_inner->removeChild(oldChild);
     }
