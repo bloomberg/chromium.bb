@@ -156,6 +156,10 @@ document.getElementById('feedbackNo').addEventListener('click', function(e) {
 
 document.getElementById('feedbackContainer').addEventListener('animationend',
     function(e) {
-      document.getElementById('feedbackContainer').style.display = "none";
+      document.getElementById('feedbackContainer').style.display = 'none';
+      // Close the gap where the feedback form was.
+      var contentWrap = document.getElementById('contentWrap');
+      contentWrap.style.transition = '0.5s';
+      contentWrap.style.paddingBottom = '0px';
     }, true);
 
