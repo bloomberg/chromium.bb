@@ -345,7 +345,8 @@ void WorkerGlobalScope::countDeprecation(UseCounter::Feature feature) const
     ASSERT(isSharedWorkerGlobalScope() || isServiceWorkerGlobalScope());
     // For each deprecated feature, send console message at most once
     // per worker lifecycle.
-    if (m_deprecationWarningBits.recordMeasurement(feature)) {
+    if (!m_deprecationWarningBits.hasRecordedMeasurement(feature)) {
+        m_deprecationWarningBits.recordMeasurement(feature);
         ASSERT(!UseCounter::deprecationMessage(feature).isEmpty());
         ASSERT(executionContext());
         executionContext()->addConsoleMessage(ConsoleMessage::create(DeprecationMessageSource, WarningMessageLevel, UseCounter::deprecationMessage(feature)));

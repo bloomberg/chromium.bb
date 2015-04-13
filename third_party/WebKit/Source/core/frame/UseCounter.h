@@ -748,40 +748,39 @@ public:
 
     class CountBits {
     public:
-        bool recordMeasurement(Feature feature)
+        CountBits() : m_bits(NumberOfFeatures) { }
+
+        bool hasRecordedMeasurement(Feature feature) const
         {
             if (UseCounter::m_muteCount)
                 return false;
             ASSERT(feature != PageDestruction); // PageDestruction is reserved as a scaling factor.
             ASSERT(feature < NumberOfFeatures);
-            if (!m_bits) {
-                m_bits = adoptPtr(new BitVector(NumberOfFeatures));
-                m_bits->clearAll();
-            }
 
-            if (m_bits->quickGet(feature))
-                return false;
-
-            m_bits->quickSet(feature);
-            return true;
+            return m_bits.quickGet(feature);
         }
+
+        void recordMeasurement(Feature feature)
+        {
+            if (UseCounter::m_muteCount)
+                return;
+            ASSERT(feature != PageDestruction); // PageDestruction is reserved as a scaling factor.
+            ASSERT(feature < NumberOfFeatures);
+
+            m_bits.quickSet(feature);
+        }
+
         void updateMeasurements();
 
-        // NOTE: only for use in testing.
-        bool hasRecordedMeasurement(Feature feature) const
-        {
-            ASSERT(feature >= 0 && feature < NumberOfFeatures);
-            return m_bits->get(feature);
-        }
-
     private:
-        OwnPtr<BitVector> m_bits;
+        BitVector m_bits;
     };
 
-private:
+protected:
+    friend class UseCounterTest;
     static int m_muteCount;
 
-    bool recordMeasurement(Feature feature) { return m_countBits.recordMeasurement(feature); }
+    void recordMeasurement(Feature feature) { m_countBits.recordMeasurement(feature); }
     void updateMeasurements();
 
     bool hasRecordedMeasurement(Feature feature) const { return m_countBits.hasRecordedMeasurement(feature); }

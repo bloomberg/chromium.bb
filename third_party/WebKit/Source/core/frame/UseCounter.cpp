@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2012 Google, Inc. All rights reserved.
  *
@@ -547,14 +546,12 @@ UseCounter::~UseCounter()
 
 void UseCounter::CountBits::updateMeasurements()
 {
-    if (m_bits) {
-        for (unsigned i = 0; i < NumberOfFeatures; ++i) {
-            if (m_bits->quickGet(i))
-                blink::Platform::current()->histogramEnumeration("WebCore.FeatureObserver", i, NumberOfFeatures);
-        }
-        // Clearing count bits is timing sensitive.
-        m_bits->clearAll();
+    for (unsigned i = 0; i < NumberOfFeatures; ++i) {
+        if (m_bits.quickGet(i))
+            blink::Platform::current()->histogramEnumeration("WebCore.FeatureObserver", i, NumberOfFeatures);
     }
+    // Clearing count bits is timing sensitive.
+    m_bits.clearAll();
 }
 
 void UseCounter::updateMeasurements()
@@ -654,7 +651,8 @@ void UseCounter::countDeprecation(const LocalFrame* frame, Feature feature)
     if (!host)
         return;
 
-    if (host->useCounter().recordMeasurement(feature)) {
+    if (!host->useCounter().hasRecordedMeasurement(feature)) {
+        host->useCounter().recordMeasurement(feature);
         ASSERT(!deprecationMessage(feature).isEmpty());
         frame->console().addMessage(ConsoleMessage::create(DeprecationMessageSource, WarningMessageLevel, deprecationMessage(feature)));
     }
