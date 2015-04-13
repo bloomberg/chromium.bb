@@ -25,6 +25,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/x/x11_types.h"
+#include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 #include "ui/views/widget/desktop_aura/x11_topmost_window_finder.h"
@@ -35,21 +36,12 @@ namespace {
 // in |Dispatch()|.
 const int64 kConfigureDelayMs = 500;
 
-// TODO(oshima): Consider using gtk-xft-dpi instead.
-float GetDeviceScaleFactor(int screen_pixels, int screen_mm) {
-  const int kCSSDefaultDPI = 96;
-  const float kInchInMm = 25.4f;
-
-  float screen_inches = screen_mm / kInchInMm;
-  float screen_dpi = screen_pixels / screen_inches;
-  float scale = screen_dpi / kCSSDefaultDPI;
-
-  return ui::GetScaleForScaleFactor(ui::GetSupportedScaleFactor(scale));
-}
-
-float GetDeviceScaleFactor() {
-  gfx::Display display = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
-  return display.device_scale_factor();
+double GetDeviceScaleFactor() {
+  float device_scale_factor = 1.0f;
+  if (views::LinuxUI::instance())
+    device_scale_factor =
+      views::LinuxUI::instance()->GetDeviceScaleFactor();
+  return device_scale_factor;
 }
 
 gfx::Point PixelToDIPPoint(const gfx::Point& pixel_point) {
@@ -71,8 +63,7 @@ std::vector<gfx::Display> GetFallbackDisplayList() {
   gfx::Display gfx_display(0, bounds_in_pixels);
   if (!gfx::Display::HasForceDeviceScaleFactor() &&
       !ui::IsDisplaySizeBlackListed(physical_size)) {
-    float device_scale_factor = GetDeviceScaleFactor(
-        width, physical_size.width());
+    const float device_scale_factor = GetDeviceScaleFactor();
     DCHECK_LE(1.0f, device_scale_factor);
     gfx_display.SetScaleAndBounds(device_scale_factor, bounds_in_pixels);
   }
@@ -294,7 +285,9 @@ std::vector<gfx::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
     has_work_area = true;
   }
 
-  float device_scale_factor = 1.0f;
+  // As per-display scale factor is not supported right now,
+  // the X11 root window's scale factor is always used.
+  const float device_scale_factor = GetDeviceScaleFactor();
   for (int i = 0; i < resources->noutput; ++i) {
     RROutput output_id = resources->outputs[i];
     gfx::XScopedPtr<XRROutputInfo,
@@ -321,14 +314,6 @@ std::vector<gfx::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
       gfx::Display display(display_id, crtc_bounds);
 
       if (!gfx::Display::HasForceDeviceScaleFactor()) {
-        if (i == 0 && !ui::IsDisplaySizeBlackListed(
-            gfx::Size(output_info->mm_width, output_info->mm_height))) {
-          // As per display scale factor is not supported right now,
-          // the primary display's scale factor is always used.
-          device_scale_factor = GetDeviceScaleFactor(crtc->width,
-                                                     output_info->mm_width);
-          DCHECK_LE(1.0f, device_scale_factor);
-        }
         display.SetScaleAndBounds(device_scale_factor, crtc_bounds);
       }
 
