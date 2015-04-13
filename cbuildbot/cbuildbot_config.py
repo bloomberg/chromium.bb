@@ -1430,6 +1430,7 @@ _arm_internal_release_boards = frozenset([
   'peach_pi-freon',
   'peach_pit',
   'peach_pit-freon',
+  'purin',
   'storm',
   'rush',
   'rush_ryu',
@@ -1609,6 +1610,7 @@ _brillo_boards = frozenset([
   'gizmo',
   'kayle',
   'panther_embedded',
+  'purin',
   'storm',
   'whirlwind',
 ])
