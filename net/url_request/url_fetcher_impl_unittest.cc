@@ -1030,15 +1030,11 @@ TEST_F(URLFetcherTest, ThrottleOnRepeatedFetches) {
 
   // Registers an entry for test url. It only allows 3 requests to be sent
   // in 200 milliseconds.
-  scoped_refptr<URLRequestThrottlerEntry> entry(
-      new URLRequestThrottlerEntry(request_context()->throttler_manager(),
-                                   std::string(),
-                                   200,
-                                   3,
-                                   1,
-                                   2.0,
-                                   0.0,
-                                   256));
+  scoped_refptr<URLRequestThrottlerEntry> entry(new URLRequestThrottlerEntry(
+      request_context()->throttler_manager(), std::string() /* url_id */,
+      200 /* sliding_window_period_ms */, 3 /* max_send_threshold */,
+      1 /* initial_backoff_ms */, 2.0 /* multiply_factor */,
+      0.0 /* jitter_factor */, 256 /* maximum_backoff_ms */));
 
   request_context()->throttler_manager()
       ->OverrideEntryForTests(url, entry.get());
@@ -1052,6 +1048,8 @@ TEST_F(URLFetcherTest, ThrottleOnRepeatedFetches) {
     EXPECT_EQ(200, delegate.fetcher()->GetResponseCode());
   }
 
+  // 20 requests were sent. Due to throttling, they should have collectively
+  // taken over 1 second.
   EXPECT_GE(Time::Now() - start_time, base::TimeDelta::FromSeconds(1));
 }
 
@@ -1063,15 +1061,11 @@ TEST_F(URLFetcherTest, ThrottleOn5xxRetries) {
   //     new_backoff = 2.0 * old_backoff + 0
   // and maximum backoff time is 256 milliseconds.
   // Maximum retries allowed is set to 11.
-  scoped_refptr<URLRequestThrottlerEntry> entry(
-      new URLRequestThrottlerEntry(request_context()->throttler_manager(),
-                                   std::string(),
-                                   200,
-                                   3,
-                                   1,
-                                   2.0,
-                                   0.0,
-                                   256));
+  scoped_refptr<URLRequestThrottlerEntry> entry(new URLRequestThrottlerEntry(
+      request_context()->throttler_manager(), std::string() /* url_id */,
+      200 /* sliding_window_period_ms */, 3 /* max_send_threshold */,
+      1 /* initial_backoff_ms */, 2.0 /* multiply_factor */,
+      0.0 /* jitter_factor */, 256 /* maximum_backoff_ms */));
   request_context()->throttler_manager()
       ->OverrideEntryForTests(url, entry.get());
 
@@ -1090,6 +1084,9 @@ TEST_F(URLFetcherTest, ThrottleOn5xxRetries) {
   ASSERT_TRUE(delegate.fetcher()->GetResponseAsString(&data));
   EXPECT_FALSE(data.empty());
 
+  // The request should have been retried 11 times (12 times including the first
+  // attempt).  Due to throttling, they should have collectively taken over 1
+  // second.
   EXPECT_GE(Time::Now() - start_time, base::TimeDelta::FromSeconds(1));
 }
 
@@ -1103,8 +1100,10 @@ TEST_F(URLFetcherTest, ProtectTestPassedThrough) {
   // and maximum backoff time is 150000 milliseconds.
   // Maximum retries allowed is set to 11.
   scoped_refptr<URLRequestThrottlerEntry> entry(new URLRequestThrottlerEntry(
-      request_context()->throttler_manager(), std::string(), 200, 3, 10000, 2.0,
-      0.0, 150000));
+      request_context()->throttler_manager(), std::string() /* url_id */,
+      200 /* sliding_window_period_ms */, 3 /* max_send_threshold */,
+      10000 /* initial_backoff_ms */, 2.0 /* multiply_factor */,
+      0.0 /* jitter_factor */, 150000 /* maximum_backoff_ms */));
   // Total time if *not* for not doing automatic backoff would be 150s.
   // In reality it should be "as soon as server responds".
   request_context()->throttler_manager()
@@ -1123,6 +1122,8 @@ TEST_F(URLFetcherTest, ProtectTestPassedThrough) {
   EXPECT_FALSE(data.empty());
   EXPECT_GT(delegate.fetcher()->GetBackoffDelay().InMicroseconds(), 0);
 
+  // The request should not have been retried at all.  If it had attempted all
+  // 11 retries, that should have taken 2.5 minutes.
   EXPECT_TRUE(Time::Now() - start_time < TimeDelta::FromMinutes(1));
 }
 
