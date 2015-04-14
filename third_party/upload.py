@@ -198,8 +198,8 @@ class AbstractRpcServer(object):
   """Provides a common interface for a simple RPC server."""
 
   def __init__(self, host, auth_function, host_override=None,
-               extra_headers=None, save_cookies=False,
-               account_type=AUTH_ACCOUNT_TYPE):
+               request_path_prefix=None, extra_headers=None,
+               save_cookies=False, account_type=AUTH_ACCOUNT_TYPE):
     """Creates a new AbstractRpcServer.
 
     Args:
@@ -208,6 +208,7 @@ class AbstractRpcServer(object):
         (email, password) tuple when called. Will be called if authentication
         is required.
       host_override: The host header to send to the server (defaults to host).
+      request_path_prefix: A string to prefix all URL paths with (e.g. 'bots/').
       extra_headers: A dict of extra headers to append to every request.
       save_cookies: If True, save the authentication cookies to local disk.
         If False, use an in-memory cookiejar instead.  Subclasses must
@@ -220,6 +221,7 @@ class AbstractRpcServer(object):
         not self.host.startswith("https://")):
       self.host = "http://" + self.host
     self.host_override = host_override
+    self.request_path_prefix = request_path_prefix or ''
     self.auth_function = auth_function
     self.authenticated = False
     self.extra_headers = extra_headers or {}
@@ -432,7 +434,7 @@ class AbstractRpcServer(object):
       while True:
         tries += 1
         args = dict(kwargs)
-        url = "%s%s" % (self.host, request_path)
+        url = "%s%s%s" % (self.host, self.request_path_prefix, request_path)
         if args:
           url += "?" + urllib.urlencode(args)
         req = self._CreateRequest(url=url, data=payload)
@@ -768,9 +770,23 @@ def GetRpcServer(server, auth_config=None, email=None):
   else:
     auth_func = KeyringCreds(server, host, email).GetUserCredentials
 
+  # HACK(crbug.com/476690): Internal Rietveld is configured to require cookie
+  # auth for all paths except /bots/* (requests to /bots/* are authenticated
+  # with OAuth). /bots/* paths expose exact same API as /* (at least enough of
+  # it for depot_tools to work). So when using OAuth with internal Rietveld,
+  # silently prefix all requests with '/bots'.
+  request_path_prefix = ''
+  if auth_config.use_oauth2:
+    if not host.startswith(('http://', 'https://')):
+      host = 'https://' + host
+    parsed = urlparse.urlparse(host)
+    if parsed.netloc.endswith('.googleplex.com'):
+      request_path_prefix = '/bots'
+
   return HttpRpcServer(
       server,
       auth_func,
+      request_path_prefix=request_path_prefix,
       save_cookies=auth_config.save_cookies,
       account_type=AUTH_ACCOUNT_TYPE)
 
