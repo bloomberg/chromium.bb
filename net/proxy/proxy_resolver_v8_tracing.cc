@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/synchronization/waitable_event.h"
@@ -956,11 +955,6 @@ ProxyResolverV8Tracing::ProxyResolverV8Tracing(
       net_log_(net_log),
       num_outstanding_callbacks_(0),
       on_load_state_changed_(on_load_state_changed) {
-  // TODO(eroman): Remove once crbug.com/454983 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "454983 ProxyResolverV8Tracing::ProxyResolverV8Tracing"));
-
   DCHECK(host_resolver);
   // Start up the thread.
   thread_.reset(new base::Thread("Proxy resolver"));

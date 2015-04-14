@@ -1623,15 +1623,30 @@ void MediaStreamManager::FinalizeMediaAccessRequest(
 }
 
 void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
+  // TODO(dalecurtis): Remove ScopedTracker below once crbug.com/457525 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "457525 MediaStreamManager::InitializeDeviceManagersOnIOThread 1"));
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (device_task_runner_.get())
     return;
 
   device_task_runner_ = audio_manager_->GetWorkerTaskRunner();
 
+  // TODO(dalecurtis): Remove ScopedTracker below once crbug.com/457525 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "457525 MediaStreamManager::InitializeDeviceManagersOnIOThread 2"));
   audio_input_device_manager_ = new AudioInputDeviceManager(audio_manager_);
   audio_input_device_manager_->Register(this, device_task_runner_);
 
+  // TODO(dalecurtis): Remove ScopedTracker below once crbug.com/457525 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "457525 MediaStreamManager::InitializeDeviceManagersOnIOThread 3"));
   // We want to be notified of IO message loop destruction to delete the thread
   // and the device managers.
   io_loop_ = base::MessageLoop::current();
@@ -1642,6 +1657,11 @@ void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
     audio_input_device_manager()->UseFakeDevice();
   }
 
+  // TODO(dalecurtis): Remove ScopedTracker below once crbug.com/457525 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile4(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "457525 MediaStreamManager::InitializeDeviceManagersOnIOThread 4"));
   video_capture_manager_ =
       new VideoCaptureManager(media::VideoCaptureDeviceFactory::CreateFactory(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)));

@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/debug/leak_tracker.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
@@ -652,9 +651,6 @@ void SafeBrowsingDatabaseManager::ResetDatabase() {
 }
 
 void SafeBrowsingDatabaseManager::StartOnIOThread() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455469 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("455469 StartOnIOThread"));
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (enabled_)
     return;
