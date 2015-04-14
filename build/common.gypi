@@ -5471,6 +5471,11 @@
           4512, # Assignment operator could not be generated
           4610, # Object can never be instantiated
           4996, # 'X': was declared deprecated (for GetVersionEx).
+
+          # These are variable shadowing warnings that are new in VS2015. We
+          # should work through these at some point -- they may be removed from
+          # the RTM release in the /W4 set.
+          4456, 4457, 4458, 4459,
         ],
         'msvs_settings': {
           'VCCLCompilerTool': {
