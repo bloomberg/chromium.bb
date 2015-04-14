@@ -1538,7 +1538,7 @@ void FrameView::setScrollPosition(const DoublePoint& scrollPoint, ScrollBehavior
         return;
 
     if (scrollBehavior == ScrollBehaviorAuto) {
-        Element* scrollElement = RuntimeEnabledFeatures::scrollTopLeftInteropEnabled() ? m_frame->document()->documentElement() : m_frame->document()->body();
+        Element* scrollElement = m_frame->document()->scrollingElement();
         LayoutObject* renderer = scrollElement ? scrollElement->layoutObject() : nullptr;
         if (renderer && renderer->style()->scrollBehavior() == ScrollBehaviorSmooth)
             scrollBehavior = ScrollBehaviorSmooth;

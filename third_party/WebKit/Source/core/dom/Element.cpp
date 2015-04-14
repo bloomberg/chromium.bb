@@ -711,19 +711,14 @@ double Element::scrollLeft()
 {
     document().updateLayoutIgnorePendingStylesheets();
 
-    if (document().documentElement() != this) {
-        if (LayoutBox* box = layoutBox())
-            return adjustScrollForAbsoluteZoom(box->scrollLeft(), *box);
+    if (document().scrollingElement() == this) {
+        if (document().domWindow())
+            return document().domWindow()->scrollX();
         return 0;
     }
 
-    if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
-        if (document().inQuirksMode())
-            return 0;
-
-        if (LocalDOMWindow* window = document().domWindow())
-            return window->scrollX();
-    }
+    if (LayoutBox* box = layoutBox())
+        return adjustScrollForAbsoluteZoom(box->scrollLeft(), *box);
 
     return 0;
 }
@@ -732,19 +727,14 @@ double Element::scrollTop()
 {
     document().updateLayoutIgnorePendingStylesheets();
 
-    if (document().documentElement() != this) {
-        if (LayoutBox* box = layoutBox())
-            return adjustScrollForAbsoluteZoom(box->scrollTop(), *box);
+    if (document().scrollingElement() == this) {
+        if (document().domWindow())
+            return document().domWindow()->scrollY();
         return 0;
     }
 
-    if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
-        if (document().inQuirksMode())
-            return 0;
-
-        if (LocalDOMWindow* window = document().domWindow())
-            return window->scrollY();
-    }
+    if (LayoutBox* box = layoutBox())
+        return adjustScrollForAbsoluteZoom(box->scrollTop(), *box);
 
     return 0;
 }
@@ -756,19 +746,13 @@ void Element::setScrollLeft(double newLeft)
     if (std::isnan(newLeft))
         return;
 
-    if (document().documentElement() != this) {
+    if (document().scrollingElement() == this) {
+        if (LocalDOMWindow* window = document().domWindow())
+            window->scrollTo(newLeft, window->scrollY());
+    } else {
         LayoutBox* box = layoutBox();
         if (box)
             box->setScrollLeft(LayoutUnit::fromFloatRound(newLeft * box->style()->effectiveZoom()));
-        return;
-    }
-
-    if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
-        if (document().inQuirksMode())
-            return;
-
-        if (LocalDOMWindow* window = document().domWindow())
-            window->scrollTo(newLeft, window->scrollY());
     }
 }
 
@@ -779,25 +763,26 @@ void Element::setScrollTop(double newTop)
     if (std::isnan(newTop))
         return;
 
-    if (document().documentElement() != this) {
+    if (document().scrollingElement() == this) {
+        if (LocalDOMWindow* window = document().domWindow())
+            window->scrollTo(window->scrollX(), newTop);
+    } else {
         LayoutBox* box = layoutBox();
         if (box)
             box->setScrollTop(LayoutUnit::fromFloatRound(newTop * box->style()->effectiveZoom()));
-        return;
-    }
-
-    if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
-        if (document().inQuirksMode())
-            return;
-
-        if (LocalDOMWindow* window = document().domWindow())
-            window->scrollTo(window->scrollX(), newTop);
     }
 }
 
 int Element::scrollWidth()
 {
     document().updateLayoutIgnorePendingStylesheets();
+
+    if (document().scrollingElement() == this) {
+        if (document().view())
+            return adjustForAbsoluteZoom(document().view()->contentsWidth(), document().frame()->pageZoomFactor());
+        return 0;
+    }
+
     if (LayoutBox* box = layoutBox())
         return adjustLayoutUnitForAbsoluteZoom(box->scrollWidth(), *box).round();
     return 0;
@@ -806,6 +791,13 @@ int Element::scrollWidth()
 int Element::scrollHeight()
 {
     document().updateLayoutIgnorePendingStylesheets();
+
+    if (document().scrollingElement() == this) {
+        if (document().view())
+            return adjustForAbsoluteZoom(document().view()->contentsHeight(), document().frame()->pageZoomFactor());
+        return 0;
+    }
+
     if (LayoutBox* box = layoutBox())
         return adjustLayoutUnitForAbsoluteZoom(box->scrollHeight(), *box).round();
     return 0;
@@ -825,15 +817,10 @@ void Element::scrollBy(const ScrollToOptions& scrollToOptions)
     // the compositing update. See http://crbug.com/420741.
     document().updateLayoutIgnorePendingStylesheets();
 
-    if (document().documentElement() != this) {
-        scrollLayoutBoxBy(scrollToOptions);
-        return;
-    }
-
-    if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
-        if (document().inQuirksMode())
-            return;
+    if (document().scrollingElement() == this) {
         scrollFrameBy(scrollToOptions);
+    } else {
+        scrollLayoutBoxBy(scrollToOptions);
     }
 }
 
@@ -851,15 +838,10 @@ void Element::scrollTo(const ScrollToOptions& scrollToOptions)
     // the compositing update. See http://crbug.com/420741.
     document().updateLayoutIgnorePendingStylesheets();
 
-    if (document().documentElement() != this) {
-        scrollLayoutBoxTo(scrollToOptions);
-        return;
-    }
-
-    if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
-        if (document().inQuirksMode())
-            return;
+    if (document().scrollingElement() == this) {
         scrollFrameTo(scrollToOptions);
+    } else {
+        scrollLayoutBoxTo(scrollToOptions);
     }
 }
 

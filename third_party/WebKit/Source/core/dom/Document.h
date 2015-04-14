@@ -320,6 +320,7 @@ public:
     Element* elementFromPoint(int x, int y) const;
     Vector<Element*> elementsFromPoint(int x, int y) const;
     PassRefPtrWillBeRawPtr<Range> caretRangeFromPoint(int x, int y);
+    Element* scrollingElement();
 
     String readyState() const;
 

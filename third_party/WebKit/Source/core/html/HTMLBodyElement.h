@@ -61,18 +61,6 @@ private:
     virtual const QualifiedName& subResourceAttributeName() const override;
 
     virtual bool supportsFocus() const override;
-
-    virtual double scrollLeft() override;
-    virtual void setScrollLeft(double) override;
-
-    virtual double scrollTop() override;
-    virtual void setScrollTop(double) override;
-
-    virtual int scrollHeight() override;
-    virtual int scrollWidth() override;
-
-    virtual void scrollBy(const ScrollToOptions&) override;
-    virtual void scrollTo(const ScrollToOptions&) override;
 };
 
 } // namespace blink

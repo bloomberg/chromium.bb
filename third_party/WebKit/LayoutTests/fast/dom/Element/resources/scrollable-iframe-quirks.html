@@ -1,8 +1,14 @@
 <head>
   <style>
+    html, body {
+      /* Use simple predictable spacing between html, body and content so
+         we can propertly test scrollWidth and scrollHeight */
+      margin: 0;
+      padding: 5px;
+    }
     div {
-      height: 9999px;
-      width: 9999px;
+      height: 10000px;
+      width: 10000px;
     }
   </style>
   <script>

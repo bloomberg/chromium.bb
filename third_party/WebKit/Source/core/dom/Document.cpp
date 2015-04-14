@@ -1266,6 +1266,23 @@ PassRefPtrWillBeRawPtr<Range> Document::caretRangeFromPoint(int x, int y)
     return Range::createAdjustedToTreeScope(*this, rangeCompliantPosition);
 }
 
+Element* Document::scrollingElement()
+{
+    if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
+        if (inQuirksMode()) {
+            updateLayoutIgnorePendingStylesheets();
+            if (body()->layoutBox() && body()->layoutBox()->hasOverflowClip())
+                return nullptr;
+
+            return body();
+        }
+
+        return documentElement();
+    }
+
+    return body();
+}
+
 /*
  * Performs three operations:
  *  1. Convert control characters to spaces
