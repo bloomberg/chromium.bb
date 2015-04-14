@@ -15,6 +15,7 @@ class Display;
 
 namespace surfaces {
 
+// TODO(brianderson): Reconcile with DisplayScheduler crbug.com/476676
 class SurfacesScheduler : public cc::SchedulerClient {
  public:
   SurfacesScheduler();

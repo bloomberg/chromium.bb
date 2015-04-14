@@ -56,7 +56,7 @@ void SurfacesScheduler::ScheduledActionSendBeginMainFrame() {
 cc::DrawResult SurfacesScheduler::ScheduledActionDrawAndSwapIfPossible() {
   base::TimeTicks start = base::TimeTicks::Now();
   for (const auto& it : displays_) {
-    it->Draw();
+    it->DrawAndSwap();
   }
   base::TimeDelta duration = base::TimeTicks::Now() - start;
 

@@ -15,6 +15,7 @@
 #include "cc/output/software_renderer.h"
 #include "cc/resources/texture_mailbox_deleter.h"
 #include "cc/surfaces/display_client.h"
+#include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_aggregator.h"
 #include "cc/surfaces/surface_manager.h"
@@ -33,6 +34,7 @@ Display::Display(DisplayClient* client,
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       settings_(settings),
       device_scale_factor_(1.f),
+      scheduler_(nullptr),
       blocking_main_thread_task_runner_(
           BlockingTaskRunner::Create(base::ThreadTaskRunnerHandle::Get())),
       texture_mailbox_deleter_(
@@ -51,15 +53,23 @@ Display::~Display() {
   }
 }
 
-bool Display::Initialize(scoped_ptr<OutputSurface> output_surface) {
+bool Display::Initialize(scoped_ptr<OutputSurface> output_surface,
+                         DisplayScheduler* scheduler) {
   output_surface_ = output_surface.Pass();
+  scheduler_ = scheduler;
   return output_surface_->BindToClient(this);
 }
 
 void Display::SetSurfaceId(SurfaceId id, float device_scale_factor) {
+  if (current_surface_id_ == id && device_scale_factor_ == device_scale_factor)
+    return;
+
   current_surface_id_ = id;
   device_scale_factor_ = device_scale_factor;
-  client_->DisplayDamaged();
+
+  UpdateResourcesLockedByBrowser();
+  if (scheduler_)
+    scheduler_->EntireDisplayDamaged();
 }
 
 void Display::Resize(const gfx::Size& size) {
@@ -70,7 +80,8 @@ void Display::Resize(const gfx::Size& size) {
   if (renderer_ && settings_.finish_rendering_on_resize)
     renderer_->Finish();
   current_surface_size_ = size;
-  client_->DisplayDamaged();
+  if (scheduler_)
+    scheduler_->EntireDisplayDamaged();
 }
 
 void Display::InitializeRenderer() {
@@ -106,9 +117,18 @@ void Display::InitializeRenderer() {
 
 void Display::DidLoseOutputSurface() {
   client_->OutputSurfaceLost();
+  if (scheduler_)
+    scheduler_->OutputSurfaceLost();
 }
 
-bool Display::Draw() {
+void Display::UpdateResourcesLockedByBrowser() {
+  Surface* surface = manager_->GetSurfaceForId(current_surface_id_);
+  bool resources_locked_by_browser = !surface || !surface->GetEligibleFrame();
+  if (scheduler_)
+    scheduler_->SetResourcesLockedByBrowser(resources_locked_by_browser);
+}
+
+bool Display::DrawAndSwap() {
   if (current_surface_id_.is_null())
     return false;
 
@@ -123,7 +143,7 @@ bool Display::Draw() {
   if (!frame)
     return false;
 
-  TRACE_EVENT0("cc", "Display::Draw");
+  TRACE_EVENT0("cc", "Display::DrawAndSwap");
   benchmark_instrumentation::IssueDisplayRenderingStatsEvent();
 
   // Run callbacks early to allow pipelining.
@@ -180,11 +200,13 @@ bool Display::Draw() {
 }
 
 void Display::DidSwapBuffers() {
-  client_->DidSwapBuffers();
+  if (scheduler_)
+    scheduler_->DidSwapBuffers();
 }
 
 void Display::DidSwapBuffersComplete() {
-  client_->DidSwapBuffersComplete();
+  if (scheduler_)
+    scheduler_->DidSwapBuffersComplete();
 }
 
 void Display::CommitVSyncParameters(base::TimeTicks timebase,
@@ -233,27 +255,25 @@ void Display::OnSurfaceDamaged(SurfaceId surface_id, bool* changed) {
     if (surface) {
       const CompositorFrame* current_frame = surface->GetEligibleFrame();
       if (!current_frame || !current_frame->delegated_frame_data ||
-          !current_frame->delegated_frame_data->resource_list.size())
+          !current_frame->delegated_frame_data->resource_list.size()) {
         aggregator_->ReleaseResources(surface_id);
+      }
     }
-    client_->DisplayDamaged();
+    if (scheduler_)
+      scheduler_->SurfaceDamaged(surface_id);
     *changed = true;
   } else if (surface_id == current_surface_id_) {
-    client_->DisplayDamaged();
+    if (scheduler_)
+      scheduler_->SurfaceDamaged(surface_id);
     *changed = true;
   }
+
+  if (surface_id == current_surface_id_)
+    UpdateResourcesLockedByBrowser();
 }
 
 SurfaceId Display::CurrentSurfaceId() {
   return current_surface_id_;
-}
-
-int Display::GetMaxFramesPending() {
-  int max_frames_pending =
-      output_surface_ ? output_surface_->capabilities().max_frames_pending : 0;
-  if (max_frames_pending <= 0)
-    max_frames_pending = OutputSurface::DEFAULT_MAX_FRAMES_PENDING;
-  return max_frames_pending;
 }
 
 }  // namespace cc

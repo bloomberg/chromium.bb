@@ -99,6 +99,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn {
 
   const SchedulerSettings& settings() const { return settings_; }
 
+  void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval);
   void CommitVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval);
   void SetEstimatedParentDrawTime(base::TimeDelta draw_time);
@@ -169,8 +170,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn {
   }
 
   void SetChildrenNeedBeginFrames(bool children_need_begin_frames);
-
-  void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval);
 
  protected:
   Scheduler(SchedulerClient* client,

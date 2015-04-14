@@ -11,6 +11,7 @@
 #include "cc/output/output_surface_client.h"
 #include "cc/output/renderer.h"
 #include "cc/resources/returned_resource.h"
+#include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/surface_aggregator.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_manager.h"
@@ -43,7 +44,8 @@ class TextureMailboxDeleter;
 // A Display produces a surface that can be used to draw to a physical display
 // (OutputSurface). The client is responsible for creating and sizing the
 // surface IDs used to draw into the display and deciding when to draw.
-class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
+class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
+                                   public OutputSurfaceClient,
                                    public RendererClient,
                                    public SurfaceDamageObserver {
  public:
@@ -54,16 +56,18 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
           const RendererSettings& settings);
   ~Display() override;
 
-  bool Initialize(scoped_ptr<OutputSurface> output_surface);
+  bool Initialize(scoped_ptr<OutputSurface> output_surface,
+                  DisplayScheduler* scheduler);
 
   // device_scale_factor is used to communicate to the external window system
   // what scale this was rendered at.
   void SetSurfaceId(SurfaceId id, float device_scale_factor);
   void Resize(const gfx::Size& new_size);
-  bool Draw();
 
   SurfaceId CurrentSurfaceId();
-  int GetMaxFramesPending();
+
+  // DisplaySchedulerClient implementation.
+  bool DrawAndSwap() override;
 
   // OutputSurfaceClient implementation.
   void CommitVSyncParameters(base::TimeTicks timebase,
@@ -92,6 +96,7 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
 
  private:
   void InitializeRenderer();
+  void UpdateResourcesLockedByBrowser();
 
   DisplayClient* client_;
   SurfaceManager* manager_;
@@ -102,6 +107,7 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
   gfx::Size current_surface_size_;
   float device_scale_factor_;
   scoped_ptr<OutputSurface> output_surface_;
+  DisplayScheduler* scheduler_;
   scoped_ptr<ResourceProvider> resource_provider_;
   scoped_ptr<SurfaceAggregator> aggregator_;
   scoped_ptr<DirectRenderer> renderer_;

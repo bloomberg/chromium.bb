@@ -41,9 +41,6 @@ class DisplayImpl : public mojo::Display,
                    const SubmitFrameCallback& callback) override;
 
   // DisplayClient implementation.
-  void DisplayDamaged() override;
-  void DidSwapBuffers() override;
-  void DidSwapBuffersComplete() override;
   void CommitVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval) override;
   void OutputSurfaceLost() override;
