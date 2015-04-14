@@ -87,8 +87,8 @@ public:
 
     virtual bool canProcessDrag() const { return false; }
 
-    // TODO(schenney): Make this pure virtual when chromium changes land
-    virtual void layoutPluginIfNeeded() { }
+    // TODO(schenney): Make these pure virtual when chromium changes land
+    virtual void layoutIfNeeded() { }
     virtual void paint(WebCanvas*, const WebRect&) = 0;
 
     // Coordinates are relative to the containing window.

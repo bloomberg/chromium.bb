@@ -27,7 +27,6 @@
 #include "config.h"
 #include "platform/Widget.h"
 
-
 #include "wtf/Assertions.h"
 
 namespace blink {

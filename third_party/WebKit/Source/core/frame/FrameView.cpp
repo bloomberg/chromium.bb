@@ -2582,7 +2582,7 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
     if (needsLayout())
         layout();
 
-    // FIXME: Calling layout() shouldn't trigger scripe execution or have any
+    // FIXME: Calling layout() shouldn't trigger script execution or have any
     // observable effects on the frame tree but we're not quite there yet.
     WillBeHeapVector<RefPtrWillBeMember<FrameView>> frameViews;
     for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {

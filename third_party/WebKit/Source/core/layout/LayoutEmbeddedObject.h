@@ -53,6 +53,7 @@ private:
     virtual void paint(const PaintInfo&, const LayoutPoint&) override final;
 
     virtual void layout() override final;
+    virtual PaintInvalidationReason invalidatePaintIfNeeded(PaintInvalidationState&, const LayoutBoxModelObject&) override final;
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectEmbeddedObject || LayoutPart::isOfType(type); }
     virtual LayoutBox* embeddedContentBox() const override final;

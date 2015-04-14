@@ -205,11 +205,6 @@ void LayoutPart::layout()
 {
     ASSERT(needsLayout());
     LayoutAnalyzer::Scope analyzer(*this);
-
-    if (Widget* widget = this->widget()) {
-        widget->layoutWidgetIfPossible();
-    }
-
     clearNeedsLayout();
 }
 
@@ -222,19 +217,6 @@ void LayoutPart::paintContents(const PaintInfo& paintInfo, const LayoutPoint& pa
 {
     PartPainter(*this).paintContents(paintInfo, paintOffset);
 }
-
-PaintInvalidationReason LayoutPart::invalidatePaintIfNeeded(PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& newPaintInvalidationContainer)
-{
-    PaintInvalidationReason reason = LayoutReplaced::invalidatePaintIfNeeded(paintInvalidationState, newPaintInvalidationContainer);
-
-    // Allow the widget to perform any invalidation
-    if (Widget* widget = this->widget()) {
-        widget->issuePaintInvalidations();
-    }
-
-    return reason;
-}
-
 
 CursorDirective LayoutPart::getCursor(const LayoutPoint& point, Cursor& cursor) const
 {

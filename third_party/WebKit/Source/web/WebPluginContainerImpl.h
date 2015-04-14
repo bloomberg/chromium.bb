@@ -78,13 +78,13 @@ public:
     virtual bool supportsInputMethod() const override;
     virtual bool canProcessDrag() const override;
     virtual bool wantsWheelEvents() override;
+    virtual void layoutIfNeeded() override;
+    virtual void invalidatePaintIfNeeded() override { issuePaintInvalidations(); }
 
     // Widget methods
     virtual void setFrameRect(const IntRect&) override;
-    virtual void layoutWidgetIfPossible() override;
     virtual void paint(GraphicsContext*, const IntRect&) override;
     virtual void invalidateRect(const IntRect&) override;
-    virtual void issuePaintInvalidations() override final;
     virtual void setFocus(bool, WebFocusType) override;
     virtual void show() override;
     virtual void hide() override;
@@ -187,6 +187,8 @@ private:
     void synthesizeMouseEventIfPossible(TouchEvent*);
 
     void focusPlugin();
+
+    void issuePaintInvalidations();
 
     void calculateGeometry(
         IntRect& windowRect,
