@@ -44,8 +44,7 @@ namespace blink {
 
 const char* HTMLImportsController::supplementName()
 {
-    DEFINE_STATIC_LOCAL(const char*, name, ("HTMLImportsController"));
-    return name;
+    return "HTMLImportsController";
 }
 
 void HTMLImportsController::provideTo(Document& master)
