@@ -38,6 +38,14 @@
       'trace_event/trace_event_win.cc',
       'trace_event/trace_event_win.h',
     ],
+    'conditions': [
+      ['OS == "linux" or OS == "android"', {
+          'trace_event_sources': [
+            'trace_event/malloc_dump_provider.cc',
+            'trace_event/malloc_dump_provider.h',
+          ],
+      }],
+    ],
     'trace_event_test_sources' : [
       'trace_event/memory_allocator_dump_unittest.cc',
       'trace_event/memory_dump_manager_unittest.cc',
