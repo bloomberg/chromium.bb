@@ -1,39 +1,14 @@
 include_rules = [
-  # Favicon is being made into a Browser Component, so we have these
-  # three basic rules followed by temporary exceptions.  Please don't
-  # add to the list of exceptions!
-  "-chrome/browser",
-  "+chrome/browser/chrome_notification_types.h",
-  "+chrome/browser/common",
-  "+chrome/browser/favicon",
-
-  # Permanently-allowed DEPS beyond the standard Browser
-  # Components-like DEPS above go here.
-  "+chrome/browser/profiles/incognito_helpers.h",
-  "+chrome/browser/search/search.h",
-  "+components/favicon/core",
-  "+net/base/registry_controlled_domains/registry_controlled_domain.h",
-  "+third_party/skia/include/core/SkBitmap.h",
-
-  # TODO(caitkp): Bring this list to zero.
+  # Favicon is a layered component [1]. You will only find Chrome specific
+  # factories and helper in that directory, the meat of the components is
+  # located at //components/favicon.
   #
-  # Do not add to the list of temporarily-allowed dependencies below,
-  # and please do not introduce more #includes of these files.
-  "!chrome/browser/bookmarks/bookmark_model_factory.h",
-  "!chrome/browser/history/history_backend.h",
-  "!chrome/browser/history/history_service.h",
-  "!chrome/browser/history/history_service_factory.h",
-  "!chrome/browser/history/select_favicon_frames.h",
-  "!chrome/browser/profiles/profile.h",
-  "!chrome/browser/ui/webui/chrome_web_ui_controller_factory.h",
-  "!components/bookmarks/browser/bookmark_model.h",
-  # Do not add to the list of temporarily-allowed dependencies above,
-  # and please do not introduce more #includes of these files.
+  # [1]: http://www.chromium.org/developers/design-documents/layered-components-design
+  "+chrome/browser",
 ]
 
 specific_include_rules = {
-  # Browser tests, by definition, need access to the browser objects.
-  '.*_browsertest\.cc': [
-    "+chrome/browser",
+  '.*test\.cc': [
+    "+chrome/test",
   ]
 }
