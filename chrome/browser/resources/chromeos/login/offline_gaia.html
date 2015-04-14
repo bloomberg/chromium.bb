@@ -1,0 +1,76 @@
+<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/polymer/layout.html">
+<link rel="import" href="chrome://resources/polymer/core-animated-pages/core-animated-pages.html">
+<link rel="import" href="chrome://resources/polymer/core-animated-pages/transitions/slide-from-right.html">
+<link rel="import" href="chrome://resources/polymer/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/paper-dialog/paper-action-dialog.html">
+
+<!--
+  Offline UI for the New Gaia flow.
+  Contains two cards with a slide transition between them:
+    1. Email input form.
+    2. Password input form.
+
+  Example:
+    <offline-gaia></offline-gaia>
+
+  Attributes:
+    'enterpriseInfo' - Information about device management.
+
+  Events:
+    'flowfinished' - fired when user enters login and password. Fires with an
+                     argument |credentials| which contains.
+                     |credentials| = { 'useOffline': true,
+                                       'email': <typed email>,
+                                       'password': <typed password> }
+  Methods:
+    'focus' - focuses current screen (email input or password input);
+    'setEmail' - accepts an argument |email|. If |email| is empty it sets
+                 current screen to the email input, otherwise it sets current
+                 screen to password input and shows error that previously
+                 entered password is incorrect.
+-->
+<polymer-element name="offline-gaia" vertical layout>
+  <template>
+    <link rel="stylesheet" href="offline_gaia.css" attributes="enterpriseInfo">
+    <core-animated-pages id="animatedPages" transitions="slide-from-right"
+        on-core-animated-pages-transition-end="{{onTransitionEnd}}" flex>
+      <section flex vertical layout>
+        <div class="newgaia-header newgaia-padded" vertical layout end-justified
+            start>
+          <h1 i18n-content="offlineLoginWelcome"></h1>
+          <p hidden?="{{!enterpriseInfo}}">{{enterpriseInfo}}</p>
+        </div>
+        <div class="gaia-footer newgaia-padded">
+          <gaia-input-form id="emailInput" inputType="email"
+              i18n-values="errorMsg:offlineLoginInvalidEmail;
+                           inputLabel:offlineLoginEmail;
+                           buttonText:offlineLoginNextBtn">
+          </gaia-input-form>
+        </div>
+      </section>
+      <section flex vertical layout>
+        <gaia-header id="passwordHeader" hasBackButton>
+        </gaia-header>
+        <div class="gaia-footer newgaia-padded">
+          <gaia-input-form id="passwordInput" inputType="password"
+              i18n-values="errorMsg:offlineLoginInvalidPassword;
+                           inputLabel:offlineLoginPassword;
+                           buttonText:offlineLoginNextBtn">
+            <a href="#" class="newgaia-link"
+                on-tap="{{onForgotPasswordClicked}}"
+                i18n-content="offlineLoginForgotPasswordBtn">
+            </a>
+            <paper-action-dialog id="forgotPasswordDlg" autoCloseDisabled
+                backdrop>
+              <p i18n-content="offlineLoginForgotPasswordDlg"></p>
+              <paper-button affirmative autofocus
+                  i18n-content="offlineLoginCloseBtn">
+              </paper-button>
+            </paper-action-dialog>
+          </gaia-input-form>
+        </div>
+      </section>
+    </core-animated-pages>
+  </template>
+</polymer-element>

@@ -30,6 +30,9 @@
   <structure name="IDR_POLYMER_CORE_ANIMATED_PAGES_TRANSITIONS_HERO_TRANSITION_HTML"
              file="../../../third_party/polymer/components-chromium/core-animated-pages/transitions/hero-transition.html"
              type="chrome_html" />
+  <structure name="IDR_POLYMER_CORE_ANIMATED_PAGES_TRANSITIONS_SLIDE_FROM_RIGHT_HTML"
+             file="../../../third_party/polymer/components-chromium/core-animated-pages/transitions/slide-from-right.html"
+             type="chrome_html" />
   <structure name="IDR_POLYMER_CORE_ANIMATION_CORE_ANIMATION_EXTRACTED_JS"
              file="../../../third_party/polymer/components-chromium/core-animation/core-animation-extracted.js"
              type="chrome_html" />

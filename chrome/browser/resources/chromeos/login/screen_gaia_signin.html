@@ -1,14 +1,17 @@
+<link rel="import" href="chrome://oobe/custom_elements.html">
+
 <div class="step right hidden" id="gaia-signin" role="group"
     aria-live="polite" hidden>
   <div class="step-contents">
     <div id="gaia-signin-form-container">
-        <div id="login-box"><!-- Aligned with the login box in iframe --></div>
-        <iframe id="signin-frame" name="signin-frame" hidden
-          src="about:blank"
-          marginwidth="0"
-          marginheight="0"
-          frameborder="0"
-          scrolling="no"></iframe>
+      <div id="login-box"><!-- Aligned with the login box in iframe --></div>
+      <iframe id="signin-frame" name="signin-frame" hidden
+        src="about:blank"
+        marginwidth="0"
+        marginheight="0"
+        frameborder="0"
+        scrolling="no"></iframe>
+      <offline-gaia id="newgaia-offline-login" hidden></offline-gaia>
     </div>
     <div id="gaia-signin-divider" class="signin-divider" hidden></div>
     <div id="signin-right" hidden>

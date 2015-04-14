@@ -214,21 +214,35 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
       params.SetString("hl", app_locale);
   } else {
     base::DictionaryValue* localized_strings = new base::DictionaryValue();
-    localized_strings->SetString(
-        "stringEmail", l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_EMAIL));
-    localized_strings->SetString(
-        "stringPassword",
-        l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_PASSWORD));
-    localized_strings->SetString(
-        "stringSignIn", l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_SIGNIN));
-    localized_strings->SetString(
-        "stringEmptyEmail",
-        l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_EMPTY_EMAIL));
-    localized_strings->SetString(
-        "stringEmptyPassword",
-        l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_EMPTY_PASSWORD));
-    localized_strings->SetString(
-        "stringError", l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_ERROR));
+    if (StartupUtils::IsWebviewSigninEnabled()) {
+      policy::BrowserPolicyConnectorChromeOS* connector =
+          g_browser_process->platform_part()
+              ->browser_policy_connector_chromeos();
+      std::string enterprise_domain(connector->GetEnterpriseDomain());
+      if (!enterprise_domain.empty()) {
+        localized_strings->SetString(
+            "stringEnterpriseInfo",
+            l10n_util::GetStringFUTF16(
+                IDS_NEWGAIA_OFFLINE_DEVICE_MANAGED_BY_NOTICE,
+                base::UTF8ToUTF16(enterprise_domain)));
+      }
+    } else {
+      localized_strings->SetString(
+          "stringEmail", l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_EMAIL));
+      localized_strings->SetString(
+          "stringPassword",
+          l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_PASSWORD));
+      localized_strings->SetString(
+          "stringSignIn", l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_SIGNIN));
+      localized_strings->SetString(
+          "stringEmptyEmail",
+          l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_EMPTY_EMAIL));
+      localized_strings->SetString(
+          "stringEmptyPassword",
+          l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_EMPTY_PASSWORD));
+      localized_strings->SetString(
+          "stringError", l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_ERROR));
+    }
     params.Set("localizedStrings", localized_strings);
   }
 
@@ -356,6 +370,20 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_FATAL_ERROR_TEXT_INSECURE_URL);
   builder->Add("fatalErrorInstructions", IDS_LOGIN_FATAL_ERROR_INSTRUCTIONS);
   builder->Add("fatalErrorDismissButton", IDS_OK);
+
+  builder->AddF("offlineLoginWelcome", IDS_NEWGAIA_OFFLINE_WELCOME,
+                GetChromeDeviceType());
+  builder->Add("offlineLoginEmail", IDS_NEWGAIA_OFFLINE_EMAIL);
+  builder->Add("offlineLoginPassword", IDS_NEWGAIA_OFFLINE_PASSWORD);
+  builder->Add("offlineLoginInvalidEmail", IDS_NEWGAIA_OFFLINE_INVALID_EMAIL);
+  builder->Add("offlineLoginInvalidPassword",
+               IDS_NEWGAIA_OFFLINE_INVALID_PASSWORD);
+  builder->Add("offlineLoginNextBtn", IDS_NEWGAIA_OFFLINE_NEXT_BUTTON_TEXT);
+  builder->Add("offlineLoginForgotPasswordBtn",
+               IDS_NEWGAIA_OFFLINE_FORGOT_PASSWORD_BUTTON_TEXT);
+  builder->Add("offlineLoginForgotPasswordDlg",
+               IDS_NEWGAIA_OFFLINE_FORGOT_PASSWORD_DIALOG_TEXT);
+  builder->Add("offlineLoginCloseBtn", IDS_NEWGAIA_OFFLINE_CLOSE_BUTTON_TEXT);
 }
 
 void GaiaScreenHandler::GetAdditionalParameters(base::DictionaryValue* dict) {

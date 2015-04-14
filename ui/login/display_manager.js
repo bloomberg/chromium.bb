@@ -1045,6 +1045,7 @@ cr.define('cr.ui.login', function() {
    * @param {string} messageText The message text.
    */
   DisplayManager.setEnterpriseInfo = function(messageText) {
+    $('newgaia-offline-login').enterpriseInfo = messageText;
     $('enterprise-info-message').textContent = messageText;
     if (messageText) {
       $('enterprise-info').hidden = false;

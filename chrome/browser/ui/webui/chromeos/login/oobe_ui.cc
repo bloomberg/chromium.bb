@@ -101,9 +101,16 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   if (display_type == OobeUI::kOobeDisplay) {
     source->SetDefaultResource(IDR_OOBE_HTML);
     source->AddResourcePath(kOobeJSPath, IDR_OOBE_JS);
+    source->AddResourcePath(kCustomElementsHTMLPath,
+                            IDR_CUSTOM_ELEMENTS_OOBE_HTML);
+    source->AddResourcePath(kCustomElementsJSPath, IDR_CUSTOM_ELEMENTS_OOBE_JS);
   } else {
     source->SetDefaultResource(IDR_LOGIN_HTML);
     source->AddResourcePath(kLoginJSPath, IDR_LOGIN_JS);
+    source->AddResourcePath(kCustomElementsHTMLPath,
+                            IDR_CUSTOM_ELEMENTS_LOGIN_HTML);
+    source->AddResourcePath(kCustomElementsJSPath,
+                            IDR_CUSTOM_ELEMENTS_LOGIN_JS);
   }
   source->AddResourcePath(kKeyboardUtilsJSPath, IDR_KEYBOARD_UTILS_JS);
   source->OverrideContentSecurityPolicyFrameSrc(
@@ -130,9 +137,6 @@ content::WebUIDataSource* CreateOobeUIDataSource(
                               : IDR_OOBE_ENROLLMENT_JS);
 
   if (display_type == OobeUI::kOobeDisplay) {
-    source->AddResourcePath(kCustomElementsHTMLPath, IDR_CUSTOM_ELEMENTS_HTML);
-    source->AddResourcePath(kCustomElementsJSPath, IDR_CUSTOM_ELEMENTS_JS);
-
     source->AddResourcePath("Roboto-Thin.ttf", IDR_FONT_ROBOTO_THIN);
     source->AddResourcePath("Roboto-Light.ttf", IDR_FONT_ROBOTO_LIGHT);
     source->AddResourcePath("Roboto-Regular.ttf", IDR_FONT_ROBOTO_REGULAR);

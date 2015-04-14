@@ -115,6 +115,9 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         webview.hidden = true;
         $('signin-frame').parentNode.replaceChild(webview, $('signin-frame'));
         this.gaiaAuthHost_ = new cr.login.GaiaAuthHost(webview);
+
+        $('newgaia-offline-login').addEventListener('authCompleted',
+            this.onAuthCompletedMessage_.bind(this));
       } else {
         this.gaiaAuthHost_ = new cr.login.GaiaAuthHost($('signin-frame'));
       }
@@ -194,6 +197,10 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     set isLocal(value) {
       this.isLocal_ = value;
+      if (this.isNewGaiaFlow) {
+        $('signin-frame').hidden = this.isLocal_;
+        $('newgaia-offline-login').hidden = !this.isLocal_;
+      }
       chrome.send('updateOfflineLogin', [value]);
     },
 
@@ -204,7 +211,11 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     showLoadingUI_: function(show) {
       $('gaia-loading').hidden = !show;
-      $('signin-frame').hidden = show;
+      if (this.isNewGaiaFlow && this.isLocal) {
+        $('newgaia-offline-login').hidden = show;
+      } else {
+        $('signin-frame').hidden = show;
+      }
       $('signin-right').hidden = show;
       $('enterprise-info-container').hidden = show;
       $('gaia-signin-divider').hidden = show;
@@ -299,8 +310,12 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     onAfterShow: function(data) {
-      if (!this.loading && this.isWebviewSignin)
-        $('signin-frame').focus();
+      if (!this.loading && this.isWebviewSignin) {
+        if (this.isLocal)
+          $('newgaia-offline-login').focus();
+        else
+          $('signin-frame').focus();
+      }
     },
 
     /**
@@ -317,9 +332,9 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @private
      */
     loadAuthExtension: function(data) {
+      this.isNewGaiaFlow = data.useNewGaiaFlow;
       this.isLocal = data.isLocal;
       this.email = '';
-      this.isNewGaiaFlow = data.useNewGaiaFlow;
 
       // Reset SAML
       this.classList.toggle('full-width', false);
@@ -361,13 +376,18 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         if (data.useOffline)
           authMode = cr.login.GaiaAuthHost.AuthMode.OFFLINE;
 
-        this.gaiaAuthHost_.load(authMode,
-                                params,
-                                this.onAuthCompleted_.bind(this));
         this.gaiaAuthParams_ = params;
-
         this.loading = true;
         this.startLoadingTimer_();
+
+        if (this.isLocal && this.isNewGaiaFlow) {
+          this.loadOffline(params);
+          this.onAuthReady_();
+        } else {
+          this.gaiaAuthHost_.load(authMode,
+                                  params,
+                                  this.onAuthCompleted_.bind(this));
+        }
       } else if (this.loading && this.error_) {
         // An error has occurred, so trying to reload.
         this.doReload();
@@ -430,7 +450,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * user pods can be displayed.
      */
     updateCancelButtonState: function() {
-      this.cancelAllowed_ = this.isShowUsers_ && $('pod-row').pods.length;
+      this.cancelAllowed_ = this.isLocal ||
+                            (this.isShowUsers_ && $('pod-row').pods.length);
       $('login-header-bar').allowCancel = this.cancelAllowed_;
       if (this.isNewGaiaFlow)
         $('close-button-item').hidden = !this.cancelAllowed_;
@@ -799,6 +820,18 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     onWebviewError: function(data) {
       chrome.send('webviewLoadAborted', [data.error]);
+    },
+
+    /**
+     * Sets welcome and enterpriseinfo strings for offline gaia.
+     * Also sets callback and sends message whether we already have email and
+     * should switch to the password screen with error.
+     */
+    loadOffline: function(params) {
+      var offlineLogin = $('newgaia-offline-login');
+      var strings = params.localizedStrings;
+      offlineLogin.enterpriseInfo = strings['stringEnterpriseInfo'];
+      offlineLogin.setEmail(params.email);
     },
 
     /**

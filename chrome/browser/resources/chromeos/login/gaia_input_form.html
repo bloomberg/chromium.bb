@@ -1,0 +1,48 @@
+<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/polymer/layout.html">
+<link rel="import" href="chrome://resources/polymer/paper-input/paper-input-decorator.html">
+<link rel="import" href="chrome://resources/polymer/paper-button/paper-button.html">
+
+<!--
+  A simple input form with a button. Being used for typing email or password.
+
+  Example:
+    <gaia-input-form id="emailInput" inputType="email"
+    </gaia-input-form>
+
+  Attributes:
+    'inputType'  - type of the input (e.g. email, password).
+    'inputLabel' - label displayed on the input. (e.g. Enter you email).
+    'errorMsg'   - error message which should be displayed when input is
+                 incorrect.
+    'buttonText' - text on the button.
+
+  Events:
+    'buttonclick' - fired on button click.
+
+  Methods:
+    'focus'         - focuses input field.
+    'setValid'      - accept boolean argument |isValid|. Set validity state on
+                      the form.
+    'checkValidity' - returns current validity state of the input form. Calls
+                      setValid at the end.
+-->
+<polymer-element name="gaia-input-form" vertical start-justified layout
+                 attributes="inputType errorMsg inputLabel buttonText">
+  <template>
+    <link rel="stylesheet" href="gaia_input_form.css">
+    <paper-input-decorator id="paperInputDecorator" error="{{errorMsg}}"
+                           label="{{inputLabel}}" on-tap="{{onTap}}"
+                           floatingLabel autoValidate>
+      <input id="inputForm" is="core-input" on-keydown="{{onKeyDown}}"
+             value="{{inputValue}}" required type="{{inputType}}">
+    </paper-input-decorator>
+    <div horizontal justified layout center reverse>
+      <paper-button raised class="colored" on-tap="{{onButtonClicked}}"
+                    self-end>
+        {{buttonText}}
+      </paper-button>
+      <content> </content>
+    </div>
+  </template>
+</polymer-element>
