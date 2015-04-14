@@ -10,7 +10,7 @@ LayerTreeHostAnimationTestContinuousAnimate.RunMultiThread_DirectRenderer_MainTh
 # http://crbug.com/416643
 LayerTreeHostCopyRequestTestMultipleRequests.GLRenderer_RunSingleThread
 LayerTreeHostCopyRequestTestMultipleRequests.SoftwareRenderer_RunSingleThread
-LayerTreeHostTestReadyToDrawNonEmpty.RunSingleThread_DelegatingRenderer_ImplSidePaint
+LayerTreeHostTestReadyToDrawNonEmpty.*
 LayerTreeHostTestMaxTransferBufferUsageBytes.*
 
 # http://crbug.com/430400

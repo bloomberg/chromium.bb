@@ -137,6 +137,8 @@ Pas*erBro*
 Pe*
 Plat*Bro*
 Policy*H*
+# PopupBlockerBrowserTest.TapGestureWithCtrlKey
+Pop*
 Port*
 Prefe*
 PrefsF*
