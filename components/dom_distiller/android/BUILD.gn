@@ -24,6 +24,7 @@ android_library("dom_distiller_core_java") {
 android_library("dom_distiller_content_java") {
   deps = [
     ":dom_distiller_core_java",
+    "//base:base_java",
     "//content/public/android:content_java",
   ]
   java_files = [ "java/src/org/chromium/components/dom_distiller/content/DistillablePageUtils.java" ]
