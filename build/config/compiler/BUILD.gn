@@ -194,16 +194,11 @@ config("compiler") {
     cflags_objcc = [ "-fobjc-call-cxx-cdtors" ]
 
     cflags_c += [ "-std=c99" ]
-    cflags_cc += [ "-std=gnu++11" ]
 
     ldflags += common_mac_flags
   } else if (is_posix) {
     # Non-Mac Posix compiler flags setup.
     # -----------------------------------
-    if (gcc_version >= 48) {
-      cflags_cc += [ "-std=gnu++11" ]
-    }
-
     if (enable_profiling && !is_debug) {
       # The GYP build spams this define into every compilation unit, as we do
       # here, but it only appears to be used in base and a couple other places.
@@ -413,7 +408,18 @@ config("compiler") {
   # ------------------------------------
   if (is_clang) {
     cflags += [ "-fcolor-diagnostics" ]
+  }
+
+  # C++11 compiler flags setup.
+  # ---------------------------
+  if (is_linux || is_android || is_nacl) {
+    # gnu++11 instead of c++11 is needed because some code uses typeof() (a
+    # GNU extension).
+    # TODO(thakis): Eventually switch this to c++11 instead,
+    # http://crbug.com/427584
     cflags_cc += [ "-std=gnu++11" ]
+  } else if (!is_win) {
+    cflags_cc += [ "-std=c++11" ]
   }
 
   # Android-specific flags setup.
