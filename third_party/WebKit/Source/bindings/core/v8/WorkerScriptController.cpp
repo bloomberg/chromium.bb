@@ -196,8 +196,14 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
         v8::Local<v8::Message> message = block.Message();
         m_globalScopeExecutionState->hadException = true;
         m_globalScopeExecutionState->errorMessage = toCoreString(message->Get());
-        m_globalScopeExecutionState->lineNumber = message->GetLineNumber();
-        m_globalScopeExecutionState->columnNumber = message->GetStartColumn() + 1;
+        if (v8Call(message->GetLineNumber(m_scriptState->context()), m_globalScopeExecutionState->lineNumber)
+            && v8Call(message->GetStartColumn(m_scriptState->context()), m_globalScopeExecutionState->columnNumber)) {
+            ++m_globalScopeExecutionState->columnNumber;
+        } else {
+            m_globalScopeExecutionState->lineNumber = 0;
+            m_globalScopeExecutionState->columnNumber = 0;
+        }
+
         TOSTRING_DEFAULT(V8StringResource<>, sourceURL, message->GetScriptOrigin().ResourceName(), ScriptValue());
         m_globalScopeExecutionState->sourceURL = sourceURL;
         m_globalScopeExecutionState->exception = ScriptValue(m_scriptState.get(), block.Exception());

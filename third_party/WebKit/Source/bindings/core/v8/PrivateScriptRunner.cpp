@@ -20,7 +20,7 @@
 
 namespace blink {
 
-static void dumpV8Message(v8::Local<v8::Message> message)
+static void dumpV8Message(v8::Local<v8::Context> context, v8::Local<v8::Message> message)
 {
     if (message.IsEmpty())
         return;
@@ -30,13 +30,15 @@ static void dumpV8Message(v8::Local<v8::Message> message)
     // So we need to call twice to get a correct ScriptOrigin and line number.
     // This is a bug of V8.
     message->GetScriptOrigin();
-    message->GetLineNumber();
+    v8::Maybe<int> unused = message->GetLineNumber(context);
+    ALLOW_UNUSED_LOCAL(unused);
 
     v8::Local<v8::Value> resourceName = message->GetScriptOrigin().ResourceName();
     String fileName = "Unknown JavaScript file";
     if (!resourceName.IsEmpty() && resourceName->IsString())
         fileName = toCoreString(v8::Local<v8::String>::Cast(resourceName));
-    int lineNumber = message->GetLineNumber();
+    int lineNumber = 0;
+    v8Call(message->GetLineNumber(context), lineNumber);
     v8::Local<v8::String> errorMessage = message->Get();
     fprintf(stderr, "%s (line %d): %s\n", fileName.utf8().data(), lineNumber, toCoreString(errorMessage).utf8().data());
 }
@@ -66,14 +68,14 @@ static v8::Local<v8::Value> compileAndRunPrivateScript(ScriptState* scriptState,
     v8::Local<v8::Script> script;
     if (!v8Call(V8ScriptRunner::compileScript(v8String(isolate, sourceString), fileName, String(), TextPosition::minimumPosition(), isolate, nullptr, nullptr, nullptr, NotSharableCrossOrigin), script, block)) {
         fprintf(stderr, "Private script error: Compile failed. (Class name = %s)\n", scriptClassName.utf8().data());
-        dumpV8Message(block.Message());
+        dumpV8Message(context, block.Message());
         RELEASE_ASSERT_NOT_REACHED();
     }
 
     v8::Local<v8::Value> result;
     if (!v8Call(V8ScriptRunner::runCompiledInternalScript(isolate, script), result, block)) {
         fprintf(stderr, "Private script error: installClass() failed. (Class name = %s)\n", scriptClassName.utf8().data());
-        dumpV8Message(block.Message());
+        dumpV8Message(context, block.Message());
         RELEASE_ASSERT_NOT_REACHED();
     }
     return result;
@@ -182,6 +184,7 @@ static void initializeHolderIfNeeded(ScriptState* scriptState, v8::Local<v8::Obj
     RELEASE_ASSERT(holder->IsObject());
     v8::Local<v8::Object> holderObject = v8::Local<v8::Object>::Cast(holder);
     v8::Isolate* isolate = scriptState->isolate();
+    v8::Local<v8::Context> context = scriptState->context();
     v8::Local<v8::Value> isInitialized = V8HiddenValue::getHiddenValue(isolate, holderObject, V8HiddenValue::privateScriptObjectIsInitialized(isolate));
     if (isInitialized.IsEmpty()) {
         v8::TryCatch block;
@@ -191,7 +194,7 @@ static void initializeHolderIfNeeded(ScriptState* scriptState, v8::Local<v8::Obj
             V8ScriptRunner::callFunction(v8::Local<v8::Function>::Cast(initializeFunction), scriptState->executionContext(), holder, 0, 0, isolate);
             if (block.HasCaught()) {
                 fprintf(stderr, "Private script error: Object constructor threw an exception.\n");
-                dumpV8Message(block.Message());
+                dumpV8Message(context, block.Message());
                 RELEASE_ASSERT_NOT_REACHED();
             }
         }
@@ -201,15 +204,15 @@ static void initializeHolderIfNeeded(ScriptState* scriptState, v8::Local<v8::Obj
         // of the private script. (e.g., if the prototype object has |foo|, the holder object should be able
         // to use it with |this.foo|.)
         if (classObject->GetPrototype() != holderObject->GetPrototype()) {
-            if (!v8CallBoolean(classObject->SetPrototype(isolate->GetCurrentContext(), holderObject->GetPrototype()))) {
+            if (!v8CallBoolean(classObject->SetPrototype(context, holderObject->GetPrototype()))) {
                 fprintf(stderr, "Private script error: SetPrototype failed.\n");
-                dumpV8Message(block.Message());
+                dumpV8Message(context, block.Message());
                 RELEASE_ASSERT_NOT_REACHED();
             }
         }
-        if (!v8CallBoolean(holderObject->SetPrototype(isolate->GetCurrentContext(), classObject))) {
+        if (!v8CallBoolean(holderObject->SetPrototype(context, classObject))) {
             fprintf(stderr, "Private script error: SetPrototype failed.\n");
-            dumpV8Message(block.Message());
+            dumpV8Message(context, block.Message());
             RELEASE_ASSERT_NOT_REACHED();
         }
 
@@ -275,7 +278,7 @@ void rethrowExceptionInPrivateScript(v8::Isolate* isolate, v8::TryCatch& block, 
     }
 
     fprintf(stderr, "Private script error: %s was thrown.\n", exceptionName.utf8().data());
-    dumpV8Message(tryCatchMessage);
+    dumpV8Message(context, tryCatchMessage);
     RELEASE_ASSERT_NOT_REACHED();
 }
 

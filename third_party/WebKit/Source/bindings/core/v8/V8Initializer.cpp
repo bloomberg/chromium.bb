@@ -150,7 +150,12 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
 
     ScriptState* scriptState = ScriptState::current(isolate);
     String errorMessage = toCoreStringWithNullCheck(message->Get());
-    RefPtrWillBeRawPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, resourceName, message->GetLineNumber(), message->GetStartColumn() + 1, &scriptState->world());
+    int lineNumber = 0;
+    int columnNumber = 0;
+    if (v8Call(message->GetLineNumber(scriptState->context()), lineNumber)
+        && v8Call(message->GetStartColumn(scriptState->context()), columnNumber))
+        ++columnNumber;
+    RefPtrWillBeRawPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, resourceName, lineNumber, columnNumber, &scriptState->world());
 
     String messageForConsole = extractMessageForConsole(isolate, data);
     if (!messageForConsole.isEmpty())
@@ -227,8 +232,9 @@ static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage data)
 
     v8::Handle<v8::Message> message = v8::Exception::CreateMessage(exception);
     if (!message.IsEmpty()) {
-        lineNumber = message->GetLineNumber();
-        columnNumber = message->GetStartColumn() + 1;
+        if (v8Call(message->GetLineNumber(isolate->GetCurrentContext()), lineNumber)
+            && v8Call(message->GetStartColumn(isolate->GetCurrentContext()), columnNumber))
+            ++columnNumber;
         resourceName = extractResourceName(message, window->document());
         errorMessage = toCoreStringWithNullCheck(message->Get());
         callStack = extractCallStack(isolate, message, &scriptId);
@@ -276,8 +282,9 @@ static void promiseRejectHandlerInWorker(v8::PromiseRejectMessage data)
     if (!message.IsEmpty()) {
         TOSTRING_VOID(V8StringResource<>, resourceName, message->GetScriptOrigin().ResourceName());
         scriptId = message->GetScriptOrigin().ScriptID()->Value();
-        lineNumber = message->GetLineNumber();
-        columnNumber = message->GetStartColumn() + 1;
+        if (v8Call(message->GetLineNumber(scriptState->context()), lineNumber)
+            && v8Call(message->GetStartColumn(scriptState->context()), columnNumber))
+            ++columnNumber;
         // message->Get() can be empty here. https://crbug.com/450330
         errorMessage = toCoreStringWithNullCheck(message->Get());
     }
@@ -422,7 +429,12 @@ static void messageHandlerInWorker(v8::Handle<v8::Message> message, v8::Handle<v
         int scriptId = 0;
         RefPtrWillBeRawPtr<ScriptCallStack> callStack = extractCallStack(isolate, message, &scriptId);
 
-        RefPtrWillBeRawPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, sourceURL, message->GetLineNumber(), message->GetStartColumn() + 1, &DOMWrapperWorld::current(isolate));
+        int lineNumber = 0;
+        int columnNumber = 0;
+        if (v8Call(message->GetLineNumber(scriptState->context()), lineNumber)
+            && v8Call(message->GetStartColumn(scriptState->context()), columnNumber))
+            ++columnNumber;
+        RefPtrWillBeRawPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, sourceURL, lineNumber, columnNumber, &DOMWrapperWorld::current(isolate));
         AccessControlStatus corsStatus = message->IsSharedCrossOrigin() ? SharableCrossOrigin : NotSharableCrossOrigin;
 
         // If execution termination has been triggered as part of constructing
