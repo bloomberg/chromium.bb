@@ -88,6 +88,44 @@ class BatteryUtils(object):
     self._default_retries = default_retries
 
   @decorators.WithTimeoutAndRetriesFromInstance()
+  def GetNetworkData(self, package, timeout=None, retries=None):
+    """ Get network data for specific package.
+
+    Args:
+      package: package name you want network data for.
+      timeout: timeout in seconds
+      retries: number of retries
+
+    Returns:
+      Tuple of (sent_data, recieved_data)
+      None if no network data found
+    """
+    # If device_utils clears cache, cache['uids'] doesn't exist
+    if 'uids' not in self._cache:
+      self._cache['uids'] = {}
+    if package not in self._cache['uids']:
+      self.GetPowerData()
+      if package not in self._cache['uids']:
+        logging.warning('No UID found for %s. Can\'t get network data.',
+                        package)
+        return None
+
+    network_data_path = '/proc/uid_stat/%s/' % self._cache['uids'][package]
+    try:
+      send_data = int(self._device.ReadFile(network_data_path + 'tcp_snd'))
+    # If ReadFile throws exception, it means no network data usage file for
+    # package has been recorded. Return 0 sent and 0 received.
+    except device_errors.AdbShellCommandFailedError:
+      logging.warning('No sent data found for package %s', package)
+      send_data = 0
+    try:
+      recv_data = int(self._device.ReadFile(network_data_path + 'tcp_rcv'))
+    except device_errors.AdbShellCommandFailedError:
+      logging.warning('No received data found for package %s', package)
+      recv_data = 0
+    return (send_data, recv_data)
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
   def GetPowerData(self, timeout=None, retries=None):
     """ Get power data for device.
     Args:
@@ -103,10 +141,11 @@ class BatteryUtils(object):
         },
       }
     """
+    if 'uids' not in self._cache:
+      self._cache['uids'] = {}
     dumpsys_output = self._device.RunShellCommand(
         ['dumpsys', 'batterystats', '-c'], check_return=True)
     csvreader = csv.reader(dumpsys_output)
-    uid_entries = {}
     pwi_entries = collections.defaultdict(list)
     for entry in csvreader:
       if entry[_DUMP_VERSION_INDEX] not in ['8', '9']:
@@ -114,14 +153,16 @@ class BatteryUtils(object):
         raise device_errors.DeviceVersionError(
             'Dumpsys version must be 8 or 9. %s found.'
             % entry[_DUMP_VERSION_INDEX])
-      if _ROW_TYPE_INDEX >= len(entry):
-        continue
-      if entry[_ROW_TYPE_INDEX] == 'uid':
+      if _ROW_TYPE_INDEX < len(entry) and entry[_ROW_TYPE_INDEX] == 'uid':
         current_package = entry[_PACKAGE_NAME_INDEX]
-        if current_package in uid_entries:
+        if (self._cache['uids'].get(current_package)
+            and self._cache['uids'].get(current_package)
+            != entry[_PACKAGE_UID_INDEX]):
           raise device_errors.CommandFailedError(
-              'Package %s found multiple times' % (current_package))
-        uid_entries[current_package] = entry[_PACKAGE_UID_INDEX]
+              'Package %s found multiple times with differnt UIDs %s and %s'
+               % (current_package, self._cache['uids'][current_package],
+               entry[_PACKAGE_UID_INDEX]))
+        self._cache['uids'][current_package] = entry[_PACKAGE_UID_INDEX]
       elif (_PWI_POWER_CONSUMPTION_INDEX < len(entry)
           and entry[_ROW_TYPE_INDEX] == 'pwi'
           and entry[_PWI_AGGREGATION_INDEX] == 'l'):
@@ -129,7 +170,7 @@ class BatteryUtils(object):
             float(entry[_PWI_POWER_CONSUMPTION_INDEX]))
 
     return {p: {'uid': uid, 'data': pwi_entries[uid]}
-            for p, uid in uid_entries.iteritems()}
+            for p, uid in self._cache['uids'].iteritems()}
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def GetPackagePowerData(self, package, timeout=None, retries=None):
