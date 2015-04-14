@@ -25,7 +25,7 @@ public:
     }
 
     // This should be called on a range with tokens returned by that range.
-    CSSParserTokenRange makeSubRange(const CSSParserToken* first, const CSSParserToken* last);
+    CSSParserTokenRange makeSubRange(const CSSParserToken* first, const CSSParserToken* last) const;
 
     bool atEnd() const { return m_first == m_last; }
     const CSSParserToken* end() const { return m_last; }
@@ -63,6 +63,9 @@ public:
     }
 
     String serialize() const;
+
+    // This is only for the inspector integration
+    const CSSParserToken* begin() const { return m_first; }
 
     static void initStaticEOFToken();
 

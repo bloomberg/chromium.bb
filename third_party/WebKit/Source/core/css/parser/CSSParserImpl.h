@@ -16,6 +16,8 @@
 
 namespace blink {
 
+class CSSParserObserver;
+class CSSParserObserverWrapper;
 class StyleRule;
 class StyleRuleBase;
 class StyleRuleCharset;
@@ -62,6 +64,9 @@ public:
 
     bool supportsDeclaration(CSSParserTokenRange&);
 
+    static void parseDeclarationListForInspector(const String&, const CSSParserContext&, CSSParserObserver&);
+    static void parseStyleSheetForInspector(const String&, const CSSParserContext&, CSSParserObserver&);
+
 private:
     enum RuleListType {
         TopLevelRuleList,
@@ -103,6 +108,9 @@ private:
 
     AtomicString m_defaultNamespace;
     RawPtrWillBeMember<StyleSheetContents> m_styleSheet;
+
+    // For the inspector
+    CSSParserObserverWrapper* m_observerWrapper;
 };
 
 } // namespace blink

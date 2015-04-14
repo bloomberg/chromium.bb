@@ -9,6 +9,7 @@ namespace blink {
 #include "core/CSSTokenizerCodepoints.cpp"
 }
 
+#include "core/css/parser/CSSParserObserverWrapper.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSParserValues.h"
 #include "core/css/parser/CSSTokenizerInputStream.h"
@@ -45,6 +46,33 @@ CSSTokenizer::Scope::Scope(const String& string)
             return;
         m_tokens.append(token);
     }
+}
+
+CSSTokenizer::Scope::Scope(const String& string, CSSParserObserverWrapper& wrapper)
+: m_string(string)
+{
+    if (string.isEmpty())
+        return;
+
+    CSSTokenizerInputStream input(string);
+    CSSTokenizer tokenizer(input, *this);
+
+    unsigned offset = 0;
+    while (true) {
+        CSSParserToken token = tokenizer.nextToken();
+        if (token.type() == EOFToken)
+            break;
+        if (token.type() == CommentToken) {
+            wrapper.addComment(offset, input.offset(), m_tokens.size());
+        } else {
+            m_tokens.append(token);
+            wrapper.addToken(offset);
+        }
+        offset = input.offset();
+    }
+
+    wrapper.addToken(offset);
+    wrapper.finalizeConstruction(m_tokens.begin());
 }
 
 CSSParserTokenRange CSSTokenizer::Scope::tokenRange()
@@ -225,7 +253,8 @@ CSSParserToken CSSTokenizer::solidus(UChar cc)
 {
     if (consumeIfNext('*')) {
         // These get ignored, but we need a value to return.
-        return consumeUntilCommentEndFound() ? CSSParserToken(CommentToken) : CSSParserToken(EOFToken);
+        consumeUntilCommentEndFound();
+        return CSSParserToken(CommentToken);
     }
 
     return CSSParserToken(DelimiterToken, cc);
@@ -625,21 +654,20 @@ void CSSTokenizer::consumeSingleWhitespaceIfNext()
         consume();
 }
 
-bool CSSTokenizer::consumeUntilCommentEndFound()
+void CSSTokenizer::consumeUntilCommentEndFound()
 {
     UChar c = consume();
     while (true) {
         if (c == kEndOfFileMarker)
-            return false;
+            return;
         if (c != '*') {
             c = consume();
             continue;
         }
         c = consume();
         if (c == '/')
-            break;
+            return;
     }
-    return true;
 }
 
 bool CSSTokenizer::consumeIfNext(UChar character)

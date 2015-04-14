@@ -15,6 +15,7 @@
 namespace blink {
 
 class CSSTokenizerInputStream;
+class CSSParserObserverWrapper;
 struct CSSParserString;
 class CSSParserTokenRange;
 
@@ -25,6 +26,8 @@ public:
     class Scope {
     public:
         Scope(const String&);
+        Scope(const String&, CSSParserObserverWrapper&); // For the inspector
+
         CSSParserTokenRange tokenRange();
         unsigned tokenCount();
 
@@ -57,7 +60,7 @@ private:
     void consumeBadUrlRemnants();
     void consumeUntilNonWhitespace();
     void consumeSingleWhitespaceIfNext();
-    bool consumeUntilCommentEndFound();
+    void consumeUntilCommentEndFound();
 
     bool consumeIfNext(UChar);
     CSSParserString consumeName();

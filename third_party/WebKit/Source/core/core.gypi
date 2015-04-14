@@ -1214,6 +1214,7 @@
             'css/parser/CSSParserImpl.h',
             'css/parser/CSSParserMode.cpp',
             'css/parser/CSSParserMode.h',
+            'css/parser/CSSParserObserverWrapper.cpp',
             'css/parser/CSSParserToken.cpp',
             'css/parser/CSSParserTokenRange.cpp',
             'css/parser/CSSParserTokenRange.h',

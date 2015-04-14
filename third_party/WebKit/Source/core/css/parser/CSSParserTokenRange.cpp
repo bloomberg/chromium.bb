@@ -17,7 +17,7 @@ void CSSParserTokenRange::initStaticEOFToken()
     new ((void*)&staticEOFToken) CSSParserToken(EOFToken);
 }
 
-CSSParserTokenRange CSSParserTokenRange::makeSubRange(const CSSParserToken* first, const CSSParserToken* last)
+CSSParserTokenRange CSSParserTokenRange::makeSubRange(const CSSParserToken* first, const CSSParserToken* last) const
 {
     if (first == &staticEOFToken)
         first = m_last;

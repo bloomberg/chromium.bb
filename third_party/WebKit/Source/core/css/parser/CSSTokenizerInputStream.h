@@ -45,7 +45,7 @@ public:
         return offset;
     }
 
-    unsigned offset() const { return m_offset; }
+    unsigned offset() const { return std::min(m_offset, m_stringLength); }
     CSSParserString rangeAsCSSParserString(unsigned start, unsigned length) const;
 
 private:

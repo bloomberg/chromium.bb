@@ -29,7 +29,7 @@ body: [regular, 9:0-9:4] {
     important /* !important property not recognized by WebCore */' is-important non-parsed] @[11:4-13:66] 
     ['height':'100% !important' is-important] @[14:4-14:28] 
     ['colorz':'"!important"' non-parsed] @[15:4-15:25] 
-    ['important':'!important' non-parsed] @[16:4-16:25] 
+    ['important':'!important' is-important non-parsed] @[16:4-16:25] 
     ['color':'yellow'] @[17:4-17:18] 
     ['color':'"badcolor" ! important /* good property with strange value */' is-important non-parsed] @[18:4-18:73] 
 }
@@ -108,7 +108,7 @@ body: [regular, 9:0-9:4] {
     important /* !important property not recognized by WebCore */' is-important non-parsed] @[11:4-13:66] 
     ['height':'100% !important' is-important] @[14:4-14:28] 
     ['colorz':'"!important"' non-parsed] @[15:4-15:25] 
-    ['important':'!important' non-parsed] @[16:4-16:25] 
+    ['important':'!important' is-important non-parsed] @[16:4-16:25] 
     ['color':'yellow'] @[17:4-17:18] 
     ['color':'"badcolor" ! important /* good property with strange value */' is-important non-parsed] @[18:4-18:73] 
 }
@@ -308,7 +308,7 @@ body: [regular, 9:0-9:4] {
     important /* !important property not recognized by WebCore */' is-important non-parsed] @[11:4-13:66] 
     ['height':'100% !important' is-important] @[14:4-14:28] 
     ['colorz':'"!important"' non-parsed] @[15:4-15:25] 
-    ['important':'!important' non-parsed] @[16:4-16:25] 
+    ['important':'!important' is-important non-parsed] @[16:4-16:25] 
     ['color':'yellow'] @[17:4-17:18] 
     ['color':'"badcolor" ! important /* good property with strange value */' is-important non-parsed] @[18:4-18:73] 
 }

@@ -12,7 +12,7 @@ media="all" (media-queries.html)
 
 [expanded] 
 media="all" (media-queries.html)
-@import screen (media-queries.css:3 -> media-queries.css:3:3)
+@import screen (media-queries.css:3 -> media-queries.css:3:36)
 @media not aural (media-queries-1.css:5 -> media-queries-1.css:5:8)
 #main  { (media-queries-1.css:6 -> media-queries-1.css:6:5)
   border: 1px solid black;

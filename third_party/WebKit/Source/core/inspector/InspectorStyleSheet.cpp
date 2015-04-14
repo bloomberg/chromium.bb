@@ -107,6 +107,7 @@ private:
 
     const String& m_parsedText;
     Document* m_document;
+    // TODO(timloh): Remove when Bison parser is gone.
     StyleSheetContents* m_styleSheetContents;
     RawPtrWillBeMember<RuleSourceDataList> m_result;
     RuleSourceDataList m_currentRuleDataStack;

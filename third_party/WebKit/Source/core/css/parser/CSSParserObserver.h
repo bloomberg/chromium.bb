@@ -24,10 +24,14 @@
 #define CSSParserObserver_h
 
 #include "core/css/CSSPropertySourceData.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
-// FIXME: Although the parser produces these, they're all ignored!
+class CSSParserToken;
+class CSSParserTokenRange;
+
+// TODO(timloh): Unused, should be removed
 enum CSSParserError {
     NoCSSError,
     PropertyDeclarationCSSError,
@@ -43,14 +47,11 @@ enum CSSParserError {
     GeneralCSSError
 };
 
-// FIXME: What are these actually used for? There is probably
-// a better way for the parser to communicate this information
-// to the Inspector.
-
-// This only implemented by StyleSheetHandler in InspectorStyleSheet.cpp.
+// This is only for the inspector and shouldn't be used elsewhere.
 class CSSParserObserver {
     STACK_ALLOCATED();
 public:
+    // TODO(timloh): Some of these can be merged once the Bison parser is gone.
     virtual void startRuleHeader(StyleRule::Type, unsigned offset) = 0;
     virtual void endRuleHeader(unsigned offset) = 0;
     virtual void startSelector(unsigned offset) = 0;
@@ -61,6 +62,7 @@ public:
     virtual void endProperty(bool isImportant, bool isParsed, unsigned offset, CSSParserError) = 0;
     virtual void startComment(unsigned offset) = 0;
     virtual void endComment(unsigned offset) = 0;
+    // TODO(timloh): Unused, should be removed
     virtual void startMediaQueryExp(unsigned offset) = 0;
     virtual void endMediaQueryExp(unsigned offset) = 0;
     virtual void startMediaQuery() = 0;

@@ -20,9 +20,13 @@ namespace blink {
 
 bool CSSParser::parseDeclarationList(const CSSParserContext& context, MutableStylePropertySet* propertySet, const String& declaration, CSSParserObserver* observer, StyleSheetContents* styleSheet)
 {
-    // FIXME: Add inspector observer support in the new CSS parser
-    if (!observer && RuntimeEnabledFeatures::newCSSParserEnabled())
+    if (RuntimeEnabledFeatures::newCSSParserEnabled()) {
+        if (observer) {
+            CSSParserImpl::parseDeclarationListForInspector(declaration, context, *observer);
+            return true;
+        }
         return CSSParserImpl::parseDeclarationList(propertySet, declaration, context);
+    }
     return BisonCSSParser(context).parseDeclaration(propertySet, declaration, observer, styleSheet);
 }
 
@@ -45,9 +49,11 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParser::parseRule(const CSSParserContex
 
 void CSSParser::parseSheet(const CSSParserContext& context, StyleSheetContents* styleSheet, const String& text, const TextPosition& startPosition, CSSParserObserver* observer, bool logErrors)
 {
-    // FIXME: Add inspector observer support in the new CSS parser
-    if (!observer && RuntimeEnabledFeatures::newCSSParserEnabled())
+    if (RuntimeEnabledFeatures::newCSSParserEnabled()) {
+        if (observer)
+            return CSSParserImpl::parseStyleSheetForInspector(text, context, *observer);
         return CSSParserImpl::parseStyleSheet(text, context, styleSheet);
+    }
     BisonCSSParser(context).parseSheet(styleSheet, text, startPosition, observer, logErrors);
 }
 
