@@ -37,7 +37,7 @@ void ColorPicker::SetRenderWidgetHost(RenderWidgetHostImpl* host) {
   if (host_ == host)
     return;
 
-  if (host_)
+  if (enabled_ && host_)
     host_->RemoveMouseEventCallback(mouse_event_callback_);
   ResetFrame();
   host_ = host;
