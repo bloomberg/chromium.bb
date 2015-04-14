@@ -32,27 +32,32 @@
 #define Blob_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/UnionTypesCore.h"
 #include "core/CoreExport.h"
+#include "core/dom/DOMArrayBuffer.h"
+#include "core/dom/DOMArrayBufferView.h"
 #include "core/html/URLRegistry.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
+class BlobPropertyBag;
 class ExceptionState;
 class ExecutionContext;
 
 class CORE_EXPORT Blob : public GarbageCollectedFinalized<Blob>, public ScriptWrappable, public URLRegistrable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static Blob* create()
+    static Blob* create(ExceptionState&)
     {
         return new Blob(BlobDataHandle::create());
     }
+
+    static Blob* create(const Vector<ArrayBufferOrArrayBufferViewOrBlobOrString>&, const BlobPropertyBag&, ExceptionState&);
 
     static Blob* create(PassRefPtr<BlobDataHandle> blobDataHandle)
     {
@@ -99,6 +104,27 @@ public:
 
 protected:
     explicit Blob(PassRefPtr<BlobDataHandle>);
+
+    template<typename ItemType>
+    static void populateBlobData(BlobData* blobData, const Vector<ItemType>& parts, bool normalizeLineEndingsToNative)
+    {
+        for (size_t i = 0; i < parts.size(); ++i) {
+            const ItemType& item = parts[i];
+            if (item.isArrayBuffer()) {
+                RefPtr<DOMArrayBuffer> arrayBuffer = item.getAsArrayBuffer();
+                blobData->appendBytes(arrayBuffer->data(), arrayBuffer->byteLength());
+            } else if (item.isArrayBufferView()) {
+                RefPtr<DOMArrayBufferView> arrayBufferView = item.getAsArrayBufferView();
+                blobData->appendBytes(arrayBufferView->baseAddress(), arrayBufferView->byteLength());
+            } else if (item.isBlob()) {
+                item.getAsBlob()->appendTo(*blobData);
+            } else if (item.isString()) {
+                blobData->appendText(item.getAsString(), normalizeLineEndingsToNative);
+            } else {
+                ASSERT_NOT_REACHED();
+            }
+        }
+    }
 
     static void clampSliceOffsets(long long size, long long& start, long long& end);
 private:

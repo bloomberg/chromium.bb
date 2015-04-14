@@ -35,7 +35,7 @@
 #include "core/dom/DOMURL.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/fileapi/File.h"
+#include "core/fileapi/BlobPropertyBag.h"
 #include "platform/blob/BlobRegistry.h"
 #include "platform/blob/BlobURL.h"
 
@@ -83,6 +83,27 @@ Blob::Blob(PassRefPtr<BlobDataHandle> dataHandle)
 
 Blob::~Blob()
 {
+}
+
+// static
+Blob* Blob::create(const Vector<ArrayBufferOrArrayBufferViewOrBlobOrString>& blobParts, const BlobPropertyBag& options, ExceptionState& exceptionState)
+{
+    ASSERT(options.hasType());
+    if (!options.type().containsOnlyASCII()) {
+        exceptionState.throwDOMException(SyntaxError, "The 'type' property must consist of ASCII characters.");
+        return nullptr;
+    }
+
+    ASSERT(options.hasEndings());
+    bool normalizeLineEndingsToNative = options.endings() == "native";
+
+    OwnPtr<BlobData> blobData = BlobData::create();
+    blobData->setContentType(options.type().lower());
+
+    populateBlobData(blobData.get(), blobParts, normalizeLineEndingsToNative);
+
+    long long blobSize = blobData->length();
+    return new Blob(BlobDataHandle::create(blobData.release(), blobSize));
 }
 
 void Blob::clampSliceOffsets(long long size, long long& start, long long& end)

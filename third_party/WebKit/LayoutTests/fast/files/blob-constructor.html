@@ -14,9 +14,9 @@ shouldBeTrue("(new Blob(['hello'], {type:'text/html', endings:'native'})) instan
 shouldBeTrue("(new Blob(['hello'], {type:'text/html', endings:'transparent'})) instanceof window.Blob");
 
 // Test invalid blob parts.
-shouldThrow("new Blob('hello')", '"TypeError: Failed to construct \'Blob\': The 1st argument provided is either null, or an invalid Array object."');
-shouldThrow("new Blob(0)", '"TypeError: Failed to construct \'Blob\': The 1st argument provided is either null, or an invalid Array object."');
-shouldThrow("new Blob(null)", '"TypeError: Failed to construct \'Blob\': The 1st argument provided is either null, or an invalid Array object."');
+shouldThrow("new Blob('hello')", '"TypeError: Failed to construct \'Blob\': The 1st argument is neither an array, nor does it have indexed properties."');
+shouldThrow("new Blob(0)", '"TypeError: Failed to construct \'Blob\': The 1st argument is neither an array, nor does it have indexed properties."');
+shouldThrow("new Blob(null)", '"TypeError: Failed to construct \'Blob\': The 1st argument is neither an array, nor does it have indexed properties."');
 
 // Test valid blob parts.
 shouldBeTrue("(new Blob([])) instanceof window.Blob");
@@ -39,7 +39,7 @@ shouldThrow("new Blob([throwingObj])", "'Error'");
 
 // Test some invalid property bags.
 shouldBeTrue("(new Blob([], {unknownKey:'value'})) instanceof window.Blob");    // Ignore invalid keys
-shouldThrow("new Blob([], {endings:'illegalValue'})", "'TypeError: Failed to construct \\'Blob\\': The \\'endings\\' property must be either \\'transparent\\' or \\'native\\'.'");
+shouldThrow("new Blob([], {endings:'illegalValue'})", "'TypeError: Failed to construct \\'Blob\\': The provided value \\'illegalValue\\' is not a valid enum value of type NormalizeLineEndings.'");
 shouldThrow("new Blob([], {endings:throwingObj})", "'Error'");
 shouldThrow("new Blob([], {type:throwingObj})", "'Error'");
 shouldThrow("new Blob([], {type:'hello\u00EE'})", "'SyntaxError: Failed to construct \\'Blob\\': The \\'type\\' property must consist of ASCII characters.'");
@@ -49,15 +49,15 @@ var throwingObj1 = { toString: function() { throw "Error 1"; } };
 var throwingObj2 = { toString: function() { throw "Error 2"; } };
 shouldThrow("new Blob([], {endings:throwingObj1, type:throwingObj2})", "'Error 1'");
 shouldThrow("new Blob([], {type:throwingObj2, endings:throwingObj1})", "'Error 1'");
-shouldThrow("new Blob([], {type:throwingObj2, endings:'illegal'})", "'TypeError: Failed to construct \\'Blob\\': The \\'endings\\' property must be either \\'transparent\\' or \\'native\\'.'");
+shouldThrow("new Blob([], {type:throwingObj2, endings:'illegal'})", "'TypeError: Failed to construct \\'Blob\\': The provided value \\'illegal\\' is not a valid enum value of type NormalizeLineEndings.'");
 
 // Test various non-object literals being used as property bags.
-shouldThrow("(new Blob([], null)) instanceof window.Blob", "'TypeError: Failed to construct \\'Blob\\': The 2nd argument is not of type Object.'");
-shouldThrow("(new Blob([], undefined)) instanceof window.Blob", "'TypeError: Failed to construct \\'Blob\\': The 2nd argument is not of type Object.'");
-shouldThrow("(new Blob([], 123)) instanceof window.Blob", "'TypeError: Failed to construct \\'Blob\\': The 2nd argument is not of type Object.'");
-shouldThrow("(new Blob([], 123.4)) instanceof window.Blob", "'TypeError: Failed to construct \\'Blob\\': The 2nd argument is not of type Object.'");
-shouldThrow("(new Blob([], true)) instanceof window.Blob", "'TypeError: Failed to construct \\'Blob\\': The 2nd argument is not of type Object.'");
-shouldThrow("(new Blob([], 'abc')) instanceof window.Blob", "'TypeError: Failed to construct \\'Blob\\': The 2nd argument is not of type Object.'");
+shouldBeTrue("(new Blob([], null)) instanceof window.Blob");
+shouldBeTrue("(new Blob([], undefined)) instanceof window.Blob");
+shouldThrow("(new Blob([], 123)) instanceof window.Blob", "'TypeError: Failed to construct \\'Blob\\': parameter 2 (\\'options\\') is not an object.'");
+shouldThrow("(new Blob([], 123.4)) instanceof window.Blob", "'TypeError: Failed to construct \\'Blob\\': parameter 2 (\\'options\\') is not an object.'");
+shouldThrow("(new Blob([], true)) instanceof window.Blob", "'TypeError: Failed to construct \\'Blob\\': parameter 2 (\\'options\\') is not an object.'");
+shouldThrow("(new Blob([], 'abc')) instanceof window.Blob", "'TypeError: Failed to construct \\'Blob\\': parameter 2 (\\'options\\') is not an object.'");
 shouldBeTrue("(new Blob([], [])) instanceof window.Blob");
 shouldBeTrue("(new Blob([], /abc/)) instanceof window.Blob");
 shouldBeTrue("(new Blob([], function () {})) instanceof window.Blob");
@@ -103,7 +103,8 @@ shouldBe("new Blob([(new Float64Array(100)).buffer]).size", "800");
 shouldBe("new Blob([(new Float64Array(100)).buffer, (new Int32Array(100)).buffer, (new Uint8Array(100)).buffer, (new DataView(new ArrayBuffer(100))).buffer]).size", "1400");
 shouldBe("new Blob([new Blob([(new Int32Array(100)).buffer]), (new Uint8Array(100)).buffer, (new Float32Array(100)).buffer, (new DataView(new ArrayBuffer(100))).buffer]).size", "1000");
 
-// Test passing blob parts in (deprecated and unsupported) objects with indexed properties.
-shouldThrow("new Blob({length: 0})", "'TypeError: Failed to construct \\'Blob\\': The 1st argument provided is either null, or an invalid Array object.'");
-shouldThrow("new Blob({length: 1, 0: 'string'})", "'TypeError: Failed to construct \\'Blob\\': The 1st argument provided is either null, or an invalid Array object.'");
+// Test passing blob parts in objects with indexed properties.
+// (This depends on the bindings code handling of sequence<T>)
+shouldBe("new Blob({length: 0}).size", "0");
+shouldBe("new Blob({length: 1, 0: 'string'}).size", "6");
 </script>

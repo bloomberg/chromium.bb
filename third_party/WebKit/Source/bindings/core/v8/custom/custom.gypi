@@ -5,7 +5,6 @@
 {
     'variables': {
         'bindings_core_v8_custom_files': [
-            'V8BlobCustom.cpp',
             'V8BlobCustomHelpers.cpp',
             'V8BlobCustomHelpers.h',
             'V8CSSStyleDeclarationCustom.cpp',

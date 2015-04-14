@@ -1,0 +1,16 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// TODO(jsbell): This enum is non-standard.
+// https://developer.mozilla.org/en-US/docs/Web/API/Blob/Blob
+enum NormalizeLineEndings { "transparent", "native" };
+
+// http://dev.w3.org/2006/webapi/FileAPI/#dfn-Blob
+dictionary BlobPropertyBag {
+    DOMString type = "";
+
+    // TODO(jsbell): This member is non-standard.
+    // https://developer.mozilla.org/en-US/docs/Web/API/Blob/Blob
+    NormalizeLineEndings endings = "transparent";
+};
