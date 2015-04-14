@@ -175,6 +175,10 @@ class CC_EXPORT ResourceProvider {
   // Destroys accounting for the child, deleting all accounted resources.
   void DestroyChild(int child);
 
+  // Sets whether resources need sync points set on them when returned to this
+  // child. Defaults to true.
+  void SetChildNeedsSyncPoints(int child, bool needs_sync_points);
+
   // Gets the child->parent resource ID map.
   const ResourceIdMap& GetChildToParentMap(int child) const;
 
@@ -518,6 +522,7 @@ class CC_EXPORT ResourceProvider {
     ReturnCallback return_callback;
     ResourceIdSet in_use_resources;
     bool marked_for_deletion;
+    bool needs_sync_points;
   };
   typedef base::hash_map<int, Child> ChildMap;
 

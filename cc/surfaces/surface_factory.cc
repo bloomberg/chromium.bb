@@ -13,7 +13,10 @@
 namespace cc {
 SurfaceFactory::SurfaceFactory(SurfaceManager* manager,
                                SurfaceFactoryClient* client)
-    : manager_(manager), client_(client), holder_(client) {
+    : manager_(manager),
+      client_(client),
+      holder_(client),
+      needs_sync_points_(true) {
 }
 
 SurfaceFactory::~SurfaceFactory() {

@@ -937,6 +937,7 @@ TEST_P(ResourceProviderTestNoSyncPoint, TransferGLResources) {
   ReturnedResourceArray returned_to_child;
   int child_id =
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
+  resource_provider_->SetChildNeedsSyncPoints(child_id, false);
   {
     // Transfer some resources to the parent.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
@@ -956,6 +957,35 @@ TEST_P(ResourceProviderTestNoSyncPoint, TransferGLResources) {
 
     resource_provider_->DeclareUsedResourcesFromChild(child_id,
                                                       resource_ids_to_transfer);
+  }
+
+  {
+    EXPECT_EQ(0u, returned_to_child.size());
+
+    // Transfer resources back from the parent to the child. Set no resources as
+    // being in use.
+    ResourceProvider::ResourceIdArray no_resources;
+    resource_provider_->DeclareUsedResourcesFromChild(child_id, no_resources);
+
+    ASSERT_EQ(3u, returned_to_child.size());
+    std::map<ResourceProvider::ResourceId, unsigned int> returned_sync_points;
+    for (const auto& returned : returned_to_child)
+      returned_sync_points[returned.id] = returned.sync_point;
+
+    EXPECT_TRUE(returned_sync_points.find(id1) != returned_sync_points.end());
+    // No new sync point should be created transferring back.
+    EXPECT_TRUE(returned_sync_points.find(id1) != returned_sync_points.end());
+    EXPECT_EQ(0u, returned_sync_points[id1]);
+    EXPECT_TRUE(returned_sync_points.find(id2) != returned_sync_points.end());
+    EXPECT_EQ(0u, returned_sync_points[id2]);
+    // Original sync point given should be returned.
+    EXPECT_TRUE(returned_sync_points.find(id3) != returned_sync_points.end());
+    EXPECT_EQ(external_sync_point, returned_sync_points[id3]);
+    EXPECT_FALSE(returned_to_child[0].lost);
+    EXPECT_FALSE(returned_to_child[1].lost);
+    EXPECT_FALSE(returned_to_child[2].lost);
+    child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
+    returned_to_child.clear();
   }
 
   resource_provider_->DestroyChild(child_id);

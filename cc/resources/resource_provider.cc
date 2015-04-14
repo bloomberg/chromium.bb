@@ -418,7 +418,9 @@ ResourceProvider::Resource::Resource(const SharedBitmapId& bitmap_id,
   DCHECK(wrap_mode == GL_CLAMP_TO_EDGE || wrap_mode == GL_REPEAT);
 }
 
-ResourceProvider::Child::Child() : marked_for_deletion(false) {}
+ResourceProvider::Child::Child()
+    : marked_for_deletion(false), needs_sync_points(true) {
+}
 
 ResourceProvider::Child::~Child() {}
 
@@ -1303,6 +1305,12 @@ int ResourceProvider::CreateChild(const ReturnCallback& return_callback) {
   return child;
 }
 
+void ResourceProvider::SetChildNeedsSyncPoints(int child_id, bool needs) {
+  ChildMap::iterator it = children_.find(child_id);
+  DCHECK(it != children_.end());
+  it->second.needs_sync_points = needs;
+}
+
 void ResourceProvider::DestroyChild(int child_id) {
   ChildMap::iterator it = children_.find(child_id);
   DCHECK(it != children_.end());
@@ -1683,7 +1691,7 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
     resource.imported_count = 0;
     DeleteResourceInternal(it, style);
   }
-  if (need_sync_point) {
+  if (need_sync_point && child_info->needs_sync_points) {
     DCHECK(gl);
     GLuint sync_point = gl->InsertSyncPointCHROMIUM();
     for (size_t i = 0; i < to_return.size(); ++i) {

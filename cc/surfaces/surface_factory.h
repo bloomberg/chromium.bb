@@ -63,10 +63,18 @@ class CC_SURFACES_EXPORT SurfaceFactory
 
   SurfaceManager* manager() { return manager_; }
 
+  // This can be set to false if resources from this SurfaceFactory don't need
+  // to have sync points set on them when returned from the Display, for
+  // example if the Display shares a context with the creator.
+  bool needs_sync_points() const { return needs_sync_points_; }
+  void set_needs_sync_points(bool needs) { needs_sync_points_ = needs; }
+
  private:
   SurfaceManager* manager_;
   SurfaceFactoryClient* client_;
   SurfaceResourceHolder holder_;
+
+  bool needs_sync_points_;
 
   typedef base::ScopedPtrHashMap<SurfaceId, Surface> OwningSurfaceMap;
   base::ScopedPtrHashMap<SurfaceId, Surface> surface_map_;

@@ -120,6 +120,10 @@ int SurfaceAggregator::ChildIdForSurface(Surface* surface) {
   if (it == surface_id_to_resource_child_id_.end()) {
     int child_id =
         provider_->CreateChild(base::Bind(&UnrefHelper, surface->factory()));
+    if (surface->factory()) {
+      provider_->SetChildNeedsSyncPoints(
+          child_id, surface->factory()->needs_sync_points());
+    }
     surface_id_to_resource_child_id_[surface->surface_id()] = child_id;
     return child_id;
   } else {

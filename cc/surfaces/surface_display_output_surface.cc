@@ -23,6 +23,7 @@ SurfaceDisplayOutputSurface::SurfaceDisplayOutputSurface(
       surface_manager_(surface_manager),
       factory_(surface_manager, this),
       allocator_(allocator) {
+  factory_.set_needs_sync_points(false);
   capabilities_.delegated_rendering = true;
   capabilities_.max_frames_pending = 1;
   capabilities_.adjust_deadline_for_parent = true;
