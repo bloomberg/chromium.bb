@@ -1451,9 +1451,11 @@ void ServiceWorkerStorage::DeleteStaleResources() {
 void ServiceWorkerStorage::DidCollectStaleResources(
     const std::vector<int64>& stale_resource_ids,
     ServiceWorkerDatabase::Status status) {
-  DCHECK_EQ(ServiceWorkerDatabase::STATUS_OK, status);
-  if (status != ServiceWorkerDatabase::STATUS_OK)
+  if (status != ServiceWorkerDatabase::STATUS_OK) {
+    DCHECK_NE(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND, status);
+    ScheduleDeleteAndStartOver();
     return;
+  }
   StartPurgingResources(stale_resource_ids);
 }
 
