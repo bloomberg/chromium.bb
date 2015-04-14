@@ -296,11 +296,10 @@ static bool lengthTypeAndValueMatch(const BorderImageLengthBox& borderImageLengt
 {
     // Visited link style can never explicitly inherit from parent visited link style so no separate getters are needed.
     StyleColor color = state.parentStyle()->{{property.getter}}();
-    Color resolvedColor = color.resolve(state.parentStyle()->color());
     if (state.applyPropertyToRegularStyle())
-        {{set_value(property)}}(resolvedColor);
+        {{set_value(property)}}(color);
     if (state.applyPropertyToVisitedLinkStyle())
-        state.style()->{{visited_link_setter}}(resolvedColor);
+        state.style()->{{visited_link_setter}}(color);
 }
 
 {{declare_value_function(property_id)}}
