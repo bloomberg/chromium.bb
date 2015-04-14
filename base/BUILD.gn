@@ -1250,6 +1250,7 @@ test("base_unittests") {
     "test/histogram_tester_unittest.cc",
     "test/test_reg_util_win_unittest.cc",
     "test/trace_event_analyzer_unittest.cc",
+    "test/user_action_tester_unittest.cc",
     "threading/non_thread_safe_unittest.cc",
     "threading/platform_thread_unittest.cc",
     "threading/sequenced_worker_pool_unittest.cc",

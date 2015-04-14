@@ -116,6 +116,8 @@ source_set("test_support") {
     "trace_event_analyzer.h",
     "trace_to_file.cc",
     "trace_to_file.h",
+    "user_action_tester.cc",
+    "user_action_tester.h",
     "values_test_util.cc",
     "values_test_util.h",
   ]
