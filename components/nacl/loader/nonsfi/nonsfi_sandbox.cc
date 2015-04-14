@@ -10,7 +10,6 @@
 #include <linux/net.h>
 #include <sys/mman.h>
 #include <sys/prctl.h>
-#include <sys/ptrace.h>
 #include <sys/socket.h>
 #include <sys/syscall.h>
 #include <sys/time.h>
@@ -185,7 +184,8 @@ bool IsGracefullyDenied(int sysno) {
 void RunSandboxSanityChecks() {
   errno = 0;
   // Make a ptrace request with an invalid PID.
-  long ptrace_ret = ptrace(PTRACE_PEEKUSER, -1 /* pid */, NULL, NULL);
+  long ptrace_ret = syscall(
+      __NR_ptrace, 3 /* = PTRACE_PEEKUSER */, -1 /* pid */, NULL, NULL);
   CHECK_EQ(-1, ptrace_ret);
   // Without the sandbox on, this ptrace call would ESRCH instead.
   CHECK_EQ(EPERM, errno);
