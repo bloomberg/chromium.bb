@@ -40,7 +40,7 @@
         '../web/ios_web.gyp:ios_web',
         'injected_js',
         'ios_chrome_common',
-        'ios_chrome_resources.gyp:ios_theme_resources_gen',
+        'ios_chrome_resources.gyp:ios_chrome_resources',
       ],
       'link_settings': {
         'libraries': [
