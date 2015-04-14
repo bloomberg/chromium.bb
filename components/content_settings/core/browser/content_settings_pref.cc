@@ -161,33 +161,24 @@ void ContentSettingsPref::ClearAllContentSettingsRules() {
   if (!is_incognito_)
     map_to_modify = &value_map_;
 
-  std::vector<Rule> rules_to_delete;
   {
     base::AutoLock auto_lock(lock_);
-    scoped_ptr<RuleIterator> rule_iterator(
-        map_to_modify->GetRuleIterator(content_type_,
-            ResourceIdentifier(),
-            NULL));
-    // Copy the rules; we cannot call |UpdatePref| while holding |lock_|.
-    while (rule_iterator->HasNext())
-      rules_to_delete.push_back(rule_iterator->Next());
-
-    map_to_modify->DeleteValues(content_type_, ResourceIdentifier());
+    map_to_modify->clear();
   }
 
-  for (std::vector<Rule>::const_iterator it = rules_to_delete.begin();
-       it != rules_to_delete.end(); ++it) {
-    UpdatePref(it->primary_pattern,
-               it->secondary_pattern,
-               ResourceIdentifier(),
-               NULL);
-    if (IsContentSettingsTypeSyncable(content_type_)) {
-      UpdateOldPref(it->primary_pattern,
-                    it->secondary_pattern,
-                    ResourceIdentifier(),
-                    NULL);
+  if (!is_incognito_) {
+    // Clear the new preference.
+    {
+      base::AutoReset<bool> auto_reset(&updating_preferences_, true);
+      DictionaryPrefUpdate update(prefs_, pref_name_);
+      base::DictionaryValue* pattern_pairs_settings = update.Get();
+      pattern_pairs_settings->Clear();
     }
+
+    if (IsContentSettingsTypeSyncable(content_type_))
+      ClearOldPreference();
   }
+
   notify_callback_.Run(ContentSettingsPattern(),
                        ContentSettingsPattern(),
                        content_type_,

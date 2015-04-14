@@ -802,4 +802,91 @@ TEST(PrefProviderTest, IncognitoInheritsValueMap) {
   normal_provider.ShutdownOnUIThread();
 }
 
+TEST(PrefProviderTest, ClearAllContentSettingsRules) {
+  TestingPrefServiceSyncable prefs;
+  PrefProvider::RegisterProfilePrefs(prefs.registry());
+
+  ContentSettingsPattern pattern =
+      ContentSettingsPattern::FromString("google.com");
+  ContentSettingsPattern wildcard =
+      ContentSettingsPattern::FromString("*");
+  scoped_ptr<base::Value> value(
+      new base::FundamentalValue(CONTENT_SETTING_ALLOW));
+  ResourceIdentifier res_id("abcde");
+
+  PrefProvider provider(&prefs, false);
+
+  // Non-empty pattern, syncable, empty resource identifier.
+  provider.SetWebsiteSetting(pattern, wildcard, CONTENT_SETTINGS_TYPE_IMAGES,
+                             ResourceIdentifier(), value->DeepCopy());
+
+  // Non-empty pattern, non-syncable, empty resource identifier.
+  provider.SetWebsiteSetting(pattern, wildcard,
+                             CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                             ResourceIdentifier(), value->DeepCopy());
+
+  // Non-empty pattern, plugins, non-empty resource identifier.
+  provider.SetWebsiteSetting(pattern, wildcard, CONTENT_SETTINGS_TYPE_PLUGINS,
+                             res_id, value->DeepCopy());
+
+  // Empty pattern, plugins, non-empty resource identifier.
+  provider.SetWebsiteSetting(wildcard, wildcard, CONTENT_SETTINGS_TYPE_PLUGINS,
+                             res_id, value->DeepCopy());
+
+  // Non-empty pattern, syncable, empty resource identifier.
+  provider.SetWebsiteSetting(pattern, wildcard, CONTENT_SETTINGS_TYPE_COOKIES,
+                             ResourceIdentifier(), value->DeepCopy());
+
+  // Non-empty pattern, non-syncable, empty resource identifier.
+  provider.SetWebsiteSetting(pattern, wildcard,
+                             CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                             ResourceIdentifier(), value->DeepCopy());
+
+  provider.ClearAllContentSettingsRules(CONTENT_SETTINGS_TYPE_IMAGES);
+  provider.ClearAllContentSettingsRules(CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  provider.ClearAllContentSettingsRules(CONTENT_SETTINGS_TYPE_PLUGINS);
+
+  // Test that the new preferences for images, geolocation and plugins
+  // are empty.
+  const char* empty_prefs[] = {
+      prefs::kContentSettingsImagesPatternPairs,
+      prefs::kContentSettingsGeolocationPatternPairs,
+      prefs::kContentSettingsPluginsPatternPairs
+  };
+
+  for (const char* pref : empty_prefs) {
+    DictionaryPrefUpdate update(&prefs, pref);
+    const base::DictionaryValue* dictionary = update.Get();
+    EXPECT_TRUE(dictionary->empty());
+  }
+
+  // Test that the preferences for cookies and notifications are not empty.
+  const char* nonempty_prefs[] = {
+      prefs::kContentSettingsCookiesPatternPairs,
+      prefs::kContentSettingsNotificationsPatternPairs
+  };
+
+  for (const char* pref : nonempty_prefs) {
+    DictionaryPrefUpdate update(&prefs, pref);
+    const base::DictionaryValue* dictionary = update.Get();
+    EXPECT_EQ(1u, dictionary->size());
+  }
+
+  // Test that the old preference only contains cookies and notifications.
+  {
+    DictionaryPrefUpdate update(&prefs, prefs::kContentSettingsPatternPairs);
+    const base::DictionaryValue* dictionary = update.Get();
+    const base::DictionaryValue* exception;
+    EXPECT_TRUE(dictionary->GetDictionaryWithoutPathExpansion(
+        CreatePatternString(pattern, wildcard), &exception));
+    EXPECT_EQ(1u, exception->size());
+    EXPECT_TRUE(exception->HasKey(GetTypeName(CONTENT_SETTINGS_TYPE_COOKIES)));
+
+    // The notification setting was not cleared, but it was also never written
+    // to the old preference, as it is unsyncable.
+  }
+
+  provider.ShutdownOnUIThread();
+}
+
 }  // namespace content_settings
