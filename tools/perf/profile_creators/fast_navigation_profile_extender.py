@@ -83,6 +83,25 @@ class FastNavigationProfileExtender(profile_extender.ProfileExtender):
     """
     pass
 
+  @property
+  def profile_path(self):
+    return self._profile_path
+
+  def _AddNewTab(self):
+    """Adds a new tab to the browser."""
+
+    # Adding a new tab requires making a request over devtools. This can fail
+    # for a variety of reasons. Retry 3 times.
+    retry_count = 3
+    for i in range(retry_count):
+      try:
+        self._navigation_tabs.append(self._browser.tabs.New())
+      except exceptions.Error:
+        if i == retry_count - 1:
+          raise
+      else:
+        break
+
   def _RefreshNavigationTabs(self):
     """Updates the member self._navigation_tabs to contain self._NUM_TABS
     elements, each of which is not crashed. The crashed tabs are intentionally
@@ -97,7 +116,7 @@ class FastNavigationProfileExtender(profile_extender.ProfileExtender):
     self._navigation_tabs = live_tabs
 
     while len(self._navigation_tabs) < self._NUM_TABS:
-      self._navigation_tabs.append(self.browser.tabs.New())
+      self._AddNewTab()
 
   def _RemoveNavigationTab(self, tab):
     """Removes a tab which is no longer in a useable state from
