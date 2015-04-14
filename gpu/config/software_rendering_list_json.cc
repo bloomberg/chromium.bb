@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "10.3",
+  "version": "10.4",
   "entries": [
     {
       "id": 1,
@@ -331,6 +331,11 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       },
       "vendor_id": "0x10de",
       "gl_vendor": "(?i)nouveau.*",
+      "driver_vendor": "Mesa",
+      "driver_version": {
+        "op": "<",
+        "value": "10.1"
+      },
       "features": [
         "all"
       ]
@@ -346,17 +351,6 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "device_id": ["0x8811"],
       "features": [
         "all"
-      ]
-    },
-    {
-      "id": 35,
-      "description": "Stage3D is not supported on Linux",
-      "cr_bugs": [129848],
-      "os": {
-        "type": "linux"
-      },
-      "features": [
-        "flash_stage3d"
       ]
     },
     {
