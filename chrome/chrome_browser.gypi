@@ -306,6 +306,8 @@
       'browser/component_updater/sw_reporter_installer_win.h',
       'browser/component_updater/swiftshader_component_installer.cc',
       'browser/component_updater/swiftshader_component_installer.h',
+      'browser/component_updater/url_constants.cc',
+      'browser/component_updater/url_constants.h',
       'browser/crash_upload_list.cc',
       'browser/crash_upload_list.h',
       'browser/crash_upload_list_mac.cc',
