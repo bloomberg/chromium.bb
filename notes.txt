@@ -5,6 +5,16 @@ mentioned. Let's keep these in date order, newest first.
 
 
 -----------------------------------------------------------------------
+2015-04-14; Pekka Paalanen <ppaalanen@gmail.com>
+http://lists.freedesktop.org/archives/wayland-devel/2015-April/021309.html
+
+Never destroy weston_views or weston_surfaces from animation hooks.
+Never destroy weston_views from weston_view signals.
+
+Basically, never manipulate a list while transversing it.
+
+
+-----------------------------------------------------------------------
 2012-10-23; Pekka Paalanen <ppaalanen@gmail.com>
 http://lists.freedesktop.org/archives/wayland-devel/2012-October/005969.html
 
