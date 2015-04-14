@@ -18,7 +18,10 @@ var cwsContainerMock = {};
 
     switch (data['message']) {
       case 'initialize':
-        cwsContainerMock.onInitialize(source);
+        cwsContainerMock.onInitialize();
+        break;
+      case 'install_success':
+        cwsContainerMock.onInstallSuccess();
         break;
     };
   }
@@ -26,6 +29,14 @@ var cwsContainerMock = {};
   cwsContainerMock.onInitialize = function() {
     if (source && origin)
       source.postMessage({message: 'widget_loaded'}, origin);
+  };
+
+  cwsContainerMock.onInstallSuccess = function() {
+    if (source && origin)
+      source.postMessage({
+          message: 'after_install',
+          item_id: DUMMY_ITEM_ID
+      }, origin);
   };
 
   cwsContainerMock.onInstallButton = function() {

@@ -52,6 +52,15 @@ AppInstaller.prototype.install = function(callback) {
 };
 
 /**
+ * Prevents {@code this.callback_} from being called.
+ */
+AppInstaller.prototype.cancel = function() {
+  // TODO(tbarzic): Would it make sense to uninstall the app on success if the
+  // app instaler is cancelled instead of just invalidating the callback?
+  this.callback_ = null;
+};
+
+/**
  * Called when the installation is completed.
  *
  * @param {!Object|undefined} error Undefined if the installation is success,
@@ -59,6 +68,9 @@ AppInstaller.prototype.install = function(callback) {
  * @private
  */
 AppInstaller.prototype.onInstallCompleted_ = function(error) {
+  if (!this.callback_)
+    return;
+
   var installerResult = AppInstaller.Result.SUCCESS;
   var errorMessage = '';
   if (error) {

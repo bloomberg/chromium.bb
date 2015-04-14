@@ -41,7 +41,8 @@ CWSContainerClient.prototype = {
 CWSContainerClient.Events = {
   LOADED: 'CWSContainerClient.Events.LOADED',
   LOAD_FAILED: 'CWSContainerClient.Events.LOAD_FAILED',
-  REQUEST_INSTALL: 'CWSContainerClient.Events.REQUEST_INSTALL'
+  REQUEST_INSTALL: 'CWSContainerClient.Events.REQUEST_INSTALL',
+  INSTALL_DONE: 'CWSContainerClient.Events.INSTALL_DONE'
 };
 Object.freeze(CWSContainerClient.Events);
 
@@ -64,6 +65,9 @@ CWSContainerClient.prototype.onMessage_ = function(event) {
       break;
     case 'before_install':
       this.sendInstallRequest_(data['item_id']);
+      break;
+    case 'after_install':
+      this.sendInstallDone_(data['item_id']);
       break;
     default:
       console.error('Unexpected message: ' + data['message'], data);
@@ -136,6 +140,18 @@ CWSContainerClient.prototype.sendWidgetLoadFailed_ = function() {
  */
 CWSContainerClient.prototype.sendInstallRequest_ = function(itemId) {
   var event = new Event(CWSContainerClient.Events.REQUEST_INSTALL);
+  event.itemId = itemId;
+  this.dispatchEvent(event);
+};
+
+/**
+ * Notifies the suggest-app dialog that the item installation is completed.
+ *
+ * @param {string} itemId The installed item ID.
+ * @private
+ */
+CWSContainerClient.prototype.sendInstallDone_ = function(itemId) {
+  var event = new Event(CWSContainerClient.Events.INSTALL_DONE);
   event.itemId = itemId;
   this.dispatchEvent(event);
 };

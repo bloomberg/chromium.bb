@@ -205,6 +205,7 @@ CWSWidgetContainer.State = {
       'CWSWidgetContainer.State.INITIALIZE_FAILED_CLOSING',
   INITIALIZED: 'CWSWidgetContainer.State.INITIALIZED',
   INSTALLING: 'CWSWidgetContainer.State.INSTALLING',
+  WAITING_FOR_CONFIRMATION: 'CWSWidgetContainer.State.WAITING_FOR_CONFIRMATION',
   INSTALLED_CLOSING: 'CWSWidgetContainer.State.INSTALLED_CLOSING',
   OPENING_WEBSTORE_CLOSING: 'CWSWidgetContainer.State.OPENING_WEBSTORE_CLOSING',
   CANCELED_CLOSING: 'CWSWidgetContainer.State.CANCELED_CLOSING'
@@ -382,6 +383,9 @@ CWSWidgetContainer.prototype.start = function(options,  webStoreUrl) {
     this.webviewClient_.addEventListener(
         CWSContainerClient.Events.REQUEST_INSTALL,
         this.onInstallRequest_.bind(this));
+    this.webviewClient_.addEventListener(
+        CWSContainerClient.Events.INSTALL_DONE,
+        this.onInstallDone_.bind(this));
     this.webviewClient_.load();
   }.bind(this));
 };
@@ -462,10 +466,22 @@ CWSWidgetContainer.prototype.onInstallRequest_ = function(e) {
   this.installingItemId_ = itemId;
 
   this.appInstaller_ = new AppInstaller(itemId);
-  this.appInstaller_.install(this.onInstallCompleted_.bind(this));
+  this.appInstaller_.install(this.onItemInstalled_.bind(this));
 
   this.webviewContainer_.classList.add('show-spinner');
   this.state_ = CWSWidgetContainer.State.INSTALLING;
+};
+
+/**
+ * Called when the webview client receives install confirmation from the
+ * Web Store widget.
+ * @param {Event} e Event
+ * @private
+ */
+CWSWidgetContainer.prototype.onInstallDone_ = function(e) {
+  this.webviewContainer_.classList.remove('show-spinner');
+  this.state_ = CWSWidgetContainer.State.INSTALLED_CLOSING;
+  this.reportDone_();
 };
 
 /**
@@ -474,12 +490,16 @@ CWSWidgetContainer.prototype.onInstallRequest_ = function(e) {
  * @param {string} error Detail of the error.
  * @private
  */
-CWSWidgetContainer.prototype.onInstallCompleted_ = function(result, error) {
+CWSWidgetContainer.prototype.onItemInstalled_ = function(result, error) {
   var success = (result === AppInstaller.Result.SUCCESS);
 
-  this.webviewContainer_.classList.remove('show-spinner');
+  // If install succeeded, the spinner will be removed once
+  // |this.webviewClient_| dispatched INSTALL_DONE event.
+  if (!success)
+    this.webviewContainer_.classList.remove('show-spinner');
+
   this.state_ = success ?
-                CWSWidgetContainer.State.INSTALLED_CLOSING :
+                CWSWidgetContainer.State.WAITING_FOR_CONFIRMATION :
                 CWSWidgetContainer.State.INITIALIZED;  // Back to normal state.
   this.webviewClient_.onInstallCompleted(success, this.installingItemId_);
   this.installedItemId_ = this.installingItemId_;
@@ -489,7 +509,7 @@ CWSWidgetContainer.prototype.onInstallCompleted_ = function(result, error) {
     case AppInstaller.Result.SUCCESS:
       CWSWidgetContainer.Metrics.recordInstall(
           CWSWidgetContainer.Metrics.INSTALL.SUCCEEDED);
-      this.reportDone_();
+      // Wait for the widget webview container to dispatch INSTALL_DONE.
       break;
     case AppInstaller.Result.CANCELLED:
       CWSWidgetContainer.Metrics.recordInstall(
@@ -545,6 +565,13 @@ CWSWidgetContainer.prototype.finalizeAndGetResult = function() {
       CWSWidgetContainer.Metrics.recordLoad(
           CWSWidgetContainer.Metrics.LOAD.CANCELLED);
       this.state_ = CWSWidgetContainer.State.CANCELED_CLOSING;
+      break;
+    case CWSWidgetContainer.State.WAITING_FOR_CONFIRMATION:
+      // This can happen if the dialog is closed by the user before Web Store
+      // widget replies with 'after_install'.
+      // Consider this success, as the app has actually been installed.
+      // TODO(tbarzic): Should the app be uninstalled in this case?
+      this.state_ = CWSWidgetContainer.State.INSTALLED_CLOSING;
       break;
     case CWSWidgetContainer.State.INSTALLED_CLOSING:
     case CWSWidgetContainer.State.INITIALIZE_FAILED_CLOSING:
@@ -612,6 +639,10 @@ CWSWidgetContainer.prototype.reset_ = function () {
 
   if (this.webview_)
     this.webviewContainer_.removeChild(this.webview_);
+
+  if (this.appInstaller_)
+    this.appInstaller_.cancel();
+
   this.options_ = null;
 };
 
