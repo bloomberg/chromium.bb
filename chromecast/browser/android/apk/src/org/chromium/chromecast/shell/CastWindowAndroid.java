@@ -167,4 +167,11 @@ public class CastWindowAndroid extends LinearLayout {
     public ContentViewCore getContentViewCore() {
         return mContentViewCore;
     }
+
+    /**
+     * @return The {@link WebContents} managed by this class.
+     */
+    public WebContents getWebContents() {
+        return mWebContents;
+    }
 }
