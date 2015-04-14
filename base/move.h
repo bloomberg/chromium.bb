@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/compiler_specific.h"
-
 #ifndef BASE_MOVE_H_
 #define BASE_MOVE_H_
+
+#include "base/compiler_specific.h"
 
 // Macro with the boilerplate that makes a type move-only in C++03.
 //
