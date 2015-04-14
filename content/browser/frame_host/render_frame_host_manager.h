@@ -422,13 +422,10 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
                                    SiteInstance* instance);
 
  private:
+  friend class FrameTreeVisualizer;
   friend class NavigatorTestWithBrowserSideNavigation;
   friend class RenderFrameHostManagerTest;
-  friend class SitePerProcessBrowserTest;
   friend class TestWebContents;
-
-  FRIEND_TEST_ALL_PREFIXES(CrossProcessFrameTreeBrowserTest,
-                           CreateCrossProcessSubframeProxies);
 
   // Stores information regarding a SiteInstance targeted at a specific URL to
   // allow for comparisons without having to actually create new instances. It

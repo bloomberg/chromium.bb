@@ -169,21 +169,8 @@ void RenderFrameHostCreatedObserver::RenderFrameCreated(
 SitePerProcessBrowserTest::SitePerProcessBrowserTest() {
 };
 
-// static
-std::string SitePerProcessBrowserTest::DumpProxyHostSiteInstances(
-    FrameTreeNode* node) {
-  std::vector<std::string> sites;
-  for (auto& entry_pair : node->render_manager()->proxy_hosts_) {
-    sites.push_back(entry_pair.second->GetSiteInstance()->GetSiteURL().spec());
-  }
-  std::sort(sites.begin(), sites.end());
-  std::string result;
-  for (auto& site : sites) {
-    if (!result.empty())
-      result.append("\n");
-    result.append(site);
-  }
-  return result;
+std::string SitePerProcessBrowserTest::DepictFrameTree(FrameTreeNode* node) {
+  return visualizer_.DepictFrameTree(node);
 }
 
 void SitePerProcessBrowserTest::StartFrameAtDataURL() {
@@ -231,10 +218,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
             ->GetRenderWidgetHostViewsInTree();
     EXPECT_EQ(1U, views_set.size());
   }
-  RenderFrameProxyHost* proxy_to_parent =
-      child->render_manager()->GetRenderFrameProxyHost(
-          shell()->web_contents()->GetSiteInstance());
-  EXPECT_FALSE(proxy_to_parent);
+
+  EXPECT_EQ(
+      " Site A\n"
+      "   |--Site A\n"
+      "   +--Site A\n"
+      "        |--Site A\n"
+      "        +--Site A\n"
+      "             +--Site A\n"
+      "Where A = http://127.0.0.1/",
+      DepictFrameTree(root));
 
   // Load cross-site page into iframe.
   GURL url = embedded_test_server()->GetURL("foo.com", "/title2.html");
@@ -259,7 +252,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
             ->GetRenderWidgetHostViewsInTree();
     EXPECT_EQ(2U, views_set.size());
   }
-  proxy_to_parent = child->render_manager()->GetProxyToParent();
+  RenderFrameProxyHost* proxy_to_parent =
+      child->render_manager()->GetProxyToParent();
   EXPECT_TRUE(proxy_to_parent);
   EXPECT_TRUE(proxy_to_parent->cross_process_frame_connector());
   // The out-of-process iframe should have its own RenderWidgetHost,
@@ -268,6 +262,17 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
       rvh->GetView(),
       proxy_to_parent->cross_process_frame_connector()->get_view_for_testing());
   EXPECT_TRUE(child->current_frame_host()->GetRenderWidgetHost());
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   |--Site B ------- proxies for A\n"
+      "   +--Site A ------- proxies for B\n"
+      "        |--Site A -- proxies for B\n"
+      "        +--Site A -- proxies for B\n"
+      "             +--Site A -- proxies for B\n"
+      "Where A = http://127.0.0.1/\n"
+      "      B = http://foo.com/",
+      DepictFrameTree(root));
 
   // Load another cross-site page into the same iframe.
   url = embedded_test_server()->GetURL("bar.com", "/title3.html");
@@ -301,6 +306,17 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
       child->current_frame_host()->render_view_host()->GetView(),
       proxy_to_parent->cross_process_frame_connector()->get_view_for_testing());
   EXPECT_TRUE(child->current_frame_host()->GetRenderWidgetHost());
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for C\n"
+      "   |--Site C ------- proxies for A\n"
+      "   +--Site A ------- proxies for C\n"
+      "        |--Site A -- proxies for C\n"
+      "        +--Site A -- proxies for C\n"
+      "             +--Site A -- proxies for C\n"
+      "Where A = http://127.0.0.1/\n"
+      "      C = http://bar.com/",
+      DepictFrameTree(root));
 }
 
 // Tests OOPIF rendering by checking that the RWH of the iframe generates
@@ -418,6 +434,20 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RestrictFrameDetach) {
       bar_child->current_frame_host()->GetSiteInstance();
   EXPECT_NE(shell()->web_contents()->GetSiteInstance(), bar_site_instance);
 
+// TODO(nick): The following EXPECTs are disabled because of
+// http://crbug.com/476628, where the Site C node sometimes (flakily) has
+// children even though it's committed a nav to a page with no iframes.
+#if 0
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C\n"
+      "   |--Site B ------- proxies for A C\n"
+      "   +--Site C ------- proxies for A B\n"
+      "Where A = http://127.0.0.1/\n"
+      "      B = http://foo.com/\n"
+      "      C = http://bar.com/",
+      DepictFrameTree(root));
+#endif
+
   // Simulate an attempt to detach the root frame from foo_site_instance.  This
   // should kill foo_site_instance's process.
   RenderFrameProxyHost* foo_mainframe_rfph =
@@ -429,6 +459,17 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RestrictFrameDetach) {
   IPC::IpcSecurityTestUtil::PwnMessageReceived(
       foo_mainframe_rfph->GetProcess()->GetChannel(), evil_msg2);
   foo_terminated.Wait();
+
+#if 0
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C\n"
+      "   |--Site B ------- proxies for A C\n"
+      "   +--Site C ------- proxies for A B\n"
+      "Where A = http://127.0.0.1/\n"
+      "      B = http://foo.com/ (no process)\n"
+      "      C = http://bar.com/",
+      DepictFrameTree(root));
+#endif
 }
 
 // Disabled for flaky crashing: crbug.com/446575
@@ -628,9 +669,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // site B and stays in not rendered state.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        NavigateRemoteFrameToKilledProcessWithSubtree) {
-  GURL main_url(
-      embedded_test_server()->GetURL(
-          "/frame_tree/page_with_two_frames_nested.html"));
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/frame_tree/page_with_two_frames_nested.html"));
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
@@ -666,24 +706,18 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // below, so create a local scope so we can extend the lifetime of
   // |site_instance_c| with a refptr.
   {
-    SiteInstance* site_instance_b =
-        root->child_at(0)->current_frame_host()->GetSiteInstance();
-    // |site_c| will go away, so extend its lifetime with a refptr.
-    scoped_refptr<SiteInstanceImpl> site_instance_c =
-        node4->current_frame_host()->GetSiteInstance();
+    // Initially each frame has proxies for the other sites.
+    EXPECT_EQ(
+        " Site A ------------ proxies for B C\n"
+        "   |--Site B ------- proxies for A C\n"
+        "   |    +--Site C -- proxies for A B\n"
+        "   +--Site A ------- proxies for B C\n"
+        "Where A = http://a.com/\n"
+        "      B = http://bar.com/\n"
+        "      C = http://baz.com/",
+        DepictFrameTree(root));
 
-    // Initially proxies for both B and C will be present in the root and node3.
-    EXPECT_TRUE(root->render_manager()->GetRenderFrameProxyHost(
-                    site_instance_b));
-    EXPECT_TRUE(root->render_manager()->GetRenderFrameProxyHost(
-                    site_instance_c.get()));
-    FrameTreeNode* node3 = root->child_at(1);
-    EXPECT_TRUE(node3->render_manager()->GetRenderFrameProxyHost(
-                    site_instance_b));
-    EXPECT_TRUE(node3->render_manager()->GetRenderFrameProxyHost(
-                    site_instance_c.get()));
-
-    // Kill that cross-site renderer/process B.
+    // Kill the render process for Site B.
     RenderProcessHost* child_process_b =
         root->child_at(0)->current_frame_host()->GetProcess();
     RenderProcessHostWatcher crash_observer(
@@ -691,24 +725,31 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     child_process_b->Shutdown(0, false);
     crash_observer.Wait();
 
-    // Make sure proxy B stays around in root and node3.
-    EXPECT_TRUE(root->render_manager()->GetRenderFrameProxyHost(
-                    site_instance_b));
-    EXPECT_TRUE(node3->render_manager()->GetRenderFrameProxyHost(
-                    site_instance_b));
-    // Make sure proxy C goes away from root and node3.
-    EXPECT_FALSE(root->render_manager()->GetRenderFrameProxyHost(
-                     site_instance_c.get()));
-    EXPECT_FALSE(node3->render_manager()->GetRenderFrameProxyHost(
-                     site_instance_c.get()));
+    // The Site C frame (a child of the crashed Site B frame) should go away,
+    // and there should be no remaining proxies for site C anywhere.
+    EXPECT_EQ(
+        " Site A ------------ proxies for B\n"
+        "   |--Site B ------- proxies for A\n"
+        "   +--Site A ------- proxies for B\n"
+        "Where A = http://a.com/\n"
+        "      B = http://bar.com/ (no process)",
+        DepictFrameTree(root));
   }
 
-  // Now navigate the second iframe (node3) to the same site as the node2.
+  // Now navigate the second iframe (node3) to Site B also.
   FrameTreeNode* node3 = root->child_at(1);
   GURL url = embedded_test_server()->GetURL("bar.com", "/title1.html");
   NavigateFrameToURL(node3, url);
   EXPECT_TRUE(observer.last_navigation_succeeded());
   EXPECT_EQ(url, observer.last_navigation_url());
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   |--Site B ------- proxies for A\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://bar.com/",
+      DepictFrameTree(root));
 }
 
 // In A-embed-B-embed-C scenario, verify that killing process B clears proxies
@@ -725,9 +766,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // After we kill B, make sure proxies for C are cleared.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        KillingRendererClearsDescendantProxies) {
-  GURL main_url(
-      embedded_test_server()->GetURL(
-          "/frame_tree/page_with_two_frames_nested.html"));
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/frame_tree/page_with_two_frames_nested.html"));
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
@@ -760,40 +800,40 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(site_c_url, node4->current_url());
 
   // |site_instance_c| is expected to go away once we kill |child_process_b|
-  // below, so create a local scope so we can extend the lifetime of
-  // |site_instance_c| with a refptr.
-  {
-    SiteInstance* site_instance_b =
-        root->child_at(0)->current_frame_host()->GetSiteInstance();
-    scoped_refptr<SiteInstanceImpl> site_instance_c =
-        node4->current_frame_host()->GetSiteInstance();
+  // below; refcount it to extend the lifetime.
+  scoped_refptr<SiteInstanceImpl> site_instance_c =
+      node4->current_frame_host()->GetSiteInstance();
 
-    // Initially proxies for both B and C will be present in the root.
-    EXPECT_TRUE(root->render_manager()->GetRenderFrameProxyHost(
-                    site_instance_b));
-    EXPECT_TRUE(root->render_manager()->GetRenderFrameProxyHost(
-                    site_instance_c.get()));
+  // Initially proxies for both B and C will be present in the root.
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C\n"
+      "   |--Site B ------- proxies for A C\n"
+      "   |    +--Site C -- proxies for A B\n"
+      "   +--Site A ------- proxies for B C\n"
+      "Where A = http://a.com/\n"
+      "      B = http://bar.com/\n"
+      "      C = http://baz.com/",
+      DepictFrameTree(root));
+  // Kill process B.
+  RenderProcessHost* child_process_b =
+      root->child_at(0)->current_frame_host()->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      child_process_b, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  child_process_b->Shutdown(0, false);
+  crash_observer.Wait();
 
-    // Kill process B.
-    RenderProcessHost* child_process_b =
-        root->child_at(0)->current_frame_host()->GetProcess();
-    RenderProcessHostWatcher crash_observer(
-        child_process_b, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-    child_process_b->Shutdown(0, false);
-    crash_observer.Wait();
+  // Make sure proxy C has gone from root.
+  // Make sure proxy C has gone from node3 as well.
+  // Make sure proxy B stays around in root and node3.
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   |--Site B ------- proxies for A\n"
+      "   +--Site A ------- proxies for B\n"
+      "Where A = http://a.com/\n"
+      "      B = http://bar.com/ (no process)",
+      DepictFrameTree(root));
 
-    // Make sure proxy C has gone from root.
-    EXPECT_FALSE(root->render_manager()->GetRenderFrameProxyHost(
-                     site_instance_c.get()));
-    // Make sure proxy C has gone from node3 as well.
-    EXPECT_FALSE(root->child_at(1)->render_manager()->GetRenderFrameProxyHost(
-                     site_instance_c.get()));
-    // Make sure proxy B stays around in root and node3.
-    EXPECT_TRUE(root->render_manager()->GetRenderFrameProxyHost(
-                    site_instance_b));
-    EXPECT_TRUE(root->child_at(1)->render_manager()->GetRenderFrameProxyHost(
-                    site_instance_b));
-  }
+  EXPECT_TRUE(site_instance_c->HasOneRef());
 }
 
 // Crash a subframe and ensures its children are cleared from the FrameTree.
@@ -866,8 +906,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DISABLED_CrashSubframe) {
 // checks that if A embeds B and later adds a new subframe A2, A2 gets a proxy
 // in B's process.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CreateProxiesForNewFrames) {
-  GURL main_url(
-      embedded_test_server()->GetURL("/frame_tree/page_with_one_frame.html"));
+  GURL main_url(embedded_test_server()->GetURL(
+      "b.com", "/frame_tree/page_with_one_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
@@ -880,19 +920,28 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CreateProxiesForNewFrames) {
   EXPECT_EQ(embedded_test_server()->GetURL("baz.com", "/title1.html"),
             root->child_at(0)->current_url());
 
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://b.com/\n"
+      "      B = http://baz.com/",
+      DepictFrameTree(root));
+
   // Add a new child frame to the top-level frame.
   RenderFrameHostCreatedObserver frame_observer(shell()->web_contents(), 1);
   EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
                             "window.domAutomationController.send("
                             "    addFrame('data:text/html,foo'));"));
   frame_observer.Wait();
-  ASSERT_EQ(2U, root->child_count());
 
-  // The new child frame should now have a proxy in first frame's process.
-  RenderFrameProxyHost* proxy =
-      root->child_at(1)->render_manager()->GetRenderFrameProxyHost(
-          root->child_at(0)->current_frame_host()->GetSiteInstance());
-  EXPECT_TRUE(proxy);
+  // The new frame should have a proxy in Site B, for use by the old frame.
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   |--Site B ------- proxies for A\n"
+      "   +--Site A ------- proxies for B\n"
+      "Where A = http://b.com/\n"
+      "      B = http://baz.com/",
+      DepictFrameTree(root));
 }
 
 // TODO(nasko): Disable this test until out-of-process iframes is ready and the
@@ -1138,10 +1187,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     NavigateFrameToURL(root->child_at(0), http_url);
     EXPECT_EQ(http_url, observer.last_navigation_url());
     EXPECT_TRUE(observer.last_navigation_succeeded());
-    RenderFrameProxyHost* proxy_to_parent =
-        root->child_at(0)->render_manager()->GetRenderFrameProxyHost(
-            shell()->web_contents()->GetSiteInstance());
-    EXPECT_FALSE(proxy_to_parent);
+    EXPECT_EQ(
+        " Site A\n"
+        "   |--Site A\n"
+        "   +--Site A\n"
+        "        |--Site A\n"
+        "        +--Site A\n"
+        "             +--Site A\n"
+        "Where A = http://127.0.0.1/",
+        DepictFrameTree(root));
   }
 
   // Create the cross-site URL to navigate to.
@@ -1162,19 +1216,21 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     params.transition_type = PageTransitionFromInt(ui::PAGE_TRANSITION_LINK);
     params.frame_tree_node_id = child->frame_tree_node_id();
     child->navigator()->GetController()->LoadURLWithParams(params);
-    EXPECT_TRUE(child->render_manager()->pending_frame_host());
 
     site = child->render_manager()->pending_frame_host()->GetSiteInstance();
     EXPECT_NE(shell()->web_contents()->GetSiteInstance(), site);
 
-    EXPECT_TRUE(root->render_manager()->GetRenderFrameProxyHost(site));
-    EXPECT_TRUE(
-        root->child_at(0)->render_manager()->GetRenderFrameProxyHost(site));
-    EXPECT_FALSE(child->render_manager()->GetRenderFrameProxyHost(site));
-    for (size_t i = 0; i < child->child_count(); ++i) {
-      EXPECT_FALSE(
-          child->child_at(i)->render_manager()->GetRenderFrameProxyHost(site));
-    }
+    EXPECT_EQ(
+        " Site A ------------ proxies for B\n"
+        "   |--Site A ------- proxies for B\n"
+        "   +--Site A (B pending)\n"
+        "        |--Site A\n"
+        "        +--Site A\n"
+        "             +--Site A\n"
+        "Where A = http://127.0.0.1/\n"
+        "      B = http://foo.com/",
+        DepictFrameTree(root));
+
     // Now that the verification is done, run the message loop and wait for the
     // navigation to complete.
     navigation_observer.Wait();
@@ -1198,21 +1254,23 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     params.transition_type = PageTransitionFromInt(ui::PAGE_TRANSITION_LINK);
     params.frame_tree_node_id = child->frame_tree_node_id();
     child->navigator()->GetController()->LoadURLWithParams(params);
-    EXPECT_TRUE(child->render_manager()->pending_frame_host() != NULL);
 
     SiteInstance* site2 =
         child->render_manager()->pending_frame_host()->GetSiteInstance();
     EXPECT_NE(shell()->web_contents()->GetSiteInstance(), site2);
     EXPECT_NE(site, site2);
 
-    EXPECT_TRUE(root->render_manager()->GetRenderFrameProxyHost(site2));
-    EXPECT_TRUE(
-        root->child_at(0)->render_manager()->GetRenderFrameProxyHost(site2));
-    EXPECT_FALSE(child->render_manager()->GetRenderFrameProxyHost(site2));
-    for (size_t i = 0; i < child->child_count(); ++i) {
-      EXPECT_FALSE(
-          child->child_at(i)->render_manager()->GetRenderFrameProxyHost(site2));
-    }
+    EXPECT_EQ(
+        " Site A ------------ proxies for B C\n"
+        "   |--Site A ------- proxies for B C\n"
+        "   +--Site B (C pending) -- proxies for A\n"
+        "        |--Site A\n"
+        "        +--Site A\n"
+        "             +--Site A\n"
+        "Where A = http://127.0.0.1/\n"
+        "      B = http://foo.com/\n"
+        "      C = http://bar.com/",
+        DepictFrameTree(root));
 
     navigation_observer.Wait();
     EXPECT_TRUE(observer.last_navigation_succeeded());
@@ -1943,21 +2001,47 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RFPHDestruction) {
   NavigateFrameToURL(root->child_at(0), url);
   EXPECT_TRUE(observer.last_navigation_succeeded());
   EXPECT_EQ(url, observer.last_navigation_url());
-  EXPECT_EQ("http://foo.com/", DumpProxyHostSiteInstances(root));
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   |--Site B ------- proxies for A\n"
+      "   +--Site A ------- proxies for B\n"
+      "        |--Site A -- proxies for B\n"
+      "        +--Site A -- proxies for B\n"
+      "             +--Site A -- proxies for B\n"
+      "Where A = http://127.0.0.1/\n"
+      "      B = http://foo.com/",
+      DepictFrameTree(root));
 
   // Load another cross-site page.
   url = embedded_test_server()->GetURL("bar.com", "/title3.html");
   NavigateIframeToURL(shell()->web_contents(), "test", url);
   EXPECT_TRUE(observer.last_navigation_succeeded());
   EXPECT_EQ(url, observer.last_navigation_url());
-  EXPECT_EQ("http://bar.com/", DumpProxyHostSiteInstances(root));
+  EXPECT_EQ(
+      " Site A ------------ proxies for C\n"
+      "   |--Site C ------- proxies for A\n"
+      "   +--Site A ------- proxies for C\n"
+      "        |--Site A -- proxies for C\n"
+      "        +--Site A -- proxies for C\n"
+      "             +--Site A -- proxies for C\n"
+      "Where A = http://127.0.0.1/\n"
+      "      C = http://bar.com/",
+      DepictFrameTree(root));
 
   // Navigate back to the parent's origin.
   url = embedded_test_server()->GetURL("/title1.html");
   NavigateFrameToURL(child, url);
   EXPECT_EQ(url, observer.last_navigation_url());
   EXPECT_TRUE(observer.last_navigation_succeeded());
-  EXPECT_EQ("", DumpProxyHostSiteInstances(root));
+  EXPECT_EQ(
+      " Site A\n"
+      "   |--Site A\n"
+      "   +--Site A\n"
+      "        |--Site A\n"
+      "        +--Site A\n"
+      "             +--Site A\n"
+      "Where A = http://127.0.0.1/",
+      DepictFrameTree(root));
 }
 
 }  // namespace content
