@@ -20,6 +20,8 @@
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/login/user_names.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/onc/onc_constants.h"
@@ -544,6 +546,12 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetManagedProperties) {
   content::RunAllPendingInMessageLoop();
 
   EXPECT_TRUE(RunNetworkingSubtest("getManagedProperties")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetErrorState) {
+  chromeos::NetworkHandler::Get()->network_state_handler()->SetLastErrorForTest(
+      kWifi1ServicePath, "TestErrorState");
+  EXPECT_TRUE(RunNetworkingSubtest("getErrorState")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,

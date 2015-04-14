@@ -91,10 +91,6 @@ const char kUpdateConnectionDataFunction[] =
 const char kShowMorePlanInfoMessage[] = "showMorePlanInfo";
 const char kSimOperationMessage[] = "simOperation";
 
-// TODO(stevenjb): Replace these with the matching networkingPrivate methods.
-// crbug.com/279351.
-const char kStartConnectMessage[] = "startConnect";
-
 // TODO(stevenjb): Deprecate this once we handle events in the JS.
 const char kSetNetworkGuidMessage[] = "setNetworkGuid";
 
@@ -260,11 +256,6 @@ void InternetOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(kSetNetworkGuidMessage,
       base::Bind(&InternetOptionsHandler::SetNetworkGuidCallback,
                  base::Unretained(this)));
-
-  // networkingPrivate methods
-  web_ui()->RegisterMessageCallback(kStartConnectMessage,
-      base::Bind(&InternetOptionsHandler::StartConnectCallback,
-                 base::Unretained(this)));
 }
 
 void InternetOptionsHandler::OnExtensionLoaded(
@@ -344,23 +335,6 @@ void InternetOptionsHandler::SetNetworkGuidCallback(
     return;
   }
   details_guid_ = guid;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// networkingPrivate implementation methods. TODO(stevenjb): Use the
-// networkingPrivate API directly in the settings JS and deprecate these
-// methods. crbug.com/279351.
-
-void InternetOptionsHandler::StartConnectCallback(const base::ListValue* args) {
-  std::string guid;
-  if (!args->GetString(0, &guid)) {
-    NOTREACHED();
-    return;
-  }
-  std::string service_path = ServicePathFromGuid(guid);
-  if (!service_path.empty())
-    ui::NetworkConnect::Get()->ConnectToNetwork(service_path);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

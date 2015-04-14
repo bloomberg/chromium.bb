@@ -224,6 +224,10 @@ class CHROMEOS_EXPORT NetworkStateHandler
     return default_network_path_;
   }
 
+  // Sets the |last_error_| property of the matching NetworkState for tests.
+  void SetLastErrorForTest(const std::string& service_path,
+                           const std::string& error);
+
   // Constructs and initializes an instance for testing.
   static NetworkStateHandler* InitializeForTest();
 

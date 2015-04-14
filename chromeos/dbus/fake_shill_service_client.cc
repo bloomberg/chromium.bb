@@ -178,8 +178,8 @@ void FakeShillServiceClient::Connect(const dbus::ObjectPath& service_path,
                                      const ErrorCallback& error_callback) {
   VLOG(1) << "FakeShillServiceClient::Connect: " << service_path.value();
   base::DictionaryValue* service_properties = NULL;
-  if (!stub_services_.GetDictionary(
-          service_path.value(), &service_properties)) {
+  if (!stub_services_.GetDictionary(service_path.value(),
+                                    &service_properties)) {
     LOG(ERROR) << "Service not found: " << service_path.value();
     error_callback.Run("Error.InvalidService", "Invalid Service");
     return;
@@ -190,21 +190,22 @@ void FakeShillServiceClient::Connect(const dbus::ObjectPath& service_path,
   // sending an update.
   SetOtherServicesOffline(service_path.value());
 
+  // Clear Error.
+  service_properties->SetStringWithoutPathExpansion(shill::kErrorProperty, "");
+
   // Set Associating.
   base::StringValue associating_value(shill::kStateAssociation);
-  SetServiceProperty(service_path.value(),
-                     shill::kStateProperty,
+  SetServiceProperty(service_path.value(), shill::kStateProperty,
                      associating_value);
 
   // Stay Associating until the state is changed again after a delay.
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&FakeShillServiceClient::ContinueConnect,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 service_path.value()),
+                 weak_ptr_factory_.GetWeakPtr(), service_path.value()),
       base::TimeDelta::FromSeconds(GetInteractiveDelay()));
 
-  callback.Run();
+  base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
 void FakeShillServiceClient::Disconnect(const dbus::ObjectPath& service_path,
@@ -606,8 +607,7 @@ void FakeShillServiceClient::SetCellularActivated(
               error_callback);
 }
 
-void FakeShillServiceClient::ContinueConnect(
-    const std::string& service_path) {
+void FakeShillServiceClient::ContinueConnect(const std::string& service_path) {
   VLOG(1) << "FakeShillServiceClient::ContinueConnect: " << service_path;
   base::DictionaryValue* service_properties = NULL;
   if (!stub_services_.GetDictionary(service_path, &service_properties)) {
@@ -625,26 +625,24 @@ void FakeShillServiceClient::ContinueConnect(
 
   // No custom connect behavior set, continue with the default connect behavior.
   std::string passphrase;
-  service_properties->GetStringWithoutPathExpansion(
-      shill::kPassphraseProperty, &passphrase);
+  service_properties->GetStringWithoutPathExpansion(shill::kPassphraseProperty,
+                                                    &passphrase);
   if (passphrase == "failure") {
     // Simulate a password failure.
-    SetServiceProperty(service_path,
-                       shill::kStateProperty,
+    SetServiceProperty(service_path, shill::kErrorProperty,
+                       base::StringValue(shill::kErrorBadPassphrase));
+    SetServiceProperty(service_path, shill::kStateProperty,
                        base::StringValue(shill::kStateFailure));
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(
             base::IgnoreResult(&FakeShillServiceClient::SetServiceProperty),
-            weak_ptr_factory_.GetWeakPtr(),
-            service_path,
-            shill::kErrorProperty,
+            weak_ptr_factory_.GetWeakPtr(), service_path, shill::kErrorProperty,
             base::StringValue(shill::kErrorBadPassphrase)));
   } else {
     // Set Online.
     VLOG(1) << "Setting state to Online " << service_path;
-    SetServiceProperty(service_path,
-                       shill::kStateProperty,
+    SetServiceProperty(service_path, shill::kStateProperty,
                        base::StringValue(shill::kStateOnline));
   }
 }

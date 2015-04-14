@@ -187,24 +187,23 @@ const FieldTranslationEntry cellular_fields[] = {
 const FieldTranslationEntry network_fields[] = {
     {::onc::network_config::kGUID, shill::kGuidProperty},
     {::onc::network_config::kConnectable, shill::kConnectableProperty},
-    {::onc::network_config::kErrorState, shill::kErrorProperty},
     {::onc::network_config::kPriority, shill::kPriorityProperty},
 
     // Shill doesn't allow setting the name for non-VPN networks.
     // Name is conditionally translated, see onc_translator_*.
-    // { ::onc::network_config::kName, shill::kNameProperty },
+    // {::onc::network_config::kName, shill::kNameProperty },
 
     // Type is converted during translation, see onc_translator_*.
-    // { ::onc::network_config::kType, shill::kTypeProperty },
+    // {::onc::network_config::kType, shill::kTypeProperty },
 
     // These fields are converted during translation, see
     // onc_translator_shill_to_onc.cc. They are only converted when going from
     // Shill->ONC, and ignored otherwise.
-    // { ::onc::network_config::kConnectionState, shill::kStateProperty },
-    // { ::onc::network_config::kRestrictedConnectivity,
-    //   shill::kStateProperty },
-    // { ::onc::network_config::kSource, shill::kProfileProperty },
-    // { ::onc::network_config::kMacAddress, shill::kAddressProperty },
+    // {::onc::network_config::kConnectionState, shill::kStateProperty },
+    // {::onc::network_config::kErrorState, shill::kErrorProperty},
+    // {::onc::network_config::kRestrictedConnectivity, shill::kStateProperty },
+    // {::onc::network_config::kSource, shill::kProfileProperty },
+    // {::onc::network_config::kMacAddress, shill::kAddressProperty },
     {NULL}};
 
 const FieldTranslationEntry ipconfig_fields[] = {

@@ -68,8 +68,6 @@ class InternetOptionsHandler : public ::options::OptionsPageUIHandler,
 
   // networkingPrvate callbacks
   void GetManagedPropertiesCallback(const base::ListValue* args);
-  void StartConnectCallback(const base::ListValue* args);
-  void SetPropertiesCallback(const base::ListValue* args);
 
   // Updates the list of VPN providers enabled in the primary user's profile.
   void UpdateVPNProviders();

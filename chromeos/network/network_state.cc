@@ -231,8 +231,6 @@ void NetworkState::GetStateProperties(base::DictionaryValue* dictionary) const {
                                             profile_path());
 
   if (visible()) {
-    if (!error().empty())
-      dictionary->SetStringWithoutPathExpansion(shill::kErrorProperty, error());
     dictionary->SetStringWithoutPathExpansion(shill::kStateProperty,
                                               connection_state());
   }
@@ -396,6 +394,12 @@ bool NetworkState::UpdateName(const base::DictionaryValue& properties) {
     return true;
   }
   return false;
+}
+
+std::string NetworkState::GetErrorState() const {
+  if (ErrorIsValid(error()))
+    return error();
+  return last_error();
 }
 
 // static

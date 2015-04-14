@@ -52,21 +52,25 @@ class ShillToONCTranslator {
  public:
   ShillToONCTranslator(const base::DictionaryValue& shill_dictionary,
                        ::onc::ONCSource onc_source,
-                       const OncValueSignature& onc_signature)
+                       const OncValueSignature& onc_signature,
+                       const NetworkState* network_state)
       : shill_dictionary_(&shill_dictionary),
         onc_source_(onc_source),
-        onc_signature_(&onc_signature) {
+        onc_signature_(&onc_signature),
+        network_state_(network_state) {
     field_translation_table_ = GetFieldTranslationTable(onc_signature);
   }
 
   ShillToONCTranslator(const base::DictionaryValue& shill_dictionary,
                        ::onc::ONCSource onc_source,
                        const OncValueSignature& onc_signature,
-                       const FieldTranslationEntry* field_translation_table)
+                       const FieldTranslationEntry* field_translation_table,
+                       const NetworkState* network_state)
       : shill_dictionary_(&shill_dictionary),
         onc_source_(onc_source),
         onc_signature_(&onc_signature),
-        field_translation_table_(field_translation_table) {}
+        field_translation_table_(field_translation_table),
+        network_state_(network_state) {}
 
   // Translates the associated Shill dictionary and creates an ONC object of the
   // given signature.
@@ -142,6 +146,7 @@ class ShillToONCTranslator {
   const OncValueSignature* onc_signature_;
   const FieldTranslationEntry* field_translation_table_;
   scoped_ptr<base::DictionaryValue> onc_object_;
+  const NetworkState* network_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ShillToONCTranslator);
 };
@@ -382,9 +387,9 @@ void ShillToONCTranslator::TranslateCellularWithState() {
   if (device_dictionary) {
     // Merge the Device dictionary with this one (Cellular) using the
     // CellularDevice signature.
-    ShillToONCTranslator nested_translator(*device_dictionary, onc_source_,
-                                           kCellularWithStateSignature,
-                                           kCellularDeviceTable);
+    ShillToONCTranslator nested_translator(
+        *device_dictionary, onc_source_, kCellularWithStateSignature,
+        kCellularDeviceTable, network_state_);
     scoped_ptr<base::DictionaryValue> nested_object =
         nested_translator.CreateTranslatedONCObject();
     onc_object_->MergeDictionary(nested_object.get());
@@ -471,6 +476,17 @@ void ShillToONCTranslator::TranslateNetworkWithState() {
     if (NetworkState::NetworkStateIsCaptivePortal(*shill_dictionary_)) {
       onc_object_->SetBooleanWithoutPathExpansion(
           ::onc::network_config::kRestrictedConnectivity, true);
+    }
+  }
+
+  // 'ErrorState' reflects the most recent error maintained in NetworkState
+  // (which may not match Shill's Error or PreviousError properties). Non
+  // visible networks (with null network_state_) do not set ErrorState.
+  if (network_state_) {
+    std::string error_state = network_state_->GetErrorState();
+    if (!error_state.empty()) {
+      onc_object_->SetStringWithoutPathExpansion(
+          ::onc::network_config::kErrorState, error_state);
     }
   }
 
@@ -601,7 +617,8 @@ void ShillToONCTranslator::TranslateAndAddNestedObject(
     return;
   }
   ShillToONCTranslator nested_translator(dictionary, onc_source_,
-                                         *field_signature->value_signature);
+                                         *field_signature->value_signature,
+                                         network_state_);
   scoped_ptr<base::DictionaryValue> nested_object =
       nested_translator.CreateTranslatedONCObject();
   if (nested_object->empty())
@@ -642,7 +659,8 @@ void ShillToONCTranslator::TranslateAndAddListOfObjects(
       continue;
     ShillToONCTranslator nested_translator(
         *shill_value, onc_source_,
-        *field_signature->value_signature->onc_array_entry_signature);
+        *field_signature->value_signature->onc_array_entry_signature,
+        network_state_);
     scoped_ptr<base::DictionaryValue> nested_object =
         nested_translator.CreateTranslatedONCObject();
     // If the nested object couldn't be parsed, simply omit it.
@@ -728,10 +746,12 @@ std::string ShillToONCTranslator::GetName() {
 scoped_ptr<base::DictionaryValue> TranslateShillServiceToONCPart(
     const base::DictionaryValue& shill_dictionary,
     ::onc::ONCSource onc_source,
-    const OncValueSignature* onc_signature) {
+    const OncValueSignature* onc_signature,
+    const NetworkState* network_state) {
   CHECK(onc_signature != NULL);
 
-  ShillToONCTranslator translator(shill_dictionary, onc_source, *onc_signature);
+  ShillToONCTranslator translator(shill_dictionary, onc_source, *onc_signature,
+                                  network_state);
   return translator.CreateTranslatedONCObject();
 }
 

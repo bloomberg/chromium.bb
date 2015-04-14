@@ -14,6 +14,9 @@ class DictionaryValue;
 }
 
 namespace chromeos {
+
+class NetworkState;
+
 namespace onc {
 
 struct OncValueSignature;
@@ -39,12 +42,15 @@ scoped_ptr<base::DictionaryValue> TranslateONCObjectToShill(
 // only a subset of it and includes only the values that are actually required
 // by the UI. If |onc_source| != ONC_SOURCE_UNKNOWN then the 'Source' property
 // of the ONC dictionary will be set accordingly. Note: ONC_SOURCE_USER_IMPORT
-// is treated the same as ONC_SOURCE_NONE.
+// is treated the same as ONC_SOURCE_NONE. If |network_state| is provided it
+// will be used to set the ErrorState property. Otherwise ErrorState will not
+// be set.
 CHROMEOS_EXPORT
 scoped_ptr<base::DictionaryValue> TranslateShillServiceToONCPart(
     const base::DictionaryValue& shill_dictionary,
     ::onc::ONCSource onc_source,
-    const OncValueSignature* onc_signature);
+    const OncValueSignature* onc_signature,
+    const NetworkState* network_state);
 
 }  // namespace onc
 }  // namespace chromeos

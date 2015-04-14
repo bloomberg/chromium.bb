@@ -207,20 +207,6 @@ void NetworkConnectImpl::OnConnectFailed(
     scoped_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR("Connect Failed: " + error_name, service_path);
 
-  // If a new connect attempt canceled this connect, or a connect attempt to
-  // the same network is in progress, no need to notify the user here since they
-  // will be notified when the new or existing attempt completes.
-  if (error_name == NetworkConnectionHandler::kErrorConnectCanceled ||
-      error_name == NetworkConnectionHandler::kErrorConnecting) {
-    return;
-  }
-
-  // Already connected to the network, show the settings UI for the network.
-  if (error_name == NetworkConnectionHandler::kErrorConnected) {
-    ShowNetworkSettingsForPath(service_path);
-    return;
-  }
-
   if (error_name == NetworkConnectionHandler::kErrorBadPassphrase ||
       error_name == NetworkConnectionHandler::kErrorPassphraseRequired ||
       error_name == NetworkConnectionHandler::kErrorConfigurationRequired ||
@@ -247,7 +233,6 @@ void NetworkConnectImpl::OnConnectFailed(
 
 void NetworkConnectImpl::OnConnectSucceeded(const std::string& service_path) {
   NET_LOG_USER("Connect Succeeded", service_path);
-  network_state_notifier_->RemoveConnectNotification();
 }
 
 // If |check_error_state| is true, error state for the network is checked,
@@ -255,7 +240,6 @@ void NetworkConnectImpl::OnConnectSucceeded(const std::string& service_path) {
 // networks or repeat connect attempts).
 void NetworkConnectImpl::CallConnectToNetwork(const std::string& service_path,
                                               bool check_error_state) {
-  network_state_notifier_->RemoveConnectNotification();
   NetworkHandler::Get()->network_connection_handler()->ConnectToNetwork(
       service_path, base::Bind(&NetworkConnectImpl::OnConnectSucceeded,
                                weak_factory_.GetWeakPtr(), service_path),

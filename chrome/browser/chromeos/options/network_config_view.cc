@@ -25,6 +25,7 @@
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "components/device_event_log/device_event_log.h"
 #include "components/user_manager/user.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -136,6 +137,7 @@ void NetworkConfigView::Show(const std::string& service_path,
     delete view;
     return;
   }
+  NET_LOG(USER) << "NetworkConfigView::Show: " << service_path;
   view->ShowDialog(parent);
 }
 
@@ -151,6 +153,7 @@ void NetworkConfigView::ShowForType(const std::string& type,
     delete view;
     return;
   }
+  NET_LOG(USER) << "NetworkConfigView::ShowForType: " << type;
   view->ShowDialog(parent);
 }
 
