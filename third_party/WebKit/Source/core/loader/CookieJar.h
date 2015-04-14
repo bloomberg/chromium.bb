@@ -27,21 +27,17 @@
 #define CookieJar_h
 
 #include "wtf/Forward.h"
-#include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class Document;
 class KURL;
-struct Cookie;
 
 String cookies(const Document*, const KURL&);
 void setCookies(Document*, const KURL&, const String& cookieString);
 bool cookiesEnabled(const Document*);
 String cookieRequestHeaderFieldValue(const Document*, const KURL&);
-bool getRawCookies(const Document*, const KURL&, Vector<Cookie>&);
-void deleteCookie(const Document*, const KURL&, const String& cookieName);
 
 }
 
