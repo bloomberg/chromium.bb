@@ -23290,6 +23290,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.Wifi.SignalAtDisconnect" units="negative dBm">
+  <owner>silberst@chromium.org</owner>
+  <summary>
+    Chrome OS network metric indicating the negative of the dBm received signal
+    strength recorded at the time of a WiFi disconnect.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.Wifi.SignalStrength" units="negative dBm">
   <owner>quiche@chromium.org</owner>
   <summary>
