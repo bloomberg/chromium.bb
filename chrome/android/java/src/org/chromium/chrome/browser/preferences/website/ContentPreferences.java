@@ -96,11 +96,8 @@ public class ContentPreferences extends PreferenceFragment
         // associated content settings entry.
         for (String prefName : websitePrefs) {
             Preference p = findPreference(prefName);
-            int type = keyToContentSettingsType(prefName);
-            Website.PermissionDataEntry entry =
-                    Website.PermissionDataEntry.getPermissionDataEntry(type);
             boolean checked = false;
-            if (LOCATION_KEY.equals(p.getKey())) {
+            if (LOCATION_KEY.equals(prefName)) {
                 checked = LocationSettings.getInstance().areAllLocationSettingsEnabled();
             } else if (CAMERA_AND_MIC_KEY.equals(prefName)) {
                 checked = PrefServiceBridge.getInstance().isCameraMicEnabled();
@@ -117,16 +114,18 @@ public class ContentPreferences extends PreferenceFragment
             } else if (FULLSCREEN_KEY.equals(prefName)) {
                 checked = PrefServiceBridge.getInstance().isFullscreenAllowed();
             }
-            p.setTitle(entry.titleResourceId);
+            int contentType = keyToContentSettingsType(prefName);
+            p.setTitle(ContentSettingsResources.getTitle(contentType));
             if (COOKIES_KEY.equals(prefName) && checked
                     && prefServiceBridge.isBlockThirdPartyCookiesEnabled()) {
-                p.setSummary(R.string.website_settings_category_allowed_except_third_party);
+                p.setSummary(ContentSettingsResources.getCookieAllowedExceptThirdPartySummary());
+            } else if (LOCATION_KEY.equals(prefName) && checked
+                    && prefServiceBridge.isLocationAllowedByPolicy()) {
+                p.setSummary(ContentSettingsResources.getGeolocationAllowedSummary());
             } else {
-                p.setSummary(checked
-                        ? entry.contentSettingToResourceIdForCategory(entry.defaultEnabledValue)
-                        : entry.contentSettingToResourceIdForCategory(entry.defaultDisabledValue));
+                p.setSummary(ContentSettingsResources.getCategorySummary(contentType, checked));
             }
-            p.setIcon(entry.iconResourceId);
+            p.setIcon(ContentSettingsResources.getIcon(contentType));
             p.setOnPreferenceClickListener(this);
         }
 

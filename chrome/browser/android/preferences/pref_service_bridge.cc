@@ -242,6 +242,16 @@ static jboolean GetAllowLocationEnabled(JNIEnv* env, jobject obj) {
   return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION);
 }
 
+static jboolean GetLocationAllowedByPolicy(JNIEnv* env, jobject obj) {
+  if (!IsContentSettingManaged(CONTENT_SETTINGS_TYPE_GEOLOCATION))
+    return false;
+  HostContentSettingsMap* content_settings =
+      GetOriginalProfile()->GetHostContentSettingsMap();
+  return content_settings->GetDefaultContentSetting(
+             CONTENT_SETTINGS_TYPE_GEOLOCATION, nullptr) ==
+         CONTENT_SETTING_ALLOW;
+}
+
 static jboolean GetAllowLocationUserModifiable(JNIEnv* env, jobject obj) {
   return IsContentSettingUserModifiable(CONTENT_SETTINGS_TYPE_GEOLOCATION);
 }

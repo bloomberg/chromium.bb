@@ -269,10 +269,17 @@ public final class PrefServiceBridge {
     }
 
     /**
-     * @return whether geolocation information can be shared with content
+     * @return whether geolocation information can be shared with content.
      */
     public boolean isAllowLocationEnabled() {
         return nativeGetAllowLocationEnabled();
+    }
+
+    /**
+     * @return whether geolocation information access is set to be shared with all sites, by policy.
+     */
+    public boolean isLocationAllowedByPolicy() {
+        return nativeGetLocationAllowedByPolicy();
     }
 
     /**
@@ -872,6 +879,7 @@ public final class PrefServiceBridge {
     private native boolean nativeGetRememberPasswordsManaged();
     private native boolean nativeGetPasswordManagerAutoSigninManaged();
     private native boolean nativeGetAllowLocationUserModifiable();
+    private native boolean nativeGetLocationAllowedByPolicy();
     private native boolean nativeGetAllowLocationManagedByCustodian();
     private native boolean nativeGetDoNotTrackEnabled();
     private native boolean nativeGetPasswordEchoEnabled();

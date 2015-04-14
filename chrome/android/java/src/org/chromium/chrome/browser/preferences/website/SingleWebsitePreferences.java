@@ -317,58 +317,52 @@ public class SingleWebsitePreferences extends PreferenceFragment
 
         ListPreference listPreference = (ListPreference) preference;
 
-        Website.PermissionDataEntry entry = getPermissionDataEntry(preference.getKey());
+        int contentType = getContentSettingsTypeFromPreferenceKey(preference.getKey());
         CharSequence[] keys = new String[2];
         CharSequence[] descriptions = new String[2];
         keys[0] = ContentSetting.ALLOW.toString();
         keys[1] = ContentSetting.BLOCK.toString();
         descriptions[0] = getResources().getString(
-                entry.contentSettingToResourceIdForSite(ContentSetting.ALLOW));
+                ContentSettingsResources.getSiteSummary(ContentSetting.ALLOW));
         descriptions[1] = getResources().getString(
-                entry.contentSettingToResourceIdForSite(ContentSetting.BLOCK));
+                ContentSettingsResources.getSiteSummary(ContentSetting.BLOCK));
         listPreference.setEntryValues(keys);
         listPreference.setEntries(descriptions);
         int index = (value == ContentSetting.ALLOW ? 0 : 1);
         listPreference.setValueIndex(index);
-        if (entry.explanationResourceId != 0) {
-            listPreference.setTitle(entry.explanationResourceId);
+        int explanationResourceId = ContentSettingsResources.getExplanation(contentType);
+        if (explanationResourceId != 0) {
+            listPreference.setTitle(explanationResourceId);
         }
-        listPreference.setIcon(entry.iconResourceId);
+        listPreference.setIcon(ContentSettingsResources.getIcon(contentType));
 
         preference.setSummary(mListPreferenceSummaries[index]);
         listPreference.setOnPreferenceChangeListener(this);
     }
 
-    private Website.PermissionDataEntry getPermissionDataEntry(String preferenceKey) {
-        if (PREF_COOKIES_PERMISSION.equals(preferenceKey)) {
-            return Website.PermissionDataEntry.getPermissionDataEntry(
-                    ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES);
-        } else if (PREF_FULLSCREEN_PERMISSION.equals(preferenceKey)) {
-            return Website.PermissionDataEntry.getPermissionDataEntry(
-                    ContentSettingsType.CONTENT_SETTINGS_TYPE_FULLSCREEN);
-        } else if (PREF_JAVASCRIPT_PERMISSION.equals(preferenceKey)) {
-            return Website.PermissionDataEntry.getPermissionDataEntry(
-                    ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT);
-        } else if (PREF_LOCATION_ACCESS.equals(preferenceKey)) {
-            return Website.PermissionDataEntry.getPermissionDataEntry(
-                    ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION);
-        } else if (PREF_MIDI_SYSEX_PERMISSION.equals(preferenceKey)) {
-            return Website.PermissionDataEntry.getPermissionDataEntry(
-                    ContentSettingsType.CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
-        } else if (PREF_POPUP_PERMISSION.equals(preferenceKey)) {
-            return Website.PermissionDataEntry.getPermissionDataEntry(
-                    ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS);
-        } else if (PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION.equals(preferenceKey)) {
-            return Website.PermissionDataEntry.getPermissionDataEntry(
-                    ContentSettingsType.CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER);
-        } else if (PREF_PUSH_NOTIFICATIONS_PERMISSION.equals(preferenceKey)) {
-            return Website.PermissionDataEntry.getPermissionDataEntry(
-                    ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-        } else if (PREF_VOICE_AND_VIDEO_CAPTURE_PERMISSION.equals(preferenceKey)) {
-            return Website.PermissionDataEntry.getPermissionDataEntry(
-                    ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM);
+    private int getContentSettingsTypeFromPreferenceKey(String preferenceKey) {
+        switch (preferenceKey) {
+            case PREF_COOKIES_PERMISSION:
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES;
+            case PREF_FULLSCREEN_PERMISSION:
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_FULLSCREEN;
+            case PREF_JAVASCRIPT_PERMISSION:
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT;
+            case PREF_LOCATION_ACCESS:
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION;
+            case PREF_MIDI_SYSEX_PERMISSION:
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_MIDI_SYSEX;
+            case PREF_POPUP_PERMISSION:
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS;
+            case PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION:
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER;
+            case PREF_PUSH_NOTIFICATIONS_PERMISSION:
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
+            case PREF_VOICE_AND_VIDEO_CAPTURE_PERMISSION:
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM;
+            default:
+                return 0;
         }
-        return null;
     }
 
     /**

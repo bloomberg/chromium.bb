@@ -317,7 +317,9 @@ public class WebsitePreferences extends PreferenceFragment
 
     @Override
     public boolean onPreferenceTreeClick(PreferenceScreen screen, Preference preference) {
-        if (isCategoryManaged()) {
+        // Do not show the toast if the System Location setting is disabled.
+        if (getPreferenceScreen().findPreference(READ_WRITE_TOGGLE_KEY) != null
+                && isCategoryManaged()) {
             showManagedToast();
             return false;
         }
@@ -493,13 +495,10 @@ public class WebsitePreferences extends PreferenceFragment
             allowedGroup.setOnPreferenceClickListener(this);
             blockedGroup.setOnPreferenceClickListener(this);
 
-            // Determine what toggle to use and what it should display.
-            int type = mFilter.toContentSettingsType(mCategoryFilter);
-            Website.PermissionDataEntry entry =
-                    Website.PermissionDataEntry.getPermissionDataEntry(type);
             if (mFilter.showGeolocationSites(mCategoryFilter)
-                    && !isCategoryManaged()
-                    && !LocationSettings.getInstance().isSystemLocationSettingEnabled()) {
+                    && !LocationSettings.getInstance().isSystemLocationSettingEnabled()
+                    && (LocationSettings.getInstance().isChromeLocationSettingEnabled()
+                               || !isCategoryManaged())) {
                 getPreferenceScreen().removePreference(globalToggle);
 
                 // Show the link to system settings since system location is disabled.
@@ -516,10 +515,20 @@ public class WebsitePreferences extends PreferenceFragment
                         LocationSettings.getInstance().getSystemLocationSettingsIntent());
                 getPreferenceScreen().addPreference(locationMessage);
             } else {
+                // Determine what toggle to use and what it should display.
+                int contentType = mFilter.toContentSettingsType(mCategoryFilter);
                 globalToggle.setOnPreferenceChangeListener(this);
-                globalToggle.setTitle(entry.titleResourceId);
-                globalToggle.setSummaryOn(entry.getEnabledSummaryResourceId());
-                globalToggle.setSummaryOff(entry.getDisabledSummaryResourceId());
+                globalToggle.setTitle(ContentSettingsResources.getTitle(contentType));
+                if (mFilter.showGeolocationSites(mCategoryFilter)
+                        && PrefServiceBridge.getInstance().isLocationAllowedByPolicy()) {
+                    globalToggle.setSummaryOn(
+                            ContentSettingsResources.getGeolocationAllowedSummary());
+                } else {
+                    globalToggle.setSummaryOn(
+                            ContentSettingsResources.getEnabledSummary(contentType));
+                }
+                globalToggle.setSummaryOff(
+                        ContentSettingsResources.getDisabledSummary(contentType));
                 if (isCategoryManaged() && !isCategoryManagedByCustodian()) {
                     globalToggle.setIcon(R.drawable.controlled_setting_mandatory);
                 }
