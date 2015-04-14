@@ -26,8 +26,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef StyledMarkupAccumulator_h
-#define StyledMarkupAccumulator_h
+#ifndef StyledMarkupSerializer_h
+#define StyledMarkupSerializer_h
 
 #include "core/dom/NodeTraversal.h"
 #include "core/editing/EditingStrategy.h"
@@ -41,25 +41,43 @@ class ContainerNode;
 class Node;
 class StylePropertySet;
 
+class StyledMarkupSerializer;
+
 class StyledMarkupAccumulator final : public MarkupAccumulator {
+    STACK_ALLOCATED();
+public:
+    StyledMarkupAccumulator(StyledMarkupSerializer*, EAbsoluteURLs, const Position& start, const Position& end);
+    virtual void appendText(StringBuilder&, Text&) override;
+    virtual void appendElement(StringBuilder&, Element&, Namespaces*) override;
+
+private:
+    // StyledMarkupAccumulator is owned by StyledMarkupSerializer and
+    // |m_serializer| must be living while this is living.
+    StyledMarkupSerializer* m_serializer;
+};
+
+class StyledMarkupSerializer final {
+    STACK_ALLOCATED();
 public:
     enum RangeFullySelectsNode { DoesFullySelectNode, DoesNotFullySelectNode };
 
-    StyledMarkupAccumulator(EAbsoluteURLs, EAnnotateForInterchange, const Position& start, const Position& end, Node* highestNodeToBeSerialized = nullptr);
+    StyledMarkupSerializer(EAbsoluteURLs, EAnnotateForInterchange, const Position& start, const Position& end, Node* highestNodeToBeSerialized = nullptr);
 
     template<typename Strategy>
     Node* serializeNodes(Node* startNode, Node* pastEnd);
-    void appendString(const String& s) { return MarkupAccumulator::appendString(s); }
+    void appendString(const String& s) { return m_markupAccumulator.appendString(s); }
     void wrapWithNode(ContainerNode&, bool convertBlocksToInlines = false, RangeFullySelectsNode = DoesFullySelectNode);
     void wrapWithStyleNode(StylePropertySet*, const Document&, bool isBlock = false);
     String takeResults();
 
 private:
+    friend class StyledMarkupAccumulator;
+
+    EditingStyle* wrappingStyle() { return m_wrappingStyle.get(); }
+
     void appendStyleNodeOpenTag(StringBuilder&, StylePropertySet*, const Document&, bool isBlock = false);
     const String& styleNodeCloseTag(bool isBlock = false);
-    virtual void appendText(StringBuilder& out, Text&) override;
     void appendElement(StringBuilder& out, Element&, bool addDisplayInline, RangeFullySelectsNode);
-    virtual void appendElement(StringBuilder& out, Element& element, Namespaces*) override { appendElement(out, element, false, DoesFullySelectNode); }
 
     enum NodeTraversalMode { EmitString, DoNotEmitString };
 
@@ -73,14 +91,15 @@ private:
             && m_wrappingStyle && m_wrappingStyle->style();
     }
 
+    StyledMarkupAccumulator m_markupAccumulator;
     Vector<String> m_reversedPrecedingMarkup;
     const EAnnotateForInterchange m_shouldAnnotate;
     RawPtrWillBeMember<Node> m_highestNodeToBeSerialized;
     RefPtrWillBeMember<EditingStyle> m_wrappingStyle;
 };
 
-extern template Node* StyledMarkupAccumulator::serializeNodes<EditingStrategy>(Node* startNode, Node* endNode);
+extern template Node* StyledMarkupSerializer::serializeNodes<EditingStrategy>(Node* startNode, Node* endNode);
 
 } // namespace blink
 
-#endif // StyledMarkupAccumulator_h
+#endif // StyledMarkupSerializer_h

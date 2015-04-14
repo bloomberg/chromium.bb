@@ -47,7 +47,7 @@
 #include "core/dom/Range.h"
 #include "core/editing/EditingStrategy.h"
 #include "core/editing/Editor.h"
-#include "core/editing/StyledMarkupAccumulator.h"
+#include "core/editing/StyledMarkupSerializer.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
@@ -281,7 +281,7 @@ static String createMarkupInternal(const Position& startPosition, const Position
     if (body && areSameRanges(body, startPosition, endPosition))
         fullySelectedRoot = body;
     HTMLElement* specialCommonAncestor = highestAncestorToWrapMarkup(startPosition, endPosition, shouldAnnotate, constrainingAncestor);
-    StyledMarkupAccumulator accumulator(shouldResolveURLs, shouldAnnotate, startPosition, endPosition, specialCommonAncestor);
+    StyledMarkupSerializer accumulator(shouldResolveURLs, shouldAnnotate, startPosition, endPosition, specialCommonAncestor);
     Node* pastEnd = endPosition.nodeAsRangePastLastNode();
 
     Node* startNode = startPosition.nodeAsRangeFirstNode();
@@ -325,7 +325,7 @@ static String createMarkupInternal(const Position& startPosition, const Position
             } else {
                 // Since this node and all the other ancestors are not in the selection we want to set RangeFullySelectsNode to DoesNotFullySelectNode
                 // so that styles that affect the exterior of the node are not included.
-                accumulator.wrapWithNode(*ancestor, convertBlocksToInlines, StyledMarkupAccumulator::DoesNotFullySelectNode);
+                accumulator.wrapWithNode(*ancestor, convertBlocksToInlines, StyledMarkupSerializer::DoesNotFullySelectNode);
             }
 
             if (ancestor == specialCommonAncestor)
@@ -780,11 +780,11 @@ String createStyledMarkupForNavigationTransition(Node* node)
 {
     node->document().updateLayoutIgnorePendingStylesheets();
 
-    StyledMarkupAccumulator accumulator(ResolveAllURLs, AnnotateForNavigationTransition, Position(), Position(), 0);
-    accumulator.serializeNodes<EditingStrategy>(node, NodeTraversal::nextSkippingChildren(*node));
+    StyledMarkupSerializer serializer(ResolveAllURLs, AnnotateForNavigationTransition, Position(), Position(), 0);
+    serializer.serializeNodes<EditingStrategy>(node, NodeTraversal::nextSkippingChildren(*node));
 
     static const char* documentMarkup = "<!DOCTYPE html><meta name=\"viewport\" content=\"width=device-width, user-scalable=0\">";
-    return documentMarkup + accumulator.takeResults();
+    return documentMarkup + serializer.takeResults();
 }
 
 }
