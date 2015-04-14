@@ -29,6 +29,15 @@ Polymer('cr-settings-a11y-page', {
     prefs: null,
 
     /**
+     * Whether the page is a subpage.
+     *
+     * @attribute subpage
+     * @type boolean
+     * @default false
+     */
+    subpage: false,
+
+    /**
      * ID of the page.
      *
      * @attribute PAGE_ID

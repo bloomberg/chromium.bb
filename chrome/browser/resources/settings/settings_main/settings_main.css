@@ -8,10 +8,17 @@
   display: block;
 }
 
-#outer {
+#mainContainer {
   box-sizing: border-box;
   height: 100%;
   overflow: auto;
+}
+
+#mainContainer > paper-shadow {
+  -webkit-padding-start: 80px;
+  background-color: white;
+  padding-bottom: 40px;
+  padding-top: 40px;
 }
 
 #pageContainer {

@@ -58,8 +58,7 @@ Polymer('cr-settings-main', {
                      /** @type {MutationObserverInit} */ {
                        childList: true,
                      });
-    this.pages = this.$.pageContainer.items;
-    this.ensureSelection_();
+    this.pageContainerUpdated_();
   },
 
   /**
@@ -81,7 +80,9 @@ Polymer('cr-settings-main', {
    * @private
    */
   pageContainerUpdated_: function() {
-    this.pages = this.$.pageContainer.items;
+    this.pages = this.$.pageContainer.items.filter(function(item) {
+      return !item.subpage;
+    });
     this.ensureSelection_();
   },
 });

@@ -29,6 +29,15 @@ Polymer('cr-settings-internet-page', {
     PAGE_ID: 'internet',
 
     /**
+     * Whether the page is a subpage.
+     *
+     * @attribute subpage
+     * @type boolean
+     * @default false
+     */
+    subpage: false,
+
+    /**
      * Title for the page header and navigation menu.
      *
      * @attribute pageTitle
