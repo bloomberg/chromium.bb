@@ -2104,13 +2104,4 @@ crbug.com/475244 media/video-durationchange-on-ended.html [ Pass Failure ]
 crbug.com/476913 [ Debug SnowLeopard ] virtual/antialiasedtext/fast/text/unicode-fallback-font.html [ Crash ]
 crbug.com/476913 [ Debug SnowLeopard ] fast/text/unicode-fallback-font.html [ Crash ]
 
-crbug.com/476933 fast/canvas/canvas-composite-video.html [ NeedsRebaseline ]
-crbug.com/476933 fast/canvas/canvas-drawImage-video.html [ NeedsRebaseline ]
-crbug.com/476933 media/video-canvas-alpha.html [ NeedsRebaseline ]
-crbug.com/476933 virtual/display_list_2d_canvas/fast/canvas/canvas-composite-video.html [ NeedsRebaseline ]
-crbug.com/476933 virtual/display_list_2d_canvas/fast/canvas/canvas-drawImage-video.html [ NeedsRebaseline ]
-
-crbug.com/476933 virtual/slimmingpaint/fast/canvas/canvas-composite-video.html [ NeedsRebaseline ]
-crbug.com/476933 virtual/slimmingpaint/fast/canvas/canvas-drawImage-video.html [ NeedsRebaseline ]
-
 crbug.com/450271 [ Win ] compositing/repaint/end-of-opacity-transition.html [ Pass Failure ]
