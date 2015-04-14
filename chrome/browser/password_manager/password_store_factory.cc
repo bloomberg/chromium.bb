@@ -13,6 +13,8 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -81,6 +83,49 @@ void DelayReportOsPassword() {
       base::TimeDelta::FromSeconds(40));
 }
 
+base::FilePath GetAffiliationDatabasePath(Profile* profile) {
+  DCHECK(profile);
+  return profile->GetPath().Append(chrome::kAffiliationDatabaseFileName);
+}
+
+bool ShouldAffiliationBasedMatchingBeActive(Profile* profile) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (!password_manager::IsAffiliationBasedMatchingEnabled(*command_line))
+    return false;
+
+  DCHECK(profile);
+  ProfileSyncService* profile_sync_service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  return profile_sync_service &&
+         profile_sync_service->IsSyncEnabledAndLoggedIn() &&
+         profile_sync_service->SyncActive() &&
+         profile_sync_service->GetPreferredDataTypes().Has(syncer::PASSWORDS) &&
+         !profile_sync_service->IsUsingSecondaryPassphrase();
+}
+
+void ActivateAffiliationBasedMatching(PasswordStore* password_store,
+                                      Profile* profile) {
+  DCHECK(password_store);
+  DCHECK(profile);
+
+  // The PasswordStore is so far the only consumer of the AffiliationService,
+  // therefore the service is owned by the AffiliatedMatchHelper, which in
+  // turn is owned by the PasswordStore.
+  // TODO(engedy): Double-check which request context we want.
+  scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner(
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::DB));
+  scoped_ptr<password_manager::AffiliationService> affiliation_service(
+      new password_manager::AffiliationService(db_thread_runner));
+  affiliation_service->Initialize(profile->GetRequestContext(),
+                                  GetAffiliationDatabasePath(profile));
+  scoped_ptr<password_manager::AffiliatedMatchHelper> affiliated_match_helper(
+      new password_manager::AffiliatedMatchHelper(password_store,
+                                                  affiliation_service.Pass()));
+  affiliated_match_helper->Initialize();
+  password_store->SetAffiliatedMatchHelper(affiliated_match_helper.Pass());
+}
+
 }  // namespace
 
 
@@ -119,6 +164,24 @@ scoped_refptr<PasswordStore> PasswordStoreFactory::GetForProfile(
 // static
 PasswordStoreFactory* PasswordStoreFactory::GetInstance() {
   return Singleton<PasswordStoreFactory>::get();
+}
+
+// static
+void PasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged(
+    Profile* profile) {
+  scoped_refptr<PasswordStore> password_store =
+      GetForProfile(profile, ServiceAccessType::EXPLICIT_ACCESS);
+  if (!password_store)
+    return;
+
+  if (ShouldAffiliationBasedMatchingBeActive(profile) &&
+      !password_store->HasAffiliatedMatchHelper()) {
+    ActivateAffiliationBasedMatching(password_store.get(), profile);
+  } else if (!ShouldAffiliationBasedMatchingBeActive(profile) &&
+             password_store->HasAffiliatedMatchHelper()) {
+    password_store->SetAffiliatedMatchHelper(
+        make_scoped_ptr<password_manager::AffiliatedMatchHelper>(nullptr));
+  }
 }
 
 PasswordStoreFactory::PasswordStoreFactory()
@@ -275,24 +338,6 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
           sync_start_util::GetFlareForSyncableService(profile->GetPath()))) {
     NOTREACHED() << "Could not initialize password manager.";
     return nullptr;
-  }
-
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (password_manager::IsAffiliationBasedMatchingEnabled(*command_line)) {
-    // The PasswordStore is so far the only consumer of the AffiliationService,
-    // therefore the service is owned by the AffiliatedMatchHelper, which in
-    // turn is owned by the PasswordStore.
-    // TODO(engedy): Double-check which request context we want.
-    scoped_ptr<password_manager::AffiliationService> affiliation_service(
-        new password_manager::AffiliationService(db_thread_runner));
-    affiliation_service->Initialize(
-        profile->GetRequestContext(),
-        profile->GetPath().Append(chrome::kAffiliationDatabaseFileName));
-    scoped_ptr<password_manager::AffiliatedMatchHelper> affiliated_match_helper(
-        new password_manager::AffiliatedMatchHelper(
-            ps.get(), affiliation_service.Pass()));
-    affiliated_match_helper->Initialize();
-    ps->SetAffiliatedMatchHelper(affiliated_match_helper.Pass());
   }
 
   return new PasswordStoreService(ps);

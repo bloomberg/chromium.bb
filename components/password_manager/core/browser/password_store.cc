@@ -75,9 +75,11 @@ bool PasswordStore::Init(const syncer::SyncableService::StartSyncFlare& flare) {
 
 void PasswordStore::SetAffiliatedMatchHelper(
     scoped_ptr<AffiliatedMatchHelper> helper) {
-  DCHECK(helper);
-  DCHECK(!affiliated_match_helper_);
   affiliated_match_helper_ = helper.Pass();
+}
+
+bool PasswordStore::HasAffiliatedMatchHelper() const {
+  return affiliated_match_helper_;
 }
 
 void PasswordStore::AddLogin(const PasswordForm& form) {
