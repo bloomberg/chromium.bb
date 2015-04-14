@@ -603,6 +603,8 @@ class BASE_EXPORT TraceLog {
 
   int process_id() const { return process_id_; }
 
+  uint64 MangleEventId(uint64 id);
+
   // Exposed for unittesting:
 
   void WaitSamplingEventForTesting();

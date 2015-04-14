@@ -1921,7 +1921,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
   DCHECK(!timestamp.is_null());
 
   if (flags & TRACE_EVENT_FLAG_MANGLE_ID)
-    id ^= process_id_hash_;
+    id = MangleEventId(id);
 
   TimeTicks offset_event_timestamp = OffsetTimestamp(timestamp);
   TimeTicks now = flags & TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP ?
@@ -2188,6 +2188,10 @@ void TraceLog::CancelWatchEvent() {
   subtle::NoBarrier_Store(&watch_category_, 0);
   watch_event_name_ = "";
   watch_event_callback_.Reset();
+}
+
+uint64 TraceLog::MangleEventId(uint64 id) {
+  return id ^ process_id_hash_;
 }
 
 void TraceLog::AddMetadataEventsWhileLocked() {

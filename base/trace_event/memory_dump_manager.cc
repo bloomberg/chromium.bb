@@ -115,9 +115,8 @@ void MemoryDumpManager::RequestGlobalDump(
   if (!UNLIKELY(subtle::NoBarrier_Load(&memory_tracing_enabled_)))
     return;
 
-  // TODO(primiano): Make guid actually unique (cross-process) by hashing it
-  // with the PID. See crbug.com/462931 for details.
-  const uint64 guid = g_next_guid.GetNext();
+  const uint64 guid =
+      TraceLog::GetInstance()->MangleEventId(g_next_guid.GetNext());
 
   // The delegate_ is supposed to be thread safe, immutable and long lived.
   // No need to keep the lock after we ensure that a delegate has been set.
