@@ -31,8 +31,6 @@ Properties of array
   length own number 3
 Properties of Bound function
   __proto__ own function undefined
-  arguments own no value, getter, setter
-  caller own no value, getter, setter
   length own number 0
   name own string 
 Internal properties

@@ -328,15 +328,17 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method append
 [Worker]     method constructor
 [Worker] interface Function
-[Worker]     attribute arguments
-[Worker]     attribute caller
 [Worker]     attribute length
 [Worker]     attribute name
+[Worker]     getter arguments
+[Worker]     getter caller
 [Worker]     method apply
 [Worker]     method bind
 [Worker]     method call
 [Worker]     method constructor
 [Worker]     method toString
+[Worker]     setter arguments
+[Worker]     setter caller
 [Worker] interface Headers
 [Worker]     method append
 [Worker]     method constructor
@@ -610,6 +612,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method toString
 [Worker] interface Request
 [Worker]     getter bodyUsed
+[Worker]     getter context
 [Worker]     getter credentials
 [Worker]     getter headers
 [Worker]     getter method

@@ -1500,15 +1500,17 @@ interface FormData
     method set
     method values
 interface Function
-    attribute arguments
-    attribute caller
     attribute length
     attribute name
+    getter arguments
+    getter caller
     method apply
     method bind
     method call
     method constructor
     method toString
+    setter arguments
+    setter caller
 interface GainNode
     getter gain
     method constructor
@@ -3774,6 +3776,7 @@ interface RelatedEvent
     method constructor
 interface Request
     getter bodyUsed
+    getter context
     getter credentials
     getter headers
     getter method

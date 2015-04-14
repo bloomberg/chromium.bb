@@ -1248,15 +1248,17 @@ interface FormData
     method append
     method constructor
 interface Function
-    attribute arguments
-    attribute caller
     attribute length
     attribute name
+    getter arguments
+    getter caller
     method apply
     method bind
     method call
     method constructor
     method toString
+    setter arguments
+    setter caller
 interface GainNode
     getter gain
     method constructor
@@ -3399,6 +3401,7 @@ interface RegExp
     method toString
 interface Request
     getter bodyUsed
+    getter context
     getter credentials
     getter headers
     getter method

@@ -16,11 +16,7 @@ properties-special.html:11 anonymous(a, b)
     <function scope>
 properties-special.html:12 b()
     arguments: (...)
-    get arguments: ThrowTypeError()
-    set arguments: ThrowTypeError()
     caller: (...)
-    get caller: ThrowTypeError()
-    set caller: ThrowTypeError()
     length: 1
     name: ""
     __proto__: Empty()

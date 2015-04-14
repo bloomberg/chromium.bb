@@ -1423,16 +1423,6 @@ crbug.com/394221 [ Win ] fast/text/emphasis-avoid-ruby.html [ Pass Failure ]
 crbug.com/394216 media/video-seek-to-duration-with-playbackrate-zero.html [ Pass Timeout ]
 crbug.com/394225 [ Win ] fast/text/sub-pixel/text-scaling-webfont.html [ Crash Pass ]
 
-# chromium:475537 / v8:3946, v8:3982
-crbug.com/475537 inspector-protocol/runtime/runtime-getProperties.html [ Pass Failure ]
-crbug.com/475537 inspector/sources/debugger/properties-special.html [ Pass Failure ]
-crbug.com/475537 virtual/stable/webexposed/global-interface-listing-dedicated-worker.html [ Pass Failure ]
-crbug.com/475537 virtual/stable/webexposed/global-interface-listing-shared-worker.html [ Pass Failure ]
-crbug.com/475537 virtual/stable/webexposed/global-interface-listing.html [ Pass Failure ]
-crbug.com/475537 webexposed/global-interface-listing-dedicated-worker.html [ Pass Failure ]
-crbug.com/475537 webexposed/global-interface-listing-shared-worker.html [ Pass Failure ]
-crbug.com/475537 webexposed/global-interface-listing.html [ Pass Failure ]
-
 # Failures that need further investigation.
 crbug.com/247716 [ Mac ] fast/frames/iframe-scaling-with-scroll.html [ NeedsManualRebaseline ]
 crbug.com/247716 [ Mac XP ] editing/spelling/inline-spelling-markers-hidpi-composited.html [ NeedsManualRebaseline ]
