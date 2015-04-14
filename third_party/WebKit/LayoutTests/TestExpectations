@@ -2116,3 +2116,6 @@ crbug.com/476907 [ XP ] virtual/slimmingpaint/fast/block/float/026.html [ NeedsR
 crbug.com/476907 [ XP ] virtual/slimmingpaint/fast/block/float/027.html [ NeedsRebaseline ]
 crbug.com/476907 [ XP ] virtual/slimmingpaint/fast/block/float/028.html [ NeedsRebaseline ]
 crbug.com/476907 [ XP ] virtual/slimmingpaint/fast/block/float/float-avoidance.html [ NeedsRebaseline ]
+
+crbug.com/476913 [ Debug SnowLeopard ] virtual/antialiasedtext/fast/text/unicode-fallback-font.html [ Crash ]
+crbug.com/476913 [ Debug SnowLeopard ] fast/text/unicode-fallback-font.html [ Crash ]
