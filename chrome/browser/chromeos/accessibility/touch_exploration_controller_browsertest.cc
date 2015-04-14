@@ -132,7 +132,8 @@ IN_PROC_BROWSER_TEST_F(TouchExplorationTest, MAYBE_NoRewritingEventsWhenOff) {
 
 // This test turns the touch exploration mode on and confirms that events get
 // rewritten.
-IN_PROC_BROWSER_TEST_F(TouchExplorationTest, RewritesEventsWhenOn) {
+// Disabling due to failing over 10% of the time. (crbug.com/469119)
+IN_PROC_BROWSER_TEST_F(TouchExplorationTest, DISABLED_RewritesEventsWhenOn) {
   SwitchTouchExplorationMode(true);
   ui::test::EventGenerator generator(root_window_);
 
