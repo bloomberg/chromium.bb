@@ -4,6 +4,7 @@
 
 """Generates dart source files from a mojom.Module."""
 
+import os
 import re
 
 import mojom.generate.generator as generator
@@ -373,10 +374,10 @@ class Generator(generator.Generator):
     'struct_from_method': generator.GetStructFromMethod,
   }
 
-  def GetParameters(self):
+  def GetParameters(self, args):
     return {
       "namespace": self.module.namespace,
-      "imports": self.GetImports(),
+      "imports": self.GetImports(args),
       "kinds": self.module.kinds,
       "enums": self.module.enums,
       "module": self.module,
@@ -387,14 +388,20 @@ class Generator(generator.Generator):
     }
 
   @UseJinja("dart_templates/module.lib.tmpl", filters=dart_filters)
-  def GenerateLibModule(self):
-    return self.GetParameters()
+  def GenerateLibModule(self, args):
+    return self.GetParameters(args)
 
   def GenerateFiles(self, args):
-    self.Write(self.GenerateLibModule(),
+    self.Write(self.GenerateLibModule(args),
         self.MatchMojomFilePath("%s.dart" % self.module.name))
 
-  def GetImports(self):
+  def GetImports(self, args):
+    mojo_root_arg = next(
+        (x for x in args if x.startswith("--dart_mojo_root")), "")
+    (_, _, mojo_root_path) = mojo_root_arg.partition("=")
+    if not mojo_root_path.startswith("//"):
+      raise Exception("Malformed mojo SDK root: " + mojo_root_path)
+    mojo_root_path = mojo_root_path[2:]  # strip //
     used_names = set()
     for each_import in self.module.imports:
       simple_name = each_import["module_name"].split(".")[0]
@@ -410,6 +417,16 @@ class Generator(generator.Generator):
       used_names.add(unique_name)
       each_import["unique_name"] = unique_name + '_mojom'
       counter += 1
+
+      # At this point, a module's path is reletive to the root of the repo.
+      # However, imports of libraries from the Mojo SDK are always reletive to
+      # root of the Mojo SDK, which may be different from the root of the repo.
+      # This code uses the --dart_mojo_root argument to ensure that Mojo SDK
+      # imports are reletive to the Mojo SDK root.
+      path = each_import['module'].path
+      if os.path.commonprefix([mojo_root_path, path]) == mojo_root_path:
+        path = os.path.relpath(path, mojo_root_path)
+      each_import["rebased_path"] = path
     return self.module.imports
 
   def GetImportedInterfaces(self):

@@ -69,6 +69,15 @@ GeolocationServiceImpl::GeolocationServiceImpl(
 }
 
 GeolocationServiceImpl::~GeolocationServiceImpl() {
+  // Make sure to respond to any pending callback even without a valid position.
+  if (!position_callback_.is_null()) {
+    if (!current_position_.valid) {
+      current_position_.error_code = MojoGeoposition::ErrorCode(
+          GEOPOSITION_ERROR_CODE_POSITION_UNAVAILABLE);
+      current_position_.error_message = mojo::String("");
+    }
+    ReportCurrentPosition();
+  }
 }
 
 void GeolocationServiceImpl::PauseUpdates() {

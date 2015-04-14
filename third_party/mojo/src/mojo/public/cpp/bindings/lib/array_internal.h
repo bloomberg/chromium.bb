@@ -285,8 +285,13 @@ struct ArraySerializationHelper<P*, false> {
   }
 
  private:
+  template <typename T,
+            typename Params,
+            bool is_union = IsUnionDataType<T>::value>
+  struct ValidateCaller {};
+
   template <typename T, typename Params>
-  struct ValidateCaller {
+  struct ValidateCaller<T, Params, false> {
     static bool Run(const void* data, BoundsChecker* bounds_checker) {
       static_assert((IsSame<Params, NoValidateParams>::value),
                     "Struct type should not have array validate params");
@@ -295,8 +300,18 @@ struct ArraySerializationHelper<P*, false> {
     }
   };
 
+  template <typename T, typename Params>
+  struct ValidateCaller<T, Params, true> {
+    static bool Run(const void* data, BoundsChecker* bounds_checker) {
+      static_assert((IsSame<Params, NoValidateParams>::value),
+                    "Union type should not have array validate params");
+
+      return T::Validate(data, bounds_checker, true);
+    }
+  };
+
   template <typename Key, typename Value, typename Params>
-  struct ValidateCaller<Map_Data<Key, Value>, Params> {
+  struct ValidateCaller<Map_Data<Key, Value>, Params, false> {
     static bool Run(const void* data, BoundsChecker* bounds_checker) {
       return Map_Data<Key, Value>::template Validate<Params>(data,
                                                              bounds_checker);
@@ -304,7 +319,7 @@ struct ArraySerializationHelper<P*, false> {
   };
 
   template <typename T, typename Params>
-  struct ValidateCaller<Array_Data<T>, Params> {
+  struct ValidateCaller<Array_Data<T>, Params, false> {
     static bool Run(const void* data, BoundsChecker* bounds_checker) {
       return Array_Data<T>::template Validate<Params>(data, bounds_checker);
     }

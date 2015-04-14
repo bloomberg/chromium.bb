@@ -74,9 +74,11 @@ if (decoder{{level+1}} == null) {
 
 {%- macro struct_def(struct) %}
 class {{struct|name}} extends bindings.Struct {
-  static const int kStructSize = {{struct.versions[-1].num_bytes}};
-  static const bindings.StructDataHeader kDefaultStructInfo =
-      const bindings.StructDataHeader(kStructSize, {{struct.versions[-1].version}});
+  static const List<bindings.StructDataHeader> kVersions = const [
+{%- for version in struct.versions %}
+    const bindings.StructDataHeader({{version.num_bytes}}, {{version.version}}){% if not loop.last %},{% endif %}
+{%- endfor %}
+  ];
 
 {#--- Enums #}
 {%- from "enum_definition.tmpl" import enum_def %}
@@ -95,7 +97,7 @@ class {{struct|name}} extends bindings.Struct {
   {{packed_field.field.kind|dart_type}} {{packed_field.field|name}} = {{packed_field.field|default_value}};
 {%- endfor %}
 
-  {{struct|name}}() : super(kStructSize);
+  {{struct|name}}() : super(kVersions.last.size);
 
   static {{struct|name}} deserialize(bindings.Message message) {
     return decode(new bindings.Decoder(message));
@@ -108,14 +110,24 @@ class {{struct|name}} extends bindings.Struct {
     {{struct|name}} result = new {{struct|name}}();
 
     var mainDataHeader = decoder0.decodeStructDataHeader();
-    if ((mainDataHeader.size < kStructSize) ||
-        (mainDataHeader.version < {{struct.versions[-1].version}})) {
-      throw new bindings.MojoCodecError('Malformed header');
+    if (mainDataHeader.version <= kVersions.last.version) {
+      // Scan in reverse order to optimize for more recent versions.
+      for (int i = kVersions.length - 1; i >= 0; --i) {
+        if (mainDataHeader.version >= kVersions[i].version) {
+          if (mainDataHeader.size != kVersions[i].size)
+            throw new bindings.MojoCodecError(
+                'Header doesn\'t correspond to any known version.');
+        }
+      }
+    } else if (mainDataHeader.size < kVersions.last.size) {
+      throw new bindings.MojoCodecError(
+        'Message newer than the last known version cannot be shorter than '
+        'required by the last known version.');
     }
 
 {%- for byte in struct.bytes %}
 {%-   for packed_field in byte.packed_fields %}
-    {
+    if (mainDataHeader.version >= {{packed_field.min_version}}) {
       {{decode('result.' ~ packed_field.field|name, packed_field.field.kind, 8+packed_field.offset, packed_field.bit)|indent(6)}}
     }
 {%-   endfor %}
@@ -125,9 +137,9 @@ class {{struct|name}} extends bindings.Struct {
 
   void encode(bindings.Encoder encoder) {
 {%- if not struct.bytes %}
-    encoder.getStructEncoderAtOffset(kDefaultStructInfo);
+    encoder.getStructEncoderAtOffset(kVersions.last);
 {%- else %}
-    var encoder0 = encoder.getStructEncoderAtOffset(kDefaultStructInfo);
+    var encoder0 = encoder.getStructEncoderAtOffset(kVersions.last);
 {%- endif %}
 {%- for byte in struct.bytes %}
 {%-   for packed_field in byte.packed_fields %}

@@ -63,6 +63,9 @@ class Connector : public MessageReceiver {
   // a quiescent state.
   ScopedMessagePipeHandle PassMessagePipe();
 
+  // Is the connector bound to a MessagePipe handle?
+  bool is_valid() const { return message_pipe_.is_valid(); }
+
   // Waits for the next message on the pipe, blocking until one arrives or an
   // error happens. Returns |true| if a message has been delivered, |false|
   // otherwise.

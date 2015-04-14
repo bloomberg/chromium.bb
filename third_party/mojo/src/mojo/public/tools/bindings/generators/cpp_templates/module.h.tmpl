@@ -63,6 +63,12 @@ typedef mojo::StructPtr<{{union.name}}> {{union.name}}Ptr;
 {%    endif %}
 {%- endfor %}
 
+{#--- Unions must be declared first because they can be members of structs #}
+{#--- Unions #}
+{%  for union in unions %}
+{%    include "wrapper_union_class_declaration.tmpl" %}
+{%- endfor %}
+
 {#--- NOTE: Non-inlined structs may have pointers to inlined structs, so we  #}
 {#---       need to fully define inlined structs ahead of the others.        #}
 
@@ -78,11 +84,6 @@ typedef mojo::StructPtr<{{union.name}}> {{union.name}}Ptr;
 {%    if not struct|should_inline %}
 {%      include "wrapper_class_declaration.tmpl" %}
 {%    endif %}
-{%- endfor %}
-
-{#--- Unions #}
-{%  for union in unions %}
-{%    include "wrapper_union_class_declaration.tmpl" %}
 {%- endfor %}
 
 {#--- Interfaces -#}
@@ -110,18 +111,17 @@ typedef mojo::StructPtr<{{union.name}}> {{union.name}}Ptr;
 {%    include "interface_response_validator_declaration.tmpl" %}
 {%- endfor %}
 
-{%- import "serialization_macros.tmpl" as serialization_macros %}
 {#--- Struct Serialization Helpers -#}
 {%  if structs %}
 {%    for struct in structs %}
-{{      serialization_macros.declare_serialization(struct.name) }}
+{%      include "struct_serialization_declaration.tmpl" %}
 {%-   endfor %}
 {%- endif %}
 
 {#--- Union Serialization Helpers -#}
 {%  if unions %}
 {%    for union in unions %}
-{{      serialization_macros.declare_serialization(union.name) }}
+{%      include "union_serialization_declaration.tmpl" %}
 {%-   endfor %}
 {%- endif %}
 

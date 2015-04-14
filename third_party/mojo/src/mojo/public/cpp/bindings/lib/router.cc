@@ -11,7 +11,7 @@ namespace internal {
 
 // ----------------------------------------------------------------------------
 
-class ResponderThunk : public MessageReceiver {
+class ResponderThunk : public MessageReceiverWithStatus {
  public:
   explicit ResponderThunk(const SharedData<Router*>& router)
       : router_(router), accept_was_invoked_(false) {}
@@ -42,6 +42,12 @@ class ResponderThunk : public MessageReceiver {
       result = router->Accept(message);
 
     return result;
+  }
+
+  // MessageReceiverWithStatus implementation:
+  bool IsValid() override {
+    Router* router = router_.value();
+    return router && !router->encountered_error() && router->is_valid();
   }
 
  private:
@@ -118,7 +124,7 @@ void Router::EnableTestingMode() {
 bool Router::HandleIncomingMessage(Message* message) {
   if (message->has_flag(kMessageExpectsResponse)) {
     if (incoming_receiver_) {
-      MessageReceiver* responder = new ResponderThunk(weak_self_);
+      MessageReceiverWithStatus* responder = new ResponderThunk(weak_self_);
       bool ok = incoming_receiver_->AcceptWithResponder(message, responder);
       if (!ok)
         delete responder;

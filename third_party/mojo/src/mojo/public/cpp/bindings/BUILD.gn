@@ -9,16 +9,9 @@ mojo_sdk_source_set("bindings") {
     "array.h",
     "binding.h",
     "error_handler.h",
-    "interface_ptr_info.h",
     "interface_ptr.h",
-    "map.h",
-    "message.h",
-    "message_filter.h",
-    "no_interface.h",
-    "strong_binding.h",
-    "string.h",
-    "struct_ptr.h",
-    "type_converter.h",
+    "interface_ptr_info.h",
+    "interface_request.h",
     "lib/array_internal.cc",
     "lib/array_internal.h",
     "lib/array_serialization.h",
@@ -55,6 +48,14 @@ mojo_sdk_source_set("bindings") {
     "lib/validate_params.h",
     "lib/validation_errors.cc",
     "lib/validation_errors.h",
+    "map.h",
+    "message.h",
+    "message_filter.h",
+    "no_interface.h",
+    "string.h",
+    "strong_binding.h",
+    "struct_ptr.h",
+    "type_converter.h",
   ]
 
   deps = [
@@ -71,9 +72,9 @@ mojo_sdk_source_set("callback") {
   sources = [
     "callback.h",
     "lib/callback_internal.h",
-    "lib/template_util.h",
     "lib/shared_data.h",
     "lib/shared_ptr.h",
+    "lib/template_util.h",
   ]
 
   mojo_sdk_deps = [ "mojo/public/cpp/system" ]

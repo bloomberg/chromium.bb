@@ -23,4 +23,6 @@ mojom("interfaces") {
   ]
 
   mojo_sdk_deps = [ "mojo/public/interfaces/application" ]
+
+  import_from = mojo_root
 }
