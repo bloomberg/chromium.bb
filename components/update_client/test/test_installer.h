@@ -17,10 +17,9 @@ class DictionaryValue;
 
 namespace update_client {
 
-// TODO(sorin): consider reducing the number of the installer mocks.
 // A TestInstaller is an installer that does nothing for installation except
 // increment a counter.
-class TestInstaller : public CrxInstaller {
+class TestInstaller : public ComponentInstaller {
  public:
   TestInstaller();
 

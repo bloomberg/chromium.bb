@@ -81,13 +81,13 @@ std::string BuildDownloadCompleteEventElements(const CrxUpdateItem* item) {
 
 // Returns a string representing one ping event xml element for an update item.
 std::string BuildUpdateCompleteEventElement(const CrxUpdateItem* item) {
-  DCHECK(item->state == CrxUpdateItem::State::kNoUpdate ||
-         item->state == CrxUpdateItem::State::kUpdated);
+  DCHECK(item->status == CrxUpdateItem::kNoUpdate ||
+         item->status == CrxUpdateItem::kUpdated);
 
   using base::StringAppendF;
 
   std::string ping_event("<event eventtype=\"3\"");
-  const int event_result = item->state == CrxUpdateItem::State::kUpdated;
+  const int event_result = item->status == CrxUpdateItem::kUpdated;
   StringAppendF(&ping_event, " eventresult=\"%d\"", event_result);
   if (item->error_category)
     StringAppendF(&ping_event, " errorcat=\"%d\"", item->error_category);

@@ -249,8 +249,8 @@ void DefaultComponentInstaller::FinishRegistration(
     crx.fingerprint = current_fingerprint_;
     installer_traits_->GetHash(&crx.pk_hash);
     ComponentUpdateService::Status status = cus->RegisterComponent(crx);
-    if (status != ComponentUpdateService::Status::kOk &&
-        status != ComponentUpdateService::Status::kReplaced) {
+    if (status != ComponentUpdateService::kOk &&
+        status != ComponentUpdateService::kReplaced) {
       NOTREACHED() << "Component registration failed for "
                    << installer_traits_->GetName();
       return;

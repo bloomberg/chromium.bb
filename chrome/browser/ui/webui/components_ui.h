@@ -39,7 +39,7 @@ class ComponentsUI : public content::WebUIController,
  private:
   static base::string16 ComponentEventToString(Events event);
   static base::string16 ServiceStatusToString(
-      update_client::CrxUpdateItem::State state);
+      update_client::CrxUpdateItem::Status status);
   DISALLOW_COPY_AND_ASSIGN(ComponentsUI);
 };
 

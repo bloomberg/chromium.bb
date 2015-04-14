@@ -17,9 +17,9 @@ struct CrxUpdateItem;
 class PingManager {
  public:
   explicit PingManager(const Configurator& config);
-  virtual ~PingManager();
+  ~PingManager();
 
-  virtual void OnUpdateComplete(const CrxUpdateItem* item);
+  void OnUpdateComplete(const CrxUpdateItem* item);
 
  private:
   const Configurator& config_;

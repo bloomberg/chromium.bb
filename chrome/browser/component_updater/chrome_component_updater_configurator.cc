@@ -105,13 +105,14 @@ class ChromeConfigurator : public Configurator {
   ChromeConfigurator(const base::CommandLine* cmdline,
                      net::URLRequestContextGetter* url_request_getter);
 
+  ~ChromeConfigurator() override {}
+
   int InitialDelay() const override;
   int NextCheckDelay() override;
   int StepDelay() const override;
   int StepDelayMedium() override;
   int MinimumReCheckWait() const override;
   int OnDemandDelay() const override;
-  int UpdateDelay() const override;
   std::vector<GURL> UpdateUrl() const override;
   std::vector<GURL> PingUrl() const override;
   base::Version GetBrowserVersion() const override;
@@ -130,10 +131,6 @@ class ChromeConfigurator : public Configurator {
       const override;
 
  private:
-  friend class base::RefCountedThreadSafe<ChromeConfigurator>;
-
-  ~ChromeConfigurator() override {}
-
   net::URLRequestContextGetter* url_request_getter_;
   std::string extra_info_;
   GURL url_source_override_;
@@ -204,10 +201,6 @@ int ChromeConfigurator::MinimumReCheckWait() const {
 
 int ChromeConfigurator::OnDemandDelay() const {
   return fast_update_ ? 2 : (30 * kDelayOneMinute);
-}
-
-int ChromeConfigurator::UpdateDelay() const {
-  return fast_update_ ? 1 : (15 * kDelayOneMinute);
 }
 
 std::vector<GURL> ChromeConfigurator::UpdateUrl() const {
@@ -284,8 +277,7 @@ ChromeConfigurator::GetSingleThreadTaskRunner() const {
 
 }  // namespace
 
-scoped_refptr<update_client::Configurator>
-MakeChromeComponentUpdaterConfigurator(
+Configurator* MakeChromeComponentUpdaterConfigurator(
     const base::CommandLine* cmdline,
     net::URLRequestContextGetter* context_getter) {
   return new ChromeConfigurator(cmdline, context_getter);

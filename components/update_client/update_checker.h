@@ -27,13 +27,11 @@ struct CrxUpdateItem;
 
 class UpdateChecker {
  public:
-  using UpdateCheckCallback =
-      base::Callback<void(const GURL& original_url,
-                          int error,
-                          const std::string& error_message,
-                          const UpdateResponse::Results& results)>;
-
-  using Factory = scoped_ptr<UpdateChecker>(*)(const Configurator& config);
+  typedef base::Callback<void(const GURL& original_url,
+                              int error,
+                              const std::string& error_message,
+                              const UpdateResponse::Results& results)>
+      UpdateCheckCallback;
 
   virtual ~UpdateChecker() {}
 

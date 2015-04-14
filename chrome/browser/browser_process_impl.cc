@@ -876,14 +876,14 @@ BrowserProcessImpl::component_updater() {
   if (!component_updater_.get()) {
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI))
       return NULL;
-    scoped_refptr<update_client::Configurator> configurator =
+    update_client::Configurator* configurator =
         component_updater::MakeChromeComponentUpdaterConfigurator(
             base::CommandLine::ForCurrentProcess(),
             io_thread()->system_url_request_context_getter());
     // Creating the component updater does not do anything, components
     // need to be registered and Start() needs to be called.
-    component_updater_.reset(component_updater::ComponentUpdateServiceFactory(
-                                 configurator).release());
+    component_updater_.reset(
+        component_updater::ComponentUpdateServiceFactory(configurator));
   }
   return component_updater_.get();
 }

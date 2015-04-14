@@ -80,12 +80,12 @@ class MockComponentUpdateService : public ComponentUpdateService,
 
   Status Start() override {
     ADD_FAILURE();
-    return Status::kError;
+    return kError;
   }
 
   Status Stop() override {
     ADD_FAILURE();
-    return Status::kError;
+    return kError;
   }
 
   std::vector<std::string> GetComponentIDs() const override {
@@ -99,23 +99,23 @@ class MockComponentUpdateService : public ComponentUpdateService,
     if (!registration_callback_.is_null())
       registration_callback_.Run();
 
-    return Status::kOk;
+    return kOk;
   }
 
   Status UnregisterComponent(const std::string& crx_id) override {
     if (!component_) {
       ADD_FAILURE();
-      return Status::kError;
+      return kError;
     }
 
     EXPECT_EQ(GetCrxComponentID(*component_), crx_id);
     if (!component_->installer->Uninstall()) {
       ADD_FAILURE();
-      return Status::kError;
+      return kError;
     }
 
     component_.reset();
-    return Status::kOk;
+    return kOk;
   }
 
   OnDemandUpdater& GetOnDemandUpdater() override { return *this; }
@@ -141,11 +141,11 @@ class MockComponentUpdateService : public ComponentUpdateService,
 
     if (!component_) {
       ADD_FAILURE() << "Trying to update unregistered component " << crx_id;
-      return Status::kError;
+      return kError;
     }
 
     EXPECT_EQ(GetCrxComponentID(*component_), crx_id);
-    return Status::kOk;
+    return kOk;
   }
 
  private:

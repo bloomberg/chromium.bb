@@ -309,8 +309,8 @@ void FinishPnaclUpdateRegistration(
 
   ComponentUpdateService::Status status =
       pci->cus()->RegisterComponent(pnacl_component);
-  if (status != ComponentUpdateService::Status::kOk &&
-      status != ComponentUpdateService::Status::kReplaced) {
+  if (status != ComponentUpdateService::kOk &&
+      status != ComponentUpdateService::kReplaced) {
     NOTREACHED() << "Pnacl component registration failed.";
   }
 }

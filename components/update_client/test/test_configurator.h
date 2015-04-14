@@ -55,6 +55,7 @@ class TestConfigurator : public Configurator {
   TestConfigurator(
       const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner);
+  ~TestConfigurator() override;
 
   // Overrrides for Configurator.
   int InitialDelay() const override;
@@ -63,7 +64,6 @@ class TestConfigurator : public Configurator {
   int StepDelayMedium() override;
   int MinimumReCheckWait() const override;
   int OnDemandDelay() const override;
-  int UpdateDelay() const override;
   std::vector<GURL> UpdateUrl() const override;
   std::vector<GURL> PingUrl() const override;
   base::Version GetBrowserVersion() const override;
@@ -88,10 +88,6 @@ class TestConfigurator : public Configurator {
   void SetInitialDelay(int seconds);
 
  private:
-  friend class base::RefCountedThreadSafe<TestConfigurator>;
-
-  ~TestConfigurator() override;
-
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 

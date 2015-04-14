@@ -6,15 +6,12 @@
 #define COMPONENTS_COMPONENT_UPDATER_COMPONENT_UPDATER_SERVICE_H_
 
 #include <stdint.h>
-
-#include <iosfwd>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/version.h"
 #include "url/gurl.h"
 
@@ -64,14 +61,14 @@ class OnDemandUpdater;
 // All methods are safe to call ONLY from the browser's main thread.
 class ComponentUpdateService {
  public:
-  enum class Status { kOk, kReplaced, kInProgress, kError };
+  enum Status { kOk, kReplaced, kInProgress, kError };
 
   // Defines an interface to observe ComponentUpdateService. It provides
   // notifications when state changes occur for the service or for the
   // registered components.
   class Observer {
    public:
-    enum class Events {
+    enum Events {
       // Sent when the component updater starts doing update checks.
       COMPONENT_UPDATER_STARTED,
 
@@ -172,9 +169,7 @@ class ComponentUpdateService {
   friend class ::ComponentsUI;
 };
 
-using ServiceObserver = ComponentUpdateService::Observer;
-std::ostream& operator<<(std::ostream& os,
-                         const ComponentUpdateService::Status& status);
+typedef ComponentUpdateService::Observer ServiceObserver;
 
 class OnDemandUpdater {
  public:
@@ -195,9 +190,10 @@ class OnDemandUpdater {
       const std::string& component_id) = 0;
 };
 
-// Creates the component updater.
-scoped_ptr<ComponentUpdateService> ComponentUpdateServiceFactory(
-    const scoped_refptr<update_client::Configurator>& config);
+// Creates the component updater. You must pass a valid |config| allocated on
+// the heap which the component updater will own.
+ComponentUpdateService* ComponentUpdateServiceFactory(
+    update_client::Configurator* config);
 
 }  // namespace component_updater
 

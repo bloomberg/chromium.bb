@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -30,25 +29,25 @@ class ComponentUpdaterPingManagerTest : public testing::Test {
   void TearDown() override;
 
  protected:
-  scoped_refptr<TestConfigurator> config_;
+  scoped_ptr<TestConfigurator> config_;
   scoped_ptr<PingManager> ping_manager_;
 
  private:
   base::MessageLoopForIO loop_;
 };
 
-ComponentUpdaterPingManagerTest::ComponentUpdaterPingManagerTest() {
+ComponentUpdaterPingManagerTest::ComponentUpdaterPingManagerTest()
+    : config_(new TestConfigurator(base::MessageLoopProxy::current(),
+                                   base::MessageLoopProxy::current())) {
 }
 
 void ComponentUpdaterPingManagerTest::SetUp() {
-  config_ = new TestConfigurator(base::MessageLoopProxy::current(),
-                                 base::MessageLoopProxy::current());
   ping_manager_.reset(new PingManager(*config_));
 }
 
 void ComponentUpdaterPingManagerTest::TearDown() {
   ping_manager_.reset();
-  config_ = nullptr;
+  config_.reset();
 }
 
 void ComponentUpdaterPingManagerTest::RunThreadsUntilIdle() {
@@ -66,7 +65,7 @@ TEST_F(ComponentUpdaterPingManagerTest, DISABLED_PingManagerTest) {
   // Test eventresult="1" is sent for successful updates.
   CrxUpdateItem item;
   item.id = "abc";
-  item.state = CrxUpdateItem::State::kUpdated;
+  item.status = CrxUpdateItem::kUpdated;
   item.previous_version = base::Version("1.0");
   item.next_version = base::Version("2.0");
 
@@ -84,7 +83,7 @@ TEST_F(ComponentUpdaterPingManagerTest, DISABLED_PingManagerTest) {
   // Test eventresult="0" is sent for failed updates.
   item = CrxUpdateItem();
   item.id = "abc";
-  item.state = CrxUpdateItem::State::kNoUpdate;
+  item.status = CrxUpdateItem::kNoUpdate;
   item.previous_version = base::Version("1.0");
   item.next_version = base::Version("2.0");
 
@@ -102,7 +101,7 @@ TEST_F(ComponentUpdaterPingManagerTest, DISABLED_PingManagerTest) {
   // Test the error values and the fingerprints.
   item = CrxUpdateItem();
   item.id = "abc";
-  item.state = CrxUpdateItem::State::kNoUpdate;
+  item.status = CrxUpdateItem::kNoUpdate;
   item.previous_version = base::Version("1.0");
   item.next_version = base::Version("2.0");
   item.previous_fp = "prev fp";
@@ -134,7 +133,7 @@ TEST_F(ComponentUpdaterPingManagerTest, DISABLED_PingManagerTest) {
   // Test the download metrics.
   item = CrxUpdateItem();
   item.id = "abc";
-  item.state = CrxUpdateItem::State::kUpdated;
+  item.status = CrxUpdateItem::kUpdated;
   item.previous_version = base::Version("1.0");
   item.next_version = base::Version("2.0");
 

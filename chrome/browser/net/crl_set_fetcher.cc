@@ -152,7 +152,7 @@ void CRLSetFetcher::RegisterComponent(uint32 sequence_of_loaded_crl) {
   }
 
   if (cus_->RegisterComponent(component) !=
-      ComponentUpdateService::Status::kOk) {
+      ComponentUpdateService::kOk) {
     NOTREACHED() << "RegisterComponent returned error";
   }
 }
