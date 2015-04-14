@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/i18n/rtl.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/aura/overscroll_window_delegate.h"
@@ -159,6 +160,8 @@ void OverscrollNavigationOverlay::StopObservingIfDone() {
 
 scoped_ptr<aura::Window> OverscrollNavigationOverlay::CreateOverlayWindow(
     const gfx::Rect& bounds) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Overscroll.Started2", direction_, NAVIGATION_COUNT);
   OverscrollWindowDelegate* overscroll_delegate = new OverscrollWindowDelegate(
       owa_.get(), GetImageForDirection(direction_));
   scoped_ptr<aura::Window> window(new aura::Window(overscroll_delegate));
@@ -236,10 +239,20 @@ void OverscrollNavigationOverlay::OnOverscrollCompleting() {
   // Make sure we can navigate first, as other factors can trigger a navigation
   // during an overscroll gesture and navigating without history produces a
   // crash.
-  if (direction_ == FORWARD && web_contents_->GetController().CanGoForward())
+  if (direction_ == FORWARD && web_contents_->GetController().CanGoForward()) {
     web_contents_->GetController().GoForward();
-  if (direction_ == BACK && web_contents_->GetController().CanGoBack())
+  } else if (direction_ == BACK && web_contents_->GetController().CanGoBack()) {
     web_contents_->GetController().GoBack();
+  } else {
+    // We need to dismiss the overlay without navigating as soon as the
+    // overscroll finishes.
+    UMA_HISTOGRAM_ENUMERATION(
+        "Overscroll.Cancelled", direction_, NAVIGATION_COUNT);
+    loading_complete_ = true;
+    return;
+  }
+  UMA_HISTOGRAM_ENUMERATION(
+      "Overscroll.Navigated2", direction_, NAVIGATION_COUNT);
   StartObserving();
 }
 
@@ -257,6 +270,8 @@ void OverscrollNavigationOverlay::OnOverscrollCompleted(
 }
 
 void OverscrollNavigationOverlay::OnOverscrollCancelled() {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Overscroll.Cancelled", direction_, NAVIGATION_COUNT);
   GetMainWindow()->ReleaseCapture();
   direction_ = NONE;
   StopObservingIfDone();

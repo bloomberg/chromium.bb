@@ -7,7 +7,6 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/download/drag_download_util.h"
@@ -724,10 +723,6 @@ void WebContentsViewAura::InstallOverscrollControllerDelegate(
 void WebContentsViewAura::CompleteOverscrollNavigation(OverscrollMode mode) {
   if (!web_contents_->GetRenderWidgetHostView())
     return;
-
-  UMA_HISTOGRAM_ENUMERATION("Overscroll.Navigated",
-                            current_overscroll_gesture_, OVERSCROLL_COUNT);
-
   navigation_overlay_->relay_delegate()->OnOverscrollComplete(mode);
 }
 
@@ -1071,7 +1066,6 @@ bool WebContentsViewAura::OnOverscrollUpdate(float delta_x, float delta_y) {
 }
 
 void WebContentsViewAura::OnOverscrollComplete(OverscrollMode mode) {
-  UMA_HISTOGRAM_ENUMERATION("Overscroll.Completed", mode, OVERSCROLL_COUNT);
   if (web_contents_->GetDelegate() &&
       IsScrollEndEffectEnabled() &&
       (mode == OVERSCROLL_NORTH || mode == OVERSCROLL_SOUTH)) {
@@ -1088,10 +1082,6 @@ void WebContentsViewAura::OnOverscrollModeChange(OverscrollMode old_mode,
   if (new_mode != OVERSCROLL_NONE && touch_editable_)
     touch_editable_->OverscrollStarted();
 
-  if (current_overscroll_gesture_ == OVERSCROLL_NONE &&
-      new_mode != OVERSCROLL_NONE) {
-    UMA_HISTOGRAM_ENUMERATION("Overscroll.Started", new_mode, OVERSCROLL_COUNT);
-  }
   current_overscroll_gesture_ = new_mode;
   navigation_overlay_->relay_delegate()->OnOverscrollModeChange(old_mode,
                                                                 new_mode);

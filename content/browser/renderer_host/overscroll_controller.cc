@@ -171,7 +171,6 @@ bool OverscrollController::DispatchEventCompletesAction (
           return false;
         break;
       case OVERSCROLL_NONE:
-      case OVERSCROLL_COUNT:
         NOTREACHED();
     }
   }

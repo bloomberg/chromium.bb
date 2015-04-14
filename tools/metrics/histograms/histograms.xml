@@ -24918,8 +24918,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="Overscroll.Completed" enum="OverscrollMode">
+<histogram name="Overscroll.Cancelled" enum="NavigationDirection">
   <owner>rbyers@chromium.org</owner>
+  <owner>mfomitchev@chromium.org</owner>
+  <summary>
+    Overscroll gestures that were aborted before they were completed.
+  </summary>
+</histogram>
+
+<histogram name="Overscroll.Completed" enum="OverscrollMode">
+  <obsolete>
+    Deprecated as of Chrome 44 in favour of Overscroll.Cancelled and
+    Overscroll.Navigated2.
+  </obsolete>
+  <owner>rbyers@chromium.org</owner>
+  <owner>mfomitchev@chromium.org</owner>
   <summary>Completed overscroll gestures.</summary>
   <details>
     An overscroll gesture starts when user scrolls past the edge of the web page
@@ -24931,6 +24944,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Overscroll.Navigated" enum="OverscrollMode">
   <owner>rbyers@chromium.org</owner>
+  <owner>mfomitchev@chromium.org</owner>
+  <obsolete>
+    Deprecated as of Chrome 44 to switch to NavigationDirection enum.
+  </obsolete>
+  <summary>
+    Navigations that were triggered due to completed overscroll gesture. Note
+    that not all completed overscroll gestures trigger a navigation.
+  </summary>
+</histogram>
+
+<histogram name="Overscroll.Navigated2" enum="NavigationDirection">
+  <owner>rbyers@chromium.org</owner>
+  <owner>mfomitchev@chromium.org</owner>
   <summary>
     Navigations that were triggered due to completed overscroll gesture. Note
     that not all completed overscroll gestures trigger a navigation.
@@ -24939,6 +24965,20 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Overscroll.Started" enum="OverscrollMode">
   <owner>rbyers@chromium.org</owner>
+  <owner>mfomitchev@chromium.org</owner>
+  <obsolete>
+    Deprecated as of Chrome 44 to switch to NavigationDirection enum.
+  </obsolete>
+  <summary>
+    Overscroll gestures initiated by the user. Note that not all overcroll
+    gestures started are completed (e.g. the overscroll gesture is aborted if
+    user clicks or presses a key during the gesture).
+  </summary>
+</histogram>
+
+<histogram name="Overscroll.Started2" enum="NavigationDirection">
+  <owner>rbyers@chromium.org</owner>
+  <owner>mfomitchev@chromium.org</owner>
   <summary>
     Overscroll gestures initiated by the user. Note that not all overcroll
     gestures started are completed (e.g. the overscroll gesture is aborted if
@@ -55812,6 +55852,13 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="NaClValidationCacheEnum" type="int">
   <int value="0" label="Miss"/>
   <int value="1" label="Hit"/>
+</enum>
+
+<enum name="NavigationDirection" type="int">
+  <summary>Direction of the overscroll gesture.</summary>
+  <int value="0" label="None">Did not scroll</int>
+  <int value="1" label="Forward">Scrolled forward</int>
+  <int value="2" label="Back">Scrolled back</int>
 </enum>
 
 <enum name="NavigationScheme" type="int">

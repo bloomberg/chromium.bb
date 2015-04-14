@@ -36,7 +36,9 @@ class CONTENT_EXPORT OverscrollNavigationOverlay
     : public WebContentsObserver,
       public OverscrollWindowAnimation::Delegate {
  public:
-  enum NavigationDirection { FORWARD, BACK, NONE };
+  // Note that this enum is used to back an UMA histogram, so it should be
+  // treated as append-only.
+  enum NavigationDirection { NONE, FORWARD, BACK, NAVIGATION_COUNT };
 
   OverscrollNavigationOverlay(WebContentsImpl* web_contents,
                               aura::Window* web_contents_window);
