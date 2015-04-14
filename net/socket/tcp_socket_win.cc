@@ -80,11 +80,11 @@ bool DisableNagle(SOCKET socket, bool disable) {
 // Enable TCP Keep-Alive to prevent NAT routers from timing out TCP
 // connections. See http://crbug.com/27400 for details.
 bool SetTCPKeepAlive(SOCKET socket, BOOL enable, int delay_secs) {
-  int delay = delay_secs * 1000;
+  unsigned delay = delay_secs * 1000;
   struct tcp_keepalive keepalive_vals = {
-    enable ? 1 : 0,  // TCP keep-alive on.
-    delay,  // Delay seconds before sending first TCP keep-alive packet.
-    delay,  // Delay seconds between sending TCP keep-alive packets.
+      enable ? 1u : 0u,  // TCP keep-alive on.
+      delay,  // Delay seconds before sending first TCP keep-alive packet.
+      delay,  // Delay seconds between sending TCP keep-alive packets.
   };
   DWORD bytes_returned = 0xABAB;
   int rv = WSAIoctl(socket, SIO_KEEPALIVE_VALS, &keepalive_vals,
