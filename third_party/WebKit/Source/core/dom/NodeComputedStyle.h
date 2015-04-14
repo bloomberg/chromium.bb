@@ -25,8 +25,8 @@
 #ifndef NodeComputedStyle_h
 #define NodeComputedStyle_h
 
+#include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/Node.h"
-#include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/layout/LayoutObject.h"
@@ -55,7 +55,7 @@ inline const ComputedStyle* Node::parentComputedStyle() const
 {
     if (isActiveInsertionPoint(*this))
         return 0;
-    ContainerNode* parent = NodeRenderingTraversal::parent(*this);
+    ContainerNode* parent = LayoutTreeBuilderTraversal::parent(*this);
     return parent ? parent->computedStyle() : 0;
 }
 

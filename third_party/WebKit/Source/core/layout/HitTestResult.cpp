@@ -24,7 +24,6 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/DocumentMarkerController.h"
-#include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/shadow/ComposedTreeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"

@@ -28,8 +28,8 @@
 #include "web/LinkHighlight.h"
 
 #include "SkMatrix44.h"
+#include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/Node.h"
-#include "core/dom/NodeRenderingTraversal.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutBoxModelObject.h"
@@ -179,7 +179,7 @@ void LinkHighlight::computeQuads(const Node& node, Vector<FloatQuad>& outQuads) 
     // appropriately sized highlight we descend into the children and have them add their
     // boxes.
     if (renderer->isLayoutInline()) {
-        for (Node* child = NodeRenderingTraversal::firstChild(node); child; child = NodeRenderingTraversal::nextSibling(*child))
+        for (Node* child = LayoutTreeBuilderTraversal::firstChild(node); child; child = LayoutTreeBuilderTraversal::nextSibling(*child))
             computeQuads(*child, outQuads);
     } else {
         // FIXME: this does not need to be absolute, just in the paint invalidation container's space.

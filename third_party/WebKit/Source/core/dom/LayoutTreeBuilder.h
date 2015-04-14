@@ -28,8 +28,8 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/FirstLetterPseudoElement.h"
+#include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/Node.h"
-#include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/Text.h"
 #include "core/layout/LayoutObject.h"
 #include "wtf/RefPtr.h"
@@ -68,7 +68,7 @@ protected:
         if (m_layoutObjectParent->node() && m_layoutObjectParent->node()->needsAttach())
             return 0;
 
-        return NodeRenderingTraversal::nextSiblingRenderer(*m_node);
+        return LayoutTreeBuilderTraversal::nextSiblingRenderer(*m_node);
     }
 
     RawPtrWillBeMember<NodeType> m_node;

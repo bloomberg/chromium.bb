@@ -29,7 +29,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/Document.h"
-#include "core/dom/NodeRenderingTraversal.h"
+#include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRoot.h"
 
@@ -50,7 +50,7 @@ class Node;
 // https://bugs.webkit.org/show_bug.cgi?id=82702
 class CORE_EXPORT ComposedTreeTraversal {
 public:
-    typedef NodeRenderingTraversal::ParentDetails ParentTraversalDetails;
+    typedef LayoutTreeBuilderTraversal::ParentDetails ParentTraversalDetails;
 
     static Node* next(const Node&);
     static Node* next(const Node&, const Node* stayWithin);

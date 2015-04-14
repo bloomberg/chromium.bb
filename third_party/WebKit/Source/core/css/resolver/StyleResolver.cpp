@@ -901,7 +901,7 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForText(Text* textNode)
 {
     ASSERT(textNode);
 
-    Node* parentNode = NodeRenderingTraversal::parent(*textNode);
+    Node* parentNode = LayoutTreeBuilderTraversal::parent(*textNode);
     if (!parentNode || !parentNode->computedStyle())
         return initialStyleForElement();
     return parentNode->mutableComputedStyle();

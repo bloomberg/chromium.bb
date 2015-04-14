@@ -38,7 +38,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/Fullscreen.h"
-#include "core/dom/NodeRenderingTraversal.h"
+#include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/Text.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
@@ -1150,9 +1150,9 @@ WebRect WebViewImpl::computeBlockBound(const WebPoint& pointInRootFrame, bool ig
         return WebRect();
 
     // Find the block type node based on the hit node.
-    // FIXME: This wants to walk composed tree with NodeRenderingTraversal::parent().
+    // FIXME: This wants to walk composed tree with LayoutTreeBuilderTraversal::parent().
     while (node && (!node->layoutObject() || node->layoutObject()->isInline()))
-        node = NodeRenderingTraversal::parent(*node);
+        node = LayoutTreeBuilderTraversal::parent(*node);
 
     // Return the bounding box in the root frame's coordinate space.
     if (node) {
@@ -1275,7 +1275,7 @@ static Node* findCursorDefiningAncestor(Node* node, LocalFrame* frame)
             if (cursor != CURSOR_AUTO || frame->eventHandler().useHandCursor(node, node->isLink()))
                 break;
         }
-        node = NodeRenderingTraversal::parent(*node);
+        node = LayoutTreeBuilderTraversal::parent(*node);
     }
 
     return node;
@@ -1305,7 +1305,7 @@ Node* WebViewImpl::bestTapNode(const GestureEventWithHitTestResults& targetedTap
     // We might hit something like an image map that has no renderer on it
     // Walk up the tree until we have a node with an attached renderer
     while (!bestTouchNode->layoutObject()) {
-        bestTouchNode = NodeRenderingTraversal::parent(*bestTouchNode);
+        bestTouchNode = LayoutTreeBuilderTraversal::parent(*bestTouchNode);
         if (!bestTouchNode)
             return nullptr;
     }
@@ -1327,7 +1327,7 @@ Node* WebViewImpl::bestTapNode(const GestureEventWithHitTestResults& targetedTap
     // has hand cursor set.
     do {
         bestTouchNode = cursorDefiningAncestor;
-        cursorDefiningAncestor = findCursorDefiningAncestor(NodeRenderingTraversal::parent(*bestTouchNode),
+        cursorDefiningAncestor = findCursorDefiningAncestor(LayoutTreeBuilderTraversal::parent(*bestTouchNode),
             m_page->deprecatedLocalMainFrame());
     } while (cursorDefiningAncestor && showsHandCursor(cursorDefiningAncestor, m_page->deprecatedLocalMainFrame()));
 
@@ -4422,7 +4422,7 @@ bool WebViewImpl::detectContentOnTouch(const GestureEventWithHitTestResults& tar
 
     // Ignore when tapping on links or nodes listening to click events, unless the click event is on the
     // body element, in which case it's unlikely that the original node itself was intended to be clickable.
-    for (; node && !isHTMLBodyElement(*node); node = NodeRenderingTraversal::parent(*node)) {
+    for (; node && !isHTMLBodyElement(*node); node = LayoutTreeBuilderTraversal::parent(*node)) {
         if (node->isLink() || node->willRespondToTouchEvents() || node->willRespondToMouseClickEvents())
             return false;
     }

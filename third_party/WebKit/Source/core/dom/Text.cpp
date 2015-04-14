@@ -28,8 +28,8 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/LayoutTreeBuilder.h"
+#include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/NodeComputedStyle.h"
-#include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/ScopedEventQueue.h"
@@ -316,7 +316,7 @@ bool Text::textRendererIsNeeded(const ComputedStyle& style, const LayoutObject& 
     if (document().childNeedsDistributionRecalc())
         return true;
 
-    const LayoutObject* prev = NodeRenderingTraversal::previousSiblingRenderer(*this);
+    const LayoutObject* prev = LayoutTreeBuilderTraversal::previousSiblingRenderer(*this);
     if (prev && prev->isBR()) // <span><br/> <br/></span>
         return false;
 
@@ -335,7 +335,7 @@ bool Text::textRendererIsNeeded(const ComputedStyle& style, const LayoutObject& 
         LayoutObject* first = parent.slowFirstChild();
         while (first && first->isFloatingOrOutOfFlowPositioned() && maxSiblingsToVisit--)
             first = first->nextSibling();
-        if (!first || first == layoutObject() || NodeRenderingTraversal::nextSiblingRenderer(*this) == first)
+        if (!first || first == layoutObject() || LayoutTreeBuilderTraversal::nextSiblingRenderer(*this) == first)
             // Whitespace at the start of a block just goes away.  Don't even
             // make a render object for this text.
             return false;
@@ -363,7 +363,7 @@ LayoutText* Text::createTextRenderer(const ComputedStyle& style)
 
 void Text::attach(const AttachContext& context)
 {
-    if (ContainerNode* renderingParent = NodeRenderingTraversal::parent(*this)) {
+    if (ContainerNode* renderingParent = LayoutTreeBuilderTraversal::parent(*this)) {
         if (LayoutObject* parentRenderer = renderingParent->layoutObject()) {
             if (textRendererIsNeeded(*parentRenderer->style(), *parentRenderer))
                 LayoutTreeBuilderForText(*this, parentRenderer).createLayoutObject();
@@ -375,7 +375,7 @@ void Text::attach(const AttachContext& context)
 void Text::reattachIfNeeded(const AttachContext& context)
 {
     bool layoutObjectIsNeeded = false;
-    ContainerNode* renderingParent = NodeRenderingTraversal::parent(*this);
+    ContainerNode* renderingParent = LayoutTreeBuilderTraversal::parent(*this);
     if (renderingParent) {
         if (LayoutObject* parentRenderer = renderingParent->layoutObject()) {
             if (textRendererIsNeeded(*parentRenderer->style(), *parentRenderer))

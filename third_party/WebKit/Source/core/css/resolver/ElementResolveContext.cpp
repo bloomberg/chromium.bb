@@ -22,9 +22,9 @@
 #include "config.h"
 #include "core/css/resolver/ElementResolveContext.h"
 
+#include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeComputedStyle.h"
-#include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/VisitedLinkState.h"
 #include "core/dom/shadow/InsertionPoint.h"
 
@@ -44,8 +44,8 @@ ElementResolveContext::ElementResolveContext(Element& element)
     , m_elementLinkState(element.document().visitedLinkState().determineLinkState(element))
     , m_distributedToInsertionPoint(false)
 {
-    NodeRenderingTraversal::ParentDetails parentDetails;
-    m_parentNode = isActiveInsertionPoint(element) ? nullptr : NodeRenderingTraversal::parent(element, &parentDetails);
+    LayoutTreeBuilderTraversal::ParentDetails parentDetails;
+    m_parentNode = isActiveInsertionPoint(element) ? nullptr : LayoutTreeBuilderTraversal::parent(element, &parentDetails);
     m_distributedToInsertionPoint = parentDetails.insertionPoint();
 
     const Document& document = element.document();

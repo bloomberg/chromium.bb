@@ -24,8 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NodeRenderingTraversal_h
-#define NodeRenderingTraversal_h
+#ifndef LayoutTreeBuilderTraversal_h
+#define LayoutTreeBuilderTraversal_h
 
 #include "core/CoreExport.h"
 #include "core/dom/Element.h"
@@ -35,7 +35,7 @@ namespace blink {
 class InsertionPoint;
 class LayoutObject;
 
-namespace NodeRenderingTraversal {
+namespace LayoutTreeBuilderTraversal {
 
 class ParentDetails {
     STACK_ALLOCATED();

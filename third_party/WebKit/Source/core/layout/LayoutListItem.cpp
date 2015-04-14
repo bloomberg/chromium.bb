@@ -120,12 +120,12 @@ static LayoutListItem* nextListItem(const Node* listNode, const LayoutListItem* 
     const Node* current = item ? item->node() : listNode;
     ASSERT(current);
     ASSERT(!current->document().childNeedsDistributionRecalc());
-    current = NodeRenderingTraversal::next(*current, listNode);
+    current = LayoutTreeBuilderTraversal::next(*current, listNode);
 
     while (current) {
         if (isList(*current)) {
             // We've found a nested, independent list: nothing to do here.
-            current = NodeRenderingTraversal::nextSkippingChildren(*current, listNode);
+            current = LayoutTreeBuilderTraversal::nextSkippingChildren(*current, listNode);
             continue;
         }
 
@@ -134,7 +134,7 @@ static LayoutListItem* nextListItem(const Node* listNode, const LayoutListItem* 
             return toLayoutListItem(renderer);
 
         // FIXME: Can this be optimized to skip the children of the elements without a renderer?
-        current = NodeRenderingTraversal::next(*current, listNode);
+        current = LayoutTreeBuilderTraversal::next(*current, listNode);
     }
 
     return 0;
@@ -146,7 +146,7 @@ static LayoutListItem* previousListItem(const Node* listNode, const LayoutListIt
     Node* current = item->node();
     ASSERT(current);
     ASSERT(!current->document().childNeedsDistributionRecalc());
-    for (current = NodeRenderingTraversal::previous(*current, listNode); current && current != listNode; current = NodeRenderingTraversal::previous(*current, listNode)) {
+    for (current = LayoutTreeBuilderTraversal::previous(*current, listNode); current && current != listNode; current = LayoutTreeBuilderTraversal::previous(*current, listNode)) {
         LayoutObject* renderer = current->layoutObject();
         if (!renderer || (renderer && !renderer->isListItem()))
             continue;
@@ -159,7 +159,7 @@ static LayoutListItem* previousListItem(const Node* listNode, const LayoutListIt
         // be a list item itself. We need to examine it, so we do this to counteract
         // the previousIncludingPseudo() that will be done by the loop.
         if (otherList)
-            current = NodeRenderingTraversal::next(*otherList, listNode);
+            current = LayoutTreeBuilderTraversal::next(*otherList, listNode);
     }
     return 0;
 }

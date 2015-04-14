@@ -52,7 +52,7 @@ LayoutTreeBuilderForElement::LayoutTreeBuilderForElement(Element& element, Compu
     if (element.isFirstLetterPseudoElement()) {
         if (LayoutObject* nextLayoutObject = FirstLetterPseudoElement::firstLetterTextRenderer(element))
             m_layoutObjectParent = nextLayoutObject->parent();
-    } else if (ContainerNode* containerNode = NodeRenderingTraversal::parent(element)) {
+    } else if (ContainerNode* containerNode = LayoutTreeBuilderTraversal::parent(element)) {
         m_layoutObjectParent = containerNode->layoutObject();
     }
 }
@@ -62,7 +62,7 @@ LayoutObject* LayoutTreeBuilderForElement::nextLayoutObject() const
     ASSERT(m_layoutObjectParent);
 
     if (m_node->isInTopLayer())
-        return NodeRenderingTraversal::nextInTopLayer(*m_node);
+        return LayoutTreeBuilderTraversal::nextInTopLayer(*m_node);
 
     if (m_node->isFirstLetterPseudoElement())
         return FirstLetterPseudoElement::firstLetterTextRenderer(*m_node);

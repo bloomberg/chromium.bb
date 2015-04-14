@@ -26,7 +26,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
-#include "core/dom/NodeRenderingTraversal.h"
+#include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/layout/LayoutListItem.h"
 
 namespace blink {
@@ -88,7 +88,7 @@ void HTMLLIElement::attach(const AttachContext& context)
         Element* listNode = 0;
         Element* current = this;
         while (!listNode) {
-            current = NodeRenderingTraversal::parentElement(*current);
+            current = LayoutTreeBuilderTraversal::parentElement(*current);
             if (!current)
                 break;
             if (isHTMLUListElement(*current) || isHTMLOListElement(*current))
