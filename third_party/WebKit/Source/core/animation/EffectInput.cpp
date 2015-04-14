@@ -99,12 +99,12 @@ PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, c
         Vector<String> keyframeProperties;
         keyframeDictionary.getPropertyNames(keyframeProperties);
         for (const auto& property : keyframeProperties) {
+            String value;
+            DictionaryHelper::get(keyframeDictionary, property, value);
             CSSPropertyID id = AnimationInputHelpers::keyframeAttributeToCSSPropertyID(property);
             if (id == CSSPropertyInvalid)
                 continue;
-            String value;
-            DictionaryHelper::get(keyframeDictionary, property, value);
-            keyframe->setPropertyValue(id, value, styleSheetContents);
+            keyframe->setPropertyValue(id, value, element, styleSheetContents);
         }
     }
 

@@ -58,11 +58,11 @@ void ElementAnimations::updateAnimationFlags(ComputedStyle& style)
         ASSERT(player.source()->isAnimation());
         const Animation& animation = *toAnimation(player.source());
         if (animation.isCurrent()) {
-            if (animation.affects(CSSPropertyOpacity))
+            if (animation.affects(PropertyHandle(CSSPropertyOpacity)))
                 style.setHasCurrentOpacityAnimation(true);
-            if (animation.affects(CSSPropertyTransform))
+            if (animation.affects(PropertyHandle(CSSPropertyTransform)))
                 style.setHasCurrentTransformAnimation(true);
-            if (animation.affects(CSSPropertyWebkitFilter))
+            if (animation.affects(PropertyHandle(CSSPropertyWebkitFilter)))
                 style.setHasCurrentFilterAnimation(true);
         }
     }

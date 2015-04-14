@@ -24,6 +24,7 @@
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/style/ComputedStyle.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
@@ -33,7 +34,7 @@ StringKeyframe::StringKeyframe(const StringKeyframe& copyFrom)
 {
 }
 
-void StringKeyframe::setPropertyValue(CSSPropertyID property, const String& value, StyleSheetContents* styleSheetContents)
+void StringKeyframe::setPropertyValue(CSSPropertyID property, const String& value, Element* element, StyleSheetContents* styleSheetContents)
 {
     ASSERT(property != CSSPropertyInvalid);
     if (CSSAnimations::isAllowedAnimation(property))
@@ -47,13 +48,14 @@ void StringKeyframe::setPropertyValue(CSSPropertyID property, PassRefPtrWillBeRa
     m_propertySet->setProperty(property, value, false);
 }
 
-PropertySet StringKeyframe::properties() const
+PropertyHandleSet StringKeyframe::properties() const
 {
     // This is not used in time-critical code, so we probably don't need to
     // worry about caching this result.
-    PropertySet properties;
+    PropertyHandleSet properties;
     for (unsigned i = 0; i < m_propertySet->propertyCount(); ++i)
-        properties.add(m_propertySet->propertyAt(i).id());
+        properties.add(PropertyHandle(m_propertySet->propertyAt(i).id()));
+
     return properties;
 }
 
@@ -61,9 +63,11 @@ PassRefPtrWillBeRawPtr<Keyframe> StringKeyframe::clone() const
 {
     return adoptRefWillBeNoop(new StringKeyframe(*this));
 }
-PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::createPropertySpecificKeyframe(CSSPropertyID property) const
+
+PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::createPropertySpecificKeyframe(PropertyHandle property) const
 {
-    return adoptPtrWillBeNoop(new PropertySpecificKeyframe(offset(), &easing(), propertyValue(property), composite()));
+    ASSERT(property.isCSSProperty());
+    return adoptPtrWillBeNoop(new PropertySpecificKeyframe(offset(), &easing(), cssPropertyValue(property.cssProperty()), composite()));
 }
 
 DEFINE_TRACE(StringKeyframe)
@@ -121,8 +125,14 @@ InterpolationRange setRange(CSSPropertyID id)
 
 } // namespace
 
+PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::maybeCreateInterpolation(PropertyHandle property, blink::Keyframe::PropertySpecificKeyframe& end, Element* element, const ComputedStyle* baseStyle) const
+{
+    ASSERT(property.isCSSProperty());
+    return maybeCreateCSSInterpolation(property.cssProperty(), end, element, baseStyle);
+}
+
 // FIXME: Refactor this into a generic piece that lives in InterpolationEffect, and a template parameter specific converter.
-PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::maybeCreateInterpolation(CSSPropertyID property, Keyframe::PropertySpecificKeyframe& end, Element* element, const ComputedStyle* baseStyle) const
+PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::maybeCreateCSSInterpolation(CSSPropertyID property, Keyframe::PropertySpecificKeyframe& end, Element* element, const ComputedStyle* baseStyle) const
 {
     CSSValue* fromCSSValue = m_value.get();
     CSSValue* toCSSValue = toStringPropertySpecificKeyframe(end).value();
@@ -399,7 +409,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
 
 PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::PropertySpecificKeyframe::neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const
 {
-    return adoptPtrWillBeNoop(new PropertySpecificKeyframe(offset, easing, 0, AnimationEffect::CompositeAdd));
+    return adoptPtrWillBeNoop(new PropertySpecificKeyframe(offset, easing, static_cast<CSSValue*>(0), AnimationEffect::CompositeAdd));
 }
 
 PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::PropertySpecificKeyframe::cloneWithOffset(double offset) const

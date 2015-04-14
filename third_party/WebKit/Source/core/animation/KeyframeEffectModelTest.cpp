@@ -35,6 +35,7 @@
 #include "core/animation/animatable/AnimatableLength.h"
 #include "core/animation/animatable/AnimatableUnknown.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/dom/Element.h"
 #include <gtest/gtest.h>
 
 using namespace blink;
@@ -467,7 +468,7 @@ TEST(AnimationKeyframeEffectModel, AddSyntheticKeyframes)
     keyframes[0]->setPropertyValue(CSSPropertyLeft, unknownAnimatableValue(4.0).get());
 
     RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = AnimatableValueKeyframeEffectModel::create(keyframes);
-    const AnimatableValuePropertySpecificKeyframeVector& propertySpecificKeyframes = effect->getPropertySpecificKeyframes(CSSPropertyLeft);
+    const AnimatableValuePropertySpecificKeyframeVector& propertySpecificKeyframes = effect->getPropertySpecificKeyframes(PropertyHandle(CSSPropertyLeft));
     EXPECT_EQ(3U, propertySpecificKeyframes.size());
     EXPECT_DOUBLE_EQ(0.0, propertySpecificKeyframes[0]->offset());
     EXPECT_DOUBLE_EQ(0.5, propertySpecificKeyframes[1]->offset());

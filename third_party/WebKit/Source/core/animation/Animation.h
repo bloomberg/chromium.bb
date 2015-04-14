@@ -45,6 +45,7 @@ class AnimationTimingProperties;
 class Dictionary;
 class Element;
 class ExceptionState;
+class PropertyHandle;
 class SampledEffect;
 
 class CORE_EXPORT Animation final : public AnimationNode {
@@ -62,7 +63,7 @@ public:
 
     virtual bool isAnimation() const override { return true; }
 
-    bool affects(CSSPropertyID) const;
+    bool affects(PropertyHandle) const;
     const AnimationEffect* effect() const { return m_effect.get(); }
     AnimationEffect* effect() { return m_effect.get(); }
     void setEffect(PassRefPtrWillBeRawPtr<AnimationEffect> effect) { m_effect = effect; }

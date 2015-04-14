@@ -71,9 +71,10 @@ protected:
         return Animation::create(element.get(), effect, timing);
     }
 
-    AnimatableValue* interpolationValue(Interpolation* interpolation)
+    AnimatableValue* interpolationValue(const ActiveInterpolationMap& activeInterpolations, CSSPropertyID id)
     {
-        return toLegacyStyleInterpolation(interpolation)->currentValue().get();
+        Interpolation& interpolation = *activeInterpolations.get(PropertyHandle(id));
+        return toLegacyStyleInterpolation(interpolation).currentValue().get();
     }
 
     RefPtrWillBePersistent<Document> document;
@@ -86,9 +87,9 @@ TEST_F(AnimationAnimationStackTest, ElementAnimationsSorted)
     play(makeAnimation(makeAnimationEffect(CSSPropertyFontSize, AnimatableDouble::create(1))).get(), 10);
     play(makeAnimation(makeAnimationEffect(CSSPropertyFontSize, AnimatableDouble::create(2))).get(), 15);
     play(makeAnimation(makeAnimationEffect(CSSPropertyFontSize, AnimatableDouble::create(3))).get(), 5);
-    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>> result = AnimationStack::activeInterpolations(&element->elementAnimations()->defaultStack(), 0, 0, Animation::DefaultPriority, 0);
+    ActiveInterpolationMap result = AnimationStack::activeInterpolations(&element->elementAnimations()->defaultStack(), 0, 0, Animation::DefaultPriority, 0);
     EXPECT_EQ(1u, result.size());
-    EXPECT_TRUE(interpolationValue(result.get(CSSPropertyFontSize))->equals(AnimatableDouble::create(3).get()));
+    EXPECT_TRUE(interpolationValue(result, CSSPropertyFontSize)->equals(AnimatableDouble::create(3).get()));
 }
 
 TEST_F(AnimationAnimationStackTest, NewAnimations)
@@ -100,10 +101,10 @@ TEST_F(AnimationAnimationStackTest, NewAnimations)
     RefPtrWillBeRawPtr<InertAnimation> inert2 = makeInertAnimation(makeAnimationEffect(CSSPropertyZIndex, AnimatableDouble::create(4)));
     newAnimations.append(inert1.get());
     newAnimations.append(inert2.get());
-    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>> result = AnimationStack::activeInterpolations(&element->elementAnimations()->defaultStack(), &newAnimations, 0, Animation::DefaultPriority, 10);
+    ActiveInterpolationMap result = AnimationStack::activeInterpolations(&element->elementAnimations()->defaultStack(), &newAnimations, 0, Animation::DefaultPriority, 10);
     EXPECT_EQ(2u, result.size());
-    EXPECT_TRUE(interpolationValue(result.get(CSSPropertyFontSize))->equals(AnimatableDouble::create(3).get()));
-    EXPECT_TRUE(interpolationValue(result.get(CSSPropertyZIndex))->equals(AnimatableDouble::create(4).get()));
+    EXPECT_TRUE(interpolationValue(result, CSSPropertyFontSize)->equals(AnimatableDouble::create(3).get()));
+    EXPECT_TRUE(interpolationValue(result, CSSPropertyZIndex)->equals(AnimatableDouble::create(4).get()));
 }
 
 TEST_F(AnimationAnimationStackTest, CancelledAnimationPlayers)
@@ -112,9 +113,9 @@ TEST_F(AnimationAnimationStackTest, CancelledAnimationPlayers)
     RefPtrWillBeRawPtr<AnimationPlayer> player = play(makeAnimation(makeAnimationEffect(CSSPropertyFontSize, AnimatableDouble::create(1))).get(), 0);
     cancelledAnimationPlayers.add(player.get());
     play(makeAnimation(makeAnimationEffect(CSSPropertyZIndex, AnimatableDouble::create(2))).get(), 0);
-    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>> result = AnimationStack::activeInterpolations(&element->elementAnimations()->defaultStack(), 0, &cancelledAnimationPlayers, Animation::DefaultPriority, 0);
+    ActiveInterpolationMap result = AnimationStack::activeInterpolations(&element->elementAnimations()->defaultStack(), 0, &cancelledAnimationPlayers, Animation::DefaultPriority, 0);
     EXPECT_EQ(1u, result.size());
-    EXPECT_TRUE(interpolationValue(result.get(CSSPropertyZIndex))->equals(AnimatableDouble::create(2).get()));
+    EXPECT_TRUE(interpolationValue(result, CSSPropertyZIndex)->equals(AnimatableDouble::create(2).get()));
 }
 
 }

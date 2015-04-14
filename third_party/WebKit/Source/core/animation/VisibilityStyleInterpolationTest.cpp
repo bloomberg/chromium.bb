@@ -51,9 +51,10 @@ TEST_F(AnimationVisibilityStyleInterpolationTest, ValueIDs)
 
 TEST_F(AnimationVisibilityStyleInterpolationTest, Interpolation)
 {
-    RefPtrWillBeRawPtr<Interpolation> interpolation = Interpolation::create(
-        visibilityToInterpolableValue(*CSSPrimitiveValue::createIdentifier(CSSValueHidden)),
-        visibilityToInterpolableValue(*CSSPrimitiveValue::createIdentifier(CSSValueVisible)));
+    RefPtrWillBeRawPtr<Interpolation> interpolation = VisibilityStyleInterpolation::create(
+        *CSSPrimitiveValue::createIdentifier(CSSValueHidden),
+        *CSSPrimitiveValue::createIdentifier(CSSValueVisible),
+        CSSPropertyVisibility);
 
     interpolation->interpolate(0, 0.0);
     RefPtrWillBeRawPtr<CSSValue> value = interpolableValueToVisibility(getCachedValue(*interpolation), CSSValueHidden);

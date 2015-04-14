@@ -973,8 +973,8 @@ bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Ele
     if (!state.animationUpdate())
         return false;
 
-    const WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>>& activeInterpolationsForAnimations = state.animationUpdate()->activeInterpolationsForAnimations();
-    const WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>>& activeInterpolationsForTransitions = state.animationUpdate()->activeInterpolationsForTransitions();
+    const ActiveInterpolationMap& activeInterpolationsForAnimations = state.animationUpdate()->activeInterpolationsForAnimations();
+    const ActiveInterpolationMap& activeInterpolationsForTransitions = state.animationUpdate()->activeInterpolationsForTransitions();
     applyAnimatedProperties<HighPropertyPriority>(state, activeInterpolationsForAnimations);
     applyAnimatedProperties<HighPropertyPriority>(state, activeInterpolationsForTransitions);
 
@@ -1006,10 +1006,12 @@ StyleRuleKeyframes* StyleResolver::findKeyframesRule(const Element* element, con
 }
 
 template <CSSPropertyPriority priority>
-void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>>& activeInterpolations)
+void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const WillBeHeapHashMap<PropertyHandle, RefPtrWillBeMember<Interpolation>>& activeInterpolations)
 {
     for (const auto& interpolationEntry : activeInterpolations) {
-        CSSPropertyID property = interpolationEntry.key;
+        if (!interpolationEntry.key.isCSSProperty())
+            continue;
+        CSSPropertyID property = interpolationEntry.key.cssProperty();
         if (!CSSPropertyPriorityData<priority>::propertyHasPriority(property))
             continue;
         const StyleInterpolation* interpolation = toStyleInterpolation(interpolationEntry.value.get());

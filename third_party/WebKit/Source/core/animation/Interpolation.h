@@ -11,19 +11,18 @@
 
 namespace blink {
 
+class PropertyHandle;
+
 class CORE_EXPORT Interpolation : public RefCountedWillBeGarbageCollectedFinalized<Interpolation> {
 public:
-    static PassRefPtrWillBeRawPtr<Interpolation> create(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end)
-    {
-        return adoptRefWillBeNoop(new Interpolation(start, end));
-    }
-
     virtual ~Interpolation();
 
     void interpolate(int iteration, double fraction) const;
 
     virtual bool isStyleInterpolation() const { return false; }
     virtual bool isLegacyStyleInterpolation() const { return false; }
+
+    virtual PropertyHandle property() const = 0;
 
     DECLARE_VIRTUAL_TRACE();
 

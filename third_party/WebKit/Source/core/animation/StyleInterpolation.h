@@ -8,6 +8,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/animation/Interpolation.h"
+#include "core/animation/PropertyHandle.h"
 
 namespace blink {
 
@@ -38,6 +39,11 @@ public:
     virtual bool isDeferredLegacyStyleInterpolation() const { return false; }
 
     CSSPropertyID id() const { return m_id; }
+
+    virtual PropertyHandle property() const override final
+    {
+        return PropertyHandle(id());
+    }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {

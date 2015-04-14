@@ -377,7 +377,7 @@ bool AnimationPlayer::affects(const Element& element, CSSPropertyID property) co
         return false;
 
     const Animation* animation = toAnimation(m_content.get());
-    return (animation->target() == &element) && animation->affects(property);
+    return (animation->target() == &element) && animation->affects(PropertyHandle(property));
 }
 
 double AnimationPlayer::calculateStartTime(double currentTime) const

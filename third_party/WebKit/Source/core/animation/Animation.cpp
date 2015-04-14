@@ -40,6 +40,7 @@
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/Interpolation.h"
 #include "core/animation/KeyframeEffectModel.h"
+#include "core/animation/PropertyHandle.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/frame/UseCounter.h"
@@ -264,10 +265,10 @@ bool Animation::hasActiveAnimationsOnCompositor() const
 
 bool Animation::hasActiveAnimationsOnCompositor(CSSPropertyID property) const
 {
-    return hasActiveAnimationsOnCompositor() && affects(property);
+    return hasActiveAnimationsOnCompositor() && affects(PropertyHandle(property));
 }
 
-bool Animation::affects(CSSPropertyID property) const
+bool Animation::affects(PropertyHandle property) const
 {
     return m_effect && m_effect->affects(property);
 }

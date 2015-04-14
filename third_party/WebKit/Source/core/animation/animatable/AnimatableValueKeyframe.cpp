@@ -16,13 +16,13 @@ AnimatableValueKeyframe::AnimatableValueKeyframe(const AnimatableValueKeyframe& 
         setPropertyValue(iter->key, iter->value.get());
 }
 
-PropertySet AnimatableValueKeyframe::properties() const
+PropertyHandleSet AnimatableValueKeyframe::properties() const
 {
     // This is not used in time-critical code, so we probably don't need to
     // worry about caching this result.
-    PropertySet properties;
+    PropertyHandleSet properties;
     for (PropertyValueMap::const_iterator iter = m_propertyValues.begin(); iter != m_propertyValues.end(); ++iter)
-        properties.add(*iter.keys());
+        properties.add(PropertyHandle(*iter.keys()));
     return properties;
 }
 
@@ -31,9 +31,9 @@ PassRefPtrWillBeRawPtr<Keyframe> AnimatableValueKeyframe::clone() const
     return adoptRefWillBeNoop(new AnimatableValueKeyframe(*this));
 }
 
-PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> AnimatableValueKeyframe::createPropertySpecificKeyframe(CSSPropertyID property) const
+PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> AnimatableValueKeyframe::createPropertySpecificKeyframe(PropertyHandle property) const
 {
-    return adoptPtrWillBeNoop(new PropertySpecificKeyframe(offset(), &easing(), propertyValue(property), composite()));
+    return adoptPtrWillBeNoop(new PropertySpecificKeyframe(offset(), &easing(), propertyValue(property.cssProperty()), composite()));
 }
 
 DEFINE_TRACE(AnimatableValueKeyframe)
@@ -62,10 +62,10 @@ PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> AnimatableValueKeyfra
     return adoptPtrWillBeNoop(theClone);
 }
 
-PassRefPtrWillBeRawPtr<Interpolation> AnimatableValueKeyframe::PropertySpecificKeyframe::maybeCreateInterpolation(CSSPropertyID property, Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle*) const
+PassRefPtrWillBeRawPtr<Interpolation> AnimatableValueKeyframe::PropertySpecificKeyframe::maybeCreateInterpolation(PropertyHandle property, Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle*) const
 {
     AnimatableValuePropertySpecificKeyframe& to = toAnimatableValuePropertySpecificKeyframe(end);
-    return LegacyStyleInterpolation::create(value(), to.value(), property);
+    return LegacyStyleInterpolation::create(value(), to.value(), property.cssProperty());
 }
 
 PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> AnimatableValueKeyframe::PropertySpecificKeyframe::neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const

@@ -42,10 +42,10 @@ namespace blink {
 
 namespace {
 
-void copyToActiveInterpolationMap(const WillBeHeapVector<RefPtrWillBeMember<blink::Interpolation>>& source, WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<blink::Interpolation>>& target)
+void copyToActiveInterpolationMap(const WillBeHeapVector<RefPtrWillBeMember<blink::Interpolation>>& source, ActiveInterpolationMap& target)
 {
     for (const auto& interpolation : source) {
-        target.set(toStyleInterpolation(interpolation.get())->id(), interpolation.get());
+        target.set(interpolation->property(), interpolation.get());
     }
 }
 
@@ -55,7 +55,7 @@ bool compareEffects(const OwnPtrWillBeMember<SampledEffect>& effect1, const OwnP
     return effect1->sequenceNumber() < effect2->sequenceNumber();
 }
 
-void copyNewAnimationsToActiveInterpolationMap(const WillBeHeapVector<RawPtrWillBeMember<InertAnimation>>& newAnimations, WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>>& result)
+void copyNewAnimationsToActiveInterpolationMap(const WillBeHeapVector<RawPtrWillBeMember<InertAnimation>>& newAnimations, ActiveInterpolationMap& result)
 {
     for (const auto& newAnimation : newAnimations) {
         OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> sample = nullptr;
@@ -80,11 +80,11 @@ bool AnimationStack::hasActiveAnimationsOnCompositor(CSSPropertyID property) con
     return false;
 }
 
-WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>> AnimationStack::activeInterpolations(AnimationStack* animationStack, const WillBeHeapVector<RawPtrWillBeMember<InertAnimation>>* newAnimations, const WillBeHeapHashSet<RawPtrWillBeMember<const AnimationPlayer>>* suppressedAnimationPlayers, Animation::Priority priority, double timelineCurrentTime)
+ActiveInterpolationMap AnimationStack::activeInterpolations(AnimationStack* animationStack, const WillBeHeapVector<RawPtrWillBeMember<InertAnimation>>* newAnimations, const WillBeHeapHashSet<RawPtrWillBeMember<const AnimationPlayer>>* suppressedAnimationPlayers, Animation::Priority priority, double timelineCurrentTime)
 {
     // We don't exactly know when new animations will start, but timelineCurrentTime is a good estimate.
 
-    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>> result;
+    ActiveInterpolationMap result;
 
     if (animationStack) {
         WillBeHeapVector<OwnPtrWillBeMember<SampledEffect>>& effects = animationStack->m_effects;
@@ -112,7 +112,7 @@ bool AnimationStack::getAnimatedBoundingBox(FloatBox& box, CSSPropertyID propert
 {
     FloatBox originalBox(box);
     for (const auto& effect : m_effects) {
-        if (effect->animation() && effect->animation()->affects(property)) {
+        if (effect->animation() && effect->animation()->affects(PropertyHandle(property))) {
             Animation* anim = effect->animation();
             if (!anim)
                 continue;

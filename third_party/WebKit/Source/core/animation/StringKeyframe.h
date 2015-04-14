@@ -8,6 +8,8 @@
 #include "core/animation/Keyframe.h"
 #include "core/css/StylePropertySet.h"
 
+#include "wtf/HashMap.h"
+
 namespace blink {
 
 class StyleSheetContents;
@@ -18,16 +20,17 @@ public:
     {
         return adoptRefWillBeNoop(new StringKeyframe);
     }
-    void setPropertyValue(CSSPropertyID, const String& value, StyleSheetContents*);
+
+    void setPropertyValue(CSSPropertyID, const String& value, Element*, StyleSheetContents*);
     void setPropertyValue(CSSPropertyID, PassRefPtrWillBeRawPtr<CSSValue>);
-    void clearPropertyValue(CSSPropertyID property) { m_propertySet->removeProperty(property); }
-    CSSValue* propertyValue(CSSPropertyID property) const
+    CSSValue* cssPropertyValue(CSSPropertyID property) const
     {
         int index = m_propertySet->findPropertyIndex(property);
         RELEASE_ASSERT(index >= 0);
         return m_propertySet->propertyAt(static_cast<unsigned>(index)).value();
     }
-    virtual PropertySet properties() const override;
+
+    virtual PropertyHandleSet properties() const override;
     RefPtrWillBeMember<MutableStylePropertySet> propertySetForInspector() const { return m_propertySet; }
 
     DECLARE_VIRTUAL_TRACE();
@@ -44,12 +47,14 @@ public:
         void setAnimatableValue(PassRefPtrWillBeRawPtr<AnimatableValue> value) { m_animatableValueCache = value; }
 
         virtual PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const override final;
-        virtual PassRefPtrWillBeRawPtr<Interpolation> maybeCreateInterpolation(CSSPropertyID, blink::Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle* baseStyle) const override final;
+        virtual PassRefPtrWillBeRawPtr<Interpolation> maybeCreateInterpolation(PropertyHandle, blink::Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle* baseStyle) const override final;
 
         DECLARE_VIRTUAL_TRACE();
 
     private:
         PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, CSSValue*);
+
+        PassRefPtrWillBeRawPtr<Interpolation> maybeCreateCSSInterpolation(CSSPropertyID, blink::Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle* baseStyle) const;
 
         virtual PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> cloneWithOffset(double offset) const;
         virtual bool isStringPropertySpecificKeyframe() const override { return true; }
@@ -70,7 +75,7 @@ private:
     StringKeyframe(const StringKeyframe& copyFrom);
 
     virtual PassRefPtrWillBeRawPtr<Keyframe> clone() const override;
-    virtual PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> createPropertySpecificKeyframe(CSSPropertyID) const override;
+    virtual PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> createPropertySpecificKeyframe(PropertyHandle) const override;
 
     virtual bool isStringKeyframe() const override { return true; }
 

@@ -71,9 +71,10 @@ TEST_F(AnimationColorStyleInterpolationTest, ValueIDColor)
 
 TEST_F(AnimationColorStyleInterpolationTest, Interpolation)
 {
-    RefPtrWillBeRawPtr<Interpolation> interpolation = Interpolation::create(
-        colorToInterpolableValue(*CSSPrimitiveValue::createColor(makeRGBA(0, 0, 0, 255))),
-        colorToInterpolableValue(*CSSPrimitiveValue::createColor(makeRGBA(255, 255, 255, 255)))
+    RefPtrWillBeRawPtr<Interpolation> interpolation = ColorStyleInterpolation::create(
+        *CSSPrimitiveValue::createColor(makeRGBA(0, 0, 0, 255)),
+        *CSSPrimitiveValue::createColor(makeRGBA(255, 255, 255, 255)),
+        CSSPropertyColor
     );
 
     interpolation->interpolate(0, 0.5);

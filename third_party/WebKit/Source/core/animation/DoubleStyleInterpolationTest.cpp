@@ -99,7 +99,12 @@ TEST_F(AnimationDoubleStyleInterpolationTest, AngleValue)
 
 TEST_F(AnimationDoubleStyleInterpolationTest, Clamping)
 {
-    RefPtrWillBeRawPtr<Interpolation> interpolableDouble = Interpolation::create(InterpolableNumber::create(0), InterpolableNumber::create(0.6));
+    RefPtrWillBeRawPtr<Interpolation> interpolableDouble = DoubleStyleInterpolation::create(
+        *CSSPrimitiveValue::create(0, CSSPrimitiveValue::CSS_NUMBER),
+        *CSSPrimitiveValue::create(0.6, CSSPrimitiveValue::CSS_NUMBER),
+        CSSPropertyLineHeight,
+        CSSPrimitiveValue::CSS_NUMBER,
+        RangeAll);
     interpolableDouble->interpolate(0, 0.4);
     // progVal = start*(1-prog) + end*prog
     EXPECT_EQ(0.24, toInterpolableNumber(getCachedValue(*interpolableDouble))->value());

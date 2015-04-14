@@ -34,6 +34,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
+#include "core/animation/PropertyHandle.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
@@ -55,7 +56,7 @@ public:
     virtual ~AnimationEffect() { }
     virtual void sample(int iteration, double fraction, double iterationDuration, OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>&) const = 0;
 
-    virtual bool affects(CSSPropertyID) const { return false; };
+    virtual bool affects(PropertyHandle) const { return false; };
     virtual bool isKeyframeEffectModel() const { return false; }
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }

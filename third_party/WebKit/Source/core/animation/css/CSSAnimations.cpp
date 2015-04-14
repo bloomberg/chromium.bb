@@ -62,6 +62,8 @@
 
 namespace blink {
 
+using PropertySet = HashSet<CSSPropertyID>;
+
 namespace {
 
 CSSPropertyID propertyForAnimation(CSSPropertyID property)
@@ -141,8 +143,8 @@ static PassRefPtrWillBeRawPtr<StringKeyframeEffectModel> createKeyframeEffect(St
     size_t targetIndex = 0;
     for (size_t i = 1; i < keyframes.size(); i++) {
         if (keyframes[i]->offset() == keyframes[targetIndex]->offset()) {
-            for (CSSPropertyID property : keyframes[i]->properties())
-                keyframes[targetIndex]->setPropertyValue(property, keyframes[i]->propertyValue(property));
+            for (const auto& property : keyframes[i]->properties())
+                keyframes[targetIndex]->setPropertyValue(property.cssProperty(), keyframes[i]->cssPropertyValue(property.cssProperty()));
         } else {
             targetIndex++;
             keyframes[targetIndex] = keyframes[i];
@@ -173,17 +175,17 @@ static PassRefPtrWillBeRawPtr<StringKeyframeEffectModel> createKeyframeEffect(St
     // FIXME: This is only used for use counting neutral keyframes running on the compositor.
     PropertySet allProperties;
     for (const auto& keyframe : keyframes) {
-        for (CSSPropertyID property : keyframe->properties())
-            allProperties.add(property);
+        for (const auto& property : keyframe->properties())
+            allProperties.add(property.cssProperty());
     }
-    const PropertySet& startKeyframeProperties = startKeyframe->properties();
-    const PropertySet& endKeyframeProperties = endKeyframe->properties();
+    const PropertyHandleSet& startKeyframeProperties = startKeyframe->properties();
+    const PropertyHandleSet& endKeyframeProperties = endKeyframe->properties();
     bool missingStartValues = startKeyframeProperties.size() < allProperties.size();
     bool missingEndValues = endKeyframeProperties.size() < allProperties.size();
     if (missingStartValues || missingEndValues) {
         for (CSSPropertyID property : allProperties) {
-            bool startNeedsValue = missingStartValues && !startKeyframeProperties.contains(property);
-            bool endNeedsValue = missingEndValues && !endKeyframeProperties.contains(property);
+            bool startNeedsValue = missingStartValues && !startKeyframeProperties.contains(PropertyHandle(property));
+            bool endNeedsValue = missingEndValues && !endKeyframeProperties.contains(PropertyHandle(property));
             if (!startNeedsValue && !endNeedsValue)
                 continue;
             if (CompositorAnimations::isCompositableProperty(property))
@@ -581,8 +583,9 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
 
                 // FIXME: We should transition if an !important property changes even when an animation is running,
                 // but this is a bit hard to do with the current applyMatchedProperties system.
-                if (!update->activeInterpolationsForAnimations().contains(id)
-                    && (!elementAnimations || !elementAnimations->cssAnimations().m_previousActiveInterpolationsForAnimations.contains(id))) {
+                PropertyHandle property = PropertyHandle(id);
+                if (!update->activeInterpolationsForAnimations().contains(property)
+                    && (!elementAnimations || !elementAnimations->cssAnimations().m_previousActiveInterpolationsForAnimations.contains(property))) {
                     calculateTransitionUpdateForProperty(id, eventId, *transitionData, i, oldStyle, style, activeTransitions, update, animatingElement);
                 }
             }
@@ -626,7 +629,7 @@ void CSSAnimations::calculateAnimationActiveInterpolations(CSSAnimationUpdate* u
     AnimationStack* animationStack = elementAnimations ? &elementAnimations->defaultStack() : nullptr;
 
     if (update->newAnimations().isEmpty() && update->suppressedAnimationAnimationPlayers().isEmpty()) {
-        WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>> activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, 0, 0, Animation::DefaultPriority, timelineCurrentTime));
+        ActiveInterpolationMap activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, 0, 0, Animation::DefaultPriority, timelineCurrentTime));
         update->adoptActiveInterpolationsForAnimations(activeInterpolationsForAnimations);
         return;
     }
@@ -637,7 +640,7 @@ void CSSAnimations::calculateAnimationActiveInterpolations(CSSAnimationUpdate* u
     for (const auto& updatedAnimation : update->animationsWithUpdates())
         newAnimations.append(updatedAnimation.animation.get()); // Animations with updates use a temporary InertAnimation for the current frame.
 
-    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>> activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, &newAnimations, &update->suppressedAnimationAnimationPlayers(), Animation::DefaultPriority, timelineCurrentTime));
+    ActiveInterpolationMap activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, &newAnimations, &update->suppressedAnimationAnimationPlayers(), Animation::DefaultPriority, timelineCurrentTime));
     update->adoptActiveInterpolationsForAnimations(activeInterpolationsForAnimations);
 }
 
@@ -646,7 +649,7 @@ void CSSAnimations::calculateTransitionActiveInterpolations(CSSAnimationUpdate* 
     ElementAnimations* elementAnimations = animatingElement ? animatingElement->elementAnimations() : nullptr;
     AnimationStack* animationStack = elementAnimations ? &elementAnimations->defaultStack() : nullptr;
 
-    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>> activeInterpolationsForTransitions;
+    ActiveInterpolationMap activeInterpolationsForTransitions;
     if (update->newTransitions().isEmpty() && update->cancelledTransitions().isEmpty()) {
         activeInterpolationsForTransitions = AnimationStack::activeInterpolations(animationStack, 0, 0, Animation::TransitionPriority, timelineCurrentTime);
     } else {

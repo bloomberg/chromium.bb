@@ -45,9 +45,9 @@
 
 namespace blink {
 
-PropertySet KeyframeEffectModelBase::properties() const
+PropertyHandleSet KeyframeEffectModelBase::properties() const
 {
-    PropertySet result;
+    PropertyHandleSet result;
     for (const auto& keyframe : m_keyframes) {
         for (const auto& property : keyframe->properties())
             result.add(property);
@@ -83,11 +83,12 @@ void KeyframeEffectModelBase::forceConversionsToAnimatableValues(Element& elemen
 void KeyframeEffectModelBase::snapshotCompositableProperties(Element& element, const ComputedStyle* baseStyle)
 {
     ensureKeyframeGroups();
-    for (CSSPropertyID property : CompositorAnimations::CompositableProperties) {
+    for (CSSPropertyID id : CompositorAnimations::CompositableProperties) {
+        PropertyHandle property = PropertyHandle(id);
         if (!affects(property))
             continue;
         for (auto& keyframe : m_keyframeGroups->get(property)->m_keyframes)
-            keyframe->populateAnimatableValue(property, element, baseStyle);
+            keyframe->populateAnimatableValue(id, element, baseStyle);
     }
 }
 
@@ -99,7 +100,7 @@ bool KeyframeEffectModelBase::updateNeutralKeyframeAnimatableValues(CSSPropertyI
         return false;
 
     ensureKeyframeGroups();
-    auto& keyframes = m_keyframeGroups->get(property)->m_keyframes;
+    auto& keyframes = m_keyframeGroups->get(PropertyHandle(property))->m_keyframes;
     ASSERT(keyframes.size() >= 2);
 
     auto& first = toStringPropertySpecificKeyframe(*keyframes.first());
@@ -161,8 +162,9 @@ void KeyframeEffectModelBase::ensureKeyframeGroups() const
 
     m_keyframeGroups = adoptPtrWillBeNoop(new KeyframeGroupMap);
     for (const auto& keyframe : normalizedKeyframes(getFrames())) {
-        for (CSSPropertyID property : keyframe->properties()) {
-            ASSERT_WITH_MESSAGE(!isShorthandProperty(property), "Web Animations: Encountered shorthand CSS property (%d) in normalized keyframes.", property);
+        for (const PropertyHandle& property : keyframe->properties()) {
+            if (property.isCSSProperty())
+                ASSERT_WITH_MESSAGE(!isShorthandProperty(property.cssProperty()), "Web Animations: Encountered shorthand CSS property (%d) in normalized keyframes.", property.cssProperty());
             KeyframeGroupMap::iterator groupIter = m_keyframeGroups->find(property);
             PropertySpecificKeyframeGroup* group;
             if (groupIter == m_keyframeGroups->end())

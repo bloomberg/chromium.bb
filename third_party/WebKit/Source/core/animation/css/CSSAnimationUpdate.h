@@ -5,6 +5,7 @@
 #ifndef CSSAnimationUpdate_h
 #define CSSAnimationUpdate_h
 
+#include "core/animation/AnimationStack.h"
 #include "core/animation/Interpolation.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
@@ -156,11 +157,11 @@ public:
         UpdatedAnimationStyle::CompositableStyleSnapshot snapshot;
         if (renderer) {
             const ComputedStyle& oldStyle = renderer->styleRef();
-            if (!CSSPropertyEquality::propertiesEqual(CSSPropertyOpacity, oldStyle, newStyle) && effect->affects(CSSPropertyOpacity))
+            if (!CSSPropertyEquality::propertiesEqual(CSSPropertyOpacity, oldStyle, newStyle) && effect->affects(PropertyHandle(CSSPropertyOpacity)))
                 snapshot.opacity = CSSAnimatableValueFactory::create(CSSPropertyOpacity, newStyle);
-            if (!CSSPropertyEquality::propertiesEqual(CSSPropertyTransform, oldStyle, newStyle) && effect->affects(CSSPropertyTransform))
+            if (!CSSPropertyEquality::propertiesEqual(CSSPropertyTransform, oldStyle, newStyle) && effect->affects(PropertyHandle(CSSPropertyTransform)))
                 snapshot.transform = CSSAnimatableValueFactory::create(CSSPropertyTransform, newStyle);
-            if (!CSSPropertyEquality::propertiesEqual(CSSPropertyWebkitFilter, oldStyle, newStyle) && effect->affects(CSSPropertyWebkitFilter))
+            if (!CSSPropertyEquality::propertiesEqual(CSSPropertyWebkitFilter, oldStyle, newStyle) && effect->affects(PropertyHandle(CSSPropertyWebkitFilter)))
                 snapshot.webkitFilter = CSSAnimatableValueFactory::create(CSSPropertyWebkitFilter, newStyle);
         }
 
@@ -210,11 +211,11 @@ public:
     const HashSet<CSSPropertyID>& cancelledTransitions() const { return m_cancelledTransitions; }
     const HashSet<CSSPropertyID>& finishedTransitions() const { return m_finishedTransitions; }
 
-    void adoptActiveInterpolationsForAnimations(WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>>& newMap) { newMap.swap(m_activeInterpolationsForAnimations); }
-    void adoptActiveInterpolationsForTransitions(WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>>& newMap) { newMap.swap(m_activeInterpolationsForTransitions); }
-    const WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>>& activeInterpolationsForAnimations() const { return m_activeInterpolationsForAnimations; }
-    const WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>>& activeInterpolationsForTransitions() const { return m_activeInterpolationsForTransitions; }
-    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>>& activeInterpolationsForAnimations() { return m_activeInterpolationsForAnimations; }
+    void adoptActiveInterpolationsForAnimations(ActiveInterpolationMap& newMap) { newMap.swap(m_activeInterpolationsForAnimations); }
+    void adoptActiveInterpolationsForTransitions(ActiveInterpolationMap& newMap) { newMap.swap(m_activeInterpolationsForTransitions); }
+    const ActiveInterpolationMap& activeInterpolationsForAnimations() const { return m_activeInterpolationsForAnimations; }
+    const ActiveInterpolationMap& activeInterpolationsForTransitions() const { return m_activeInterpolationsForTransitions; }
+    ActiveInterpolationMap& activeInterpolationsForAnimations() { return m_activeInterpolationsForAnimations; }
 
     bool isEmpty() const
     {
@@ -249,8 +250,8 @@ private:
     HashSet<CSSPropertyID> m_cancelledTransitions;
     HashSet<CSSPropertyID> m_finishedTransitions;
 
-    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>> m_activeInterpolationsForAnimations;
-    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>> m_activeInterpolationsForTransitions;
+    ActiveInterpolationMap m_activeInterpolationsForAnimations;
+    ActiveInterpolationMap m_activeInterpolationsForTransitions;
 };
 
 } // namespace blink

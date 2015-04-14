@@ -6,10 +6,33 @@
 #include "core/animation/InterpolableValue.h"
 
 #include "core/animation/Interpolation.h"
+#include "core/animation/PropertyHandle.h"
 
 #include <gtest/gtest.h>
 
 namespace blink {
+
+namespace {
+
+class SampleInterpolation : public Interpolation {
+public:
+    static PassRefPtrWillBeRawPtr<Interpolation> create(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end)
+    {
+        return adoptRefWillBeNoop(new SampleInterpolation(start, end));
+    }
+
+    virtual PropertyHandle property() const override
+    {
+        return PropertyHandle(CSSPropertyBackgroundColor);
+    }
+private:
+    SampleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end)
+        : Interpolation(start, end)
+    {
+    }
+};
+
+} // namespace
 
 class AnimationInterpolableValueTest : public ::testing::Test {
 protected:
@@ -20,21 +43,21 @@ protected:
 
     double interpolateNumbers(double a, double b, double progress)
     {
-        RefPtrWillBeRawPtr<Interpolation> i = Interpolation::create(InterpolableNumber::create(a), InterpolableNumber::create(b));
+        RefPtrWillBeRawPtr<Interpolation> i = SampleInterpolation::create(InterpolableNumber::create(a), InterpolableNumber::create(b));
         i->interpolate(0, progress);
         return toInterpolableNumber(interpolationValue(*i.get()))->value();
     }
 
     bool interpolateBools(bool a, bool b, double progress)
     {
-        RefPtrWillBeRawPtr<Interpolation> i = Interpolation::create(InterpolableBool::create(a), InterpolableBool::create(b));
+        RefPtrWillBeRawPtr<Interpolation> i = SampleInterpolation::create(InterpolableBool::create(a), InterpolableBool::create(b));
         i->interpolate(0, progress);
         return toInterpolableBool(interpolationValue(*i.get()))->value();
     }
 
     PassRefPtrWillBeRawPtr<Interpolation> interpolateLists(PassOwnPtrWillBeRawPtr<InterpolableList> listA, PassOwnPtrWillBeRawPtr<InterpolableList> listB, double progress)
     {
-        RefPtrWillBeRawPtr<Interpolation> i = Interpolation::create(listA, listB);
+        RefPtrWillBeRawPtr<Interpolation> i = SampleInterpolation::create(listA, listB);
         i->interpolate(0, progress);
         return i;
     }
