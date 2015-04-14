@@ -30,26 +30,26 @@ shouldBeEqualToString('flexbox.style.display', 'block');
 flexbox.style.display = 'flex';
 
 var flexitem = document.getElementById("flexitem");
-shouldBeEqualToString('flexitem.style.webkitOrder', '');
+shouldBeEqualToString('flexitem.style.order', '');
 
-flexitem.style.webkitOrder = 2;
-shouldBeEqualToString('flexitem.style.webkitOrder', '2');
+flexitem.style.order = 2;
+shouldBeEqualToString('flexitem.style.order', '2');
 
-flexitem.style.webkitOrder = -1;
-shouldBeEqualToString('flexitem.style.webkitOrder', '-1');
+flexitem.style.order = -1;
+shouldBeEqualToString('flexitem.style.order', '-1');
 
-flexitem.style.webkitOrder = 0;
-shouldBeEqualToString('flexitem.style.webkitOrder', '0');
+flexitem.style.order = 0;
+shouldBeEqualToString('flexitem.style.order', '0');
 
-// -webkit-order must be an integer.
-flexitem.style.webkitOrder = 1.5;
-shouldBeEqualToString('flexitem.style.webkitOrder', '0');
+// order must be an integer.
+flexitem.style.order = 1.5;
+shouldBeEqualToString('flexitem.style.order', '0');
 
-flexitem.style.webkitOrder = "test";
-shouldBeEqualToString('flexitem.style.webkitOrder', '0');
+flexitem.style.order = "test";
+shouldBeEqualToString('flexitem.style.order', '0');
 
-flexitem.style.webkitOrder = '';
-shouldBeEqualToString('flexitem.style.webkitOrder', '');
+flexitem.style.order = '';
+shouldBeEqualToString('flexitem.style.order', '');
 
 
 shouldBeEqualToString('flexbox.style.justifyContent', '');
