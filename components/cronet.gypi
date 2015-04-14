@@ -299,13 +299,19 @@
             '../third_party/icu/icu.gyp:icuuc',
           ],
           'conditions': [
-            ['use_icu_alternatives_on_android==1',
+            # If file support is disabled, add the following sources since
+            # url_request_mock_http_job depends on them.
+            ['disable_file_support==1',
               {
                 'sources': [
                   '../net/base/directory_lister.cc',
                   '../net/base/directory_lister.h',
+                  '../net/url_request/test_url_request_interceptor.cc',
+                  '../net/url_request/test_url_request_interceptor.h',
                   '../net/url_request/url_request_file_job.cc',
                   '../net/url_request/url_request_file_job.h',
+                  '../net/test/url_request/url_request_mock_http_job.cc',
+                  '../net/test/url_request/url_request_mock_http_job.h',
                 ]
               }
             ],
@@ -361,6 +367,7 @@
             'libcronet',
             'cronet_java',
             'cronet_stub',
+            '../net/net.gyp:net_unittests_apk',
           ],
           'variables': {
             'native_lib': 'libcronet.>(android_product_extension)',

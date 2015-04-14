@@ -594,14 +594,10 @@
         'test/url_request/url_request_failed_job.h',
         'test/url_request/url_request_mock_data_job.cc',
         'test/url_request/url_request_mock_data_job.h',
-        'test/url_request/url_request_mock_http_job.cc',
-        'test/url_request/url_request_mock_http_job.h',
         'test/url_request/url_request_slow_download_job.cc',
         'test/url_request/url_request_slow_download_job.h',
         'url_request/test_url_fetcher_factory.cc',
         'url_request/test_url_fetcher_factory.h',
-        'url_request/test_url_request_interceptor.cc',
-        'url_request/test_url_request_interceptor.h',
         'url_request/url_request_test_util.cc',
         'url_request/url_request_test_util.h',
       ],
@@ -659,6 +655,14 @@
             'sources!': [
               'test/cert_test_util_nss.cc',
             ],
+        }],
+        ['disable_file_support != 1', {
+          'sources': [
+            'test/url_request/url_request_mock_http_job.cc',
+            'test/url_request/url_request_mock_http_job.h',
+            'url_request/test_url_request_interceptor.cc',
+            'url_request/test_url_request_interceptor.h',
+          ],
         }],
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
@@ -1319,6 +1323,7 @@
             'disable_ftp_support': 1,
             'disable_file_support': 1,
             'enable_websockets': 0,
+            'use_icu_alternatives_on_android': 1,
           },
           'dependencies': [
             '../url/url.gyp:url_lib_use_icu_alternatives_on_android',

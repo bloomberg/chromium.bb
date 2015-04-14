@@ -690,14 +690,10 @@ source_set("test_support") {
     "test/url_request/url_request_failed_job.h",
     "test/url_request/url_request_mock_data_job.cc",
     "test/url_request/url_request_mock_data_job.h",
-    "test/url_request/url_request_mock_http_job.cc",
-    "test/url_request/url_request_mock_http_job.h",
     "test/url_request/url_request_slow_download_job.cc",
     "test/url_request/url_request_slow_download_job.h",
     "url_request/test_url_fetcher_factory.cc",
     "url_request/test_url_fetcher_factory.h",
-    "url_request/test_url_request_interceptor.cc",
-    "url_request/test_url_request_interceptor.h",
     "url_request/url_request_test_util.cc",
     "url_request/url_request_test_util.h",
   ]
@@ -746,6 +742,15 @@ source_set("test_support") {
 
   if (!use_nss_certs) {
     sources -= [ "test/cert_test_util_nss.cc" ]
+  }
+
+  if (!disable_file_support) {
+    sources += [
+      "test/url_request/url_request_mock_http_job.cc",
+      "test/url_request/url_request_mock_http_job.h",
+      "url_request/test_url_request_interceptor.cc",
+      "url_request/test_url_request_interceptor.h",
+    ]
   }
 }
 

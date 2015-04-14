@@ -176,6 +176,7 @@ void TestLoadTimingReusedWithProxy(
   EXPECT_LE(load_timing_info.send_end, load_timing_info.receive_headers_end);
 }
 
+#if !defined(DISABLE_FILE_SUPPORT)
 // Tests load timing information in the case of a cache hit, when no cache
 // validation request was sent over the wire.
 base::StringPiece TestNetResourceProvider(int key) {
@@ -196,6 +197,7 @@ void FillBuffer(char* buffer, size_t len) {
       buffer[i] = 'g';
   }
 }
+#endif
 
 #if !defined(OS_IOS)
 void TestLoadTimingCacheHitNoNetwork(
@@ -215,6 +217,7 @@ void TestLoadTimingCacheHitNoNetwork(
   EXPECT_TRUE(load_timing_info.proxy_resolve_end.is_null());
 }
 
+#if !defined(DISABLE_FTP_SUPPORT)
 // Tests load timing in the case that there is no HTTP response.  This can be
 // used to test in the case of errors or non-HTTP requests.
 void TestLoadTimingNoHttpResponse(
@@ -234,6 +237,7 @@ void TestLoadTimingNoHttpResponse(
   EXPECT_TRUE(load_timing_info.send_end.is_null());
   EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
 }
+#endif
 
 // Do a case-insensitive search through |haystack| for |needle|.
 bool ContainsString(const std::string& haystack, const char* needle) {
