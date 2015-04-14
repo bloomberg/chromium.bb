@@ -177,6 +177,8 @@ struct shell_surface {
 	bool has_set_geometry, has_next_geometry;
 
 	int focus_count;
+
+	bool destroying;
 };
 
 struct shell_grab {
@@ -3575,11 +3577,26 @@ shell_handle_surface_destroy(struct wl_listener *listener, void *data)
 }
 
 static void
-fade_out_done(struct weston_view_animation *animation, void *data)
+fade_out_done_idle_cb(void *data)
 {
 	struct shell_surface *shsurf = data;
 
 	weston_surface_destroy(shsurf->surface);
+}
+
+static void
+fade_out_done(struct weston_view_animation *animation, void *data)
+{
+	struct shell_surface *shsurf = data;
+	struct wl_event_loop *loop;
+
+	loop = wl_display_get_event_loop(
+				shsurf->surface->compositor->wl_display);
+
+	if (!shsurf->destroying) {
+		wl_event_loop_add_idle(loop, fade_out_done_idle_cb, shsurf);
+		shsurf->destroying = true;
+	}
 }
 
 static void
