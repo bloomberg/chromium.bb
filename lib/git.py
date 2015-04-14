@@ -614,6 +614,30 @@ class ManifestCheckout(Manifest):
       manifest_path = os.path.join(root, '.repo', 'manifest.xml')
     return root, manifest_path
 
+  @staticmethod
+  def IsFullManifest(checkout_root):
+    """Returns True iff the given checkout is using a full manifest.
+
+    This method should go away as part of the cleanup related to brbug.com/854.
+
+    Args:
+      checkout_root: path to the root of an SDK checkout.
+
+    Returns:
+      True iff the manifest selected for the given SDK is a full manifest.
+      In this context we'll accept any manifest for which there are no groups
+      defined.
+    """
+    manifests_git_repo = os.path.join(checkout_root, '.repo', 'manifests.git')
+    cmd = ['config', '--local', '--get', 'manifest.groups']
+    result = RunGit(manifests_git_repo, cmd, error_code_ok=True)
+
+    if result.output.strip():
+      # Full layouts don't define groups.
+      return False
+
+    return True
+
   def FindCheckouts(self, project, branch=None, only_patchable=False):
     """Returns the list of checkouts for a given |project|/|branch|.
 

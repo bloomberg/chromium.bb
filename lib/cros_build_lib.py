@@ -645,6 +645,24 @@ def Die(message, *args, **kwargs):
   raise DieSystemExit(1)
 
 
+def GetSysrootToolPath(sysroot, tool_name):
+  """Returns the path to the sysroot specific version of a tool.
+
+  Does not check that the tool actually exists.
+
+  Args:
+    sysroot: build root of the system in question.
+    tool_name: string name of tool desired (e.g. 'equery').
+
+  Returns:
+    string path to tool inside the sysroot.
+  """
+  if sysroot == '/':
+    return os.path.join(sysroot, 'usr', 'bin', tool_name)
+
+  return os.path.join(sysroot, 'build', 'bin', tool_name)
+
+
 def PrintBuildbotLink(text, url, handle=None):
   """Prints out a link to buildbot."""
   text = ' '.join(text.split())

@@ -25,6 +25,11 @@ from chromite.lib import git
 from chromite.lib import osutils
 
 
+# The parsed output of running `ebuild <ebuild path> info`.
+RepositoryInfoTuple = collections.namedtuple('RepositoryInfoTuple',
+                                             ('srcdir', 'project'))
+
+
 _PRIVATE_PREFIX = '%(buildroot)s/src/private-overlays'
 
 # Define datastructures for holding PV and CPV objects.
@@ -54,6 +59,7 @@ WORKON_EBUILD_SUFFIX = '-%s.ebuild' % WORKON_EBUILD_VERSION
 class MissingOverlayException(Exception):
   """This exception indicates that a needed overlay is missing."""
 
+
 def GetOverlayRoot(path):
   """Get the overlay root folder for |path|.
 
@@ -64,6 +70,7 @@ def GetOverlayRoot(path):
     # A brick has its overlay root in the packages subdirectory.
     return os.path.join(path, 'packages')
   return path
+
 
 def _ListOverlays(board=None, buildroot=constants.SOURCE_ROOT):
   """Return the list of overlays to use for a given buildbot.
@@ -207,6 +214,24 @@ def FindOverlayFile(filename, overlay_type='both', board=None,
     if os.path.isfile(os.path.join(overlay, filename)):
       return os.path.join(overlay, filename)
   return None
+
+
+def FindSysrootOverlays(sysroot):
+  """Ask portage for a list of overlays installed in a given sysroot.
+
+  Returns overlays in lowest to highest priority.  Note that this list
+  is only partially ordered.
+
+  Args:
+    sysroot: The root directory being inspected.
+
+  Returns:
+    list of overlays used in sysroot.
+  """
+  cmd = (cros_build_lib.GetSysrootToolPath(sysroot, 'portageq'),
+         'envvar', 'PORTDIR_OVERLAY')
+  return cros_build_lib.RunCommand(cmd, print_cmd=False,
+                                   capture_output=True).output.strip().split()
 
 
 def ReadOverlayFile(filename, overlay_type='both', board=None,
@@ -1271,6 +1296,18 @@ def GetWorkonProjectMap(overlay, subdirectories):
       yield relpath, projects, srcpaths
 
 
+def EbuildToCP(path):
+  """Return the category/path string from an ebuild path.
+
+  Args:
+    path: Path to an ebuild.
+
+  Returns:
+    '$CATEGORY/$PN' (e.g. 'sys-apps/dbus')
+  """
+  return os.path.join(*SplitEbuildPath(path)[0:2])
+
+
 def SplitEbuildPath(path):
   """Split an ebuild path into its components.
 
@@ -1435,6 +1472,33 @@ def FindPackageNameMatches(pkg_str, board=None):
   return matches
 
 
+def FindEbuildForPackage(pkg_str, sysroot, include_masked=False,
+                         extra_env=None):
+  """Returns a path to an ebuild responsible for package matching |pkg_str|.
+
+  Args:
+    pkg_str: The package name with optional category, version, and slot.
+    sysroot: The root directory being inspected.
+    include_masked: True iff we should include masked ebuilds in our query.
+    extra_env: optional dictionary of extra string/string pairs to use as the
+      environment of equery command.
+
+  Returns:
+    Path to ebuild for this package.
+  """
+  cmd = [cros_build_lib.GetSysrootToolPath(sysroot, 'equery'), 'which']
+  if include_masked:
+    cmd += ['--include-masked']
+  cmd += [pkg_str]
+
+  result = cros_build_lib.RunCommand(cmd, extra_env=extra_env, print_cmd=False,
+                                     capture_output=True, error_code_ok=True)
+
+  if result.error:
+    return None
+  return result.output.strip()
+
+
 def GetInstalledPackageUseFlags(pkg_str, board=None):
   """Gets the list of USE flags for installed packages matching |pkg_str|.
 
@@ -1488,6 +1552,43 @@ def GetBinaryPackagePath(c, p, v, sysroot='/', packages_dir=None):
     raise ValueError('Cannot find the binary package %s!' % path)
 
   return path
+
+
+def GetRepositoryForEbuild(ebuild_path, sysroot):
+  """Get parsed output of `ebuild <ebuild_path> info`
+
+  ebuild ... info runs the pkg_info step of an ebuild.
+  cros-workon.eclass defines that step and prints both variables.
+
+  Args:
+    ebuild_path: string full path to ebuild file.
+    sysroot: The root directory being inspected.
+
+  Returns:
+    list of RepositoryInfoTuples.
+  """
+  cmd = (cros_build_lib.GetSysrootToolPath(sysroot, 'ebuild'),
+         ebuild_path, 'info')
+  result = cros_build_lib.RunCommand(
+      cmd, capture_output=True, print_cmd=False, error_code_ok=True)
+
+  # This command should return output that looks a lot like:
+  # CROS_WORKON_SRCDIR=("/mnt/host/source/src/platform2")
+  # CROS_WORKON_PROJECT=("chromiumos/platform2")
+  srcdir_match = re.search(r'^CROS_WORKON_SRCDIR=\((".*")\)$',
+                           result.output, re.MULTILINE)
+  project_match = re.search(r'^CROS_WORKON_PROJECT=\((".*")\)$',
+                            result.output, re.MULTILINE)
+  if not srcdir_match or not project_match:
+    return None
+
+  srcdirs = ParseBashArray(srcdir_match.group(1))
+  projects = ParseBashArray(project_match.group(1))
+  if len(srcdirs) != len(projects):
+    return None
+
+  return [RepositoryInfoTuple(srcdir, project)
+          for srcdir, project in zip(srcdirs, projects)]
 
 
 def CleanOutdatedBinaryPackages(board):
