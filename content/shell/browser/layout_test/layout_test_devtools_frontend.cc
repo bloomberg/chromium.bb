@@ -62,6 +62,7 @@ GURL LayoutTestDevToolsFrontend::GetDevToolsPathAsURL(
 void LayoutTestDevToolsFrontend::ReuseFrontend(const std::string& settings,
                                                const std::string frontend_url) {
   DisconnectFromTarget();
+  preferences()->Clear();
   frontend_shell()->LoadURL(GetDevToolsPathAsURL(settings, frontend_url));
 }
 

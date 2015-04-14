@@ -194,5 +194,13 @@ DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(
                      &Delegate::RecordEnumeratedHistogram, delegate);
   d->RegisterHandlerWithCallback("sendJsonRequest",
                                  &Delegate::SendJsonRequest, delegate);
+  d->RegisterHandlerWithCallback("getPreferences",
+                                 &Delegate::GetPreferences, delegate);
+  d->RegisterHandler("setPreference",
+                     &Delegate::SetPreference, delegate);
+  d->RegisterHandler("removePreference",
+                     &Delegate::RemovePreference, delegate);
+  d->RegisterHandler("clearPreferences",
+                     &Delegate::ClearPreferences, delegate);
   return d;
 }

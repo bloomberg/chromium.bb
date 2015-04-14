@@ -224,6 +224,22 @@ void ShellDevToolsFrontend::HandleMessageFromDevToolsFrontend(
         new ResponseWriter(weak_factory_.GetWeakPtr(), stream_id)));
     fetcher->Start();
     return;
+  } else if (method == "getPreferences") {
+    SendMessageAck(request_id, &preferences_);
+    return;
+  } else if (method == "setPreference") {
+    std::string name;
+    std::string value;
+    if (!params->GetString(0, &name) ||
+        !params->GetString(1, &value)) {
+      return;
+    }
+    preferences_.SetStringWithoutPathExpansion(name, value);
+  } else if (method == "removePreference") {
+    std::string name;
+    if (!params->GetString(0, &name))
+      return;
+    preferences_.RemoveWithoutPathExpansion(name, nullptr);
   } else {
     return;
   }

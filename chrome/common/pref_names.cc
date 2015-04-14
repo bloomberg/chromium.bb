@@ -1619,6 +1619,9 @@ const char kDevToolsPortForwardingDefaultSet[] =
 // A dictionary of port->location pairs for port forwarding.
 const char kDevToolsPortForwardingConfig[] = "devtools.port_forwarding_config";
 
+// A dictionary with generic DevTools settings.
+const char kDevToolsPreferences[] = "devtools.preferences";
+
 #if defined(OS_ANDROID)
 // A boolean specifying whether remote dev tools debugging is enabled.
 const char kDevToolsRemoteEnabled[] = "devtools.remote_enabled";

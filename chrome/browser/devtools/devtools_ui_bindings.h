@@ -138,6 +138,11 @@ class DevToolsUIBindings : public content::NotificationObserver,
   void SendJsonRequest(const DispatchCallback& callback,
                        const std::string& browser_id,
                        const std::string& url) override;
+  void GetPreferences(const DispatchCallback& callback) override;
+  void SetPreference(const std::string& name,
+                     const std::string& value) override;
+  void RemovePreference(const std::string& name) override;
+  void ClearPreferences() override;
 
   // net::URLFetcherDelegate overrides.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
