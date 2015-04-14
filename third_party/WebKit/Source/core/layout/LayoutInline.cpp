@@ -812,7 +812,7 @@ private:
 
 bool LayoutInline::hitTestCulledInline(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset)
 {
-    ASSERT(result.isRectBasedTest() && !alwaysCreateLineBoxes());
+    ASSERT(!alwaysCreateLineBoxes());
     if (!visibleToHitTestRequest(result.hitTestRequest()))
         return false;
 

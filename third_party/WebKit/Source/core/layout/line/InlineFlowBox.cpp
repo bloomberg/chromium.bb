@@ -975,41 +975,41 @@ bool InlineFlowBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& lo
     if (!locationInContainer.intersects(overflowRect))
         return false;
 
-    // Check children first.
-    // We need to account for culled inline parents of the hit-tested nodes, so that they may also get included in area-based hit-tests.
-    LayoutObject* culledParent = 0;
-    for (InlineBox* curr = lastChild(); curr; curr = curr->prevOnLine()) {
-        if (curr->layoutObject().isText() || !curr->boxModelObject()->hasSelfPaintingLayer()) {
-            LayoutObject* newParent = 0;
-            // Culled parents are only relevant for area-based hit-tests, so ignore it in point-based ones.
-            if (locationInContainer.isRectBasedTest()) {
-                newParent = curr->layoutObject().parent();
-                if (newParent == layoutObject())
-                    newParent = 0;
-            }
-            // Check the culled parent after all its children have been checked, to do this we wait until
-            // we are about to test an element with a different parent.
-            if (newParent != culledParent) {
-                if (!newParent || !newParent->isDescendantOf(culledParent)) {
-                    while (culledParent && culledParent != layoutObject() && culledParent != newParent) {
-                        if (culledParent->isLayoutInline() && toLayoutInline(culledParent)->hitTestCulledInline(result, locationInContainer, accumulatedOffset))
-                            return true;
-                        culledParent = culledParent->parent();
-                    }
-                }
-                culledParent = newParent;
-            }
-            if (curr->nodeAtPoint(result, locationInContainer, accumulatedOffset, lineTop, lineBottom)) {
-                layoutObject().updateHitTestResult(result, locationInContainer.point() - toLayoutSize(accumulatedOffset));
-                return true;
-            }
-        }
-    }
-    // Check any culled ancestor of the final children tested.
-    while (culledParent && culledParent != layoutObject()) {
-        if (culledParent->isLayoutInline() && toLayoutInline(culledParent)->hitTestCulledInline(result, locationInContainer, accumulatedOffset))
+    // We need to hit test both our inline children (InlineBoxes) and culled inlines
+    // (LayoutObjects). We check our inlines in the same order as line layout but
+    // for each inline we additionally need to hit test its culled inline parents.
+    // While hit testing culled inline parents, we can stop once we reach
+    // a non-inline parent or a culled inline associated with a different inline box.
+    InlineBox* prev;
+    for (InlineBox* curr = lastChild(); curr; curr = prev) {
+        prev = curr->prevOnLine();
+
+        // Layers will handle hit testing themselves.
+        if (curr->boxModelObject() && curr->boxModelObject()->hasSelfPaintingLayer())
+            continue;
+
+        if (curr->nodeAtPoint(result, locationInContainer, accumulatedOffset, lineTop, lineBottom)) {
+            layoutObject().updateHitTestResult(result, locationInContainer.point() - toLayoutSize(accumulatedOffset));
             return true;
-        culledParent = culledParent->parent();
+        }
+
+        // If the current inlinebox's layout object and the previous inlinebox's layout object are same,
+        // we should yield the hit-test to the previous inlinebox.
+        if (prev && curr->layoutObject() == prev->layoutObject())
+            continue;
+
+        LayoutObject* culledParent = &curr->layoutObject();
+        while (true) {
+            LayoutObject* sibling = culledParent->style()->isLeftToRightDirection() ? culledParent->previousSibling() : culledParent->nextSibling();
+            culledParent = culledParent->parent();
+            ASSERT(culledParent);
+
+            if (culledParent == layoutObject() || (sibling && prev && prev->layoutObject().isDescendantOf(culledParent)))
+                break;
+
+            if (culledParent->isLayoutInline() && toLayoutInline(culledParent)->hitTestCulledInline(result, locationInContainer, accumulatedOffset))
+                return true;
+        }
     }
 
     if (layoutObject().style()->hasBorderRadius()) {
