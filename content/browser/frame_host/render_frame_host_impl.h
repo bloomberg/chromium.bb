@@ -91,6 +91,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
     : public RenderFrameHost,
       public BrowserAccessibilityDelegate {
  public:
+  typedef base::Callback<void(const ui::AXTreeUpdate&)>
+      AXTreeSnapshotCallback;
+
   // Keeps track of the state of the RenderFrameHostImpl, particularly with
   // respect to swap out.
   enum RenderFrameHostImplState {
@@ -366,6 +369,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Send a message to the renderer process to change the accessibility mode.
   void SetAccessibilityMode(AccessibilityMode AccessibilityMode);
 
+  // Request a one-time snapshot of the accessibility tree without changing
+  // the accessibility mode.
+  void RequestAXTreeSnapshot(AXTreeSnapshotCallback callback);
+
   // Turn on accessibility testing. The given callback will be run
   // every time an accessibility notification is received from the
   // renderer process, and the accessibility tree it sent can be
@@ -511,6 +518,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const std::vector<AccessibilityHostMsg_LocationChangeParams>& params);
   void OnAccessibilityFindInPageResult(
       const AccessibilityHostMsg_FindInPageResultParams& params);
+  void OnAccessibilitySnapshotResponse(int callback_id,
+                                       const ui::AXTreeUpdate& snapshot);
   void OnToggleFullscreen(bool enter_fullscreen);
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
@@ -680,6 +689,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // A count of the number of times we needed to reset accessibility, so
   // we don't keep trying to reset forever.
   int accessibility_reset_count_;
+
+  // The mapping from callback id to corresponding callback for pending
+  // accessibility tree snapshot calls created by RequestAXTreeSnapshot.
+  std::map<int, AXTreeSnapshotCallback> ax_tree_snapshot_callbacks_;
 
   // Callback when an event is received, for testing.
   base::Callback<void(ui::AXEvent, int)> accessibility_testing_callback_;

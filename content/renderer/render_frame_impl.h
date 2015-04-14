@@ -643,6 +643,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnHideTransitionElements(const std::string& css_selector);
   void OnShowTransitionElements(const std::string& css_selector);
   void OnSetAccessibilityMode(AccessibilityMode new_mode);
+  void OnSnapshotAccessibilityTree(int callback_id);
   void OnDisownOpener();
   void OnDidUpdateSandboxFlags(SandboxFlags flags);
   void OnTextTrackSettingsChanged(

@@ -46,6 +46,11 @@ class RenderFrameImpl;
 // (e.g., change focus, or click on a button).
 class CONTENT_EXPORT RendererAccessibility : public RenderFrameObserver {
  public:
+  // Request a one-time snapshot of the accessibility tree without
+  // enabling accessibility if it wasn't already enabled.
+  static void SnapshotAccessibilityTree(RenderFrameImpl* render_frame,
+                                        ui::AXTreeUpdate* response);
+
   explicit RendererAccessibility(RenderFrameImpl* render_frame);
   ~RendererAccessibility() override;
 

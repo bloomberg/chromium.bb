@@ -1049,6 +1049,8 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnAddStyleSheetByURL)
     IPC_MESSAGE_HANDLER(FrameMsg_SetAccessibilityMode,
                         OnSetAccessibilityMode)
+    IPC_MESSAGE_HANDLER(AccessibilityMsg_SnapshotTree,
+                        OnSnapshotAccessibilityTree)
     IPC_MESSAGE_HANDLER(FrameMsg_DisownOpener, OnDisownOpener)
     IPC_MESSAGE_HANDLER(FrameMsg_CommitNavigation, OnCommitNavigation)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateSandboxFlags, OnDidUpdateSandboxFlags)
@@ -1577,6 +1579,13 @@ void RenderFrameImpl::OnSetAccessibilityMode(AccessibilityMode new_mode) {
 
   if (accessibility_mode_ & AccessibilityModeFlagFullTree)
     renderer_accessibility_ = new RendererAccessibility(this);
+}
+
+void RenderFrameImpl::OnSnapshotAccessibilityTree(int callback_id) {
+  ui::AXTreeUpdate response;
+  RendererAccessibility::SnapshotAccessibilityTree(this, &response);
+  Send(new AccessibilityHostMsg_SnapshotResponse(
+      routing_id_, callback_id, response));
 }
 
 void RenderFrameImpl::OnDisownOpener() {

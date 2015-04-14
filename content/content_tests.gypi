@@ -186,6 +186,7 @@
       'browser/accessibility/dump_accessibility_browsertest_base.h',
       'browser/accessibility/dump_accessibility_events_browsertest.cc',
       'browser/accessibility/dump_accessibility_tree_browsertest.cc',
+      'browser/accessibility/snapshot_ax_tree_browsertest.cc',
       'browser/accessibility/site_per_process_accessibility_browsertest.cc',
       'browser/battery_status/battery_monitor_impl_browsertest.cc',
       'browser/battery_status/battery_monitor_integration_browsertest.cc',

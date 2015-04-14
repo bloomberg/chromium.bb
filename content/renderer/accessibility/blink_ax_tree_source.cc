@@ -117,6 +117,10 @@ BlinkAXTreeSource::BlinkAXTreeSource(RenderFrameImpl* render_frame)
 BlinkAXTreeSource::~BlinkAXTreeSource() {
 }
 
+void BlinkAXTreeSource::SetRoot(blink::WebAXObject root) {
+  root_ = root;
+}
+
 bool BlinkAXTreeSource::IsInTree(blink::WebAXObject node) const {
   const blink::WebAXObject& root = GetRoot();
   while (IsValid(node)) {
@@ -136,6 +140,8 @@ void BlinkAXTreeSource::CollectChildFrameIdMapping(
 }
 
 blink::WebAXObject BlinkAXTreeSource::GetRoot() const {
+  if (!root_.isNull())
+    return root_;
   return GetMainDocument().accessibilityObject();
 }
 

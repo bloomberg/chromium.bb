@@ -25,10 +25,28 @@ using blink::WebLocalFrame;
 using blink::WebNode;
 using blink::WebPoint;
 using blink::WebRect;
+using blink::WebScopedAXContext;
 using blink::WebSettings;
 using blink::WebView;
 
 namespace content {
+
+// static
+void RendererAccessibility::SnapshotAccessibilityTree(
+    RenderFrameImpl* render_frame,
+    ui::AXTreeUpdate* response) {
+  DCHECK(render_frame);
+  DCHECK(response);
+  if (!render_frame->GetWebFrame())
+    return;
+
+  WebDocument document = render_frame->GetWebFrame()->document();
+  WebScopedAXContext context(document);
+  BlinkAXTreeSource tree_source(render_frame);
+  tree_source.SetRoot(context.root());
+  ui::AXTreeSerializer<blink::WebAXObject> serializer(&tree_source);
+  serializer.SerializeChanges(context.root(), response);
+}
 
 RendererAccessibility::RendererAccessibility(RenderFrameImpl* render_frame)
     : RenderFrameObserver(render_frame),

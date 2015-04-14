@@ -178,6 +178,12 @@ IPC_MESSAGE_ROUTED1(AccessibilityMsg_Reset,
 // and we've already reset too many times.
 IPC_MESSAGE_ROUTED0(AccessibilityMsg_FatalError)
 
+// Request a one-time snapshot of the accessibility tree without
+// enabling accessibility if it wasn't already enabled. The passed id
+// will be returned in the AccessibilityHostMsg_SnapshotResponse message.
+IPC_MESSAGE_ROUTED1(AccessibilityMsg_SnapshotTree,
+                    int /* callback id */)
+
 // Messages sent from the renderer to the browser.
 
 // Sent to notify the browser about renderer accessibility events.
@@ -200,3 +206,10 @@ IPC_MESSAGE_ROUTED1(
 IPC_MESSAGE_ROUTED1(
     AccessibilityHostMsg_FindInPageResult,
     AccessibilityHostMsg_FindInPageResultParams)
+
+// Sent in response to AccessibilityMsg_SnapshotTree. The callback id that was
+// passed to the request will be returned in |callback_id|, along with
+// a standalone snapshot of the accessibility tree.
+IPC_MESSAGE_ROUTED2(AccessibilityHostMsg_SnapshotResponse,
+                    int /* callback_id */,
+                    ui::AXTreeUpdate)

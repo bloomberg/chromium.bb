@@ -722,6 +722,13 @@ void WebContentsImpl::RemoveAccessibilityMode(AccessibilityMode mode) {
   SetAccessibilityMode(RemoveAccessibilityModeFrom(accessibility_mode_, mode));
 }
 
+void WebContentsImpl::RequestAXTreeSnapshot(AXTreeSnapshotCallback callback) {
+  // TODO(dmazzoni): http://crbug.com/475608 This only returns the
+  // accessibility tree from the main frame and everything in the
+  // same site instance.
+  GetMainFrame()->RequestAXTreeSnapshot(callback);
+}
+
 void WebContentsImpl::ClearNavigationTransitionData() {
   FrameTreeNode* node = frame_tree_.root();
   node->render_manager()->ClearNavigationTransitionData();

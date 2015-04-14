@@ -19,6 +19,11 @@ class BlinkAXTreeSource
   BlinkAXTreeSource(RenderFrameImpl* render_frame);
   ~BlinkAXTreeSource() override;
 
+  // It may be necessary to call SetRoot if you're using a WebScopedAXContext,
+  // because BlinkAXTreeSource can't get the root of the tree from the
+  // WebDocument if accessibility isn't enabled globally.
+  void SetRoot(blink::WebAXObject root);
+
   // Call this to have BlinkAXTreeSource collect a mapping from
   // node ids to the frame routing id for an out-of-process iframe during
   // calls to SerializeNode.
@@ -54,6 +59,7 @@ class BlinkAXTreeSource
 
  private:
   RenderFrameImpl* render_frame_;
+  blink::WebAXObject root_;
   std::map<int32, int>* node_to_frame_routing_id_map_;
   std::map<int32, int>* node_to_browser_plugin_instance_id_map_;
   int accessibility_focus_id_;

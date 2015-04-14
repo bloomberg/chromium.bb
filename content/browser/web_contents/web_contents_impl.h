@@ -207,6 +207,12 @@ class CONTENT_EXPORT WebContentsImpl
   // have been removed.
   void RemoveAccessibilityMode(AccessibilityMode mode);
 
+  // Request a one-time snapshot of the accessibility tree without changing
+  // the accessibility mode.
+  typedef base::Callback<void(const ui::AXTreeUpdate&)>
+      AXTreeSnapshotCallback;
+  void RequestAXTreeSnapshot(AXTreeSnapshotCallback callback);
+
   // Clear the navigation transition data when the user navigates back to Chrome
   // from a native app.
   void ClearNavigationTransitionData();

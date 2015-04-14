@@ -64,6 +64,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "ui/accessibility/ax_tree.h"
+#include "ui/accessibility/ax_tree_update.h"
 #include "url/gurl.h"
 
 #if defined(OS_MACOSX)
@@ -381,6 +382,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnAccessibilityLocationChanges)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_FindInPageResult,
                         OnAccessibilityFindInPageResult)
+    IPC_MESSAGE_HANDLER(AccessibilityHostMsg_SnapshotResponse,
+                        OnAccessibilitySnapshotResponse)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ToggleFullscreen, OnToggleFullscreen)
     // The following message is synthetic and doesn't come from RenderFrame, but
     // from RenderProcessHost.
@@ -1069,6 +1072,12 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
   SetRenderFrameCreated(false);
   InvalidateMojoConnection();
 
+  // Execute any pending AX tree snapshot callbacks with an empty response,
+  // since we're never going to get a response from this renderer.
+  for (const auto& iter : ax_tree_snapshot_callbacks_)
+    iter.second.Run(ui::AXTreeUpdate());
+  ax_tree_snapshot_callbacks_.clear();
+
   if (frame_tree_node_->IsMainFrame()) {
     // RenderViewHost/RenderWidgetHost needs to reset some stuff.
     render_view_host_->RendererExited(
@@ -1078,6 +1087,10 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
         render_view_host_, static_cast<base::TerminationStatus>(status),
         exit_code);
   }
+
+  // Note: don't add any more code at this point in the function because
+  // |this| may be deleted. Any additional cleanup should happen before
+  // the last block of code here.
 }
 
 void RenderFrameHostImpl::OnSwappedOut() {
@@ -1389,6 +1402,18 @@ void RenderFrameHostImpl::OnAccessibilityFindInPageResult(
           params.request_id, params.match_index, params.start_id,
           params.start_offset, params.end_id, params.end_offset);
     }
+  }
+}
+
+void RenderFrameHostImpl::OnAccessibilitySnapshotResponse(
+    int callback_id,
+    const ui::AXTreeUpdate& snapshot) {
+  const auto& it = ax_tree_snapshot_callbacks_.find(callback_id);
+  if (it != ax_tree_snapshot_callbacks_.end()) {
+    it->second.Run(snapshot);
+    ax_tree_snapshot_callbacks_.erase(it);
+  } else {
+    NOTREACHED() << "Received AX tree snapshot response for unknown id";
   }
 }
 
@@ -1803,6 +1828,14 @@ bool RenderFrameHostImpl::IsSameSiteInstance(
 
 void RenderFrameHostImpl::SetAccessibilityMode(AccessibilityMode mode) {
   Send(new FrameMsg_SetAccessibilityMode(routing_id_, mode));
+}
+
+void RenderFrameHostImpl::RequestAXTreeSnapshot(
+    AXTreeSnapshotCallback callback) {
+  static int next_id = 1;
+  int callback_id = next_id++;
+  Send(new AccessibilityMsg_SnapshotTree(routing_id_, callback_id));
+  ax_tree_snapshot_callbacks_.insert(std::make_pair(callback_id, callback));
 }
 
 void RenderFrameHostImpl::SetAccessibilityCallbackForTesting(
