@@ -43,7 +43,7 @@ class PositionIteratorAlgorithm {
 public:
     using PositionType = typename Strategy::PositionType;
 
-    PositionIteratorAlgorithm(const PositionType&);
+    explicit PositionIteratorAlgorithm(const PositionType&);
     PositionIteratorAlgorithm();
 
     operator PositionType() const;

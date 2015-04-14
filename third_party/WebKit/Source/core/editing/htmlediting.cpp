@@ -212,7 +212,7 @@ Element* unsplittableElementForPosition(const Position& p)
 
 Position nextCandidate(const Position& position)
 {
-    PositionIterator p = position;
+    PositionIterator p(position);
     while (!p.atEnd()) {
         p.increment();
         if (p.isCandidate())
@@ -235,7 +235,7 @@ Position nextVisuallyDistinctCandidate(const Position& position)
 
 Position previousCandidate(const Position& position)
 {
-    PositionIterator p = position;
+    PositionIterator p(position);
     while (!p.atStart()) {
         p.decrement();
         if (p.isCandidate())
