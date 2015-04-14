@@ -21,7 +21,7 @@
         'command': [
           '../testing/xvfb.py',
           '<(PRODUCT_DIR)',
-          '<(PRODUCT_DIR)/gpu_unittests',
+          '<(PRODUCT_DIR)/gpu_unittests<(EXECUTABLE_SUFFIX)',
           '--brave-new-test-launcher',
           '--test-launcher-bot-mode',
           '--asan=<(asan)',
@@ -30,7 +30,7 @@
         ],
         'files': [
           '../testing/xvfb.py',
-          '<(PRODUCT_DIR)/xdisplaycheck',
+          '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],
