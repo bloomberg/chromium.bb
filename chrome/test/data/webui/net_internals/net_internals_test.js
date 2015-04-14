@@ -292,7 +292,7 @@ var NetInternalsTest = (function() {
       timeline: TimelineView.TAB_ID,
       dns: DnsView.TAB_ID,
       sockets: SocketsView.TAB_ID,
-      spdy: SpdyView.TAB_ID,
+      http2: SpdyView.TAB_ID,
       quic: QuicView.TAB_ID,
       sdch: SdchView.TAB_ID,
       httpCache: HttpCacheView.TAB_ID,
