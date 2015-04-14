@@ -115,7 +115,8 @@ LRESULT WinWindow::OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 WinWindow::OnMouseRange"));
 
-  MSG msg = { hwnd(), message, w_param, l_param, GetMessageTime(),
+  MSG msg = { hwnd(), message, w_param, l_param,
+              static_cast<DWORD>(GetMessageTime()),
               { CR_GET_X_LPARAM(l_param), CR_GET_Y_LPARAM(l_param) } };
   MouseEvent event(msg);
   if (IsMouseEventFromTouch(message))
