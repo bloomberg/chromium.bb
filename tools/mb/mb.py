@@ -413,7 +413,7 @@ class MetaBuildWrapper(object):
     # Bail out early if a GN file was modified, since 'gn refs' won't know
     # what to do about it.
     if any(f.endswith('.gn') or f.endswith('.gni') for f in inp['files']):
-      self.WriteJSONOutput({'status': 'Found dependency (all)'}, output_path)
+      self.WriteJSON({'status': 'Found dependency (all)'}, output_path)
       return 0
 
     all_needed_targets = set()
