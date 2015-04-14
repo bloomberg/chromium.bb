@@ -863,6 +863,10 @@ if (use_v8_in_net && !is_android) {
       "proxy/mojo_proxy_resolver_impl.h",
     ]
 
+    deps = [
+      ":net_with_v8",
+    ]
+
     public_deps = [
       ":mojo_type_converters",
       ":net",
