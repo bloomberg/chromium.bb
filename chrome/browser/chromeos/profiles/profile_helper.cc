@@ -222,11 +222,10 @@ void ProfileHelper::ClearSigninProfile(const base::Closure& on_clear_callback) {
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   // Check if signin profile was loaded.
-  if (Profile* signin_profile =
-          profile_manager->GetProfileByPath(GetSigninProfileDir())) {
+  if (profile_manager->GetProfileByPath(GetSigninProfileDir())) {
     LOG_ASSERT(!browsing_data_remover_);
     browsing_data_remover_ =
-        BrowsingDataRemover::CreateForUnboundedRange(signin_profile);
+        BrowsingDataRemover::CreateForUnboundedRange(GetSigninProfile());
     browsing_data_remover_->AddObserver(this);
     browsing_data_remover_->Remove(BrowsingDataRemover::REMOVE_SITE_DATA,
                                    BrowsingDataHelper::ALL);
