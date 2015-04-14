@@ -2497,8 +2497,8 @@
         }],
         ['OS=="win"', {
           'dependencies': [
-            'browser/safe_browsing/verifier_test/verifier_unittest.gyp:verifier_test_dll_1',
-            'browser/safe_browsing/verifier_test/verifier_unittest.gyp:verifier_test_dll_2',
+            'browser/safe_browsing/incident_reporting/verifier_test/verifier_unittest.gyp:verifier_test_dll_1',
+            'browser/safe_browsing/incident_reporting/verifier_test/verifier_unittest.gyp:verifier_test_dll_2',
             'chrome_version_resources',
             'installer_util_strings',
             '../chrome_elf/chrome_elf.gyp:blacklist_test_dll_1',
