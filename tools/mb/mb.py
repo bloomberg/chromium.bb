@@ -35,6 +35,7 @@ class MetaBuildWrapper(object):
     self.chromium_src_dir = p.normpath(d(d(d(p.abspath(__file__)))))
     self.default_config = p.join(self.chromium_src_dir, 'tools', 'mb',
                                  'mb_config.pyl')
+    self.platform = sys.platform
     self.args = argparse.Namespace()
     self.configs = {}
     self.masters = {}
@@ -131,7 +132,7 @@ class MetaBuildWrapper(object):
   def CmdLookup(self):
     vals = self.GetConfig()
     if vals['type'] == 'gn':
-      cmd = self.GNCmd('<path>', vals['gn_args'])
+      cmd = self.GNCmd('gen', '<path>', vals['gn_args'])
     elif vals['type'] == 'gyp':
       cmd = self.GYPCmd('<path>', vals['gyp_defines'], vals['gyp_config'])
     else:
@@ -309,13 +310,22 @@ class MetaBuildWrapper(object):
     return vals
 
   def RunGNGen(self, path, vals):
-    cmd = self.GNCmd(path, vals['gn_args'])
+    cmd = self.GNCmd('gen', path, vals['gn_args'])
     ret, _, _ = self.Run(cmd)
     return ret
 
-  def GNCmd(self, path, gn_args):
-    # TODO(dpranke): Find gn explicitly in the path ...
-    cmd = ['gn', 'gen', path]
+  def GNCmd(self, subcommand, path, gn_args=''):
+    if self.platform == 'linux2':
+      gn_path = os.path.join(self.chromium_src_dir, 'buildtools', 'linux64',
+                             'gn')
+    elif self.platform == 'darwin':
+      gn_path = os.path.join(self.chromium_src_dir, 'buildtools', 'mac',
+                             'gn')
+    else:
+      gn_path = os.path.join(self.chromium_src_dir, 'buildtools', 'win',
+                             'gn.exe')
+
+    cmd = [gn_path, subcommand, path]
     gn_args = gn_args.replace("$(goma_dir)", self.args.goma_dir)
     if gn_args:
       cmd.append('--args=%s' % gn_args)
@@ -408,8 +418,8 @@ class MetaBuildWrapper(object):
 
     all_needed_targets = set()
     for f in inp['files']:
-      cmd = ['gn', 'refs', self.args.path[0], '//' + f,
-             '--type=executable', '--all', '--as=output']
+      cmd = self.GNCmd('refs', self.args.path[0]) + [
+             '//' + f, '--type=executable', '--all', '--as=output']
       ret, out, _ = self.Run(cmd)
       if ret:
         self.WriteFailureAndRaise('gn refs returned %d: %s' % (ret, out),

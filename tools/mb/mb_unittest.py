@@ -18,6 +18,7 @@ class FakeMBW(mb.MetaBuildWrapper):
     self.calls = []
     self.out = ''
     self.err = ''
+    self.platform = 'linux2'
     self.chromium_src_dir = '/fake_src'
     self.default_config = '/fake_src/tools/mb/mb_config.pyl'
 
@@ -151,7 +152,8 @@ class UnitTest(unittest.TestCase):
                out=("python build/gyp_chromium -G 'output_dir=<path>' "
                     "-G config=Release -D goma=1 -D gomadir=/foo\n"))
     self.check(['lookup', '-c', 'gn_rel_bot', '-g', '/foo'], ret=0,
-               out=("gn gen '<path>' '--args=is_debug=false use_goma=true "
+               out=("/fake_src/buildtools/linux64/gn gen '<path>' "
+                    "'--args=is_debug=false use_goma=true "
                     "goma_dir=\"/foo\"'\n" ))
 
   def test_help(self):
