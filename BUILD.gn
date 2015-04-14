@@ -287,6 +287,13 @@ group("gn_all") {
     ]
   }
 
+  if (is_chromeos) {
+    deps += [
+      "//chromeos:chromeos_unittests",
+      "//ui/chromeos:ui_chromeos_unittests",
+    ]
+  }
+
   if (is_chromeos || is_mac || is_win) {
     deps += [
       "//rlz:rlz_id",
@@ -550,11 +557,8 @@ group("gn_all") {
       "//crypto:crypto_unittests",  # TODO(GYP)
       "//net:net_unittests",  # TODO(GYP)
     ]
-  } else {
-    if (!is_android) {
-      # TODO(GYP): Make this work on android also.
-      deps += [ "//breakpad:symupload" ]
-    }
+  } else if (!is_android) {
+    deps += [ "//breakpad:symupload" ]
   }
 }
 

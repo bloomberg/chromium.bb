@@ -156,6 +156,7 @@
         '../ppapi/ppapi_internal.gyp:ppapi_example_video_effects',
         '../ppapi/ppapi_internal.gyp:ppapi_example_video_encode',
         '../ppapi/ppapi_internal.gyp:ppapi_tests',
+        '../ppapi/ppapi_internal.gyp:ppapi_perftests',
         '../ppapi/ppapi_internal.gyp:ppapi_unittests',
         '../ppapi/tools/ppapi_tools.gyp:pepper_hash_for_uma',
         '../printing/printing.gyp:printing_unittests',
@@ -182,6 +183,7 @@
         '../third_party/mojo/mojo_edk_tests.gyp:mojo_public_system_perftests',
         '../third_party/mojo/mojo_edk_tests.gyp:mojo_public_system_unittests',
         '../third_party/mojo/mojo_edk_tests.gyp:mojo_public_utility_unittests',
+        '../third_party/pdfium/samples/samples.gyp:pdfium_diff',
         '../third_party/pdfium/samples/samples.gyp:pdfium_test',
         '../third_party/smhasher/smhasher.gyp:pmurhash',
         '../tools/gn/gn.gyp:gn',
@@ -207,11 +209,6 @@
         '../v8/tools/gyp/v8.gyp:postmortem-metadata',
       ],
       'conditions': [
-        ['chromeos== 1 or use_ash==1', {
-          'dependencies': [
-            '../components/components.gyp:session_manager_component',
-          ]
-        }],
         ['clang==1', {
           'dependencies': [
             '../build/sanitizers/sanitizers.gyp:llvm-symbolizer',
@@ -228,24 +225,13 @@
             '../extensions/shell/app_shell.gyp:app_shell_unittests',
           ],
         }],
-        ['OS!="win"', {
-          'dependencies': [
-            '../breakpad/breakpad.gyp:core-2-minidump',
-            '../breakpad/breakpad.gyp:microdump_stackwalk',
-            '../breakpad/breakpad.gyp:minidump_dump',
-            '../breakpad/breakpad.gyp:minidump_stackwalk',
-            '../breakpad/breakpad.gyp:symupload',
-          ],
-        }],
         ['remoting==1', {
           'dependencies': [
             '../remoting/remoting.gyp:remoting_host',
             '../remoting/remoting.gyp:remoting_it2me_native_messaging_host',
-            '../remoting/remoting.gyp:remoting_me2me_native_messaging_host',
-            '../remoting/remoting.gyp:remoting_me2me_host',
+            '../remoting/remoting.gyp:remoting_start_host',
             '../remoting/remoting.gyp:remoting_native_messaging_manifests',
             '../remoting/remoting.gyp:remoting_perftests',
-            '../remoting/remoting.gyp:remoting_start_host',
             '../remoting/remoting.gyp:remoting_unittests',
           ],
         }],
@@ -254,23 +240,16 @@
              '../remoting/remoting.gyp:remoting_key_tester',
           ],
         }],
+        ['remoting==1 and chromeos==0', {
+          'dependencies': [
+            '../remoting/remoting.gyp:remoting_me2me_host',
+            '../remoting/remoting.gyp:remoting_me2me_native_messaging_host',
+          ],
+        }],
         ['toolkit_views==1', {
           'dependencies': [
             '../ui/app_list/app_list.gyp:app_list_demo',
             '../ui/views/views.gyp:views_unittests',
-          ],
-        }],
-        ['use_x11==1', {
-          'dependencies': [
-            '../media/media.gyp:player_x11',
-            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
-          ],
-          'conditions': [
-            ['target_arch!="arm"', {
-              'dependencies': [
-                '../gpu/tools/tools.gyp:compositor_model_bench',
-              ],
-            }],
           ],
         }],
         ['use_ash==1', {
@@ -279,6 +258,11 @@
             '../ash/ash.gyp:ash_shell_unittests',
             '../ash/ash.gyp:ash_unittests',
           ],
+        }],
+        ['use_ash==1 or chromeos== 1', {
+          'dependencies': [
+            '../components/components.gyp:session_manager_component',
+          ]
         }],
         ['use_aura==1', {
           'dependencies': [
@@ -293,11 +277,19 @@
             '../ui/ozone/ozone.gyp:ozone',
           ],
         }],
-        ['OS=="win" or OS=="mac" or chromeos==1', {
+
+
+        ['use_x11==1', {
           'dependencies': [
-            '../rlz/rlz.gyp:rlz_id',
-            '../rlz/rlz.gyp:rlz_lib',
-            '../rlz/rlz.gyp:rlz_unittests',
+            '../media/media.gyp:player_x11',
+            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+          ],
+          'conditions': [
+            ['target_arch!="arm"', {
+              'dependencies': [
+                '../gpu/tools/tools.gyp:compositor_model_bench',
+              ],
+            }],
           ],
         }],
         ['OS=="android"', {
@@ -371,6 +363,19 @@
             '../net/net.gyp:disk_cache_memory_test',
           ],
         }],
+        ['chromeos==1', {
+          'dependencies': [
+            '../chromeos/chromeos.gyp:chromeos_unittests',
+            '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_unittests',
+          ]
+        }],
+        ['chromeos==1 or OS=="win" or OS=="mac"', {
+          'dependencies': [
+            '../rlz/rlz.gyp:rlz_id',
+            '../rlz/rlz.gyp:rlz_lib',
+            '../rlz/rlz.gyp:rlz_unittests',
+          ],
+        }],
         ['OS=="linux"', {
           'dependencies': [
             '../breakpad/breakpad.gyp:breakpad_unittests',
@@ -383,6 +388,8 @@
             '../net/net.gyp:disk_cache_memory_test',
             '../net/net.gyp:flip_in_mem_edsm_server',
             '../net/net.gyp:flip_in_mem_edsm_server_unittests',
+            '../net/net.gyp:epoll_quic_client',
+            '../net/net.gyp:epoll_quic_server',
             '../net/net.gyp:hpack_example_generator',
             '../net/net.gyp:hpack_fuzz_mutator',
             '../net/net.gyp:hpack_fuzz_wrapper',
@@ -469,6 +476,11 @@
           ],
         }, {
           'dependencies': [
+            '../breakpad/breakpad.gyp:core-2-minidump',
+            '../breakpad/breakpad.gyp:microdump_stackwalk',
+            '../breakpad/breakpad.gyp:minidump_dump',
+            '../breakpad/breakpad.gyp:minidump_stackwalk',
+            '../breakpad/breakpad.gyp:symupload',
             '../third_party/codesighs/codesighs.gyp:nm2tsv',
           ],
         }],
@@ -498,11 +510,6 @@
             '../remoting/app_remoting_webapp.gyp:ar_sample_app',  # crbug.com/471916
           ],
         }],
-        ['remoting==1 and disable_nacl==0 and disable_nacl_untrusted==0', {
-           'dependencies': [
-             '../remoting/remoting.gyp:remoting_key_tester',
-           ],
-        }],
         ['test_isolation_mode!="noop"', {
           'dependencies': [
             '../base/base.gyp:base_unittests_run',
@@ -530,17 +537,15 @@
             '../ui/message_center/message_center.gyp:message_center_unittests_run',
             '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests_run',
           ],
-          'conditions': [
-            ['use_ash==1', {
-              'dependencies': [
-                '../ash/ash.gyp:ash_unittests_run',
-              ],
-            }],
-            ['OS=="linux"', {
-              'dependencies': [
-                '../sandbox/sandbox.gyp:sandbox_linux_unittests_run',
-              ],
-            }],
+        }],
+        ['test_isolation_mode!="noop" and use_ash==1', {
+          'dependencies': [
+            '../ash/ash.gyp:ash_unittests_run',
+          ],
+        }],
+        ['test_isolation_mode!="noop" and OS=="linux"', {
+          'dependencies': [
+            '../sandbox/sandbox.gyp:sandbox_linux_unittests_run',
           ],
         }],
         ['use_openssl==1', {
@@ -575,8 +580,27 @@
             '../third_party/boringssl/boringssl_tests.gyp:boringssl_unittests',
           ],
         }],
+        ['chromeos==1', {
+          'dependencies': [
+            '../content/content_shell_and_tests.gyp:video_encode_accelerator_unittest',
+          ],
+        }],
+        ['chromeos==1 and target_arch != "arm"', {
+          'dependencies': [
+            '../content/content_shell_and_tests.gyp:vaapi_jpeg_decoder_unittest',
+          ],
+        }],
+        ['chromeos==1 or OS=="win" or OS=="android"', {
+          'dependencies': [
+            '../content/content_shell_and_tests.gyp:video_decode_accelerator_unittest',
+          ],
+        }],
         ['OS=="linux" or OS=="win"', {
           'dependencies': [
+            # TODO(GYP): Figure out which of these run on android/mac/win/ios/etc.
+            '../net/net.gyp:net_docs',
+            '../remoting/app_remoting_test.gyp:ar_sample_test_driver',
+
             # TODO(GYP): in progress - see tfarina.
             '../third_party/webrtc/tools/tools.gyp:frame_analyzer',
             '../third_party/webrtc/tools/tools.gyp:rgba_to_i420_converter',
@@ -608,7 +632,6 @@
             '../cloud_print/virtual_driver/win/virtual_driver.gyp:gcp_portmon',
             '../content/content_shell_and_tests.gyp:content_shell_crash_service',
             '../content/content_shell_and_tests.gyp:layout_test_helper',
-            '../content/content_shell_and_tests.gyp:video_decode_accelerator_unittest',
             '../gpu/gpu.gyp:angle_end2end_tests',
             '../gpu/gpu.gyp:angle_perftests',
             '../net/net.gyp:net_docs',
