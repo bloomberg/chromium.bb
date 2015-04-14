@@ -32,12 +32,6 @@ crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/013.html [ P
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/014.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/018.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
 
-crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/background-leakage.html [ NeedsRebaseline ]
-crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/background-leakage-transforms.html [ NeedsRebaseline ]
-crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/gradient-background-leakage.html [ NeedsRebaseline ]
-crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/gradient-background-leakage-2.html [ NeedsRebaseline ]
-crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/gradient-background-leakage-hidpi.html [ NeedsRebaseline ]
-
 # These baselines need to be reviewed and perhaps updated after crbug.com/452967
 crbug.com/452967 compositing/color-matching/pdf-image-match.html [ Pass Failure ImageOnlyFailure ]
 crbug.com/452967 virtual/slimmingpaint/compositing/color-matching/pdf-image-match.html [ Pass Failure ImageOnlyFailure ]
