@@ -51618,6 +51618,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="747" label="TabStopAttribute"/>
   <int value="748" label="LegacyConst"/>
   <int value="750" label="V8Permissions_Query_Method"/>
+  <int value="754" label="V8HTMLInputElement_Autocapitalize_AttributeGetter"/>
+  <int value="755" label="V8HTMLInputElement_Autocapitalize_AttributeSetter"/>
+  <int value="756"
+      label="V8HTMLTextAreaElement_Autocapitalize_AttributeGetter"/>
+  <int value="757"
+      label="V8HTMLTextAreaElement_Autocapitalize_AttributeSetter"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
