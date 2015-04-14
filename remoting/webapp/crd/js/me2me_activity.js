@@ -10,17 +10,14 @@ var remoting = remoting || {};
 'use strict';
 
 /**
- * @param {remoting.SessionConnector} sessionConnector
  * @param {remoting.Host} host
  *
  * @constructor
  * @implements {remoting.Activity}
  */
-remoting.Me2MeActivity = function(sessionConnector, host) {
+remoting.Me2MeActivity = function(host) {
   /** @private */
   this.host_ = host;
-  /** @private */
-  this.connector_ = sessionConnector;
   /** @private */
   this.pinDialog_ =
       new remoting.PinDialog(document.getElementById('pin-dialog'), host);
@@ -33,9 +30,15 @@ remoting.Me2MeActivity = function(sessionConnector, host) {
 
   /** @private {remoting.SmartReconnector} */
   this.reconnector_ = null;
+
+  /** @private {remoting.DesktopRemotingActivity} */
+  this.desktopActivity_ = null;
 };
 
-remoting.Me2MeActivity.prototype.dispose = function() {};
+remoting.Me2MeActivity.prototype.dispose = function() {
+  base.dispose(this.desktopActivity_);
+  this.desktopActivity_ = null;
+};
 
 remoting.Me2MeActivity.prototype.start = function() {
   var webappVersion = chrome.runtime.getManifest().version;
@@ -52,13 +55,36 @@ remoting.Me2MeActivity.prototype.start = function() {
   });
 };
 
+/** @return {remoting.DesktopRemotingActivity} */
+remoting.Me2MeActivity.prototype.getDesktopActivity = function() {
+  return this.desktopActivity_;
+};
+
 /**
  * @param {boolean} suppressHostOfflineError
  * @private
  */
 remoting.Me2MeActivity.prototype.connect_ = function(suppressHostOfflineError) {
   remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
+  base.dispose(this.desktopActivity_);
+  this.desktopActivity_ = new remoting.DesktopRemotingActivity(this);
+  var connector = remoting.SessionConnector.factory.createConnector(
+        document.getElementById('client-container'),
+        remoting.app_capabilities(),
+        this.desktopActivity_);
+
+  connector.connect(
+      remoting.Application.Mode.ME2ME,
+      this.host_, this.createCredentialsProvider_(), suppressHostOfflineError);
+};
+
+/**
+ * @return {remoting.CredentialsProvider}
+ * @private
+ */
+remoting.Me2MeActivity.prototype.createCredentialsProvider_ = function() {
   var host = this.host_;
+  var that = this;
 
   /**
    * @param {string} tokenUrl Token-issue URL received from the host.
@@ -74,7 +100,6 @@ remoting.Me2MeActivity.prototype.connect_ = function(suppressHostOfflineError) {
     thirdPartyTokenFetcher.fetchToken();
   };
 
-  var that = this;
   /**
    * @param {boolean} supportsPairing
    * @param {function(string):void} onPinFetched
@@ -89,17 +114,12 @@ remoting.Me2MeActivity.prototype.connect_ = function(suppressHostOfflineError) {
     });
   };
 
-  var pairingInfo = /** @type{remoting.PairingInfo} */ (
-      base.deepCopy(host.options.pairingInfo));
-  var credentialsProvider = new remoting.CredentialsProvider({
+  return new remoting.CredentialsProvider({
     fetchPin: requestPin,
-    pairingInfo: pairingInfo,
+    pairingInfo: /** @type{remoting.PairingInfo} */ (
+        base.deepCopy(host.options.pairingInfo)),
     fetchThirdPartyToken: fetchThirdPartyToken
   });
-
-  this.connector_.connect(
-      remoting.Application.Mode.ME2ME,
-      host, credentialsProvider, suppressHostOfflineError);
 };
 
 /**
@@ -135,12 +155,12 @@ remoting.Me2MeActivity.prototype.onConnected = function(connectionInfo) {
   this.retryOnHostOffline_ = true;
 
   var plugin = connectionInfo.plugin();
-  if (remoting.app.hasCapability(remoting.ClientSession.Capability.CAST)) {
+  var session = connectionInfo.session();
+  if (session.hasCapability(remoting.ClientSession.Capability.CAST)) {
     plugin.extensions().register(new remoting.CastExtensionHandler());
   }
   plugin.extensions().register(new remoting.GnubbyAuthHandler());
-  this.pinDialog_.requestPairingIfNecessary(connectionInfo.plugin(),
-                                            this.connector_);
+  this.pinDialog_.requestPairingIfNecessary(connectionInfo.plugin());
 
   base.dispose(this.reconnector_);
   this.reconnector_ = new remoting.SmartReconnector(
@@ -265,10 +285,8 @@ remoting.PinDialog.prototype.show = function(supportsPairing) {
 
 /**
  * @param {remoting.ClientPlugin} plugin
- * @param {remoting.SessionConnector} connector
  */
-remoting.PinDialog.prototype.requestPairingIfNecessary =
-    function(plugin, connector) {
+remoting.PinDialog.prototype.requestPairingIfNecessary = function(plugin) {
   if (this.pairingCheckbox_.checked) {
     var that = this;
     /**

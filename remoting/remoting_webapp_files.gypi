@@ -289,6 +289,7 @@
       'webapp/crd/js/crd_main.js',
       'webapp/crd/js/activity.js',
       'webapp/crd/js/desktop_remoting.js',
+      'webapp/crd/js/desktop_remoting_activity.js',
       'webapp/crd/js/it2me_activity.js',
       'webapp/crd/js/me2me_activity.js',
     ],

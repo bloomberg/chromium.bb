@@ -31,12 +31,6 @@ remoting.SessionConnector = function() {};
 remoting.SessionConnector.prototype.connect =
     function(mode, host, credentialsProvider, opt_suppressOfflineError) {};
 
-
-/**
- * Closes the session and removes the plugin element.
- */
-remoting.SessionConnector.prototype.closeSession = function() {};
-
 /**
  * @interface
  */
@@ -44,18 +38,13 @@ remoting.SessionConnectorFactory = function() {};
 
 /**
  * @param {HTMLElement} clientContainer Container element for the client view.
- * @param {function(remoting.ConnectionInfo):void} onConnected Callback on
- *     success.
- * @param {function(!remoting.Error):void} onError Callback on error.
- * @param {function(!remoting.Error):void} onConnectionFailed Callback for when
- *     the connection fails.
  * @param {Array<string>} requiredCapabilities Connector capabilities
  *     required by this application.
+ * @param {remoting.ClientSession.EventHandler} handler
  * @return {remoting.SessionConnector}
  */
 remoting.SessionConnectorFactory.prototype.createConnector =
-    function(clientContainer, onConnected, onError,
-             onConnectionFailed, requiredCapabilities) {};
+    function(clientContainer, requiredCapabilities, handler) {};
 
 /**
  * @type {remoting.SessionConnectorFactory}

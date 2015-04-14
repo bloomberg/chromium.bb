@@ -15,13 +15,10 @@ var HOST_SECRET_LENGTH = 5;
 var ACCESS_CODE_LENGTH = SUPPORT_ID_LENGTH + HOST_SECRET_LENGTH;
 
 /**
- * @param {remoting.SessionConnector} sessionConnector
  * @constructor
  * @implements {remoting.Activity}
  */
-remoting.It2MeActivity = function(sessionConnector) {
-  /** @private */
-  this.sessionConnector_ = sessionConnector;
+remoting.It2MeActivity = function() {
   /** @private */
   this.hostId_ = '';
   /** @private */
@@ -34,9 +31,15 @@ remoting.It2MeActivity = function(sessionConnector) {
     form,
     form.querySelector('#access-code-entry'),
     form.querySelector('#cancel-access-code-button'));
+
+  /** @private {remoting.DesktopRemotingActivity} */
+  this.desktopActivity_ = null;
 };
 
-remoting.It2MeActivity.prototype.dispose = function() {};
+remoting.It2MeActivity.prototype.dispose = function() {
+  base.dispose(this.desktopActivity_);
+  this.desktopActivity_ = null;
+};
 
 remoting.It2MeActivity.prototype.start = function() {
   var that = this;
@@ -51,10 +54,7 @@ remoting.It2MeActivity.prototype.start = function() {
   }).then(function(/** !remoting.Xhr.Response */ response) {
     return that.onHostInfo_(response);
   }).then(function(/** remoting.Host */ host) {
-    that.sessionConnector_.connect(
-        remoting.Application.Mode.IT2ME,
-        host,
-        new remoting.CredentialsProvider({ accessCode: that.passCode_ }));
+    that.connect_(host);
   }).catch(function(/** remoting.Error */ error) {
     if (error.hasTag(remoting.Error.Tag.CANCELLED)) {
       remoting.setMode(remoting.AppMode.HOME);
@@ -91,6 +91,11 @@ remoting.It2MeActivity.prototype.onError = function(error) {
   var errorDiv = document.getElementById('connect-error-message');
   l10n.localizeElementFromTag(errorDiv, error.getTag());
   this.showFinishDialog_(remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME);
+};
+
+/** @return {remoting.DesktopRemotingActivity} */
+remoting.It2MeActivity.prototype.getDesktopActivityForTesting = function() {
+  return this.desktopActivity_;
 };
 
 /**
@@ -167,6 +172,22 @@ remoting.It2MeActivity.prototype.onHostInfo_ = function(xhrResponse) {
   } else {
     return Promise.reject(translateSupportHostsError(xhrResponse.status));
   }
+};
+
+/**
+ * @param {remoting.Host} host
+ * @private
+ */
+remoting.It2MeActivity.prototype.connect_ = function(host) {
+  base.dispose(this.desktopActivity_);
+  this.desktopActivity_ = new remoting.DesktopRemotingActivity(this);
+  var sessionConnector = remoting.SessionConnector.factory.createConnector(
+      document.getElementById('client-container'),
+      remoting.app_capabilities(),
+      this.desktopActivity_);
+  sessionConnector.connect(
+      remoting.Application.Mode.IT2ME, host,
+      new remoting.CredentialsProvider({ accessCode: this.passCode_ }));
 };
 
 /**

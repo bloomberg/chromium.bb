@@ -71,6 +71,9 @@ remoting.ClientSession = function(plugin, host, signalStrategy) {
   this.plugin_ = plugin;
   plugin.setConnectionEventHandler(this);
 
+  /** @private  */
+  this.connectedDisposables_ = new base.Disposables();
+
   this.defineEvents(Object.keys(remoting.ClientSession.Events));
 };
 
@@ -309,6 +312,8 @@ remoting.ClientSession.prototype.disconnect = function(error) {
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.dispose = function() {
+  base.dispose(this.connectedDisposables_);
+  this.connectedDisposables_ = null;
   this.plugin_ = null;
 };
 
@@ -491,6 +496,15 @@ remoting.ClientSession.prototype.onSetCapabilities = function(capabilities) {
   this.capabilities_ = capabilities;
 };
 
+/** @return {boolean} */
+remoting.ClientSession.prototype.isFinished = function() {
+  var finishedStates = [
+    remoting.ClientSession.State.CLOSED,
+    remoting.ClientSession.State.FAILED,
+    remoting.ClientSession.State.CONNECTION_DROPPED
+  ];
+  return finishedStates.indexOf(this.getState()) !== -1;
+};
 /**
  * @param {remoting.ClientSession.State} newState The new state for the session.
  * @return {void} Nothing.
@@ -498,25 +512,17 @@ remoting.ClientSession.prototype.onSetCapabilities = function(capabilities) {
  */
 remoting.ClientSession.prototype.setState_ = function(newState) {
   var oldState = this.state_;
-  this.state_ = newState;
-  var state = this.state_;
-  if (oldState == remoting.ClientSession.State.CONNECTING ||
-      oldState == remoting.ClientSession.State.AUTHENTICATED) {
-    if (this.state_ == remoting.ClientSession.State.CLOSED) {
-      state = remoting.ClientSession.State.CONNECTION_CANCELED;
-    } else if (this.state_ == remoting.ClientSession.State.FAILED &&
-        this.error_.hasTag(remoting.Error.Tag.HOST_IS_OFFLINE) &&
-        !this.logHostOfflineErrors_) {
-      // The application requested host-offline errors to be suppressed, for
-      // example, because this connection attempt is using a cached host JID.
-      console.log('Suppressing host-offline error.');
-      state = remoting.ClientSession.State.CONNECTION_CANCELED;
-    }
-  } else if (oldState == remoting.ClientSession.State.CONNECTED &&
-             this.state_ == remoting.ClientSession.State.FAILED) {
-    state = remoting.ClientSession.State.CONNECTION_DROPPED;
+  this.state_ = this.translateState_(oldState, newState);
+
+  if (newState == remoting.ClientSession.State.CONNECTED) {
+    this.connectedDisposables_.add(
+        new base.RepeatingTimer(this.reportStatistics.bind(this), 1000));
+  } else if (this.isFinished()) {
+    base.dispose(this.connectedDisposables_);
+    this.connectedDisposables_ = null;
   }
-  this.logToServer.logClientSessionStateChange(state, this.error_);
+
+  this.logToServer.logClientSessionStateChange(this.state_, this.error_);
 
   this.raiseEvent(remoting.ClientSession.Events.stateChanged,
     new remoting.ClientSession.StateEvent(newState, oldState)
@@ -524,21 +530,33 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
 };
 
 /**
- * Returns an associative array with a set of stats for this connection.
- *
- * @return {remoting.ClientSession.PerfStats} The connection statistics.
+ * @param {remoting.ClientSession.State} previous
+ * @param {remoting.ClientSession.State} current
+ * @return {remoting.ClientSession.State}
+ * @private
  */
-remoting.ClientSession.prototype.getPerfStats = function() {
-  return this.plugin_.getPerfStats();
+remoting.ClientSession.prototype.translateState_ = function(previous, current) {
+  var State = remoting.ClientSession.State;
+  if (previous == State.CONNECTING || previous == State.AUTHENTICATED) {
+    if (current == State.CLOSED) {
+      return remoting.ClientSession.State.CONNECTION_CANCELED;
+    } else if (current == State.FAILED &&
+        this.error_.hasTag(remoting.Error.Tag.HOST_IS_OFFLINE) &&
+        !this.logHostOfflineErrors_) {
+      // The application requested host-offline errors to be suppressed, for
+      // example, because this connection attempt is using a cached host JID.
+      console.log('Suppressing host-offline error.');
+      return State.CONNECTION_CANCELED;
+    }
+  } else if (previous == State.CONNECTED && current == State.FAILED) {
+    return State.CONNECTION_DROPPED;
+  }
+  return current;
 };
 
-/**
- * Logs statistics.
- *
- * @param {remoting.ClientSession.PerfStats} stats
- */
-remoting.ClientSession.prototype.logStatistics = function(stats) {
-  this.logToServer.logStatistics(stats);
+/** @private */
+remoting.ClientSession.prototype.reportStatistics = function() {
+  this.logToServer.logStatistics(this.plugin_.getPerfStats());
 };
 
 /**

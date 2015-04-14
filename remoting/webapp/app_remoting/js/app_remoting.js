@@ -30,10 +30,11 @@ var DRIVE_ACCESS_TOKEN_REFRESH_INTERVAL_MS = 15 * 60 * 1000;
  * @constructor
  * @implements {remoting.ApplicationInterface}
  * @implements {remoting.ProtocolExtension}
+ * @implements {remoting.ClientSession.EventHandler}
  * @extends {remoting.Application}
  */
 remoting.AppRemoting = function(appCapabilities) {
-  base.inherits(this, remoting.Application, appCapabilities);
+  base.inherits(this, remoting.Application);
 
   /** @private {remoting.ApplicationContextMenu} */
   this.contextMenu_ = null;
@@ -52,6 +53,11 @@ remoting.AppRemoting = function(appCapabilities) {
 
   /** @private */
   this.supportsGoogleDrive_ = false;
+
+  /** @private */
+  this.sessionConnector_ = remoting.SessionConnector.factory.createConnector(
+      document.getElementById('client-container'),
+      appCapabilities, this);
 };
 
 /**
@@ -92,7 +98,7 @@ remoting.AppRemoting.prototype.getApplicationName = function() {
  * @override {remoting.ApplicationInterface}
  */
 remoting.AppRemoting.prototype.signInFailed_ = function(error) {
-  this.onError_(error);
+  this.onError(error);
 };
 
 /**
@@ -172,31 +178,13 @@ remoting.AppRemoting.prototype.startApplication_ = function(token) {
             remoting.Application.Mode.APP_REMOTING, host,
             new remoting.CredentialsProvider(
                 {fetchThirdPartyToken: fetchThirdPartyToken}));
-
       } else if (response && response.status == 'pending') {
-        that.onError_(new remoting.Error(
+        that.onError(new remoting.Error(
             remoting.Error.Tag.SERVICE_UNAVAILABLE));
       }
     } else {
       console.error('Invalid "runApplication" response from server.');
-      // TODO(garykac) Start using remoting.Error.fromHttpStatus once it has
-      // been updated to properly report 'unknown' errors (rather than
-      // reporting them as AUTHENTICATION_FAILED).
-      if (xhrResponse.status == 0) {
-        that.onError_(new remoting.Error(
-            remoting.Error.Tag.NETWORK_FAILURE));
-      } else if (xhrResponse.status == 401) {
-        that.onError_(new remoting.Error(
-            remoting.Error.Tag.AUTHENTICATION_FAILED));
-      } else if (xhrResponse.status == 403) {
-        that.onError_(new remoting.Error(
-            remoting.Error.Tag.APP_NOT_AUTHORIZED));
-      } else if (xhrResponse.status == 502 || xhrResponse.status == 503) {
-        that.onError_(new remoting.Error(
-            remoting.Error.Tag.SERVICE_UNAVAILABLE));
-      } else {
-        that.onError_(remoting.Error.unexpected());
-      }
+      that.onError(remoting.Error.fromHttpStatus(xhrResponse.status));
     }
   };
 
@@ -217,11 +205,8 @@ remoting.AppRemoting.prototype.exitApplication_ = function() {
 
 /**
  * @param {remoting.ConnectionInfo} connectionInfo
- * @override {remoting.ApplicationInterface}
  */
-remoting.AppRemoting.prototype.onConnected_ = function(connectionInfo) {
-  this.initSession_(connectionInfo);
-
+remoting.AppRemoting.prototype.onConnected = function(connectionInfo) {
   this.supportsGoogleDrive_ = connectionInfo.session().hasCapability(
       remoting.ClientSession.Capability.GOOGLE_DRIVE);
 
@@ -237,10 +222,7 @@ remoting.AppRemoting.prototype.onConnected_ = function(connectionInfo) {
   }
 };
 
-/**
- * @override {remoting.ApplicationInterface}
- */
-remoting.AppRemoting.prototype.onDisconnected_ = function() {
+remoting.AppRemoting.prototype.onDisconnected = function() {
   base.dispose(this.connectedView_);
   this.connectedView_ = null;
   this.stopExtension_();
@@ -249,17 +231,15 @@ remoting.AppRemoting.prototype.onDisconnected_ = function() {
 
 /**
  * @param {!remoting.Error} error
- * @override {remoting.ApplicationInterface}
  */
-remoting.AppRemoting.prototype.onConnectionFailed_ = function(error) {
-  this.onError_(error);
+remoting.AppRemoting.prototype.onConnectionFailed = function(error) {
+  this.onError(error);
 };
 
 /**
  * @param {!remoting.Error} error The error to be localized and displayed.
- * @override {remoting.ApplicationInterface}
  */
-remoting.AppRemoting.prototype.onError_ = function(error) {
+remoting.AppRemoting.prototype.onError = function(error) {
   console.error('Connection failed: ' + error.toString());
   remoting.LoadingWindow.close();
   remoting.MessageWindow.showErrorMessage(

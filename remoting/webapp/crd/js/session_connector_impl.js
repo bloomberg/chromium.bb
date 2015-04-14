@@ -21,41 +21,36 @@ remoting.clientSession;
 
 /**
  * @param {HTMLElement} clientContainer Container element for the client view.
- * @param {function(remoting.ConnectionInfo):void} onConnected Callback on
- *     success.
- * @param {function(!remoting.Error):void} onError Callback on error.
- * @param {function(!remoting.Error):void} onConnectionFailed Callback for when
- *     the connection fails.
  * @param {Array<string>} requiredCapabilities Connector capabilities
  *     required by this application.
+ * @param {remoting.ClientSession.EventHandler} handler
  * @constructor
  * @implements {remoting.SessionConnector}
  */
-remoting.SessionConnectorImpl = function(clientContainer, onConnected, onError,
-                                         onConnectionFailed,
-                                         requiredCapabilities) {
+remoting.SessionConnectorImpl =
+    function(clientContainer, requiredCapabilities, handler) {
   /** @private {HTMLElement} */
   this.clientContainer_ = clientContainer;
 
-  /** @private {function(remoting.ConnectionInfo):void} */
-  this.onConnected_ = onConnected;
-
-  /** @private {function(!remoting.Error):void} */
-  this.onError_ = onError;
-
-  /** @private {function(!remoting.Error):void} */
-  this.onConnectionFailed_ = onConnectionFailed;
-
-  /** @private {Array<string>} */
-  this.requiredCapabilities_ = requiredCapabilities;
+  /** @private */
+  this.onError_ = handler.onError.bind(handler);
 
   /** @private */
-  this.bound_ = {
-    onStateChange : this.onStateChange_.bind(this)
-  };
+  this.handler_ = handler;
+
+  /** @private {Array<string>} */
+  this.requiredCapabilities_ = [
+    remoting.ClientSession.Capability.SEND_INITIAL_RESOLUTION,
+    remoting.ClientSession.Capability.RATE_LIMIT_RESIZE_REQUESTS,
+    remoting.ClientSession.Capability.VIDEO_RECORDER
+  ];
+
+  // Append the app-specific capabilities.
+  this.requiredCapabilities_.push.apply(this.requiredCapabilities_,
+                                        requiredCapabilities);
 
   // Initialize/declare per-connection state.
-  this.closeSession();
+  this.closeSession_();
 };
 
 /**
@@ -63,9 +58,13 @@ remoting.SessionConnectorImpl = function(clientContainer, onConnected, onError,
  * second connection. Note the none of the shared WCS state is reset.
  * @private
  */
-remoting.SessionConnectorImpl.prototype.closeSession = function() {
+remoting.SessionConnectorImpl.prototype.closeSession_ = function() {
   // It's OK to initialize these member variables here because the
   // constructor calls this method.
+
+  base.dispose(this.eventHook_);
+  /** @private {base.Disposable} */
+  this.eventHook_ = null;
 
   /** @private {remoting.Host} */
   this.host_ = null;
@@ -106,7 +105,7 @@ remoting.SessionConnectorImpl.prototype.connect =
   // in a new clientJid and a new callback. In this case, cancel any existing
   // connect operation and remove the old client plugin before instantiating a
   // new one.
-  this.closeSession();
+  this.closeSession_();
   remoting.app.setConnectionMode(mode);
   this.host_ = host;
   this.credentialsProvider_ = credentialsProvider;
@@ -213,10 +212,8 @@ remoting.SessionConnectorImpl.prototype.onPluginInitialized_ = function(
   remoting.clientSession = this.clientSession_;
 
   this.clientSession_.logHostOfflineErrors(this.logHostOfflineErrors_);
-  this.clientSession_.addEventListener(
-      remoting.ClientSession.Events.stateChanged,
-      this.bound_.onStateChange);
-
+  this.eventHook_ = new base.EventHook(
+      this.clientSession_, 'stateChanged', this.onStateChange_.bind(this));
   this.plugin_.connect(
       this.host_, this.signalStrategy_.getJid(), this.credentialsProvider_);
 };
@@ -227,15 +224,11 @@ remoting.SessionConnectorImpl.prototype.onPluginInitialized_ = function(
  */
 remoting.SessionConnectorImpl.prototype.pluginError_ = function(error) {
   this.signalStrategy_.setIncomingStanzaCallback(null);
-  this.clientSession_.disconnect(error);
-  this.closeSession();
+  this.closeSession_();
 };
 
 /**
- * Handle a change in the state of the client session prior to successful
- * connection (after connection, this class no longer handles state change
- * events). Errors that occur while connecting either trigger a reconnect
- * or notify the onError handler.
+ * Handle a change in the state of the client session.
  *
  * @param {remoting.ClientSession.StateEvent=} event
  * @return {void} Nothing.
@@ -244,25 +237,16 @@ remoting.SessionConnectorImpl.prototype.pluginError_ = function(error) {
 remoting.SessionConnectorImpl.prototype.onStateChange_ = function(event) {
   switch (event.current) {
     case remoting.ClientSession.State.CONNECTED:
-      // When the connection succeeds, deregister for state-change callbacks
-      // and pass the session to the onConnected callback. It is expected that
-      // it will register a new state-change callback to handle disconnect
-      // or error conditions.
-      this.clientSession_.removeEventListener(
-          remoting.ClientSession.Events.stateChanged,
-          this.bound_.onStateChange);
-
       var connectionInfo = new remoting.ConnectionInfo(
           this.host_, this.credentialsProvider_, this.clientSession_,
           this.plugin_);
-      this.onConnected_(connectionInfo);
+      this.handler_.onConnected(connectionInfo);
       break;
 
     case remoting.ClientSession.State.CONNECTING:
-      remoting.identity.getEmail().then(
-          function(/** string */ email) {
-            console.log('Connecting as ' + email);
-          });
+      remoting.identity.getEmail().then(function(/** string */ email) {
+        console.log('Connecting as ' + email);
+      });
       break;
 
     case remoting.ClientSession.State.AUTHENTICATED:
@@ -274,24 +258,14 @@ remoting.SessionConnectorImpl.prototype.onStateChange_ = function(event) {
       break;
 
     case remoting.ClientSession.State.CLOSED:
-      // This class deregisters for state-change callbacks when the CONNECTED
-      // state is reached, so it only sees the CLOSED state in exceptional
-      // circumstances. For example, a CONNECTING -> CLOSED transition happens
-      // if the host closes the connection without an error message instead of
-      // accepting it. Since there's no way of knowing exactly what went wrong,
-      // we rely on server-side logs in this case and report a generic error
-      // message.
-      this.onError_(remoting.Error.unexpected());
+      this.handler_.onDisconnected();
       break;
 
     case remoting.ClientSession.State.FAILED:
       var error = this.clientSession_.getError();
       console.error('Client plugin reported connection failed: ' +
                     error.toString());
-      if (error == null) {
-        error = remoting.Error.unexpected();
-      }
-      this.onConnectionFailed_(error);
+      this.handler_.onConnectionFailed(error || remoting.Error.unexpected());
       break;
 
     default:
@@ -299,6 +273,10 @@ remoting.SessionConnectorImpl.prototype.onStateChange_ = function(event) {
       // This should only happen if the web-app and client plugin get out of
       // sync, and even then the version check should ensure compatibility.
       this.onError_(new remoting.Error(remoting.Error.Tag.MISSING_PLUGIN));
+  }
+
+  if (this.clientSession_.isFinished()) {
+    this.closeSession_();
   }
 };
 
@@ -310,20 +288,13 @@ remoting.DefaultSessionConnectorFactory = function() {};
 
 /**
  * @param {HTMLElement} clientContainer Container element for the client view.
- * @param {function(remoting.ConnectionInfo):void} onConnected Callback on
- *     success.
- * @param {function(!remoting.Error):void} onError Callback on error.
- * @param {function(!remoting.Error):void} onConnectionFailed Callback for when
- *     the connection fails.
  * @param {Array<string>} requiredCapabilities Connector capabilities
  *     required by this application.
+ * @param {remoting.ClientSession.EventHandler} handler
  * @return {remoting.SessionConnector}
  */
 remoting.DefaultSessionConnectorFactory.prototype.createConnector =
-    function(clientContainer, onConnected, onError,
-             onConnectionFailed, requiredCapabilities) {
-  return new remoting.SessionConnectorImpl(clientContainer, onConnected,
-                                           onError,
-                                           onConnectionFailed,
-                                           requiredCapabilities);
+    function(clientContainer, requiredCapabilities, handler) {
+  return new remoting.SessionConnectorImpl(clientContainer,
+                                           requiredCapabilities, handler);
 };

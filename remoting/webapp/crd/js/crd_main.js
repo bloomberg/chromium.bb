@@ -178,7 +178,7 @@ remoting.showErrorMessage = function(error) {
 
 
 remoting.startDesktopRemoting = function() {
-  remoting.app = new remoting.DesktopRemoting(remoting.app_capabilities());
+  remoting.app = new remoting.DesktopRemoting();
   remoting.app.start();
 };
 

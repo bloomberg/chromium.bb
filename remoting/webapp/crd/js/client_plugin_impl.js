@@ -34,6 +34,9 @@ remoting.ClientPluginMessage = function() {
  */
 remoting.ClientPluginImpl = function(container,
                                      requiredCapabilities) {
+  // TODO(kelvinp): Hack to remove all plugin elements as our current code does
+  // not handle connection cancellation properly.
+  container.innerText = '';
   this.plugin_ = remoting.ClientPluginImpl.createPluginElement_();
   this.plugin_.id = 'session-client-plugin';
   container.appendChild(this.plugin_);

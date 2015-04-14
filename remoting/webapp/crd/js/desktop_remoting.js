@@ -14,25 +14,15 @@
 var remoting = remoting || {};
 
 /**
- * @param {Array<string>} appCapabilities Array of application capabilities.
  * @constructor
  * @implements {remoting.ApplicationInterface}
  * @extends {remoting.Application}
  */
-remoting.DesktopRemoting = function(appCapabilities) {
-  base.inherits(this, remoting.Application, appCapabilities);
-
-  /** @private {remoting.DesktopConnectedView} */
-  this.connectedView_ = null;
+remoting.DesktopRemoting = function() {
+  base.inherits(this, remoting.Application);
 
   /** @private {remoting.Activity} */
   this.activity_ = null;
-};
-
-/** @private */
-remoting.DesktopRemoting.prototype.reset_ = function() {
-  base.dispose(this.connectedView_);
-  this.connectedView_ = null;
 };
 
 /**
@@ -147,71 +137,6 @@ remoting.DesktopRemoting.prototype.exitApplication_ = function() {
 };
 
 /**
- * @param {remoting.ConnectionInfo} connectionInfo
- * @override {remoting.ApplicationInterface}
- */
-remoting.DesktopRemoting.prototype.onConnected_ = function(connectionInfo) {
-  this.initSession_(connectionInfo);
-
-  remoting.setMode(remoting.AppMode.IN_SESSION);
-  if (!base.isAppsV2()) {
-    remoting.toolbar.center();
-    remoting.toolbar.preview();
-  }
-
-  this.connectedView_ = new remoting.DesktopConnectedView(
-      document.getElementById('client-container'), connectionInfo);
-
-  // By default, under ChromeOS, remap the right Control key to the right
-  // Win / Cmd key.
-  if (remoting.platformIsChromeOS()) {
-    connectionInfo.plugin().setRemapKeys('0x0700e4>0x0700e7');
-  }
-
-  if (connectionInfo.session().hasCapability(
-          remoting.ClientSession.Capability.VIDEO_RECORDER)) {
-    var recorder = new remoting.VideoFrameRecorder();
-    connectionInfo.plugin().extensions().register(recorder);
-    this.connectedView_.setVideoFrameRecorder(recorder);
-  }
-
-  this.activity_.onConnected(connectionInfo);
-};
-
-/**
- * @override {remoting.ApplicationInterface}
- */
-remoting.DesktopRemoting.prototype.onDisconnected_ = function() {
-  this.activity_.onDisconnected();
-  this.reset_();
-};
-
-/**
- * @param {!remoting.Error} error
- * @override {remoting.ApplicationInterface}
- */
-remoting.DesktopRemoting.prototype.onConnectionFailed_ = function(error) {
-  this.activity_.onConnectionFailed(error);
-};
-
-/**
- * @param {!remoting.Error} error The error to be localized and displayed.
- * @override {remoting.ApplicationInterface}
- */
-remoting.DesktopRemoting.prototype.onError_ = function(error) {
-  console.error('Connection failed: ' + error.toString());
-
-  if (error.hasTag(remoting.Error.Tag.AUTHENTICATION_FAILED)) {
-    remoting.setMode(remoting.AppMode.HOME);
-    remoting.handleAuthFailureAndRelaunch();
-    return;
-  }
-
-  this.activity_.onError(error);
-  this.reset_();
-};
-
-/**
  * Determine whether or not the app is running in a window.
  * @param {function(boolean):void} callback Callback to receive whether or not
  *     the current tab is running in windowed mode.
@@ -260,7 +185,8 @@ remoting.DesktopRemoting.prototype.promptClose_ = function() {
 
 /** @returns {remoting.DesktopConnectedView} */
 remoting.DesktopRemoting.prototype.getConnectedViewForTesting = function() {
-  return this.connectedView_;
+  var activity = /** @type {remoting.Me2MeActivity} */ (this.activity_);
+  return activity.getDesktopActivity().getConnectedView();
 };
 
 /**
@@ -272,14 +198,8 @@ remoting.DesktopRemoting.prototype.getConnectedViewForTesting = function() {
  */
 remoting.DesktopRemoting.prototype.connectMe2Me_ = function(hostId) {
   var host = remoting.hostList.getHostForId(hostId);
-  // The Me2MeActivity triggers a reconnect underneath the hood on connection
-  // failure, but it won't notify the DesktopRemoting upon successful
-  // re-connection.  Therefore, we can't dispose the activity on connection
-  // failure.  Instead, the activity is only disposed when a new one is
-  // created.  This would be fixed once |sessionConnector| is moved out of the
-  // application.
   base.dispose(this.activity_);
-  this.activity_ = new remoting.Me2MeActivity(this.sessionConnector_, host);
+  this.activity_ = new remoting.Me2MeActivity(host);
   this.activity_.start();
 };
 
@@ -290,6 +210,6 @@ remoting.DesktopRemoting.prototype.connectMe2Me_ = function(hostId) {
  */
 remoting.DesktopRemoting.prototype.connectIt2Me_ = function() {
   base.dispose(this.activity_);
-  this.activity_ = new remoting.It2MeActivity(this.sessionConnector_);
+  this.activity_ = new remoting.It2MeActivity();
   this.activity_.start();
 };
