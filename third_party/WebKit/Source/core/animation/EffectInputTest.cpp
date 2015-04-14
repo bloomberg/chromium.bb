@@ -41,8 +41,8 @@ private:
 TEST_F(AnimationEffectInputTest, SortedOffsets)
 {
     Vector<Dictionary> jsKeyframes;
-    v8::Handle<v8::Object> keyframe1 = v8::Object::New(m_isolate);
-    v8::Handle<v8::Object> keyframe2 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
 
     setV8ObjectPropertyAsString(keyframe1, "width", "100px");
     setV8ObjectPropertyAsString(keyframe1, "offset", "0");
@@ -61,8 +61,8 @@ TEST_F(AnimationEffectInputTest, SortedOffsets)
 TEST_F(AnimationEffectInputTest, UnsortedOffsets)
 {
     Vector<Dictionary> jsKeyframes;
-    v8::Handle<v8::Object> keyframe1 = v8::Object::New(m_isolate);
-    v8::Handle<v8::Object> keyframe2 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
 
     setV8ObjectPropertyAsString(keyframe1, "width", "0px");
     setV8ObjectPropertyAsString(keyframe1, "offset", "1");
@@ -80,9 +80,9 @@ TEST_F(AnimationEffectInputTest, UnsortedOffsets)
 TEST_F(AnimationEffectInputTest, LooslySorted)
 {
     Vector<Dictionary> jsKeyframes;
-    v8::Handle<v8::Object> keyframe1 = v8::Object::New(m_isolate);
-    v8::Handle<v8::Object> keyframe2 = v8::Object::New(m_isolate);
-    v8::Handle<v8::Object> keyframe3 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe3 = v8::Object::New(m_isolate);
 
     setV8ObjectPropertyAsString(keyframe1, "width", "100px");
     setV8ObjectPropertyAsString(keyframe1, "offset", "0");
@@ -103,10 +103,10 @@ TEST_F(AnimationEffectInputTest, LooslySorted)
 TEST_F(AnimationEffectInputTest, OutOfOrderWithNullOffsets)
 {
     Vector<Dictionary> jsKeyframes;
-    v8::Handle<v8::Object> keyframe1 = v8::Object::New(m_isolate);
-    v8::Handle<v8::Object> keyframe2 = v8::Object::New(m_isolate);
-    v8::Handle<v8::Object> keyframe3 = v8::Object::New(m_isolate);
-    v8::Handle<v8::Object> keyframe4 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe3 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe4 = v8::Object::New(m_isolate);
 
     setV8ObjectPropertyAsString(keyframe1, "height", "100px");
     setV8ObjectPropertyAsString(keyframe1, "offset", "0.5");
@@ -129,9 +129,9 @@ TEST_F(AnimationEffectInputTest, Invalid)
 {
     // Not loosely sorted by offset, and there exists a keyframe with null offset.
     Vector<Dictionary> jsKeyframes;
-    v8::Handle<v8::Object> keyframe1 = v8::Object::New(m_isolate);
-    v8::Handle<v8::Object> keyframe2 = v8::Object::New(m_isolate);
-    v8::Handle<v8::Object> keyframe3 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe3 = v8::Object::New(m_isolate);
 
     setV8ObjectPropertyAsString(keyframe1, "width", "0px");
     setV8ObjectPropertyAsString(keyframe1, "offset", "1");

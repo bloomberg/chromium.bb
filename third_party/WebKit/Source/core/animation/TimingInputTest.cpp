@@ -24,7 +24,7 @@ protected:
 
     Timing applyTimingInputNumber(String timingProperty, double timingPropertyValue)
     {
-        v8::Handle<v8::Object> timingInput = v8::Object::New(m_isolate);
+        v8::Local<v8::Object> timingInput = v8::Object::New(m_isolate);
         setV8ObjectPropertyAsNumber(timingInput, timingProperty, timingPropertyValue);
         AnimationTimingProperties timingInputDictionary;
         V8AnimationTimingProperties::toImpl(m_isolate, timingInput, timingInputDictionary, exceptionState);
@@ -33,7 +33,7 @@ protected:
 
     Timing applyTimingInputString(String timingProperty, String timingPropertyValue)
     {
-        v8::Handle<v8::Object> timingInput = v8::Object::New(m_isolate);
+        v8::Local<v8::Object> timingInput = v8::Object::New(m_isolate);
         setV8ObjectPropertyAsString(timingInput, timingProperty, timingPropertyValue);
         AnimationTimingProperties timingInputDictionary;
         V8AnimationTimingProperties::toImpl(m_isolate, timingInput, timingInputDictionary, exceptionState);

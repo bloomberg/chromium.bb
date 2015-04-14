@@ -67,8 +67,8 @@ private:
 TEST_F(AnimationAnimationV8Test, CanCreateAnAnimation)
 {
     Vector<Dictionary> jsKeyframes;
-    v8::Handle<v8::Object> keyframe1 = v8::Object::New(m_isolate);
-    v8::Handle<v8::Object> keyframe2 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
 
     setV8ObjectPropertyAsString(keyframe1, "width", "100px");
     setV8ObjectPropertyAsString(keyframe1, "offset", "0");
@@ -137,8 +137,8 @@ TEST_F(AnimationAnimationV8Test, NegativeDurationIsAuto)
 TEST_F(AnimationAnimationV8Test, MismatchedKeyframePropertyRaisesException)
 {
     Vector<Dictionary> jsKeyframes;
-    v8::Handle<v8::Object> keyframe1 = v8::Object::New(m_isolate);
-    v8::Handle<v8::Object> keyframe2 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
 
     setV8ObjectPropertyAsString(keyframe1, "width", "100px");
     setV8ObjectPropertyAsString(keyframe1, "offset", "0");
@@ -160,8 +160,8 @@ TEST_F(AnimationAnimationV8Test, MismatchedKeyframePropertyRaisesException)
 TEST_F(AnimationAnimationV8Test, MissingOffsetZeroRaisesException)
 {
     Vector<Dictionary> jsKeyframes;
-    v8::Handle<v8::Object> keyframe1 = v8::Object::New(m_isolate);
-    v8::Handle<v8::Object> keyframe2 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
 
     setV8ObjectPropertyAsString(keyframe1, "width", "100px");
     setV8ObjectPropertyAsString(keyframe1, "offset", "0.1");
@@ -180,8 +180,8 @@ TEST_F(AnimationAnimationV8Test, MissingOffsetZeroRaisesException)
 TEST_F(AnimationAnimationV8Test, MissingOffsetOneRaisesException)
 {
     Vector<Dictionary> jsKeyframes;
-    v8::Handle<v8::Object> keyframe1 = v8::Object::New(m_isolate);
-    v8::Handle<v8::Object> keyframe2 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
 
     setV8ObjectPropertyAsString(keyframe1, "width", "100px");
     setV8ObjectPropertyAsString(keyframe1, "offset", "0");
@@ -200,8 +200,8 @@ TEST_F(AnimationAnimationV8Test, MissingOffsetOneRaisesException)
 TEST_F(AnimationAnimationV8Test, MissingOffsetZeroAndOneRaisesException)
 {
     Vector<Dictionary> jsKeyframes;
-    v8::Handle<v8::Object> keyframe1 = v8::Object::New(m_isolate);
-    v8::Handle<v8::Object> keyframe2 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
 
     setV8ObjectPropertyAsString(keyframe1, "width", "100px");
     setV8ObjectPropertyAsString(keyframe1, "offset", "0.1");
@@ -221,7 +221,7 @@ TEST_F(AnimationAnimationV8Test, SpecifiedGetters)
 {
     Vector<Dictionary, 0> jsKeyframes;
 
-    v8::Handle<v8::Object> timingInput = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> timingInput = v8::Object::New(m_isolate);
     setV8ObjectPropertyAsNumber(timingInput, "delay", 2);
     setV8ObjectPropertyAsNumber(timingInput, "endDelay", 0.5);
     setV8ObjectPropertyAsString(timingInput, "fill", "backwards");
@@ -250,7 +250,7 @@ TEST_F(AnimationAnimationV8Test, SpecifiedDurationGetter)
 {
     Vector<Dictionary, 0> jsKeyframes;
 
-    v8::Handle<v8::Object> timingInputWithDuration = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> timingInputWithDuration = v8::Object::New(m_isolate);
     setV8ObjectPropertyAsNumber(timingInputWithDuration, "duration", 2.5);
     AnimationTimingProperties timingInputDictionaryWithDuration;
     V8AnimationTimingProperties::toImpl(m_isolate, timingInputWithDuration, timingInputDictionaryWithDuration, exceptionState);
@@ -265,7 +265,7 @@ TEST_F(AnimationAnimationV8Test, SpecifiedDurationGetter)
     EXPECT_FALSE(duration.isString());
 
 
-    v8::Handle<v8::Object> timingInputNoDuration = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> timingInputNoDuration = v8::Object::New(m_isolate);
     AnimationTimingProperties timingInputDictionaryNoDuration;
     V8AnimationTimingProperties::toImpl(m_isolate, timingInputNoDuration, timingInputDictionaryNoDuration, exceptionState);
 
@@ -282,7 +282,7 @@ TEST_F(AnimationAnimationV8Test, SpecifiedDurationGetter)
 TEST_F(AnimationAnimationV8Test, SpecifiedSetters)
 {
     Vector<Dictionary, 0> jsKeyframes;
-    v8::Handle<v8::Object> timingInput = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> timingInput = v8::Object::New(m_isolate);
     AnimationTimingProperties timingInputDictionary;
     V8AnimationTimingProperties::toImpl(m_isolate, timingInput, timingInputDictionary, exceptionState);
     RefPtrWillBeRawPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary, exceptionState);
@@ -325,7 +325,7 @@ TEST_F(AnimationAnimationV8Test, SpecifiedSetters)
 TEST_F(AnimationAnimationV8Test, SetSpecifiedDuration)
 {
     Vector<Dictionary, 0> jsKeyframes;
-    v8::Handle<v8::Object> timingInput = v8::Object::New(m_isolate);
+    v8::Local<v8::Object> timingInput = v8::Object::New(m_isolate);
     AnimationTimingProperties timingInputDictionary;
     V8AnimationTimingProperties::toImpl(m_isolate, timingInput, timingInputDictionary, exceptionState);
     RefPtrWillBeRawPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary, exceptionState);
