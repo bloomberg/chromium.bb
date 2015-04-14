@@ -2112,8 +2112,11 @@ crbug.com/476907 [ XP ] virtual/slimmingpaint/fast/block/float/float-avoidance.h
 crbug.com/476913 [ Debug SnowLeopard ] virtual/antialiasedtext/fast/text/unicode-fallback-font.html [ Crash ]
 crbug.com/476913 [ Debug SnowLeopard ] fast/text/unicode-fallback-font.html [ Crash ]
 
-crbug.com/476933 fast/canvas/canvas-composite-video.html [ NeedsManualRebaseline ]
-crbug.com/476933 fast/canvas/canvas-drawImage-video.html [ NeedsManualRebaseline ]
-crbug.com/476933 media/video-canvas-alpha.html [ NeedsManualRebaseline ]
-crbug.com/476933 virtual/display_list_2d_canvas/fast/canvas/canvas-composite-video.html [ NeedsManualRebaseline ]
-crbug.com/476933 virtual/display_list_2d_canvas/fast/canvas/canvas-drawImage-video.html [ NeedsManualRebaseline ]
+crbug.com/476933 fast/canvas/canvas-composite-video.html [ NeedsRebaseline ]
+crbug.com/476933 fast/canvas/canvas-drawImage-video.html [ NeedsRebaseline ]
+crbug.com/476933 media/video-canvas-alpha.html [ NeedsRebaseline ]
+crbug.com/476933 virtual/display_list_2d_canvas/fast/canvas/canvas-composite-video.html [ NeedsRebaseline ]
+crbug.com/476933 virtual/display_list_2d_canvas/fast/canvas/canvas-drawImage-video.html [ NeedsRebaseline ]
+
+crbug.com/476933 virtual/slimmingpaint/fast/canvas/canvas-composite-video.html [ NeedsRebaseline ]
+crbug.com/476933 virtual/slimmingpaint/fast/canvas/canvas-drawImage-video.html [ NeedsRebaseline ]
