@@ -618,6 +618,8 @@ TEST_F(VideoCaptureControllerTest, DataCaptureInEachVideoFormatInSequence) {
   // buffer.
   const size_t kScratchpadSizeInBytes = 400;
   unsigned char data[kScratchpadSizeInBytes];
+  // Initialize memory to satisfy DrMemory tests.
+  memset(data, 0, kScratchpadSizeInBytes);
   const gfx::Size capture_resolution(10, 10);
   ASSERT_GE(kScratchpadSizeInBytes, capture_resolution.GetArea() * 4u)
       << "Scratchpad is too small to hold the largest pixel format (ARGB).";
