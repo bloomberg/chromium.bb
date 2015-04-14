@@ -12,7 +12,6 @@ namespace {
 class EglPlatformDefault : public CastEglPlatform {
  public:
   ~EglPlatformDefault() override {}
-  Size GetDefaultDisplaySize() const override { return Size(1, 1); }
   const int* GetEGLSurfaceProperties(const int* desired) override {
     return desired;
   }
@@ -34,8 +33,8 @@ class EglPlatformDefault : public CastEglPlatform {
 
 }  // namespace
 
-CastEglPlatform*
-CastEglPlatformShlib::Create(const std::vector<std::string>& argv) {
+CastEglPlatform* CastEglPlatformShlib::Create(
+    const std::vector<std::string>& argv) {
   return new EglPlatformDefault();
 }
 

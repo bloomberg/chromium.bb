@@ -62,7 +62,6 @@ class SurfaceFactoryCast : public SurfaceFactoryOzone {
   base::Closure relinquish_display_callback_;
   void* display_type_;
   void* window_;
-  const gfx::Size default_display_size_;
   gfx::Size display_size_;
   gfx::Size new_display_size_;
   scoped_ptr<chromecast::CastEglPlatform> egl_platform_;

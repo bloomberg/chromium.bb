@@ -15,19 +15,21 @@ namespace {
 CastEglPlatform::Size FromGfxSize(const gfx::Size& size) {
   return CastEglPlatform::Size(size.width(), size.height());
 }
-gfx::Size ToGfxSize(const CastEglPlatform::Size& size) {
-  return gfx::Size(size.width, size.height);
+
+// Hard lower bound on display resolution
+gfx::Size GetMinDisplaySize() {
+  return gfx::Size(1280, 720);
 }
-}
+
+}  // namespace
 
 SurfaceFactoryCast::SurfaceFactoryCast(scoped_ptr<CastEglPlatform> egl_platform)
     : state_(kUninitialized),
       destroy_window_pending_state_(kNoDestroyPending),
       display_type_(0),
       window_(0),
-      default_display_size_(ToGfxSize(egl_platform->GetDefaultDisplaySize())),
-      display_size_(default_display_size_),
-      new_display_size_(default_display_size_),
+      display_size_(0, 0),
+      new_display_size_(0, 0),
       egl_platform_(egl_platform.Pass()) {
 }
 
@@ -97,7 +99,7 @@ intptr_t SurfaceFactoryCast::GetNativeWindow() {
 
 bool SurfaceFactoryCast::ResizeDisplay(gfx::Size size) {
   // set size to at least 1280x720 even if passed 1x1
-  size.SetToMax(default_display_size_);
+  size.SetToMax(GetMinDisplaySize());
   if (display_type_ && size != display_size_) {
     DestroyDisplayTypeAndWindow();
   }
@@ -119,7 +121,7 @@ void SurfaceFactoryCast::DestroyDisplayTypeAndWindow() {
 scoped_ptr<SurfaceOzoneEGL> SurfaceFactoryCast::CreateEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
   new_display_size_ = gfx::Size(widget >> 16, widget & 0xFFFF);
-  new_display_size_.SetToMax(default_display_size_);
+  new_display_size_.SetToMax(GetMinDisplaySize());
   destroy_window_pending_state_ = kSurfaceExists;
   SendRelinquishResponse();
   return make_scoped_ptr<SurfaceOzoneEGL>(new SurfaceOzoneEglCast(this));

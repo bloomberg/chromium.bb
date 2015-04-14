@@ -12,11 +12,8 @@ namespace chromecast {
 // to OzonePlatformCast to create a complete Ozone implementation.
 class CastEglPlatform {
  public:
-
   struct Size {
-    Size(int w, int h)
-        : width(w),
-          height(h) {}
+    Size(int w, int h) : width(w), height(h) {}
     const int width;
     const int height;
   };
@@ -26,10 +23,6 @@ class CastEglPlatform {
   typedef void* NativeWindowType;
 
   virtual ~CastEglPlatform() {}
-
-  // Default display size is used for initial display and also as a minimum
-  // resolution for applications.
-  virtual Size GetDefaultDisplaySize() const = 0;
 
   // Returns an array of EGL properties, which can be used in any EGL function
   // used to select a display configuration. Note that all properties should be

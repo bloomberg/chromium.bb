@@ -36,6 +36,7 @@
         'public/cast_egl_platform.h',
         'public/cast_egl_platform_shlib.h',
         'public/chromecast_export.h',
+        'public/graphics_properties_shlib.h'
       ],
     },
     # TODO(gunsch): Remove this fake target once it's either added or no
@@ -584,7 +585,8 @@
             'cast_public_api'
           ],
           'sources': [
-            'graphics/cast_egl_platform_default.cc'
+            'graphics/cast_egl_platform_default.cc',
+            'graphics/graphics_properties_default.cc'
           ],
         }
       ]
