@@ -1551,6 +1551,9 @@
     'compositor_browser_sources': [
       'browser/compositor/browser_compositor_output_surface.cc',
       'browser/compositor/browser_compositor_output_surface.h',
+      'browser/compositor/browser_compositor_overlay_candidate_validator.h',
+      'browser/compositor/browser_compositor_overlay_candidate_validator_ozone.cc',
+      'browser/compositor/browser_compositor_overlay_candidate_validator_ozone.h',
       'browser/compositor/browser_compositor_view_mac.h',
       'browser/compositor/browser_compositor_view_mac.mm',
       'browser/compositor/buffer_queue.cc',
@@ -1565,8 +1568,6 @@
       'browser/compositor/gpu_surfaceless_browser_compositor_output_surface.h',
       'browser/compositor/image_transport_factory.cc',
       'browser/compositor/image_transport_factory.h',
-      'browser/compositor/overlay_candidate_validator_ozone.cc',
-      'browser/compositor/overlay_candidate_validator_ozone.h',
       'browser/compositor/owned_mailbox.cc',
       'browser/compositor/owned_mailbox.h',
       'browser/compositor/reflector_impl.cc',

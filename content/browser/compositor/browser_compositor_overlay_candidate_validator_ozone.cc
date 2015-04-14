@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/compositor/overlay_candidate_validator_ozone.h"
+#include "content/browser/compositor/browser_compositor_overlay_candidate_validator_ozone.h"
 
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 
@@ -26,16 +26,26 @@ static ui::SurfaceFactoryOzone::BufferFormat GetOzoneFormat(
   return ui::SurfaceFactoryOzone::UNKNOWN;
 }
 
-OverlayCandidateValidatorOzone::OverlayCandidateValidatorOzone(
-    gfx::AcceleratedWidget widget,
-    ui::OverlayCandidatesOzone* overlay_candidates)
-    : widget_(widget), overlay_candidates_(overlay_candidates) {
+BrowserCompositorOverlayCandidateValidatorOzone::
+    BrowserCompositorOverlayCandidateValidatorOzone(
+        gfx::AcceleratedWidget widget,
+        ui::OverlayCandidatesOzone* overlay_candidates)
+    : widget_(widget),
+      overlay_candidates_(overlay_candidates),
+      software_mirror_active_(false) {
 }
 
-OverlayCandidateValidatorOzone::~OverlayCandidateValidatorOzone() {}
+BrowserCompositorOverlayCandidateValidatorOzone::
+    ~BrowserCompositorOverlayCandidateValidatorOzone() {
+}
 
-void OverlayCandidateValidatorOzone::CheckOverlaySupport(
+void BrowserCompositorOverlayCandidateValidatorOzone::CheckOverlaySupport(
     cc::OverlayCandidateList* surfaces) {
+  // SW mirroring copies out of the framebuffer, so we can't remove any
+  // quads for overlaying, otherwise the output is incorrect.
+  if (software_mirror_active_)
+    return;
+
   DCHECK_GE(2U, surfaces->size());
   ui::OverlayCandidatesOzone::OverlaySurfaceCandidateList ozone_surface_list;
   ozone_surface_list.resize(surfaces->size());
@@ -54,6 +64,11 @@ void OverlayCandidateValidatorOzone::CheckOverlaySupport(
   for (size_t i = 0; i < surfaces->size(); i++) {
     surfaces->at(i).overlay_handled = ozone_surface_list.at(i).overlay_handled;
   }
+}
+
+void BrowserCompositorOverlayCandidateValidatorOzone::SetSoftwareMirrorMode(
+    bool enabled) {
+  software_mirror_active_ = enabled;
 }
 
 }  // namespace content

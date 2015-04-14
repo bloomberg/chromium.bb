@@ -141,9 +141,7 @@ class CC_EXPORT OutputSurface {
   bool HasClient() { return !!client_; }
 
   // Get the class capable of informing cc of hardware overlay capability.
-  OverlayCandidateValidator* overlay_candidate_validator() const {
-    return overlay_candidate_validator_.get();
-  }
+  virtual OverlayCandidateValidator* GetOverlayCandidateValidator() const;
 
   void DidLoseOutputSurface();
   void SetMemoryPolicy(const ManagedMemoryPolicy& policy);
@@ -163,7 +161,6 @@ class CC_EXPORT OutputSurface {
   scoped_refptr<ContextProvider> context_provider_;
   scoped_refptr<ContextProvider> worker_context_provider_;
   scoped_ptr<SoftwareOutputDevice> software_device_;
-  scoped_ptr<OverlayCandidateValidator> overlay_candidate_validator_;
   gfx::Size surface_size_;
   float device_scale_factor_;
 

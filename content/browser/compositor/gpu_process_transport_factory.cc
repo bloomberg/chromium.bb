@@ -21,6 +21,7 @@
 #include "cc/surfaces/surface_display_output_surface.h"
 #include "cc/surfaces/surface_manager.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
+#include "content/browser/compositor/browser_compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/gpu_browser_compositor_output_surface.h"
 #include "content/browser/compositor/gpu_surfaceless_browser_compositor_output_surface.h"
 #include "content/browser/compositor/reflector_impl.h"
@@ -51,7 +52,7 @@
 #if defined(OS_WIN)
 #include "content/browser/compositor/software_output_device_win.h"
 #elif defined(USE_OZONE)
-#include "content/browser/compositor/overlay_candidate_validator_ozone.h"
+#include "content/browser/compositor/browser_compositor_overlay_candidate_validator_ozone.h"
 #include "content/browser/compositor/software_output_device_ozone.h"
 #include "ui/ozone/public/ozone_switches.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
@@ -148,8 +149,8 @@ scoped_ptr<cc::SoftwareOutputDevice> CreateSoftwareOutputDevice(
 #endif
 }
 
-scoped_ptr<cc::OverlayCandidateValidator> CreateOverlayCandidateValidator(
-    gfx::AcceleratedWidget widget) {
+scoped_ptr<BrowserCompositorOverlayCandidateValidator>
+CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
 #if defined(USE_OZONE)
   ui::OverlayCandidatesOzone* overlay_candidates =
       ui::SurfaceFactoryOzone::GetInstance()->GetOverlayCandidates(widget);
@@ -157,11 +158,12 @@ scoped_ptr<cc::OverlayCandidateValidator> CreateOverlayCandidateValidator(
   if (overlay_candidates &&
       (command_line->HasSwitch(switches::kEnableHardwareOverlays) ||
        command_line->HasSwitch(switches::kOzoneTestSingleOverlaySupport))) {
-    return scoped_ptr<cc::OverlayCandidateValidator>(
-        new OverlayCandidateValidatorOzone(widget, overlay_candidates));
+    return scoped_ptr<BrowserCompositorOverlayCandidateValidator>(
+        new BrowserCompositorOverlayCandidateValidatorOzone(
+            widget, overlay_candidates));
   }
 #endif
-  return scoped_ptr<cc::OverlayCandidateValidator>();
+  return scoped_ptr<BrowserCompositorOverlayCandidateValidator>();
 }
 
 static bool ShouldCreateGpuOutputSurface(ui::Compositor* compositor) {

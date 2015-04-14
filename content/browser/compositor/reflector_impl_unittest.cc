@@ -9,12 +9,18 @@
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
+#include "content/browser/compositor/browser_compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/test/context_factories_for_test.h"
+
+#if defined(USE_OZONE)
+#include "content/browser/compositor/browser_compositor_overlay_candidate_validator_ozone.h"
+#include "ui/ozone/public/overlay_candidates_ozone.h"
+#endif  // defined(USE_OZONE)
 
 namespace content {
 namespace {
@@ -38,13 +44,37 @@ class FakeTaskRunner : public base::SingleThreadTaskRunner {
   ~FakeTaskRunner() override {}
 };
 
+#if defined(USE_OZONE)
+class TestOverlayCandidatesOzone : public ui::OverlayCandidatesOzone {
+ public:
+  TestOverlayCandidatesOzone() {}
+  ~TestOverlayCandidatesOzone() override {}
+
+  void CheckOverlaySupport(OverlaySurfaceCandidateList* surfaces) override {
+    (*surfaces)[0].overlay_handled = true;
+  }
+};
+#endif  // defined(USE_OZONE)
+
+scoped_ptr<BrowserCompositorOverlayCandidateValidator>
+CreateTestValidatorOzone() {
+#if defined(USE_OZONE)
+  return scoped_ptr<BrowserCompositorOverlayCandidateValidator>(
+      new BrowserCompositorOverlayCandidateValidatorOzone(
+          0, new TestOverlayCandidatesOzone()));
+#else
+  return nullptr;
+#endif  // defined(USE_OZONE)
+}
+
 class TestOutputSurface : public BrowserCompositorOutputSurface {
  public:
   TestOutputSurface(
       const scoped_refptr<cc::ContextProvider>& context_provider,
       const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager)
       : BrowserCompositorOutputSurface(context_provider,
-                                       vsync_manager) {}
+                                       vsync_manager,
+                                       CreateTestValidatorOzone().Pass()) {}
 
   void SetFlip(bool flip) { capabilities_.flipped_output_surface = flip; }
 
@@ -142,6 +172,31 @@ TEST_F(ReflectorImplTest, CheckInvertedOutputSurface) {
   EXPECT_FALSE(mirroring_layer_->TextureFlipped());
   EXPECT_EQ(SkRegion(kSkSubRect), mirroring_layer_->damaged_region());
 }
+
+#if defined(USE_OZONE)
+TEST_F(ReflectorImplTest, CheckOverlayNoReflector) {
+  cc::OverlayCandidateList list;
+  cc::OverlayCandidate plane_1, plane_2;
+  plane_1.plane_z_order = 0;
+  plane_2.plane_z_order = 1;
+  list.push_back(plane_1);
+  list.push_back(plane_2);
+  output_surface_->GetOverlayCandidateValidator()->CheckOverlaySupport(&list);
+  EXPECT_TRUE(list[0].overlay_handled);
+}
+
+TEST_F(ReflectorImplTest, CheckOverlaySWMirroring) {
+  SetUpReflector();
+  cc::OverlayCandidateList list;
+  cc::OverlayCandidate plane_1, plane_2;
+  plane_1.plane_z_order = 0;
+  plane_2.plane_z_order = 1;
+  list.push_back(plane_1);
+  list.push_back(plane_2);
+  output_surface_->GetOverlayCandidateValidator()->CheckOverlaySupport(&list);
+  EXPECT_FALSE(list[0].overlay_handled);
+}
+#endif  // defined(USE_OZONE)
 
 }  // namespace
 }  // namespace content

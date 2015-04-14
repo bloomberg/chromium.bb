@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/strings/string_number_conversions.h"
+#include "content/browser/compositor/browser_compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 
@@ -14,10 +15,13 @@ namespace content {
 
 BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
     const scoped_refptr<cc::ContextProvider>& context_provider,
-    const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager)
+    const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
+    scoped_ptr<BrowserCompositorOverlayCandidateValidator>
+        overlay_candidate_validator)
     : OutputSurface(context_provider),
       vsync_manager_(vsync_manager),
       reflector_(nullptr) {
+  overlay_candidate_validator_ = overlay_candidate_validator.Pass();
   Initialize();
 }
 
@@ -68,7 +72,17 @@ void BrowserCompositorOutputSurface::OnUpdateVSyncParametersFromGpu(
 }
 
 void BrowserCompositorOutputSurface::SetReflector(ReflectorImpl* reflector) {
+  // Software mirroring is done by doing a GL copy out of the framebuffer - if
+  // we have overlays then that data will be missing.
+  if (overlay_candidate_validator_) {
+    overlay_candidate_validator_->SetSoftwareMirrorMode(reflector != nullptr);
+  }
   reflector_ = reflector;
+}
+
+cc::OverlayCandidateValidator*
+BrowserCompositorOutputSurface::GetOverlayCandidateValidator() const {
+  return overlay_candidate_validator_.get();
 }
 
 }  // namespace content

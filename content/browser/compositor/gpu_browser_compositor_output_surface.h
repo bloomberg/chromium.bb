@@ -12,12 +12,9 @@ namespace ui {
 class CompositorVSyncManager;
 }
 
-namespace cc {
-class OverlayCandidateValidator;
-}
-
 namespace content {
 class CommandBufferProxyImpl;
+class BrowserCompositorOverlayCandidateValidator;
 
 // Adapts a WebGraphicsContext3DCommandBufferImpl into a
 // cc::OutputSurface that also handles vsync parameter updates
@@ -28,7 +25,8 @@ class GpuBrowserCompositorOutputSurface
   GpuBrowserCompositorOutputSurface(
       const scoped_refptr<ContextProviderCommandBuffer>& context,
       const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
-      scoped_ptr<cc::OverlayCandidateValidator> overlay_candidate_validator);
+      scoped_ptr<BrowserCompositorOverlayCandidateValidator>
+          overlay_candidate_validator);
 
   ~GpuBrowserCompositorOutputSurface() override;
 

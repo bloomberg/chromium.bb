@@ -21,7 +21,7 @@ void OverlayProcessor::Initialize() {
     return;
 
   OverlayCandidateValidator* candidates =
-      surface_->overlay_candidate_validator();
+      surface_->GetOverlayCandidateValidator();
   if (candidates) {
     strategies_.push_back(scoped_ptr<Strategy>(
         new OverlayStrategySingleOnTop(candidates, resource_provider_)));

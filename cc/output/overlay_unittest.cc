@@ -83,7 +83,7 @@ class SingleOverlayProcessor : public OverlayProcessor {
   // Virtual to allow testing different strategies.
   void Initialize() override {
     OverlayCandidateValidator* candidates =
-        surface_->overlay_candidate_validator();
+        surface_->GetOverlayCandidateValidator();
     ASSERT_TRUE(candidates != NULL);
     strategies_.push_back(scoped_ptr<Strategy>(
         new OverlayStrategyType(candidates, resource_provider_)));
@@ -117,6 +117,13 @@ class OverlayOutputSurface : public OutputSurface {
   void InitWithSingleOverlayValidator() {
     overlay_candidate_validator_.reset(new SingleOverlayValidator);
   }
+
+  OverlayCandidateValidator* GetOverlayCandidateValidator() const override {
+    return overlay_candidate_validator_.get();
+  }
+
+ private:
+  scoped_ptr<OverlayCandidateValidator> overlay_candidate_validator_;
 };
 
 void OverlayOutputSurface::SwapBuffers(CompositorFrame* frame) {
@@ -275,10 +282,10 @@ static void CompareRenderPassLists(const RenderPassList& expected_list,
 TEST(OverlayTest, NoOverlaysByDefault) {
   scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
   OverlayOutputSurface output_surface(provider);
-  EXPECT_EQ(NULL, output_surface.overlay_candidate_validator());
+  EXPECT_EQ(NULL, output_surface.GetOverlayCandidateValidator());
 
   output_surface.InitWithSingleOverlayValidator();
-  EXPECT_TRUE(output_surface.overlay_candidate_validator() != NULL);
+  EXPECT_TRUE(output_surface.GetOverlayCandidateValidator() != NULL);
 }
 
 TEST(OverlayTest, OverlaysProcessorHasStrategy) {
@@ -287,7 +294,7 @@ TEST(OverlayTest, OverlaysProcessorHasStrategy) {
   FakeOutputSurfaceClient client;
   EXPECT_TRUE(output_surface.BindToClient(&client));
   output_surface.InitWithSingleOverlayValidator();
-  EXPECT_TRUE(output_surface.overlay_candidate_validator() != NULL);
+  EXPECT_TRUE(output_surface.GetOverlayCandidateValidator() != NULL);
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
@@ -308,7 +315,7 @@ class OverlayTest : public testing::Test {
     output_surface_.reset(new OverlayOutputSurface(provider_));
     EXPECT_TRUE(output_surface_->BindToClient(&client_));
     output_surface_->InitWithSingleOverlayValidator();
-    EXPECT_TRUE(output_surface_->overlay_candidate_validator() != NULL);
+    EXPECT_TRUE(output_surface_->GetOverlayCandidateValidator() != NULL);
 
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     resource_provider_ = ResourceProvider::Create(output_surface_.get(),

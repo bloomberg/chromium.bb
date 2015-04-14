@@ -5,6 +5,7 @@
 #include "content/browser/compositor/gpu_surfaceless_browser_compositor_output_surface.h"
 
 #include "cc/output/compositor_frame.h"
+#include "content/browser/compositor/browser_compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/buffer_queue.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
@@ -20,7 +21,8 @@ GpuSurfacelessBrowserCompositorOutputSurface::
         const scoped_refptr<ContextProviderCommandBuffer>& context,
         int surface_id,
         const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
-        scoped_ptr<cc::OverlayCandidateValidator> overlay_candidate_validator,
+        scoped_ptr<BrowserCompositorOverlayCandidateValidator>
+            overlay_candidate_validator,
         unsigned internalformat,
         BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager)
     : GpuBrowserCompositorOutputSurface(context,

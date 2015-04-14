@@ -6,6 +6,7 @@
 
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface_client.h"
+#include "content/browser/compositor/browser_compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
@@ -18,9 +19,11 @@ namespace content {
 GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
     const scoped_refptr<ContextProviderCommandBuffer>& context,
     const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
-    scoped_ptr<cc::OverlayCandidateValidator> overlay_candidate_validator)
+    scoped_ptr<BrowserCompositorOverlayCandidateValidator>
+        overlay_candidate_validator)
     : BrowserCompositorOutputSurface(context,
-                                     vsync_manager),
+                                     vsync_manager,
+                                     overlay_candidate_validator.Pass()),
 #if defined(OS_MACOSX)
       should_not_show_frames_(false),
 #endif
@@ -30,7 +33,6 @@ GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
       update_vsync_parameters_callback_(base::Bind(
           &BrowserCompositorOutputSurface::OnUpdateVSyncParametersFromGpu,
           base::Unretained(this))) {
-  overlay_candidate_validator_ = overlay_candidate_validator.Pass();
 }
 
 GpuBrowserCompositorOutputSurface::~GpuBrowserCompositorOutputSurface() {}

@@ -15,6 +15,7 @@ class SoftwareOutputDevice;
 }
 
 namespace content {
+class BrowserCompositorOverlayCandidateValidator;
 class ContextProviderCommandBuffer;
 class ReflectorImpl;
 class WebGraphicsContext3DCommandBufferImpl;
@@ -27,6 +28,7 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
 
   // cc::OutputSurface implementation.
   bool BindToClient(cc::OutputSurfaceClient* client) override;
+  cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
 
   // ui::CompositorOutputSurface::Observer implementation.
   void OnUpdateVSyncParameters(base::TimeTicks timebase,
@@ -47,7 +49,9 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   // Constructor used by the accelerated implementation.
   BrowserCompositorOutputSurface(
       const scoped_refptr<cc::ContextProvider>& context,
-      const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager);
+      const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
+      scoped_ptr<BrowserCompositorOverlayCandidateValidator>
+          overlay_candidate_validator);
 
   // Constructor used by the software implementation.
   BrowserCompositorOutputSurface(
@@ -59,6 +63,9 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
 
  private:
   void Initialize();
+
+  scoped_ptr<BrowserCompositorOverlayCandidateValidator>
+      overlay_candidate_validator_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserCompositorOutputSurface);
 };

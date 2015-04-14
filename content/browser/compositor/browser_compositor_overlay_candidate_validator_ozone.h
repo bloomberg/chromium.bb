@@ -5,9 +5,7 @@
 #ifndef CONTENT_BROWSER_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_OZONE_H_
 #define CONTENT_BROWSER_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_OZONE_H_
 
-#include "cc/output/overlay_candidate_validator.h"
-
-#include "content/common/content_export.h"
+#include "content/browser/compositor/browser_compositor_overlay_candidate_validator.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {
@@ -16,22 +14,26 @@ class OverlayCandidatesOzone;
 
 namespace content {
 
-class CONTENT_EXPORT OverlayCandidateValidatorOzone
-    : public cc::OverlayCandidateValidator {
+class CONTENT_EXPORT BrowserCompositorOverlayCandidateValidatorOzone
+    : public BrowserCompositorOverlayCandidateValidator {
  public:
-  OverlayCandidateValidatorOzone(
+  BrowserCompositorOverlayCandidateValidatorOzone(
       gfx::AcceleratedWidget widget,
       ui::OverlayCandidatesOzone* overlay_candidates);
-  ~OverlayCandidateValidatorOzone() override;
+  ~BrowserCompositorOverlayCandidateValidatorOzone() override;
 
   // cc::OverlayCandidateValidator implementation.
   void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) override;
 
+  // BrowserCompositorOverlayCandidateValidator implementation.
+  void SetSoftwareMirrorMode(bool enabled) override;
+
  private:
   gfx::AcceleratedWidget widget_;
   ui::OverlayCandidatesOzone* overlay_candidates_;
+  bool software_mirror_active_;
 
-  DISALLOW_COPY_AND_ASSIGN(OverlayCandidateValidatorOzone);
+  DISALLOW_COPY_AND_ASSIGN(BrowserCompositorOverlayCandidateValidatorOzone);
 };
 
 }  // namespace content

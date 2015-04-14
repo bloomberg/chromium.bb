@@ -205,4 +205,8 @@ void OutputSurface::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
     client_->SetMemoryPolicy(policy);
 }
 
+OverlayCandidateValidator* OutputSurface::GetOverlayCandidateValidator() const {
+  return nullptr;
+}
+
 }  // namespace cc
