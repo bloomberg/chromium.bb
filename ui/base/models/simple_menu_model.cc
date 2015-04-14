@@ -140,12 +140,6 @@ void SimpleMenuModel::AddSeparator(MenuSeparatorType separator_type) {
   AppendItem(item);
 }
 
-void SimpleMenuModel::RemoveTrailingSeparators() {
-  while (!items_.empty() && items_.back().type == TYPE_SEPARATOR)
-    items_.pop_back();
-  MenuItemsChanged();
-}
-
 void SimpleMenuModel::AddButtonItem(int command_id,
                                     ButtonMenuItemModel* model) {
   Item item = { command_id, base::string16(), base::string16(),

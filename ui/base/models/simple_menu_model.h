@@ -87,10 +87,6 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
   //   or SPACING. NORMAL separators are silently ignored if the model is empty.
   void AddSeparator(MenuSeparatorType separator_type);
 
-  // Removes separators until the model's last entry is not a separator, or the
-  // model is empty.
-  void RemoveTrailingSeparators();
-
   // These three methods take pointers to various sub-models. These models
   // should be owned by the same owner of this SimpleMenuModel.
   void AddButtonItem(int command_id, ButtonMenuItemModel* model);

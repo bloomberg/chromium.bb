@@ -46,6 +46,9 @@ void LauncherApplicationMenuItemModel::ExecuteCommand(int command_id,
 }
 
 void LauncherApplicationMenuItemModel::Build() {
+  if (launcher_items_.empty())
+    return;
+
   AddSeparator(ui::SPACING_SEPARATOR);
   for (size_t i = 0; i < launcher_items_.size(); i++) {
     ChromeLauncherAppMenuItem* item = launcher_items_[i];
@@ -60,11 +63,5 @@ void LauncherApplicationMenuItemModel::Build() {
     if (!item->icon().IsEmpty())
       SetIcon(GetIndexOfCommandId(i), item->icon());
   }
-  RemoveTrailingSeparators();
-
-  // Adding final spacing (if the menu is not empty) to conform the menu to our
-  // style.
-  if (launcher_items_.size())
-    AddSeparator(ui::SPACING_SEPARATOR);
+  AddSeparator(ui::SPACING_SEPARATOR);
 }
-
