@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "skia/ext/refptr.h"
-#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/compositor/compositor_export.h"
 
 namespace cc {
@@ -20,6 +19,7 @@ class Canvas;
 }
 
 class SkCanvas;
+class SkPictureRecorder;
 
 namespace ui {
 class PaintContext;
@@ -39,7 +39,7 @@ class COMPOSITOR_EXPORT PaintRecorder {
  private:
   gfx::Canvas* canvas_;
   cc::DisplayItemList* list_;
-  SkPictureRecorder recorder_;
+  SkPictureRecorder* recorder_;
   scoped_ptr<gfx::Canvas> owned_canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintRecorder);

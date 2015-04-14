@@ -4,6 +4,7 @@
 
 #include "ui/compositor/paint_context.h"
 
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/gfx/canvas.h"
 
 namespace ui {
@@ -25,6 +26,7 @@ PaintContext::PaintContext(cc::DisplayItemList* list,
                            const gfx::Rect& invalidation)
     : canvas_(nullptr),
       list_(list),
+      recorder_(new SkPictureRecorder),
       device_scale_factor_(device_scale_factor),
       bounds_(bounds),
       invalidation_(invalidation) {
@@ -40,6 +42,10 @@ PaintContext::PaintContext(gfx::Canvas* canvas)
 PaintContext::PaintContext(const PaintContext& other)
     : canvas_(other.canvas_),
       list_(other.list_),
+      // The SkPictureRecorder doesn't hold state, it is only held on the
+      // PaintContext as an optimization for fewer allocations. So we can just
+      // make a new one here.
+      recorder_(new SkPictureRecorder),
       device_scale_factor_(other.device_scale_factor_),
       bounds_(other.bounds_),
       invalidation_(other.invalidation_),

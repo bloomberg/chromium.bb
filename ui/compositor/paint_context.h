@@ -6,6 +6,7 @@
 #define UI_COMPOSITOR_PAINT_CONTEXT_H_
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -16,6 +17,8 @@ class DisplayItemList;
 namespace gfx {
 class Canvas;
 }
+
+class SkPictureRecorder;
 
 namespace ui {
 class ClipTransformRecorder;
@@ -91,6 +94,9 @@ class COMPOSITOR_EXPORT PaintContext {
 
   gfx::Canvas* canvas_;
   cc::DisplayItemList* list_;
+  scoped_ptr<SkPictureRecorder> recorder_;
+  // The device scale of the frame being painted. Used to determine which bitmap
+  // resources to use in the frame.
   float device_scale_factor_;
   // The bounds of the area being painted. Not all of it may be invalidated from
   // the previous frame.
