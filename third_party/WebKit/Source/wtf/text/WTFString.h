@@ -550,27 +550,6 @@ inline void append(Vector<UChar, inlineCapacity>& vector, const String& string)
     }
 }
 
-template<typename CharacterType>
-inline void appendNumber(Vector<CharacterType>& vector, unsigned char number)
-{
-    int numberLength = number > 99 ? 3 : (number > 9 ? 2 : 1);
-    size_t vectorSize = vector.size();
-    vector.grow(vectorSize + numberLength);
-
-    switch (numberLength) {
-    case 3:
-        vector[vectorSize + 2] = number % 10 + '0';
-        number /= 10;
-
-    case 2:
-        vector[vectorSize + 1] = number % 10 + '0';
-        number /= 10;
-
-    case 1:
-        vector[vectorSize] = number % 10 + '0';
-    }
-}
-
 template<bool isSpecialCharacter(UChar), typename CharacterType>
 inline bool isAllSpecialCharacters(const CharacterType* characters, size_t length)
 {
@@ -662,7 +641,6 @@ using WTF::String;
 using WTF::emptyString;
 using WTF::emptyString16Bit;
 using WTF::append;
-using WTF::appendNumber;
 using WTF::charactersAreAllASCII;
 using WTF::charactersToIntStrict;
 using WTF::charactersToUIntStrict;
