@@ -1043,7 +1043,6 @@ public:
 
     bool mayNeedPaintInvalidation() const { return m_bitfields.mayNeedPaintInvalidation(); }
     void setMayNeedPaintInvalidation();
-    void clearMayNeedPaintInvalidation();
 
     bool shouldInvalidateSelection() const { return m_bitfields.shouldInvalidateSelection(); }
     void setShouldInvalidateSelection()
@@ -1216,6 +1215,8 @@ protected:
     virtual void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const;
 
 private:
+    void clearMayNeedPaintInvalidation();
+
     void setLayoutDidGetCalledSinceLastFrame()
     {
         m_bitfields.setLayoutDidGetCalledSinceLastFrame(true);
