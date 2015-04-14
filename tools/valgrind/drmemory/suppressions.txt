@@ -478,9 +478,8 @@ HANDLE LEAK
 name=http://crbug.com/371368
 system call NtCreateNamedPipeFile
 KERNELBASE.dll!CreateNamedPipeW
-ipc.dll!IPC::Channel::ChannelImpl::CreatePipe
-ipc.dll!IPC::Channel::ChannelImpl::ChannelImpl
-ipc.dll!IPC::Channel::Channel
+ipc.dll!IPC::ChannelWin::CreatePipe
+ipc.dll!IPC::ChannelWin::ChannelWin
 
 HANDLE LEAK
 name=http://crbug.com/371942

@@ -16,6 +16,7 @@ Http/MediaTest.VideoBearTheora/0
 Http/MediaTest.VideoTulipWebm/0
 IndexedDBBrowserTest.DeleteCompactsBackingStore
 MSE_ClearKey/EncryptedMediaTest.FrameSizeChangeVideo/0
+MSE_ClearKey/EncryptedMediaTest.Playback_VideoAudio_WebM/0
 OutOfProcessPPAPITest.MediaStreamAudioTrack
 OutOfProcessPPAPITest.NetworkProxy
 OutOfProcessPPAPITest.VideoDecoder
