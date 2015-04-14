@@ -183,7 +183,7 @@ PassOwnPtr<DragImage> DragImage::create(const KURL& url, const String& inLabel, 
             const IntSize radii(DragLabelRadius, DragLabelRadius);
 
             const Color backgroundColor(140, 140, 140);
-            paintContext.fillRoundedRect(rect, radii, radii, radii, radii, backgroundColor);
+            paintContext.fillRoundedRect(FloatRoundedRect(rect, radii, radii, radii, radii), backgroundColor);
 
             // Draw the text
             if (drawURLString) {

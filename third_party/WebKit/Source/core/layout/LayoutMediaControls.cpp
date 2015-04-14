@@ -135,7 +135,7 @@ static void paintRoundedSliderBackground(const IntRect& rect, const ComputedStyl
     int borderRadius = rect.height() / 2;
     IntSize radii(borderRadius, borderRadius);
     Color sliderBackgroundColor = Color(11, 11, 11);
-    context->fillRoundedRect(rect, radii, radii, radii, radii, sliderBackgroundColor);
+    context->fillRoundedRect(FloatRoundedRect(rect, radii, radii, radii, radii), sliderBackgroundColor);
 }
 
 static void paintSliderRangeHighlight(const IntRect& rect, const ComputedStyle& style, GraphicsContext* context, int startPosition, int endPosition, Color startColor, Color endColor)
@@ -181,11 +181,11 @@ static void paintSliderRangeHighlight(const IntRect& rect, const ComputedStyle& 
     context->setFillGradient(gradient);
 
     if (startOffset < borderRadius && endOffset < borderRadius)
-        context->fillRoundedRect(highlightRect, radii, radii, radii, radii, startColor);
+        context->fillRoundedRect(FloatRoundedRect(highlightRect, radii, radii, radii, radii), startColor);
     else if (startOffset < borderRadius)
-        context->fillRoundedRect(highlightRect, radii, IntSize(0, 0), radii, IntSize(0, 0), startColor);
+        context->fillRoundedRect(FloatRoundedRect(highlightRect, radii, IntSize(0, 0), radii, IntSize(0, 0)), startColor);
     else if (endOffset < borderRadius)
-        context->fillRoundedRect(highlightRect, IntSize(0, 0), radii, IntSize(0, 0), radii, startColor);
+        context->fillRoundedRect(FloatRoundedRect(highlightRect, IntSize(0, 0), radii, IntSize(0, 0), radii), startColor);
     else
         context->fillRect(highlightRect);
 

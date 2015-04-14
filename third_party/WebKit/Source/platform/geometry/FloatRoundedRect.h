@@ -32,6 +32,7 @@
 
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatSize.h"
+#include "third_party/skia/include/core/SkRRect.h"
 
 namespace blink {
 
@@ -158,10 +159,31 @@ public:
     // FIXME: this code is almost the same as adjustRadii()/isRenderable(). Get rid of one of them.
     void constrainRadii();
 
+    operator SkRRect() const;
+
 private:
     FloatRect m_rect;
     Radii m_radii;
 };
+
+inline FloatRoundedRect::operator SkRRect() const
+{
+    SkRRect rrect;
+
+    if (isRounded()) {
+        SkVector radii[4];
+        radii[SkRRect::kUpperLeft_Corner].set(topLeftCorner().width(), topLeftCorner().height());
+        radii[SkRRect::kUpperRight_Corner].set(topRightCorner().width(), topRightCorner().height());
+        radii[SkRRect::kLowerRight_Corner].set(bottomRightCorner().width(), bottomRightCorner().height());
+        radii[SkRRect::kLowerLeft_Corner].set(bottomLeftCorner().width(), bottomLeftCorner().height());
+
+        rrect.setRectRadii(rect(), radii);
+    } else {
+        rrect.setRect(rect());
+    }
+
+    return rrect;
+}
 
 inline bool operator==(const FloatRoundedRect::Radii& a, const FloatRoundedRect::Radii& b)
 {

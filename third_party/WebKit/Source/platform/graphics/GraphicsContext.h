@@ -207,7 +207,6 @@ public:
 
     void fillRect(const FloatRect&);
     void fillRect(const FloatRect&, const Color&, SkXfermode::Mode = SkXfermode::kSrcOver_Mode);
-    void fillRoundedRect(const FloatRect&, const FloatSize& topLeft, const FloatSize& topRight, const FloatSize& bottomLeft, const FloatSize& bottomRight, const Color&);
     void fillRoundedRect(const FloatRoundedRect&, const Color&);
     void fillDRRect(const FloatRoundedRect&, const FloatRoundedRect&, const Color&);
 
@@ -366,7 +365,6 @@ private:
     void drawTextPasses(const DrawTextFunc&);
 
     static void setPathFromPoints(SkPath*, size_t, const FloatPoint*);
-    static void setRadii(SkVector*, FloatSize, FloatSize, FloatSize, FloatSize);
 
 #if OS(MACOSX)
     static inline int focusRingOutset(int offset) { return offset + 2; }
