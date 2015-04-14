@@ -897,8 +897,9 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGets) {
                                      BoundNetLog(), GetParam(), NULL);
   helper.RunPreTestSetup();
   helper.AddData(&data);
-  // We require placeholder data because three get requests are sent out, so
-  // there needs to be three sets of SSL connection data.
+  // We require placeholder data because three get requests are sent out at
+  // the same time which results in three sockets being connected. The first
+  // on will negotiate SPDY and will be used for all requests.
   helper.AddData(&data_placeholder);
   helper.AddData(&data_placeholder);
   scoped_ptr<HttpNetworkTransaction> trans1(
@@ -975,7 +976,6 @@ TEST_P(SpdyNetworkTransactionTest, TwoGetsLateBinding) {
                          writes, arraysize(writes));
 
   MockConnect never_finishing_connect(SYNCHRONOUS, ERR_IO_PENDING);
-
   OrderedSocketData data_placeholder(NULL, 0, NULL, 0);
   data_placeholder.set_connect_data(never_finishing_connect);
 
@@ -985,8 +985,9 @@ TEST_P(SpdyNetworkTransactionTest, TwoGetsLateBinding) {
                                      BoundNetLog(), GetParam(), NULL);
   helper.RunPreTestSetup();
   helper.AddData(&data);
-  // We require placeholder data because two get requests are sent out, so
-  // there needs to be two sets of SSL connection data.
+  // We require placeholder data because two requests are sent out at
+  // the same time which results in two sockets being connected. The first
+  // on will negotiate SPDY and will be used for all requests.
   helper.AddData(&data_placeholder);
   scoped_ptr<HttpNetworkTransaction> trans1(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session().get()));
@@ -1188,7 +1189,6 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrent) {
 
   OrderedSocketData data(reads, arraysize(reads),
                          writes, arraysize(writes));
-  OrderedSocketData data_placeholder(NULL, 0, NULL, 0);
 
   BoundNetLog log;
   TransactionHelperResult out;
@@ -1197,10 +1197,6 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrent) {
                                        BoundNetLog(), GetParam(), NULL);
     helper.RunPreTestSetup();
     helper.AddData(&data);
-    // We require placeholder data because three get requests are sent out, so
-    // there needs to be three sets of SSL connection data.
-    helper.AddData(&data_placeholder);
-    helper.AddData(&data_placeholder);
     scoped_ptr<HttpNetworkTransaction> trans1(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session().get()));
     scoped_ptr<HttpNetworkTransaction> trans2(
@@ -1329,7 +1325,6 @@ TEST_P(SpdyNetworkTransactionTest, FourGetsWithMaxConcurrentPriority) {
 
   OrderedSocketData data(reads, arraysize(reads),
                          writes, arraysize(writes));
-  OrderedSocketData data_placeholder(NULL, 0, NULL, 0);
 
   BoundNetLog log;
   TransactionHelperResult out;
@@ -1337,11 +1332,6 @@ TEST_P(SpdyNetworkTransactionTest, FourGetsWithMaxConcurrentPriority) {
                                      BoundNetLog(), GetParam(), NULL);
   helper.RunPreTestSetup();
   helper.AddData(&data);
-  // We require placeholder data because four get requests are sent out, so
-  // there needs to be four sets of SSL connection data.
-  helper.AddData(&data_placeholder);
-  helper.AddData(&data_placeholder);
-  helper.AddData(&data_placeholder);
   scoped_ptr<HttpNetworkTransaction> trans1(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session().get()));
   scoped_ptr<HttpNetworkTransaction> trans2(
@@ -1466,7 +1456,6 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentDelete) {
 
   OrderedSocketData data(reads, arraysize(reads),
                          writes, arraysize(writes));
-  OrderedSocketData data_placeholder(NULL, 0, NULL, 0);
 
   BoundNetLog log;
   TransactionHelperResult out;
@@ -1474,10 +1463,6 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentDelete) {
                                      BoundNetLog(), GetParam(), NULL);
   helper.RunPreTestSetup();
   helper.AddData(&data);
-  // We require placeholder data because three get requests are sent out, so
-  // there needs to be three sets of SSL connection data.
-  helper.AddData(&data_placeholder);
-  helper.AddData(&data_placeholder);
   scoped_ptr<HttpNetworkTransaction> trans1(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session().get()));
   scoped_ptr<HttpNetworkTransaction> trans2(
