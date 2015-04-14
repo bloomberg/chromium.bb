@@ -131,9 +131,9 @@ void PolicyApplicator::GetEntryCallback(
           << profile_.ToDebugString();
 
   scoped_ptr<base::DictionaryValue> onc_part(
-      onc::TranslateShillServiceToONCPart(
-          entry_properties, ::onc::ONC_SOURCE_UNKNOWN,
-          &onc::kNetworkWithStateSignature, nullptr /* network_state */));
+      onc::TranslateShillServiceToONCPart(entry_properties,
+                                          ::onc::ONC_SOURCE_UNKNOWN,
+                                          &onc::kNetworkWithStateSignature));
 
   std::string old_guid;
   if (!onc_part->GetStringWithoutPathExpansion(::onc::network_config::kGUID,
