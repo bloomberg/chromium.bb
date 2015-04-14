@@ -4,7 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_metrics.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics_action.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -73,6 +73,26 @@ void ServiceWorkerMetrics::CountControlledPageLoad(const GURL& url) {
   RecordAction(base::UserMetricsAction("ServiceWorker.ControlledPageLoad"));
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&RecordURLMetricOnUI, url));
+}
+
+void ServiceWorkerMetrics::RecordStartWorkerStatus(
+    ServiceWorkerStatusCode status,
+    bool is_installed) {
+  if (is_installed) {
+    UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Status", status,
+                              SERVICE_WORKER_ERROR_MAX_VALUE);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartNewWorker.Status", status,
+                              SERVICE_WORKER_ERROR_MAX_VALUE);
+  }
+}
+
+void ServiceWorkerMetrics::RecordStartWorkerTime(const base::TimeDelta& time,
+                                                 bool is_installed) {
+  if (is_installed)
+    UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.StartWorker.Time", time);
+  else
+    UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.StartNewWorker.Time", time);
 }
 
 }  // namespace content

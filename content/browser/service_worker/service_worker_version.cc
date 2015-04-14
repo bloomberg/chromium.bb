@@ -19,6 +19,7 @@
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_utils.h"
 #include "content/browser/storage_partition_impl.h"
@@ -341,6 +342,21 @@ void AddNonWindowClient(ServiceWorkerProviderHost* host,
       host->document_url(), REQUEST_CONTEXT_FRAME_TYPE_NONE, host_client_type);
   client_info.client_uuid = host->client_uuid();
   clients->push_back(client_info);
+}
+
+bool IsInstalled(ServiceWorkerVersion::Status status) {
+  switch (status) {
+    case ServiceWorkerVersion::NEW:
+    case ServiceWorkerVersion::INSTALLING:
+    case ServiceWorkerVersion::REDUNDANT:
+      return false;
+    case ServiceWorkerVersion::INSTALLED:
+    case ServiceWorkerVersion::ACTIVATING:
+    case ServiceWorkerVersion::ACTIVATED:
+      return true;
+  }
+  NOTREACHED() << "Unexpected status: " << status;
+  return false;
 }
 
 }  // namespace
@@ -1731,15 +1747,15 @@ void ServiceWorkerVersion::RecordStartWorkerResult(
 
   // Failing to start a doomed worker isn't interesting and very common when
   // update dooms because the script is byte-to-byte identical.
-  if (is_doomed_)
+  if (is_doomed_ || status_ == REDUNDANT)
     return;
 
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Status", status,
-                            SERVICE_WORKER_ERROR_MAX_VALUE);
+  ServiceWorkerMetrics::RecordStartWorkerStatus(status, IsInstalled(status_));
+
   if (status == SERVICE_WORKER_OK && !start_time.is_null() &&
       !skip_recording_startup_time_) {
-    UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.StartWorker.Time",
-                               GetTickDuration(start_time));
+    ServiceWorkerMetrics::RecordStartWorkerTime(GetTickDuration(start_time),
+                                                IsInstalled(status_));
   }
 
   if (status != SERVICE_WORKER_ERROR_TIMEOUT)

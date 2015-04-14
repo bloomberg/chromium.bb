@@ -34674,24 +34674,48 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="ServiceWorker.StartWorker.Status"
-    units="ServiceWorkerStatusCode">
+<histogram name="ServiceWorker.StartNewWorker.Status"
+    enum="ServiceWorkerStatusCode">
   <owner>falken@chromium.org</owner>
-  <summary>The result of trying to start a Service Worker.</summary>
+  <summary>
+    The result of trying to start a Service Worker that has not yet installed.
+    See also ServiceWorker.StartWorker.Status for installed workers.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.StartNewWorker.Time" units="milliseconds">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    The time taken to start a Service Worker that has not yet installed, from
+    process allocation to ACK of started from the renderer (which occurs after
+    script execution). This may include script download time. The metric is not
+    recorded if DevTools was ever attached to the Service Worker during startup.
+    See also ServiceWorker.StartWorker.Time for installed workers.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.StartWorker.Status"
+    enum="ServiceWorkerStatusCode">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    The result of trying to start a Service Worker that is already installed.
+    See also ServiceWorker.StartNewWorker.Status for new workers.
+  </summary>
 </histogram>
 
 <histogram name="ServiceWorker.StartWorker.Time" units="milliseconds">
   <owner>falken@chromium.org</owner>
   <summary>
-    The time taken to start a Service Worker end-to-end, from process allocation
-    to ACK of started from the renderer. This possibly includes script download
-    time, but the metric is not recorded if DevTools was ever attached to the
-    Service Worker during startup.
+    The time taken to start a Service Worker that is already installed, from
+    process allocation to ACK of started from the renderer (which occurs after
+    script execution). The metric is not recorded if DevTools was ever attached
+    to the Service Worker during startup. See also
+    ServiceWorker.StartNewWorker.Time for new workers.
   </summary>
 </histogram>
 
 <histogram name="ServiceWorker.StartWorker.TimeoutPhase"
-    units="EmbeddedWorkerStartingPhase">
+    enum="EmbeddedWorkerStartingPhase">
   <owner>falken@chromium.org</owner>
   <summary>
     The phase the EmbeddedWorker was in when ServiceWorker startup timed out.
