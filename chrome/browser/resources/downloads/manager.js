@@ -134,6 +134,7 @@ cr.define('downloads', function() {
           focusRow.getEquivalentElement(activeElement).focus();
         }
       }, this);
+      this.focusGrid_.ensureRowActive();
     },
 
     /**

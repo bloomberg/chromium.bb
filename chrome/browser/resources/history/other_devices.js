@@ -517,6 +517,7 @@ DevicesView.prototype.displayResults_ = function() {
       DevicesViewFocusRow.decorate(rows[j], devices[i]);
       grid.addRow(rows[j]);
     }
+    grid.ensureRowActive();
     this.focusGrids_.push(grid);
   }
 };

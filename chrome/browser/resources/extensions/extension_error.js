@@ -151,6 +151,7 @@ cr.define('extensions', function() {
           this.focusGrid_.addRow(focusRow);
         }
       }, this);
+      this.focusGrid_.ensureRowActive();
 
       var numShowing = this.focusGrid_.rows.length;
       if (numShowing > ExtensionErrorList.MAX_ERRORS_TO_SHOW_)

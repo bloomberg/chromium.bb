@@ -319,6 +319,7 @@ cr.define('extensions', function() {
         seenIds.push(extension.id);
         this.updateExtension_(extension);
       }, this);
+      this.focusGrid_.ensureRowActive();
 
       // Remove extensions that are no longer installed.
       var nodes = document.querySelectorAll('.extension-list-item-wrapper[id]');

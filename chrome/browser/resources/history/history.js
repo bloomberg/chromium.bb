@@ -1711,6 +1711,7 @@ HistoryView.prototype.updateFocusGrid_ = function() {
     HistoryFocusRow.decorate(rows[i], this.resultDiv_);
     this.focusGrid_.addRow(rows[i]);
   }
+  this.focusGrid_.ensureRowActive();
 };
 
 /**
