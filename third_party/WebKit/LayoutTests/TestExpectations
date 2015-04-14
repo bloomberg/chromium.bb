@@ -1434,6 +1434,8 @@ crbug.com/436477 fast/js/mozilla/strict/assign-to-callee-name.html [ NeedsManual
 crbug.com/361729 [ MountainLion ] printing/return-from-printing-mode.html [ Failure ImageOnlyFailure ]
 
 crbug.com/373430 [ Linux Win7 ] fast/dom/Geolocation/error-clear-watch.html [ Pass Timeout ]
+crbug.com/373430 [ Linux Win7 ] virtual/slimmingpaint/fast/dom/Geolocation/error-clear-watch.html [ Pass Timeout ]
+
 crbug.com/374936 [ Linux Win Debug ] svg/dynamic-updates/SVGImageElement-svgdom-height-prop.html [ ImageOnlyFailure Pass ]
 crbug.com/374936 [ Linux Win Debug ] svg/dynamic-updates/SVGImageElement-svgdom-width-prop.html [ ImageOnlyFailure Pass ]
 crbug.com/374936 [ Linux Win Debug ] svg/dynamic-updates/SVGImageElement-dom-preserveAspectRatio-attr.html [ ImageOnlyFailure Pass ]
