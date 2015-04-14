@@ -1,3 +1,7 @@
 include_rules = [
   "+ios/chrome/browser",
+  "+ios/public/provider/chrome",
+  "+ios/public/test",
+  "+ios/web/public",
+  "+ui",
 ]

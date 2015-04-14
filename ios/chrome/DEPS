@@ -2,36 +2,4 @@ include_rules = [
   # The subdirectories in ios/chrome/ will manually allow their own include
   # directories in ios/chrome/ so we disallow all of them.
   "-ios/chrome",
-  "+ios/chrome/grit",
-
-  "+components/autofill/core/browser",
-  "+components/autofill/ios/browser",
-  "+components/data_reduction_proxy/core/common",
-  "+components/dom_distiller/core",
-  "+components/dom_distiller/ios",
-  "+components/infobars/core",
-  "+components/keyed_service/core",
-  "+components/keyed_service/ios",
-  "+components/leveldb_proto",
-  "+components/suggestions",
-  "+components/translate/core",
-  "+components/translate/ios",
-  "+components/web_resource",
-  "+components/webp_transcode",
-  "+ios/net",
-  "+ios/public/provider/chrome",
-  "+ios/web/public",
-  "+net",
-  "+third_party/google_toolbox_for_mac",
-  "+ui",
-
-  # For tests.
-  "+ios/public/test",
-
-  # Only parts of skia are compiled on iOS, so we explicitly list the
-  # files that can be included to avoid bringing in more code.
-  "+skia/ext/skia_utils_ios.h",
-
-  # Generated file for translated strings in components.
-  "+grit/components_strings.h",
 ]
