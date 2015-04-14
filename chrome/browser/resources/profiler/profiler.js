@@ -1070,12 +1070,10 @@ var MainView = (function() {
         var linenumber = m[2];
 
         var link = addNode(td, 'a', filename + ' [' + linenumber + ']');
-        // http://chromesrc.appspot.com is a server I wrote specifically for
-        // this task. It redirects to the appropriate source file; the file
-        // paths given by the compiler can be pretty crazy and different
-        // between platforms.
-        link.href = 'http://chromesrc.appspot.com/?path=' +
-                    encodeURIComponent(filepath) + '&line=' + linenumber;
+
+        link.href = 'https://code.google.com/p/chromium/codesearch#search/&q=' +
+                    encodeURIComponent(filename) + ':' + linenumber +
+                    '&sq=package:chromium&type=cs';
         link.target = '_blank';
         return;
       }
