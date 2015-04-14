@@ -10,7 +10,7 @@
 #include "content/child/worker_task_runner.h"
 #include "content/common/bluetooth/bluetooth_device.h"
 #include "content/common/bluetooth/bluetooth_error.h"
-#include "third_party/WebKit/public/platform/WebBluetooth.h"
+#include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetooth.h"
 
 namespace base {
 class MessageLoop;

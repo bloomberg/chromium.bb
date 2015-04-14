@@ -10,8 +10,8 @@
 #include "base/thread_task_runner_handle.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/bluetooth/bluetooth_messages.h"
-#include "third_party/WebKit/public/platform/WebBluetoothDevice.h"
-#include "third_party/WebKit/public/platform/WebBluetoothError.h"
+#include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothDevice.h"
+#include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothError.h"
 
 using blink::WebBluetoothDevice;
 using blink::WebBluetoothError;

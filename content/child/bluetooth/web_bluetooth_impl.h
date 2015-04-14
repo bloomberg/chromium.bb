@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebBluetooth.h"
+#include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetooth.h"
 
 namespace content {
 
