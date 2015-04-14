@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/files/scoped_temp_dir.h"
+#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "sync/syncable/deferred_on_disk_directory_backing_store.h"
 #include "sync/syncable/directory.h"
@@ -27,6 +28,7 @@ class DeferredOnDiskDirectoryBackingStoreTest : public testing::Test {
 
   void TearDown() override { STLDeleteValues(&handles_map_); }
 
+  base::MessageLoop message_loop_;
   base::ScopedTempDir temp_dir_;
   base::FilePath db_path_;
   Directory::MetahandlesMap handles_map_;

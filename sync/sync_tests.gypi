@@ -249,6 +249,7 @@
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
         '../sql/sql.gyp:sql',
+        '../sql/sql.gyp:test_support_sql',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',

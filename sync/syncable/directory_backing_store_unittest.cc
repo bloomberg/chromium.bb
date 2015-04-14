@@ -10,10 +10,14 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
+#include "sql/test/scoped_error_ignorer.h"
+#include "sql/test/test_helpers.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/node_ordinal.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
@@ -25,6 +29,15 @@
 #include "sync/test/test_directory_backing_store.h"
 #include "sync/util/time.h"
 #include "testing/gtest/include/gtest/gtest-param-test.h"
+
+namespace {
+
+// A handler that simply sets |catastrophic_error_handler_was_called| to true.
+void CatastrophicErrorHandler(bool* catastrophic_error_handler_was_called) {
+  *catastrophic_error_handler_was_called = true;
+}
+
+}  // namespace
 
 namespace syncer {
 namespace syncable {
@@ -89,6 +102,7 @@ class MigrationTest : public testing::TestWithParam<int> {
   }
 
  private:
+  base::MessageLoop message_loop_;
   base::ScopedTempDir temp_dir_;
 };
 
@@ -3993,6 +4007,78 @@ TEST_F(DirectoryBackingStoreTest, IncreaseDatabasePageSizeFrom4KTo32K) {
   pageSize = 0;
   dbs->GetDatabasePageSize(&pageSize);
   EXPECT_EQ(32768, pageSize);
+}
+
+// See that a catastrophic error handler remains set across instances of the
+// underlying sql:Connection.
+TEST_F(DirectoryBackingStoreTest, CatastrophicErrorHandler_KeptAcrossReset) {
+  scoped_ptr<OnDiskDirectoryBackingStoreForTest> dbs(
+      new OnDiskDirectoryBackingStoreForTest(GetUsername(), GetDatabasePath()));
+  // See that by default there is no catastrophic error handler.
+  ASSERT_FALSE(dbs->db_->has_error_callback());
+  // Set one and see that it was set.
+  dbs->SetCatastrophicErrorHandler(
+      base::Bind(&CatastrophicErrorHandler, nullptr));
+  ASSERT_TRUE(dbs->db_->has_error_callback());
+  // Recreate the Connection and see that the handler remains set.
+  dbs->ResetAndCreateConnection();
+  ASSERT_TRUE(dbs->db_->has_error_callback());
+}
+
+// Verify that database corruption will trigger the catastrohpic error handler.
+TEST_F(DirectoryBackingStoreTest, CatastrophicErrorHandler_Invocation) {
+  bool was_called = false;
+  const base::Closure handler =
+      base::Bind(&CatastrophicErrorHandler, &was_called);
+  {
+    scoped_ptr<OnDiskDirectoryBackingStoreForTest> dbs(
+        new OnDiskDirectoryBackingStoreForTest(GetUsername(),
+                                               GetDatabasePath()));
+    dbs->SetCatastrophicErrorHandler(handler);
+    ASSERT_TRUE(dbs->db_->has_error_callback());
+    // Load the DB, and save one entry.
+    ASSERT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
+    ASSERT_FALSE(dbs->DidFailFirstOpenAttempt());
+    Directory::SaveChangesSnapshot snapshot;
+    scoped_ptr<EntryKernel> entry(new EntryKernel());
+    entry->put(ID, Id::CreateFromClientString("test_entry"));
+    entry->put(META_HANDLE, 2);
+    entry->mark_dirty(NULL);
+    snapshot.dirty_metas.insert(entry.release());
+    ASSERT_TRUE(dbs->SaveChanges(snapshot));
+  }
+
+  base::RunLoop().RunUntilIdle();
+  // No catastrophic errors have happened. See that it hasn't be called yet.
+  ASSERT_FALSE(was_called);
+
+  // Corrupt the DB. Some forms of corruption (like this one) will be detected
+  // upon loading the Sync DB.
+  ASSERT_TRUE(sql::test::CorruptSizeInHeader(GetDatabasePath()));
+
+  {
+    scoped_ptr<OnDiskDirectoryBackingStoreForTest> dbs(
+        new OnDiskDirectoryBackingStoreForTest(GetUsername(),
+                                               GetDatabasePath()));
+    dbs->SetCatastrophicErrorHandler(handler);
+    ASSERT_TRUE(dbs->db_->has_error_callback());
+    {
+      // The corruption will be detected when we attempt to load the data. Use a
+      // ScopedErrorIgnorer to ensure we don't crash in debug builds.
+      sql::ScopedErrorIgnorer error_ignorer;
+      error_ignorer.IgnoreError(SQLITE_CORRUPT);
+      ASSERT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
+      ASSERT_TRUE(error_ignorer.CheckIgnoredErrors());
+    }
+    // See that the first open failed as expected.
+    ASSERT_TRUE(dbs->DidFailFirstOpenAttempt());
+  }
+
+  // At this point the handler has been posted but not executed.
+  ASSERT_FALSE(was_called);
+  // Pump the message loop and see that it is executed.
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(was_called);
 }
 
 }  // namespace syncable

@@ -47,6 +47,10 @@ class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
   friend class DirectoryBackingStoreTest;
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest,
                            IncreaseDatabasePageSizeFrom4KTo32K);
+  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest,
+                           CatastrophicErrorHandler_KeptAcrossReset);
+  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest,
+                           CatastrophicErrorHandler_Invocation);
 
  public:
   explicit DirectoryBackingStore(const std::string& dir_name);
@@ -72,7 +76,30 @@ class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
   // opening transactions elsewhere to block on synchronous I/O.
   // DO NOT CALL THIS FROM MORE THAN ONE THREAD EVER.  Also, whichever thread
   // calls SaveChanges *must* be the thread that owns/destroys |this|.
+  //
+  // Returns true if the changes were saved successfully. Returns false if an
+  // error (of any kind) occurred. See also |SetCatastrophicErrorHandler| for a
+  // systematic way of handling underlying DB errors.
   virtual bool SaveChanges(const Directory::SaveChangesSnapshot& snapshot);
+
+  // Set the catastrophic error handler.
+  //
+  // When a catastrophic error is encountered while accessing the underlying DB,
+  // |catastrophic_error_handler| will be invoked (via PostTask) on the thread
+  // on which this DirectoryBackingStore object lives.
+  //
+  // For a definition of what's catastrophic, see sql::IsErrorCatastrophic.
+  //
+  // |catastrophic_error_handler| must be initialized (i.e. !is_null()).
+  //
+  // A single operation (like Load or SaveChanges) may result in the
+  // |catastrophic_error_handler| being invoked several times.
+  //
+  // There can be at most one handler. If this method is invoked when there is
+  // already a handler, the existing handler is overwritten with
+  // |catastrophic_error_handler|.
+  virtual void SetCatastrophicErrorHandler(
+      const base::Closure& catastrophic_error_handler);
 
  protected:
   // For test classes.
@@ -205,6 +232,10 @@ class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
   // Set to true if migration left some old columns around that need to be
   // discarded.
   bool needs_column_refresh_;
+
+  // We keep a copy of the Closure so we reinstall it when the underlying
+  // sql::Connection is destroyed/recreated.
+  base::Closure catastrophic_error_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectoryBackingStore);
 };

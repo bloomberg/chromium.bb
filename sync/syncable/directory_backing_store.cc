@@ -13,9 +13,11 @@
 #include "base/metrics/field_trial.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "sql/connection.h"
+#include "sql/error_delegate_util.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "sync/internal_api/public/base/node_ordinal.h"
@@ -34,6 +36,19 @@ bool IsSyncBackingDatabase32KEnabled() {
   const std::string group_name =
       base::FieldTrialList::FindFullName("SyncBackingDatabase32K");
   return group_name == "Enabled";
+}
+
+void OnSqliteError(const base::Closure& catastrophic_error_handler,
+                   int err,
+                   sql::Statement* statement) {
+  // An error has been detected. Ignore unless it is catastrophic.
+  if (sql::IsErrorCatastrophic(err)) {
+    // At this point sql::* and DirectoryBackingStore may be on the callstack so
+    // don't invoke the error handler directly. Instead, PostTask to this thread
+    // to avoid potential reentrancy issues.
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           catastrophic_error_handler);
+  }
 }
 
 }  // namespace
@@ -185,6 +200,7 @@ DirectoryBackingStore::DirectoryBackingStore(const string& dir_name)
     : dir_name_(dir_name),
       database_page_size_(IsSyncBackingDatabase32KEnabled() ? 32768 : 4096),
       needs_column_refresh_(false) {
+  DCHECK(base::ThreadTaskRunnerHandle::IsSet());
   ResetAndCreateConnection();
 }
 
@@ -194,6 +210,7 @@ DirectoryBackingStore::DirectoryBackingStore(const string& dir_name,
       dir_name_(dir_name),
       database_page_size_(IsSyncBackingDatabase32KEnabled() ? 32768 : 4096),
       needs_column_refresh_(false) {
+  DCHECK(base::ThreadTaskRunnerHandle::IsSet());
 }
 
 DirectoryBackingStore::~DirectoryBackingStore() {
@@ -1641,6 +1658,18 @@ void DirectoryBackingStore::ResetAndCreateConnection() {
   db_->set_exclusive_locking();
   db_->set_cache_size(32);
   db_->set_page_size(database_page_size_);
+  if (!catastrophic_error_handler_.is_null())
+    SetCatastrophicErrorHandler(catastrophic_error_handler_);
+}
+
+void DirectoryBackingStore::SetCatastrophicErrorHandler(
+    const base::Closure& catastrophic_error_handler) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!catastrophic_error_handler.is_null());
+  catastrophic_error_handler_ = catastrophic_error_handler;
+  sql::Connection::ErrorCallback error_callback =
+      base::Bind(&OnSqliteError, catastrophic_error_handler_);
+  db_->set_error_callback(error_callback);
 }
 
 }  // namespace syncable

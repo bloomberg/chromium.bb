@@ -643,6 +643,7 @@ test("sync_unit_tests") {
     "//net",
     "//net:test_support",
     "//sql",
+    "//sql:test_support",
     "//sync",
     "//sync/internal_api/attachments/proto",
     "//sync/protocol",
