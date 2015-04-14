@@ -403,6 +403,7 @@ public:
     bool isRadioButton() const { return roleValue() == RadioButtonRole; }
     bool isScrollbar() const { return roleValue() == ScrollBarRole; }
     virtual bool isSlider() const { return false; }
+    virtual bool isNativeSlider() const { return false; }
     virtual bool isSpinButton() const { return roleValue() == SpinButtonRole; }
     virtual bool isSpinButtonPart() const { return false; }
     bool isTabItem() const { return roleValue() == TabRole; }

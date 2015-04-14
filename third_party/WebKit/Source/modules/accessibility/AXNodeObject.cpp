@@ -128,10 +128,13 @@ void AXNodeObject::alterSliderValue(bool increase)
     if (roleValue() != SliderRole)
         return;
 
-    if (!getAttribute(stepAttr).isEmpty())
-        changeValueByStep(increase);
-    else
-        changeValueByPercent(increase ? 5 : -5);
+    float value = valueForRange();
+    float step = stepValueForRange();
+
+    value += increase ? step : -step;
+
+    setValue(String::number(value));
+    axObjectCache()->postNotification(node(), AXObjectCacheImpl::AXValueChanged);
 }
 
 String AXNodeObject::ariaAccessibilityDescription() const
@@ -153,18 +156,6 @@ void AXNodeObject::ariaLabeledByElements(WillBeHeapVector<RawPtrWillBeMember<Ele
     elementsFromAttribute(elements, aria_labeledbyAttr);
     if (!elements.size())
         elementsFromAttribute(elements, aria_labelledbyAttr);
-}
-
-void AXNodeObject::changeValueByStep(bool increase)
-{
-    float step = stepValueForRange();
-    float value = valueForRange();
-
-    value += increase ? step : -step;
-
-    setValue(String::number(value));
-
-    axObjectCache()->postNotification(node(), AXObjectCacheImpl::AXValueChanged);
 }
 
 bool AXNodeObject::computeAccessibilityIsIgnored() const
@@ -860,6 +851,18 @@ bool AXNodeObject::isSlider() const
     return roleValue() == SliderRole;
 }
 
+bool AXNodeObject::isNativeSlider() const
+{
+    Node* node = this->node();
+    if (!node)
+        return false;
+
+    if (!isHTMLInputElement(node))
+        return false;
+
+    return toHTMLInputElement(node)->type() == InputTypeNames::range;
+}
+
 bool AXNodeObject::isChecked() const
 {
     Node* node = this->node();
@@ -1300,11 +1303,8 @@ float AXNodeObject::maxValueForRange() const
     if (hasAttribute(aria_valuemaxAttr))
         return getAttribute(aria_valuemaxAttr).toFloat();
 
-    if (isHTMLInputElement(node())) {
-        HTMLInputElement& input = toHTMLInputElement(*node());
-        if (input.type() == InputTypeNames::range)
-            return input.maximum();
-    }
+    if (isNativeSlider())
+        return toHTMLInputElement(*node()).maximum();
 
     if (isHTMLMeterElement(node()))
         return toHTMLMeterElement(*node()).max();
@@ -1317,11 +1317,8 @@ float AXNodeObject::minValueForRange() const
     if (hasAttribute(aria_valueminAttr))
         return getAttribute(aria_valueminAttr).toFloat();
 
-    if (isHTMLInputElement(node())) {
-        HTMLInputElement& input = toHTMLInputElement(*node());
-        if (input.type() == InputTypeNames::range)
-            return input.minimum();
-    }
+    if (isNativeSlider())
+        return toHTMLInputElement(*node()).minimum();
 
     if (isHTMLMeterElement(node()))
         return toHTMLMeterElement(*node()).min();
@@ -1331,7 +1328,11 @@ float AXNodeObject::minValueForRange() const
 
 float AXNodeObject::stepValueForRange() const
 {
-    return getAttribute(stepAttr).toFloat();
+    if (!isNativeSlider())
+        return 0.0;
+
+    Decimal step = toHTMLInputElement(*node()).createStepRange(RejectAny).step();
+    return step.toString().toFloat();
 }
 
 String AXNodeObject::stringValue() const
@@ -2165,17 +2166,6 @@ void AXNodeObject::ariaLabeledByText(Vector<AccessibilityText>& textOrder) const
             textOrder.append(AccessibilityText(ariaLabeledBy, AlternativeText, axElement));
         }
     }
-}
-
-void AXNodeObject::changeValueByPercent(float percentChange)
-{
-    float range = maxValueForRange() - minValueForRange();
-    float value = valueForRange();
-
-    value += range * (percentChange / 100);
-    setValue(String::number(value));
-
-    axObjectCache()->postNotification(node(), AXObjectCacheImpl::AXValueChanged);
 }
 
 } // namespace blink

@@ -66,7 +66,6 @@ protected:
     String ariaAccessibilityDescription() const;
     String ariaAutoComplete() const;
     void ariaLabeledByElements(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements) const;
-    void changeValueByStep(bool increase);
     AccessibilityRole determineAriaRoleAttribute() const;
     void elementsFromAttribute(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, const QualifiedName&) const;
     bool hasContentEditableAttributeSet() const;
@@ -114,6 +113,7 @@ protected:
     virtual bool isPasswordField() const override final;
     virtual bool isProgressIndicator() const override;
     virtual bool isSlider() const override;
+    virtual bool isNativeSlider() const override;
 
     // Check object state.
     virtual bool isChecked() const override final;
@@ -202,7 +202,6 @@ private:
     String alternativeTextForWebArea() const;
     void alternativeText(Vector<AccessibilityText>&) const;
     void ariaLabeledByText(Vector<AccessibilityText>&) const;
-    void changeValueByPercent(float percentChange);
     float stepValueForRange() const;
     AXObject* findChildWithTagName(const HTMLQualifiedName&) const;
     bool isDescendantOfElementType(const HTMLQualifiedName& tagName) const;
