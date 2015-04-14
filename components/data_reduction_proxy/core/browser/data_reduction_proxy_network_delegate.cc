@@ -81,10 +81,11 @@ DataReductionProxyNetworkDelegate::DataReductionProxyNetworkDelegate(
     : LayeredNetworkDelegate(network_delegate.Pass()),
       received_content_length_(0),
       original_content_length_(0),
-      data_reduction_proxy_enabled_(NULL),
+      data_reduction_proxy_enabled_(nullptr),
       data_reduction_proxy_config_(config),
-      data_reduction_proxy_bypass_stats_(NULL),
+      data_reduction_proxy_bypass_stats_(nullptr),
       data_reduction_proxy_request_options_(request_options),
+      data_reduction_proxy_io_data_(nullptr),
       configurator_(configurator) {
   DCHECK(data_reduction_proxy_config_);
   DCHECK(data_reduction_proxy_request_options_);
@@ -121,9 +122,9 @@ void DataReductionProxyNetworkDelegate::OnResolveProxyInternal(
     const net::ProxyService& proxy_service,
     net::ProxyInfo* result) {
   if (configurator_) {
-    OnResolveProxyHandler(
-        url, load_flags, configurator_->GetProxyConfigOnIOThread(),
-        proxy_service.proxy_retry_info(), data_reduction_proxy_config_, result);
+    OnResolveProxyHandler(url, load_flags, configurator_->GetProxyConfig(),
+                          proxy_service.proxy_retry_info(),
+                          data_reduction_proxy_config_, result);
   }
 }
 
@@ -175,10 +176,9 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
         request->response_info().headers->GetFreshnessLifetimes(
             request->response_info().response_time).freshness;
     DataReductionProxyRequestType request_type =
-        GetDataReductionProxyRequestType(
-            *request,
-            configurator_->GetProxyConfigOnIOThread(),
-            *data_reduction_proxy_config_);
+        GetDataReductionProxyRequestType(*request,
+                                         configurator_->GetProxyConfig(),
+                                         *data_reduction_proxy_config_);
 
     int64 adjusted_original_content_length =
         GetAdjustedOriginalContentLength(request_type,
@@ -194,9 +194,8 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
     if (data_reduction_proxy_enabled_ &&
         data_reduction_proxy_bypass_stats_) {
       data_reduction_proxy_bypass_stats_->RecordBytesHistograms(
-          *request,
-          *data_reduction_proxy_enabled_,
-          configurator_->GetProxyConfigOnIOThread());
+          *request, *data_reduction_proxy_enabled_,
+          configurator_->GetProxyConfig());
     }
     DVLOG(2) << __FUNCTION__
         << " received content length: " << received_content_length

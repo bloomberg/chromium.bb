@@ -4,17 +4,15 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 
-#include "base/single_thread_task_runner.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 
 namespace data_reduction_proxy {
 
 scoped_ptr<DataReductionProxyMutableConfigValues>
 DataReductionProxyMutableConfigValues::CreateFromParams(
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     const DataReductionProxyParams* params) {
   scoped_ptr<DataReductionProxyMutableConfigValues> config_values(
-      new DataReductionProxyMutableConfigValues(io_task_runner));
+      new DataReductionProxyMutableConfigValues());
   config_values->promo_allowed_ = params->promo_allowed();
   config_values->holdback_ = params->holdback();
   config_values->allowed_ = params->allowed();
@@ -23,17 +21,16 @@ DataReductionProxyMutableConfigValues::CreateFromParams(
   return config_values.Pass();
 }
 
-DataReductionProxyMutableConfigValues::DataReductionProxyMutableConfigValues(
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
+DataReductionProxyMutableConfigValues::DataReductionProxyMutableConfigValues()
     : empty_origin_(),
       promo_allowed_(false),
       holdback_(false),
       allowed_(false),
       fallback_allowed_(false),
       origin_(empty_origin_),
-      fallback_origin_(empty_origin_),
-      io_task_runner_(io_task_runner) {
-  DCHECK(io_task_runner.get());
+      fallback_origin_(empty_origin_) {
+  // Constructed on the UI thread, but should be checked on the IO thread.
+  thread_checker_.DetachFromThread();
 }
 
 DataReductionProxyMutableConfigValues::
@@ -99,13 +96,13 @@ bool DataReductionProxyMutableConfigValues::IsDataReductionProxy(
 }
 
 const net::ProxyServer& DataReductionProxyMutableConfigValues::origin() const {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   return origin_;
 }
 
 const net::ProxyServer& DataReductionProxyMutableConfigValues::fallback_origin()
     const {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   return fallback_origin_;
 }
 
@@ -132,7 +129,7 @@ const GURL& DataReductionProxyMutableConfigValues::secure_proxy_check_url()
 void DataReductionProxyMutableConfigValues::UpdateValues(
     const net::ProxyServer& origin,
     const net::ProxyServer& fallback_origin) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   origin_ = origin;
   fallback_origin_ = fallback_origin;
 }

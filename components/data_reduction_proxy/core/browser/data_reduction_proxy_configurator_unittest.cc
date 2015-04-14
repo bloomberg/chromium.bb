@@ -23,10 +23,8 @@ class DataReductionProxyConfiguratorTest : public testing::Test {
     net_log_.reset(new net::CapturingNetLog());
     data_reduction_proxy_event_store_.reset(
         new data_reduction_proxy::DataReductionProxyEventStore(task_runner_));
-    config_.reset(
-        new DataReductionProxyConfigurator(
-            task_runner_, net_log_.get(),
-            data_reduction_proxy_event_store_.get()));
+    config_.reset(new DataReductionProxyConfigurator(
+        net_log_.get(), data_reduction_proxy_event_store_.get()));
   }
 
   void CheckProxyConfig(
@@ -36,7 +34,7 @@ class DataReductionProxyConfiguratorTest : public testing::Test {
       const std::string& expected_bypass_list) {
     task_runner_->RunUntilIdle();
     const net::ProxyConfig::ProxyRules& rules =
-        config_->GetProxyConfigOnIOThread().proxy_rules();
+        config_->GetProxyConfig().proxy_rules();
     ASSERT_EQ(expected_rules_type, rules.type);
     if (net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME ==
         expected_rules_type) {

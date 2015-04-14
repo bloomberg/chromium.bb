@@ -12,7 +12,6 @@
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
@@ -86,22 +85,17 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
     const net::BackoffEntry::Policy& backoff_policy,
     DataReductionProxyRequestOptions* request_options,
     DataReductionProxyMutableConfigValues* config_values,
-    DataReductionProxyConfig* config,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
+    DataReductionProxyConfig* config)
     : params_(params.Pass()),
       request_options_(request_options),
       config_values_(config_values),
       config_(config),
-      io_task_runner_(io_task_runner),
       backoff_entry_(&backoff_policy) {
   DCHECK(request_options);
   DCHECK(config_values);
   DCHECK(config);
-  DCHECK(io_task_runner.get());
-  io_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&DataReductionProxyConfigServiceClient::RetrieveConfig,
-                 base::Unretained(this)));
+  // Constructed on the UI thread, but should be checked on the IO thread.
+  thread_checker_.DetachFromThread();
 }
 
 DataReductionProxyConfigServiceClient::
@@ -109,8 +103,7 @@ DataReductionProxyConfigServiceClient::
 }
 
 void DataReductionProxyConfigServiceClient::RetrieveConfig() {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-
+  DCHECK(thread_checker_.CalledOnValidThread());
   std::string static_response = ConstructStaticResponse();
   ClientConfig config;
   bool succeeded = false;

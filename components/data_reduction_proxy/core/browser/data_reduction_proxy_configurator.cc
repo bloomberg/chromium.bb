@@ -4,7 +4,6 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
@@ -13,15 +12,13 @@
 namespace data_reduction_proxy {
 
 DataReductionProxyConfigurator::DataReductionProxyConfigurator(
-    scoped_refptr<base::SequencedTaskRunner> network_task_runner,
     net::NetLog* net_log,
     DataReductionProxyEventStore* event_store)
-    : network_task_runner_(network_task_runner),
-      net_log_(net_log),
-      data_reduction_proxy_event_store_(event_store) {
-  DCHECK(network_task_runner.get());
+    : net_log_(net_log), data_reduction_proxy_event_store_(event_store) {
   DCHECK(net_log);
   DCHECK(event_store);
+  // Constructed on the UI thread, but should be checked on the IO thread.
+  thread_checker_.DetachFromThread();
 }
 
 DataReductionProxyConfigurator::~DataReductionProxyConfigurator() {
@@ -33,6 +30,7 @@ void DataReductionProxyConfigurator::Enable(
     const std::string& primary_origin,
     const std::string& fallback_origin,
     const std::string& ssl_origin) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   std::vector<std::string> proxies;
   if (!primary_restricted) {
     std::string trimmed_primary;
@@ -68,32 +66,25 @@ void DataReductionProxyConfigurator::Enable(
   data_reduction_proxy_event_store_->AddProxyEnabledEvent(
       net_log_, primary_restricted, fallback_restricted, primary_origin,
       fallback_origin, ssl_origin);
-  network_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &DataReductionProxyConfigurator::UpdateProxyConfigOnIOThread,
-          base::Unretained(this),
-          config));
+  config_ = config;
 }
 
 void DataReductionProxyConfigurator::Disable() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   net::ProxyConfig config = net::ProxyConfig::CreateDirect();
   data_reduction_proxy_event_store_->AddProxyDisabledEvent(net_log_);
-  network_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &DataReductionProxyConfigurator::UpdateProxyConfigOnIOThread,
-          base::Unretained(this),
-          config));
+  config_ = config;
 }
 
 void DataReductionProxyConfigurator::AddHostPatternToBypass(
     const std::string& pattern) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   bypass_rules_.push_back(pattern);
 }
 
 void DataReductionProxyConfigurator::AddURLPatternToBypass(
     const std::string& pattern) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   size_t pos = pattern.find('/');
   if (pattern.find('/', pos + 1) == pos + 1)
     pos = pattern.find('/', pos + 2);
@@ -107,13 +98,8 @@ void DataReductionProxyConfigurator::AddURLPatternToBypass(
   AddHostPatternToBypass(host_pattern);
 }
 
-void DataReductionProxyConfigurator::UpdateProxyConfigOnIOThread(
-    const net::ProxyConfig& config) {
-  config_ = config;
-}
-
-const net::ProxyConfig&
-DataReductionProxyConfigurator::GetProxyConfigOnIOThread() const {
+const net::ProxyConfig& DataReductionProxyConfigurator::GetProxyConfig() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return config_;
 }
 

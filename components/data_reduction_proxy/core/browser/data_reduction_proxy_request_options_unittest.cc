@@ -135,10 +135,8 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
   }
 
   void CreateRequestOptions(const std::string& version) {
-    request_options_.reset(
-        new TestDataReductionProxyRequestOptions(
-            kClient, version, test_context_->config(),
-            test_context_->task_runner()));
+    request_options_.reset(new TestDataReductionProxyRequestOptions(
+        kClient, version, test_context_->config()));
     request_options_->Init();
   }
 

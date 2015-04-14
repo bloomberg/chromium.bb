@@ -9,13 +9,12 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "net/base/backoff_entry.h"
 
 namespace base {
-class SingleThreadTaskRunner;
 class Time;
 class TimeDelta;
 }
@@ -43,8 +42,7 @@ class DataReductionProxyConfigServiceClient {
       const net::BackoffEntry::Policy& backoff_policy,
       DataReductionProxyRequestOptions* request_options,
       DataReductionProxyMutableConfigValues* config_values,
-      DataReductionProxyConfig* config,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+      DataReductionProxyConfig* config);
 
   virtual ~DataReductionProxyConfigServiceClient();
 
@@ -86,10 +84,6 @@ class DataReductionProxyConfigServiceClient {
   // The caller must ensure that the |config_| outlives this instance.
   DataReductionProxyConfig* config_;
 
-  // |io_task_runner_| should be the task runner for running operations on the
-  // IO thread.
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-
   // Used to calculate the backoff time on request failures.
   net::BackoffEntry backoff_entry_;
 
@@ -97,6 +91,9 @@ class DataReductionProxyConfigServiceClient {
   // configuration.
   base::OneShotTimer<DataReductionProxyConfigServiceClient>
       config_refresh_timer_;
+
+  // Enforce usage on the IO thread.
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyConfigServiceClient);
 };

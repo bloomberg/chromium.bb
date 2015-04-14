@@ -60,7 +60,7 @@ CreateDataReductionProxyChromeIOData(
       data_reduction_proxy_ui_service(
           new data_reduction_proxy::ContentDataReductionProxyDebugUIService(
               base::Bind(&data_reduction_proxy::DataReductionProxyConfigurator::
-                             GetProxyConfigOnIOThread,
+                             GetProxyConfig,
                          base::Unretained(
                              data_reduction_proxy_io_data->configurator())),
               ui_task_runner, io_task_runner,

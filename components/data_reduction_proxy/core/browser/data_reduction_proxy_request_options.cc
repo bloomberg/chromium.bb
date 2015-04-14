@@ -96,25 +96,25 @@ bool DataReductionProxyRequestOptions::ParseLocalSessionKey(
 
 DataReductionProxyRequestOptions::DataReductionProxyRequestOptions(
     Client client,
-    DataReductionProxyConfig* config,
-    scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
+    DataReductionProxyConfig* config)
     : client_(GetString(client)),
       use_assigned_credentials_(false),
-      data_reduction_proxy_config_(config),
-      network_task_runner_(network_task_runner) {
+      data_reduction_proxy_config_(config) {
   GetChromiumBuildAndPatch(ChromiumVersion(), &build_, &patch_);
+  // Constructed on the UI thread, but should be checked on the IO thread.
+  thread_checker_.DetachFromThread();
 }
 
 DataReductionProxyRequestOptions::DataReductionProxyRequestOptions(
     Client client,
     const std::string& version,
-    DataReductionProxyConfig* config,
-    scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
+    DataReductionProxyConfig* config)
     : client_(GetString(client)),
       use_assigned_credentials_(false),
-      data_reduction_proxy_config_(config),
-      network_task_runner_(network_task_runner) {
+      data_reduction_proxy_config_(config) {
   GetChromiumBuildAndPatch(version, &build_, &patch_);
+  // Constructed on the UI thread, but should be checked on the IO thread.
+  thread_checker_.DetachFromThread();
 }
 
 DataReductionProxyRequestOptions::~DataReductionProxyRequestOptions() {
@@ -208,7 +208,7 @@ void DataReductionProxyRequestOptions::MaybeAddRequestHeader(
     net::URLRequest* request,
     const net::ProxyServer& proxy_server,
     net::HttpRequestHeaders* request_headers) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!proxy_server.is_valid())
     return;
   if (proxy_server.is_direct())
@@ -221,7 +221,7 @@ void DataReductionProxyRequestOptions::MaybeAddRequestHeader(
 void DataReductionProxyRequestOptions::MaybeAddProxyTunnelRequestHandler(
     const net::HostPortPair& proxy_server,
     net::HttpRequestHeaders* request_headers) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   MaybeAddRequestHeaderImpl(proxy_server, true, request_headers);
 }
 
@@ -273,6 +273,7 @@ void DataReductionProxyRequestOptions::UpdateCredentials() {
 }
 
 void DataReductionProxyRequestOptions::SetKeyOnIO(const std::string& key) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if(!key.empty()) {
     key_ = key;
     UpdateCredentials();
@@ -281,7 +282,7 @@ void DataReductionProxyRequestOptions::SetKeyOnIO(const std::string& key) {
 
 void DataReductionProxyRequestOptions::PopulateConfigResponse(
     base::DictionaryValue* response) const {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   std::string session;
   std::string credentials;
   base::Time now = Now();
@@ -296,7 +297,7 @@ void DataReductionProxyRequestOptions::PopulateConfigResponse(
 void DataReductionProxyRequestOptions::SetCredentials(
     const std::string& session,
     const std::string& credentials) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   session_ = session;
   credentials_ = credentials;
   // Force skipping of credential regeneration. It should be handled by the

@@ -23,7 +23,6 @@ class TestingPrefServiceSimple;
 
 namespace data_reduction_proxy {
 
-class DataReductionProxyConfigurator;
 class DataReductionProxyTestContext;
 class MockDataReductionProxyConfig;
 

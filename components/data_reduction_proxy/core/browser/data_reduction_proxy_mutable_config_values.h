@@ -6,15 +6,11 @@
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_MUTABLE_CONFIG_VALUES_H_
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_config_values.h"
 #include "net/proxy/proxy_server.h"
 #include "url/gurl.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace data_reduction_proxy {
 
@@ -28,7 +24,6 @@ class DataReductionProxyMutableConfigValues
   // Creates a new |DataReductionProxyMutableConfigValues| using |params| as
   // the basis for its initial values.
   static scoped_ptr<DataReductionProxyMutableConfigValues> CreateFromParams(
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       const DataReductionProxyParams* params);
 
   ~DataReductionProxyMutableConfigValues() override;
@@ -57,8 +52,7 @@ class DataReductionProxyMutableConfigValues
   const GURL& secure_proxy_check_url() const override;
 
  protected:
-  DataReductionProxyMutableConfigValues(
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+  DataReductionProxyMutableConfigValues();
 
  private:
   net::ProxyServer empty_origin_;
@@ -70,9 +64,8 @@ class DataReductionProxyMutableConfigValues
   net::ProxyServer fallback_origin_;
   GURL secure_proxy_check_url_;
 
-  // |io_task_runner_| should be the task runner for running operations on the
-  // IO thread.
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  // Enforce usage on the IO thread.
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyMutableConfigValues);
 };

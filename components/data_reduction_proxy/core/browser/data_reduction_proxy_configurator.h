@@ -9,12 +9,8 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/task_runner.h"
+#include "base/threading/thread_checker.h"
 #include "net/proxy/proxy_config.h"
-
-namespace base {
-class SequencedTaskRunner;
-}
 
 namespace net {
 class NetLog;
@@ -30,22 +26,14 @@ class DataReductionProxyEventStore;
 
 class DataReductionProxyConfigurator {
  public:
-  // Constructs a configurator. |network_task_runner| should be the task runner
-  // for running network operations, |net_log| and |event_store| are used to
+  // Constructs a configurator. |net_log| and |event_store| are used to
   // track network and Data Reduction Proxy events respectively, must not be
   // null, and must outlive this instance.
   DataReductionProxyConfigurator(
-      scoped_refptr<base::SequencedTaskRunner> network_task_runner,
       net::NetLog* net_log,
       DataReductionProxyEventStore* event_store);
 
   virtual ~DataReductionProxyConfigurator();
-
-  void set_net_log(net::NetLog* net_log) {
-    DCHECK(!net_log_);
-    net_log_ = net_log;
-    DCHECK(net_log_);
-  }
 
   // Constructs a proxy configuration suitable for enabling the Data Reduction
   // proxy.
@@ -71,18 +59,12 @@ class DataReductionProxyConfigurator {
   // as a hostname pattern.
   virtual void AddURLPatternToBypass(const std::string& pattern);
 
-  // Updates the config for use on the IO thread.
-  void UpdateProxyConfigOnIOThread(const net::ProxyConfig& config);
-
   // Returns the current data reduction proxy config, even if it is not the
   // effective configuration used by the proxy service.
-  const net::ProxyConfig& GetProxyConfigOnIOThread() const;
+  const net::ProxyConfig& GetProxyConfig() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfiguratorTest, TestBypassList);
-
-  // Used for updating the proxy config on the IO thread.
-  scoped_refptr<base::SequencedTaskRunner> network_task_runner_;
 
   // Rules for bypassing the Data Reduction Proxy.
   std::vector<std::string> bypass_rules_;
@@ -95,6 +77,9 @@ class DataReductionProxyConfigurator {
   // Used for logging of network- and Data Reduction Proxy-related events.
   net::NetLog* net_log_;
   DataReductionProxyEventStore* data_reduction_proxy_event_store_;
+
+  // Enforce usage on the IO thread.
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyConfigurator);
 };

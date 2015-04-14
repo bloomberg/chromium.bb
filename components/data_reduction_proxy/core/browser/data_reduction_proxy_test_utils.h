@@ -53,11 +53,9 @@ class TestDataReductionProxyParams;
 class TestDataReductionProxyRequestOptions
     : public DataReductionProxyRequestOptions {
  public:
-  TestDataReductionProxyRequestOptions(
-      Client client,
-      const std::string& version,
-      DataReductionProxyConfig* config,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  TestDataReductionProxyRequestOptions(Client client,
+                                       const std::string& version,
+                                       DataReductionProxyConfig* config);
 
   // Overrides of DataReductionProxyRequestOptions.
   std::string GetDefaultKey() const override;
@@ -75,11 +73,9 @@ class TestDataReductionProxyRequestOptions
 class MockDataReductionProxyRequestOptions
     : public DataReductionProxyRequestOptions {
  public:
-  MockDataReductionProxyRequestOptions(
-      Client client,
-      const std::string& version,
-      DataReductionProxyConfig* config,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  MockDataReductionProxyRequestOptions(Client client,
+                                       const std::string& version,
+                                       DataReductionProxyConfig* config);
 
   ~MockDataReductionProxyRequestOptions();
 
@@ -96,8 +92,7 @@ class TestDataReductionProxyConfigServiceClient
       scoped_ptr<DataReductionProxyParams> params,
       DataReductionProxyRequestOptions* request_options,
       DataReductionProxyMutableConfigValues* config_values,
-      DataReductionProxyConfig* config,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+      DataReductionProxyConfig* config);
 
   ~TestDataReductionProxyConfigServiceClient() override;
 

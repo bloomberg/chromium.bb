@@ -45,9 +45,8 @@ namespace data_reduction_proxy {
 TestDataReductionProxyRequestOptions::TestDataReductionProxyRequestOptions(
     Client client,
     const std::string& version,
-    DataReductionProxyConfig* config,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : DataReductionProxyRequestOptions(client, version, config, task_runner) {
+    DataReductionProxyConfig* config)
+    : DataReductionProxyRequestOptions(client, version, config) {
 }
 
 std::string TestDataReductionProxyRequestOptions::GetDefaultKey() const {
@@ -75,9 +74,8 @@ void TestDataReductionProxyRequestOptions::set_offset(
 MockDataReductionProxyRequestOptions::MockDataReductionProxyRequestOptions(
     Client client,
     const std::string& version,
-    DataReductionProxyConfig* config,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : DataReductionProxyRequestOptions(client, version, config, task_runner) {
+    DataReductionProxyConfig* config)
+    : DataReductionProxyRequestOptions(client, version, config) {
 }
 
 MockDataReductionProxyRequestOptions::~MockDataReductionProxyRequestOptions() {
@@ -88,14 +86,12 @@ TestDataReductionProxyConfigServiceClient::
         scoped_ptr<DataReductionProxyParams> params,
         DataReductionProxyRequestOptions* request_options,
         DataReductionProxyMutableConfigValues* config_values,
-        DataReductionProxyConfig* config,
-        scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
+        DataReductionProxyConfig* config)
     : DataReductionProxyConfigServiceClient(params.Pass(),
                                             kTestBackoffPolicy,
                                             request_options,
                                             config_values,
-                                            config,
-                                            io_task_runner),
+                                            config),
       tick_clock_(base::Time::UnixEpoch()),
       test_backoff_entry_(&kTestBackoffPolicy, &tick_clock_) {
 }
@@ -320,10 +316,10 @@ DataReductionProxyTestContext::Builder::Build() {
   if (use_test_configurator_) {
     test_context_flags |= USE_TEST_CONFIGURATOR;
     configurator.reset(new TestDataReductionProxyConfigurator(
-        task_runner, net_log.get(), event_store.get()));
+        net_log.get(), event_store.get()));
   } else {
-    configurator.reset(new DataReductionProxyConfigurator(
-        task_runner, net_log.get(), event_store.get()));
+    configurator.reset(
+        new DataReductionProxyConfigurator(net_log.get(), event_store.get()));
   }
 
   scoped_ptr<TestDataReductionProxyConfig> config;
@@ -335,8 +331,7 @@ DataReductionProxyTestContext::Builder::Build() {
   if (use_config_client_) {
     test_context_flags |= USE_CONFIG_CLIENT;
     scoped_ptr<DataReductionProxyMutableConfigValues> mutable_config =
-        DataReductionProxyMutableConfigValues::CreateFromParams(task_runner,
-                                                                params.get());
+        DataReductionProxyMutableConfigValues::CreateFromParams(params.get());
     raw_mutable_config = mutable_config.get();
     config.reset(new TestDataReductionProxyConfig(
         mutable_config.Pass(), task_runner, net_log.get(), configurator.get(),
@@ -356,21 +351,21 @@ DataReductionProxyTestContext::Builder::Build() {
   if (use_mock_request_options_) {
     test_context_flags |= USE_MOCK_REQUEST_OPTIONS;
     request_options.reset(new MockDataReductionProxyRequestOptions(
-        client_, std::string(), config.get(), task_runner));
+        client_, std::string(), config.get()));
   } else {
-    request_options.reset(new DataReductionProxyRequestOptions(
-        client_, config.get(), task_runner));
+    request_options.reset(
+        new DataReductionProxyRequestOptions(client_, config.get()));
   }
 
   if (use_test_config_client_) {
     test_context_flags |= USE_TEST_CONFIG_CLIENT;
     config_client.reset(new TestDataReductionProxyConfigServiceClient(
-        params.Pass(), request_options.get(), raw_mutable_config, config.get(),
-        task_runner));
+        params.Pass(), request_options.get(), raw_mutable_config,
+        config.get()));
   } else if (use_config_client_) {
     config_client.reset(new DataReductionProxyConfigServiceClient(
         params.Pass(), GetBackoffPolicy(), request_options.get(),
-        raw_mutable_config, config.get(), task_runner));
+        raw_mutable_config, config.get()));
   }
 
   scoped_ptr<DataReductionProxySettings> settings(

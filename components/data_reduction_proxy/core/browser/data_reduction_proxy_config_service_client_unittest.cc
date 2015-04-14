@@ -75,16 +75,13 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
         DataReductionProxyParams::kAllowed |
         DataReductionProxyParams::kFallbackAllowed |
         DataReductionProxyParams::kPromoAllowed));
-    request_options_.reset(
-        new DataReductionProxyRequestOptions(Client::UNKNOWN,
-                                             test_context_->io_data()->config(),
-                                             test_context_->task_runner()));
+    request_options_.reset(new DataReductionProxyRequestOptions(
+        Client::UNKNOWN, test_context_->io_data()->config()));
     return scoped_ptr<DataReductionProxyConfigServiceClient>(
         new DataReductionProxyConfigServiceClient(
-            params.Pass(), GetBackoffPolicy(),
-            request_options_.get(),
+            params.Pass(), GetBackoffPolicy(), request_options_.get(),
             test_context_->mutable_config_values(),
-            test_context_->io_data()->config(), test_context_->task_runner()));
+            test_context_->io_data()->config()));
   }
 
   DataReductionProxyParams* params() {
@@ -133,7 +130,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, SuccessfulLoop) {
       .WillRepeatedly(
           testing::Invoke(&populator,
                           &RequestOptionsPopulator::PopulateResponse));
-  RunUntilIdle();
+  config_client()->RetrieveConfig();
   EXPECT_EQ(base::TimeDelta::FromDays(1), config_client()->GetDelay());
   EXPECT_EQ(params()->origin().ToURI(), configurator()->origin());
   EXPECT_EQ(params()->fallback_origin().ToURI(),
@@ -162,7 +159,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, SuccessfulLoopShortDuration) {
       .Times(1)
       .WillOnce(testing::Invoke(&populator,
                                 &RequestOptionsPopulator::PopulateResponse));
-  RunUntilIdle();
+  config_client()->RetrieveConfig();
   EXPECT_EQ(base::TimeDelta::FromSeconds(10), config_client()->GetDelay());
   EXPECT_EQ(params()->origin().ToURI(), configurator()->origin());
   EXPECT_EQ(params()->fallback_origin().ToURI(),
@@ -202,7 +199,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, ConfigDisabled) {
       .Times(1)
       .WillOnce(testing::Invoke(&populator,
                                 &RequestOptionsPopulator::PopulateResponse));
-  RunUntilIdle();
+  config_client()->RetrieveConfig();
   EXPECT_TRUE(configurator()->origin().empty());
   EXPECT_TRUE(configurator()->fallback_origin().empty());
   EXPECT_TRUE(configurator()->ssl_origin().empty());

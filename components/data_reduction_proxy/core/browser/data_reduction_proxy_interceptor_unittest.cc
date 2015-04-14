@@ -302,7 +302,7 @@ class DataReductionProxyInterceptorEndToEndTest : public testing::Test {
 
     // Three proxies should be available for use: primary, fallback, and direct.
     const net::ProxyConfig& proxy_config =
-        drp_test_context_->configurator()->GetProxyConfigOnIOThread();
+        drp_test_context_->configurator()->GetProxyConfig();
     EXPECT_EQ(3U, proxy_config.proxy_rules().proxies_for_http.size());
   }
 

@@ -48,14 +48,13 @@ DataReductionProxyIOData::DataReductionProxyIOData(
       new DataReductionProxyParams(param_flags));
   params->EnableQuic(enable_quic);
   event_store_.reset(new DataReductionProxyEventStore(ui_task_runner));
-  configurator_.reset(new DataReductionProxyConfigurator(
-      io_task_runner, net_log, event_store_.get()));
+  configurator_.reset(
+      new DataReductionProxyConfigurator(net_log, event_store_.get()));
   bool use_config_client = DataReductionProxyParams::IsConfigClientEnabled();
   DataReductionProxyMutableConfigValues* raw_mutable_config = nullptr;
   if (use_config_client) {
     scoped_ptr<DataReductionProxyMutableConfigValues> mutable_config =
-        DataReductionProxyMutableConfigValues::CreateFromParams(io_task_runner_,
-                                                                params.get());
+        DataReductionProxyMutableConfigValues::CreateFromParams(params.get());
     raw_mutable_config = mutable_config.get();
     config_.reset(new DataReductionProxyConfig(
         io_task_runner_, ui_task_runner_, net_log, mutable_config.Pass(),
@@ -72,13 +71,13 @@ DataReductionProxyIOData::DataReductionProxyIOData(
   bypass_stats_.reset(new DataReductionProxyBypassStats(
       config_.get(), base::Bind(&DataReductionProxyIOData::SetUnreachable,
                                 base::Unretained(this))));
-  request_options_.reset(new DataReductionProxyRequestOptions(
-      client_, config_.get(), io_task_runner_));
+  request_options_.reset(
+      new DataReductionProxyRequestOptions(client_, config_.get()));
   request_options_->Init();
   if (use_config_client) {
     config_client_.reset(new DataReductionProxyConfigServiceClient(
         params.Pass(), GetBackoffPolicy(), request_options_.get(),
-        raw_mutable_config, config_.get(), io_task_runner_));
+        raw_mutable_config, config_.get()));
   }
 
   proxy_delegate_.reset(
@@ -122,6 +121,8 @@ void DataReductionProxyIOData::SetDataReductionProxyService(
 
 void DataReductionProxyIOData::InitializeOnIOThread() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
+  if (config_client_.get())
+    config_client_->RetrieveConfig();
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DataReductionProxyService::SetIOData,
