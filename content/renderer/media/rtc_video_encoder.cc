@@ -18,6 +18,7 @@
 #include "media/filters/h264_parser.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "media/video/video_encode_accelerator.h"
+#include "third_party/libyuv/include/libyuv.h"
 #include "third_party/webrtc/system_wrappers/interface/tick_util.h"
 
 #define NOTIFY_ERROR(x)                             \
@@ -514,18 +515,24 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
   // Do a strided copy of the input frame to match the input requirements for
   // the encoder.
   // TODO(sheu): support zero-copy from WebRTC.  http://crbug.com/269312
-  media::CopyYPlane(next_frame->buffer(webrtc::kYPlane),
-                    next_frame->stride(webrtc::kYPlane),
-                    next_frame->height(),
-                    frame.get());
-  media::CopyUPlane(next_frame->buffer(webrtc::kUPlane),
-                    next_frame->stride(webrtc::kUPlane),
-                    next_frame->height(),
-                    frame.get());
-  media::CopyVPlane(next_frame->buffer(webrtc::kVPlane),
-                    next_frame->stride(webrtc::kVPlane),
-                    next_frame->height(),
-                    frame.get());
+  if (libyuv::I420Copy(next_frame->buffer(webrtc::kYPlane),
+                       next_frame->stride(webrtc::kYPlane),
+                       next_frame->buffer(webrtc::kUPlane),
+                       next_frame->stride(webrtc::kUPlane),
+                       next_frame->buffer(webrtc::kVPlane),
+                       next_frame->stride(webrtc::kVPlane),
+                       frame->data(media::VideoFrame::kYPlane),
+                       frame->stride(media::VideoFrame::kYPlane),
+                       frame->data(media::VideoFrame::kUPlane),
+                       frame->stride(media::VideoFrame::kUPlane),
+                       frame->data(media::VideoFrame::kVPlane),
+                       frame->stride(media::VideoFrame::kVPlane),
+                       next_frame->width(),
+                       next_frame->height())) {
+    DLOG(ERROR) << "Failed to copy buffer";
+    NOTIFY_ERROR(media::VideoEncodeAccelerator::kPlatformFailureError);
+    return;
+  }
 
   video_encoder_->Encode(frame, next_frame_keyframe);
   input_buffers_free_.pop_back();
