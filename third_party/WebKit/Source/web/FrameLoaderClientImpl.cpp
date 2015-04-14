@@ -134,7 +134,7 @@ void FrameLoaderClientImpl::dispatchDidClearWindowObjectInMainWorld()
             if (RuntimeEnabledFeatures::serviceWorkerEnabled())
                 NavigatorServiceWorker::from(*document);
             DOMWindowStorageController::from(*document);
-            if (RuntimeEnabledFeatures::vRDeviceEnabled())
+            if (RuntimeEnabledFeatures::webVREnabled())
                 NavigatorVRDevice::from(*document);
         }
     }

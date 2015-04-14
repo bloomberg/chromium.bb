@@ -8,7 +8,7 @@
 // hand tracking.
 // http://mozvr.github.io/webvr-spec/webvr.html#positionsensorvrdevice
 [
-    RuntimeEnabled=VRDevice,
+    RuntimeEnabled=WebVR,
 ] interface PositionSensorVRDevice : VRDevice {
     VRPositionState getState();
     VRPositionState getImmediateState();

@@ -12,7 +12,7 @@ enum VREye {
 // headset.
 // http://mozvr.github.io/webvr-spec/webvr.html#hmdvrdevice
 [
-    RuntimeEnabled=VRDevice,
+    RuntimeEnabled=WebVR,
     TypeChecking=Interface
 ] interface HMDVRDevice : VRDevice {
     VREyeParameters getEyeParameters(VREye whichEye);
