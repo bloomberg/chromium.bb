@@ -36,6 +36,7 @@
 #include "base/trace_event/trace_event_synthetic_delay.h"
 
 #if defined(OS_WIN)
+#include "base/trace_event/trace_event_etw_export_win.h"
 #include "base/trace_event/trace_event_win.h"
 #endif
 
@@ -1292,6 +1293,11 @@ void TraceLog::UpdateCategoryGroupEnabledFlag(size_t category_index) {
   if (event_callback_ &&
       event_callback_category_filter_.IsCategoryGroupEnabled(category_group))
     enabled_flag |= ENABLED_FOR_EVENT_CALLBACK;
+#if defined(OS_WIN)
+  if (base::trace_event::TraceEventETWExport::isETWExportEnabled())
+    enabled_flag |= ENABLED_FOR_ETW_EXPORT;
+#endif
+
   g_category_group_enabled[category_index] = enabled_flag;
 }
 
@@ -1983,6 +1989,15 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
       }
     }
   }
+
+#if defined(OS_WIN)
+  // This is done sooner rather than later, to avoid creating the event and
+  // acquiring the lock, which is not needed for ETW as it's already threadsafe.
+  if (*category_group_enabled & ENABLED_FOR_ETW_EXPORT)
+    TraceEventETWExport::AddEvent(phase, category_group_enabled, name, id,
+                                  num_args, arg_names, arg_types, arg_values,
+                                  convertable_values);
+#endif  // OS_WIN
 
   std::string console_message;
   if (*category_group_enabled &
