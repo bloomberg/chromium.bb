@@ -371,7 +371,10 @@ void InputMethodChromeOS::ProcessKeyEventPostIME(
   if (client != GetTextInputClient())
     return;
 
-  if (event.type() == ET_KEY_PRESSED && !handled)
+  if (handled)
+    return;  // IME handled the key event. do not forward.
+
+  if (event.type() == ET_KEY_PRESSED)
     ProcessUnfilteredKeyPressEvent(event);
   else if (event.type() == ET_KEY_RELEASED)
     DispatchKeyEventPostIME(event);
