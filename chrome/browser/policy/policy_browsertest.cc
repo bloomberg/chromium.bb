@@ -2665,7 +2665,15 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FullscreenAllowedApp) {
 #endif
 
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(PolicyTest, DisableScreenshotsFile) {
+
+// Flaky http://crbug.com/476964
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_DisableScreenshotsFile DISABLED_DisableScreenshotsFile
+#else
+#define MAYBE_DisableScreenshotsFile DisableScreenshotsFile
+#endif
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_DisableScreenshotsFile) {
   int screenshot_count = CountScreenshots();
 
   // Make sure screenshots are counted correctly.
