@@ -16,7 +16,7 @@
 namespace blink {
 
 inline CompositorWorker::CompositorWorker(ExecutionContext* context)
-    : Worker(context)
+    : InProcessWorkerBase(context)
 {
 }
 

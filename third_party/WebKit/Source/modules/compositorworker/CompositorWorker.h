@@ -5,7 +5,7 @@
 #ifndef CompositorWorker_h
 #define CompositorWorker_h
 
-#include "core/workers/Worker.h"
+#include "core/workers/InProcessWorkerBase.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/AtomicString.h"
 
@@ -15,7 +15,7 @@ class ExceptionState;
 class ExecutionContext;
 class WorkerGlobalScopeProxy;
 
-class CompositorWorker final : public Worker {
+class CompositorWorker final : public InProcessWorkerBase {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<CompositorWorker> create(ExecutionContext*, const String& url, ExceptionState&);

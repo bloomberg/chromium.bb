@@ -33,9 +33,9 @@
 
 #include "core/dom/Document.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "core/workers/DedicatedWorkerMessagingProxy.h"
 #include "core/workers/Worker.h"
 #include "core/workers/WorkerClients.h"
-#include "core/workers/WorkerMessagingProxy.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebContentSettingsClient.h"
 #include "public/web/WebFrameClient.h"
@@ -57,7 +57,7 @@ WorkerGlobalScopeProxy* WorkerGlobalScopeProxyProviderImpl::createWorkerGlobalSc
         provideContentSettingsClientToWorker(workerClients.get(), adoptPtr(webFrame->client()->createWorkerContentSettingsClientProxy(webFrame)));
         // FIXME: call provideServiceWorkerContainerClientToWorker here when we
         // support ServiceWorker in dedicated workers (http://crbug.com/371690)
-        return new WorkerMessagingProxy(worker, workerClients.release());
+        return new DedicatedWorkerMessagingProxy(worker, workerClients.release());
     }
     ASSERT_NOT_REACHED();
     return 0;

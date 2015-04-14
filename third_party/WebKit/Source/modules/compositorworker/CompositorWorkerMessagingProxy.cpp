@@ -10,7 +10,7 @@
 
 namespace blink {
 
-CompositorWorkerMessagingProxy::CompositorWorkerMessagingProxy(Worker* worker, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
+CompositorWorkerMessagingProxy::CompositorWorkerMessagingProxy(InProcessWorkerBase* worker, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
     : WorkerMessagingProxy(worker, workerClients)
 {
 }

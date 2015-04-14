@@ -43,7 +43,7 @@ namespace blink {
 class WorkerObjectProxy;
 class WorkerThread;
 class ExecutionContext;
-class Worker;
+class InProcessWorkerBase;
 class WorkerClients;
 class WorkerInspectorProxy;
 
@@ -51,10 +51,7 @@ class CORE_EXPORT WorkerMessagingProxy
     : public WorkerGlobalScopeProxy
     , private WorkerLoaderProxyProvider {
     WTF_MAKE_NONCOPYABLE(WorkerMessagingProxy);
-    WTF_MAKE_FAST_ALLOCATED(WorkerMessagingProxy);
 public:
-    WorkerMessagingProxy(Worker*, PassOwnPtrWillBeRawPtr<WorkerClients>);
-
     // Implementations of WorkerGlobalScopeProxy.
     // (Only use these methods in the worker object thread.)
     virtual void startWorkerGlobalScope(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode) override;
@@ -79,9 +76,10 @@ public:
     void workerThreadCreated(PassRefPtr<WorkerThread>);
 
 protected:
+    WorkerMessagingProxy(InProcessWorkerBase*, PassOwnPtrWillBeRawPtr<WorkerClients>);
     virtual ~WorkerMessagingProxy();
 
-    virtual PassRefPtr<WorkerThread> createWorkerThread(double originTime, PassOwnPtr<WorkerThreadStartupData>);
+    virtual PassRefPtr<WorkerThread> createWorkerThread(double originTime, PassOwnPtr<WorkerThreadStartupData>) = 0;
 
     PassRefPtr<WorkerLoaderProxy> loaderProxy() { return m_loaderProxy; }
     WorkerObjectProxy& workerObjectProxy() { return *m_workerObjectProxy.get(); }
@@ -98,7 +96,7 @@ private:
 
     RefPtrWillBePersistent<ExecutionContext> m_executionContext;
     OwnPtr<WorkerObjectProxy> m_workerObjectProxy;
-    Worker* m_workerObject;
+    InProcessWorkerBase* m_workerObject;
     bool m_mayBeDestroyed;
     RefPtr<WorkerThread> m_workerThread;
 

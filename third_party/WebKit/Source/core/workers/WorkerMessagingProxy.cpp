@@ -43,8 +43,7 @@
 #include "core/inspector/WorkerDebuggerAgent.h"
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/workers/DedicatedWorkerThread.h"
-#include "core/workers/Worker.h"
+#include "core/workers/InProcessWorkerBase.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerInspectorProxy.h"
 #include "core/workers/WorkerObjectProxy.h"
@@ -85,7 +84,7 @@ private:
     WorkerObjectProxy& m_workerObjectProxy;
 };
 
-WorkerMessagingProxy::WorkerMessagingProxy(Worker* workerObject, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
+WorkerMessagingProxy::WorkerMessagingProxy(InProcessWorkerBase* workerObject, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
     : m_executionContext(workerObject->executionContext())
     , m_workerObjectProxy(WorkerObjectProxy::create(m_executionContext.get(), this))
     , m_workerObject(workerObject)
@@ -213,11 +212,6 @@ void WorkerMessagingProxy::workerThreadCreated(PassRefPtr<WorkerThread> workerTh
     for (auto& earlyTasks : m_queuedEarlyTasks)
         m_workerThread->postTask(FROM_HERE, earlyTasks.release());
     m_queuedEarlyTasks.clear();
-}
-
-PassRefPtr<WorkerThread> WorkerMessagingProxy::createWorkerThread(double originTime, PassOwnPtr<WorkerThreadStartupData> startupData)
-{
-    return DedicatedWorkerThread::create(loaderProxy(), workerObjectProxy(), originTime, startupData);
 }
 
 void WorkerMessagingProxy::workerObjectDestroyed()

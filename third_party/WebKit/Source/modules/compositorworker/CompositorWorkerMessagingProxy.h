@@ -11,7 +11,7 @@ namespace blink {
 
 class CompositorWorkerMessagingProxy final : public WorkerMessagingProxy {
 public:
-    CompositorWorkerMessagingProxy(Worker*, PassOwnPtrWillBeRawPtr<WorkerClients>);
+    CompositorWorkerMessagingProxy(InProcessWorkerBase*, PassOwnPtrWillBeRawPtr<WorkerClients>);
 
 protected:
     virtual ~CompositorWorkerMessagingProxy();
