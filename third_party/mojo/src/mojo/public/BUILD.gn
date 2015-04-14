@@ -38,7 +38,6 @@ group("sdk") {
     "cpp/environment:standalone",
     "cpp/utility",
     "interfaces/application",
-    "interfaces/bindings",
     "js",
   ]
 }

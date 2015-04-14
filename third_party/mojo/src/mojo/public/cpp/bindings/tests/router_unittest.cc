@@ -47,20 +47,19 @@ class MessageAccumulator : public MessageReceiver {
   internal::MessageQueue* queue_;
 };
 
-class ResponseGenerator : public MessageReceiverWithResponderStatus {
+class ResponseGenerator : public MessageReceiverWithResponder {
  public:
   ResponseGenerator() {}
 
   bool Accept(Message* message) override { return false; }
 
   bool AcceptWithResponder(Message* message,
-                           MessageReceiverWithStatus* responder) override {
+                           MessageReceiver* responder) override {
     EXPECT_TRUE(message->has_flag(internal::kMessageExpectsResponse));
 
     bool result = SendResponse(
         message->name(), message->request_id(),
         reinterpret_cast<const char*>(message->payload()), responder);
-    EXPECT_TRUE(responder->IsValid());
     delete responder;
     return result;
   }
@@ -85,7 +84,7 @@ class LazyResponseGenerator : public ResponseGenerator {
   ~LazyResponseGenerator() override { delete responder_; }
 
   bool AcceptWithResponder(Message* message,
-                           MessageReceiverWithStatus* responder) override {
+                           MessageReceiver* responder) override {
     name_ = message->name();
     request_id_ = message->request_id();
     request_string_ =
@@ -95,8 +94,6 @@ class LazyResponseGenerator : public ResponseGenerator {
   }
 
   bool has_responder() const { return !!responder_; }
-
-  bool responder_is_valid() const { return responder_->IsValid(); }
 
   // Send the response and delete the responder.
   void CompleteWithResponse() { Complete(true); }
@@ -115,7 +112,7 @@ class LazyResponseGenerator : public ResponseGenerator {
     responder_ = nullptr;
   }
 
-  MessageReceiverWithStatus* responder_;
+  MessageReceiver* responder_;
   uint32_t name_;
   uint64_t request_id_;
   std::string request_string_;
@@ -264,7 +261,6 @@ TEST_F(RouterTest, LazyResponses) {
   EXPECT_TRUE(message_queue.IsEmpty());
 
   // Send the response.
-  EXPECT_TRUE(generator.responder_is_valid());
   generator.CompleteWithResponse();
   PumpMessages();
 
@@ -287,7 +283,6 @@ TEST_F(RouterTest, LazyResponses) {
   EXPECT_TRUE(message_queue.IsEmpty());
 
   // Send the second response.
-  EXPECT_TRUE(generator.responder_is_valid());
   generator.CompleteWithResponse();
   PumpMessages();
 
@@ -363,7 +358,6 @@ TEST_F(RouterTest, LateResponse) {
     EXPECT_TRUE(generator.has_responder());
   }
 
-  EXPECT_FALSE(generator.responder_is_valid());
   generator.CompleteWithResponse();  // This should end up doing nothing.
 }
 

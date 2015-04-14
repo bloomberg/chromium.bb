@@ -20,14 +20,10 @@ mojom("interfaces") {
     "../../../gpu/public/interfaces",
     "../../../native_viewport/public/interfaces",
   ]
-
-  import_from = mojo_root
 }
 
 mojom("surface_id") {
   sources = [
     "surface_id.mojom",
   ]
-
-  import_from = mojo_root
 }

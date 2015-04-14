@@ -61,21 +61,20 @@ template("mojom") {
       "$generator_root/generators/cpp_templates/interface_request_validator_declaration.tmpl",
       "$generator_root/generators/cpp_templates/interface_response_validator_declaration.tmpl",
       "$generator_root/generators/cpp_templates/interface_stub_declaration.tmpl",
-      "$generator_root/generators/cpp_templates/module-internal.h.tmpl",
       "$generator_root/generators/cpp_templates/module.cc.tmpl",
       "$generator_root/generators/cpp_templates/module.h.tmpl",
+      "$generator_root/generators/cpp_templates/module-internal.h.tmpl",
+      "$generator_root/generators/cpp_templates/serialization_macros.tmpl",
       "$generator_root/generators/cpp_templates/struct_declaration.tmpl",
       "$generator_root/generators/cpp_templates/struct_definition.tmpl",
-      "$generator_root/generators/cpp_templates/struct_macros.tmpl",
-      "$generator_root/generators/cpp_templates/struct_serialization_declaration.tmpl",
       "$generator_root/generators/cpp_templates/struct_serialization_definition.tmpl",
-      "$generator_root/generators/cpp_templates/union_declaration.tmpl",
-      "$generator_root/generators/cpp_templates/union_definition.tmpl",
-      "$generator_root/generators/cpp_templates/union_serialization_declaration.tmpl",
-      "$generator_root/generators/cpp_templates/union_serialization_definition.tmpl",
-      "$generator_root/generators/cpp_templates/validation_macros.tmpl",
+      "$generator_root/generators/cpp_templates/struct_macros.tmpl",
       "$generator_root/generators/cpp_templates/wrapper_class_declaration.tmpl",
       "$generator_root/generators/cpp_templates/wrapper_class_definition.tmpl",
+      "$generator_root/generators/cpp_templates/union_declaration.tmpl",
+      "$generator_root/generators/cpp_templates/union_definition.tmpl",
+      "$generator_root/generators/cpp_templates/union_serialization_definition.tmpl",
+      "$generator_root/generators/cpp_templates/validation_macros.tmpl",
       "$generator_root/generators/cpp_templates/wrapper_union_class_declaration.tmpl",
       "$generator_root/generators/cpp_templates/wrapper_union_class_definition.tmpl",
       "$generator_root/generators/dart_templates/enum_definition.tmpl",
@@ -102,8 +101,8 @@ template("mojom") {
       "$generator_root/generators/js_templates/module.amd.tmpl",
       "$generator_root/generators/js_templates/module_definition.tmpl",
       "$generator_root/generators/js_templates/struct_definition.tmpl",
-      "$generator_root/generators/python_templates/module.py.tmpl",
       "$generator_root/generators/python_templates/module_macros.tmpl",
+      "$generator_root/generators/python_templates/module.py.tmpl",
       "$generator_root/generators/mojom_cpp_generator.py",
       "$generator_root/generators/mojom_dart_generator.py",
       "$generator_root/generators/mojom_go_generator.py",
@@ -181,7 +180,6 @@ template("mojom") {
                 generator_js_outputs + generator_python_outputs
       args = [
         "{{source}}",
-        "--dart_mojo_root=${mojo_root}",
         "--use_bundled_pylibs",
         "-d",
         rebase_path("//", root_build_dir),
@@ -336,21 +334,21 @@ template("mojom") {
       output,
     ]
 
-    invoker_import_from = ""
-    if (defined(invoker.import_from)) {
-      invoker_import_from =
-          rebase_path(invoker.import_from, "$root_build_dir/../../", ".")
+    invoker_base_dir = ""
+    if (defined(invoker.base_dir)) {
+      invoker_base_dir =
+          rebase_path(invoker.base_dir, "$root_build_dir/../../", ".")
     }
 
-    rebase_import_from =
-        rebase_path("$root_build_dir/gen/$invoker_import_from", root_build_dir)
+    rebase_base_dir =
+        rebase_path("$root_build_dir/gen/$invoker_base_dir", root_build_dir)
     if (defined(invoker.sources)) {
       rebase_inputs = rebase_path(inputs, root_build_dir)
     }
     rebase_zip_inputs = rebase_path(zip_inputs, root_build_dir)
     rebase_output = rebase_path(output, root_build_dir)
     args = [
-      "--base-dir=$rebase_import_from",
+      "--base-dir=$rebase_base_dir",
       "--zip-inputs=$rebase_zip_inputs",
       "--output=$rebase_output",
     ]

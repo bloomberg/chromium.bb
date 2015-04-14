@@ -9,6 +9,4 @@ mojom("interfaces") {
   sources = [
     "clipboard.mojom",
   ]
-
-  import_from = mojo_root
 }

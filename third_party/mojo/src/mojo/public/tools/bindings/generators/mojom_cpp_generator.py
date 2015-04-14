@@ -75,8 +75,6 @@ def GetCppType(kind):
       GetCppType(kind.key_kind), GetCppType(kind.value_kind))
   if mojom.IsStructKind(kind):
     return "%s_Data*" % GetNameForKind(kind, internal=True)
-  if mojom.IsUnionKind(kind):
-    return "%s_Data" % GetNameForKind(kind, internal=True)
   if mojom.IsInterfaceKind(kind) or mojom.IsInterfaceRequestKind(kind):
     return "mojo::MessagePipeHandle"
   if mojom.IsEnumKind(kind):
@@ -93,7 +91,7 @@ def GetCppPodType(kind):
 def GetCppArrayArgWrapperType(kind):
   if mojom.IsEnumKind(kind):
     return GetNameForKind(kind)
-  if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
+  if mojom.IsStructKind(kind):
     return "%sPtr" % GetNameForKind(kind)
   if mojom.IsArrayKind(kind):
     return "mojo::Array<%s> " % GetCppArrayArgWrapperType(kind.kind)
@@ -149,7 +147,7 @@ def GetCppResultWrapperType(kind):
 def GetCppWrapperType(kind):
   if mojom.IsEnumKind(kind):
     return GetNameForKind(kind)
-  if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
+  if mojom.IsStructKind(kind):
     return "%sPtr" % GetNameForKind(kind)
   if mojom.IsArrayKind(kind):
     return "mojo::Array<%s>" % GetCppArrayArgWrapperType(kind.kind)
@@ -208,8 +206,6 @@ def GetCppFieldType(kind):
   if mojom.IsStructKind(kind):
     return ("mojo::internal::StructPointer<%s_Data>" %
         GetNameForKind(kind, internal=True))
-  if mojom.IsUnionKind(kind):
-    return "%s_Data" % GetNameForKind(kind, internal=True)
   if mojom.IsArrayKind(kind):
     return "mojo::internal::ArrayPointer<%s>" % GetCppType(kind.kind)
   if mojom.IsMapKind(kind):
