@@ -3640,8 +3640,8 @@
             'testing/PartialPrivateScriptTest.idl',
         ],
         'generated_webcore_testing_idl_files': [
-            '<(blink_core_output_dir)/InternalRuntimeFlags.idl',
-            '<(blink_core_output_dir)/InternalSettingsGenerated.idl',
+            '<(blink_core_output_dir)/testing/InternalRuntimeFlags.idl',
+            '<(blink_core_output_dir)/testing/InternalSettingsGenerated.idl',
         ],
         'generated_core_testing_dictionary_files': [
             '<(blink_core_output_dir)/testing/InternalDictionary.cpp',
@@ -3652,8 +3652,8 @@
             '<(blink_core_output_dir)/testing/PluginPlaceholderOptions.h',
         ],
         'webcore_testing_files': [
-            '<(blink_core_output_dir)/InternalSettingsGenerated.cpp',
-            '<(blink_core_output_dir)/InternalSettingsGenerated.h',
+            '<(blink_core_output_dir)/testing/InternalSettingsGenerated.cpp',
+            '<(blink_core_output_dir)/testing/InternalSettingsGenerated.h',
             'testing/DictionaryTest.cpp',
             'testing/DictionaryTest.h',
             'testing/DummyPageHolder.cpp',

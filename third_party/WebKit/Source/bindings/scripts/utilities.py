@@ -15,6 +15,7 @@ import subprocess
 
 
 KNOWN_COMPONENTS = frozenset(['core', 'modules'])
+KNOWN_COMPONENTS_WITH_TESTING = frozenset(['core', 'modules', 'testing'])
 
 
 def idl_filename_to_interface_name(idl_filename):
@@ -22,16 +23,25 @@ def idl_filename_to_interface_name(idl_filename):
     return os.path.splitext(os.path.basename(idl_filename))[0]
 
 
-def idl_filename_to_component(idl_filename):
+def idl_filename_to_component_with_known_components(idl_filename, known_components):
     path = os.path.dirname(os.path.realpath(idl_filename))
     while path:
         dirname, basename = os.path.split(path)
         if not basename:
             break
-        if basename.lower() in KNOWN_COMPONENTS:
+        if basename.lower() in known_components:
             return basename.lower()
         path = dirname
     raise Exception('Unknown component type for %s' % idl_filename)
+
+
+def idl_filename_to_component(idl_filename):
+    return idl_filename_to_component_with_known_components(idl_filename, KNOWN_COMPONENTS)
+
+
+def is_testing_target(idl_filename):
+    component = idl_filename_to_component_with_known_components(idl_filename, KNOWN_COMPONENTS_WITH_TESTING)
+    return component == 'testing'
 
 
 # See whether "component" can depend on "dependency" or not:

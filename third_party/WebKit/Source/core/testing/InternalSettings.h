@@ -27,8 +27,8 @@
 #ifndef InternalSettings_h
 #define InternalSettings_h
 
-#include "core/InternalSettingsGenerated.h"
 #include "core/editing/EditingBehaviorTypes.h"
+#include "core/testing/InternalSettingsGenerated.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/ImageAnimationPolicy.h"
 #include "platform/heap/Handle.h"
