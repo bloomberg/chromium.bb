@@ -41,19 +41,11 @@ void Surface::QueueFrame(scoped_ptr<CompositorFrame> frame,
                          const DrawCallback& callback) {
   DCHECK(factory_);
   ClearCopyRequests();
-
-  if (frame) {
-    TakeLatencyInfo(&frame->metadata.latency_info);
-  }
-
+  TakeLatencyInfo(&frame->metadata.latency_info);
   scoped_ptr<CompositorFrame> previous_frame = current_frame_.Pass();
   current_frame_ = frame.Pass();
-
-  if (current_frame_) {
-    factory_->ReceiveFromChild(
-        current_frame_->delegated_frame_data->resource_list);
-  }
-
+  factory_->ReceiveFromChild(
+      current_frame_->delegated_frame_data->resource_list);
   // Empty frames shouldn't be drawn and shouldn't contribute damage, so don't
   // increment frame index for them.
   if (!current_frame_ ||
@@ -70,12 +62,9 @@ void Surface::QueueFrame(scoped_ptr<CompositorFrame> frame,
   if (!draw_callback_.is_null())
     draw_callback_.Run(SurfaceDrawStatus::DRAW_SKIPPED);
   draw_callback_ = callback;
-
-  if (current_frame_) {
-    factory_->manager()->DidSatisfySequences(
-        SurfaceIdAllocator::NamespaceForId(surface_id_),
-        &current_frame_->metadata.satisfies_sequences);
-  }
+  factory_->manager()->DidSatisfySequences(
+      SurfaceIdAllocator::NamespaceForId(surface_id_),
+      &current_frame_->metadata.satisfies_sequences);
 }
 
 void Surface::RequestCopyOfOutput(scoped_ptr<CopyOutputRequest> copy_request) {
