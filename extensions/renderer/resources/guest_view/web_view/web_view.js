@@ -92,11 +92,7 @@ WebViewImpl.prototype.setupElementProperties = function() {
   // dynamic getter value.
   Object.defineProperty(this.element, 'contentWindow', {
     get: function() {
-      if (this.guest.getContentWindow()) {
-        return this.guest.getContentWindow();
-      }
-      window.console.error(
-          WebViewConstants.ERROR_MSG_CONTENTWINDOW_NOT_AVAILABLE);
+      return this.guest.getContentWindow();
     }.bind(this),
     // No setter.
     enumerable: true
