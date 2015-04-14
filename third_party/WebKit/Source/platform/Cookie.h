@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003, 2006, 2008, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2009 Joseph Pecoraro. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,26 +23,61 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CookieJar_h
-#define CookieJar_h
+#ifndef Cookie_h
+#define Cookie_h
 
-#include "wtf/Forward.h"
-#include "wtf/Vector.h"
+#include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class Document;
-class KURL;
-struct Cookie;
+// This struct is currently only used to provide more cookies information
+// to the Web Inspector.
 
-String cookies(const Document*, const KURL&);
-void setCookies(Document*, const KURL&, const String& cookieString);
-bool cookiesEnabled(const Document*);
-String cookieRequestHeaderFieldValue(const Document*, const KURL&);
-bool getRawCookies(const Document*, const KURL&, Vector<Cookie>&);
-void deleteCookie(const Document*, const KURL&, const String& cookieName);
+struct Cookie {
+    Cookie() { }
 
+    Cookie(const String& name, const String& value, const String& domain,
+        const String& path, double expires, bool httpOnly, bool secure,
+        bool session)
+        : name(name)
+        , value(value)
+        , domain(domain)
+        , path(path)
+        , expires(expires)
+        , httpOnly(httpOnly)
+        , secure(secure)
+        , session(session)
+    {
+    }
+
+    String name;
+    String value;
+    String domain;
+    String path;
+    double expires;
+    bool httpOnly;
+    bool secure;
+    bool session;
+};
+
+struct CookieHash {
+    static unsigned hash(Cookie key)
+    {
+        return StringHash::hash(key.name) + StringHash::hash(key.domain) + StringHash::hash(key.path) + key.secure;
+    }
+
+    static bool equal(Cookie a, Cookie b)
+    {
+        return a.name == b.name && a.domain == b.domain && a.path == b.path && a.secure == b.secure;
+    }
+};
+} // namespace blink
+
+namespace WTF {
+template<> struct DefaultHash<blink::Cookie> {
+    typedef blink::CookieHash Hash;
+};
 }
 
 #endif

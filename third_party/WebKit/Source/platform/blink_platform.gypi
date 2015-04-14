@@ -18,6 +18,7 @@
       'ContextMenu.h',
       'ContextMenuItem.cpp',
       'ContextMenuItem.h',
+      'Cookie.h',
       'CrossThreadCopier.cpp',
       'CrossThreadCopier.h',
       'Crypto.cpp',
