@@ -828,10 +828,9 @@
         category_group, name, TRACE_ID_DONT_MANGLE(id), TRACE_EVENT_FLAG_NONE)
 
 #define INTERNAL_TRACE_EVENT_CATEGORY_GROUP_ENABLED_FOR_RECORDING_MODE() \
-  UNLIKELY(*INTERNAL_TRACE_EVENT_UID(category_group_enabled) &           \
-           (base::trace_event::TraceLog::ENABLED_FOR_RECORDING |         \
-            base::trace_event::TraceLog::ENABLED_FOR_EVENT_CALLBACK |    \
-            base::trace_event::TraceLog::ENABLED_FOR_ETW_EXPORT))
+    UNLIKELY(*INTERNAL_TRACE_EVENT_UID(category_group_enabled) & \
+        (base::trace_event::TraceLog::ENABLED_FOR_RECORDING | \
+         base::trace_event::TraceLog::ENABLED_FOR_EVENT_CALLBACK))
 
 // Macro to efficiently determine if a given category group is enabled.
 #define TRACE_EVENT_CATEGORY_GROUP_ENABLED(category_group, ret) \
