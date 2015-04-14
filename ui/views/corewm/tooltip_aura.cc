@@ -62,6 +62,7 @@ class TooltipAura::TooltipView : public views::View {
         kVerticalPadding, kHorizontalPadding));
 
     set_owned_by_client();
+    render_text_->SetWordWrapBehavior(gfx::WRAP_LONG_WORDS);
     render_text_->SetMultiline(true);
 
     ResetDisplayRect();
