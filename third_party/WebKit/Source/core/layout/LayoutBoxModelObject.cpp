@@ -50,6 +50,29 @@
 
 namespace blink {
 
+class FloatStateForStyleChange {
+public:
+    static void setWasFloating(LayoutBoxModelObject* boxModelObject, bool wasFloating)
+    {
+        s_wasFloating = wasFloating;
+        s_boxModelObject = boxModelObject;
+    }
+
+    static bool wasFloating(LayoutBoxModelObject* boxModelObject)
+    {
+        ASSERT(boxModelObject == s_boxModelObject);
+        return s_wasFloating;
+    }
+
+private:
+    // Used to store state between styleWillChange and styleDidChange
+    static bool s_wasFloating;
+    static LayoutBoxModelObject* s_boxModelObject;
+};
+
+bool FloatStateForStyleChange::s_wasFloating = false;
+LayoutBoxModelObject* FloatStateForStyleChange::s_boxModelObject = nullptr;
+
 // The HashMap for storing continuation pointers.
 // An inline can be split with blocks occuring in between the inline content.
 // When this occurs we need a pointer to the next object. We can basically be
@@ -59,8 +82,6 @@ namespace blink {
 // its continuation but the <b> will just have an inline as its continuation.
 typedef HashMap<const LayoutBoxModelObject*, LayoutBoxModelObject*> ContinuationMap;
 static ContinuationMap* continuationMap = nullptr;
-
-bool LayoutBoxModelObject::s_wasFloating = false;
 
 void LayoutBoxModelObject::setSelectionState(SelectionState state)
 {
@@ -144,7 +165,7 @@ void LayoutBoxModelObject::styleWillChange(StyleDifference diff, const ComputedS
         invalidatePaintIncludingNonCompositingDescendants();
     }
 
-    s_wasFloating = isFloating();
+    FloatStateForStyleChange::setWasFloating(this, isFloating());
 
     if (const ComputedStyle* oldStyle = style()) {
         if (parent() && diff.needsPaintInvalidationLayer()) {
@@ -162,6 +183,7 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedSt
     bool hadTransform = hasTransformRelatedProperty();
     bool hadLayer = hasLayer();
     bool layerWasSelfPainting = hadLayer && layer()->isSelfPaintingLayer();
+    bool wasFloatingBeforeStyleChanged = FloatStateForStyleChange::wasFloating(this);
 
     LayoutObject::styleDidChange(diff, oldStyle);
     updateFromStyle();
@@ -169,7 +191,7 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedSt
     DeprecatedPaintLayerType type = layerTypeRequired();
     if (type != NoDeprecatedPaintLayer) {
         if (!layer() && layerCreationAllowedForSubtree()) {
-            if (s_wasFloating && isFloating())
+            if (wasFloatingBeforeStyleChanged && isFloating())
                 setChildNeedsLayout();
             createLayer(type);
             if (parent() && !needsLayout()) {
@@ -182,7 +204,7 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedSt
         setHasTransformRelatedProperty(false); // Either a transform wasn't specified or the object doesn't support transforms, so just null out the bit.
         setHasReflection(false);
         layer()->removeOnlyThisLayer(); // calls destroyLayer() which clears m_layer
-        if (s_wasFloating && isFloating())
+        if (wasFloatingBeforeStyleChanged && isFloating())
             setChildNeedsLayout();
         if (hadTransform)
             setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::StyleChange);

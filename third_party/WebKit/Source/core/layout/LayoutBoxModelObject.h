@@ -262,9 +262,6 @@ private:
     virtual bool isLayoutBoxModelObject() const override final { return true; }
 
     OwnPtr<DeprecatedPaintLayer> m_layer;
-
-    // Used to store state between styleWillChange and styleDidChange
-    static bool s_wasFloating;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBoxModelObject, isBoxModelObject());
