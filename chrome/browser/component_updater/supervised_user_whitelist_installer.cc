@@ -260,7 +260,7 @@ bool SupervisedUserWhitelistInstallerImpl::UnregisterWhitelistInternal(
   pref_dict->RemoveWithoutPathExpansion(crx_id, nullptr);
   const ComponentUpdateService::Status status =
       cus_->UnregisterComponent(crx_id);
-  DCHECK_EQ(ComponentUpdateService::kOk, status);
+  DCHECK_EQ(ComponentUpdateService::Status::kOk, status);
 
   return removed;
 }
@@ -433,7 +433,7 @@ void SupervisedUserWhitelistInstaller::TriggerComponentUpdate(
     OnDemandUpdater* updater,
     const std::string& crx_id) {
   ComponentUpdateService::Status status = updater->OnDemandUpdate(crx_id);
-  DCHECK_EQ(ComponentUpdateService::kOk, status);
+  DCHECK_EQ(ComponentUpdateService::Status::kOk, status);
 }
 
 }  // namespace component_updater

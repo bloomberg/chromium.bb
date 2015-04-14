@@ -52,13 +52,17 @@ namespace update_client {
 //     |              error                            V           |
 //     +------------------------------------------ kUpdating ->----+ success
 //
+// TODO(sorin): this data structure will be further refactored once
+// the new update service is in place. For the time being, it remains as-is,
+// since it is used by the old component update service.
 struct CrxUpdateItem {
-  enum Status {
+  enum class State {
     kNew,
     kChecking,
     kCanUpdate,
     kDownloadingDiff,
     kDownloading,
+    kDownloaded,
     kUpdatingDiff,
     kUpdating,
     kUpdated,
@@ -69,7 +73,7 @@ struct CrxUpdateItem {
 
   // Call CrxUpdateService::ChangeItemState to change |status|. The function may
   // enforce conditions or notify observers of the change.
-  Status status;
+  State state;
 
   // True if the component was recently unregistered and will be uninstalled
   // soon (after the currently operation is finished, if there is one).

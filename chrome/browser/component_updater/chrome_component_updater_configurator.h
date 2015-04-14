@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_COMPONENT_UPDATER_CHROME_COMPONENT_UPDATER_CONFIGURATOR_H_
 #define CHROME_BROWSER_COMPONENT_UPDATER_CHROME_COMPONENT_UPDATER_CONFIGURATOR_H_
 
+#include "base/memory/ref_counted.h"
 #include "components/update_client/configurator.h"
 
 namespace base {
@@ -17,7 +18,8 @@ class URLRequestContextGetter;
 
 namespace component_updater {
 
-update_client::Configurator* MakeChromeComponentUpdaterConfigurator(
+scoped_refptr<update_client::Configurator>
+MakeChromeComponentUpdaterConfigurator(
     const base::CommandLine* cmdline,
     net::URLRequestContextGetter* context_getter);
 

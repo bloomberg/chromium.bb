@@ -96,7 +96,7 @@ void RegisterSwiftShaderWithChrome(const base::FilePath& path) {
   GpuDataManager::GetInstance()->RegisterSwiftShaderPath(path);
 }
 
-class SwiftShaderComponentInstaller : public update_client::ComponentInstaller {
+class SwiftShaderComponentInstaller : public update_client::CrxInstaller {
  public:
   explicit SwiftShaderComponentInstaller(const Version& version);
 
@@ -178,7 +178,8 @@ void FinishSwiftShaderUpdateRegistration(ComponentUpdateService* cus,
   swiftshader.installer = new SwiftShaderComponentInstaller(version);
   swiftshader.version = version;
   swiftshader.pk_hash.assign(kSha2Hash, &kSha2Hash[sizeof(kSha2Hash)]);
-  if (cus->RegisterComponent(swiftshader) != ComponentUpdateService::kOk) {
+  if (cus->RegisterComponent(swiftshader) !=
+      ComponentUpdateService::Status::kOk) {
     NOTREACHED() << "SwiftShader component registration fail";
   }
 }

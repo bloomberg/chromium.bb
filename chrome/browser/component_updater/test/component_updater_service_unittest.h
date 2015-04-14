@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/component_updater/component_updater_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -54,7 +55,7 @@ class ComponentUpdaterTest : public testing::Test {
   // Makes the full path to a component updater test file.
   const base::FilePath test_file(const char* file);
 
-  update_client::TestConfigurator* test_configurator();
+  scoped_refptr<update_client::TestConfigurator> test_configurator();
 
   ComponentUpdateService::Status RegisterComponent(
       update_client::CrxComponent* com,
@@ -74,8 +75,8 @@ class ComponentUpdaterTest : public testing::Test {
   scoped_ptr<GetInterceptor> get_interceptor_;
 
  private:
-  update_client::TestConfigurator* test_config_;
   content::TestBrowserThreadBundle thread_bundle_;
+  scoped_refptr<update_client::TestConfigurator> test_config_;
   scoped_ptr<ComponentUpdateService> component_updater_;
 };
 

@@ -29,22 +29,22 @@ CrxDownloader::DownloadMetrics::DownloadMetrics()
 
 // On Windows, the first downloader in the chain is a background downloader,
 // which uses the BITS service.
-CrxDownloader* CrxDownloader::Create(
+scoped_ptr<CrxDownloader> CrxDownloader::Create(
     bool is_background_download,
     net::URLRequestContextGetter* context_getter,
-    scoped_refptr<base::SequencedTaskRunner> url_fetcher_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> background_task_runner) {
-  scoped_ptr<CrxDownloader> url_fetcher_downloader(
+    const scoped_refptr<base::SequencedTaskRunner>& url_fetcher_task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& background_task_runner) {
+  scoped_ptr<CrxDownloader> url_fetcher_downloader(scoped_ptr<CrxDownloader>(
       new UrlFetcherDownloader(scoped_ptr<CrxDownloader>().Pass(),
-                               context_getter, url_fetcher_task_runner));
+                               context_getter, url_fetcher_task_runner)));
 #if defined(OS_WIN)
   if (is_background_download) {
-    return new BackgroundDownloader(url_fetcher_downloader.Pass(),
-                                    context_getter, background_task_runner);
+    return scoped_ptr<CrxDownloader>(new BackgroundDownloader(
+        url_fetcher_downloader.Pass(), context_getter, background_task_runner));
   }
 #endif
 
-  return url_fetcher_downloader.release();
+  return url_fetcher_downloader;
 }
 
 CrxDownloader::CrxDownloader(scoped_ptr<CrxDownloader> successor)

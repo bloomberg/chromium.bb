@@ -506,6 +506,7 @@
       'update_client/test/ping_manager_unittest.cc',
       'update_client/test/request_sender_unittest.cc',
       'update_client/test/update_checker_unittest.cc',
+      'update_client/test/update_client_unittest.cc',
       'update_client/test/update_response_unittest.cc',
       'update_client/update_query_params_unittest.cc',
     ],

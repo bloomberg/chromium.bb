@@ -172,7 +172,7 @@ base::ListValue* ComponentsUI::LoadComponents() {
       component_entry->SetString("id", component_ids[j]);
       component_entry->SetString("name", item.component.name);
       component_entry->SetString("version", item.component.version.GetString());
-      component_entry->SetString("status", ServiceStatusToString(item.status));
+      component_entry->SetString("status", ServiceStatusToString(item.state));
       component_list->Append(component_entry);
     }
   }
@@ -189,48 +189,50 @@ base::RefCountedMemory* ComponentsUI::GetFaviconResourceBytes(
 
 base::string16 ComponentsUI::ComponentEventToString(Events event) {
   switch (event) {
-    case COMPONENT_UPDATER_STARTED:
+    case Events::COMPONENT_UPDATER_STARTED:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_EVT_STATUS_STARTED);
-    case COMPONENT_UPDATER_SLEEPING:
+    case Events::COMPONENT_UPDATER_SLEEPING:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_EVT_STATUS_SLEEPING);
-    case COMPONENT_UPDATE_FOUND:
+    case Events::COMPONENT_UPDATE_FOUND:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_EVT_STATUS_FOUND);
-    case COMPONENT_UPDATE_READY:
+    case Events::COMPONENT_UPDATE_READY:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_EVT_STATUS_READY);
-    case COMPONENT_UPDATED:
+    case Events::COMPONENT_UPDATED:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_EVT_STATUS_UPDATED);
-    case COMPONENT_NOT_UPDATED:
+    case Events::COMPONENT_NOT_UPDATED:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_EVT_STATUS_NOTUPDATED);
-    case COMPONENT_UPDATE_DOWNLOADING:
+    case Events::COMPONENT_UPDATE_DOWNLOADING:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_EVT_STATUS_DOWNLOADING);
   }
   return l10n_util::GetStringUTF16(IDS_COMPONENTS_UNKNOWN);
 }
 
 base::string16 ComponentsUI::ServiceStatusToString(
-    update_client::CrxUpdateItem::Status status) {
-  switch (status) {
-    case update_client::CrxUpdateItem::kNew:
+    update_client::CrxUpdateItem::State state) {
+  // TODO(sorin): handle kDownloaded. For now, just handle it as kUpdating.
+  switch (state) {
+    case update_client::CrxUpdateItem::State::kNew:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_NEW);
-    case update_client::CrxUpdateItem::kChecking:
+    case update_client::CrxUpdateItem::State::kChecking:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_CHECKING);
-    case update_client::CrxUpdateItem::kCanUpdate:
+    case update_client::CrxUpdateItem::State::kCanUpdate:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_UPDATE);
-    case update_client::CrxUpdateItem::kDownloadingDiff:
+    case update_client::CrxUpdateItem::State::kDownloadingDiff:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_DNL_DIFF);
-    case update_client::CrxUpdateItem::kDownloading:
+    case update_client::CrxUpdateItem::State::kDownloading:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_DNL);
-    case update_client::CrxUpdateItem::kUpdatingDiff:
+    case update_client::CrxUpdateItem::State::kUpdatingDiff:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_UPDT_DIFF);
-    case update_client::CrxUpdateItem::kUpdating:
+    case update_client::CrxUpdateItem::State::kUpdating:
+    case update_client::CrxUpdateItem::State::kDownloaded:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_UPDATING);
-    case update_client::CrxUpdateItem::kUpdated:
+    case update_client::CrxUpdateItem::State::kUpdated:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_UPDATED);
-    case update_client::CrxUpdateItem::kUpToDate:
+    case update_client::CrxUpdateItem::State::kUpToDate:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_UPTODATE);
-    case update_client::CrxUpdateItem::kNoUpdate:
+    case update_client::CrxUpdateItem::State::kNoUpdate:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_NOUPDATE);
-    case update_client::CrxUpdateItem::kLastStatus:
+    case update_client::CrxUpdateItem::State::kLastStatus:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_UNKNOWN);
   }
   return l10n_util::GetStringUTF16(IDS_COMPONENTS_UNKNOWN);
@@ -240,9 +242,8 @@ void ComponentsUI::OnEvent(Events event, const std::string& id) {
   base::DictionaryValue parameters;
   parameters.SetString("event", ComponentEventToString(event));
   if (!id.empty()) {
-    using component_updater::ComponentUpdateService;
-    if (event == ComponentUpdateService::Observer::COMPONENT_UPDATED) {
-      ComponentUpdateService* cus = g_browser_process->component_updater();
+    if (event == Events::COMPONENT_UPDATED) {
+      auto cus = g_browser_process->component_updater();
       update_client::CrxUpdateItem item;
       if (cus->GetComponentDetails(id, &item))
         parameters.SetString("version", item.component.version.GetString());

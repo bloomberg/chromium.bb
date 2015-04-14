@@ -60,7 +60,7 @@ class UpdateCheckerTest : public testing::Test {
 
   CrxUpdateItem BuildCrxUpdateItem();
 
-  scoped_ptr<TestConfigurator> config_;
+  scoped_refptr<TestConfigurator> config_;
 
   scoped_ptr<UpdateChecker> update_checker_;
 
@@ -86,8 +86,8 @@ UpdateCheckerTest::~UpdateCheckerTest() {
 }
 
 void UpdateCheckerTest::SetUp() {
-  config_.reset(new TestConfigurator(base::MessageLoopProxy::current(),
-                                     base::MessageLoopProxy::current()));
+  config_ = new TestConfigurator(base::MessageLoopProxy::current(),
+                                 base::MessageLoopProxy::current());
   interceptor_factory_.reset(
       new InterceptorFactory(base::MessageLoopProxy::current()));
   post_interceptor_ = interceptor_factory_->CreateInterceptor();
@@ -106,7 +106,7 @@ void UpdateCheckerTest::TearDown() {
   post_interceptor_ = NULL;
   interceptor_factory_.reset();
 
-  config_.reset();
+  config_ = nullptr;
 
   // The PostInterceptor requires the message loop to run to destruct correctly.
   // TODO(sorin): This is fragile and should be fixed.
@@ -155,7 +155,7 @@ CrxUpdateItem UpdateCheckerTest::BuildCrxUpdateItem() {
   crx_component.fingerprint = "fp1";
 
   CrxUpdateItem crx_update_item;
-  crx_update_item.status = CrxUpdateItem::kNew;
+  crx_update_item.state = CrxUpdateItem::State::kNew;
   crx_update_item.id = "jebgalgnebhfojomionfpkfelancnnkf";
   crx_update_item.component = crx_component;
 

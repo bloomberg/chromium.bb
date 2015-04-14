@@ -85,7 +85,7 @@ class ComponentInstallerTraits {
 // A DefaultComponentInstaller is intended to be final, and not derived from.
 // Customization must be provided by passing a ComponentInstallerTraits object
 // to the constructor.
-class DefaultComponentInstaller : public update_client::ComponentInstaller {
+class DefaultComponentInstaller : public update_client::CrxInstaller {
  public:
   DefaultComponentInstaller(
       scoped_ptr<ComponentInstallerTraits> installer_traits);

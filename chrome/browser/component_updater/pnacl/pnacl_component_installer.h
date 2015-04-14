@@ -37,7 +37,7 @@ class ComponentUpdateService;
 // Component installer responsible for Portable Native Client files.
 // Files can be installed to a shared location, or be installed to
 // a per-user location.
-class PnaclComponentInstaller : public update_client::ComponentInstaller {
+class PnaclComponentInstaller : public update_client::CrxInstaller {
  public:
   PnaclComponentInstaller();
 

@@ -4,6 +4,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -40,7 +41,7 @@ class RequestSenderTest : public testing::Test {
   void RunThreads();
   void RunThreadsUntilIdle();
 
-  scoped_ptr<TestConfigurator> config_;
+  scoped_refptr<TestConfigurator> config_;
   scoped_ptr<RequestSender> request_sender_;
   scoped_ptr<InterceptorFactory> interceptor_factory_;
 
@@ -66,8 +67,8 @@ RequestSenderTest::~RequestSenderTest() {
 }
 
 void RequestSenderTest::SetUp() {
-  config_.reset(new TestConfigurator(base::MessageLoopProxy::current(),
-                                     base::MessageLoopProxy::current()));
+  config_ = new TestConfigurator(base::MessageLoopProxy::current(),
+                                 base::MessageLoopProxy::current());
   interceptor_factory_.reset(
       new InterceptorFactory(base::MessageLoopProxy::current()));
   post_interceptor_1 =
@@ -88,7 +89,7 @@ void RequestSenderTest::TearDown() {
 
   interceptor_factory_.reset();
 
-  config_.reset();
+  config_ = nullptr;
 
   RunThreadsUntilIdle();
 }

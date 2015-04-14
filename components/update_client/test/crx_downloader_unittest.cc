@@ -113,10 +113,10 @@ void CrxDownloaderTest::SetUp() {
   num_progress_calls_ = 0;
   download_progress_result_ = CrxDownloader::Result();
 
-  crx_downloader_.reset(CrxDownloader::Create(
-      false,  // Do not use the background downloader in these tests.
-      context_.get(), base::MessageLoopProxy::current(),
-      NULL));  // No |background_task_runner| because no background downloader.
+  // Do not use the background downloader in these tests.
+  crx_downloader_.reset(CrxDownloader::Create(false, context_.get(),
+                                              base::MessageLoopProxy::current(),
+                                              NULL).release());
   crx_downloader_->set_progress_callback(progress_callback_);
 
   get_interceptor_.reset(new GetInterceptor(base::MessageLoopProxy::current(),
