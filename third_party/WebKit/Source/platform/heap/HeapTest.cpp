@@ -671,7 +671,7 @@ public:
         return new TraceCounter();
     }
 
-    void trace(Visitor*) { m_traceCount++; }
+    DEFINE_INLINE_TRACE() { m_traceCount++; }
 
     int traceCount() { return m_traceCount; }
 

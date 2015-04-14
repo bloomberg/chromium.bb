@@ -327,7 +327,8 @@ public:
         m_raw = nullptr;
     }
 
-    void trace(Visitor* visitor)
+    template<typename VisitorDispatcher>
+    void trace(VisitorDispatcher visitor)
     {
         STATIC_ASSERT_IS_GARBAGE_COLLECTED(T, "non-garbage collected object should not be in Persistent");
 #if ENABLE(GC_PROFILING)

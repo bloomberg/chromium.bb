@@ -161,9 +161,6 @@ public:
     static const bool value = sizeof(checkMarker<T>(nullptr)) == sizeof(YesType);
 };
 
-template <typename T, bool = HasInlinedTraceMethod<T>::value>
-struct TraceCompatibilityAdaptor;
-
 template<typename T, bool = NeedsAdjustAndMark<T>::value> class DefaultTraceTrait;
 
 // The TraceTrait is used to specify how to mark an object pointer and
@@ -180,13 +177,8 @@ template<typename T, bool = NeedsAdjustAndMark<T>::value> class DefaultTraceTrai
 template<typename T>
 class TraceTrait {
 public:
-    // Default implementation of TraceTrait<T>::trace just statically
-    // dispatches to the trace method of the class T.
-    template<typename VisitorDispatcher>
-    static void trace(VisitorDispatcher visitor, void* self)
-    {
-        TraceCompatibilityAdaptor<T>::trace(visitor, static_cast<T*>(self));
-    }
+    static void trace(Visitor*, void* self);
+    static void trace(InlinedGlobalMarkingVisitor, void* self);
 
     template<typename VisitorDispatcher>
     static void mark(VisitorDispatcher visitor, const T* t)
@@ -442,7 +434,7 @@ public:
             if (!vtable)
                 return;
         }
-        TraceCompatibilityAdaptor<T>::trace(Derived::fromHelper(this), &const_cast<T&>(t));
+        TraceTrait<T>::trace(Derived::fromHelper(this), &const_cast<T&>(t));
     }
 
     // The following trace methods are for off-heap collections.
