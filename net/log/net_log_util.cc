@@ -462,24 +462,11 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
   }
 
   if (info_sources & NET_INFO_SPDY_ALT_PROTO_MAPPINGS) {
-    base::ListValue* dict_list = new base::ListValue();
-
     const net::HttpServerProperties& http_server_properties =
         *context->http_server_properties();
-
-    const net::AlternativeServiceMap& map =
-        http_server_properties.alternative_service_map();
-
-    for (net::AlternativeServiceMap::const_iterator it = map.begin();
-         it != map.end(); ++it) {
-      base::DictionaryValue* dict = new base::DictionaryValue();
-      dict->SetString("host_port_pair", it->first.ToString());
-      dict->SetString("alternative_service", it->second.ToString());
-      dict_list->Append(dict);
-    }
-
-    net_info_dict->Set(NetInfoSourceToString(NET_INFO_SPDY_ALT_PROTO_MAPPINGS),
-                       dict_list);
+    net_info_dict->Set(
+        NetInfoSourceToString(NET_INFO_SPDY_ALT_PROTO_MAPPINGS),
+        http_server_properties.GetAlternativeServiceInfoAsValue());
   }
 
   if (info_sources & NET_INFO_QUIC) {

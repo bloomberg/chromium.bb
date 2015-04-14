@@ -19,6 +19,10 @@
 #include "net/spdy/spdy_framer.h"  // TODO(willchan): Reconsider this.
 #include "net/spdy/spdy_protocol.h"
 
+namespace base {
+class Value;
+}
+
 namespace net {
 
 struct SSLConfig;
@@ -251,7 +255,7 @@ class NET_EXPORT HttpServerProperties {
 
   // Returns true iff |alternative_service| is currently broken.
   virtual bool IsAlternativeServiceBroken(
-      const AlternativeService& alternative_service) = 0;
+      const AlternativeService& alternative_service) const = 0;
 
   // Returns true iff |alternative_service| was recently broken.
   virtual bool WasAlternativeServiceRecentlyBroken(
@@ -266,6 +270,9 @@ class NET_EXPORT HttpServerProperties {
 
   // Returns all alternative service mappings.
   virtual const AlternativeServiceMap& alternative_service_map() const = 0;
+
+  // Returns all alternative service mappings as human readable strings.
+  virtual base::Value* GetAlternativeServiceInfoAsValue() const = 0;
 
   // Sets the threshold to be used when evaluating alternative service
   // advertisments. Only advertisements with a probability greater than or equal

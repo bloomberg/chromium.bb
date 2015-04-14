@@ -101,7 +101,7 @@ AlternateProtocol AlternateProtocolFromNextProto(NextProto next_proto) {
 }
 
 std::string AlternativeService::ToString() const {
-  return base::StringPrintf("(%s, %s, %d)", AlternateProtocolToString(protocol),
+  return base::StringPrintf("%s %s:%d", AlternateProtocolToString(protocol),
                             host.c_str(), port);
 }
 

@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
 
 namespace net {
 
@@ -342,7 +343,7 @@ void HttpServerPropertiesImpl::MarkAlternativeServiceRecentlyBroken(
 }
 
 bool HttpServerPropertiesImpl::IsAlternativeServiceBroken(
-    const AlternativeService& alternative_service) {
+    const AlternativeService& alternative_service) const {
   // Empty host means use host of origin, callers are supposed to substitute.
   DCHECK(!alternative_service.host.empty());
   return ContainsKey(broken_alternative_services_, alternative_service);
@@ -392,6 +393,31 @@ void HttpServerPropertiesImpl::ClearAlternativeService(
 const AlternativeServiceMap& HttpServerPropertiesImpl::alternative_service_map()
     const {
   return alternative_service_map_;
+}
+
+base::Value* HttpServerPropertiesImpl::GetAlternativeServiceInfoAsValue()
+    const {
+  base::ListValue* dict_list = new base::ListValue();
+  for (const auto& alternative_service_map_item : alternative_service_map_) {
+    const HostPortPair& host_port_pair = alternative_service_map_item.first;
+    const AlternativeServiceInfo& alternative_service_info =
+        alternative_service_map_item.second;
+    std::string alternative_service_string(alternative_service_info.ToString());
+    AlternativeService alternative_service(
+        alternative_service_info.alternative_service);
+    if (alternative_service.host.empty()) {
+      alternative_service.host = host_port_pair.host();
+    }
+    if (IsAlternativeServiceBroken(alternative_service)) {
+      alternative_service_string.append(" (broken)");
+    }
+
+    base::DictionaryValue* dict = new base::DictionaryValue();
+    dict->SetString("host_port_pair", host_port_pair.ToString());
+    dict->SetString("alternative_service", alternative_service_string);
+    dict_list->Append(dict);
+  }
+  return dict_list;
 }
 
 const SettingsMap& HttpServerPropertiesImpl::GetSpdySettings(
