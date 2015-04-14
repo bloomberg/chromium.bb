@@ -32,6 +32,11 @@ FakeRendererScheduler::IdleTaskRunner() {
   return nullptr;
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+FakeRendererScheduler::TimerTaskRunner() {
+  return nullptr;
+}
+
 void FakeRendererScheduler::WillBeginFrame(const cc::BeginFrameArgs& args) {
 }
 
@@ -75,6 +80,12 @@ void FakeRendererScheduler::RemoveTaskObserver(
 }
 
 void FakeRendererScheduler::Shutdown() {
+}
+
+void FakeRendererScheduler::SuspendTimerQueue() {
+}
+
+void FakeRendererScheduler::ResumeTimerQueue() {
 }
 
 }  // namespace content

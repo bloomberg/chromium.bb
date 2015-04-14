@@ -11,7 +11,7 @@
 namespace content {
 
 PrioritizingTaskQueueSelector::PrioritizingTaskQueueSelector()
-    : starvation_count_(0) {
+    : starvation_count_(0), task_queue_selector_observer_(nullptr) {
 }
 
 PrioritizingTaskQueueSelector::~PrioritizingTaskQueueSelector() {
@@ -36,8 +36,10 @@ void PrioritizingTaskQueueSelector::SetQueuePriority(size_t queue_index,
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK_LT(queue_index, work_queues_.size());
   DCHECK_LT(priority, QUEUE_PRIORITY_COUNT);
-  DisableQueue(queue_index);
+  bool previously_enabled = DisableQueueInternal(queue_index);
   queue_priorities_[priority].insert(queue_index);
+  if (task_queue_selector_observer_ && !previously_enabled)
+    task_queue_selector_observer_->OnTaskQueueEnabled();
 }
 
 void PrioritizingTaskQueueSelector::EnableQueue(size_t queue_index,
@@ -46,11 +48,18 @@ void PrioritizingTaskQueueSelector::EnableQueue(size_t queue_index,
 }
 
 void PrioritizingTaskQueueSelector::DisableQueue(size_t queue_index) {
+  DisableQueueInternal(queue_index);
+}
+
+bool PrioritizingTaskQueueSelector::DisableQueueInternal(size_t queue_index) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK_LT(queue_index, work_queues_.size());
+  bool previously_enabled = false;
   for (auto& queue_priority : queue_priorities_) {
-    queue_priority.erase(queue_index);
+    if (queue_priority.erase(queue_index))
+      previously_enabled = true;
   }
+  return previously_enabled;
 }
 
 bool PrioritizingTaskQueueSelector::IsQueueEnabled(size_t queue_index) const {
@@ -173,6 +182,11 @@ void PrioritizingTaskQueueSelector::AsValueInto(
   }
   state->EndDictionary();
   state->SetInteger("starvation_count", starvation_count_);
+}
+
+void PrioritizingTaskQueueSelector::SetTaskQueueSelectorObserver(
+    Observer* observer) {
+  task_queue_selector_observer_ = observer;
 }
 
 }  // namespace content

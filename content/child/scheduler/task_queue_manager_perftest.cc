@@ -42,6 +42,8 @@ class SelectorForTest : public TaskQueueSelector {
     return found_one;
   }
 
+  void SetTaskQueueSelectorObserver(Observer* observer) override {}
+
   void AsValueInto(base::trace_event::TracedValue* state) const override {}
 
  private:

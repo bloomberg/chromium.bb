@@ -32,6 +32,7 @@ class CONTENT_EXPORT RendererSchedulerImpl
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> LoadingTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> TimerTaskRunner() override;
   void WillBeginFrame(const cc::BeginFrameArgs& args) override;
   void BeginFrameNotExpectedSoon() override;
   void DidCommitFrameToCompositor() override;
@@ -47,6 +48,8 @@ class CONTENT_EXPORT RendererSchedulerImpl
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override;
   void Shutdown() override;
+  void SuspendTimerQueue() override;
+  void ResumeTimerQueue() override;
 
   void SetTimeSourceForTesting(scoped_refptr<cc::TestNowSource> time_source);
   void SetWorkBatchSizeForTesting(size_t work_batch_size);
@@ -60,6 +63,7 @@ class CONTENT_EXPORT RendererSchedulerImpl
   enum QueueId {
     COMPOSITOR_TASK_QUEUE = SchedulerHelper::TASK_QUEUE_COUNT,
     LOADING_TASK_QUEUE,
+    TIMER_TASK_QUEUE,
     // Must be the last entry.
     TASK_QUEUE_COUNT,
   };
@@ -137,10 +141,21 @@ class CONTENT_EXPORT RendererSchedulerImpl
   // thread.
   void MaybeUpdatePolicy();
 
-  // Locks |incoming_signals_lock_| and updates the scheduler policy.
-  // Must be called from the main thread.
+  // Locks |incoming_signals_lock_| and updates the scheduler policy.  May early
+  // out if the policy is unchanged. Must be called from the main thread.
   void UpdatePolicy();
-  virtual void UpdatePolicyLocked();
+
+  // Like UpdatePolicy, except it doesn't early out.
+  void ForceUpdatePolicy();
+
+  enum class UpdateType {
+    MAY_EARLY_OUT_IF_POLICY_UNCHANGED,
+    FORCE_UPDATE,
+  };
+
+  // The implelemtation of UpdatePolicy & ForceUpdatePolicy.  It is allowed to
+  // early out if |update_type| is MAY_EARLY_OUT_IF_POLICY_UNCHANGED.
+  virtual void UpdatePolicyLocked(UpdateType update_type);
 
   // Returns the amount of time left in the current input escalated priority
   // policy.
@@ -166,6 +181,7 @@ class CONTENT_EXPORT RendererSchedulerImpl
   scoped_refptr<base::SingleThreadTaskRunner> control_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner_;
 
   base::Closure update_policy_closure_;
   DeadlineTaskRunner delayed_update_policy_runner_;
@@ -186,6 +202,7 @@ class CONTENT_EXPORT RendererSchedulerImpl
   blink::WebInputEvent::Type last_input_type_;
   InputStreamState input_stream_state_;
   PollableNeedsUpdateFlag policy_may_need_update_;
+  int timer_queue_suspend_count_;  // TIMER_TASK_QUEUE suspended if non-zero.
 
   base::WeakPtrFactory<RendererSchedulerImpl> weak_factory_;
 

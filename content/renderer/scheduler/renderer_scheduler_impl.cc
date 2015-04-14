@@ -30,6 +30,9 @@ RendererSchedulerImpl::RendererSchedulerImpl(
       loading_task_runner_(
           helper_.SchedulerTaskQueueManager()->TaskRunnerForQueue(
               LOADING_TASK_QUEUE)),
+      timer_task_runner_(
+          helper_.SchedulerTaskQueueManager()->TaskRunnerForQueue(
+              TIMER_TASK_QUEUE)),
       delayed_update_policy_runner_(
           base::Bind(&RendererSchedulerImpl::UpdatePolicy,
                      base::Unretained(this)),
@@ -39,6 +42,7 @@ RendererSchedulerImpl::RendererSchedulerImpl(
       last_input_type_(blink::WebInputEvent::Undefined),
       input_stream_state_(InputStreamState::INACTIVE),
       policy_may_need_update_(&incoming_signals_lock_),
+      timer_queue_suspend_count_(0),
       weak_factory_(this) {
   update_policy_closure_ = base::Bind(&RendererSchedulerImpl::UpdatePolicy,
                                       weak_factory_.GetWeakPtr());
@@ -86,6 +90,12 @@ scoped_refptr<base::SingleThreadTaskRunner>
 RendererSchedulerImpl::LoadingTaskRunner() {
   helper_.CheckOnValidThread();
   return loading_task_runner_;
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+RendererSchedulerImpl::TimerTaskRunner() {
+  helper_.CheckOnValidThread();
+  return timer_task_runner_;
 }
 
 bool RendererSchedulerImpl::CanExceedIdleDeadlineIfRequired() const {
@@ -256,7 +266,7 @@ void RendererSchedulerImpl::DidProcessInputEvent(
       begin_frame_time < last_input_receipt_time_on_compositor_)
     return;
   last_input_process_time_on_main_ = helper_.Now();
-  UpdatePolicyLocked();
+  UpdatePolicyLocked(UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED);
 }
 
 bool RendererSchedulerImpl::IsHighPriorityWorkAnticipated() {
@@ -331,10 +341,15 @@ void RendererSchedulerImpl::EnsureUrgentPolicyUpdatePostedOnMainThread(
 
 void RendererSchedulerImpl::UpdatePolicy() {
   base::AutoLock lock(incoming_signals_lock_);
-  UpdatePolicyLocked();
+  UpdatePolicyLocked(UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED);
 }
 
-void RendererSchedulerImpl::UpdatePolicyLocked() {
+void RendererSchedulerImpl::ForceUpdatePolicy() {
+  base::AutoLock lock(incoming_signals_lock_);
+  UpdatePolicyLocked(UpdateType::FORCE_UPDATE);
+}
+
+void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   helper_.CheckOnValidThread();
   incoming_signals_lock_.AssertAcquired();
   if (helper_.IsShutdown())
@@ -353,11 +368,13 @@ void RendererSchedulerImpl::UpdatePolicyLocked() {
     current_policy_expiration_time_ = base::TimeTicks();
   }
 
-  if (new_policy == current_policy_)
+  if (update_type == UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED &&
+      new_policy == current_policy_)
     return;
 
   PrioritizingTaskQueueSelector* task_queue_selector =
       helper_.SchedulerTaskQueueSelector();
+  bool policy_disables_timers = false;
 
   switch (new_policy) {
     case Policy::COMPOSITOR_PRIORITY:
@@ -373,6 +390,8 @@ void RendererSchedulerImpl::UpdatePolicyLocked() {
       task_queue_selector->SetQueuePriority(
           COMPOSITOR_TASK_QUEUE, PrioritizingTaskQueueSelector::HIGH_PRIORITY);
       task_queue_selector->DisableQueue(LOADING_TASK_QUEUE);
+      // TODO(alexclarke): Set policy_disables_timers once the blink TimerBase
+      // refactor is safely landed.
       break;
     case Policy::NORMAL:
       task_queue_selector->SetQueuePriority(
@@ -381,6 +400,12 @@ void RendererSchedulerImpl::UpdatePolicyLocked() {
       task_queue_selector->SetQueuePriority(
           LOADING_TASK_QUEUE, PrioritizingTaskQueueSelector::NORMAL_PRIORITY);
       break;
+  }
+  if (timer_queue_suspend_count_ != 0 || policy_disables_timers) {
+    task_queue_selector->DisableQueue(TIMER_TASK_QUEUE);
+  } else {
+    helper_.SchedulerTaskQueueSelector()->SetQueuePriority(
+        TIMER_TASK_QUEUE, PrioritizingTaskQueueSelector::NORMAL_PRIORITY);
   }
   DCHECK(task_queue_selector->IsQueueEnabled(COMPOSITOR_TASK_QUEUE));
   if (new_policy != Policy::TOUCHSTART_PRIORITY)
@@ -494,6 +519,21 @@ bool RendererSchedulerImpl::PollableNeedsUpdateFlag::IsSet() const {
   return base::subtle::Acquire_Load(&flag_) != 0;
 }
 
+void RendererSchedulerImpl::SuspendTimerQueue() {
+  helper_.CheckOnValidThread();
+  timer_queue_suspend_count_++;
+  ForceUpdatePolicy();
+  DCHECK(!helper_.SchedulerTaskQueueSelector()->IsQueueEnabled(
+      TIMER_TASK_QUEUE));
+}
+
+void RendererSchedulerImpl::ResumeTimerQueue() {
+  helper_.CheckOnValidThread();
+  timer_queue_suspend_count_--;
+  DCHECK_GE(timer_queue_suspend_count_, 0);
+  ForceUpdatePolicy();
+}
+
 // static
 const char* RendererSchedulerImpl::TaskQueueIdToString(QueueId queue_id) {
   switch (queue_id) {
@@ -501,6 +541,8 @@ const char* RendererSchedulerImpl::TaskQueueIdToString(QueueId queue_id) {
       return "compositor_tq";
     case LOADING_TASK_QUEUE:
       return "loading_tq";
+    case TIMER_TASK_QUEUE:
+      return "timer_tq";
     default:
       return SchedulerHelper::TaskQueueIdToString(
           static_cast<SchedulerHelper::QueueId>(queue_id));

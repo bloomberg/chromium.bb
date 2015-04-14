@@ -59,6 +59,12 @@ class CONTENT_EXPORT PrioritizingTaskQueueSelector
       const std::vector<const base::TaskQueue*>& work_queues) override;
   bool SelectWorkQueueToService(size_t* out_queue_index) override;
   void AsValueInto(base::trace_event::TracedValue* state) const override;
+  void SetTaskQueueSelectorObserver(Observer* observer) override;
+
+ protected:
+  // Disable the |queue_index|. Returns true if the queue was previously enabled
+  // otherwise returns false.
+  bool DisableQueueInternal(size_t queue_index);
 
  private:
   // Returns true if queueA contains an older task than queueB.
@@ -93,6 +99,7 @@ class CONTENT_EXPORT PrioritizingTaskQueueSelector
   std::vector<const base::TaskQueue*> work_queues_;
   std::set<size_t> queue_priorities_[QUEUE_PRIORITY_COUNT];
   size_t starvation_count_;
+  Observer* task_queue_selector_observer_;  // NOT OWNED
   DISALLOW_COPY_AND_ASSIGN(PrioritizingTaskQueueSelector);
 };
 

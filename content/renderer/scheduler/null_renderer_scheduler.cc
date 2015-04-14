@@ -38,6 +38,11 @@ NullRendererScheduler::IdleTaskRunner() {
   return idle_task_runner_;
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+NullRendererScheduler::TimerTaskRunner() {
+  return task_runner_;
+}
+
 void NullRendererScheduler::WillBeginFrame(const cc::BeginFrameArgs& args) {
 }
 
@@ -83,6 +88,12 @@ void NullRendererScheduler::RemoveTaskObserver(
 }
 
 void NullRendererScheduler::Shutdown() {
+}
+
+void NullRendererScheduler::SuspendTimerQueue() {
+}
+
+void NullRendererScheduler::ResumeTimerQueue() {
 }
 
 }  // namespace content

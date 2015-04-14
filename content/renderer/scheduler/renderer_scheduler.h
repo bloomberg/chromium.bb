@@ -37,6 +37,9 @@ class CONTENT_EXPORT RendererScheduler {
   // to resource dispatch, foreground HTML parsing, etc...
   virtual scoped_refptr<base::SingleThreadTaskRunner> LoadingTaskRunner() = 0;
 
+  // Returns the timer task runner.  This queue is intended for DOM Timers.
+  virtual scoped_refptr<base::SingleThreadTaskRunner> TimerTaskRunner() = 0;
+
   // Called to notify about the start of an extended period where no frames
   // need to be drawn. Must be called from the main thread.
   virtual void BeginFrameNotExpectedSoon() = 0;
@@ -104,6 +107,14 @@ class CONTENT_EXPORT RendererScheduler {
   // queues. After this call any work posted to the task runners will be
   // silently dropped.
   virtual void Shutdown() = 0;
+
+  // Suspends the timer queue and increments the timer queue suspension count.
+  // May only be called from the main thread.
+  virtual void SuspendTimerQueue() = 0;
+
+  // Decrements the timer queue suspension count and re-enables the timer queue
+  // if the suspension count is zero and the current schduler policy allows it.
+  virtual void ResumeTimerQueue() = 0;
 
  protected:
   RendererScheduler();

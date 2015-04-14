@@ -831,8 +831,11 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
 #endif
 
   if (pumping_events) {
-    if (suspend_webkit_shared_timer)
+    if (suspend_webkit_shared_timer) {
+      // TODO(alexclarke): Remove the shared timer.
       blink_platform_impl_->SuspendSharedTimer();
+      renderer_scheduler_->SuspendTimerQueue();
+    }
 
     if (notify_webkit_of_modal_loop)
       WebView::willEnterModalLoop();
@@ -860,8 +863,11 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
     if (notify_webkit_of_modal_loop)
       WebView::didExitModalLoop();
 
-    if (suspend_webkit_shared_timer)
+    if (suspend_webkit_shared_timer) {
+      // TODO(alexclarke): Remove the shared timer.
       blink_platform_impl_->ResumeSharedTimer();
+      renderer_scheduler_->ResumeTimerQueue();
+    }
   }
 
   return rv;
@@ -1699,10 +1705,13 @@ void RenderThreadImpl::OnUpdateTimezone() {
 void RenderThreadImpl::OnSetWebKitSharedTimersSuspended(bool suspend) {
   if (suspend_webkit_shared_timer_) {
     EnsureWebKitInitialized();
+    // TODO(alexclarke): Remove the shared timer.
     if (suspend) {
       blink_platform_impl_->SuspendSharedTimer();
+      renderer_scheduler_->SuspendTimerQueue();
     } else {
       blink_platform_impl_->ResumeSharedTimer();
+      renderer_scheduler_->ResumeTimerQueue();
     }
     webkit_shared_timer_suspended_ = suspend;
   }

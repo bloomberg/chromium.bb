@@ -482,6 +482,7 @@ TaskQueueManager::TaskQueueManager(
   for (const auto& queue : queues_)
     work_queues.push_back(&queue->work_queue());
   selector_->RegisterWorkQueues(work_queues);
+  selector_->SetTaskQueueSelectorObserver(this);
 
   do_work_from_main_thread_closure_ =
       base::Bind(&TaskQueueManager::DoWork, weak_factory_.GetWeakPtr(), true);
@@ -494,6 +495,7 @@ TaskQueueManager::~TaskQueueManager() {
                                      "TaskQueueManager", this);
   for (auto& queue : queues_)
     queue->WillDeleteTaskQueueManager();
+  selector_->SetTaskQueueSelectorObserver(nullptr);
 }
 
 internal::TaskQueue* TaskQueueManager::Queue(size_t queue_index) const {
@@ -732,6 +734,11 @@ TaskQueueManager::AsValueWithSelectorResult(bool should_run,
   if (should_run)
     state->SetInteger("selected_queue", selected_queue);
   return state;
+}
+
+void TaskQueueManager::OnTaskQueueEnabled() {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  MaybePostDoWorkOnMainRunner();
 }
 
 }  // namespace content

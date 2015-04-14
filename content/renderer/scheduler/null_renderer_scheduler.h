@@ -18,6 +18,7 @@ class NullRendererScheduler : public RendererScheduler {
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> LoadingTaskRunner() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> TimerTaskRunner() override;
 
   void WillBeginFrame(const cc::BeginFrameArgs& args) override;
   void BeginFrameNotExpectedSoon() override;
@@ -34,6 +35,8 @@ class NullRendererScheduler : public RendererScheduler {
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override;
   void Shutdown() override;
+  void SuspendTimerQueue() override;
+  void ResumeTimerQueue() override;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

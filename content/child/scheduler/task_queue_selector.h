@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 
 namespace base {
 class TaskQueue;
@@ -26,6 +27,18 @@ class TaskQueueSelector {
   // is called on the main thread.
   virtual void RegisterWorkQueues(
       const std::vector<const base::TaskQueue*>& work_queues) = 0;
+
+  class CONTENT_EXPORT Observer {
+   public:
+    virtual ~Observer() {}
+
+    // Called when a task queue transitions from disabled to enabled.
+    virtual void OnTaskQueueEnabled() = 0;
+  };
+
+  // Called once to set the Observer. This function is called
+  // on the main thread. If |observer| is null, then no callbacks will occur.
+  virtual void SetTaskQueueSelectorObserver(Observer* observer) = 0;
 
   // Called to choose the work queue from which the next task should be taken
   // and run. Return true if |out_queue| indicates the queue to service or

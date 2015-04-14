@@ -58,6 +58,9 @@ class AutomaticSelectorForTest : public SelectorForTest {
     return work_queues_;
   }
 
+  void SetTaskQueueSelectorObserver(Observer* observer) override {
+  }
+
  private:
   std::vector<const base::TaskQueue*> work_queues_;
 
@@ -88,6 +91,9 @@ class ExplicitSelectorForTest : public SelectorForTest {
 
   const std::vector<const base::TaskQueue*>& work_queues() override {
     return work_queues_;
+  }
+
+  void SetTaskQueueSelectorObserver(Observer* observer) override {
   }
 
  private:

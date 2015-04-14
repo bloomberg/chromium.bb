@@ -134,7 +134,8 @@ class RendererSchedulerImplTest : public testing::Test {
         default_task_runner_(scheduler_->DefaultTaskRunner()),
         compositor_task_runner_(scheduler_->CompositorTaskRunner()),
         loading_task_runner_(scheduler_->LoadingTaskRunner()),
-        idle_task_runner_(scheduler_->IdleTaskRunner()) {
+        idle_task_runner_(scheduler_->IdleTaskRunner()),
+        timer_task_runner_(scheduler_->TimerTaskRunner()) {
     scheduler_->SetTimeSourceForTesting(clock_);
   }
 
@@ -147,7 +148,8 @@ class RendererSchedulerImplTest : public testing::Test {
         default_task_runner_(scheduler_->DefaultTaskRunner()),
         compositor_task_runner_(scheduler_->CompositorTaskRunner()),
         loading_task_runner_(scheduler_->LoadingTaskRunner()),
-        idle_task_runner_(scheduler_->IdleTaskRunner()) {
+        idle_task_runner_(scheduler_->IdleTaskRunner()),
+        timer_task_runner_(scheduler_->TimerTaskRunner()) {
     scheduler_->SetTimeSourceForTesting(clock_);
   }
   ~RendererSchedulerImplTest() override {}
@@ -201,6 +203,7 @@ class RendererSchedulerImplTest : public testing::Test {
   // - 'C': Compositor task
   // - 'L': Loading task
   // - 'I': Idle task
+  // - 'T': Timer task
   void PostTestTasks(std::vector<std::string>* run_order,
                      const std::string& task_descriptor) {
     std::istringstream stream(task_descriptor);
@@ -224,6 +227,10 @@ class RendererSchedulerImplTest : public testing::Test {
           idle_task_runner_->PostIdleTask(
               FROM_HERE,
               base::Bind(&AppendToVectorIdleTestTask, run_order, task));
+          break;
+        case 'T':
+          timer_task_runner_->PostTask(
+              FROM_HERE, base::Bind(&AppendToVectorTestTask, run_order, task));
           break;
         default:
           NOTREACHED();
@@ -258,6 +265,7 @@ class RendererSchedulerImplTest : public testing::Test {
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererSchedulerImplTest);
 };
@@ -508,15 +516,16 @@ TEST_F(RendererSchedulerImplTest, TestCompositorPolicy_DidAnimateForInput) {
 
 TEST_F(RendererSchedulerImplTest, TestTouchstartPolicy) {
   std::vector<std::string> run_order;
-  PostTestTasks(&run_order, "L1 D1 C1 D2 C2");
+  PostTestTasks(&run_order, "L1 D1 C1 D2 C2 T1 T2");
 
-  // Observation of touchstart should defer execution of loading tasks.
+  // Observation of touchstart should defer execution of idle and loading tasks.
   scheduler_->DidReceiveInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::TouchStart));
   RunUntilIdle();
   EXPECT_THAT(run_order,
               testing::ElementsAre(std::string("C1"), std::string("C2"),
-                                   std::string("D1"), std::string("D2")));
+                                   std::string("D1"), std::string("D2"),
+                                   std::string("T1"), std::string("T2")));
 
   // Meta events like TapDown/FlingCancel shouldn't affect the priority.
   run_order.clear();
@@ -528,12 +537,14 @@ TEST_F(RendererSchedulerImplTest, TestTouchstartPolicy) {
   EXPECT_TRUE(run_order.empty());
 
   // Action events like ScrollBegin will kick us back into compositor priority,
-  // allowing servie of the loading and idle queues.
+  // allowing service of the timer, loading and idle queues.
   run_order.clear();
   scheduler_->DidReceiveInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::GestureScrollBegin));
   RunUntilIdle();
-  EXPECT_THAT(run_order, testing::ElementsAre(std::string("L1")));
+
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("L1")));
 }
 
 TEST_F(RendererSchedulerImplTest,
@@ -916,9 +927,9 @@ class RendererSchedulerImplForTest : public RendererSchedulerImpl {
       scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner)
       : RendererSchedulerImpl(main_task_runner), update_policy_count_(0) {}
 
-  void UpdatePolicyLocked() override {
+  void UpdatePolicyLocked(UpdateType update_type) override {
     update_policy_count_++;
-    RendererSchedulerImpl::UpdatePolicyLocked();
+    RendererSchedulerImpl::UpdatePolicyLocked(update_type);
   }
 
   int update_policy_count_;
@@ -1337,23 +1348,50 @@ TEST_F(RendererSchedulerImplTest, TestRendererHiddenIdlePeriod) {
   EXPECT_EQ(2, run_count);
 }
 
-TEST_F(RendererSchedulerImplTest, TestRendererHiddenThenVisibleIdlePeriod) {
-  int run_count = 0;
-
-  idle_task_runner_->PostIdleTask(
-      FROM_HERE,
-      base::Bind(&RepostingIdleTestTask, idle_task_runner_, &run_count));
-
-  // Hide the renderer to start an idle period.
-  scheduler_->OnRendererHidden();
+TEST_F(RendererSchedulerImplTest, TimerQueueEnabledByDefault) {
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "T1 T2");
   RunUntilIdle();
-  EXPECT_EQ(1, run_count);
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("T1"), std::string("T2")));
+}
 
-  // Ensure that the idle period stops when renderer becomes visible again.
-  clock_->AdvanceNow(maximum_idle_period_duration());
-  scheduler_->OnRendererVisible();
+TEST_F(RendererSchedulerImplTest, SuspendAndResumeTimerQueue) {
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "T1 T2");
+
+  scheduler_->SuspendTimerQueue();
   RunUntilIdle();
-  EXPECT_EQ(1, run_count);
+  EXPECT_TRUE(run_order.empty());
+
+  scheduler_->ResumeTimerQueue();
+  RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("T1"), std::string("T2")));
+}
+
+TEST_F(RendererSchedulerImplTest, MultipleSuspendsNeedMultipleResumes) {
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "T1 T2");
+
+  scheduler_->SuspendTimerQueue();
+  scheduler_->SuspendTimerQueue();
+  scheduler_->SuspendTimerQueue();
+  RunUntilIdle();
+  EXPECT_TRUE(run_order.empty());
+
+  scheduler_->ResumeTimerQueue();
+  RunUntilIdle();
+  EXPECT_TRUE(run_order.empty());
+
+  scheduler_->ResumeTimerQueue();
+  RunUntilIdle();
+  EXPECT_TRUE(run_order.empty());
+
+  scheduler_->ResumeTimerQueue();
+  RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("T1"), std::string("T2")));
 }
 
 }  // namespace content

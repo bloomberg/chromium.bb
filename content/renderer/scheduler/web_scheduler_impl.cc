@@ -15,7 +15,7 @@ WebSchedulerImpl::WebSchedulerImpl(RendererScheduler* renderer_scheduler)
     : renderer_scheduler_(renderer_scheduler),
       idle_task_runner_(renderer_scheduler_->IdleTaskRunner()),
       loading_task_runner_(renderer_scheduler_->LoadingTaskRunner()),
-      timer_task_runner_(renderer_scheduler_->DefaultTaskRunner()) {
+      timer_task_runner_(renderer_scheduler_->TimerTaskRunner()) {
 }
 
 WebSchedulerImpl::~WebSchedulerImpl() {

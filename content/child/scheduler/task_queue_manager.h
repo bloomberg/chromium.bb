@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "content/child/scheduler/task_queue_selector.h"
 #include "content/common/content_export.h"
 
 namespace base {
@@ -47,7 +48,8 @@ class NestableSingleThreadTaskRunner;
 //    the incoming task queue (if any) are moved here. The work queues are
 //    registered with the selector as input to the scheduling decision.
 //
-class CONTENT_EXPORT TaskQueueManager {
+class CONTENT_EXPORT TaskQueueManager
+    : public TaskQueueSelector::Observer {
  public:
   // Keep TaskQueue::PumpPolicyToString in sync with this enum.
   enum class PumpPolicy {
@@ -76,7 +78,7 @@ class CONTENT_EXPORT TaskQueueManager {
       scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner,
       TaskQueueSelector* selector,
       const char* disabled_by_default_tracing_category);
-  ~TaskQueueManager();
+  ~TaskQueueManager() override;
 
   // Returns the task runner which targets the queue selected by |queue_index|.
   scoped_refptr<base::SingleThreadTaskRunner> TaskRunnerForQueue(
@@ -129,6 +131,9 @@ class CONTENT_EXPORT TaskQueueManager {
   uint64 GetAndClearTaskWasRunOnQueueBitmap();
 
  private:
+  // TaskQueueSelector::Observer implementation:
+  void OnTaskQueueEnabled() override;
+
   friend class internal::LazyNow;
   friend class internal::TaskQueue;
 

@@ -13,6 +13,27 @@
 
 namespace content {
 
+class MockObserver
+    : public TaskQueueSelector::Observer {
+ public:
+  MockObserver() {}
+  virtual ~MockObserver() {}
+
+  MOCK_METHOD0(OnTaskQueueEnabled, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockObserver);
+};
+
+class PrioritizingTaskQueueSelectorForTest
+    : public PrioritizingTaskQueueSelector {
+ public:
+  PrioritizingTaskQueueSelectorForTest() {}
+  ~PrioritizingTaskQueueSelectorForTest() override {}
+
+  using PrioritizingTaskQueueSelector::DisableQueueInternal;
+};
+
 class PrioritizingTaskQueueSelectorTest : public testing::Test {
  public:
   PrioritizingTaskQueueSelectorTest()
@@ -64,7 +85,7 @@ class PrioritizingTaskQueueSelectorTest : public testing::Test {
 
   const size_t kTaskQueueCount = 5;
   base::Closure test_closure_;
-  PrioritizingTaskQueueSelector selector_;
+  PrioritizingTaskQueueSelectorForTest selector_;
   ScopedVector<base::TaskQueue> task_queues_;
 };
 
@@ -105,7 +126,22 @@ TEST_F(PrioritizingTaskQueueSelectorTest, TestControlPriority) {
   EXPECT_THAT(PopTasks(), testing::ElementsAre(4, 2, 0, 1, 3));
 }
 
+TEST_F(PrioritizingTaskQueueSelectorTest,
+       TestDisableReturnsTrueIfQueueWasEnabled) {
+  selector_.EnableQueue(1, PrioritizingTaskQueueSelector::NORMAL_PRIORITY);
+  EXPECT_TRUE(selector_.DisableQueueInternal(1));
+}
+
+TEST_F(PrioritizingTaskQueueSelectorTest,
+       TestDisableReturnsFalseIfQueueWasAlreadyDisabled) {
+  selector_.DisableQueue(1);
+  EXPECT_FALSE(selector_.DisableQueueInternal(1));
+}
+
 TEST_F(PrioritizingTaskQueueSelectorTest, TestDisableEnable) {
+  MockObserver mock_observer;
+  selector_.SetTaskQueueSelectorObserver(&mock_observer);
+
   std::vector<base::PendingTask> tasks = GetTasks(5);
   size_t queue_order[] = {0, 1, 2, 3, 4};
   PushTasks(tasks, queue_order);
@@ -114,6 +150,8 @@ TEST_F(PrioritizingTaskQueueSelectorTest, TestDisableEnable) {
   selector_.DisableQueue(4);
   EXPECT_FALSE(selector_.IsQueueEnabled(4));
   EXPECT_THAT(PopTasks(), testing::ElementsAre(0, 1, 3));
+
+  EXPECT_CALL(mock_observer, OnTaskQueueEnabled()).Times(2);
   selector_.EnableQueue(2, PrioritizingTaskQueueSelector::BEST_EFFORT_PRIORITY);
   EXPECT_THAT(PopTasks(), testing::ElementsAre(2));
   selector_.EnableQueue(4, PrioritizingTaskQueueSelector::NORMAL_PRIORITY);

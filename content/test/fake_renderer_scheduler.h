@@ -19,6 +19,7 @@ class FakeRendererScheduler : public RendererScheduler {
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> LoadingTaskRunner() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> TimerTaskRunner() override;
   void WillBeginFrame(const cc::BeginFrameArgs& args) override;
   void BeginFrameNotExpectedSoon() override;
   void DidCommitFrameToCompositor() override;
@@ -34,6 +35,8 @@ class FakeRendererScheduler : public RendererScheduler {
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override;
   void Shutdown() override;
+  void SuspendTimerQueue() override;
+  void ResumeTimerQueue() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeRendererScheduler);
