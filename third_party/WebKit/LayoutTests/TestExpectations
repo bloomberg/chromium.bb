@@ -2113,3 +2113,5 @@ crbug.com/476933 virtual/display_list_2d_canvas/fast/canvas/canvas-drawImage-vid
 
 crbug.com/476933 virtual/slimmingpaint/fast/canvas/canvas-composite-video.html [ NeedsRebaseline ]
 crbug.com/476933 virtual/slimmingpaint/fast/canvas/canvas-drawImage-video.html [ NeedsRebaseline ]
+
+crbug.com/450271 [ Win ] compositing/repaint/end-of-opacity-transition.html [ Pass Failure ]
