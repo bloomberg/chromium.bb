@@ -58,10 +58,6 @@ class PasswordStoreFactory : public BrowserContextKeyedServiceFactory {
 
   static PasswordStoreFactory* GetInstance();
 
-  // Called by the PasswordDataTypeController whenever there is a possibility
-  // that syncing passwords has just started or ended for |profile|.
-  static void OnPasswordsSyncedStatePotentiallyChanged(Profile* profile);
-
  private:
   friend struct DefaultSingletonTraits<PasswordStoreFactory>;
 

@@ -68,14 +68,10 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Sets the affiliation-based match |helper| that will be used by subsequent
   // GetLogins() calls to return credentials stored not only for the requested
-  // sign-on realm, but also for affiliated Android applications. If |helper| is
-  // null, clears the the currently set helper if any. Unless a helper is set,
-  // affiliation-based matching is disabled. The passed |helper| must already be
-  // initialized if it is non-null.
+  // sign-on realm, but also for affiliated Android applications. The helper
+  // must already be initialized. Unless a |helper| is set, affiliation-based
+  // matching is disabled.
   void SetAffiliatedMatchHelper(scoped_ptr<AffiliatedMatchHelper> helper);
-
-  // Returns whether or not an affiliation-based match helper is set.
-  bool HasAffiliatedMatchHelper() const;
 
   // Adds the given PasswordForm to the secure password store asynchronously.
   virtual void AddLogin(const autofill::PasswordForm& form);

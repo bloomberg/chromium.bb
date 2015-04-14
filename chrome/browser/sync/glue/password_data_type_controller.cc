@@ -10,8 +10,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -52,29 +50,9 @@ bool PasswordDataTypeController::PostTaskOnBackendThread(
 bool PasswordDataTypeController::StartModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(MODEL_STARTING, state());
-
-  ProfileSyncService* profile_sync_service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
-  DCHECK(profile_sync_service);
-  profile_sync_service->AddObserver(this);
-
-  OnStateChanged();
-
   password_store_ = PasswordStoreFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   return !!password_store_.get();
-}
-
-void PasswordDataTypeController::StopModels() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ProfileSyncService* profile_sync_service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
-  DCHECK(profile_sync_service);
-  profile_sync_service->RemoveObserver(this);
-}
-
-void PasswordDataTypeController::OnStateChanged() {
-  PasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged(profile_);
 }
 
 }  // namespace browser_sync
