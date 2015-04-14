@@ -128,18 +128,8 @@ base::TimeTicks Scheduler::Now() const {
   return now;
 }
 
-void Scheduler::SetAuthoritativeVSyncInterval(const base::TimeDelta& interval) {
-  authoritative_vsync_interval_ = interval;
-  if (vsync_observer_)
-    vsync_observer_->OnUpdateVSyncParameters(last_vsync_timebase_, interval);
-}
-
 void Scheduler::CommitVSyncParameters(base::TimeTicks timebase,
                                       base::TimeDelta interval) {
-  TRACE_EVENT2("cc", "Scheduler::CommitVSyncParameters", "timebase",
-               (timebase - base::TimeTicks()).InSecondsF(), "interval",
-               interval.InSecondsF());
-
   if (authoritative_vsync_interval_ != base::TimeDelta()) {
     interval = authoritative_vsync_interval_;
   } else if (interval == base::TimeDelta()) {
@@ -402,6 +392,12 @@ bool Scheduler::OnBeginFrameMixInDelegate(const BeginFrameArgs& args) {
 void Scheduler::SetChildrenNeedBeginFrames(bool children_need_begin_frames) {
   state_machine_.SetChildrenNeedBeginFrames(children_need_begin_frames);
   ProcessScheduledActions();
+}
+
+void Scheduler::SetAuthoritativeVSyncInterval(const base::TimeDelta& interval) {
+  authoritative_vsync_interval_ = interval;
+  if (vsync_observer_)
+    vsync_observer_->OnUpdateVSyncParameters(last_vsync_timebase_, interval);
 }
 
 void Scheduler::OnDrawForOutputSurface() {

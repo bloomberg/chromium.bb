@@ -603,8 +603,6 @@
         'surfaces/display.cc',
         'surfaces/display.h',
         'surfaces/display_client.h',
-        'surfaces/display_scheduler.cc',
-        'surfaces/display_scheduler.h',
         'surfaces/onscreen_display_client.cc',
         'surfaces/onscreen_display_client.h',
         'surfaces/surface.cc',

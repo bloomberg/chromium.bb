@@ -18,8 +18,6 @@ component("surfaces") {
     "display.cc",
     "display.h",
     "display_client.h",
-    "display_scheduler.cc",
-    "display_scheduler.h",
     "onscreen_display_client.cc",
     "onscreen_display_client.h",
     "surface.cc",

@@ -16,10 +16,8 @@
 
 namespace cc {
 class ContextProvider;
-class DisplayScheduler;
 class SurfaceManager;
 class SurfaceDisplayOutputSurface;
-class SyntheticBeginFrameSource;
 
 // This class provides a DisplayClient implementation for drawing directly to an
 // onscreen context.
@@ -42,6 +40,9 @@ class CC_SURFACES_EXPORT OnscreenDisplayClient
   }
 
   // DisplayClient implementation.
+  void DisplayDamaged() override;
+  void DidSwapBuffers() override;
+  void DidSwapBuffersComplete() override;
   void CommitVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval) override;
   void OutputSurfaceLost() override;
@@ -50,13 +51,21 @@ class CC_SURFACES_EXPORT OnscreenDisplayClient
   bool output_surface_lost() { return output_surface_lost_; }
 
  private:
+  void ScheduleDraw();
+  void Draw();
+
   scoped_ptr<OutputSurface> output_surface_;
   scoped_ptr<Display> display_;
-  scoped_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source_;
-  scoped_ptr<DisplayScheduler> scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   SurfaceDisplayOutputSurface* surface_display_output_surface_;
+  bool scheduled_draw_;
   bool output_surface_lost_;
+  // True if a draw should be scheduled, but it's hit the limit on max frames
+  // pending.
+  bool deferred_draw_;
+  int pending_frames_;
+
+  base::WeakPtrFactory<OnscreenDisplayClient> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OnscreenDisplayClient);
 };

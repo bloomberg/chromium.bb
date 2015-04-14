@@ -46,12 +46,8 @@ void DisplayImpl::OnContextCreated(mojo::CommandBufferPtr gles2_client) {
   cc::RendererSettings settings;
   display_.reset(new cc::Display(this, manager_, nullptr, nullptr, settings));
   scheduler_->AddDisplay(display_.get());
-
-  // TODO(brianderson): Reconcile with SurfacesScheduler crbug.com/476676
-  cc::DisplayScheduler* null_display_scheduler = nullptr;
   display_->Initialize(make_scoped_ptr(new mojo::DirectOutputSurface(
-      new mojo::ContextProviderMojo(gles2_client.PassMessagePipe()))),
-      null_display_scheduler);
+      new mojo::ContextProviderMojo(gles2_client.PassMessagePipe()))));
 
   factory_.Create(cc_id_);
   display_->SetSurfaceId(cc_id_, 1.f);
@@ -84,6 +80,15 @@ void DisplayImpl::Draw() {
                        base::Bind(&CallCallback, pending_callback_));
   scheduler_->SetNeedsDraw();
   pending_callback_.reset();
+}
+
+void DisplayImpl::DisplayDamaged() {
+}
+
+void DisplayImpl::DidSwapBuffers() {
+}
+
+void DisplayImpl::DidSwapBuffersComplete() {
 }
 
 void DisplayImpl::CommitVSyncParameters(base::TimeTicks timebase,

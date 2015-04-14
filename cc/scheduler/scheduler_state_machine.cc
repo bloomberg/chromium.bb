@@ -859,6 +859,7 @@ SchedulerStateMachine::CurrentBeginImplFrameDeadlineMode() const {
 
 bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately()
     const {
+  // TODO(brianderson): This should take into account multiple commit sources.
   if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME)
     return false;
 
