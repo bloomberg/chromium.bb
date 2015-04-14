@@ -23,6 +23,7 @@
 #include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/validation.h"
+#include "components/autofill/core/common/autofill_l10n_util.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "grit/components_scaled_resources.h"
 #include "grit/components_strings.h"
@@ -70,8 +71,7 @@ bool ConvertMonth(const base::string16& month,
 
   // Otherwise, try parsing the |month| as a named month, e.g. "January" or
   // "Jan".
-  base::string16 lowercased_month = base::StringToLowerASCII(month);
-
+  l10n::CaseInsensitiveCompare compare;
   UErrorCode status = U_ZERO_ERROR;
   icu::Locale locale(app_locale.c_str());
   icu::DateFormatSymbols date_format_symbols(locale, status);
@@ -81,9 +81,8 @@ bool ConvertMonth(const base::string16& month,
   int32_t num_months;
   const icu::UnicodeString* months = date_format_symbols.getMonths(num_months);
   for (int32_t i = 0; i < num_months; ++i) {
-    const base::string16 icu_month = base::string16(months[i].getBuffer(),
-                                        months[i].length());
-    if (lowercased_month == base::StringToLowerASCII(icu_month)) {
+    const base::string16 icu_month(months[i].getBuffer(), months[i].length());
+    if (compare.StringsEqual(icu_month, month)) {
       *num = i + 1;  // Adjust from 0-indexed to 1-indexed.
       return true;
     }
@@ -91,9 +90,8 @@ bool ConvertMonth(const base::string16& month,
 
   months = date_format_symbols.getShortMonths(num_months);
   for (int32_t i = 0; i < num_months; ++i) {
-    const base::string16 icu_month = base::string16(months[i].getBuffer(),
-                                        months[i].length());
-    if (lowercased_month == base::StringToLowerASCII(icu_month)) {
+    const base::string16 icu_month(months[i].getBuffer(), months[i].length());
+    if (compare.StringsEqual(icu_month, month)) {
       *num = i + 1;  // Adjust from 0-indexed to 1-indexed.
       return true;
     }
