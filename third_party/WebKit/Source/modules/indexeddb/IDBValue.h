@@ -5,10 +5,9 @@
 #ifndef IDBValue_h
 #define IDBValue_h
 
-#include "IDBKey.h"
-#include "IDBKeyPath.h"
+#include "modules/indexeddb/IDBKey.h"
+#include "modules/indexeddb/IDBKeyPath.h"
 #include "platform/SharedBuffer.h"
-#include "public/platform/WebIDBKey.h"
 #include "public/platform/WebVector.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -22,7 +21,7 @@ class IDBValue final : public RefCounted<IDBValue> {
 public:
     static PassRefPtr<IDBValue> create();
     static PassRefPtr<IDBValue> create(PassRefPtr<SharedBuffer>, const WebVector<WebBlobInfo>&);
-    static PassRefPtr<IDBValue> create(PassRefPtr<SharedBuffer>, const WebVector<WebBlobInfo>&, const WebIDBKey&, const IDBKeyPath&);
+    static PassRefPtr<IDBValue> create(PassRefPtr<SharedBuffer>, const WebVector<WebBlobInfo>&, IDBKey*, const IDBKeyPath&);
     static PassRefPtr<IDBValue> create(const IDBValue*, IDBKey*, const IDBKeyPath&);
 
     bool isNull() const;
@@ -35,7 +34,7 @@ public:
 private:
     IDBValue();
     IDBValue(PassRefPtr<SharedBuffer>, const WebVector<WebBlobInfo>&);
-    IDBValue(PassRefPtr<SharedBuffer>, const WebVector<WebBlobInfo>&, const WebIDBKey&, const IDBKeyPath&);
+    IDBValue(PassRefPtr<SharedBuffer>, const WebVector<WebBlobInfo>&, IDBKey*, const IDBKeyPath&);
     IDBValue(const IDBValue*, IDBKey*, const IDBKeyPath&);
 
     const RefPtr<SharedBuffer> m_data;

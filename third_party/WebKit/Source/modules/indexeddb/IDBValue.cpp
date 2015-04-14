@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "config.h"
-
 #include "modules/indexeddb/IDBValue.h"
 
 #include "platform/blob/BlobData.h"
@@ -13,11 +12,11 @@ namespace blink {
 
 IDBValue::IDBValue() = default;
 
-IDBValue::IDBValue(PassRefPtr<SharedBuffer> data, const WebVector<WebBlobInfo>& webBlobInfo, const WebIDBKey& primaryKey, const IDBKeyPath& keyPath)
+IDBValue::IDBValue(PassRefPtr<SharedBuffer> data, const WebVector<WebBlobInfo>& webBlobInfo, IDBKey* primaryKey, const IDBKeyPath& keyPath)
     : m_data(data)
     , m_blobData(adoptPtr(new Vector<RefPtr<BlobDataHandle>>()))
     , m_blobInfo(adoptPtr(new Vector<WebBlobInfo>(webBlobInfo.size())))
-    , m_primaryKey(primaryKey.isValid() ? primaryKey : nullptr)
+    , m_primaryKey(primaryKey && primaryKey->isValid() ? primaryKey : nullptr)
     , m_keyPath(keyPath)
 {
     for (size_t i = 0; i < webBlobInfo.size(); ++i) {
@@ -27,7 +26,7 @@ IDBValue::IDBValue(PassRefPtr<SharedBuffer> data, const WebVector<WebBlobInfo>& 
 }
 
 IDBValue::IDBValue(PassRefPtr<SharedBuffer> data, const WebVector<WebBlobInfo>& webBlobInfo)
-    : IDBValue(data, webBlobInfo, WebIDBKey::createInvalid(), IDBKeyPath())
+    : IDBValue(data, webBlobInfo, nullptr, IDBKeyPath())
 {
 }
 
@@ -54,7 +53,7 @@ PassRefPtr<IDBValue> IDBValue::create(PassRefPtr<SharedBuffer>data, const WebVec
     return adoptRef(new IDBValue(data, webBlobInfo));
 }
 
-PassRefPtr<IDBValue> IDBValue::create(PassRefPtr<SharedBuffer>data, const WebVector<WebBlobInfo>& webBlobInfo, const WebIDBKey& primaryKey, const IDBKeyPath& keyPath)
+PassRefPtr<IDBValue> IDBValue::create(PassRefPtr<SharedBuffer>data, const WebVector<WebBlobInfo>& webBlobInfo, IDBKey* primaryKey, const IDBKeyPath& keyPath)
 {
     return adoptRef(new IDBValue(data, webBlobInfo, primaryKey, keyPath));
 }
