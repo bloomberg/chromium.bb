@@ -117,6 +117,7 @@ Scheduler::Scheduler(
 Scheduler::~Scheduler() {
   if (frame_source_->NeedsBeginFrames())
     frame_source_->SetNeedsBeginFrames(false);
+  frame_source_->SetActiveSource(nullptr);
 }
 
 base::TimeTicks Scheduler::Now() const {

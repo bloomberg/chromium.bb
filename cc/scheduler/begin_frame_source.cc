@@ -297,6 +297,10 @@ BeginFrameSourceMultiplexer::BeginFrameSourceMultiplexer(
 }
 
 BeginFrameSourceMultiplexer::~BeginFrameSourceMultiplexer() {
+  if (active_source_) {
+    active_source_->SetNeedsBeginFrames(false);
+    active_source_->RemoveObserver(this);
+  }
 }
 
 void BeginFrameSourceMultiplexer::SetMinimumInterval(
