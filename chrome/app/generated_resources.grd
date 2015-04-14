@@ -5713,9 +5713,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DEBUG_SHORTCUTS_NAME" desc="Name of the 'Debugging keyboard shortcuts' lab.">
         Debugging keyboard shortcuts
       </message>
-      <message name="IDS_FLAGS_DEBUG_SHORTCUTS_DESCRIPTION" desc="Description of the 'Debugging keyboard shortcuts' lab.">
-        Enables additional keyboard shortcuts that are useful for debugging Chromium.
-      </message>
       <message name="IDS_FLAGS_IGNORE_GPU_BLACKLIST_NAME" desc="Name of the 'Ignore GPU blacklist' lab.">
         Override software rendering list
       </message>
@@ -8455,9 +8452,6 @@ I don't think this site should be blocked!
       </message>
       <message name="IDS_RESET_BUBBLE_TEXT" desc="Text for the settings reset bubble view full description.">
         <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> detected that your browser settings may have been changed without your knowledge. Would you like to reset them to their original defaults?
-      </message>
-      <message name="IDS_REPORT_BUBBLE_TEXT" desc="Text for the settings reset bubble reporting checkbox.">
-        Help make Google Chrome better by reporting the current settings
       </message>
 
       <!-- SRT bubble messages -->

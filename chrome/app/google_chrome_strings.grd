@@ -595,6 +595,9 @@ Google Chrome is unable to recover your settings.
           Your changes will take effect the next time you restart your device.
         </message>
       </if>
+      <message name="IDS_FLAGS_DEBUG_SHORTCUTS_DESCRIPTION" desc="Description of the 'Debugging keyboard shortcuts' lab.">
+        Enables additional keyboard shortcuts that are useful for debugging Google Chrome.
+      </message>
 
       <!-- Obsolete System info bar -->
       <message name="IDS_SYSTEM_OBSOLETE_MESSAGE" desc="Message shown when your OS is no longer supported. This message is followed by a 'Learn more' link.">
@@ -688,6 +691,11 @@ For Google Chrome, processes used to display diagnostics information (such as th
           Sign in to Chrome
         </message>
       </if>
+
+      <!-- settings reset bubble messages -->
+      <message name="IDS_REPORT_BUBBLE_TEXT" desc="Text for the settings reset bubble reporting checkbox.">
+        Help make Google Chrome better by reporting the current settings
+      </message>
 
       <!-- chrome://settings/extensions page -->
       <message name="IDS_EXTENSIONS_INCOGNITO_WARNING" desc="Warns the user that Chrome cannot prevent extensions from recording history in incognito mode. Displayed in extensions management UI after an extension is selected to be run in incognito mode.">

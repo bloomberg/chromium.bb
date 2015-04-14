@@ -672,6 +672,9 @@ Chromium is unable to recover your settings.
           Your changes will take effect the next time you restart your device.
         </message>
       </if>
+      <message name="IDS_FLAGS_DEBUG_SHORTCUTS_DESCRIPTION" desc="Description of the 'Debugging keyboard shortcuts' lab.">
+        Enables additional keyboard shortcuts that are useful for debugging Chromium.
+      </message>
 
       <!-- Obsolete System info bar -->
       <message name="IDS_SYSTEM_OBSOLETE_MESSAGE" desc="Message shown when your OS is no longer supported. This message is followed by a 'Learn more' link.">
@@ -765,6 +768,11 @@ For Chromium, processes used to display diagnostics information (such as this "a
           Sign in to Chromium
         </message>
       </if>
+
+      <!-- settings reset bubble messages -->
+      <message name="IDS_REPORT_BUBBLE_TEXT" desc="Text for the settings reset bubble reporting checkbox.">
+        Help make Chromium better by reporting the current settings
+      </message>
 
       <!-- chrome://settings/extensions page -->
       <message name="IDS_EXTENSIONS_INCOGNITO_WARNING" desc="Warns the user that Chromium cannot prevent extensions from recording history in incognito mode. Displayed in extensions management UI after an extension is selected to be run in incognito mode.">
