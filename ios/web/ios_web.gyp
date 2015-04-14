@@ -27,6 +27,8 @@
         '../../url/url.gyp:url_lib',
       ],
       'sources': [
+        'alloc_with_zone_interceptor.h',
+        'alloc_with_zone_interceptor.mm',
         'browser_state.cc',
         'load_committed_details.cc',
         'navigation/navigation_item_impl.h',

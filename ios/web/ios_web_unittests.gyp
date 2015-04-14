@@ -21,6 +21,7 @@
         'ios_web.gyp:test_support_ios_web',
       ],
       'sources': [
+        'alloc_with_zone_interceptor_unittest.mm',
         'browser_state_unittest.cc',
         'crw_network_activity_indicator_manager_unittest.mm',
         'history_state_util_unittest.mm',
