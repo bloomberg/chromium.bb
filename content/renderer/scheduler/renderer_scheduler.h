@@ -58,6 +58,17 @@ class CONTENT_EXPORT RendererScheduler {
   // a fling). Called by the compositor (impl) thread.
   virtual void DidAnimateForInputOnCompositorThread() = 0;
 
+  // Tells the scheduler that all render widgets managed by this renderer
+  // process have been hidden. The renderer is assumed to be visible when the
+  // scheduler is constructed. Must be called on the main thread.
+  virtual void OnRendererHidden() = 0;
+
+  // Tells the scheduler that at least one render widget managed by this
+  // renderer process has become visible and the renderer is no longer hidden.
+  // The renderer is assumed to be visible when the scheduler is constructed.
+  // Must be called on the main thread.
+  virtual void OnRendererVisible() = 0;
+
   // Returns true if the scheduler has reason to believe that high priority work
   // may soon arrive on the main thread, e.g., if gesture events were observed
   // recently.

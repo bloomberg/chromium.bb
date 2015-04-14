@@ -859,10 +859,10 @@ void RenderWidget::OnClose() {
 
   // Browser correspondence is no longer needed at this point.
   if (routing_id_ != MSG_ROUTING_NONE) {
-    if (RenderThreadImpl::current())
-      RenderThreadImpl::current()->WidgetDestroyed();
     RenderThread::Get()->RemoveRoute(routing_id_);
     SetHidden(false);
+    if (RenderThreadImpl::current())
+      RenderThreadImpl::current()->WidgetDestroyed();
   }
 
   // If there is a Send call on the stack, then it could be dangerous to close

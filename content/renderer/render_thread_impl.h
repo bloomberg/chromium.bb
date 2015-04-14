@@ -401,6 +401,8 @@ class CONTENT_EXPORT RenderThreadImpl
   // Called by a RenderWidget when it is created or destroyed. This
   // allows the process to know when there are no visible widgets.
   void WidgetCreated();
+  // Note: A widget must not be hidden when it is destroyed - ensure that
+  // WidgetRestored is called before WidgetDestroyed for any hidden widget.
   void WidgetDestroyed();
   void WidgetHidden();
   void WidgetRestored();
@@ -468,6 +470,9 @@ class CONTENT_EXPORT RenderThreadImpl
 #endif
   void OnCreateNewSharedWorker(
       const WorkerProcessMsg_CreateWorker_Params& params);
+  bool RendererIsHidden() const;
+  void OnRendererHidden();
+  void OnRendererVisible();
 
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateOffscreenContext3d();
 

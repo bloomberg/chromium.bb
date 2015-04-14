@@ -25,6 +25,8 @@ class FakeRendererScheduler : public RendererScheduler {
   void DidReceiveInputEventOnCompositorThread(
       const blink::WebInputEvent& web_input_event) override;
   void DidAnimateForInputOnCompositorThread() override;
+  void OnRendererHidden() override;
+  void OnRendererVisible() override;
   bool IsHighPriorityWorkAnticipated() override;
   bool CanExceedIdleDeadlineIfRequired() const override;
   bool ShouldYieldForHighPriorityWork() override;

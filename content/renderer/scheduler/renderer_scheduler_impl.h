@@ -38,6 +38,8 @@ class CONTENT_EXPORT RendererSchedulerImpl
   void DidReceiveInputEventOnCompositorThread(
       const blink::WebInputEvent& web_input_event) override;
   void DidAnimateForInputOnCompositorThread() override;
+  void OnRendererHidden() override;
+  void OnRendererVisible() override;
   bool IsHighPriorityWorkAnticipated() override;
   bool ShouldYieldForHighPriorityWork() override;
   bool CanExceedIdleDeadlineIfRequired() const override;
@@ -101,6 +103,8 @@ class CONTENT_EXPORT RendererSchedulerImpl
       base::TimeDelta* next_long_idle_period_delay_out) override;
   void IsNotQuiescent() override {}
 
+  void EndIdlePeriod();
+
   // Returns the serialized scheduler state for tracing.
   scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValueLocked(
       base::TimeTicks optional_now) const;
@@ -115,6 +119,10 @@ class CONTENT_EXPORT RendererSchedulerImpl
 
   // The time we should stay in a priority-escalated mode after an input event.
   static const int kPriorityEscalationAfterInputMillis = 100;
+
+  // The amount of time which idle periods can continue being scheduled when the
+  // renderer has been hidden, before going to sleep for good.
+  static const int kEndIdleWhenHiddenDelayMillis = 10000;
 
   // Returns the current scheduler policy. Must be called from the main thread.
   Policy SchedulerPolicy() const;
@@ -161,10 +169,12 @@ class CONTENT_EXPORT RendererSchedulerImpl
 
   base::Closure update_policy_closure_;
   DeadlineTaskRunner delayed_update_policy_runner_;
+  CancelableClosureHolder end_renderer_hidden_idle_period_closure_;
 
   // Don't access current_policy_ directly, instead use SchedulerPolicy().
   Policy current_policy_;
   base::TimeTicks current_policy_expiration_time_;
+  bool renderer_hidden_;
 
   base::TimeTicks estimated_next_frame_begin_;
 

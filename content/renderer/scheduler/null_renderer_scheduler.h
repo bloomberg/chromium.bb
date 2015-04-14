@@ -24,6 +24,8 @@ class NullRendererScheduler : public RendererScheduler {
   void DidCommitFrameToCompositor() override;
   void DidReceiveInputEventOnCompositorThread(
       const blink::WebInputEvent& web_input_event) override;
+  void OnRendererHidden() override;
+  void OnRendererVisible() override;
   void DidAnimateForInputOnCompositorThread() override;
   bool IsHighPriorityWorkAnticipated() override;
   bool ShouldYieldForHighPriorityWork() override;

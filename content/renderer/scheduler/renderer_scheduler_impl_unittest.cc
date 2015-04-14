@@ -242,6 +242,11 @@ class RendererSchedulerImplTest : public testing::Test {
         SchedulerHelper::kMaximumIdlePeriodMillis);
   }
 
+  static base::TimeDelta end_idle_when_hidden_delay() {
+    return base::TimeDelta::FromMilliseconds(
+        RendererSchedulerImpl::kEndIdleWhenHiddenDelayMillis);
+  }
+
   scoped_refptr<cc::TestNowSource> clock_;
   // Only one of mock_task_runner_ or message_loop_ will be set.
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
@@ -1300,6 +1305,55 @@ TEST_F(RendererSchedulerImplTest, CanExceedIdleDeadlineIfRequired) {
       BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
       base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL));
   EXPECT_FALSE(scheduler_->CanExceedIdleDeadlineIfRequired());
+}
+
+TEST_F(RendererSchedulerImplTest, TestRendererHiddenIdlePeriod) {
+  int run_count = 0;
+
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE,
+      base::Bind(&RepostingIdleTestTask, idle_task_runner_, &run_count));
+
+  // Renderer should start in visible state.
+  RunUntilIdle();
+  EXPECT_EQ(0, run_count);
+
+  // When we hide the renderer it should start an idle period.
+  scheduler_->OnRendererHidden();
+  RunUntilIdle();
+  EXPECT_EQ(1, run_count);
+
+  // Advance time to start of next long idle period and check task reposted task
+  // gets run.
+  clock_->AdvanceNow(maximum_idle_period_duration());
+  RunUntilIdle();
+  EXPECT_EQ(2, run_count);
+
+  // Advance time by amount of time by the maximum amount of time we execute
+  // idle tasks when hidden (plus some slack) - idle period should have ended.
+  clock_->AdvanceNow(end_idle_when_hidden_delay() +
+                     base::TimeDelta::FromMilliseconds(10));
+  RunUntilIdle();
+  EXPECT_EQ(2, run_count);
+}
+
+TEST_F(RendererSchedulerImplTest, TestRendererHiddenThenVisibleIdlePeriod) {
+  int run_count = 0;
+
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE,
+      base::Bind(&RepostingIdleTestTask, idle_task_runner_, &run_count));
+
+  // Hide the renderer to start an idle period.
+  scheduler_->OnRendererHidden();
+  RunUntilIdle();
+  EXPECT_EQ(1, run_count);
+
+  // Ensure that the idle period stops when renderer becomes visible again.
+  clock_->AdvanceNow(maximum_idle_period_duration());
+  scheduler_->OnRendererVisible();
+  RunUntilIdle();
+  EXPECT_EQ(1, run_count);
 }
 
 }  // namespace content

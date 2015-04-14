@@ -1798,31 +1798,56 @@ void RenderThreadImpl::SampleGamepads(blink::WebGamepads* data) {
   blink_platform_impl_->sampleGamepads(*data);
 }
 
+bool RenderThreadImpl::RendererIsHidden() const {
+  return widget_count_ > 0 && hidden_widget_count_ == widget_count_;
+}
+
 void RenderThreadImpl::WidgetCreated() {
+  bool renderer_was_hidden = RendererIsHidden();
   widget_count_++;
+  if (renderer_was_hidden)
+    OnRendererVisible();
 }
 
 void RenderThreadImpl::WidgetDestroyed() {
+  // TODO(rmcilroy): Remove the restriction that destroyed widgets must be
+  // unhidden before WidgetDestroyed is called.
+  DCHECK_GT(widget_count_, 0);
+  DCHECK_GT(widget_count_, hidden_widget_count_);
   widget_count_--;
+  if (RendererIsHidden())
+    OnRendererHidden();
 }
 
 void RenderThreadImpl::WidgetHidden() {
   DCHECK_LT(hidden_widget_count_, widget_count_);
   hidden_widget_count_++;
-
-  if (widget_count_ && hidden_widget_count_ == widget_count_) {
-    if (GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
-      ScheduleIdleHandler(kInitialIdleHandlerDelayMs);
-  }
+  if (RendererIsHidden())
+    OnRendererHidden();
 }
 
 void RenderThreadImpl::WidgetRestored() {
+  bool renderer_was_hidden = RendererIsHidden();
   DCHECK_GT(hidden_widget_count_, 0);
   hidden_widget_count_--;
+  if (renderer_was_hidden)
+    OnRendererVisible();
+}
 
-  if (!GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden()) {
+void RenderThreadImpl::OnRendererHidden() {
+  renderer_scheduler_->OnRendererHidden();
+
+  // TODO(rmcilroy): Remove IdleHandler and replace it with an IdleTask
+  // scheduled by the RendererScheduler - http://crbug.com/469210.
+  if (GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
+    ScheduleIdleHandler(kInitialIdleHandlerDelayMs);
+}
+
+void RenderThreadImpl::OnRendererVisible() {
+  renderer_scheduler_->OnRendererVisible();
+
+  if (!GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
     return;
-  }
 
   ScheduleIdleHandler(kLongIdleHandlerDelayMs);
 }

@@ -35,12 +35,16 @@ RendererSchedulerImpl::RendererSchedulerImpl(
                      base::Unretained(this)),
           helper_.ControlTaskRunner()),
       current_policy_(Policy::NORMAL),
+      renderer_hidden_(false),
       last_input_type_(blink::WebInputEvent::Undefined),
       input_stream_state_(InputStreamState::INACTIVE),
       policy_may_need_update_(&incoming_signals_lock_),
       weak_factory_(this) {
   update_policy_closure_ = base::Bind(&RendererSchedulerImpl::UpdatePolicy,
                                       weak_factory_.GetWeakPtr());
+  end_renderer_hidden_idle_period_closure_.Reset(base::Bind(
+      &RendererSchedulerImpl::EndIdlePeriod, weak_factory_.GetWeakPtr()));
+
   for (size_t i = SchedulerHelper::TASK_QUEUE_COUNT;
        i < TASK_QUEUE_COUNT;
        i++) {
@@ -105,7 +109,7 @@ void RendererSchedulerImpl::WillBeginFrame(const cc::BeginFrameArgs& args) {
   if (helper_.IsShutdown())
     return;
 
-  helper_.EndIdlePeriod();
+  EndIdlePeriod();
   estimated_next_frame_begin_ = args.frame_time + args.interval;
   // TODO(skyostil): Wire up real notification of input events processing
   // instead of this approximation.
@@ -143,6 +147,53 @@ void RendererSchedulerImpl::BeginFrameNotExpectedSoon() {
   DidProcessInputEvent(base::TimeTicks());
 
   helper_.EnableLongIdlePeriod();
+}
+
+void RendererSchedulerImpl::OnRendererHidden() {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "RendererSchedulerImpl::OnRendererHidden");
+  helper_.CheckOnValidThread();
+  if (helper_.IsShutdown() || renderer_hidden_)
+    return;
+
+  helper_.EnableLongIdlePeriod();
+
+  // Ensure that we stop running idle tasks after a few seconds of being hidden.
+  end_renderer_hidden_idle_period_closure_.Cancel();
+  base::TimeDelta end_idle_when_hidden_delay =
+      base::TimeDelta::FromMilliseconds(kEndIdleWhenHiddenDelayMillis);
+  control_task_runner_->PostDelayedTask(
+      FROM_HERE,
+      end_renderer_hidden_idle_period_closure_.callback(),
+      end_idle_when_hidden_delay);
+  renderer_hidden_ = true;
+
+  TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
+      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "RendererScheduler",
+      this, AsValueLocked(helper_.Now()));
+}
+
+void RendererSchedulerImpl::OnRendererVisible() {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "RendererSchedulerImpl::OnRendererVisible");
+  helper_.CheckOnValidThread();
+  if (helper_.IsShutdown() || !renderer_hidden_)
+    return;
+
+  end_renderer_hidden_idle_period_closure_.Cancel();
+  renderer_hidden_ = false;
+  EndIdlePeriod();
+
+  TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
+      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "RendererScheduler",
+      this, AsValueLocked(helper_.Now()));
+}
+
+void RendererSchedulerImpl::EndIdlePeriod() {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "RendererSchedulerImpl::EndIdlePeriod");
+  helper_.CheckOnValidThread();
+  helper_.EndIdlePeriod();
 }
 
 void RendererSchedulerImpl::DidReceiveInputEventOnCompositorThread(
@@ -500,6 +551,7 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
   state->SetString("idle_period_state",
                    SchedulerHelper::IdlePeriodStateToString(
                        helper_.SchedulerIdlePeriodState()));
+  state->SetBoolean("renderer_hidden_", renderer_hidden_);
   state->SetString("input_stream_state",
                    InputStreamStateToString(input_stream_state_));
   state->SetDouble("now", (optional_now - base::TimeTicks()).InMillisecondsF());

@@ -52,6 +52,12 @@ bool FakeRendererScheduler::IsHighPriorityWorkAnticipated() {
   return false;
 }
 
+void FakeRendererScheduler::OnRendererHidden() {
+}
+
+void FakeRendererScheduler::OnRendererVisible() {
+}
+
 bool FakeRendererScheduler::ShouldYieldForHighPriorityWork() {
   return false;
 }

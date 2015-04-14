@@ -54,6 +54,12 @@ void NullRendererScheduler::DidReceiveInputEventOnCompositorThread(
 void NullRendererScheduler::DidAnimateForInputOnCompositorThread() {
 }
 
+void NullRendererScheduler::OnRendererHidden() {
+}
+
+void NullRendererScheduler::OnRendererVisible() {
+}
+
 bool NullRendererScheduler::IsHighPriorityWorkAnticipated() {
   return false;
 }
