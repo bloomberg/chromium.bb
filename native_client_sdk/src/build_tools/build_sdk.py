@@ -828,14 +828,21 @@ def GetManifestBundle(pepper_ver, chrome_revision, nacl_revision, tarfile,
   return bundle
 
 
+def Archive(filename, from_directory, step_link=True):
+  if buildbot_common.IsSDKBuilder():
+    bucket_path = 'nativeclient-mirror/nacl/nacl_sdk/'
+  else:
+    bucket_path = 'nativeclient-mirror/nacl/nacl_sdk_test/'
+  bucket_path += build_version.ChromeVersion()
+  buildbot_common.Archive(filename, bucket_path, from_directory, step_link)
+
+
 def BuildStepArchiveBundle(name, pepper_ver, chrome_revision, nacl_revision,
                            tarfile):
   buildbot_common.BuildStep('Archive %s' % name)
-  bucket_path = 'nativeclient-mirror/nacl/nacl_sdk/%s' % (
-      build_version.ChromeVersion(),)
   tarname = os.path.basename(tarfile)
   tarfile_dir = os.path.dirname(tarfile)
-  buildbot_common.Archive(tarname, bucket_path, tarfile_dir)
+  Archive(tarname, tarfile_dir)
 
   # generate "manifest snippet" for this archive.
   archive_url = GSTORE + 'nacl_sdk/%s/%s' % (
@@ -847,24 +854,37 @@ def BuildStepArchiveBundle(name, pepper_ver, chrome_revision, nacl_revision,
   with open(manifest_snippet_file, 'wb') as manifest_snippet_stream:
     manifest_snippet_stream.write(bundle.GetDataAsString())
 
-  buildbot_common.Archive(tarname + '.json', bucket_path, OUT_DIR,
-                          step_link=False)
+  Archive(tarname + '.json', OUT_DIR, step_link=False)
+
+
+def BuildStepBuildPNaClComponent(version, revision):
+  # Sadly revision can go backwords for a given version since when a version
+  # is built from master, revision will be a huge number (in the hundreds of
+  # thousands.  Once the branch happens the revision will reset to zero.
+  # TODO(sbc): figure out how to compensate for this in some way such that
+  # revisions always go forward for a given version.
+  buildbot_common.BuildStep('PNaCl Component')
+  if len(revision) > 4:
+    rev_minor = revision[-4:]
+    rev_major = revision[:-4]
+    version = "0.%s.%s.%s" % (version, rev_major, rev_minor)
+  else:
+    version = "0.%s.0.%s" % (version, revision)
+  buildbot_common.Run(['./make_pnacl_component.sh', version], cwd=SCRIPT_DIR)
+
+
+def BuildStepArchivePNaClComponent():
+  buildbot_common.BuildStep('Archive PNaCl Component')
+  Archive('pnacl_multicrx.zip', OUT_DIR)
 
 
 def BuildStepArchiveSDKTools():
-  # Only push up sdk_tools.tgz and nacl_sdk.zip on the linux buildbot.
-  builder_name = os.getenv('BUILDBOT_BUILDERNAME', '')
-  if builder_name == 'linux-sdk-multi':
-    buildbot_common.BuildStep('Build SDK Tools')
-    build_updater.BuildUpdater(OUT_DIR)
+  buildbot_common.BuildStep('Build SDK Tools')
+  build_updater.BuildUpdater(OUT_DIR)
 
-    buildbot_common.BuildStep('Archive SDK Tools')
-    bucket_path = 'nativeclient-mirror/nacl/nacl_sdk/%s' % (
-        build_version.ChromeVersion(),)
-    buildbot_common.Archive('sdk_tools.tgz', bucket_path, OUT_DIR,
-                            step_link=False)
-    buildbot_common.Archive('nacl_sdk.zip', bucket_path, OUT_DIR,
-                            step_link=False)
+  buildbot_common.BuildStep('Archive SDK Tools')
+  Archive('sdk_tools.tgz', OUT_DIR, step_link=False)
+  Archive('nacl_sdk.zip', OUT_DIR, step_link=False)
 
 
 def BuildStepSyncNaClPorts():
@@ -1123,12 +1143,15 @@ def main(args):
   if options.tar:
     BuildStepTarBundle(pepper_ver, tarfile)
 
-  if options.build_ports and platform == 'linux':
-    ports_tarfile = os.path.join(OUT_DIR, 'naclports.tar.bz2')
-    BuildStepSyncNaClPorts()
-    BuildStepBuildNaClPorts(pepper_ver, pepperdir)
-    if options.tar:
-      BuildStepTarNaClPorts(pepper_ver, ports_tarfile)
+  if platform == 'linux':
+    BuildStepBuildPNaClComponent(pepper_ver, chrome_revision)
+
+    if options.build_ports:
+      ports_tarfile = os.path.join(OUT_DIR, 'naclports.tar.bz2')
+      BuildStepSyncNaClPorts()
+      BuildStepBuildNaClPorts(pepper_ver, pepperdir)
+      if options.tar:
+        BuildStepTarNaClPorts(pepper_ver, ports_tarfile)
 
   if options.build_app_engine and platform == 'linux':
     BuildStepBuildAppEngine(pepperdir, chrome_revision)
@@ -1137,14 +1160,17 @@ def main(args):
     qemudir = os.path.join(NACL_DIR, 'toolchain', 'linux_arm-trusted')
     oshelpers.Copy(['-r', qemudir, pepperdir])
 
-  # Archive on non-trybots.
+  # Archive the results on Google Cloud Storage.
   if options.archive:
     BuildStepArchiveBundle('build', pepper_ver, chrome_revision, nacl_revision,
                            tarfile)
-    if options.build_ports and platform == 'linux':
-      BuildStepArchiveBundle('naclports', pepper_ver, chrome_revision,
-                             nacl_revision, ports_tarfile)
-    BuildStepArchiveSDKTools()
+    # Only archive sdk_tools/naclport/pnacl_component on linux.
+    if platform == 'linux':
+      if options.build_ports:
+        BuildStepArchiveBundle('naclports', pepper_ver, chrome_revision,
+                               nacl_revision, ports_tarfile)
+      BuildStepArchiveSDKTools()
+      BuildStepArchivePNaClComponent()
 
   return 0
 

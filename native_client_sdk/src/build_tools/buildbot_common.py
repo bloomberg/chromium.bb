@@ -37,15 +37,6 @@ def IsSDKBuilder():
   return '-sdk-multi' in bot or '-sdk-bionic-multi' in bot
 
 
-def IsSDKTrybot():
-  """Returns True if this script is running on an SDK trybot.
-
-  False means it is either running on an SDK builder, or a user's machine.
-
-  See IsSDKBuilder above for trybot/buildbot names."""
-  return '_nacl_sdk' in os.getenv('BUILDBOT_BUILDERNAME', '')
-
-
 def ErrorExit(msg):
   """Write and error to stderr, then exit with 1 signaling failure."""
   sys.stderr.write(str(msg) + '\n')
