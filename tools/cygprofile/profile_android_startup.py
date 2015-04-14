@@ -80,7 +80,7 @@ class WprManager(object):
   def Start(self):
     """Set up the device and host for WPR."""
     self.Stop()
-    self._InstallTestCa()
+    #TODO(azarchs): make self._InstallTestCa() work
     self._BringUpWpr()
     self._StartForwarder()
 
@@ -88,7 +88,7 @@ class WprManager(object):
     """Clean up the device and host's WPR setup."""
     self._StopForwarder()
     self._StopWpr()
-    self._RemoveTestCa()
+    #TODO(azarchs): make self._RemoveTestCa() work
 
   def __enter__(self):
     self.Start()
