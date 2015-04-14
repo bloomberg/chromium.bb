@@ -113,8 +113,9 @@ size_t StrideInBytes(size_t width,
 
 size_t BufferSizeInBytes(const gfx::Size& size,
                          gfx::GpuMemoryBuffer::Format format) {
-  size_t size_in_bytes = 0u;
-  for (size_t i = 0; i < NumberOfPlanesForGpuMemoryBufferFormat(format); ++i) {
+  size_t size_in_bytes = 0;
+  size_t num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format);
+  for (size_t i = 0; i < num_planes; ++i) {
     size_in_bytes += StrideInBytes(size.width(), format, i) *
                      (size.height() / SubsamplingFactor(format, i));
   }
@@ -134,12 +135,12 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
 
   // Overridden from gfx::GpuMemoryBuffer:
   bool Map(void** data) override {
-    data[0] = &bytes_->data().front();
-    for (size_t i = 0; i < NumberOfPlanesForGpuMemoryBufferFormat(format_) - 1;
-         ++i) {
-      size_t offset = StrideInBytes(size_.width(), format_, i) *
-                      (size_.height() / SubsamplingFactor(format_, i));
-      data[i + 1] = reinterpret_cast<uint8*>(data[i]) + offset;
+    size_t offset = 0;
+    size_t num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format_);
+    for (size_t i = 0; i < num_planes; ++i) {
+      data[i] = reinterpret_cast<uint8*>(&bytes_->data().front()) + offset;
+      offset += StrideInBytes(size_.width(), format_, i) *
+                (size_.height() / SubsamplingFactor(format_, i));
     }
     mapped_ = true;
     return true;
@@ -148,10 +149,9 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   bool IsMapped() const override { return mapped_; }
   Format GetFormat() const override { return format_; }
   void GetStride(int* stride) const override {
-    for (size_t i = 0; i < NumberOfPlanesForGpuMemoryBufferFormat(format_);
-         ++i) {
+    size_t num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format_);
+    for (size_t i = 0; i < num_planes; ++i)
       stride[i] = StrideInBytes(size_.width(), format_, i);
-    }
   }
   gfx::GpuMemoryBufferHandle GetHandle() const override {
     NOTREACHED();

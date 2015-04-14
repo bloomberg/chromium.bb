@@ -176,16 +176,15 @@ bool GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(
 
 bool GpuMemoryBufferImplSharedMemory::Map(void** data) {
   DCHECK(!mapped_);
-  data[0] = shared_memory_->memory();
-  // Map the other planes if they exist.
+  size_t offset = 0;
   size_t num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format_);
-  for (size_t i = 0; i < num_planes - 1; ++i) {
+  for (size_t i = 0; i < num_planes; ++i) {
+    data[i] = reinterpret_cast<uint8*>(shared_memory_->memory()) + offset;
     size_t stride_in_bytes = 0;
     bool valid_stride =
         StrideInBytes(size_.width(), format_, i, &stride_in_bytes);
     DCHECK(valid_stride);
-    data[i + 1] =
-        reinterpret_cast<uint8*>(data[i]) +
+    offset +=
         stride_in_bytes * (size_.height() / SubsamplingFactor(format_, i));
   }
   mapped_ = true;
