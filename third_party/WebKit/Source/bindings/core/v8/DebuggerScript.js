@@ -190,7 +190,7 @@ DebuggerScript._formatScript = function(script)
         startColumn: script.column_offset,
         endLine: endLine,
         endColumn: endColumn,
-        isContentScript: !!script.context_data && script.context_data.indexOf("injected") == 0,
+        isContentScript: !!script.context_data && script.context_data.indexOf("[injected,") === 0,
         isInternalScript: script.is_debugger_script
     };
 }
