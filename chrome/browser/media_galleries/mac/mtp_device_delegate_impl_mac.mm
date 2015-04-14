@@ -263,6 +263,26 @@ void MTPDeviceDelegateImplMac::DeleteDirectory(
   NOTREACHED();
 }
 
+void MTPDeviceDelegateImplMac::AddWatcher(
+    const GURL& origin,
+    const base::FilePath& file_path,
+    const bool recursive,
+    const storage::WatcherManager::StatusCallback& callback,
+    const storage::WatcherManager::NotificationCallback&
+        notification_callback) {
+  NOTIMPLEMENTED();
+  callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
+}
+
+void MTPDeviceDelegateImplMac::RemoveWatcher(
+    const GURL& origin,
+    const base::FilePath& file_path,
+    const bool recursive,
+    const storage::WatcherManager::StatusCallback& callback) {
+  NOTIMPLEMENTED();
+  callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
+}
+
 void MTPDeviceDelegateImplMac::CancelPendingTasksAndDeleteDelegate() {
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
       base::Bind(&MTPDeviceDelegateImplMac::CancelAndDelete,

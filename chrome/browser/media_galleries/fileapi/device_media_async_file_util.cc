@@ -582,6 +582,35 @@ DeviceMediaAsyncFileUtil::GetFileStreamReader(
                               validate_media_files())));
 }
 
+void DeviceMediaAsyncFileUtil::AddWatcher(
+    const storage::FileSystemURL& url,
+    bool recursive,
+    const storage::WatcherManager::StatusCallback& callback,
+    const storage::WatcherManager::NotificationCallback&
+        notification_callback) {
+  MTPDeviceAsyncDelegate* const delegate = GetMTPDeviceDelegate(url);
+  if (!delegate) {
+    callback.Run(base::File::FILE_ERROR_FAILED);
+    return;
+  }
+
+  delegate->AddWatcher(url.origin(), url.path(), recursive, callback,
+                       notification_callback);
+}
+
+void DeviceMediaAsyncFileUtil::RemoveWatcher(
+    const storage::FileSystemURL& url,
+    const bool recursive,
+    const storage::WatcherManager::StatusCallback& callback) {
+  MTPDeviceAsyncDelegate* const delegate = GetMTPDeviceDelegate(url);
+  if (!delegate) {
+    callback.Run(base::File::FILE_ERROR_FAILED);
+    return;
+  }
+
+  delegate->RemoveWatcher(url.origin(), url.path(), recursive, callback);
+}
+
 DeviceMediaAsyncFileUtil::DeviceMediaAsyncFileUtil(
     const base::FilePath& profile_path,
     MediaFileValidationType validation_type)

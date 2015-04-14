@@ -14,7 +14,9 @@ MTPFileSystemBackendDelegate::MTPFileSystemBackendDelegate(
     const base::FilePath& storage_partition_path)
     : device_media_async_file_util_(
           DeviceMediaAsyncFileUtil::Create(storage_partition_path,
-                                           NO_MEDIA_FILE_VALIDATION)) {
+                                           NO_MEDIA_FILE_VALIDATION)),
+      mtp_watcher_manager_(
+          new MTPWatcherManager(device_media_async_file_util_.get())) {
 }
 
 MTPFileSystemBackendDelegate::~MTPFileSystemBackendDelegate() {
@@ -53,8 +55,8 @@ MTPFileSystemBackendDelegate::CreateFileStreamWriter(
 
 storage::WatcherManager* MTPFileSystemBackendDelegate::GetWatcherManager(
     storage::FileSystemType type) {
-  NOTIMPLEMENTED();
-  return NULL;
+  DCHECK_EQ(storage::kFileSystemTypeDeviceMediaAsFileStorage, type);
+  return mtp_watcher_manager_.get();
 }
 
 void MTPFileSystemBackendDelegate::GetRedirectURLForContents(

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
@@ -11,6 +12,7 @@
 #include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "storage/browser/fileapi/async_file_util.h"
 #include "storage/browser/fileapi/external_mount_points.h"
@@ -242,6 +244,13 @@ storage::WatcherManager* FileSystemBackend::GetWatcherManager(
     storage::FileSystemType type) {
   if (type == storage::kFileSystemTypeProvided)
     return file_system_provider_delegate_->GetWatcherManager(type);
+
+  // Enables MTP file watcher only when MTP write support is enabled.
+  if (type == storage::kFileSystemTypeDeviceMediaAsFileStorage &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableMtpWriteSupport)) {
+    return mtp_delegate_->GetWatcherManager(type);
+  }
 
   // TODO(mtomasz): Add support for other backends.
   return NULL;

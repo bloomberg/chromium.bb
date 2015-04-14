@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/async_file_util.h"
+#include "storage/browser/fileapi/watcher_manager.h"
 
 namespace storage {
 class FileSystemOperationContext;
@@ -107,6 +108,18 @@ class DeviceMediaAsyncFileUtil : public storage::AsyncFileUtil {
       int64 offset,
       const base::Time& expected_modification_time,
       storage::FileSystemContext* context);
+
+  // Adds watcher to |url|.
+  void AddWatcher(const storage::FileSystemURL& url,
+                  bool recursive,
+                  const storage::WatcherManager::StatusCallback& callback,
+                  const storage::WatcherManager::NotificationCallback&
+                      notification_callback);
+
+  // Removes watcher of |url|.
+  void RemoveWatcher(const storage::FileSystemURL& url,
+                     const bool recursive,
+                     const storage::WatcherManager::StatusCallback& callback);
 
  private:
   class MediaPathFilterWrapper;

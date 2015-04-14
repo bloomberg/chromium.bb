@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
+#include "chrome/browser/chromeos/fileapi/mtp_watcher_manager.h"
 
 namespace base {
 class FilePath;
@@ -53,6 +54,7 @@ class MTPFileSystemBackendDelegate : public FileSystemBackendDelegate {
 
  private:
   scoped_ptr<DeviceMediaAsyncFileUtil> device_media_async_file_util_;
+  scoped_ptr<MTPWatcherManager> mtp_watcher_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MTPFileSystemBackendDelegate);
 };

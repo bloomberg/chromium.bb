@@ -124,6 +124,17 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   void DeleteDirectory(const base::FilePath& file_path,
                        const DeleteDirectorySuccessCallback& success_callback,
                        const ErrorCallback& error_callback) override;
+  void AddWatcher(const GURL& origin,
+                  const base::FilePath& file_path,
+                  const bool recursive,
+                  const storage::WatcherManager::StatusCallback& callback,
+                  const storage::WatcherManager::NotificationCallback&
+                      notification_callback) override;
+  void RemoveWatcher(
+      const GURL& origin,
+      const base::FilePath& file_path,
+      const bool recursive,
+      const storage::WatcherManager::StatusCallback& callback) override;
   void CancelPendingTasksAndDeleteDelegate() override;
 
   // The internal methods correspond to the similarly named methods above.
@@ -205,6 +216,10 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
       const uint32 object_id,
       const DeleteObjectSuccessCallback& success_callback,
       const ErrorCallback& error_callback);
+
+  // Notifies |chage_type| of |file_path| to watchers.
+  void NotifyFileChange(const base::FilePath& file_path,
+                        const storage::WatcherManager::ChangeType change_type);
 
   // Ensures the device is initialized for communication.
   // If the device is already initialized, call RunTask().
@@ -303,6 +318,7 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
 
   // Called when CreateSignleDirectory() succeeds.
   void OnDidCreateSingleDirectory(
+      const base::FilePath& directory_path,
       const CreateDirectorySuccessCallback& success_callback);
 
   // Called when parent directory |created_directory| is created as part of
@@ -457,6 +473,12 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
 
   // Mode for opening storage.
   const bool read_only_;
+
+  // Maps for holding notification callbacks.
+  typedef std::map<GURL, storage::WatcherManager::NotificationCallback>
+      OriginNotificationCallbackMap;
+  typedef std::map<base::FilePath, OriginNotificationCallbackMap> Subscribers;
+  Subscribers subscribers_;
 
   // A list of pending tasks that needs to be run when the device is
   // initialized or when the current task in progress is complete.

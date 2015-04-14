@@ -9,6 +9,8 @@
 #include "base/files/file.h"
 #include "base/memory/ref_counted.h"
 #include "storage/browser/fileapi/async_file_util.h"
+#include "storage/browser/fileapi/watcher_manager.h"
+#include "url/gurl.h"
 
 namespace base {
 class FilePath;
@@ -175,6 +177,22 @@ class MTPDeviceAsyncDelegate {
       const base::FilePath& file_path,
       const DeleteDirectorySuccessCallback& success_callback,
       const ErrorCallback& error_callback) = 0;
+
+  // Adds watcher to |file_path| as |origin|.
+  virtual void AddWatcher(
+      const GURL& origin,
+      const base::FilePath& file_path,
+      const bool recursive,
+      const storage::WatcherManager::StatusCallback& callback,
+      const storage::WatcherManager::NotificationCallback&
+          notification_callback) = 0;
+
+  // Removes watcher from |file_path| of |origin|.
+  virtual void RemoveWatcher(
+      const GURL& origin,
+      const base::FilePath& file_path,
+      const bool recursive,
+      const storage::WatcherManager::StatusCallback& callback) = 0;
 
   // Called when the
   // (1) Browser application is in shutdown mode (or)

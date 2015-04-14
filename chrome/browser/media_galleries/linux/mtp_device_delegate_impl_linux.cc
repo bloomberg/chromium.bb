@@ -754,6 +754,76 @@ void MTPDeviceDelegateImplLinux::DeleteDirectory(
                                        FROM_HERE, closure));
 }
 
+void MTPDeviceDelegateImplLinux::AddWatcher(
+    const GURL& origin,
+    const base::FilePath& file_path,
+    const bool recursive,
+    const storage::WatcherManager::StatusCallback& callback,
+    const storage::WatcherManager::NotificationCallback&
+        notification_callback) {
+  if (recursive) {
+    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
+    return;
+  }
+
+  // TODO(yawano) Checks existence of |file_path|.
+  const auto it = subscribers_.find(file_path);
+  if (it != subscribers_.end()) {
+    // Adds to existing origin callback map.
+    if (ContainsKey(it->second, origin)) {
+      callback.Run(base::File::FILE_ERROR_EXISTS);
+      return;
+    }
+
+    it->second.insert(std::make_pair(origin, notification_callback));
+  } else {
+    // Creates new origin callback map.
+    OriginNotificationCallbackMap callback_map;
+    callback_map.insert(std::make_pair(origin, notification_callback));
+    subscribers_.insert(std::make_pair(file_path, callback_map));
+  }
+
+  callback.Run(base::File::FILE_OK);
+}
+
+void MTPDeviceDelegateImplLinux::RemoveWatcher(
+    const GURL& origin,
+    const base::FilePath& file_path,
+    const bool recursive,
+    const storage::WatcherManager::StatusCallback& callback) {
+  if (recursive) {
+    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
+    return;
+  }
+
+  const auto it = subscribers_.find(file_path);
+  if (it == subscribers_.end()) {
+    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
+    return;
+  }
+
+  if (it->second.erase(origin) == 0) {
+    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
+    return;
+  }
+
+  if (it->second.empty())
+    subscribers_.erase(it);
+
+  callback.Run(base::File::FILE_OK);
+}
+
+void MTPDeviceDelegateImplLinux::NotifyFileChange(
+    const base::FilePath& file_path,
+    const storage::WatcherManager::ChangeType change_type) {
+  const auto it = subscribers_.find(file_path);
+  if (it != subscribers_.end()) {
+    for (const auto& origin_callback : it->second) {
+      origin_callback.second.Run(change_type);
+    }
+  }
+}
+
 void MTPDeviceDelegateImplLinux::CancelPendingTasksAndDeleteDelegate() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   // To cancel all the pending tasks, destroy the MTPDeviceTaskHelper object.
@@ -1343,9 +1413,9 @@ void MTPDeviceDelegateImplLinux::OnPathDoesNotExistForCreateSingleDirectory(
   }
 
   const MTPDeviceTaskHelper::CreateDirectorySuccessCallback
-      success_callback_wrapper =
-          base::Bind(&MTPDeviceDelegateImplLinux::OnDidCreateSingleDirectory,
-                     weak_ptr_factory_.GetWeakPtr(), success_callback);
+      success_callback_wrapper = base::Bind(
+          &MTPDeviceDelegateImplLinux::OnDidCreateSingleDirectory,
+          weak_ptr_factory_.GetWeakPtr(), directory_path, success_callback);
   const MTPDeviceTaskHelper::ErrorCallback error_callback_wrapper =
       base::Bind(&MTPDeviceDelegateImplLinux::HandleDeviceFileError,
                  weak_ptr_factory_.GetWeakPtr(), error_callback, parent_id);
@@ -1448,10 +1518,13 @@ void MTPDeviceDelegateImplLinux::OnGetDestFileInfoErrorToCopyFileFromLocal(
 }
 
 void MTPDeviceDelegateImplLinux::OnDidCreateSingleDirectory(
+    const base::FilePath& directory_path,
     const CreateDirectorySuccessCallback& success_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   success_callback.Run();
+  NotifyFileChange(directory_path.DirName(),
+                   storage::WatcherManager::ChangeType::CHANGED);
   PendingRequestDone();
 }
 
