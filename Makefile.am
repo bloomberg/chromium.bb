@@ -700,26 +700,6 @@ demo_clients += weston-gears
 weston_gears_SOURCES = clients/gears.c
 weston_gears_LDADD = libtoytoolkit.la
 weston_gears_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
-
-if HAVE_GLU
-libexec_PROGRAMS += weston-screensaver
-weston_screensaver_SOURCES =				\
-	clients/wscreensaver.c				\
-	clients/wscreensaver.h				\
-	clients/wscreensaver-glue.c			\
-	clients/wscreensaver-glue.h			\
-	clients/glmatrix.c				\
-	clients/matrix3.xpm				\
-	shared/helpers.h
-nodist_weston_screensaver_SOURCES =			\
-	protocol/desktop-shell-client-protocol.h	\
-	protocol/desktop-shell-protocol.c
-
-weston_screensaver_LDADD = libtoytoolkit.la $(GLU_LIBS)
-weston_screensaver_CFLAGS = $(AM_CFLAGS) $(GLU_CFLAGS) $(CLIENT_CFLAGS)
-
-endif
-
 endif
 
 endif

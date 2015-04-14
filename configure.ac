@@ -365,11 +365,6 @@ if test x$enable_weston_launch == xyes; then
   AC_SUBST(PAM_LIBS)
 fi
 
-if test x$enable_egl = xyes; then
-  PKG_CHECK_MODULES(GLU, [glu], [have_glu=yes], [have_glu=no])
-fi
-AM_CONDITIONAL(HAVE_GLU, test "x$have_glu" = "xyes")
-
 AM_CONDITIONAL(HAVE_PANGO, test "x$have_pango" = "xyes")
 
 AM_CONDITIONAL(HAVE_CAIRO_GLESV2,
@@ -553,7 +548,6 @@ AC_MSG_RESULT([
 	Install Demo Clients		${enable_demo_clients_install}
 
 	Colord Support			${have_colord}
-	GLU Support			${have_glu}
 	LCMS2 Support			${have_lcms}
 	libwebp Support			${have_webp}
 	libunwind Support		${have_libunwind}

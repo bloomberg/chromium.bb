@@ -75,7 +75,6 @@ libtoytoolkit.a
 weston-desktop-shell
 weston-ivi-shell-user-interface
 weston-info
-weston-screensaver
 weston-screenshooter
 weston-tablet-shell
 weston-terminal
