@@ -8,10 +8,8 @@ from page_sets import key_mobile_sites_pages
 
 
 def _IssueMarkerAndScroll(action_runner):
-  interaction = action_runner.BeginGestureInteraction(
-      'ScrollAction')
-  action_runner.ScrollPage()
-  interaction.End()
+  with action_runner.CreateGestureInteraction('ScrollAction'):
+    action_runner.ScrollPage()
 
 
 def _CreatePageClassWithSmoothInteractions(page_cls):
@@ -73,72 +71,60 @@ class WowwikiSmoothPage(KeyMobileSitesSmoothPage):
 class GmailSmoothPage(key_mobile_sites_pages.GmailPage):
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollElement(element_function=(
-        'document.getElementById("views").childNodes[1].firstChild'))
-    interaction.End()
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollElement(element_function=(
-        'document.getElementById("views").childNodes[1].firstChild'))
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollElement(element_function=(
+          'document.getElementById("views").childNodes[1].firstChild'))
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollElement(element_function=(
+          'document.getElementById("views").childNodes[1].firstChild'))
 
 
 class GroupClonedSmoothPage(key_mobile_sites_pages.GroupClonedPage):
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage(
-        distance_expr='''
-            Math.max(0, 1250 + document.getElementById("element-19")
-                                       .contentDocument
-                                       .getElementById("element-22")
-                                       .getBoundingClientRect().top);''',
-        use_touch=True)
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage(
+          distance_expr='''
+              Math.max(0, 1250 + document.getElementById("element-19")
+                                         .contentDocument
+                                         .getElementById("element-22")
+                                         .getBoundingClientRect().top);''',
+          use_touch=True)
 
 
 class GroupClonedListImagesPage(
   key_mobile_sites_pages.GroupClonedListImagesPage):
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage(
-        distance_expr='''
-            Math.max(0, 1250 +
-                document.getElementById("element-5")
-                        .getBoundingClientRect().top);''',
-        use_touch=True)
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage(
+          distance_expr='''
+              Math.max(0, 1250 +
+                  document.getElementById("element-5")
+                          .getBoundingClientRect().top);''',
+          use_touch=True)
 
 class GoogleNewsMobile2SmoothPage(
   key_mobile_sites_pages.GoogleNewsMobile2Page):
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollElement(
-        element_function='document.getElementById(":5")',
-        distance_expr='''
-            Math.max(0, 2500 +
-                document.getElementById(':h').getBoundingClientRect().top)''',
-        use_touch=True)
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollElement(
+          element_function='document.getElementById(":5")',
+          distance_expr='''
+              Math.max(0, 2500 +
+                  document.getElementById(':h').getBoundingClientRect().top)''',
+          use_touch=True)
 
 
 class AmazonNicolasCageSmoothPage(
   key_mobile_sites_pages.AmazonNicolasCagePage):
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollElement(
-        selector='#search',
-        distance_expr='document.body.scrollHeight - window.innerHeight')
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollElement(
+          selector='#search',
+          distance_expr='document.body.scrollHeight - window.innerHeight')
 
 
 class KeyMobileSitesSmoothPageSet(page_set_module.PageSet):

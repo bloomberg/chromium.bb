@@ -14,10 +14,8 @@ class ToughSchedulingCasesPage(page_module.Page):
     self.archive_data_file = 'data/tough_scheduling_cases.json'
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
 
 
 class Page1(ToughSchedulingCasesPage):
@@ -308,15 +306,13 @@ class Page20(ToughSchedulingCasesPage):
         page_set=page_set)
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollElement(
-        selector='#card',
-        use_touch=True,
-        direction='up',
-        speed_in_pixels_per_second=150,
-        distance=400)
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollElement(
+          selector='#card',
+          use_touch=True,
+          direction='up',
+          speed_in_pixels_per_second=150,
+          distance=400)
 
 
 class EmptyTouchHandlerPage(ToughSchedulingCasesPage):
@@ -339,18 +335,14 @@ class EmptyTouchHandlerPage(ToughSchedulingCasesPage):
 
   def RunPageInteractions(self, action_runner):
     if self.bounce:
-      interaction = action_runner.BeginGestureInteraction(
-          'ScrollBounceAction')
-      action_runner.ScrollBouncePage()
-      interaction.End()
+      with action_runner.CreateGestureInteraction('ScrollBounceAction'):
+        action_runner.ScrollBouncePage()
     else:
-      interaction = action_runner.BeginGestureInteraction(
-          'ScrollAction')
-      # Speed and distance are tuned to run exactly as long as a scroll
-      # bounce.
-      action_runner.ScrollPage(use_touch=True, speed_in_pixels_per_second=400,
-                               distance=2100)
-      interaction.End()
+      with action_runner.CreateGestureInteraction('ScrollAction'):
+        # Speed and distance are tuned to run exactly as long as a scroll
+        # bounce.
+        action_runner.ScrollPage(use_touch=True, speed_in_pixels_per_second=400,
+                                 distance=2100)
 
 
 class SynchronizedScrollOffsetPage(ToughSchedulingCasesPage):
@@ -363,10 +355,8 @@ class SynchronizedScrollOffsetPage(ToughSchedulingCasesPage):
         page_set=page_set)
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollBounceAction')
-    action_runner.ScrollBouncePage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollBounceAction'):
+      action_runner.ScrollBouncePage()
 
 
 class SecondBatchJsPage(ToughSchedulingCasesPage):
@@ -387,15 +377,14 @@ class SecondBatchJsPage(ToughSchedulingCasesPage):
     # even while resources are being loaded.
     action_runner.WaitForJavaScriptCondition('window.__ready !== undefined')
 
-    interaction = action_runner.BeginGestureInteraction('LoadAction')
-    action_runner.ExecuteJavaScript('kickOffLoading()')
-    action_runner.WaitForJavaScriptCondition('window.__ready')
-    # Click one second after the resources have finished loading.
-    action_runner.Wait(1)
-    action_runner.TapElement(selector='input[id="run"]')
-    # Wait for the test to complete.
-    action_runner.WaitForJavaScriptCondition('window.__finished')
-    interaction.End()
+    with action_runner.CreateGestureInteraction('LoadAction'):
+      action_runner.ExecuteJavaScript('kickOffLoading()')
+      action_runner.WaitForJavaScriptCondition('window.__ready')
+      # Click one second after the resources have finished loading.
+      action_runner.Wait(1)
+      action_runner.TapElement(selector='input[id="run"]')
+      # Wait for the test to complete.
+      action_runner.WaitForJavaScriptCondition('window.__finished')
 
 
 class ToughSchedulingCasesPageSet(page_set_module.PageSet):

@@ -13,10 +13,8 @@ class KeyDesktopSitesPage(page_module.Page):
     self.archive_data_file = 'data/key_desktop_sites.json'
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
 
 
 class FacebookPage(KeyDesktopSitesPage):
@@ -45,10 +43,8 @@ class GmailPage(KeyDesktopSitesPage):
     self.credentials = 'google'
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
     action_runner.WaitForJavaScriptCondition(
         'window.gmonkey !== undefined && '
         'document.getElementById("gb") !== null')
@@ -82,10 +78,8 @@ class GoogleDrivePage(KeyDesktopSitesPage):
     self.credentials = 'google'
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
     action_runner.WaitForJavaScriptCondition(
         'document.getElementsByClassName("doclistview-list").length')
 
@@ -105,10 +99,8 @@ class GoogleDocPage(KeyDesktopSitesPage):
     self.credentials = 'google'
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
     action_runner.WaitForJavaScriptCondition(
         'document.getElementsByClassName("kix-appview-editor").length')
 
