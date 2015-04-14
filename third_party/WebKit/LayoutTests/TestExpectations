@@ -1639,12 +1639,6 @@ crbug.com/437131 [ Win Linux ] virtual/gpu/fast/canvas/image-object-in-canvas.ht
 crbug.com/419486 [ Mac ] fast/text/atsui-small-caps-punctuation-size.html [ Pass Failure ]
 crbug.com/419486 [ Mac ] virtual/slimmingpaint/fast/text/atsui-small-caps-punctuation-size.html [ Pass Failure ]
 
-# Object.prototype.toString.call(a_promise) yields [object Promise] now, rather than [object Object]
-crbug.com/476122 inspector/console/console-format-es6.html [ Pass Failure ]
-crbug.com/476122 webaudio/audiocontext-suspend-resume.html [ Pass Failure ]
-crbug.com/476122 virtual/slimmingpaint/fast/js/Promise-native-then.html [ Pass Failure ]
-crbug.com/476122 fast/js/Promise-native-then.html [ Pass Failure ]
-
 # Disabled until the test plugin is fixed.
 crbug.com/363099 [ Win ] plugins/geturlnotify-during-document-teardown.html [ Failure ]
 crbug.com/363099 [ Win ] plugins/nested-plugin-objects.html [ Failure ]
