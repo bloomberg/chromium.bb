@@ -724,6 +724,8 @@ void WebContentsViewAura::CompleteOverscrollNavigation(OverscrollMode mode) {
   if (!web_contents_->GetRenderWidgetHostView())
     return;
   navigation_overlay_->relay_delegate()->OnOverscrollComplete(mode);
+  if (touch_editable_)
+    touch_editable_->OverscrollCompleted();
 }
 
 void WebContentsViewAura::AttachTouchEditableToRenderView() {
@@ -1079,8 +1081,12 @@ void WebContentsViewAura::OnOverscrollModeChange(OverscrollMode old_mode,
   if (old_mode == OVERSCROLL_NORTH || old_mode == OVERSCROLL_SOUTH)
     OverscrollUpdateForWebContentsDelegate(0);
 
-  if (new_mode != OVERSCROLL_NONE && touch_editable_)
-    touch_editable_->OverscrollStarted();
+  if (touch_editable_) {
+    if (new_mode == OVERSCROLL_NONE)
+      touch_editable_->OverscrollCompleted();
+    else
+      touch_editable_->OverscrollStarted();
+  }
 
   current_overscroll_gesture_ = new_mode;
   navigation_overlay_->relay_delegate()->OnOverscrollModeChange(old_mode,

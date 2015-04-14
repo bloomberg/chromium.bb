@@ -34,7 +34,11 @@ namespace content {
 class TestTouchEditableImplAura : public TouchEditableImplAura {
  public:
   TestTouchEditableImplAura()
-      : selection_changed_callback_arrived_(false),
+      : overscroll_started_callback_arrived_(false),
+        waiting_for_overscroll_started_callback_(false),
+        overscroll_completed_callback_arrived_(false),
+        waiting_for_overscroll_completed_callback_(false),
+        selection_changed_callback_arrived_(false),
         waiting_for_selection_changed_callback_(false),
         waiting_for_gesture_ack_type_(WebInputEvent::Undefined),
         last_gesture_ack_type_(WebInputEvent::Undefined),
@@ -42,12 +46,50 @@ class TestTouchEditableImplAura : public TouchEditableImplAura {
         waiting_for_fling_stop_callback_(false) {}
 
   virtual void Reset() {
+    overscroll_started_callback_arrived_ = false;
+    waiting_for_overscroll_started_callback_ = false;
+    overscroll_completed_callback_arrived_ = false;
+    waiting_for_overscroll_completed_callback_ = false;
     selection_changed_callback_arrived_ = false;
     waiting_for_selection_changed_callback_ = false;
     waiting_for_gesture_ack_type_ = WebInputEvent::Undefined;
     last_gesture_ack_type_ = WebInputEvent::Undefined;
     fling_stop_callback_arrived_ = false;
     waiting_for_fling_stop_callback_ = false;
+  }
+
+  void OverscrollStarted() override {
+    overscroll_started_callback_arrived_ = true;
+    TouchEditableImplAura::OverscrollStarted();
+    if (waiting_for_overscroll_started_callback_)
+      overscroll_started_wait_run_loop_->Quit();
+}
+
+  void WaitForOverscrollStartedCallback() {
+    // Doesn't make sense to call more that once without resetting.
+    CHECK(!waiting_for_overscroll_started_callback_);
+    waiting_for_overscroll_started_callback_ = true;
+    if (overscroll_started_callback_arrived_)
+      return;
+    overscroll_started_wait_run_loop_.reset(new base::RunLoop());
+    overscroll_started_wait_run_loop_->Run();
+  }
+
+  void OverscrollCompleted() override {
+    overscroll_completed_callback_arrived_ = true;
+    TouchEditableImplAura::OverscrollCompleted();
+    if (waiting_for_overscroll_completed_callback_)
+      overscroll_completed_wait_run_loop_->Quit();
+  }
+
+  void WaitForOverscrollCompletedCallback() {
+    // Doesn't make sense to call more that once without resetting.
+    CHECK(!waiting_for_overscroll_completed_callback_);
+    waiting_for_overscroll_completed_callback_ = true;
+    if (overscroll_completed_callback_arrived_)
+      return;
+    overscroll_completed_wait_run_loop_.reset(new base::RunLoop());
+    overscroll_completed_wait_run_loop_->Run();
   }
 
   void OnSelectionOrCursorChanged(const ui::SelectionBound& anchor,
@@ -73,26 +115,32 @@ class TestTouchEditableImplAura : public TouchEditableImplAura {
       fling_stop_wait_run_loop_->Quit();
   }
 
-  virtual void WaitForSelectionChangeCallback() {
+  void WaitForSelectionChangeCallback() {
+    // Doesn't make sense to call more that once without resetting.
+    CHECK(!waiting_for_selection_changed_callback_);
+    waiting_for_selection_changed_callback_ = true;
     if (selection_changed_callback_arrived_)
       return;
-    waiting_for_selection_changed_callback_ = true;
     selection_changed_wait_run_loop_.reset(new base::RunLoop());
     selection_changed_wait_run_loop_->Run();
   }
 
-  virtual void WaitForGestureAck(WebInputEvent::Type gesture_event_type) {
+  void WaitForGestureAck(WebInputEvent::Type gesture_event_type) {
+    // Doesn't make sense to call more that once without resetting.
+    CHECK_EQ(waiting_for_gesture_ack_type_, WebInputEvent::Undefined);
+    waiting_for_gesture_ack_type_ = gesture_event_type;
     if (last_gesture_ack_type_ == gesture_event_type)
       return;
-    waiting_for_gesture_ack_type_ = gesture_event_type;
     gesture_ack_wait_run_loop_.reset(new base::RunLoop());
     gesture_ack_wait_run_loop_->Run();
   }
 
-  virtual void WaitForFlingStopCallback() {
+  void WaitForFlingStopCallback() {
+    // Doesn't make sense to call more that once without resetting.
+    CHECK(!waiting_for_fling_stop_callback_);
+    waiting_for_fling_stop_callback_ = true;
     if (fling_stop_callback_arrived_)
       return;
-    waiting_for_fling_stop_callback_ = true;
     fling_stop_wait_run_loop_.reset(new base::RunLoop());
     fling_stop_wait_run_loop_->Run();
   }
@@ -101,12 +149,18 @@ class TestTouchEditableImplAura : public TouchEditableImplAura {
   ~TestTouchEditableImplAura() override {}
 
  private:
+  bool overscroll_started_callback_arrived_;
+  bool waiting_for_overscroll_started_callback_;
+  bool overscroll_completed_callback_arrived_;
+  bool waiting_for_overscroll_completed_callback_;
   bool selection_changed_callback_arrived_;
   bool waiting_for_selection_changed_callback_;
   WebInputEvent::Type waiting_for_gesture_ack_type_;
   WebInputEvent::Type last_gesture_ack_type_;
   bool fling_stop_callback_arrived_;
   bool waiting_for_fling_stop_callback_;
+  scoped_ptr<base::RunLoop> overscroll_started_wait_run_loop_;
+  scoped_ptr<base::RunLoop> overscroll_completed_wait_run_loop_;
   scoped_ptr<base::RunLoop> selection_changed_wait_run_loop_;
   scoped_ptr<base::RunLoop> gesture_ack_wait_run_loop_;
   scoped_ptr<base::RunLoop> fling_stop_wait_run_loop_;
@@ -371,7 +425,6 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
   value->GetAsString(&selection);
   EXPECT_STREQ("Some", selection.c_str());
 
-  // Overscroll is preceded with a scroll. Handles should get hidden.
   ui::GestureEvent scroll_begin(
       10,
       10,
@@ -381,8 +434,16 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
   rwhva->OnGestureEvent(&scroll_begin);
   EXPECT_FALSE(GetTouchSelectionController(touch_editable));
 
-  // Then overscroll itself starts. Handles should remain hidden.
-  touch_editable->OverscrollStarted();
+  // Then overscroll starts. OverscrollStarted callback should be called and
+  // handles should remain hidden.
+  ui::GestureEvent scroll_update(
+      210,
+      10,
+      0,
+      ui::EventTimeForNow(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 200, 0));
+  rwhva->OnGestureEvent(&scroll_update);
+  touch_editable->WaitForOverscrollStartedCallback();
   EXPECT_FALSE(GetTouchSelectionController(touch_editable));
 
   // We might have multiple overscroll-starts in one overscroll session. Handles
@@ -390,20 +451,60 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
   touch_editable->OverscrollStarted();
   EXPECT_FALSE(GetTouchSelectionController(touch_editable));
 
-  // An overscroll session ends with a single overscroll-complete.  Handles
-  // should still remain hidden as the scroll is still in progress.
-  touch_editable->OverscrollCompleted();
-  EXPECT_FALSE(GetTouchSelectionController(touch_editable));
-
-  // And, finally an scroll-end. Handles should come back.
+  // And, finally a scroll-end. An OverscrollCompleted callback should be
+  // called and handles should come back.
   ui::GestureEvent scroll_end(
       10,
-      10,
+      210,
       0,
       ui::EventTimeForNow(),
       ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END));
   rwhva->OnGestureEvent(&scroll_end);
+  touch_editable->WaitForOverscrollCompletedCallback();
   EXPECT_TRUE(GetTouchSelectionController(touch_editable));
+
+  // Now repeat the same sequence, but abort the overscroll by scrolling back
+  // before ending the scroll.
+  touch_editable->Reset();
+  scroll_begin = ui::GestureEvent(
+        10,
+        10,
+        0,
+        ui::EventTimeForNow(),
+        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, 0));
+    rwhva->OnGestureEvent(&scroll_begin);
+
+    scroll_update = ui::GestureEvent(
+        210,
+        10,
+        0,
+        ui::EventTimeForNow(),
+        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 200, 0));
+    rwhva->OnGestureEvent(&scroll_update);
+    touch_editable->WaitForOverscrollStartedCallback();
+
+    // Scroll back.
+    ui::GestureEvent scroll_update2(
+        10,
+        10,
+        0,
+        ui::EventTimeForNow(),
+        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, -200, 0));
+    rwhva->OnGestureEvent(&scroll_update2);
+    // Handles should remain hidden.
+    EXPECT_FALSE(GetTouchSelectionController(touch_editable));
+
+    // End the scroll - the overscroll should be cancelled, and we should still
+    // receive OverscrollCompleted callback
+    scroll_end = ui::GestureEvent(
+        10,
+        10,
+        0,
+        ui::EventTimeForNow(),
+        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END));
+    rwhva->OnGestureEvent(&scroll_end);
+    touch_editable->WaitForOverscrollCompletedCallback();
+    EXPECT_TRUE(GetTouchSelectionController(touch_editable));
 }
 
 IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,

@@ -38,8 +38,8 @@ class CONTENT_EXPORT TouchEditableImplAura
   // depending on the current selection and cursor state.
   void UpdateEditingController();
 
-  void OverscrollStarted();
-  void OverscrollCompleted();
+  virtual void OverscrollStarted();
+  virtual void OverscrollCompleted();
 
   // Overridden from RenderWidgetHostViewAura::TouchEditingClient.
   void StartTouchEditing() override;
