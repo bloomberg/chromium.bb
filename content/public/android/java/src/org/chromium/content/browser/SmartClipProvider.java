@@ -6,7 +6,7 @@ package org.chromium.content.browser;
 
 import android.os.Handler;
 
-import org.chromium.base.UsedByReflection;
+import org.chromium.base.annotations.UsedByReflection;
 
 /**
  * An interface to provide smart clip data when requested.

@@ -10,10 +10,10 @@ import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
 import android.util.Log;
 
-import org.chromium.base.AccessedByNative;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.AccessedByNative;
 
 import java.io.FileNotFoundException;
 import java.util.HashMap;

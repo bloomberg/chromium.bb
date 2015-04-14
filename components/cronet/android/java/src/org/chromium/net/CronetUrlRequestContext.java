@@ -15,7 +15,7 @@ import android.util.Log;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.NativeClassQualifiedName;
-import org.chromium.base.UsedByReflection;
+import org.chromium.base.annotations.UsedByReflection;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;

@@ -12,7 +12,7 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import org.chromium.base.CalledByNative;
-import org.chromium.base.CalledByNativeUnchecked;
+import org.chromium.base.annotations.CalledByNativeUnchecked;
 
 import java.net.NetworkInterface;
 import java.net.SocketException;

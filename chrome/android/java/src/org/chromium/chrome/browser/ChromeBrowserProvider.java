@@ -31,9 +31,9 @@ import android.util.Log;
 import android.util.LongSparseArray;
 
 import org.chromium.base.CalledByNative;
-import org.chromium.base.CalledByNativeUnchecked;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNativeUnchecked;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.database.SQLiteCursor;
 import org.chromium.sync.AndroidSyncSettings;

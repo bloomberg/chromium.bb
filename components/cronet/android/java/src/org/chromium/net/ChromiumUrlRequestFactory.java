@@ -7,7 +7,7 @@ package org.chromium.net;
 import android.content.Context;
 import android.os.Build;
 
-import org.chromium.base.UsedByReflection;
+import org.chromium.base.annotations.UsedByReflection;
 
 import java.nio.channels.WritableByteChannel;
 import java.util.Map;
