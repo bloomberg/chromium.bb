@@ -1,4 +1,24 @@
 {
+  "Android GN": {
+    "additional_compile_targets": [
+      "chrome_shell_apk"
+    ],
+    "gtest_tests": [
+      {
+        "test": "base_unittests"
+      }
+    ]
+  },
+  "Android GN (dbg)": {
+    "additional_compile_targets": [
+      "chrome_shell_apk"
+    ],
+    "gtest_tests": [
+      {
+        "test": "base_unittests"
+      }
+    ]
+  },
   "Linux ChromiumOS Tests (1)": {
     "gtest_tests": [
       {
@@ -355,6 +375,26 @@
   },
   "Linux ChromiumOS Tests (dbg)(3)": {
     "gtest_tests": []
+  },
+  "Linux GN": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "test": "base_unittests"
+      }
+    ]
+  },
+  "Linux GN (dbg)": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "test": "base_unittests"
+      }
+    ]
   },
   "WebKit Linux": {
     "gtest_tests": [

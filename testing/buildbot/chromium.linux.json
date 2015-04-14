@@ -1,7 +1,7 @@
 {
   "Android GN": {
     "additional_compile_targets": [
-      "all"
+      "chrome_shell_apk"
     ],
     "gtest_tests": [
       {
