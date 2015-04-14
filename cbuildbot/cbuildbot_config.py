@@ -2631,6 +2631,12 @@ _release.add_config('stout-release',
   important=True,
 )
 
+# Builder for non-freon 'quawks' for test coverage.
+_release.add_config('quawks-release',
+  _base_configs['quawks'],
+  important=True,
+)
+
 ### Arm release configs.
 
 _release.add_config('veyron_rialto-release',
@@ -2864,33 +2870,30 @@ _AddGroupConfig('beltino-b', 'monroe', (
 ))
 
 # rambi-based boards
-_AddGroupConfig('rambi-freon-a', 'rambi', (
+_AddGroupConfig('rambi-a', 'rambi', (
     'clapper',
     'enguarde',
     'expresso',
 ))
 
-_AddGroupConfig('rambi-freon-b', 'glimmer', (
+_AddGroupConfig('rambi-b', 'glimmer', (
     'gnawty',
     'kip',
     'quawks_freon',
 ))
 
-_AddGroupConfig('rambi-freon-c', 'squawks', (
+_AddGroupConfig('rambi-c', 'squawks', (
     'swanky',
     'winky',
     'candy',
 ))
 
-_AddGroupConfig('rambi-a', 'banjo', (
-    'sumo',
+_AddGroupConfig('rambi-d', 'banjo', (
+    'cranky',
     'ninja',
-    'quawks',
-))
-
-_AddGroupConfig('rambi-b', 'cranky', (
+    'sumo',
 ),
-  important=False
+    important=False
 )
 
 # daisy-based boards
@@ -3252,7 +3255,7 @@ _waterfall_config_map = {
       'jecht-release-group',
       'peach-freon-release-group',
       'pineview-freon-release-group',
-      'rambi-b-release-group',
+      'rambi-d-release-group',
       'veyron-b-release-group',
 
       # Experimental Canaries
