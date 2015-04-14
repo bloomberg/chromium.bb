@@ -162,8 +162,6 @@ places are noted in the table below.
 
 | *GYP*                                           | *GN*                                       | *GN import*                                    |
 |:------------------------------------------------|:-------------------------------------------|:-----------------------------------------------|
-| `android_src`                                   | `android_src`                              | `//build/config/android/config.gni`            |
-| `android_webview_build` (0/1)                   | `is_android_webview_build` (true/false)    | `//build/config/android/config.gni`            |
 | `arm_float_abi`                                 | `arm_float_abi`                            | `//build/config/arm.gni`                       |
 | `arm_neon` (0/1)                                | `arm_use_neon` (true/false)                | `//build/config/arm.gni`                       |
 | `arm_neon_optional` (0/1)                       | `arm_optionally_use_neon` (true/false)     | `//build/config/arm.gni`                       |

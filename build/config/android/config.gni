@@ -30,10 +30,6 @@ if (is_android) {
     android_sdk_version = default_android_sdk_version
     android_sdk_build_tools_version = default_android_sdk_build_tools_version
 
-    # WebView now builds in a normal android build; don't use this.
-    # TODO(torne): remove this. http://crbug.com/440793
-    is_android_webview_build = false
-
     android_default_keystore_path =
         "//build/android/ant/chromium-debug.keystore"
     android_default_keystore_name = "chromiumdebugkey"
@@ -190,9 +186,5 @@ if (is_android) {
     android_app_abi = "mips64"
   } else {
     assert(false, "Unknown Android ABI: " + current_cpu)
-  }
-} else {
-  if (!defined(is_android_webview_build)) {
-    is_android_webview_build = false
   }
 }

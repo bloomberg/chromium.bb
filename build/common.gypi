@@ -155,10 +155,6 @@
         # default. "default" should be used on non-official builds.
         'android_channel%': 'default',
 
-        # WebView now builds in a normal android build; don't use this.
-        # TODO(torne): remove this. http://crbug.com/440793
-        'android_webview_build%': 0,
-
         # Set ARM architecture version.
         'arm_version%': 7,
 
@@ -290,7 +286,6 @@
       'enable_viewport%': '<(enable_viewport)',
       'enable_hidpi%': '<(enable_hidpi)',
       'android_channel%': '<(android_channel)',
-      'android_webview_build%': '<(android_webview_build)',
       'use_goma%': '<(use_goma)',
       'gomadir%': '<(gomadir)',
       'enable_app_list%': '<(enable_app_list)',
@@ -664,6 +659,12 @@
       # Whether the entire browser uses toolkit-views on Mac instead of Cocoa.
       'mac_views_browser%': 0,
 
+      # By default, use ICU data file (icudtl.dat).
+      'icu_use_data_file_flag%': 1,
+
+      # Turn on JNI generation optimizations by default.
+      'optimize_jni_generation%': 1,
+
       'conditions': [
         # A flag for POSIX platforms
         ['OS=="win"', {
@@ -994,15 +995,6 @@
           'enable_print_preview%': 0,
         }],
 
-        # By default, use ICU data file (icudtl.dat) on all platforms
-        # except when building Android WebView.
-        # TODO(jshin): Handle 'use_system_icu' on Linux (Chromium).
-        # Set the data reduction proxy origin for Android Webview.
-        ['android_webview_build==0', {
-          'icu_use_data_file_flag%' : 1,
-        }, {
-          'icu_use_data_file_flag%' : 0,
-        }],
         ['OS=="win" or OS=="mac"', {
           'enable_wifi_bootstrapping%' : 1,
         }],
@@ -1013,13 +1005,6 @@
           'sas_dll_path%': '<(DEPTH)/third_party/platformsdk_win7/files/redist/amd64',
         }, {
           'sas_dll_path%': '<(DEPTH)/third_party/platformsdk_win7/files/redist/x86',
-        }],
-
-        # Turn on JNI generation optimizations on non-WebView builds.
-        ['OS=="android" and android_webview_build==0', {
-          'optimize_jni_generation%': 1,
-        }, {
-          'optimize_jni_generation%': 0,
         }],
       ],
 
@@ -1205,7 +1190,6 @@
     'use_libjpeg_turbo%': '<(use_libjpeg_turbo)',
     'use_system_libjpeg%': '<(use_system_libjpeg)',
     'android_channel%': '<(android_channel)',
-    'android_webview_build%': '<(android_webview_build)',
     'icu_use_data_file_flag%': '<(icu_use_data_file_flag)',
     'gyp_managed_install%': 0,
     'create_standalone_apk%': 1,
@@ -1820,13 +1804,6 @@
 
         # Uses system APIs for decoding audio and video.
         'use_libffmpeg%': '0',
-
-        # TODO(torne): Remove this unsupported option once all the places that
-        # test it have been updated.
-        'use_system_stlport%': 0,
-
-        # Copy it out one scope.
-        'android_webview_build%': '<(android_webview_build)',
       }],  # OS=="android"
       ['embedded==1', {
         'use_system_fontconfig%': 0,
