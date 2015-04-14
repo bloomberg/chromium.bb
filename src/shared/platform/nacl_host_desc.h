@@ -172,8 +172,8 @@ extern int NaClHostDescUnmapUnsafe(void   *start_addr,
 /*
  * These are the flags that are permitted.
  */
-#define NACL_ALLOWED_OPEN_FLAGS \
-  (NACL_ABI_O_ACCMODE | NACL_ABI_O_CREAT | NACL_ABI_O_TRUNC | NACL_ABI_O_APPEND)
+#define NACL_ALLOWED_OPEN_FLAGS (NACL_ABI_O_ACCMODE | NACL_ABI_O_CREAT | \
+    NACL_ABI_O_TRUNC | NACL_ABI_O_APPEND | NACL_ABI_O_EXCL)
 
 /*
  * Constructor for a NaClHostDesc object.
@@ -181,7 +181,8 @@ extern int NaClHostDescUnmapUnsafe(void   *start_addr,
  * |path| should be a host-OS pathname to a file.  No validation is
  * done.  |flags| should contain one of NACL_ABI_O_RDONLY,
  * NACL_ABI_O_WRONLY, and NACL_ABI_O_RDWR, and can additionally
- * contain NACL_ABI_O_CREAT, NACL_ABI_O_TRUNC, and NACL_ABI_O_APPEND.
+ * contain NACL_ABI_O_CREAT, NACL_ABI_O_TRUNC, NACL_ABI_O_EXCL and
+ * NACL_ABI_O_APPEND.
  *
  * Uses raw syscall return convention, so returns 0 for success and
  * non-zero (usually -NACL_ABI_EINVAL) for failure.

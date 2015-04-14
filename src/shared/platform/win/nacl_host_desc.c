@@ -939,7 +939,6 @@ int NaClHostDescOpen(struct NaClHostDesc  *d,
   DWORD dwCreationDisposition;
   DWORD dwFlagsAndAttributes;
   int oflags;
-  int truncate_after_open = 0;
   HANDLE hFile;
   DWORD err;
   int fd;
@@ -995,15 +994,21 @@ int NaClHostDescOpen(struct NaClHostDesc  *d,
       dwCreationDisposition = OPEN_EXISTING;
       break;
     case NACL_ABI_O_CREAT:
-      dwCreationDisposition = OPEN_ALWAYS;
+      if (flags & NACL_ABI_O_EXCL)
+        /* Force creation of new file (fails if file already exists) */
+        dwCreationDisposition = CREATE_NEW;
+      else
+        /* Open existing file, or create one if needed. */
+        dwCreationDisposition = OPEN_ALWAYS;
       break;
     case NACL_ABI_O_TRUNC:
+      /* truncates existing file, but does not create a new one */
       dwCreationDisposition = TRUNCATE_EXISTING;
-      truncate_after_open = 1;
       break;
     case NACL_ABI_O_CREAT | NACL_ABI_O_TRUNC:
-      dwCreationDisposition = OPEN_ALWAYS;
-      truncate_after_open = 1;
+      /* truncates existing file or creates a new one */
+      dwCreationDisposition = CREATE_ALWAYS;
+      break;
   }
   if (0 != (flags & NACL_ABI_O_APPEND)) {
     oflags |= _O_APPEND;
@@ -1027,22 +1032,6 @@ int NaClHostDescOpen(struct NaClHostDesc  *d,
     err = GetLastError();
     NaClLog(3, "NaClHostDescOpen: CreateFile failed %d\n", err);
     return -NaClXlateSystemError(err);
-  }
-  if (truncate_after_open &&
-      NACL_ABI_O_RDONLY != (flags & NACL_ABI_O_ACCMODE)) {
-    NaClLog(4, "NaClHostDescOpen: Truncating file\n");
-    if (!SetEndOfFile(hFile)) {
-      err = GetLastError();
-      NaClLog(LOG_ERROR,
-              "NaClHostDescOpen: could not truncate file:"
-              " last error %d.\n",
-              err);
-      if (err == ERROR_USER_MAPPED_FILE) {
-        NaClLog(LOG_ERROR,
-                "NaClHostDescOpen: this is due to an existing mapping"
-                " of the same file.\n");
-      }
-    }
   }
   fd = _open_osfhandle((intptr_t) hFile, oflags);
   /*

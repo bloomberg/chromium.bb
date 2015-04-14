@@ -525,6 +525,46 @@ bool test_truncate(const char *test_file) {
   return passed("test_truncate", "all");
 }
 
+bool test_open_trunc(const char *test_file) {
+  int fd;
+  char buffer[100];
+  struct stat buf;
+  const char *testname = "test_open_trunc";
+  char temp_file[PATH_MAX];
+  snprintf(temp_file, PATH_MAX, "%s.open_truncate", test_file);
+
+  // Write some data to a new file.
+  fd = open(temp_file, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
+  ASSERT_NE(-1, fd);
+  memset(buffer, 0, 100);
+  ASSERT_EQ(100, write(fd, buffer, 100));
+  ASSERT_EQ(0, close(fd));
+
+  // Verify size is 100.
+  ASSERT_EQ(0, stat(temp_file, &buf));
+  ASSERT_EQ(100, buf.st_size);
+
+  // Open the file without O_TRUNC
+  fd = open(temp_file, O_RDWR);
+  ASSERT_NE(-1, fd);
+  ASSERT_EQ(0, close(fd));
+
+  // Verify size is still 100.
+  ASSERT_EQ(0, stat(temp_file, &buf));
+  ASSERT_EQ(100, buf.st_size);
+
+  // Open the file again with O_TRUNC.
+  fd = open(temp_file, O_RDWR | O_TRUNC);
+  ASSERT_NE(-1, fd);
+  ASSERT_EQ(0, close(fd));
+
+  // Verify size is now 0.
+  ASSERT_EQ(0, stat(temp_file, &buf));
+  ASSERT_EQ(0, buf.st_size);
+
+  return passed(testname, "all");
+}
+
 // open() returns the new file descriptor, or -1 if an error occurred
 bool test_open(const char *test_file) {
   int fd;
@@ -532,46 +572,71 @@ bool test_open(const char *test_file) {
 
   // file OK, flag OK
   fd = open(test_file, O_RDONLY);
-  if (fd == -1)
-    return failed(testname, "open(test_file, O_RDONLY)");
+  ASSERT_NE_MSG(fd, -1, "open(test_file, O_RDONLY)");
   close(fd);
 
   errno = 0;
   // file does not exist, flags OK
   fd = open("testdata/file_none.txt", O_RDONLY);
-  if (fd != -1)
-    return failed(testname, "open(testdata/file_none.txt, O_RDONLY)");
+  ASSERT_EQ_MSG(fd, -1, "open(testdata/file_none.txt, O_RDONLY)");
   // no such file or directory
-  if (ENOENT != errno)
-    return failed(testname, "ENOENT != errno");
-  close(fd);
+  ASSERT_EQ(errno, ENOENT);
 
   // file OK, flags OK, mode OK
   fd = open(test_file, O_WRONLY, S_IRUSR);
-  if (fd == -1)
-    return failed(testname, "open(test_file, O_WRONLY, S_IRUSR)");
+  ASSERT_NE_MSG(fd, -1, "open(test_file, O_WRONLY, S_IRUSR)");
   close(fd);
 
   // too many args
   fd = open(test_file, O_RDWR, S_IRUSR, O_APPEND);
-  if (fd == -1)
-    return failed(testname, "open(test_file, O_RDWR, S_IRUSR, O_APPEND)");
+  ASSERT_NE_MSG(fd, -1, "open(test_file, O_RDWR, S_IRUSR, O_APPEND)");
   close(fd);
 
   // directory OK
   fd = open(".", O_RDONLY);
-  if (fd == -1)
-    return failed(testname, "open(., O_RDONLY)");
+  ASSERT_NE_MSG(fd, -1, "open(., O_RDONLY)");
   close(fd);
+
+  // open with O_CREAT | O_EXCL should fail on existing directories.
+  fd = open(".", O_RDONLY | O_CREAT | O_EXCL);
+  ASSERT_EQ_MSG(fd, -1, "open(., O_RDONLY | O_EXCL)");
 
   errno = 0;
   // directory does not exist
   fd = open("nosuchdir", O_RDONLY);
-  if (fd != -1)
-    return failed(testname, "open(nosuchdir, O_RDONLY)");
+  ASSERT_EQ_MSG(fd, -1, "open(nosuchdir, O_RDONLY)");
   // no such file or directory
-  if (ENOENT != errno)
-    return failed(testname, "ENOENT != errno");
+  ASSERT_EQ(errno, ENOENT);
+
+  // open exiting file with O_CREAT should succeed
+  fd = open(test_file, O_RDONLY | O_CREAT, S_IRUSR | S_IWUSR);
+  ASSERT_NE_MSG(fd, -1, "open(test_file, O_RDONLY | O_CREAT)");
+
+  // open exiting file with O_CREAT | O_EXCL should fail
+  fd = open(test_file, O_RDONLY | O_CREAT | O_EXCL);
+  ASSERT_EQ_MSG(fd, -1, "open(test_file, O_RDONLY | O_CREAT | O_EXCL)");
+
+#if defined(__GLIBC__)
+  if (!TESTS_USE_IRT) {
+    // These final two cases rely on ensure_file_is_absent which does not work
+    // under glibc-non-irt.
+    return passed(testname, "all");
+  }
+#endif
+
+  char temp_file[PATH_MAX];
+  snprintf(temp_file, PATH_MAX, "%s.new_file", test_file);
+
+  // open new file with O_CREAT
+  ensure_file_is_absent(temp_file);
+  fd = open(temp_file, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+  ASSERT_NE_MSG(fd, -1, "open(new_file, O_RDWR | O_CREAT)");
+  close(fd);
+
+  // open new file with O_EXCL
+  ensure_file_is_absent(temp_file);
+  fd = open(temp_file, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
+  ASSERT_NE_MSG(fd, -1, "open(new_file, O_RDWR | O_CREAT | O_EXCL)");
   close(fd);
 
   return passed(testname, "all");
@@ -1049,6 +1114,7 @@ bool testSuite(const char *test_file) {
   ret &= test_sysconf();
   ret &= test_stat(test_file);
   ret &= test_open(test_file);
+  ret &= test_open_trunc(test_file);
   ret &= test_close(test_file);
   ret &= test_read(test_file);
   ret &= test_write(test_file);

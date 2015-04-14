@@ -96,7 +96,7 @@ static INLINE int NaClMapAccessMode(int nacl_mode) {
 static INLINE int NaClMapOpenFlags(int nacl_flags) {
   int host_os_flags;
 
-  nacl_flags &= (NACL_ABI_O_ACCMODE | NACL_ABI_O_CREAT
+  nacl_flags &= (NACL_ABI_O_ACCMODE | NACL_ABI_O_CREAT | NACL_ABI_O_EXCL
                  | NACL_ABI_O_TRUNC | NACL_ABI_O_APPEND);
 
   host_os_flags = 0;
@@ -115,6 +115,7 @@ static INLINE int NaClMapOpenFlags(int nacl_flags) {
     }                                           \
   } while (0)
   M(O_CREAT);
+  M(O_EXCL);
   M(O_TRUNC);
   M(O_APPEND);
 #undef M
