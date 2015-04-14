@@ -219,8 +219,8 @@
 
 #define MOVE_ONLY_TYPE_WITH_MOVE_CONSTRUCTOR_FOR_CPP_03(type) \
  private: \
-  type(type&); \
-  void operator=(type&); \
+  type(const type&); \
+  void operator=(const type&); \
  public: \
   type&& Pass() WARN_UNUSED_RESULT { return static_cast<type&&>(*this); } \
   typedef void MoveOnlyTypeForCPP03; \
