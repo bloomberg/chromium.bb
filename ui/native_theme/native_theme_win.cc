@@ -1512,7 +1512,7 @@ HRESULT NativeThemeWin::PaintProgressBar(
   const DTBGOPTS value_draw_options = {
     sizeof(DTBGOPTS),
     (bar_rect.right == value_rect.right && bar_rect.left != value_rect.left) ?
-        DTBG_MIRRORDC : 0,
+        DTBG_MIRRORDC : 0u,
     bar_rect
   };
   if (pre_vista) {
