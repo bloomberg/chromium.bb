@@ -23,6 +23,7 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/signin/core/common/signin_switches.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
@@ -37,12 +38,6 @@
 #if !defined(OS_ANDROID)
 #include "chrome/browser/first_run/first_run.h"
 #endif
-
-namespace {
-
-const char kGoogleAccountsUrl[] = "https://accounts.google.com";
-
-}  // namespace
 
 ChromeSigninClient::ChromeSigninClient(
     Profile* profile, SigninErrorController* signin_error_controller)
@@ -65,9 +60,9 @@ bool ChromeSigninClient::ProfileAllowsSigninCookies(Profile* profile) {
 // static
 bool ChromeSigninClient::SettingsAllowSigninCookies(
     CookieSettings* cookie_settings) {
+  GURL gaia_url = GaiaUrls::GetInstance()->gaia_url();
   return cookie_settings &&
-         cookie_settings->IsSettingCookieAllowed(GURL(kGoogleAccountsUrl),
-                                                 GURL(kGoogleAccountsUrl));
+         cookie_settings->IsSettingCookieAllowed(gaia_url, gaia_url);
 }
 
 PrefService* ChromeSigninClient::GetPrefs() { return profile_->GetPrefs(); }
