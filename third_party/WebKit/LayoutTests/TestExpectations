@@ -2110,3 +2110,9 @@ crbug.com/453822 virtual/slimmingpaint/fast/forms/calendar-picker/datepicker-cra
 # update and reenable the test once the bugfix for 475244 lands in Chromium
 crbug.com/475244 media/video-durationchange-on-ended.html [ Pass Failure ]
 
+crbug.com/476907 [ XP ] virtual/slimmingpaint/fast/block/basic/018.html [ NeedsRebaseline ]
+crbug.com/476907 [ XP ] virtual/slimmingpaint/fast/block/float/025.html [ NeedsRebaseline ]
+crbug.com/476907 [ XP ] virtual/slimmingpaint/fast/block/float/026.html [ NeedsRebaseline ]
+crbug.com/476907 [ XP ] virtual/slimmingpaint/fast/block/float/027.html [ NeedsRebaseline ]
+crbug.com/476907 [ XP ] virtual/slimmingpaint/fast/block/float/028.html [ NeedsRebaseline ]
+crbug.com/476907 [ XP ] virtual/slimmingpaint/fast/block/float/float-avoidance.html [ NeedsRebaseline ]
