@@ -217,16 +217,16 @@ void WorkerMessagingProxy::workerThreadCreated(PassRefPtr<WorkerThread> workerTh
 void WorkerMessagingProxy::workerObjectDestroyed()
 {
     m_workerObject = nullptr;
-    m_executionContext->postTask(FROM_HERE, createCrossThreadTask(&workerObjectDestroyedInternal, AllowCrossThreadAccess(this)));
+    m_executionContext->postTask(FROM_HERE, createCrossThreadTask(&WorkerMessagingProxy::workerObjectDestroyedInternal, this));
 }
 
-void WorkerMessagingProxy::workerObjectDestroyedInternal(ExecutionContext*, WorkerMessagingProxy* proxy)
+void WorkerMessagingProxy::workerObjectDestroyedInternal()
 {
-    proxy->m_mayBeDestroyed = true;
-    if (proxy->m_workerThread)
-        proxy->terminateWorkerGlobalScope();
+    m_mayBeDestroyed = true;
+    if (m_workerThread)
+        terminateWorkerGlobalScope();
     else
-        proxy->workerThreadTerminated();
+        workerThreadTerminated();
 }
 
 void WorkerMessagingProxy::workerThreadTerminated()

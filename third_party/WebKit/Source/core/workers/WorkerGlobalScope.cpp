@@ -370,7 +370,7 @@ void WorkerGlobalScope::removeURLFromMemoryCache(const KURL& url)
     m_thread->workerLoaderProxy()->postTaskToLoader(createCrossThreadTask(&WorkerGlobalScope::removeURLFromMemoryCacheInternal, url));
 }
 
-void WorkerGlobalScope::removeURLFromMemoryCacheInternal(ExecutionContext*, const KURL& url)
+void WorkerGlobalScope::removeURLFromMemoryCacheInternal(const KURL& url)
 {
     memoryCache()->removeURLFromCache(url);
 }

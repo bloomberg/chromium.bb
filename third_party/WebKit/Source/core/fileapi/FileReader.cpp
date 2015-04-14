@@ -326,7 +326,7 @@ void FileReader::executePendingRead()
     m_blobDataHandle = nullptr;
 }
 
-static void delayedAbort(ExecutionContext*, FileReader* reader)
+static void delayedAbort(FileReader* reader)
 {
     reader->doAbort();
 }

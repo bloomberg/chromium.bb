@@ -360,7 +360,7 @@ void WebSharedWorkerImpl::connect(WebMessagePortChannel* webChannel)
         FROM_HERE, createCrossThreadTask(&connectTask, adoptPtr(webChannel)));
 }
 
-void WebSharedWorkerImpl::connectTask(ExecutionContext* context, PassOwnPtr<WebMessagePortChannel> channel)
+void WebSharedWorkerImpl::connectTask(PassOwnPtr<WebMessagePortChannel> channel, ExecutionContext* context)
 {
     // Wrap the passed-in channel in a MessagePort, and send it off via a connect event.
     RefPtrWillBeRawPtr<MessagePort> port = MessagePort::create(*context);

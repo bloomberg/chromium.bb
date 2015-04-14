@@ -197,7 +197,7 @@ Peer::~Peer()
     ASSERT(!isMainThread());
 }
 
-void Peer::initializeInternal(ExecutionContext* context, const String& sourceURL, unsigned lineNumber)
+void Peer::initialize(const String& sourceURL, unsigned lineNumber, ExecutionContext* context)
 {
     ASSERT(isMainThread());
     Document* document = toDocument(context);
@@ -268,7 +268,7 @@ void Peer::disconnect()
     m_syncHelper->signalWorkerThread();
 }
 
-static void workerGlobalScopeDidConnect(ExecutionContext* context, Bridge* bridge, const String& subprotocol, const String& extensions)
+static void workerGlobalScopeDidConnect(Bridge* bridge, const String& subprotocol, const String& extensions, ExecutionContext* context)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
     if (bridge->client())
@@ -281,7 +281,7 @@ void Peer::didConnect(const String& subprotocol, const String& extensions)
     m_loaderProxy->postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidConnect, m_bridge, subprotocol, extensions));
 }
 
-static void workerGlobalScopeDidReceiveTextMessage(ExecutionContext* context, Bridge* bridge, const String& payload)
+static void workerGlobalScopeDidReceiveTextMessage(Bridge* bridge, const String& payload, ExecutionContext* context)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
     if (bridge->client())
@@ -294,7 +294,7 @@ void Peer::didReceiveTextMessage(const String& payload)
     m_loaderProxy->postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidReceiveTextMessage, m_bridge, payload));
 }
 
-static void workerGlobalScopeDidReceiveBinaryMessage(ExecutionContext* context, Bridge* bridge, PassOwnPtr<Vector<char>> payload)
+static void workerGlobalScopeDidReceiveBinaryMessage(Bridge* bridge, PassOwnPtr<Vector<char>> payload, ExecutionContext* context)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
     if (bridge->client())
@@ -307,7 +307,7 @@ void Peer::didReceiveBinaryMessage(PassOwnPtr<Vector<char>> payload)
     m_loaderProxy->postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidReceiveBinaryMessage, m_bridge, payload));
 }
 
-static void workerGlobalScopeDidConsumeBufferedAmount(ExecutionContext* context, Bridge* bridge, uint64_t consumed)
+static void workerGlobalScopeDidConsumeBufferedAmount(Bridge* bridge, uint64_t consumed, ExecutionContext* context)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
     if (bridge->client())
@@ -320,7 +320,7 @@ void Peer::didConsumeBufferedAmount(uint64_t consumed)
     m_loaderProxy->postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidConsumeBufferedAmount, m_bridge, consumed));
 }
 
-static void workerGlobalScopeDidStartClosingHandshake(ExecutionContext* context, Bridge* bridge)
+static void workerGlobalScopeDidStartClosingHandshake(Bridge* bridge, ExecutionContext* context)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
     if (bridge->client())
@@ -333,7 +333,7 @@ void Peer::didStartClosingHandshake()
     m_loaderProxy->postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidStartClosingHandshake, m_bridge));
 }
 
-static void workerGlobalScopeDidClose(ExecutionContext* context, Bridge* bridge, WebSocketChannelClient::ClosingHandshakeCompletionStatus closingHandshakeCompletion, unsigned short code, const String& reason)
+static void workerGlobalScopeDidClose(Bridge* bridge, WebSocketChannelClient::ClosingHandshakeCompletionStatus closingHandshakeCompletion, unsigned short code, const String& reason, ExecutionContext* context)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
     if (bridge->client())
@@ -350,7 +350,7 @@ void Peer::didClose(ClosingHandshakeCompletionStatus closingHandshakeCompletion,
     m_loaderProxy->postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidClose, m_bridge, closingHandshakeCompletion, code, reason));
 }
 
-static void workerGlobalScopeDidError(ExecutionContext* context, Bridge* bridge)
+static void workerGlobalScopeDidError(Bridge* bridge, ExecutionContext* context)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
     if (bridge->client())
@@ -387,7 +387,7 @@ Bridge::~Bridge()
 
 void Bridge::initialize(const String& sourceURL, unsigned lineNumber)
 {
-    if (!waitForMethodCompletion(createCrossThreadTask(&Peer::initialize, AllowCrossThreadAccess(m_peer.get()), sourceURL, lineNumber))) {
+    if (!waitForMethodCompletion(createCrossThreadTask(&Peer::initialize, m_peer.get(), sourceURL, lineNumber))) {
         // The worker thread has been signalled to shutdown before method completion.
         disconnect();
     }

@@ -25,7 +25,7 @@ static void functionWithGarbageCollected(GCObject*)
 {
 }
 
-static void functionWithExecutionContext(ExecutionContext*, GCObject*)
+static void functionWithExecutionContext(GCObject*, ExecutionContext*)
 {
 }
 

@@ -85,7 +85,7 @@ protected:
     WorkerObjectProxy& workerObjectProxy() { return *m_workerObjectProxy.get(); }
 
 private:
-    static void workerObjectDestroyedInternal(ExecutionContext*, WorkerMessagingProxy*);
+    void workerObjectDestroyedInternal();
     void terminateInternally();
 
     // WorkerLoaderProxyProvider

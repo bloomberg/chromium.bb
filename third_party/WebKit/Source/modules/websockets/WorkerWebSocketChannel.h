@@ -88,10 +88,7 @@ public:
 
         // sourceURLAtConnection and lineNumberAtConnection parameters may
         // be shown when the connection fails.
-        static void initialize(ExecutionContext* executionContext, Peer* peer, const String& sourceURLAtConnection, unsigned lineNumberAtConnection)
-        {
-            peer->initializeInternal(executionContext, sourceURLAtConnection, lineNumberAtConnection);
-        }
+        void initialize(const String& sourceURLAtConnection, unsigned lineNumberAtConnection, ExecutionContext*);
 
         void connect(const KURL&, const String& protocol);
         void send(const String& message);
@@ -113,8 +110,6 @@ public:
         virtual void didError() override;
 
     private:
-        void initializeInternal(ExecutionContext*, const String& sourceURLAtConnection, unsigned lineNumberAtConnection);
-
         Member<Bridge> m_bridge;
         RefPtr<WorkerLoaderProxy> m_loaderProxy;
         Member<WebSocketChannel> m_mainWebSocketChannel;

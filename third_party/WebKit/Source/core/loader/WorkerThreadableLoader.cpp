@@ -122,14 +122,14 @@ WorkerThreadableLoader::MainThreadBridge::MainThreadBridge(
     ASSERT(m_workerClientWrapper.get());
     ASSERT(m_clientBridge.get());
     m_loaderProxy->postTaskToLoader(
-        createCrossThreadTask(&MainThreadBridge::mainThreadCreateLoader, AllowCrossThreadAccess(this), request, options, resourceLoaderOptions, outgoingReferrer));
+        createCrossThreadTask(&MainThreadBridge::mainThreadCreateLoader, this, request, options, resourceLoaderOptions, outgoingReferrer));
 }
 
 WorkerThreadableLoader::MainThreadBridge::~MainThreadBridge()
 {
 }
 
-void WorkerThreadableLoader::MainThreadBridge::mainThreadCreateLoader(ExecutionContext* context, MainThreadBridge* thisPtr, PassOwnPtr<CrossThreadResourceRequestData> requestData, ThreadableLoaderOptions options, ResourceLoaderOptions resourceLoaderOptions, const String& outgoingReferrer)
+void WorkerThreadableLoader::MainThreadBridge::mainThreadCreateLoader(PassOwnPtr<CrossThreadResourceRequestData> requestData, ThreadableLoaderOptions options, ResourceLoaderOptions resourceLoaderOptions, const String& outgoingReferrer, ExecutionContext* context)
 {
     ASSERT(isMainThread());
     Document* document = toDocument(context);
@@ -137,18 +137,18 @@ void WorkerThreadableLoader::MainThreadBridge::mainThreadCreateLoader(ExecutionC
     OwnPtr<ResourceRequest> request(ResourceRequest::adopt(requestData));
     request->setHTTPReferrer(SecurityPolicy::generateReferrer(ReferrerPolicyDefault, request->url(), outgoingReferrer));
     resourceLoaderOptions.requestInitiatorContext = WorkerContext;
-    thisPtr->m_mainThreadLoader = DocumentThreadableLoader::create(*document, thisPtr, *request, options, resourceLoaderOptions);
-    if (!thisPtr->m_mainThreadLoader) {
+    m_mainThreadLoader = DocumentThreadableLoader::create(*document, this, *request, options, resourceLoaderOptions);
+    if (!m_mainThreadLoader) {
         // DocumentThreadableLoader::create may return 0 when the document loader has been already changed.
-        thisPtr->didFail(ResourceError(errorDomainBlinkInternal, 0, request->url().string(), "Can't create DocumentThreadableLoader"));
+        didFail(ResourceError(errorDomainBlinkInternal, 0, request->url().string(), "Can't create DocumentThreadableLoader"));
     }
 }
 
-void WorkerThreadableLoader::MainThreadBridge::mainThreadDestroy(ExecutionContext* context, MainThreadBridge* thisPtr)
+void WorkerThreadableLoader::MainThreadBridge::mainThreadDestroy(ExecutionContext* context)
 {
     ASSERT(isMainThread());
     ASSERT_UNUSED(context, context->isDocument());
-    delete thisPtr;
+    delete this;
 }
 
 void WorkerThreadableLoader::MainThreadBridge::destroy()
@@ -158,41 +158,41 @@ void WorkerThreadableLoader::MainThreadBridge::destroy()
 
     // "delete this" and m_mainThreadLoader::deref() on the worker object's thread.
     m_loaderProxy->postTaskToLoader(
-        createCrossThreadTask(&MainThreadBridge::mainThreadDestroy, AllowCrossThreadAccess(this)));
+        createCrossThreadTask(&MainThreadBridge::mainThreadDestroy, this));
 }
 
-void WorkerThreadableLoader::MainThreadBridge::mainThreadOverrideTimeout(ExecutionContext* context, MainThreadBridge* thisPtr, unsigned long timeoutMilliseconds)
+void WorkerThreadableLoader::MainThreadBridge::mainThreadOverrideTimeout(unsigned long timeoutMilliseconds, ExecutionContext* context)
 {
     ASSERT(isMainThread());
     ASSERT_UNUSED(context, context->isDocument());
 
-    if (!thisPtr->m_mainThreadLoader)
+    if (!m_mainThreadLoader)
         return;
-    thisPtr->m_mainThreadLoader->overrideTimeout(timeoutMilliseconds);
+    m_mainThreadLoader->overrideTimeout(timeoutMilliseconds);
 }
 
 void WorkerThreadableLoader::MainThreadBridge::overrideTimeout(unsigned long timeoutMilliseconds)
 {
     m_loaderProxy->postTaskToLoader(
-        createCrossThreadTask(&MainThreadBridge::mainThreadOverrideTimeout, AllowCrossThreadAccess(this),
+        createCrossThreadTask(&MainThreadBridge::mainThreadOverrideTimeout, this,
             timeoutMilliseconds));
 }
 
-void WorkerThreadableLoader::MainThreadBridge::mainThreadCancel(ExecutionContext* context, MainThreadBridge* thisPtr)
+void WorkerThreadableLoader::MainThreadBridge::mainThreadCancel(ExecutionContext* context)
 {
     ASSERT(isMainThread());
     ASSERT_UNUSED(context, context->isDocument());
 
-    if (!thisPtr->m_mainThreadLoader)
+    if (!m_mainThreadLoader)
         return;
-    thisPtr->m_mainThreadLoader->cancel();
-    thisPtr->m_mainThreadLoader = nullptr;
+    m_mainThreadLoader->cancel();
+    m_mainThreadLoader = nullptr;
 }
 
 void WorkerThreadableLoader::MainThreadBridge::cancel()
 {
     m_loaderProxy->postTaskToLoader(
-        createCrossThreadTask(&MainThreadBridge::mainThreadCancel, AllowCrossThreadAccess(this)));
+        createCrossThreadTask(&MainThreadBridge::mainThreadCancel, this));
     ThreadableLoaderClientWrapper* clientWrapper = m_workerClientWrapper.get();
     if (!clientWrapper->done()) {
         // If the client hasn't reached a termination state, then transition it by sending a cancellation error.

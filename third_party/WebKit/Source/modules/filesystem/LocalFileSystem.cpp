@@ -50,7 +50,7 @@ namespace blink {
 
 namespace {
 
-void reportFailure(ExecutionContext*, PassOwnPtr<AsyncFileSystemCallbacks> callbacks, FileError::ErrorCode error)
+void reportFailure(PassOwnPtr<AsyncFileSystemCallbacks> callbacks, FileError::ErrorCode error)
 {
     callbacks->didFail(error);
 }

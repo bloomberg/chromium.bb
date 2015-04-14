@@ -161,7 +161,7 @@ private:
     virtual EventTarget* errorEventTarget() override final;
     virtual void didUpdateSecurityOrigin() override final { }
 
-    static void removeURLFromMemoryCacheInternal(ExecutionContext*, const KURL&);
+    static void removeURLFromMemoryCacheInternal(const KURL&);
 
     KURL m_url;
     String m_userAgent;
