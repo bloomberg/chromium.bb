@@ -214,8 +214,12 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   frame.disable_picture_quad_image_filtering =
       disable_picture_quad_image_filtering;
 
-  overlay_processor_->ProcessForOverlays(render_passes_in_draw_order,
-                                         &frame.overlay_list);
+  if (root_render_pass->copy_requests.empty()) {
+    // If we have any copy requests, we can't remove any quads for overlays,
+    // otherwise the framebuffer will be missing the overlay contents.
+    overlay_processor_->ProcessForOverlays(render_passes_in_draw_order,
+                                           &frame.overlay_list);
+  }
 
   EnsureBackbuffer();
 
