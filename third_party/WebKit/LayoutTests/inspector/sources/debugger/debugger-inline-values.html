@@ -25,13 +25,13 @@ function test()
 
     function runTestFunction()
     {
-        InspectorTest.addSniffer(WebInspector.JavaScriptSourceFrame.prototype, "setExecutionLine", onSetExecutionLine);
+        InspectorTest.addSniffer(WebInspector.JavaScriptSourceFrame.prototype, "setExecutionLocation", onSetExecutionLocation);
         InspectorTest.evaluateInPage("setTimeout(testFunction, 0)");
     }
 
-    function onSetExecutionLine(lineNumber)
+    function onSetExecutionLocation(uiLocation)
     {
-        InspectorTest.runAfterPendingDispatches(dumpAndContinue.bind(null, this.textEditor, lineNumber));
+        InspectorTest.runAfterPendingDispatches(dumpAndContinue.bind(null, this.textEditor, uiLocation.lineNumber));
     }
 
     function dumpAndContinue(textEditor, lineNumber)
@@ -49,7 +49,7 @@ function test()
             InspectorTest.addResult(output.join(" "));
         }
 
-        InspectorTest.addSniffer(WebInspector.JavaScriptSourceFrame.prototype, "setExecutionLine", onSetExecutionLine);
+        InspectorTest.addSniffer(WebInspector.JavaScriptSourceFrame.prototype, "setExecutionLocation", onSetExecutionLocation);
         if (++stepCount < 10)
             WebInspector.panels.sources._stepOverButton.element.click();
         else

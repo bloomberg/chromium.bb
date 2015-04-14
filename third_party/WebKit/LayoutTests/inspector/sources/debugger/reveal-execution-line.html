@@ -17,14 +17,14 @@ var test = function()
             var executionLineSet = false;
             var executionLineRevealed = false;
             InspectorTest.addSniffer(WebInspector.SourceFrame.prototype, "revealPosition", didRevealLine);
-            InspectorTest.addSniffer(WebInspector.JavaScriptSourceFrame.prototype, "setExecutionLine", didSetExecutionLine);
+            InspectorTest.addSniffer(WebInspector.JavaScriptSourceFrame.prototype, "setExecutionLocation", didSetExecutionLocation);
             InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
 
             function didPause(callFrames)
             {
             }
 
-            function didSetExecutionLine(line)
+            function didSetExecutionLocation(uiLocation)
             {
                 if (executionLineSet)
                     return;
