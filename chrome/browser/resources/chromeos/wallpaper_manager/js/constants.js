@@ -5,14 +5,14 @@
 
 /** @const */ var Constants = {
   /**
-   * Key to access wallpaper rss in chrome.local.storage.
+   * Key to access wallpaper rss in chrome.storage.local.
    */
-  AccessRssKey: 'wallpaper-picker-surprise-rss-key',
+  AccessLocalRssKey: 'wallpaper-picker-surprise-rss-key',
 
   /**
    * Key to access wallpaper manifest in chrome.storage.local.
    */
-  AccessManifestKey: 'wallpaper-picker-manifest-key',
+  AccessLocalManifestKey: 'wallpaper-picker-manifest-key',
 
   /**
    * Key to access user wallpaper info in chrome.storage.local.
@@ -25,15 +25,22 @@
   AccessSyncWallpaperInfoKey: 'wallpaper-sync-info-key',
 
   /**
-   * Key to access last changed date of a surprise wallpaper.
+   * Key to access last changed date of a surprise wallpaper in
+   * chrome.storage.local or chrome.storage.sync.
    */
   AccessLastSurpriseWallpaperChangedDate: 'wallpaper-last-changed-date-key',
 
   /**
    * Key to access if surprise me feature is enabled or not in
-   * chrome.local.storage.
+   * chrome.storage.local.
    */
-  AccessSurpriseMeEnabledKey: 'surprise-me-enabled-key',
+  AccessLocalSurpriseMeEnabledKey: 'surprise-me-enabled-key',
+
+  /**
+   * Key to access if surprise me feature is enabled or not in
+   * chrome.storage.sync.
+   */
+  AccessSyncSurpriseMeEnabledKey: 'sync-surprise-me-enabled-key',
 
   /**
    * Suffix to append to baseURL if requesting high resoultion wallpaper.

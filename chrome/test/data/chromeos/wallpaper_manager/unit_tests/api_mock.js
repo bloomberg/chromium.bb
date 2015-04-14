@@ -201,6 +201,8 @@ var chrome = {
       get: function(key, callback) {
         var items = {};
         switch (key) {
+          case Constants.AccessLocalSurpriseMeEnabledKey:
+            items[Constants.AccessLocalSurpriseMeEnabledKey] = true;
           case Constants.AccessLocalWallpaperInfoKey:
             items[Constants.AccessLocalWallpaperInfoKey] = {
               'url': 'dummy',
@@ -217,8 +219,8 @@ var chrome = {
       get: function(key, callback) {
         var items = {};
         switch (key) {
-          case Constants.AccessSurpriseMeEnabledKey:
-            items[Constants.AccessSurpriseMeEnabledKey] = true;
+          case Constants.AccessSyncSurpriseMeEnabledKey:
+            items[Constants.AccessSyncSurpriseMeEnabledKey] = true;
           case Constants.AccessLastSurpriseWallpaperChangedDate:
             items[Constants.AccessLastSurpriseWallpaperChangedDate] =
                 new Date().toDateString();
@@ -266,7 +268,13 @@ var chrome = {
                                  callback) {
     },
     getSyncSetting: function(callback) {
-      callback({syncThemes: true});
+      var setting = {};
+      setting.syncThemes = true;
+      callback(setting);
+    },
+    onWallpaperChangedBy3rdParty: {
+      addListener: function(listener) {
+      }
     }
   },
   runtime: {

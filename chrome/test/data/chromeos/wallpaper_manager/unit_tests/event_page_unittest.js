@@ -6,7 +6,9 @@
 var mockController;
 
 WallpaperUtil.enabledSyncThemesCallback = function(callback) {
-  callback();
+  chrome.wallpaperPrivate.getSyncSetting(function(setting) {
+    callback(setting.syncThemes);
+  });
 };
 
 function setUp() {
