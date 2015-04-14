@@ -2396,8 +2396,14 @@ void Heap::collectAllGarbage()
     // because the hierarchy was not completely moved to the heap and
     // some heap allocated objects own objects that contain persistents
     // pointing to other heap allocated objects.
-    for (int i = 0; i < 5; ++i)
+    size_t previousLiveObjects = 0;
+    for (int i = 0; i < 5; ++i) {
         collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, ForcedGCForTesting);
+        size_t liveObjects = Heap::markedObjectSize();
+        if (liveObjects == previousLiveObjects)
+            break;
+        previousLiveObjects = liveObjects;
+    }
 }
 
 double Heap::estimatedMarkingTime()
