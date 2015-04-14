@@ -146,6 +146,12 @@
       'Win8 GN': 'gn_release_bot',
       'Win8 GN (dbg)': 'gn_debug_bot',
     },
+    'chromium.webkit': {
+      'Android GN': 'gn_release_bot',
+      'Android GN (dbg)': 'gn_debug_bot',
+      'Linux GN': 'gn_release_bot',
+      'Linux GN (dbg)': 'gn_debug_bot'
+    },
     'tryserver.chromium.linux': {
       'android_chromium_gn_compile_dbg': 'android_gn_debug_bot',
       'android_chromium_gn_compile_rel': 'android_gn_release_trybot',

@@ -417,6 +417,7 @@ class MetaBuildWrapper(object):
       return 0
 
     all_needed_targets = set()
+    ret = 0
     for f in inp['files']:
       cmd = self.GNCmd('refs', self.args.path[0]) + [
              '//' + f, '--type=executable', '--all', '--as=output']
