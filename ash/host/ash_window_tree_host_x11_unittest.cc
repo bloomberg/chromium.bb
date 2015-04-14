@@ -92,7 +92,7 @@ TEST_F(AshWindowTreeHostX11Test, DispatchTouchEventToOneRootWindow) {
   scoped_ptr<RootWindowEventHandler> handler(
       new RootWindowEventHandler(window_tree_host.get()));
 
-  std::vector<unsigned int> devices;
+  std::vector<int> devices;
   devices.push_back(0);
   ui::SetUpTouchDevicesForTest(devices);
   std::vector<ui::Valuator> valuators;
@@ -155,7 +155,7 @@ TEST_F(AshWindowTreeHostX11Test, DispatchTouchEventToTwoRootWindow) {
   scoped_ptr<RootWindowEventHandler> handler2(
       new RootWindowEventHandler(window_tree_host2.get()));
 
-  std::vector<unsigned int> devices;
+  std::vector<int> devices;
   devices.push_back(0);
   ui::SetUpTouchDevicesForTest(devices);
   std::vector<ui::Valuator> valuators;

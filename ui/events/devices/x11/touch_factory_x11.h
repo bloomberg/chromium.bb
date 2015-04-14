@@ -49,14 +49,17 @@ class EVENTS_DEVICES_EXPORT TouchFactory {
   // Keeps a list of touch devices so that it is possible to determine if a
   // pointer event is a touch-event or a mouse-event. The list is reset each
   // time this is called.
-  void SetTouchDeviceList(const std::vector<unsigned int>& devices);
+  void SetTouchDeviceList(const std::vector<int>& devices);
+
+  // Is the device ID valid?
+  bool IsValidDevice(int deviceid) const;
 
   // Is the device a touch-device?
-  bool IsTouchDevice(unsigned int deviceid) const;
+  bool IsTouchDevice(int deviceid) const;
 
   // Is the device a real multi-touch-device? (see doc. for |touch_device_list_|
   // below for more explanation.)
-  bool IsMultiTouchDevice(unsigned int deviceid) const;
+  bool IsMultiTouchDevice(int deviceid) const;
 
   // Tries to find an existing slot ID mapping to tracking ID. Returns true
   // if the slot is found and it is saved in |slot|, false if no such slot
@@ -84,12 +87,12 @@ class EVENTS_DEVICES_EXPORT TouchFactory {
   // Sets up the device id in the list |devices| as multi-touch capable
   // devices and enables touch events processing. This function is only
   // for test purpose, and it does not query from X server.
-  void SetTouchDeviceForTest(const std::vector<unsigned int>& devices);
+  void SetTouchDeviceForTest(const std::vector<int>& devices);
 
   // Sets up the device id in the list |devices| as pointer devices.
   // This function is only for test purpose, and it does not query from
   // X server.
-  void SetPointerDeviceForTest(const std::vector<unsigned int>& devices);
+  void SetPointerDeviceForTest(const std::vector<int>& devices);
 
  private:
   // Requirement for Singleton

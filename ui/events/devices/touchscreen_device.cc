@@ -13,7 +13,7 @@ namespace ui {
 TouchscreenDevice::TouchscreenDevice() : touch_points(0) {
 }
 
-TouchscreenDevice::TouchscreenDevice(unsigned int id,
+TouchscreenDevice::TouchscreenDevice(int id,
                                      InputDeviceType type,
                                      const gfx::Size& size,
                                      int touch_points)

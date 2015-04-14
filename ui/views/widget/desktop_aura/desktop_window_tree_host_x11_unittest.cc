@@ -523,7 +523,7 @@ class DesktopWindowTreeHostX11HighDPITest
   void SetUp() override {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor, "2");
-    std::vector<unsigned int> pointer_devices;
+    std::vector<int> pointer_devices;
     pointer_devices.push_back(kPointerDeviceId);
     ui::TouchFactory::GetInstance()->SetPointerDeviceForTest(pointer_devices);
 

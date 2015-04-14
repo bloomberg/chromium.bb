@@ -286,19 +286,19 @@ void ScopedXI2Event::SetUpValuators(const std::vector<Valuator>& valuators) {
   }
 }
 
-void SetUpTouchPadForTest(unsigned int deviceid) {
-  std::vector<unsigned int> device_list;
+void SetUpTouchPadForTest(int deviceid) {
+  std::vector<int> device_list;
   device_list.push_back(deviceid);
 
   TouchFactory::GetInstance()->SetPointerDeviceForTest(device_list);
   ui::DeviceDataManagerX11* manager = ui::DeviceDataManagerX11::GetInstance();
-  manager->SetDeviceListForTest(std::vector<unsigned int>(), device_list);
+  manager->SetDeviceListForTest(std::vector<int>(), device_list);
 }
 
-void SetUpTouchDevicesForTest(const std::vector<unsigned int>& devices) {
+void SetUpTouchDevicesForTest(const std::vector<int>& devices) {
   TouchFactory::GetInstance()->SetTouchDeviceForTest(devices);
   ui::DeviceDataManagerX11* manager = ui::DeviceDataManagerX11::GetInstance();
-  manager->SetDeviceListForTest(devices, std::vector<unsigned int>());
+  manager->SetDeviceListForTest(devices, std::vector<int>());
 }
 
 }  // namespace ui

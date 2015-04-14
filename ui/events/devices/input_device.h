@@ -19,16 +19,16 @@ enum InputDeviceType {
 
 // Represents an input device state.
 struct EVENTS_DEVICES_EXPORT InputDevice {
-  static const unsigned int kInvalidId;
+  static const int kInvalidId;
 
   // Creates an invalid input device.
   InputDevice();
 
-  InputDevice(unsigned int id, InputDeviceType type);
+  InputDevice(int id, InputDeviceType type);
   virtual ~InputDevice();
 
   // ID of the device. This ID is unique between all input devices.
-  unsigned int id;
+  int id;
 
   // The type of the input device.
   InputDeviceType type;

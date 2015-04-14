@@ -90,10 +90,10 @@ class ScopedXI2Event {
 };
 
 // Initializes a test touchpad device for scroll events.
-void SetUpTouchPadForTest(unsigned int deviceid);
+void SetUpTouchPadForTest(int deviceid);
 
 // Initializes a list of touchscreen devices for touch events.
-void SetUpTouchDevicesForTest(const std::vector<unsigned int>& devices);
+void SetUpTouchDevicesForTest(const std::vector<int>& devices);
 
 }  // namespace ui
 

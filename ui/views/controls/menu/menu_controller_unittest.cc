@@ -296,7 +296,7 @@ TEST_F(MenuControllerTest, TouchIdsReleasedCorrectly) {
   owner->GetNativeWindow()->GetRootWindow()->AddPreTargetHandler(
       &test_event_handler);
 
-  std::vector<unsigned int> devices;
+  std::vector<int> devices;
   devices.push_back(1);
   ui::SetUpTouchDevicesForTest(devices);
 

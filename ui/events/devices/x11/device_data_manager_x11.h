@@ -204,13 +204,13 @@ class EVENTS_DEVICES_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
   // *value = (*value - min_value_of_tp) / (max_value_of_tp - min_value_of_tp)
   // Returns true and sets the normalized value in|value| if normalization is
   // successful. Returns false and |value| is unchanged otherwise.
-  bool NormalizeData(unsigned int deviceid,
+  bool NormalizeData(int deviceid,
                      const DataType type,
                      double* value);
 
   // Extract the range of the data type. Return true if the range is available
   // and written into min & max, false if the range is not available.
-  bool GetDataRange(unsigned int deviceid,
+  bool GetDataRange(int deviceid,
                     const DataType type,
                     double* min,
                     double* max);
@@ -219,22 +219,22 @@ class EVENTS_DEVICES_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
   // This function is only for test purpose. It does not query the X server for
   // the actual device info, but rather inits the relevant valuator structures
   // to have safe default values for testing.
-  void SetDeviceListForTest(const std::vector<unsigned int>& touchscreen,
-                            const std::vector<unsigned int>& cmt_devices);
+  void SetDeviceListForTest(const std::vector<int>& touchscreen,
+                            const std::vector<int>& cmt_devices);
 
   void SetValuatorDataForTest(XIDeviceEvent* xievent,
                               DataType type,
                               double value);
 
-  bool TouchEventNeedsCalibrate(unsigned int touch_device_id) const;
+  bool TouchEventNeedsCalibrate(int touch_device_id) const;
 
   // Sets the keys which are still allowed on a disabled keyboard device.
   void SetDisabledKeyboardAllowedKeys(
       scoped_ptr<std::set<KeyboardCode> > excepted_keys);
 
   // Disables and enables events from devices by device id.
-  void DisableDevice(unsigned int deviceid);
-  void EnableDevice(unsigned int deviceid);
+  void DisableDevice(int deviceid);
+  void EnableDevice(int deviceid);
 
   // Returns true if |native_event| should be blocked.
   bool IsEventBlocked(const base::NativeEvent& native_event);
@@ -315,7 +315,7 @@ class EVENTS_DEVICES_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
 
   // Map that stores meta-data for blocked keyboards. This is needed to restore
   // devices when they are re-enabled.
-  std::map<unsigned int, ui::KeyboardDevice> blocked_keyboards_;
+  std::map<int, ui::KeyboardDevice> blocked_keyboards_;
 
   // X11 atoms cache.
   X11AtomCache atom_cache_;

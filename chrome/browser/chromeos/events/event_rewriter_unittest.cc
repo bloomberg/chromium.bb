@@ -45,7 +45,7 @@
 namespace {
 
 // The device id of the test touchpad device.
-const unsigned int kTouchPadDeviceId = 1;
+const int kTouchPadDeviceId = 1;
 const int kKeyboardDeviceId = 2;
 const int kMasterKeyboardDeviceId = 3;
 
@@ -1931,7 +1931,7 @@ TEST_F(EventRewriterAshTest, TopRowKeysAreFunctionKeys) {
 }
 
 TEST_F(EventRewriterTest, TestRewrittenModifierClick) {
-  std::vector<unsigned int> device_list;
+  std::vector<int> device_list;
   device_list.push_back(10);
   ui::TouchFactory::GetInstance()->SetPointerDeviceForTest(device_list);
 
@@ -1970,7 +1970,7 @@ TEST_F(EventRewriterTest, TestRewrittenModifierClick) {
 TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
   // TODO(kpschoedel): pending changes for crbug.com/360377
   // to |chromeos::EventRewriter::RewriteLocatedEvent()
-  std::vector<unsigned int> device_list;
+  std::vector<int> device_list;
   device_list.push_back(10);
   device_list.push_back(11);
   ui::TouchFactory::GetInstance()->SetPointerDeviceForTest(device_list);

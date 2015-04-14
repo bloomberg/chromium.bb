@@ -111,7 +111,7 @@ namespace ui {
 
 namespace {
 
-bool DeviceHasId(const ui::InputDevice input_device, unsigned int id) {
+bool DeviceHasId(const ui::InputDevice input_device, int id) {
   return input_device.id == id;
 }
 
@@ -301,6 +301,8 @@ void DeviceDataManagerX11::GetEventRawData(const XEvent& xev, EventData* data) {
     return;
 
   XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev.xcookie.data);
+  CHECK(xiev->sourceid >= 0);
+  CHECK(xiev->deviceid >= 0);
   if (xiev->sourceid >= kMaxDeviceNum || xiev->deviceid >= kMaxDeviceNum)
     return;
   data->clear();
@@ -328,6 +330,8 @@ bool DeviceDataManagerX11::GetEventData(const XEvent& xev,
     return false;
 
   XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev.xcookie.data);
+  CHECK(xiev->sourceid >= 0);
+  CHECK(xiev->deviceid >= 0);
   if (xiev->sourceid >= kMaxDeviceNum || xiev->deviceid >= kMaxDeviceNum)
     return false;
   const int sourceid = xiev->sourceid;
@@ -386,6 +390,7 @@ bool DeviceDataManagerX11::IsTouchpadXInputEvent(
 
   XIDeviceEvent* xievent =
       static_cast<XIDeviceEvent*>(native_event->xcookie.data);
+  CHECK(xievent->sourceid >= 0);
   if (xievent->sourceid >= kMaxDeviceNum)
     return false;
   return touchpads_[xievent->sourceid];
@@ -398,6 +403,7 @@ bool DeviceDataManagerX11::IsCMTDeviceEvent(
 
   XIDeviceEvent* xievent =
       static_cast<XIDeviceEvent*>(native_event->xcookie.data);
+  CHECK(xievent->sourceid >= 0);
   if (xievent->sourceid >= kMaxDeviceNum)
     return false;
   return cmt_devices_[xievent->sourceid];
@@ -570,7 +576,7 @@ void DeviceDataManagerX11::GetGestureTimes(
     *end_time = data[DT_CMT_END_TIME];
 }
 
-bool DeviceDataManagerX11::NormalizeData(unsigned int deviceid,
+bool DeviceDataManagerX11::NormalizeData(int deviceid,
                                          const DataType type,
                                          double* value) {
   double max_value;
@@ -583,11 +589,12 @@ bool DeviceDataManagerX11::NormalizeData(unsigned int deviceid,
   return false;
 }
 
-bool DeviceDataManagerX11::GetDataRange(unsigned int deviceid,
+bool DeviceDataManagerX11::GetDataRange(int deviceid,
                                         const DataType type,
                                         double* min,
                                         double* max) {
-  if (deviceid >= static_cast<unsigned int>(kMaxDeviceNum))
+  CHECK(deviceid >= 0);
+  if (deviceid >= kMaxDeviceNum)
     return false;
   if (valuator_lookup_[deviceid][type] >= 0) {
     *min = valuator_min_[deviceid][type];
@@ -598,8 +605,8 @@ bool DeviceDataManagerX11::GetDataRange(unsigned int deviceid,
 }
 
 void DeviceDataManagerX11::SetDeviceListForTest(
-    const std::vector<unsigned int>& touchscreen,
-    const std::vector<unsigned int>& cmt_devices) {
+    const std::vector<int>& touchscreen,
+    const std::vector<int>& cmt_devices) {
   for (int i = 0; i < kMaxDeviceNum; ++i) {
     valuator_count_[i] = 0;
     valuator_lookup_[i].clear();
@@ -611,14 +618,14 @@ void DeviceDataManagerX11::SetDeviceListForTest(
   }
 
   for (size_t i = 0; i < touchscreen.size(); i++) {
-    unsigned int deviceid = touchscreen[i];
+    int deviceid = touchscreen[i];
     InitializeValuatorsForTest(deviceid, kTouchDataTypeStart, kTouchDataTypeEnd,
                                0, 1000);
   }
 
   cmt_devices_.reset();
   for (size_t i = 0; i < cmt_devices.size(); ++i) {
-    unsigned int deviceid = cmt_devices[i];
+    int deviceid = cmt_devices[i];
     cmt_devices_[deviceid] = true;
     touchpads_[deviceid] = true;
     InitializeValuatorsForTest(deviceid, kCMTDataTypeStart, kCMTDataTypeEnd,
@@ -665,8 +672,7 @@ void DeviceDataManagerX11::InitializeValuatorsForTest(int deviceid,
   }
 }
 
-bool DeviceDataManagerX11::TouchEventNeedsCalibrate(
-    unsigned int touch_device_id) const {
+bool DeviceDataManagerX11::TouchEventNeedsCalibrate(int touch_device_id) const {
 #if defined(OS_CHROMEOS)
   if (!base::SysInfo::IsRunningOnChromeOS())
     return false;
@@ -688,7 +694,7 @@ void DeviceDataManagerX11::SetDisabledKeyboardAllowedKeys(
   blocked_keyboard_allowed_keys_ = excepted_keys.Pass();
 }
 
-void DeviceDataManagerX11::DisableDevice(unsigned int deviceid) {
+void DeviceDataManagerX11::DisableDevice(int deviceid) {
   blocked_devices_.set(deviceid, true);
   // TODO(rsadam@): Support blocking touchscreen devices.
   std::vector<KeyboardDevice> keyboards = keyboard_devices();
@@ -698,15 +704,15 @@ void DeviceDataManagerX11::DisableDevice(unsigned int deviceid) {
                    std::bind2nd(std::ptr_fun(&DeviceHasId), deviceid));
   if (it != std::end(keyboards)) {
     blocked_keyboards_.insert(
-        std::pair<unsigned int, KeyboardDevice>(deviceid, *it));
+        std::pair<int, KeyboardDevice>(deviceid, *it));
     keyboards.erase(it);
     DeviceDataManager::OnKeyboardDevicesUpdated(keyboards);
   }
 }
 
-void DeviceDataManagerX11::EnableDevice(unsigned int deviceid) {
+void DeviceDataManagerX11::EnableDevice(int deviceid) {
   blocked_devices_.set(deviceid, false);
-  std::map<unsigned int, KeyboardDevice>::iterator it =
+  std::map<int, KeyboardDevice>::iterator it =
       blocked_keyboards_.find(deviceid);
   if (it != blocked_keyboards_.end()) {
     std::vector<KeyboardDevice> devices = keyboard_devices();
@@ -740,7 +746,7 @@ bool DeviceDataManagerX11::IsEventBlocked(
 void DeviceDataManagerX11::OnKeyboardDevicesUpdated(
     const std::vector<KeyboardDevice>& devices) {
   std::vector<KeyboardDevice> keyboards(devices);
-  for (std::map<unsigned int, KeyboardDevice>::iterator blocked_iter =
+  for (std::map<int, KeyboardDevice>::iterator blocked_iter =
            blocked_keyboards_.begin();
        blocked_iter != blocked_keyboards_.end();) {
     // Check if the blocked device still exists in list of devices.

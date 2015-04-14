@@ -84,9 +84,9 @@ TEST_F(TouchscreenUtilTest, OneToOneMapping) {
   AssociateTouchscreens(&displays_, devices);
 
   EXPECT_EQ(ui::TouchscreenDevice::kInvalidId, displays_[0].touch_device_id());
-  EXPECT_EQ(1u, displays_[1].touch_device_id());
+  EXPECT_EQ(1, displays_[1].touch_device_id());
   EXPECT_EQ(ui::TouchscreenDevice::kInvalidId, displays_[2].touch_device_id());
-  EXPECT_EQ(2u, displays_[3].touch_device_id());
+  EXPECT_EQ(2, displays_[3].touch_device_id());
 }
 
 TEST_F(TouchscreenUtilTest, MapToCorrectDisplaySize) {
@@ -99,7 +99,7 @@ TEST_F(TouchscreenUtilTest, MapToCorrectDisplaySize) {
   EXPECT_EQ(ui::TouchscreenDevice::kInvalidId, displays_[0].touch_device_id());
   EXPECT_EQ(ui::TouchscreenDevice::kInvalidId, displays_[1].touch_device_id());
   EXPECT_EQ(ui::TouchscreenDevice::kInvalidId, displays_[2].touch_device_id());
-  EXPECT_EQ(2u, displays_[3].touch_device_id());
+  EXPECT_EQ(2, displays_[3].touch_device_id());
 }
 
 TEST_F(TouchscreenUtilTest, MapWhenSizeDiffersByOne) {
@@ -112,9 +112,9 @@ TEST_F(TouchscreenUtilTest, MapWhenSizeDiffersByOne) {
   AssociateTouchscreens(&displays_, devices);
 
   EXPECT_EQ(ui::TouchscreenDevice::kInvalidId, displays_[0].touch_device_id());
-  EXPECT_EQ(1u, displays_[1].touch_device_id());
+  EXPECT_EQ(1, displays_[1].touch_device_id());
   EXPECT_EQ(ui::TouchscreenDevice::kInvalidId, displays_[2].touch_device_id());
-  EXPECT_EQ(2u, displays_[3].touch_device_id());
+  EXPECT_EQ(2, displays_[3].touch_device_id());
 }
 
 TEST_F(TouchscreenUtilTest, MapWhenSizesDoNotMatch) {
@@ -127,9 +127,9 @@ TEST_F(TouchscreenUtilTest, MapWhenSizesDoNotMatch) {
   AssociateTouchscreens(&displays_, devices);
 
   EXPECT_EQ(ui::TouchscreenDevice::kInvalidId, displays_[0].touch_device_id());
-  EXPECT_EQ(1u, displays_[1].touch_device_id());
+  EXPECT_EQ(1, displays_[1].touch_device_id());
   EXPECT_EQ(ui::TouchscreenDevice::kInvalidId, displays_[2].touch_device_id());
-  EXPECT_EQ(2u, displays_[3].touch_device_id());
+  EXPECT_EQ(2, displays_[3].touch_device_id());
 }
 
 TEST_F(TouchscreenUtilTest, MapInternalTouchscreen) {
@@ -142,8 +142,8 @@ TEST_F(TouchscreenUtilTest, MapInternalTouchscreen) {
   AssociateTouchscreens(&displays_, devices);
 
   // Internal touchscreen is always mapped to internal display.
-  EXPECT_EQ(2u, displays_[0].touch_device_id());
-  EXPECT_EQ(1u, displays_[1].touch_device_id());
+  EXPECT_EQ(2, displays_[0].touch_device_id());
+  EXPECT_EQ(1, displays_[1].touch_device_id());
   EXPECT_EQ(ui::TouchscreenDevice::kInvalidId, displays_[2].touch_device_id());
   EXPECT_EQ(ui::TouchscreenDevice::kInvalidId, displays_[3].touch_device_id());
 }

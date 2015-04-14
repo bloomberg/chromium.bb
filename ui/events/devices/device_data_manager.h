@@ -35,15 +35,15 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
 
   void ClearTouchDeviceAssociations();
   void UpdateTouchInfoForDisplay(int64_t target_display_id,
-                                 unsigned int touch_device_id,
+                                 int touch_device_id,
                                  const gfx::Transform& touch_transformer);
-  void ApplyTouchTransformer(unsigned int touch_device_id, float* x, float* y);
+  void ApplyTouchTransformer(int touch_device_id, float* x, float* y);
 
   // Gets the display that touches from |touch_device_id| should be sent to.
-  int64_t GetTargetDisplayForTouchDevice(unsigned int touch_device_id) const;
+  int64_t GetTargetDisplayForTouchDevice(int touch_device_id) const;
 
-  void UpdateTouchRadiusScale(unsigned int touch_device_id, double scale);
-  void ApplyTouchRadiusScale(unsigned int touch_device_id, double* radius);
+  void UpdateTouchRadiusScale(int touch_device_id, double scale);
+  void ApplyTouchRadiusScale(int touch_device_id, double* radius);
 
   const std::vector<TouchscreenDevice>& touchscreen_devices() const {
     return touchscreen_devices_;
@@ -74,7 +74,7 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
  private:
   static DeviceDataManager* instance_;
 
-  bool IsTouchDeviceIdValid(unsigned int touch_device_id) const;
+  bool IsTouchDeviceIdValid(int touch_device_id) const;
 
   double touch_radius_scale_map_[kMaxDeviceNum];
 
