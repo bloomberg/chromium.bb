@@ -54,6 +54,7 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewStatics;
 import org.chromium.content.browser.SmartClipProvider;
 import org.chromium.content.common.CleanupReference;
+import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -2049,6 +2050,11 @@ public class AwContents implements SmartClipProvider,
     public boolean hasAccessedInitialDocument() {
         if (isDestroyed()) return false;
         return mWebContents.hasAccessedInitialDocument();
+    }
+
+    public void requestAccessibilitySnapshot(AccessibilitySnapshotCallback callback) {
+        if (isDestroyed()) return;
+        mWebContents.requestAccessibilitySnapshot(callback);
     }
 
     //--------------------------------------------------------------------------------------------

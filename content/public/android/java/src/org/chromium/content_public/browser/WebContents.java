@@ -239,6 +239,14 @@ public interface WebContents {
     public int getThemeColor(int defaultColor);
 
     /**
+     * Requests a snapshop of accessibility tree. The result is provided asynchronously
+     * using the callback
+     * @param callback The callback to be called when the snapshot is ready. The callback
+     *                 cannot be null.
+     */
+    public void requestAccessibilitySnapshot(AccessibilitySnapshotCallback callback);
+
+    /**
      * Add an observer to the WebContents
      *
      * @param observer The observer to add.

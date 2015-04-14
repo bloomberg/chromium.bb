@@ -115,6 +115,9 @@ class CONTENT_EXPORT WebContentsAndroid
 
   jint GetThemeColor(JNIEnv* env, jobject obj);
 
+  void RequestAccessibilitySnapshot(JNIEnv* env,
+                                    jobject obj,
+                                    jobject callback);
  private:
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();
 

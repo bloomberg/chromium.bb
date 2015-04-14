@@ -33,6 +33,8 @@ import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
+import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.test.util.TestWebServer;
 
@@ -625,5 +627,41 @@ public class AwContentsTest extends AwTestBase {
         loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), "about:blank");
         assertEquals("null", executeJavaScriptAndWaitForResult(awContents, mContentsClient,
                 script));
+    }
+
+    /**
+     * Verifies that AX tree is returned.
+     */
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testRequestAccessibilitySnapshot() throws Throwable {
+        final AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        final AwContents awContents = testView.getAwContents();
+        final CallbackHelper loadHelper = mContentsClient.getOnPageFinishedHelper();
+        loadDataSync(awContents, loadHelper, "<button>Click</button>", "text/html", false);
+
+        final CallbackHelper callbackHelper = new CallbackHelper();
+        final AccessibilitySnapshotCallback callback = new AccessibilitySnapshotCallback() {
+            @Override
+            public void onAccessibilitySnapshot(AccessibilitySnapshotNode root) {
+                assertEquals(1, root.children.size());
+                assertEquals("", root.text);
+                AccessibilitySnapshotNode child = root.children.get(0);
+                assertEquals(1, child.children.size());
+                assertEquals("", child.text);
+                AccessibilitySnapshotNode grandChild = child.children.get(0);
+                assertEquals(0, grandChild.children.size());
+                assertEquals("Click", grandChild.text);
+                callbackHelper.notifyCalled();
+            }
+        };
+
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                awContents.requestAccessibilitySnapshot(callback);
+            }
+        });
+        callbackHelper.waitForCallback(callbackHelper.getCallCount());
     }
 }
