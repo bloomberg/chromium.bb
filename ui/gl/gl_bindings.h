@@ -388,6 +388,7 @@ struct GL_EXPORT DriverEGL {
 
  private:
   static std::string GetPlatformExtensions();
+  static std::string GetClientExtensions();
 };
 #endif
 

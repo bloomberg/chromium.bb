@@ -1279,7 +1279,7 @@ EGL_FUNCTIONS = [
 { 'return_type': 'EGLDisplay',
   'known_as': 'eglGetPlatformDisplayEXT',
   'versions': [{ 'name': 'eglGetPlatformDisplayEXT',
-                 'extensions': ['EGL_ANGLE_platform_angle'] }],
+                 'client_extensions': ['EGL_EXT_platform_base'], }],
   'arguments': 'EGLenum platform, void* native_display, '
                'const EGLint* attrib_list', },
 { 'return_type': '__eglMustCastToProperFunctionPointerType',
@@ -1679,7 +1679,8 @@ def GetStaticBinding(func):
     return None
 
 
-def GenerateHeader(file, functions, set_name, used_extensions):
+def GenerateHeader(file, functions, set_name,
+                   used_extensions, used_client_extensions):
   """Generates gl_bindings_autogen_x.h"""
 
   # Write file header.
@@ -1705,6 +1706,8 @@ class GLContext;
   # Write declarations for booleans indicating which extensions are available.
   file.write('\n')
   file.write("struct Extensions%s {\n" % set_name.upper())
+  for extension in sorted(used_client_extensions):
+    file.write('  bool b_%s;\n' % extension)
   for extension in sorted(used_extensions):
     file.write('  bool b_%s;\n' % extension)
   file.write('};\n')
@@ -1779,7 +1782,8 @@ def GenerateMockHeader(file, functions, set_name):
   file.write('\n')
 
 
-def GenerateSource(file, functions, set_name, used_extensions, options):
+def GenerateSource(file, functions, set_name, used_extensions,
+                   used_client_extensions, options):
   """Generates gl_bindings_autogen_x.cc"""
 
   set_header_name = "ui/gl/gl_" + set_name.lower() + "_api_implementation.h"
@@ -1843,31 +1847,6 @@ namespace gfx {
     else:
       file.write('  fn.%sFn = 0;\n' % func['known_as'])
 
-  if set_name == 'gl':
-    # Write the deferred bindings for GL that need a current context and depend
-    # on GL_VERSION and GL_EXTENSIONS.
-    file.write('}\n\n')
-    file.write("""void DriverGL::InitializeDynamicBindings(GLContext* context) {
-  DCHECK(context && context->IsCurrent(NULL));
-  const GLVersionInfo* ver = context->GetVersionInfo();
-  ALLOW_UNUSED_LOCAL(ver);
-  std::string extensions = context->GetExtensions() + " ";
-  ALLOW_UNUSED_LOCAL(extensions);
-
-""")
-  else:
-    file.write("""std::string extensions(GetPlatformExtensions());
-  extensions += " ";
-  ALLOW_UNUSED_LOCAL(extensions);
-
-""")
-
-  for extension in sorted(used_extensions):
-    # Extra space at the end of the extension name is intentional, it is used
-    # as a separator
-    file.write('  ext.b_%s = extensions.find("%s ") != std::string::npos;\n' %
-        (extension, extension))
-
   def GetGLVersionCondition(gl_version):
     if GLVersionBindAlways(gl_version):
       if gl_version.is_es:
@@ -1910,8 +1889,59 @@ namespace gfx {
       i += 1
       first_version = False
 
+  # TODO(jmadill): make more robust
+  def IsClientExtensionFunc(func):
+    assert len(func['versions']) > 0
+    if 'client_extensions' in func['versions'][0]:
+      assert len(func['versions']) == 1
+      return True
+    return False
+
+  if set_name == 'egl':
+    file.write("""std::string client_extensions(GetClientExtensions());
+  client_extensions += " ";
+  ALLOW_UNUSED_LOCAL(client_extensions);
+
+""")
+    for extension in sorted(used_client_extensions):
+      # Extra space at the end of the extension name is intentional,
+      # it is used as a separator
+      file.write(
+          '  ext.b_%s = client_extensions.find("%s ") != std::string::npos;\n' %
+          (extension, extension))
+    for func in functions:
+      if not 'static_binding' in func and IsClientExtensionFunc(func):
+        file.write('\n')
+        file.write('  debug_fn.%sFn = 0;\n' % func['known_as'])
+        WriteConditionalFuncBinding(file, func)
+
+  if set_name == 'gl':
+    # Write the deferred bindings for GL that need a current context and depend
+    # on GL_VERSION and GL_EXTENSIONS.
+    file.write('}\n\n')
+    file.write("""void DriverGL::InitializeDynamicBindings(GLContext* context) {
+  DCHECK(context && context->IsCurrent(NULL));
+  const GLVersionInfo* ver = context->GetVersionInfo();
+  ALLOW_UNUSED_LOCAL(ver);
+  std::string extensions = context->GetExtensions() + " ";
+  ALLOW_UNUSED_LOCAL(extensions);
+
+""")
+  else:
+    file.write("""std::string extensions(GetPlatformExtensions());
+  extensions += " ";
+  ALLOW_UNUSED_LOCAL(extensions);
+
+""")
+
+  for extension in sorted(used_extensions):
+    # Extra space at the end of the extension name is intentional, it is used
+    # as a separator
+    file.write('  ext.b_%s = extensions.find("%s ") != std::string::npos;\n' %
+        (extension, extension))
+
   for func in functions:
-    if not 'static_binding' in func:
+    if not 'static_binding' in func and not IsClientExtensionFunc(func):
       file.write('\n')
       file.write('  debug_fn.%sFn = 0;\n' % func['known_as'])
       WriteConditionalFuncBinding(file, func)
@@ -2381,6 +2411,7 @@ def FillExtensionsFromHeaders(functions, extension_headers, extra_extensions):
 
   # Fill in the extension information.
   used_extensions = set()
+  used_client_extensions = set()
   used_functions_by_version = collections.defaultdict(lambda: set([]))
   for func in functions:
     for version in func['versions']:
@@ -2397,6 +2428,11 @@ def FillExtensionsFromHeaders(functions, extension_headers, extra_extensions):
         extensions_from_headers = set(functions_to_extensions[name])
 
       explicit_extensions = set([])
+
+      if 'client_extensions' in version:
+        assert not 'extensions' in version
+        version['extensions'] = version['client_extensions']
+
       if 'extensions' in version:
         explicit_extensions = set(version['extensions'])
 
@@ -2415,7 +2451,10 @@ def FillExtensionsFromHeaders(functions, extension_headers, extra_extensions):
 
       if 'extensions' in version:
         assert len(version['extensions'])
-        used_extensions.update(version['extensions'])
+        if 'client_extensions' in version:
+          used_client_extensions.update(version['extensions'])
+        else:
+          used_extensions.update(version['extensions'])
 
       if not 'extensions' in version and LooksLikeExtensionFunction(name):
         raise RuntimeError('%s looks like an extension function but does not '
@@ -2440,7 +2479,7 @@ def FillExtensionsFromHeaders(functions, extension_headers, extra_extensions):
     print "OpenGL %d.%d: %d used functions" % (
         v.major_version, v.minor_version, len(used_functions_by_version[v]))
 
-  return used_extensions
+  return used_extensions, used_client_extensions
 
 
 def ResolveHeader(header, header_paths):
@@ -2511,12 +2550,13 @@ def main(argv):
 
     extension_headers = [ResolveHeader(h, HEADER_PATHS)
                          for h in extension_headers]
-    used_extensions = FillExtensionsFromHeaders(
+    used_extensions, used_client_extensions = FillExtensionsFromHeaders(
         functions, extension_headers, extensions)
 
     header_file = open(
         os.path.join(directory, 'gl_bindings_autogen_%s.h' % set_name), 'wb')
-    GenerateHeader(header_file, functions, set_name, used_extensions)
+    GenerateHeader(header_file, functions, set_name,
+                   used_extensions, used_client_extensions)
     header_file.close()
     ClangFormat(header_file.name)
 
@@ -2529,7 +2569,8 @@ def main(argv):
 
     source_file = open(
         os.path.join(directory, 'gl_bindings_autogen_%s.cc' % set_name), 'wb')
-    GenerateSource(source_file, functions, set_name, used_extensions, options)
+    GenerateSource(source_file, functions, set_name,
+                   used_extensions, used_client_extensions, options)
     source_file.close()
     ClangFormat(source_file.name)
 

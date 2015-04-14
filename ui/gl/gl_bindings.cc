@@ -54,6 +54,13 @@ std::string DriverEGL::GetPlatformExtensions() {
   const char* str = g_driver_egl.fn.eglQueryStringFn(display, EGL_EXTENSIONS);
   return str ? std::string(str) : "";
 }
+
+// static
+std::string DriverEGL::GetClientExtensions() {
+  const char* str =
+      g_driver_egl.fn.eglQueryStringFn(EGL_NO_DISPLAY, EGL_EXTENSIONS);
+  return str ? std::string(str) : "";
+}
 #endif
 
 #if defined(USE_X11)

@@ -104,6 +104,20 @@ void DriverEGL::InitializeStaticBindings() {
   fn.eglWaitNativeFn =
       reinterpret_cast<eglWaitNativeProc>(GetGLProcAddress("eglWaitNative"));
   fn.eglWaitSyncKHRFn = 0;
+  std::string client_extensions(GetClientExtensions());
+  client_extensions += " ";
+  ALLOW_UNUSED_LOCAL(client_extensions);
+
+  ext.b_EGL_EXT_platform_base =
+      client_extensions.find("EGL_EXT_platform_base ") != std::string::npos;
+
+  debug_fn.eglGetPlatformDisplayEXTFn = 0;
+  if (ext.b_EGL_EXT_platform_base) {
+    fn.eglGetPlatformDisplayEXTFn =
+        reinterpret_cast<eglGetPlatformDisplayEXTProc>(
+            GetGLProcAddress("eglGetPlatformDisplayEXT"));
+    DCHECK(fn.eglGetPlatformDisplayEXTFn);
+  }
   std::string extensions(GetPlatformExtensions());
   extensions += " ";
   ALLOW_UNUSED_LOCAL(extensions);
@@ -111,8 +125,6 @@ void DriverEGL::InitializeStaticBindings() {
   ext.b_EGL_ANGLE_d3d_share_handle_client_buffer =
       extensions.find("EGL_ANGLE_d3d_share_handle_client_buffer ") !=
       std::string::npos;
-  ext.b_EGL_ANGLE_platform_angle =
-      extensions.find("EGL_ANGLE_platform_angle ") != std::string::npos;
   ext.b_EGL_ANGLE_query_surface_pointer =
       extensions.find("EGL_ANGLE_query_surface_pointer ") != std::string::npos;
   ext.b_EGL_ANGLE_surface_d3d_texture_2d_share_handle =
@@ -168,14 +180,6 @@ void DriverEGL::InitializeStaticBindings() {
     fn.eglDestroySyncKHRFn = reinterpret_cast<eglDestroySyncKHRProc>(
         GetGLProcAddress("eglDestroySyncKHR"));
     DCHECK(fn.eglDestroySyncKHRFn);
-  }
-
-  debug_fn.eglGetPlatformDisplayEXTFn = 0;
-  if (ext.b_EGL_ANGLE_platform_angle) {
-    fn.eglGetPlatformDisplayEXTFn =
-        reinterpret_cast<eglGetPlatformDisplayEXTProc>(
-            GetGLProcAddress("eglGetPlatformDisplayEXT"));
-    DCHECK(fn.eglGetPlatformDisplayEXTFn);
   }
 
   debug_fn.eglGetSyncAttribKHRFn = 0;

@@ -156,8 +156,8 @@ typedef EGLint(GL_BINDING_CALL* eglWaitSyncKHRProc)(EGLDisplay dpy,
                                                     EGLint flags);
 
 struct ExtensionsEGL {
+  bool b_EGL_EXT_platform_base;
   bool b_EGL_ANGLE_d3d_share_handle_client_buffer;
-  bool b_EGL_ANGLE_platform_angle;
   bool b_EGL_ANGLE_query_surface_pointer;
   bool b_EGL_ANGLE_surface_d3d_texture_2d_share_handle;
   bool b_EGL_CHROMIUM_sync_control;
