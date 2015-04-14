@@ -28,7 +28,7 @@ function test()
         var sidebarSize = splitView.isVertical() ? splitView.sidebarView().element.offsetWidth : splitView.sidebarView().element.offsetHeight;
         var orientation = splitView.isVertical() ? "vertical" : "horizontal";
         InspectorTest.addResult("    Sidebar size = " + sidebarSize + ", showMode = " + splitView.showMode() + ", " + orientation);
-        InspectorTest.addResult("    Setting value: " + localStorage[splitView._setting._name]);
+        InspectorTest.addResult("    Setting value: " + JSON.stringify(WebInspector.settings.settingForTest(splitView._setting._name).get()));
     }
 
     function testSplitViewSizes(useFraction, shouldSaveShowMode)
