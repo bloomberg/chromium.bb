@@ -967,7 +967,7 @@ WebString WebAXObject::name(WebAXNameFrom& outNameFrom, WebVector<WebAXObject>& 
     if (isDetached())
         return WebString();
 
-    AXNameFrom nameFrom;
+    AXNameFrom nameFrom = AXNameFromAttribute;
     Vector<AXObject*> nameObjects;
     WebString result = m_private->name(nameFrom, nameObjects);
     outNameFrom = static_cast<WebAXNameFrom>(nameFrom);
