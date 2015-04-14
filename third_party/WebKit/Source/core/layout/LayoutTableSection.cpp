@@ -1002,7 +1002,7 @@ void LayoutTableSection::layoutRows()
             }
 
             if (!cellChildrenFlex) {
-                if (TrackedRendererListHashSet* percentHeightDescendants = cell->percentHeightDescendants()) {
+                if (TrackedLayoutBoxListHashSet* percentHeightDescendants = cell->percentHeightDescendants()) {
                     for (auto* descendant : *percentHeightDescendants) {
                         if (flexAllChildren || shouldFlexCellChild(descendant)) {
                             cellChildrenFlex = true;

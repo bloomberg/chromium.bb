@@ -1191,7 +1191,7 @@ void LayoutGrid::layoutGridItems()
 
 void LayoutGrid::layoutPositionedObjects(bool relayoutChildren, PositionedLayoutBehavior info)
 {
-    TrackedRendererListHashSet* positionedDescendants = positionedObjects();
+    TrackedLayoutBoxListHashSet* positionedDescendants = positionedObjects();
     if (!positionedDescendants)
         return;
 

@@ -43,8 +43,8 @@ struct PaintInfo;
 class LayoutInline;
 class WordMeasurement;
 
-typedef WTF::ListHashSet<LayoutBox*, 16> TrackedRendererListHashSet;
-typedef WTF::HashMap<const LayoutBlock*, OwnPtr<TrackedRendererListHashSet>> TrackedDescendantsMap;
+typedef WTF::ListHashSet<LayoutBox*, 16> TrackedLayoutBoxListHashSet;
+typedef WTF::HashMap<const LayoutBlock*, OwnPtr<TrackedLayoutBoxListHashSet>> TrackedDescendantsMap;
 typedef WTF::HashMap<const LayoutBox*, OwnPtr<HashSet<LayoutBlock*>>> TrackedContainerMap;
 typedef Vector<WordMeasurement, 64> WordMeasurements;
 
@@ -105,10 +105,10 @@ public:
     static void removePositionedObject(LayoutBox*);
     void removePositionedObjects(LayoutBlock*, ContainingBlockState = SameContainingBlock);
 
-    TrackedRendererListHashSet* positionedObjects() const;
+    TrackedLayoutBoxListHashSet* positionedObjects() const;
     bool hasPositionedObjects() const
     {
-        TrackedRendererListHashSet* objects = positionedObjects();
+        TrackedLayoutBoxListHashSet* objects = positionedObjects();
         return objects && !objects->isEmpty();
     }
 
@@ -119,10 +119,10 @@ public:
     static void clearPercentHeightDescendantsFrom(LayoutBox*);
     static void removePercentHeightDescendantIfNeeded(LayoutBox*);
 
-    TrackedRendererListHashSet* percentHeightDescendants() const;
+    TrackedLayoutBoxListHashSet* percentHeightDescendants() const;
     bool hasPercentHeightDescendants() const
     {
-        TrackedRendererListHashSet* descendants = percentHeightDescendants();
+        TrackedLayoutBoxListHashSet* descendants = percentHeightDescendants();
         return descendants && !descendants->isEmpty();
     }
 
@@ -353,8 +353,8 @@ private:
 
     void removeAnonymousWrappersIfRequired();
 
-    void insertIntoTrackedRendererMaps(LayoutBox* descendant, TrackedDescendantsMap*&, TrackedContainerMap*&);
-    static void removeFromTrackedRendererMaps(LayoutBox* descendant, TrackedDescendantsMap*&, TrackedContainerMap*&);
+    void insertIntoTrackedLayoutBoxMaps(LayoutBox* descendant, TrackedDescendantsMap*&, TrackedContainerMap*&);
+    static void removeFromTrackedLayoutBoxMaps(LayoutBox* descendant, TrackedDescendantsMap*&, TrackedContainerMap*&);
 
     Node* nodeForHitTest() const;
 

@@ -269,7 +269,7 @@ void FloatingObjects::markLowestFloatLogicalBottomCacheAsDirty()
         m_lowestFloatBottomCache[i].dirty = true;
 }
 
-void FloatingObjects::moveAllToFloatInfoMap(RendererToFloatInfoMap& map)
+void FloatingObjects::moveAllToFloatInfoMap(LayoutBoxToFloatInfoMap& map)
 {
     while (!m_set.isEmpty()) {
         OwnPtr<FloatingObject> floatingObject = m_set.takeFirst();

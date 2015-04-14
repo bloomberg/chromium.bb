@@ -913,7 +913,7 @@ void LayoutBlockFlow::rebuildFloatsFromIntruding()
         return;
     }
 
-    RendererToFloatInfoMap floatMap;
+    LayoutBoxToFloatInfoMap floatMap;
 
     if (m_floatingObjects) {
         if (childrenInline())
@@ -996,8 +996,8 @@ void LayoutBlockFlow::rebuildFloatsFromIntruding()
             }
         }
 
-        RendererToFloatInfoMap::iterator end = floatMap.end();
-        for (RendererToFloatInfoMap::iterator it = floatMap.begin(); it != end; ++it) {
+        LayoutBoxToFloatInfoMap::iterator end = floatMap.end();
+        for (LayoutBoxToFloatInfoMap::iterator it = floatMap.begin(); it != end; ++it) {
             OwnPtr<FloatingObject>& floatingObject = it->value;
             if (!floatingObject->isDescendant()) {
                 changeLogicalTop = 0;
@@ -2727,13 +2727,13 @@ GapRects LayoutBlockFlow::selectionGapRectsForPaintInvalidation(const LayoutBoxM
     return selectionGaps(this, offsetFromPaintInvalidationContainer, LayoutSize(), lastTop, lastLeft, lastRight);
 }
 
-static void clipOutPositionedObjects(const PaintInfo& paintInfo, const LayoutPoint& offset, TrackedRendererListHashSet* positionedObjects)
+static void clipOutPositionedObjects(const PaintInfo& paintInfo, const LayoutPoint& offset, TrackedLayoutBoxListHashSet* positionedObjects)
 {
     if (!positionedObjects)
         return;
 
-    TrackedRendererListHashSet::const_iterator end = positionedObjects->end();
-    for (TrackedRendererListHashSet::const_iterator it = positionedObjects->begin(); it != end; ++it) {
+    TrackedLayoutBoxListHashSet::const_iterator end = positionedObjects->end();
+    for (TrackedLayoutBoxListHashSet::const_iterator it = positionedObjects->begin(); it != end; ++it) {
         LayoutBox* r = *it;
         ASSERT(paintInfo.context->clipRecorderStack());
         paintInfo.context->clipRecorderStack()->addClipRecorder(adoptPtr(new ClipRecorder(

@@ -161,7 +161,7 @@ LayoutBlock::LayoutBlock(ContainerNode* node)
 
 static void removeBlockFromDescendantAndContainerMaps(LayoutBlock* block, TrackedDescendantsMap*& descendantMap, TrackedContainerMap*& containerMap)
 {
-    if (OwnPtr<TrackedRendererListHashSet> descendantSet = descendantMap->take(block)) {
+    if (OwnPtr<TrackedLayoutBoxListHashSet> descendantSet = descendantMap->take(block)) {
         for (auto& descendant : *descendantSet) {
             TrackedContainerMap::iterator it = containerMap->find(descendant);
             ASSERT(it != containerMap->end());
@@ -367,7 +367,7 @@ void LayoutBlock::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& chil
     LayoutBox::invalidatePaintOfSubtreesIfNeeded(childPaintInvalidationState);
 
     // Take care of positioned objects. This is required as PaintInvalidationState keeps a single clip rect.
-    if (TrackedRendererListHashSet* positionedObjects = this->positionedObjects()) {
+    if (TrackedLayoutBoxListHashSet* positionedObjects = this->positionedObjects()) {
         for (auto* box : *positionedObjects) {
 
             // One of the renderers we're skipping over here may be the child's paint invalidation container,
@@ -1499,7 +1499,7 @@ void LayoutBlock::addOverflowFromBlockChildren()
 
 void LayoutBlock::addOverflowFromPositionedObjects()
 {
-    TrackedRendererListHashSet* positionedDescendants = positionedObjects();
+    TrackedLayoutBoxListHashSet* positionedDescendants = positionedObjects();
     if (!positionedDescendants)
         return;
 
@@ -1676,7 +1676,7 @@ LayoutUnit LayoutBlock::marginIntrinsicLogicalWidthForChild(LayoutBox& child) co
 
 void LayoutBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayoutBehavior info)
 {
-    TrackedRendererListHashSet* positionedDescendants = positionedObjects();
+    TrackedLayoutBoxListHashSet* positionedDescendants = positionedObjects();
     if (!positionedDescendants)
         return;
 
@@ -1740,7 +1740,7 @@ void LayoutBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
 
 void LayoutBlock::markPositionedObjectsForLayout()
 {
-    if (TrackedRendererListHashSet* positionedDescendants = positionedObjects()) {
+    if (TrackedLayoutBoxListHashSet* positionedDescendants = positionedObjects()) {
         for (auto* descendant : *positionedDescendants)
             descendant->setChildNeedsLayout();
     }
@@ -1914,16 +1914,16 @@ void LayoutBlock::setSelectionState(SelectionState state)
         inlineBoxWrapper()->root().setHasSelectedChildren(state != SelectionNone);
 }
 
-void LayoutBlock::insertIntoTrackedRendererMaps(LayoutBox* descendant, TrackedDescendantsMap*& descendantsMap, TrackedContainerMap*& containerMap)
+void LayoutBlock::insertIntoTrackedLayoutBoxMaps(LayoutBox* descendant, TrackedDescendantsMap*& descendantsMap, TrackedContainerMap*& containerMap)
 {
     if (!descendantsMap) {
         descendantsMap = new TrackedDescendantsMap;
         containerMap = new TrackedContainerMap;
     }
 
-    TrackedRendererListHashSet* descendantSet = descendantsMap->get(this);
+    TrackedLayoutBoxListHashSet* descendantSet = descendantsMap->get(this);
     if (!descendantSet) {
-        descendantSet = new TrackedRendererListHashSet;
+        descendantSet = new TrackedLayoutBoxListHashSet;
         descendantsMap->set(this, adoptPtr(descendantSet));
     }
     bool added = descendantSet->add(descendant).isNewEntry;
@@ -1942,7 +1942,7 @@ void LayoutBlock::insertIntoTrackedRendererMaps(LayoutBox* descendant, TrackedDe
     containerSet->add(this);
 }
 
-void LayoutBlock::removeFromTrackedRendererMaps(LayoutBox* descendant, TrackedDescendantsMap*& descendantsMap, TrackedContainerMap*& containerMap)
+void LayoutBlock::removeFromTrackedLayoutBoxMaps(LayoutBox* descendant, TrackedDescendantsMap*& descendantsMap, TrackedContainerMap*& containerMap)
 {
     if (!descendantsMap)
         return;
@@ -1961,7 +1961,7 @@ void LayoutBlock::removeFromTrackedRendererMaps(LayoutBox* descendant, TrackedDe
         ASSERT(descendantsMapIterator != descendantsMap->end());
         if (descendantsMapIterator == descendantsMap->end())
             continue;
-        TrackedRendererListHashSet* descendantSet = descendantsMapIterator->value.get();
+        TrackedLayoutBoxListHashSet* descendantSet = descendantsMapIterator->value.get();
         ASSERT(descendantSet->contains(descendant));
         descendantSet->remove(descendant);
         if (descendantSet->isEmpty())
@@ -1969,7 +1969,7 @@ void LayoutBlock::removeFromTrackedRendererMaps(LayoutBox* descendant, TrackedDe
     }
 }
 
-TrackedRendererListHashSet* LayoutBlock::positionedObjects() const
+TrackedLayoutBoxListHashSet* LayoutBlock::positionedObjects() const
 {
     if (gPositionedDescendantsMap)
         return gPositionedDescendantsMap->get(this);
@@ -1979,17 +1979,17 @@ TrackedRendererListHashSet* LayoutBlock::positionedObjects() const
 void LayoutBlock::insertPositionedObject(LayoutBox* o)
 {
     ASSERT(!isAnonymousBlock());
-    insertIntoTrackedRendererMaps(o, gPositionedDescendantsMap, gPositionedContainerMap);
+    insertIntoTrackedLayoutBoxMaps(o, gPositionedDescendantsMap, gPositionedContainerMap);
 }
 
 void LayoutBlock::removePositionedObject(LayoutBox* o)
 {
-    removeFromTrackedRendererMaps(o, gPositionedDescendantsMap, gPositionedContainerMap);
+    removeFromTrackedLayoutBoxMaps(o, gPositionedDescendantsMap, gPositionedContainerMap);
 }
 
 void LayoutBlock::removePositionedObjects(LayoutBlock* o, ContainingBlockState containingBlockState)
 {
-    TrackedRendererListHashSet* positionedDescendants = positionedObjects();
+    TrackedLayoutBoxListHashSet* positionedDescendants = positionedObjects();
     if (!positionedDescendants)
         return;
 
@@ -2020,15 +2020,15 @@ void LayoutBlock::removePositionedObjects(LayoutBlock* o, ContainingBlockState c
 
 void LayoutBlock::addPercentHeightDescendant(LayoutBox* descendant)
 {
-    insertIntoTrackedRendererMaps(descendant, gPercentHeightDescendantsMap, gPercentHeightContainerMap);
+    insertIntoTrackedLayoutBoxMaps(descendant, gPercentHeightDescendantsMap, gPercentHeightContainerMap);
 }
 
 void LayoutBlock::removePercentHeightDescendant(LayoutBox* descendant)
 {
-    removeFromTrackedRendererMaps(descendant, gPercentHeightDescendantsMap, gPercentHeightContainerMap);
+    removeFromTrackedLayoutBoxMaps(descendant, gPercentHeightDescendantsMap, gPercentHeightContainerMap);
 }
 
-TrackedRendererListHashSet* LayoutBlock::percentHeightDescendants() const
+TrackedLayoutBoxListHashSet* LayoutBlock::percentHeightDescendants() const
 {
     return gPercentHeightDescendantsMap ? gPercentHeightDescendantsMap->get(this) : 0;
 }
@@ -2052,7 +2052,7 @@ void LayoutBlock::dirtyForLayoutFromPercentageHeightDescendants(SubtreeLayoutSco
     if (!gPercentHeightDescendantsMap)
         return;
 
-    TrackedRendererListHashSet* descendants = gPercentHeightDescendantsMap->get(this);
+    TrackedLayoutBoxListHashSet* descendants = gPercentHeightDescendantsMap->get(this);
     if (!descendants)
         return;
 
@@ -3805,7 +3805,7 @@ bool LayoutBlock::recalcChildOverflowAfterStyleChange()
         }
     }
 
-    TrackedRendererListHashSet* positionedDescendants = positionedObjects();
+    TrackedLayoutBoxListHashSet* positionedDescendants = positionedObjects();
     if (!positionedDescendants)
         return childrenOverflowChanged;
 
@@ -3887,9 +3887,9 @@ void LayoutBlock::checkPositionedObjectsNeedLayout()
     if (!gPositionedDescendantsMap)
         return;
 
-    if (TrackedRendererListHashSet* positionedDescendantSet = positionedObjects()) {
-        TrackedRendererListHashSet::const_iterator end = positionedDescendantSet->end();
-        for (TrackedRendererListHashSet::const_iterator it = positionedDescendantSet->begin(); it != end; ++it) {
+    if (TrackedLayoutBoxListHashSet* positionedDescendantSet = positionedObjects()) {
+        TrackedLayoutBoxListHashSet::const_iterator end = positionedDescendantSet->end();
+        for (TrackedLayoutBoxListHashSet::const_iterator it = positionedDescendantSet->begin(); it != end; ++it) {
             LayoutBox* currBox = *it;
             ASSERT(!currBox->needsLayout());
         }

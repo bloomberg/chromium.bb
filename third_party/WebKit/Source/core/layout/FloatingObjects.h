@@ -130,7 +130,7 @@ typedef FloatingObjectSet::const_iterator FloatingObjectSetIterator;
 typedef PODInterval<int, FloatingObject*> FloatingObjectInterval;
 typedef PODIntervalTree<int, FloatingObject*> FloatingObjectTree;
 typedef PODFreeListArena<PODRedBlackTree<FloatingObjectInterval>::Node> IntervalArena;
-typedef HashMap<LayoutBox*, OwnPtr<FloatingObject>> RendererToFloatInfoMap;
+typedef HashMap<LayoutBox*, OwnPtr<FloatingObject>> LayoutBoxToFloatInfoMap;
 
 class FloatingObjects {
     WTF_MAKE_NONCOPYABLE(FloatingObjects); WTF_MAKE_FAST_ALLOCATED(FloatingObjects);
@@ -139,7 +139,7 @@ public:
     ~FloatingObjects();
 
     void clear();
-    void moveAllToFloatInfoMap(RendererToFloatInfoMap&);
+    void moveAllToFloatInfoMap(LayoutBoxToFloatInfoMap&);
     FloatingObject* add(PassOwnPtr<FloatingObject>);
     void remove(FloatingObject*);
     void addPlacedObject(FloatingObject*);
