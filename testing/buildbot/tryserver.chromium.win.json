@@ -1,1 +1,22 @@
-{}
+{
+  "win8_chromium_gn_dbg": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "test": "base_unittests"
+      }
+    ]
+  },
+  "win8_chromium_gn_rel": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "test": "base_unittests"
+      }
+    ]
+  }
+}

@@ -1,4 +1,14 @@
 {
+  "Linux ChromiumOS GN": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "test": "base_unittests"
+      }
+    ]
+  },
   "Linux ChromiumOS Ozone Tests (1)": {
     "gtest_tests": [
       {

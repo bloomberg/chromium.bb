@@ -1,4 +1,14 @@
 {
+  "Android GN": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "test": "base_unittests"
+      }
+    ]
+  },
   "Android Tests": {
     "scripts": [
       {
@@ -97,6 +107,26 @@
       },
       {
         "test": "unit_tests"
+      }
+    ]
+  },
+  "Linux GN": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "test": "base_unittests"
+      }
+    ]
+  },
+  "Linux GN (dbg)": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "test": "base_unittests"
       }
     ]
   },

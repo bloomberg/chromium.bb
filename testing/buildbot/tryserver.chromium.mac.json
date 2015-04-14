@@ -1,7 +1,17 @@
 {
   "mac_chromium_gn_dbg": {
     "additional_compile_targets": [
-      "gn_all"
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "test": "base_unittests"
+      }
+    ]
+  },
+  "mac_chromium_gn_rel": {
+    "additional_compile_targets": [
+      "all"
     ],
     "gtest_tests": [
       {

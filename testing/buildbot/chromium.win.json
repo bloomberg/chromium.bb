@@ -983,6 +983,26 @@
       }
     ]
   },
+  "Win8 GN": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "test": "base_unittests"
+      }
+    ]
+  },
+  "Win8 GN (dbg)": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "test": "base_unittests"
+      }
+    ]
+  },
   "XP Tests (1)": {
     "gtest_tests": [
       {

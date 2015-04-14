@@ -1,4 +1,24 @@
 {
+  "Mac GN": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "test": "base_unittests"
+      }
+    ]
+  },
+  "Mac GN (dbg)": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "test": "base_unittests"
+      }
+    ]
+  },
   "Mac10.6 Tests": {
     "gtest_tests": [
       {
