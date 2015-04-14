@@ -229,6 +229,13 @@ class RenderViewZoomer : public RenderViewVisitor {
 
   bool Visit(RenderView* render_view) override {
     WebView* webview = render_view->GetWebView();
+    // Remote frames don't host documents.
+    // TODO(wjmaclean) Although it seems likely that a frame without a
+    // document can safely early-out here, we should confirm this is truly
+    // the case. https://crbug.com/477007
+    if (webview->mainFrame()->isWebRemoteFrame())
+      return true;
+
     WebDocument document = webview->mainFrame()->document();
 
     // Don't set zoom level for full-page plugin since they don't use the same
