@@ -6,7 +6,6 @@ per-file chrome_extension_message_filter.*=miket@chromium.org
 per-file chrome_extension_message_filter.*=rockot@chromium.org
 per-file chrome_extension_message_filter.*=benwells@chromium.org
 per-file chrome_extension_message_filter.*=rdevlin.cronin@chromium.org
-per-file chrome_extension_message_filter.*=yoz@chromium.org
 per-file chrome_extension_message_filter.*=mek@chromium.org
 per-file chrome_extension_message_filter.*=reillyg@chromium.org
 per-file chrome_extension_message_filter.*=asargent@chromium.org

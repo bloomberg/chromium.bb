@@ -8739,7 +8739,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Extensions.BackgroundContentsServiceStartupTime"
     units="milliseconds">
-  <owner>yoz@chromium.org</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>
     Time taken to load BackgroundContents for apps at startup when the extension
     system notifies that it is ready.
@@ -8782,7 +8782,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.BadSyncDataReason" enum="BadSyncDataReason">
-  <owner>yoz@chromium.org</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>
     The reason a valid ExtensionSyncData could not be parsed from a SyncData
     received from sync.
@@ -9033,7 +9033,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.EventlessEventPages">
-  <owner>yoz@chromium.org</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>
     The number of extensions with event pages that have no registered event
     listeners at profile startup. (This may indicate something has gone wrong;
@@ -9158,7 +9158,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.ExtensionServiceInitTime">
-  <owner>yoz@chromium.org</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>
     Time taken for the ExtensionService to initialize, including the time it
     takes to load the extensions for the service's profile and parse their
@@ -10021,7 +10021,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Extensions.ProcessManagerStartupHostsTime"
     units="milliseconds">
-  <owner>yoz@chromium.org</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>
     The time taken to start up persistent background pages for extensions in
     ExtensionProcessManager when the extension system notifies that it is ready.

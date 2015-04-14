@@ -4,7 +4,6 @@ per-file DEPS=benwells@chromium.org
 per-file DEPS=derat@chromium.org
 per-file DEPS=jamescook@chromium.org
 per-file DEPS=miket@chromium.org
-per-file DEPS=yoz@chromium.org
 
 per-file extension_function_histogram_value.h=set noparent
 per-file extension_function_histogram_value.h=asvitkine@chromium.org
