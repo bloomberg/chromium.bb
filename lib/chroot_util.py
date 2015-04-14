@@ -91,6 +91,7 @@ def Emerge(packages, sysroot, with_deps=True, rebuild_deps=True,
 def UpdateChroot(brick=None, board=None, update_host_packages=True):
   """Update the chroot."""
   # Run chroot update hooks.
+  logging.notice('Updating the chroot. This may take several minutes.')
   cmd = [os.path.join(constants.CROSUTILS_DIR, 'run_chroot_version_hooks')]
   cros_build_lib.RunCommand(cmd, debug_level=logging.DEBUG)
 

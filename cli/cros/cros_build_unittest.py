@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+from chromite.cli import command
 from chromite.cli import command_unittest
 from chromite.cli.cros import cros_build
 from chromite.lib import chroot_util
@@ -53,6 +54,26 @@ class FakeWorkonHelper(object):
 
 class BuildCommandTest(cros_test_lib.MockTempDirTestCase):
   """Test class for our BuildCommand class."""
+
+  def testBrilloBuildOperationCalled(self):
+    """Test that BrilloBuildOperation is used when appropriate."""
+    cmd = ['--board=randonname', 'power_manager']
+    self.PatchObject(workon_helper, 'WorkonHelper')
+    self.PatchObject(command, 'UseProgressBar', return_value=True)
+    with MockBuildCommand(cmd) as build:
+      operation_run = self.PatchObject(cros_build.BrilloBuildOperation, 'Run')
+      build.inst.Run()
+      self.assertTrue(operation_run.called)
+
+  def testBrilloBuildOperationNotCalled(self):
+    """Test that BrilloBuildOperation is not used when it shouldn't be."""
+    cmd = ['--board=randonname', 'power_manager']
+    self.PatchObject(workon_helper, 'WorkonHelper')
+    self.PatchObject(command, 'UseProgressBar', return_value=False)
+    with MockBuildCommand(cmd) as build:
+      operation_run = self.PatchObject(cros_build.BrilloBuildOperation, 'Run')
+      build.inst.Run()
+      self.assertFalse(operation_run.called)
 
   def testSuccess(self):
     """Test that successful commands work."""

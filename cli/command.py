@@ -26,9 +26,20 @@ from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_import
+from chromite.lib import cros_logging as logging
 
 
 _commands = dict()
+
+
+def UseProgressBar():
+  """Determine whether the progress bar is to be used or not.
+
+  We only want the progress bar to display for the brillo commands which operate
+  at logging level NOTICE. If the user wants to see the noisy output, then they
+  can execute the command at logging level INFO or DEBUG.
+  """
+  return logging.getLogger().getEffectiveLevel() == logging.NOTICE
 
 
 def _GetToolset():

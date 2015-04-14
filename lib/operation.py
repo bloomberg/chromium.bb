@@ -202,6 +202,50 @@ class ProgressBarOperation(object):
       self._Cleanup()
 
 
+class ParallelEmergeOperation(ProgressBarOperation):
+  """ProgressBarOperation specific for scripts/parallel_emerge.py."""
+
+  def __init__(self):
+    super(ParallelEmergeOperation, self).__init__()
+    self._total = None
+    self._completed = 0
+    self._printed_no_packages = False
+    self._events = ['Fetched ', 'Completed ']
+
+  def _GetTotal(self, output):
+    """Get total packages by looking for Total: digits packages."""
+    match = re.search(r'Total: (\d+) packages', output)
+    return int(match.group(1)) if match else None
+
+  def ParseOutput(self):
+    """Parse the output of emerge to determine how to update progress bar.
+
+    1) Figure out how many packages exist. If the total number of packages to be
+    built is zero, then we do not display the progress bar.
+    2) Whenever a package is downloaded or built, 'Fetched' and 'Completed' are
+    printed respectively. By counting counting 'Fetched's and 'Completed's, we
+    can determine how much to update the progress bar by.
+    """
+    stdout = self._stdout.read()
+    stderr = self._stderr.read()
+    output = stdout + stderr
+
+    if self._total is None:
+      temp = self._GetTotal(output)
+      if temp is not None:
+        self._total = temp * len(self._events)
+
+    for event in self._events:
+      self._completed += output.count(event)
+
+    if not self._printed_no_packages and self._total == 0:
+      logging.notice('No packages to build.')
+      self._printed_no_packages = True
+
+    if self._total:
+      self._ProgressBar(float(self._completed) / self._total)
+
+
 # TODO(sjg): When !isatty(), keep stdout and stderr separate so they can be
 # redirected separately
 # TODO(sjg): Add proper docs to this fileno

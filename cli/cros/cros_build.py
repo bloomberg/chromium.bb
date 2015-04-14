@@ -13,8 +13,18 @@ from chromite.lib import chroot_util
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import operation
 from chromite.lib import parallel
 from chromite.lib import workon_helper
+
+
+class BrilloBuildOperation(operation.ParallelEmergeOperation):
+  """Wrapper around operation.ParallelEmergeOperation.
+
+  Currently, this class is empty as the main component is just
+  operation.ParallelEmergeOperation. However, self._CheckDependencies also
+  produces output, then that output can be captured here.
+  """
 
 
 @command.CommandDecorator('build')
@@ -183,4 +193,10 @@ To just build a single package:
         workon = workon_helper.WorkonHelper(self.sysroot)
         workon.StartWorkingOnPackages([], use_workon_only=True)
 
-      parallel.RunParallelSteps([self._CheckDependencies, self._Build])
+      if command.UseProgressBar():
+        op = BrilloBuildOperation()
+        op.Run(
+            parallel.RunParallelSteps, [self._CheckDependencies, self._Build],
+            log_level=logging.DEBUG)
+      else:
+        parallel.RunParallelSteps([self._CheckDependencies, self._Build])

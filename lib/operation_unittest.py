@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import multiprocessing
 import os
 
 from chromite.lib import cros_logging as logging
@@ -20,18 +21,36 @@ class TestWrapperProgressBarOperation(operation.ProgressBarOperation):
     print(self._stdout.read())
 
 
+class FakeParallelEmergeOperation(operation.ParallelEmergeOperation):
+  """Fake for operation.ParallelEmergeOperation."""
+  def __init__(self, queue):
+    super(FakeParallelEmergeOperation, self).__init__()
+    self._queue = queue
+
+  def ParseOutput(self):
+    super(FakeParallelEmergeOperation, self).ParseOutput()
+    self._queue.put('advance')
+
+
 class ProgressBarOperationTest(cros_test_lib.MockOutputTestCase,
-                               cros_test_lib.TempDirTestCase):
+                               cros_test_lib.TempDirTestCase,
+                               cros_test_lib.LoggingTestCase):
   """Test the Progress Bar Operation class."""
   # pylint: disable=protected-access
+
+  def setUp(self):
+    terminal_width = 20
+    self._terminal = self.PatchObject(
+        operation.ProgressBarOperation, '_GetTerminalSize',
+        return_value=operation._TerminalSize(100, terminal_width))
+    self.PatchObject(os, 'isatty', return_value=True)
 
   def _VerifyProgressBar(self, width, percent, expected_shaded,
                          expected_unshaded):
     """Helper to test progress bar with different percentages and lengths."""
     terminal_width = width + (
         operation.ProgressBarOperation._PROGRESS_BAR_BORDER_SIZE)
-    self.PatchObject(operation.ProgressBarOperation, '_GetTerminalSize',
-                     return_value=operation._TerminalSize(100, terminal_width))
+    self._terminal.return_value = operation._TerminalSize(100, terminal_width)
     op = operation.ProgressBarOperation()
     with self.OutputCapturer() as output:
       op._ProgressBar(percent)
@@ -42,6 +61,7 @@ class ProgressBarOperationTest(cros_test_lib.MockOutputTestCase,
     self.assertEqual(stdout.count('-'), expected_unshaded)
 
   def testProgressBar(self):
+    """Test progress bar at different percentages."""
     self._VerifyProgressBar(10, 0.7, 7, 3)
     self._VerifyProgressBar(10, 0, 0, 10)
     self._VerifyProgressBar(10, 1, 10, 0)
@@ -79,7 +99,6 @@ class ProgressBarOperationTest(cros_test_lib.MockOutputTestCase,
       print(expected_output)
 
     op = TestWrapperProgressBarOperation()
-    self.PatchObject(os, 'isatty', return_value=True)
     with self.OutputCapturer():
       op.Run(func, update_period=0.05)
 
@@ -103,7 +122,6 @@ class ProgressBarOperationTest(cros_test_lib.MockOutputTestCase,
         print(expected_output)
 
     logging.getLogger().setLevel(test_log_level)
-    self.PatchObject(os, 'isatty', return_value=True)
     op = TestWrapperProgressBarOperation()
     with self.OutputCapturer():
       op.Run(func, update_period=0.05, log_level=func_log_level)
@@ -113,3 +131,48 @@ class ProgressBarOperationTest(cros_test_lib.MockOutputTestCase,
     self.AssertOutputContainsLine(expected_output)
     # Check that the log level was restored after the function executed.
     self.assertEqual(logging.getLogger().getEffectiveLevel(), test_log_level)
+
+  def testParallelEmergeOperationParseOutputTotalNotFound(self):
+    """Test that ParallelEmergeOperation.ParseOutput if total is not set."""
+    def func():
+      print('hi')
+
+    op = operation.ParallelEmergeOperation()
+    with self.OutputCapturer():
+      op.Run(func)
+
+    # Check that the output is empty.
+    self.AssertOutputContainsLine('hi', check_stderr=True, invert=True)
+
+  def testParallelEmergeOperationParseOutputTotalIsZero(self):
+    """Test that ParallelEmergeOperation.ParseOutput if total is zero."""
+    def func():
+      print('Total: 0 packages.')
+
+    op = operation.ParallelEmergeOperation()
+    with self.OutputCapturer():
+      with cros_test_lib.LoggingCapturer() as logs:
+        op.Run(func)
+
+    # Check that no progress bar is printed.
+    self.AssertOutputContainsLine('%', check_stderr=True, invert=True)
+    # Check logs contain message.
+    self.AssertLogsContain(logs, 'No packages to build.')
+
+  def testParallelEmergeOperationParseOutputTotalNonZero(self):
+    """Test that ParallelEmergeOperation.ParseOutput's progress bar updates."""
+    def func(queue):
+      print('Total: 2 packages.')
+      for _ in xrange(2):
+        queue.get()
+        print('Completed ')
+
+    queue = multiprocessing.Queue()
+    op = FakeParallelEmergeOperation(queue)
+    with self.OutputCapturer():
+      op.Run(func, queue, update_period=0.005)
+
+    # Check that progress bar prints correctly at 0%, 50%, and 100%.
+    self.AssertOutputContainsLine('0%')
+    self.AssertOutputContainsLine('50%')
+    self.AssertOutputContainsLine('100%')
