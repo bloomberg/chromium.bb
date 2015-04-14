@@ -40,6 +40,7 @@ DataReductionProxyIOData::DataReductionProxyIOData(
       io_task_runner_(io_task_runner),
       ui_task_runner_(ui_task_runner),
       shutdown_on_ui_(false),
+      url_request_context_getter_(nullptr),
       weak_factory_(this) {
   DCHECK(net_log);
   DCHECK(io_task_runner_);
@@ -84,9 +85,10 @@ DataReductionProxyIOData::DataReductionProxyIOData(
       new DataReductionProxyDelegate(request_options_.get(), config_.get()));
  }
 
-DataReductionProxyIOData::DataReductionProxyIOData()
-    : shutdown_on_ui_(false),
-      weak_factory_(this) {
+ DataReductionProxyIOData::DataReductionProxyIOData()
+     : shutdown_on_ui_(false),
+       url_request_context_getter_(nullptr),
+       weak_factory_(this) {
 }
 
 DataReductionProxyIOData::~DataReductionProxyIOData() {
@@ -108,7 +110,9 @@ void DataReductionProxyIOData::ShutdownOnUIThread() {
 
 void DataReductionProxyIOData::SetDataReductionProxyService(
     base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service) {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
   service_ = data_reduction_proxy_service;
+  url_request_context_getter_ = service_->url_request_context_getter();
   config()->SetDataReductionProxyService(data_reduction_proxy_service);
   // Using base::Unretained is safe here, unless the browser is being shut down
   // before the Initialize task can be executed. The task is only created as
@@ -121,6 +125,7 @@ void DataReductionProxyIOData::SetDataReductionProxyService(
 
 void DataReductionProxyIOData::InitializeOnIOThread() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
+  config_->InitializeOnIOThread(url_request_context_getter_);
   if (config_client_.get())
     config_client_->RetrieveConfig();
   ui_task_runner_->PostTask(

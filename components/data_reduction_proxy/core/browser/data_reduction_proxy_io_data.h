@@ -16,6 +16,7 @@
 
 namespace net {
 class NetLog;
+class URLRequestContextGetter;
 class URLRequestInterceptor;
 }
 
@@ -187,6 +188,9 @@ class DataReductionProxyIOData {
   // Preference that determines if the Data Reduction Proxy has been enabled
   // by the user. In practice, this can be overridden by the command line.
   BooleanPrefMember enabled_;
+
+  // The net::URLRequestContextGetter used for making URL requests.
+  net::URLRequestContextGetter* url_request_context_getter_;
 
   base::WeakPtrFactory<DataReductionProxyIOData> weak_factory_;
 

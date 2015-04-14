@@ -63,12 +63,12 @@ DataReductionProxyConfig::DataReductionProxyConfig(
       ui_task_runner_(ui_task_runner),
       net_log_(net_log),
       configurator_(configurator),
-      event_store_(event_store) {
+      event_store_(event_store),
+      url_request_context_getter_(nullptr) {
   DCHECK(io_task_runner);
   DCHECK(ui_task_runner);
   DCHECK(configurator);
   DCHECK(event_store);
-  InitOnIOThread();
 }
 
 DataReductionProxyConfig::~DataReductionProxyConfig() {
@@ -78,6 +78,17 @@ DataReductionProxyConfig::~DataReductionProxyConfig() {
 void DataReductionProxyConfig::SetDataReductionProxyService(
     base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service) {
   data_reduction_proxy_service_ = data_reduction_proxy_service;
+}
+
+void DataReductionProxyConfig::InitializeOnIOThread(
+    net::URLRequestContextGetter* url_request_context_getter) {
+  DCHECK(url_request_context_getter);
+  url_request_context_getter_ = url_request_context_getter;
+  if (!config_values_->allowed())
+    return;
+
+  AddDefaultProxyBypassRules();
+  net::NetworkChangeNotifier::AddIPAddressObserver(this);
 }
 
 void DataReductionProxyConfig::ReloadConfig() {
@@ -387,21 +398,6 @@ void DataReductionProxyConfig::OnIPAddressChanged() {
         FROM_HERE, base::Bind(&DataReductionProxyConfig::StartSecureProxyCheck,
                               base::Unretained(this)));
   }
-}
-
-void DataReductionProxyConfig::InitOnIOThread() {
-  if (!io_task_runner_->BelongsToCurrentThread()) {
-    io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DataReductionProxyConfig::InitOnIOThread,
-                              base::Unretained(this)));
-    return;
-  }
-
-  if (!config_values_->allowed())
-    return;
-
-  AddDefaultProxyBypassRules();
-  net::NetworkChangeNotifier::AddIPAddressObserver(this);
 }
 
 void DataReductionProxyConfig::AddDefaultProxyBypassRules() {

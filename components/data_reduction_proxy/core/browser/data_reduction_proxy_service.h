@@ -108,6 +108,10 @@ class DataReductionProxyService : public base::NonThreadSafe,
     return settings_;
   }
 
+  net::URLRequestContextGetter* url_request_context_getter() const {
+    return url_request_context_getter_;
+  }
+
   base::WeakPtr<DataReductionProxyService> GetWeakPtr();
 
  protected:

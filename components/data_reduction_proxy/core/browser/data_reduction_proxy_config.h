@@ -26,6 +26,7 @@ namespace net {
 class HostPortPair;
 class NetLog;
 class URLRequest;
+class URLRequestContextGetter;
 class URLRequestStatus;
 }
 
@@ -83,6 +84,10 @@ class DataReductionProxyConfig
 
   void SetDataReductionProxyService(
       base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service);
+
+  // Performs initialization on the IO thread.
+  void InitializeOnIOThread(
+      net::URLRequestContextGetter* url_request_context_getter);
 
   // Sets the proxy configs, enabling or disabling the proxy according to
   // the value of |enabled| and |alternative_enabled|. Use the alternative
@@ -204,9 +209,6 @@ class DataReductionProxyConfig
   // NetworkChangeNotifier::IPAddressObserver:
   void OnIPAddressChanged() override;
 
-  // Performs initialization on the IO thread.
-  void InitOnIOThread();
-
   // Updates the Data Reduction Proxy configurator with the current config.
   virtual void UpdateConfigurator(bool enabled,
                                   bool alternative_enabled,
@@ -275,6 +277,10 @@ class DataReductionProxyConfig
   // The caller must ensure that the |event_store_| outlives this instance.
   DataReductionProxyEventStore* event_store_;
 
+  // Used for performing the secure proxy check.
+  net::URLRequestContextGetter* url_request_context_getter_;
+
+  // Enforce usage on the IO thread.
   base::ThreadChecker thread_checker_;
 
   // A weak pointer to a |DataReductionProxyService| to perform secure proxy
