@@ -2,27 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_SCHEDULER_WEBTHREAD_IMPL_FOR_SCHEDULER_H_
-#define CONTENT_RENDERER_SCHEDULER_WEBTHREAD_IMPL_FOR_SCHEDULER_H_
-
-#include "content/child/webthread_impl.h"
+#ifndef CONTENT_RENDERER_SCHEDULER_WEBTHREAD_IMPL_FOR_RENDERER_SCHEDULER_H_
+#define CONTENT_RENDERER_SCHEDULER_WEBTHREAD_IMPL_FOR_RENDERER_SCHEDULER_H_
 
 #include "base/containers/scoped_ptr_hash_map.h"
+#include "content/child/webthread_base.h"
 
 namespace content {
 
 class RendererScheduler;
 
-class CONTENT_EXPORT WebThreadImplForScheduler : public WebThreadBase {
+class CONTENT_EXPORT WebThreadImplForRendererScheduler : public WebThreadBase {
  public:
-  explicit WebThreadImplForScheduler(RendererScheduler* scheduler);
-  virtual ~WebThreadImplForScheduler();
+  explicit WebThreadImplForRendererScheduler(RendererScheduler* scheduler);
+  virtual ~WebThreadImplForRendererScheduler();
 
   // blink::WebThread implementation.
   blink::PlatformThreadId threadId() const override;
 
   // WebThreadBase implementation.
   base::SingleThreadTaskRunner* TaskRunner() const override;
+  SingleThreadIdleTaskRunner* IdleTaskRunner() const override;
 
  private:
   base::MessageLoop* MessageLoop() const override;
@@ -32,10 +32,11 @@ class CONTENT_EXPORT WebThreadImplForScheduler : public WebThreadBase {
       base::MessageLoop::TaskObserver* observer) override;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
   RendererScheduler* scheduler_;  // Not owned.
   blink::PlatformThreadId thread_id_;
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_SCHEDULER_WEBTHREAD_IMPL_FOR_SCHEDULER_H_
+#endif  // CONTENT_RENDERER_SCHEDULER_WEBTHREAD_IMPL_FOR_RENDERER_SCHEDULER_H_

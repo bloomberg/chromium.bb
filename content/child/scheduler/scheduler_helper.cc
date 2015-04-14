@@ -190,6 +190,7 @@ void SchedulerHelper::EnableLongIdlePeriod() {
     control_task_runner_->PostDelayedTask(
         FROM_HERE, enable_next_long_idle_period_closure_.callback(),
         required_quiescence_duration_before_long_idle_period_);
+    scheduler_helper_delegate_->IsNotQuiescent();
     return;
   }
 

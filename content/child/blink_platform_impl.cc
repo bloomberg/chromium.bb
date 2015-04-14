@@ -40,11 +40,11 @@
 #include "content/child/permissions/permission_dispatcher_thread_proxy.h"
 #include "content/child/push_messaging/push_dispatcher.h"
 #include "content/child/push_messaging/push_provider.h"
+#include "content/child/scheduler/webthread_impl_for_worker_scheduler.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/web_discardable_memory_impl.h"
 #include "content/child/web_url_loader_impl.h"
 #include "content/child/websocket_bridge.h"
-#include "content/child/webthread_impl.h"
 #include "content/child/worker_task_runner.h"
 #include "content/public/common/content_client.h"
 #include "net/base/data_url.h"
@@ -506,7 +506,8 @@ bool BlinkPlatformImpl::isReservedIPAddress(
 }
 
 blink::WebThread* BlinkPlatformImpl::createThread(const char* name) {
-  WebThreadImpl* thread = new WebThreadImpl(name);
+  WebThreadImplForWorkerScheduler* thread =
+      new WebThreadImplForWorkerScheduler(name);
   thread->TaskRunner()->PostTask(
       FROM_HERE, base::Bind(&BlinkPlatformImpl::UpdateWebThreadTLS,
                             base::Unretained(this), thread));
