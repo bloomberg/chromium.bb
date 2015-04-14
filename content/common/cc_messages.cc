@@ -7,6 +7,7 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/filter_operations.h"
 #include "cc/quads/largest_draw_quad.h"
+#include "cc/quads/render_pass_id.h"
 #include "content/public/common/common_param_traits.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkFlattenableSerialization.h"
@@ -702,10 +703,10 @@ void ParamTraits<cc::DelegatedFrameData>::Write(Message* m,
   WriteParam(m, p.device_scale_factor);
   WriteParam(m, p.resource_list);
   WriteParam(m, p.render_pass_list.size());
-  for (size_t i = 0; i < p.render_pass_list.size(); ++i) {
-    WriteParam(m, p.render_pass_list[i]->quad_list.size());
-    WriteParam(m, p.render_pass_list[i]->shared_quad_state_list.size());
-    WriteParam(m, *p.render_pass_list[i]);
+  for (const auto* pass : p.render_pass_list) {
+    WriteParam(m, pass->quad_list.size());
+    WriteParam(m, pass->shared_quad_state_list.size());
+    WriteParam(m, *pass);
   }
 }
 
@@ -718,6 +719,8 @@ bool ParamTraits<cc::DelegatedFrameData>::Read(const Message* m,
   const static size_t kMaxRenderPasses = 10000;
   const static size_t kMaxSharedQuadStateListSize = 100000;
   const static size_t kMaxQuadListSize = 1000000;
+
+  std::set<cc::RenderPassId> pass_set;
 
   size_t num_render_passes;
   if (!ReadParam(m, iter, &p->resource_list) ||
@@ -736,6 +739,17 @@ bool ParamTraits<cc::DelegatedFrameData>::Read(const Message* m,
         cc::RenderPass::Create(shared_quad_state_list_size, quad_list_size);
     if (!ReadParam(m, iter, render_pass.get()))
       return false;
+    // Validate that each RenderPassDrawQuad points at a valid RenderPass
+    // earlier in the frame.
+    for (const auto* quad : render_pass->quad_list) {
+      if (quad->material != cc::DrawQuad::RENDER_PASS)
+        continue;
+      const cc::RenderPassDrawQuad* rpdq =
+          cc::RenderPassDrawQuad::MaterialCast(quad);
+      if (!pass_set.count(rpdq->render_pass_id))
+        return false;
+    }
+    pass_set.insert(render_pass->id);
     p->render_pass_list.push_back(render_pass.Pass());
   }
   return true;

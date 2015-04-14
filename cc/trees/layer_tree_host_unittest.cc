@@ -29,6 +29,7 @@
 #include "cc/output/swap_promise.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/io_surface_draw_quad.h"
+#include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/prioritized_resource.h"
 #include "cc/resources/prioritized_resource_manager.h"
@@ -6477,5 +6478,475 @@ class LayerPreserveRenderSurfaceFromOutputRequests : public LayerTreeHostTest {
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerPreserveRenderSurfaceFromOutputRequests);
+
+class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
+ protected:
+  void SetupTree() override {
+    // The masked layer has bounds 50x50, but it has a child that causes
+    // the surface bounds to be larger. It also has a parent that clips the
+    // masked layer and its surface.
+
+    scoped_refptr<Layer> root = Layer::Create();
+
+    scoped_refptr<Layer> clipping_layer = Layer::Create();
+    root->AddChild(clipping_layer);
+
+    scoped_refptr<FakePictureLayer> content_layer =
+        FakePictureLayer::Create(&client_);
+    clipping_layer->AddChild(content_layer);
+
+    scoped_refptr<FakePictureLayer> content_child_layer =
+        FakePictureLayer::Create(&client_);
+    content_layer->AddChild(content_child_layer);
+
+    scoped_refptr<FakePictureLayer> mask_layer =
+        FakePictureLayer::Create(&client_);
+    content_layer->SetMaskLayer(mask_layer.get());
+
+    gfx::Size root_size(100, 100);
+    root->SetBounds(root_size);
+
+    gfx::Rect clipping_rect(20, 10, 10, 20);
+    clipping_layer->SetBounds(clipping_rect.size());
+    clipping_layer->SetPosition(clipping_rect.origin());
+    clipping_layer->SetMasksToBounds(true);
+
+    gfx::Size layer_size(50, 50);
+    content_layer->SetBounds(layer_size);
+    content_layer->SetPosition(gfx::Point() - clipping_rect.OffsetFromOrigin());
+
+    gfx::Size child_size(50, 50);
+    content_child_layer->SetBounds(child_size);
+    content_child_layer->SetPosition(gfx::Point(20, 0));
+
+    gfx::Size mask_size(100, 100);
+    mask_layer->SetBounds(mask_size);
+    mask_layer->SetIsMask(true);
+
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeTest::SetupTree();
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                   LayerTreeHostImpl::FrameData* frame_data,
+                                   DrawResult draw_result) override {
+    EXPECT_EQ(2u, frame_data->render_passes.size());
+    RenderPass* root_pass = frame_data->render_passes.back();
+    EXPECT_EQ(2u, root_pass->quad_list.size());
+
+    // There's a solid color quad under everything.
+    EXPECT_EQ(DrawQuad::SOLID_COLOR, root_pass->quad_list.back()->material);
+
+    // The surface is clipped to 10x20.
+    EXPECT_EQ(DrawQuad::RENDER_PASS, root_pass->quad_list.front()->material);
+    const RenderPassDrawQuad* render_pass_quad =
+        RenderPassDrawQuad::MaterialCast(root_pass->quad_list.front());
+    EXPECT_EQ(gfx::Rect(20, 10, 10, 20).ToString(),
+              render_pass_quad->rect.ToString());
+    // The masked layer is 50x50, but the surface size is 10x20. So the texture
+    // coords in the mask are scaled by 10/50 and 20/50.
+    // The surface is clipped to (20,10) so the mask texture coords are offset
+    // by 20/50 and 10/50
+    EXPECT_EQ(gfx::ScaleRect(gfx::RectF(20.f, 10.f, 10.f, 20.f), 1.f / 50.f)
+                  .ToString(),
+              render_pass_quad->MaskUVRect().ToString());
+    EXPECT_EQ(gfx::Vector2dF(10.f / 50.f, 20.f / 50.f).ToString(),
+              render_pass_quad->mask_uv_scale.ToString());
+    EndTest();
+    return draw_result;
+  }
+
+  void AfterTest() override {}
+
+  FakeContentLayerClient client_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeTestMaskLayerForSurfaceWithClippedLayer);
+
+class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
+ protected:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->layer_transforms_should_scale_layer_contents = true;
+  }
+
+  void SetupTree() override {
+    // Root
+    //  |
+    //  +-- Scaling Layer (adds a 2x scale)
+    //       |
+    //       +-- Content Layer
+    //             +--Mask
+
+    scoped_refptr<Layer> root = Layer::Create();
+
+    scoped_refptr<Layer> scaling_layer = Layer::Create();
+    root->AddChild(scaling_layer);
+
+    scoped_refptr<FakePictureLayer> content_layer =
+        FakePictureLayer::Create(&client_);
+    scaling_layer->AddChild(content_layer);
+
+    scoped_refptr<FakePictureLayer> mask_layer =
+        FakePictureLayer::Create(&client_);
+    content_layer->SetMaskLayer(mask_layer.get());
+
+    gfx::Size root_size(100, 100);
+    root->SetBounds(root_size);
+
+    gfx::Size scaling_layer_size(50, 50);
+    scaling_layer->SetBounds(scaling_layer_size);
+    gfx::Transform scale;
+    scale.Scale(2.f, 2.f);
+    scaling_layer->SetTransform(scale);
+
+    content_layer->SetBounds(scaling_layer_size);
+
+    mask_layer->SetBounds(scaling_layer_size);
+    mask_layer->SetIsMask(true);
+
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeTest::SetupTree();
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                   LayerTreeHostImpl::FrameData* frame_data,
+                                   DrawResult draw_result) override {
+    EXPECT_EQ(2u, frame_data->render_passes.size());
+    RenderPass* root_pass = frame_data->render_passes.back();
+    EXPECT_EQ(2u, root_pass->quad_list.size());
+
+    // There's a solid color quad under everything.
+    EXPECT_EQ(DrawQuad::SOLID_COLOR, root_pass->quad_list.back()->material);
+
+    EXPECT_EQ(DrawQuad::RENDER_PASS, root_pass->quad_list.front()->material);
+    const RenderPassDrawQuad* render_pass_quad =
+        RenderPassDrawQuad::MaterialCast(root_pass->quad_list.front());
+    switch (host_impl->active_tree()->source_frame_number()) {
+      case 0:
+        // Check that the tree scaling is correctly taken into account for the
+        // mask, that should fully map onto the quad.
+        EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
+                  render_pass_quad->rect.ToString());
+        EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
+                  render_pass_quad->MaskUVRect().ToString());
+        EXPECT_EQ(gfx::Vector2dF(1.f, 1.f).ToString(),
+                  render_pass_quad->mask_uv_scale.ToString());
+        break;
+      case 1:
+        // Applying a DSF should change the render surface size, but won't
+        // affect which part of the mask is used.
+        EXPECT_EQ(gfx::Rect(0, 0, 200, 200).ToString(),
+                  render_pass_quad->rect.ToString());
+        EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
+                  render_pass_quad->MaskUVRect().ToString());
+        EXPECT_EQ(gfx::Vector2dF(1.f, 1.f).ToString(),
+                  render_pass_quad->mask_uv_scale.ToString());
+        EndTest();
+        break;
+    }
+    return draw_result;
+  }
+
+  void DidCommit() override {
+    switch (layer_tree_host()->source_frame_number()) {
+      case 1:
+        gfx::Size double_root_size(200, 200);
+        layer_tree_host()->SetViewportSize(double_root_size);
+        layer_tree_host()->SetDeviceScaleFactor(2.f);
+        break;
+    }
+  }
+
+  void AfterTest() override {}
+
+  FakeContentLayerClient client_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeTestMaskLayerWithScaling);
+
+class LayerTreeTestMaskLayerWithDifferentBounds : public LayerTreeTest {
+ protected:
+  void SetupTree() override {
+    // The mask layer has bounds 100x100 but is attached to a layer with bounds
+    // 50x50.
+
+    scoped_refptr<Layer> root = Layer::Create();
+
+    scoped_refptr<FakePictureLayer> content_layer =
+        FakePictureLayer::Create(&client_);
+    root->AddChild(content_layer);
+
+    scoped_refptr<FakePictureLayer> mask_layer =
+        FakePictureLayer::Create(&client_);
+    content_layer->SetMaskLayer(mask_layer.get());
+
+    gfx::Size root_size(100, 100);
+    root->SetBounds(root_size);
+
+    gfx::Size layer_size(50, 50);
+    content_layer->SetBounds(layer_size);
+
+    gfx::Size mask_size(100, 100);
+    mask_layer->SetBounds(mask_size);
+    mask_layer->SetIsMask(true);
+
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeTest::SetupTree();
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                   LayerTreeHostImpl::FrameData* frame_data,
+                                   DrawResult draw_result) override {
+    EXPECT_EQ(2u, frame_data->render_passes.size());
+    RenderPass* root_pass = frame_data->render_passes.back();
+    EXPECT_EQ(2u, root_pass->quad_list.size());
+
+    // There's a solid color quad under everything.
+    EXPECT_EQ(DrawQuad::SOLID_COLOR, root_pass->quad_list.back()->material);
+
+    EXPECT_EQ(DrawQuad::RENDER_PASS, root_pass->quad_list.front()->material);
+    const RenderPassDrawQuad* render_pass_quad =
+        RenderPassDrawQuad::MaterialCast(root_pass->quad_list.front());
+    switch (host_impl->active_tree()->source_frame_number()) {
+      case 0:
+        // Check that the mask fills the surface.
+        EXPECT_EQ(gfx::Rect(0, 0, 50, 50).ToString(),
+                  render_pass_quad->rect.ToString());
+        EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
+                  render_pass_quad->MaskUVRect().ToString());
+        EXPECT_EQ(gfx::Vector2dF(1.f, 1.f).ToString(),
+                  render_pass_quad->mask_uv_scale.ToString());
+        break;
+      case 1:
+        // Applying a DSF should change the render surface size, but won't
+        // affect which part of the mask is used.
+        EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
+                  render_pass_quad->rect.ToString());
+        EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
+                  render_pass_quad->MaskUVRect().ToString());
+        EXPECT_EQ(gfx::Vector2dF(1.f, 1.f).ToString(),
+                  render_pass_quad->mask_uv_scale.ToString());
+        EndTest();
+        break;
+    }
+    return draw_result;
+  }
+
+  void DidCommit() override {
+    switch (layer_tree_host()->source_frame_number()) {
+      case 1:
+        gfx::Size double_root_size(200, 200);
+        layer_tree_host()->SetViewportSize(double_root_size);
+        layer_tree_host()->SetDeviceScaleFactor(2.f);
+        break;
+    }
+  }
+
+  void AfterTest() override {}
+
+  FakeContentLayerClient client_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeTestMaskLayerWithDifferentBounds);
+
+class LayerTreeTestReflectionMaskLayerWithDifferentBounds
+    : public LayerTreeTest {
+ protected:
+  void SetupTree() override {
+    // The replica's mask layer has bounds 100x100 but the replica is of a
+    // layer with bounds 50x50.
+
+    scoped_refptr<Layer> root = Layer::Create();
+
+    scoped_refptr<FakePictureLayer> content_layer =
+        FakePictureLayer::Create(&client_);
+    root->AddChild(content_layer);
+
+    scoped_refptr<Layer> replica_layer = Layer::Create();
+    content_layer->SetReplicaLayer(replica_layer.get());
+
+    scoped_refptr<FakePictureLayer> mask_layer =
+        FakePictureLayer::Create(&client_);
+    replica_layer->SetMaskLayer(mask_layer.get());
+
+    gfx::Size root_size(100, 100);
+    root->SetBounds(root_size);
+
+    gfx::Size layer_size(50, 50);
+    content_layer->SetBounds(layer_size);
+
+    gfx::Size mask_size(100, 100);
+    mask_layer->SetBounds(mask_size);
+    mask_layer->SetIsMask(true);
+
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeTest::SetupTree();
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                   LayerTreeHostImpl::FrameData* frame_data,
+                                   DrawResult draw_result) override {
+    EXPECT_EQ(2u, frame_data->render_passes.size());
+    RenderPass* root_pass = frame_data->render_passes.back();
+    EXPECT_EQ(3u, root_pass->quad_list.size());
+
+    // There's a solid color quad under everything.
+    EXPECT_EQ(DrawQuad::SOLID_COLOR, root_pass->quad_list.back()->material);
+
+    EXPECT_EQ(DrawQuad::RENDER_PASS,
+              root_pass->quad_list.ElementAt(1)->material);
+    const RenderPassDrawQuad* render_pass_quad =
+        RenderPassDrawQuad::MaterialCast(root_pass->quad_list.ElementAt(1));
+    switch (host_impl->active_tree()->source_frame_number()) {
+      case 0:
+        // Check that the mask fills the surface.
+        EXPECT_EQ(gfx::Rect(0, 0, 50, 50).ToString(),
+                  render_pass_quad->rect.ToString());
+        EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
+                  render_pass_quad->MaskUVRect().ToString());
+        EXPECT_EQ(gfx::Vector2dF(1.f, 1.f).ToString(),
+                  render_pass_quad->mask_uv_scale.ToString());
+        break;
+      case 1:
+        // Applying a DSF should change the render surface size, but won't
+        // affect which part of the mask is used.
+        EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
+                  render_pass_quad->rect.ToString());
+        EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
+                  render_pass_quad->MaskUVRect().ToString());
+        EXPECT_EQ(gfx::Vector2dF(1.f, 1.f).ToString(),
+                  render_pass_quad->mask_uv_scale.ToString());
+        EndTest();
+        break;
+    }
+    return draw_result;
+  }
+
+  void DidCommit() override {
+    switch (layer_tree_host()->source_frame_number()) {
+      case 1:
+        gfx::Size double_root_size(200, 200);
+        layer_tree_host()->SetViewportSize(double_root_size);
+        layer_tree_host()->SetDeviceScaleFactor(2.f);
+        break;
+    }
+  }
+
+  void AfterTest() override {}
+
+  FakeContentLayerClient client_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeTestReflectionMaskLayerWithDifferentBounds);
+
+class LayerTreeTestReflectionMaskLayerForSurfaceWithUnclippedChild
+    : public LayerTreeTest {
+ protected:
+  void SetupTree() override {
+    // The replica is of a layer with bounds 50x50, but it has a child that
+    // causes the surface bounds to be larger.
+
+    scoped_refptr<Layer> root = Layer::Create();
+
+    scoped_refptr<FakePictureLayer> content_layer =
+        FakePictureLayer::Create(&client_);
+    root->AddChild(content_layer);
+
+    content_child_layer_ = FakePictureLayer::Create(&client_);
+    content_layer->AddChild(content_child_layer_);
+
+    scoped_refptr<Layer> replica_layer = Layer::Create();
+    content_layer->SetReplicaLayer(replica_layer.get());
+
+    scoped_refptr<FakePictureLayer> mask_layer =
+        FakePictureLayer::Create(&client_);
+    replica_layer->SetMaskLayer(mask_layer.get());
+
+    gfx::Size root_size(100, 100);
+    root->SetBounds(root_size);
+
+    gfx::Size layer_size(50, 50);
+    content_layer->SetBounds(layer_size);
+    content_child_layer_->SetBounds(layer_size);
+    content_child_layer_->SetPosition(gfx::PointF(50.f, 0.f));
+
+    gfx::Size mask_size(100, 100);
+    mask_layer->SetBounds(mask_size);
+    mask_layer->SetIsMask(true);
+
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeTest::SetupTree();
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                   LayerTreeHostImpl::FrameData* frame_data,
+                                   DrawResult draw_result) override {
+    EXPECT_EQ(2u, frame_data->render_passes.size());
+    RenderPass* root_pass = frame_data->render_passes.back();
+    EXPECT_EQ(3u, root_pass->quad_list.size());
+
+    // There's a solid color quad under everything.
+    EXPECT_EQ(DrawQuad::SOLID_COLOR, root_pass->quad_list.back()->material);
+
+    EXPECT_EQ(DrawQuad::RENDER_PASS,
+              root_pass->quad_list.ElementAt(1)->material);
+    const RenderPassDrawQuad* replica_quad =
+        RenderPassDrawQuad::MaterialCast(root_pass->quad_list.ElementAt(1));
+    switch (host_impl->active_tree()->source_frame_number()) {
+      case 0:
+        // The surface is 100x50.
+        // The mask covers the owning layer only.
+        EXPECT_EQ(gfx::Rect(0, 0, 100, 50).ToString(),
+                  replica_quad->rect.ToString());
+        EXPECT_EQ(gfx::RectF(0.f, 0.f, 2.f, 1.f).ToString(),
+                  replica_quad->MaskUVRect().ToString());
+        EXPECT_EQ(gfx::Vector2dF(2.f, 1.f).ToString(),
+                  replica_quad->mask_uv_scale.ToString());
+        break;
+      case 1:
+        // The surface is 100x50 with its origin at (-50, 0).
+        // The mask covers the owning layer only.
+        EXPECT_EQ(gfx::Rect(-50, 0, 100, 50).ToString(),
+                  replica_quad->rect.ToString());
+        EXPECT_EQ(gfx::RectF(-1.f, 0.f, 2.f, 1.f).ToString(),
+                  replica_quad->MaskUVRect().ToString());
+        EXPECT_EQ(gfx::Vector2dF(2.f, 1.f).ToString(),
+                  replica_quad->mask_uv_scale.ToString());
+        EndTest();
+        break;
+    }
+    return draw_result;
+  }
+
+  void DidCommit() override {
+    switch (layer_tree_host()->source_frame_number()) {
+      case 1:
+        // Move the child to (-50, 0) instead. Now the mask should be moved to
+        // still cover the layer being replicated.
+        content_child_layer_->SetPosition(gfx::PointF(-50.f, 0.f));
+        break;
+    }
+  }
+
+  void AfterTest() override {}
+
+  scoped_refptr<FakePictureLayer> content_child_layer_;
+  FakeContentLayerClient client_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeTestReflectionMaskLayerForSurfaceWithUnclippedChild);
 
 }  // namespace cc

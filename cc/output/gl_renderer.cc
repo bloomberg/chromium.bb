@@ -937,8 +937,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
                                     const gfx::QuadF* clip_region) {
   ScopedResource* contents_texture =
       render_pass_textures_.get(quad->render_pass_id);
-  if (!contents_texture || !contents_texture->id())
-    return;
+  DCHECK(contents_texture);
+  DCHECK(contents_texture->id());
 
   gfx::Transform quad_rect_matrix;
   QuadRectTransform(&quad_rect_matrix, quad->quadTransform(), quad->rect);

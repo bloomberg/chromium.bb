@@ -1441,56 +1441,6 @@ TEST_F(DelegatedRendererLayerImplTestClip, QuadsClipped_LayerClipped_Surface) {
   host_impl_->DidDrawAllLayers(frame);
 }
 
-TEST_F(DelegatedRendererLayerImplTest, InvalidRenderPassDrawQuad) {
-  scoped_ptr<LayerImpl> root_layer =
-      LayerImpl::Create(host_impl_->active_tree(), 1);
-  scoped_ptr<FakeDelegatedRendererLayerImpl> delegated_renderer_layer =
-      FakeDelegatedRendererLayerImpl::Create(host_impl_->active_tree(), 4);
-
-  host_impl_->SetViewportSize(gfx::Size(100, 100));
-  root_layer->SetHasRenderSurface(true);
-
-  delegated_renderer_layer->SetPosition(gfx::Point(3, 3));
-  delegated_renderer_layer->SetBounds(gfx::Size(10, 10));
-  delegated_renderer_layer->SetContentBounds(gfx::Size(10, 10));
-  delegated_renderer_layer->SetDrawsContent(true);
-
-  RenderPassList delegated_render_passes;
-  TestRenderPass* pass1 = AddRenderPass(&delegated_render_passes,
-                                        RenderPassId(9, 6),
-                                        gfx::Rect(0, 0, 10, 10),
-                                        gfx::Transform());
-  AddQuad(pass1, gfx::Rect(0, 0, 6, 6), 33u);
-
-  // This render pass isn't part of the frame.
-  scoped_ptr<TestRenderPass> missing_pass(TestRenderPass::Create());
-  missing_pass->SetNew(RenderPassId(9, 7),
-                       gfx::Rect(7, 7, 7, 7),
-                       gfx::Rect(7, 7, 7, 7),
-                       gfx::Transform());
-
-  // But a render pass quad refers to it.
-  AddRenderPassQuad(pass1, missing_pass.get());
-
-  delegated_renderer_layer->SetFrameDataForRenderPasses(
-      1.f, delegated_render_passes);
-
-  root_layer->AddChild(delegated_renderer_layer.Pass());
-  host_impl_->active_tree()->SetRootLayer(root_layer.Pass());
-
-  LayerTreeHostImpl::FrameData frame;
-  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
-
-  // The DelegatedRendererLayerImpl should drop the bad RenderPassDrawQuad.
-  ASSERT_EQ(1u, frame.render_passes.size());
-  ASSERT_EQ(1u, frame.render_passes[0]->quad_list.size());
-  EXPECT_EQ(DrawQuad::SOLID_COLOR,
-            frame.render_passes[0]->quad_list.front()->material);
-
-  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
-  host_impl_->DidDrawAllLayers(frame);
-}
-
 TEST_F(DelegatedRendererLayerImplTest, Occlusion) {
   gfx::Size layer_size(1000, 1000);
   gfx::Size viewport_size(1000, 1000);

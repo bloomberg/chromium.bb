@@ -426,23 +426,6 @@ class CC_EXPORT LayerTreeHostImpl
   void SetDebugState(const LayerTreeDebugState& new_debug_state);
   const LayerTreeDebugState& debug_state() const { return debug_state_; }
 
-  class CC_EXPORT CullRenderPassesWithNoQuads {
-   public:
-    bool ShouldRemoveRenderPass(const RenderPassDrawQuad& quad,
-                                const FrameData& frame) const;
-
-    // Iterates in draw order, so that when a surface is removed, and its
-    // target becomes empty, then its target can be removed also.
-    size_t RenderPassListBegin(const RenderPassList& list) const { return 0; }
-    size_t RenderPassListEnd(const RenderPassList& list) const {
-      return list.size();
-    }
-    size_t RenderPassListNext(size_t it) const { return it + 1; }
-  };
-
-  template <typename RenderPassCuller>
-      static void RemoveRenderPasses(RenderPassCuller culler, FrameData* frame);
-
   gfx::Vector2dF accumulated_root_overscroll() const {
     return accumulated_root_overscroll_;
   }
@@ -561,6 +544,9 @@ class CC_EXPORT LayerTreeHostImpl
   bool is_likely_to_require_a_draw() const {
     return is_likely_to_require_a_draw_;
   }
+
+  // Removes empty or orphan RenderPasses from the frame.
+  static void RemoveRenderPasses(FrameData* frame);
 
   LayerTreeHostImplClient* client_;
   Proxy* proxy_;

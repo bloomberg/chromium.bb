@@ -40,6 +40,7 @@ class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
   using LayerTreeHostImpl::ActivateSyncTree;
   using LayerTreeHostImpl::prepare_tiles_needed;
   using LayerTreeHostImpl::is_likely_to_require_a_draw;
+  using LayerTreeHostImpl::RemoveRenderPasses;
 
  private:
   BeginFrameArgs current_begin_frame_args_;

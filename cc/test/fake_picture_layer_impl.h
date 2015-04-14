@@ -18,6 +18,12 @@ class FakePictureLayerImpl : public PictureLayerImpl {
     return make_scoped_ptr(new FakePictureLayerImpl(tree_impl, id, is_mask));
   }
 
+  static scoped_ptr<FakePictureLayerImpl> CreateMask(LayerTreeImpl* tree_impl,
+                                                     int id) {
+    bool is_mask = true;
+    return make_scoped_ptr(new FakePictureLayerImpl(tree_impl, id, is_mask));
+  }
+
   // Create layer from a raster source that covers the entire layer.
   static scoped_ptr<FakePictureLayerImpl> CreateWithRasterSource(
       LayerTreeImpl* tree_impl,

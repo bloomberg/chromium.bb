@@ -35,6 +35,8 @@ FakePictureLayer::~FakePictureLayer() {}
 
 scoped_ptr<LayerImpl> FakePictureLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
+  if (is_mask())
+    return FakePictureLayerImpl::CreateMask(tree_impl, layer_id_);
   return FakePictureLayerImpl::Create(tree_impl, layer_id_);
 }
 

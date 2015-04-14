@@ -146,9 +146,6 @@ void DirectRenderer::SetEnlargePassTextureAmountForTesting(
 
 void DirectRenderer::DecideRenderPassAllocationsForFrame(
     const RenderPassList& render_passes_in_draw_order) {
-  if (!resource_provider_)
-    return;
-
   base::hash_map<RenderPassId, gfx::Size> render_passes_in_frame;
   for (size_t i = 0; i < render_passes_in_draw_order.size(); ++i)
     render_passes_in_frame.insert(std::pair<RenderPassId, gfx::Size>(
@@ -484,7 +481,6 @@ bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
                                    const RenderPass* render_pass) {
   frame->current_render_pass = render_pass;
   frame->current_texture = NULL;
-
   if (render_pass == frame->root_render_pass) {
     BindFramebufferToOutputSurface(frame);
     InitializeViewport(frame,
@@ -500,9 +496,10 @@ bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
   gfx::Size size = RenderPassTextureSize(render_pass);
   size.Enlarge(enlarge_pass_texture_amount_.x(),
                enlarge_pass_texture_amount_.y());
-  if (!texture->id())
+  if (!texture->id()) {
     texture->Allocate(
         size, ResourceProvider::TEXTURE_HINT_IMMUTABLE_FRAMEBUFFER, RGBA_8888);
+  }
   DCHECK(texture->id());
 
   if (BindFramebufferToTexture(frame, texture, render_pass->output_rect)) {

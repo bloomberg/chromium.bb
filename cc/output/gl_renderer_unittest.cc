@@ -1001,11 +1001,11 @@ TEST_F(GLRendererTest, ActiveTextureState) {
   // During initialization we are allowed to set any texture parameters.
   EXPECT_CALL(*context, texParameteri(_, _, _)).Times(AnyNumber());
 
-  RenderPassId id(1, 1);
-  TestRenderPass* root_pass = AddRenderPass(
-      &render_passes_in_draw_order_, id, gfx::Rect(100, 100), gfx::Transform());
+  TestRenderPass* root_pass =
+      AddRenderPass(&render_passes_in_draw_order_, RenderPassId(1, 1),
+                    gfx::Rect(100, 100), gfx::Transform());
   root_pass->AppendOneOfEveryQuadType(resource_provider.get(),
-                                      RenderPassId(2, 1));
+                                      RenderPassId(0, 0));
 
   renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
 
@@ -1093,6 +1093,12 @@ TEST_F(GLRendererTest, ShouldClearRootRenderPass) {
 
   gfx::Rect viewport_rect(10, 10);
 
+  RenderPassId child_pass_id(2, 0);
+  TestRenderPass* child_pass =
+      AddRenderPass(&render_passes_in_draw_order_, child_pass_id, viewport_rect,
+                    gfx::Transform());
+  AddQuad(child_pass, viewport_rect, SK_ColorBLUE);
+
   RenderPassId root_pass_id(1, 0);
   TestRenderPass* root_pass = AddRenderPass(&render_passes_in_draw_order_,
                                             root_pass_id,
@@ -1100,12 +1106,6 @@ TEST_F(GLRendererTest, ShouldClearRootRenderPass) {
                                             gfx::Transform());
   AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
 
-  RenderPassId child_pass_id(2, 0);
-  TestRenderPass* child_pass = AddRenderPass(&render_passes_in_draw_order_,
-                                             child_pass_id,
-                                             viewport_rect,
-                                             gfx::Transform());
-  AddQuad(child_pass, viewport_rect, SK_ColorBLUE);
 
   AddRenderPassQuad(root_pass, child_pass);
 

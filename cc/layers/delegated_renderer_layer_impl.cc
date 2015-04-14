@@ -484,23 +484,18 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
       bool present =
           ConvertDelegatedRenderPassId(delegated_contributing_render_pass_id,
                                        &output_contributing_render_pass_id);
+      // |present| being false means the child compositor sent an invalid frame.
+      DCHECK(present);
+      DCHECK(output_contributing_render_pass_id != render_pass->id);
 
-      // The frame may have a RenderPassDrawQuad that points to a RenderPass not
-      // part of the frame. Just ignore these quads.
-      if (present) {
-        DCHECK(output_contributing_render_pass_id != render_pass->id);
-
-        RenderPassDrawQuad* output_quad =
-            render_pass->CopyFromAndAppendRenderPassDrawQuad(
-                RenderPassDrawQuad::MaterialCast(delegated_quad),
-                output_shared_quad_state,
-                output_contributing_render_pass_id);
-        output_quad->visible_rect = quad_visible_rect;
-
-        // TODO(danakj): crbug.com/455931
-        output_quad->IterateResources(base::Bind(
-            &ValidateResource, layer_tree_impl()->resource_provider()));
-      }
+      RenderPassDrawQuad* output_quad =
+          render_pass->CopyFromAndAppendRenderPassDrawQuad(
+              RenderPassDrawQuad::MaterialCast(delegated_quad),
+              output_shared_quad_state, output_contributing_render_pass_id);
+      output_quad->visible_rect = quad_visible_rect;
+      // TODO(danakj): crbug.com/455931
+      output_quad->IterateResources(base::Bind(
+          &ValidateResource, layer_tree_impl()->resource_provider()));
     }
   }
 }

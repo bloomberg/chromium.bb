@@ -7,9 +7,11 @@
 #include <algorithm>
 #include <limits>
 #include <map>
+#include <set>
 
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/containers/small_map.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
@@ -897,7 +899,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
         active_tree_->background_color(), unoccluded_screen_space_region);
   }
 
-  RemoveRenderPasses(CullRenderPassesWithNoQuads(), frame);
+  RemoveRenderPasses(frame);
   renderer_->DecideRenderPassAllocationsForFrame(frame->render_passes);
 
   // Any copy requests left in the tree are not going to get serviced, and
@@ -958,115 +960,6 @@ void LayerTreeHostImpl::SetViewportDamage(const gfx::Rect& damage_rect) {
   viewport_damage_rect_.Union(damage_rect);
 }
 
-static inline RenderPass* FindRenderPassById(
-    RenderPassId render_pass_id,
-    const LayerTreeHostImpl::FrameData& frame) {
-  RenderPassIdHashMap::const_iterator it =
-      frame.render_passes_by_id.find(render_pass_id);
-  return it != frame.render_passes_by_id.end() ? it->second : NULL;
-}
-
-static void RemoveRenderPassesRecursive(RenderPassId remove_render_pass_id,
-                                        LayerTreeHostImpl::FrameData* frame) {
-  RenderPass* remove_render_pass =
-      FindRenderPassById(remove_render_pass_id, *frame);
-  // The pass was already removed by another quad - probably the original, and
-  // we are the replica.
-  if (!remove_render_pass)
-    return;
-  RenderPassList& render_passes = frame->render_passes;
-  RenderPassList::iterator to_remove = std::find(render_passes.begin(),
-                                                 render_passes.end(),
-                                                 remove_render_pass);
-
-  DCHECK(to_remove != render_passes.end());
-
-  scoped_ptr<RenderPass> removed_pass = render_passes.take(to_remove);
-  frame->render_passes.erase(to_remove);
-  frame->render_passes_by_id.erase(remove_render_pass_id);
-
-  // Now follow up for all RenderPass quads and remove their RenderPasses
-  // recursively.
-  const QuadList& quad_list = removed_pass->quad_list;
-  for (auto quad_list_iterator = quad_list.BackToFrontBegin();
-       quad_list_iterator != quad_list.BackToFrontEnd();
-       ++quad_list_iterator) {
-    const DrawQuad* current_quad = *quad_list_iterator;
-    if (current_quad->material != DrawQuad::RENDER_PASS)
-      continue;
-
-    RenderPassId next_remove_render_pass_id =
-        RenderPassDrawQuad::MaterialCast(current_quad)->render_pass_id;
-    RemoveRenderPassesRecursive(next_remove_render_pass_id, frame);
-  }
-}
-
-bool LayerTreeHostImpl::CullRenderPassesWithNoQuads::ShouldRemoveRenderPass(
-    const RenderPassDrawQuad& quad, const FrameData& frame) const {
-  const RenderPass* render_pass =
-      FindRenderPassById(quad.render_pass_id, frame);
-  if (!render_pass)
-    return false;
-
-  // If any quad or RenderPass draws into this RenderPass, then keep it.
-  const QuadList& quad_list = render_pass->quad_list;
-  for (auto quad_list_iterator = quad_list.BackToFrontBegin();
-       quad_list_iterator != quad_list.BackToFrontEnd();
-       ++quad_list_iterator) {
-    const DrawQuad* current_quad = *quad_list_iterator;
-
-    if (current_quad->material != DrawQuad::RENDER_PASS)
-      return false;
-
-    const RenderPass* contributing_pass = FindRenderPassById(
-        RenderPassDrawQuad::MaterialCast(current_quad)->render_pass_id, frame);
-    if (contributing_pass)
-      return false;
-  }
-  return true;
-}
-
-// Defined for linking tests.
-template CC_EXPORT void LayerTreeHostImpl::RemoveRenderPasses<
-  LayerTreeHostImpl::CullRenderPassesWithNoQuads>(
-      CullRenderPassesWithNoQuads culler, FrameData*);
-
-// static
-template <typename RenderPassCuller>
-void LayerTreeHostImpl::RemoveRenderPasses(RenderPassCuller culler,
-                                           FrameData* frame) {
-  for (size_t it = culler.RenderPassListBegin(frame->render_passes);
-       it != culler.RenderPassListEnd(frame->render_passes);
-       it = culler.RenderPassListNext(it)) {
-    const RenderPass* current_pass = frame->render_passes[it];
-    const QuadList& quad_list = current_pass->quad_list;
-
-    for (auto quad_list_iterator = quad_list.BackToFrontBegin();
-         quad_list_iterator != quad_list.BackToFrontEnd();
-         ++quad_list_iterator) {
-      const DrawQuad* current_quad = *quad_list_iterator;
-
-      if (current_quad->material != DrawQuad::RENDER_PASS)
-        continue;
-
-      const RenderPassDrawQuad* render_pass_quad =
-          RenderPassDrawQuad::MaterialCast(current_quad);
-      if (!culler.ShouldRemoveRenderPass(*render_pass_quad, *frame))
-        continue;
-
-      // We are changing the vector in the middle of iteration. Because we
-      // delete render passes that draw into the current pass, we are
-      // guaranteed that any data from the iterator to the end will not
-      // change. So, capture the iterator position from the end of the
-      // list, and restore it after the change.
-      size_t position_from_end = frame->render_passes.size() - it;
-      RemoveRenderPassesRecursive(render_pass_quad->render_pass_id, frame);
-      it = frame->render_passes.size() - position_from_end;
-      DCHECK_GE(frame->render_passes.size(), position_from_end);
-    }
-  }
-}
-
 DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   TRACE_EVENT1("cc",
                "LayerTreeHostImpl::PrepareToDraw",
@@ -1112,6 +1005,90 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   // If we return DRAW_SUCCESS, then we expect DrawLayers() to be called before
   // this function is called again.
   return draw_result;
+}
+
+void LayerTreeHostImpl::RemoveRenderPasses(FrameData* frame) {
+  // There is always at least a root RenderPass.
+  DCHECK_GE(frame->render_passes.size(), 1u);
+
+  // A set of RenderPasses that we have seen.
+  std::set<RenderPassId> pass_exists;
+  // A set of RenderPassDrawQuads that we have seen (stored by the RenderPasses
+  // they refer to).
+  base::SmallMap<base::hash_map<RenderPassId, int>> pass_references;
+
+  // Iterate RenderPasses in draw order, removing empty render passes (except
+  // the root RenderPass).
+  for (size_t i = 0; i < frame->render_passes.size(); ++i) {
+    RenderPass* pass = frame->render_passes[i];
+
+    // Remove orphan RenderPassDrawQuads.
+    bool removed = true;
+    while (removed) {
+      removed = false;
+      for (auto it = pass->quad_list.begin(); it != pass->quad_list.end();
+           ++it) {
+        if (it->material != DrawQuad::RENDER_PASS)
+          continue;
+        const RenderPassDrawQuad* quad = RenderPassDrawQuad::MaterialCast(*it);
+        // If the RenderPass doesn't exist, we can remove the quad.
+        if (pass_exists.count(quad->render_pass_id)) {
+          // Otherwise, save a reference to the RenderPass so we know there's a
+          // quad using it.
+          pass_references[quad->render_pass_id]++;
+          continue;
+        }
+        // This invalidates the iterator. So break out of the loop and look
+        // again. Luckily there's not a lot of render passes cuz this is
+        // terrible.
+        // TODO(danakj): We could make erase not invalidate the iterator.
+        pass->quad_list.EraseAndInvalidateAllPointers(it);
+        removed = true;
+        break;
+      }
+    }
+
+    if (i == frame->render_passes.size() - 1) {
+      // Don't remove the root RenderPass.
+      break;
+    }
+
+    if (pass->quad_list.empty() && pass->copy_requests.empty()) {
+      // Remove the pass and decrement |i| to counter the for loop's increment,
+      // so we don't skip the next pass in the loop.
+      frame->render_passes_by_id.erase(pass->id);
+      frame->render_passes.erase(frame->render_passes.begin() + i);
+      --i;
+      continue;
+    }
+
+    pass_exists.insert(pass->id);
+  }
+
+  // Remove RenderPasses that are not referenced by any draw quads or copy
+  // requests (except the root RenderPass).
+  for (size_t i = 0; i < frame->render_passes.size() - 1; ++i) {
+    // Iterating from the back of the list to the front, skipping over the
+    // back-most (root) pass, in order to remove each qualified RenderPass, and
+    // drop references to earlier RenderPasses allowing them to be removed to.
+    RenderPass* pass =
+        frame->render_passes[frame->render_passes.size() - 2 - i];
+    if (!pass->copy_requests.empty())
+      continue;
+    if (pass_references[pass->id])
+      continue;
+
+    for (auto it = pass->quad_list.begin(); it != pass->quad_list.end(); ++it) {
+      if (it->material != DrawQuad::RENDER_PASS)
+        continue;
+      const RenderPassDrawQuad* quad = RenderPassDrawQuad::MaterialCast(*it);
+      pass_references[quad->render_pass_id]--;
+    }
+
+    frame->render_passes_by_id.erase(pass->id);
+    frame->render_passes.erase(frame->render_passes.end() - 2 - i);
+    --i;
+  }
 }
 
 void LayerTreeHostImpl::EvictTexturesForTesting() {
