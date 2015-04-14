@@ -134,7 +134,6 @@ crbug.com/66751 [ Win ] http/tests/local/link-stylesheet-load-order.html [ Failu
 crbug.com/331566 fast/preloader/document-write-noscript.html [ Failure Pass ]
 
 crbug.com/451606 virtual/slimmingpaint/svg/filters/feImage-self-and-other-referencing.html [ Pass Crash Timeout ]
-crbug.com/451606 virtual/slimmingpaint/svg/filters/feImage-target-reappend-to-document.svg [ Pass Failure Crash ]
 
 # Disable fast/preloader tests until https://codereview.chromium.org/673603002/ lands
 crbug.com/436881 fast/preloader/first-base-tag-scanned-wins.html [ Pass Failure ]
@@ -1405,7 +1404,6 @@ crbug.com/408123 virtual/slimmingpaint/fast/pagination/div-y-horizontal-tb-rtl.h
 
 crbug.com/419101 [ Win Debug ] http/tests/security/contentSecurityPolicy/report-cross-origin-no-cookies.html [ NeedsManualRebaseline ]
 
-crbug.com/374572 svg/filters/feImage-target-reappend-to-document.svg [ Pass Failure ]
 crbug.com/374572 svg/dynamic-updates/SVGImageElement-svgdom-preserveAspectRatio-prop.html [ Pass ImageOnlyFailure ]
 
 crbug.com/371651 svg/custom/deep-dynamic-updates.svg [ Pass Failure ]
