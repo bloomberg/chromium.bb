@@ -50,7 +50,6 @@ group("gn_all") {
     "//chrome/test/chromedriver:chromedriver_unittests",
     "//components:components_browsertests",
     "//components:components_unittests",
-    "//components/policy:policy_templates",
     "//content/shell:content_shell",
     "//content/test:content_browsertests",
     "//content/test:content_perftests",
@@ -174,6 +173,10 @@ group("gn_all") {
 
   if (use_x11) {
     deps += [ "//tools/xdisplaycheck" ]
+  }
+
+  if (enable_configuration_policy) {
+    deps += [ "//components/policy:policy_templates" ]
   }
 
   if (v8_use_external_startup_data) {
