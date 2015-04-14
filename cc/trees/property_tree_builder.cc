@@ -33,6 +33,7 @@ struct DataForRecursion {
   float device_scale_factor;
   bool in_subtree_of_page_scale_application_layer;
   bool should_flatten;
+  bool ancestor_clips_subtree;
   const gfx::Transform* device_transform;
   gfx::Vector2dF scroll_compensation_adjustment;
 };
@@ -52,9 +53,10 @@ static ClipNode* GetClipParent(const DataForRecursion& data, Layer* layer) {
 
 static bool RequiresClipNode(Layer* layer,
                              const DataForRecursion& data,
-                             int parent_transform_id) {
+                             int parent_transform_id,
+                             bool is_clipped) {
   const bool render_surface_applies_clip =
-      layer->render_surface() && layer->is_clipped();
+      layer->render_surface() && is_clipped;
   const bool render_surface_may_grow_due_to_clip_children =
       layer->render_surface() && layer->num_unclipped_descendants() > 0;
 
@@ -72,6 +74,10 @@ static bool RequiresClipNode(Layer* layer,
   return !axis_aligned_with_respect_to_parent;
 }
 
+static bool LayerClipsSubtree(Layer* layer) {
+  return layer->masks_to_bounds() || layer->mask_layer();
+}
+
 void AddClipNodeIfNeeded(const DataForRecursion& data_from_ancestor,
                          Layer* layer,
                          bool created_transform_node,
@@ -79,17 +85,29 @@ void AddClipNodeIfNeeded(const DataForRecursion& data_from_ancestor,
   ClipNode* parent = GetClipParent(data_from_ancestor, layer);
   int parent_id = parent->id;
 
-  // TODO(vollick): once Andrew refactors the surface determinations out of
-  // CDP, the the layer->render_surface() check will be invalid.
-  const bool has_unclipped_surface =
-      layer->render_surface() &&
-      !layer->render_surface()->is_clipped() &&
-      layer->num_unclipped_descendants() == 0;
+  bool ancestor_clips_subtree =
+      data_from_ancestor.ancestor_clips_subtree || layer->clip_parent();
+
+  data_for_children->ancestor_clips_subtree = false;
+  bool has_unclipped_surface = false;
+
+  if (layer->has_render_surface()) {
+    if (ancestor_clips_subtree && layer->num_unclipped_descendants() > 0)
+      data_for_children->ancestor_clips_subtree = true;
+    else if (!ancestor_clips_subtree && !layer->num_unclipped_descendants())
+      has_unclipped_surface = true;
+  } else {
+    data_for_children->ancestor_clips_subtree = ancestor_clips_subtree;
+  }
+
+  if (LayerClipsSubtree(layer))
+    data_for_children->ancestor_clips_subtree = true;
 
   if (has_unclipped_surface)
     parent_id = 0;
 
-  if (!RequiresClipNode(layer, data_from_ancestor, parent->data.transform_id)) {
+  if (!RequiresClipNode(layer, data_from_ancestor, parent->data.transform_id,
+                        data_for_children->ancestor_clips_subtree)) {
     // Unclipped surfaces reset the clip rect.
     data_for_children->clip_tree_parent = parent_id;
   } else if (layer->parent()) {
@@ -339,6 +357,7 @@ void PropertyTreeBuilder::BuildPropertyTrees(
   data_for_recursion.device_scale_factor = device_scale_factor;
   data_for_recursion.in_subtree_of_page_scale_application_layer = false;
   data_for_recursion.should_flatten = false;
+  data_for_recursion.ancestor_clips_subtree = true;
   data_for_recursion.device_transform = &device_transform;
 
   ClipNode root_clip;
