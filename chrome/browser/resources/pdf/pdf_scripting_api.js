@@ -250,8 +250,6 @@ PDFScriptingAPI.prototype = {
   },
 };
 
-var IS_MAC_PARAM = 'isMac&';
-
 /**
  * Creates a PDF viewer with a scripting interface. This is basically 1) an
  * iframe which is navigated to the PDF viewer extension and 2) a scripting
@@ -262,11 +260,9 @@ var IS_MAC_PARAM = 'isMac&';
  */
 function PDFCreateOutOfProcessPlugin(src) {
   var iframe = window.document.createElement('iframe');
-  var isMac = cr.isMac ? IS_MAC_PARAM : '';
   iframe.setAttribute(
       'src',
-      'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/index.html?' +
-      isMac + src);
+      'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/index.html?' + src);
   // Prevent the frame from being tab-focusable.
   iframe.setAttribute('tabindex', '-1');
   var client = new PDFScriptingAPI(window);
