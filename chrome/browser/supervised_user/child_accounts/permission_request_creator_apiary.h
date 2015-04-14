@@ -64,7 +64,7 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator,
   GURL GetApiUrl() const;
   std::string GetApiScope() const;
 
-  void CreateRequest(const std::string& request_namespace,
+  void CreateRequest(const std::string& request_type,
                      const std::string& object_ref,
                      const SuccessCallback& callback);
 

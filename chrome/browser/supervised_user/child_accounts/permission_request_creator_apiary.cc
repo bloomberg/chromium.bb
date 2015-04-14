@@ -37,13 +37,13 @@ const int kNumRetries = 1;
 const char kAuthorizationHeaderFormat[] = "Authorization: Bearer %s";
 
 // Request keys.
-const char kNamespaceKey[] = "namespace";
+const char kEventTypeKey[] = "eventType";
 const char kObjectRefKey[] = "objectRef";
 const char kStateKey[] = "state";
 
 // Request values.
-const char kNamespaceURLRequest[] = "PERMISSION_CHROME_URL";
-const char kNamespaceUpdateRequest[] = "PERMISSION_CHROME_CWS_ITEM_UPDATE";
+const char kEventTypeURLRequest[] = "PERMISSION_CHROME_URL";
+const char kEventTypeUpdateRequest[] = "PERMISSION_CHROME_CWS_ITEM_UPDATE";
 const char kState[] = "PENDING";
 
 // Response keys.
@@ -51,13 +51,13 @@ const char kPermissionRequestKey[] = "permissionRequest";
 const char kIdKey[] = "id";
 
 struct PermissionRequestCreatorApiary::Request {
-  Request(const std::string& request_namespace,
+  Request(const std::string& request_type,
           const std::string& object_ref,
           const SuccessCallback& callback,
           int url_fetcher_id);
   ~Request();
 
-  std::string request_namespace;
+  std::string request_type;
   std::string object_ref;
   SuccessCallback callback;
   scoped_ptr<OAuth2TokenService::Request> access_token_request;
@@ -68,11 +68,11 @@ struct PermissionRequestCreatorApiary::Request {
 };
 
 PermissionRequestCreatorApiary::Request::Request(
-    const std::string& request_namespace,
+    const std::string& request_type,
     const std::string& object_ref,
     const SuccessCallback& callback,
     int url_fetcher_id)
-    : request_namespace(request_namespace),
+    : request_type(request_type),
       object_ref(object_ref),
       callback(callback),
       access_token_expired(false),
@@ -113,13 +113,13 @@ bool PermissionRequestCreatorApiary::IsEnabled() const {
 void PermissionRequestCreatorApiary::CreateURLAccessRequest(
     const GURL& url_requested,
     const SuccessCallback& callback) {
-  CreateRequest(kNamespaceURLRequest, url_requested.spec(), callback);
+  CreateRequest(kEventTypeURLRequest, url_requested.spec(), callback);
 }
 
 void PermissionRequestCreatorApiary::CreateExtensionUpdateRequest(
     const std::string& id,
     const SuccessCallback& callback) {
-  CreateRequest(kNamespaceUpdateRequest, id, callback);
+  CreateRequest(kEventTypeUpdateRequest, id, callback);
 }
 
 GURL PermissionRequestCreatorApiary::GetApiUrl() const {
@@ -146,11 +146,11 @@ std::string PermissionRequestCreatorApiary::GetApiScope() const {
 }
 
 void PermissionRequestCreatorApiary::CreateRequest(
-    const std::string& request_namespace,
+    const std::string& request_type,
     const std::string& object_ref,
     const SuccessCallback& callback) {
   requests_.push_back(
-      new Request(request_namespace, object_ref, callback, url_fetcher_id_));
+      new Request(request_type, object_ref, callback, url_fetcher_id_));
   StartFetching(requests_.back());
 }
 
@@ -187,7 +187,7 @@ void PermissionRequestCreatorApiary::OnGetTokenSuccess(
       base::StringPrintf(kAuthorizationHeaderFormat, access_token.c_str()));
 
   base::DictionaryValue dict;
-  dict.SetStringWithoutPathExpansion(kNamespaceKey, (*it)->request_namespace);
+  dict.SetStringWithoutPathExpansion(kEventTypeKey, (*it)->request_type);
   dict.SetStringWithoutPathExpansion(kObjectRefKey, (*it)->object_ref);
   dict.SetStringWithoutPathExpansion(kStateKey, kState);
 
