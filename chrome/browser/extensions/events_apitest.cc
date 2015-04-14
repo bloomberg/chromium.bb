@@ -13,8 +13,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Events) {
   ASSERT_TRUE(RunExtensionTest("events")) << message_;
 }
 
+// Fails on Win only. http://crbug.com/476863
+#if defined(OS_WIN)
+#define MAYBE_EventsAreUnregistered DISABLED_EventsAreUnregistered
+#else
+#define MAYBE_EventsAreUnregistered EventsAreUnregistered
+#endif
 // Tests that events are unregistered when an extension page shuts down.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, EventsAreUnregistered) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_EventsAreUnregistered) {
   // In this test, page1.html registers for a number of events, then navigates
   // to page2.html, which should unregister those events. page2.html notifies
   // pass, by which point the event should have been unregistered.
