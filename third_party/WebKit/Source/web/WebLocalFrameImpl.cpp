@@ -895,12 +895,16 @@ void WebLocalFrameImpl::requestExecuteScriptInIsolatedWorld(int worldID, const W
     SuspendableScriptExecutor::createAndRun(frame(), worldID, createSourcesVector(sourcesIn, numSources), extensionGroup, userGesture, callback);
 }
 
-v8::Handle<v8::Value> WebLocalFrameImpl::callFunctionEvenIfScriptDisabled(v8::Handle<v8::Function> function, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> argv[])
+#ifndef WEB_FRAME_USES_V8_LOCAL
+v8::Local<v8::Value> WebLocalFrameImpl::callFunctionEvenIfScriptDisabled(v8::Local<v8::Function> function, v8::Local<v8::Value> receiver, int argc, v8::Handle<v8::Value> argv[])
+#else
+v8::Local<v8::Value> WebLocalFrameImpl::callFunctionEvenIfScriptDisabled(v8::Local<v8::Function> function, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> argv[])
+#endif
 {
     ASSERT(frame());
     // TODO(bashi): Change the signature of callFunctionEvenIfScriptDisabled()
     // so that it takes v8::Local instead of v8::Handle.
-    return frame()->script().callFunction(v8::Local<v8::Function>(function), v8::Local<v8::Value>(receiver), argc, static_cast<v8::Local<v8::Value>*>(argv));
+    return frame()->script().callFunction(function, receiver, argc, static_cast<v8::Local<v8::Value>*>(argv));
 }
 
 v8::Local<v8::Context> WebLocalFrameImpl::mainWorldScriptContext() const

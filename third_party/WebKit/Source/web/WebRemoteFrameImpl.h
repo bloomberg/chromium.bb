@@ -70,11 +70,15 @@ public:
     virtual void executeScriptInIsolatedWorld(
         int worldID, const WebScriptSource* sourcesIn, unsigned numSources,
         int extensionGroup, WebVector<v8::Local<v8::Value>>* results) override;
-    virtual v8::Handle<v8::Value> callFunctionEvenIfScriptDisabled(
-        v8::Handle<v8::Function>,
-        v8::Handle<v8::Value>,
+    virtual v8::Local<v8::Value> callFunctionEvenIfScriptDisabled(
+        v8::Local<v8::Function>,
+        v8::Local<v8::Value>,
         int argc,
+#ifndef WEB_FRAME_USES_V8_LOCAL
         v8::Handle<v8::Value> argv[]) override;
+#else
+        v8::Local<v8::Value> argv[]) override;
+#endif
     virtual v8::Local<v8::Context> mainWorldScriptContext() const override;
     virtual void reload(bool ignoreCache) override;
     virtual void reloadWithOverrideURL(const WebURL& overrideUrl, bool ignoreCache) override;
