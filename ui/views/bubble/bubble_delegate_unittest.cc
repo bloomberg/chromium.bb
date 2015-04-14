@@ -242,6 +242,7 @@ TEST_F(BubbleDelegateTest, VisibleWhenAnchorWidgetBoundsChanged) {
   test::TestWidgetObserver bubble_observer(bubble_widget);
   EXPECT_FALSE(bubble_observer.widget_closed());
 
+  anchor_widget->Show();
   bubble_widget->Show();
   EXPECT_TRUE(bubble_widget->IsVisible());
   anchor_widget->SetBounds(gfx::Rect(10, 10, 100, 100));
