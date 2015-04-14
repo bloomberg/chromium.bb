@@ -6,11 +6,9 @@ package org.chromium.android_webview;
 
 import org.chromium.android_webview.AwContents.VisualStateCallback;
 import org.chromium.base.ThreadUtils;
-import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.net.NetError;
-import org.chromium.ui.base.PageTransition;
 
 import java.lang.ref.WeakReference;
 
@@ -24,17 +22,12 @@ public class AwWebContentsObserver extends WebContentsObserver {
     // and should be found and cleaned up.
     private final WeakReference<AwContents> mAwContents;
     private final WeakReference<AwContentsClient> mAwContentsClient;
-    private boolean mStartedNonApiProvisionalLoadInMainFrame = false;
 
     public AwWebContentsObserver(
             WebContents webContents, AwContents awContents, AwContentsClient awContentsClient) {
         super(webContents);
         mAwContents = new WeakReference<>(awContents);
         mAwContentsClient = new WeakReference<>(awContentsClient);
-    }
-
-    boolean hasStartedNonApiProvisionalLoadInMainFrame() {
-        return mStartedNonApiProvisionalLoadInMainFrame;
     }
 
     @Override
@@ -102,24 +95,5 @@ public class AwWebContentsObserver extends WebContentsObserver {
         final AwContentsClient client = mAwContentsClient.get();
         if (client == null) return;
         client.doUpdateVisitedHistory(url, isReload);
-    }
-
-    @Override
-    public void didStartProvisionalLoadForFrame(
-            long frameId,
-            long parentFrameId,
-            boolean isMainFrame,
-            String validatedUrl,
-            boolean isErrorPage,
-            boolean isIframeSrcdoc) {
-        if (!isMainFrame) return;
-        AwContents awContents = mAwContents.get();
-        if (awContents != null) {
-            NavigationEntry pendingEntry = awContents.getNavigationController().getPendingEntry();
-            if (pendingEntry != null
-                    && (pendingEntry.getTransition() & PageTransition.FROM_API) == 0) {
-                mStartedNonApiProvisionalLoadInMainFrame = true;
-            }
-        }
     }
 }

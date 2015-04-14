@@ -234,8 +234,8 @@ public class AwContents implements SmartClipProvider,
     private boolean mHasRequestedVisitedHistoryFromClient;
     // TODO(boliu): This should be in a global context, not per webview.
     private final double mDIPScale;
-    // Whether the WebView has attempted to do any load (including uncommitted loads).
-    private boolean mDidAttemptLoad = false;
+    // Whether this WebView is a popup.
+    private boolean mIsPopupWindow = false;
 
     // The base background color, i.e. not accounting for any CSS body from the current page.
     private int mBaseBackgroundColor = Color.WHITE;
@@ -961,8 +961,7 @@ public class AwContents implements SmartClipProvider,
         if (wasWindowFocused) onWindowFocusChanged(wasWindowFocused);
         if (wasFocused) onFocusChanged(true, 0, null);
 
-        // Popups are always assumed as having made a load attempt.
-        mDidAttemptLoad = true;
+        mIsPopupWindow = true;
 
         // Restore injected JavaScript interfaces.
         for (Map.Entry<String, Pair<Object, Class>> entry : javascriptInterfaces.entrySet()) {
@@ -2301,10 +2300,8 @@ public class AwContents implements SmartClipProvider,
         nativeInsertVisualStateCallback(mNativeAwContents, requestId, callback);
     }
 
-    public boolean getDidAttemptLoad() {
-        if (mDidAttemptLoad) return mDidAttemptLoad;
-        mDidAttemptLoad = mWebContentsObserver.hasStartedNonApiProvisionalLoadInMainFrame();
-        return mDidAttemptLoad;
+    public boolean isPopupWindow() {
+        return mIsPopupWindow;
     }
 
     //--------------------------------------------------------------------------------------------

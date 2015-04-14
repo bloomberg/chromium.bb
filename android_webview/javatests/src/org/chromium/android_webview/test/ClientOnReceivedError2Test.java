@@ -359,7 +359,7 @@ public class ClientOnReceivedError2Test extends AwTestBase {
                 mContentsClient.getOnPageFinishedHelper();
         final int onPageFinishedCallCount = onPageFinishedHelper.getCallCount();
         loadUrlAsync(mAwContents, url);
-        mAwContents.stopLoading();
+        stopLoading(mAwContents);
         onPageFinishedHelper.waitForCallback(onPageFinishedCallCount,
                 1 /* numberOfCallsToWaitFor */,
                 WAIT_TIMEOUT_MS,

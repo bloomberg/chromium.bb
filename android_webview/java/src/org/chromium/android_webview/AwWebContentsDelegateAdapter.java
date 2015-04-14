@@ -219,8 +219,8 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
     @Override
     public void navigationStateChanged(int flags) {
         if ((flags & InvalidateTypes.URL) != 0
-                && mAwContents.hasAccessedInitialDocument()
-                && mAwContents.getDidAttemptLoad()) {
+                && mAwContents.isPopupWindow()
+                && mAwContents.hasAccessedInitialDocument()) {
             // Hint the client to show the last committed url, as it may be unsafe to show
             // the pending entry.
             String url = mAwContents.getLastCommittedUrl();

@@ -275,6 +275,18 @@ public class AwTestBase
                 TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * Stops loading on the UI thread.
+     */
+    public void stopLoading(final AwContents awContents) {
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                awContents.stopLoading();
+            }
+        });
+    }
+
     public void waitForVisualStateCallback(final AwContents awContents) throws Exception {
         final CallbackHelper ch = new CallbackHelper();
         final int chCount = ch.getCallCount();
