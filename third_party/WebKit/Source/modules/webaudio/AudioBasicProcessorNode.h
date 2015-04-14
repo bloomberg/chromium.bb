@@ -37,9 +37,8 @@ class AudioProcessor;
 // AudioBasicProcessorNode is an AudioNode with one input and one output where the input and output have the same number of channels.
 class AudioBasicProcessorHandler : public AudioHandler {
 public:
-    static AudioBasicProcessorHandler* create(NodeType, AudioNode&, float sampleRate, PassOwnPtr<AudioProcessor>);
+    static PassRefPtr<AudioBasicProcessorHandler> create(NodeType, AudioNode&, float sampleRate, PassOwnPtr<AudioProcessor>);
     virtual ~AudioBasicProcessorHandler();
-    DECLARE_VIRTUAL_TRACE();
 
     // AudioHandler
     virtual void dispose() override final;

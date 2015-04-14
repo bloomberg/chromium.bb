@@ -39,7 +39,7 @@ class AudioContext;
 
 class GainHandler final : public AudioHandler {
 public:
-    static GainHandler* create(AudioNode&, float sampleRate, AudioParamHandler& gain);
+    static PassRefPtr<GainHandler> create(AudioNode&, float sampleRate, AudioParamHandler& gain);
 
     // AudioHandler
     virtual void process(size_t framesToProcess) override;

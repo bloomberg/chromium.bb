@@ -50,7 +50,12 @@ class ExceptionState;
 // An AudioDestinationNode has one input and no outputs and represents the final destination to the audio hardware.
 // Most processing nodes such as filters will have one input and one output, although multiple inputs and outputs are possible.
 
-class AudioHandler : public GarbageCollectedFinalized<AudioHandler> {
+// AudioHandler is created and owned by an AudioNode, and they die together in
+// the main thread.
+// Be careful to avoid reference cycles. If an AudioHandler has a reference
+// cycle including the owner AudioNode, objects in the cycle are never
+// collected.
+class AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
 public:
     enum { ProcessingSizeInFrames = 128 };
 
@@ -86,8 +91,8 @@ public:
 
     // node() always returns a valid pointer for now.
     AudioNode* node() const { return m_node; }
-    AudioContext* context() { return m_context.get(); }
-    const AudioContext* context() const { return m_context.get(); }
+    AudioContext* context() { return m_context; }
+    const AudioContext* context() const { return m_context; }
 
     enum ChannelCountMode {
         Max,
@@ -189,8 +194,6 @@ public:
 
     void updateChannelCountMode();
 
-    DECLARE_VIRTUAL_TRACE();
-
 protected:
     // Inputs and outputs must be created before the AudioHandler is
     // initialized.
@@ -210,8 +213,17 @@ private:
 
     volatile bool m_isInitialized;
     NodeType m_nodeType;
-    Member<AudioNode> m_node;
-    Member<AudioContext> m_context;
+
+    // The owner AudioNode.  This raw pointer is safe because only the AudioNode
+    // has the reference count of this object for now.
+    GC_PLUGIN_IGNORE("http://crbug.com/404527")
+    AudioNode* m_node;
+
+    // This raw pointer is safe because the AudioContext is alive whenever the
+    // owner AudioNode is alive.
+    GC_PLUGIN_IGNORE("http://crbug.com/404527")
+    AudioContext* m_context;
+
     float m_sampleRate;
     Vector<OwnPtr<AudioNodeInput>> m_inputs;
     Vector<OwnPtr<AudioNodeOutput>> m_outputs;
@@ -278,7 +290,7 @@ public:
 protected:
     explicit AudioNode(AudioContext&);
     // This should be called in a constructor.
-    void setHandler(AudioHandler*);
+    void setHandler(PassRefPtr<AudioHandler>);
 
 private:
     void dispose();
@@ -289,7 +301,7 @@ private:
     bool disconnectFromOutputIfConnected(unsigned outputIndex, AudioParam&);
 
     Member<AudioContext> m_context;
-    Member<AudioHandler> m_handler;
+    RefPtr<AudioHandler> m_handler;
     // Represents audio node graph with Oilpan references. N-th HeapHashSet
     // represents a set of AudioNode objects connected to this AudioNode's N-th
     // output.

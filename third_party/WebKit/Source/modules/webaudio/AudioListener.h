@@ -108,7 +108,10 @@ private:
     mutable Mutex m_listenerLock;
     // List for pannerNodes in context. This is updated only in the main thread,
     // and can be referred in audio thread.
-    HeapVector<Member<PannerHandler>> m_panners;
+    // These raw pointers are safe because PannerHandler::uninitialize()
+    // unregisters it from m_panners.
+    // TODO(tkent): This can be HashSet<>.
+    Vector<PannerHandler*> m_panners;
     // HRTF DB loader for panner node.
     RefPtr<HRTFDatabaseLoader> m_hrtfDatabaseLoader;
 };

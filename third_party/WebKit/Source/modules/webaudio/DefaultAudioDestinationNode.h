@@ -36,7 +36,7 @@ class ExceptionState;
 
 class DefaultAudioDestinationHandler final : public AudioDestinationHandler {
 public:
-    static DefaultAudioDestinationHandler* create(AudioNode&);
+    static PassRefPtr<DefaultAudioDestinationHandler> create(AudioNode&);
     virtual ~DefaultAudioDestinationHandler();
 
     // AudioHandler

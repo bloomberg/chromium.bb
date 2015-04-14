@@ -60,9 +60,9 @@ ConvolverHandler::ConvolverHandler(AudioNode& node, float sampleRate)
     initialize();
 }
 
-ConvolverHandler* ConvolverHandler::create(AudioNode& node, float sampleRate)
+PassRefPtr<ConvolverHandler> ConvolverHandler::create(AudioNode& node, float sampleRate)
 {
-    return new ConvolverHandler(node, sampleRate);
+    return adoptRef(new ConvolverHandler(node, sampleRate));
 }
 
 ConvolverHandler::~ConvolverHandler()
@@ -185,12 +185,6 @@ double ConvolverHandler::latencyTime() const
     // Since we don't want to block the Audio Device thread, we return a large value
     // instead of trying to acquire the lock.
     return std::numeric_limits<double>::infinity();
-}
-
-DEFINE_TRACE(ConvolverHandler)
-{
-    visitor->trace(m_buffer);
-    AudioHandler::trace(visitor);
 }
 
 // ----------------------------------------------------------------

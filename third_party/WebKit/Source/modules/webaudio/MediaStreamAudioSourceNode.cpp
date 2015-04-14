@@ -47,9 +47,9 @@ MediaStreamAudioSourceHandler::MediaStreamAudioSourceHandler(AudioNode& node, Me
     initialize();
 }
 
-MediaStreamAudioSourceHandler* MediaStreamAudioSourceHandler::create(AudioNode& node, MediaStream& mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
+PassRefPtr<MediaStreamAudioSourceHandler> MediaStreamAudioSourceHandler::create(AudioNode& node, MediaStream& mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
 {
-    return new MediaStreamAudioSourceHandler(node, mediaStream, audioTrack, audioSourceProvider);
+    return adoptRef(new MediaStreamAudioSourceHandler(node, mediaStream, audioTrack, audioSourceProvider));
 }
 
 MediaStreamAudioSourceHandler::~MediaStreamAudioSourceHandler()
@@ -113,13 +113,6 @@ void MediaStreamAudioSourceHandler::process(size_t numberOfFrames)
         // We failed to acquire the lock.
         outputBus->zero();
     }
-}
-
-DEFINE_TRACE(MediaStreamAudioSourceHandler)
-{
-    visitor->trace(m_mediaStream);
-    visitor->trace(m_audioTrack);
-    AudioHandler::trace(visitor);
 }
 
 // ----------------------------------------------------------------

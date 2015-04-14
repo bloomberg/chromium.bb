@@ -35,7 +35,7 @@ class ExceptionState;
 
 class AnalyserHandler final : public AudioBasicInspectorHandler {
 public:
-    static AnalyserHandler* create(AudioNode&, float sampleRate);
+    static PassRefPtr<AnalyserHandler> create(AudioNode&, float sampleRate);
     virtual ~AnalyserHandler();
 
     // AudioHandler

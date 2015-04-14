@@ -47,6 +47,7 @@ static void fixNANs(double& x)
 
 PannerHandler::PannerHandler(AudioNode& node, float sampleRate)
     : AudioHandler(NodeTypePanner, node, sampleRate)
+    , m_listener(node.context()->listener())
     , m_panningModel(Panner::PanningModelEqualPower)
     , m_distanceModel(DistanceEffect::ModelInverse)
     , m_position(0, 0, 0)
@@ -76,9 +77,9 @@ PannerHandler::PannerHandler(AudioNode& node, float sampleRate)
     initialize();
 }
 
-PannerHandler* PannerHandler::create(AudioNode& node, float sampleRate)
+PassRefPtr<PannerHandler> PannerHandler::create(AudioNode& node, float sampleRate)
 {
-    return new PannerHandler(node, sampleRate);
+    return adoptRef(new PannerHandler(node, sampleRate));
 }
 
 PannerHandler::~PannerHandler()
@@ -169,7 +170,7 @@ void PannerHandler::uninitialize()
 
 AudioListener* PannerHandler::listener()
 {
-    return context()->listener();
+    return m_listener;
 }
 
 String PannerHandler::panningModel() const

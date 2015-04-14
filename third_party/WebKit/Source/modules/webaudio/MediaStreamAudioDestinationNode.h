@@ -39,9 +39,8 @@ class AudioContext;
 
 class MediaStreamAudioDestinationHandler final : public AudioBasicInspectorHandler {
 public:
-    static MediaStreamAudioDestinationHandler* create(AudioNode&, size_t numberOfChannels);
+    static PassRefPtr<MediaStreamAudioDestinationHandler> create(AudioNode&, size_t numberOfChannels);
     virtual ~MediaStreamAudioDestinationHandler();
-    DECLARE_VIRTUAL_TRACE();
 
     MediaStream* stream() { return m_stream.get(); }
 
@@ -54,7 +53,8 @@ private:
     // As an audio source, we will never propagate silence.
     virtual bool propagatesSilence() const override { return false; }
 
-    Member<MediaStream> m_stream;
+    // This Persistent doesn't make a reference cycle.
+    Persistent<MediaStream> m_stream;
     RefPtr<MediaStreamSource> m_source;
     RefPtr<AudioBus> m_mixBus;
 };

@@ -53,9 +53,9 @@ MediaElementAudioSourceHandler::MediaElementAudioSourceHandler(AudioNode& node, 
     initialize();
 }
 
-MediaElementAudioSourceHandler* MediaElementAudioSourceHandler::create(AudioNode& node, HTMLMediaElement& mediaElement)
+PassRefPtr<MediaElementAudioSourceHandler> MediaElementAudioSourceHandler::create(AudioNode& node, HTMLMediaElement& mediaElement)
 {
-    return new MediaElementAudioSourceHandler(node, mediaElement);
+    return adoptRef(new MediaElementAudioSourceHandler(node, mediaElement));
 }
 
 MediaElementAudioSourceHandler::~MediaElementAudioSourceHandler()
@@ -178,12 +178,6 @@ void MediaElementAudioSourceHandler::lock()
 void MediaElementAudioSourceHandler::unlock()
 {
     m_processLock.unlock();
-}
-
-DEFINE_TRACE(MediaElementAudioSourceHandler)
-{
-    visitor->trace(m_mediaElement);
-    AudioHandler::trace(visitor);
 }
 
 // ----------------------------------------------------------------

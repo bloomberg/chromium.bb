@@ -38,7 +38,7 @@ class AudioContext;
 
 class ChannelMergerHandler final : public AudioHandler {
 public:
-    static ChannelMergerHandler* create(AudioNode&, float sampleRate, unsigned numberOfInputs);
+    static PassRefPtr<ChannelMergerHandler> create(AudioNode&, float sampleRate, unsigned numberOfInputs);
 
     virtual void process(size_t framesToProcess) override;
     virtual void setChannelCount(unsigned long, ExceptionState&) final;

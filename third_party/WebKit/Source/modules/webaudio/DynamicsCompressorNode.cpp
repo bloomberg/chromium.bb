@@ -54,13 +54,13 @@ DynamicsCompressorHandler::DynamicsCompressorHandler(
     initialize();
 }
 
-DynamicsCompressorHandler* DynamicsCompressorHandler::create(
+PassRefPtr<DynamicsCompressorHandler> DynamicsCompressorHandler::create(
     AudioNode& node, float sampleRate,
     AudioParamHandler& threshold, AudioParamHandler& knee,
     AudioParamHandler& ratio, AudioParamHandler& reduction,
     AudioParamHandler& attack, AudioParamHandler& release)
 {
-    return new DynamicsCompressorHandler(node, sampleRate, threshold, knee, ratio, reduction, attack, release);
+    return adoptRef(new DynamicsCompressorHandler(node, sampleRate, threshold, knee, ratio, reduction, attack, release));
 }
 
 DynamicsCompressorHandler::~DynamicsCompressorHandler()

@@ -38,7 +38,7 @@ class Reverb;
 
 class ConvolverHandler final : public AudioHandler {
 public:
-    static ConvolverHandler* create(AudioNode&, float sampleRate);
+    static PassRefPtr<ConvolverHandler> create(AudioNode&, float sampleRate);
     virtual ~ConvolverHandler();
 
     // AudioHandler
@@ -54,15 +54,15 @@ public:
     bool normalize() const { return m_normalize; }
     void setNormalize(bool normalize) { m_normalize = normalize; }
 
-    DECLARE_VIRTUAL_TRACE();
-
 private:
     ConvolverHandler(AudioNode&, float sampleRate);
     virtual double tailTime() const override;
     virtual double latencyTime() const override;
 
     OwnPtr<Reverb> m_reverb;
-    Member<AudioBuffer> m_buffer;
+    // This Persistent doesn't make a reference cycle including the owner
+    // ConvolverNode.
+    Persistent<AudioBuffer> m_buffer;
 
     // This synchronizes dynamic changes to the convolution impulse response with process().
     mutable Mutex m_processLock;

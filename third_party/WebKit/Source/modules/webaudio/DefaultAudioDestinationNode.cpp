@@ -44,9 +44,9 @@ DefaultAudioDestinationHandler::DefaultAudioDestinationHandler(AudioNode& node)
     m_channelInterpretation = AudioBus::Speakers;
 }
 
-DefaultAudioDestinationHandler* DefaultAudioDestinationHandler::create(AudioNode& node)
+PassRefPtr<DefaultAudioDestinationHandler> DefaultAudioDestinationHandler::create(AudioNode& node)
 {
-    return new DefaultAudioDestinationHandler(node);
+    return adoptRef(new DefaultAudioDestinationHandler(node));
 }
 
 DefaultAudioDestinationHandler::~DefaultAudioDestinationHandler()

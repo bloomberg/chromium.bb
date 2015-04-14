@@ -46,9 +46,9 @@ OfflineAudioDestinationHandler::OfflineAudioDestinationHandler(AudioNode& node, 
     m_renderBus = AudioBus::create(renderTarget->numberOfChannels(), renderQuantumSize);
 }
 
-OfflineAudioDestinationHandler* OfflineAudioDestinationHandler::create(AudioNode& node, AudioBuffer* renderTarget)
+PassRefPtr<OfflineAudioDestinationHandler> OfflineAudioDestinationHandler::create(AudioNode& node, AudioBuffer* renderTarget)
 {
-    return new OfflineAudioDestinationHandler(node, renderTarget);
+    return adoptRef(new OfflineAudioDestinationHandler(node, renderTarget));
 }
 
 OfflineAudioDestinationHandler::~OfflineAudioDestinationHandler()
@@ -160,12 +160,6 @@ void OfflineAudioDestinationHandler::offlineRenderInternal()
 void OfflineAudioDestinationHandler::notifyComplete()
 {
     context()->fireCompletionEvent();
-}
-
-DEFINE_TRACE(OfflineAudioDestinationHandler)
-{
-    visitor->trace(m_renderTarget);
-    AudioDestinationHandler::trace(visitor);
 }
 
 // ----------------------------------------------------------------

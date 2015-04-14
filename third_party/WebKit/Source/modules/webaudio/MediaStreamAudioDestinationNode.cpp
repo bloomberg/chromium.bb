@@ -51,9 +51,9 @@ MediaStreamAudioDestinationHandler::MediaStreamAudioDestinationHandler(AudioNode
     initialize();
 }
 
-MediaStreamAudioDestinationHandler* MediaStreamAudioDestinationHandler::create(AudioNode& node, size_t numberOfChannels)
+PassRefPtr<MediaStreamAudioDestinationHandler> MediaStreamAudioDestinationHandler::create(AudioNode& node, size_t numberOfChannels)
 {
-    return new MediaStreamAudioDestinationHandler(node, numberOfChannels);
+    return adoptRef(new MediaStreamAudioDestinationHandler(node, numberOfChannels));
 }
 
 MediaStreamAudioDestinationHandler::~MediaStreamAudioDestinationHandler()
@@ -65,12 +65,6 @@ void MediaStreamAudioDestinationHandler::dispose()
 {
     uninitialize();
     AudioBasicInspectorHandler::dispose();
-}
-
-DEFINE_TRACE(MediaStreamAudioDestinationHandler)
-{
-    visitor->trace(m_stream);
-    AudioBasicInspectorHandler::trace(visitor);
 }
 
 void MediaStreamAudioDestinationHandler::process(size_t numberOfFrames)

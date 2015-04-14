@@ -16,7 +16,7 @@ namespace blink {
 // specifically designed for equal-power stereo panning.
 class StereoPannerHandler final : public AudioHandler {
 public:
-    static StereoPannerHandler* create(AudioNode&, float sampleRate, AudioParamHandler& pan);
+    static PassRefPtr<StereoPannerHandler> create(AudioNode&, float sampleRate, AudioParamHandler& pan);
     virtual ~StereoPannerHandler();
 
     virtual void dispose() override;

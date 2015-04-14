@@ -44,9 +44,9 @@ GainHandler::GainHandler(AudioNode& node, float sampleRate, AudioParamHandler& g
     initialize();
 }
 
-GainHandler* GainHandler::create(AudioNode& node, float sampleRate, AudioParamHandler& gain)
+PassRefPtr<GainHandler> GainHandler::create(AudioNode& node, float sampleRate, AudioParamHandler& gain)
 {
-    return new GainHandler(node, sampleRate, gain);
+    return adoptRef(new GainHandler(node, sampleRate, gain));
 }
 
 void GainHandler::process(size_t framesToProcess)

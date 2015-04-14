@@ -42,19 +42,14 @@ AudioBasicProcessorHandler::AudioBasicProcessorHandler(NodeType nodeType, AudioN
     addOutput(1);
 }
 
-AudioBasicProcessorHandler* AudioBasicProcessorHandler::create(NodeType nodeType, AudioNode& node, float sampleRate, PassOwnPtr<AudioProcessor> processor)
+PassRefPtr<AudioBasicProcessorHandler> AudioBasicProcessorHandler::create(NodeType nodeType, AudioNode& node, float sampleRate, PassOwnPtr<AudioProcessor> processor)
 {
-    return new AudioBasicProcessorHandler(nodeType, node, sampleRate, processor);
+    return adoptRef(new AudioBasicProcessorHandler(nodeType, node, sampleRate, processor));
 }
 
 AudioBasicProcessorHandler::~AudioBasicProcessorHandler()
 {
     ASSERT(!isInitialized());
-}
-
-DEFINE_TRACE(AudioBasicProcessorHandler)
-{
-    AudioHandler::trace(visitor);
 }
 
 void AudioBasicProcessorHandler::dispose()

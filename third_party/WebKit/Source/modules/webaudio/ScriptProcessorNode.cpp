@@ -64,9 +64,9 @@ ScriptProcessorHandler::ScriptProcessorHandler(AudioNode& node, float sampleRate
     initialize();
 }
 
-ScriptProcessorHandler* ScriptProcessorHandler::create(AudioNode& node, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)
+PassRefPtr<ScriptProcessorHandler> ScriptProcessorHandler::create(AudioNode& node, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)
 {
-    return new ScriptProcessorHandler(node, sampleRate, bufferSize, numberOfInputChannels, numberOfOutputChannels);
+    return adoptRef(new ScriptProcessorHandler(node, sampleRate, bufferSize, numberOfInputChannels, numberOfOutputChannels));
 }
 
 ScriptProcessorHandler::~ScriptProcessorHandler()
@@ -253,13 +253,6 @@ void ScriptProcessorHandler::setChannelCountMode(const String& mode, ExceptionSt
             NotSupportedError,
             "channelCountMode cannot be changed from 'explicit' to '" + mode + "'");
     }
-}
-
-DEFINE_TRACE(ScriptProcessorHandler)
-{
-    visitor->trace(m_inputBuffers);
-    visitor->trace(m_outputBuffers);
-    AudioHandler::trace(visitor);
 }
 
 // ----------------------------------------------------------------

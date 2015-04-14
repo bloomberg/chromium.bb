@@ -53,7 +53,6 @@ AudioListener::~AudioListener()
 
 DEFINE_TRACE(AudioListener)
 {
-    visitor->trace(m_panners);
 }
 
 void AudioListener::addPanner(PannerHandler* panner)

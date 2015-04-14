@@ -44,7 +44,7 @@ class AudioContext;
 
 class AudioBufferSourceHandler final : public AudioScheduledSourceHandler {
 public:
-    static AudioBufferSourceHandler* create(AudioNode&, float sampleRate, AudioParamHandler& playbackRate);
+    static PassRefPtr<AudioBufferSourceHandler> create(AudioNode&, float sampleRate, AudioParamHandler& playbackRate);
     virtual ~AudioBufferSourceHandler();
 
     // AudioHandler
@@ -88,8 +88,6 @@ public:
 
     void handleStoppableSourceNode();
 
-    DECLARE_VIRTUAL_TRACE();
-
 private:
     AudioBufferSourceHandler(AudioNode&, float sampleRate, AudioParamHandler& playbackRate);
     void startSource(double when, double grainOffset, double grainDuration, bool isDurationGiven, ExceptionState&);
@@ -104,7 +102,9 @@ private:
     void clampGrainParameters(const AudioBuffer*);
 
     // m_buffer holds the sample data which this node outputs.
-    Member<AudioBuffer> m_buffer;
+    // This Persistent doesn't make a reference cycle including
+    // AudioBufferSourceNode.
+    Persistent<AudioBuffer> m_buffer;
 
     // Pointers for the buffer and destination.
     OwnPtr<const float*[]> m_sourceChannels;
@@ -135,13 +135,13 @@ private:
 
     // We optionally keep track of a panner node which has a doppler shift that
     // is incorporated into the pitch rate.
-    // This RefPtr is connection reference. We must call AudioNode::
-    // makeConnection() after ref(), and call AudioNode::breakConnection()
+    // This RefPtr is connection reference. We must call AudioHandler::
+    // makeConnection() after ref(), and call AudioHandler::breakConnection()
     // before deref().
-    // Oilpan: This holds connection references. We must call
-    // AudioNode::makeConnection when we add an AudioNode to this, and must call
-    // AudioNode::breakConnection() when we remove an AudioNode from this.
-    Member<PannerHandler> m_pannerNode;
+    // TODO(tkent): This is always null because setPannerNode is never
+    // called. If we revive setPannerNode, this should be a raw pointer and
+    // AudioBufferSourceNode should have Member<PannerNode>.
+    RefPtr<PannerHandler> m_pannerNode;
 
     // This synchronizes process() with setBuffer() which can cause dynamic channel count changes.
     mutable Mutex m_processLock;

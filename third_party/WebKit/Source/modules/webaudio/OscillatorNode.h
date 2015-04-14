@@ -52,7 +52,7 @@ public:
         CUSTOM = 4
     };
 
-    static OscillatorHandler* create(AudioNode&, float sampleRate, AudioParamHandler& frequency, AudioParamHandler& detune);
+    static PassRefPtr<OscillatorHandler> create(AudioNode&, float sampleRate, AudioParamHandler& frequency, AudioParamHandler& detune);
     virtual ~OscillatorHandler();
 
     // AudioHandler
@@ -63,8 +63,6 @@ public:
     void setType(const String&);
 
     void setPeriodicWave(PeriodicWave*);
-
-    DECLARE_VIRTUAL_TRACE();
 
 private:
     OscillatorHandler(AudioNode&, float sampleRate, AudioParamHandler& frequency, AudioParamHandler& detune);
@@ -97,7 +95,9 @@ private:
     AudioFloatArray m_phaseIncrements;
     AudioFloatArray m_detuneValues;
 
-    Member<PeriodicWave> m_periodicWave;
+    // This Persistent doesn't make a reference cycle including the owner
+    // OscillatorNode.
+    Persistent<PeriodicWave> m_periodicWave;
 };
 
 class OscillatorNode final : public AudioScheduledSourceNode {

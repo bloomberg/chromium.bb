@@ -41,7 +41,7 @@ class HTMLMediaElement;
 
 class MediaElementAudioSourceHandler final : public AudioHandler {
 public:
-    static MediaElementAudioSourceHandler* create(AudioNode&, HTMLMediaElement&);
+    static PassRefPtr<MediaElementAudioSourceHandler> create(AudioNode&, HTMLMediaElement&);
     virtual ~MediaElementAudioSourceHandler();
 
     HTMLMediaElement* mediaElement() { return m_mediaElement.get(); }
@@ -57,8 +57,6 @@ public:
     void lock();
     void unlock();
 
-    DECLARE_VIRTUAL_TRACE();
-
 private:
     MediaElementAudioSourceHandler(AudioNode&, HTMLMediaElement&);
     // As an audio source, we will never propagate silence.
@@ -70,7 +68,10 @@ private:
     // Must be called only on the main thread.
     bool passesCurrentSrcCORSAccessCheck(const KURL& currentSrc);
 
-    RefPtrWillBeMember<HTMLMediaElement> m_mediaElement;
+    // This Persistent doesn't make a reference cycle. The reference from
+    // HTMLMediaElement to AudioSourceProvideClient, which
+    // MediaElementAudioSourceNode implements, is weak.
+    RefPtrWillBePersistent<HTMLMediaElement> m_mediaElement;
     Mutex m_processLock;
 
     unsigned m_sourceNumberOfChannels;

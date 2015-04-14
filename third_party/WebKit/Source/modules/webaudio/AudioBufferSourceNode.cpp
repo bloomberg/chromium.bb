@@ -66,9 +66,9 @@ AudioBufferSourceHandler::AudioBufferSourceHandler(AudioNode& node, float sample
     initialize();
 }
 
-AudioBufferSourceHandler* AudioBufferSourceHandler::create(AudioNode& node, float sampleRate, AudioParamHandler& playbackRate)
+PassRefPtr<AudioBufferSourceHandler> AudioBufferSourceHandler::create(AudioNode& node, float sampleRate, AudioParamHandler& playbackRate)
 {
-    return new AudioBufferSourceHandler(node, sampleRate, playbackRate);
+    return adoptRef(new AudioBufferSourceHandler(node, sampleRate, playbackRate));
 }
 
 AudioBufferSourceHandler::~AudioBufferSourceHandler()
@@ -523,7 +523,7 @@ bool AudioBufferSourceHandler::propagatesSilence() const
 void AudioBufferSourceHandler::setPannerNode(PannerHandler* pannerNode)
 {
     if (m_pannerNode != pannerNode && !hasFinished()) {
-        PannerHandler* oldPannerNode(m_pannerNode.release());
+        RefPtr<PannerHandler> oldPannerNode(m_pannerNode.release());
         m_pannerNode = pannerNode;
         if (pannerNode)
             pannerNode->makeConnection();
@@ -560,13 +560,6 @@ void AudioBufferSourceHandler::finish()
     clearPannerNode();
     ASSERT(!m_pannerNode);
     AudioScheduledSourceHandler::finish();
-}
-
-DEFINE_TRACE(AudioBufferSourceHandler)
-{
-    visitor->trace(m_buffer);
-    visitor->trace(m_pannerNode);
-    AudioScheduledSourceHandler::trace(visitor);
 }
 
 // ----------------------------------------------------------------

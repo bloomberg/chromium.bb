@@ -35,9 +35,9 @@ StereoPannerHandler::StereoPannerHandler(AudioNode& node, float sampleRate, Audi
     initialize();
 }
 
-StereoPannerHandler* StereoPannerHandler::create(AudioNode& node, float sampleRate, AudioParamHandler& pan)
+PassRefPtr<StereoPannerHandler> StereoPannerHandler::create(AudioNode& node, float sampleRate, AudioParamHandler& pan)
 {
-    return new StereoPannerHandler(node, sampleRate, pan);
+    return adoptRef(new StereoPannerHandler(node, sampleRate, pan));
 }
 
 StereoPannerHandler::~StereoPannerHandler()

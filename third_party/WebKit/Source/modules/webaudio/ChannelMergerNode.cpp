@@ -58,9 +58,9 @@ ChannelMergerHandler::ChannelMergerHandler(AudioNode& node, float sampleRate, un
     initialize();
 }
 
-ChannelMergerHandler* ChannelMergerHandler::create(AudioNode& node, float sampleRate, unsigned numberOfInputs)
+PassRefPtr<ChannelMergerHandler> ChannelMergerHandler::create(AudioNode& node, float sampleRate, unsigned numberOfInputs)
 {
-    return new ChannelMergerHandler(node, sampleRate, numberOfInputs);
+    return adoptRef(new ChannelMergerHandler(node, sampleRate, numberOfInputs));
 }
 
 void ChannelMergerHandler::process(size_t framesToProcess)

@@ -45,7 +45,7 @@ class AudioContext;
 
 class ScriptProcessorHandler final : public AudioHandler {
 public:
-    static ScriptProcessorHandler* create(AudioNode&, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels);
+    static PassRefPtr<ScriptProcessorHandler> create(AudioNode&, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels);
     virtual ~ScriptProcessorHandler();
 
     // AudioHandler
@@ -59,8 +59,6 @@ public:
     virtual void setChannelCount(unsigned long, ExceptionState&) override;
     virtual void setChannelCountMode(const String&, ExceptionState&) override;
 
-    DECLARE_TRACE();
-
 private:
     ScriptProcessorHandler(AudioNode&, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels);
     virtual double tailTime() const override;
@@ -73,8 +71,10 @@ private:
     void swapBuffers() { m_doubleBufferIndex = 1 - m_doubleBufferIndex; }
     unsigned m_doubleBufferIndex;
     unsigned m_doubleBufferIndexForEvent;
-    HeapVector<Member<AudioBuffer>> m_inputBuffers;
-    HeapVector<Member<AudioBuffer>> m_outputBuffers;
+    // These Persistent don't make reference cycles including the owner
+    // ScriptProcessorNode.
+    PersistentHeapVector<Member<AudioBuffer>> m_inputBuffers;
+    PersistentHeapVector<Member<AudioBuffer>> m_outputBuffers;
 
     size_t m_bufferSize;
     unsigned m_bufferReadWriteIndex;

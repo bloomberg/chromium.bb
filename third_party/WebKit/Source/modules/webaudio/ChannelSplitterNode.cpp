@@ -44,9 +44,9 @@ ChannelSplitterHandler::ChannelSplitterHandler(AudioNode& node, float sampleRate
     initialize();
 }
 
-ChannelSplitterHandler* ChannelSplitterHandler::create(AudioNode& node, float sampleRate, unsigned numberOfOutputs)
+PassRefPtr<ChannelSplitterHandler> ChannelSplitterHandler::create(AudioNode& node, float sampleRate, unsigned numberOfOutputs)
 {
-    return new ChannelSplitterHandler(node, sampleRate, numberOfOutputs);
+    return adoptRef(new ChannelSplitterHandler(node, sampleRate, numberOfOutputs));
 }
 
 void ChannelSplitterHandler::process(size_t framesToProcess)

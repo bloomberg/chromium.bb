@@ -46,7 +46,7 @@ unsigned AudioHandler::s_instanceCount = 0;
 AudioHandler::AudioHandler(NodeType nodeType, AudioNode& node, float sampleRate)
     : m_isInitialized(false)
     , m_nodeType(NodeTypeUnknown)
-    , m_node(node)
+    , m_node(&node)
     , m_context(node.context())
     , m_sampleRate(sampleRate)
     , m_lastProcessingTime(-1)
@@ -71,6 +71,7 @@ AudioHandler::AudioHandler(NodeType nodeType, AudioNode& node, float sampleRate)
 
 AudioHandler::~AudioHandler()
 {
+    ASSERT(isMainThread());
     --s_instanceCount;
 #if DEBUG_AUDIONODE_REFERENCES
     --s_nodeCount[nodeType()];
@@ -793,22 +794,6 @@ void AudioHandler::printNodeCounts()
 
 #endif // DEBUG_AUDIONODE_REFERENCES
 
-DEFINE_TRACE(AudioHandler)
-{
-    visitor->trace(m_node);
-    visitor->trace(m_context);
-    // TODO(tkent): Oilpan: renderingOutputs should not be strong references.
-    // This is a short-term workaround to avoid crashes, and causes AudioNode
-    // leaks.
-    {
-        AudioContext::AutoLocker locker(context()->handler());
-        for (const OwnPtr<AudioNodeInput>& input : m_inputs) {
-            for (unsigned i = 0; i < input->numberOfRenderingConnections(); ++i)
-                visitor->trace(input->renderingOutput(i)->node());
-        }
-    }
-}
-
 void AudioHandler::updateChannelCountMode()
 {
     m_channelCountMode = m_newChannelCountMode;
@@ -833,7 +818,7 @@ void AudioNode::dispose()
     handler().dispose();
 }
 
-void AudioNode::setHandler(AudioHandler* handler)
+void AudioNode::setHandler(PassRefPtr<AudioHandler> handler)
 {
     ASSERT(handler);
     m_handler = handler;
@@ -847,10 +832,21 @@ AudioHandler& AudioNode::handler() const
 DEFINE_TRACE(AudioNode)
 {
     visitor->trace(m_context);
-    visitor->trace(m_handler);
     visitor->trace(m_connectedNodes);
     visitor->trace(m_connectedParams);
     RefCountedGarbageCollectedEventTargetWithInlineData<AudioNode>::trace(visitor);
+
+    // TODO(tkent): Oilpan: renderingOutputs should not be strong references.
+    // This is a short-term workaround to avoid crashes, and causes AudioNode
+    // leaks.
+    {
+        AudioContext::AutoLocker locker(context()->handler());
+        for (unsigned inputIndex = 0; inputIndex < handler().numberOfInputs(); ++inputIndex) {
+            AudioNodeInput* input = handler().input(inputIndex);
+            for (unsigned outputIndex = 0; outputIndex < input->numberOfRenderingConnections(); ++outputIndex)
+                visitor->trace(input->renderingOutput(outputIndex)->node()->node());
+        }
+    }
 }
 
 AudioContext* AudioNode::context() const

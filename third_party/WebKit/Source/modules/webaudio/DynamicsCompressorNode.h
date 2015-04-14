@@ -35,7 +35,7 @@ class DynamicsCompressor;
 
 class DynamicsCompressorHandler final : public AudioHandler {
 public:
-    static DynamicsCompressorHandler* create(AudioNode&, float sampleRate, AudioParamHandler& threshold, AudioParamHandler& knee, AudioParamHandler& ratio, AudioParamHandler& reduction, AudioParamHandler& attack, AudioParamHandler& release);
+    static PassRefPtr<DynamicsCompressorHandler> create(AudioNode&, float sampleRate, AudioParamHandler& threshold, AudioParamHandler& knee, AudioParamHandler& ratio, AudioParamHandler& reduction, AudioParamHandler& attack, AudioParamHandler& release);
     virtual ~DynamicsCompressorHandler();
 
     // AudioHandler
