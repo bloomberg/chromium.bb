@@ -107,7 +107,11 @@ html[dir=rtl] .progress {
 }
 
 .title-area {
-  white-space: nowrap;
+  display: flex;
+}
+
+.title-area > * {
+  flex-shrink: 0;
 }
 
 .name,
