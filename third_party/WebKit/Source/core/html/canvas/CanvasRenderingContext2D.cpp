@@ -1154,12 +1154,15 @@ void CanvasRenderingContext2D::scrollPathIntoView(Path2D* path2d)
 
 void CanvasRenderingContext2D::scrollPathIntoViewInternal(const Path& path)
 {
-    LayoutObject* renderer = canvas()->layoutObject();
-    LayoutBox* layoutBox = canvas()->layoutBox();
-    if (!renderer || !layoutBox || !state().isTransformInvertible() || path.isEmpty())
+    if (!state().isTransformInvertible() || path.isEmpty())
         return;
 
     canvas()->document().updateLayoutIgnorePendingStylesheets();
+
+    LayoutObject* renderer = canvas()->layoutObject();
+    LayoutBox* layoutBox = canvas()->layoutBox();
+    if (!renderer || !layoutBox)
+        return;
 
     // Apply transformation and get the bounding rect
     Path transformedPath = path;
@@ -2131,7 +2134,9 @@ void CanvasRenderingContext2D::drawFocusRing(const Path& path)
 void CanvasRenderingContext2D::updateFocusRingElementAccessibility(const Path& path, Element* element)
 {
     AXObjectCache* axObjectCache = element->document().existingAXObjectCache();
-    if (!axObjectCache)
+    LayoutBoxModelObject* lbmo = canvas()->layoutBoxModelObject();
+    LayoutObject* renderer = canvas()->layoutObject();
+    if (!axObjectCache || !lbmo || !renderer)
         return;
 
     // Get the transformed path.
@@ -2139,9 +2144,8 @@ void CanvasRenderingContext2D::updateFocusRingElementAccessibility(const Path& p
     transformedPath.transform(state().transform());
 
     // Offset by the canvas rect, taking border and padding into account.
-    LayoutBoxModelObject* rbmo = canvas()->layoutBoxModelObject();
-    IntRect canvasRect = canvas()->layoutObject()->absoluteBoundingBoxRect();
-    canvasRect.move(rbmo->borderLeft() + rbmo->paddingLeft(), rbmo->borderTop() + rbmo->paddingTop());
+    IntRect canvasRect = renderer->absoluteBoundingBoxRect();
+    canvasRect.move(lbmo->borderLeft() + lbmo->paddingLeft(), lbmo->borderTop() + lbmo->paddingTop());
     LayoutRect elementRect = enclosingLayoutRect(transformedPath.boundingRect());
     elementRect.moveBy(canvasRect.location());
     axObjectCache->setCanvasObjectBounds(element, elementRect);
