@@ -418,7 +418,7 @@ input[type="hidden" i] {
     display: none
 }
 
-input, input[type="password" i], input[type="search" i] {
+input {
     -webkit-appearance: textfield;
     padding: 1px;
     background-color: white;
