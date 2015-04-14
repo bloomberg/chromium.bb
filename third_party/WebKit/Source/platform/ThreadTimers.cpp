@@ -145,12 +145,5 @@ void ThreadTimers::sharedTimerFiredInternal()
     updateSharedTimer();
 }
 
-void ThreadTimers::fireTimersInNestedEventLoop()
-{
-    // Reset the reentrancy guard so the timers can fire again.
-    m_firingTimers = false;
-    updateSharedTimer();
-}
-
 } // namespace blink
 

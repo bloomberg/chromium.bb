@@ -394,12 +394,6 @@ void TimerBase::setNextFireTime(double newUnalignedTime)
     checkConsistency();
 }
 
-void TimerBase::fireTimersInNestedEventLoop()
-{
-    // Redirect to ThreadTimers.
-    PlatformThreadData::current().threadTimers().fireTimersInNestedEventLoop();
-}
-
 void TimerBase::didChangeAlignmentInterval()
 {
     setNextFireTime(m_unalignedNextFireTime);

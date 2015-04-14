@@ -69,8 +69,6 @@ public:
 
     void didChangeAlignmentInterval();
 
-    static void fireTimersInNestedEventLoop();
-
 private:
     virtual void fired() = 0;
 

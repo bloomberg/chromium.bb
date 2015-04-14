@@ -49,14 +49,12 @@ public:
     Vector<TimerBase*>& timerHeap() { return m_timerHeap; }
 
     void updateSharedTimer();
-    void fireTimersInNestedEventLoop();
     double nextFireTime() const { return m_pendingSharedTimerFireTime; }
 
 private:
     static void sharedTimerFired();
 
     void sharedTimerFiredInternal();
-    void fireTimersInNestedEventLoopInternal();
 
     Vector<TimerBase*> m_timerHeap;
     OwnPtr<SharedTimer> m_sharedTimer;
