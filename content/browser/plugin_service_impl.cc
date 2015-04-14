@@ -18,6 +18,7 @@
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/common/content_switches_internal.h"
 #include "content/common/pepper_plugin_list.h"
 #include "content/common/plugin_list.h"
 #include "content/common/view_messages.h"
@@ -816,6 +817,9 @@ void PluginServiceImpl::DisablePluginsDiscoveryForTesting() {
 }
 
 void PluginServiceImpl::EnableNpapiPlugins() {
+#if defined(OS_WIN)
+  DisableWin32kRendererLockdown();
+#endif
   npapi_plugins_enabled_ = true;
   RefreshPlugins();
   BrowserThread::PostTask(

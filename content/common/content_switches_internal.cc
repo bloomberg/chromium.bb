@@ -17,6 +17,14 @@
 
 namespace content {
 
+namespace {
+
+#if defined(OS_WIN)
+static bool g_win32k_renderer_lockdown_disabled = false;
+#endif
+
+}  // namespace
+
 bool IsPinchToZoomEnabled() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -37,9 +45,15 @@ bool IsPinchToZoomEnabled() {
 
 #if defined(OS_WIN)
 
+void DisableWin32kRendererLockdown() {
+  g_win32k_renderer_lockdown_disabled = true;
+}
+
 bool IsWin32kRendererLockdownEnabled() {
   const std::string group_name =
       base::FieldTrialList::FindFullName("Win32kLockdown");
+  if (g_win32k_renderer_lockdown_disabled)
+    return false;
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return false;
   if (!gfx::win::ShouldUseDirectWrite())
