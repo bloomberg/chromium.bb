@@ -28,13 +28,7 @@
 #include "net/ssl/ssl_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// Socket events are easier to debug if you log individual reads and writes.
-// Enable these if locally debugging, but they are too noisy for the waterfall.
-#if 0
-#define NET_TRACE(level, s) DLOG(level) << s << __FUNCTION__ << "() "
-#else
-#define NET_TRACE(level, s) EAT_STREAM_PARAMETERS
-#endif
+#define NET_TRACE(level, s) VLOG(level) << s << __FUNCTION__ << "() "
 
 namespace net {
 
@@ -373,21 +367,21 @@ OrderedSocketData::OrderedSocketData(
 void OrderedSocketData::EndLoop() {
   // If we've already stopped the loop, don't do it again until we've advanced
   // to the next sequence_number.
-  NET_TRACE(INFO, "  *** ") << "Stage " << sequence_number_ << ": EndLoop()";
+  NET_TRACE(1, "  *** ") << "Stage " << sequence_number_ << ": EndLoop()";
   if (loop_stop_stage_ > 0) {
     const MockRead& next_read = StaticSocketDataProvider::PeekRead();
     if ((next_read.sequence_number & ~MockRead::STOPLOOP) >
         loop_stop_stage_) {
-      NET_TRACE(INFO, "  *** ") << "Stage " << sequence_number_
-                                << ": Clearing stop index";
+      NET_TRACE(1, "  *** ") << "Stage " << sequence_number_
+                             << ": Clearing stop index";
       loop_stop_stage_ = 0;
     } else {
       return;
     }
   }
   // Record the sequence_number at which we stopped the loop.
-  NET_TRACE(INFO, "  *** ") << "Stage " << sequence_number_
-                            << ": Posting Quit at read " << read_index();
+  NET_TRACE(1, "  *** ") << "Stage " << sequence_number_
+                         << ": Posting Quit at read " << read_index();
   loop_stop_stage_ = sequence_number_;
 }
 
@@ -399,14 +393,13 @@ MockRead OrderedSocketData::GetNextRead() {
     EndLoop();
   if ((next_read.sequence_number & ~MockRead::STOPLOOP) <=
       sequence_number_++) {
-    NET_TRACE(INFO, "  *** ") << "Stage " << sequence_number_ - 1
-                              << ": Read " << read_index();
+    NET_TRACE(1, "  *** ") << "Stage " << sequence_number_ - 1 << ": Read "
+                           << read_index();
     DumpMockReadWrite(next_read);
     blocked_ = (next_read.result == ERR_IO_PENDING);
     return StaticSocketDataProvider::GetNextRead();
   }
-  NET_TRACE(INFO, "  *** ") << "Stage " << sequence_number_ - 1
-                            << ": I/O Pending";
+  NET_TRACE(1, "  *** ") << "Stage " << sequence_number_ - 1 << ": I/O Pending";
   MockRead result = MockRead(ASYNC, ERR_IO_PENDING);
   DumpMockReadWrite(result);
   blocked_ = true;
@@ -414,8 +407,8 @@ MockRead OrderedSocketData::GetNextRead() {
 }
 
 MockWriteResult OrderedSocketData::OnWrite(const std::string& data) {
-  NET_TRACE(INFO, "  *** ") << "Stage " << sequence_number_
-                            << ": Write " << write_index();
+  NET_TRACE(1, "  *** ") << "Stage " << sequence_number_ << ": Write "
+                         << write_index();
   DumpMockReadWrite(PeekWrite());
   ++sequence_number_;
   if (blocked_) {
@@ -434,8 +427,7 @@ MockWriteResult OrderedSocketData::OnWrite(const std::string& data) {
 }
 
 void OrderedSocketData::Reset() {
-  NET_TRACE(INFO, "  *** ") << "Stage "
-                            << sequence_number_ << ": Reset()";
+  NET_TRACE(1, "  *** ") << "Stage " << sequence_number_ << ": Reset()";
   sequence_number_ = 0;
   loop_stop_stage_ = 0;
   set_socket(NULL);
@@ -445,7 +437,7 @@ void OrderedSocketData::Reset() {
 
 void OrderedSocketData::CompleteRead() {
   if (socket() && blocked_) {
-    NET_TRACE(INFO, "  *** ") << "Stage " << sequence_number_;
+    NET_TRACE(1, "  *** ") << "Stage " << sequence_number_;
     socket()->OnReadComplete(GetNextRead());
   }
 }
@@ -524,8 +516,7 @@ MockRead DeterministicSocketData::GetNextRead() {
 
   // Async read which will be called back in a future step.
   if (sequence_number_ < current_read_.sequence_number) {
-    NET_TRACE(INFO, "  *** ") << "Stage " << sequence_number_
-                              << ": I/O Pending";
+    NET_TRACE(1, "  *** ") << "Stage " << sequence_number_ << ": I/O Pending";
     MockRead result = MockRead(SYNCHRONOUS, ERR_IO_PENDING);
     if (current_read_.mode == SYNCHRONOUS) {
       LOG(ERROR) << "Unable to perform synchronous read: "
@@ -538,8 +529,8 @@ MockRead DeterministicSocketData::GetNextRead() {
     return result;
   }
 
-  NET_TRACE(INFO, "  *** ") << "Stage " << sequence_number_
-                            << ": Read " << read_index();
+  NET_TRACE(1, "  *** ") << "Stage " << sequence_number_ << ": Read "
+                         << read_index();
   if (print_debug_)
     DumpMockReadWrite(current_read_);
 
@@ -565,16 +556,15 @@ MockWriteResult DeterministicSocketData::OnWrite(const std::string& data) {
 
   // Async write which will be called back in a future step.
   if (sequence_number_ < next_write.sequence_number) {
-    NET_TRACE(INFO, "  *** ") << "Stage " << sequence_number_
-                              << ": I/O Pending";
+    NET_TRACE(1, "  *** ") << "Stage " << sequence_number_ << ": I/O Pending";
     if (next_write.mode == SYNCHRONOUS) {
       LOG(ERROR) << "Unable to perform synchronous write: "
           << next_write.sequence_number << " at stage: " << sequence_number_;
       return MockWriteResult(SYNCHRONOUS, ERR_UNEXPECTED);
     }
   } else {
-    NET_TRACE(INFO, "  *** ") << "Stage " << sequence_number_
-                              << ": Write " << write_index();
+    NET_TRACE(1, "  *** ") << "Stage " << sequence_number_ << ": Write "
+                           << write_index();
   }
 
   if (print_debug_)
@@ -590,8 +580,7 @@ MockWriteResult DeterministicSocketData::OnWrite(const std::string& data) {
 }
 
 void DeterministicSocketData::Reset() {
-  NET_TRACE(INFO, "  *** ") << "Stage "
-                            << sequence_number_ << ": Reset()";
+  NET_TRACE(1, "  *** ") << "Stage " << sequence_number_ << ": Reset()";
   sequence_number_ = 0;
   StaticSocketDataProvider::Reset();
   NOTREACHED();
