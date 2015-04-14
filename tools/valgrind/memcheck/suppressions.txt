@@ -3653,3 +3653,18 @@
    fun:_ZN4base12_GLOBAL__N_112WorkerThread10ThreadMainEv
    fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
 }
+{
+   bug_476940
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF9BitVector13OutOfLineBits6createEm
+   fun:_ZN3WTF9BitVector15resizeOutOfLineEm
+   fun:_ZN3WTF9BitVector10ensureSizeEm
+   fun:_ZN3WTF9BitVectorC2Em
+   fun:_ZN5blink10UseCounter9CountBitsC2Ev
+   fun:_ZN5blink10UseCounterC1Ev
+   fun:_ZN5blink4PageC1ERNS0_11PageClientsE
+   fun:_ZN5blink11WebViewImplC1EPNS_13WebViewClientE
+   fun:_ZN5blink11WebViewImpl6createEPNS_13WebViewClientE
+   fun:_ZN5blink7WebView6createEPNS_13WebViewClientE
+}

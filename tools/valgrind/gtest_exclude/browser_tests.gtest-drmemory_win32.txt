@@ -179,7 +179,8 @@ SRC*.Pl*
 SRC*.Fr*
 SSL*ed
 Sup*Mo*
-Str*
+# StartupBrowserCreatorTest.ProfilesLaunchedAfterCrash
+St*orTest.*
 SyncF*
 SyncInt*
 Sys*Di*
