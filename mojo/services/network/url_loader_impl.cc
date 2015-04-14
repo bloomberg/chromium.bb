@@ -278,6 +278,7 @@ void URLLoaderImpl::OnResponseBodyStreamReady(MojoResult result) {
 }
 
 void URLLoaderImpl::OnResponseBodyStreamClosed(MojoResult result) {
+  url_request_.reset();
   response_body_stream_.reset();
   pending_write_ = nullptr;
   DeleteIfNeeded();
