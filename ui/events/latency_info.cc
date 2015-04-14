@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/json/json_writer.h"
+#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
@@ -136,6 +137,18 @@ scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsTraceableData(
   return LatencyInfoTracedValue::FromValue(record_data.Pass());
 }
 
+struct BenchmarkEnabledInitializer {
+  BenchmarkEnabledInitializer() :
+      benchmark_enabled(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
+          "benchmark")) {
+  }
+
+  const unsigned char* benchmark_enabled;
+};
+
+static base::LazyInstance<BenchmarkEnabledInitializer>::Leaky
+  g_benchmark_enabled = LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
 namespace ui {
@@ -213,8 +226,8 @@ void LatencyInfo::AddLatencyNumberWithTimestamp(LatencyComponentType component,
                                                 base::TimeTicks time,
                                                 uint32 event_count) {
 
-  static const unsigned char* benchmark_enabled =
-      TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED("benchmark");
+  const unsigned char* benchmark_enabled =
+      g_benchmark_enabled.Get().benchmark_enabled;
 
   if (IsBeginComponent(component)) {
     // Should only ever add begin component once.
