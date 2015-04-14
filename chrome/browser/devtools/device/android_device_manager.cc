@@ -4,6 +4,8 @@
 
 #include "chrome/browser/devtools/device/android_device_manager.h"
 
+#include <string.h>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -107,16 +109,34 @@ class HttpRequest {
   ~HttpRequest() {
   }
 
-  void SendRequest(const std::string& request) {
-    scoped_refptr<net::StringIOBuffer> request_buffer =
-        new net::StringIOBuffer(request);
+  void DoSendRequest(int result) {
+    while (result != net::ERR_IO_PENDING) {
+      if (!CheckNetResultOrDie(result))
+        return;
 
-    int result = socket_->Write(
-        request_buffer.get(),
-        request_buffer->size(),
-        base::Bind(&HttpRequest::ReadResponse, base::Unretained(this)));
-    if (result != net::ERR_IO_PENDING)
-      ReadResponse(result);
+      if (result > 0)
+        request_->DidConsume(result);
+
+      if (request_->BytesRemaining() == 0) {
+        request_ = nullptr;
+        ReadResponse(net::OK);
+        return;
+      }
+
+      result = socket_->Write(
+          request_.get(),
+          request_->BytesRemaining(),
+          base::Bind(&HttpRequest::DoSendRequest, base::Unretained(this)));
+    }
+  }
+
+  void SendRequest(const std::string& request) {
+    scoped_refptr<net::IOBuffer> base_buffer =
+        new net::IOBuffer(request.size());
+    memcpy(base_buffer->data(), request.data(), request.size());
+    request_ = new net::DrainableIOBuffer(base_buffer.get(), request.size());
+
+    DoSendRequest(net::OK);
   }
 
   void ReadResponse(int result) {
@@ -215,6 +235,7 @@ class HttpRequest {
   }
 
   scoped_ptr<net::StreamSocket> socket_;
+  scoped_refptr<net::DrainableIOBuffer> request_;
   std::string response_;
   CommandCallback command_callback_;
   HttpUpgradeCallback http_upgrade_callback_;
