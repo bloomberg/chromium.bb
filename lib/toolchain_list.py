@@ -85,7 +85,7 @@ class ToolchainList(object):
     Args:
       brick: brick_lib.Brick object.
     """
-    for target, settings in brick.config.get('toolchains'):
+    for target, settings in brick.config.get('toolchains', {}):
       self._AddToolchain(target, setting_overrides=settings)
 
   def _AddToolchain(self, target, setting_overrides=None):

@@ -46,6 +46,10 @@ MODERN_FIRMWARE_BRICK_CONFIG = {
                    ('extra-toolchain', {})],
 }
 
+TYPICAL_BRICK_WITHOUT_TOOLCHAINS = {
+    'name': 'custom-firmware-brick',
+}
+
 EXPECTED_TOOLCHAINS = {
     'bonus-toolchain': {
         'sdk': True,
@@ -138,3 +142,8 @@ target=foo
     self.assertRaises(toolchain_list.MismatchedToolchainConfigsError,
                       toolchain.GetToolchainsForBrick,
                       brick.brick_locator)
+
+  def testToleratesBricksWithoutToolchains(self):
+    """Tests that we correctly handle bricks that are toolchain agnostic."""
+    simple_brick = self._MakeBrick(TYPICAL_BRICK_WITHOUT_TOOLCHAINS)
+    toolchain.GetToolchainsForBrick(simple_brick.brick_locator)
