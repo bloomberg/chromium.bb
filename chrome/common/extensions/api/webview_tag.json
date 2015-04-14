@@ -772,7 +772,7 @@
       {
         "name": "loadabort",
         "options": { "supportsDom": true },
-        "description": "Fired when a top-level load has aborted without committing. <p class=\"note\"><strong>Note:</strong> When a resource load is aborted, a <code>loadabort</code> event will eventually be followed by a <code>loadstop</code> event, even if all committed loads since the last <code>loadstop</code> event (if any) were aborted.</p>",
+        "description": "Fired when a top-level load has aborted without committing. An error message will be printed to the console unless the event is default-prevented. <p class=\"note\"><strong>Note:</strong> When a resource load is aborted, a <code>loadabort</code> event will eventually be followed by a <code>loadstop</code> event, even if all committed loads since the last <code>loadstop</code> event (if any) were aborted.</p><p class=\"note\"><strong>Note:</strong> When the load of either an about URL or a JavaScript URL is aborted, <code>loadabort</code> will be fired and then the webview will be navigated to 'about:blank'.</p>",
         "parameters": [
           {
             "name": "url",
@@ -785,8 +785,13 @@
             "type": "boolean"
           },
           {
+            "name": "code",
+            "description": "Unique integer ID for the type of abort. Note that this ID is <em>not</em> guaranteed to remain backwards compatible between releases. You must not act based upon this specific integer.",
+            "type": "integer"
+          },
+          {
             "name": "reason",
-            "description": "String indicating what type of abort occurred.",
+            "description": "String indicating what type of abort occurred. This string is <em>not</em> guaranteed to remain backwards compatible between releases. You must not parse and act based upon its content.",
             "type": "string",
             "enum": ["networkError", "download", "canceled", "sslError", "safeBrowsingError"]
           }

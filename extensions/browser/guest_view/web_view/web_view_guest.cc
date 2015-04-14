@@ -546,10 +546,12 @@ void WebViewGuest::LoadProgressChanged(content::WebContents* source,
 
 void WebViewGuest::LoadAbort(bool is_top_level,
                              const GURL& url,
+                             int error_code,
                              const std::string& error_type) {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetBoolean(guestview::kIsTopLevel, is_top_level);
   args->SetString(guestview::kUrl, url.possibly_invalid_spec());
+  args->SetInteger(guestview::kCode, error_code);
   args->SetString(guestview::kReason, error_type);
   DispatchEventToView(
       new GuestViewBase::Event(webview::kEventLoadAbort, args.Pass()));
@@ -772,7 +774,7 @@ void WebViewGuest::DidFailProvisionalLoad(
     const GURL& validated_url,
     int error_code,
     const base::string16& error_description) {
-  LoadAbort(!render_frame_host->GetParent(), validated_url,
+  LoadAbort(!render_frame_host->GetParent(), validated_url, error_code,
             net::ErrorToShortString(error_code));
 }
 
@@ -1279,7 +1281,7 @@ void WebViewGuest::LoadURLWithParams(const GURL& url,
        !url.SchemeIs(url::kAboutScheme)) ||
       url.SchemeIs(url::kJavaScriptScheme);
   if (scheme_is_blocked || !url.is_valid()) {
-    LoadAbort(true /* is_top_level */, url,
+    LoadAbort(true /* is_top_level */, url, net::ERR_ABORTED,
               net::ErrorToShortString(net::ERR_ABORTED));
     NavigateGuest(url::kAboutBlankURL, true /* force_navigation */);
     return;

@@ -80,7 +80,7 @@ WebViewEvents.EVENTS = {
   'loadabort': {
     cancelable: true,
     evt: CreateEvent('webViewInternal.onLoadAbort'),
-    fields: ['url', 'isTopLevel', 'reason'],
+    fields: ['url', 'isTopLevel', 'code', 'reason'],
     handler: 'handleLoadAbortEvent'
   },
   'loadcommit': {
@@ -230,14 +230,15 @@ WebViewEvents.prototype.handleFullscreenExitEvent = function(event, eventName) {
 };
 
 WebViewEvents.prototype.handleLoadAbortEvent = function(event, eventName) {
-  var showWarningMessage = function(reason) {
+  var showWarningMessage = function(code, reason) {
     var WARNING_MSG_LOAD_ABORTED = '<webview>: ' +
-        'The load has aborted with reason "%1".';
-    window.console.warn(WARNING_MSG_LOAD_ABORTED.replace('%1', reason));
+        'The load has aborted with error %1: %2.';
+    window.console.warn(
+        WARNING_MSG_LOAD_ABORTED.replace('%1', code).replace('%2', reason));
   };
   var webViewEvent = this.makeDomEvent(event, eventName);
   if (this.view.dispatchEvent(webViewEvent)) {
-    showWarningMessage(event.reason);
+    showWarningMessage(event.code, event.reason);
   }
 };
 

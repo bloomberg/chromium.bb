@@ -20,6 +20,7 @@ const char kElementSizeIsLogical[] = "elementSizeIsLogical";
 const char kEventResize[] = "guestViewInternal.onResize";
 
 // Parameters/properties on events.
+const char kCode[] = "code";
 const char kContentWindowID[] = "contentWindowId";
 const char kID[] = "id";
 const char kIsTopLevel[] = "isTopLevel";

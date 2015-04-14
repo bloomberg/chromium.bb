@@ -336,6 +336,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   // may be invalid.
   void LoadAbort(bool is_top_level,
                  const GURL& url,
+                 int error_code,
                  const std::string& error_type);
 
   // Creates a new guest window owned by this WebViewGuest.

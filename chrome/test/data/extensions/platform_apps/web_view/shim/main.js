@@ -1386,6 +1386,7 @@ function testLoadAbortChromeExtensionURLWrongPartition() {
   var localResource = chrome.runtime.getURL('guest.html');
   var webview = document.createElement('webview');
   webview.addEventListener('loadabort', function(e) {
+    embedder.test.assertEq(-109, e.code);
     embedder.test.assertEq('ERR_ADDRESS_UNREACHABLE', e.reason);
     embedder.test.succeed();
   });
@@ -1401,6 +1402,7 @@ function testLoadAbortChromeExtensionURLWrongPartition() {
 function testLoadAbortEmptyResponse() {
   var webview = document.createElement('webview');
   webview.addEventListener('loadabort', function(e) {
+    embedder.test.assertEq(-324, e.code);
     embedder.test.assertEq('ERR_EMPTY_RESPONSE', e.reason);
     embedder.test.succeed();
   });
@@ -1413,6 +1415,7 @@ function testLoadAbortEmptyResponse() {
 function testLoadAbortIllegalChromeURL() {
   var webview = document.createElement('webview');
   webview.addEventListener('loadabort', function(e) {
+    embedder.test.assertEq(-3, e.code);
     embedder.test.assertEq('ERR_ABORTED', e.reason);
   });
   webview.addEventListener('loadstop', function(e)  {
@@ -1426,6 +1429,7 @@ function testLoadAbortIllegalChromeURL() {
 function testLoadAbortIllegalFileURL() {
   var webview = document.createElement('webview');
   webview.addEventListener('loadabort', function(e) {
+    embedder.test.assertEq(-3, e.code);
     embedder.test.assertEq('ERR_ABORTED', e.reason);
   });
   webview.addEventListener('loadstop', function(e) {
@@ -1439,6 +1443,7 @@ function testLoadAbortIllegalFileURL() {
 function testLoadAbortIllegalJavaScriptURL() {
   var webview = document.createElement('webview');
   webview.addEventListener('loadabort', function(e) {
+    embedder.test.assertEq(-3, e.code);
     embedder.test.assertEq('ERR_ABORTED', e.reason);
   });
   webview.addEventListener('loadstop', function(e) {
@@ -1453,6 +1458,7 @@ function testLoadAbortIllegalJavaScriptURL() {
 function testLoadAbortInvalidNavigation() {
   var webview = document.createElement('webview');
   webview.addEventListener('loadabort', function(e) {
+    embedder.test.assertEq(-3, e.code);
     embedder.test.assertEq('ERR_ABORTED', e.reason);
     embedder.test.assertEq('', e.url);
   });
@@ -1474,6 +1480,7 @@ function testLoadAbortNonWebSafeScheme() {
   var webview = document.createElement('webview');
   var chromeGuestURL = 'chrome-guest://abc123/';
   webview.addEventListener('loadabort', function(e) {
+    embedder.test.assertEq(-3, e.code);
     embedder.test.assertEq('ERR_ABORTED', e.reason);
     embedder.test.assertEq(chromeGuestURL, e.url);
   });

@@ -23,6 +23,7 @@ extern const char kElementSizeIsLogical[];
 extern const char kEventResize[];
 
 // Parameters/properties on events.
+extern const char kCode[];
 extern const char kContentWindowID[];
 extern const char kID[];
 extern const char kIsTopLevel[];
