@@ -105,9 +105,6 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestStreamInternal(
     request->AttachJob(alternate_job);
     alternate_job->MarkAsAlternate(alternative_service);
 
-    // Never share connection with other jobs for FTP requests.
-    DCHECK(!request_info.url.SchemeIs("ftp"));
-
     job->WaitFor(alternate_job);
     // Make sure to wait until we call WaitFor(), before starting
     // |alternate_job|, otherwise |alternate_job| will not notify |job|
