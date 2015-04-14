@@ -32,12 +32,6 @@ public abstract class ChromeSwitches {
     /** Whether instant is disabled. */
     public static final String DISABLE_INSTANT = "disable-instant";
 
-    /** Whether force-enable the "hardware acceleration" preference. */
-    public static final String HARDWARE_ACCELERATION = "hardware-acceleration";
-
-    /** If specified, enables notification center verbose logging. */
-    public static final String NOTIFICATION_CENTER_LOGGING = "notification-center-logging";
-
     /** Enables StrictMode violation detection. By default this logs violations to logcat. */
     public static final String STRICT_MODE = "strict-mode";
 
@@ -50,17 +44,11 @@ public abstract class ChromeSwitches {
     /** Force the crash dump to be uploaded regardless of preferences. */
     public static final String FORCE_CRASH_DUMP_UPLOAD = "force-dump-upload";
 
-    /** Do not use OAuth2 tokens for communication with Cloud Print service for Chrome to Mobile. */
-    public static final String DISABLE_CHROME_TO_MOBILE_OAUTH2 = "disable-chrome-to-mobile-oauth2";
-
     /** Enable debug logs for the video casting feature. */
     public static final String ENABLE_CAST_DEBUG_LOGS = "enable-cast-debug";
 
     /** Prevent automatic reconnection to current Cast video when Chrome restarts. */
     public static final String DISABLE_CAST_RECONNECTION = "disable-cast-reconnection";
-
-    /** Whether site/user triggered persistent fullscreen is supported. */
-    public static final String DISABLE_PERSISTENT_FULLSCREEN = "disable-persistent-fullscreen";
 
     /** Whether or not to enable the experimental tablet tab stack. */
     public static final String ENABLE_TABLET_TAB_STACK = "enable-tablet-tab-stack";
@@ -121,9 +109,6 @@ public abstract class ChromeSwitches {
     /** Enable experimental web-platform features, such as Push Messaging. */
     public static final String EXPERIMENTAL_WEB_PLAFTORM_FEATURES =
             "enable-experimental-web-platform-features";
-
-    /** Enable the Reader Mode icon in toolbar. */
-    public static final String ENABLE_READER_MODE_TOOLBAR_ICON = "enable-reader-mode-toolbar-icon";
 
     /** Enable Reader Mode button animation. */
     public static final String ENABLE_READER_MODE_BUTTON_ANIMATION =
