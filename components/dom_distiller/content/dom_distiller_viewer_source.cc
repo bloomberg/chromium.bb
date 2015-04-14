@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
+#include "components/dom_distiller/core/external_feedback_reporter.h"
 #include "components/dom_distiller/core/feedback_reporter.h"
 #include "components/dom_distiller/core/task_tracker.h"
 #include "components/dom_distiller/core/url_constants.h"
@@ -280,8 +281,11 @@ void DomDistillerViewerSource::RequestViewerHandle::OnChangeFontFamily(
 
 DomDistillerViewerSource::DomDistillerViewerSource(
     DomDistillerServiceInterface* dom_distiller_service,
-    const std::string& scheme)
-    : scheme_(scheme), dom_distiller_service_(dom_distiller_service) {
+    const std::string& scheme,
+    scoped_ptr<ExternalFeedbackReporter> external_reporter)
+    : scheme_(scheme),
+      dom_distiller_service_(dom_distiller_service),
+      external_feedback_reporter_(external_reporter.Pass()) {
 }
 
 DomDistillerViewerSource::~DomDistillerViewerSource() {
@@ -318,6 +322,12 @@ void DomDistillerViewerSource::StartDataRequest(
     return;
   } else if (kFeedbackBad == path) {
     FeedbackReporter::ReportQuality(false);
+    if (!external_feedback_reporter_)
+      return;
+    content::WebContents* contents =
+        content::WebContents::FromRenderFrameHost(render_frame_host);
+    external_feedback_reporter_->ReportExternalFeedback(
+        contents, contents->GetURL(), false);
     return;
   } else if (kFeedbackGood == path) {
     FeedbackReporter::ReportQuality(true);

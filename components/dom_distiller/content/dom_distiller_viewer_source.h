@@ -9,6 +9,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
+#include "components/dom_distiller/core/external_feedback_reporter.h"
 #include "content/public/browser/url_data_source.h"
 
 namespace dom_distiller {
@@ -21,8 +23,10 @@ class ViewRequestDelegate;
 // Serves HTML and resources for viewing distilled articles.
 class DomDistillerViewerSource : public content::URLDataSource {
  public:
-  DomDistillerViewerSource(DomDistillerServiceInterface* dom_distiller_service,
-                           const std::string& scheme);
+  DomDistillerViewerSource(
+      DomDistillerServiceInterface* dom_distiller_service,
+      const std::string& scheme,
+      scoped_ptr<ExternalFeedbackReporter> external_reporter);
   ~DomDistillerViewerSource() override;
 
   class RequestViewerHandle;
@@ -50,6 +54,9 @@ class DomDistillerViewerSource : public content::URLDataSource {
   // The service which contains all the functionality needed to interact with
   // the list of articles.
   DomDistillerServiceInterface* dom_distiller_service_;
+
+  // A means for starting/opening an external service for feedback reporting.
+  scoped_ptr<ExternalFeedbackReporter> external_feedback_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(DomDistillerViewerSource);
 };

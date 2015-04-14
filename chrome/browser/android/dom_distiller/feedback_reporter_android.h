@@ -43,6 +43,11 @@ class FeedbackReporterAndroid : content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(FeedbackReporterAndroid);
 };
 
+// Load the external feedback form for distiller.
+void ReportDomDistillerExternalFeedback(content::WebContents* web_contents,
+                                        const GURL& url,
+                                        const bool good);
+
 // Registers the FeedbackReporter's native methods through JNI.
 bool RegisterFeedbackReporter(JNIEnv* env);
 

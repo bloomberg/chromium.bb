@@ -92,6 +92,7 @@
         'dom_distiller/core/dom_distiller_switches.h',
         'dom_distiller/core/experiments.cc',
         'dom_distiller/core/experiments.h',
+        'dom_distiller/core/external_feedback_reporter.h',
         'dom_distiller/core/feedback_reporter.cc',
         'dom_distiller/core/feedback_reporter.h',
         'dom_distiller/core/font_family_list.h',

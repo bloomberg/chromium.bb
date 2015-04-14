@@ -4,8 +4,9 @@
 
 #include "chrome/browser/android/dom_distiller/feedback_reporter_android.h"
 
-#include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/command_line.h"
+#include "chrome/browser/ui/android/window_android_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/dom_distiller/core/feedback_reporter.h"
 #include "components/dom_distiller/core/url_utils.h"
@@ -14,6 +15,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "jni/DomDistillerFeedbackReporter_jni.h"
+#include "ui/android/window_android.h"
 #include "url/gurl.h"
 
 namespace dom_distiller {
@@ -63,6 +65,28 @@ void FeedbackReporterAndroid::DidNavigateMainFrame(
 jlong Init(JNIEnv* env, jobject obj) {
   FeedbackReporterAndroid* reporter = new FeedbackReporterAndroid(env, obj);
   return reinterpret_cast<intptr_t>(reporter);
+}
+
+// static
+void ReportDomDistillerExternalFeedback(content::WebContents* web_contents,
+                                        const GURL& url,
+                                        const bool good) {
+  if (!web_contents)
+    return;
+  WindowAndroidHelper* helper =
+      content::WebContentsUserData<WindowAndroidHelper>::FromWebContents(
+          web_contents);
+  DCHECK(helper);
+
+  ui::WindowAndroid* window = helper->GetWindowAndroid();
+  DCHECK(window);
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jurl = base::android::ConvertUTF8ToJavaString(
+      env, url_utils::GetOriginalUrlFromDistillerUrl(url).spec());
+
+  Java_DomDistillerFeedbackReporter_reportFeedbackWithWindow(
+      env, window->GetJavaObject().obj(), jurl.obj(), good);
 }
 
 // static

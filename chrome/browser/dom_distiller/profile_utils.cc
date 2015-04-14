@@ -5,12 +5,18 @@
 #include "chrome/browser/dom_distiller/profile_utils.h"
 
 #include "base/command_line.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/dom_distiller/lazy_dom_distiller_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/dom_distiller/content/dom_distiller_viewer_source.h"
+#include "components/dom_distiller/core/external_feedback_reporter.h"
 #include "components/dom_distiller/core/url_constants.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/dom_distiller/external_feedback_reporter_android.h"
+#endif  // defined(OS_ANDROID)
 
 void RegisterDomDistillerViewerSource(Profile* profile) {
   const base::CommandLine& command_line =
@@ -22,9 +28,16 @@ void RegisterDomDistillerViewerSource(Profile* profile) {
     dom_distiller::LazyDomDistillerService* lazy_service =
         new dom_distiller::LazyDomDistillerService(
             profile, dom_distiller_service_factory);
+    scoped_ptr<dom_distiller::ExternalFeedbackReporter> reporter;
+
+#if defined(OS_ANDROID)
+    reporter.reset(
+        new dom_distiller::android::ExternalFeedbackReporterAndroid());
+#endif  // defined(OS_ANDROID)
+
     content::URLDataSource::Add(
         profile,
         new dom_distiller::DomDistillerViewerSource(
-            lazy_service, dom_distiller::kDomDistillerScheme));
+            lazy_service, dom_distiller::kDomDistillerScheme, reporter.Pass()));
   }
 }

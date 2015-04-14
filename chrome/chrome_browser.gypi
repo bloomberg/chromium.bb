@@ -80,6 +80,8 @@
       'browser/android/dev_tools_manager_delegate_android.h',
       'browser/android/dev_tools_server.cc',
       'browser/android/dev_tools_server.h',
+      'browser/android/dom_distiller/external_feedback_reporter_android.cc',
+      'browser/android/dom_distiller/external_feedback_reporter_android.h',
       'browser/android/dom_distiller/feedback_reporter_android.cc',
       'browser/android/dom_distiller/feedback_reporter_android.h',
       'browser/android/download/android_download_manager_overwrite_infobar_delegate.cc',

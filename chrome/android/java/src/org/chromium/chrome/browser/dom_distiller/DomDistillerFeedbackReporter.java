@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.TabObserver;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Java implementation of dom_distiller::android::FeedbackReporterAndroid.
@@ -144,6 +145,17 @@ public final class DomDistillerFeedbackReporter implements
                 mContentViewCore = null;
             }
         };
+    }
+
+    /**
+     * A static method for native code to call to call the external feedback form.
+     * @param window WindowAndroid object to get an activity from.
+     * @param url The URL to report feedback for.
+     * @param good True if the feedback is good and false if not.
+     */
+    @CalledByNative
+    public static void reportFeedbackWithWindow(WindowAndroid window, String url, boolean good) {
+        sExternalFeedbackReporter.reportFeedback(window.getActivity().get(), url, good);
     }
 
     private static native boolean nativeIsEnabled();
