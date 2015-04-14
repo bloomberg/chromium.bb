@@ -112,6 +112,9 @@ class DriveApiUrlGenerator {
                        int width,
                        int height) const;
 
+  // Generates a URL for batch upload.
+  GURL GetBatchUploadUrl() const;
+
  private:
   const GURL base_url_;
   const GURL base_download_url_;
