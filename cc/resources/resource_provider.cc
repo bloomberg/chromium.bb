@@ -243,43 +243,6 @@ class CopyTextureFence : public ResourceProvider::Fence {
 
 }  // namespace
 
-ResourceProvider::Resource::Resource()
-    : child_id(0),
-      gl_id(0),
-      gl_pixel_buffer_id(0),
-      gl_upload_query_id(0),
-      gl_read_lock_query_id(0),
-      pixels(NULL),
-      lock_for_read_count(0),
-      imported_count(0),
-      exported_count(0),
-      dirty_image(false),
-      locked_for_write(false),
-      lost(false),
-      marked_for_deletion(false),
-      pending_set_pixels(false),
-      set_pixels_completion_forced(false),
-      allocated(false),
-      read_lock_fences_enabled(false),
-      has_shared_bitmap_id(false),
-      allow_overlay(false),
-      read_lock_fence(NULL),
-      size(),
-      origin(INTERNAL),
-      target(0),
-      original_filter(0),
-      filter(0),
-      image_id(0),
-      bound_image_id(0),
-      texture_pool(0),
-      wrap_mode(0),
-      hint(TEXTURE_HINT_IMMUTABLE),
-      type(RESOURCE_TYPE_INVALID),
-      format(RGBA_8888),
-      shared_bitmap(NULL),
-      gpu_memory_buffer(NULL) {
-}
-
 ResourceProvider::Resource::~Resource() {}
 
 ResourceProvider::Resource::Resource(GLuint texture_id,
@@ -432,21 +395,23 @@ scoped_ptr<ResourceProvider> ResourceProvider::Create(
     int highp_threshold_min,
     bool use_rgba_4444_texture_format,
     size_t id_allocation_chunk_size) {
-  scoped_ptr<ResourceProvider> resource_provider(
-      new ResourceProvider(output_surface,
-                           shared_bitmap_manager,
-                           gpu_memory_buffer_manager,
-                           blocking_main_thread_task_runner,
-                           highp_threshold_min,
-                           use_rgba_4444_texture_format,
-                           id_allocation_chunk_size));
+  ContextProvider* context_provider = output_surface->context_provider();
+  GLES2Interface* gl =
+      context_provider ? context_provider->ContextGL() : nullptr;
+  ResourceType default_resource_type =
+      gl ? RESOURCE_TYPE_GL_TEXTURE : RESOURCE_TYPE_BITMAP;
 
-  if (resource_provider->ContextGL())
+  scoped_ptr<ResourceProvider> resource_provider(new ResourceProvider(
+      output_surface, shared_bitmap_manager, gpu_memory_buffer_manager,
+      blocking_main_thread_task_runner, highp_threshold_min,
+      default_resource_type, use_rgba_4444_texture_format,
+      id_allocation_chunk_size));
+
+  if (gl)
     resource_provider->InitializeGL();
   else
     resource_provider->InitializeSoftware();
 
-  DCHECK_NE(RESOURCE_TYPE_INVALID, resource_provider->default_resource_type());
   return resource_provider.Pass();
 }
 
@@ -512,8 +477,6 @@ ResourceProvider::ResourceId ResourceProvider::CreateResource(
     case RESOURCE_TYPE_BITMAP:
       DCHECK_EQ(RGBA_8888, format);
       return CreateBitmap(size, wrap_mode);
-    case RESOURCE_TYPE_INVALID:
-      break;
   }
 
   LOG(FATAL) << "Invalid default resource type.";
@@ -538,8 +501,6 @@ ResourceProvider::ResourceId ResourceProvider::CreateManagedResource(
     case RESOURCE_TYPE_BITMAP:
       DCHECK_EQ(RGBA_8888, format);
       return CreateBitmap(size, wrap_mode);
-    case RESOURCE_TYPE_INVALID:
-      break;
   }
 
   LOG(FATAL) << "Invalid default resource type.";
@@ -558,10 +519,10 @@ ResourceProvider::ResourceId ResourceProvider::CreateGLTexture(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   ResourceId id = next_id_++;
-  Resource resource(0, size, Resource::INTERNAL, target, GL_LINEAR,
-                    texture_pool, wrap_mode, hint, format);
-  resource.allocated = false;
-  resources_[id] = resource;
+  Resource* resource = InsertResource(
+      id, Resource(0, size, Resource::INTERNAL, target, GL_LINEAR, texture_pool,
+                   wrap_mode, hint, format));
+  resource->allocated = false;
   return id;
 }
 
@@ -575,10 +536,10 @@ ResourceProvider::ResourceId ResourceProvider::CreateBitmap(
   DCHECK(pixels);
 
   ResourceId id = next_id_++;
-  Resource resource(pixels, bitmap.release(), size, Resource::INTERNAL,
-                    GL_LINEAR, wrap_mode);
-  resource.allocated = true;
-  resources_[id] = resource;
+  Resource* resource =
+      InsertResource(id, Resource(pixels, bitmap.release(), size,
+                                  Resource::INTERNAL, GL_LINEAR, wrap_mode));
+  resource->allocated = true;
   return id;
 }
 
@@ -588,18 +549,17 @@ ResourceProvider::ResourceId ResourceProvider::CreateResourceFromIOSurface(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   ResourceId id = next_id_++;
-  Resource resource(0, gfx::Size(), Resource::INTERNAL,
-                    GL_TEXTURE_RECTANGLE_ARB, GL_LINEAR,
-                    GL_TEXTURE_POOL_UNMANAGED_CHROMIUM, GL_CLAMP_TO_EDGE,
-                    TEXTURE_HINT_IMMUTABLE, RGBA_8888);
-  LazyCreate(&resource);
+  Resource* resource = InsertResource(
+      id, Resource(0, gfx::Size(), Resource::INTERNAL, GL_TEXTURE_RECTANGLE_ARB,
+                   GL_LINEAR, GL_TEXTURE_POOL_UNMANAGED_CHROMIUM,
+                   GL_CLAMP_TO_EDGE, TEXTURE_HINT_IMMUTABLE, RGBA_8888));
+  LazyCreate(resource);
   GLES2Interface* gl = ContextGL();
   DCHECK(gl);
-  gl->BindTexture(GL_TEXTURE_RECTANGLE_ARB, resource.gl_id);
+  gl->BindTexture(GL_TEXTURE_RECTANGLE_ARB, resource->gl_id);
   gl->TexImageIOSurface2DCHROMIUM(
       GL_TEXTURE_RECTANGLE_ARB, size.width(), size.height(), io_surface_id, 0);
-  resource.allocated = true;
-  resources_[id] = resource;
+  resource->allocated = true;
   return id;
 }
 
@@ -610,25 +570,27 @@ ResourceProvider::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
   // Just store the information. Mailbox will be consumed in LockForRead().
   ResourceId id = next_id_++;
   DCHECK(mailbox.IsValid());
-  Resource& resource = resources_[id];
+  Resource* resource = nullptr;
   if (mailbox.IsTexture()) {
-    resource = Resource(0, gfx::Size(), Resource::EXTERNAL, mailbox.target(),
-                        mailbox.nearest_neighbor() ? GL_NEAREST : GL_LINEAR, 0,
-                        GL_CLAMP_TO_EDGE, TEXTURE_HINT_IMMUTABLE, RGBA_8888);
+    resource = InsertResource(
+        id, Resource(0, gfx::Size(), Resource::EXTERNAL, mailbox.target(),
+                     mailbox.nearest_neighbor() ? GL_NEAREST : GL_LINEAR, 0,
+                     GL_CLAMP_TO_EDGE, TEXTURE_HINT_IMMUTABLE, RGBA_8888));
   } else {
     DCHECK(mailbox.IsSharedMemory());
     SharedBitmap* shared_bitmap = mailbox.shared_bitmap();
     uint8_t* pixels = shared_bitmap->pixels();
     DCHECK(pixels);
-    resource = Resource(pixels, shared_bitmap, mailbox.shared_memory_size(),
-                        Resource::EXTERNAL, GL_LINEAR, GL_CLAMP_TO_EDGE);
+    resource = InsertResource(
+        id, Resource(pixels, shared_bitmap, mailbox.shared_memory_size(),
+                     Resource::EXTERNAL, GL_LINEAR, GL_CLAMP_TO_EDGE));
   }
-  resource.allocated = true;
-  resource.mailbox = mailbox;
-  resource.release_callback_impl =
+  resource->allocated = true;
+  resource->mailbox = mailbox;
+  resource->release_callback_impl =
       base::Bind(&SingleReleaseCallbackImpl::Run,
                  base::Owned(release_callback_impl.release()));
-  resource.allow_overlay = mailbox.allow_overlay();
+  resource->allow_overlay = mailbox.allow_overlay();
   return id;
 }
 
@@ -888,6 +850,15 @@ base::TimeTicks ResourceProvider::EstimatedUploadCompletionTime(
 
   size_t total_uploads = NumBlockingUploads() + uploads_per_tick;
   return gfx::FrameTime::Now() + upload_one_texture_time * total_uploads;
+}
+
+ResourceProvider::Resource* ResourceProvider::InsertResource(
+    ResourceId id,
+    const Resource& resource) {
+  std::pair<ResourceMap::iterator, bool> result =
+      resources_.insert(ResourceMap::value_type(id, resource));
+  DCHECK(result.second);
+  return &result.first->second;
 }
 
 ResourceProvider::Resource* ResourceProvider::GetResource(ResourceId id) {
@@ -1225,6 +1196,7 @@ ResourceProvider::ResourceProvider(
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     BlockingTaskRunner* blocking_main_thread_task_runner,
     int highp_threshold_min,
+    ResourceType default_resource_type,
     bool use_rgba_4444_texture_format,
     size_t id_allocation_chunk_size)
     : output_surface_(output_surface),
@@ -1235,7 +1207,7 @@ ResourceProvider::ResourceProvider(
       highp_threshold_min_(highp_threshold_min),
       next_id_(1),
       next_child_(1),
-      default_resource_type_(RESOURCE_TYPE_INVALID),
+      default_resource_type_(default_resource_type),
       use_texture_storage_ext_(false),
       use_texture_format_bgra_(false),
       use_texture_usage_hint_(false),
@@ -1252,9 +1224,7 @@ ResourceProvider::ResourceProvider(
 
 void ResourceProvider::InitializeSoftware() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_NE(RESOURCE_TYPE_BITMAP, default_resource_type_);
-
-  default_resource_type_ = RESOURCE_TYPE_BITMAP;
+  DCHECK_EQ(default_resource_type_, RESOURCE_TYPE_BITMAP);
   // Pick an arbitrary limit here similar to what hardware might.
   max_texture_size_ = 16 * 1024;
   best_texture_format_ = RGBA_8888;
@@ -1262,12 +1232,10 @@ void ResourceProvider::InitializeSoftware() {
 
 void ResourceProvider::InitializeGL() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(default_resource_type_, RESOURCE_TYPE_GL_TEXTURE);
   DCHECK(!texture_uploader_);
-  DCHECK_NE(RESOURCE_TYPE_GL_TEXTURE, default_resource_type_);
   DCHECK(!texture_id_allocator_);
   DCHECK(!buffer_id_allocator_);
-
-  default_resource_type_ = RESOURCE_TYPE_GL_TEXTURE;
 
   const ContextProvider::Capabilities& caps =
       output_surface_->context_provider()->ContextCapabilities();
@@ -1388,9 +1356,9 @@ void ResourceProvider::ReceiveFromChild(
     ResourceIdMap::iterator resource_in_map_it =
         child_info.child_to_parent_map.find(it->id);
     if (resource_in_map_it != child_info.child_to_parent_map.end()) {
-      Resource& resource = resources_[resource_in_map_it->second];
-      resource.marked_for_deletion = false;
-      resource.imported_count++;
+      Resource* resource = GetResource(resource_in_map_it->second);
+      resource->marked_for_deletion = false;
+      resource->imported_count++;
       continue;
     }
 
@@ -1405,25 +1373,27 @@ void ResourceProvider::ReceiveFromChild(
     }
 
     ResourceId local_id = next_id_++;
-    Resource& resource = resources_[local_id];
+    Resource* resource = nullptr;
     if (it->is_software) {
-      resource =
+      resource = InsertResource(
+          local_id,
           Resource(it->mailbox_holder.mailbox, it->size, Resource::DELEGATED,
-                   GL_LINEAR, it->is_repeated ? GL_REPEAT : GL_CLAMP_TO_EDGE);
+                   GL_LINEAR, it->is_repeated ? GL_REPEAT : GL_CLAMP_TO_EDGE));
     } else {
-      resource = Resource(0, it->size, Resource::DELEGATED,
-                          it->mailbox_holder.texture_target, it->filter, 0,
-                          it->is_repeated ? GL_REPEAT : GL_CLAMP_TO_EDGE,
-                          TEXTURE_HINT_IMMUTABLE, it->format);
-      resource.mailbox = TextureMailbox(it->mailbox_holder.mailbox,
-                                        it->mailbox_holder.texture_target,
-                                        it->mailbox_holder.sync_point);
+      resource = InsertResource(
+          local_id, Resource(0, it->size, Resource::DELEGATED,
+                             it->mailbox_holder.texture_target, it->filter, 0,
+                             it->is_repeated ? GL_REPEAT : GL_CLAMP_TO_EDGE,
+                             TEXTURE_HINT_IMMUTABLE, it->format));
+      resource->mailbox = TextureMailbox(it->mailbox_holder.mailbox,
+                                         it->mailbox_holder.texture_target,
+                                         it->mailbox_holder.sync_point);
     }
-    resource.child_id = child;
+    resource->child_id = child;
     // Don't allocate a texture for a child.
-    resource.allocated = true;
-    resource.imported_count = 1;
-    resource.allow_overlay = it->allow_overlay;
+    resource->allocated = true;
+    resource->imported_count = 1;
+    resource->allow_overlay = it->allow_overlay;
     child_info.parent_to_child_map[local_id] = it->id;
     child_info.child_to_parent_map[it->id] = local_id;
   }
@@ -1446,7 +1416,7 @@ void ResourceProvider::DeclareUsedResourcesFromChild(
     DCHECK(it != child_info.child_to_parent_map.end());
 
     ResourceId local_id = it->second;
-    DCHECK(!resources_[local_id].marked_for_deletion);
+    DCHECK(!GetResource(local_id)->marked_for_deletion);
     child_info.in_use_resources.insert(local_id);
   }
 

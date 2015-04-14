@@ -74,8 +74,7 @@ class CC_EXPORT ResourceProvider {
         TEXTURE_HINT_IMMUTABLE | TEXTURE_HINT_FRAMEBUFFER
   };
   enum ResourceType {
-    RESOURCE_TYPE_INVALID = 0,
-    RESOURCE_TYPE_GL_TEXTURE = 1,
+    RESOURCE_TYPE_GL_TEXTURE,
     RESOURCE_TYPE_BITMAP,
   };
 
@@ -442,7 +441,6 @@ class CC_EXPORT ResourceProvider {
   struct Resource {
     enum Origin { INTERNAL, EXTERNAL, DELEGATED };
 
-    Resource();
     ~Resource();
     Resource(unsigned texture_id,
              const gfx::Size& size,
@@ -536,12 +534,14 @@ class CC_EXPORT ResourceProvider {
                    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                    BlockingTaskRunner* blocking_main_thread_task_runner,
                    int highp_threshold_min,
+                   ResourceType default_resource_type,
                    bool use_rgba_4444_texture_format,
                    size_t id_allocation_chunk_size);
 
   void InitializeSoftware();
   void InitializeGL();
 
+  Resource* InsertResource(ResourceId id, const Resource& resource);
   Resource* GetResource(ResourceId id);
   const Resource* LockForRead(ResourceId id);
   void UnlockForRead(ResourceId id);
@@ -587,7 +587,7 @@ class CC_EXPORT ResourceProvider {
   int next_child_;
   ChildMap children_;
 
-  ResourceType default_resource_type_;
+  const ResourceType default_resource_type_;
   bool use_texture_storage_ext_;
   bool use_texture_format_bgra_;
   bool use_texture_usage_hint_;

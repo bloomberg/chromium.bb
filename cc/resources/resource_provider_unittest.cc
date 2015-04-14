@@ -371,9 +371,6 @@ void GetResourcePixels(ResourceProvider* resource_provider,
              lock_software.sk_bitmap()->getSize());
       break;
     }
-    case ResourceProvider::RESOURCE_TYPE_INVALID:
-      NOTREACHED();
-      break;
   }
 }
 
@@ -413,9 +410,6 @@ class ResourceProviderTest
             make_scoped_ptr(new SoftwareOutputDevice));
         child_output_surface_ = FakeOutputSurface::CreateSoftware(
             make_scoped_ptr(new SoftwareOutputDevice));
-        break;
-      case ResourceProvider::RESOURCE_TYPE_INVALID:
-        NOTREACHED();
         break;
     }
     CHECK(output_surface_->BindToClient(&output_surface_client_));
