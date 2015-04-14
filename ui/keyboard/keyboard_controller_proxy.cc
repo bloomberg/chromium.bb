@@ -44,6 +44,24 @@ class KeyboardContentsDelegate : public content::WebContentsDelegate,
     return source;
   }
 
+  bool CanDragEnter(content::WebContents* source,
+                    const content::DropData& data,
+                    blink::WebDragOperationsMask operations_allowed) override {
+    return false;
+  }
+
+  bool ShouldCreateWebContents(
+      content::WebContents* web_contents,
+      int route_id,
+      int main_frame_route_id,
+      WindowContainerType window_container_type,
+      const base::string16& frame_name,
+      const GURL& target_url,
+      const std::string& partition_id,
+      content::SessionStorageNamespace* session_storage_namespace) override {
+    return false;
+  }
+
   bool IsPopupOrPanel(const content::WebContents* source) const override {
     return true;
   }
