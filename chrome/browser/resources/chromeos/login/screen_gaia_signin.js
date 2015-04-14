@@ -345,6 +345,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         params.chromeType = data.chromeType;
         params.isNewGaiaFlowChromeOS = true;
         $('login-header-bar').showGuestButton = true;
+        this.gaiaAuthHost_.setDeviceId(data.deviceId);
       }
 
       if (data.gaiaEndpoint)
@@ -623,12 +624,14 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           chrome.send('completeAuthenticationAuthCodeOnly',
                       [credentials.authCode]);
         } else {
-          chrome.send('completeAuthentication',
-                      [credentials.gaiaId,
-                       credentials.email,
-                       credentials.password,
-                       credentials.authCode,
-                       credentials.usingSAML]);
+          chrome.send('completeAuthentication', [
+            credentials.gaiaId,
+            credentials.email,
+            credentials.password,
+            credentials.authCode,
+            credentials.usingSAML,
+            credentials.deviceId
+          ]);
         }
       } else {
         chrome.send('completeLogin',

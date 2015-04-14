@@ -54,6 +54,7 @@ class CHROMEOS_EXPORT UserContext {
   user_manager::UserType GetUserType() const;
   const std::string& GetPublicSessionLocale() const;
   const std::string& GetPublicSessionInputMethod() const;
+  const std::string& GetDeviceId() const;
 
   bool HasCredentials() const;
 
@@ -68,6 +69,7 @@ class CHROMEOS_EXPORT UserContext {
   void SetUserType(user_manager::UserType user_type);
   void SetPublicSessionLocale(const std::string& locale);
   void SetPublicSessionInputMethod(const std::string& input_method);
+  void SetDeviceId(const std::string& device_id);
 
   void ClearSecrets();
 
@@ -83,6 +85,7 @@ class CHROMEOS_EXPORT UserContext {
   user_manager::UserType user_type_;
   std::string public_session_locale_;
   std::string public_session_input_method_;
+  std::string device_id_;
 };
 
 }  // namespace chromeos

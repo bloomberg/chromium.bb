@@ -53,6 +53,9 @@ struct GaiaContext {
   // GAIA ID of the current user.
   std::string gaia_id;
 
+  // Device Id of the current user.
+  std::string device_id;
+
   // Whether consumer management enrollment is in progress.
   bool is_enrolling_consumer_management;
 };
@@ -111,7 +114,8 @@ class GaiaScreenHandler : public BaseScreenHandler {
                                     const std::string& email,
                                     const std::string& password,
                                     const std::string& auth_code,
-                                    bool using_saml);
+                                    bool using_saml,
+                                    const std::string& device_id);
   void HandleCompleteAuthenticationAuthCodeOnly(const std::string& auth_code);
   void HandleCompleteLogin(const std::string& gaia_id,
                            const std::string& typed_email,

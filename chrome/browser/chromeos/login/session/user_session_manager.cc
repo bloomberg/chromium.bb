@@ -894,6 +894,20 @@ void UserSessionManager::InitProfilePreferences(
     ChromeUserManager::Get()->SetIsCurrentUserNew(true);
   }
 
+  std::string device_id = profile->GetPrefs()->GetString(
+      prefs::kGoogleServicesSigninScopedDeviceId);
+  if (device_id.empty()) {
+    device_id = user_context.GetDeviceId();
+    if (!device_id.empty()) {
+      profile->GetPrefs()->SetString(prefs::kGoogleServicesSigninScopedDeviceId,
+                                     device_id);
+    }
+  }
+  if (!device_id.empty()) {
+    user_manager::UserManager::Get()->SetKnownUserDeviceId(user->GetUserID(),
+                                                           device_id);
+  }
+
   if (user->is_active()) {
     input_method::InputMethodManager* manager =
         input_method::InputMethodManager::Get();

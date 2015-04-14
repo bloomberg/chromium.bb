@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_USER_MANAGER_USER_MANAGER_BASE_H_
 #define COMPONENTS_USER_MANAGER_USER_MANAGER_BASE_H_
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -127,6 +128,9 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   void UpdateUsingSAML(const std::string& user_id,
                        const bool using_saml) override;
   bool FindUsingSAML(const std::string& user_id) override;
+  void SetKnownUserDeviceId(const UserID& user_id,
+                            const std::string& device_id) override;
+  std::string GetKnownUserDeviceId(const UserID& user_id) override;
 
   virtual void SetIsCurrentUserNew(bool is_new);
 

@@ -29,6 +29,7 @@ cr.define('cr.login', function() {
   var OAUTH_CODE_COOKIE = 'oauth_code';
   var SERVICE_ID = 'chromeoslogin';
   var EMBEDDED_SETUP_CHROMEOS_ENDPOINT = 'embedded/setup/chromeos';
+  var X_DEVICE_ID_HEADER = 'X-Device-ID';
 
   /**
    * The source URL parameter for the constrained signin flow.
@@ -61,27 +62,28 @@ cr.define('cr.login', function() {
    * @const
    */
   var SUPPORTED_PARAMS = [
-    'gaiaId',           // Obfuscated GAIA ID to skip the email prompt page
-                        // during the re-auth flow.
-    'gaiaUrl',          // Gaia url to use.
-    'gaiaPath',         // Gaia path to use without a leading slash.
-    'hl',               // Language code for the user interface.
-    'email',            // Pre-fill the email field in Gaia UI.
-    'service',          // Name of Gaia service.
-    'continueUrl',      // Continue url to use.
-    'frameUrl',         // Initial frame URL to use. If empty defaults to
-                        // gaiaUrl.
-    'constrained',      // Whether the extension is loaded in a constrained
-                        // window.
-    'clientId',         // Chrome client id.
-    'needPassword',     // Whether the host is interested in getting a password.
-                        // If this set to |false|, |confirmPasswordCallback| is
-                        // not called before dispatching |authCopleted|.
-                        // Default is |true|.
-    'flow',             // One of 'default', 'enterprise', or 'theftprotection'.
-    'enterpriseDomain', // Domain in which hosting device is (or should be)
-                        // enrolled.
-    'emailDomain'       // Value used to prefill domain for email.
+    'gaiaId',        // Obfuscated GAIA ID to skip the email prompt page
+                     // during the re-auth flow.
+    'gaiaUrl',       // Gaia url to use.
+    'gaiaPath',      // Gaia path to use without a leading slash.
+    'hl',            // Language code for the user interface.
+    'email',         // Pre-fill the email field in Gaia UI.
+    'service',       // Name of Gaia service.
+    'continueUrl',   // Continue url to use.
+    'frameUrl',      // Initial frame URL to use. If empty defaults to
+                     // gaiaUrl.
+    'constrained',   // Whether the extension is loaded in a constrained
+                     // window.
+    'clientId',      // Chrome client id.
+    'needPassword',  // Whether the host is interested in getting a password.
+                     // If this set to |false|, |confirmPasswordCallback| is
+                     // not called before dispatching |authCopleted|.
+                     // Default is |true|.
+    'flow',          // One of 'default', 'enterprise', or 'theftprotection'.
+    'enterpriseDomain',  // Domain in which hosting device is (or should be)
+                         // enrolled.
+    'emailDomain',       // Value used to prefill domain for email.
+    'deviceId',          // User device ID (sync Id).
   ];
 
   /**
@@ -109,6 +111,8 @@ cr.define('cr.login', function() {
     this.reloadUrl_ = null;
     this.trusted_ = true;
     this.oauth_code_ = null;
+    this.deviceId_ = null;
+    this.onBeforeSetHeadersSet_ = false;
 
     this.samlHandler_ = new cr.login.SamlHandler(this.webview_);
     this.confirmPasswordCallback = null;
@@ -204,6 +208,14 @@ cr.define('cr.login', function() {
       this.webview_.contextMenus.onShow.addListener(function(e) {
         e.preventDefault();
       });
+      if (!this.onBeforeSetHeadersSet_) {
+        this.onBeforeSetHeadersSet_ = true;
+        var filterPrefix = this.idpOrigin_ + EMBEDDED_SETUP_CHROMEOS_ENDPOINT;
+        this.webview_.request.onBeforeSendHeaders.addListener(
+            this.onBeforeSendHeaders_.bind(this),
+            {urls: [filterPrefix + '?*', filterPrefix + '/*']},
+            ['requestHeaders', 'blocking']);
+      }
     }
 
     this.webview_.src = this.reloadUrl_;
@@ -232,6 +244,7 @@ cr.define('cr.login', function() {
         url = appendParam(url, 'client_id', data.clientId);
       if (data.enterpriseDomain)
         url = appendParam(url, 'manageddomain', data.enterpriseDomain);
+      this.setDeviceId(data.deviceId);
     } else {
       url = appendParam(url, 'continue', this.continueUrl_);
       url = appendParam(url, 'service', data.service || SERVICE_ID);
@@ -249,6 +262,13 @@ cr.define('cr.login', function() {
     if (data.emailDomain)
       url = appendParam(url, 'emaildomain', data.emailDomain);
     return url;
+  };
+
+  /**
+   * Invoked when deviceId is set or updated.
+   */
+  Authenticator.prototype.setDeviceId = function(deviceId) {
+    this.deviceId_ = deviceId;
   };
 
   /**
@@ -366,6 +386,34 @@ cr.define('cr.login', function() {
   };
 
   /**
+   * Handler for webView.request.onBeforeSendHeaders .
+   * @return {!Object} Modified request headers.
+   * @private
+   */
+  Authenticator.prototype.onBeforeSendHeaders_ = function(details) {
+    // deviceId_ is empty when we do not need to send it. For example,
+    // in case of device enrollment.
+    if (this.isNewGaiaFlowChromeOS && this.deviceId_) {
+      var headers = details.requestHeaders;
+      var found = false;
+      for (var i = 0, l = headers.length; i < l; ++i) {
+        if (headers[i].name == X_DEVICE_ID_HEADER) {
+          headers[i].value = this.deviceId_;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        details.requestHeaders.push(
+            {name: X_DEVICE_ID_HEADER, value: this.deviceId_});
+      }
+    }
+    return {
+      requestHeaders: details.requestHeaders
+    };
+  };
+
+  /**
    * Invoked when an HTML5 message is received from the webview element.
    * @param {object} e Payload of the received HTML5 message.
    * @private
@@ -476,16 +524,21 @@ cr.define('cr.login', function() {
            (this.email_ && this.gaiaId_ && this.sessionIndex_));
     this.dispatchEvent(
         new CustomEvent('authCompleted',
-          // TODO(rsorokin): get rid of the stub values.
-                        {detail: {email: this.email_ || '',
-                                  gaiaId: this.gaiaId_ || '',
-                                  password: this.password_ || '',
-                                  authCode: this.oauth_code_,
-                                  usingSAML: this.authFlow == AuthFlow.SAML,
-                                  chooseWhatToSync: this.chooseWhatToSync_,
-                                  skipForNow: this.skipForNow_,
-                                  sessionIndex: this.sessionIndex_ || '',
-                                  trusted: this.trusted_}}));
+                        // TODO(rsorokin): get rid of the stub values.
+                        {
+                          detail: {
+                            email: this.email_ || '',
+                            gaiaId: this.gaiaId_ || '',
+                            password: this.password_ || '',
+                            authCode: this.oauth_code_,
+                            usingSAML: this.authFlow == AuthFlow.SAML,
+                            chooseWhatToSync: this.chooseWhatToSync_,
+                            skipForNow: this.skipForNow_,
+                            sessionIndex: this.sessionIndex_ || '',
+                            trusted: this.trusted_,
+                            deviceId: this.deviceId_ || ''
+                          }
+                        }));
   };
 
   /**

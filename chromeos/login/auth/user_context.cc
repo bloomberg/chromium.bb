@@ -113,6 +113,10 @@ const std::string& UserContext::GetPublicSessionInputMethod() const {
   return public_session_input_method_;
 }
 
+const std::string& UserContext::GetDeviceId() const {
+  return device_id_;
+}
+
 bool UserContext::HasCredentials() const {
   return (!user_id_.empty() && !key_.GetSecret().empty()) ||
          !auth_code_.empty();
@@ -160,6 +164,10 @@ void UserContext::SetPublicSessionLocale(const std::string& locale) {
 
 void UserContext::SetPublicSessionInputMethod(const std::string& input_method) {
   public_session_input_method_ = input_method;
+}
+
+void UserContext::SetDeviceId(const std::string& device_id) {
+  device_id_ = device_id;
 }
 
 void UserContext::ClearSecrets() {

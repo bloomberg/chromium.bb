@@ -85,6 +85,9 @@ const char kGAIAIdKey[] = "gaia_id";
 // Key of whether this user ID refers to a SAML user.
 const char kUsingSAMLKey[] = "using_saml";
 
+// Key of Device Id.
+const char kDeviceId[] = "device_id";
+
 // Upper bound for a histogram metric reporting the amount of time between
 // one regular user logging out and a different regular user logging in.
 const int kLogoutToLoginDelayMaxSec = 1800;
@@ -1080,6 +1083,19 @@ void UserManagerBase::UpdateGaiaID(const UserID& user_id,
 bool UserManagerBase::FindGaiaID(const UserID& user_id,
                                  std::string* out_value) {
   return GetKnownUserStringPref(user_id, kGAIAIdKey, out_value);
+}
+
+void UserManagerBase::SetKnownUserDeviceId(const UserID& user_id,
+                                           const std::string& device_id) {
+  SetKnownUserStringPref(user_id, kDeviceId, device_id);
+}
+
+std::string UserManagerBase::GetKnownUserDeviceId(const UserID& user_id) {
+  std::string device_id;
+  if (GetKnownUserStringPref(user_id, kDeviceId, &device_id)) {
+    return device_id;
+  }
+  return std::string();
 }
 
 User* UserManagerBase::RemoveRegularOrSupervisedUserFromList(

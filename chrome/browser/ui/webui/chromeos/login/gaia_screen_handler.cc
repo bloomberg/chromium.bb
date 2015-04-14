@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 
 #include "base/bind.h"
+#include "base/guid.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
@@ -199,6 +200,9 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
   params.SetString("email", context.email);
   params.SetBoolean("isEnrollingConsumerManagement",
                     is_enrolling_consumer_management);
+  if (StartupUtils::IsWebviewSigninEnabled()) {
+    params.SetString("deviceId", context.device_id);
+  }
 
   UpdateAuthParams(&params,
                    context.has_users,
@@ -295,6 +299,9 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
 
 void GaiaScreenHandler::UpdateGaia(const GaiaContext& context) {
   base::DictionaryValue params;
+  if (StartupUtils::IsWebviewSigninEnabled()) {
+    params.SetString("deviceId", context.device_id);
+  }
   UpdateAuthParams(&params, context.has_users,
                    context.is_enrolling_consumer_management);
   CallJS("updateAuthExtension", params);
@@ -442,7 +449,8 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
     const std::string& email,
     const std::string& password,
     const std::string& auth_code,
-    bool using_saml) {
+    bool using_saml,
+    const std::string& device_id) {
   if (!Delegate())
     return;
 
@@ -459,6 +467,7 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
   user_context.SetAuthFlow(using_saml
                                ? UserContext::AUTH_FLOW_GAIA_WITH_SAML
                                : UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML);
+  user_context.SetDeviceId(device_id);
   Delegate()->CompleteLogin(user_context);
 }
 
@@ -878,6 +887,11 @@ void GaiaScreenHandler::LoadAuthExtension(bool force,
   if (Delegate()) {
     context.show_users = Delegate()->IsShowUsers();
     context.has_users = !Delegate()->GetUsers().empty();
+  }
+
+  if (context.device_id.empty()) {
+    context.device_id = base::GenerateGUID();
+    DCHECK(!context.device_id.empty());
   }
 
   populated_email_.clear();

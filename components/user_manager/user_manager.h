@@ -367,6 +367,11 @@ class USER_MANAGER_EXPORT UserManager {
   // returns false.
   virtual bool FindUsingSAML(const UserID& user_id) = 0;
 
+  // Setter and getter for DeviceId known user string preference.
+  virtual void SetKnownUserDeviceId(const UserID& user_id,
+                                    const std::string& device_id) = 0;
+  virtual std::string GetKnownUserDeviceId(const UserID& user_id) = 0;
+
  protected:
   // Sets UserManager instance.
   static void SetInstance(UserManager* user_manager);
