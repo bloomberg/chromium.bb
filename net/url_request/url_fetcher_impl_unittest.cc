@@ -51,6 +51,12 @@ const base::FilePath::CharType kDocRoot[] =
     FILE_PATH_LITERAL("net/data/url_fetcher_impl_unittest");
 const char kTestServerFilePrefix[] = "files/";
 
+// Test server path and response body for the default URL used by many of the
+// tests.
+const char kDefaultResponsePath[] = "defaultresponse";
+const char kDefaultResponseBody[] =
+    "Default response given for path: /defaultresponse";
+
 // Request body for streams created by CreateUploadStream.
 const char kCreateUploadStreamBody[] = "rosebud";
 
@@ -65,30 +71,46 @@ base::FilePath GetUploadFileTestPath() {
 // Can only be used once.
 class WaitingURLFetcherDelegate : public URLFetcherDelegate {
  public:
-  WaitingURLFetcherDelegate() {}
+  WaitingURLFetcherDelegate() : did_complete_(false) {}
 
   // Creates a URLFetcher that runs network tasks on the current message loop.
   void CreateFetcherWithContext(const GURL& url,
                                 URLFetcher::RequestType request_type,
                                 net::URLRequestContext* context) {
+    CreateFetcherWithContextGetter(
+        url, request_type, new TrivialURLRequestContextGetter(
+                               context, base::MessageLoopProxy::current()));
+  }
+
+  void CreateFetcherWithContextGetter(
+      const GURL& url,
+      URLFetcher::RequestType request_type,
+      net::URLRequestContextGetter* context_getter) {
     fetcher_.reset(new URLFetcherImpl(url, request_type, this));
-    fetcher_->SetRequestContext(new TrivialURLRequestContextGetter(
-        context, base::MessageLoopProxy::current()));
+    fetcher_->SetRequestContext(context_getter);
   }
 
   URLFetcher* fetcher() const { return fetcher_.get(); }
 
   void StartFetcherAndWait() {
     fetcher_->Start();
-    run_loop_.Run();
+    WaitForComplete();
   }
+
+  // Wait until the request has completed, if it's already been started.
+  void WaitForComplete() { run_loop_.Run(); }
 
   void OnURLFetchComplete(const URLFetcher* source) override {
     EXPECT_EQ(fetcher_.get(), source);
+    did_complete_ = true;
     run_loop_.Quit();
   }
 
+  bool did_complete() const { return did_complete_; }
+
  private:
+  bool did_complete_;
+
   scoped_ptr<URLFetcherImpl> fetcher_;
   base::RunLoop run_loop_;
 
@@ -178,13 +200,31 @@ class URLFetcherTest : public testing::Test,
     return num_upload_streams_created_;
   }
 
- protected:
+  // Returns a URL that hangs on DNS resolution.  Only hangs when using the
+  // request context returned by request_context().
+  const GURL& hanging_url() const { return hanging_url_; }
+
+  MockHostResolver* resolver() { return &resolver_; }
+
   // testing::Test:
   void SetUp() override {
     SetUpServer();
     ASSERT_TRUE(test_server_->Start());
 
-    context_.reset(new ThrottlingTestURLRequestContext());
+    // Set up host resolver so requests for |hanging_url_| block on an async DNS
+    // resolver.  Calling resolver()->ResolveAllPending() will resume the hung
+    // requests.
+    resolver_.set_ondemand_mode(true);
+    resolver_.rules()->AddRule("example.com", "127.0.0.1");
+    hanging_url_ =
+        GURL(base::StringPrintf("http://example.com:%d/defaultresponse",
+                                test_server_->host_port_pair().port()));
+    ASSERT_TRUE(hanging_url_.is_valid());
+
+    context_.reset(new TestURLRequestContext(true));
+    context_->set_host_resolver(&resolver_);
+    context_->set_throttler_manager(&throttler_manager_);
+    context_->Init();
 
 #if defined(USE_NSS) || defined(OS_IOS)
     crypto::EnsureNSSInit();
@@ -213,31 +253,17 @@ class URLFetcherTest : public testing::Test,
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
 
   scoped_ptr<SpawnedTestServer> test_server_;
+  GURL hanging_url_;
 
   size_t num_upload_streams_created_;
 
   URLFetcherImpl* fetcher_;
-  scoped_ptr<TestURLRequestContext> context_;
-  int expected_status_code_;
-};
 
-// A test fixture that uses a MockHostResolver, so that name resolutions can
-// be manipulated by the tests to keep connections in the resolving state.
-class URLFetcherMockDnsTest : public URLFetcherTest {
- public:
-  // testing::Test:
-  void SetUp() override;
-
-  // URLFetcherTest:
-  void CreateFetcher(const GURL& url) override;
-
-  // URLFetcherDelegate:
-  void OnURLFetchComplete(const URLFetcher* source) override;
-
- protected:
-  GURL test_url_;
   MockHostResolver resolver_;
-  scoped_ptr<URLFetcher> completed_fetcher_;
+  URLRequestThrottlerManager throttler_manager_;
+  scoped_ptr<TestURLRequestContext> context_;
+
+  int expected_status_code_;
 };
 
 void URLFetcherTest::CreateFetcher(const GURL& url) {
@@ -267,39 +293,6 @@ void URLFetcherTest::CleanupAfterFetchComplete() {
                                     base::MessageLoop::QuitClosure());
   // If the current message loop is not the IO loop, it will be shut down when
   // the main loop returns and this thread subsequently goes out of scope.
-}
-
-void URLFetcherMockDnsTest::SetUp() {
-  URLFetcherTest::SetUp();
-
-  resolver_.set_ondemand_mode(true);
-  resolver_.rules()->AddRule("example.com", "127.0.0.1");
-
-  context_.reset(new TestURLRequestContext(true));
-  context_->set_host_resolver(&resolver_);
-  context_->Init();
-
-  // test_server_.GetURL() returns a URL with 127.0.0.1 (kLocalhost), that is
-  // immediately resolved by the MockHostResolver. Use a hostname instead to
-  // trigger an async resolve.
-  test_url_ = GURL(
-      base::StringPrintf("http://example.com:%d/defaultresponse",
-      test_server_->host_port_pair().port()));
-  ASSERT_TRUE(test_url_.is_valid());
-}
-
-void URLFetcherMockDnsTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
-  fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
-      io_message_loop_proxy().get(), request_context()));
-}
-
-void URLFetcherMockDnsTest::OnURLFetchComplete(const URLFetcher* source) {
-  io_message_loop_proxy()->PostTask(FROM_HERE,
-                                    base::MessageLoop::QuitClosure());
-  ASSERT_EQ(fetcher_, source);
-  EXPECT_EQ(test_url_, source->GetOriginalURL());
-  completed_fetcher_.reset(fetcher_);
 }
 
 namespace {
@@ -682,155 +675,172 @@ void URLFetcherFileTest::OnURLFetchComplete(const URLFetcher* source) {
   CleanupAfterFetchComplete();
 }
 
-TEST_F(URLFetcherTest, SameThreadsTest) {
-  // Create the fetcher on the main thread.  Since IO will happen on the main
-  // thread, this will test URLFetcher's ability to do everything on one
-  // thread.
-  CreateFetcher(test_server_->GetURL("defaultresponse"));
+// Create the fetcher on the main thread.  Since network IO will happen on the
+// main thread, this will test URLFetcher's ability to do everything on one
+// thread.
+TEST_F(URLFetcherTest, SameThreadTest) {
+  WaitingURLFetcherDelegate delegate;
+  delegate.CreateFetcherWithContext(test_server_->GetURL(kDefaultResponsePath),
+                                    URLFetcher::GET, request_context());
+  delegate.StartFetcherAndWait();
 
-  base::MessageLoop::current()->Run();
+  EXPECT_TRUE(delegate.fetcher()->GetStatus().is_success());
+  EXPECT_EQ(200, delegate.fetcher()->GetResponseCode());
+  std::string data;
+  ASSERT_TRUE(delegate.fetcher()->GetResponseAsString(&data));
+  EXPECT_EQ(kDefaultResponseBody, data);
 }
 
+// Create a separate thread that will create the URLFetcher.  A separate thread
+// acts as the network thread.
 TEST_F(URLFetcherTest, DifferentThreadsTest) {
-  // Create a separate thread that will create the URLFetcher.  The current
-  // (main) thread will do the IO, and when the fetch is complete it will
-  // terminate the main thread's message loop; then the other thread's
-  // message loop will be shut down automatically as the thread goes out of
-  // scope.
-  base::Thread t("URLFetcher test thread");
-  ASSERT_TRUE(t.Start());
-  t.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&URLFetcherTest::CreateFetcher, base::Unretained(this),
-                 test_server_->GetURL("defaultresponse")));
+  base::Thread network_thread("network thread");
+  base::Thread::Options network_thread_options;
+  network_thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
+  ASSERT_TRUE(network_thread.StartWithOptions(network_thread_options));
 
-  base::MessageLoop::current()->Run();
-}
+  scoped_refptr<TestURLRequestContextGetter> context_getter(
+      new TestURLRequestContextGetter(network_thread.task_runner()));
+  WaitingURLFetcherDelegate delegate;
+  delegate.CreateFetcherWithContextGetter(
+      test_server_->GetURL(kDefaultResponsePath), URLFetcher::GET,
+      new TestURLRequestContextGetter(network_thread.task_runner()));
+  delegate.StartFetcherAndWait();
 
-void CancelAllOnIO() {
-  EXPECT_EQ(1, URLFetcherTest::GetNumFetcherCores());
-  URLFetcherImpl::CancelAll();
-  EXPECT_EQ(0, URLFetcherTest::GetNumFetcherCores());
+  EXPECT_TRUE(delegate.fetcher()->GetStatus().is_success());
+  EXPECT_EQ(200, delegate.fetcher()->GetResponseCode());
+  std::string data;
+  ASSERT_TRUE(delegate.fetcher()->GetResponseAsString(&data));
+  EXPECT_EQ(kDefaultResponseBody, data);
 }
 
 // Tests to make sure CancelAll() will successfully cancel existing URLFetchers.
 TEST_F(URLFetcherTest, CancelAll) {
   EXPECT_EQ(0, GetNumFetcherCores());
+  WaitingURLFetcherDelegate delegate;
+  delegate.CreateFetcherWithContext(hanging_url(), URLFetcher::GET,
+                                    request_context());
+  delegate.fetcher()->Start();
+  // Wait for the request to reach the mock resolver and hang, to ensure the
+  // request has actually started.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(resolver_.has_pending_requests());
 
-  CreateFetcher(test_server_->GetURL("defaultresponse"));
-  io_message_loop_proxy()->PostTaskAndReply(
-      FROM_HERE, base::Bind(&CancelAllOnIO), base::MessageLoop::QuitClosure());
-  base::MessageLoop::current()->Run();
-  EXPECT_EQ(0, GetNumFetcherCores());
-  delete fetcher_;
+  EXPECT_EQ(1, URLFetcherTest::GetNumFetcherCores());
+  URLFetcherImpl::CancelAll();
+  EXPECT_EQ(0, URLFetcherTest::GetNumFetcherCores());
 }
 
-TEST_F(URLFetcherMockDnsTest, DontRetryOnNetworkChangedByDefault) {
+TEST_F(URLFetcherTest, DontRetryOnNetworkChangedByDefault) {
   EXPECT_EQ(0, GetNumFetcherCores());
+  WaitingURLFetcherDelegate delegate;
+  delegate.CreateFetcherWithContext(hanging_url(), URLFetcher::GET,
+                                    request_context());
   EXPECT_FALSE(resolver_.has_pending_requests());
 
   // This posts a task to start the fetcher.
-  CreateFetcher(test_url_);
-  fetcher_->Start();
-  EXPECT_EQ(0, GetNumFetcherCores());
-  base::MessageLoop::current()->RunUntilIdle();
+  delegate.fetcher()->Start();
+  base::RunLoop().RunUntilIdle();
 
   // The fetcher is now running, but is pending the host resolve.
   EXPECT_EQ(1, GetNumFetcherCores());
   EXPECT_TRUE(resolver_.has_pending_requests());
-  ASSERT_FALSE(completed_fetcher_);
+  ASSERT_FALSE(delegate.did_complete());
 
   // A network change notification aborts the connect job.
   NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-  base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_EQ(0, GetNumFetcherCores());
+  delegate.WaitForComplete();
   EXPECT_FALSE(resolver_.has_pending_requests());
-  ASSERT_TRUE(completed_fetcher_);
 
   // And the owner of the fetcher gets the ERR_NETWORK_CHANGED error.
-  EXPECT_EQ(ERR_NETWORK_CHANGED, completed_fetcher_->GetStatus().error());
+  EXPECT_EQ(hanging_url(), delegate.fetcher()->GetOriginalURL());
+  ASSERT_FALSE(delegate.fetcher()->GetStatus().is_success());
+  EXPECT_EQ(ERR_NETWORK_CHANGED, delegate.fetcher()->GetStatus().error());
 }
 
-TEST_F(URLFetcherMockDnsTest, RetryOnNetworkChangedAndFail) {
+TEST_F(URLFetcherTest, RetryOnNetworkChangedAndFail) {
   EXPECT_EQ(0, GetNumFetcherCores());
+  WaitingURLFetcherDelegate delegate;
+  delegate.CreateFetcherWithContext(hanging_url(), URLFetcher::GET,
+                                    request_context());
+  delegate.fetcher()->SetAutomaticallyRetryOnNetworkChanges(3);
   EXPECT_FALSE(resolver_.has_pending_requests());
 
   // This posts a task to start the fetcher.
-  CreateFetcher(test_url_);
-  fetcher_->SetAutomaticallyRetryOnNetworkChanges(3);
-  fetcher_->Start();
-  EXPECT_EQ(0, GetNumFetcherCores());
-  base::MessageLoop::current()->RunUntilIdle();
+  delegate.fetcher()->Start();
+  base::RunLoop().RunUntilIdle();
 
   // The fetcher is now running, but is pending the host resolve.
   EXPECT_EQ(1, GetNumFetcherCores());
   EXPECT_TRUE(resolver_.has_pending_requests());
-  ASSERT_FALSE(completed_fetcher_);
+  ASSERT_FALSE(delegate.did_complete());
 
   // Make it fail 3 times.
   for (int i = 0; i < 3; ++i) {
     // A network change notification aborts the connect job.
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     // But the fetcher retries automatically.
     EXPECT_EQ(1, GetNumFetcherCores());
     EXPECT_TRUE(resolver_.has_pending_requests());
-    ASSERT_FALSE(completed_fetcher_);
+    ASSERT_FALSE(delegate.did_complete());
   }
 
   // A 4th failure doesn't trigger another retry, and propagates the error
   // to the owner of the fetcher.
   NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-  base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_EQ(0, GetNumFetcherCores());
+  delegate.WaitForComplete();
   EXPECT_FALSE(resolver_.has_pending_requests());
-  ASSERT_TRUE(completed_fetcher_);
 
   // And the owner of the fetcher gets the ERR_NETWORK_CHANGED error.
-  EXPECT_EQ(ERR_NETWORK_CHANGED, completed_fetcher_->GetStatus().error());
+  EXPECT_EQ(hanging_url(), delegate.fetcher()->GetOriginalURL());
+  ASSERT_FALSE(delegate.fetcher()->GetStatus().is_success());
+  EXPECT_EQ(ERR_NETWORK_CHANGED, delegate.fetcher()->GetStatus().error());
 }
 
-TEST_F(URLFetcherMockDnsTest, RetryOnNetworkChangedAndSucceed) {
+TEST_F(URLFetcherTest, RetryOnNetworkChangedAndSucceed) {
   EXPECT_EQ(0, GetNumFetcherCores());
+  WaitingURLFetcherDelegate delegate;
+  delegate.CreateFetcherWithContext(hanging_url(), URLFetcher::GET,
+                                    request_context());
+  delegate.fetcher()->SetAutomaticallyRetryOnNetworkChanges(3);
   EXPECT_FALSE(resolver_.has_pending_requests());
 
   // This posts a task to start the fetcher.
-  CreateFetcher(test_url_);
-  fetcher_->SetAutomaticallyRetryOnNetworkChanges(3);
-  fetcher_->Start();
-  EXPECT_EQ(0, GetNumFetcherCores());
-  base::MessageLoop::current()->RunUntilIdle();
+  delegate.fetcher()->Start();
+  base::RunLoop().RunUntilIdle();
 
   // The fetcher is now running, but is pending the host resolve.
   EXPECT_EQ(1, GetNumFetcherCores());
   EXPECT_TRUE(resolver_.has_pending_requests());
-  ASSERT_FALSE(completed_fetcher_);
+  ASSERT_FALSE(delegate.did_complete());
 
   // Make it fail 3 times.
   for (int i = 0; i < 3; ++i) {
     // A network change notification aborts the connect job.
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     // But the fetcher retries automatically.
     EXPECT_EQ(1, GetNumFetcherCores());
     EXPECT_TRUE(resolver_.has_pending_requests());
-    ASSERT_FALSE(completed_fetcher_);
+    ASSERT_FALSE(delegate.did_complete());
   }
 
   // Now let it succeed by resolving the pending request.
   resolver_.ResolveAllPending();
-  base::MessageLoop::current()->Run();
-
-  // URLFetcherMockDnsTest::OnURLFetchComplete() will quit the loop.
-  EXPECT_EQ(0, GetNumFetcherCores());
+  delegate.WaitForComplete();
   EXPECT_FALSE(resolver_.has_pending_requests());
-  ASSERT_TRUE(completed_fetcher_);
 
   // This time the request succeeded.
-  EXPECT_EQ(OK, completed_fetcher_->GetStatus().error());
-  EXPECT_EQ(200, completed_fetcher_->GetResponseCode());
+  EXPECT_EQ(hanging_url(), delegate.fetcher()->GetOriginalURL());
+  EXPECT_TRUE(delegate.fetcher()->GetStatus().is_success());
+  EXPECT_EQ(200, delegate.fetcher()->GetResponseCode());
+
+  std::string data;
+  ASSERT_TRUE(delegate.fetcher()->GetResponseAsString(&data));
+  EXPECT_EQ(kDefaultResponseBody, data);
 }
 
 TEST_F(URLFetcherTest, PostString) {
@@ -995,7 +1005,7 @@ TEST_F(URLFetcherTest, Headers) {
 
 TEST_F(URLFetcherTest, SocketAddress) {
   WaitingURLFetcherDelegate delegate;
-  delegate.CreateFetcherWithContext(test_server_->GetURL("defaultresponse"),
+  delegate.CreateFetcherWithContext(test_server_->GetURL(kDefaultResponsePath),
                                     URLFetcher::GET, request_context());
   delegate.StartFetcherAndWait();
 
@@ -1026,7 +1036,7 @@ TEST_F(URLFetcherTest, StopOnRedirect) {
 
 TEST_F(URLFetcherTest, ThrottleOnRepeatedFetches) {
   base::Time start_time = Time::Now();
-  GURL url(test_server_->GetURL("defaultresponse"));
+  GURL url(test_server_->GetURL(kDefaultResponsePath));
 
   // Registers an entry for test url. It only allows 3 requests to be sent
   // in 200 milliseconds.
@@ -1128,7 +1138,7 @@ TEST_F(URLFetcherTest, ProtectTestPassedThrough) {
 }
 
 TEST_F(URLFetcherBadHTTPSTest, BadHTTPSTest) {
-  CreateFetcher(test_server_->GetURL("defaultresponse"));
+  CreateFetcher(test_server_->GetURL(kDefaultResponsePath));
   base::MessageLoop::current()->Run();
 }
 
@@ -1187,7 +1197,7 @@ TEST_F(URLFetcherMultipleAttemptTest, SameData) {
   // Create the fetcher on the main thread.  Since IO will happen on the main
   // thread, this will test URLFetcher's ability to do everything on one
   // thread.
-  CreateFetcher(test_server_->GetURL("defaultresponse"));
+  CreateFetcher(test_server_->GetURL(kDefaultResponsePath));
 
   base::MessageLoop::current()->Run();
 }
