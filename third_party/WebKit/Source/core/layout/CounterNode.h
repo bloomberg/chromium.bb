@@ -33,7 +33,7 @@
 // by "counter-reset" style rules or implicitly by referring to a counter that is not in scope.
 // Such nodes are tagged as "reset" nodes, although they are not all due to "counter-reset".
 
-// Not that render tree children are often counter tree siblings due to counter scoping rules.
+// Not that layout tree children are often counter tree siblings due to counter scoping rules.
 
 namespace blink {
 
@@ -49,11 +49,11 @@ public:
     int value() const { return m_value; }
     int countInParent() const { return m_countInParent; }
     LayoutObject& owner() const { return m_owner; }
-    void addRenderer(LayoutCounter*);
-    void removeRenderer(LayoutCounter*);
+    void addLayoutObject(LayoutCounter*);
+    void removeLayoutObject(LayoutCounter*);
 
-    // Invalidates the text in the renderers of this counter, if any.
-    void resetRenderers();
+    // Invalidates the text in the layoutObjects of this counter, if any.
+    void resetLayoutObjects();
 
     CounterNode* parent() const { return m_parent; }
     CounterNode* previousSibling() const { return m_previousSibling; }
@@ -73,16 +73,16 @@ public:
 private:
     CounterNode(LayoutObject&, bool isReset, int value);
     int computeCountInParent() const;
-    // Invalidates the text in the renderer of this counter, if any,
-    // and in the renderers of all descendants of this counter, if any.
-    void resetThisAndDescendantsRenderers();
+    // Invalidates the text in the layoutObject of this counter, if any,
+    // and in the layoutObjects of all descendants of this counter, if any.
+    void resetThisAndDescendantsLayoutObjects();
     void recount();
 
     bool m_hasResetType;
     int m_value;
     int m_countInParent;
     LayoutObject& m_owner;
-    LayoutCounter* m_rootRenderer;
+    LayoutCounter* m_rootLayoutObject;
 
     CounterNode* m_parent;
     CounterNode* m_previousSibling;

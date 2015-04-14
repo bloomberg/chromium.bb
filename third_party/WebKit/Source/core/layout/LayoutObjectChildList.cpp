@@ -102,10 +102,10 @@ LayoutObject* LayoutObjectChildList::removeChildNode(LayoutObject* owner, Layout
     oldChild->setNextSibling(0);
     oldChild->setParent(0);
 
-    // rendererRemovedFromTree walks the whole subtree. We can improve performance
+    // layoutObjectRemovedFromTree walks the whole subtree. We can improve performance
     // by skipping this step when destroying the entire tree.
     if (!owner->documentBeingDestroyed())
-        LayoutCounter::rendererRemovedFromTree(oldChild);
+        LayoutCounter::layoutObjectRemovedFromTree(oldChild);
 
     if (AXObjectCache* cache = owner->document().existingAXObjectCache())
         cache->childrenChanged(owner);
@@ -153,7 +153,7 @@ void LayoutObjectChildList::insertChildNode(LayoutObject* owner, LayoutObject* n
         newChild->insertedIntoTree();
 
     if (!owner->documentBeingDestroyed()) {
-        LayoutCounter::rendererSubtreeAttached(newChild);
+        LayoutCounter::layoutObjectSubtreeAttached(newChild);
     }
 
     newChild->setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::AddedToLayout);

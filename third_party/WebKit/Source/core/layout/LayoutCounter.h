@@ -37,9 +37,9 @@ public:
 
     static void destroyCounterNodes(LayoutObject&);
     static void destroyCounterNode(LayoutObject&, const AtomicString& identifier);
-    static void rendererSubtreeAttached(LayoutObject*);
-    static void rendererRemovedFromTree(LayoutObject*);
-    static void rendererStyleChanged(LayoutObject&, const ComputedStyle* oldStyle, const ComputedStyle& newStyle);
+    static void layoutObjectSubtreeAttached(LayoutObject*);
+    static void layoutObjectRemovedFromTree(LayoutObject*);
+    static void layoutObjectStyleChanged(LayoutObject&, const ComputedStyle* oldStyle, const ComputedStyle& newStyle);
 
     void updateCounter();
 
@@ -52,7 +52,7 @@ private:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectCounter || LayoutText::isOfType(type); }
     virtual PassRefPtr<StringImpl> originalText() const override;
 
-    // Removes the reference to the CounterNode associated with this renderer.
+    // Removes the reference to the CounterNode associated with this layoutObject.
     // This is used to cause a counter display update when the CounterNode tree changes.
     void invalidate();
 
@@ -68,7 +68,7 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutCounter, isCounter());
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
-void showCounterRendererTree(const blink::LayoutObject*, const char* counterName = 0);
+void showCounterLayoutTree(const blink::LayoutObject*, const char* counterName = 0);
 #endif
 
 #endif // LayoutCounter_h

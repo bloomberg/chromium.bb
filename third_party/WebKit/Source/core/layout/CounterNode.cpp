@@ -35,7 +35,7 @@ CounterNode::CounterNode(LayoutObject& o, bool hasResetType, int value)
     , m_value(value)
     , m_countInParent(0)
     , m_owner(o)
-    , m_rootRenderer(0)
+    , m_rootLayoutObject(0)
     , m_parent(0)
     , m_previousSibling(0)
     , m_nextSibling(0)
@@ -89,7 +89,7 @@ CounterNode::~CounterNode()
             }
         }
     }
-    resetRenderers();
+    resetLayoutObjects();
 }
 
 PassRefPtr<CounterNode> CounterNode::create(LayoutObject& owner, bool hasResetType, int value)
@@ -153,7 +153,7 @@ int CounterNode::computeCountInParent() const
     return m_parent->m_value + increment;
 }
 
-void CounterNode::addRenderer(LayoutCounter* value)
+void CounterNode::addLayoutObject(LayoutCounter* value)
 {
     if (!value) {
         ASSERT_NOT_REACHED();
@@ -161,27 +161,27 @@ void CounterNode::addRenderer(LayoutCounter* value)
     }
     if (value->m_counterNode) {
         ASSERT_NOT_REACHED();
-        value->m_counterNode->removeRenderer(value);
+        value->m_counterNode->removeLayoutObject(value);
     }
     ASSERT(!value->m_nextForSameCounter);
-    for (LayoutCounter* iterator = m_rootRenderer;iterator; iterator = iterator->m_nextForSameCounter) {
+    for (LayoutCounter* iterator = m_rootLayoutObject; iterator; iterator = iterator->m_nextForSameCounter) {
         if (iterator == value) {
             ASSERT_NOT_REACHED();
             return;
         }
     }
-    value->m_nextForSameCounter = m_rootRenderer;
-    m_rootRenderer = value;
+    value->m_nextForSameCounter = m_rootLayoutObject;
+    m_rootLayoutObject = value;
     if (value->m_counterNode != this) {
         if (value->m_counterNode) {
             ASSERT_NOT_REACHED();
-            value->m_counterNode->removeRenderer(value);
+            value->m_counterNode->removeLayoutObject(value);
         }
         value->m_counterNode = this;
     }
 }
 
-void CounterNode::removeRenderer(LayoutCounter* value)
+void CounterNode::removeLayoutObject(LayoutCounter* value)
 {
     if (!value) {
         ASSERT_NOT_REACHED();
@@ -189,15 +189,15 @@ void CounterNode::removeRenderer(LayoutCounter* value)
     }
     if (value->m_counterNode && value->m_counterNode != this) {
         ASSERT_NOT_REACHED();
-        value->m_counterNode->removeRenderer(value);
+        value->m_counterNode->removeLayoutObject(value);
     }
     LayoutCounter* previous = 0;
-    for (LayoutCounter* iterator = m_rootRenderer;iterator; iterator = iterator->m_nextForSameCounter) {
+    for (LayoutCounter* iterator = m_rootLayoutObject; iterator; iterator = iterator->m_nextForSameCounter) {
         if (iterator == value) {
             if (previous)
                 previous->m_nextForSameCounter = value->m_nextForSameCounter;
             else
-                m_rootRenderer = value->m_nextForSameCounter;
+                m_rootLayoutObject = value->m_nextForSameCounter;
             value->m_nextForSameCounter = 0;
             value->m_counterNode = 0;
             return;
@@ -207,17 +207,17 @@ void CounterNode::removeRenderer(LayoutCounter* value)
     ASSERT_NOT_REACHED();
 }
 
-void CounterNode::resetRenderers()
+void CounterNode::resetLayoutObjects()
 {
-    while (m_rootRenderer)
-        m_rootRenderer->invalidate(); // This makes m_rootRenderer point to the next renderer if any since it disconnects the m_rootRenderer from this.
+    while (m_rootLayoutObject)
+        m_rootLayoutObject->invalidate(); // This makes m_rootLayoutObject point to the next layoutObject if any since it disconnects the m_rootLayoutObject from this.
 }
 
-void CounterNode::resetThisAndDescendantsRenderers()
+void CounterNode::resetThisAndDescendantsLayoutObjects()
 {
     CounterNode* node = this;
     do {
-        node->resetRenderers();
+        node->resetLayoutObjects();
         node = node->nextInPreOrder(this);
     } while (node);
 }
@@ -230,7 +230,7 @@ void CounterNode::recount()
         if (oldCount == newCount)
             break;
         node->m_countInParent = newCount;
-        node->resetThisAndDescendantsRenderers();
+        node->resetThisAndDescendantsLayoutObjects();
     }
 }
 
@@ -274,7 +274,7 @@ void CounterNode::insertAfter(CounterNode* newChild, CounterNode* refChild, cons
 
     if (!newChild->m_firstChild || newChild->m_hasResetType) {
         newChild->m_countInParent = newChild->computeCountInParent();
-        newChild->resetThisAndDescendantsRenderers();
+        newChild->resetThisAndDescendantsLayoutObjects();
         if (next)
             next->recount();
         return;
@@ -298,10 +298,10 @@ void CounterNode::insertAfter(CounterNode* newChild, CounterNode* refChild, cons
         // to be impossible since:
         // 1. if the increment counter node lost it's root position as a result of another
         //    counter node being created, it will be inserted as the last child so next is null.
-        // 2. if the increment counter node lost it's root position as a result of a renderer being
-        //    inserted into the document's render tree, all its former children counters are attached
-        //    to children of the inserted renderer and hence cannot be in scope for counter nodes
-        //    attached to renderers that were already in the document's render tree.
+        // 2. if the increment counter node lost it's root position as a result of a layoutObject being
+        //    inserted into the document's layout tree, all its former children counters are attached
+        //    to children of the inserted layoutObject and hence cannot be in scope for counter nodes
+        //    attached to layoutObjects that were already in the document's layout tree.
         last->m_nextSibling = next;
         if (next) {
             ASSERT(next->m_previousSibling == newChild);
@@ -318,7 +318,7 @@ void CounterNode::insertAfter(CounterNode* newChild, CounterNode* refChild, cons
     newChild->m_firstChild = 0;
     newChild->m_lastChild = 0;
     newChild->m_countInParent = newChild->computeCountInParent();
-    newChild->resetRenderers();
+    newChild->resetLayoutObjects();
     first->recount();
 }
 
