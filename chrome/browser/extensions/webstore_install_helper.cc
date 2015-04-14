@@ -53,6 +53,9 @@ void WebstoreInstallHelper::Start() {
   if (icon_url_.is_empty()) {
     icon_decode_complete_ = true;
   } else {
+    // No existing |icon_fetcher_| to avoid unbalanced AddRef().
+    CHECK(!icon_fetcher_.get());
+    AddRef();  // Balanced in OnFetchComplete().
     icon_fetcher_.reset(new chrome::BitmapFetcher(icon_url_, this));
     icon_fetcher_->Start(
         context_getter_, std::string(),
@@ -92,6 +95,10 @@ bool WebstoreInstallHelper::OnMessageReceived(const IPC::Message& message) {
 void WebstoreInstallHelper::OnFetchComplete(const GURL& url,
                                             const SkBitmap* image) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // OnFetchComplete should only be called as icon_fetcher_ delegate to avoid
+  // unbalanced Release().
+  CHECK(icon_fetcher_.get());
+
   if (image)
     icon_ = *image;
   icon_decode_complete_ = true;
@@ -104,6 +111,7 @@ void WebstoreInstallHelper::OnFetchComplete(const GURL& url,
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(&WebstoreInstallHelper::ReportResultsIfComplete, this));
+  Release();  // Balanced in Start().
 }
 
 void WebstoreInstallHelper::OnJSONParseSucceeded(
