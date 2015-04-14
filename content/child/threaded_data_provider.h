@@ -26,7 +26,7 @@ class SyncChannel;
 
 namespace content {
 class ResourceDispatcher;
-class WebThreadImplForWorkerScheduler;
+class WebThreadImpl;
 
 class ThreadedDataProvider {
  public:
@@ -78,7 +78,7 @@ class ThreadedDataProvider {
   int shm_size_;
   scoped_ptr<base::WeakPtrFactory<ThreadedDataProvider> >
       background_thread_weak_factory_;
-  WebThreadImplForWorkerScheduler& background_thread_;
+  WebThreadImpl& background_thread_;
   IPC::SyncChannel* ipc_channel_;
   blink::WebThreadedDataReceiver* threaded_data_receiver_;
   bool resource_filter_active_;

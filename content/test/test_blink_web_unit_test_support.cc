@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/scheduler/renderer_scheduler.h"
 #include "content/renderer/scheduler/web_scheduler_impl.h"
-#include "content/renderer/scheduler/webthread_impl_for_renderer_scheduler.h"
+#include "content/renderer/scheduler/webthread_impl_for_scheduler.h"
 #include "content/test/mock_webclipboard_impl.h"
 #include "content/test/web_gesture_curve_mock.h"
 #include "content/test/web_layer_tree_view_impl_for_testing.h"
@@ -59,8 +59,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
   if (base::MessageLoopProxy::current()) {
     renderer_scheduler_ = RendererScheduler::Create();
     web_scheduler_.reset(new WebSchedulerImpl(renderer_scheduler_.get()));
-    web_thread_.reset(
-        new WebThreadImplForRendererScheduler(renderer_scheduler_.get()));
+    web_thread_.reset(new WebThreadImplForScheduler(renderer_scheduler_.get()));
   }
 
   blink::initialize(this);

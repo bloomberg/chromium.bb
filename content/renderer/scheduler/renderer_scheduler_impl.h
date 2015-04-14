@@ -99,7 +99,6 @@ class CONTENT_EXPORT RendererSchedulerImpl
   bool CanEnterLongIdlePeriod(
       base::TimeTicks now,
       base::TimeDelta* next_long_idle_period_delay_out) override;
-  void IsNotQuiescent() override {}
 
   // Returns the serialized scheduler state for tracing.
   scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValueLocked(

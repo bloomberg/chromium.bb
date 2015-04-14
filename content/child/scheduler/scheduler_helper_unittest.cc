@@ -133,8 +133,6 @@ class SchedulerHelperForTest : public SchedulerHelper,
   MOCK_METHOD2(CanEnterLongIdlePeriod,
                bool(base::TimeTicks now,
                     base::TimeDelta* next_long_idle_period_delay_out));
-
-  MOCK_METHOD0(IsNotQuiescent, void());
 };
 
 class BaseSchedulerHelperTest : public testing::Test {

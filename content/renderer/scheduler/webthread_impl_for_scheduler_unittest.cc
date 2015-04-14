@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/scheduler/webthread_impl_for_renderer_scheduler.h"
+#include "content/renderer/scheduler/webthread_impl_for_scheduler.h"
 
 #include "base/run_loop.h"
 #include "content/child/scheduler/scheduler_message_loop_delegate.h"
@@ -28,14 +28,14 @@ class MockTaskObserver : public blink::WebThread::TaskObserver {
 };
 }  // namespace
 
-class WebThreadImplForRendererSchedulerTest : public testing::Test {
+class WebThreadImplForSchedulerTest : public testing::Test {
  public:
-  WebThreadImplForRendererSchedulerTest()
+  WebThreadImplForSchedulerTest()
       : scheduler_(SchedulerMessageLoopDelegate::Create(&message_loop_)),
         default_task_runner_(scheduler_.DefaultTaskRunner()),
         thread_(&scheduler_) {}
 
-  ~WebThreadImplForRendererSchedulerTest() override {}
+  ~WebThreadImplForSchedulerTest() override {}
 
   void SetWorkBatchSizeForTesting(size_t work_batch_size) {
     scheduler_.SetWorkBatchSizeForTesting(work_batch_size);
@@ -51,12 +51,12 @@ class WebThreadImplForRendererSchedulerTest : public testing::Test {
   base::MessageLoop message_loop_;
   RendererSchedulerImpl scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
-  WebThreadImplForRendererScheduler thread_;
+  WebThreadImplForScheduler thread_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebThreadImplForRendererSchedulerTest);
+  DISALLOW_COPY_AND_ASSIGN(WebThreadImplForSchedulerTest);
 };
 
-TEST_F(WebThreadImplForRendererSchedulerTest, TestTaskObserver) {
+TEST_F(WebThreadImplForSchedulerTest, TestTaskObserver) {
   MockTaskObserver observer;
   thread_.addTaskObserver(&observer);
   scoped_ptr<MockTask> task(new MockTask());
@@ -75,7 +75,7 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestTaskObserver) {
   thread_.removeTaskObserver(&observer);
 }
 
-TEST_F(WebThreadImplForRendererSchedulerTest, TestWorkBatchWithOneTask) {
+TEST_F(WebThreadImplForSchedulerTest, TestWorkBatchWithOneTask) {
   MockTaskObserver observer;
   thread_.addTaskObserver(&observer);
   scoped_ptr<MockTask> task(new MockTask());
@@ -95,7 +95,7 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestWorkBatchWithOneTask) {
   thread_.removeTaskObserver(&observer);
 }
 
-TEST_F(WebThreadImplForRendererSchedulerTest, TestWorkBatchWithTwoTasks) {
+TEST_F(WebThreadImplForSchedulerTest, TestWorkBatchWithTwoTasks) {
   MockTaskObserver observer;
   thread_.addTaskObserver(&observer);
   scoped_ptr<MockTask> task1(new MockTask());
@@ -121,7 +121,7 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestWorkBatchWithTwoTasks) {
   thread_.removeTaskObserver(&observer);
 }
 
-TEST_F(WebThreadImplForRendererSchedulerTest, TestWorkBatchWithThreeTasks) {
+TEST_F(WebThreadImplForSchedulerTest, TestWorkBatchWithThreeTasks) {
   MockTaskObserver observer;
   thread_.addTaskObserver(&observer);
   scoped_ptr<MockTask> task1(new MockTask());
@@ -172,7 +172,7 @@ void EnterRunLoop(base::MessageLoop* message_loop, blink::WebThread* thread) {
   run_loop.Run();
 }
 
-TEST_F(WebThreadImplForRendererSchedulerTest, TestNestedRunLoop) {
+TEST_F(WebThreadImplForSchedulerTest, TestNestedRunLoop) {
   MockTaskObserver observer;
   thread_.addTaskObserver(&observer);
 

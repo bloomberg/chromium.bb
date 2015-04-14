@@ -2,49 +2,42 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/scheduler/webthread_impl_for_renderer_scheduler.h"
+#include "content/renderer/scheduler/webthread_impl_for_scheduler.h"
 
 #include "content/renderer/scheduler/renderer_scheduler.h"
 #include "third_party/WebKit/public/platform/WebTraceLocation.h"
 
 namespace content {
 
-WebThreadImplForRendererScheduler::WebThreadImplForRendererScheduler(
+WebThreadImplForScheduler::WebThreadImplForScheduler(
     RendererScheduler* scheduler)
     : task_runner_(scheduler->DefaultTaskRunner()),
-      idle_task_runner_(scheduler->IdleTaskRunner()),
       scheduler_(scheduler),
       thread_id_(base::PlatformThread::CurrentId()) {
 }
 
-WebThreadImplForRendererScheduler::~WebThreadImplForRendererScheduler() {
+WebThreadImplForScheduler::~WebThreadImplForScheduler() {
 }
 
-blink::PlatformThreadId WebThreadImplForRendererScheduler::threadId() const {
+blink::PlatformThreadId WebThreadImplForScheduler::threadId() const {
   return thread_id_;
 }
 
-base::MessageLoop* WebThreadImplForRendererScheduler::MessageLoop() const {
+base::MessageLoop* WebThreadImplForScheduler::MessageLoop() const {
   DCHECK(isCurrentThread());
   return base::MessageLoop::current();
 }
 
-base::SingleThreadTaskRunner* WebThreadImplForRendererScheduler::TaskRunner()
-    const {
+base::SingleThreadTaskRunner* WebThreadImplForScheduler::TaskRunner() const {
   return task_runner_.get();
 }
 
-SingleThreadIdleTaskRunner* WebThreadImplForRendererScheduler::IdleTaskRunner()
-    const {
-  return idle_task_runner_.get();
-}
-
-void WebThreadImplForRendererScheduler::AddTaskObserverInternal(
+void WebThreadImplForScheduler::AddTaskObserverInternal(
     base::MessageLoop::TaskObserver* observer) {
   scheduler_->AddTaskObserver(observer);
 }
 
-void WebThreadImplForRendererScheduler::RemoveTaskObserverInternal(
+void WebThreadImplForScheduler::RemoveTaskObserverInternal(
     base::MessageLoop::TaskObserver* observer) {
   scheduler_->RemoveTaskObserver(observer);
 }
