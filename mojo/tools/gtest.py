@@ -70,9 +70,7 @@ def get_fixtures(mojo_shell, apptest):
   [TestSuite.TestFixture, ... ]
   An empty list is returned on failure, with errors logged.
   """
-  command = [mojo_shell,
-             "--args-for={0} --gtest_list_tests".format(apptest),
-             apptest]
+  command = [mojo_shell, "--gtest_list_tests", apptest]
   try:
     list_output = subprocess.check_output(command, stderr=subprocess.STDOUT)
     _logging.debug("Tests listed:\n%s" % list_output)

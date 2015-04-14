@@ -4,6 +4,7 @@
 
 #include "mojo/shell/native_application_support.h"
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -103,6 +104,26 @@ bool RunNativeApplication(base::NativeLibrary app_library,
     DVLOG(2) << "InitGoRuntime: Initializing Go Runtime found in app";
     init_go_runtime();
   }
+
+#if !defined(OS_WIN)
+  // On Windows, initializing base::CommandLine with null parameters gets the
+  // process's command line from the OS. Other platforms need it to be passed
+  // in. This needs to be passed in before the app initializes the command line,
+  // which is done as soon as it loads.
+  typedef void (*InitCommandLineArgs)(int, const char* const*);
+  InitCommandLineArgs init_command_line_args =
+      reinterpret_cast<InitCommandLineArgs>(
+          base::GetFunctionPointerFromNativeLibrary(app_library,
+                                                    "InitCommandLineArgs"));
+  if (init_command_line_args) {
+    int argc = 0;
+    base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+    const char** argv = new const char* [cmd_line->argv().size()];
+    for (auto& arg : cmd_line->argv())
+      argv[argc++] = arg.c_str();
+    init_command_line_args(argc, argv);
+  }
+#endif
 
   typedef MojoResult (*MojoMainFunction)(MojoHandle);
   MojoMainFunction main_function = reinterpret_cast<MojoMainFunction>(

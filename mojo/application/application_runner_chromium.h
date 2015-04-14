@@ -30,6 +30,8 @@ class ApplicationRunnerChromium {
   explicit ApplicationRunnerChromium(ApplicationDelegate* delegate);
   ~ApplicationRunnerChromium();
 
+  static void InitBaseCommandLine();
+
   void set_message_loop_type(base::MessageLoop::Type type);
 
   // Once the various parameters have been set above, use Run to initialize an

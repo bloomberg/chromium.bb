@@ -83,10 +83,6 @@ class ApplicationManager {
   void RegisterContentHandler(const std::string& mime_type,
                               const GURL& content_handler_url);
 
-  void RegisterExternalApplication(const GURL& application_url,
-                                   const std::vector<std::string>& args,
-                                   ApplicationPtr application);
-
   // Sets the default Loader to be used if not overridden by SetLoaderForURL()
   // or SetLoaderForScheme().
   void set_default_loader(scoped_ptr<ApplicationLoader> loader) {
@@ -105,11 +101,6 @@ class ApplicationManager {
   // Sets a Loader to be used for a specific url scheme.
   void SetLoaderForScheme(scoped_ptr<ApplicationLoader> loader,
                           const std::string& scheme);
-  // These strings will be passed to the Initialize() method when an Application
-  // is instantiated.
-  // TODO(vtl): Maybe we should store/compare resolved URLs, like
-  // SetNativeOptionsForURL() below?
-  void SetArgsForURL(const std::vector<std::string>& args, const GURL& url);
   // These options will be used in running any native application at |url|
   // (which shouldn't contain a query string). (|url| will be mapped and
   // resolved, and any application whose base resolved URL matches it will have
@@ -135,7 +126,6 @@ class ApplicationManager {
   typedef std::map<GURL, ApplicationLoader*> URLToLoaderMap;
   typedef std::map<Identity, ShellImpl*> IdentityToShellImplMap;
   typedef std::map<GURL, ContentHandlerConnection*> URLToContentHandlerMap;
-  typedef std::map<GURL, std::vector<std::string>> URLToArgsMap;
   typedef std::map<std::string, GURL> MimeTypeToURLMap;
   typedef std::map<GURL, NativeRunnerFactory::Options> URLToNativeOptionsMap;
 
@@ -204,9 +194,6 @@ class ApplicationManager {
   // Removes a ContentHandler when it encounters an error.
   void OnContentHandlerError(ContentHandlerConnection* content_handler);
 
-  // Returns the arguments for the given url.
-  std::vector<std::string> GetArgsForURL(const GURL& url);
-
   void CleanupRunner(NativeRunner* runner);
 
   Delegate* const delegate_;
@@ -219,7 +206,6 @@ class ApplicationManager {
 
   IdentityToShellImplMap identity_to_shell_impl_;
   URLToContentHandlerMap url_to_content_handler_;
-  URLToArgsMap url_to_args_;
   // Note: The keys are URLs after mapping and resolving.
   URLToNativeOptionsMap url_to_native_options_;
 

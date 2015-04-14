@@ -15,36 +15,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
-#include "mojo/shell/command_line_util.h"
 #include "mojo/shell/context.h"
 #include "mojo/shell/switches.h"
 
 namespace mojo {
 namespace shell {
 namespace {
-
-void Usage() {
-  std::cerr << "Launch Mojo applications.\n";
-  std::cerr
-      << "Usage: mojo_shell"
-      << " [--" << switches::kArgsFor << "=<mojo-app>]"
-      << " [--" << switches::kContentHandlers << "=<handlers>]"
-      << " [--" << switches::kDisableCache << "]"
-      << " [--" << switches::kEnableMultiprocess << "]"
-      << " [--" << switches::kOrigin << "=<url-lib-path>]"
-      << " [--" << switches::kTraceStartup << "]"
-      << " [--" << switches::kURLMappings << "=from1=to1,from2=to2]"
-      << " [--" << switches::kPredictableAppFilenames << "]"
-      << " [--" << switches::kWaitForDebugger << "]"
-      << " <mojo-app> ...\n\n"
-      << "A <mojo-app> is a Mojo URL or a Mojo URL and arguments within "
-      << "quotes.\n"
-      << "Example: mojo_shell \"mojo:js_standalone test.js\".\n"
-      << "<url-lib-path> is searched for shared libraries named by mojo URLs.\n"
-      << "The value of <handlers> is a comma separated list like:\n"
-      << "text/html,mojo:html_viewer,"
-      << "application/javascript,mojo:js_content_handler\n";
-}
 
 // Whether we're currently tracing.
 bool g_tracing = false;
@@ -99,28 +75,28 @@ void StopTracingAndFlushToDisk() {
   flush_complete_event.Wait();
 }
 
+void StartApp(mojo::shell::Context* context) {
+  // If a mojo app isn't specified (i.e. for an apptest), run the mojo shell's
+  // window manager.
+  GURL app_url(GURL("mojo:window_manager"));
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  base::CommandLine::StringVector args = command_line->GetArgs();
+  for (size_t i = 0; i < args.size(); ++i) {
+    GURL possible_app(args[i]);
+    if (possible_app.SchemeIs("mojo")) {
+      app_url = possible_app;
+      break;
+    }
+  }
+
+  context->Run(app_url);
+}
+
 }  // namespace
 
 int LauncherProcessMain(int argc, char** argv) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-
-  const std::set<std::string> all_switches = switches::GetAllSwitches();
-  const base::CommandLine::SwitchMap switches = command_line.GetSwitches();
-  bool found_unknown_switch = false;
-  for (const auto& s : switches) {
-    if (all_switches.find(s.first) == all_switches.end()) {
-      std::cerr << "unknown switch: " << s.first << std::endl;
-      found_unknown_switch = true;
-    }
-  }
-
-  if (found_unknown_switch || command_line.HasSwitch(switches::kHelp) ||
-      command_line.GetArgs().empty()) {
-    Usage();
-    return 0;
-  }
-
   if (command_line.HasSwitch(switches::kTraceStartup)) {
     g_tracing = true;
     base::trace_event::CategoryFilter category_filter(
@@ -136,7 +112,6 @@ int LauncherProcessMain(int argc, char** argv) {
   {
     base::MessageLoop message_loop;
     if (!shell_context.Init()) {
-      Usage();
       return 0;
     }
     if (g_tracing) {
@@ -145,16 +120,7 @@ int LauncherProcessMain(int argc, char** argv) {
                                    base::TimeDelta::FromSeconds(5));
     }
 
-    // The mojo_shell --args-for command-line switch is handled specially
-    // because it can appear more than once. The base::CommandLine class
-    // collapses multiple occurrences of the same switch.
-    for (int i = 1; i < argc; i++) {
-      ApplyApplicationArgs(&shell_context, argv[i]);
-    }
-
-    message_loop.PostTask(
-        FROM_HERE,
-        base::Bind(&mojo::shell::RunCommandLineApps, &shell_context));
+    message_loop.PostTask(FROM_HERE, base::Bind(&StartApp, &shell_context));
     message_loop.Run();
 
     // Must be called before |message_loop| is destroyed.

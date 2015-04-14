@@ -4,9 +4,9 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "mojo/application/application_test_base_chromium.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
-#include "mojo/public/cpp/application/application_test_base.h"
 #include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "third_party/mojo_services/src/view_manager/public/cpp/view.h"
@@ -84,7 +84,7 @@ class WindowManagerApplicationTest : public test::ApplicationTestBase {
   // ApplicationTestBase:
   void SetUp() override {
     ApplicationTestBase::SetUp();
-    application_impl()->ConnectToService("mojo:window_manager",
+    application_impl()->ConnectToService("mojo:test_window_manager",
                                          &window_manager_);
   }
   ApplicationDelegate* GetApplicationDelegate() override {

@@ -59,8 +59,7 @@ def main():
 
     apptest_result = "Succeeded"
     for fixture in fixtures:
-      args_for_apptest = " ".join(["--args-for=" + apptest,
-                                   "--gtest_filter=" + fixture] + apptest_args)
+      args_for_apptest = " ".join(["--gtest_filter=" + fixture] + apptest_args)
 
       success = RunApptestInShell(mojo_shell_path, apptest,
                                   shell_args + [args_for_apptest])

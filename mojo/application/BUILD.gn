@@ -38,14 +38,18 @@ source_set("content_handler") {
 source_set("test_support") {
   testonly = true
   sources = [
+    "application_test_base_chromium.cc",
+    "application_test_base_chromium.h",
     "application_test_main_chromium.cc",
   ]
 
-  public_deps = [
-    "//third_party/mojo/src/mojo/public/cpp/application:test_support",
-  ]
   deps = [
     "//base",
     "//base/test:test_support",
+    "//third_party/mojo/src/mojo/public/cpp/application:application",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//third_party/mojo/src/mojo/public/cpp/environment",
+    "//third_party/mojo/src/mojo/public/cpp/system",
+    "//testing/gtest",
   ]
 }

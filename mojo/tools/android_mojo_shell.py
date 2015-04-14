@@ -10,28 +10,10 @@ import sys
 from mopy.config import Config
 from mopy import android
 
-USAGE = ("android_mojo_shell.py "
-         "[--args-for=<mojo-app>] "
-         "[--content-handlers=<handlers>] "
-         "[--enable-external-applications] "
-         "[--disable-cache] "
-         "[--enable-multiprocess] "
-         "[--url-mappings=from1=to1,from2=to2] "
-         "[<mojo-app>] "
-         """
-
-A <mojo-app> is a Mojo URL or a Mojo URL and arguments within quotes.
-Example: mojo_shell "mojo:js_standalone test.js".
-<url-lib-path> is searched for shared libraries named by mojo URLs.
-The value of <handlers> is a comma separated list like:
-text/html,mojo:html_viewer,application/javascript,mojo:js_content_handler
-""")
-
-
 def main():
   logging.basicConfig()
 
-  parser = argparse.ArgumentParser(usage=USAGE)
+  parser = argparse.ArgumentParser("Helper for running mojo_shell")
 
   debug_group = parser.add_mutually_exclusive_group()
   debug_group.add_argument('--debug', help='Debug build (default)',

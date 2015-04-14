@@ -419,34 +419,6 @@ class TestDelegate : public ApplicationManager::Delegate {
   std::map<GURL, GURL> mappings_;
 };
 
-class TestExternal : public ApplicationDelegate {
- public:
-  TestExternal() : configure_incoming_connection_called_(false) {}
-
-  void Initialize(ApplicationImpl* app) override {
-    initialize_args_ = app->args();
-    base::MessageLoop::current()->Quit();
-  }
-
-  bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
-    configure_incoming_connection_called_ = true;
-    base::MessageLoop::current()->Quit();
-    return true;
-  }
-
-  const std::vector<std::string>& initialize_args() const {
-    return initialize_args_;
-  }
-
-  bool configure_incoming_connection_called() const {
-    return configure_incoming_connection_called_;
-  }
-
- private:
-  std::vector<std::string> initialize_args_;
-  bool configure_incoming_connection_called_;
-};
-
 class ApplicationManagerTest : public testing::Test {
  public:
   ApplicationManagerTest() : tester_context_(&loop_) {}
@@ -513,75 +485,6 @@ TEST_F(ApplicationManagerTest, NoArgs) {
   loop_.Run();
   std::vector<std::string> app_args = loader->GetArgs();
   EXPECT_EQ(0U, app_args.size());
-}
-
-// Confirm that arguments are sent to an application.
-TEST_F(ApplicationManagerTest, Args) {
-  ApplicationManager am(&test_delegate_);
-  GURL test_url("test:test");
-  std::vector<std::string> args;
-  args.push_back("test_arg1");
-  args.push_back("test_arg2");
-  am.SetArgsForURL(args, test_url);
-  TestApplicationLoader* loader = new TestApplicationLoader;
-  loader->set_context(&context_);
-  am.SetLoaderForURL(scoped_ptr<ApplicationLoader>(loader), test_url);
-  TestServicePtr test_service;
-  am.ConnectToService(test_url, &test_service);
-  TestClient test_client(test_service.Pass());
-  test_client.Test("test");
-  loop_.Run();
-  std::vector<std::string> app_args = loader->GetArgs();
-  ASSERT_EQ(args.size(), app_args.size());
-  EXPECT_EQ(args[0], app_args[0]);
-  EXPECT_EQ(args[1], app_args[1]);
-}
-
-// Confirm that arguments are aggregated through mappings.
-TEST_F(ApplicationManagerTest, ArgsAndMapping) {
-  ApplicationManager am(&test_delegate_);
-  GURL test_url("test:test");
-  GURL test_url2("test:test2");
-  test_delegate_.AddMapping(test_url, test_url2);
-  std::vector<std::string> args;
-  args.push_back("test_arg1");
-  args.push_back("test_arg2");
-  am.SetArgsForURL(args, test_url);
-  std::vector<std::string> args2;
-  args2.push_back("test_arg3");
-  args2.push_back("test_arg4");
-  am.SetArgsForURL(args2, test_url2);
-  TestApplicationLoader* loader = new TestApplicationLoader;
-  loader->set_context(&context_);
-  am.SetLoaderForURL(scoped_ptr<ApplicationLoader>(loader), test_url2);
-  {
-    // Connext to the mapped url
-    TestServicePtr test_service;
-    am.ConnectToService(test_url, &test_service);
-    TestClient test_client(test_service.Pass());
-    test_client.Test("test");
-    loop_.Run();
-    std::vector<std::string> app_args = loader->GetArgs();
-    ASSERT_EQ(args.size() + args2.size(), app_args.size());
-    EXPECT_EQ(args[0], app_args[0]);
-    EXPECT_EQ(args[1], app_args[1]);
-    EXPECT_EQ(args2[0], app_args[2]);
-    EXPECT_EQ(args2[1], app_args[3]);
-  }
-  {
-    // Connext to the target url
-    TestServicePtr test_service;
-    am.ConnectToService(test_url2, &test_service);
-    TestClient test_client(test_service.Pass());
-    test_client.Test("test");
-    loop_.Run();
-    std::vector<std::string> app_args = loader->GetArgs();
-    ASSERT_EQ(args.size() + args2.size(), app_args.size());
-    EXPECT_EQ(args[0], app_args[0]);
-    EXPECT_EQ(args[1], app_args[1]);
-    EXPECT_EQ(args2[0], app_args[2]);
-    EXPECT_EQ(args2[1], app_args[3]);
-  }
 }
 
 TEST_F(ApplicationManagerTest, ClientError) {
@@ -772,22 +675,6 @@ TEST_F(ApplicationManagerTest, MappedURLsShouldWorkWithLoaders) {
   EXPECT_EQ(1, custom_loader->num_loads());
   custom_loader->set_context(nullptr);
 }
-
-TEST_F(ApplicationManagerTest, ExternalApp) {
-  ApplicationPtr application;
-  TestExternal external;
-  std::vector<std::string> args;
-  args.push_back("test");
-  ApplicationImpl app(&external, GetProxy(&application));
-  application_manager_->RegisterExternalApplication(GURL("mojo:test"), args,
-                                                    application.Pass());
-  loop_.Run();
-  EXPECT_EQ(args, external.initialize_args());
-  application_manager_->ConnectToServiceByName(GURL("mojo:test"),
-                                               std::string());
-  loop_.Run();
-  EXPECT_TRUE(external.configure_incoming_connection_called());
-};
 
 TEST_F(ApplicationManagerTest, TestQueryWithLoaders) {
   TestApplicationLoader* url_loader = new TestApplicationLoader;
