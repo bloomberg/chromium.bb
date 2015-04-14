@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info_internal.h"
 
@@ -28,7 +29,7 @@ int64 AmountOfPhysicalMemory() {
   return AmountOfMemory(_SC_PHYS_PAGES);
 }
 
-size_t MaxSharedMemorySize() {
+uint64 MaxSharedMemorySize() {
   std::string contents;
   base::ReadFileToString(base::FilePath("/proc/sys/kernel/shmmax"), &contents);
   DCHECK(!contents.empty());
@@ -40,18 +41,15 @@ size_t MaxSharedMemorySize() {
   if (!base::StringToUint64(contents, &limit)) {
     limit = 0;
   }
-  if (limit > std::numeric_limits<size_t>::max()) {
-    limit = 0;
-  }
   DCHECK_GT(limit, 0u);
-  return static_cast<size_t>(limit);
+  return limit;
 }
 
 base::LazyInstance<
     base::internal::LazySysInfoValue<int64, AmountOfPhysicalMemory> >::Leaky
     g_lazy_physical_memory = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<
-    base::internal::LazySysInfoValue<size_t, MaxSharedMemorySize> >::Leaky
+    base::internal::LazySysInfoValue<uint64, MaxSharedMemorySize> >::Leaky
     g_lazy_max_shared_memory = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -69,7 +67,7 @@ int64 SysInfo::AmountOfPhysicalMemory() {
 }
 
 // static
-size_t SysInfo::MaxSharedMemorySize() {
+uint64 SysInfo::MaxSharedMemorySize() {
   return g_lazy_max_shared_memory.Get().value();
 }
 
