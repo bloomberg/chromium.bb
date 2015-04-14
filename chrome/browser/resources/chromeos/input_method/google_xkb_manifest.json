@@ -176,6 +176,22 @@
       "options_page": "hmm_options.html?code=xkb:us:dvorak:eng"
     },
     {
+      "name": "__MSG_keyboard_us_dvp__",
+      "type": "ime",
+      "id": "xkb:us:dvp:eng",
+      "indicator": "DVP",
+      "description": "",
+      "language": [
+        "en",
+        "en-US"
+      ],
+      "layouts": [
+        "us(dvp)"
+      ],
+      "input_view": "inputview.html#id=us-dvp&language=en-US&passwordLayout=us-dvp&name=keyboard_us_dvp",
+      "options_page": "hmm_options.html?code=xkb:us:dvp:eng"
+    },
+    {
       "name": "__MSG_keyboard_us_colemak__",
       "type": "ime",
       "id": "xkb:us:colemak:eng",
