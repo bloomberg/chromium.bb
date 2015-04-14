@@ -245,7 +245,7 @@ llvm-sb-setup() {
   # The LLVM sandboxed build uses the normally-disallowed external
   # function __nacl_get_arch().  Allow that for now.
   local flags="-static -I$(GetAbsolutePath ${NACL_ROOT}/..) \
-    --pnacl-disable-abi-check "
+    --pnacl-disable-abi-check -gline-tables-only "
 
   LLVM_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
@@ -420,14 +420,6 @@ translate-sb-tool() {
   local arches=$2
   local have_segment_gap=$3
   local pexe="${toolname}.pexe"
-  if ${PNACL_PRUNE}; then
-    # Only strip debug, to preserve symbol names for testing. This is okay
-    # because we strip the native nexe later anyway.
-    # So, why bother stripping here at all?
-    # It does appear to affect the size of the nexe:
-    # http://code.google.com/p/nativeclient/issues/detail?id=3305
-    ${PNACL_STRIP} --strip-debug "${pexe}"
-  fi
 
   local tarch
   for tarch in ${arches}; do
@@ -555,7 +547,7 @@ binutils-gold-sb-configure() {
   # function __nacl_get_arch().  Allow that for now.
   #
   local flags="-static -I$(GetAbsolutePath ${NACL_ROOT}/..) \
-    -fno-exceptions -O3 --pnacl-disable-abi-check "
+    -fno-exceptions -O3 --pnacl-disable-abi-check -gline-tables-only "
   local configure_env=(
     AR="${PNACL_AR}" \
     AS="${PNACL_AS}" \
