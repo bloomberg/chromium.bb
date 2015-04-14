@@ -352,7 +352,7 @@ TEST(DOMStorageDatabaseTest, TestCanOpenFileThatIsNotADatabase) {
     // Earlier versions of Chromium compiled against SQLite 3.6.7.3, which
     // returned SQLITE_IOERR_SHORT_READ in this case.  Some platforms may still
     // compile against an earlier SQLite via USE_SYSTEM_SQLITE.
-    if (ignore_errors.SQLiteLibVersionNumber() < 3008007) {
+    if (ignore_errors.SQLiteLibVersionNumber() < 3008005) {
       ignore_errors.IgnoreError(SQLITE_IOERR_SHORT_READ);
     } else {
       ignore_errors.IgnoreError(SQLITE_NOTADB);
