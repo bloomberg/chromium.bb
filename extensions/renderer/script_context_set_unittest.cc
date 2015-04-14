@@ -53,7 +53,7 @@ TEST(ScriptContextSet, Lifecycle) {
   EXPECT_EQ(1u, set_copy.size());
 
   // After removal, the context should be marked for destruction.
-  EXPECT_FALSE(context->is_valid());
+  EXPECT_FALSE(context->web_frame());
 
   // Run loop to do the actual deletion.
   loop.RunUntilIdle();

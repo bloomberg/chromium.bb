@@ -365,8 +365,7 @@ void Dispatcher::WillReleaseScriptContext(
     return;
 
   context->DispatchOnUnloadEvent();
-  // TODO(kalman): Make |request_sender| use |context->AddInvalidationObserver|.
-  // In fact |request_sender_| should really be owned by ScriptContext.
+  // TODO(kalman): add an invalidation observer interface to ScriptContext.
   request_sender_->InvalidateSource(context);
 
   script_context_set_.Remove(context);

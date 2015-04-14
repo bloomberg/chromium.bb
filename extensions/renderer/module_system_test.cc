@@ -157,7 +157,7 @@ ModuleSystemTestEnvironment::ModuleSystemTestEnvironment(v8::Isolate* isolate)
 
 ModuleSystemTestEnvironment::~ModuleSystemTestEnvironment() {
   if (context_->is_valid())
-    ShutdownModuleSystem();
+    context_->v8_context()->Exit();
 }
 
 void ModuleSystemTestEnvironment::RegisterModule(const std::string& name,
@@ -196,7 +196,6 @@ void ModuleSystemTestEnvironment::ShutdownGin() {
 }
 
 void ModuleSystemTestEnvironment::ShutdownModuleSystem() {
-  CHECK(context_->is_valid());
   context_->v8_context()->Exit();
   context_->Invalidate();
 }

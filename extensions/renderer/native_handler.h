@@ -29,9 +29,6 @@ class NativeHandler {
   //
   // Subclasses should override to invalidate their own V8 state. If they do
   // they must call their superclass' Invalidate().
-  //
-  // Invalidate() will be called on destruction, if it hasn't already been.
-  // Subclasses don't need to do it themselves.
   virtual void Invalidate();
 
  protected:

@@ -9,6 +9,7 @@
   var sendRequest = require('sendRequest').sendRequest;
   var utils = require('utils');
   var validate = require('schemaUtils').validate;
+  var unloadEvent = require('unload_event');
 
   // Schemas for the rule-style functions on the events API that
   // only need to be generated occasionally, so populate them lazily.
@@ -36,6 +37,9 @@
 
   // A map of event names to the event object that is registered to that name.
   var attachedNamedEvents = {};
+
+  // An array of all attached event objects, used for detaching on unload.
+  var allAttachedEvents = [];
 
   // A map of functions that massage event arguments before they are dispatched.
   // Key is event name, value is function.
@@ -279,6 +283,7 @@
     this.attachmentStrategy.onAddedListener(listener);
 
     if (this.listeners.length == 0) {
+      allAttachedEvents[allAttachedEvents.length] = this;
       if (this.eventName) {
         if (attachedNamedEvents[this.eventName]) {
           throw new Error("Event '" + this.eventName +
@@ -302,6 +307,9 @@
     this.attachmentStrategy.onRemovedListener(removedListener);
 
     if (this.listeners.length == 0) {
+      var i = $Array.indexOf(allAttachedEvents, this);
+      if (i >= 0)
+        delete allAttachedEvents[i];
       if (this.eventName) {
         if (!attachedNamedEvents[this.eventName]) {
           throw new Error(
@@ -489,6 +497,14 @@
       [this.eventName, this.webViewInstanceId, ruleIdentifiers, cb],
       ruleFunctionSchemas.getRules.parameters);
   }
+
+  unloadEvent.addListener(function() {
+    for (var i = 0; i < allAttachedEvents.length; ++i) {
+      var event = allAttachedEvents[i];
+      if (event)
+        event.detach_();
+    }
+  });
 
   var Event = utils.expose('Event', EventImpl, { functions: [
     'addListener',

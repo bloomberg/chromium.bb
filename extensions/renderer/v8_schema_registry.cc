@@ -29,8 +29,6 @@ class SchemaRegistryNativeHandler : public ObjectBackedNativeHandler {
                              base::Unretained(this)));
   }
 
-  ~SchemaRegistryNativeHandler() override { context_->Invalidate(); }
-
  private:
   void GetSchema(const v8::FunctionCallbackInfo<v8::Value>& args) {
     args.GetReturnValue().Set(

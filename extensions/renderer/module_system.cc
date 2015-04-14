@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -152,10 +151,12 @@ ModuleSystem::ModuleSystem(ScriptContext* context, SourceMap* source_map)
   }
 }
 
-ModuleSystem::~ModuleSystem() {
-}
+ModuleSystem::~ModuleSystem() { Invalidate(); }
 
 void ModuleSystem::Invalidate() {
+  if (!is_valid())
+    return;
+
   // Clear the module system properties from the global context. It's polite,
   // and we use this as a signal in lazy handlers that we no longer exist.
   {
@@ -167,11 +168,12 @@ void ModuleSystem::Invalidate() {
         v8::String::NewFromUtf8(GetIsolate(), kModuleSystem));
   }
 
-  // Invalidate all active and clobbered NativeHandlers we own.
-  for (const auto& handler : native_handler_map_)
-    handler.second->Invalidate();
-  for (const auto& clobbered_handler : clobbered_native_handlers_)
-    clobbered_handler->Invalidate();
+  // Invalidate all of the successfully required handlers we own.
+  for (NativeHandlerMap::iterator it = native_handler_map_.begin();
+       it != native_handler_map_.end();
+       ++it) {
+    it->second->Invalidate();
+  }
 
   ObjectBackedNativeHandler::Invalidate();
 }
@@ -299,13 +301,11 @@ v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
 void ModuleSystem::RegisterNativeHandler(
     const std::string& name,
     scoped_ptr<NativeHandler> native_handler) {
-  ClobberExistingNativeHandler(name);
   native_handler_map_[name] =
       linked_ptr<NativeHandler>(native_handler.release());
 }
 
 void ModuleSystem::OverrideNativeHandlerForTest(const std::string& name) {
-  ClobberExistingNativeHandler(name);
   overridden_native_handlers_.insert(name);
 }
 
@@ -683,14 +683,6 @@ void ModuleSystem::OnModuleLoaded(
   v8::Handle<v8::Promise::Resolver> resolver_local(
       v8::Local<v8::Promise::Resolver>::New(GetIsolate(), *resolver));
   resolver_local->Resolve(value);
-}
-
-void ModuleSystem::ClobberExistingNativeHandler(const std::string& name) {
-  NativeHandlerMap::iterator existing_handler = native_handler_map_.find(name);
-  if (existing_handler != native_handler_map_.end()) {
-    clobbered_native_handlers_.push_back(existing_handler->second);
-    native_handler_map_.erase(existing_handler);
-  }
 }
 
 }  // namespace extensions

@@ -38,10 +38,6 @@ class ObjectBackedNativeHandler : public NativeHandler {
   // Installs a new 'route' from |name| to |handler_function|. This means that
   // NewInstance()s of this ObjectBackedNativeHandler will have a property
   // |name| which will be handled by |handler_function|.
-  //
-  // Routed functions are destroyed along with the destruction of this class,
-  // and are never called back into, therefore it's safe for |handler_function|
-  // to bind to base::Unretained.
   void RouteFunction(const std::string& name,
                      const HandlerFunction& handler_function);
 
