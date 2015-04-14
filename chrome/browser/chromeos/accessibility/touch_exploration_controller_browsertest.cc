@@ -192,7 +192,8 @@ IN_PROC_BROWSER_TEST_F(TouchExplorationTest, RewritesEventsWhenOn) {
 // This test makes sure that after the user clicks with split tap,
 // they continue to touch exploration mode if the original touch exploration
 // finger is still on the screen.
-IN_PROC_BROWSER_TEST_F(TouchExplorationTest, SplitTapExplore) {
+// Disabled due to failing upwards of 50% of the time (crbug.com/475923)
+IN_PROC_BROWSER_TEST_F(TouchExplorationTest, DISABLED_SplitTapExplore) {
   SwitchTouchExplorationMode(true);
   ui::test::EventGenerator generator(root_window_);
   aura::client::CursorClient* cursor_client =
