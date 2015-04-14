@@ -26,7 +26,6 @@
 #ifndef MarkupAccumulator_h
 #define MarkupAccumulator_h
 
-#include "core/dom/Position.h"
 #include "core/editing/markup.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
@@ -66,7 +65,7 @@ class MarkupAccumulator {
     WTF_MAKE_NONCOPYABLE(MarkupAccumulator);
     STACK_ALLOCATED();
 public:
-    MarkupAccumulator(WillBeHeapVector<RawPtrWillBeMember<Node>>*, EAbsoluteURLs, const Position& start, const Position& end, SerializationType = AsOwnerDocument);
+    MarkupAccumulator(WillBeHeapVector<RawPtrWillBeMember<Node>>*, EAbsoluteURLs, SerializationType = AsOwnerDocument);
     virtual ~MarkupAccumulator();
 
     String serializeNodes(Node& targetNode, EChildrenOnly);
@@ -80,8 +79,6 @@ public:
     virtual void appendEndTag(const Element&);
     static size_t totalLength(const Vector<String>&);
     size_t length() const { return m_markup.length(); }
-    const Position& startPosition() const { return m_start; }
-    const Position& endPosition() const { return m_end; }
     void concatenateMarkup(StringBuilder&);
     void appendAttributeValue(StringBuilder&, const String&, bool);
     virtual void appendCustomAttributes(StringBuilder&, const Element&, Namespaces*);
@@ -104,10 +101,6 @@ public:
     bool elementCannotHaveEndTag(const Node&);
     void appendEndMarkup(StringBuilder&, const Element&);
 
-    // These methods are used only at StyledMarkupAccumulator
-    String renderedText(Text&);
-    String stringValueForRange(const Node&);
-
 private:
     String resolveURLIfNeeded(const Element&, const String&) const;
     void appendQuotedURLAttributeValue(StringBuilder&, const Element&, const Attribute&);
@@ -123,8 +116,6 @@ private:
     StringBuilder m_markup;
     const EAbsoluteURLs m_resolveURLsMethod;
     SerializationType m_serializationType;
-    const Position m_start;
-    const Position m_end;
 };
 
 }

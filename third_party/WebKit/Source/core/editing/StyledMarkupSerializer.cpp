@@ -35,6 +35,7 @@
 #include "core/dom/Text.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/htmlediting.h"
+#include "core/editing/iterators/TextIterator.h"
 #include "core/editing/markup.h"
 #include "core/html/HTMLElement.h"
 #include "wtf/text/StringBuilder.h"
@@ -44,9 +45,12 @@ namespace blink {
 using namespace HTMLNames;
 
 StyledMarkupAccumulator::StyledMarkupAccumulator(StyledMarkupSerializer* serializer, EAbsoluteURLs shouldResolveURLs, const Position& start, const Position& end)
-    : MarkupAccumulator(nullptr, shouldResolveURLs, start, end)
+    : MarkupAccumulator(nullptr, shouldResolveURLs)
     , m_serializer(serializer)
+    , m_start(start.parentAnchoredEquivalent())
+    , m_end(end.parentAnchoredEquivalent())
 {
+    ASSERT(m_start.isNull() == m_end.isNull());
 }
 
 void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
@@ -65,7 +69,18 @@ void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
     }
 
     if (!m_serializer->shouldAnnotate() || parentIsTextarea) {
-        MarkupAccumulator::appendText(out, text);
+        const String& str = text.data();
+        unsigned length = str.length();
+        unsigned start = 0;
+        if (m_start.isNotNull() && m_end.isNotNull()) {
+            if (text == m_end.containerNode())
+                length = m_end.offsetInContainerNode();
+            if (text == m_start.containerNode()) {
+                start = m_start.offsetInContainerNode();
+                length -= start;
+            }
+        }
+        appendCharactersReplacingEntities(out, str, start, length, entityMaskForText(text));
     } else {
         const bool useRenderedText = !enclosingElementWithTag(firstPositionInNode(&text), selectTag);
         String content = useRenderedText ? renderedText(text) : stringValueForRange(text);
@@ -81,6 +96,30 @@ void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
 void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element, Namespaces*)
 {
     m_serializer->appendElement(out, element, false, StyledMarkupSerializer::DoesFullySelectNode);
+}
+
+String StyledMarkupAccumulator::renderedText(Text& textNode)
+{
+    int startOffset = 0;
+    int endOffset = textNode.length();
+    if (m_start.containerNode() == textNode)
+        startOffset = m_start.offsetInContainerNode();
+    if (m_end.containerNode() == textNode)
+        endOffset = m_end.offsetInContainerNode();
+    return plainText(Position(&textNode, startOffset), Position(&textNode, endOffset));
+}
+
+String StyledMarkupAccumulator::stringValueForRange(const Node& node)
+{
+    if (m_start.isNull())
+        return node.nodeValue();
+
+    String str = node.nodeValue();
+    if (m_start.containerNode() == node)
+        str.truncate(m_end.offsetInContainerNode());
+    if (m_end.containerNode() == node)
+        str.remove(0, m_start.offsetInContainerNode());
+    return str;
 }
 
 StyledMarkupSerializer::StyledMarkupSerializer(EAbsoluteURLs shouldResolveURLs, EAnnotateForInterchange shouldAnnotate, const Position& start, const Position& end, Node* highestNodeToBeSerialized)

@@ -452,7 +452,7 @@ String createMarkup(const Node* node, EChildrenOnly childrenOnly, EAbsoluteURLs 
     if (!node)
         return "";
 
-    MarkupAccumulator accumulator(nullptr, shouldResolveURLs, Position(), Position());
+    MarkupAccumulator accumulator(nullptr, shouldResolveURLs);
     return accumulator.serializeNodes(const_cast<Node&>(*node), childrenOnly);
 }
 

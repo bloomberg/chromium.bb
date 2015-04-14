@@ -30,6 +30,7 @@
 #define StyledMarkupSerializer_h
 
 #include "core/dom/NodeTraversal.h"
+#include "core/dom/Position.h"
 #include "core/editing/EditingStrategy.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/MarkupAccumulator.h"
@@ -51,9 +52,15 @@ public:
     virtual void appendElement(StringBuilder&, Element&, Namespaces*) override;
 
 private:
+    String renderedText(Text&);
+    String stringValueForRange(const Node&);
+
     // StyledMarkupAccumulator is owned by StyledMarkupSerializer and
     // |m_serializer| must be living while this is living.
     StyledMarkupSerializer* m_serializer;
+
+    const Position m_start;
+    const Position m_end;
 };
 
 class StyledMarkupSerializer final {
