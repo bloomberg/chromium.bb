@@ -224,43 +224,18 @@ function stubSignalStrategyConnect(successful) {
   });
 }
 
-// Check that hasFeature returns false for missing features.
-QUnit.test('hasFeature returns false', function(assert) {
-  return new Promise(function(resolve, reject) {
-    controller.hasFeature(
-        remoting.HostController.Feature.PAIRING_REGISTRY,
-        resolve);
-  }).then(function(/** boolean */ result) {
-    assert.equal(result, false);
-  });
-});
-
-// Check that hasFeature returns true for supported features.
-QUnit.test('hasFeature returns true', function(assert) {
-  return new Promise(function(resolve, reject) {
-    controller.hasFeature(
-        remoting.HostController.Feature.OAUTH_CLIENT,
-        resolve);
-  }).then(function(/** boolean */ result) {
-    assert.equal(result, true);
-  });
-});
-
 // Check what happens when the HostDaemonFacade's getHostName method
 // fails.
 QUnit.test('start with getHostName failure', function(assert) {
   mockHostDaemonFacade.hostName = null;
-  return new Promise(function(resolve, reject) {
-    controller.start(FAKE_HOST_PIN, true, function() {
-      reject('test failed');
-    }, function(/** remoting.Error */ e) {
-      assert.equal(e.getDetail(), 'getHostName');
-      assert.equal(e.getTag(), remoting.Error.Tag.UNEXPECTED);
-      assert.equal(unregisterHostByIdSpy.callCount, 0);
-      assert.equal(onLocalHostStartedSpy.callCount, 0);
-      assert.equal(startDaemonSpy.callCount, 0);
-      resolve(null);
-    });
+  return controller.start(FAKE_HOST_PIN, true).then(function() {
+    throw 'test failed';
+  }, function(/** remoting.Error */ e) {
+    assert.equal(e.getDetail(), 'getHostName');
+    assert.equal(e.getTag(), remoting.Error.Tag.UNEXPECTED);
+    assert.equal(unregisterHostByIdSpy.callCount, 0);
+    assert.equal(onLocalHostStartedSpy.callCount, 0);
+    assert.equal(startDaemonSpy.callCount, 0);
   });
 });
 
@@ -269,17 +244,14 @@ QUnit.test('start with getHostName failure', function(assert) {
 QUnit.test('start with generateKeyPair failure', function(assert) {
   mockHostDaemonFacade.publicKey = null;
   mockHostDaemonFacade.privateKey = null;
-  return new Promise(function(resolve, reject) {
-    controller.start(FAKE_HOST_PIN, true, function() {
-      reject('test failed');
-    }, function(/** remoting.Error */ e) {
-      assert.equal(e.getDetail(), 'generateKeyPair');
-      assert.equal(e.getTag(), remoting.Error.Tag.UNEXPECTED);
-      assert.equal(unregisterHostByIdSpy.callCount, 0);
-      assert.equal(onLocalHostStartedSpy.callCount, 0);
-      assert.equal(startDaemonSpy.callCount, 0);
-      resolve(null);
-    });
+  return controller.start(FAKE_HOST_PIN, true).then(function() {
+    throw 'test failed';
+  }, function(/** remoting.Error */ e) {
+    assert.equal(e.getDetail(), 'generateKeyPair');
+    assert.equal(e.getTag(), remoting.Error.Tag.UNEXPECTED);
+    assert.equal(unregisterHostByIdSpy.callCount, 0);
+    assert.equal(onLocalHostStartedSpy.callCount, 0);
+    assert.equal(startDaemonSpy.callCount, 0);
   });
 });
 
@@ -287,17 +259,14 @@ QUnit.test('start with generateKeyPair failure', function(assert) {
 // method fails.
 QUnit.test('start with getHostClientId failure', function(assert) {
   mockHostDaemonFacade.hostClientId = null;
-  return new Promise(function(resolve, reject) {
-    controller.start(FAKE_HOST_PIN, true, function() {
-      reject('test failed');
-    }, function(/** remoting.Error */ e) {
-      assert.equal(e.getDetail(), 'getHostClientId');
-      assert.equal(e.getTag(), remoting.Error.Tag.UNEXPECTED);
-      assert.equal(unregisterHostByIdSpy.callCount, 0);
-      assert.equal(onLocalHostStartedSpy.callCount, 0);
-      assert.equal(startDaemonSpy.callCount, 0);
-      resolve(null);
-    });
+  return controller.start(FAKE_HOST_PIN, true).then(function() {
+    throw 'test failed';
+  }, function(/** remoting.Error */ e) {
+    assert.equal(e.getDetail(), 'getHostClientId');
+    assert.equal(e.getTag(), remoting.Error.Tag.UNEXPECTED);
+    assert.equal(unregisterHostByIdSpy.callCount, 0);
+    assert.equal(onLocalHostStartedSpy.callCount, 0);
+    assert.equal(startDaemonSpy.callCount, 0);
   });
 });
 
@@ -306,16 +275,13 @@ QUnit.test('start with getHostClientId failure', function(assert) {
 QUnit.test('start with host registration failure', function(assert) {
   remoting.MockXhr.setEmptyResponseFor(
       'POST', 'DIRECTORY_API_BASE_URL/@me/hosts', 500);
-  return new Promise(function(resolve, reject) {
-    controller.start(FAKE_HOST_PIN, true, function() {
-      reject('test failed');
-    }, function(/** remoting.Error */ e) {
-      assert.equal(e.getTag(), remoting.Error.Tag.REGISTRATION_FAILED);
-      assert.equal(unregisterHostByIdSpy.callCount, 0);
-      assert.equal(onLocalHostStartedSpy.callCount, 0);
-      assert.equal(startDaemonSpy.callCount, 0);
-      resolve(null);
-    });
+  return controller.start(FAKE_HOST_PIN, true).then(function() {
+    throw 'test failed';
+  }, function(/** remoting.Error */ e) {
+    assert.equal(e.getTag(), remoting.Error.Tag.REGISTRATION_FAILED);
+    assert.equal(unregisterHostByIdSpy.callCount, 0);
+    assert.equal(onLocalHostStartedSpy.callCount, 0);
+    assert.equal(startDaemonSpy.callCount, 0);
   });
 });
 
@@ -325,18 +291,14 @@ QUnit.test('start with getCredentialsFromAuthCode failure', function(assert) {
   mockHostDaemonFacade.useEmail = null;
   mockHostDaemonFacade.refreshToken = null;
   queueRegistryResponse(assert, true);
-  return new Promise(function(resolve, reject) {
-    controller.start(FAKE_HOST_PIN, true, function() {
-      reject('test failed');
-    }, function(/** remoting.Error */ e) {
-      assert.equal(e.getDetail(), 'getCredentialsFromAuthCode');
-      assert.equal(e.getTag(), remoting.Error.Tag.UNEXPECTED);
-      assert.equal(getCredentialsFromAuthCodeSpy.callCount, 1);
-      assert.equal(unregisterHostByIdSpy.callCount, 0);
-      assert.equal(onLocalHostStartedSpy.callCount, 0);
-      assert.equal(startDaemonSpy.callCount, 0);
-      resolve(null);
-    });
+  return controller.start(FAKE_HOST_PIN, true).then(function() {
+    throw 'test failed';
+  }, function(/** remoting.Error */ e) {
+    assert.equal(e.getDetail(), 'getCredentialsFromAuthCode');
+    assert.equal(e.getTag(), remoting.Error.Tag.UNEXPECTED);
+    assert.equal(getCredentialsFromAuthCodeSpy.callCount, 1);
+    assert.equal(onLocalHostStartedSpy.callCount, 0);
+    assert.equal(startDaemonSpy.callCount, 0);
   });
 });
 
@@ -346,17 +308,13 @@ QUnit.test('start with getCredentialsFromAuthCode failure', function(assert) {
 QUnit.test('start with getRefreshToken+getPinHash failure', function(assert) {
   mockHostDaemonFacade.pinHashFunc = null;
   queueRegistryResponse(assert, false);
-  return new Promise(function(resolve, reject) {
-    controller.start(FAKE_HOST_PIN, true, function() {
-      reject('test failed');
-    }, function(/** remoting.Error */ e) {
-      assert.equal(e.getDetail(), 'getPinHash');
-      assert.equal(e.getTag(), remoting.Error.Tag.UNEXPECTED);
-      assert.equal(unregisterHostByIdSpy.callCount, 0);
-      assert.equal(onLocalHostStartedSpy.callCount, 0);
-      assert.equal(startDaemonSpy.callCount, 0);
-      resolve(null);
-    });
+  return controller.start(FAKE_HOST_PIN, true).then(function() {
+    throw 'test failed';
+  }, function(/** remoting.Error */ e) {
+    assert.equal(e.getDetail(), 'getPinHash');
+    assert.equal(e.getTag(), remoting.Error.Tag.UNEXPECTED);
+    assert.equal(onLocalHostStartedSpy.callCount, 0);
+    assert.equal(startDaemonSpy.callCount, 0);
   });
 });
 
@@ -364,15 +322,12 @@ QUnit.test('start with getRefreshToken+getPinHash failure', function(assert) {
 QUnit.test('start with signalStrategy failure', function(assert) {
   queueRegistryResponse(assert, true);
   stubSignalStrategyConnect(false);
-  return new Promise(function(resolve, reject) {
-    controller.start(FAKE_HOST_PIN, true, function() {
-      reject('test failed');
-    }, function(/** remoting.Error */ e) {
-      assert.equal(e.getDetail(), 'setStateForTesting');
-      assert.equal(e.getTag(), remoting.Error.Tag.UNEXPECTED);
-      assert.equal(unregisterHostByIdSpy.callCount, 1);
-      resolve(null);
-    });
+  return controller.start(FAKE_HOST_PIN, true).then(function() {
+    throw 'test failed';
+  }, function(/** remoting.Error */ e) {
+    assert.equal(e.getDetail(), 'setStateForTesting');
+    assert.equal(e.getTag(), remoting.Error.Tag.UNEXPECTED);
+    assert.equal(unregisterHostByIdSpy.callCount, 1);
   });
 });
 
@@ -383,17 +338,14 @@ QUnit.test('start with startDaemon failure', function(assert) {
   queueRegistryResponse(assert, true);
   stubSignalStrategyConnect(true);
   mockHostDaemonFacade.startDaemonResult = null;
-  return new Promise(function(resolve, reject) {
-    controller.start(FAKE_HOST_PIN, true, function() {
-      reject('test failed');
-    }, function(/** remoting.Error */ e) {
-      assert.equal(e.getDetail(), 'startDaemon');
-      assert.equal(e.getTag(), remoting.Error.Tag.UNEXPECTED);
-      assert.equal(unregisterHostByIdSpy.callCount, 1);
-      assert.equal(unregisterHostByIdSpy.args[0][0], FAKE_HOST_ID);
-      assert.equal(onLocalHostStartedSpy.callCount, 0);
-      resolve(null);
-    });
+  return controller.start(FAKE_HOST_PIN, true).then(function() {
+    throw 'test failed';
+  }, function(/** remoting.Error */ e) {
+    assert.equal(e.getDetail(), 'startDaemon');
+    assert.equal(e.getTag(), remoting.Error.Tag.UNEXPECTED);
+    assert.equal(unregisterHostByIdSpy.callCount, 1);
+    assert.equal(unregisterHostByIdSpy.args[0][0], FAKE_HOST_ID);
+    assert.equal(onLocalHostStartedSpy.callCount, 0);
   });
 });
 
@@ -404,16 +356,13 @@ QUnit.test('start with startDaemon cancelled', function(assert) {
   stubSignalStrategyConnect(true);
   mockHostDaemonFacade.startDaemonResult =
       remoting.HostController.AsyncResult.CANCELLED;
-  return new Promise(function(resolve, reject) {
-    controller.start(FAKE_HOST_PIN, true, function() {
-      reject('test failed');
-    }, function(/** remoting.Error */ e) {
-      assert.equal(e.getTag(), remoting.Error.Tag.CANCELLED);
-      assert.equal(unregisterHostByIdSpy.callCount, 1);
-      assert.equal(unregisterHostByIdSpy.args[0][0], FAKE_HOST_ID);
-      assert.equal(onLocalHostStartedSpy.callCount, 0);
-      resolve(null);
-    });
+  return controller.start(FAKE_HOST_PIN, true).then(function() {
+    throw 'test failed';
+  }, function(/** remoting.Error */ e) {
+    assert.equal(e.getTag(), remoting.Error.Tag.CANCELLED);
+    assert.equal(unregisterHostByIdSpy.callCount, 1);
+    assert.equal(unregisterHostByIdSpy.args[0][0], FAKE_HOST_ID);
+    assert.equal(onLocalHostStartedSpy.callCount, 0);
   });
 });
 
@@ -424,53 +373,47 @@ QUnit.test('start with startDaemon returning failure code', function(assert) {
   stubSignalStrategyConnect(true);
   mockHostDaemonFacade.startDaemonResult =
       remoting.HostController.AsyncResult.FAILED;
-  return new Promise(function(resolve, reject) {
-    controller.start(FAKE_HOST_PIN, true, function() {
-      reject('test failed');
-    }, function(/** remoting.Error */ e) {
-      assert.equal(e.getTag(), remoting.Error.Tag.UNEXPECTED);
-      assert.equal(unregisterHostByIdSpy.callCount, 1);
-      assert.equal(onLocalHostStartedSpy.callCount, 0);
-      resolve(null);
-    });
+  return controller.start(FAKE_HOST_PIN, true).then(function() {
+    throw 'test failed';
+  }, function(/** remoting.Error */ e) {
+    assert.equal(e.getTag(), remoting.Error.Tag.UNEXPECTED);
+    assert.equal(unregisterHostByIdSpy.callCount, 1);
+    assert.equal(onLocalHostStartedSpy.callCount, 0);
   });
 });
 
 // Check what happens when the entire host registration process
 // succeeds.
 [false, true].forEach(function(/** boolean */ consent) {
-  QUnit.test('start succeeds(1) with consent=' + consent, function(assert) {
+  QUnit.test('start with auth code, consent=' + consent, function(assert) {
     /** @const */
     var fakePinHash = fakePinHashFunc(FAKE_HOST_ID, FAKE_HOST_PIN);
     queueRegistryResponse(assert, true);
     stubSignalStrategyConnect(true);
-    return new Promise(function(resolve, reject) {
-      controller.start(FAKE_HOST_PIN, consent, function() {
-        assert.equal(getCredentialsFromAuthCodeSpy.callCount, 1);
-        assert.deepEqual(
-            getCredentialsFromAuthCodeSpy.args[0][0],
-            FAKE_AUTH_CODE);
-        assert.equal(getPinHashSpy.callCount, 1);
-        assert.deepEqual(
-            getPinHashSpy.args[0].slice(0, 2),
-            [FAKE_HOST_ID, FAKE_HOST_PIN]);
-        assert.equal(unregisterHostByIdSpy.callCount, 0);
-        assert.equal(onLocalHostStartedSpy.callCount, 1);
-        assert.equal(startDaemonSpy.callCount, 1);
-        assert.deepEqual(
-            startDaemonSpy.args[0].slice(0, 2),
-            [{
-              xmpp_login: FAKE_XMPP_LOGIN,
-              oauth_refresh_token: FAKE_REFRESH_TOKEN,
-              host_owner: FAKE_CLIENT_JID.toLowerCase(),
-              host_owner_email: FAKE_USER_EMAIL,
-              host_id: FAKE_HOST_ID,
-              host_name: FAKE_HOST_NAME,
-              host_secret_hash: fakePinHash,
-              private_key: FAKE_PRIVATE_KEY
-            }, consent]);
-        resolve(null);
-      }, reject);
+    return controller.start(FAKE_HOST_PIN, consent).then(function() {
+      assert.equal(getCredentialsFromAuthCodeSpy.callCount, 1);
+      assert.deepEqual(
+          getCredentialsFromAuthCodeSpy.args[0][0],
+          FAKE_AUTH_CODE);
+      assert.equal(getPinHashSpy.callCount, 1);
+      assert.deepEqual(
+          getPinHashSpy.args[0].slice(0, 2),
+          [FAKE_HOST_ID, FAKE_HOST_PIN]);
+      assert.equal(unregisterHostByIdSpy.callCount, 0);
+      assert.equal(onLocalHostStartedSpy.callCount, 1);
+      assert.equal(startDaemonSpy.callCount, 1);
+      assert.deepEqual(
+          startDaemonSpy.args[0].slice(0, 2),
+          [{
+            xmpp_login: FAKE_XMPP_LOGIN,
+            oauth_refresh_token: FAKE_REFRESH_TOKEN,
+            host_owner: FAKE_CLIENT_JID.toLowerCase(),
+            host_owner_email: FAKE_USER_EMAIL,
+            host_id: FAKE_HOST_ID,
+            host_name: FAKE_HOST_NAME,
+            host_secret_hash: fakePinHash,
+            private_key: FAKE_PRIVATE_KEY
+          }, consent]);
     });
   });
 });
@@ -478,66 +421,30 @@ QUnit.test('start with startDaemon returning failure code', function(assert) {
 // Check alternative host registration without a registry-supplied
 // auth code.
 [false, true].forEach(function(/** boolean */ consent) {
-  QUnit.test('start succeeds(2) with consent=' + consent, function(assert) {
+  QUnit.test('start without auth code, consent=' + consent, function(assert) {
     /** @const */
     var fakePinHash = fakePinHashFunc(FAKE_HOST_ID, FAKE_HOST_PIN);
     queueRegistryResponse(assert, false);
     stubSignalStrategyConnect(true);
-    return new Promise(function(resolve, reject) {
-      controller.start(FAKE_HOST_PIN, consent, function() {
-        assert.equal(getPinHashSpy.callCount, 1);
-        assert.deepEqual(
-            getPinHashSpy.args[0].slice(0, 2),
-            [FAKE_HOST_ID, FAKE_HOST_PIN]);
-        assert.equal(unregisterHostByIdSpy.callCount, 0);
-        assert.equal(onLocalHostStartedSpy.callCount, 1);
-        assert.equal(startDaemonSpy.callCount, 1);
-        assert.deepEqual(
-            startDaemonSpy.args[0].slice(0, 2),
-            [{
-              xmpp_login: FAKE_USER_EMAIL,
-              oauth_refresh_token: FAKE_REFRESH_TOKEN,
-              host_id: FAKE_HOST_ID,
-              host_name: FAKE_HOST_NAME,
-              host_secret_hash: fakePinHash,
-              private_key: FAKE_PRIVATE_KEY
-            }, consent]);
-        resolve(null);
-      }, reject);
-    });
-  });
-});
-
-// Check alternative host registration without a registry-supplied
-// auth code.
-[false, true].forEach(function(/** boolean */ consent) {
-  QUnit.test('start succeeds(2) with consent=' + consent, function(assert) {
-    /** @const */
-    var fakePinHash = fakePinHashFunc(FAKE_HOST_ID, FAKE_HOST_PIN);
-    queueRegistryResponse(assert, false);
-    stubSignalStrategyConnect(true);
-    return new Promise(function(resolve, reject) {
-      controller.start(FAKE_HOST_PIN, consent, function() {
-        assert.equal(getCredentialsFromAuthCodeSpy.callCount, 0);
-        assert.equal(getPinHashSpy.callCount, 1);
-        assert.deepEqual(
-            getPinHashSpy.args[0].slice(0, 2),
-            [FAKE_HOST_ID, FAKE_HOST_PIN]);
-        assert.equal(unregisterHostByIdSpy.callCount, 0);
-        assert.equal(onLocalHostStartedSpy.callCount, 1);
-        assert.equal(startDaemonSpy.callCount, 1);
-        assert.deepEqual(
-            startDaemonSpy.args[0].slice(0, 2),
-            [{
-              xmpp_login: FAKE_USER_EMAIL,
-              oauth_refresh_token: FAKE_REFRESH_TOKEN,
-              host_id: FAKE_HOST_ID,
-              host_name: FAKE_HOST_NAME,
-              host_secret_hash: fakePinHash,
-              private_key: FAKE_PRIVATE_KEY
-            }, consent]);
-        resolve(null);
-      }, reject);
+    return controller.start(FAKE_HOST_PIN, consent).then(function() {
+      assert.equal(getCredentialsFromAuthCodeSpy.callCount, 0);
+      assert.equal(getPinHashSpy.callCount, 1);
+      assert.deepEqual(
+          getPinHashSpy.args[0].slice(0, 2),
+          [FAKE_HOST_ID, FAKE_HOST_PIN]);
+      assert.equal(unregisterHostByIdSpy.callCount, 0);
+      assert.equal(onLocalHostStartedSpy.callCount, 1);
+      assert.equal(startDaemonSpy.callCount, 1);
+      assert.deepEqual(
+          startDaemonSpy.args[0].slice(0, 2),
+          [{
+            xmpp_login: FAKE_USER_EMAIL,
+            oauth_refresh_token: FAKE_REFRESH_TOKEN,
+            host_id: FAKE_HOST_ID,
+            host_name: FAKE_HOST_NAME,
+            host_secret_hash: fakePinHash,
+            private_key: FAKE_PRIVATE_KEY
+          }, consent]);
     });
   });
 });
@@ -762,8 +669,8 @@ QUnit.test('getLocalHostId succeeds', function(assert) {
   });
 });
 
-// Tests omitted for getPairedClients, deletePairedClient, and
-// clearPairedClients because they simply call through to
+// Tests omitted for hasFeature, getPairedClients, deletePairedClient,
+// and clearPairedClients because they simply call through to
 // HostDaemonFacade.
 
 })();

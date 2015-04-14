@@ -108,14 +108,29 @@ remoting.HostController.Feature = {
 remoting.UsageStatsConsent;
 
 /**
- * @param {remoting.HostController.Feature} feature The feature to test for.
- * @param {function(boolean):void} callback
- * @return {void}
+ * @typedef {{
+ *   userEmail:string,
+ *   refreshToken:string
+ * }}
  */
-remoting.HostController.prototype.hasFeature = function(feature, callback) {
+remoting.XmppCredentials;
+
+/**
+ * @typedef {{
+ *   privateKey:string,
+ *   publicKey:string
+ * }}
+ */
+remoting.KeyPair;
+
+/**
+ * @param {remoting.HostController.Feature} feature The feature to test for.
+ * @return {!Promise<boolean>} A promise that always resolves.
+ */
+remoting.HostController.prototype.hasFeature = function(feature) {
   // TODO(rmsousa): This could synchronously return a boolean, provided it were
   // only called after native messaging is completely initialized.
-  this.hostDaemonFacade_.hasFeature(feature).then(callback);
+  return this.hostDaemonFacade_.hasFeature(feature);
 };
 
 /**
@@ -130,155 +145,48 @@ remoting.HostController.prototype.getConsent = function() {
  *
  * @param {string} hostPin Host PIN.
  * @param {boolean} consent The user's consent to crash dump reporting.
- * @param {function():void} onDone Callback to be called when done.
- * @param {function(!remoting.Error):void} onError Callback to be called on
- *     error.
- * @return {void} Nothing.
+ * @return {!Promise<void>} A promise resolved once the host is started.
  */
-remoting.HostController.prototype.start = function(hostPin, consent, onDone,
-                                                   onError) {
+remoting.HostController.prototype.start = function(hostPin, consent) {
   /** @type {remoting.HostController} */
   var that = this;
 
-  // The following variables are set in local functions of this method
-  // and read by other local methods.  Each variable is assumed to be
-  // undefined at the point where it is assigned.
-
-  /** @type {string} */
-  var hostName;
-
-  /** @type {string} */
-  var privateKey;
-
-  /** @type {string} */
-  var publicKey;
-
-  /** @type {?string} */
-  var hostClientId;
-
-  /** @type {string} */
-  var xmppLogin;
-
-  /** @type {?string} */
-  var refreshToken;
-
-  /** @type {string} */
-  var clientBaseJid;
-
-  /** @const */
+  // Start a bunch of requests with no side-effects.
+  var hostNamePromise = this.hostDaemonFacade_.getHostName();
+  var hasOauthPromise =
+      this.hasFeature(remoting.HostController.Feature.OAUTH_CLIENT);
+  var keyPairPromise = this.hostDaemonFacade_.generateKeyPair();
+  var oauthTokenPromise = remoting.identity.getToken();
+  var hostClientIdPromise = hasOauthPromise.then(function(hasOauth) {
+    if (hasOauth) {
+      return that.hostDaemonFacade_.getHostClientId();
+    } else {
+      return null;
+    }
+  });
   var newHostId = base.generateUuid();
+  var pinHashPromise = this.hostDaemonFacade_.getPinHash(newHostId, hostPin);
 
-  /** @param {!remoting.Error} error */
-  function onStartError(error) {
-    // Unregister the host if we failed to start it.
-    remoting.hostList.unregisterHostById(newHostId);
-    onError(error);
-  }
+  // Try to register the host.
+  /** @type {!Promise<!remoting.Xhr.Response>} */
+  var registrationResultPromise = Promise.all([
+    hostClientIdPromise,
+    hostNamePromise,
+    oauthTokenPromise,
+    keyPairPromise
+  ]).then(function(/** Array */ a) {
+    var hostClientId = /** @type {string} */ (a[0]);
+    var hostName = /** @type {string} */ (a[1]);
+    var oauthToken = /** @type {string} */ (a[2]);
+    var keyPair = /** @type {remoting.KeyPair} */ (a[3]);
 
-  /**
-   * @param {remoting.HostController.AsyncResult} result
-   */
-  function onStarted(result) {
-    if (result == remoting.HostController.AsyncResult.OK) {
-      remoting.hostList.onLocalHostStarted(hostName, newHostId, publicKey);
-      onDone();
-    } else if (result == remoting.HostController.AsyncResult.CANCELLED) {
-      onStartError(new remoting.Error(remoting.Error.Tag.CANCELLED));
-    } else {
-      onStartError(remoting.Error.unexpected());
-    }
-  }
-
-  /**
-   * @param {string} hostSecretHash
-   */
-  function startHostWithHash(hostSecretHash) {
-    var hostConfig = {
-      xmpp_login: xmppLogin,
-      oauth_refresh_token: refreshToken,
-      host_id: newHostId,
-      host_name: hostName,
-      host_secret_hash: hostSecretHash,
-      private_key: privateKey
-    };
-    var hostOwner = clientBaseJid;
-    remoting.identity.getEmail().then(
-        function(/** string */ hostOwnerEmail) {
-          if (hostOwner != xmppLogin) {
-            hostConfig['host_owner'] = hostOwner;
-            if (hostOwnerEmail != hostOwner) {
-              hostConfig['host_owner_email'] = hostOwnerEmail;
-            }
-          }
-          that.hostDaemonFacade_.startDaemon(
-              hostConfig, consent).then(
-                  onStarted, remoting.Error.handler(onStartError));
-        });
-  }
-
-  /**
-   * @param {string} clientBaseJidParam
-   */
-  function onClientBaseJid(clientBaseJidParam) {
-    clientBaseJid = clientBaseJidParam;
-    that.hostDaemonFacade_.getPinHash(
-        newHostId, hostPin).then(
-            startHostWithHash, remoting.Error.handler(onError));
-  }
-
-  /**
-   * @param {{refreshToken: string, userEmail: string}} creds
-   */
-  function onServiceAccountCredentials(creds) {
-    xmppLogin = creds.userEmail;
-    refreshToken = creds.refreshToken;
-    that.getClientBaseJid_(onClientBaseJid, onStartError);
-  }
-
-  /**
-   * @param {!remoting.Xhr.Response} response
-   */
-  function onRegistered(response) {
-    var success = (response.status == 200);
-
-    if (success) {
-      var result = base.jsonParseSafe(response.getText());
-      if ('data' in result && 'authorizationCode' in result['data']) {
-        that.hostDaemonFacade_.getCredentialsFromAuthCode(
-            result['data']['authorizationCode']).then(
-                onServiceAccountCredentials,
-                remoting.Error.handler(onError));
-      } else {
-        // No authorization code returned, use regular user credential flow.
-        refreshToken = remoting.oauth2.getRefreshToken();
-        remoting.identity.getEmail().then(
-            function(/** string */ email) {
-              xmppLogin = email;
-              clientBaseJid = email;
-              that.hostDaemonFacade_.getPinHash(
-                  newHostId, hostPin).then(
-                      startHostWithHash,
-                      remoting.Error.handler(onError));
-            });
-      }
-    } else {
-      console.log('Failed to register the host. Status: ' + response.status +
-                  ' response: ' + response.getText());
-      onError(new remoting.Error(remoting.Error.Tag.REGISTRATION_FAILED));
-    }
-  }
-
-  /**
-   * @param {string} oauthToken
-   */
-  function doRegisterHost(oauthToken) {
     var newHostDetails = { data: {
-       hostId: newHostId,
-       hostName: hostName,
-       publicKey: publicKey
+      hostId: newHostId,
+      hostName: hostName,
+      publicKey: keyPair.publicKey
     } };
 
-    new remoting.Xhr({
+    return new remoting.Xhr({
       method: 'POST',
       url: remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts',
       urlParams: {
@@ -286,57 +194,131 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
       },
       jsonContent: newHostDetails,
       oauthToken: oauthToken
-    }).start().then(onRegistered);
-  }
+    }).start();
+  });
 
-  /**
-   * @param {string} hostClientIdParam
-   */
-  function onHostClientId(hostClientIdParam) {
-    hostClientId = hostClientIdParam;
-    remoting.identity.getToken().then(
-        doRegisterHost,
-        remoting.Error.handler(onError));
-  }
+  /** @type {boolean} */
+  var hostRegistered = false;
 
-  /**
-   * @param {boolean} hasFeature
-   */
-  function onHasFeatureOAuthClient(hasFeature) {
-    if (hasFeature) {
-      that.hostDaemonFacade_.getHostClientId().then(
-          onHostClientId, remoting.Error.handler(onError));
+  // Extract an optional auth code from the host response.  The
+  // absence of an auth code is represented by an empty string.
+  /** @type {!Promise<string>} */
+  var authCodePromise = registrationResultPromise.then(function(response) {
+    if (response.status == 200) {
+      hostRegistered = true;
+      var result = base.jsonParseSafe(response.getText());
+      if (result['data']) {
+        return base.getStringAttr(result['data'], 'authorizationCode', '');
+      } else {
+        return '';
+      }
     } else {
-      hostClientId = null;
-      remoting.identity.getToken().then(
-          doRegisterHost,
-          remoting.Error.handler(onError));
+      console.log(
+          'Failed to register the host. Status: ' + response.status +
+          ' response: ' + response.getText());
+      throw new remoting.Error(remoting.Error.Tag.REGISTRATION_FAILED);
     }
-  }
+  });
 
-  /**
-   * @param {{privateKey:string, publicKey:string}} keyPair
-   */
-  function onKeyGenerated(keyPair) {
-    privateKey = keyPair.privateKey;
-    publicKey = keyPair.publicKey;
-    that.hasFeature(
-        remoting.HostController.Feature.OAUTH_CLIENT,
-        onHasFeatureOAuthClient);
-  }
+  // Get XMPP creditials.
+  var xmppCredsPromise = authCodePromise.then(function(authCode) {
+    if (authCode) {
+      // Use auth code supplied by registry.
+      return that.hostDaemonFacade_.getCredentialsFromAuthCode(authCode);
+    } else {
+      // No authorization code returned, use regular Chrome
+      // identitial credential flow.
+      return remoting.identity.getEmail().then(function(/** string */ email) {
+        return {
+          userEmail: email,
+          refreshToken: remoting.oauth2.getRefreshToken()
+        };
+      });
+    }
+  });
 
-  /**
-   * @param {string} hostNameParam
-   * @return {void} Nothing.
-   */
-  function startWithHostname(hostNameParam) {
-    hostName = hostNameParam;
-    that.hostDaemonFacade_.generateKeyPair().then(
-        onKeyGenerated, remoting.Error.handler(onError));
-  }
+  // Get as JID to use as the host owner.
+  var hostOwnerPromise = authCodePromise.then(function(authCode) {
+    if (authCode) {
+      return that.getClientBaseJid_();
+    } else {
+      return remoting.identity.getEmail();
+    }
+  });
 
-  this.hostDaemonFacade_.getHostName().then(
-      startWithHostname, remoting.Error.handler(onError));
+  // Build an initial host configuration.
+  /** @type {!Promise<!Object>} */
+  var hostConfigNoOwnerPromise = Promise.all([
+    hostNamePromise,
+    pinHashPromise,
+    xmppCredsPromise,
+    keyPairPromise
+  ]).then(function(/** Array */ a) {
+    var hostName = /** @type {string} */ (a[0]);
+    var hostSecretHash = /** @type {string} */ (a[1]);
+    var xmppCreds = /** @type {remoting.XmppCredentials} */ (a[2]);
+    var keyPair = /** @type {remoting.KeyPair} */ (a[3]);
+    return {
+      xmpp_login: xmppCreds.userEmail,
+      oauth_refresh_token: xmppCreds.refreshToken,
+      host_id: newHostId,
+      host_name: hostName,
+      host_secret_hash: hostSecretHash,
+      private_key: keyPair.privateKey
+    };
+  });
+
+  // Add host_owner and host_owner_email fields to the host config if
+  // necessary.  This promise resolves to the same value as
+  // hostConfigNoOwnerPromise, with not until the extra fields are
+  // either added or determined to be redundant.
+  /** @type {!Promise<!Object>} */
+  var hostConfigWithOwnerPromise = Promise.all([
+    hostConfigNoOwnerPromise,
+    hostOwnerPromise,
+    remoting.identity.getEmail(),
+    xmppCredsPromise
+  ]).then(function(/** Array */ a) {
+    var hostConfig = /** @type {!Object} */ (a[0]);
+    var hostOwner = /** @type {string} */ (a[1]);
+    var hostOwnerEmail = /** @type {string} */ (a[2]);
+    var xmppCreds = /** @type {remoting.XmppCredentials} */ (a[3]);
+    if (hostOwner != xmppCreds.userEmail) {
+      hostConfig['host_owner'] = hostOwner;
+      if (hostOwnerEmail != hostOwner) {
+        hostConfig['host_owner_email'] = hostOwnerEmail;
+      }
+    }
+    return hostConfig;
+  });
+
+  // Start the daemon.
+  /** @type {!Promise<remoting.HostController.AsyncResult>} */
+  var startDaemonResultPromise =
+      hostConfigWithOwnerPromise.then(function(hostConfig) {
+        return that.hostDaemonFacade_.startDaemon(hostConfig, consent);
+      });
+
+  // Update the UI or report an error.
+  return startDaemonResultPromise.then(function(result) {
+    if (result == remoting.HostController.AsyncResult.OK) {
+      return hostNamePromise.then(function(hostName) {
+        return keyPairPromise.then(function(keyPair) {
+          remoting.hostList.onLocalHostStarted(
+              hostName, newHostId, keyPair.publicKey);
+        });
+      });
+    } else if (result == remoting.HostController.AsyncResult.CANCELLED) {
+      throw new remoting.Error(remoting.Error.Tag.CANCELLED);
+    } else {
+      throw remoting.Error.unexpected();
+    }
+  }).catch(function(error) {
+    if (hostRegistered) {
+      remoting.hostList.unregisterHostById(newHostId);
+    }
+    throw error;
+  });
 };
 
 /**
@@ -520,53 +502,45 @@ remoting.HostController.prototype.clearPairedClients = function(
  * non-Gmail accounts, it may be different.
  *
  * @private
- * @param {function(string): void} onSuccess
- * @param {function(!remoting.Error): void} onError
+ * @return {!Promise<string>}
  */
-remoting.HostController.prototype.getClientBaseJid_ = function(
-    onSuccess, onError) {
+remoting.HostController.prototype.getClientBaseJid_ = function() {
   /** @type {remoting.SignalStrategy} */
   var signalStrategy = null;
 
-  /** @param {remoting.SignalStrategy.State} state */
-  var onState = function(state) {
-    switch (state) {
-      case remoting.SignalStrategy.State.CONNECTED:
+  var result = new Promise(function(resolve, reject) {
+    /** @param {remoting.SignalStrategy.State} state */
+    var onState = function(state) {
+      switch (state) {
+        case remoting.SignalStrategy.State.CONNECTED:
         var jid = signalStrategy.getJid().split('/')[0].toLowerCase();
         base.dispose(signalStrategy);
         signalStrategy = null;
-        onSuccess(jid);
+        resolve(jid);
         break;
 
-      case remoting.SignalStrategy.State.FAILED:
+        case remoting.SignalStrategy.State.FAILED:
         var error = signalStrategy.getError();
         base.dispose(signalStrategy);
         signalStrategy = null;
-        onError(error);
+        reject(error);
         break;
-    }
-  };
+      }
+    };
 
-  signalStrategy = remoting.SignalStrategy.create();
-  signalStrategy.setStateChangedCallback(onState);
+    signalStrategy = remoting.SignalStrategy.create();
+    signalStrategy.setStateChangedCallback(onState);
+  });
 
-  /** @param {string} token */
-  function connectSignalingWithToken(token) {
-    remoting.identity.getEmail().then(
-        connectSignalingWithTokenAndEmail.bind(null, token),
-        remoting.Error.handler(onError));
-  }
+  var tokenPromise = remoting.identity.getToken();
+  var emailPromise = remoting.identity.getEmail();
+  tokenPromise.then(function(/** string */ token) {
+    emailPromise.then(function(/** string */ email) {
+      signalStrategy.connect(remoting.settings.XMPP_SERVER, email, token);
+    });
+  });
 
-  /**
-   * @param {string} token
-   * @param {string} email
-   */
-  function connectSignalingWithTokenAndEmail(token, email) {
-    signalStrategy.connect(remoting.settings.XMPP_SERVER, email, token);
-  }
-
-  remoting.identity.getToken().then(
-      connectSignalingWithToken, remoting.Error.handler(onError));
+  return result;
 };
 
 /** @type {remoting.HostController} */

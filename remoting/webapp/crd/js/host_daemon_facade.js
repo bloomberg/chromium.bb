@@ -355,7 +355,7 @@ remoting.HostDaemonFacade.prototype.getPinHash = function(hostId, pin) {
  * when the key is generated. The key is returned in format understood by the
  * host (PublicKeyInfo structure encoded with ASN.1 DER, and then BASE64).
  *
- * @return {!Promise<{privateKey:string, publicKey:string}>}
+ * @return {!Promise<remoting.KeyPair>}
  */
 remoting.HostDaemonFacade.prototype.generateKeyPair = function() {
   return this.postMessage_({type: 'generateKeyPair'});
@@ -497,7 +497,7 @@ remoting.HostDaemonFacade.prototype.getHostClientId = function() {
 /**
  *
  * @param {string} authorizationCode OAuth authorization code.
- * @return {!Promise<{userEmail:string, refreshToken:string}>}
+ * @return {!Promise<{remoting.XmppCredentials}>}
  */
 remoting.HostDaemonFacade.prototype.getCredentialsFromAuthCode =
     function(authorizationCode) {

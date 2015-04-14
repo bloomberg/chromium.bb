@@ -425,8 +425,11 @@ remoting.HostSetupDialog.prototype.startHost_ = function() {
     }
   }
 
-  this.hostController_.start(this.flow_.pin, this.flow_.consent, onHostStarted,
-                             onError);
+  this.hostController_.start(this.flow_.pin, this.flow_.consent).then(
+      onHostStarted
+  ).catch(
+      remoting.Error.handler(onError)
+  );
 };
 
 remoting.HostSetupDialog.prototype.updatePin_ = function() {

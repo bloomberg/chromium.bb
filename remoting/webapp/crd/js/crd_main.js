@@ -133,7 +133,8 @@ remoting.updateLocalHostState = function() {
   };
 
   remoting.hostController.hasFeature(
-      remoting.HostController.Feature.PAIRING_REGISTRY, onHasFeatureResponse);
+      remoting.HostController.Feature.PAIRING_REGISTRY).
+      then(onHasFeatureResponse);
   remoting.hostController.getLocalHostState(onHostState);
 };
 
