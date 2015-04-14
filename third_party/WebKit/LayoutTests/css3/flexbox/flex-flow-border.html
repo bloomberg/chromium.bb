@@ -8,7 +8,7 @@
     display: inline-block;
 }
 .flexbox {
-    display: -webkit-flex;
+    display: flex;
     background-color: grey;
     width: 100px;
     height: 100px;
@@ -40,16 +40,16 @@
     -webkit-writing-mode: vertical-lr;
 }
 .row {
-    -webkit-flex-flow: row;    
+    flex-flow: row;
 }
 .row-reverse {
-    -webkit-flex-flow: row-reverse;
+    flex-flow: row-reverse;
 }
 .column {
-    -webkit-flex-flow: column;
+    flex-flow: column;
 }
 .column-reverse {
-    -webkit-flex-flow: column-reverse;
+    flex-flow: column-reverse;
 }
 .physical {
     border-width: 10px 20px 30px 40px;
@@ -243,7 +243,7 @@ writingModes.forEach(function(writingMode) {
                 container.setAttribute('data-expected-height', expectations.size[1]);
 
                 container.innerHTML = '\n<div class="flexbox ' + flexboxClassName + '" ' + positionAsString(expectations.position) + ' ' + offsetSizeAsString(expectations.size) + '>\n' +
-                    '<div style="-webkit-flex: 1 auto; height: 20px; width: 20px;" ' + asString(expectations[flexFlow.replace("-reverse", "")]) + '></div>\n' +
+                    '<div style="flex: 1 auto; height: 20px; width: 20px;" ' + asString(expectations[flexFlow.replace("-reverse", "")]) + '></div>\n' +
                 '</div>\n';
 
                 document.body.appendChild(container);   

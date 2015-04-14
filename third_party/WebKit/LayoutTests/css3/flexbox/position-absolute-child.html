@@ -10,13 +10,13 @@ body {
 }
 
 .flexbox {
-    display: -webkit-flex;
+    display: flex;
     background-color: #aaa;
     position: relative;
 }
 .flexbox div {
     border: 0;
-    -webkit-flex: none;
+    flex: none;
 }
 
 .horizontal-tb {
@@ -33,16 +33,16 @@ body {
 }
 
 .row {
-    -webkit-flex-flow: row;
+    flex-flow: row;
 }
 .row-reverse {
-    -webkit-flex-flow: row-reverse;
+    flex-flow: row-reverse;
 }
 .column {
-    -webkit-flex-flow: column;
+    flex-flow: column;
 }
 .column-reverse {
-    -webkit-flex-flow: column-reverse;
+    flex-flow: column-reverse;
 }
 
 .flexbox :nth-child(1) {
@@ -502,7 +502,7 @@ function addJustifyContentSpaceBetweenTests(writingMode, flexFlow, direction, fl
         var flexbox = document.createElement('div');
         flexbox.className = 'flexbox ' + flexboxClassName;
         setFlexboxSize(flexbox, flexDirection);
-        flexbox.style.webkitJustifyContent = 'space-between';
+        flexbox.style.justifyContent = 'space-between';
         for (var childIndex = 1; childIndex <= 3; ++childIndex) {
             var child = document.createElement('div');
             child.style[flexDirection] = '40px';
@@ -536,8 +536,8 @@ function addAlignItemsCenterTests(writingMode, flexFlow, direction, flexDirectio
         flexbox.style.height = '100px';
         flexbox.style.width = '100px';
         flexbox.style.margin = "20px";
-        flexbox.style.webkitJustifyContent = 'center';
-        flexbox.style.webkitAlignItems = 'center';
+        flexbox.style.justifyContent = 'center';
+        flexbox.style.alignItems = 'center';
 
         for (var childIndex = 1; childIndex <= 3; ++childIndex) {
             var child = document.createElement('div');
@@ -576,7 +576,7 @@ writingModes.forEach(function(writingMode) {
                 setFlexboxSize(flexbox, flexDirection);
                 for (var childIndex = 1; childIndex <= 3; ++childIndex) {
                     var child = document.createElement('div');
-                    child.style.webkitFlex = childIndex;
+                    child.style.flex = childIndex;
                     if (childIndex == absoluteIndex)
                         child.style.position = 'absolute';
 

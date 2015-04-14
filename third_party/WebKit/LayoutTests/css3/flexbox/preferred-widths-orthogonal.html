@@ -2,13 +2,13 @@
 <html>
 <style>
 .flexbox {
-    display: -webkit-flex;
+    display: flex;
     background-color: #aaa;
     float: left;
 }
 .flexbox > div {
     margin: 2px 13px 8px 17px;
-    -webkit-flex: none;
+    flex: none;
 }
 .flexbox > div:not(.nested) {
     width: 10px;
@@ -43,7 +43,7 @@
 }
 
 .nested {
-    display: -webkit-flex;
+    display: flex;
     background-color: #ddd;
 }
 .horizontal-tb {
@@ -53,7 +53,7 @@
     -webkit-writing-mode: vertical-lr;
 }
 .column {
-    -webkit-flex-flow: column;
+    flex-flow: column;
 }
 .clear {
     clear: both;

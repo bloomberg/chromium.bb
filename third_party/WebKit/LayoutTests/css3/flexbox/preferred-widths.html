@@ -2,14 +2,14 @@
 <html>
 <style>
 .flexbox {
-    display: -webkit-flex;
+    display: flex;
     background-color: grey;
     float: left;
 }
 .flexbox > div {
     padding: 2px 13px 8px 17px;
     margin: 2px 13px 8px 17px;
-    -webkit-flex: none;
+    flex: none;
     flex: none;
 }
 .title {
@@ -39,16 +39,16 @@
     -webkit-writing-mode: vertical-lr;
 }
 .row {
-    -webkit-flex-flow: row;
+    flex-flow: row;
 }
 .row-reverse {
-    -webkit-flex-flow: row-reverse;
+    flex-flow: row-reverse;
 }
 .column {
-    -webkit-flex-flow: column;
+    flex-flow: column;
 }
 .column-reverse {
-    -webkit-flex-flow: column-reverse;
+    flex-flow: column-reverse;
 }
 </style>
 <script src="../../resources/check-layout.js"></script>

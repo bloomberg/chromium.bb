@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <style>
 #flexbox {
-    display: -webkit-flex;
-    -webkit-flex-flow: column;
+    display: flex;
+    flex-flow: column;
     height: 300px;
     width: 200px;
 }
 #left {
-    -webkit-flex: 1;
+    flex: 1;
     background-color: yellow;
     min-height: 0;
 }
 #content {
-    -webkit-flex: 1;
+    flex: 1;
     border: 5px solid blue;
     min-height: 0;
 }
@@ -29,7 +29,7 @@
 // this test fails.
 function setFlex(value)
 {
-    document.getElementById("content").style.webkitFlex = value;
+    document.getElementById("content").style.flex = value;
 }
 
 window.testIsAsync = true;

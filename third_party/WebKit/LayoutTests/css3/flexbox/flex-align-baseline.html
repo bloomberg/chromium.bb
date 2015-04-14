@@ -67,7 +67,7 @@ writingModes.forEach(function(writingMode) {
             var isHorizontalFlow = (writingMode.indexOf('horizontal') != -1) ? !isColumn : isColumn;
 
             var container = document.createElement('div');
-            container.innerHTML = '<div class="flexbox ' + flexboxClassName + '" style="-webkit-align-items: baseline;">' +
+            container.innerHTML = '<div class="flexbox ' + flexboxClassName + '" style="align-items: baseline;">' +
                 '<div><div style="display:inline-block;"></div></div>' +
                 '<div style="margin-top:20px;"><div style="display:inline-block;"></div></div>' +
             '</div>';

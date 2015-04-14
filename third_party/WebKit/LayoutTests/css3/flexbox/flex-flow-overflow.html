@@ -8,7 +8,7 @@
     display: inline-block;
 }
 .flexbox {
-    display: -webkit-flex;
+    display: flex;
     background-color: grey;
     width: 100px;
     height: 100px;
@@ -35,16 +35,16 @@
     -webkit-writing-mode: vertical-lr;
 }
 .row {
-    -webkit-flex-flow: row;    
+    flex-flow: row;    
 }
 .row-reverse {
-    -webkit-flex-flow: row-reverse;
+    flex-flow: row-reverse;
 }
 .column {
-    -webkit-flex-flow: column;
+    flex-flow: column;
 }
 .column-reverse {
-    -webkit-flex-flow: column-reverse;
+    flex-flow: column-reverse;
 }
 .flexbox > :nth-child(1) {
     background-color: blue;
@@ -119,7 +119,7 @@ writingModes.forEach(function(writingMode) {
                 flowDirection = direction + "-column-reverse";
 
             container.innerHTML = '\n<div class="flexbox ' + flexboxClassName + '" ' + sizeAsString(containerSize) + '>\n' +
-                '<div style="-webkit-flex: 1 0 auto; width: 105px; height: 105px;" ' + sizeAsString([105, 105])  + ' ' + positionAsString(expectations[writingMode][flowDirection]) + '></div>\n' +
+                '<div style="flex: 1 0 auto; width: 105px; height: 105px;" ' + sizeAsString([105, 105])  + ' ' + positionAsString(expectations[writingMode][flowDirection]) + '></div>\n' +
             '</div>\n';
 
             document.body.appendChild(container);   

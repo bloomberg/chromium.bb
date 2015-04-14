@@ -8,13 +8,13 @@
     display: inline-block;
 }
 .flexbox {
-    display: -webkit-flex;
+    display: flex;
     background-color: grey;
     width: 100px;
     height: 100px;
 }
 .flexbox > * {
-    -webkit-flex: none;
+    flex: none;
 }
 .title {
     margin-top: 1em;
@@ -38,16 +38,16 @@
     -webkit-writing-mode: vertical-lr;
 }
 .row {
-    -webkit-flex-flow: row;    
+    flex-flow: row;
 }
 .row-reverse {
-    -webkit-flex-flow: row-reverse;
+    flex-flow: row-reverse;
 }
 .column {
-    -webkit-flex-flow: column;
+    flex-flow: column;
 }
 .column-reverse {
-    -webkit-flex-flow: column-reverse;
+    flex-flow: column-reverse;
 }
 .flexbox > :nth-child(1) {
     background-color: blue;

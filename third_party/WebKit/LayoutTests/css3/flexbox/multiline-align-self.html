@@ -3,10 +3,10 @@
 <style>
 .flexbox {
     position: relative;
-    display: -webkit-flex;
+    display: flex;
     background-color: grey;
     max-width: 600px;
-    -webkit-align-content: flex-start;
+    align-content: flex-start;
 }
 .title {
     margin-top: 1em;
@@ -30,22 +30,22 @@
     -webkit-writing-mode: vertical-lr;
 }
 .row {
-    -webkit-flex-flow: row;
+    flex-flow: row;
 }
 .row-reverse {
-    -webkit-flex-flow: row-reverse;
+    flex-flow: row-reverse;
 }
 .column {
-    -webkit-flex-flow: column;
+    flex-flow: column;
 }
 .column-reverse {
-    -webkit-flex-flow: column-reverse;
+    flex-flow: column-reverse;
 }
 .wrap {
-  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
 }
 .wrap-reverse {
-  -webkit-flex-wrap: wrap-reverse;
+  flex-wrap: wrap-reverse;
 }
 .flexbox > :nth-child(1) {
     background-color: #0f0;
@@ -1301,9 +1301,9 @@ function mainAxisDirection(writingMode, flexDirection)
 function addChild(flexbox, mainAxis, crossAxis, preferredSize, crossAxisLength, alignment, expectations)
 {
     var child = document.createElement('div');
-    child.setAttribute('style', '-webkit-flex: 1 ' + preferredSize + 'px;'
+    child.setAttribute('style', 'flex: 1 ' + preferredSize + 'px;'
         + crossAxis + ': ' + crossAxisLength + ';'
-        + '-webkit-align-self: ' + alignment);
+        + 'align-self: ' + alignment);
 
     child.setAttribute("data-expected-width", expectations[0]);
     child.setAttribute("data-expected-height", expectations[1]);

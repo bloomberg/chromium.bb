@@ -2,7 +2,7 @@
 <html>
 <style>
 .flexbox {
-    display: -webkit-flex;
+    display: flex;
     background-color: #aaa;
     border: 5px solid blue;
     float:left;
@@ -25,8 +25,8 @@
 <div style="clear: left; position: relative">
     <div style="width: 100px; height: 100px; background-color: green; float: left"></div>
     <div data-expected-height=30 data-offset-x=100 data-offset-y=0 class="flexbox" style="float: none">
-        <div data-expected-height=20 data style="height: 20px; -webkit-flex: 1"></div>
-        <div data-expected-height=20 style="height: 20px; -webkit-flex: 1"></div>
+        <div data-expected-height=20 data style="height: 20px; flex: 1"></div>
+        <div data-expected-height=20 style="height: 20px; flex: 1"></div>
     </div>
 </div>
 

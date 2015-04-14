@@ -3,16 +3,16 @@
 <head>
 <style>
 #flexbox {
-  display: -webkit-flex;
+  display: flex;
 }
 
 #left {
-  -webkit-flex: 1;
+  flex: 1;
   background-color: yellow;
 }
 
 #content {
-  -webkit-flex: 1;
+  flex: 1;
   background-color: grey;
 }
 </style>
@@ -25,7 +25,7 @@
 
 function setFlex(id, animationPercentage, start, end) {
   var flexValue = start + ((end - start) * animationPercentage);
-  document.getElementById(id).style.webkitFlex = flexValue + " 0 0px";
+  document.getElementById(id).style.flex = flexValue + " 0 0px";
 }
 
 function step(count) {
