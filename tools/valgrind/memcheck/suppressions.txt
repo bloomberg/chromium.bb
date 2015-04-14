@@ -3664,7 +3664,4 @@
    fun:_ZN5blink10UseCounter9CountBitsC2Ev
    fun:_ZN5blink10UseCounterC1Ev
    fun:_ZN5blink4PageC1ERNS0_11PageClientsE
-   fun:_ZN5blink11WebViewImplC1EPNS_13WebViewClientE
-   fun:_ZN5blink11WebViewImpl6createEPNS_13WebViewClientE
-   fun:_ZN5blink7WebView6createEPNS_13WebViewClientE
 }
