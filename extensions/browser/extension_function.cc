@@ -306,6 +306,11 @@ ExtensionFunction::ResponseValue ExtensionFunction::OneArgument(
       new ArgumentListResponseValue(name(), "OneArgument", this, args.Pass()));
 }
 
+ExtensionFunction::ResponseValue ExtensionFunction::OneArgument(
+    scoped_ptr<base::Value> arg) {
+  return OneArgument(arg.release());
+}
+
 ExtensionFunction::ResponseValue ExtensionFunction::TwoArguments(
     base::Value* arg1,
     base::Value* arg2) {

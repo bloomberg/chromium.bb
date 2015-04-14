@@ -551,17 +551,24 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, UpdateExtensionsPage) {
       base::Bind(&content::FrameHasSourceUrl,
                  GURL(chrome::kChromeUIExtensionsFrameURL)));
 
-  // We do the first ExecuteScript to serve as a "Run All Pending" hack.
-  EXPECT_TRUE(content::ExecuteScript(frame, "1 == 1;"));
-
-  bool is_inactive;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      frame,
-      "var ele = document.querySelectorAll('div.active-views');"
-      "window.domAutomationController.send("
-      "    ele[0].innerHTML.search('(Inactive)') > 0);",
-      &is_inactive));
-  EXPECT_TRUE(is_inactive);
+  // Updating the extensions page is a process that has back-and-forth
+  // communication (i.e., backend tells extensions page something changed,
+  // extensions page requests updated data, backend responds with updated data,
+  // and so forth). This makes it difficult to know for sure when the page is
+  // done updating, so just try a few times. We limit the total number of
+  // attempts so that a) the test *fails* (instead of times out), and b) we
+  // know we're not making a ridiculous amount of trips to update the page.
+  bool is_inactive = false;
+  int kMaxTries = 10;
+  int num_tries = 0;
+  while (!is_inactive && num_tries++ < kMaxTries) {
+    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+        frame,
+        "var ele = document.querySelectorAll('div.active-views');"
+        "window.domAutomationController.send("
+        "    ele[0].innerHTML.search('(Inactive)') > 0);",
+        &is_inactive));
+  }
 }
 
 // Tests that the lazy background page will be unloaded if the onSuspend event

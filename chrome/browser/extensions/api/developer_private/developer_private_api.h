@@ -167,7 +167,7 @@ class DeveloperPrivateAPI : public BrowserContextKeyedAPI,
 
 namespace api {
 
-class DeveloperPrivateAPIFunction : public UIThreadExtensionFunction {
+class DeveloperPrivateAPIFunction : public ChromeUIThreadExtensionFunction {
  protected:
   ~DeveloperPrivateAPIFunction() override;
 
@@ -225,6 +225,28 @@ class DeveloperPrivateGetExtensionInfoFunction
 
  private:
   ~DeveloperPrivateGetExtensionInfoFunction() override;
+  ResponseAction Run() override;
+};
+
+class DeveloperPrivateGetProfileConfigurationFunction
+    : public DeveloperPrivateAPIFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.getProfileConfiguration",
+                             DEVELOPERPRIVATE_GETPROFILECONFIGURATION);
+
+ private:
+  ~DeveloperPrivateGetProfileConfigurationFunction() override;
+  ResponseAction Run() override;
+};
+
+class DeveloperPrivateUpdateProfileConfigurationFunction
+    : public DeveloperPrivateAPIFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.updateProfileConfiguration",
+                             DEVELOPERPRIVATE_UPDATEPROFILECONFIGURATION);
+
+ private:
+  ~DeveloperPrivateUpdateProfileConfigurationFunction() override;
   ResponseAction Run() override;
 };
 
