@@ -26,9 +26,9 @@ shouldBeTrue("(new File([], '')) instanceof window.File");
 shouldBeTrue("(new File([], document)) instanceof window.File");
 
 // Test invalid file parts.
-shouldThrow("new File('hello', 'world.html')", '"TypeError: Failed to construct \'File\': The 1st argument provided is either null, or an invalid Array object."');
-shouldThrow("new File(0, 'world.html')", '"TypeError: Failed to construct \'File\': The 1st argument provided is either null, or an invalid Array object."');
-shouldThrow("new File(null, 'world.html')", '"TypeError: Failed to construct \'File\': The 1st argument provided is either null, or an invalid Array object."');
+shouldThrow("new File('hello', 'world.html')", '"TypeError: Failed to construct \'File\': The 1st argument is neither an array, nor does it have indexed properties."');
+shouldThrow("new File(0, 'world.html')", '"TypeError: Failed to construct \'File\': The 1st argument is neither an array, nor does it have indexed properties."');
+shouldThrow("new File(null, 'world.html')", '"TypeError: Failed to construct \'File\': The 1st argument is neither an array, nor does it have indexed properties."');
 
 // Test valid file parts.
 shouldBeTrue("(new File([], 'world.html')) instanceof window.File");
@@ -66,18 +66,18 @@ shouldThrow("(new File([], throwingObj)).name", "'Error'");
 
 // Test some invalid property bags.
 shouldBeTrue("(new File([], 'world.html', {unknownKey:'value'})) instanceof window.File");    // Ignore invalid keys
-shouldThrow("new File([], 'world.html', {endings:'illegalValue'})", "'TypeError: Failed to construct \\'File\\': The \\'endings\\' property must be either \\'transparent\\' or \\'native\\'.'");
+shouldThrow("new File([], 'world.html', {endings:'illegalValue'})", "'TypeError: Failed to construct \\'File\\': The provided value \\'illegalValue\\' is not a valid enum value of type NormalizeLineEndings.'");
 shouldThrow("new File([], 'world.html', {endings:throwingObj})", "'Error'");
 shouldThrow("new File([], 'world.html', {type:throwingObj})", "'Error'");
 shouldThrow("new File([], 'world.html', {type:'hello\u00EE'})", "'SyntaxError: Failed to construct \\'File\\': The \\'type\\' property must consist of ASCII characters.'");
 
 // Test various non-object literals being used as property bags.
-shouldThrow("(new File([], 'world.html', null)) instanceof window.File", "'TypeError: Failed to construct \\'File\\': The 3rd argument is not of type Object.'");
-shouldThrow("(new File([], 'world.html', undefined)) instanceof window.File", "'TypeError: Failed to construct \\'File\\': The 3rd argument is not of type Object.'");
-shouldThrow("(new File([], 'world.html', 123)) instanceof window.File", "'TypeError: Failed to construct \\'File\\': The 3rd argument is not of type Object.'");
-shouldThrow("(new File([], 'world.html', 123.4)) instanceof window.File", "'TypeError: Failed to construct \\'File\\': The 3rd argument is not of type Object.'");
-shouldThrow("(new File([], 'world.html', true)) instanceof window.File", "'TypeError: Failed to construct \\'File\\': The 3rd argument is not of type Object.'");
-shouldThrow("(new File([], 'world.html', 'abc')) instanceof window.File", "'TypeError: Failed to construct \\'File\\': The 3rd argument is not of type Object.'");
+shouldBeTrue("(new File([], 'world.html', null)) instanceof window.File");
+shouldBeTrue("(new File([], 'world.html', undefined)) instanceof window.File");
+shouldThrow("(new File([], 'world.html', 123)) instanceof window.File", "'TypeError: Failed to construct \\'File\\': parameter 3 (\\'options\\') is not an object.'");
+shouldThrow("(new File([], 'world.html', 123.4)) instanceof window.File", "'TypeError: Failed to construct \\'File\\': parameter 3 (\\'options\\') is not an object.'");
+shouldThrow("(new File([], 'world.html', true)) instanceof window.File", "'TypeError: Failed to construct \\'File\\': parameter 3 (\\'options\\') is not an object.'");
+shouldThrow("(new File([], 'world.html', 'abc')) instanceof window.File", "'TypeError: Failed to construct \\'File\\': parameter 3 (\\'options\\') is not an object.'");
 shouldBeTrue("(new File([], 'world.html', [])) instanceof window.File");
 shouldBeTrue("(new File([], 'world.html', /abc/)) instanceof window.File");
 shouldBeTrue("(new File([], 'world.html', function () {})) instanceof window.File");
@@ -139,7 +139,8 @@ shouldBe("new File([new Blob([(new Int32Array(100)).buffer]), new File([new Uint
 shouldBe("new Blob([new Blob([new Int32Array(100)]), new File([new Uint16Array(100)], 'world.txt'), new Uint8Array(100), new Float32Array(100), new DataView(new ArrayBuffer(100))]).size", "1200");
 shouldBe("new Blob([new Blob([(new Int32Array(100)).buffer]), new File([new Uint16Array(100).buffer], 'world.txt'), (new Uint8Array(100)).buffer, (new Float32Array(100)).buffer, (new DataView(new ArrayBuffer(100))).buffer]).size", "1200");
 
-// Test passing file parts in (deprecated and unsupported) objects with indexed properties.
-shouldThrow("new File({length: 0}, 'world.txt')", "'TypeError: Failed to construct \\'File\\': The 1st argument provided is either null, or an invalid Array object.'");
-shouldThrow("new File({length: 1, 0: 'string'}, 'world.txt')", "'TypeError: Failed to construct \\'File\\': The 1st argument provided is either null, or an invalid Array object.'");
+// Test passing blob parts in objects with indexed properties.
+// (This depends on the bindings code handling of sequence<T>)
+shouldBe("new File({length: 0}, 'world.txt').size", "0");
+shouldBe("new File({length: 1, 0: 'string'}, 'world.txt').size", "6");
 </script>
