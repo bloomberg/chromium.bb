@@ -306,6 +306,11 @@ class TestGetDefaultDevice(USBDeviceTestCase):
 class TestUSBDeviceIP(USBDeviceTestCase):
   """Tests of the GetUSBDeviceIP() function."""
 
+  def testEmptyAlias(self):
+    """Test empty alias should resolve to None."""
+    ip = remote_access.GetUSBDeviceIP('')
+    self.assertEqual(ip, None)
+
   def testDebugLinkInitialization(self):
     """Test case to make sure the Debug Link is initialized."""
     self.PatchObject(mdns, 'FindServices')

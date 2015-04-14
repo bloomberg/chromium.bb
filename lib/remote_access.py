@@ -1058,6 +1058,9 @@ def GetUSBDeviceIP(alias):
     USB-connected device IP address or None if |alias| is not found.  If there
     are duplicate aliases on the network, the first IP address is returned.
   """
+  if not alias:
+    return None
+
   # Lazy import mdns so that we don't break the chromite requirement that
   # bootstrapping should not depend on third_party packages. mdns pulls in
   # dpkt which is a third_party package.
