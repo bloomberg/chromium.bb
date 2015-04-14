@@ -573,15 +573,6 @@ class CONTENT_EXPORT RenderFrameImpl
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, ShowPopupThenNavigate);
   FRIEND_TEST_ALL_PREFIXES(RendererAccessibilityTest,
                            AccessibilityMessagesQueueWhileSwappedOut);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
-                           OnExtendSelectionAndDelete);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, ReloadWhileSwappedOut);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, SendSwapOutACK);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OriginReplicationForSwapOut);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
-                           SetEditableSelectionAndComposition);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
-                           OnSetAccessibilityMode);
 
   typedef std::map<GURL, double> HostZoomLevels;
 

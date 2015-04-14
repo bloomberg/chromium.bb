@@ -298,6 +298,34 @@ class RenderViewImplTest : public RenderViewTest {
     frame()->OnNavigate(common_params, start_params, request_params);
   }
 
+  void SwapOut(RenderFrameImpl* frame,
+               int proxy_routing_id,
+               bool is_loading,
+               const FrameReplicationState& replicated_frame_state) {
+    frame->OnSwapOut(proxy_routing_id, is_loading, replicated_frame_state);
+  }
+
+  void SetEditableSelectionOffsets(int start, int end) {
+    frame()->OnSetEditableSelectionOffsets(start, end);
+  }
+
+  void ExtendSelectionAndDelete(int before, int after) {
+    frame()->OnExtendSelectionAndDelete(before, after);
+  }
+
+  void Unselect() { frame()->OnUnselect(); }
+
+  void SetAccessibilityMode(AccessibilityMode new_mode) {
+    frame()->OnSetAccessibilityMode(new_mode);
+  }
+
+  void SetCompositionFromExistingText(
+      int start,
+      int end,
+      const std::vector<blink::WebCompositionUnderline>& underlines) {
+    frame()->OnSetCompositionFromExistingText(start, end, underlines);
+  }
+
  private:
   scoped_ptr<MockKeyboard> mock_keyboard_;
 };
@@ -615,8 +643,7 @@ TEST_F(RenderViewImplTest, SendSwapOutACK) {
   RenderProcess::current()->AddRefProcess();
 
   // Respond to a swap out request.
-  view()->GetMainRenderFrame()->OnSwapOut(kProxyRoutingId, true,
-                                          content::FrameReplicationState());
+  SwapOut(frame(), kProxyRoutingId, true, content::FrameReplicationState());
 
   // Ensure the swap out commits synchronously.
   EXPECT_NE(initial_page_id, view_page_id());
@@ -629,8 +656,7 @@ TEST_F(RenderViewImplTest, SendSwapOutACK) {
   // It is possible to get another swap out request.  Ensure that we send
   // an ACK, even if we don't have to do anything else.
   render_thread_->sink().ClearMessages();
-  view()->GetMainRenderFrame()->OnSwapOut(kProxyRoutingId, false,
-                                          content::FrameReplicationState());
+  SwapOut(frame(), kProxyRoutingId, false, content::FrameReplicationState());
   const IPC::Message* msg2 = render_thread_->sink().GetUniqueMessageMatching(
       FrameHostMsg_SwapOut_ACK::ID);
   ASSERT_TRUE(msg2);
@@ -691,8 +717,7 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   ProcessPendingMessages();
 
   // Respond to a swap out request.
-  view()->GetMainRenderFrame()->OnSwapOut(kProxyRoutingId, true,
-                                          content::FrameReplicationState());
+  SwapOut(frame(), kProxyRoutingId, true, content::FrameReplicationState());
 
   // Check for a OnSwapOutACK.
   const IPC::Message* msg = render_thread_->sink().GetUniqueMessageMatching(
@@ -750,7 +775,7 @@ TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
   // WebRemoteFrame.
   content::FrameReplicationState replication_state;
   replication_state.origin = url::Origin("http://foo.com");
-  child_frame->OnSwapOut(kProxyRoutingId, true, replication_state);
+  SwapOut(child_frame, kProxyRoutingId, true, replication_state);
 
   // The child frame should now be a WebRemoteFrame.
   EXPECT_TRUE(web_frame->firstChild()->isWebRemoteFrame());
@@ -765,7 +790,7 @@ TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
   replication_state.origin = url::Origin();
   RenderFrameImpl* child_frame2 = static_cast<RenderFrameImpl*>(
       RenderFrame::FromWebFrame(web_frame->lastChild()));
-  child_frame2->OnSwapOut(kProxyRoutingId + 1, true, replication_state);
+  SwapOut(child_frame2, kProxyRoutingId + 1, true, replication_state);
   EXPECT_TRUE(web_frame->lastChild()->isWebRemoteFrame());
   EXPECT_TRUE(web_frame->lastChild()->securityOrigin().isUnique());
 }
@@ -1896,15 +1921,15 @@ TEST_F(RenderViewImplTest, SetEditableSelectionAndComposition) {
            "</body>"
            "</html>");
   ExecuteJavaScript("document.getElementById('test1').focus();");
-  frame()->OnSetEditableSelectionOffsets(4, 8);
+  SetEditableSelectionOffsets(4, 8);
   const std::vector<blink::WebCompositionUnderline> empty_underline;
-  frame()->OnSetCompositionFromExistingText(7, 10, empty_underline);
+  SetCompositionFromExistingText(7, 10, empty_underline);
   blink::WebTextInputInfo info = view()->webview()->textInputInfo();
   EXPECT_EQ(4, info.selectionStart);
   EXPECT_EQ(8, info.selectionEnd);
   EXPECT_EQ(7, info.compositionStart);
   EXPECT_EQ(10, info.compositionEnd);
-  frame()->OnUnselect();
+  Unselect();
   info = view()->webview()->textInputInfo();
   EXPECT_EQ(0, info.selectionStart);
   EXPECT_EQ(0, info.selectionEnd);
@@ -1921,14 +1946,14 @@ TEST_F(RenderViewImplTest, OnExtendSelectionAndDelete) {
            "</body>"
            "</html>");
   ExecuteJavaScript("document.getElementById('test1').focus();");
-  frame()->OnSetEditableSelectionOffsets(10, 10);
-  frame()->OnExtendSelectionAndDelete(3, 4);
+  SetEditableSelectionOffsets(10, 10);
+  ExtendSelectionAndDelete(3, 4);
   blink::WebTextInputInfo info = view()->webview()->textInputInfo();
   EXPECT_EQ("abcdefgopqrstuvwxyz", info.value);
   EXPECT_EQ(7, info.selectionStart);
   EXPECT_EQ(7, info.selectionEnd);
-  frame()->OnSetEditableSelectionOffsets(4, 8);
-  frame()->OnExtendSelectionAndDelete(2, 5);
+  SetEditableSelectionOffsets(4, 8);
+  ExtendSelectionAndDelete(2, 5);
   info = view()->webview()->textInputInfo();
   EXPECT_EQ("abuvwxyz", info.value);
   EXPECT_EQ(2, info.selectionStart);
@@ -2250,15 +2275,15 @@ TEST_F(RenderViewImplTest, OnSetAccessibilityMode) {
   ASSERT_EQ(AccessibilityModeOff, frame()->accessibility_mode());
   ASSERT_EQ((RendererAccessibility*) NULL, frame()->renderer_accessibility());
 
-  frame()->OnSetAccessibilityMode(AccessibilityModeTreeOnly);
+  SetAccessibilityMode(AccessibilityModeTreeOnly);
   ASSERT_EQ(AccessibilityModeTreeOnly, frame()->accessibility_mode());
   ASSERT_NE((RendererAccessibility*) NULL, frame()->renderer_accessibility());
 
-  frame()->OnSetAccessibilityMode(AccessibilityModeOff);
+  SetAccessibilityMode(AccessibilityModeOff);
   ASSERT_EQ(AccessibilityModeOff, frame()->accessibility_mode());
   ASSERT_EQ((RendererAccessibility*) NULL, frame()->renderer_accessibility());
 
-  frame()->OnSetAccessibilityMode(AccessibilityModeComplete);
+  SetAccessibilityMode(AccessibilityModeComplete);
   ASSERT_EQ(AccessibilityModeComplete, frame()->accessibility_mode());
   ASSERT_NE((RendererAccessibility*) NULL, frame()->renderer_accessibility());
 }
