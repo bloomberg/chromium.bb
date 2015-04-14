@@ -249,8 +249,8 @@ bool TestRenderViewHost::IsRenderViewLive() const {
   return render_view_created_;
 }
 
-bool TestRenderViewHost::IsFullscreen() const {
-  return RenderViewHostImpl::IsFullscreen();
+bool TestRenderViewHost::IsFullscreenGranted() const {
+  return RenderViewHostImpl::IsFullscreenGranted();
 }
 
 void TestRenderViewHost::SimulateWasHidden() {

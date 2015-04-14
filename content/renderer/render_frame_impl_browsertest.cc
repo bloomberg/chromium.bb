@@ -125,7 +125,7 @@ TEST_F(RenderFrameImplTest, MAYBE_FrameResize) {
   resize_params.top_controls_height = 0.f;
   resize_params.top_controls_shrink_blink_size = false;
   resize_params.resizer_rect = gfx::Rect();
-  resize_params.is_fullscreen = false;
+  resize_params.is_fullscreen_granted = false;
 
   scoped_ptr<IPC::Message> resize_message(new ViewMsg_Resize(0, resize_params));
   FrameWidget()->OnMessageReceived(*resize_message);

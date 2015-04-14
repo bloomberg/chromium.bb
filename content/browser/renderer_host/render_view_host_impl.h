@@ -327,7 +327,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnRenderAutoResized(const gfx::Size& size) override;
   void RequestToLockMouse(bool user_gesture,
                           bool last_unlocked_by_target) override;
-  bool IsFullscreen() const override;
+  bool IsFullscreenGranted() const override;
   void OnFocus() override;
   void OnBlur() override;
 

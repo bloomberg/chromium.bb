@@ -539,8 +539,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   bool IsMouseLocked() const;
 
-  // RenderViewHost overrides this method to report when in fullscreen mode.
-  virtual bool IsFullscreen() const;
+  // RenderViewHost overrides this method to report whether tab-initiated
+  // fullscreen was granted.
+  virtual bool IsFullscreenGranted() const;
 
   // Indicates if the render widget host should track the render widget's size
   // as opposed to visa versa.

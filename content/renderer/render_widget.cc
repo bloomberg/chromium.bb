@@ -269,7 +269,7 @@ class RenderWidget::ScreenMetricsEmulator {
   void Apply(bool top_controls_shrink_blink_size,
              float top_controls_height,
              gfx::Rect resizer_rect,
-             bool is_fullscreen);
+             bool is_fullscreen_granted);
 
   RenderWidget* widget_;
 
@@ -307,7 +307,7 @@ RenderWidget::ScreenMetricsEmulator::ScreenMetricsEmulator(
   Apply(widget_->top_controls_shrink_blink_size_,
         widget_->top_controls_height_,
         widget_->resizer_rect_,
-        widget_->is_fullscreen_);
+        widget_->is_fullscreen_granted_);
 }
 
 RenderWidget::ScreenMetricsEmulator::~ScreenMetricsEmulator() {
@@ -323,7 +323,7 @@ RenderWidget::ScreenMetricsEmulator::~ScreenMetricsEmulator() {
                   widget_->top_controls_height_,
                   original_visible_viewport_size_,
                   widget_->resizer_rect_,
-                  widget_->is_fullscreen_,
+                  widget_->is_fullscreen_granted_,
                   NO_RESIZE_ACK);
 }
 
@@ -337,14 +337,14 @@ void RenderWidget::ScreenMetricsEmulator::Reapply() {
   Apply(widget_->top_controls_shrink_blink_size_,
         widget_->top_controls_height_,
         widget_->resizer_rect_,
-        widget_->is_fullscreen_);
+        widget_->is_fullscreen_granted_);
 }
 
 void RenderWidget::ScreenMetricsEmulator::Apply(
     bool top_controls_shrink_blink_size,
     float top_controls_height,
     gfx::Rect resizer_rect,
-    bool is_fullscreen) {
+    bool is_fullscreen_granted) {
   applied_widget_rect_.set_size(gfx::Size(params_.viewSize));
   if (!applied_widget_rect_.width())
     applied_widget_rect_.set_width(original_size_.width());
@@ -409,7 +409,7 @@ void RenderWidget::ScreenMetricsEmulator::Apply(
                   top_controls_height,
                   applied_widget_rect_.size(),
                   resizer_rect,
-                  is_fullscreen,
+                  is_fullscreen_granted,
                   NO_RESIZE_ACK);
 }
 
@@ -424,7 +424,7 @@ void RenderWidget::ScreenMetricsEmulator::OnResizeMessage(
   Apply(params.top_controls_shrink_blink_size,
         params.top_controls_height,
         params.resizer_rect,
-        params.is_fullscreen);
+        params.is_fullscreen_granted);
 
   if (need_ack) {
     widget_->set_next_paint_is_resize_ack();
@@ -479,7 +479,7 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
       did_show_(false),
       is_hidden_(hidden),
       never_visible_(never_visible),
-      is_fullscreen_(false),
+      is_fullscreen_granted_(false),
       has_focus_(false),
       handling_input_event_(false),
       handling_ime_event_(false),
@@ -771,7 +771,7 @@ void RenderWidget::Resize(const gfx::Size& new_size,
                           float top_controls_height,
                           const gfx::Size& visible_viewport_size,
                           const gfx::Rect& resizer_rect,
-                          bool is_fullscreen,
+                          bool is_fullscreen_granted,
                           const ResizeAck resize_ack) {
   if (resizing_mode_selector_->NeverUsesSynchronousResize()) {
     // A resize ack shouldn't be requested if we have not ACK'd the previous
@@ -795,10 +795,10 @@ void RenderWidget::Resize(const gfx::Size& new_size,
   resizer_rect_ = resizer_rect;
 
   // NOTE: We may have entered fullscreen mode without changing our size.
-  bool fullscreen_change = is_fullscreen_ != is_fullscreen;
+  bool fullscreen_change = is_fullscreen_granted_ != is_fullscreen_granted;
   if (fullscreen_change)
     WillToggleFullscreen();
-  is_fullscreen_ = is_fullscreen;
+  is_fullscreen_granted_ = is_fullscreen_granted;
 
   webwidget_->setTopControlsHeight(top_controls_height,
                                    top_controls_shrink_blink_size_);
@@ -843,7 +843,7 @@ void RenderWidget::SetWindowRectSynchronously(
          top_controls_height_,
          new_window_rect.size(),
          gfx::Rect(),
-         is_fullscreen_,
+         is_fullscreen_granted_,
          NO_RESIZE_ACK);
   view_screen_rect_ = new_window_rect;
   window_screen_rect_ = new_window_rect;
@@ -903,7 +903,7 @@ void RenderWidget::OnResize(const ViewMsg_Resize_Params& params) {
          params.top_controls_height,
          params.visible_viewport_size,
          params.resizer_rect,
-         params.is_fullscreen,
+         params.is_fullscreen_granted,
          params.needs_resize_ack ? SEND_RESIZE_ACK : NO_RESIZE_ACK);
 
   if (orientation_changed)
@@ -1841,7 +1841,7 @@ void RenderWidget::WillToggleFullscreen() {
   if (!webwidget_)
     return;
 
-  if (is_fullscreen_) {
+  if (is_fullscreen_granted_) {
     webwidget_->willExitFullScreen();
   } else {
     webwidget_->willEnterFullScreen();
@@ -1852,7 +1852,7 @@ void RenderWidget::DidToggleFullscreen() {
   if (!webwidget_)
     return;
 
-  if (is_fullscreen_) {
+  if (is_fullscreen_granted_) {
     webwidget_->didEnterFullScreen();
   } else {
     webwidget_->didExitFullScreen();

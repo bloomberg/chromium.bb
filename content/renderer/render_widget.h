@@ -123,7 +123,7 @@ class CONTENT_EXPORT RenderWidget
   blink::WebWidget* webwidget() const { return webwidget_; }
   gfx::Size size() const { return size_; }
   bool has_focus() const { return has_focus_; }
-  bool is_fullscreen() const { return is_fullscreen_; }
+  bool is_fullscreen_granted() const { return is_fullscreen_granted_; }
   bool is_hidden() const { return is_hidden_; }
   bool handling_input_event() const { return handling_input_event_; }
   // Temporary for debugging purposes...
@@ -389,7 +389,7 @@ class CONTENT_EXPORT RenderWidget
               float top_controls_height,
               const gfx::Size& visible_viewport_size,
               const gfx::Rect& resizer_rect,
-              bool is_fullscreen,
+              bool is_fullscreen_granted,
               ResizeAck resize_ack);
   // Used to force the size of a window when running layout tests.
   void SetWindowRectSynchronously(const gfx::Rect& new_window_rect);
@@ -659,8 +659,8 @@ class CONTENT_EXPORT RenderWidget
   // Indicates that we are never visible, so never produce graphical output.
   bool never_visible_;
 
-  // Indicates that we are in fullscreen mode.
-  bool is_fullscreen_;
+  // Indicates whether tab-initiated fullscreen was granted.
+  bool is_fullscreen_granted_;
 
   // Indicates whether we have been focused/unfocused by the browser.
   bool has_focus_;

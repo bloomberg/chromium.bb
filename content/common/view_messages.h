@@ -470,8 +470,8 @@ IPC_STRUCT_BEGIN(ViewMsg_Resize_Params)
   IPC_STRUCT_MEMBER(gfx::Size, visible_viewport_size)
   // The resizer rect.
   IPC_STRUCT_MEMBER(gfx::Rect, resizer_rect)
-  // Indicates whether a page is fullscreen or not.
-  IPC_STRUCT_MEMBER(bool, is_fullscreen)
+  // Indicates whether tab-initiated fullscreen was granted.
+  IPC_STRUCT_MEMBER(bool, is_fullscreen_granted)
   // If set, requests the renderer to reply with a ViewHostMsg_UpdateRect
   // with the ViewHostMsg_UpdateRect_Flags::IS_RESIZE_ACK bit set in flags.
   IPC_STRUCT_MEMBER(bool, needs_resize_ack)

@@ -1263,7 +1263,7 @@ void PepperPluginInstanceImpl::ViewChanged(
     WebDocument document = element.document();
     bool is_fullscreen_element = (element == document.fullScreenElement());
     if (!view_data_.is_fullscreen && desired_fullscreen_state_ &&
-        render_frame()->GetRenderWidget()->is_fullscreen() &&
+        render_frame()->GetRenderWidget()->is_fullscreen_granted() &&
         is_fullscreen_element) {
       // Entered fullscreen. Only possible via SetFullscreen().
       view_data_.is_fullscreen = true;

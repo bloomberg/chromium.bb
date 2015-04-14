@@ -594,7 +594,7 @@ bool RenderWidgetHostImpl::GetResizeParams(
     resize_params->top_controls_shrink_blink_size =
         view_->DoTopControlsShrinkBlinkSize();
     resize_params->visible_viewport_size = view_->GetVisibleViewportSize();
-    resize_params->is_fullscreen = IsFullscreen();
+    resize_params->is_fullscreen_granted = IsFullscreenGranted();
   }
 
   const bool size_changed =
@@ -606,7 +606,8 @@ bool RenderWidgetHostImpl::GetResizeParams(
       size_changed || screen_info_out_of_date_ ||
       old_resize_params_->physical_backing_size !=
           resize_params->physical_backing_size ||
-      old_resize_params_->is_fullscreen != resize_params->is_fullscreen ||
+      old_resize_params_->is_fullscreen_granted !=
+          resize_params->is_fullscreen_granted ||
       old_resize_params_->top_controls_height !=
           resize_params->top_controls_height ||
       old_resize_params_->top_controls_shrink_blink_size !=
@@ -1317,7 +1318,7 @@ bool RenderWidgetHostImpl::IsMouseLocked() const {
   return view_ ? view_->IsMouseLocked() : false;
 }
 
-bool RenderWidgetHostImpl::IsFullscreen() const {
+bool RenderWidgetHostImpl::IsFullscreenGranted() const {
   return false;
 }
 

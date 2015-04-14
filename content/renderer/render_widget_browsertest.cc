@@ -18,7 +18,7 @@ TEST_F(RenderWidgetTest, OnResize) {
   resize_params.top_controls_height = 0.f;
   resize_params.top_controls_shrink_blink_size = false;
   resize_params.resizer_rect = gfx::Rect();
-  resize_params.is_fullscreen = false;
+  resize_params.is_fullscreen_granted = false;
   resize_params.needs_resize_ack = false;
   OnResize(resize_params);
   EXPECT_EQ(resize_params.needs_resize_ack, next_paint_is_resize_ack());

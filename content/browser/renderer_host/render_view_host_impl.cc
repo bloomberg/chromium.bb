@@ -1218,7 +1218,7 @@ void RenderViewHostImpl::RequestToLockMouse(bool user_gesture,
   delegate_->RequestToLockMouse(user_gesture, last_unlocked_by_target);
 }
 
-bool RenderViewHostImpl::IsFullscreen() const {
+bool RenderViewHostImpl::IsFullscreenGranted() const {
   return delegate_->IsFullscreenForCurrentTab();
 }
 

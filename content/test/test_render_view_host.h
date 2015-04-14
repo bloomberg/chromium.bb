@@ -241,7 +241,7 @@ class TestRenderViewHost
                         int32 max_page_id,
                         bool window_was_created_with_opener) override;
   bool IsRenderViewLive() const override;
-  bool IsFullscreen() const override;
+  bool IsFullscreenGranted() const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, FilterNavigate);

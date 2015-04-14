@@ -2687,7 +2687,7 @@ void RenderViewImpl::OnDisableAutoResize(const gfx::Size& new_size) {
            top_controls_height_,
            visible_viewport_size_,
            resizer_rect_,
-           is_fullscreen_,
+           is_fullscreen_granted_,
            NO_RESIZE_ACK);
   }
 }
@@ -3695,7 +3695,7 @@ void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
   params.top_controls_shrink_blink_size = false;
   params.top_controls_height = 0.f;
   params.resizer_rect = WebRect();
-  params.is_fullscreen = is_fullscreen();
+  params.is_fullscreen_granted = is_fullscreen_granted();
   OnResize(params);
 }
 
