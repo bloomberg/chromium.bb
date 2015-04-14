@@ -420,6 +420,10 @@ _settings = dict(
 )
 
 
+# Set to 'True' if this is a release branch.
+IS_RELEASE_BRANCH = False
+
+
 _CONFIG = config_lib.Config(defaults=_settings)
 
 def GetConfig():
@@ -504,19 +508,28 @@ def GetDefaultWaterfall(build_config):
     return None
   if build_config['branch']:
     return None
-
   b_type = build_config['build_type']
-  if (
-      config_lib.IsPFQType(b_type) or
-      config_lib.IsCQType(b_type) or
-      config_lib.IsCanaryType(b_type) or
-      b_type in (
-        constants.PRE_CQ_LAUNCHER_TYPE,
-      )):
-    if build_config['internal']:
-      return constants.WATERFALL_INTERNAL
+
+  if config_lib.IsCanaryType(b_type):
+    # If this is a canary build, it may fall on different waterfalls:
+    # - If we're building for a release branch, it belongs on a release
+    #   waterfall.
+    # - Otherwise, it belongs on the internal waterfall.
+    if IS_RELEASE_BRANCH:
+      return constants.WATERFALL_RELEASE
     else:
-      return constants.WATERFALL_EXTERNAL
+      return constants.WATERFALL_INTERNAL
+  elif config_lib.IsCQType(b_type):
+    # A Paladin can appear on the public or internal waterfall depending on its
+    # 'internal' status.
+    return (constants.WATERFALL_INTERNAL if build_config['internal'] else
+            constants.WATERFALL_EXTERNAL)
+  elif config_lib.IsPFQType(b_type) or b_type == constants.PRE_CQ_LAUNCHER_TYPE:
+    # These builder types belong on the internal waterfall.
+    return constants.WATERFALL_INTERNAL
+  else:
+    # No default active waterfall.
+    return None
 
 
 # pylint: disable=W0102
@@ -1680,8 +1693,12 @@ internal_pfq = internal.derive(official_chrome, pfq,
 # Because branch directories may be shared amongst builders on multiple
 # branches, they must delete the chroot every time they run.
 # They also potentially need to build [new] Chrome.
-internal_pfq_branch = internal_pfq.derive(branch=True, chroot_replace=True,
-                                          trybot_list=False, sync_chrome=True)
+internal_pfq_branch = internal_pfq.derive(
+    branch=True,
+    chroot_replace=True,
+    trybot_list=False,
+    sync_chrome=True,
+    active_waterfall=constants.WATERFALL_RELEASE)
 
 internal_paladin = internal.derive(official_chrome, paladin,
   manifest=constants.OFFICIAL_MANIFEST,
@@ -2976,6 +2993,14 @@ def GetDisplayPosition(config_name,
   return len(type_order)
 
 
+# On release branches, x86-mario is the release master.
+#
+# TODO(dnj): This should go away once the boardless release master is complete
+# (crbug.com/458675)
+if IS_RELEASE_BRANCH:
+  _CONFIG['x86-mario-release']['master'] = True
+
+
 # This is a list of configs that should be included on the main waterfall, but
 # aren't included by default (see IsDefaultMainWaterfall). This loosely
 # corresponds to the set of experimental or self-standing configs.
@@ -3059,7 +3084,8 @@ _waterfall_config_map = {
 
 def _SetupWaterfalls():
   for name, c in _CONFIG.iteritems():
-    c['active_waterfall'] = GetDefaultWaterfall(c)
+    if not c.get('active_waterfall'):
+      c['active_waterfall'] = GetDefaultWaterfall(c)
 
   # Apply manual configs.
   for waterfall, names in _waterfall_config_map.iteritems():

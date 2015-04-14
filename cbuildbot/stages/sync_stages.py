@@ -738,8 +738,7 @@ class ManifestVersionedSyncStage(SyncStage):
     # TODO(dgarrett): Push this logic into it's own stage.
     # If we are a Canary Master, create an additional derivative Manifest for
     # the Project SDK builders.
-    if (cbuildbot_config.IsCanaryType(self._run.config.build_type) and
-        self._run.config.master):
+    if self._run.config.name == constants.CANARY_MASTER:
       logging.info('Creating Project SDK Manifest.')
       sdk_manifest = None
       try:

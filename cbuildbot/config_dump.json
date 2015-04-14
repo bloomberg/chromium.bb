@@ -28463,6 +28463,7 @@
         ]
     },
     "lumpy-pre-flight-branch": {
+        "active_waterfall": "chromeos_release",
         "afdo_generate": true,
         "afdo_update_ebuild": true,
         "boards": [
