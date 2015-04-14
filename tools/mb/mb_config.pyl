@@ -128,7 +128,7 @@
   # above). mb uses this dict to look up which config to use for a given bot.
   # TODO(dpranke): add in remaining bots on the waterfalls.
   'masters': {
-    'chromium.chromeos': {
+    'chromium.chromiumos': {
       'Linux ChromiumOS GN': 'chromeos_gn_release_bot',
     },
     'chromium.linux': {
