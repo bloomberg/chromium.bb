@@ -11,6 +11,7 @@
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
 #include "public/platform/modules/notifications/WebNotificationPermission.h"
+#include <stdint.h>
 
 namespace blink {
 
@@ -20,7 +21,10 @@ class WebServiceWorkerRegistration;
 
 // Structure representing the info associated with a persistent notification.
 struct WebPersistentNotificationInfo {
+    // TODO(peter): Remove the string property when Chromium has switched over.
     WebString persistentNotificationId;
+
+    int64_t persistentId = 0;
     WebNotificationData data;
 };
 
@@ -44,16 +48,22 @@ public:
     // Asynchronously gets the persistent notifications belonging to the Service Worker Registration.
     // If |filterTag| is not an empty string, only the notification with the given tag will be
     // considered. Will take ownership of the WebNotificationGetCallbacks object.
-    virtual void getNotifications(const WebString& filterTag, WebServiceWorkerRegistration*, WebNotificationGetCallbacks*)
-    {
-        BLINK_ASSERT_NOT_REACHED();
-    }
+    virtual void getNotifications(const WebString& filterTag, WebServiceWorkerRegistration*, WebNotificationGetCallbacks*) = 0;
 
     // Closes a notification previously shown, and removes it if being shown.
     virtual void close(WebNotificationDelegate*) = 0;
 
     // Closes a persistent notification identified by its persistent notification Id.
-    virtual void closePersistent(const WebSerializedOrigin&, const WebString& persistentNotificationId) = 0;
+    virtual void closePersistent(const WebSerializedOrigin&, int64_t persistentNotificationId)
+    {
+        BLINK_ASSERT_NOT_REACHED();
+    }
+
+    // TODO(peter): Remove this method when the embedder accepts integral persistent ids.
+    virtual void closePersistent(const WebSerializedOrigin&, const WebString& persistentNotificationId)
+    {
+        BLINK_ASSERT_NOT_REACHED();
+    }
 
     // Indicates that the delegate object is being destroyed, and must no longer
     // be used by the embedder to dispatch events.

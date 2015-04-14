@@ -59,6 +59,8 @@ public:
 
     virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray& channels) = 0;
 
+    virtual void dispatchNotificationClickEvent(int eventID, int64_t notificationID, const WebNotificationData&) = 0;
+    // TODO(peter): Remove this method when Chromium has switched over.
     virtual void dispatchNotificationClickEvent(int eventID, const WebString& notificationID, const WebNotificationData&) = 0;
 
     virtual void dispatchPushEvent(int eventID, const WebString& data) = 0;
