@@ -926,9 +926,9 @@ void WebContentsViewAura::SetOverscrollControllerEnabled(bool enabled) {
       InstallOverscrollControllerDelegate(view);
   }
 
-  if (!enabled)
+  if (!enabled) {
     navigation_overlay_.reset();
-  if (!navigation_overlay_) {
+  } else if (!navigation_overlay_) {
     navigation_overlay_.reset(
         new OverscrollNavigationOverlay(web_contents_, window_.get()));
   }
