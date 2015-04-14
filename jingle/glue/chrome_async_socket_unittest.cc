@@ -43,7 +43,7 @@ class AsyncSocketDataProvider : public net::SocketDataProvider {
 
   // If there's no read, sets the "has pending read" flag.  Otherwise,
   // pops the next read.
-  net::MockRead GetNextRead() override {
+  net::MockRead OnRead() override {
     if (reads_.empty()) {
       DCHECK(!has_pending_read_);
       has_pending_read_ = true;

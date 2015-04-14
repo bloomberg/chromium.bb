@@ -195,7 +195,7 @@ class SocketDataProvider {
   // If the |MockRead.result| is ERR_IO_PENDING, it informs the caller
   // that it will be called via the AsyncSocket::OnReadComplete()
   // function at a later time.
-  virtual MockRead GetNextRead() = 0;
+  virtual MockRead OnRead() = 0;
   virtual MockWriteResult OnWrite(const std::string& data) = 0;
   virtual void Reset() = 0;
 
@@ -254,7 +254,7 @@ class StaticSocketDataProvider : public SocketDataProvider {
   virtual void CompleteRead() {}
 
   // SocketDataProvider implementation.
-  MockRead GetNextRead() override;
+  MockRead OnRead() override;
   MockWriteResult OnWrite(const std::string& data) override;
   void Reset() override;
 
@@ -284,7 +284,7 @@ class DynamicSocketDataProvider : public SocketDataProvider {
   void allow_unconsumed_reads(bool allow) { allow_unconsumed_reads_ = allow; }
 
   // SocketDataProvider implementation.
-  MockRead GetNextRead() override;
+  MockRead OnRead() override;
   MockWriteResult OnWrite(const std::string& data) override = 0;
   void Reset() override;
 
@@ -363,7 +363,7 @@ class DelayedSocketData : public StaticSocketDataProvider {
   void ForceNextRead();
 
   // StaticSocketDataProvider:
-  MockRead GetNextRead() override;
+  MockRead OnRead() override;
   MockWriteResult OnWrite(const std::string& data) override;
   void Reset() override;
   void CompleteRead() override;
@@ -417,7 +417,7 @@ class OrderedSocketData : public StaticSocketDataProvider {
   void EndLoop();
 
   // StaticSocketDataProvider:
-  MockRead GetNextRead() override;
+  MockRead OnRead() override;
   MockWriteResult OnWrite(const std::string& data) override;
   void Reset() override;
   void CompleteRead() override;
@@ -545,9 +545,9 @@ class DeterministicSocketData : public StaticSocketDataProvider {
 
   // StaticSocketDataProvider:
 
-  // When the socket calls Read(), that calls GetNextRead(), and expects either
+  // When the socket calls Read(), that calls OnRead(), and expects either
   // ERR_IO_PENDING or data.
-  MockRead GetNextRead() override;
+  MockRead OnRead() override;
 
   // When the socket calls Write(), it always completes synchronously. OnWrite()
   // checks to make sure the written data matches the expected data. The

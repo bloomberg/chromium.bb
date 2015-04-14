@@ -26,7 +26,7 @@ class SocketDataProvider: public net::SocketDataProvider {
   SocketDataProvider()
       : write_limit_(-1), async_write_(false), next_write_error_(net::OK) {}
 
-  net::MockRead GetNextRead() override {
+  net::MockRead OnRead() override {
     return net::MockRead(net::ASYNC, net::ERR_IO_PENDING);
   }
 

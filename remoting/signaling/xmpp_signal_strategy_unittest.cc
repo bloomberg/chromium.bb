@@ -18,7 +18,7 @@ namespace {
 
 class XmppSocketDataProvider: public net::SocketDataProvider {
  public:
-  net::MockRead GetNextRead() override {
+  net::MockRead OnRead() override {
     return net::MockRead(net::ASYNC, net::ERR_IO_PENDING);
   }
 

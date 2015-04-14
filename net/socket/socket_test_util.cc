@@ -182,7 +182,7 @@ const MockWrite& StaticSocketDataProvider::PeekWrite(size_t index) const {
   return writes_[index];
 }
 
-MockRead StaticSocketDataProvider::GetNextRead() {
+MockRead StaticSocketDataProvider::OnRead() {
   CHECK(!at_read_eof());
   return reads_[read_index_++];
 }
@@ -234,7 +234,7 @@ DynamicSocketDataProvider::DynamicSocketDataProvider()
 
 DynamicSocketDataProvider::~DynamicSocketDataProvider() {}
 
-MockRead DynamicSocketDataProvider::GetNextRead() {
+MockRead DynamicSocketDataProvider::OnRead() {
   if (reads_.empty())
     return MockRead(SYNCHRONOUS, ERR_UNEXPECTED);
   MockRead result = reads_.front();
@@ -315,10 +315,10 @@ void DelayedSocketData::ForceNextRead() {
   CompleteRead();
 }
 
-MockRead DelayedSocketData::GetNextRead() {
+MockRead DelayedSocketData::OnRead() {
   MockRead out = MockRead(ASYNC, ERR_IO_PENDING);
   if (write_delay_ <= 0)
-    out = StaticSocketDataProvider::GetNextRead();
+    out = StaticSocketDataProvider::OnRead();
   read_in_progress_ = (out.result == ERR_IO_PENDING);
   return out;
 }
@@ -344,7 +344,7 @@ void DelayedSocketData::Reset() {
 
 void DelayedSocketData::CompleteRead() {
   if (socket() && read_in_progress_)
-    socket()->OnReadComplete(GetNextRead());
+    socket()->OnReadComplete(OnRead());
 }
 
 OrderedSocketData::OrderedSocketData(
@@ -385,7 +385,7 @@ void OrderedSocketData::EndLoop() {
   loop_stop_stage_ = sequence_number_;
 }
 
-MockRead OrderedSocketData::GetNextRead() {
+MockRead OrderedSocketData::OnRead() {
   weak_factory_.InvalidateWeakPtrs();
   blocked_ = false;
   const MockRead& next_read = StaticSocketDataProvider::PeekRead();
@@ -397,7 +397,7 @@ MockRead OrderedSocketData::GetNextRead() {
                            << read_index();
     DumpMockReadWrite(next_read);
     blocked_ = (next_read.result == ERR_IO_PENDING);
-    return StaticSocketDataProvider::GetNextRead();
+    return StaticSocketDataProvider::OnRead();
   }
   NET_TRACE(1, "  *** ") << "Stage " << sequence_number_ - 1 << ": I/O Pending";
   MockRead result = MockRead(ASYNC, ERR_IO_PENDING);
@@ -438,7 +438,7 @@ void OrderedSocketData::Reset() {
 void OrderedSocketData::CompleteRead() {
   if (socket() && blocked_) {
     NET_TRACE(1, "  *** ") << "Stage " << sequence_number_;
-    socket()->OnReadComplete(GetNextRead());
+    socket()->OnReadComplete(OnRead());
   }
 }
 
@@ -505,7 +505,7 @@ void DeterministicSocketData::StopAfter(int seq) {
   SetStop(sequence_number_ + seq);
 }
 
-MockRead DeterministicSocketData::GetNextRead() {
+MockRead DeterministicSocketData::OnRead() {
   current_read_ = StaticSocketDataProvider::PeekRead();
 
   // Synchronous read while stopped is an error
@@ -539,7 +539,7 @@ MockRead DeterministicSocketData::GetNextRead() {
     NextStep();
 
   DCHECK_NE(ERR_IO_PENDING, current_read_.result);
-  StaticSocketDataProvider::GetNextRead();
+  StaticSocketDataProvider::OnRead();
 
   return current_read_;
 }
@@ -838,7 +838,7 @@ int MockTCPClientSocket::Read(IOBuffer* buf, int buf_len,
   pending_callback_ = callback;
 
   if (need_read_data_) {
-    read_data_ = data_->GetNextRead();
+    read_data_ = data_->OnRead();
     if (read_data_.result == ERR_CONNECTION_CLOSED) {
       // This MockRead is just a marker to instruct us to set
       // peer_closed_connection_.
@@ -847,7 +847,7 @@ int MockTCPClientSocket::Read(IOBuffer* buf, int buf_len,
     if (read_data_.result == ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ) {
       // This MockRead is just a marker to instruct us to set
       // peer_closed_connection_.  Skip it and get the next one.
-      read_data_ = data_->GetNextRead();
+      read_data_ = data_->OnRead();
       peer_closed_connection_ = true;
     }
     // ERR_IO_PENDING means that the SocketDataProvider is taking responsibility
@@ -1031,7 +1031,7 @@ int DeterministicSocketHelper::CompleteRead() {
   was_used_to_convey_data_ = true;
 
   if (read_data_.result == ERR_IO_PENDING)
-    read_data_ = data_->GetNextRead();
+    read_data_ = data_->OnRead();
   DCHECK_NE(ERR_IO_PENDING, read_data_.result);
   // If read_data_.mode is ASYNC, we do not need to wait, since this is already
   // the callback. Therefore we don't even bother to check it.
@@ -1074,8 +1074,7 @@ int DeterministicSocketHelper::Write(
 
 int DeterministicSocketHelper::Read(
     IOBuffer* buf, int buf_len, const CompletionCallback& callback) {
-
-  read_data_ = data_->GetNextRead();
+  read_data_ = data_->OnRead();
   // The buffer should always be big enough to contain all the MockRead data. To
   // use small buffers, split the data into multiple MockReads.
   DCHECK_LE(read_data_.data_len, buf_len);
@@ -1088,7 +1087,7 @@ int DeterministicSocketHelper::Read(
   if (read_data_.result == ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ) {
     // This MockRead is just a marker to instruct us to set
     // peer_closed_connection_.  Skip it and get the next one.
-    read_data_ = data_->GetNextRead();
+    read_data_ = data_->OnRead();
     peer_closed_connection_ = true;
   }
 
@@ -1474,7 +1473,7 @@ int MockUDPClientSocket::Read(IOBuffer* buf,
   pending_callback_ = callback;
 
   if (need_read_data_) {
-    read_data_ = data_->GetNextRead();
+    read_data_ = data_->OnRead();
     // ERR_IO_PENDING means that the SocketDataProvider is taking responsibility
     // to complete the async IO manually later (via OnReadComplete).
     if (read_data_.result == ERR_IO_PENDING) {
