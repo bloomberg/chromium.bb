@@ -409,6 +409,8 @@ void BrowserNonClientFrameViewAsh::
   // UpdateSizeButtonVisibility(false). Due to this a new size is not available
   // until the completion of the animation. Layout in response to the preferred
   // size changes.
+  if (!browser_view()->initialized())
+    return;
   if (child == caption_button_container_ || child == new_avatar_button()) {
     InvalidateLayout();
     frame()->GetRootView()->Layout();

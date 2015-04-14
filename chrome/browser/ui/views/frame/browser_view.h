@@ -223,6 +223,9 @@ class BrowserView : public BrowserWindow,
     return immersive_mode_controller_.get();
   }
 
+  // Returns true if the view has been initialized.
+  bool initialized() const { return initialized_; }
+
   // Restores the focused view. This is also used to set the initial focus
   // when a new browser window is created.
   void RestoreFocus();
