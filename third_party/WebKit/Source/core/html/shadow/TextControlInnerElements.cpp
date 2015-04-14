@@ -85,6 +85,7 @@ PassRefPtr<ComputedStyle> EditingViewPortElement::customStyleForLayoutObject()
     style->inheritFrom(shadowHost()->computedStyleRef());
 
     style->setFlexGrow(1);
+    style->setMinWidth(Length(0, Fixed));
     style->setDisplay(BLOCK);
     style->setDirection(LTR);
 

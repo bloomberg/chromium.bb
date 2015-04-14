@@ -68,6 +68,8 @@ void LayoutButton::updateAnonymousChildStyle(const LayoutObject& child, Computed
     ASSERT(!m_inner || &child == m_inner);
 
     childStyle.setFlexGrow(1.0f);
+    // min-width: 0; is needed for correct shrinking.
+    childStyle.setMinWidth(Length(0, Fixed));
     // Use margin:auto instead of align-items:center to get safe centering, i.e.
     // when the content overflows, treat it the same as align-items: flex-start.
     childStyle.setMarginTop(Length());

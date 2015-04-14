@@ -610,6 +610,7 @@ input[type="range" i] {
 
 input[type="range" i]::-webkit-slider-container, input[type="range" i]::-webkit-media-slider-container {
     flex: 1;
+    min-width: 0;
     box-sizing: border-box;
     -webkit-user-modify: read-only !important;
     display: flex;
@@ -617,6 +618,7 @@ input[type="range" i]::-webkit-slider-container, input[type="range" i]::-webkit-
 
 input[type="range" i]::-webkit-slider-runnable-track {
     flex: 1;
+    min-width: 0;
     -webkit-align-self: center;
 
     box-sizing: border-box;
@@ -697,6 +699,7 @@ input[type="color" i]::-webkit-color-swatch {
     background-color: #000000;
     border: 1px solid #777777;
     flex: 1;
+    min-width: 0;
     -webkit-user-modify: read-only !important;
 }
 

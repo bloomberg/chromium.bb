@@ -505,12 +505,12 @@ public:
     LayoutUnit shrinkLogicalWidthToAvoidFloats(LayoutUnit childMarginStart, LayoutUnit childMarginEnd, const LayoutBlockFlow* cb) const;
 
     LayoutUnit computeLogicalWidthUsing(SizeType, const Length& logicalWidth, LayoutUnit availableLogicalWidth, const LayoutBlock* containingBlock) const;
-    LayoutUnit computeLogicalHeightUsing(const Length& height, LayoutUnit intrinsicContentHeight) const;
-    LayoutUnit computeContentLogicalHeight(const Length& height, LayoutUnit intrinsicContentHeight) const;
-    LayoutUnit computeContentAndScrollbarLogicalHeightUsing(const Length& height, LayoutUnit intrinsicContentHeight) const;
-    LayoutUnit computeReplacedLogicalWidthUsing(const Length& width) const;
+    LayoutUnit computeLogicalHeightUsing(SizeType, const Length& height, LayoutUnit intrinsicContentHeight) const;
+    LayoutUnit computeContentLogicalHeight(SizeType, const Length& height, LayoutUnit intrinsicContentHeight) const;
+    LayoutUnit computeContentAndScrollbarLogicalHeightUsing(SizeType, const Length& height, LayoutUnit intrinsicContentHeight) const;
+    LayoutUnit computeReplacedLogicalWidthUsing(SizeType, const Length& width) const;
     LayoutUnit computeReplacedLogicalWidthRespectingMinMaxWidth(LayoutUnit logicalWidth, ShouldComputePreferred  = ComputeActual) const;
-    LayoutUnit computeReplacedLogicalHeightUsing(const Length& height) const;
+    LayoutUnit computeReplacedLogicalHeightUsing(SizeType, const Length& height) const;
     LayoutUnit computeReplacedLogicalHeightRespectingMinMaxHeight(LayoutUnit logicalHeight) const;
 
     virtual LayoutUnit computeReplacedLogicalWidth(ShouldComputePreferred  = ComputeActual) const;
@@ -773,11 +773,11 @@ private:
     LayoutUnit containingBlockLogicalHeightForPositioned(const LayoutBoxModelObject* containingBlock, bool checkForPerpendicularWritingMode = true) const;
 
     void computePositionedLogicalHeight(LogicalExtentComputedValues&) const;
-    void computePositionedLogicalWidthUsing(Length logicalWidth, const LayoutBoxModelObject* containerBlock, TextDirection containerDirection,
+    void computePositionedLogicalWidthUsing(SizeType, Length logicalWidth, const LayoutBoxModelObject* containerBlock, TextDirection containerDirection,
         LayoutUnit containerLogicalWidth, LayoutUnit bordersPlusPadding,
         const Length& logicalLeft, const Length& logicalRight, const Length& marginLogicalLeft,
         const Length& marginLogicalRight, LogicalExtentComputedValues&) const;
-    void computePositionedLogicalHeightUsing(Length logicalHeightLength, const LayoutBoxModelObject* containerBlock,
+    void computePositionedLogicalHeightUsing(SizeType, Length logicalHeightLength, const LayoutBoxModelObject* containerBlock,
         LayoutUnit containerLogicalHeight, LayoutUnit bordersPlusPadding, LayoutUnit logicalHeight,
         const Length& logicalTop, const Length& logicalBottom, const Length& marginLogicalTop,
         const Length& marginLogicalBottom, LogicalExtentComputedValues&) const;

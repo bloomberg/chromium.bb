@@ -1538,7 +1538,7 @@ public:
     static unsigned short initialOutlineWidth() { return 3; }
     static float initialLetterWordSpacing() { return 0.0f; }
     static Length initialSize() { return Length(); }
-    static Length initialMinSize() { return Length(Fixed); }
+    static Length initialMinSize() { return Length(); }
     static Length initialMaxSize() { return Length(MaxSizeNone); }
     static Length initialOffset() { return Length(); }
     static Length initialMargin() { return Length(Fixed); }

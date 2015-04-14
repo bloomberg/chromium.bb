@@ -18,6 +18,7 @@ input[type="week" i] {
 
 input::-webkit-datetime-edit {
     flex: 1;
+    min-width: 0;
     -webkit-user-modify: read-only !important;
     display: inline-block;
     overflow: hidden;

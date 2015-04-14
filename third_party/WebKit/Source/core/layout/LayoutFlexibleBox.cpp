@@ -419,7 +419,7 @@ LayoutUnit LayoutFlexibleBox::computeMainAxisExtentForChild(LayoutBox& child, Si
         // We don't have to check for "auto" here - computeContentLogicalHeight will just return -1 for that case anyway.
         if (size.isIntrinsic())
             child.layoutIfNeeded();
-        return child.computeContentLogicalHeight(size, child.logicalHeight() - child.borderAndPaddingLogicalHeight()) + child.scrollbarLogicalHeight();
+        return child.computeContentLogicalHeight(sizeType, size, child.logicalHeight() - child.borderAndPaddingLogicalHeight()) + child.scrollbarLogicalHeight();
     }
     return child.computeLogicalWidthUsing(sizeType, size, contentLogicalWidth(), this) - child.borderAndPaddingLogicalWidth();
 }
@@ -837,8 +837,9 @@ void LayoutFlexibleBox::prepareOrderIteratorAndMargins()
 LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(LayoutBox& child, LayoutUnit childSize)
 {
     Length max = isHorizontalFlow() ? child.style()->maxWidth() : child.style()->maxHeight();
+    LayoutUnit maxExtent = -1;
     if (max.isSpecifiedOrIntrinsic()) {
-        LayoutUnit maxExtent = computeMainAxisExtentForChild(child, MaxSize, max);
+        maxExtent = computeMainAxisExtentForChild(child, MaxSize, max);
         if (maxExtent != -1 && childSize > maxExtent)
             childSize = maxExtent;
     }
@@ -850,7 +851,32 @@ LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(LayoutBox& child, Layo
         // computeMainAxisExtentForChild can return -1 when the child has a percentage
         // min size, but we have an indefinite size in that axis.
         minExtent = std::max(LayoutUnit(), minExtent);
+    } else if (min.isAuto() && mainAxisOverflowForChild(child) == OVISIBLE) {
+        // css-flexbox section 4.5
+        LayoutUnit contentSize = computeMainAxisExtentForChild(child, MinSize, Length(MinContent));
+        ASSERT(contentSize >= 0);
+        if (maxExtent != -1 && contentSize > maxExtent)
+            contentSize = maxExtent;
+
+        bool hasClampedSize = !childPreferredMainAxisContentExtentRequiresLayout(child);
+        if (hasClampedSize) {
+            const Length& flexBasis = flexBasisForChild(child);
+            bool flexBasisIsDefinite = flexBasis.isFixed() || (flexBasis.isPercent() && mainAxisExtentIsDefinite());
+            if (flexBasisIsDefinite) {
+                LayoutUnit resolvedFlexBasis = computeMainAxisExtentForChild(child, MainOrPreferredSize, flexBasis);
+                ASSERT(resolvedFlexBasis >= 0);
+                LayoutUnit clampedSize = maxExtent != -1 ? std::min(resolvedFlexBasis, maxExtent) : resolvedFlexBasis;
+
+                minExtent = std::min(clampedSize, contentSize);
+            } else {
+                minExtent = contentSize;
+            }
+        } else {
+            minExtent = contentSize;
+        }
+        // TODO(cbiesinger): Implement aspect ratio handling (here, transferred size) - crbug.com/249112
     }
+    ASSERT(minExtent >= 0);
     return std::max(childSize, minExtent);
 }
 
@@ -1061,6 +1087,13 @@ bool LayoutFlexibleBox::needToStretchChildLogicalHeight(LayoutBox& child) const
         return false;
 
     return isHorizontalFlow() && child.style()->height().isAuto();
+}
+
+EOverflow LayoutFlexibleBox::mainAxisOverflowForChild(LayoutBox& child) const
+{
+    if (isHorizontalFlow())
+        return child.styleRef().overflowX();
+    return child.styleRef().overflowY();
 }
 
 void LayoutFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, const OrderedFlexItemList& children, const Vector<LayoutUnit, 16>& childSizes, LayoutUnit availableFreeSpace, bool relayoutChildren, Vector<LineContext>& lineContexts)

@@ -831,7 +831,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         // fall through
     case CSSPropertyWebkitMinLogicalWidth:
     case CSSPropertyWebkitMinLogicalHeight:
-        validPrimitive = validWidthOrHeight(value, unitless);
+        validPrimitive = id == CSSValueAuto || validWidthOrHeight(value, unitless);
         break;
 
     case CSSPropertyWidth:

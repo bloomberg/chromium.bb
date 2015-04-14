@@ -127,6 +127,7 @@ private:
     bool preferredMainAxisExtentDependsOnLayout(const Length& flexBasis) const;
     bool childPreferredMainAxisContentExtentRequiresLayout(LayoutBox& child) const;
     bool needToStretchChildLogicalHeight(LayoutBox& child) const;
+    EOverflow mainAxisOverflowForChild(LayoutBox& child) const;
 
     void layoutFlexItems(bool relayoutChildren);
     LayoutUnit autoMarginOffsetInMainAxis(const OrderedFlexItemList&, LayoutUnit& availableFreeSpace);

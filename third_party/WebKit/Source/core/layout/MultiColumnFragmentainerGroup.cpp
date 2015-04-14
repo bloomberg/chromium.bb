@@ -337,7 +337,7 @@ LayoutUnit MultiColumnFragmentainerGroup::calculateMaxColumnHeight() const
     LayoutUnit availableHeight = m_columnSet.multiColumnFlowThread()->columnHeightAvailable();
     LayoutUnit maxColumnHeight = availableHeight ? availableHeight : LayoutFlowThread::maxLogicalHeight();
     if (!multicolStyle.logicalMaxHeight().isMaxSizeNone()) {
-        LayoutUnit logicalMaxHeight = multicolBlock->computeContentLogicalHeight(multicolStyle.logicalMaxHeight(), -1);
+        LayoutUnit logicalMaxHeight = multicolBlock->computeContentLogicalHeight(MaxSize, multicolStyle.logicalMaxHeight(), -1);
         if (logicalMaxHeight != -1 && maxColumnHeight > logicalMaxHeight)
             maxColumnHeight = logicalMaxHeight;
     }

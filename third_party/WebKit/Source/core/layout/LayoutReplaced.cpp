@@ -275,7 +275,7 @@ void LayoutReplaced::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, 
 LayoutUnit LayoutReplaced::computeReplacedLogicalWidth(ShouldComputePreferred shouldComputePreferred) const
 {
     if (style()->logicalWidth().isSpecified() || style()->logicalWidth().isIntrinsic())
-        return computeReplacedLogicalWidthRespectingMinMaxWidth(computeReplacedLogicalWidthUsing(style()->logicalWidth()), shouldComputePreferred);
+        return computeReplacedLogicalWidthRespectingMinMaxWidth(computeReplacedLogicalWidthUsing(MainOrPreferredSize, style()->logicalWidth()), shouldComputePreferred);
 
     LayoutBox* contentRenderer = embeddedContentBox();
 
@@ -338,7 +338,7 @@ LayoutUnit LayoutReplaced::computeReplacedLogicalHeight() const
 {
     // 10.5 Content height: the 'height' property: http://www.w3.org/TR/CSS21/visudet.html#propdef-height
     if (hasReplacedLogicalHeight())
-        return computeReplacedLogicalHeightRespectingMinMaxHeight(computeReplacedLogicalHeightUsing(style()->logicalHeight()));
+        return computeReplacedLogicalHeightRespectingMinMaxHeight(computeReplacedLogicalHeightUsing(MainOrPreferredSize, style()->logicalHeight()));
 
     LayoutBox* contentRenderer = embeddedContentBox();
 
