@@ -147,8 +147,6 @@ struct DefaultCommandLineSwitch {
 };
 
 DefaultCommandLineSwitch g_default_switches[] = {
-  // TODO(gunsch): Enable unprefixed EME. See http://crbug.com/471936.
-  { switches::kDisableEncryptedMedia, ""},
 #if defined(OS_ANDROID)
   // Disables Chromecast-specific WiFi-related features on ATV for now.
   { switches::kNoWifi, "" },
@@ -156,6 +154,8 @@ DefaultCommandLineSwitch g_default_switches[] = {
   { switches::kDisableInfobarForProtectedMediaIdentifier, ""},
   { switches::kDisableGestureRequirementForMediaPlayback, ""},
 #endif
+  // TODO(gunsch): Enable unprefixed EME on ATV. See http://crbug.com/471936.
+  { switches::kDisableEncryptedMedia, ""},
   // Always enable HTMLMediaElement logs.
   { switches::kBlinkPlatformLogChannels, "Media"},
 #if defined(DISABLE_DISPLAY)

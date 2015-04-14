@@ -45,7 +45,8 @@ void AddChromecastKeySystems(
       ::media::EmeRobustness::HW_SECURE_ALL,    // Max video robustness.
       ::media::EME_SESSION_TYPE_NOT_SUPPORTED,  // persistent-license.
       ::media::EME_SESSION_TYPE_NOT_SUPPORTED,  // persistent-release-message.
-      ::media::EME_FEATURE_NOT_SUPPORTED,       // Persistent state.
+      // Note: On Chromecast, all CDMs may have persistent state.
+      ::media::EME_FEATURE_ALWAYS_ENABLED,      // Persistent state.
       ::media::EME_FEATURE_ALWAYS_ENABLED,      // Distinctive identifier.
       key_systems_info);
 #endif
