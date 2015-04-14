@@ -25,9 +25,11 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_client.h"
@@ -851,8 +853,11 @@ bool HistoryService::Init(
     bool no_db,
     const std::string& languages,
     const HistoryDatabaseParams& history_database_params) {
+  TRACE_EVENT0("browser,startup", "HistoryService::Init")
+  SCOPED_UMA_HISTOGRAM_TIMER("History.HistoryServiceInitTime");
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
+
   base::Thread::Options options;
   options.timer_slack = base::TIMER_SLACK_MAXIMUM;
   if (!thread_->StartWithOptions(options)) {

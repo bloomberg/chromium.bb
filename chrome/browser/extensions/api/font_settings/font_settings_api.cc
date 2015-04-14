@@ -10,9 +10,11 @@
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
@@ -94,6 +96,9 @@ void RegisterFontFamilyMapObserver(
 
 FontSettingsEventRouter::FontSettingsEventRouter(
     Profile* profile) : profile_(profile) {
+  TRACE_EVENT0("browser,startup", "FontSettingsEventRouter::ctor")
+  SCOPED_UMA_HISTOGRAM_TIMER("Extensions.FontSettingsEventRouterCtorTime");
+
   registrar_.Init(profile_->GetPrefs());
 
   AddPrefToObserve(prefs::kWebKitDefaultFixedFontSize,

@@ -9,6 +9,8 @@
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/trace_event/trace_event.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -83,6 +85,9 @@ StorageFrontend::StorageFrontend(
 
 void StorageFrontend::Init(
     const scoped_refptr<SettingsStorageFactory>& factory) {
+  TRACE_EVENT0("browser,startup", "StorageFrontend::Init")
+  SCOPED_UMA_HISTOGRAM_TIMER("Extensions.StorageFrontendInitTime");
+
   observers_ = new SettingsObserverList();
   browser_context_observer_.reset(new DefaultObserver(browser_context_));
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

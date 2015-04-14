@@ -7,10 +7,12 @@
 #include <iterator>
 
 #include "base/command_line.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_notifier.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/trace_event/trace_event.h"
 #include "base/value_conversions.h"
 #include "components/crx_file/id_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -1744,6 +1746,9 @@ void ExtensionPrefs::FixMissingPrefs(const ExtensionIdList& extension_ids) {
 }
 
 void ExtensionPrefs::InitPrefStore() {
+  TRACE_EVENT0("browser,startup", "ExtensionPrefs::InitPrefStore")
+  SCOPED_UMA_HISTOGRAM_TIMER("Extensions.InitPrefStoreTime");
+
   if (extensions_disabled_) {
     extension_pref_value_map_->NotifyInitializationCompleted();
     return;
@@ -1752,7 +1757,10 @@ void ExtensionPrefs::InitPrefStore() {
   // When this is called, the PrefService is initialized and provides access
   // to the user preferences stored in a JSON file.
   ExtensionIdList extension_ids;
-  GetExtensions(&extension_ids);
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER("Extensions.InitPrefGetExtensionsTime");
+    GetExtensions(&extension_ids);
+  }
   // Create empty preferences dictionary for each extension (these dictionaries
   // are pruned when persisting the preferences to disk).
   for (ExtensionIdList::iterator ext_id = extension_ids.begin();
@@ -2037,6 +2045,10 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
 
 void ExtensionPrefs::InitExtensionControlledPrefs(
     ExtensionPrefValueMap* value_map) {
+  TRACE_EVENT0("browser,startup",
+               "ExtensionPrefs::InitExtensionControlledPrefs")
+  SCOPED_UMA_HISTOGRAM_TIMER("Extensions.InitExtensionControlledPrefsTime");
+
   ExtensionIdList extension_ids;
   GetExtensions(&extension_ids);
 

@@ -8789,7 +8789,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="Extensions.CheckForExternalUpdatesTime">
+<histogram name="Extensions.CheckForExternalUpdatesTime" units="milliseconds">
   <owner>rkaplow@chromium.org</owner>
   <summary>
     The amount of time that elapsed during
@@ -9248,6 +9248,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.FontSettingsEventRouterCtorTime"
+    units="milliseconds">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during the FontSettingsEventRouter
+    construction.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.FromWebstoreInconsistency"
     enum="ExtensionFromWebstoreInconcistencyEnum">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
@@ -9340,6 +9349,30 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     chrome://extensions (platform apps, hosted apps, component extensions),
     policy-installed extensions, and unpacked extensions. See also
     Extensions.IncognitoAllowed.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.InitExtensionControlledPrefsTime"
+    units="milliseconds">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during
+    ExtensionPrefs::InitExtensionControlledPrefs.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.InitPrefGetExtensionsTime" units="milliseconds">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during the GetExtensions call within
+    ExtensionPrefs::InitPrefStore.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.InitPrefStoreTime" units="milliseconds">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during ExtensionPrefs::InitPrefStore.
   </summary>
 </histogram>
 
@@ -10162,6 +10195,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>kalman@chromium.org</owner>
   <summary>
     The total time extensions delay network requests at startup.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.StorageFrontendInitTime" units="milliseconds">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during StorageFrontend::Init.
   </summary>
 </histogram>
 
@@ -11592,6 +11632,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>rpop@google.com</owner>
   <summary>
     Track results of SQLite database recovery code in thumbnail_database.cc.
+  </summary>
+</histogram>
+
+<histogram name="History.HistoryServiceInitTime" units="milliseconds">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during HistoryService::Init.
   </summary>
 </histogram>
 
