@@ -1381,7 +1381,7 @@ void LayoutFlexibleBox::applyStretchAlignmentToChild(LayoutBox& child, LayoutUni
         // FIXME: If the child has orthogonal flow, then it already has an override height set, so use it.
         if (!hasOrthogonalFlow(child)) {
             LayoutUnit heightBeforeStretching = needToStretchChildLogicalHeight(child) ? constrainedChildIntrinsicContentLogicalHeight(child) : child.logicalHeight();
-            LayoutUnit stretchedLogicalHeight = heightBeforeStretching + availableAlignmentSpaceForChildBeforeStretching(lineCrossAxisExtent, child);
+            LayoutUnit stretchedLogicalHeight = std::max(child.borderAndPaddingLogicalHeight(), heightBeforeStretching + availableAlignmentSpaceForChildBeforeStretching(lineCrossAxisExtent, child));
             ASSERT(!child.needsLayout());
             LayoutUnit desiredLogicalHeight = child.constrainLogicalHeightByMinMax(stretchedLogicalHeight, heightBeforeStretching - child.borderAndPaddingLogicalHeight());
 
