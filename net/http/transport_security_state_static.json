@@ -2189,7 +2189,6 @@
     { "name": "unknownphenomena.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "uptrends.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "utilityapi.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "wearvr.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "welpy.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "wesleyharris.ca", "include_subdomains": true, "mode": "force-https" },
     { "name": "resources.flowfinity.com", "include_subdomains": true, "mode": "force-https" },
