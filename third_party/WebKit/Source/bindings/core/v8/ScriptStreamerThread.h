@@ -5,6 +5,7 @@
 #ifndef ScriptStreamerThread_h
 #define ScriptStreamerThread_h
 
+#include "core/CoreExport.h"
 #include "platform/TaskSynchronizer.h"
 #include "public/platform/WebThread.h"
 #include "wtf/OwnPtr.h"
@@ -16,7 +17,7 @@ namespace blink {
 class ScriptStreamer;
 
 // A singleton thread for running background tasks for script streaming.
-class ScriptStreamerThread {
+class CORE_EXPORT ScriptStreamerThread {
     WTF_MAKE_NONCOPYABLE(ScriptStreamerThread);
 public:
     static void init();

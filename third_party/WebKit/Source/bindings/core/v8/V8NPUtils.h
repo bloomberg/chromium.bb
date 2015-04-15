@@ -49,8 +49,8 @@ NPIdentifier getStringIdentifier(v8::Local<v8::String>);
 // The ExceptionHandler will be notified of any exceptions thrown while
 // operating on a NPObject.
 typedef void (*ExceptionHandler)(void* data, const NPUTF8* message);
-void pushExceptionHandler(ExceptionHandler, void* data);
-void popExceptionHandler();
+CORE_EXPORT void pushExceptionHandler(ExceptionHandler, void* data);
+CORE_EXPORT void popExceptionHandler();
 
 // Upon destruction, an ExceptionCatcher will pass a caught exception to the
 // current ExceptionHandler.

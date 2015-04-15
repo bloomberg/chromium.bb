@@ -6,6 +6,7 @@
 #define ToV8ForModules_h
 
 #include "bindings/core/v8/V8Binding.h"
+#include "modules/ModulesExport.h"
 #include "modules/webdatabase/sqlite/SQLValue.h"
 
 namespace blink {
@@ -29,7 +30,7 @@ inline v8::Handle<v8::Value> toV8(const SQLValue& sqlValue, v8::Handle<v8::Objec
 }
 
 v8::Local<v8::Value> toV8(const IDBKeyPath&, v8::Local<v8::Object> creationContext, v8::Isolate*);
-v8::Local<v8::Value> toV8(const IDBKey*, v8::Local<v8::Object> creationContext, v8::Isolate*);
+MODULES_EXPORT v8::Local<v8::Value> toV8(const IDBKey*, v8::Local<v8::Object> creationContext, v8::Isolate*);
 v8::Local<v8::Value> toV8(const IDBAny*, v8::Local<v8::Object> creationContext, v8::Isolate*);
 
 } // namespace blink

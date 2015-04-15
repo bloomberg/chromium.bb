@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScopedPersistent.h"
+#include "core/CoreExport.h"
 #include "core/events/EventListener.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -50,7 +51,7 @@ class Event;
 // Why does this matter?
 // WebKit does not allow duplicated HTML event handlers of the same type,
 // but ALLOWs duplicated non-HTML event handlers.
-class V8AbstractEventListener : public EventListener {
+class CORE_EXPORT V8AbstractEventListener : public EventListener {
 public:
     virtual ~V8AbstractEventListener();
 

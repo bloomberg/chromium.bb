@@ -23,7 +23,7 @@ class ScriptValue;
 // ScriptState is created when v8::Context is created.
 // ScriptState is destroyed when v8::Context is garbage-collected and
 // all V8 proxy objects that have references to the ScriptState are destructed.
-class ScriptState : public RefCounted<ScriptState> {
+class CORE_EXPORT ScriptState : public RefCounted<ScriptState> {
     WTF_MAKE_NONCOPYABLE(ScriptState);
 public:
     class Scope {
@@ -66,7 +66,7 @@ public:
         return scriptState;
     }
 
-    CORE_EXPORT static ScriptState* forMainWorld(LocalFrame*);
+    static ScriptState* forMainWorld(LocalFrame*);
 
     v8::Isolate* isolate() const { return m_isolate; }
     DOMWrapperWorld& world() const { return *m_world; }

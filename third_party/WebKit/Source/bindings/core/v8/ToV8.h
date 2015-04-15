@@ -47,7 +47,7 @@ inline v8::Handle<v8::Value> toV8(Node* impl, v8::Handle<v8::Object> creationCon
 
 // [Custom=ToV8]
 
-v8::Handle<v8::Value> toV8(DOMWindow*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+CORE_EXPORT v8::Handle<v8::Value> toV8(DOMWindow*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 CORE_EXPORT v8::Handle<v8::Value> toV8(EventTarget*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 v8::Handle<v8::Value> toV8(WorkerGlobalScope*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 

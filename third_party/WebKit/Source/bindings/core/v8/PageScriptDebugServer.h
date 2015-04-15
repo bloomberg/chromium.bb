@@ -32,6 +32,7 @@
 #define PageScriptDebugServer_h
 
 #include "bindings/core/v8/ScriptDebugServer.h"
+#include "core/CoreExport.h"
 #include <v8.h>
 
 namespace WTF {
@@ -42,7 +43,7 @@ namespace blink {
 
 class Page;
 
-class PageScriptDebugServer final : public ScriptDebugServer {
+class CORE_EXPORT PageScriptDebugServer final : public ScriptDebugServer {
     WTF_MAKE_NONCOPYABLE(PageScriptDebugServer);
 public:
     class ClientMessageLoop {

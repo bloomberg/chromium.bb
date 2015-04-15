@@ -5,6 +5,7 @@
 #ifndef ScriptStreamer_h
 #define ScriptStreamer_h
 
+#include "core/CoreExport.h"
 #include "core/dom/PendingScript.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
@@ -28,7 +29,7 @@ class SourceStream;
 // streaming. It is possible, though, that Document and the PendingScript are
 // destroyed while the streaming is in progress, and ScriptStreamer handles it
 // gracefully.
-class ScriptStreamer final : public RefCountedWillBeRefCountedGarbageCollected<ScriptStreamer> {
+class CORE_EXPORT ScriptStreamer final : public RefCountedWillBeRefCountedGarbageCollected<ScriptStreamer> {
     WTF_MAKE_NONCOPYABLE(ScriptStreamer);
 public:
     static PassRefPtrWillBeRawPtr<ScriptStreamer> create(ScriptResource* resource, PendingScript::Type scriptType, ScriptState* scriptState, v8::ScriptCompiler::CompileOptions compileOptions)

@@ -55,7 +55,7 @@ enum WorldIdConstants {
 };
 
 // This class represent a collection of DOM wrappers for a specific world.
-class DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
+class CORE_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
 public:
     static PassRefPtr<DOMWrapperWorld> create(v8::Isolate*, int worldId = -1, int extensionGroup = -1);
 
@@ -177,8 +177,8 @@ private:
     void registerDOMObjectHolderInternal(PassOwnPtr<DOMObjectHolderBase>);
     void unregisterDOMObjectHolder(DOMObjectHolderBase*);
 
-    CORE_EXPORT static unsigned isolatedWorldCount;
-    CORE_EXPORT static DOMWrapperWorld* worldOfInitializingWindow;
+    static unsigned isolatedWorldCount;
+    static DOMWrapperWorld* worldOfInitializingWindow;
 
     const int m_worldId;
     const int m_extensionGroup;

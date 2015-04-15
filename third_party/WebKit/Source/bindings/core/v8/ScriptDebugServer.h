@@ -32,6 +32,7 @@
 #define ScriptDebugServer_h
 
 #include "bindings/core/v8/V8PersistentValueMap.h"
+#include "core/CoreExport.h"
 #include "core/inspector/ScriptBreakpoint.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/ScriptDebugListener.h"
@@ -48,7 +49,7 @@ class ScriptSourceCode;
 class ScriptValue;
 class JavaScriptCallFrame;
 
-class ScriptDebugServer : public NoBaseWillBeGarbageCollectedFinalized<ScriptDebugServer> {
+class CORE_EXPORT ScriptDebugServer : public NoBaseWillBeGarbageCollectedFinalized<ScriptDebugServer> {
     WTF_MAKE_NONCOPYABLE(ScriptDebugServer);
 public:
     virtual ~ScriptDebugServer();

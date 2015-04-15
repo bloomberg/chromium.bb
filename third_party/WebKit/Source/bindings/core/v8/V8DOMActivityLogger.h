@@ -31,6 +31,7 @@
 #ifndef V8DOMActivityLogger_h
 #define V8DOMActivityLogger_h
 
+#include "core/CoreExport.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 #include <v8.h>
@@ -39,7 +40,7 @@ namespace blink {
 
 class KURL;
 
-class V8DOMActivityLogger {
+class CORE_EXPORT V8DOMActivityLogger {
 public:
     virtual ~V8DOMActivityLogger() { }
 

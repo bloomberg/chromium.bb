@@ -32,6 +32,7 @@
 #define ScriptSourceCode_h
 
 #include "bindings/core/v8/ScriptStreamer.h"
+#include "core/CoreExport.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/fetch/ScriptResource.h"
 #include "platform/heap/Handle.h"
@@ -44,7 +45,7 @@ namespace blink {
 template <class R> class ResourcePtr;
 class ScriptResource;
 
-class ScriptSourceCode final {
+class CORE_EXPORT ScriptSourceCode final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     ScriptSourceCode();

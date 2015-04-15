@@ -399,17 +399,17 @@ inline bool toBoolean(v8::Isolate* isolate, v8::Local<v8::Value> value, Exceptio
 // Convert a value to a 8-bit signed integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-byte
-int8_t toInt8(v8::Isolate*, v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+CORE_EXPORT int8_t toInt8(v8::Isolate*, v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
 
 // Convert a value to a 8-bit unsigned integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-octet
-uint8_t toUInt8(v8::Isolate*, v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+CORE_EXPORT uint8_t toUInt8(v8::Isolate*, v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
 
 // Convert a value to a 16-bit signed integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-short
-int16_t toInt16(v8::Isolate*, v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+CORE_EXPORT int16_t toInt16(v8::Isolate*, v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
 
 // Convert a value to a 16-bit unsigned integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
@@ -873,12 +873,12 @@ struct NativeValueTraits<JSONValuePtr> {
 };
 
 CORE_EXPORT v8::Isolate* toIsolate(ExecutionContext*);
-v8::Isolate* toIsolate(LocalFrame*);
+CORE_EXPORT v8::Isolate* toIsolate(LocalFrame*);
 
 DOMWindow* toDOMWindow(v8::Isolate*, v8::Handle<v8::Value>);
 DOMWindow* toDOMWindow(v8::Handle<v8::Context>);
 LocalDOMWindow* enteredDOMWindow(v8::Isolate*);
-LocalDOMWindow* currentDOMWindow(v8::Isolate*);
+CORE_EXPORT LocalDOMWindow* currentDOMWindow(v8::Isolate*);
 LocalDOMWindow* callingDOMWindow(v8::Isolate*);
 ExecutionContext* toExecutionContext(v8::Handle<v8::Context>);
 CORE_EXPORT ExecutionContext* currentExecutionContext(v8::Isolate*);
@@ -886,16 +886,16 @@ CORE_EXPORT ExecutionContext* callingExecutionContext(v8::Isolate*);
 
 // Returns a V8 context associated with a ExecutionContext and a DOMWrapperWorld.
 // This method returns an empty context if there is no frame or the frame is already detached.
-v8::Local<v8::Context> toV8Context(ExecutionContext*, DOMWrapperWorld&);
+CORE_EXPORT v8::Local<v8::Context> toV8Context(ExecutionContext*, DOMWrapperWorld&);
 // Returns a V8 context associated with a Frame and a DOMWrapperWorld.
 // This method returns an empty context if the frame is already detached.
-v8::Local<v8::Context> toV8Context(Frame*, DOMWrapperWorld&);
+CORE_EXPORT v8::Local<v8::Context> toV8Context(Frame*, DOMWrapperWorld&);
 
 // Returns the frame object of the window object associated with
 // a context, if the window is currently being displayed in a Frame.
-Frame* toFrameIfNotDetached(v8::Handle<v8::Context>);
+CORE_EXPORT Frame* toFrameIfNotDetached(v8::Handle<v8::Context>);
 
-EventTarget* toEventTarget(v8::Isolate*, v8::Handle<v8::Value>);
+CORE_EXPORT EventTarget* toEventTarget(v8::Isolate*, v8::Handle<v8::Value>);
 
 // If the current context causes out of memory, JavaScript setting
 // is disabled and it returns true.

@@ -21,6 +21,7 @@
 #ifndef EventListener_h
 #define EventListener_h
 
+#include "core/CoreExport.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {
@@ -28,7 +29,7 @@ namespace blink {
     class Event;
     class ExecutionContext;
 
-    class EventListener : public RefCounted<EventListener> {
+    class CORE_EXPORT EventListener : public RefCounted<EventListener> {
     public:
         enum Type {
             JSEventListenerType,

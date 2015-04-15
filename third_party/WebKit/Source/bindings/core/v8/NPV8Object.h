@@ -32,6 +32,7 @@
 #define NPV8Object_h
 
 #include "bindings/core/v8/V8DOMWrapper.h"
+#include "core/CoreExport.h"
 
 // Chromium uses npruntime.h from the Chromium source repository under
 // third_party/npapi/bindings.
@@ -66,7 +67,7 @@ struct PrivateIdentifier {
     bool isString;
 };
 
-NPObject* npCreateV8ScriptObject(v8::Isolate*, NPP, v8::Local<v8::Object>, LocalDOMWindow*);
+CORE_EXPORT NPObject* npCreateV8ScriptObject(v8::Isolate*, NPP, v8::Local<v8::Object>, LocalDOMWindow*);
 
 NPObject* v8ObjectToNPObject(v8::Local<v8::Object>);
 

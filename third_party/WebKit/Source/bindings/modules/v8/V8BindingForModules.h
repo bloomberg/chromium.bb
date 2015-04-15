@@ -6,6 +6,7 @@
 #define V8BindingForModules_h
 
 #include "bindings/core/v8/V8Binding.h"
+#include "modules/ModulesExport.h"
 #include "modules/webdatabase/sqlite/SQLValue.h"
 
 namespace blink {
@@ -20,7 +21,7 @@ class SharedBuffer;
 class WebBlobInfo;
 
 // Exposed for unit testing:
-bool injectV8KeyIntoV8Value(v8::Isolate*, v8::Local<v8::Value> key, v8::Local<v8::Value>, const IDBKeyPath&);
+MODULES_EXPORT bool injectV8KeyIntoV8Value(v8::Isolate*, v8::Local<v8::Value> key, v8::Local<v8::Value>, const IDBKeyPath&);
 
 // For use by Source/modules/indexeddb:
 bool canInjectIDBKeyIntoScriptValue(v8::Isolate*, const ScriptValue&, const IDBKeyPath&);
@@ -38,7 +39,7 @@ struct NativeValueTraits<SQLValue> {
 template <>
 struct NativeValueTraits<IDBKey*> {
     static IDBKey* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-    static IDBKey* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&, const IDBKeyPath&);
+    MODULES_EXPORT static IDBKey* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&, const IDBKeyPath&);
 };
 
 template <>
