@@ -1590,12 +1590,16 @@ AXObject::PlainTextRange AXLayoutObject::selectedTextRange() const
     if (!isTextControl())
         return PlainTextRange();
 
-    if (m_layoutObject->isTextControl()) {
+    AccessibilityRole ariaRole = ariaRoleAttribute();
+    if (isNativeTextControl() && ariaRole == UnknownRole && m_layoutObject->isTextControl()) {
         HTMLTextFormControlElement* textControl = toLayoutTextControl(m_layoutObject)->textFormControlElement();
         return PlainTextRange(textControl->selectionStart(), textControl->selectionEnd() - textControl->selectionStart());
     }
 
-    return visibleSelectionUnderObject();
+    if (ariaRole == UnknownRole)
+        return PlainTextRange();
+
+    return ariaSelectedTextRange();
 }
 
 VisibleSelection AXLayoutObject::selection() const
@@ -1609,7 +1613,7 @@ VisibleSelection AXLayoutObject::selection() const
 
 void AXLayoutObject::setSelectedTextRange(const PlainTextRange& range)
 {
-    if (m_layoutObject->isTextControl()) {
+    if (isNativeTextControl() && m_layoutObject->isTextControl()) {
         HTMLTextFormControlElement* textControl = toLayoutTextControl(m_layoutObject)->textFormControlElement();
         textControl->setSelectionRange(range.start, range.start + range.length, SelectionHasNoDirection, NotDispatchSelectEvent);
         return;
@@ -1746,7 +1750,7 @@ VisiblePosition AXLayoutObject::visiblePositionForIndex(int index) const
     if (!m_layoutObject)
         return VisiblePosition();
 
-    if (m_layoutObject->isTextControl())
+    if (isNativeTextControl() && m_layoutObject->isTextControl())
         return toLayoutTextControl(m_layoutObject)->textFormControlElement()->visiblePositionForIndex(index);
 
     if (!allowsTextRanges() && !m_layoutObject->isText())
@@ -1771,7 +1775,7 @@ VisiblePosition AXLayoutObject::visiblePositionForIndex(int index) const
 
 int AXLayoutObject::indexForVisiblePosition(const VisiblePosition& pos) const
 {
-    if (m_layoutObject->isTextControl()) {
+    if (isNativeTextControl() && m_layoutObject->isTextControl()) {
         HTMLTextFormControlElement* textControl = toLayoutTextControl(m_layoutObject)->textFormControlElement();
         return textControl->indexForVisiblePosition(pos);
     }
@@ -1784,9 +1788,7 @@ int AXLayoutObject::indexForVisiblePosition(const VisiblePosition& pos) const
         return 0;
 
     Position indexPosition = pos.deepEquivalent();
-    if (indexPosition.isNull()
-        || (highestEditableRoot(indexPosition) != node
-        && highestEditableRoot(indexPosition, HasEditableAXRole) != node))
+    if (indexPosition.isNull() || highestEditableRoot(indexPosition, HasEditableAXRole) != node)
         return 0;
 
     RefPtrWillBeRawPtr<Range> range = Range::create(m_layoutObject->document());
@@ -1875,7 +1877,7 @@ void AXLayoutObject::ariaListboxSelectedChildren(AccessibilityChildrenVector& re
     }
 }
 
-AXObject::PlainTextRange AXLayoutObject::visibleSelectionUnderObject() const
+AXObject::PlainTextRange AXLayoutObject::ariaSelectedTextRange() const
 {
     Node* node = m_layoutObject->node();
     if (!node)

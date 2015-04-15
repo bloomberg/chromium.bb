@@ -409,8 +409,8 @@ public:
     bool isTabItem() const { return roleValue() == TabRole; }
     virtual bool isTableCell() const { return false; }
     virtual bool isTableRow() const { return false; }
-    virtual bool isTextControl() const { return false; }
     virtual bool isTableCol() const { return false; }
+    bool isTextControl() const;
     bool isTree() const { return roleValue() == TreeRole; }
     bool isTreeItem() const { return roleValue() == TreeItemRole; }
     bool isWebArea() const { return roleValue() == WebAreaRole; }
@@ -690,6 +690,7 @@ protected:
 
     AccessibilityRole buttonRoleType() const;
 
+    bool allowsTextRanges() const { return isTextControl(); }
     unsigned getLengthForTextRange() const { return text().length(); }
 
     bool m_detached;

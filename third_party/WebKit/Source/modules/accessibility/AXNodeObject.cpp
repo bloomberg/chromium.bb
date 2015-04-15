@@ -511,9 +511,8 @@ void AXNodeObject::elementsFromAttribute(WillBeHeapVector<RawPtrWillBeMember<Ele
     }
 }
 
-// This only returns true if this is the element that actually has the
-// contentEditable attribute set, unlike node->hasEditableStyle() which will
-// also return true if an ancestor is editable.
+// If you call node->hasEditableStyle() since that will return true if an ancestor is editable.
+// This only returns true if this is the element that actually has the contentEditable attribute set.
 bool AXNodeObject::hasContentEditableAttributeSet() const
 {
     if (!hasAttribute(contenteditableAttr))
@@ -521,21 +520,6 @@ bool AXNodeObject::hasContentEditableAttributeSet() const
     const AtomicString& contentEditableValue = getAttribute(contenteditableAttr);
     // Both "true" (case-insensitive) and the empty string count as true.
     return contentEditableValue.isEmpty() || equalIgnoringCase(contentEditableValue, "true");
-}
-
-bool AXNodeObject::isTextControl() const
-{
-    if (hasContentEditableAttributeSet())
-        return true;
-
-    switch (roleValue()) {
-    case TextFieldRole:
-    case ComboBoxRole:
-    case SearchBoxRole:
-        return true;
-    default:
-        return false;
-    }
 }
 
 bool AXNodeObject::isGenericFocusableElement() const
