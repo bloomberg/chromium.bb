@@ -41,58 +41,44 @@ class GoogleWebSearchPage(Top7StressPage):
     action_runner.WaitForElement(text='Next')
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
     old_href = _GetCurrentLocation(action_runner)
     action_runner.ClickElement(text='Next')
     _WaitForLocationChange(action_runner, old_href)
     action_runner.WaitForElement(text='Next')
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
     old_href = _GetCurrentLocation(action_runner)
     action_runner.ClickElement(text='Next')
     _WaitForLocationChange(action_runner, old_href)
     action_runner.WaitForElement(text='Next')
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
     old_href = _GetCurrentLocation(action_runner)
     action_runner.ClickElement(text='Next')
     _WaitForLocationChange(action_runner, old_href)
     action_runner.WaitForElement(text='Previous')
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
     old_href = _GetCurrentLocation(action_runner)
     action_runner.ClickElement(text='Previous')
     _WaitForLocationChange(action_runner, old_href)
     action_runner.WaitForElement(text='Previous')
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
     old_href = _GetCurrentLocation(action_runner)
     action_runner.ClickElement(text='Previous')
     _WaitForLocationChange(action_runner, old_href)
     action_runner.WaitForElement(text='Previous')
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
     old_href = _GetCurrentLocation(action_runner)
     action_runner.ClickElement(text='Previous')
     _WaitForLocationChange(action_runner, old_href)
     action_runner.WaitForElement(text='Images')
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
     old_href = _GetCurrentLocation(action_runner)
     action_runner.ClickElement(text='Images')
     _WaitForLocationChange(action_runner, old_href)
@@ -229,26 +215,20 @@ class BlogspotPage(Top7StressPage):
   def RunPageInteractions(self, action_runner):
     action_runner.ClickElement(text='accessibility')
     action_runner.WaitForNavigate()
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
     # Insert 300ms wait to simulate user finger movement,
     # and ensure scheduling of idle tasks.
     action_runner.Wait(0.3)
     action_runner.ClickElement(text='advanced')
     action_runner.WaitForNavigate()
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
     action_runner.Wait(0.3)
     action_runner.ClickElement(text='beginner')
     action_runner.WaitForNavigate()
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
     action_runner.Wait(0.3)
     action_runner.ClickElement(text='Home')
     action_runner.WaitForNavigate()
@@ -272,10 +252,8 @@ class WordpressPage(Top7StressPage):
         'a[href="http://en.blog.wordpress.com/2012/08/30/new-themes-able-and-sight/"]')
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
     # Insert 300ms wait to simulate user finger movement,
     # and ensure scheduling of idle tasks.
     action_runner.Wait(0.3)
@@ -283,24 +261,18 @@ class WordpressPage(Top7StressPage):
         # pylint: disable=C0301
         'a[href="http://en.blog.wordpress.com/2012/08/30/new-themes-able-and-sight/"]')
     action_runner.WaitForNavigate()
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
     action_runner.Wait(0.3)
     action_runner.ClickElement(text='Features')
     action_runner.WaitForNavigate()
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
     action_runner.Wait(0.3)
     action_runner.ClickElement(text='News')
     action_runner.WaitForNavigate()
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
 
 
 class FacebookPage(Top7StressPage):
@@ -320,19 +292,15 @@ class FacebookPage(Top7StressPage):
 
   def RunPageInteractions(self, action_runner):
     # Scroll and wait for the next page to be loaded.
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
     action_runner.WaitForJavaScriptCondition(
         'document.documentElement.scrollHeight - window.innerHeight - '
         'window.pageYOffset > 0')
 
     # Scroll and wait again.
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
     action_runner.WaitForJavaScriptCondition(
         'document.documentElement.scrollHeight - window.innerHeight - '
         'window.pageYOffset > 0')

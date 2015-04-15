@@ -15,10 +15,8 @@ class ToughPinchZoomCasesPage(page_module.Page):
     self.archive_data_file = 'data/tough_pinch_zoom_cases.json'
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'PinchAction')
-    action_runner.PinchPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('PinchAction'):
+      action_runner.PinchPage()
 
 
 class GoogleSearchPage(ToughPinchZoomCasesPage):
@@ -69,10 +67,8 @@ class GoogleCalendarPage(ToughPinchZoomCasesPage):
     action_runner.Wait(2)
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'PinchAction')
-    action_runner.PinchPage(left_anchor_ratio=0.1, top_anchor_ratio=0.3)
-    interaction.End()
+    with action_runner.CreateGestureInteraction('PinchAction'):
+      action_runner.PinchPage(left_anchor_ratio=0.1, top_anchor_ratio=0.3)
 
 
 class GoogleImageSearchPage(ToughPinchZoomCasesPage):
@@ -103,10 +99,9 @@ class GooglePlusPage(ToughPinchZoomCasesPage):
     action_runner.WaitForElement(text='Home')
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'PinchAction')
-    action_runner.PinchElement(selector='[id="110031535020051778989-tab-bar"]')
-    interaction.End()
+    with action_runner.CreateGestureInteraction('PinchAction'):
+      action_runner.PinchElement(
+          selector='[id="110031535020051778989-tab-bar"]')
 
 
 class YoutubePage(ToughPinchZoomCasesPage):
@@ -234,10 +229,8 @@ class YahooAnswersPage(ToughPinchZoomCasesPage):
       page_set=page_set)
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'PinchAction')
-    action_runner.PinchElement(selector='#ya-content-apps')
-    interaction.End()
+    with action_runner.CreateGestureInteraction('PinchAction'):
+      action_runner.PinchElement(selector='#ya-content-apps')
 
 
 class ToughPinchZoomCasesPageSet(page_set_module.PageSet):

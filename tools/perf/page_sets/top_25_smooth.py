@@ -8,10 +8,8 @@ from page_sets import top_pages
 
 
 def _IssueMarkerAndScroll(action_runner):
-  interaction = action_runner.BeginGestureInteraction(
-      'ScrollAction')
-  action_runner.ScrollPage()
-  interaction.End()
+  with action_runner.CreateGestureInteraction('ScrollAction'):
+    action_runner.ScrollPage()
 
 
 def _CreatePageClassWithSmoothInteractions(page_cls):
@@ -46,11 +44,9 @@ class GmailSmoothPage(top_pages.GmailPage):
         });''')
     action_runner.WaitForJavaScriptCondition(
         'window.__scrollableElementForTelemetry != null')
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollElement(
-        element_function='window.__scrollableElementForTelemetry')
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollElement(
+          element_function='window.__scrollableElementForTelemetry')
 
 
 class GoogleCalendarSmoothPage(top_pages.GoogleCalendarPage):
@@ -58,10 +54,8 @@ class GoogleCalendarSmoothPage(top_pages.GoogleCalendarPage):
   """ Why: productivity, top google properties """
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollElement(selector='#scrolltimedeventswk')
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollElement(selector='#scrolltimedeventswk')
 
 
 class GoogleDocSmoothPage(top_pages.GoogleDocPage):
@@ -69,10 +63,8 @@ class GoogleDocSmoothPage(top_pages.GoogleDocPage):
   """ Why: productivity, top google properties; Sample doc in the link """
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollElement(selector='.kix-appview-editor')
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollElement(selector='.kix-appview-editor')
 
 
 class ESPNSmoothPage(top_pages.ESPNPage):
@@ -80,10 +72,8 @@ class ESPNSmoothPage(top_pages.ESPNPage):
   """ Why: #1 sports """
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage(left_start_ratio=0.1)
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage(left_start_ratio=0.1)
 
 
 class Top25SmoothPageSet(page_set_module.PageSet):
