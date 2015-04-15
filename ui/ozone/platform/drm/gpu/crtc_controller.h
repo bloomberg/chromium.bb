@@ -68,13 +68,14 @@ class OZONE_EXPORT CrtcController
                        unsigned int useconds);
 
   bool SetCursor(const scoped_refptr<ScanoutBuffer>& buffer);
-  bool UnsetCursor();
   bool MoveCursor(const gfx::Point& location);
 
   void AddObserver(PageFlipObserver* observer);
   void RemoveObserver(PageFlipObserver* observer);
 
  private:
+  bool ResetCursor();
+
   scoped_refptr<DrmDevice> drm_;
 
   HardwareDisplayPlaneManager* overlay_plane_manager_;  // Not owned.

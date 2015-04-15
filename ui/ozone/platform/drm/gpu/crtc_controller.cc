@@ -27,7 +27,7 @@ CrtcController::CrtcController(const scoped_refptr<DrmDevice>& drm,
 CrtcController::~CrtcController() {
   if (!is_disabled_) {
     drm_->SetCrtc(saved_crtc_.get(), std::vector<uint32_t>(1, connector_));
-    UnsetCursor();
+    SetCursor(nullptr);
   }
 }
 
@@ -53,6 +53,9 @@ bool CrtcController::Modeset(const OverlayPlane& plane, drmModeModeInfo mode) {
   current_planes_ = std::vector<OverlayPlane>(1, plane);
   if (page_flip_pending_)
     pending_planes_ = current_planes_;
+
+  if (!ResetCursor())
+    return false;
 
   return true;
 }
@@ -118,15 +121,10 @@ void CrtcController::OnPageFlipEvent(unsigned int frame,
 }
 
 bool CrtcController::SetCursor(const scoped_refptr<ScanoutBuffer>& buffer) {
-  DCHECK(!is_disabled_);
+  DCHECK(!is_disabled_ || !buffer);
   cursor_buffer_ = buffer;
-  return drm_->SetCursor(crtc_, buffer->GetHandle(), buffer->GetSize());
-}
 
-bool CrtcController::UnsetCursor() {
-  bool state = drm_->SetCursor(crtc_, 0, gfx::Size());
-  cursor_buffer_ = NULL;
-  return state;
+  return ResetCursor();
 }
 
 bool CrtcController::MoveCursor(const gfx::Point& location) {
@@ -140,6 +138,25 @@ void CrtcController::AddObserver(PageFlipObserver* observer) {
 
 void CrtcController::RemoveObserver(PageFlipObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+bool CrtcController::ResetCursor() {
+  uint32_t handle = 0;
+  gfx::Size size;
+
+  if (cursor_buffer_) {
+    handle = cursor_buffer_->GetHandle();
+    size = cursor_buffer_->GetSize();
+  }
+
+  bool status = drm_->SetCursor(crtc_, handle, size);
+  if (!status) {
+    PLOG(ERROR) << "drmModeSetCursor: device " << drm_->device_path().value()
+                << " crtc " << crtc_ << " handle " << handle << " size "
+                << size.ToString();
+  }
+
+  return status;
 }
 
 }  // namespace ui

@@ -136,7 +136,7 @@ bool HardwareDisplayController::SetCursor(
 bool HardwareDisplayController::UnsetCursor() {
   bool status = true;
   for (size_t i = 0; i < crtc_controllers_.size(); ++i)
-    status &= crtc_controllers_[i]->UnsetCursor();
+    status &= crtc_controllers_[i]->SetCursor(nullptr);
 
   return status;
 }
