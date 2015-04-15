@@ -214,10 +214,6 @@ component("platform") {
 
   if (is_mac) {
     sources -= [
-      "fonts/opentype/OpenTypeTypes.h",
-      "fonts/opentype/OpenTypeVerticalData.cpp",
-      "fonts/opentype/OpenTypeVerticalData.h",
-      # The Mac currently uses FontCustomPlatformDataMac.cpp instead.
       "fonts/skia/FontCacheSkia.cpp",
       # Uses LocaleMac instead.
       "text/LocaleICU.cpp",
