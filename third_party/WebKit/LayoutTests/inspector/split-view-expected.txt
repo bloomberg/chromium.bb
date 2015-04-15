@@ -4,7 +4,7 @@ Create default split view
 Running split view test with the following parameters: useFraction = false, shouldSaveShowMode = false
 Creating split view
     Sidebar size = 100, showMode = Both, vertical
-    Setting value: undefined
+    Setting value: {}
 Hiding sidebar
     Sidebar size = 0, showMode = OnlyMain, vertical
     Setting value: {"vertical":{"size":0}}
@@ -100,7 +100,7 @@ Create default split view
 Running split view test with the following parameters: useFraction = true, shouldSaveShowMode = false
 Creating split view
     Sidebar size = 114, showMode = Both, vertical
-    Setting value: undefined
+    Setting value: {}
 Hiding sidebar
     Sidebar size = 0, showMode = OnlyMain, vertical
     Setting value: {"vertical":{"size":0}}

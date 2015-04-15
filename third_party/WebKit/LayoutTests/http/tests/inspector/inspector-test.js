@@ -862,7 +862,7 @@ function runTest(enableWatchDogWhileDebugging)
             promises.push(WebInspector.inspectorView.panel(lastLoadedPanel));
         }
 
-        var testPath = self.localStorage ? self.localStorage["testPath"] || "" : "";
+        var testPath = WebInspector.settings.createSetting("testPath", "").get();
 
         // 2. Show initial panel based on test path.
         var initialPanelByFolder = {
