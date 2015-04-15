@@ -20,13 +20,19 @@ class StreamSocket;
 
 class AndroidDeviceManager : public base::NonThreadSafe {
  public:
-  typedef base::Callback<void(int, const std::string&)> CommandCallback;
-  typedef base::Callback<void(int result, scoped_ptr<net::StreamSocket>)>
-      SocketCallback;
-  typedef base::Callback<void(
-      int result, const std::string& extensions, scoped_ptr<net::StreamSocket>)>
-      HttpUpgradeCallback;
-  typedef base::Callback<void(const std::vector<std::string>&)> SerialsCallback;
+  using CommandCallback =
+      base::Callback<void(int, const std::string&)>;
+  using SocketCallback =
+      base::Callback<void(int result, scoped_ptr<net::StreamSocket>)>;
+  // |body_head| should contain the body (WebSocket frame data) part that has
+  // been read during processing the header (WebSocket handshake).
+  using HttpUpgradeCallback = base::Callback<void(
+      int result,
+      const std::string& extensions,
+      const std::string& body_head,
+      scoped_ptr<net::StreamSocket>)>;
+  using SerialsCallback =
+      base::Callback<void(const std::vector<std::string>&)>;
 
   struct BrowserInfo {
     BrowserInfo();
@@ -83,6 +89,7 @@ class AndroidDeviceManager : public base::NonThreadSafe {
         AndroidWebSocket::Delegate* delegate);
     void Connected(int result,
                    const std::string& extensions,
+                   const std::string& body_head,
                    scoped_ptr<net::StreamSocket> socket);
     void OnFrameRead(const std::string& message);
     void OnSocketClosed();

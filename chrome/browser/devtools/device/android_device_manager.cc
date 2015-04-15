@@ -54,10 +54,12 @@ static void PostHttpUpgradeCallback(
     const AndroidDeviceManager::HttpUpgradeCallback& callback,
     int result,
     const std::string& extensions,
+    const std::string& body_head,
     scoped_ptr<net::StreamSocket> socket) {
   response_message_loop->PostTask(
       FROM_HERE,
-      base::Bind(callback, result, extensions, base::Passed(&socket)));
+      base::Bind(callback, result, extensions, body_head,
+                 base::Passed(&socket)));
 }
 
 class HttpRequest {
@@ -81,7 +83,9 @@ class HttpRequest {
                                  int result,
                                  scoped_ptr<net::StreamSocket> socket) {
     if (result != net::OK) {
-      callback.Run(result, "", make_scoped_ptr<net::StreamSocket>(nullptr));
+      callback.Run(
+          result, std::string(), std::string(),
+          make_scoped_ptr<net::StreamSocket>(nullptr));
       return;
     }
     new HttpRequest(socket.Pass(), request, callback);
@@ -93,7 +97,8 @@ class HttpRequest {
               const CommandCallback& callback)
       : socket_(socket.Pass()),
         command_callback_(callback),
-        body_pos_(0) {
+        expected_size_(-1),
+        header_size_(0) {
     SendRequest(request);
   }
 
@@ -102,7 +107,8 @@ class HttpRequest {
               const HttpUpgradeCallback& callback)
     : socket_(socket.Pass()),
       http_upgrade_callback_(callback),
-      body_pos_(0) {
+      expected_size_(-1),
+      header_size_(0) {
     SendRequest(request);
   }
 
@@ -142,22 +148,18 @@ class HttpRequest {
   void ReadResponse(int result) {
     if (!CheckNetResultOrDie(result))
       return;
-    scoped_refptr<net::IOBuffer> response_buffer =
-        new net::IOBuffer(kBufferSize);
+
+    response_buffer_ = new net::IOBuffer(kBufferSize);
 
     result = socket_->Read(
-        response_buffer.get(),
+        response_buffer_.get(),
         kBufferSize,
-        base::Bind(&HttpRequest::OnResponseData, base::Unretained(this),
-                  response_buffer,
-                  -1));
+        base::Bind(&HttpRequest::OnResponseData, base::Unretained(this)));
     if (result != net::ERR_IO_PENDING)
-      OnResponseData(response_buffer, -1, result);
+      OnResponseData(result);
   }
 
-  void OnResponseData(scoped_refptr<net::IOBuffer> response_buffer,
-                      int bytes_total,
-                      int result) {
+  void OnResponseData(int result) {
     if (!CheckNetResultOrDie(result))
       return;
     if (result == 0) {
@@ -165,9 +167,10 @@ class HttpRequest {
       return;
     }
 
-    response_ += std::string(response_buffer->data(), result);
-    int expected_length = 0;
-    if (bytes_total < 0) {
+    response_.append(response_buffer_->data(), result);
+    if (expected_size_ < 0) {
+      int expected_length = 0;
+
       // TODO(kaznacheev): Use net::HttpResponseHeader to parse the header.
       std::string content_length = ExtractHeader("Content-Length:");
       if (!content_length.empty()) {
@@ -177,33 +180,35 @@ class HttpRequest {
         }
       }
 
-      body_pos_ = response_.find("\r\n\r\n");
-      if (body_pos_ != std::string::npos) {
-        body_pos_ += 4;
-        bytes_total = body_pos_ + expected_length;
+      header_size_ = response_.find("\r\n\r\n");
+      if (header_size_ != std::string::npos) {
+        header_size_ += 4;
+        expected_size_ = header_size_ + expected_length;
       }
     }
 
-    if (bytes_total == static_cast<int>(response_.length())) {
+    // WebSocket handshake doesn't contain the Content-Length. For this case,
+    // |expected_size_| is set to the size of the header (handshake).
+    // Some WebSocket frames can be already received into |response_|.
+    if (static_cast<int>(response_.length()) >= expected_size_) {
+      const std::string& body = response_.substr(header_size_);
       if (!command_callback_.is_null()) {
-        command_callback_.Run(net::OK, response_.substr(body_pos_));
+        command_callback_.Run(net::OK, body);
       } else {
+        // Pass the WebSocket frames (in |body|), too.
         http_upgrade_callback_.Run(net::OK,
-            ExtractHeader("Sec-WebSocket-Extensions:"), socket_.Pass());
+            ExtractHeader("Sec-WebSocket-Extensions:"), body, socket_.Pass());
       }
       delete this;
       return;
     }
 
     result = socket_->Read(
-        response_buffer.get(),
+        response_buffer_.get(),
         kBufferSize,
-        base::Bind(&HttpRequest::OnResponseData,
-                   base::Unretained(this),
-                   response_buffer,
-                   bytes_total));
+        base::Bind(&HttpRequest::OnResponseData, base::Unretained(this)));
     if (result != net::ERR_IO_PENDING)
-      OnResponseData(response_buffer, bytes_total, result);
+      OnResponseData(result);
   }
 
   std::string ExtractHeader(const std::string& header) {
@@ -228,7 +233,8 @@ class HttpRequest {
       command_callback_.Run(result, std::string());
     } else {
       http_upgrade_callback_.Run(
-          result, "", make_scoped_ptr<net::StreamSocket>(nullptr));
+          result, std::string(), std::string(),
+          make_scoped_ptr<net::StreamSocket>(nullptr));
     }
     delete this;
     return false;
@@ -239,7 +245,17 @@ class HttpRequest {
   std::string response_;
   CommandCallback command_callback_;
   HttpUpgradeCallback http_upgrade_callback_;
-  size_t body_pos_;
+
+  scoped_refptr<net::IOBuffer> response_buffer_;
+  // Initially -1. Once the end of the header is seen:
+  // - If the Content-Length header is included, this variable is set to the
+  //   sum of the header size (including the last two CRLFs) and the value of
+  //   the header.
+  // - Otherwise, this variable is set to the size of the header (including the
+  //   last two CRLFs).
+  int expected_size_;
+  // Set to the size of the header part in |response_|.
+  size_t header_size_;
 };
 
 class DevicesRequest : public base::RefCountedThreadSafe<DevicesRequest> {

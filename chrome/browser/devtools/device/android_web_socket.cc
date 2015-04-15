@@ -23,22 +23,29 @@ const int kBufferSize = 16 * 1024;
 
 class AndroidDeviceManager::AndroidWebSocket::WebSocketImpl {
  public:
-   WebSocketImpl(scoped_refptr<base::MessageLoopProxy> response_message_loop,
+  WebSocketImpl(scoped_refptr<base::MessageLoopProxy> response_message_loop,
                  base::WeakPtr<AndroidWebSocket> weak_socket,
                  const std::string& extensions,
+                 const std::string& body_head,
                  scoped_ptr<net::StreamSocket> socket)
        : response_message_loop_(response_message_loop),
          weak_socket_(weak_socket),
          socket_(socket.Pass()),
-         encoder_(net::WebSocketEncoder::CreateClient(extensions)) {
+         encoder_(net::WebSocketEncoder::CreateClient(extensions)),
+         response_buffer_(body_head) {
     thread_checker_.DetachFromThread();
   }
 
   void StartListening() {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(socket_);
+
     scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
-    Read(buffer);
+
+    if (response_buffer_.size() > 0)
+      ProcessResponseBuffer(buffer);
+    else
+      Read(buffer);
   }
 
   void SendFrame(const std::string& message) {
@@ -54,24 +61,28 @@ class AndroidDeviceManager::AndroidWebSocket::WebSocketImpl {
   }
 
  private:
-  void Read(scoped_refptr<net::IOBuffer> response_buffer) {
+  void Read(scoped_refptr<net::IOBuffer> io_buffer) {
     int result = socket_->Read(
-        response_buffer.get(),
+        io_buffer.get(),
         kBufferSize,
         base::Bind(&WebSocketImpl::OnBytesRead,
-                   base::Unretained(this), response_buffer));
+                   base::Unretained(this), io_buffer));
     if (result != net::ERR_IO_PENDING)
-      OnBytesRead(response_buffer, result);
+      OnBytesRead(io_buffer, result);
   }
 
-  void OnBytesRead(scoped_refptr<net::IOBuffer> response_buffer, int result) {
+  void OnBytesRead(scoped_refptr<net::IOBuffer> io_buffer, int result) {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (result <= 0) {
       Disconnect();
       return;
     }
-    response_buffer_.append(response_buffer->data(), result);
+    response_buffer_.append(io_buffer->data(), result);
 
+    ProcessResponseBuffer(io_buffer);
+  }
+
+  void ProcessResponseBuffer(scoped_refptr<net::IOBuffer> io_buffer) {
     int bytes_consumed;
     std::string output;
     WebSocket::ParseResult parse_result = encoder_->DecodeFrame(
@@ -91,7 +102,7 @@ class AndroidDeviceManager::AndroidWebSocket::WebSocketImpl {
       Disconnect();
       return;
     }
-    Read(response_buffer);
+    Read(io_buffer);
   }
 
   void SendPendingRequests(int result) {
@@ -168,6 +179,7 @@ void AndroidDeviceManager::AndroidWebSocket::SendFrame(
 void AndroidDeviceManager::AndroidWebSocket::Connected(
     int result,
     const std::string& extensions,
+    const std::string& body_head,
     scoped_ptr<net::StreamSocket> socket) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (result != net::OK || !socket.get()) {
@@ -177,6 +189,7 @@ void AndroidDeviceManager::AndroidWebSocket::Connected(
   socket_impl_ = new WebSocketImpl(base::MessageLoopProxy::current(),
                                    weak_factory_.GetWeakPtr(),
                                    extensions,
+                                   body_head,
                                    socket.Pass());
   device_->message_loop_proxy_->PostTask(
       FROM_HERE,
