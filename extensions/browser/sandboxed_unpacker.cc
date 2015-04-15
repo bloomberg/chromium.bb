@@ -212,6 +212,13 @@ bool ReadMessageCatalogsFromFile(const base::FilePath& extension_path,
 
 }  // namespace
 
+SandboxedUnpackerClient::SandboxedUnpackerClient()
+    : RefCountedDeleteOnMessageLoop<SandboxedUnpackerClient>(
+          content::BrowserThread::GetMessageLoopProxyForThread(
+              content::BrowserThread::UI)) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
+
 SandboxedUnpacker::SandboxedUnpacker(
     const CRXFileInfo& file,
     Manifest::Location location,

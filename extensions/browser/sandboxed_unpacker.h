@@ -9,8 +9,9 @@
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_delete_on_message_loop.h"
 #include "base/time/time.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "extensions/browser/crx_file_info.h"
 #include "extensions/browser/install/crx_install_error.h"
@@ -31,8 +32,12 @@ namespace extensions {
 class Extension;
 
 class SandboxedUnpackerClient
-    : public base::RefCountedThreadSafe<SandboxedUnpackerClient> {
+    : public base::RefCountedDeleteOnMessageLoop<SandboxedUnpackerClient> {
  public:
+  // Initialize the ref-counted base to always delete on the UI thread. Note
+  // the constructor call must also happen on the UI thread.
+  SandboxedUnpackerClient();
+
   // temp_dir - A temporary directory containing the results of the extension
   // unpacking. The client is responsible for deleting this directory.
   //
@@ -53,7 +58,8 @@ class SandboxedUnpackerClient
   virtual void OnUnpackFailure(const CrxInstallError& error) = 0;
 
  protected:
-  friend class base::RefCountedThreadSafe<SandboxedUnpackerClient>;
+  friend class base::RefCountedDeleteOnMessageLoop<SandboxedUnpackerClient>;
+  friend class base::DeleteHelper<SandboxedUnpackerClient>;
 
   virtual ~SandboxedUnpackerClient() {}
 };

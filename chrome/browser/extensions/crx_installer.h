@@ -370,9 +370,7 @@ class CrxInstaller
 
   // The client we will work with to do the installation. This can be NULL, in
   // which case the install is silent.
-  // NOTE: we may be deleted on the file thread. To ensure the UI is deleted on
-  // the main thread we don't use a scoped_ptr here.
-  ExtensionInstallPrompt* client_;
+  scoped_ptr<ExtensionInstallPrompt> client_;
 
   // The root of the unpacked extension directory. This is a subdirectory of
   // temp_dir_, so we don't have to delete it explicitly.

@@ -163,11 +163,11 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> service_weak,
 }
 
 CrxInstaller::~CrxInstaller() {
-  // Make sure the UI is deleted on the ui thread.
-  if (client_) {
-    BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, client_);
-    client_ = NULL;
-  }
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // Ensure |client_| and |install_checker_| data members are destroyed on the
+  // UI thread. The |client_| dialog has a weak reference as |this| is its
+  // delegate, and |install_checker_| owns WeakPtrs, so must be destroyed on the
+  // same thread that created it.
 }
 
 void CrxInstaller::InstallCrx(const base::FilePath& source_file) {
