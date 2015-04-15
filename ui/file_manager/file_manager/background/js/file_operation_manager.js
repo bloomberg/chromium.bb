@@ -17,9 +17,18 @@ function FileOperationManager(volumeManager) {
   this.volumeManager_ = volumeManager;
 
   /**
+   * List of pending copy tasks. The manager can execute tasks in arbitary
+   * order.
    * @private {!Array<!fileOperationUtil.Task>}
    */
-  this.copyTasks_ = [];
+  this.pendingCopyTasks_ = [];
+
+  /**
+   * Map of volume id and running copy task. The key is a volume id and the
+   * value is a copy task.
+   * @private {!Object<string,!fileOperationUtil.Task>}
+   */
+  this.runningCopyTasks_ = {};
 
   /**
    * @private {!Array<!fileOperationUtil.Task>}
@@ -37,6 +46,14 @@ function FileOperationManager(volumeManager) {
    */
   this.eventRouter_ = new fileOperationUtil.EventRouter();
 }
+
+/**
+ * Returns pending copy tasks for testing.
+ * @return {!Array<!fileOperationUtil.Task>} Pending copy tasks.
+ */
+FileOperationManager.prototype.getPendingCopyTasksForTesting = function() {
+  return this.pendingCopyTasks_;
+};
 
 /**
  * Adds an event listener for the tasks.
@@ -64,17 +81,9 @@ FileOperationManager.prototype.removeEventListener = function(type, handler) {
  * @return {boolean} True, if there are any tasks.
  */
 FileOperationManager.prototype.hasQueuedTasks = function() {
-  return this.copyTasks_.length > 0 || this.deleteTasks_.length > 0;
-};
-
-/**
- * Completely clear out the copy queue, either because we encountered an error
- * or completed successfully.
- *
- * @private
- */
-FileOperationManager.prototype.resetQueue_ = function() {
-  this.copyTasks_ = [];
+  return Object.keys(this.runningCopyTasks_).length > 0 ||
+      this.pendingCopyTasks_.length > 0 ||
+      this.deleteTasks_.length > 0;
 };
 
 /**
@@ -83,20 +92,26 @@ FileOperationManager.prototype.resetQueue_ = function() {
  */
 FileOperationManager.prototype.requestTaskCancel = function(taskId) {
   var task = null;
-  for (var i = 0; i < this.copyTasks_.length; i++) {
-    task = this.copyTasks_[i];
+
+  // If the task is not on progress, remove it immediately.
+  for (var i = 0; i < this.pendingCopyTasks_.length; i++) {
+    task = this.pendingCopyTasks_[i];
     if (task.taskId !== taskId)
       continue;
     task.requestCancel();
-    // If the task is not on progress, remove it immediately.
-    if (i !== 0) {
-      this.eventRouter_.sendProgressEvent(
-          fileOperationUtil.EventRouter.EventType.CANCELED,
-          task.getStatus(),
-          task.taskId);
-      this.copyTasks_.splice(i, 1);
-    }
+    this.eventRouter_.sendProgressEvent(
+        fileOperationUtil.EventRouter.EventType.CANCELED,
+        task.getStatus(),
+        task.taskId);
+    this.pendingCopyTasks_.splice(i, 1);
   }
+
+  for (var volumeId in this.runningCopyTasks_) {
+    task = this.runningCopyTasks_[volumeId];
+    if (task.taskId === taskId)
+      task.requestCancel();
+  }
+
   for (var i = 0; i < this.deleteTasks_.length; i++) {
     task = this.deleteTasks_[i];
     if (task.taskId !== taskId)
@@ -216,43 +231,84 @@ FileOperationManager.prototype.queueCopy_ = function(
       fileOperationUtil.EventRouter.EventType.BEGIN,
       task.getStatus(),
       task.taskId);
+
   task.initialize(function() {
-    this.copyTasks_.push(task);
-    if (this.copyTasks_.length === 1)
-      this.serviceAllTasks_();
+    this.pendingCopyTasks_.push(task);
+    this.serviceAllTasks_();
   }.bind(this));
 };
 
 /**
  * Service all pending tasks, as well as any that might appear during the
- * copy.
+ * copy. We allow to run tasks in parallel when destinations are different
+ * volumes.
  *
  * @private
  */
 FileOperationManager.prototype.serviceAllTasks_ = function() {
-  if (!this.copyTasks_.length) {
+  if (this.pendingCopyTasks_.length === 0 &&
+      Object.keys(this.runningCopyTasks_).length === 0) {
     // All tasks have been serviced, clean up and exit.
     chrome.power.releaseKeepAwake();
-    this.resetQueue_();
     return;
   }
 
   // Prevent the system from sleeping while copy is in progress.
   chrome.power.requestKeepAwake('system');
 
-  var onTaskProgress = function() {
+  // Find next task which can run at now.
+  var nextTask = null;
+  var nextTaskVolumeId = null;
+  for (var i = 0; i < this.pendingCopyTasks_.length; i++) {
+    var task = this.pendingCopyTasks_[i];
+
+    // Fails a copy task of which it fails to get volume info. The destination
+    // volume might be already unmounted.
+    var volumeInfo = this.volumeManager_.getVolumeInfo(task.targetDirEntry);
+    if (volumeInfo === null) {
+      this.eventRouter_.sendProgressEvent(
+          fileOperationUtil.EventRouter.EventType.ERROR,
+          task.getStatus(),
+          task.taskId,
+          new fileOperationUtil.Error(
+              util.FileOperationErrorType.FILESYSTEM_ERROR,
+              util.createDOMError(util.FileError.NOT_FOUND_ERR)));
+
+      this.pendingCopyTasks_.splice(i, 1);
+      i--;
+
+      continue;
+    }
+
+    // When no task is running for the volume, run the task.
+    if (!this.runningCopyTasks_[volumeInfo.volumeId]) {
+      nextTask = this.pendingCopyTasks_.splice(i, 1)[0];
+      nextTaskVolumeId = volumeInfo.volumeId;
+      break;
+    }
+  }
+
+  // There is no task which can run at now.
+  if (nextTask === null)
+    return;
+
+  var onTaskProgress = function(task) {
     this.eventRouter_.sendProgressEvent(
         fileOperationUtil.EventRouter.EventType.PROGRESS,
-        this.copyTasks_[0].getStatus(),
-        this.copyTasks_[0].taskId);
-  }.bind(this);
+        task.getStatus(),
+        task.taskId);
+  }.bind(this, nextTask);
 
   var onEntryChanged = function(kind, entry) {
     this.eventRouter_.sendEntryChangedEvent(kind, entry);
   }.bind(this);
 
-  var onTaskError = function(err) {
-    var task = this.copyTasks_.shift();
+  // Since getVolumeInfo of targetDirEntry might not be available when this
+  // callback is called, bind volume id here.
+  var onTaskError = function(volumeId, err) {
+    var task = this.runningCopyTasks_[volumeId];
+    delete this.runningCopyTasks_[volumeId];
+
     var reason = err.data.name === util.FileError.ABORT_ERR ?
         fileOperationUtil.EventRouter.EventType.CANCELED :
         fileOperationUtil.EventRouter.EventType.ERROR;
@@ -261,19 +317,22 @@ FileOperationManager.prototype.serviceAllTasks_ = function() {
                                         task.taskId,
                                         err);
     this.serviceAllTasks_();
-  }.bind(this);
+  }.bind(this, nextTaskVolumeId);
 
-  var onTaskSuccess = function() {
-    // The task at the front of the queue is completed. Pop it from the queue.
-    var task = this.copyTasks_.shift();
+  var onTaskSuccess = function(volumeId) {
+    var task = this.runningCopyTasks_[volumeId];
+    delete this.runningCopyTasks_[volumeId];
+
     this.eventRouter_.sendProgressEvent(
         fileOperationUtil.EventRouter.EventType.SUCCESS,
         task.getStatus(),
         task.taskId);
     this.serviceAllTasks_();
-  }.bind(this);
+  }.bind(this, nextTaskVolumeId);
 
-  var nextTask = this.copyTasks_[0];
+  // Add to running tasks and run it.
+  this.runningCopyTasks_[nextTaskVolumeId] = nextTask;
+
   this.eventRouter_.sendProgressEvent(
       fileOperationUtil.EventRouter.EventType.PROGRESS,
       nextTask.getStatus(),
@@ -414,9 +473,8 @@ FileOperationManager.prototype.zipSelection = function(
       zipTask.getStatus(),
       zipTask.taskId);
   zipTask.initialize(function() {
-    this.copyTasks_.push(zipTask);
-    if (this.copyTasks_.length == 1)
-      this.serviceAllTasks_();
+    this.pendingCopyTasks_.push(zipTask);
+    this.serviceAllTasks_();
   }.bind(this));
 };
 

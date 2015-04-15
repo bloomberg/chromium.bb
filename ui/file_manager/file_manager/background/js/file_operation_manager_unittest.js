@@ -45,22 +45,122 @@ chrome.fileManagerPrivate = {
 };
 
 /**
- * Reports the result of promise to the test system.
- * @param {Promise} promise Promise to be fulfilled or rejected.
- * @param {function(boolean:hasError)} callback Callback to be passed true on
- *     error.
+ * Logs events of file operation manager.
+ * @param {!FileOperationManager} fileOperationManager A target file operation
+ *     manager.
+ * @constructor
+ * @struct
  */
-function reportPromise(promise, callback) {
-  promise.then(
-      callback.bind(null, false),
-      function(error) {
-        if (error instanceof fileOperationUtil.Error) {
-          console.error('fileOperationUtil.Error: code=' + error.code);
-        } else {
-          console.error(error.stack || error.name || error);
-        }
-        callback(true);
-      });
+function EventLogger(fileOperationManager) {
+  this.events = [];
+  this.numberOfBeginEvents = 0;
+  this.numberOfErrorEvents = 0;
+  this.numberOfSuccessEvents = 0;
+  fileOperationManager.addEventListener('copy-progress',
+      this.onCopyProgress_.bind(this));
+}
+
+/**
+ * Handles copy-progress event.
+ * @param {Event} event An event.
+ * @private
+ */
+EventLogger.prototype.onCopyProgress_ = function(event) {
+  if (event.reason === 'BEGIN') {
+    this.events.push(event);
+    this.numberOfBeginEvents++;
+  }
+  if (event.reason === 'ERROR') {
+    this.events.push(event);
+    this.numberOfErrorEvents++;
+  }
+  if (event.reason === 'SUCCESS') {
+    this.events.push(event);
+    this.numberOfSuccessEvents++;
+  }
+};
+
+/**
+ * Provides fake implementation of chrome.fileManagerPrivate.startCopy.
+ * @param {string} blockedDestination Destination url of an entry whose request
+ *     should be blocked.
+ * @param {!Entry} sourceEntry Source entry. Single source entry is supported.
+ * @param {!Array<!FakeFileSystem>} fileSystems File systems.
+ * @constructor
+ * @struct
+ */
+function BlockableFakeStartCopy(blockedDestination, sourceEntry, fileSystems) {
+  this.resolveBlockedOperationCallback = null;
+  this.blockedDestination_ = blockedDestination;
+  this.sourceEntry_ = sourceEntry;
+  this.fileSystems_ = fileSystems;
+  this.startCopyId_ = 0;
+}
+
+/**
+ * A fake implemencation of startCopy function.
+ * @param {string} source
+ * @param {string} destination
+ * @param {string} newName
+ * @param {function(number)} callback
+ */
+BlockableFakeStartCopy.prototype.startCopyFunc = function(
+    source, destination, newName, callback) {
+  var makeStatus = function(type) {
+    return {type: type, sourceUrl: source, destinationUrl: destination};
+  };
+
+  var completeCopyOperation = function(copyId) {
+    var newPath = joinPath('/', newName);
+    var fileSystem = getFileSystemForURL(this.fileSystems_, destination);
+    fileSystem.entries[newPath] = this.sourceEntry_.clone(newPath);
+    listener(copyId, makeStatus('end_copy_entry'));
+    listener(copyId, makeStatus('success'));
+  }.bind(this);
+
+  this.startCopyId_++;
+
+  callback(this.startCopyId_);
+  var listener = chrome.fileManagerPrivate.onCopyProgress.listener_;
+  listener(this.startCopyId_, makeStatus('begin_copy_entry'));
+  listener(this.startCopyId_, makeStatus('progress'));
+
+  if (destination === this.blockedDestination_) {
+    this.resolveBlockedOperation =
+        completeCopyOperation.bind(this, this.startCopyId_);
+  } else {
+    completeCopyOperation(this.startCopyId_);
+  }
+};
+
+/**
+ * Fake volume manager.
+ * @constructor
+ * @structs
+ */
+function FakeVolumeManager() {}
+
+/**
+ * Returns fake volume info.
+ * @param {!Entry} entry
+ * @return {VolumeInfo} A fake volume info.
+ */
+FakeVolumeManager.prototype.getVolumeInfo = function(entry) {
+  return { volumeId: entry.filesystem.name };
+}
+
+/**
+ * Returns file system of the url.
+ * @param {!Array<!FakeFileSystem>} fileSystems
+ * @param {string} url
+ * @return {!FakeFileSystem}
+ */
+function getFileSystemForURL(fileSystems, url) {
+  for (var i = 0; i < fileSystems.length; i++) {
+    if (new RegExp('^filesystem:' + fileSystems[i].name + '/').test(url))
+      return fileSystems[i];
+  }
+  throw new Error('Unexpected url.');
 }
 
 /**
@@ -360,6 +460,8 @@ function testCopy(callback) {
         listener(1, makeStatus('success'));
       };
 
+  fileOperationManager = new FileOperationManager(new FakeVolumeManager());
+
   // Observing manager's events.
   var eventsPromise = waitForEvents(fileOperationManager);
 
@@ -395,6 +497,205 @@ function testCopy(callback) {
 }
 
 /**
+ * Tests the fileOperationUtil.paste for copying files in sequential. When
+ * destination volumes are same, copy operations should run in sequential.
+ */
+function testCopyInSequential(callback) {
+  var fileSystem = createTestFileSystem('testVolume', {
+    '/': DIRECTORY_SIZE,
+    '/dest': DIRECTORY_SIZE,
+    '/test.txt': 10
+  });
+
+  window.webkitResolveLocalFileSystemURL =
+      resolveTestFileSystemURL.bind(null, fileSystem);
+
+  var blockableFakeStartCopy = new BlockableFakeStartCopy(
+      'filesystem:testVolume/dest',
+      fileSystem.entries['/test.txt'],
+      [fileSystem]);
+  chrome.fileManagerPrivate.startCopy =
+      blockableFakeStartCopy.startCopyFunc.bind(blockableFakeStartCopy);
+
+  fileOperationManager = new FileOperationManager(new FakeVolumeManager());
+
+  var eventLogger = new EventLogger(fileOperationManager);
+
+  // Copy test.txt to /dest. This operation will be blocked.
+  fileOperationManager.paste([fileSystem.entries['/test.txt']],
+      fileSystem.entries['/dest'],
+      false);
+
+  var firstOperationTaskId;
+  reportPromise(waitUntil(function() {
+    // Wait until the first operation is blocked.
+    return blockableFakeStartCopy.resolveBlockedOperation !== null
+  }).then(function() {
+    assertEquals(1, eventLogger.events.length);
+    assertEquals('BEGIN', eventLogger.events[0].reason);
+    firstOperationTaskId = eventLogger.events[0].taskId;
+
+    // Copy test.txt to /. This operation should be blocked.
+    fileOperationManager.paste([fileSystem.entries['/test.txt']],
+        fileSystem.entries['/'],
+        false);
+
+    return waitUntil(function() {
+      return fileOperationManager.getPendingCopyTasksForTesting().length === 1;
+    });
+  }).then(function() {
+    // Asserts that the second operation is added to pending copy tasks. Current
+    // implementation run tasks synchronusly after adding it to pending tasks.
+    // TODO(yawano) This check deeply depends on the implementation. Find a
+    //     better way to test this.
+    var pendingTask = fileOperationManager.getPendingCopyTasksForTesting()[0];
+    assertEquals(fileSystem.entries['/'], pendingTask.targetDirEntry);
+
+    blockableFakeStartCopy.resolveBlockedOperation();
+
+    return waitUntil(function() {
+      return eventLogger.numberOfSuccessEvents === 2;
+    });
+  }).then(function() {
+    // Events should be the following.
+    // BEGIN: first operation
+    // BEGIN: second operation
+    // SUCCESS: first operation
+    // SUCCESS: second operation
+    var events = eventLogger.events;
+    assertEquals(4, events.length);
+    assertEquals('BEGIN', events[0].reason);
+    assertEquals(firstOperationTaskId, events[0].taskId);
+    assertEquals('BEGIN', events[1].reason);
+    assertTrue(events[1].taskId !== firstOperationTaskId);
+    assertEquals('SUCCESS', events[2].reason);
+    assertEquals(firstOperationTaskId, events[2].taskId);
+    assertEquals('SUCCESS', events[3].reason);
+    assertEquals(events[1].taskId, events[3].taskId);
+  }), callback);
+}
+
+/**
+ * Tests the fileOperationUtil.paste for copying files in paralell. When
+ * destination volumes are different, copy operations can run in paralell.
+ */
+function testCopyInParallel(callback) {
+  var fileSystemA = createTestFileSystem('volumeA', {
+    '/': DIRECTORY_SIZE,
+    '/test.txt': 10
+  });
+  var fileSystemB = createTestFileSystem('volumeB', {
+    '/': DIRECTORY_SIZE,
+  });
+  var fileSystems = [fileSystemA, fileSystemB];
+
+  window.webkitResolveLocalFileSystemURL = function(url, success, failure) {
+    return resolveTestFileSystemURL(
+        getFileSystemForURL(fileSystems, url), url, success, failure);
+  };
+
+  var blockableFakeStartCopy = new BlockableFakeStartCopy(
+      'filesystem:volumeB/',
+      fileSystemA.entries['/test.txt'],
+      fileSystems);
+  chrome.fileManagerPrivate.startCopy =
+      blockableFakeStartCopy.startCopyFunc.bind(blockableFakeStartCopy);
+
+  fileOperationManager = new FileOperationManager(new FakeVolumeManager());
+
+  var eventLogger = new EventLogger(fileOperationManager);
+
+  // Copy test.txt from volume A to volume B.
+  fileOperationManager.paste([fileSystemA.entries['/test.txt']],
+      fileSystemB.entries['/'],
+      false);
+
+  var firstOperationTaskId;
+  reportPromise(waitUntil(function() {
+    return blockableFakeStartCopy.resolveBlockedOperation !== null;
+  }).then(function() {
+    assertEquals(1, eventLogger.events.length);
+    assertEquals('BEGIN', eventLogger.events[0].reason);
+    firstOperationTaskId = eventLogger.events[0].taskId;
+
+    // Copy test.txt from volume A to volume A. This should not be blocked by
+    // the previous operation.
+    fileOperationManager.paste([fileSystemA.entries['/test.txt']],
+        fileSystemA.entries['/'],
+        false);
+
+    // Wait until the second operation is completed.
+    return waitUntil(function() {
+      return eventLogger.numberOfSuccessEvents === 1;
+    });
+  }).then(function() {
+    // Resolve the blocked operation.
+    blockableFakeStartCopy.resolveBlockedOperation();
+
+    // Wait until the blocked operation is completed.
+    return waitUntil(function() {
+      return eventLogger.numberOfSuccessEvents === 2;
+    });
+  }).then(function() {
+    // Events should be following.
+    // BEGIN: first operation
+    // BEGIN: second operation
+    // SUCCESS: second operation
+    // SUCCESS: first operation
+    var events = eventLogger.events;
+    assertEquals(4, events.length);
+    assertEquals('BEGIN', events[0].reason);
+    assertEquals(firstOperationTaskId, events[0].taskId);
+    assertEquals('BEGIN', events[1].reason);
+    assertTrue(firstOperationTaskId !== events[1].taskId);
+    assertEquals('SUCCESS', events[2].reason);
+    assertEquals(events[1].taskId, events[2].taskId);
+    assertEquals('SUCCESS', events[3].reason);
+    assertEquals(firstOperationTaskId, events[3].taskId);
+  }), callback);
+}
+
+/**
+ * Test case that a copy fails since destination volume is not available.
+ */
+function testCopyFails(callback) {
+  var fileSystem = createTestFileSystem('testVolume', {
+    '/': DIRECTORY_SIZE,
+    '/test.txt': 10
+  });
+
+  fileOperationManager = new FileOperationManager({
+    /* Mocking volume manager. */
+    getVolumeInfo: function() {
+      // Return null to simulate that the volume info is not available.
+      return null;
+    }
+  });
+
+  var eventLogger = new EventLogger(fileOperationManager);
+
+  // Copy test.txt to /.
+  fileOperationManager.paste([fileSystem.entries['/test.txt']],
+      fileSystem.entries['/'],
+      false);
+
+  reportPromise(waitUntil(function() {
+    return eventLogger.numberOfErrorEvents === 1;
+  }).then(function() {
+    // Since the task fails with an error, pending copy tasks should be empty.
+    assertEquals(0,
+        fileOperationManager.getPendingCopyTasksForTesting().length);
+
+    // Check events.
+    var events = eventLogger.events;
+    assertEquals(2, events.length);
+    assertEquals('BEGIN', events[0].reason);
+    assertEquals('ERROR', events[1].reason);
+    assertEquals(events[0].taskId, events[1].taskId);
+  }), callback);
+}
+
+/**
  * Tests the fileOperationUtil.paste for move.
  * @param {function(boolean:hasError)} callback Callback to be passed true on
  *     error.
@@ -408,6 +709,8 @@ function testMove(callback) {
   });
   window.webkitResolveLocalFileSystemURL =
       resolveTestFileSystemURL.bind(null, fileSystem);
+
+  fileOperationManager = new FileOperationManager(new FakeVolumeManager());
 
   // Observing manager's events.
   var eventsPromise = waitForEvents(fileOperationManager);
@@ -504,6 +807,8 @@ function testZip(callback) {
         fileSystem.entries[newPath] = newEntry;
         success(newEntry);
       };
+
+  fileOperationManager = new FileOperationManager(new FakeVolumeManager());
 
   // Observing manager's events.
   reportPromise(waitForEvents(fileOperationManager).then(function(events) {
