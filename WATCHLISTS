@@ -274,6 +274,9 @@
     'deep_memory_profiler': {
       'filepath': 'tools/(deep_memory_profiler|find_runtime_symbols)',
     },
+    'device_bluetooth': {
+      'filepath': 'device/.*bluetooth'
+    },
     'device_sensors': {
       'filepath': 'content/browser/device_sensors/|'\
                   'content/common/device_sensors/|'\
@@ -925,6 +928,7 @@
     'cookie_monster': ['erikwright@chromium.org'],
     'custom_handlers': ['vabr@chromium.org'],
     'deep_memory_profiler': ['dmikurube@chromium.org'],
+    'device_bluetooth': ['scheib+watch@chromium.org'],
     'device_sensors': ['timvolodine@chromium.org',
                        'mvanouwerkerk@chromium.org',
                        'rijubrata.bhaumik@intel.com',
