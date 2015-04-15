@@ -31,6 +31,16 @@ openPicker(menuElement, function () {
     shouldBeEqualToString('picker._selectElement.value', '1');
     shouldBeEqualToString('menuElement.value', 'bar');
 
+    // Start drag selecting but release outside the popup.
+    hoverOverElement(picker._selectElement.children[2]);
+    eventSender.mouseDown();
+    hoverOverElement(picker._selectElement.children[0]);
+    hoverOverElement(menuElement);
+    eventSender.mouseUp();
+    shouldNotBe('window.internals.pagePopupWindow', 'null');
+    shouldBeEqualToString('picker._selectElement.value', '0');
+    shouldBeEqualToString('menuElement.value', 'bar');
+
     clickElement(picker._selectElement.children[2]);
     shouldBeNull('window.internals.pagePopupWindow');
     shouldBeEqualToString('menuElement.value', 'baz');

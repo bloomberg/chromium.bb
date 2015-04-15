@@ -86,6 +86,8 @@ ListPicker.prototype._handleWindowMouseMove = function (event) {
     this.lastMousePositionY = event.clientY;
     this._highlightOption(event.target);
     this._selectionSetByMouseHover = true;
+    // Prevent the select element from firing change events for mouse input.
+    event.preventDefault();
 };
 
 ListPicker.prototype._handleMouseUp = function(event) {
