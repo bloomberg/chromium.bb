@@ -26,12 +26,12 @@
 #define HTMLTextFormControlElement_h
 
 #include "core/CoreExport.h"
+#include "core/dom/Position.h"
 #include "core/html/HTMLFormControlElementWithState.h"
 
 namespace blink {
 
 class ExceptionState;
-class Position;
 class Range;
 class VisiblePosition;
 

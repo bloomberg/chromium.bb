@@ -40,7 +40,6 @@ namespace blink {
 class LayoutPoint;
 class LayoutRect;
 class Node;
-class Position;
 class Range;
 class RenderedDocumentMarker;
 class Text;

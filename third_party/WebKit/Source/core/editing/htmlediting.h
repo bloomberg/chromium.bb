@@ -43,7 +43,6 @@ class HTMLLIElement;
 class HTMLSpanElement;
 class HTMLUListElement;
 class Node;
-class Position;
 class PositionWithAffinity;
 class Range;
 class VisiblePosition;

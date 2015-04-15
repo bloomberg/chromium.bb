@@ -85,6 +85,7 @@ public:
         int m_offset;
     };
 
+    static const TreeScope* commonAncestorTreeScope(const PositionType&, const PositionType& b);
     static PositionType createLegacyEditingPosition(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset);
 
     PositionAlgorithm(PassRefPtrWillBeRawPtr<Node> anchorNode, LegacyEditingOffset);
@@ -96,6 +97,8 @@ public:
     // For creating offset positions:
     // FIXME: This constructor should eventually go away. See bug 63040.
     PositionAlgorithm(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset, AnchorType);
+
+    PositionAlgorithm(const PositionAlgorithm&);
 
     AnchorType anchorType() const { return m_anchorType; }
 
@@ -182,6 +185,8 @@ public:
     static int uncheckedPreviousOffsetForBackwardDeletion(const Node*, int current);
     static int uncheckedNextOffset(const Node*, int current);
 
+    int compareTo(const PositionType&) const;
+
     // These can be either inside or just before/after the node, depending on
     // if the node is ignored by editing or not.
     // FIXME: These should go away. They only make sense for legacy positions.
@@ -238,9 +243,7 @@ public:
         visitor->trace(m_anchorNode);
     }
 
-protected:
-    PositionAlgorithm(const PositionAlgorithm&);
-
+private:
     int offsetForPositionAfterAnchor() const;
 
     int renderedOffset() const;
@@ -256,37 +259,7 @@ protected:
     bool m_isLegacyEditingPosition;
 };
 
-// Represents a position in DOM tree.
-class CORE_EXPORT Position final : public PositionAlgorithm<EditingStrategy> {
-    DISALLOW_ALLOCATION();
-public:
-    Position()
-    {
-    }
-
-    static const TreeScope* commonAncestorTreeScope(const Position&, const Position&);
-    static Position fromPositionInDOMTree(const Position& position) { return position; }
-
-    Position(PassRefPtrWillBeRawPtr<Node> anchorNode, LegacyEditingOffset);
-
-    // For creating before/after positions:
-    Position(PassRefPtrWillBeRawPtr<Node> anchorNode, AnchorType);
-    Position(PassRefPtrWillBeRawPtr<Text> textNode, unsigned offset);
-
-    // For creating offset positions:
-    // FIXME: This constructor should eventually go away. See bug 63040.
-    Position(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset, AnchorType);
-    explicit Position(const PositionAlgorithm&);
-
-    int compareTo(const Position&) const;
-
-#ifndef NDEBUG
-    Node* nodeAsSelectionStart() const;
-    Node* nodeAsSelectionEnd() const;
-    bool equivalentTo(const Position&) const;
-    Position toPositionForEquality() const;
-#endif
-};
+using Position = PositionAlgorithm<EditingStrategy>;
 
 template <typename Strategy>
 typename Strategy::PositionType PositionAlgorithm<Strategy>::createLegacyEditingPosition(PassRefPtrWillBeRawPtr<Node> node, int offset)
@@ -299,7 +272,8 @@ inline Position createLegacyEditingPosition(PassRefPtrWillBeRawPtr<Node> node, i
     return Position::createLegacyEditingPosition(node, offset);
 }
 
-inline bool operator==(const Position& a, const Position& b)
+template <typename Strategy>
+bool operator==(const PositionAlgorithm<Strategy>& a, const PositionAlgorithm<Strategy>& b)
 {
     if (a.isNull())
         return b.isNull();
@@ -309,7 +283,8 @@ inline bool operator==(const Position& a, const Position& b)
     return a.anchorNode() == b.anchorNode() && a.deprecatedEditingOffset() == b.deprecatedEditingOffset() && a.anchorType() == b.anchorType();
 }
 
-inline bool operator!=(const Position& a, const Position& b)
+template <typename Strategy>
+bool operator!=(const PositionAlgorithm<Strategy>& a, const PositionAlgorithm<Strategy>& b)
 {
     return !(a == b);
 }

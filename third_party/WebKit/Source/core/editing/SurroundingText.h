@@ -32,12 +32,12 @@
 #define SurroundingText_h
 
 #include "core/CoreExport.h"
+#include "core/dom/Position.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class Position;
 class Range;
 
 class CORE_EXPORT SurroundingText {

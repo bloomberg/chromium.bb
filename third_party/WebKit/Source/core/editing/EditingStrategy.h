@@ -11,13 +11,14 @@
 namespace blink {
 
 template <typename Strategy>
-class PositionIteratorAlgorithm;
+class PositionAlgorithm;
 
-class Position;
+template <typename Strategy>
+class PositionIteratorAlgorithm;
 
 class EditingStrategy : public NodeTraversal {
 public:
-    using PositionType = Position;
+    using PositionType = PositionAlgorithm<EditingStrategy>;
     using PositionIteratorType = PositionIteratorAlgorithm<EditingStrategy>;
 
     // |disconnected| is optional output parameter having true if specified

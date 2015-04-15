@@ -79,7 +79,8 @@ static Node* previousRenderedEditable(Node* node)
     return 0;
 }
 
-const TreeScope* Position::commonAncestorTreeScope(const Position& a, const Position& b)
+template <typename Strategy>
+const TreeScope* PositionAlgorithm<Strategy>::commonAncestorTreeScope(const PositionType& a, const PositionType& b)
 {
     if (!a.containerNode() || !b.containerNode())
         return nullptr;
@@ -138,31 +139,6 @@ PositionAlgorithm<Strategy>::PositionAlgorithm(const PositionAlgorithm& other)
 }
 
 // --
-
-Position::Position(PassRefPtrWillBeRawPtr<Node> anchorNode, LegacyEditingOffset offset)
-    : PositionAlgorithm(anchorNode, offset)
-{
-}
-
-Position::Position(PassRefPtrWillBeRawPtr<Node> anchorNode, AnchorType anchorType)
-    : PositionAlgorithm(anchorNode, anchorType)
-{
-}
-
-Position::Position(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset, AnchorType anchorType)
-    : PositionAlgorithm(anchorNode, offset, anchorType)
-{
-}
-
-Position::Position(PassRefPtrWillBeRawPtr<Text> textNode, unsigned offset)
-    : PositionAlgorithm(textNode, offset)
-{
-}
-
-Position::Position(const PositionAlgorithm& other)
-    : PositionAlgorithm(other)
-{
-}
 
 template <typename Strategy>
 void PositionAlgorithm<Strategy>::moveToPosition(PassRefPtrWillBeRawPtr<Node> node, int offset)
@@ -395,7 +371,8 @@ PassRefPtrWillBeRawPtr<CSSComputedStyleDeclaration> PositionAlgorithm<Strategy>:
     return CSSComputedStyleDeclaration::create(elem);
 }
 
-int Position::compareTo(const Position& other) const
+template <typename Strategy>
+int PositionAlgorithm<Strategy>::compareTo(const PositionType& other) const
 {
     return comparePositions(*this, other);
 }
@@ -984,14 +961,14 @@ bool PositionAlgorithm<Strategy>::isCandidate() const
 
     if (renderer->isLayoutBlockFlow() || renderer->isLayoutGrid()) {
         if (toLayoutBlock(renderer)->logicalHeight() || isHTMLBodyElement(*m_anchorNode)) {
-            if (!Position::hasRenderedNonAnonymousDescendantsWithHeight(renderer))
-                return atFirstEditingPositionForNode() && !Position::nodeIsUserSelectNone(deprecatedNode());
-            return m_anchorNode->hasEditableStyle() && !Position::nodeIsUserSelectNone(deprecatedNode()) && atEditingBoundary();
+            if (!hasRenderedNonAnonymousDescendantsWithHeight(renderer))
+                return atFirstEditingPositionForNode() && !nodeIsUserSelectNone(deprecatedNode());
+            return m_anchorNode->hasEditableStyle() && !nodeIsUserSelectNone(deprecatedNode()) && atEditingBoundary();
         }
     } else {
         LocalFrame* frame = m_anchorNode->document().frame();
         bool caretBrowsing = frame->settings() && frame->settings()->caretBrowsingEnabled();
-        return (caretBrowsing || m_anchorNode->hasEditableStyle()) && !Position::nodeIsUserSelectNone(deprecatedNode()) && atEditingBoundary();
+        return (caretBrowsing || m_anchorNode->hasEditableStyle()) && !nodeIsUserSelectNone(deprecatedNode()) && atEditingBoundary();
     }
 
     return false;

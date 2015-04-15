@@ -26,6 +26,7 @@
 #ifndef FormatBlockCommand_h
 #define FormatBlockCommand_h
 
+#include "core/dom/Position.h"
 #include "core/dom/QualifiedName.h"
 #include "core/editing/ApplyBlockElementCommand.h"
 #include "core/editing/EditAction.h"
@@ -34,7 +35,6 @@ namespace blink {
 
 class Document;
 class Element;
-class Position;
 class Range;
 class VisiblePosition;
 

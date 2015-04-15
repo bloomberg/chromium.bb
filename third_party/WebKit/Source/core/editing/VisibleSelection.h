@@ -34,7 +34,6 @@
 namespace blink {
 
 class LayoutPoint;
-class Position;
 
 const EAffinity SEL_DEFAULT_AFFINITY = DOWNSTREAM;
 enum SelectionDirection { DirectionForward, DirectionBackward, DirectionRight, DirectionLeft };
