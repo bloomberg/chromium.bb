@@ -8,6 +8,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/guest_view/guest_view_event.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper_delegate.h"
@@ -330,18 +331,18 @@ int WebViewPermissionHelper::RequestPermission(
   switch (permission_type) {
     case WEB_VIEW_PERMISSION_TYPE_NEW_WINDOW: {
       web_view_guest_->DispatchEventToView(
-          new GuestViewBase::Event(webview::kEventNewWindow, args.Pass()));
+          new GuestViewEvent(webview::kEventNewWindow, args.Pass()));
       break;
     }
     case WEB_VIEW_PERMISSION_TYPE_JAVASCRIPT_DIALOG: {
       web_view_guest_->DispatchEventToView(
-          new GuestViewBase::Event(webview::kEventDialog, args.Pass()));
+          new GuestViewEvent(webview::kEventDialog, args.Pass()));
       break;
     }
     default: {
       args->SetString(webview::kPermission,
                       PermissionTypeToString(permission_type));
-      web_view_guest_->DispatchEventToView(new GuestViewBase::Event(
+      web_view_guest_->DispatchEventToView(new GuestViewEvent(
           webview::kEventPermissionRequest, args.Pass()));
       break;
     }

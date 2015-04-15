@@ -17,6 +17,7 @@
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
+#include "extensions/browser/guest_view/guest_view_event.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 
 #if defined(ENABLE_PRINTING)
@@ -79,7 +80,7 @@ bool ChromeWebViewGuestDelegate::HandleContextMenu(
   args->Set(webview::kContextMenuItems, items.release());
   args->SetInteger(webview::kRequestId, request_id);
   web_view_guest()->DispatchEventToView(
-      new GuestViewBase::Event(webview::kEventContextMenuShow, args.Pass()));
+      new GuestViewEvent(webview::kEventContextMenuShow, args.Pass()));
   return true;
 }
 

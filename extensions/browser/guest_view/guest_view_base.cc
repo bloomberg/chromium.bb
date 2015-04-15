@@ -16,20 +16,14 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
-#include "extensions/browser/api/extensions_api_client.h"
-#include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/app_view/app_view_guest.h"
 #include "extensions/browser/guest_view/extension_options/extension_options_guest.h"
 #include "extensions/browser/guest_view/extension_view/extension_view_guest.h"
+#include "extensions/browser/guest_view/guest_view_event.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/guest_view/surface_worker/surface_worker_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
-#include "extensions/browser/process_manager.h"
-#include "extensions/browser/process_map.h"
-#include "extensions/common/features/feature.h"
-#include "extensions/common/features/feature_provider.h"
 #include "extensions/common/guest_view/guest_view_constants.h"
 #include "extensions/common/guest_view/guest_view_messages.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -58,18 +52,6 @@ static base::LazyInstance<WebContentsGuestViewMap> webcontents_guestview_map =
 SetSizeParams::SetSizeParams() {
 }
 SetSizeParams::~SetSizeParams() {
-}
-
-GuestViewBase::Event::Event(const std::string& name,
-                            scoped_ptr<base::DictionaryValue> args)
-    : name_(name), args_(args.Pass()) {
-}
-
-GuestViewBase::Event::~Event() {
-}
-
-scoped_ptr<base::DictionaryValue> GuestViewBase::Event::GetArguments() {
-  return args_.Pass();
 }
 
 // This observer ensures that the GuestViewBase destroys itself when its
@@ -194,25 +176,8 @@ void GuestViewBase::Init(const base::DictionaryValue& create_params,
     return;
   initialized_ = true;
 
-  const Feature* feature = FeatureProvider::GetAPIFeature(GetAPINamespace());
-  CHECK(feature);
-
-  ProcessMap* process_map = ProcessMap::Get(browser_context());
-  CHECK(process_map);
-
-  const Extension* owner_extension =
-      ProcessManager::Get(owner_web_contents()->GetBrowserContext())->
-          GetExtensionForWebContents(owner_web_contents());
-  owner_extension_id_ = owner_extension ? owner_extension->id() : std::string();
-
-  // Ok for |owner_extension| to be nullptr, the embedder might be WebUI.
-  Feature::Availability availability = feature->IsAvailableToContext(
-      owner_extension,
-      process_map->GetMostLikelyContextType(
-          owner_extension,
-          owner_web_contents()->GetRenderProcessHost()->GetID()),
-      GetOwnerSiteURL());
-  if (!availability.is_available()) {
+  if (!GuestViewManager::FromBrowserContext(browser_context_)->
+          IsGuestAvailableToContext(this, &owner_extension_id_)) {
     // The derived class did not create a WebContents so this class serves no
     // purpose. Let's self-destruct.
     delete this;
@@ -292,7 +257,8 @@ void GuestViewBase::DispatchOnResizeEvent(const gfx::Size& old_size,
   args->SetInteger(guestview::kOldHeight, old_size.height());
   args->SetInteger(guestview::kNewWidth, new_size.width());
   args->SetInteger(guestview::kNewHeight, new_size.height());
-  DispatchEventToGuestProxy(new Event(guestview::kEventResize, args.Pass()));
+  DispatchEventToGuestProxy(
+      new GuestViewEvent(guestview::kEventResize, args.Pass()));
 }
 
 gfx::Size GuestViewBase::GetDefaultSize() const {
@@ -738,45 +704,27 @@ void GuestViewBase::OnZoomChanged(
   }
 }
 
-void GuestViewBase::DispatchEventToGuestProxy(Event* event) {
-  DispatchEvent(event, guest_instance_id_);
+void GuestViewBase::DispatchEventToGuestProxy(GuestViewEvent* event) {
+  event->Dispatch(this, guest_instance_id_);
 }
 
-void GuestViewBase::DispatchEventToView(Event* event) {
+void GuestViewBase::DispatchEventToView(GuestViewEvent* event) {
   if (!attached() &&
       (!CanRunInDetachedState() || !can_owner_receive_events())) {
-    pending_events_.push_back(linked_ptr<Event>(event));
+    pending_events_.push_back(linked_ptr<GuestViewEvent>(event));
     return;
   }
 
-  DispatchEvent(event, view_instance_id_);
-}
-
-void GuestViewBase::DispatchEvent(Event* event, int instance_id) {
-  scoped_ptr<Event> event_ptr(event);
-
-  EventFilteringInfo info;
-  info.SetInstanceID(instance_id);
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(event->GetArguments().release());
-
-  EventRouter::DispatchEvent(
-      owner_web_contents_,
-      browser_context_,
-      owner_extension_id_,
-      event->name(),
-      args.Pass(),
-      EventRouter::USER_GESTURE_UNKNOWN,
-      info);
+  event->Dispatch(this, view_instance_id_);
 }
 
 void GuestViewBase::SendQueuedEvents() {
   if (!attached())
     return;
   while (!pending_events_.empty()) {
-    linked_ptr<Event> event_ptr = pending_events_.front();
+    linked_ptr<GuestViewEvent> event_ptr = pending_events_.front();
     pending_events_.pop_front();
-    DispatchEvent(event_ptr.release(), view_instance_id_);
+    event_ptr.release()->Dispatch(this, view_instance_id_);
   }
 }
 

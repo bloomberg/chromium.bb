@@ -22,6 +22,8 @@ struct RendererContentSettingRules;
 
 namespace extensions {
 
+class GuestViewEvent;
+
 // A struct of parameters for SetSize(). The parameters are all declared as
 // scoped pointers since they are all optional. Null pointers indicate that the
 // parameter has not been provided, and the last used value should be used. Note
@@ -49,20 +51,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
                       public content::WebContentsObserver,
                       public ui_zoom::ZoomObserver {
  public:
-  class Event {
-   public:
-    Event(const std::string& name, scoped_ptr<base::DictionaryValue> args);
-    ~Event();
-
-    const std::string& name() const { return name_; }
-
-    scoped_ptr<base::DictionaryValue> GetArguments();
-
-   private:
-    const std::string name_;
-    scoped_ptr<base::DictionaryValue> args_;
-  };
-
   // Returns a *ViewGuest if this GuestView is of the given view type.
   template <typename T>
   T* As() {
@@ -306,10 +294,10 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
       const ui_zoom::ZoomController::ZoomChangedEventData& data) final;
 
   // Dispatches an event to the guest proxy.
-  void DispatchEventToGuestProxy(Event* event);
+  void DispatchEventToGuestProxy(GuestViewEvent* event);
 
   // Dispatches an event to the view.
-  void DispatchEventToView(Event* event);
+  void DispatchEventToView(GuestViewEvent* event);
 
  protected:
   explicit GuestViewBase(content::WebContents* owner_web_contents);
@@ -370,8 +358,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   class OpenerLifetimeObserver;
 
-  void DispatchEvent(Event* event, int instance_id);
-
   void SendQueuedEvents();
 
   void CompleteInit(scoped_ptr<base::DictionaryValue> create_params,
@@ -423,7 +409,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   // This is a queue of Events that are destined to be sent to the embedder once
   // the guest is attached to a particular embedder.
-  std::deque<linked_ptr<Event> > pending_events_;
+  std::deque<linked_ptr<GuestViewEvent> > pending_events_;
 
   // The opener guest view.
   base::WeakPtr<GuestViewBase> opener_;

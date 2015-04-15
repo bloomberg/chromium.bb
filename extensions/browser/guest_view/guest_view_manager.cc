@@ -14,10 +14,12 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/guest_view_base.h"
 #include "extensions/browser/guest_view/guest_view_manager_factory.h"
-#include "extensions/common/extension_messages.h"
+#include "extensions/browser/process_manager.h"
+#include "extensions/browser/process_map.h"
+#include "extensions/common/features/feature.h"
+#include "extensions/common/features/feature_provider.h"
 #include "extensions/common/guest_view/guest_view_constants.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"
@@ -227,6 +229,31 @@ void GuestViewManager::RemoveGuest(int guest_instance_id) {
   } else {
     removed_instance_ids_.insert(guest_instance_id);
   }
+}
+
+bool GuestViewManager::IsGuestAvailableToContext(
+    GuestViewBase* guest,
+    std::string* owner_extension_id) {
+  const Feature* feature =
+      FeatureProvider::GetAPIFeature(guest->GetAPINamespace());
+  CHECK(feature);
+
+  ProcessMap* process_map = ProcessMap::Get(context_);
+  CHECK(process_map);
+
+  const Extension* owner_extension = ProcessManager::Get(context_)->
+      GetExtensionForWebContents(guest->owner_web_contents());
+  *owner_extension_id = owner_extension ? owner_extension->id() : std::string();
+
+  // Ok for |owner_extension| to be nullptr, the embedder might be WebUI.
+  Feature::Availability availability = feature->IsAvailableToContext(
+      owner_extension,
+      process_map->GetMostLikelyContextType(
+          owner_extension,
+          guest->owner_web_contents()->GetRenderProcessHost()->GetID()),
+      guest->GetOwnerSiteURL());
+
+  return availability.is_available();
 }
 
 content::WebContents* GuestViewManager::GetGuestByInstanceID(

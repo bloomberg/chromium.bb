@@ -639,6 +639,8 @@
       'browser/guest_view/guest_view.h',
       'browser/guest_view/guest_view_base.cc',
       'browser/guest_view/guest_view_base.h',
+      'browser/guest_view/guest_view_event.cc',
+      'browser/guest_view/guest_view_event.h',
       'browser/guest_view/guest_view_manager.cc',
       'browser/guest_view/guest_view_manager.h',
       'browser/guest_view/guest_view_manager_factory.h',

@@ -11,6 +11,7 @@
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/bad_message.h"
 #include "extensions/browser/guest_view/extension_view/extension_view_constants.h"
+#include "extensions/browser/guest_view/guest_view_event.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/strings/grit/extensions_strings.h"
@@ -142,7 +143,7 @@ void ExtensionViewGuest::DidCommitProvisionalLoadForFrame(
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guestview::kUrl, relative_url);
   DispatchEventToView(
-      new GuestViewBase::Event(extensionview::kEventLoadCommit, args.Pass()));
+      new GuestViewEvent(extensionview::kEventLoadCommit, args.Pass()));
 }
 
 void ExtensionViewGuest::DidNavigateMainFrame(

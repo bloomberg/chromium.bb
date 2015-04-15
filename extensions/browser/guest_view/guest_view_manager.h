@@ -104,6 +104,11 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
   // Can be overriden in tests.
   virtual void RemoveGuest(int guest_instance_id);
 
+  // Indicates whether the provided |guest| can be used in the context it has
+  // been created.
+  bool IsGuestAvailableToContext(GuestViewBase* guest,
+                                 std::string* owner_extension_id);
+
   content::WebContents* GetGuestByInstanceID(int guest_instance_id);
 
   bool CanEmbedderAccessInstanceIDMaybeKill(
