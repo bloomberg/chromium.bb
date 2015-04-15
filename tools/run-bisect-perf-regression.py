@@ -37,6 +37,7 @@ WEBKIT_RUN_TEST_CONFIG_PATH = os.path.join(
 BISECT_SCRIPT_DIR = os.path.join(SCRIPT_DIR, 'auto_bisect')
 
 PERF_BENCHMARKS_PATH = 'tools/perf/benchmarks'
+PERF_MEASUREMENTS_PATH = 'tools/perf/measurements'
 BUILDBOT_BUILDERNAME = 'BUILDBOT_BUILDERNAME'
 BENCHMARKS_JSON_FILE = 'benchmarks.json'
 
@@ -634,7 +635,8 @@ def _GetAffectedBenchmarkModuleNames():
   all_affected_files = _GetModifiedFilesFromPatch()
   modified_benchmarks = []
   for affected_file in all_affected_files:
-    if affected_file.startswith(PERF_BENCHMARKS_PATH):
+    if (affected_file.startswith(PERF_BENCHMARKS_PATH) or
+        affected_file.startswith(PERF_MEASUREMENTS_PATH)):
       benchmark = os.path.basename(os.path.splitext(affected_file)[0])
       modified_benchmarks.append(benchmark)
   return modified_benchmarks
