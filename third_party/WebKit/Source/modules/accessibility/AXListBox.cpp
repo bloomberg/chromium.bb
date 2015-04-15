@@ -55,11 +55,11 @@ PassRefPtr<AXListBox> AXListBox::create(LayoutObject* layoutObject, AXObjectCach
     return adoptRef(new AXListBox(layoutObject, axObjectCache));
 }
 
-AccessibilityRole AXListBox::roleValue() const
+AccessibilityRole AXListBox::determineAccessibilityRole()
 {
-    AccessibilityRole ariaRole = ariaRoleAttribute();
-    if (ariaRole != UnknownRole)
-        return ariaRole;
+    if ((m_ariaRole = determineAriaRoleAttribute()) != UnknownRole)
+        return m_ariaRole;
+
     return ListBoxRole;
 }
 

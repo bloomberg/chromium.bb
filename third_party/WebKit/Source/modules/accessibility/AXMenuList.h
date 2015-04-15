@@ -50,7 +50,7 @@ private:
     AXMenuList(LayoutMenuList*, AXObjectCacheImpl*);
 
     virtual bool isMenuList() const override { return true; }
-    virtual AccessibilityRole roleValue() const override;
+    virtual AccessibilityRole determineAccessibilityRole() override final;
     virtual bool canSetFocusAttribute() const override;
 
     virtual void addChildren() override;

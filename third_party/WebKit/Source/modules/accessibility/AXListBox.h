@@ -44,7 +44,7 @@ public:
     static PassRefPtr<AXListBox> create(LayoutObject*, AXObjectCacheImpl*);
     virtual ~AXListBox();
 
-    virtual AccessibilityRole roleValue() const override;
+    virtual AccessibilityRole determineAccessibilityRole() override final;
     virtual bool isAXListBox() const override { return true; }
     virtual bool shouldFocusActiveDescendant() const override { return true; }
     virtual AXObject* activeDescendant() const override;

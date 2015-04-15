@@ -34,7 +34,7 @@ public:
     static PassRefPtr<AXProgressIndicator> create(LayoutProgress*, AXObjectCacheImpl*);
 
 private:
-    virtual AccessibilityRole roleValue() const override;
+    virtual AccessibilityRole determineAccessibilityRole() override final;
 
     virtual bool isProgressIndicator() const override { return true; }
 

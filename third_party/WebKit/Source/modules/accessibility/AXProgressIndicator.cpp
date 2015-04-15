@@ -40,11 +40,10 @@ PassRefPtr<AXProgressIndicator> AXProgressIndicator::create(LayoutProgress* layo
     return adoptRef(new AXProgressIndicator(layoutObject, axObjectCache));
 }
 
-AccessibilityRole AXProgressIndicator::roleValue() const
+AccessibilityRole AXProgressIndicator::determineAccessibilityRole()
 {
-    AccessibilityRole ariaRole = ariaRoleAttribute();
-    if (ariaRole != UnknownRole)
-        return ariaRole;
+    if ((m_ariaRole = determineAriaRoleAttribute()) != UnknownRole)
+        return m_ariaRole;
     return ProgressIndicatorRole;
 }
 

@@ -42,11 +42,11 @@ PassRefPtr<AXMenuList> AXMenuList::create(LayoutMenuList* layoutObject, AXObject
     return adoptRef(new AXMenuList(layoutObject, axObjectCache));
 }
 
-AccessibilityRole AXMenuList::roleValue() const
+AccessibilityRole AXMenuList::determineAccessibilityRole()
 {
-    AccessibilityRole ariaRole = ariaRoleAttribute();
-    if (ariaRole != UnknownRole)
-        return ariaRole;
+    if ((m_ariaRole = determineAriaRoleAttribute()) != UnknownRole)
+        return m_ariaRole;
+
     return PopUpButtonRole;
 }
 

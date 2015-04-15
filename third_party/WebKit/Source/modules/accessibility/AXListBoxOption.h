@@ -48,7 +48,7 @@ public:
     virtual ~AXListBoxOption();
 
     virtual bool isAXListBoxOption() const override { return true; }
-    virtual AccessibilityRole roleValue() const override;
+    virtual AccessibilityRole determineAccessibilityRole() override final;
     virtual bool isSelected() const override;
     virtual bool isEnabled() const override;
     virtual bool isSelectedOptionActive() const override;

@@ -53,11 +53,10 @@ PassRefPtr<AXListBoxOption> AXListBoxOption::create(LayoutObject* layoutObject, 
     return adoptRef(new AXListBoxOption(layoutObject, axObjectCache));
 }
 
-AccessibilityRole AXListBoxOption::roleValue() const
+AccessibilityRole AXListBoxOption::determineAccessibilityRole()
 {
-    AccessibilityRole ariaRole = ariaRoleAttribute();
-    if (ariaRole != UnknownRole)
-        return ariaRole;
+    if ((m_ariaRole = determineAriaRoleAttribute()) != UnknownRole)
+        return m_ariaRole;
 
     // http://www.w3.org/TR/wai-aria/complete#presentation
     // ARIA spec says that the presentation role causes a given element to be treated

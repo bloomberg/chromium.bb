@@ -49,11 +49,11 @@ PassRefPtr<AXSlider> AXSlider::create(LayoutObject* layoutObject, AXObjectCacheI
     return adoptRef(new AXSlider(layoutObject, axObjectCache));
 }
 
-AccessibilityRole AXSlider::roleValue() const
+AccessibilityRole AXSlider::determineAccessibilityRole()
 {
-    AccessibilityRole ariaRole = ariaRoleAttribute();
-    if (ariaRole != UnknownRole)
-        return ariaRole;
+    if ((m_ariaRole = determineAriaRoleAttribute()) != UnknownRole)
+        return m_ariaRole;
+
     return SliderRole;
 }
 
