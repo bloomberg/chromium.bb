@@ -341,8 +341,10 @@ class PackageInfo(object):
     Returns:
       ebuild command output
     """
+    ebuild_cmd = cros_build_lib.GetSysrootToolPath(
+        cros_build_lib.GetSysroot(self.board), 'ebuild')
     return cros_build_lib.RunCommand(
-        ['ebuild-%s' % self.board, ebuild_path] + phases, print_cmd=debug,
+        [ebuild_cmd, ebuild_path] + phases, print_cmd=debug,
         redirect_stdout=True)
 
   def _GetOverrideLicense(self):
@@ -433,7 +435,9 @@ class PackageInfo(object):
       for line in output:
         logging.info(line)
 
-      args = ['portageq-%s' % self.board, 'envvar', 'PORTAGE_TMPDIR']
+      portageq_cmd = cros_build_lib.GetSysrootToolPath(
+          cros_build_lib.GetSysroot(self.board), 'portageq')
+      args = [portageq_cmd, 'envvar', 'PORTAGE_TMPDIR']
       result = cros_build_lib.RunCommand(args, print_cmd=debug,
                                          redirect_stdout=True)
       tmpdir = result.output.splitlines()[0]
@@ -559,7 +563,9 @@ being scraped currently).""",
     Raises:
       AssertionError if it can't be discovered for some reason.
     """
-    args = ['equery-%s' % self.board, '-q', '-C', 'which', self.fullnamerev]
+    equery_cmd = cros_build_lib.GetSysrootToolPath(
+        cros_build_lib.GetSysroot(self.board), 'equery')
+    args = [equery_cmd, '-q', '-C', 'which', self.fullnamerev]
     try:
       path = cros_build_lib.RunCommand(args, print_cmd=True,
                                        redirect_stdout=True).output.strip()
@@ -1048,7 +1054,9 @@ def ListInstalledPackages(board, all_packages=False):
     # (many get built or used during the build, but do not get shipped).
     # Note that it also contains packages that are in the build as
     # defined by build_packages but not part of the image we ship.
-    args = ['equery-%s' % board, 'list', '*']
+    equery_cmd = cros_build_lib.GetSysrootToolPath(
+        cros_build_lib.GetSysroot(board), 'equery')
+    args = [equery_cmd, 'list', '*']
     packages = cros_build_lib.RunCommand(args, print_cmd=debug,
                                          redirect_stdout=True
                                         ).output.splitlines()
@@ -1057,7 +1065,9 @@ def ListInstalledPackages(board, all_packages=False):
     # (many get built or used during the build, but do not get shipped).
     # Note that it also contains packages that are in the build as
     # defined by build_packages but not part of the image we ship.
-    args = ['emerge-%s' % board, '--with-bdeps=y', '--usepkgonly',
+    emerge_cmd = cros_build_lib.GetSysrootToolPath(
+        cros_build_lib.GetSysroot(board), 'emerge')
+    args = [emerge_cmd, '--with-bdeps=y', '--usepkgonly',
             '--emptytree', '--pretend', '--color=n', 'virtual/target-os']
     emerge = cros_build_lib.RunCommand(args, print_cmd=debug,
                                        redirect_stdout=True).output.splitlines()
