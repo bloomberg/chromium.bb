@@ -533,6 +533,9 @@
       <message desc="Spoken when the user opens a Chrome menu named 'title'." name="IDS_CHROMEVOX_CHROME_MENU_OPENED">
         <ph name="title">$1</ph> menu opened
       </message>
+      <message desc="Spoken when the user closes any Chrome menu." name="IDS_CHROMEVOX_CHROME_MENU_CLOSED">
+        menu closed
+      </message>
       <message desc="Describes a HTML checkbox named 'name' in the checked state." name="IDS_CHROMEVOX_DESCRIBE_CHECKBOX_CHECKED">
         <ph name="name">$1</ph> checkbox checked
       </message>
@@ -646,6 +649,12 @@
       </message>
       <message desc="Spoken when the user enters a dialog with the text 'text'." name="IDS_CHROMEVOX_ENTERING_DIALOG">
         Entered dialog
+      </message>
+      <message desc="Spoken for an element with role dialog." name="IDS_CHROMEVOX_DIALOG">
+        Dialog
+      </message>
+      <message desc="Brailled for an element with role dialog." name="IDS_CHROMEVOX_DIALOG_BRL">
+        dlg
       </message>
       <message desc="Spoken before the list of elements when a live region of a page is removed." name="IDS_CHROMEVOX_LIVE_REGIONS_REMOVED">
         removed:
