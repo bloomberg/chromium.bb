@@ -22,12 +22,6 @@ public interface FirstRunPageDelegate {
     void advanceToNextPage();
 
     /**
-     * Skips all intro pages.
-     * Successfully finishes FRE if there are no non-intro pages.
-     */
-    void skipIntroPages();
-
-    /**
      * Asks to re-instantiate the current page.
      * Useful to restore the "clean" state of the UI elements.
      */
@@ -95,9 +89,4 @@ public interface FirstRunPageDelegate {
      * @param url Resource id for the URL of the EmbedContentViewActivity.
      */
     void showEmbedContentViewActivity(int title, int url);
-
-    /**
-     * Opens Chrome preferences for document mode.
-     */
-    void openDocumentModeSettings();
 }

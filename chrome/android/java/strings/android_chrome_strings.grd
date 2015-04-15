@@ -1495,14 +1495,6 @@ Hit the back button to exit.
         Warning
       </message>
 
-      <!-- First Run Experience: What's New screens -->
-      <message name="IDS_FRE_NEW_RECENTS_MENU_TITLE" desc="Title for the Recents Menu what's-new-screen">
-        Find your tabs here
-      </message>
-      <message name="IDS_FRE_NEW_RECENTS_MENU_TEXT" desc="Text for the Recents Menu what's-new-screen">
-        Your tabs and apps are now in the same place for easier access.  You can turn this feature off in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
-      </message>
-
       <message name="IDS_CAST_NOTIFICATION_STOPPED" desc="AtHome notification text when stopped. [CHAR LIMIT=40]">
         Stopped
       </message>

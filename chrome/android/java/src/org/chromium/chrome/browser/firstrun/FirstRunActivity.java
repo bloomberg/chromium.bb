@@ -47,8 +47,6 @@ public class FirstRunActivity extends ActionBarActivity implements FirstRunPageD
 
     public static final String SHOW_WELCOME_PAGE = "ShowWelcome";
     public static final String SKIP_WELCOME_PAGE_IF_ACCEPTED_TOS = "SkipWelcomePageIfAcceptedToS";
-    public static final String SHOW_INTRO_BITMAP = "ShowIntroBitmap";
-    public static final String SKIP_ALL_INTRO = "SkipAllIntro";  // Marks all intros as seen.
     public static final String SHOW_SIGNIN_PAGE = "ShowSignIn";
 
     // Outcoming results:
@@ -82,7 +80,6 @@ public class FirstRunActivity extends ActionBarActivity implements FirstRunPageD
     private Bundle mFreProperties;
 
     private List<Callable<FirstRunPage>> mPages;
-    private int mSkipIntroPageNumber;
 
     /**
      * The pager adapter, which provides the pages to the view pager widget.
@@ -97,20 +94,6 @@ public class FirstRunActivity extends ActionBarActivity implements FirstRunPageD
 
         // An optional welcome page.
         if (mShowWelcomePage) mPages.add(pageOf(ToSAndUMAFirstRunFragment.class));
-
-        // An optional sequence of intro pages.
-        if (!mFreProperties.getBoolean(SKIP_ALL_INTRO)) {
-            final long bitmap = mFreProperties.getLong(SHOW_INTRO_BITMAP);
-
-            // "Hera" (recents/tabs) promo.
-            if (((bitmap & FirstRunIntroPage.INTRO_RECENTS) != 0)
-                    && sGlue.isDocumentModeEligible(getApplicationContext())) {
-                mPages.add(pageOf(FirstRunIntroRecentsPage.class));
-            }
-        }
-
-        // Set the anchor to jump to if the user skips intro pages.
-        mSkipIntroPageNumber = mPages.size();
 
         // An optional sign-in page.
         if (mFreProperties.getBoolean(SHOW_SIGNIN_PAGE)) {
@@ -205,8 +188,7 @@ public class FirstRunActivity extends ActionBarActivity implements FirstRunPageD
         super.onStart();
         stopProgressionIfNotAcceptedTermsOfService();
         if (!mFreProperties.getBoolean(USE_FRE_FLOW_SEQUENCER)) {
-            if (FirstRunStatus.getFirstRunFlowComplete(this)
-                    && FirstRunIntroPage.wereAllNecessaryPagesShown(this)) {
+            if (FirstRunStatus.getFirstRunFlowComplete(this)) {
                 // This is a parallel flow that needs to be refreshed/re-fired.
                 // Signal the FRE flow completion and re-launch the original intent.
                 completeFirstRunExperience();
@@ -245,11 +227,6 @@ public class FirstRunActivity extends ActionBarActivity implements FirstRunPageD
     @Override
     public void advanceToNextPage() {
         jumpToPage(mPager.getCurrentItem() + 1, true);
-    }
-
-    @Override
-    public void skipIntroPages() {
-        jumpToPage(mSkipIntroPageNumber, false);
     }
 
     @Override
@@ -434,10 +411,5 @@ public class FirstRunActivity extends ActionBarActivity implements FirstRunPageD
     @Override
     public void showEmbedContentViewActivity(int title, int url) {
         // TODO(aurimas): implement this once EmbededContentViewActivity is upstreamed.
-    }
-
-    @Override
-    public void openDocumentModeSettings() {
-        // TODO(aurimas): implement opening settings once DocumentModeSettings is upstreamed.
     }
 }

@@ -107,8 +107,7 @@ public abstract class FirstRunFlowSequencer  {
     private void processFreEnvironment() {
         final Context context = mActivity.getApplicationContext();
 
-        if (FirstRunStatus.getFirstRunFlowComplete(mActivity)
-                && FirstRunIntroPage.wereAllNecessaryPagesShown(mActivity)) {
+        if (FirstRunStatus.getFirstRunFlowComplete(mActivity)) {
             assert PrefServiceBridge.getInstance().isFirstRunEulaAccepted();
             // We do not need any interactive FRE.
             onFlowIsKnown(mActivity, null);
@@ -172,12 +171,6 @@ public abstract class FirstRunFlowSequencer  {
             freProperties.putBoolean(FirstRunActivity.SHOW_SIGNIN_PAGE, false);
         }
 
-        // We always show all not-yet-shown intro pages that could be shown.
-        freProperties.putLong(FirstRunActivity.SHOW_INTRO_BITMAP,
-                FirstRunIntroPage.getAllPresentablePages(mActivity)
-                        & ~FirstRunIntroPage.getAlreadyShownPagesBitmap(mActivity));
-        freProperties.putBoolean(FirstRunActivity.SKIP_ALL_INTRO,
-                shouldSkipFirstUseHints || forceEduSignIn);
         freProperties.putBoolean(AccountFirstRunFragment.IS_CHILD_ACCOUNT, mHasChildAccount);
 
         onFlowIsKnown(mActivity, freProperties);
@@ -194,9 +187,6 @@ public abstract class FirstRunFlowSequencer  {
         if (!PrefServiceBridge.getInstance().isFirstRunEulaAccepted()) {
             PrefServiceBridge.getInstance().setEulaAccepted();
         }
-
-        // Mark the intro pages we have shown as complete.
-        FirstRunIntroPage.markAsShown(activity, data.getLong(FirstRunActivity.SHOW_INTRO_BITMAP));
 
         // Mark the FRE flow as complete and set the sign-in flow preferences if necessary.
         FirstRunSignInProcessor.finalizeFirstRunFlowState(activity, data);
@@ -227,14 +217,8 @@ public abstract class FirstRunFlowSequencer  {
             return createGenericFirstRunIntent(activity, originalIntent, fromChromeIcon);
         }
 
-        // If Chrome isn't opened via the Chrome icon, or the user has already been through all
-        // intro screens, proceed directly to the intent handling.
-        if (!fromChromeIcon || FirstRunIntroPage.wereAllNecessaryPagesShown(activity)) return null;
-
-        // Otherwise (Chrome is launched via the Chrome icon and the user has already been through
-        // the First Run Activity, but not through all intro screens), check if we could show some
-        // intro screen.
-        if (FirstRunIntroPage.getAllPresentablePages(activity) == 0L) return null;
+        // If Chrome isn't opened via the Chrome icon proceed directly to the intent handling.
+        if (!fromChromeIcon) return null;
 
         return createGenericFirstRunIntent(activity, originalIntent, fromChromeIcon);
     }
