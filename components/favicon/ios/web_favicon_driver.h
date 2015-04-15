@@ -52,7 +52,7 @@ class WebFaviconDriver : public web::WebStateObserver,
   ~WebFaviconDriver() override;
 
   // web::WebStateObserver implementation.
-  void FaviconURLUpdated(
+  void FaviconUrlUpdated(
       const std::vector<web::FaviconURL>& candidates) override;
 
   // Returns the active navigation entry's favicon.

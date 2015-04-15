@@ -113,7 +113,7 @@ WebFaviconDriver::WebFaviconDriver(web::WebState* web_state,
 WebFaviconDriver::~WebFaviconDriver() {
 }
 
-void WebFaviconDriver::FaviconURLUpdated(
+void WebFaviconDriver::FaviconUrlUpdated(
     const std::vector<web::FaviconURL>& candidates) {
   DCHECK(!candidates.empty());
   OnUpdateFaviconURL(FaviconURLsFromWebFaviconURLs(candidates));

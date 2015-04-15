@@ -12,25 +12,55 @@
 #import "base/ios/weak_nsobject.h"
 #import "ios/web/public/web_state/web_state_observer.h"
 
+class GURL;
+
 // Observes page lifecyle events from Objective-C. To use as a
 // web::WebStateObserver, wrap in a web::WebStateObserverBridge.
-// NOTE: This is far from complete. Add new methods as needed.
 @protocol CRWWebStateObserver<NSObject>
 @optional
+// Invoked by WebStateObserverBridge::NavigationItemCommitted.
+- (void)webState:(web::WebState*)webState
+    didCommitNavigationWithDetails:
+        (const web::LoadCommittedDetails&)load_details;
 
-// Page lifecycle methods. These are equivalent to the corresponding methods
-// in web::WebStateObserver.
-- (void)pageLoaded:(web::WebState*)webState;
-- (void)documentSubmitted:(web::WebState*)webState
-                 formName:(const std::string&)formName
-          userInteraction:(BOOL)userInteraction;
-- (void)formActivity:(web::WebState*)webState
-            formName:(const std::string&)formName
-           fieldName:(const std::string&)fieldName
-                type:(const std::string&)type
-               value:(const std::string&)value
-             keyCode:(int)keyCode
-               error:(BOOL)error;
+// Invoked by WebStateObserverBridge::PageLoaded.
+- (void)webStateDidLoadPage:(web::WebState*)webState;
+
+// Invoked by WebStateObserverBridge::InterstitialDismissed.
+- (void)webStateDidDismissInterstitial:(web::WebState*)webState;
+
+// Invoked by WebStateObserverBridge::UrlHashChanged.
+- (void)webStateDidChangeURLHash:(web::WebState*)webState;
+
+// Invoked by WebStateObserverBridge::HistoryStateChanged.
+- (void)webStateDidChangeHistoryState:(web::WebState*)webState;
+
+// Invoked by WebStateObserverBridge::DocumentSubmitted.
+- (void)webState:(web::WebState*)webState
+    didSubmitDocumentWithFormNamed:(const std::string&)formName
+                     userInitiated:(BOOL)userInitiated;
+
+// Invoked by WebStateObserverBridge::FormActivityRegistered.
+// TODO(ios): Method should take data transfer object rather than parameters.
+- (void)webState:(web::WebState*)webState
+    didRegisterFormActivityWithFormNamed:(const std::string&)formName
+                               fieldName:(const std::string&)fieldName
+                                    type:(const std::string&)type
+                                   value:(const std::string&)value
+                                 keyCode:(int)keyCode
+                            inputMissing:(BOOL)inputMissing;
+
+// Invoked by WebStateObserverBridge::AutocompleteRequested.
+- (void)webState:(web::WebState*)webState
+    requestAutocompleteForFormNamed:(const std::string&)formName
+                          sourceURL:(const GURL&)sourceURL
+                      userInitiated:(BOOL)userInitiated;
+
+// Invoked by WebStateObserverBridge::FaviconUrlUpdated.
+- (void)webState:(web::WebState*)webState
+    didUpdateFaviconURLCandidates:
+        (const std::vector<web::FaviconURL>&)candidates;
+
 // Note: after |webStateDestroyed:| is invoked, the WebState being observed
 // is no longer valid.
 - (void)webStateDestroyed:(web::WebState*)webState;
@@ -51,18 +81,26 @@ class WebStateObserverBridge : public web::WebStateObserver {
                          id<CRWWebStateObserver> observer);
   ~WebStateObserverBridge() override;
 
-  // web::WebStateObserver:
-  // NOTE: This is far from complete. Add new methods as needed.
+  // web::WebStateObserver methods.
+  void NavigationItemCommitted(
+      const LoadCommittedDetails& load_details) override;
   void PageLoaded(
       web::PageLoadCompletionStatus load_completion_status) override;
+  void InsterstitialDismissed() override;
+  void UrlHashChanged() override;
+  void HistoryStateChanged() override;
   void DocumentSubmitted(const std::string& form_name,
-                         bool user_interaction) override;
+                         bool user_initiated) override;
   void FormActivityRegistered(const std::string& form_name,
                               const std::string& field_name,
                               const std::string& type,
                               const std::string& value,
                               int key_code,
-                              bool error) override;
+                              bool input_missing) override;
+  void AutocompleteRequested(const GURL& source_url,
+                             const std::string& form_name,
+                             bool user_initiated) override;
+  void FaviconUrlUpdated(const std::vector<FaviconURL>& candidates) override;
   void WebStateDestroyed() override;
 
  private:

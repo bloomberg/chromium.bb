@@ -10,6 +10,8 @@
 
 #include "base/macros.h"
 
+class GURL;
+
 namespace web {
 
 struct FaviconURL;
@@ -44,15 +46,15 @@ class WebStateObserver {
   virtual void InsterstitialDismissed() {}
 
   // Called on URL hash change events.
-  virtual void URLHashChanged() {}
+  virtual void UrlHashChanged() {}
 
   // Called on history state change events.
   virtual void HistoryStateChanged() {}
 
-  // Called on form submission. |user_interaction| is true if the user
+  // Called on form submission. |user_initiated| is true if the user
   // interacted with the page.
   virtual void DocumentSubmitted(const std::string& form_name,
-                                 bool user_interaction) {}
+                                 bool user_initiated) {}
 
   // Called when the user is typing on a form field, with |error| indicating if
   // there is any error when parsing the form field information.
@@ -62,10 +64,18 @@ class WebStateObserver {
                                       const std::string& type,
                                       const std::string& value,
                                       int key_code,
-                                      bool error) {}
+                                      bool input_missing) {}
 
-  // Invoked when new FaviconURL candidates are received.
-  virtual void FaviconURLUpdated(const std::vector<FaviconURL>& candidates) {}
+  // Notifies the observer that the requestAutocomplete API was invoked from
+  // |source_url| for the form with the specified |form_name|.
+  // |user_initiated| indicates whether the API was invoked in response to a
+  // user interaction.
+  virtual void AutocompleteRequested(const GURL& source_url,
+                                     const std::string& form_name,
+                                     bool user_initiated) {}
+
+  // Invoked when new favicon URL candidates are received.
+  virtual void FaviconUrlUpdated(const std::vector<FaviconURL>& candidates) {}
 
   // Invoked when the WebState is being destroyed. Gives subclasses a chance
   // to cleanup.

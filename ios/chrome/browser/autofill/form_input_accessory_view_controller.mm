@@ -362,20 +362,20 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
 #pragma mark -
 #pragma mark CRWWebStateObserver
 
-- (void)pageLoaded:(web::WebState*)webState {
+- (void)webStateDidLoadPage:(web::WebState*)webState {
   [self reset];
 }
 
-- (void)formActivity:(web::WebState*)webState
-            formName:(const std::string&)formName
-           fieldName:(const std::string&)fieldName
-                type:(const std::string&)type
-               value:(const std::string&)value
-             keyCode:(int)keyCode
-               error:(BOOL)error {
+- (void)webState:(web::WebState*)webState
+    didRegisterFormActivityWithFormNamed:(const std::string&)formName
+                               fieldName:(const std::string&)fieldName
+                                    type:(const std::string&)type
+                                   value:(const std::string&)value
+                                 keyCode:(int)keyCode
+                            inputMissing:(BOOL)inputMissing {
   web::URLVerificationTrustLevel trustLevel;
   const GURL pageURL(webState->GetCurrentURL(&trustLevel));
-  if (error || trustLevel != web::URLVerificationTrustLevel::kAbsolute ||
+  if (inputMissing || trustLevel != web::URLVerificationTrustLevel::kAbsolute ||
       !web::UrlHasWebScheme(pageURL) || !webState->ContentIsHTML()) {
     [self reset];
     return;

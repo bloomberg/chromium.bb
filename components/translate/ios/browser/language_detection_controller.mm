@@ -133,7 +133,7 @@ void LanguageDetectionController::PageLoaded(
     StartLanguageDetection();
 }
 
-void LanguageDetectionController::URLHashChanged() {
+void LanguageDetectionController::UrlHashChanged() {
   StartLanguageDetection();
 }
 
