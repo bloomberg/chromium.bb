@@ -151,6 +151,8 @@ void LibjingleTransport::OnCanStart() {
     DoStart();
 
   while (!pending_candidates_.empty()) {
+    channel_->SetRemoteIceCredentials(pending_candidates_.front().username(),
+                                      pending_candidates_.front().password());
     channel_->OnCandidate(pending_candidates_.front());
     pending_candidates_.pop_front();
   }
@@ -228,6 +230,8 @@ void LibjingleTransport::AddRemoteCandidate(
     return;
 
   if (channel_) {
+    channel_->SetRemoteIceCredentials(candidate.username(),
+                                      candidate.password());
     channel_->OnCandidate(candidate);
   } else {
     pending_candidates_.push_back(candidate);

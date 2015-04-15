@@ -532,5 +532,24 @@ TEST_F(JingleSessionTest, TestCancelChannelCreation) {
   EXPECT_TRUE(!client_socket_.get());
 }
 
+// Verify that we can still connect even when there is a delay in signaling
+// messages delivery.
+TEST_F(JingleSessionTest, TestDelayedSignaling) {
+  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
+  ASSERT_NO_FATAL_FAILURE(
+      InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
+
+  host_signal_strategy_->set_send_delay(
+      base::TimeDelta::FromMilliseconds(100));
+
+  ASSERT_NO_FATAL_FAILURE(CreateChannel());
+
+  StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
+                                kMessageSize, 1);
+  tester.Start();
+  message_loop_->Run();
+  tester.CheckResults();
+}
+
 }  // namespace protocol
 }  // namespace remoting

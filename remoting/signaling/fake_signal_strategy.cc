@@ -97,7 +97,13 @@ bool FakeSignalStrategy::SendStanza(scoped_ptr<buzz::XmlElement> stanza) {
   stanza->SetAttr(buzz::QN_FROM, jid_);
 
   if (!peer_callback_.is_null()) {
-    peer_callback_.Run(stanza.Pass());
+    if (send_delay_ != base::TimeDelta()) {
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, base::Bind(peer_callback_, base::Passed(&stanza)),
+          send_delay_);
+    } else {
+      peer_callback_.Run(stanza.Pass());
+    }
     return true;
   } else {
     return false;
