@@ -1377,6 +1377,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta)
 
 void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
 {
+    TRACE_EVENT0("blink", "FrameView::scrollContentsSlowPath");
     // We need full invalidation during slow scrolling. For slimming paint, full invalidation
     // of the LayoutView is not enough. We also need to invalidate all of the objects.
     // FIXME: Find out what are enough to invalidate in slow path scrolling. crbug.com/451090#9.
@@ -1678,6 +1679,8 @@ void FrameView::updateCompositedSelectionIfNeeded()
 {
     if (!RuntimeEnabledFeatures::compositedSelectionUpdateEnabled())
         return;
+
+    TRACE_EVENT0("blink", "FrameView::updateCompositedSelectionIfNeeded");
 
     Page* page = frame().page();
     ASSERT(page);
@@ -3006,6 +3009,7 @@ void FrameView::setCursor(const Cursor& cursor)
 
 void FrameView::frameRectsChanged()
 {
+    TRACE_EVENT0("blink", "FrameView::frameRectsChanged");
     if (layoutSizeFixedToFrameSize())
         setLayoutSizeInternal(frameRect().size());
 
@@ -3565,6 +3569,8 @@ void FrameView::scrollContents(const IntSize& scrollDelta)
     if (!window)
         return;
 
+    TRACE_EVENT0("blink", "FrameView::scrollContents");
+
     IntRect clipRect = windowClipRect();
     IntRect updateRect = clipRect;
     updateRect.intersect(rectToCopyOnScroll());
@@ -3907,6 +3913,8 @@ void FrameView::updateOverhangAreas()
     HostWindow* window = hostWindow();
     if (!window)
         return;
+
+    TRACE_EVENT0("blink", "FrameView::updateOverhangAreas");
 
     IntRect horizontalOverhangRect;
     IntRect verticalOverhangRect;
