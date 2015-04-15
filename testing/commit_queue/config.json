@@ -60,14 +60,7 @@
                 "percentage": 1.0,
                 "trybots": {
                     "launched": {
-                        "tryserver.chromium.linux": {
-                            "cast_shell_android": [
-                                "defaulttests"
-                            ],
-                            "cast_shell_linux": [
-                                "defaulttests"
-                            ]
-                        },
+                        "tryserver.chromium.linux": {},
                         "tryserver.chromium.mac": {}
                     }
                 }
@@ -111,6 +104,12 @@
                         "defaulttests"
                     ],
                     "android_compile_dbg": [
+                        "defaulttests"
+                    ],
+                    "cast_shell_android": [
+                        "defaulttests"
+                    ],
+                    "cast_shell_linux": [
                         "defaulttests"
                     ],
                     "chromium_presubmit": [
