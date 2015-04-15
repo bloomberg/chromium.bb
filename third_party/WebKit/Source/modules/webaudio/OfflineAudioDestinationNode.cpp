@@ -92,7 +92,7 @@ void OfflineAudioDestinationHandler::startRendering()
         m_startedRendering = true;
         context()->notifyNodeStartedProcessing(node());
         m_renderThread = adoptPtr(blink::Platform::current()->createThread("Offline Audio Renderer"));
-        m_renderThread->postTask(FROM_HERE, new Task(bind(&OfflineAudioDestinationHandler::offlineRender, PassRefPtr<OfflineAudioDestinationHandler>(this))));
+        m_renderThread->postTask(FROM_HERE, new Task(bind(&OfflineAudioDestinationHandler::offlineRender, this)));
     }
 }
 
@@ -104,7 +104,7 @@ void OfflineAudioDestinationHandler::stopRendering()
 void OfflineAudioDestinationHandler::offlineRender()
 {
     offlineRenderInternal();
-    context()->notifyNodeFinishedProcessing(this);
+    context()->notifyNodeFinishedProcessing(node());
     context()->handlePostRenderTasks();
 }
 
@@ -154,14 +154,12 @@ void OfflineAudioDestinationHandler::offlineRenderInternal()
 
     // Our work is done. Let the AudioContext know.
     if (context()->executionContext())
-        context()->executionContext()->postTask(FROM_HERE, createCrossThreadTask(&OfflineAudioDestinationHandler::notifyComplete, PassRefPtr<OfflineAudioDestinationHandler>(this)));
+        context()->executionContext()->postTask(FROM_HERE, createCrossThreadTask(&OfflineAudioDestinationHandler::notifyComplete, this));
 }
 
 void OfflineAudioDestinationHandler::notifyComplete()
 {
-    // The AudioContext might be gone.
-    if (context())
-        context()->fireCompletionEvent();
+    context()->fireCompletionEvent();
 }
 
 // ----------------------------------------------------------------

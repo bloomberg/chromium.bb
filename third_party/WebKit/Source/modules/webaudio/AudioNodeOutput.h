@@ -92,8 +92,8 @@ public:
 private:
     AudioNodeOutput(AudioHandler*, unsigned numberOfChannels);
 
-    // This reference is safe because the AudioHandler owns this AudioNodeOutput
-    // object.
+    // This reference to an Oilpan object is safe because the AudioNode owns
+    // this AudioNodeOutput object.
     AudioHandler& m_handler;
 
     friend class AudioNodeInput;

@@ -72,8 +72,6 @@ AudioHandler::AudioHandler(NodeType nodeType, AudioNode& node, float sampleRate)
 AudioHandler::~AudioHandler()
 {
     ASSERT(isMainThread());
-    // dispose() should be called.
-    ASSERT(!node());
     --s_instanceCount;
 #if DEBUG_AUDIONODE_REFERENCES
     --s_nodeCount[nodeType()];
@@ -105,18 +103,6 @@ void AudioHandler::dispose()
     context()->handler().removeAutomaticPullNode(this);
     for (auto& output : m_outputs)
         output->dispose();
-    m_node = nullptr;
-}
-
-AudioNode* AudioHandler::node() const
-{
-    ASSERT(isMainThread());
-    return m_node;
-}
-
-AudioContext* AudioHandler::context() const
-{
-    return m_context;
 }
 
 String AudioHandler::nodeTypeName() const
@@ -830,7 +816,6 @@ void AudioNode::dispose()
     context()->unregisterLiveNode(*this);
     AudioContext::AutoLocker locker(context());
     handler().dispose();
-    context()->handler().addRenderingOrphanHandler(m_handler.release());
 }
 
 void AudioNode::setHandler(PassRefPtr<AudioHandler> handler)
@@ -850,6 +835,18 @@ DEFINE_TRACE(AudioNode)
     visitor->trace(m_connectedNodes);
     visitor->trace(m_connectedParams);
     RefCountedGarbageCollectedEventTargetWithInlineData<AudioNode>::trace(visitor);
+
+    // TODO(tkent): Oilpan: renderingOutputs should not be strong references.
+    // This is a short-term workaround to avoid crashes, and causes AudioNode
+    // leaks.
+    {
+        AudioContext::AutoLocker locker(context()->handler());
+        for (unsigned inputIndex = 0; inputIndex < handler().numberOfInputs(); ++inputIndex) {
+            AudioNodeInput* input = handler().input(inputIndex);
+            for (unsigned outputIndex = 0; outputIndex < input->numberOfRenderingConnections(); ++outputIndex)
+                visitor->trace(input->renderingOutput(outputIndex)->node()->node());
+        }
+    }
 }
 
 AudioContext* AudioNode::context() const

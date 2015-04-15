@@ -80,8 +80,8 @@ public:
 private:
     explicit AudioNodeInput(AudioHandler&);
 
-    // This reference is safe because the AudioHandler owns this AudioNodeInput
-    // object.
+    // This reference to an Oilpan object is safe because the AudioNode owns
+    // this AudioNodeInput object.
     AudioHandler& m_handler;
 
     // m_disabledOutputs contains the AudioNodeOutputs which are disabled (will

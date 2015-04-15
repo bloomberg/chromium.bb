@@ -50,16 +50,8 @@ class ExceptionState;
 // An AudioDestinationNode has one input and no outputs and represents the final destination to the audio hardware.
 // Most processing nodes such as filters will have one input and one output, although multiple inputs and outputs are possible.
 
-// Each of AudioNode objects owns its dedicated AudioHandler object. AudioNode
-// is responsible to provide IDL-accessible interface and its lifetime is
-// managed by Oilpan GC. AudioHandler is responsible for anything else. We must
-// not touch AudioNode objects in an audio rendering thread.
-
-// AudioHandler is created and owned by an AudioNode almost all the time. When
-// the AudioNode is about to die, the ownership of its AudioHandler is
-// transferred to DeferredTaskHandler, and it does deref the AudioHandler on the
-// main thread.
-//
+// AudioHandler is created and owned by an AudioNode, and they die together in
+// the main thread.
 // Be careful to avoid reference cycles. If an AudioHandler has a reference
 // cycle including the owner AudioNode, objects in the cycle are never
 // collected.
@@ -92,22 +84,15 @@ public:
 
     AudioHandler(NodeType, AudioNode&, float sampleRate);
     virtual ~AudioHandler();
-    // dispose() is called when the owner AudioNode is about to be
-    // destructed. This must be called in the main thread, and while the graph
-    // lock is held.
+    // dispose() is called just before the destructor. This must be called in
+    // the main thread, and while the graph lock is held.
     virtual void dispose();
     static unsigned instanceCount() { return s_instanceCount; }
 
-    // node() returns a valid object until dispose() is called.  This returns
-    // nullptr after dispose().  We must not call node() in an audio rendering
-    // thread.
-    AudioNode* node() const;
-    // context() returns a valid object until the AudioContext dies, and returns
-    // nullptr otherwise.  This always returns a valid object in an audio
-    // rendering thread, and inside dispose().  We must not call context() in
-    // the destructor.
-    AudioContext* context() const;
-    void clearContext() { m_context = nullptr; }
+    // node() always returns a valid pointer for now.
+    AudioNode* node() const { return m_node; }
+    AudioContext* context() { return m_context; }
+    const AudioContext* context() const { return m_context; }
 
     enum ChannelCountMode {
         Max,
@@ -229,15 +214,13 @@ private:
     volatile bool m_isInitialized;
     NodeType m_nodeType;
 
-    // The owner AudioNode.  This raw pointer is safe because dispose() is
-    // called before the AudioNode death, and it clears m_node.  Do not access
-    // m_node directly, use node() instead.
+    // The owner AudioNode.  This raw pointer is safe because only the AudioNode
+    // has the reference count of this object for now.
     GC_PLUGIN_IGNORE("http://crbug.com/404527")
     AudioNode* m_node;
 
-    // This raw pointer is safe because this is cleared for all of live
-    // AudioHandlers when the AudioContext dies.  Do not access m_context
-    // directly, use context() instead.
+    // This raw pointer is safe because the AudioContext is alive whenever the
+    // owner AudioNode is alive.
     GC_PLUGIN_IGNORE("http://crbug.com/404527")
     AudioContext* m_context;
 

@@ -208,6 +208,12 @@ AudioParam* AudioParam::create(AudioContext& context, double defaultValue)
 DEFINE_TRACE(AudioParam)
 {
     visitor->trace(m_context);
+    // TODO(tkent): Oilpan: m_renderingOutputs should not be strong references.
+    // This is a short-term workaround to avoid crashes, and causes AudioNode
+    // leaks.
+    AudioContext::AutoLocker locker(context());
+    for (unsigned i = 0; i < handler().numberOfRenderingConnections(); ++i)
+        visitor->trace(handler().renderingOutput(i)->node()->node());
 }
 
 float AudioParam::value() const
