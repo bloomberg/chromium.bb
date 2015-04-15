@@ -14,17 +14,36 @@ var remoting = remoting || {};
 
 /**
  * @constructor
- * @implements {remoting.WindowShape.ClientUI}
  * @param {Element} statsElement The HTML div to which to update stats.
+ * @param {remoting.ClientPlugin} plugin
+ *
+ * @implements {remoting.WindowShape.ClientUI}
+ * @implements {base.Disposable}
  */
-remoting.ConnectionStats = function(statsElement) {
+remoting.ConnectionStats = function(statsElement, plugin) {
   /** @private */
   this.statsElement_ = statsElement;
 
   /** @private {remoting.ClientSession.PerfStats} */
   this.mostRecent_ = null
 
+  /** @private */
+  this.plugin_ = plugin;
+
+  var that = this;
+
+  /** @private */
+  this.timer_ = new base.RepeatingTimer(function(){
+    that.update(plugin.getPerfStats());
+  }, 1000, true);
+
   remoting.windowShape.addCallback(this);
+};
+
+remoting.ConnectionStats.prototype.dispose = function() {
+  base.dispose(this.timer_);
+  this.timer_ = null;
+  this.plugin_ = null;
 };
 
 /**
@@ -40,6 +59,13 @@ remoting.ConnectionStats.prototype.mostRecent = function() {
  */
 remoting.ConnectionStats.prototype.toggle = function() {
   this.statsElement_.hidden = !this.statsElement_.hidden;
+};
+
+/**
+ * @return {boolean}
+ */
+remoting.ConnectionStats.prototype.isVisible = function() {
+  return !this.statsElement_.hidden;
 };
 
 /**
@@ -109,22 +135,3 @@ remoting.ConnectionStats.prototype.update = function(stats) {
       ', Render: ' + formatStatNumber(stats.renderLatency, 'ms') +
       ', Latency: ' + formatStatNumber(stats.roundtripLatency, 'ms'));
 };
-
-/**
- * Check for the debug toggle hot-key.
- *
- * @param {Event} event The keyboard event.
- * @return {void} Nothing.
- */
-remoting.ConnectionStats.onKeydown = function(event) {
-  var element = /** @type {Element} */ (event.target);
-  if (element.tagName == 'INPUT' || element.tagName == 'TEXTAREA') {
-    return;
-  }
-  if (String.fromCharCode(event.which) == 'D') {
-    remoting.stats.toggle();
-  }
-};
-
-/** @type {remoting.ConnectionStats} */
-remoting.stats = null;

@@ -50,7 +50,8 @@ remoting.AppConnectedView = function(containerElement, connectionInfo) {
         new remoting.ContextMenuDom(document.getElementById('context-menu'));
   }
 
-  this.contextMenu_ = new remoting.ApplicationContextMenu(menuAdapter);
+  this.contextMenu_ =
+      new remoting.ApplicationContextMenu(menuAdapter, this.plugin_);
   this.contextMenu_.setHostId(connectionInfo.host().hostId);
 
   /** @private */
@@ -75,7 +76,7 @@ remoting.AppConnectedView = function(containerElement, connectionInfo) {
 
   /** @private */
   this.disposables_ = new base.Disposables(
-      baseView, windowShapeHook, desktopSizeHook);
+      baseView, windowShapeHook, desktopSizeHook, this.contextMenu_);
 
   /** @private */
   this.supportsGoogleDrive_ = connectionInfo.session().hasCapability(

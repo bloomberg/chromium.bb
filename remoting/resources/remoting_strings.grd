@@ -1081,6 +1081,9 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       <message desc="Menu option to open a new connection." name="IDS_NEW_CONNECTION">
         New connection
       </message>
+      <message desc="Menu option to toggle the visibility of connection statistics." name="IDS_TOGGLE_STATS">
+        Show statistics
+      </message>
       <message desc="Menu option to open a new window." name="IDS_NEW_WINDOW">
         New window…
       </message>

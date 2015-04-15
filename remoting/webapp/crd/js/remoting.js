@@ -26,8 +26,6 @@ remoting.initGlobalObjects = function() {
   console.log(remoting.getExtensionInfo());
   l10n.localize();
 
-  remoting.stats = new remoting.ConnectionStats(
-      document.getElementById('statistics'));
   remoting.formatIq = new remoting.FormatIq();
 
   var sandbox =
@@ -42,7 +40,7 @@ remoting.initGlobalObjects = function() {
     uiModeChanged: 'uiModeChanged'
   };
   remoting.testEvents.defineEvents(base.values(remoting.testEvents.Names));
-}
+};
 
 /**
  * @return {string} Information about the current extension.

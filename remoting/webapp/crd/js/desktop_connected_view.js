@@ -45,6 +45,10 @@ remoting.DesktopConnectedView = function(container, connectionInfo) {
   /** private {base.Disposable} */
   this.eventHooks_ = null;
 
+  /** @private */
+  this.stats_ = new remoting.ConnectionStats(
+      document.getElementById('statistics'), connectionInfo.plugin());
+
   this.initPlugin_();
   this.initUI_();
 };
@@ -68,6 +72,9 @@ remoting.DesktopConnectedView.prototype.dispose = function() {
 
   base.dispose(this.viewport_);
   this.viewport_ = null;
+
+  base.dispose(this.stats_);
+  this.stats = null;
 };
 
 /**
@@ -97,6 +104,17 @@ remoting.DesktopConnectedView.prototype.getResizeToClient = function() {
     return this.viewport_.getResizeToClient();
   }
   return false;
+};
+
+remoting.DesktopConnectedView.prototype.toggleStats = function() {
+  this.stats_.toggle();
+};
+
+/**
+ * @return {boolean} True if the connection stats is visible; false otherwise.
+ */
+remoting.DesktopConnectedView.prototype.isStatsVisible = function() {
+  return this.stats_.isVisible();
 };
 
 /**

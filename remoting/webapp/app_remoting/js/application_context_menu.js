@@ -14,9 +14,11 @@ var remoting = remoting || {};
 
 /**
  * @param {remoting.ContextMenuAdapter} adapter
+ * @param {remoting.ClientPlugin} plugin
  * @constructor
+ * @implements {base.Disposable}
  */
-remoting.ApplicationContextMenu = function(adapter) {
+remoting.ApplicationContextMenu = function(adapter, plugin) {
   /** @private {remoting.ContextMenuAdapter} */
   this.adapter_ = adapter;
 
@@ -28,10 +30,21 @@ remoting.ApplicationContextMenu = function(adapter) {
       remoting.ApplicationContextMenu.kShowStatsId,
       l10n.getTranslationOrError(/*i18n-content*/'SHOW_STATS'),
       true);
+
+  // TODO(kelvinp):Unhook this event on shutdown.
   this.adapter_.addListener(this.onClicked_.bind(this));
 
   /** @private {string} */
   this.hostId_ = '';
+
+  /** @private */
+  this.stats_ = new remoting.ConnectionStats(
+      document.getElementById('statistics'), plugin);
+};
+
+remoting.ApplicationContextMenu.prototype.dispose = function() {
+  base.dispose(this.stats_);
+  this.stats_ = null;
 };
 
 /**
@@ -39,7 +52,7 @@ remoting.ApplicationContextMenu = function(adapter) {
  */
 remoting.ApplicationContextMenu.prototype.setHostId = function(hostId) {
   this.hostId_ = hostId;
-}
+};
 
 /**
  * Add an indication of the connection RTT to the 'Show statistics' menu item.
@@ -81,7 +94,7 @@ remoting.ApplicationContextMenu.prototype.onClicked_ = function(info) {
           var message = {
             method: 'init',
             hostId: that.hostId_,
-            connectionStats: JSON.stringify(remoting.stats.mostRecent())
+            connectionStats: JSON.stringify(that.stats_.mostRecent())
           };
           consentWindow.contentWindow.postMessage(message, '*');
         };
@@ -92,9 +105,7 @@ remoting.ApplicationContextMenu.prototype.onClicked_ = function(info) {
       break;
 
     case remoting.ApplicationContextMenu.kShowStatsId:
-      if (remoting.stats) {
-        remoting.stats.show(info.checked);
-      }
+      this.stats_.show(info.checked);
       break;
   }
 };

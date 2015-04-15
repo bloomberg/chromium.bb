@@ -19,12 +19,13 @@ var remoting = remoting || {};
  * @param {Element} shrinkToFit
  * @param {Element} newConnection
  * @param {Element?} fullscreen
+ * @param {Element?} toggleStats
  * @param {Element?} startStopRecording
  * @constructor
  */
 remoting.OptionsMenu = function(sendCtrlAltDel, sendPrtScrn,
                                 resizeToClient, shrinkToFit,
-                                newConnection, fullscreen,
+                                newConnection, fullscreen, toggleStats,
                                 startStopRecording) {
   this.sendCtrlAltDel_ = sendCtrlAltDel;
   this.sendPrtScrn_ = sendPrtScrn;
@@ -32,6 +33,7 @@ remoting.OptionsMenu = function(sendCtrlAltDel, sendPrtScrn,
   this.shrinkToFit_ = shrinkToFit;
   this.newConnection_ = newConnection;
   this.fullscreen_ = fullscreen;
+  this.toggleStats_ = toggleStats;
   this.startStopRecording_ = startStopRecording;
 
   /** @private {remoting.DesktopConnectedView} */
@@ -47,9 +49,13 @@ remoting.OptionsMenu = function(sendCtrlAltDel, sendPrtScrn,
       'click', this.onShrinkToFit_.bind(this), false);
   this.newConnection_.addEventListener(
       'click', this.onNewConnection_.bind(this), false);
+
   if (this.fullscreen_) {
-    this.fullscreen_.addEventListener(
-        'click', this.onFullscreen_.bind(this), false);
+    fullscreen.addEventListener('click', this.onFullscreen_.bind(this), false);
+  }
+  if (this.toggleStats_) {
+    toggleStats.addEventListener(
+        'click', this.onToggleStats_.bind(this), false);
   }
   if (this.startStopRecording_) {
     this.startStopRecording_.addEventListener(
@@ -74,9 +80,14 @@ remoting.OptionsMenu.prototype.onShow = function() {
         this.resizeToClient_, this.desktopConnectedView_.getResizeToClient());
     remoting.MenuButton.select(
         this.shrinkToFit_, this.desktopConnectedView_.getShrinkToFit());
+
     if (this.fullscreen_) {
       remoting.MenuButton.select(
           this.fullscreen_, remoting.fullscreen.isActive());
+    }
+    if (this.toggleStats_) {
+      remoting.MenuButton.select(
+          this.toggleStats_, this.desktopConnectedView_.isStatsVisible());
     }
     if (this.startStopRecording_) {
       this.startStopRecording_.hidden =
@@ -132,11 +143,17 @@ remoting.OptionsMenu.prototype.onFullscreen_ = function() {
   remoting.fullscreen.toggle();
 };
 
+remoting.OptionsMenu.prototype.onToggleStats_ = function() {
+  if (this.desktopConnectedView_) {
+    this.desktopConnectedView_.toggleStats();
+  }
+};
+
 remoting.OptionsMenu.prototype.onStartStopRecording_ = function() {
   if (this.desktopConnectedView_) {
     this.desktopConnectedView_.startStopRecording();
   }
-}
+};
 
 /**
  * @type {remoting.OptionsMenu}

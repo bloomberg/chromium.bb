@@ -72,6 +72,7 @@ remoting.Toolbar.prototype.createOptionsMenu = function() {
       document.getElementById('screen-shrink-to-fit'),
       document.getElementById('new-connection'),
       document.getElementById('toggle-full-screen'),
+      null,
       null);
 };
 
