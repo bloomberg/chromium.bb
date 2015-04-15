@@ -38,6 +38,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/WindowFeatures.h"
+#include "platform/UserGestureIndicator.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -146,6 +147,8 @@ LocalFrame* createWindow(const String& urlString, const AtomicString& frameName,
     // so we need to ensure the proper referrer is set now.
     frameRequest.resourceRequest().setHTTPReferrer(SecurityPolicy::generateReferrer(activeFrame->document()->referrerPolicy(), completedURL, activeFrame->document()->outgoingReferrer()));
 
+    bool hasUserGesture = UserGestureIndicator::processingUserGesture();
+
     // We pass the opener frame for the lookupFrame in case the active frame is different from
     // the opener frame, and the name references a frame relative to the opener frame.
     bool created;
@@ -158,10 +161,13 @@ LocalFrame* createWindow(const String& urlString, const AtomicString& frameName,
     if (newFrame->localDOMWindow()->isInsecureScriptAccess(callingWindow, completedURL))
         return newFrame;
 
-    if (created)
-        newFrame->loader().load(FrameLoadRequest(callingWindow.document(), completedURL));
-    else if (!urlString.isEmpty())
+    if (created) {
+        FrameLoadRequest request(callingWindow.document(), completedURL);
+        request.resourceRequest().setHasUserGesture(hasUserGesture);
+        newFrame->loader().load(request);
+    } else if (!urlString.isEmpty()) {
         newFrame->navigate(*callingWindow.document(), completedURL, false);
+    }
     return newFrame;
 }
 
