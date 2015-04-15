@@ -139,7 +139,6 @@ BufferList H264SegmenterForTest(const uint8* data, size_t data_size) {
   scoped_ptr< ::media::H264Parser> h264_parser(new ::media::H264Parser());
   h264_parser->SetStream(data, data_size);
 
-  size_t offset = 0;
   while (true) {
     bool is_eos = false;
     ::media::H264NALU nalu;

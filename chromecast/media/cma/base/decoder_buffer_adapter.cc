@@ -29,7 +29,7 @@ uint8* DecoderBufferAdapter::writable_data() const {
   return buffer_->writable_data();
 }
 
-int DecoderBufferAdapter::data_size() const {
+size_t DecoderBufferAdapter::data_size() const {
   return buffer_->data_size();
 }
 

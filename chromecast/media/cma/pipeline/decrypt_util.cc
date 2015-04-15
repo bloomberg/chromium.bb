@@ -25,7 +25,7 @@ class DecoderBufferClear : public DecoderBufferBase {
   base::TimeDelta timestamp() const override;
   const uint8* data() const override;
   uint8* writable_data() const override;
-  int data_size() const override;
+  size_t data_size() const override;
   const ::media::DecryptConfig* decrypt_config() const override;
   bool end_of_stream() const override;
 
@@ -57,7 +57,7 @@ uint8* DecoderBufferClear::writable_data() const {
   return buffer_->writable_data();
 }
 
-int DecoderBufferClear::data_size() const {
+size_t DecoderBufferClear::data_size() const {
   return buffer_->data_size();
 }
 
@@ -114,7 +114,7 @@ scoped_refptr<DecoderBufferBase> DecryptDecoderBuffer(
   for (size_t k = 0; k < subsamples.size(); k++) {
     offset += subsamples[k].clear_bytes;
     uint32 cypher_bytes = subsamples[k].cypher_bytes;
-    CHECK_LE(offset + cypher_bytes, buffer->data_size());
+    CHECK_LE(static_cast<size_t>(offset + cypher_bytes), buffer->data_size());
     AES_ctr128_encrypt(
         data + offset, data + offset, cypher_bytes, &aes_key,
         aes_iv, ecount_buf, &encrypted_byte_offset);

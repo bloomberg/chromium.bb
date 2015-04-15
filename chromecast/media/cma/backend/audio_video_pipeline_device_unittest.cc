@@ -230,7 +230,7 @@ void AudioVideoPipelineDeviceTest::Start() {
   pause_time_ = base::TimeDelta();
   pause_pattern_idx_ = 0;
 
-  for (int i = 0; i < component_device_feeders_.size(); i++) {
+  for (size_t i = 0; i < component_device_feeders_.size(); i++) {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(&MediaComponentDeviceFeederForTest::Feed,

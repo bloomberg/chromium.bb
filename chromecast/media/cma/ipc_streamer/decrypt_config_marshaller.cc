@@ -20,9 +20,9 @@ const size_t kMaxSubsampleCount = 1024;
 // static
 void DecryptConfigMarshaller::Write(
     const ::media::DecryptConfig& config, MediaMessage* msg) {
-  CHECK_GT(config.key_id().size(), 0);
-  CHECK_GT(config.iv().size(), 0);
-  CHECK_GT(config.subsamples().size(), 0);
+  CHECK_GT(config.key_id().size(), 0u);
+  CHECK_GT(config.iv().size(), 0u);
+  CHECK_GT(config.subsamples().size(), 0u);
 
   CHECK(msg->WritePod(config.key_id().size()));
   CHECK(msg->WriteBuffer(config.key_id().data(), config.key_id().size()));
@@ -40,21 +40,21 @@ scoped_ptr< ::media::DecryptConfig> DecryptConfigMarshaller::Read(
     MediaMessage* msg) {
   size_t key_id_size = 0;
   CHECK(msg->ReadPod(&key_id_size));
-  CHECK_GT(key_id_size, 0);
+  CHECK_GT(key_id_size, 0u);
   CHECK_LT(key_id_size, kMaxKeyIdSize);
   scoped_ptr<char[]> key_id(new char[key_id_size]);
   CHECK(msg->ReadBuffer(key_id.get(), key_id_size));
 
   size_t iv_size = 0;
   CHECK(msg->ReadPod(&iv_size));
-  CHECK_GT(iv_size, 0);
+  CHECK_GT(iv_size, 0u);
   CHECK_LT(iv_size, kMaxIvSize);
   scoped_ptr<char[]> iv(new char[iv_size]);
   CHECK(msg->ReadBuffer(iv.get(), iv_size));
 
   size_t subsample_count = 0;
   CHECK(msg->ReadPod(&subsample_count));
-  CHECK_GT(subsample_count, 0);
+  CHECK_GT(subsample_count, 0u);
   CHECK_LT(subsample_count, kMaxSubsampleCount);
   std::vector< ::media::SubsampleEntry> subsamples(subsample_count);
   for (size_t k = 0; k < subsample_count; k++) {

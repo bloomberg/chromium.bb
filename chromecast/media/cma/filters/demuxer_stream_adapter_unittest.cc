@@ -232,7 +232,7 @@ void DemuxerStreamAdapterTest::OnNewFrame(
     const ::media::AudioDecoderConfig& audio_config,
     const ::media::VideoDecoderConfig& video_config) {
   if (video_config.IsValidConfig()) {
-    ASSERT_GT(config_idx_.size(), 0);
+    ASSERT_GT(config_idx_.size(), 0u);
     ASSERT_EQ(frame_received_count_, config_idx_.front());
     config_idx_.pop_front();
   }

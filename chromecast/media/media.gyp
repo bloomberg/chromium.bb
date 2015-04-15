@@ -4,6 +4,7 @@
 
 {
   'variables': {
+    'chromium_code': 1,
     'chromecast_branding%': 'Chromium',
   },
   'targets': [

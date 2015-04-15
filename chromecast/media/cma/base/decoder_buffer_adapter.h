@@ -27,7 +27,7 @@ class DecoderBufferAdapter : public DecoderBufferBase {
   base::TimeDelta timestamp() const override;
   const uint8* data() const override;
   uint8* writable_data() const override;
-  int data_size() const override;
+  size_t data_size() const override;
   const ::media::DecryptConfig* decrypt_config() const override;
   bool end_of_stream() const override;
 

@@ -108,7 +108,7 @@ void MockFrameConsumer::OnNewFrame(
 }
 
 void MockFrameConsumer::OnFlushCompleted() {
-  EXPECT_EQ(frame_generator_->RemainingFrameCount(), 0);
+  EXPECT_EQ(frame_generator_->RemainingFrameCount(), 0u);
   done_cb_.Run();
 }
 

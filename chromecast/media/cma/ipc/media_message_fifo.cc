@@ -133,7 +133,7 @@ MediaMessageFifo::MediaMessageFifo(
   }
   CMALOG(kLogControl)
       << "MediaMessageFifo:" << " init=" << init << " size=" << size_;
-  CHECK_GT(size_, 0) << size_;
+  CHECK_GT(size_, 0u) << size_;
 
   weak_this_ = weak_factory_.GetWeakPtr();
   thread_checker_.DetachFromThread();

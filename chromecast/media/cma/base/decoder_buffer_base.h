@@ -33,7 +33,7 @@ class DecoderBufferBase
   virtual uint8* writable_data() const = 0;
 
   // Returns the size of the frame in bytes.
-  virtual int data_size() const = 0;
+  virtual size_t data_size() const = 0;
 
   // Returns the decrypt configuration.
   // Returns NULL if the buffer has no decrypt info.
