@@ -456,6 +456,14 @@ void WebMediaPlayerMS::SetVideoFrameProviderClient(
   video_frame_provider_client_ = client;
 }
 
+bool WebMediaPlayerMS::UpdateCurrentFrame(base::TimeTicks deadline_min,
+                                          base::TimeTicks deadline_max) {
+  // TODO(dalecurtis): This should make use of the deadline interval to ensure
+  // the painted frame is correct for the given interval.
+  NOTREACHED();
+  return false;
+}
+
 scoped_refptr<media::VideoFrame> WebMediaPlayerMS::GetCurrentFrame() {
   DVLOG(3) << "WebMediaPlayerMS::GetCurrentFrame";
   base::AutoLock auto_lock(current_frame_lock_);
@@ -467,8 +475,7 @@ scoped_refptr<media::VideoFrame> WebMediaPlayerMS::GetCurrentFrame() {
   return current_frame_;
 }
 
-void WebMediaPlayerMS::PutCurrentFrame(
-    const scoped_refptr<media::VideoFrame>& frame) {
+void WebMediaPlayerMS::PutCurrentFrame() {
   DVLOG(3) << "WebMediaPlayerMS::PutCurrentFrame";
   DCHECK(pending_repaint_);
   pending_repaint_ = false;

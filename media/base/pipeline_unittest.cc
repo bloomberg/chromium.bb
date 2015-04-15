@@ -84,7 +84,6 @@ class PipelineTest : public ::testing::Test {
     MOCK_METHOD1(OnError, void(PipelineStatus));
     MOCK_METHOD1(OnMetadata, void(PipelineMetadata));
     MOCK_METHOD1(OnBufferingStateChange, void(BufferingState));
-    MOCK_METHOD1(OnVideoFramePaint, void(const scoped_refptr<VideoFrame>&));
     MOCK_METHOD0(OnDurationChange, void());
 
    private:
@@ -170,9 +169,9 @@ class PipelineTest : public ::testing::Test {
 
   // Sets up expectations to allow the video renderer to initialize.
   void SetRendererExpectations() {
-    EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _, _))
+    EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _))
         .WillOnce(DoAll(SaveArg<3>(&buffering_state_cb_),
-                        SaveArg<5>(&ended_cb_),
+                        SaveArg<4>(&ended_cb_),
                         PostCallback<1>(PIPELINE_OK)));
     EXPECT_CALL(*renderer_, HasAudio()).WillRepeatedly(Return(audio_stream()));
     EXPECT_CALL(*renderer_, HasVideo()).WillRepeatedly(Return(video_stream()));
@@ -195,8 +194,6 @@ class PipelineTest : public ::testing::Test {
         base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnMetadata, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnBufferingStateChange,
-                   base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnVideoFramePaint,
                    base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnDurationChange,
                    base::Unretained(&callbacks_)),
@@ -858,13 +855,13 @@ class PipelineTeardownTest : public PipelineTest {
 
     if (state == kInitRenderer) {
       if (stop_or_error == kStop) {
-        EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _, _))
+        EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _))
             .WillOnce(DoAll(Stop(pipeline_.get(), stop_cb),
                             PostCallback<1>(PIPELINE_OK)));
         ExpectPipelineStopAndDestroyPipeline();
       } else {
         status = PIPELINE_ERROR_INITIALIZATION_FAILED;
-        EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _, _))
+        EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _))
             .WillOnce(PostCallback<1>(status));
       }
 
@@ -873,7 +870,7 @@ class PipelineTeardownTest : public PipelineTest {
       return status;
     }
 
-    EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _, _))
+    EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _))
         .WillOnce(DoAll(SaveArg<3>(&buffering_state_cb_),
                         PostCallback<1>(PIPELINE_OK)));
 

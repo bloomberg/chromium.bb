@@ -38,9 +38,6 @@ class MEDIA_EXPORT Renderer {
   // Permanent callbacks:
   // - |statistics_cb|: Executed periodically with rendering statistics.
   // - |buffering_state_cb|: Executed when buffering state is changed.
-  // - |paint_cb|: Executed when there is a VideoFrame ready to paint.  Can be
-  //               ignored if the Renderer handles the painting by itself. Can
-  //               be called from any thread.
   // - |ended_cb|: Executed when rendering has reached the end of stream.
   // - |error_cb|: Executed if any error was encountered after initialization.
   // - |waiting_for_decryption_key_cb|: Executed whenever the key needed to
@@ -50,7 +47,6 @@ class MEDIA_EXPORT Renderer {
       const PipelineStatusCB& init_cb,
       const StatisticsCB& statistics_cb,
       const BufferingStateCB& buffering_state_cb,
-      const PaintCB& paint_cb,
       const base::Closure& ended_cb,
       const PipelineStatusCB& error_cb,
       const base::Closure& waiting_for_decryption_key_cb) = 0;

@@ -26,6 +26,7 @@
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::AtMost;
+using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 using ::testing::SaveArg;
 
@@ -33,6 +34,9 @@ namespace media {
 
 const char kNullVideoHash[] = "d41d8cd98f00b204e9800998ecf8427e";
 const char kNullAudioHash[] = "0.00,0.00,0.00,0.00,0.00,0.00,";
+
+MockVideoRendererSink::MockVideoRendererSink() {}
+MockVideoRendererSink::~MockVideoRendererSink() {}
 
 PipelineIntegrationTestBase::PipelineIntegrationTestBase()
     : hashing_enabled_(false),
@@ -135,8 +139,6 @@ PipelineStatus PipelineIntegrationTestBase::Start(const std::string& filename,
                  base::Unretained(this)),
       base::Bind(&PipelineIntegrationTestBase::OnBufferingStateChanged,
                  base::Unretained(this)),
-      base::Bind(&PipelineIntegrationTestBase::OnVideoFramePaint,
-                 base::Unretained(this)),
       base::Closure(), base::Bind(&PipelineIntegrationTestBase::OnAddTextTrack,
                                   base::Unretained(this)),
       base::Bind(&PipelineIntegrationTestBase::OnWaitingForDecryptionKey,
@@ -238,9 +240,13 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
       new FFmpegVideoDecoder(message_loop_.message_loop_proxy()));
 #endif
 
+  EXPECT_CALL(video_sink_, PaintFrameUsingOldRenderingPath(_))
+      .WillRepeatedly(
+          Invoke(this, &PipelineIntegrationTestBase::OnVideoFramePaint));
+
   // Disable frame dropping if hashing is enabled.
   scoped_ptr<VideoRenderer> video_renderer(
-      new VideoRendererImpl(message_loop_.message_loop_proxy(),
+      new VideoRendererImpl(message_loop_.message_loop_proxy(), &video_sink_,
                             video_decoders.Pass(), false, new MediaLog()));
 
   if (!clockless_playback_) {

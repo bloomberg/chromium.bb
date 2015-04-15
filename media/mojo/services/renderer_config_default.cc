@@ -24,6 +24,20 @@
 namespace media {
 namespace internal {
 
+class DummyVideoRendererSink : public VideoRendererSink {
+ public:
+  DummyVideoRendererSink() {}
+  ~DummyVideoRendererSink() override {}
+
+  void Start(RenderCallback* callback) override {}
+  void Stop() override {}
+  void PaintFrameUsingOldRenderingPath(
+      const scoped_refptr<VideoFrame>& frame) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DummyVideoRendererSink);
+};
+
 class DefaultRendererConfig : public PlatformRendererConfig {
  public:
   DefaultRendererConfig() {
@@ -85,6 +99,10 @@ class DefaultRendererConfig : public PlatformRendererConfig {
 
   scoped_refptr<AudioRendererSink> GetAudioRendererSink() override {
     return new AudioOutputStreamSink();
+  }
+
+  scoped_ptr<VideoRendererSink> GetVideoRendererSink() override {
+    return make_scoped_ptr(new DummyVideoRendererSink());
   }
 
   const AudioHardwareConfig& GetAudioHardwareConfig() override {

@@ -380,7 +380,7 @@ void VideoLayerImpl::DidDraw(ResourceProvider* resource_provider) {
     frame_resources_.clear();
   }
 
-  provider_client_impl_->PutCurrentFrame(frame_);
+  provider_client_impl_->PutCurrentFrame();
   frame_ = nullptr;
 
   provider_client_impl_->ReleaseLock();

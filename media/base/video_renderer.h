@@ -45,9 +45,6 @@ class MEDIA_EXPORT VideoRenderer {
   // |buffering_state_cb| is executed when video rendering has either run out of
   // data or has enough data to continue playback.
   //
-  // |paint_cb| is executed on the video frame timing thread whenever a new
-  // frame is available for painting. Can be called from any thread.
-  //
   // |ended_cb| is executed when video rendering has reached the end of stream.
   //
   // |error_cb| is executed if an error was encountered after initialization.
@@ -63,7 +60,6 @@ class MEDIA_EXPORT VideoRenderer {
       const SetDecryptorReadyCB& set_decryptor_ready_cb,
       const StatisticsCB& statistics_cb,
       const BufferingStateCB& buffering_state_cb,
-      const PaintCB& paint_cb,
       const base::Closure& ended_cb,
       const PipelineStatusCB& error_cb,
       const WallClockTimeCB& wall_clock_time_cb,

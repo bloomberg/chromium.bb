@@ -36,7 +36,6 @@ class SwitchingMediaRenderer : public ::media::Renderer {
       const ::media::PipelineStatusCB& init_cb,
       const ::media::StatisticsCB& statistics_cb,
       const ::media::BufferingStateCB& buffering_state_cb,
-      const ::media::Renderer::PaintCB& paint_cb,
       const base::Closure& ended_cb,
       const ::media::PipelineStatusCB& error_cb,
       const base::Closure& waiting_for_decryption_key_cb) override;

@@ -133,8 +133,13 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       context_3d_cb_(params.context_3d_cb()),
       supports_save_(true),
       chunk_demuxer_(NULL),
-      compositor_task_runner_(params.compositor_task_runner()),
+      // Threaded compositing isn't enabled universally yet.
+      compositor_task_runner_(
+          params.compositor_task_runner()
+              ? params.compositor_task_runner()
+              : base::MessageLoop::current()->task_runner()),
       compositor_(new VideoFrameCompositor(
+          compositor_task_runner_,
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNaturalSizeChanged),
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnOpacityChanged))),
       encrypted_media_support_(cdm_factory,
@@ -144,10 +149,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
                                           AsWeakPtr(),
                                           base::Bind(&IgnoreCdmAttached))),
       renderer_factory_(renderer_factory.Pass()) {
-  // Threaded compositing isn't enabled universally yet.
-  if (!compositor_task_runner_.get())
-    compositor_task_runner_ = base::MessageLoopProxy::current();
-
   media_log_->AddEvent(
       media_log_->CreateEvent(MediaLogEvent::WEBMEDIAPLAYER_CREATED));
 
@@ -902,14 +903,13 @@ void WebMediaPlayerImpl::StartPipeline() {
 
   pipeline_.Start(
       demuxer_.get(),
-      renderer_factory_->CreateRenderer(media_task_runner_,
-                                        audio_source_provider_.get()),
+      renderer_factory_->CreateRenderer(
+          media_task_runner_, audio_source_provider_.get(), compositor_),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineEnded),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineError),
       BIND_TO_RENDER_LOOP1(&WebMediaPlayerImpl::OnPipelineSeeked, false),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineMetadata),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineBufferingStateChanged),
-      base::Bind(&WebMediaPlayerImpl::FrameReady, base::Unretained(this)),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDurationChanged),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnAddTextTrack),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnWaitingForDecryptionKey));
@@ -980,21 +980,12 @@ void WebMediaPlayerImpl::OnOpacityChanged(bool opaque) {
     video_weblayer_->setOpaque(opaque_);
 }
 
-void WebMediaPlayerImpl::FrameReady(
-    const scoped_refptr<VideoFrame>& frame) {
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoFrameCompositor::UpdateCurrentFrame,
-                 base::Unretained(compositor_),
-                 frame));
-}
-
 static void GetCurrentFrameAndSignal(
     VideoFrameCompositor* compositor,
     scoped_refptr<VideoFrame>* video_frame_out,
     base::WaitableEvent* event) {
   TRACE_EVENT0("media", "GetCurrentFrameAndSignal");
-  *video_frame_out = compositor->GetCurrentFrame();
+  *video_frame_out = compositor->GetCurrentFrameAndUpdateIfStale();
   event->Signal();
 }
 
