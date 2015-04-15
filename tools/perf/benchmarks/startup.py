@@ -60,6 +60,7 @@ class StartupWarmBlankPage(_StartupWarm):
 
 @benchmark.Enabled('has tabs')
 @benchmark.Enabled('win', 'linux', 'mac')
+@benchmark.Disabled('reference')
 class StartupLargeProfileColdBlankPage(_StartupCold):
   """Measures cold startup time with a large profile."""
   tag = 'cold'
@@ -79,6 +80,7 @@ class StartupLargeProfileColdBlankPage(_StartupCold):
 
 @benchmark.Enabled('has tabs')
 @benchmark.Enabled('win', 'linux', 'mac')
+@benchmark.Disabled('reference')
 class StartupLargeProfileWarmBlankPage(_StartupWarm):
   """Measures warm startup time with a large profile."""
   tag = 'warm'
