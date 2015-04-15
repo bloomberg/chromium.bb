@@ -2101,3 +2101,5 @@ crbug.com/477244 inspector-protocol/debugger/debugger-setVariableValue.html [ Cr
 crbug.com/477244 inspector/sources/debugger/live-edit-breakpoints.html [ Crash ]
 
 crbug.com/477252 [ Win ] http/tests/fetch/window/stream-reader.html [ Pass Timeout ]
+
+crbug.com/473633 http/tests/inspector/service-workers/user-agent-override.html [ Pass Timeout ]
