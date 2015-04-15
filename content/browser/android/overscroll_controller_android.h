@@ -27,18 +27,16 @@ class WindowAndroidCompositor;
 
 namespace content {
 
+class ContentViewCoreImpl;
 struct DidOverscrollParams;
 
 // Glue class for handling all inputs into Android-specific overscroll effects,
 // both the passive overscroll glow and the active overscroll pull-to-refresh.
 // Note that all input coordinates (both for events and overscroll) are in DIPs.
 class OverscrollControllerAndroid : public OverscrollGlowClient,
-                                    public OverscrollRefreshClient,
                                     public WebContentsObserver {
  public:
-  OverscrollControllerAndroid(WebContents* web_contents,
-                              ui::WindowAndroidCompositor* compositor,
-                              float dpi_scale);
+  explicit OverscrollControllerAndroid(ContentViewCoreImpl* content_view_core);
   ~OverscrollControllerAndroid() override;
 
   // Returns true if |event| is consumed by an overscroll effect, in which
@@ -66,20 +64,14 @@ class OverscrollControllerAndroid : public OverscrollGlowClient,
 
  private:
   // WebContentsObserver implementation.
-  void DidNavigateMainFrame(const LoadCommittedDetails& details,
-                            const FrameNavigateParams& params) override;
   void DidToggleFullscreenModeForTab(bool entered_fullscreen) override;
-
-  // OverscrollRefreshClient implementation.
-  void TriggerRefresh() override;
-  bool IsStillRefreshing() const override;
 
   // OverscrollGlowClient implementation.
   scoped_ptr<EdgeEffectBase> CreateEdgeEffect() override;
 
   void SetNeedsAnimate();
 
-  ui::WindowAndroidCompositor* compositor_;
+  ui::WindowAndroidCompositor* const compositor_;
   const float dpi_scale_;
 
   bool enabled_;
@@ -87,7 +79,7 @@ class OverscrollControllerAndroid : public OverscrollGlowClient,
   // TODO(jdduke): Factor out a common API from the two overscroll effects.
   scoped_ptr<OverscrollGlow> glow_effect_;
   scoped_ptr<OverscrollRefresh> refresh_effect_;
-  bool triggered_refresh_active_;
+  bool has_initialized_refresh_effect_;
   bool is_fullscreen_;
 
   DISALLOW_COPY_AND_ASSIGN(OverscrollControllerAndroid);

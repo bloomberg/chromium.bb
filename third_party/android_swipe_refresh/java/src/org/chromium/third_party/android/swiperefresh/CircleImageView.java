@@ -25,8 +25,8 @@ import android.graphics.RadialGradient;
 import android.graphics.Shader;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
-import android.support.v4.view.ViewCompat;
 import android.view.animation.Animation;
+import android.view.View;
 import android.widget.ImageView;
 
 /**
@@ -49,28 +49,18 @@ class CircleImageView extends ImageView {
     private Animation.AnimationListener mListener;
     private int mShadowRadius;
 
+    @SuppressWarnings("deprecation")
     public CircleImageView(Context context, int color, final float radius) {
         super(context);
         final float density = getContext().getResources().getDisplayMetrics().density;
-        final int diameter = (int) (radius * density * 2);
-        final int shadowYOffset = (int) (density * Y_OFFSET);
-        final int shadowXOffset = (int) (density * X_OFFSET);
 
         mShadowRadius = (int) (density * SHADOW_RADIUS);
 
         ShapeDrawable circle;
         if (elevationSupported()) {
-            circle = new ShapeDrawable(new OvalShape());
-            ViewCompat.setElevation(this, SHADOW_ELEVATION * density);
+            circle = initializeElevated(density);
         } else {
-            OvalShape oval = new OvalShadow(mShadowRadius, diameter);
-            circle = new ShapeDrawable(oval);
-            ViewCompat.setLayerType(this, ViewCompat.LAYER_TYPE_SOFTWARE, circle.getPaint());
-            circle.getPaint().setShadowLayer(mShadowRadius, shadowXOffset, shadowYOffset,
-                    KEY_SHADOW_COLOR);
-            final int padding = (int) mShadowRadius;
-            // set padding so the inner image sits correctly within the shadow.
-            setPadding(padding, padding, padding, padding);
+            circle = initializeNonElevated(radius, density);
         }
         circle.getPaint().setColor(color);
         if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.JELLY_BEAN) {
@@ -78,6 +68,27 @@ class CircleImageView extends ImageView {
         } else {
             setBackground(circle);
         }
+    }
+
+    ShapeDrawable initializeElevated(float density) {
+        ShapeDrawable circle = new ShapeDrawable(new OvalShape());
+        setElevation(SHADOW_ELEVATION * density);
+        return circle;
+    }
+
+    ShapeDrawable initializeNonElevated(float radius, float density) {
+        final int diameter = (int) (radius * density * 2);
+        final int shadowYOffset = (int) (density * Y_OFFSET);
+        final int shadowXOffset = (int) (density * X_OFFSET);
+        OvalShape oval = new OvalShadow(mShadowRadius, diameter);
+        ShapeDrawable circle = new ShapeDrawable(oval);
+        setLayerType(View.LAYER_TYPE_SOFTWARE, circle.getPaint());
+        circle.getPaint().setShadowLayer(mShadowRadius, shadowXOffset, shadowYOffset,
+                KEY_SHADOW_COLOR);
+        final int padding = (int) mShadowRadius;
+        // set padding so the inner image sits correctly within the shadow.
+        setPadding(padding, padding, padding, padding);
+        return circle;
     }
 
     private boolean elevationSupported() {
@@ -134,7 +145,7 @@ class CircleImageView extends ImageView {
             mShadowPaint = new Paint();
             mShadowRadius = shadowRadius;
             mCircleDiameter = circleDiameter;
-            mRadialGradient = new RadialGradient(mCircleDiameter / 2, mCircleDiameter / 2,
+            mRadialGradient = new RadialGradient(mCircleDiameter / 2f, mCircleDiameter / 2f,
                     mShadowRadius, new int[] {
                             FILL_SHADOW_COLOR, Color.TRANSPARENT
                     }, null, Shader.TileMode.CLAMP);
@@ -145,9 +156,9 @@ class CircleImageView extends ImageView {
         public void draw(Canvas canvas, Paint paint) {
             final int viewWidth = CircleImageView.this.getWidth();
             final int viewHeight = CircleImageView.this.getHeight();
-            canvas.drawCircle(viewWidth / 2, viewHeight / 2, (mCircleDiameter / 2 + mShadowRadius),
+            canvas.drawCircle(viewWidth / 2f, viewHeight / 2f, (mCircleDiameter / 2f + mShadowRadius),
                     mShadowPaint);
-            canvas.drawCircle(viewWidth / 2, viewHeight / 2, (mCircleDiameter / 2), paint);
+            canvas.drawCircle(viewWidth / 2f, viewHeight / 2f, (mCircleDiameter / 2f), paint);
         }
     }
 }

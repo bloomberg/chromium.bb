@@ -1162,7 +1162,12 @@ You are signing in with a managed account and giving its administrator control o
       </message>
       <message name="IDS_CONTEXTMENU_SAVE_VIDEO" desc="Context sensitive menu item for saving the selected video. [CHAR-LIMIT=30]">
         Save video
-     </message>
+      </message>
+
+      <!-- Swipe refresh -->
+      <message name="IDS_ACCESSIBILITY_SWIPE_REFRESH" desc="Content description for the swipe refresh action.">
+        Refreshing page
+      </message>
 
      <!-- Http authentication -->
       <message name="IDS_ACCESSIBILITY_HTTP_AUTH_USERNAME_INPUT" desc="Content description for the http authentication pop-up username input field.">

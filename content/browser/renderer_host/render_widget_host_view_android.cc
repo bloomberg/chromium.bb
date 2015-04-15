@@ -293,16 +293,8 @@ scoped_ptr<ui::TouchSelectionController> CreateSelectionController(
 }
 
 scoped_ptr<OverscrollControllerAndroid> CreateOverscrollController(
-    ContentViewCore* content_view_core) {
-  DCHECK(content_view_core);
-  ui::WindowAndroid* window = content_view_core->GetWindowAndroid();
-  DCHECK(window);
-  ui::WindowAndroidCompositor* compositor = window->GetCompositor();
-  DCHECK(compositor);
-  return make_scoped_ptr(new OverscrollControllerAndroid(
-      content_view_core->GetWebContents(),
-      compositor,
-      content_view_core->GetDpiScale()));
+    ContentViewCoreImpl* content_view_core) {
+  return make_scoped_ptr(new OverscrollControllerAndroid(content_view_core));
 }
 
 ui::GestureProvider::Config CreateGestureProviderConfig() {

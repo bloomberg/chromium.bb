@@ -494,6 +494,8 @@ public class ContentViewCore
     private SelectPopup mSelectPopup;
     private long mNativeSelectPopupSourceFrame = 0;
 
+    private OverscrollRefreshHandler mOverscrollRefreshHandler;
+
     private Runnable mFakeMouseMoveRunnable = null;
 
     // Only valid when focused on a text / password field.
@@ -871,6 +873,7 @@ public class ContentViewCore
         try {
             TraceEvent.begin("ContentViewCore.setContainerView");
             if (mContainerView != null) {
+                assert mOverscrollRefreshHandler == null;
                 mPastePopupMenu = null;
                 mInputConnection = null;
                 hidePopupsAndClearSelection();
@@ -1002,6 +1005,7 @@ public class ContentViewCore
         // in this class.
         mContentViewClient = new ContentViewClient();
         mWebContents = null;
+        mOverscrollRefreshHandler = null;
         mNativeContentViewCore = 0;
         mJavaScriptInterfaces.clear();
         mRetainedJavaScriptObjects.clear();
@@ -2511,6 +2515,40 @@ public class ContentViewCore
             };
         }
         return new PopupTouchHandleDrawable(mTouchHandleDelegate);
+    }
+
+    /**
+     * Initialize the view with an overscroll refresh handler.
+     * @param handler The refresh handler.
+     */
+    public void setOverscrollRefreshHandler(OverscrollRefreshHandler handler) {
+        assert mOverscrollRefreshHandler == null || handler == null;
+        mOverscrollRefreshHandler = handler;
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private boolean onOverscrollRefreshStart() {
+        if (mOverscrollRefreshHandler == null) return false;
+        return mOverscrollRefreshHandler.start();
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void onOverscrollRefreshUpdate(float delta) {
+        if (mOverscrollRefreshHandler != null) mOverscrollRefreshHandler.pull(delta);
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void onOverscrollRefreshRelease(boolean allowRefresh) {
+        if (mOverscrollRefreshHandler != null) mOverscrollRefreshHandler.release(allowRefresh);
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void onOverscrollRefreshReset() {
+        if (mOverscrollRefreshHandler != null) mOverscrollRefreshHandler.reset();
     }
 
     @SuppressWarnings("unused")

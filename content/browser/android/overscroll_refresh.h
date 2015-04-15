@@ -5,34 +5,32 @@
 #ifndef CONTENT_BROWSER_ANDROID_OVERSCROLL_REFRESH_H_
 #define CONTENT_BROWSER_ANDROID_OVERSCROLL_REFRESH_H_
 
-#include "base/memory/scoped_ptr.h"
-#include "base/time/time.h"
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
-namespace cc {
-class Layer;
-}
-
-namespace ui {
-class ResourceManager;
-}
-
 namespace content {
 
-// Allows both page reload activation and page reloading state queries.
-class CONTENT_EXPORT OverscrollRefreshClient {
+class CONTENT_EXPORT OverscrollRefreshHandler {
  public:
-  virtual ~OverscrollRefreshClient() {}
+  // Signals the start of an overscrolling pull. Returns whether the handler
+  // will consume the overscroll gesture, in which case it will receive the
+  // remaining pull updates.
+  virtual bool PullStart() = 0;
 
-  // Called when the effect is released beyond the activation threshold. This
-  // should cause a refresh of some kind, e.g., page reload.
-  virtual void TriggerRefresh() = 0;
+  // Signals a pull update, where |delta| is in device pixels.
+  virtual void PullUpdate(float delta) = 0;
 
-  // Whether the triggered refresh has yet to complete. The effect will continue
-  // animating until the refresh completes (or it reaches a reasonable timeout).
-  virtual bool IsStillRefreshing() const = 0;
+  // Signals the release of the pull, and whether the release is allowed to
+  // trigger the refresh action.
+  virtual void PullRelease(bool allow_refresh) = 0;
+
+  // Reset the active pull state.
+  virtual void PullReset() = 0;
+
+ protected:
+  virtual ~OverscrollRefreshHandler() {}
 };
 
 // Simple pull-to-refresh styled effect. Listens to scroll events, conditionally
@@ -41,8 +39,8 @@ class CONTENT_EXPORT OverscrollRefreshClient {
 //      offset and 2) lacks the overflow-y:hidden property.
 //   2) The page doesn't consume the initial scroll events.
 //   3) The initial scroll direction is upward.
-// The actual page reload action is triggered only when the effect is active
-// and beyond a particular threshold when released.
+// The actuall pull response, animation and action are delegated to the
+// provided refresh handler.
 class CONTENT_EXPORT OverscrollRefresh {
  public:
   // Minmum number of overscrolling pull events required to activate the effect.
@@ -50,18 +48,12 @@ class CONTENT_EXPORT OverscrollRefresh {
   // capping the impulse per event.
   enum { kMinPullsToActivate = 3 };
 
-  // Both |resource_manager| and |client| must not be null.
-  // |target_drag_offset_pixels| is the threshold beyond which the effect
-  // will trigger a refresh action when released. When |mirror| is true,
-  // the effect and its rotation will be mirrored about the y axis.
-  OverscrollRefresh(ui::ResourceManager* resource_manager,
-                    OverscrollRefreshClient* client,
-                    float target_drag_offset_pixels,
-                    bool mirror);
+  explicit OverscrollRefresh(OverscrollRefreshHandler* handler);
   ~OverscrollRefresh();
 
   // Scroll event stream listening methods.
   void OnScrollBegin();
+  // Returns whether the refresh was activated.
   void OnScrollEnd(const gfx::Vector2dF& velocity);
 
   // Scroll ack listener. The effect will only be activated if the initial
@@ -74,16 +66,11 @@ class CONTENT_EXPORT OverscrollRefresh {
   // Release the effect (if active), preventing any associated refresh action.
   void ReleaseWithoutActivation();
 
-  // Returns true if the effect still needs animation ticks, with effect layers
-  // attached to |parent| if necessary.
-  // Note: The effect will detach itself when no further animation is required.
-  bool Animate(base::TimeTicks current_time, cc::Layer* parent_layer);
-
-  // Update the effect according to the most recent display parameters,
-  // Note: All dimensions are in device pixels.
-  void UpdateDisplay(const gfx::SizeF& viewport_size,
-                     const gfx::Vector2dF& content_scroll_offset,
-                     bool root_overflow_y_hidden);
+  // Notify the effect of the latest scroll offset and overflow properties.
+  // The effect will be disabled when the offset is non-zero or overflow is
+  // hidden. Note: All dimensions are in device pixels.
+  void OnFrameUpdated(const gfx::Vector2dF& content_scroll_offset,
+                      bool root_overflow_y_hidden);
 
   // Reset the effect to its inactive state, immediately detaching and
   // disabling any active effects.
@@ -96,11 +83,8 @@ class CONTENT_EXPORT OverscrollRefresh {
   bool IsAwaitingScrollUpdateAck() const;
 
  private:
-  void Release(bool allow_activation);
+  void Release(bool allow_refresh);
 
-  OverscrollRefreshClient* const client_;
-
-  gfx::SizeF viewport_size_;
   bool scrolled_to_top_;
   bool overflow_y_hidden_;
 
@@ -110,8 +94,7 @@ class CONTENT_EXPORT OverscrollRefresh {
     ENABLED,
   } scroll_consumption_state_;
 
-  class Effect;
-  scoped_ptr<Effect> effect_;
+  OverscrollRefreshHandler* const handler_;
 
   DISALLOW_COPY_AND_ASSIGN(OverscrollRefresh);
 };

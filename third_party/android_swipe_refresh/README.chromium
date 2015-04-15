@@ -10,5 +10,12 @@ dependencies) from Android's app compat library (v4). The widget provides a
 pull-to-refresh styled layout for touch-activated refresh of view contents.
 
 Local Modifications:
-CircleImageView, MaterialProgressDrawable, SwipeRefreshLayout:
-  * Only the package has been changed.
+
+CircleImageView, MaterialProgressDrawable
+  * The package has been changed, and all ViewCompat dependencies removed.
+
+SwipeRefreshLayout
+  * MotionEvent-behavior has been changed to allow more abstract inputs.
+  * Target View semantics have been removed, allowing it to operate on
+    a parent View rather than a child View.
+  * All ViewCompat and MotionEventCompat dependencies removed.

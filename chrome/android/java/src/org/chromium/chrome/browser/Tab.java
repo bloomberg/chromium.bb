@@ -156,6 +156,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     /** Manages app banners shown for this tab. */
     private AppBannerManager mAppBannerManager;
 
+    /** Controls overscroll pull-to-refresh behavior for this tab. */
+    private SwipeRefreshHandler mSwipeRefreshHandler;
+
     /** The sync id of the Tab if session sync is enabled. */
     private int mSyncId;
 
@@ -633,7 +636,10 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                 observer.onDidNavigateMainFrame(
                         Tab.this, url, baseUrl, isNavigationToDifferentPage,
                         isFragmentNavigation, statusCode);
+            }
 
+            if (mSwipeRefreshHandler != null) {
+                mSwipeRefreshHandler.didStopRefreshing();
             }
         }
 
@@ -1603,6 +1609,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         }
         mInfoBarContainer.setContentViewCore(mContentViewCore);
 
+        mSwipeRefreshHandler = new SwipeRefreshHandler(mContext);
+        mSwipeRefreshHandler.setContentViewCore(mContentViewCore);
+
         if (DomDistillerFeedbackReporter.isEnabled() && mDomDistillerFeedbackReporter == null) {
             mDomDistillerFeedbackReporter = new DomDistillerFeedbackReporter(this);
         }
@@ -2039,6 +2048,10 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         if (mInfoBarContainer != null && mInfoBarContainer.getParent() != null) {
             mInfoBarContainer.removeFromParentView();
             mInfoBarContainer.setContentViewCore(null);
+        }
+        if (mSwipeRefreshHandler != null) {
+            mSwipeRefreshHandler.setContentViewCore(null);
+            mSwipeRefreshHandler = null;
         }
         mContentViewParent = null;
         mContentViewCore.destroy();

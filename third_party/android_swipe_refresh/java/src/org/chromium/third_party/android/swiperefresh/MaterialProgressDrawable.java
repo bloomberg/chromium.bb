@@ -35,8 +35,6 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Animatable;
-import android.support.annotation.IntDef;
-import android.support.annotation.NonNull;
 import android.util.DisplayMetrics;
 import android.view.View;
 
@@ -56,7 +54,6 @@ class MaterialProgressDrawable extends Drawable implements Animatable {
     private static final Interpolator EASE_INTERPOLATOR = new AccelerateDecelerateInterpolator();
 
     @Retention(RetentionPolicy.CLASS)
-    @IntDef({LARGE, DEFAULT})
     public @interface ProgressDrawableSize {}
     // Maps to ProgressBar.Large style
     static final int LARGE = 0;
@@ -215,13 +212,25 @@ class MaterialProgressDrawable extends Drawable implements Animatable {
         return (int) mWidth;
     }
 
+    private static boolean isLayoutRtl(View view) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            return view.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL;
+        } else {
+            // All layouts are LTR before JB MR1.
+            return false;
+        }
+    }
+
     @Override
     public void draw(Canvas c) {
+        final boolean mirrorX = isLayoutRtl(mParent);
         final Rect bounds = getBounds();
         final int saveCount = c.save();
+        if (mirrorX) c.scale(-1.f, 1.f);
         c.rotate(mRotation, bounds.exactCenterX(), bounds.exactCenterY());
         mRing.draw(c, bounds);
         c.restoreToCount(saveCount);
+        if (mirrorX) c.scale(-1.f, 1.f);
     }
 
     @Override
@@ -358,7 +367,7 @@ class MaterialProgressDrawable extends Drawable implements Animatable {
                 setRotation(groupRotation);
             }
         };
-        animation.setRepeatCount(Animation.INFINITE);
+        animation.setRepeatCount(10);
         animation.setRepeatMode(Animation.RESTART);
         animation.setInterpolator(LINEAR_INTERPOLATOR);
         animation.setDuration(ANIMATION_DURATION);
@@ -480,7 +489,7 @@ class MaterialProgressDrawable extends Drawable implements Animatable {
             if (mAlpha < 255) {
                 mCirclePaint.setColor(mBackgroundColor);
                 mCirclePaint.setAlpha(255 - mAlpha);
-                c.drawCircle(bounds.exactCenterX(), bounds.exactCenterY(), bounds.width() / 2,
+                c.drawCircle(bounds.exactCenterX(), bounds.exactCenterY(), bounds.width() / 2f,
                         mCirclePaint);
             }
         }
@@ -496,7 +505,7 @@ class MaterialProgressDrawable extends Drawable implements Animatable {
 
                 // Adjust the position of the triangle so that it is inset as
                 // much as the arc, but also centered on the arc.
-                float inset = (int) mStrokeInset / 2 * mArrowScale;
+                float inset = (int) mStrokeInset / 2f * mArrowScale;
                 float x = (float) (mRingCenterRadius * Math.cos(0) + bounds.exactCenterX());
                 float y = (float) (mRingCenterRadius * Math.sin(0) + bounds.exactCenterY());
 
@@ -506,8 +515,7 @@ class MaterialProgressDrawable extends Drawable implements Animatable {
                 // been fixed as of API 21.
                 mArrow.moveTo(0, 0);
                 mArrow.lineTo(mArrowWidth * mArrowScale, 0);
-                mArrow.lineTo((mArrowWidth * mArrowScale / 2), (mArrowHeight
-                        * mArrowScale));
+                mArrow.lineTo((mArrowWidth * mArrowScale / 2f), (mArrowHeight * mArrowScale));
                 mArrow.offset(x - inset, y);
                 mArrow.close();
                 // draw a triangle
@@ -523,7 +531,7 @@ class MaterialProgressDrawable extends Drawable implements Animatable {
          *
          * @param colors Array of integers describing the colors. Must be non-<code>null</code>.
          */
-        public void setColors(@NonNull int[] colors) {
+        public void setColors(int[] colors) {
             mColors = colors;
             // if colors are reset, make sure to reset the color index as well
             setColorIndex(0);
@@ -554,7 +562,10 @@ class MaterialProgressDrawable extends Drawable implements Animatable {
          * @param alpha Set the alpha of the progress spinner and associated arrowhead.
          */
         public void setAlpha(int alpha) {
-            mAlpha = alpha;
+            if (mAlpha != alpha) {
+                mAlpha = alpha;
+                invalidateSelf();
+            }
         }
 
         /**

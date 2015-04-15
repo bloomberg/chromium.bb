@@ -167,7 +167,7 @@ bool OverscrollGlow::Animate(base::TimeTicks current_time,
   return CheckNeedsAnimate();
 }
 
-void OverscrollGlow::UpdateDisplay(
+void OverscrollGlow::OnFrameUpdated(
     const gfx::SizeF& viewport_size,
     const gfx::SizeF& content_size,
     const gfx::Vector2dF& content_scroll_offset) {

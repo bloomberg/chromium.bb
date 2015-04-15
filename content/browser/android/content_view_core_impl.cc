@@ -1410,6 +1410,37 @@ void ContentViewCoreImpl::WebContentsDestroyed() {
   wcva->SetContentViewCore(NULL);
 }
 
+bool ContentViewCoreImpl::PullStart() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (!obj.is_null())
+    return Java_ContentViewCore_onOverscrollRefreshStart(env, obj.obj());
+  return false;
+}
+
+void ContentViewCoreImpl::PullUpdate(float delta) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (!obj.is_null())
+    Java_ContentViewCore_onOverscrollRefreshUpdate(env, obj.obj(), delta);
+}
+
+void ContentViewCoreImpl::PullRelease(bool allow_refresh) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (!obj.is_null()) {
+    Java_ContentViewCore_onOverscrollRefreshRelease(env, obj.obj(),
+                                                    allow_refresh);
+  }
+}
+
+void ContentViewCoreImpl::PullReset() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (!obj.is_null())
+    Java_ContentViewCore_onOverscrollRefreshReset(env, obj.obj());
+}
+
 // This is called for each ContentView.
 jlong Init(JNIEnv* env,
            jobject obj,

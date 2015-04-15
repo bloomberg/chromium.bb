@@ -8,7 +8,4 @@ assert(is_android)
 
 android_library("android_swipe_refresh_java") {
   DEPRECATED_java_in_dir = "java/src"
-  deps = [
-    "//third_party/android_tools:android_support_v4_java",
-  ]
 }

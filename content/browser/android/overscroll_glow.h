@@ -59,9 +59,9 @@ class OverscrollGlow {
 
   // Update the effect according to the most recent display parameters,
   // Note: All dimensions are in device pixels.
-  void UpdateDisplay(const gfx::SizeF& viewport_size,
-                     const gfx::SizeF& content_size,
-                     const gfx::Vector2dF& content_scroll_offset);
+  void OnFrameUpdated(const gfx::SizeF& viewport_size,
+                      const gfx::SizeF& content_size,
+                      const gfx::Vector2dF& content_scroll_offset);
 
   // Reset the effect to its inactive state, clearing any active effects.
   void Reset();
