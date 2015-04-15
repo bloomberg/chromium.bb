@@ -130,6 +130,7 @@
           '<(PRODUCT_DIR)/nacl_helper',
           '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
           '<(PRODUCT_DIR)/resources/chromeos/',
+          'browser/chromeos/login/test/https_forwarder.py',
         ],
       },
     }],

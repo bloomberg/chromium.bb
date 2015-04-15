@@ -20,6 +20,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/fake_shill_manager_client.h"
+#include "components/policy/core/common/policy_switches.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -32,12 +33,19 @@
 
 namespace chromeos {
 
+// static
+const char OobeBaseTest::kFakeUserEmail[] = "fake-email@gmail.com";
+const char OobeBaseTest::kFakeUserPassword[] = "fake-password";
+const char OobeBaseTest::kFakeSIDCookie[] = "fake-SID-cookie";
+const char OobeBaseTest::kFakeLSIDCookie[] = "fake-LSID-cookie";
+
 OobeBaseTest::OobeBaseTest()
     : fake_gaia_(new FakeGaia()),
       network_portal_detector_(NULL),
       needs_background_networking_(false),
       gaia_frame_parent_("signin-frame"),
-      use_webview_(false) {
+      use_webview_(false),
+      initialize_fake_merge_session_(true) {
   set_exit_when_last_browser_closes(false);
   set_chromeos_user_ = false;
 }
@@ -49,6 +57,8 @@ void OobeBaseTest::SetUp() {
   base::FilePath test_data_dir;
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
   embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
+
+  RegisterAdditionalRequestHandlers();
 
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&FakeGaia::HandleRequest, base::Unretained(fake_gaia_.get())));
@@ -67,25 +77,19 @@ void OobeBaseTest::SetUp() {
 }
 
 bool OobeBaseTest::SetUpUserDataDirectory() {
-  if (use_webview_) {
-    // Fake Dev channel to enable webview signin.
-    scoped_channel_.reset(
-        new extensions::ScopedCurrentChannel(chrome::VersionInfo::CHANNEL_DEV));
+  base::FilePath user_data_dir;
+  CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
+  base::FilePath local_state_path =
+      user_data_dir.Append(chrome::kLocalStateFilename);
 
-    base::FilePath user_data_dir;
-    CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
-    base::FilePath local_state_path =
-        user_data_dir.Append(chrome::kLocalStateFilename);
-
-    // Set webview enabled flag only when local state file does not exist.
+  if (!use_webview()) {
+    // Set webview disabled flag only when local state file does not exist.
     // Otherwise, we break PRE tests that leave state in it.
     if (!base::PathExists(local_state_path)) {
       base::DictionaryValue local_state_dict;
-      local_state_dict.SetBoolean(prefs::kWebviewSigninEnabled, true);
-      // OobeCompleted to skip controller-pairing-screen which still uses
-      // iframe and ends up in a JS error in oobe page init.
-      // See http://crbug.com/467147
-      local_state_dict.SetBoolean(prefs::kOobeComplete, true);
+
+      // TODO(nkostylev): Fix tests that fail with webview signin.
+      local_state_dict.SetBoolean(prefs::kWebviewSigninDisabled, true);
 
       CHECK(JSONFileValueSerializer(local_state_path)
                 .Serialize(local_state_dict));
@@ -106,6 +110,11 @@ void OobeBaseTest::SetUpInProcessBrowserTestFixture() {
 }
 
 void OobeBaseTest::SetUpOnMainThread() {
+  if (initialize_fake_merge_session()) {
+    fake_gaia_->SetFakeMergeSessionParams(kFakeUserEmail, kFakeSIDCookie,
+                                          kFakeLSIDCookie);
+  }
+
   // Restart the thread as the sandbox host process has already been spawned.
   embedded_test_server()->RestartThreadAndListen();
 
@@ -123,6 +132,7 @@ void OobeBaseTest::TearDownOnMainThread() {
                                            base::Bind(&chrome::AttemptExit));
     content::RunMessageLoop();
   }
+  EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 
   ExtensionApiTest::TearDownOnMainThread();
 }
@@ -136,20 +146,23 @@ void OobeBaseTest::SetUpCommandLine(base::CommandLine* command_line) {
     command_line->AppendSwitch(::switches::kDisableBackgroundNetworking);
   command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
 
-  GURL gaia_url = gaia_https_forwarder_->GetURL("");
+  GURL gaia_url = gaia_https_forwarder_->GetURL(std::string());
   command_line->AppendSwitchASCII(::switches::kGaiaUrl, gaia_url.spec());
   command_line->AppendSwitchASCII(::switches::kLsoUrl, gaia_url.spec());
   command_line->AppendSwitchASCII(::switches::kGoogleApisUrl,
                                   gaia_url.spec());
 
   fake_gaia_->Initialize();
-  fake_gaia_->set_issue_oauth_code_cookie(use_webview_);
+  fake_gaia_->set_issue_oauth_code_cookie(use_webview());
 }
 
 void OobeBaseTest::InitHttpsForwarders() {
   gaia_https_forwarder_.reset(
       new HTTPSForwarder(embedded_test_server()->base_url()));
   ASSERT_TRUE(gaia_https_forwarder_->Start());
+}
+
+void OobeBaseTest::RegisterAdditionalRequestHandlers() {
 }
 
 void OobeBaseTest::SimulateNetworkOffline() {
@@ -217,11 +230,32 @@ WebUILoginDisplay* OobeBaseTest::GetLoginDisplay() {
       controller->login_display());
 }
 
+void OobeBaseTest::WaitForGaiaPageLoad() {
+  WaitForSigninScreen();
+
+  if (!use_webview())
+    return;
+
+  ASSERT_TRUE(content::ExecuteScript(
+      GetLoginUI()->GetWebContents(),
+      "$('gaia-signin').gaiaAuthHost_.addEventListener('ready',"
+      "function() {"
+      "window.domAutomationController.setAutomationId(0);"
+      "window.domAutomationController.send('GaiaReady');"
+      "});"));
+
+  content::DOMMessageQueue message_queue;
+  std::string message;
+  do {
+    ASSERT_TRUE(message_queue.WaitForMessage(&message));
+  } while (message != "\"GaiaReady\"");
+}
+
 void OobeBaseTest::WaitForSigninScreen() {
   WizardController* wizard_controller = WizardController::default_controller();
-  if (wizard_controller) {
+  if (wizard_controller)
     wizard_controller->SkipToLoginForTesting(LoginScreenContext());
-  }
+
   WizardController::SkipPostLoginScreensForTesting();
 
   login_screen_load_observer_->Wait();

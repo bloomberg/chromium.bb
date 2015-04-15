@@ -997,14 +997,29 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
     // empty if |transfer_saml_auth_cookies_on_subsequent_login| is true.
     const bool transfer_auth_cookies_and_channel_ids_on_first_login =
         has_auth_cookies_;
-    ProfileAuthData::Transfer(
-        GetAuthRequestContext(),
-        profile->GetRequestContext(),
-        transfer_auth_cookies_and_channel_ids_on_first_login,
-        transfer_saml_auth_cookies_on_subsequent_login,
-        base::Bind(&UserSessionManager::CompleteProfileCreateAfterAuthTransfer,
-                   AsWeakPtr(),
-                   profile));
+
+    net::URLRequestContextGetter* auth_request_context =
+        GetAuthRequestContext();
+
+    // Authentication request context may be missing especially if user didn't
+    // sign in using GAIA (webview) and webview didn't yet initialize.
+    if (auth_request_context) {
+      ProfileAuthData::Transfer(
+          auth_request_context, profile->GetRequestContext(),
+          transfer_auth_cookies_and_channel_ids_on_first_login,
+          transfer_saml_auth_cookies_on_subsequent_login,
+          base::Bind(
+              &UserSessionManager::CompleteProfileCreateAfterAuthTransfer,
+              AsWeakPtr(), profile));
+    } else {
+      // We need to post task so that OnProfileCreated() caller sends out
+      // NOTIFICATION_PROFILE_CREATED which marks user profile as initialized.
+      base::MessageLoopProxy::current()->PostTask(
+          FROM_HERE,
+          base::Bind(
+              &UserSessionManager::CompleteProfileCreateAfterAuthTransfer,
+              AsWeakPtr(), profile));
+    }
     return;
   }
 
@@ -1231,9 +1246,18 @@ void UserSessionManager::RestoreAuthSessionImpl(
       OAuth2LoginManagerFactory::GetInstance()->GetForProfile(profile);
   login_manager->AddObserver(this);
 
-  login_manager->RestoreSession(
-      GetAuthRequestContext(), session_restore_strategy_,
-      user_context_.GetRefreshToken(), user_context_.GetAuthCode());
+  net::URLRequestContextGetter* auth_request_context = GetAuthRequestContext();
+
+  // Authentication request context may not be available if user was not
+  // signing in with GAIA webview (i.e. webview instance hasn't been
+  // initialized at all). Use fallback request context.
+  if (!auth_request_context) {
+    auth_request_context =
+        authenticator_->authentication_context()->GetRequestContext();
+  }
+  login_manager->RestoreSession(auth_request_context, session_restore_strategy_,
+                                user_context_.GetRefreshToken(),
+                                user_context_.GetAuthCode());
 }
 
 void UserSessionManager::InitRlzImpl(Profile* profile, bool disabled) {
@@ -1422,13 +1446,15 @@ void UserSessionManager::UpdateEasyUnlockKeys(const UserContext& user_context) {
 
 net::URLRequestContextGetter*
 UserSessionManager::GetAuthRequestContext() const {
-  net::URLRequestContextGetter* auth_request_context = NULL;
+  net::URLRequestContextGetter* auth_request_context = nullptr;
 
   if (StartupUtils::IsWebviewSigninEnabled()) {
     // Webview uses different partition storage than iframe. We need to get
     // cookies from the right storage for url request to get auth token into
     // session.
-    auth_request_context = login::GetSigninPartition()->GetURLRequestContext();
+    content::StoragePartition* signin_partition = login::GetSigninPartition();
+    if (signin_partition)
+      auth_request_context = signin_partition->GetURLRequestContext();
   } else if (authenticator_.get() && authenticator_->authentication_context()) {
     auth_request_context =
         authenticator_->authentication_context()->GetRequestContext();

@@ -1919,9 +1919,8 @@ const char kConsumerManagementStage[] = "consumer_management.stage";
 const char kNewOobe[] = "NewOobe";
 
 // A boolean pref. If set to true, experimental webview based signin flow
-// activated.
-const char kWebviewSigninEnabled[] =
-    "webview_signin_enabled";
+// is deactivated.
+const char kWebviewSigninDisabled[] = "webview_signin_disabled";
 #endif  // defined(OS_CHROMEOS)
 
 // Whether there is a Flash version installed that supports clearing LSO data.

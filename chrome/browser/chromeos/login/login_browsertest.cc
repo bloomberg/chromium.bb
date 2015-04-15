@@ -5,6 +5,8 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "base/command_line.h"
+#include "base/json/json_file_value_serializer.h"
+#include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
@@ -17,7 +19,9 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/tracing.h"
@@ -143,6 +147,33 @@ class LoginTest : public chromeos::LoginManagerTest {
   }
 };
 
+class LoginOfflineTest : public LoginTest {
+ public:
+  LoginOfflineTest() {}
+  ~LoginOfflineTest() override {}
+
+  bool SetUpUserDataDirectory() override {
+    base::FilePath user_data_dir;
+    CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
+    base::FilePath local_state_path =
+        user_data_dir.Append(chrome::kLocalStateFilename);
+    base::DictionaryValue local_state_dict;
+
+    // Set webview disabled flag only when local state file does not exist.
+    // Otherwise, we break PRE tests that leave state in it.
+    if (!base::PathExists(local_state_path)) {
+      // TODO(rsorokin): Fix offline test for webview signin.
+      // http://crbug.com/475569
+      local_state_dict.SetBoolean(prefs::kWebviewSigninDisabled, true);
+
+      CHECK(JSONFileValueSerializer(local_state_path)
+                .Serialize(local_state_dict));
+    }
+
+    return LoginTest::SetUpUserDataDirectory();
+  }
+};
+
 // Used to make sure that the system tray is visible and within the screen
 // bounds after login.
 void TestSystemTrayIsVisible() {
@@ -215,14 +246,14 @@ IN_PROC_BROWSER_TEST_F(LoginSigninTest, WebUIVisible) {
   ASSERT_TRUE(tracing::EndTracing(&json_events));
 }
 
-IN_PROC_BROWSER_TEST_F(LoginTest, PRE_GaiaAuthOffline) {
+IN_PROC_BROWSER_TEST_F(LoginOfflineTest, PRE_GaiaAuthOffline) {
   RegisterUser(kTestUser);
   chromeos::StartupUtils::MarkOobeCompleted();
   chromeos::CrosSettings::Get()->SetBoolean(
       chromeos::kAccountsPrefShowUserNamesOnSignIn, false);
 }
 
-IN_PROC_BROWSER_TEST_F(LoginTest, GaiaAuthOffline) {
+IN_PROC_BROWSER_TEST_F(LoginOfflineTest, GaiaAuthOffline) {
   bool show_user;
   ASSERT_TRUE(chromeos::CrosSettings::Get()->GetBoolean(
       chromeos::kAccountsPrefShowUserNamesOnSignIn, &show_user));

@@ -34,8 +34,21 @@ class NetworkPortalDetectorTestImpl;
 // Base class for OOBE, login, SAML and Kiosk tests.
 class OobeBaseTest : public ExtensionApiTest {
  public:
+  // Default fake user email and password, may be used by tests.
+
+  static const char kFakeUserEmail[];
+  static const char kFakeUserPassword[];
+
+  // FakeGaia is configured to return these cookies for kFakeUserEmail.
+  static const char kFakeSIDCookie[];
+  static const char kFakeLSIDCookie[];
+
   OobeBaseTest();
   ~OobeBaseTest() override;
+
+  // Subclasses may register their own custom request handlers that will
+  // process requests prior it gets handled by FakeGaia instance.
+  virtual void RegisterAdditionalRequestHandlers();
 
  protected:
   // InProcessBrowserTest overrides.
@@ -60,12 +73,23 @@ class OobeBaseTest : public ExtensionApiTest {
   // Checks JavaScript |expression| in login screen.
   void JsExpect(const std::string& expression);
 
+  bool use_webview() { return use_webview_; }
+  void set_use_webview(bool use_webview) { use_webview_ = use_webview; }
+
+  bool initialize_fake_merge_session() {
+    return initialize_fake_merge_session_;
+  }
+  void set_initialize_fake_merge_session(bool value) {
+    initialize_fake_merge_session_ = value;
+  }
+
   // Returns chrome://oobe WebUI.
   content::WebUI* GetLoginUI();
 
   // Returns login display.
   WebUILoginDisplay* GetLoginDisplay();
 
+  void WaitForGaiaPageLoad();
   void WaitForSigninScreen();
   void ExecuteJsInSigninFrame(const std::string& js);
   void SetSignFormField(const std::string& field_id,
@@ -83,6 +107,7 @@ class OobeBaseTest : public ExtensionApiTest {
   scoped_ptr<HTTPSForwarder> gaia_https_forwarder_;
   std::string gaia_frame_parent_;
   bool use_webview_;
+  bool initialize_fake_merge_session_;
 
   DISALLOW_COPY_AND_ASSIGN(OobeBaseTest);
 };
