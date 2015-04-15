@@ -38860,6 +38860,36 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Startup.BrowserMessageLoopStartHardFaultCount" units="faults">
+  <owner>chrisha@chromium.org</owner>
+  <summary>
+    The number of hard faults incurred in the browser process from startup to
+    start of the main thread's message loop, not including first runs of the
+    browser. This is only reported on Windows 7 and greater.
+  </summary>
+</histogram>
+
+<histogram name="Startup.BrowserMessageLoopStartHardFaultCount.FirstRun"
+    units="faults">
+  <owner>chrisha@chromium.org</owner>
+  <summary>
+    The number of hard faults incurred in the browser process from startup to
+    start of the main thread's message loop on first run. This is only reported
+    on Windows 7 and greater.
+  </summary>
+</histogram>
+
+<histogram name="Startup.BrowserMessageLoopStartHardFaultCount.Success"
+    enum="BooleanSuccess">
+  <owner>chrisha@chromium.org</owner>
+  <summary>
+    If OS support was detected (Windows 7 and greater) indicates whether it was
+    possible to determine the number of hard faults that have occurred in the
+    process from startup to start of the main thread's message loop. This can
+    fail because the underlying call is inherently racy.
+  </summary>
+</histogram>
+
 <histogram name="Startup.BrowserMessageLoopStartTime">
   <owner>jeremy@chromium.org</owner>
   <summary>
