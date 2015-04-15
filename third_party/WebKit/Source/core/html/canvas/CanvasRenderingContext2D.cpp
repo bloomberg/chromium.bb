@@ -951,7 +951,8 @@ void CanvasRenderingContext2D::drawPathInternal(const Path& path, CanvasRenderin
     if (draw(
         [&skPath, this](const SkPaint* paint) // draw lambda
         {
-            drawingCanvas()->drawPath(skPath, *paint);
+            if (drawingCanvas())
+                drawingCanvas()->drawPath(skPath, *paint);
         },
         [](const SkIRect& rect) // overdraw test lambda
         {
@@ -1007,7 +1008,8 @@ void CanvasRenderingContext2D::fillRect(float x, float y, float width, float hei
     draw(
         [&rect, this](const SkPaint* paint) // draw lambda
         {
-            drawingCanvas()->drawRect(rect, *paint);
+            if (drawingCanvas())
+                drawingCanvas()->drawRect(rect, *paint);
         },
         [&rect, this](const SkIRect& clipBounds) // overdraw test lambda
         {
@@ -1042,7 +1044,8 @@ void CanvasRenderingContext2D::strokeRect(float x, float y, float width, float h
     draw(
         [&rect, this](const SkPaint* paint) // draw lambda
         {
-            strokeRectOnCanvas(rect, drawingCanvas(), paint);
+            if (drawingCanvas())
+                strokeRectOnCanvas(rect, drawingCanvas(), paint);
         },
         [](const SkIRect& clipBounds) // overdraw test lambda
         {
@@ -1203,7 +1206,8 @@ void CanvasRenderingContext2D::clearRect(float x, float y, float width, float he
 
     if (rectContainsTransformedRect(rect, clipBounds)) {
         checkOverdraw(rect, &clearPaint, CanvasRenderingContext2DState::NoImage, ClipFill);
-        drawingCanvas()->drawRect(rect, clearPaint);
+        if (drawingCanvas())
+            drawingCanvas()->drawRect(rect, clearPaint);
         didDraw(clipBounds);
     } else {
         SkIRect dirtyRect;
@@ -1385,7 +1389,8 @@ void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
     draw(
         [this, &imageSource, &image, &srcRect, dstRect](const SkPaint* paint) // draw lambda
         {
-            drawImageOnContext(imageSource, image.get(), srcRect, dstRect, paint);\
+            if (drawingCanvas())
+                drawImageOnContext(imageSource, image.get(), srcRect, dstRect, paint);
         },
         [this, &dstRect](const SkIRect& clipBounds) // overdraw test lambda
         {
@@ -1413,14 +1418,9 @@ void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
 void CanvasRenderingContext2D::clearCanvas()
 {
     FloatRect canvasRect(0, 0, canvas()->width(), canvas()->height());
-    SkCanvas* c = drawingCanvas();
-    if (!c)
-        return;
-
     checkOverdraw(canvasRect, 0, CanvasRenderingContext2DState::NoImage, ClipFill);
-    // Must not use 'c' beyond this point in case checkOverdraw substitutes the recording
-    // canvas in order to clear a draw command backlog.
-    drawingCanvas()->clear(m_hasAlpha ? SK_ColorTRANSPARENT : SK_ColorBLACK);
+    if (drawingCanvas())
+        drawingCanvas()->clear(m_hasAlpha ? SK_ColorTRANSPARENT : SK_ColorBLACK);
 }
 
 bool CanvasRenderingContext2D::rectContainsTransformedRect(const FloatRect& rect, const SkIRect& transformedRect) const
@@ -1968,7 +1968,8 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
     draw(
         [&font, this, &textRunPaintInfo, &location](const SkPaint* paint) // draw lambda
         {
-            font.drawBidiText(drawingCanvas(), textRunPaintInfo, location, Font::UseFallbackIfFontNotReady, cDeviceScaleFactor, *paint);
+            if (drawingCanvas())
+                font.drawBidiText(drawingCanvas(), textRunPaintInfo, location, Font::UseFallbackIfFontNotReady, cDeviceScaleFactor, *paint);
         },
         [](const SkIRect& rect) // overdraw test lambda
         {
