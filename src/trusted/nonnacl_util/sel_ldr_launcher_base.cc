@@ -127,19 +127,6 @@ bool SelLdrLauncherBase::LoadModule(NaClSrpcChannel* command,
   return true;
 }
 
-bool SelLdrLauncherBase::SetupCommandAndLoad(NaClSrpcChannel* command,
-                                             DescWrapper* nexe) {
-  if (!SetupCommand(command)) {
-    return false;
-  }
-  if (nexe != NULL) {
-    if (!LoadModule(command, nexe)) {
-      return false;
-    }
-  }
-  return true;
-}
-
 bool SelLdrLauncherBase::StartModule(NaClSrpcChannel* command) {
   // Start untrusted code module.
   int start_result;
@@ -147,7 +134,7 @@ bool SelLdrLauncherBase::StartModule(NaClSrpcChannel* command) {
       command,
       NACL_SECURE_SERVICE_START_MODULE,
       &start_result);
-  NaClLog(4, "SelLdrLauncher::StartModule rpc result %d\n",
+  NaClLog(4, "SelLdrLauncherBase::StartModule rpc result %d\n",
           static_cast<int>(rpc_result));
   if (NACL_SRPC_RESULT_OK != rpc_result || LOAD_OK != start_result) {
     NaClSrpcDtor(command);
@@ -164,7 +151,7 @@ bool SelLdrLauncherBase::SetupAppChannel(NaClSrpcChannel* out_app_chan) {
   // Connect to the untrusted service itself.
   scoped_ptr<DescWrapper> untrusted_desc(socket_addr_->Connect());
   if (untrusted_desc == NULL) {
-    NaClLog(LOG_ERROR, "SelLdrLauncher::StartModuleAndSetupAppChannel: "
+    NaClLog(LOG_ERROR, "SelLdrLauncherBase::SetupAppChannel: "
             "Connect failed\n");
     return false;
   }
@@ -176,30 +163,6 @@ bool SelLdrLauncherBase::SetupAppChannel(NaClSrpcChannel* out_app_chan) {
     return false;
   }
   return true;
-}
-
-// Sends the SRPC to start the nexe over |command| and sets up the application
-// SRPC chanel |out_app_chan|.
-bool SelLdrLauncherBase::StartModuleAndSetupAppChannel(
-    NaClSrpcChannel* command,
-    NaClSrpcChannel* out_app_chan) {
-  if (!StartModule(command)) {
-    return false;
-  }
-  if (!SetupAppChannel(out_app_chan)) {
-    return false;
-  }
-  return true;
-}
-
-DescWrapper* SelLdrLauncherBase::Wrap(NaClDesc* raw_desc) {
-  CHECK(factory_ != NULL);
-  return factory_->MakeGeneric(raw_desc);
-}
-
-DescWrapper* SelLdrLauncherBase::WrapCleanup(NaClDesc* raw_desc) {
-  CHECK(factory_ != NULL);
-  return factory_->MakeGenericCleanup(raw_desc);
 }
 
 }  // namespace nacl

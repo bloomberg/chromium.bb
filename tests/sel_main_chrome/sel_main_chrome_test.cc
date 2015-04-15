@@ -121,8 +121,8 @@ void WINAPI DummyRendererThread(void *thread_arg) {
   NaClSrpcChannel trusted_channel;
   NaClSrpcChannel untrusted_channel;
   CHECK(launcher.SetupCommand(&trusted_channel));
-  CHECK(launcher.StartModuleAndSetupAppChannel(&trusted_channel,
-                                               &untrusted_channel));
+  CHECK(launcher.StartModule(&trusted_channel));
+  CHECK(launcher.SetupAppChannel(&untrusted_channel));
 }
 
 void ExampleDescDestroy(void *handle) {

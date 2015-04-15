@@ -43,6 +43,7 @@ class SelLdrLocator {
 
   virtual ~SelLdrLocator() {}
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(SelLdrLocator);
 };
 
@@ -57,6 +58,7 @@ class PluginSelLdrLocator : public SelLdrLocator {
 
   PluginSelLdrLocator() {}
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(PluginSelLdrLocator);
 };
 
@@ -82,20 +84,11 @@ class SelLdrLauncherBase {
   // After starting the sel_ldr process.
   /////////////////////////////////////////////////////////////////////////////
 
-  // Connects bootstrap socket.
-  bool ConnectBootstrapSocket();
-
-  // Retrieves the socket address.
-  bool RetrieveSockAddr();
-
   // Sets up the command channel |command|.
   bool SetupCommand(NaClSrpcChannel* command);
 
   // Load |nexe| over the command channel |command|.
   bool LoadModule(NaClSrpcChannel* command, DescWrapper* nexe);
-
-  // Sets up the command channel |command| and sends the SRPC to load |nexe|.
-  bool SetupCommandAndLoad(NaClSrpcChannel* command, DescWrapper* nexe);
 
   // Sends the SRPC to start the nexe over |command|.
   bool StartModule(NaClSrpcChannel* command);
@@ -103,28 +96,19 @@ class SelLdrLauncherBase {
   // Sets up the SRPC channel |out_app_chan|.
   bool SetupAppChannel(NaClSrpcChannel* out_app_chan);
 
-  // Sends the SRPC to start the nexe over |command| and sets up the application
-  // SRPC chanel |out_app_chan|.
-  bool StartModuleAndSetupAppChannel(NaClSrpcChannel* command,
-                                     NaClSrpcChannel* out_app_chan);
-
-  // Returns the socket address used to connect to the sel_ldr.
-  DescWrapper* secure_socket_addr() const { return secure_socket_addr_.get(); }
-
   // Returns the socket address used to connect to the module.
   DescWrapper* socket_addr() const { return socket_addr_.get(); }
-
-  // Wraps a raw NaClDesc descriptor.  If NULL is returned, caller retains
-  // ownership of the reference.
-  DescWrapper* Wrap(NaClDesc* raw_desc);
-
-  // As above, but raw_desc is Unref'd on failure.
-  DescWrapper* WrapCleanup(NaClDesc* raw_desc);
 
  protected:
   NaClHandle channel_;
 
  private:
+  // Connects bootstrap socket.
+  bool ConnectBootstrapSocket();
+
+  // Retrieves the socket address.
+  bool RetrieveSockAddr();
+
   // lifetime of bootstrap_socket_ must be at least that of factory_
   scoped_ptr<DescWrapperFactory> factory_;
   scoped_ptr<DescWrapper> bootstrap_socket_;
