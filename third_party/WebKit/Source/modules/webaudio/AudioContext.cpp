@@ -153,11 +153,12 @@ AudioContext::~AudioContext()
 #if DEBUG_AUDIONODE_REFERENCES
     fprintf(stderr, "%p: AudioContext::~AudioContext(): %u\n", this, m_contextId);
 #endif
+    handler().contextWillBeDestroyed();
     // AudioNodes keep a reference to their context, so there should be no way to be in the destructor if there are still AudioNodes around.
 
     ASSERT(!m_isInitialized);
     ASSERT(!m_referencedNodes.size());
-    ASSERT(!m_finishedNodes.size());
+    ASSERT(!m_finishedHandlers.size());
     ASSERT(!m_suspendResolvers.size());
     ASSERT(!m_isResolvingResumePromises);
     ASSERT(!m_resumeResolvers.size());
@@ -195,9 +196,11 @@ void AudioContext::initialize()
 
 void AudioContext::clear()
 {
-    // We need to run disposers before destructing m_contextGraphMutex.
     m_liveNodes.clear();
     m_destinationNode.clear();
+    // The audio rendering thread is dead.  Nobody will schedule AudioHandler
+    // deletion.  Let's do it ourselves.
+    handler().clearHandlersToBeDeleted();
     m_isCleared = true;
 }
 
@@ -829,20 +832,20 @@ void AudioContext::notifyNodeStartedProcessing(AudioNode* node)
     refNode(node);
 }
 
-void AudioContext::notifyNodeFinishedProcessing(AudioNode* node)
+void AudioContext::notifyNodeFinishedProcessing(AudioHandler* handler)
 {
     ASSERT(isAudioThread());
-    m_finishedNodes.append(node);
+    m_finishedHandlers.append(handler);
 }
 
 void AudioContext::derefFinishedSourceNodes()
 {
     ASSERT(isGraphOwner());
     ASSERT(isAudioThread());
-    for (unsigned i = 0; i < m_finishedNodes.size(); ++i)
-        derefNode(m_finishedNodes[i]);
+    for (unsigned i = 0; i < m_finishedHandlers.size(); ++i)
+        derefNodeFor(m_finishedHandlers[i]);
 
-    m_finishedNodes.clear();
+    m_finishedHandlers.clear();
 }
 
 void AudioContext::refNode(AudioNode* node)
@@ -854,13 +857,13 @@ void AudioContext::refNode(AudioNode* node)
     node->handler().makeConnection();
 }
 
-void AudioContext::derefNode(AudioNode* node)
+void AudioContext::derefNodeFor(AudioHandler* handler)
 {
     ASSERT(isGraphOwner());
 
     for (unsigned i = 0; i < m_referencedNodes.size(); ++i) {
-        if (node == m_referencedNodes.at(i).get()) {
-            node->handler().breakConnection();
+        if (handler == &m_referencedNodes.at(i)->handler()) {
+            handler->breakConnection();
             m_referencedNodes.remove(i);
             break;
         }
@@ -983,6 +986,7 @@ void AudioContext::handlePostRenderTasks()
         derefFinishedSourceNodes();
 
         handler().handleDeferredTasks();
+        handler().requestToDeleteHandlersOnMainThread();
 
         resolvePromisesForSuspend();
 
@@ -1315,6 +1319,8 @@ ScriptPromise AudioContext::closeContext(ScriptState* scriptState)
     // Before closing the context go and disconnect all nodes, allowing them to be collected. This
     // will also break any connections to the destination node. Any unfinished sourced nodes will
     // get stopped when the context is unitialized.
+    // TODO(tkent): We don't need to disconnect everything to collect
+    // AudioNodes.  This was a workaround of crbug.com/455993.
     for (auto& node : m_liveNodes) {
         if (node) {
             for (unsigned k = 0; k < node->numberOfOutputs(); ++k)
@@ -1358,12 +1364,52 @@ void DeferredTaskHandler::handleDeferredTasks()
     updateAutomaticPullNodes();
 }
 
+void DeferredTaskHandler::contextWillBeDestroyed()
+{
+    for (auto& handler : m_renderingOrphanHandlers)
+        handler->clearContext();
+    for (auto& handler : m_deletableOrphanHandlers)
+        handler->clearContext();
+}
+
 DeferredTaskHandler::AutoLocker::AutoLocker(AudioContext* context)
     : m_handler(context->handler())
 {
     m_handler.lock();
 }
 
+void DeferredTaskHandler::addRenderingOrphanHandler(PassRefPtr<AudioHandler> handler)
+{
+    ASSERT(handler);
+    ASSERT(!m_renderingOrphanHandlers.contains(handler));
+    m_renderingOrphanHandlers.append(handler);
+}
+
+void DeferredTaskHandler::requestToDeleteHandlersOnMainThread()
+{
+    ASSERT(isGraphOwner());
+    ASSERT(isAudioThread());
+    if (m_renderingOrphanHandlers.isEmpty())
+        return;
+    m_deletableOrphanHandlers.appendVector(m_renderingOrphanHandlers);
+    m_renderingOrphanHandlers.clear();
+    Platform::current()->mainThread()->postTask(FROM_HERE, bind(&DeferredTaskHandler::deleteHandlersOnMainThread, PassRefPtr<DeferredTaskHandler>(this)));
+}
+
+void DeferredTaskHandler::deleteHandlersOnMainThread()
+{
+    ASSERT(isMainThread());
+    AutoLocker locker(*this);
+    m_deletableOrphanHandlers.clear();
+}
+
+void DeferredTaskHandler::clearHandlersToBeDeleted()
+{
+    ASSERT(isMainThread());
+    AutoLocker locker(*this);
+    m_renderingOrphanHandlers.clear();
+    m_deletableOrphanHandlers.clear();
+}
 
 } // namespace blink
 

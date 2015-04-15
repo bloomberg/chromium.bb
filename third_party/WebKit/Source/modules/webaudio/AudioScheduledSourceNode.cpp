@@ -189,7 +189,7 @@ void AudioScheduledSourceHandler::finishWithoutOnEnded()
 {
     if (m_playbackState != FINISHED_STATE) {
         // Let the context dereference this AudioNode.
-        context()->notifyNodeFinishedProcessing(node());
+        context()->notifyNodeFinishedProcessing(this);
         m_playbackState = FINISHED_STATE;
     }
 }
@@ -198,13 +198,15 @@ void AudioScheduledSourceHandler::finish()
     finishWithoutOnEnded();
 
     if (m_hasEndedListener && context()->executionContext()) {
-        context()->executionContext()->postTask(FROM_HERE, createCrossThreadTask(&AudioScheduledSourceHandler::notifyEnded, this));
+        context()->executionContext()->postTask(FROM_HERE, createCrossThreadTask(&AudioScheduledSourceHandler::notifyEnded, PassRefPtr<AudioScheduledSourceHandler>(this)));
     }
 }
 
 void AudioScheduledSourceHandler::notifyEnded()
 {
-    node()->dispatchEvent(Event::create(EventTypeNames::ended));
+    ASSERT(isMainThread());
+    if (node())
+        node()->dispatchEvent(Event::create(EventTypeNames::ended));
 }
 
 // ----------------------------------------------------------------
