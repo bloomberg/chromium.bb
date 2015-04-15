@@ -471,7 +471,7 @@ client_disconnect(struct client *c)
 }
 
 /* num is number of clients that requests to stop display.
- * Display is stopped after it receive num STOP_DISPLAY requests */
+ * Display is stopped after it receives num STOP_DISPLAY requests */
 int
 stop_display(struct client *c, int num)
 {
