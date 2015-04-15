@@ -60,6 +60,9 @@ enum ServiceWorkerStatusCode {
   // The Service Worker took too long to finish a task.
   SERVICE_WORKER_ERROR_TIMEOUT,
 
+  // An error occurred during initial script evaluation.
+  SERVICE_WORKER_ERROR_SCRIPT_EVALUATE_FAILED,
+
   SERVICE_WORKER_ERROR_MAX_VALUE
 };
 

@@ -478,6 +478,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool OnRequestTimeout(const RequestInfo& info);
   void SetAllRequestTimes(const base::TimeTicks& ticks);
 
+  // Returns the reason the embedded worker failed to start, using information
+  // inaccessible to EmbeddedWorkerInstance. Returns |default_code| if it can't
+  // deduce a reason.
+  ServiceWorkerStatusCode DeduceStartWorkerFailureReason(
+      ServiceWorkerStatusCode default_code);
+
   const int64 version_id_;
   int64 registration_id_;
   GURL script_url_;

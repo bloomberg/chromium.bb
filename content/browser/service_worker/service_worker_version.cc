@@ -452,7 +452,7 @@ void ServiceWorkerVersion::StartWorker(
     bool pause_after_download,
     const StatusCallback& callback) {
   if (!context_) {
-    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_START_WORKER_FAILED));
+    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_ABORT));
     return;
   }
 
@@ -942,7 +942,8 @@ void ServiceWorkerVersion::OnStopped(
   if (!should_restart) {
     // Let all start callbacks fail.
     RunCallbacks(this, &start_callbacks_,
-                 SERVICE_WORKER_ERROR_START_WORKER_FAILED);
+                 DeduceStartWorkerFailureReason(
+                     SERVICE_WORKER_ERROR_START_WORKER_FAILED));
   }
 
   // Let all message callbacks fail (this will also fire and clear all
@@ -1047,8 +1048,10 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
 
 void ServiceWorkerVersion::OnStartSentAndScriptEvaluated(
     ServiceWorkerStatusCode status) {
-  if (status != SERVICE_WORKER_OK)
-    RunCallbacks(this, &start_callbacks_, status);
+  if (status != SERVICE_WORKER_OK) {
+    RunCallbacks(this, &start_callbacks_,
+                 DeduceStartWorkerFailureReason(status));
+  }
 }
 
 void ServiceWorkerVersion::DispatchInstallEventAfterStartWorker(
@@ -1860,6 +1863,28 @@ void ServiceWorkerVersion::SetAllRequestTimes(const base::TimeTicks& ticks) {
     requests_.pop();
   }
   requests_ = new_requests;
+}
+
+ServiceWorkerStatusCode ServiceWorkerVersion::DeduceStartWorkerFailureReason(
+    ServiceWorkerStatusCode default_code) {
+  if (ping_state_ == PING_TIMED_OUT)
+    return SERVICE_WORKER_ERROR_TIMEOUT;
+
+  const net::URLRequestStatus& main_script_status =
+      script_cache_map()->main_script_status();
+  if (main_script_status.status() != net::URLRequestStatus::SUCCESS) {
+    switch (main_script_status.error()) {
+      case net::ERR_INSECURE_RESPONSE:
+      case net::ERR_UNSAFE_REDIRECT:
+        return SERVICE_WORKER_ERROR_SECURITY;
+      case net::ERR_ABORTED:
+        return SERVICE_WORKER_ERROR_ABORT;
+      default:
+        return SERVICE_WORKER_ERROR_NETWORK;
+    }
+  }
+
+  return default_code;
 }
 
 }  // namespace content

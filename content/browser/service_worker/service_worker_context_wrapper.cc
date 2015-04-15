@@ -254,9 +254,8 @@ void ServiceWorkerContextWrapper::StartServiceWorker(
   }
   if (!context_core_.get()) {
     LOG(ERROR) << "ServiceWorkerContextCore is no longer alive.";
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(callback, SERVICE_WORKER_ERROR_START_WORKER_FAILED));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(callback, SERVICE_WORKER_ERROR_ABORT));
     return;
   }
   context_core_->storage()->FindRegistrationForPattern(

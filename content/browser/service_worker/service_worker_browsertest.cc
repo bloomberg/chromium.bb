@@ -694,7 +694,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, StartNotFound) {
                            "/service_worker/nonexistent.js"));
 
   // Start a worker for nonexistent URL.
-  StartWorker(SERVICE_WORKER_ERROR_START_WORKER_FAILED);
+  StartWorker(SERVICE_WORKER_ERROR_NETWORK);
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, Install) {
@@ -773,7 +773,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, TimeoutStartingWorker) {
                          base::TimeDelta::FromMilliseconds(100));
   start_run_loop.Run();
 
-  EXPECT_EQ(SERVICE_WORKER_ERROR_START_WORKER_FAILED, status);
+  EXPECT_EQ(SERVICE_WORKER_ERROR_TIMEOUT, status);
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, TimeoutWorkerInEvent) {

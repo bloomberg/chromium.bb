@@ -60525,6 +60525,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="12" label="SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED"/>
   <int value="13" label="SERVICE_WORKER_ERROR_STATE"/>
   <int value="14" label="SERVICE_WORKER_ERROR_TIMEOUT"/>
+  <int value="15" label="SERVICE_WORKER_ERROR_SCRIPT_EVALUATE_FAILED"/>
 </enum>
 
 <enum name="ServiceWorkerWriteResponseResult" type="int">

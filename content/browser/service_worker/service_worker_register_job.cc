@@ -333,31 +333,20 @@ void ServiceWorkerRegisterJob::OnStartWorkerFinished(
   }
 
   // "If serviceWorker fails to start up..." then reject the promise with an
-  // error and abort. When there is a main script network error, the status will
-  // be updated to a more specific one.
+  // error and abort.
+  if (status == SERVICE_WORKER_ERROR_TIMEOUT) {
+    Complete(status, "Timed out while trying to start the Service Worker.");
+    return;
+  }
+
   const net::URLRequestStatus& main_script_status =
       new_version()->script_cache_map()->main_script_status();
   std::string message;
   if (main_script_status.status() != net::URLRequestStatus::SUCCESS) {
-    switch (main_script_status.error()) {
-      case net::ERR_INSECURE_RESPONSE:
-      case net::ERR_UNSAFE_REDIRECT:
-        status = SERVICE_WORKER_ERROR_SECURITY;
-        break;
-      case net::ERR_ABORTED:
-        status = SERVICE_WORKER_ERROR_ABORT;
-        break;
-      default:
-        status = SERVICE_WORKER_ERROR_NETWORK;
-    }
     message = new_version()->script_cache_map()->main_script_status_message();
     if (message.empty())
       message = kFetchScriptError;
   }
-
-  if (status == SERVICE_WORKER_ERROR_TIMEOUT)
-    message = "Timed out while trying to start the Service Worker.";
-
   Complete(status, message);
 }
 

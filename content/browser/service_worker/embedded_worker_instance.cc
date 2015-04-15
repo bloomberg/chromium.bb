@@ -354,13 +354,16 @@ void EmbeddedWorkerInstance::OnScriptLoadFailed() {
 
 void EmbeddedWorkerInstance::OnScriptEvaluated(bool success) {
   starting_phase_ = SCRIPT_EVALUATED;
+  if (start_callback_.is_null()) {
+    DVLOG(1) << "Received unexpected OnScriptEvaluated message.";
+    return;
+  }
   if (success && !start_timing_.is_null()) {
     UMA_HISTOGRAM_TIMES("EmbeddedWorkerInstance.ScriptEvaluate",
                         base::TimeTicks::Now() - start_timing_);
   }
-  DCHECK(!start_callback_.is_null());
   start_callback_.Run(success ? SERVICE_WORKER_OK
-                              : SERVICE_WORKER_ERROR_START_WORKER_FAILED);
+                              : SERVICE_WORKER_ERROR_SCRIPT_EVALUATE_FAILED);
   start_callback_.Reset();
 }
 
