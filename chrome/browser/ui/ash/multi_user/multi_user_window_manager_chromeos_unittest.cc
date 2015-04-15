@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_helper.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
@@ -18,13 +19,17 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/browser/ui/ash/multi_user/user_switch_animator_chromeos.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/user_manager/fake_user_manager.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/user_manager/user_info.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -36,6 +41,54 @@
 namespace ash {
 namespace test {
 
+class TestSessionStateDelegateChromeOS
+    : public ash::test::TestSessionStateDelegate {
+ public:
+  TestSessionStateDelegateChromeOS() {}
+
+  // TestSessionStateDelegate override:
+  content::BrowserContext* GetBrowserContextForWindow(
+      aura::Window* window) override {
+    const std::string& user_id =
+        chrome::MultiUserWindowManager::GetInstance()->GetWindowOwner(window);
+    return user_id.empty() ? NULL
+                           : multi_user_util::GetProfileFromUserID(user_id);
+  }
+
+  content::BrowserContext* GetUserPresentingBrowserContextForWindow(
+      aura::Window* window) override {
+    const std::string& user_id =
+        chrome::MultiUserWindowManager::GetInstance()->GetUserPresentingWindow(
+            window);
+    return user_id.empty() ? NULL
+                           : multi_user_util::GetProfileFromUserID(user_id);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestSessionStateDelegateChromeOS);
+};
+
+class TestShellDelegateChromeOS : public test::TestShellDelegate {
+ public:
+  TestShellDelegateChromeOS() {}
+
+  TestSessionStateDelegate* CreateSessionStateDelegate() override {
+    return new TestSessionStateDelegateChromeOS();
+  }
+
+  content::BrowserContext* GetActiveBrowserContext() override {
+    const user_manager::UserManager* user_manager =
+        user_manager::UserManager::Get();
+    const user_manager::User* active_user = user_manager->GetActiveUser();
+    return active_user
+               ? multi_user_util::GetProfileFromUserID(active_user->GetUserID())
+               : NULL;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestShellDelegateChromeOS);
+};
+
 // A test class for preparing the chrome::MultiUserWindowManager. It creates
 // various windows and instantiates the chrome::MultiUserWindowManager.
 class MultiUserWindowManagerChromeOSTest : public AshTestBase {
@@ -43,7 +96,7 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
   MultiUserWindowManagerChromeOSTest()
       : multi_user_window_manager_(NULL),
         session_state_delegate_(NULL),
-        fake_user_manager_(new user_manager::FakeUserManager),
+        fake_user_manager_(new chromeos::FakeChromeUserManager),
         user_manager_enabler_(fake_user_manager_) {}
 
   void SetUp() override;
@@ -81,6 +134,21 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
     return multi_user_window_manager_;
   }
 
+  chromeos::FakeChromeUserManager* user_manager() { return fake_user_manager_; }
+
+  TestingProfileManager* profile_manager() { return profile_manager_.get(); }
+
+  const user_manager::User* AddTestUser(const std::string& user_email) {
+    const user_manager::User* user = fake_user_manager_->AddUser(user_email);
+    fake_user_manager_->LoginUser(user_email);
+    session_state_delegate_->AddUser(user_email);
+    TestingProfile* profile =
+        profile_manager()->CreateTestingProfile(user_email);
+    chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(user,
+                                                                      profile);
+    return user;
+  }
+
   // Returns a list of all open windows in the following form:
   // "<H(idden)/S(hown)/D(eleted)>[<Owner>[,<shownForUser>]], .."
   // Like: "S[B], .." would mean that window#0 is shown and belongs to user B.
@@ -91,7 +159,7 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
   // Returns a test-friendly string format of GetOwnersOfVisibleWindows().
   std::string GetOwnersOfVisibleWindowsAsString();
 
-  TestSessionStateDelegate* session_state_delegate() {
+  TestSessionStateDelegateChromeOS* session_state_delegate() {
     return session_state_delegate_;
   }
 
@@ -160,9 +228,11 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
   chrome::MultiUserWindowManagerChromeOS* multi_user_window_manager_;
 
   // The session state delegate.
-  ash::test::TestSessionStateDelegate* session_state_delegate_;
+  TestSessionStateDelegateChromeOS* session_state_delegate_;
 
-  user_manager::FakeUserManager* fake_user_manager_;  // Not owned.
+  chromeos::FakeChromeUserManager* fake_user_manager_;  // Not owned.
+
+  scoped_ptr<TestingProfileManager> profile_manager_;
 
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
 
@@ -173,10 +243,13 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
 };
 
 void MultiUserWindowManagerChromeOSTest::SetUp() {
+  ash_test_helper()->set_test_shell_delegate(new TestShellDelegateChromeOS);
   AshTestBase::SetUp();
-  session_state_delegate_ =
-      static_cast<TestSessionStateDelegate*> (
-          ash::Shell::GetInstance()->session_state_delegate());
+  session_state_delegate_ = static_cast<TestSessionStateDelegateChromeOS*>(
+      ash::Shell::GetInstance()->session_state_delegate());
+  profile_manager_.reset(
+      new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+  ASSERT_TRUE(profile_manager_.get()->SetUp());
   session_state_delegate_->AddUser("a");
   session_state_delegate_->AddUser("b");
   session_state_delegate_->AddUser("c");
@@ -209,6 +282,7 @@ void MultiUserWindowManagerChromeOSTest::TearDown() {
   chrome::MultiUserWindowManager::DeleteInstance();
   AshTestBase::TearDown();
   chromeos::WallpaperManager::Shutdown();
+  profile_manager_.reset();
 }
 
 std::string MultiUserWindowManagerChromeOSTest::GetStatus() {
@@ -1181,6 +1255,73 @@ TEST_F(MultiUserWindowManagerChromeOSTest, TransientWindowActivationTest) {
 
   ::wm::RemoveTransientChild(window(0), window(1));
   ::wm::RemoveTransientChild(window(1), window(2));
+}
+
+// Test that minimized window on one desktop can't be activated on another
+// desktop.
+TEST_F(MultiUserWindowManagerChromeOSTest, MinimizedWindowActivatableTests) {
+  SetUpForThisManyWindows(4);
+
+  const std::string user1 = "a@test.com";
+  const std::string user2 = "b@test.com";
+  AddTestUser(user1);
+  AddTestUser(user2);
+  session_state_delegate()->set_logged_in_users(2);
+
+  multi_user_window_manager()->SetWindowOwner(window(0), user1);
+  multi_user_window_manager()->SetWindowOwner(window(1), user1);
+  multi_user_window_manager()->SetWindowOwner(window(2), user2);
+  multi_user_window_manager()->SetWindowOwner(window(3), user2);
+
+  // Minimizes window #0 and window #2.
+  wm::GetWindowState(window(0))->Minimize();
+  wm::GetWindowState(window(2))->Minimize();
+
+  // Windows belonging to user2 (window #2 and #3) can't be activated by user1.
+  user_manager()->SwitchActiveUser(user1);
+  multi_user_window_manager()->ActiveUserChanged(user1);
+  EXPECT_TRUE(::wm::CanActivateWindow(window(0)));
+  EXPECT_TRUE(::wm::CanActivateWindow(window(1)));
+  EXPECT_FALSE(::wm::CanActivateWindow(window(2)));
+  EXPECT_FALSE(::wm::CanActivateWindow(window(3)));
+
+  // Windows belonging to user1 (window #0 and #1) can't be activated by user2.
+  user_manager()->SwitchActiveUser(user2);
+  multi_user_window_manager()->ActiveUserChanged(user2);
+  EXPECT_FALSE(::wm::CanActivateWindow(window(0)));
+  EXPECT_FALSE(::wm::CanActivateWindow(window(1)));
+  EXPECT_TRUE(::wm::CanActivateWindow(window(2)));
+  EXPECT_TRUE(::wm::CanActivateWindow(window(3)));
+}
+
+// Test that teleported window can be activated by the presenting user.
+TEST_F(MultiUserWindowManagerChromeOSTest, TeleportedWindowActivatableTests) {
+  SetUpForThisManyWindows(2);
+
+  const std::string user1 = "a@test.com";
+  const std::string user2 = "b@test.com";
+  AddTestUser(user1);
+  AddTestUser(user2);
+  session_state_delegate()->set_logged_in_users(2);
+
+  multi_user_window_manager()->SetWindowOwner(window(0), user1);
+  multi_user_window_manager()->SetWindowOwner(window(1), user2);
+
+  user_manager()->SwitchActiveUser(user1);
+  multi_user_window_manager()->ActiveUserChanged(user1);
+  EXPECT_TRUE(::wm::CanActivateWindow(window(0)));
+  EXPECT_FALSE(::wm::CanActivateWindow(window(1)));
+
+  // Teleports window #0 to user2 desktop. Then window #0 can't be activated by
+  // user 1.
+  multi_user_window_manager()->ShowWindowForUser(window(0), user2);
+  EXPECT_FALSE(::wm::CanActivateWindow(window(0)));
+
+  // Test that window #0 can be activated by user2.
+  user_manager()->SwitchActiveUser(user2);
+  multi_user_window_manager()->ActiveUserChanged(user2);
+  EXPECT_TRUE(::wm::CanActivateWindow(window(0)));
+  EXPECT_TRUE(::wm::CanActivateWindow(window(1)));
 }
 
 }  // namespace test

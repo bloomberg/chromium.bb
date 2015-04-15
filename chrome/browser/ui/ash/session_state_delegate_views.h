@@ -25,6 +25,8 @@ class SessionStateDelegate : public ash::SessionStateDelegate {
       ash::MultiProfileIndex index) override;
   content::BrowserContext* GetBrowserContextForWindow(
       aura::Window* window) override;
+  content::BrowserContext* GetUserPresentingBrowserContextForWindow(
+      aura::Window* window) override;
   int GetMaximumNumberOfLoggedInUsers() const override;
   int NumberOfLoggedInUsers() const override;
   bool IsActiveUserSessionStarted() const override;

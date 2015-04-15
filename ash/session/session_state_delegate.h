@@ -81,6 +81,11 @@ class ASH_EXPORT SessionStateDelegate {
   virtual content::BrowserContext* GetBrowserContextForWindow(
       aura::Window* window) = 0;
 
+  // Returns the browser context on which the window is currently shown. NULL
+  // means the window will be shown for every user.
+  virtual content::BrowserContext* GetUserPresentingBrowserContextForWindow(
+      aura::Window* window) = 0;
+
   // Returns the maximum possible number of logged in users.
   virtual int GetMaximumNumberOfLoggedInUsers() const = 0;
 

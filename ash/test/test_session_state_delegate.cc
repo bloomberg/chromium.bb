@@ -99,8 +99,13 @@ TestSessionStateDelegate::GetBrowserContextByIndex(
   return NULL;
 }
 
+content::BrowserContext* TestSessionStateDelegate::GetBrowserContextForWindow(
+    aura::Window* window) {
+  return NULL;
+}
+
 content::BrowserContext*
-TestSessionStateDelegate::GetBrowserContextForWindow(
+TestSessionStateDelegate::GetUserPresentingBrowserContextForWindow(
     aura::Window* window) {
   return NULL;
 }

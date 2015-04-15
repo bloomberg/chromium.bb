@@ -1241,6 +1241,9 @@ class RestartDeviceTest : public PlatformAppBrowserTest {
         .WillRepeatedly(testing::Return(true));
     EXPECT_CALL(*mock_user_manager_, IsLoggedInAsKioskApp())
         .WillRepeatedly(testing::Return(true));
+    EXPECT_CALL(*mock_user_manager_, GetLoggedInUsers())
+        .WillRepeatedly(testing::Invoke(mock_user_manager_,
+                                        &chromeos::MockUserManager::GetUsers));
   }
 
   void TearDownOnMainThread() override {

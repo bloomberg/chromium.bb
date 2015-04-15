@@ -31,6 +31,8 @@ class SessionStateDelegateChromeos
       ash::MultiProfileIndex index) override;
   content::BrowserContext* GetBrowserContextForWindow(
       aura::Window* window) override;
+  content::BrowserContext* GetUserPresentingBrowserContextForWindow(
+      aura::Window* window) override;
   int GetMaximumNumberOfLoggedInUsers() const override;
   int NumberOfLoggedInUsers() const override;
   bool CanAddUserToMultiProfile(AddUserError* error) const override;

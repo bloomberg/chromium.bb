@@ -42,7 +42,7 @@
 
 namespace {
 
-void InitAfterSessionStart() {
+void InitAfterFirstSessionStart() {
   // Restore focus after the user session is started.  It's needed because some
   // windows can be opened in background while login UI is still active because
   // we currently restore browser windows before login UI is deleted.
@@ -263,7 +263,10 @@ void ChromeShellDelegate::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_SESSION_STARTED:
-      InitAfterSessionStart();
+      // InitAfterFirstSessionStart() should only be called once upon system
+      // start.
+      if (user_manager::UserManager::Get()->GetLoggedInUsers().size() < 2)
+        InitAfterFirstSessionStart();
       ash::Shell::GetInstance()->ShowShelf();
       break;
     default:

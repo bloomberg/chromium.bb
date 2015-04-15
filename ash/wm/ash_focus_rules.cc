@@ -4,7 +4,9 @@
 
 #include "ash/wm/ash_focus_rules.h"
 
+#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
@@ -84,6 +86,25 @@ bool AshFocusRules::SupportsChildActivation(aura::Window* window) const {
 
 bool AshFocusRules::IsWindowConsideredVisibleForActivation(
     aura::Window* window) const {
+  // If the |window| doesn't belong to the current active user and also doesn't
+  // show for the current active user, then it should not be activated.
+  SessionStateDelegate* delegate =
+      Shell::GetInstance()->session_state_delegate();
+  if (delegate->NumberOfLoggedInUsers() > 1) {
+    content::BrowserContext* active_browser_context =
+        Shell::GetInstance()->delegate()->GetActiveBrowserContext();
+    content::BrowserContext* owner_browser_context =
+        delegate->GetBrowserContextForWindow(window);
+    content::BrowserContext* shown_browser_context =
+        delegate->GetUserPresentingBrowserContextForWindow(window);
+
+    if (owner_browser_context && active_browser_context &&
+        owner_browser_context != active_browser_context &&
+        shown_browser_context != active_browser_context) {
+      return false;
+    }
+  }
+
   if (BaseFocusRules::IsWindowConsideredVisibleForActivation(window))
     return true;
 

@@ -26,6 +26,12 @@ namespace extensions {
 class ExtensionGarbageCollectorChromeOSUnitTest;
 }
 
+namespace ash {
+namespace test {
+class MultiUserWindowManagerChromeOSTest;
+}  // namespace test
+}  // namespace ash
+
 namespace chromeos {
 
 // This helper class is used on Chrome OS to keep track of currently
@@ -139,6 +145,7 @@ class ProfileHelper
   friend class ProfileListChromeOSTest;
   friend class SessionStateDelegateChromeOSTest;
   friend class SystemTrayDelegateChromeOSTest;
+  friend class ash::test::MultiUserWindowManagerChromeOSTest;
 
   // Called when signin profile is cleared.
   void OnSigninProfileCleared();

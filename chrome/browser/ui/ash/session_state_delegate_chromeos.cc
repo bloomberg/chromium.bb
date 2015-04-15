@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
@@ -64,10 +65,18 @@ SessionStateDelegateChromeos::GetBrowserContextForWindow(
     aura::Window* window) {
   const std::string& user_id =
       chrome::MultiUserWindowManager::GetInstance()->GetWindowOwner(window);
-  const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(user_id);
-  DCHECK(user);
-  return chromeos::ProfileHelper::Get()->GetProfileByUserUnsafe(user);
+  return user_id.empty() ? NULL
+                         : multi_user_util::GetProfileFromUserID(user_id);
+}
+
+content::BrowserContext*
+SessionStateDelegateChromeos::GetUserPresentingBrowserContextForWindow(
+    aura::Window* window) {
+  const std::string& user_id =
+      chrome::MultiUserWindowManager::GetInstance()->GetUserPresentingWindow(
+          window);
+  return user_id.empty() ? NULL
+                         : multi_user_util::GetProfileFromUserID(user_id);
 }
 
 int SessionStateDelegateChromeos::GetMaximumNumberOfLoggedInUsers() const {

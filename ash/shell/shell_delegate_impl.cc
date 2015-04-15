@@ -89,6 +89,10 @@ class SessionStateDelegateImpl : public SessionStateDelegate {
       aura::Window* window) override {
     return Shell::GetInstance()->delegate()->GetActiveBrowserContext();
   }
+  content::BrowserContext* GetUserPresentingBrowserContextForWindow(
+      aura::Window* window) override {
+    return NULL;
+  }
   int GetMaximumNumberOfLoggedInUsers() const override { return 3; }
   int NumberOfLoggedInUsers() const override {
     // ash_shell has 2 users.

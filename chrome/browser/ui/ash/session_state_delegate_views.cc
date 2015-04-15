@@ -28,6 +28,12 @@ content::BrowserContext* SessionStateDelegate::GetBrowserContextForWindow(
   return NULL;
 }
 
+content::BrowserContext*
+SessionStateDelegate::GetUserPresentingBrowserContextForWindow(
+    aura::Window* window) {
+  return NULL;
+}
+
 int SessionStateDelegate::GetMaximumNumberOfLoggedInUsers() const {
   return 3;
 }
