@@ -34,8 +34,13 @@ bool BitStreamReader::ReadBits(uint8_t num_bits, uint64_t* out) {
     return false;
 
   *out = 0;
-  for (uint8_t i = 0; i < num_bits; ++i)
-    (*out) |= (static_cast<uint64_t>(ReadBit()) << (num_bits - (i + 1)));
+
+  for (; num_bits && (current_bit_ != 7); --num_bits)
+    (*out) |= (static_cast<uint64_t>(ReadBit()) << (num_bits - 1));
+  for (; num_bits / 8; num_bits -= 8)
+    (*out) |= (static_cast<uint64_t>(ReadByte()) << (num_bits - 8));
+  for (; num_bits; --num_bits)
+    (*out) |= (static_cast<uint64_t>(ReadBit()) << (num_bits - 1));
 
   return true;
 }
@@ -59,6 +64,14 @@ uint8_t BitStreamReader::ReadBit() {
   }
 
   return res;
+}
+
+uint8_t BitStreamReader::ReadByte() {
+  DCHECK_GT(BitsLeft(), 7u);
+  DCHECK_EQ(current_bit_, 7);
+
+  return source_.data()[current_byte_++];
+
 }
 
 }  // namespace internal

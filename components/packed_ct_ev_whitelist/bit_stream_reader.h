@@ -41,6 +41,11 @@ class BitStreamReader {
   // LSB.
   uint8_t ReadBit();
 
+  // Reads a single byte.
+  // Precondition: The stream must be byte-aligned (current_bit_ == 7) before
+  // calling this function.
+  uint8_t ReadByte();
+
   const base::StringPiece source_;
 
   // Index of the byte currently being read from.
