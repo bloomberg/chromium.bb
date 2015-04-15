@@ -1780,6 +1780,16 @@ TEST(SchedulerStateMachineTest, TestImplLatencyTakesPriority) {
   // Finish the previous commit and draw it.
   FinishPreviousCommitAndDrawWithoutExitingDeadline(&state);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Verify we do not send another BeginMainFrame if was are swap throttled
+  // and did not just swap.
+  state.SetNeedsCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.OnBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  EXPECT_FALSE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 }
 
 TEST(SchedulerStateMachineTest,

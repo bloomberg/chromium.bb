@@ -1495,14 +1495,13 @@ TEST_F(SchedulerTest, BeginRetroFrame_SwapThrottled) {
   client_->Reset();
 
   // While swap throttled, BeginRetroFrames should trigger BeginImplFrames
-  // and BeginMainFrame.
+  // but not a BeginMainFrame or draw.
   scheduler_->SetNeedsCommit();
   scheduler_->SetNeedsRedraw();
   // Run posted BeginRetroFrame.
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(false));
-  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 3);
-  EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 3);
-  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 2, 3);
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 2);
   EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
   EXPECT_TRUE(client_->needs_begin_frames());
   client_->Reset();
@@ -1516,7 +1515,7 @@ TEST_F(SchedulerTest, BeginRetroFrame_SwapThrottled) {
 
   // Take us out of a swap throttled state.
   scheduler_->DidSwapBuffersComplete();
-  EXPECT_NO_ACTION(client_);
+  EXPECT_SINGLE_ACTION("ScheduledActionSendBeginMainFrame", client_);
   EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
   EXPECT_TRUE(client_->needs_begin_frames());
   client_->Reset();
@@ -1762,14 +1761,13 @@ void SchedulerTest::BeginFramesNotFromClient_SwapThrottled(
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
   client_->Reset();
 
-  // While swap throttled, BeginFrames should trigger BeginImplFrames
-  // and BeginMainFrame.
+  // While swap throttled, BeginFrames should trigger BeginImplFrames,
+  // but not a BeginMainFrame or draw.
   scheduler_->SetNeedsCommit();
   scheduler_->SetNeedsRedraw();
   EXPECT_SCOPED(AdvanceFrame());  // Run posted BeginFrame.
-  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 3);
-  EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 3);
-  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 2, 3);
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 2);
   EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
   client_->Reset();
 
@@ -1782,7 +1780,7 @@ void SchedulerTest::BeginFramesNotFromClient_SwapThrottled(
 
   // Take us out of a swap throttled state.
   scheduler_->DidSwapBuffersComplete();
-  EXPECT_NO_ACTION(client_);
+  EXPECT_SINGLE_ACTION("ScheduledActionSendBeginMainFrame", client_);
   EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
   client_->Reset();
 
