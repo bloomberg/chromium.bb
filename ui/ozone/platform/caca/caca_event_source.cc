@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/ozone/platform/caca/caca_window.h"
 
@@ -215,8 +216,8 @@ void CacaEventSource::OnInputEvent(caca_event_t* event, CacaWindow* window) {
         flags = modifier_flags_ | changed_flags;
       }
       gfx::PointF location = TranslateLocation(last_cursor_location_, window);
-      ui::MouseEvent mouse_event(
-          type, location, location, flags, changed_flags);
+      ui::MouseEvent mouse_event(type, location, location, EventTimeForNow(),
+                                 flags, changed_flags);
       window->OnCacaEvent(&mouse_event);
       break;
     }
