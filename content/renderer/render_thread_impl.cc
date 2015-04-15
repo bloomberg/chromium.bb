@@ -787,9 +787,11 @@ void RenderThreadImpl::Shutdown() {
 
   main_thread_compositor_task_runner_ = NULL;
 
+  // Context providers must be released prior to destroying the GPU channel.
+  gpu_va_context_provider_ = nullptr;
+
   if (gpu_channel_.get())
     gpu_channel_->DestroyChannel();
-  gpu_va_context_provider_ = nullptr;
 
   // TODO(port)
 #if defined(OS_WIN)
