@@ -226,6 +226,46 @@ class AsyncSocket {
   virtual void OnConnectComplete(const MockConnect& data) = 0;
 };
 
+// StaticSocketDataHelper manages a list of reads and writes.
+class StaticSocketDataHelper {
+ public:
+  StaticSocketDataHelper(MockRead* reads,
+                         size_t reads_count,
+                         MockWrite* writes,
+                         size_t writes_count);
+  ~StaticSocketDataHelper();
+
+  // These functions get access to the next available read and write data,
+  // or null if there is no more data available.
+  const MockRead& PeekRead() const;
+  const MockWrite& PeekWrite() const;
+
+  // Returns the current read or write , and then advances to the next one.
+  const MockRead& AdvanceRead();
+  const MockWrite& AdvanceWrite();
+
+  // Resets the read and write indexes to 0.
+  void Reset();
+
+  size_t read_index() const { return read_index_; }
+  size_t write_index() const { return write_index_; }
+  size_t read_count() const { return read_count_; }
+  size_t write_count() const { return write_count_; }
+
+  bool at_read_eof() const { return read_index_ >= read_count_; }
+  bool at_write_eof() const { return write_index_ >= write_count_; }
+
+ private:
+  MockRead* reads_;
+  size_t read_index_;
+  size_t read_count_;
+  MockWrite* writes_;
+  size_t write_index_;
+  size_t write_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(StaticSocketDataHelper);
+};
+
 // SocketDataProvider which responds based on static tables of mock reads and
 // writes.
 class StaticSocketDataProvider : public SocketDataProvider {
@@ -237,20 +277,6 @@ class StaticSocketDataProvider : public SocketDataProvider {
                            size_t writes_count);
   ~StaticSocketDataProvider() override;
 
-  // These functions get access to the next available read and write data.
-  const MockRead& PeekRead() const;
-  const MockWrite& PeekWrite() const;
-  // These functions get random access to the read and write data, for timing.
-  const MockRead& PeekRead(size_t index) const;
-  const MockWrite& PeekWrite(size_t index) const;
-  size_t read_index() const { return read_index_; }
-  size_t write_index() const { return write_index_; }
-  size_t read_count() const { return read_count_; }
-  size_t write_count() const { return write_count_; }
-
-  bool at_read_eof() const { return read_index_ >= read_count_; }
-  bool at_write_eof() const { return write_index_ >= write_count_; }
-
   virtual void CompleteRead() {}
 
   // SocketDataProvider implementation.
@@ -258,13 +284,19 @@ class StaticSocketDataProvider : public SocketDataProvider {
   MockWriteResult OnWrite(const std::string& data) override;
   void Reset() override;
 
+  size_t read_index() const { return helper_.read_index(); }
+  size_t write_index() const { return helper_.write_index(); }
+  size_t read_count() const { return helper_.read_count(); }
+  size_t write_count() const { return helper_.write_count(); }
+
+  bool at_read_eof() const { return helper_.at_read_eof(); }
+  bool at_write_eof() const { return helper_.at_write_eof(); }
+
+ protected:
+  StaticSocketDataHelper* helper() { return &helper_; }
+
  private:
-  MockRead* reads_;
-  size_t read_index_;
-  size_t read_count_;
-  MockWrite* writes_;
-  size_t write_index_;
-  size_t write_count_;
+  StaticSocketDataHelper helper_;
 
   DISALLOW_COPY_AND_ASSIGN(StaticSocketDataProvider);
 };

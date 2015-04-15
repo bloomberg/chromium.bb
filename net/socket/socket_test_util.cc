@@ -139,19 +139,10 @@ MockConnect::MockConnect(IoMode io_mode, int r, IPEndPoint addr) :
 
 MockConnect::~MockConnect() {}
 
-StaticSocketDataProvider::StaticSocketDataProvider()
-    : reads_(NULL),
-      read_index_(0),
-      read_count_(0),
-      writes_(NULL),
-      write_index_(0),
-      write_count_(0) {
-}
-
-StaticSocketDataProvider::StaticSocketDataProvider(MockRead* reads,
-                                                   size_t reads_count,
-                                                   MockWrite* writes,
-                                                   size_t writes_count)
+StaticSocketDataHelper::StaticSocketDataHelper(MockRead* reads,
+                                               size_t reads_count,
+                                               MockWrite* writes,
+                                               size_t writes_count)
     : reads_(reads),
       read_index_(0),
       read_count_(reads_count),
@@ -160,40 +151,60 @@ StaticSocketDataProvider::StaticSocketDataProvider(MockRead* reads,
       write_count_(writes_count) {
 }
 
-StaticSocketDataProvider::~StaticSocketDataProvider() {}
+StaticSocketDataHelper::~StaticSocketDataHelper() {
+}
 
-const MockRead& StaticSocketDataProvider::PeekRead() const {
+const MockRead& StaticSocketDataHelper::PeekRead() const {
   CHECK(!at_read_eof());
   return reads_[read_index_];
 }
 
-const MockWrite& StaticSocketDataProvider::PeekWrite() const {
+const MockWrite& StaticSocketDataHelper::PeekWrite() const {
   CHECK(!at_write_eof());
   return writes_[write_index_];
 }
 
-const MockRead& StaticSocketDataProvider::PeekRead(size_t index) const {
-  CHECK_LT(index, read_count_);
-  return reads_[index];
-}
-
-const MockWrite& StaticSocketDataProvider::PeekWrite(size_t index) const {
-  CHECK_LT(index, write_count_);
-  return writes_[index];
-}
-
-MockRead StaticSocketDataProvider::OnRead() {
+const MockRead& StaticSocketDataHelper::AdvanceRead() {
   CHECK(!at_read_eof());
   return reads_[read_index_++];
 }
 
+const MockWrite& StaticSocketDataHelper::AdvanceWrite() {
+  CHECK(!at_write_eof());
+  return writes_[write_index_++];
+}
+
+void StaticSocketDataHelper::Reset() {
+  read_index_ = 0;
+  write_index_ = 0;
+}
+
+StaticSocketDataProvider::StaticSocketDataProvider()
+    : StaticSocketDataProvider(nullptr, 0, nullptr, 0) {
+}
+
+StaticSocketDataProvider::StaticSocketDataProvider(MockRead* reads,
+                                                   size_t reads_count,
+                                                   MockWrite* writes,
+                                                   size_t writes_count)
+    : helper_(reads, reads_count, writes, writes_count) {
+}
+
+StaticSocketDataProvider::~StaticSocketDataProvider() {
+}
+
+MockRead StaticSocketDataProvider::OnRead() {
+  CHECK(!helper_.at_read_eof());
+  return helper_.AdvanceRead();
+}
+
 MockWriteResult StaticSocketDataProvider::OnWrite(const std::string& data) {
-  if (!writes_) {
+  if (helper_.write_count() == 0) {
     // Not using mock writes; succeed synchronously.
     return MockWriteResult(SYNCHRONOUS, data.length());
   }
-  EXPECT_FALSE(at_write_eof());
-  if (at_write_eof()) {
+  EXPECT_FALSE(helper_.at_write_eof());
+  if (helper_.at_write_eof()) {
     // Show what the extra write actually consists of.
     EXPECT_EQ("<unexpected write>", data);
     return MockWriteResult(SYNCHRONOUS, ERR_UNEXPECTED);
@@ -201,7 +212,7 @@ MockWriteResult StaticSocketDataProvider::OnWrite(const std::string& data) {
 
   // Check that what we are writing matches the expectation.
   // Then give the mocked return value.
-  const MockWrite& w = writes_[write_index_++];
+  const MockWrite& w = helper_.AdvanceWrite();
   int result = w.result;
   if (w.data) {
     // Note - we can simulate a partial write here.  If the expected data
@@ -223,8 +234,7 @@ MockWriteResult StaticSocketDataProvider::OnWrite(const std::string& data) {
 }
 
 void StaticSocketDataProvider::Reset() {
-  read_index_ = 0;
-  write_index_ = 0;
+  helper_.Reset();
 }
 
 DynamicSocketDataProvider::DynamicSocketDataProvider()
@@ -369,7 +379,7 @@ void OrderedSocketData::EndLoop() {
   // to the next sequence_number.
   NET_TRACE(1, "  *** ") << "Stage " << sequence_number_ << ": EndLoop()";
   if (loop_stop_stage_ > 0) {
-    const MockRead& next_read = StaticSocketDataProvider::PeekRead();
+    const MockRead& next_read = helper()->PeekRead();
     if ((next_read.sequence_number & ~MockRead::STOPLOOP) >
         loop_stop_stage_) {
       NET_TRACE(1, "  *** ") << "Stage " << sequence_number_
@@ -388,7 +398,7 @@ void OrderedSocketData::EndLoop() {
 MockRead OrderedSocketData::OnRead() {
   weak_factory_.InvalidateWeakPtrs();
   blocked_ = false;
-  const MockRead& next_read = StaticSocketDataProvider::PeekRead();
+  const MockRead& next_read = helper()->PeekRead();
   if (next_read.sequence_number & MockRead::STOPLOOP)
     EndLoop();
   if ((next_read.sequence_number & ~MockRead::STOPLOOP) <=
@@ -409,7 +419,7 @@ MockRead OrderedSocketData::OnRead() {
 MockWriteResult OrderedSocketData::OnWrite(const std::string& data) {
   NET_TRACE(1, "  *** ") << "Stage " << sequence_number_ << ": Write "
                          << write_index();
-  DumpMockReadWrite(PeekWrite());
+  DumpMockReadWrite(helper()->PeekWrite());
   ++sequence_number_;
   if (blocked_) {
     // TODO(willchan): This 100ms delay seems to work around some weirdness.  We
@@ -506,7 +516,7 @@ void DeterministicSocketData::StopAfter(int seq) {
 }
 
 MockRead DeterministicSocketData::OnRead() {
-  current_read_ = StaticSocketDataProvider::PeekRead();
+  current_read_ = helper()->PeekRead();
 
   // Synchronous read while stopped is an error
   if (stopped() && current_read_.mode == SYNCHRONOUS) {
@@ -545,7 +555,7 @@ MockRead DeterministicSocketData::OnRead() {
 }
 
 MockWriteResult DeterministicSocketData::OnWrite(const std::string& data) {
-  const MockWrite& next_write = StaticSocketDataProvider::PeekWrite();
+  const MockWrite& next_write = helper()->PeekWrite();
   current_write_ = next_write;
 
   // Synchronous write while stopped is an error
