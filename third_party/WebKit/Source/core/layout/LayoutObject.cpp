@@ -1340,6 +1340,13 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(PaintInvalidationS
         "object", this->debugName().ascii(),
         "info", jsonObjectForOldAndNewRects(oldBounds, oldLocation, newBounds, newLocation));
 
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        bool boxDecorationBackgroundObscured = boxDecorationBackgroundIsKnownToBeObscured();
+        if (!isFullPaintInvalidationReason(invalidationReason) && boxDecorationBackgroundObscured != m_bitfields.lastBoxDecorationBackgroundObscured())
+            invalidationReason = PaintInvalidationBackgroundObscurationChange;
+        m_bitfields.setLastBoxDecorationBackgroundObscured(boxDecorationBackgroundObscured);
+    }
+
     if (invalidationReason == PaintInvalidationNone)
         return invalidationReason;
 

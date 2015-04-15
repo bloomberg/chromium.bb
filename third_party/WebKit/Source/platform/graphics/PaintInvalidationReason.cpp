@@ -32,6 +32,8 @@ const char* paintInvalidationReasonToString(PaintInvalidationReason reason)
         return "bounds change";
     case PaintInvalidationLocationChange:
         return "location change";
+    case PaintInvalidationBackgroundObscurationChange:
+        return "background obscuration change";
     case PaintInvalidationBecameVisible:
         return "became visible";
     case PaintInvalidationBecameInvisible:

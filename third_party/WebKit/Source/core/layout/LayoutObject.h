@@ -1321,6 +1321,7 @@ private:
             , m_childrenInline(false)
             , m_hasColumns(false)
             , m_alwaysCreateLineBoxesForLayoutInline(false)
+            , m_lastBoxDecorationBackgroundObscured(false)
             , m_positionedState(IsStaticallyPositioned)
             , m_selectionState(SelectionNone)
             , m_flowThreadState(NotInsideFlowThread)
@@ -1371,6 +1372,9 @@ private:
 
         // from LayoutInline
         ADD_BOOLEAN_BITFIELD(alwaysCreateLineBoxesForLayoutInline, AlwaysCreateLineBoxesForLayoutInline);
+
+        // For slimming-paint.
+        ADD_BOOLEAN_BITFIELD(lastBoxDecorationBackgroundObscured, LastBoxDecorationBackgroundObscured);
 
     private:
         unsigned m_positionedState : 2; // PositionedState

@@ -21,6 +21,7 @@ enum PaintInvalidationReason {
     PaintInvalidationBorderBoxChange,
     PaintInvalidationBoundsChange,
     PaintInvalidationLocationChange,
+    PaintInvalidationBackgroundObscurationChange,
     PaintInvalidationBecameVisible,
     PaintInvalidationBecameInvisible,
     PaintInvalidationScroll,
