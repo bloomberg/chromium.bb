@@ -17,6 +17,9 @@ mojo_disable_dart_apptest_framework = true
 mojo_network_service_root = "//mojo/services"
 
 declare_args() {
+  # The mojo shell is forked and built in the chromium repo.
+  mojo_build_mojo_shell_from_source = true
+
   # Specify prebuilt network service mojo file location rather than download
   # from gs://mojo.
   #
