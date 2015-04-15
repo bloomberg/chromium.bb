@@ -82,8 +82,6 @@ public:
     virtual void disableEval(const String& errorMessage) override final;
 
     WorkerScriptController* script() { return m_script.get(); }
-    void clearScript() { m_script.clear(); }
-    void clearInspector();
 
     virtual void didEvaluateWorkerScript();
     void dispose();
@@ -160,6 +158,9 @@ private:
 
     virtual EventTarget* errorEventTarget() override final;
     virtual void didUpdateSecurityOrigin() override final { }
+
+    void clearScript() { m_script.clear(); }
+    void clearInspector();
 
     static void removeURLFromMemoryCacheInternal(const KURL&);
 

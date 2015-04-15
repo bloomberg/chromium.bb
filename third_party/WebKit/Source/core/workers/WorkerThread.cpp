@@ -367,7 +367,7 @@ void WorkerThread::cleanup()
 #if !ENABLE(OILPAN)
     ASSERT(m_workerGlobalScope->hasOneRef());
 #endif
-    m_workerGlobalScope->dispose();
+    m_workerGlobalScope->notifyContextDestroyed();
     m_workerGlobalScope = nullptr;
 
     m_thread->detachGC();
@@ -396,9 +396,8 @@ public:
     virtual void performTask(ExecutionContext *context)
     {
         WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
-        workerGlobalScope->clearInspector();
-        // It's not safe to call clearScript until all the cleanup tasks posted by functions initiated by WorkerThreadShutdownStartTask have completed.
-        workerGlobalScope->clearScript();
+        workerGlobalScope->dispose();
+
         WorkerThread* workerThread = workerGlobalScope->thread();
         workerThread->willDestroyIsolate();
         workerThread->m_thread->postTask(FROM_HERE, new Task(WTF::bind(&WorkerThread::cleanup, workerThread)));
