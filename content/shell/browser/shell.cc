@@ -313,6 +313,15 @@ bool Shell::IsFullscreenForTabOrPending(const WebContents* web_contents) const {
 #endif
 }
 
+blink::WebDisplayMode Shell::GetDisplayMode(
+    const WebContents* web_contents) const {
+ // TODO : should return blink::WebDisplayModeFullscreen wherever user puts
+ // a browser window into fullscreen (not only in case of renderer-initiated
+ // fullscreen mode): crbug.com/476874.
+ return IsFullscreenForTabOrPending(web_contents) ?
+     blink::WebDisplayModeFullscreen : blink::WebDisplayModeBrowser;
+}
+
 void Shell::RequestToLockMouse(WebContents* web_contents,
                                bool user_gesture,
                                bool last_unlocked_by_target) {

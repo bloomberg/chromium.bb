@@ -472,6 +472,7 @@ class CONTENT_EXPORT WebContentsImpl
   void RunFileChooser(RenderViewHost* render_view_host,
                       const FileChooserParams& params) override;
   bool IsFullscreenForCurrentTab() const override;
+  blink::WebDisplayMode GetDisplayMode() const override;
   void UpdatePreferredSize(const gfx::Size& pref_size) override;
   void ResizeDueToAutoResize(const gfx::Size& new_size) override;
   void RequestToLockMouse(bool user_gesture,

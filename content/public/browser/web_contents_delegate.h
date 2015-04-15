@@ -16,6 +16,7 @@
 #include "content/public/browser/navigation_type.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/window_container_type.h"
+#include "third_party/WebKit/public/platform/WebDisplayMode.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/window_open_disposition.h"
@@ -355,6 +356,14 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual void ExitFullscreenModeForTab(WebContents*) {}
 
   virtual bool IsFullscreenForTabOrPending(
+      const WebContents* web_contents) const;
+
+  // Returns the actual display mode of the top-level browsing context.
+  // For example, it should return 'blink::WebDisplayModeFullscreen' whenever
+  // the browser window is put to fullscreen mode (either by the end user,
+  // or HTML API or from a web manifest setting).
+  // See http://w3c.github.io/manifest/#dfn-display-mode
+  virtual blink::WebDisplayMode GetDisplayMode(
       const WebContents* web_contents) const;
 
   // Register a new handler for URL requests with the given scheme.

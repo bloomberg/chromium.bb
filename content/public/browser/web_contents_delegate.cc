@@ -151,6 +151,11 @@ bool WebContentsDelegate::IsFullscreenForTabOrPending(
   return false;
 }
 
+blink::WebDisplayMode WebContentsDelegate::GetDisplayMode(
+    const WebContents* web_contents) const {
+  return blink::WebDisplayModeBrowser;
+}
+
 content::ColorChooser* WebContentsDelegate::OpenColorChooser(
     WebContents* web_contents,
     SkColor color,

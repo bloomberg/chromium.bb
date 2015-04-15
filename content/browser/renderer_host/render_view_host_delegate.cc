@@ -26,6 +26,10 @@ bool RenderViewHostDelegate::IsFullscreenForCurrentTab() const {
   return false;
 }
 
+blink::WebDisplayMode RenderViewHostDelegate::GetDisplayMode() const {
+  return blink::WebDisplayModeBrowser;
+}
+
 SessionStorageNamespace* RenderViewHostDelegate::GetSessionStorageNamespace(
     SiteInstance* instance) {
   return NULL;

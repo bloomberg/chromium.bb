@@ -5,6 +5,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/frame_messages.h"
@@ -50,6 +51,10 @@ void ResizeWebContentsView(Shell* shell, const gfx::Size& size,
 class WebContentsImplBrowserTest : public ContentBrowserTest {
  public:
   WebContentsImplBrowserTest() {}
+  void SetUp() override {
+    RenderWidgetHostImpl::DisableResizeAckCheckForTesting();
+    ContentBrowserTest::SetUp();
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebContentsImplBrowserTest);
@@ -639,6 +644,48 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   observer->WaitForDidFirstVisuallyNonEmptyPaint();
   ASSERT_TRUE(observer->did_fist_visually_non_empty_paint_);
+}
+
+namespace {
+
+class WebDisplayModeDelegate : public WebContentsDelegate {
+ public:
+  explicit WebDisplayModeDelegate(blink::WebDisplayMode mode) : mode_(mode) { }
+  ~WebDisplayModeDelegate() override { }
+
+  blink::WebDisplayMode GetDisplayMode(
+      const WebContents* source) const override { return mode_; }
+  void set_mode(blink::WebDisplayMode mode) { mode_ = mode; }
+ private:
+  blink::WebDisplayMode mode_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebDisplayModeDelegate);
+};
+
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ChangeDisplayMode) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  WebDisplayModeDelegate delegate(blink::WebDisplayModeMinimalUi);
+  shell()->web_contents()->SetDelegate(&delegate);
+
+  NavigateToURL(shell(), GURL("about://blank"));
+
+  ASSERT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "document.title = "
+                            " window.matchMedia('(display-mode:"
+                            " minimal-ui)').matches"));
+  EXPECT_EQ(base::ASCIIToUTF16("true"), shell()->web_contents()->GetTitle());
+
+  delegate.set_mode(blink::WebDisplayModeFullscreen);
+  // Simulate widget is entering fullscreen (changing size is enough).
+  shell()->web_contents()->GetRenderViewHost()->WasResized();
+
+  ASSERT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "document.title = "
+                            " window.matchMedia('(display-mode:"
+                            " fullscreen)').matches"));
+  EXPECT_EQ(base::ASCIIToUTF16("true"), shell()->web_contents()->GetTitle());
 }
 
 }  // namespace content

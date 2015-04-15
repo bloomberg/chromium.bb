@@ -671,6 +671,7 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   surface_id_ = params.surface_id;
   if (params.opener_route_id != MSG_ROUTING_NONE && was_created_by_renderer)
     opener_id_ = params.opener_route_id;
+  display_mode_= params.initial_size.display_mode;
 
   // Ensure we start with a valid next_page_id_ from the browser.
   DCHECK_GE(next_page_id_, 0);
@@ -725,6 +726,7 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   g_view_map.Get().insert(std::make_pair(webview(), this));
   g_routing_id_view_map.Get().insert(std::make_pair(routing_id_, this));
   webview()->setDeviceScaleFactor(device_scale_factor_);
+  webview()->setDisplayMode(display_mode_);
   webview()->settings()->setPreferCompositingToLCDTextEnabled(
       PreferCompositingToLCDText(compositor_deps_, device_scale_factor_));
   webview()->settings()->setThreadedScrollingEnabled(
@@ -2688,6 +2690,7 @@ void RenderViewImpl::OnDisableAutoResize(const gfx::Size& new_size) {
            visible_viewport_size_,
            resizer_rect_,
            is_fullscreen_granted_,
+           display_mode_,
            NO_RESIZE_ACK);
   }
 }
@@ -2874,6 +2877,10 @@ void RenderViewImpl::OnResize(const ViewMsg_Resize_Params& params) {
       webview()->mainFrame()->setCanHaveScrollbars(
           ShouldDisplayScrollbars(params.new_size.width(),
                                   params.new_size.height()));
+    }
+    if (display_mode_ != params.display_mode) {
+      display_mode_ = params.display_mode;
+      webview()->setDisplayMode(display_mode_);
     }
   }
 
@@ -3696,6 +3703,7 @@ void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
   params.top_controls_height = 0.f;
   params.resizer_rect = WebRect();
   params.is_fullscreen_granted = is_fullscreen_granted();
+  params.display_mode = display_mode_;
   OnResize(params);
 }
 

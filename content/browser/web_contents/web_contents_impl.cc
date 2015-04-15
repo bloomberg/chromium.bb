@@ -1493,6 +1493,11 @@ bool WebContentsImpl::IsFullscreenForCurrentTab() const {
   return delegate_ ? delegate_->IsFullscreenForTabOrPending(this) : false;
 }
 
+blink::WebDisplayMode WebContentsImpl::GetDisplayMode() const {
+  return delegate_ ? delegate_->GetDisplayMode(this)
+                   : blink::WebDisplayModeBrowser;
+}
+
 void WebContentsImpl::RequestToLockMouse(bool user_gesture,
                                          bool last_unlocked_by_target) {
   if (delegate_) {

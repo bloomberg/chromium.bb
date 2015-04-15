@@ -39,6 +39,7 @@
 #include "media/base/channel_layout.h"
 #include "media/base/media_log_event.h"
 #include "net/base/network_change_notifier.h"
+#include "third_party/WebKit/public/platform/WebDisplayMode.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
@@ -84,6 +85,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPopupType,
                           blink::WebPopupType::WebPopupTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTextDirection,
                           blink::WebTextDirection::WebTextDirectionLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebDisplayMode,
+                          blink::WebDisplayMode::WebDisplayModeLast)
 IPC_ENUM_TRAITS(WindowContainerType)
 IPC_ENUM_TRAITS(content::FaviconURL::IconType)
 IPC_ENUM_TRAITS(content::FileChooserParams::Mode)
@@ -472,6 +475,8 @@ IPC_STRUCT_BEGIN(ViewMsg_Resize_Params)
   IPC_STRUCT_MEMBER(gfx::Rect, resizer_rect)
   // Indicates whether tab-initiated fullscreen was granted.
   IPC_STRUCT_MEMBER(bool, is_fullscreen_granted)
+  // The display mode.
+  IPC_STRUCT_MEMBER(blink::WebDisplayMode, display_mode)
   // If set, requests the renderer to reply with a ViewHostMsg_UpdateRect
   // with the ViewHostMsg_UpdateRect_Flags::IS_RESIZE_ACK bit set in flags.
   IPC_STRUCT_MEMBER(bool, needs_resize_ack)

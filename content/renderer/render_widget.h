@@ -23,6 +23,7 @@
 #include "content/renderer/message_delivery_policy.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "third_party/WebKit/public/platform/WebDisplayMode.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -124,6 +125,7 @@ class CONTENT_EXPORT RenderWidget
   gfx::Size size() const { return size_; }
   bool has_focus() const { return has_focus_; }
   bool is_fullscreen_granted() const { return is_fullscreen_granted_; }
+  blink::WebDisplayMode display_mode() const { return display_mode_; }
   bool is_hidden() const { return is_hidden_; }
   bool handling_input_event() const { return handling_input_event_; }
   // Temporary for debugging purposes...
@@ -390,6 +392,7 @@ class CONTENT_EXPORT RenderWidget
               const gfx::Size& visible_viewport_size,
               const gfx::Rect& resizer_rect,
               bool is_fullscreen_granted,
+              blink::WebDisplayMode display_mode,
               ResizeAck resize_ack);
   // Used to force the size of a window when running layout tests.
   void SetWindowRectSynchronously(const gfx::Rect& new_window_rect);
@@ -661,6 +664,9 @@ class CONTENT_EXPORT RenderWidget
 
   // Indicates whether tab-initiated fullscreen was granted.
   bool is_fullscreen_granted_;
+
+  // Indicates the display mode.
+  blink::WebDisplayMode display_mode_;
 
   // Indicates whether we have been focused/unfocused by the browser.
   bool has_focus_;

@@ -595,6 +595,7 @@ bool RenderWidgetHostImpl::GetResizeParams(
         view_->DoTopControlsShrinkBlinkSize();
     resize_params->visible_viewport_size = view_->GetVisibleViewportSize();
     resize_params->is_fullscreen_granted = IsFullscreenGranted();
+    resize_params->display_mode = GetDisplayMode();
   }
 
   const bool size_changed =
@@ -608,6 +609,7 @@ bool RenderWidgetHostImpl::GetResizeParams(
           resize_params->physical_backing_size ||
       old_resize_params_->is_fullscreen_granted !=
           resize_params->is_fullscreen_granted ||
+      old_resize_params_->display_mode != resize_params->display_mode ||
       old_resize_params_->top_controls_height !=
           resize_params->top_controls_height ||
       old_resize_params_->top_controls_shrink_blink_size !=
@@ -1320,6 +1322,10 @@ bool RenderWidgetHostImpl::IsMouseLocked() const {
 
 bool RenderWidgetHostImpl::IsFullscreenGranted() const {
   return false;
+}
+
+blink::WebDisplayMode RenderWidgetHostImpl::GetDisplayMode() const {
+  return blink::WebDisplayModeBrowser;
 }
 
 void RenderWidgetHostImpl::SetAutoResize(bool enable,

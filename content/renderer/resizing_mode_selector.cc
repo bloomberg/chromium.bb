@@ -23,6 +23,7 @@ bool ResizingModeSelector::ShouldAbortOnResize(
     const ViewMsg_Resize_Params& params) {
   return is_synchronous_mode_ &&
       params.is_fullscreen_granted == widget->is_fullscreen_granted() &&
+      params.display_mode == widget->display_mode() &&
       params.screen_info.deviceScaleFactor ==
         widget->screenInfo().deviceScaleFactor;
 }

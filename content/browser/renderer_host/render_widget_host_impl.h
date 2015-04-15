@@ -37,6 +37,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/common/page_zoom.h"
 #include "ipc/ipc_listener.h"
+#include "third_party/WebKit/public/platform/WebDisplayMode.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
@@ -542,6 +543,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // RenderViewHost overrides this method to report whether tab-initiated
   // fullscreen was granted.
   virtual bool IsFullscreenGranted() const;
+
+  virtual blink::WebDisplayMode GetDisplayMode() const;
 
   // Indicates if the render widget host should track the render widget's size
   // as opposed to visa versa.
