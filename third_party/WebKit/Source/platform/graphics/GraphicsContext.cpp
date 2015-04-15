@@ -30,6 +30,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/graphics/ColorSpace.h"
 #include "platform/graphics/Gradient.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/weborigin/KURL.h"
@@ -1524,9 +1525,9 @@ PassRefPtr<SkColorFilter> GraphicsContext::WebCoreColorFilterToSkiaColorFilter(C
     case ColorFilterLuminanceToAlpha:
         return adoptRef(SkLumaColorFilter::Create());
     case ColorFilterLinearRGBToSRGB:
-        return ImageBuffer::createColorSpaceFilter(ColorSpaceLinearRGB, ColorSpaceDeviceRGB);
+        return ColorSpaceUtilities::createColorSpaceFilter(ColorSpaceLinearRGB, ColorSpaceDeviceRGB);
     case ColorFilterSRGBToLinearRGB:
-        return ImageBuffer::createColorSpaceFilter(ColorSpaceDeviceRGB, ColorSpaceLinearRGB);
+        return ColorSpaceUtilities::createColorSpaceFilter(ColorSpaceDeviceRGB, ColorSpaceLinearRGB);
     case ColorFilterNone:
         break;
     default:

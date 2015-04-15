@@ -22,15 +22,14 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "config.h"
 
+#include "config.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 
 #include "SkBlurImageFilter.h"
 #include "SkColorFilterImageFilter.h"
 #include "SkColorMatrixFilter.h"
 #include "SkTableColorFilter.h"
-#include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/filters/FilterEffect.h"
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/graphics/filters/SourceGraphic.h"
@@ -77,7 +76,7 @@ PassRefPtr<SkImageFilter> SkiaImageFilterBuilder::build(FilterEffect* effect, Co
 PassRefPtr<SkImageFilter> SkiaImageFilterBuilder::transformColorSpace(
     SkImageFilter* input, ColorSpace srcColorSpace, ColorSpace dstColorSpace) {
 
-    RefPtr<SkColorFilter> colorFilter = ImageBuffer::createColorSpaceFilter(srcColorSpace, dstColorSpace);
+    RefPtr<SkColorFilter> colorFilter = ColorSpaceUtilities::createColorSpaceFilter(srcColorSpace, dstColorSpace);
     if (!colorFilter)
         return input;
 

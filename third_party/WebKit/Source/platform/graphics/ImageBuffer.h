@@ -32,7 +32,6 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/Canvas2DLayerBridge.h"
-#include "platform/graphics/ColorSpace.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/graphics/ImageBufferSurface.h"
@@ -154,7 +153,6 @@ private:
     ImageBuffer(PassOwnPtr<ImageBufferSurface>);
 
     void draw(GraphicsContext*, const FloatRect&, const FloatRect*, SkXfermode::Mode);
-    static PassRefPtr<SkColorFilter> createColorSpaceFilter(ColorSpace srcColorSpace, ColorSpace dstColorSpace);
 
     friend class GraphicsContext;
     friend class SkiaImageFilterBuilder;

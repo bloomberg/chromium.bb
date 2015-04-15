@@ -28,6 +28,9 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/graphics/Color.h"
+#include "wtf/PassRefPtr.h"
+
+class SkColorFilter;
 
 namespace blink {
 
@@ -48,6 +51,9 @@ const uint8_t* getConversionLUT(ColorSpace dstColorSpace, ColorSpace srcColorSpa
 
 // Convert a Color assumed to be in the |srcColorSpace| into the |dstColorSpace|.
 Color convertColor(const Color& srcColor, ColorSpace dstColorSpace, ColorSpace srcColorSpace = ColorSpaceDeviceRGB);
+
+// Create a color filter that will convert from |srcColorSpace| into |dstColorSpace|.
+PassRefPtr<SkColorFilter> createColorSpaceFilter(ColorSpace srcColorSpace, ColorSpace dstColorSpace);
 
 } // namespace ColorSpaceUtilities
 

@@ -33,6 +33,7 @@
 #include "config.h"
 #include "platform/graphics/ColorSpace.h"
 
+#include "third_party/skia/include/effects/SkTableColorFilter.h"
 #include "wtf/MathExtras.h"
 
 namespace blink {
@@ -100,6 +101,15 @@ Color convertColor(const Color& srcColor, ColorSpace dstColorSpace, ColorSpace s
         return srcColor;
 
     return Color(lookupTable[srcColor.red()], lookupTable[srcColor.green()], lookupTable[srcColor.blue()], srcColor.alpha());
+}
+
+PassRefPtr<SkColorFilter> createColorSpaceFilter(ColorSpace srcColorSpace, ColorSpace dstColorSpace)
+{
+    const uint8_t* lookupTable = getConversionLUT(dstColorSpace, srcColorSpace);
+    if (!lookupTable)
+        return nullptr;
+
+    return adoptRef(SkTableColorFilter::CreateARGB(0, lookupTable, lookupTable, lookupTable));
 }
 
 } // namespace ColorSpaceUtilities
