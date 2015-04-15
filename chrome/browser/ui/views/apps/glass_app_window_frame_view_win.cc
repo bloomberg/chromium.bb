@@ -55,6 +55,9 @@ gfx::Rect GlassAppWindowFrameViewWin::GetBoundsForClientView() const {
 
 gfx::Rect GlassAppWindowFrameViewWin::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
+  if (widget_->IsFullscreen())
+    return bounds();
+
   gfx::Insets insets = GetGlassInsets();
   // Our bounds are not the same as the window's due to the offset added by
   // AppWindowDesktopWindowTreeHostWin::GetClientAreaInsets. So account for it

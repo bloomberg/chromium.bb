@@ -232,6 +232,21 @@ function testDrawAttention() {
   ]);
 }
 
+function testFullscreen() {
+  chrome.test.runTests([
+    function createFullscreen() {
+      chrome.app.window.create('test.html', {
+        state: 'fullscreen',
+      }, callbackPass(function (win) {
+        chrome.test.assertEq(win.contentWindow.screen.width,
+                             win.contentWindow.innerWidth);
+        chrome.test.assertEq(win.contentWindow.screen.height,
+                             win.contentWindow.innerHeight);
+      }));
+    }
+  ]);
+}
+
 chrome.app.runtime.onLaunched.addListener(function() {
   chrome.test.sendMessage('Launched', function(reply) {
     window[reply]();

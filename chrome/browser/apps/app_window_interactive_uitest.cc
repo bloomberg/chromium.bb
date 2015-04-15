@@ -497,6 +497,10 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, TestCreateHidden) {
   }
 }
 
+IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, TestFullscreen) {
+  ASSERT_TRUE(RunAppWindowInteractiveTest("testFullscreen")) << message_;
+}
+
 // Only Linux and Windows use keep-alive to determine when to shut down.
 #if defined(OS_LINUX) || defined(OS_WIN)
 
