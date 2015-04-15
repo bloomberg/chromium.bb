@@ -13,8 +13,8 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/chromeos/memory_pressure_observer_chromeos.h"
 #include "base/command_line.h"
+#include "base/memory/memory_pressure_monitor.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/process/process.h"
@@ -41,7 +41,6 @@
 #include "chrome/common/url_constants.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/memory_pressure_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
@@ -103,11 +102,6 @@ void RecordLinearHistogram(const std::string& name,
       bucket_count + 2,  // Account for the underflow and overflow bins.
       base::Histogram::kUmaTargetedHistogramFlag);
   counter->Add(sample);
-}
-
-// Gets the MemoryPressureObserver - if it exists.
-base::MemoryPressureObserverChromeOS* GetMemoryPressureObserver() {
-  return content::GetMemoryPressureObserver();
 }
 
 }  // namespace
@@ -181,9 +175,8 @@ OomPriorityManager::OomPriorityManager()
     : focused_tab_process_info_(std::make_pair(0, 0)),
       discard_count_(0),
       recent_tab_discard_(false) {
-  // Use the old |LowMemoryObserver| when there is no
-  // |MemoryPressureObserverChromeOS|.
-  if (!GetMemoryPressureObserver())
+  // Use the old |LowMemoryObserver| when there is no |MemoryPressureMonitor|.
+  if (!base::MemoryPressureMonitor::Get())
     low_memory_observer_.reset(new LowMemoryObserver);
 
   registrar_.Add(this,
@@ -218,17 +211,16 @@ void OomPriorityManager::Start() {
   start_time_ = TimeTicks::Now();
   // If a |LowMemoryObserver| exists we use the old system, otherwise we create
   // a |MemoryPressureListener| to listen for memory events.
-  if (low_memory_observer_.get()) {
+  if (low_memory_observer_) {
     low_memory_observer_->Start();
   } else {
-    base::MemoryPressureObserverChromeOS* observer =
-        GetMemoryPressureObserver();
-    if (observer) {
+    base::MemoryPressureMonitor* monitor = base::MemoryPressureMonitor::Get();
+    if (monitor) {
       memory_pressure_listener_.reset(new base::MemoryPressureListener(
           base::Bind(&OomPriorityManager::OnMemoryPressure,
                      base::Unretained(this))));
       base::MemoryPressureListener::MemoryPressureLevel level =
-          observer->GetCurrentPressureLevel();
+          monitor->GetCurrentPressureLevel();
       if (level ==
           base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
         OnMemoryPressure(level);
@@ -240,7 +232,7 @@ void OomPriorityManager::Start() {
 void OomPriorityManager::Stop() {
   timer_.Stop();
   recent_tab_discard_timer_.Stop();
-  if (low_memory_observer_.get())
+  if (low_memory_observer_)
     low_memory_observer_->Stop();
   else
     memory_pressure_listener_.reset();
@@ -510,20 +502,21 @@ void OomPriorityManager::Observe(int type,
       content::RenderProcessHost* host =
           content::Source<content::RenderProcessHost>(source).ptr();
       oom_score_map_.erase(host->GetID());
-      if (!low_memory_observer_.get()) {
+      if (!low_memory_observer_) {
         // Coming here we know that a renderer was just killed and memory should
         // come back into the pool. However - the memory pressure observer did
         // not yet update its status and therefore we ask it to redo the
         // measurement, calling us again if we have to release more.
         // Note: We do not only accelerate the discarding speed by doing another
         // check in short succession - we also accelerate it because the timer
-        // driven MemoryPressureObserver will continue to produce timed events
-        // on top. So as longer as the cleanup phase takes, as more tabs will
+        // driven MemoryPressureMonitor will continue to produce timed events
+        // on top. So the longer the cleanup phase takes, the more tabs will
         // get discarded in parallel.
-        base::MemoryPressureObserverChromeOS* observer =
-            GetMemoryPressureObserver();
-        if (observer)
-          observer->ScheduleEarlyCheck();
+        base::MemoryPressureMonitorChromeOS* monitor =
+            static_cast<base::MemoryPressureMonitorChromeOS*>(
+                base::MemoryPressureMonitor::Get());
+        if (monitor)
+          monitor->ScheduleEarlyCheck();
       }
       break;
     }

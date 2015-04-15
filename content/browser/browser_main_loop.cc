@@ -103,7 +103,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "base/chromeos/memory_pressure_observer_chromeos.h"
+#include "base/chromeos/memory_pressure_monitor_chromeos.h"
 #include "chromeos/chromeos_switches.h"
 #endif
 
@@ -590,7 +590,7 @@ int BrowserMainLoop::PreCreateThreads() {
 
 #if defined(OS_CHROMEOS)
   if (chromeos::switches::MemoryPressureHandlingEnabled()) {
-    memory_pressure_observer_.reset(new base::MemoryPressureObserverChromeOS(
+    memory_pressure_monitor_.reset(new base::MemoryPressureMonitorChromeOS(
         chromeos::switches::GetMemoryPressureThresholds()));
   }
 #endif
@@ -852,7 +852,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   }
 
 #if defined(OS_CHROMEOS)
-  memory_pressure_observer_.reset();
+  memory_pressure_monitor_.reset();
 #endif
 
 #if defined(OS_MACOSX)

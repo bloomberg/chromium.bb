@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/chromeos/memory_pressure_observer_chromeos.h"
+#include "base/chromeos/memory_pressure_monitor_chromeos.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
@@ -43,10 +43,10 @@ enum MemoryPressureLevelUMA {
 // Converts a |MemoryPressureThreshold| value into a used memory percentage for
 // the moderate pressure event.
 int GetModerateMemoryThresholdInPercent(
-    MemoryPressureObserverChromeOS::MemoryPressureThresholds thresholds) {
-  return thresholds == MemoryPressureObserverChromeOS::
+    MemoryPressureMonitorChromeOS::MemoryPressureThresholds thresholds) {
+  return thresholds == MemoryPressureMonitorChromeOS::
                            THRESHOLD_AGGRESSIVE_CACHE_DISCARD ||
-         thresholds == MemoryPressureObserverChromeOS::THRESHOLD_AGGRESSIVE
+         thresholds == MemoryPressureMonitorChromeOS::THRESHOLD_AGGRESSIVE
              ? kAggressiveMemoryPressureModerateThresholdPercent
              : kNormalMemoryPressureModerateThresholdPercent;
 }
@@ -54,10 +54,10 @@ int GetModerateMemoryThresholdInPercent(
 // Converts a |MemoryPressureThreshold| value into a used memory percentage for
 // the critical pressure event.
 int GetCriticalMemoryThresholdInPercent(
-    MemoryPressureObserverChromeOS::MemoryPressureThresholds thresholds) {
-  return thresholds == MemoryPressureObserverChromeOS::
+    MemoryPressureMonitorChromeOS::MemoryPressureThresholds thresholds) {
+  return thresholds == MemoryPressureMonitorChromeOS::
                            THRESHOLD_AGGRESSIVE_TAB_DISCARD ||
-         thresholds == MemoryPressureObserverChromeOS::THRESHOLD_AGGRESSIVE
+         thresholds == MemoryPressureMonitorChromeOS::THRESHOLD_AGGRESSIVE
              ? kAggressiveMemoryPressureCriticalThresholdPercent
              : kNormalMemoryPressureCriticalThresholdPercent;
 }
@@ -76,7 +76,7 @@ MemoryPressureListener::MemoryPressureLevel GetMemoryPressureLevelFromFillLevel(
 
 }  // namespace
 
-MemoryPressureObserverChromeOS::MemoryPressureObserverChromeOS(
+MemoryPressureMonitorChromeOS::MemoryPressureMonitorChromeOS(
     MemoryPressureThresholds thresholds)
     : current_memory_pressure_level_(
           MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE),
@@ -89,31 +89,36 @@ MemoryPressureObserverChromeOS::MemoryPressureObserverChromeOS(
   StartObserving();
 }
 
-MemoryPressureObserverChromeOS::~MemoryPressureObserverChromeOS() {
+MemoryPressureMonitorChromeOS::~MemoryPressureMonitorChromeOS() {
   StopObserving();
 }
 
-void MemoryPressureObserverChromeOS::ScheduleEarlyCheck() {
+void MemoryPressureMonitorChromeOS::ScheduleEarlyCheck() {
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      Bind(&MemoryPressureObserverChromeOS::CheckMemoryPressure,
+      Bind(&MemoryPressureMonitorChromeOS::CheckMemoryPressure,
            weak_ptr_factory_.GetWeakPtr()));
 }
 
-void MemoryPressureObserverChromeOS::StartObserving() {
+MemoryPressureListener::MemoryPressureLevel
+MemoryPressureMonitorChromeOS::GetCurrentPressureLevel() const {
+  return current_memory_pressure_level_;
+}
+
+void MemoryPressureMonitorChromeOS::StartObserving() {
   timer_.Start(FROM_HERE,
                TimeDelta::FromMilliseconds(kMemoryPressureIntervalMs),
-               Bind(&MemoryPressureObserverChromeOS::
+               Bind(&MemoryPressureMonitorChromeOS::
                         CheckMemoryPressureAndRecordStatistics,
                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-void MemoryPressureObserverChromeOS::StopObserving() {
+void MemoryPressureMonitorChromeOS::StopObserving() {
   // If StartObserving failed, StopObserving will still get called.
   timer_.Stop();
 }
 
-void MemoryPressureObserverChromeOS::CheckMemoryPressureAndRecordStatistics() {
+void MemoryPressureMonitorChromeOS::CheckMemoryPressureAndRecordStatistics() {
   CheckMemoryPressure();
 
   // Record UMA histogram statistics for the current memory pressure level.
@@ -135,7 +140,7 @@ void MemoryPressureObserverChromeOS::CheckMemoryPressureAndRecordStatistics() {
                             NUM_MEMORY_PRESSURE_LEVELS);
 }
 
-void MemoryPressureObserverChromeOS::CheckMemoryPressure() {
+void MemoryPressureMonitorChromeOS::CheckMemoryPressure() {
   MemoryPressureListener::MemoryPressureLevel old_pressure =
       current_memory_pressure_level_;
   current_memory_pressure_level_ =
@@ -171,7 +176,7 @@ void MemoryPressureObserverChromeOS::CheckMemoryPressure() {
 }
 
 // Gets the used ChromeOS memory in percent.
-int MemoryPressureObserverChromeOS::GetUsedMemoryInPercent() {
+int MemoryPressureMonitorChromeOS::GetUsedMemoryInPercent() {
   base::SystemMemoryInfoKB info;
   if (!base::GetSystemMemoryInfo(&info)) {
     VLOG(1) << "Cannot determine the free memory of the system.";

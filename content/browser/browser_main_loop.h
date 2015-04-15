@@ -21,7 +21,7 @@ class MessageLoop;
 class PowerMonitor;
 class SystemMonitor;
 #if defined(OS_CHROMEOS)
-class MemoryPressureObserverChromeOS;
+class MemoryPressureMonitorChromeOS;
 #endif
 namespace trace_event {
 class TraceMemoryController;
@@ -118,12 +118,6 @@ class CONTENT_EXPORT BrowserMainLoop {
     return device_monitor_mac_.get();
   }
 #endif
-#if defined(OS_CHROMEOS)
-  // Return the MemoryPressureObserver which might be NULL.
-  base::MemoryPressureObserverChromeOS* memory_pressure_observer() {
-    return memory_pressure_observer_.get();
-  }
-#endif
 
  private:
   class MemoryObserver;
@@ -185,7 +179,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   scoped_ptr<ScreenOrientationDelegate> screen_orientation_delegate_;
 #endif
 #if defined(OS_CHROMEOS)
-  scoped_ptr<base::MemoryPressureObserverChromeOS> memory_pressure_observer_;
+  scoped_ptr<base::MemoryPressureMonitorChromeOS> memory_pressure_monitor_;
 #endif
   // The startup task runner is created by CreateStartupTasks()
   scoped_ptr<StartupTaskRunner> startup_task_runner_;

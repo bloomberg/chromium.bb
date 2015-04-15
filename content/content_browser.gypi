@@ -159,7 +159,6 @@
       'public/browser/media_capture_devices.h',
       'public/browser/media_device_id.cc',
       'public/browser/media_device_id.h',
-      'public/browser/memory_pressure_observer.h',
       'public/browser/message_port_delegate.h',
       'public/browser/message_port_provider.h',
       'public/browser/native_web_keyboard_event.h',
@@ -1585,7 +1584,6 @@
       'browser/compositor/software_output_device_x11.cc',
       'browser/compositor/software_output_device_x11.h',
       'browser/context_factory.cc',
-      'browser/memory_pressure_observer.cc',
     ],
     'plugin_browser_sources': [
       'browser/pepper_flash_settings_helper_impl.cc',

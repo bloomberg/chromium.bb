@@ -2,28 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_CHROMEOS_MEMORY_PRESSURE_OBSERVER_CHROMEOS_H_
-#define BASE_CHROMEOS_MEMORY_PRESSURE_OBSERVER_CHROMEOS_H_
+#ifndef BASE_CHROMEOS_MEMORY_PRESSURE_MONITOR_CHROMEOS_H_
+#define BASE_CHROMEOS_MEMORY_PRESSURE_MONITOR_CHROMEOS_H_
 
 #include "base/base_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 
 namespace base {
 
-class TestMemoryPressureObserver;
+class TestMemoryPressureMonitor;
 
 ////////////////////////////////////////////////////////////////////////////////
-// MemoryPressureObserverChromeOS
+// MemoryPressureMonitorChromeOS
 //
 // A class to handle the observation of our free memory. It notifies the
 // MemoryPressureListener of memory fill level changes, so that it can take
 // action to reduce memory resources accordingly.
 //
-class BASE_EXPORT MemoryPressureObserverChromeOS {
+class BASE_EXPORT MemoryPressureMonitorChromeOS : public MemoryPressureMonitor {
  public:
   using GetUsedMemoryInPercentCallback = int (*)();
 
@@ -47,8 +48,8 @@ class BASE_EXPORT MemoryPressureObserverChromeOS {
     THRESHOLD_AGGRESSIVE = 4
   };
 
-  explicit MemoryPressureObserverChromeOS(MemoryPressureThresholds thresholds);
-  virtual ~MemoryPressureObserverChromeOS();
+  explicit MemoryPressureMonitorChromeOS(MemoryPressureThresholds thresholds);
+  ~MemoryPressureMonitorChromeOS() override;
 
   // Redo the memory pressure calculation soon and call again if a critical
   // memory pressure prevails. Note that this call will trigger an asynchronous
@@ -56,12 +57,11 @@ class BASE_EXPORT MemoryPressureObserverChromeOS {
   void ScheduleEarlyCheck();
 
   // Get the current memory pressure level.
-  base::MemoryPressureListener::MemoryPressureLevel GetCurrentPressureLevel() {
-    return current_memory_pressure_level_;
-  }
+  MemoryPressureListener::MemoryPressureLevel GetCurrentPressureLevel() const
+      override;
 
  private:
-  friend TestMemoryPressureObserver;
+  friend TestMemoryPressureMonitor;
   // Starts observing the memory fill level.
   // Calls to StartObserving should always be matched with calls to
   // StopObserving.
@@ -89,7 +89,7 @@ class BASE_EXPORT MemoryPressureObserverChromeOS {
 
   // A periodic timer to check for resource pressure changes. This will get
   // replaced by a kernel triggered event system (see crbug.com/381196).
-  base::RepeatingTimer<MemoryPressureObserverChromeOS> timer_;
+  base::RepeatingTimer<MemoryPressureMonitorChromeOS> timer_;
 
   // To slow down the amount of moderate pressure event calls, this counter
   // gets used to count the number of events since the last event occured.
@@ -99,11 +99,11 @@ class BASE_EXPORT MemoryPressureObserverChromeOS {
   const int moderate_pressure_threshold_percent_;
   const int critical_pressure_threshold_percent_;
 
-  base::WeakPtrFactory<MemoryPressureObserverChromeOS> weak_ptr_factory_;
+  base::WeakPtrFactory<MemoryPressureMonitorChromeOS> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(MemoryPressureObserverChromeOS);
+  DISALLOW_COPY_AND_ASSIGN(MemoryPressureMonitorChromeOS);
 };
 
 }  // namespace base
 
-#endif  // BASE_CHROMEOS_MEMORY_PRESSURE_OBSERVER_CHROMEOS_H_
+#endif  // BASE_CHROMEOS_MEMORY_PRESSURE_MONITOR_CHROMEOS_H_

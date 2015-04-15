@@ -360,40 +360,40 @@ bool MemoryPressureHandlingEnabled() {
   return true;
 }
 
-base::MemoryPressureObserverChromeOS::MemoryPressureThresholds
+base::MemoryPressureMonitorChromeOS::MemoryPressureThresholds
 GetMemoryPressureThresholds() {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           kMemoryPressureThresholds)) {
     const std::string group_name =
         base::FieldTrialList::FindFullName(kMemoryPressureExperimentName);
     if (group_name == kConservativeThreshold)
-      return base::MemoryPressureObserverChromeOS::THRESHOLD_CONSERVATIVE;
+      return base::MemoryPressureMonitorChromeOS::THRESHOLD_CONSERVATIVE;
     if (group_name == kAggressiveCacheDiscardThreshold)
-      return base::MemoryPressureObserverChromeOS::
+      return base::MemoryPressureMonitorChromeOS::
           THRESHOLD_AGGRESSIVE_CACHE_DISCARD;
     if (group_name == kAggressiveTabDiscardThreshold)
-      return base::MemoryPressureObserverChromeOS::
+      return base::MemoryPressureMonitorChromeOS::
           THRESHOLD_AGGRESSIVE_TAB_DISCARD;
     if (group_name == kAggressiveThreshold)
-      return base::MemoryPressureObserverChromeOS::THRESHOLD_AGGRESSIVE;
-    return base::MemoryPressureObserverChromeOS::THRESHOLD_DEFAULT;
+      return base::MemoryPressureMonitorChromeOS::THRESHOLD_AGGRESSIVE;
+    return base::MemoryPressureMonitorChromeOS::THRESHOLD_DEFAULT;
   }
 
   const std::string option =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           kMemoryPressureThresholds);
   if (option == kConservativeThreshold)
-    return base::MemoryPressureObserverChromeOS::THRESHOLD_CONSERVATIVE;
+    return base::MemoryPressureMonitorChromeOS::THRESHOLD_CONSERVATIVE;
   if (option == kAggressiveCacheDiscardThreshold)
-    return base::MemoryPressureObserverChromeOS::
+    return base::MemoryPressureMonitorChromeOS::
         THRESHOLD_AGGRESSIVE_CACHE_DISCARD;
   if (option == kAggressiveTabDiscardThreshold)
-    return base::MemoryPressureObserverChromeOS::
+    return base::MemoryPressureMonitorChromeOS::
         THRESHOLD_AGGRESSIVE_TAB_DISCARD;
   if (option == kAggressiveThreshold)
-    return base::MemoryPressureObserverChromeOS::THRESHOLD_AGGRESSIVE;
+    return base::MemoryPressureMonitorChromeOS::THRESHOLD_AGGRESSIVE;
 
-  return base::MemoryPressureObserverChromeOS::THRESHOLD_DEFAULT;
+  return base::MemoryPressureMonitorChromeOS::THRESHOLD_DEFAULT;
 }
 
 }  // namespace switches

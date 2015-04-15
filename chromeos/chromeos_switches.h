@@ -5,7 +5,7 @@
 #ifndef CHROMEOS_CHROMEOS_SWITCHES_H_
 #define CHROMEOS_CHROMEOS_SWITCHES_H_
 
-#include "base/chromeos/memory_pressure_observer_chromeos.h"
+#include "base/chromeos/memory_pressure_monitor_chromeos.h"
 #include "chromeos/chromeos_export.h"
 
 namespace chromeos {
@@ -118,7 +118,7 @@ CHROMEOS_EXPORT extern const char kDataSaverPromptDemoMode[];
 CHROMEOS_EXPORT bool WakeOnWifiEnabled();
 
 CHROMEOS_EXPORT bool MemoryPressureHandlingEnabled();
-CHROMEOS_EXPORT base::MemoryPressureObserverChromeOS::MemoryPressureThresholds
+CHROMEOS_EXPORT base::MemoryPressureMonitorChromeOS::MemoryPressureThresholds
 GetMemoryPressureThresholds();
 
 }  // namespace switches

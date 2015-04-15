@@ -9,14 +9,10 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/shared_memory.h"
 #include "base/sys_info.h"
 #include "content/common/host_shared_bitmap_manager.h"
-
-#if defined(OS_CHROMEOS)
-#include "base/chromeos/memory_pressure_observer_chromeos.h"
-#include "content/browser/browser_main_loop.h"
-#endif
 
 namespace content {
 namespace {
@@ -75,24 +71,15 @@ void RendererFrameManager::UnlockFrame(RendererFrameManagerClient* frame) {
 }
 
 size_t RendererFrameManager::GetMaxNumberOfSavedFrames() const {
-#if defined(OS_CHROMEOS)
-  content::BrowserMainLoop* browser_main_loop =
-      content::BrowserMainLoop::GetInstance();
+  base::MemoryPressureMonitor* monitor = base::MemoryPressureMonitor::Get();
 
-  // Unit tests can come here without a BrowserMainLoop instance.
-  if (!browser_main_loop)
-    return max_number_of_saved_frames_;
-
-  base::MemoryPressureObserverChromeOS* observer =
-      browser_main_loop->memory_pressure_observer();
-
-  if (!observer)
+  if (!monitor)
     return max_number_of_saved_frames_;
 
   // Until we have a global OnMemoryPressureChanged event we need to query the
-  // value from our specific pressure observer.
+  // value from our specific pressure monitor.
   int percentage = 100;
-  switch (observer->GetCurrentPressureLevel()) {
+  switch (monitor->GetCurrentPressureLevel()) {
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
       percentage = 100;
       break;
@@ -105,9 +92,6 @@ size_t RendererFrameManager::GetMaxNumberOfSavedFrames() const {
   }
   size_t frames = (max_number_of_saved_frames_ * percentage) / 100;
   return std::max(static_cast<size_t>(1), frames);
-#else
-  return max_number_of_saved_frames_;
-#endif
 }
 
 RendererFrameManager::RendererFrameManager()
