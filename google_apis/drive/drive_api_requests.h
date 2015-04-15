@@ -1097,9 +1097,10 @@ class PermissionsInsertRequest : public EntryActionRequest {
 //========================== BatchUploadRequest ==========================
 
 struct BatchUploadChildEntry {
-  explicit BatchUploadChildEntry(UrlFetchRequestBase* request)
+  BatchUploadChildEntry() : request(NULL), prepared(false) {}
+  explicit BatchUploadChildEntry(BatchableRequestBase* request)
       : request(request), prepared(false) {}
-  UrlFetchRequestBase* request;
+  BatchableRequestBase* request;
   bool prepared;
 };
 
@@ -1110,29 +1111,64 @@ class BatchUploadRequest : public UrlFetchRequestBase {
   ~BatchUploadRequest() override;
 
   // Adds request to the batch request.
-  void AddRequest(UrlFetchRequestBase* request);
+  void AddRequest(BatchableRequestBase* request);
 
   // Completes building batch upload request, and starts to send the request to
-  // server.
+  // server. Must add at least one request before calling |Commit|.
   void Commit();
 
   // Obtains weak pointer of this.
   base::WeakPtr<BatchUploadRequest> GetWeakPtrAsBatchUploadRequest();
 
+  // Set boundary. Only tests can use this method.
+  void SetBoundaryForTesting(const std::string& boundary);
+
   // Obtains reference to RequestSender that owns the request.
   RequestSender* sender() const { return sender_; }
-  DriveApiUrlGenerator url_generator() const { return url_generator_; }
 
-  // Returns URL of this request.
+  // Obtains URLGenerator.
+  const DriveApiUrlGenerator& url_generator() const { return url_generator_; }
+
+  // UrlFetchRequestBase overrides.
+  void Prepare(const PrepareCallback& callback) override;
+  void Cancel() override;
   GURL GetURL() const override;
-
+  net::URLFetcher::RequestType GetRequestType() const override;
+  std::vector<std::string> GetExtraRequestHeaders() const override;
+  bool GetContentData(
+      std::string* upload_content_type,
+      std::string* upload_content) override;
   void ProcessURLFetchResults(const net::URLFetcher* source) override;
   void RunCallbackOnPrematureFailure(DriveApiErrorCode code) override;
 
  private:
+  typedef void* RequestID;
+  // Obtains corresponding child entry of |request_id|. Returns NULL if the
+  // entry is not found.
+  std::vector<BatchUploadChildEntry>::iterator
+  GetChildEntry(RequestID request_id);
+
+  // Called after child requests' |Prepare| method.
+  void OnChildRequestPrepared(RequestID request_id, DriveApiErrorCode result);
+
+  // Complete |Prepare| if possible.
+  void MayCompletePrepare();
+
+  // Process result for each child.
+  void ProcessURLFetchResultsForChild(RequestID id, const std::string& body);
+
   RequestSender* const sender_;
   const DriveApiUrlGenerator url_generator_;
   std::vector<BatchUploadChildEntry> child_requests_;
+
+  PrepareCallback prepare_callback_;
+  bool committed_;
+
+  // Boundary of multipart body.
+  std::string boundary_;
+
+  // Multipart of child requests.
+  ContentTypeAndData upload_content_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

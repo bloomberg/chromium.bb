@@ -9,6 +9,7 @@
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "google_apis/drive/request_sender.h"
@@ -19,6 +20,21 @@
 namespace google_apis {
 namespace drive {
 namespace {
+
+// Format of one request in batch uploading request.
+const char kBatchUploadRequestFormat[] =
+    "%s %s HTTP/1.1\n"
+    "Host: %s\n"
+    "X-Goog-Upload-Protocol: multipart\n"
+    "Content-Type: %s\n"
+    "\n"
+    "%s";
+
+// Request header for specifying batch upload.
+const char kBatchUploadHeader[] = "X-Goog-Upload-Protocol: batch";
+
+// Content type of HTTP request.
+const char kHttpContentType[] = "application/http";
 
 // Parses the JSON value to FileResource instance and runs |callback| on the
 // UI thread once parsing is done.
@@ -977,23 +993,134 @@ BatchUploadRequest::BatchUploadRequest(
     : UrlFetchRequestBase(sender),
       sender_(sender),
       url_generator_(url_generator),
+      committed_(false),
       weak_ptr_factory_(this) {
 }
 
 BatchUploadRequest::~BatchUploadRequest() {
   for (const auto& child : child_requests_) {
-    // Request will be deleted in RequestFinished method.
+    // Request will be deleted in |RequestFinished| method.
     sender_->RequestFinished(child.request);
   }
 }
 
-void BatchUploadRequest::AddRequest(UrlFetchRequestBase* request) {
+void BatchUploadRequest::SetBoundaryForTesting(const std::string& boundary) {
+  boundary_ = boundary;
+}
+
+void BatchUploadRequest::AddRequest(BatchableRequestBase* request) {
+  DCHECK(CalledOnValidThread());
   DCHECK(request);
+  DCHECK(GetChildEntry(request) == child_requests_.end());
+  DCHECK(!committed_);
   child_requests_.push_back(BatchUploadChildEntry(request));
+  request->Prepare(
+      base::Bind(&BatchUploadRequest::OnChildRequestPrepared,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 request));
+}
+
+void BatchUploadRequest::OnChildRequestPrepared(
+    RequestID request_id, DriveApiErrorCode result) {
+  DCHECK(CalledOnValidThread());
+  auto const child = GetChildEntry(request_id);
+  DCHECK(child != child_requests_.end());
+  if (IsSuccessfulDriveApiErrorCode(result)) {
+    child->prepared = true;
+  } else {
+    child->request->RunCallbackOnPrematureFailure(result);
+    sender_->RequestFinished(child->request);
+    child_requests_.erase(child);
+  }
+  MayCompletePrepare();
 }
 
 void BatchUploadRequest::Commit() {
-  NOTIMPLEMENTED();
+  DCHECK(CalledOnValidThread());
+  DCHECK(!committed_);
+  CHECK(!child_requests_.empty());
+  committed_ = true;
+  MayCompletePrepare();
+}
+
+void BatchUploadRequest::Prepare(const PrepareCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!callback.is_null());
+  prepare_callback_ = callback;
+  MayCompletePrepare();
+}
+
+void BatchUploadRequest::Cancel() {
+  for (auto& child : child_requests_) {
+    // Request cancel should delete the request instance.
+    child.request->Cancel();
+  }
+  child_requests_.clear();
+  UrlFetchRequestBase::Cancel();
+}
+
+// Obtains corresponding child entry of |request_id|. Returns NULL if the
+// entry is not found.
+std::vector<BatchUploadChildEntry>::iterator
+BatchUploadRequest::GetChildEntry(RequestID request_id) {
+  for (auto it = child_requests_.begin(); it != child_requests_.end(); ++it) {
+    if (it->request == request_id)
+      return it;
+  }
+  return child_requests_.end();
+}
+
+void BatchUploadRequest::MayCompletePrepare() {
+  if (!committed_ || prepare_callback_.is_null())
+    return;
+  for (const auto& child : child_requests_) {
+    if (!child.prepared)
+      return;
+  }
+
+  // Build multipart body here.
+  std::vector<ContentTypeAndData> parts;
+  for (const auto& child : child_requests_) {
+    std::string type;
+    std::string data;
+    const bool result = child.request->GetContentData(&type, &data);
+    // Upload request must have content data.
+    DCHECK(result);
+
+    const GURL url = child.request->GetURL();
+    std::string method;
+    switch (child.request->GetRequestType()) {
+      case net::URLFetcher::POST:
+        method = "POST";
+        break;
+      case net::URLFetcher::PUT:
+        method = "PUT";
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+
+    parts.push_back(ContentTypeAndData());
+    parts.back().type = kHttpContentType;
+    parts.back().data = base::StringPrintf(
+        kBatchUploadRequestFormat,
+        method.c_str(),
+        url.path().c_str(),
+        url_generator_.GetBatchUploadUrl().host().c_str(),
+        type.c_str(),
+        data.c_str());
+  }
+
+  GenerateMultipartBody(MULTIPART_MIXED, boundary_, parts, &upload_content_);
+  prepare_callback_.Run(HTTP_SUCCESS);
+}
+
+bool BatchUploadRequest::GetContentData(std::string* upload_content_type,
+                                        std::string* upload_content_data) {
+  upload_content_type->assign(upload_content_.type);
+  upload_content_data->assign(upload_content_.data);
+  return true;
 }
 
 base::WeakPtr<BatchUploadRequest>
@@ -1002,16 +1129,42 @@ BatchUploadRequest::GetWeakPtrAsBatchUploadRequest() {
 }
 
 GURL BatchUploadRequest::GetURL() const {
-  NOTIMPLEMENTED();
-  return GURL();
+  return url_generator_.GetBatchUploadUrl();
+}
+
+net::URLFetcher::RequestType BatchUploadRequest::GetRequestType() const {
+  return net::URLFetcher::PUT;
+}
+
+std::vector<std::string> BatchUploadRequest::GetExtraRequestHeaders() const {
+  std::vector<std::string> headers;
+  headers.push_back(kBatchUploadHeader);
+  return headers;
 }
 
 void BatchUploadRequest::ProcessURLFetchResults(const net::URLFetcher* source) {
-  NOTIMPLEMENTED();
+  if (!IsSuccessfulDriveApiErrorCode(GetErrorCode())) {
+    RunCallbackOnPrematureFailure(GetErrorCode());
+    sender_->RequestFinished(this);
+    return;
+  }
+
+  for (auto& child : child_requests_) {
+    // TODO(hirono): Split the mutlipart result and return the correct code and
+    // body.
+    child.request->ProcessURLFetchResults(HTTP_SERVICE_UNAVAILABLE, "");
+    // Request deletes itself after processing.
+  }
+
+  child_requests_.clear();
 }
 
 void BatchUploadRequest::RunCallbackOnPrematureFailure(DriveApiErrorCode code) {
-  NOTIMPLEMENTED();
+  for (auto child : child_requests_) {
+    child.request->RunCallbackOnPrematureFailure(code);
+    sender_->RequestFinished(child.request);
+  }
+  child_requests_.clear();
 }
 
 }  // namespace drive

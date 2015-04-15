@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/drive_api_requests.h"
@@ -99,6 +100,9 @@ class DriveApiRequestsTest : public testing::Test {
                    base::Unretained(this)));
     test_server_.RegisterRequestHandler(
         base::Bind(&DriveApiRequestsTest::HandleDownloadRequest,
+                   base::Unretained(this)));
+    test_server_.RegisterRequestHandler(
+        base::Bind(&DriveApiRequestsTest::HandleBatchUploadRequest,
                    base::Unretained(this)));
 
     GURL test_base_url = test_util::GetBaseUrlForTesting(test_server_.port());
@@ -391,6 +395,21 @@ class DriveApiRequestsTest : public testing::Test {
     response->set_code(net::HTTP_OK);
     response->set_content(id + id + id);
     response->set_content_type("text/plain");
+    return response.Pass();
+  }
+
+  scoped_ptr<net::test_server::HttpResponse> HandleBatchUploadRequest(
+      const net::test_server::HttpRequest& request) {
+    http_request_ = request;
+
+    const GURL absolute_url = test_server_.GetURL(request.relative_url);
+    std::string id;
+    if (absolute_url.path() != "/upload/drive")
+      return scoped_ptr<net::test_server::HttpResponse>();
+
+    scoped_ptr<net::test_server::BasicHttpResponse> response(
+        new net::test_server::BasicHttpResponse);
+    response->set_code(net::HTTP_OK);
     return response.Pass();
   }
 
@@ -1886,6 +1905,99 @@ TEST_F(DriveApiRequestsTest, PermissionsInsertRequest) {
   result.reset(base::JSONReader::Read(http_request_.content));
   EXPECT_TRUE(http_request_.has_content);
   EXPECT_TRUE(base::Value::Equals(expected.get(), result.get()));
+}
+
+TEST_F(DriveApiRequestsTest, BatchUploadRequest) {
+  // Preapre constants.
+  const char kTestContentType[] = "text/plain";
+  const std::string kTestContent(10, 'a');
+  const base::FilePath kTestFilePath =
+      temp_dir_.path().AppendASCII("upload_file.txt");
+  ASSERT_TRUE(test_util::WriteStringToFile(kTestFilePath, kTestContent));
+
+  // Create batch request.
+  drive::BatchUploadRequest* const request = new drive::BatchUploadRequest(
+      request_sender_.get(), *url_generator_);
+  request->SetBoundaryForTesting("OUTERBOUNDARY");
+  request_sender_->StartRequestWithRetry(request);
+
+  // Create child request.
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
+  scoped_ptr<FileResource> file_resource;
+  base::RunLoop run_loop[2];
+  for (int i = 0; i < 2; ++i) {
+    const FileResourceCallback callback = test_util::CreateQuitCallback(
+        &run_loop[i],
+        test_util::CreateCopyResultCallback(&error, &file_resource));
+    drive::MultipartUploadNewFileRequest* const child_request =
+        new drive::MultipartUploadNewFileRequest(
+            request_sender_.get(),
+            base::StringPrintf("new file title %d", i),
+            "parent_resource_id",
+            kTestContentType,
+            kTestContent.size(),
+            base::Time(),
+            base::Time(),
+            kTestFilePath,
+            drive::Properties(),
+            *url_generator_,
+            callback,
+            ProgressCallback());
+    child_request->SetBoundaryForTesting("INNERBOUNDARY");
+    request->AddRequest(child_request);
+  }
+  request->Commit();
+  run_loop[0].Run();
+  run_loop[1].Run();
+
+  EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ("batch", http_request_.headers["X-Goog-Upload-Protocol"]);
+  EXPECT_EQ("multipart/mixed; boundary=OUTERBOUNDARY",
+            http_request_.headers["Content-Type"]);
+  EXPECT_EQ("--OUTERBOUNDARY\n"
+            "Content-Type: application/http\n"
+            "\n"
+            "POST /upload/drive/v2/files HTTP/1.1\n"
+            "Host: 127.0.0.1\n"
+            "X-Goog-Upload-Protocol: multipart\n"
+            "Content-Type: multipart/related; boundary=INNERBOUNDARY\n"
+            "\n"
+            "--INNERBOUNDARY\n"
+            "Content-Type: application/json\n"
+            "\n"
+            "{\"parents\":[{\"id\":\"parent_resource_id\","
+            "\"kind\":\"drive#fileLink\"}],\"title\":\"new file title 0\"}\n"
+            "--INNERBOUNDARY\n"
+            "Content-Type: text/plain\n"
+            "\n"
+            "aaaaaaaaaa\n"
+            "--INNERBOUNDARY--\n"
+            "--OUTERBOUNDARY\n"
+            "Content-Type: application/http\n"
+            "\n"
+            "POST /upload/drive/v2/files HTTP/1.1\n"
+            "Host: 127.0.0.1\n"
+            "X-Goog-Upload-Protocol: multipart\n"
+            "Content-Type: multipart/related; boundary=INNERBOUNDARY\n"
+            "\n"
+            "--INNERBOUNDARY\n"
+            "Content-Type: application/json\n"
+            "\n"
+            "{\"parents\":[{\"id\":\"parent_resource_id\","
+            "\"kind\":\"drive#fileLink\"}],\"title\":\"new file title 1\"}\n"
+            "--INNERBOUNDARY\n"
+            "Content-Type: text/plain\n"
+            "\n"
+            "aaaaaaaaaa\n"
+            "--INNERBOUNDARY--\n"
+            "--OUTERBOUNDARY--",
+            http_request_.content);
+}
+
+TEST_F(DriveApiRequestsTest, EmptyBatchUploadRequest) {
+  scoped_ptr<drive::BatchUploadRequest> request(new drive::BatchUploadRequest(
+      request_sender_.get(), *url_generator_));
+  EXPECT_DEATH(request->Commit(), "Check failed");
 }
 
 }  // namespace google_apis
