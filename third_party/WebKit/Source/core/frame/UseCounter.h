@@ -682,6 +682,8 @@ public:
         LegacyConst = 748,
         SVGFilterRes = 749,
         V8Permissions_Query_Method = 750,
+        // The above items are available in M43 branch.
+
         LegacyCSSValueIntrinsic = 751,
         LegacyCSSValueMinIntrinsic = 752,
         WebkitCanvas = 753,
