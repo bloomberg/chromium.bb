@@ -5,11 +5,12 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_dropdown_menu/cr_dropdown_menu.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_page_header.html">
 <link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
+<link rel="import" href="a11y_page_style.html">
 
 <polymer-element name="cr-settings-a11y-page">
   <template>
     <link rel="stylesheet" href="chrome://md-settings/settings_page/settings_page.css">
-    <link rel="stylesheet" href="a11y_page.css">
+    <core-style ref="a11yPageStyle"></core-style>
     <paper-shadow layout vertical cross-fade>
       <div class="more-a11y-link">
         <a href="https://chrome.google.com/webstore/category/collection/accessibility"
