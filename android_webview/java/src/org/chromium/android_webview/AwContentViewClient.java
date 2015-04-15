@@ -20,6 +20,8 @@ import android.widget.FrameLayout;
 import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.browser.SelectActionMode;
+import org.chromium.content.browser.SelectActionModeCallback.ActionHandler;
 
 import java.net.URISyntaxException;
 
@@ -103,6 +105,17 @@ public class AwContentViewClient extends ContentViewClient implements ContentVid
         }
 
         return super.shouldOverrideKeyEvent(event);
+    }
+
+    @Override
+    public SelectActionMode startActionMode(
+            View view, ActionHandler actionHandler, boolean floating) {
+        return mAwContentsClient.startActionMode(view, actionHandler, floating);
+    }
+
+    @Override
+    public boolean supportsFloatingActionMode() {
+        return mAwContentsClient.supportsFloatingActionMode();
     }
 
     @Override

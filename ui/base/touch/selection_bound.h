@@ -11,6 +11,7 @@
 
 namespace gfx {
 class Rect;
+class RectF;
 }
 
 namespace ui {
@@ -65,6 +66,9 @@ UI_BASE_EXPORT bool operator!=(const SelectionBound& lhs,
 
 UI_BASE_EXPORT gfx::Rect RectBetweenSelectionBounds(const SelectionBound& b1,
                                                     const SelectionBound& b2);
+
+UI_BASE_EXPORT gfx::RectF RectFBetweenSelectionBounds(const SelectionBound& b1,
+                                                      const SelectionBound& b2);
 
 }  // namespace ui
 

@@ -84,6 +84,11 @@ class UI_TOUCH_SELECTION_EXPORT TouchHandle {
   // Returns true if an animation is active and requires further ticking.
   bool Animate(base::TimeTicks frame_time);
 
+  // Get the visible bounds of the handle, based on the current position and
+  // the drawable's size/orientation. If the handle is invisible or disabled,
+  // the bounds will be empty.
+  gfx::RectF GetVisibleBounds() const;
+
   bool is_dragging() const { return is_dragging_; }
   const gfx::PointF& position() const { return position_; }
   TouchHandleOrientation orientation() const { return orientation_; }

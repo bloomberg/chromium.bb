@@ -220,8 +220,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void MoveRangeSelectionExtent(const gfx::PointF& extent) override;
   void SelectBetweenCoordinates(const gfx::PointF& base,
                                 const gfx::PointF& extent) override;
-  void OnSelectionEvent(ui::SelectionEventType event,
-                        const gfx::PointF& anchor_position) override;
+  void OnSelectionEvent(ui::SelectionEventType event) override;
   scoped_ptr<ui::TouchHandleDrawable> CreateDrawable() override;
 
   // Non-virtual methods

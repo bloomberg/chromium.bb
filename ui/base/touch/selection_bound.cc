@@ -65,4 +65,20 @@ gfx::Rect RectBetweenSelectionBounds(const SelectionBound& b1,
   return gfx::Rect(top_left, gfx::Size(diff.x(), diff.y()));
 }
 
+gfx::RectF RectFBetweenSelectionBounds(const SelectionBound& b1,
+                                       const SelectionBound& b2) {
+  gfx::PointF top_left(b1.edge_top());
+  top_left.SetToMin(b1.edge_bottom());
+  top_left.SetToMin(b2.edge_top());
+  top_left.SetToMin(b2.edge_bottom());
+
+  gfx::PointF bottom_right(b1.edge_top());
+  bottom_right.SetToMax(b1.edge_bottom());
+  bottom_right.SetToMax(b2.edge_top());
+  bottom_right.SetToMax(b2.edge_bottom());
+
+  gfx::Vector2dF diff = bottom_right - top_left;
+  return gfx::RectF(top_left, gfx::SizeF(diff.x(), diff.y()));
+}
+
 }  // namespace ui

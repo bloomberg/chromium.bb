@@ -14,6 +14,7 @@ namespace ui {
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.ui.touch_selection
 enum SelectionEventType {
   SELECTION_SHOWN,
+  SELECTION_MOVED,
   SELECTION_CLEARED,
   SELECTION_DRAG_STARTED,
   SELECTION_DRAG_STOPPED,

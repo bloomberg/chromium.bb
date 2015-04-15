@@ -230,9 +230,48 @@ bool TouchSelectionController::Animate(base::TimeTicks frame_time) {
   return false;
 }
 
+gfx::RectF TouchSelectionController::GetRectBetweenBounds() const {
+  // Short-circuit for efficiency.
+  if (!is_insertion_active_ && !is_selection_active_)
+    return gfx::RectF();
+
+  if (start_.visible() && !end_.visible())
+    return gfx::BoundingRect(start_.edge_top(), start_.edge_bottom());
+
+  if (end_.visible() && !start_.visible())
+    return gfx::BoundingRect(end_.edge_top(), end_.edge_bottom());
+
+  // If both handles are visible, or both are invisible, use the entire rect.
+  return RectFBetweenSelectionBounds(start_, end_);
+}
+
+gfx::RectF TouchSelectionController::GetStartHandleRect() const {
+  if (is_insertion_active_)
+    return insertion_handle_->GetVisibleBounds();
+  if (is_selection_active_)
+    return start_selection_handle_->GetVisibleBounds();
+  return gfx::RectF();
+}
+
+gfx::RectF TouchSelectionController::GetEndHandleRect() const {
+  if (is_insertion_active_)
+    return insertion_handle_->GetVisibleBounds();
+  if (is_selection_active_)
+    return end_selection_handle_->GetVisibleBounds();
+  return gfx::RectF();
+}
+
+const gfx::PointF& TouchSelectionController::GetStartPosition() const {
+  return start_.edge_bottom();
+}
+
+const gfx::PointF& TouchSelectionController::GetEndPosition() const {
+  return end_.edge_bottom();
+}
+
 void TouchSelectionController::OnHandleDragBegin(const TouchHandle& handle) {
   if (&handle == insertion_handle_.get()) {
-    client_->OnSelectionEvent(INSERTION_DRAG_STARTED, handle.position());
+    client_->OnSelectionEvent(INSERTION_DRAG_STARTED);
     return;
   }
 
@@ -249,8 +288,7 @@ void TouchSelectionController::OnHandleDragBegin(const TouchHandle& handle) {
   // When moving the handle we want to move only the extent point. Before doing
   // so we must make sure that the base point is set correctly.
   client_->SelectBetweenCoordinates(base, extent);
-
-  client_->OnSelectionEvent(SELECTION_DRAG_STARTED, handle.position());
+  client_->OnSelectionEvent(SELECTION_DRAG_STARTED);
 }
 
 void TouchSelectionController::OnHandleDragUpdate(const TouchHandle& handle,
@@ -270,14 +308,14 @@ void TouchSelectionController::OnHandleDragUpdate(const TouchHandle& handle,
 
 void TouchSelectionController::OnHandleDragEnd(const TouchHandle& handle) {
   if (&handle == insertion_handle_.get())
-    client_->OnSelectionEvent(INSERTION_DRAG_STOPPED, handle.position());
+    client_->OnSelectionEvent(INSERTION_DRAG_STOPPED);
   else
-    client_->OnSelectionEvent(SELECTION_DRAG_STOPPED, handle.position());
+    client_->OnSelectionEvent(SELECTION_DRAG_STOPPED);
 }
 
 void TouchSelectionController::OnHandleTapped(const TouchHandle& handle) {
   if (insertion_handle_ && &handle == insertion_handle_.get())
-    client_->OnSelectionEvent(INSERTION_TAPPED, handle.position());
+    client_->OnSelectionEvent(INSERTION_TAPPED);
 }
 
 void TouchSelectionController::SetNeedsAnimate() {
@@ -327,7 +365,7 @@ void TouchSelectionController::OnInsertionChanged() {
   if (!is_insertion_active_)
     ActivateInsertion();
   else
-    client_->OnSelectionEvent(INSERTION_MOVED, position);
+    client_->OnSelectionEvent(INSERTION_MOVED);
 
   insertion_handle_->SetVisible(GetStartVisible(),
                                 GetAnimationStyle(was_active));
@@ -341,7 +379,10 @@ void TouchSelectionController::OnSelectionChanged() {
     return;
 
   const bool was_active = is_selection_active_;
-  ActivateSelection();
+  if (!is_selection_active_ || response_pending_input_event_ == LONG_PRESS)
+    ActivateSelection();
+  else
+    client_->OnSelectionEvent(SELECTION_MOVED);
 
   const TouchHandle::AnimationStyle animation = GetAnimationStyle(was_active);
   start_selection_handle_->SetVisible(GetStartVisible(), animation);
@@ -361,7 +402,7 @@ void TouchSelectionController::ActivateInsertion() {
   if (!is_insertion_active_) {
     is_insertion_active_ = true;
     insertion_handle_->SetEnabled(true);
-    client_->OnSelectionEvent(INSERTION_SHOWN, GetStartPosition());
+    client_->OnSelectionEvent(INSERTION_SHOWN);
   }
 }
 
@@ -371,7 +412,7 @@ void TouchSelectionController::DeactivateInsertion() {
   DCHECK(insertion_handle_);
   is_insertion_active_ = false;
   insertion_handle_->SetEnabled(false);
-  client_->OnSelectionEvent(INSERTION_CLEARED, gfx::PointF());
+  client_->OnSelectionEvent(INSERTION_CLEARED);
 }
 
 void TouchSelectionController::ActivateSelection() {
@@ -403,7 +444,7 @@ void TouchSelectionController::ActivateSelection() {
     selection_handle_dragged_ = false;
     selection_start_time_ = base::TimeTicks::Now();
     response_pending_input_event_ = INPUT_EVENT_TYPE_NONE;
-    client_->OnSelectionEvent(SELECTION_SHOWN, GetStartPosition());
+    client_->OnSelectionEvent(SELECTION_SHOWN);
   }
 }
 
@@ -416,7 +457,7 @@ void TouchSelectionController::DeactivateSelection() {
   start_selection_handle_->SetEnabled(false);
   end_selection_handle_->SetEnabled(false);
   is_selection_active_ = false;
-  client_->OnSelectionEvent(SELECTION_CLEARED, gfx::PointF());
+  client_->OnSelectionEvent(SELECTION_CLEARED);
 }
 
 void TouchSelectionController::ResetCachedValuesIfInactive() {
@@ -426,14 +467,6 @@ void TouchSelectionController::ResetCachedValuesIfInactive() {
   end_ = SelectionBound();
   start_orientation_ = TouchHandleOrientation::UNDEFINED;
   end_orientation_ = TouchHandleOrientation::UNDEFINED;
-}
-
-const gfx::PointF& TouchSelectionController::GetStartPosition() const {
-  return start_.edge_bottom();
-}
-
-const gfx::PointF& TouchSelectionController::GetEndPosition() const {
-  return end_.edge_bottom();
 }
 
 gfx::Vector2dF TouchSelectionController::GetStartLineOffset() const {

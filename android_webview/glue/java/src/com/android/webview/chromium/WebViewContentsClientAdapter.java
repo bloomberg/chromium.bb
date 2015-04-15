@@ -16,6 +16,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.ActionMode;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.ClientCertRequest;
@@ -50,6 +51,9 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.browser.SelectActionMode;
+import org.chromium.content.browser.SelectActionModeCallback;
+import org.chromium.content.browser.SelectActionModeCallback.ActionHandler;
 
 import java.lang.ref.WeakReference;
 import java.security.Principal;
@@ -377,6 +381,33 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
         } finally {
             TraceEvent.end("WebViewContentsClientAdapter.onNewPicture");
         }
+    }
+
+    /**
+     * @See AwContentsClient#startActionMode(View,ActionHandler,boolean)
+     */
+    @Override
+    public SelectActionMode startActionMode(
+            View view, ActionHandler actionHandler, boolean floating) {
+        try {
+            TraceEvent.begin("WebViewContentsClientAdapter.startActionMode");
+            if (TRACE) Log.d(TAG, "startActionMode");
+            if (floating) return null;
+            ActionMode.Callback callback =
+                    new SelectActionModeCallback(view.getContext(), actionHandler);
+            ActionMode actionMode = view.startActionMode(callback);
+            return actionMode != null ? new SelectActionMode(actionMode) : null;
+        } finally {
+            TraceEvent.end("WebViewContentsClientAdapter.startActionMode");
+        }
+    }
+
+    /**
+     * @See AwContentsClient#supportsFloatingActionMode()
+     */
+    @Override
+    public boolean supportsFloatingActionMode() {
+        return false;
     }
 
     @Override

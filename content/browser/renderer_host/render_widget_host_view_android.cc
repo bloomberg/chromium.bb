@@ -340,6 +340,16 @@ ui::SelectionBound ConvertSelectionBound(
   return ui_bound;
 }
 
+gfx::RectF GetSelectionRect(const ui::TouchSelectionController& controller) {
+  gfx::RectF rect = controller.GetRectBetweenBounds();
+  if (rect.IsEmpty())
+    return rect;
+
+  rect.Union(controller.GetStartHandleRect());
+  rect.Union(controller.GetEndHandleRect());
+  return rect;
+}
+
 }  // anonymous namespace
 
 ReadbackRequest::ReadbackRequest(float scale,
@@ -1342,16 +1352,18 @@ void RenderWidgetHostViewAndroid::SelectBetweenCoordinates(
 }
 
 void RenderWidgetHostViewAndroid::OnSelectionEvent(
-    ui::SelectionEventType event,
-    const gfx::PointF& position) {
+    ui::SelectionEventType event) {
   DCHECK(content_view_core_);
+  DCHECK(selection_controller_);
   // Showing the selection action bar can alter the current View coordinates in
   // such a way that the current MotionEvent stream is suddenly shifted in
   // space. Avoid the associated scroll jump by pre-emptively cancelling gesture
   // detection; scrolling after the selection is activated is unnecessary.
   if (event == ui::SelectionEventType::SELECTION_SHOWN)
     ResetGestureDetection();
-  content_view_core_->OnSelectionEvent(event, position);
+  content_view_core_->OnSelectionEvent(
+      event, selection_controller_->GetStartPosition(),
+      GetSelectionRect(*selection_controller_));
 }
 
 scoped_ptr<ui::TouchHandleDrawable>

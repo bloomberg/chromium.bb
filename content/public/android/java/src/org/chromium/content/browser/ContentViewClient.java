@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.KeyEvent;
+import android.view.View;
 
 import org.chromium.content.browser.SelectActionModeCallback.ActionHandler;
 
@@ -83,11 +84,27 @@ public class ContentViewClient {
     }
 
     /**
-     * Returns an ActionMode.Callback for in-page selection.
+     * Starts an ActionMode for in-page selection.
+     * @param view The associated View.
+     * @param actionHandler The associated ActionHandler.
+     * @param floating Whether to try creating a floating ActionMode. If this
+     *                 feature is unsupported, the return value will be null.
+     * @return the SelectActionMode if creation is successful, otherwise null.
      */
-    public ActionMode.Callback getSelectActionModeCallback(
-            Context context, ActionHandler actionHandler, boolean incognito) {
-        return new SelectActionModeCallback(context, actionHandler, incognito);
+    public SelectActionMode startActionMode(
+            View view, ActionHandler actionHandler, boolean floating) {
+        if (floating) return null;
+        ActionMode.Callback callback =
+                new SelectActionModeCallback(view.getContext(), actionHandler);
+        ActionMode actionMode = view.startActionMode(callback);
+        return actionMode != null ? new SelectActionMode(actionMode) : null;
+    }
+
+    /**
+     * @return whether the client supports the creation of floating ActionMode instances.
+     */
+    public boolean supportsFloatingActionMode() {
+        return false;
     }
 
     /**

@@ -28,8 +28,7 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionControllerClient {
   virtual void MoveRangeSelectionExtent(const gfx::PointF& extent) = 0;
   virtual void SelectBetweenCoordinates(const gfx::PointF& base,
                                         const gfx::PointF& extent) = 0;
-  virtual void OnSelectionEvent(SelectionEventType event,
-                                const gfx::PointF& position) = 0;
+  virtual void OnSelectionEvent(SelectionEventType event) = 0;
   virtual scoped_ptr<TouchHandleDrawable> CreateDrawable() = 0;
 };
 
@@ -83,6 +82,21 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   // Returns true if an animation is active and requires further ticking.
   bool Animate(base::TimeTicks animate_time);
 
+  // Returns the rect between the two active selection bounds. If just one of
+  // the bounds is visible, the rect is simply the (one-dimensional) rect of
+  // that bound. If no selection is active, an empty rect will be returned.
+  gfx::RectF GetRectBetweenBounds() const;
+
+  // Returns the visible rect of specified touch handle. For an active insertion
+  // these values will be identical.
+  gfx::RectF GetStartHandleRect() const;
+  gfx::RectF GetEndHandleRect() const;
+
+  // Returns the focal point of the start and end bounds, as defined by
+  // their bottom coordinate.
+  const gfx::PointF& GetStartPosition() const;
+  const gfx::PointF& GetEndPosition() const;
+
  private:
   enum InputEventType { TAP, LONG_PRESS, INPUT_EVENT_TYPE_NONE };
 
@@ -109,8 +123,6 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   void DeactivateSelection();
   void ResetCachedValuesIfInactive();
 
-  const gfx::PointF& GetStartPosition() const;
-  const gfx::PointF& GetEndPosition() const;
   gfx::Vector2dF GetStartLineOffset() const;
   gfx::Vector2dF GetEndLineOffset() const;
   bool GetStartVisible() const;

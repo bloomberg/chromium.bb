@@ -228,6 +228,13 @@ bool TouchHandle::Animate(base::TimeTicks frame_time) {
   return true;
 }
 
+gfx::RectF TouchHandle::GetVisibleBounds() const {
+  if (!is_visible_ || !enabled_)
+    return gfx::RectF();
+
+  return drawable_->GetVisibleBounds();
+}
+
 void TouchHandle::BeginDrag() {
   DCHECK(enabled_);
   if (is_dragging_)

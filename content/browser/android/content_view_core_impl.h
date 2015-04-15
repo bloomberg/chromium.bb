@@ -242,7 +242,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   InputEventAckState FilterInputEvent(const blink::WebInputEvent& event);
   void OnSelectionChanged(const std::string& text);
   void OnSelectionEvent(ui::SelectionEventType event,
-                        const gfx::PointF& anchor_position);
+                        const gfx::PointF& selection_anchor,
+                        const gfx::RectF& selection_rect);
   scoped_ptr<ui::TouchHandleDrawable> CreatePopupTouchHandleDrawable();
 
   void StartContentIntent(const GURL& content_url);

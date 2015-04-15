@@ -609,14 +609,20 @@ void ContentViewCoreImpl::OnSelectionChanged(const std::string& text) {
 }
 
 void ContentViewCoreImpl::OnSelectionEvent(ui::SelectionEventType event,
-                                           const gfx::PointF& position) {
+                                           const gfx::PointF& selection_anchor,
+                                           const gfx::RectF& selection_rect) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
     return;
-  Java_ContentViewCore_onSelectionEvent(env, j_obj.obj(), event,
-                                        position.x() * dpi_scale(),
-                                        position.y() * dpi_scale());
+
+  gfx::PointF selection_anchor_pix =
+      gfx::ScalePoint(selection_anchor, dpi_scale());
+  gfx::RectF selection_rect_pix = gfx::ScaleRect(selection_rect, dpi_scale());
+  Java_ContentViewCore_onSelectionEvent(
+      env, j_obj.obj(), event, selection_anchor_pix.x(),
+      selection_anchor_pix.y(), selection_rect_pix.x(), selection_rect_pix.y(),
+      selection_rect_pix.right(), selection_rect_pix.bottom());
 }
 
 scoped_ptr<ui::TouchHandleDrawable>

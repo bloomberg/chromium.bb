@@ -32,7 +32,6 @@ import android.text.Selection;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
-import android.view.ActionMode;
 import android.view.HapticFeedbackConstants;
 import android.view.InputDevice;
 import android.view.KeyEvent;
@@ -531,10 +530,12 @@ public class ContentViewCore
     private boolean mHasInsertion;
     private String mLastSelectedText;
     private boolean mFocusedNodeEditable;
-    private ActionMode mActionMode;
+    private SelectActionMode mActionMode;
+    private boolean mFloatingActionModeCreationFailed;
     private boolean mUnselectAllOnActionModeDismiss;
     private boolean mPreserveSelectionOnNextLossOfFocus;
     private SelectActionModeCallback.ActionHandler mActionHandler;
+    private final Rect mSelectionRect = new Rect();
 
     // Delegate that will handle GET downloads, and be notified of completion of POST downloads.
     private ContentViewDownloadDelegate mDownloadDelegate;
@@ -1472,7 +1473,7 @@ public class ContentViewCore
     }
 
     private void hidePopups() {
-        hideSelectActionBar();
+        hideSelectActionMode();
         hidePastePopup();
         hideSelectPopup();
         mPopupZoomer.hide(false);
@@ -1480,10 +1481,10 @@ public class ContentViewCore
     }
 
     private void restoreSelectionPopupsIfNecessary() {
-        if (mHasSelection && mActionMode == null) showSelectActionBar();
+        if (mHasSelection && mActionMode == null) showSelectActionMode(true);
     }
 
-    public void hideSelectActionBar() {
+    public void hideSelectActionMode() {
         if (mActionMode != null) {
             mActionMode.finish();
             mActionMode = null;
@@ -2015,20 +2016,9 @@ public class ContentViewCore
         return mActionHandler;
     }
 
-    // crbug.com/446717
-    private void actionModeInvalidateWAR() {
-        assert mActionMode != null;
-
-        try {
-            mActionMode.invalidate();
-        } catch (NullPointerException e) {
-            Log.w(TAG, "Ignoring NPE from ActionMode.invalidate() as workaround for L", e);
-        }
-    }
-
-    private void showSelectActionBar() {
+    private void showSelectActionMode(boolean allowFallbackIfFloatingActionModeCreationFails) {
         if (mActionMode != null) {
-            actionModeInvalidateWAR();
+            mActionMode.invalidate();
             return;
         }
 
@@ -2109,6 +2099,11 @@ public class ContentViewCore
                 }
 
                 @Override
+                public boolean isInsertion() {
+                    return mHasInsertion;
+                }
+
+                @Override
                 public void onDestroyActionMode() {
                     mActionMode = null;
                     if (mUnselectAllOnActionModeDismiss) {
@@ -2116,6 +2111,11 @@ public class ContentViewCore
                         clearUserSelection();
                     }
                     getContentViewClient().onContextualActionBarHidden();
+                }
+
+                @Override
+                public void onGetContentRect(Rect outRect) {
+                    outRect.set(mSelectionRect);
                 }
 
                 @Override
@@ -2134,15 +2134,26 @@ public class ContentViewCore
                     return getContext().getPackageManager().queryIntentActivities(intent,
                             PackageManager.MATCH_DEFAULT_ONLY).size() > 0;
                 }
+
+                @Override
+                public boolean isIncognito() {
+                    return mWebContents.isIncognito();
+                }
             };
         }
         mActionMode = null;
         // On ICS, startActionMode throws an NPE when getParent() is null.
         if (mContainerView.getParent() != null) {
             assert mWebContents != null;
-            mActionMode = mContainerView.startActionMode(
-                    getContentViewClient().getSelectActionModeCallback(getContext(), mActionHandler,
-                            mWebContents.isIncognito()));
+            boolean tryCreateFloatingActionMode = supportsFloatingActionMode();
+            mActionMode = getContentViewClient().startActionMode(
+                    mContainerView, mActionHandler, tryCreateFloatingActionMode);
+            if (tryCreateFloatingActionMode && mActionMode == null) {
+                mFloatingActionModeCreationFailed = true;
+                if (!allowFallbackIfFloatingActionModeCreationFails) return;
+                mActionMode = getContentViewClient().startActionMode(
+                        mContainerView, mActionHandler, false);
+            }
         }
         mUnselectAllOnActionModeDismiss = true;
         if (mActionMode == null) {
@@ -2151,6 +2162,15 @@ public class ContentViewCore
         } else {
             getContentViewClient().onContextualActionBarShown();
         }
+    }
+
+    private boolean supportsFloatingActionMode() {
+        return !mFloatingActionModeCreationFailed
+                && getContentViewClient().supportsFloatingActionMode();
+    }
+
+    private void invalidateActionModeContentRect() {
+        if (mActionMode != null) mActionMode.invalidateContentRect();
     }
 
     /**
@@ -2183,27 +2203,34 @@ public class ContentViewCore
         return mHasInsertion;
     }
 
-    private void hidePastePopup() {
-        if (mPastePopupMenu == null) return;
-        mPastePopupMenu.hide();
-    }
-
     @CalledByNative
-    private void onSelectionEvent(int eventType, int x, int y) {
+    private void onSelectionEvent(
+            int eventType, int xAnchor, int yAnchor, int left, int top, int right, int bottom) {
         switch (eventType) {
             case SelectionEventType.SELECTION_SHOWN:
+                mSelectionRect.set(left, top, right, bottom);
                 mHasSelection = true;
                 mUnselectAllOnActionModeDismiss = true;
                 // TODO(cjhopman): Remove this when there is a better signal that long press caused
                 // a selection. See http://crbug.com/150151.
                 mContainerView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
-                showSelectActionBar();
+                // There may already be an active selection, e.g., if the user
+                // longpresses different text while an existing selection is
+                // active. In such case, we need to update the selection rect.
+                showSelectActionMode(true);
+                invalidateActionModeContentRect();
+                break;
+
+            case SelectionEventType.SELECTION_MOVED:
+                mSelectionRect.set(left, top, right, bottom);
+                invalidateActionModeContentRect();
                 break;
 
             case SelectionEventType.SELECTION_CLEARED:
                 mHasSelection = false;
                 mUnselectAllOnActionModeDismiss = false;
-                hideSelectActionBar();
+                hideSelectActionMode();
+                mSelectionRect.setEmpty();
                 break;
 
             case SelectionEventType.SELECTION_DRAG_STARTED:
@@ -2213,13 +2240,14 @@ public class ContentViewCore
                 break;
 
             case SelectionEventType.INSERTION_SHOWN:
+                mSelectionRect.set(left, top, right, bottom);
                 mHasInsertion = true;
                 break;
 
             case SelectionEventType.INSERTION_MOVED:
-                if (mPastePopupMenu == null) break;
-                if (!isScrollInProgress() && mPastePopupMenu.isShowing()) {
-                    showPastePopup(x, y);
+                mSelectionRect.set(left, top, right, bottom);
+                if (!isScrollInProgress() && isPastePopupShowing()) {
+                    showPastePopup(xAnchor, yAnchor);
                 } else {
                     hidePastePopup();
                 }
@@ -2229,18 +2257,18 @@ public class ContentViewCore
                 if (mWasPastePopupShowingOnInsertionDragStart) {
                     hidePastePopup();
                 } else {
-                    showPastePopup(x, y);
+                    showPastePopup(xAnchor, yAnchor);
                 }
                 break;
 
             case SelectionEventType.INSERTION_CLEARED:
-                mHasInsertion = false;
                 hidePastePopup();
+                mHasInsertion = false;
+                mSelectionRect.setEmpty();
                 break;
 
             case SelectionEventType.INSERTION_DRAG_STARTED:
-                mWasPastePopupShowingOnInsertionDragStart =
-                        mPastePopupMenu != null && mPastePopupMenu.isShowing();
+                mWasPastePopupShowingOnInsertionDragStart = isPastePopupShowing();
                 hidePastePopup();
                 break;
 
@@ -2251,7 +2279,7 @@ public class ContentViewCore
                 assert false : "Invalid selection event type.";
         }
         if (mContextualSearchClient != null) {
-            mContextualSearchClient.onSelectionEvent(eventType, x, y);
+            mContextualSearchClient.onSelectionEvent(eventType, xAnchor, yAnchor);
         }
     }
 
@@ -2380,7 +2408,7 @@ public class ContentViewCore
                         compositionEnd, isNonImeChange);
             }
 
-            if (mActionMode != null) actionModeInvalidateWAR();
+            if (mActionMode != null) mActionMode.invalidate();
         } finally {
             TraceEvent.end("ContentViewCore.updateImeAdapter");
         }
@@ -2504,14 +2532,44 @@ public class ContentViewCore
         }
     }
 
+    private boolean isPastePopupShowing() {
+        if (supportsFloatingActionMode()) return mActionMode != null;
+        return mPastePopupMenu != null && mPastePopupMenu.isShowing();
+    }
+
     private boolean showPastePopup(int x, int y) {
         if (!mHasInsertion || !canPaste()) return false;
-        final float contentOffsetYPix = mRenderCoordinates.getContentOffsetYPix();
-        getPastePopup().showAt(x, (int) (y + contentOffsetYPix));
+        // TODO(jdduke): Factor out all selection/paste-related logic from ContentViewCore.
+        if (supportsFloatingActionMode()) {
+            if (mActionMode == null) {
+                showSelectActionMode(false);
+            } else {
+                invalidateActionModeContentRect();
+            }
+        }
+        // As floating action mode creation may fail if the embedding View
+        // doesn't support it, fall back to the custom paste popup.
+        if (!supportsFloatingActionMode()) {
+            assert mActionMode == null;
+            final float contentOffsetYPix = mRenderCoordinates.getContentOffsetYPix();
+            getPastePopup().showAt(x, (int) (y + contentOffsetYPix));
+        }
         return true;
     }
 
+    private void hidePastePopup() {
+        if (!mHasInsertion) return;
+        if (supportsFloatingActionMode()) {
+            mUnselectAllOnActionModeDismiss = false;
+            hideSelectActionMode();
+            return;
+        }
+        if (mPastePopupMenu == null) return;
+        mPastePopupMenu.hide();
+    }
+
     private PastePopupMenu getPastePopup() {
+        assert !supportsFloatingActionMode();
         if (mPastePopupMenu == null) {
             mPastePopupMenu = new PastePopupMenu(getContainerView(),
                 new PastePopupMenuDelegate() {
