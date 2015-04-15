@@ -539,12 +539,16 @@ bool SSLClientSocketOpenSSL::IsConnectedAndIdle() const {
   // If an asynchronous operation is still pending.
   if (user_read_buf_.get() || user_write_buf_.get())
     return false;
-  // If there is data waiting to be sent, or data read from the network that
-  // has not yet been consumed.
-  if (BIO_pending(transport_bio_) > 0 ||
-      BIO_wpending(transport_bio_) > 0) {
+
+  // If there is data read from the network that has not yet been consumed, do
+  // not treat the connection as idle.
+  //
+  // Note that this does not check |BIO_pending|, whether there is ciphertext
+  // that has not yet been flushed to the network. |Write| returns early, so
+  // this can cause race conditions which cause a socket to not be treated
+  // reusable when it should be. See https://crbug.com/466147.
+  if (BIO_wpending(transport_bio_) > 0)
     return false;
-  }
 
   return transport_->socket()->IsConnectedAndIdle();
 }

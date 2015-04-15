@@ -2823,6 +2823,52 @@ TEST_F(SSLClientSocketTest, ReuseStates) {
   // attempt to read one byte extra.
 }
 
+// Tests that IsConnectedAndIdle treats a socket as idle even if a Write hasn't
+// been flushed completely out of SSLClientSocket's internal buffers. This is a
+// regression test for https://crbug.com/466147.
+TEST_F(SSLClientSocketTest, ReusableAfterWrite) {
+  SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTPS,
+                                SpawnedTestServer::kLocalhost,
+                                base::FilePath());
+  ASSERT_TRUE(test_server.Start());
+
+  AddressList addr;
+  ASSERT_TRUE(test_server.GetAddressList(&addr));
+
+  TestCompletionCallback callback;
+  scoped_ptr<StreamSocket> real_transport(
+      new TCPClientSocket(addr, NULL, NetLog::Source()));
+  scoped_ptr<FakeBlockingStreamSocket> transport(
+      new FakeBlockingStreamSocket(real_transport.Pass()));
+  FakeBlockingStreamSocket* raw_transport = transport.get();
+  ASSERT_EQ(OK, callback.GetResult(transport->Connect(callback.callback())));
+
+  scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
+      transport.Pass(), test_server.host_port_pair(), SSLConfig()));
+  ASSERT_EQ(OK, callback.GetResult(sock->Connect(callback.callback())));
+
+  // Block any application data from reaching the network.
+  raw_transport->BlockWrite();
+
+  // Write a partial HTTP request.
+  const char kRequestText[] = "GET / HTTP/1.0";
+  const size_t kRequestLen = arraysize(kRequestText) - 1;
+  scoped_refptr<IOBuffer> request_buffer(new IOBuffer(kRequestLen));
+  memcpy(request_buffer->data(), kRequestText, kRequestLen);
+
+  // Although transport writes are blocked, both SSLClientSocketOpenSSL and
+  // SSLClientSocketNSS complete the outer Write operation.
+  EXPECT_EQ(static_cast<int>(kRequestLen),
+            callback.GetResult(sock->Write(request_buffer.get(), kRequestLen,
+                                           callback.callback())));
+
+  // The Write operation is complete, so the socket should be treated as
+  // reusable, in case the server returns an HTTP response before completely
+  // consuming the request body. In this case, we assume the server will
+  // properly drain the request body before trying to read the next request.
+  EXPECT_TRUE(sock->IsConnectedAndIdle());
+}
+
 // Tests that basic session resumption works.
 TEST_F(SSLClientSocketTest, SessionResumption) {
   SpawnedTestServer::SSLOptions ssl_options;
