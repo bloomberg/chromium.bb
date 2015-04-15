@@ -511,19 +511,9 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
                                        views::BubbleBorder::Arrow arrow,
                                        bool border_accepts_events,
                                        const gfx::Vector2d& anchor_offset) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "431326 AppListView::InitAsBubbleInternal1"));
-
   base::Time start_time = base::Time::Now();
 
   InitContents(parent, initial_apps_page);
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "431326 AppListView::InitAsBubbleInternal2"));
 
   set_color(kContentsBackgroundColor);
   set_margins(gfx::Insets());
@@ -538,36 +528,23 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
   set_shadow(SupportsShadow() ? views::BubbleBorder::BIG_SHADOW
                               : views::BubbleBorder::NO_SHADOW_OPAQUE_BORDER);
 
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2_1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "431326 AppListView::InitAsBubbleInternal2_1"));
+  {
+    // TODO(tapted): Remove ScopedTracker below once crbug.com/431326 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "431326 views::BubbleDelegateView::CreateBubble()"));
 
-  // This creates the app list widget. (Before this, child widgets cannot be
-  // created.)
-  views::BubbleDelegateView::CreateBubble(this);
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2_11(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "431326 AppListView::InitAsBubbleInternal2_11"));
+    // This creates the app list widget. (Before this, child widgets cannot be
+    // created.)
+    views::BubbleDelegateView::CreateBubble(this);
+  }
 
   SetBubbleArrow(arrow);
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2_2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "431326 AppListView::InitAsBubbleInternal2_2"));
 
   // We can now create the internal widgets.
   InitChildWidgets();
 
 #if defined(USE_AURA)
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "431326 AppListView::InitAsBubbleInternal3"));
-
   aura::Window* window = GetWidget()->GetNativeWindow();
   window->layer()->SetMasksToBounds(true);
   GetBubbleFrameView()->set_background(new AppListBackground(
@@ -586,11 +563,6 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
   // the border to be shown. See http://crbug.com/231687 .
   GetWidget()->Hide();
 #endif
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
-  tracked_objects::ScopedTracker tracking_profile4(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "431326 AppListView::InitAsBubbleInternal4"));
 
   // On platforms that don't support a shadow, the rounded border of the app
   // list is constructed _inside_ the view, so a rectangular background goes

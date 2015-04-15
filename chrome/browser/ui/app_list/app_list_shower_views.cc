@@ -50,25 +50,15 @@ void AppListShower::CreateViewForProfile(Profile* requested_profile) {
 
   profile_ = requested_profile->GetOriginalProfile();
   if (HasView()) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
-    tracked_objects::ScopedTracker tracking_profile1(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "431326 AppListShower::CreateViewForProfile1"));
-
     UpdateViewForNewProfile();
     return;
   }
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "431326 AppListShower::CreateViewForProfile2"));
-
   app_list_ = MakeViewForCurrentProfile();
 
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
+  // TODO(tapted): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "431326 AppListShower::CreateViewForProfile3"));
+          "431326 AppListShowerDelegate::OnViewCreated()"));
 
   delegate_->OnViewCreated();
 }
@@ -115,27 +105,17 @@ bool AppListShower::HasView() const {
 }
 
 app_list::AppListView* AppListShower::MakeViewForCurrentProfile() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "431326 AppListShower::MakeViewForCurrentProfile1"));
+  app_list::AppListView* view;
+  {
+    // TODO(tapted): Remove ScopedTracker below once crbug.com/431326 is fixed.
+    tracked_objects::ScopedTracker tracking_profile1(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("431326 AppListView()"));
 
-  // The app list view manages its own lifetime.
-  app_list::AppListView* view =
-      new app_list::AppListView(delegate_->GetViewDelegateForCreate());
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "431326 AppListShower::MakeViewForCurrentProfile2"));
+    // The app list view manages its own lifetime.
+    view = new app_list::AppListView(delegate_->GetViewDelegateForCreate());
+  }
 
   gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "431326 AppListShower::MakeViewForCurrentProfile3"));
-
   view->InitAsBubbleAtFixedLocation(NULL,
                                     0,
                                     cursor,

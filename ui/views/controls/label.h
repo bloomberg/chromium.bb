@@ -212,7 +212,7 @@ class VIEWS_EXPORT Label : public View {
   bool collapse_when_hidden_;
   int max_width_;
 
-  // TODO(vadimt): Remove is_first_paint_text_ before crbug.com/431326 is
+  // TODO(ckocagil): Remove is_first_paint_text_ before crbug.com/441028 is
   // closed.
   bool is_first_paint_text_;
 

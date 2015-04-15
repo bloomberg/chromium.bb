@@ -214,10 +214,6 @@ int Label::GetBaseline() const {
 }
 
 gfx::Size Label::GetPreferredSize() const {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("431326 Label::GetPreferredSize"));
-
   // Return a size of (0, 0) if the label is not visible and if the
   // |collapse_when_hidden_| flag is set.
   // TODO(munjal): This logic probably belongs to the View class. But for now,
@@ -361,17 +357,14 @@ void Label::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 void Label::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
   if (is_first_paint_text_) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+    // TODO(ckocagil): Remove ScopedTracker below once crbug.com/441028 is
+    // fixed.
     tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("431326 Label::PaintText first"));
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("441028 First PaintText()"));
 
     is_first_paint_text_ = false;
     PaintText(canvas);
   } else {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("431326 Label::PaintText not first"));
-
     PaintText(canvas);
   }
   if (HasFocus())

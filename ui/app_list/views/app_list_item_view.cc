@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/app_list/app_list_constants.h"
@@ -280,10 +279,6 @@ const char* AppListItemView::GetClassName() const {
 }
 
 void AppListItemView::Layout() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("431326 AppListItemView::Layout1"));
-
   gfx::Rect rect(GetContentsBounds());
 
   const int left_right_padding =
@@ -293,16 +288,7 @@ void AppListItemView::Layout() {
 
   icon_->SetBoundsRect(GetIconBoundsForTargetViewBounds(GetContentsBounds()));
 
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("431326 AppListItemView::Layout2"));
-
   const gfx::Size title_size = title_->GetPreferredSize();
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("431326 AppListItemView::Layout3"));
-
   gfx::Rect title_bounds(rect.x() + (rect.width() - title_size.width()) / 2,
                          y + kGridIconDimension + kIconTitleSpacing,
                          title_size.width(),
