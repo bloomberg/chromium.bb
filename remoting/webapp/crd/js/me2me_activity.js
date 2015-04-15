@@ -55,6 +55,10 @@ remoting.Me2MeActivity.prototype.start = function() {
   });
 };
 
+remoting.Me2MeActivity.prototype.stop = function() {
+  this.desktopActivity_.stop();
+};
+
 /** @return {remoting.DesktopRemotingActivity} */
 remoting.Me2MeActivity.prototype.getDesktopActivity = function() {
   return this.desktopActivity_;
@@ -164,7 +168,9 @@ remoting.Me2MeActivity.prototype.onConnected = function(connectionInfo) {
 
   base.dispose(this.reconnector_);
   this.reconnector_ = new remoting.SmartReconnector(
-      this.connect_.bind(this, false), connectionInfo.session());
+      this.connect_.bind(this, false),
+      this.stop.bind(this),
+      connectionInfo.session());
 };
 
 remoting.Me2MeActivity.prototype.onDisconnected = function() {

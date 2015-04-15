@@ -38,6 +38,9 @@ remoting.AppRemotingActivity = function(appCapabilities) {
   this.connector_ = remoting.SessionConnector.factory.createConnector(
       document.getElementById('client-container'), appCapabilities,
       this);
+
+  /** @private {remoting.ClientSession} */
+  this.session_ = null;
 };
 
 remoting.AppRemotingActivity.prototype.dispose = function() {
@@ -54,6 +57,19 @@ remoting.AppRemotingActivity.prototype.start = function() {
   }).then(function(/** !remoting.Xhr.Response */ response) {
     that.onAppHostResponse_(response);
   });
+};
+
+remoting.AppRemotingActivity.prototype.stop = function() {
+  if (this.session_) {
+    this.session_.disconnect(remoting.Error.none());
+  }
+};
+
+/** @private */
+remoting.AppRemotingActivity.prototype.cleanup_ = function() {
+  base.dispose(this.connectedView_);
+  this.connectedView_ = null;
+  this.session_ = null;
 };
 
 /**
@@ -96,10 +112,6 @@ remoting.AppRemotingActivity.prototype.onAppHostResponse_ =
 
       remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
 
-      var idleDetector = new remoting.IdleDetector(
-          document.getElementById('idle-dialog'),
-          remoting.app.disconnect.bind(remoting.app));
-
       /**
        * @param {string} tokenUrl Token-issue URL received from the host.
        * @param {string} hostPublicKey Host public key (DER and Base64
@@ -137,6 +149,10 @@ remoting.AppRemotingActivity.prototype.onConnected = function(connectionInfo) {
   this.connectedView_ = new remoting.AppConnectedView(
       document.getElementById('client-container'), connectionInfo);
 
+  this.session_ = connectionInfo.session();
+  var idleDetector = new remoting.IdleDetector(
+      document.getElementById('idle-dialog'), this.stop.bind(this));
+
   // Map Cmd to Ctrl on Mac since hosts typically use Ctrl for keyboard
   // shortcuts, but we want them to act as natively as possible.
   if (remoting.platformIsMac()) {
@@ -145,8 +161,7 @@ remoting.AppRemotingActivity.prototype.onConnected = function(connectionInfo) {
 };
 
 remoting.AppRemotingActivity.prototype.onDisconnected = function() {
-  base.dispose(this.connectedView_);
-  this.connectedView_ = null;
+  this.cleanup_();
   chrome.app.window.current().close();
 };
 
@@ -166,8 +181,7 @@ remoting.AppRemotingActivity.prototype.onError = function(error) {
   remoting.MessageWindow.showErrorMessage(
       chrome.i18n.getMessage(/*i18n-content*/'CONNECTION_FAILED'),
       chrome.i18n.getMessage(error.getTag()));
-  base.dispose(this.connectedView_);
-  this.connectedView_ = null;
+  this.cleanup_();
 };
 
 })();

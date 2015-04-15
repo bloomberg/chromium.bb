@@ -13,13 +13,6 @@
 var remoting = remoting || {};
 
 /**
- * @type {remoting.ClientSession} The client session object, set once the
- *     connector has invoked its onOk callback.
- * TODO(garykac): Have this owned by someone instead of being global.
- */
-remoting.clientSession;
-
-/**
  * @param {HTMLElement} clientContainer Container element for the client view.
  * @param {Array<string>} requiredCapabilities Connector capabilities
  *     required by this application.
@@ -75,7 +68,6 @@ remoting.SessionConnectorImpl.prototype.closeSession_ = function() {
   base.dispose(this.clientSession_);
   /** @private {remoting.ClientSession} */
   this.clientSession_ = null;
-  remoting.clientSession = null;
 
   base.dispose(this.plugin_);
   /** @private {remoting.ClientPlugin} */
@@ -209,7 +201,6 @@ remoting.SessionConnectorImpl.prototype.onPluginInitialized_ = function(
 
   this.clientSession_ = new remoting.ClientSession(
       this.plugin_, this.host_, this.signalStrategy_);
-  remoting.clientSession = this.clientSession_;
 
   this.clientSession_.logHostOfflineErrors(this.logHostOfflineErrors_);
   this.eventHook_ = new base.EventHook(

@@ -49,7 +49,7 @@ remoting.DesktopRemoting.prototype.initApplication_ = function() {
 
   if (base.isAppsV2()) {
     remoting.windowFrame = new remoting.WindowFrame(
-        document.getElementById('title-bar'));
+        document.getElementById('title-bar'), this.disconnect_.bind(this));
     remoting.optionsMenu = remoting.windowFrame.createOptionsMenu();
 
     var START_FULLSCREEN = 'start-fullscreen';
@@ -73,13 +73,13 @@ remoting.DesktopRemoting.prototype.initApplication_ = function() {
   } else {
     remoting.fullscreen = new remoting.FullscreenAppsV1();
     remoting.toolbar = new remoting.Toolbar(
-        document.getElementById('session-toolbar'));
+        document.getElementById('session-toolbar'),
+        this.disconnect_.bind(this));
     remoting.optionsMenu = remoting.toolbar.createOptionsMenu();
 
     window.addEventListener('beforeunload',
                             this.promptClose_.bind(this), false);
-    window.addEventListener('unload',
-                            remoting.app.disconnect.bind(remoting.app), false);
+    window.addEventListener('unload', this.disconnect_.bind(this), false);
   }
 
   remoting.initHostlist_(this.connectMe2Me_.bind(this));
@@ -187,6 +187,16 @@ remoting.DesktopRemoting.prototype.promptClose_ = function() {
 remoting.DesktopRemoting.prototype.getConnectedViewForTesting = function() {
   var activity = /** @type {remoting.Me2MeActivity} */ (this.activity_);
   return activity.getDesktopActivity().getConnectedView();
+};
+
+remoting.DesktopRemoting.prototype.getActivity = function() {
+  return this.activity_;
+};
+
+remoting.DesktopRemoting.prototype.disconnect_ = function() {
+  if (this.activity_) {
+    this.activity_.stop();
+  }
 };
 
 /**

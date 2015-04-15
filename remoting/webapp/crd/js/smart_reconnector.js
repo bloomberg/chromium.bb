@@ -20,14 +20,19 @@ var remoting = remoting || {};
 /**
  * @constructor
  * @param {function()} reconnectCallback
+ * @param {function()} disconnectCallback
  * @param {remoting.ClientSession} clientSession This represents the current
  *    remote desktop connection.  It is used to monitor the changes in
  *    connection state.
  * @implements {base.Disposable}
  */
-remoting.SmartReconnector = function(reconnectCallback, clientSession) {
+remoting.SmartReconnector =
+    function(reconnectCallback, disconnectCallback, clientSession) {
   /** @private */
   this.reconnectCallback_ = reconnectCallback;
+
+  /** @private */
+  this.disconnectCallback_ = disconnectCallback;
 
   /** @private */
   this.clientSession_ = clientSession;
@@ -67,7 +72,7 @@ remoting.SmartReconnector.kConnectionTimeout = 10000;
 remoting.SmartReconnector.prototype = {
   reconnect_: function() {
     this.cancelPending_();
-    remoting.app.disconnect();
+    this.disconnectCallback_();
     remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
     this.reconnectCallback_();
   },

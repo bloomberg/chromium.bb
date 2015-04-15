@@ -232,6 +232,10 @@ remoting.ClientPlugin.ConnectionEventHandler.prototype.onConnectionReady =
 remoting.ClientPlugin.ConnectionEventHandler.prototype.onSetCapabilities =
     function(capabilities) {};
 
+/** Called when the first video frame is received */
+remoting.ClientPlugin.ConnectionEventHandler.prototype.onFirstFrameReceived =
+    function() {};
+
 /**
  * @interface
  */

@@ -250,6 +250,9 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
           base.getStringAttr(message.data, 'capabilities'));
       handler.onSetCapabilities(capabilities);
 
+    } else if (message.method == 'onFirstFrameReceived') {
+      handler.onFirstFrameReceived();
+
     }
   }
 
@@ -310,11 +313,6 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
     var mimetype = base.getStringAttr(message.data, 'mimeType');
     var item = base.getStringAttr(message.data, 'item');
     this.updateClipboardData_(mimetype, item);
-
-  } else if (message.method == 'onFirstFrameReceived') {
-    if (remoting.clientSession) {
-      remoting.clientSession.onFirstFrameReceived();
-    }
 
   } else if (message.method == 'fetchPin') {
     // The pairingSupported value in the dictionary indicates whether both

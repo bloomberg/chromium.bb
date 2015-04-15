@@ -66,6 +66,10 @@ remoting.It2MeActivity.prototype.start = function() {
   });
 };
 
+remoting.It2MeActivity.prototype.stop = function() {
+  this.desktopActivity_.stop();
+};
+
 /**
  * @param {!remoting.Error} error
  */

@@ -222,7 +222,12 @@ browserTest.disconnect = function() {
     finishedButton = 'client-finished-it2me-button';
   }
 
-  remoting.app.disconnect();
+  var activity = remoting.app.getActivity();
+  if (!activity) {
+    return Promise.resolve();
+  }
+
+  activity.stop();
 
   return browserTest.onUIMode(finishedMode).then(function() {
     browserTest.clickOnControl(finishedButton);

@@ -24,6 +24,15 @@ remoting.DesktopRemotingActivity = function(parentActivity) {
   this.parentActivity_ = parentActivity;
   /** @private {remoting.DesktopConnectedView} */
   this.connectedView_ = null;
+  /** @private {remoting.ClientSession} */
+  this.session_ = null;
+};
+
+remoting.DesktopRemotingActivity.prototype.stop = function() {
+  if (this.session_) {
+    this.session_.disconnect(remoting.Error.none());
+    console.log('Disconnected.');
+  }
 };
 
 /**
@@ -36,6 +45,8 @@ remoting.DesktopRemotingActivity.prototype.onConnected =
     remoting.toolbar.center();
     remoting.toolbar.preview();
   }
+
+  this.session_ = connectionInfo.session();
 
   this.connectedView_ = new remoting.DesktopConnectedView(
       document.getElementById('client-container'), connectionInfo);
@@ -58,8 +69,7 @@ remoting.DesktopRemotingActivity.prototype.onConnected =
 
 remoting.DesktopRemotingActivity.prototype.onDisconnected = function() {
   this.parentActivity_.onDisconnected();
-  base.dispose(this.connectedView_);
-  this.connectedView_ = null;
+  this.dispose();
 };
 
 /**
@@ -84,13 +94,13 @@ remoting.DesktopRemotingActivity.prototype.onError = function(error) {
 
   this.parentActivity_.onError(error);
 
-  base.dispose(this.connectedView_);
-  this.connectedView_ = null;
+  this.dispose();
 };
 
 remoting.DesktopRemotingActivity.prototype.dispose = function() {
   base.dispose(this.connectedView_);
   this.connectedView_ = null;
+  this.session_ = null;
 };
 
 /** @return {remoting.DesktopConnectedView} */

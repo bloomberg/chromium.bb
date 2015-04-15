@@ -14,9 +14,11 @@ var remoting = remoting || {};
 
 /**
  * @param {HTMLElement} titleBar The root node of the title-bar DOM hierarchy.
+ * @param {function()} disconnectCallback Callback for disconnecting the
+ *     session.
  * @constructor
  */
-remoting.WindowFrame = function(titleBar) {
+remoting.WindowFrame = function(titleBar, disconnectCallback) {
   /** @private {remoting.DesktopConnectedView} */
   this.desktopConnectedView_ = null;
 
@@ -49,7 +51,7 @@ remoting.WindowFrame = function(titleBar) {
    * @type {Array<{cls:string, fn: function()}>}
    */
   var handlers = [
-    { cls: 'window-disconnect', fn: this.disconnectSession_.bind(this) },
+    { cls: 'window-disconnect', fn: disconnectCallback },
     { cls: 'window-maximize-restore',
       fn: this.maximizeOrRestoreWindow_.bind(this) },
     { cls: 'window-minimize', fn: this.minimizeWindow_.bind(this) },
@@ -122,13 +124,6 @@ remoting.WindowFrame.prototype.getClientArea = function() {
       'width': window.innerWidth - 2 * kBorderWidth
     };
   }
-};
-
-/**
- * @private
- */
-remoting.WindowFrame.prototype.disconnectSession_ = function() {
-  remoting.app.disconnect();
 };
 
 /**

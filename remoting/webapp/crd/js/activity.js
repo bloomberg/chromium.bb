@@ -29,4 +29,10 @@ remoting.Activity = function() {};
  */
 remoting.Activity.prototype.start = function() {};
 
+/**
+ * Cancels or disconnects a remote connection.
+ * @return {void}
+ */
+remoting.Activity.prototype.stop = function() {};
+
 })();

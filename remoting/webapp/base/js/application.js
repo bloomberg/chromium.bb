@@ -57,14 +57,6 @@ remoting.Application.prototype.setConnectionMode = function(mode) {
   this.connectionMode_ = mode;
 };
 
-/* Disconnect the remoting client. */
-remoting.Application.prototype.disconnect = function() {
-  if (remoting.clientSession) {
-    remoting.clientSession.disconnect(remoting.Error.none());
-    console.log('Disconnected.');
-  }
-};
-
 /* Public method to exit the application. */
 remoting.Application.prototype.quit = function() {
   this.exitApplication_();
@@ -111,7 +103,14 @@ remoting.Application.prototype.start = function() {
 
 /** @return {string} */
 remoting.Application.prototype.getApplicationName = function() {
-  base.debug.assert(false, "Subclass must override");
+  base.debug.assert(false, 'Subclass must override');
+};
+
+/**
+ * @return {remoting.Activity}  The Current activity.
+ */
+remoting.Application.prototype.getActivity = function() {
+  base.debug.assert(false, 'Subclass must override');
 };
 
 /**
@@ -119,12 +118,12 @@ remoting.Application.prototype.getApplicationName = function() {
  * @protected
  */
 remoting.Application.prototype.signInFailed_ = function(error) {
-  base.debug.assert(false, "Subclass must override");
+  base.debug.assert(false, 'Subclass must override');
 };
 
 /** @protected */
 remoting.Application.prototype.initApplication_ = function() {
-  base.debug.assert(false, "Subclass must override");
+  base.debug.assert(false, 'Subclass must override');
 };
 
 /**
@@ -132,12 +131,12 @@ remoting.Application.prototype.initApplication_ = function() {
  * @protected
  */
 remoting.Application.prototype.startApplication_ = function(token) {
-  base.debug.assert(false, "Subclass must override");
+  base.debug.assert(false, 'Subclass must override');
 };
 
 /** @protected */
 remoting.Application.prototype.exitApplication_ = function() {
-  base.debug.assert(false, "Subclass must override");
+  base.debug.assert(false, 'Subclass must override');
 };
 
 /**

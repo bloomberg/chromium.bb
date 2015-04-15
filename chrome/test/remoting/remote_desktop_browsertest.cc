@@ -387,7 +387,7 @@ void RemoteDesktopBrowserTest::DisconnectMe2Me() {
 
   ASSERT_TRUE(RemoteDesktopBrowserTest::IsSessionConnected());
 
-  ExecuteScript("remoting.app.disconnect();");
+  ExecuteScript("remoting.app.getActivity().stop();");
 
   EXPECT_TRUE(HtmlElementVisible("client-dialog"));
   EXPECT_TRUE(HtmlElementVisible("client-reconnect-button"));
@@ -841,9 +841,7 @@ bool RemoteDesktopBrowserTest::IsSessionConnected() {
   DismissHostVersionWarningIfVisible();
 
   return ExecuteScriptAndExtractBool(
-      "remoting.clientSession != null && "
-      "remoting.clientSession.getState() == "
-      "remoting.ClientSession.State.CONNECTED");
+      "remoting.currentMode === remoting.AppMode.IN_SESSION");
 }
 
 bool RemoteDesktopBrowserTest::IsPinFormVisible() {

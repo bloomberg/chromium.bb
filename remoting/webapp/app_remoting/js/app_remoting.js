@@ -38,6 +38,10 @@ remoting.AppRemoting.prototype.getApplicationName = function() {
   return manifest.name;
 };
 
+remoting.AppRemoting.prototype.getActivity = function() {
+  return this.activity_;
+};
+
 /**
  * @param {!remoting.Error} error The failure reason.
  * @override {remoting.ApplicationInterface}
