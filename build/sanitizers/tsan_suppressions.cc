@@ -101,9 +101,6 @@ char kTSanDefaultSuppressions[] =
 // http://crbug.com/246968
 "race:webrtc::VideoCodingModuleImpl::RegisterPacketRequestCallback\n"
 
-// http://crbug.com/246970
-"race:webrtc::EventPosix::StartTimer\n"
-
 // http://crbug.com/246974
 "race:content::GpuWatchdogThread::CheckArmed\n"
 
