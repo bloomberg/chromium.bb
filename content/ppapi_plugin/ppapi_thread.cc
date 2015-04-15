@@ -11,6 +11,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/discardable_memory_allocator.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/rand_util.h"
@@ -19,6 +20,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "content/child/browser_font_resource_trusted.h"
+#include "content/child/child_discardable_shared_memory_manager.h"
 #include "content/child/child_process.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/sandbox_util.h"
@@ -118,6 +120,13 @@ PpapiThread::PpapiThread(const base::CommandLine& command_line, bool is_broker)
             NULL, plugin_globals_.resource_reply_thread_registrar()));
     channel()->AddFilter(plugin_filter.get());
     plugin_globals_.RegisterResourceMessageFilters(plugin_filter.get());
+  }
+
+  // In single process, browser main loop set up the discardable memory
+  // allocator.
+  if (!command_line.HasSwitch(switches::kSingleProcess)) {
+    base::DiscardableMemoryAllocator::SetInstance(
+        ChildThreadImpl::discardable_shared_memory_manager());
   }
 }
 
