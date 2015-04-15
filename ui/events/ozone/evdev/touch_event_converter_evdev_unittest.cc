@@ -256,7 +256,7 @@ TEST_F(TouchEventConverterEvdevTest, TouchMove) {
             event.timestamp);
   EXPECT_EQ(295, event.location.x());
   EXPECT_EQ(421, event.location.y());
-  EXPECT_EQ(0, event.touch_id);
+  EXPECT_EQ(0, event.slot);
   EXPECT_FLOAT_EQ(58.f, event.radii.x());
   EXPECT_FLOAT_EQ(0.13333334f, event.pressure);
 
@@ -271,7 +271,7 @@ TEST_F(TouchEventConverterEvdevTest, TouchMove) {
             event.timestamp);
   EXPECT_EQ(312, event.location.x());
   EXPECT_EQ(432, event.location.y());
-  EXPECT_EQ(0, event.touch_id);
+  EXPECT_EQ(0, event.slot);
   EXPECT_FLOAT_EQ(50.f, event.radii.x());
   EXPECT_FLOAT_EQ(0.16862745f, event.pressure);
 
@@ -286,7 +286,7 @@ TEST_F(TouchEventConverterEvdevTest, TouchMove) {
             event.timestamp);
   EXPECT_EQ(312, event.location.x());
   EXPECT_EQ(432, event.location.y());
-  EXPECT_EQ(0, event.touch_id);
+  EXPECT_EQ(0, event.slot);
   EXPECT_FLOAT_EQ(50.f, event.radii.x());
   EXPECT_FLOAT_EQ(0.16862745f, event.pressure);
 }
@@ -336,7 +336,7 @@ TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(0), ev0.timestamp);
   EXPECT_EQ(40, ev0.location.x());
   EXPECT_EQ(51, ev0.location.y());
-  EXPECT_EQ(0, ev0.touch_id);
+  EXPECT_EQ(0, ev0.slot);
   EXPECT_FLOAT_EQ(0.17647059f, ev0.pressure);
 
   // Press
@@ -344,7 +344,7 @@ TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(0), ev1.timestamp);
   EXPECT_EQ(101, ev1.location.x());
   EXPECT_EQ(102, ev1.location.y());
-  EXPECT_EQ(1, ev1.touch_id);
+  EXPECT_EQ(1, ev1.slot);
   EXPECT_FLOAT_EQ(0.17647059f, ev1.pressure);
 
   // Stationary 0, Moves 1.
@@ -360,7 +360,7 @@ TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(0), ev1.timestamp);
   EXPECT_EQ(40, ev1.location.x());
   EXPECT_EQ(102, ev1.location.y());
-  EXPECT_EQ(1, ev1.touch_id);
+  EXPECT_EQ(1, ev1.slot);
   EXPECT_FLOAT_EQ(0.17647059f, ev1.pressure);
 
   // Move 0, stationary 1.
@@ -377,7 +377,7 @@ TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(0), ev0.timestamp);
   EXPECT_EQ(39, ev0.location.x());
   EXPECT_EQ(51, ev0.location.y());
-  EXPECT_EQ(0, ev0.touch_id);
+  EXPECT_EQ(0, ev0.slot);
   EXPECT_FLOAT_EQ(0.17647059f, ev0.pressure);
 
   // Release 0, move 1.
@@ -395,14 +395,14 @@ TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(0), ev0.timestamp);
   EXPECT_EQ(39, ev0.location.x());
   EXPECT_EQ(51, ev0.location.y());
-  EXPECT_EQ(0, ev0.touch_id);
+  EXPECT_EQ(0, ev0.slot);
   EXPECT_FLOAT_EQ(0.17647059f, ev0.pressure);
 
   EXPECT_EQ(ui::ET_TOUCH_MOVED, ev1.type);
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(0), ev1.timestamp);
   EXPECT_EQ(38, ev1.location.x());
   EXPECT_EQ(102, ev1.location.y());
-  EXPECT_EQ(1, ev1.touch_id);
+  EXPECT_EQ(1, ev1.slot);
   EXPECT_FLOAT_EQ(0.17647059f, ev1.pressure);
 
   // Release 1.
@@ -418,7 +418,7 @@ TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(0), ev1.timestamp);
   EXPECT_EQ(38, ev1.location.x());
   EXPECT_EQ(102, ev1.location.y());
-  EXPECT_EQ(1, ev1.touch_id);
+  EXPECT_EQ(1, ev1.slot);
   EXPECT_FLOAT_EQ(0.17647059f, ev1.pressure);
 }
 
@@ -488,7 +488,7 @@ TEST_F(TouchEventConverterEvdevTest, ShouldResumeExistingContactsOnStart) {
 
   ui::TouchEventParams ev = dispatched_event(0);
   EXPECT_EQ(ET_TOUCH_PRESSED, ev.type);
-  EXPECT_EQ(0, ev.touch_id);
+  EXPECT_EQ(0, ev.slot);
   EXPECT_FLOAT_EQ(50.f, ev.radii.x());
   EXPECT_FLOAT_EQ(0.f, ev.radii.y());
   EXPECT_FLOAT_EQ(0.50196081f, ev.pressure);
@@ -530,12 +530,12 @@ TEST_F(TouchEventConverterEvdevTest,
   ui::TouchEventParams ev0 = dispatched_event(0);
   ui::TouchEventParams ev1 = dispatched_event(1);
 
-  EXPECT_EQ(0, ev0.touch_id);
+  EXPECT_EQ(0, ev0.slot);
   EXPECT_EQ(999, ev0.location.x());
   EXPECT_EQ(888, ev0.location.y());
   EXPECT_FLOAT_EQ(0.21568628f, ev0.pressure);
 
-  EXPECT_EQ(1, ev1.touch_id);
+  EXPECT_EQ(1, ev1.slot);
   EXPECT_EQ(777, ev1.location.x());
   EXPECT_EQ(666, ev1.location.y());
   EXPECT_FLOAT_EQ(0.17254902f, ev1.pressure);

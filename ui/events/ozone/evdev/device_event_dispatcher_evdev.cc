@@ -88,14 +88,14 @@ ScrollEventParams::~ScrollEventParams() {
 }
 
 TouchEventParams::TouchEventParams(int device_id,
-                                   int touch_id,
+                                   int slot,
                                    EventType type,
                                    const gfx::PointF& location,
                                    const gfx::Vector2dF& radii,
                                    float pressure,
                                    const base::TimeDelta& timestamp)
     : device_id(device_id),
-      touch_id(touch_id),
+      slot(slot),
       type(type),
       location(location),
       radii(radii),

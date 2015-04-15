@@ -99,7 +99,7 @@ struct EVENTS_OZONE_EVDEV_EXPORT ScrollEventParams {
 
 struct EVENTS_OZONE_EVDEV_EXPORT TouchEventParams {
   TouchEventParams(int device_id,
-                   int touch_id,
+                   int slot,
                    EventType type,
                    const gfx::PointF& location,
                    const gfx::Vector2dF& radii,
@@ -109,7 +109,7 @@ struct EVENTS_OZONE_EVDEV_EXPORT TouchEventParams {
   ~TouchEventParams();
 
   int device_id;
-  int touch_id;
+  int slot;
   EventType type;
   gfx::PointF location;
   gfx::Vector2dF radii;

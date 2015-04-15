@@ -20,6 +20,7 @@
 #include "ui/events/ozone/evdev/input_device_factory_evdev.h"
 #include "ui/events/ozone/evdev/input_device_factory_evdev_proxy.h"
 #include "ui/events/ozone/evdev/input_injector_evdev.h"
+#include "ui/events/ozone/evdev/touch_evdev_types.h"
 
 namespace ui {
 
@@ -121,6 +122,7 @@ EventFactoryEvdev::EventFactoryEvdev(CursorDelegateEvdev* cursor,
       cursor_(cursor),
       input_controller_(&keyboard_, &button_map_),
       initialized_(false),
+      touch_id_generator_(0),
       weak_ptr_factory_(this) {
   DCHECK(device_manager_);
 }
@@ -231,12 +233,19 @@ void EventFactoryEvdev::DispatchTouchEvent(const TouchEventParams& params) {
   DeviceDataManager::GetInstance()->ApplyTouchRadiusScale(params.device_id,
                                                           &radius_y);
 
+  // params.slot is guaranteed to be < kNumTouchEvdevSlots.
+  int touch_id = touch_id_generator_.GetGeneratedID(
+      params.device_id * kNumTouchEvdevSlots + params.slot);
   TouchEvent touch_event(params.type, gfx::PointF(x, y),
-                         modifiers_.GetModifierFlags(), params.touch_id,
+                         modifiers_.GetModifierFlags(), touch_id,
                          params.timestamp, radius_x, radius_y,
                          /* angle */ 0.f, params.pressure);
   touch_event.set_source_device_id(params.device_id);
   DispatchUiEvent(&touch_event);
+
+  if (params.type == ET_TOUCH_RELEASED || params.type == ET_TOUCH_CANCELLED) {
+    touch_id_generator_.ReleaseGeneratedID(touch_event.touch_id());
+  }
 }
 
 void EventFactoryEvdev::DispatchUiEvent(Event* event) {

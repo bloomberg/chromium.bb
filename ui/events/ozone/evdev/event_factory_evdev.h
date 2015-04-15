@@ -20,6 +20,7 @@
 #include "ui/events/ozone/evdev/mouse_button_map_evdev.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/sequential_id_generator.h"
 #include "ui/ozone/public/system_input_injector.h"
 
 namespace gfx {
@@ -127,6 +128,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
 
   // Thread for device I/O.
   EventThreadEvdev thread_;
+
+  // Touch event id generator.
+  SequentialIDGenerator touch_id_generator_;
 
   // Support weak pointers for attach & detach callbacks.
   base::WeakPtrFactory<EventFactoryEvdev> weak_ptr_factory_;
