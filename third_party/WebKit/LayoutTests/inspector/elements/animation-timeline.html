@@ -21,6 +21,11 @@ function cancelAnimation()
     player.cancel();
 }
 
+function startAnimationWithStepTiming()
+{
+    player = node.animate([{ width: "100px", easing: "step(5, end)" }, { width: "200px", easing: "step-start" }], 200);
+}
+
 function test()
 {
     InspectorTest.selectNodeWithId("node", step1);
@@ -62,6 +67,15 @@ function test()
         InspectorTest.addResult(">>>> Animation canceled");
         // Force redraw since the draw is async scheduled
         sidebarPane._timeline._redraw();
+        InspectorTest.dumpAnimationTimeline();
+        sidebarPane._timeline._reset();
+        InspectorTest.waitForAnimationAdded(step5);
+        InspectorTest.evaluateInPage("startAnimationWithStepTiming()");
+    }
+
+    function step5()
+    {
+        InspectorTest.addResult(">>>> Animation with step timing function");
         InspectorTest.dumpAnimationTimeline();
         InspectorTest.completeTest();
     }
