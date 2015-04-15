@@ -8121,7 +8121,7 @@ I don't think this site should be blocked!
         Plugin exceptions
       </message>
       <message name="IDS_PLUGIN_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing plugins use on any site.">
-        Run all plugin content (recommended)
+        Run all plugin content
       </message>
       <message name="IDS_PLUGIN_DETECT_RADIO" desc="A radio button in the Content Settings dialog for detecting and running important plugin content only.">
         Detect and run important plugin content
