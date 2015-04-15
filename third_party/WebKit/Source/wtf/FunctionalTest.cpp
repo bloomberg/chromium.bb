@@ -316,4 +316,10 @@ TEST(FunctionalTest, WrapUnwrap)
     EXPECT_EQ(21, (*function)());
 }
 
+TEST(FunctionalTest, WrapUnwrapInPartialBind)
+{
+    OwnPtr<Function<int(int)>> partiallyBoundFunction = bind<int>(processUnwrappedClass, ClassToBeWrapped(3));
+    EXPECT_EQ(21, (*partiallyBoundFunction)(7));
+}
+
 } // namespace

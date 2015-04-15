@@ -168,7 +168,7 @@ public:
 
     virtual typename FunctionWrapper::ResultType operator()(P... params) override
     {
-        return m_functionWrapper(m_p1, params...);
+        return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), params...);
     }
 
 private:
@@ -188,7 +188,7 @@ public:
 
     virtual typename FunctionWrapper::ResultType operator()(P... params) override
     {
-        return m_functionWrapper(m_p1, m_p2, params...);
+        return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), params...);
     }
 
 private:
@@ -210,7 +210,7 @@ public:
 
     virtual typename FunctionWrapper::ResultType operator()(P... params) override
     {
-        return m_functionWrapper(m_p1, m_p2, m_p3, params...);
+        return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3), params...);
     }
 
 private:
@@ -234,7 +234,7 @@ public:
 
     virtual typename FunctionWrapper::ResultType operator()(P... params) override
     {
-        return m_functionWrapper(m_p1, m_p2, m_p3, m_p4, params...);
+        return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3), ParamStorageTraits<P4>::unwrap(m_p4), params...);
     }
 
 private:
@@ -260,7 +260,7 @@ public:
 
     virtual typename FunctionWrapper::ResultType operator()(P... params) override
     {
-        return m_functionWrapper(m_p1, m_p2, m_p3, m_p4, m_p5, params...);
+        return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3), ParamStorageTraits<P4>::unwrap(m_p4), ParamStorageTraits<P5>::unwrap(m_p5), params...);
     }
 
 private:
@@ -288,7 +288,7 @@ public:
 
     virtual typename FunctionWrapper::ResultType operator()(P... params) override
     {
-        return m_functionWrapper(m_p1, m_p2, m_p3, m_p4, m_p5, m_p6, params...);
+        return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3), ParamStorageTraits<P4>::unwrap(m_p4), ParamStorageTraits<P5>::unwrap(m_p5), ParamStorageTraits<P6>::unwrap(m_p6), params...);
     }
 
 private:
