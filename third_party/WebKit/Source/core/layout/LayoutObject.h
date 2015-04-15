@@ -655,7 +655,6 @@ public:
     void setNeedsPositionedMovementLayout();
     void setPreferredLogicalWidthsDirty(MarkingBehavior = MarkContainerChain);
     void clearPreferredLogicalWidthsDirty();
-    void invalidateContainerPreferredLogicalWidths();
 
     void setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReasonForTracing reason)
     {
@@ -1215,6 +1214,8 @@ protected:
     virtual void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const;
 
 private:
+    inline void invalidateContainerPreferredLogicalWidths();
+
     void clearMayNeedPaintInvalidation();
 
     void setLayoutDidGetCalledSinceLastFrame()

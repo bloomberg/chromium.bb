@@ -761,7 +761,7 @@ void LayoutObject::clearPreferredLogicalWidthsDirty()
     m_bitfields.setPreferredLogicalWidthsDirty(false);
 }
 
-void LayoutObject::invalidateContainerPreferredLogicalWidths()
+inline void LayoutObject::invalidateContainerPreferredLogicalWidths()
 {
     // In order to avoid pathological behavior when inlines are deeply nested, we do include them
     // in the chain that we mark dirty (even though they're kind of irrelevant).
