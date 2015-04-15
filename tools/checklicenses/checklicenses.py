@@ -134,8 +134,10 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     ],
     'native_client/toolchain': [
         'BSD GPL (v2 or later)',
+        'BSD MIT/X11 (BSD like)',
         'BSD (2 clause) GPL (v2 or later)',
         'BSD (3 clause) GPL (v2 or later)',
+        'BSD (4 clause) ISC',
         'BSL (v1.0) GPL',
         'BSL (v1.0) GPL (v3.1)',
         'GPL',
@@ -144,6 +146,7 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'GPL (v2 or later)',
         'GPL (v3.1)',
         'GPL (v3 or later)',
+        'MPL (v1.1) LGPL (unversioned/unknown version)',
     ],
     'third_party/WebKit': [
         'UNKNOWN',
