@@ -89,6 +89,23 @@ class FindByDevicePath {
   base::FilePath path_;
 };
 
+std::string GetEnumNameForProperty(drmModeConnector* connector,
+                                   drmModePropertyRes* property) {
+  for (int prop_idx = 0; prop_idx < connector->count_props; ++prop_idx) {
+    if (connector->props[prop_idx] != property->prop_id)
+      continue;
+
+    for (int enum_idx = 0; enum_idx < property->count_enums; ++enum_idx) {
+      const drm_mode_property_enum& property_enum = property->enums[enum_idx];
+      if (property_enum.value == connector->prop_values[prop_idx])
+        return property_enum.name;
+    }
+  }
+
+  NOTREACHED();
+  return std::string();
+}
+
 }  // namespace
 
 DrmGpuDisplayManager::DrmGpuDisplayManager(
@@ -335,11 +352,8 @@ bool DrmGpuDisplayManager::GetHDCPState(const DrmDisplaySnapshot& output,
     return false;
   }
 
-  DCHECK_LT(static_cast<int>(hdcp_property->prop_id), connector->count_props);
-  int hdcp_state_idx = connector->prop_values[hdcp_property->prop_id];
-  DCHECK_LT(hdcp_state_idx, hdcp_property->count_enums);
-
-  std::string name(hdcp_property->enums[hdcp_state_idx].name);
+  std::string name =
+      GetEnumNameForProperty(connector.get(), hdcp_property.get());
   for (size_t i = 0; i < arraysize(kContentProtectionStates); ++i) {
     if (name == kContentProtectionStates[i].name) {
       *state = kContentProtectionStates[i].state;
