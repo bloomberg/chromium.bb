@@ -726,12 +726,8 @@ public:
             // ASan adds extra stack usage, so disable the assert when it is
             // enabled so as to avoid testing against a much lower & too low,
             // stack depth threshold.
-            //
-            // FIXME: visitor->isMarked(t) exception is to allow empty trace()
-            // calls from HashTable weak processing. Remove the condition once
-            // it is refactored.
 #if !defined(ADDRESS_SANITIZER)
-            ASSERT(StackFrameDepth::isSafeToRecurse() || visitor->isMarked(t));
+            ASSERT(StackFrameDepth::isSafeToRecurse());
 #endif
             if (LIKELY(StackFrameDepth::isSafeToRecurse())) {
                 if (visitor->ensureMarked(t)) {
