@@ -13,7 +13,6 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/win/message_window.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_handle.h"
