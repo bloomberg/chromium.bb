@@ -10,7 +10,7 @@
 // Helper to write information for the points-to graph.
 class JsonWriter {
  public:
-  static JsonWriter* from(std::unique_ptr<llvm::raw_fd_ostream> os) {
+  static JsonWriter* from(std::unique_ptr<llvm::raw_ostream> os) {
     return os ? new JsonWriter(std::move(os)) : 0;
   }
   void OpenList() {
@@ -53,7 +53,7 @@ class JsonWriter {
     *os_ << "\"" << key << "\":\"" << val << "\"";
   }
  private:
-  JsonWriter(std::unique_ptr<llvm::raw_fd_ostream> os) : os_(std::move(os)) {}
+  JsonWriter(std::unique_ptr<llvm::raw_ostream> os) : os_(std::move(os)) {}
   void Separator() {
     if (state_.empty())
       return;
@@ -63,7 +63,7 @@ class JsonWriter {
     }
     state_.top() = true;
   }
-  std::unique_ptr<llvm::raw_fd_ostream> os_;
+  std::unique_ptr<llvm::raw_ostream> os_;
   std::stack<bool> state_;
 };
 
