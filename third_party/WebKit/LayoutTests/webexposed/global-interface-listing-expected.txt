@@ -291,6 +291,8 @@ interface Blob
     method close
     method constructor
     method slice
+interface BluetoothGATTRemoteServer
+    method constructor
 interface Boolean
     method constructor
     method toString
