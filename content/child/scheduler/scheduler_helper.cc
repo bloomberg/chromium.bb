@@ -337,8 +337,20 @@ SchedulerHelper::SchedulerTaskQueueSelector() const {
   return task_queue_selector_.get();
 }
 
-TaskQueueManager* SchedulerHelper::SchedulerTaskQueueManager() const {
-  return task_queue_manager_.get();
+scoped_refptr<base::SingleThreadTaskRunner> SchedulerHelper::TaskRunnerForQueue(
+    size_t queue_index) const {
+  CheckOnValidThread();
+  return task_queue_manager_->TaskRunnerForQueue(queue_index);
+}
+
+void SchedulerHelper::SetQueueName(size_t queue_index, const char* name) {
+  CheckOnValidThread();
+  task_queue_manager_->SetQueueName(queue_index, name);
+}
+
+bool SchedulerHelper::IsQueueEmpty(size_t queue_index) const {
+  CheckOnValidThread();
+  return task_queue_manager_->IsQueueEmpty(queue_index);
 }
 
 // static

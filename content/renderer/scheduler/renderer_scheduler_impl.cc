@@ -25,14 +25,9 @@ RendererSchedulerImpl::RendererSchedulerImpl(
               base::TimeDelta()),
       control_task_runner_(helper_.ControlTaskRunner()),
       compositor_task_runner_(
-          helper_.SchedulerTaskQueueManager()->TaskRunnerForQueue(
-              COMPOSITOR_TASK_QUEUE)),
-      loading_task_runner_(
-          helper_.SchedulerTaskQueueManager()->TaskRunnerForQueue(
-              LOADING_TASK_QUEUE)),
-      timer_task_runner_(
-          helper_.SchedulerTaskQueueManager()->TaskRunnerForQueue(
-              TIMER_TASK_QUEUE)),
+          helper_.TaskRunnerForQueue(COMPOSITOR_TASK_QUEUE)),
+      loading_task_runner_(helper_.TaskRunnerForQueue(LOADING_TASK_QUEUE)),
+      timer_task_runner_(helper_.TaskRunnerForQueue(TIMER_TASK_QUEUE)),
       delayed_update_policy_runner_(
           base::Bind(&RendererSchedulerImpl::UpdatePolicy,
                      base::Unretained(this)),
@@ -52,8 +47,7 @@ RendererSchedulerImpl::RendererSchedulerImpl(
   for (size_t i = SchedulerHelper::TASK_QUEUE_COUNT;
        i < TASK_QUEUE_COUNT;
        i++) {
-    helper_.SchedulerTaskQueueManager()->SetQueueName(
-        i, TaskQueueIdToString(static_cast<QueueId>(i)));
+    helper_.SetQueueName(i, TaskQueueIdToString(static_cast<QueueId>(i)));
   }
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "RendererScheduler",
@@ -297,8 +291,7 @@ bool RendererSchedulerImpl::ShouldYieldForHighPriorityWork() {
       return false;
 
     case Policy::COMPOSITOR_PRIORITY:
-      return !helper_.SchedulerTaskQueueManager()->IsQueueEmpty(
-          COMPOSITOR_TASK_QUEUE);
+      return !helper_.IsQueueEmpty(COMPOSITOR_TASK_QUEUE);
 
     case Policy::TOUCHSTART_PRIORITY:
       return true;
@@ -461,8 +454,7 @@ base::TimeDelta RendererSchedulerImpl::TimeLeftInInputEscalatedPolicy(
       base::TimeDelta::FromMilliseconds(kPriorityEscalationAfterInputMillis);
   base::TimeDelta time_left_in_policy;
   if (last_input_process_time_on_main_.is_null() &&
-      !helper_.SchedulerTaskQueueManager()->IsQueueEmpty(
-          COMPOSITOR_TASK_QUEUE)) {
+      !helper_.IsQueueEmpty(COMPOSITOR_TASK_QUEUE)) {
     // If the input event is still pending, go into input prioritized policy
     // and check again later.
     time_left_in_policy = escalated_priority_duration;

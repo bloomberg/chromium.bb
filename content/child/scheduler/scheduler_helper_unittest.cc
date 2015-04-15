@@ -124,11 +124,6 @@ class SchedulerHelperForTest : public SchedulerHelper,
 
   ~SchedulerHelperForTest() override {}
 
-  using SchedulerHelper::CanExceedIdleDeadlineIfRequired;
-  using SchedulerHelper::EndIdlePeriod;
-  using SchedulerHelper::StartIdlePeriod;
-  using SchedulerHelper::EnableLongIdlePeriod;
-
   // SchedulerHelperDelegate implementation:
   MOCK_METHOD2(CanEnterLongIdlePeriod,
                bool(base::TimeTicks now,
@@ -238,6 +233,10 @@ class SchedulerHelperTest : public BaseSchedulerHelperTest {
   SchedulerHelperTest() : BaseSchedulerHelperTest(nullptr, base::TimeDelta()) {}
 
   ~SchedulerHelperTest() override {}
+
+  TaskQueueManager* task_queue_manager() const {
+    return scheduler_helper_->task_queue_manager_.get();
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SchedulerHelperTest);
@@ -457,8 +456,6 @@ TEST_F(SchedulerHelperTest, TestPostIdleTaskWakesAfterWakeupIdleTask) {
 
 TEST_F(SchedulerHelperTest, TestDelayedEndIdlePeriod) {
   mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
-  TaskQueueManager* task_queue_manager =
-      scheduler_helper_->SchedulerTaskQueueManager();
 
   EXPECT_CALL(*scheduler_helper_, CanEnterLongIdlePeriod(_, _))
       .Times(2)
@@ -470,21 +467,19 @@ TEST_F(SchedulerHelperTest, TestDelayedEndIdlePeriod) {
   scheduler_helper_->EnableLongIdlePeriod();
 
   // Check there is a pending delayed task.
-  EXPECT_GT(
-      task_queue_manager->NextPendingDelayedTaskRunTime(), base::TimeTicks());
+  EXPECT_GT(task_queue_manager()->NextPendingDelayedTaskRunTime(),
+            base::TimeTicks());
 
   RunUntilIdle();
 
   // If the delayed task ran, it will an EnableLongIdlePeriod on the control
   // task after wake up queue.
-  EXPECT_FALSE(task_queue_manager->IsQueueEmpty(
+  EXPECT_FALSE(task_queue_manager()->IsQueueEmpty(
       SchedulerHelper::CONTROL_TASK_AFTER_WAKEUP_QUEUE));
 }
 
 TEST_F(SchedulerHelperTest, TestDelayedEndIdlePeriodCanceled) {
   mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
-  TaskQueueManager* task_queue_manager =
-      scheduler_helper_->SchedulerTaskQueueManager();
 
   EXPECT_CALL(*scheduler_helper_, CanEnterLongIdlePeriod(_, _))
       .Times(1)
@@ -496,15 +491,15 @@ TEST_F(SchedulerHelperTest, TestDelayedEndIdlePeriodCanceled) {
   scheduler_helper_->EnableLongIdlePeriod();
 
   // Check there is a pending delayed task.
-  EXPECT_GT(
-      task_queue_manager->NextPendingDelayedTaskRunTime(), base::TimeTicks());
+  EXPECT_GT(task_queue_manager()->NextPendingDelayedTaskRunTime(),
+            base::TimeTicks());
 
   scheduler_helper_->EndIdlePeriod();
   RunUntilIdle();
 
   // If the delayed task didn't run, there will be nothing on the control task
   // after wake up queue.
-  EXPECT_TRUE(task_queue_manager->IsQueueEmpty(
+  EXPECT_TRUE(scheduler_helper_->IsQueueEmpty(
       SchedulerHelper::CONTROL_TASK_AFTER_WAKEUP_QUEUE));
 }
 

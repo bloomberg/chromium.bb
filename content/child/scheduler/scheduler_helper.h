@@ -158,7 +158,10 @@ class CONTENT_EXPORT SchedulerHelper {
   base::TimeTicks Now() const;
   IdlePeriodState SchedulerIdlePeriodState() const;
   PrioritizingTaskQueueSelector* SchedulerTaskQueueSelector() const;
-  TaskQueueManager* SchedulerTaskQueueManager() const;
+  scoped_refptr<base::SingleThreadTaskRunner> TaskRunnerForQueue(
+      size_t queue_index) const;
+  void SetQueueName(size_t queue_index, const char* name);
+  bool IsQueueEmpty(size_t queue_index) const;
 
   // Test helpers.
   void SetTimeSourceForTesting(scoped_refptr<cc::TestNowSource> time_source);
