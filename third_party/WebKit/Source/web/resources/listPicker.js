@@ -178,11 +178,24 @@ ListPicker.prototype._fixWindowSize = function() {
     var maxHeight = this._selectElement.offsetHeight;
     this._selectElement.style.height = "0";
     var heightOutsideOfContent = this._selectElement.offsetHeight - this._selectElement.clientHeight;
-    var desiredWindowHeight = Math.round(this._calculateScrollHeight() + heightOutsideOfContent);
-    if (desiredWindowHeight > maxHeight)
+    var noScrollHeight = Math.round(this._calculateScrollHeight() + heightOutsideOfContent);
+    var desiredWindowHeight = noScrollHeight;
+    var desiredWindowWidth = this._selectElement.offsetWidth;
+    var expectingScrollbar = false;
+    if (desiredWindowHeight > maxHeight) {
         desiredWindowHeight = maxHeight;
-    var desiredWindowWidth = Math.max(this._config.anchorRectInScreen.width, this._selectElement.offsetWidth);
+        // Setting overflow to auto does not increase width for the scrollbar
+        // so we need to do it manually.
+        desiredWindowWidth += getScrollbarWidth();
+        expectingScrollbar = true;
+    }
+    desiredWindowWidth = Math.max(this._config.anchorRectInScreen.width, desiredWindowWidth);
     var windowRect = adjustWindowRect(desiredWindowWidth, desiredWindowHeight, this._selectElement.offsetWidth, 0);
+    // If the available screen space is smaller than maxHeight, we will get an unexpected scrollbar.
+    if (!expectingScrollbar && windowRect.height < noScrollHeight) {
+        desiredWindowWidth = windowRect.width + getScrollbarWidth();
+        windowRect = adjustWindowRect(desiredWindowWidth, windowRect.height, windowRect.width, windowRect.height);
+    }
     this._selectElement.style.width = windowRect.width + "px";
     this._selectElement.style.height = windowRect.height + "px";
     this._element.style.height = windowRect.height + "px";
