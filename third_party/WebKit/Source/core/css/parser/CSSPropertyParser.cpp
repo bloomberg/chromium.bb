@@ -446,24 +446,24 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
 
     CSSValueID id = value->id;
 
-    int num = inShorthand() ? 1 : m_valueList->size();
-
     if (id == CSSValueInherit) {
-        if (num != 1)
+        if (m_valueList->size() != 1)
             return false;
         addExpandedPropertyForValue(propId, cssValuePool().createInheritedValue(), important);
         return true;
     } else if (id == CSSValueInitial) {
-        if (num != 1)
+        if (m_valueList->size() != 1)
             return false;
         addExpandedPropertyForValue(propId, cssValuePool().createExplicitInitialValue(), important);
         return true;
     } else if (id == CSSValueUnset) {
-        if (num != 1)
+        if (m_valueList->size() != 1)
             return false;
         addExpandedPropertyForValue(propId, cssValuePool().createUnsetValue(), important);
         return true;
     }
+
+    int num = inShorthand() ? 1 : m_valueList->size();
 
     if (CSSParserFastPaths::isKeywordPropertyID(propId)) {
         if (!CSSParserFastPaths::isValidKeywordPropertyAndValue(propId, id))

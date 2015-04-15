@@ -83,6 +83,67 @@
     shouldBeFalse('CSS.supports("content", [])');
     shouldBeFalse('CSS.supports("content", "!important")');
     shouldBeFalse('CSS.supports("(display: none)", undefined)');
+
+    // shorthands and CSS wide keywords
+    shouldBeTrue('CSS.supports("border", "1px solid #000")');
+    shouldBeTrue('CSS.supports("border", "inherit")');
+    shouldBeFalse('CSS.supports("border", "1px solid inherit")');
+    shouldBeFalse('CSS.supports("border", "inherit solid #000")');
+    shouldBeTrue('CSS.supports("border-bottom", "thick green")');
+    shouldBeTrue('CSS.supports("border-bottom", "inherit")');
+    shouldBeFalse('CSS.supports("border-bottom", "thick green inherit")');
+    shouldBeFalse('CSS.supports("border-bottom", "inherit thick green")');
+    shouldBeTrue('CSS.supports("border-left", "thick green")');
+    shouldBeTrue('CSS.supports("border-left", "inherit")');
+    shouldBeFalse('CSS.supports("border-left", "thick green inherit")');
+    shouldBeFalse('CSS.supports("border-left", "inherit thick green")');
+    shouldBeTrue('CSS.supports("border-right", "thick green")');
+    shouldBeTrue('CSS.supports("border-right", "inherit")');
+    shouldBeFalse('CSS.supports("border-right", "thick green inherit")');
+    shouldBeFalse('CSS.supports("border-right", "inherit thick green")');
+    shouldBeTrue('CSS.supports("border-top", "thick green")');
+    shouldBeTrue('CSS.supports("border-top", "inherit")');
+    shouldBeFalse('CSS.supports("border-top", "thick green inherit")');
+    shouldBeFalse('CSS.supports("border-top", "inherit thick green")');
+    shouldBeTrue('CSS.supports("border-radius", "1px 0 3px 4px")');
+    shouldBeTrue('CSS.supports("border-radius", "inherit")');
+    shouldBeFalse('CSS.supports("border-radius", "1px 0 3px inherit")');
+    shouldBeFalse('CSS.supports("border-radius", "inherit 0 3px 4px")');
+    shouldBeTrue('CSS.supports("border-spacing", "5px 5px")');
+    shouldBeTrue('CSS.supports("border-spacing", "inherit")');
+    shouldBeFalse('CSS.supports("border-spacing", "5px inherit")');
+    shouldBeFalse('CSS.supports("border-spacing", "inherit 5px")');
+    shouldBeTrue('CSS.supports("font", "italic small-caps bolder 16px/3 cursive")');
+    shouldBeTrue('CSS.supports("font", "inherit")');
+    shouldBeFalse('CSS.supports("font", "italic small-caps bolder 16px/3 inherit")');
+    shouldBeFalse('CSS.supports("font", "inherit small-caps bolder 16px/3 cursive")');
+    shouldBeTrue('CSS.supports("list-style", "georgian inside")');
+    shouldBeTrue('CSS.supports("list-style", "inherit")');
+    shouldBeFalse('CSS.supports("list-style", "georgian inherit")');
+    shouldBeFalse('CSS.supports("list-style", "inherit inside")');
+    // border-width, border-color, border-style and padding use same code path as margin
+    shouldBeTrue('CSS.supports("margin", "5px")');
+    shouldBeTrue('CSS.supports("margin", "inherit")');
+    shouldBeFalse('CSS.supports("margin", "inherit 5px")');
+    shouldBeFalse('CSS.supports("margin", "5px inherit")');
+    shouldBeFalse('CSS.supports("margin", "inherit 5px 5px")');
+    shouldBeFalse('CSS.supports("margin", "inherit 5px 5px 5px")');
+    shouldBeTrue('CSS.supports("outline", "1px solid #000")');
+    shouldBeTrue('CSS.supports("outline", "inherit")');
+    shouldBeFalse('CSS.supports("outline", "1px solid inherit")');
+    shouldBeFalse('CSS.supports("outline", "inherit solid #000")');
+    shouldBeTrue('CSS.supports("overflow", "scroll")');
+    shouldBeTrue('CSS.supports("overflow", "inherit")');
+    shouldBeFalse('CSS.supports("overflow", "inherit scroll")');
+    shouldBeFalse('CSS.supports("overflow", "scroll inherit")');
+    shouldBeTrue('CSS.supports("transform", "scaleX(2)")');
+    shouldBeTrue('CSS.supports("transform", "inherit")');
+    shouldBeFalse('CSS.supports("transform", "scaleX(2) inherit")');
+    shouldBeFalse('CSS.supports("transform", "inherit scaleX(2)")');
+    shouldBeTrue('CSS.supports("transition", "margin-left 4s")');
+    shouldBeTrue('CSS.supports("transition", "inherit")');
+    shouldBeFalse('CSS.supports("transition", "margin-left inherit")');
+    shouldBeFalse('CSS.supports("transition", "inherit 4s")');
 </script>
 </body>
 </html>
