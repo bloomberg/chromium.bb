@@ -105,12 +105,6 @@ class ServiceProcess : public cloud_print::CloudPrintProxy::Client {
   // connected.
   void ShutdownIfNeeded();
 
-  // Schedule a call to CloudPrintPolicyCheckIfNeeded.
-  void ScheduleCloudPrintPolicyCheck();
-
-  // Launch the browser for a policy check if we're not connected.
-  void CloudPrintPolicyCheckIfNeeded();
-
   // Called exactly ONCE per process instance for each service that gets
   // enabled in this process.
   void OnServiceEnabled();

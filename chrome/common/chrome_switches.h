@@ -49,7 +49,6 @@ extern const char kAutoSelectDesktopCaptureSource[];
 extern const char kBypassAppBannerEngagementChecks[];
 extern const char kCertificateTransparencyLog[];
 extern const char kCheckForUpdateIntervalSec[];
-extern const char kCheckCloudPrintConnectorPolicy[];
 extern const char kCipherSuiteBlacklist[];
 extern const char kCloudPrintFile[];
 extern const char kCloudPrintJobTitle[];

@@ -139,11 +139,6 @@ const char kCertificateTransparencyLog[] =
 // purposes.
 const char kCheckForUpdateIntervalSec[]     = "check-for-update-interval";
 
-// Checks the cloud print connector policy, informing the service process if
-// the policy is set to disallow the connector, then quits.
-const char kCheckCloudPrintConnectorPolicy[] =
-    "check-cloud-print-connector-policy";
-
 // Comma-separated list of SSL cipher suites to disable.
 const char kCipherSuiteBlacklist[]          = "cipher-suite-blacklist";
 

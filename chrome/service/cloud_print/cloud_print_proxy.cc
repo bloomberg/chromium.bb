@@ -22,50 +22,6 @@
 #include "google_apis/google_api_keys.h"
 #include "url/gurl.h"
 
-namespace {
-
-#if !defined(OS_MACOSX)
-void LaunchBrowserProcessWithSwitch(const std::string& switch_string) {
-  DCHECK(g_service_process->io_thread()->message_loop_proxy()->
-      BelongsToCurrentThread());
-  base::FilePath exe_path;
-  PathService::Get(base::FILE_EXE, &exe_path);
-  if (exe_path.empty()) {
-    NOTREACHED() << "Unable to get browser process binary name.";
-  }
-  base::CommandLine cmd_line(exe_path);
-
-  // Propagate an explicit --user-data-dir value if one was given. The new
-  // browser process will pick up a policy override during initialization.
-  const base::CommandLine& process_command_line =
-      *base::CommandLine::ForCurrentProcess();
-  base::FilePath user_data_dir =
-      process_command_line.GetSwitchValuePath(switches::kUserDataDir);
-  if (!user_data_dir.empty())
-    cmd_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir);
-  cmd_line.AppendSwitch(switch_string);
-
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  base::Process process = base::LaunchProcess(cmd_line, base::LaunchOptions());
-  if (process.IsValid())
-    base::EnsureProcessGetsReaped(process.Pid());
-#else
-  base::LaunchOptions launch_options;
-#if defined(OS_WIN)
-  launch_options.force_breakaway_from_job_ = true;
-#endif  // OS_WIN
-  base::LaunchProcess(cmd_line, launch_options);
-#endif
-}
-
-void CheckCloudPrintProxyPolicyInBrowser() {
-  LaunchBrowserProcessWithSwitch(switches::kCheckCloudPrintConnectorPolicy);
-}
-
-#endif  // !OS_MACOSX
-
-}  // namespace
-
 namespace cloud_print {
 
 CloudPrintProxy::CloudPrintProxy()
@@ -214,13 +170,6 @@ void CloudPrintProxy::GetPrinters(std::vector<std::string>* printers) {
   print_system->EnumeratePrinters(&printer_list);
   for (size_t i = 0; i < printer_list.size(); ++i)
     printers->push_back(printer_list[i].printer_name);
-}
-
-void CloudPrintProxy::CheckCloudPrintProxyPolicy() {
-#if !defined(OS_MACOSX)
-  g_service_process->io_thread()->message_loop_proxy()->PostTask(
-      FROM_HERE, base::Bind(&CheckCloudPrintProxyPolicyInBrowser));
-#endif
 }
 
 void CloudPrintProxy::OnAuthenticated(

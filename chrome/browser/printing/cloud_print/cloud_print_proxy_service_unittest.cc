@@ -436,33 +436,3 @@ TEST_F(CloudPrintProxyPolicyTest,
   EXPECT_EQ(MockServiceProcessControl::EnabledUserId(),
             prefs->GetString(prefs::kCloudPrintEmail));
 }
-
-KeyedService* TestCloudPrintProxyServiceFactory(
-    content::BrowserContext* profile) {
-  TestCloudPrintProxyService* service =
-      new TestCloudPrintProxyService(static_cast<Profile*>(profile));
-
-  service->GetMockServiceProcessControl()->SetConnectSuccessMockExpectations(
-      MockServiceProcessControl::kServiceStateEnabled, true);
-  service->GetMockServiceProcessControl()->SetWillBeDisabledExpectations();
-
-  service->Initialize();
-  return service;
-}
-
-TEST_F(CloudPrintProxyPolicyTest, StartupBrowserCreatorWithCommandLine) {
-  TestingPrefServiceSyncable* prefs = profile_.GetTestingPrefService();
-  prefs->SetUserPref(prefs::kCloudPrintEmail,
-                     new base::StringValue(std::string()));
-  prefs->SetManagedPref(prefs::kCloudPrintProxyEnabled,
-                        new base::FundamentalValue(false));
-
-  CloudPrintProxyServiceFactory::GetInstance()->
-      SetTestingFactory(&profile_, TestCloudPrintProxyServiceFactory);
-
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  command_line.AppendSwitch(switches::kCheckCloudPrintConnectorPolicy);
-
-  EXPECT_FALSE(LaunchBrowser(command_line, &profile_));
-  base::RunLoop().RunUntilIdle();
-}

@@ -58,27 +58,4 @@ IN_PROC_BROWSER_TEST_F(CloudPrintPolicyTest, NormalPassedFlag) {
   EXPECT_EQ(chrome::RESULT_CODE_NORMAL_EXIT_PROCESS_NOTIFIED, exit_code);
 }
 
-// Disabled due to http://crbug.com/144393.
-IN_PROC_BROWSER_TEST_F(CloudPrintPolicyTest, DISABLED_CloudPrintPolicyFlag) {
-  base::CommandLine new_command_line(GetCommandLineForRelaunch());
-  new_command_line.AppendSwitch(switches::kCheckCloudPrintConnectorPolicy);
-  // This is important for the test as the way the browser process is launched
-  // here causes the predictor databases to be initialized multiple times. This
-  // is not an issue for production where the process is launched as a service
-  // and a Profile is not created. See http://crbug.com/140466 for more details.
-  new_command_line.AppendSwitchASCII(
-      switches::kSpeculativeResourcePrefetching,
-      switches::kSpeculativeResourcePrefetchingDisabled);
-
-  base::Process process =
-      base::LaunchProcess(new_command_line, base::LaunchOptionsForTest());
-  EXPECT_TRUE(process.IsValid());
-
-  int exit_code = -100;
-  bool exited = process.WaitForExitWithTimeout(TestTimeouts::action_timeout(),
-                                               &exit_code);
-  EXPECT_TRUE(exited);
-  EXPECT_EQ(content::RESULT_CODE_NORMAL_EXIT, exit_code);
-}
-
 }  // namespace

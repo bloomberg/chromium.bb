@@ -513,16 +513,6 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
                                                            command_line)) {
     silent_launch = true;
   }
-
-  // If we are checking the proxy enabled policy, don't open any windows.
-  if (command_line.HasSwitch(switches::kCheckCloudPrintConnectorPolicy)) {
-    silent_launch = true;
-    if (CloudPrintProxyServiceFactory::GetForProfile(last_used_profile)->
-        EnforceCloudPrintConnectorPolicyAndQuit())
-      // Success, nothing more needs to be done, so return false to stop
-      // launching and quit.
-      return false;
-  }
 #endif  // defined(ENABLE_PRINT_PREVIEW)
 
   VLOG(2) << "ProcessCmdLineImpl: PLACE 1";

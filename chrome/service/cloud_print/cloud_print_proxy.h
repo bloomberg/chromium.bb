@@ -54,9 +54,6 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
   // Return accessible printers.
   void GetPrinters(std::vector<std::string>* printers);
 
-  // Launches a browser to see if the proxy policy has been set.
-  void CheckCloudPrintProxyPolicy();
-
   const std::string& user_email() const {
     return user_email_;
   }

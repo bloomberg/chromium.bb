@@ -35,7 +35,6 @@ using content::BrowserThread;
 
 CloudPrintProxyService::CloudPrintProxyService(Profile* profile)
     : profile_(profile),
-      enforcing_connector_policy_(false),
       weak_factory_(this) {
 }
 
@@ -77,14 +76,6 @@ void CloudPrintProxyService::RefreshStatusFromService() {
                  weak_factory_.GetWeakPtr()));
 }
 
-bool CloudPrintProxyService::EnforceCloudPrintConnectorPolicyAndQuit() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  enforcing_connector_policy_ = true;
-  if (ApplyCloudPrintConnectorPolicy())
-    return true;
-  return false;
-}
-
 void CloudPrintProxyService::EnableForUserWithRobot(
     const std::string& robot_auth_code,
     const std::string& robot_email,
@@ -124,16 +115,7 @@ bool CloudPrintProxyService::ApplyCloudPrintConnectorPolicy() {
           ServiceProcessControl::SERVICE_EVENT_MAX);
       DisableForUser();
       profile_->GetPrefs()->SetString(prefs::kCloudPrintEmail, std::string());
-      if (enforcing_connector_policy_) {
-        base::MessageLoop::current()->PostTask(
-            FROM_HERE,
-            base::Bind(&CloudPrintProxyService::RefreshCloudPrintProxyStatus,
-                       weak_factory_.GetWeakPtr()));
-      }
       return false;
-    } else if (enforcing_connector_policy_) {
-      base::MessageLoop::current()->PostTask(FROM_HERE,
-                                             base::MessageLoop::QuitClosure());
     }
   }
   return true;

@@ -47,10 +47,6 @@ namespace {
 // a shutdown.
 const int kShutdownDelaySeconds = 60;
 
-// Delay in hours between launching a browser process to check the
-// policy for us.
-const int64 kPolicyCheckDelayHours = 8;
-
 const char kDefaultServiceProcessLocale[] = "en-US";
 
 class ServiceIOThread : public base::Thread {
@@ -205,9 +201,6 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
   // See if we need to stay running.
   ScheduleShutdownCheck();
 
-  // Occasionally check to see if we need to launch the browser to get the
-  // policy state information.
-  CloudPrintPolicyCheckIfNeeded();
   return true;
 }
 
@@ -350,21 +343,6 @@ void ServiceProcess::ShutdownIfNeeded() {
       Shutdown();
     }
   }
-}
-
-void ServiceProcess::ScheduleCloudPrintPolicyCheck() {
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&ServiceProcess::CloudPrintPolicyCheckIfNeeded,
-                 base::Unretained(this)),
-      base::TimeDelta::FromHours(kPolicyCheckDelayHours));
-}
-
-void ServiceProcess::CloudPrintPolicyCheckIfNeeded() {
-  if (enabled_services_ && !ipc_server_->is_client_connected()) {
-    GetCloudPrintProxy()->CheckCloudPrintProxyPolicy();
-  }
-  ScheduleCloudPrintPolicyCheck();
 }
 
 ServiceProcess::~ServiceProcess() {

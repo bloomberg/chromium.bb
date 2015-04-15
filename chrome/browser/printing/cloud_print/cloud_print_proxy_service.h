@@ -55,11 +55,6 @@ class CloudPrintProxyService : public KeyedService {
   // update the browser prefs.
   void RefreshStatusFromService();
 
-  // Disable the service if the policy to do so is set, and once the
-  // disablement is verified, quit the browser. Returns true if the policy is
-  // not set or the connector was not enabled.
-  bool EnforceCloudPrintConnectorPolicyAndQuit();
-
   std::string proxy_id() const { return proxy_id_; }
 
  private:
@@ -98,10 +93,6 @@ class CloudPrintProxyService : public KeyedService {
 
   // For watching for connector policy changes.
   PrefChangeRegistrar pref_change_registrar_;
-
-  // If set, continue trying to disable the connector, and quit the process
-  // once successful.
-  bool enforcing_connector_policy_;
 
   base::WeakPtrFactory<CloudPrintProxyService> weak_factory_;
 

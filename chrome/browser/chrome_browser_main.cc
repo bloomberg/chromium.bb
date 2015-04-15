@@ -1212,51 +1212,44 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     return chrome::RESULT_CODE_PACK_EXTENSION_ERROR;
   }
 
-  // If we're being launched just to check the connector policy, we are
-  // short-lived and don't want to be passing that switch off.
-  bool pass_command_line = !parsed_command_line().HasSwitch(
-      switches::kCheckCloudPrintConnectorPolicy);
+  // When another process is running, use that process instead of starting a
+  // new one. NotifyOtherProcess will currently give the other process up to
+  // 20 seconds to respond. Note that this needs to be done before we attempt
+  // to read the profile.
+  notify_result_ = process_singleton_->NotifyOtherProcessOrCreate();
+  switch (notify_result_) {
+    case ProcessSingleton::PROCESS_NONE:
+      // No process already running, fall through to starting a new one.
+      break;
 
-  if (pass_command_line) {
-    // When another process is running, use that process instead of starting a
-    // new one. NotifyOtherProcess will currently give the other process up to
-    // 20 seconds to respond. Note that this needs to be done before we attempt
-    // to read the profile.
-    notify_result_ = process_singleton_->NotifyOtherProcessOrCreate();
-    switch (notify_result_) {
-      case ProcessSingleton::PROCESS_NONE:
-        // No process already running, fall through to starting a new one.
-        break;
-
-      case ProcessSingleton::PROCESS_NOTIFIED:
+    case ProcessSingleton::PROCESS_NOTIFIED:
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-        // On POSIX systems, print a message notifying the process is running.
-        printf("%s\n", base::SysWideToNativeMB(base::UTF16ToWide(
-            l10n_util::GetStringUTF16(IDS_USED_EXISTING_BROWSER))).c_str());
+      // On POSIX systems, print a message notifying the process is running.
+      printf("%s\n", base::SysWideToNativeMB(base::UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_USED_EXISTING_BROWSER))).c_str());
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
-        // Having a differentiated return type for testing allows for tests to
-        // verify proper handling of some switches. When not testing, stick to
-        // the standard Unix convention of returning zero when things went as
-        // expected.
-        if (parsed_command_line().HasSwitch(switches::kTestType))
-          return chrome::RESULT_CODE_NORMAL_EXIT_PROCESS_NOTIFIED;
-        return content::RESULT_CODE_NORMAL_EXIT;
+      // Having a differentiated return type for testing allows for tests to
+      // verify proper handling of some switches. When not testing, stick to
+      // the standard Unix convention of returning zero when things went as
+      // expected.
+      if (parsed_command_line().HasSwitch(switches::kTestType))
+        return chrome::RESULT_CODE_NORMAL_EXIT_PROCESS_NOTIFIED;
+      return content::RESULT_CODE_NORMAL_EXIT;
 
-      case ProcessSingleton::PROFILE_IN_USE:
-        return chrome::RESULT_CODE_PROFILE_IN_USE;
+    case ProcessSingleton::PROFILE_IN_USE:
+      return chrome::RESULT_CODE_PROFILE_IN_USE;
 
-      case ProcessSingleton::LOCK_ERROR:
-        LOG(ERROR) << "Failed to create a ProcessSingleton for your profile "
-                      "directory. This means that running multiple instances "
-                      "would start multiple browser processes rather than "
-                      "opening a new window in the existing process. Aborting "
-                      "now to avoid profile corruption.";
-        return chrome::RESULT_CODE_PROFILE_IN_USE;
+    case ProcessSingleton::LOCK_ERROR:
+      LOG(ERROR) << "Failed to create a ProcessSingleton for your profile "
+                    "directory. This means that running multiple instances "
+                    "would start multiple browser processes rather than "
+                    "opening a new window in the existing process. Aborting "
+                    "now to avoid profile corruption.";
+      return chrome::RESULT_CODE_PROFILE_IN_USE;
 
-      default:
-        NOTREACHED();
-    }
+    default:
+      NOTREACHED();
   }
 #endif  // !defined(OS_ANDROID)
 
