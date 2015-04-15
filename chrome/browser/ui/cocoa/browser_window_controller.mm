@@ -838,6 +838,19 @@ using content::WebContents;
   NSRect windowFrame = [window frame];
   NSRect workarea = [[window screen] visibleFrame];
 
+  // Prevent the window from growing smaller than its minimum height:
+  // http://crbug.com/230400 .
+  if (deltaH < 0) {
+    CGFloat minWindowHeight = [window minSize].height;
+    if (windowFrame.size.height + deltaH < minWindowHeight) {
+      // |deltaH| + |windowFrame.size.height| = |minWindowHeight|.
+      deltaH = minWindowHeight - windowFrame.size.height;
+    }
+    if (deltaH == 0) {
+      return NO;
+    }
+  }
+
   // If the window is not already fully in the workarea, do not adjust its frame
   // at all.
   if (!NSContainsRect(workarea, windowFrame))

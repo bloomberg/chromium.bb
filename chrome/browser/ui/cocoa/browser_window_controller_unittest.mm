@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,7 +124,7 @@ TEST_F(BrowserWindowControllerTest, TestNormal) {
   Browser* popup_browser(new Browser(
       Browser::CreateParams(Browser::TYPE_POPUP, profile(),
                             chrome::GetActiveDesktop())));
-  NSWindow *cocoaWindow = popup_browser->window()->GetNativeWindow();
+  NSWindow* cocoaWindow = popup_browser->window()->GetNativeWindow();
   BrowserWindowController* controller =
       static_cast<BrowserWindowController*>([cocoaWindow windowController]);
   ASSERT_TRUE([controller isKindOfClass:[BrowserWindowController class]]);
@@ -141,7 +141,7 @@ TEST_F(BrowserWindowControllerTest, TestSetBounds) {
                                chrome::GetActiveDesktop());
   params.initial_bounds = gfx::Rect(0, 0, 50, 50);
   Browser* browser = new Browser(params);
-  NSWindow *cocoaWindow = browser->window()->GetNativeWindow();
+  NSWindow* cocoaWindow = browser->window()->GetNativeWindow();
   BrowserWindowController* controller =
     static_cast<BrowserWindowController*>([cocoaWindow windowController]);
 
@@ -167,7 +167,7 @@ TEST_F(BrowserWindowControllerTest, TestSetBoundsPopup) {
                                chrome::GetActiveDesktop());
   params.initial_bounds = gfx::Rect(0, 0, 50, 50);
   Browser* browser = new Browser(params);
-  NSWindow *cocoaWindow = browser->window()->GetNativeWindow();
+  NSWindow* cocoaWindow = browser->window()->GetNativeWindow();
   BrowserWindowController* controller =
     static_cast<BrowserWindowController*>([cocoaWindow windowController]);
 
@@ -201,6 +201,28 @@ TEST_F(BrowserWindowControllerTest, BookmarkBarControllerIndirection) {
   [controller_ browserWindow]->BookmarkBarStateChanged(
       BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
   EXPECT_TRUE([controller_ isBookmarkBarVisible]);
+}
+
+TEST_F(BrowserWindowControllerTest, BookmarkBarToggleRespectMinWindowHeight) {
+  Browser::CreateParams params(Browser::TYPE_TABBED, profile(),
+                               chrome::GetActiveDesktop());
+  params.initial_bounds = gfx::Rect(0, 0, 50, 280);
+  Browser* browser = new Browser(params);
+  NSWindow* cocoaWindow = browser->window()->GetNativeWindow();
+  BrowserWindowController* controller =
+   static_cast<BrowserWindowController*>([cocoaWindow windowController]);
+  BrowserWindow* browser_window = [controller browserWindow];
+  gfx::Rect bounds = browser_window->GetBounds();
+  EXPECT_EQ(280, bounds.height());
+
+  // Try to set the bounds smaller than the minimum.
+  // Explicitly show the bar. Can't use chrome::ToggleBookmarkBarWhenVisible()
+  // because of the notification issues.
+  [controller adjustWindowHeightBy:-20];
+  bounds = browser_window->GetBounds();
+  EXPECT_EQ(272, bounds.height());
+
+  [controller close];
 }
 
 #if 0
@@ -311,7 +333,7 @@ TEST_F(BrowserWindowControllerTest, TestAdjustWindowHeight) {
   // height. It should change appropriately (and only downwards). Then get it to
   // shrink by the same amount; it should return to its original state.
   NSRect initialFrame = NSMakeRect(workarea.origin.x, workarea.origin.y + 100,
-                                   200, 200);
+                                   200, 280);
   [window setFrame:initialFrame display:YES];
   [controller_ resetWindowGrowthState];
   [controller_ adjustWindowHeightBy:40];
@@ -328,7 +350,7 @@ TEST_F(BrowserWindowControllerTest, TestAdjustWindowHeight) {
   // should still change, but it should not grow down below the work area; it
   // should instead move upwards. Then shrink it and make sure it goes back to
   // the way it was.
-  initialFrame = NSMakeRect(workarea.origin.x, workarea.origin.y, 200, 200);
+  initialFrame = NSMakeRect(workarea.origin.x, workarea.origin.y, 200, 280);
   [window setFrame:initialFrame display:YES];
   [controller_ resetWindowGrowthState];
   [controller_ adjustWindowHeightBy:40];
@@ -343,7 +365,7 @@ TEST_F(BrowserWindowControllerTest, TestAdjustWindowHeight) {
 
   // Put the window slightly offscreen and try again.  The height should not
   // change this time.
-  initialFrame = NSMakeRect(workarea.origin.x - 10, 0, 200, 200);
+  initialFrame = NSMakeRect(workarea.origin.x - 10, 0, 200, 280);
   [window setFrame:initialFrame display:YES];
   [controller_ resetWindowGrowthState];
   [controller_ adjustWindowHeightBy:40];
@@ -365,7 +387,7 @@ TEST_F(BrowserWindowControllerTest, TestAdjustWindowHeight) {
   // then continue to grow up. Then shrink it, and it should return to where it
   // was.
   initialFrame = NSMakeRect(workarea.origin.x, workarea.origin.y + 5,
-                            200, 200);
+                            200, 280);
   [window setFrame:initialFrame display:YES];
   [controller_ resetWindowGrowthState];
   [controller_ adjustWindowHeightBy:40];
@@ -394,7 +416,7 @@ TEST_F(BrowserWindowControllerTest, TestAdjustWindowHeight) {
   // Place the window at the bottom of the screen and grow; it should grow
   // upwards. Move the window off the bottom, then shrink. It should then shrink
   // from the bottom.
-  initialFrame = NSMakeRect(workarea.origin.x, workarea.origin.y, 200, 200);
+  initialFrame = NSMakeRect(workarea.origin.x, workarea.origin.y, 200, 280);
   [window setFrame:initialFrame display:YES];
   [controller_ resetWindowGrowthState];
   [controller_ adjustWindowHeightBy:40];
@@ -708,7 +730,7 @@ class BrowserWindowFullScreenControllerTest : public CocoaProfileTest {
 
 // Check if the window is front most or if one of its child windows (such
 // as a status bubble) is front most.
-static bool IsFrontWindow(NSWindow *window) {
+static bool IsFrontWindow(NSWindow* window) {
   NSWindow* frontmostWindow = [[NSApp orderedWindows] objectAtIndex:0];
   return [frontmostWindow isEqual:window] ||
          [[frontmostWindow parentWindow] isEqual:window];
