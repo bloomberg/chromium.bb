@@ -21,6 +21,12 @@ class _HRefParser(HTMLParser.HTMLParser):
           self.hrefs.append(value)
 
 
+def _AbsoluteUrlHasSaneScheme(absolute_url):
+  if len(absolute_url) < 4:
+    return False
+  return absolute_url[0:4] == 'http'
+
+
 def GenerateSafeUrls():
   """Prints a list of safe urls.
 
@@ -31,7 +37,7 @@ def GenerateSafeUrls():
   # A list of websites whose hrefs are unlikely to link to sites that contain
   # malware.
   seed_urls = [
-    "https://www.cnn.com",
+    "http://www.cnn.com",
     "https://www.youtube.com",
     "https://www.facebook.com",
     "https://www.twitter.com",
@@ -76,6 +82,8 @@ def GenerateSafeUrls():
         continue
 
       absolute_url = urlparse.urljoin(url, relative_url)
+      if not _AbsoluteUrlHasSaneScheme(absolute_url):
+        continue
       safe_urls.add(absolute_url)
 
   # Sort the urls, to make them easier to view in bulk.

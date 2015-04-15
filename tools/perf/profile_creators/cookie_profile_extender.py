@@ -5,13 +5,14 @@ import multiprocessing
 import os
 import sqlite3
 
+import page_sets
+
 from profile_creators import fast_navigation_profile_extender
 from profile_creators import profile_safe_url_list
 
 class CookieProfileExtender(
     fast_navigation_profile_extender.FastNavigationProfileExtender):
-  """This extender performs a large number of navigations (up to 500), with the
-  goal of filling out the cookie database.
+  """This extender fills in the cookie database.
 
   By default, Chrome purges the cookie DB down to 3300 cookies. However, it
   won't purge cookies accessed in the last month. This means the extender needs
@@ -28,9 +29,12 @@ class CookieProfileExtender(
 
     # A list of urls that have not yet been navigated to. This list will shrink
     # over time. Each navigation will add a diminishing number of new cookies,
-    # since there's a high probability that the cookie is already present. If
-    # the cookie DB isn't full by 500 navigations, just give up.
-    self._navigation_urls = profile_safe_url_list.GetShuffledSafeUrls()[0:500]
+    # since there's a high probability that the cookie is already present.
+    self._page_set = page_sets.ProfileSafeUrlsPageSet()
+    urls = []
+    for user_story in self._page_set.user_stories:
+      urls.append(user_story.url)
+    self._navigation_urls = urls
 
   def GetUrlIterator(self):
     """Superclass override."""
@@ -39,6 +43,14 @@ class CookieProfileExtender(
   def ShouldExitAfterBatchNavigation(self):
     """Superclass override."""
     return self._IsCookieDBFull()
+
+  def WebPageReplayArchivePath(self):
+    return self._page_set.WprFilePathForUserStory(
+        self._page_set.user_stories[0])
+
+  def FetchWebPageReplayArchives(self):
+    """Superclass override."""
+    self._page_set.wpr_archive_info.DownloadArchivesIfNeeded()
 
   @staticmethod
   def _CookieCountInDB(db_path):
