@@ -271,13 +271,12 @@ SpdySessionKey HttpStreamFactoryImpl::Job::GetSpdySessionKey() const {
   // In the case that we're using an HTTPS proxy for an HTTP url,
   // we look for a SPDY session *to* the proxy, instead of to the
   // origin server.
-  PrivacyMode privacy_mode = request_info_.privacy_mode;
   if (IsHttpsProxyAndHttpUrl()) {
     return SpdySessionKey(proxy_info_.proxy_server().host_port_pair(),
-                          ProxyServer::Direct(),
-                          privacy_mode);
+                          ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
   }
-  return SpdySessionKey(server_, proxy_info_.proxy_server(), privacy_mode);
+  return SpdySessionKey(server_, proxy_info_.proxy_server(),
+                        request_info_.privacy_mode);
 }
 
 bool HttpStreamFactoryImpl::Job::CanUseExistingSpdySession() const {
@@ -801,29 +800,32 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
     return rv;
   }
 
+  SpdySessionKey spdy_session_key = GetSpdySessionKey();
+
   // Check first if we have a spdy session for this group.  If so, then go
   // straight to using that.
-  SpdySessionKey spdy_session_key = GetSpdySessionKey();
-  base::WeakPtr<SpdySession> spdy_session =
-      session_->spdy_session_pool()->FindAvailableSession(
-          spdy_session_key, net_log_);
-  if (spdy_session && CanUseExistingSpdySession()) {
-    // If we're preconnecting, but we already have a SpdySession, we don't
-    // actually need to preconnect any sockets, so we're done.
-    if (IsPreconnecting())
+  if (CanUseExistingSpdySession()) {
+    base::WeakPtr<SpdySession> spdy_session =
+        session_->spdy_session_pool()->FindAvailableSession(spdy_session_key,
+                                                            net_log_);
+    if (spdy_session) {
+      // If we're preconnecting, but we already have a SpdySession, we don't
+      // actually need to preconnect any sockets, so we're done.
+      if (IsPreconnecting())
+        return OK;
+      using_spdy_ = true;
+      next_state_ = STATE_CREATE_STREAM;
+      existing_spdy_session_ = spdy_session;
       return OK;
-    using_spdy_ = true;
-    next_state_ = STATE_CREATE_STREAM;
-    existing_spdy_session_ = spdy_session;
-    return OK;
-  } else if (request_ && !request_->HasSpdySessionKey() && using_ssl_) {
+    }
+  }
+  if (request_ && !request_->HasSpdySessionKey() && using_ssl_) {
     // Update the spdy session key for the request that launched this job.
     request_->SetSpdySessionKey(spdy_session_key);
   }
 
   // OK, there's no available SPDY session. Let |waiting_job_| resume if it's
   // paused.
-
   if (waiting_job_) {
     waiting_job_->Resume(this);
     waiting_job_ = NULL;
@@ -868,10 +870,11 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
 
   // If we can't use a SPDY session, don't bother checking for one after
   // the hostname is resolved.
-  OnHostResolutionCallback resolution_callback = CanUseExistingSpdySession() ?
-      base::Bind(&Job::OnHostResolution, session_->spdy_session_pool(),
-                 GetSpdySessionKey()) :
-      OnHostResolutionCallback();
+  OnHostResolutionCallback resolution_callback =
+      CanUseExistingSpdySession()
+          ? base::Bind(&Job::OnHostResolution, session_->spdy_session_pool(),
+                       spdy_session_key)
+          : OnHostResolutionCallback();
   if (stream_factory_->for_websockets_) {
     // TODO(ricea): Re-enable NPN when WebSockets over SPDY is supported.
     SSLConfig websocket_server_ssl_config = server_ssl_config_;
@@ -1103,12 +1106,7 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
 
   CHECK(!stream_.get());
 
-  bool direct = true;
-  const ProxyServer& proxy_server = proxy_info_.proxy_server();
-  PrivacyMode privacy_mode = request_info_.privacy_mode;
-  if (IsHttpsProxyAndHttpUrl())
-    direct = false;
-
+  bool direct = !IsHttpsProxyAndHttpUrl();
   if (existing_spdy_session_.get()) {
     // We picked up an existing session, so we don't need our socket.
     if (connection_->socket())
@@ -1120,17 +1118,8 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
     return set_result;
   }
 
-  SpdySessionKey spdy_session_key(server_, proxy_server, privacy_mode);
-  if (IsHttpsProxyAndHttpUrl()) {
-    // If we don't have a direct SPDY session, and we're using an HTTPS
-    // proxy, then we might have a SPDY session to the proxy.
-    // We never use privacy mode for connection to proxy server.
-    spdy_session_key = SpdySessionKey(proxy_server.host_port_pair(),
-                                      ProxyServer::Direct(),
-                                      PRIVACY_MODE_DISABLED);
-  }
-
   SpdySessionPool* spdy_pool = session_->spdy_session_pool();
+  SpdySessionKey spdy_session_key = GetSpdySessionKey();
   base::WeakPtr<SpdySession> spdy_session =
       spdy_pool->FindAvailableSession(spdy_session_key, net_log_);
 
