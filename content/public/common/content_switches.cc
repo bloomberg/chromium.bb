@@ -512,6 +512,10 @@ const char kEnableWebGLImageChromium[] = "enable-webgl-image-chromium";
 // Enable rasterizer that writes directly to GPU memory associated with tiles.
 const char kEnableZeroCopy[]                = "enable-zero-copy";
 
+// Explicitly allows additional ports using a comma-separated list of port
+// numbers.
+const char kExplicitlyAllowedPorts[]        = "explicitly-allowed-ports";
+
 // Load NPAPI plugins from the specified directory.
 const char kExtraPluginDir[]                = "extra-plugin-dir";
 

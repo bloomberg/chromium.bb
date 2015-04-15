@@ -65,6 +65,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/common/content_switches.h"
 #include "extensions/common/switches.h"
 #include "net/base/net_util.h"
 

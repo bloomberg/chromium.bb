@@ -1135,6 +1135,12 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
     memory_observer_.reset(new MemoryObserver());
     message_loop()->AddTaskObserver(memory_observer_.get());
   }
+
+  if (command_line.HasSwitch(switches::kExplicitlyAllowedPorts)) {
+    std::string allowed_ports =
+        command_line.GetSwitchValueASCII(switches::kExplicitlyAllowedPorts);
+    net::SetExplicitlyAllowedPorts(allowed_ports);
+  }
 }
 
 void RenderThreadImpl::RegisterSchemes() {

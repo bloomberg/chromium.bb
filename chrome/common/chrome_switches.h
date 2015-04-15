@@ -174,7 +174,6 @@ extern const char kEnableWebAppFrame[];
 extern const char kEnableWebsiteSettingsManager[];
 extern const char kEnableWifiCredentialSync[];
 extern const char kEnhancedBookmarksExperiment[];
-extern const char kExplicitlyAllowedPorts[];
 extern const char kExtensionContentVerificationBootstrap[];
 extern const char kExtensionContentVerificationEnforceStrict[];
 extern const char kExtensionContentVerificationEnforce[];

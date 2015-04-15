@@ -120,4 +120,16 @@ TEST(BlinkPlatformTest, IsReservedIPAddress) {
   }
 }
 
+TEST(BlinkPlatformTest, portAllowed) {
+  TestBlinkPlatformImpl platform_impl;
+  EXPECT_TRUE(platform_impl.portAllowed(GURL("http://example.com")));
+  EXPECT_TRUE(platform_impl.portAllowed(GURL("file://example.com")));
+  EXPECT_TRUE(platform_impl.portAllowed(GURL("file://example.com:87")));
+  EXPECT_TRUE(platform_impl.portAllowed(GURL("ftp://example.com:21")));
+  EXPECT_FALSE(platform_impl.portAllowed(GURL("ftp://example.com:87")));
+  EXPECT_FALSE(platform_impl.portAllowed(GURL("ws://example.com:21")));
+  EXPECT_TRUE(platform_impl.portAllowed(GURL("http://example.com:80")));
+  EXPECT_TRUE(platform_impl.portAllowed(GURL("http://example.com:8889")));
+}
+
 }  // namespace content

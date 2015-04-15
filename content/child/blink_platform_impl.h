@@ -86,6 +86,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
       blink::WebString& charset);
   virtual blink::WebURLError cancelledError(const blink::WebURL& url) const;
   virtual bool isReservedIPAddress(const blink::WebString& host) const;
+  virtual bool portAllowed(const blink::WebURL& url) const;
   virtual blink::WebThread* createThread(const char* name);
   virtual blink::WebThread* currentThread();
   virtual void yieldCurrentThread();

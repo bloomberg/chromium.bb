@@ -505,6 +505,18 @@ bool BlinkPlatformImpl::isReservedIPAddress(
   return net::IsIPAddressReserved(address);
 }
 
+bool BlinkPlatformImpl::portAllowed(const blink::WebURL& url) const {
+  GURL gurl = GURL(url);
+  if (!gurl.has_port())
+    return true;
+  int port = gurl.IntPort();
+  if (net::IsPortAllowedByOverride(port))
+    return true;
+  if (gurl.SchemeIs("ftp"))
+    return net::IsPortAllowedByFtp(port);
+  return net::IsPortAllowedByDefault(port);
+}
+
 blink::WebThread* BlinkPlatformImpl::createThread(const char* name) {
   WebThreadImplForWorkerScheduler* thread =
       new WebThreadImplForWorkerScheduler(name);

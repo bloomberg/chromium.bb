@@ -593,10 +593,6 @@ const char kEnableWebsiteSettingsManager[]  = "enable-website-settings-manager";
 // Enables synchronizing WiFi credentials across devices, using Chrome Sync.
 const char kEnableWifiCredentialSync[]      = "enable-wifi-credential-sync";
 
-// Explicitly allows additional ports using a comma-separated list of port
-// numbers.
-const char kExplicitlyAllowedPorts[]        = "explicitly-allowed-ports";
-
 // Values for the kExtensionContentVerification flag.
 // See ContentVerifierDelegate::Mode for more explanation.
 const char kExtensionContentVerificationBootstrap[] = "bootstrap";
