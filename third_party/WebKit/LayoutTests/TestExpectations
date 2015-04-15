@@ -1024,8 +1024,8 @@ crbug.com/339778 crbug.com/412273 fast/dom/timer-throttling-hidden-page.html [ F
 
 crbug.com/356828 fast/dom/gc-dom-tree-lifetime.html [ Timeout Pass ]
 
-crbug.com/418070 [ Mac ] fast/text/atsui-multiple-renderers.html [ Failure ]
-crbug.com/418070 [ Mac ] virtual/slimmingpaint/fast/text/atsui-multiple-renderers.html [ Failure ]
+crbug.com/418070 [ Mac ] fast/text/atsui-multiple-renderers.html [ NeedsRebaseline ]
+crbug.com/418070 [ Mac ] virtual/slimmingpaint/fast/text/atsui-multiple-renderers.html [ NeedsRebaseline ]
 
 crbug.com/392046 [ Win ] fast/inline/justify-emphasis-inline-box.html [ Pass Failure ]
 
