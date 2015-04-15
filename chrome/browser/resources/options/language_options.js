@@ -274,9 +274,9 @@ cr.define('options', function() {
       // on the selected language. Note that we only have less than 100
       // input methods, so creating DOM nodes at once here should be ok.
       this.appendInputMethodElement_(loadTimeData.getValue('inputMethodList'));
-      this.appendInputMethodElement_(loadTimeData.getValue('extensionImeList'));
       this.appendComponentExtensionIme_(
           loadTimeData.getValue('componentExtensionImeList'));
+      this.appendInputMethodElement_(loadTimeData.getValue('extensionImeList'));
 
       // Listen to pref change once the input method list is initialized.
       Preferences.getInstance().addEventListener(
