@@ -822,12 +822,6 @@ static inline void layoutFromRootObject(LayoutObject& root)
 
 void FrameView::prepareAnalyzer()
 {
-    bool isTracing = false;
-    TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink.debug.layout"), &isTracing);
-    if (LIKELY(!isTracing)) {
-        m_analyzer.clear();
-        return;
-    }
     if (!m_analyzer.get())
         m_analyzer = adoptPtr(new LayoutAnalyzer());
     m_analyzer->reset();
@@ -835,7 +829,7 @@ void FrameView::prepareAnalyzer()
 
 PassRefPtr<TracedValue> FrameView::analyzerCounters()
 {
-    RefPtr<TracedValue> value = layoutAnalyzer() ? layoutAnalyzer()->toTracedValue() : TracedValue::create();
+    RefPtr<TracedValue> value = layoutAnalyzer()->toTracedValue();
     value->setString("host", layoutView()->document().location()->host());
     return value;
 }
@@ -863,8 +857,7 @@ void FrameView::performLayout(bool inSubtreeLayout)
     forceLayoutParentViewIfNeeded();
 
     if (inSubtreeLayout) {
-        if (layoutAnalyzer())
-            layoutAnalyzer()->increment(LayoutAnalyzer::PerformLayoutRootLayoutObjects, m_layoutSubtreeRoots.size());
+        layoutAnalyzer()->increment(LayoutAnalyzer::PerformLayoutRootLayoutObjects, m_layoutSubtreeRoots.size());
         while (m_layoutSubtreeRoots.size()) {
             LayoutObject& root = *m_layoutSubtreeRoots.takeAny();
             if (!root.needsLayout())

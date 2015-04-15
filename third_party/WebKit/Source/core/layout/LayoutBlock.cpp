@@ -1621,9 +1621,7 @@ bool LayoutBlock::simplifiedLayout()
 
     clearNeedsLayout();
 
-    LayoutAnalyzer* analyzer = frameView()->layoutAnalyzer();
-    if (UNLIKELY(analyzer != nullptr))
-        analyzer->increment(LayoutAnalyzer::LayoutObjectsThatNeedSimplifiedLayout);
+    frameView()->layoutAnalyzer()->increment(LayoutAnalyzer::LayoutObjectsThatNeedSimplifiedLayout);
 
     return true;
 }
