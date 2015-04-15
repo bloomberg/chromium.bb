@@ -119,6 +119,7 @@ NotificationDatabase::Status NotificationDatabase::Open(
   options.create_if_missing = create_if_missing;
   options.paranoid_checks = true;
   options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
+  options.filter_policy = filter_policy_.get();
   if (IsInMemoryDatabase()) {
     env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
     options.env = env_.get();
