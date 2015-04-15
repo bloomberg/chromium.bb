@@ -129,7 +129,7 @@ def container_context(union_type, interfaces_info):
 
 
 def member_context(member, interfaces_info):
-    cpp_includes.update(member.includes_for_type)
+    cpp_includes.update(member.includes_for_type())
     interface_info = interfaces_info.get(member.name, None)
     if interface_info:
         cpp_includes.update(interface_info.get('dependencies_include_paths', []))

@@ -12,6 +12,7 @@
 #include "bindings/core/v8/UnionTypesCore.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
+#include "bindings/core/v8/V8TestDictionary.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"

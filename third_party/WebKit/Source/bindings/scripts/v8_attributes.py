@@ -49,7 +49,7 @@ def attribute_context(interface, attribute):
     base_idl_type = idl_type.base_type
     extended_attributes = attribute.extended_attributes
 
-    idl_type.add_includes_for_type()
+    idl_type.add_includes_for_type(extended_attributes)
     if idl_type.enum_values:
         includes.add('core/inspector/ConsoleMessage.h')
 

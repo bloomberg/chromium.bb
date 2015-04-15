@@ -70,7 +70,9 @@ def method_context(interface, method, is_visible=True):
     is_static = method.is_static
     name = method.name
 
-    idl_type.add_includes_for_type()
+    if is_visible:
+        idl_type.add_includes_for_type(extended_attributes)
+
     this_cpp_value = cpp_value(interface, method, len(arguments))
 
     def function_template():
@@ -119,7 +121,7 @@ def method_context(interface, method, is_visible=True):
 
     return {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
-        'arguments': [argument_context(interface, method, argument, index)
+        'arguments': [argument_context(interface, method, argument, index, is_visible=is_visible)
                       for index, argument in enumerate(arguments)],
         'argument_declarations_for_private_script':
             argument_declarations_for_private_script(interface, method),
@@ -195,9 +197,11 @@ def method_context(interface, method, is_visible=True):
     }
 
 
-def argument_context(interface, method, argument, index):
+def argument_context(interface, method, argument, index, is_visible=True):
     extended_attributes = argument.extended_attributes
     idl_type = argument.idl_type
+    if is_visible:
+        idl_type.add_includes_for_type(extended_attributes)
     this_cpp_value = cpp_value(interface, method, index)
     is_variadic_wrapper_type = argument.is_variadic and idl_type.is_wrapper_type
 

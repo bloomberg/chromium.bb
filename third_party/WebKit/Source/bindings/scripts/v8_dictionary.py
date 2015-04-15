@@ -76,8 +76,9 @@ def dictionary_context(dictionary, interfaces_info):
 
 
 def member_context(dictionary, member):
+    extended_attributes = member.extended_attributes
     idl_type = member.idl_type
-    idl_type.add_includes_for_type()
+    idl_type.add_includes_for_type(extended_attributes)
     unwrapped_idl_type = unwrap_nullable_if_needed(idl_type)
 
     if member.is_required and member.default_value:
@@ -106,7 +107,7 @@ def member_context(dictionary, member):
         'cpp_value_to_v8_value': unwrapped_idl_type.cpp_value_to_v8_value(
             cpp_value='impl.%s()' % cpp_name, isolate='isolate',
             creation_context='creationContext',
-            extended_attributes=member.extended_attributes),
+            extended_attributes=extended_attributes),
         'deprecate_as': v8_utilities.deprecate_as(member),
         'enum_type': idl_type.enum_type,
         'enum_values': unwrapped_idl_type.enum_values,
@@ -121,7 +122,7 @@ def member_context(dictionary, member):
         'null_setter_name': null_setter_name_for_dictionary_member(member),
         'v8_default_value': v8_default_value,
         'v8_value_to_local_cpp_value': unwrapped_idl_type.v8_value_to_local_cpp_value(
-            member.extended_attributes, member.name + 'Value',
+            extended_attributes, member.name + 'Value',
             member.name, isolate='isolate', use_exception_state=True),
     }
 

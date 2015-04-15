@@ -16,7 +16,6 @@
 #include "bindings/core/v8/UnionTypesCore.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
-#include "bindings/core/v8/V8Document.h"
 #include "bindings/core/v8/V8EventListenerList.h"
 #include "bindings/core/v8/V8Iterator.h"
 #include "bindings/core/v8/V8Node.h"

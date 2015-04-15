@@ -366,8 +366,9 @@ INCLUDES_FOR_TYPE = {
 }
 
 
-def includes_for_type(idl_type):
+def includes_for_type(idl_type, extended_attributes=None):
     idl_type = idl_type.preprocessed_type
+    extended_attributes = extended_attributes or {}
 
     # Simple types
     base_idl_type = idl_type.base_type
@@ -390,22 +391,30 @@ def includes_for_type(idl_type):
     return set(['bindings/%s/v8/V8%s.h' % (component_dir[base_idl_type],
                                            base_idl_type)])
 
-IdlType.includes_for_type = property(includes_for_type)
-IdlUnionType.includes_for_type = property(
-    lambda self: set.union(*[member_type.includes_for_type
-                             for member_type in self.member_types]))
-IdlArrayOrSequenceType.includes_for_type = property(
-    lambda self: self.element_type.includes_for_type)
+IdlType.includes_for_type = includes_for_type
 
 
-def add_includes_for_type(idl_type):
-    includes.update(idl_type.includes_for_type)
+def includes_for_union_type(idl_type, extended_attributes=None):
+    return set.union(*[member_type.includes_for_type(extended_attributes)
+                       for member_type in idl_type.member_types])
+
+IdlUnionType.includes_for_type = includes_for_union_type
+
+
+def includes_for_array_or_sequence_type(idl_type, extended_attributes=None):
+    return idl_type.element_type.includes_for_type(extended_attributes)
+
+IdlArrayOrSequenceType.includes_for_type = includes_for_array_or_sequence_type
+
+
+def add_includes_for_type(idl_type, extended_attributes=None):
+    includes.update(idl_type.includes_for_type(extended_attributes))
 
 IdlTypeBase.add_includes_for_type = add_includes_for_type
 
 
 def includes_for_interface(interface_name):
-    return IdlType(interface_name).includes_for_type
+    return IdlType(interface_name).includes_for_type()
 
 
 def add_includes_for_interface(interface_name):
@@ -539,7 +548,6 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
 
     # Simple types
     idl_type = idl_type.preprocessed_type
-    add_includes_for_type(idl_type)
     base_idl_type = idl_type.as_union_type.name if idl_type.is_union_type else idl_type.base_type
 
     if idl_type.is_integer_type:
@@ -582,7 +590,6 @@ def v8_value_to_cpp_value_array_or_sequence(native_array_element_type, v8_value,
         this_cpp_type = None
         ref_ptr_type = cpp_ptr_type('RefPtr', 'Member', native_array_element_type.gc_type)
         expression_format = '(to{ref_ptr_type}NativeArray<{native_array_element_type}, V8{native_array_element_type}>({v8_value}, {index}, {isolate}, exceptionState))'
-        add_includes_for_type(native_array_element_type)
     else:
         ref_ptr_type = None
         this_cpp_type = native_array_element_type.cpp_type
@@ -729,8 +736,6 @@ def v8_conversion_type(idl_type, extended_attributes):
     # Array or sequence types
     native_array_element_type = idl_type.native_array_element_type
     if native_array_element_type:
-        if native_array_element_type.is_interface_type:
-            add_includes_for_type(native_array_element_type)
         return 'array'
 
     # Simple types
@@ -758,7 +763,6 @@ def v8_conversion_type(idl_type, extended_attributes):
         return 'Dictionary'
 
     # Data type with potential additional includes
-    add_includes_for_type(idl_type)
     if base_idl_type in V8_SET_RETURN_VALUE:  # Special v8SetReturnValue treatment
         return base_idl_type
 

@@ -1252,8 +1252,9 @@ def property_getter(getter, cpp_arguments):
             return 'result.isEmpty()'
         return ''
 
-    idl_type = getter.idl_type
     extended_attributes = getter.extended_attributes
+    idl_type = getter.idl_type
+    idl_type.add_includes_for_type(extended_attributes)
     is_call_with_script_state = v8_utilities.has_extended_attribute_value(getter, 'CallWith', 'ScriptState')
     is_raises_exception = 'RaisesException' in extended_attributes
     use_output_parameter_for_result = idl_type.use_output_parameter_for_result
@@ -1296,8 +1297,9 @@ def property_setter(setter, interface):
     if not setter:
         return None
 
-    idl_type = setter.arguments[1].idl_type
     extended_attributes = setter.extended_attributes
+    idl_type = setter.arguments[1].idl_type
+    idl_type.add_includes_for_type(extended_attributes)
     is_call_with_script_state = v8_utilities.has_extended_attribute_value(setter, 'CallWith', 'ScriptState')
     is_raises_exception = 'RaisesException' in extended_attributes
 
@@ -1325,8 +1327,8 @@ def property_deleter(deleter):
     if not deleter:
         return None
 
-    idl_type = deleter.idl_type
     extended_attributes = deleter.extended_attributes
+    idl_type = deleter.idl_type
     is_call_with_script_state = v8_utilities.has_extended_attribute_value(deleter, 'CallWith', 'ScriptState')
     return {
         'is_call_with_script_state': is_call_with_script_state,
