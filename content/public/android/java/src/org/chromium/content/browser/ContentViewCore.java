@@ -1454,10 +1454,6 @@ public class ContentViewCore
     private void hidePopupsAndClearSelection() {
         mUnselectAllOnActionModeDismiss = true;
         hidePopups();
-        // Clear the selection. The selection is cleared on destroying IME
-        // and also here since we may receive destroy first, for example
-        // when focus is lost in webview.
-        clearUserSelection();
     }
 
     private void hidePopupsAndPreserveSelection() {
@@ -1681,6 +1677,10 @@ public class ContentViewCore
                 hidePopupsAndPreserveSelection();
             } else {
                 hidePopupsAndClearSelection();
+                // Clear the selection. The selection is cleared on destroying IME
+                // and also here since we may receive destroy first, for example
+                // when focus is lost in webview.
+                clearUserSelection();
             }
         }
         if (mNativeContentViewCore != 0) nativeSetFocus(mNativeContentViewCore, gainFocus);
