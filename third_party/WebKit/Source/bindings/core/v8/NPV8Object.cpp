@@ -474,8 +474,8 @@ bool _NPN_HasProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName)
         ScriptState::Scope scope(scriptState);
         ExceptionCatcher exceptionCatcher;
 
-        v8::Local<v8::Object> obj = v8::Local<v8::Object>::New(isolate, object->v8Object);
-        return obj->Has(npIdentifierToV8Identifier(isolate, propertyName));
+        v8::Local<v8::Object> obj = v8::Local<v8::Object>::New(scriptState->isolate(), object->v8Object);
+        return v8CallBoolean(obj->Has(scriptState->context(), npIdentifierToV8Identifier(scriptState->isolate(), propertyName)));
     }
 
     if (npObject->_class->hasProperty)
