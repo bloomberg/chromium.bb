@@ -515,7 +515,7 @@ public:
 };
 
 template<typename FunctionType, typename... A>
-PassOwnPtr<Function<typename FunctionWrapper<FunctionType>::ResultType()>> bind(FunctionType function, const A... args)
+PassOwnPtr<Function<typename FunctionWrapper<FunctionType>::ResultType()>> bind(FunctionType function, const A&... args)
 {
     return adoptPtr(new Function<typename FunctionWrapper<FunctionType>::ResultType()>(adoptRef(new BoundFunctionImpl<FunctionWrapper<FunctionType>, typename FunctionWrapper<FunctionType>::ResultType (A...)>(FunctionWrapper<FunctionType>(function), args...))));
 }

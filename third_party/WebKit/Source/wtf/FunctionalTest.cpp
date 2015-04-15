@@ -32,6 +32,61 @@
 
 namespace {
 
+class UnwrappedClass {
+public:
+    explicit UnwrappedClass(int value)
+        : m_value(value)
+    {
+    }
+
+    int value() const { return m_value; }
+
+private:
+    int m_value;
+};
+
+class WrappedClass {
+public:
+    explicit WrappedClass(int value)
+        : m_value(value)
+    {
+    }
+
+    UnwrappedClass unwrap() const { return UnwrappedClass(m_value); }
+
+private:
+    int m_value;
+};
+
+// This class must be wrapped in bind() and unwrapped in closure execution.
+class ClassToBeWrapped {
+    WTF_MAKE_NONCOPYABLE(ClassToBeWrapped);
+public:
+    explicit ClassToBeWrapped(int value)
+        : m_value(value)
+    {
+    }
+
+    WrappedClass wrap() const { return WrappedClass(m_value); }
+
+private:
+    int m_value;
+};
+
+} // namespace
+
+namespace WTF {
+
+template<> struct ParamStorageTraits<ClassToBeWrapped> {
+    using StorageType = WrappedClass;
+    static StorageType wrap(const ClassToBeWrapped& value) { return value.wrap(); }
+    static UnwrappedClass unwrap(const StorageType& value) { return value.unwrap(); }
+};
+
+} // namespace WTF
+
+namespace {
+
 static int returnFortyTwo()
 {
     return 42;
@@ -242,6 +297,23 @@ TEST(FunctionalTest, RefCountedStorage)
     OwnPtr<Function<int()>> multiplySixByTwoFunction = bind(multiplyNumberByTwo, six.release());
     EXPECT_FALSE(six);
     EXPECT_EQ(12, (*multiplySixByTwoFunction)());
+}
+
+int processUnwrappedClass(const UnwrappedClass& u, int v)
+{
+    return u.value() * v;
+}
+
+// Tests that:
+// - ParamStorageTraits's wrap()/unwrap() are called, and
+// - bind()'s arguments are passed as references to ParamStorageTraits::wrap()
+//   with no additional copies.
+// This test would fail in compile if something is wrong,
+// rather than in runtime.
+TEST(FunctionalTest, WrapUnwrap)
+{
+    OwnPtr<Function<int()>> function = bind(processUnwrappedClass, ClassToBeWrapped(3), 7);
+    EXPECT_EQ(21, (*function)());
 }
 
 } // namespace
