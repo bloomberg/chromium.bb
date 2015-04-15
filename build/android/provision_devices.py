@@ -232,14 +232,7 @@ def _PushAndLaunchAdbReboot(device, target):
   """
   logging.info('Will push and launch adb_reboot on %s' % str(device))
   # Kill if adb_reboot is already running.
-  try:
-    # Don't try to kill adb_reboot more than once. We don't expect it to be
-    # running at all.
-    device.KillAll('adb_reboot', blocking=True, timeout=2, retries=0)
-  except device_errors.CommandFailedError:
-    # We can safely ignore the exception because we don't expect adb_reboot
-    # to be running.
-    pass
+  device.KillAll('adb_reboot', blocking=True, timeout=2, quiet=True)
   # Push adb_reboot
   logging.info('  Pushing adb_reboot ...')
   adb_reboot = os.path.join(constants.DIR_SOURCE_ROOT,

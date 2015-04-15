@@ -25,6 +25,7 @@ import zipfile
 import pylib.android_commands
 from pylib import cmd_helper
 from pylib import constants
+from pylib import device_signal
 from pylib.device import adb_wrapper
 from pylib.device import decorators
 from pylib.device import device_blacklist
@@ -575,37 +576,46 @@ class DeviceUtils(object):
       return output
 
   @decorators.WithTimeoutAndRetriesFromInstance()
-  def KillAll(self, process_name, signum=9, as_root=False, blocking=False,
-              timeout=None, retries=None):
+  def KillAll(self, process_name, signum=device_signal.SIGKILL, as_root=False,
+              blocking=False, quiet=False, timeout=None, retries=None):
     """Kill all processes with the given name on the device.
 
     Args:
       process_name: A string containing the name of the process to kill.
       signum: An integer containing the signal number to send to kill. Defaults
-              to 9 (SIGKILL).
+              to SIGKILL (9).
       as_root: A boolean indicating whether the kill should be executed with
                root privileges.
       blocking: A boolean indicating whether we should wait until all processes
                 with the given |process_name| are dead.
+      quiet: A boolean indicating whether to ignore the fact that no processes
+             to kill were found.
       timeout: timeout in seconds
       retries: number of retries
 
+    Returns:
+      The number of processes attempted to kill.
+
     Raises:
-      CommandFailedError if no process was killed.
+      CommandFailedError if no process was killed and |quiet| is False.
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    pids = self._GetPidsImpl(process_name)
+    pids = self.GetPids(process_name)
     if not pids:
-      raise device_errors.CommandFailedError(
-          'No process "%s"' % process_name, str(self))
+      if quiet:
+        return 0
+      else:
+        raise device_errors.CommandFailedError(
+            'No process "%s"' % process_name, str(self))
 
     cmd = ['kill', '-%d' % signum] + pids.values()
     self.RunShellCommand(cmd, as_root=as_root, check_return=True)
 
     if blocking:
+      # TODO(perezu): use timeout_retry.WaitFor
       wait_period = 0.1
-      while self._GetPidsImpl(process_name):
+      while self.GetPids(process_name):
         time.sleep(wait_period)
 
     return len(pids)
@@ -1355,9 +1365,6 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    return self._GetPidsImpl(process_name)
-
-  def _GetPidsImpl(self, process_name):
     procs_pids = {}
     for line in self.RunShellCommand('ps', check_return=True):
       try:

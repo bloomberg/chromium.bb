@@ -112,12 +112,7 @@ class _ExeDelegate(object):
     return output
 
   def Clear(self, device):
-    try:
-      device.KillAll(self._exe_file_name, blocking=True, timeout=30, retries=0)
-    except device_errors.CommandFailedError:
-      # Raised if there is no process with the given name, which in this case
-      # is all we care about.
-      pass
+    device.KillAll(self._exe_file_name, blocking=True, timeout=30, quiet=True)
 
 
 class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):

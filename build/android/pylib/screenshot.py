@@ -4,11 +4,11 @@
 
 import logging
 import os
-import signal
 import tempfile
 import time
 
 from pylib import cmd_helper
+from pylib import device_signal
 from pylib.device import device_errors
 
 # TODO(jbudorick) Remove once telemetry gets switched over.
@@ -74,9 +74,8 @@ class VideoRecorder(object):
     self._is_started = False
     if not self._recorder:
       return
-    try:
-      self._device.KillAll('screenrecord', signum=signal.SIGINT)
-    except device_errors.CommandFailedError:
+    if not self._device.KillAll('screenrecord', signum=device_signal.SIGINT,
+                                quiet=True):
       logging.warning('Nothing to kill: screenrecord was not running')
     self._recorder.wait()
 

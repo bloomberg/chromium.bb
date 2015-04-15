@@ -16,13 +16,13 @@ import datetime
 import logging
 import os
 import re
-import signal
 import sys
 import unittest
 
 from pylib import android_commands
 from pylib import cmd_helper
 from pylib import constants
+from pylib import device_signal
 from pylib.device import adb_wrapper
 from pylib.device import device_errors
 from pylib.device import device_utils
@@ -641,40 +641,34 @@ class DeviceUtilsGetDevicePieWrapper(DeviceUtilsTest):
 @mock.patch('time.sleep', mock.Mock())
 class DeviceUtilsKillAllTest(DeviceUtilsTest):
 
-  def testKillAll_noMatchingProcesses(self):
-    with self.assertCall(self.call.adb.Shell('ps'),
-        'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\n'):
+  def testKillAll_noMatchingProcessesFailure(self):
+    with self.assertCall(self.call.device.GetPids('test_process'), {}):
       with self.assertRaises(device_errors.CommandFailedError):
         self.device.KillAll('test_process')
 
+  def testKillAll_noMatchingProcessesQuiet(self):
+    with self.assertCall(self.call.device.GetPids('test_process'), {}):
+      self.assertEqual(0, self.device.KillAll('test_process', quiet=True))
+
   def testKillAll_nonblocking(self):
     with self.assertCalls(
-        (self.call.adb.Shell('ps'),
-         'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\n'
-         'u0_a1  1234  174   123456 54321 ffffffff 456789ab some.process\n'),
+        (self.call.device.GetPids('some.process'), {'some.process': '1234'}),
         (self.call.adb.Shell('kill -9 1234'), '')):
       self.assertEquals(1,
           self.device.KillAll('some.process', blocking=False))
 
   def testKillAll_blocking(self):
     with self.assertCalls(
-        (self.call.adb.Shell('ps'),
-         'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\n'
-         'u0_a1  1234  174   123456 54321 ffffffff 456789ab some.process\n'),
+        (self.call.device.GetPids('some.process'), {'some.process': '1234'}),
         (self.call.adb.Shell('kill -9 1234'), ''),
-        (self.call.adb.Shell('ps'),
-         'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\n'
-         'u0_a1  1234  174   123456 54321 ffffffff 456789ab some.process\n'),
-        (self.call.adb.Shell('ps'),
-         'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\n')):
+        (self.call.device.GetPids('some.process'), {'some.process': '1234'}),
+        (self.call.device.GetPids('some.process'), {})):
       self.assertEquals(1,
           self.device.KillAll('some.process', blocking=True))
 
   def testKillAll_root(self):
     with self.assertCalls(
-        (self.call.adb.Shell('ps'),
-         'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\n'
-         'u0_a1  1234  174   123456 54321 ffffffff 456789ab some.process\n'),
+        (self.call.device.GetPids('some.process'), {'some.process': '1234'}),
         (self.call.device.NeedsSU(), True),
         (self.call.adb.Shell("su -c sh -c 'kill -9 1234'"), '')):
       self.assertEquals(1,
@@ -682,12 +676,10 @@ class DeviceUtilsKillAllTest(DeviceUtilsTest):
 
   def testKillAll_sigterm(self):
     with self.assertCalls(
-        (self.call.adb.Shell('ps'),
-         'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\n'
-         'u0_a1  1234  174   123456 54321 ffffffff 456789ab some.process\n'),
+        (self.call.device.GetPids('some.process'), {'some.process': '1234'}),
         (self.call.adb.Shell('kill -15 1234'), '')):
       self.assertEquals(1,
-          self.device.KillAll('some.process', signum=signal.SIGTERM))
+          self.device.KillAll('some.process', signum=device_signal.SIGTERM))
 
 
 class DeviceUtilsStartActivityTest(DeviceUtilsTest):
