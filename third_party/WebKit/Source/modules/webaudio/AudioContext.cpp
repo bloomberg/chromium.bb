@@ -783,8 +783,15 @@ ScriptPromise AudioContext::suspendContext(ScriptState* scriptState)
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    // Save the resolver which will get resolved at the end of the rendering quantum.
+    // Save the resolver.  If the context is running, it will get resolved at the end of a rendering
+    // quantum.  Otherwise, resolve it now.
     m_suspendResolvers.append(resolver);
+
+    if (m_contextState != Running) {
+        // Context is not running so we can't wait for a rendering quantum to resolve the
+        // promise. Just resolve it now (along with any other pending suspend promises).
+        resolvePromisesForSuspendOnMainThread();
+    }
 
     return promise;
 }
