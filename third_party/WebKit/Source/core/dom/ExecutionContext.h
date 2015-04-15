@@ -178,6 +178,7 @@ private:
     int m_windowInteractionTokens;
 
     Deque<OwnPtr<SuspendableTask>> m_suspendedTasks;
+    bool m_isRunSuspendableTasksScheduled;
 };
 
 } // namespace blink

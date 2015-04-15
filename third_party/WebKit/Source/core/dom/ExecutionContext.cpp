@@ -73,6 +73,7 @@ ExecutionContext::ExecutionContext()
     , m_activeDOMObjectsAreStopped(false)
     , m_strictMixedContentCheckingEnforced(false)
     , m_windowInteractionTokens(0)
+    , m_isRunSuspendableTasksScheduled(false)
 {
 }
 
@@ -127,6 +128,9 @@ void ExecutionContext::resumeScheduledTasks()
     resumeActiveDOMObjects();
     tasksWereResumed();
     // We need finish stack unwiding before running next task because it can suspend this context.
+    if (m_isRunSuspendableTasksScheduled)
+        return;
+    m_isRunSuspendableTasksScheduled = true;
     postTask(FROM_HERE, createSameThreadTask(&ExecutionContext::runSuspendableTasks, this));
 }
 
@@ -186,6 +190,7 @@ bool ExecutionContext::dispatchErrorEvent(PassRefPtrWillBeRawPtr<ErrorEvent> eve
 
 void ExecutionContext::runSuspendableTasks()
 {
+    m_isRunSuspendableTasksScheduled = false;
     while (!m_activeDOMObjectsAreSuspended && m_suspendedTasks.size()) {
         OwnPtr<SuspendableTask> task = m_suspendedTasks.takeFirst();
         task->run();
