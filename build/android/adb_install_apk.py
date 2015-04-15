@@ -10,8 +10,9 @@ import optparse
 import os
 import sys
 
-from pylib import android_commands
 from pylib import constants
+from pylib.device import adb_wrapper
+from pylib.device import device_filter
 from pylib.device import device_utils
 
 
@@ -71,10 +72,11 @@ def main(argv):
   constants.SetBuildType(options.build_type)
   ValidateInstallAPKOption(parser, options, args)
 
-  devices = android_commands.GetAttachedDevices()
+  devices = adb_wrapper.AdbWrapper.Devices(
+      filters=device_filter.DefaultFilters())
 
   if options.device:
-    if options.device not in devices:
+    if options.device not in [d.GetDeviceSerial() for d in devices]:
       raise Exception('Error: %s not in attached devices %s' % (options.device,
                       ','.join(devices)))
     devices = [options.device]

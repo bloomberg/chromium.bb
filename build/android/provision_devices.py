@@ -19,12 +19,13 @@ import subprocess
 import sys
 import time
 
-from pylib import android_commands
 from pylib import constants
 from pylib import device_settings
+from pylib.device import adb_wrapper
 from pylib.device import battery_utils
 from pylib.device import device_blacklist
 from pylib.device import device_errors
+from pylib.device import device_filter
 from pylib.device import device_utils
 from pylib.utils import run_tests_helper
 from pylib.utils import timeout_retry
@@ -54,7 +55,8 @@ def ProvisionDevices(options):
   if options.device is not None:
     devices = [options.device]
   else:
-    devices = android_commands.GetAttachedDevices()
+    devices = adb_wrapper.AdbWrapper.Devices(
+        filters=device_filter.DefaultFilters())
 
   parallel_devices = device_utils.DeviceUtils.parallel(devices)
   parallel_devices.pMap(ProvisionDevice, options)
@@ -196,7 +198,8 @@ def _ConfigureLocalProperties(device, java_debug=True):
       'ro.setupwizard.mode=DISABLED',
       ]
   if java_debug:
-    local_props.append('%s=all' % android_commands.JAVA_ASSERT_PROPERTY)
+    local_props.append(
+        '%s=all' % device_utils.DeviceUtils.JAVA_ASSERT_PROPERTY)
     local_props.append('debug.checkjni=1')
   try:
     device.WriteFile(

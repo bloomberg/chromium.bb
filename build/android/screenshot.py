@@ -11,8 +11,9 @@ import optparse
 import os
 import sys
 
-from pylib import android_commands
 from pylib import screenshot
+from pylib.device import adb_wrapper
+from pylib.device import device_filter
 from pylib.device import device_utils
 
 def _PrintMessage(heading, eol='\n'):
@@ -69,7 +70,8 @@ def main():
   if options.verbose:
     logging.getLogger().setLevel(logging.DEBUG)
 
-  devices = android_commands.GetAttachedDevices()
+  devices = adb_wrapper.AdbWrapper.Devices(
+      filters=device_filter.DefaultFilters())
 
   if not options.device and len(devices) > 1:
     parser.error('Multiple devices are attached. '
