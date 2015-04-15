@@ -402,6 +402,8 @@ cr.define('extensions', function() {
      *     overlay.
      * @param {string} extensionUrl The URL of the extension, in the form
      *     "chrome-extension://<extension_id>".
+     * TODO(dbeam): add URL externs and re-enable typechecking in this method.
+     * @suppress {missingProperties}
      */
     setErrorAndShowOverlay: function(error, extensionUrl) {
       this.error_ = error;
