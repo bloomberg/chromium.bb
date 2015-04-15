@@ -52,4 +52,13 @@ source_set("test_support") {
     "//third_party/mojo/src/mojo/public/cpp/system",
     "//testing/gtest",
   ]
+
+  # TODO(msw): Any apptest target should build mojo shell; see crbug.com/477104.
+  data_deps = []
+  if (is_android) {
+    data_deps += [ "//mojo/android" ]
+  }
+  if (!is_component_build) {
+    data_deps += [ "//mojo/shell:mojo_shell" ]
+  }
 }
