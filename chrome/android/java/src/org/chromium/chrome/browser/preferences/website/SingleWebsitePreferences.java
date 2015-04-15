@@ -54,6 +54,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
     // Website permissions (if adding new, see hasPermissionsPreferences and resetSite below):
     public static final String PREF_COOKIES_PERMISSION = "cookies_permission_list";
     public static final String PREF_FULLSCREEN_PERMISSION = "fullscreen_permission_list";
+    public static final String PREF_IMAGES_PERMISSION = "images_permission_list";
     public static final String PREF_JAVASCRIPT_PERMISSION = "javascript_permission_list";
     public static final String PREF_LOCATION_ACCESS = "location_access_list";
     public static final String PREF_MIDI_SYSEX_PERMISSION = "midi_sysex_permission_list";
@@ -70,6 +71,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
     private static final String[] PERMISSION_PREFERENCE_KEYS = {
         PREF_COOKIES_PERMISSION,
         PREF_FULLSCREEN_PERMISSION,
+        PREF_IMAGES_PERMISSION,
         PREF_JAVASCRIPT_PERMISSION,
         PREF_LOCATION_ACCESS,
         PREF_MIDI_SYSEX_PERMISSION,
@@ -217,8 +219,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 // supports reading the origin or host.
                 // TODO(mvanouwerkerk): Merge in PopupExceptionInfo? It uses a pattern, and is never
                 // set on Android.
-                // TODO(mvanouwerkerk): Merge in JavaScriptExceptionInfo? It uses a pattern, and is
-                // never set on Android.
+                // TODO(mvanouwerkerk): Merge in JavaScriptExceptionInfo? It uses a pattern.
+                // TODO(mvanouwerkerk): Merge in ImagesExceptionInfo? It uses a pattern.
             }
         }
         return merged;
@@ -261,6 +263,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 setUpListPreference(preference, mSite.getCookiePermission());
             } else if (PREF_FULLSCREEN_PERMISSION.equals(preference.getKey())) {
                 setUpListPreference(preference, mSite.getFullscreenPermission());
+            } else if (PREF_IMAGES_PERMISSION.equals(preference.getKey())) {
+                setUpListPreference(preference, mSite.getImagesPermission());
             } else if (PREF_JAVASCRIPT_PERMISSION.equals(preference.getKey())) {
                 setUpListPreference(preference, mSite.getJavaScriptPermission());
             } else if (PREF_LOCATION_ACCESS.equals(preference.getKey())) {
@@ -346,6 +350,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 return ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES;
             case PREF_FULLSCREEN_PERMISSION:
                 return ContentSettingsType.CONTENT_SETTINGS_TYPE_FULLSCREEN;
+            case PREF_IMAGES_PERMISSION:
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_IMAGES;
             case PREF_JAVASCRIPT_PERMISSION:
                 return ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT;
             case PREF_LOCATION_ACCESS:
@@ -476,6 +482,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
             mSite.setCookiePermission(permission);
         } else if (PREF_FULLSCREEN_PERMISSION.equals(preference.getKey())) {
             mSite.setFullscreenPermission(permission);
+        } else if (PREF_IMAGES_PERMISSION.equals(preference.getKey())) {
+            mSite.setImagesPermission(permission);
         } else if (PREF_JAVASCRIPT_PERMISSION.equals(preference.getKey())) {
             mSite.setJavaScriptPermission(permission);
         } else if (PREF_LOCATION_ACCESS.equals(preference.getKey())) {
@@ -532,6 +540,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
         WebsitePreferenceBridge.nativeClearCookieData(mSite.getAddress().getOrigin());
         mSite.setFullscreenPermission(null);
         mSite.setGeolocationPermission(null);
+        mSite.setImagesPermission(null);
         mSite.setJavaScriptPermission(null);
         mSite.setMidiPermission(null);
         mSite.setPopupPermission(null);

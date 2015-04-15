@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.preferences.website;
 
+import org.chromium.chrome.browser.ContentSettingsType;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,6 +63,8 @@ public class WebsitePermissionsFetcher {
         queue.add(new CookieInfoFetcher());
         // Fullscreen are stored per-origin.
         queue.add(new FullscreenInfoFetcher());
+        // Images exceptions are host-based patterns.
+        queue.add(new ImagesExceptionInfoFetcher());
         // Local storage info is per-origin.
         queue.add(new LocalStorageInfoFetcher());
         // Website storage is per-host.
@@ -121,6 +125,9 @@ public class WebsitePermissionsFetcher {
         } else if (filterHelper.showPushNotificationsSites(filter)) {
             // Push notification permission is per-origin and per-embedder.
             queue.add(new PushNotificationInfoFetcher());
+        } else if (filterHelper.showImagesSites(filter)) {
+            // Images exceptions are host-based patterns.
+            queue.add(new ImagesExceptionInfoFetcher());
         }
         queue.add(new PermissionsAvailableCallbackRunner());
         queue.next();
@@ -200,15 +207,17 @@ public class WebsitePermissionsFetcher {
     private class PopupExceptionInfoFetcher implements Task {
         @Override
         public void run(TaskQueue queue) {
-            for (PopupExceptionInfo info : WebsitePreferenceBridge.getPopupExceptionInfo()) {
+            for (ContentSettingException exception :
+                    WebsitePreferenceBridge.getContentSettingsExceptions(
+                            ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS)) {
                 // The pattern "*" represents the default setting, not a
                 // specific website.
-                if (info.getPattern().equals("*")) continue;
-                WebsiteAddress address = WebsiteAddress.create(info.getPattern());
+                if (exception.getPattern().equals("*")) continue;
+                WebsiteAddress address = WebsiteAddress.create(exception.getPattern());
                 if (address == null) continue;
                 Set<Website> sites = findOrCreateSitesByHost(address);
                 for (Website site : sites) {
-                    site.setPopupExceptionInfo(info);
+                    site.setPopupException(exception);
                 }
             }
             queue.next();
@@ -218,15 +227,16 @@ public class WebsitePermissionsFetcher {
     private class JavaScriptExceptionInfoFetcher implements Task {
         @Override
         public void run(TaskQueue queue) {
-            for (JavaScriptExceptionInfo info
-                    : WebsitePreferenceBridge.getJavaScriptExceptionInfo()) {
+            for (ContentSettingException exception
+                    : WebsitePreferenceBridge.getContentSettingsExceptions(
+                            ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT)) {
                 // The pattern "*" represents the default setting, not a specific website.
-                if (info.getPattern().equals("*")) continue;
-                WebsiteAddress address = WebsiteAddress.create(info.getPattern());
+                if (exception.getPattern().equals("*")) continue;
+                WebsiteAddress address = WebsiteAddress.create(exception.getPattern());
                 if (address == null) continue;
                 Set<Website> sites = findOrCreateSitesByHost(address);
                 for (Website site : sites) {
-                    site.setJavaScriptExceptionInfo(info);
+                    site.setJavaScriptException(exception);
                 }
             }
             queue.next();
@@ -255,6 +265,28 @@ public class WebsitePermissionsFetcher {
                 WebsiteAddress address = WebsiteAddress.create(info.getOrigin());
                 if (address == null) continue;
                 createSiteByOriginAndHost(address).setFullscreenInfo(info);
+            }
+            queue.next();
+        }
+    }
+
+    /**
+     * Class for fetching the images information.
+     */
+    private class ImagesExceptionInfoFetcher implements Task {
+        @Override
+        public void run(TaskQueue queue) {
+            for (ContentSettingException exception
+                    : WebsitePreferenceBridge.getContentSettingsExceptions(
+                            ContentSettingsType.CONTENT_SETTINGS_TYPE_IMAGES)) {
+                // The pattern "*" represents the default setting, not a specific website.
+                if (exception.getPattern().equals("*")) continue;
+                WebsiteAddress address = WebsiteAddress.create(exception.getPattern());
+                if (address == null) continue;
+                Set<Website> sites = findOrCreateSitesByHost(address);
+                for (Website site : sites) {
+                    site.setImagesException(exception);
+                }
             }
             queue.next();
         }

@@ -27,8 +27,9 @@ public class Website implements Serializable {
     private CookieInfo mCookieInfo;
     private GeolocationInfo mGeolocationInfo;
     private MidiInfo mMidiInfo;
-    private JavaScriptExceptionInfo mJavaScriptExceptionInfo;
-    private PopupExceptionInfo mPopupExceptionInfo;
+    private ContentSettingException mImagesException;
+    private ContentSettingException mJavaScriptException;
+    private ContentSettingException mPopupException;
     private ProtectedMediaIdentifierInfo mProtectedMediaIdentifierInfo;
     private PushNotificationInfo mPushNotificationInfo;
     private VoiceAndVideoCaptureInfo mVoiceAndVideoCaptureInfo;
@@ -161,45 +162,68 @@ public class Website implements Serializable {
     }
 
     /**
+     * Returns what permission governs Images access.
+     */
+    public ContentSetting getImagesPermission() {
+        return mImagesException != null ? mImagesException.getContentSetting() : null;
+    }
+
+    /**
+     * Configure Images permission access setting for this site.
+     */
+    public void setImagesPermission(ContentSetting value) {
+        if (mImagesException != null) {
+            mImagesException.setContentSetting(value);
+        }
+    }
+
+    /**
+     * Sets the Images exception info for this Website.
+     */
+    public void setImagesException(ContentSettingException exception) {
+        mImagesException = exception;
+    }
+
+    /**
      * Returns what permission governs JavaScript access.
      */
     public ContentSetting getJavaScriptPermission() {
-        return mJavaScriptExceptionInfo != null
-                ? mJavaScriptExceptionInfo.getContentSetting() : null;
+        return mJavaScriptException != null
+                ? mJavaScriptException.getContentSetting() : null;
     }
 
     /**
      * Configure JavaScript permission access setting for this site.
      */
     public void setJavaScriptPermission(ContentSetting value) {
-        if (mJavaScriptExceptionInfo != null) {
-            mJavaScriptExceptionInfo.setContentSetting(value);
+        if (mJavaScriptException != null) {
+            mJavaScriptException.setContentSetting(value);
         }
     }
 
     /**
      * Sets the JavaScript exception info for this Website.
      */
-    public void setJavaScriptExceptionInfo(JavaScriptExceptionInfo info) {
-        mJavaScriptExceptionInfo = info;
+    public void setJavaScriptException(ContentSettingException exception) {
+        mJavaScriptException = exception;
     }
 
     /**
      * Sets the Popup exception info for this Website.
      */
-    public void setPopupExceptionInfo(PopupExceptionInfo info) {
-        mPopupExceptionInfo = info;
+    public void setPopupException(ContentSettingException exception) {
+        mPopupException = exception;
     }
 
-    public PopupExceptionInfo getPopupExceptionInfo() {
-        return mPopupExceptionInfo;
+    public ContentSettingException getPopupException() {
+        return mPopupException;
     }
 
     /**
      * Returns what permission governs Popup permission.
      */
     public ContentSetting getPopupPermission() {
-        if (mPopupExceptionInfo != null) return mPopupExceptionInfo.getContentSetting();
+        if (mPopupException != null) return mPopupException.getContentSetting();
         return null;
     }
 
@@ -207,8 +231,8 @@ public class Website implements Serializable {
      * Configure Popup permission access setting for this site.
      */
     public void setPopupPermission(ContentSetting value) {
-        if (mPopupExceptionInfo != null) {
-            mPopupExceptionInfo.setContentSetting(value);
+        if (mPopupException != null) {
+            mPopupException.setContentSetting(value);
         }
     }
 

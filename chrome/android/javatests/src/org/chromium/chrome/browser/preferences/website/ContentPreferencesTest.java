@@ -160,18 +160,36 @@ public class ContentPreferencesTest extends ChromeShellTestBase {
         });
     }
 
-    private void setEnablePopups(final boolean enabled) {
-        Preferences preferenceActivity =
-                startContentSettingsCategory(ContentPreferences.POPUPS_KEY);
-
-        final WebsitePreferences websitePreferences =
-                (WebsitePreferences) preferenceActivity.getFragmentForTest();
-        final ChromeSwitchPreference popups = (ChromeSwitchPreference)
-                websitePreferences.findPreference(WebsitePreferences.READ_WRITE_TOGGLE_KEY);
+    private void setEnableImages(final boolean enabled) {
+        final Preferences preferenceActivity =
+                startContentSettingsCategory(ContentPreferences.IMAGES_KEY);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
+                final WebsitePreferences websitePreferences =
+                        (WebsitePreferences) preferenceActivity.getFragmentForTest();
+                ChromeSwitchPreference images = (ChromeSwitchPreference)
+                        websitePreferences.findPreference(WebsitePreferences.READ_WRITE_TOGGLE_KEY);
+                websitePreferences.onPreferenceChange(images, enabled);
+                assertEquals("Images should be " + (enabled ? "allowed" : "blocked"), enabled,
+                        PrefServiceBridge.getInstance().imagesEnabled());
+            }
+        });
+        preferenceActivity.finish();
+    }
+
+    private void setEnablePopups(final boolean enabled) {
+        final Preferences preferenceActivity =
+                startContentSettingsCategory(ContentPreferences.POPUPS_KEY);
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                WebsitePreferences websitePreferences =
+                        (WebsitePreferences) preferenceActivity.getFragmentForTest();
+                ChromeSwitchPreference popups = (ChromeSwitchPreference)
+                        websitePreferences.findPreference(WebsitePreferences.READ_WRITE_TOGGLE_KEY);
                 websitePreferences.onPreferenceChange(popups, enabled);
                 assertEquals("Popups should be " + (enabled ? "allowed" : "blocked"), enabled,
                         PrefServiceBridge.getInstance().popupsEnabled());
@@ -181,17 +199,16 @@ public class ContentPreferencesTest extends ChromeShellTestBase {
     }
 
     private void setEnableCameraMic(final boolean enabled) {
-        Preferences preferenceActivity =
+        final Preferences preferenceActivity =
                 startContentSettingsCategory(ContentPreferences.CAMERA_AND_MIC_KEY);
-
-        final WebsitePreferences websitePreferences =
-                (WebsitePreferences) preferenceActivity.getFragmentForTest();
-        final ChromeSwitchPreference toggle = (ChromeSwitchPreference)
-                websitePreferences.findPreference(WebsitePreferences.READ_WRITE_TOGGLE_KEY);
 
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                WebsitePreferences websitePreferences =
+                        (WebsitePreferences) preferenceActivity.getFragmentForTest();
+                ChromeSwitchPreference toggle = (ChromeSwitchPreference)
+                        websitePreferences.findPreference(WebsitePreferences.READ_WRITE_TOGGLE_KEY);
                 websitePreferences.onPreferenceChange(toggle, enabled);
                 assertEquals("Camera/Mic should be " + (enabled ? "allowed" : "blocked"),
                         enabled, PrefServiceBridge.getInstance().isCameraMicEnabled());
@@ -262,6 +279,34 @@ public class ContentPreferencesTest extends ChromeShellTestBase {
         // Load the page again and ensure the cookie remains unset.
         loadUrl(url);
         assertEquals("\"\"", runJavaScriptCodeInCurrentTab("getCookie()"));
+    }
+
+    /**
+     * Sets Images to be disabled and make sure it is set correctly.
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testImagesBlocked() throws Exception {
+        setEnableImages(false);
+
+        // Test that images don't load.
+        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/images.html"));
+        assertEquals("0", runJavaScriptCodeInCurrentTab("getImageHeight()"));
+    }
+
+    /**
+     * Sets Images to be Enabled to be true and make sure it is set correctly.
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testImagesNotBlocked() throws Exception {
+        setEnableImages(true);
+
+        // Test that images load.
+        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/images.html"));
+        assertEquals("5", runJavaScriptCodeInCurrentTab("getImageHeight()"));
     }
 
     /**

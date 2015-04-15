@@ -163,31 +163,18 @@ public abstract class WebsitePreferenceBridge {
         list.add(new VoiceAndVideoCaptureInfo(origin, embedder));
     }
 
-    public static List<JavaScriptExceptionInfo> getJavaScriptExceptionInfo() {
-        List<JavaScriptExceptionInfo> exceptions =
-                PrefServiceBridge.getInstance().getJavaScriptExceptions();
-        if (!PrefServiceBridge.getInstance().javaScriptManaged()) {
+    public static List<ContentSettingException> getContentSettingsExceptions(
+            int contentSettingsType) {
+        List<ContentSettingException> exceptions =
+                PrefServiceBridge.getInstance().getContentSettingsExceptions(
+                        contentSettingsType);
+        if (!PrefServiceBridge.getInstance().isContentSettingManaged(contentSettingsType)) {
             return exceptions;
         }
 
-        List<JavaScriptExceptionInfo> managedExceptions = new ArrayList<JavaScriptExceptionInfo>();
-        for (JavaScriptExceptionInfo exception : exceptions) {
-            if (exception.getSource().equals("policy")) {
-                managedExceptions.add(exception);
-            }
-        }
-        return managedExceptions;
-    }
-
-    public static List<PopupExceptionInfo> getPopupExceptionInfo() {
-        List<PopupExceptionInfo> exceptions =
-                PrefServiceBridge.getInstance().getPopupExceptions();
-        if (!PrefServiceBridge.getInstance().isPopupsManaged()) {
-            return exceptions;
-        }
-
-        List<PopupExceptionInfo> managedExceptions = new ArrayList<PopupExceptionInfo>();
-        for (PopupExceptionInfo exception : exceptions) {
+        List<ContentSettingException> managedExceptions =
+                new ArrayList<ContentSettingException>();
+        for (ContentSettingException exception : exceptions) {
             if (exception.getSource().equals("policy")) {
                 managedExceptions.add(exception);
             }

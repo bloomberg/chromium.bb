@@ -27,6 +27,7 @@ public class ContentPreferences extends PreferenceFragment
     static final String ALL_SITES_KEY = "website_settings";
     static final String COOKIES_KEY = "cookies";
     static final String FULLSCREEN_KEY = "fullscreen";
+    static final String IMAGES_KEY = "images";
     static final String LOCATION_KEY = "device_location";
     static final String CAMERA_AND_MIC_KEY = "use_camera_or_mic";
     static final String JAVASCRIPT_KEY = "javascript";
@@ -59,6 +60,8 @@ public class ContentPreferences extends PreferenceFragment
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION;
         } else if (CAMERA_AND_MIC_KEY.equals(key)) {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM;
+        } else if (IMAGES_KEY.equals(key)) {
+            return ContentSettingsType.CONTENT_SETTINGS_TYPE_IMAGES;
         } else if (JAVASCRIPT_KEY.equals(key)) {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT;
         } else if (PUSH_NOTIFICATIONS_KEY.equals(key)) {
@@ -89,6 +92,7 @@ public class ContentPreferences extends PreferenceFragment
         websitePrefs.add(COOKIES_KEY);
         websitePrefs.add(CAMERA_AND_MIC_KEY);
         websitePrefs.add(FULLSCREEN_KEY);
+        websitePrefs.add(IMAGES_KEY);
         websitePrefs.add(JAVASCRIPT_KEY);
         websitePrefs.add(PUSH_NOTIFICATIONS_KEY);
         websitePrefs.add(POPUPS_KEY);
@@ -103,6 +107,8 @@ public class ContentPreferences extends PreferenceFragment
                 checked = PrefServiceBridge.getInstance().isCameraMicEnabled();
             } else if (JAVASCRIPT_KEY.equals(prefName)) {
                 checked = PrefServiceBridge.getInstance().javaScriptEnabled();
+            } else if (IMAGES_KEY.equals(prefName)) {
+                checked = PrefServiceBridge.getInstance().imagesEnabled();
             } else if (PROTECTED_CONTENT_KEY.equals(prefName)) {
                 checked = PrefServiceBridge.getInstance().isProtectedMediaIdentifierEnabled();
             } else if (COOKIES_KEY.equals(prefName)) {

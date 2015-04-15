@@ -22,11 +22,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 
 /**
  * A utility class for the UI recording exceptions to the blocked list for site
@@ -35,23 +33,32 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 public class AddExceptionPreference extends Preference implements OnPreferenceClickListener {
     // The callback to notify when the user adds a site.
     private SiteAddedCallback mSiteAddedCallback;
+
+    // The accent color to use for the icon and title view.
     private int mPrefAccentColor;
 
+    // The custom message to show in the dialog.
+    private String mDialogMessage;
+
     /**
-     * An interface to implement to get a callback when a site has been added.
+     * An interface to implement to get a callback when a site needs to be added.
+     * @param hostname The hostname to add.
      */
     public interface SiteAddedCallback {
-        public void onSiteAdded();
+        public void onAddSite(String hostname);
     }
 
     /**
      * Construct a AddException preference.
      * @param context The current context.
      * @param key The key to use for the preference.
+     * @param message The custom message to show in the dialog.
      * @param callback A callback to receive notifications that an exception has been added.
      */
-    public AddExceptionPreference(Context context, String key, SiteAddedCallback callback) {
+    public AddExceptionPreference(
+            Context context, String key, String message, SiteAddedCallback callback) {
         super(context);
+        mDialogMessage = message;
         mSiteAddedCallback = callback;
         setOnPreferenceClickListener(this);
 
@@ -94,16 +101,7 @@ public class AddExceptionPreference extends Preference implements OnPreferenceCl
             @Override
             public void onClick(DialogInterface dialog, int button) {
                 if (button == AlertDialog.BUTTON_POSITIVE) {
-                    String hostname = input.getText().toString().trim();
-                    PrefServiceBridge.getInstance().setJavaScriptAllowed(
-                            hostname, true);
-
-                    Toast.makeText(getContext(),
-                            String.format(getContext().getString(
-                                    R.string.website_settings_add_site_toast),
-                                    hostname),
-                            Toast.LENGTH_SHORT).show();
-                    mSiteAddedCallback.onSiteAdded();
+                    mSiteAddedCallback.onAddSite(input.getText().toString().trim());
                 } else {
                     dialog.dismiss();
                 }
@@ -113,7 +111,7 @@ public class AddExceptionPreference extends Preference implements OnPreferenceCl
         AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
         AlertDialog alertDialog = alert
                 .setTitle(R.string.website_settings_add_site_dialog_title)
-                .setMessage(R.string.website_settings_add_site_description)
+                .setMessage(mDialogMessage)
                 .setView(view)
                 .setPositiveButton(R.string.website_settings_add_site_add_button,
                                    onClickListener)

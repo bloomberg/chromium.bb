@@ -21,6 +21,7 @@ import android.view.MenuItem;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
@@ -208,6 +209,8 @@ public class WebsitePreferences extends PreferenceFragment
             return website.site().getFullscreenPermission() == ContentSetting.ASK;
         } else if (mFilter.showGeolocationSites(mCategoryFilter)) {
             return website.site().getGeolocationPermission() == ContentSetting.BLOCK;
+        } else if (mFilter.showImagesSites(mCategoryFilter)) {
+            return website.site().getImagesPermission() == ContentSetting.BLOCK;
         } else if (mFilter.showJavaScriptSites(mCategoryFilter)) {
             return website.site().getJavaScriptPermission() == ContentSetting.BLOCK;
         } else if (mFilter.showPopupSites(mCategoryFilter)) {
@@ -356,20 +359,30 @@ public class WebsitePreferences extends PreferenceFragment
                 PrefServiceBridge.getInstance().setCameraMicEnabled((boolean) newValue);
             } else if (mFilter.showFullscreenSites(mCategoryFilter)) {
                 PrefServiceBridge.getInstance().setFullscreenAllowed((boolean) newValue);
+            } else if (mFilter.showImagesSites(mCategoryFilter)) {
+                PrefServiceBridge.getInstance().setImagesEnabled((boolean) newValue);
             } else if (mFilter.showJavaScriptSites(mCategoryFilter)) {
                 PrefServiceBridge.getInstance().setJavaScriptEnabled((boolean) newValue);
-                if ((boolean) newValue) {
-                    Preference addException = getPreferenceScreen().findPreference(
-                            ADD_EXCEPTION_KEY);
-                    getPreferenceScreen().removePreference(addException);
-                } else {
-                    getPreferenceScreen().addPreference(
-                            new AddExceptionPreference(getActivity(), ADD_EXCEPTION_KEY, this));
-                }
             } else if (mFilter.showPopupSites(mCategoryFilter)) {
                 PrefServiceBridge.getInstance().setAllowPopupsEnabled((boolean) newValue);
             } else if (mFilter.showPushNotificationsSites(mCategoryFilter)) {
                 PrefServiceBridge.getInstance().setPushNotificationsEnabled((boolean) newValue);
+            }
+
+            // Categories that support adding exceptions also manage the 'Add site' preference.
+            if (mFilter.showImagesSites(mCategoryFilter)
+                    || mFilter.showJavaScriptSites(mCategoryFilter)) {
+                if ((boolean) newValue) {
+                    Preference addException = getPreferenceScreen().findPreference(
+                            ADD_EXCEPTION_KEY);
+                    if (addException != null) {  // Can be null in testing.
+                        getPreferenceScreen().removePreference(addException);
+                    }
+                } else {
+                    getPreferenceScreen().addPreference(
+                            new AddExceptionPreference(getActivity(), ADD_EXCEPTION_KEY,
+                                    getAddExceptionDialogMessage(), this));
+                }
             }
 
             ChromeSwitchPreference globalToggle = (ChromeSwitchPreference)
@@ -379,6 +392,17 @@ public class WebsitePreferences extends PreferenceFragment
             PrefServiceBridge.getInstance().setBlockThirdPartyCookiesEnabled(!((boolean) newValue));
         }
         return true;
+    }
+
+    private String getAddExceptionDialogMessage() {
+        int resource = 0;
+        if (mFilter.showJavaScriptSites(mCategoryFilter)) {
+            resource = R.string.website_settings_add_site_description_javascript;
+        } else if (mFilter.showImagesSites(mCategoryFilter)) {
+            resource = R.string.website_settings_add_site_description_images;
+        }
+        assert resource > 0;
+        return getResources().getString(resource);
     }
 
     // OnPreferenceClickListener:
@@ -402,7 +426,17 @@ public class WebsitePreferences extends PreferenceFragment
     }
 
     @Override
-    public void onSiteAdded() {
+    public void onAddSite(String hostname) {
+        PrefServiceBridge.getInstance().nativeSetContentSettingForPattern(
+                    mFilter.toContentSettingsType(mCategoryFilter), hostname,
+                    ContentSetting.ALLOW.toInt());
+
+        Toast.makeText(getActivity(),
+                String.format(getActivity().getString(
+                        R.string.website_settings_add_site_toast),
+                        hostname),
+                Toast.LENGTH_SHORT).show();
+
         getInfoForOrigins();
     }
 
@@ -418,6 +452,7 @@ public class WebsitePreferences extends PreferenceFragment
         if (mFilter.showGeolocationSites(mCategoryFilter)) {
             return !prefs.isAllowLocationUserModifiable();
         }
+        if (mFilter.showImagesSites(mCategoryFilter)) return prefs.imagesManaged();
         if (mFilter.showJavaScriptSites(mCategoryFilter)) return prefs.javaScriptManaged();
         if (mFilter.showPopupSites(mCategoryFilter)) return prefs.isPopupsManaged();
         return false;
@@ -449,10 +484,13 @@ public class WebsitePreferences extends PreferenceFragment
 
         configureGlobalToggles();
 
-        if (mFilter.showJavaScriptSites(mCategoryFilter)
-                && !PrefServiceBridge.getInstance().javaScriptEnabled()) {
+        if ((mFilter.showJavaScriptSites(mCategoryFilter)
+                && !PrefServiceBridge.getInstance().javaScriptEnabled())
+                || (mFilter.showImagesSites(mCategoryFilter)
+                        && !PrefServiceBridge.getInstance().imagesEnabled())) {
             getPreferenceScreen().addPreference(
-                    new AddExceptionPreference(getActivity(), ADD_EXCEPTION_KEY, this));
+                    new AddExceptionPreference(getActivity(), ADD_EXCEPTION_KEY,
+                            getAddExceptionDialogMessage(), this));
         }
     }
 
@@ -543,6 +581,9 @@ public class WebsitePreferences extends PreferenceFragment
                 } else if (mFilter.showFullscreenSites(mCategoryFilter)) {
                     globalToggle.setChecked(
                             PrefServiceBridge.getInstance().isFullscreenAllowed());
+                } else if (mFilter.showImagesSites(mCategoryFilter)) {
+                    globalToggle.setChecked(
+                            PrefServiceBridge.getInstance().imagesEnabled());
                 } else if (mFilter.showJavaScriptSites(mCategoryFilter)) {
                     globalToggle.setChecked(PrefServiceBridge.getInstance().javaScriptEnabled());
                 } else if (mFilter.showPopupSites(mCategoryFilter)) {

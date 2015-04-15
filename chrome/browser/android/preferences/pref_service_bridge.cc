@@ -152,6 +152,76 @@ PrefService* GetPrefService() {
 // Native JNI methods
 // ----------------------------------------------------------------------------
 
+static jboolean IsContentSettingManaged(JNIEnv* env, jobject obj,
+    int content_settings_type) {
+  return IsContentSettingManaged(
+      static_cast<ContentSettingsType>(content_settings_type));
+}
+
+static jboolean IsContentSettingEnabled(JNIEnv* env, jobject obj,
+    int content_settings_type) {
+  // Before we migrate functions over to this central function, we must verify
+  // that the functionality provided below is correct.
+  DCHECK(content_settings_type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
+         content_settings_type == CONTENT_SETTINGS_TYPE_IMAGES ||
+         content_settings_type == CONTENT_SETTINGS_TYPE_POPUPS);
+  ContentSettingsType type =
+      static_cast<ContentSettingsType>(content_settings_type);
+  if (type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
+      type == CONTENT_SETTINGS_TYPE_POPUPS)
+    return GetBooleanForContentSetting(type);
+
+  HostContentSettingsMap* content_settings =
+      GetOriginalProfile()->GetHostContentSettingsMap();
+  return content_settings->GetDefaultContentSetting(
+      type, nullptr) == CONTENT_SETTING_ALLOW;
+}
+
+static void SetContentSettingEnabled(JNIEnv* env, jobject obj,
+    int content_settings_type, jboolean allow) {
+  // Before we migrate functions over to this central function, we must verify
+  // that the new category supports ALLOW/BLOCK pairs and, if not, handle them.
+  DCHECK(content_settings_type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
+         content_settings_type == CONTENT_SETTINGS_TYPE_IMAGES ||
+         content_settings_type == CONTENT_SETTINGS_TYPE_POPUPS);
+  HostContentSettingsMap* host_content_settings_map =
+      GetOriginalProfile()->GetHostContentSettingsMap();
+  host_content_settings_map->SetDefaultContentSetting(
+      static_cast<ContentSettingsType>(content_settings_type),
+      allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
+}
+
+static void SetContentSettingForPattern(JNIEnv* env, jobject obj,
+    int content_settings_type, jstring pattern, int setting) {
+  HostContentSettingsMap* host_content_settings_map =
+      GetOriginalProfile()->GetHostContentSettingsMap();
+  host_content_settings_map->SetContentSetting(
+      ContentSettingsPattern::FromString(ConvertJavaStringToUTF8(env, pattern)),
+      ContentSettingsPattern::Wildcard(),
+      static_cast<ContentSettingsType>(content_settings_type),
+      "",
+      static_cast<ContentSetting>(setting));
+}
+
+static void GetContentSettingsExceptions(JNIEnv* env, jobject obj,
+    int content_settings_type, jobject list) {
+  HostContentSettingsMap* host_content_settings_map =
+      GetOriginalProfile()->GetHostContentSettingsMap();
+  ContentSettingsForOneType entries;
+  host_content_settings_map->GetSettingsForOneType(
+      static_cast<ContentSettingsType>(content_settings_type), "", &entries);
+  for (size_t i = 0; i < entries.size(); ++i) {
+    Java_PrefServiceBridge_addContentSettingExceptionToList(
+        env, list,
+        content_settings_type,
+        ConvertUTF8ToJavaString(
+            env, entries[i].primary_pattern.ToString()).obj(),
+        ConvertUTF8ToJavaString(
+            env, GetStringForContentSettingsType(entries[i].setting)).obj(),
+        ConvertUTF8ToJavaString(env, entries[i].source).obj());
+  }
+}
+
 static jboolean GetAcceptCookiesEnabled(JNIEnv* env, jobject obj) {
   return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_COOKIES);
 }
@@ -476,22 +546,6 @@ static void ResetTranslateDefaults(JNIEnv* env, jobject obj) {
   translate_prefs->ResetToDefaults();
 }
 
-static jboolean GetJavaScriptManaged(JNIEnv* env, jobject obj) {
-  return IsContentSettingManaged(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
-}
-
-static void SetJavaScriptEnabled(JNIEnv* env, jobject obj, jboolean enabled) {
-  HostContentSettingsMap* host_content_settings_map =
-      GetOriginalProfile()->GetHostContentSettingsMap();
-  host_content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-      enabled ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
-}
-
-static jboolean GetJavaScriptEnabled(JNIEnv* env, jobject obj) {
-  return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
-}
-
 static void MigrateJavascriptPreference(JNIEnv* env, jobject obj) {
   const PrefService::Preference* javascript_pref =
       GetPrefService()->FindPreference(prefs::kWebKitJavascriptEnabled);
@@ -503,7 +557,8 @@ static void MigrateJavascriptPreference(JNIEnv* env, jobject obj) {
   bool javascript_enabled = false;
   bool retval = javascript_pref->GetValue()->GetAsBoolean(&javascript_enabled);
   DCHECK(retval);
-  SetJavaScriptEnabled(env, obj, javascript_enabled);
+  SetContentSettingEnabled(env, obj,
+      CONTENT_SETTINGS_TYPE_JAVASCRIPT, javascript_enabled);
   GetPrefService()->ClearPref(prefs::kWebKitJavascriptEnabled);
 }
 
@@ -543,21 +598,6 @@ static void SetPasswordEchoEnabled(JNIEnv* env,
                                passwordEchoEnabled);
 }
 
-static jboolean GetAllowPopupsEnabled(JNIEnv* env, jobject obj) {
-  return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_POPUPS);
-}
-
-static jboolean GetAllowPopupsManaged(JNIEnv* env, jobject obj) {
-  return IsContentSettingManaged(CONTENT_SETTINGS_TYPE_POPUPS);
-}
-
-static void SetAllowPopupsEnabled(JNIEnv* env, jobject obj, jboolean allow) {
-  HostContentSettingsMap* host_content_settings_map =
-      GetOriginalProfile()->GetHostContentSettingsMap();
-  host_content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_POPUPS,
-      allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
-}
 
 static jboolean GetCameraMicEnabled(JNIEnv* env, jobject obj) {
   return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) &&
@@ -599,23 +639,6 @@ static void SetJavaScriptAllowed(JNIEnv* env, jobject obj, jstring pattern,
       static_cast<ContentSetting>(setting));
 }
 
-static void GetJavaScriptExceptions(JNIEnv* env, jobject obj, jobject list) {
-  HostContentSettingsMap* host_content_settings_map =
-      GetOriginalProfile()->GetHostContentSettingsMap();
-  ContentSettingsForOneType entries;
-  host_content_settings_map->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_JAVASCRIPT, "", &entries);
-  for (size_t i = 0; i < entries.size(); ++i) {
-    Java_PrefServiceBridge_addJavaScriptExceptionToList(
-        env, list,
-        ConvertUTF8ToJavaString(
-            env, entries[i].primary_pattern.ToString()).obj(),
-        ConvertUTF8ToJavaString(
-            env, GetStringForContentSettingsType(entries[i].setting)).obj(),
-        ConvertUTF8ToJavaString(env, entries[i].source).obj());
-  }
-}
-
 static void SetPopupException(JNIEnv* env, jobject obj, jstring pattern,
                               int setting) {
   HostContentSettingsMap* host_content_settings_map =
@@ -626,23 +649,6 @@ static void SetPopupException(JNIEnv* env, jobject obj, jstring pattern,
       CONTENT_SETTINGS_TYPE_POPUPS,
       "",
       static_cast<ContentSetting>(setting));
-}
-
-static void GetPopupExceptions(JNIEnv* env, jobject obj, jobject list) {
-  HostContentSettingsMap* host_content_settings_map =
-      GetOriginalProfile()->GetHostContentSettingsMap();
-  ContentSettingsForOneType entries;
-  host_content_settings_map->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_POPUPS, "", &entries);
-  for (size_t i = 0; i < entries.size(); ++i) {
-    Java_PrefServiceBridge_insertPopupExceptionToList(
-        env, list,
-        ConvertUTF8ToJavaString(
-            env, entries[i].primary_pattern.ToString()).obj(),
-        ConvertUTF8ToJavaString(
-            env, GetStringForContentSettingsType(entries[i].setting)).obj(),
-        ConvertUTF8ToJavaString(env, entries[i].source).obj());
-  }
 }
 
 static void SetSearchSuggestEnabled(JNIEnv* env, jobject obj,
