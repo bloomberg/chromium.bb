@@ -76,6 +76,8 @@ source_set("lib") {
     "webmediaplayer_factory.h",
     "webmimeregistry_impl.cc",
     "webmimeregistry_impl.h",
+    "webnotificationmanager_impl.cc",
+    "webnotificationmanager_impl.h",
     "webscheduler_impl.cc",
     "webscheduler_impl.h",
     "websockethandle_impl.cc",

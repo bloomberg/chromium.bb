@@ -12,6 +12,7 @@
 #include "cc/blink/web_compositor_support_impl.h"
 #include "mojo/services/html_viewer/blink_resource_map.h"
 #include "mojo/services/html_viewer/webmimeregistry_impl.h"
+#include "mojo/services/html_viewer/webnotificationmanager_impl.h"
 #include "mojo/services/html_viewer/webscheduler_impl.h"
 #include "mojo/services/html_viewer/webthemeengine_impl.h"
 #include "third_party/WebKit/public/platform/Platform.h"
@@ -61,6 +62,7 @@ class BlinkPlatformImpl : public blink::Platform {
       blink::WebGestureDevice device_source,
       const blink::WebFloatPoint& velocity,
       const blink::WebSize& cumulative_scroll) override;
+  blink::WebNotificationManager* notificationManager() override;
 
  private:
   void SuspendSharedTimer();
@@ -84,6 +86,7 @@ class BlinkPlatformImpl : public blink::Platform {
   WebThemeEngineImpl theme_engine_;
   WebMimeRegistryImpl mime_registry_;
   WebSchedulerImpl scheduler_;
+  WebNotificationManagerImpl web_notification_manager_;
   blink::WebScrollbarBehavior scrollbar_behavior_;
   BlinkResourceMap blink_resource_map_;
 

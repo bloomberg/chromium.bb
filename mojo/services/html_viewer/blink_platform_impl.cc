@@ -269,6 +269,11 @@ blink::WebGestureCurve* BlinkPlatformImpl::createFlingAnimationCurve(
              is_main_thread).release();
 }
 
+blink::WebNotificationManager*
+BlinkPlatformImpl::notificationManager() {
+  return &web_notification_manager_;
+}
+
 // static
 void BlinkPlatformImpl::DestroyCurrentThread(void* thread) {
   WebThreadImplForMessageLoop* impl =
