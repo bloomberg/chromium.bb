@@ -142,7 +142,7 @@ class InputMethodEngineTest :  public testing::Test {
     IMEEngineHandlerInterface::InputContext input_context(
         input_type, ui::TEXT_INPUT_MODE_DEFAULT, ui::TEXT_INPUT_FLAG_NONE);
     engine_->FocusIn(input_context);
-    IMEBridge::Get()->SetCurrentTextInputType(input_type);
+    IMEBridge::Get()->SetCurrentInputContext(input_context);
   }
 
   scoped_ptr<InputMethodEngine> engine_;

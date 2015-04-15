@@ -576,10 +576,10 @@ void InputMethodEngine::Enable(const std::string& component_id) {
   DCHECK(!component_id.empty());
   active_component_id_ = component_id;
   observer_->OnActivate(component_id);
-  current_input_type_ = IMEBridge::Get()->GetCurrentTextInputType();
-  FocusIn(IMEEngineHandlerInterface::InputContext(current_input_type_,
-                                                  ui::TEXT_INPUT_MODE_DEFAULT,
-                                                  ui::TEXT_INPUT_FLAG_NONE));
+  const IMEEngineHandlerInterface::InputContext& input_context =
+      IMEBridge::Get()->GetCurrentInputContext();
+  current_input_type_ = input_context.type;
+  FocusIn(input_context);
   EnableInputView();
 }
 

@@ -180,11 +180,15 @@ class UI_BASE_IME_EXPORT IMEBridge {
   virtual void SetCandidateWindowHandler(
       IMECandidateWindowHandlerInterface* handler) = 0;
 
-  // Updates current text input type.
-  virtual void SetCurrentTextInputType(ui::TextInputType input_type) = 0;
+  // Updates the current input context.
+  // This is called from InputMethodChromeOS.
+  virtual void SetCurrentInputContext(
+      const IMEEngineHandlerInterface::InputContext& input_context) = 0;
 
-  // Returns the current text input type.
-  virtual ui::TextInputType GetCurrentTextInputType() const = 0;
+  // Returns the current input context.
+  // This is called from InputMethodEngine.
+  virtual const IMEEngineHandlerInterface::InputContext&
+  GetCurrentInputContext() const = 0;
 
  protected:
   IMEBridge();

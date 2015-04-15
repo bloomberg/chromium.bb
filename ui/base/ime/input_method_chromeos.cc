@@ -338,7 +338,9 @@ void InputMethodChromeOS::UpdateContextFocusState() {
   if (candidate_window)
     candidate_window->FocusStateChanged(IsNonPasswordInputFieldFocused());
 
-  chromeos::IMEBridge::Get()->SetCurrentTextInputType(GetTextInputType());
+  chromeos::IMEEngineHandlerInterface::InputContext context(
+      GetTextInputType(), GetTextInputMode(), GetTextInputFlags());
+  chromeos::IMEBridge::Get()->SetCurrentInputContext(context);
 
   if (!IsTextInputTypeNone())
     OnCaretBoundsChanged(GetTextInputClient());
