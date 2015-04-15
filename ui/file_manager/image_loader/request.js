@@ -240,7 +240,7 @@ Request.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
   if (fileType.type === 'raw') {
     var timer = metrics.getTracker().startTiming(
         metrics.Categories.INTERNALS,
-        metrics.timing.Variables.EXTRACT_JPEG_FROM_RAW,
+        metrics.timing.Variables.EXTRACT_THUMBNAIL_FROM_RAW,
         fileType.subtype);
     this.piexLoader_.load(this.request_.url).then(function(data) {
       timer.send();
