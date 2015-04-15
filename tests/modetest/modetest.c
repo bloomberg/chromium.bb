@@ -140,6 +140,9 @@ struct type_name encoder_type_names[] = {
 	{ DRM_MODE_ENCODER_TMDS, "TMDS" },
 	{ DRM_MODE_ENCODER_LVDS, "LVDS" },
 	{ DRM_MODE_ENCODER_TVDAC, "TVDAC" },
+	{ DRM_MODE_ENCODER_VIRTUAL, "Virtual" },
+	{ DRM_MODE_ENCODER_DSI, "DSI" },
+	{ DRM_MODE_ENCODER_DPMST, "DPMST" },
 };
 
 static type_name_fn(encoder_type)
@@ -168,6 +171,8 @@ struct type_name connector_type_names[] = {
 	{ DRM_MODE_CONNECTOR_HDMIB, "HDMI-B" },
 	{ DRM_MODE_CONNECTOR_TV, "TV" },
 	{ DRM_MODE_CONNECTOR_eDP, "eDP" },
+	{ DRM_MODE_CONNECTOR_VIRTUAL, "Virtual" },
+	{ DRM_MODE_CONNECTOR_DSI, "DSI" },
 };
 
 static type_name_fn(connector_type)
