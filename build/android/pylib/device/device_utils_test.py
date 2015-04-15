@@ -620,6 +620,48 @@ class DeviceUtilsRunShellCommandTest(DeviceUtilsTest):
                         self.device.RunShellCommand(cmd, check_return=True))
 
 
+class DeviceUtilsRunPipedShellCommandTest(DeviceUtilsTest):
+
+  def testRunPipedShellCommand_success(self):
+    with self.assertCall(
+        self.call.device.RunShellCommand(
+            'ps | grep foo; echo "PIPESTATUS: ${PIPESTATUS[@]}"',
+            check_return=True),
+        ['This line contains foo', 'PIPESTATUS: 0 0']):
+      self.assertEquals(['This line contains foo'],
+                        self.device._RunPipedShellCommand('ps | grep foo'))
+
+  def testRunPipedShellCommand_firstCommandFails(self):
+    with self.assertCall(
+        self.call.device.RunShellCommand(
+            'ps | grep foo; echo "PIPESTATUS: ${PIPESTATUS[@]}"',
+            check_return=True),
+        ['PIPESTATUS: 1 0']):
+      with self.assertRaises(device_errors.AdbShellCommandFailedError) as ec:
+        self.device._RunPipedShellCommand('ps | grep foo')
+      self.assertEquals([1, 0], ec.exception.status)
+
+  def testRunPipedShellCommand_secondCommandFails(self):
+    with self.assertCall(
+        self.call.device.RunShellCommand(
+            'ps | grep foo; echo "PIPESTATUS: ${PIPESTATUS[@]}"',
+            check_return=True),
+        ['PIPESTATUS: 0 1']):
+      with self.assertRaises(device_errors.AdbShellCommandFailedError) as ec:
+        self.device._RunPipedShellCommand('ps | grep foo')
+      self.assertEquals([0, 1], ec.exception.status)
+
+  def testRunPipedShellCommand_outputCutOff(self):
+    with self.assertCall(
+        self.call.device.RunShellCommand(
+            'ps | grep foo; echo "PIPESTATUS: ${PIPESTATUS[@]}"',
+            check_return=True),
+        ['foo.bar'] * 256 + ['foo.ba']):
+      with self.assertRaises(device_errors.AdbShellCommandFailedError) as ec:
+        self.device._RunPipedShellCommand('ps | grep foo')
+      self.assertIs(None, ec.exception.status)
+
+
 class DeviceUtilsGetDevicePieWrapper(DeviceUtilsTest):
 
   def testGetDevicePieWrapper_jb(self):
@@ -654,32 +696,32 @@ class DeviceUtilsKillAllTest(DeviceUtilsTest):
     with self.assertCalls(
         (self.call.device.GetPids('some.process'), {'some.process': '1234'}),
         (self.call.adb.Shell('kill -9 1234'), '')):
-      self.assertEquals(1,
-          self.device.KillAll('some.process', blocking=False))
+      self.assertEquals(
+          1, self.device.KillAll('some.process', blocking=False))
 
   def testKillAll_blocking(self):
     with self.assertCalls(
         (self.call.device.GetPids('some.process'), {'some.process': '1234'}),
         (self.call.adb.Shell('kill -9 1234'), ''),
         (self.call.device.GetPids('some.process'), {'some.process': '1234'}),
-        (self.call.device.GetPids('some.process'), {})):
-      self.assertEquals(1,
-          self.device.KillAll('some.process', blocking=True))
+        (self.call.device.GetPids('some.process'), [])):
+      self.assertEquals(
+          1, self.device.KillAll('some.process', blocking=True))
 
   def testKillAll_root(self):
     with self.assertCalls(
         (self.call.device.GetPids('some.process'), {'some.process': '1234'}),
         (self.call.device.NeedsSU(), True),
         (self.call.adb.Shell("su -c sh -c 'kill -9 1234'"), '')):
-      self.assertEquals(1,
-          self.device.KillAll('some.process', as_root=True))
+      self.assertEquals(
+          1, self.device.KillAll('some.process', as_root=True))
 
   def testKillAll_sigterm(self):
     with self.assertCalls(
         (self.call.device.GetPids('some.process'), {'some.process': '1234'}),
         (self.call.adb.Shell('kill -15 1234'), '')):
-      self.assertEquals(1,
-          self.device.KillAll('some.process', signum=device_signal.SIGTERM))
+      self.assertEquals(
+          1, self.device.KillAll('some.process', signum=device_signal.SIGTERM))
 
 
 class DeviceUtilsStartActivityTest(DeviceUtilsTest):
@@ -1107,7 +1149,8 @@ class DeviceUtilsReadFileTest(DeviceUtilsTest):
             as_root=False, check_return=True),
          ['-rw-rw---- root foo 256 1970-01-01 00:00 file']),
         (self.call.device.RunShellCommand(
-            ['cat', '/read/this/test/file'], as_root=False, check_return=True),
+            ['cat', '/read/this/test/file'],
+            as_root=False, check_return=True),
          ['this is a test file'])):
       self.assertEqual('this is a test file\n',
                        self.device.ReadFile('/read/this/test/file'))
@@ -1120,6 +1163,17 @@ class DeviceUtilsReadFileTest(DeviceUtilsTest):
         self.CommandError('File does not exist')):
       with self.assertRaises(device_errors.CommandFailedError):
         self.device.ReadFile('/this/file/does.not.exist')
+
+  def testReadFile_zeroSize(self):
+    with self.assertCalls(
+        (self.call.device.RunShellCommand(
+            ['ls', '-l', '/this/file/has/zero/size'],
+            as_root=False, check_return=True),
+         ['-r--r--r-- root foo 0 1970-01-01 00:00 zero_size_file']),
+        (self.call.device._ReadFileWithPull('/this/file/has/zero/size'),
+         'but it has contents\n')):
+      self.assertEqual('but it has contents\n',
+                       self.device.ReadFile('/this/file/has/zero/size'))
 
   def testReadFile_withSU(self):
     with self.assertCalls(
@@ -1379,37 +1433,42 @@ class DeviceUtilsSetPropTest(DeviceUtilsTest):
 class DeviceUtilsGetPidsTest(DeviceUtilsTest):
 
   def testGetPids_noMatches(self):
-    with self.assertCall(self.call.adb.Shell('ps'),
-        'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\n'
-        'user  1000    100   1024 1024   ffffffff 00000000 no.match\n'):
+    with self.assertCall(
+        self.call.device._RunPipedShellCommand('ps | grep -F does.not.match'),
+        []):
       self.assertEqual({}, self.device.GetPids('does.not.match'))
 
   def testGetPids_oneMatch(self):
-    with self.assertCall(self.call.adb.Shell('ps'),
-        'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\n'
-        'user  1000    100   1024 1024   ffffffff 00000000 not.a.match\n'
-        'user  1001    100   1024 1024   ffffffff 00000000 one.match\n'):
+    with self.assertCall(
+        self.call.device._RunPipedShellCommand('ps | grep -F one.match'),
+        ['user  1001    100   1024 1024   ffffffff 00000000 one.match']):
       self.assertEqual({'one.match': '1001'}, self.device.GetPids('one.match'))
 
   def testGetPids_mutlipleMatches(self):
-    with self.assertCall(self.call.adb.Shell('ps'),
-        'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\n'
-        'user  1000    100   1024 1024   ffffffff 00000000 not\n'
-        'user  1001    100   1024 1024   ffffffff 00000000 one.match\n'
-        'user  1002    100   1024 1024   ffffffff 00000000 two.match\n'
-        'user  1003    100   1024 1024   ffffffff 00000000 three.match\n'):
+    with self.assertCall(
+        self.call.device._RunPipedShellCommand('ps | grep -F match'),
+        ['user  1001    100   1024 1024   ffffffff 00000000 one.match',
+         'user  1002    100   1024 1024   ffffffff 00000000 two.match',
+         'user  1003    100   1024 1024   ffffffff 00000000 three.match']):
       self.assertEqual(
           {'one.match': '1001', 'two.match': '1002', 'three.match': '1003'},
           self.device.GetPids('match'))
 
   def testGetPids_exactMatch(self):
-    with self.assertCall(self.call.adb.Shell('ps'),
-        'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\n'
-        'user  1000    100   1024 1024   ffffffff 00000000 not.exact.match\n'
-        'user  1234    100   1024 1024   ffffffff 00000000 exact.match\n'):
+    with self.assertCall(
+        self.call.device._RunPipedShellCommand('ps | grep -F exact.match'),
+        ['user  1000    100   1024 1024   ffffffff 00000000 not.exact.match',
+         'user  1234    100   1024 1024   ffffffff 00000000 exact.match']):
       self.assertEqual(
           {'not.exact.match': '1000', 'exact.match': '1234'},
           self.device.GetPids('exact.match'))
+
+  def testGetPids_quotable(self):
+    with self.assertCall(
+        self.call.device._RunPipedShellCommand("ps | grep -F 'my$process'"),
+        ['user  1234    100   1024 1024   ffffffff 00000000 my$process']):
+      self.assertEqual(
+          {'my$process': '1234'}, self.device.GetPids('my$process'))
 
 
 class DeviceUtilsTakeScreenshotTest(DeviceUtilsTest):
@@ -1433,8 +1492,8 @@ class DeviceUtilsGetMemoryUsageForPidTest(DeviceUtilsTest):
 
   def testGetMemoryUsageForPid_validPid(self):
     with self.assertCalls(
-        (self.call.device.RunShellCommand(
-            ['showmap', '1234'], as_root=True, check_return=True),
+        (self.call.device._RunPipedShellCommand(
+            'showmap 1234 | grep TOTAL', as_root=True),
          ['100 101 102 103 104 105 106 107 TOTAL']),
         (self.call.device.ReadFile('/proc/1234/status', as_root=True),
          'VmHWM: 1024 kB\n')):
@@ -1453,8 +1512,8 @@ class DeviceUtilsGetMemoryUsageForPidTest(DeviceUtilsTest):
 
   def testGetMemoryUsageForPid_noSmaps(self):
     with self.assertCalls(
-        (self.call.device.RunShellCommand(
-            ['showmap', '4321'], as_root=True, check_return=True),
+        (self.call.device._RunPipedShellCommand(
+            'showmap 4321 | grep TOTAL', as_root=True),
          ['cannot open /proc/4321/smaps: No such file or directory']),
         (self.call.device.ReadFile('/proc/4321/status', as_root=True),
          'VmHWM: 1024 kb\n')):
@@ -1462,8 +1521,8 @@ class DeviceUtilsGetMemoryUsageForPidTest(DeviceUtilsTest):
 
   def testGetMemoryUsageForPid_noStatus(self):
     with self.assertCalls(
-        (self.call.device.RunShellCommand(
-            ['showmap', '4321'], as_root=True, check_return=True),
+        (self.call.device._RunPipedShellCommand(
+            'showmap 4321 | grep TOTAL', as_root=True),
          ['100 101 102 103 104 105 106 107 TOTAL']),
         (self.call.device.ReadFile('/proc/4321/status', as_root=True),
          self.CommandError())):

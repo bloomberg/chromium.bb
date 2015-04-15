@@ -575,6 +575,29 @@ class DeviceUtils(object):
     else:
       return output
 
+  def _RunPipedShellCommand(self, script, **kwargs):
+    PIPESTATUS_LEADER = 'PIPESTATUS: '
+
+    script += '; echo "%s${PIPESTATUS[@]}"' % PIPESTATUS_LEADER
+    kwargs['check_return'] = True
+    output = self.RunShellCommand(script, **kwargs)
+    pipestatus_line = output[-1]
+
+    if not pipestatus_line.startswith(PIPESTATUS_LEADER):
+      logging.error('Pipe exit statuses of shell script missing.')
+      raise device_errors.AdbShellCommandFailedError(
+          script, output, status=None,
+          device_serial=self.adb.GetDeviceSerial())
+
+    output = output[:-1]
+    statuses = [
+        int(s) for s in pipestatus_line[len(PIPESTATUS_LEADER):].split()]
+    if any(statuses):
+      raise device_errors.AdbShellCommandFailedError(
+          script, output, status=statuses,
+          device_serial=self.adb.GetDeviceSerial())
+    return output
+
   @decorators.WithTimeoutAndRetriesFromInstance()
   def KillAll(self, process_name, signum=device_signal.SIGKILL, as_root=False,
               blocking=False, quiet=False, timeout=None, retries=None):
@@ -1030,7 +1053,7 @@ class DeviceUtils(object):
     else:
       logging.warning('Could not determine size of %s.', device_path)
 
-    if size is None or size <= self._MAX_ADB_OUTPUT_LENGTH:
+    if 0 < size <= self._MAX_ADB_OUTPUT_LENGTH:
       return _JoinLines(self.RunShellCommand(
           ['cat', device_path], as_root=as_root, check_return=True))
     elif as_root and self.NeedsSU():
@@ -1366,7 +1389,18 @@ class DeviceUtils(object):
       DeviceUnreachableError on missing device.
     """
     procs_pids = {}
-    for line in self.RunShellCommand('ps', check_return=True):
+    try:
+      ps_output = self._RunPipedShellCommand(
+          'ps | grep -F %s' % cmd_helper.SingleQuote(process_name))
+    except device_errors.AdbShellCommandFailedError as e:
+      if e.status and isinstance(e.status, list) and not e.status[0]:
+        # If ps succeeded but grep failed, there were no processes with the
+        # given name.
+        return procs_pids
+      else:
+        raise
+
+    for line in ps_output:
       try:
         ps_data = line.split()
         if process_name in ps_data[-1]:
@@ -1438,10 +1472,8 @@ class DeviceUtils(object):
         'Size', 'Rss', 'Pss', 'Shared_Clean', 'Shared_Dirty', 'Private_Clean',
         'Private_Dirty')
 
-    showmap_out = self.RunShellCommand(
-        ['showmap', str(pid)], as_root=True, check_return=True)
-    if not showmap_out:
-      raise device_errors.CommandFailedError('No output from showmap')
+    showmap_out = self._RunPipedShellCommand(
+        'showmap %d | grep TOTAL' % int(pid), as_root=True)
 
     split_totals = showmap_out[-1].split()
     if (not split_totals

@@ -59,7 +59,11 @@ class AdbShellCommandFailedError(AdbCommandFailedError):
     message.append('  exit status: %s\n' % status)
     if output:
       message.append('  output:\n')
-      message.extend('  - %s\n' % line for line in output.splitlines())
+      if isinstance(output, basestring):
+        output_lines = output.splitlines()
+      else:
+        output_lines = output
+      message.extend('  - %s\n' % line for line in output_lines)
     else:
       message.append("  output: ''\n")
     message = ''.join(message)

@@ -36,7 +36,7 @@ class TestCase(unittest.TestCase):
           expected_call, action = self._expected_calls.pop(0)
           self._test_case.assertTrue(
               received_call == expected_call,
-              msg=('Expected call missmatch:\n'
+              msg=('Expected call mismatch:\n'
                    '  expected: %s\n'
                    '  received: %s\n'
                    % (str(expected_call), str(received_call))))
