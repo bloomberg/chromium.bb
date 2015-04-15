@@ -29,9 +29,11 @@
 
 namespace blink {
 
-SVGTextLayoutEngineBaseline::SVGTextLayoutEngineBaseline(const Font& font)
+SVGTextLayoutEngineBaseline::SVGTextLayoutEngineBaseline(const Font& font, float effectiveZoom)
     : m_font(font)
+    , m_effectiveZoom(effectiveZoom)
 {
+    ASSERT(m_effectiveZoom);
 }
 
 float SVGTextLayoutEngineBaseline::calculateBaselineShift(const ComputedStyle& style) const
@@ -40,11 +42,11 @@ float SVGTextLayoutEngineBaseline::calculateBaselineShift(const ComputedStyle& s
 
     switch (svgStyle.baselineShift()) {
     case BS_LENGTH:
-        return SVGLengthContext::valueForLength(svgStyle.baselineShiftValue(), style, m_font.fontDescription().computedPixelSize());
+        return SVGLengthContext::valueForLength(svgStyle.baselineShiftValue(), style, m_font.fontDescription().computedPixelSize() / m_effectiveZoom);
     case BS_SUB:
-        return -m_font.fontMetrics().floatHeight() / 2;
+        return -m_font.fontMetrics().floatHeight() / 2 / m_effectiveZoom;
     case BS_SUPER:
-        return m_font.fontMetrics().floatHeight() / 2;
+        return m_font.fontMetrics().floatHeight() / 2 / m_effectiveZoom;
     default:
         ASSERT_NOT_REACHED();
         return 0;
@@ -114,26 +116,29 @@ float SVGTextLayoutEngineBaseline::calculateAlignmentBaselineShift(bool isVertic
     }
 
     const FontMetrics& fontMetrics = m_font.fontMetrics();
+    float ascent = fontMetrics.floatAscent() / m_effectiveZoom;
+    float descent = fontMetrics.floatDescent() / m_effectiveZoom;
+    float xheight = fontMetrics.xHeight() / m_effectiveZoom;
 
     // Note: http://wiki.apache.org/xmlgraphics-fop/LineLayout/AlignmentHandling
     switch (baseline) {
     case AB_BEFORE_EDGE:
     case AB_TEXT_BEFORE_EDGE:
-        return fontMetrics.floatAscent();
+        return ascent;
     case AB_MIDDLE:
-        return fontMetrics.xHeight() / 2;
+        return xheight / 2;
     case AB_CENTRAL:
-        return (fontMetrics.floatAscent() - fontMetrics.floatDescent()) / 2;
+        return (ascent - descent) / 2;
     case AB_AFTER_EDGE:
     case AB_TEXT_AFTER_EDGE:
     case AB_IDEOGRAPHIC:
-        return -fontMetrics.floatDescent();
+        return -descent;
     case AB_ALPHABETIC:
         return 0;
     case AB_HANGING:
-        return fontMetrics.floatAscent() * 8 / 10.f;
+        return ascent * 8 / 10.f;
     case AB_MATHEMATICAL:
-        return fontMetrics.floatAscent() / 2;
+        return ascent / 2;
     case AB_BASELINE:
     default:
         ASSERT_NOT_REACHED();
@@ -184,12 +189,16 @@ float SVGTextLayoutEngineBaseline::calculateGlyphAdvanceAndOrientation(bool isVe
 
     const FontMetrics& fontMetrics = m_font.fontMetrics();
 
+    float ascent = fontMetrics.floatAscent() / m_effectiveZoom;
+    float descent = fontMetrics.floatDescent() / m_effectiveZoom;
+
     // Vertical orientation handling.
     if (isVerticalText) {
-        float ascentMinusDescent = fontMetrics.floatAscent() - fontMetrics.floatDescent();
+        float ascentMinusDescent = ascent - descent;
+
         if (!angle) {
             xOrientationShift = (ascentMinusDescent - metrics.width()) / 2;
-            yOrientationShift = fontMetrics.floatAscent();
+            yOrientationShift = ascent;
         } else if (angle == 180) {
             xOrientationShift = (ascentMinusDescent + metrics.width()) / 2;
         } else if (angle == 270) {
@@ -209,7 +218,7 @@ float SVGTextLayoutEngineBaseline::calculateGlyphAdvanceAndOrientation(bool isVe
         yOrientationShift = -metrics.width();
     } else if (angle == 180) {
         xOrientationShift = metrics.width();
-        yOrientationShift = -fontMetrics.floatAscent();
+        yOrientationShift = -ascent;
     } else if (angle == 270) {
         xOrientationShift = metrics.width();
     }

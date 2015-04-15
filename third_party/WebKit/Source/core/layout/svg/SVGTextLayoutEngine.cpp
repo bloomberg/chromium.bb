@@ -441,7 +441,7 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, cons
     const Font& font = style.font();
 
     SVGTextLayoutEngineSpacing spacingLayout(font, style.effectiveZoom());
-    SVGTextLayoutEngineBaseline baselineLayout(font);
+    SVGTextLayoutEngineBaseline baselineLayout(font, style.effectiveZoom());
 
     bool didStartTextFragment = false;
     bool applySpacingToNextCharacter = false;

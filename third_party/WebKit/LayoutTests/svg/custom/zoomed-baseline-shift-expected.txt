@@ -1,0 +1,18 @@
+beforeinterafter
+This test requires the Ahem font
+
+This is a testharness.js-based test.
+PASS Text bounds height at zoom 1 with baseline-shift=sub 
+PASS Text bounds height at zoom 4 with baseline-shift=sub 
+PASS Text bounds height at zoom 16 with baseline-shift=sub 
+PASS Text bounds height at zoom 1 with baseline-shift=super 
+PASS Text bounds height at zoom 4 with baseline-shift=super 
+PASS Text bounds height at zoom 16 with baseline-shift=super 
+PASS Text bounds height at zoom 1 with baseline-shift=10px 
+PASS Text bounds height at zoom 4 with baseline-shift=10px 
+PASS Text bounds height at zoom 16 with baseline-shift=10px 
+PASS Text bounds height at zoom 1 with baseline-shift=-50% 
+PASS Text bounds height at zoom 4 with baseline-shift=-50% 
+PASS Text bounds height at zoom 16 with baseline-shift=-50% 
+Harness: the test ran to completion.
+

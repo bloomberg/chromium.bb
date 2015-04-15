@@ -1,0 +1,9 @@
+您好SVG
+ This is a testharness.js-based test.
+PASS Position of character index 0 unaffected by zoom level 
+PASS Position of character index 1 unaffected by zoom level 
+PASS Position of character index 2 unaffected by zoom level 
+PASS Position of character index 3 unaffected by zoom level 
+PASS Position of character index 4 unaffected by zoom level 
+Harness: the test ran to completion.
+

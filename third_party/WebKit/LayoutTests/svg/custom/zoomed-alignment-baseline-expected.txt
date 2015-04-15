@@ -1,0 +1,39 @@
+beforeinterafter
+This test requires the Ahem font
+
+This is a testharness.js-based test.
+PASS Text bounds height at zoom 1 with alignment-baseline=baseline 
+PASS Text bounds height at zoom 4 with alignment-baseline=baseline 
+PASS Text bounds height at zoom 16 with alignment-baseline=baseline 
+PASS Text bounds height at zoom 1 with alignment-baseline=before-edge 
+PASS Text bounds height at zoom 4 with alignment-baseline=before-edge 
+PASS Text bounds height at zoom 16 with alignment-baseline=before-edge 
+PASS Text bounds height at zoom 1 with alignment-baseline=text-before-edge 
+PASS Text bounds height at zoom 4 with alignment-baseline=text-before-edge 
+PASS Text bounds height at zoom 16 with alignment-baseline=text-before-edge 
+PASS Text bounds height at zoom 1 with alignment-baseline=middle 
+PASS Text bounds height at zoom 4 with alignment-baseline=middle 
+PASS Text bounds height at zoom 16 with alignment-baseline=middle 
+PASS Text bounds height at zoom 1 with alignment-baseline=central 
+PASS Text bounds height at zoom 4 with alignment-baseline=central 
+PASS Text bounds height at zoom 16 with alignment-baseline=central 
+PASS Text bounds height at zoom 1 with alignment-baseline=after-edge 
+PASS Text bounds height at zoom 4 with alignment-baseline=after-edge 
+PASS Text bounds height at zoom 16 with alignment-baseline=after-edge 
+PASS Text bounds height at zoom 1 with alignment-baseline=text-after-edge 
+PASS Text bounds height at zoom 4 with alignment-baseline=text-after-edge 
+PASS Text bounds height at zoom 16 with alignment-baseline=text-after-edge 
+PASS Text bounds height at zoom 1 with alignment-baseline=ideograpic 
+PASS Text bounds height at zoom 4 with alignment-baseline=ideograpic 
+PASS Text bounds height at zoom 16 with alignment-baseline=ideograpic 
+PASS Text bounds height at zoom 1 with alignment-baseline=alphabetic 
+PASS Text bounds height at zoom 4 with alignment-baseline=alphabetic 
+PASS Text bounds height at zoom 16 with alignment-baseline=alphabetic 
+PASS Text bounds height at zoom 1 with alignment-baseline=hanging 
+PASS Text bounds height at zoom 4 with alignment-baseline=hanging 
+PASS Text bounds height at zoom 16 with alignment-baseline=hanging 
+PASS Text bounds height at zoom 1 with alignment-baseline=mathematical 
+PASS Text bounds height at zoom 4 with alignment-baseline=mathematical 
+PASS Text bounds height at zoom 16 with alignment-baseline=mathematical 
+Harness: the test ran to completion.
+
