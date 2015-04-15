@@ -233,7 +233,7 @@ bool isResourceHotForCaching(CachedMetadataHandler* cacheHandler, int hotHours)
 
 // Final compile call for a streamed compilation. Most decisions have already
 // been made, but we need to write back data into the cache.
-v8::MaybeLocal<v8::Script> postStreamCompile(CachedMetadataHandler* cacheHandler, ScriptStreamer* streamer, v8::Isolate* isolate, v8::Local<v8::String> code, v8::ScriptOrigin origin)
+v8::MaybeLocal<v8::Script> postStreamCompile(V8CacheOptions cacheOptions, CachedMetadataHandler* cacheHandler, ScriptStreamer* streamer, v8::Isolate* isolate, v8::Local<v8::String> code, v8::ScriptOrigin origin)
 {
     V8CompileHistogram histogramScope(V8CompileHistogram::Noncacheable);
     v8::MaybeLocal<v8::Script> script = v8::ScriptCompiler::Compile(isolate->GetCurrentContext(), streamer->source(), code, origin);
@@ -241,24 +241,32 @@ v8::MaybeLocal<v8::Script> postStreamCompile(CachedMetadataHandler* cacheHandler
     if (!cacheHandler)
         return script;
 
-    // Whether to produce the cached data or not is decided when the
-    // streamer is started. Here we only need to get the data out.
-    const v8::ScriptCompiler::CachedData* newCachedData = streamer->source()->GetCachedData();
-    if (newCachedData) {
-        cacheHandler->clearCachedMetadata(CachedMetadataHandler::CacheLocally);
-        v8::ScriptCompiler::CompileOptions options = streamer->compileOptions();
-        switch (options) {
-        case v8::ScriptCompiler::kProduceParserCache:
-            cacheHandler->setCachedMetadata(cacheTag(CacheTagParser, cacheHandler), reinterpret_cast<const char*>(newCachedData->data), newCachedData->length, CachedMetadataHandler::CacheLocally);
+    // If the non-streaming compiler uses the parser cache, retrieve and store
+    // the cache data. If the code cache uses time stamp as heuristic, set that
+    // time stamp.
+    switch (cacheOptions) {
+    case V8CacheOptionsParseMemory:
+    case V8CacheOptionsParse: {
+        const v8::ScriptCompiler::CachedData* newCachedData = streamer->source()->GetCachedData();
+        if (!newCachedData)
             break;
-        case v8::ScriptCompiler::kProduceCodeCache:
-            cacheHandler->setCachedMetadata(cacheTag(CacheTagCode, cacheHandler), reinterpret_cast<const char*>(newCachedData->data), newCachedData->length, CachedMetadataHandler::SendToPlatform);
-            break;
-        default:
-            break;
-        }
+        CachedMetadataHandler::CacheType cacheType = (cacheOptions == V8CacheOptionsParse) ? CachedMetadataHandler::SendToPlatform : CachedMetadataHandler::CacheLocally;
+        cacheHandler->clearCachedMetadata(cacheType);
+        cacheHandler->setCachedMetadata(cacheTag(CacheTagParser, cacheHandler), reinterpret_cast<const char*>(newCachedData->data), newCachedData->length, cacheType);
+        break;
     }
 
+    case V8CacheOptionsDefault:
+    case V8CacheOptionsHeuristics:
+    case V8CacheOptionsHeuristicsMobile:
+    case V8CacheOptionsRecent:
+    case V8CacheOptionsRecentSmall:
+        setCacheTimeStamp(cacheHandler);
+        break;
+
+    default:
+        break;
+    }
     return script;
 }
 
@@ -354,7 +362,7 @@ PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, CachedM
 }
 
 // Select a compile function for a streaming compile.
-PassOwnPtr<CompileFn> selectCompileFunction(ScriptResource* resource, ScriptStreamer* streamer)
+PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, ScriptResource* resource, ScriptStreamer* streamer)
 {
     // We don't stream scripts which don't have a Resource.
     ASSERT(resource);
@@ -362,7 +370,7 @@ PassOwnPtr<CompileFn> selectCompileFunction(ScriptResource* resource, ScriptStre
     ASSERT(!resource->errorOccurred());
     ASSERT(streamer->isFinished());
     ASSERT(!streamer->streamingSuppressed());
-    return WTF::bind<v8::Isolate*, v8::Local<v8::String>, v8::ScriptOrigin>(postStreamCompile, resource->cacheHandler(), streamer);
+    return WTF::bind<v8::Isolate*, v8::Local<v8::String>, v8::ScriptOrigin>(postStreamCompile, cacheOptions, resource->cacheHandler(), streamer);
 }
 } // namespace
 
@@ -404,7 +412,7 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::compileScript(v8::Local<v8::String> c
         v8String(isolate, sourceMapUrl));
 
     OwnPtr<CompileFn> compileFn = streamer
-        ? selectCompileFunction(resource, streamer)
+        ? selectCompileFunction(cacheOptions, resource, streamer)
         : selectCompileFunction(cacheOptions, cacheHandler, code);
 
     return (*compileFn)(isolate, code, origin);
