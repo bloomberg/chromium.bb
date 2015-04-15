@@ -350,6 +350,14 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
 
     case CSSSelector::ShadowDeep:
         {
+            if (context.selector->relationIsAffectedByPseudoContent()) {
+                for (Element* element = context.element; element; element = parentOrShadowHostButDisallowEscapingClosedShadowTree(*element)) {
+                    if (matchForShadowDistributed(element, siblingTraversalStrategy, nextContext, result) == SelectorMatches)
+                        return SelectorMatches;
+                }
+                return SelectorFailsCompletely;
+            }
+
             nextContext.isSubSelector = false;
             nextContext.elementStyle = 0;
             for (nextContext.element = parentOrShadowHostButDisallowEscapingClosedShadowTree(*context.element); nextContext.element; nextContext.element = parentOrShadowHostButDisallowEscapingClosedShadowTree(*nextContext.element)) {
