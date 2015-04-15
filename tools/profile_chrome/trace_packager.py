@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import codecs
 import gzip
 import json
 import os
@@ -21,7 +22,7 @@ from trace_viewer.build import trace2html
 
 
 def _PackageTracesAsHtml(trace_files, html_file):
-  with open(html_file, 'w') as f:
+  with codecs.open(html_file, mode='w', encoding='utf-8') as f:
     trace2html.WriteHTMLForTracesToFile(trace_files, f)
   for trace_file in trace_files:
     os.unlink(trace_file)
