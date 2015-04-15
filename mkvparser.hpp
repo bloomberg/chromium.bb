@@ -737,14 +737,6 @@ class Cues {
       long long time_ns, const Track*, const CuePoint*&,
       const CuePoint::TrackPosition*&) const;
 
-#if 0
-    bool FindNext(  //upper_bound of time_ns
-        long long time_ns,
-        const Track*,
-        const CuePoint*&,
-        const CuePoint::TrackPosition*&) const;
-#endif
-
   const CuePoint* GetFirst() const;
   const CuePoint* GetLast() const;
   const CuePoint* GetNext(const CuePoint*) const;
@@ -883,13 +875,6 @@ class Segment {
 
   long ParseNext(const Cluster* pCurr, const Cluster*& pNext, long long& pos,
                  long& size);
-
-#if 0
-    //This pair parses one cluster, but only changes the state of the
-    //segment object when the cluster is actually added to the index.
-    long ParseCluster(long long& cluster_pos, long long& new_pos) const;
-    bool AddCluster(long long cluster_pos, long long new_pos);
-#endif
 
   const SeekHead* GetSeekHead() const;
   const Tracks* GetTracks() const;
