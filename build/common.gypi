@@ -861,7 +861,7 @@
         # are using a custom toolchain and need to control -B in ldflags.
         # Do not use 32-bit gold on 32-bit hosts as it runs out address space
         # for component=static_library builds.
-        ['OS=="linux" and (target_arch=="x64" or target_arch=="arm")', {
+        ['(OS=="linux" or OS=="android") and (target_arch=="x64" or target_arch=="arm")', {
           'linux_use_bundled_gold%': 1,
         }, {
           'linux_use_bundled_gold%': 0,
@@ -3994,6 +3994,8 @@
                           '-no-integrated-as',
                           '-B<(android_toolchain)',  # Else /usr/bin/as gets picked up.
                         ],
+                      }],
+                      ['clang==1 and linux_use_bundled_gold==0', {
                         'ldflags': [
                           # Let clang find the ld.gold in the NDK.
                           '--gcc-toolchain=<(android_toolchain)/..',
