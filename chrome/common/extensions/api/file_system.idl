@@ -180,12 +180,16 @@ namespace fileSystem {
     // "fileSystem": {"write"}</code> permission in the manifest. Available to
     // kiosk apps running in kiosk session only. For manual-launch kiosk mode, a
     // confirmation dialog will be shown on top of the active app window.
+    // In case of an error, <code>fileSystem</code> will be undefined, and
+    // <code>chrome.runtime.lastError</code> will be set.
     [nodoc] static void requestFileSystem(RequestFileSystemOptions options,
                                           RequestFileSystemCallback callback);
 
     // Returns a list of volumes available for <code>requestFileSystem()</code>.
     // The <code>"fileSystem": {"requestFileSystem"}</code> manifest permission
     // is required. Available to kiosk apps running in the kiosk session only.
+    // In case of an error, <code>volumes</code> will be undefined, and <code>
+    // chrome.runtime.lastError</code> will be set.
     [nodoc] static void getVolumeList(GetVolumeListCallback callback);
 
     // Observes a directory entry. Emits an event if the tracked directory is
