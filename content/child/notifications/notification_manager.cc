@@ -5,6 +5,7 @@
 #include "content/child/notifications/notification_manager.h"
 
 #include "base/lazy_instance.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_local.h"
@@ -164,10 +165,23 @@ void NotificationManager::close(blink::WebNotificationDelegate* delegate) {
 
 void NotificationManager::closePersistent(
     const blink::WebSerializedOrigin& origin,
-    const blink::WebString& persistent_notification_id) {
+    const blink::WebString& persistent_notification_id_string) {
+  // TODO(peter): Blink should store the persistent_notification_id as an
+  // int64_t instead of a string. The id, created by Chromium, is a decimal
+  // number that fits in an int64_t, so convert it until the API updates.
+  base::string16 string_value = persistent_notification_id_string;
+
+  int64_t persistent_notification_id = 0;
+  if (!base::StringToInt64(string_value,
+                           &persistent_notification_id)) {
+    NOTREACHED() << "Unable to close persistent notification; invalid id: "
+                  << string_value;
+    return;
+  }
+
   thread_safe_sender_->Send(new PlatformNotificationHostMsg_ClosePersistent(
       GURL(origin.string()),
-      base::UTF16ToUTF8(persistent_notification_id)));
+      persistent_notification_id));
 }
 
 void NotificationManager::notifyDelegateDestroyed(

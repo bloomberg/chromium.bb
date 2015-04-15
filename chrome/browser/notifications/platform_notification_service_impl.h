@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_PLATFORM_NOTIFICATION_SERVICE_IMPL_H_
 #define CHROME_BROWSER_NOTIFICATIONS_PLATFORM_NOTIFICATION_SERVICE_IMPL_H_
 
+#include <stdint.h>
+#include <map>
+
 #include "base/gtest_prod_util.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string16.h"
@@ -34,10 +37,8 @@ class PlatformNotificationServiceImpl
   // needed, on which the event will be fired. Must be called on the UI thread.
   void OnPersistentNotificationClick(
       content::BrowserContext* browser_context,
-      int64 service_worker_registration_id,
-      const std::string& notification_id,
+      int64_t persistent_notification_id,
       const GURL& origin,
-      const content::PlatformNotificationData& notification_data,
       const base::Callback<void(content::PersistentNotificationStatus)>&
           callback) const;
 
@@ -63,13 +64,13 @@ class PlatformNotificationServiceImpl
       base::Closure* cancel_callback) override;
   void DisplayPersistentNotification(
       content::BrowserContext* browser_context,
-      int64 service_worker_registration_id,
+      int64_t persistent_notification_id,
       const GURL& origin,
       const SkBitmap& icon,
       const content::PlatformNotificationData& notification_data) override;
   void ClosePersistentNotification(
       content::BrowserContext* browser_context,
-      const std::string& persistent_notification_id) override;
+      int64_t persistent_notification_id) override;
 
  private:
   friend struct DefaultSingletonTraits<PlatformNotificationServiceImpl>;
@@ -113,6 +114,10 @@ class PlatformNotificationServiceImpl
 
   // Weak reference. Ownership maintains with the test.
   NotificationUIManager* notification_ui_manager_for_tests_;
+
+  // Mapping between a persistent notification id and the id of the associated
+  // message_center::Notification object. Must only be used on the UI thread.
+  std::map<int64_t, std::string> persistent_notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformNotificationServiceImpl);
 };

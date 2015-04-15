@@ -5,6 +5,7 @@
 #ifndef CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_NOTIFICATION_MANAGER_H_
 #define CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_NOTIFICATION_MANAGER_H_
 
+#include <stdint.h>
 #include <map>
 #include <string>
 
@@ -13,7 +14,6 @@
 #include "base/synchronization/lock.h"
 #include "content/public/browser/platform_notification_service.h"
 #include "content/public/common/permission_status.mojom.h"
-#include "content/public/common/platform_notification_data.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationPermission.h"
 #include "url/gurl.h"
 
@@ -70,13 +70,13 @@ class LayoutTestNotificationManager : public PlatformNotificationService {
                            base::Closure* cancel_callback) override;
   void DisplayPersistentNotification(
       BrowserContext* browser_context,
-      int64 service_worker_registration_id,
+      int64_t persistent_notification_id,
       const GURL& origin,
       const SkBitmap& icon,
       const PlatformNotificationData& notification_data) override;
   void ClosePersistentNotification(
       BrowserContext* browser_context,
-      const std::string& persistent_notification_id) override;
+      int64_t persistent_notification_id) override;
 
  private:
   // Closes the notification titled |title|. Must be called on the UI thread.
@@ -90,13 +90,9 @@ class LayoutTestNotificationManager : public PlatformNotificationService {
 
   // Structure to represent the information of a persistent notification.
   struct PersistentNotification {
-    PersistentNotification();
-
-    BrowserContext* browser_context;
+    BrowserContext* browser_context = nullptr;
     GURL origin;
-    int64 service_worker_registration_id;
-    PlatformNotificationData notification_data;
-    std::string persistent_id;
+    int64_t persistent_id = 0;
   };
 
   std::map<GURL, blink::WebNotificationPermission> permission_map_;

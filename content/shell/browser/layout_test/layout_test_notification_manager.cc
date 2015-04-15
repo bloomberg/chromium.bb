@@ -24,10 +24,6 @@ void OnEventDispatchComplete(PersistentNotificationStatus status) {}
 LayoutTestNotificationManager::LayoutTestNotificationManager()
     : weak_factory_(this) {}
 
-LayoutTestNotificationManager::PersistentNotification::PersistentNotification()
-    : browser_context(nullptr),
-      service_worker_registration_id(0) {}
-
 LayoutTestNotificationManager::~LayoutTestNotificationManager() {}
 
 PermissionStatus LayoutTestNotificationManager::RequestPermission(
@@ -84,7 +80,7 @@ void LayoutTestNotificationManager::DisplayNotification(
 
 void LayoutTestNotificationManager::DisplayPersistentNotification(
     BrowserContext* browser_context,
-    int64 service_worker_registration_id,
+    int64_t persistent_notification_id,
     const GURL& origin,
     const SkBitmap& icon,
     const PlatformNotificationData& notification_data) {
@@ -96,16 +92,14 @@ void LayoutTestNotificationManager::DisplayPersistentNotification(
   PersistentNotification notification;
   notification.browser_context = browser_context;
   notification.origin = origin;
-  notification.notification_data = notification_data;
-  notification.service_worker_registration_id = service_worker_registration_id;
-  notification.persistent_id = base::GenerateGUID();
+  notification.persistent_id = persistent_notification_id;
 
   persistent_notifications_[title] = notification;
 }
 
 void LayoutTestNotificationManager::ClosePersistentNotification(
     BrowserContext* browser_context,
-    const std::string& persistent_notification_id) {
+    int64_t persistent_notification_id) {
   for (const auto& iter : persistent_notifications_) {
     if (iter.second.persistent_id != persistent_notification_id)
       continue;
@@ -134,10 +128,8 @@ void LayoutTestNotificationManager::SimulateClick(const std::string& title) {
   content::NotificationEventDispatcher::GetInstance()
       ->DispatchNotificationClickEvent(
           notification.browser_context,
-          notification.origin,
-          notification.service_worker_registration_id,
           notification.persistent_id,
-          notification.notification_data,
+          notification.origin,
           base::Bind(&OnEventDispatchComplete));
 }
 

@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.notifications;
 import android.app.Notification;
 import android.graphics.Bitmap;
 import android.os.Build;
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -230,28 +229,6 @@ public class NotificationUIManagerTest extends ChromeShellTestBase {
 
         assertEquals(generatedIcon.getWidth(), notification.largeIcon.getWidth());
         assertEquals(generatedIcon.getHeight(), notification.largeIcon.getHeight());
-    }
-
-    /*
-     * Verifies that starting the PendingIntent stored as the notification's delete intent will
-     * close the notification.
-     */
-    /* @MediumTest */
-    @FlakyTest
-    @Feature({"Browser", "Notifications"})
-    public void testNotificationDeleteIntentClosesNotification() throws Exception {
-        setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
-
-        Notification notification = showAndGetNotification("MyNotification", "{}");
-        assertEquals(1, mMockNotificationManager.getNotifications().size());
-
-        // Sending the PendingIntent simulates dismissing (swiping away) the notification.
-        assertNotNull(notification.deleteIntent);
-        notification.deleteIntent.send();
-        // The deleteIntent should trigger a call to cancel() in the NotificationManager.
-        assertTrue(waitForNotificationManagerMutation());
-
-        assertEquals(0, mMockNotificationManager.getNotifications().size());
     }
 
     /*

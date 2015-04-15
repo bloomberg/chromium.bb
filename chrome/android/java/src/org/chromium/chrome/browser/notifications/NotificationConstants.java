@@ -14,13 +14,19 @@ public class NotificationConstants {
     public static final String ACTION_CLOSE_NOTIFICATION =
             "org.chromium.chrome.browser.notifications.CLOSE_NOTIFICATION";
 
-    public static final String EXTRA_NOTIFICATION_ID = "notification_id";
+    /**
+     * Name of the Intent extra set by the framework when a notification preferences intent has
+     * been triggered from there, which could be one of the setting gears in system UI.
+     */
     public static final String EXTRA_NOTIFICATION_TAG = "notification_tag";
 
-    // TODO(peter): Remove these extras once Notifications are powered by a database on the
-    // native side, that contains all the additional information.
-    public static final String EXTRA_NOTIFICATION_PLATFORM_ID = "notification_platform_id";
-    public static final String EXTRA_NOTIFICATION_DATA = "notification_data";
+    /**
+     * Names of the Intent extras used for Intents related to notifications. These intents are set
+     * and owned by Chromium.
+     */
+    public static final String EXTRA_PERSISTENT_NOTIFICATION_ID = "notification_persistent_id";
+    public static final String EXTRA_NOTIFICATION_INFO_ORIGIN = "notification_info_origin";
+    public static final String EXTRA_NOTIFICATION_INFO_TAG = "notification_info_tag";
 
     /**
      * Unique identifier for a single sync notification. Since the notification ID is reused,

@@ -17,21 +17,27 @@ class ProfileNotification;
 
 // Implementation of the Notification UI Manager for Android, which defers to
 // the Android framework for displaying notifications.
+//
+// The Android notification manager only operates reliably on notifications
+// that were opened or interacted with since the last restart of Chrome.
 class NotificationUIManagerAndroid : public NotificationUIManager {
  public:
   NotificationUIManagerAndroid();
   ~NotificationUIManagerAndroid() override;
 
-  // Called by the Java implementation when a notification has been clicked on.
+  // Called by the Java implementation when the notification has been clicked.
   bool OnNotificationClicked(JNIEnv* env,
                              jobject java_object,
-                             jstring notification_id,
-                             jbyteArray serialized_notification_data);
+                             jlong persistent_notification_id,
+                             jstring java_origin,
+                             jstring java_tag);
 
-  // Called by the Java implementation when a notification has been closed.
+  // Called by the Java implementation when the notification has been closed.
   bool OnNotificationClosed(JNIEnv* env,
                             jobject java_object,
-                            jstring notification_id);
+                            jlong persistent_notification_id,
+                            jstring java_origin,
+                            jstring java_tag);
 
   // NotificationUIManager implementation;
   void Add(const Notification& notification, Profile* profile) override;
@@ -75,11 +81,14 @@ class NotificationUIManagerAndroid : public NotificationUIManager {
   // Map from a notification id to the associated ProfileNotification*.
   std::map<std::string, ProfileNotification*> profile_notifications_;
 
-  // Holds the tag of a notification, and its origin.
+  // Pair containing the information necessary in order to enable closing
+  // notifications that were not created by this instance of the manager: the
+  // notification's origin and tag. This list may not contain the notifications
+  // that have not been interacted with since the last restart of Chrome.
   using RegeneratedNotificationInfo = std::pair<std::string, std::string>;
 
-  // Map from notification id to RegeneratedNotificationInfo.
-  std::map<std::string, RegeneratedNotificationInfo>
+  // Map from persistent notification id to RegeneratedNotificationInfo.
+  std::map<int64_t, RegeneratedNotificationInfo>
       regenerated_notification_infos_;
 
   base::android::ScopedJavaGlobalRef<jobject> java_object_;

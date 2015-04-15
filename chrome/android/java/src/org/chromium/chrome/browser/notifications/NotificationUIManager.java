@@ -136,20 +136,15 @@ public class NotificationUIManager {
             }
         }
 
-        String notificationId = intent.getStringExtra(NotificationConstants.EXTRA_NOTIFICATION_ID);
+        long persistentNotificationId =
+                intent.getLongExtra(NotificationConstants.EXTRA_PERSISTENT_NOTIFICATION_ID, -1);
+        String origin = intent.getStringExtra(NotificationConstants.EXTRA_NOTIFICATION_INFO_ORIGIN);
+        String tag = intent.getStringExtra(NotificationConstants.EXTRA_NOTIFICATION_INFO_TAG);
+
         if (NotificationConstants.ACTION_CLICK_NOTIFICATION.equals(intent.getAction())) {
-            if (!intent.hasExtra(NotificationConstants.EXTRA_NOTIFICATION_DATA)) {
-                Log.e(TAG, "Not all required notification data has been set in the intent.");
-                return false;
-            }
-
-            byte[] notificationData =
-                    intent.getByteArrayExtra(NotificationConstants.EXTRA_NOTIFICATION_DATA);
-            return sInstance.onNotificationClicked(notificationId, notificationData);
-        }
-
-        if (NotificationConstants.ACTION_CLOSE_NOTIFICATION.equals(intent.getAction())) {
-            return sInstance.onNotificationClosed(notificationId);
+            return sInstance.onNotificationClicked(persistentNotificationId, origin, tag);
+        } else if (NotificationConstants.ACTION_CLOSE_NOTIFICATION.equals(intent.getAction())) {
+            return sInstance.onNotificationClosed(persistentNotificationId, origin, tag);
         }
 
         Log.e(TAG, "Unrecognized Notification action: " + intent.getAction());
@@ -203,12 +198,25 @@ public class NotificationUIManager {
         applicationContext.startActivity(preferencesIntent);
     }
 
-    private PendingIntent getPendingIntent(String action, String notificationId,
-                                           byte[] notificationData, Uri intentData) {
+    /**
+     * Returns the PendingIntent for completing |action| on the notification identified by the data
+     * in the other parameters. |intentData| is used to ensure uniqueness of the PendingIntent.
+     *
+     * @param action The action this pending intent will represent.
+     * @param persistentNotificationId The persistent id of the notification.
+     * @param origin The origin to whom the notification belongs.
+     * @param tag The tag of the notification. May be NULL.
+     * @param intentData URI used to ensure uniqueness of the created PendingIntent.
+     */
+    private PendingIntent getPendingIntent(String action, long persistentNotificationId,
+                                           String origin, @Nullable String tag, Uri intentData) {
         Intent intent = new Intent(action, intentData);
         intent.setClass(mAppContext, NotificationService.Receiver.class);
-        intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_ID, notificationId);
-        intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_DATA, notificationData);
+
+        intent.putExtra(NotificationConstants.EXTRA_PERSISTENT_NOTIFICATION_ID,
+                persistentNotificationId);
+        intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_INFO_ORIGIN, origin);
+        intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_INFO_TAG, tag);
 
         return PendingIntent.getBroadcast(mAppContext, PENDING_INTENT_REQUEST_CODE, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
@@ -227,13 +235,13 @@ public class NotificationUIManager {
      * If the input tag is empty the output is PREFIX + SEPARATOR + ORIGIN + SEPARATOR +
      * NOTIFICATION_ID.
      *
-     * @param tag A string identifier for this notification.
-     * @param notificationId An string identifier for this notification.
+     * @param persistentNotificationId The persistent id of the notification.
      * @param origin The origin for which the notification is shown.
+     * @param tag A string identifier for this notification.
      * @return The generated platform tag.
      */
-    private static String makePlatformTag(@Nullable String tag, String notificationId,
-                                          String origin) {
+    private static String makePlatformTag(long persistentNotificationId, String origin,
+                                          @Nullable String tag) {
         // The given tag may contain the separator character, so add it last to make reading the
         // preceding origin token reliable. If no tag was specified (it is the default empty
         // string), make the platform tag unique by appending the notification id.
@@ -242,11 +250,13 @@ public class NotificationUIManager {
                 .append(NotificationConstants.NOTIFICATION_TAG_SEPARATOR)
                 .append(origin)
                 .append(NotificationConstants.NOTIFICATION_TAG_SEPARATOR);
+
         if (TextUtils.isEmpty(tag)) {
-            builder.append(notificationId);
+            builder.append(persistentNotificationId);
         } else {
             builder.append(tag);
         }
+
         return builder.toString();
     }
 
@@ -280,25 +290,24 @@ public class NotificationUIManager {
     }
 
     /**
-     * Displays a notification with the given |notificationId|, |title|, |body| and |icon|.
+     * Displays a notification with the given details.
      *
+     * @param persistentNotificationId The persistent id of the notification.
+     * @param origin Full text of the origin, including the protocol, owning this notification.
      * @param tag A string identifier for this notification. If the tag is not empty, the new
      *            notification will replace the previous notification with the same tag and origin,
      *            if present. If no matching previous notification is present, the new one will just
      *            be added.
-     * @param notificationId Unique id provided by the Chrome Notification system.
      * @param title Title to be displayed in the notification.
      * @param body Message to be displayed in the notification. Will be trimmed to one line of
      *             text by the Android notification system.
      * @param icon Icon to be displayed in the notification. When this isn't a valid Bitmap, a
      *             default icon will be generated instead.
-     * @param origin Full text of the origin, including the protocol, owning this notification.
      * @param silent Whether the default sound, vibration and lights should be suppressed.
-     * @param notificationData Serialized data associated with the notification.
      */
     @CalledByNative
-    private void displayNotification(String tag, String notificationId, String title, String body,
-            Bitmap icon, String origin, boolean silent, byte[] notificationData) {
+    private void displayNotification(long persistentNotificationId, String origin, String tag,
+            String title, String body, Bitmap icon, boolean silent) {
         if (icon == null || icon.getWidth() == 0) {
             icon = getIconGenerator().generateIconForUrl(origin, true);
         }
@@ -308,7 +317,8 @@ public class NotificationUIManager {
         // The data used to make each intent unique according to the rules of Intent#filterEquals.
         // Without this, the pending intents derived from them may be reused, because extras are
         // not taken into account for the filterEquals comparison.
-        Uri intentData = Uri.parse(origin).buildUpon().fragment(notificationId).build();
+        Uri intentData = Uri.parse(origin).buildUpon().fragment(
+                String.valueOf(persistentNotificationId)).build();
 
         // Set up a pending intent for going to the settings screen for |origin|.
         Intent settingsIntent = PreferencesLauncher.createIntentForSettingsPage(
@@ -316,6 +326,7 @@ public class NotificationUIManager {
         settingsIntent.setData(intentData);
         settingsIntent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS,
                 SingleWebsitePreferences.createFragmentArgsForSite(origin));
+
         PendingIntent pendingSettingsIntent = PendingIntent.getActivity(mAppContext,
                 PENDING_INTENT_REQUEST_CODE, settingsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -327,10 +338,10 @@ public class NotificationUIManager {
                 .setSmallIcon(R.drawable.notification_badge)
                 .setContentIntent(getPendingIntent(
                         NotificationConstants.ACTION_CLICK_NOTIFICATION,
-                        notificationId, notificationData, intentData))
+                        persistentNotificationId, origin, tag, intentData))
                 .setDeleteIntent(getPendingIntent(
                         NotificationConstants.ACTION_CLOSE_NOTIFICATION,
-                        notificationId, notificationData, intentData))
+                        persistentNotificationId, origin, tag, intentData))
                 .addAction(R.drawable.settings_cog,
                            res.getString(R.string.page_info_site_settings_button),
                            pendingSettingsIntent)
@@ -340,7 +351,7 @@ public class NotificationUIManager {
         // has been marked as being silent, for example because it's low priority.
         if (!silent) notificationBuilder.setDefaults(Notification.DEFAULT_ALL);
 
-        String platformTag = makePlatformTag(tag, notificationId, origin);
+        String platformTag = makePlatformTag(persistentNotificationId, origin, tag);
         mNotificationManager.notify(platformTag, PLATFORM_ID, notificationBuilder.build());
     }
 
@@ -382,27 +393,53 @@ public class NotificationUIManager {
     }
 
     /**
-     * Closes the notification identified by |tag|, |notificationId|, and |origin|.
+     * Closes the notification associated with the given parameters.
+     *
+     * @param persistentNotificationId The persistent id of the notification.
+     * @param origin The origin to which the notification belongs.
+     * @param tag The tag of the notification. May be NULL.
      */
     @CalledByNative
-    private void closeNotification(String tag, String notificationId, String origin) {
-        String platformTag = makePlatformTag(tag, notificationId, origin);
+    private void closeNotification(long persistentNotificationId, String origin, String tag) {
+        String platformTag = makePlatformTag(persistentNotificationId, origin, tag);
         mNotificationManager.cancel(platformTag, PLATFORM_ID);
     }
 
-    private boolean onNotificationClicked(String notificationId, byte[] notificationData) {
-        return nativeOnNotificationClicked(
-                mNativeNotificationManager, notificationId, notificationData);
+    /**
+     * Calls NotificationUIManagerAndroid::OnNotificationClicked in native code to indicate that
+     * the notification with the given parameters has been clicked on.
+     *
+     * @param persistentNotificationId The persistent id of the notification.
+     * @param origin The origin of the notification.
+     * @param tag The tag of the notification. May be NULL.
+     * @return Whether the manager could handle the click event.
+     */
+    private boolean onNotificationClicked(long persistentNotificationId, String origin,
+                                          String tag) {
+        return nativeOnNotificationClicked(mNativeNotificationManager, persistentNotificationId,
+                                           origin, tag);
     }
 
-    private boolean onNotificationClosed(String notificationId) {
-        return nativeOnNotificationClosed(mNativeNotificationManager, notificationId);
+    /**
+     * Calls NotificationUIManagerAndroid::OnNotificationClosed in native code to indicate that
+     * the notification with the given parameters has been closed. This could be the result of
+     * user interaction or an action initiated by the framework.
+     *
+     * @param persistentNotificationId The persistent id of the notification.
+     * @param origin The origin of the notification.
+     * @param tag The tag of the notification. May be NULL.
+     * @return Whether the manager could handle the close event.
+     */
+    private boolean onNotificationClosed(long persistentNotificationId, String origin,
+                                         String tag) {
+        return nativeOnNotificationClosed(mNativeNotificationManager, persistentNotificationId,
+                                          origin, tag);
     }
 
     private static native void nativeInitializeNotificationUIManager();
 
     private native boolean nativeOnNotificationClicked(long nativeNotificationUIManagerAndroid,
-            String notificationId, byte[] notificationData);
-    private native boolean nativeOnNotificationClosed(
-            long nativeNotificationUIManagerAndroid, String notificationId);
+            long persistentNotificationId, String origin, String tag);
+    private native boolean nativeOnNotificationClosed(long nativeNotificationUIManagerAndroid,
+            long persistentNotificationId, String origin, String tag);
 }

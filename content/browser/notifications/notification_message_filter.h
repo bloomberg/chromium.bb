@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/callback_forward.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationPermission.h"
 
@@ -35,6 +36,7 @@ class NotificationMessageFilter : public BrowserMessageFilter {
   void DidCloseNotification(int notification_id);
 
   // BrowserMessageFilter implementation. Called on the UI thread.
+  void OnDestruct() const override;
   bool OnMessageReceived(const IPC::Message& message) override;
   void OverrideThreadForMessage(
       const IPC::Message& message, content::BrowserThread::ID* thread) override;
@@ -43,6 +45,9 @@ class NotificationMessageFilter : public BrowserMessageFilter {
   ~NotificationMessageFilter() override;
 
  private:
+  friend class base::DeleteHelper<NotificationMessageFilter>;
+  friend class BrowserThread;
+
   void OnCheckNotificationPermission(
       const GURL& origin, blink::WebNotificationPermission* permission);
   void OnShowPlatformNotification(
@@ -63,7 +68,29 @@ class NotificationMessageFilter : public BrowserMessageFilter {
   void OnClosePlatformNotification(int notification_id);
   void OnClosePersistentNotification(
       const GURL& origin,
-      const std::string& persistent_notification_id);
+      int64_t persistent_notification_id);
+
+  // Callback to be invoked by the notification context when the notification
+  // data for the persistent notification may have been written, as indicated by
+  // |success|. Will present the notification to the user when successful.
+  void DidWritePersistentNotificationData(
+      int request_id,
+      const GURL& origin,
+      const SkBitmap& icon,
+      const PlatformNotificationData& notification_data,
+      bool success,
+      int64_t persistent_notification_id);
+
+  // Callback to be invoked when the data associated with a persistent
+  // notification has been removed by the database, unless an error occurred,
+  // which will be indicated by |success|.
+  void DidDeletePersistentNotificationData(bool success);
+
+  // Returns the permission status for |origin|. Must only be used on the IO
+  // thread. If the PlatformNotificationService is unavailable, permission will
+  // assumed to be denied.
+  blink::WebNotificationPermission GetPermissionForOriginOnIO(
+      const GURL& origin) const;
 
   // Verifies that Web Notification permission has been granted for |origin| in
   // cases where the renderer shouldn't send messages if it weren't the case. If
@@ -80,6 +107,10 @@ class NotificationMessageFilter : public BrowserMessageFilter {
 
   // Map mapping notification ids to their associated close closures.
   std::map<int, base::Closure> close_closures_;
+
+  base::WeakPtrFactory<NotificationMessageFilter> weak_factory_io_;
+
+  DISALLOW_COPY_AND_ASSIGN(NotificationMessageFilter);
 };
 
 }  // namespace content

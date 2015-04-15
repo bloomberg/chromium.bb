@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_NOTIFICATION_EVENT_DISPATCHER_H_
 #define CONTENT_PUBLIC_BROWSER_NOTIFICATION_EVENT_DISPATCHER_H_
 
+#include <stdint.h>
 #include <string>
 
 #include "base/callback_forward.h"
@@ -30,14 +31,12 @@ class CONTENT_EXPORT NotificationEventDispatcher {
       base::Callback<void(PersistentNotificationStatus)>;
 
   // Dispatches the "notificationclick" event on the Service Worker associated
-  // with |origin| and |service_worker_registration_id|. The |callback| will
-  // be invoked when it's known whether the event successfully executed.
+  // with |persistent_notification_id| belonging to |origin|. The |callback|
+  // will be invoked when it's known whether the event successfully executed.
   virtual void DispatchNotificationClickEvent(
       BrowserContext* browser_context,
+      int64_t persistent_notification_id,
       const GURL& origin,
-      int64 service_worker_registration_id,
-      const std::string& notification_id,
-      const PlatformNotificationData& notification_data,
       const NotificationClickDispatchCompleteCallback&
           dispatch_complete_callback) = 0;
 

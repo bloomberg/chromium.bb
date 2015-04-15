@@ -19,13 +19,11 @@ void OnEventDispatchComplete(content::PersistentNotificationStatus status) {}
 
 PersistentNotificationDelegate::PersistentNotificationDelegate(
     content::BrowserContext* browser_context,
-    int64 service_worker_registration_id,
-    const GURL& origin,
-    const content::PlatformNotificationData& notification_data)
+    int64_t persistent_notification_id,
+    const GURL& origin)
     : browser_context_(browser_context),
-      service_worker_registration_id_(service_worker_registration_id),
+      persistent_notification_id_(persistent_notification_id),
       origin_(origin),
-      notification_data_(notification_data),
       id_(base::GenerateGUID()) {}
 
 PersistentNotificationDelegate::~PersistentNotificationDelegate() {}
@@ -37,10 +35,8 @@ void PersistentNotificationDelegate::Close(bool by_user) {}
 void PersistentNotificationDelegate::Click() {
   PlatformNotificationServiceImpl::GetInstance()->OnPersistentNotificationClick(
       browser_context_,
-      service_worker_registration_id_,
-      id_,
+      persistent_notification_id_,
       origin_,
-      notification_data_,
       base::Bind(&OnEventDispatchComplete));
 }
 

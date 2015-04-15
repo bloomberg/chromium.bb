@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_PERSISTENT_NOTIFICATION_DELEGATE_H_
 #define CHROME_BROWSER_NOTIFICATIONS_PERSISTENT_NOTIFICATION_DELEGATE_H_
 
+#include <stdint.h>
 #include <string>
 
 #include "chrome/browser/notifications/notification_delegate.h"
-#include "content/public/common/platform_notification_data.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -22,16 +22,13 @@ class PersistentNotificationDelegate : public NotificationDelegate {
  public:
   PersistentNotificationDelegate(
       content::BrowserContext* browser_context,
-      int64 service_worker_registration_id,
-      const GURL& origin,
-      const content::PlatformNotificationData& notification_data);
+      int64_t persistent_notification_id,
+      const GURL& origin);
 
-  int64 service_worker_registration_id() const {
-    return service_worker_registration_id_;
-  }
-
-  const content::PlatformNotificationData& notification_data() const {
-    return notification_data_;
+  // Persistent id of this notification in the notification database. To be
+  // used when retrieving all information associated with it.
+  int64_t persistent_notification_id() const {
+    return persistent_notification_id_;
   }
 
   // NotificationDelegate implementation.
@@ -45,9 +42,8 @@ class PersistentNotificationDelegate : public NotificationDelegate {
 
  private:
   content::BrowserContext* browser_context_;
-  int64 service_worker_registration_id_;
+  int64_t persistent_notification_id_;
   GURL origin_;
-  content::PlatformNotificationData notification_data_;
 
   std::string id_;
 };

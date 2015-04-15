@@ -20,7 +20,11 @@ enum PersistentNotificationStatus {
 
   // The event has been delivered, but the developer extended the event with a
   // promise that has been rejected.
-  PERSISTENT_NOTIFICATION_STATUS_EVENT_WAITUNTIL_REJECTED
+  PERSISTENT_NOTIFICATION_STATUS_EVENT_WAITUNTIL_REJECTED,
+
+  // The event could not be delivered because the data associated with the
+  // notification could not be read from the database.
+  PERSISTENT_NOTIFICATION_STATUS_DATABASE_ERROR,
 };
 
 }  // content

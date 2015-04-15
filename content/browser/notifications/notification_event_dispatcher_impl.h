@@ -19,10 +19,8 @@ class NotificationEventDispatcherImpl : public NotificationEventDispatcher {
   // NotificationEventDispatcher implementation.
   void DispatchNotificationClickEvent(
       BrowserContext* browser_context,
+      int64_t persistent_notification_id,
       const GURL& origin,
-      int64 service_worker_registration_id,
-      const std::string& notification_id,
-      const PlatformNotificationData& notification_data,
       const NotificationClickDispatchCompleteCallback&
           dispatch_complete_callback) override;
 
