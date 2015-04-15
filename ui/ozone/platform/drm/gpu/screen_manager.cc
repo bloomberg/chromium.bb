@@ -99,8 +99,8 @@ void ScreenManager::RemoveDisplayController(const scoped_refptr<DrmDevice>& drm,
     bool is_mirrored = (*it)->IsMirrored();
     (*it)->RemoveCrtc(drm, crtc);
     if (!is_mirrored) {
-      UpdateControllerToWindowMapping();
       controllers_.erase(it);
+      UpdateControllerToWindowMapping();
     }
   }
 }

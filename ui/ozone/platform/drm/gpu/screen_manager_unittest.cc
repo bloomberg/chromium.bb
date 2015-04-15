@@ -374,3 +374,27 @@ TEST_F(ScreenManagerTest,
     window->Shutdown();
   }
 }
+
+TEST_F(ScreenManagerTest, ShouldDissociateWindowOnControllerRemoval) {
+  gfx::AcceleratedWidget window_id = 1;
+  ui::DrmDeviceManager device_manager(drm_);
+  scoped_ptr<ui::DrmWindow> window(
+      new ui::DrmWindow(window_id, &device_manager, screen_manager_.get()));
+  window->Initialize();
+  window->OnBoundsChanged(GetPrimaryBounds());
+  screen_manager_->AddWindow(window_id, window.Pass());
+
+  screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);
+  screen_manager_->ConfigureDisplayController(
+      drm_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
+
+  EXPECT_TRUE(screen_manager_->GetWindow(window_id)->GetController());
+
+  screen_manager_->RemoveDisplayController(drm_, kPrimaryCrtc);
+
+  EXPECT_FALSE(screen_manager_->GetWindow(window_id)->GetController());
+
+  window = screen_manager_->RemoveWindow(1);
+  window->Shutdown();
+}
