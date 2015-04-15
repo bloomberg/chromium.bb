@@ -205,8 +205,6 @@
       'common/content_paths.cc',
       'common/content_switches_internal.cc',
       'common/content_switches_internal.h',
-      'common/cookie_data.cc',
-      'common/cookie_data.h',
       'common/cursors/webcursor.cc',
       'common/cursors/webcursor.h',
       'common/cursors/webcursor_android.cc',

@@ -157,11 +157,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
                     const GURL& url,
                     const GURL& first_party_for_cookies,
                     IPC::Message* reply_msg);
-  void OnGetRawCookies(const GURL& url,
-                       const GURL& first_party_for_cookies,
-                       IPC::Message* reply_msg);
-  void OnDeleteCookie(const GURL& url,
-                      const std::string& cookieName);
   void OnCookiesEnabled(int render_frame_id,
                         const GURL& url,
                         const GURL& first_party_for_cookies,
@@ -276,8 +271,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   // Callback functions for getting cookies from cookie store.
   void SendGetCookiesResponse(IPC::Message* reply_msg,
                               const std::string& cookies);
-  void SendGetRawCookiesResponse(IPC::Message* reply_msg,
-                                 const net::CookieList& cookie_list);
 
   bool CheckBenchmarkingEnabled() const;
   bool CheckPreparsedJsCachingEnabled() const;

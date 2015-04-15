@@ -34,7 +34,6 @@
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/content_constants_internal.h"
-#include "content/common/cookie_data.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 #include "content/common/host_shared_bitmap_manager.h"
@@ -372,8 +371,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnCreateFullscreenWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCookie, OnSetCookie)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetCookies, OnGetCookies)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetRawCookies, OnGetRawCookies)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DeleteCookie, OnDeleteCookie)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CookiesEnabled, OnCookiesEnabled)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_LoadFont, OnLoadFont)
@@ -600,42 +597,6 @@ void RenderMessageFilter::OnGetCookies(int render_frame_id,
       url, base::Bind(&RenderMessageFilter::CheckPolicyForCookies, this,
                       render_frame_id, url, first_party_for_cookies,
                       reply_msg));
-}
-
-void RenderMessageFilter::OnGetRawCookies(
-    const GURL& url,
-    const GURL& first_party_for_cookies,
-    IPC::Message* reply_msg) {
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-  // Only return raw cookies to trusted renderers or if this request is
-  // not targeted to an an external host like ChromeFrame.
-  // TODO(ananta) We need to support retreiving raw cookies from external
-  // hosts.
-  if (!policy->CanReadRawCookies(render_process_id_) ||
-      !policy->CanAccessCookiesForOrigin(render_process_id_, url)) {
-    SendGetRawCookiesResponse(reply_msg, net::CookieList());
-    return;
-  }
-
-  // We check policy here to avoid sending back cookies that would not normally
-  // be applied to outbound requests for the given URL.  Since this cookie info
-  // is visible in the developer tools, it is helpful to make it match reality.
-  net::URLRequestContext* context = GetRequestContextForURL(url);
-  context->cookie_store()->GetAllCookiesForURLAsync(
-      url, base::Bind(&RenderMessageFilter::SendGetRawCookiesResponse,
-                      this, reply_msg));
-}
-
-void RenderMessageFilter::OnDeleteCookie(const GURL& url,
-                                         const std::string& cookie_name) {
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanAccessCookiesForOrigin(render_process_id_, url))
-    return;
-
-  net::URLRequestContext* context = GetRequestContextForURL(url);
-  context->cookie_store()->DeleteCookieAsync(url, cookie_name, base::Closure());
 }
 
 void RenderMessageFilter::OnCookiesEnabled(
@@ -1119,16 +1080,6 @@ void RenderMessageFilter::CheckPolicyForCookies(
 void RenderMessageFilter::SendGetCookiesResponse(IPC::Message* reply_msg,
                                                  const std::string& cookies) {
   ViewHostMsg_GetCookies::WriteReplyParams(reply_msg, cookies);
-  Send(reply_msg);
-}
-
-void RenderMessageFilter::SendGetRawCookiesResponse(
-    IPC::Message* reply_msg,
-    const net::CookieList& cookie_list) {
-  std::vector<CookieData> cookies;
-  for (size_t i = 0; i < cookie_list.size(); ++i)
-    cookies.push_back(CookieData(cookie_list[i]));
-  ViewHostMsg_GetRawCookies::WriteReplyParams(reply_msg, cookies);
   Send(reply_msg);
 }
 

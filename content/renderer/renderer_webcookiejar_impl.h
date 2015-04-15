@@ -27,11 +27,6 @@ class RendererWebCookieJarImpl : public blink::WebCookieJar {
       const blink::WebURL& url, const blink::WebURL& first_party_for_cookies);
   virtual blink::WebString cookieRequestHeaderFieldValue(
       const blink::WebURL& url, const blink::WebURL& first_party_for_cookies);
-  virtual void rawCookies(
-      const blink::WebURL& url, const blink::WebURL& first_party_for_cookies,
-      blink::WebVector<blink::WebCookie>& cookies);
-  virtual void deleteCookie(
-      const blink::WebURL& url, const blink::WebString& cookie_name);
   virtual bool cookiesEnabled(
       const blink::WebURL& url, const blink::WebURL& first_party_for_cookies);
 

@@ -13,7 +13,6 @@
 #include "cc/output/compositor_frame_ack.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
-#include "content/common/cookie_data.h"
 #include "content/common/date_time_suggestion.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/navigation_gesture.h"
@@ -272,17 +271,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::RendererPreferences)
   IPC_STRUCT_TRAITS_MEMBER(arrow_bitmap_height_vertical_scroll_bar_in_dips)
   IPC_STRUCT_TRAITS_MEMBER(arrow_bitmap_width_horizontal_scroll_bar_in_dips)
 #endif
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::CookieData)
-  IPC_STRUCT_TRAITS_MEMBER(name)
-  IPC_STRUCT_TRAITS_MEMBER(value)
-  IPC_STRUCT_TRAITS_MEMBER(domain)
-  IPC_STRUCT_TRAITS_MEMBER(path)
-  IPC_STRUCT_TRAITS_MEMBER(expires)
-  IPC_STRUCT_TRAITS_MEMBER(http_only)
-  IPC_STRUCT_TRAITS_MEMBER(secure)
-  IPC_STRUCT_TRAITS_MEMBER(session)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::WebPluginGeometry)
@@ -1184,19 +1172,6 @@ IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_GetCookies,
                             GURL /* url */,
                             GURL /* first_party_for_cookies */,
                             std::string /* cookies */)
-
-// Used to get raw cookie information for the given URL. This may block
-// waiting for a previous SetCookie message to be processed.
-IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_GetRawCookies,
-                            GURL /* url */,
-                            GURL /* first_party_for_cookies */,
-                            std::vector<content::CookieData>
-                                /* raw_cookies */)
-
-// Used to delete cookie for the given URL and name
-IPC_SYNC_MESSAGE_CONTROL2_0(ViewHostMsg_DeleteCookie,
-                            GURL /* url */,
-                            std::string /* cookie_name */)
 
 // Used to check if cookies are enabled for the given URL. This may block
 // waiting for a previous SetCookie message to be processed.
