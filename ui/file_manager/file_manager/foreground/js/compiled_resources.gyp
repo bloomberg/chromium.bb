@@ -114,6 +114,7 @@
           './list_thumbnail_loader.js',
           './ui/banners.js',
           './ui/conflict_dialog.js',
+          './ui/cws_widget_container_error_dialog.js',
           './ui/default_action_dialog.js',
           './ui/dialog_footer.js',
           './ui/directory_tree.js',

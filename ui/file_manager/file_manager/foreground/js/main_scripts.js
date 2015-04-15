@@ -132,6 +132,7 @@
 //<include src="list_thumbnail_loader.js">
 //<include src="ui/banners.js" >
 //<include src="ui/conflict_dialog.js">
+//<include src="ui/cws_widget_container_error_dialog.js">
 //<include src="ui/default_action_dialog.js">
 //<include src="ui/dialog_footer.js">
 //<include src="ui/directory_tree.js">
