@@ -429,17 +429,17 @@ void KeySystemsImpl::AddConcreteSupportedKeySystems(
 
     // Distinctive identifiers and persistent state can only be reliably blocked
     // (and therefore be safely configurable) for Pepper-hosted key systems. For
-    // other platforms, only non-configurable values are valid.
-    bool can_block = false;
+    // other platforms, (except for the AES decryptor) assume that the CDM can
+    // and will do anything.
+    bool can_block = info.use_aes_decryptor;
 #if defined(ENABLE_PEPPER_CDMS)
     DCHECK_EQ(info.use_aes_decryptor, info.pepper_type.empty());
-    can_block = !info.pepper_type.empty();
+    if (!info.pepper_type.empty())
+      can_block = true;
 #endif
     if (!can_block) {
-      DCHECK(info.distinctive_identifier_support == EME_FEATURE_NOT_SUPPORTED ||
-             info.distinctive_identifier_support == EME_FEATURE_ALWAYS_ENABLED);
-      DCHECK(info.persistent_state_support == EME_FEATURE_NOT_SUPPORTED ||
-             info.persistent_state_support == EME_FEATURE_ALWAYS_ENABLED);
+      DCHECK(info.distinctive_identifier_support == EME_FEATURE_ALWAYS_ENABLED);
+      DCHECK(info.persistent_state_support == EME_FEATURE_ALWAYS_ENABLED);
     }
 
     DCHECK(!IsSupportedKeySystem(info.key_system))
