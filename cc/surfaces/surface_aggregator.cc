@@ -173,9 +173,10 @@ bool SurfaceAggregator::ValidateResources(
   IdArray referenced_resources;
 
   bool invalid_frame = false;
-  DrawQuad::ResourceIteratorCallback remap = base::Bind(
-      &ValidateResourceHelper, &invalid_frame,
-      provider_->GetChildToParentMap(child_id), &referenced_resources);
+  DrawQuad::ResourceIteratorCallback remap =
+      base::Bind(&ValidateResourceHelper, &invalid_frame,
+                 base::ConstRef(provider_->GetChildToParentMap(child_id)),
+                 &referenced_resources);
   for (const auto& render_pass : frame_data->render_pass_list) {
     for (const auto& quad : render_pass->quad_list)
       quad->IterateResources(remap);
@@ -238,8 +239,9 @@ void SurfaceAggregator::HandleSurfaceQuad(
   DrawQuad::ResourceIteratorCallback remap;
   if (provider_) {
     int child_id = ChildIdForSurface(surface);
-    remap = base::Bind(&ResourceRemapHelper,
-                       provider_->GetChildToParentMap(child_id));
+    remap =
+        base::Bind(&ResourceRemapHelper,
+                   base::ConstRef(provider_->GetChildToParentMap(child_id)));
   }
 
   bool merge_pass = surface_quad->opacity() == 1.f && copy_requests.empty();
@@ -435,8 +437,9 @@ void SurfaceAggregator::CopyPasses(const DelegatedFrameData* frame_data,
   DrawQuad::ResourceIteratorCallback remap;
   if (provider_) {
     int child_id = ChildIdForSurface(surface);
-    remap = base::Bind(&ResourceRemapHelper,
-                       provider_->GetChildToParentMap(child_id));
+    remap =
+        base::Bind(&ResourceRemapHelper,
+                   base::ConstRef(provider_->GetChildToParentMap(child_id)));
   }
 
   for (size_t i = 0; i < source_pass_list.size(); ++i) {
