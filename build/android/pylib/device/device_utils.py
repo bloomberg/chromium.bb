@@ -30,7 +30,6 @@ from pylib.device import adb_wrapper
 from pylib.device import decorators
 from pylib.device import device_blacklist
 from pylib.device import device_errors
-from pylib.device import device_filter
 from pylib.device import intent
 from pylib.device import logcat_monitor
 from pylib.device.commands import install_commands
@@ -1560,8 +1559,9 @@ class DeviceUtils(object):
       A Parallelizer operating over |devices|.
     """
     if not devices:
-      devices = adb_wrapper.AdbWrapper.Devices(
-          filters=device_filter.DefaultFilters())
+      blacklist = device_blacklist.ReadBlacklist()
+      devices = [d for d in adb_wrapper.AdbWrapper.GetDevices()
+                 if d.GetDeviceSerial() not in blacklist]
       if not devices:
         raise device_errors.NoDevicesError()
 

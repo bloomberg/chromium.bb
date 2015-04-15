@@ -6,37 +6,33 @@
 
 """Enables dalvik vm asserts in the android device."""
 
-import argparse
+from pylib import android_commands
+from pylib.device import device_utils
+import optparse
 import sys
 
-from pylib.device import device_utils
 
-
-def main():
-  parser = argparse.ArgumentParser()
-
-  set_asserts_group = parser.add_mutually_exclusive_group(required=True)
-  set_asserts_group.add_argument(
-      '--enable_asserts', dest='set_asserts', action='store_true',
+def main(argv):
+  option_parser = optparse.OptionParser()
+  option_parser.add_option('--enable_asserts', dest='set_asserts',
+      action='store_true', default=None,
       help='Sets the dalvik.vm.enableassertions property to "all"')
-  set_asserts_group.add_argument(
-      '--disable_asserts', dest='set_asserts', action='store_false',
+  option_parser.add_option('--disable_asserts', dest='set_asserts',
+      action='store_false', default=None,
       help='Removes the dalvik.vm.enableassertions property')
-
-  args = parser.parse_args()
+  options, _ = option_parser.parse_args(argv)
 
   # TODO(jbudorick): Accept optional serial number and run only for the
   # specified device when present.
-  devices = device_utils.DeviceUtils.parallel()
-
-  def set_java_asserts_and_restart(device):
-    if device.SetJavaAsserts(args.set_asserts):
-      device.RunShellCommand('stop')
-      device.RunShellCommand('start')
-
-  devices.pMap(set_java_asserts_and_restart)
-  return 0
+  devices = android_commands.GetAttachedDevices()
+  for device in [device_utils.DeviceUtils(serial) for serial in devices]:
+    if options.set_asserts != None:
+      if device.SetJavaAsserts(options.set_asserts):
+        # TODO(jbudorick) How to best do shell restarts after the
+        #                 android_commands refactor?
+        device.RunShellCommand('stop')
+        device.RunShellCommand('start')
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  main(sys.argv)
