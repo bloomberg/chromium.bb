@@ -570,8 +570,6 @@
       'tests/test_pdf.h',
       'tests/test_platform_verification_private.cc',
       'tests/test_platform_verification_private.h',
-      'tests/test_talk_private.cc',
-      'tests/test_talk_private.h',
       'tests/test_tcp_socket_private_trusted.cc',
       'tests/test_tcp_socket_private_trusted.h',
       'tests/test_url_util.cc',

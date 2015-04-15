@@ -182,7 +182,6 @@ class ResourceCreationProxy : public InterfaceProxy,
       PP_Instance instance) override;
   virtual PP_Resource CreateScrollbar(PP_Instance instance,
                                       PP_Bool vertical) override;
-  virtual PP_Resource CreateTalk(PP_Instance instance) override;
   virtual PP_Resource CreateVideoCapture(PP_Instance instance) override;
   virtual PP_Resource CreateVideoDecoderDev(
       PP_Instance instance,

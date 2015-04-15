@@ -177,7 +177,6 @@
         'proxy/printing_resource_unittest.cc',
         'proxy/raw_var_data_unittest.cc',
         'proxy/serialized_var_unittest.cc',
-        'proxy/talk_resource_unittest.cc',
         'proxy/tracked_callback_unittest.cc',
         'proxy/video_decoder_resource_unittest.cc',
         'proxy/video_encoder_resource_unittest.cc',

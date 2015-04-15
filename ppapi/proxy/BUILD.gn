@@ -256,8 +256,6 @@ component("proxy") {
       "ppp_instance_private_proxy.h",
       "ppp_video_decoder_proxy.cc",
       "ppp_video_decoder_proxy.h",
-      "talk_resource.cc",
-      "talk_resource.h",
       "video_capture_resource.cc",
       "video_capture_resource.h",
     ]

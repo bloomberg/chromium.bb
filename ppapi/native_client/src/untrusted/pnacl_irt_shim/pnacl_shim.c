@@ -69,7 +69,6 @@
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/c/private/ppb_output_protection_private.h"
 #include "ppapi/c/private/ppb_platform_verification_private.h"
-#include "ppapi/c/private/ppb_talk_private.h"
 #include "ppapi/c/private/ppb_tcp_server_socket_private.h"
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
 #include "ppapi/c/private/ppb_testing_private.h"
@@ -190,8 +189,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_OutputProtection_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_PlatformVerification_Private_0_2;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Talk_Private_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Talk_Private_2_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPServerSocket_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPServerSocket_Private_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPSocket_Private_0_3;
@@ -3859,44 +3856,6 @@ static int32_t Pnacl_M32_PPB_PlatformVerification_Private_ChallengePlatform(PP_R
 
 /* End wrapper methods for PPB_PlatformVerification_Private_0_2 */
 
-/* Begin wrapper methods for PPB_Talk_Private_1_0 */
-
-static PP_Resource Pnacl_M19_PPB_Talk_Private_Create(PP_Instance instance) {
-  const struct PPB_Talk_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_Talk_Private_1_0.real_iface;
-  return iface->Create(instance);
-}
-
-static int32_t Pnacl_M19_PPB_Talk_Private_GetPermission(PP_Resource talk_resource, struct PP_CompletionCallback* callback) {
-  const struct PPB_Talk_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_Talk_Private_1_0.real_iface;
-  return iface->GetPermission(talk_resource, *callback);
-}
-
-/* End wrapper methods for PPB_Talk_Private_1_0 */
-
-/* Begin wrapper methods for PPB_Talk_Private_2_0 */
-
-static PP_Resource Pnacl_M29_PPB_Talk_Private_Create(PP_Instance instance) {
-  const struct PPB_Talk_Private_2_0 *iface = Pnacl_WrapperInfo_PPB_Talk_Private_2_0.real_iface;
-  return iface->Create(instance);
-}
-
-static int32_t Pnacl_M29_PPB_Talk_Private_RequestPermission(PP_Resource talk_resource, PP_TalkPermission permission, struct PP_CompletionCallback* callback) {
-  const struct PPB_Talk_Private_2_0 *iface = Pnacl_WrapperInfo_PPB_Talk_Private_2_0.real_iface;
-  return iface->RequestPermission(talk_resource, permission, *callback);
-}
-
-static int32_t Pnacl_M29_PPB_Talk_Private_StartRemoting(PP_Resource talk_resource, PP_TalkEventCallback event_callback, void* user_data, struct PP_CompletionCallback* callback) {
-  const struct PPB_Talk_Private_2_0 *iface = Pnacl_WrapperInfo_PPB_Talk_Private_2_0.real_iface;
-  return iface->StartRemoting(talk_resource, event_callback, user_data, *callback);
-}
-
-static int32_t Pnacl_M29_PPB_Talk_Private_StopRemoting(PP_Resource talk_resource, struct PP_CompletionCallback* callback) {
-  const struct PPB_Talk_Private_2_0 *iface = Pnacl_WrapperInfo_PPB_Talk_Private_2_0.real_iface;
-  return iface->StopRemoting(talk_resource, *callback);
-}
-
-/* End wrapper methods for PPB_Talk_Private_2_0 */
-
 /* Begin wrapper methods for PPB_TCPServerSocket_Private_0_1 */
 
 static PP_Resource Pnacl_M18_PPB_TCPServerSocket_Private_Create(PP_Instance instance) {
@@ -5602,18 +5561,6 @@ static const struct PPB_PlatformVerification_Private_0_2 Pnacl_Wrappers_PPB_Plat
     .ChallengePlatform = (int32_t (*)(PP_Resource instance, struct PP_Var service_id, struct PP_Var challenge, struct PP_Var* signed_data, struct PP_Var* signed_data_signature, struct PP_Var* platform_key_certificate, struct PP_CompletionCallback callback))&Pnacl_M32_PPB_PlatformVerification_Private_ChallengePlatform
 };
 
-static const struct PPB_Talk_Private_1_0 Pnacl_Wrappers_PPB_Talk_Private_1_0 = {
-    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M19_PPB_Talk_Private_Create,
-    .GetPermission = (int32_t (*)(PP_Resource talk_resource, struct PP_CompletionCallback callback))&Pnacl_M19_PPB_Talk_Private_GetPermission
-};
-
-static const struct PPB_Talk_Private_2_0 Pnacl_Wrappers_PPB_Talk_Private_2_0 = {
-    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M29_PPB_Talk_Private_Create,
-    .RequestPermission = (int32_t (*)(PP_Resource talk_resource, PP_TalkPermission permission, struct PP_CompletionCallback callback))&Pnacl_M29_PPB_Talk_Private_RequestPermission,
-    .StartRemoting = (int32_t (*)(PP_Resource talk_resource, PP_TalkEventCallback event_callback, void* user_data, struct PP_CompletionCallback callback))&Pnacl_M29_PPB_Talk_Private_StartRemoting,
-    .StopRemoting = (int32_t (*)(PP_Resource talk_resource, struct PP_CompletionCallback callback))&Pnacl_M29_PPB_Talk_Private_StopRemoting
-};
-
 static const struct PPB_TCPServerSocket_Private_0_1 Pnacl_Wrappers_PPB_TCPServerSocket_Private_0_1 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M18_PPB_TCPServerSocket_Private_Create,
     .IsTCPServerSocket = (PP_Bool (*)(PP_Resource resource))&Pnacl_M18_PPB_TCPServerSocket_Private_IsTCPServerSocket,
@@ -6351,18 +6298,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_PlatformVerification_Priv
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Talk_Private_1_0 = {
-  .iface_macro = PPB_TALK_PRIVATE_INTERFACE_1_0,
-  .wrapped_iface = (const void *) &Pnacl_Wrappers_PPB_Talk_Private_1_0,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Talk_Private_2_0 = {
-  .iface_macro = PPB_TALK_PRIVATE_INTERFACE_2_0,
-  .wrapped_iface = (const void *) &Pnacl_Wrappers_PPB_Talk_Private_2_0,
-  .real_iface = NULL
-};
-
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPServerSocket_Private_0_1 = {
   .iface_macro = PPB_TCPSERVERSOCKET_PRIVATE_INTERFACE_0_1,
   .wrapped_iface = (const void *) &Pnacl_Wrappers_PPB_TCPServerSocket_Private_0_1,
@@ -6547,8 +6482,6 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_NetAddress_Private_1_1,
   &Pnacl_WrapperInfo_PPB_OutputProtection_Private_0_1,
   &Pnacl_WrapperInfo_PPB_PlatformVerification_Private_0_2,
-  &Pnacl_WrapperInfo_PPB_Talk_Private_1_0,
-  &Pnacl_WrapperInfo_PPB_Talk_Private_2_0,
   &Pnacl_WrapperInfo_PPB_TCPServerSocket_Private_0_1,
   &Pnacl_WrapperInfo_PPB_TCPServerSocket_Private_0_2,
   &Pnacl_WrapperInfo_PPB_TCPSocket_Private_0_3,

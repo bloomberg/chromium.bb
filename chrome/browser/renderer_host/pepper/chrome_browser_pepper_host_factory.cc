@@ -12,7 +12,6 @@
 #include "chrome/browser/renderer_host/pepper/pepper_isolated_file_system_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/pepper_output_protection_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/pepper_platform_verification_message_filter.h"
-#include "chrome/browser/renderer_host/pepper/pepper_talk_host.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "ppapi/host/message_filter_host.h"
 #include "ppapi/host/ppapi_host.h"
@@ -61,9 +60,6 @@ scoped_ptr<ResourceHost> ChromeBrowserPepperHostFactory::CreateResourceHost(
             host_->GetPpapiHost(), instance, resource, pv_filter));
       }
 #endif
-      case PpapiHostMsg_Talk_Create::ID:
-        return scoped_ptr<ResourceHost>(
-            new PepperTalkHost(host_, instance, resource));
 #if defined(OS_CHROMEOS)
       case PpapiHostMsg_OutputProtection_Create::ID: {
         scoped_refptr<ResourceMessageFilter> output_protection_filter(

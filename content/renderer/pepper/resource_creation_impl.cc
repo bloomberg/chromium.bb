@@ -287,10 +287,6 @@ PP_Resource ResourceCreationImpl::CreateScrollbar(PP_Instance instance,
   return PPB_Scrollbar_Impl::Create(instance, PP_ToBool(vertical));
 }
 
-PP_Resource ResourceCreationImpl::CreateTalk(PP_Instance /* instance */) {
-  return 0;  // Not supported in-process.
-}
-
 PP_Resource ResourceCreationImpl::CreateTCPServerSocketPrivate(
     PP_Instance instance) {
   return 0;  // Not supported in-process.

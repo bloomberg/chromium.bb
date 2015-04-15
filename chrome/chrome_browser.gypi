@@ -2023,8 +2023,6 @@
       'browser/renderer_host/pepper/pepper_isolated_file_system_message_filter.h',
       'browser/renderer_host/pepper/pepper_output_protection_message_filter.cc',
       'browser/renderer_host/pepper/pepper_output_protection_message_filter.h',
-      'browser/renderer_host/pepper/pepper_talk_host.cc',
-      'browser/renderer_host/pepper/pepper_talk_host.h',
     ],
     'chrome_browser_plugin_installation_sources': [
       'browser/plugins/plugin_installer.cc',

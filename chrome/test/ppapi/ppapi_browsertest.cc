@@ -1323,8 +1323,6 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FlashDRM) {
           LIST_TEST(FlashDRM_GetVoucherFile));
 }
 
-TEST_PPAPI_OUT_OF_PROCESS(TalkPrivate)
-
 #if defined(OS_CHROMEOS)
 TEST_PPAPI_OUT_OF_PROCESS(OutputProtectionPrivate)
 #endif

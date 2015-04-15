@@ -14249,27 +14249,6 @@ After you create a new supervised user, you can manage their settings at any tim
         <message name="IDS_LAUNCHER_NEW_INCOGNITO_WINDOW" desc="The text label of the New incognito window menu item">
           New incognito window
         </message>
-        <message name="IDS_GTALK_SCREEN_SHARE_DIALOG_MESSAGE" desc="Message to display in the dialog box asking user's permission to share their screen">
-          Do you want to start presenting your entire screen in this meeting?
-        </message>
-        <message name="IDS_GTALK_SCREEN_SHARE_DIALOG_TITLE" desc="Title of the dialog box asking user's permission to share their screen">
-          Google Talk Screen Sharing Request
-        </message>
-        <message name="IDS_GTALK_REMOTING_DIALOG_TITLE" desc="Title of the dialog box asking user's permission to start Hangouts Remote Desktop">
-          Google+ Hangouts
-        </message>
-        <message name="IDS_GTALK_REMOTING_DIALOG_MESSAGE" desc="Message of the dialog box asking user's permission to start Hangouts Remote Desktop">
-          A participant in this hangout has offered to help you by controlling your computer. If you accept:
-
-  &#8226; Everyone in this hangout can see your screen
-  &#8226; The person helping you will be able to control your mouse and keyboard
-  &#8226; You can end at any time
-
-Do you accept?
-        </message>
-        <message name="IDS_GTALK_REMOTING_CONTINUE_DIALOG_MESSAGE" desc="Message of the dialog box asking user's permission to continue Hangouts Remote Desktop">
-          You are being helped. Do you want to continue?
-        </message>
       </if>
 
       <!-- Panel windows -->

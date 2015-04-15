@@ -38,7 +38,6 @@
 #include "ppapi/proxy/ppb_video_decoder_proxy.h"
 #include "ppapi/proxy/ppb_x509_certificate_private_proxy.h"
 #include "ppapi/proxy/printing_resource.h"
-#include "ppapi/proxy/talk_resource.h"
 #include "ppapi/proxy/tcp_server_socket_private_resource.h"
 #include "ppapi/proxy/tcp_socket_private_resource.h"
 #include "ppapi/proxy/tcp_socket_resource.h"
@@ -474,10 +473,6 @@ PP_Resource ResourceCreationProxy::CreateScrollbar(PP_Instance instance,
                                                    PP_Bool vertical) {
   NOTIMPLEMENTED();  // Not proxied yet.
   return 0;
-}
-
-PP_Resource ResourceCreationProxy::CreateTalk(PP_Instance instance) {
-  return (new TalkResource(GetConnection(), instance))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateVideoCapture(PP_Instance instance) {

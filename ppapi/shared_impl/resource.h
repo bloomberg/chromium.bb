@@ -68,7 +68,6 @@
   F(PPB_PlatformVerification_API)       \
   F(PPB_Printing_API)                   \
   F(PPB_Scrollbar_API)                  \
-  F(PPB_Talk_Private_API)               \
   F(PPB_TrueTypeFont_API)               \
   F(PPB_TrueTypeFont_Singleton_API)     \
   F(PPB_TCPServerSocket_Private_API)    \
