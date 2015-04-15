@@ -22,6 +22,8 @@
         'dec/prefix.h',
         'dec/safe_malloc.c',
         'dec/safe_malloc.h',
+        'dec/state.c',
+        'dec/state.h',
         'dec/streams.c',
         'dec/streams.h',
         'dec/transform.h',

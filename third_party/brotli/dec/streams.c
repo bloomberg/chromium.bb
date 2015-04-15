@@ -11,9 +11,9 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-
-   Functions for streaming input and output.
 */
+
+/* Functions for streaming input and output. */
 
 #include <string.h>
 #ifndef _WIN32
@@ -71,6 +71,7 @@ BrotliOutput BrotliInitMemOutput(uint8_t* buffer, size_t length,
 }
 
 int BrotliStdinInputFunction(void* data, uint8_t* buf, size_t count) {
+  (void) data; /* Shut up LLVM */
 #ifndef _WIN32
   return (int)read(STDIN_FILENO, buf, count);
 #else
@@ -86,6 +87,7 @@ BrotliInput BrotliStdinInput() {
 }
 
 int BrotliStdoutOutputFunction(void* data, const uint8_t* buf, size_t count) {
+  (void) data; /* Shut up LLVM */
 #ifndef _WIN32
   return (int)write(STDOUT_FILENO, buf, count);
 #else
