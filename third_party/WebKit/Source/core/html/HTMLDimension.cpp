@@ -57,7 +57,8 @@ static HTMLDimension parseDimension(const CharacterType* characters, size_t last
     if (position > lastParsedIndex) {
         bool ok = false;
         unsigned integerValue = charactersToUIntStrict(characters + lastParsedIndex, position - lastParsedIndex, &ok);
-        ASSERT(ok);
+        if (!ok)
+            return HTMLDimension(0., HTMLDimension::Relative);
         value += integerValue;
 
         if (position < endOfCurrentToken && characters[position] == '.') {
@@ -71,7 +72,8 @@ static HTMLDimension parseDimension(const CharacterType* characters, size_t last
 
             if (fractionNumbers.size()) {
                 double fractionValue = charactersToUIntStrict(fractionNumbers.data(), fractionNumbers.size(), &ok);
-                ASSERT(ok);
+                if (!ok)
+                    return HTMLDimension(0., HTMLDimension::Relative);
 
                 value += fractionValue / pow(10., static_cast<double>(fractionNumbers.size()));
             }
