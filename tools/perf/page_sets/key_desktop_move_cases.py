@@ -103,11 +103,10 @@ class GoogleMapsPage(KeyDesktopMoveCasesPage):
   def RunPageInteractions(self, action_runner):
     for _ in range(3):
       action_runner.Wait(2)
-      interaction = action_runner.BeginGestureInteraction(
-          'DragAction', repeatable=True)
-      action_runner.DragPage(left_start_ratio=0.5, top_start_ratio=0.75,
-                             left_end_ratio=0.75, top_end_ratio=0.5)
-      interaction.End()
+      with action_runner.CreateGestureInteraction(
+          'DragAction', repeatable=True):
+        action_runner.DragPage(left_start_ratio=0.5, top_start_ratio=0.75,
+                               left_end_ratio=0.75, top_end_ratio=0.5)
     # TODO(ssid): Add zoom gestures after fixing bug crbug.com/462214.
 
 

@@ -11,10 +11,9 @@ class ToughScrollingCasesPage(page_module.Page):
     super(ToughScrollingCasesPage, self).__init__(url=url, page_set=page_set)
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
+
 
 class ToughFastScrollingCasesPage(page_module.Page):
 
@@ -27,12 +26,10 @@ class ToughFastScrollingCasesPage(page_module.Page):
     self.speed_in_pixels_per_second = speed_in_pixels_per_second
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage(
-      direction='down',
-      speed_in_pixels_per_second=self.speed_in_pixels_per_second)
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage(
+          direction='down',
+          speed_in_pixels_per_second=self.speed_in_pixels_per_second)
 
 class ToughScrollingCasesPageSet(page_set_module.PageSet):
 

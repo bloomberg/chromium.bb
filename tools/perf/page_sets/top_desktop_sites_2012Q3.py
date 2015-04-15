@@ -255,10 +255,8 @@ class Top2012Q3Page(page.Page):
     self.archive_data_file = 'data/2012Q3.json'
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
 
 
 class Top2012Q3PageSet(page_set.PageSet):

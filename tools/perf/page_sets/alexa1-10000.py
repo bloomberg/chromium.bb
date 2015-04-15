@@ -22,10 +22,8 @@ class Alexa1To10000Page(Page):
     super(Alexa1To10000Page, self).__init__(url=url, page_set=page_set)
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
 
 
 class Alexa1To10000PageSet(PageSet):
