@@ -86,12 +86,21 @@ WhichTree HigherPriorityTree(TreePriority tree_priority,
                              const TilingSetRasterQueueAll* active_queue,
                              const TilingSetRasterQueueAll* pending_queue,
                              const Tile* shared_tile) {
+  // In cases when we're given an active tile with a non ideal active resolution
+  // (or pending tile with non ideal pending resolution), we should return the
+  // other tree. The reason for this is that tiling set iterators will not
+  // return non ideal tiles and the only way we get here is if we're skipping
+  // twin tiles, but since it's non-ideal on the twin, we shouldn't skip it.
+  // TODO(vmpstr): Remove when tiles aren't shared.
+  const Tile* active_tile = shared_tile ? shared_tile : active_queue->Top();
+  const Tile* pending_tile = shared_tile ? shared_tile : pending_queue->Top();
+  if (active_tile->priority(ACTIVE_TREE).resolution == NON_IDEAL_RESOLUTION)
+    return PENDING_TREE;
+  if (pending_tile->priority(PENDING_TREE).resolution == NON_IDEAL_RESOLUTION)
+    return ACTIVE_TREE;
+
   switch (tree_priority) {
     case SMOOTHNESS_TAKES_PRIORITY: {
-      const Tile* active_tile = shared_tile ? shared_tile : active_queue->Top();
-      const Tile* pending_tile =
-          shared_tile ? shared_tile : pending_queue->Top();
-
       const TilePriority& active_priority = active_tile->priority(ACTIVE_TREE);
       const TilePriority& pending_priority =
           pending_tile->priority(PENDING_TREE);
@@ -108,10 +117,6 @@ WhichTree HigherPriorityTree(TreePriority tree_priority,
     case NEW_CONTENT_TAKES_PRIORITY:
       return PENDING_TREE;
     case SAME_PRIORITY_FOR_BOTH_TREES: {
-      const Tile* active_tile = shared_tile ? shared_tile : active_queue->Top();
-      const Tile* pending_tile =
-          shared_tile ? shared_tile : pending_queue->Top();
-
       const TilePriority& active_priority = active_tile->priority(ACTIVE_TREE);
       const TilePriority& pending_priority =
           pending_tile->priority(PENDING_TREE);

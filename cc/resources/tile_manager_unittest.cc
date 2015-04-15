@@ -426,6 +426,64 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
   EXPECT_NE(new_content_tiles, required_for_draw_tiles);
 }
 
+TEST_F(TileManagerTilePriorityQueueTest,
+       RasterTilePriorityQueueHighNonIdealTilings) {
+  const gfx::Size layer_bounds(1000, 1000);
+  const gfx::Size viewport(800, 800);
+  host_impl_.SetViewportSize(viewport);
+  SetupDefaultTrees(layer_bounds);
+
+  pending_layer_->tilings()->AddTiling(1.5f, pending_layer_->raster_source());
+  active_layer_->tilings()->AddTiling(1.5f, active_layer_->raster_source());
+
+  pending_layer_->tilings()->UpdateTilePriorities(gfx::Rect(viewport), 1.f, 5.0,
+                                                  Occlusion(), true);
+  active_layer_->tilings()->UpdateTilePriorities(gfx::Rect(viewport), 1.f, 5.0,
+                                                 Occlusion(), true);
+
+  std::set<Tile*> all_expected_tiles;
+  for (size_t i = 0; i < pending_layer_->num_tilings(); ++i) {
+    PictureLayerTiling* tiling = pending_layer_->tilings()->tiling_at(i);
+    tiling->CreateAllTilesForTesting();
+    if (tiling->contents_scale() == 1.f) {
+      tiling->set_resolution(HIGH_RESOLUTION);
+      const auto& all_tiles = tiling->AllTilesForTesting();
+      all_expected_tiles.insert(all_tiles.begin(), all_tiles.end());
+    } else {
+      tiling->set_resolution(NON_IDEAL_RESOLUTION);
+    }
+  }
+
+  for (size_t i = 0; i < active_layer_->num_tilings(); ++i) {
+    PictureLayerTiling* tiling = active_layer_->tilings()->tiling_at(i);
+    tiling->CreateAllTilesForTesting();
+    if (tiling->contents_scale() == 1.5f) {
+      tiling->set_resolution(HIGH_RESOLUTION);
+      const auto& all_tiles = tiling->AllTilesForTesting();
+      all_expected_tiles.insert(all_tiles.begin(), all_tiles.end());
+    } else {
+      tiling->set_resolution(NON_IDEAL_RESOLUTION);
+    }
+  }
+
+  scoped_ptr<RasterTilePriorityQueue> queue(host_impl_.BuildRasterQueue(
+      SMOOTHNESS_TAKES_PRIORITY, RasterTilePriorityQueue::Type::ALL));
+  EXPECT_FALSE(queue->IsEmpty());
+
+  size_t tile_count = 0;
+  std::set<Tile*> all_actual_tiles;
+  while (!queue->IsEmpty()) {
+    EXPECT_TRUE(queue->Top());
+    all_actual_tiles.insert(queue->Top());
+    ++tile_count;
+    queue->Pop();
+  }
+
+  EXPECT_EQ(tile_count, all_actual_tiles.size());
+  EXPECT_EQ(all_expected_tiles.size(), all_actual_tiles.size());
+  EXPECT_EQ(all_expected_tiles, all_actual_tiles);
+}
+
 TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueueInvalidation) {
   const gfx::Size layer_bounds(1000, 1000);
   host_impl_.SetViewportSize(gfx::Size(500, 500));
