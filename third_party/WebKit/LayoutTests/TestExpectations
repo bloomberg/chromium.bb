@@ -980,6 +980,7 @@ crbug.com/464729 inspector/sources/debugger/show-function-definition.html [ Pass
 crbug.com/339259 fast/flexbox/box-orient-button.html [ Pass Failure ]
 crbug.com/339394 [ Win Debug ] virtual/threaded/animations/animation-matrix-negative-scale-unmatrix.html [ Pass Failure ]
 crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Timeout ]
+crbug.com/24308  http/tests/navigation/back-send-referrer.html [ Pass Timeout ]
 
 crbug.com/378716 editing/pasteboard/drag-files-to-editable-element.html [ Pass Timeout ]
 crbug.com/393094 [ Win7 ] editing/selection/move-by-line-006.html [ Pass Failure ]
