@@ -200,8 +200,8 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, Find) {
       << message_;
 }
 
-// Flaky on Linux only. http://crbug.com/467921
-#if defined(OS_LINUX)
+// Flaky on Linux and Windows. http://crbug.com/467921
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_Mixins DISABLED_Mixins
 #else
 #define MAYBE_Mixins Mixins
