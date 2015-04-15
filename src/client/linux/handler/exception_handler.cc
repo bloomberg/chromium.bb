@@ -195,12 +195,12 @@ void InstallDefaultHandler(int sig) {
   // to SIG_DFL is ignored. In that case, an infinite loop is entered as the
   // signal is repeatedly sent to breakpad's signal handler.
   // To work around this, directly call the system's sigaction.
-  struct sigaction sa;
+  struct kernel_sigaction sa;
   memset(&sa, 0, sizeof(sa));
-  sigemptyset(&sa.sa_mask);
-  sa.sa_handler = SIG_DFL;
+  sys_sigemptyset(&sa.sa_mask);
+  sa.sa_handler_ = SIG_DFL;
   sa.sa_flags = SA_RESTART;
-  syscall(__NR_rt_sigaction, sig, &sa, NULL);
+  sys_rt_sigaction(sig, &sa, NULL, sizeof(kernel_sigset_t));
 #else
   signal(sig, SIG_DFL);
 #endif
