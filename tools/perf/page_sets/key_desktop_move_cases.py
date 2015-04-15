@@ -51,13 +51,11 @@ class GmailMouseScrollPage(KeyDesktopMoveCasesPage):
         'window.__scrollableElementForTelemetry != null')
     scrollbar_x, start_y, end_y = self._CalculateScrollBarRatios(action_runner)
 
-    interaction = action_runner.BeginGestureInteraction(
-        'DragAction')
-    action_runner.DragPage(left_start_ratio=scrollbar_x,
-        top_start_ratio=start_y, left_end_ratio=scrollbar_x,
-        top_end_ratio=end_y, speed_in_pixels_per_second=100,
-        element_function='window.__scrollableElementForTelemetry')
-    interaction.End()
+    with action_runner.CreateGestureInteraction('DragAction'):
+      action_runner.DragPage(left_start_ratio=scrollbar_x,
+          top_start_ratio=start_y, left_end_ratio=scrollbar_x,
+          top_end_ratio=end_y, speed_in_pixels_per_second=100,
+          element_function='window.__scrollableElementForTelemetry')
 
   def _CalculateScrollBarRatios(self, action_runner):
     viewport_height = float(action_runner.EvaluateJavaScript(
