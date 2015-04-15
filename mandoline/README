@@ -1,0 +1,4 @@
+Mandoline is an experimental environment for a browser built using Mojo Shell
+instead of Content for its core application hosting/sandboxing/etc.
+
+Developer Docs: https://www.chromium.org/developers/mandoline

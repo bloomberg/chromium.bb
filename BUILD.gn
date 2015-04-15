@@ -63,6 +63,7 @@ group("gn_all") {
     "//ipc:ipc_tests",
     "//ipc/mojo:ipc_mojo_unittests",
     "//jingle:jingle_unittests",
+    "//mandoline",
     "//media:media_unittests",
     "//media/cast:cast_unittests",
     "//mojo",
