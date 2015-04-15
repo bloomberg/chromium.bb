@@ -23,63 +23,17 @@ OutputE2ETest.prototype = {
   }
 };
 
-TEST_F('OutputE2ETest', 'Links', function() {
+TEST_F('OutputE2ETest', 'RenderBasic', function() {
   this.runWithLoadedTree('<a href="#">Click here</a>',
     function(root) {
-      var el = root.firstChild.firstChild;
-      var range = cursors.Range.fromNode(el);
+      var link = root.firstChild.firstChild;
+      var range = cursors.Range.fromNode(link);
       var o = new Output().withSpeechAndBraille(range, null, 'navigate');
-      assertEqualsJSON({string_: 'Click hereLink', 'spans_': [
-        // Attributes.
-        {value: 'name', start: 0, end: 10},
-        {value: 'role', start: 10, end: 14},
-
-        // Link earcon (based on the role).
-        {value: {}, start: 10, end: 14}
-      ]}, o.toSpannable());
-  });
-});
-
-TEST_F('OutputE2ETest', 'Checkbox', function() {
-  this.runWithLoadedTree('<input type="checkbox">',
-    function(root) {
-      var el = root.firstChild.firstChild;
-      var range = cursors.Range.fromNode(el);
-      var o = new Output().withSpeechAndBraille(range, null, 'navigate');
-      assertEqualsJSON({string_: 'Check boxnot checked', 'spans_': [
-        // Attributes.
-        {value: 'name', start: 0, end: 0},
-        {value: 'role', start: 0, end: 9},
-        {value: 'state', start: 9, end: 20},
-
-        // Link earcon (based on the state).
-        {value: {}, start: 9, end: 20}
-      ]}, o.toSpannable());
-  });
-});
-
-TEST_F('OutputE2ETest', 'InLineTextBoxValueGetsIgnored', function() {
-  this.runWithLoadedTree('<p>OK',
-    function(root) {
-      var el = root.firstChild.firstChild.firstChild;
-      assertEquals('inlineTextBox', el.role);
-      var range = cursors.Range.fromNode(el);
-      var o = new Output().withSpeechAndBraille(range, null, 'navigate');
-      assertEqualsJSON({string_: 'OK', 'spans_': [
-        // Attributes.
-        {value: 'name', start: 0, end: 2}
-      ]}, o.toSpannable());
-
-      el = root.firstChild.firstChild;
-      assertEquals('staticText', el.role);
-      range = cursors.Range.fromNode(el);
-      o = new Output().withSpeechAndBraille(range, null, 'navigate');
-      assertEqualsJSON({string_: 'OK', 'spans_': [
-        // Attributes.
-        {value: 'value', start: 0, end: 2},
-
-        // The name is an empty string.
-        {value: 'name', start: 2, end: 2}
-      ]}, o.toSpannable());
+      assertEqualsJSON({string_: 'Click here Link', 'spans_': [
+                        {value: 'name', start: 0, end: 10},
+                        // Link earcon.
+                        {value: {}, start: 11, end: 15}
+          ]},
+          o.getBuffer());
   });
 });
