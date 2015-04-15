@@ -8,6 +8,10 @@
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 
+namespace cc {
+class InputHandler;
+}
+
 namespace content {
 
 class SynchronousCompositorExternalBeginFrameSource;
@@ -34,6 +38,10 @@ class SynchronousCompositorRegistry {
   void UnregisterOutputSurface(
       int routing_id,
       SynchronousCompositorOutputSurface* output_surface);
+  void RegisterInputHandler(
+      int routing_id,
+      cc::InputHandler* input_handler);
+  void UnregisterInputHandler(int routing_id);
 
  private:
   friend struct base::DefaultLazyInstanceTraits<SynchronousCompositorRegistry>;
@@ -44,6 +52,7 @@ class SynchronousCompositorRegistry {
     SynchronousCompositorImpl* compositor;
     SynchronousCompositorExternalBeginFrameSource* begin_frame_source;
     SynchronousCompositorOutputSurface* output_surface;
+    cc::InputHandler* input_handler;
 
     Entry();
     bool IsReady();

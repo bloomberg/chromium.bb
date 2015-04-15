@@ -105,12 +105,35 @@ void SynchronousCompositorRegistry::UnregisterOutputSurface(
   RemoveEntryIfNeeded(routing_id);
 }
 
+void SynchronousCompositorRegistry::RegisterInputHandler(
+    int routing_id,
+    cc::InputHandler* input_handler) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(input_handler);
+  Entry& entry = entry_map_[routing_id];
+  DCHECK(!entry.input_handler);
+  entry.input_handler = input_handler;
+  CheckIsReady(routing_id);
+}
+
+void SynchronousCompositorRegistry::UnregisterInputHandler(int routing_id) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(entry_map_.find(routing_id) != entry_map_.end());
+  Entry& entry = entry_map_[routing_id];
+
+  if (entry.IsReady())
+    UnregisterObjects(routing_id);
+  entry.input_handler = nullptr;
+  RemoveEntryIfNeeded(routing_id);
+}
+
 void SynchronousCompositorRegistry::CheckIsReady(int routing_id) {
   DCHECK(entry_map_.find(routing_id) != entry_map_.end());
   Entry& entry = entry_map_[routing_id];
   if (entry.IsReady()) {
     entry.compositor->DidInitializeRendererObjects(entry.output_surface,
-                                                   entry.begin_frame_source);
+                                                   entry.begin_frame_source,
+                                                   entry.input_handler);
   }
 }
 
@@ -124,7 +147,8 @@ void SynchronousCompositorRegistry::UnregisterObjects(int routing_id) {
 void SynchronousCompositorRegistry::RemoveEntryIfNeeded(int routing_id) {
   DCHECK(entry_map_.find(routing_id) != entry_map_.end());
   Entry& entry = entry_map_[routing_id];
-  if (!entry.compositor && !entry.begin_frame_source && !entry.output_surface) {
+  if (!entry.compositor && !entry.begin_frame_source && !entry.output_surface &&
+      !entry.input_handler) {
     entry_map_.erase(routing_id);
   }
 }
@@ -136,11 +160,12 @@ bool SynchronousCompositorRegistry::CalledOnValidThread() const {
 SynchronousCompositorRegistry::Entry::Entry()
     : compositor(nullptr),
       begin_frame_source(nullptr),
-      output_surface(nullptr) {
+      output_surface(nullptr),
+      input_handler(nullptr) {
 }
 
 bool SynchronousCompositorRegistry::Entry::IsReady() {
-  return compositor && begin_frame_source && output_surface;
+  return compositor && begin_frame_source && output_surface && input_handler;
 }
 
 }  // namespace content

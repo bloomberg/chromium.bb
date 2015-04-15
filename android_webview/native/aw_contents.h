@@ -235,6 +235,8 @@ class AwContents : public FindHelper::Listener,
   void ShowGeolocationPrompt(const GURL& origin, base::Callback<void(bool)>);
   void HideGeolocationPrompt(const GURL& origin);
 
+  void SetDipScaleInternal(float dip_scale);
+
   JavaObjectWeakGlobalRef java_ref_;
   scoped_ptr<AwWebContentsDelegate> web_contents_delegate_;
   scoped_ptr<AwContentsClientBridge> contents_client_bridge_;

@@ -20,6 +20,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content_public.browser.GestureStateListener;
+import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
 import java.util.Locale;
@@ -33,6 +34,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
 public class AndroidScrollIntegrationTest extends AwTestBase {
+    private TestWebServer mWebServer;
+
     private static class OverScrollByCallbackHelper extends CallbackHelper {
         int mDeltaX;
         int mDeltaY;
@@ -105,6 +108,20 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
             super.scrollTo(x, y);
             mOnScrollToCallbackHelper.notifyCalled();
         }
+    }
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        mWebServer = TestWebServer.start();
+    }
+
+    @Override
+    public void tearDown() throws Exception {
+        if (mWebServer != null) {
+            mWebServer.shutdown();
+        }
+        super.tearDown();
     }
 
     @Override
@@ -549,6 +566,60 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
         enableJavaScriptOnUiThread(testContainerView.getAwContents());
 
         loadTestPageAndWaitForFirstFrame(testContainerView, contentsClient, null, "");
+
+        assertScrollOnMainSync(testContainerView, 0, 0);
+
+        final CallbackHelper onScrollToCallbackHelper =
+                testContainerView.getOnScrollToCallbackHelper();
+        final int scrollToCallCount = onScrollToCallbackHelper.getCallCount();
+
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                testContainerView.getAwContents().flingScroll(1000, 1000);
+            }
+        });
+
+        onScrollToCallbackHelper.waitForCallback(scrollToCallCount);
+
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                assertTrue(testContainerView.getScrollX() > 0);
+                assertTrue(testContainerView.getScrollY() > 0);
+            }
+        });
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testFlingScrollOnPopup() throws Throwable {
+        final TestAwContentsClient parentContentsClient = new TestAwContentsClient();
+        final ScrollTestContainerView parentContainerView =
+                (ScrollTestContainerView) createAwTestContainerViewOnMainSync(parentContentsClient);
+        final AwContents parentContents = parentContainerView.getAwContents();
+        enableJavaScriptOnUiThread(parentContents);
+
+        final String popupPath = "/popup.html";
+        final String parentPageHtml = CommonResources.makeHtmlPageFrom("", "<script>"
+                        + "function tryOpenWindow() {"
+                        + "  var newWindow = window.open('" + popupPath + "');"
+                        + "}</script> <h1>Parent</h1>");
+
+        final String popupPageHtml = CommonResources.makeHtmlPageFrom(
+                "<title>" + "Popup Window" + "</title>",
+                "This is a popup window");
+
+        triggerPopup(parentContents, parentContentsClient, mWebServer, parentPageHtml,
+                popupPageHtml, popupPath, "tryOpenWindow()");
+        final PopupInfo popupInfo = connectPendingPopup(parentContents);
+        assertEquals("Popup Window", getTitleOnUiThread(popupInfo.popupContents));
+
+        final ScrollTestContainerView testContainerView =
+                (ScrollTestContainerView) popupInfo.popupContainerView;
+        enableJavaScriptOnUiThread(testContainerView.getAwContents());
+        loadTestPageAndWaitForFirstFrame(
+                testContainerView, popupInfo.popupContentsClient, null, "");
 
         assertScrollOnMainSync(testContainerView, 0, 0);
 

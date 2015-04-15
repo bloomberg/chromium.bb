@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "cc/input/input_handler.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
+#include "content/browser/android/in_process/synchronous_compositor_registry.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/events/latency_info.h"
 
@@ -48,21 +49,15 @@ void SynchronousInputEventFilter::SetBoundHandlerOnUIThread(
 void SynchronousInputEventFilter::DidAddInputHandler(
     int routing_id,
     cc::InputHandler* input_handler) {
-  // The SynchronusCompositorImpl can be NULL if the WebContents that it's
-  // bound to has already been deleted.
-  SynchronousCompositorImpl* compositor =
-      SynchronousCompositorImpl::FromRoutingID(routing_id);
-  if (compositor)
-    compositor->SetInputHandler(input_handler);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  SynchronousCompositorRegistry::GetInstance()->RegisterInputHandler(
+      routing_id, input_handler);
 }
 
 void SynchronousInputEventFilter::DidRemoveInputHandler(int routing_id) {
-  // The SynchronusCompositorImpl can be NULL if the WebContents that it's
-  // bound to has already been deleted.
-  SynchronousCompositorImpl* compositor =
-      SynchronousCompositorImpl::FromRoutingID(routing_id);
-  if (compositor)
-    compositor->SetInputHandler(NULL);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  SynchronousCompositorRegistry::GetInstance()->UnregisterInputHandler(
+      routing_id);
 }
 
 void SynchronousInputEventFilter::DidOverscroll(

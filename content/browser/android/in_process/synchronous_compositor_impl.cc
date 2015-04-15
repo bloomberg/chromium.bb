@@ -85,10 +85,10 @@ SynchronousCompositorImpl::SynchronousCompositorImpl(WebContents* contents)
 SynchronousCompositorImpl::~SynchronousCompositorImpl() {
   SynchronousCompositorRegistry::GetInstance()->UnregisterCompositor(
       routing_id_, this);
-  SetInputHandler(NULL);
 
   DCHECK(!output_surface_);
   DCHECK(!begin_frame_source_);
+  DCHECK(!input_handler_);
 }
 
 void SynchronousCompositorImpl::SetClient(
@@ -110,12 +110,14 @@ void SynchronousCompositor::SetRecordFullDocument(bool record_full_document) {
 
 void SynchronousCompositorImpl::DidInitializeRendererObjects(
     SynchronousCompositorOutputSurface* output_surface,
-    SynchronousCompositorExternalBeginFrameSource* begin_frame_source) {
+    SynchronousCompositorExternalBeginFrameSource* begin_frame_source,
+    cc::InputHandler* input_handler) {
   DCHECK(!output_surface_);
   DCHECK(!begin_frame_source_);
   DCHECK(output_surface);
   DCHECK(begin_frame_source);
   DCHECK(compositor_client_);
+  DCHECK(input_handler);
 
   output_surface_ = output_surface;
   begin_frame_source_ = begin_frame_source;
@@ -130,6 +132,8 @@ void SynchronousCompositorImpl::DidInitializeRendererObjects(
   OnNeedsBeginFramesChange(begin_frame_source_->NeedsBeginFrames());
 
   compositor_client_->DidInitializeCompositor(this);
+
+  SetInputHandler(input_handler);
 }
 
 void SynchronousCompositorImpl::DidDestroyRendererObjects() {
@@ -143,6 +147,7 @@ void SynchronousCompositorImpl::DidDestroyRendererObjects() {
   compositor_client_ = nullptr;
   output_surface_ = nullptr;
   begin_frame_source_ = nullptr;
+  SetInputHandler(nullptr);
 }
 
 void SynchronousCompositorImpl::NotifyDidDestroyCompositorToClient() {

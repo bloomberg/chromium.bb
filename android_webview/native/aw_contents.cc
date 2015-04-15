@@ -909,6 +909,9 @@ void AwContents::SetPendingWebContentsForPopup(
     return;
   }
   pending_contents_.reset(new AwContents(pending.Pass()));
+  // Set dip_scale for pending contents, which is necessary for the later
+  // SynchronousCompositor and InputHandler setup.
+  pending_contents_->SetDipScaleInternal(browser_view_renderer_.dip_scale());
 }
 
 void AwContents::FocusFirstNode(JNIEnv* env, jobject obj) {
@@ -992,6 +995,10 @@ void AwContents::DidOverscroll(gfx::Vector2d overscroll_delta) {
 
 void AwContents::SetDipScale(JNIEnv* env, jobject obj, jfloat dip_scale) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  SetDipScaleInternal(dip_scale);
+}
+
+void AwContents::SetDipScaleInternal(float dip_scale) {
   browser_view_renderer_.SetDipScale(dip_scale);
 }
 

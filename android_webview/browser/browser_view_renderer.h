@@ -77,6 +77,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
 
   // Sets the scale for logical<->physical pixel conversions.
   void SetDipScale(float dip_scale);
+  float dip_scale() const { return dip_scale_; }
 
   // Set the root layer scroll offset to |new_value|.
   void ScrollTo(gfx::Vector2d new_value);
