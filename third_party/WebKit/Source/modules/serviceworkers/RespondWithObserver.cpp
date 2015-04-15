@@ -187,15 +187,15 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
         return;
     }
     Response* response = V8Response::toImplWithTypeCheck(toIsolate(executionContext()), value.v8Value());
-    // "If either |response|'s type is |opaque| and |request|'s mode is not
-    // |no CORS| or |response|'s type is |error|, return a network error."
+    // "If one of the following conditions is true, return a network error:
+    //   - |response|'s type is |error|.
+    //   - |request|'s mode is not |no-cors| and response's type is |opaque|.
+    //   - |request| is a client request and |response|'s type is neither
+    //     |basic| nor |default|."
     const FetchResponseData::Type responseType = response->response()->type();
-    if ((responseType == FetchResponseData::OpaqueType && m_requestMode != WebURLRequest::FetchRequestModeNoCORS) || responseType == FetchResponseData::ErrorType) {
-        responseWasRejected();
-        return;
-    }
-    // Treat the opaque response as a network error for frame loading.
-    if (responseType == FetchResponseData::OpaqueType && m_frameType != WebURLRequest::FrameTypeNone) {
+    if (responseType == FetchResponseData::ErrorType
+        || (m_requestMode != WebURLRequest::FetchRequestModeNoCORS && responseType == FetchResponseData::OpaqueType)
+        || (m_frameType != WebURLRequest::FrameTypeNone && responseType != FetchResponseData::BasicType && responseType != FetchResponseData::DefaultType)) {
         responseWasRejected();
         return;
     }
