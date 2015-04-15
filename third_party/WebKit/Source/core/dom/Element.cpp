@@ -158,14 +158,13 @@ Element::~Element()
     ASSERT(needsAttach());
 
 #if !ENABLE(OILPAN)
-    if (hasRareData())
+    if (hasRareData()) {
         elementRareData()->clearShadow();
+        detachAllAttrNodesFromElement();
+    }
 
     if (isCustomElement())
         CustomElement::wasDestroyed(this);
-
-    if (hasSyntheticAttrChildNodes())
-        detachAllAttrNodesFromElement();
 
     // With Oilpan, either the Element has been removed from the Document
     // or the Document is dead as well. If the Element has been removed from
@@ -1994,16 +1993,14 @@ WillBeHeapVector<RefPtrWillBeMember<Attr>>* Element::attrNodeList()
 
 WillBeHeapVector<RefPtrWillBeMember<Attr>>& Element::ensureAttrNodeList()
 {
-    setHasSyntheticAttrChildNodes(true);
     return ensureElementRareData().ensureAttrNodeList();
 }
 
 void Element::removeAttrNodeList()
 {
-    ASSERT(hasSyntheticAttrChildNodes());
+    ASSERT(attrNodeList());
     if (hasRareData())
         elementRareData()->removeAttrNodeList();
-    setHasSyntheticAttrChildNodes(false);
 }
 
 PassRefPtrWillBeRawPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& exceptionState)
@@ -3177,7 +3174,7 @@ PassRefPtrWillBeRawPtr<Attr> Element::ensureAttr(const QualifiedName& name)
 
 void Element::detachAttrNodeFromElementWithValue(Attr* attrNode, const AtomicString& value)
 {
-    ASSERT(hasSyntheticAttrChildNodes());
+    ASSERT(attrNodeList());
     attrNode->detachFromElementWithValue(value);
 
     AttrNodeList* list = attrNodeList();
@@ -3195,7 +3192,8 @@ void Element::detachAttrNodeFromElementWithValue(Attr* attrNode, const AtomicStr
 void Element::detachAllAttrNodesFromElement()
 {
     AttrNodeList* list = this->attrNodeList();
-    ASSERT(list);
+    if (!list)
+        return;
 
     AttributeCollection attributes = elementData()->attributes();
     for (const Attribute& attr : attributes) {
@@ -3225,7 +3223,7 @@ PassRefPtr<ComputedStyle> Element::customStyleForLayoutObject()
 
 void Element::cloneAttributesFromElement(const Element& other)
 {
-    if (hasSyntheticAttrChildNodes())
+    if (hasRareData())
         detachAllAttrNodesFromElement();
 
     other.synchronizeAllAttributes();

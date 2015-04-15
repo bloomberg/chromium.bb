@@ -291,9 +291,6 @@ public:
 
     bool hasCustomStyleCallbacks() const { return getFlag(HasCustomStyleCallbacksFlag); }
 
-    bool hasSyntheticAttrChildNodes() const { return getFlag(HasSyntheticAttrChildNodesFlag); }
-    void setHasSyntheticAttrChildNodes(bool flag) { setFlag(flag, HasSyntheticAttrChildNodesFlag); }
-
     // If this node is in a shadow tree, returns its shadow host. Otherwise, returns nullptr.
     Element* shadowHost() const;
     ShadowRoot* containingShadowRoot() const;
@@ -733,14 +730,13 @@ private:
         HasNameOrIsEditingTextFlag = 1 << 23,
         HasWeakReferencesFlag = 1 << 24,
         V8CollectableDuringMinorGCFlag = 1 << 25,
-        HasSyntheticAttrChildNodesFlag = 1 << 26,
-        HasEventTargetDataFlag = 1 << 27,
-        AlreadySpellCheckedFlag = 1 << 28,
+        HasEventTargetDataFlag = 1 << 26,
+        AlreadySpellCheckedFlag = 1 << 27,
 
         DefaultNodeFlags = IsFinishedParsingChildrenFlag | ChildNeedsStyleRecalcFlag | NeedsReattachStyleChange
     };
 
-    // 2 bits remaining.
+    // 3 bits remaining.
 
     bool getFlag(NodeFlags mask) const { return m_nodeFlags & mask; }
     void setFlag(bool f, NodeFlags mask) { m_nodeFlags = (m_nodeFlags & ~mask) | (-(int32_t)f & mask); }

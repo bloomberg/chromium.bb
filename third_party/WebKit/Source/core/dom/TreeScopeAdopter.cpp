@@ -69,16 +69,17 @@ void TreeScopeAdopter::moveTreeToNewScope(Node& root) const
         if (!node.isElementNode())
             continue;
 
-        if (node.hasSyntheticAttrChildNodes()) {
-            WillBeHeapVector<RefPtrWillBeMember<Attr>>& attrs = *toElement(node).attrNodeList();
-            for (unsigned i = 0; i < attrs.size(); ++i)
-                moveTreeToNewScope(*attrs[i]);
-        }
+        if (node.hasRareData()) {
+            if (WillBeHeapVector<RefPtrWillBeMember<Attr>>* attrs = toElement(node).attrNodeList()) {
+                for (unsigned i = 0; i < attrs->size(); ++i)
+                    moveTreeToNewScope(*(*attrs)[i]);
+            }
 
-        for (ShadowRoot* shadow = node.youngestShadowRoot(); shadow; shadow = shadow->olderShadowRoot()) {
-            shadow->setParentTreeScope(newScope());
-            if (willMoveToNewDocument)
-                moveTreeToNewDocument(*shadow, oldDocument, newDocument);
+            for (ShadowRoot* shadow = node.youngestShadowRoot(); shadow; shadow = shadow->olderShadowRoot()) {
+                shadow->setParentTreeScope(newScope());
+                if (willMoveToNewDocument)
+                    moveTreeToNewDocument(*shadow, oldDocument, newDocument);
+            }
         }
     }
 
@@ -93,14 +94,15 @@ void TreeScopeAdopter::moveTreeToNewDocument(Node& root, Document& oldDocument, 
     for (Node& node : NodeTraversal::inclusiveDescendantsOf(root)) {
         moveNodeToNewDocument(node, oldDocument, newDocument);
 
-        if (node.hasSyntheticAttrChildNodes()) {
-            WillBeHeapVector<RefPtrWillBeMember<Attr>>& attrs = *toElement(node).attrNodeList();
-            for (unsigned i = 0; i < attrs.size(); ++i)
-                moveTreeToNewDocument(*attrs[i], oldDocument, newDocument);
-        }
+        if (node.hasRareData()) {
+            if (WillBeHeapVector<RefPtrWillBeMember<Attr>>* attrs = toElement(node).attrNodeList()) {
+                for (unsigned i = 0; i < attrs->size(); ++i)
+                    moveTreeToNewDocument(*(*attrs)[i], oldDocument, newDocument);
+            }
 
-        for (ShadowRoot* shadow = node.youngestShadowRoot(); shadow; shadow = shadow->olderShadowRoot())
-            moveTreeToNewDocument(*shadow, oldDocument, newDocument);
+            for (ShadowRoot* shadow = node.youngestShadowRoot(); shadow; shadow = shadow->olderShadowRoot())
+                moveTreeToNewDocument(*shadow, oldDocument, newDocument);
+        }
     }
 }
 
