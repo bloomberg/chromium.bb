@@ -967,7 +967,8 @@ ivi_tests =
 $(ivi_tests) : $(builddir)/tests/weston-ivi.ini
 
 AM_TESTS_ENVIRONMENT = \
-	abs_builddir='$(abs_builddir)'; export abs_builddir;
+	abs_builddir='$(abs_builddir)'; export abs_builddir; \
+	abs_top_srcdir='$(abs_top_srcdir)'; export abs_top_srcdir;
 
 TEST_EXTENSIONS = .la .weston
 LA_LOG_COMPILER = $(srcdir)/tests/weston-tests-env

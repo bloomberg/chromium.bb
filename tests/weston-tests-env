@@ -26,6 +26,16 @@ SHELL_PLUGIN=$MODDIR/desktop-shell.so
 TEST_PLUGIN=$MODDIR/weston-test.so
 XWAYLAND_PLUGIN=$MODDIR/xwayland.so
 
+CONFIG_FILE="${TEST_NAME}.ini"
+
+if [ -e "${abs_builddir}/${CONFIG_FILE}" ]; then
+       CONFIG="--config=${abs_builddir}/${CONFIG_FILE}"
+elif [ -e "${abs_top_srcdir}/tests/${CONFIG_FILE}" ]; then
+       CONFIG="--config=${abs_top_srcdir}/tests/${CONFIG_FILE}"
+else
+       CONFIG="--no-config"
+fi
+
 case $TEST_FILE in
 	ivi-*.la|ivi-*.so)
 		SHELL_PLUGIN=$MODDIR/ivi-shell.so
@@ -43,11 +53,11 @@ case $TEST_FILE in
 	*.la|*.so)
 		WESTON_BUILD_DIR=$abs_builddir \
 		$WESTON --backend=$MODDIR/$BACKEND \
-			--no-config \
 			--shell=$SHELL_PLUGIN \
 			--socket=test-${TEST_NAME} \
 			--modules=$MODDIR/${TEST_FILE/.la/.so},$XWAYLAND_PLUGIN \
 			--log="$SERVERLOG" \
+			${CONFIG} \
 			&> "$OUTLOG"
 		;;
 	ivi-*.weston)
@@ -69,10 +79,10 @@ case $TEST_FILE in
 		WESTON_TEST_CLIENT_PATH=$abs_builddir/$TEST_FILE $WESTON \
 			--socket=test-${TEST_NAME} \
 			--backend=$MODDIR/$BACKEND \
-			--no-config \
 			--shell=$SHELL_PLUGIN \
 			--log="$SERVERLOG" \
 			--modules=$TEST_PLUGIN,$XWAYLAND_PLUGIN \
+			${CONFIG} \
 			$($abs_builddir/$TEST_FILE --params) \
 			&> "$OUTLOG"
 esac
