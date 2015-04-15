@@ -285,30 +285,9 @@ cr.define('extensions', function() {
           this.extensions_ = extensions;
           this.showExtensionNodes_();
           resolve();
-
-          // |onUpdateFinished_| should be called after the list becomes visible
-          // in extensions.js. |resolve| is async, so |onUpdateFinished_|
-          // shouldn't be called directly.
-          this.extensionsUpdated_.then(this.onUpdateFinished_.bind(this));
         }.bind(this));
       }.bind(this));
       return this.extensionsUpdated_;
-    },
-
-    /** Updates elements that need to be visible in order to update properly. */
-    onUpdateFinished_: function() {
-      assert(!this.hidden);
-      assert(!this.parentElement.hidden);
-
-      this.updateFocusableElements();
-
-      var idToHighlight = this.getIdQueryParam_();
-      if (idToHighlight && $(idToHighlight))
-        this.scrollToNode_(idToHighlight);
-
-      var idToOpenOptions = this.getOptionsQueryParam_();
-      if (idToOpenOptions && $(idToOpenOptions))
-        this.showEmbeddedExtensionOptions_(idToOpenOptions, true);
     },
 
     /** @return {number} The number of extensions being displayed. */
@@ -360,6 +339,14 @@ cr.define('extensions', function() {
           assertInstanceof(node, ExtensionFocusRow).destroy();
         }
       }
+
+      var idToHighlight = this.getIdQueryParam_();
+      if (idToHighlight && $(idToHighlight))
+        this.scrollToNode_(idToHighlight);
+
+      var idToOpenOptions = this.getOptionsQueryParam_();
+      if (idToOpenOptions && $(idToOpenOptions))
+        this.showEmbeddedExtensionOptions_(idToOpenOptions, true);
     },
 
     /** Updates each row's focusable elements without rebuilding the grid. */
