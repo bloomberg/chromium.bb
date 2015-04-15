@@ -902,8 +902,12 @@ class ChromiumOSDevice(RemoteDevice):
   def alias(self):
     """The user-friendly alias name assigned to the device."""
     if not self._alias:
-      # TODO(thieule): Get the alias name from the remote device.
-      self._alias = 'test_alias'
+      alias_file_path = os.path.join(BRILLO_DEVICE_PROPERTY_DIR,
+                                     BRILLO_DEVICE_PROPERTY_ALIAS)
+      result = self.RunCommand(['cat', alias_file_path], capture_output=True,
+                               error_code_ok=True)
+      if not result.returncode:
+        self._alias = result.output.strip()
 
     return self._alias
 
