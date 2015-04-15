@@ -39,13 +39,14 @@ public:
     /*
      * The state transitions should follow the following:
      * Initial -> RecordingContent -> ReadyToPaint -> PaintingFilter -> ReadyToPaint
-     *                                                   |     ^
-     *                                                   v     |
-     *                                              PaintingFilterCycle
+     *               |     ^                              |     ^
+     *               v     |                              v     |
+     *     RecordingContentCycleDetected            PaintingFilterCycle
      */
     enum FilterDataState {
         Initial,
         RecordingContent,
+        RecordingContentCycleDetected,
         ReadyToPaint,
         PaintingFilter,
         PaintingFilterCycleDetected

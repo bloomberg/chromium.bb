@@ -133,6 +133,9 @@ GraphicsContext* SVGFilterPainter::prepareEffect(LayoutObject& object, GraphicsC
         if (filterData->m_state == FilterData::PaintingFilter)
             filterData->m_state = FilterData::PaintingFilterCycleDetected;
 
+        if (filterData->m_state == FilterData::RecordingContent)
+            filterData->m_state = FilterData::RecordingContentCycleDetected;
+
         return nullptr;
     }
 
@@ -179,6 +182,11 @@ void SVGFilterPainter::finishEffect(LayoutObject& object, GraphicsContext* conte
     // cycle so we reset the state and continue.
     if (filterData->m_state == FilterData::PaintingFilterCycleDetected) {
         filterData->m_state = FilterData::PaintingFilter;
+        return;
+    }
+
+    if (filterData->m_state == FilterData::RecordingContentCycleDetected) {
+        filterData->m_state = FilterData::RecordingContent;
         return;
     }
 
