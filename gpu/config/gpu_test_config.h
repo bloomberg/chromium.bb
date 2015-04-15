@@ -30,11 +30,12 @@ class GPU_EXPORT GPUTestConfig {
     kOsMacLion = 1 << 6,
     kOsMacMountainLion = 1 << 7,
     kOsMacMavericks = 1 << 8,
+    kOsMacYosemite = 1 << 9,
     kOsMac = kOsMacLeopard | kOsMacSnowLeopard | kOsMacLion |
-             kOsMacMountainLion | kOsMacMavericks,
-    kOsLinux = 1 << 9,
-    kOsChromeOS = 1 << 10,
-    kOsAndroid = 1 << 11,
+             kOsMacMountainLion | kOsMacMavericks | kOsMacYosemite,
+    kOsLinux = 1 << 10,
+    kOsChromeOS = 1 << 11,
+    kOsAndroid = 1 << 12,
   };
 
   enum BuildType {

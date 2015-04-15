@@ -2,11 +2,57 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "gpu/config/gpu_test_expectations_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {
+
+struct TestOSEntry {
+  const char* name;
+  GPUTestConfig::OS os;
+};
+
+static const TestOSEntry kOsFamilyWin = { "WIN", GPUTestConfig::kOsWin };
+static const TestOSEntry kOsFamilyMac = { "MAC", GPUTestConfig::kOsMac };
+
+static const struct TestOsWithFamily {
+  TestOSEntry version;
+  TestOSEntry family;
+} kOSVersionsWithFamily[] = {
+  { { "XP", GPUTestConfig::kOsWinXP }, kOsFamilyWin },
+  { { "VISTA", GPUTestConfig::kOsWinVista }, kOsFamilyWin },
+  { { "WIN7", GPUTestConfig::kOsWin7 }, kOsFamilyWin },
+  { { "WIN8", GPUTestConfig::kOsWin8 }, kOsFamilyWin },
+  { { "LEOPARD", GPUTestConfig::kOsMacLeopard }, kOsFamilyMac },
+  { { "SNOWLEOPARD", GPUTestConfig::kOsMacSnowLeopard }, kOsFamilyMac },
+  { { "LION", GPUTestConfig::kOsMacLion }, kOsFamilyMac },
+  { { "MOUNTAINLION", GPUTestConfig::kOsMacMountainLion }, kOsFamilyMac },
+  { { "MAVERICKS", GPUTestConfig::kOsMacMavericks }, kOsFamilyMac },
+  { { "YOSEMITE", GPUTestConfig::kOsMacYosemite }, kOsFamilyMac },
+  { { "LINUX", GPUTestConfig::kOsLinux },
+    { "LINUX", GPUTestConfig::kOsLinux } },
+  { { "CHROMEOS", GPUTestConfig::kOsChromeOS },
+    { "CHROMEOS", GPUTestConfig::kOsChromeOS } },
+  { { "ANDROID", GPUTestConfig::kOsAndroid },
+    { "ANDROID", GPUTestConfig::kOsAndroid } }
+};
+
+TestOSEntry GetUnrelatedOS(const TestOSEntry& os) {
+  return (os.os & kOsFamilyWin.os) ? kOsFamilyMac : kOsFamilyWin;
+}
+
+// Prints test parameter details.
+std::ostream& operator << (std::ostream& out, const TestOsWithFamily& os) {
+  out << "{ os_name: \"" << os.version.name
+      << "\", os_flag: " << os.version.os
+      << ", os_family: \"" << os.family.name
+      << "\", os_family_flag: " << os.family.os
+      << " }";
+  return out;
+}
 
 class GPUTestExpectationsParserTest : public testing::Test {
  public:
@@ -29,8 +75,33 @@ class GPUTestExpectationsParserTest : public testing::Test {
 
   void TearDown() override {}
 
+  void set_os(int32 os) {
+    bot_config_.set_os(os);
+    ASSERT_TRUE(bot_config_.IsValid());
+  }
+
  private:
   GPUTestBotConfig bot_config_;
+};
+
+class GPUTestExpectationsParserParamTest
+    : public GPUTestExpectationsParserTest,
+      public testing::WithParamInterface<TestOsWithFamily> {
+ public:
+  GPUTestExpectationsParserParamTest() { }
+
+  ~GPUTestExpectationsParserParamTest() override {}
+
+ protected:
+  const GPUTestBotConfig& GetBotConfig() {
+    set_os(GetParam().version.os);
+    return bot_config();
+  }
+
+ private:
+  // Restrict access to bot_config() function.
+  // GetBotConfig() should be used instead.
+  using GPUTestExpectationsParserTest::bot_config;
 };
 
 TEST_F(GPUTestExpectationsParserTest, CommentOnly) {
@@ -45,37 +116,40 @@ TEST_F(GPUTestExpectationsParserTest, CommentOnly) {
             parser.GetTestExpectation("some_test", bot_config()));
 }
 
-TEST_F(GPUTestExpectationsParserTest, ValidFullEntry) {
+TEST_P(GPUTestExpectationsParserParamTest, ValidFullEntry) {
   const std::string text =
-      "BUG12345 WIN7 RELEASE NVIDIA 0x0640 : MyTest = FAIL";
+      base::StringPrintf("BUG12345 %s RELEASE NVIDIA 0x0640 : MyTest = FAIL",
+                         GetParam().version.name);
 
   GPUTestExpectationsParser parser;
   EXPECT_TRUE(parser.LoadTestExpectations(text));
   EXPECT_EQ(0u, parser.GetErrorMessages().size());
   EXPECT_EQ(GPUTestExpectationsParser::kGpuTestFail,
-            parser.GetTestExpectation("MyTest", bot_config()));
+            parser.GetTestExpectation("MyTest", GetBotConfig()));
 }
 
-TEST_F(GPUTestExpectationsParserTest, ValidPartialEntry) {
+TEST_P(GPUTestExpectationsParserParamTest, ValidPartialEntry) {
   const std::string text =
-      "BUG12345 WIN NVIDIA : MyTest = TIMEOUT";
+      base::StringPrintf("BUG12345 %s NVIDIA : MyTest = TIMEOUT",
+                         GetParam().family.name);
 
   GPUTestExpectationsParser parser;
   EXPECT_TRUE(parser.LoadTestExpectations(text));
   EXPECT_EQ(0u, parser.GetErrorMessages().size());
   EXPECT_EQ(GPUTestExpectationsParser::kGpuTestTimeout,
-            parser.GetTestExpectation("MyTest", bot_config()));
+            parser.GetTestExpectation("MyTest", GetBotConfig()));
 }
 
-TEST_F(GPUTestExpectationsParserTest, ValidUnrelatedOsEntry) {
-  const std::string text =
-      "BUG12345 LEOPARD : MyTest = TIMEOUT";
+TEST_P(GPUTestExpectationsParserParamTest, ValidUnrelatedOsEntry) {
+  const std::string text = base::StringPrintf(
+      "BUG12345 %s : MyTest = TIMEOUT",
+      GetUnrelatedOS(GetParam().version).name);
 
   GPUTestExpectationsParser parser;
   EXPECT_TRUE(parser.LoadTestExpectations(text));
   EXPECT_EQ(0u, parser.GetErrorMessages().size());
   EXPECT_EQ(GPUTestExpectationsParser::kGpuTestPass,
-            parser.GetTestExpectation("MyTest", bot_config()));
+            parser.GetTestExpectation("MyTest", GetBotConfig()));
 }
 
 TEST_F(GPUTestExpectationsParserTest, ValidUnrelatedTestEntry) {
@@ -107,9 +181,11 @@ TEST_F(GPUTestExpectationsParserTest, AllModifiers) {
             parser.GetTestExpectation("MyTest", bot_config()));
 }
 
-TEST_F(GPUTestExpectationsParserTest, DuplicateModifiers) {
-  const std::string text =
-      "BUG12345 WIN7 WIN7 RELEASE NVIDIA 0x0640 : MyTest = FAIL";
+TEST_P(GPUTestExpectationsParserParamTest, DuplicateModifiers) {
+  const std::string text = base::StringPrintf(
+      "BUG12345 %s %s RELEASE NVIDIA 0x0640 : MyTest = FAIL",
+      GetParam().version.name,
+      GetParam().version.name);
 
   GPUTestExpectationsParser parser;
   EXPECT_FALSE(parser.LoadTestExpectations(text));
@@ -160,9 +236,10 @@ TEST_F(GPUTestExpectationsParserTest, IllegalModifier) {
   EXPECT_NE(0u, parser.GetErrorMessages().size());
 }
 
-TEST_F(GPUTestExpectationsParserTest, OsConflicts) {
-  const std::string text =
-      "BUG12345 XP WIN : MyTest = FAIL";
+TEST_P(GPUTestExpectationsParserParamTest, OsConflicts) {
+  const std::string text = base::StringPrintf("BUG12345 %s %s : MyTest = FAIL",
+                                              GetParam().version.name,
+                                              GetParam().family.name);
 
   GPUTestExpectationsParser parser;
   EXPECT_FALSE(parser.LoadTestExpectations(text));
@@ -196,10 +273,12 @@ TEST_F(GPUTestExpectationsParserTest, MoreThanOneGpuDeviceID) {
   EXPECT_NE(0u, parser.GetErrorMessages().size());
 }
 
-TEST_F(GPUTestExpectationsParserTest, MultipleEntriesConflicts) {
-  const std::string text =
-      "BUG12345 WIN7 RELEASE NVIDIA 0x0640 : MyTest = FAIL\n"
-      "BUG12345 WIN : MyTest = FAIL";
+TEST_P(GPUTestExpectationsParserParamTest, MultipleEntriesConflicts) {
+  const std::string text = base::StringPrintf(
+      "BUG12345 %s RELEASE NVIDIA 0x0640 : MyTest = FAIL\n"
+      "BUG12345 %s : MyTest = FAIL",
+      GetParam().version.name,
+      GetParam().family.name);
 
   GPUTestExpectationsParser parser;
   EXPECT_FALSE(parser.LoadTestExpectations(text));
@@ -240,6 +319,10 @@ TEST_F(GPUTestExpectationsParserTest, StarMatching) {
   EXPECT_EQ(GPUTestExpectationsParser::kGpuTestPass,
             parser.GetTestExpectation("OtherTest", bot_config()));
 }
+
+INSTANTIATE_TEST_CASE_P(GPUTestExpectationsParser,
+                        GPUTestExpectationsParserParamTest,
+                        ::testing::ValuesIn(kOSVersionsWithFamily));
 
 }  // namespace gpu
 
