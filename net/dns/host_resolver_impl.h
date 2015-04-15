@@ -15,6 +15,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
+#include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
@@ -165,6 +166,7 @@ class NET_EXPORT HostResolverImpl
   // incompatible, ERR_DNS_CACHE_MISS if entry was not found in cache and HOSTS.
   int ResolveHelper(const Key& key,
                     const RequestInfo& info,
+                    const IPAddressNumber* ip_address,
                     AddressList* addresses,
                     const BoundNetLog& request_net_log);
 
@@ -172,6 +174,7 @@ class NET_EXPORT HostResolverImpl
   // succeeds, returns false otherwise.
   bool ResolveAsIP(const Key& key,
                    const RequestInfo& info,
+                   const IPAddressNumber* ip_address,
                    int* net_error,
                    AddressList* addresses);
 
@@ -196,6 +199,7 @@ class NET_EXPORT HostResolverImpl
   // "effective" address family by inheriting the resolver's default address
   // family when the request leaves it unspecified.
   Key GetEffectiveKeyForRequest(const RequestInfo& info,
+                                const IPAddressNumber* ip_number,
                                 const BoundNetLog& net_log) const;
 
   // Records the result in cache if cache is present.

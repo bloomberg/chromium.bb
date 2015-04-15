@@ -1881,11 +1881,16 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
 
   LogStartRequest(source_net_log, info);
 
+  IPAddressNumber ip_number;
+  IPAddressNumber* ip_number_ptr = nullptr;
+  if (ParseIPLiteralToNumber(info.hostname(), &ip_number))
+    ip_number_ptr = &ip_number;
+
   // Build a key that identifies the request in the cache and in the
   // outstanding jobs map.
-  Key key = GetEffectiveKeyForRequest(info, source_net_log);
+  Key key = GetEffectiveKeyForRequest(info, ip_number_ptr, source_net_log);
 
-  int rv = ResolveHelper(key, info, addresses, source_net_log);
+  int rv = ResolveHelper(key, info, ip_number_ptr, addresses, source_net_log);
   if (rv != ERR_DNS_CACHE_MISS) {
     LogFinishRequest(source_net_log, info, rv);
     RecordTotalTime(HaveDnsConfig(), info.is_speculative(), base::TimeDelta());
@@ -1931,6 +1936,7 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
 
 int HostResolverImpl::ResolveHelper(const Key& key,
                                     const RequestInfo& info,
+                                    const IPAddressNumber* ip_number,
                                     AddressList* addresses,
                                     const BoundNetLog& source_net_log) {
   // The result of |getaddrinfo| for empty hosts is inconsistent across systems.
@@ -1940,7 +1946,7 @@ int HostResolverImpl::ResolveHelper(const Key& key,
     return ERR_NAME_NOT_RESOLVED;
 
   int net_error = ERR_UNEXPECTED;
-  if (ResolveAsIP(key, info, &net_error, addresses))
+  if (ResolveAsIP(key, info, ip_number, &net_error, addresses))
     return net_error;
   if (ServeFromCache(key, info, &net_error, addresses)) {
     source_net_log.AddEvent(NetLog::TYPE_HOST_RESOLVER_IMPL_CACHE_HIT);
@@ -1964,9 +1970,14 @@ int HostResolverImpl::ResolveFromCache(const RequestInfo& info,
   // Update the net log and notify registered observers.
   LogStartRequest(source_net_log, info);
 
-  Key key = GetEffectiveKeyForRequest(info, source_net_log);
+  IPAddressNumber ip_number;
+  IPAddressNumber* ip_number_ptr = nullptr;
+  if (ParseIPLiteralToNumber(info.hostname(), &ip_number))
+    ip_number_ptr = &ip_number;
 
-  int rv = ResolveHelper(key, info, addresses, source_net_log);
+  Key key = GetEffectiveKeyForRequest(info, ip_number_ptr, source_net_log);
+
+  int rv = ResolveHelper(key, info, ip_number_ptr, addresses, source_net_log);
   LogFinishRequest(source_net_log, info, rv);
   return rv;
 }
@@ -2021,12 +2032,12 @@ base::Value* HostResolverImpl::GetDnsConfigAsValue() const {
 
 bool HostResolverImpl::ResolveAsIP(const Key& key,
                                    const RequestInfo& info,
+                                   const IPAddressNumber* ip_number,
                                    int* net_error,
                                    AddressList* addresses) {
   DCHECK(addresses);
   DCHECK(net_error);
-  IPAddressNumber ip_number;
-  if (!ParseIPLiteralToNumber(key.hostname, &ip_number))
+  if (ip_number == nullptr)
     return false;
 
   DCHECK_EQ(key.host_resolver_flags &
@@ -2035,7 +2046,7 @@ bool HostResolverImpl::ResolveAsIP(const Key& key,
             0) << " Unhandled flag";
 
   *net_error = OK;
-  AddressFamily family = GetAddressFamily(ip_number);
+  AddressFamily family = GetAddressFamily(*ip_number);
   if (family == ADDRESS_FAMILY_IPV6 &&
       !probe_ipv6_support_ &&
       default_address_family_ == ADDRESS_FAMILY_IPV4) {
@@ -2047,7 +2058,7 @@ bool HostResolverImpl::ResolveAsIP(const Key& key,
     // Don't return IPv6 addresses for IPv4 queries, and vice versa.
     *net_error = ERR_NAME_NOT_RESOLVED;
   } else {
-    *addresses = AddressList::CreateFromIPAddress(ip_number, info.port());
+    *addresses = AddressList::CreateFromIPAddress(*ip_number, info.port());
     if (key.host_resolver_flags & HOST_RESOLVER_CANONNAME)
       addresses->SetDefaultCanonicalName();
   }
@@ -2148,19 +2159,24 @@ void HostResolverImpl::SetHaveOnlyLoopbackAddresses(bool result) {
 }
 
 HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
-    const RequestInfo& info, const BoundNetLog& net_log) const {
+    const RequestInfo& info,
+    const IPAddressNumber* ip_number,
+    const BoundNetLog& net_log) const {
   HostResolverFlags effective_flags =
       info.host_resolver_flags() | additional_resolver_flags_;
   AddressFamily effective_address_family = info.address_family();
 
   if (info.address_family() == ADDRESS_FAMILY_UNSPECIFIED) {
-    unsigned char ip_number[4];
-    url::Component host_comp(0, info.hostname().size());
-    int num_components;
     if (probe_ipv6_support_ && !use_local_ipv6_ &&
-        // Don't bother IPv6 probing when resolving IPv4 literals.
-        url::IPv4AddressToNumber(info.hostname().c_str(), host_comp, ip_number,
-                                 &num_components) != url::CanonHostInfo::IPV4) {
+        // When resolving IPv4 literals, there's no need to probe for IPv6.
+        // When resolving IPv6 literals, there's no benefit to artificially
+        // limiting our resolution based on a probe.  Prior logic ensures
+        // that this query is UNSPECIFIED (see info.address_family()
+        // check above) and that |default_address_family_| is UNSPECIFIED
+        // (|prove_ipv6_support_| is false if |default_address_family_| is
+        // set) so the code requesting the resolution should be amenable to
+        // receiving a IPv6 resolution.
+        ip_number == nullptr) {
       // Google DNS address.
       const uint8 kIPv6Address[] =
           { 0x20, 0x01, 0x48, 0x60, 0x48, 0x60, 0x00, 0x00,
