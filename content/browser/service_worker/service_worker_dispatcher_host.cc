@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
 
 #include "base/logging.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/message_port_message_filter.h"
@@ -563,6 +564,10 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
     int provider_id,
     int render_frame_id,
     ServiceWorkerProviderType provider_type) {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/477117 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "477117 ServiceWorkerDispatcherHost::OnProviderCreated"));
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerDispatcherHost::OnProviderCreated");
   if (!GetContext())

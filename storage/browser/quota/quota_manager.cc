@@ -16,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -830,6 +831,10 @@ void QuotaManager::GetUsageAndQuotaForWebApps(
     const GURL& origin,
     StorageType type,
     const GetUsageAndQuotaCallback& callback) {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/477117 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "477117 QuotaManager::GetUsageAndQuotaForWebApps"));
   if (type != kStorageTypeTemporary &&
       type != kStorageTypePersistent &&
       type != kStorageTypeSyncable) {

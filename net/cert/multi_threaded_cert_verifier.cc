@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/worker_pool.h"
@@ -277,6 +278,10 @@ class CertVerifierWorker {
 
   // DoReply runs on the origin thread.
   void DoReply() {
+    // TODO(pkasting): Remove ScopedTracker below once crbug.com/477117 is
+    // fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("477117 CertVerifierWorker::DoReply"));
     DCHECK_EQ(base::MessageLoop::current(), origin_loop_);
     {
       // We lock here because the worker thread could still be in Finished,

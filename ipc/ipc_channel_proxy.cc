@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "ipc/ipc_channel_factory.h"
@@ -146,6 +147,10 @@ void ChannelProxy::Context::OnChannelOpened() {
 
 // Called on the IPC::Channel thread
 void ChannelProxy::Context::OnChannelClosed() {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/477117 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "477117 ChannelProxy::Context::OnChannelClosed"));
   // It's okay for IPC::ChannelProxy::Close to be called more than once, which
   // would result in this branch being taken.
   if (!channel_)
@@ -176,6 +181,10 @@ void ChannelProxy::Context::Clear() {
 
 // Called on the IPC::Channel thread
 void ChannelProxy::Context::OnSendMessage(scoped_ptr<Message> message) {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/477117 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "477117 ChannelProxy::Context::OnSendMessage"));
   if (!channel_) {
     OnChannelClosed();
     return;
