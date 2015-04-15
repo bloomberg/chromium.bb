@@ -1997,7 +1997,7 @@ TEST_F(DriveApiRequestsTest, BatchUploadRequest) {
 TEST_F(DriveApiRequestsTest, EmptyBatchUploadRequest) {
   scoped_ptr<drive::BatchUploadRequest> request(new drive::BatchUploadRequest(
       request_sender_.get(), *url_generator_));
-  EXPECT_DEATH(request->Commit(), "Check failed");
+  EXPECT_DEATH(request->Commit(), "");
 }
 
 }  // namespace google_apis
