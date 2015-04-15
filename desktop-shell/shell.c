@@ -424,13 +424,12 @@ get_output_panel_size(struct desktop_shell *shell,
 		switch (shell->panel_position) {
 		case DESKTOP_SHELL_PANEL_POSITION_TOP:
 		case DESKTOP_SHELL_PANEL_POSITION_BOTTOM:
-
 			weston_view_to_global_float(view,
 						    view->surface->width, 0,
 						    &x, &y);
 
-			*width = (int) x;
-			*height = view->surface->height + (int) y;
+			*width = (int)x - output->x;
+			*height = view->surface->height + (int) y - output->y;
 			return;
 
 		case DESKTOP_SHELL_PANEL_POSITION_LEFT:
@@ -439,8 +438,8 @@ get_output_panel_size(struct desktop_shell *shell,
 						    0, view->surface->height,
 						    &x, &y);
 
-			*width = view->surface->width + (int) x;
-			*height = (int) y;
+			*width = view->surface->width + (int)x - output->x;
+			*height = (int)y - output->y;
 			return;
 
 		default:
