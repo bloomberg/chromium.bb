@@ -111,20 +111,26 @@ blink::WebMimeRegistry::SupportsType
 
 blink::WebString WebMimeRegistryImpl::mimeTypeForExtension(
     const blink::WebString& file_extension) {
-  NOTIMPLEMENTED();
-  return blink::WebString();
+  std::string mime_type;
+  net::GetMimeTypeFromExtension(
+      base::FilePath::FromUTF16Unsafe(file_extension).value(), &mime_type);
+  return blink::WebString::fromUTF8(mime_type);
 }
 
 blink::WebString WebMimeRegistryImpl::wellKnownMimeTypeForExtension(
     const blink::WebString& file_extension) {
-  NOTIMPLEMENTED();
-  return blink::WebString();
+  std::string mime_type;
+  net::GetWellKnownMimeTypeFromExtension(
+      base::FilePath::FromUTF16Unsafe(file_extension).value(), &mime_type);
+  return blink::WebString::fromUTF8(mime_type);
 }
 
 blink::WebString WebMimeRegistryImpl::mimeTypeFromFile(
     const blink::WebString& file_path) {
-  NOTIMPLEMENTED();
-  return blink::WebString();
+  std::string mime_type;
+  net::GetMimeTypeFromFile(base::FilePath::FromUTF16Unsafe(file_path),
+                           &mime_type);
+  return blink::WebString::fromUTF8(mime_type);
 }
 
 }  // namespace html_viewer
