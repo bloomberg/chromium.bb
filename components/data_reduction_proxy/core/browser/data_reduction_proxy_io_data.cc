@@ -58,12 +58,12 @@ DataReductionProxyIOData::DataReductionProxyIOData(
         DataReductionProxyMutableConfigValues::CreateFromParams(params.get());
     raw_mutable_config = mutable_config.get();
     config_.reset(new DataReductionProxyConfig(
-        io_task_runner_, ui_task_runner_, net_log, mutable_config.Pass(),
-        configurator_.get(), event_store_.get()));
+        io_task_runner_, net_log, mutable_config.Pass(), configurator_.get(),
+        event_store_.get()));
   } else {
-    config_.reset(new DataReductionProxyConfig(
-        io_task_runner_, ui_task_runner_, net_log, params.Pass(),
-        configurator_.get(), event_store_.get()));
+    config_.reset(
+        new DataReductionProxyConfig(io_task_runner_, net_log, params.Pass(),
+                                     configurator_.get(), event_store_.get()));
   }
 
   // It is safe to use base::Unretained here, since it gets executed
@@ -113,7 +113,6 @@ void DataReductionProxyIOData::SetDataReductionProxyService(
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   service_ = data_reduction_proxy_service;
   url_request_context_getter_ = service_->url_request_context_getter();
-  config()->SetDataReductionProxyService(data_reduction_proxy_service);
   // Using base::Unretained is safe here, unless the browser is being shut down
   // before the Initialize task can be executed. The task is only created as
   // part of class initialization.
