@@ -37,10 +37,12 @@
 #include "platform/weborigin/KURLHash.h"
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
+class Attribute;
 class FontResource;
 class ImageResource;
 class CSSStyleSheet;
@@ -60,7 +62,13 @@ struct SerializedResource;
 class CORE_EXPORT PageSerializer final {
     STACK_ALLOCATED();
 public:
-    explicit PageSerializer(Vector<SerializedResource>*);
+    class Delegate {
+    public:
+        virtual ~Delegate() { }
+        virtual bool shouldIgnoreAttribute(const Attribute&) = 0;
+    };
+
+    PageSerializer(Vector<SerializedResource>*, PassOwnPtr<Delegate>);
 
     // Initiates the serialization of the frame's page. All serialized content and retrieved
     // resources are added to the Vector passed to the constructor. The first resource in that
@@ -68,6 +76,8 @@ public:
     void serialize(Page*);
 
     KURL urlForBlankFrame(LocalFrame*);
+
+    Delegate* delegate();
 
 private:
     void serializeFrame(LocalFrame*);
@@ -91,6 +101,8 @@ private:
     using BlankFrameURLMap = WillBeHeapHashMap<RawPtrWillBeMember<LocalFrame>, KURL>;
     BlankFrameURLMap m_blankFrameURLs;
     unsigned m_blankFrameCounter;
+
+    OwnPtr<Delegate> m_delegate;
 };
 
 } // namespace blink

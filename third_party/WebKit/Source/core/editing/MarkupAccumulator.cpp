@@ -362,13 +362,20 @@ void MarkupAccumulator::appendProcessingInstruction(StringBuilder& result, const
     result.appendLiteral("?>");
 }
 
+bool MarkupAccumulator::shouldIgnoreAttribute(const Attribute& attribute)
+{
+    return false;
+}
+
 void MarkupAccumulator::appendElement(StringBuilder& result, Element& element, Namespaces* namespaces)
 {
     appendOpenTag(result, element, namespaces);
 
     AttributeCollection attributes = element.attributes();
-    for (const auto& attribute : attributes)
-        appendAttribute(result, element, attribute, namespaces);
+    for (const auto& attribute : attributes) {
+        if (!shouldIgnoreAttribute(attribute))
+            appendAttribute(result, element, attribute, namespaces);
+    }
 
     // Give an opportunity to subclasses to add their own attributes.
     appendCustomAttributes(result, element, namespaces);

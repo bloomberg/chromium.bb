@@ -91,6 +91,7 @@ public:
     void appendXMLDeclaration(StringBuilder&, const Document&);
     void appendDocumentType(StringBuilder&, const DocumentType&);
     void appendProcessingInstruction(StringBuilder&, const String& target, const String& data);
+    virtual bool shouldIgnoreAttribute(const Attribute&);
     virtual void appendElement(StringBuilder&, Element&, Namespaces*);
     void appendOpenTag(StringBuilder&, const Element&, Namespaces*);
     void appendCloseTag(StringBuilder&, const Element&);

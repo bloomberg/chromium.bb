@@ -62,6 +62,7 @@
 #include "core/page/Page.h"
 #include "platform/SerializedResource.h"
 #include "platform/graphics/Image.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextEncoding.h"
@@ -104,6 +105,7 @@ public:
 
 protected:
     virtual void appendText(StringBuilder& out, Text&) override;
+    virtual bool shouldIgnoreAttribute(const Attribute&) override;
     virtual void appendElement(StringBuilder& out, Element&, Namespaces*) override;
     virtual void appendCustomAttributes(StringBuilder& out, const Element&, Namespaces*) override;
     virtual void appendStartTag(Node&, Namespaces* = nullptr) override;
@@ -137,6 +139,15 @@ void SerializerMarkupAccumulator::appendText(StringBuilder& out, Text& text)
     Element* parent = text.parentElement();
     if (parent && !shouldIgnoreElement(*parent))
         MarkupAccumulator::appendText(out, text);
+}
+
+bool SerializerMarkupAccumulator::shouldIgnoreAttribute(const Attribute& attribute)
+{
+    PageSerializer::Delegate* delegate = m_serializer->delegate();
+    if (delegate)
+        return delegate->shouldIgnoreAttribute(attribute);
+
+    return MarkupAccumulator::shouldIgnoreAttribute(attribute);
 }
 
 void SerializerMarkupAccumulator::appendElement(StringBuilder& out, Element& element, Namespaces* namespaces)
@@ -186,9 +197,10 @@ void SerializerMarkupAccumulator::appendEndTag(const Element& element)
         MarkupAccumulator::appendEndTag(element);
 }
 
-PageSerializer::PageSerializer(Vector<SerializedResource>* resources)
+PageSerializer::PageSerializer(Vector<SerializedResource>* resources, PassOwnPtr<Delegate> delegate)
     : m_resources(resources)
     , m_blankFrameCounter(0)
+    , m_delegate(delegate)
 {
 }
 
@@ -400,6 +412,11 @@ KURL PageSerializer::urlForBlankFrame(LocalFrame* frame)
     m_blankFrameURLs.add(frame, fakeURL);
 
     return fakeURL;
+}
+
+PageSerializer::Delegate* PageSerializer::delegate()
+{
+    return m_delegate.get();
 }
 
 } // namespace blink

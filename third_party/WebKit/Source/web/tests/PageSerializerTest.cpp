@@ -103,7 +103,7 @@ protected:
     void serialize(const char* url)
     {
         FrameTestHelpers::loadFrame(m_helper.webView()->mainFrame(), KURL(m_baseUrl, url).string().utf8().data());
-        PageSerializer serializer(&m_resources);
+        PageSerializer serializer(&m_resources, nullptr);
         serializer.serialize(m_helper.webViewImpl()->mainFrameImpl()->frame()->page());
     }
 

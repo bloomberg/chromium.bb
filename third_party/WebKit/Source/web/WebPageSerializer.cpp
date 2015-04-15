@@ -149,12 +149,31 @@ void retrieveResourcesForFrame(LocalFrame* frame,
     }
 }
 
+class MHTMLPageSerializerDelegate final : public PageSerializer::Delegate {
+public:
+    ~MHTMLPageSerializerDelegate() override;
+    bool shouldIgnoreAttribute(const Attribute&) override;
+};
+
+
+MHTMLPageSerializerDelegate::~MHTMLPageSerializerDelegate()
+{
+}
+
+bool MHTMLPageSerializerDelegate::shouldIgnoreAttribute(const Attribute& attribute)
+{
+    // TODO(fgorski): Presence of srcset attribute causes MHTML to not display images, as only the value of src
+    // is pulled into the archive. Discarding srcset prevents the problem. Long term we should make sure to MHTML
+    // plays nicely with srcset.
+    return attribute.localName() == HTMLNames::srcsetAttr;
+}
+
 } // namespace
 
 void WebPageSerializer::serialize(WebView* view, WebVector<WebPageSerializer::Resource>* resourcesParam)
 {
     Vector<SerializedResource> resources;
-    PageSerializer serializer(&resources);
+    PageSerializer serializer(&resources, PassOwnPtr<PageSerializer::Delegate>(nullptr));
     serializer.serialize(toWebViewImpl(view)->page());
 
     Vector<Resource> result;
@@ -173,7 +192,7 @@ void WebPageSerializer::serialize(WebView* view, WebVector<WebPageSerializer::Re
 static PassRefPtr<SharedBuffer> serializePageToMHTML(Page* page, MHTMLArchive::EncodingPolicy encodingPolicy)
 {
     Vector<SerializedResource> resources;
-    PageSerializer serializer(&resources);
+    PageSerializer serializer(&resources, adoptPtr(new MHTMLPageSerializerDelegate));
     serializer.serialize(page);
     Document* document = page->deprecatedLocalMainFrame()->document();
     return MHTMLArchive::generateMHTMLData(resources, encodingPolicy, document->title(), document->suggestedMIMEType());
