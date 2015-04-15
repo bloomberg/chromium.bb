@@ -78,12 +78,11 @@ v8::Local<v8::Object> V8PerContextData::createWrapperFromCacheSlowCase(const Wra
 
     v8::Context::Scope scope(context());
     v8::Local<v8::Function> function = constructorForType(type);
-    v8::Local<v8::Object> instanceTemplate = V8ObjectConstructor::newInstance(m_isolate, function);
-    if (!instanceTemplate.IsEmpty()) {
-        m_wrapperBoilerplates.Set(type, instanceTemplate);
-        return instanceTemplate->Clone();
-    }
-    return v8::Local<v8::Object>();
+    v8::Local<v8::Object> instanceTemplate;
+    if (!V8ObjectConstructor::newInstance(m_isolate, function).ToLocal(&instanceTemplate))
+        return v8::Local<v8::Object>();
+    m_wrapperBoilerplates.Set(type, instanceTemplate);
+    return instanceTemplate->Clone();
 }
 
 v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(const WrapperTypeInfo* type)

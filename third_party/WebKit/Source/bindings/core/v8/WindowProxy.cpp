@@ -309,8 +309,8 @@ bool WindowProxy::installDOMWindow()
 {
     DOMWindow* window = m_frame->domWindow();
     const WrapperTypeInfo* wrapperTypeInfo = window->wrapperTypeInfo();
-    v8::Local<v8::Object> windowWrapper = V8ObjectConstructor::newInstance(m_isolate, m_scriptState->perContextData()->constructorForType(wrapperTypeInfo));
-    if (windowWrapper.IsEmpty())
+    v8::Local<v8::Object> windowWrapper;
+    if (!V8ObjectConstructor::newInstance(m_isolate, m_scriptState->perContextData()->constructorForType(wrapperTypeInfo)).ToLocal(&windowWrapper))
         return false;
 
     V8DOMWrapper::setNativeInfo(v8::Local<v8::Object>::Cast(windowWrapper->GetPrototype()), wrapperTypeInfo, window);

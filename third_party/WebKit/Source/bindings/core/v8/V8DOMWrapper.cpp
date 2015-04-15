@@ -61,8 +61,8 @@ static v8::Local<v8::Object> wrapInShadowTemplate(v8::Local<v8::Object> wrapper,
     if (shadowConstructor.IsEmpty())
         return v8::Local<v8::Object>();
 
-    v8::Local<v8::Object> shadow = V8ScriptRunner::instantiateObject(isolate, shadowConstructor);
-    if (shadow.IsEmpty())
+    v8::Local<v8::Object> shadow;
+    if (!V8ScriptRunner::instantiateObject(isolate, shadowConstructor).ToLocal(&shadow))
         return v8::Local<v8::Object>();
     if (!v8CallBoolean(shadow->SetPrototype(isolate->GetCurrentContext(), wrapper)))
         return v8::Local<v8::Object>();
@@ -75,7 +75,13 @@ v8::Local<v8::Object> V8DOMWrapper::createWrapper(v8::Isolate* isolate, v8::Loca
     V8WrapperInstantiationScope scope(creationContext, isolate);
 
     V8PerContextData* perContextData = V8PerContextData::from(scope.context());
-    v8::Local<v8::Object> wrapper = perContextData ? perContextData->createWrapperFromCache(type) : V8ObjectConstructor::newInstance(isolate, type->domTemplate(isolate)->GetFunction());
+    v8::Local<v8::Object> wrapper;
+    if (perContextData) {
+        wrapper = perContextData->createWrapperFromCache(type);
+    } else {
+        if (!V8ObjectConstructor::newInstance(isolate, type->domTemplate(isolate)->GetFunction()).ToLocal(&wrapper))
+            return v8::Local<v8::Object>();
+    }
 
     if (type == &V8HTMLDocument::wrapperTypeInfo && !wrapper.IsEmpty())
         wrapper = wrapInShadowTemplate(wrapper, scriptWrappable, isolate);

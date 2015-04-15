@@ -604,14 +604,13 @@ bool _NPN_Construct(NPP npp, NPObject* npObject, const NPVariant* arguments, uin
         // Call the constructor.
         v8::Local<v8::Value> resultObject;
         v8::Local<v8::Function> ctor = v8::Local<v8::Function>::Cast(ctorObj);
-        if (!ctor->IsNull()) {
-            LocalFrame* frame = object->rootObject->frame();
-            ASSERT(frame);
-            OwnPtr<v8::Local<v8::Value>[]> argv = createValueListFromVariantArgs(arguments, argumentCount, npObject, scriptState->isolate());
-            resultObject = V8ObjectConstructor::newInstanceInDocument(scriptState->isolate(), ctor, argumentCount, argv.get(), frame ? frame->document() : 0);
-        }
+        if (ctor->IsNull())
+            return false;
 
-        if (resultObject.IsEmpty())
+        LocalFrame* frame = object->rootObject->frame();
+        ASSERT(frame);
+        OwnPtr<v8::Local<v8::Value>[]> argv = createValueListFromVariantArgs(arguments, argumentCount, npObject, scriptState->isolate());
+        if (!V8ObjectConstructor::newInstanceInDocument(scriptState->isolate(), ctor, argumentCount, argv.get(), frame ? frame->document() : 0).ToLocal(&resultObject))
             return false;
 
         convertV8ObjectToNPVariant(scriptState->isolate(), resultObject, npObject, result);

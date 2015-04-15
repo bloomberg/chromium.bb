@@ -490,36 +490,38 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callInternalFunction(v8::Local<v8::Fun
     return result;
 }
 
-v8::Local<v8::Object> V8ScriptRunner::instantiateObject(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> objectTemplate)
+v8::MaybeLocal<v8::Object> V8ScriptRunner::instantiateObject(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> objectTemplate)
 {
     TRACE_EVENT0("v8", "v8.newInstance");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
 
     V8RecursionScope::MicrotaskSuppression scope(isolate);
-    v8::Local<v8::Object> result = objectTemplate->NewInstance();
+    v8::MaybeLocal<v8::Object> result = objectTemplate->NewInstance(isolate->GetCurrentContext());
     crashIfV8IsDead();
     return result;
 }
 
-v8::Local<v8::Object> V8ScriptRunner::instantiateObject(v8::Isolate* isolate, v8::Local<v8::Function> function, int argc, v8::Local<v8::Value> argv[])
+v8::MaybeLocal<v8::Object> V8ScriptRunner::instantiateObject(v8::Isolate* isolate, v8::Local<v8::Function> function, int argc, v8::Local<v8::Value> argv[])
 {
     TRACE_EVENT0("v8", "v8.newInstance");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
 
     V8RecursionScope::MicrotaskSuppression scope(isolate);
-    v8::Local<v8::Object> result = function->NewInstance(argc, argv);
+    v8::MaybeLocal<v8::Object> result = function->NewInstance(isolate->GetCurrentContext(), argc, argv);
     crashIfV8IsDead();
     return result;
 }
 
-v8::Local<v8::Object> V8ScriptRunner::instantiateObjectInDocument(v8::Isolate* isolate, v8::Local<v8::Function> function, ExecutionContext* context, int argc, v8::Local<v8::Value> argv[])
+v8::MaybeLocal<v8::Object> V8ScriptRunner::instantiateObjectInDocument(v8::Isolate* isolate, v8::Local<v8::Function> function, ExecutionContext* context, int argc, v8::Local<v8::Value> argv[])
 {
     TRACE_EVENT0("v8", "v8.newInstance");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
-    if (ScriptForbiddenScope::isScriptForbidden())
-        return v8::Local<v8::Object>();
+    if (ScriptForbiddenScope::isScriptForbidden()) {
+        throwScriptForbiddenException(isolate);
+        return v8::MaybeLocal<v8::Object>();
+    }
     V8RecursionScope scope(isolate);
-    v8::Local<v8::Object> result = function->NewInstance(argc, argv);
+    v8::MaybeLocal<v8::Object> result = function->NewInstance(isolate->GetCurrentContext(), argc, argv);
     crashIfV8IsDead();
     return result;
 }
