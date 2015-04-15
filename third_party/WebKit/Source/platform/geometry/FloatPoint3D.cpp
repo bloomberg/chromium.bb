@@ -22,6 +22,7 @@
 #include "config.h"
 
 #include "platform/geometry/FloatPoint3D.h"
+#include "wtf/MathExtras.h"
 
 #include <math.h>
 
@@ -36,6 +37,20 @@ void FloatPoint3D::normalize()
         m_y /= tempLength;
         m_z /= tempLength;
     }
+}
+
+float FloatPoint3D::angleBetween(const FloatPoint3D& y) const
+{
+    float xLength = this->length();
+    float yLength = y.length();
+
+    if (xLength && yLength) {
+        float cosAngle = this->dot(y) / (xLength * yLength);
+        // Due to round-off |cosAngle| can have a magnitude greater than 1.  Clamp the value to [-1,
+        // 1] before computing the angle.
+        return acos(clampTo(cosAngle, -1.0, 1.0));
+    }
+    return 0;
 }
 
 } // namespace blink

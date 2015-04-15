@@ -390,9 +390,8 @@ void PannerHandler::calculateAzimuthElevation(double* outAzimuth, double* outEle
     float upProjection = sourceListener.dot(up);
 
     FloatPoint3D projectedSource = sourceListener - upProjection * up;
-    projectedSource.normalize();
 
-    azimuth = 180.0 * acos(projectedSource.dot(listenerRight)) / piDouble;
+    azimuth = rad2deg(projectedSource.angleBetween(listenerRight));
     fixNANs(azimuth); // avoid illegal values
 
     // Source  in front or behind the listener
@@ -407,7 +406,7 @@ void PannerHandler::calculateAzimuthElevation(double* outAzimuth, double* outEle
         azimuth = 450.0 - azimuth;
 
     // Elevation
-    double elevation = 90.0 - 180.0 * acos(sourceListener.dot(up)) / piDouble;
+    double elevation = 90 - rad2deg(sourceListener.angleBetween(up));
     fixNANs(elevation); // avoid illegal values
 
     if (elevation > 90.0)
