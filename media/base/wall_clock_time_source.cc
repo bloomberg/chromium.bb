@@ -68,7 +68,7 @@ base::TimeTicks WallClockTimeSource::GetWallClockTime(base::TimeDelta time) {
   // See notes about |time| values less than |base_time_| in TimeSource header.
   return reference_wall_ticks_ +
          base::TimeDelta::FromMicroseconds(
-             (time - base_time_).InMicroseconds() * playback_rate_);
+             (time - base_time_).InMicroseconds() / playback_rate_);
 }
 
 void WallClockTimeSource::SetTickClockForTesting(
