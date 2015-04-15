@@ -172,8 +172,9 @@ void CollectModuleVerificationData(
     }
 
     if (!result.verification_completed) {
-      UMA_HISTOGRAM_COUNTS_100(
-          "ModuleIntegrityVerification.RelocationsUnorderedModuleIndex", i);
+      UMA_HISTOGRAM_ENUMERATION(
+          "ModuleIntegrityVerification.RelocationsUnordered", i,
+          num_modules_to_verify);
     }
 
     if (modified == MODULE_STATE_UNMODIFIED)

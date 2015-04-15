@@ -15468,7 +15468,20 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ModuleIntegrityVerification.RelocationsUnordered"
+    enum="ModuleIndex">
+  <owner>grt@chromium.org</owner>
+  <summary>
+    Logged when the relocations in a module are not ordered causing the module
+    verification to abort.
+  </summary>
+</histogram>
+
 <histogram name="ModuleIntegrityVerification.RelocationsUnorderedModuleIndex">
+  <obsolete>
+    Deprecated 04/2015; replaced by
+    ModuleIntegrityVerification.RelocationsUnordered.
+  </obsolete>
   <owner>anthonyvd@chromium.org</owner>
   <summary>
     Logged when the relocations in a module are not ordered causing the module
@@ -55662,6 +55675,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="Settings default account"/>
   <int value="3" label="Settings another account"/>
   <int value="4" label="No thanks"/>
+</enum>
+
+<enum name="ModuleIndex" type="int">
+  <int value="0" label="chrome.dll"/>
+  <int value="1" label="chrome_elf.dll"/>
+  <int value="2" label="ntdll.dll"/>
 </enum>
 
 <enum name="MouseEventFollowedByClick" type="int">
