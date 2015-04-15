@@ -247,4 +247,12 @@ class AppNotificationBridge : public content::NotificationObserver {
   return closing_;
 }
 
+// Override -[NSWindow addChildWindow] to prevent ShareKit bugs propagating
+// to the browser window. See http://crbug.com/475855.
+- (void)addChildWindow:(NSWindow*)childWindow
+               ordered:(NSWindowOrderingMode)orderingMode {
+  [[self parentWindow] removeChildWindow:self];
+  [super addChildWindow:childWindow ordered:orderingMode];
+}
+
 @end
