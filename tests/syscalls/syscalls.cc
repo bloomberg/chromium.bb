@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <utime.h>
 
 #include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
@@ -26,13 +27,16 @@
 #define TEXT_LINE_SIZE 1024
 
 /*
- * TODO(sbc): remove this test once these declarations get added to the prebuilt
+ * TODO(sbc): remove this test once these declarations get added to the
  * newlib toolchain
  */
 #ifndef __GLIBC__
-extern "C" int gethostname(char *name, size_t len);
-extern "C" int utimes(const char *filename, const struct timeval times[2]);
-extern "C" int eaccess(const char *pathname, int mode);
+extern "C" {
+int gethostname(char *name, size_t len);
+int utimes(const char *filename, const struct timeval times[2]);
+int utime(const char *filename, const struct utimbuf *times);
+int eaccess(const char *pathname, int mode);
+}
 #endif
 
 /*
@@ -473,6 +477,23 @@ bool test_utimes(const char *test_file) {
   ASSERT_EQ(utimes("dummy", times), -1);
   ASSERT_EQ(errno, ENOSYS);
   return passed("test_utimes", "all");
+}
+
+bool test_utime(const char *test_file) {
+  // TODO(mseaborn): Implement utimes for unsandboxed mode.
+  if (NONSFI_MODE)
+    return true;
+  printf("test_utime");
+  struct utimbuf times;
+  times.actime = 0;
+  times.modtime = 0;
+  // utimes() is currently not implemented and should always
+  // fail with ENOSYS
+  printf("test_utime 2");
+
+  ASSERT_EQ(utime("dummy", &times), -1);
+  ASSERT_EQ(errno, ENOSYS);
+  return passed("test_utime", "all");
 }
 
 bool test_truncate(const char *test_file) {
@@ -1143,6 +1164,7 @@ bool testSuite(const char *test_file) {
   ret &= test_truncate(test_file);
 #endif
   ret &= test_utimes(test_file);
+  ret &= test_utime(test_file);
   return ret;
 }
 

@@ -80,6 +80,7 @@ SRCS_NEWLIB_SYSCALL =  [
     'sysconf.c',
     'truncate.c',
     'unlink.c',
+    'utime.c',
     'utimes.c',
     'write.c',
 ]
@@ -203,7 +204,6 @@ SRCS_NEWLIB_STUBS = [
     'stubs/ttyname.c',
     'stubs/ttyname_r.c',
     'stubs/umask.c',
-    'stubs/utime.c',
     'stubs/vfork.c',
     'stubs/wait.c',
     'stubs/waitpid.c',
