@@ -90,6 +90,10 @@ content::WebUIDataSource* CreatePolicyUIHTMLSource() {
   source->AddLocalizedString("labelDomain", IDS_POLICY_LABEL_DOMAIN);
   source->AddLocalizedString("labelUsername", IDS_POLICY_LABEL_USERNAME);
   source->AddLocalizedString("labelClientId", IDS_POLICY_LABEL_CLIENT_ID);
+  source->AddLocalizedString("labelAssetId", IDS_POLICY_LABEL_ASSET_ID);
+  source->AddLocalizedString("labelLocation", IDS_POLICY_LABEL_LOCATION);
+  source->AddLocalizedString("labelDirectoryApiId",
+                             IDS_POLICY_LABEL_DIRECTORY_API_ID);
   source->AddLocalizedString("labelTimeSinceLastRefresh",
                              IDS_POLICY_LABEL_TIME_SINCE_LAST_REFRESH);
   source->AddLocalizedString("labelRefreshInterval",
@@ -113,6 +117,7 @@ content::WebUIDataSource* CreatePolicyUIHTMLSource() {
   source->AddLocalizedString("ok", IDS_POLICY_OK);
   source->AddLocalizedString("unset", IDS_POLICY_UNSET);
   source->AddLocalizedString("unknown", IDS_POLICY_UNKNOWN);
+  source->AddLocalizedString("notSpecified", IDS_POLICY_NOT_SPECIFIED);
 
   source->SetJsonPath("strings.js");
 
@@ -168,6 +173,14 @@ void GetStatusFromCore(const policy::CloudPolicyCore* core,
   const em::PolicyData* policy = store->policy();
   std::string client_id = policy ? policy->device_id() : std::string();
   std::string username = policy ? policy->username() : std::string();
+
+  if (policy && policy->has_annotated_asset_id())
+    dict->SetString("assetId", policy->annotated_asset_id());
+  if (policy && policy->has_annotated_location())
+    dict->SetString("location", policy->annotated_location());
+  if (policy && policy->has_directory_api_id())
+    dict->SetString("directoryApiId", policy->directory_api_id());
+
   base::TimeDelta refresh_interval =
       base::TimeDelta::FromMilliseconds(refresh_scheduler ?
           refresh_scheduler->refresh_delay() :

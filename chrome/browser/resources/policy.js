@@ -48,6 +48,25 @@ cr.define('policy', function() {
         var domain = this.querySelector('.domain');
         domain.textContent = status.domain;
         domain.parentElement.hidden = false;
+
+        // Populate the device naming information.
+        // Populate the asset identifier.
+        var assetId = this.querySelector('.asset-id');
+        assetId.textContent = status.assetId ||
+            loadTimeData.getString('notSpecified');
+        assetId.parentElement.hidden = false;
+
+        // Populate the device location.
+        var location = this.querySelector('.location');
+        location.textContent = status.location ||
+            loadTimeData.getString('notSpecified');
+        location.parentElement.hidden = false;
+
+        // Populate the directory API ID.
+        var directoryApiId = this.querySelector('.directory-api-id');
+        directoryApiId.textContent = status.directoryApiId ||
+            loadTimeData.getString('notSpecified');
+        directoryApiId.parentElement.hidden = false;
       } else {
         // For user policy, set the appropriate title and populate the topmost
         // status item with the username that policies apply to.
