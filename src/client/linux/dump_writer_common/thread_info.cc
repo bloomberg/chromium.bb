@@ -257,7 +257,9 @@ void ThreadInfo::FillCPUContext(RawContextCPU* out) const {
     out->float_save.regs[i] = fpregs.regs[i];
 
   out->float_save.fpcsr = fpregs.fpcsr;
+#if _MIPS_SIM == _ABIO32
   out->float_save.fir = fpregs.fir;
+#endif
 }
 #endif
 

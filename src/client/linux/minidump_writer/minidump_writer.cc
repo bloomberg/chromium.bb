@@ -689,10 +689,18 @@ class MinidumpWriter {
         return false;
       }
 
+#ifdef __mips__
+      if (dyn.d_tag == DT_MIPS_RLD_MAP) {
+        r_debug = reinterpret_cast<struct r_debug*>(dyn.d_un.d_ptr);
+        continue;
+      }
+#else
       if (dyn.d_tag == DT_DEBUG) {
         r_debug = reinterpret_cast<struct r_debug*>(dyn.d_un.d_ptr);
         continue;
-      } else if (dyn.d_tag == DT_NULL) {
+      }
+#endif
+      else if (dyn.d_tag == DT_NULL) {
         break;
       }
     }

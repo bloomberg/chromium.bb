@@ -97,11 +97,19 @@
 
 #elif defined(__mips__)
 
+#if _MIPS_SIM == _ABIO32
 #define  MCONTEXT_PC_OFFSET        32
 #define  MCONTEXT_GREGS_OFFSET     40
 #define  MCONTEXT_FPREGS_OFFSET    296
 #define  MCONTEXT_FPC_CSR          556
 #define  UCONTEXT_SIGMASK_OFFSET   616
+#else
+#define  MCONTEXT_GREGS_OFFSET     40
+#define  MCONTEXT_FPREGS_OFFSET    296
+#define  MCONTEXT_PC_OFFSET        616
+#define  MCONTEXT_FPC_CSR          624
+#define  UCONTEXT_SIGMASK_OFFSET   640
+#endif
 
 #elif defined(__x86_64__)
 

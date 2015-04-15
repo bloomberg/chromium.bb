@@ -54,6 +54,8 @@ MemoryMappedFile::~MemoryMappedFile() {
   Unmap();
 }
 
+#include <unistd.h>
+
 bool MemoryMappedFile::Map(const char* path, size_t offset) {
   Unmap();
 
@@ -62,7 +64,9 @@ bool MemoryMappedFile::Map(const char* path, size_t offset) {
     return false;
   }
 
-#if defined(__x86_64__) || defined(__aarch64__)
+#if defined(__x86_64__) || defined(__aarch64__) || \
+   (defined(__mips__) && _MIPS_SIM == _ABI64)
+
   struct kernel_stat st;
   if (sys_fstat(fd, &st) == -1 || st.st_size < 0) {
 #else
@@ -83,7 +87,8 @@ bool MemoryMappedFile::Map(const char* path, size_t offset) {
     return true;
   }
 
-#if defined(__x86_64__) || defined(__aarch64__)
+#if defined(__x86_64__) || defined(__aarch64__) || \
+   (defined(__mips__) && _MIPS_SIM == _ABI64)
   void* data = sys_mmap(NULL, file_len, PROT_READ, MAP_PRIVATE, fd, offset);
 #else
   if ((offset & 4095) != 0) {

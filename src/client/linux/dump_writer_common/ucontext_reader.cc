@@ -244,7 +244,9 @@ void UContextReader::FillCPUContext(RawContextCPU *out, const ucontext *uc) {
     out->float_save.regs[i] = uc->uc_mcontext.fpregs.fp_r.fp_dregs[i];
 
   out->float_save.fpcsr = uc->uc_mcontext.fpc_csr;
+#if _MIPS_SIM == _ABIO32
   out->float_save.fir = uc->uc_mcontext.fpc_eir;  // Unused.
+#endif
 }
 #endif
 

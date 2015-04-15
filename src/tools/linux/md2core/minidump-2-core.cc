@@ -384,7 +384,9 @@ ParseThreadRegisters(CrashedProcess::Thread* thread,
     thread->fpregs.regs[i] = rawregs->float_save.regs[i];
 
   thread->fpregs.fpcsr = rawregs->float_save.fpcsr;
+#if _MIPS_SIM == _ABIO32
   thread->fpregs.fir = rawregs->float_save.fir;
+#endif
 }
 #else
 #error "This code has not been ported to your platform yet"
