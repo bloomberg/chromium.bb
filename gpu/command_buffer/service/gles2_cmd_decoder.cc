@@ -2898,12 +2898,56 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   DoGetIntegerv(GL_BIND_GENERATES_RESOURCE_CHROMIUM,
                 &caps.bind_generates_resource_chromium);
   if (unsafe_es3_apis_enabled()) {
+    // TODO(zmo): Note that some parameter values could be more than 32-bit,
+    // but for now we clamp them to 32-bit max.
+    DoGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &caps.max_3d_texture_size);
+    DoGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &caps.max_array_texture_layers);
+    DoGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &caps.max_color_attachments);
+    DoGetIntegerv(GL_MAX_COMBINED_FRAGMENT_UNIFORM_COMPONENTS,
+                  &caps.max_combined_fragment_uniform_components);
+    DoGetIntegerv(GL_MAX_COMBINED_UNIFORM_BLOCKS,
+                  &caps.max_combined_uniform_blocks);
+    DoGetIntegerv(GL_MAX_COMBINED_VERTEX_UNIFORM_COMPONENTS,
+                  &caps.max_combined_vertex_uniform_components);
+    DoGetIntegerv(GL_MAX_DRAW_BUFFERS, &caps.max_draw_buffers);
+    DoGetIntegerv(GL_MAX_ELEMENT_INDEX, &caps.max_element_index);
+    DoGetIntegerv(GL_MAX_ELEMENTS_INDICES, &caps.max_elements_indices);
+    DoGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &caps.max_elements_vertices);
+    DoGetIntegerv(GL_MAX_FRAGMENT_INPUT_COMPONENTS,
+                  &caps.max_fragment_input_components);
+    DoGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_BLOCKS,
+                  &caps.max_fragment_uniform_blocks);
+    DoGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS,
+                  &caps.max_fragment_uniform_components);
+    DoGetIntegerv(GL_MAX_PROGRAM_TEXEL_OFFSET,
+                  &caps.max_program_texel_offset);
+    DoGetIntegerv(GL_MAX_SAMPLES, &caps.max_samples);
+    DoGetIntegerv(GL_MAX_SERVER_WAIT_TIMEOUT, &caps.max_server_wait_timeout);
+    DoGetIntegerv(GL_MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS,
+                  &caps.max_transform_feedback_interleaved_components);
     DoGetIntegerv(GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS,
                   &caps.max_transform_feedback_separate_attribs);
+    DoGetIntegerv(GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS,
+                  &caps.max_transform_feedback_separate_components);
+    DoGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &caps.max_uniform_block_size);
     DoGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS,
                   &caps.max_uniform_buffer_bindings);
+    DoGetIntegerv(GL_MAX_VARYING_COMPONENTS, &caps.max_varying_components);
+    DoGetIntegerv(GL_MAX_VERTEX_OUTPUT_COMPONENTS,
+                  &caps.max_vertex_output_components);
+    DoGetIntegerv(GL_MAX_VERTEX_UNIFORM_BLOCKS,
+                  &caps.max_vertex_uniform_blocks);
+    DoGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS,
+                  &caps.max_vertex_uniform_components);
+    DoGetIntegerv(GL_MIN_PROGRAM_TEXEL_OFFSET, &caps.min_program_texel_offset);
+    DoGetIntegerv(GL_NUM_EXTENSIONS, &caps.num_extensions);
+    DoGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS,
+                  &caps.num_program_binary_formats);
     DoGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT,
                   &caps.uniform_buffer_offset_alignment);
+    // TODO(zmo): once we switch to MANGLE, we should query version numbers.
+    caps.major_version = 3;
+    caps.minor_version = 0;
   }
 
   caps.egl_image_external =

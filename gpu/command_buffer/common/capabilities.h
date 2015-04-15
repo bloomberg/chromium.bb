@@ -75,8 +75,35 @@ struct GPU_EXPORT Capabilities {
   int num_compressed_texture_formats;
   int num_shader_binary_formats;
   int bind_generates_resource_chromium;
+
+  int max_3d_texture_size;
+  int max_array_texture_layers;
+  int max_color_attachments;
+  int max_combined_fragment_uniform_components;
+  int max_combined_uniform_blocks;
+  int max_combined_vertex_uniform_components;
+  int max_draw_buffers;
+  int max_element_index;
+  int max_elements_indices;
+  int max_elements_vertices;
+  int max_fragment_input_components;
+  int max_fragment_uniform_blocks;
+  int max_fragment_uniform_components;
+  int max_program_texel_offset;
+  int max_samples;
+  int max_server_wait_timeout;
+  int max_transform_feedback_interleaved_components;
   int max_transform_feedback_separate_attribs;
+  int max_transform_feedback_separate_components;
+  int max_uniform_block_size;
   int max_uniform_buffer_bindings;
+  int max_varying_components;
+  int max_vertex_output_components;
+  int max_vertex_uniform_blocks;
+  int max_vertex_uniform_components;
+  int min_program_texel_offset;
+  int num_extensions;
+  int num_program_binary_formats;
   int uniform_buffer_offset_alignment;
 
   bool post_sub_buffer;
@@ -98,6 +125,9 @@ struct GPU_EXPORT Capabilities {
   bool blend_equation_advanced;
   bool blend_equation_advanced_coherent;
   bool texture_rg;
+
+  int major_version;
+  int minor_version;
 };
 
 }  // namespace gpu

@@ -329,10 +329,6 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
      "GL_SYNC_OBJECT_APPLE",
     },
     {
-     0x78FB,
-     "GL_RGBA_YUV_420_CHROMIUM",
-    },
-    {
      0x8DF8,
      "GL_SHADER_BINARY_FORMATS",
     },
