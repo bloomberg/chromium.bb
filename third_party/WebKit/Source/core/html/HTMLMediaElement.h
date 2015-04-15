@@ -305,7 +305,7 @@ protected:
 private:
     void createMediaPlayer();
 
-    virtual bool alwaysCreateClosedShadowRoot() const override final { return true; }
+    virtual bool alwaysCreateUserAgentShadowRoot() const override final { return true; }
     virtual bool areAuthorShadowsAllowed() const override final { return false; }
 
     virtual bool supportsFocus() const override final;

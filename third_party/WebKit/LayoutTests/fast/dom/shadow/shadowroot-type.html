@@ -16,7 +16,7 @@ var shadowRootForDiv = host.createShadowRoot();
 var shadowRootForInput = internals.shadowRoot(input);
 
 shouldBe('"OpenShadowRoot"', 'internals.shadowRootType(shadowRootForDiv)');
-shouldBe('"ClosedShadowRoot"', 'internals.shadowRootType(shadowRootForInput)');
+shouldBe('"UserAgentShadowRoot"', 'internals.shadowRootType(shadowRootForInput)');
 
 container.innerHTML = "";
 

@@ -267,7 +267,7 @@ protected:
 private:
     enum AutoCompleteSetting { Uninitialized, On, Off };
 
-    virtual void didAddClosedShadowRoot(ShadowRoot&) override final;
+    virtual void didAddUserAgentShadowRoot(ShadowRoot&) override final;
     virtual void willAddFirstOpenShadowRoot() override final;
 
     virtual void willChangeForm() override final;

@@ -262,20 +262,20 @@ void FileInputType::createShadowSubtree()
     button->setType(InputTypeNames::button);
     button->setAttribute(valueAttr, AtomicString(locale().queryString(element().multiple() ? WebLocalizedString::FileButtonChooseMultipleFilesLabel : WebLocalizedString::FileButtonChooseFileLabel)));
     button->setShadowPseudoId(AtomicString("-webkit-file-upload-button", AtomicString::ConstructFromLiteral));
-    element().closedShadowRoot()->appendChild(button.release());
+    element().userAgentShadowRoot()->appendChild(button.release());
 }
 
 void FileInputType::disabledAttributeChanged()
 {
     ASSERT(element().shadow());
-    if (Element* button = toElement(element().closedShadowRoot()->firstChild()))
+    if (Element* button = toElement(element().userAgentShadowRoot()->firstChild()))
         button->setBooleanAttribute(disabledAttr, element().isDisabledFormControl());
 }
 
 void FileInputType::multipleAttributeChanged()
 {
     ASSERT(element().shadow());
-    if (Element* button = toElement(element().closedShadowRoot()->firstChild()))
+    if (Element* button = toElement(element().userAgentShadowRoot()->firstChild()))
         button->setAttribute(valueAttr, AtomicString(locale().queryString(element().multiple() ? WebLocalizedString::FileButtonChooseMultipleFilesLabel : WebLocalizedString::FileButtonChooseFileLabel)));
 }
 

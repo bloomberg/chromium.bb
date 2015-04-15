@@ -66,7 +66,7 @@ private:
     virtual void attach(const AttachContext& = AttachContext()) override;
 
     void didElementStateChange();
-    virtual void didAddClosedShadowRoot(ShadowRoot&) override;
+    virtual void didAddUserAgentShadowRoot(ShadowRoot&) override;
     bool isDeterminate() const;
 
     RawPtrWillBeMember<ProgressValueElement> m_value;

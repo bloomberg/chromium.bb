@@ -131,7 +131,7 @@ private:
     virtual bool supportsFocus() const override final { return true; }
     virtual bool layoutObjectIsFocusable() const override final;
     virtual bool isKeyboardFocusable() const override final;
-    virtual void didAddClosedShadowRoot(ShadowRoot&) override final;
+    virtual void didAddUserAgentShadowRoot(ShadowRoot&) override final;
     virtual void willAddFirstOpenShadowRoot() override final;
 
     // HTMLElement function:

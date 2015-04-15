@@ -530,10 +530,10 @@ PassRefPtrWillBeRawPtr<CSSStyleDeclaration> Internals::computedStyleIncludingVis
     return CSSComputedStyleDeclaration::create(node, allowVisitedStyle);
 }
 
-PassRefPtrWillBeRawPtr<ShadowRoot> Internals::createClosedShadowRoot(Element* host)
+PassRefPtrWillBeRawPtr<ShadowRoot> Internals::createUserAgentShadowRoot(Element* host)
 {
     ASSERT(host);
-    return PassRefPtrWillBeRawPtr<ShadowRoot>(host->ensureClosedShadowRoot());
+    return PassRefPtrWillBeRawPtr<ShadowRoot>(host->ensureUserAgentShadowRoot());
 }
 
 ShadowRoot* Internals::shadowRoot(Element* host)
@@ -579,8 +579,8 @@ String Internals::shadowRootType(const Node* root, ExceptionState& exceptionStat
     }
 
     switch (toShadowRoot(root)->type()) {
-    case ShadowRoot::ClosedShadowRoot:
-        return String("ClosedShadowRoot");
+    case ShadowRoot::UserAgentShadowRoot:
+        return String("UserAgentShadowRoot");
     case ShadowRoot::OpenShadowRoot:
         return String("OpenShadowRoot");
     default:

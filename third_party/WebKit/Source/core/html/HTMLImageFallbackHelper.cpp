@@ -34,7 +34,7 @@ static bool noImageSourceSpecified(const Element& element)
 
 void HTMLImageFallbackHelper::createAltTextShadowTree(Element& element)
 {
-    ShadowRoot& root = element.ensureClosedShadowRoot();
+    ShadowRoot& root = element.ensureUserAgentShadowRoot();
 
     RefPtrWillBeRawPtr<HTMLDivElement> container = HTMLDivElement::create(element.document());
     root.appendChild(container);
@@ -69,12 +69,12 @@ void HTMLImageFallbackHelper::createAltTextShadowTree(Element& element)
 PassRefPtr<ComputedStyle> HTMLImageFallbackHelper::customStyleForAltText(Element& element, PassRefPtr<ComputedStyle> newStyle)
 {
     // If we have an author shadow root or have not created the UA shadow root yet, bail early. We can't
-    // use ensureClosedShadowRoot() here because that would alter the DOM tree during style recalc.
-    if (element.shadowRoot() || !element.closedShadowRoot())
+    // use ensureUserAgentShadowRoot() here because that would alter the DOM tree during style recalc.
+    if (element.shadowRoot() || !element.userAgentShadowRoot())
         return newStyle;
 
-    Element* placeHolder = element.closedShadowRoot()->getElementById("alttext-container");
-    Element* brokenImage = element.closedShadowRoot()->getElementById("alttext-image");
+    Element* placeHolder = element.userAgentShadowRoot()->getElementById("alttext-container");
+    Element* brokenImage = element.userAgentShadowRoot()->getElementById("alttext-image");
     // Input elements have a UA shadow root of their own. We may not have replaced it with fallback content yet.
     if (!placeHolder || !brokenImage)
         return newStyle;

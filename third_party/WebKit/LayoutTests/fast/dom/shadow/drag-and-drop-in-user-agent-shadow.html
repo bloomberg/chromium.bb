@@ -7,7 +7,7 @@ description('Tests whether we can not start dragging a node in user agent shadow
 
 sandbox.appendChild(
     createDOM('div', {'id': 'host', 'draggable': 'true'},
-              createClosedShadowRoot({},
+              createUserAgentShadowRoot({},
                                      createDOM('div', {'id': 'shadow-root-child'},
                                                document.createTextNode('Shadow Root Child')),
                                      createDOM('content', {}))));

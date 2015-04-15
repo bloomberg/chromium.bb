@@ -71,7 +71,7 @@ SelectorChecker::SelectorChecker(Document& document, Mode mode)
 static bool matchesCustomPseudoElement(const Element* element, const CSSSelector& selector)
 {
     ShadowRoot* root = element->containingShadowRoot();
-    if (!root || root->type() != ShadowRoot::ClosedShadowRoot)
+    if (!root || root->type() != ShadowRoot::UserAgentShadowRoot)
         return false;
 
     if (element->shadowPseudoId() != selector.value())
@@ -225,13 +225,13 @@ static bool selectorMatchesShadowRoot(const CSSSelector* selector)
     return selector && selector->isShadowPseudoElement();
 }
 
-static inline Element* parentOrShadowHostButDisallowEscapingClosedShadowTree(const Element& element)
+static inline Element* parentOrShadowHostButDisallowEscapingUserAgentShadowTree(const Element& element)
 {
     ContainerNode* parent = element.parentOrShadowHostNode();
     if (!parent)
         return nullptr;
     if (parent->isShadowRoot())
-        return (toShadowRoot(parent)->type() == ShadowRoot::ClosedShadowRoot) ? nullptr : toShadowRoot(parent)->host();
+        return (toShadowRoot(parent)->type() == ShadowRoot::UserAgentShadowRoot) ? nullptr : toShadowRoot(parent)->host();
     if (!parent->isElementNode())
         return nullptr;
     return toElement(parent);
@@ -351,7 +351,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
     case CSSSelector::ShadowDeep:
         {
             if (context.selector->relationIsAffectedByPseudoContent()) {
-                for (Element* element = context.element; element; element = parentOrShadowHostButDisallowEscapingClosedShadowTree(*element)) {
+                for (Element* element = context.element; element; element = parentOrShadowHostButDisallowEscapingUserAgentShadowTree(*element)) {
                     if (matchForShadowDistributed(element, siblingTraversalStrategy, nextContext, result) == SelectorMatches)
                         return SelectorMatches;
                 }
@@ -360,7 +360,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
 
             nextContext.isSubSelector = false;
             nextContext.elementStyle = 0;
-            for (nextContext.element = parentOrShadowHostButDisallowEscapingClosedShadowTree(*context.element); nextContext.element; nextContext.element = parentOrShadowHostButDisallowEscapingClosedShadowTree(*nextContext.element)) {
+            for (nextContext.element = parentOrShadowHostButDisallowEscapingUserAgentShadowTree(*context.element); nextContext.element; nextContext.element = parentOrShadowHostButDisallowEscapingUserAgentShadowTree(*nextContext.element)) {
                 Match match = this->match(nextContext, siblingTraversalStrategy, result);
                 if (match == SelectorMatches || match == SelectorFailsCompletely)
                     return match;

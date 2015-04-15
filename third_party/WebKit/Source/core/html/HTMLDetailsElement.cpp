@@ -52,7 +52,7 @@ static DetailsEventSender& detailsToggleEventSender()
 PassRefPtrWillBeRawPtr<HTMLDetailsElement> HTMLDetailsElement::create(Document& document)
 {
     RefPtrWillBeRawPtr<HTMLDetailsElement> details = adoptRefWillBeNoop(new HTMLDetailsElement(document));
-    details->ensureClosedShadowRoot();
+    details->ensureUserAgentShadowRoot();
     return details.release();
 }
 
@@ -80,7 +80,7 @@ LayoutObject* HTMLDetailsElement::createLayoutObject(const ComputedStyle&)
     return new LayoutBlockFlow(this);
 }
 
-void HTMLDetailsElement::didAddClosedShadowRoot(ShadowRoot& root)
+void HTMLDetailsElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
     DEFINE_STATIC_LOCAL(const AtomicString, summarySelector, ("summary:first-of-type", AtomicString::ConstructFromLiteral));
 
@@ -105,7 +105,7 @@ Element* HTMLDetailsElement::findMainSummary() const
     if (HTMLSummaryElement* summary = Traversal<HTMLSummaryElement>::firstChild(*this))
         return summary;
 
-    HTMLContentElement* content = toHTMLContentElement(closedShadowRoot()->firstChild());
+    HTMLContentElement* content = toHTMLContentElement(userAgentShadowRoot()->firstChild());
     ASSERT(content->firstChild() && isHTMLSummaryElement(*content->firstChild()));
     return toElement(content->firstChild());
 }
@@ -122,7 +122,7 @@ void HTMLDetailsElement::parseAttribute(const QualifiedName& name, const AtomicS
         detailsToggleEventSender().cancelEvent(this);
         detailsToggleEventSender().dispatchEventSoon(this);
 
-        Element* content = ensureClosedShadowRoot().getElementById(ShadowElementNames::detailsContent());
+        Element* content = ensureUserAgentShadowRoot().getElementById(ShadowElementNames::detailsContent());
         ASSERT(content);
         if (m_isOpen)
             content->removeInlineStyleProperty(CSSPropertyDisplay);

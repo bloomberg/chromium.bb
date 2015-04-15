@@ -40,7 +40,7 @@ private:
 
     virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
     virtual void defaultEventHandler(Event*) override;
-    virtual void didAddClosedShadowRoot(ShadowRoot&) override;
+    virtual void didAddUserAgentShadowRoot(ShadowRoot&) override;
     HTMLDetailsElement* detailsElement() const;
 
     virtual bool supportsFocus() const override;

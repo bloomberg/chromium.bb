@@ -64,13 +64,13 @@ void BaseChooserOnlyDateAndTimeInputType::createShadowSubtree()
 
     RefPtrWillBeRawPtr<HTMLDivElement> valueContainer = HTMLDivElement::create(element().document());
     valueContainer->setShadowPseudoId(valueContainerPseudo);
-    element().closedShadowRoot()->appendChild(valueContainer.get());
+    element().userAgentShadowRoot()->appendChild(valueContainer.get());
     updateView();
 }
 
 void BaseChooserOnlyDateAndTimeInputType::updateView()
 {
-    Node* node = element().closedShadowRoot()->firstChild();
+    Node* node = element().userAgentShadowRoot()->firstChild();
     if (!node || !node->isHTMLElement())
         return;
     String displayValue;

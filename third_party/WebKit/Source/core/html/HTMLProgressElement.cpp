@@ -54,7 +54,7 @@ HTMLProgressElement::~HTMLProgressElement()
 PassRefPtrWillBeRawPtr<HTMLProgressElement> HTMLProgressElement::create(Document& document)
 {
     RefPtrWillBeRawPtr<HTMLProgressElement> progress = adoptRefWillBeNoop(new HTMLProgressElement(document));
-    progress->ensureClosedShadowRoot();
+    progress->ensureUserAgentShadowRoot();
     return progress.release();
 }
 
@@ -70,7 +70,7 @@ LayoutProgress* HTMLProgressElement::layoutProgress() const
     if (layoutObject() && layoutObject()->isProgress())
         return toLayoutProgress(layoutObject());
 
-    LayoutObject* layoutObject = closedShadowRoot()->firstChild()->layoutObject();
+    LayoutObject* layoutObject = userAgentShadowRoot()->firstChild()->layoutObject();
     ASSERT_WITH_SECURITY_IMPLICATION(!layoutObject || layoutObject->isProgress());
     return toLayoutProgress(layoutObject);
 }
@@ -146,7 +146,7 @@ void HTMLProgressElement::didElementStateChange()
     }
 }
 
-void HTMLProgressElement::didAddClosedShadowRoot(ShadowRoot& root)
+void HTMLProgressElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
     ASSERT(!m_value);
 

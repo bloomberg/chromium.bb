@@ -53,7 +53,7 @@ HTMLKeygenElement::HTMLKeygenElement(Document& document, HTMLFormElement* form)
 PassRefPtrWillBeRawPtr<HTMLKeygenElement> HTMLKeygenElement::create(Document& document, HTMLFormElement* form)
 {
     RefPtrWillBeRawPtr<HTMLKeygenElement> keygen = adoptRefWillBeNoop(new HTMLKeygenElement(document, form));
-    keygen->ensureClosedShadowRoot();
+    keygen->ensureUserAgentShadowRoot();
     return keygen.release();
 }
 
@@ -65,7 +65,7 @@ LayoutObject* HTMLKeygenElement::createLayoutObject(const ComputedStyle& style)
     return new LayoutBlockFlow(this);
 }
 
-void HTMLKeygenElement::didAddClosedShadowRoot(ShadowRoot& root)
+void HTMLKeygenElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
     DEFINE_STATIC_LOCAL(AtomicString, keygenSelectPseudoId, ("-webkit-keygen-select", AtomicString::ConstructFromLiteral));
 
@@ -121,7 +121,7 @@ void HTMLKeygenElement::resetImpl()
 
 HTMLSelectElement* HTMLKeygenElement::shadowSelect() const
 {
-    ShadowRoot* root = closedShadowRoot();
+    ShadowRoot* root = userAgentShadowRoot();
     return root ? toHTMLSelectElement(root->firstChild()) : 0;
 }
 

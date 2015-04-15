@@ -47,12 +47,12 @@ LayoutSearchField::~LayoutSearchField()
 
 inline Element* LayoutSearchField::searchDecorationElement() const
 {
-    return inputElement()->closedShadowRoot()->getElementById(ShadowElementNames::searchDecoration());
+    return inputElement()->userAgentShadowRoot()->getElementById(ShadowElementNames::searchDecoration());
 }
 
 inline Element* LayoutSearchField::cancelButtonElement() const
 {
-    return inputElement()->closedShadowRoot()->getElementById(ShadowElementNames::clearButton());
+    return inputElement()->userAgentShadowRoot()->getElementById(ShadowElementNames::clearButton());
 }
 
 LayoutUnit LayoutSearchField::computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const

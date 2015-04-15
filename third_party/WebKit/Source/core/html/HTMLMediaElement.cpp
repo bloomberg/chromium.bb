@@ -3215,7 +3215,7 @@ static void assertShadowRootChildren(ShadowRoot& shadowRoot)
 
 TextTrackContainer& HTMLMediaElement::ensureTextTrackContainer()
 {
-    ShadowRoot& shadowRoot = ensureClosedShadowRoot();
+    ShadowRoot& shadowRoot = ensureUserAgentShadowRoot();
     assertShadowRootChildren(shadowRoot);
 
     Node* firstChild = shadowRoot.firstChild();
@@ -3326,7 +3326,7 @@ void HTMLMediaElement::setShouldDelayLoadEvent(bool shouldDelay)
 
 MediaControls* HTMLMediaElement::mediaControls() const
 {
-    if (ShadowRoot* shadowRoot = closedShadowRoot()) {
+    if (ShadowRoot* shadowRoot = userAgentShadowRoot()) {
         Node* lastChild = shadowRoot->lastChild();
         if (lastChild && lastChild->isMediaControls())
             return toMediaControls(lastChild);
@@ -3346,7 +3346,7 @@ void HTMLMediaElement::ensureMediaControls()
     if (isFullscreen())
         mediaControls->enteredFullscreen();
 
-    ShadowRoot& shadowRoot = ensureClosedShadowRoot();
+    ShadowRoot& shadowRoot = ensureUserAgentShadowRoot();
     assertShadowRootChildren(shadowRoot);
 
     // The media controls should be inserted after the text track container,

@@ -44,7 +44,7 @@ private:
 
     virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual void didAddClosedShadowRoot(ShadowRoot&) override;
+    virtual void didAddUserAgentShadowRoot(ShadowRoot&) override;
     virtual bool isInteractiveContent() const override;
 
     bool m_isOpen;

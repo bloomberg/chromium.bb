@@ -460,7 +460,7 @@ Element* InspectorDOMAgent::assertElement(ErrorString* errorString, int nodeId)
     return toElement(node);
 }
 
-static ShadowRoot* closedShadowRoot(Node* node)
+static ShadowRoot* userAgentShadowRoot(Node* node)
 {
     if (!node || !node->isInShadowTree())
         return nullptr;
@@ -471,7 +471,7 @@ static ShadowRoot* closedShadowRoot(Node* node)
     ASSERT(candidate);
     ShadowRoot* shadowRoot = toShadowRoot(candidate);
 
-    return shadowRoot->type() == ShadowRoot::ClosedShadowRoot ? shadowRoot : nullptr;
+    return shadowRoot->type() == ShadowRoot::UserAgentShadowRoot ? shadowRoot : nullptr;
 }
 
 Node* InspectorDOMAgent::assertEditableNode(ErrorString* errorString, int nodeId)
@@ -485,7 +485,7 @@ Node* InspectorDOMAgent::assertEditableNode(ErrorString* errorString, int nodeId
             *errorString = "Cannot edit shadow roots";
             return nullptr;
         }
-        if (closedShadowRoot(node)) {
+        if (userAgentShadowRoot(node)) {
             *errorString = "Cannot edit nodes from user-agent shadow trees";
             return nullptr;
         }
@@ -517,7 +517,7 @@ Element* InspectorDOMAgent::assertEditableElement(ErrorString* errorString, int 
     if (!element)
         return nullptr;
 
-    if (element->isInShadowTree() && closedShadowRoot(element)) {
+    if (element->isInShadowTree() && userAgentShadowRoot(element)) {
         *errorString = "Cannot edit elements from user-agent shadow trees";
         return nullptr;
     }
@@ -1253,7 +1253,7 @@ bool InspectorDOMAgent::handleMouseMove(LocalFrame* frame, const PlatformMouseEv
 
     // Do not highlight within closed shadow root unless requested.
     if (m_searchingForNode != SearchingForUAShadow) {
-        ShadowRoot* shadowRoot = closedShadowRoot(node);
+        ShadowRoot* shadowRoot = userAgentShadowRoot(node);
         if (shadowRoot)
             node = shadowRoot->host();
     }
@@ -1596,7 +1596,7 @@ static String documentBaseURLString(Document* document)
 static TypeBuilder::DOM::ShadowRootType::Enum shadowRootType(ShadowRoot* shadowRoot)
 {
     switch (shadowRoot->type()) {
-    case ShadowRoot::ClosedShadowRoot:
+    case ShadowRoot::UserAgentShadowRoot:
         return TypeBuilder::DOM::ShadowRootType::User_agent;
     case ShadowRoot::OpenShadowRoot:
         return TypeBuilder::DOM::ShadowRootType::Author;
@@ -2146,7 +2146,7 @@ static ShadowRoot* shadowRootForNode(Node* node, const String& type)
     if (type == "a")
         return toElement(node)->shadowRoot();
     if (type == "u")
-        return toElement(node)->closedShadowRoot();
+        return toElement(node)->userAgentShadowRoot();
     return nullptr;
 }
 

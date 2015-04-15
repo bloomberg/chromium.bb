@@ -81,7 +81,7 @@ void SearchInputType::createShadowSubtree()
 {
     TextFieldInputType::createShadowSubtree();
     Element* container = containerElement();
-    Element* viewPort = element().closedShadowRoot()->getElementById(ShadowElementNames::editingViewPort());
+    Element* viewPort = element().userAgentShadowRoot()->getElementById(ShadowElementNames::editingViewPort());
     ASSERT(container);
     ASSERT(viewPort);
 
@@ -163,7 +163,7 @@ const AtomicString& SearchInputType::defaultAutocapitalize() const
 
 void SearchInputType::updateCancelButtonVisibility()
 {
-    Element* button = element().closedShadowRoot()->getElementById(ShadowElementNames::clearButton());
+    Element* button = element().userAgentShadowRoot()->getElementById(ShadowElementNames::clearButton());
     if (!button)
         return;
     if (element().value().isEmpty()) {

@@ -51,7 +51,7 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual void childrenChanged(const ChildrenChange&) override;
     virtual void accessKeyAction(bool sendMouseEvents) override;
-    virtual void didAddClosedShadowRoot(ShadowRoot&) override;
+    virtual void didAddUserAgentShadowRoot(ShadowRoot&) override;
     virtual void attach(const AttachContext& = AttachContext()) override;
     virtual void detach(const AttachContext& = AttachContext()) override;
 

@@ -91,11 +91,11 @@ HTMLTextAreaElement::HTMLTextAreaElement(Document& document, HTMLFormElement* fo
 PassRefPtrWillBeRawPtr<HTMLTextAreaElement> HTMLTextAreaElement::create(Document& document, HTMLFormElement* form)
 {
     RefPtrWillBeRawPtr<HTMLTextAreaElement> textArea = adoptRefWillBeNoop(new HTMLTextAreaElement(document, form));
-    textArea->ensureClosedShadowRoot();
+    textArea->ensureUserAgentShadowRoot();
     return textArea.release();
 }
 
-void HTMLTextAreaElement::didAddClosedShadowRoot(ShadowRoot& root)
+void HTMLTextAreaElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
     root.appendChild(TextControlInnerEditorElement::create(document()));
 }
@@ -609,7 +609,7 @@ void HTMLTextAreaElement::updatePlaceholderText()
     const AtomicString& placeholderText = fastGetAttribute(placeholderAttr);
     if (placeholderText.isEmpty()) {
         if (placeholder)
-            closedShadowRoot()->removeChild(placeholder);
+            userAgentShadowRoot()->removeChild(placeholder);
         return;
     }
     if (!placeholder) {
@@ -617,7 +617,7 @@ void HTMLTextAreaElement::updatePlaceholderText()
         placeholder = newElement.get();
         placeholder->setShadowPseudoId(AtomicString("-webkit-input-placeholder", AtomicString::ConstructFromLiteral));
         placeholder->setAttribute(idAttr, ShadowElementNames::placeholder());
-        closedShadowRoot()->insertBefore(placeholder, innerEditorElement()->nextSibling());
+        userAgentShadowRoot()->insertBefore(placeholder, innerEditorElement()->nextSibling());
     }
     placeholder->setTextContent(placeholderText);
 }

@@ -97,7 +97,7 @@ private:
     enum IterationProgress {
         HandledNone,
         HandledOpenShadowRoots,
-        HandledClosedShadowRoot,
+        HandledUserAgentShadowRoot,
         HandledNode,
         HandledChildren
     };

@@ -4,7 +4,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS "OpenShadowRoot" is internals.shadowRootType(shadowRootForDiv)
-PASS "ClosedShadowRoot" is internals.shadowRootType(shadowRootForInput)
+PASS "UserAgentShadowRoot" is internals.shadowRootType(shadowRootForInput)
 PASS successfullyParsed is true
 
 TEST COMPLETE

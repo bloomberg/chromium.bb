@@ -1864,8 +1864,8 @@ PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(ScriptState* script
 
 PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(ExceptionState& exceptionState)
 {
-    if (alwaysCreateClosedShadowRoot())
-        ensureClosedShadowRoot();
+    if (alwaysCreateUserAgentShadowRoot())
+        ensureUserAgentShadowRoot();
 
     // Some elements make assumptions about what kind of renderers they allow
     // as children so we can't allow author shadows on them for now. An override
@@ -1889,11 +1889,11 @@ ShadowRoot* Element::shadowRoot() const
     return nullptr;
 }
 
-ShadowRoot* Element::closedShadowRoot() const
+ShadowRoot* Element::userAgentShadowRoot() const
 {
     if (ElementShadow* elementShadow = shadow()) {
         if (ShadowRoot* shadowRoot = elementShadow->oldestShadowRoot()) {
-            ASSERT(shadowRoot->type() == ShadowRoot::ClosedShadowRoot);
+            ASSERT(shadowRoot->type() == ShadowRoot::UserAgentShadowRoot);
             return shadowRoot;
         }
     }
@@ -1901,12 +1901,12 @@ ShadowRoot* Element::closedShadowRoot() const
     return nullptr;
 }
 
-ShadowRoot& Element::ensureClosedShadowRoot()
+ShadowRoot& Element::ensureUserAgentShadowRoot()
 {
-    if (ShadowRoot* shadowRoot = closedShadowRoot())
+    if (ShadowRoot* shadowRoot = userAgentShadowRoot())
         return *shadowRoot;
-    ShadowRoot& shadowRoot = ensureShadow().addShadowRoot(*this, ShadowRoot::ClosedShadowRoot);
-    didAddClosedShadowRoot(shadowRoot);
+    ShadowRoot& shadowRoot = ensureShadow().addShadowRoot(*this, ShadowRoot::UserAgentShadowRoot);
+    didAddUserAgentShadowRoot(shadowRoot);
     return shadowRoot;
 }
 
@@ -2599,7 +2599,7 @@ String Element::textFromChildren()
 const AtomicString& Element::shadowPseudoId() const
 {
     if (ShadowRoot* root = containingShadowRoot()) {
-        if (root->type() == ShadowRoot::ClosedShadowRoot)
+        if (root->type() == ShadowRoot::UserAgentShadowRoot)
             return fastGetAttribute(pseudoAttr);
     }
     return nullAtom;

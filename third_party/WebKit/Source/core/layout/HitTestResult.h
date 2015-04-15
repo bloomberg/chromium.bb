@@ -96,7 +96,7 @@ public:
     PositionWithAffinity position() const;
     LayoutObject* layoutObject() const;
 
-    void setToShadowHostIfInClosedShadowRoot();
+    void setToShadowHostIfInUserAgentShadowRoot();
 
     const HitTestLocation& hitTestLocation() const { return m_hitTestLocation; }
     const HitTestRequest& hitTestRequest() const { return m_hitTestRequest; }

@@ -129,27 +129,27 @@ bool DateTimeFormatValidator::validateFormat(const String& format, const BaseMul
 
 DateTimeEditElement* BaseMultipleFieldsDateAndTimeInputType::dateTimeEditElement() const
 {
-    return toDateTimeEditElement(element().closedShadowRoot()->getElementById(ShadowElementNames::dateTimeEdit()));
+    return toDateTimeEditElement(element().userAgentShadowRoot()->getElementById(ShadowElementNames::dateTimeEdit()));
 }
 
 SpinButtonElement* BaseMultipleFieldsDateAndTimeInputType::spinButtonElement() const
 {
-    return toSpinButtonElement(element().closedShadowRoot()->getElementById(ShadowElementNames::spinButton()));
+    return toSpinButtonElement(element().userAgentShadowRoot()->getElementById(ShadowElementNames::spinButton()));
 }
 
 ClearButtonElement* BaseMultipleFieldsDateAndTimeInputType::clearButtonElement() const
 {
-    return toClearButtonElement(element().closedShadowRoot()->getElementById(ShadowElementNames::clearButton()));
+    return toClearButtonElement(element().userAgentShadowRoot()->getElementById(ShadowElementNames::clearButton()));
 }
 
 PickerIndicatorElement* BaseMultipleFieldsDateAndTimeInputType::pickerIndicatorElement() const
 {
-    return toPickerIndicatorElement(element().closedShadowRoot()->getElementById(ShadowElementNames::pickerIndicator()));
+    return toPickerIndicatorElement(element().userAgentShadowRoot()->getElementById(ShadowElementNames::pickerIndicator()));
 }
 
 inline bool BaseMultipleFieldsDateAndTimeInputType::containsFocusedShadowElement() const
 {
-    return element().closedShadowRoot()->contains(element().document().focusedElement());
+    return element().userAgentShadowRoot()->contains(element().document().focusedElement());
 }
 
 void BaseMultipleFieldsDateAndTimeInputType::didBlurFromControl()
@@ -354,7 +354,7 @@ void BaseMultipleFieldsDateAndTimeInputType::createShadowSubtree()
     ASSERT(!element().layoutObject());
 
     Document& document = element().document();
-    ContainerNode* container = element().closedShadowRoot();
+    ContainerNode* container = element().userAgentShadowRoot();
 
     container->appendChild(DateTimeEditElement::create(document, *this));
     element().updateView();

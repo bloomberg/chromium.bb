@@ -154,7 +154,7 @@ bool HTMLTextFormControlElement::placeholderShouldBeVisible() const
 
 HTMLElement* HTMLTextFormControlElement::placeholderElement() const
 {
-    return toHTMLElement(closedShadowRoot()->getElementById(ShadowElementNames::placeholder()));
+    return toHTMLElement(userAgentShadowRoot()->getElementById(ShadowElementNames::placeholder()));
 }
 
 void HTMLTextFormControlElement::updatePlaceholderVisibility(bool placeholderValueChanged)
@@ -736,7 +736,7 @@ HTMLTextFormControlElement* enclosingTextFormControl(Node* container)
     if (!container)
         return nullptr;
     Element* ancestor = container->shadowHost();
-    return ancestor && isHTMLTextFormControlElement(*ancestor) && container->containingShadowRoot()->type() == ShadowRoot::ClosedShadowRoot ? toHTMLTextFormControlElement(ancestor) : 0;
+    return ancestor && isHTMLTextFormControlElement(*ancestor) && container->containingShadowRoot()->type() == ShadowRoot::UserAgentShadowRoot ? toHTMLTextFormControlElement(ancestor) : 0;
 }
 
 String HTMLTextFormControlElement::directionForFormData() const
@@ -761,7 +761,7 @@ String HTMLTextFormControlElement::directionForFormData() const
 
 HTMLElement* HTMLTextFormControlElement::innerEditorElement() const
 {
-    return toHTMLElement(closedShadowRoot()->getElementById(ShadowElementNames::innerEditor()));
+    return toHTMLElement(userAgentShadowRoot()->getElementById(ShadowElementNames::innerEditor()));
 }
 
 static Position innerNodePosition(const Position& innerPosition)

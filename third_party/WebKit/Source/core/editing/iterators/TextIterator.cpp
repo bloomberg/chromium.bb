@@ -256,17 +256,17 @@ void TextIteratorAlgorithm<Strategy>::advance()
             }
 
             // Enter user-agent shadow root, if necessary.
-            if (m_iterationProgress < HandledClosedShadowRoot) {
+            if (m_iterationProgress < HandledUserAgentShadowRoot) {
                 if (entersTextControls() && renderer->isTextControl()) {
-                    ShadowRoot* closedShadowRoot = toElement(m_node)->closedShadowRoot();
-                    ASSERT(closedShadowRoot->type() == ShadowRoot::ClosedShadowRoot);
-                    m_node = closedShadowRoot;
+                    ShadowRoot* userAgentShadowRoot = toElement(m_node)->userAgentShadowRoot();
+                    ASSERT(userAgentShadowRoot->type() == ShadowRoot::UserAgentShadowRoot);
+                    m_node = userAgentShadowRoot;
                     m_iterationProgress = HandledNone;
                     ++m_shadowDepth;
                     m_fullyClippedStack.pushFullyClippedState(m_node);
                     continue;
                 }
-                m_iterationProgress = HandledClosedShadowRoot;
+                m_iterationProgress = HandledUserAgentShadowRoot;
             }
 
             // Handle the current node according to its type.
@@ -345,9 +345,9 @@ void TextIteratorAlgorithm<Strategy>::advance()
                         }
                     } else {
                         // If we are in a user-agent shadow root, then go back to the host.
-                        ASSERT(shadowRoot->type() == ShadowRoot::ClosedShadowRoot);
+                        ASSERT(shadowRoot->type() == ShadowRoot::UserAgentShadowRoot);
                         m_node = shadowRoot->host();
-                        m_iterationProgress = HandledClosedShadowRoot;
+                        m_iterationProgress = HandledUserAgentShadowRoot;
                         --m_shadowDepth;
                         m_fullyClippedStack.pop();
                     }

@@ -143,7 +143,7 @@ void InputTypeView::createShadowSubtree()
 
 void InputTypeView::destroyShadowSubtree()
 {
-    if (ShadowRoot* root = element().closedShadowRoot())
+    if (ShadowRoot* root = element().userAgentShadowRoot())
         root->removeChildren();
 }
 

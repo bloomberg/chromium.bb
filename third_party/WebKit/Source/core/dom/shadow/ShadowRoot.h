@@ -54,7 +54,7 @@ public:
     // in several elements for a while.
     // See https://bugs.webkit.org/show_bug.cgi?id=77503 and related bugs.
     enum ShadowRootType {
-        ClosedShadowRoot = 0,
+        UserAgentShadowRoot = 0,
         OpenShadowRoot
     };
 

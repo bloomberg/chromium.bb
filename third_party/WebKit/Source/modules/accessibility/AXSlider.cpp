@@ -156,7 +156,7 @@ LayoutRect AXSliderThumb::elementRect() const
     LayoutObject* sliderLayoutObject = m_parent->layoutObject();
     if (!sliderLayoutObject || !sliderLayoutObject->isSlider())
         return LayoutRect();
-    return toElement(sliderLayoutObject->node())->closedShadowRoot()->getElementById(ShadowElementNames::sliderThumb())->boundingBox();
+    return toElement(sliderLayoutObject->node())->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderThumb())->boundingBox();
 }
 
 bool AXSliderThumb::computeAccessibilityIsIgnored() const

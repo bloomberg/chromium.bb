@@ -39,7 +39,7 @@ using namespace HTMLNames;
 PassRefPtrWillBeRawPtr<HTMLSummaryElement> HTMLSummaryElement::create(Document& document)
 {
     RefPtrWillBeRawPtr<HTMLSummaryElement> summary = adoptRefWillBeNoop(new HTMLSummaryElement(document));
-    summary->ensureClosedShadowRoot();
+    summary->ensureUserAgentShadowRoot();
     return summary.release();
 }
 
@@ -53,7 +53,7 @@ LayoutObject* HTMLSummaryElement::createLayoutObject(const ComputedStyle&)
     return new LayoutBlockFlow(this);
 }
 
-void HTMLSummaryElement::didAddClosedShadowRoot(ShadowRoot& root)
+void HTMLSummaryElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
     RefPtrWillBeRawPtr<DetailsMarkerControl> markerControl = DetailsMarkerControl::create(document());
     markerControl->setIdAttribute(ShadowElementNames::detailsMarker());
@@ -71,7 +71,7 @@ HTMLDetailsElement* HTMLSummaryElement::detailsElement() const
 
 Element* HTMLSummaryElement::markerControl()
 {
-    return ensureClosedShadowRoot().getElementById(ShadowElementNames::detailsMarker());
+    return ensureUserAgentShadowRoot().getElementById(ShadowElementNames::detailsMarker());
 }
 
 bool HTMLSummaryElement::isMainSummary() const

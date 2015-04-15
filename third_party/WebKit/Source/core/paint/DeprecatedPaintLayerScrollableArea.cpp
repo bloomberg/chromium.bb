@@ -917,7 +917,7 @@ static inline LayoutObject* rendererForScrollbar(LayoutObject& renderer)
 {
     if (Node* node = renderer.node()) {
         if (ShadowRoot* shadowRoot = node->containingShadowRoot()) {
-            if (shadowRoot->type() == ShadowRoot::ClosedShadowRoot)
+            if (shadowRoot->type() == ShadowRoot::UserAgentShadowRoot)
                 return shadowRoot->host()->layoutObject();
         }
     }

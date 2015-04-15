@@ -109,8 +109,8 @@ void LayoutSliderContainer::layout()
         mutableStyleRef().setDirection(LTR);
     }
 
-    Element* thumbElement = input->closedShadowRoot()->getElementById(ShadowElementNames::sliderThumb());
-    Element* trackElement = input->closedShadowRoot()->getElementById(ShadowElementNames::sliderTrack());
+    Element* thumbElement = input->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderThumb());
+    Element* trackElement = input->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderTrack());
     LayoutBox* thumb = thumbElement ? thumbElement->layoutBox() : 0;
     LayoutBox* track = trackElement ? trackElement->layoutBox() : 0;
 

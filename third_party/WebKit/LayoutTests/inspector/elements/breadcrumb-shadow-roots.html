@@ -20,7 +20,7 @@ function test()
 
     function step0()
     {
-        selectNode(matchClosedShadowRoot, step1);
+        selectNode(matchUserAgentShadowRoot, step1);
     }
 
     function step1()
@@ -44,7 +44,7 @@ function test()
         }
     }
 
-    function matchClosedShadowRoot(node)
+    function matchUserAgentShadowRoot(node)
     {
         return node.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.UserAgent;
     }

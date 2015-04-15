@@ -51,7 +51,7 @@ HTMLMeterElement::~HTMLMeterElement()
 PassRefPtrWillBeRawPtr<HTMLMeterElement> HTMLMeterElement::create(Document& document)
 {
     RefPtrWillBeRawPtr<HTMLMeterElement> meter = adoptRefWillBeNoop(new HTMLMeterElement(document));
-    meter->ensureClosedShadowRoot();
+    meter->ensureUserAgentShadowRoot();
     return meter.release();
 }
 
@@ -191,11 +191,11 @@ LayoutMeter* HTMLMeterElement::layoutMeter() const
     if (layoutObject() && layoutObject()->isMeter())
         return toLayoutMeter(layoutObject());
 
-    LayoutObject* layoutObject = closedShadowRoot()->firstChild()->layoutObject();
+    LayoutObject* layoutObject = userAgentShadowRoot()->firstChild()->layoutObject();
     return toLayoutMeter(layoutObject);
 }
 
-void HTMLMeterElement::didAddClosedShadowRoot(ShadowRoot& root)
+void HTMLMeterElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
     ASSERT(!m_value);
 

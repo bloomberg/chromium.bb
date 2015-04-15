@@ -134,7 +134,7 @@ PassRefPtrWillBeRawPtr<HTMLInputElement> HTMLInputElement::create(Document& docu
 {
     RefPtrWillBeRawPtr<HTMLInputElement> inputElement = adoptRefWillBeNoop(new HTMLInputElement(document, form, createdByParser));
     if (!createdByParser)
-        inputElement->ensureClosedShadowRoot();
+        inputElement->ensureUserAgentShadowRoot();
     return inputElement.release();
 }
 
@@ -154,7 +154,7 @@ HTMLImageLoader& HTMLInputElement::ensureImageLoader()
     return *m_imageLoader;
 }
 
-void HTMLInputElement::didAddClosedShadowRoot(ShadowRoot&)
+void HTMLInputElement::didAddUserAgentShadowRoot(ShadowRoot&)
 {
     m_inputTypeView->createShadowSubtree();
 }
@@ -431,7 +431,7 @@ void HTMLInputElement::initializeTypeInParsing()
     const AtomicString& newTypeName = InputType::normalizeTypeName(fastGetAttribute(typeAttr));
     m_inputType = InputType::create(*this, newTypeName);
     m_inputTypeView = m_inputType;
-    ensureClosedShadowRoot();
+    ensureUserAgentShadowRoot();
 
     updateTouchEventHandlerRegistry();
 

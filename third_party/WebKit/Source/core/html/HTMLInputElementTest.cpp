@@ -14,12 +14,12 @@ TEST(HTMLInputElementTest, create)
 {
     const RefPtrWillBeRawPtr<Document> document = Document::create();
     RefPtrWillBeRawPtr<HTMLInputElement> input = HTMLInputElement::create(*document, nullptr, /* createdByParser */ false);
-    EXPECT_NE(nullptr, input->closedShadowRoot());
+    EXPECT_NE(nullptr, input->userAgentShadowRoot());
 
     input = HTMLInputElement::create(*document, nullptr, /* createdByParser */ true);
-    EXPECT_EQ(nullptr, input->closedShadowRoot());
+    EXPECT_EQ(nullptr, input->userAgentShadowRoot());
     input->parserSetAttributes(Vector<Attribute>());
-    EXPECT_NE(nullptr, input->closedShadowRoot());
+    EXPECT_NE(nullptr, input->userAgentShadowRoot());
 }
 
 } // namespace blink

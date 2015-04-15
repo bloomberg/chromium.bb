@@ -823,7 +823,7 @@ void LayoutTheme::paintSliderTicks(LayoutObject* o, const PaintInfo& paintInfo, 
     bool isHorizontal = part ==  SliderHorizontalPart;
 
     IntSize thumbSize;
-    LayoutObject* thumbRenderer = input->closedShadowRoot()->getElementById(ShadowElementNames::sliderThumb())->layoutObject();
+    LayoutObject* thumbRenderer = input->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderThumb())->layoutObject();
     if (thumbRenderer) {
         const ComputedStyle& thumbStyle = thumbRenderer->styleRef();
         int thumbWidth = thumbStyle.width().intValue();
@@ -838,7 +838,7 @@ void LayoutTheme::paintSliderTicks(LayoutObject* o, const PaintInfo& paintInfo, 
     int tickRegionSideMargin = 0;
     int tickRegionWidth = 0;
     IntRect trackBounds;
-    LayoutObject* trackRenderer = input->closedShadowRoot()->getElementById(ShadowElementNames::sliderTrack())->layoutObject();
+    LayoutObject* trackRenderer = input->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderTrack())->layoutObject();
     // We can ignoring transforms because transform is handled by the graphics context.
     if (trackRenderer)
         trackBounds = trackRenderer->absoluteBoundingBoxRectIgnoringTransforms();

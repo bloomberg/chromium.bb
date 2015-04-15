@@ -529,7 +529,7 @@ void WebViewImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent& ev
     if (event.button == WebMouseEvent::ButtonLeft && m_page->mainFrame()->isLocalFrame()) {
         point = m_page->deprecatedLocalMainFrame()->view()->rootFrameToContents(point);
         HitTestResult result(m_page->deprecatedLocalMainFrame()->eventHandler().hitTestResultAtPoint(point));
-        result.setToShadowHostIfInClosedShadowRoot();
+        result.setToShadowHostIfInUserAgentShadowRoot();
         Node* hitNode = result.innerNodeOrImageMapImage();
 
         if (!result.scrollbar() && hitNode && hitNode->layoutObject() && hitNode->layoutObject()->isEmbeddedObject()) {
@@ -1143,7 +1143,7 @@ WebRect WebViewImpl::computeBlockBound(const WebPoint& pointInRootFrame, bool ig
     IntPoint point = mainFrameImpl()->frameView()->rootFrameToContents(IntPoint(pointInRootFrame.x, pointInRootFrame.y));
     HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active | (ignoreClipping ? HitTestRequest::IgnoreClipping : 0);
     HitTestResult result = mainFrameImpl()->frame()->eventHandler().hitTestResultAtPoint(point, hitType);
-    result.setToShadowHostIfInClosedShadowRoot();
+    result.setToShadowHostIfInUserAgentShadowRoot();
 
     Node* node = result.innerNodeOrImageMapImage();
     if (!node)
@@ -4111,7 +4111,7 @@ HitTestResult WebViewImpl::hitTestResultForRootFramePos(const IntPoint& posInRoo
         return HitTestResult();
     IntPoint docPoint(m_page->deprecatedLocalMainFrame()->view()->rootFrameToContents(posInRootFrame));
     HitTestResult result = m_page->deprecatedLocalMainFrame()->eventHandler().hitTestResultAtPoint(docPoint, HitTestRequest::ReadOnly | HitTestRequest::Active);
-    result.setToShadowHostIfInClosedShadowRoot();
+    result.setToShadowHostIfInUserAgentShadowRoot();
     return result;
 }
 
@@ -4132,7 +4132,7 @@ WebHitTestResult WebViewImpl::hitTestResultForTap(const WebPoint& tapPointWindow
 
     HitTestResult result = m_page->deprecatedLocalMainFrame()->eventHandler().hitTestResultForGestureEvent(platformEvent, HitTestRequest::ReadOnly | HitTestRequest::Active).hitTestResult();
 
-    result.setToShadowHostIfInClosedShadowRoot();
+    result.setToShadowHostIfInUserAgentShadowRoot();
     return result;
 }
 
@@ -4409,9 +4409,9 @@ bool WebViewImpl::detectContentOnTouch(const GestureEventWithHitTestResults& tar
     if (!m_page->mainFrame()->isLocalFrame())
         return false;
 
-    // Need a local copy of the hit test as setToShadowHostIfInClosedShadowRoot() will modify it.
+    // Need a local copy of the hit test as setToShadowHostIfInUserAgentShadowRoot() will modify it.
     HitTestResult touchHit = targetedEvent.hitTestResult();
-    touchHit.setToShadowHostIfInClosedShadowRoot();
+    touchHit.setToShadowHostIfInUserAgentShadowRoot();
 
     if (touchHit.isContentEditable())
         return false;

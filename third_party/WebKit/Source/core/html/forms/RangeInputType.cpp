@@ -141,7 +141,7 @@ void RangeInputType::handleMouseDownEvent(MouseEvent* event)
     if (event->button() != LeftButton || !targetNode)
         return;
     ASSERT(element().shadow());
-    if (targetNode != element() && !targetNode->isDescendantOf(element().closedShadowRoot()))
+    if (targetNode != element() && !targetNode->isDescendantOf(element().userAgentShadowRoot()))
         return;
     SliderThumbElement* thumb = sliderThumbElement();
     if (targetNode == thumb)
@@ -241,7 +241,7 @@ void RangeInputType::createShadowSubtree()
     track->appendChild(SliderThumbElement::create(document));
     RefPtrWillBeRawPtr<HTMLElement> container = SliderContainerElement::create(document);
     container->appendChild(track.release());
-    element().closedShadowRoot()->appendChild(container.release());
+    element().userAgentShadowRoot()->appendChild(container.release());
 }
 
 LayoutObject* RangeInputType::createLayoutObject(const ComputedStyle&) const
@@ -314,12 +314,12 @@ bool RangeInputType::shouldRespectListAttribute()
 
 inline SliderThumbElement* RangeInputType::sliderThumbElement() const
 {
-    return toSliderThumbElement(element().closedShadowRoot()->getElementById(ShadowElementNames::sliderThumb()));
+    return toSliderThumbElement(element().userAgentShadowRoot()->getElementById(ShadowElementNames::sliderThumb()));
 }
 
 inline Element* RangeInputType::sliderTrackElement() const
 {
-    return element().closedShadowRoot()->getElementById(ShadowElementNames::sliderTrack());
+    return element().userAgentShadowRoot()->getElementById(ShadowElementNames::sliderTrack());
 }
 
 void RangeInputType::listAttributeTargetChanged()

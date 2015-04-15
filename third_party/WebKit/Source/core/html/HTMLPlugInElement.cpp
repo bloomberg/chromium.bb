@@ -595,10 +595,10 @@ void HTMLPlugInElement::setPlaceholder(PassOwnPtrWillBeRawPtr<PluginPlaceholder>
 {
     bool needsLazyReattach = (!placeholder) != (!m_placeholder);
     if (placeholder) {
-        placeholder->loadIntoContainer(ensureClosedShadowRoot());
+        placeholder->loadIntoContainer(ensureUserAgentShadowRoot());
         m_placeholder = placeholder;
     } else {
-        ShadowRoot& shadowRoot = ensureClosedShadowRoot();
+        ShadowRoot& shadowRoot = ensureUserAgentShadowRoot();
         shadowRoot.removeChildren();
         shadowRoot.appendChild(HTMLContentElement::create(document()));
         m_placeholder.clear();
@@ -648,9 +648,9 @@ bool HTMLPlugInElement::pluginIsLoadable(const KURL& url, const String& mimeType
     return (!mimeType.isEmpty() && url.isEmpty()) || !MixedContentChecker::shouldBlockFetch(frame, WebURLRequest::RequestContextObject, WebURLRequest::FrameTypeNone, url);
 }
 
-void HTMLPlugInElement::didAddClosedShadowRoot(ShadowRoot&)
+void HTMLPlugInElement::didAddUserAgentShadowRoot(ShadowRoot&)
 {
-    closedShadowRoot()->appendChild(HTMLContentElement::create(document()));
+    userAgentShadowRoot()->appendChild(HTMLContentElement::create(document()));
 }
 
 void HTMLPlugInElement::willAddFirstOpenShadowRoot()

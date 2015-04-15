@@ -149,7 +149,7 @@ HTMLInputElement* LayoutFileUploadControl::uploadButton() const
 {
     // FIXME: This should be on HTMLInputElement as an API like innerButtonElement().
     HTMLInputElement* input = toHTMLInputElement(node());
-    Node* buttonNode = input->closedShadowRoot()->firstChild();
+    Node* buttonNode = input->userAgentShadowRoot()->firstChild();
     return isHTMLInputElement(buttonNode) ? toHTMLInputElement(buttonNode) : 0;
 }
 

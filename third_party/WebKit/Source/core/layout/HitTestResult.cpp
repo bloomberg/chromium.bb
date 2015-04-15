@@ -142,11 +142,11 @@ LayoutObject* HitTestResult::layoutObject() const
     return m_innerNode ? m_innerNode->layoutObject() : 0;
 }
 
-void HitTestResult::setToShadowHostIfInClosedShadowRoot()
+void HitTestResult::setToShadowHostIfInUserAgentShadowRoot()
 {
     if (Node* node = innerNode()) {
         if (ShadowRoot* containingShadowRoot = node->containingShadowRoot()) {
-            if (containingShadowRoot->type() == ShadowRoot::ClosedShadowRoot)
+            if (containingShadowRoot->type() == ShadowRoot::UserAgentShadowRoot)
                 setInnerNode(node->shadowHost());
         }
     }

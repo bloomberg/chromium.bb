@@ -132,8 +132,8 @@ LayoutObject* ImageInputType::createLayoutObject(const ComputedStyle& style) con
 
 void ImageInputType::altAttributeChanged()
 {
-    if (element().closedShadowRoot()) {
-        Element* text = element().closedShadowRoot()->getElementById("alttext");
+    if (element().userAgentShadowRoot()) {
+        Element* text = element().userAgentShadowRoot()->getElementById("alttext");
         String value = element().altText();
         if (text && text->textContent() != value)
             text->setTextContent(element().altText());
@@ -263,7 +263,7 @@ void ImageInputType::setUseFallbackContent()
     m_useFallbackContent = true;
     if (element().document().inStyleRecalc())
         return;
-    if (ShadowRoot* root = element().closedShadowRoot())
+    if (ShadowRoot* root = element().userAgentShadowRoot())
         root->removeChildren();
     createShadowSubtree();
 }

@@ -7,7 +7,7 @@ Running: testOpenShadowRoot
 Page reloaded.
 Selected node: '#shadow-root'
 
-Running: testClosedShadowRoot
+Running: testUserAgentShadowRoot
 Page reloaded.
 Selected node: '#shadow-root (user-agent)'
 
@@ -15,7 +15,7 @@ Running: testOpenShadowRootChild
 Page reloaded.
 Selected node: 'input'
 
-Running: testClosedShadowRootChild
+Running: testUserAgentShadowRootChild
 Page reloaded.
 Selected node: 'div'
 

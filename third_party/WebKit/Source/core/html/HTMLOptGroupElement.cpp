@@ -49,7 +49,7 @@ inline HTMLOptGroupElement::HTMLOptGroupElement(Document& document)
 PassRefPtrWillBeRawPtr<HTMLOptGroupElement> HTMLOptGroupElement::create(Document& document)
 {
     RefPtrWillBeRawPtr<HTMLOptGroupElement> optGroupElement = adoptRefWillBeNoop(new HTMLOptGroupElement(document));
-    optGroupElement->ensureClosedShadowRoot();
+    optGroupElement->ensureUserAgentShadowRoot();
     return optGroupElement.release();
 }
 
@@ -151,7 +151,7 @@ void HTMLOptGroupElement::accessKeyAction(bool)
         select->accessKeyAction(false);
 }
 
-void HTMLOptGroupElement::didAddClosedShadowRoot(ShadowRoot& root)
+void HTMLOptGroupElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
     DEFINE_STATIC_LOCAL(AtomicString, labelPadding, ("0 2px 1px 2px", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, labelMinHeight, ("1.2em", AtomicString::ConstructFromLiteral));
@@ -178,7 +178,7 @@ void HTMLOptGroupElement::updateGroupLabel()
 
 HTMLDivElement& HTMLOptGroupElement::optGroupLabelElement() const
 {
-    return *toHTMLDivElement(closedShadowRoot()->getElementById(ShadowElementNames::optGroupLabel()));
+    return *toHTMLDivElement(userAgentShadowRoot()->getElementById(ShadowElementNames::optGroupLabel()));
 }
 
 } // namespace

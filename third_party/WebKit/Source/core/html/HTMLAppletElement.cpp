@@ -53,7 +53,7 @@ HTMLAppletElement::HTMLAppletElement(Document& document, bool createdByParser)
 PassRefPtrWillBeRawPtr<HTMLAppletElement> HTMLAppletElement::create(Document& document, bool createdByParser)
 {
     RefPtrWillBeRawPtr<HTMLAppletElement> element = adoptRefWillBeNoop(new HTMLAppletElement(document, createdByParser));
-    element->ensureClosedShadowRoot();
+    element->ensureUserAgentShadowRoot();
     return element.release();
 }
 

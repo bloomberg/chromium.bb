@@ -97,7 +97,7 @@ bool HTMLContentElement::validateSelect() const
     if (!m_selectorList.isValid())
         return false;
 
-    bool allowAnyPseudoClasses = RuntimeEnabledFeatures::pseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled() || (containingShadowRoot() && containingShadowRoot()->type() == ShadowRoot::ClosedShadowRoot);
+    bool allowAnyPseudoClasses = RuntimeEnabledFeatures::pseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled() || (containingShadowRoot() && containingShadowRoot()->type() == ShadowRoot::UserAgentShadowRoot);
 
     for (const CSSSelector* selector = m_selectorList.first(); selector; selector = m_selectorList.next(*selector)) {
         if (!selector->isCompound())

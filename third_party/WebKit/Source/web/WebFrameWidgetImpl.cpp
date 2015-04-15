@@ -691,7 +691,7 @@ void WebFrameWidgetImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEv
     if (event.button == WebMouseEvent::ButtonLeft) {
         point = m_localRoot->frameView()->rootFrameToContents(point);
         HitTestResult result(m_localRoot->frame()->eventHandler().hitTestResultAtPoint(point));
-        result.setToShadowHostIfInClosedShadowRoot();
+        result.setToShadowHostIfInUserAgentShadowRoot();
         Node* hitNode = result.innerNode();
 
         if (!result.scrollbar() && hitNode && hitNode->layoutObject() && hitNode->layoutObject()->isEmbeddedObject()) {
