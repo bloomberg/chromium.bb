@@ -289,6 +289,10 @@ void AvatarMenu::OnProfileSigninRequiredChanged(
   Update();
 }
 
+void AvatarMenu::OnProfileIsOmittedChanged(const base::FilePath& profile_path) {
+  Update();
+}
+
 #if defined(ENABLE_SUPERVISED_USERS)
 void AvatarMenu::OnCustodianInfoChanged() {
   RebuildMenu();

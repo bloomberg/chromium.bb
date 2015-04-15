@@ -135,6 +135,7 @@
 
 #if defined(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/permission_request_creator.h"
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #endif
@@ -6629,6 +6630,24 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNotInstalled) {
 }
 
 #if defined(ENABLE_SUPERVISED_USERS)
+class ScopedSupervisedUserServiceDelegate
+    : public SupervisedUserService::Delegate {
+ public:
+  explicit ScopedSupervisedUserServiceDelegate(SupervisedUserService* service)
+      : service_(service) {
+    service_->SetDelegate(this);
+  }
+  ~ScopedSupervisedUserServiceDelegate() override {
+    service_->SetDelegate(nullptr);
+  }
+
+  // This prevents the legacy supervised user init code from running.
+  bool SetActive(bool active) override { return true; }
+
+ private:
+  SupervisedUserService* service_;
+};
+
 class MockPermissionRequestCreator : public PermissionRequestCreator {
  public:
   MockPermissionRequestCreator() {}
@@ -6656,7 +6675,8 @@ TEST_F(ExtensionServiceTest, SupervisedUser_InstallOnlyAllowedByCustodian) {
 
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile());
-  GetManagementPolicy()->RegisterProvider(supervised_user_service);
+  ScopedSupervisedUserServiceDelegate delegate(supervised_user_service);
+  supervised_user_service->Init();
 
   base::FilePath path1 = data_dir().AppendASCII("good.crx");
   base::FilePath path2 = data_dir().AppendASCII("good2048.crx");
@@ -6672,6 +6692,29 @@ TEST_F(ExtensionServiceTest, SupervisedUser_InstallOnlyAllowedByCustodian) {
   EXPECT_TRUE(registry()->enabled_extensions().Contains(extensions[1]->id()));
 }
 
+TEST_F(ExtensionServiceTest, SupervisedUser_PreinstalledExtension) {
+  ExtensionServiceInitParams params = CreateDefaultInitParams();
+  // Do *not* set the profile to supervised here!
+  InitializeExtensionService(params);
+
+  SupervisedUserService* supervised_user_service =
+      SupervisedUserServiceFactory::GetForProfile(profile());
+  ScopedSupervisedUserServiceDelegate delegate(supervised_user_service);
+  supervised_user_service->Init();
+
+  // Install an extension.
+  base::FilePath path = data_dir().AppendASCII("good.crx");
+  const Extension* extension = InstallCRX(path, INSTALL_NEW);
+  std::string id = extension->id();
+
+  // Now make the profile supervised.
+  profile()->AsTestingProfile()->SetSupervisedUserId(
+      supervised_users::kChildAccountSUID);
+
+  // The extension should not be enabled anymore.
+  EXPECT_FALSE(registry()->enabled_extensions().Contains(id));
+}
+
 TEST_F(ExtensionServiceTest, SupervisedUser_UpdateWithoutPermissionIncrease) {
   ExtensionServiceInitParams params = CreateDefaultInitParams();
   params.profile_is_supervised = true;
@@ -6679,7 +6722,8 @@ TEST_F(ExtensionServiceTest, SupervisedUser_UpdateWithoutPermissionIncrease) {
 
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile());
-  GetManagementPolicy()->RegisterProvider(supervised_user_service);
+  ScopedSupervisedUserServiceDelegate delegate(supervised_user_service);
+  supervised_user_service->Init();
 
   base::FilePath base_path = data_dir().AppendASCII("autoupdate");
   base::FilePath pem_path = base_path.AppendASCII("key.pem");
@@ -6715,7 +6759,8 @@ TEST_F(ExtensionServiceTest, SupervisedUser_UpdateWithPermissionIncrease) {
 
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile());
-  GetManagementPolicy()->RegisterProvider(supervised_user_service);
+  ScopedSupervisedUserServiceDelegate delegate(supervised_user_service);
+  supervised_user_service->Init();
   MockPermissionRequestCreator* creator = new MockPermissionRequestCreator;
   supervised_user_service->AddPermissionRequestCreator(
       make_scoped_ptr(creator));

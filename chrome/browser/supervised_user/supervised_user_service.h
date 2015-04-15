@@ -129,8 +129,7 @@ class SupervisedUserService : public KeyedService,
   // is empty, or the empty string is there is no second custodian.
   std::string GetSecondCustodianName() const;
 
-  // Initializes this object. This method does nothing if the profile is not
-  // supervised.
+  // Initializes this object.
   void Init();
 
   // Initializes this profile for syncing, using the provided |refresh_token| to

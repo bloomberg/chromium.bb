@@ -382,7 +382,6 @@ TestingProfile::TestingProfile(
       force_incognito_(false),
       original_profile_(parent),
       guest_session_(guest_session),
-      supervised_user_id_(supervised_user_id),
       last_session_exited_cleanly_(true),
 #if defined(ENABLE_EXTENSIONS)
       extension_special_storage_policy_(extension_policy),
@@ -420,6 +419,8 @@ TestingProfile::TestingProfile(
   } else {
     FinishInit();
   }
+
+  SetSupervisedUserId(supervised_user_id);
 }
 
 void TestingProfile::CreateTempProfileDir() {
@@ -764,6 +765,14 @@ Profile* TestingProfile::GetOriginalProfile() {
   if (original_profile_)
     return original_profile_;
   return this;
+}
+
+void TestingProfile::SetSupervisedUserId(const std::string& id) {
+  supervised_user_id_ = id;
+  if (!id.empty())
+    GetPrefs()->SetString(prefs::kSupervisedUserId, id);
+  else
+    GetPrefs()->ClearPref(prefs::kSupervisedUserId);
 }
 
 bool TestingProfile::IsSupervised() {

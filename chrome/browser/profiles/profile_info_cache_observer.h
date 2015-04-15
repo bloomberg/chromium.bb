@@ -32,6 +32,8 @@ class ProfileInfoCacheObserver {
       const base::FilePath& profile_path) {}
   virtual void OnProfileSupervisedUserIdChanged(
       const base::FilePath& profile_path) {}
+  virtual void OnProfileIsOmittedChanged(
+      const base::FilePath& profile_path) {}
 
  protected:
   ProfileInfoCacheObserver() {}

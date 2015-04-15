@@ -217,6 +217,8 @@ class TestingProfile : public Profile {
   // to provide an OffTheRecordProfileImpl instance.
   void SetOffTheRecordProfile(scoped_ptr<Profile> profile);
 
+  void SetSupervisedUserId(const std::string& id);
+
   // content::BrowserContext
   base::FilePath GetPath() const override;
   scoped_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(

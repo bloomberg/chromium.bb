@@ -562,6 +562,11 @@ void ProfileInfoCache::SetIsOmittedProfileAtIndex(size_t index,
   info->SetBoolean(kIsOmittedFromProfileListKey, is_omitted);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
+
+  base::FilePath profile_path = GetPathOfProfileAtIndex(index);
+  FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
+                    observer_list_,
+                    OnProfileIsOmittedChanged(profile_path));
 }
 
 void ProfileInfoCache::SetSupervisedUserIdOfProfileAtIndex(

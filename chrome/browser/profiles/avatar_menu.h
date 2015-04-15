@@ -163,6 +163,7 @@ class AvatarMenu :
       const base::FilePath& profile_path) override;
   void OnProfileSigninRequiredChanged(
       const base::FilePath& profile_path) override;
+  void OnProfileIsOmittedChanged(const base::FilePath& profile_path) override;
 
 #if defined(ENABLE_SUPERVISED_USERS)
   // SupervisedUserServiceObserver:

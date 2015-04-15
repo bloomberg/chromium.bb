@@ -253,10 +253,20 @@ TEST_F(ProfileMenuControllerTest, SupervisedProfile) {
                                     0,
                                     "TEST_ID",
                                     TestingProfile::TestingFactories());
+  // The supervised profile is initially marked as omitted from the avatar menu
+  // (in non-test code, until we have confirmation that it has actually been
+  // created on the server). For the test, just tell the cache to un-hide it.
+  ProfileInfoCache* cache = manager->profile_info_cache();
+  size_t index =
+      cache->GetIndexOfProfileWithPath(supervised_profile->GetPath());
+  cache->SetIsOmittedProfileAtIndex(index, false);
+
   BrowserList::SetLastActive(browser());
 
   NSMenu* menu = [controller() menu];
+  // Person 1, Supervised User, <sep>, Edit, <sep>, New.
   ASSERT_EQ(6, [menu numberOfItems]);
+
   NSMenuItem* item = [menu itemAtIndex:0];
   ASSERT_EQ(@selector(switchToProfileFromMenu:), [item action]);
   EXPECT_TRUE([controller() validateMenuItem:item]);
