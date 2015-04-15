@@ -4,8 +4,12 @@ function log(msg) {
     document.getElementById('result').appendChild(div);
 }
 
+function extractMessage(e) {
+    return 'Received message: data="' + e.data + '" origin="' + e.origin + '"';
+}
+
 function recv(e) {
-    var msg = 'Received message: data="' + e.data + '" origin="' + e.origin + '"';
+    var msg = extractMessage(e);
 
     log(msg);
 
