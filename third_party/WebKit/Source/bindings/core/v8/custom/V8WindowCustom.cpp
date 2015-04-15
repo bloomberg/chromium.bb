@@ -124,7 +124,7 @@ void V8Window::frameElementAttributeGetterCustom(const v8::PropertyCallbackInfo<
 void V8Window::openerAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
-    LocalDOMWindow* impl = toLocalDOMWindow(V8Window::toImpl(info.Holder()));
+    DOMWindow* impl = V8Window::toImpl(info.Holder());
     ExceptionState exceptionState(ExceptionState::SetterContext, "opener", "Window", info.Holder(), isolate);
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
@@ -135,10 +135,10 @@ void V8Window::openerAttributeSetterCustom(v8::Local<v8::Value> value, const v8:
     // Have a special handling of null value to behave
     // like Firefox. See bug http://b/1224887 & http://b/791706.
     if (value->IsNull()) {
-        // impl->frame() cannot be null,
-        // otherwise, SameOrigin check would have failed.
+        // impl->frame() has to be a non-null LocalFrame.  Otherwise, the
+        // same-origin check would have failed.
         ASSERT(impl->frame());
-        impl->frame()->loader().setOpener(0);
+        toLocalFrame(impl->frame())->loader().setOpener(0);
     }
 
     // Delete the accessor from this object.
