@@ -45,16 +45,28 @@ try {
         var source = event.data;
         var formattedSource = beautify(source);
         var mapping = buildMapping(source, formattedSource);
-        postMessage({formattedSource: formattedSource,mapping: mapping})
-    };
+        postMessage({
+            formattedSource: formattedSource,
+            mapping: mapping
+        })
+    }
+    ;
     function beautify(source) {
         var ast = parse.parse(source);
         var beautifyOptions = 
-        {indent_level: 4,indent_start: 0,quote_keys: false,space_colon: false};
+        {
+            indent_level: 4,
+            indent_start: 0,
+            quote_keys: false,
+            space_colon: false
+        };
         return process.gen_code(ast, beautifyOptions)
     }
     function buildMapping(source, formattedSource) {
-        var mapping = {original: [],formatted: []};
+        var mapping = {
+            original: [],
+            formatted: []
+        };
         var lastPosition = 0;
         var regexp = /(^|[^\\])\b((?=\D)[\$\.\w]+)\b/g;
         while (true) 
@@ -80,8 +92,7 @@ try {
     var exports = {};
     importScripts("UglifyJS/process.js");
     var process = exports;
-} catch (e) {
-}
+} catch (e) {}
 
 function formatted2() 
 {

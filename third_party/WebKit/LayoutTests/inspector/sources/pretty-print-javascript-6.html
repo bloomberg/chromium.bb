@@ -28,6 +28,12 @@ function test()
         {
             var mappingQueries = ["max", "*", "else"];
             testJSFormatter("function *max(){ var a = yield; var b = yield; if (a > b) return a; else return b;}", mappingQueries, next);
+        },
+
+        function blockCommentFormatter(next)
+        {
+            var mappingQueries = ["this", "is", "block", "comment", "var", "10"];
+            testJSFormatter("/** this\n * is\n * block\n * comment\n */\nvar a=10;", mappingQueries, next);
         }
     ]);
 }

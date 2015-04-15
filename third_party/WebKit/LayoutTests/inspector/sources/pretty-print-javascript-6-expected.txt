@@ -3,15 +3,15 @@ Verifies JavaScript pretty-printing functionality.
 
 Running: trailingCommentsTest
 ====== 8< ------
-noop(); //#sourceMappingURL=program.js.map
+noop();
+//#sourceMappingURL=program.js.map
 
 ------ >8 ======
 
 Running: inlinedScriptFormatting
 ====== 8< ------
 <html><body><script>
-function f() {
-}
+function f() {}
 </script><script>
 function g() {
     var a;
@@ -37,4 +37,21 @@ function *max() {
 Correct mapping for <max>
 Correct mapping for <*>
 Correct mapping for <else>
+
+Running: blockCommentFormatter
+====== 8< ------
+/** this
+ * is
+ * block
+ * comment
+ */
+var a = 10;
+
+------ >8 ======
+Correct mapping for <this>
+Correct mapping for <is>
+Correct mapping for <block>
+Correct mapping for <comment>
+Correct mapping for <var>
+Correct mapping for <10>
 
