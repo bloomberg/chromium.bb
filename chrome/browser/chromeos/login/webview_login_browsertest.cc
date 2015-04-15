@@ -75,4 +75,38 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
   session_start_waiter.Wait();
 }
 
+IN_PROC_BROWSER_TEST_F(WebviewLoginTest, BackButton) {
+  WaitForGaiaPageLoaded();
+
+  // Start: no back button, first page.
+  JsExpect("$('back-button-item').hidden");
+  JsExpect("$('signin-frame').src.indexOf('#identifier') != -1");
+
+  // Next step: back button active, second page.
+  SetSignFormField("identifier", kFakeUserEmail);
+  ExecuteJsInSigninFrame("document.getElementById('nextButton').click();");
+  JsExpect("!$('back-button-item').hidden");
+  JsExpect("$('signin-frame').src.indexOf('#challengepassword') != -1");
+
+  // One step back: no back button, first page.
+  ASSERT_TRUE(content::ExecuteScript(GetLoginUI()->GetWebContents(),
+                                     "$('back-button-item').click();"));
+  JsExpect("$('back-button-item').hidden");
+  JsExpect("$('signin-frame').src.indexOf('#identifier') != -1");
+
+  // Next step (again): back button active, second page, user id remembered.
+  ExecuteJsInSigninFrame("document.getElementById('nextButton').click();");
+  JsExpect("!$('back-button-item').hidden");
+  JsExpect("$('signin-frame').src.indexOf('#challengepassword') != -1");
+
+  content::WindowedNotificationObserver session_start_waiter(
+      chrome::NOTIFICATION_SESSION_STARTED,
+      content::NotificationService::AllSources());
+
+  SetSignFormField("password", kFakeUserPassword);
+  ExecuteJsInSigninFrame("document.getElementById('nextButton').click();");
+
+  session_start_waiter.Wait();
+}
+
 }  // namespace chromeos

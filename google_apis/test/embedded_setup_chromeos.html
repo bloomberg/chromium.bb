@@ -21,6 +21,7 @@ gaia.chromeOSLogin.registerHtml5Listener = function() {
     }
   };
   window.addEventListener('message', onMessage);
+  window.addEventListener("popstate", function(e) { goBack(); });
 }
 
 gaia.chromeOSLogin.clearOldAttempts = function() {
@@ -49,6 +50,19 @@ gaia.chromeOSLogin.backButton = function(show) {
   gaia.chromeOSLogin.parent_webview_.postMessage(msg,
       gaia.chromeOSLogin.parent_webview_url_);
 };
+
+function goFirstPage() {
+  document.getElementById('page1').hidden = false;
+  document.getElementById('page2').hidden = true;
+  history.replaceState({}, '', window.location.pathname + '#identifier');
+  gaia.chromeOSLogin.backButton(false);
+}
+
+function goBack() {
+  if (!document.getElementById('page2').hidden) {
+    goFirstPage();
+  }
+}
 
 function goNext() {
   if (!document.getElementById("page1").hidden) {
@@ -88,8 +102,7 @@ function goNext() {
 
 function onLoad() {
   gaia.chromeOSLogin.registerHtml5Listener();
-  document.getElementById("page1").hidden = false;
-  history.replaceState({}, "", window.location.pathname + "#identifier");
+  goFirstPage();
   gaia.chromeOSLogin.clearOldAttempts();
 }
 
