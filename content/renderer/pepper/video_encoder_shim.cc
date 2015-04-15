@@ -101,9 +101,12 @@ void VideoEncoderShim::EncoderImpl::Initialize(
 
   encoder_->UpdateRates(initial_bitrate);
 
+  gfx::Size coded_size =
+      media::VideoFrame::PlaneSize(input_format, 0, input_visible_size);
+
   media_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VideoEncoderShim::OnRequireBitstreamBuffers, shim_,
-                            kInputFrameCount, input_visible_size,
+                            kInputFrameCount, coded_size,
                             kBitstreamBufferSize));
 }
 

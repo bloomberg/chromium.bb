@@ -84,6 +84,16 @@ std::string TestVideoEncoder::TestCreate() {
     ASSERT_EQ(PP_OK, video_encoder.GetFrameCodedSize(&coded_size));
     ASSERT_GE(coded_size.GetArea(), video_size.GetArea());
     ASSERT_GE(video_encoder.GetFramesRequired(), 1);
+
+    TestCompletionCallbackWithOutput<pp::VideoFrame> get_video_frame(
+        instance_->pp_instance(), false);
+    get_video_frame.WaitForResult(
+        video_encoder.GetVideoFrame(get_video_frame.GetCallback()));
+    ASSERT_EQ(PP_OK, get_video_frame.result());
+
+    pp::Size video_frame_size;
+    ASSERT_TRUE(get_video_frame.output().GetSize(&video_frame_size));
+    ASSERT_EQ(coded_size.GetArea(), video_frame_size.GetArea());
   }
 
   PASS();
