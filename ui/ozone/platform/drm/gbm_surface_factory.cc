@@ -92,12 +92,6 @@ intptr_t GbmSurfaceFactory::GetNativeDisplay() {
 #endif
 }
 
-int GbmSurfaceFactory::GetDrmFd() {
-  scoped_refptr<GbmDevice> gbm = GetGbmDevice(gfx::kNullAcceleratedWidget);
-  DCHECK(gbm);
-  return gbm->get_fd();
-}
-
 const int32* GbmSurfaceFactory::GetEGLSurfaceProperties(
     const int32* desired_list) {
   static const int32 kConfigAttribs[] = {EGL_BUFFER_SIZE,
