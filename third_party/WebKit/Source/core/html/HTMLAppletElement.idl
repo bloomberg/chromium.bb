@@ -20,7 +20,10 @@
 
 // https://html.spec.whatwg.org/#the-applet-element
 
-interface HTMLAppletElement : HTMLElement {
+// TODO(yukishiino): HTMLObjectElement should not have [OverrideBuiltins].
+[
+    OverrideBuiltins,
+] interface HTMLAppletElement : HTMLElement {
     [Reflect] attribute DOMString align;
     [Reflect] attribute DOMString alt;
     [Reflect] attribute DOMString archive;

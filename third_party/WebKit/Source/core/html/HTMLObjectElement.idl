@@ -20,8 +20,10 @@
 
 // https://html.spec.whatwg.org/#the-object-element
 
+// TODO(yukishiino): HTMLObjectElement should not have [OverrideBuiltins].
 [
     Custom=LegacyCallAsFunction,
+    OverrideBuiltins,
 ] interface HTMLObjectElement : HTMLElement {
     [Reflect, URL] attribute DOMString data;
     [Reflect] attribute DOMString type;

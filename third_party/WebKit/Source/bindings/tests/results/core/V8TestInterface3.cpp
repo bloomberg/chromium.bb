@@ -286,6 +286,8 @@ static void installV8TestInterface3Template(v8::Local<v8::FunctionTemplate> func
     }
     {
         v8::NamedPropertyHandlerConfiguration config(TestInterface3V8Internal::namedPropertyGetterCallback, TestInterface3V8Internal::namedPropertySetterCallback, TestInterface3V8Internal::namedPropertyQueryCallback, TestInterface3V8Internal::namedPropertyDeleterCallback, TestInterface3V8Internal::namedPropertyEnumeratorCallback);
+        config.flags = static_cast<v8::PropertyHandlerFlags>(static_cast<int>(config.flags) | static_cast<int>(v8::PropertyHandlerFlags::kOnlyInterceptStrings));
+        config.flags = static_cast<v8::PropertyHandlerFlags>(static_cast<int>(config.flags) | static_cast<int>(v8::PropertyHandlerFlags::kNonMasking));
         functionTemplate->InstanceTemplate()->SetHandler(config);
     }
     if (RuntimeEnabledFeatures::featureNameEnabled()) {

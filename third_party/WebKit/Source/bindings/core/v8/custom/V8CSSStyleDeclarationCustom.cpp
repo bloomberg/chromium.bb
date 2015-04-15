@@ -197,12 +197,6 @@ void V8CSSStyleDeclaration::namedPropertyQueryCustom(v8::Local<v8::Name> v8Name,
 
 void V8CSSStyleDeclaration::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    if (!name->IsString())
-        return;
-    // First look for API defined attributes on the style declaration object.
-    if (v8CallBoolean(info.Holder()->HasRealNamedCallbackProperty(info.GetIsolate()->GetCurrentContext(), name.As<v8::String>())))
-        return;
-
     // Search the style declaration.
     CSSPropertyInfo* propInfo = cssPropertyInfo(name.As<v8::String>(), info.GetIsolate());
 
