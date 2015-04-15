@@ -13,9 +13,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "jni/CoreImpl_jni.h"
-#include "third_party/mojo/src/mojo/public/c/environment/async_waiter.h"
-#include "third_party/mojo/src/mojo/public/c/system/core.h"
-#include "third_party/mojo/src/mojo/public/cpp/environment/environment.h"
+#include "mojo/public/c/environment/async_waiter.h"
+#include "mojo/public/c/system/core.h"
+#include "mojo/public/cpp/environment/environment.h"
 
 namespace {
 
@@ -144,8 +144,7 @@ static jobject CreateSharedBuffer(JNIEnv* env,
   }
   MojoHandle handle;
   MojoResult result = MojoCreateSharedBuffer(options, num_bytes, &handle);
-  return Java_CoreImpl_newNativeCreationResult(env, result, handle, 0)
-      .Release();
+  return Java_CoreImpl_newResultAndInteger(env, result, handle).Release();
 }
 
 static jint Close(JNIEnv* env, jobject jcaller, jint mojo_handle) {
@@ -223,12 +222,12 @@ static jobject ReadMessage(JNIEnv* env,
              env, result, buffer_size, num_handles).Release();
 }
 
-static jint ReadData(JNIEnv* env,
-                     jobject jcaller,
-                     jint mojo_handle,
-                     jobject elements,
-                     jint elements_capacity,
-                     jint flags) {
+static jobject ReadData(JNIEnv* env,
+                        jobject jcaller,
+                        jint mojo_handle,
+                        jobject elements,
+                        jint elements_capacity,
+                        jint flags) {
   void* buffer_start = 0;
   uint32_t buffer_size = elements_capacity;
   if (elements) {
@@ -238,10 +237,9 @@ static jint ReadData(JNIEnv* env,
   }
   MojoResult result =
       MojoReadData(mojo_handle, buffer_start, &buffer_size, flags);
-  if (result < 0) {
-    return result;
-  }
-  return buffer_size;
+  return Java_CoreImpl_newResultAndInteger(
+             env, result, (result == MOJO_RESULT_OK) ? buffer_size : 0)
+      .Release();
 }
 
 static jobject BeginReadData(JNIEnv* env,
@@ -258,8 +256,7 @@ static jobject BeginReadData(JNIEnv* env,
     byte_buffer =
         env->NewDirectByteBuffer(const_cast<void*>(buffer), buffer_size);
   }
-  return Java_CoreImpl_newNativeCodeAndBufferResult(env, result, byte_buffer)
-      .Release();
+  return Java_CoreImpl_newResultAndBuffer(env, result, byte_buffer).Release();
 }
 
 static jint EndReadData(JNIEnv* env,
@@ -269,22 +266,21 @@ static jint EndReadData(JNIEnv* env,
   return MojoEndReadData(mojo_handle, num_bytes_read);
 }
 
-static jint WriteData(JNIEnv* env,
-                      jobject jcaller,
-                      jint mojo_handle,
-                      jobject elements,
-                      jint limit,
-                      jint flags) {
+static jobject WriteData(JNIEnv* env,
+                         jobject jcaller,
+                         jint mojo_handle,
+                         jobject elements,
+                         jint limit,
+                         jint flags) {
   void* buffer_start = env->GetDirectBufferAddress(elements);
   DCHECK(buffer_start);
   DCHECK(limit <= env->GetDirectBufferCapacity(elements));
   uint32_t buffer_size = limit;
   MojoResult result =
       MojoWriteData(mojo_handle, buffer_start, &buffer_size, flags);
-  if (result < 0) {
-    return result;
-  }
-  return buffer_size;
+  return Java_CoreImpl_newResultAndInteger(
+             env, result, (result == MOJO_RESULT_OK) ? buffer_size : 0)
+      .Release();
 }
 
 static jobject BeginWriteData(JNIEnv* env,
@@ -300,8 +296,7 @@ static jobject BeginWriteData(JNIEnv* env,
   if (result == MOJO_RESULT_OK) {
     byte_buffer = env->NewDirectByteBuffer(buffer, buffer_size);
   }
-  return Java_CoreImpl_newNativeCodeAndBufferResult(env, result, byte_buffer)
-      .Release();
+  return Java_CoreImpl_newResultAndBuffer(env, result, byte_buffer).Release();
 }
 
 static jint EndWriteData(JNIEnv* env,
@@ -327,8 +322,7 @@ static jobject Duplicate(JNIEnv* env,
   }
   MojoHandle handle;
   MojoResult result = MojoDuplicateBufferHandle(mojo_handle, options, &handle);
-  return Java_CoreImpl_newNativeCreationResult(env, result, handle, 0)
-      .Release();
+  return Java_CoreImpl_newResultAndInteger(env, result, handle).Release();
 }
 
 static jobject Map(JNIEnv* env,
@@ -344,8 +338,7 @@ static jobject Map(JNIEnv* env,
   if (result == MOJO_RESULT_OK) {
     byte_buffer = env->NewDirectByteBuffer(buffer, num_bytes);
   }
-  return Java_CoreImpl_newNativeCodeAndBufferResult(env, result, byte_buffer)
-      .Release();
+  return Java_CoreImpl_newResultAndBuffer(env, result, byte_buffer).Release();
 }
 
 static int Unmap(JNIEnv* env, jobject jcaller, jobject buffer) {

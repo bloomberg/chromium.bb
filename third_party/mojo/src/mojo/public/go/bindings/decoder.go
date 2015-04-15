@@ -364,3 +364,17 @@ func (d *Decoder) ReadSharedBufferHandle() (system.SharedBufferHandle, error) {
 		return handle.ToSharedBufferHandle(), nil
 	}
 }
+
+// ReadInterface reads an encoded interface and returns the message pipe handle.
+// The version field is ignored for now.
+func (d *Decoder) ReadInterface() (system.MessagePipeHandle, error) {
+	handle, err := d.ReadMessagePipeHandle()
+	if err != nil {
+		return nil, err
+	}
+	d.state().elementsProcessed--
+	if _, err := d.ReadUint32(); err != nil {
+		return nil, err
+	}
+	return handle, nil
+}

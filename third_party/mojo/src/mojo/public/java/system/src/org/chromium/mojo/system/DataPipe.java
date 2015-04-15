@@ -234,7 +234,7 @@ public interface DataPipe {
          *
          * @return number of written bytes.
          */
-        public int writeData(ByteBuffer elements, WriteFlags flags);
+        public ResultAnd<Integer> writeData(ByteBuffer elements, WriteFlags flags);
 
         /**
          * Begins a two-phase write to the data pipe producer . On success, returns a |ByteBuffer|
@@ -276,7 +276,6 @@ public interface DataPipe {
      * Handle for the consumer part of a data pipe.
      */
     public static interface ConsumerHandle extends Handle {
-
         /**
          * @see org.chromium.mojo.system.Handle#pass()
          */
@@ -302,7 +301,7 @@ public interface DataPipe {
          * If flags has |query| set, it queries the amount of data available, returning the number
          * of bytes available. In this case |allOrNone| is ignored, as are |elements|.
          */
-        public int readData(ByteBuffer elements, ReadFlags flags);
+        public ResultAnd<Integer> readData(ByteBuffer elements, ReadFlags flags);
 
         /**
          * Begins a two-phase read from the data pipe consumer. On success, returns a |ByteBuffer|

@@ -19,18 +19,31 @@ import sys
 import tempfile
 import zipfile
 
-_ANALYZING_PATTERN = re.compile(r'^Analyzing \[')
-_NO_ISSUES_FOUND_PATTERN = re.compile(r'^No issues found')
-_PART_WARNINGS_PATTERN = re.compile(
-  r'.*is a part and can not|^Only libraries can be analyzed')
-_ERRORS_AND_WARNINGS_PATTERN = re.compile(
-  r'^[0-9]+ errors? and [0-9]+ warnings? found.')
-_ERRORS_PATTERN = re.compile(r'^([0-9]+|No) (error|warning|issue)s? found.')
+_IGNORED_PATTERNS = [
+  # Ignored because they're not indicative of specific errors.
+  re.compile(r'^$'),
+  re.compile(r'^Analyzing \['),
+  re.compile(r'^No issues found'),
+  re.compile(r'^[0-9]+ errors? and [0-9]+ warnings? found.'),
+  re.compile(r'^([0-9]+|No) (error|warning|issue)s? found.'),
 
+  # TODO: It seems like this should be re-enabled evenutally.
+  re.compile(r'.*is a part and can not|^Only libraries can be analyzed'),
+]
+
+def _success(stamp_file):
+  # We passed cleanly, so touch the stamp file so that we don't run again.
+  with open(stamp_file, 'a'):
+    os.utime(stamp_file, None)
+  return 0
 
 def main(args):
   dartzip_file = args.pop(0)
   stamp_file = args.pop(0)
+
+  # Do not run dart analyzer on third_party sources.
+  if "/third_party/" in dartzip_file:
+    return _success(stamp_file)
 
   dartzip_basename = os.path.basename(dartzip_file) + ":"
 
@@ -46,40 +59,28 @@ def main(args):
     # Grab all the toplevel dart files in the archive.
     dart_files = glob.glob(os.path.join(temp_dir, "*.dart"))
 
+    if not dart_files:
+      return _success(stamp_file)
+
     cmd.extend(dart_files)
     cmd.extend(args)
     cmd.append("--package-root=%s" % temp_dir)
     cmd.append("--fatal-warnings")
 
-    passed = True
+    errors = 0
     try:
       subprocess.check_output(cmd, shell=False, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
-      # Perform post processing on the output. Filter out non-error messages and
-      # known problem patterns that we're working on.
-      raw_lines = e.output.split('\n')
-      # Remove the last empty line
-      raw_lines.pop()
-      filtered_lines = [i for i in raw_lines if (
-        not re.match(_ANALYZING_PATTERN, i) and
-        not re.match(_NO_ISSUES_FOUND_PATTERN, i) and
-        not re.match(_PART_WARNINGS_PATTERN, i) and
-        not re.match(_ERRORS_AND_WARNINGS_PATTERN, i) and
-        not re.match(_ERRORS_PATTERN, i))]
-      for line in filtered_lines:
-        passed = False
-        print >> sys.stderr, line.replace(temp_dir + "/", dartzip_basename)
+      errors = set(l for l in e.output.split('\n')
+                   if not any(p.match(l) for p in _IGNORED_PATTERNS))
+      for error in sorted(errors):
+        print >> sys.stderr, error.replace(temp_dir + "/", dartzip_basename)
 
-    if passed:
-      # We passed cleanly, so touch the stamp file so that we don't run again.
-      with open(stamp_file, 'a'):
-        os.utime(stamp_file, None)
-      return 0
-    else:
-      return -2
+    if not errors:
+      return _success(stamp_file)
+    return min(255, len(errors))
   finally:
     shutil.rmtree(temp_dir)
-
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))

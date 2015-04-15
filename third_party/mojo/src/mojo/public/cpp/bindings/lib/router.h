@@ -52,9 +52,11 @@ class Router : public MessageReceiverWithResponder {
   bool AcceptWithResponder(Message* message,
                            MessageReceiver* responder) override;
 
-  // Blocks the current thread for the first incoming method call, i.e., either
-  // a call to a client method or a callback method.
-  bool WaitForIncomingMessage() { return connector_.WaitForIncomingMessage(); }
+  // Blocks the current thread until the first incoming method call, i.e.,
+  // either a call to a client method or a callback method, or |deadline|.
+  bool WaitForIncomingMessage(MojoDeadline deadline) {
+    return connector_.WaitForIncomingMessage(deadline);
+  }
 
   // Sets this object to testing mode.
   // In testing mode:
@@ -62,6 +64,8 @@ class Router : public MessageReceiverWithResponder {
   // - the connector continues working after seeing errors from its incoming
   //   receiver.
   void EnableTestingMode();
+
+  MessagePipeHandle handle() const { return connector_.handle(); }
 
  private:
   typedef std::map<uint64_t, MessageReceiver*> ResponderMap;

@@ -774,6 +774,34 @@ define("mojo/public/js/codec", [
 
   NullableHandle.encode = Handle.encode;
 
+  function Interface() {
+  }
+
+  Interface.encodedSize = 8;
+
+  Interface.decode = function(decoder) {
+    var handle = decoder.decodeHandle();
+    // Ignore the version field for now.
+    decoder.readUint32();
+
+    return handle;
+  };
+
+  Interface.encode = function(encoder, val) {
+    encoder.encodeHandle(val);
+    // Set the version field to 0 for now.
+    encoder.writeUint32(0);
+  };
+
+  function NullableInterface() {
+  }
+
+  NullableInterface.encodedSize = Interface.encodedSize;
+
+  NullableInterface.decode = Interface.decode;
+
+  NullableInterface.encode = Interface.encode;
+
   function MapOf(keyClass, valueClass) {
     this.keyClass = keyClass;
     this.valueClass = valueClass;
@@ -829,6 +857,8 @@ define("mojo/public/js/codec", [
   exports.PackedBool = PackedBool;
   exports.Handle = Handle;
   exports.NullableHandle = NullableHandle;
+  exports.Interface = Interface;
+  exports.NullableInterface = NullableInterface;
   exports.MapOf = MapOf;
   exports.NullableMapOf = NullableMapOf;
   return exports;

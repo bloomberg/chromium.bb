@@ -324,3 +324,22 @@ func (e *Encoder) WriteHandle(handle system.Handle) error {
 	e.handles = append(e.handles, UntypedHandle)
 	return e.WriteUint32(uint32(len(e.handles) - 1))
 }
+
+// WriteInvalidInterface writes an invalid interface.
+func (e *Encoder) WriteInvalidInterface() error {
+	if err := e.WriteInvalidHandle(); err != nil {
+		return err
+	}
+	e.state().elementsProcessed--
+	return e.WriteUint32(0)
+}
+
+// WriteInterface writes an interface and invalidates the passed handle object.
+func (e *Encoder) WriteInterface(handle system.Handle) error {
+	if err := e.WriteHandle(handle); err != nil {
+		return err
+	}
+	e.state().elementsProcessed--
+	// Set the version field to 0 for now.
+	return e.WriteUint32(0)
+}

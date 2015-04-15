@@ -11,7 +11,7 @@ namespace test {
 SimpleWaiterThread::SimpleWaiterThread(MojoResult* result, uint32_t* context)
     : base::SimpleThread("waiter_thread"), result_(result), context_(context) {
   waiter_.Init();
-  *result_ = -5420734;   // Totally invalid result.
+  *result_ = 5420734;    // Totally invalid result.
   *context_ = 23489023;  // "Random".
 }
 
@@ -43,7 +43,7 @@ WaiterThread::WaiterThread(scoped_refptr<Dispatcher> dispatcher,
   *did_wait_out_ = false;
   // Initialize these with invalid results (so that we'll be sure to catch any
   // case where they're not set).
-  *result_out_ = -8542346;
+  *result_out_ = 8542346;
   *context_out_ = 89023444;
   *signals_state_out_ = HandleSignalsState(~0u, ~0u);
 }

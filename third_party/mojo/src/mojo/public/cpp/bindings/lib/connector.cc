@@ -45,14 +45,14 @@ ScopedMessagePipeHandle Connector::PassMessagePipe() {
   return message_pipe_.Pass();
 }
 
-bool Connector::WaitForIncomingMessage() {
+bool Connector::WaitForIncomingMessage(MojoDeadline deadline) {
   if (error_)
     return false;
 
-  MojoResult rv = Wait(message_pipe_.get(),
-                       MOJO_HANDLE_SIGNAL_READABLE,
-                       MOJO_DEADLINE_INDEFINITE,
-                       nullptr);
+  MojoResult rv =
+      Wait(message_pipe_.get(), MOJO_HANDLE_SIGNAL_READABLE, deadline, nullptr);
+  if (rv == MOJO_RESULT_SHOULD_WAIT)
+    return false;
   if (rv != MOJO_RESULT_OK) {
     NotifyError();
     return false;

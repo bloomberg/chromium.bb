@@ -67,7 +67,7 @@ class InterfacePtrState {
     ConfigureProxyIfNecessary();
 
     MOJO_DCHECK(router_);
-    return router_->WaitForIncomingMessage();
+    return router_->WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
   }
 
   // After this method is called, the object is in an invalid state and

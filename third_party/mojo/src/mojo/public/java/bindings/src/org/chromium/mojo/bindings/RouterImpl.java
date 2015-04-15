@@ -18,7 +18,7 @@ public class RouterImpl implements Router {
     /**
      * {@link MessageReceiver} used as the {@link Connector} callback.
      */
-    private class ResponderThunk implements MessageReceiver {
+    private class HandleIncomingMessageThunk implements MessageReceiver {
 
         /**
          * @see MessageReceiver#accept(Message)
@@ -77,7 +77,7 @@ public class RouterImpl implements Router {
      */
     public RouterImpl(MessagePipeHandle messagePipeHandle, AsyncWaiter asyncWaiter) {
         mConnector = new Connector(messagePipeHandle, asyncWaiter);
-        mConnector.setIncomingMessageReceiver(new ResponderThunk());
+        mConnector.setIncomingMessageReceiver(new HandleIncomingMessageThunk());
     }
 
     /**

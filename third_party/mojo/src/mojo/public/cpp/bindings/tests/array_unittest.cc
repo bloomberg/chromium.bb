@@ -18,7 +18,6 @@ namespace {
 using mojo::internal::Array_Data;
 using mojo::internal::ArrayValidateParams;
 using mojo::internal::FixedBuffer;
-using mojo::internal::NoValidateParams;
 using mojo::internal::String_Data;
 
 class ArrayTest : public testing::Test {
@@ -160,8 +159,8 @@ TEST_F(ArrayTest, Serialization_ArrayOfPOD) {
 
   FixedBuffer buf(size);
   Array_Data<int32_t>* data;
-  SerializeArray_<ArrayValidateParams<0, false, NoValidateParams>>(
-      array.Pass(), &buf, &data);
+  ArrayValidateParams validate_params(0, false, nullptr);
+  SerializeArray_(array.Pass(), &buf, &data, &validate_params);
 
   Array<int32_t> array2;
   Deserialize_(data, &array2);
@@ -178,8 +177,8 @@ TEST_F(ArrayTest, Serialization_EmptyArrayOfPOD) {
 
   FixedBuffer buf(size);
   Array_Data<int32_t>* data;
-  SerializeArray_<ArrayValidateParams<0, false, NoValidateParams>>(
-      array.Pass(), &buf, &data);
+  ArrayValidateParams validate_params(0, false, nullptr);
+  SerializeArray_(array.Pass(), &buf, &data, &validate_params);
 
   Array<int32_t> array2;
   Deserialize_(data, &array2);
@@ -200,11 +199,9 @@ TEST_F(ArrayTest, Serialization_ArrayOfArrayOfPOD) {
 
   FixedBuffer buf(size);
   Array_Data<Array_Data<int32_t>*>* data;
-  SerializeArray_<
-      ArrayValidateParams<0,
-                          false,
-                          ArrayValidateParams<0, false, NoValidateParams>>>(
-      array.Pass(), &buf, &data);
+  ArrayValidateParams validate_params(
+      0, false, new ArrayValidateParams(0, false, nullptr));
+  SerializeArray_(array.Pass(), &buf, &data, &validate_params);
 
   Array<Array<int32_t>> array2;
   Deserialize_(data, &array2);
@@ -228,8 +225,8 @@ TEST_F(ArrayTest, Serialization_ArrayOfBool) {
 
   FixedBuffer buf(size);
   Array_Data<bool>* data;
-  SerializeArray_<ArrayValidateParams<0, false, NoValidateParams>>(
-      array.Pass(), &buf, &data);
+  ArrayValidateParams validate_params(0, false, nullptr);
+  SerializeArray_(array.Pass(), &buf, &data, &validate_params);
 
   Array<bool> array2;
   Deserialize_(data, &array2);
@@ -255,11 +252,9 @@ TEST_F(ArrayTest, Serialization_ArrayOfString) {
 
   FixedBuffer buf(size);
   Array_Data<String_Data*>* data;
-  SerializeArray_<
-      ArrayValidateParams<0,
-                          false,
-                          ArrayValidateParams<0, false, NoValidateParams>>>(
-      array.Pass(), &buf, &data);
+  ArrayValidateParams validate_params(
+      0, false, new ArrayValidateParams(0, false, nullptr));
+  SerializeArray_(array.Pass(), &buf, &data, &validate_params);
 
   Array<String> array2;
   Deserialize_(data, &array2);

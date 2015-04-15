@@ -22,7 +22,6 @@ using mojo::internal::Array_Data;
 using mojo::internal::ArrayValidateParams;
 using mojo::internal::FixedBuffer;
 using mojo::internal::Map_Data;
-using mojo::internal::NoValidateParams;
 using mojo::internal::String_Data;
 
 struct StringIntData {
@@ -238,7 +237,6 @@ TEST_F(MapTest, STLToMojo) {
     stl_data[kStringIntData[i].string_data] = kStringIntData[i].int_data;
 
   Map<String, int32_t> mojo_data = Map<String, int32_t>::From(stl_data);
-
   for (size_t i = 0; i < kStringIntDataSize; ++i) {
     EXPECT_EQ(kStringIntData[i].int_data,
               mojo_data.at(kStringIntData[i].string_data));
@@ -283,9 +281,9 @@ TEST_F(MapTest, ArrayOfMap) {
     size_t size = GetSerializedSize_(array);
     FixedBuffer buf(size);
     Array_Data<Map_Data<int32_t, int8_t>*>* data;
-    SerializeArray_<ArrayValidateParams<
-        0, false, ArrayValidateParams<0, false, NoValidateParams>>>(
-        array.Pass(), &buf, &data);
+    ArrayValidateParams validate_params(
+        0, false, new ArrayValidateParams(0, false, nullptr));
+    SerializeArray_(array.Pass(), &buf, &data, &validate_params);
 
     Array<Map<int32_t, int8_t>> deserialized_array;
     Deserialize_(data, &deserialized_array);
@@ -305,11 +303,10 @@ TEST_F(MapTest, ArrayOfMap) {
     size_t size = GetSerializedSize_(array);
     FixedBuffer buf(size);
     Array_Data<Map_Data<String_Data*, Array_Data<bool>*>*>* data;
-    SerializeArray_<ArrayValidateParams<
-        0, false,
-        ArrayValidateParams<0, false,
-                            ArrayValidateParams<0, false, NoValidateParams>>>>(
-        array.Pass(), &buf, &data);
+    ArrayValidateParams validate_params(
+        0, false, new ArrayValidateParams(
+                      0, false, new ArrayValidateParams(0, false, nullptr)));
+    SerializeArray_(array.Pass(), &buf, &data, &validate_params);
 
     Array<Map<String, Array<bool>>> deserialized_array;
     Deserialize_(data, &deserialized_array);

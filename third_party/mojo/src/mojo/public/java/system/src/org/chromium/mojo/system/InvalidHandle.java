@@ -145,7 +145,7 @@ public class InvalidHandle implements UntypedHandle, MessagePipeHandle, Consumer
      * @see DataPipe.ProducerHandle#writeData(java.nio.ByteBuffer, DataPipe.WriteFlags)
      */
     @Override
-    public int writeData(ByteBuffer elements, DataPipe.WriteFlags flags) {
+    public ResultAnd<Integer> writeData(ByteBuffer elements, DataPipe.WriteFlags flags) {
         throw new MojoException(MojoResult.INVALID_ARGUMENT);
     }
 
@@ -178,7 +178,7 @@ public class InvalidHandle implements UntypedHandle, MessagePipeHandle, Consumer
      * @see DataPipe.ConsumerHandle#readData(java.nio.ByteBuffer, DataPipe.ReadFlags)
      */
     @Override
-    public int readData(ByteBuffer elements, DataPipe.ReadFlags flags) {
+    public ResultAnd<Integer> readData(ByteBuffer elements, DataPipe.ReadFlags flags) {
         throw new MojoException(MojoResult.INVALID_ARGUMENT);
     }
 
@@ -212,8 +212,8 @@ public class InvalidHandle implements UntypedHandle, MessagePipeHandle, Consumer
      * @see MessagePipeHandle#readMessage(java.nio.ByteBuffer, int, MessagePipeHandle.ReadFlags)
      */
     @Override
-    public ReadMessageResult readMessage(ByteBuffer bytes, int maxNumberOfHandles,
-            ReadFlags flags) {
+    public ResultAnd<ReadMessageResult> readMessage(
+            ByteBuffer bytes, int maxNumberOfHandles, ReadFlags flags) {
         throw new MojoException(MojoResult.INVALID_ARGUMENT);
     }
 

@@ -50,8 +50,7 @@ bool IsValidMessageHeader(const MessageHeader* header) {
   // These flags are mutually exclusive.
   if ((header->flags & kMessageExpectsResponse) &&
       (header->flags & kMessageIsResponse)) {
-    ReportValidationError(
-        VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAG_COMBINATION);
+    ReportValidationError(VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAGS);
     return false;
   }
 

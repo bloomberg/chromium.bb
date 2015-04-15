@@ -233,7 +233,7 @@ bool {{class_name}}RequestValidator::Accept(mojo::Message* message) {
 {%- if interface.methods %}
   if (message->has_flag(mojo::internal::kMessageIsResponse)) {
     ReportValidationError(
-        mojo::internal::VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAG_COMBINATION);
+        mojo::internal::VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAGS);
     return false;
   }
   switch (message->header()->name) {
@@ -242,13 +242,13 @@ bool {{class_name}}RequestValidator::Accept(mojo::Message* message) {
 {%-     if method.response_parameters != None %}
       if (!message->has_flag(mojo::internal::kMessageExpectsResponse)) {
         ReportValidationError(
-            mojo::internal::VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAG_COMBINATION);
+            mojo::internal::VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAGS);
         return false;
       }
 {%-     else %}
       if (message->has_flag(mojo::internal::kMessageExpectsResponse)) {
         ReportValidationError(
-            mojo::internal::VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAG_COMBINATION);
+            mojo::internal::VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAGS);
         return false;
       }
 {%-     endif %}
@@ -285,7 +285,7 @@ bool {{class_name}}ResponseValidator::Accept(mojo::Message* message) {
 {%- if interface.methods %}
   if (!message->has_flag(mojo::internal::kMessageIsResponse)) {
     ReportValidationError(
-        mojo::internal::VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAG_COMBINATION);
+        mojo::internal::VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAGS);
     return false;
   }
   switch (message->header()->name) {

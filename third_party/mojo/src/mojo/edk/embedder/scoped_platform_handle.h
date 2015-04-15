@@ -14,7 +14,7 @@ namespace mojo {
 namespace embedder {
 
 class MOJO_SYSTEM_IMPL_EXPORT ScopedPlatformHandle {
-  MOVE_ONLY_TYPE_FOR_CPP_03(ScopedPlatformHandle, RValue)
+  MOVE_ONLY_TYPE_WITH_MOVE_CONSTRUCTOR_FOR_CPP_03(ScopedPlatformHandle)
 
  public:
   ScopedPlatformHandle() {}
@@ -22,9 +22,12 @@ class MOJO_SYSTEM_IMPL_EXPORT ScopedPlatformHandle {
   ~ScopedPlatformHandle() { handle_.CloseIfNecessary(); }
 
   // Move-only constructor and operator=.
-  ScopedPlatformHandle(RValue other) : handle_(other.object->release()) {}
-  ScopedPlatformHandle& operator=(RValue other) {
-    handle_ = other.object->release();
+  ScopedPlatformHandle(ScopedPlatformHandle&& other)
+      : handle_(other.release()) {}
+
+  ScopedPlatformHandle& operator=(ScopedPlatformHandle&& other) {
+    if (this != &other)
+      handle_ = other.release();
     return *this;
   }
 

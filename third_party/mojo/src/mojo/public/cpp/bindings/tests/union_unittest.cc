@@ -361,8 +361,8 @@ TEST(UnionTest, PodUnionInArraySerialization) {
 
   mojo::internal::FixedBuffer buf(size);
   mojo::internal::Array_Data<internal::PodUnion_Data>* data;
-  SerializeArray_<mojo::internal::ArrayValidateParams<
-      0, false, mojo::internal::NoValidateParams>>(array.Pass(), &buf, &data);
+  mojo::internal::ArrayValidateParams validate_params(0, false, nullptr);
+  SerializeArray_(array.Pass(), &buf, &data, &validate_params);
 
   Array<PodUnionPtr> array2;
   Deserialize_(data, &array2);
@@ -386,8 +386,8 @@ TEST(UnionTest, PodUnionInArraySerializationWithNull) {
 
   mojo::internal::FixedBuffer buf(size);
   mojo::internal::Array_Data<internal::PodUnion_Data>* data;
-  SerializeArray_<mojo::internal::ArrayValidateParams<
-      0, true, mojo::internal::NoValidateParams>>(array.Pass(), &buf, &data);
+  mojo::internal::ArrayValidateParams validate_params(0, true, nullptr);
+  SerializeArray_(array.Pass(), &buf, &data, &validate_params);
 
   Array<PodUnionPtr> array2;
   Deserialize_(data, &array2);

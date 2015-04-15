@@ -39,8 +39,12 @@ enum ValidationError {
   VALIDATION_ERROR_ILLEGAL_POINTER,
   // A non-nullable pointer field is set to null.
   VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
-  // |flags| in the message header is an invalid flag combination.
-  VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAG_COMBINATION,
+  // |flags| in the message header is invalid. The flags are either
+  // inconsistent with one another, inconsistent with other parts of the
+  // message, or unexpected for the message receiver.  For example the
+  // receiver is expecting a request message but the flags indicate that
+  // the message is a response message.
+  VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAGS,
   // |flags| in the message header indicates that a request ID is required but
   // there isn't one.
   VALIDATION_ERROR_MESSAGE_HEADER_MISSING_REQUEST_ID,

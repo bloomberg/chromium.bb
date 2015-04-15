@@ -249,6 +249,8 @@ public class Encoder {
      */
     public <T extends Interface> void encode(T v, int offset, boolean nullable,
             Interface.Manager<T, ?> manager) {
+        // Set the version field to 0 for now.
+        encode(0, offset + BindingsHelper.SERIALIZED_HANDLE_SIZE);
         if (v == null) {
             encodeInvalidHandle(offset, nullable);
             return;
@@ -415,9 +417,9 @@ public class Encoder {
             return;
         }
         Encoder e = encoderForArray(
-                BindingsHelper.SERIALIZED_HANDLE_SIZE, v.length, offset, expectedLength);
+                BindingsHelper.SERIALIZED_INTERFACE_SIZE, v.length, offset, expectedLength);
         for (int i = 0; i < v.length; ++i) {
-            e.encode(v[i], DataHeader.HEADER_SIZE + BindingsHelper.SERIALIZED_HANDLE_SIZE * i,
+            e.encode(v[i], DataHeader.HEADER_SIZE + BindingsHelper.SERIALIZED_INTERFACE_SIZE * i,
                     BindingsHelper.isElementNullable(arrayNullability), manager);
         }
     }

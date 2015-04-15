@@ -14,6 +14,7 @@ import org.chromium.mojo.system.Handle;
 import org.chromium.mojo.system.MessagePipeHandle;
 import org.chromium.mojo.system.MojoResult;
 import org.chromium.mojo.system.Pair;
+import org.chromium.mojo.system.ResultAnd;
 import org.chromium.mojo.system.impl.CoreImpl;
 
 import java.nio.ByteBuffer;
@@ -71,10 +72,10 @@ public class ConnectorTest extends MojoTestCase {
         mConnector.accept(mTestMessage);
         assertNull(mErrorHandler.getLastMojoException());
         ByteBuffer received = ByteBuffer.allocateDirect(DATA_LENGTH);
-        MessagePipeHandle.ReadMessageResult result = mHandle.readMessage(received, 0,
-                MessagePipeHandle.ReadFlags.NONE);
+        ResultAnd<MessagePipeHandle.ReadMessageResult> result =
+                mHandle.readMessage(received, 0, MessagePipeHandle.ReadFlags.NONE);
         assertEquals(MojoResult.OK, result.getMojoResult());
-        assertEquals(DATA_LENGTH, result.getMessageSize());
+        assertEquals(DATA_LENGTH, result.getValue().getMessageSize());
         assertEquals(mTestMessage.getData(), received);
     }
 

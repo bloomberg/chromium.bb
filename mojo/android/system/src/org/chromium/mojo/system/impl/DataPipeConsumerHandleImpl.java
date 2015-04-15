@@ -6,6 +6,7 @@ package org.chromium.mojo.system.impl;
 
 import org.chromium.mojo.system.DataPipe.ConsumerHandle;
 import org.chromium.mojo.system.DataPipe.ReadFlags;
+import org.chromium.mojo.system.ResultAnd;
 
 import java.nio.ByteBuffer;
 
@@ -48,7 +49,7 @@ class DataPipeConsumerHandleImpl extends HandleBase implements ConsumerHandle {
      * @see ConsumerHandle#readData(ByteBuffer, ReadFlags)
      */
     @Override
-    public int readData(ByteBuffer elements, ReadFlags flags) {
+    public ResultAnd<Integer> readData(ByteBuffer elements, ReadFlags flags) {
         return mCore.readData(this, elements, flags);
     }
 

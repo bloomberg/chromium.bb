@@ -14,6 +14,7 @@ import org.chromium.mojo.system.Handle;
 import org.chromium.mojo.system.MessagePipeHandle;
 import org.chromium.mojo.system.MojoResult;
 import org.chromium.mojo.system.Pair;
+import org.chromium.mojo.system.ResultAnd;
 import org.chromium.mojo.system.impl.CoreImpl;
 
 import java.nio.ByteBuffer;
@@ -61,8 +62,8 @@ public class RouterTest extends MojoTestCase {
         header.encode(encoder);
         mRouter.acceptWithResponder(encoder.getMessage(), mReceiver);
         ByteBuffer receiveBuffer = ByteBuffer.allocateDirect(header.getSize());
-        MessagePipeHandle.ReadMessageResult result = mHandle.readMessage(receiveBuffer, 0,
-                MessagePipeHandle.ReadFlags.NONE);
+        ResultAnd<MessagePipeHandle.ReadMessageResult> result =
+                mHandle.readMessage(receiveBuffer, 0, MessagePipeHandle.ReadFlags.NONE);
 
         assertEquals(MojoResult.OK, result.getMojoResult());
         MessageHeader receivedHeader = new Message(
@@ -121,8 +122,8 @@ public class RouterTest extends MojoTestCase {
         Message message = encoder.getMessage();
         receivedMessage.second.accept(message);
         ByteBuffer receivedResponseMessage = ByteBuffer.allocateDirect(responseHeader.getSize());
-        MessagePipeHandle.ReadMessageResult result = mHandle.readMessage(receivedResponseMessage, 0,
-                MessagePipeHandle.ReadFlags.NONE);
+        ResultAnd<MessagePipeHandle.ReadMessageResult> result =
+                mHandle.readMessage(receivedResponseMessage, 0, MessagePipeHandle.ReadFlags.NONE);
 
         assertEquals(MojoResult.OK, result.getMojoResult());
         assertEquals(message.getData(), receivedResponseMessage);

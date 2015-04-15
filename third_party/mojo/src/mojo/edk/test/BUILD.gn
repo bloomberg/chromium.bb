@@ -90,6 +90,7 @@ group("public_tests") {
     ":mojo_public_system_perftests",
     ":mojo_public_system_unittests",
     ":mojo_public_utility_unittests",
+    ":mojo_system_impl_private_unittests",
   ]
 }
 
@@ -132,5 +133,12 @@ test("mojo_public_utility_unittests") {
   deps = [
     ":run_all_unittests",
     "../../public/cpp/utility/tests",
+  ]
+}
+
+test("mojo_system_impl_private_unittests") {
+  deps = [
+    ":run_all_unittests",
+    "../../public/platform/native:system_impl_private_tests",
   ]
 }

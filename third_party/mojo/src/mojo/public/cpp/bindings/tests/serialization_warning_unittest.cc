@@ -21,7 +21,6 @@ namespace test {
 namespace {
 
 using mojo::internal::ArrayValidateParams;
-using mojo::internal::NoValidateParams;
 
 // Creates an array of arrays of handles (2 X 3) for testing.
 Array<Array<ScopedHandle>> CreateTestNestedHandleArray() {
@@ -67,14 +66,15 @@ class SerializationWarningTest : public testing::Test {
     EXPECT_EQ(expected_warning, warning_observer_.last_warning());
   }
 
-  template <typename ValidateParams, typename T>
+  template <typename T>
   void TestArrayWarning(T obj,
-                        mojo::internal::ValidationError expected_warning) {
+                        mojo::internal::ValidationError expected_warning,
+                        const ArrayValidateParams* validate_params) {
     warning_observer_.set_last_warning(mojo::internal::VALIDATION_ERROR_NONE);
 
     mojo::internal::FixedBuffer buf(GetSerializedSize_(obj));
     typename T::Data_* data;
-    SerializeArray_<ValidateParams>(obj.Pass(), &buf, &data);
+    SerializeArray_(obj.Pass(), &buf, &data, validate_params);
 
     EXPECT_EQ(expected_warning, warning_observer_.last_warning());
   }
@@ -175,29 +175,26 @@ TEST_F(SerializationWarningTest, ArrayOfArraysOfHandles) {
   test_array[0] = Array<ScopedHandle>();
   test_array[1][0] = ScopedHandle();
 
-  TestArrayWarning<
-      ArrayValidateParams<0,
-                          true,
-                          ArrayValidateParams<0, true, NoValidateParams>>>(
-      test_array.Pass(), mojo::internal::VALIDATION_ERROR_NONE);
+  ArrayValidateParams validate_params_0(
+      0, true, new ArrayValidateParams(0, true, nullptr));
+  TestArrayWarning(test_array.Pass(), mojo::internal::VALIDATION_ERROR_NONE,
+                   &validate_params_0);
 
   test_array = CreateTestNestedHandleArray();
   test_array[0] = Array<ScopedHandle>();
-  TestArrayWarning<
-      ArrayValidateParams<0,
-                          false,
-                          ArrayValidateParams<0, true, NoValidateParams>>>(
-      test_array.Pass(),
-      mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
+  ArrayValidateParams validate_params_1(
+      0, false, new ArrayValidateParams(0, true, nullptr));
+  TestArrayWarning(test_array.Pass(),
+                   mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
+                   &validate_params_1);
 
   test_array = CreateTestNestedHandleArray();
   test_array[1][0] = ScopedHandle();
-  TestArrayWarning<
-      ArrayValidateParams<0,
-                          true,
-                          ArrayValidateParams<0, false, NoValidateParams>>>(
-      test_array.Pass(),
-      mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE);
+  ArrayValidateParams validate_params_2(
+      0, true, new ArrayValidateParams(0, false, nullptr));
+  TestArrayWarning(test_array.Pass(),
+                   mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
+                   &validate_params_2);
 }
 
 TEST_F(SerializationWarningTest, ArrayOfStrings) {
@@ -205,27 +202,24 @@ TEST_F(SerializationWarningTest, ArrayOfStrings) {
   for (size_t i = 0; i < test_array.size(); ++i)
     test_array[i] = "hello";
 
-  TestArrayWarning<
-      ArrayValidateParams<0,
-                          true,
-                          ArrayValidateParams<0, false, NoValidateParams>>>(
-      test_array.Pass(), mojo::internal::VALIDATION_ERROR_NONE);
+  ArrayValidateParams validate_params_0(
+      0, true, new ArrayValidateParams(0, false, nullptr));
+  TestArrayWarning(test_array.Pass(), mojo::internal::VALIDATION_ERROR_NONE,
+                   &validate_params_0);
 
   test_array = Array<String>(3);
-  TestArrayWarning<
-      ArrayValidateParams<0,
-                          false,
-                          ArrayValidateParams<0, false, NoValidateParams>>>(
-      test_array.Pass(),
-      mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
+  ArrayValidateParams validate_params_1(
+      0, false, new ArrayValidateParams(0, false, nullptr));
+  TestArrayWarning(test_array.Pass(),
+                   mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
+                   &validate_params_1);
 
   test_array = Array<String>(2);
-  TestArrayWarning<
-      ArrayValidateParams<3,
-                          true,
-                          ArrayValidateParams<0, false, NoValidateParams>>>(
-      test_array.Pass(),
-      mojo::internal::VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER);
+  ArrayValidateParams validate_params_2(
+      3, true, new ArrayValidateParams(0, false, nullptr));
+  TestArrayWarning(test_array.Pass(),
+                   mojo::internal::VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER,
+                   &validate_params_2);
 }
 
 }  // namespace

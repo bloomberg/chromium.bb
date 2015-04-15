@@ -29,6 +29,27 @@ from mojom.generate import module as mojom
 
 # TODO(yzshen): Move tests in pack_tests.py here.
 class PackTest(unittest.TestCase):
+  def _CheckPackSequence(self, kinds, fields, offsets):
+    """Checks the pack order and offsets of a sequence of mojom.Kinds.
+
+    Args:
+      kinds: A sequence of mojom.Kinds that specify the fields that are to be
+      created.
+      fields: The expected order of the resulting fields, with the integer "1"
+      first.
+      offsets: The expected order of offsets, with the integer "0" first.
+    """
+    struct = mojom.Struct('test')
+    index = 1
+    for kind in kinds:
+      struct.AddField('%d' % index, kind)
+      index += 1
+    ps = pack.PackedStruct(struct)
+    num_fields = len(ps.packed_fields)
+    self.assertEquals(len(kinds), num_fields)
+    for i in xrange(num_fields):
+      self.assertEquals('%d' % fields[i], ps.packed_fields[i].field.name)
+      self.assertEquals(offsets[i], ps.packed_fields[i].offset)
 
   def testMinVersion(self):
     """Tests that |min_version| is properly set for packed fields."""
@@ -38,9 +59,9 @@ class PackTest(unittest.TestCase):
     struct.AddField('field_1', mojom.INT64, 1)
     ps = pack.PackedStruct(struct)
 
-    self.assertEquals("field_0", ps.packed_fields[0].field.name)
-    self.assertEquals("field_2", ps.packed_fields[1].field.name)
-    self.assertEquals("field_1", ps.packed_fields[2].field.name)
+    self.assertEquals('field_0', ps.packed_fields[0].field.name)
+    self.assertEquals('field_2', ps.packed_fields[1].field.name)
+    self.assertEquals('field_1', ps.packed_fields[2].field.name)
 
     self.assertEquals(0, ps.packed_fields[0].min_version)
     self.assertEquals(0, ps.packed_fields[1].min_version)
@@ -94,3 +115,12 @@ class PackTest(unittest.TestCase):
     self.assertEquals(3, versions[2].version)
     self.assertEquals(4, versions[2].num_fields)
     self.assertEquals(32, versions[2].num_bytes)
+
+  def testInterfaceAlignment(self):
+    """Tests that interfaces are aligned on 4-byte boundaries, although the size
+    of an interface is 8 bytes.
+    """
+    kinds = (mojom.INT32, mojom.Interface('test_interface'))
+    fields = (1, 2)
+    offsets = (0, 4)
+    self._CheckPackSequence(kinds, fields, offsets)

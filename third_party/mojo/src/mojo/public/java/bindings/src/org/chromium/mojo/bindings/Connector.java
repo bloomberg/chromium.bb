@@ -10,6 +10,7 @@ import org.chromium.mojo.system.MessagePipeHandle;
 import org.chromium.mojo.system.MessagePipeHandle.ReadMessageResult;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.mojo.system.MojoResult;
+import org.chromium.mojo.system.ResultAnd;
 
 import java.nio.ByteBuffer;
 
@@ -152,6 +153,7 @@ public class Connector implements MessageReceiver, HandleOwner<MessagePipeHandle
          */
         @Override
         public void onError(MojoException exception) {
+            mCancellable = null;
             Connector.this.onError(exception);
         }
 
@@ -170,8 +172,8 @@ public class Connector implements MessageReceiver, HandleOwner<MessagePipeHandle
     }
 
     private void onError(MojoException exception) {
-        mCancellable = null;
         close();
+        assert mCancellable == null;
         if (mErrorHandler != null) {
             mErrorHandler.onConnectionError(exception);
         }
@@ -226,15 +228,18 @@ public class Connector implements MessageReceiver, HandleOwner<MessagePipeHandle
      */
     static int readAndDispatchMessage(MessagePipeHandle handle, MessageReceiver receiver) {
         // TODO(qsr) Allow usage of a pool of pre-allocated buffer for performance.
-        ReadMessageResult result = handle.readMessage(null, 0, MessagePipeHandle.ReadFlags.NONE);
+        ResultAnd<ReadMessageResult> result =
+                handle.readMessage(null, 0, MessagePipeHandle.ReadFlags.NONE);
         if (result.getMojoResult() != MojoResult.RESOURCE_EXHAUSTED) {
             return result.getMojoResult();
         }
-        ByteBuffer buffer = ByteBuffer.allocateDirect(result.getMessageSize());
-        result = handle.readMessage(buffer, result.getHandlesCount(),
-                MessagePipeHandle.ReadFlags.NONE);
+        ReadMessageResult readResult = result.getValue();
+        assert readResult != null;
+        ByteBuffer buffer = ByteBuffer.allocateDirect(readResult.getMessageSize());
+        result = handle.readMessage(
+                buffer, readResult.getHandlesCount(), MessagePipeHandle.ReadFlags.NONE);
         if (receiver != null && result.getMojoResult() == MojoResult.OK) {
-            receiver.accept(new Message(buffer, result.getHandles()));
+            receiver.accept(new Message(buffer, result.getValue().getHandles()));
         }
         return result.getMojoResult();
     }

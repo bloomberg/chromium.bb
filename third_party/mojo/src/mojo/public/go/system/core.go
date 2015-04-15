@@ -111,7 +111,7 @@ func (impl *coreImpl) WaitMany(handles []Handle, signals []MojoHandleSignals, de
 
 func (impl *coreImpl) CreateDataPipe(opts *DataPipeOptions) (MojoResult, ProducerHandle, ConsumerHandle) {
 
-	var r int32
+	var r uint32
 	var p, c uint32
 	impl.mu.Lock()
 	if opts == nil {

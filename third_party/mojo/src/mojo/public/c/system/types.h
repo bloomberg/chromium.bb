@@ -33,10 +33,10 @@ const MojoHandle MOJO_HANDLE_INVALID = 0;
 #define MOJO_HANDLE_INVALID ((MojoHandle)0)
 #endif
 
-// |MojoResult|: Result codes for Mojo operations. Non-negative values are
-// success codes; negative values are error/failure codes.
-//   |MOJO_RESULT_OK| - Not an error; returned on success. Note that positive
-//       |MojoResult|s may also be used to indicate success.
+// |MojoResult|: Result codes for Mojo operations. The only success code is zero
+// (|MOJO_RESULT_OK|); all non-zero values should be considered as error/failure
+// codes (even if the value is not recognized).
+//   |MOJO_RESULT_OK| - Not an error; returned on success.
 //   |MOJO_RESULT_CANCELLED| - Operation was cancelled, typically by the caller.
 //   |MOJO_RESULT_UNKNOWN| - Unknown error (e.g., if not enough information is
 //       available for a more specific error).
@@ -82,53 +82,51 @@ const MojoHandle MOJO_HANDLE_INVALID = 0;
 //       (e.g., if the data requested is not yet available). The caller should
 //       wait for it to be feasible using |MojoWait()| or |MojoWaitMany()|.
 //
-// Note that positive values are also available as success codes.
-//
 // The codes from |MOJO_RESULT_OK| to |MOJO_RESULT_DATA_LOSS| come from
 // Google3's canonical error codes.
 //
 // TODO(vtl): Add a |MOJO_RESULT_UNSATISFIABLE|?
 
-typedef int32_t MojoResult;
+typedef uint32_t MojoResult;
 
 #ifdef __cplusplus
 const MojoResult MOJO_RESULT_OK = 0;
-const MojoResult MOJO_RESULT_CANCELLED = -1;
-const MojoResult MOJO_RESULT_UNKNOWN = -2;
-const MojoResult MOJO_RESULT_INVALID_ARGUMENT = -3;
-const MojoResult MOJO_RESULT_DEADLINE_EXCEEDED = -4;
-const MojoResult MOJO_RESULT_NOT_FOUND = -5;
-const MojoResult MOJO_RESULT_ALREADY_EXISTS = -6;
-const MojoResult MOJO_RESULT_PERMISSION_DENIED = -7;
-const MojoResult MOJO_RESULT_RESOURCE_EXHAUSTED = -8;
-const MojoResult MOJO_RESULT_FAILED_PRECONDITION = -9;
-const MojoResult MOJO_RESULT_ABORTED = -10;
-const MojoResult MOJO_RESULT_OUT_OF_RANGE = -11;
-const MojoResult MOJO_RESULT_UNIMPLEMENTED = -12;
-const MojoResult MOJO_RESULT_INTERNAL = -13;
-const MojoResult MOJO_RESULT_UNAVAILABLE = -14;
-const MojoResult MOJO_RESULT_DATA_LOSS = -15;
-const MojoResult MOJO_RESULT_BUSY = -16;
-const MojoResult MOJO_RESULT_SHOULD_WAIT = -17;
+const MojoResult MOJO_RESULT_CANCELLED = 1;
+const MojoResult MOJO_RESULT_UNKNOWN = 2;
+const MojoResult MOJO_RESULT_INVALID_ARGUMENT = 3;
+const MojoResult MOJO_RESULT_DEADLINE_EXCEEDED = 4;
+const MojoResult MOJO_RESULT_NOT_FOUND = 5;
+const MojoResult MOJO_RESULT_ALREADY_EXISTS = 6;
+const MojoResult MOJO_RESULT_PERMISSION_DENIED = 7;
+const MojoResult MOJO_RESULT_RESOURCE_EXHAUSTED = 8;
+const MojoResult MOJO_RESULT_FAILED_PRECONDITION = 9;
+const MojoResult MOJO_RESULT_ABORTED = 10;
+const MojoResult MOJO_RESULT_OUT_OF_RANGE = 11;
+const MojoResult MOJO_RESULT_UNIMPLEMENTED = 12;
+const MojoResult MOJO_RESULT_INTERNAL = 13;
+const MojoResult MOJO_RESULT_UNAVAILABLE = 14;
+const MojoResult MOJO_RESULT_DATA_LOSS = 15;
+const MojoResult MOJO_RESULT_BUSY = 16;
+const MojoResult MOJO_RESULT_SHOULD_WAIT = 17;
 #else
 #define MOJO_RESULT_OK ((MojoResult)0)
-#define MOJO_RESULT_CANCELLED ((MojoResult) - 1)
-#define MOJO_RESULT_UNKNOWN ((MojoResult) - 2)
-#define MOJO_RESULT_INVALID_ARGUMENT ((MojoResult) - 3)
-#define MOJO_RESULT_DEADLINE_EXCEEDED ((MojoResult) - 4)
-#define MOJO_RESULT_NOT_FOUND ((MojoResult) - 5)
-#define MOJO_RESULT_ALREADY_EXISTS ((MojoResult) - 6)
-#define MOJO_RESULT_PERMISSION_DENIED ((MojoResult) - 7)
-#define MOJO_RESULT_RESOURCE_EXHAUSTED ((MojoResult) - 8)
-#define MOJO_RESULT_FAILED_PRECONDITION ((MojoResult) - 9)
-#define MOJO_RESULT_ABORTED ((MojoResult) - 10)
-#define MOJO_RESULT_OUT_OF_RANGE ((MojoResult) - 11)
-#define MOJO_RESULT_UNIMPLEMENTED ((MojoResult) - 12)
-#define MOJO_RESULT_INTERNAL ((MojoResult) - 13)
-#define MOJO_RESULT_UNAVAILABLE ((MojoResult) - 14)
-#define MOJO_RESULT_DATA_LOSS ((MojoResult) - 15)
-#define MOJO_RESULT_BUSY ((MojoResult) - 16)
-#define MOJO_RESULT_SHOULD_WAIT ((MojoResult) - 17)
+#define MOJO_RESULT_CANCELLED ((MojoResult)1)
+#define MOJO_RESULT_UNKNOWN ((MojoResult)2)
+#define MOJO_RESULT_INVALID_ARGUMENT ((MojoResult)3)
+#define MOJO_RESULT_DEADLINE_EXCEEDED ((MojoResult)4)
+#define MOJO_RESULT_NOT_FOUND ((MojoResult)5)
+#define MOJO_RESULT_ALREADY_EXISTS ((MojoResult)6)
+#define MOJO_RESULT_PERMISSION_DENIED ((MojoResult)7)
+#define MOJO_RESULT_RESOURCE_EXHAUSTED ((MojoResult)8)
+#define MOJO_RESULT_FAILED_PRECONDITION ((MojoResult)9)
+#define MOJO_RESULT_ABORTED ((MojoResult)10)
+#define MOJO_RESULT_OUT_OF_RANGE ((MojoResult)11)
+#define MOJO_RESULT_UNIMPLEMENTED ((MojoResult)12)
+#define MOJO_RESULT_INTERNAL ((MojoResult)13)
+#define MOJO_RESULT_UNAVAILABLE ((MojoResult)14)
+#define MOJO_RESULT_DATA_LOSS ((MojoResult)15)
+#define MOJO_RESULT_BUSY ((MojoResult)16)
+#define MOJO_RESULT_SHOULD_WAIT ((MojoResult)17)
 #endif
 
 // |MojoDeadline|: Used to specify deadlines (timeouts), in microseconds (except

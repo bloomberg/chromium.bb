@@ -371,6 +371,18 @@ TEST_F(ValidationTest, Conformance) {
   RunValidationTests("conformance_", validators.GetHead());
 }
 
+// This test is similar to Conformance test but its goal is specifically
+// do bounds-check testing of message validation. For example we test the
+// detection of off-by-one errors in method ordinals.
+TEST_F(ValidationTest, BoundsCheck) {
+  DummyMessageReceiver dummy_receiver;
+  mojo::internal::FilterChain validators(&dummy_receiver);
+  validators.Append<mojo::internal::MessageHeaderValidator>();
+  validators.Append<BoundsCheckTestInterface::RequestValidator_>();
+
+  RunValidationTests("boundscheck_", validators.GetHead());
+}
+
 // This test is similar to the Conformance test but for responses.
 TEST_F(ValidationTest, ResponseConformance) {
   DummyMessageReceiver dummy_receiver;
@@ -379,6 +391,16 @@ TEST_F(ValidationTest, ResponseConformance) {
   validators.Append<ConformanceTestInterface::ResponseValidator_>();
 
   RunValidationTests("resp_conformance_", validators.GetHead());
+}
+
+// This test is similar to the BoundsCheck test but for responses.
+TEST_F(ValidationTest, ResponseBoundsCheck) {
+  DummyMessageReceiver dummy_receiver;
+  mojo::internal::FilterChain validators(&dummy_receiver);
+  validators.Append<mojo::internal::MessageHeaderValidator>();
+  validators.Append<BoundsCheckTestInterface::ResponseValidator_>();
+
+  RunValidationTests("resp_boundscheck_", validators.GetHead());
 }
 
 // Test that InterfacePtr<X> applies the correct validators and they don't

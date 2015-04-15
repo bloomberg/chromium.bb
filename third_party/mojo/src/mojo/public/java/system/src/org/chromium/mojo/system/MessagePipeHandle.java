@@ -132,10 +132,6 @@ public interface MessagePipeHandle extends Handle {
      */
     public static class ReadMessageResult {
         /**
-         * The MojoResult value of the read call.
-         */
-        private int mMojoResult;
-        /**
          * If a message was read, the size in bytes of the message, otherwise the size in bytes of
          * the next message.
          */
@@ -149,20 +145,6 @@ public interface MessagePipeHandle extends Handle {
          * If a message was read, the handles contained in the message, undefined otherwise.
          */
         private List<UntypedHandle> mHandles;
-
-        /**
-         * @return the mojoResult
-         */
-        public int getMojoResult() {
-            return mMojoResult;
-        }
-
-        /**
-         * @param mojoResult the mojoResult to set
-         */
-        public void setMojoResult(int mojoResult) {
-            mMojoResult = mojoResult;
-        }
 
         /**
          * @return the messageSize
@@ -237,6 +219,6 @@ public interface MessagePipeHandle extends Handle {
      * will be true, or the read is NOT done and |wasMessageRead| will be false (if |mayDiscard| was
      * set, the message is also discarded in this case).
      */
-    ReadMessageResult readMessage(ByteBuffer bytes, int maxNumberOfHandles,
-            ReadFlags flags);
+    ResultAnd<ReadMessageResult> readMessage(
+            ByteBuffer bytes, int maxNumberOfHandles, ReadFlags flags);
 }

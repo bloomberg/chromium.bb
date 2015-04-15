@@ -5,6 +5,8 @@
 import os
 
 from fetcher.dependency import Dependency
+from fetcher.mojom_directory import MojomDirectory
+from fetcher.mojom_file import MojomFile
 from mojom.parse.parser import Parse
 
 
@@ -23,6 +25,9 @@ class Repository(object):
 
   def get_external_directory(self):
     return os.path.join(self._root_dir, self._external_dir)
+
+  def get_external_suffix(self):
+    return self._external_dir
 
   def _os_walk(self, root_directory):
     # This method is included for dependency injection
@@ -85,4 +90,26 @@ class Repository(object):
     for mojom in mojoms:
       urls.append(os.path.relpath(mojom, self.get_external_directory()))
     return urls
+
+  def get_all_external_mojom_directories(self):
+    """Get all external directories populated with their mojom files."""
+    mojoms = self._get_all_mojom_in_directory(self.get_external_directory())
+    directories = {}
+    for mojom_path in mojoms:
+      directory_path = os.path.dirname(mojom_path)
+      directory = directories.setdefault(
+          directory_path, MojomDirectory(directory_path))
+      with self._open(mojom_path) as f:
+        source = f.read()
+        tree = Parse(source, mojom_path)
+        mojom = MojomFile(self, mojom_path)
+        directory.add_mojom(mojom)
+        for dep in tree.import_list:
+          mojom.add_dependency(dep.import_filename)
+    return directories.values()
+
+
+
+
+
 

@@ -112,7 +112,10 @@ def CodecType(kind):
     array_length = "" if kind.length is None else ", %d" % kind.length
     element_type = ElementCodecType(kind.kind)
     return "new codec.%s(%s%s)" % (array_type, element_type, array_length)
-  if mojom.IsInterfaceKind(kind) or mojom.IsInterfaceRequestKind(kind):
+  if mojom.IsInterfaceKind(kind):
+    return "codec.%s" % ("NullableInterface" if mojom.IsNullableKind(kind)
+        else "Interface")
+  if mojom.IsInterfaceRequestKind(kind):
     return CodecType(mojom.MSGPIPE)
   if mojom.IsEnumKind(kind):
     return _kind_to_codec_type[mojom.INT32]
@@ -138,7 +141,9 @@ def JavaScriptDecodeSnippet(kind):
     return "decodeArrayPointer(codec.PackedBool)"
   if mojom.IsArrayKind(kind):
     return "decodeArrayPointer(%s)" % CodecType(kind.kind)
-  if mojom.IsInterfaceKind(kind) or mojom.IsInterfaceRequestKind(kind):
+  if mojom.IsInterfaceKind(kind):
+    return "decodeStruct(%s)" % CodecType(kind)
+  if mojom.IsInterfaceRequestKind(kind):
     return JavaScriptDecodeSnippet(mojom.MSGPIPE)
   if mojom.IsEnumKind(kind):
     return JavaScriptDecodeSnippet(mojom.INT32)
@@ -156,7 +161,9 @@ def JavaScriptEncodeSnippet(kind):
     return "encodeArrayPointer(codec.PackedBool, ";
   if mojom.IsArrayKind(kind):
     return "encodeArrayPointer(%s, " % CodecType(kind.kind)
-  if mojom.IsInterfaceKind(kind) or mojom.IsInterfaceRequestKind(kind):
+  if mojom.IsInterfaceKind(kind):
+    return "encodeStruct(%s, " % CodecType(kind)
+  if mojom.IsInterfaceRequestKind(kind):
     return JavaScriptEncodeSnippet(mojom.MSGPIPE)
   if mojom.IsEnumKind(kind):
     return JavaScriptEncodeSnippet(mojom.INT32)
@@ -222,14 +229,16 @@ def JavaScriptValidateHandleParams(packed_field):
   field_offset = JavaScriptFieldOffset(packed_field)
   return "%s, %s" % (field_offset, nullable)
 
+def JavaScriptValidateInterfaceParams(packed_field):
+  return JavaScriptValidateHandleParams(packed_field)
 
 def JavaScriptProxyMethodParameterValue(parameter):
   name = parameter.name;
-  if (IsInterfaceParameter(parameter)):
+  if (mojom.IsInterfaceKind(parameter.kind)):
    type = JavaScriptType(parameter.kind)
    return "core.isHandle(%s) ? %s : connection.bindImpl" \
        "(%s, %s)" % (name, name, name, type)
-  if (IsInterfaceRequestParameter(parameter)):
+  if (mojom.IsInterfaceRequestKind(parameter.kind)):
    type = JavaScriptType(parameter.kind.kind)
    return "core.isHandle(%s) ? %s : connection.bindProxy" \
        "(%s, %s)" % (name, name, name, type)
@@ -238,10 +247,10 @@ def JavaScriptProxyMethodParameterValue(parameter):
 
 def JavaScriptStubMethodParameterValue(parameter):
   name = parameter.name;
-  if (IsInterfaceParameter(parameter)):
+  if (mojom.IsInterfaceKind(parameter.kind)):
    type = JavaScriptType(parameter.kind)
    return "connection.bindHandleToProxy(%s, %s)" % (name, type)
-  if (IsInterfaceRequestParameter(parameter)):
+  if (mojom.IsInterfaceRequestKind(parameter.kind)):
    type = JavaScriptType(parameter.kind.kind)
    return "connection.bindHandleToStub(%s, %s)" % (name, type)
   return name;
@@ -291,11 +300,8 @@ def IsMapPointerField(field):
 def IsHandleField(field):
   return mojom.IsAnyHandleKind(field.kind)
 
-def IsInterfaceRequestParameter(parameter):
-  return mojom.IsInterfaceRequestKind(parameter.kind)
-
-def IsInterfaceParameter(parameter):
-  return mojom.IsInterfaceKind(parameter.kind)
+def IsInterfaceField(field):
+  return mojom.IsInterfaceKind(field.kind)
 
 
 class Generator(generator.Generator):
@@ -313,14 +319,14 @@ class Generator(generator.Generator):
     "is_struct_pointer_field": IsStructPointerField,
     "is_string_pointer_field": IsStringPointerField,
     "is_handle_field": IsHandleField,
+    "is_interface_field": IsInterfaceField,
     "js_type": JavaScriptType,
-    "is_interface_request_parameter": IsInterfaceRequestParameter,
-    "is_interface_parameter": IsInterfaceParameter,
     "js_proxy_method_parameter_value": JavaScriptProxyMethodParameterValue,
     "js_stub_method_parameter_value": JavaScriptStubMethodParameterValue,
     "stylize_method": generator.StudlyCapsToCamel,
     "validate_array_params": JavaScriptValidateArrayParams,
     "validate_handle_params": JavaScriptValidateHandleParams,
+    "validate_interface_params": JavaScriptValidateInterfaceParams,
     "validate_map_params": JavaScriptValidateMapParams,
     "validate_string_params": JavaScriptValidateStringParams,
     "validate_struct_params": JavaScriptValidateStructParams,

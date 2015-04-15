@@ -5,30 +5,40 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_VALIDATE_PARAMS_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_VALIDATE_PARAMS_H_
 
+#include "mojo/public/cpp/system/macros.h"
+
 namespace mojo {
 namespace internal {
 
-// Array type information needed for valdiation.
-template <uint32_t in_expected_num_elements,
-          bool in_element_is_nullable,
-          typename InElementValidateParams>
 class ArrayValidateParams {
  public:
-  // Validation information for elements. It is either another specialization
-  // of ArrayValidateParams (if elements are arrays or maps), or
-  // NoValidateParams. In the case of maps, this is used to validate the value
-  // array.
-  typedef InElementValidateParams ElementValidateParams;
+  // ArrayValidateParams takes ownership of |in_element_validate params|.
+  ArrayValidateParams(uint32_t in_expected_num_elements,
+                      bool in_element_is_nullable,
+                      ArrayValidateParams* in_element_validate_params)
+      : expected_num_elements(in_expected_num_elements),
+        element_is_nullable(in_element_is_nullable),
+        element_validate_params(in_element_validate_params) {}
+
+  ~ArrayValidateParams() {
+    if (element_validate_params)
+      delete element_validate_params;
+  }
 
   // If |expected_num_elements| is not 0, the array is expected to have exactly
   // that number of elements.
-  static const uint32_t expected_num_elements = in_expected_num_elements;
-  // Whether the elements are nullable.
-  static const bool element_is_nullable = in_element_is_nullable;
-};
+  uint32_t expected_num_elements;
 
-// NoValidateParams is used to indicate the end of an ArrayValidateParams chain.
-class NoValidateParams {};
+  // Whether the elements are nullable.
+  bool element_is_nullable;
+
+  // Validation information for elements. It is either a pointer to another
+  // instance of ArrayValidateParams (if elements are arrays or maps), or
+  // nullptr. In the case of maps, this is used to validate the value array.
+  ArrayValidateParams* element_validate_params;
+
+  MOJO_DISALLOW_COPY_AND_ASSIGN(ArrayValidateParams);
+};
 
 }  // namespace internal
 }  // namespace mojo

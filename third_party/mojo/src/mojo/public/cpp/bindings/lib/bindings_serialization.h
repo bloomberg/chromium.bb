@@ -7,6 +7,8 @@
 
 #include <vector>
 
+#include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
@@ -47,9 +49,12 @@ bool ValidateEncodedPointer(const uint64_t* offset);
 
 // Handles are encoded as indices into a vector of handles. These functions
 // manipulate the value of |handle|, mapping it to and from an index.
+
 void EncodeHandle(Handle* handle, std::vector<Handle>* handles);
-// Note: This function doesn't validate the encoded handle value.
+void EncodeHandle(Interface_Data* data, std::vector<Handle>* handles);
+// Note: The following two functions don't validate the encoded handle value.
 void DecodeHandle(Handle* handle, std::vector<Handle>* handles);
+void DecodeHandle(Interface_Data* data, std::vector<Handle>* handles);
 
 // The following 2 functions are used to encode/decode all objects (structs and
 // arrays) in a consistent manner.
@@ -78,6 +83,21 @@ inline void Decode(T* obj, std::vector<Handle>* handles) {
 // claimed version.
 bool ValidateStructHeaderAndClaimMemory(const void* data,
                                         BoundsChecker* bounds_checker);
+
+template <typename T>
+inline void InterfacePointerToData(InterfacePtr<T> input,
+                                   Interface_Data* output) {
+  InterfacePtrInfo<T> info = input.PassInterface();
+  output->handle = info.PassHandle().release();
+  output->version = info.version();
+}
+
+template <typename T>
+inline void InterfaceDataToPointer(Interface_Data* input,
+                                   InterfacePtr<T>* output) {
+  output->Bind(InterfacePtrInfo<T>(
+      MakeScopedHandle(FetchAndReset(&input->handle)), input->version));
+}
 
 }  // namespace internal
 }  // namespace mojo

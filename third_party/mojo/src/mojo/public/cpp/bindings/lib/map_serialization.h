@@ -17,9 +17,11 @@ template <typename Key, typename Value>
 inline size_t GetSerializedSize_(const Map<Key, Value>& input);
 
 template <typename ValidateParams, typename E, typename F>
-inline void SerializeArray_(Array<E> input,
-                            internal::Buffer* buf,
-                            internal::Array_Data<F>** output);
+inline void SerializeArray_(
+    Array<E> input,
+    internal::Buffer* buf,
+    internal::Array_Data<F>** output,
+    const internal::ArrayValidateParams* validate_params);
 
 namespace internal {
 
@@ -112,16 +114,18 @@ inline size_t GetSerializedSize_(const Map<MapKey, MapValue>& input) {
          value_data_size;
 }
 
-// We don't need a KeyValidateParams, because we konw exactly what params are
-// needed. (Keys are primitive types or non-nullable strings.)
-template <typename ValueValidateParams,
-          typename MapKey,
+// We don't need an ArrayValidateParams instance for key validation since
+// we can deduce it from the Key type. (which can only be primitive types or
+// non-nullable strings.)
+template <typename MapKey,
           typename MapValue,
           typename DataKey,
           typename DataValue>
-inline void SerializeMap_(Map<MapKey, MapValue> input,
-                          internal::Buffer* buf,
-                          internal::Map_Data<DataKey, DataValue>** output) {
+inline void SerializeMap_(
+    Map<MapKey, MapValue> input,
+    internal::Buffer* buf,
+    internal::Map_Data<DataKey, DataValue>** output,
+    const internal::ArrayValidateParams* value_validate_params) {
   if (input) {
     internal::Map_Data<DataKey, DataValue>* result =
         internal::Map_Data<DataKey, DataValue>::New(buf);
@@ -129,10 +133,11 @@ inline void SerializeMap_(Map<MapKey, MapValue> input,
       Array<MapKey> keys;
       Array<MapValue> values;
       input.DecomposeMapTo(&keys, &values);
-      SerializeArray_<internal::MapKeyValidateParams<DataKey>>(
-          keys.Pass(), buf, &result->keys.ptr);
-      SerializeArray_<ValueValidateParams>(
-          values.Pass(), buf, &result->values.ptr);
+      const internal::ArrayValidateParams* key_validate_params =
+          internal::MapKeyValidateParamsFactory<DataKey>::Get();
+      SerializeArray_(keys.Pass(), buf, &result->keys.ptr, key_validate_params);
+      SerializeArray_(values.Pass(), buf, &result->values.ptr,
+                      value_validate_params);
     }
     *output = result;
   } else {

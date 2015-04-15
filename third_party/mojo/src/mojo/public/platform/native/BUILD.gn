@@ -24,6 +24,42 @@ mojo_sdk_source_set("system") {
   # source_set here, this flag change is not needed.
 }
 
+# For internal use only.
+mojo_sdk_source_set("system_impl_private") {
+  sources = [
+    "system_impl_private_thunks.cc",
+    "system_impl_private_thunks.h",
+  ]
+  defines = [ "MOJO_SYSTEM_IMPLEMENTATION" ]
+  deps = [
+    ":system_impl_private_api",
+  ]
+  mojo_sdk_deps = [ "mojo/public/c/system" ]
+}
+
+# For internal use only.
+mojo_sdk_source_set("system_impl_private_api") {
+  sources = [
+    "system_impl_private.h",
+  ]
+  mojo_sdk_deps = [ "mojo/public/c/system" ]
+}
+
+mojo_sdk_source_set("system_impl_private_tests") {
+  testonly = true
+
+  sources = [
+    "system_impl_private_unittest.cc",
+  ]
+
+  deps = [
+    ":system_impl_private_api",
+    "//testing/gtest",
+  ]
+
+  mojo_sdk_deps = [ "mojo/public/c/system" ]
+}
+
 mojo_sdk_source_set("gles2") {
   sources = [
     "gles2_impl_chromium_miscellaneous_thunks.cc",

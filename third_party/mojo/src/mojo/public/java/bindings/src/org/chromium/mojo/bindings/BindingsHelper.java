@@ -24,6 +24,12 @@ public class BindingsHelper {
     public static final int SERIALIZED_HANDLE_SIZE = 4;
 
     /**
+     * The size, in bytes, of a serialized interface, which consists of a serialized handle (4
+     * bytes) and a version number (4 bytes).
+     */
+    public static final int SERIALIZED_INTERFACE_SIZE = 8;
+
+    /**
      * The size, in bytes, of a serialized pointer. A pointer is serializaed as an unsigned long
      * representing the offset from its position to the pointed elemnt.
      */

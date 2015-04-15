@@ -59,7 +59,7 @@ import (
 // CGoSystem provides an implementation of the system.System interface based on CGO
 type CGoSystem struct{}
 
-func (c *CGoSystem) CreateSharedBuffer(flags uint32, numBytes uint64) (int32, uint32) {
+func (c *CGoSystem) CreateSharedBuffer(flags uint32, numBytes uint64) (uint32, uint32) {
 	var opts *C.struct_MojoCreateSharedBufferOptions
 	opts = &C.struct_MojoCreateSharedBufferOptions{
 		C.uint32_t(unsafe.Sizeof(*opts)),
@@ -67,10 +67,10 @@ func (c *CGoSystem) CreateSharedBuffer(flags uint32, numBytes uint64) (int32, ui
 	}
 	var cHandle C.MojoHandle
 	r := C.CreateSharedBuffer(opts, C.uint64_t(numBytes), &cHandle)
-	return int32(r), uint32(cHandle)
+	return uint32(r), uint32(cHandle)
 }
 
-func (c *CGoSystem) DuplicateBufferHandle(handle uint32, flags uint32) (int32, uint32) {
+func (c *CGoSystem) DuplicateBufferHandle(handle uint32, flags uint32) (uint32, uint32) {
 	var opts *C.struct_MojoDuplicateBufferHandleOptions
 	opts = &C.struct_MojoDuplicateBufferHandleOptions{
 		C.uint32_t(unsafe.Sizeof(*opts)),
@@ -78,29 +78,29 @@ func (c *CGoSystem) DuplicateBufferHandle(handle uint32, flags uint32) (int32, u
 	}
 	var cDuplicateHandle C.MojoHandle
 	r := C.DuplicateBufferHandle(C.MojoHandle(handle), opts, &cDuplicateHandle)
-	return int32(r), uint32(cDuplicateHandle)
+	return uint32(r), uint32(cDuplicateHandle)
 }
 
-func (c *CGoSystem) MapBuffer(handle uint32, offset, numBytes uint64, flags uint32) (result int32, buf []byte) {
+func (c *CGoSystem) MapBuffer(handle uint32, offset, numBytes uint64, flags uint32) (result uint32, buf []byte) {
 	var bufPtr unsafe.Pointer
 	r := C.MojoMapBuffer(C.MojoHandle(handle), C.uint64_t(offset), C.uint64_t(numBytes), &bufPtr, C.MojoMapBufferFlags(flags))
 	if r != C.MOJO_RESULT_OK {
-		return int32(r), nil
+		return uint32(r), nil
 	}
-	return int32(r), unsafeByteSlice(bufPtr, int(numBytes))
+	return uint32(r), unsafeByteSlice(bufPtr, int(numBytes))
 }
 
-func (c *CGoSystem) UnmapBuffer(buf []byte) (result int32) {
-	return int32(C.MojoUnmapBuffer(unsafe.Pointer(&buf[0])))
+func (c *CGoSystem) UnmapBuffer(buf []byte) (result uint32) {
+	return uint32(C.MojoUnmapBuffer(unsafe.Pointer(&buf[0])))
 }
 
-func createDataPipeWithCOptions(opts *C.struct_MojoCreateDataPipeOptions) (result int32, producerHandle, consumerHandle uint32) {
+func createDataPipeWithCOptions(opts *C.struct_MojoCreateDataPipeOptions) (result uint32, producerHandle, consumerHandle uint32) {
 	var cProducerHandle, cConsumerHandle C.MojoHandle
 	r := C.CreateDataPipe(opts, &cProducerHandle, &cConsumerHandle)
-	return int32(r), uint32(cProducerHandle), uint32(cConsumerHandle)
+	return uint32(r), uint32(cProducerHandle), uint32(cConsumerHandle)
 }
 
-func (c *CGoSystem) CreateDataPipe(flags, elementNumBytes, capacityNumBytes uint32) (result int32, producerHandle, consumerHandle uint32) {
+func (c *CGoSystem) CreateDataPipe(flags, elementNumBytes, capacityNumBytes uint32) (result uint32, producerHandle, consumerHandle uint32) {
 	var opts *C.struct_MojoCreateDataPipeOptions
 	opts = &C.struct_MojoCreateDataPipeOptions{
 		C.uint32_t(unsafe.Sizeof(*opts)),
@@ -111,74 +111,74 @@ func (c *CGoSystem) CreateDataPipe(flags, elementNumBytes, capacityNumBytes uint
 	return createDataPipeWithCOptions(opts)
 }
 
-func (c *CGoSystem) CreateDataPipeWithDefaultOptions() (result int32, producerHandle, consumerHandle uint32) {
+func (c *CGoSystem) CreateDataPipeWithDefaultOptions() (result uint32, producerHandle, consumerHandle uint32) {
 	// A nil options pointer in the C interface means use the default values.
 	return createDataPipeWithCOptions(nil)
 }
 
-func (c *CGoSystem) WriteData(producerHandle uint32, buf []byte, flags uint32) (result int32, bytesWritten uint32) {
+func (c *CGoSystem) WriteData(producerHandle uint32, buf []byte, flags uint32) (result uint32, bytesWritten uint32) {
 	numBytes := C.uint32_t(len(buf))
 	r := C.MojoWriteData(C.MojoHandle(producerHandle), unsafe.Pointer(&buf[0]), &numBytes, C.MojoWriteDataFlags(flags))
-	return int32(r), uint32(numBytes)
+	return uint32(r), uint32(numBytes)
 }
 
-func (c *CGoSystem) BeginWriteData(producerHandle uint32, numBytes uint32, flags uint32) (result int32, buf []byte) {
+func (c *CGoSystem) BeginWriteData(producerHandle uint32, numBytes uint32, flags uint32) (result uint32, buf []byte) {
 	var buffer unsafe.Pointer
 	bufferNumBytes := C.uint32_t(numBytes)
 	r := C.MojoBeginWriteData(C.MojoHandle(producerHandle), &buffer, &bufferNumBytes, C.MojoWriteDataFlags(flags))
 	if r != C.MOJO_RESULT_OK {
-		return int32(r), nil
+		return uint32(r), nil
 	}
-	return int32(r), unsafeByteSlice(buffer, int(bufferNumBytes))
+	return uint32(r), unsafeByteSlice(buffer, int(bufferNumBytes))
 }
 
-func (c *CGoSystem) EndWriteData(producerHandle uint32, numBytesWritten uint32) (result int32) {
-	return int32(C.MojoEndWriteData(C.MojoHandle(producerHandle), C.uint32_t(numBytesWritten)))
+func (c *CGoSystem) EndWriteData(producerHandle uint32, numBytesWritten uint32) (result uint32) {
+	return uint32(C.MojoEndWriteData(C.MojoHandle(producerHandle), C.uint32_t(numBytesWritten)))
 }
 
-func (c *CGoSystem) ReadData(consumerHandle uint32, flags uint32) (result int32, buf []byte) {
+func (c *CGoSystem) ReadData(consumerHandle uint32, flags uint32) (result uint32, buf []byte) {
 	var numBytes C.uint32_t
 	if r := C.MojoReadData(C.MojoHandle(consumerHandle), nil, &numBytes, C.MOJO_READ_DATA_FLAG_QUERY); r != C.MOJO_RESULT_OK {
-		return int32(r), nil
+		return uint32(r), nil
 	}
 	buf = make([]byte, int(numBytes))
 	r := C.MojoReadData(C.MojoHandle(consumerHandle), unsafe.Pointer(&buf[0]), &numBytes, C.MojoReadDataFlags(flags))
 	buf = buf[0:int(numBytes)]
-	return int32(r), buf
+	return uint32(r), buf
 }
 
-func (c *CGoSystem) BeginReadData(consumerHandle uint32, numBytes uint32, flags uint32) (result int32, buf []byte) {
+func (c *CGoSystem) BeginReadData(consumerHandle uint32, numBytes uint32, flags uint32) (result uint32, buf []byte) {
 	var buffer unsafe.Pointer
 	bufferNumBytes := C.uint32_t(numBytes)
 	r := C.MojoBeginReadData(C.MojoHandle(consumerHandle), &buffer, &bufferNumBytes, C.MojoReadDataFlags(flags))
 	if r != C.MOJO_RESULT_OK {
-		return int32(r), nil
+		return uint32(r), nil
 	}
-	return int32(r), unsafeByteSlice(buffer, int(bufferNumBytes))
+	return uint32(r), unsafeByteSlice(buffer, int(bufferNumBytes))
 }
 
-func (c *CGoSystem) EndReadData(consumerHandle uint32, numBytesRead uint32) (result int32) {
-	return int32(C.MojoEndReadData(C.MojoHandle(consumerHandle), C.uint32_t(numBytesRead)))
+func (c *CGoSystem) EndReadData(consumerHandle uint32, numBytesRead uint32) (result uint32) {
+	return uint32(C.MojoEndReadData(C.MojoHandle(consumerHandle), C.uint32_t(numBytesRead)))
 }
 
 func (c *CGoSystem) GetTimeTicksNow() (timestamp uint64) {
 	return uint64(C.MojoGetTimeTicksNow())
 }
 
-func (c *CGoSystem) Close(handle uint32) (result int32) {
-	return int32(C.MojoClose(C.MojoHandle(handle)))
+func (c *CGoSystem) Close(handle uint32) (result uint32) {
+	return uint32(C.MojoClose(C.MojoHandle(handle)))
 }
 
-func (c *CGoSystem) Wait(handle uint32, signals uint32, deadline uint64) (result int32, satisfiedSignals, satisfiableSignals uint32) {
+func (c *CGoSystem) Wait(handle uint32, signals uint32, deadline uint64) (result uint32, satisfiedSignals, satisfiableSignals uint32) {
 	var cState C.struct_MojoHandleSignalsState
 	r := C.MojoWait(C.MojoHandle(handle), C.MojoHandleSignals(signals), C.MojoDeadline(deadline), &cState)
-	return int32(r), uint32(cState.satisfied_signals), uint32(cState.satisfiable_signals)
+	return uint32(r), uint32(cState.satisfied_signals), uint32(cState.satisfiable_signals)
 }
 
-func (c *CGoSystem) WaitMany(handles []uint32, signals []uint32, deadline uint64) (int32, int, []uint32, []uint32) {
+func (c *CGoSystem) WaitMany(handles []uint32, signals []uint32, deadline uint64) (uint32, int, []uint32, []uint32) {
 	if len(handles) == 0 {
 		r := C.MojoWaitMany(nil, nil, 0, C.MojoDeadline(deadline), nil, nil)
-		return int32(r), -1, nil, nil
+		return uint32(r), -1, nil, nil
 	}
 	if len(handles) != len(signals) {
 		panic("number of handles and signals must match")
@@ -197,10 +197,10 @@ func (c *CGoSystem) WaitMany(handles []uint32, signals []uint32, deadline uint64
 			satisfiable[i] = uint32(cStates[i].satisfiable_signals)
 		}
 	}
-	return int32(r), int(int32(index)), satisfied, satisfiable
+	return uint32(r), int(int32(index)), satisfied, satisfiable
 }
 
-func (c *CGoSystem) CreateMessagePipe(flags uint32) (int32, uint32, uint32) {
+func (c *CGoSystem) CreateMessagePipe(flags uint32) (uint32, uint32, uint32) {
 	var handle0, handle1 C.MojoHandle
 	var opts *C.struct_MojoCreateMessagePipeOptions
 	opts = &C.struct_MojoCreateMessagePipeOptions{
@@ -208,10 +208,10 @@ func (c *CGoSystem) CreateMessagePipe(flags uint32) (int32, uint32, uint32) {
 		C.MojoCreateMessagePipeOptionsFlags(flags),
 	}
 	r := C.CreateMessagePipe(opts, &handle0, &handle1)
-	return int32(r), uint32(handle0), uint32(handle1)
+	return uint32(r), uint32(handle0), uint32(handle1)
 }
 
-func (c *CGoSystem) WriteMessage(handle uint32, bytes []byte, handles []uint32, flags uint32) (result int32) {
+func (c *CGoSystem) WriteMessage(handle uint32, bytes []byte, handles []uint32, flags uint32) (result uint32) {
 	var bytesPtr unsafe.Pointer
 	if len(bytes) != 0 {
 		bytesPtr = unsafe.Pointer(&bytes[0])
@@ -220,15 +220,15 @@ func (c *CGoSystem) WriteMessage(handle uint32, bytes []byte, handles []uint32, 
 	if len(handles) != 0 {
 		handlesPtr = (*C.MojoHandle)(unsafe.Pointer(&handles[0]))
 	}
-	return int32(C.MojoWriteMessage(C.MojoHandle(handle), bytesPtr, C.uint32_t(len(bytes)), handlesPtr, C.uint32_t(len(handles)), C.MojoWriteMessageFlags(flags)))
+	return uint32(C.MojoWriteMessage(C.MojoHandle(handle), bytesPtr, C.uint32_t(len(bytes)), handlesPtr, C.uint32_t(len(handles)), C.MojoWriteMessageFlags(flags)))
 }
 
-func (c *CGoSystem) ReadMessage(handle uint32, flags uint32) (result int32, buf []byte, handles []uint32) {
+func (c *CGoSystem) ReadMessage(handle uint32, flags uint32) (result uint32, buf []byte, handles []uint32) {
 	var numBytes, numHandles C.uint32_t
 	cHandle := C.MojoHandle(handle)
 	cFlags := C.MojoReadMessageFlags(flags)
 	if r := C.MojoReadMessage(cHandle, nil, &numBytes, nil, &numHandles, cFlags); r != C.MOJO_RESULT_RESOURCE_EXHAUSTED {
-		return int32(r), nil, nil
+		return uint32(r), nil, nil
 	}
 	var bufPtr unsafe.Pointer
 	if numBytes != 0 {
@@ -241,7 +241,7 @@ func (c *CGoSystem) ReadMessage(handle uint32, flags uint32) (result int32, buf 
 		handlesPtr = (*C.MojoHandle)(unsafe.Pointer(&handles[0]))
 	}
 	r := C.MojoReadMessage(cHandle, bufPtr, &numBytes, handlesPtr, &numHandles, cFlags)
-	return int32(r), buf, handles
+	return uint32(r), buf, handles
 }
 
 func newUnsafeSlice(ptr unsafe.Pointer, length int) unsafe.Pointer {

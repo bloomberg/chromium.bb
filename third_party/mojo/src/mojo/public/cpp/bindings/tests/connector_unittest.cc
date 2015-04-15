@@ -59,7 +59,7 @@ class ReentrantMessageAccumulator : public MessageAccumulator {
       return false;
     number_of_calls_++;
     if (number_of_calls_ == 1) {
-      return connector_->WaitForIncomingMessage();
+      return connector_->WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
     }
     return true;
   }
@@ -139,7 +139,7 @@ TEST_F(ConnectorTest, Basic_Synchronous) {
   MessageAccumulator accumulator;
   connector1.set_incoming_receiver(&accumulator);
 
-  connector1.WaitForIncomingMessage();
+  connector1.WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
 
   ASSERT_FALSE(accumulator.IsEmpty());
 
@@ -223,7 +223,7 @@ TEST_F(ConnectorTest, Basic_TwoMessages_Synchronous) {
   MessageAccumulator accumulator;
   connector1.set_incoming_receiver(&accumulator);
 
-  connector1.WaitForIncomingMessage();
+  connector1.WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
 
   ASSERT_FALSE(accumulator.IsEmpty());
 
@@ -327,7 +327,7 @@ TEST_F(ConnectorTest, WaitForIncomingMessageWithError) {
   internal::Connector connector0(handle0_.Pass());
   // Close the other end of the pipe.
   handle1_.reset();
-  ASSERT_FALSE(connector0.WaitForIncomingMessage());
+  ASSERT_FALSE(connector0.WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE));
 }
 
 TEST_F(ConnectorTest, WaitForIncomingMessageWithDeletion) {
@@ -344,7 +344,7 @@ TEST_F(ConnectorTest, WaitForIncomingMessageWithDeletion) {
   ConnectorDeletingMessageAccumulator accumulator(&connector1);
   connector1->set_incoming_receiver(&accumulator);
 
-  connector1->WaitForIncomingMessage();
+  connector1->WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
 
   ASSERT_FALSE(connector1);
   ASSERT_FALSE(accumulator.IsEmpty());

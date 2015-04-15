@@ -294,7 +294,7 @@ struct MultiVersionStruct {
   [MinVersion=3]
   string? f_string;
   [MinVersion=5]
-  array<int8> f_array;
+  array<int8>? f_array;
   [MinVersion=7]
   handle<message_pipe>? f_message_pipe;
   [MinVersion=7]
@@ -332,7 +332,7 @@ struct MultiVersionStructV5 {
   [MinVersion=3]
   string? f_string;
   [MinVersion=5]
-  array<int8> f_array;
+  array<int8>? f_array;
 };
 
 struct MultiVersionStructV7 {
@@ -343,7 +343,7 @@ struct MultiVersionStructV7 {
   [MinVersion=3]
   string? f_string;
   [MinVersion=5]
-  array<int8> f_array;
+  array<int8>? f_array;
   [MinVersion=7]
   handle<message_pipe>? f_message_pipe;
   [MinVersion=7]

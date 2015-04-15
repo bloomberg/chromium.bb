@@ -56,6 +56,13 @@ class SerializableType(Type):
     """
     return self.byte_size
 
+  def GetAlignment(self):
+    """
+    Returns the alignment required by the encoding of this type. By default it
+    is set to the byte size of the biggest packed value.
+    """
+    return max([struct.calcsize('<%s' % c) for c in self.GetTypeCode()])
+
   def Serialize(self, value, data_offset, data, handle_offset):
     """
     Serialize a value of this type.
@@ -222,8 +229,8 @@ class StringType(PointerType):
 class BaseHandleType(SerializableType):
   """Type object for handles."""
 
-  def __init__(self, nullable=False):
-    SerializableType.__init__(self, 'i')
+  def __init__(self, nullable=False, type_code='i'):
+    SerializableType.__init__(self, type_code)
     self.nullable = nullable
 
   def Serialize(self, value, data_offset, data, handle_offset):
@@ -288,7 +295,8 @@ class InterfaceType(BaseHandleType):
   """Type object for interfaces."""
 
   def __init__(self, interface_getter, nullable=False):
-    BaseHandleType.__init__(self, nullable)
+    # handle (4 bytes) + version (4 bytes)
+    BaseHandleType.__init__(self, nullable, 'iI')
     self._interface_getter = interface_getter
     self._interface = None
 
@@ -302,6 +310,16 @@ class InterfaceType(BaseHandleType):
     if not self._interface:
       self._interface = self._interface_getter()
     return self._interface
+
+  def Serialize(self, value, data_offset, data, handle_offset):
+    (encoded_handle, handles) = super(InterfaceType, self).Serialize(
+        value, data_offset, data, handle_offset)
+    # Set the version field to 0 for now.
+    return ((encoded_handle, 0), handles)
+
+  def Deserialize(self, value, context):
+    # Ignore the version field for now.
+    return super(InterfaceType, self).Deserialize(value[0], context)
 
   def FromHandle(self, handle):
     if handle.IsValid():
@@ -406,7 +424,7 @@ class GenericArrayType(BaseArrayType):
           len(data) - position,
           data,
           handle_offset + len(returned_handles))
-      to_pack.append(new_data)
+      to_pack.extend(serialization.Flatten(new_data))
       returned_handles.extend(new_handles)
       position = position + self.sub_type.GetByteSize()
     serialization.HEADER_STRUCT.pack_into(data, data_end, size, len(value))
@@ -420,9 +438,17 @@ class GenericArrayType(BaseArrayType):
     values = struct.unpack_from(
         '%d%s' % (nb_elements, self.sub_type.GetTypeCode()),
         buffer(context.data, serialization.HEADER_STRUCT.size))
+    values_per_element = len(self.sub_type.GetTypeCode())
+    assert nb_elements * values_per_element == len(values)
+
     result = []
     sub_context = context.GetSubContext(serialization.HEADER_STRUCT.size)
-    for value in values:
+    for index in xrange(nb_elements):
+      if values_per_element == 1:
+        value = values[index]
+      else:
+        value = tuple(values[index * values_per_element :
+                             (index + 1) * values_per_element])
       result.append(self.sub_type.Deserialize(
           value,
           sub_context))
@@ -608,6 +634,9 @@ class FieldGroup(object):
   def GetByteSize(self):
     raise NotImplementedError()
 
+  def GetAlignment(self):
+    raise NotImplementedError()
+
   def GetMinVersion(self):
     raise NotImplementedError()
 
@@ -638,6 +667,9 @@ class SingleFieldGroup(FieldGroup, FieldDescriptor):
   def GetByteSize(self):
     return self.field_type.GetByteSize()
 
+  def GetAlignment(self):
+    return self.field_type.GetAlignment()
+
   def GetMinVersion(self):
     return self.version
 
@@ -667,6 +699,9 @@ class BooleanGroup(FieldGroup):
     return 'B'
 
   def GetByteSize(self):
+    return 1
+
+  def GetAlignment(self):
     return 1
 
   def GetMinVersion(self):

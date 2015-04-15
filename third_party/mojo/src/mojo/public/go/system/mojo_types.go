@@ -13,7 +13,7 @@ import "math"
 //
 type MojoTimeTicks int64
 type MojoHandle uint32
-type MojoResult int32
+type MojoResult uint32
 type MojoDeadline uint64
 type MojoHandleSignals uint32
 type MojoWriteMessageFlags uint32
@@ -30,23 +30,23 @@ const (
 	MOJO_DEADLINE_INDEFINITE        MojoDeadline = math.MaxUint64
 	MOJO_HANDLE_INVALID             MojoHandle   = 0
 	MOJO_RESULT_OK                  MojoResult   = 0
-	MOJO_RESULT_CANCELLED           MojoResult   = -1
-	MOJO_RESULT_UNKNOWN             MojoResult   = -2
-	MOJO_RESULT_INVALID_ARGUMENT    MojoResult   = -3
-	MOJO_RESULT_DEADLINE_EXCEEDED   MojoResult   = -4
-	MOJO_RESULT_NOT_FOUND           MojoResult   = -5
-	MOJO_RESULT_ALREADY_EXISTS      MojoResult   = -6
-	MOJO_RESULT_PERMISSION_DENIED   MojoResult   = -7
-	MOJO_RESULT_RESOURCE_EXHAUSTED  MojoResult   = -8
-	MOJO_RESULT_FAILED_PRECONDITION MojoResult   = -9
-	MOJO_RESULT_ABORTED             MojoResult   = -10
-	MOJO_RESULT_OUT_OF_RANGE        MojoResult   = -11
-	MOJO_RESULT_UNIMPLEMENTED       MojoResult   = -12
-	MOJO_RESULT_INTERNAL            MojoResult   = -13
-	MOJO_RESULT_UNAVAILABLE         MojoResult   = -14
-	MOJO_RESULT_DATA_LOSS           MojoResult   = -15
-	MOJO_RESULT_BUSY                MojoResult   = -16
-	MOJO_RESULT_SHOULD_WAIT         MojoResult   = -17
+	MOJO_RESULT_CANCELLED           MojoResult   = 1
+	MOJO_RESULT_UNKNOWN             MojoResult   = 2
+	MOJO_RESULT_INVALID_ARGUMENT    MojoResult   = 3
+	MOJO_RESULT_DEADLINE_EXCEEDED   MojoResult   = 4
+	MOJO_RESULT_NOT_FOUND           MojoResult   = 5
+	MOJO_RESULT_ALREADY_EXISTS      MojoResult   = 6
+	MOJO_RESULT_PERMISSION_DENIED   MojoResult   = 7
+	MOJO_RESULT_RESOURCE_EXHAUSTED  MojoResult   = 8
+	MOJO_RESULT_FAILED_PRECONDITION MojoResult   = 9
+	MOJO_RESULT_ABORTED             MojoResult   = 10
+	MOJO_RESULT_OUT_OF_RANGE        MojoResult   = 11
+	MOJO_RESULT_UNIMPLEMENTED       MojoResult   = 12
+	MOJO_RESULT_INTERNAL            MojoResult   = 13
+	MOJO_RESULT_UNAVAILABLE         MojoResult   = 14
+	MOJO_RESULT_DATA_LOSS           MojoResult   = 15
+	MOJO_RESULT_BUSY                MojoResult   = 16
+	MOJO_RESULT_SHOULD_WAIT         MojoResult   = 17
 
 	MOJO_HANDLE_SIGNAL_NONE        MojoHandleSignals = 0
 	MOJO_HANDLE_SIGNAL_READABLE    MojoHandleSignals = 1 << 0

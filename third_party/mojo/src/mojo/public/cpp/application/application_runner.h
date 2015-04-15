@@ -14,9 +14,9 @@ class ApplicationDelegate;
 // A utility for running an Application. The typical use case is to use
 // when writing your MojoMain:
 //
-//  MojoResult MojoMain(MojoHandle shell_handle) {
+//  MojoResult MojoMain(MojoHandle application_request) {
 //    mojo::ApplicationRunner runner(new MyApplicationDelegate());
-//    return runner.Run(shell_handle);
+//    return runner.Run(application_request);
 //  }
 //
 // ApplicationRunner takes care of mojo environment initialization and
@@ -31,7 +31,7 @@ class ApplicationRunner {
   // Once the various parameters have been set above, use Run to initialize an
   // ApplicationImpl wired to the provided delegate, and run a RunLoop until
   // the application exits.
-  MojoResult Run(MojoHandle shell_handle);
+  MojoResult Run(MojoHandle application_request);
 
  private:
   ApplicationDelegate* delegate_;

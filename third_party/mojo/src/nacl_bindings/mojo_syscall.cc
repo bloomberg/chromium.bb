@@ -10,12 +10,14 @@
 #include <stdio.h>
 
 #include "mojo/public/c/system/core.h"
+#include "mojo/public/platform/native/system_impl_private.h"
 #include "nacl_bindings/mojo_syscall_internal.h"
 #include "native_client/src/public/chrome_main.h"
 #include "native_client/src/public/nacl_app.h"
 #include "native_client/src/trusted/desc/nacl_desc_custom.h"
 
 MojoHandle g_mojo_handle = MOJO_HANDLE_INVALID;
+MojoSystemImpl g_mojo_system = nullptr;
 
 namespace {
 
@@ -73,8 +75,8 @@ ssize_t MojoDescSendMsg(void* handle,
         }
       }
 
-      result_value = MojoCreateSharedBuffer(options, num_bytes_value,
-                                            &shared_buffer_handle_value);
+      result_value = MojoSystemImplCreateSharedBuffer(
+          g_mojo_system, options, num_bytes_value, &shared_buffer_handle_value);
 
       {
         ScopedCopyLock copy_lock(nap);
@@ -111,8 +113,9 @@ ssize_t MojoDescSendMsg(void* handle,
         }
       }
 
-      result_value = MojoDuplicateBufferHandle(buffer_handle_value, options,
-                                               &new_buffer_handle_value);
+      result_value = MojoSystemImplDuplicateBufferHandle(
+          g_mojo_system, buffer_handle_value, options,
+          &new_buffer_handle_value);
 
       {
         ScopedCopyLock copy_lock(nap);
@@ -159,9 +162,9 @@ ssize_t MojoDescSendMsg(void* handle,
         }
       }
 
-      result_value =
-          MojoCreateDataPipe(options, &data_pipe_producer_handle_value,
-                             &data_pipe_consumer_handle_value);
+      result_value = MojoSystemImplCreateDataPipe(
+          g_mojo_system, options, &data_pipe_producer_handle_value,
+          &data_pipe_consumer_handle_value);
 
       {
         ScopedCopyLock copy_lock(nap);
@@ -205,8 +208,9 @@ ssize_t MojoDescSendMsg(void* handle,
         }
       }
 
-      result_value = MojoWriteData(data_pipe_producer_handle_value, elements,
-                                   &num_bytes_value, flags_value);
+      result_value = MojoSystemImplWriteData(
+          g_mojo_system, data_pipe_producer_handle_value, elements,
+          &num_bytes_value, flags_value);
 
       {
         ScopedCopyLock copy_lock(nap);
@@ -241,8 +245,9 @@ ssize_t MojoDescSendMsg(void* handle,
         }
       }
 
-      result_value = MojoEndWriteData(data_pipe_producer_handle_value,
-                                      num_bytes_written_value);
+      result_value = MojoSystemImplEndWriteData(g_mojo_system,
+                                                data_pipe_producer_handle_value,
+                                                num_bytes_written_value);
 
       {
         ScopedCopyLock copy_lock(nap);
@@ -284,8 +289,9 @@ ssize_t MojoDescSendMsg(void* handle,
         }
       }
 
-      result_value = MojoReadData(data_pipe_consumer_handle_value, elements,
-                                  &num_bytes_value, flags_value);
+      result_value =
+          MojoSystemImplReadData(g_mojo_system, data_pipe_consumer_handle_value,
+                                 elements, &num_bytes_value, flags_value);
 
       {
         ScopedCopyLock copy_lock(nap);
@@ -320,8 +326,8 @@ ssize_t MojoDescSendMsg(void* handle,
         }
       }
 
-      result_value = MojoEndReadData(data_pipe_consumer_handle_value,
-                                     num_bytes_read_value);
+      result_value = MojoSystemImplEndReadData(
+          g_mojo_system, data_pipe_consumer_handle_value, num_bytes_read_value);
 
       {
         ScopedCopyLock copy_lock(nap);
@@ -343,7 +349,7 @@ ssize_t MojoDescSendMsg(void* handle,
         }
       }
 
-      result_value = MojoGetTimeTicksNow();
+      result_value = MojoSystemImplGetTimeTicksNow(g_mojo_system);
 
       {
         ScopedCopyLock copy_lock(nap);
@@ -369,7 +375,7 @@ ssize_t MojoDescSendMsg(void* handle,
         }
       }
 
-      result_value = MojoClose(handle_value);
+      result_value = MojoSystemImplClose(g_mojo_system, handle_value);
 
       {
         ScopedCopyLock copy_lock(nap);
@@ -408,8 +414,9 @@ ssize_t MojoDescSendMsg(void* handle,
         }
       }
 
-      result_value = MojoWait(handle_value, signals_value, deadline_value,
-                              signals_state_ptr ? &signals_state_value : NULL);
+      result_value = MojoSystemImplWait(
+          g_mojo_system, handle_value, signals_value, deadline_value,
+          signals_state_ptr ? &signals_state_value : NULL);
 
       {
         ScopedCopyLock copy_lock(nap);
@@ -464,8 +471,8 @@ ssize_t MojoDescSendMsg(void* handle,
         }
       }
 
-      result_value = MojoWaitMany(
-          handles, signals, num_handles_value, deadline_value,
+      result_value = MojoSystemImplWaitMany(
+          g_mojo_system, handles, signals, num_handles_value, deadline_value,
           result_index_ptr ? &result_index_value : NULL, signals_states);
 
       {
@@ -509,8 +516,9 @@ ssize_t MojoDescSendMsg(void* handle,
         }
       }
 
-      result_value = MojoCreateMessagePipe(options, &message_pipe_handle0_value,
-                                           &message_pipe_handle1_value);
+      result_value = MojoSystemImplCreateMessagePipe(
+          g_mojo_system, options, &message_pipe_handle0_value,
+          &message_pipe_handle1_value);
 
       {
         ScopedCopyLock copy_lock(nap);
@@ -559,9 +567,9 @@ ssize_t MojoDescSendMsg(void* handle,
         }
       }
 
-      result_value =
-          MojoWriteMessage(message_pipe_handle_value, bytes, num_bytes_value,
-                           handles, num_handles_value, flags_value);
+      result_value = MojoSystemImplWriteMessage(
+          g_mojo_system, message_pipe_handle_value, bytes, num_bytes_value,
+          handles, num_handles_value, flags_value);
 
       {
         ScopedCopyLock copy_lock(nap);
@@ -612,8 +620,8 @@ ssize_t MojoDescSendMsg(void* handle,
         }
       }
 
-      result_value = MojoReadMessage(
-          message_pipe_handle_value, bytes,
+      result_value = MojoSystemImplReadMessage(
+          g_mojo_system, message_pipe_handle_value, bytes,
           num_bytes_ptr ? &num_bytes_value : NULL, handles,
           num_handles_ptr ? &num_handles_value : NULL, flags_value);
 
@@ -710,14 +718,11 @@ struct NaClDesc* MakeDisabledMojoDesc(struct NaClApp* nap) {
 // from there.
 #define NACL_MOJO_DESC (NACL_CHROME_DESC_BASE + 3)
 
-void InjectMojo(struct NaClApp* nap) {
+MojoResult InjectMojo(struct NaClApp* nap, MojoHandle handle) {
   NaClAppSetDesc(nap, NACL_MOJO_DESC, MakeMojoDesc(nap));
-  g_mojo_handle = MOJO_HANDLE_INVALID;
-}
-
-void InjectMojo(struct NaClApp* nap, MojoHandle handle) {
-  NaClAppSetDesc(nap, NACL_MOJO_DESC, MakeMojoDesc(nap));
-  g_mojo_handle = handle;
+  g_mojo_system = MojoSystemImplCreateImpl();
+  return MojoSystemImplTransferHandle(MojoSystemImplGetDefaultImpl(), handle,
+                                      g_mojo_system, &g_mojo_handle);
 }
 
 void InjectDisabledMojo(struct NaClApp* nap) {

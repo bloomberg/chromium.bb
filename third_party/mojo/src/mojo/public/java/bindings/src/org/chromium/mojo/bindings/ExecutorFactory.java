@@ -12,6 +12,7 @@ import org.chromium.mojo.system.MessagePipeHandle.ReadMessageResult;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.mojo.system.MojoResult;
 import org.chromium.mojo.system.Pair;
+import org.chromium.mojo.system.ResultAnd;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -122,8 +123,8 @@ class ExecutorFactory {
          */
         private boolean readNotifyBufferMessage() {
             try {
-                ReadMessageResult readMessageResult = mReadHandle.readMessage(NOTIFY_BUFFER, 0,
-                        MessagePipeHandle.ReadFlags.NONE);
+                ResultAnd<ReadMessageResult> readMessageResult =
+                        mReadHandle.readMessage(NOTIFY_BUFFER, 0, MessagePipeHandle.ReadFlags.NONE);
                 if (readMessageResult.getMojoResult() == MojoResult.OK) {
                     asyncWait();
                     return true;

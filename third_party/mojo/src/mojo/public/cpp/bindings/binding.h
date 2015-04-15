@@ -147,10 +147,12 @@ class Binding : public ErrorHandler {
   }
 
   // Blocks the calling thread until either a call arrives on the previously
-  // bound message pipe, or an error occurs.
-  bool WaitForIncomingMethodCall() {
+  // bound message pipe, the deadline is exceeded, or an error occurs. Returns
+  // true if a method was successfully read and dispatched.
+  bool WaitForIncomingMethodCall(
+      MojoDeadline deadline = MOJO_DEADLINE_INDEFINITE) {
     MOJO_DCHECK(internal_router_);
-    return internal_router_->WaitForIncomingMessage();
+    return internal_router_->WaitForIncomingMessage(deadline);
   }
 
   // Closes the message pipe that was previously bound. Put this object into a
@@ -193,6 +195,15 @@ class Binding : public ErrorHandler {
   // Indicates whether the binding has been completed (i.e., whether a message
   // pipe has been bound to the implementation).
   bool is_bound() const { return !!internal_router_; }
+
+  // Returns the value of the handle currently bound to this Binding which can
+  // be used to make explicit Wait/WaitMany calls. Requires that the Binding be
+  // bound. Ownership of the handle is retained by the Binding, it is not
+  // transferred to the caller.
+  MessagePipeHandle handle() const {
+    MOJO_DCHECK(is_bound());
+    return internal_router_->handle();
+  }
 
   // Exposed for testing, should not generally be used.
   internal::Router* internal_router() { return internal_router_; }

@@ -9,7 +9,7 @@
 
 // Implement MojoMain directly as the entry point for an application.
 //
-// MojoResult MojoMain(MojoHandle service_provider_handle) {
+// MojoResult MojoMain(MojoHandle application_request) {
 //   ...
 // }
 //
@@ -22,7 +22,7 @@ extern "C" {
 
 #if defined(WIN32)
 __declspec(dllexport) MojoResult
-    __cdecl MojoMain(MojoHandle service_provider_handle);
+    __cdecl MojoMain(MojoHandle application_request);
 #else  // !defined(WIN32)
 __attribute__((visibility("default"))) MojoResult
     MojoMain(MojoHandle service_provider_handle);

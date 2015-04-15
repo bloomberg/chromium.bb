@@ -11,6 +11,20 @@ import struct
 HEADER_STRUCT = struct.Struct("<II")
 
 
+def Flatten(value):
+  """Flattens nested lists/tuples into an one-level list. If value is not a
+     list/tuple, it is converted to an one-item list. For example,
+     (1, 2, [3, 4, ('56', '7')]) is converted to [1, 2, 3, 4, '56', '7'];
+     1 is converted to [1].
+  """
+  if isinstance(value, (list, tuple)):
+    result = []
+    for item in value:
+      result.extend(Flatten(item))
+    return result
+  return [value]
+
+
 class SerializationException(Exception):
   """Error when strying to serialize a struct."""
   pass
@@ -128,13 +142,13 @@ class Serialization(object):
     to_pack = []
     for group in self._groups:
       position = position + NeededPaddingForAlignment(position,
-                                                      group.GetByteSize())
+                                                      group.GetAlignment())
       (entry, new_handles) = group.Serialize(
           obj,
           len(data) - position,
           data,
           handle_offset + len(handles))
-      to_pack.append(entry)
+      to_pack.extend(Flatten(entry))
       handles.extend(new_handles)
       position = position + group.GetByteSize()
     self._GetMainStruct().pack_into(data, HEADER_STRUCT.size, *to_pack)
@@ -150,18 +164,25 @@ class Serialization(object):
     if context.IsInitialContext():
       context.ClaimMemory(0, size)
     version_struct = self._GetStruct(version)
-    entitities = version_struct.unpack_from(context.data, HEADER_STRUCT.size)
+    entities = version_struct.unpack_from(context.data, HEADER_STRUCT.size)
     filtered_groups = self._GetGroups(version)
     if ((version <= self.version and
          size != version_struct.size + HEADER_STRUCT.size) or
         size < version_struct.size + HEADER_STRUCT.size):
       raise DeserializationException('Struct size in incorrect.')
     position = HEADER_STRUCT.size
-    for (group, value) in zip(filtered_groups, entitities):
+    enties_index = 0
+    for group in filtered_groups:
       position = position + NeededPaddingForAlignment(position,
-                                                      group.GetByteSize())
+                                                      group.GetAlignment())
+      enties_count = len(group.GetTypeCode())
+      if enties_count == 1:
+        value = entities[enties_index]
+      else:
+        value = tuple(entities[enties_index:enties_index+enties_count])
       fields.update(group.Deserialize(value, context.GetSubContext(position)))
       position += group.GetByteSize()
+      enties_index += enties_count
 
 
 def NeededPaddingForAlignment(value, alignment=8):
@@ -187,13 +208,12 @@ def _GetStruct(groups):
   codes = [ '<' ]
   for group in groups:
     code = group.GetTypeCode()
-    size = group.GetByteSize()
-    needed_padding = NeededPaddingForAlignment(index, size)
+    needed_padding = NeededPaddingForAlignment(index, group.GetAlignment())
     if needed_padding:
       codes.append('x' * needed_padding)
       index = index + needed_padding
     codes.append(code)
-    index = index + size
+    index = index + group.GetByteSize()
   alignment_needed = NeededPaddingForAlignment(index)
   if alignment_needed:
     codes.append('x' * alignment_needed)

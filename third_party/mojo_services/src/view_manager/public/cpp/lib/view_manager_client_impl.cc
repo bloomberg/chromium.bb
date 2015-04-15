@@ -216,6 +216,13 @@ void ViewManagerClientImpl::AddView(View* view) {
 }
 
 void ViewManagerClientImpl::RemoveView(Id view_id) {
+  if (focused_view_ && focused_view_->id() == view_id)
+    OnFocusChanged(0);
+  if (capture_view_ && capture_view_->id() == view_id)
+    OnCaptureChanged(0);
+  if (activated_view_ && activated_view_->id() == view_id)
+    OnActiveWindowChanged(0);
+
   IdToViewMap::iterator it = views_.find(view_id);
   if (it != views_.end())
     views_.erase(it);

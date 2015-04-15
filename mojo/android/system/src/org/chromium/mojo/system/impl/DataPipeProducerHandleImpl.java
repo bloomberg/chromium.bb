@@ -6,6 +6,7 @@ package org.chromium.mojo.system.impl;
 
 import org.chromium.mojo.system.DataPipe.ProducerHandle;
 import org.chromium.mojo.system.DataPipe.WriteFlags;
+import org.chromium.mojo.system.ResultAnd;
 
 import java.nio.ByteBuffer;
 
@@ -40,7 +41,7 @@ class DataPipeProducerHandleImpl extends HandleBase implements ProducerHandle {
      * @see ProducerHandle#writeData(ByteBuffer, WriteFlags)
      */
     @Override
-    public int writeData(ByteBuffer elements, WriteFlags flags) {
+    public ResultAnd<Integer> writeData(ByteBuffer elements, WriteFlags flags) {
         return mCore.writeData(this, elements, flags);
     }
 

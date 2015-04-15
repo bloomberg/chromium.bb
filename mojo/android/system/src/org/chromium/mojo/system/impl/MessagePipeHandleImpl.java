@@ -6,6 +6,7 @@ package org.chromium.mojo.system.impl;
 
 import org.chromium.mojo.system.Handle;
 import org.chromium.mojo.system.MessagePipeHandle;
+import org.chromium.mojo.system.ResultAnd;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -49,9 +50,8 @@ class MessagePipeHandleImpl extends HandleBase implements MessagePipeHandle {
      * @see MessagePipeHandle#readMessage(ByteBuffer, int, ReadFlags)
      */
     @Override
-    public ReadMessageResult readMessage(ByteBuffer bytes,
-            int maxNumberOfHandles,
-            ReadFlags flags) {
+    public ResultAnd<ReadMessageResult> readMessage(
+            ByteBuffer bytes, int maxNumberOfHandles, ReadFlags flags) {
         return mCore.readMessage(this, bytes, maxNumberOfHandles, flags);
     }
 

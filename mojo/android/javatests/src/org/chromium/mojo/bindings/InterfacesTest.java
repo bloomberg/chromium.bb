@@ -16,7 +16,6 @@ import org.chromium.mojo.bindings.test.mojom.sample.Request;
 import org.chromium.mojo.bindings.test.mojom.sample.Response;
 import org.chromium.mojo.system.DataPipe.ConsumerHandle;
 import org.chromium.mojo.system.MessagePipeHandle;
-import org.chromium.mojo.system.MojoException;
 import org.chromium.mojo.system.Pair;
 import org.chromium.mojo.system.impl.CoreImpl;
 
@@ -120,12 +119,12 @@ public class InterfacesTest extends MojoTestCase {
             }
             Response response = new Response();
             response.x = 42;
-
             callback.call(response, "Hello");
         }
 
         @Override
         public void doStuff2(ConsumerHandle pipe, DoStuff2Response callback) {
+            callback.call("World");
         }
 
         @Override
@@ -143,6 +142,22 @@ public class InterfacesTest extends MojoTestCase {
         public void takeImportedInterface(ImportedInterface obj,
                 TakeImportedInterfaceResponse callback) {
             throw new UnsupportedOperationException("Not implemented.");
+        }
+    }
+
+    /**
+     * Implementation of DoStuffResponse that keeps track of if the response is called.
+     */
+    public class DoStuffResponseImpl implements Factory.DoStuffResponse {
+        private boolean mResponseCalled = false;
+
+        public boolean wasResponseCalled() {
+            return mResponseCalled;
+        }
+
+        @Override
+        public void call(Response response, String string) {
+            mResponseCalled = true;
         }
     }
 
@@ -253,5 +268,23 @@ public class InterfacesTest extends MojoTestCase {
         runLoopUntilIdle();
 
         assertTrue(impl.isClosed());
+    }
+
+    @SmallTest
+    public void testResponse() {
+        MockFactoryImpl impl = new MockFactoryImpl();
+        Factory.Proxy proxy = newProxyOverPipe(Factory.MANAGER, impl);
+        Request request = new Request();
+        request.x = 42;
+        Pair<MessagePipeHandle, MessagePipeHandle> handles =
+                CoreImpl.getInstance().createMessagePipe(null);
+        DoStuffResponseImpl response = new DoStuffResponseImpl();
+        proxy.doStuff(request, handles.first, response);
+
+        assertFalse(response.wasResponseCalled());
+
+        runLoopUntilIdle();
+
+        assertTrue(response.wasResponseCalled());
     }
 }

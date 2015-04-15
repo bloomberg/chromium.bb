@@ -135,7 +135,7 @@ bool RunNativeApplication(base::NativeLibrary app_library,
   // |MojoMain()| takes ownership of the service handle.
   MojoHandle handle = application_request.PassMessagePipe().release().value();
   MojoResult result = main_function(handle);
-  if (result < MOJO_RESULT_OK) {
+  if (result != MOJO_RESULT_OK) {
     LOG(ERROR) << "MojoMain returned error (result: " << result << ")";
   }
   return true;

@@ -43,12 +43,12 @@ class PackedField(object):
 
   @classmethod
   def GetSizeForKind(cls, kind):
-    if isinstance(kind, (mojom.Array, mojom.Map, mojom.Struct)):
+    if isinstance(kind, (mojom.Array, mojom.Map, mojom.Struct,
+                         mojom.Interface)):
       return 8
     if isinstance(kind, mojom.Union):
       return 16
-    if (isinstance(kind, mojom.Interface) or
-        isinstance(kind, mojom.InterfaceRequest)):
+    if isinstance(kind, mojom.InterfaceRequest):
       kind = mojom.MSGPIPE
     if isinstance(kind, mojom.Enum):
       # TODO(mpcomplete): what about big enums?
@@ -56,6 +56,12 @@ class PackedField(object):
     if not kind in cls.kind_to_size:
       raise Exception("Invalid kind: %s" % kind.spec)
     return cls.kind_to_size[kind]
+
+  @classmethod
+  def GetAlignmentForKind(cls, kind):
+    if isinstance(kind, mojom.Interface):
+      return 4
+    return cls.GetSizeForKind(kind)
 
   def __init__(self, field, index, ordinal):
     """
@@ -68,14 +74,16 @@ class PackedField(object):
     self.index = index
     self.ordinal = ordinal
     self.size = self.GetSizeForKind(field.kind)
+    self.alignment = self.GetAlignmentForKind(field.kind)
     self.offset = None
     self.bit = None
     self.min_version = None
 
 
-def GetPad(offset, size):
-  """Returns the pad necessary to reserve space for alignment of |size|."""
-  return (size - (offset % size)) % size
+def GetPad(offset, alignment):
+  """Returns the pad necessary to reserve space so that |offset + pad| equals to
+  some multiple of |alignment|."""
+  return (alignment - (offset % alignment)) % alignment
 
 
 def GetFieldOffset(field, last_field):
@@ -86,7 +94,7 @@ def GetFieldOffset(field, last_field):
     return (last_field.offset, last_field.bit + 1)
 
   offset = last_field.offset + last_field.size
-  pad = GetPad(offset, field.size)
+  pad = GetPad(offset, field.alignment)
   return (offset + pad, 0)
 
 
@@ -133,6 +141,14 @@ class PackedStruct(object):
         assert packed_field.field.min_version >= next_min_version
         next_min_version = packed_field.field.min_version
       packed_field.min_version = next_min_version
+
+      if (packed_field.min_version != 0 and
+          mojom.IsReferenceKind(packed_field.field.kind) and
+          not packed_field.field.kind.is_nullable):
+        raise Exception("Non-nullable fields are only allowed in version 0 of "
+                        "a struct. %s.%s is defined with [MinVersion=%d]."
+                            % (self.struct.name, packed_field.field.name,
+                               packed_field.min_version))
 
     src_field = src_fields[0]
     src_field.offset = 0

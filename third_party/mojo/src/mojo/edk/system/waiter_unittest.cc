@@ -128,7 +128,7 @@ TEST(WaiterTest, Basic) {
     base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     thread.waiter()->Awake(1, 3);
     thread.WaitUntilDone(&result, &context, &elapsed);
-    EXPECT_EQ(1, result);
+    EXPECT_EQ(1u, result);
     EXPECT_EQ(3u, context);
     EXPECT_GT(elapsed, (2 - 1) * test::EpsilonTimeout());
     EXPECT_LT(elapsed, (2 + 1) * test::EpsilonTimeout());
@@ -141,7 +141,7 @@ TEST(WaiterTest, Basic) {
     base::PlatformThread::Sleep(5 * test::EpsilonTimeout());
     thread.waiter()->Awake(2, 4);
     thread.WaitUntilDone(&result, &context, &elapsed);
-    EXPECT_EQ(2, result);
+    EXPECT_EQ(2u, result);
     EXPECT_EQ(4u, context);
     EXPECT_GT(elapsed, (5 - 1) * test::EpsilonTimeout());
     EXPECT_LT(elapsed, (5 + 1) * test::EpsilonTimeout());
@@ -189,7 +189,7 @@ TEST(WaiterTest, Basic) {
     base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     thread.waiter()->Awake(1, 7);
     thread.WaitUntilDone(&result, &context, &elapsed);
-    EXPECT_EQ(1, result);
+    EXPECT_EQ(1u, result);
     EXPECT_EQ(7u, context);
     EXPECT_GT(elapsed, (2 - 1) * test::EpsilonTimeout());
     EXPECT_LT(elapsed, (2 + 1) * test::EpsilonTimeout());
@@ -202,7 +202,7 @@ TEST(WaiterTest, Basic) {
     base::PlatformThread::Sleep(5 * test::EpsilonTimeout());
     thread.waiter()->Awake(2, 8);
     thread.WaitUntilDone(&result, &context, &elapsed);
-    EXPECT_EQ(2, result);
+    EXPECT_EQ(2u, result);
     EXPECT_EQ(8u, context);
     EXPECT_GT(elapsed, (5 - 1) * test::EpsilonTimeout());
     EXPECT_LT(elapsed, (5 + 1) * test::EpsilonTimeout());
@@ -265,7 +265,7 @@ TEST(WaiterTest, MultipleAwakes) {
     thread.Start();
     thread.waiter()->Awake(MOJO_RESULT_OK, 4);
     thread.WaitUntilDone(&result, &context, &elapsed);
-    EXPECT_EQ(1, result);
+    EXPECT_EQ(1u, result);
     EXPECT_EQ(3u, context);
     EXPECT_LT(elapsed, test::EpsilonTimeout());
   }
@@ -277,7 +277,7 @@ TEST(WaiterTest, MultipleAwakes) {
     base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     thread.waiter()->Awake(20, 6);
     thread.WaitUntilDone(&result, &context, &elapsed);
-    EXPECT_EQ(10, result);
+    EXPECT_EQ(10u, result);
     EXPECT_EQ(5u, context);
     EXPECT_LT(elapsed, test::EpsilonTimeout());
   }

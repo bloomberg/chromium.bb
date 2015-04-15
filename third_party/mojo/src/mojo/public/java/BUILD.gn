@@ -16,6 +16,7 @@ android_library("system") {
     "system/src/org/chromium/mojo/system/MojoException.java",
     "system/src/org/chromium/mojo/system/MojoResult.java",
     "system/src/org/chromium/mojo/system/Pair.java",
+    "system/src/org/chromium/mojo/system/ResultAnd.java",
     "system/src/org/chromium/mojo/system/SharedBufferHandle.java",
     "system/src/org/chromium/mojo/system/UntypedHandle.java",
     "system/src/org/chromium/mojo/system/RunLoop.java",
@@ -61,6 +62,7 @@ android_library("application") {
     "application/src/org/chromium/mojo/application/ApplicationImpl.java",
     "application/src/org/chromium/mojo/application/ApplicationRunner.java",
     "application/src/org/chromium/mojo/application/ServiceFactoryBinder.java",
+    "application/src/org/chromium/mojo/application/ShellHelper.java",
   ]
   deps = [
     ":bindings",

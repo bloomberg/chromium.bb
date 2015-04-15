@@ -16,6 +16,7 @@ import org.chromium.mojo.system.MessagePipeHandle;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.mojo.system.MojoResult;
 import org.chromium.mojo.system.Pair;
+import org.chromium.mojo.system.ResultAnd;
 import org.chromium.mojo.system.RunLoop;
 import org.chromium.mojo.system.SharedBufferHandle;
 import org.chromium.mojo.system.SharedBufferHandle.DuplicateOptions;
@@ -54,6 +55,11 @@ public class CoreImpl implements Core, AsyncWaiter {
     static final int INVALID_HANDLE = 0;
 
     private static class LazyHolder { private static final Core INSTANCE = new CoreImpl(); }
+
+    /**
+     * The run loop for the current thread.
+     */
+    private ThreadLocal<BaseRunLoop> mCurrentRunLoop = new ThreadLocal<BaseRunLoop>();
 
     /**
      * @return the instance.
@@ -139,13 +145,13 @@ public class CoreImpl implements Core, AsyncWaiter {
             optionsBuffer.putInt(0, 8);
             optionsBuffer.putInt(4, options.getFlags().getFlags());
         }
-        NativeCreationResult result = nativeCreateMessagePipe(optionsBuffer);
+        ResultAnd<IntegerPair> result = nativeCreateMessagePipe(optionsBuffer);
         if (result.getMojoResult() != MojoResult.OK) {
             throw new MojoException(result.getMojoResult());
         }
         return Pair.<MessagePipeHandle, MessagePipeHandle>create(
-                new MessagePipeHandleImpl(this, result.getMojoHandle1()),
-                new MessagePipeHandleImpl(this, result.getMojoHandle2()));
+                new MessagePipeHandleImpl(this, result.getValue().first),
+                new MessagePipeHandleImpl(this, result.getValue().second));
     }
 
     /**
@@ -161,13 +167,13 @@ public class CoreImpl implements Core, AsyncWaiter {
             optionsBuffer.putInt(8, options.getElementNumBytes());
             optionsBuffer.putInt(12, options.getCapacityNumBytes());
         }
-        NativeCreationResult result = nativeCreateDataPipe(optionsBuffer);
+        ResultAnd<IntegerPair> result = nativeCreateDataPipe(optionsBuffer);
         if (result.getMojoResult() != MojoResult.OK) {
             throw new MojoException(result.getMojoResult());
         }
         return Pair.<ProducerHandle, ConsumerHandle>create(
-                new DataPipeProducerHandleImpl(this, result.getMojoHandle1()),
-                new DataPipeConsumerHandleImpl(this, result.getMojoHandle2()));
+                new DataPipeProducerHandleImpl(this, result.getValue().first),
+                new DataPipeConsumerHandleImpl(this, result.getValue().second));
     }
 
     /**
@@ -182,12 +188,11 @@ public class CoreImpl implements Core, AsyncWaiter {
             optionsBuffer.putInt(0, 8);
             optionsBuffer.putInt(4, options.getFlags().getFlags());
         }
-        NativeCreationResult result = nativeCreateSharedBuffer(optionsBuffer, numBytes);
+        ResultAnd<Integer> result = nativeCreateSharedBuffer(optionsBuffer, numBytes);
         if (result.getMojoResult() != MojoResult.OK) {
             throw new MojoException(result.getMojoResult());
         }
-        assert result.getMojoHandle2() == 0;
-        return new SharedBufferHandleImpl(this, result.getMojoHandle1());
+        return new SharedBufferHandleImpl(this, result.getValue());
     }
 
     /**
@@ -211,7 +216,12 @@ public class CoreImpl implements Core, AsyncWaiter {
      */
     @Override
     public RunLoop createDefaultRunLoop() {
-        return null;
+        if (mCurrentRunLoop.get() != null) {
+            throw new MojoException(MojoResult.FAILED_PRECONDITION);
+        }
+        BaseRunLoop runLoop = new BaseRunLoop(this);
+        mCurrentRunLoop.set(runLoop);
+        return runLoop;
     }
 
     /**
@@ -219,7 +229,14 @@ public class CoreImpl implements Core, AsyncWaiter {
      */
     @Override
     public RunLoop getCurrentRunLoop() {
-        return null;
+        return mCurrentRunLoop.get();
+    }
+
+    /**
+     * Remove the current run loop.
+     */
+    void clearCurrentRunLoop() {
+        mCurrentRunLoop.remove();
     }
 
     /**
@@ -273,13 +290,13 @@ public class CoreImpl implements Core, AsyncWaiter {
     /**
      * @see MessagePipeHandle#readMessage(ByteBuffer, int, MessagePipeHandle.ReadFlags)
      */
-    MessagePipeHandle.ReadMessageResult readMessage(MessagePipeHandleImpl handle, ByteBuffer bytes,
-            int maxNumberOfHandles, MessagePipeHandle.ReadFlags flags) {
+    ResultAnd<MessagePipeHandle.ReadMessageResult> readMessage(MessagePipeHandleImpl handle,
+            ByteBuffer bytes, int maxNumberOfHandles, MessagePipeHandle.ReadFlags flags) {
         ByteBuffer handlesBuffer = null;
         if (maxNumberOfHandles > 0) {
             handlesBuffer = allocateDirectBuffer(maxNumberOfHandles * HANDLE_SIZE);
         }
-        MessagePipeHandle.ReadMessageResult result =
+        ResultAnd<MessagePipeHandle.ReadMessageResult> result =
                 nativeReadMessage(handle.getMojoHandle(), bytes, handlesBuffer, flags.getFlags());
         if (result.getMojoResult() != MojoResult.OK
                 && result.getMojoResult() != MojoResult.RESOURCE_EXHAUSTED
@@ -288,17 +305,19 @@ public class CoreImpl implements Core, AsyncWaiter {
         }
 
         if (result.getMojoResult() == MojoResult.OK) {
+            MessagePipeHandle.ReadMessageResult readResult = result.getValue();
             if (bytes != null) {
                 bytes.position(0);
-                bytes.limit(result.getMessageSize());
+                bytes.limit(readResult.getMessageSize());
             }
 
-            List<UntypedHandle> handles = new ArrayList<UntypedHandle>(result.getHandlesCount());
-            for (int i = 0; i < result.getHandlesCount(); ++i) {
+            List<UntypedHandle> handles =
+                    new ArrayList<UntypedHandle>(readResult.getHandlesCount());
+            for (int i = 0; i < readResult.getHandlesCount(); ++i) {
                 int mojoHandle = handlesBuffer.getInt(HANDLE_SIZE * i);
                 handles.add(new UntypedHandleImpl(this, mojoHandle));
             }
-            result.setHandles(handles);
+            readResult.setHandles(handles);
         }
         return result;
     }
@@ -307,25 +326,29 @@ public class CoreImpl implements Core, AsyncWaiter {
      * @see ConsumerHandle#discardData(int, DataPipe.ReadFlags)
      */
     int discardData(DataPipeConsumerHandleImpl handle, int numBytes, DataPipe.ReadFlags flags) {
-        int result = nativeReadData(handle.getMojoHandle(), null, numBytes,
+        ResultAnd<Integer> result = nativeReadData(handle.getMojoHandle(), null, numBytes,
                 flags.getFlags() | MOJO_READ_DATA_FLAG_DISCARD);
-        if (result < 0) {
-            throw new MojoException(result);
+        if (result.getMojoResult() != MojoResult.OK) {
+            throw new MojoException(result.getMojoResult());
         }
-        return result;
+        return result.getValue();
     }
 
     /**
      * @see ConsumerHandle#readData(ByteBuffer, DataPipe.ReadFlags)
      */
-    int readData(DataPipeConsumerHandleImpl handle, ByteBuffer elements, DataPipe.ReadFlags flags) {
-        int result = nativeReadData(handle.getMojoHandle(), elements,
+    ResultAnd<Integer> readData(
+            DataPipeConsumerHandleImpl handle, ByteBuffer elements, DataPipe.ReadFlags flags) {
+        ResultAnd<Integer> result = nativeReadData(handle.getMojoHandle(), elements,
                 elements == null ? 0 : elements.capacity(), flags.getFlags());
-        if (result < 0) {
-            throw new MojoException(result);
+        if (result.getMojoResult() != MojoResult.OK
+                && result.getMojoResult() != MojoResult.SHOULD_WAIT) {
+            throw new MojoException(result.getMojoResult());
         }
-        if (elements != null) {
-            elements.limit(result);
+        if (result.getMojoResult() == MojoResult.OK) {
+            if (elements != null) {
+                elements.limit(result.getValue());
+            }
         }
         return result;
     }
@@ -335,12 +358,12 @@ public class CoreImpl implements Core, AsyncWaiter {
      */
     ByteBuffer beginReadData(
             DataPipeConsumerHandleImpl handle, int numBytes, DataPipe.ReadFlags flags) {
-        NativeCodeAndBufferResult result =
+        ResultAnd<ByteBuffer> result =
                 nativeBeginReadData(handle.getMojoHandle(), numBytes, flags.getFlags());
         if (result.getMojoResult() != MojoResult.OK) {
             throw new MojoException(result.getMojoResult());
         }
-        return result.getBuffer().asReadOnlyBuffer();
+        return result.getValue().asReadOnlyBuffer();
     }
 
     /**
@@ -356,7 +379,7 @@ public class CoreImpl implements Core, AsyncWaiter {
     /**
      * @see ProducerHandle#writeData(ByteBuffer, DataPipe.WriteFlags)
      */
-    int writeData(
+    ResultAnd<Integer> writeData(
             DataPipeProducerHandleImpl handle, ByteBuffer elements, DataPipe.WriteFlags flags) {
         return nativeWriteData(
                 handle.getMojoHandle(), elements, elements.limit(), flags.getFlags());
@@ -367,12 +390,12 @@ public class CoreImpl implements Core, AsyncWaiter {
      */
     ByteBuffer beginWriteData(
             DataPipeProducerHandleImpl handle, int numBytes, DataPipe.WriteFlags flags) {
-        NativeCodeAndBufferResult result =
+        ResultAnd<ByteBuffer> result =
                 nativeBeginWriteData(handle.getMojoHandle(), numBytes, flags.getFlags());
         if (result.getMojoResult() != MojoResult.OK) {
             throw new MojoException(result.getMojoResult());
         }
-        return result.getBuffer();
+        return result.getValue();
     }
 
     /**
@@ -395,24 +418,23 @@ public class CoreImpl implements Core, AsyncWaiter {
             optionsBuffer.putInt(0, 8);
             optionsBuffer.putInt(4, options.getFlags().getFlags());
         }
-        NativeCreationResult result = nativeDuplicate(handle.getMojoHandle(), optionsBuffer);
+        ResultAnd<Integer> result = nativeDuplicate(handle.getMojoHandle(), optionsBuffer);
         if (result.getMojoResult() != MojoResult.OK) {
             throw new MojoException(result.getMojoResult());
         }
-        assert result.getMojoHandle2() == 0;
-        return new SharedBufferHandleImpl(this, result.getMojoHandle1());
+        return new SharedBufferHandleImpl(this, result.getValue());
     }
 
     /**
      * @see SharedBufferHandle#map(long, long, MapFlags)
      */
     ByteBuffer map(SharedBufferHandleImpl handle, long offset, long numBytes, MapFlags flags) {
-        NativeCodeAndBufferResult result =
+        ResultAnd<ByteBuffer> result =
                 nativeMap(handle.getMojoHandle(), offset, numBytes, flags.getFlags());
         if (result.getMojoResult() != MojoResult.OK) {
             throw new MojoException(result.getMojoResult());
         }
-        return result.getBuffer();
+        return result.getValue();
     }
 
     /**
@@ -458,39 +480,6 @@ public class CoreImpl implements Core, AsyncWaiter {
         ByteBuffer buffer = ByteBuffer.allocateDirect(capacity);
         buffer.order(ByteOrder.nativeOrder());
         return buffer;
-    }
-
-    private static class NativeCodeAndBufferResult {
-        private int mMojoResult;
-        private ByteBuffer mBuffer;
-
-        /**
-         * @return the mojoResult
-         */
-        public int getMojoResult() {
-            return mMojoResult;
-        }
-
-        /**
-         * @param mojoResult the mojoResult to set
-         */
-        public void setMojoResult(int mojoResult) {
-            mMojoResult = mojoResult;
-        }
-
-        /**
-         * @return the buffer
-         */
-        public ByteBuffer getBuffer() {
-            return mBuffer;
-        }
-
-        /**
-         * @param buffer the buffer to set
-         */
-        public void setBuffer(ByteBuffer buffer) {
-            mBuffer = buffer;
-        }
     }
 
     /**
@@ -547,95 +536,49 @@ public class CoreImpl implements Core, AsyncWaiter {
     }
 
     @CalledByNative
-    private static NativeCodeAndBufferResult newNativeCodeAndBufferResult(
-            int mojoResult, ByteBuffer buffer) {
-        NativeCodeAndBufferResult result = new NativeCodeAndBufferResult();
-        result.setMojoResult(mojoResult);
-        result.setBuffer(buffer);
-        return result;
+    private static ResultAnd<ByteBuffer> newResultAndBuffer(int mojoResult, ByteBuffer buffer) {
+        return new ResultAnd<>(mojoResult, buffer);
+    }
+
+    /**
+     * Trivial alias for Pair<Integer, Integer>. This is needed because our jni generator is unable
+     * to handle class that contains space.
+     */
+    private static final class IntegerPair extends Pair<Integer, Integer> {
+        public IntegerPair(Integer first, Integer second) {
+            super(first, second);
+        }
     }
 
     @CalledByNative
-    private static MessagePipeHandle.ReadMessageResult newReadMessageResult(
+    private static ResultAnd<MessagePipeHandle.ReadMessageResult> newReadMessageResult(
             int mojoResult, int messageSize, int handlesCount) {
         MessagePipeHandle.ReadMessageResult result = new MessagePipeHandle.ReadMessageResult();
-        if (mojoResult >= 0) {
-            result.setMojoResult(MojoResult.OK);
-        } else {
-            result.setMojoResult(mojoResult);
-        }
         result.setMessageSize(messageSize);
         result.setHandlesCount(handlesCount);
-        return result;
-    }
-
-    private static class NativeCreationResult {
-        private int mMojoResult;
-        private int mMojoHandle1;
-        private int mMojoHandle2;
-
-        /**
-         * @return the mojoResult
-         */
-        public int getMojoResult() {
-            return mMojoResult;
-        }
-
-        /**
-         * @param mojoResult the mojoResult to set
-         */
-        public void setMojoResult(int mojoResult) {
-            mMojoResult = mojoResult;
-        }
-
-        /**
-         * @return the mojoHandle1
-         */
-        public int getMojoHandle1() {
-            return mMojoHandle1;
-        }
-
-        /**
-         * @param mojoHandle1 the mojoHandle1 to set
-         */
-        public void setMojoHandle1(int mojoHandle1) {
-            mMojoHandle1 = mojoHandle1;
-        }
-
-        /**
-         * @return the mojoHandle2
-         */
-        public int getMojoHandle2() {
-            return mMojoHandle2;
-        }
-
-        /**
-         * @param mojoHandle2 the mojoHandle2 to set
-         */
-        public void setMojoHandle2(int mojoHandle2) {
-            mMojoHandle2 = mojoHandle2;
-        }
+        return new ResultAnd<>(mojoResult, result);
     }
 
     @CalledByNative
-    private static NativeCreationResult newNativeCreationResult(
+    private static ResultAnd<Integer> newResultAndInteger(int mojoResult, int numBytesRead) {
+        return new ResultAnd<>(mojoResult, numBytesRead);
+    }
+
+    @CalledByNative
+    private static ResultAnd<IntegerPair> newNativeCreationResult(
             int mojoResult, int mojoHandle1, int mojoHandle2) {
-        NativeCreationResult result = new NativeCreationResult();
-        result.setMojoResult(mojoResult);
-        result.setMojoHandle1(mojoHandle1);
-        result.setMojoHandle2(mojoHandle2);
-        return result;
+        return new ResultAnd<>(mojoResult, new IntegerPair(mojoHandle1, mojoHandle2));
     }
 
     private native long nativeGetTimeTicksNow();
 
     private native int nativeWaitMany(ByteBuffer buffer, long deadline);
 
-    private native NativeCreationResult nativeCreateMessagePipe(ByteBuffer optionsBuffer);
+    private native ResultAnd<IntegerPair> nativeCreateMessagePipe(ByteBuffer optionsBuffer);
 
-    private native NativeCreationResult nativeCreateDataPipe(ByteBuffer optionsBuffer);
+    private native ResultAnd<IntegerPair> nativeCreateDataPipe(ByteBuffer optionsBuffer);
 
-    private native NativeCreationResult nativeCreateSharedBuffer(
+    private native ResultAnd<Integer> nativeCreateSharedBuffer(
             ByteBuffer optionsBuffer, long numBytes);
 
     private native int nativeClose(int mojoHandle);
@@ -645,27 +588,28 @@ public class CoreImpl implements Core, AsyncWaiter {
     private native int nativeWriteMessage(
             int mojoHandle, ByteBuffer bytes, int numBytes, ByteBuffer handlesBuffer, int flags);
 
-    private native MessagePipeHandle.ReadMessageResult nativeReadMessage(
+    private native ResultAnd<MessagePipeHandle.ReadMessageResult> nativeReadMessage(
             int mojoHandle, ByteBuffer bytes, ByteBuffer handlesBuffer, int flags);
 
-    private native int nativeReadData(
+    private native ResultAnd<Integer> nativeReadData(
             int mojoHandle, ByteBuffer elements, int elementsSize, int flags);
 
-    private native NativeCodeAndBufferResult nativeBeginReadData(
+    private native ResultAnd<ByteBuffer> nativeBeginReadData(
             int mojoHandle, int numBytes, int flags);
 
     private native int nativeEndReadData(int mojoHandle, int numBytesRead);
 
-    private native int nativeWriteData(int mojoHandle, ByteBuffer elements, int limit, int flags);
+    private native ResultAnd<Integer> nativeWriteData(
+            int mojoHandle, ByteBuffer elements, int limit, int flags);
 
-    private native NativeCodeAndBufferResult nativeBeginWriteData(
+    private native ResultAnd<ByteBuffer> nativeBeginWriteData(
             int mojoHandle, int numBytes, int flags);
 
     private native int nativeEndWriteData(int mojoHandle, int numBytesWritten);
 
-    private native NativeCreationResult nativeDuplicate(int mojoHandle, ByteBuffer optionsBuffer);
+    private native ResultAnd<Integer> nativeDuplicate(int mojoHandle, ByteBuffer optionsBuffer);
 
-    private native NativeCodeAndBufferResult nativeMap(
+    private native ResultAnd<ByteBuffer> nativeMap(
             int mojoHandle, long offset, long numBytes, int flags);
 
     private native int nativeUnmap(ByteBuffer buffer);

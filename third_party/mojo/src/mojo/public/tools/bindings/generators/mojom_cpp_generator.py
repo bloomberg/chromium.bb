@@ -77,7 +77,9 @@ def GetCppType(kind):
     return "%s_Data*" % GetNameForKind(kind, internal=True)
   if mojom.IsUnionKind(kind):
     return "%s_Data" % GetNameForKind(kind, internal=True)
-  if mojom.IsInterfaceKind(kind) or mojom.IsInterfaceRequestKind(kind):
+  if mojom.IsInterfaceKind(kind):
+    return "mojo::internal::Interface_Data"
+  if mojom.IsInterfaceRequestKind(kind):
     return "mojo::MessagePipeHandle"
   if mojom.IsEnumKind(kind):
     return "int32_t"
@@ -215,7 +217,9 @@ def GetCppFieldType(kind):
   if mojom.IsMapKind(kind):
     return ("mojo::internal::StructPointer<mojo::internal::Map_Data<%s, %s>>" %
             (GetCppType(kind.key_kind), GetCppType(kind.value_kind)))
-  if mojom.IsInterfaceKind(kind) or mojom.IsInterfaceRequestKind(kind):
+  if mojom.IsInterfaceKind(kind):
+    return "mojo::internal::Interface_Data"
+  if mojom.IsInterfaceRequestKind(kind):
     return "mojo::MessagePipeHandle"
   if mojom.IsEnumKind(kind):
     return GetNameForKind(kind)
@@ -290,25 +294,26 @@ def ShouldInlineStruct(struct):
 def ShouldInlineUnion(union):
   return not any(mojom.IsMoveOnlyKind(field.kind) for field in union.fields)
 
-def GetArrayValidateParams(kind):
+def GetArrayValidateParams(kind, new=False):
   if (not mojom.IsArrayKind(kind) and not mojom.IsMapKind(kind) and
       not mojom.IsStringKind(kind)):
-    return "mojo::internal::NoValidateParams"
+    return "nullptr"
 
   if mojom.IsStringKind(kind):
     expected_num_elements = 0
     element_is_nullable = False
-    element_validate_params = "mojo::internal::NoValidateParams"
+    element_validate_params = "nullptr"
   elif mojom.IsMapKind(kind):
     expected_num_elements = 0
     element_is_nullable = mojom.IsNullableKind(kind.value_kind)
-    element_validate_params = GetArrayValidateParams(kind.value_kind)
+    element_validate_params = GetArrayValidateParams(kind.value_kind, new=True)
   else:
     expected_num_elements = generator.ExpectedArraySize(kind) or 0
     element_is_nullable = mojom.IsNullableKind(kind.kind)
-    element_validate_params = GetArrayValidateParams(kind.kind)
+    element_validate_params = GetArrayValidateParams(kind.kind, new=True)
 
-  return "mojo::internal::ArrayValidateParams<%d, %s,\n%s> " % (
+  return "%smojo::internal::ArrayValidateParams(%d, %s,\n%s) " % (
+      'new ' if new else '',
       expected_num_elements,
       'true' if element_is_nullable else 'false',
       element_validate_params)
@@ -317,9 +322,9 @@ def GetMapValidateParams(value_kind):
   # Unlike GetArrayValidateParams, we are given the wrapped kind, instead of
   # the raw array kind. So we wrap the return value of GetArrayValidateParams.
   element_is_nullable = mojom.IsNullableKind(value_kind)
-  return "mojo::internal::ArrayValidateParams<0, %s,\n%s> " % (
+  return "mojo::internal::ArrayValidateParams(0, %s,\n%s) " % (
       'true' if element_is_nullable else 'false',
-      GetArrayValidateParams(value_kind))
+      GetArrayValidateParams(value_kind, new=True))
 
 class Generator(generator.Generator):
 

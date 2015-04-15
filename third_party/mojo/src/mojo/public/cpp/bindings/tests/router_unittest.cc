@@ -195,8 +195,8 @@ TEST_F(RouterTest, BasicRequestResponse_Synchronous) {
   internal::MessageQueue message_queue;
   router0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
 
-  router1.WaitForIncomingMessage();
-  router0.WaitForIncomingMessage();
+  router1.WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
+  router0.WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
 
   EXPECT_FALSE(message_queue.IsEmpty());
 
@@ -213,8 +213,8 @@ TEST_F(RouterTest, BasicRequestResponse_Synchronous) {
   router0.AcceptWithResponder(&request2,
                               new MessageAccumulator(&message_queue));
 
-  router1.WaitForIncomingMessage();
-  router0.WaitForIncomingMessage();
+  router1.WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
+  router0.WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
 
   EXPECT_FALSE(message_queue.IsEmpty());
 

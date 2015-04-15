@@ -5,6 +5,8 @@
 #ifndef MOJO_NACL_MOJO_SYSCALL_INTERNAL_H_
 #define MOJO_NACL_MOJO_SYSCALL_INTERNAL_H_
 
+#include <type_traits>
+
 #include "native_client/src/trusted/service_runtime/nacl_copy.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
@@ -51,7 +53,70 @@ static inline void memcpy_volatile_out(void volatile* dst,
 }
 
 template <typename T>
+bool ConvertPointerInput(struct NaClApp* nap, uint32_t user_ptr, T** value) {
+  if (user_ptr) {
+    uintptr_t temp = NaClUserToSysAddr(nap, user_ptr);
+    if (temp != kNaClBadAddress) {
+      *value = reinterpret_cast<T*>(temp);
+      return true;
+    }
+  } else {
+    *value = nullptr;
+    return true;
+  }
+  *value = nullptr;  // Paranoia.
+  return false;
+}
+
+template <typename T>
+bool ConvertPointerInOut(struct NaClApp* nap,
+                         uint32_t user_ptr,
+                         bool optional,
+                         T** value,
+                         uint32_t volatile** sys_ptr) {
+  if (user_ptr) {
+    uintptr_t temp = NaClUserToSysAddrRange(nap, user_ptr, sizeof(uint32_t));
+    if (temp != kNaClBadAddress) {
+      uint32_t volatile* converted_ptr =
+          reinterpret_cast<uint32_t volatile*>(temp);
+      uint32_t raw_value = *converted_ptr;
+      if (!raw_value) {
+        *sys_ptr = converted_ptr;
+        *value = nullptr;
+        return true;
+      }
+      uintptr_t temp = NaClUserToSysAddr(nap, raw_value);
+      if (temp != kNaClBadAddress) {
+        *sys_ptr = converted_ptr;
+        *value = reinterpret_cast<T*>(temp);
+        return true;
+      }
+    }
+  } else if (optional) {
+    *sys_ptr = nullptr;
+    *value = nullptr;  // Paranoia.
+    return true;
+  }
+  *sys_ptr = nullptr;  // Paranoia.
+  *value = nullptr;    // Paranoia.
+  return false;
+}
+
+template <typename T>
+void CopyOutPointer(struct NaClApp* nap, T* value, uint32_t volatile* sys_ptr) {
+  if (value) {
+    // Will kill the process if value if the pointer does not lie in the
+    // sandbox.
+    uintptr_t temp = NaClSysToUser(nap, reinterpret_cast<uintptr_t>(value));
+    *sys_ptr = static_cast<uint32_t>(temp);
+  } else {
+    *sys_ptr = 0;
+  }
+}
+
+template <typename T>
 bool ConvertScalarInput(struct NaClApp* nap, uint32_t user_ptr, T* value) {
+  static_assert(!std::is_pointer<T>::value, "do not use for pointer types");
   if (user_ptr) {
     uintptr_t temp = NaClUserToSysAddrRange(nap, user_ptr, sizeof(T));
     if (temp != kNaClBadAddress) {
@@ -67,6 +132,7 @@ bool ConvertScalarOutput(struct NaClApp* nap,
                          uint32_t user_ptr,
                          bool optional,
                          T volatile** sys_ptr) {
+  static_assert(!std::is_pointer<T>::value, "do not use for pointer types");
   if (user_ptr) {
     uintptr_t temp = NaClUserToSysAddrRange(nap, user_ptr, sizeof(T));
     if (temp != kNaClBadAddress) {
@@ -87,6 +153,7 @@ bool ConvertScalarInOut(struct NaClApp* nap,
                         bool optional,
                         T* value,
                         T volatile** sys_ptr) {
+  static_assert(!std::is_pointer<T>::value, "do not use for pointer types");
   if (user_ptr) {
     uintptr_t temp = NaClUserToSysAddrRange(nap, user_ptr, sizeof(T));
     if (temp != kNaClBadAddress) {
@@ -152,6 +219,7 @@ bool ConvertExtensibleStructInput(struct NaClApp* nap,
                                   uint32_t user_ptr,
                                   bool optional,
                                   T** sys_ptr) {
+  static_assert(!std::is_pointer<T>::value, "do not use for pointer types");
   if (user_ptr) {
     uintptr_t temp = NaClUserToSysAddrRange(nap, user_ptr, sizeof(T));
     if (temp != kNaClBadAddress) {

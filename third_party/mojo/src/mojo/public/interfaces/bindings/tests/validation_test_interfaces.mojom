@@ -41,6 +41,18 @@ struct StructG {
   bool b;
 };
 
+interface InterfaceA {
+};
+
+// This interface is used for testing bounds-checking in the mojom
+// binding code. If you add a method please update the files
+// ./data/validation/boundscheck_*. If you add a response please update
+// ./data/validation/resp_boundscheck_*.
+interface BoundsCheckTestInterface {
+  Method0(uint8 param0) => (uint8 param0);
+  Method1(uint8 param0);
+};
+
 interface ConformanceTestInterface {
   Method0(float param0);
   Method1(StructA param0);
@@ -55,6 +67,7 @@ interface ConformanceTestInterface {
   Method10(map<string, uint8> param0);
   Method11(StructG param0);
   Method12(float param0) => (float param0);
+  Method13(InterfaceA? param0, uint32 param1, InterfaceA? param2);
 };
 
 struct BasicStruct {

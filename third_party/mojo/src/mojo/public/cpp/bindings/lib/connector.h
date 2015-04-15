@@ -66,13 +66,15 @@ class Connector : public MessageReceiver {
   // Is the connector bound to a MessagePipe handle?
   bool is_valid() const { return message_pipe_.is_valid(); }
 
-  // Waits for the next message on the pipe, blocking until one arrives or an
-  // error happens. Returns |true| if a message has been delivered, |false|
-  // otherwise.
-  bool WaitForIncomingMessage();
+  // Waits for the next message on the pipe, blocking until one arrives,
+  // |deadline| elapses, or an error happens. Returns |true| if a message has
+  // been delivered, |false| otherwise.
+  bool WaitForIncomingMessage(MojoDeadline deadline);
 
   // MessageReceiver implementation:
   bool Accept(Message* message) override;
+
+  MessagePipeHandle handle() const { return message_pipe_.get(); }
 
  private:
   static void CallOnHandleReady(void* closure, MojoResult result);
