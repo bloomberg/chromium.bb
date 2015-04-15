@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
@@ -56,7 +57,7 @@ class LibjingleTransport
       public sigslot::has_slots<> {
  public:
   LibjingleTransport(cricket::PortAllocator* port_allocator,
-                           const NetworkSettings& network_settings);
+                     const NetworkSettings& network_settings);
   ~LibjingleTransport() override;
 
   // Called by JingleTransportFactory when it has fresh Jingle info.
@@ -104,7 +105,6 @@ class LibjingleTransport
 
   std::list<cricket::Candidate> pending_candidates_;
   scoped_ptr<cricket::P2PTransportChannel> channel_;
-  bool channel_was_writable_;
   int connect_attempts_left_;
   base::RepeatingTimer<LibjingleTransport> reconnect_timer_;
 
@@ -122,7 +122,6 @@ LibjingleTransport::LibjingleTransport(cricket::PortAllocator* port_allocator,
           rtc::CreateRandomString(cricket::ICE_UFRAG_LENGTH)),
       ice_password_(rtc::CreateRandomString(cricket::ICE_PWD_LENGTH)),
       can_start_(false),
-      channel_was_writable_(false),
       connect_attempts_left_(kMaxReconnectAttempts),
       weak_factory_(this) {
   DCHECK(!ice_username_fragment_.empty());
@@ -204,6 +203,10 @@ void LibjingleTransport::DoStart() {
   reconnect_timer_.Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kReconnectDelaySeconds),
       this, &LibjingleTransport::TryReconnect);
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&LibjingleTransport::NotifyConnected,
+                            weak_factory_.GetWeakPtr()));
 }
 
 void LibjingleTransport::NotifyConnected() {
@@ -212,10 +215,7 @@ void LibjingleTransport::NotifyConnected() {
       new jingle_glue::TransportChannelSocketAdapter(channel_.get()));
   socket->SetOnDestroyedCallback(base::Bind(
       &LibjingleTransport::OnChannelDestroyed, base::Unretained(this)));
-
-  Transport::ConnectedCallback callback = callback_;
-  callback_.Reset();
-  callback.Run(socket.Pass());
+  base::ResetAndReturn(&callback_).Run(socket.Pass());
 }
 
 void LibjingleTransport::AddRemoteCandidate(
@@ -274,13 +274,6 @@ void LibjingleTransport::OnWritableState(
   DCHECK_EQ(channel, channel_.get());
 
   if (channel->writable()) {
-    if (!channel_was_writable_) {
-      channel_was_writable_ = true;
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(&LibjingleTransport::NotifyConnected,
-                     weak_factory_.GetWeakPtr()));
-    }
     connect_attempts_left_ = kMaxReconnectAttempts;
     reconnect_timer_.Stop();
 
@@ -288,17 +281,15 @@ void LibjingleTransport::OnWritableState(
     // writable. Notify the event handler about the current route once the
     // channel is writable.
     NotifyRouteChanged();
-  } else if (!channel->writable() && channel_was_writable_) {
+  } else {
     reconnect_timer_.Reset();
     TryReconnect();
   }
 }
 
 void LibjingleTransport::OnChannelDestroyed() {
-  if (is_connected()) {
-    // The connection socket is being deleted, so delete the transport too.
-    delete this;
-  }
+  // The connection socket is being deleted, so delete the transport too.
+  delete this;
 }
 
 void LibjingleTransport::NotifyRouteChanged() {
