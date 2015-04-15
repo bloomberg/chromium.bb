@@ -140,7 +140,7 @@ private:
     }
 
     // FIXME: Could this be a LayoutBox?
-    LayoutBoxModelObject& m_renderer;
+    LayoutBoxModelObject& m_layoutObject;
     mutable OwnPtr<ClipRectsCache> m_cache;
 };
 

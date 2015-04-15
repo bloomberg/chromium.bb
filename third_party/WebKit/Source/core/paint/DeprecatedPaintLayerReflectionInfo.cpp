@@ -56,8 +56,8 @@
 
 namespace blink {
 
-DeprecatedPaintLayerReflectionInfo::DeprecatedPaintLayerReflectionInfo(LayoutBox& renderer)
-    : m_box(&renderer)
+DeprecatedPaintLayerReflectionInfo::DeprecatedPaintLayerReflectionInfo(LayoutBox& layoutObject)
+    : m_box(&layoutObject)
     , m_isPaintingInsideReflection(false)
 {
     UseCounter::count(box().document(), UseCounter::Reflection);

@@ -52,7 +52,7 @@
 namespace blink {
 
 // FIXME: This should not require DeprecatedPaintLayer. There is currently a cycle where
-// in order to determine if we shoulBeNormalFlowOnly() we have to ask the render
+// in order to determine if we shoulBeNormalFlowOnly() we have to ask the paint
 // layer about some of its state.
 DeprecatedPaintLayerStackingNode::DeprecatedPaintLayerStackingNode(DeprecatedPaintLayer* layer)
     : m_layer(layer)
@@ -153,7 +153,7 @@ void DeprecatedPaintLayerStackingNode::rebuildZOrderLists()
         std::stable_sort(m_negZOrderList->begin(), m_negZOrderList->end(), compareZIndex);
 
     // Append layers for top layer elements after normal layer collection, to ensure they are on top regardless of z-indexes.
-    // The renderers of top layer elements are children of the view, sorted in top layer stacking order.
+    // The layoutObjects of top layer elements are children of the view, sorted in top layer stacking order.
     if (layer()->isRootLayer()) {
         LayoutView* view = layoutObject()->view();
         for (LayoutObject* child = view->firstChild(); child; child = child->nextSibling()) {

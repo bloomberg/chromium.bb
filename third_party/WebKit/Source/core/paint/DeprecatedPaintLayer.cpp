@@ -100,11 +100,11 @@ static CompositingQueryMode gCompositingQueryMode =
 
 using namespace HTMLNames;
 
-DeprecatedPaintLayer::DeprecatedPaintLayer(LayoutBoxModelObject* renderer, DeprecatedPaintLayerType type)
+DeprecatedPaintLayer::DeprecatedPaintLayer(LayoutBoxModelObject* layoutObject, DeprecatedPaintLayerType type)
     : m_layerType(type)
     , m_hasSelfPaintingLayerDescendant(false)
     , m_hasSelfPaintingLayerDescendantDirty(false)
-    , m_isRootLayer(renderer->isLayoutView())
+    , m_isRootLayer(layoutObject->isLayoutView())
     , m_visibleContentStatusDirty(true)
     , m_hasVisibleContent(false)
     , m_visibleDescendantStatusDirty(false)
@@ -125,7 +125,7 @@ DeprecatedPaintLayer::DeprecatedPaintLayer(LayoutBoxModelObject* renderer, Depre
     , m_hasNonCompositedChild(false)
     , m_shouldIsolateCompositedDescendants(false)
     , m_lostGroupedMapping(false)
-    , m_renderer(renderer)
+    , m_layoutObject(layoutObject)
     , m_parent(0)
     , m_previous(0)
     , m_next(0)
@@ -137,15 +137,15 @@ DeprecatedPaintLayer::DeprecatedPaintLayer(LayoutBoxModelObject* renderer, Depre
     , m_potentialCompositingReasonsFromStyle(CompositingReasonNone)
     , m_compositingReasons(CompositingReasonNone)
     , m_groupedMapping(0)
-    , m_clipper(*renderer)
+    , m_clipper(*layoutObject)
 {
     updateStackingNode();
 
     m_isSelfPaintingLayer = shouldBeSelfPaintingLayer();
 
-    if (!renderer->slowFirstChild() && renderer->style()) {
+    if (!layoutObject->slowFirstChild() && layoutObject->style()) {
         m_visibleContentStatusDirty = false;
-        m_hasVisibleContent = renderer->style()->visibility() == VISIBLE;
+        m_hasVisibleContent = layoutObject->style()->visibility() == VISIBLE;
     }
 
     updateScrollableArea();
@@ -166,7 +166,7 @@ DeprecatedPaintLayer::~DeprecatedPaintLayer()
         setGroupedMapping(0);
     }
 
-    // Child layers will be deleted by their corresponding render objects, so
+    // Child layers will be deleted by their corresponding layout objects, so
     // we don't need to delete them ourselves.
 
     clearCompositedDeprecatedPaintLayerMapping(true);
@@ -328,9 +328,9 @@ void DeprecatedPaintLayer::updateLayerPositionsAfterScrollRecursive(const Double
         // the current bounds rect, as the LayoutObject may have moved since the last invalidation.
         // FIXME(416535): Ideally, pending invalidations of scrolling content should be stored in
         // the coordinate space of the scrolling content layer, so that they need no adjustment.
-        LayoutRect invalidationRect = m_renderer->previousPaintInvalidationRect();
+        LayoutRect invalidationRect = m_layoutObject->previousPaintInvalidationRect();
         invalidationRect.move(LayoutSize(scrollDelta));
-        m_renderer->setPreviousPaintInvalidationRect(invalidationRect);
+        m_layoutObject->setPreviousPaintInvalidationRect(invalidationRect);
     }
     for (DeprecatedPaintLayer* child = firstChild(); child; child = child->nextSibling()) {
         child->updateLayerPositionsAfterScrollRecursive(scrollDelta,
@@ -354,7 +354,7 @@ void DeprecatedPaintLayer::updateTransform(const ComputedStyle* oldStyle, const 
     if (oldStyle && newStyle.transformDataEquivalent(*oldStyle))
         return;
 
-    // hasTransform() on the renderer is also true when there is transform-style: preserve-3d or perspective set,
+    // hasTransform() on the layoutObject is also true when there is transform-style: preserve-3d or perspective set,
     // so check style too.
     bool hasTransform = layoutObject()->hasTransformRelatedProperty() && newStyle.hasTransform();
     bool had3DTransform = has3DTransform();
@@ -429,18 +429,18 @@ TransformationMatrix DeprecatedPaintLayer::renderableTransform(PaintBehavior pai
     return *m_transform;
 }
 
-static bool checkContainingBlockChainForPagination(LayoutBoxModelObject* renderer, LayoutBox* ancestorColumnsRenderer)
+static bool checkContainingBlockChainForPagination(LayoutBoxModelObject* layoutObject, LayoutBox* ancestorColumnsLayoutObject)
 {
-    LayoutView* view = renderer->view();
-    LayoutBoxModelObject* prevBlock = renderer;
+    LayoutView* view = layoutObject->view();
+    LayoutBoxModelObject* prevBlock = layoutObject;
     LayoutBlock* containingBlock;
-    for (containingBlock = renderer->containingBlock();
-        containingBlock && containingBlock != view && containingBlock != ancestorColumnsRenderer;
+    for (containingBlock = layoutObject->containingBlock();
+        containingBlock && containingBlock != view && containingBlock != ancestorColumnsLayoutObject;
         containingBlock = containingBlock->containingBlock())
         prevBlock = containingBlock;
 
     // If the columns block wasn't in our containing block chain, then we aren't paginated by it.
-    if (containingBlock != ancestorColumnsRenderer)
+    if (containingBlock != ancestorColumnsLayoutObject)
         return false;
 
     // If the previous block is absolutely positioned, then we can't be paginated by the columns block.
@@ -465,7 +465,7 @@ static void convertFromFlowThreadToVisualBoundingBoxInAncestor(const DeprecatedP
     rect.moveBy(offsetWithinPaginationLayer);
 
     // Then make the rectangle visual, relative to the fragmentation context. Split our box up into
-    // the actual fragment boxes that render in the columns/pages and unite those together to get
+    // the actual fragment boxes that layout in the columns/pages and unite those together to get
     // our true bounding box.
     rect = flowThread->fragmentsBoundingBox(rect);
 
@@ -676,7 +676,7 @@ void DeprecatedPaintLayer::dirtyAncestorChainVisibleDescendantStatus()
 }
 
 // FIXME: this is quite brute-force. We could be more efficient if we were to
-// track state and update it as appropriate as changes are made in the Render tree.
+// track state and update it as appropriate as changes are made in the layout tree.
 void DeprecatedPaintLayer::updateScrollingStateAfterCompositingChange()
 {
     TRACE_EVENT0("blink", "DeprecatedPaintLayer::updateScrollingStateAfterCompositingChange");
@@ -743,9 +743,9 @@ void DeprecatedPaintLayer::updateDescendantDependentFlags()
                     m_hasVisibleContent = true;
                     break;
                 }
-                LayoutObject* rendererFirstChild = r->slowFirstChild();
-                if (rendererFirstChild && !r->hasLayer()) {
-                    r = rendererFirstChild;
+                LayoutObject* layoutObjectFirstChild = r->slowFirstChild();
+                if (layoutObjectFirstChild && !r->hasLayer()) {
+                    r = layoutObjectFirstChild;
                 } else if (r->nextSibling()) {
                     r = r->nextSibling();
                 } else {
@@ -763,11 +763,11 @@ void DeprecatedPaintLayer::updateDescendantDependentFlags()
 
         if (hasVisibleContent() != previouslyHasVisibleContent) {
             setNeedsCompositingInputsUpdate();
-            // We need to tell m_renderer to recheck its rect because we
+            // We need to tell m_layoutObject to recheck its rect because we
             // pretend that invisible LayoutObjects have 0x0 rects. Changing
             // visibility therefore changes our rect and we need to visit
             // this LayoutObject during the invalidateTreeIfNeeded walk.
-            m_renderer->setMayNeedPaintInvalidation();
+            m_layoutObject->setMayNeedPaintInvalidation();
         }
     }
 }
@@ -830,7 +830,7 @@ bool DeprecatedPaintLayer::updateLayerPosition()
     }
 
     if (!layoutObject()->isOutOfFlowPositioned() && !layoutObject()->isColumnSpanAll() && layoutObject()->parent()) {
-        // We must adjust our position by walking up the render tree looking for the
+        // We must adjust our position by walking up the layout tree looking for the
         // nearest enclosing object with a layer.
         LayoutObject* curr = layoutObject()->parent();
         while (curr && !curr->hasLayer()) {
@@ -891,7 +891,7 @@ bool DeprecatedPaintLayer::updateLayerPosition()
         m_offsetForInFlowPosition = LayoutSize();
     }
 
-    // FIXME: We'd really like to just get rid of the concept of a layer rectangle and rely on the renderers.
+    // FIXME: We'd really like to just get rid of the concept of a layer rectangle and rely on the layoutObjects.
     localPoint.moveBy(-inlineBoundingBoxOffset);
 
     if (m_location != localPoint)
@@ -1107,8 +1107,8 @@ void DeprecatedPaintLayer::setShouldIsolateCompositedDescendants(bool shouldIsol
 bool DeprecatedPaintLayer::hasAncestorWithFilterOutsets() const
 {
     for (const DeprecatedPaintLayer* curr = this; curr; curr = curr->parent()) {
-        LayoutBoxModelObject* renderer = curr->layoutObject();
-        if (renderer->style()->hasFilterOutsets())
+        LayoutBoxModelObject* layoutObject = curr->layoutObject();
+        if (layoutObject->style()->hasFilterOutsets())
             return true;
     }
     return false;
@@ -1173,7 +1173,7 @@ LayoutRect DeprecatedPaintLayer::transparencyClipBox(const DeprecatedPaintLayer*
             return result;
 
         // We have to break up the transformed extent across our columns.
-        // Split our box up into the actual fragment boxes that render in the columns/pages and unite those together to
+        // Split our box up into the actual fragment boxes that layout in the columns/pages and unite those together to
         // get our true bounding box.
         LayoutFlowThread* enclosingFlowThread = toLayoutFlowThread(paginationLayer->layoutObject());
         result = enclosingFlowThread->fragmentsBoundingBox(result);
@@ -1325,7 +1325,7 @@ void DeprecatedPaintLayer::removeOnlyThisLayer()
 
     // Remove us from the parent.
     m_parent->removeChild(this);
-    m_renderer->destroyLayer();
+    m_layoutObject->destroyLayer();
 }
 
 void DeprecatedPaintLayer::insertOnlyThisLayer()
@@ -1352,25 +1352,25 @@ static inline const DeprecatedPaintLayer* accumulateOffsetTowardsAncestor(const 
 {
     ASSERT(ancestorLayer != layer);
 
-    const LayoutBoxModelObject* renderer = layer->layoutObject();
-    EPosition position = renderer->style()->position();
+    const LayoutBoxModelObject* layoutObject = layer->layoutObject();
+    EPosition position = layoutObject->style()->position();
 
     // FIXME: Positioning of out-of-flow(fixed, absolute) elements collected in a LayoutFlowThread
     // may need to be revisited in a future patch.
-    // If the fixed renderer is inside a LayoutFlowThread, we should not compute location using localToAbsolute,
+    // If the fixed layoutObject is inside a LayoutFlowThread, we should not compute location using localToAbsolute,
     // since localToAbsolute maps the coordinates from flow thread to regions coordinates and regions can be
     // positioned in a completely different place in the viewport (LayoutView).
-    if (position == FixedPosition && (!ancestorLayer || ancestorLayer == renderer->view()->layer())) {
+    if (position == FixedPosition && (!ancestorLayer || ancestorLayer == layoutObject->view()->layer())) {
         // If the fixed layer's container is the root, just add in the offset of the view. We can obtain this by calling
         // localToAbsolute() on the LayoutView.
-        FloatPoint absPos = renderer->localToAbsolute(FloatPoint(), IsFixed);
+        FloatPoint absPos = layoutObject->localToAbsolute(FloatPoint(), IsFixed);
         location += LayoutSize(absPos.x(), absPos.y());
         return ancestorLayer;
     }
 
-    // For the fixed positioned elements inside a render flow thread, we should also skip the code path below
+    // For the fixed positioned elements inside a layout flow thread, we should also skip the code path below
     // Otherwise, for the case of ancestorLayer == rootLayer and fixed positioned element child of a transformed
-    // element in render flow thread, we will hit the fixed positioned container before hitting the ancestor layer.
+    // element in layout flow thread, we will hit the fixed positioned container before hitting the ancestor layer.
     if (position == FixedPosition) {
         // For a fixed layers, we need to walk up to the root to see if there's a fixed position container
         // (e.g. a transformed layer). It's an error to call convertToLayerCoords() across a layer with a transform,
@@ -1400,7 +1400,7 @@ static inline const DeprecatedPaintLayer* accumulateOffsetTowardsAncestor(const 
             location += (fixedContainerCoords - ancestorCoords);
         } else {
             // LayoutView has been handled in the first top-level 'if' block above.
-            ASSERT(ancestorLayer != renderer->view()->layer());
+            ASSERT(ancestorLayer != layoutObject->view()->layer());
             ASSERT(ancestorLayer->hasTransformRelatedProperty());
 
             location += layer->location();
@@ -1430,7 +1430,7 @@ static inline const DeprecatedPaintLayer* accumulateOffsetTowardsAncestor(const 
 
         // We should not reach LayoutView layer past the LayoutFlowThread layer for any
         // children of the LayoutFlowThread.
-        ASSERT(!renderer->flowThreadContainingBlock() || parentLayer != renderer->view()->layer());
+        ASSERT(!layoutObject->flowThreadContainingBlock() || parentLayer != layoutObject->view()->layer());
 
         if (foundAncestorFirst) {
             // Found ancestorLayer before the abs. positioned container, so compute offset of both relative
@@ -1446,8 +1446,8 @@ static inline const DeprecatedPaintLayer* accumulateOffsetTowardsAncestor(const 
             location += (thisCoords - ancestorCoords);
             return ancestorLayer;
         }
-    } else if (renderer->isColumnSpanAll()) {
-        LayoutBlock* multicolContainer = renderer->containingBlock();
+    } else if (layoutObject->isColumnSpanAll()) {
+        LayoutBlock* multicolContainer = layoutObject->containingBlock();
         ASSERT(toLayoutBlockFlow(multicolContainer)->multiColumnFlowThread());
         parentLayer = multicolContainer->layer();
         ASSERT(parentLayer);
@@ -1641,9 +1641,9 @@ void DeprecatedPaintLayer::collectFragments(DeprecatedPaintLayerFragments& fragm
     }
 }
 
-static inline LayoutRect frameVisibleRect(LayoutObject* renderer)
+static inline LayoutRect frameVisibleRect(LayoutObject* layoutObject)
 {
-    FrameView* frameView = renderer->document().view();
+    FrameView* frameView = layoutObject->document().view();
     if (!frameView)
         return LayoutRect();
 
@@ -1746,10 +1746,10 @@ PassRefPtr<HitTestingTransformState> DeprecatedPaintLayer::createLocalTransformS
     }
     offset.moveBy(translationOffset);
 
-    LayoutObject* containerRenderer = containerLayer ? containerLayer->layoutObject() : 0;
-    if (layoutObject()->shouldUseTransformFromContainer(containerRenderer)) {
+    LayoutObject* containerLayoutObject = containerLayer ? containerLayer->layoutObject() : 0;
+    if (layoutObject()->shouldUseTransformFromContainer(containerLayoutObject)) {
         TransformationMatrix containerTransform;
-        layoutObject()->getTransformFromContainer(containerRenderer, toLayoutSize(offset), containerTransform);
+        layoutObject()->getTransformFromContainer(containerLayoutObject, toLayoutSize(offset), containerTransform);
         transformState->applyTransform(containerTransform, HitTestingTransformState::AccumulateTransform);
     } else {
         transformState->translate(offset.x(), offset.y(), HitTestingTransformState::AccumulateTransform);
@@ -2205,7 +2205,7 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestChildLayerColumns(DeprecatedP
                 else
                     childLayer->m_transform.clear();
             } else {
-                // Adjust the transform such that the renderer's upper left corner will be at (0,0) in user space.
+                // Adjust the transform such that the layoutObjects's upper left corner will be at (0,0) in user space.
                 // This involves subtracting out the position of the layer in our current coordinate space.
                 DeprecatedPaintLayer* nextLayer = columnLayers[columnIndex - 1];
                 RefPtr<HitTestingTransformState> newTransformState = nextLayer->createLocalTransformState(rootLayer, nextLayer, localClipRect, hitTestLocation, transformState);
@@ -2359,13 +2359,13 @@ LayoutRect DeprecatedPaintLayer::logicalBoundingBox() const
     return result;
 }
 
-static inline LayoutRect flippedLogicalBoundingBox(LayoutRect boundingBox, LayoutObject* renderer)
+static inline LayoutRect flippedLogicalBoundingBox(LayoutRect boundingBox, LayoutObject* layoutObjects)
 {
     LayoutRect result = boundingBox;
-    if (renderer->isBox())
-        toLayoutBox(renderer)->flipForWritingMode(result);
+    if (layoutObjects->isBox())
+        toLayoutBox(layoutObjects)->flipForWritingMode(result);
     else
-        renderer->containingBlock()->flipForWritingMode(result);
+        layoutObjects->containingBlock()->flipForWritingMode(result);
     return result;
 }
 
@@ -2445,11 +2445,11 @@ LayoutRect DeprecatedPaintLayer::boundingBoxForCompositing(const DeprecatedPaint
 
     // The root layer is always just the size of the document.
     if (isRootLayer())
-        return LayoutRect(m_renderer->view()->unscaledDocumentRect());
+        return LayoutRect(m_layoutObject->view()->unscaledDocumentRect());
 
     // The layer created for the LayoutFlowThread is just a helper for painting and hit-testing,
     // and should not contribute to the bounding box. The LayoutMultiColumnSets will contribute
-    // the correct size for the rendered content of the multicol container.
+    // the correct size for the layout content of the multicol container.
     if (useRegionBasedColumns() && layoutObject()->isLayoutFlowThread())
         return LayoutRect();
 
@@ -2473,7 +2473,7 @@ LayoutRect DeprecatedPaintLayer::boundingBoxForCompositing(const DeprecatedPaint
         // FIXME: We can optimize the size of the composited layers, by not enlarging
         // filtered areas with the outsets if we know that the filter is going to render in hardware.
         // https://bugs.webkit.org/show_bug.cgi?id=81239
-        result.expand(m_renderer->style()->filterOutsets());
+        result.expand(m_layoutObject->style()->filterOutsets());
     }
 
     if (paintsWithTransform(PaintBehaviorNormal) || (options == ApplyBoundsChickenEggHacks && transform()))
@@ -2609,7 +2609,7 @@ bool DeprecatedPaintLayer::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& l
     if (paintsWithTransparency(PaintBehaviorNormal))
         return false;
 
-    // We can't use hasVisibleContent(), because that will be true if our renderer is hidden, but some child
+    // We can't use hasVisibleContent(), because that will be true if our layoutObject is hidden, but some child
     // is visible and that child doesn't cover the entire rect.
     if (layoutObject()->style()->visibility() != VISIBLE)
         return false;
@@ -2627,7 +2627,7 @@ bool DeprecatedPaintLayer::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& l
     if (m_stackingNode->zOrderListsDirty() || m_stackingNode->normalFlowListDirty())
         return false;
 
-    // FIXME: We currently only check the immediate renderer,
+    // FIXME: We currently only check the immediate layoutObject,
     // which will miss many cases.
     if (layoutObject()->backgroundIsKnownToBeOpaqueInRect(localRect))
         return true;
@@ -2684,13 +2684,13 @@ void DeprecatedPaintLayer::updateSelfPaintingLayer()
         parent()->dirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
 }
 
-bool DeprecatedPaintLayer::hasNonEmptyChildRenderers() const
+bool DeprecatedPaintLayer::hasNonEmptyChildLayoutObjects() const
 {
-    // Some HTML can cause whitespace text nodes to have renderers, like:
+    // Some HTML can cause whitespace text nodes to have layoutObjects, like:
     // <div>
     // <img src=...>
     // </div>
-    // so test for 0x0 RenderTexts here
+    // so test for 0x0 LayoutTexts here
     for (LayoutObject* child = layoutObject()->slowFirstChild(); child; child = child->nextSibling()) {
         if (!child->hasLayer()) {
             if (child->isLayoutInline() || !child->isBox())
@@ -2769,13 +2769,13 @@ bool DeprecatedPaintLayer::attemptDirectCompositingUpdate(StyleDifference diff, 
     // We composite transparent Layers differently from non-transparent
     // Layers even when the non-transparent Layers are already a
     // stacking context.
-    if (diff.opacityChanged() && m_renderer->style()->hasOpacity() != oldStyle->hasOpacity())
+    if (diff.opacityChanged() && m_layoutObject->style()->hasOpacity() != oldStyle->hasOpacity())
         return false;
 
     // Changes in pointer-events affect hit test visibility of the scrollable
     // area and its |m_scrollsOverflow| value which determines if the layer
     // requires composited scrolling or not.
-    if (m_scrollableArea && m_renderer->style()->pointerEvents() != oldStyle->pointerEvents())
+    if (m_scrollableArea && m_layoutObject->style()->pointerEvents() != oldStyle->pointerEvents())
         return false;
 
     updateTransform(oldStyle, layoutObject()->styleRef());
@@ -2873,14 +2873,14 @@ void DeprecatedPaintLayer::updateOrRemoveFilterEffectRenderer()
     }
 
     DeprecatedPaintLayerFilterInfo* filterInfo = ensureFilterInfo();
-    if (!filterInfo->layoutObject()) {
+    if (!filterInfo->renderer()) {
         RefPtrWillBeRawPtr<FilterEffectRenderer> filterRenderer = FilterEffectRenderer::create();
         filterInfo->setRenderer(filterRenderer.release());
     }
 
     // If the filter fails to build, remove it from the layer. It will still attempt to
     // go through regular processing (e.g. compositing), but never apply anything.
-    if (!filterInfo->layoutObject()->build(layoutObject(), computeFilterOperations(layoutObject()->styleRef())))
+    if (!filterInfo->renderer()->build(layoutObject(), computeFilterOperations(layoutObject()->styleRef())))
         filterInfo->setRenderer(nullptr);
 }
 
@@ -2967,10 +2967,10 @@ void showLayerTree(const blink::DeprecatedPaintLayer* layer)
     }
 }
 
-void showLayerTree(const blink::LayoutObject* renderer)
+void showLayerTree(const blink::LayoutObject* layoutObject)
 {
-    if (!renderer)
+    if (!layoutObject)
         return;
-    showLayerTree(renderer->enclosingLayer());
+    showLayerTree(layoutObject->enclosingLayer());
 }
 #endif

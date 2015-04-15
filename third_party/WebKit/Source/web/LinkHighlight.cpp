@@ -205,7 +205,7 @@ bool LinkHighlight::computeHighlightLayerPathAndPosition(const LayoutBoxModelObj
     ASSERT(quads.size());
     Path newPath;
 
-    FloatPoint positionAdjustForCompositedScrolling = IntPoint(m_currentGraphicsLayer->offsetFromRenderer());
+    FloatPoint positionAdjustForCompositedScrolling = IntPoint(m_currentGraphicsLayer->offsetFromLayoutObject());
 
     for (size_t quadIndex = 0; quadIndex < quads.size(); ++quadIndex) {
         FloatQuad absoluteQuad = quads[quadIndex];

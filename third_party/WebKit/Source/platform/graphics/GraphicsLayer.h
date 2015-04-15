@@ -120,7 +120,7 @@ public:
     GraphicsLayer* contentsClippingMaskLayer() const { return m_contentsClippingMaskLayer; }
     void setContentsClippingMaskLayer(GraphicsLayer*);
 
-    // The given layer will replicate this layer and its children; the replica renders behind this layer.
+    // The given layer will replicate this layer and its children; the replica layoutObjects behind this layer.
     void setReplicatedByLayer(GraphicsLayer*);
     // The layer that replicates this layer (if any).
     GraphicsLayer* replicaLayer() const { return m_replicaLayer; }
@@ -132,14 +132,14 @@ public:
         SetNeedsDisplay
     };
 
-    // Offset is origin of the renderer minus origin of the graphics layer (so either zero or negative).
-    IntSize offsetFromRenderer() const { return flooredIntSize(m_offsetFromRenderer); }
-    void setOffsetFromRenderer(const IntSize&, ShouldSetNeedsDisplay = SetNeedsDisplay);
+    // Offset is origin of the layoutObject minus origin of the graphics layer (so either zero or negative).
+    IntSize offsetFromLayoutObject() const { return flooredIntSize(m_offsetFromLayoutObject); }
+    void setOffsetFromLayoutObject(const IntSize&, ShouldSetNeedsDisplay = SetNeedsDisplay);
 
     // The double version is only used in |updateScrollingLayerGeometry()| for detecting
     // scroll offset change at floating point precision.
-    DoubleSize offsetDoubleFromRenderer() const { return m_offsetFromRenderer; }
-    void setOffsetDoubleFromRenderer(const DoubleSize&, ShouldSetNeedsDisplay = SetNeedsDisplay);
+    DoubleSize offsetDoubleFromLayoutObject() const { return m_offsetFromLayoutObject; }
+    void setOffsetDoubleFromLayoutObject(const DoubleSize&, ShouldSetNeedsDisplay = SetNeedsDisplay);
 
     // The position of the layer (the location of its top-left corner in its parent)
     const FloatPoint& position() const { return m_position; }
@@ -305,8 +305,8 @@ private:
 
     GraphicsLayerClient* m_client;
 
-    // Offset from the owning renderer
-    DoubleSize m_offsetFromRenderer;
+    // Offset from the owning layoutObject
+    DoubleSize m_offsetFromLayoutObject;
 
     // Position is relative to the parent GraphicsLayer
     FloatPoint m_position;

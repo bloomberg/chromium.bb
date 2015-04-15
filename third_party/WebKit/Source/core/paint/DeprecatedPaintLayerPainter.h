@@ -18,7 +18,7 @@ class DeprecatedPaintLayerPainter {
 public:
     enum FragmentPolicy { AllowMultipleFragments, ForceSingleFragment };
 
-    DeprecatedPaintLayerPainter(DeprecatedPaintLayer& renderLayer) : m_renderLayer(renderLayer) { }
+    DeprecatedPaintLayerPainter(DeprecatedPaintLayer& paintLayer) : m_paintLayer(paintLayer) { }
 
     // The paint() method paints the layers that intersect the damage rect from back to front.
     //  paint() assumes that the caller will clip to the bounds of damageRect if necessary.
@@ -41,17 +41,17 @@ private:
     void paintPaginatedChildLayer(GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, PaintLayerFlags);
     void paintChildLayerIntoColumns(GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, PaintLayerFlags, const Vector<DeprecatedPaintLayer*>& columnLayers, size_t columnIndex);
     bool atLeastOneFragmentIntersectsDamageRect(DeprecatedPaintLayerFragments&, const DeprecatedPaintLayerPaintingInfo&, PaintLayerFlags, const LayoutPoint& offsetFromRoot);
-    void paintFragmentWithPhase(PaintPhase, const DeprecatedPaintLayerFragment&, GraphicsContext*, const ClipRect&, const DeprecatedPaintLayerPaintingInfo&, PaintBehavior, LayoutObject* paintingRootForRenderer, PaintLayerFlags, ClipState);
+    void paintFragmentWithPhase(PaintPhase, const DeprecatedPaintLayerFragment&, GraphicsContext*, const ClipRect&, const DeprecatedPaintLayerPaintingInfo&, PaintBehavior, LayoutObject* paintingRootForLayoutObject, PaintLayerFlags, ClipState);
     void paintBackgroundForFragments(const DeprecatedPaintLayerFragments&, GraphicsContext*,
-        const LayoutRect& transparencyPaintDirtyRect, const DeprecatedPaintLayerPaintingInfo&, PaintBehavior, LayoutObject* paintingRootForRenderer, PaintLayerFlags);
+        const LayoutRect& transparencyPaintDirtyRect, const DeprecatedPaintLayerPaintingInfo&, PaintBehavior, LayoutObject* paintingRootForLayoutObject, PaintLayerFlags);
     void paintForegroundForFragments(const DeprecatedPaintLayerFragments&, GraphicsContext*,
-        const LayoutRect& transparencyPaintDirtyRect, const DeprecatedPaintLayerPaintingInfo&, PaintBehavior, LayoutObject* paintingRootForRenderer,
+        const LayoutRect& transparencyPaintDirtyRect, const DeprecatedPaintLayerPaintingInfo&, PaintBehavior, LayoutObject* paintingRootForLayoutObject,
         bool selectionOnly, PaintLayerFlags);
-    void paintForegroundForFragmentsWithPhase(PaintPhase, const DeprecatedPaintLayerFragments&, GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, PaintBehavior, LayoutObject* paintingRootForRenderer, PaintLayerFlags, ClipState);
-    void paintOutlineForFragments(const DeprecatedPaintLayerFragments&, GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, PaintBehavior, LayoutObject* paintingRootForRenderer, PaintLayerFlags);
+    void paintForegroundForFragmentsWithPhase(PaintPhase, const DeprecatedPaintLayerFragments&, GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, PaintBehavior, LayoutObject* paintingRootForLayoutObject, PaintLayerFlags, ClipState);
+    void paintOutlineForFragments(const DeprecatedPaintLayerFragments&, GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, PaintBehavior, LayoutObject* paintingRootForLayoutObject, PaintLayerFlags);
     void paintOverflowControlsForFragments(const DeprecatedPaintLayerFragments&, GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, PaintLayerFlags);
-    void paintMaskForFragments(const DeprecatedPaintLayerFragments&, GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, LayoutObject* paintingRootForRenderer, PaintLayerFlags);
-    void paintChildClippingMaskForFragments(const DeprecatedPaintLayerFragments&, GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, LayoutObject* paintingRootForRenderer, PaintLayerFlags);
+    void paintMaskForFragments(const DeprecatedPaintLayerFragments&, GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, LayoutObject* paintingRootForLayoutObject, PaintLayerFlags);
+    void paintChildClippingMaskForFragments(const DeprecatedPaintLayerFragments&, GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, LayoutObject* paintingRootForLayoutObject, PaintLayerFlags);
 
     static bool needsToClip(const DeprecatedPaintLayerPaintingInfo& localPaintingInfo, const ClipRect&);
 
@@ -59,7 +59,7 @@ private:
     // layers).
     bool shouldPaintLayerInSoftwareMode(const DeprecatedPaintLayerPaintingInfo&, PaintLayerFlags paintFlags);
 
-    DeprecatedPaintLayer& m_renderLayer;
+    DeprecatedPaintLayer& m_paintLayer;
 };
 
 } // namespace blink

@@ -260,17 +260,17 @@ void GraphicsLayer::setReplicatedByLayer(GraphicsLayer* layer)
     platformLayer()->setReplicaLayer(webReplicaLayer);
 }
 
-void GraphicsLayer::setOffsetFromRenderer(const IntSize& offset, ShouldSetNeedsDisplay shouldSetNeedsDisplay)
+void GraphicsLayer::setOffsetFromLayoutObject(const IntSize& offset, ShouldSetNeedsDisplay shouldSetNeedsDisplay)
 {
-    setOffsetDoubleFromRenderer(offset);
+    setOffsetDoubleFromLayoutObject(offset);
 }
 
-void GraphicsLayer::setOffsetDoubleFromRenderer(const DoubleSize& offset, ShouldSetNeedsDisplay shouldSetNeedsDisplay)
+void GraphicsLayer::setOffsetDoubleFromLayoutObject(const DoubleSize& offset, ShouldSetNeedsDisplay shouldSetNeedsDisplay)
 {
-    if (offset == m_offsetFromRenderer)
+    if (offset == m_offsetFromLayoutObject)
         return;
 
-    m_offsetFromRenderer = offset;
+    m_offsetFromLayoutObject = offset;
 
     // If the compositing layer offset changes, we need to repaint.
     if (shouldSetNeedsDisplay == SetNeedsDisplay)
@@ -350,7 +350,7 @@ void GraphicsLayer::updateContentsRect()
             m_contentsClippingMaskLayer->setNeedsDisplay();
         }
         m_contentsClippingMaskLayer->setPosition(FloatPoint());
-        m_contentsClippingMaskLayer->setOffsetFromRenderer(offsetFromRenderer() + IntSize(m_contentsRect.location().x(), m_contentsRect.location().y()));
+        m_contentsClippingMaskLayer->setOffsetFromLayoutObject(offsetFromLayoutObject() + IntSize(m_contentsRect.location().x(), m_contentsRect.location().y()));
     }
 }
 

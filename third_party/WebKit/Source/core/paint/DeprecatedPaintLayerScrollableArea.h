@@ -278,10 +278,10 @@ private:
     RefPtrWillBePersistent<Scrollbar> m_hBar;
     RefPtrWillBePersistent<Scrollbar> m_vBar;
 
-    // Renderers to hold our custom scroll corner.
+    // LayoutObject to hold our custom scroll corner.
     LayoutScrollbarPart* m_scrollCorner;
 
-    // Renderers to hold our custom resizer.
+    // LayoutObject to hold our custom resizer.
     LayoutScrollbarPart* m_resizer;
 };
 

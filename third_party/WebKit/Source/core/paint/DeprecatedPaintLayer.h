@@ -101,8 +101,8 @@ public:
 
     String debugName() const;
 
-    LayoutBoxModelObject* layoutObject() const { return m_renderer; }
-    LayoutBox* layoutBox() const { return m_renderer && m_renderer->isBox() ? toLayoutBox(m_renderer) : 0; }
+    LayoutBoxModelObject* layoutObject() const { return m_layoutObject; }
+    LayoutBox* layoutBox() const { return m_layoutObject && m_layoutObject->isBox() ? toLayoutBox(m_layoutObject) : 0; }
     DeprecatedPaintLayer* parent() const { return m_parent; }
     DeprecatedPaintLayer* previousSibling() const { return m_previous; }
     DeprecatedPaintLayer* nextSibling() const { return m_next; }
@@ -150,7 +150,7 @@ public:
 
     DeprecatedPaintLayerCompositor* compositor() const;
 
-    // Notification from the renderer that its content changed (e.g. current frame of image changed).
+    // Notification from the layoutObject that its content changed (e.g. current frame of image changed).
     // Allows updates of layer content without invalidating paint.
     void contentChanged(ContentChangeType);
 
@@ -188,8 +188,8 @@ public:
 
     bool hasBoxDecorationsOrBackground() const;
     bool hasVisibleBoxDecorations() const;
-    // True if this layer container renderers that paint.
-    bool hasNonEmptyChildRenderers() const;
+    // True if this layer container layoutObjects that paint.
+    bool hasNonEmptyChildLayoutObjects() const;
 
     // Will ensure that hasNonCompositiedChild are up to date.
     void updateScrollingStateAfterCompositingChange();
@@ -216,7 +216,7 @@ public:
 
     bool canUseConvertToLayerCoords() const
     {
-        // These LayoutObjects have an impact on their layers without the renderers knowing about it.
+        // These LayoutObjects have an impact on their layers without the layoutObjects knowing about it.
         return !layoutObject()->hasColumns() && !layoutObject()->hasTransformRelatedProperty() && !layoutObject()->isSVGRoot();
     }
 
@@ -318,7 +318,7 @@ public:
     bool hasCompositedClippingMask() const;
     bool needsCompositedScrolling() const { return m_scrollableArea && m_scrollableArea->needsCompositedScrolling(); }
 
-    // Computes the position of the given render object in the space of |paintInvalidationContainer|.
+    // Computes the position of the given layout object in the space of |paintInvalidationContainer|.
     // FIXME: invert the logic to have paint invalidation containers take care of painting objects into them, rather than the reverse.
     // This will allow us to clean up this static method messiness.
     static LayoutPoint positionFromPaintInvalidationBacking(const LayoutObject*, const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0);
@@ -351,7 +351,7 @@ public:
     FilterEffectRenderer* filterRenderer() const
     {
         DeprecatedPaintLayerFilterInfo* filterInfo = this->filterInfo();
-        return filterInfo ? filterInfo->layoutObject() : 0;
+        return filterInfo ? filterInfo->renderer() : 0;
     }
 
     DeprecatedPaintLayerFilterInfo* filterInfo() const { return hasFilterInfo() ? DeprecatedPaintLayerFilterInfo::filterInfoForLayer(this) : 0; }
@@ -389,8 +389,8 @@ public:
         // FIXME: This is not in sync with containingBlock.
         // LayoutObject::canContainFixedPositionedObject() should probably be used
         // instead.
-        LayoutBoxModelObject* layerRenderer = layoutObject();
-        return isRootLayer() || layerRenderer->isPositioned() || hasTransformRelatedProperty();
+        LayoutBoxModelObject* layerlayoutObject = layoutObject();
+        return isRootLayer() || layerlayoutObject->isPositioned() || hasTransformRelatedProperty();
     }
 
     bool scrollsOverflow() const;
@@ -656,18 +656,18 @@ private:
     // Used only while determining what layers should be composited. Applies to the tree of z-order lists.
     unsigned m_hasCompositingDescendant : 1;
 
-    // Applies to the real render layer tree (i.e., the tree determined by the layer's parent and children and
+    // Applies to the real layout layer tree (i.e., the tree determined by the layer's parent and children and
     // as opposed to the tree formed by the z-order and normal flow lists).
     unsigned m_hasNonCompositedChild : 1;
 
     // Should be for stacking contexts having unisolated blending descendants.
     unsigned m_shouldIsolateCompositedDescendants : 1;
 
-    // True if this render layer just lost its grouped mapping due to the CompositedDeprecatedPaintLayerMapping being destroyed,
+    // True if this layout layer just lost its grouped mapping due to the CompositedDeprecatedPaintLayerMapping being destroyed,
     // and we don't yet know to what graphics layer this Layer will be assigned.
     unsigned m_lostGroupedMapping : 1;
 
-    LayoutBoxModelObject* m_renderer;
+    LayoutBoxModelObject* m_layoutObject;
 
     DeprecatedPaintLayer* m_parent;
     DeprecatedPaintLayer* m_previous;

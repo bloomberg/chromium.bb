@@ -53,7 +53,7 @@ public:
     static DeprecatedPaintLayerFilterInfo* createFilterInfoForLayerIfNeeded(DeprecatedPaintLayer*);
     static void removeFilterInfoForLayer(DeprecatedPaintLayer*);
 
-    FilterEffectRenderer* layoutObject() const { return m_renderer.get(); }
+    FilterEffectRenderer* renderer() const { return m_renderer.get(); }
     void setRenderer(PassRefPtrWillBeRawPtr<FilterEffectRenderer>);
 
     void updateReferenceFilterClients(const FilterOperations&);

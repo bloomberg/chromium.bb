@@ -39,7 +39,7 @@ class DeprecatedPaintLayerCompositor;
 
 // A GraphicsLayerPaintInfo contains all the info needed to paint a partial subtree of Layers into a GraphicsLayer.
 struct GraphicsLayerPaintInfo {
-    DeprecatedPaintLayer* renderLayer;
+    DeprecatedPaintLayer* paintLayer;
 
     LayoutRect compositedBounds;
 
@@ -47,10 +47,10 @@ struct GraphicsLayerPaintInfo {
     IntRect localClipRectForSquashedLayer;
 
     // Offset describing where this squashed Layer paints into the shared GraphicsLayer backing.
-    IntSize offsetFromRenderer;
-    bool offsetFromRendererSet;
+    IntSize offsetFromLayoutObject;
+    bool offsetFromLayoutObjectSet;
 
-    GraphicsLayerPaintInfo() : renderLayer(0), offsetFromRendererSet(false) { }
+    GraphicsLayerPaintInfo() : paintLayer(0), offsetFromLayoutObjectSet(false) { }
 };
 
 enum GraphicsLayerUpdateScope {
@@ -59,7 +59,7 @@ enum GraphicsLayerUpdateScope {
     GraphicsLayerUpdateSubtree,
 };
 
-// CompositedDeprecatedPaintLayerMapping keeps track of how Layers of the render tree correspond to
+// CompositedDeprecatedPaintLayerMapping keeps track of how Layers of the layout tree correspond to
 // GraphicsLayers of the composited layer tree. Each instance of CompositedDeprecatedPaintLayerMapping
 // manages a small cluster of GraphicsLayers and the references to which Layers
 // and paint phases contribute to each GraphicsLayer.
@@ -117,12 +117,12 @@ public:
 
     void setSquashingContentsNeedDisplay();
     void setContentsNeedDisplay();
-    // r is in the coordinate space of the layer's render object
+    // LayoutRect is in the coordinate space of the layer's layout object.
     void setContentsNeedDisplayInRect(const LayoutRect&, PaintInvalidationReason);
 
     void invalidateDisplayItemClient(const DisplayItemClientWrapper&);
 
-    // Notification from the renderer that its content changed.
+    // Notification from the layoutObject that its content changed.
     void contentChanged(ContentChangeType);
 
     LayoutRect compositedBounds() const { return m_compositedBounds; }
@@ -262,17 +262,17 @@ private:
     void updateIsRootForIsolatedGroup();
     void updateScrollBlocksOn(const ComputedStyle&);
     // Return the opacity value that this layer should use for compositing.
-    float compositingOpacity(float rendererOpacity) const;
+    float compositingOpacity(float layoutObjectOpacity) const;
 
     bool paintsChildren() const;
 
-    // Returns true if this layer has content that needs to be rendered by painting into the backing store.
+    // Returns true if this layer has content that needs to be displayed by painting into the backing store.
     bool containsPaintedContent() const;
     // Returns true if the Layer just contains an image that we can composite directly.
     bool isDirectlyCompositedImage() const;
     void updateImageContents();
 
-    Color rendererBackgroundColor() const;
+    Color layoutObjectBackgroundColor() const;
     void updateBackgroundColor();
     void updateContentsRect();
     void updateContentsOffsetInCompositingLayer(const IntPoint& snappedOffsetFromCompositedAncestor, const IntPoint& graphicsLayerParentLocation);
