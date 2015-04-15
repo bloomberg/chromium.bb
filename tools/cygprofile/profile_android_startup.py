@@ -135,12 +135,14 @@ class WprManager(object):
     """Start the WPR server on the host and the forwarder on the device."""
     print 'Starting WPR on host...'
     _DownloadFromCloudStorage(self._WPR_BUCKET, self._wpr_archive_hash)
-    self._wpr_server = webpagereplay.ReplayServer(self._wpr_archive,
-        '127.0.0.1', 0, 0, None,
-        ['--should_generate_certs',
-         '--https_root_ca_cert_path=' + self._wpr_ca_cert_path,
-         '--use_closest_match'])
-    ports = self._wpr_server.StartServer()[:-1]
+    args = ['--user_closest_match']
+    if self._is_test_ca_installed:
+      args.extend(['--should_generate_certs',
+                   '--https_root_ca_cert_path=' + self._wpr_ca_cert_path])
+    wpr_server = webpagereplay.ReplayServer(self._wpr_archive,
+        '127.0.0.1', 0, 0, None, args)
+    ports = wpr_server.StartServer()[:-1]
+    self._wpr_server = wpr_server
     self._host_http_port = ports[0]
     self._host_https_port = ports[1]
 
@@ -149,11 +151,15 @@ class WprManager(object):
     print 'Stopping WPR on host...'
     if self._wpr_server:
       self._wpr_server.StopServer()
+      self._wpr_server = None
 
   def _StartForwarder(self):
     """Sets up forwarding of device ports to the host, and configures chrome
     to use those ports.
     """
+    if not self._wpr_server:
+      logging.warning('No host WPR server to forward to.')
+      return
     print 'Starting device forwarder...'
     forwarder.Forwarder.Map([(0, self._host_http_port),
                              (0, self._host_https_port)],
