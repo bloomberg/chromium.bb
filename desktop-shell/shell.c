@@ -1668,24 +1668,27 @@ constrain_position(struct weston_move_grab *move, int *cx, int *cy)
 {
 	struct shell_surface *shsurf = move->base.shsurf;
 	struct weston_pointer *pointer = move->base.grab.pointer;
-	int x, y, panel_width, panel_height, bottom;
+	int x, y, bottom;
 	const int safety = 50;
+	pixman_rectangle32_t area;
 
 	x = wl_fixed_to_int(pointer->x + move->dx);
 	y = wl_fixed_to_int(pointer->y + move->dy);
 
 	if (shsurf->shell->panel_position == DESKTOP_SHELL_PANEL_POSITION_TOP) {
-		get_output_panel_size(shsurf->shell, shsurf->surface->output,
-				      &panel_width, &panel_height);
+		get_output_work_area(shsurf->shell,
+				     shsurf->surface->output,
+				     &area);
 
-		bottom = y + shsurf->geometry.height;
-		if (bottom - panel_height < safety)
-			y = panel_height + safety -
-				shsurf->geometry.height;
+		bottom = y + shsurf->geometry.height + shsurf->geometry.y;
+		if (bottom - safety < area.y)
+			y = area.y + safety - shsurf->geometry.height
+			  - shsurf->geometry.y;
 
 		if (move->client_initiated &&
-		    y + shsurf->geometry.y < panel_height)
-			y = panel_height - shsurf->geometry.y;
+		    y + shsurf->geometry.y < area.y)
+			y = area.y - shsurf->geometry.y;
+
 	}
 
 	*cx = x;
