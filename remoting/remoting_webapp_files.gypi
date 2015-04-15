@@ -150,6 +150,7 @@
     ],
     # Client JavaScript files.
     'remoting_webapp_js_client_files': [
+      'webapp/crd/js/activity.js',
       'webapp/crd/js/client_plugin.js',
       'webapp/crd/js/client_plugin_impl.js',
       'webapp/crd/js/client_plugin_host_desktop_impl.js',
@@ -287,7 +288,6 @@
       'webapp/crd/js/crd_event_handlers.js',
       'webapp/crd/js/crd_experimental.js',
       'webapp/crd/js/crd_main.js',
-      'webapp/crd/js/activity.js',
       'webapp/crd/js/desktop_remoting.js',
       'webapp/crd/js/desktop_remoting_activity.js',
       'webapp/crd/js/it2me_activity.js',

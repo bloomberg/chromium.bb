@@ -48,6 +48,7 @@
       'webapp/app_remoting/js/application_context_menu.js',
       'webapp/app_remoting/js/app_connected_view.js',
       'webapp/app_remoting/js/app_remoting.js',
+      'webapp/app_remoting/js/app_remoting_activity.js',
       'webapp/app_remoting/js/ar_auth_dialog.js',
       'webapp/app_remoting/js/ar_main.js',
       'webapp/app_remoting/js/context_menu_adapter.js',
