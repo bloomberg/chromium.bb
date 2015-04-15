@@ -1477,6 +1477,7 @@ _x86_internal_release_boards = frozenset([
   'guado',
   'jecht',
   'kip',
+  'lakitu',
   'leon',
   'link',
   'lulu',
@@ -1611,6 +1612,7 @@ _brillo_boards = frozenset([
   'cosmos',
   'gizmo',
   'kayle',
+  'lakitu',
   'panther_embedded',
   'purin',
   'storm',
@@ -1639,6 +1641,18 @@ _toolchains_from_source = frozenset([
   'x32-generic',
 ])
 
+_noimagetest_boards = frozenset([
+    'lakitu',
+])
+
+_nohwqual_boards = frozenset([
+    'lakitu',
+])
+
+_norootfs_verification_boards = frozenset([
+    'lakitu',
+])
+
 # A base config for each board.
 _base_configs = dict()
 
@@ -1661,6 +1675,12 @@ def _CreateBaseConfigs():
       base.update(factory=False)
     if board in _toolchains_from_source:
       base.update(usepkg_toolchain=False)
+    if board in _noimagetest_boards:
+      base.update(image_test=False)
+    if board in _nohwqual_boards:
+      base.update(hwqual=False)
+    if board in _norootfs_verification_boards:
+      base.update(rootfs_verification=False)
 
     # TODO(akeshet) Eliminate or clean up this special case.
     # kayle board has a lot of kayle-specific config changes.
@@ -2439,6 +2459,10 @@ internal_paladin.add_config('pre-cq-launcher',
 
 internal_incremental.add_config('mario-incremental',
   boards=['x86-mario'],
+)
+
+internal_incremental.add_config('lakitu-incremental',
+  _base_configs['lakitu'],
 )
 
 _toolchain_major.add_config('internal-toolchain-major', internal, official,
@@ -3271,6 +3295,7 @@ _waterfall_config_map = {
       'panther_moblab-release',
       'rush_ryu-release',
       'strago-release',
+      'lakitu-release',
 
       # Experimental PFQs.
       'peach_pit-chrome-pfq',
@@ -3278,6 +3303,7 @@ _waterfall_config_map = {
 
       # Incremental Builders.
       'mario-incremental',
+      'lakitu-incremental',
 
       # Firmware Builders.
       'link-depthcharge-full-firmware',
