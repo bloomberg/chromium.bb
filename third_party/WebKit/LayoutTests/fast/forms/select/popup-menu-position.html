@@ -73,7 +73,7 @@ function test3() {
 
 function test4() {
     popupWindowRect = getPopupWindowRect();
-    shouldBe('popupWindowRect.x', 'screenWidth - menuWidth');
+    shouldBe('popupWindowRect.x', 'screenWidth - 100');
     shouldBe('popupWindowRect.y', 'menuHeight');
 
     popupWindow.pagePopupController.closePopup();
@@ -89,7 +89,7 @@ function test4() {
 
 function test5() {
     popupWindowRect = getPopupWindowRect();
-    shouldBe('popupWindowRect.x', '0');
+    shouldBe('popupWindowRect.x', '-100');
     shouldBe('popupWindowRect.y', 'menuHeight');
 
     popupWindow.pagePopupController.closePopup();
@@ -105,8 +105,7 @@ function test5() {
 
 function test6() {
     popupWindowRect = getPopupWindowRect();
-    // Popup should appear right at the right edge of the screen.
-    shouldBe('popupWindowRect.x', 'screenWidth - 250');
+    shouldBe('popupWindowRect.x', 'screenWidth - menuWidth - 10');
     shouldBe('popupWindowRect.y', 'menuHeight');
 
     popupWindow.pagePopupController.closePopup();

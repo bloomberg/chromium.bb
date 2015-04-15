@@ -31,21 +31,23 @@
 #include "config.h"
 #include "core/page/PagePopupController.h"
 
+#include "core/page/PagePopup.h"
 #include "core/page/PagePopupClient.h"
 #include "platform/text/PlatformLocale.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
 
-PagePopupController::PagePopupController(PagePopupClient* client)
-    : m_popupClient(client)
+PagePopupController::PagePopupController(PagePopup& popup, PagePopupClient* client)
+    : m_popup(popup)
+    , m_popupClient(client)
 {
     ASSERT(client);
 }
 
-PassRefPtrWillBeRawPtr<PagePopupController> PagePopupController::create(PagePopupClient* client)
+PassRefPtrWillBeRawPtr<PagePopupController> PagePopupController::create(PagePopup& popup, PagePopupClient* client)
 {
-    return adoptRefWillBeNoop(new PagePopupController(client));
+    return adoptRefWillBeNoop(new PagePopupController(popup, client));
 }
 
 void PagePopupController::setValueAndClosePopup(int numValue, const String& stringValue)
@@ -117,6 +119,11 @@ void PagePopupController::clearPagePopupClient()
 void PagePopupController::histogramEnumeration(const String& name, int sample, int boundaryValue)
 {
     blink::Platform::current()->histogramEnumeration(name.utf8().data(), sample, boundaryValue);
+}
+
+void PagePopupController::setWindowRect(int x, int y, int width, int height)
+{
+    m_popup.setWindowRect(IntRect(x, y, width, height));
 }
 
 }

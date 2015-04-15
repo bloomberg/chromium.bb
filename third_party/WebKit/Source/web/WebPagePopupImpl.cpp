@@ -77,6 +77,12 @@ public:
         ASSERT(m_popup->widgetClient());
     }
 
+    virtual void setWindowRect(const IntRect& rect) override
+    {
+        m_popup->m_windowRectInScreen = rect;
+        m_popup->widgetClient()->setWindowRect(m_popup->m_windowRectInScreen);
+    }
+
 private:
     virtual void closeWindowSoon() override
     {
@@ -86,12 +92,6 @@ private:
     virtual IntRect windowRect() override
     {
         return IntRect(m_popup->m_windowRectInScreen.x, m_popup->m_windowRectInScreen.y, m_popup->m_windowRectInScreen.width, m_popup->m_windowRectInScreen.height);
-    }
-
-    virtual void setWindowRect(const IntRect& rect) override
-    {
-        m_popup->m_windowRectInScreen = rect;
-        m_popup->widgetClient()->setWindowRect(m_popup->m_windowRectInScreen);
     }
 
     virtual IntRect viewportToScreen(const IntRect& rect) const override
@@ -259,7 +259,7 @@ bool WebPagePopupImpl::initializePage()
         cache->childrenChanged(&m_popupClient->ownerElement());
 
     ASSERT(frame->localDOMWindow());
-    DOMWindowPagePopup::install(*frame->localDOMWindow(), m_popupClient);
+    DOMWindowPagePopup::install(*frame->localDOMWindow(), *this, m_popupClient);
     ASSERT(m_popupClient->ownerElement().document().existingAXObjectCache() == frame->document()->existingAXObjectCache());
 
     RefPtr<SharedBuffer> data = SharedBuffer::create();
@@ -297,6 +297,11 @@ AXObject* WebPagePopupImpl::rootAXObject()
     AXObjectCache* cache = document->axObjectCache();
     ASSERT(cache);
     return toAXObjectCacheImpl(cache)->getOrCreate(document->layoutView());
+}
+
+void WebPagePopupImpl::setWindowRect(const IntRect& rect)
+{
+    m_chromeClient->setWindowRect(rect);
 }
 
 void WebPagePopupImpl::setRootGraphicsLayer(GraphicsLayer* layer)

@@ -94,6 +94,7 @@ private:
 
     // PagePopup function
     virtual AXObject* rootAXObject() override;
+    virtual void setWindowRect(const IntRect&) override;
 
     explicit WebPagePopupImpl(WebWidgetClient*);
     bool initializePage();

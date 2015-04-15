@@ -38,6 +38,7 @@
 
 namespace blink {
 
+class PagePopup;
 class PagePopupClient;
 class PagePopupController;
 
@@ -45,14 +46,14 @@ class CORE_EXPORT DOMWindowPagePopup final : public NoBaseWillBeGarbageCollected
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindowPagePopup);
 public:
     static PagePopupController* pagePopupController(DOMWindow&);
-    static void install(LocalDOMWindow&, PagePopupClient*);
+    static void install(LocalDOMWindow&, PagePopup&, PagePopupClient*);
     static void uninstall(LocalDOMWindow&);
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowPagePopup);
 
     DECLARE_TRACE();
 
 private:
-    explicit DOMWindowPagePopup(PagePopupClient*);
+    DOMWindowPagePopup(PagePopup&, PagePopupClient*);
     static const char* supplementName();
 
     RefPtrWillBeMember<PagePopupController> m_controller;

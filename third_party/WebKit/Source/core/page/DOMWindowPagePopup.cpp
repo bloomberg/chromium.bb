@@ -36,8 +36,8 @@
 
 namespace blink {
 
-DOMWindowPagePopup::DOMWindowPagePopup(PagePopupClient* popupClient)
-    : m_controller(PagePopupController::create(popupClient))
+DOMWindowPagePopup::DOMWindowPagePopup(PagePopup& popup, PagePopupClient* popupClient)
+    : m_controller(PagePopupController::create(popup, popupClient))
 {
     ASSERT(popupClient);
 }
@@ -56,10 +56,10 @@ PagePopupController* DOMWindowPagePopup::pagePopupController(DOMWindow& window)
     return supplement->m_controller.get();
 }
 
-void DOMWindowPagePopup::install(LocalDOMWindow& window, PagePopupClient* popupClient)
+void DOMWindowPagePopup::install(LocalDOMWindow& window, PagePopup& popup, PagePopupClient* popupClient)
 {
     ASSERT(popupClient);
-    provideTo(window, supplementName(), adoptPtrWillBeNoop(new DOMWindowPagePopup(popupClient)));
+    provideTo(window, supplementName(), adoptPtrWillBeNoop(new DOMWindowPagePopup(popup, popupClient)));
 }
 
 void DOMWindowPagePopup::uninstall(LocalDOMWindow& window)
