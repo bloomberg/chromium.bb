@@ -80,7 +80,8 @@ ScriptContext::ScriptContext(const v8::Handle<v8::Context>& v8_context,
                              Feature::Context context_type,
                              const Extension* effective_extension,
                              Feature::Context effective_context_type)
-    : v8_context_(v8_context->GetIsolate(), v8_context),
+    : is_valid_(true),
+      v8_context_(v8_context->GetIsolate(), v8_context),
       web_frame_(web_frame),
       extension_(extension),
       context_type_(context_type),
@@ -107,17 +108,34 @@ ScriptContext::~ScriptContext() {
           << "  extension id: " << GetExtensionID() << "\n"
           << "  effective extension id: "
           << (effective_extension_.get() ? effective_extension_->id() : "");
-  Invalidate();
+  CHECK(!is_valid_) << "ScriptContexts must be invalidated before destruction";
 }
 
 void ScriptContext::Invalidate() {
-  if (!is_valid())
-    return;
+  CHECK(is_valid_);
+  is_valid_ = false;
+
+  // TODO(kalman): Make ModuleSystem use AddInvalidationObserver.
+  // Ownership graph is a bit weird here.
   if (module_system_)
     module_system_->Invalidate();
-  web_frame_ = NULL;
-  v8_context_.Reset();
+
+  // Swap |invalidate_observers_| to a local variable to clear it, and to make
+  // sure it's not mutated as we iterate.
+  std::vector<base::Closure> observers;
+  observers.swap(invalidate_observers_);
+  for (const base::Closure& observer : observers) {
+    observer.Run();
+  }
+  DCHECK(invalidate_observers_.empty())
+      << "Invalidation observers cannot be added during invalidation";
+
   runner_.reset();
+  v8_context_.Reset();
+}
+
+void ScriptContext::AddInvalidationObserver(const base::Closure& observer) {
+  invalidate_observers_.push_back(observer);
 }
 
 const std::string& ScriptContext::GetExtensionID() const {
@@ -144,7 +162,7 @@ v8::Local<v8::Value> ScriptContext::CallFunction(
   v8::Context::Scope scope(v8_context());
 
   blink::WebScopedMicrotaskSuppression suppression;
-  if (!is_valid()) {
+  if (!is_valid_) {
     return handle_scope.Escape(
         v8::Local<v8::Primitive>(v8::Undefined(isolate())));
   }

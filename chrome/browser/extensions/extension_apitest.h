@@ -92,6 +92,15 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   // Same as RunExtensionTestIncognito, but disables file access.
   bool RunExtensionTestIncognitoNoFileAccess(const std::string& extension_name);
 
+  // Returns true if the Subtest and Page tests are being skipped. This is
+  // will only be true for windows debug builds, see http://crbug.com/177163.
+  //
+  // Usually you won't need to check this, but if a test continues after
+  // RunExtensionSubtest, you may. For example, if a test calls
+  // RunExtensionSubtest then asserts that the Extension was installed, it will
+  // fail on win debug builds.
+  bool ExtensionSubtestsAreSkipped();
+
   // If not empty, Load |extension_name|, load |page_url| and wait for pass /
   // fail notification from the extension API on the page. Note that if
   // |page_url| is not a valid url, it will be treated as a resource within

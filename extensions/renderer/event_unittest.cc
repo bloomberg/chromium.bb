@@ -18,7 +18,6 @@ class EventUnittest : public ModuleSystemTest {
     env()->RegisterModule(kSchemaUtils, IDR_SCHEMA_UTILS_JS);
     env()->RegisterModule("uncaught_exception_handler",
                           IDR_UNCAUGHT_EXCEPTION_HANDLER_JS);
-    env()->RegisterModule("unload_event", IDR_UNLOAD_EVENT_JS);
     env()->RegisterModule("utils", IDR_UTILS_JS);
 
     // Mock out the native handler for event_bindings. These mocks will fail if
@@ -88,41 +87,6 @@ TEST_F(EventUnittest, AddRemoveTwoListeners) {
       "myEvent.removeListener(cb1);"
       "assert.AssertTrue(!!eventNatives.attachedListeners['named-event']);"
       "myEvent.removeListener(cb2);"
-      "assert.AssertFalse(!!eventNatives.attachedListeners['named-event']);");
-  env()->module_system()->Require("test");
-}
-
-TEST_F(EventUnittest, OnUnloadDetachesAllListeners) {
-  ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      env()->module_system());
-  env()->RegisterModule(
-      "test",
-      "var assert = requireNative('assert');"
-      "var Event = require('event_bindings').Event;"
-      "var eventNatives = requireNative('event_natives');"
-      "var myEvent = new Event('named-event');"
-      "var cb1 = function() {};"
-      "var cb2 = function() {};"
-      "myEvent.addListener(cb1);"
-      "myEvent.addListener(cb2);"
-      "require('unload_event').dispatch();"
-      "assert.AssertFalse(!!eventNatives.attachedListeners['named-event']);");
-  env()->module_system()->Require("test");
-}
-
-TEST_F(EventUnittest, OnUnloadDetachesAllListenersEvenDupes) {
-  ModuleSystem::NativesEnabledScope natives_enabled_scope(
-      env()->module_system());
-  env()->RegisterModule(
-      "test",
-      "var assert = requireNative('assert');"
-      "var Event = require('event_bindings').Event;"
-      "var eventNatives = requireNative('event_natives');"
-      "var myEvent = new Event('named-event');"
-      "var cb1 = function() {};"
-      "myEvent.addListener(cb1);"
-      "myEvent.addListener(cb1);"
-      "require('unload_event').dispatch();"
       "assert.AssertFalse(!!eventNatives.attachedListeners['named-event']);");
   env()->module_system()->Require("test");
 }

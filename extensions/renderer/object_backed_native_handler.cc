@@ -25,7 +25,8 @@ ObjectBackedNativeHandler::ObjectBackedNativeHandler(ScriptContext* context)
                        v8::ObjectTemplate::New(context->isolate())) {
 }
 
-ObjectBackedNativeHandler::~ObjectBackedNativeHandler() { Invalidate(); }
+ObjectBackedNativeHandler::~ObjectBackedNativeHandler() {
+}
 
 v8::Handle<v8::Object> ObjectBackedNativeHandler::NewInstance() {
   return v8::Local<v8::ObjectTemplate>::New(GetIsolate(), object_template_)
@@ -75,9 +76,7 @@ v8::Isolate* ObjectBackedNativeHandler::GetIsolate() const {
 }
 
 void ObjectBackedNativeHandler::Invalidate() {
-  if (!is_valid())
-    return;
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::Isolate* isolate = GetIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context_->v8_context());
 
@@ -90,9 +89,10 @@ void ObjectBackedNativeHandler::Invalidate() {
         handler_function_value.As<v8::External>()->Value());
     data->Delete(v8::String::NewFromUtf8(isolate, kHandlerFunction));
   }
+
   router_data_.Clear();
   object_template_.Reset();
-  context_ = NULL;
+
   NativeHandler::Invalidate();
 }
 

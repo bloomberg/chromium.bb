@@ -6,8 +6,10 @@
 #define EXTENSIONS_RENDERER_SCRIPT_CONTEXT_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/permissions/api_permission_set.h"
@@ -45,9 +47,13 @@ class ScriptContext : public RequestSender::Source {
   // ModuleSystem.
   void Invalidate();
 
+  // Registers |observer| to be run when this context is invalidated. Closures
+  // are run immediately when Invalidate() is called, not in a message loop.
+  void AddInvalidationObserver(const base::Closure& observer);
+
   // Returns true if this context is still valid, false if it isn't.
   // A context becomes invalid via Invalidate().
-  bool is_valid() const { return !v8_context_.IsEmpty(); }
+  bool is_valid() const { return is_valid_; }
 
   v8::Handle<v8::Context> v8_context() const {
     return v8::Local<v8::Context>::New(isolate_, v8_context_);
@@ -150,12 +156,14 @@ class ScriptContext : public RequestSender::Source {
   // extension.
   bool HasAPIPermission(APIPermission::ID permission) const;
 
- protected:
-  // The v8 context the bindings are accessible to.
-  v8::Global<v8::Context> v8_context_;
-
  private:
   class Runner;
+
+  // Whether this context is valid.
+  bool is_valid_;
+
+  // The v8 context the bindings are accessible to.
+  v8::Global<v8::Context> v8_context_;
 
   // The WebFrame associated with this context. This can be NULL because this
   // object can outlive is destroyed asynchronously.
@@ -184,6 +192,10 @@ class ScriptContext : public RequestSender::Source {
 
   // The set of capabilities granted to this context by extensions.
   APIPermissionSet content_capabilities_;
+
+  // A list of base::Closure instances as an observer interface for
+  // invalidation.
+  std::vector<base::Closure> invalidate_observers_;
 
   v8::Isolate* isolate_;
 
