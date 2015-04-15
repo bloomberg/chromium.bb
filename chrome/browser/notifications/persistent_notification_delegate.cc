@@ -9,14 +9,6 @@
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "content/public/common/persistent_notification_status.h"
 
-namespace {
-
-// Persistent notifications fired through the delegate do not care about the
-// lifetime of the Service Worker responsible for executing the event.
-void OnEventDispatchComplete(content::PersistentNotificationStatus status) {}
-
-}  // namespace
-
 PersistentNotificationDelegate::PersistentNotificationDelegate(
     content::BrowserContext* browser_context,
     int64_t persistent_notification_id,
@@ -36,8 +28,7 @@ void PersistentNotificationDelegate::Click() {
   PlatformNotificationServiceImpl::GetInstance()->OnPersistentNotificationClick(
       browser_context_,
       persistent_notification_id_,
-      origin_,
-      base::Bind(&OnEventDispatchComplete));
+      origin_);
 }
 
 std::string PersistentNotificationDelegate::id() const {

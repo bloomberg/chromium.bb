@@ -45,6 +45,13 @@ using message_center::NotifierId;
 
 namespace {
 
+// Persistent notifications fired through the delegate do not care about the
+// lifetime of the Service Worker responsible for executing the event.
+void OnEventDispatchComplete(content::PersistentNotificationStatus status) {
+  // TODO(peter): Record UMA statistics about the result status of running
+  // events for persistent Web Notifications.
+}
+
 void CancelNotification(const std::string& id, ProfileID profile_id) {
   PlatformNotificationServiceImpl::GetInstance()
       ->GetNotificationUIManager()->CancelById(id, profile_id);
@@ -66,16 +73,14 @@ PlatformNotificationServiceImpl::~PlatformNotificationServiceImpl() {}
 void PlatformNotificationServiceImpl::OnPersistentNotificationClick(
     content::BrowserContext* browser_context,
     int64_t persistent_notification_id,
-    const GURL& origin,
-    const base::Callback<void(content::PersistentNotificationStatus)>&
-        callback) const {
+    const GURL& origin) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::NotificationEventDispatcher::GetInstance()
       ->DispatchNotificationClickEvent(
             browser_context,
             persistent_notification_id,
             origin,
-            callback);
+            base::Bind(&OnEventDispatchComplete));
 }
 
 blink::WebNotificationPermission
