@@ -80,6 +80,13 @@ scoped_refptr<ServiceDiscoverySharedClient>
   if (g_service_discovery_client)
     return g_service_discovery_client;
 
+#if defined(OS_WIN)
+  if (!g_is_firewall_state_reported) {
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            base::Bind(&ReportFirewallStats));
+  }
+#endif  // OS_WIN
+
 #if defined(OS_MACOSX)
   return ServiceDiscoveryClientMacFactory::CreateInstance();
 #else  // OS_MACOSX
