@@ -200,6 +200,7 @@ if (is_android) {
     deps = [
       ":lib",
     ]
+    data_deps = [ "//mojo/services/network:network" ]
   }
 }
 
