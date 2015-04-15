@@ -460,21 +460,20 @@ get_output_work_area(struct desktop_shell *shell,
 {
 	int32_t panel_width = 0, panel_height = 0;
 
-	area->x = 0;
-	area->y = 0;
+	area->x = output->x;
+	area->y = output->y;
 
 	get_output_panel_size(shell, output, &panel_width, &panel_height);
-
 	switch (shell->panel_position) {
 	case DESKTOP_SHELL_PANEL_POSITION_TOP:
 	default:
-		area->y = panel_height;
+		area->y += panel_height;
 	case DESKTOP_SHELL_PANEL_POSITION_BOTTOM:
 		area->width = output->width;
 		area->height = output->height - panel_height;
 		break;
 	case DESKTOP_SHELL_PANEL_POSITION_LEFT:
-		area->x = panel_width;
+		area->x += panel_width;
 	case DESKTOP_SHELL_PANEL_POSITION_RIGHT:
 		area->width = output->width - panel_width;
 		area->height = output->height;
@@ -5437,7 +5436,7 @@ weston_view_set_initial_position(struct weston_view *view,
 	struct weston_compositor *compositor = shell->compositor;
 	int ix = 0, iy = 0;
 	int32_t range_x, range_y;
-	int32_t dx, dy, x, y;
+	int32_t x, y;
 	struct weston_output *output, *target_output = NULL;
 	struct weston_seat *seat;
 	pixman_rectangle32_t area;
@@ -5474,19 +5473,16 @@ weston_view_set_initial_position(struct weston_view *view,
 	 */
 	get_output_work_area(shell, target_output, &area);
 
-	dx = area.x;
-	dy = area.y;
+	x = area.x;
+	y = area.y;
 	range_x = area.width - view->surface->width;
 	range_y = area.height - view->surface->height;
 
 	if (range_x > 0)
-		dx += random() % range_x;
+		x += random() % range_x;
 
 	if (range_y > 0)
-		dy += random() % range_y;
-
-	x = target_output->x + dx;
-	y = target_output->y + dy;
+		y += random() % range_y;
 
 	weston_view_set_position(view, x, y);
 }
