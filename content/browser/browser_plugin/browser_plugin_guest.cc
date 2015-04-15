@@ -496,6 +496,18 @@ void BrowserPluginGuest::SendTextInputTypeChangedToView(
   if (!guest_rwhv)
     return;
 
+  if (!owner_web_contents_) {
+    // If we were showing an interstitial, then we can end up here during
+    // embedder shutdown or when the embedder navigates to a different page.
+    // The call stack is roughly:
+    // BrowserPluginGuest::SetFocus()
+    // content::InterstitialPageImpl::Hide()
+    // content::InterstitialPageImpl::DontProceed().
+    //
+    // TODO(lazyboy): Write a WebUI test once http://crbug.com/463674 is fixed.
+    return;
+  }
+
   guest_rwhv->TextInputTypeChanged(last_text_input_type_, last_input_mode_,
                                    last_can_compose_inline_, last_input_flags_);
   // Enable input method for guest if it's enabled for the embedder.
