@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_LINUX_SYSTEM_HEADERS_LINUX_FUTEX_H_
-#define SANDBOX_LINUX_SYSTEM_HEADERS_LINUX_FUTEX_H_
-
-#include <linux/futex.h>
+#ifndef SANDBOX_LINUX_SYSTEM_HEADERS_ANDROID_FUTEX_H_
+#define SANDBOX_LINUX_SYSTEM_HEADERS_ANDROID_FUTEX_H_
 
 #if !defined(FUTEX_WAIT)
 #define FUTEX_WAIT 0
@@ -79,4 +77,4 @@
 #define FUTEX_UNLOCK_PI_PRIVATE (FUTEX_UNLOCK_PI | FUTEX_PRIVATE_FLAG)
 #endif
 
-#endif  // SANDBOX_LINUX_SYSTEM_HEADERS_LINUX_FUTEX_H_
+#endif  // SANDBOX_LINUX_SYSTEM_HEADERS_ANDROID_FUTEX_H_
