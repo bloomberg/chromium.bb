@@ -240,6 +240,7 @@ void RenderingHelper::Setup() {
 
   platform_window_delegate_.reset(new RenderingHelper::StubOzoneDelegate());
   window_ = platform_window_delegate_->accelerated_widget();
+  gfx::Size window_size(800, 600);
 #if defined(OS_CHROMEOS)
   // We hold onto the main loop here to wait for the DisplayController
   // to give us the size of the display so we can create a window of
@@ -255,11 +256,12 @@ void RenderingHelper::Setup() {
   wait_display_setup.Run();
   display_configurator_->RemoveObserver(&display_setup_observer);
 
-  platform_window_delegate_->platform_window()->SetBounds(
-      gfx::Rect(display_configurator_->framebuffer_size()));
-#else
-  platform_window_delegate_->platform_window()->SetBounds(gfx::Rect(800, 600));
+  gfx::Size framebuffer_size = display_configurator_->framebuffer_size();
+  if (!framebuffer_size.IsEmpty())
+    window_size = framebuffer_size;
 #endif
+  platform_window_delegate_->platform_window()->SetBounds(
+      gfx::Rect(window_size));
 
   // On Ozone/DRI, platform windows are associated with the physical
   // outputs. Association is achieved by matching the bounds of the
