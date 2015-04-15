@@ -176,6 +176,13 @@ std::string TestExtensionPrefs::AddExtensionAndReturnId(
   return extension->id();
 }
 
+void TestExtensionPrefs::AddExtension(Extension* extension) {
+  prefs_->OnExtensionInstalled(extension,
+                               Extension::ENABLED,
+                               syncer::StringOrdinal::CreateInitialOrdinal(),
+                               std::string());
+}
+
 PrefService* TestExtensionPrefs::CreateIncognitoPrefService() const {
   return pref_service_->CreateIncognitoPrefService(
       new ExtensionPrefStore(extension_pref_value_map_.get(), true));

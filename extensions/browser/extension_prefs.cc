@@ -543,6 +543,14 @@ bool ExtensionPrefs::ReadPrefAsURLPatternSet(const std::string& extension_id,
   const base::ListValue* value = NULL;
   if (!ReadPrefAsList(extension_id, pref_key, &value))
     return false;
+  const base::DictionaryValue* extension = GetExtensionPref(extension_id);
+  if (!extension)
+    return false;
+  int location;
+  if (extension->GetInteger(kPrefLocation, &location) &&
+      static_cast<Manifest::Location>(location) == Manifest::COMPONENT) {
+    valid_schemes |= URLPattern::SCHEME_CHROMEUI;
+  }
 
   bool allow_file_access = AllowFileAccess(extension_id);
   return result->Populate(*value, valid_schemes, allow_file_access, NULL);

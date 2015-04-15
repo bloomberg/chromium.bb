@@ -78,6 +78,9 @@ class TestExtensionPrefs {
   // assigned.
   std::string AddExtensionAndReturnId(const std::string& name);
 
+  // This will add extension in our ExtensionPrefs.
+  void AddExtension(Extension* extension);
+
   PrefService* CreateIncognitoPrefService() const;
 
   // Allows disabling the loading of preferences of extensions. Becomes

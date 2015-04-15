@@ -25,6 +25,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_info.h"
@@ -912,5 +913,84 @@ class ExtensionPrefsClearLastLaunched : public ExtensionPrefsTest {
   scoped_refptr<const Extension> extension_b_;
 };
 TEST_F(ExtensionPrefsClearLastLaunched, ExtensionPrefsClearLastLaunched) {}
+
+class ExtensionPrefsComponentExtension : public ExtensionPrefsTest {
+ public:
+  ~ExtensionPrefsComponentExtension() override {}
+  void Initialize() override {
+    // Adding a component extension.
+    component_extension_ =
+        ExtensionBuilder()
+            .SetManifest(DictionaryBuilder()
+                             .Set(manifest_keys::kName, "a")
+                             .Set(manifest_keys::kVersion, "0.1"))
+            .SetLocation(Manifest::COMPONENT)
+            .SetPath(prefs_.extensions_dir().AppendASCII("a"))
+            .Build();
+    prefs_.AddExtension(component_extension_.get());
+
+    // Adding a non component extension.
+    no_component_extension_ =
+        ExtensionBuilder()
+            .SetManifest(DictionaryBuilder()
+                             .Set(manifest_keys::kName, "b")
+                             .Set(manifest_keys::kVersion, "0.1"))
+            .SetLocation(Manifest::INTERNAL)
+            .SetPath(prefs_.extensions_dir().AppendASCII("b"))
+            .Build();
+    prefs_.AddExtension(no_component_extension_.get());
+
+    APIPermissionSet api_perms;
+    api_perms.insert(APIPermission::kTab);
+    api_perms.insert(APIPermission::kBookmark);
+    api_perms.insert(APIPermission::kHistory);
+
+    ManifestPermissionSet empty_manifest_permissions;
+
+    URLPatternSet ehosts, shosts;
+    AddPattern(&shosts, "chrome://print/*");
+
+    active_perms_ = new PermissionSet(api_perms, empty_manifest_permissions,
+                                      ehosts, shosts);
+    // Set the active permissions.
+    prefs()->SetActivePermissions(component_extension_->id(),
+                                  active_perms_.get());
+    prefs()->SetActivePermissions(no_component_extension_->id(),
+                                  active_perms_.get());
+  }
+
+  void Verify() override {
+    // Component extension can access chrome://print/*.
+    scoped_refptr<PermissionSet> component_permissions(
+        prefs()->GetActivePermissions(component_extension_->id()));
+    EXPECT_EQ(1u, component_permissions->scriptable_hosts().size());
+
+    // Non Component extension can not access chrome://print/*.
+    scoped_refptr<PermissionSet> no_component_permissions(
+        prefs()->GetActivePermissions(no_component_extension_->id()));
+    EXPECT_EQ(0u, no_component_permissions->scriptable_hosts().size());
+
+    // |URLPattern::SCHEME_CHROMEUI| scheme will be added in valid_schemes for
+    // component extensions.
+    URLPatternSet scriptable_hosts;
+    std::string pref_key = "active_permissions.scriptable_host";
+    int valid_schemes = URLPattern::SCHEME_ALL & ~URLPattern::SCHEME_CHROMEUI;
+
+    EXPECT_TRUE(prefs()->ReadPrefAsURLPatternSet(component_extension_->id(),
+                                                 pref_key, &scriptable_hosts,
+                                                 valid_schemes));
+
+    EXPECT_FALSE(prefs()->ReadPrefAsURLPatternSet(no_component_extension_->id(),
+                                                  pref_key, &scriptable_hosts,
+                                                  valid_schemes));
+  }
+
+ private:
+  scoped_refptr<PermissionSet> active_perms_;
+  scoped_refptr<Extension> component_extension_;
+  scoped_refptr<Extension> no_component_extension_;
+};
+TEST_F(ExtensionPrefsComponentExtension, ExtensionPrefsComponentExtension) {
+}
 
 }  // namespace extensions

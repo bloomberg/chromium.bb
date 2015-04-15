@@ -537,6 +537,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
 
  private:
   friend class ExtensionPrefsBlacklistedExtensions;  // Unit test.
+  friend class ExtensionPrefsComponentExtension;     // Unit test.
   friend class ExtensionPrefsUninstallExtension;     // Unit test.
 
   enum DisableReasonChange {
