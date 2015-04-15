@@ -446,7 +446,7 @@ MidiManagerAlsa::MidiPortState::MidiPortState()
 
 uint32 MidiManagerAlsa::MidiPortState::Insert(scoped_ptr<MidiPort> port) {
   // Add the web midi index.
-  uint32 web_port_index;
+  uint32 web_port_index = 0;
   switch (port->type()) {
     case MidiPort::Type::kInput:
       web_port_index = num_input_ports_++;
