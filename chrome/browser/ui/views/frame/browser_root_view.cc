@@ -131,7 +131,7 @@ bool BrowserRootView::OnMouseWheel(const ui::MouseWheelEvent& event) {
         hittest == HTCAPTION ||
         hittest == HTTOP) {
       int scroll_offset = abs(event.y_offset()) > abs(event.x_offset()) ?
-          event.y_offset() : -event.x_offset();
+          event.y_offset() : event.x_offset();
       Browser* browser = browser_view_->browser();
       TabStripModel* model = browser->tab_strip_model();
       // Switch to the next tab only if not at the end of the tab-strip.
