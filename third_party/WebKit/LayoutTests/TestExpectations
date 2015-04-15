@@ -536,7 +536,6 @@ crbug.com/396941 [ Linux Win ] ietestcenter/css3/multicolumn/column-width-applie
 crbug.com/396941 [ Linux Win ] ietestcenter/css3/multicolumn/column-width-applies-to-012.htm [ ImageOnlyFailure ]
 crbug.com/396941 [ Linux Win ] ietestcenter/css3/multicolumn/column-width-applies-to-015.htm [ ImageOnlyFailure ]
 crbug.com/396945 ietestcenter/css3/namespaces/syntax-021.xml [ ImageOnlyFailure ]
-crbug.com/378610 [ Win7 ] svg/transforms/transformed-text-fill-gradient.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] svg/custom/focus-ring-text.svg [ ImageOnlyFailure ]
 
 crbug.com/371725 http/tests/webfont/slow-loading.html [ Pass ImageOnlyFailure Timeout ]
@@ -973,6 +972,9 @@ crbug.com/340150 [ Mac Debug ] plugins/plugin-document-back-forward.html [ Pass 
 
 crbug.com/464729 inspector/sources/debugger/show-function-definition.html [ Pass Failure ]
 
+crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/line-break-after-question-mark.html [ Pass Failure ]
+crbug.com/476440 [ Mac ] svg/transforms/transformed-text-fill-gradient.html [ ImageOnlyFailure ]
+
 crbug.com/339259 fast/flexbox/box-orient-button.html [ Pass Failure ]
 crbug.com/339394 [ Win Debug ] virtual/threaded/animations/animation-matrix-negative-scale-unmatrix.html [ Pass Failure ]
 crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Timeout ]
@@ -990,9 +992,6 @@ crbug.com/356828 fast/dom/gc-dom-tree-lifetime.html [ Timeout Pass ]
 
 crbug.com/418070 [ Mac ] fast/text/atsui-multiple-renderers.html [ Failure ]
 crbug.com/418070 [ Mac ] virtual/slimmingpaint/fast/text/atsui-multiple-renderers.html [ Failure ]
-
-crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/line-break-after-question-mark.html [ Pass Failure ]
-crbug.com/476440 [ Mac ] svg/transforms/transformed-text-fill-gradient.html [ ImageOnlyFailure ]
 
 crbug.com/392046 [ Win ] fast/inline/justify-emphasis-inline-box.html [ Pass Failure ]
 
