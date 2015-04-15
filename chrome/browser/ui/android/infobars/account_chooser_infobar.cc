@@ -62,11 +62,13 @@ AvatarFetcherAndroid::AvatarFetcherAndroid(
 
 void AvatarFetcherAndroid::OnFetchComplete(const GURL& url,
                                            const SkBitmap* bitmap) {
-  base::android::ScopedJavaLocalRef<jobject> java_bitmap =
-      gfx::ConvertToJavaBitmap(bitmap);
-  Java_AccountChooserInfoBar_imageFetchComplete(
-      base::android::AttachCurrentThread(), java_infobar_.obj(), index_,
-      java_bitmap.obj());
+  if (bitmap) {
+    base::android::ScopedJavaLocalRef<jobject> java_bitmap =
+        gfx::ConvertToJavaBitmap(bitmap);
+    Java_AccountChooserInfoBar_imageFetchComplete(
+        base::android::AttachCurrentThread(), java_infobar_.obj(), index_,
+        java_bitmap.obj());
+  }
   delete this;
 }
 
