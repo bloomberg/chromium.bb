@@ -10,7 +10,7 @@
   # bots all using the 'gn_release_bot' config).
   'configs': {
     'android_gn_release_bot': ['android', 'gn', 'release_bot'],
-    'android_gn_debug_bot': ['android', 'gn', 'debug_bot'],
+    'android_gn_debug_bot': ['android', 'gn', 'debug_static_bot'],
     'android_gn_release_trybot': ['android', 'gn', 'release_trybot'],
     'chromeos_gn_debug_bot': ['chromeos', 'gn', 'debug_bot'],
     'chromeos_gn_release_bot': ['chromeos', 'gn', 'release_bot'],
@@ -23,6 +23,7 @@
     'gn_release_bot_x86': ['gn', 'release_bot', 'x86'],
     'gn_release_trybot': ['gn', 'release_trybot'],
     'gn_debug_bot': ['gn', 'debug_bot'],
+    'gn_debug_bot_win_x86': ['gn', 'debug_static_bot', 'x86'],
     'gyp_release_bot': ['gyp', 'release_bot'],
   },
   
@@ -73,6 +74,10 @@
     },
 
     'debug_bot': {'mixins': ['debug', 'shared', 'minimal_symbols', 'goma']},
+
+    'debug_static_bot': {
+      'mixins': ['debug', 'static', 'minimal_symbols', 'goma']
+    },
 
     'full_symbols': {
       'gn_args': 'symbol_level=2',
@@ -143,14 +148,18 @@
       'Mac GN (dbg)': 'gn_debug_bot',
     },
     'chromium.win': {
-      'Win8 GN': 'gn_release_bot',
-      'Win8 GN (dbg)': 'gn_debug_bot',
+      'Win8 GN': 'gn_release_bot_x86',
+      'Win8 GN (dbg)': 'gn_debug_bot_win_x86',
     },
     'chromium.webkit': {
       'Android GN': 'gn_release_bot',
       'Android GN (dbg)': 'gn_debug_bot',
       'Linux GN': 'gn_release_bot',
       'Linux GN (dbg)': 'gn_debug_bot'
+    },
+    'tryserver.blink': {
+      'android_chromium_gn_compile_rel': 'android_gn_release_bot',
+      'linux_chromium_gn_rel': 'gn_release_bot',
     },
     'tryserver.chromium.linux': {
       'android_chromium_gn_compile_dbg': 'android_gn_debug_bot',

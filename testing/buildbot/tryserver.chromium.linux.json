@@ -3,21 +3,13 @@
     "additional_compile_targets": [
       "chrome_shell_apk"
     ],
-    "gtest_tests": [
-      {
-        "test": "base_unittests"
-      }
-    ]
+    "gtest_tests": []
   },
   "android_chromium_gn_compile_rel": {
     "additional_compile_targets": [
       "chrome_shell_apk"
     ],
-    "gtest_tests": [
-      {
-        "test": "base_unittests"
-      }
-    ]
+    "gtest_tests": []
   },
   "linux_chromium_gn_chromeos_dbg": {
     "additional_compile_targets": [
