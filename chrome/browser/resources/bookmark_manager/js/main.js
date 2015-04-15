@@ -470,6 +470,18 @@ function updatePasteCommand(opt_f) {
   });
 }
 
+function handleCanExecuteForSearchBox(e) {
+  var command = e.command;
+  switch (command.id) {
+    case 'delete-command':
+    case 'undo-command':
+      // Pass the delete and undo commands through
+      // (fixes http://crbug.com/278112).
+      e.canExecute = false;
+      break;
+  }
+}
+
 function handleCanExecuteForDocument(e) {
   var command = e.command;
   switch (command.id) {
@@ -489,10 +501,8 @@ function handleCanExecuteForDocument(e) {
       break;
 
     case 'undo-command':
-      // If the search box is active, pass the undo command through
-      // (fixes http://crbug.com/278112). Otherwise, because
-      // the global undo command has no visible UI, always enable it, and
-      // just make it a no-op if undo is not possible.
+      // Because the global undo command has no visible UI, always enable it,
+      // and just make it a no-op if undo is not possible.
       e.canExecute = e.currentTarget.activeElement !== $('term');
       break;
 
@@ -1464,6 +1474,7 @@ function continueInitializeBookmarkManager(localizedStrings) {
   });
 
   $('term').addEventListener('search', handleSearch);
+  $('term').addEventListener('canExecute', handleCanExecuteForSearchBox);
 
   $('folders-button').addEventListener('click', handleMenuButtonClicked);
   $('organize-button').addEventListener('click', handleMenuButtonClicked);
