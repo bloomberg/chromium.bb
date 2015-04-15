@@ -28,7 +28,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/google_chrome_strings.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
