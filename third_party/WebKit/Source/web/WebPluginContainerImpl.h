@@ -207,6 +207,9 @@ private:
 
     IntRect m_pendingInvalidationRect;
 
+    // TODO(schenney) Needed while layout is still called during paint in some plugins
+    bool m_isInPaint;
+
     // The associated scrollbar group object, created lazily. Used for Pepper
     // scrollbars.
     OwnPtr<ScrollbarGroup> m_scrollbarGroup;
