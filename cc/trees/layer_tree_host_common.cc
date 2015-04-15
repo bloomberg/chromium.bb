@@ -2496,9 +2496,9 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   ProcessCalcDrawPropsInputs(*inputs, &globals, &data_for_recursion);
 
   PreCalculateMetaInformationRecursiveData recursive_data;
+  PreCalculateMetaInformation(inputs->root_layer, &recursive_data);
 
   if (!inputs->verify_property_trees) {
-    PreCalculateMetaInformation(inputs->root_layer, &recursive_data);
     std::vector<AccumulatedSurfaceState<Layer>> accumulated_surface_state;
     CalculateDrawPropertiesInternal<Layer>(
         inputs->root_layer, globals, data_for_recursion,
@@ -2509,7 +2509,6 @@ void LayerTreeHostCommon::CalculateDrawProperties(
     {
       TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
                    "LayerTreeHostCommon::CalculateDrawProperties");
-      PreCalculateMetaInformation(inputs->root_layer, &recursive_data);
       std::vector<AccumulatedSurfaceState<Layer>> accumulated_surface_state;
       CalculateDrawPropertiesInternal<Layer>(
           inputs->root_layer, globals, data_for_recursion,
