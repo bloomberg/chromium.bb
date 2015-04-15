@@ -51,7 +51,7 @@ class DrawProperties(page_test.PageTest):
     reduction = 100.0 * (1.0 - (pt_sum / cdp_sum))
 
     results.AddValue(scalar.ScalarValue(
-        results.current_page, 'CDP_reduction', ' %', reduction,
+        results.current_page, 'CDP_reduction', 'reduction%', reduction,
         description='Reduction in CDP cost with property trees'))
 
     results.AddValue(scalar.ScalarValue(

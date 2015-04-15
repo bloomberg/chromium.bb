@@ -150,6 +150,10 @@
   "ports": {
     "improvement_direction": "down"
   },
+  "reduction%": {
+    "improvement_direction": "up",
+    "why": "Used in draw_property measurement to indicate relative improvement."
+  },
   "relocs": {
     "improvement_direction": "down"
   },
