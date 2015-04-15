@@ -170,10 +170,10 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForPositionOffset(const ComputedSty
         return nullptr;
     }
 
-    if (offset.isPercent() && renderer && renderer->isBox()) {
+    if (offset.isPercent() && renderer && renderer->isBox() && renderer->isPositioned()) {
         LayoutUnit containingBlockSize = (propertyID == CSSPropertyLeft || propertyID == CSSPropertyRight) ?
             toLayoutBox(renderer)->containingBlockLogicalWidthForContent() :
-            toLayoutBox(renderer)->containingBlockLogicalHeightForContent(ExcludeMarginBorderPadding);
+            toLayoutBox(renderer)->containingBlockLogicalHeightForGetComputedStyle();
         return zoomAdjustedPixelValue(valueForLength(offset, containingBlockSize), style);
     }
     if (offset.isAuto()) {

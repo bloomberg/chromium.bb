@@ -16,11 +16,11 @@ test(function() {
     var player = element.animate([{left: 'calc(100px + 80%)'}, {left: '10em'}], 10);
     player.pause();
     player.currentTime = 5;
-    assert_equals(getComputedStyle(element).left, '500px');
+    assert_equals(getComputedStyle(element).left, 'calc(100px + 40%)');
     element.style.fontSize = '20px';
-    assert_equals(getComputedStyle(element).left, '550px');
+    assert_equals(getComputedStyle(element).left, 'calc(150px + 40%)');
     container.style.width = '500px';
-    assert_equals(getComputedStyle(element).left, '350px');
+    assert_equals(getComputedStyle(element).left, 'calc(150px + 40%)');
 }, 'Lengths responsive to style changes');
 
 test(function() {

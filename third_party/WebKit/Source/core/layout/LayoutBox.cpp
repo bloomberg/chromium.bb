@@ -1524,6 +1524,21 @@ LayoutUnit LayoutBox::shrinkLogicalWidthToAvoidFloats(LayoutUnit childMarginStar
     return width;
 }
 
+LayoutUnit LayoutBox::containingBlockLogicalHeightForGetComputedStyle() const
+{
+    if (hasOverrideContainingBlockLogicalHeight())
+        return overrideContainingBlockContentLogicalHeight();
+
+    if (!isPositioned())
+        return containingBlockLogicalHeightForContent(ExcludeMarginBorderPadding);
+
+    LayoutBoxModelObject* cb = toLayoutBoxModelObject(container());
+    LayoutUnit height = containingBlockLogicalHeightForPositioned(cb);
+    if (styleRef().position() != AbsolutePosition)
+        height -= cb->paddingLogicalHeight();
+    return height;
+}
+
 LayoutUnit LayoutBox::containingBlockLogicalWidthForContent() const
 {
     if (hasOverrideContainingBlockLogicalWidth())
