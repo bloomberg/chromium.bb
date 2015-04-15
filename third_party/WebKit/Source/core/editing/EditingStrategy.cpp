@@ -10,7 +10,48 @@
 namespace blink {
 
 template <typename Traversal>
-short comparePositionsAlgorithm(Node* containerA, int offsetA, Node* containerB, int offsetB, bool* disconnected)
+bool EditingAlgorithm<Traversal>::isEmptyNonEditableNodeInEditable(const Node* node)
+{
+    // Editability is defined the DOM tree rather than the composed tree. For example:
+    // DOM:
+    //   <host><span>unedittable</span><shadowroot><div ce><content /></div></shadowroot></host>
+    // Composed Tree:
+    //   <host><div ce><span1>unedittable</span></div></host>
+    // e.g. editing/shadow/breaking-editing-boundaries.html
+    return !Traversal::hasChildren(*node) && !node->hasEditableStyle() && node->parentNode() && node->parentNode()->hasEditableStyle();
+}
+
+template <typename Traversal>
+bool EditingAlgorithm<Traversal>::editingIgnoresContent(const Node* node)
+{
+    return !node->canContainRangeEndPoint() || isEmptyNonEditableNodeInEditable(node);
+}
+
+template <typename Traversal>
+int EditingAlgorithm<Traversal>::lastOffsetForEditing(const Node* node)
+{
+    ASSERT(node);
+    if (!node)
+        return 0;
+    if (node->offsetInCharacters())
+        return node->maxCharacterOffset();
+
+    if (Traversal::hasChildren(*node))
+        return Traversal::countChildren(*node);
+
+    // FIXME: Try return 0 here.
+
+    if (!editingIgnoresContent(node))
+        return 0;
+
+    // editingIgnoresContent uses the same logic in
+    // isEmptyNonEditableNodeInEditable (htmlediting.cpp). We don't understand
+    // why this function returns 1 even when the node doesn't have children.
+    return 1;
+}
+
+template <typename Traversal>
+short EditingAlgorithm<Traversal>::comparePositions(Node* containerA, int offsetA, Node* containerB, int offsetB, bool* disconnected)
 {
     ASSERT(containerA);
     ASSERT(containerB);
@@ -104,19 +145,6 @@ short comparePositionsAlgorithm(Node* containerA, int offsetA, Node* containerB,
     return 0;
 }
 
-short EditingStrategy:: comparePositions(Node* containerA, int offsetA, Node* containerB, int offsetB, bool* disconnected)
-{
-    return comparePositionsAlgorithm<NodeTraversal>(containerA, offsetA, containerB, offsetB, disconnected);
-}
-
-bool EditingStrategy::editingIgnoresContent(const Node* node)
-{
-    return ::blink::editingIgnoresContent(node);
-}
-
-int EditingStrategy::lastOffsetForEditing(const Node* node)
-{
-    return ::blink::lastOffsetForEditing(node);
-}
+template class EditingAlgorithm<NodeTraversal>;
 
 } // namespace blink

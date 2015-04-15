@@ -364,20 +364,7 @@ TextDirection directionOfEnclosingBlock(const Position& position)
 // on a Position before using it to create a DOM Range, or an exception will be thrown.
 int lastOffsetForEditing(const Node* node)
 {
-    ASSERT(node);
-    if (!node)
-        return 0;
-    if (node->offsetInCharacters())
-        return node->maxCharacterOffset();
-
-    if (node->hasChildren())
-        return node->countChildren();
-
-    // NOTE: This should preempt the childNodeCount for, e.g., select nodes
-    if (editingIgnoresContent(node))
-        return 1;
-
-    return 0;
+    return EditingStrategy::lastOffsetForEditing(node);
 }
 
 String stringWithRebalancedWhitespace(const String& string, bool startIsStartOfParagraph, bool endIsEndOfParagraph)

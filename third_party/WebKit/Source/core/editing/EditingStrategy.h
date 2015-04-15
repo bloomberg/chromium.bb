@@ -16,17 +16,26 @@ class PositionAlgorithm;
 template <typename Strategy>
 class PositionIteratorAlgorithm;
 
-class EditingStrategy : public NodeTraversal {
+// Editing algorithm defined on node traversal.
+template <typename Traversal>
+class EditingAlgorithm : public Traversal {
 public:
-    using PositionType = PositionAlgorithm<EditingStrategy>;
-    using PositionIteratorType = PositionIteratorAlgorithm<EditingStrategy>;
-
     // |disconnected| is optional output parameter having true if specified
     // positions don't have common ancestor.
     static short comparePositions(Node* containerA, int offsetA, Node* containerB, int offsetB, bool* disconnected = nullptr);
+    static bool isEmptyNonEditableNodeInEditable(const Node*);
     static bool editingIgnoresContent(const Node*);
     static int lastOffsetForEditing(const Node*);
 };
+
+// DOM tree version of editing algorithm
+class EditingStrategy : public EditingAlgorithm<NodeTraversal> {
+public:
+    using PositionIteratorType = PositionIteratorAlgorithm<EditingStrategy>;
+    using PositionType = PositionAlgorithm<EditingStrategy>;
+};
+
+extern template class EditingAlgorithm<NodeTraversal>;
 
 } // namespace blink
 
