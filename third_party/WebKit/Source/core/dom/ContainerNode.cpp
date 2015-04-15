@@ -1050,13 +1050,6 @@ void ContainerNode::focusStateChanged()
 
     if (layoutObject() && layoutObject()->style()->hasAppearance())
         LayoutTheme::theme().stateChanged(layoutObject(), FocusControlState);
-
-    // If any of the shadow hosts above has :focus CSS style rule, this focus has to affect the
-    // style of the shadow host.
-    if (isInShadowTree()) {
-        if (Element* host = shadowHost())
-            host->focusStateChanged();
-    }
 }
 
 void ContainerNode::setFocus(bool received)
@@ -1067,6 +1060,19 @@ void ContainerNode::setFocus(bool received)
     Node::setFocus(received);
 
     focusStateChanged();
+
+    // If any of the shadow hosts above has :focus CSS style rule, this focus has to affect the
+    // style of the shadow host.
+    if (isInShadowTree()) {
+        // TODO(kochi): Thic is not symmetric with click-focus sliding for shadow DOMs.
+        // crbug.com/476841
+        for (Element* host = shadowHost(); host; host = host->shadowHost()) {
+            if (!host->supportsFocus() || host->tabStop())
+                break;
+            host->focusStateChanged();
+            host->document().userActionElements().setFocused(host, received);
+        }
+    }
 
     if (layoutObject() || received)
         return;

@@ -2379,6 +2379,11 @@ void Element::setTabStopInternal(bool flag)
     focusStateChanged();
 }
 
+bool Element::isFocusedElementInDocument() const
+{
+    return this == document().focusedElement();
+}
+
 void Element::dispatchFocusEvent(Element* oldFocusedElement, WebFocusType type)
 {
     RefPtrWillBeRawPtr<FocusEvent> event = FocusEvent::create(EventTypeNames::focus, false, false, document().domWindow(), 0, oldFocusedElement);

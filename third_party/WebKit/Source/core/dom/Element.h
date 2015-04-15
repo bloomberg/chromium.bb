@@ -379,6 +379,7 @@ public:
     bool tabStop() const;
     void setTabStop(bool);
     void setTabStopInternal(bool);
+    bool isFocusedElementInDocument() const;
     virtual bool isKeyboardFocusable() const;
     virtual bool isMouseFocusable() const;
     virtual void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType);

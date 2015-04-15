@@ -2034,7 +2034,7 @@ bool EventHandler::handleMouseFocus(const MouseEventWithHitTestResults& targeted
     if (m_nodeUnderMouse)
         element = m_nodeUnderMouse->isElementNode() ? toElement(m_nodeUnderMouse) : m_nodeUnderMouse->parentOrShadowHostElement();
     for (; element; element = element->parentOrShadowHostElement()) {
-        if (element->isFocusable() && element->focused())
+        if (element->isFocusable() && element->isFocusedElementInDocument())
             return false;
         if (element->isMouseFocusable())
             break;
