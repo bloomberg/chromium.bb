@@ -93,10 +93,6 @@ WebScrollbarLayer* WebCompositorSupportImpl::createSolidColorScrollbarLayer(
                                    is_left_side_vertical_scrollbar);
 }
 
-WebDisplayItemList* WebCompositorSupportImpl::createDisplayItemList() {
-  return new WebDisplayItemListImpl();
-}
-
 WebCompositorAnimation* WebCompositorSupportImpl::createAnimation(
     const blink::WebCompositorAnimationCurve& curve,
     blink::WebCompositorAnimation::TargetProperty target,

@@ -31,10 +31,8 @@ namespace cc_blink {
 
 class WebDisplayItemListImpl : public blink::WebDisplayItemList {
  public:
-  CC_BLINK_EXPORT WebDisplayItemListImpl();
+  CC_BLINK_EXPORT WebDisplayItemListImpl(cc::DisplayItemList* display_list);
   virtual ~WebDisplayItemListImpl();
-
-  scoped_refptr<cc::DisplayItemList> ToDisplayItemList();
 
   // blink::WebDisplayItemList implementation.
   virtual void appendDrawingItem(const SkPicture*);
@@ -63,7 +61,7 @@ class WebDisplayItemListImpl : public blink::WebDisplayItemList {
   virtual void appendEndScrollItem();
 
  private:
-  scoped_refptr<cc::DisplayItemList> display_item_list_;
+  cc::DisplayItemList* display_item_list_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDisplayItemListImpl);
 };

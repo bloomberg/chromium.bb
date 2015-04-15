@@ -36,7 +36,9 @@ TEST(DisplayItemListTest, SingleDrawingItem) {
   SkPaint red_paint;
   red_paint.setColor(SK_ColorRED);
   unsigned char pixels[4 * 100 * 100] = {0};
-  scoped_refptr<DisplayItemList> list = DisplayItemList::Create();
+  const bool use_cached_picture = true;
+  scoped_refptr<DisplayItemList> list =
+      DisplayItemList::Create(layer_rect, use_cached_picture);
 
   gfx::PointF offset(8.f, 9.f);
   gfx::RectF recording_rect(offset, layer_rect.size());
@@ -47,6 +49,7 @@ TEST(DisplayItemListTest, SingleDrawingItem) {
   canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_paint);
   picture = skia::AdoptRef(recorder.endRecordingAsPicture());
   list->AppendItem(DrawingDisplayItem::Create(picture));
+  list->CreateAndCacheSkPicture();
   DrawDisplayList(pixels, layer_rect, list);
 
   SkBitmap expected_bitmap;
@@ -76,7 +79,9 @@ TEST(DisplayItemListTest, ClipItem) {
   SkPaint red_paint;
   red_paint.setColor(SK_ColorRED);
   unsigned char pixels[4 * 100 * 100] = {0};
-  scoped_refptr<DisplayItemList> list = DisplayItemList::Create();
+  const bool use_cached_picture = true;
+  scoped_refptr<DisplayItemList> list =
+      DisplayItemList::Create(layer_rect, use_cached_picture);
 
   gfx::PointF first_offset(8.f, 9.f);
   gfx::RectF first_recording_rect(first_offset, layer_rect.size());
@@ -100,6 +105,7 @@ TEST(DisplayItemListTest, ClipItem) {
   list->AppendItem(DrawingDisplayItem::Create(picture));
 
   list->AppendItem(EndClipDisplayItem::Create());
+  list->CreateAndCacheSkPicture();
 
   DrawDisplayList(pixels, layer_rect, list);
 
@@ -131,7 +137,9 @@ TEST(DisplayItemListTest, TransformItem) {
   SkPaint red_paint;
   red_paint.setColor(SK_ColorRED);
   unsigned char pixels[4 * 100 * 100] = {0};
-  scoped_refptr<DisplayItemList> list = DisplayItemList::Create();
+  const bool use_cached_picture = true;
+  scoped_refptr<DisplayItemList> list =
+      DisplayItemList::Create(layer_rect, use_cached_picture);
 
   gfx::PointF first_offset(8.f, 9.f);
   gfx::RectF first_recording_rect(first_offset, layer_rect.size());
@@ -156,6 +164,7 @@ TEST(DisplayItemListTest, TransformItem) {
   list->AppendItem(DrawingDisplayItem::Create(picture));
 
   list->AppendItem(EndTransformDisplayItem::Create());
+  list->CreateAndCacheSkPicture();
 
   DrawDisplayList(pixels, layer_rect, list);
 
@@ -177,11 +186,13 @@ TEST(DisplayItemListTest, TransformItem) {
   EXPECT_EQ(0, memcmp(pixels, expected_pixels, 4 * 100 * 100));
 }
 
-TEST(DisplayItemList, FilterItem) {
+TEST(DisplayItemListTest, FilterItem) {
   gfx::Rect layer_rect(100, 100);
   FilterOperations filters;
   unsigned char pixels[4 * 100 * 100] = {0};
-  scoped_refptr<DisplayItemList> list = DisplayItemList::Create();
+  const bool use_cached_picture = true;
+  scoped_refptr<DisplayItemList> list =
+      DisplayItemList::Create(layer_rect, use_cached_picture);
 
   SkBitmap source_bitmap;
   source_bitmap.allocN32Pixels(50, 50);
@@ -206,6 +217,7 @@ TEST(DisplayItemList, FilterItem) {
   gfx::RectF filter_bounds(10.f, 10.f, 50.f, 50.f);
   list->AppendItem(FilterDisplayItem::Create(filters, filter_bounds));
   list->AppendItem(EndFilterDisplayItem::Create());
+  list->CreateAndCacheSkPicture();
 
   DrawDisplayList(pixels, layer_rect, list);
 
@@ -236,8 +248,9 @@ TEST(DisplayItemListTest, CompactingItems) {
   gfx::PointF offset(8.f, 9.f);
   gfx::RectF recording_rect(offset, layer_rect.size());
 
-  scoped_refptr<DisplayItemList> list = DisplayItemList::Create();
-  list->set_layer_rect(ToEnclosingRect(recording_rect));
+  bool use_cached_picture = false;
+  scoped_refptr<DisplayItemList> list_without_caching =
+      DisplayItemList::Create(layer_rect, use_cached_picture);
 
   canvas = skia::SharePtr(
       recorder.beginRecording(gfx::RectFToSkRect(recording_rect)));
@@ -245,13 +258,16 @@ TEST(DisplayItemListTest, CompactingItems) {
   canvas->drawRectCoords(0.f, 0.f, 60.f, 60.f, red_paint);
   canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_paint);
   picture = skia::AdoptRef(recorder.endRecordingAsPicture());
-  list->AppendItem(DrawingDisplayItem::Create(picture));
-  DrawDisplayList(pixels, layer_rect, list);
-
-  list->CreateAndCacheSkPicture();
+  list_without_caching->AppendItem(DrawingDisplayItem::Create(picture));
+  DrawDisplayList(pixels, layer_rect, list_without_caching);
 
   unsigned char expected_pixels[4 * 100 * 100] = {0};
-  DrawDisplayList(expected_pixels, layer_rect, list);
+  use_cached_picture = true;
+  scoped_refptr<DisplayItemList> list_with_caching =
+      DisplayItemList::Create(layer_rect, use_cached_picture);
+  list_with_caching->AppendItem(DrawingDisplayItem::Create(picture));
+  list_with_caching->CreateAndCacheSkPicture();
+  DrawDisplayList(expected_pixels, layer_rect, list_with_caching);
 
   EXPECT_EQ(0, memcmp(pixels, expected_pixels, 4 * 100 * 100));
 }

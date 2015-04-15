@@ -751,11 +751,11 @@ void Layer::PaintContents(
     delegate_->OnPaintLayer(PaintContext(canvas.get(), clip));
 }
 
-scoped_refptr<cc::DisplayItemList> Layer::PaintContentsToDisplayList(
+void Layer::PaintContentsToDisplayList(
+    cc::DisplayItemList* display_list,
     const gfx::Rect& clip,
     ContentLayerClient::PaintingControlSetting painting_control) {
   TRACE_EVENT1("ui", "Layer::PaintContentsToDisplayList", "name", name_);
-  scoped_refptr<cc::DisplayItemList> list = cc::DisplayItemList::Create();
   if (delegate_) {
     // TODO(danakj): Save the invalidation on the layer and pass that down
     // instead of the |clip| here. That will break everything until View
@@ -763,9 +763,8 @@ scoped_refptr<cc::DisplayItemList> Layer::PaintContentsToDisplayList(
     gfx::Rect invalidation = clip;
     DCHECK(clip.Contains(invalidation));
     delegate_->OnPaintLayer(
-        PaintContext(list.get(), device_scale_factor_, clip, invalidation));
+        PaintContext(display_list, device_scale_factor_, clip, invalidation));
   }
-  return list;
 }
 
 bool Layer::FillsBoundsCompletely() const { return fills_bounds_completely_; }

@@ -9,8 +9,4 @@ namespace cc {
 DisplayItem::DisplayItem() {
 }
 
-void DisplayItem::RasterForTracing(SkCanvas* canvas) const {
-  Raster(canvas, nullptr);
-}
-
 }  // namespace cc

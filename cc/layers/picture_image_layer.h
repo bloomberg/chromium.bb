@@ -27,7 +27,8 @@ class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
       SkCanvas* canvas,
       const gfx::Rect& clip,
       ContentLayerClient::PaintingControlSetting painting_control) override;
-  scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
+  void PaintContentsToDisplayList(
+      DisplayItemList* display_list,
       const gfx::Rect& clip,
       ContentLayerClient::PaintingControlSetting painting_control) override;
   bool FillsBoundsCompletely() const override;

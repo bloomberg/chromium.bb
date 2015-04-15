@@ -29,7 +29,8 @@ class CC_EXPORT ContentLayerClient {
                              const gfx::Rect& clip,
                              PaintingControlSetting painting_status) = 0;
 
-  virtual scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
+  virtual void PaintContentsToDisplayList(
+      DisplayItemList* display_list,
       const gfx::Rect& clip,
       PaintingControlSetting painting_status) = 0;
 
