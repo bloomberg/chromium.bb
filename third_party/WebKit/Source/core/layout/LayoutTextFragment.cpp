@@ -95,13 +95,9 @@ void LayoutTextFragment::setText(PassRefPtr<StringImpl> text, bool force)
     // If we're the remaining text from a first letter then we have to tell the
     // first letter pseudo element to reattach itself so it can re-calculate the
     // correct first-letter settings.
-    if (LayoutObject* previous = previousSibling()) {
-        if (!previous->isPseudoElement() || !previous->node()->isFirstLetterPseudoElement())
-            return;
-
-        // Tell the first letter container node, and the first-letter node
-        // that their text content changed.
-        toFirstLetterPseudoElement(previous->node())->updateTextFragments();
+    if (isRemainingTextRenderer()) {
+        ASSERT(firstLetterPseudoElement());
+        firstLetterPseudoElement()->updateTextFragments();
     }
 }
 
