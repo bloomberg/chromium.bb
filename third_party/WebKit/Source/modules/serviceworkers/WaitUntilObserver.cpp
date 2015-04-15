@@ -68,8 +68,10 @@ private:
     {
         ASSERT(m_observer);
         ASSERT(m_resolveType == Fulfilled || m_resolveType == Rejected);
-        if (m_resolveType == Rejected)
+        if (m_resolveType == Rejected) {
             m_observer->reportError(value);
+            value = ScriptPromise::reject(value.scriptState(), value).scriptValue();
+        }
         m_observer->decrementPendingActivity();
         m_observer = nullptr;
         return value;

@@ -73,6 +73,11 @@ public:
         return m_promise.isUndefined() || m_promise.isNull();
     }
 
+    ScriptValue scriptValue() const
+    {
+        return m_promise;
+    }
+
     v8::Handle<v8::Value> v8Value() const
     {
         return m_promise.v8Value();

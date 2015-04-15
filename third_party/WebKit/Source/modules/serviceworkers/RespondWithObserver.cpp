@@ -115,10 +115,12 @@ private:
     {
         ASSERT(m_observer);
         ASSERT(m_resolveType == Fulfilled || m_resolveType == Rejected);
-        if (m_resolveType == Rejected)
+        if (m_resolveType == Rejected) {
             m_observer->responseWasRejected();
-        else
+            value = ScriptPromise::reject(value.scriptState(), value).scriptValue();
+        } else {
             m_observer->responseWasFulfilled(value);
+        }
         m_observer = nullptr;
         return value;
     }
