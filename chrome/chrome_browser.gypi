@@ -253,8 +253,6 @@
       'browser/browsing_data/cookies_tree_model.h',
       'browser/browsing_data/local_data_container.cc',
       'browser/browsing_data/local_data_container.h',
-      'browser/caps/generate_state_json.h',
-      'browser/caps/generate_state_json.cc',
       'browser/character_encoding.cc',
       'browser/character_encoding.h',
       'browser/chrome_browser_application_mac.h',
@@ -809,8 +807,6 @@
       'browser/signin/signin_global_error.h',
       'browser/signin/signin_global_error_factory.cc',
       'browser/signin/signin_global_error_factory.h',
-      'browser/sync/sync_global_error_factory.cc',
-      'browser/sync/sync_global_error_factory.h',
     ],
     # Everything but Android, iOS, and CrOS.
     'chrome_browser_desktop_sources': [
@@ -2109,6 +2105,8 @@
       'browser/policy/cloud/user_policy_signin_service.h',
       'browser/sync/sync_global_error.cc',
       'browser/sync/sync_global_error.h',
+      'browser/sync/sync_global_error_factory.cc',
+      'browser/sync/sync_global_error_factory.h',
       'browser/upgrade_detector_impl.cc',
       'browser/upgrade_detector_impl.h',
     ],
@@ -2856,6 +2854,10 @@
       'browser/sync/sync_type_preference_provider.h',
     ],
     'chrome_browser_task_manager_sources': [
+      # Stats collection for CAPS (uses old task manager):
+      'browser/caps/generate_state_json.cc',
+      'browser/caps/generate_state_json.h',
+
       # New Task Manager Sources:
       'browser/task_management/providers/browser_process_task_provider.cc',
       'browser/task_management/providers/browser_process_task_provider.h',

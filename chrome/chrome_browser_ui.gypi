@@ -138,8 +138,6 @@
       'browser/ui/browser_commands_mac.cc',
       'browser/ui/browser_commands_mac.h',
       'browser/ui/browser_dialogs.h',
-      'browser/ui/browser_instant_controller.cc',
-      'browser/ui/browser_instant_controller.h',
       'browser/ui/browser_mac.cc',
       'browser/ui/browser_mac.h',
       'browser/ui/browser_navigator.cc',
@@ -215,8 +213,6 @@
       'browser/ui/proximity_auth/proximity_auth_error_bubble.cc',
       'browser/ui/proximity_auth/proximity_auth_error_bubble.h',
       'browser/ui/screen_capture_notification_ui.h',
-      'browser/ui/search/instant_controller.cc',
-      'browser/ui/search/instant_controller.h',
       'browser/ui/search/instant_page.cc',
       'browser/ui/search/instant_page.h',
       'browser/ui/search/instant_search_prerenderer.cc',
@@ -526,11 +522,6 @@
       'browser/ui/auto_login_infobar_delegate.cc',
       'browser/ui/auto_login_infobar_delegate.h',
       'browser/ui/screen_capture_notification_ui_stub.cc',
-    ],
-    # Files shared between CrOS, desktop linux, and Android.
-    'chrome_browser_ui_android_linux_sources': [
-      'browser/ui/certificate_dialogs.cc',
-      'browser/ui/certificate_dialogs.h',
     ],
     # Cross-platform ash sources.
     'chrome_browser_ui_ash_sources': [
@@ -1351,6 +1342,8 @@
     ],
     # Counts desktop Linux and ChromeOS.
     'chrome_browser_ui_linux_sources': [
+      'browser/ui/certificate_dialogs.cc',
+      'browser/ui/certificate_dialogs.h',
       'browser/ui/startup/autolaunch_prompt.cc',
       'browser/ui/views/apps/chrome_app_window_client_views.cc',
       'browser/ui/webui/certificate_viewer_ui.cc',
@@ -1492,6 +1485,8 @@
       'browser/ui/browser_content_setting_bubble_model_delegate.h',
       'browser/ui/browser_finder.cc',
       'browser/ui/browser_finder.h',
+      'browser/ui/browser_instant_controller.cc',
+      'browser/ui/browser_instant_controller.h',
       'browser/ui/browser_iterator.cc',
       'browser/ui/browser_iterator.h',
       'browser/ui/browser_list.cc',
@@ -1607,6 +1602,8 @@
       'browser/ui/sad_tab_types.h',
       'browser/ui/scoped_tabbed_browser_displayer.cc',
       'browser/ui/scoped_tabbed_browser_displayer.h',
+      'browser/ui/search/instant_controller.cc',
+      'browser/ui/search/instant_controller.h',
       'browser/ui/search/search_delegate.cc',
       'browser/ui/search/search_delegate.h',
       'browser/ui/search/search_ui.cc',
@@ -2941,9 +2938,6 @@
         }],
         ['enable_print_preview==1', {
           'sources': [ '<@(chrome_browser_ui_print_preview_sources)' ],
-        }],
-        ['OS=="linux" or OS=="android"', {
-          'sources': [ '<@(chrome_browser_ui_android_linux_sources)' ],
         }],
         ['OS=="android"', {
           'dependencies': [

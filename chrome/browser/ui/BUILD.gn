@@ -264,11 +264,6 @@ source_set("ui") {
                            ".",
                            "//chrome")
   }
-  if (is_linux || is_android) {
-    sources += rebase_path(gypi_values.chrome_browser_ui_android_linux_sources,
-                           ".",
-                           "//chrome")
-  }
 
   if (is_android) {
     deps += [

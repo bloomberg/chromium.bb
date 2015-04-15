@@ -135,8 +135,10 @@ class InstantService : public KeyedService,
   // Notifies the observer about the last known most visited items.
   void NotifyAboutMostVisitedItems();
 
+#if defined(ENABLE_THEMES)
   // Theme changed notification handler.
   void OnThemeChanged(ThemeService* theme_service);
+#endif
 
   void ResetInstantSearchPrerenderer();
 
