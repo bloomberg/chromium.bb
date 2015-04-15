@@ -134,29 +134,40 @@ hosted inside their own tabs.
 </p>
 
 <h3 id="linking">Linking to your options page</h3>
+
 <p>
-To link to your extension's options page, use a URL like
-<em style="white-space:nowrap">chrome://extensions<strong>?options=yourextensionid</strong></em>.
-This loads <em>chrome://extensions</em> then automatically opens your options
-page in a dialogue.
+If you want to link to your options page, call
+<code>$(ref:runtime.openOptionsPage chrome.runtime.openOptionsPage())</code>.
+This has been available since Chrome 42.
+</p>
+
+<p>
+Linking directly to
+<em style="white-space:nowrap">chrome-extension://<strong>yourextensionid/youroptionspage.html</strong></em>
+will be a bad user experience. Linking directly to
+<em style="white-space:nowrap">chrome://extensions<strong>?options=yourextensionid</strong></em>
+isn't advisable either, as Chrome may change the embedding URL in the future.
+
+<p>
+<code>$(ref:runtime.openOptionsPage chrome.runtime.openOptionsPage())</code>
+will always open the canonical location, and has nice behavior like re-focusing
+an open options page if there is one.
+</p>
 
 <pre data-filename="popup.html">
-&lt;a href="chrome://extensions?options=aebdgjojlaaljcehfkjaknmlilmblnip"&gt;
-  Go to options.
-&lt;/a&gt;
+&lt;button id="go-to-options"&gt;Go to options&lt;/button&gt;
 </pre>
-</p>
-
-<p>
-Of course, this is only supported in Chrome 40 onwards.
-</p>
-
-<p>
-If you link to your options page directly with <em
-style="white-space:nowrap">chrome-extension://<strong>yourextensionid/youroptionspage.html</strong></em>,
-it will always open in its own tab. This is a bad user experience (but it can
-be useful in development).
-</p>
+<pre data-filename="popup.js">
+document.querySelector('#go-to-options').addEventListener(function() {
+  if (chrome.runtime.openOptionsPage) {
+    // New way to open options pages, if supported (Chrome 42+).
+    chrome.runtime.openOptionsPage();
+  } else {
+    // Reasonable fallback.
+    window.open(chrome.runtime.getURL('options.html'));
+  }
+});
+</pre>
 
 <h3 id="tabs-api">Tabs API</h3>
 <p>
