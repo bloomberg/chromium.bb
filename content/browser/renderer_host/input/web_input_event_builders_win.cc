@@ -162,8 +162,9 @@ WebKeyboardEvent WebKeyboardEventBuilder::Build(HWND hwnd,
   // this case.
 
   // Bit 30 of lParam represents the "previous key state". If set, the key was
-  // already down, therefore this is an auto-repeat.
-  if (lparam & 0x40000000)
+  // already down, therefore this is an auto-repeat. Only apply this to key
+  // down events, to match DOM semantics.
+  if ((result.type == WebInputEvent::RawKeyDown) && (lparam & 0x40000000))
     result.modifiers |= WebInputEvent::IsAutoRepeat;
 
   result.modifiers |= GetLocationModifier(wparam, lparam);
