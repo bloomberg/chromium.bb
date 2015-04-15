@@ -753,9 +753,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
         }
         break;
     case CSSSelector::PseudoTarget:
-        if (element == element.document().cssTarget())
-            return true;
-        break;
+        return element == element.document().cssTarget();
     case CSSSelector::PseudoAny:
         {
             SelectorCheckingContext subContext(context);

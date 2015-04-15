@@ -1473,6 +1473,9 @@ void Element::removedFrom(ContainerNode* insertionPoint)
 
     ContainerNode::removedFrom(insertionPoint);
     if (wasInDocument) {
+        if (this == document().cssTarget())
+            document().setCSSTarget(nullptr);
+
         if (hasPendingResources())
             document().accessSVGExtensions().removeElementFromPendingResources(this);
 

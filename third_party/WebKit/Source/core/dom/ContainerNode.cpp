@@ -817,15 +817,12 @@ void ContainerNode::notifyNodeRemoved(Node& root)
     ScriptForbiddenScope forbidScript;
     EventDispatchForbiddenScope assertNoEventDispatch;
 
-    Document& document = root.document();
     for (Node& node : NodeTraversal::inclusiveDescendantsOf(root)) {
         // As an optimization we skip notifying Text nodes and other leaf nodes
         // of removal when they're not in the Document tree since the virtual
         // call to removedFrom is not needed.
         if (!node.inDocument() && !node.isContainerNode())
             continue;
-        if (document.cssTarget() == node)
-            document.setCSSTarget(nullptr);
         node.removedFrom(this);
         for (ShadowRoot* shadowRoot = node.youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot())
             notifyNodeRemoved(*shadowRoot);
