@@ -1022,7 +1022,7 @@ DirectoryModel.prototype.onVolumeChanged_ = function(volumeInfo) {
                 // high counts for a particular id, we should add it to the
                 // whitelist in metrics_events.js.
                 if (extensionId && extensionName == 'unknown') {
-                  this.tracker_.sendEvent(
+                  this.tracker_.send(
                       metrics.Internals.UNRECOGNIZED_FILE_SYSTEM_PROVIDER
                           .label(extensionId));
                 }

@@ -19,6 +19,7 @@ var metrics = metrics || metricsBase;
 /** @enum {string} */
 metrics.Categories = {
   ACQUISITION: 'Acquisition',
+  MANAGEMENT: 'Management',
   INTERNALS: 'Internals'
 };
 
@@ -62,17 +63,17 @@ metrics.getFileSystemProviderName = function(extensionId, defaultName) {
  * @enum {!analytics.EventBuilder.Dimension}
  */
 metrics.Dimensions = {
-  CONSUMER_TYPE_READER: {
+  CONSUMER_TYPE_MANAGER: {
     index: metrics.Dimension_.CONSUMER_TYPE,
-    value: 'Non-import'
+    value: 'Manage'
   },
   CONSUMER_TYPE_IMPORTER: {
     index: metrics.Dimension_.CONSUMER_TYPE,
     value: 'Import'
   },
-  SESSION_TYPE_NON_IMPORT: {
+  SESSION_TYPE_MANAGE: {
     index: metrics.Dimension_.SESSION_TYPE,
-    value: 'Non-import'
+    value: 'Manage'
   },
   SESSION_TYPE_IMPORT: {
     index: metrics.Dimension_.SESSION_TYPE,
@@ -99,7 +100,17 @@ metrics.event.Builders_ = {
   IMPORT: analytics.EventBuilder.builder()
       .category(metrics.Categories.ACQUISITION),
   INTERNALS: analytics.EventBuilder.builder()
-      .category(metrics.Categories.INTERNALS)
+      .category(metrics.Categories.INTERNALS),
+  MANAGE: analytics.EventBuilder.builder()
+      .category(metrics.Categories.MANAGEMENT)
+};
+
+/** @enum {!analytics.EventBuilder} */
+metrics.Management = {
+  WINDOW_CREATED: metrics.event.Builders_.MANAGE
+      .action('Window Created')
+      .dimension(metrics.Dimensions.SESSION_TYPE_MANAGE)
+      .dimension(metrics.Dimensions.CONSUMER_TYPE_MANAGER)
 };
 
 /** @enum {!analytics.EventBuilder} */
