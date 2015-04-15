@@ -7,17 +7,24 @@
   "incognito" : "split",
   "manifest_version": 2,
   "permissions": [
+    "chrome://resources/",
     {
       "fileSystem": ["requestFileSystem"]
     },
     "fileManagerPrivate",
-    "https://www.googledrive.com/"
+    "https://www.googledrive.com/",
+    "metricsPrivate",
+    "storage"
   ],
-  "content_security_policy": "default-src 'none'; script-src 'self' chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj; style-src 'self'; frame-src 'self'; img-src 'self' data:; media-src 'self'; connect-src 'self' https://www.googledrive.com",
+  "content_security_policy": "default-src 'none'; script-src 'self' chrome://resources chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj; style-src 'self'; frame-src 'self'; img-src 'self' data:; media-src 'self'; connect-src 'self' https://www.googledrive.com",
   "background": {
     "scripts": [
+      "chrome://resources/js/analytics.js",
       "cache.js",
       "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/file_type.js",
+      "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/metrics_base.js",
+      "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/metrics.js",
+      "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/metrics_events.js",
       "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/js/metadata/image_orientation.js",
       "image_loader.js",
       "piex_loader.js",

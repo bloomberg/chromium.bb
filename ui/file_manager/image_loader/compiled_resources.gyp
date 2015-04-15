@@ -8,6 +8,9 @@
       'variables': {
         'depends': [
           "../file_manager/common/js/file_type.js",
+          '../file_manager/common/js/metrics_base.js',
+          '../file_manager/common/js/metrics.js',
+          '../file_manager/common/js/metrics_events.js',
           "../file_manager/foreground/js/metadata/image_orientation.js",
           'cache.js',
           'image_loader.js',
@@ -19,6 +22,8 @@
           '<(CLOSURE_DIR)/externs/chrome_send_externs.js',
           '<(CLOSURE_DIR)/externs/chrome_extensions.js',
           '<(CLOSURE_DIR)/externs/file_manager_private.js',
+          '<(CLOSURE_DIR)/externs/metrics_private.js',
+          '../../../third_party/analytics/externs.js',
         ],
       },
       'includes': [

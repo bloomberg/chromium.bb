@@ -144,5 +144,6 @@ metrics.timing = metrics.timing || {};
 metrics.timing.Variables = {
   COMPUTE_HASH: 'Compute Content Hash',
   SEARCH_BY_HASH: 'Search By Hash',
-  HISTORY_LOAD: 'History Load'
+  HISTORY_LOAD: 'History Load',
+  EXTRACT_THUMBNAIL_FROM_RAW: 'Extract Thumbnail From RAW'
 };
