@@ -100,7 +100,7 @@ private:
 
     using ObserverListMap = HashMap<ExecutionContext*, OwnPtr<ObserverList>>;
 
-    void notifyObserversOnContext(ExecutionContext*, blink::WebConnectionType);
+    void notifyObserversOnContext(blink::WebConnectionType, ExecutionContext*);
 
     ObserverList* lockAndFindObserverList(ExecutionContext*);
 

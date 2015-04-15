@@ -78,7 +78,7 @@ void NetworkStateNotifier::setWebConnectionTypeImpl(blink::WebConnectionType typ
 
     for (const auto& entry : m_observers) {
         ExecutionContext* context = entry.key;
-        context->postTask(FROM_HERE, createCrossThreadTask(&NetworkStateNotifier::notifyObserversOnContext, this, AllowCrossThreadAccess(context), type));
+        context->postTask(FROM_HERE, createCrossThreadTask(&NetworkStateNotifier::notifyObserversOnContext, this, type));
     }
 }
 
@@ -129,7 +129,7 @@ void NetworkStateNotifier::setWebConnectionTypeForTest(blink::WebConnectionType 
     setWebConnectionTypeImpl(type);
 }
 
-void NetworkStateNotifier::notifyObserversOnContext(ExecutionContext* context, blink::WebConnectionType type)
+void NetworkStateNotifier::notifyObserversOnContext(blink::WebConnectionType type, ExecutionContext* context)
 {
     ObserverList* observerList = lockAndFindObserverList(context);
 
