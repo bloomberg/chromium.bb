@@ -11,12 +11,12 @@ fi
 WESTON=$abs_builddir/weston
 LOGDIR=$abs_builddir/logs
 
-mkdir -p "$LOGDIR"
+mkdir -p "$LOGDIR" || exit
 
 SERVERLOG="$LOGDIR/${TEST_NAME}-serverlog.txt"
 OUTLOG="$LOGDIR/${TEST_NAME}-log.txt"
 
-rm -f "$SERVERLOG"
+rm -f "$SERVERLOG" || exit
 
 BACKEND=${BACKEND:-headless-backend.so}
 
