@@ -631,8 +631,12 @@ class PipelineIntegrationTestHost : public mojo::test::ApplicationTestBase,
 
   void SetUp() override {
     ApplicationTestBase::SetUp();
-    if (!IsMediaLibraryInitialized())
+
+    // TODO(dalecurtis): For some reason this isn't done...
+    if (!base::CommandLine::InitializedForCurrentProcess()) {
+      base::CommandLine::Init(0, NULL);
       InitializeMediaLibraryForTesting();
+    }
   }
 
  protected:
@@ -677,6 +681,8 @@ class PipelineIntegrationTest : public PipelineIntegrationTestHost {
                    base::Unretained(this)),
         base::Bind(&PipelineIntegrationTest::OnBufferingStateChanged,
                    base::Unretained(this)),
+        base::Bind(&PipelineIntegrationTest::OnVideoFramePaint,
+                   base::Unretained(this)),
         base::Closure(), base::Bind(&PipelineIntegrationTest::OnAddTextTrack,
                                     base::Unretained(this)),
         base::Bind(&PipelineIntegrationTest::OnWaitingForDecryptionKey,
@@ -720,6 +726,8 @@ class PipelineIntegrationTest : public PipelineIntegrationTestHost {
         base::Bind(&PipelineIntegrationTest::OnMetadata,
                    base::Unretained(this)),
         base::Bind(&PipelineIntegrationTest::OnBufferingStateChanged,
+                   base::Unretained(this)),
+        base::Bind(&PipelineIntegrationTest::OnVideoFramePaint,
                    base::Unretained(this)),
         base::Closure(), base::Bind(&PipelineIntegrationTest::OnAddTextTrack,
                                     base::Unretained(this)),

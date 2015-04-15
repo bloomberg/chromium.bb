@@ -281,6 +281,7 @@
 
         ['use_x11==1', {
           'dependencies': [
+            '../media/media.gyp:player_x11',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
           'conditions': [
