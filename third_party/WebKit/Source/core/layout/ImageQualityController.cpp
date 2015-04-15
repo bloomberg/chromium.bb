@@ -90,15 +90,10 @@ ImageQualityController::~ImageQualityController()
 }
 
 ImageQualityController::ImageQualityController()
-    : m_timer(adoptPtr(new Timer<ImageQualityController>(this, &ImageQualityController::highQualityRepaintTimerFired)))
+    : m_timer(this, &ImageQualityController::highQualityRepaintTimerFired)
     , m_animatedResizeIsActive(false)
     , m_liveResizeOptimizationIsActive(false)
 {
-}
-
-void ImageQualityController::setTimer(Timer<ImageQualityController>* newTimer)
-{
-    m_timer = adoptPtr(newTimer);
 }
 
 void ImageQualityController::removeLayer(LayoutObject* object, LayerSizeMap* innerMap, const void* layer)
@@ -126,7 +121,7 @@ void ImageQualityController::objectDestroyed(LayoutObject* object)
     m_objectLayerSizeMap.remove(object);
     if (m_objectLayerSizeMap.isEmpty()) {
         m_animatedResizeIsActive = false;
-        m_timer->stop();
+        m_timer.stop();
     }
 }
 
@@ -152,7 +147,7 @@ void ImageQualityController::highQualityRepaintTimerFired(Timer<ImageQualityCont
 
 void ImageQualityController::restartTimer()
 {
-    m_timer->startOneShot(cLowQualityTimeThreshold, FROM_HERE);
+    m_timer.startOneShot(cLowQualityTimeThreshold, FROM_HERE);
 }
 
 bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, LayoutObject* object, Image* image, const void *layer, const LayoutSize& layoutSize)
@@ -220,8 +215,7 @@ bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, L
     // If an animated resize is active, paint in low quality and kick the timer ahead.
     if (m_animatedResizeIsActive) {
         set(object, innerMap, layer, scaledLayoutSize);
-        if (oldSize != scaledLayoutSize)
-            restartTimer();
+        restartTimer();
         return true;
     }
     // If this is the first time resizing this image, or its size is the
@@ -234,11 +228,10 @@ bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, L
     }
     // If the timer is no longer active, draw at high quality and don't
     // set the timer.
-    if (!m_timer->isActive()) {
+    if (!m_timer.isActive()) {
         removeLayer(object, innerMap, layer);
         return false;
     }
-
     // This object has been resized to two different sizes while the timer
     // is active, so draw at low quality, set the flag for animated resizes and
     // the object to the list for high quality redraw.

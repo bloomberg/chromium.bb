@@ -3800,7 +3800,6 @@
             'html/parser/HTMLSrcsetParserTest.cpp',
             'html/track/vtt/BufferedLineReaderTest.cpp',
             'html/track/vtt/VTTScannerTest.cpp',
-            'layout/ImageQualityControllerTest.cpp',
             'layout/LayoutBlockTest.cpp',
             'layout/LayoutInlineTest.cpp',
             'layout/LayoutMenuListTest.cpp',
