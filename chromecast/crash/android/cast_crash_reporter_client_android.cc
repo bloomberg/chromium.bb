@@ -27,7 +27,7 @@ void CastCrashReporterClientAndroid::GetProductNameAndVersion(
     const char** version) {
   *product_name = "media_shell";
   *version = PRODUCT_VERSION
-#if CAST_IS_DEBUG_BUILD
+#if CAST_IS_DEBUG_BUILD()
       ".debug"
 #endif
       "." CAST_BUILD_REVISION;

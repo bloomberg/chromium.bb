@@ -41,7 +41,7 @@ bool HandleCrash(const void* /* crash_context */,
 // Debug builds: always to crash-staging
 // Release builds: only to crash-staging for local/invalid build numbers
 bool UploadCrashToStaging() {
-#if CAST_IS_DEBUG_BUILD
+#if CAST_IS_DEBUG_BUILD()
   return true;
 #else
   int build_number;
