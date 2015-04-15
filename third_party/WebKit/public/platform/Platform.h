@@ -343,6 +343,8 @@ public:
 
     virtual bool isReservedIPAddress(const WebString& host) const { return false; }
 
+    virtual bool portAllowed(const WebURL&) const { return false; }
+
     // Plugins -------------------------------------------------------------
 
     // If refresh is true, then cached information should not be used to

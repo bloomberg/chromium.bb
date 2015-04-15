@@ -34,7 +34,6 @@ namespace blink {
 class KURL;
 
 PLATFORM_EXPORT bool isDefaultPortForProtocol(unsigned short port, const String& protocol);
-PLATFORM_EXPORT bool portAllowed(const KURL&); // Blacklist ports that should never be used for Web resources.
 
 } // namespace blink
 
