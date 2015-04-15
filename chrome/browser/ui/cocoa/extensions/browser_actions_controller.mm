@@ -171,6 +171,9 @@ class ToolbarActionsBarBridge : public ToolbarActionsBarDelegate {
   bool IsPopupRunning() const override;
   void OnOverflowedActionWantsToRunChanged(bool overflowed_action_wants_to_run)
       override;
+  void ShowExtensionMessageBubble(
+      scoped_ptr<extensions::ExtensionMessageBubbleController> controller)
+          override;
 
   // The owning BrowserActionsController; weak.
   BrowserActionsController* controller_;
@@ -246,6 +249,11 @@ void ToolbarActionsBarBridge::OnOverflowedActionWantsToRunChanged(
     bool overflowed_action_wants_to_run) {
   [[controller_ toolbarController]
       setOverflowedToolbarActionWantsToRun:overflowed_action_wants_to_run];
+}
+
+void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
+    scoped_ptr<extensions::ExtensionMessageBubbleController> controller) {
+  NOTREACHED();  // Not yet implemented on Mac.
 }
 
 }  // namespace

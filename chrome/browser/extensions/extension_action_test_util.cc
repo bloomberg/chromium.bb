@@ -116,6 +116,13 @@ size_t GetTotalPageActionCount(content::WebContents* web_contents) {
 
 scoped_refptr<const Extension> CreateActionExtension(const std::string& name,
                                                      ActionType action_type) {
+  return CreateActionExtension(name, action_type, Manifest::INTERNAL);
+}
+
+scoped_refptr<const Extension> CreateActionExtension(
+    const std::string& name,
+    ActionType action_type,
+    Manifest::Location location) {
   DictionaryBuilder manifest;
   manifest.Set("name", name)
           .Set("description", "An extension")
@@ -139,6 +146,7 @@ scoped_refptr<const Extension> CreateActionExtension(const std::string& name,
 
   return ExtensionBuilder().SetManifest(manifest.Pass()).
                             SetID(crx_file::id_util::GenerateId(name)).
+                            SetLocation(location).
                             Build();
 }
 

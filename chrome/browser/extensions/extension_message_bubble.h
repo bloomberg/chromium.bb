@@ -15,16 +15,6 @@ namespace extensions {
 // controller.
 class ExtensionMessageBubble {
  public:
-  // Setup the callback for when the action button is clicked in the
-  // bubble.
-  virtual void OnActionButtonClicked(const base::Closure& callback) = 0;
-
-  // Setup the callback for when the dismiss button is clicked.
-  virtual void OnDismissButtonClicked(const base::Closure& callback) = 0;
-
-  // Setup the callback for when the link is clicked in the bubble.
-  virtual void OnLinkClicked(const base::Closure& callback) = 0;
-
   // Instruct the bubble to appear.
   virtual void Show() = 0;
 };

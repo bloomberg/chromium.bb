@@ -604,6 +604,7 @@
       'browser/ui/views/collected_cookies_views_browsertest.cc',
       'browser/ui/views/extensions/bookmark_override_browsertest.cc',
       'browser/ui/views/extensions/extension_install_dialog_view_browsertest.cc',
+      'browser/ui/views/extensions/extension_message_bubble_view_browsertest.cc',
       'browser/ui/views/frame/browser_view_browsertest.cc',
       'browser/ui/views/location_bar/zoom_bubble_view_browsertest.cc',
       'browser/ui/views/profiles/avatar_menu_button_browsertest.cc',

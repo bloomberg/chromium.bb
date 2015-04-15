@@ -31,7 +31,6 @@ class WrenchToolbarButton;
 namespace extensions {
 class Command;
 class Extension;
-class ExtensionMessageBubbleFactory;
 }
 
 namespace views {
@@ -137,7 +136,6 @@ class ToolbarView : public views::AccessiblePaneView,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::WidgetObserver:
-  void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
   // content::NotificationObserver:
@@ -244,11 +242,6 @@ class ToolbarView : public views::AccessiblePaneView,
   // menu should be listed later.
   scoped_ptr<WrenchMenuModel> wrench_menu_model_;
   scoped_ptr<WrenchMenu> wrench_menu_;
-
-  // The factory to create bubbles to warn about dangerous/suspicious
-  // extensions.
-  scoped_ptr<extensions::ExtensionMessageBubbleFactory>
-      extension_message_bubble_factory_;
 
   // A list of listeners to call when the menu opens.
   ObserverList<views::MenuListener> menu_listeners_;

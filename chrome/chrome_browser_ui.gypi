@@ -2592,6 +2592,8 @@
       'browser/ui/extensions/extension_action_platform_delegate.h',
       'browser/ui/extensions/extension_action_view_controller.cc',
       'browser/ui/extensions/extension_action_view_controller.h',
+      'browser/ui/extensions/extension_message_bubble_factory.cc',
+      'browser/ui/extensions/extension_message_bubble_factory.h',
       'browser/ui/extensions/extension_enable_flow.cc',
       'browser/ui/extensions/extension_enable_flow.h',
       'browser/ui/extensions/extension_enable_flow_delegate.h',

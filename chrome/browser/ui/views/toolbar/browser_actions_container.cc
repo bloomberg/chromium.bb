@@ -6,6 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/stl_util.h"
+#include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
+#include "chrome/browser/ui/views/extensions/extension_message_bubble_view.h"
 #include "chrome/browser/ui/views/extensions/extension_toolbar_icon_surfacing_bubble_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container_observer.h"
@@ -33,6 +35,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/resize_area.h"
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
@@ -83,7 +86,8 @@ BrowserActionsContainer::BrowserActionsContainer(
       added_to_view_(false),
       shown_bubble_(false),
       resize_amount_(0),
-      animation_target_size_(0) {
+      animation_target_size_(0),
+      active_bubble_(nullptr) {
   set_id(VIEW_ID_BROWSER_ACTION_TOOLBAR);
 
   bool overflow_experiment =
@@ -112,6 +116,12 @@ BrowserActionsContainer::BrowserActionsContainer(
 }
 
 BrowserActionsContainer::~BrowserActionsContainer() {
+  if (active_bubble_)
+    active_bubble_->GetWidget()->Close();
+  // We should synchronously receive the OnWidgetClosing() event, so we should
+  // always have cleared the active bubble by now.
+  DCHECK(!active_bubble_);
+
   FOR_EACH_OBSERVER(BrowserActionsContainerObserver,
                     observers_,
                     OnBrowserActionsContainerDestroyed());
@@ -337,6 +347,40 @@ void BrowserActionsContainer::OnOverflowedActionWantsToRunChanged(
   BrowserView::GetBrowserViewForBrowser(browser_)->toolbar()->
       app_menu()->SetOverflowedToolbarActionWantsToRun(
           overflowed_action_wants_to_run);
+}
+
+void BrowserActionsContainer::ShowExtensionMessageBubble(
+    scoped_ptr<extensions::ExtensionMessageBubbleController> controller) {
+  if (animating()) {
+    // Similarly, if the container is animating, we can't effectively anchor the
+    // bubble, so wait until animation stops.
+    pending_extension_bubble_controller_ = controller.Pass();
+    return;
+  }
+
+  views::View* reference_view = VisibleBrowserActions() > 0 ?
+      static_cast<views::View*>(toolbar_action_views_[0]) :
+      BrowserView::GetBrowserViewForBrowser(browser_)->toolbar()->app_menu();
+
+  extensions::ExtensionMessageBubbleController* weak_controller =
+      controller.get();
+  extensions::ExtensionMessageBubbleView* bubble =
+      new extensions::ExtensionMessageBubbleView(
+          reference_view,
+          views::BubbleBorder::TOP_RIGHT,
+          controller.Pass());
+  views::BubbleDelegateView::CreateBubble(bubble);
+  active_bubble_ = bubble;
+  active_bubble_->GetWidget()->AddObserver(this);
+  weak_controller->Show(bubble);
+}
+
+void BrowserActionsContainer::OnWidgetClosing(views::Widget* widget) {
+  ClearActiveBubble(widget);
+}
+
+void BrowserActionsContainer::OnWidgetDestroying(views::Widget* widget) {
+  ClearActiveBubble(widget);
 }
 
 void BrowserActionsContainer::AddObserver(
@@ -668,6 +712,9 @@ void BrowserActionsContainer::AnimationEnded(const gfx::Animation* animation) {
   FOR_EACH_OBSERVER(BrowserActionsContainerObserver,
                     observers_,
                     OnBrowserActionsContainerAnimationEnded());
+
+  if (pending_extension_bubble_controller_)
+    ShowExtensionMessageBubble(pending_extension_bubble_controller_.Pass());
 }
 
 content::WebContents* BrowserActionsContainer::GetCurrentWebContents() {
@@ -779,4 +826,11 @@ void BrowserActionsContainer::LoadImages() {
 
   const int kImages[] = IMAGE_GRID(IDR_DEVELOPER_MODE_HIGHLIGHT);
   highlight_painter_.reset(views::Painter::CreateImageGridPainter(kImages));
+}
+
+void BrowserActionsContainer::ClearActiveBubble(views::Widget* widget) {
+  DCHECK(active_bubble_);
+  DCHECK_EQ(active_bubble_->GetWidget(), widget);
+  widget->RemoveObserver(this);
+  active_bubble_ = nullptr;
 }

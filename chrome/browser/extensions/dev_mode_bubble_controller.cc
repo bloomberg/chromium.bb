@@ -52,6 +52,7 @@ class DevModeBubbleDelegate
   base::string16 GetActionButtonLabel() const override;
   base::string16 GetDismissButtonLabel() const override;
   bool ShouldShowExtensionList() const override;
+  bool ShouldHighlightExtensions() const override;
   void LogExtensionCount(size_t count) override;
   void LogAction(
       ExtensionMessageBubbleController::BubbleAction action) override;
@@ -125,6 +126,10 @@ base::string16 DevModeBubbleDelegate::GetDismissButtonLabel() const {
 
 bool DevModeBubbleDelegate::ShouldShowExtensionList() const {
   return false;
+}
+
+bool DevModeBubbleDelegate::ShouldHighlightExtensions() const {
+  return true;
 }
 
 void DevModeBubbleDelegate::LogExtensionCount(size_t count) {

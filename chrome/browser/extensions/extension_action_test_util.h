@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "extensions/common/manifest.h"
 
 class Profile;
 
@@ -45,6 +46,10 @@ size_t GetTotalPageActionCount(content::WebContents* web_contents);
 // Does not add the extension to the extension service or registry.
 scoped_refptr<const Extension> CreateActionExtension(const std::string& name,
                                                      ActionType action_type);
+scoped_refptr<const Extension> CreateActionExtension(
+    const std::string& name,
+    ActionType action_type,
+    Manifest::Location location);
 
 // Creates a new ExtensionToolbarModel for the given |profile|, and associates
 // it with the profile as a keyed service.
