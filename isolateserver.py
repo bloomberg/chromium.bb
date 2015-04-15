@@ -779,6 +779,7 @@ class FetchStreamVerifier(object):
   """Verifies that fetched file is valid before passing it to the LocalCache."""
 
   def __init__(self, stream, expected_size):
+    assert stream is not None
     self.stream = stream
     self.expected_size = expected_size
     self.current_size = 0
@@ -1422,6 +1423,7 @@ class DiskCache(LocalCache):
       return f.read()
 
   def write(self, digest, content):
+    assert content is not None
     path = self._path(digest)
     # A stale broken file may remain. It is possible for the file to have write
     # access bit removed which would cause the file_write() call to fail to open
