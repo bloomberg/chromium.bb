@@ -2642,8 +2642,6 @@ void LayoutObject::updateHitTestResult(HitTestResult& result, const LayoutPoint&
 
     if (node) {
         result.setInnerNode(node);
-        if (!result.innerNonSharedNode())
-            result.setInnerNonSharedNode(node);
         result.setLocalPoint(point);
     }
 }

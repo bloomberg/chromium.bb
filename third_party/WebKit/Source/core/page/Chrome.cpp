@@ -273,7 +273,7 @@ void Chrome::setToolTip(const HitTestResult& result)
 
     // Lastly, for <input type="file"> that allow multiple files, we'll consider a tooltip for the selected filenames
     if (toolTip.isEmpty()) {
-        if (Node* node = result.innerNonSharedNode()) {
+        if (Node* node = result.innerNode()) {
             if (isHTMLInputElement(*node)) {
                 HTMLInputElement* input = toHTMLInputElement(node);
                 toolTip = input->defaultToolTip();

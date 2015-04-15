@@ -81,19 +81,14 @@ void HTMLAreaElement::invalidateCachedRegion()
     m_lastSize = LayoutSize(-1, -1);
 }
 
-bool HTMLAreaElement::mapMouseEvent(LayoutPoint location, const LayoutSize& size, HitTestResult& result)
+bool HTMLAreaElement::pointInArea(LayoutPoint location, const LayoutSize& containerSize)
 {
-    if (m_lastSize != size) {
-        m_region = adoptPtr(new Path(getRegion(size)));
-        m_lastSize = size;
+    if (m_lastSize != containerSize) {
+        m_region = adoptPtr(new Path(getRegion(containerSize)));
+        m_lastSize = containerSize;
     }
 
-    if (!m_region->contains(FloatPoint(location)))
-        return false;
-
-    result.setInnerNode(this);
-    result.setURLElement(this);
-    return true;
+    return m_region->contains(FloatPoint(location));
 }
 
 Path HTMLAreaElement::computePath(LayoutObject* obj) const

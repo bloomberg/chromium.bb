@@ -219,7 +219,7 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
     // all else.
     data.linkURL = r.absoluteLinkURL();
 
-    if (isHTMLCanvasElement(r.innerNonSharedNode())) {
+    if (isHTMLCanvasElement(r.innerNode())) {
         data.mediaType = WebContextMenuData::MediaTypeCanvas;
         data.hasImageContents = true;
     } else if (!r.absoluteImageURL().isEmpty()) {
@@ -235,7 +235,7 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
 
         // We know that if absoluteMediaURL() is not empty, then this
         // is a media element.
-        HTMLMediaElement* mediaElement = toHTMLMediaElement(r.innerNonSharedNode());
+        HTMLMediaElement* mediaElement = toHTMLMediaElement(r.innerNode());
         if (isHTMLVideoElement(*mediaElement))
             data.mediaType = WebContextMenuData::MediaTypeVideo;
         else if (isHTMLAudioElement(*mediaElement))
@@ -261,8 +261,8 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
             data.mediaFlags |= WebContextMenuData::MediaCanToggleControls;
         if (mediaElement->shouldShowControls())
             data.mediaFlags |= WebContextMenuData::MediaControls;
-    } else if (isHTMLObjectElement(*r.innerNonSharedNode()) || isHTMLEmbedElement(*r.innerNonSharedNode())) {
-        LayoutObject* object = r.innerNonSharedNode()->layoutObject();
+    } else if (isHTMLObjectElement(*r.innerNode()) || isHTMLEmbedElement(*r.innerNode())) {
+        LayoutObject* object = r.innerNode()->layoutObject();
         if (object && object->isLayoutPart()) {
             Widget* widget = toLayoutPart(object)->widget();
             if (widget && widget->isPluginContainer()) {
@@ -278,7 +278,7 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
                 if (plugin->plugin()->supportsPaginatedPrint())
                     data.mediaFlags |= WebContextMenuData::MediaCanPrint;
 
-                HTMLPlugInElement* pluginElement = toHTMLPlugInElement(r.innerNonSharedNode());
+                HTMLPlugInElement* pluginElement = toHTMLPlugInElement(r.innerNode());
                 data.srcURL = pluginElement->document().completeURL(pluginElement->url());
                 data.mediaFlags |= WebContextMenuData::MediaCanSave;
 
@@ -304,7 +304,7 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
     }
 
     if (r.isSelected()) {
-        if (!isHTMLInputElement(*r.innerNonSharedNode()) || toHTMLInputElement(r.innerNonSharedNode())->type() != InputTypeNames::password)
+        if (!isHTMLInputElement(*r.innerNode()) || toHTMLInputElement(r.innerNode())->type() != InputTypeNames::password)
             data.selectedText = selectedFrame->selectedText().stripWhiteSpace();
     }
 
@@ -344,8 +344,8 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
             }
         }
         HTMLFormElement* form = selectedFrame->selection().currentForm();
-        if (form && isHTMLInputElement(*r.innerNonSharedNode())) {
-            HTMLInputElement& selectedElement = toHTMLInputElement(*r.innerNonSharedNode());
+        if (form && isHTMLInputElement(*r.innerNode())) {
+            HTMLInputElement& selectedElement = toHTMLInputElement(*r.innerNode());
             WebSearchableFormData ws = WebSearchableFormData(WebFormElement(form), WebInputElement(&selectedElement));
             if (ws.url().isValid())
                 data.keywordURL = ws.url();
@@ -379,7 +379,7 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
             data.referrerPolicy = WebReferrerPolicyNever;
     }
 
-    data.node = r.innerNonSharedNode();
+    data.node = r.innerNodeOrImageMapImage();
 
     WebLocalFrameImpl* selectedWebFrame = WebLocalFrameImpl::fromFrame(selectedFrame);
     if (selectedWebFrame->client())

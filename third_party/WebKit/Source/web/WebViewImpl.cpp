@@ -530,7 +530,7 @@ void WebViewImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent& ev
         point = m_page->deprecatedLocalMainFrame()->view()->rootFrameToContents(point);
         HitTestResult result(m_page->deprecatedLocalMainFrame()->eventHandler().hitTestResultAtPoint(point));
         result.setToShadowHostIfInClosedShadowRoot();
-        Node* hitNode = result.innerNonSharedNode();
+        Node* hitNode = result.innerNodeOrImageMapImage();
 
         if (!result.scrollbar() && hitNode && hitNode->layoutObject() && hitNode->layoutObject()->isEmbeddedObject()) {
             m_mouseCaptureNode = hitNode;
@@ -592,8 +592,8 @@ void WebViewImpl::mouseContextMenu(const WebMouseEvent& event)
     // Find the right target frame. See issue 1186900.
     HitTestResult result = hitTestResultForRootFramePos(pme.position());
     Frame* targetFrame;
-    if (result.innerNonSharedNode())
-        targetFrame = result.innerNonSharedNode()->document().frame();
+    if (result.innerNodeOrImageMapImage())
+        targetFrame = result.innerNodeOrImageMapImage()->document().frame();
     else
         targetFrame = m_page->focusController().focusedOrMainFrame();
 
@@ -1145,7 +1145,7 @@ WebRect WebViewImpl::computeBlockBound(const WebPoint& pointInRootFrame, bool ig
     HitTestResult result = mainFrameImpl()->frame()->eventHandler().hitTestResultAtPoint(point, hitType);
     result.setToShadowHostIfInClosedShadowRoot();
 
-    Node* node = result.innerNonSharedNode();
+    Node* node = result.innerNodeOrImageMapImage();
     if (!node)
         return WebRect();
 
@@ -3441,7 +3441,7 @@ void WebViewImpl::performMediaPlayerAction(const WebMediaPlayerAction& action,
                                            const WebPoint& location)
 {
     HitTestResult result = hitTestResultForViewportPos(location);
-    RefPtrWillBeRawPtr<Node> node = result.innerNonSharedNode();
+    RefPtrWillBeRawPtr<Node> node = result.innerNode();
     if (!isHTMLVideoElement(*node) && !isHTMLAudioElement(*node))
         return;
 
@@ -3472,7 +3472,7 @@ void WebViewImpl::performPluginAction(const WebPluginAction& action,
 {
     // FIXME: Location is probably in viewport coordinates
     HitTestResult result = hitTestResultForRootFramePos(location);
-    RefPtrWillBeRawPtr<Node> node = result.innerNonSharedNode();
+    RefPtrWillBeRawPtr<Node> node = result.innerNode();
     if (!isHTMLObjectElement(*node) && !isHTMLEmbedElement(*node))
         return;
 
@@ -3513,7 +3513,7 @@ void WebViewImpl::copyImageAt(const WebPoint& point)
         return;
 
     HitTestResult result = hitTestResultForViewportPos(point);
-    if (!isHTMLCanvasElement(result.innerNonSharedNode()) && result.absoluteImageURL().isEmpty()) {
+    if (!isHTMLCanvasElement(result.innerNodeOrImageMapImage()) && result.absoluteImageURL().isEmpty()) {
         // There isn't actually an image at these coordinates.  Might be because
         // the window scrolled while the context menu was open or because the page
         // changed itself between when we thought there was an image here and when
@@ -3532,7 +3532,7 @@ void WebViewImpl::saveImageAt(const WebPoint& point)
     if (!m_client)
         return;
 
-    Node* node = hitTestResultForViewportPos(point).innerNonSharedNode();
+    Node* node = hitTestResultForViewportPos(point).innerNodeOrImageMapImage();
     if (!node || !(isHTMLCanvasElement(*node) || isHTMLImageElement(*node)))
         return;
 

@@ -69,7 +69,10 @@ public:
     Node* innerNode() const { return m_innerNode.get(); }
     Node* innerPossiblyPseudoNode() const { return m_innerPossiblyPseudoNode.get(); }
     Element* innerElement() const;
-    Node* innerNonSharedNode() const { return m_innerNonSharedNode.get(); }
+
+    // If innerNode is an image map or image map area, return the associated image node.
+    Node* innerNodeOrImageMapImage() const;
+
     Element* URLElement() const { return m_innerURLElement.get(); }
     Scrollbar* scrollbar() const { return m_scrollbar.get(); }
     bool isOverWidget() const { return m_isOverWidget; }
@@ -99,7 +102,6 @@ public:
     const HitTestRequest& hitTestRequest() const { return m_hitTestRequest; }
 
     void setInnerNode(Node*);
-    void setInnerNonSharedNode(Node*);
     void setURLElement(Element*);
     void setScrollbar(Scrollbar*);
     void setIsOverWidget(bool b) { m_isOverWidget = b; }
@@ -142,10 +144,9 @@ private:
 
     RefPtrWillBeMember<Node> m_innerNode;
     RefPtrWillBeMember<Node> m_innerPossiblyPseudoNode;
-    RefPtrWillBeMember<Node> m_innerNonSharedNode;
     // FIXME: Nothing changes this to a value different from m_hitTestLocation!
     LayoutPoint m_pointInInnerNodeFrame; // The hit-tested point in innerNode frame coordinates.
-    LayoutPoint m_localPoint; // A point in the local coordinate space of m_innerNonSharedNode's renderer. Allows us to efficiently
+    LayoutPoint m_localPoint; // A point in the local coordinate space of m_innerNode's renderer. Allows us to efficiently
         // determine where inside the renderer we hit on subsequent operations.
     RefPtrWillBeMember<Element> m_innerURLElement;
     RefPtrWillBeMember<Scrollbar> m_scrollbar;

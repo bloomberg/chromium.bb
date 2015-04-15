@@ -40,7 +40,7 @@ public:
 
     bool isDefault() const { return m_shape == Default; }
 
-    bool mapMouseEvent(LayoutPoint location, const LayoutSize&, HitTestResult&);
+    bool pointInArea(LayoutPoint, const LayoutSize& containerSize);
 
     LayoutRect computeRect(LayoutObject*) const;
     Path computePath(LayoutObject*) const;

@@ -960,7 +960,7 @@ void Editor::countEvent(ExecutionContext* executionContext, const Event* event)
 
 void Editor::copyImage(const HitTestResult& result)
 {
-    writeImageNodeToPasteboard(Pasteboard::generalPasteboard(), result.innerNonSharedNode(), result.altDisplayString());
+    writeImageNodeToPasteboard(Pasteboard::generalPasteboard(), result.innerNodeOrImageMapImage(), result.altDisplayString());
 }
 
 bool Editor::canUndo()

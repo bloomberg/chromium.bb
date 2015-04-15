@@ -640,7 +640,7 @@ String LocalFrame::selectedTextForClipboard() const
 VisiblePosition LocalFrame::visiblePositionForPoint(const IntPoint& framePoint)
 {
     HitTestResult result = eventHandler().hitTestResultAtPoint(framePoint);
-    Node* node = result.innerNonSharedNode();
+    Node* node = result.innerNodeOrImageMapImage();
     if (!node)
         return VisiblePosition();
     LayoutObject* renderer = node->layoutObject();

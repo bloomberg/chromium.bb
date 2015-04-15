@@ -546,18 +546,19 @@ bool DragController::canProcessDrag(DragData* dragData)
 
     HitTestResult result = m_page->deprecatedLocalMainFrame()->eventHandler().hitTestResultAtPoint(point);
 
-    if (!result.innerNonSharedNode())
+    if (!result.innerNode())
         return false;
 
-    if (dragData->containsFiles() && asFileInput(result.innerNonSharedNode()))
+    if (dragData->containsFiles() && asFileInput(result.innerNode()))
         return true;
 
-    if (isHTMLPlugInElement(*result.innerNonSharedNode())) {
-        HTMLPlugInElement* plugin = toHTMLPlugInElement(result.innerNonSharedNode());
-        if (!plugin->canProcessDrag() && !result.innerNonSharedNode()->hasEditableStyle())
+    if (isHTMLPlugInElement(*result.innerNode())) {
+        HTMLPlugInElement* plugin = toHTMLPlugInElement(result.innerNode());
+        if (!plugin->canProcessDrag() && !result.innerNode()->hasEditableStyle())
             return false;
-    } else if (!result.innerNonSharedNode()->hasEditableStyle())
+    } else if (!result.innerNode()->hasEditableStyle()) {
         return false;
+    }
 
     if (m_didInitiateDrag && m_documentUnderMouse == m_dragInitiator && result.isSelected())
         return false;

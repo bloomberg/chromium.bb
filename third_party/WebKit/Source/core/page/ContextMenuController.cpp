@@ -164,7 +164,7 @@ PassOwnPtr<ContextMenu> ContextMenuController::createContextMenu(LocalFrame* fra
     if (frame)
         result = frame->eventHandler().hitTestResultAtPoint(location, type);
 
-    if (!result.innerNonSharedNode())
+    if (!result.innerNodeOrImageMapImage())
         return nullptr;
 
     m_hitTestResult = result;

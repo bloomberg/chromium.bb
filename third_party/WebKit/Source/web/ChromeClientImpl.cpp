@@ -528,10 +528,10 @@ void ChromeClientImpl::mouseDidMoveOverElement(const HitTestResult& result)
     // Find out if the mouse is over a link, and if so, let our UI know...
     if (result.isLiveLink() && !result.absoluteLinkURL().string().isEmpty()) {
         url = result.absoluteLinkURL();
-    } else if (result.innerNonSharedNode()
-        && (isHTMLObjectElement(*result.innerNonSharedNode())
-            || isHTMLEmbedElement(*result.innerNonSharedNode()))) {
-        LayoutObject* object = result.innerNonSharedNode()->layoutObject();
+    } else if (result.innerNode()
+        && (isHTMLObjectElement(*result.innerNode())
+            || isHTMLEmbedElement(*result.innerNode()))) {
+        LayoutObject* object = result.innerNode()->layoutObject();
         if (object && object->isLayoutPart()) {
             Widget* widget = toLayoutPart(object)->widget();
             if (widget && widget->isPluginContainer()) {

@@ -266,6 +266,32 @@ TEST_F(WebViewTest, SaveImageAt)
     m_webViewHelper.reset(); // Explicitly reset to break dependency on locally scoped client.
 };
 
+TEST_F(WebViewTest, SaveImageWithImageMap)
+{
+    SaveImageFromDataURLWebViewClient client;
+
+    std::string url = m_baseURL + "image-map.html";
+    URLTestHelpers::registerMockedURLLoad(toKURL(url), "image-map.html");
+    WebView* webView = m_webViewHelper.initializeAndLoad(url, true, 0, &client);
+    webView->resize(WebSize(400, 400));
+
+    client.reset();
+    webView->saveImageAt(WebPoint(25, 25));
+    EXPECT_EQ(WebString::fromUTF8("data:image/gif;base64"
+        ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="), client.result());
+
+    client.reset();
+    webView->saveImageAt(WebPoint(75, 25));
+    EXPECT_EQ(WebString::fromUTF8("data:image/gif;base64"
+        ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="), client.result());
+
+    client.reset();
+    webView->saveImageAt(WebPoint(125, 25));
+    EXPECT_EQ(WebString(), client.result());
+
+    m_webViewHelper.reset(); // Explicitly reset to break dependency on locally scoped client.
+}
+
 TEST_F(WebViewTest, CopyImageAt)
 {
     std::string url = m_baseURL + "canvas-copy-image.html";
@@ -308,6 +334,106 @@ TEST_F(WebViewTest, CopyImageAtWithPinchZoom)
     SkAutoLockPixels autoLock(image.getSkBitmap());
     EXPECT_EQ(SkColorSetARGB(255, 255, 0, 0), image.getSkBitmap().getColor(0, 0));
 };
+
+TEST_F(WebViewTest, CopyImageWithImageMap)
+{
+    SaveImageFromDataURLWebViewClient client;
+
+    std::string url = m_baseURL + "image-map.html";
+    URLTestHelpers::registerMockedURLLoad(toKURL(url), "image-map.html");
+    WebView* webView = m_webViewHelper.initializeAndLoad(url, true, 0, &client);
+    webView->resize(WebSize(400, 400));
+
+    client.reset();
+    webView->saveImageAt(WebPoint(25, 25));
+    EXPECT_EQ(WebString::fromUTF8("data:image/gif;base64"
+        ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="), client.result());
+
+    client.reset();
+    webView->saveImageAt(WebPoint(75, 25));
+    EXPECT_EQ(WebString::fromUTF8("data:image/gif;base64"
+        ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="), client.result());
+
+    client.reset();
+    webView->saveImageAt(WebPoint(125, 25));
+    EXPECT_EQ(WebString(), client.result());
+
+    m_webViewHelper.reset(); // Explicitly reset to break dependency on locally scoped client.
+}
+
+static bool hitTestIsContentEditable(WebView* view, int x, int y)
+{
+    WebPoint hitPoint(x, y);
+    WebHitTestResult hitTestResult = view->hitTestResultAt(hitPoint);
+    return hitTestResult.isContentEditable();
+}
+
+static std::string hitTestElementId(WebView* view, int x, int y)
+{
+    WebPoint hitPoint(x, y);
+    WebHitTestResult hitTestResult = view->hitTestResultAt(hitPoint);
+    return hitTestResult.node().to<WebElement>().getAttribute("id").utf8();
+}
+
+TEST_F(WebViewTest, HitTestContentEditableImageMaps)
+{
+    std::string url = m_baseURL + "content-editable-image-maps.html";
+    URLTestHelpers::registerMockedURLLoad(toKURL(url), "content-editable-image-maps.html");
+    WebView* webView = m_webViewHelper.initializeAndLoad(url, true, 0);
+    webView->resize(WebSize(500, 500));
+
+    EXPECT_EQ("areaANotEditable", hitTestElementId(webView, 25, 25));
+    EXPECT_FALSE(hitTestIsContentEditable(webView, 25, 25));
+    EXPECT_EQ("imageANotEditable", hitTestElementId(webView, 75, 25));
+    EXPECT_FALSE(hitTestIsContentEditable(webView, 75, 25));
+
+    EXPECT_EQ("areaBNotEditable", hitTestElementId(webView, 25, 125));
+    EXPECT_FALSE(hitTestIsContentEditable(webView, 25, 125));
+    EXPECT_EQ("imageBEditable", hitTestElementId(webView, 75, 125));
+    EXPECT_TRUE(hitTestIsContentEditable(webView, 75, 125));
+
+    EXPECT_EQ("areaCNotEditable", hitTestElementId(webView, 25, 225));
+    EXPECT_FALSE(hitTestIsContentEditable(webView, 25, 225));
+    EXPECT_EQ("imageCNotEditable", hitTestElementId(webView, 75, 225));
+    EXPECT_FALSE(hitTestIsContentEditable(webView, 75, 225));
+
+    EXPECT_EQ("areaDEditable", hitTestElementId(webView, 25, 325));
+    EXPECT_TRUE(hitTestIsContentEditable(webView, 25, 325));
+    EXPECT_EQ("imageDNotEditable", hitTestElementId(webView, 75, 325));
+    EXPECT_FALSE(hitTestIsContentEditable(webView, 75, 325));
+}
+
+static std::string hitTestAbsoluteUrl(WebView* view, int x, int y)
+{
+    WebPoint hitPoint(x, y);
+    WebHitTestResult hitTestResult = view->hitTestResultAt(hitPoint);
+    return hitTestResult.absoluteImageURL().string().utf8();
+}
+
+static WebElement hitTestUrlElement(WebView* view, int x, int y)
+{
+    WebPoint hitPoint(x, y);
+    WebHitTestResult hitTestResult = view->hitTestResultAt(hitPoint);
+    return hitTestResult.urlElement();
+}
+
+TEST_F(WebViewTest, ImageMapUrls)
+{
+    std::string url = m_baseURL + "image-map.html";
+    URLTestHelpers::registerMockedURLLoad(toKURL(url), "image-map.html");
+    WebView* webView = m_webViewHelper.initializeAndLoad(url, true, 0);
+    webView->resize(WebSize(400, 400));
+
+    std::string imageUrl = "data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=";
+
+    EXPECT_EQ("area", hitTestElementId(webView, 25, 25));
+    EXPECT_EQ("area", hitTestUrlElement(webView, 25, 25).getAttribute("id").utf8());
+    EXPECT_EQ(imageUrl, hitTestAbsoluteUrl(webView, 25, 25));
+
+    EXPECT_EQ("image", hitTestElementId(webView, 75, 25));
+    EXPECT_TRUE(hitTestUrlElement(webView, 75, 25).isNull());
+    EXPECT_EQ(imageUrl, hitTestAbsoluteUrl(webView, 75, 25));
+}
 
 TEST_F(WebViewTest, SetBaseBackgroundColor)
 {

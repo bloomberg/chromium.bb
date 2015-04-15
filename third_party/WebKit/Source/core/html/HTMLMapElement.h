@@ -39,7 +39,7 @@ public:
 
     const AtomicString& getName() const { return m_name; }
 
-    bool mapMouseEvent(LayoutPoint location, const LayoutSize&, HitTestResult&);
+    HTMLAreaElement* areaForPoint(LayoutPoint, const LayoutSize& containerSize);
 
     HTMLImageElement* imageElement();
     PassRefPtrWillBeRawPtr<HTMLCollection> areas();

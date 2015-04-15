@@ -159,7 +159,6 @@ void LayoutTextControl::hitInnerEditorElement(HitTestResult& result, const Layou
     if (hasOverflowClip())
         localPoint += scrolledContentOffset();
     result.setInnerNode(innerEditor);
-    result.setInnerNonSharedNode(innerEditor);
     result.setLocalPoint(localPoint);
 }
 

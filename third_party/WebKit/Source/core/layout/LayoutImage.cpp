@@ -300,11 +300,13 @@ bool LayoutImage::nodeAtPoint(HitTestResult& result, const HitTestLocation& loca
         if (HTMLMapElement* map = imageMap()) {
             LayoutRect contentBox = contentBoxRect();
             float scaleFactor = 1 / style()->effectiveZoom();
-            LayoutPoint mapLocation = locationInContainer.point() - toLayoutSize(accumulatedOffset) - locationOffset() - toLayoutSize(contentBox.location());
-            mapLocation.scale(scaleFactor, scaleFactor);
+            LayoutPoint location = locationInContainer.point() - toLayoutSize(accumulatedOffset) - locationOffset() - toLayoutSize(contentBox.location());
+            location.scale(scaleFactor, scaleFactor);
 
-            if (map->mapMouseEvent(mapLocation, contentBox.size(), tempResult))
-                tempResult.setInnerNonSharedNode(node());
+            if (HTMLAreaElement* area = map->areaForPoint(location, contentBox.size())) {
+                tempResult.setInnerNode(area);
+                tempResult.setURLElement(area);
+            }
         }
     }
 

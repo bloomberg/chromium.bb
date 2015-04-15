@@ -1250,7 +1250,7 @@ void LayoutInline::updateHitTestResult(HitTestResult& result, const LayoutPoint&
     if (n) {
         if (isInlineElementContinuation()) {
             // We're in the continuation of a split inline.  Adjust our local point to be in the coordinate space
-            // of the principal renderer's containing block.  This will end up being the innerNonSharedNode.
+            // of the principal renderer's containing block.  This will end up being the innerNode.
             LayoutBlock* firstBlock = n->layoutObject()->containingBlock();
 
             // Get our containing block.
@@ -1259,8 +1259,6 @@ void LayoutInline::updateHitTestResult(HitTestResult& result, const LayoutPoint&
         }
 
         result.setInnerNode(n);
-        if (!result.innerNonSharedNode())
-            result.setInnerNonSharedNode(n);
         result.setLocalPoint(localPoint);
     }
 }

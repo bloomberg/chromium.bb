@@ -2048,7 +2048,7 @@ bool DeprecatedPaintLayer::hitTestContents(HitTestResult& result, const LayoutRe
         return false;
     }
 
-    if (!result.innerNode() || !result.innerNonSharedNode()) {
+    if (!result.innerNode()) {
         // We hit something anonymous, and we didn't find a DOM node ancestor in this layer.
 
         if (layoutObject()->isLayoutFlowThread()) {
@@ -2062,8 +2062,7 @@ bool DeprecatedPaintLayer::hitTestContents(HitTestResult& result, const LayoutRe
         Node* e = enclosingElement();
         if (!result.innerNode())
             result.setInnerNode(e);
-        if (!result.innerNonSharedNode())
-            result.setInnerNonSharedNode(e);
+
         // FIXME: missing call to result.setLocalPoint(). What we would really want to do here is to
         // return and look for the nearest non-anonymous ancestor, and ignore aunts and uncles on
         // our way. It's bad to look for it manually like we do here, and give up on setting a local

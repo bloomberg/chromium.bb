@@ -891,8 +891,6 @@ void LayoutView::updateHitTestResult(HitTestResult& result, const LayoutPoint& p
     Node* node = document().documentElement();
     if (node) {
         result.setInnerNode(node);
-        if (!result.innerNonSharedNode())
-            result.setInnerNonSharedNode(node);
 
         LayoutPoint adjustedPoint = point;
         offsetForContents(adjustedPoint);
