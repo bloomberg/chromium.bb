@@ -1802,7 +1802,17 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
           initWithFrame:rect
       imageTitleSpacing:kImageTitleSpacing
         backgroundColor:GetDialogBackgroundColor()]);
-  [profileButton setTitle:base::SysUTF16ToNSString(item.name)];
+
+  NSString* title;
+  if (item.legacy_supervised) {
+    title = l10n_util::GetNSStringF(IDS_SUPERVISED_USER_NEW_AVATAR_LABEL,
+                                    item.name);
+  } else if (item.child_account) {
+    title = l10n_util::GetNSStringF(IDS_CHILD_AVATAR_LABEL, item.name);
+  } else {
+    title = base::SysUTF16ToNSString(item.name);
+  }
+  [profileButton setTitle:title];
 
   // Use the low-res, small default avatars in the fast user switcher, like
   // we do in the menu bar.
