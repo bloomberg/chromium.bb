@@ -4,6 +4,8 @@
 
 #include "content/child/notifications/notification_data_conversions.h"
 
+#include <stdint.h>
+
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/platform_notification_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -12,17 +14,18 @@
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationData.h"
 
 namespace content {
-namespace {
 
 const char kNotificationTitle[] = "My Notification";
 const char kNotificationLang[] = "nl";
 const char kNotificationBody[] = "Hello, world!";
 const char kNotificationTag[] = "my_tag";
 const char kNotificationIconUrl[] = "https://example.com/icon.png";
-
-}
+const unsigned char kNotificationData[] = { 0xdf, 0xff, 0x0, 0x0, 0xff, 0xdf };
 
 TEST(NotificationDataConversionsTest, ToPlatformNotificationData) {
+  std::vector<char> developer_data(
+      kNotificationData, kNotificationData + arraysize(kNotificationData));
+
   blink::WebNotificationData web_data(
       blink::WebString::fromUTF8(kNotificationTitle),
       blink::WebNotificationData::DirectionLeftToRight,
@@ -30,7 +33,8 @@ TEST(NotificationDataConversionsTest, ToPlatformNotificationData) {
       blink::WebString::fromUTF8(kNotificationBody),
       blink::WebString::fromUTF8(kNotificationTag),
       blink::WebURL(GURL(kNotificationIconUrl)),
-      true /* silent */);
+      true /* silent */,
+      blink::WebVector<char>(developer_data));
 
   PlatformNotificationData platform_data = ToPlatformNotificationData(web_data);
   EXPECT_EQ(base::ASCIIToUTF16(kNotificationTitle), platform_data.title);
@@ -41,6 +45,10 @@ TEST(NotificationDataConversionsTest, ToPlatformNotificationData) {
   EXPECT_EQ(kNotificationTag, platform_data.tag);
   EXPECT_EQ(kNotificationIconUrl, platform_data.icon.spec());
   EXPECT_TRUE(platform_data.silent);
+
+  ASSERT_EQ(developer_data.size(), platform_data.data.size());
+  for (size_t i = 0; i < developer_data.size(); ++i)
+    EXPECT_EQ(developer_data[i], platform_data.data[i]);
 }
 
 TEST(NotificationDataConversionsTest,
@@ -60,6 +68,9 @@ TEST(NotificationDataConversionsTest,
 }
 
 TEST(NotificationDataConversionsTest, ToWebNotificationData) {
+  std::vector<char> developer_data(
+      kNotificationData, kNotificationData + arraysize(kNotificationData));
+
   PlatformNotificationData platform_data;
   platform_data.title = base::ASCIIToUTF16(kNotificationTitle);
   platform_data.direction =
@@ -69,6 +80,7 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
   platform_data.tag = kNotificationTag;
   platform_data.icon = GURL(kNotificationIconUrl);
   platform_data.silent = true;
+  platform_data.data = developer_data;
 
   blink::WebNotificationData web_data = ToWebNotificationData(platform_data);
   EXPECT_EQ(kNotificationTitle, web_data.title);
@@ -79,6 +91,10 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
   EXPECT_EQ(kNotificationTag, web_data.tag);
   EXPECT_EQ(kNotificationIconUrl, web_data.icon.string());
   EXPECT_TRUE(web_data.silent);
+
+  ASSERT_EQ(developer_data.size(), web_data.data.size());
+  for (size_t i = 0; i < developer_data.size(); ++i)
+    EXPECT_EQ(developer_data[i], web_data.data[i]);
 }
 
 TEST(NotificationDataConversionsTest, ToWebNotificationDataDirectionality) {

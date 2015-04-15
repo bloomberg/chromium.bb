@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_COMMON_PLATFORM_NOTIFICATION_DATA_H_
 
 #include <string>
+#include <vector>
 
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
@@ -20,6 +21,10 @@ struct CONTENT_EXPORT PlatformNotificationData {
   PlatformNotificationData();
   ~PlatformNotificationData();
 
+  // The maximum size of developer-provided data to be stored in the |data|
+  // property of this structure.
+  static const size_t kMaximumDeveloperDataSize = 1024 * 1024;
+
   enum NotificationDirection {
     NotificationDirectionLeftToRight,
     NotificationDirectionRightToLeft,
@@ -31,7 +36,7 @@ struct CONTENT_EXPORT PlatformNotificationData {
   base::string16 title;
 
   // Hint to determine the directionality of the displayed notification.
-  NotificationDirection direction;
+  NotificationDirection direction = NotificationDirectionLeftToRight;
 
   // BCP 47 language tag describing the notification's contents. Optional.
   std::string lang;
@@ -48,7 +53,11 @@ struct CONTENT_EXPORT PlatformNotificationData {
 
   // Whether default notification indicators (sound, vibration, light) should
   // be suppressed.
-  bool silent;
+  bool silent = false;
+
+  // Developer-provided data associated with the notification, in the form of
+  // a serialized string. Must not exceed |kMaximumDeveloperDataSize| bytes.
+  std::vector<char> data;
 };
 
 }  // namespace content

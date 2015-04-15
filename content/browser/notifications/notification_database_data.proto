@@ -35,6 +35,7 @@ message NotificationDatabaseDataProto {
     optional string tag = 5;
     optional string icon = 6;
     optional bool silent = 7;
+    optional bytes data = 8;
   }
 
   optional NotificationData notification_data = 4;

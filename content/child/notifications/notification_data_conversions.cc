@@ -25,6 +25,7 @@ PlatformNotificationData ToPlatformNotificationData(
   platform_data.tag = base::UTF16ToUTF8(web_data.tag);
   platform_data.icon = GURL(web_data.icon.string());
   platform_data.silent = web_data.silent;
+  platform_data.data.assign(web_data.data.begin(), web_data.data.end());
 
   return platform_data;
 }
@@ -43,6 +44,7 @@ WebNotificationData ToWebNotificationData(
   web_data.tag = blink::WebString::fromUTF8(platform_data.tag);
   web_data.icon = blink::WebURL(platform_data.icon);
   web_data.silent = platform_data.silent;
+  web_data.data = platform_data.data;
 
   return web_data;
 }

@@ -40,6 +40,11 @@ bool DeserializeNotificationDatabaseData(const std::string& input,
   notification_data->icon = GURL(payload.icon());
   notification_data->silent = payload.silent();
 
+  if (payload.data().length()) {
+    notification_data->data.assign(payload.data().begin(),
+                                   payload.data().end());
+  }
+
   return true;
 }
 
@@ -63,6 +68,11 @@ bool SerializeNotificationDatabaseData(const NotificationDatabaseData& input,
   payload->set_tag(notification_data.tag);
   payload->set_icon(notification_data.icon.spec());
   payload->set_silent(notification_data.silent);
+
+  if (notification_data.data.size()) {
+    payload->set_data(&notification_data.data.front(),
+                      notification_data.data.size());
+  }
 
   NotificationDatabaseDataProto message;
   message.set_notification_id(input.notification_id);
