@@ -11,7 +11,6 @@ perkj@chromium.org
 tommi@chromium.org
 
 # Cast Streaming OWNERS.
-per-file cast_*=hclam@chromium.org
 per-file cast_*=hubbe@chromium.org
 per-file cast_*=miu@chromium.org
 
