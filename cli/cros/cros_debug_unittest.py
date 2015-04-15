@@ -6,8 +6,6 @@
 
 from __future__ import print_function
 
-import mock
-
 from chromite.cli import command_unittest
 from chromite.cli.cros import cros_debug
 from chromite.lib import cros_build_lib
@@ -54,7 +52,8 @@ class DebugRunThroughTest(cros_test_lib.MockTempDirTestCase):
   def setUp(self):
     """Patches objects."""
     self.cmd_mock = None
-    self.PatchObject(remote_access, 'ChromiumOSDevice')
+    self.device_mock = self.PatchObject(remote_access,
+                                        'ChromiumOSDevice').return_value
 
   def testMissingExeAndPid(self):
     """Test that command fails when --exe and --pid are not provided."""
@@ -92,28 +91,33 @@ class DebugRunThroughTest(cros_test_lib.MockTempDirTestCase):
     self.assertFalse(self.cmd_mock.patched['_DebugNewProcess'].called)
     self.assertFalse(self.cmd_mock.patched['_DebugRunningProcess'].called)
 
+  def testNoRunningProcess(self):
+    """Test that command starts a new process to debug if no process running."""
+    self.SetupCommandMock([self.DEVICE, '--exe', self.EXE])
+    self.PatchObject(self.device_mock, 'GetRunningPids', return_value=[])
+    self.cmd_mock.inst.Run()
+    self.assertTrue(self.cmd_mock.patched['_ListProcesses'].called)
+    self.assertTrue(self.cmd_mock.patched['_DebugNewProcess'].called)
+    self.assertFalse(self.cmd_mock.patched['_DebugRunningProcess'].called)
+
   def testDebugNewProcess(self):
     """Test that user can select zero to start a new process to debug."""
     self.SetupCommandMock([self.DEVICE, '--exe', self.EXE])
-    with mock.patch.object(remote_access.RemoteDevice, 'GetRunningPids',
-                           return_value=['1']):
-      with mock.patch.object(
-          cros_build_lib, 'GetChoice', return_value=0) as mock_prompt:
-        self.cmd_mock.inst.Run()
-        self.assertTrue(mock_prompt.called)
-        self.assertTrue(self.cmd_mock.patched['_ListProcesses'].called)
-        self.assertTrue(self.cmd_mock.patched['_DebugNewProcess'].called)
-        self.assertFalse(self.cmd_mock.patched['_DebugRunningProcess'].called)
+    self.PatchObject(self.device_mock, 'GetRunningPids', return_value=['1'])
+    mock_prompt = self.PatchObject(cros_build_lib, 'GetChoice', return_value=0)
+    self.cmd_mock.inst.Run()
+    self.assertTrue(mock_prompt.called)
+    self.assertTrue(self.cmd_mock.patched['_ListProcesses'].called)
+    self.assertTrue(self.cmd_mock.patched['_DebugNewProcess'].called)
+    self.assertFalse(self.cmd_mock.patched['_DebugRunningProcess'].called)
 
   def testDebugRunningProcess(self):
     """Test that user can select none-zero to debug a running process."""
     self.SetupCommandMock([self.DEVICE, '--exe', self.EXE])
-    with mock.patch.object(remote_access.RemoteDevice, 'GetRunningPids',
-                           return_value=['1']):
-      with mock.patch.object(
-          cros_build_lib, 'GetChoice', return_value=1) as mock_prompt:
-        self.cmd_mock.inst.Run()
-        self.assertTrue(mock_prompt.called)
-        self.assertTrue(self.cmd_mock.patched['_ListProcesses'].called)
-        self.assertFalse(self.cmd_mock.patched['_DebugNewProcess'].called)
-        self.assertTrue(self.cmd_mock.patched['_DebugRunningProcess'].called)
+    self.PatchObject(self.device_mock, 'GetRunningPids', return_value=['1'])
+    mock_prompt = self.PatchObject(cros_build_lib, 'GetChoice', return_value=1)
+    self.cmd_mock.inst.Run()
+    self.assertTrue(mock_prompt.called)
+    self.assertTrue(self.cmd_mock.patched['_ListProcesses'].called)
+    self.assertFalse(self.cmd_mock.patched['_DebugNewProcess'].called)
+    self.assertTrue(self.cmd_mock.patched['_DebugRunningProcess'].called)
