@@ -101,6 +101,20 @@ function test()
     {
         "args": {
             "data": {
+                "stackTrace": []
+            }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "JSSample",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 212000,
+        "tts": 1758056
+    },
+    {
+        "args": {
+            "data": {
                 "stackTrace": [
                     { "functionName": "c", "callUID": "c", "scriptId": 1 },
                     { "functionName": "b", "callUID": "b", "scriptId": 1 },
@@ -158,8 +172,6 @@ function test()
             "frame": "0x2f7b63884000",
             "data": {
                 "stackTrace": [
-                    { "functionName": "e", "callUID": "e", "scriptId": 1 },
-                    { "functionName": "d", "callUID": "d", "scriptId": 1 },
                     { "functionName": "b", "callUID": "b", "scriptId": 1 },
                     { "functionName": "a", "callUID": "a", "scriptId": 1 }
                 ]
@@ -283,7 +295,7 @@ function test()
     tracingTimelineModel.setEventsForTest(rawTraceEvents);
     var events = WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents(tracingTimelineModel.mainThreadEvents());
     events.forEach(function(e) {
-        InspectorTest.addResult(e.name + ": " + e.startTime + "(" + (e.duration || 0) + ") " + e.args.data.functionName);
+        InspectorTest.addResult(e.name + ": " + e.startTime.toFixed(3) + " / " + (e.duration.toFixed(3) || 0) + " " + e.args.data.functionName);
     });
 
     events = events.mergeOrdered(tracingTimelineModel.mainThreadEvents(), WebInspector.TracingModel.Event.orderedCompareStartTime);
@@ -293,8 +305,8 @@ function test()
     var timelineData = dataProvider.timelineData();
     for (var i = 0; i < timelineData.entryStartTimes.length; ++i) {
         var name = dataProvider.entryTitle(i);
-        var padding = new Array(timelineData.entryLevels[i] + 1).join("  ");
-        InspectorTest.addResult(padding + name + ": " + timelineData.entryTotalTimes[i] + " @ " + timelineData.entryStartTimes[i]);
+        var padding = "  ".repeat(timelineData.entryLevels[i]);
+        InspectorTest.addResult(padding + name + ": " + timelineData.entryTotalTimes[i].toFixed(3) + " @ " + timelineData.entryStartTimes[i].toFixed(3));
     }
 
     InspectorTest.completeTest();

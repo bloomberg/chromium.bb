@@ -253,6 +253,20 @@ function test()
     {
         "args": {
             "data": {
+                "stack": []
+            }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "V8Sample",
+        "ph": "P",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 212000,
+        "tts": 1758056
+    },
+    {
+        "args": {
+            "data": {
                 "stack": [
                     "0xc000",
                     "0xb000",
@@ -436,7 +450,7 @@ function test()
     tracingTimelineModel.setEventsForTest(rawTraceEvents);
     var events = tracingTimelineModel.mainThreadEvents();
     events.filter(function(e) { return e.name === "JSFrame"; }).forEach(function(e) {
-        InspectorTest.addResult(e.name + ": " + e.startTime + "(" + (e.duration || 0) + ") " + e.args.data.functionName);
+        InspectorTest.addResult(e.name + ": " + e.startTime.toFixed(3) + " / " + (e.duration.toFixed(3) || 0) + " " + e.args.data.functionName);
     });
 
     InspectorTest.completeTest();
