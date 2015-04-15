@@ -525,9 +525,10 @@ crbug.com/377696 printing/width-overflow.html [ Skip ]
 # Reftests that needs investigation.
 crbug.com/397232 [ XP ] css2.1/20110323/c541-word-sp-000.htm [ ImageOnlyFailure ]
 crbug.com/397232 [ XP ] css2.1/20110323/vertical-align-boxes-001.htm [ ImageOnlyFailure ]
+crbug.com/378610 [ Win7 ] css3/flexbox/auto-margins.html [ ImageOnlyFailure ]
 crbug.com/397255 [ Linux XP ] css3/masking/clip-path-reference-userSpaceOnUse.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
-crbug.com/475882 [ Mac Win7 ] fast/writing-mode/table-vertical-child-width.html [ ImageOnlyFailure ]
+crbug.com/378610 [ Win7 ] fast/writing-mode/table-vertical-child-width.html [ ImageOnlyFailure ]
 crbug.com/396940 ietestcenter/css3/multicolumn/column-containing-block-001.htm [ ImageOnlyFailure ]
 crbug.com/396940 ietestcenter/css3/multicolumn/column-containing-block-002.htm [ ImageOnlyFailure ]
 crbug.com/396941 [ Linux Win ] ietestcenter/css3/multicolumn/column-width-applies-to-007.htm [ ImageOnlyFailure ]
@@ -540,7 +541,12 @@ crbug.com/378610 [ Win7 ] svg/custom/focus-ring-text.svg [ ImageOnlyFailure ]
 
 crbug.com/371725 http/tests/webfont/slow-loading.html [ Pass ImageOnlyFailure Timeout ]
 
-crbug.com/474987 [ Win7 Mac ] css3/flexbox/auto-margins.html [ ImageOnlyFailure ]
+# Issues on the mac-antialiased fonts virtual test suite.
+crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/zerowidthjoiner.html [ ImageOnlyFailure ]
+crbug.com/334269 [ Mac ] virtual/slimmingpaint/fast/text/international/zerowidthjoiner.html [ ImageOnlyFailure ]
+crbug.com/334269 [ Mac ] fast/text/international/inline-plaintext-relayout-with-leading-neutrals.html [ ImageOnlyFailure Pass ]
+crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/inline-plaintext-relayout-with-leading-neutrals.html [ ImageOnlyFailure Pass ]
+crbug.com/334269 [ Mac ] virtual/slimmingpaint/fast/text/international/inline-plaintext-relayout-with-leading-neutrals.html [ ImageOnlyFailure Pass ]
 
 crbug.com/452967 [ Mac ] ietestcenter/css3/multicolumn/column-width-applies-to-007.htm [ ImageOnlyFailure ]
 crbug.com/452967 [ Mac ] ietestcenter/css3/multicolumn/column-width-applies-to-009.htm [ ImageOnlyFailure ]
@@ -972,8 +978,36 @@ crbug.com/340150 [ Mac Debug ] plugins/plugin-document-back-forward.html [ Pass 
 
 crbug.com/464729 inspector/sources/debugger/show-function-definition.html [ Pass Failure ]
 
+# Failing Reftests from CoreText shaper removal
+crbug.com/334269 [ Mac ] css3/flexbox/auto-margins.html [ ImageOnlyFailure ]
+crbug.com/334269 [ Mac ] fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
+crbug.com/334269 [ Mac ] fast/text/international/vertical-positioning-with-combining-marks.html [ ImageOnlyFailure ]
+crbug.com/334269 [ Mac ] virtual/slimmingpaint/fast/text/international/vertical-positioning-with-combining-marks.html [ ImageOnlyFailure ]
+crbug.com/334269 [ Mac ] fast/writing-mode/table-vertical-child-width.html [ ImageOnlyFailure ]
+crbug.com/334269 [ Mac ] svg/transforms/transformed-text-fill-gradient.html [ ImageOnlyFailure ]
+crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/vertical-positioning-with-combining-marks.html [ ImageOnlyFailure ]
+
+crbug.com/334269 [ SnowLeopard Debug ] fast/text/zero-width-characters-complex-script.html [ Crash ]
+crbug.com/334269 [ SnowLeopard Debug ] virtual/slimmingpaint/fast/text/zero-width-characters-complex-script.html [ Crash ]
+crbug.com/334269 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/zero-width-characters-complex-script.html [ Crash ]
+
+crbug.com/334269 [ Mac ] editing/spelling/spellcheck-editable-on-focus-sync.html [ NeedsManualRebaseline ]
+crbug.com/334269 [ Mac ] fast/repaint/4776765.html [ NeedsManualRebaseline ]
+crbug.com/334269 [ Mac ] virtual/slimmingpaint/fast/repaint/4776765.html [ NeedsManualRebaseline ]
+
+crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/008.html [ NeedsManualRebaseline ]
+crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/009.html [ NeedsManualRebaseline ]
+crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/012.html [ NeedsManualRebaseline ]
+crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/013.html [ NeedsManualRebaseline ]
+crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/014.html [ NeedsManualRebaseline ]
+crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/018.html [ NeedsManualRebaseline ]
+
+crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/ipa-tone-letters.html [ Pass Failure ]
+crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/bidi-embedding-pop-and-push-same-2.html [ Pass Failure ]
+crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/ellipsis-stroked.html [ Pass Failure ]
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/line-break-after-question-mark.html [ Pass Failure ]
-crbug.com/476440 [ Mac ] svg/transforms/transformed-text-fill-gradient.html [ ImageOnlyFailure ]
+crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/remove-zero-length-run.html [ Pass Failure ]
+crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/text-combine-shrink-to-fit.html [ Pass Failure ]
 
 crbug.com/339259 fast/flexbox/box-orient-button.html [ Pass Failure ]
 crbug.com/339394 [ Win Debug ] virtual/threaded/animations/animation-matrix-negative-scale-unmatrix.html [ Pass Failure ]
