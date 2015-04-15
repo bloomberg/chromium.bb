@@ -819,6 +819,7 @@ if (is_android) {
       "//base",
       "//sync/protocol:protocol",
       "//testing/gtest",
+      "//url:url",
     ]
   }
 }

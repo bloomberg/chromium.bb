@@ -116,6 +116,9 @@ class FakeServer {
   // This can be used to trigger exponential backoff in the client.
   void DisableNetwork();
 
+  // Returns the entity ID of the Bookmark Bar folder.
+  std::string GetBookmarkBarFolderId() const;
+
  private:
   typedef std::map<std::string, FakeServerEntity*> EntityMap;
 
@@ -128,13 +131,12 @@ class FakeServer {
                            const std::string& invalidator_client_id,
                            sync_pb::CommitResponse* response);
 
-  bool CreatePermanentBookmarkFolder(const char* server_tag, const char* name);
+  // Creates and saves a permanent folder for Bookmarks (e.g., Bookmark Bar).
+  bool CreatePermanentBookmarkFolder(const std::string& server_tag,
+                                     const std::string& name);
 
   // Inserts the default permanent items in |entities_|.
   bool CreateDefaultPermanentItems();
-
-  // Inserts the mobile bookmarks folder entity in |entities_|.
-  bool CreateMobileBookmarksPermanentItem();
 
   // Saves a |entity| to |entities_|.
   void SaveEntity(FakeServerEntity* entity);
