@@ -459,10 +459,12 @@ base::string16 TemplateURLRef::SearchTermToString16(
   const std::vector<std::string>& encodings = owner_->input_encodings();
   base::string16 result;
 
-  std::string unescaped = net::UnescapeURLComponent(
-      term,
-      net::UnescapeRule::REPLACE_PLUS_WITH_SPACE |
-      net::UnescapeRule::URL_SPECIAL_CHARS);
+  net::UnescapeRule::Type unescape_rules =
+      net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS;
+  if (search_term_key_location_ != url::Parsed::PATH)
+    unescape_rules |= net::UnescapeRule::REPLACE_PLUS_WITH_SPACE;
+
+  std::string unescaped = net::UnescapeURLComponent(term, unescape_rules);
   for (size_t i = 0; i < encodings.size(); ++i) {
     if (base::CodepageToUTF16(unescaped, encodings[i].c_str(),
                               base::OnStringConversionError::FAIL, &result))
@@ -478,7 +480,8 @@ base::string16 TemplateURLRef::SearchTermToString16(
   // encoding is. We need to substitute spaces for pluses ourselves since we're
   // not sending it through an unescaper.
   result = base::UTF8ToUTF16(term);
-  std::replace(result.begin(), result.end(), '+', ' ');
+  if (unescape_rules & net::UnescapeRule::REPLACE_PLUS_WITH_SPACE)
+    std::replace(result.begin(), result.end(), '+', ' ');
   return result;
 }
 
@@ -524,8 +527,6 @@ bool TemplateURLRef::ExtractSearchTermsFromURL(
 
   std::string source;
   url::Component position;
-  net::UnescapeRule::Type unescape_rules =
-      net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS;
 
   if (search_term_key_location_ == url::Parsed::PATH) {
     source = url.path();
@@ -560,12 +561,11 @@ bool TemplateURLRef::ExtractSearchTermsFromURL(
     }
     if (!key_found)
       return false;
-    unescape_rules |= net::UnescapeRule::REPLACE_PLUS_WITH_SPACE;
   }
 
   // Extract the search term.
-  *search_terms = net::UnescapeAndDecodeUTF8URLComponent(
-      source.substr(position.begin, position.len), unescape_rules);
+  *search_terms = SearchTermToString16(
+      source.substr(position.begin, position.len));
   if (search_terms_component)
     *search_terms_component = search_term_key_location_;
   if (search_terms_position)
