@@ -36,7 +36,7 @@ import java.util.List;
 /**
  * The main implementation of the {@link ExternalNavigationDelegate}.
  */
-public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegate {
+class ExternalNavigationDelegateImpl implements ExternalNavigationDelegate {
     private static final String TAG = "ExternalNavigationDelegateImpl";
     private final Activity mActivity;
 

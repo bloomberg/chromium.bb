@@ -16,7 +16,7 @@ import java.util.List;
  * A delegate for the class responsible for navigating to external applications from Chrome. Used
  * by {@link ExternalNavigationHandler}.
  */
-public interface ExternalNavigationDelegate {
+interface ExternalNavigationDelegate {
     /**
      * Get the list of component name of activities which can resolve |intent|.
      */
