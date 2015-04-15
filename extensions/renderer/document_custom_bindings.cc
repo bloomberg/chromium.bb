@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
