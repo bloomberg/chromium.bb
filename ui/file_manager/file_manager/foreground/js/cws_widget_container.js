@@ -62,7 +62,7 @@ function CWSWidgetContainer(document, parentNode, state) {
    * @private
    */
   this.webviewContainer_ = document.createElement('div');
-  this.webviewContainer_.id = 'webview-container';
+  this.webviewContainer_.classList.add('cws-widget-webview-container');
   this.webviewContainer_.style.width = WEBVIEW_WIDTH + 'px';
   this.webviewContainer_.style.height = WEBVIEW_HEIGHT + 'px';
   parentNode.appendChild(this.webviewContainer_);
@@ -72,7 +72,7 @@ function CWSWidgetContainer(document, parentNode, state) {
    * @type {!Element}
    */
   var spinnerLayer = document.createElement('div');
-  spinnerLayer.className = 'spinner-layer';
+  spinnerLayer.className = 'cws-widget-spinner-layer';
   this.webviewContainer_.appendChild(spinnerLayer);
 
   /**
@@ -80,7 +80,7 @@ function CWSWidgetContainer(document, parentNode, state) {
    * @type {!Element}
    */
   var buttons = document.createElement('div');
-  buttons.id = 'buttons';
+  buttons.classList.add('cws-widget-buttons');
   parentNode.appendChild(buttons);
 
   /**
@@ -90,7 +90,7 @@ function CWSWidgetContainer(document, parentNode, state) {
    */
   this.webstoreButton_ = document.createElement('div');
   this.webstoreButton_.hidden = true;
-  this.webstoreButton_.id = 'webstore-button';
+  this.webstoreButton_.classList.add('cws-widget-webstore-button');
   this.webstoreButton_.setAttribute('role', 'button');
   this.webstoreButton_.tabIndex = 0;
 
@@ -99,7 +99,7 @@ function CWSWidgetContainer(document, parentNode, state) {
    * @type {!Element}
    */
   var webstoreButtonIcon = this.document_.createElement('span');
-  webstoreButtonIcon.id = 'webstore-button-icon';
+  webstoreButtonIcon.classList.add('cws-widget-webstore-button-icon');
   this.webstoreButton_.appendChild(webstoreButtonIcon);
 
   /**
@@ -107,7 +107,7 @@ function CWSWidgetContainer(document, parentNode, state) {
    * @type {!Element}
    */
   var webstoreButtonLabel = this.document_.createElement('span');
-  webstoreButtonLabel.id = 'webstore-button-label';
+  webstoreButtonLabel.classList.add('cws-widget-webstore-button-label');
   webstoreButtonLabel.textContent = str('SUGGEST_DIALOG_LINK_TO_WEBSTORE');
   this.webstoreButton_.appendChild(webstoreButtonLabel);
 
@@ -367,7 +367,7 @@ CWSWidgetContainer.prototype.start = function(options,  webStoreUrl) {
     });
     this.webviewContainer_.appendChild(this.webview_);
 
-    this.webviewContainer_.classList.add('show-spinner');
+    this.webviewContainer_.classList.add('cws-widget-show-spinner');
 
     this.webviewClient_ = new CWSContainerClient(
         this.webview_,
@@ -427,7 +427,7 @@ CWSWidgetContainer.prototype.onWidgetLoaded_ = function(event) {
   CWSWidgetContainer.Metrics.recordLoad(
       CWSWidgetContainer.Metrics.LOAD.SUCCEEDED);
 
-  this.webviewContainer_.classList.remove('show-spinner');
+  this.webviewContainer_.classList.remove('cws-widget-show-spinner');
   this.state_ = CWSWidgetContainer.State.INITIALIZED;
 
   this.webview_.focus();
@@ -441,7 +441,7 @@ CWSWidgetContainer.prototype.onWidgetLoaded_ = function(event) {
 CWSWidgetContainer.prototype.onWidgetLoadFailed_ = function(event) {
   CWSWidgetContainer.Metrics.recordLoad(CWSWidgetContainer.Metrics.LOAD.FAILED);
 
-  this.webviewContainer_.classList.remove('show-spinner');
+  this.webviewContainer_.classList.remove('cws-widget-show-spinner');
   this.state_ = CWSWidgetContainer.State.INITIALIZE_FAILED_CLOSING;
   this.reportDone_();
 };
@@ -468,7 +468,7 @@ CWSWidgetContainer.prototype.onInstallRequest_ = function(e) {
   this.appInstaller_ = new AppInstaller(itemId);
   this.appInstaller_.install(this.onItemInstalled_.bind(this));
 
-  this.webviewContainer_.classList.add('show-spinner');
+  this.webviewContainer_.classList.add('cws-widget-show-spinner');
   this.state_ = CWSWidgetContainer.State.INSTALLING;
 };
 
@@ -479,7 +479,7 @@ CWSWidgetContainer.prototype.onInstallRequest_ = function(e) {
  * @private
  */
 CWSWidgetContainer.prototype.onInstallDone_ = function(e) {
-  this.webviewContainer_.classList.remove('show-spinner');
+  this.webviewContainer_.classList.remove('cws-widget-show-spinner');
   this.state_ = CWSWidgetContainer.State.INSTALLED_CLOSING;
   this.reportDone_();
 };
@@ -496,7 +496,7 @@ CWSWidgetContainer.prototype.onItemInstalled_ = function(result, error) {
   // If install succeeded, the spinner will be removed once
   // |this.webviewClient_| dispatched INSTALL_DONE event.
   if (!success)
-    this.webviewContainer_.classList.remove('show-spinner');
+    this.webviewContainer_.classList.remove('cws-widget-show-spinner');
 
   this.state_ = success ?
                 CWSWidgetContainer.State.WAITING_FOR_CONFIRMATION :

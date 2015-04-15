@@ -43,6 +43,13 @@ function SuggestAppsDialog(parentNode, state) {
    * @private
    */
   this.result_ = SuggestAppsDialog.Result.FAILED;
+
+  // Hide default dialog buttons.
+  this.buttons.hidden = true;
+
+  // Override default dialog styles.
+  this.title_.classList.add('suggest-apps-dialog-title');
+  this.text_.classList.add('suggest-apps-dialog-text');
 }
 
 SuggestAppsDialog.prototype = {

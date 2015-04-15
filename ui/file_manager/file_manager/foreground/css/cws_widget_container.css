@@ -1,0 +1,65 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+.cws-widget-container-root {
+  position: relative;
+}
+
+.cws-widget-webview-container {
+  border-bottom: solid 1px #bbb;
+  border-top: solid 1px #bbb;
+  position: relative;
+}
+
+.cws-widget-webview-container.cws-widget-show-spinner webview {
+  pointer-events: none;
+}
+
+.cws-widget-webview-container:not(.cws-widget-show-spinner)
+    .cws-widget-spinner-layer {
+  display: none;
+}
+
+.cws-widget-spinner-layer {
+  background: url(../images/common/spinner.svg) center / 16px no-repeat;
+  background-color: rgba(255, 255, 255, 0.7);
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 525;
+}
+
+.cws-widget-buttons {
+  background: #eee;
+  width: 100%;
+}
+
+.cws-widget-webstore-button {
+  -webkit-padding-end: 10px;
+  -webkit-padding-start: 12px;
+  color: #00f;
+  cursor: pointer;
+  display: flex;
+  height: 16px;
+  padding-bottom: 10px;
+  padding-top: 10px;
+}
+
+.cws-widget-webstore-button-icon {
+  -webkit-margin-end: 8px;
+  background-image: -webkit-image-set(
+    url(chrome://theme/IDR_WEBSTORE_ICON_16) 1x,
+    url(chrome://theme/IDR_WEBSTORE_ICON_16@2x) 2x);
+  background-repeat: no-repeat;
+  display: inline-block;
+  height: 16px;
+  width: 16px;
+}
+
+.cws-widget-webstore-button-label {
+  flex: 1;
+  line-height: 16px;
+}
