@@ -50,4 +50,10 @@
   [textView setEnabledTextCheckingTypes:checkingTypes];
 }
 
+// Implemented to allow the findbar to respond to "Paste and Match Style" menu
+// commands.
+- (void)pasteAndMatchStyle:(id)sender {
+  [[self currentEditor] paste:sender];
+}
+
 @end
