@@ -204,7 +204,9 @@ void invokeOnScriptableObject(const v8::FunctionCallbackInfo<v8::Value>& info)
     for (int i = 0; i < info.Length(); ++i)
         arguments[i] = info[i];
 
-    TONATIVE_VOID(v8::Local<v8::Value>, retVal, instance->CallAsFunction(info.This(), info.Length(), arguments.get()));
+    v8::Local<v8::Value> retVal;
+    if (!instance->CallAsFunction(info.GetIsolate()->GetCurrentContext(), info.This(), info.Length(), arguments.get()).ToLocal(&retVal))
+        return;
     v8SetReturnValue(info, retVal);
 }
 
