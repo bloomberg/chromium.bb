@@ -45,7 +45,7 @@ namespace blink {
 using namespace HTMLNames;
 
 StyledMarkupAccumulator::StyledMarkupAccumulator(StyledMarkupSerializer* serializer, EAbsoluteURLs shouldResolveURLs, const Position& start, const Position& end)
-    : MarkupAccumulator(nullptr, shouldResolveURLs)
+    : MarkupAccumulator(shouldResolveURLs)
     , m_serializer(serializer)
     , m_start(start.parentAnchoredEquivalent())
     , m_end(end.parentAnchoredEquivalent())

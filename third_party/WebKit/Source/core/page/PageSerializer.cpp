@@ -106,17 +106,25 @@ protected:
     virtual void appendText(StringBuilder& out, Text&) override;
     virtual void appendElement(StringBuilder& out, Element&, Namespaces*) override;
     virtual void appendCustomAttributes(StringBuilder& out, const Element&, Namespaces*) override;
+    virtual void appendStartTag(Node&, Namespaces* = nullptr) override;
     virtual void appendEndTag(const Element&) override;
 
 private:
     RawPtrWillBeMember<PageSerializer> m_serializer;
     RawPtrWillBeMember<const Document> m_document;
+
+    // FIXME: |PageSerializer| uses |m_nodes| for collecting nodes in document
+    // included into serialized text then extracts image, object, etc. The size
+    // of this vector isn't small for large document. It is better to use
+    // callback like functionality.
+    RawPtrWillBeMember<WillBeHeapVector<RawPtrWillBeMember<Node>>> const m_nodes;
 };
 
 SerializerMarkupAccumulator::SerializerMarkupAccumulator(PageSerializer* serializer, const Document& document, WillBeHeapVector<RawPtrWillBeMember<Node>>* nodes)
-    : MarkupAccumulator(nodes, ResolveAllURLs)
+    : MarkupAccumulator(ResolveAllURLs)
     , m_serializer(serializer)
     , m_document(&document)
+    , m_nodes(nodes)
 {
 }
 
@@ -163,6 +171,13 @@ void SerializerMarkupAccumulator::appendCustomAttributes(StringBuilder& out, con
     // We need to give a fake location to blank frames so they can be referenced by the serialized frame.
     url = m_serializer->urlForBlankFrame(toLocalFrame(frame));
     appendAttribute(out, element, Attribute(frameOwnerURLAttributeName(frameOwner), AtomicString(url.string())), namespaces);
+}
+
+void SerializerMarkupAccumulator::appendStartTag(Node& node, Namespaces* namespaces)
+{
+    MarkupAccumulator::appendStartTag(node, namespaces);
+    if (m_nodes)
+        m_nodes->append(&node);
 }
 
 void SerializerMarkupAccumulator::appendEndTag(const Element& element)

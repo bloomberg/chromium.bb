@@ -29,7 +29,7 @@ namespace blink {
 String XMLSerializer::serializeToString(Node* root)
 {
     ASSERT(root);
-    MarkupAccumulator accumulator(0, DoNotResolveURLs, ForcedXML);
+    MarkupAccumulator accumulator(DoNotResolveURLs, ForcedXML);
     return accumulator.serializeNodes(*root, IncludeNode);
 }
 

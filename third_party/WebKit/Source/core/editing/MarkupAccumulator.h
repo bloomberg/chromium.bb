@@ -65,7 +65,7 @@ class MarkupAccumulator {
     WTF_MAKE_NONCOPYABLE(MarkupAccumulator);
     STACK_ALLOCATED();
 public:
-    MarkupAccumulator(WillBeHeapVector<RawPtrWillBeMember<Node>>*, EAbsoluteURLs, SerializationType = AsOwnerDocument);
+    MarkupAccumulator(EAbsoluteURLs, SerializationType = AsOwnerDocument);
     virtual ~MarkupAccumulator();
 
     String serializeNodes(Node& targetNode, EChildrenOnly);
@@ -75,7 +75,7 @@ public:
     static void appendCharactersReplacingEntities(StringBuilder&, const String&, unsigned, unsigned, EntityMask);
 
     void appendString(const String&);
-    void appendStartTag(Node&, Namespaces* = nullptr);
+    virtual void appendStartTag(Node&, Namespaces* = nullptr);
     virtual void appendEndTag(const Element&);
     static size_t totalLength(const Vector<String>&);
     size_t length() const { return m_markup.length(); }
