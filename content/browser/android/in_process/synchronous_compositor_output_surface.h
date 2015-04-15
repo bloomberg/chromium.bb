@@ -76,6 +76,10 @@ class SynchronousCompositorOutputSurface
   void SetTreeActivationCallback(const base::Closure& callback);
   void GetMessagesToDeliver(ScopedVector<IPC::Message>* messages);
 
+  size_t GetMemoryPolicy() const {
+    return memory_policy_.bytes_limit_when_visible;
+  }
+
  private:
   class SoftwareDevice;
   friend class SoftwareDevice;
