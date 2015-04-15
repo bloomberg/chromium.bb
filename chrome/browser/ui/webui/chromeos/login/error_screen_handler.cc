@@ -76,7 +76,8 @@ bool ErrorScreenHandler::GetScreenName(OobeUI::Screen screen,
 }
 
 void ErrorScreenHandler::HandleHideCaptivePortal() {
-  model_->HideCaptivePortal();
+  if (model_)
+    model_->HideCaptivePortal();
 }
 
 void ErrorScreenHandler::RegisterMessages() {
