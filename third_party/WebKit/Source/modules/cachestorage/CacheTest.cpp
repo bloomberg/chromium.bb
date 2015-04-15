@@ -553,7 +553,7 @@ TEST_F(CacheStorageTest, MatchAllAndBatchResponseTest)
     result = cache->deleteFunction(scriptState(), stringToRequestInfo("http://some.url/"), options, exceptionState());
     scriptValue = getResolveValue(result);
     EXPECT_TRUE(scriptValue.v8Value()->IsBoolean());
-    EXPECT_EQ(true, scriptValue.v8Value()->BooleanValue());
+    EXPECT_EQ(true, scriptValue.v8Value().As<v8::Boolean>()->Value());
 }
 
 } // namespace

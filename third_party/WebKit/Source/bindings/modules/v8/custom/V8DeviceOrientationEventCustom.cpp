@@ -69,7 +69,9 @@ void V8DeviceOrientationEvent::initDeviceOrientationEventMethodCustom(const v8::
             return;
     }
     bool absoluteProvided = !isUndefinedOrNull(info[6]);
-    bool absolute = info[6]->BooleanValue();
+    bool absolute = false;
+    if (absoluteProvided && !v8Call(info[6]->BooleanValue(context), absolute))
+        return;
     DeviceOrientationData* orientation = DeviceOrientationData::create(alphaProvided, alpha, betaProvided, beta, gammaProvided, gamma, absoluteProvided, absolute);
     impl->initDeviceOrientationEvent(type, bubbles, cancelable, orientation);
 }

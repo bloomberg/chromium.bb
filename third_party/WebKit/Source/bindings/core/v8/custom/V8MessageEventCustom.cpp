@@ -111,8 +111,11 @@ void V8MessageEvent::initMessageEventMethodCustom(const v8::FunctionCallbackInfo
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "initMessageEvent", "MessageEvent", info.Holder(), info.GetIsolate());
     MessageEvent* event = V8MessageEvent::toImpl(info.Holder());
     TOSTRING_VOID(V8StringResource<>, typeArg, info[0]);
-    TONATIVE_VOID(bool, canBubbleArg, info[1]->BooleanValue());
-    TONATIVE_VOID(bool, cancelableArg, info[2]->BooleanValue());
+    bool canBubbleArg;
+    bool cancelableArg;
+    if (!v8Call(info[1]->BooleanValue(info.GetIsolate()->GetCurrentContext()), canBubbleArg)
+        || !v8Call(info[2]->BooleanValue(info.GetIsolate()->GetCurrentContext()), cancelableArg))
+        return;
     v8::Local<v8::Value> dataArg = info[3];
     TOSTRING_VOID(V8StringResource<>, originArg, info[4]);
     TOSTRING_VOID(V8StringResource<>, lastEventIdArg, info[5]);

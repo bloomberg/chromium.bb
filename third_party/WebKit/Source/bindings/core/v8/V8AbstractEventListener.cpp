@@ -157,7 +157,7 @@ bool V8AbstractEventListener::shouldPreventDefault(v8::Local<v8::Value> returnVa
 {
     // Prevent default action if the return value is false in accord with the spec
     // http://www.w3.org/TR/html5/webappapis.html#event-handler-attributes
-    return returnValue->IsBoolean() && !returnValue->BooleanValue();
+    return returnValue->IsBoolean() && !returnValue.As<v8::Boolean>()->Value();
 }
 
 v8::Local<v8::Object> V8AbstractEventListener::getReceiverObject(ScriptState* scriptState, Event* event)

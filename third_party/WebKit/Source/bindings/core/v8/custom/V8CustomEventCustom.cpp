@@ -84,8 +84,11 @@ void V8CustomEvent::initCustomEventMethodCustom(const v8::FunctionCallbackInfo<v
     ASSERT(!event->serializedDetail());
 
     TOSTRING_VOID(V8StringResource<>, typeArg, info[0]);
-    TONATIVE_VOID(bool, canBubbleArg, info[1]->BooleanValue());
-    TONATIVE_VOID(bool, cancelableArg, info[2]->BooleanValue());
+    bool canBubbleArg;
+    bool cancelableArg;
+    if (!v8Call(info[1]->BooleanValue(info.GetIsolate()->GetCurrentContext()), canBubbleArg)
+        || !v8Call(info[2]->BooleanValue(info.GetIsolate()->GetCurrentContext()), cancelableArg))
+        return;
     v8::Local<v8::Value> detailsArg = info[3];
 
     event->initEvent(typeArg, canBubbleArg, cancelableArg);

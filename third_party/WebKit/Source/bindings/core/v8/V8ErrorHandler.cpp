@@ -92,7 +92,7 @@ void V8ErrorHandler::storeExceptionOnErrorEventWrapper(v8::Isolate* isolate, Err
 
 bool V8ErrorHandler::shouldPreventDefault(v8::Local<v8::Value> returnValue)
 {
-    return returnValue->IsBoolean() && returnValue->BooleanValue();
+    return returnValue->IsBoolean() && returnValue.As<v8::Boolean>()->Value();
 }
 
 } // namespace blink
