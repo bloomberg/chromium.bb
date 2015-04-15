@@ -496,10 +496,12 @@ namespace Json {
 # endif
       } value_;
       ValueType type_ : 8;
-      int allocated_ : 1;     // Notes: if declared as bool, bitfield is useless.
+      // One-bit bitfields must be unsigned to allow storing 1.
+      // They must be 32-bits to share storage with ValueHolder.
+      unsigned int allocated_ : 1;
 # ifdef JSON_VALUE_USE_INTERNAL_MAP
       unsigned int itemIsUsed_ : 1;      // used by the ValueInternalMap container.
-      int memberNameIsStatic_ : 1;       // used by the ValueInternalMap container.
+      unsigned int memberNameIsStatic_ : 1; // used by the ValueInternalMap container.
 # endif
       CommentInfo *comments_;
    };
