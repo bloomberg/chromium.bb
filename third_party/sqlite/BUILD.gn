@@ -14,7 +14,6 @@ source_set("sqlite") {
 
   cflags = []
   defines = [
-    "SQLITE_CORE",
     "SQLITE_ENABLE_FTS3",
     "SQLITE_DISABLE_FTS3_UNICODE",
     "SQLITE_DISABLE_FTS4_DEFERRED",
@@ -101,6 +100,10 @@ if (is_linux) {
 
 if (is_ios) {
   source_set("sqlite_regexp") {
+    defines += [
+      # Necessary to statically compile the extension.
+      "SQLITE_CORE",
+    ]
     sources = [
       "src/ext/icu/icu.c",
     ]

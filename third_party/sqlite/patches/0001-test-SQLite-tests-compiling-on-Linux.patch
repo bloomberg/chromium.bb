@@ -45,7 +45,7 @@ index 1c9f24f..6d67ba7 100644
  
  #### Leave SQLITE_DEBUG undefined for maximum speed.  Use SQLITE_DEBUG=1
  #    to check for memory leaks.  Use SQLITE_DEBUG=2 to print a log of all
-@@ -58,7 +58,25 @@ TLIBS =
+@@ -58,7 +58,24 @@ TLIBS =
  #OPTS = -DSQLITE_DEBUG=1
  #OPTS = 
  OPTS = -DNDEBUG=1
@@ -54,7 +54,6 @@ index 1c9f24f..6d67ba7 100644
 +
 +# These flags match those for SQLITE_CFLAGS in config.mk.
 +
-+OPTS += -DSQLITE_CORE
 +OPTS += -DSQLITE_DEFAULT_FILE_PERMISSIONS=0600
 +OPTS += -DHAVE_USLEEP=1
 +
