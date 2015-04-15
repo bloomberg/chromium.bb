@@ -78,11 +78,10 @@ VideoFrameProviderClientImpl::AcquireLockAndCurrentFrame() {
   return provider_->GetCurrentFrame();
 }
 
-void VideoFrameProviderClientImpl::PutCurrentFrame(
-    const scoped_refptr<media::VideoFrame>& frame) {
+void VideoFrameProviderClientImpl::PutCurrentFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
   provider_lock_.AssertAcquired();
-  provider_->PutCurrentFrame(frame);
+  provider_->PutCurrentFrame();
 }
 
 void VideoFrameProviderClientImpl::ReleaseLock() {
@@ -102,6 +101,16 @@ void VideoFrameProviderClientImpl::StopUsingProvider() {
   // using the frame.
   base::AutoLock locker(provider_lock_);
   provider_ = nullptr;
+}
+
+void VideoFrameProviderClientImpl::StartRendering() {
+  // TODO(dalecurtis, sunnyps): Hook this method up to control when to start
+  // observing vsync intervals. http://crbug.com/336733
+}
+
+void VideoFrameProviderClientImpl::StopRendering() {
+  // TODO(dalecurtis, sunnyps): Hook this method up to control when to stop
+  // observing vsync intervals. http://crbug.com/336733
 }
 
 void VideoFrameProviderClientImpl::DidReceiveFrame() {

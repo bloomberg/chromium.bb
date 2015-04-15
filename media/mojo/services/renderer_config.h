@@ -13,6 +13,7 @@
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/media_log.h"
 #include "media/base/video_decoder.h"
+#include "media/base/video_renderer_sink.h"
 
 namespace media {
 
@@ -34,13 +35,13 @@ class PlatformRendererConfig {
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const LogCB& media_log_cb) = 0;
 
-  // The audio output sink used for rendering audio.
+  // The output sink used for rendering audio or video respectively.
   virtual scoped_refptr<AudioRendererSink> GetAudioRendererSink() = 0;
+  virtual scoped_ptr<VideoRendererSink> GetVideoRendererSink() = 0;
 
   // The platform's audio hardware configuration.  Note, this must remain
   // constant for the lifetime of the PlatformRendererConfig.
   virtual const AudioHardwareConfig& GetAudioHardwareConfig() = 0;
-
 };
 
 class RendererConfig {
@@ -57,6 +58,7 @@ class RendererConfig {
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const LogCB& media_log_cb);
   scoped_refptr<AudioRendererSink> GetAudioRendererSink();
+  scoped_ptr<VideoRendererSink> GetVideoRendererSink();
   const AudioHardwareConfig& GetAudioHardwareConfig();
 
  private:

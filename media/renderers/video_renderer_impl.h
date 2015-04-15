@@ -21,6 +21,7 @@
 #include "media/base/video_decoder.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_renderer.h"
+#include "media/base/video_renderer_sink.h"
 #include "media/filters/decoder_stream.h"
 
 namespace base {
@@ -36,6 +37,7 @@ namespace media {
 // ready for rendering.
 class MEDIA_EXPORT VideoRendererImpl
     : public VideoRenderer,
+      public NON_EXPORTED_BASE(VideoRendererSink::RenderCallback),
       public base::PlatformThread::Delegate {
  public:
   // |decoders| contains the VideoDecoders to use when initializing.
@@ -47,6 +49,7 @@ class MEDIA_EXPORT VideoRendererImpl
   // Setting |drop_frames_| to true causes the renderer to drop expired frames.
   VideoRendererImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      VideoRendererSink* sink,
       ScopedVector<VideoDecoder> decoders,
       bool drop_frames,
       const scoped_refptr<MediaLog>& media_log);
@@ -58,7 +61,6 @@ class MEDIA_EXPORT VideoRendererImpl
                   const SetDecryptorReadyCB& set_decryptor_ready_cb,
                   const StatisticsCB& statistics_cb,
                   const BufferingStateCB& buffering_state_cb,
-                  const PaintCB& paint_cb,
                   const base::Closure& ended_cb,
                   const PipelineStatusCB& error_cb,
                   const WallClockTimeCB& wall_clock_time_cb,
@@ -71,6 +73,11 @@ class MEDIA_EXPORT VideoRendererImpl
   void ThreadMain() override;
 
   void SetTickClockForTesting(scoped_ptr<base::TickClock> tick_clock);
+
+  // VideoRendererSink::RenderCallback implementation.
+  scoped_refptr<VideoFrame> Render(base::TimeTicks deadline_min,
+                                   base::TimeTicks deadline_max) override;
+  void OnFrameDropped() override;
 
  private:
   // Creates a dedicated |thread_| for video rendering.
@@ -117,6 +124,8 @@ class MEDIA_EXPORT VideoRendererImpl
   void UpdateStatsAndWait_Locked(base::TimeDelta wait_duration);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  VideoRendererSink* const sink_;
 
   // Used for accessing data members.
   base::Lock lock_;

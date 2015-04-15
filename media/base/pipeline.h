@@ -100,8 +100,6 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   //                 video in supported formats are known.
   //   |buffering_state_cb| will be executed whenever there are changes in the
   //                        overall buffering state of the pipeline.
-  //   |paint_cb| will be executed whenever there is a VideoFrame to be painted.
-  //              It's safe to call this callback from any thread.
   //   |duration_change_cb| optional callback that will be executed whenever the
   //                        presentation duration changes.
   //   |add_text_track_cb| will be executed whenever a text track is added.
@@ -115,7 +113,6 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
              const PipelineStatusCB& seek_cb,
              const PipelineMetadataCB& metadata_cb,
              const BufferingStateCB& buffering_state_cb,
-             const PaintCB& paint_cb,
              const base::Closure& duration_change_cb,
              const AddTextTrackCB& add_text_track_cb,
              const base::Closure& waiting_for_decryption_key_cb);
@@ -360,7 +357,6 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   PipelineStatusCB error_cb_;
   PipelineMetadataCB metadata_cb_;
   BufferingStateCB buffering_state_cb_;
-  PaintCB paint_cb_;
   base::Closure duration_change_cb_;
   AddTextTrackCB add_text_track_cb_;
   base::Closure waiting_for_decryption_key_cb_;

@@ -1667,44 +1667,6 @@
         },
       ], # targets
     }],
-    ['use_x11==1', {
-      'targets': [
-        {
-          'target_name': 'player_x11',
-          'type': 'executable',
-          'dependencies': [
-            'media',
-            'shared_memory_support',
-            '../base/base.gyp:base',
-            '../ui/gl/gl.gyp:gl',
-            '../ui/gfx/gfx.gyp:gfx',
-            '../ui/gfx/gfx.gyp:gfx_geometry',
-            '../build/linux/system.gyp:x11',
-            '../build/linux/system.gyp:xext',
-            '../build/linux/system.gyp:xrender',
-          ],
-          'conditions': [
-            # Linux/Solaris need libdl for dlopen() and friends.
-            ['OS=="linux" or OS=="solaris"', {
-              'link_settings': {
-                'libraries': [
-                  '-ldl',
-                ],
-              },
-            }],
-          ],
-          'sources': [
-            'tools/player_x11/data_source_logger.cc',
-            'tools/player_x11/data_source_logger.h',
-            'tools/player_x11/gl_video_renderer.cc',
-            'tools/player_x11/gl_video_renderer.h',
-            'tools/player_x11/player_x11.cc',
-            'tools/player_x11/x11_video_renderer.cc',
-            'tools/player_x11/x11_video_renderer.h',
-          ],
-        },
-      ],
-    }],
     ['OS=="android"', {
       'targets': [
         {

@@ -15,6 +15,7 @@ class AudioHardwareConfig;
 class AudioRendererSink;
 class GpuVideoAcceleratorFactories;
 class MediaLog;
+class VideoRendererSink;
 
 // The default factory class for creating RendererImpl.
 class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
@@ -27,7 +28,8 @@ class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
 
   scoped_ptr<Renderer> CreateRenderer(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-      AudioRendererSink* audio_renderer_sink) final;
+      AudioRendererSink* audio_renderer_sink,
+      VideoRendererSink* video_renderer_sink) final;
 
  private:
   scoped_refptr<MediaLog> media_log_;

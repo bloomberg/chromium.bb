@@ -37,7 +37,7 @@ class CC_EXPORT VideoFrameProviderClientImpl
   void Stop();
 
   scoped_refptr<media::VideoFrame> AcquireLockAndCurrentFrame();
-  void PutCurrentFrame(const scoped_refptr<media::VideoFrame>& frame);
+  void PutCurrentFrame();
   void ReleaseLock();
 
   const gfx::Transform& StreamTextureMatrix() const;
@@ -46,6 +46,8 @@ class CC_EXPORT VideoFrameProviderClientImpl
   // Called on the main thread.
   void StopUsingProvider() override;
   // Called on the impl thread.
+  void StartRendering() override;
+  void StopRendering() override;
   void DidReceiveFrame() override;
   void DidUpdateMatrix(const float* matrix) override;
 

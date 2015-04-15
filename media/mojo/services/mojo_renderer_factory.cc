@@ -21,7 +21,8 @@ MojoRendererFactory::~MojoRendererFactory() {
 
 scoped_ptr<Renderer> MojoRendererFactory::CreateRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-    AudioRendererSink* /* audio_renderer_sink */) {
+    AudioRendererSink* /* audio_renderer_sink */,
+    VideoRendererSink* /* video_renderer_sink */) {
   mojo::MediaRendererPtr mojo_media_renderer;
   service_provider_->ConnectToService(&mojo_media_renderer);
   return scoped_ptr<Renderer>(

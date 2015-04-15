@@ -81,7 +81,6 @@ void RendererImpl::Initialize(
     const PipelineStatusCB& init_cb,
     const StatisticsCB& statistics_cb,
     const BufferingStateCB& buffering_state_cb,
-    const PaintCB& paint_cb,
     const base::Closure& ended_cb,
     const PipelineStatusCB& error_cb,
     const base::Closure& waiting_for_decryption_key_cb) {
@@ -91,7 +90,6 @@ void RendererImpl::Initialize(
   DCHECK(!init_cb.is_null());
   DCHECK(!statistics_cb.is_null());
   DCHECK(!buffering_state_cb.is_null());
-  DCHECK(!paint_cb.is_null());
   DCHECK(!ended_cb.is_null());
   DCHECK(!error_cb.is_null());
   DCHECK(demuxer_stream_provider->GetStream(DemuxerStream::AUDIO) ||
@@ -100,7 +98,6 @@ void RendererImpl::Initialize(
   demuxer_stream_provider_ = demuxer_stream_provider;
   statistics_cb_ = statistics_cb;
   buffering_state_cb_ = buffering_state_cb;
-  paint_cb_ = paint_cb;
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
   init_cb_ = init_cb;
@@ -337,7 +334,6 @@ void RendererImpl::InitializeVideoRenderer() {
       base::Bind(&RendererImpl::OnUpdateStatistics, weak_this_),
       base::Bind(&RendererImpl::OnBufferingStateChanged, weak_this_,
                  &video_buffering_state_),
-      base::ResetAndReturn(&paint_cb_),
       base::Bind(&RendererImpl::OnVideoRendererEnded, weak_this_),
       base::Bind(&RendererImpl::OnError, weak_this_),
       base::Bind(&RendererImpl::GetWallClockTime, base::Unretained(this)),
