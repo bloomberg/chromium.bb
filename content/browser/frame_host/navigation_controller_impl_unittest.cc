@@ -1758,7 +1758,7 @@ TEST_F(NavigationControllerTest, Forward_GeneratesNewPage) {
   EXPECT_FALSE(controller.CanGoForward());
 }
 
-// Two consequent navigation for the same URL entered in should be considered
+// Two consecutive navigations for the same URL entered in should be considered
 // as SAME_PAGE navigation even when we are redirected to some other page.
 TEST_F(NavigationControllerTest, Redirect) {
   NavigationControllerImpl& controller = controller_impl();
@@ -1768,22 +1768,11 @@ TEST_F(NavigationControllerTest, Redirect) {
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");  // Redirection target
 
-  // First request
+  // First request.
   controller.LoadURL(
       url1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
 
   EXPECT_EQ(0U, notifications.size());
-  main_test_rfh()->SendNavigate(0, url2);
-  EXPECT_EQ(1U, navigation_entry_committed_counter_);
-  navigation_entry_committed_counter_ = 0;
-
-  // Second request
-  controller.LoadURL(
-      url1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-
-  EXPECT_TRUE(controller.GetPendingEntry());
-  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
-  EXPECT_EQ(url1, controller.GetVisibleEntry()->GetURL());
 
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.page_id = 0;
@@ -1798,6 +1787,18 @@ TEST_F(NavigationControllerTest, Redirect) {
 
   LoadCommittedDetails details;
 
+  EXPECT_TRUE(controller.RendererDidNavigate(main_test_rfh(), params,
+                                             &details));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
+
+  // Second request.
+  controller.LoadURL(
+      url1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+
+  EXPECT_TRUE(controller.GetPendingEntry());
+  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
+  EXPECT_EQ(url1, controller.GetVisibleEntry()->GetURL());
   EXPECT_EQ(0U, notifications.size());
   EXPECT_TRUE(controller.RendererDidNavigate(main_test_rfh(), params,
                                              &details));
@@ -1827,23 +1828,12 @@ TEST_F(NavigationControllerTest, PostThenRedirect) {
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");  // Redirection target
 
-  // First request as POST
+  // First request as POST.
   controller.LoadURL(
       url1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   controller.GetVisibleEntry()->SetHasPostData(true);
 
   EXPECT_EQ(0U, notifications.size());
-  main_test_rfh()->SendNavigate(0, url2);
-  EXPECT_EQ(1U, navigation_entry_committed_counter_);
-  navigation_entry_committed_counter_ = 0;
-
-  // Second request
-  controller.LoadURL(
-      url1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-
-  EXPECT_TRUE(controller.GetPendingEntry());
-  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
-  EXPECT_EQ(url1, controller.GetVisibleEntry()->GetURL());
 
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.page_id = 0;
@@ -1853,10 +1843,25 @@ TEST_F(NavigationControllerTest, PostThenRedirect) {
   params.redirects.push_back(GURL("http://foo2"));
   params.should_update_history = false;
   params.gesture = NavigationGestureAuto;
-  params.is_post = false;
+  params.is_post = true;
   params.page_state = PageState::CreateFromURL(url2);
 
   LoadCommittedDetails details;
+
+  EXPECT_TRUE(controller.RendererDidNavigate(main_test_rfh(), params,
+                                             &details));
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
+
+  // Second request.
+  controller.LoadURL(
+      url1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+
+  EXPECT_TRUE(controller.GetPendingEntry());
+  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
+  EXPECT_EQ(url1, controller.GetVisibleEntry()->GetURL());
+
+  params.is_post = false;
 
   EXPECT_EQ(0U, notifications.size());
   EXPECT_TRUE(controller.RendererDidNavigate(main_test_rfh(), params,

@@ -11,6 +11,10 @@
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/resource_controller.h"
+#include "content/public/browser/resource_dispatcher_host.h"
+#include "content/public/browser/resource_dispatcher_host_delegate.h"
+#include "content/public/browser/resource_throttle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/bindings_policy.h"
@@ -249,10 +253,15 @@ class FrameNavigateParamsCapturer : public WebContentsObserver {
             node->current_frame_host()->delegate()->GetAsWebContents()),
         frame_tree_node_id_(node->frame_tree_node_id()),
         navigations_remaining_(1),
+        wait_for_load_(true),
         message_loop_runner_(new MessageLoopRunner) {}
 
   void set_navigations_remaining(int count) {
     navigations_remaining_ = count;
+  }
+
+  void set_wait_for_load(bool ignore) {
+    wait_for_load_ = ignore;
   }
 
   void Wait() {
@@ -289,7 +298,8 @@ class FrameNavigateParamsCapturer : public WebContentsObserver {
     --navigations_remaining_;
     params_.push_back(params);
     details_.push_back(details);
-    if (!web_contents()->IsLoading() && !navigations_remaining_)
+    if (!navigations_remaining_ &&
+        (!web_contents()->IsLoading() || !wait_for_load_))
       message_loop_runner_->Quit();
   }
 
@@ -303,6 +313,9 @@ class FrameNavigateParamsCapturer : public WebContentsObserver {
 
   // How many navigations remain to capture.
   int navigations_remaining_;
+
+  // Whether to also wait for the load to complete.
+  bool wait_for_load_;
 
   // The params of the navigations.
   std::vector<FrameNavigateParams> params_;
@@ -935,7 +948,6 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 }
 
-
 // Verify the tree of FrameNavigationEntries after NAVIGATION_TYPE_AUTO_SUBFRAME
 // commits.
 // TODO(creis): Test cross-site and nested iframes.
@@ -984,6 +996,78 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     // There are no subframe FrameNavigationEntries by default.
     EXPECT_EQ(0U, entry->root_node()->children.size());
   }
+}
+
+namespace {
+
+class HttpThrottle : public ResourceThrottle {
+ public:
+  // ResourceThrottle
+  void WillStartRequest(bool* defer) override {
+    *defer = true;
+  }
+
+  const char* GetNameForLogging() const override {
+    return "HttpThrottle";
+  }
+};
+
+class StallDelegate : public ResourceDispatcherHostDelegate {
+  // ResourceDispatcherHostDelegate
+  void RequestBeginning(
+      net::URLRequest* request,
+      content::ResourceContext* resource_context,
+      content::AppCacheService* appcache_service,
+      ResourceType resource_type,
+      ScopedVector<content::ResourceThrottle>* throttles) override {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    throttles->push_back(new HttpThrottle);
+  }
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       NavigationTypeClassification_InPageWhilePending) {
+  NavigationControllerImpl& controller =
+      static_cast<NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(shell()->web_contents())->
+          GetFrameTree()->root();
+
+  // Start with a normal page.
+  GURL url1(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+
+  // Have the user decide to go to a different page which is very slow.
+  StallDelegate stall_delegate;
+  ResourceDispatcherHost::Get()->SetDelegate(&stall_delegate);
+  GURL url2(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_2.html"));
+  controller.LoadURL(url2, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
+
+  // That should be the pending entry.
+  NavigationEntryImpl* entry = controller.GetPendingEntry();
+  ASSERT_NE(nullptr, entry);
+  EXPECT_EQ(url2, entry->GetURL());
+
+  {
+    // Now the existing page uses history.replaceState().
+    FrameNavigateParamsCapturer capturer(root);
+    capturer.set_wait_for_load(false);
+    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(),
+                                       "history.replaceState({}, '', 'x')"));
+    capturer.Wait();
+
+    // The fact that there was a pending entry shouldn't interfere with the
+    // classification.
+    EXPECT_EQ(NAVIGATION_TYPE_IN_PAGE, capturer.details().type);
+  }
+
+  ResourceDispatcherHost::Get()->SetDelegate(nullptr);
 }
 
 }  // namespace content

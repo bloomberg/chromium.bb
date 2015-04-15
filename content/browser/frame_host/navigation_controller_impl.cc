@@ -912,12 +912,12 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
     RenderFrameHostImpl* rfh,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params) const {
   if (params.page_id == -1) {
-    // TODO(nasko, creis):  An out-of-process child frame has no way of
-    // knowing the page_id of its parent, so it is passing back -1. The
-    // semantics here should be re-evaluated during session history refactor
-    // (see http://crbug.com/236848). For now, we assume this means the
-    // child frame loaded and proceed. Note that this may do the wrong thing
-    // for cross-process AUTO_SUBFRAME navigations.
+    // TODO(nasko, creis): An out-of-process child frame has no way of knowing
+    // the page_id of its parent, so it is passing back -1. The semantics here
+    // should be re-evaluated during session history refactor (see
+    // http://crbug.com/236848 and in particular http://crbug.com/464014). For
+    // now, we assume this means the child frame loaded and proceed. Note that
+    // this may do the wrong thing for cross-process AUTO_SUBFRAME navigations.
     if (rfh->IsCrossProcessSubframe())
       return NAVIGATION_TYPE_NEW_SUBFRAME;
 
@@ -1025,14 +1025,21 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
       existing_entry != pending_entry_ &&
       pending_entry_->GetPageID() == -1 &&
       existing_entry == GetLastCommittedEntry()) {
-    // In this case, we have a pending entry for a URL but WebCore didn't do a
-    // new navigation. This happens when you press enter in the URL bar to
-    // reload. We will create a pending entry, but WebKit will convert it to
-    // a reload since it's the same page and not create a new entry for it
-    // (the user doesn't want to have a new back/forward entry when they do
-    // this). If this matches the last committed entry, we want to just ignore
-    // the pending entry and go back to where we were (the "existing entry").
-    return NAVIGATION_TYPE_SAME_PAGE;
+    const std::vector<GURL>& existing_redirect_chain =
+        existing_entry->GetRedirectChain();
+
+    if (existing_entry->GetURL() == pending_entry_->GetURL() ||
+        (existing_redirect_chain.size() &&
+         existing_redirect_chain[0] == pending_entry_->GetURL())) {
+      // In this case, we have a pending entry for a URL but WebCore didn't do a
+      // new navigation. This happens when you press enter in the URL bar to
+      // reload. We will create a pending entry, but WebKit will convert it to
+      // a reload since it's the same page and not create a new entry for it
+      // (the user doesn't want to have a new back/forward entry when they do
+      // this). If this matches the last committed entry, we want to just ignore
+      // the pending entry and go back to where we were (the "existing entry").
+      return NAVIGATION_TYPE_SAME_PAGE;
+    }
   }
 
   // Any toplevel navigations with the same base (minus the reference fragment)
