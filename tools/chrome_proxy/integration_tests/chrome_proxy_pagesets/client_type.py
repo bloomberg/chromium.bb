@@ -39,36 +39,36 @@ class ClientTypePageSet(page_set_module.PageSet):
 
     # Page that should cause a bypass for android chrome clients.
     self.AddUserStory(ClientTypePage(
-        url='http://check.googlezip.net/chrome-proxy-header/c=ANDROID',
+        url='http://check.googlezip.net/chrome-proxy-header/c_android',
         page_set=self,
         bypass_for_client_type='android'))
 
     # Page that should cause a bypass for android webview clients.
     self.AddUserStory(ClientTypePage(
-        url='http://check.googlezip.net/chrome-proxy-header/c=WEBVIEW',
+        url='http://check.googlezip.net/chrome-proxy-header/c_webview',
         page_set=self,
         bypass_for_client_type='webview'))
 
     # Page that should cause a bypass for iOS clients.
     self.AddUserStory(ClientTypePage(
-        url='http://check.googlezip.net/chrome-proxy-header/c=IOS',
+        url='http://check.googlezip.net/chrome-proxy-header/c_ios',
         page_set=self,
         bypass_for_client_type='ios'))
 
     # Page that should cause a bypass for Linux clients.
     self.AddUserStory(ClientTypePage(
-        url='http://check.googlezip.net/chrome-proxy-header/c=LINUX',
+        url='http://check.googlezip.net/chrome-proxy-header/c_linux',
         page_set=self,
         bypass_for_client_type='linux'))
 
     # Page that should cause a bypass for Windows clients.
     self.AddUserStory(ClientTypePage(
-        url='http://check.googlezip.net/chrome-proxy-header/c=WIN',
+        url='http://check.googlezip.net/chrome-proxy-header/c_win',
         page_set=self,
         bypass_for_client_type='win'))
 
     # Page that should cause a bypass for ChromeOS clients.
     self.AddUserStory(ClientTypePage(
-        url='http://check.googlezip.net/chrome-proxy-header/c=CHROMEOS',
+        url='http://check.googlezip.net/chrome-proxy-header/c_chromeos',
         page_set=self,
         bypass_for_client_type='chromeos'))

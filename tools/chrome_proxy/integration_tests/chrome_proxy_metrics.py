@@ -259,8 +259,7 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
         if client_type.lower() == bypass_for_client_type.lower():
           raise ChromeProxyMetricException, (
               '%s: Response for client of type "%s" has via header, but should '
-              'be bypassed.' % (
-                  resp.response.url, bypass_for_client_type, client_type))
+              'be bypassed.' % (resp.response.url, bypass_for_client_type))
       elif resp.ShouldHaveChromeProxyViaHeader():
         bypass_count += 1
         if client_type.lower() != bypass_for_client_type.lower():
