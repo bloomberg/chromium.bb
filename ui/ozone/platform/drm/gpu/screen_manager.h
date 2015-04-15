@@ -104,7 +104,8 @@ class OZONE_EXPORT ScreenManager {
   // Perform modesetting in |controller| using |origin| and |mode|.
   bool ModesetDisplayController(HardwareDisplayController* controller,
                                 const gfx::Point& origin,
-                                const drmModeModeInfo& mode);
+                                const drmModeModeInfo& mode,
+                                bool fill_mode_set_buffer);
 
   // Tries to set the controller identified by (|crtc|, |connector|) to mirror
   // those in |mirror|. |original| is an iterator to the HDC where the
@@ -114,6 +115,9 @@ class OZONE_EXPORT ScreenManager {
                         const scoped_refptr<DrmDevice>& drm,
                         uint32_t crtc,
                         uint32_t connector);
+
+  // Aquire pending frames from the time the controller was disabled.
+  bool EnableController(HardwareDisplayController* controller);
 
   DrmWindow* FindWindowAt(const gfx::Rect& bounds) const;
 

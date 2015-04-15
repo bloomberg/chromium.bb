@@ -34,23 +34,13 @@ bool GbmSurfaceless::ResizeNativeWindow(const gfx::Size& viewport_size) {
 }
 
 bool GbmSurfaceless::OnSwapBuffers() {
-  HardwareDisplayController* controller = window_delegate_->GetController();
-  if (!controller)
-    return true;
-
-  return controller->SchedulePageFlip(true /* is_sync */,
-                                      base::Bind(&base::DoNothing));
+  return window_delegate_->SchedulePageFlip(true /* is_sync */,
+                                            base::Bind(&base::DoNothing));
 }
 
 bool GbmSurfaceless::OnSwapBuffersAsync(
     const SwapCompletionCallback& callback) {
-  HardwareDisplayController* controller = window_delegate_->GetController();
-  if (!controller) {
-    callback.Run();
-    return true;
-  }
-
-  return controller->SchedulePageFlip(false /* is_sync */, callback);
+  return window_delegate_->SchedulePageFlip(false /* is_sync */, callback);
 }
 
 scoped_ptr<gfx::VSyncProvider> GbmSurfaceless::CreateVSyncProvider() {
