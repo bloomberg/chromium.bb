@@ -1055,12 +1055,25 @@ TEST_F(LoginDatabaseTest, ReportMetricsTest) {
   password_form.blacklisted_by_user = true;
   EXPECT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
 
+  password_form.origin = GURL("http://sixth.example.com/");
+  password_form.signon_realm = "http://sixth.example.com/";
+  password_form.username_value = ASCIIToUTF16("");
+  password_form.password_value = ASCIIToUTF16("my_password");
+  password_form.blacklisted_by_user = false;
+  EXPECT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+
+  password_form.username_element = ASCIIToUTF16("some_other_input");
+  EXPECT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+
+  password_form.username_value = ASCIIToUTF16("my_username");
+  EXPECT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+
   base::HistogramTester histogram_tester;
   db().ReportMetrics("", false);
 
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.TotalAccounts.UserCreated.WithoutCustomPassphrase",
-      4,
+      6,
       1);
   histogram_tester.ExpectBucketCount(
       "PasswordManager.AccountsPerSite.UserCreated.WithoutCustomPassphrase",
@@ -1069,7 +1082,7 @@ TEST_F(LoginDatabaseTest, ReportMetricsTest) {
   histogram_tester.ExpectBucketCount(
       "PasswordManager.AccountsPerSite.UserCreated.WithoutCustomPassphrase",
       2,
-      1);
+      2);
   histogram_tester.ExpectBucketCount(
       "PasswordManager.TimesPasswordUsed.UserCreated.WithoutCustomPassphrase",
       0,
@@ -1100,6 +1113,10 @@ TEST_F(LoginDatabaseTest, ReportMetricsTest) {
       1);
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.EmptyUsernames.CountInDatabase",
+      3,
+      1);
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.EmptyUsernames.WithoutCorrespondingNonempty",
       1,
       1);
 }

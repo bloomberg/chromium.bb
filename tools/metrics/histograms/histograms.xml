@@ -25397,6 +25397,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.EmptyUsernames.WithoutCorrespondingNonempty">
+  <owner>msramek@chromium.org</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    Number of password forms with empty username in the Login Database for which
+    there is not another password form from the same realm with a nonempty
+    username. In other words, number of password forms with empty username which
+    we do not suspect to be reauthentication forms.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.Enabled" enum="BooleanEnabled">
   <owner>dubroy@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
