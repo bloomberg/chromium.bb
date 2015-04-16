@@ -154,7 +154,7 @@ bool MatchedPropertiesCache::isCacheable(const Element* element, const ComputedS
         return false;
     if (style.zoom() != ComputedStyle::initialZoom())
         return false;
-    if (style.writingMode() != ComputedStyle::initialWritingMode())
+    if (style.writingMode() != ComputedStyle::initialWritingMode() || style.direction() != ComputedStyle::initialDirection())
         return false;
     // The cache assumes static knowledge about which properties are inherited.
     if (parentStyle.hasExplicitlyInheritedProperties())
