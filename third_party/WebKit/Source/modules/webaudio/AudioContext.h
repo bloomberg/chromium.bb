@@ -79,6 +79,15 @@ class WaveShaperNode;
 // DeferredTaskHandler manages the major part of pre- and post- rendering tasks,
 // and provides a lock mechanism against the audio rendering graph. A
 // DeferredTaskHandler object is created when an AudioContext object is created.
+//
+// DeferredTaskHandler outlives the AudioContext only if all of the following
+// conditions match:
+// - An audio rendering thread is running,
+// - It is requested to stop,
+// - The audio rendering thread calls requestToDeleteHandlersOnMainThread(),
+// - It posts a task of deleteHandlersOnMainThread(), and
+// - GC happens and it collects the AudioContext before the task execution.
+//
 // TODO(tkent): Move this to its own files.
 class DeferredTaskHandler final : public ThreadSafeRefCounted<DeferredTaskHandler> {
 public:
@@ -86,6 +95,7 @@ public:
     ~DeferredTaskHandler();
 
     void handleDeferredTasks();
+    void contextWillBeDestroyed();
 
     // AudioContext can pull node(s) at the end of each render quantum even when
     // they are not connected to any downstream nodes.  These two methods are
@@ -114,6 +124,10 @@ public:
     // calling actual processing, but if it fails keep track here.
     void addDeferredBreakConnection(AudioHandler&);
     void breakConnections();
+
+    void addRenderingOrphanHandler(PassRefPtr<AudioHandler>);
+    void requestToDeleteHandlersOnMainThread();
+    void clearHandlersToBeDeleted();
 
     //
     // Thread Safety and Graph Locking:
@@ -152,16 +166,13 @@ private:
     void updateChangedChannelCountMode();
     void handleDirtyAudioSummingJunctions();
     void handleDirtyAudioNodeOutputs();
+    void deleteHandlersOnMainThread();
 
     // For the sake of thread safety, we maintain a seperate Vector of automatic
     // pull nodes for rendering in m_renderingAutomaticPullNodes.  It will be
     // copied from m_automaticPullNodes by updateAutomaticPullNodes() at the
     // very start or end of the rendering quantum.
-    // Oilpan: Since items are added to the vector/hash set by the audio thread
-    // (not registered to Oilpan), we cannot use a HeapVector/HeapHashSet.
-    GC_PLUGIN_IGNORE("http://crbug.com/404527")
     HashSet<AudioHandler*> m_automaticPullNodes;
-    GC_PLUGIN_IGNORE("http://crbug.com/404527")
     Vector<AudioHandler*> m_renderingAutomaticPullNodes;
     // m_automaticPullNodesNeedUpdating keeps track if m_automaticPullNodes is modified.
     bool m_automaticPullNodesNeedUpdating;
@@ -169,7 +180,6 @@ private:
     // Collection of nodes where the channel count mode has changed. We want the
     // channel count mode to change in the pre- or post-rendering phase so as
     // not to disturb the running audio thread.
-    GC_PLUGIN_IGNORE("http://crbug.com/404527")
     HashSet<AudioHandler*> m_deferredCountModeChange;
 
     // These two HashSet must be accessed only when the graph lock is held.
@@ -178,10 +188,10 @@ private:
     HashSet<AudioNodeOutput*> m_dirtyAudioNodeOutputs;
 
     // Only accessed in the audio thread.
-    // Oilpan: Since items are added to these vectors by the audio thread (not
-    // registered to Oilpan), we cannot use HeapVectors.
-    GC_PLUGIN_IGNORE("http://crbug.com/404527")
     Vector<AudioHandler*> m_deferredBreakConnectionList;
+
+    Vector<RefPtr<AudioHandler>> m_renderingOrphanHandlers;
+    Vector<RefPtr<AudioHandler>> m_deletableOrphanHandlers;
 
     // Graph locking.
     RecursiveMutex m_contextGraphMutex;
@@ -279,7 +289,7 @@ public:
     void notifyNodeStartedProcessing(AudioNode*);
     // When a source node has no more processing to do (has finished playing),
     // this method tells the context to dereference the node.
-    void notifyNodeFinishedProcessing(AudioNode*);
+    void notifyNodeFinishedProcessing(AudioHandler*);
 
     // Called at the start of each render quantum.
     void handlePreRenderTasks();
@@ -369,7 +379,7 @@ private:
     // Set to true when the destination node has been initialized and is ready to process data.
     bool m_isInitialized;
 
-    void derefNode(AudioNode*);
+    void derefNodeFor(AudioHandler*);
 
     // When the context goes away, there might still be some sources which haven't finished playing.
     // Make sure to dereference them here.
@@ -379,10 +389,9 @@ private:
     Member<AudioListener> m_listener;
 
     // Only accessed in the audio thread.
-    // Oilpan: Since items are added to the vector by the audio thread (not registered to Oilpan),
-    // we cannot use a HeapVector.
-    GC_PLUGIN_IGNORE("http://crbug.com/404527")
-    Vector<AudioNode*> m_finishedNodes;
+    // These raw pointers are safe because AudioNodes in m_referencedNodes own
+    // them.
+    Vector<AudioHandler*> m_finishedHandlers;
 
     // List of source nodes. This is either accessed when the graph lock is
     // held, or on the main thread when the audio thread has finished.

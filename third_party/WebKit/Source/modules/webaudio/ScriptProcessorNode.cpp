@@ -185,7 +185,7 @@ void ScriptProcessorHandler::process(size_t framesToProcess)
         } else if (context()->executionContext()) {
             // Fire the event on the main thread, not this one (which is the realtime audio thread).
             m_doubleBufferIndexForEvent = m_doubleBufferIndex;
-            context()->executionContext()->postTask(FROM_HERE, createCrossThreadTask(&ScriptProcessorHandler::fireProcessEvent, this));
+            context()->executionContext()->postTask(FROM_HERE, createCrossThreadTask(&ScriptProcessorHandler::fireProcessEvent, PassRefPtr<ScriptProcessorHandler>(this)));
         }
 
         swapBuffers();
@@ -208,7 +208,7 @@ void ScriptProcessorHandler::fireProcessEvent()
         return;
 
     // Avoid firing the event if the document has already gone away.
-    if (context()->executionContext()) {
+    if (node() && context() && context()->executionContext()) {
         // This synchronizes with process().
         MutexLocker processLocker(m_processEventLock);
 
