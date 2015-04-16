@@ -199,7 +199,6 @@ bool DrmNativeDisplayDelegate::SetHDCPState(const DisplaySnapshot& output,
 std::vector<ColorCalibrationProfile>
 DrmNativeDisplayDelegate::GetAvailableColorCalibrationProfiles(
     const DisplaySnapshot& output) {
-  NOTIMPLEMENTED();
   return std::vector<ColorCalibrationProfile>();
 }
 
