@@ -110,6 +110,10 @@
           'create_nmf': '<(DEPTH)/native_client_sdk/src/tools/create_nmf.py',
           'create_nmf_args_portable%': [],
           'create_nonsfi_test_nmf': '<(DEPTH)/ppapi/tests/create_nonsfi_test_nmf.py',
+          'create_nmf_args': [
+            '--no-default-libpath',
+            '--objdump=>(nacl_glibc_tc_root)/bin/x86_64-nacl-objdump',
+          ],
         },
         'target_conditions': [
           ['generate_nmf==1 and build_newlib==1', {
@@ -121,6 +125,7 @@
                 'action': [
                   'python',
                   '>(create_nmf)',
+                  '>@(create_nmf_args)',
                   '--output=>(nmf_newlib)',
                   '>@(create_nmf_args_portable)',
                 ],
@@ -151,7 +156,6 @@
               # doesn't work on Windows.
               'libdir_glibc64': '>(nacl_glibc_tc_root)/x86_64-nacl/lib',
               'libdir_glibc32': '>(nacl_glibc_tc_root)/x86_64-nacl/lib32',
-              'nacl_objdump': '>(nacl_glibc_tc_root)/bin/x86_64-nacl-objdump',
             },
             'actions': [
               {
@@ -164,7 +168,7 @@
                 'action': [
                   'python',
                   '>@(_inputs)',
-                  '--objdump=>(nacl_objdump)',
+                  '>@(create_nmf_args)',
                   '--output=>(nmf_glibc)',
                   '--path-prefix=>(nexe_target)_libs',
                   '--stage-dependencies=<(nacl_glibc_out_dir)',
@@ -201,6 +205,7 @@
                 'action': [
                   'python',
                   '>(create_nmf)',
+                  '>@(create_nmf_args)',
                   '--output=>(nmf_pnacl_newlib)',
                   '>(out_pnacl_newlib)',
                   '>@(create_nmf_args_portable)',

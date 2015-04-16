@@ -138,6 +138,8 @@
                 '<(DEPTH)/native_client_sdk/src/tools/create_nmf.py',
                 '>@(_inputs)',
                 '--output=>(nmf)',
+                '--no-default-libpath',
+                '--objdump=>(nacl_glibc_tc_root)/bin/x86_64-nacl-objdump',
               ],
             },
           ],

@@ -466,15 +466,16 @@ def ParseExtraFiles(encoded_list, err):
 
 
 def GetSDKRoot():
-  """Determine current NACL_SDK_ROOT, either via the environment variable
-  itself, or by attempting to derive it from the location of this script.
+  """Returns the root directory of the NaCl SDK.
   """
-  sdk_root = os.environ.get('NACL_SDK_ROOT')
-  if not sdk_root:
-    sdk_root = os.path.dirname(SCRIPT_DIR)
-    if not os.path.exists(os.path.join(sdk_root, 'toolchain')):
-      return None
-
+  # This script should be installed in NACL_SDK_ROOT/tools. Assert that
+  # the 'toolchain' folder exists within this directory in case, for
+  # example, this script is moved to a different location.
+  # During the Chrome build this script is sometimes run outside of
+  # of an SDK but in these cases it should always be run with --objdump=
+  # and --no-default-libpath which avoids the need to call this function.
+  sdk_root = os.path.dirname(SCRIPT_DIR)
+  assert(os.path.exists(os.path.join(sdk_root, 'toolchain')))
   return sdk_root
 
 
@@ -482,12 +483,8 @@ def FindObjdumpExecutable():
   """Derive path to objdump executable to use for determining shared
   object dependencies.
   """
-  sdk_root = GetSDKRoot()
-  if not sdk_root:
-    return None
-
   osname = getos.GetPlatform()
-  toolchain = os.path.join(sdk_root, 'toolchain', '%s_x86_glibc' % osname)
+  toolchain = os.path.join(GetSDKRoot(), 'toolchain', '%s_x86_glibc' % osname)
   objdump = os.path.join(toolchain, 'bin', 'x86_64-nacl-objdump')
   if osname == 'win':
     objdump += '.exe'
@@ -508,10 +505,6 @@ def GetDefaultLibPath(config):
   """
   assert(config in ('Debug', 'Release'))
   sdk_root = GetSDKRoot()
-  if not sdk_root:
-    # TOOD(sbc): output a warning here?  We would also need to suppress
-    # the warning when run from the chromium build.
-    return []
 
   osname = getos.GetPlatform()
   libpath = [
@@ -580,8 +573,8 @@ def main(args):
                       help='Rename FOO as BAR',
                       action='append', default=[], metavar='FOO,BAR')
   parser.add_argument('-x', '--extra-files',
-                      help=('Add extra key:file tuple to the "files"' +
-                            ' section of the .nmf'),
+                      help='Add extra key:file tuple to the "files"'
+                           ' section of the .nmf',
                       action='append', default=[], metavar='FILE')
   parser.add_argument('-O', '--pnacl-optlevel',
                       help='Set the optimization level to N in PNaCl manifests',
@@ -669,7 +662,7 @@ def main(args):
                  pnacl_debug_optlevel=pnacl_debug_optlevel,
                  nmf_root=nmf_root)
 
-  if not options.output:
+  if options.output is None:
     sys.stdout.write(nmf.GetJson())
   else:
     with open(options.output, 'w') as output:
