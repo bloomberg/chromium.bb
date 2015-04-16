@@ -135,7 +135,7 @@ class WprManager(object):
     """Start the WPR server on the host and the forwarder on the device."""
     print 'Starting WPR on host...'
     _DownloadFromCloudStorage(self._WPR_BUCKET, self._wpr_archive_hash)
-    args = ['--user_closest_match']
+    args = ['--use_closest_match']
     if self._is_test_ca_installed:
       args.extend(['--should_generate_certs',
                    '--https_root_ca_cert_path=' + self._wpr_ca_cert_path])
