@@ -52,16 +52,24 @@ function chromeSend(name, params, callbackName, callback) {
 }
 
 /**
- * Returns the scale factors supported by this platform.
+ * Returns the scale factors supported by this platform for webui
+ * resources.
  * @return {Array} The supported scale factors.
  */
 function getSupportedScaleFactors() {
   var supportedScaleFactors = [];
-  if (cr.isMac || cr.isChromeOS) {
+  if (cr.isMac || cr.isChromeOS || cr.isWindows || cr.isLinux) {
+    // All desktop platforms support zooming which also updates the
+    // renderer's device scale factors (a.k.a devicePixelRatio), and
+    // these platforms has high DPI assets for 2.0x. Use 1x and 2x in
+    // image-set on these platforms so that the renderer can pick the
+    // closest image for the current device scale factor.
     supportedScaleFactors.push(1);
     supportedScaleFactors.push(2);
   } else {
-    // Windows must be restarted to display at a different scale factor.
+    // For other platforms that use fixed device scale factor, use
+    // the window's device pixel ratio.
+    // TODO(oshima): Investigate if Android/iOS need to use image-set.
     supportedScaleFactors.push(window.devicePixelRatio);
   }
   return supportedScaleFactors;
