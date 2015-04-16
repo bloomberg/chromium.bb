@@ -8602,7 +8602,8 @@
         "boards": [
             "x86-generic",
             "arm-generic",
-            "amd64-generic"
+            "amd64-generic",
+            "mipsel-o32-generic"
         ],
         "build_type": "chroot",
         "builder_class_name": "sdk_builders.ChrootSdkBuilder",
@@ -53366,7 +53367,8 @@
         "boards": [
             "x86-generic",
             "arm-generic",
-            "amd64-generic"
+            "amd64-generic",
+            "mipsel-o32-generic"
         ],
         "build_type": "chroot",
         "builder_class_name": "sdk_builders.ChrootSdkBuilder",
@@ -53392,7 +53394,8 @@
         "boards": [
             "x86-generic",
             "arm-generic",
-            "amd64-generic"
+            "amd64-generic",
+            "mipsel-o32-generic"
         ],
         "build_type": "chroot",
         "builder_class_name": "sdk_builders.ChrootSdkBuilder",
