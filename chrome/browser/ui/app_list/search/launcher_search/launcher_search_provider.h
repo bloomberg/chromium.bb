@@ -5,10 +5,14 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_LAUNCHER_SEARCH_LAUNCHER_SEARCH_PROVIDER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_LAUNCHER_SEARCH_LAUNCHER_SEARCH_PROVIDER_H_
 
+#include "base/memory/scoped_vector.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_result.h"
+#include "extensions/common/extension.h"
 #include "ui/app_list/search_provider.h"
 
 namespace app_list {
@@ -22,6 +26,8 @@ class LauncherSearchProvider : public SearchProvider {
 
   void Start(bool is_voice_query, const base::string16& query) override;
   void Stop() override;
+  void SetSearchResults(const extensions::ExtensionId& extension_id,
+                        ScopedVector<LauncherSearchResult> extension_results);
 
  private:
   // Delays query for |kLauncherSearchProviderQueryDelayInMs|. This dispatches
@@ -31,13 +37,21 @@ class LauncherSearchProvider : public SearchProvider {
   // Dispatches |query| to LauncherSearchProvider service.
   void StartInternal(const base::string16& query);
 
+  // The search results of each extension. The STLValueDeleter will
+  // automatically free the vectors in this map, but elements that are
+  // individually erased or replaced must be manually deleted.
+  typedef std::map<extensions::ExtensionId, ScopedVector<LauncherSearchResult>*>
+      ExtensionResults;
+  ExtensionResults extension_results_;
+  STLValueDeleter<ExtensionResults> extension_results_deleter_;
+
   // A timer to delay query.
   base::OneShotTimer<LauncherSearchProvider> query_timer_;
 
   // The timestamp of the last query.
   base::Time last_query_time_;
 
-  // Keep reference to profile to get LauncherSearchProvider service.
+  // The reference to profile to get LauncherSearchProvider service.
   Profile* profile_;
 
   base::WeakPtrFactory<LauncherSearchProvider> weak_ptr_factory_;

@@ -707,9 +707,11 @@
     # ChromeOS-only sources that don't end in _chromeos or live in a chromeos
     # directory.
     'chrome_browser_ui_chromeos_sources': [
-      # On chromeos, file manager extension handles the file open/save dialog.
       'browser/ui/app_list/search/launcher_search/launcher_search_provider.cc',
       'browser/ui/app_list/search/launcher_search/launcher_search_provider.h',
+      'browser/ui/app_list/search/launcher_search/launcher_search_result.cc',
+      'browser/ui/app_list/search/launcher_search/launcher_search_result.h',
+      # On chromeos, file manager extension handles the file open/save dialog.
       'browser/ui/views/select_file_dialog_extension.cc',
       'browser/ui/views/select_file_dialog_extension.h',
       'browser/ui/views/select_file_dialog_extension_factory.cc',

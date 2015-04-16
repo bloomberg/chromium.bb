@@ -6,13 +6,22 @@
 #define CHROME_BROWSER_CHROMEOS_LAUNCHER_SEARCH_PROVIDER_SERVICE_H_
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/launcher_search_provider.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/extension.h"
 
+namespace app_list {
+class LauncherSearchProvider;
+}  // namespace app_list
+
 namespace chromeos {
 namespace launcher_search_provider {
+
+// Relevance score should be provided in a range from 0 to 4. 0 is the lowest
+// relevance, 4 is the highest.
+const int kMaxSearchResultScore = 4;
 
 // Manages listener extensions and routes events. Listener extensions are
 // extensions which are allowed to use this API. When this API becomes public,
@@ -27,10 +36,19 @@ class Service : public KeyedService {
   static Service* Get(content::BrowserContext* context);
 
   // Dispatches onQueryStarted events to listener extensions.
-  void OnQueryStarted(const std::string& query, const int max_result);
+  void OnQueryStarted(app_list::LauncherSearchProvider* provider,
+                      const std::string& query,
+                      const int max_result);
 
   // Dispatches onQueryEnded events to listener extensions.
   void OnQueryEnded();
+
+  // Sets search results of a listener extension.
+  void SetSearchResults(
+      const extensions::Extension* extension,
+      const std::string& query_id,
+      const std::vector<linked_ptr<
+          extensions::api::launcher_search_provider::SearchResult>>& results);
 
   // Returns true if there is a running query.
   bool IsQueryRunning() const;
@@ -41,6 +59,7 @@ class Service : public KeyedService {
 
   Profile* const profile_;
   extensions::ExtensionRegistry* extension_registry_;
+  app_list::LauncherSearchProvider* provider_;
   uint32 query_id_;
   bool is_query_running_;
 

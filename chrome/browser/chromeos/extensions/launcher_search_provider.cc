@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/extensions/launcher_search_provider.h"
 
+#include "chrome/browser/chromeos/launcher_search_provider/service.h"
+#include "chrome/common/extensions/api/launcher_search_provider.h"
+
 namespace extensions {
 
 LauncherSearchProviderSetSearchResultsFunction::
@@ -11,9 +14,15 @@ LauncherSearchProviderSetSearchResultsFunction::
 }
 
 bool LauncherSearchProviderSetSearchResultsFunction::RunSync() {
-  // TODO(yawano): Implement this (crbug.com/440649).
-  NOTREACHED();
-  return false;
+  using chromeos::launcher_search_provider::Service;
+  using extensions::api::launcher_search_provider::SetSearchResults::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  Service* const service = Service::Get(GetProfile());
+  service->SetSearchResults(extension(), params->query_id, params->results);
+
+  return true;
 }
 
 }  // namespace extensions

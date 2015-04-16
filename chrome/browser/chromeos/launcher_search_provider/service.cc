@@ -4,8 +4,11 @@
 
 #include "chrome/browser/chromeos/launcher_search_provider/service.h"
 
+#include "base/memory/scoped_vector.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/launcher_search_provider/service_factory.h"
-#include "chrome/common/extensions/api/launcher_search_provider.h"
+#include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_provider.h"
+#include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_result.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -22,6 +25,7 @@ Service::Service(Profile* profile,
                  extensions::ExtensionRegistry* extension_registry)
     : profile_(profile),
       extension_registry_(extension_registry),
+      provider_(nullptr),
       query_id_(0),
       is_query_running_(false) {
 }
@@ -34,9 +38,12 @@ Service* Service::Get(content::BrowserContext* context) {
   return ServiceFactory::Get(context);
 }
 
-void Service::OnQueryStarted(const std::string& query, const int max_result) {
+void Service::OnQueryStarted(app_list::LauncherSearchProvider* provider,
+                             const std::string& query,
+                             const int max_result) {
   DCHECK(!is_query_running_);
   is_query_running_ = true;
+  provider_ = provider;
 
   ++query_id_;
 
@@ -45,6 +52,9 @@ void Service::OnQueryStarted(const std::string& query, const int max_result) {
 
   std::set<ExtensionId> extension_ids = GetListenerExtensionIds();
   for (const ExtensionId extension_id : extension_ids) {
+    // Convert query_id_ to string here since queryId is defined as string in
+    // javascript side API while we use uint32 internally to generate it.
+    // TODO(yawano): Consider if we can change it to integer at javascript side.
     event_router->DispatchEventToExtension(
         extension_id,
         make_scoped_ptr(new extensions::Event(
@@ -56,6 +66,7 @@ void Service::OnQueryStarted(const std::string& query, const int max_result) {
 
 void Service::OnQueryEnded() {
   DCHECK(is_query_running_);
+  provider_ = nullptr;
 
   extensions::EventRouter* event_router =
       extensions::EventRouter::Get(profile_);
@@ -71,6 +82,34 @@ void Service::OnQueryEnded() {
   }
 
   is_query_running_ = false;
+}
+
+void Service::SetSearchResults(
+    const extensions::Extension* extension,
+    const std::string& query_id,
+    const std::vector<linked_ptr<
+        extensions::api::launcher_search_provider::SearchResult>>& results) {
+  // If query is not running or query_id is different from current query id,
+  // discard the results.
+  if (!is_query_running_ || query_id != std::to_string(query_id_))
+    return;
+
+  // Set search results to provider.
+  DCHECK(provider_);
+  ScopedVector<app_list::LauncherSearchResult> search_results;
+  for (const auto& result : results) {
+    const int relevance =
+        std::min(kMaxSearchResultScore, std::max(result->relevance, 0));
+    const GURL icon_url =
+        result->icon_url ? GURL(*result->icon_url.get()) : GURL();
+
+    app_list::LauncherSearchResult* search_result =
+        new app_list::LauncherSearchResult(result->item_id, icon_url, relevance,
+                                           profile_, extension);
+    search_result->set_title(base::UTF8ToUTF16(result->title));
+    search_results.push_back(search_result);
+  }
+  provider_->SetSearchResults(extension->id(), search_results.Pass());
 }
 
 bool Service::IsQueryRunning() const {
