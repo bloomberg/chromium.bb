@@ -635,7 +635,7 @@ function canExecuteForList(e) {
       break;
 
     case 'open-in-same-window-command':
-      e.canExecute = hasSelected();
+      e.canExecute = (e.target == bmm.list) && hasSelected();
       break;
 
     default:
