@@ -54,10 +54,8 @@ void ParentDetails::didTraverseInsertionPoint(const InsertionPoint* insertionPoi
 
 ContainerNode* parent(const Node& node, ParentDetails* details)
 {
-    ASSERT(node.inDocument() ? !node.document().childNeedsDistributionRecalc() : !node.childNeedsDistributionRecalc());
-    ASSERT(!node.isShadowRoot());
-    if (isActiveInsertionPoint(node))
-        return 0;
+    // TODO(hayato): Uncomment this once we can be sure LayoutTreeBuilderTraversal::parent() is used only for a node in a document.
+    // ASSERT(node.inDocument());
     return ComposedTreeTraversal::parent(node, details);
 }
 
