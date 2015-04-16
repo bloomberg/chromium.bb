@@ -806,7 +806,7 @@ void SigninScreenHandler::HideOfflineMessage(NetworkStateInformer::State state,
 
   // Forces a reload for Gaia screen on hiding error message.
   if (IsGaiaVisible() || IsGaiaHiddenByError())
-    ReloadGaia(false);
+    ReloadGaia(reason == NetworkError::ERROR_REASON_NETWORK_STATE_CHANGED);
 }
 
 void SigninScreenHandler::ReloadGaia(bool force_reload) {
