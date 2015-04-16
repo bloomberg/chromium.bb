@@ -1572,7 +1572,6 @@ void drawDoubleBorder(GraphicsContext* context, const BoxBorderInfo& borderInfo,
 bool paintBorderFastPath(GraphicsContext* context, const BoxBorderInfo& info,
     const LayoutRect& borderRect, const FloatRoundedRect& outer, const FloatRoundedRect& inner)
 {
-    // isRenderable() check avoids issue described in https://bugs.webkit.org/show_bug.cgi?id=38787
     if (!info.isUniformColor || !info.isUniformStyle || !inner.isRenderable())
         return false;
 
@@ -1598,8 +1597,7 @@ bool paintBorderFastPath(GraphicsContext* context, const BoxBorderInfo& info,
         return true;
     }
 
-    // TODO(fmalita): why is this predicated on hasAlpha?
-    if (firstEdge.borderStyle() == SOLID && !outer.isRounded() && info.hasAlpha) {
+    if (firstEdge.borderStyle() == SOLID && !outer.isRounded()) {
         ASSERT(info.visibleEdgeSet != AllBorderEdges);
         // solid, rectangular border => one drawPath()
         Path path;
