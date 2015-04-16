@@ -141,6 +141,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   using RenderWidgetHostImpl::OnUpdateRect;
   using RenderWidgetHostImpl::RendererExited;
   using RenderWidgetHostImpl::SetInitialRenderSizeParams;
+  using RenderWidgetHostImpl::UpdateScreenInfo;
   using RenderWidgetHostImpl::old_resize_params_;
   using RenderWidgetHostImpl::is_hidden_;
   using RenderWidgetHostImpl::resize_ack_pending_;
@@ -446,6 +447,7 @@ class RenderWidgetHostTest : public testing::Test {
 
   void SetInitialRenderSizeParams() {
     ViewMsg_Resize_Params render_size_params;
+    host_->UpdateScreenInfo();
     host_->GetResizeParams(&render_size_params);
     host_->SetInitialRenderSizeParams(render_size_params);
   }
@@ -604,8 +606,8 @@ class RenderWidgetHostWithSourceTest
 // -----------------------------------------------------------------------------
 
 TEST_F(RenderWidgetHostTest, Resize) {
-  // The initial bounds is the empty rect, and the screen info hasn't been sent
-  // yet, so setting it to the same thing shouldn't send the resize message.
+  // The initial bounds is the empty rect, so setting it to the same thing
+  // shouldn't send the resize message.
   view_->set_bounds(gfx::Rect());
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
@@ -716,6 +718,14 @@ TEST_F(RenderWidgetHostTest, Resize) {
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_EQ(gfx::Size(0, 31), host_->old_resize_params_->new_size);
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
+}
+
+// Test that a resize event is sent if InvalidateScreenInfo() was called.
+TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
+  host_->InvalidateScreenInfo();
+  host_->WasResized();
+  EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 }
 
