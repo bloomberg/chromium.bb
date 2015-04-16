@@ -8,7 +8,8 @@ from page_sets import key_mobile_sites_pages
 
 
 def _RepaintContinously(action_runner):
-  action_runner.RepaintContinuously(seconds=5)
+  with action_runner.CreateInteraction('Repaint'):
+    action_runner.RepaintContinuously(seconds=5)
 
 
 def _CreatePageClassWithRepaintInteractions(page_cls):

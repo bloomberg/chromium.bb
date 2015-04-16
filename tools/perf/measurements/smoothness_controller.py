@@ -21,11 +21,12 @@ RUN_SMOOTH_ACTIONS = 'RunSmoothAllActions'
 
 
 class SmoothnessController(object):
-  def __init__(self):
+  def __init__(self, auto_issuing_marker=True):
     self._timeline_model = None
     self._trace_data = None
     self._interaction = None
     self._surface_flinger_trace_data = None
+    self._auto_issuing_marker = auto_issuing_marker
 
   def SetUp(self, page, tab):
     # FIXME: Remove webkit.console when blink.console lands in chromium and
@@ -43,13 +44,15 @@ class SmoothnessController(object):
   def Start(self, tab):
     # Start the smooth marker for all smooth actions.
     runner = action_runner.ActionRunner(tab)
-    self._interaction = runner.CreateInteraction(
-        RUN_SMOOTH_ACTIONS)
-    self._interaction.Begin()
+    if self._auto_issuing_marker:
+      self._interaction = runner.CreateInteraction(
+          RUN_SMOOTH_ACTIONS)
+      self._interaction.Begin()
 
   def Stop(self, tab):
     # End the smooth marker for  all smooth actions.
-    self._interaction.End()
+    if self._auto_issuing_marker:
+      self._interaction.End()
     self._trace_data = tab.browser.platform.tracing_controller.Stop()
     self._timeline_model = TimelineModel(self._trace_data)
 
