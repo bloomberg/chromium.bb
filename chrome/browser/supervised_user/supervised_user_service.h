@@ -281,13 +281,17 @@ class SupervisedUserService : public KeyedService,
   void OnSiteListsChanged(
       const std::vector<scoped_refptr<SupervisedUserSiteList>>& site_lists);
 
-  // Asynchronously downloads a static blacklist file from |url|, stores it at
-  // |path|, loads it, and applies it to the URL filters. If |url| is not valid
-  // (e.g. empty), directly tries to load from |path|.
+  // Asynchronously loads a blacklist from a binary file at |path| and applies
+  // it to the URL filters. If no file exists at |path| yet, downloads a file
+  // from |url| and stores it at |path| first.
   void LoadBlacklist(const base::FilePath& path, const GURL& url);
 
-  // Asynchronously loads a static blacklist from a binary file at |path| and
-  // applies it to the URL filters.
+  void OnBlacklistFileChecked(const base::FilePath& path,
+                              const GURL& url,
+                              bool file_exists);
+
+  // Asynchronously loads a blacklist from a binary file at |path| and applies
+  // it to the URL filters.
   void LoadBlacklistFromFile(const base::FilePath& path);
 
   void OnBlacklistDownloadDone(const base::FilePath& path, bool success);

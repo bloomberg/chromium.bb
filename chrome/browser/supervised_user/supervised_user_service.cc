@@ -6,10 +6,12 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_runner_util.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
@@ -620,8 +622,18 @@ void SupervisedUserService::OnSiteListUpdated() {
 
 void SupervisedUserService::LoadBlacklist(const base::FilePath& path,
                                           const GURL& url) {
-  // TODO(treib): Don't re-download the blacklist if the local file exists!
-  if (!url.is_valid()) {
+  base::PostTaskAndReplyWithResult(
+      BrowserThread::GetBlockingPool(),
+      FROM_HERE,
+      base::Bind(&base::PathExists, path),
+      base::Bind(&SupervisedUserService::OnBlacklistFileChecked,
+                 weak_ptr_factory_.GetWeakPtr(), path, url));
+}
+
+void SupervisedUserService::OnBlacklistFileChecked(const base::FilePath& path,
+                                                   const GURL& url,
+                                                   bool file_exists) {
+  if (file_exists) {
     LoadBlacklistFromFile(path);
     return;
   }
