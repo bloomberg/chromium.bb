@@ -67,6 +67,8 @@
         'base/completion_event.h',
         'base/delayed_unique_notifier.cc',
         'base/delayed_unique_notifier.h',
+        'base/histograms.cc',
+        'base/histograms.h',
         'base/invalidation_region.cc',
         'base/invalidation_region.h',
         'base/math_util.cc',
