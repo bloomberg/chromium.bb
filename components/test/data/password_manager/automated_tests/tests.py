@@ -373,14 +373,10 @@ class Flipkart(WebsiteTest):
     self.Submit("#login_password")
 
 
-# Iframe, password saved but not autofilled.
 class Instagram(WebsiteTest):
 
   def Login(self):
     self.GoTo("https://instagram.com/accounts/login/")
-    self.Wait(5)
-    frame = self.driver.find_element_by_css_selector(".hiFrame")
-    self.driver.switch_to_frame(frame)
     self.FillUsernameInto("#lfFieldInputUsername")
     self.FillPasswordInto("#lfFieldInputPassword")
     self.Submit(".lfSubmit")
