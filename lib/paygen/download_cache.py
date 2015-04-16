@@ -16,7 +16,8 @@ import stat
 import tempfile
 import time
 
-from chromite.lib.paygen import flock
+from chromite.lib import locking
+from chromite.lib import osutils
 from chromite.lib.paygen import urilib
 from chromite.lib.paygen import utils
 
@@ -96,6 +97,7 @@ class DownloadCache(object):
   def _SetupCache(self):
     """Make sure that our cache contains only files/directories we expect."""
     try:
+      osutils.SafeMakedirs(self._cache_dir)
       # The purge lock ensures nobody else is modifying the cache in any way.
       with self._PurgeLock(blocking=False, shared=False):
         # We have changed the layout of our cache directories over time.
@@ -117,7 +119,7 @@ class DownloadCache(object):
         # Create the lock dir if needed.
         if not os.path.exists(self._lock_dir):
           os.makedirs(self._lock_dir)
-    except flock.LockNotAcquired:
+    except locking.LockNotAcquiredError:
       # If we can't get an exclusive lock on the cache, someone else set it up.
       pass
 
@@ -148,12 +150,12 @@ class DownloadCache(object):
       shared: Get a shared lock, or an exclusive lock?
 
     Returns:
-      flock.Lock (not acquired)
+      Locking.FileLock (acquired)
     """
-    return flock.Lock(lock_name=self._CACHE_LOCK,
-                      lock_dir=self._cache_dir,
-                      blocking=blocking,
-                      shared=shared)
+    lock_file = os.path.join(self._cache_dir, self._CACHE_LOCK)
+    lock = locking.FileLock(lock_file, locktype=locking.FLOCK,
+                            blocking=blocking)
+    return lock.lock(shared)
 
   def _CacheFileLock(self, cache_file, blocking=False, shared=False):
     """Acquire a lock on a file in the cache.
@@ -173,12 +175,12 @@ class DownloadCache(object):
       shared: Get a shared lock, or an exclusive lock?
 
     Returns:
-      flock.Lock (not acquired)
+      Locking.FileLock (acquired)
     """
-    return flock.Lock(lock_name=os.path.basename(cache_file),
-                      lock_dir=self._lock_dir,
-                      blocking=blocking,
-                      shared=shared)
+    lock_file = os.path.join(self._lock_dir, os.path.basename(cache_file))
+    lock = locking.FileLock(lock_file, locktype=locking.FLOCK,
+                            blocking=blocking)
+    return lock.lock(shared)
 
   def Purge(self, max_age=None, cache_size=None):
     """Attempts to clean up the cache contents.
@@ -226,7 +228,7 @@ class DownloadCache(object):
         shutil.rmtree(self._lock_dir)
         os.makedirs(self._lock_dir)
 
-    except flock.LockNotAcquired:
+    except locking.LockNotAcquiredError:
       # If we can't get an exclusive lock on the file, it's in use, leave it.
       pass
 
@@ -266,7 +268,7 @@ class DownloadCache(object):
             os.unlink(cache_file)
           raise
 
-    except flock.LockNotAcquired:
+    except locking.LockNotAcquiredError:
       # In theory, if it's already locked, that either means a download is in
       # progress, or there is a shared lock which means it's already present.
       return False
@@ -317,7 +319,7 @@ class DownloadCache(object):
         self._FetchIntoCache(uri, cache_file, fetch_func)
 
         # Get a shared lock on the file. This can block if another process
-        # has a non-shared lock (ie: they are downloading)
+        # has a non-shared lock (ie: they are downloading).
         with self._CacheFileLock(cache_file, shared=True, blocking=True):
 
           if os.path.exists(cache_file):

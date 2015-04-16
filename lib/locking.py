@@ -21,10 +21,15 @@ LOCKF = 'lockf'
 FLOCK = 'flock'
 
 
+class LockNotAcquiredError(Exception):
+  """Signals that the lock was not acquired."""
+
+
 class _Lock(cros_build_lib.MasterPidContextManager):
   """Base lockf based locking.  Derivatives need to override _GetFd"""
 
-  def __init__(self, description=None, verbose=True, locktype=LOCKF):
+  def __init__(self, description=None, verbose=True, locktype=LOCKF,
+               blocking=True):
     """Initialize this instance.
 
     Two types of locks are available: LOCKF and FLOCK.
@@ -46,12 +51,14 @@ class _Lock(cros_build_lib.MasterPidContextManager):
       description: A description for this lock- what is it protecting?
       verbose: Verbose logging?
       locktype: Type of lock to use (lockf or flock).
+      blocking: If True, use a blocking lock.
     """
     cros_build_lib.MasterPidContextManager.__init__(self)
     self._verbose = verbose
     self.description = description
     self._fd = None
     self.locking_mechanism = fcntl.flock if locktype == FLOCK else fcntl.lockf
+    self.blocking = blocking
 
   @property
   def fd(self):
@@ -79,8 +86,12 @@ class _Lock(cros_build_lib.MasterPidContextManager):
         raise
     if self.description:
       message = '%s: blocking while %s' % (self.description, message)
+    if not self.blocking:
+      self.close()
+      raise LockNotAcquiredError(message)
     if self._verbose:
       logging.info(message)
+
     try:
       self.locking_mechanism(self.fd, flags)
     except EnvironmentError as e:
@@ -88,6 +99,27 @@ class _Lock(cros_build_lib.MasterPidContextManager):
         raise
       self.unlock()
       self.locking_mechanism(self.fd, flags)
+
+  def lock(self, shared=False):
+    """Take a lock of type |shared|.
+
+    Any existing lock will be updated if need be.
+
+    Args:
+      shared: If True make the lock shared.
+
+    Returns:
+      self, allowing it to be used as a `with` target.
+
+    Raises:
+      IOError if the operation fails in some way.
+      LockNotAcquiredError if the lock couldn't be acquired (non-blocking
+        mode only).
+    """
+    self._enforce_lock(
+        fcntl.LOCK_SH if shared else fcntl.LOCK_EX,
+        'taking a %s lock' % ('shared' if shared else 'exclusive'))
+    return self
 
   def read_lock(self, message="taking read lock"):
     """Take a read lock (shared), downgrading from write if required.
@@ -160,12 +192,16 @@ class _Lock(cros_build_lib.MasterPidContextManager):
     finally:
       self.close()
 
+  def IsLocked(self):
+    """Return True if the lock is grabbed."""
+    return bool(self._fd)
+
 
 class FileLock(_Lock):
   """Use a specified file as a locking mechanism."""
 
   def __init__(self, path, description=None, verbose=True,
-               locktype=LOCKF, world_writable=False):
+               locktype=LOCKF, world_writable=False, blocking=True):
     """Initializer for FileLock.
 
     Args:
@@ -175,11 +211,12 @@ class FileLock(_Lock):
       locktype: Type of lock to use (lockf or flock).
       world_writable: If true, the lock file will be created as root and be made
         writable to all users.
+      blocking: If True, use a blocking lock.
     """
     if description is None:
       description = "lock %s" % (path,)
     _Lock.__init__(self, description=description, verbose=verbose,
-                   locktype=locktype)
+                   locktype=locktype, blocking=blocking)
     self.path = os.path.abspath(path)
     self.world_writable = world_writable
 

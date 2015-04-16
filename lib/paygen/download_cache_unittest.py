@@ -177,14 +177,14 @@ class DownloadCacheTest(cros_test_lib.TempDirTestCase):
                      expected_cache)
 
     # Make sure the lock file for a cache content file is named as expected.
-    file_lock = cache._CacheFileLock(expected_cache)
-    self.assertEqual(file_lock.lock_file, expected_lock)
+    with cache._CacheFileLock(expected_cache) as file_lock:
+      self.assertEqual(file_lock.path, expected_lock)
 
-    purge_lock = cache._PurgeLock()
-    self.assertEqual(purge_lock.lock_file, expected_cache_lock)
+    with cache._PurgeLock() as purge_lock:
+      self.assertEqual(purge_lock.path, expected_cache_lock)
 
-    cache_file_lock = cache._CacheFileLock(expected_cache)
-    self.assertEqual(cache_file_lock.lock_file, expected_lock)
+    with cache._CacheFileLock(expected_cache) as cache_file_lock:
+      self.assertEqual(cache_file_lock.path, expected_lock)
 
   def testSetupCacheClean(self):
     """Test _SetupCache with a clean directory."""
