@@ -5,11 +5,12 @@
 #ifndef AnimatableDoubleAndBool_h
 #define AnimatableDoubleAndBool_h
 
+#include "core/CoreExport.h"
 #include "core/animation/animatable/AnimatableValue.h"
 
 namespace blink {
 
-class AnimatableDoubleAndBool final : public AnimatableValue {
+class CORE_EXPORT AnimatableDoubleAndBool final : public AnimatableValue {
 public:
     virtual ~AnimatableDoubleAndBool() { }
     static PassRefPtrWillBeRawPtr<AnimatableDoubleAndBool> create(double number, bool flag)

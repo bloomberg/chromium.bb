@@ -31,12 +31,13 @@
 #ifndef HTMLContentElement_h
 #define HTMLContentElement_h
 
+#include "core/CoreExport.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/dom/shadow/InsertionPoint.h"
 
 namespace blink {
 
-class HTMLContentElement final : public InsertionPoint {
+class CORE_EXPORT HTMLContentElement final : public InsertionPoint {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLContentElement);

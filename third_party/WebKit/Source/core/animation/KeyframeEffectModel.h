@@ -31,6 +31,7 @@
 #ifndef KeyframeEffectModel_h
 #define KeyframeEffectModel_h
 
+#include "core/CoreExport.h"
 #include "core/animation/AnimationEffect.h"
 #include "core/animation/AnimationNode.h"
 #include "core/animation/InterpolationEffect.h"
@@ -51,7 +52,7 @@ namespace blink {
 class Element;
 class KeyframeEffectModelTest;
 
-class KeyframeEffectModelBase : public AnimationEffect {
+class CORE_EXPORT KeyframeEffectModelBase : public AnimationEffect {
 public:
     // FIXME: Implement accumulation.
 

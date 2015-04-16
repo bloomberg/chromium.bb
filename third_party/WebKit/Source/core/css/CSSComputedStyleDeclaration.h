@@ -21,6 +21,7 @@
 #ifndef CSSComputedStyleDeclaration_h
 #define CSSComputedStyleDeclaration_h
 
+#include "core/CoreExport.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "wtf/HashMap.h"
@@ -43,7 +44,7 @@ class ShadowList;
 class StyleColor;
 class StylePropertyShorthand;
 
-class CSSComputedStyleDeclaration final : public CSSStyleDeclaration {
+class CORE_EXPORT CSSComputedStyleDeclaration final : public CSSStyleDeclaration {
 public:
     static PassRefPtrWillBeRawPtr<CSSComputedStyleDeclaration> create(PassRefPtrWillBeRawPtr<Node> node, bool allowVisitedStyle = false, const String& pseudoElementName = String())
     {

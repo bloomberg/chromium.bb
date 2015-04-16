@@ -28,6 +28,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
+#include "core/CoreExport.h"
 #include "core/css/CSSInheritedValue.h"
 #include "core/css/CSSInitialValue.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -87,10 +88,10 @@ private:
     typedef WillBeHeapHashMap<String, RefPtrWillBeMember<CSSPrimitiveValue>> FontFamilyValueCache;
     FontFamilyValueCache m_fontFamilyValueCache;
 
-    friend CSSValuePool& cssValuePool();
+    friend CORE_EXPORT CSSValuePool& cssValuePool();
 };
 
-CSSValuePool& cssValuePool();
+CORE_EXPORT CSSValuePool& cssValuePool();
 
 }
 

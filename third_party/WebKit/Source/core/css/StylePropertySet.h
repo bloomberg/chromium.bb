@@ -151,7 +151,7 @@ protected:
     friend class PropertySetCSSStyleDeclaration;
 };
 
-class ImmutableStylePropertySet : public StylePropertySet {
+class CORE_EXPORT ImmutableStylePropertySet : public StylePropertySet {
 public:
     ~ImmutableStylePropertySet();
     static PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> create(const CSSProperty* properties, unsigned count, CSSParserMode);

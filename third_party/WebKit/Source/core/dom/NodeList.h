@@ -25,13 +25,14 @@
 #define NodeList_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {
 
 class Node;
 
-class NodeList : public RefCountedWillBeGarbageCollectedFinalized<NodeList>, public ScriptWrappable {
+class CORE_EXPORT NodeList : public RefCountedWillBeGarbageCollectedFinalized<NodeList>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~NodeList() { }

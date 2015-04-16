@@ -5,6 +5,7 @@
 #ifndef InterpolableValue_h
 #define InterpolableValue_h
 
+#include "core/CoreExport.h"
 #include "core/animation/animatable/AnimatableValue.h"
 #include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
@@ -13,7 +14,7 @@
 
 namespace blink {
 
-class InterpolableValue : public NoBaseWillBeGarbageCollected<InterpolableValue> {
+class CORE_EXPORT InterpolableValue : public NoBaseWillBeGarbageCollected<InterpolableValue> {
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(InterpolableValue);
 public:
     virtual bool isNumber() const { return false; }
@@ -42,7 +43,7 @@ private:
     friend class AnimationInterpolableValueTest;
 };
 
-class InterpolableNumber final : public InterpolableValue {
+class CORE_EXPORT InterpolableNumber final : public InterpolableValue {
 public:
     static PassOwnPtrWillBeRawPtr<InterpolableNumber> create(double value)
     {
@@ -66,7 +67,7 @@ private:
 
 };
 
-class InterpolableBool final : public InterpolableValue {
+class CORE_EXPORT InterpolableBool final : public InterpolableValue {
 public:
     static PassOwnPtrWillBeRawPtr<InterpolableBool> create(bool value)
     {
@@ -90,8 +91,16 @@ private:
 
 };
 
-class InterpolableList : public InterpolableValue {
+class CORE_EXPORT InterpolableList : public InterpolableValue {
 public:
+    // Explicitly delete operator= because MSVC automatically generate
+    // copy constructors and operator= for dll-exported classes.
+    // Since InterpolableList is not copyable, automatically generated
+    // operator= causes MSVC compiler error.
+    // However, we cannot use WTF_MAKE_NONCOPYABLE because InterpolableList
+    // has its own copy constructor. So just delete operator= here.
+    InterpolableList& operator=(const InterpolableList&) = delete;
+
     static PassOwnPtrWillBeRawPtr<InterpolableList> create(const InterpolableList &other)
     {
         return adoptPtrWillBeNoop(new InterpolableList(other));

@@ -31,6 +31,8 @@
 #ifndef AnimationTranslationUtil_h
 #define AnimationTranslationUtil_h
 
+#include "core/CoreExport.h"
+
 namespace blink {
 
 class FilterOperations;
@@ -38,8 +40,8 @@ class TransformOperations;
 class WebFilterOperations;
 class WebTransformOperations;
 
-void toWebTransformOperations(const TransformOperations& inOperations, WebTransformOperations* outOperations);
-void toWebFilterOperations(const FilterOperations& inOperations, WebFilterOperations* outOperations);
+CORE_EXPORT void toWebTransformOperations(const TransformOperations& inOperations, WebTransformOperations* outOperations);
+CORE_EXPORT void toWebFilterOperations(const FilterOperations& inOperations, WebFilterOperations* outOperations);
 
 } // namespace blink
 

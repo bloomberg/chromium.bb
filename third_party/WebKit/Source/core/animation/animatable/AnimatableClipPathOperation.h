@@ -31,12 +31,13 @@
 #ifndef AnimatableClipPathOperation_h
 #define AnimatableClipPathOperation_h
 
+#include "core/CoreExport.h"
 #include "core/animation/animatable/AnimatableValue.h"
 #include "core/layout/ClipPathOperation.h"
 
 namespace blink {
 
-class AnimatableClipPathOperation final : public AnimatableValue {
+class CORE_EXPORT AnimatableClipPathOperation final : public AnimatableValue {
 public:
     virtual ~AnimatableClipPathOperation() { }
     static PassRefPtrWillBeRawPtr<AnimatableClipPathOperation> create(ClipPathOperation* operation)

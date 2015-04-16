@@ -31,12 +31,13 @@
 #ifndef AnimatableShapeValue_h
 #define AnimatableShapeValue_h
 
+#include "core/CoreExport.h"
 #include "core/animation/animatable/AnimatableValue.h"
 #include "core/style/ShapeValue.h"
 
 namespace blink {
 
-class AnimatableShapeValue final : public AnimatableValue {
+class CORE_EXPORT AnimatableShapeValue final : public AnimatableValue {
 public:
     virtual ~AnimatableShapeValue() { }
     static PassRefPtrWillBeRawPtr<AnimatableShapeValue> create(ShapeValue* shape)

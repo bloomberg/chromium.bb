@@ -31,11 +31,12 @@
 #ifndef AnimatableDouble_h
 #define AnimatableDouble_h
 
+#include "core/CoreExport.h"
 #include "core/animation/animatable/AnimatableValue.h"
 
 namespace blink {
 
-class AnimatableDouble final : public AnimatableValue {
+class CORE_EXPORT AnimatableDouble final : public AnimatableValue {
 public:
     virtual ~AnimatableDouble() { }
 

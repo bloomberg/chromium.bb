@@ -31,12 +31,13 @@
 #ifndef AnimatableVisibility_h
 #define AnimatableVisibility_h
 
+#include "core/CoreExport.h"
 #include "core/animation/animatable/AnimatableValue.h"
 #include "core/style/ComputedStyleConstants.h"
 
 namespace blink {
 
-class AnimatableVisibility final : public AnimatableValue {
+class CORE_EXPORT AnimatableVisibility final : public AnimatableValue {
 public:
     virtual ~AnimatableVisibility() { }
     static PassRefPtrWillBeRawPtr<AnimatableVisibility> create(EVisibility visibility)

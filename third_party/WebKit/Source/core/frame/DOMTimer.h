@@ -28,6 +28,7 @@
 #define DOMTimer_h
 
 #include "bindings/core/v8/ScheduledAction.h"
+#include "core/CoreExport.h"
 #include "core/frame/SuspendableTimer.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/heap/Handle.h"
@@ -39,7 +40,7 @@ namespace blink {
 
 class ExecutionContext;
 
-class DOMTimer final : public RefCountedWillBeGarbageCollectedFinalized<DOMTimer>, public SuspendableTimer {
+class CORE_EXPORT DOMTimer final : public RefCountedWillBeGarbageCollectedFinalized<DOMTimer>, public SuspendableTimer {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMTimer);
 public:
     // Creates a new timer owned by the ExecutionContext, starts it and returns its ID.

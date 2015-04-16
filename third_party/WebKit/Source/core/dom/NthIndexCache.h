@@ -5,6 +5,7 @@
 #ifndef NthIndexCache_h
 #define NthIndexCache_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
 #include "platform/heap/Handle.h"
@@ -16,7 +17,7 @@ namespace blink {
 
 class Document;
 
-class NthIndexCache final {
+class CORE_EXPORT NthIndexCache final {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(NthIndexCache);
 public:

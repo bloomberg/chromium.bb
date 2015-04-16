@@ -31,6 +31,7 @@
 #ifndef DataObject_h
 #define DataObject_h
 
+#include "core/CoreExport.h"
 #include "core/clipboard/DataObjectItem.h"
 #include "platform/PasteMode.h"
 #include "platform/Supplementable.h"
@@ -51,7 +52,7 @@ class WebDragData;
 // A data object for holding data that would be in a clipboard or moved
 // during a drag-n-drop operation. This is the data that WebCore is aware
 // of and is not specific to a platform.
-class DataObject : public RefCountedWillBeGarbageCollectedFinalized<DataObject>, public WillBeHeapSupplementable<DataObject> {
+class CORE_EXPORT DataObject : public RefCountedWillBeGarbageCollectedFinalized<DataObject>, public WillBeHeapSupplementable<DataObject> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DataObject);
 public:
     static PassRefPtrWillBeRawPtr<DataObject> createFromPasteboard(PasteMode);

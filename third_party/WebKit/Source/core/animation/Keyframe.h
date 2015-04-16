@@ -5,6 +5,7 @@
 #ifndef Keyframe_h
 #define Keyframe_h
 
+#include "core/CoreExport.h"
 #include "core/animation/AnimationEffect.h"
 #include "core/animation/AnimationNode.h"
 #include "core/animation/PropertyHandle.h"
@@ -18,7 +19,7 @@ class Element;
 class ComputedStyle;
 
 // FIXME: Make Keyframe immutable
-class Keyframe : public RefCountedWillBeGarbageCollectedFinalized<Keyframe> {
+class CORE_EXPORT Keyframe : public RefCountedWillBeGarbageCollectedFinalized<Keyframe> {
 public:
     virtual ~Keyframe() { }
 

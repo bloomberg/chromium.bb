@@ -28,6 +28,7 @@
 #define ClientRect_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
@@ -37,7 +38,7 @@ namespace blink {
 
 class IntRect;
 
-class ClientRect final : public RefCountedWillBeGarbageCollected<ClientRect>, public ScriptWrappable {
+class CORE_EXPORT ClientRect final : public RefCountedWillBeGarbageCollected<ClientRect>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<ClientRect> create()

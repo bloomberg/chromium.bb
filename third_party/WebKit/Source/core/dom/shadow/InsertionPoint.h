@@ -31,6 +31,7 @@
 #ifndef InsertionPoint_h
 #define InsertionPoint_h
 
+#include "core/CoreExport.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/dom/shadow/DistributedNodes.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -38,7 +39,7 @@
 
 namespace blink {
 
-class InsertionPoint : public HTMLElement {
+class CORE_EXPORT InsertionPoint : public HTMLElement {
 public:
     virtual ~InsertionPoint();
 

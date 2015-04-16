@@ -5,12 +5,13 @@
 #ifndef AnimatableValueKeyframe_h
 #define AnimatableValueKeyframe_h
 
+#include "core/CoreExport.h"
 #include "core/animation/Keyframe.h"
 #include "core/animation/animatable/AnimatableValue.h"
 
 namespace blink {
 
-class AnimatableValueKeyframe : public Keyframe {
+class CORE_EXPORT AnimatableValueKeyframe : public Keyframe {
 public:
     static PassRefPtrWillBeRawPtr<AnimatableValueKeyframe> create()
     {
