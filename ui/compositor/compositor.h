@@ -62,6 +62,8 @@ class Reflector;
 class Texture;
 struct LatencyInfo;
 
+const int kCompositorLockTimeoutMs = 67;
+
 // This class abstracts the creation of the 3D context for the compositor. It is
 // a global object.
 class COMPOSITOR_EXPORT ContextFactory {

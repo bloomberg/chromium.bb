@@ -40,8 +40,6 @@ namespace {
 const double kDefaultRefreshRate = 60.0;
 const double kTestRefreshRate = 200.0;
 
-const int kCompositorLockTimeoutMs = 67;
-
 }  // namespace
 
 namespace ui {

@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/test/test_simple_task_runner.h"
+#include "base/message_loop/message_loop_proxy.h"
+#include "base/run_loop.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -29,7 +30,7 @@ class CompositorTest : public testing::Test {
   ~CompositorTest() override {}
 
   void SetUp() override {
-    task_runner_ = new base::TestSimpleTaskRunner;
+    task_runner_ = base::MessageLoopProxy::current();
 
     ui::ContextFactory* context_factory =
         ui::InitializeContextFactoryForTests(false);
@@ -43,11 +44,11 @@ class CompositorTest : public testing::Test {
   }
 
  protected:
-  base::TestSimpleTaskRunner* task_runner() { return task_runner_.get(); }
+  base::MessageLoopProxy* task_runner() { return task_runner_.get(); }
   ui::Compositor* compositor() { return compositor_.get(); }
 
  private:
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  scoped_refptr<base::MessageLoopProxy> task_runner_;
   scoped_ptr<ui::Compositor> compositor_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorTest);
@@ -57,19 +58,30 @@ class CompositorTest : public testing::Test {
 
 TEST_F(CompositorTest, LocksTimeOut) {
   scoped_refptr<ui::CompositorLock> lock;
+  {
+    base::RunLoop run_loop;
+    // Ensure that the lock times out by default.
+    lock = compositor()->GetCompositorLock();
+    EXPECT_TRUE(compositor()->IsLocked());
+    task_runner()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        base::TimeDelta::FromMilliseconds(kCompositorLockTimeoutMs));
+    run_loop.Run();
+    EXPECT_FALSE(compositor()->IsLocked());
+  }
 
-  // Ensure that the lock times out by default.
-  lock = compositor()->GetCompositorLock();
-  EXPECT_TRUE(compositor()->IsLocked());
-  task_runner()->RunUntilIdle();
-  EXPECT_FALSE(compositor()->IsLocked());
-
-  // Ensure that the lock does not time out when set.
-  compositor()->SetLocksWillTimeOut(false);
-  lock = compositor()->GetCompositorLock();
-  EXPECT_TRUE(compositor()->IsLocked());
-  task_runner()->RunUntilIdle();
-  EXPECT_TRUE(compositor()->IsLocked());
+  {
+    base::RunLoop run_loop;
+    // Ensure that the lock does not time out when set.
+    compositor()->SetLocksWillTimeOut(false);
+    lock = compositor()->GetCompositorLock();
+    EXPECT_TRUE(compositor()->IsLocked());
+    task_runner()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        base::TimeDelta::FromMilliseconds(kCompositorLockTimeoutMs));
+    run_loop.Run();
+    EXPECT_TRUE(compositor()->IsLocked());
+  }
 }
 
 TEST_F(CompositorTest, AddAndRemoveBeginFrameObserver) {
