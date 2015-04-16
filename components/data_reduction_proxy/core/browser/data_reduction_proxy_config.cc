@@ -11,14 +11,10 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_config_values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "net/base/load_flags.h"
-#include "net/http/http_network_layer.h"
 #include "net/proxy/proxy_server.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -50,82 +46,9 @@ void RecordNetworkChangeEvent(DataReductionProxyNetworkChangeEvent event) {
 
 namespace data_reduction_proxy {
 
-// Checks if the secure proxy is allowed by the carrier by sending a probe.
-class SecureProxyChecker : public net::URLFetcherDelegate {
- public:
-  SecureProxyChecker(net::URLRequestContext* url_request_context,
-                     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-      : io_task_runner_(io_task_runner) {
-    DCHECK(io_task_runner_->BelongsToCurrentThread());
-
-    url_request_context_.reset(new net::URLRequestContext());
-    url_request_context_->CopyFrom(url_request_context);
-
-    net::HttpNetworkSession::Params params_modified =
-        *(url_request_context_->GetNetworkSessionParams());
-    params_modified.enable_quic = false;
-    params_modified.next_protos = net::NextProtosWithSpdyAndQuic(false, false);
-
-    http_network_layer_.reset(new net::HttpNetworkLayer(
-        new net::HttpNetworkSession(params_modified)));
-    url_request_context_->set_http_transaction_factory(
-        http_network_layer_.get());
-
-    url_request_context_getter_ = new net::TrivialURLRequestContextGetter(
-        url_request_context_.get(), io_task_runner_);
-  }
-
-  void OnURLFetchComplete(const net::URLFetcher* source) override {
-    DCHECK(io_task_runner_->BelongsToCurrentThread());
-    DCHECK_EQ(source, fetcher_.get());
-    net::URLRequestStatus status = source->GetStatus();
-
-    std::string response;
-    source->GetResponseAsString(&response);
-
-    fetcher_callback_.Run(response, status);
-  }
-
-  void CheckIfSecureProxyIsAllowed(const GURL& secure_proxy_check_url,
-                                   FetcherResponseCallback fetcher_callback) {
-    DCHECK(io_task_runner_->BelongsToCurrentThread());
-    fetcher_.reset(net::URLFetcher::Create(secure_proxy_check_url,
-                                           net::URLFetcher::GET, this));
-    fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_PROXY);
-    fetcher_->SetRequestContext(url_request_context_getter_.get());
-    // Configure max retries to be at most kMaxRetries times for 5xx errors.
-    static const int kMaxRetries = 5;
-    fetcher_->SetMaxRetriesOn5xx(kMaxRetries);
-    fetcher_->SetAutomaticallyRetryOnNetworkChanges(kMaxRetries);
-    // The secure proxy check should not be redirected. Since the secure proxy
-    // check will inevitably fail if it gets redirected somewhere else (e.g. by
-    // a captive portal), short circuit that by giving up on the secure proxy
-    // check if it gets redirected.
-    fetcher_->SetStopOnRedirect(true);
-
-    fetcher_callback_ = fetcher_callback;
-
-    fetcher_->Start();
-  }
-
-  ~SecureProxyChecker() override {}
-
- private:
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
-  scoped_ptr<net::URLRequestContext> url_request_context_;
-  scoped_ptr<net::HttpNetworkLayer> http_network_layer_;
-
-  // The URLFetcher being used for the secure proxy check.
-  scoped_ptr<net::URLFetcher> fetcher_;
-  FetcherResponseCallback fetcher_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(SecureProxyChecker);
-};
-
 DataReductionProxyConfig::DataReductionProxyConfig(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     net::NetLog* net_log,
     scoped_ptr<DataReductionProxyConfigValues> config_values,
     DataReductionProxyConfigurator* configurator,
@@ -137,11 +60,13 @@ DataReductionProxyConfig::DataReductionProxyConfig(
       alternative_enabled_by_user_(false),
       config_values_(config_values.Pass()),
       io_task_runner_(io_task_runner),
+      ui_task_runner_(ui_task_runner),
       net_log_(net_log),
       configurator_(configurator),
       event_store_(event_store),
       url_request_context_getter_(nullptr) {
   DCHECK(io_task_runner);
+  DCHECK(ui_task_runner);
   DCHECK(configurator);
   DCHECK(event_store);
 }
@@ -150,15 +75,15 @@ DataReductionProxyConfig::~DataReductionProxyConfig() {
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
 
+void DataReductionProxyConfig::SetDataReductionProxyService(
+    base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service) {
+  data_reduction_proxy_service_ = data_reduction_proxy_service;
+}
+
 void DataReductionProxyConfig::InitializeOnIOThread(
     net::URLRequestContextGetter* url_request_context_getter) {
   DCHECK(url_request_context_getter);
   url_request_context_getter_ = url_request_context_getter;
-
-  DCHECK(url_request_context_getter_->GetURLRequestContext());
-  secure_proxy_checker_.reset(new SecureProxyChecker(
-      url_request_context_getter_->GetURLRequestContext(), io_task_runner_));
-
   if (!config_values_->allowed())
     return;
 
@@ -331,13 +256,9 @@ void DataReductionProxyConfig::SetProxyConfig(
   if (enabled &&
       !(alternative_enabled &&
         !config_values_->alternative_fallback_allowed())) {
-    // It is safe to use base::Unretained here, since it gets executed
-    // synchronously on the IO thread, and |this| outlives
-    // |secure_proxy_checker_|.
-    SecureProxyCheck(
-        config_values_->secure_proxy_check_url(),
-        base::Bind(&DataReductionProxyConfig::HandleSecureProxyCheckResponse,
-                   base::Unretained(this)));
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&DataReductionProxyConfig::StartSecureProxyCheck,
+                              base::Unretained(this)));
   }
 }
 
@@ -401,7 +322,16 @@ void DataReductionProxyConfig::LogProxyState(bool enabled,
 
 void DataReductionProxyConfig::HandleSecureProxyCheckResponse(
     const std::string& response, const net::URLRequestStatus& status) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &DataReductionProxyConfig::HandleSecureProxyCheckResponseOnIOThread,
+          base::Unretained(this), response, status));
+}
+
+void DataReductionProxyConfig::HandleSecureProxyCheckResponseOnIOThread(
+    const std::string& response, const net::URLRequestStatus& status) {
   if (event_store_) {
     event_store_->EndSecureProxyCheck(bound_net_log_, status.error());
   }
@@ -464,13 +394,9 @@ void DataReductionProxyConfig::OnIPAddressChanged() {
       return;
     }
 
-    // It is safe to use base::Unretained here, since it gets executed
-    // synchronously on the IO thread, and |this| outlives
-    // |secure_proxy_checker_|.
-    SecureProxyCheck(
-        config_values_->secure_proxy_check_url(),
-        base::Bind(&DataReductionProxyConfig::HandleSecureProxyCheckResponse,
-                   base::Unretained(this)));
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&DataReductionProxyConfig::StartSecureProxyCheck,
+                              base::Unretained(this)));
   }
 }
 
@@ -506,21 +432,21 @@ void DataReductionProxyConfig::RecordSecureProxyCheckFetchResult(
                             SECURE_PROXY_CHECK_FETCH_RESULT_COUNT);
 }
 
-void DataReductionProxyConfig::SecureProxyCheck(
-    const GURL& secure_proxy_check_url,
-    FetcherResponseCallback fetcher_callback) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+void DataReductionProxyConfig::StartSecureProxyCheck() {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
   bound_net_log_ = net::BoundNetLog::Make(
       net_log_, net::NetLog::SOURCE_DATA_REDUCTION_PROXY);
+  if (data_reduction_proxy_service_) {
+    if (event_store_) {
+      event_store_->BeginSecureProxyCheck(
+          bound_net_log_, config_values_->secure_proxy_check_url());
+    }
 
-  if (event_store_) {
-    event_store_->BeginSecureProxyCheck(
-        bound_net_log_, config_values_->secure_proxy_check_url());
+    data_reduction_proxy_service_->SecureProxyCheck(
+        config_values_->secure_proxy_check_url(),
+        base::Bind(&DataReductionProxyConfig::HandleSecureProxyCheckResponse,
+                   base::Unretained(this)));
   }
-
-  DCHECK(secure_proxy_checker_);
-  secure_proxy_checker_->CheckIfSecureProxyIsAllowed(secure_proxy_check_url,
-                                                     fetcher_callback);
 }
 
 void DataReductionProxyConfig::GetNetworkList(

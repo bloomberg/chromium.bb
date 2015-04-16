@@ -156,6 +156,9 @@ class MockDataReductionProxyService : public DataReductionProxyService {
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
   ~MockDataReductionProxyService() override;
 
+  MOCK_METHOD2(SecureProxyCheck,
+      void(const GURL& secure_proxy_check_url,
+           FetcherResponseCallback fetcher_callback));
   MOCK_METHOD3(SetProxyPrefs,
                void(bool enabled, bool alternative_enabled, bool at_startup));
 };

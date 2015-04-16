@@ -5,9 +5,6 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_CONFIG_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_CONFIG_H_
 
-#include <string>
-
-#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -20,8 +17,6 @@
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_retry_info.h"
 
-class GURL;
-
 namespace base {
 class SingleThreadTaskRunner;
 class TimeDelta;
@@ -30,7 +25,6 @@ class TimeDelta;
 namespace net {
 class HostPortPair;
 class NetLog;
-class URLFetcher;
 class URLRequest;
 class URLRequestContextGetter;
 class URLRequestStatus;
@@ -38,14 +32,10 @@ class URLRequestStatus;
 
 namespace data_reduction_proxy {
 
-typedef base::Callback<void(const std::string&, const net::URLRequestStatus&)>
-    FetcherResponseCallback;
-
 class DataReductionProxyConfigValues;
 class DataReductionProxyConfigurator;
 class DataReductionProxyEventStore;
 class DataReductionProxyService;
-class SecureProxyChecker;
 struct DataReductionProxyTypeInfo;
 
 // Values of the UMA DataReductionProxy.ProbeURL histogram.
@@ -85,11 +75,15 @@ class DataReductionProxyConfig
   // which this instance will own.
   DataReductionProxyConfig(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       net::NetLog* net_log,
       scoped_ptr<DataReductionProxyConfigValues> config_values,
       DataReductionProxyConfigurator* configurator,
       DataReductionProxyEventStore* event_store);
   ~DataReductionProxyConfig() override;
+
+  void SetDataReductionProxyService(
+      base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service);
 
   // Performs initialization on the IO thread.
   void InitializeOnIOThread(
@@ -221,15 +215,15 @@ class DataReductionProxyConfig
                                   bool restricted,
                                   bool at_startup);
 
-  // Requests the given |secure_proxy_check_url|. Upon completion, returns the
-  // results to the caller via the |fetcher_callback|. Virtualized for unit
-  // testing.
-  virtual void SecureProxyCheck(const GURL& secure_proxy_check_url,
-                                FetcherResponseCallback fetcher_callback);
+  // Begins a secure proxy check to determine if the Data Reduction Proxy is
+  // permitted to use the HTTPS proxy servers.
+  void StartSecureProxyCheck();
 
   // Parses the secure proxy check responses and appropriately configures the
   // Data Reduction Proxy rules.
   virtual void HandleSecureProxyCheckResponse(
+      const std::string& response, const net::URLRequestStatus& status);
+  virtual void HandleSecureProxyCheckResponseOnIOThread(
       const std::string& response, const net::URLRequestStatus& status);
 
   // Adds the default proxy bypass rules for the Data Reduction Proxy.
@@ -252,8 +246,6 @@ class DataReductionProxyConfig
       bool is_https,
       base::TimeDelta* min_retry_delay) const;
 
-  scoped_ptr<SecureProxyChecker> secure_proxy_checker_;
-
   bool restricted_by_carrier_;
   bool disabled_on_vpn_;
   bool unreachable_;
@@ -266,6 +258,10 @@ class DataReductionProxyConfig
   // |io_task_runner_| should be the task runner for running operations on the
   // IO thread.
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
+  // |ui_task_runner_| should be the task runner for running operations on the
+  // UI thread.
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   // The caller must ensure that the |net_log_|, if set, outlives this instance.
   // It is used to create new instances of |bound_net_log_| on secure proxy
@@ -286,6 +282,11 @@ class DataReductionProxyConfig
 
   // Enforce usage on the IO thread.
   base::ThreadChecker thread_checker_;
+
+  // A weak pointer to a |DataReductionProxyService| to perform secure proxy
+  // checks. The weak pointer is required since the |DataReductionProxyService|
+  // is destroyed before this instance of the |DataReductionProxyConfig|.
+  base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyConfig);
 };
