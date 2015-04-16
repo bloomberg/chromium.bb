@@ -4535,11 +4535,16 @@
               '-B<!(cd <(DEPTH) && pwd -P)/<(binutils_dir)',
             ],
           }],
-          ['linux_use_bundled_gold==1', {
+          ['linux_use_bundled_gold==1 and '
+           'not (clang==0 and (use_lto==1 or use_lto_o2==1))', {
             # Put our binutils, which contains gold in the search path. We pass
             # the path to gold to the compiler. gyp leaves unspecified what the
             # cwd is when running the compiler, so the normal gyp path-munging
             # fails us. This hack gets the right path.
+            #
+            # Disabled when using GCC LTO because GCC also uses the -B search
+            # path at link time to find "as", and our bundled "as" can only
+            # target x86.
             'ldflags': [
               '-B<!(cd <(DEPTH) && pwd -P)/<(binutils_dir)',
             ],
