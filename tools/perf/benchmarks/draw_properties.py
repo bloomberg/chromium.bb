@@ -9,8 +9,8 @@ import page_sets
 
 
 # This benchmark depends on tracing categories available in M43
-@benchmark.Disabled('reference','win', # http://crbug.com/463111
-                    'android')         # http://crbug.com/471786
+@benchmark.Disabled('reference',  # http://crbug.com/463111
+                    'android')    # http://crbug.com/471786
 class DrawPropertiesToughScrolling(benchmark.Benchmark):
   test = draw_properties.DrawProperties
   page_set = page_sets.ToughScrollingCasesPageSet
