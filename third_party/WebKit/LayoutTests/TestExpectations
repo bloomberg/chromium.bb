@@ -169,9 +169,6 @@ crbug.com/476175 virtual/slimmingpaint/fast/repaint/block-selection-gap-in-compo
 crbug.com/476175 virtual/slimmingpaint/fast/events/updateLayoutForHitTest.html [ Crash ]
 crbug.com/476175 virtual/slimmingpaint/fast/text/emphasis.html [ Crash ]
 
-crbug.com/477497 fast/html/details-writing-mode.html [ NeedsRebaseline ]
-crbug.com/477497 virtual/slimmingpaint/fast/html/details-writing-mode.html [ NeedsRebaseline ]
-
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
 crbug.com/225184 virtual/slimmingpaint/fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
