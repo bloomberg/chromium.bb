@@ -557,9 +557,6 @@ static bool hoverMediaFeatureEval(const MediaQueryExpValue& value, MediaFeatureP
 
 static bool anyHoverMediaFeatureEval(const MediaQueryExpValue& value, MediaFeaturePrefix, const MediaValues& mediaValues)
 {
-    if (!RuntimeEnabledFeatures::anyPointerMediaQueriesEnabled())
-        return false;
-
     int availableHoverTypes = mediaValues.availableHoverTypes();
 
     if (!value.isValid())
@@ -598,9 +595,6 @@ static bool pointerMediaFeatureEval(const MediaQueryExpValue& value, MediaFeatur
 
 static bool anyPointerMediaFeatureEval(const MediaQueryExpValue& value, MediaFeaturePrefix, const MediaValues& mediaValues)
 {
-    if (!RuntimeEnabledFeatures::anyPointerMediaQueriesEnabled())
-        return false;
-
     int availablePointers = mediaValues.availablePointerTypes();
 
     if (!value.isValid())
