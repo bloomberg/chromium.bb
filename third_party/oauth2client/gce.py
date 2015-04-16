@@ -1,4 +1,4 @@
-# Copyright 2014 Google Inc. All rights reserved.
+# Copyright (C) 2012 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,13 +19,14 @@ Utilities for making it easier to use OAuth 2.0 on Google Compute Engine.
 
 __author__ = 'jcgregorio@google.com (Joe Gregorio)'
 
-import json
+import httplib2
 import logging
-from third_party.six.moves import urllib
+import uritemplate
 
-from third_party.oauth2client import util
-from third_party.oauth2client.client import AccessTokenRefreshError
-from third_party.oauth2client.client import AssertionCredentials
+from oauth2client import util
+from oauth2client.anyjson import simplejson
+from oauth2client.client import AccessTokenRefreshError
+from oauth2client.client import AssertionCredentials
 
 logger = logging.getLogger(__name__)
 
@@ -56,14 +57,13 @@ class AppAssertionCredentials(AssertionCredentials):
         requested.
     """
     self.scope = util.scopes_to_string(scope)
-    self.kwargs = kwargs
 
     # Assertion type is no longer used, but still in the parent class signature.
     super(AppAssertionCredentials, self).__init__(None)
 
   @classmethod
-  def from_json(cls, json_data):
-    data = json.loads(json_data)
+  def from_json(cls, json):
+    data = simplejson.loads(json)
     return AppAssertionCredentials(data['scope'])
 
   def _refresh(self, http_request):
@@ -78,28 +78,13 @@ class AppAssertionCredentials(AssertionCredentials):
     Raises:
       AccessTokenRefreshError: When the refresh fails.
     """
-    query = '?scope=%s' % urllib.parse.quote(self.scope, '')
-    uri = META.replace('{?scope}', query)
+    uri = uritemplate.expand(META, {'scope': self.scope})
     response, content = http_request(uri)
     if response.status == 200:
       try:
-        d = json.loads(content)
-      except Exception as e:
+        d = simplejson.loads(content)
+      except StandardError, e:
         raise AccessTokenRefreshError(str(e))
       self.access_token = d['accessToken']
     else:
-      if response.status == 404:
-        content += (' This can occur if a VM was created'
-                    ' with no service account or scopes.')
       raise AccessTokenRefreshError(content)
-
-  @property
-  def serialization_data(self):
-    raise NotImplementedError(
-        'Cannot serialize credentials for GCE service accounts.')
-
-  def create_scoped_required(self):
-    return not self.scope
-
-  def create_scoped(self, scopes):
-    return AppAssertionCredentials(scopes, **self.kwargs)

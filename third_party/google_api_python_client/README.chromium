@@ -3,8 +3,4 @@ Version: v1.3.1
 Revision: 49d45a6c3318b75e551c3022020f46c78655f365
 License: Apache License, Version 2.0 (the "License")
 
-Local modifications:
-See also MODIFICATIONS.diff
-
-Notes:
-Requires the httplib2 and oauth2client library.
+No local changes

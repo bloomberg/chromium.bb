@@ -25,6 +25,7 @@ import StringIO
 import base64
 import copy
 import gzip
+import httplib2
 import json
 import logging
 import mimeparse
@@ -48,8 +49,7 @@ from errors import ResumableUploadError
 from errors import UnexpectedBodyError
 from errors import UnexpectedMethodError
 from model import JsonModel
-from third_party import httplib2
-from third_party.oauth2client import util
+from ...oauth2client import util
 
 
 DEFAULT_CHUNK_SIZE = 512*1024

@@ -1,4 +1,4 @@
-# Copyright 2014 Google Inc. All rights reserved.
+# Copyright (C) 2011 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,10 +20,8 @@ an OAuth 2.0 protected service.
 
 __author__ = 'jcgregorio@google.com (Joe Gregorio)'
 
-import json
 
-from third_party import six
-
+from anyjson import simplejson
 
 # Properties that make a client_secrets.json file valid.
 TYPE_WEB = 'web'
@@ -70,21 +68,11 @@ class InvalidClientSecretsError(Error):
 
 
 def _validate_clientsecrets(obj):
-  _INVALID_FILE_FORMAT_MSG = (
-    'Invalid file format. See '
-    'https://developers.google.com/api-client-library/'
-    'python/guide/aaa_client_secrets')
-
-  if obj is None:
-    raise InvalidClientSecretsError(_INVALID_FILE_FORMAT_MSG)
-  if len(obj) != 1:
-    raise InvalidClientSecretsError(
-      _INVALID_FILE_FORMAT_MSG + ' '
-      'Expected a JSON object with a single property for a "web" or '
-      '"installed" application')
-  client_type = tuple(obj)[0]
-  if client_type not in VALID_CLIENT:
-    raise InvalidClientSecretsError('Unknown client type: %s.' % (client_type,))
+  if obj is None or len(obj) != 1:
+    raise InvalidClientSecretsError('Invalid file format.')
+  client_type = obj.keys()[0]
+  if client_type not in VALID_CLIENT.keys():
+    raise InvalidClientSecretsError('Unknown client type: %s.' % client_type)
   client_info = obj[client_type]
   for prop_name in VALID_CLIENT[client_type]['required']:
     if prop_name not in client_info:
@@ -99,19 +87,22 @@ def _validate_clientsecrets(obj):
 
 
 def load(fp):
-  obj = json.load(fp)
+  obj = simplejson.load(fp)
   return _validate_clientsecrets(obj)
 
 
 def loads(s):
-  obj = json.loads(s)
+  obj = simplejson.loads(s)
   return _validate_clientsecrets(obj)
 
 
 def _loadfile(filename):
   try:
-    with open(filename, 'r') as fp:
-      obj = json.load(fp)
+    fp = file(filename, 'r')
+    try:
+      obj = simplejson.load(fp)
+    finally:
+      fp.close()
   except IOError:
     raise InvalidClientSecretsError('File not found: "%s"' % filename)
   return _validate_clientsecrets(obj)
@@ -123,12 +114,10 @@ def loadfile(filename, cache=None):
   Typical cache storage would be App Engine memcache service,
   but you can pass in any other cache client that implements
   these methods:
+    - get(key, namespace=ns)
+    - set(key, value, namespace=ns)
 
-  * ``get(key, namespace=ns)``
-  * ``set(key, value, namespace=ns)``
-
-  Usage::
-
+  Usage:
     # without caching
     client_type, client_info = loadfile('secrets.json')
     # using App Engine memcache service
@@ -161,4 +150,4 @@ def loadfile(filename, cache=None):
     obj = {client_type: client_info}
     cache.set(filename, obj, namespace=_SECRET_NAMESPACE)
 
-  return next(six.iteritems(obj))
+  return obj.iteritems().next()

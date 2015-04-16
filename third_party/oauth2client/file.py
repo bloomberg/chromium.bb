@@ -1,4 +1,4 @@
-# Copyright 2014 Google Inc. All rights reserved.
+# Copyright (C) 2010 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,10 +21,12 @@ credentials.
 __author__ = 'jcgregorio@google.com (Joe Gregorio)'
 
 import os
+import stat
 import threading
 
-from client import Credentials
+from anyjson import simplejson
 from client import Storage as BaseStorage
+from client import Credentials
 
 
 class CredentialsFileSymbolicLinkError(Exception):
@@ -90,7 +92,7 @@ class Storage(BaseStorage):
     simple version of "touch" to ensure the file has been created.
     """
     if not os.path.exists(self._filename):
-      old_umask = os.umask(0o177)
+      old_umask = os.umask(0177)
       try:
         open(self._filename, 'a+b').close()
       finally:
@@ -108,7 +110,7 @@ class Storage(BaseStorage):
 
     self._create_file_if_needed()
     self._validate_file()
-    f = open(self._filename, 'w')
+    f = open(self._filename, 'wb')
     f.write(credentials.to_json())
     f.close()
 

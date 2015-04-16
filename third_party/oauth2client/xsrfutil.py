@@ -1,5 +1,6 @@
+#!/usr/bin/python2.5
 #
-# Copyright 2014 the Melange authors.
+# Copyright 2010 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,35 +17,24 @@
 """Helper methods for creating & verifying XSRF tokens."""
 
 __authors__ = [
-    '"Doug Coker" <dcoker@google.com>',
-    '"Joe Gregorio" <jcgregorio@google.com>',
+  '"Doug Coker" <dcoker@google.com>',
+  '"Joe Gregorio" <jcgregorio@google.com>',
 ]
 
 
 import base64
 import hmac
+import os  # for urandom
 import time
 
-import six
 from oauth2client import util
 
 
 # Delimiter character
-DELIMITER = b':'
-
+DELIMITER = ':'
 
 # 1 hour in seconds
 DEFAULT_TIMEOUT_SECS = 1*60*60
-
-
-def _force_bytes(s):
-    if isinstance(s, bytes):
-        return s
-    s = str(s)
-    if isinstance(s, six.text_type):
-        return s.encode('utf-8')
-    return s
-
 
 @util.positional(2)
 def generate_token(key, user_id, action_id="", when=None):
@@ -61,16 +51,18 @@ def generate_token(key, user_id, action_id="", when=None):
   Returns:
     A string XSRF protection token.
   """
-  when = _force_bytes(when or int(time.time()))
-  digester = hmac.new(_force_bytes(key))
-  digester.update(_force_bytes(user_id))
+  when = when or int(time.time())
+  digester = hmac.new(key)
+  digester.update(str(user_id))
   digester.update(DELIMITER)
-  digester.update(_force_bytes(action_id))
+  digester.update(action_id)
   digester.update(DELIMITER)
-  digester.update(when)
+  digester.update(str(when))
   digest = digester.digest()
 
-  token = base64.urlsafe_b64encode(digest + DELIMITER + when)
+  token = base64.urlsafe_b64encode('%s%s%d' % (digest,
+                                               DELIMITER,
+                                               when))
   return token
 
 
@@ -95,8 +87,8 @@ def validate_token(key, token, user_id, action_id="", current_time=None):
   if not token:
     return False
   try:
-    decoded = base64.urlsafe_b64decode(token)
-    token_time = int(decoded.split(DELIMITER)[-1])
+    decoded = base64.urlsafe_b64decode(str(token))
+    token_time = long(decoded.split(DELIMITER)[-1])
   except (TypeError, ValueError):
     return False
   if current_time is None:
@@ -113,6 +105,9 @@ def validate_token(key, token, user_id, action_id="", current_time=None):
 
   # Perform constant time comparison to avoid timing attacks
   different = 0
-  for x, y in zip(bytearray(token), bytearray(expected_token)):
-    different |= x ^ y
-  return not different
+  for x, y in zip(token, expected_token):
+    different |= ord(x) ^ ord(y)
+  if different:
+    return False
+
+  return True

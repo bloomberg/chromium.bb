@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2014 Google Inc. All rights reserved.
+# Copyright 2010 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,27 +17,26 @@
 
 """Common utility library."""
 
-__author__ = [
-    'rafek@google.com (Rafe Kaplan)',
-    'guido@google.com (Guido van Rossum)',
+__author__ = ['rafek@google.com (Rafe Kaplan)',
+              'guido@google.com (Guido van Rossum)',
 ]
-
 __all__ = [
-    'positional',
-    'POSITIONAL_WARNING',
-    'POSITIONAL_EXCEPTION',
-    'POSITIONAL_IGNORE',
+  'positional',
+  'POSITIONAL_WARNING',
+  'POSITIONAL_EXCEPTION',
+  'POSITIONAL_IGNORE',
 ]
 
-import functools
 import inspect
 import logging
-import sys
 import types
+import urllib
+import urlparse
 
-from third_party import six
-from third_party.six.moves import urllib
-
+try:
+  from urlparse import parse_qsl
+except ImportError:
+  from cgi import parse_qsl
 
 logger = logging.getLogger(__name__)
 
@@ -52,58 +51,56 @@ positional_parameters_enforcement = POSITIONAL_WARNING
 def positional(max_positional_args):
   """A decorator to declare that only the first N arguments my be positional.
 
-  This decorator makes it easy to support Python 3 style keyword-only
-  parameters. For example, in Python 3 it is possible to write::
+  This decorator makes it easy to support Python 3 style key-word only
+  parameters. For example, in Python 3 it is possible to write:
 
     def fn(pos1, *, kwonly1=None, kwonly1=None):
       ...
 
-  All named parameters after ``*`` must be a keyword::
+  All named parameters after * must be a keyword:
 
     fn(10, 'kw1', 'kw2')  # Raises exception.
     fn(10, kwonly1='kw1')  # Ok.
 
-  Example
-  ^^^^^^^
+  Example:
+    To define a function like above, do:
 
-  To define a function like above, do::
-
-    @positional(1)
-    def fn(pos1, kwonly1=None, kwonly2=None):
-      ...
-
-  If no default value is provided to a keyword argument, it becomes a required
-  keyword argument::
-
-    @positional(0)
-    def fn(required_kw):
-      ...
-
-  This must be called with the keyword parameter::
-
-    fn()  # Raises exception.
-    fn(10)  # Raises exception.
-    fn(required_kw=10)  # Ok.
-
-  When defining instance or class methods always remember to account for
-  ``self`` and ``cls``::
-
-    class MyClass(object):
-
-      @positional(2)
-      def my_method(self, pos1, kwonly1=None):
+      @positional(1)
+      def fn(pos1, kwonly1=None, kwonly2=None):
         ...
 
-      @classmethod
-      @positional(2)
-      def my_method(cls, pos1, kwonly1=None):
+    If no default value is provided to a keyword argument, it becomes a required
+    keyword argument:
+
+      @positional(0)
+      def fn(required_kw):
         ...
+
+    This must be called with the keyword parameter:
+
+      fn()  # Raises exception.
+      fn(10)  # Raises exception.
+      fn(required_kw=10)  # Ok.
+
+    When defining instance or class methods always remember to account for
+    'self' and 'cls':
+
+      class MyClass(object):
+
+        @positional(2)
+        def my_method(self, pos1, kwonly1=None):
+          ...
+
+        @classmethod
+        @positional(2)
+        def my_method(cls, pos1, kwonly1=None):
+          ...
 
   The positional decorator behavior is controlled by
-  ``util.positional_parameters_enforcement``, which may be set to
-  ``POSITIONAL_EXCEPTION``, ``POSITIONAL_WARNING`` or
-  ``POSITIONAL_IGNORE`` to raise an exception, log a warning, or do
-  nothing, respectively, if a declaration is violated.
+  util.positional_parameters_enforcement, which may be set to
+  POSITIONAL_EXCEPTION, POSITIONAL_WARNING or POSITIONAL_IGNORE to raise an
+  exception, log a warning, or do nothing, respectively, if a declaration is
+  violated.
 
   Args:
     max_positional_arguments: Maximum number of positional arguments. All
@@ -117,10 +114,8 @@ def positional(max_positional_args):
     TypeError if a key-word only argument is provided as a positional
     parameter, but only if util.positional_parameters_enforcement is set to
     POSITIONAL_EXCEPTION.
-
   """
   def positional_decorator(wrapped):
-    @functools.wraps(wrapped)
     def positional_wrapper(*args, **kwargs):
       if len(args) > max_positional_args:
         plural_s = ''
@@ -137,7 +132,7 @@ def positional(max_positional_args):
       return wrapped(*args, **kwargs)
     return positional_wrapper
 
-  if isinstance(max_positional_args, six.integer_types):
+  if isinstance(max_positional_args, (int, long)):
     return positional_decorator
   else:
     args, _, _, defaults = inspect.getargspec(max_positional_args)
@@ -157,7 +152,7 @@ def scopes_to_string(scopes):
   Returns:
     The scopes formatted as a single string.
   """
-  if isinstance(scopes, six.string_types):
+  if isinstance(scopes, types.StringTypes):
     return scopes
   else:
     return ' '.join(scopes)
@@ -194,8 +189,8 @@ def _add_query_parameter(url, name, value):
   if value is None:
     return url
   else:
-    parsed = list(urllib.parse.urlparse(url))
-    q = dict(urllib.parse.parse_qsl(parsed[4]))
+    parsed = list(urlparse.urlparse(url))
+    q = dict(parse_qsl(parsed[4]))
     q[name] = value
-    parsed[4] = urllib.parse.urlencode(q)
-    return urllib.parse.urlunparse(parsed)
+    parsed[4] = urllib.urlencode(q)
+    return urlparse.urlunparse(parsed)

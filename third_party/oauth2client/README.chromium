@@ -1,7 +1,7 @@
 Name: oauth2client
 Short Name: oauth2client
-URL: https://pypi.python.org/packages/source/o/oauth2client/oauth2client-1.4.7.tar.gz
-Version: 1.4.7
+URL: https://pypi.python.org/packages/source/o/oauth2client/oauth2client-1.2.tar.gz
+Version: 1.2
 License: Apache License 2.0
 
 Description:
