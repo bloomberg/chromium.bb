@@ -66,7 +66,7 @@
   # anything to be done in this file (instead of a higher-level .gyp file).
   'targets': [
     {
-      # GN version: //third_party/widevine/cdm:adapter_resources
+      # GN version: //third_party/widevine/cdm:widevinecdmadapter_resources
       'target_name': 'widevinecdmadapter_resources',
       'type': 'none',
       'conditions': [
@@ -94,7 +94,7 @@
       ],
     },
     {
-      # GN version: //third_party/widevine/cdm:adapter
+      # GN version: //third_party/widevine/cdm:widevinecdmadapter
       'target_name': 'widevinecdmadapter',
       'type': 'none',
       'conditions': [
@@ -143,7 +143,7 @@
       }],
     },
     {
-      # GN version: //third_party/widevine/cdm:binaries
+      # GN version: //third_party/widevine/cdm:widevinecdm
       'target_name': 'widevinecdm',
       'type': 'none',
       'conditions': [
@@ -181,6 +181,7 @@
           ],
           'defines': ['CDM_IMPLEMENTATION'],
           'dependencies': [
+            'widevine_cdm_version_h',
             '<(DEPTH)/base/base.gyp:base',
           ],
           'sources': [
@@ -191,6 +192,7 @@
       ],
     },
     {
+      # GN version: //third_party/widevine/cdm:widevine_test_license_server
       'target_name': 'widevine_test_license_server',
       'type': 'none',
       'conditions': [

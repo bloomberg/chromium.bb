@@ -969,7 +969,7 @@ if (!is_android) {
       # Runtime dependencies.
       data_deps += [
         "//media/cdm/ppapi:clearkeycdmadapter",
-        "//third_party/widevine/cdm:adapter",
+        "//third_party/widevine/cdm:widevinecdmadapter",
       ]
     }
     if (!enable_print_preview) {
@@ -1161,7 +1161,7 @@ if (!is_android) {
     if (enable_pepper_cdms) {
       data_deps = [
         "//media/cdm/ppapi:clearkeycdmadapter",
-        "//third_party/widevine/cdm:adapter",
+        "//third_party/widevine/cdm:widevinecdmadapter",
       ]
     }
   }
