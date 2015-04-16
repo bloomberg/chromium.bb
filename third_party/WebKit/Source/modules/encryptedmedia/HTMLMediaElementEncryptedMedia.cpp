@@ -65,6 +65,7 @@ private:
     void setNewMediaKeys();
     void finish();
 
+    void reportClearFailed(ExceptionCode, const String& errorMessage);
     void reportSetFailed(ExceptionCode, const String& errorMessage);
 
     // Keep media element alive until promise is fulfilled
@@ -171,18 +172,24 @@ void SetMediaKeysHandler::clearExistingMediaKeys()
         // 3.2.2 If the association cannot currently be removed (i.e. during
         //       playback), return a promise rejected with a new DOMException
         //       whose name is "InvalidStateError".
-        if (m_element->webMediaPlayer()) {
-            reject(DOMException::create(InvalidStateError, "The existing MediaKeys object cannot be removed while a media resource is loaded."));
+        WebMediaPlayer* mediaPlayer = m_element->webMediaPlayer();
+        if (mediaPlayer) {
+            if (!mediaPlayer->paused()) {
+                reject(DOMException::create(InvalidStateError, "The existing MediaKeys object cannot be removed while a media resource is playing."));
+                return;
+            }
+
+            // 3.2.3 Stop using the CDM instance represented by the mediaKeys
+            //       attribute to decrypt media data and remove the association
+            //       with the media element.
+            OwnPtr<SuccessCallback> successCallback = bind(&SetMediaKeysHandler::setNewMediaKeys, this);
+            OwnPtr<FailureCallback> failureCallback = bind<ExceptionCode, const String&>(&SetMediaKeysHandler::reportClearFailed, this);
+            ContentDecryptionModuleResult* result = new SetContentDecryptionModuleResult(successCallback.release(), failureCallback.release());
+            mediaPlayer->setContentDecryptionModule(nullptr, result->result());
+
+            // Don't do anything more until |result| is resolved (or rejected).
             return;
         }
-
-        // (next 2 steps not required as there is no player connected).
-        // 3.2.3 Stop using the CDM instance represented by the mediaKeys
-        //       attribute to decrypt media data and remove the association
-        //       with the media element.
-        // 3.2.4 If the preceding step failed, reject promise with a new
-        //       DOMException whose name is the appropriate error name and
-        //       that has an appropriate message.
     }
 
     // MediaKeys not currently set or no player connected, so continue on.
@@ -231,12 +238,24 @@ void SetMediaKeysHandler::finish()
     resolve();
 }
 
+void SetMediaKeysHandler::reportClearFailed(ExceptionCode code, const String& errorMessage)
+{
+    WTF_LOG(Media, "SetMediaKeysHandler::reportClearFailed (%d, %s)", code, errorMessage.ascii().data());
+
+    // 3.2.4 If the preceding step failed (in setContentDecryptionModule()
+    //       called from clearExistingMediaKeys()), reject promise with a new
+    //       DOMException whose name is the appropriate error name and that
+    //       has an appropriate message.
+    reject(DOMException::create(code, errorMessage));
+}
+
 void SetMediaKeysHandler::reportSetFailed(ExceptionCode code, const String& errorMessage)
 {
-    WTF_LOG(Media, "SetMediaKeysHandler::reportSetFailed");
+    WTF_LOG(Media, "SetMediaKeysHandler::reportSetFailed (%d, %s)", code, errorMessage.ascii().data());
     HTMLMediaElementEncryptedMedia& thisElement = HTMLMediaElementEncryptedMedia::from(*m_element);
 
-    // 3.3.2 If the preceding step failed, run the following steps:
+    // 3.3.2 If the preceding step failed (in setContentDecryptionModule()
+    //       called from setNewMediaKeys()), run the following steps:
     // 3.3.2.1 Set the mediaKeys attribute to null.
     thisElement.m_mediaKeys.clear();
 
