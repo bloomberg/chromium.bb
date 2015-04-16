@@ -28,7 +28,7 @@ public:
     void setComposite(AnimationEffect::CompositeOperation composite) { m_composite = composite; }
     AnimationEffect::CompositeOperation composite() const { return m_composite; }
 
-    void setEasing(PassRefPtrWillBeRawPtr<TimingFunction> easing) { m_easing = easing; }
+    void setEasing(PassRefPtr<TimingFunction> easing) { m_easing = easing; }
     TimingFunction& easing() const { return *m_easing; }
 
     static bool compareOffsets(const RefPtrWillBeMember<Keyframe>& a, const RefPtrWillBeMember<Keyframe>& b)
