@@ -232,6 +232,8 @@ bool DrmDevice::Initialize() {
         << "': " << base::File::ErrorToString(file_.error_details());
   }
 
+  VLOG(1) << "Succeeded in taking master on " << device_path_.value();
+
 #if defined(USE_DRM_ATOMIC)
   plane_manager_.reset(new HardwareDisplayPlaneManagerAtomic());
 #else
