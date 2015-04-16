@@ -2570,7 +2570,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
   def AssertOwnersWorks(self, tbr=False, issue='1', approvers=None,
       reviewers=None, is_committing=True, rietveld_response=None,
       uncovered_files=None, expected_output='',
-      manually_specified_reviewers=None):
+      manually_specified_reviewers=None, cq_dry_run=False):
     if approvers is None:
       # The set of people who lgtm'ed a change.
       approvers = set()
@@ -2598,8 +2598,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.tbr = tbr
 
     if not is_committing or (not tbr and issue):
-      affected_file.LocalPath().AndReturn('foo/xyz.cc')
-      change.AffectedFiles(file_filter=None).AndReturn([affected_file])
+      if not cq_dry_run:
+        affected_file.LocalPath().AndReturn('foo/xyz.cc')
+        change.AffectedFiles(file_filter=None).AndReturn([affected_file])
       if issue and not rietveld_response:
         rietveld_response = {
           "owner_email": change.author_email,
@@ -2612,20 +2613,25 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
       if is_committing:
         people = approvers
+        if issue:
+          input_api.rietveld.get_issue_properties(
+              issue=int(input_api.change.issue), messages=None).AndReturn(
+                  rietveld_response)
       else:
         people = reviewers
 
-      if issue:
-        input_api.rietveld.get_issue_properties(
-            issue=int(input_api.change.issue), messages=True).AndReturn(
-                rietveld_response)
+      if not cq_dry_run:
+        if issue:
+          input_api.rietveld.get_issue_properties(
+              issue=int(input_api.change.issue), messages=True).AndReturn(
+                  rietveld_response)
 
-      people.add(change.author_email)
-      fake_db.files_not_covered_by(set(['foo/xyz.cc']),
-          people).AndReturn(uncovered_files)
-      if not is_committing and uncovered_files:
-        fake_db.reviewers_for(set(['foo']),
-            change.author_email).AndReturn(change.author_email)
+        people.add(change.author_email)
+        fake_db.files_not_covered_by(set(['foo/xyz.cc']),
+            people).AndReturn(uncovered_files)
+        if not is_committing and uncovered_files:
+          fake_db.reviewers_for(set(['foo']),
+              change.author_email).AndReturn(change.author_email)
 
     self.mox.ReplayAll()
     output = presubmit.PresubmitOutput()
@@ -2634,6 +2640,23 @@ class CannedChecksUnittest(PresubmitTestsBase):
     if results:
       results[0].handle(output)
     self.assertEquals(output.getvalue(), expected_output)
+
+  def testCannedCheckOwners_DryRun(self):
+    response = {
+      "owner_email": "john@example.com",
+      "cq_dry_run": True,
+      "reviewers": ["ben@example.com"],
+    }
+    self.AssertOwnersWorks(approvers=set(),
+        cq_dry_run=True,
+        rietveld_response=response,
+        reviewers=set(["ben@example.com"]),
+        expected_output='This is a CQ dry run, skipping OWNERS check\n')
+
+    self.AssertOwnersWorks(approvers=set(['ben@example.com']),
+        is_committing=False,
+        rietveld_response=response,
+        expected_output='')
 
   def testCannedCheckOwners_Approved(self):
     response = {

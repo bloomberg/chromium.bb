@@ -854,7 +854,11 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
     if input_api.tbr:
       return [output_api.PresubmitNotifyResult(
           '--tbr was specified, skipping OWNERS check')]
-    if not input_api.change.issue:
+    if input_api.change.issue:
+      if _GetRietveldIssueProps(input_api, None).get('cq_dry_run', False):
+        return [output_api.PresubmitNotifyResult(
+            'This is a CQ dry run, skipping OWNERS check')]
+    else:
       return [output_api.PresubmitError("OWNERS check failed: this change has "
           "no Rietveld issue number, so we can't check it for approvals.")]
     needed = 'LGTM from an OWNER'
