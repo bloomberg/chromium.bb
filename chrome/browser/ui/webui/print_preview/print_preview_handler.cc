@@ -687,9 +687,10 @@ void PrintPreviewHandler::HandleGetPrivetPrinters(const base::ListValue* args) {
   if (!PrivetPrintingEnabled())
     return web_ui()->CallJavascriptFunction("onPrivetPrinterSearchDone");
 #if defined(ENABLE_SERVICE_DISCOVERY)
-  local_discovery::ServiceDiscoverySharedClient::GetInstanceWithoutAlert(
-      base::Bind(&PrintPreviewHandler::StartPrivetLister,
-                 weak_factory_.GetWeakPtr()));
+  using local_discovery::ServiceDiscoverySharedClient;
+  scoped_refptr<ServiceDiscoverySharedClient> service_discovery =
+      ServiceDiscoverySharedClient::GetInstance();
+  StartPrivetLister(service_discovery);
 #endif  // ENABLE_SERVICE_DISCOVERY
 }
 
