@@ -59,7 +59,6 @@
 #include "chrome/browser/renderer_host/pepper/device_id_fetcher.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/app_list/app_list_prefs.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
@@ -134,6 +133,7 @@
 #endif
 
 #if defined(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
@@ -373,7 +373,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   autofill::AutofillManager::RegisterProfilePrefs(registry);
   bookmarks::RegisterProfilePrefs(registry);
   sync_driver::SyncPrefs::RegisterProfilePrefs(registry);
-  ChildAccountService::RegisterProfilePrefs(registry);
   ChromeContentBrowserClient::RegisterProfilePrefs(registry);
   ChromeVersionService::RegisterProfilePrefs(registry);
   chrome_browser_net::HttpServerPropertiesManagerFactory::RegisterProfilePrefs(
@@ -453,6 +452,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #endif
 
 #if defined(ENABLE_SUPERVISED_USERS)
+  ChildAccountService::RegisterProfilePrefs(registry);
   SupervisedUserService::RegisterProfilePrefs(registry);
   SupervisedUserSharedSettingsService::RegisterProfilePrefs(registry);
   SupervisedUserSyncService::RegisterProfilePrefs(registry);

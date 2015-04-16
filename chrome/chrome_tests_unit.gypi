@@ -70,7 +70,6 @@
       'browser/content_settings/content_settings_origin_identifier_value_map_unittest.cc',
       'browser/content_settings/content_settings_policy_provider_unittest.cc',
       'browser/content_settings/content_settings_pref_provider_unittest.cc',
-      'browser/content_settings/content_settings_supervised_provider_unittest.cc',
       'browser/content_settings/content_settings_usages_state_unittest.cc',
       'browser/content_settings/cookie_settings_unittest.cc',
       'browser/content_settings/host_content_settings_map_unittest.cc',
@@ -1401,6 +1400,7 @@
       'browser/ui/webui/theme_source_unittest.cc',
     ],
     'chrome_unit_tests_supervised_user_sources': [
+      'browser/content_settings/content_settings_supervised_provider_unittest.cc',
       'browser/supervised_user/child_accounts/family_info_fetcher_unittest.cc',
       'browser/supervised_user/child_accounts/permission_request_creator_apiary_unittest.cc',
       'browser/supervised_user/experimental/supervised_user_async_url_checker_unittest.cc',
