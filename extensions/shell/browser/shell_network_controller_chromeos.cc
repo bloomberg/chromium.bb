@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chromeos/network/network_connection_handler.h"
+#include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_state.h"
@@ -100,6 +101,12 @@ void ShellNetworkController::NetworkConnectionStateChanged(
     SetScanningEnabled(true);
     ConnectIfUnconnected();
   }
+}
+
+void ShellNetworkController::SetCellularAllowRoaming(bool allow_roaming) {
+  chromeos::NetworkDeviceHandler* device_handler =
+      chromeos::NetworkHandler::Get()->network_device_handler();
+  device_handler->SetCellularAllowRoaming(allow_roaming);
 }
 
 const chromeos::NetworkState* ShellNetworkController::GetActiveWiFiNetwork() {

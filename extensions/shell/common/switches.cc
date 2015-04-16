@@ -7,6 +7,9 @@
 namespace extensions {
 namespace switches {
 
+// Allow roaming in the cellular network.
+const char kAppShellAllowRoaming[] = "app-shell-allow-roaming";
+
 // Size for the host window to create (i.e. "800x600").
 const char kAppShellHostWindowSize[] = "app-shell-host-window-size";
 

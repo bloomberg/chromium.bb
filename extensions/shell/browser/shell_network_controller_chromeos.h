@@ -30,6 +30,9 @@ class ShellNetworkController : public chromeos::NetworkStateHandlerObserver {
   void NetworkConnectionStateChanged(
       const chromeos::NetworkState* state) override;
 
+  // Control whether the cellular network connection allows roaming.
+  void SetCellularAllowRoaming(bool allow_roaming);
+
  private:
   // State of communication with the connection manager.
   enum State {

@@ -113,6 +113,12 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
   network_controller_.reset(new ShellNetworkController(
       base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
           switches::kAppShellPreferredNetwork)));
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAppShellAllowRoaming)) {
+    network_controller_->SetCellularAllowRoaming(true);
+  }
+
 #else
   // Non-Chrome OS platforms are for developer convenience, so use a test IME.
   ui::InitializeInputMethodForTesting();
