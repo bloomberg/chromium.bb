@@ -733,6 +733,12 @@ body:not(.connected) #session-mode {
   box-sizing: border-box;
 }
 
+#client-container {
+  /* The mouse-cursor-overlay is positioned relative to the client plugin,
+   * which is contained within this element. */
+  position: relative;
+}
+
 .mouse-cursor-overlay {
   position: absolute;
   pointer-events: none;
