@@ -64,18 +64,11 @@ cr.define('options.network', function() {
   var activeMenu_ = null;
 
   /**
-   * Indicates if cellular networks are available.
-   * @type {boolean}
+   * The state of the cellular device or undefined if not available.
+   * @type {string|undefined}
    * @private
    */
-  var cellularAvailable_ = false;
-
-  /**
-   * Indicates if cellular networks are enabled.
-   * @type {boolean}
-   * @private
-   */
-  var cellularEnabled_ = false;
+  var cellularState_ = undefined;
 
   /**
    * Indicates if cellular device supports network scanning.
@@ -99,18 +92,18 @@ cr.define('options.network', function() {
   var cellularSimAbsent_ = false;
 
   /**
-   * Indicates if WiMAX networks are available.
-   * @type {boolean}
+   * The state of the WiFi device or undefined if not available.
+   * @type {string|undefined}
    * @private
    */
-  var wimaxAvailable_ = false;
+  var wifiState_ = undefined;
 
   /**
-   * Indicates if WiMAX networks are enabled.
-   * @type {boolean}
+   * The state of the WiMAX device or undefined if not available.
+   * @type {string|undefined}
    * @private
    */
-  var wimaxEnabled_ = false;
+  var wimaxState_ = undefined;
 
   /**
    * Indicates if mobile data roaming is enabled.
@@ -118,6 +111,34 @@ cr.define('options.network', function() {
    * @private
    */
   var enableDataRoaming_ = false;
+
+  /**
+   * List of wired networks.
+   * @type {Array<!NetworkInfo>}
+   * @private
+   */
+  var wiredList_ = [];
+
+  /**
+   * List of WiFi, Cellular, and WiMAX networks.
+   * @type {Array<!NetworkInfo>}
+   * @private
+   */
+  var wirelessList_ = [];
+
+  /**
+   * List of VPN networks.
+   * @type {Array<!NetworkInfo>}
+   * @private
+   */
+  var vpnList_ = [];
+
+  /**
+   * List of remembered (favorite) networks.
+   * @type {Array<!NetworkInfo>}
+   * @private
+   */
+  var rememberedList_ = [];
 
   /**
    * Returns the display name for 'network'.
@@ -512,7 +533,7 @@ cr.define('options.network', function() {
           data: {}
         });
       } else if (this.data_.key == 'Cellular') {
-        if (cellularEnabled_ && cellularSupportsScan_) {
+        if (cellularState_ == 'Enabled' && cellularSupportsScan_) {
           addendum.push({
             label: loadTimeData.getString('otherCellularNetworks'),
             command: createAddNonVPNConnectionCallback_('Cellular'),
@@ -1028,34 +1049,55 @@ cr.define('options.network', function() {
 
   /**
    * Chrome callback for updating network controls.
-   * @param {{cellularAvailable: boolean,
-   *          cellularEnabled: boolean,
-   *          cellularSimAbsent: boolean,
+   * @param {{cellularSimAbsent: boolean,
    *          cellularSimLockType: string,
    *          cellularSupportsScan: boolean,
    *          rememberedList: Array<NetworkInfo>,
    *          vpnList: Array<NetworkInfo>,
-   *          wifiAvailable: boolean,
-   *          wifiEnabled: boolean,
-   *          wimaxAvailable: boolean,
-   *          wimaxEnabled: boolean,
    *          wiredList: Array<NetworkInfo>,
    *          wirelessList: Array<NetworkInfo>}} data Description of available
    *     network devices and their corresponding state.
    */
   NetworkList.refreshNetworkData = function(data) {
-    var networkList = $('network-list');
-    networkList.startBatchUpdates();
-    cellularAvailable_ = data.cellularAvailable;
-    cellularEnabled_ = data.cellularEnabled;
     cellularSupportsScan_ = data.cellularSupportsScan;
     cellularSimAbsent_ = data.cellularSimAbsent;
     cellularSimLockType_ = data.cellularSimLockType;
-    wimaxAvailable_ = data.wimaxAvailable;
-    wimaxEnabled_ = data.wimaxEnabled;
+    wiredList_ = data.wiredList;
+    wirelessList_ = data.wirelessList;
+    vpnList_ = data.vpnList;
+    rememberedList_ = data.rememberedList;
+
+    // Request device states.
+    chrome.networkingPrivate.getDeviceStates(
+        NetworkList.onGetDeviceStates.bind(this));
+  };
+
+  /**
+   * Callback from getDeviceStates. Updates network controls.
+   * @param {Array<{State: string, Type: string}>} deviceStates The result
+   *     from getDeviceStates.
+   */
+  NetworkList.onGetDeviceStates = function(deviceStates) {
+    var networkList = $('network-list');
+    networkList.startBatchUpdates();
+
+    cellularState_ = undefined;
+    wifiState_ = undefined;
+    wimaxState_ = undefined;
+    for (var i = 0; i < deviceStates.length; ++i) {
+      var device = deviceStates[i];
+      var type = device.Type;
+      var state = device.State;
+      if (type == 'Cellular')
+        cellularState_ = cellularState_ || state;
+      else if (type == 'WiFi')
+        wifiState_ = wifiState_ || state;
+      else if (type == 'WiMAX')
+        wimaxState_ = wimaxState_ || state;
+    }
 
     // Only show Ethernet control if connected.
-    var ethernetConnection = getConnection_(data.wiredList);
+    var ethernetConnection = getConnection_(wiredList_);
     if (ethernetConnection) {
       var type = String('Ethernet');
       var ethernetOptions = showDetails.bind(null, ethernetConnection.GUID);
@@ -1070,15 +1112,15 @@ cr.define('options.network', function() {
       networkList.deleteItem('Ethernet');
     }
 
-    if (data.wifiEnabled)
-      loadData_('WiFi', data.wirelessList, data.rememberedList);
+    if (wifiState_ == 'Enabled')
+      loadData_('WiFi', wirelessList_, rememberedList_);
     else
       addEnableNetworkButton_('WiFi');
 
     // Only show cellular control if available.
-    if (data.cellularAvailable) {
-      if (data.cellularEnabled)
-        loadData_('Cellular', data.wirelessList, data.rememberedList);
+    if (cellularState_) {
+      if (cellularState_ == 'Enabled')
+        loadData_('Cellular', wirelessList_, rememberedList_);
       else
         addEnableNetworkButton_('Cellular');
     } else {
@@ -1086,9 +1128,9 @@ cr.define('options.network', function() {
     }
 
     // Only show wimax control if available. Uses cellular icons.
-    if (data.wimaxAvailable) {
-      if (data.wimaxEnabled)
-        loadData_('WiMAX', data.wirelessList, data.rememberedList);
+    if (wimaxState_) {
+      if (wimaxState_ == 'Enabled')
+        loadData_('WiMAX', wirelessList_, rememberedList_);
       else
         addEnableNetworkButton_('WiMAX');
     } else {
@@ -1096,8 +1138,8 @@ cr.define('options.network', function() {
     }
 
     // Only show VPN control if there is at least one VPN configured.
-    if (data.vpnList.length > 0)
-      loadData_('VPN', data.vpnList, data.rememberedList);
+    if (vpnList_.length > 0)
+      loadData_('VPN', vpnList_, rememberedList_);
     else
       networkList.deleteItem('VPN');
     networkList.endBatchUpdates();
@@ -1117,7 +1159,7 @@ cr.define('options.network', function() {
         if (cellularSimLockType_) {
           chrome.send('simOperation', ['unlock']);
           return;
-        } else if (cellularEnabled_ && cellularSimAbsent_) {
+        } else if (cellularState_ == 'Enabled' && cellularSimAbsent_) {
           chrome.send('simOperation', ['configure']);
           return;
         }

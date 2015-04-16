@@ -106,8 +106,6 @@ const char kConfigureNetworkMessage[] = "configureNetwork";
 const char kLoadVPNProviders[] = "loadVPNProviders";
 
 // These are strings used to communicate with JavaScript.
-const char kTagCellularAvailable[] = "cellularAvailable";
-const char kTagCellularEnabled[] = "cellularEnabled";
 const char kTagCellularSimAbsent[] = "cellularSimAbsent";
 const char kTagCellularSimLockType[] = "cellularSimLockType";
 const char kTagCellularSupportsScan[] = "cellularSupportsScan";
@@ -120,10 +118,6 @@ const char kTagSimOpUnlock[] = "unlock";
 const char kTagVPNProviderName[] = "name";
 const char kTagVPNProviderExtensionID[] = "extensionID";
 const char kTagVpnList[] = "vpnList";
-const char kTagWifiAvailable[] = "wifiAvailable";
-const char kTagWifiEnabled[] = "wifiEnabled";
-const char kTagWimaxAvailable[] = "wimaxAvailable";
-const char kTagWimaxEnabled[] = "wimaxEnabled";
 const char kTagWiredList[] = "wiredList";
 const char kTagWirelessList[] = "wirelessList";
 
@@ -596,34 +590,14 @@ void InternetOptionsHandler::FillNetworkInfo(
   dictionary->Set(kTagVpnList, GetVPNList());
   dictionary->Set(kTagRememberedList, GetRememberedList());
 
-  dictionary->SetBoolean(
-      kTagWifiAvailable,
-      handler->IsTechnologyAvailable(NetworkTypePattern::WiFi()));
-  dictionary->SetBoolean(
-      kTagWifiEnabled,
-      handler->IsTechnologyEnabled(NetworkTypePattern::WiFi()));
-
   const DeviceState* cellular =
       handler->GetDeviceStateByType(NetworkTypePattern::Mobile());
-  dictionary->SetBoolean(
-      kTagCellularAvailable,
-      handler->IsTechnologyAvailable(NetworkTypePattern::Mobile()));
-  dictionary->SetBoolean(
-      kTagCellularEnabled,
-      handler->IsTechnologyEnabled(NetworkTypePattern::Mobile()));
   dictionary->SetBoolean(kTagCellularSupportsScan,
                          cellular && cellular->support_network_scan());
   dictionary->SetBoolean(kTagCellularSimAbsent,
                          cellular && cellular->IsSimAbsent());
   dictionary->SetString(kTagCellularSimLockType,
                         cellular ? cellular->sim_lock_type() : "");
-
-  dictionary->SetBoolean(
-      kTagWimaxAvailable,
-      handler->IsTechnologyAvailable(NetworkTypePattern::Wimax()));
-  dictionary->SetBoolean(
-      kTagWimaxEnabled,
-      handler->IsTechnologyEnabled(NetworkTypePattern::Wimax()));
 }
 
 }  // namespace options
