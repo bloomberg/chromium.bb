@@ -20,6 +20,8 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/common/fileapi/file_system_mount_option.h"
 
@@ -40,6 +42,13 @@ ProvidedFileSystemInterface* CreateProvidedFileSystem(
 }
 
 }  // namespace
+
+ProvidingExtensionInfo::ProvidingExtensionInfo()
+    : can_configure(false), can_add(false) {
+}
+
+ProvidingExtensionInfo::~ProvidingExtensionInfo() {
+}
 
 Service::Service(Profile* profile,
                  extensions::ExtensionRegistry* extension_registry)
@@ -292,6 +301,39 @@ ProvidedFileSystemInterface* Service::GetProvidedFileSystem(
     return NULL;
 
   return file_system_it->second;
+}
+
+std::vector<ProvidingExtensionInfo> Service::GetProvidingExtensionInfoList()
+    const {
+  extensions::ExtensionRegistry* const registry =
+      extensions::ExtensionRegistry::Get(profile_);
+  DCHECK(registry);
+
+  extensions::EventRouter* const router =
+      extensions::EventRouter::Get(profile_);
+  DCHECK(router);
+
+  std::vector<ProvidingExtensionInfo> result;
+  for (const auto& extension : registry->enabled_extensions()) {
+    if (!extension->permissions_data()->HasAPIPermission(
+            extensions::APIPermission::kFileSystemProvider)) {
+      continue;
+    }
+
+    ProvidingExtensionInfo info;
+    info.extension_id = extension->id();
+    info.name = extension->name();
+    info.can_configure = router->ExtensionHasEventListener(
+        extension->id(), extensions::api::file_system_provider::
+                             OnConfigureRequested::kEventName);
+    info.can_add = router->ExtensionHasEventListener(
+        extension->id(),
+        extensions::api::file_system_provider::OnMountRequested::kEventName);
+
+    result.push_back(info);
+  }
+
+  return result;
 }
 
 void Service::OnExtensionUnloaded(

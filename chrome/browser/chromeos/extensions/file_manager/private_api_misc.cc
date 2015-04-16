@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/file_manager/app_installer.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/zip_file_creator.h"
+#include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -463,12 +464,40 @@ void FileManagerPrivateGetMimeTypeFunction::OnGetMimeType(
 ExtensionFunction::ResponseAction
 FileManagerPrivateIsPiexLoaderEnabledFunction::Run() {
 #if defined(OFFICIAL_BUILD)
-  return RespondNow(OneArgument(
-      new base::FundamentalValue(true)));
+  return RespondNow(OneArgument(new base::FundamentalValue(true)));
 #else
-  return RespondNow(OneArgument(
-      new base::FundamentalValue(false)));
+  return RespondNow(OneArgument(new base::FundamentalValue(false)));
 #endif
+}
+
+FileManagerPrivateGetProvidingExtensionsFunction::
+    FileManagerPrivateGetProvidingExtensionsFunction()
+    : chrome_details_(this) {
+}
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateGetProvidingExtensionsFunction::Run() {
+  using chromeos::file_system_provider::Service;
+  using chromeos::file_system_provider::ProvidingExtensionInfo;
+  const Service* const service = Service::Get(chrome_details_.GetProfile());
+  const std::vector<ProvidingExtensionInfo> info_list =
+      service->GetProvidingExtensionInfoList();
+
+  using api::file_manager_private::ProvidingExtension;
+  std::vector<linked_ptr<ProvidingExtension>> providing_extensions;
+  for (const auto& info : info_list) {
+    const linked_ptr<ProvidingExtension> providing_extension(
+        new ProvidingExtension);
+    providing_extension->extension_id = info.extension_id;
+    providing_extension->name = info.name;
+    providing_extension->can_configure = info.can_configure;
+    providing_extension->can_add = info.can_add;
+    providing_extensions.push_back(providing_extension);
+  }
+
+  return RespondNow(ArgumentList(
+      api::file_manager_private::GetProvidingExtensions::Results::Create(
+          providing_extensions).Pass()));
 }
 
 }  // namespace extensions

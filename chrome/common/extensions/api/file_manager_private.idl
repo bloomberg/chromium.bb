@@ -518,6 +518,21 @@ dictionary DeviceEvent {
   DOMString devicePath;
 };
 
+// Describes an installed providing extension.
+dictionary ProvidingExtension {
+  // ID of the providing extension.
+  DOMString extensionId;
+
+  // Name of the providing extension.
+  DOMString name;
+
+  // Whether supports configuration dialog.
+  boolean canConfigure;
+
+  // Whether supports adding new instances.
+  boolean canAdd;
+};
+
 // Callback that does not take arguments.
 callback SimpleCallback = void();
 
@@ -610,6 +625,9 @@ callback ResolveEntriesCallback =
 
 // |checksum| Result checksum.
 callback ComputeChecksumCallback = void(DOMString checksum);
+
+// |extensions| List of providing extensions.
+callback GetProvidingExtensionsCallback = void(ProvidingExtension[] extensions);
 
 interface Functions {
   // Logout the current user for navigating to the re-authentication screen for
@@ -888,6 +906,9 @@ interface Functions {
 
   // Returns if Piex loader is enabled.
   static void isPiexLoaderEnabled(BooleanCallback callback);
+
+  // Returns list of available providing extensions.
+  static void getProvidingExtensions(GetProvidingExtensionsCallback callback);
 };
 
 interface Events {

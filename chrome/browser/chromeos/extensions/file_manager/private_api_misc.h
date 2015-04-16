@@ -9,6 +9,8 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_MISC_H_
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/common/extensions/webstore_install_result.h"
 #include "google_apis/drive/drive_api_error_codes.h"
 
@@ -196,6 +198,21 @@ class FileManagerPrivateIsPiexLoaderEnabledFunction
   DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateIsPiexLoaderEnabledFunction);
 };
 
+// Implements the chrome.fileManagerPrivate.getProvidingExtensions method.
+class FileManagerPrivateGetProvidingExtensionsFunction
+    : public UIThreadExtensionFunction {
+ public:
+  FileManagerPrivateGetProvidingExtensionsFunction();
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.getProvidingExtensions",
+                             FILEMANAGERPRIVATE_GETPROVIDINGEXTENSIONS)
+ protected:
+  ~FileManagerPrivateGetProvidingExtensionsFunction() override {}
+
+ private:
+  ResponseAction Run() override;
+  const ChromeExtensionFunctionDetails chrome_details_;
+  DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateGetProvidingExtensionsFunction);
+};
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_MISC_H_

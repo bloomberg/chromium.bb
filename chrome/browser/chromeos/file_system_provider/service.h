@@ -50,6 +50,17 @@ struct MountOptions;
 // Registers preferences to remember registered file systems between reboots.
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+// Holds information for a providing extension.
+struct ProvidingExtensionInfo {
+  ProvidingExtensionInfo();
+  ~ProvidingExtensionInfo();
+
+  std::string extension_id;
+  std::string name;
+  bool can_configure;
+  bool can_add;
+};
+
 // Manages and registers the file system provider service. Maintains provided
 // file systems.
 class Service : public KeyedService,
@@ -117,6 +128,10 @@ class Service : public KeyedService,
   // |mount_point_name|. If not found, then returns NULL.
   ProvidedFileSystemInterface* GetProvidedFileSystem(
       const std::string& mount_point_name);
+
+  // Returns a list of information of all currently installed providing
+  // extensions.
+  std::vector<ProvidingExtensionInfo> GetProvidingExtensionInfoList() const;
 
   // Adds and removes observers.
   void AddObserver(Observer* observer);

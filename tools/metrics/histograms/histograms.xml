@@ -50645,6 +50645,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1000" label="DEVELOPERPRIVATE_GETPROFILECONFIGURATION"/>
   <int value="1001" label="DEVELOPERPRIVATE_UPDATEPROFILECONFIGURATION"/>
   <int value="1002" label="SOCKETS_UDP_SETBROADCAST"/>
+  <int value="1003" label="FILEMANAGERPRIVATE_GETPROVIDINGEXTENSIONS"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
