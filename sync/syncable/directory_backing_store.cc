@@ -206,9 +206,9 @@ DirectoryBackingStore::DirectoryBackingStore(const string& dir_name)
 
 DirectoryBackingStore::DirectoryBackingStore(const string& dir_name,
                                              sql::Connection* db)
-    : db_(db),
-      dir_name_(dir_name),
+    : dir_name_(dir_name),
       database_page_size_(IsSyncBackingDatabase32KEnabled() ? 32768 : 4096),
+      db_(db),
       needs_column_refresh_(false) {
   DCHECK(base::ThreadTaskRunnerHandle::IsSet());
 }
@@ -332,6 +332,24 @@ bool DirectoryBackingStore::SaveChanges(
   }
 
   return transaction.Commit();
+}
+
+sql::Connection* DirectoryBackingStore::db() {
+  return db_.get();
+}
+
+bool DirectoryBackingStore::IsOpen() const {
+  return db_->is_open();
+}
+
+bool DirectoryBackingStore::Open(const base::FilePath& path) {
+  DCHECK(!db_->is_open());
+  return db_->Open(path);
+}
+
+bool DirectoryBackingStore::OpenInMemory() {
+  DCHECK(!db_->is_open());
+  return db_->OpenInMemory();
 }
 
 bool DirectoryBackingStore::InitializeTables() {

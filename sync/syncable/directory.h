@@ -55,16 +55,6 @@ enum InvariantCheckLevel {
 // Although Directory's kernel_ is exposed via public accessor it should be
 // treated as pseudo-private.
 class SYNC_EXPORT Directory {
-  friend class SyncableDirectoryTest;
-  friend class syncer::TestUserShare;
-  FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest, ManageDeleteJournals);
-  FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest,
-                           TakeSnapshotGetsAllDirtyHandlesTest);
-  FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest,
-                           TakeSnapshotGetsOnlyDirtyHandlesTest);
-  FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest,
-                           TakeSnapshotGetsMetahandlesToPurge);
-
  public:
   typedef std::vector<int64> Metahandles;
 
@@ -540,6 +530,16 @@ class SYNC_EXPORT Directory {
   const Kernel* kernel() const;
 
  private:
+  friend class SyncableDirectoryTest;
+  friend class syncer::TestUserShare;
+  FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest, ManageDeleteJournals);
+  FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest,
+                           TakeSnapshotGetsAllDirtyHandlesTest);
+  FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest,
+                           TakeSnapshotGetsOnlyDirtyHandlesTest);
+  FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest,
+                           TakeSnapshotGetsMetahandlesToPurge);
+
   // You'll notice that some of the methods below are private overloads of the
   // public ones declared above. The general pattern is that the public overload
   // constructs a ScopedKernelLock before calling the corresponding private

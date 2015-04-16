@@ -18,8 +18,8 @@ DirOpenResult InMemoryDirectoryBackingStore::Load(
     JournalIndex* delete_journals,
     MetahandleSet* metahandles_to_purge,
     Directory::KernelLoadInfo* kernel_load_info) {
-  if (!db_->is_open()) {
-    if (!db_->OpenInMemory())
+  if (!IsOpen()) {
+    if (!OpenInMemory())
       return FAILED_OPEN_DATABASE;
   }
 
@@ -27,8 +27,9 @@ DirOpenResult InMemoryDirectoryBackingStore::Load(
     return FAILED_OPEN_DATABASE;
 
   if (consistent_cache_guid_requested_) {
-    if (!db_->Execute("UPDATE share_info "
-                      "SET cache_guid = 'IrcjZ2jyzHDV9Io4+zKcXQ=='")) {
+    if (!db()->Execute(
+            "UPDATE share_info "
+            "SET cache_guid = 'IrcjZ2jyzHDV9Io4+zKcXQ=='")) {
       return FAILED_OPEN_DATABASE;
     }
   }

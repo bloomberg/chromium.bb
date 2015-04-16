@@ -38,8 +38,9 @@ DirOpenResult OnDiskDirectoryBackingStore::TryLoad(
     MetahandleSet* metahandles_to_purge,
     Directory::KernelLoadInfo* kernel_load_info) {
   DCHECK(CalledOnValidThread());
-  if (!db_->is_open()) {
-    if (!db_->Open(backing_filepath_))
+
+  if (!IsOpen()) {
+    if (!Open(backing_filepath_))
       return FAILED_OPEN_DATABASE;
   }
 

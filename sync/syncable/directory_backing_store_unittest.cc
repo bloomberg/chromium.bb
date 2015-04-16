@@ -3162,7 +3162,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion76To77) {
   ASSERT_FALSE(dbs->needs_column_refresh());
 
   EXPECT_EQ(GetExpectedLegacyMetaProtoTimes(INCLUDE_DELETED_ITEMS),
-            GetMetaProtoTimes(dbs->db_.get()));
+            GetMetaProtoTimes(&connection));
   // Since the proto times are expected to be in a legacy format, they may not
   // be compatible with ProtoTimeToTime, so we don't call ExpectTimes().
 
@@ -3170,7 +3170,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion76To77) {
   ASSERT_EQ(77, dbs->GetVersion());
 
   EXPECT_EQ(GetExpectedMetaProtoTimes(INCLUDE_DELETED_ITEMS),
-            GetMetaProtoTimes(dbs->db_.get()));
+            GetMetaProtoTimes(&connection));
   // Cannot actually load entries due to version 77 not having all required
   // columns.
   ASSERT_FALSE(dbs->needs_column_refresh());

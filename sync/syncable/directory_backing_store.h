@@ -44,6 +44,7 @@ struct ColumnSpec;
 // in tests.  The concrete class used in non-test scenarios is
 // OnDiskDirectoryBackingStore.
 class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
+  friend class TestDirectoryBackingStore;
   friend class DirectoryBackingStoreTest;
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest,
                            IncreaseDatabasePageSizeFrom4KTo32K);
@@ -105,6 +106,21 @@ class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
   // For test classes.
   DirectoryBackingStore(const std::string& dir_name,
                         sql::Connection* connection);
+
+  // An accessor for the underlying sql::Connection. Avoid using outside of
+  // tests.
+  sql::Connection* db();
+
+  // Return true if the DB is open.
+  bool IsOpen() const;
+
+  // Open the DB at |path|.
+  // Return true on success, false on failure.
+  bool Open(const base::FilePath& path);
+
+  // Open an in memory DB.
+  // Return true on success, false on failure.
+  bool OpenInMemory();
 
   // General Directory initialization and load helpers.
   bool InitializeTables();
@@ -213,8 +229,6 @@ class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
   // Destroys the existing Connection and creates a new one.
   void ResetAndCreateConnection();
 
-  scoped_ptr<sql::Connection> db_;
-
  private:
   bool Vacuum();
   bool IncreasePageSizeTo32K();
@@ -226,6 +240,8 @@ class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
 
   const std::string dir_name_;
   const int database_page_size_;
+
+  scoped_ptr<sql::Connection> db_;
   sql::Statement save_meta_statement_;
   sql::Statement save_delete_journal_statement_;
 

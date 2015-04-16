@@ -38,7 +38,7 @@ bool DeferredOnDiskDirectoryBackingStore::SaveChanges(
 
     // Reopen DB on disk.
     ResetAndCreateConnection();
-    if (!db_->Open(backing_filepath_) || !InitializeTables())
+    if (!Open(backing_filepath_) || !InitializeTables())
       return false;
 
     db_is_on_disk_ = true;
@@ -54,8 +54,8 @@ DirOpenResult DeferredOnDiskDirectoryBackingStore::Load(
     Directory::KernelLoadInfo* kernel_load_info) {
   // Open an in-memory database at first to create initial sync data needed by
   // Directory.
-  CHECK(!db_->is_open());
-  if (!db_->OpenInMemory())
+  CHECK(!IsOpen());
+  if (!OpenInMemory())
     return FAILED_OPEN_DATABASE;
 
   if (!InitializeTables())
