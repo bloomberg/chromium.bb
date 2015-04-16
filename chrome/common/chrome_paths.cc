@@ -66,15 +66,6 @@ const base::FilePath::CharType kPepperFlashSystemBaseDirectory[] =
 const base::FilePath::CharType kInternalNaClPluginFileName[] =
     FILE_PATH_LITERAL("internal-nacl-plugin");
 
-const base::FilePath::CharType kEffectsPluginFileName[] =
-#if defined(OS_WIN)
-    FILE_PATH_LITERAL("pepper/libppeffects.dll");
-#elif defined(OS_MACOSX)
-    FILE_PATH_LITERAL("pepper/libppeffects.plugin");
-#else  // Linux and Chrome OS
-    FILE_PATH_LITERAL("pepper/libppeffects.so");
-#endif
-
 #if defined(OS_LINUX)
 // The path to the external extension <id>.json files.
 // /usr/share seems like a good choice, see: http://www.pathname.com/fhs/
@@ -315,11 +306,6 @@ bool PathProvider(int key, base::FilePath* result) {
       if (!PathService::Get(chrome::DIR_PEPPER_FLASH_PLUGIN, &cur))
         return false;
       cur = cur.Append(chrome::kPepperFlashPluginFilename);
-      break;
-    case chrome::FILE_EFFECTS_PLUGIN:
-      if (!GetInternalPluginsDirectory(&cur))
-        return false;
-      cur = cur.Append(kEffectsPluginFileName);
       break;
     // TODO(teravest): Remove this case once the internal NaCl plugin is gone.
     // We currently need a path here to look up whether the plugin is disabled

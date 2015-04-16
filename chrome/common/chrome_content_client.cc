@@ -74,13 +74,6 @@ const char kPDFPluginOutOfProcessMimeType[] =
 const uint32 kPDFPluginPermissions = ppapi::PERMISSION_PRIVATE |
                                      ppapi::PERMISSION_DEV;
 
-const char kEffectsPluginName[] = "Google Talk Effects Plugin";
-const char kEffectsPluginMimeType[] ="application/x-ppapi-hangouts-effects";
-const char kEffectsPluginExtension[] = "";
-const char kEffectsPluginDescription[] = "Google Talk Effects Plugin";
-const uint32 kEffectsPluginPermissions = ppapi::PERMISSION_PRIVATE |
-                                         ppapi::PERMISSION_DEV;
-
 content::PepperPluginInfo::GetInterfaceFunc g_pdf_get_interface;
 content::PepperPluginInfo::PPP_InitializeModuleFunc g_pdf_initialize_module;
 content::PepperPluginInfo::PPP_ShutdownModuleFunc g_pdf_shutdown_module;
@@ -169,26 +162,6 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
     plugins->push_back(nacl);
   }
 #endif  // !defined(DISABLE_NACL)
-
-  // TODO(vrk): Remove this when NaCl effects plugin replaces the ppapi effects
-  // plugin.
-  static bool skip_effects_file_check = false;
-  if (PathService::Get(chrome::FILE_EFFECTS_PLUGIN, &path)) {
-    if (skip_effects_file_check || base::PathExists(path)) {
-      content::PepperPluginInfo effects;
-      effects.path = path;
-      effects.name = kEffectsPluginName;
-      effects.is_out_of_process = true;
-      effects.permissions = kEffectsPluginPermissions;
-      content::WebPluginMimeType effects_mime_type(kEffectsPluginMimeType,
-                                                   kEffectsPluginExtension,
-                                                   kEffectsPluginDescription);
-      effects.mime_types.push_back(effects_mime_type);
-      plugins->push_back(effects);
-
-      skip_effects_file_check = true;
-    }
-  }
 
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS) && \
     !defined(WIDEVINE_CDM_IS_COMPONENT)
