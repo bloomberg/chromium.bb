@@ -340,10 +340,14 @@ void WebView::didExitModalLoop()
 
 void WebViewImpl::setMainFrame(WebFrame* frame)
 {
-    if (frame->isWebLocalFrame())
-        toWebLocalFrameImpl(frame)->initializeCoreFrame(&page()->frameHost(), 0, nullAtom, nullAtom);
-    else
+    if (frame->isWebLocalFrame()) {
+        WebLocalFrameImpl* localFrame = toWebLocalFrameImpl(frame);
+        localFrame->initializeCoreFrame(&page()->frameHost(), 0, nullAtom, nullAtom);
+        // Composited WebViews want repaints outside the frame visible rect.
+        localFrame->frame()->view()->setClipsRepaints(!m_layerTreeView);
+    } else {
         toWebRemoteFrameImpl(frame)->initializeCoreFrame(&page()->frameHost(), 0, nullAtom);
+    }
 }
 
 void WebViewImpl::setCredentialManagerClient(WebCredentialManagerClient* webCredentialManagerClient)
@@ -412,19 +416,13 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_rootGraphicsLayer(0)
     , m_rootTransformLayer(0)
     , m_graphicsLayerFactory(adoptPtr(new GraphicsLayerFactoryChromium(this)))
-    , m_isAcceleratedCompositingActive(false)
-    , m_layerTreeViewCommitsDeferred(false)
-    , m_layerTreeViewClosed(false)
     , m_matchesHeuristicsForGpuRasterization(false)
     , m_recreatingGraphicsContext(false)
     , m_flingModifier(0)
     , m_flingSourceDevice(false)
     , m_fullscreenController(FullscreenController::create(this))
     , m_showFPSCounter(false)
-    , m_showPaintRects(false)
-    , m_showDebugBorders(false)
     , m_continuousPaintingEnabled(false)
-    , m_showScrollBottleneckRects(false)
     , m_baseBackgroundColor(Color::white)
     , m_backgroundColorOverride(Color::transparent)
     , m_zoomFactorOverride(0)
@@ -967,7 +965,6 @@ void WebViewImpl::setShowPaintRects(bool show)
         TRACE_EVENT0("blink", "WebViewImpl::setShowPaintRects");
         m_layerTreeView->setShowPaintRects(show);
     }
-    m_showPaintRects = show;
     setFirstPaintInvalidationTrackingEnabledForShowPaintRects(show);
 }
 
@@ -975,7 +972,6 @@ void WebViewImpl::setShowDebugBorders(bool show)
 {
     if (m_layerTreeView)
         m_layerTreeView->setShowDebugBorders(show);
-    m_showDebugBorders = show;
 }
 
 void WebViewImpl::setContinuousPaintingEnabled(bool enabled)
@@ -1003,7 +999,6 @@ void WebViewImpl::setShowScrollBottleneckRects(bool show)
 {
     if (m_layerTreeView)
         m_layerTreeView->setShowScrollBottleneckRects(show);
-    m_showScrollBottleneckRects = show;
 }
 
 void WebViewImpl::acceptLanguagesChanged()
@@ -2732,14 +2727,12 @@ void WebViewImpl::setTextDirection(WebTextDirection direction)
 
 bool WebViewImpl::isAcceleratedCompositingActive() const
 {
-    return m_isAcceleratedCompositingActive;
+    return m_rootLayer;
 }
 
 void WebViewImpl::willCloseLayerTreeView()
 {
-    setIsAcceleratedCompositingActive(false);
     m_layerTreeView = 0;
-    m_layerTreeViewClosed = true;
 }
 
 void WebViewImpl::didAcquirePointerLock()
@@ -3706,7 +3699,7 @@ void WebViewImpl::sendResizeEventAndRepaint()
     }
 
     if (m_client) {
-        if (isAcceleratedCompositingActive()) {
+        if (m_layerTreeView) {
             updateLayerTreeViewport();
         } else {
             WebRect damagedRect(0, 0, m_size.width, m_size.height);
@@ -3854,6 +3847,9 @@ void WebViewImpl::setIsTransparent(bool isTransparent)
 
     // Future frames check this to know whether to be transparent.
     m_isTransparent = isTransparent;
+
+    if (m_layerTreeView)
+        m_layerTreeView->setHasTransparentBackground(this->isTransparent());
 }
 
 bool WebViewImpl::isTransparent() const
@@ -3954,11 +3950,8 @@ void WebViewImpl::didRemoveAllPendingStylesheet(WebLocalFrameImpl* webframe)
 
 void WebViewImpl::resumeTreeViewCommits()
 {
-    if (m_layerTreeViewCommitsDeferred) {
-        if (m_layerTreeView)
-            m_layerTreeView->setDeferCommits(false);
-        m_layerTreeViewCommitsDeferred = false;
-    }
+    if (m_layerTreeView)
+        m_layerTreeView->setDeferCommits(false);
 }
 
 void WebViewImpl::postLayoutResize(WebLocalFrameImpl* webframe)
@@ -4154,6 +4147,9 @@ void WebViewImpl::suppressInvalidations(bool enable)
 
 void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
 {
+    if (!m_layerTreeView)
+        return;
+
     suppressInvalidations(true);
 
     PinchViewport& pinchViewport = page()->frameHost().pinchViewport();
@@ -4162,15 +4158,16 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
         m_rootGraphicsLayer = pinchViewport.rootGraphicsLayer();
         m_rootLayer = pinchViewport.rootGraphicsLayer()->platformLayer();
         m_rootTransformLayer = pinchViewport.rootGraphicsLayer();
+        updateRootLayerTransform();
     } else {
         m_rootGraphicsLayer = nullptr;
         m_rootLayer = nullptr;
         m_rootTransformLayer = nullptr;
+        // This means that we're transitioning to a new page. Suppress
+        // commits until Blink generates invalidations so we don't
+        // attempt to paint too early in the next page load.
+        m_layerTreeView->setDeferCommits(true);
     }
-
-    setIsAcceleratedCompositingActive(layer != 0);
-
-    updateRootLayerTransform();
 
     if (m_layerTreeView) {
         if (m_rootLayer) {
@@ -4178,6 +4175,8 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
             // We register viewport layers here since there may not be a layer
             // tree view prior to this point.
             page()->frameHost().pinchViewport().registerLayersWithTreeView(m_layerTreeView);
+            if (m_pageOverlays)
+                m_pageOverlays->update();
         } else {
             m_layerTreeView->clearRootLayer();
             page()->frameHost().pinchViewport().clearLayersForTreeView(m_layerTreeView);
@@ -4194,10 +4193,9 @@ void WebViewImpl::scheduleCompositingLayerSync()
 
 void WebViewImpl::invalidateRect(const IntRect& rect)
 {
-    if (m_isAcceleratedCompositingActive) {
-        ASSERT(m_layerTreeView);
+    if (m_layerTreeView)
         updateLayerTreeViewport();
-    } else if (m_client)
+    else if (m_client)
         m_client->didInvalidateRect(rect);
 }
 
@@ -4262,58 +4260,6 @@ void WebViewImpl::initializeLayerTreeView()
     // FIXME: only unittests, click to play, Android priting, and printing (for headers and footers)
     // make this assert necessary. We should make them not hit this code and then delete allowsBrokenNullLayerTreeView.
     ASSERT(m_layerTreeView || !m_client || m_client->allowsBrokenNullLayerTreeView());
-}
-
-void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
-{
-    // In the middle of shutting down; don't try to spin back up a compositor.
-    // FIXME: compositing startup/shutdown should be refactored so that it
-    // turns on explicitly rather than lazily, which causes this awkwardness.
-    if (m_layerTreeViewClosed)
-        return;
-
-    ASSERT(!active || m_layerTreeView);
-    Platform::current()->histogramEnumeration("GPU.setIsAcceleratedCompositingActive", active * 2 + m_isAcceleratedCompositingActive, 4);
-
-    if (m_isAcceleratedCompositingActive == active)
-        return;
-
-    if (!m_client)
-        return;
-
-    if (!active) {
-        m_isAcceleratedCompositingActive = false;
-        if (!m_layerTreeViewCommitsDeferred) {
-            ASSERT(m_layerTreeView);
-            // This means that we're transitioning to a new page. Suppress commits until WebKit generates invalidations so
-            // we don't attempt to paint too early in the next page load.
-            m_layerTreeView->setDeferCommits(true);
-            m_layerTreeViewCommitsDeferred = true;
-        }
-    } else {
-        TRACE_EVENT0("blink", "WebViewImpl::setIsAcceleratedCompositingActive(true)");
-        m_layerTreeView->setRootLayer(*m_rootLayer);
-
-        bool visible = page()->visibilityState() == PageVisibilityStateVisible;
-        m_layerTreeView->setVisible(visible);
-        updateLayerTreeDeviceScaleFactor();
-        m_layerTreeView->setPageScaleFactorAndLimits(pageScaleFactor(), minimumPageScaleFactor(), maximumPageScaleFactor());
-        updateLayerTreeBackgroundColor();
-        m_layerTreeView->setHasTransparentBackground(isTransparent());
-        updateLayerTreeViewport();
-        m_isAcceleratedCompositingActive = true;
-        if (m_pageOverlays)
-            m_pageOverlays->update();
-        // FIXME: allow emulation, fps counter and continuous painting at the same time: crbug.com/299837.
-        m_layerTreeView->setShowFPSCounter(m_showFPSCounter && !m_devToolsEmulator->deviceEmulationEnabled());
-        m_layerTreeView->setShowPaintRects(m_showPaintRects);
-        m_layerTreeView->setShowDebugBorders(m_showDebugBorders);
-        m_layerTreeView->setContinuousPaintingEnabled(m_continuousPaintingEnabled && !m_devToolsEmulator->deviceEmulationEnabled());
-        m_layerTreeView->setShowScrollBottleneckRects(m_showScrollBottleneckRects);
-        m_layerTreeView->heuristicsForGpuRasterizationUpdated(m_matchesHeuristicsForGpuRasterization);
-    }
-    if (page() && page()->mainFrame()->isLocalFrame())
-        page()->deprecatedLocalMainFrame()->view()->setClipsRepaints(!m_isAcceleratedCompositingActive);
 }
 
 void WebViewImpl::updateMainFrameScrollPosition(const DoublePoint& scrollPosition, bool programmaticScroll)
@@ -4437,11 +4383,10 @@ bool WebViewImpl::detectContentOnTouch(const GestureEventWithHitTestResults& tar
 
 void WebViewImpl::setVisibilityState(WebPageVisibilityState visibilityState,
                                      bool isInitialState) {
-    if (!page())
-        return;
-
     ASSERT(visibilityState == WebPageVisibilityStateVisible || visibilityState == WebPageVisibilityStateHidden || visibilityState == WebPageVisibilityStatePrerender);
-    m_page->setVisibilityState(static_cast<PageVisibilityState>(static_cast<int>(visibilityState)), isInitialState);
+
+    if (page())
+        m_page->setVisibilityState(static_cast<PageVisibilityState>(static_cast<int>(visibilityState)), isInitialState);
 
     if (m_layerTreeView) {
         bool visible = visibilityState == WebPageVisibilityStateVisible;
