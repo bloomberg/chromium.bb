@@ -37,6 +37,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/guest_view_base.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/webview_info.h"
@@ -157,6 +158,8 @@ bool IsPluginLoadingAccessibleResourceInWebView(
   const extensions::Extension* extension =
       extension_registry->GetExtensionById(extension_id,
                              extensions::ExtensionRegistry::ENABLED);
+  if (!extension)
+    return false;
   const extensions::WebviewInfo* webview_info =
       static_cast<const extensions::WebviewInfo*>(extension->GetManifestData(
           extensions::manifest_keys::kWebviewAccessibleResources));
@@ -417,7 +420,8 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
   // If an app has explicitly made internal resources available by listing them
   // in |accessible_resources| in the manifest, then allow them to be loaded by
   // plugins inside a guest-view.
-  if (!is_managed && plugin_setting == CONTENT_SETTING_BLOCK &&
+  if (params.url.SchemeIs(extensions::kExtensionScheme) && !is_managed &&
+      plugin_setting == CONTENT_SETTING_BLOCK &&
       IsPluginLoadingAccessibleResourceInWebView(
           extension_registry_, render_process_id_, params.url)) {
     plugin_setting = CONTENT_SETTING_ALLOW;

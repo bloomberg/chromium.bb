@@ -32,6 +32,8 @@ embedder.setUp_ = function(config) {
   embedder.testImageBaseURL = embedder.baseGuestURL +
       '/extensions/platform_apps/web_view/shim/';
   embedder.virtualURL = 'http://virtualurl/';
+  embedder.pluginURL = embedder.baseGuestURL +
+      '/extensions/platform_apps/web_view/shim/embed.html';
 };
 
 window.runTest = function(testName) {
@@ -2205,6 +2207,16 @@ function testDisabledZoomMode() {
   document.body.appendChild(webview);
 }
 
+function testPlugin() {
+  var webview = document.createElement('webview');
+  webview.setAttribute('src', embedder.pluginURL);
+  webview.addEventListener('loadstop', function(e) {
+    // Not crashing means success.
+    embedder.test.succeed();
+  });
+  document.body.appendChild(webview);
+}
+
 embedder.test.testList = {
   'testAllowTransparencyAttribute': testAllowTransparencyAttribute,
   'testAutosizeHeight': testAutosizeHeight,
@@ -2287,6 +2299,7 @@ embedder.test.testList = {
   'testPerOriginZoomMode': testPerOriginZoomMode,
   'testPerViewZoomMode': testPerViewZoomMode,
   'testDisabledZoomMode': testDisabledZoomMode,
+  'testPlugin': testPlugin,
 };
 
 onload = function() {
