@@ -21,6 +21,10 @@ struct WebVRVector4 {
     float x, y, z, w;
 };
 
+struct WebVRRect {
+    int x, y, width, height;
+};
+
 // A field of view, given by 4 degrees describing the view from a center point.
 struct WebVRFieldOfView {
     float upDegrees;
@@ -63,6 +67,7 @@ struct WebVREyeParameters {
     WebVRFieldOfView maximumFieldOfView;
     WebVRFieldOfView recommendedFieldOfView;
     WebVRVector3 eyeTranslation;
+    WebVRRect renderRect;
 };
 
 // Information pertaining to Head Mounted Displays.
@@ -84,20 +89,16 @@ typedef int WebVRDeviceTypeMask;
 // such as position sensors or head mounted display metrics.
 class WebVRDevice {
 public:
-    static const size_t deviceIdLengthCap = 128;
     static const size_t deviceNameLengthCap = 128;
 
     WebVRDevice()
         : flags(0)
     {
-        deviceId[0] = 0;
         deviceName[0] = 0;
     }
 
     // Index for this hardware unit.
     unsigned index;
-    // Device identifier (based on manufacturer, model, etc.).
-    WebUChar deviceId[deviceIdLengthCap];
     // Friendly device name.
     WebUChar deviceName[deviceNameLengthCap];
     // Identifies the capabilities of this hardware unit.

@@ -6,17 +6,21 @@
 #define NavigatorVRDevice_h
 
 #include "bindings/core/v8/ScriptPromise.h"
+#include "core/frame/DOMWindowProperty.h"
 #include "modules/vr/VRDevice.h"
 #include "modules/vr/VRHardwareUnit.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebVector.h"
 
 namespace blink {
 
 class Document;
 class Navigator;
+class VRController;
+class VRHardwareUnitCollection;
 
-class NavigatorVRDevice final : public NoBaseWillBeGarbageCollectedFinalized<NavigatorVRDevice>, public WillBeHeapSupplement<Navigator> {
+class NavigatorVRDevice final : public NoBaseWillBeGarbageCollectedFinalized<NavigatorVRDevice>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorVRDevice);
 public:
     static NavigatorVRDevice* from(Document&);
@@ -26,19 +30,19 @@ public:
     static ScriptPromise getVRDevices(ScriptState*, Navigator&);
     ScriptPromise getVRDevices(ScriptState*);
 
+    VRController* controller();
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    friend VRHardwareUnit;
+    friend class VRHardwareUnit;
+    friend class VRGetDevicesCallback;
 
-    NavigatorVRDevice();
+    explicit NavigatorVRDevice(LocalFrame*);
 
     static const char* supplementName();
 
-    VRDeviceVector getUpdatedVRHardwareUnits();
-    VRHardwareUnit* getHardwareUnitForIndex(unsigned index);
-
-    PersistentHeapVectorWillBeHeapVector<Member<VRHardwareUnit>> m_hardwareUnits;
+    RefPtrWillBeMember<VRHardwareUnitCollection> m_hardwareUnits;
 };
 
 } // namespace blink

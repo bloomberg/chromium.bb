@@ -32,25 +32,16 @@ VREyeParameters::VREyeParameters()
 
 void VREyeParameters::setFromWebVREyeParameters(const blink::WebVREyeParameters &state)
 {
-    m_minimumFieldOfView->setFromWebVRFieldOfView(state.minimumFieldOfView);
-    m_maximumFieldOfView->setFromWebVRFieldOfView(state.maximumFieldOfView);
+    // FIXME: We should expose proper min/max FOV eventually but for now set the
+    // min/max equal to the recommended FOV to reduce need for synchronous
+    // queries and reduce rendering complexity.
+    m_minimumFieldOfView->setFromWebVRFieldOfView(state.recommendedFieldOfView);
+    m_maximumFieldOfView->setFromWebVRFieldOfView(state.recommendedFieldOfView);
     m_recommendedFieldOfView->setFromWebVRFieldOfView(state.recommendedFieldOfView);
     setDomPoint(m_eyeTranslation, state.eyeTranslation);
 
     m_currentFieldOfView->setFromWebVRFieldOfView(state.recommendedFieldOfView);
-}
-
-void VREyeParameters::setCurrentFieldOfView(const blink::VRFieldOfView* fov)
-{
-    m_currentFieldOfView = new VRFieldOfView(*fov);
-}
-
-void VREyeParameters::setRenderRect(double x, double y, double width, double height)
-{
-    m_renderRect->setX(x);
-    m_renderRect->setY(y);
-    m_renderRect->setWidth(width);
-    m_renderRect->setHeight(height);
+    m_renderRect = DOMRect::create(state.renderRect.x, state.renderRect.y, state.renderRect.width, state.renderRect.height);
 }
 
 DEFINE_TRACE(VREyeParameters)

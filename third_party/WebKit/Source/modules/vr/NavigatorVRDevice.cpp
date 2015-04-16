@@ -6,17 +6,20 @@
 #include "modules/vr/NavigatorVRDevice.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
 #include "core/page/Page.h"
 #include "modules/vr/HMDVRDevice.h"
 #include "modules/vr/PositionSensorVRDevice.h"
+#include "modules/vr/VRController.h"
+#include "modules/vr/VRGetDevicesCallback.h"
 #include "modules/vr/VRHardwareUnit.h"
+#include "modules/vr/VRHardwareUnitCollection.h"
 #include "modules/vr/VRPositionState.h"
-#include "platform/RuntimeEnabledFeatures.h"
-#include "public/platform/Platform.h"
 
 namespace blink {
 
@@ -32,7 +35,7 @@ NavigatorVRDevice& NavigatorVRDevice::from(Navigator& navigator)
 {
     NavigatorVRDevice* supplement = static_cast<NavigatorVRDevice*>(WillBeHeapSupplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
-        supplement = new NavigatorVRDevice();
+        supplement = new NavigatorVRDevice(navigator.frame());
         provideTo(navigator, supplementName(), adoptPtrWillBeNoop(supplement));
     }
     return *supplement;
@@ -45,46 +48,28 @@ ScriptPromise NavigatorVRDevice::getVRDevices(ScriptState* scriptState, Navigato
 
 ScriptPromise NavigatorVRDevice::getVRDevices(ScriptState* scriptState)
 {
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    resolver->resolve(getUpdatedVRHardwareUnits());
+
+    Document* document = m_frame ? m_frame->document() : 0;
+
+    if (!document || !controller()) {
+        RefPtrWillBeRawPtr<DOMException> exception = DOMException::create(InvalidStateError, "The object is no longer associated to a document.");
+        resolver->reject(exception);
+        return promise;
+    }
+
+    controller()->getDevices(new VRGetDevicesCallback(resolver, m_hardwareUnits.get()));
 
     return promise;
 }
 
-HeapVector<Member<VRDevice>> NavigatorVRDevice::getUpdatedVRHardwareUnits()
+VRController* NavigatorVRDevice::controller()
 {
-    WebVector<blink::WebVRDevice> devices;
-    blink::Platform::current()->getVRDevices(&devices);
+    if (!frame())
+        return 0;
 
-    VRDeviceVector vrDevices;
-    for (size_t i = 0; i < devices.size(); ++i) {
-        const blink::WebVRDevice& device = devices[i];
-
-        VRHardwareUnit* hardwareUnit = getHardwareUnitForIndex(device.index);
-        if (!hardwareUnit) {
-            hardwareUnit = new VRHardwareUnit();
-            m_hardwareUnits.append(hardwareUnit);
-        }
-
-        hardwareUnit->updateFromWebVRDevice(device);
-        hardwareUnit->addDevicesToVector(vrDevices);
-    }
-
-    return vrDevices;
-}
-
-VRHardwareUnit* NavigatorVRDevice::getHardwareUnitForIndex(unsigned index)
-{
-    VRHardwareUnit* hardwareUnit;
-    for (size_t i = 0; i < m_hardwareUnits.size(); ++i) {
-        hardwareUnit = m_hardwareUnits[i];
-        if (hardwareUnit->index() == index) {
-            return hardwareUnit;
-        }
-    }
-
-    return 0;
+    return VRController::from(*frame());
 }
 
 DEFINE_TRACE(NavigatorVRDevice)
@@ -92,10 +77,13 @@ DEFINE_TRACE(NavigatorVRDevice)
     visitor->trace(m_hardwareUnits);
 
     WillBeHeapSupplement<Navigator>::trace(visitor);
+    DOMWindowProperty::trace(visitor);
 }
 
-NavigatorVRDevice::NavigatorVRDevice()
+NavigatorVRDevice::NavigatorVRDevice(LocalFrame* frame)
+    : DOMWindowProperty(frame)
 {
+    m_hardwareUnits = new VRHardwareUnitCollection(controller());
 }
 
 NavigatorVRDevice::~NavigatorVRDevice()

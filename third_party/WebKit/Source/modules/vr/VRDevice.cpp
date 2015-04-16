@@ -7,14 +7,14 @@
 
 namespace blink {
 
-VRDevice::VRDevice(VRHardwareUnit* hardwareUnit)
+VRDevice::VRDevice(VRHardwareUnit* hardwareUnit, unsigned deviceId)
     : m_hardwareUnit(hardwareUnit)
+    , m_deviceId(String::number(deviceId))
 {
 }
 
 void VRDevice::updateFromWebVRDevice(const WebVRDevice& device)
 {
-    m_deviceId = device.deviceId;
     m_deviceName = device.deviceName;
 }
 

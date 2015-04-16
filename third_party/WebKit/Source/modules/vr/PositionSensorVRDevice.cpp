@@ -5,29 +5,30 @@
 #include "config.h"
 #include "modules/vr/PositionSensorVRDevice.h"
 
+#include "modules/vr/VRController.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
 
-PositionSensorVRDevice::PositionSensorVRDevice(VRHardwareUnit* hardwareUnit)
-    : VRDevice(hardwareUnit)
+PositionSensorVRDevice::PositionSensorVRDevice(VRHardwareUnit* hardwareUnit, unsigned deviceId)
+    : VRDevice(hardwareUnit, deviceId)
 {
 }
 
 VRPositionState* PositionSensorVRDevice::getState()
 {
     // FIXME: This value should be stable for the duration of a requestAnimationFrame callback
-    return hardwareUnit()->getPositionState();
+    return hardwareUnit()->getSensorState();
 }
 
 VRPositionState* PositionSensorVRDevice::getImmediateState()
 {
-    return hardwareUnit()->getPositionState();
+    return hardwareUnit()->getSensorState();
 }
 
 void PositionSensorVRDevice::resetSensor()
 {
-    blink::Platform::current()->resetVRSensor(index());
+    controller()->resetSensor(index());
 }
 
 DEFINE_TRACE(PositionSensorVRDevice)

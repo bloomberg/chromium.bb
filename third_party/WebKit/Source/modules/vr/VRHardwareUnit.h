@@ -12,6 +12,7 @@
 
 namespace blink {
 
+class VRController;
 class VRDevice;
 class HMDVRDevice;
 class NavigatorVRDevice;
@@ -25,7 +26,7 @@ enum VREye {
 
 class VRHardwareUnit : public GarbageCollectedFinalized<VRHardwareUnit> {
 public:
-    VRHardwareUnit();
+    explicit VRHardwareUnit(VRController*);
     virtual ~VRHardwareUnit();
 
     void updateFromWebVRDevice(const WebVRDevice&);
@@ -37,10 +38,10 @@ public:
 
     unsigned frameIndex() const { return m_frameIndex; }
 
-    VRPositionState* getPositionState();
+    VRController* controller();
 
-    void setFieldOfView(VREye, VRFieldOfView*);
-    VRFieldOfView* getCurrentEyeFieldOfView(VREye) const;
+    // VRController queries
+    VRPositionState* getSensorState();
 
     HMDVRDevice* hmd() const { return m_hmd; }
     PositionSensorVRDevice* positionSensor() const { return m_positionSensor; }
@@ -50,12 +51,12 @@ public:
 private:
     unsigned m_index;
     String m_hardwareUnitId;
+    unsigned m_nextDeviceId;
 
     unsigned m_frameIndex;
 
+    Member<VRController> m_controller;
     Member<VRPositionState> m_positionState;
-    Member<VRFieldOfView> m_currentFOVLeft;
-    Member<VRFieldOfView> m_currentFOVRight;
 
     // Device types
     Member<HMDVRDevice> m_hmd;

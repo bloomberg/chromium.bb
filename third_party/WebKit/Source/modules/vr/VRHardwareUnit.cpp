@@ -6,18 +6,20 @@
 #include "modules/vr/VRHardwareUnit.h"
 
 #include "modules/vr/HMDVRDevice.h"
+#include "modules/vr/NavigatorVRDevice.h"
 #include "modules/vr/PositionSensorVRDevice.h"
+#include "modules/vr/VRController.h"
 #include "modules/vr/VRDevice.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
 
-VRHardwareUnit::VRHardwareUnit()
-    : m_frameIndex(0)
+VRHardwareUnit::VRHardwareUnit(VRController* controller)
+    : m_nextDeviceId(1)
+    , m_frameIndex(0)
+    , m_controller(controller)
 {
     m_positionState = VRPositionState::create();
-    m_currentFOVLeft = new VRFieldOfView();
-    m_currentFOVRight = new VRFieldOfView();
 }
 
 VRHardwareUnit::~VRHardwareUnit()
@@ -27,11 +29,11 @@ VRHardwareUnit::~VRHardwareUnit()
 void VRHardwareUnit::updateFromWebVRDevice(const WebVRDevice& device)
 {
     m_index = device.index;
-    m_hardwareUnitId = device.deviceId;
+    m_hardwareUnitId = String::number(device.index);
 
     if (device.flags & WebVRDeviceTypeHMD) {
         if (!m_hmd)
-            m_hmd = new HMDVRDevice(this);
+            m_hmd = new HMDVRDevice(this, m_nextDeviceId++);
         m_hmd->updateFromWebVRDevice(device);
     } else if (m_hmd) {
         m_hmd.clear();
@@ -39,7 +41,7 @@ void VRHardwareUnit::updateFromWebVRDevice(const WebVRDevice& device)
 
     if (device.flags & WebVRDeviceTypePosition) {
         if (!m_positionSensor)
-            m_positionSensor = new PositionSensorVRDevice(this);
+            m_positionSensor = new PositionSensorVRDevice(this, m_nextDeviceId++);
         m_positionSensor->updateFromWebVRDevice(device);
     } else if (m_positionSensor) {
         m_positionSensor.clear();
@@ -55,49 +57,24 @@ void VRHardwareUnit::addDevicesToVector(HeapVector<Member<VRDevice>>& vrDevices)
         vrDevices.append(m_positionSensor);
 }
 
-VRPositionState* VRHardwareUnit::getPositionState()
+VRController* VRHardwareUnit::controller()
+{
+    return m_controller;
+}
+
+VRPositionState* VRHardwareUnit::getSensorState()
 {
     blink::WebHMDSensorState state;
-    blink::Platform::current()->getHMDSensorState(m_index, state);
-
+    m_controller->getSensorState(m_index, state);
     m_positionState->setState(state);
     m_frameIndex = state.frameIndex;
-
     return m_positionState;
-}
-
-void VRHardwareUnit::setFieldOfView(VREye eye, VRFieldOfView* fov)
-{
-    switch (eye) {
-    case VREyeLeft:
-        m_currentFOVLeft->setFromVRFieldOfView(*fov);
-        break;
-    case VREyeRight:
-        m_currentFOVRight->setFromVRFieldOfView(*fov);
-        break;
-    default:
-        ASSERT_NOT_REACHED();
-    }
-}
-
-VRFieldOfView* VRHardwareUnit::getCurrentEyeFieldOfView(VREye eye) const
-{
-    switch (eye) {
-    case VREyeLeft:
-        return new VRFieldOfView(*m_currentFOVLeft);
-    case VREyeRight:
-        return new VRFieldOfView(*m_currentFOVRight);
-    default:
-        ASSERT_NOT_REACHED();
-        return nullptr;
-    }
 }
 
 DEFINE_TRACE(VRHardwareUnit)
 {
+    visitor->trace(m_controller);
     visitor->trace(m_positionState);
-    visitor->trace(m_currentFOVLeft);
-    visitor->trace(m_currentFOVRight);
     visitor->trace(m_hmd);
     visitor->trace(m_positionSensor);
 }

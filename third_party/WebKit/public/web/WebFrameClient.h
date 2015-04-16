@@ -85,6 +85,7 @@ class WebString;
 class WebURL;
 class WebURLResponse;
 class WebUserMediaClient;
+class WebVRClient;
 class WebWorkerContentSettingsClientProxy;
 struct WebColorSuggestion;
 struct WebConsoleMessage;
@@ -641,6 +642,11 @@ public:
 
     // Access the embedder API for permission client.
     virtual WebPermissionClient* permissionClient() { return 0; }
+
+    // Virtual Reality -----------------------------------------------------
+
+    // Access the embedder API for virtual reality client.
+    virtual WebVRClient* webVRClient() { return 0; }
 
 protected:
     virtual ~WebFrameClient() { }

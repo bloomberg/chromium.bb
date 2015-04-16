@@ -14,16 +14,12 @@
 
 namespace blink {
 
-class VRPoint3D;
 class VRFieldOfView;
-class VRRect;
 
 class HMDVRDevice final : public VRDevice {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    explicit HMDVRDevice(VRHardwareUnit*);
-
-    typedef Vector<double> DoubleVector;
+    HMDVRDevice(VRHardwareUnit*, unsigned);
 
     virtual void updateFromWebVRDevice(const WebVRDevice&) override;
 
@@ -37,7 +33,6 @@ private:
 
     Member<VREyeParameters> m_eyeParametersLeft;
     Member<VREyeParameters> m_eyeParametersRight;
-    bool m_dirtyFov;
 };
 
 } // namespace blink

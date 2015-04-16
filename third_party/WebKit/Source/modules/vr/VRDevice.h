@@ -13,6 +13,8 @@
 
 namespace blink {
 
+class VRController;
+
 class VRDevice : public GarbageCollectedFinalized<VRDevice>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -24,12 +26,14 @@ public:
     VRHardwareUnit* hardwareUnit() { return m_hardwareUnit; }
     const VRHardwareUnit* hardwareUnit() const { return m_hardwareUnit; }
 
+    VRController* controller() { return m_hardwareUnit->controller(); }
+
     virtual void updateFromWebVRDevice(const WebVRDevice&);
 
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    explicit VRDevice(VRHardwareUnit*);
+    VRDevice(VRHardwareUnit*, unsigned);
 
 private:
     Member<VRHardwareUnit> m_hardwareUnit;

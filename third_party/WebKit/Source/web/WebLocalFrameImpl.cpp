@@ -157,6 +157,7 @@
 #include "modules/presentation/PresentationController.h"
 #include "modules/push_messaging/PushController.h"
 #include "modules/screen_orientation/ScreenOrientationController.h"
+#include "modules/vr/VRController.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
 #include "platform/UserGestureIndicator.h"
@@ -1657,6 +1658,8 @@ void WebLocalFrameImpl::setCoreFrame(PassRefPtrWillBeRawPtr<LocalFrame> frame)
             PresentationController::provideTo(*m_frame, m_client ? m_client->presentationClient() : nullptr);
         if (RuntimeEnabledFeatures::permissionsEnabled())
             PermissionController::provideTo(*m_frame, m_client ? m_client->permissionClient() : nullptr);
+        if (RuntimeEnabledFeatures::webVREnabled())
+            VRController::provideTo(*m_frame, m_client ? m_client->webVRClient() : nullptr);
     }
 }
 
