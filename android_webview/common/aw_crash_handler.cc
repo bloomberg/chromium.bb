@@ -11,6 +11,7 @@
 #include <unistd.h>
 
 #include "base/logging.h"
+#include "build/build_config.h"
 
 namespace {
 
@@ -66,6 +67,13 @@ namespace android_webview {
 namespace crash_handler {
 
 void RegisterCrashHandler(const std::string& version) {
+#if defined(ARCH_CPU_X86_FAMILY)
+  // Don't install signal handler on X86/64 because this breaks binary
+  // translators that handle SIGSEGV in userspace and get chained after our
+  // handler. See crbug.com/477444
+  return;
+#endif
+
   if (crash_handler_registered) {
     NOTREACHED();
     return;
