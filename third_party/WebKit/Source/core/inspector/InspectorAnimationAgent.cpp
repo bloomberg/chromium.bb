@@ -204,7 +204,7 @@ PassRefPtr<TypeBuilder::Animation::AnimationPlayer> InspectorAnimationAgent::bui
         .setPausedState(player.paused())
         .setPlayState(player.playState())
         .setPlaybackRate(player.playbackRate())
-        .setStartTime(player.startTime())
+        .setStartTime(normalizedStartTime(player))
         .setCurrentTime(player.currentTime())
         .setSource(animationObject.release())
         .setType(animationType);
@@ -239,7 +239,7 @@ void InspectorAnimationAgent::getAnimationPlayersForNode(ErrorString* errorStrin
 
 void InspectorAnimationAgent::getPlaybackRate(ErrorString*, double* playbackRate)
 {
-    *playbackRate = m_pageAgent->inspectedFrame()->document()->timeline().playbackRate();
+    *playbackRate = referenceTimeline().playbackRate();
 }
 
 void InspectorAnimationAgent::setPlaybackRate(ErrorString*, double playbackRate)
@@ -252,7 +252,13 @@ void InspectorAnimationAgent::setPlaybackRate(ErrorString*, double playbackRate)
 
 void InspectorAnimationAgent::setCurrentTime(ErrorString*, double currentTime)
 {
-    m_pageAgent->inspectedFrame()->document()->timeline().setCurrentTime(currentTime);
+    double timeDelta = currentTime - referenceTimeline().currentTime();
+    for (Frame* frame = m_pageAgent->inspectedFrame(); frame; frame = frame->tree().traverseNext(m_pageAgent->inspectedFrame())) {
+        if (frame->isLocalFrame()) {
+            AnimationTimeline& timeline = toLocalFrame(frame)->document()->timeline();
+            timeline.setCurrentTime(timeline.currentTime() + timeDelta);
+        }
+    }
 }
 
 void InspectorAnimationAgent::setTiming(ErrorString* errorString, const String& playerId, double duration, double delay)
@@ -298,10 +304,11 @@ void InspectorAnimationAgent::didCreateAnimationPlayer(AnimationPlayer* player)
     // Check threshold
     double latestStartTime = 0;
     for (const auto& p : m_idToAnimationPlayer.values())
-        latestStartTime = max(latestStartTime, p->startTime());
+        latestStartTime = max(latestStartTime, normalizedStartTime(*p));
 
     bool reset = false;
-    if (player->startTime() - latestStartTime > 1000) {
+    const double threshold = 1000;
+    if (normalizedStartTime(*player) - latestStartTime > threshold) {
         reset = true;
         m_idToAnimationPlayer.clear();
         m_idToAnimationType.clear();
@@ -318,6 +325,14 @@ void InspectorAnimationAgent::didCancelAnimationPlayer(AnimationPlayer* player)
     frontend()->animationPlayerCanceled(playerId);
 }
 
+void InspectorAnimationAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
+{
+    if (!m_state->getBoolean(AnimationAgentState::animationAgentEnabled))
+        return;
+    ASSERT(frame->document());
+    frame->document()->timeline().setPlaybackRate(referenceTimeline().playbackRate());
+}
+
 AnimationPlayer* InspectorAnimationAgent::assertAnimationPlayer(ErrorString* errorString, const String& id)
 {
     AnimationPlayer* player = m_idToAnimationPlayer.get(id);
@@ -326,6 +341,18 @@ AnimationPlayer* InspectorAnimationAgent::assertAnimationPlayer(ErrorString* err
         return nullptr;
     }
     return player;
+}
+
+AnimationTimeline& InspectorAnimationAgent::referenceTimeline()
+{
+    return m_pageAgent->inspectedFrame()->document()->timeline();
+}
+
+double InspectorAnimationAgent::normalizedStartTime(AnimationPlayer& player)
+{
+    if (referenceTimeline().playbackRate() == 0)
+        return player.startTime() + referenceTimeline().currentTime() - player.timeline()->currentTime();
+    return player.startTime() + (player.timeline()->zeroTime() - referenceTimeline().zeroTime()) * 1000 * referenceTimeline().playbackRate();
 }
 
 DEFINE_TRACE(InspectorAnimationAgent)

@@ -15,6 +15,7 @@ namespace blink {
 
 class AnimationNode;
 class AnimationPlayer;
+class AnimationTimeline;
 class Element;
 class InspectorDOMAgent;
 class InspectorPageAgent;
@@ -43,6 +44,7 @@ public:
     // API for InspectorInstrumentation
     void didCreateAnimationPlayer(AnimationPlayer*);
     void didCancelAnimationPlayer(AnimationPlayer*);
+    void didClearDocumentOfWindowObject(LocalFrame*);
 
     // API for InspectorFrontend
     virtual void enable(ErrorString*) override;
@@ -60,6 +62,8 @@ private:
     PassRefPtr<TypeBuilder::Animation::AnimationPlayer> buildObjectForAnimationPlayer(AnimationPlayer&);
     PassRefPtr<TypeBuilder::Animation::AnimationPlayer> buildObjectForAnimationPlayer(AnimationPlayer&, AnimationType, PassRefPtr<TypeBuilder::Animation::KeyframesRule> keyframeRule = nullptr);
     PassRefPtr<TypeBuilder::Array<TypeBuilder::Animation::AnimationPlayer> > buildArrayForAnimationPlayers(Element&, const WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> >);
+    double normalizedStartTime(AnimationPlayer&);
+    AnimationTimeline& referenceTimeline();
 
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
