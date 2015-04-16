@@ -170,7 +170,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       is_hidden_(hidden),
       repaint_ack_pending_(false),
       resize_ack_pending_(false),
-      screen_info_out_of_date_(true),
+      screen_info_out_of_date_(false),
       auto_resize_enabled_(false),
       waiting_for_screen_rects_ack_(false),
       needs_repainting_on_restore_(false),
@@ -577,11 +577,13 @@ void RenderWidgetHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
 }
 
 bool RenderWidgetHostImpl::GetResizeParams(
-    ViewMsg_Resize_Params* resize_params) const {
-  DCHECK(!screen_info_out_of_date_);
-
+    ViewMsg_Resize_Params* resize_params) {
   *resize_params = ViewMsg_Resize_Params();
 
+  if (!screen_info_) {
+    screen_info_.reset(new blink::WebScreenInfo);
+    GetWebScreenInfo(screen_info_.get());
+  }
   resize_params->screen_info = *screen_info_;
   resize_params->resizer_rect = GetRootWindowResizerRect();
 
@@ -602,7 +604,7 @@ bool RenderWidgetHostImpl::GetResizeParams(
       (old_resize_params_->physical_backing_size.IsEmpty() &&
        !resize_params->physical_backing_size.IsEmpty());
   bool dirty =
-      size_changed ||
+      size_changed || screen_info_out_of_date_ ||
       old_resize_params_->physical_backing_size !=
           resize_params->physical_backing_size ||
       old_resize_params_->is_fullscreen_granted !=
@@ -624,17 +626,6 @@ bool RenderWidgetHostImpl::GetResizeParams(
   return dirty;
 }
 
-bool RenderWidgetHostImpl::UpdateScreenInfo() {
-  if (!screen_info_out_of_date_)
-    return false;
-
-  screen_info_.reset(new blink::WebScreenInfo);
-  GetWebScreenInfo(screen_info_.get());
-  screen_info_out_of_date_ = false;
-
-  return true;
-}
-
 void RenderWidgetHostImpl::SetInitialRenderSizeParams(
     const ViewMsg_Resize_Params& resize_params) {
   resize_ack_pending_ = resize_params.needs_resize_ack;
@@ -651,9 +642,8 @@ void RenderWidgetHostImpl::WasResized() {
     return;
   }
 
-  bool screen_info_was_updated = UpdateScreenInfo();
   scoped_ptr<ViewMsg_Resize_Params> params(new ViewMsg_Resize_Params);
-  if (!GetResizeParams(params.get()) && !screen_info_was_updated)
+  if (!GetResizeParams(params.get()))
     return;
 
   bool width_changed =
@@ -1147,9 +1137,8 @@ void RenderWidgetHostImpl::GetWebScreenInfo(blink::WebScreenInfo* result) {
     view_->GetScreenInfo(result);
   else
     RenderWidgetHostViewBase::GetDefaultScreenInfo(result);
-  // TODO(sievers): find a way to make this done another way so the method
-  // can be const.
   latency_tracker_.set_device_scale_factor(result->deviceScaleFactor);
+  screen_info_out_of_date_ = false;
 }
 
 const NativeWebKeyboardEvent*

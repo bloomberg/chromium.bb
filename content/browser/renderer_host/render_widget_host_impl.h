@@ -554,7 +554,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Fills in the |resize_params| struct.
   // Returns |false| if the update is redundant, |true| otherwise.
-  bool GetResizeParams(ViewMsg_Resize_Params* resize_params) const;
+  bool GetResizeParams(ViewMsg_Resize_Params* resize_params);
 
   // Sets the |resize_params| that were sent to the renderer bundled with the
   // request to create a new RenderWidget.
@@ -567,10 +567,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     DCHECK_GT(in_flight_event_count_, 0);
     return --in_flight_event_count_;
   }
-
-  // Update screen_info_ if needed.
-  // Returns whether screen_info_ was updated.
-  bool UpdateScreenInfo();
 
   // The View associated with the RenderViewHost. The lifetime of this object
   // is associated with the lifetime of the Render process. If the Renderer

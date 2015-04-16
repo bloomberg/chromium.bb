@@ -325,7 +325,6 @@ bool RenderViewHostImpl::CreateRenderView(
   params.enable_auto_resize = auto_resize_enabled();
   params.min_size = min_size_for_auto_resize();
   params.max_size = max_size_for_auto_resize();
-  UpdateScreenInfo();
   GetResizeParams(&params.initial_size);
   if (!is_active_) {
     params.replicated_frame_state =
