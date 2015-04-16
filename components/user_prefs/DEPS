@@ -1,3 +1,6 @@
 include_rules = [
-  "+content/public/browser",
+  # user_prefs can be used on all platforms, including iOS. Do not allow
+  # platform-specific dependencies.
+  "-content",
+  "-ios",
 ]

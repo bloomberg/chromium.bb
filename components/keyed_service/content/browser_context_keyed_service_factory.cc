@@ -100,8 +100,7 @@ bool BrowserContextKeyedServiceFactory::IsOffTheRecord(
 user_prefs::PrefRegistrySyncable*
 BrowserContextKeyedServiceFactory::GetAssociatedPrefRegistry(
     base::SupportsUserData* context) const {
-  PrefService* prefs = user_prefs::UserPrefs::Get(
-      static_cast<content::BrowserContext*>(context));
+  PrefService* prefs = user_prefs::UserPrefs::Get(context);
   user_prefs::PrefRegistrySyncable* registry =
       static_cast<user_prefs::PrefRegistrySyncable*>(
           prefs->DeprecatedGetPrefRegistry());

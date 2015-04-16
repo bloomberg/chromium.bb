@@ -14,7 +14,5 @@ component("user_prefs") {
   deps = [
     "//base",
     "//base:prefs",
-    "//base/third_party/dynamic_annotations",
-    "//content/public/browser",
   ]
 }

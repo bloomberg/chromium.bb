@@ -15,6 +15,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
 

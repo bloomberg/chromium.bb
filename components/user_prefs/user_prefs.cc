@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_service.h"
-#include "content/public/browser/browser_context.h"
 
 namespace user_prefs {
 
@@ -23,7 +22,7 @@ void* UserDataKey() {
 }  // namespace
 
 // static
-PrefService* UserPrefs::Get(content::BrowserContext* context) {
+PrefService* UserPrefs::Get(base::SupportsUserData* context) {
   DCHECK(context);
   DCHECK(context->GetUserData(UserDataKey()));
   return static_cast<UserPrefs*>(
@@ -31,7 +30,7 @@ PrefService* UserPrefs::Get(content::BrowserContext* context) {
 }
 
 // static
-void UserPrefs::Set(content::BrowserContext* context, PrefService* prefs) {
+void UserPrefs::Set(base::SupportsUserData* context, PrefService* prefs) {
   DCHECK(context);
   DCHECK(prefs);
   DCHECK(!context->GetUserData(UserDataKey()));

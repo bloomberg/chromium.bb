@@ -5,9 +5,12 @@
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
 #include "base/logging.h"
+#include "base/prefs/pref_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/keyed_service/ios/browser_state_helper.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/user_prefs/user_prefs.h"
 #include "ios/web/public/browser_state.h"
 
 void BrowserStateKeyedServiceFactory::SetTestingFactory(
@@ -87,8 +90,14 @@ bool BrowserStateKeyedServiceFactory::IsOffTheRecord(
 user_prefs::PrefRegistrySyncable*
 BrowserStateKeyedServiceFactory::GetAssociatedPrefRegistry(
     base::SupportsUserData* context) const {
-  NOTREACHED();
-  return nullptr;
+  // TODO(droger): Move this code to KeyedServiceFactory and share it with the
+  // other platforms once iOS no longer needs BrowserStateFromContext().
+  PrefService* prefs =
+      user_prefs::UserPrefs::Get(BrowserStateFromContext(context));
+  user_prefs::PrefRegistrySyncable* registry =
+      static_cast<user_prefs::PrefRegistrySyncable*>(
+          prefs->DeprecatedGetPrefRegistry());
+  return registry;
 }
 
 base::SupportsUserData* BrowserStateKeyedServiceFactory::GetContextToUse(

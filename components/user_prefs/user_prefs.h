@@ -11,27 +11,21 @@
 
 class PrefService;
 
-namespace content {
-class BrowserContext;
-}
-
 namespace user_prefs {
 
-// Components may use preferences associated with a given user. These
-// hang off of content::BrowserContext and can be retrieved using
-// UserPrefs::Get().
+// Components may use preferences associated with a given user. These hang off
+// of base::SupportsUserData and can be retrieved using UserPrefs::Get().
 //
-// It is up to the embedder to create and own the PrefService and
-// attach it to BrowserContext using the UserPrefs::Set() function.
+// It is up to the embedder to create and own the PrefService and attach it to
+// base::SupportsUserData using the UserPrefs::Set() function.
 class USER_PREFS_EXPORT UserPrefs : public base::SupportsUserData::Data {
  public:
-  // Retrieves the PrefService for a given BrowserContext, or NULL if
-  // none is attached.
-  static PrefService* Get(content::BrowserContext* context);
+  // Retrieves the PrefService for a given context, or null if none is attached.
+  static PrefService* Get(base::SupportsUserData* context);
 
   // Hangs the specified |prefs| off of |context|. Should be called
-  // only once per BrowserContext.
-  static void Set(content::BrowserContext* context, PrefService* prefs);
+  // only once per context.
+  static void Set(base::SupportsUserData* context, PrefService* prefs);
 
  private:
   explicit UserPrefs(PrefService* prefs);
