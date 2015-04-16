@@ -1975,20 +1975,6 @@ crbug.com/457137 [ Win ] webaudio/osc-sine-sweep-snr.html [ Pass Failure ]
 # These need a manual rebaseline after crbug.com/459555
 crbug.com/459555 fast/js/reserved-words-as-property.html [ NeedsManualRebaseline ]
 
-# These need a rebaseline after V8 has rolled fix for crbug.com/476503
-crbug.com/476503 fast/events/window-onerror-06.html [ NeedsRebaseline ]
-crbug.com/476503 fast/events/window-onerror-10.html [ NeedsRebaseline ]
-crbug.com/476503 fast/events/window-onerror-isolatedworld-01.html [ NeedsRebaseline ]
-crbug.com/476503 fast/events/window-onerror-isolatedworld-02.html [ NeedsRebaseline ]
-crbug.com/476503 fast/js/exception-thrown-from-new.html [ NeedsRebaseline ]
-crbug.com/476503 fast/workers/worker-onerror-08.html [ NeedsRebaseline ]
-crbug.com/476503 virtual/slimmingpaint/fast/events/window-onerror-06.html [ NeedsRebaseline ]
-crbug.com/476503 virtual/slimmingpaint/fast/events/window-onerror-10.html [ NeedsRebaseline ]
-crbug.com/476503 virtual/slimmingpaint/fast/events/window-onerror-isolatedworld-01.html [ NeedsRebaseline ]
-crbug.com/476503 virtual/slimmingpaint/fast/events/window-onerror-isolatedworld-02.html [ NeedsRebaseline ]
-crbug.com/476503 virtual/slimmingpaint/fast/js/exception-thrown-from-new.html [ NeedsRebaseline ]
-crbug.com/476503 virtual/slimmingpaint/fast/workers/worker-onerror-08.html [ NeedsRebaseline ]
-
 crbug.com/459575 [ XP ] virtual/slimmingpaint/fast/text/emoticons.html [ Failure ]
 
 crbug.com/460335 editing/undo/orphaned-selection-crash-bug32823-2.html [ Pass Crash ]
