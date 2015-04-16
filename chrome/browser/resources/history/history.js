@@ -1802,6 +1802,16 @@ HistoryView.prototype.toggleGroupedVisits_ = function(e) {
   }
 
   entry.classList.toggle('expand');
+
+  var row = entry.querySelector('.site-domain-wrapper');
+  var activeRows =
+      this.resultDiv_.getElementsByClassName(cr.ui.FocusRow.ACTIVE_CLASS);
+  for (var i = 0; i < activeRows.length; ++i) {
+    if (activeRows[i] != row) // Ignore |row| to avoid flicker.
+      activeRows[i].makeActive(false);
+  }
+  row.makeActive(true);
+
   this.updateFocusGrid_();
 };
 
