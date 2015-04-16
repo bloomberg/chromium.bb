@@ -4667,7 +4667,6 @@
               '-fstack-protector',
               '-fno-short-enums',
               '-finline-limit=64',
-              '-Wa,--noexecstack',
               '<@(release_extra_cflags)',
               '--sysroot=<(android_ndk_sysroot)',
               # NOTE: The stlport header include paths below are specified in
