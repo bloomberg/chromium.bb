@@ -853,12 +853,14 @@ html[dir='rtl'] .breadcrumbs .separator {
   display: flex;
   flex: auto;
   flex-direction: column;
+  min-width: 0;
 }
 
 #list-container {
   display: flex;
   flex: auto;
   flex-direction: column;
+  min-height: 0;
   position: relative;
 }
 
@@ -866,6 +868,7 @@ html[dir='rtl'] .breadcrumbs .separator {
   display: flex;
   flex: auto;
   flex-direction: column;
+  min-height: 0;
 }
 
 #detail-table > list,
