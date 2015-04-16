@@ -203,7 +203,7 @@ class SdkCommand(command.CliCommand):
     sdk_dir = self.options.sdk_dir
 
     if self.options.version:
-      version = project_sdk.FindVersion(sdk_dir)
+      version = _FindVersion(workspace_path, sdk_dir)
       if version is None:
         logging.error('Please specify a valid SDK location.')
       else:

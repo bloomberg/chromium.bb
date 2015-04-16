@@ -336,18 +336,32 @@ class BrilloSdkCommandTest(cros_test_lib.MockTempDirTestCase,
     # Make sure no exec assertion is raised.
     self.cmd_mock.inst.Run()
 
-  def testVersionOption(self):
+  def testVersionOptionSdkDir(self):
     self.PatchObject(project_sdk, 'FindVersion', return_value='foo')
-    self.SetupCommandMock(['--version'])
+    self.SetupCommandMock(['--version', '--sdk-dir', 'bar'])
     with self.OutputCapturer():
       self.cmd_mock.inst.Run()
+
+    # Check that the version is 'foo'.
     self.AssertOutputContainsLine('foo')
 
   def testVersionOptionSdkNotFound(self):
-    self.PatchObject(project_sdk, 'FindVersion', return_value=None)
+    self.PatchObject(brillo_sdk, '_FindVersion', return_value=None)
     self.SetupCommandMock(['--version'])
     with self.OutputCapturer():
       self.cmd_mock.inst.Run()
+
+    # Check that the version was not found.
     self.AssertOutputContainsLine('foo', invert=True)
     self.AssertOutputContainsLine('Please specify a valid SDK location.',
                                   check_stderr=True, check_stdout=False)
+
+  def testVersionOptionWithWorkspace(self):
+    self.PatchObject(workspace_lib, 'WorkspacePath', return_value='.')
+    self.PatchObject(workspace_lib, 'GetActiveSdkVersion', return_value='foo')
+    self.SetupCommandMock(['--version'])
+    with self.OutputCapturer():
+      self.cmd_mock.inst.Run()
+
+    # Check that the version is 'foo'.
+    self.AssertOutputContainsLine('foo')
