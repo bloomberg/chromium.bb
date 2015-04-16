@@ -223,10 +223,31 @@ class URL_EXPORT GURL {
     return SchemeIs(url::kFileSystemScheme);
   }
 
-  // If the scheme indicates a secure connection
+  // Returns true if the scheme indicates a secure connection.
+  //
+  // NOTE: This function is deprecated. You probably want |SchemeUsesTLS| (if
+  // you just want to know if a scheme uses TLS for network transport) or
+  // Chromium's |IsOriginSecure| for a higher-level test about an origin's
+  // security. See those functions' documentation for more detail.
+  //
+  // TODO(palmer): Audit callers and change them to |SchemeUsesTLS| or
+  // |IsOriginSecure|, as appropriate. Then remove |SchemeIsSecure|.
+  // crbug.com/362214
   bool SchemeIsSecure() const {
     return SchemeIs(url::kHttpsScheme) || SchemeIs(url::kWssScheme) ||
-        (SchemeIsFileSystem() && inner_url() && inner_url()->SchemeIsSecure());
+           (SchemeIsFileSystem() && inner_url() &&
+            inner_url()->SchemeIsSecure());
+  }
+
+  // Returns true if the scheme indicates a network connection that uses TLS for
+  // security.
+  //
+  // This function is a not a complete test of whether or not an origin's code
+  // is minimally trustworthy. For that, see Chromium's |IsOriginSecure| for a
+  // higher-level and more complete semantics. See that function's documentation
+  // for more detail.
+  bool SchemeUsesTLS() const {
+    return SchemeIs(url::kHttpsScheme) || SchemeIs(url::kWssScheme);
   }
 
   // Returns true if the scheme is "blob".
@@ -241,7 +262,6 @@ class URL_EXPORT GURL {
 
   // Returns true if the hostname is an IP address. Note: this function isn't
   // as cheap as a simple getter because it re-parses the hostname to verify.
-  // This currently identifies only IPv4 addresses (bug 822685).
   bool HostIsIPAddress() const;
 
   // Getters for various components of the URL. The returned string will be
@@ -310,7 +330,7 @@ class URL_EXPORT GURL {
   // values defined in Parsed for ExtractPort.
   int IntPort() const;
 
-  // Returns the port number of the url, or the default port number.
+  // Returns the port number of the URL, or the default port number.
   // If the scheme has no concept of port (or unknown default) returns
   // PORT_UNSPECIFIED.
   int EffectiveIntPort() const;

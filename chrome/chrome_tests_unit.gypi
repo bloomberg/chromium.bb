@@ -558,6 +558,7 @@
       'common/mac/mock_launchd.cc',
       'common/mac/mock_launchd.h',
       'common/mac/objc_zombie_unittest.mm',
+      'common/origin_util_unittest.cc',
       'common/partial_circular_buffer_unittest.cc',
       'common/pref_names_util_unittest.cc',
       'common/search_urls_unittest.cc',
@@ -1431,7 +1432,7 @@
       'browser/font_family_cache_unittest.cc',
       'browser/importer/firefox_profile_lock_unittest.cc',
       'browser/importer/profile_writer_unittest.cc',
-      # Android uses a different invaliator.
+      # Android uses a different invalidator.
       'browser/invalidation/gcm_invalidation_bridge_unittest.cc',
       'browser/invalidation/ticl_profile_settings_provider_unittest.cc',
       'browser/media_galleries/fileapi/native_media_file_util_unittest.cc',
