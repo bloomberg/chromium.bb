@@ -60,7 +60,7 @@ import datetime
 import uuid
 
 from googleapiclient import errors
-from ...oauth2client import util
+from third_party.oauth2client import util
 
 
 # The unix time epoch starts at midnight 1970.

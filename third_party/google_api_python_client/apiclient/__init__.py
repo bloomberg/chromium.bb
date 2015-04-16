@@ -3,7 +3,7 @@
 import googleapiclient
 
 try:
-  import oauth2client
+  from third_party import oauth2client
 except ImportError:
   raise RuntimeError(
       'Previous version of google-api-python-client detected; due to a '

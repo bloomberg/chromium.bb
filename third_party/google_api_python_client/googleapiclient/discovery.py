@@ -47,9 +47,9 @@ except ImportError:
   from cgi import parse_qsl
 
 # Third-party imports
-from ... import httplib2
+from third_party import httplib2
+from third_party.uritemplate import uritemplate
 import mimeparse
-from ... import uritemplate
 
 # Local imports
 from googleapiclient.errors import HttpError
@@ -65,9 +65,9 @@ from googleapiclient.model import JsonModel
 from googleapiclient.model import MediaModel
 from googleapiclient.model import RawModel
 from googleapiclient.schema import Schemas
-from oauth2client.client import GoogleCredentials
-from oauth2client.util import _add_query_parameter
-from oauth2client.util import positional
+from third_party.oauth2client.client import GoogleCredentials
+from third_party.oauth2client.util import _add_query_parameter
+from third_party.oauth2client.util import positional
 
 
 # The client library requires a version of httplib2 that supports RETRIES.

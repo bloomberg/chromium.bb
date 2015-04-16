@@ -1,4 +1,4 @@
-# Copyright 2011 Google Inc.
+# Copyright 2014 Google Inc. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,39 +19,41 @@ credentials can be stored in one file. That file supports locking
 both in a single process and across processes.
 
 The credential themselves are keyed off of:
+
 * client_id
 * user_agent
 * scope
 
-The format of the stored data is like so:
-{
-  'file_version': 1,
-  'data': [
-    {
-      'key': {
-        'clientId': '<client id>',
-        'userAgent': '<user agent>',
-        'scope': '<scope>'
-      },
-      'credential': {
-        # JSON serialized Credentials.
+The format of the stored data is like so::
+
+  {
+    'file_version': 1,
+    'data': [
+      {
+        'key': {
+          'clientId': '<client id>',
+          'userAgent': '<user agent>',
+          'scope': '<scope>'
+        },
+        'credential': {
+          # JSON serialized Credentials.
+        }
       }
-    }
-  ]
-}
+    ]
+  }
+
 """
 
 __author__ = 'jbeda@google.com (Joe Beda)'
 
-import base64
 import errno
+import json
 import logging
 import os
 import threading
 
-from anyjson import simplejson
-from .client import Storage as BaseStorage
 from .client import Credentials
+from .client import Storage as BaseStorage
 from . import util
 from locked_file import LockedFile
 
@@ -64,12 +66,10 @@ _multistores_lock = threading.Lock()
 
 class Error(Exception):
   """Base error for this module."""
-  pass
 
 
 class NewerCredentialStoreError(Error):
-  """The credential store is a newer version that supported."""
-  pass
+  """The credential store is a newer version than supported."""
 
 
 @util.positional(4)
@@ -193,7 +193,7 @@ class _MultiStore(object):
 
     This will create the file if necessary.
     """
-    self._file = LockedFile(filename, 'r+b', 'rb')
+    self._file = LockedFile(filename, 'r+', 'r')
     self._thread_lock = threading.Lock()
     self._read_only = False
     self._warn_on_readonly = warn_on_readonly
@@ -271,7 +271,7 @@ class _MultiStore(object):
     simple version of "touch" to ensure the file has been created.
     """
     if not os.path.exists(self._file.filename()):
-      old_umask = os.umask(0177)
+      old_umask = os.umask(0o177)
       try:
         open(self._file.filename(), 'a+b').close()
       finally:
@@ -280,13 +280,23 @@ class _MultiStore(object):
   def _lock(self):
     """Lock the entire multistore."""
     self._thread_lock.acquire()
-    self._file.open_and_lock()
+    try:
+      self._file.open_and_lock()
+    except IOError as e:
+      if e.errno == errno.ENOSYS:
+        logger.warn('File system does not support locking the credentials '
+                    'file.')
+      elif e.errno ==  errno.ENOLCK:
+        logger.warn('File system is out of resources for writing the '
+                    'credentials file (is your disk full?).')
+      else:
+        raise
     if not self._file.is_locked():
       self._read_only = True
       if self._warn_on_readonly:
         logger.warn('The credentials file (%s) is not writable. Opening in '
                     'read-only mode. Any refreshed credentials will only be '
-                    'valid for this run.' % self._file.filename())
+                    'valid for this run.', self._file.filename())
     if os.path.getsize(self._file.filename()) == 0:
       logger.debug('Initializing empty multistore file')
       # The multistore is empty so write out an empty file.
@@ -315,7 +325,7 @@ class _MultiStore(object):
     """
     assert self._thread_lock.locked()
     self._file.file_handle().seek(0)
-    return simplejson.load(self._file.file_handle())
+    return json.load(self._file.file_handle())
 
   def _locked_json_write(self, data):
     """Write a JSON serializable data structure to the multistore.
@@ -329,7 +339,7 @@ class _MultiStore(object):
     if self._read_only:
       return
     self._file.file_handle().seek(0)
-    simplejson.dump(data, self._file.file_handle(), sort_keys=True, indent=2)
+    json.dump(data, self._file.file_handle(), sort_keys=True, indent=2, separators=(',', ': '))
     self._file.file_handle().truncate()
 
   def _refresh_data_cache(self):
@@ -387,7 +397,7 @@ class _MultiStore(object):
     raw_key = cred_entry['key']
     key = util.dict_to_tuple_key(raw_key)
     credential = None
-    credential = Credentials.new_from_json(simplejson.dumps(cred_entry['credential']))
+    credential = Credentials.new_from_json(json.dumps(cred_entry['credential']))
     return (key, credential)
 
   def _write(self):
@@ -400,7 +410,7 @@ class _MultiStore(object):
     raw_data['data'] = raw_creds
     for (cred_key, cred) in self._data.items():
       raw_key = dict(cred_key)
-      raw_cred = simplejson.loads(cred.to_json())
+      raw_cred = json.loads(cred.to_json())
       raw_creds.append({'key': raw_key, 'credential': raw_cred})
     self._locked_json_write(raw_data)
 
