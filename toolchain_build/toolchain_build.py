@@ -200,7 +200,6 @@ def CollectSources():
 # Canonical tuples we use for hosts.
 WINDOWS_HOST_TUPLE = pynacl.platform.PlatformTriple('win', 'x86-32')
 MAC_HOST_TUPLE = pynacl.platform.PlatformTriple('darwin', 'x86-64')
-ARM_HOST_TUPLE = pynacl.platform.PlatformTriple('linux', 'arm')
 LINUX_X86_32_TUPLE = pynacl.platform.PlatformTriple('linux', 'x86-32')
 LINUX_X86_64_TUPLE = pynacl.platform.PlatformTriple('linux', 'x86-64')
 
@@ -208,7 +207,6 @@ LINUX_X86_64_TUPLE = pynacl.platform.PlatformTriple('linux', 'x86-64')
 EXTRA_HOSTS_MAP = {
     LINUX_X86_64_TUPLE: [
         LINUX_X86_32_TUPLE,
-        ARM_HOST_TUPLE,
         WINDOWS_HOST_TUPLE,
         ],
     }
@@ -223,7 +221,7 @@ NATIVE_ENOUGH_MAP = {
     }
 
 # The list of targets to build toolchains for.
-TARGET_LIST = ['arm', 'i686']
+TARGET_LIST = ['arm']
 
 # List upload targets for each host we want to upload packages for.
 TARGET = collections.namedtuple('TARGET', ['name', 'pkg_prefix'])
@@ -231,14 +229,12 @@ HOST_TARGET = collections.namedtuple('HOST_TARGET',
                                      ['os', 'arch', 'differ3264', 'targets'])
 
 STANDARD_TARGETS = [TARGET('arm', '')]
-LINUX_X86_64_TARGETS = [TARGET('arm', ''), TARGET('i686', 'ng_')]
 
 UPLOAD_HOST_TARGETS = [
     HOST_TARGET('win', 'x86-32', False, STANDARD_TARGETS),
     HOST_TARGET('darwin', 'x86-64', False, STANDARD_TARGETS),
-    HOST_TARGET('linux', 'arm', False, STANDARD_TARGETS),
     HOST_TARGET('linux', 'x86-32', False, STANDARD_TARGETS),
-    HOST_TARGET('linux', 'x86-64', True, LINUX_X86_64_TARGETS),
+    HOST_TARGET('linux', 'x86-64', True, STANDARD_TARGETS),
     ]
 
 # GDB is built by toolchain_build but injected into package targets built by
