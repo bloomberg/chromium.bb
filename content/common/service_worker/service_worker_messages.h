@@ -384,7 +384,7 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_SyncEvent,
                      int /* request_id */)
 IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_NotificationClickEvent,
                      int /* request_id */,
-                     std::string /* notification_id */,
+                     int64_t /* persistent_notification_id */,
                      content::PlatformNotificationData /* notification_data */)
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_PushEvent,
                      int /* request_id */,

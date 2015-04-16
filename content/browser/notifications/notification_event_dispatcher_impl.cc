@@ -5,7 +5,6 @@
 #include "content/browser/notifications/notification_event_dispatcher_impl.h"
 
 #include "base/callback.h"
-#include "base/strings/string_number_conversions.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -77,15 +76,10 @@ void DispatchNotificationClickEventOnRegistration(
                    dispatch_complete_callback,
                    service_worker_registration);
 
-    // TODO(peter): Pass the persistent notification id as an int64_t rather
-    // than as a string. This depends on the Blink API being updated.
-    std::string persistent_notification_id_string =
-        base::Int64ToString(notification_database_data.notification_id);
-
     service_worker_registration->active_version()->
         DispatchNotificationClickEvent(
             dispatch_event_callback,
-            persistent_notification_id_string,
+            notification_database_data.notification_id,
             notification_database_data.notification_data);
     return;
   }

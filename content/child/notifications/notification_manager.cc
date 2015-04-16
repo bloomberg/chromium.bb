@@ -8,7 +8,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_local.h"
@@ -93,7 +92,7 @@ void NotificationManager::showPersistent(
     blink::WebServiceWorkerRegistration* service_worker_registration,
     blink::WebNotificationShowCallbacks* callbacks) {
   DCHECK(service_worker_registration);
-  int64 service_worker_registration_id =
+  int64_t service_worker_registration_id =
       static_cast<WebServiceWorkerRegistrationImpl*>(
           service_worker_registration)->registration_id();
 
@@ -147,7 +146,7 @@ void NotificationManager::getNotifications(
           service_worker_registration);
 
   GURL origin = GURL(service_worker_registration_impl->scope()).GetOrigin();
-  int64 service_worker_registration_id =
+  int64_t service_worker_registration_id =
       service_worker_registration_impl->registration_id();
 
   // TODO(peter): GenerateNotificationId is more of a request id. Consider
@@ -186,20 +185,7 @@ void NotificationManager::close(blink::WebNotificationDelegate* delegate) {
 
 void NotificationManager::closePersistent(
     const blink::WebSerializedOrigin& origin,
-    const blink::WebString& persistent_notification_id_string) {
-  // TODO(peter): Blink should store the persistent_notification_id as an
-  // int64_t instead of a string. The id, created by Chromium, is a decimal
-  // number that fits in an int64_t, so convert it until the API updates.
-  base::string16 string_value = persistent_notification_id_string;
-
-  int64_t persistent_notification_id = 0;
-  if (!base::StringToInt64(string_value,
-                           &persistent_notification_id)) {
-    NOTREACHED() << "Unable to close persistent notification; invalid id: "
-                  << string_value;
-    return;
-  }
-
+    int64_t persistent_notification_id) {
   thread_safe_sender_->Send(new PlatformNotificationHostMsg_ClosePersistent(
       GURL(origin.string()),
       persistent_notification_id));
@@ -301,8 +287,7 @@ void NotificationManager::OnDidGetNotifications(
 
   for (size_t i = 0; i < notification_infos.size(); ++i) {
     blink::WebPersistentNotificationInfo web_notification_info;
-    web_notification_info.persistentNotificationId =
-        blink::WebString::fromUTF8(notification_infos[i].first);
+    web_notification_info.persistentId = notification_infos[i].first;
     web_notification_info.data =
         ToWebNotificationData(notification_infos[i].second);
 
@@ -334,7 +319,7 @@ void NotificationManager::DisplayPageNotification(
 void NotificationManager::DisplayPersistentNotification(
     const blink::WebSerializedOrigin& origin,
     const blink::WebNotificationData& notification_data,
-    int64 service_worker_registration_id,
+    int64_t service_worker_registration_id,
     scoped_ptr<blink::WebNotificationShowCallbacks> callbacks,
     const SkBitmap& icon) {
   // TODO(peter): GenerateNotificationId is more of a request id. Consider

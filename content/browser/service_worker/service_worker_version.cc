@@ -643,26 +643,24 @@ void ServiceWorkerVersion::DispatchSyncEvent(const StatusCallback& callback) {
 
 void ServiceWorkerVersion::DispatchNotificationClickEvent(
     const StatusCallback& callback,
-    const std::string& notification_id,
+    int64_t persistent_notification_id,
     const PlatformNotificationData& notification_data) {
   DCHECK_EQ(ACTIVATED, status()) << status();
   if (running_status() != RUNNING) {
     // Schedule calling this method after starting the worker.
-    StartWorker(base::Bind(&RunTaskAfterStartWorker,
-                           weak_factory_.GetWeakPtr(), callback,
-                           base::Bind(&self::DispatchNotificationClickEvent,
-                                      weak_factory_.GetWeakPtr(),
-                                      callback, notification_id,
-                                      notification_data)));
+    StartWorker(base::Bind(
+        &RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(), callback,
+        base::Bind(&self::DispatchNotificationClickEvent,
+                   weak_factory_.GetWeakPtr(), callback,
+                   persistent_notification_id, notification_data)));
     return;
   }
 
   int request_id = AddRequest(callback, &notification_click_callbacks_,
                               REQUEST_NOTIFICATION_CLICK);
-  ServiceWorkerStatusCode status = embedded_worker_->SendMessage(
-      ServiceWorkerMsg_NotificationClickEvent(request_id,
-                                              notification_id,
-                                              notification_data));
+  ServiceWorkerStatusCode status =
+      embedded_worker_->SendMessage(ServiceWorkerMsg_NotificationClickEvent(
+          request_id, persistent_notification_id, notification_data));
   if (status != SERVICE_WORKER_OK) {
     notification_click_callbacks_.Remove(request_id);
     RunSoon(base::Bind(callback, status));

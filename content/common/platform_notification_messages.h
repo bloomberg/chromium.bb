@@ -22,7 +22,7 @@
 // Defines the pair of [persistent notification id] => [notification data] used
 // when getting the notifications for a given Service Worker registration.
 using PersistentNotificationInfo =
-    std::pair<std::string, content::PlatformNotificationData>;
+    std::pair<int64_t, content::PlatformNotificationData>;
 
 #endif  // CONTENT_COMMON_PLATFORM_NOTIFICATION_MESSAGES_H_
 

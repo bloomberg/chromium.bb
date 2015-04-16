@@ -365,14 +365,14 @@ void ServiceWorkerScriptContext::OnSyncEvent(int request_id) {
 
 void ServiceWorkerScriptContext::OnNotificationClickEvent(
     int request_id,
-    const std::string& notification_id,
+    int64_t persistent_notification_id,
     const PlatformNotificationData& notification_data) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerScriptContext::OnNotificationClickEvent");
   notification_click_start_timings_[request_id] = base::TimeTicks::Now();
   proxy_->dispatchNotificationClickEvent(
       request_id,
-      blink::WebString::fromUTF8(notification_id),
+      persistent_notification_id,
       ToWebNotificationData(notification_data));
 }
 

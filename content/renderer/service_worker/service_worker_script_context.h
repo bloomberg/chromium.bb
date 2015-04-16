@@ -115,7 +115,7 @@ class ServiceWorkerScriptContext {
   void OnSyncEvent(int request_id);
   void OnNotificationClickEvent(
       int request_id,
-      const std::string& notification_id,
+      int64_t persistent_notification_id,
       const PlatformNotificationData& notification_data);
   void OnPushEvent(int request_id, const std::string& data);
   void OnGeofencingEvent(int request_id,

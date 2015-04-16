@@ -56,7 +56,7 @@ class NotificationManager : public blink::WebNotificationManager,
   virtual void close(blink::WebNotificationDelegate* delegate);
   virtual void closePersistent(
       const blink::WebSerializedOrigin& origin,
-      const blink::WebString& persistent_notification_id);
+      int64_t persistent_notification_id);
   virtual void notifyDelegateDestroyed(
       blink::WebNotificationDelegate* delegate);
   virtual blink::WebNotificationPermission checkPermission(

@@ -215,7 +215,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // This must be called when the status() is ACTIVATED.
   void DispatchNotificationClickEvent(
       const StatusCallback& callback,
-      const std::string& notification_id,
+      int64_t persistent_notification_id,
       const PlatformNotificationData& notification_data);
 
   // Sends push event to the associated embedded worker and asynchronously calls
