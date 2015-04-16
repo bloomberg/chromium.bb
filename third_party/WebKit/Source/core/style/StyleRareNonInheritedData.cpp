@@ -32,18 +32,47 @@
 
 namespace blink {
 
+class SameSizeStyleRareNonInheritedData : public RefCounted<StyleRareNonInheritedData> {
+public:
+    float floats[3];
+    int integers;
+
+    LengthPoint lengthPoints[2];
+    LineClampValue lineClamps;
+    DraggableRegionMode draggableRegions;
+
+    void* dataRefs[8];
+    void* ownPtrs[4];
+    void* refPtrs[4];
+
+    FillLayer fillLayers;
+    NinePieceImage ninePieces;
+    LengthSize lengthSizes;
+    Length lengths;
+
+    StyleColor styleColors[8];
+
+    Vector<String> m_callbackSelectors;
+
+    unsigned m_bitFields[4];
+};
+
+static_assert(sizeof(StyleRareNonInheritedData) == sizeof(SameSizeStyleRareNonInheritedData), "StyleRareNonInheritedData_should_stay_small");
+
 StyleRareNonInheritedData::StyleRareNonInheritedData()
     : opacity(ComputedStyle::initialOpacity())
     , m_perspective(ComputedStyle::initialPerspective())
+    , m_shapeImageThreshold(ComputedStyle::initialShapeImageThreshold())
+    , m_order(ComputedStyle::initialOrder())
     , m_perspectiveOrigin(ComputedStyle::initialPerspectiveOrigin())
+    , m_objectPosition(ComputedStyle::initialObjectPosition())
     , lineClamp(ComputedStyle::initialLineClamp())
     , m_draggableRegionMode(DraggableRegionNone)
+    , m_shapeOutside(ComputedStyle::initialShapeOutside())
+    , m_clipPath(ComputedStyle::initialClipPath())
     , m_mask(MaskFillLayer, true)
     , m_pageSize()
-    , m_shapeOutside(ComputedStyle::initialShapeOutside())
     , m_shapeMargin(ComputedStyle::initialShapeMargin())
-    , m_shapeImageThreshold(ComputedStyle::initialShapeImageThreshold())
-    , m_clipPath(ComputedStyle::initialClipPath())
     , m_textDecorationColor(StyleColor::currentColor())
     , m_visitedLinkTextDecorationColor(StyleColor::currentColor())
     , m_visitedLinkBackgroundColor(ComputedStyle::initialBackgroundColor())
@@ -52,8 +81,6 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
     , m_visitedLinkBorderRightColor(StyleColor::currentColor())
     , m_visitedLinkBorderTopColor(StyleColor::currentColor())
     , m_visitedLinkBorderBottomColor(StyleColor::currentColor())
-    , m_order(ComputedStyle::initialOrder())
-    , m_objectPosition(ComputedStyle::initialObjectPosition())
     , m_pageSizeType(PAGE_SIZE_AUTO)
     , m_transformStyle3D(ComputedStyle::initialTransformStyle3D())
     , m_backfaceVisibility(ComputedStyle::initialBackfaceVisibility())
@@ -105,7 +132,10 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     : RefCounted<StyleRareNonInheritedData>()
     , opacity(o.opacity)
     , m_perspective(o.m_perspective)
+    , m_shapeImageThreshold(o.m_shapeImageThreshold)
+    , m_order(o.m_order)
     , m_perspectiveOrigin(o.m_perspectiveOrigin)
+    , m_objectPosition(o.m_objectPosition)
     , lineClamp(o.lineClamp)
     , m_draggableRegionMode(o.m_draggableRegionMode)
     , m_deprecatedFlexibleBox(o.m_deprecatedFlexibleBox)
@@ -118,17 +148,16 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     , m_gridItem(o.m_gridItem)
     , m_content(o.m_content ? o.m_content->clone() : nullptr)
     , m_counterDirectives(o.m_counterDirectives ? clone(*o.m_counterDirectives) : nullptr)
-    , m_boxShadow(o.m_boxShadow)
-    , m_boxReflect(o.m_boxReflect)
     , m_animations(o.m_animations ? CSSAnimationData::create(*o.m_animations) : nullptr)
     , m_transitions(o.m_transitions ? CSSTransitionData::create(*o.m_transitions) : nullptr)
+    , m_boxShadow(o.m_boxShadow)
+    , m_boxReflect(o.m_boxReflect)
+    , m_shapeOutside(o.m_shapeOutside)
+    , m_clipPath(o.m_clipPath)
     , m_mask(o.m_mask)
     , m_maskBoxImage(o.m_maskBoxImage)
     , m_pageSize(o.m_pageSize)
-    , m_shapeOutside(o.m_shapeOutside)
     , m_shapeMargin(o.m_shapeMargin)
-    , m_shapeImageThreshold(o.m_shapeImageThreshold)
-    , m_clipPath(o.m_clipPath)
     , m_textDecorationColor(o.m_textDecorationColor)
     , m_visitedLinkTextDecorationColor(o.m_visitedLinkTextDecorationColor)
     , m_visitedLinkBackgroundColor(o.m_visitedLinkBackgroundColor)
@@ -137,8 +166,6 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     , m_visitedLinkBorderRightColor(o.m_visitedLinkBorderRightColor)
     , m_visitedLinkBorderTopColor(o.m_visitedLinkBorderTopColor)
     , m_visitedLinkBorderBottomColor(o.m_visitedLinkBorderBottomColor)
-    , m_order(o.m_order)
-    , m_objectPosition(o.m_objectPosition)
     , m_pageSizeType(o.m_pageSizeType)
     , m_transformStyle3D(o.m_transformStyle3D)
     , m_backfaceVisibility(o.m_backfaceVisibility)
@@ -196,7 +223,10 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
 {
     return opacity == o.opacity
         && m_perspective == o.m_perspective
+        && m_shapeImageThreshold == o.m_shapeImageThreshold
+        && m_order == o.m_order
         && m_perspectiveOrigin == o.m_perspectiveOrigin
+        && m_objectPosition == o.m_objectPosition
         && lineClamp == o.lineClamp
         && m_draggableRegionMode == o.m_draggableRegionMode
         && m_deprecatedFlexibleBox == o.m_deprecatedFlexibleBox
@@ -213,12 +243,11 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
         && reflectionDataEquivalent(o)
         && animationDataEquivalent(o)
         && transitionDataEquivalent(o)
+        && shapeOutsideDataEquivalent(o)
         && m_mask == o.m_mask
         && m_maskBoxImage == o.m_maskBoxImage
         && m_pageSize == o.m_pageSize
-        && shapeOutsideDataEquivalent(o)
         && m_shapeMargin == o.m_shapeMargin
-        && m_shapeImageThreshold == o.m_shapeImageThreshold
         && clipPathDataEquivalent(o)
         && m_textDecorationColor == o.m_textDecorationColor
         && m_visitedLinkTextDecorationColor == o.m_visitedLinkTextDecorationColor
@@ -228,8 +257,6 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
         && m_visitedLinkBorderRightColor == o.m_visitedLinkBorderRightColor
         && m_visitedLinkBorderTopColor == o.m_visitedLinkBorderTopColor
         && m_visitedLinkBorderBottomColor == o.m_visitedLinkBorderBottomColor
-        && m_order == o.m_order
-        && m_objectPosition == o.m_objectPosition
         && m_callbackSelectors == o.m_callbackSelectors
         && m_pageSizeType == o.m_pageSizeType
         && m_transformStyle3D == o.m_transformStyle3D

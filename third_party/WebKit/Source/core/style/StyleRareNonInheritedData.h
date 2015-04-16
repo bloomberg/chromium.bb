@@ -94,7 +94,12 @@ public:
     float opacity; // Whether or not we're transparent.
 
     float m_perspective;
+    float m_shapeImageThreshold;
+
+    int m_order;
+
     LengthPoint m_perspectiveOrigin;
+    LengthPoint m_objectPosition;
 
     LineClampValue lineClamp; // An Apple extension.
     DraggableRegionMode m_draggableRegionMode;
@@ -112,24 +117,21 @@ public:
 
     OwnPtr<ContentData> m_content;
     OwnPtr<CounterDirectiveMap> m_counterDirectives;
+    OwnPtr<CSSAnimationData> m_animations;
+    OwnPtr<CSSTransitionData> m_transitions;
 
     RefPtr<ShadowList> m_boxShadow;
 
     RefPtr<StyleReflection> m_boxReflect;
 
-    OwnPtr<CSSAnimationData> m_animations;
-    OwnPtr<CSSTransitionData> m_transitions;
+    RefPtr<ShapeValue> m_shapeOutside;
+    RefPtr<ClipPathOperation> m_clipPath;
 
     FillLayer m_mask;
     NinePieceImage m_maskBoxImage;
 
     LengthSize m_pageSize;
-
-    RefPtr<ShapeValue> m_shapeOutside;
     Length m_shapeMargin;
-    float m_shapeImageThreshold;
-
-    RefPtr<ClipPathOperation> m_clipPath;
 
     StyleColor m_textDecorationColor;
     StyleColor m_visitedLinkTextDecorationColor;
@@ -139,10 +141,6 @@ public:
     StyleColor m_visitedLinkBorderRightColor;
     StyleColor m_visitedLinkBorderTopColor;
     StyleColor m_visitedLinkBorderBottomColor;
-
-    int m_order;
-
-    LengthPoint m_objectPosition;
 
     Vector<String> m_callbackSelectors;
 
