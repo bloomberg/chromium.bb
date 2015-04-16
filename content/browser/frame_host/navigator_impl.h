@@ -88,11 +88,6 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   void CancelNavigation(FrameTreeNode* frame_tree_node) override;
   bool IsWaitingForBeforeUnloadACK(FrameTreeNode* frame_tree_node) override;
 
-  // PlzNavigate
-  // Returns the navigation request for a given node. Used in tests.
-  NavigationRequest* GetNavigationRequestForNodeForTesting(
-      FrameTreeNode* frame_tree_node);
-
  private:
   // Holds data used to track browser side navigation metrics.
   struct NavigationMetricsData;
@@ -141,11 +136,6 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   NavigatorDelegate* delegate_;
 
   scoped_ptr<NavigatorImpl::NavigationMetricsData> navigation_data_;
-
-  // PlzNavigate: used to track the various ongoing NavigationRequests in the
-  // different FrameTreeNodes, based on the frame_tree_node_id.
-  typedef base::ScopedPtrHashMap<int64, NavigationRequest> NavigationRequestMap;
-  NavigationRequestMap navigation_request_map_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigatorImpl);
 };

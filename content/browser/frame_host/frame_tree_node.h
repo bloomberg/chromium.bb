@@ -21,6 +21,7 @@
 namespace content {
 
 class FrameTree;
+class NavigationRequest;
 class Navigator;
 class RenderFrameHostImpl;
 
@@ -142,6 +143,20 @@ class CONTENT_EXPORT FrameTreeNode {
   // Returns this node's loading progress.
   double loading_progress() const { return loading_progress_; }
 
+  NavigationRequest* navigation_request() { return navigation_request_.get(); }
+
+  // PlzNavigate
+  // Takes ownership of |navigation_request| and makes it the current
+  // NavigationRequest of this frame. This corresponds to the start of a new
+  // navigation. If there was an ongoing navigation request before calling this
+  // function, it is canceled. |navigation_request| should not be null.
+  void SetNavigationRequest(scoped_ptr<NavigationRequest> navigation_request);
+
+  // PlzNavigate
+  // Resets the current navigation request. |is_commit| is true if the reset is
+  // due to the commit of the navigation.
+  void ResetNavigationRequest(bool is_commit);
+
  private:
   void set_parent(FrameTreeNode* parent) { parent_ = parent; }
 
@@ -194,6 +209,11 @@ class CONTENT_EXPORT FrameTreeNode {
 
   // Used to track this node's loading progress (from 0 to 1).
   double loading_progress_;
+
+  // PlzNavigate
+  // Owns an ongoing NavigationRequest until it is ready to commit. It will then
+  // be reset and a RenderFrameHost will be responsible for the navigation.
+  scoped_ptr<NavigationRequest> navigation_request_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTreeNode);
 };

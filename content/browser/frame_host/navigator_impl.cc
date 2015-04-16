@@ -367,8 +367,7 @@ void NavigatorImpl::DidNavigate(
   // need to care about it anymore.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBrowserSideNavigation)) {
-    navigation_request_map_.erase(
-        render_frame_host->frame_tree_node()->frame_tree_node_id());
+    render_frame_host->frame_tree_node()->ResetNavigationRequest(true);
   }
 
   FrameHostMsg_DidCommitProvisionalLoad_Params params(input_params);
@@ -615,8 +614,7 @@ void NavigatorImpl::OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
       switches::kEnableBrowserSideNavigation));
   DCHECK(frame_tree_node);
 
-  NavigationRequest* navigation_request =
-      navigation_request_map_.get(frame_tree_node->frame_tree_node_id());
+  NavigationRequest* navigation_request = frame_tree_node->navigation_request();
 
   // The NavigationRequest may have been canceled while the renderer was
   // executing the BeforeUnload event.
@@ -644,7 +642,7 @@ void NavigatorImpl::OnBeginNavigation(
   DCHECK(frame_tree_node);
 
   NavigationRequest* ongoing_navigation_request =
-      navigation_request_map_.get(frame_tree_node->frame_tree_node_id());
+      frame_tree_node->navigation_request();
 
   // The renderer-initiated navigation request is ignored iff a) there is an
   // ongoing request b) which is browser or user-initiated and c) the renderer
@@ -657,17 +655,13 @@ void NavigatorImpl::OnBeginNavigation(
   }
 
   // In all other cases the current navigation, if any, is canceled and a new
-  // NavigationRequest is created and stored in the map.
-  if (ongoing_navigation_request)
-    CancelNavigation(frame_tree_node);
-
+  // NavigationRequest is created for the node.
   scoped_ptr<NavigationRequest> navigation_request =
       NavigationRequest::CreateRendererInitiated(
           frame_tree_node, common_params, begin_params, body,
           controller_->GetLastCommittedEntryIndex(),
           controller_->GetEntryCount());
-  navigation_request_map_.set(
-      frame_tree_node->frame_tree_node_id(), navigation_request.Pass());
+  frame_tree_node->SetNavigationRequest(navigation_request.Pass());
 
   if (frame_tree_node->IsMainFrame())
     navigation_data_.reset();
@@ -682,8 +676,7 @@ void NavigatorImpl::CommitNavigation(FrameTreeNode* frame_tree_node,
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
 
-  NavigationRequest* navigation_request =
-      navigation_request_map_.get(frame_tree_node->frame_tree_node_id());
+  NavigationRequest* navigation_request = frame_tree_node->navigation_request();
   DCHECK(navigation_request);
   DCHECK(response ||
          !NavigationRequest::ShouldMakeNetworkRequest(
@@ -729,8 +722,7 @@ void NavigatorImpl::FailedNavigation(FrameTreeNode* frame_tree_node,
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
 
-  NavigationRequest* navigation_request =
-      navigation_request_map_.get(frame_tree_node->frame_tree_node_id());
+  NavigationRequest* navigation_request = frame_tree_node->navigation_request();
   DCHECK(navigation_request);
 
   // Select an appropriate renderer to show the error page.
@@ -749,26 +741,16 @@ void NavigatorImpl::FailedNavigation(FrameTreeNode* frame_tree_node,
 void NavigatorImpl::CancelNavigation(FrameTreeNode* frame_tree_node) {
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
-  navigation_request_map_.erase(frame_tree_node->frame_tree_node_id());
+  frame_tree_node->ResetNavigationRequest(false);
   if (frame_tree_node->IsMainFrame())
     navigation_data_.reset();
-  // TODO(carlosk): move this cleanup into the NavigationRequest destructor once
-  // we properly cancel ongoing navigations.
-  frame_tree_node->render_manager()->CleanUpNavigation();
-}
-
-// PlzNavigate
-NavigationRequest* NavigatorImpl::GetNavigationRequestForNodeForTesting(
-    FrameTreeNode* frame_tree_node) {
-  return navigation_request_map_.get(frame_tree_node->frame_tree_node_id());
 }
 
 bool NavigatorImpl::IsWaitingForBeforeUnloadACK(
     FrameTreeNode* frame_tree_node) {
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
-  NavigationRequest* request =
-      navigation_request_map_.get(frame_tree_node->frame_tree_node_id());
+  NavigationRequest* request = frame_tree_node->navigation_request();
   if (!request)
     return false;
   return request->state() == NavigationRequest::WAITING_FOR_RENDERER_RESPONSE;
@@ -821,36 +803,23 @@ void NavigatorImpl::RequestNavigation(
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
   DCHECK(frame_tree_node);
-  int64 frame_tree_node_id = frame_tree_node->frame_tree_node_id();
   FrameMsg_Navigate_Type::Value navigation_type =
       GetNavigationType(controller_->GetBrowserContext(), entry, reload_type);
   scoped_ptr<NavigationRequest> navigation_request =
       NavigationRequest::CreateBrowserInitiated(frame_tree_node, entry,
                                                 navigation_type,
                                                 navigation_start, controller_);
-  // TODO(clamy): Check if navigations are blocked and if so store the
-  // parameters.
-
-  // If there is an ongoing request, cancel and replace it.
-  NavigationRequest* ongoing_request =
-      navigation_request_map_.get(frame_tree_node->frame_tree_node_id());
-  if (ongoing_request)
-    CancelNavigation(frame_tree_node);
-
-  navigation_request_map_.set(frame_tree_node_id, navigation_request.Pass());
+  frame_tree_node->SetNavigationRequest(navigation_request.Pass());
 
   // Have the current renderer execute its beforeUnload event if needed. If it
   // is not needed (eg. the renderer is not live), BeginNavigation should get
   // called.
-  NavigationRequest* request_to_send =
-      navigation_request_map_.get(frame_tree_node_id);
-  request_to_send->SetWaitingForRendererResponse();
+  frame_tree_node->navigation_request()->SetWaitingForRendererResponse();
   frame_tree_node->current_frame_host()->DispatchBeforeUnload(true);
 }
 
 void NavigatorImpl::BeginNavigation(FrameTreeNode* frame_tree_node) {
-  NavigationRequest* navigation_request =
-      navigation_request_map_.get(frame_tree_node->frame_tree_node_id());
+  NavigationRequest* navigation_request = frame_tree_node->navigation_request();
 
   // A browser-initiated navigation could have been cancelled while it was
   // waiting for the BeforeUnload event to execute.

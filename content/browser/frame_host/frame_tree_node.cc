@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -71,10 +72,6 @@ FrameTreeNode::~FrameTreeNode() {
   frame_tree_->FrameRemoved(this);
 
   g_frame_tree_node_id_map.Get().erase(frame_tree_node_id_);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
-    navigator_->CancelNavigation(this);
-  }
 }
 
 bool FrameTreeNode::IsMainFrame() const {
@@ -172,6 +169,29 @@ bool FrameTreeNode::CommitPendingSandboxFlags() {
       effective_sandbox_flags_ != replication_state_.sandbox_flags;
   effective_sandbox_flags_ = replication_state_.sandbox_flags;
   return did_change_flags;
+}
+
+void FrameTreeNode::SetNavigationRequest(
+    scoped_ptr<NavigationRequest> navigation_request) {
+  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBrowserSideNavigation));
+  ResetNavigationRequest(false);
+  // TODO(clamy): perform the StartLoading logic here.
+  navigation_request_ = navigation_request.Pass();
+}
+
+void FrameTreeNode::ResetNavigationRequest(bool is_commit) {
+  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBrowserSideNavigation));
+  // Upon commit the current NavigationRequest will be reset. There should be no
+  // cleanup performed since the navigation is still ongoing. If the reset
+  // corresponds to a cancelation, the RenderFrameHostManager should clean up
+  // any speculative RenderFrameHost it created for the navigation.
+  if (navigation_request_ && !is_commit) {
+    // TODO(clamy): perform the StopLoading logic.
+    render_manager_.CleanUpNavigation();
+  }
+  navigation_request_.reset();
 }
 
 }  // namespace content

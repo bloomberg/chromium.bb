@@ -238,9 +238,7 @@ void TestRenderFrameHost::PrepareForCommitWithServerRedirect(
   }
 
   // PlzNavigate
-  NavigationRequest* request =
-      static_cast<NavigatorImpl*>(frame_tree_node_->navigator())
-          ->GetNavigationRequestForNodeForTesting(frame_tree_node_);
+  NavigationRequest* request = frame_tree_node_->navigation_request();
   CHECK(request);
 
   // Simulate a beforeUnload ACK from the renderer if the browser is waiting for

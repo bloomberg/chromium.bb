@@ -220,10 +220,8 @@ class NavigationControllerTest
   bool HasNavigationRequest() {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableBrowserSideNavigation)) {
-      FrameTreeNode* root = contents()->GetFrameTree()->root();
-      NavigationRequest* navigation_request = static_cast<NavigatorImpl*>(
-          root->navigator())->GetNavigationRequestForNodeForTesting(root);
-      return navigation_request != nullptr;
+      return contents()->GetFrameTree()->root()->navigation_request() !=
+             nullptr;
     }
     return process()->sink().GetFirstMessageMatching(FrameMsg_Navigate::ID)
         != nullptr;
@@ -232,9 +230,8 @@ class NavigationControllerTest
   const GURL GetLastNavigationURL() {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableBrowserSideNavigation)) {
-      FrameTreeNode* root = contents()->GetFrameTree()->root();
-      NavigationRequest* navigation_request = static_cast<NavigatorImpl*>(
-          root->navigator())->GetNavigationRequestForNodeForTesting(root);
+      NavigationRequest* navigation_request =
+          contents()->GetFrameTree()->root()->navigation_request();
       CHECK(navigation_request);
       return navigation_request->common_params().url;
     }
