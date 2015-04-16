@@ -179,11 +179,12 @@ namespace blink {
         T> {
     };
 
+    // |T| is |C*| or |const WeakPtr<C>&|.
     template<typename T> struct AllowCrossThreadAccessWrapper {
         STACK_ALLOCATED();
     public:
-        explicit AllowCrossThreadAccessWrapper(T* value) : m_value(value) { }
-        T* value() const { return m_value; }
+        explicit AllowCrossThreadAccessWrapper(T value) : m_value(value) { }
+        T value() const { return m_value; }
     private:
         // This raw pointer is safe since AllowCrossThreadAccessWrapper is
         // always stack-allocated. Ideally this should be Member<T> if T is
@@ -191,17 +192,22 @@ namespace blink {
         // another template magic just for distinguishing Member<T> from T*.
         // From the perspective of GC, T* always works correctly.
         GC_PLUGIN_IGNORE("")
-        T* m_value;
+        T m_value;
     };
 
     template<typename T> struct CrossThreadCopierBase<false, false, false, AllowCrossThreadAccessWrapper<T>> {
-        typedef T* Type;
+        typedef T Type;
         static Type copy(const AllowCrossThreadAccessWrapper<T>& wrapper) { return wrapper.value(); }
     };
 
-    template<typename T> AllowCrossThreadAccessWrapper<T> AllowCrossThreadAccess(T* value)
+    template<typename T> AllowCrossThreadAccessWrapper<T*> AllowCrossThreadAccess(T* value)
     {
-        return AllowCrossThreadAccessWrapper<T>(value);
+        return AllowCrossThreadAccessWrapper<T*>(value);
+    }
+
+    template<typename T> AllowCrossThreadAccessWrapper<const WeakPtr<T>&> AllowCrossThreadAccess(const WeakPtr<T>& value)
+    {
+        return AllowCrossThreadAccessWrapper<const WeakPtr<T>&>(value);
     }
 
     // FIXME: Move to a different header file. AllowAccessLater is for cross-thread access

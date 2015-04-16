@@ -49,6 +49,8 @@ public:
     virtual String taskNameForInstrumentation() const { return String(); }
 };
 
+namespace internal {
+
 class CallClosureTask final : public ExecutionContextTask {
 public:
     // Do not use |create| other than in createCrossThreadTask and
@@ -65,6 +67,8 @@ private:
     OwnPtr<Closure> m_closure;
 };
 
+} // namespace internal
+
 // Create tasks passed within a single thread.
 // When posting tasks within a thread, use |createSameThreadTask| instead
 // of using |bind| directly to state explicitly that there is no need to care
@@ -74,7 +78,7 @@ template<typename FunctionType, typename... P>
 PassOwnPtr<ExecutionContextTask> createSameThreadTask(
     FunctionType function, const P&... parameters)
 {
-    return CallClosureTask::create(bind(function, parameters...));
+    return internal::CallClosureTask::create(bind(function, parameters...));
 }
 
 } // namespace
