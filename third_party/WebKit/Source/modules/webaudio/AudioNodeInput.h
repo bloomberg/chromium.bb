@@ -46,8 +46,7 @@ public:
     virtual void didUpdate() override;
 
     // Can be called from any thread.
-    // TODO(tkent): Rename to m_handler.
-    AudioHandler& node() const { return m_handler; }
+    AudioHandler& handler() const { return m_handler; }
 
     // Must be called with the context's graph lock.
     void connect(AudioNodeOutput&);

@@ -117,7 +117,7 @@ void AudioNodeOutput::propagateChannelCount()
     if (isChannelCountKnown()) {
         // Announce to any nodes we're connected to that we changed our channel count for its input.
         for (AudioNodeInput* i : m_inputs)
-            i->node().checkNumberOfChannelsForInput(i);
+            i->handler().checkNumberOfChannelsForInput(i);
     }
 }
 
@@ -136,7 +136,7 @@ AudioBus* AudioNodeOutput::pull(AudioBus* inPlaceBus, size_t framesToProcess)
 
     m_inPlaceBus = m_isInPlace ? inPlaceBus : 0;
 
-    node()->processIfNecessary(framesToProcess);
+    handler().processIfNecessary(framesToProcess);
     return bus();
 }
 
@@ -167,13 +167,13 @@ void AudioNodeOutput::addInput(AudioNodeInput& input)
 {
     ASSERT(deferredTaskHandler().isGraphOwner());
     m_inputs.add(&input);
-    input.node().makeConnection();
+    input.handler().makeConnection();
 }
 
 void AudioNodeOutput::removeInput(AudioNodeInput& input)
 {
     ASSERT(deferredTaskHandler().isGraphOwner());
-    input.node().breakConnection();
+    input.handler().breakConnection();
     m_inputs.remove(&input);
 }
 
