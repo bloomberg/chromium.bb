@@ -18,22 +18,21 @@
 
 class SkCanvas;
 class SkDrawPictureCallback;
+class SkPictureRecorder;
 
 namespace cc {
 
 class CC_EXPORT DisplayItemList
     : public base::RefCountedThreadSafe<DisplayItemList> {
  public:
-  static scoped_refptr<DisplayItemList> Create();
+  static scoped_refptr<DisplayItemList> Create(gfx::Rect layer_rect,
+                                               bool use_cached_picture);
 
   void Raster(SkCanvas* canvas,
               SkDrawPictureCallback* callback,
               float contents_scale) const;
 
   void AppendItem(scoped_ptr<DisplayItem> item);
-
-  void set_layer_rect(gfx::Rect layer_rect) { layer_rect_ = layer_rect; }
-  gfx::Rect layer_rect() const { return layer_rect_; }
 
   void CreateAndCacheSkPicture();
 
@@ -48,10 +47,15 @@ class CC_EXPORT DisplayItemList
   void GatherPixelRefs(const gfx::Size& grid_cell_size);
 
  private:
-  DisplayItemList();
+  DisplayItemList(gfx::Rect layer_rect, bool use_cached_picture);
   ~DisplayItemList();
   ScopedPtrVector<DisplayItem> items_;
   skia::RefPtr<SkPicture> picture_;
+
+  scoped_ptr<SkPictureRecorder> recorder_;
+  skia::RefPtr<SkCanvas> canvas_;
+  bool use_cached_picture_;
+  bool retain_individual_display_items_;
 
   gfx::Rect layer_rect_;
   bool is_suitable_for_gpu_rasterization_;

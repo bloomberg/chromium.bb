@@ -134,8 +134,10 @@ class WebMediaPlayerMS
   // VideoFrameProvider implementation.
   void SetVideoFrameProviderClient(
       cc::VideoFrameProvider::Client* client) override;
+  bool UpdateCurrentFrame(base::TimeTicks deadline_min,
+                          base::TimeTicks deadline_max) override;
   scoped_refptr<media::VideoFrame> GetCurrentFrame() override;
-  void PutCurrentFrame(const scoped_refptr<media::VideoFrame>& frame) override;
+  void PutCurrentFrame() override;
 
  private:
   // The callback for VideoFrameProvider to signal a new frame is available.

@@ -24274,6 +24274,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Notifications.AuthorDataSizeKB" units="KB">
+  <owner>peter@chromium.org</owner>
+  <summary>
+    The size, in kilobytes, of the author-provided data associated with a Web
+    Notification. Recorded when a persistent Web Notification is being shown by
+    the developer.
+  </summary>
+</histogram>
+
 <histogram name="Notifications.Database.DeleteResult"
     enum="NotificationDatabaseStatus">
   <owner>peter@chromium.org</owner>

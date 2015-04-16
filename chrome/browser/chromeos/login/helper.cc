@@ -153,8 +153,20 @@ content::StoragePartition* GetSigninPartition() {
 }
 
 net::URLRequestContextGetter* GetSigninContext() {
-  if (StartupUtils::IsWebviewSigninEnabled())
-    return GetSigninPartition()->GetURLRequestContext();
+  if (StartupUtils::IsWebviewSigninEnabled()) {
+    content::StoragePartition* signin_partition = GetSigninPartition();
+
+    // Special case for unit tests. There's no LoginDisplayHost thus no
+    // webview instance. TODO(nkostylev): Investigate if there's a better
+    // place to address this like dependency injection. http://crbug.com/477402
+    if (!signin_partition && !LoginDisplayHostImpl::default_host())
+      return ProfileHelper::GetSigninProfile()->GetRequestContext();
+
+    if (!signin_partition)
+      return nullptr;
+
+    return signin_partition->GetURLRequestContext();
+  }
 
   return ProfileHelper::GetSigninProfile()->GetRequestContext();
 }

@@ -68,7 +68,6 @@ void Pipeline::Start(Demuxer* demuxer,
                      const PipelineStatusCB& seek_cb,
                      const PipelineMetadataCB& metadata_cb,
                      const BufferingStateCB& buffering_state_cb,
-                     const PaintCB& paint_cb,
                      const base::Closure& duration_change_cb,
                      const AddTextTrackCB& add_text_track_cb,
                      const base::Closure& waiting_for_decryption_key_cb) {
@@ -77,7 +76,6 @@ void Pipeline::Start(Demuxer* demuxer,
   DCHECK(!seek_cb.is_null());
   DCHECK(!metadata_cb.is_null());
   DCHECK(!buffering_state_cb.is_null());
-  DCHECK(!paint_cb.is_null());
 
   base::AutoLock auto_lock(lock_);
   CHECK(!running_) << "Media pipeline is already running";
@@ -90,7 +88,6 @@ void Pipeline::Start(Demuxer* demuxer,
   seek_cb_ = seek_cb;
   metadata_cb_ = metadata_cb;
   buffering_state_cb_ = buffering_state_cb;
-  paint_cb_ = paint_cb;
   duration_change_cb_ = duration_change_cb;
   add_text_track_cb_ = add_text_track_cb;
   waiting_for_decryption_key_cb_ = waiting_for_decryption_key_cb;
@@ -714,7 +711,6 @@ void Pipeline::InitializeRenderer(const PipelineStatusCB& done_cb) {
       done_cb,
       base::Bind(&Pipeline::OnUpdateStatistics, weak_this),
       base::Bind(&Pipeline::BufferingStateChanged, weak_this),
-      base::ResetAndReturn(&paint_cb_),
       base::Bind(&Pipeline::OnRendererEnded, weak_this),
       base::Bind(&Pipeline::OnError, weak_this),
       waiting_for_decryption_key_cb_);

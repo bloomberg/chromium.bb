@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/message_loop/message_loop.h"
 #include "cc/layers/video_frame_provider.h"
 #include "media/base/video_frame.h"
 #include "media/blink/video_frame_compositor.h"
@@ -15,6 +16,7 @@ class VideoFrameCompositorTest : public testing::Test,
  public:
   VideoFrameCompositorTest()
       : compositor_(new VideoFrameCompositor(
+            message_loop.task_runner(),
             base::Bind(&VideoFrameCompositorTest::NaturalSizeChanged,
                        base::Unretained(this)),
             base::Bind(&VideoFrameCompositorTest::OpacityChanged,
@@ -41,6 +43,8 @@ class VideoFrameCompositorTest : public testing::Test,
  private:
   // cc::VideoFrameProvider::Client implementation.
   void StopUsingProvider() override {}
+  void StartRendering() override {};
+  void StopRendering() override {};
   void DidReceiveFrame() override {
     ++did_receive_frame_count_;
   }
@@ -56,6 +60,7 @@ class VideoFrameCompositorTest : public testing::Test,
     opaque_ = opaque;
   }
 
+  base::MessageLoop message_loop;
   scoped_ptr<VideoFrameCompositor> compositor_;
   int did_receive_frame_count_;
   int natural_size_changed_count_;
@@ -70,12 +75,12 @@ TEST_F(VideoFrameCompositorTest, InitialValues) {
   EXPECT_FALSE(compositor()->GetCurrentFrame().get());
 }
 
-TEST_F(VideoFrameCompositorTest, UpdateCurrentFrame) {
+TEST_F(VideoFrameCompositorTest, PaintFrameUsingOldRenderingPath) {
   scoped_refptr<VideoFrame> expected = VideoFrame::CreateEOSFrame();
 
   // Should notify compositor synchronously.
   EXPECT_EQ(0, did_receive_frame_count());
-  compositor()->UpdateCurrentFrame(expected);
+  compositor()->PaintFrameUsingOldRenderingPath(expected);
   scoped_refptr<VideoFrame> actual = compositor()->GetCurrentFrame();
   EXPECT_EQ(expected, actual);
   EXPECT_EQ(1, did_receive_frame_count());
@@ -96,29 +101,29 @@ TEST_F(VideoFrameCompositorTest, NaturalSizeChanged) {
   EXPECT_EQ(0, natural_size_changed_count());
 
   // Callback isn't fired for the first frame.
-  compositor()->UpdateCurrentFrame(initial_frame);
+  compositor()->PaintFrameUsingOldRenderingPath(initial_frame);
   EXPECT_EQ(0, natural_size().width());
   EXPECT_EQ(0, natural_size().height());
   EXPECT_EQ(0, natural_size_changed_count());
 
   // Callback should be fired once.
-  compositor()->UpdateCurrentFrame(larger_frame);
+  compositor()->PaintFrameUsingOldRenderingPath(larger_frame);
   EXPECT_EQ(larger_size.width(), natural_size().width());
   EXPECT_EQ(larger_size.height(), natural_size().height());
   EXPECT_EQ(1, natural_size_changed_count());
 
-  compositor()->UpdateCurrentFrame(larger_frame);
+  compositor()->PaintFrameUsingOldRenderingPath(larger_frame);
   EXPECT_EQ(larger_size.width(), natural_size().width());
   EXPECT_EQ(larger_size.height(), natural_size().height());
   EXPECT_EQ(1, natural_size_changed_count());
 
   // Callback is fired once more when switching back to initial size.
-  compositor()->UpdateCurrentFrame(initial_frame);
+  compositor()->PaintFrameUsingOldRenderingPath(initial_frame);
   EXPECT_EQ(initial_size.width(), natural_size().width());
   EXPECT_EQ(initial_size.height(), natural_size().height());
   EXPECT_EQ(2, natural_size_changed_count());
 
-  compositor()->UpdateCurrentFrame(initial_frame);
+  compositor()->PaintFrameUsingOldRenderingPath(initial_frame);
   EXPECT_EQ(initial_size.width(), natural_size().width());
   EXPECT_EQ(initial_size, natural_size());
   EXPECT_EQ(2, natural_size_changed_count());
@@ -137,22 +142,22 @@ TEST_F(VideoFrameCompositorTest, OpacityChanged) {
   EXPECT_EQ(0, opacity_changed_count());
 
   // Callback is fired for the first frame.
-  compositor()->UpdateCurrentFrame(not_opaque_frame);
+  compositor()->PaintFrameUsingOldRenderingPath(not_opaque_frame);
   EXPECT_FALSE(opaque());
   EXPECT_EQ(1, opacity_changed_count());
 
   // Callback shouldn't be first subsequent times with same opaqueness.
-  compositor()->UpdateCurrentFrame(not_opaque_frame);
+  compositor()->PaintFrameUsingOldRenderingPath(not_opaque_frame);
   EXPECT_FALSE(opaque());
   EXPECT_EQ(1, opacity_changed_count());
 
   // Callback is fired when using opacity changes.
-  compositor()->UpdateCurrentFrame(opaque_frame);
+  compositor()->PaintFrameUsingOldRenderingPath(opaque_frame);
   EXPECT_TRUE(opaque());
   EXPECT_EQ(2, opacity_changed_count());
 
   // Callback shouldn't be first subsequent times with same opaqueness.
-  compositor()->UpdateCurrentFrame(opaque_frame);
+  compositor()->PaintFrameUsingOldRenderingPath(opaque_frame);
   EXPECT_TRUE(opaque());
   EXPECT_EQ(2, opacity_changed_count());
 }

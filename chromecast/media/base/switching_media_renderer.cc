@@ -29,7 +29,6 @@ void SwitchingMediaRenderer::Initialize(
     const ::media::PipelineStatusCB& init_cb,
     const ::media::StatisticsCB& statistics_cb,
     const ::media::BufferingStateCB& buffering_state_cb,
-    const ::media::Renderer::PaintCB& paint_cb,
     const base::Closure& ended_cb,
     const ::media::PipelineStatusCB& error_cb,
     const base::Closure& waiting_for_decryption_key_cb) {
@@ -53,7 +52,7 @@ void SwitchingMediaRenderer::Initialize(
 
   return GetRenderer()->Initialize(
       demuxer_stream_provider, init_cb, statistics_cb, buffering_state_cb,
-      paint_cb, ended_cb, error_cb, waiting_for_decryption_key_cb);
+      ended_cb, error_cb, waiting_for_decryption_key_cb);
 }
 
 ::media::Renderer* SwitchingMediaRenderer::GetRenderer() const {

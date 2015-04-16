@@ -22,6 +22,7 @@
 #include "media/base/pipeline_status.h"
 #include "media/base/time_delta_interpolator.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_renderer_sink.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace chromecast {
@@ -36,12 +37,14 @@ const base::TimeDelta kMaxDeltaFetcher(
 
 }  // namespace
 
-CmaRenderer::CmaRenderer(scoped_ptr<MediaPipeline> media_pipeline)
+CmaRenderer::CmaRenderer(scoped_ptr<MediaPipeline> media_pipeline,
+                         ::media::VideoRendererSink* video_renderer_sink)
     : media_task_runner_factory_(
           new BalancedMediaTaskRunnerFactory(kMaxDeltaFetcher)),
       media_pipeline_(media_pipeline.Pass()),
       audio_pipeline_(media_pipeline_->GetAudioPipeline()),
       video_pipeline_(media_pipeline_->GetVideoPipeline()),
+      video_renderer_sink_(video_renderer_sink),
       state_(kUninitialized),
       is_pending_transition_(false),
       has_audio_(false),
@@ -76,7 +79,6 @@ void CmaRenderer::Initialize(
     const ::media::PipelineStatusCB& init_cb,
     const ::media::StatisticsCB& statistics_cb,
     const ::media::BufferingStateCB& buffering_state_cb,
-    const PaintCB& paint_cb,
     const base::Closure& ended_cb,
     const ::media::PipelineStatusCB& error_cb,
     const base::Closure& waiting_for_decryption_key_cb) {
@@ -97,7 +99,6 @@ void CmaRenderer::Initialize(
   demuxer_stream_provider_ = demuxer_stream_provider;
   statistics_cb_ = statistics_cb;
   buffering_state_cb_ = buffering_state_cb;
-  paint_cb_ = paint_cb;
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
   // TODO(erickung): wire up waiting_for_decryption_key_cb.
@@ -160,7 +161,8 @@ void CmaRenderer::StartPlayingFrom(base::TimeDelta time) {
   // Pipeline::StateTransitionTask).
   if (!initial_video_hole_created_) {
     initial_video_hole_created_ = true;
-    paint_cb_.Run(::media::VideoFrame::CreateHoleFrame(initial_natural_size_));
+    video_renderer_sink_->PaintFrameUsingOldRenderingPath(
+        ::media::VideoFrame::CreateHoleFrame(initial_natural_size_));
   }
 #endif
 
@@ -383,7 +385,8 @@ void CmaRenderer::OnStatisticsUpdated(
 void CmaRenderer::OnNaturalSizeChanged(const gfx::Size& size) {
   DCHECK(thread_checker_.CalledOnValidThread());
 #if defined(VIDEO_HOLE)
-  paint_cb_.Run(::media::VideoFrame::CreateHoleFrame(size));
+  video_renderer_sink_->PaintFrameUsingOldRenderingPath(
+      ::media::VideoFrame::CreateHoleFrame(size));
 #endif
 }
 

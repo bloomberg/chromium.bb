@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -27,7 +28,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
-#include "google_apis/gaia/fake_gaia.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/http/http_status_code.h"
@@ -81,52 +81,35 @@ struct BlockingLoginTestParam {
 };
 
 class BlockingLoginTest
-    : public InProcessBrowserTest,
+    : public OobeBaseTest,
       public content::NotificationObserver,
       public testing::WithParamInterface<BlockingLoginTestParam> {
  public:
   BlockingLoginTest() : profile_added_(NULL) {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Initialize the test server early, so that we can use its base url for
-    // the command line flags.
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    OobeBaseTest::SetUpCommandLine(command_line);
 
-    // Use the login manager screens and the gaia auth extension.
-    command_line->AppendSwitch(switches::kLoginManager);
-    command_line->AppendSwitch(switches::kForceLoginManagerInTests);
-    command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
     command_line->AppendSwitchASCII(::switches::kAuthExtensionPath,
                                     "gaia_auth");
-
-    // Redirect requests to gaia and the policy server to the test server.
-    command_line->AppendSwitchASCII(::switches::kGaiaUrl,
-                                    embedded_test_server()->base_url().spec());
-    command_line->AppendSwitchASCII(::switches::kLsoUrl,
-                                    embedded_test_server()->base_url().spec());
     command_line->AppendSwitchASCII(
         policy::switches::kDeviceManagementUrl,
         embedded_test_server()->GetURL("/device_management").spec());
   }
 
   void SetUpOnMainThread() override {
-    fake_gaia_.Initialize();
-
-    embedded_test_server()->RegisterRequestHandler(
-        base::Bind(&BlockingLoginTest::HandleRequest, base::Unretained(this)));
-    embedded_test_server()->RegisterRequestHandler(
-        base::Bind(&FakeGaia::HandleRequest, base::Unretained(&fake_gaia_)));
-
     registrar_.Add(this,
                    chrome::NOTIFICATION_PROFILE_ADDED,
                    content::NotificationService::AllSources());
+
+    OobeBaseTest::SetUpOnMainThread();
   }
 
   void TearDownOnMainThread() override {
     RunUntilIdle();
     EXPECT_TRUE(responses_.empty());
     STLDeleteElements(&responses_);
-    EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+    OobeBaseTest::TearDownOnMainThread();
   }
 
   void Observe(int type,
@@ -245,10 +228,14 @@ class BlockingLoginTest
   }
 
  protected:
+  void RegisterAdditionalRequestHandlers() override {
+    embedded_test_server()->RegisterRequestHandler(
+        base::Bind(&BlockingLoginTest::HandleRequest, base::Unretained(this)));
+  }
+
   Profile* profile_added_;
 
  private:
-  FakeGaia fake_gaia_;
   std::vector<net::test_server::HttpResponse*> responses_;
   content::NotificationRegistrar registrar_;
 

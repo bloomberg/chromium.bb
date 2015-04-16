@@ -37,7 +37,6 @@ class MojoRendererImpl : public Renderer, public mojo::MediaRendererClient {
                   const PipelineStatusCB& init_cb,
                   const StatisticsCB& statistics_cb,
                   const BufferingStateCB& buffering_state_cb,
-                  const PaintCB& paint_cb,
                   const base::Closure& ended_cb,
                   const PipelineStatusCB& error_cb,
                   const base::Closure& waiting_for_decryption_key_cb) override;

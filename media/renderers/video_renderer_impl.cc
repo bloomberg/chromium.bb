@@ -22,10 +22,12 @@ namespace media {
 
 VideoRendererImpl::VideoRendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    VideoRendererSink* sink,
     ScopedVector<VideoDecoder> decoders,
     bool drop_frames,
     const scoped_refptr<MediaLog>& media_log)
     : task_runner_(task_runner),
+      sink_(sink),
       video_frame_stream_(
           new VideoFrameStream(task_runner, decoders.Pass(), media_log)),
       low_delay_(false),
@@ -106,7 +108,6 @@ void VideoRendererImpl::Initialize(
     const SetDecryptorReadyCB& set_decryptor_ready_cb,
     const StatisticsCB& statistics_cb,
     const BufferingStateCB& buffering_state_cb,
-    const PaintCB& paint_cb,
     const base::Closure& ended_cb,
     const PipelineStatusCB& error_cb,
     const WallClockTimeCB& wall_clock_time_cb,
@@ -118,7 +119,6 @@ void VideoRendererImpl::Initialize(
   DCHECK(!init_cb.is_null());
   DCHECK(!statistics_cb.is_null());
   DCHECK(!buffering_state_cb.is_null());
-  DCHECK(!paint_cb.is_null());
   DCHECK(!ended_cb.is_null());
   DCHECK(!wall_clock_time_cb.is_null());
   DCHECK_EQ(kUninitialized, state_);
@@ -131,7 +131,8 @@ void VideoRendererImpl::Initialize(
 
   statistics_cb_ = statistics_cb;
   buffering_state_cb_ = buffering_state_cb;
-  paint_cb_ = paint_cb,
+  paint_cb_ = base::Bind(&VideoRendererSink::PaintFrameUsingOldRenderingPath,
+                         base::Unretained(sink_));
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
   wall_clock_time_cb_ = wall_clock_time_cb;
@@ -141,6 +142,19 @@ void VideoRendererImpl::Initialize(
       stream, base::Bind(&VideoRendererImpl::OnVideoFrameStreamInitialized,
                          weak_factory_.GetWeakPtr()),
       set_decryptor_ready_cb, statistics_cb, waiting_for_decryption_key_cb);
+}
+
+scoped_refptr<VideoFrame> VideoRendererImpl::Render(
+    base::TimeTicks deadline_min,
+    base::TimeTicks deadline_max) {
+  // TODO(dalecurtis): Hook this up to the new VideoRendererAlgorithm.
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
+void VideoRendererImpl::OnFrameDropped() {
+  // TODO(dalecurtis): Hook this up to the new VideoRendererAlgorithm.
+  NOTIMPLEMENTED();
 }
 
 void VideoRendererImpl::CreateVideoThread() {

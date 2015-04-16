@@ -40,9 +40,11 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
   void Rerecord() {
     ContentLayerClient::PaintingControlSetting painting_control =
         ContentLayerClient::PAINTING_BEHAVIOR_NORMAL;
-    display_list_ = client_.PaintContentsToDisplayList(recorded_viewport_,
-                                                       painting_control);
-    display_list_->set_layer_rect(recorded_viewport_);
+    bool use_cached_picture = true;
+    display_list_ =
+        DisplayItemList::Create(recorded_viewport_, use_cached_picture);
+    client_.PaintContentsToDisplayList(display_list_.get(), recorded_viewport_,
+                                       painting_control);
     display_list_->CreateAndCacheSkPicture();
     if (gather_pixel_refs_)
       display_list_->GatherPixelRefs(grid_cell_size_);

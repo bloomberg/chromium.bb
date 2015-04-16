@@ -291,6 +291,23 @@ public class SyncTest extends ChromeShellTestBase {
         // injected. This data should be retrieved from the Sync node browser data.
     }
 
+    @LargeTest
+    @Feature({"Sync"})
+    public void testDownloadBookmark() throws InterruptedException {
+        setupTestAccountAndSignInToSync(FOREIGN_SESSION_TEST_MACHINE_ID);
+        // 3 bookmark folders exist by default: Bookmarks Bar, Other Bookmarks, Mobile Bookmarks.
+        assertLocalEntityCount("Bookmarks", 3);
+
+        mFakeServerHelper.injectBookmarkEntity(
+                "Title", "http://chromium.org", mFakeServerHelper.getBookmarkBarFolderId());
+
+        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        assertLocalEntityCount("Bookmarks", 4);
+
+        // TODO(pvalenzuela): Also verify that the downloaded bookmark matches the one that was
+        // injected. This data should be retrieved from the Sync node browser data.
+    }
+
     private void setupTestAccountAndSignInToSync(
             final String syncClientIdentifier)
             throws InterruptedException {

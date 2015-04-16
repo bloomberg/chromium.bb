@@ -14,7 +14,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
 class GURL;
 class PrefService;
@@ -25,15 +24,10 @@ class TimeDelta;
 }
 
 namespace net {
-class URLFetcher;
 class URLRequestContextGetter;
-class URLRequestStatus;
 }
 
 namespace data_reduction_proxy {
-
-typedef base::Callback<void(const std::string&, const net::URLRequestStatus&)>
-    FetcherResponseCallback;
 
 class DataReductionProxyCompressionStats;
 class DataReductionProxyIOData;
@@ -42,8 +36,7 @@ class DataReductionProxySettings;
 
 // Contains and initializes all Data Reduction Proxy objects that have a
 // lifetime based on the UI thread.
-class DataReductionProxyService : public base::NonThreadSafe,
-                                  public net::URLFetcherDelegate {
+class DataReductionProxyService : public base::NonThreadSafe {
  public:
   // The caller must ensure that |settings| and |request_context| remain alive
   // for the lifetime of the |DataReductionProxyService| instance. This instance
@@ -56,7 +49,7 @@ class DataReductionProxyService : public base::NonThreadSafe,
       net::URLRequestContextGetter* request_context_getter,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
-  ~DataReductionProxyService() override;
+  virtual ~DataReductionProxyService();
 
   // Sets the DataReductionProxyIOData weak pointer.
   void SetIOData(base::WeakPtr<DataReductionProxyIOData> io_data);
@@ -66,12 +59,6 @@ class DataReductionProxyService : public base::NonThreadSafe,
   // Indicates whether |this| has been fully initialized. |SetIOData| is the
   // final step in initialization.
   bool Initialized() const;
-
-  // Requests the given |secure_proxy_check_url|. Upon completion, returns the
-  // results to the caller via the |fetcher_callback|. Virtualized for unit
-  // testing.
-  virtual void SecureProxyCheck(const GURL& secure_proxy_check_url,
-                                FetcherResponseCallback fetcher_callback);
 
   // Constructs compression stats. This should not be called if a valid
   // compression stats is passed into the constructor.
@@ -114,21 +101,8 @@ class DataReductionProxyService : public base::NonThreadSafe,
 
   base::WeakPtr<DataReductionProxyService> GetWeakPtr();
 
- protected:
-  // Virtualized for testing. Returns a fetcher to check if it is permitted to
-  // use the secure proxy.
-  virtual net::URLFetcher* GetURLFetcherForSecureProxyCheck(
-      const GURL& secure_proxy_check_url);
-
  private:
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
-
   net::URLRequestContextGetter* url_request_context_getter_;
-
-  // The URLFetcher being used for the secure proxy check.
-  scoped_ptr<net::URLFetcher> fetcher_;
-  FetcherResponseCallback fetcher_callback_;
 
   // Tracks compression statistics to be displayed to the user.
   scoped_ptr<DataReductionProxyCompressionStats> compression_stats_;

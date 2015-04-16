@@ -19,8 +19,12 @@ const char kNotificationLang[] = "nl";
 const char kNotificationBody[] = "Hello, world!";
 const char kNotificationTag[] = "my_tag";
 const char kNotificationIconUrl[] = "https://example.com/icon.png";
+const unsigned char kNotificationData[] = { 0xdf, 0xff, 0x0, 0x0, 0xff, 0xdf };
 
 TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
+  std::vector<char> developer_data(
+      kNotificationData, kNotificationData + arraysize(kNotificationData));
+
   PlatformNotificationData notification_data;
   notification_data.title = base::ASCIIToUTF16(kNotificationTitle);
   notification_data.direction =
@@ -30,6 +34,7 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   notification_data.tag = kNotificationTag;
   notification_data.icon = GURL(kNotificationIconUrl);
   notification_data.silent = true;
+  notification_data.data = developer_data;
 
   NotificationDatabaseData database_data;
   database_data.notification_id = kNotificationId;
@@ -64,6 +69,10 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   EXPECT_EQ(notification_data.tag, copied_notification_data.tag);
   EXPECT_EQ(notification_data.icon, copied_notification_data.icon);
   EXPECT_EQ(notification_data.silent, copied_notification_data.silent);
+
+  ASSERT_EQ(developer_data.size(), copied_notification_data.data.size());
+  for (size_t i = 0; i < developer_data.size(); ++i)
+    EXPECT_EQ(developer_data[i], copied_notification_data.data[i]);
 }
 
 }  // namespace content

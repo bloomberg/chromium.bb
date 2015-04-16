@@ -19,7 +19,8 @@ class SolidColorContentLayerClient : public ContentLayerClient {
   void PaintContents(SkCanvas* canvas,
                      const gfx::Rect& rect,
                      PaintingControlSetting painting_control) override;
-  scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
+  void PaintContentsToDisplayList(
+      DisplayItemList* display_list,
       const gfx::Rect& clip,
       PaintingControlSetting painting_control) override;
   bool FillsBoundsCompletely() const override;

@@ -27,7 +27,6 @@ class CC_EXPORT DrawingDisplayItem : public DisplayItem {
   }
 
   void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
-  void RasterForTracing(SkCanvas* canvas) const override;
 
   bool IsSuitableForGpuRasterization() const override;
   int ApproximateOpCount() const override;

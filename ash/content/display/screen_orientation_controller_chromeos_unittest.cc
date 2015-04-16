@@ -589,4 +589,23 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLockDisallowsRotation) {
   EXPECT_EQ(gfx::Display::ROTATE_0, GetInternalDisplayRotation());
 }
 
+// Tests that when MaximizeMode is triggered before the internal display is
+// ready, that ScreenOrientationController still begins listening to events,
+// which require an internal display to be acted upon.
+TEST_F(ScreenOrientationControllerTest, InternalDisplayNotAvailableAtStartup) {
+  int64 internal_display_id = gfx::Display::InternalDisplayId();
+  gfx::Display::SetInternalDisplayId(gfx::Display::kInvalidDisplayID);
+
+  EnableMaximizeMode(true);
+
+  // Should not crash, even thought there is no internal display.
+  SetInternalDisplayRotation(gfx::Display::ROTATE_180);
+  EXPECT_FALSE(RotationLocked());
+
+  // With an internal display now available, functionality should resume.
+  gfx::Display::SetInternalDisplayId(internal_display_id);
+  SetInternalDisplayRotation(gfx::Display::ROTATE_90);
+  EXPECT_TRUE(RotationLocked());
+}
+
 }  // namespace ash

@@ -67,6 +67,8 @@ function CWSWidgetContainer(document, parentNode, state) {
   this.webviewContainer_.style.height = WEBVIEW_HEIGHT + 'px';
   parentNode.appendChild(this.webviewContainer_);
 
+  parentNode.classList.add('cws-widget-container-root');
+
   /**
    * Element showing spinner layout in place of Web Store widget.
    * @type {!Element}
@@ -190,6 +192,13 @@ function CWSWidgetContainer(document, parentNode, state) {
    * @private
    */
   this.tokenGetter_ = this.createTokenGetter_();
+
+  /**
+   * Dialog to be shown when an installation attempt fails.
+   * @type {CWSWidgetContainerErrorDialog}
+   * @private
+   */
+  this.errorDialog_ = new CWSWidgetContainerErrorDialog(parentNode);
 }
 
 /**
@@ -519,8 +528,7 @@ CWSWidgetContainer.prototype.onItemInstalled_ = function(result, error) {
     case AppInstaller.Result.ERROR:
       CWSWidgetContainer.Metrics.recordInstall(
           CWSWidgetContainer.Metrics.INSTALL.FAILED);
-      // TODO(tbarzic): Remove dialog showing call from this class.
-      fileManager.ui.errorDialog.show(
+      this.errorDialog_.show(
           str('SUGGEST_DIALOG_INSTALLATION_FAILED'),
           null,
           null,
@@ -644,6 +652,9 @@ CWSWidgetContainer.prototype.reset_ = function () {
     this.appInstaller_.cancel();
 
   this.options_ = null;
+
+  if (this.errorDialog_.shown())
+    this.errorDialog_.hide();
 };
 
 /**

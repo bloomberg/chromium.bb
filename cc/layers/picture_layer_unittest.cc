@@ -25,11 +25,11 @@ class MockContentLayerClient : public ContentLayerClient {
   void PaintContents(SkCanvas* canvas,
                      const gfx::Rect& clip,
                      PaintingControlSetting picture_control) override {}
-  scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
+  void PaintContentsToDisplayList(
+      DisplayItemList* display_list,
       const gfx::Rect& clip,
       PaintingControlSetting picture_control) override {
     NOTIMPLEMENTED();
-    return DisplayItemList::Create();
   }
   bool FillsBoundsCompletely() const override { return false; };
 };

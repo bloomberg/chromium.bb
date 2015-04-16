@@ -13,6 +13,7 @@
 #include "base/sys_info.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/pref_names.h"
@@ -59,7 +60,7 @@ void StartupUtils::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kEnrollmentRecoveryRequired, false);
   registry->RegisterStringPref(prefs::kInitialLocale, "en-US");
   registry->RegisterBooleanPref(prefs::kNewOobe, false);
-  registry->RegisterBooleanPref(prefs::kWebviewSigninEnabled, false);
+  registry->RegisterBooleanPref(prefs::kWebviewSigninDisabled, false);
 }
 
 // static
@@ -179,25 +180,41 @@ std::string StartupUtils::GetInitialLocale() {
 
 // static
 bool StartupUtils::IsWebviewSigninAllowed() {
-  return extensions::GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV &&
-         !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kDisableWebviewSigninFlow);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableWebviewSigninFlow);
 }
 
 // static
 bool StartupUtils::IsWebviewSigninEnabled() {
-  return IsWebviewSigninAllowed() &&
-      g_browser_process->local_state()->GetBoolean(
-          prefs::kWebviewSigninEnabled);
+  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+      g_browser_process
+          ? g_browser_process->platform_part()
+                ->browser_policy_connector_chromeos()
+                ->GetDeviceCloudPolicyManager()
+          : nullptr;
+
+  bool is_remora_or_shark_requisition =
+      policy_manager
+          ? policy_manager->IsRemoraRequisition() ||
+                policy_manager->IsSharkRequisition()
+          : false;
+
+  bool is_webview_disabled_pref = g_browser_process->local_state()->GetBoolean(
+      prefs::kWebviewSigninDisabled);
+
+  // TODO(dzhioev): Re-enable webview signin for remora/shark requisition
+  // http://crbug.com/464049
+  return !is_remora_or_shark_requisition && IsWebviewSigninAllowed() &&
+         !is_webview_disabled_pref;
 }
 
 // static
 bool StartupUtils::EnableWebviewSignin(bool is_enabled) {
-  if (!IsWebviewSigninAllowed())
+  if (is_enabled && !IsWebviewSigninAllowed())
     return false;
 
-  g_browser_process->local_state()->SetBoolean(prefs::kWebviewSigninEnabled,
-                                               is_enabled);
+  g_browser_process->local_state()->SetBoolean(prefs::kWebviewSigninDisabled,
+                                               !is_enabled);
   return true;
 }
 

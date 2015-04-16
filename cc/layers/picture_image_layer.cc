@@ -63,19 +63,17 @@ void PictureImageLayer::PaintContents(
   canvas->drawBitmap(bitmap_, 0, 0);
 }
 
-scoped_refptr<DisplayItemList> PictureImageLayer::PaintContentsToDisplayList(
+void PictureImageLayer::PaintContentsToDisplayList(
+    DisplayItemList* display_list,
     const gfx::Rect& clip,
     ContentLayerClient::PaintingControlSetting painting_control) {
-  scoped_refptr<DisplayItemList> display_item_list = DisplayItemList::Create();
-
   SkPictureRecorder recorder;
   SkCanvas* canvas = recorder.beginRecording(gfx::RectToSkRect(clip));
   PaintContents(canvas, clip, painting_control);
 
   skia::RefPtr<SkPicture> picture =
       skia::AdoptRef(recorder.endRecordingAsPicture());
-  display_item_list->AppendItem(DrawingDisplayItem::Create(picture));
-  return display_item_list;
+  display_list->AppendItem(DrawingDisplayItem::Create(picture));
 }
 
 bool PictureImageLayer::FillsBoundsCompletely() const {

@@ -42,7 +42,6 @@ class CC_BLINK_EXPORT WebCompositorSupportImpl
       int thumb_thickness,
       int track_start,
       bool is_left_side_vertical_scrollbar);
-  virtual blink::WebDisplayItemList* createDisplayItemList();
   virtual blink::WebCompositorAnimation* createAnimation(
       const blink::WebCompositorAnimationCurve& curve,
       blink::WebCompositorAnimation::TargetProperty target,

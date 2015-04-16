@@ -34,6 +34,10 @@ scoped_refptr<AudioRendererSink> RendererConfig::GetAudioRendererSink() {
   return renderer_config_->GetAudioRendererSink();
 }
 
+scoped_ptr<VideoRendererSink> RendererConfig::GetVideoRendererSink() {
+  return renderer_config_->GetVideoRendererSink();
+}
+
 const AudioHardwareConfig& RendererConfig::GetAudioHardwareConfig() {
   return renderer_config_->GetAudioHardwareConfig();
 }

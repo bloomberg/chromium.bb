@@ -1272,6 +1272,12 @@ void WebMediaPlayerAndroid::SetCurrentFrameInternal(
   current_frame_ = video_frame;
 }
 
+bool WebMediaPlayerAndroid::UpdateCurrentFrame(base::TimeTicks deadline_min,
+                                               base::TimeTicks deadline_max) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 scoped_refptr<media::VideoFrame> WebMediaPlayerAndroid::GetCurrentFrame() {
   scoped_refptr<VideoFrame> video_frame;
   {
@@ -1282,8 +1288,7 @@ scoped_refptr<media::VideoFrame> WebMediaPlayerAndroid::GetCurrentFrame() {
   return video_frame;
 }
 
-void WebMediaPlayerAndroid::PutCurrentFrame(
-    const scoped_refptr<media::VideoFrame>& frame) {
+void WebMediaPlayerAndroid::PutCurrentFrame() {
 }
 
 void WebMediaPlayerAndroid::ResetStreamTextureProxy() {

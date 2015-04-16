@@ -38,7 +38,8 @@ DefaultRendererFactory::~DefaultRendererFactory() {
 // TODO(xhwang): Use RendererConfig to customize what decoders we use.
 scoped_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-    AudioRendererSink* audio_renderer_sink) {
+    AudioRendererSink* audio_renderer_sink,
+    VideoRendererSink* video_renderer_sink) {
   DCHECK(audio_renderer_sink);
 
   // Create our audio decoders and renderer.
@@ -75,8 +76,9 @@ scoped_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
   video_decoders.push_back(new FFmpegVideoDecoder(media_task_runner));
 #endif
 
-  scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
-      media_task_runner, video_decoders.Pass(), true, media_log_));
+  scoped_ptr<VideoRenderer> video_renderer(
+      new VideoRendererImpl(media_task_runner, video_renderer_sink,
+                            video_decoders.Pass(), true, media_log_));
 
   // Create renderer.
   return scoped_ptr<Renderer>(new RendererImpl(

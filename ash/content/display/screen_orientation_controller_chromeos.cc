@@ -196,10 +196,11 @@ void ScreenOrientationController::Unlock(content::WebContents* web_contents) {
 void ScreenOrientationController::OnDisplayConfigurationChanged() {
   if (ignore_display_configuration_updates_)
     return;
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  if (!display_manager->HasInternalDisplay())
+    return;
   gfx::Display::Rotation user_rotation =
-      Shell::GetInstance()
-          ->display_manager()
-          ->GetDisplayInfo(gfx::Display::InternalDisplayId())
+      display_manager->GetDisplayInfo(gfx::Display::InternalDisplayId())
           .rotation();
   if (user_rotation != current_rotation_) {
     // A user may change other display configuration settings. When the user
@@ -212,11 +213,14 @@ void ScreenOrientationController::OnDisplayConfigurationChanged() {
 
 void ScreenOrientationController::OnMaximizeModeStarted() {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  if (!display_manager->HasInternalDisplay())
-    return;
-  current_rotation_ = user_rotation_ =
-      display_manager->GetDisplayInfo(gfx::Display::InternalDisplayId())
-          .rotation();
+  // Do not exit early, as the internal display can be determined after Maximize
+  // Mode has started. (chrome-os-partner:38796)
+  // Always start observing.
+  if (display_manager->HasInternalDisplay()) {
+    current_rotation_ = user_rotation_ =
+        display_manager->GetDisplayInfo(gfx::Display::InternalDisplayId())
+            .rotation();
+  }
   if (!rotation_locked_)
     LoadDisplayRotationProperties();
   chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
@@ -224,8 +228,6 @@ void ScreenOrientationController::OnMaximizeModeStarted() {
 }
 
 void ScreenOrientationController::OnMaximizeModeEnded() {
-  if (!Shell::GetInstance()->display_manager()->HasInternalDisplay())
-    return;
   chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
   Shell::GetInstance()->display_controller()->RemoveObserver(this);
   if (current_rotation_ != user_rotation_)
