@@ -17,6 +17,13 @@ BookmarkUndoService* BookmarkUndoServiceFactory::GetForProfile(
 }
 
 // static
+BookmarkUndoService* BookmarkUndoServiceFactory::GetForProfileIfExists(
+    Profile* profile) {
+  return static_cast<BookmarkUndoService*>(
+      GetInstance()->GetServiceForBrowserContext(profile, false));
+}
+
+// static
 BookmarkUndoServiceFactory* BookmarkUndoServiceFactory::GetInstance() {
   return Singleton<BookmarkUndoServiceFactory>::get();
 }

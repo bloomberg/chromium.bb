@@ -420,7 +420,8 @@ syncer::SyncError BookmarkModelAssociator::AssociateModels(
     syncer::SyncMergeResult* syncer_merge_result) {
   // Since any changes to the bookmark model made here are not user initiated,
   // these change should not be undoable and so suspend the undo tracking.
-  ScopedSuspendBookmarkUndo suspend_undo(profile_);
+  ScopedSuspendBookmarkUndo suspend_undo(
+      BookmarkUndoServiceFactory::GetForProfileIfExists(profile_));
 
   syncer::SyncError error = CheckModelSyncState(local_merge_result,
                                                 syncer_merge_result);

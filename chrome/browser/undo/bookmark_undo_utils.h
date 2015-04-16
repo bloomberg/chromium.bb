@@ -7,19 +7,21 @@
 
 #include "base/basictypes.h"
 
-class Profile;
+class BookmarkUndoService;
+class UndoManager;
 
 // ScopedSuspendBookmarkUndo --------------------------------------------------
 
 // Scopes the suspension of the undo tracking for non-user initiated changes
-// such as those occuring during profile synchronization.
+// such as those occuring during account synchronization.
 class ScopedSuspendBookmarkUndo {
  public:
-  explicit ScopedSuspendBookmarkUndo(Profile* profile);
+  explicit ScopedSuspendBookmarkUndo(
+      BookmarkUndoService* bookmark_undo_service);
   ~ScopedSuspendBookmarkUndo();
 
  private:
-  Profile* profile_;
+  UndoManager* undo_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedSuspendBookmarkUndo);
 };

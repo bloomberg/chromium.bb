@@ -15,6 +15,8 @@ class BookmarkUndoServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   static BookmarkUndoService* GetForProfile(Profile* profile);
 
+  static BookmarkUndoService* GetForProfileIfExists(Profile* profile);
+
   static BookmarkUndoServiceFactory* GetInstance();
 
  private:
