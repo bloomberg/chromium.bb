@@ -18,6 +18,7 @@ line      := directive
           | comment
 
 directive := "set noparent"
+          |  "file:" glob
           |  email_address
           |  "*"
 
@@ -44,6 +45,11 @@ apply (up until a "set noparent is encountered").
 If "per-file glob=set noparent" is used, then global directives are ignored
 for the glob, and only the "per-file" owners are used for files matching that
 glob.
+
+If the "file:" directive is used, the referred to OWNERS file will be parsed and
+considered when determining the valid set of OWNERS. If the filename starts with
+"//" it is relative to the root of the repository, otherwise it is relative to
+the current file
 
 Examples for all of these combinations can be found in tests/owners_unittest.py.
 """
@@ -118,6 +124,9 @@ class Database(object):
     # (This is implicitly true for the root directory).
     self.stop_looking = set([''])
 
+    # Set of files which have already been read.
+    self.read_files = set()
+
   def reviewers_for(self, files, author):
     """Returns a suggested set of reviewers that will cover the files.
 
@@ -189,16 +198,23 @@ class Database(object):
     for f in files:
       dirpath = self.os_path.dirname(f)
       while not dirpath in self.owners_for:
-        self._read_owners_in_dir(dirpath)
+        self._read_owners(self.os_path.join(dirpath, 'OWNERS'))
         if self._stop_looking(dirpath):
           break
         dirpath = self.os_path.dirname(dirpath)
 
-  def _read_owners_in_dir(self, dirpath):
-    owners_path = self.os_path.join(self.root, dirpath, 'OWNERS')
+  def _read_owners(self, path):
+    owners_path = self.os_path.join(self.root, path)
     if not self.os_path.exists(owners_path):
       return
+
+    if owners_path in self.read_files:
+      return
+
+    self.read_files.add(owners_path)
+
     comment = []
+    dirpath = self.os_path.dirname(path)
     in_comment = False
     lineno = 0
     for line in self.fopen(owners_path):
@@ -244,6 +260,23 @@ class Database(object):
                  line_type, owners_path, lineno, comment):
     if directive == 'set noparent':
       self.stop_looking.add(path)
+    elif directive.startswith('file:'):
+      owners_file = self._resolve_include(directive[5:], owners_path)
+      if not owners_file:
+        raise SyntaxErrorInOwnersFile(owners_path, lineno,
+            ('%s does not refer to an existing file.' % directive[5:]))
+
+      self._read_owners(owners_file)
+
+      dirpath = self.os_path.dirname(owners_file)
+      for key in self.owned_by:
+        if not dirpath in self.owned_by[key]:
+          continue
+        self.owned_by[key].add(path)
+
+      if dirpath in self.owners_for:
+        self.owners_for.setdefault(path, set()).update(self.owners_for[dirpath])
+
     elif self.email_regexp.match(directive) or directive == EVERYONE:
       self.comments.setdefault(directive, {})
       self.comments[directive][path] = comment
@@ -251,8 +284,22 @@ class Database(object):
       self.owners_for.setdefault(path, set()).add(directive)
     else:
       raise SyntaxErrorInOwnersFile(owners_path, lineno,
-          ('%s is not a "set" directive, "*", '
+          ('%s is not a "set" directive, file include, "*", '
            'or an email address: "%s"' % (line_type, directive)))
+
+  def _resolve_include(self, path, start):
+    if path.startswith('//'):
+      include_path = path[2:]
+    else:
+      assert start.startswith(self.root)
+      start = self.os_path.dirname(start[len(self.root):])
+      include_path = self.os_path.join(start, path)
+
+    owners_path = self.os_path.join(self.root, include_path)
+    if not self.os_path.exists(owners_path):
+      return None
+
+    return include_path
 
   def _covering_set_of_owners_for(self, files, author):
     dirs_remaining = set(self._enclosing_dir_with_owners(f) for f in files)

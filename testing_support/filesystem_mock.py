@@ -38,6 +38,11 @@ class MockFileSystem(object):
       return path[:-1]
     return path
 
+  def basename(self, path):
+    if self.sep not in path:
+      return ''
+    return self._split(path)[-1] or self.sep
+
   def dirname(self, path):
     if self.sep not in path:
       return ''

@@ -30,6 +30,8 @@ def owners_file(*email_addresses, **kwargs):
     s += '# %s\n' % kwargs.get('comment')
   if kwargs.get('noparent'):
     s += 'set noparent\n'
+  if kwargs.get('file'):
+    s += 'file:%s\n' % kwargs.get('file')
   s += '\n'.join(kwargs.get('lines', [])) + '\n'
   return s + '\n'.join(email_addresses) + '\n'
 
@@ -54,6 +56,11 @@ def test_repo():
     '/content/baz/froboz.h': '',
     '/content/baz/ugly.cc': '',
     '/content/baz/ugly.h': '',
+    '/content/garply/OWNERS': owners_file(file='test/OWNERS'),
+    '/content/garply/foo.cc': '',
+    '/content/garply/test/OWNERS': owners_file(peter),
+    '/content/qux/OWNERS': owners_file(peter, file='//content/baz/OWNERS'),
+    '/content/qux/foo.cc': '',
     '/content/views/OWNERS': owners_file(ben, john, owners.EVERYONE,
                                          noparent=True),
     '/content/views/pie.h': '',
@@ -209,6 +216,50 @@ class OwnersDatabaseTest(_BaseTestCase):
     self.assertRaises(owners.SyntaxErrorInOwnersFile,
         self.db().files_not_covered_by, ['DEPS'], [brett])
 
+  def test_file_include_absolute_path(self):
+    self.assert_files_not_covered_by(['content/qux/foo.cc'], [brett], [])
+    self.assert_files_not_covered_by(['content/qux/bar.cc'], [peter], [])
+    self.assert_files_not_covered_by(['content/qux/baz.cc'],
+                                     [tom], ['content/qux/baz.cc'])
+
+  def test_file_include_relative_path(self):
+    self.assert_files_not_covered_by(['content/garply/foo.cc'], [peter], [])
+    self.assert_files_not_covered_by(['content/garply/bar.cc'], [darin], [])
+    self.assert_files_not_covered_by(['content/garply/baz.cc'],
+                                     [tom], ['content/garply/baz.cc'])
+
+  def test_file_include_per_file_absolute_path(self):
+    self.files['/content/qux/OWNERS'] = owners_file(peter,
+        lines=['per-file foo.*=file://content/baz/OWNERS'])
+
+    self.assert_files_not_covered_by(['content/qux/foo.cc'], [brett], [])
+    self.assert_files_not_covered_by(['content/qux/baz.cc'],
+                                     [brett], ['content/qux/baz.cc'])
+
+  def test_file_include_per_file_relative_path(self):
+    self.files['/content/garply/OWNERS'] = owners_file(brett,
+        lines=['per-file foo.*=file:test/OWNERS'])
+
+    self.assert_files_not_covered_by(['content/garply/foo.cc'], [peter], [])
+    self.assert_files_not_covered_by(['content/garply/baz.cc'],
+                                     [peter], ['content/garply/baz.cc'])
+
+  def test_file_include_recursive(self):
+    self.files['/content/baz/OWNERS'] = owners_file(file='//chrome/gpu/OWNERS')
+    self.assert_files_not_covered_by(['content/qux/foo.cc'], [ken], [])
+
+  def test_file_include_recursive_loop(self):
+    self.files['/content/baz/OWNERS'] = owners_file(brett,
+        file='//content/qux/OWNERS')
+    self.test_file_include_absolute_path()
+
+  def test_file_include_different_filename(self):
+    self.files['/owners/garply'] = owners_file(peter)
+    self.files['/content/garply/OWNERS'] = owners_file(john,
+        lines=['per-file foo.*=file://owners/garply'])
+
+    self.assert_files_not_covered_by(['content/garply/foo.cc'], [peter], [])
+
   def assert_syntax_error(self, owners_file_contents):
     db = self.db()
     self.files['/foo/OWNERS'] = owners_file_contents
@@ -227,6 +278,12 @@ class OwnersDatabaseTest(_BaseTestCase):
 
   def test_syntax_error__bad_email(self):
     self.assert_syntax_error('ben\n')
+
+  def test_syntax_error__invalid_absolute_file(self):
+    self.assert_syntax_error('file://foo/bar/baz\n')
+
+  def test_syntax_error__invalid_relative_file(self):
+    self.assert_syntax_error('file:foo/bar/baz\n')
 
 
 class ReviewersForTest(_BaseTestCase):
@@ -321,6 +378,33 @@ class ReviewersForTest(_BaseTestCase):
     # We should never suggest ken as a reviewer for his own changes.
     self.assert_reviewers_for(['chrome/gpu/gpu_channel.h'],
                               [[ben], [brett]], author=ken)
+
+  def test_reviewers_file_includes__absolute(self):
+    self.assert_reviewers_for(['content/qux/foo.cc'],
+                              [[peter], [brett], [john], [darin]])
+
+  def test_reviewers_file_includes__relative(self):
+    self.assert_reviewers_for(['content/garply/foo.cc'],
+                              [[peter], [john], [darin]])
+
+  def test_reviewers_file_includes__per_file(self):
+    self.files['/content/garply/OWNERS'] = owners_file(brett,
+        lines=['per-file foo.*=file:test/OWNERS'])
+
+    self.assert_reviewers_for(['content/garply/foo.cc'],
+                              [[brett], [peter]])
+    self.assert_reviewers_for(['content/garply/bar.cc'],
+                              [[brett]])
+
+  def test_reviewers_file_includes__per_file_noparent(self):
+    self.files['/content/garply/OWNERS'] = owners_file(brett,
+        lines=['per-file foo.*=set noparent',
+               'per-file foo.*=file:test/OWNERS'])
+
+    self.assert_reviewers_for(['content/garply/foo.cc'],
+                              [[peter]])
+    self.assert_reviewers_for(['content/garply/bar.cc'],
+                              [[brett]])
 
 
 class LowestCostOwnersTest(_BaseTestCase):
