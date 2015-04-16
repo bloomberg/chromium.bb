@@ -125,6 +125,7 @@ struct CORE_EXPORT ViewportDescription {
     bool isLegacyViewportType() const { return type >= HandheldFriendlyMeta && type <= ViewportMeta; }
     bool isMetaViewportType() const { return type == ViewportMeta; }
     bool isSpecifiedByAuthor() const { return type != UserAgentStyleSheet; }
+    bool matchesHeuristicsForGpuRasterization() const;
 
     // Reports UMA stat on whether the page is considered mobile or desktop and what kind of
     // mobile it is. Applies only to Android, must only be called once per page load.

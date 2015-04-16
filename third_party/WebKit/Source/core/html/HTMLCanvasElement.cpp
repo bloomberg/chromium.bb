@@ -541,6 +541,10 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
     if (RuntimeEnabledFeatures::forceDisplayList2dCanvasEnabled())
         return false;
 
+    // Prefer display list over acceleration only if gpu rasterization is triggered
+    if (RuntimeEnabledFeatures::displayList2dCanvasEnabled() && document().viewportDescription().matchesHeuristicsForGpuRasterization())
+        return false;
+
     Settings* settings = document().settings();
     if (!settings || !settings->accelerated2dCanvasEnabled())
         return false;
