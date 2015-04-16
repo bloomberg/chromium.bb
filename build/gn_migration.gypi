@@ -227,17 +227,7 @@
         }],
         ['remoting==1', {
           'dependencies': [
-            '../remoting/remoting.gyp:remoting_host',
-            '../remoting/remoting.gyp:remoting_it2me_native_messaging_host',
-            '../remoting/remoting.gyp:remoting_start_host',
-            '../remoting/remoting.gyp:remoting_native_messaging_manifests',
-            '../remoting/remoting.gyp:remoting_perftests',
-            '../remoting/remoting.gyp:remoting_unittests',
-          ],
-        }],
-        ['remoting==1 and disable_nacl==0 and disable_nacl_untrusted==0', {
-          'dependencies': [
-             '../remoting/remoting.gyp:remoting_key_tester',
+            '../remoting/remoting_all.gyp:remoting_all',
           ],
         }],
         ['remoting==1 and chromeos==0', {

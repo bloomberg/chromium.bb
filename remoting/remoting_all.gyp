@@ -72,6 +72,12 @@
             '../remoting/remoting.gyp:remoting_me2me_native_messaging_host',
           ],
         }],
+        # TODO(GYP) Depends on crbug.com/471924 being fixed for PNaCl.
+        ['disable_nacl==0 and disable_nacl_untrusted==0', {
+          'dependencies': [
+             '../remoting/remoting.gyp:remoting_key_tester',
+          ],
+        }],
       ],
 
     },  # end of target 'remoting_all'
