@@ -60,7 +60,7 @@ IN_PROC_BROWSER_TEST_F(ChildDiscardableSharedMemoryManagerBrowserTest,
       kSize, &memory));
 
   ASSERT_TRUE(memory);
-  void* addr = memory->Memory();
+  void* addr = memory->data();
   ASSERT_NE(nullptr, addr);
 
   PostTaskToInProcessRendererAndWait(
@@ -96,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(ChildDiscardableSharedMemoryManagerBrowserTest,
         &ChildDiscardableSharedMemoryManagerBrowserTest::AllocateLockedMemory,
         kLargeSize, &memory));
     ASSERT_TRUE(memory);
-    void* addr = memory->Memory();
+    void* addr = memory->data();
     ASSERT_NE(nullptr, addr);
     PostTaskToInProcessRendererAndWait(base::Bind(
         &ChildDiscardableSharedMemoryManagerBrowserTest::UnlockMemory,

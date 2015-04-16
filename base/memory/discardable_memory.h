@@ -52,8 +52,13 @@ class BASE_EXPORT DiscardableMemory {
   virtual void Unlock() = 0;
 
   // Returns the memory address held by this object. The object must be locked
-  // before calling this. Otherwise, this will cause a DCHECK error.
-  virtual void* Memory() const = 0;
+  // before calling this.
+  virtual void* data() const = 0;
+
+  // Handy method to simplify calling data() with a reinterpret_cast.
+  template<typename T> const T* data_as() const {
+    return reinterpret_cast<const T*>(data());
+  }
 };
 
 }  // namespace base

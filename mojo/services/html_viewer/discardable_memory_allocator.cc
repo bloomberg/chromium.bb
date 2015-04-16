@@ -18,7 +18,7 @@ class DiscardableMemoryAllocator::OwnedMemoryChunk {
   OwnedMemoryChunk(size_t size, DiscardableMemoryAllocator* allocator)
       : is_locked_(true),
         size_(size),
-        memory_(new uint8_t[size]),
+        data_(new uint8_t[size]),
         allocator_(allocator),
         weak_factory_(this) {}
   ~OwnedMemoryChunk() {}
@@ -37,9 +37,9 @@ class DiscardableMemoryAllocator::OwnedMemoryChunk {
 
   bool is_locked() const { return is_locked_; }
   size_t size() const { return size_; }
-  void* Memory() const {
+  void* data() const {
     DCHECK(is_locked_);
-    return memory_.get();
+    return data_.get();
   }
 
   base::WeakPtr<OwnedMemoryChunk> GetWeakPtr() {
@@ -49,7 +49,7 @@ class DiscardableMemoryAllocator::OwnedMemoryChunk {
  private:
   bool is_locked_;
   size_t size_;
-  scoped_ptr<uint8_t[]> memory_;
+  scoped_ptr<uint8_t[]> data_;
   DiscardableMemoryAllocator* allocator_;
 
   std::list<OwnedMemoryChunk*>::iterator unlocked_position_;
@@ -89,9 +89,9 @@ class DiscardableMemoryChunkImpl : public base::DiscardableMemory {
     memory_chunk_->Unlock();
   }
 
-  void* Memory() const override {
+  void* data() const override {
     if (memory_chunk_)
-      return memory_chunk_->Memory();
+      return memory_chunk_->data();
     return nullptr;
   }
 

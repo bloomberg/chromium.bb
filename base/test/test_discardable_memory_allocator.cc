@@ -13,15 +13,15 @@ namespace {
 
 class DiscardableMemoryImpl : public DiscardableMemory {
  public:
-  explicit DiscardableMemoryImpl(size_t size) : memory_(new uint8_t[size]) {}
+  explicit DiscardableMemoryImpl(size_t size) : data_(new uint8_t[size]) {}
 
   // Overridden from DiscardableMemory:
   bool Lock() override { return false; }
   void Unlock() override {}
-  void* Memory() const override { return memory_.get(); }
+  void* data() const override { return data_.get(); }
 
  private:
-  scoped_ptr<uint8_t[]> memory_;
+  scoped_ptr<uint8_t[]> data_;
 };
 
 }  // namespace

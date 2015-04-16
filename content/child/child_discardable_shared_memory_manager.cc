@@ -59,7 +59,7 @@ class DiscardableMemoryImpl : public base::DiscardableMemory {
     manager_->UnlockSpan(span_.get());
     is_locked_ = false;
   }
-  void* Memory() const override {
+  void* data() const override {
     DCHECK(is_locked_);
     return reinterpret_cast<void*>(span_->start() * base::GetPageSize());
   }

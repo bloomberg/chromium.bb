@@ -28,7 +28,7 @@ void WebDiscardableMemoryImpl::unlock() {
 }
 
 void* WebDiscardableMemoryImpl::data() {
-  return discardable_->Memory();
+  return discardable_->data();
 }
 
 WebDiscardableMemoryImpl::WebDiscardableMemoryImpl(

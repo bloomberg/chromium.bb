@@ -14,7 +14,7 @@ bool SkDiscardableMemoryChrome::lock() {
 }
 
 void* SkDiscardableMemoryChrome::data() {
-  return discardable_->Memory();
+  return discardable_->data();
 }
 
 void SkDiscardableMemoryChrome::unlock() {

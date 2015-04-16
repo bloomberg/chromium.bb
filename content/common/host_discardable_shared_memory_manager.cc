@@ -51,7 +51,7 @@ class DiscardableMemoryImpl : public base::DiscardableMemory {
     shared_memory_->Unlock(0, 0);
     is_locked_ = false;
   }
-  void* Memory() const override {
+  void* data() const override {
     DCHECK(is_locked_);
     return shared_memory_->memory();
   }

@@ -63,9 +63,9 @@ TEST(DiscardableMemoryAllocator, DontDiscardLiveChunks) {
       allocator.AllocateLockedDiscardableMemory(kAlmostOneMegabyte);
 
   // These accesses will fail if the underlying weak ptr has been deallocated.
-  EXPECT_NE(nullptr, chunk_one->Memory());
-  EXPECT_NE(nullptr, chunk_two->Memory());
-  EXPECT_NE(nullptr, chunk_three->Memory());
+  EXPECT_NE(nullptr, chunk_one->data());
+  EXPECT_NE(nullptr, chunk_two->data());
+  EXPECT_NE(nullptr, chunk_three->data());
 
   chunk_one->Unlock();
   chunk_two->Unlock();
