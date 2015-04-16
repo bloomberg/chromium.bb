@@ -924,6 +924,10 @@ DirectoryModel.prototype.changeDirectoryEntry = function(
   this.changeDirectorySequence_++;
   this.clearSearch_();
 
+  // If there is on-going scan, cancel it.
+  if (this.currentDirContents_.isScanning())
+    this.currentDirContents_.cancelScan();
+
   this.directoryChangeQueue_.run(function(sequence, queueTaskCallback) {
     this.fileWatcher_.changeWatchedDirectory(
         dirEntry,
