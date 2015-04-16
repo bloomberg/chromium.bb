@@ -22,6 +22,7 @@
 #include "content/child/npapi/npobject_util.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/child/quota_message_filter.h"
+#include "content/child/scheduler/web_scheduler_impl.h"
 #include "content/child/simple_webmimeregistry_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/web_database_observer_impl.h"
@@ -52,7 +53,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_clipboard_delegate.h"
 #include "content/renderer/scheduler/renderer_scheduler.h"
-#include "content/renderer/scheduler/web_scheduler_impl.h"
 #include "content/renderer/scheduler/webthread_impl_for_renderer_scheduler.h"
 #include "content/renderer/screen_orientation/screen_orientation_observer.h"
 #include "content/renderer/webclipboard_impl.h"
@@ -223,7 +223,11 @@ class RendererBlinkPlatformImpl::SandboxSupport
 RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
     RendererScheduler* renderer_scheduler)
     : BlinkPlatformImpl(renderer_scheduler->DefaultTaskRunner()),
-      web_scheduler_(new WebSchedulerImpl(renderer_scheduler)),
+      web_scheduler_(
+          new WebSchedulerImpl(renderer_scheduler,
+                               renderer_scheduler->IdleTaskRunner(),
+                               renderer_scheduler->LoadingTaskRunner(),
+                               renderer_scheduler->TimerTaskRunner())),
       main_thread_(new WebThreadImplForRendererScheduler(renderer_scheduler)),
       clipboard_delegate_(new RendererClipboardDelegate),
       clipboard_(new WebClipboardImpl(clipboard_delegate_.get())),

@@ -35,6 +35,7 @@ class WebDeviceMotionData;
 class WebDeviceOrientationData;
 class WebGraphicsContext3DProvider;
 class WebServiceWorkerCacheStorage;
+class WebScheduler;
 }
 
 namespace content {
@@ -51,8 +52,8 @@ class ThreadSafeSender;
 class WebClipboardImpl;
 class WebDatabaseObserverImpl;
 class WebFileSystemImpl;
-class WebThreadImplForRendererScheduler;
 class WebSchedulerImpl;
+class WebThreadImplForRendererScheduler;
 
 class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
  public:

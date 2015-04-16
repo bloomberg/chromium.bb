@@ -1,32 +1,36 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/scheduler/web_scheduler_impl.h"
+#include "content/child/scheduler/web_scheduler_impl.h"
 
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
-#include "content/renderer/scheduler/renderer_scheduler.h"
+#include "content/child/scheduler/worker_scheduler.h"
 #include "third_party/WebKit/public/platform/WebTraceLocation.h"
 
 namespace content {
 
-WebSchedulerImpl::WebSchedulerImpl(RendererScheduler* renderer_scheduler)
-    : renderer_scheduler_(renderer_scheduler),
-      idle_task_runner_(renderer_scheduler_->IdleTaskRunner()),
-      loading_task_runner_(renderer_scheduler_->LoadingTaskRunner()),
-      timer_task_runner_(renderer_scheduler_->TimerTaskRunner()) {
+WebSchedulerImpl::WebSchedulerImpl(
+    ChildScheduler* child_scheduler,
+    scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner)
+    : child_scheduler_(child_scheduler),
+      idle_task_runner_(idle_task_runner),
+      loading_task_runner_(loading_task_runner),
+      timer_task_runner_(timer_task_runner) {
 }
 
 WebSchedulerImpl::~WebSchedulerImpl() {
 }
 
 bool WebSchedulerImpl::shouldYieldForHighPriorityWork() {
-  return renderer_scheduler_->ShouldYieldForHighPriorityWork();
+  return child_scheduler_->ShouldYieldForHighPriorityWork();
 }
 
 bool WebSchedulerImpl::canExceedIdleDeadlineIfRequired() {
-  return renderer_scheduler_->CanExceedIdleDeadlineIfRequired();
+  return child_scheduler_->CanExceedIdleDeadlineIfRequired();
 }
 
 void WebSchedulerImpl::runIdleTask(scoped_ptr<blink::WebThread::IdleTask> task,
@@ -74,7 +78,8 @@ void WebSchedulerImpl::postIdleTaskAfterWakeup(
 }
 
 void WebSchedulerImpl::postLoadingTask(
-    const blink::WebTraceLocation& web_location, blink::WebThread::Task* task) {
+    const blink::WebTraceLocation& web_location,
+    blink::WebThread::Task* task) {
   DCHECK(loading_task_runner_);
   scoped_ptr<blink::WebThread::Task> scoped_task(task);
   tracked_objects::Location location(web_location.functionName(),

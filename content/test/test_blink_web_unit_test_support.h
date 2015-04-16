@@ -22,6 +22,7 @@ class StatsTable;
 
 namespace blink {
 class WebLayerTreeView;
+class WebScheduler;
 }
 
 namespace content {

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/child/scheduler/scheduler_message_loop_delegate.h"
+#include "content/child/scheduler/web_scheduler_impl.h"
 #include "content/child/scheduler/worker_scheduler_impl.h"
 #include "third_party/WebKit/public/platform/WebTraceLocation.h"
 
@@ -42,6 +43,10 @@ void WebThreadImplForWorkerScheduler::InitOnThread(
   worker_scheduler_->Init();
   task_runner_ = worker_scheduler_->DefaultTaskRunner();
   idle_task_runner_ = worker_scheduler_->IdleTaskRunner();
+  web_scheduler_.reset(new WebSchedulerImpl(
+      worker_scheduler_.get(), worker_scheduler_->IdleTaskRunner(),
+      worker_scheduler_->DefaultTaskRunner(),
+      worker_scheduler_->DefaultTaskRunner()));
   completion->Signal();
 }
 
@@ -49,12 +54,17 @@ void WebThreadImplForWorkerScheduler::ShutDownOnThread(
     base::WaitableEvent* completion) {
   task_runner_ = nullptr;
   idle_task_runner_ = nullptr;
-  worker_scheduler_.reset(nullptr);
+  web_scheduler_.reset();
+  worker_scheduler_.reset();
   completion->Signal();
 }
 
 blink::PlatformThreadId WebThreadImplForWorkerScheduler::threadId() const {
   return thread_->thread_id();
+}
+
+blink::WebScheduler* WebThreadImplForWorkerScheduler::scheduler() const {
+  return web_scheduler_.get();
 }
 
 base::MessageLoop* WebThreadImplForWorkerScheduler::MessageLoop() const {

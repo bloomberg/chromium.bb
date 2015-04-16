@@ -1,9 +1,9 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_SCHEDULER_WEB_SCHEDULER_IMPL_H_
-#define CONTENT_RENDERER_SCHEDULER_WEB_SCHEDULER_IMPL_H_
+#ifndef CONTENT_CHILD_SCHEDULER_BASE_WEB_SCHEDULER_IMPL_H_
+#define CONTENT_CHILD_SCHEDULER_BASE_WEB_SCHEDULER_IMPL_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -18,14 +18,19 @@ class SingleThreadTaskRunner;
 
 namespace content {
 
-class RendererScheduler;
+class ChildScheduler;
 class SingleThreadIdleTaskRunner;
 
 class CONTENT_EXPORT WebSchedulerImpl : public blink::WebScheduler {
  public:
-  WebSchedulerImpl(RendererScheduler* renderer_scheduler);
+  WebSchedulerImpl(
+      ChildScheduler* child_scheduler,
+      scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner);
   ~WebSchedulerImpl() override;
 
+  // blink::WebScheduler implementation:
   virtual bool shouldYieldForHighPriorityWork();
   virtual bool canExceedIdleDeadlineIfRequired();
   virtual void postIdleTask(const blink::WebTraceLocation& location,
@@ -45,7 +50,7 @@ class CONTENT_EXPORT WebSchedulerImpl : public blink::WebScheduler {
                           base::TimeTicks deadline);
   static void runTask(scoped_ptr<blink::WebThread::Task> task);
 
-  RendererScheduler* renderer_scheduler_;
+  ChildScheduler* child_scheduler_;  // NOT OWNED
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner_;
@@ -53,4 +58,4 @@ class CONTENT_EXPORT WebSchedulerImpl : public blink::WebScheduler {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_SCHEDULER_WEB_SCHEDULER_IMPL_H_
+#endif  // CONTENT_CHILD_SCHEDULER_BASE_WEB_SCHEDULER_IMPL_H_

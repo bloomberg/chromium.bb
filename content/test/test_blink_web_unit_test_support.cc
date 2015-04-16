@@ -9,8 +9,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/child/scheduler/web_scheduler_impl.h"
 #include "content/renderer/scheduler/renderer_scheduler.h"
-#include "content/renderer/scheduler/web_scheduler_impl.h"
 #include "content/renderer/scheduler/webthread_impl_for_renderer_scheduler.h"
 #include "content/test/mock_webclipboard_impl.h"
 #include "content/test/web_gesture_curve_mock.h"
@@ -58,7 +58,10 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
 
   if (base::MessageLoopProxy::current()) {
     renderer_scheduler_ = RendererScheduler::Create();
-    web_scheduler_.reset(new WebSchedulerImpl(renderer_scheduler_.get()));
+    web_scheduler_.reset(new WebSchedulerImpl(
+        renderer_scheduler_.get(), renderer_scheduler_->IdleTaskRunner(),
+        renderer_scheduler_->LoadingTaskRunner(),
+        renderer_scheduler_->TimerTaskRunner()));
     web_thread_.reset(
         new WebThreadImplForRendererScheduler(renderer_scheduler_.get()));
   }

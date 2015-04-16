@@ -8,9 +8,14 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "content/child/webthread_base.h"
 
+namespace blink {
+class WebScheduler;
+};
+
 namespace content {
 
 class RendererScheduler;
+class WebSchedulerImpl;
 
 class CONTENT_EXPORT WebThreadImplForRendererScheduler : public WebThreadBase {
  public:
@@ -18,6 +23,7 @@ class CONTENT_EXPORT WebThreadImplForRendererScheduler : public WebThreadBase {
   virtual ~WebThreadImplForRendererScheduler();
 
   // blink::WebThread implementation.
+  blink::WebScheduler* scheduler() const;
   blink::PlatformThreadId threadId() const override;
 
   // WebThreadBase implementation.
@@ -31,6 +37,7 @@ class CONTENT_EXPORT WebThreadImplForRendererScheduler : public WebThreadBase {
   void RemoveTaskObserverInternal(
       base::MessageLoop::TaskObserver* observer) override;
 
+  scoped_ptr<WebSchedulerImpl> web_scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
   RendererScheduler* scheduler_;  // Not owned.

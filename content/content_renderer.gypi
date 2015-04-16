@@ -381,8 +381,6 @@
       'renderer/scheduler/renderer_scheduler_impl.h',
       'renderer/scheduler/resource_dispatch_throttler.cc',
       'renderer/scheduler/resource_dispatch_throttler.h',
-      'renderer/scheduler/web_scheduler_impl.cc',
-      'renderer/scheduler/web_scheduler_impl.h',
       'renderer/scheduler/webthread_impl_for_renderer_scheduler.cc',
       'renderer/scheduler/webthread_impl_for_renderer_scheduler.h',
       'renderer/screen_orientation/screen_orientation_dispatcher.cc',

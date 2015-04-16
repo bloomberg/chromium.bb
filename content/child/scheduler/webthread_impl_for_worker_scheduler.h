@@ -12,9 +12,14 @@ namespace base {
 class WaitableEvent;
 };
 
+namespace blink {
+class WebScheduler;
+};
+
 namespace content {
 
 class SingleThreadIdleTaskRunner;
+class WebSchedulerImpl;
 class WorkerScheduler;
 
 class CONTENT_EXPORT WebThreadImplForWorkerScheduler : public WebThreadBase {
@@ -23,6 +28,7 @@ class CONTENT_EXPORT WebThreadImplForWorkerScheduler : public WebThreadBase {
   virtual ~WebThreadImplForWorkerScheduler();
 
   // blink::WebThread implementation.
+  virtual blink::WebScheduler* scheduler() const;
   blink::PlatformThreadId threadId() const override;
 
   // WebThreadBase implementation.
@@ -41,6 +47,7 @@ class CONTENT_EXPORT WebThreadImplForWorkerScheduler : public WebThreadBase {
 
   scoped_ptr<base::Thread> thread_;
   scoped_ptr<WorkerScheduler> worker_scheduler_;
+  scoped_ptr<WebSchedulerImpl> web_scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
 };
