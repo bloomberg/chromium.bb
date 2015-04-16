@@ -33,6 +33,8 @@ class MockEnrollmentScreenActor
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
   MOCK_METHOD0(ShowSigninScreen, void());
+  MOCK_METHOD2(ShowAttributePromptScreen,
+               void(const std::string& asset_id, const std::string& location));
   MOCK_METHOD0(ShowEnrollmentSpinnerScreen, void());
   MOCK_METHOD1(ShowAuthError, void(const GoogleServiceAuthError&));
   MOCK_METHOD1(ShowOtherError, void(EnterpriseEnrollmentHelper::OtherError));

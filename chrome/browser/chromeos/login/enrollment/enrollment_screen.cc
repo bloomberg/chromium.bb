@@ -227,13 +227,57 @@ void EnrollmentScreen::OnOtherError(
 void EnrollmentScreen::OnDeviceEnrolled(const std::string& additional_token) {
   if (!additional_token.empty())
     SendEnrollmentAuthToken(additional_token);
-  StartupUtils::MarkDeviceRegistered(
-      base::Bind(&EnrollmentScreen::ShowEnrollmentStatusOnSuccess,
-                 weak_ptr_factory_.GetWeakPtr()));
+
+  enrollment_helper_->GetDeviceAttributeUpdatePermission();
+}
+
+void EnrollmentScreen::OnDeviceAttributeProvided(const std::string& asset_id,
+                                                 const std::string& location) {
+  enrollment_helper_->UpdateDeviceAttributes(asset_id, location);
+}
+
+void EnrollmentScreen::OnDeviceAttributeUpdatePermission(bool granted) {
+  // If user is permitted to update device attributes
+  // Show attribute prompt screen
+  if (granted) {
+    StartupUtils::MarkDeviceRegistered(
+        base::Bind(&EnrollmentScreen::ShowAttributePromptScreen,
+                   weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    StartupUtils::MarkDeviceRegistered(
+        base::Bind(&EnrollmentScreen::ShowEnrollmentStatusOnSuccess,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
   if (remora_controller_) {
     remora_controller_->OnEnrollmentStatusChanged(
         HostPairingController::ENROLLMENT_STATUS_SUCCESS);
   }
+}
+
+void EnrollmentScreen::OnDeviceAttributeUploadCompleted(bool success) {
+  if (success) {
+    actor_->ShowEnrollmentStatus(policy::EnrollmentStatus::ForStatus(
+        policy::EnrollmentStatus::STATUS_SUCCESS));
+  } else {
+    actor_->ShowEnrollmentStatus(policy::EnrollmentStatus::ForStatus(
+        policy::EnrollmentStatus::STATUS_ATTRIBUTE_UPDATE_FAILED));
+  }
+}
+
+void EnrollmentScreen::ShowAttributePromptScreen() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+      connector->GetDeviceCloudPolicyManager();
+
+  policy::CloudPolicyStore* store = policy_manager->core()->store();
+
+  const enterprise_management::PolicyData* policy = store->policy();
+
+  std::string asset_id = policy ? policy->annotated_asset_id() : std::string();
+  std::string location = policy ? policy->annotated_location() : std::string();
+  actor_->ShowAttributePromptScreen(asset_id, location);
 }
 
 void EnrollmentScreen::SendEnrollmentAuthToken(const std::string& token) {

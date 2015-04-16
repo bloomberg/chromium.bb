@@ -39,6 +39,7 @@ class EnrollmentStatus {
     STATUS_STORE_ERROR = 12,                // Failed to store the policy.
     STATUS_STORE_TOKEN_AND_ID_FAILED = 13,  // Failed to store DM token and
                                             // device ID.
+    STATUS_ATTRIBUTE_UPDATE_FAILED = 14,    // Device attribute update failed.
   };
 
   // Helpers for constructing errors for relevant cases.

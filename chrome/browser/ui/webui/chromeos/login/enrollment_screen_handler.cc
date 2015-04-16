@@ -148,6 +148,8 @@ void EnrollmentScreenHandler::RegisterMessages() {
               &EnrollmentScreenHandler::HandleRetry);
   AddCallback("frameLoadingCompleted",
               &EnrollmentScreenHandler::HandleFrameLoadingCompleted);
+  AddCallback("oauthEnrollAttributes",
+              &EnrollmentScreenHandler::HandleDeviceAttributesProvided);
 }
 
 // EnrollmentScreenHandler
@@ -182,6 +184,12 @@ void EnrollmentScreenHandler::Hide() {
 void EnrollmentScreenHandler::ShowSigninScreen() {
   observe_network_failure_ = true;
   ShowStep(kEnrollmentStepSignin);
+}
+
+void EnrollmentScreenHandler::ShowAttributePromptScreen(
+    const std::string& asset_id,
+    const std::string& location) {
+  CallJS("showAttributePromptStep", asset_id, location);
 }
 
 void EnrollmentScreenHandler::ShowEnrollmentSpinnerScreen() {
@@ -327,6 +335,9 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
                 true);
       NOTREACHED();
       return;
+    case policy::EnrollmentStatus::STATUS_ATTRIBUTE_UPDATE_FAILED:
+      ShowError(IDS_ENTERPRISE_ENROLLMENT_ATTRIBUTE_ERROR, false);
+      return;
   }
   NOTREACHED();
 }
@@ -351,10 +362,16 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
   builder->Add("oauthEnrollCancel", IDS_ENTERPRISE_ENROLLMENT_CANCEL);
   builder->Add("oauthEnrollBack", IDS_ENTERPRISE_ENROLLMENT_BACK);
   builder->Add("oauthEnrollDone", IDS_ENTERPRISE_ENROLLMENT_DONE);
+  builder->Add("oauthEnrollContinue", IDS_ENTERPRISE_ENROLLMENT_CONTINUE);
   builder->Add("oauthEnrollSuccess", IDS_ENTERPRISE_ENROLLMENT_SUCCESS);
+  builder->Add("oauthEnrollAttributes", IDS_ENTERPRISE_ENROLLMENT_ATTRIBUTES);
   builder->Add("oauthEnrollExplainLink",
                IDS_ENTERPRISE_ENROLLMENT_EXPLAIN_LINK);
   builder->Add("oauthEnrollWorking", IDS_ENTERPRISE_ENROLLMENT_WORKING);
+  builder->Add("oauthEnrollAssetIdLabel",
+               IDS_ENTERPRISE_ENROLLMENT_ASSET_ID_LABEL);
+  builder->Add("oauthEnrollLocationLabel",
+               IDS_ENTERPRISE_ENROLLMENT_LOCATION_LABEL);
 }
 
 OobeUI::Screen EnrollmentScreenHandler::GetCurrentScreen() const {
@@ -514,6 +531,12 @@ void EnrollmentScreenHandler::HandleFrameLoadingCompleted(int status) {
     UpdateState(NetworkError::ERROR_REASON_FRAME_ERROR);
   else
     UpdateState(NetworkError::ERROR_REASON_UPDATE);
+}
+
+void EnrollmentScreenHandler::HandleDeviceAttributesProvided(
+    const std::string& asset_id,
+    const std::string& location) {
+  controller_->OnDeviceAttributeProvided(asset_id, location);
 }
 
 void EnrollmentScreenHandler::ShowStep(const char* step) {

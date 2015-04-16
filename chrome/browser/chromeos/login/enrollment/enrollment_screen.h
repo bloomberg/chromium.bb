@@ -81,12 +81,16 @@ class EnrollmentScreen
   void OnRetry() override;
   void OnCancel() override;
   void OnConfirmationClosed() override;
+  void OnDeviceAttributeProvided(const std::string& asset_id,
+                                 const std::string& location) override;
 
   // EnterpriseEnrollmentHelper::EnrollmentStatusConsumer implementation:
   void OnAuthError(const GoogleServiceAuthError& error) override;
   void OnEnrollmentError(policy::EnrollmentStatus status) override;
   void OnOtherError(EnterpriseEnrollmentHelper::OtherError error) override;
   void OnDeviceEnrolled(const std::string& additional_token) override;
+  void OnDeviceAttributeUploadCompleted(bool success) override;
+  void OnDeviceAttributeUpdatePermission(bool granted) override;
 
   // Used for testing.
   EnrollmentScreenActor* GetActor() {
@@ -120,6 +124,10 @@ class EnrollmentScreen
 
   // Shows the signin screen. Used as a callback to run after auth reset.
   void ShowSigninScreen();
+
+  // Shows the device attribute prompt screen.
+  // Used as a callback to run after successful enrollment.
+  void ShowAttributePromptScreen();
 
   void OnAnyEnrollmentError();
 

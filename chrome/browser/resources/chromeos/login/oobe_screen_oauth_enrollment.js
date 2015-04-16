@@ -5,6 +5,7 @@
 login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
   /** @const */ var STEP_SIGNIN = 'signin';
   /** @const */ var STEP_WORKING = 'working';
+  /** @const */ var STEP_ATTRIBUTE_PROMPT = 'attribute-prompt';
   /** @const */ var STEP_ERROR = 'error';
   /** @const */ var STEP_SUCCESS = 'success';
 
@@ -15,6 +16,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       'showStep',
       'showError',
       'doReload',
+      'showAttributePromptStep',
     ],
 
     /**
@@ -133,6 +135,16 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
             chrome.send('oauthEnrollClose', ['done']);
           });
 
+      makeButton(
+          'oauth-enroll-continue-button',
+          ['oauth-enroll-focus-on-attribute-prompt'],
+          loadTimeData.getString('oauthEnrollContinue'),
+          function() {
+            chrome.send('oauthEnrollAttributes',
+                        [$('oauth-enroll-asset-id').value,
+                         $('oauth-enroll-location').value]);
+          });
+
       return buttons;
     },
 
@@ -160,6 +172,19 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     },
 
     /**
+     * Shows attribute-prompt step with pre-filled asset ID and location.
+     */
+    showAttributePromptStep: function(annotated_asset_id, annotated_location) {
+      $('oauth-enroll-attribute-prompt-message').innerHTML =
+          loadTimeData.getString('oauthEnrollAttributes');
+
+      $('oauth-enroll-asset-id').value = annotated_asset_id;
+      $('oauth-enroll-location').value = annotated_location;
+
+      this.showStep(STEP_ATTRIBUTE_PROMPT);
+    },
+
+    /**
      * Cancels enrollment and drops the user back to the login screen.
      */
     cancel: function() {
@@ -170,15 +195,49 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     },
 
     /**
+     * Returns whether |step| is the device attribute update error or not.
+     */
+    isAttributeUpdateError: function(step) {
+      return this.currentStep_ == STEP_ATTRIBUTE_PROMPT && step == STEP_ERROR;
+    },
+
+    /**
+     * Shows cancel or done button.
+     */
+    hideCancelShowDone: function(hide) {
+      $('oauth-enroll-cancel-button').hidden = hide;
+      $('oauth-enroll-cancel-button').disabled = hide;
+
+      $('oauth-enroll-done-button').hidden = !hide;
+      $('oauth-enroll-done-button').disabled = !hide;
+    },
+
+    /**
      * Switches between the different steps in the enrollment flow.
      * @param {string} step the steps to show, one of "signin", "working",
-     * "error", "success".
+     * "attribute-prompt", "error", "success".
      */
     showStep: function(step) {
+      var focusStep = step;
+
       this.classList.toggle('oauth-enroll-state-' + this.currentStep_, false);
       this.classList.toggle('oauth-enroll-state-' + step, true);
+
+      /**
+       * In case of device attribute update error done button should be shown
+       * instead of cancel button and focus on success,
+       * because enrollment has completed
+       */
+      if (this.isAttributeUpdateError(step)) {
+        focusStep = STEP_SUCCESS;
+        this.hideCancelShowDone(true);
+      } else {
+        if (step == STEP_ERROR)
+          this.hideCancelShowDone(false);
+      }
+
       var focusElements =
-          this.querySelectorAll('.oauth-enroll-focus-on-' + step);
+          this.querySelectorAll('.oauth-enroll-focus-on-' + focusStep);
       for (var i = 0; i < focusElements.length; ++i) {
         if (getComputedStyle(focusElements[i])['display'] != 'none') {
           focusElements[i].focus();

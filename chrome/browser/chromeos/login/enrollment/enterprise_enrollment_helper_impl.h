@@ -42,6 +42,9 @@ class EnterpriseEnrollmentHelperImpl : public EnterpriseEnrollmentHelper,
   void EnrollUsingAuthCode(const std::string& auth_code) override;
   void EnrollUsingToken(const std::string& token) override;
   void ClearAuth(const base::Closure& callback) override;
+  void GetDeviceAttributeUpdatePermission() override;
+  void UpdateDeviceAttributes(const std::string& asset_id,
+                              const std::string& location) override;
 
  private:
   void DoEnrollUsingToken(const std::string& token);
@@ -54,6 +57,12 @@ class EnterpriseEnrollmentHelperImpl : public EnterpriseEnrollmentHelper,
   // Handles completion of the enrollment attempt.
   void OnEnrollmentFinished(policy::EnrollmentStatus status);
 
+  // Handles completion of the device attribute update permission request.
+  void OnDeviceAttributeUpdatePermission(bool granted);
+
+  // Handles completion of the device attribute update attempt.
+  void OnDeviceAttributeUploadCompleted(bool success);
+
   void ReportAuthStatus(const GoogleServiceAuthError& error);
   void ReportEnrollmentStatus(policy::EnrollmentStatus status);
 
@@ -63,6 +72,9 @@ class EnterpriseEnrollmentHelperImpl : public EnterpriseEnrollmentHelper,
 
   // Overridden from BrowsingDataRemover::Observer:
   void OnBrowsingDataRemoverDone() override;
+
+  // Gets oauth token, used during enterprise enrollment.
+  const std::string& GetOAuthToken();
 
   const policy::EnrollmentConfig enrollment_config_;
   const std::string enrolling_user_domain_;

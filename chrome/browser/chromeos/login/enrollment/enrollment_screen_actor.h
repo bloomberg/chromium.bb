@@ -33,6 +33,8 @@ class EnrollmentScreenActor {
     virtual void OnRetry() = 0;
     virtual void OnCancel() = 0;
     virtual void OnConfirmationClosed() = 0;
+    virtual void OnDeviceAttributeProvided(const std::string& asset_id,
+                                           const std::string& location) = 0;
   };
 
   virtual ~EnrollmentScreenActor() {}
@@ -52,6 +54,10 @@ class EnrollmentScreenActor {
 
   // Shows the signin screen.
   virtual void ShowSigninScreen() = 0;
+
+  // Shows the device attribute prompt screen.
+  virtual void ShowAttributePromptScreen(const std::string& asset_id,
+                                         const std::string& location) = 0;
 
   // Shows the spinner screen for enrollment.
   virtual void ShowEnrollmentSpinnerScreen() = 0;

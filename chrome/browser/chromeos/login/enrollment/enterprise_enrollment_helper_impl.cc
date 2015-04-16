@@ -187,6 +187,36 @@ void EnterpriseEnrollmentHelperImpl::DoEnrollUsingToken(
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
+void EnterpriseEnrollmentHelperImpl::GetDeviceAttributeUpdatePermission() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+      connector->GetDeviceCloudPolicyManager();
+  policy::CloudPolicyClient* client = policy_manager->core()->client();
+
+  client->GetDeviceAttributeUpdatePermission(
+      GetOAuthToken(),
+      base::Bind(
+          &EnterpriseEnrollmentHelperImpl::OnDeviceAttributeUpdatePermission,
+          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void EnterpriseEnrollmentHelperImpl::UpdateDeviceAttributes(
+    const std::string& asset_id,
+    const std::string& location) {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+      connector->GetDeviceCloudPolicyManager();
+  policy::CloudPolicyClient* client = policy_manager->core()->client();
+
+  client->UpdateDeviceAttributes(
+      GetOAuthToken(), asset_id, location,
+      base::Bind(
+          &EnterpriseEnrollmentHelperImpl::OnDeviceAttributeUploadCompleted,
+          weak_ptr_factory_.GetWeakPtr()));
+}
+
 void EnterpriseEnrollmentHelperImpl::OnTokenFetched(
     size_t fetcher_index,
     const std::string& token,
@@ -223,6 +253,16 @@ void EnterpriseEnrollmentHelperImpl::OnEnrollmentFinished(
   } else {
     status_consumer()->OnEnrollmentError(status);
   }
+}
+
+void EnterpriseEnrollmentHelperImpl::OnDeviceAttributeUpdatePermission(
+    bool granted) {
+  status_consumer()->OnDeviceAttributeUpdatePermission(granted);
+}
+
+void EnterpriseEnrollmentHelperImpl::OnDeviceAttributeUploadCompleted(
+    bool success) {
+  status_consumer()->OnDeviceAttributeUploadCompleted(success);
 }
 
 void EnterpriseEnrollmentHelperImpl::ReportAuthStatus(
@@ -378,6 +418,9 @@ void EnterpriseEnrollmentHelperImpl::ReportEnrollmentStatus(
       UMA(policy::kMetricEnrollmentStoreTokenAndIdFailed);
       NOTREACHED();
       break;
+    case policy::EnrollmentStatus::STATUS_ATTRIBUTE_UPDATE_FAILED:
+      UMA(policy::kMetricEnrollmentAttributeUpdateFailed);
+      break;
   }
 }
 
@@ -400,6 +443,11 @@ void EnterpriseEnrollmentHelperImpl::OnBrowsingDataRemoverDone() {
        ++callback) {
     callback->Run();
   }
+}
+
+const std::string& EnterpriseEnrollmentHelperImpl::GetOAuthToken() {
+  DCHECK(oauth_fetchers_.size() > 0);
+  return oauth_fetchers_[0]->oauth2_access_token();
 }
 
 }  // namespace chromeos

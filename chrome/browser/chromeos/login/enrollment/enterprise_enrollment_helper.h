@@ -56,6 +56,14 @@ class EnterpriseEnrollmentHelper {
     // |fetch_additional_token| param of EnrollUsingProfile() to true.
     // Otherwise, |additional_token| is empty.
     virtual void OnDeviceEnrolled(const std::string& additional_token) = 0;
+
+    // Called when device attribute update permission granted,
+    // |granted| indicates whether permission granted or not.
+    virtual void OnDeviceAttributeUpdatePermission(bool granted) = 0;
+
+    // Called when device attribute upload finishes. |success| indicates
+    // whether it is successful or not.
+    virtual void OnDeviceAttributeUploadCompleted(bool success) = 0;
   };
 
   // Factory method. Caller takes ownership of the returned object.
@@ -89,6 +97,18 @@ class EnterpriseEnrollmentHelper {
   // EnrollUsingToken can be called only once during this object's lifetime, and
   // only if neither of EnrollUsing* was called before.
   virtual void EnrollUsingToken(const std::string& token) = 0;
+
+  // Starts device attribute update process. First tries to get
+  // permission to update device attributes for current user
+  // using stored during enrollment oauth token.
+  virtual void GetDeviceAttributeUpdatePermission() = 0;
+
+  // Uploads device attributes on DM server. |asset_id| - Asset Identifier
+  // and |location| - Assigned Location, these attributes were typed by
+  // current user on the device attribute prompt screen after successful
+  // enrollment.
+  virtual void UpdateDeviceAttributes(const std::string& asset_id,
+                                      const std::string& location) = 0;
 
   // Clears authentication data from the profile (if EnrollUsingProfile was
   // used) and revokes fetched tokens.

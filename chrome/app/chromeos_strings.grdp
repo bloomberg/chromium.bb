@@ -5984,6 +5984,9 @@ All users must sign out to continue.
   <message name="IDS_ENTERPRISE_ENROLLMENT_DOMAIN_MISMATCH_ERROR" desc="Error message shown when the device doesn't belong to the domain the user tried to enroll it to.">
     This device cannot be enrolled to the domain your account belongs to because the device is marked for management by a different domain.
   </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_ATTRIBUTE_ERROR" desc="Error message shown when successfully enrolled, but the device attribute update has failed.">
+  Your device has successfully been enrolled for enterprise management, but failed to send its asset and location information. Please manually enter this information from your Admin console for this device.
+  </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_SCREEN_TITLE" desc="The title on the enterprise enrollment dialog.">
     Enterprise enrollment
   </message>
@@ -6005,8 +6008,20 @@ All users must sign out to continue.
   <message name="IDS_ENTERPRISE_ENROLLMENT_DONE" desc="Label for the done button on the success screen in the enterprise enrollment dialog.">
     Done
   </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_CONTINUE" desc="Label for the continue button on the device naming screen in the enterprise enrollment dialog.">
+    Continue
+  </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_SUCCESS" desc="Success message to be shown once enterprise enrollment completes.">
     Your device has successfully been enrolled for enterprise management.
+  </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_ATTRIBUTES" desc="Device attribute message to be shown when editing the name and location field for a device.">
+    <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Your account is enabled to provide an Asset ID and Location for this device (optional).<ph name="END_BOLD">&lt;/strong&gt;</ph> <ph name="BEGIN_ITALIC">&lt;i&gt;</ph>You may provide a device identifier and location in the fields below. These details will be displayed for this device on the chrome:policy page in your management console.<ph name="END_ITALIC">&lt;/i&gt;</ph>
+  </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_ASSET_ID_LABEL" desc="Label for asset id text box on the device naming screen in the enterprise enrollment dialog.">
+    Asset Identifier
+  </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_LOCATION_LABEL" desc="Label for location tex box on the device naming screen in the enterprise enrollment dialog.">
+    Device Location
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_WORKING" desc="Status message to show while enterprise enrollment is underway.">
     Enrolling the device. Please wait...
