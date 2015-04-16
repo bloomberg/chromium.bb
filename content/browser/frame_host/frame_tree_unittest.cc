@@ -29,6 +29,9 @@ namespace {
 void AppendTreeNodeState(FrameTreeNode* node, std::string* result) {
   result->append(
       base::Int64ToString(node->current_frame_host()->GetRoutingID()));
+  if (!node->current_frame_host()->IsRenderFrameLive())
+    result->append("*");  // Asterisk next to dead frames.
+
   if (!node->frame_name().empty()) {
     result->append(" '");
     result->append(node->frame_name());
@@ -202,10 +205,11 @@ TEST_F(FrameTreeTest, DISABLED_Shape) {
 // WebContentsObservers see a consistent view of the tree as we go.
 TEST_F(FrameTreeTest, ObserverWalksTreeDuringFrameCreation) {
   TreeWalkingWebContentsLogger activity(contents());
+  contents()->NavigateAndCommit(GURL("http://www.google.com"));
+  EXPECT_EQ("", activity.GetLog());
+
   FrameTree* frame_tree = contents()->GetFrameTree();
   FrameTreeNode* root = frame_tree->root();
-
-  EXPECT_EQ("", activity.GetLog());
 
   // Simulate attaching a series of frames to build the frame tree.
   main_test_rfh()->OnCreateChildFrame(14, std::string(), SandboxFlags::NONE);
@@ -228,6 +232,8 @@ TEST_F(FrameTreeTest, ObserverWalksTreeDuringFrameCreation) {
 // recovery from a render process crash.
 TEST_F(FrameTreeTest, ObserverWalksTreeAfterCrash) {
   TreeWalkingWebContentsLogger activity(contents());
+  contents()->NavigateAndCommit(GURL("http://www.google.com"));
+  EXPECT_EQ("", activity.GetLog());
 
   main_test_rfh()->OnCreateChildFrame(22, std::string(), SandboxFlags::NONE);
   EXPECT_EQ(
@@ -255,6 +261,7 @@ TEST_F(FrameTreeTest, ObserverWalksTreeAfterCrash) {
 // Ensure that frames are not added to the tree, if the process passed in
 // is different than the process of the parent node.
 TEST_F(FrameTreeTest, FailAddFrameWithWrongProcessId) {
+  contents()->NavigateAndCommit(GURL("http://www.google.com"));
   FrameTree* frame_tree = contents()->GetFrameTree();
   FrameTreeNode* root = frame_tree->root();
   int process_id = root->current_frame_host()->GetProcess()->GetID();

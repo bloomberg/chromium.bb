@@ -623,16 +623,18 @@ bool RenderFrameHostImpl::IsRenderFrameLive() {
 }
 
 void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
+  bool was_created = render_frame_created_;
+  render_frame_created_ = created;
+
   // If the current status is different than the new status, the delegate
   // needs to be notified.
-  if (delegate_ && (created != render_frame_created_)) {
+  if (delegate_ && (created != was_created)) {
     if (created)
       delegate_->RenderFrameCreated(this);
     else
       delegate_->RenderFrameDeleted(this);
   }
 
-  render_frame_created_ = created;
   if (created && render_widget_host_)
     render_widget_host_->InitForFrame();
 }
