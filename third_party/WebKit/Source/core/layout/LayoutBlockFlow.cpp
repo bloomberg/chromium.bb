@@ -3097,8 +3097,17 @@ void LayoutBlockFlow::createOrDestroyMultiColumnFlowThreadIfNeeded(const Compute
     if (type == NoFlowThread || multiColumnFlowThread())
         return;
 
+    // Ruby elements manage child insertion in a special way, and would mess up insertion of the
+    // flow thread. The flow thread needs to be a direct child of the multicol block (|this|).
+    if (isRuby())
+        return;
+
     LayoutMultiColumnFlowThread* flowThread = createMultiColumnFlowThread(type);
     addChild(flowThread);
+
+    // Check that addChild() put the flow thread as a direct child, and didn't do fancy things.
+    ASSERT(flowThread->parent() == this);
+
     flowThread->populate();
     LayoutBlockFlowRareData& rareData = ensureRareData();
     ASSERT(!rareData.m_multiColumnFlowThread);
