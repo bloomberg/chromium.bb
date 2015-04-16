@@ -71,9 +71,11 @@ void LatencyInfoSwapPromiseMonitor::OnForwardScrollUpdateToMainThreadOnImpl() {
          it != latency_->latency_components.end(); ++it) {
       if (it->first.first == ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT) {
         new_sequence_number =
-            (static_cast<int64>(base::PlatformThread::CurrentId()) << 32) |
+            ((static_cast<int64>(base::PlatformThread::CurrentId()) << 32) ^
+             (reinterpret_cast<uint64>(this) << 32)) |
             (it->second.sequence_number & 0xffffffff);
-        DCHECK(new_sequence_number != it->second.sequence_number);
+        if (new_sequence_number == it->second.sequence_number)
+          return;
         break;
       }
     }
