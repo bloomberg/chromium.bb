@@ -142,4 +142,9 @@ public class ChromeSigninController {
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
+
+    @VisibleForTesting
+    public boolean isGcmInitialized() {
+        return mGcmInitialized;
+    }
 }

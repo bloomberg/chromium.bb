@@ -92,6 +92,16 @@ public class SyncTest extends ChromeShellTestBase {
         super.tearDown();
     }
 
+    /**
+     * This is a regression test for http://crbug.com/475299.
+     */
+    @LargeTest
+    @Feature({"Sync"})
+    public void testGcmInitialized() throws Throwable {
+        setupTestAccountAndSignInToSync(FOREIGN_SESSION_TEST_MACHINE_ID);
+        assertTrue(ChromeSigninController.get(mContext).isGcmInitialized());
+    }
+
     @LargeTest
     @Feature({"Sync"})
     public void testGetAboutSyncInfoYieldsValidData() throws Throwable {

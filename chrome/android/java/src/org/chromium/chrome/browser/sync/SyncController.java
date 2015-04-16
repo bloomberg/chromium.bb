@@ -82,6 +82,8 @@ public class SyncController implements ApplicationStateListener,
         mProfileSyncService = ProfileSyncService.get(mContext);
         mProfileSyncService.addSyncStateChangedListener(this);
 
+        mChromeSigninController.ensureGcmIsInitialized();
+
         // Set the sessions ID using the generator that was registered for GENERATOR_ID.
         mProfileSyncService.setSessionsId(
                 UniqueIdentificationGeneratorFactory.getInstance(GENERATOR_ID));
@@ -262,7 +264,6 @@ public class SyncController implements ApplicationStateListener,
 
     private void onFirstStart() {
         if (mAndroidSyncSettings.isSyncEnabled()) {
-            mChromeSigninController.ensureGcmIsInitialized();
             InvalidationController controller = InvalidationController.get(mContext);
             controller.refreshRegisteredTypes(mProfileSyncService.getPreferredDataTypes());
         }
