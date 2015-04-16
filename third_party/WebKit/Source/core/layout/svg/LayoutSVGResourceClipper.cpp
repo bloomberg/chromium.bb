@@ -169,22 +169,16 @@ PassRefPtr<const SkPicture> LayoutSVGResourceClipper::createContentPicture(Affin
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
             continue;
 
-        WindRule newClipRule = style->svgStyle().clipRule();
         bool isUseElement = isSVGUseElement(*childElement);
         if (isUseElement) {
-            SVGUseElement& useElement = toSVGUseElement(*childElement);
-            layoutObject = useElement.layoutObjectClipChild();
+            layoutObject = toSVGUseElement(*childElement).layoutObjectClipChild();
             if (!layoutObject)
                 continue;
-            if (!useElement.hasAttribute(SVGNames::clip_ruleAttr))
-                newClipRule = layoutObject->style()->svgStyle().clipRule();
         }
 
         // Only shapes, paths and texts are allowed for clipping.
         if (!layoutObject->isSVGShape() && !layoutObject->isSVGText())
             continue;
-
-        context.setFillRule(newClipRule);
 
         if (isUseElement)
             layoutObject = childElement->layoutObject();
