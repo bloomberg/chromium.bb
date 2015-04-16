@@ -68,6 +68,17 @@ class BluetoothEventRouter : public device::BluetoothAdapter::Observer,
                             const base::Closure& callback,
                             const base::Closure& error_callback);
 
+  // Requests that the filter associated with discovery session that belongs
+  // to the extension with id |extension_id| be set to |discovery_filter|.
+  // Callback is called, if the filter was successfully updated.
+  // |error_callback| is called, if filter update failed.
+  void SetDiscoveryFilter(
+      scoped_ptr<device::BluetoothDiscoveryFilter> discovery_filter,
+      device::BluetoothAdapter* adapter,
+      const std::string& extension_id,
+      const base::Closure& callback,
+      const base::Closure& error_callback);
+
   // Called when a bluetooth event listener is added.
   void OnListenerAdded();
 
@@ -133,6 +144,9 @@ class BluetoothEventRouter : public device::BluetoothAdapter::Observer,
       const base::Closure& callback,
       scoped_ptr<device::BluetoothDiscoverySession> discovery_session);
 
+  void OnSetDiscoveryFilter(const std::string& extension_id,
+                            const base::Closure& callback);
+
   content::BrowserContext* browser_context_;
   scoped_refptr<device::BluetoothAdapter> adapter_;
 
@@ -142,6 +156,12 @@ class BluetoothEventRouter : public device::BluetoothAdapter::Observer,
   typedef std::map<std::string, device::BluetoothDiscoverySession*>
       DiscoverySessionMap;
   DiscoverySessionMap discovery_session_map_;
+
+  typedef std::map<std::string, device::BluetoothDiscoveryFilter*>
+      PreSetFilterMap;
+
+  // Maps an extension id to it's pre-set discovery filter.
+  PreSetFilterMap pre_set_filter_map_;
 
   // Maps an extension id to its pairing delegate.
   typedef std::map<std::string, BluetoothApiPairingDelegate*>

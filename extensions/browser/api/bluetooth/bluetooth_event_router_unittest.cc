@@ -27,6 +27,9 @@ const char kTestExtensionId[] = "test extension id";
 const device::BluetoothUUID kAudioProfileUuid("1234");
 const device::BluetoothUUID kHealthProfileUuid("4321");
 
+MATCHER_P(IsFilterEqual, a, "") {
+  return arg.Equals(*a);
+}
 }  // namespace
 
 namespace extensions {
@@ -87,6 +90,35 @@ TEST_F(BluetoothEventRouterTest, UnloadExtension) {
 
   ExtensionRegistry::Get(browser_context())->TriggerOnUnloaded(
       extension.get(), UnloadedExtensionInfo::REASON_DISABLE);
+
+  EXPECT_CALL(*mock_adapter_, RemoveObserver(testing::_)).Times(1);
+}
+
+// This test check that calling SetDiscoveryFilter before StartDiscoverySession
+// for given extension will start session with proper filter.
+TEST_F(BluetoothEventRouterTest, SetDiscoveryFilter) {
+  scoped_ptr<device::BluetoothDiscoveryFilter> discovery_filter(
+      new device::BluetoothDiscoveryFilter(
+          device::BluetoothDiscoveryFilter::Transport::TRANSPORT_LE));
+
+  discovery_filter->SetRSSI(-80);
+  discovery_filter->AddUUID(device::BluetoothUUID("1000"));
+
+  device::BluetoothDiscoveryFilter df(
+      device::BluetoothDiscoveryFilter::Transport::TRANSPORT_LE);
+  df.CopyFrom(*discovery_filter);
+
+  router_->SetDiscoveryFilter(discovery_filter.Pass(), mock_adapter_,
+                              kTestExtensionId, base::Bind(&base::DoNothing),
+                              base::Bind(&base::DoNothing));
+
+  EXPECT_CALL(*mock_adapter_, StartDiscoverySessionWithFilterRaw(
+                                  testing::Pointee(IsFilterEqual(&df)),
+                                  testing::_, testing::_)).Times(1);
+
+  router_->StartDiscoverySession(mock_adapter_, kTestExtensionId,
+                                 base::Bind(&base::DoNothing),
+                                 base::Bind(&base::DoNothing));
 
   EXPECT_CALL(*mock_adapter_, RemoveObserver(testing::_)).Times(1);
 }

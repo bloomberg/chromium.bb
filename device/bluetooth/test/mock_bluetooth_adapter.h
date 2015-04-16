@@ -61,6 +61,10 @@ class MockBluetoothAdapter : public BluetoothAdapter {
   MOCK_METHOD2(StartDiscoverySession,
                void(const DiscoverySessionCallback& callback,
                     const ErrorCallback& error_callback));
+  MOCK_METHOD3(StartDiscoverySessionWithFilterRaw,
+               void(const BluetoothDiscoveryFilter*,
+                    const DiscoverySessionCallback& callback,
+                    const ErrorCallback& error_callback));
   MOCK_CONST_METHOD0(GetDevices, BluetoothAdapter::ConstDeviceList());
   MOCK_METHOD1(GetDevice, BluetoothDevice*(const std::string& address));
   MOCK_CONST_METHOD1(GetDevice,
@@ -85,6 +89,11 @@ class MockBluetoothAdapter : public BluetoothAdapter {
                void(const BluetoothAudioSink::Options& options,
                     const AcquiredCallback& callback,
                     const BluetoothAudioSink::ErrorCallback& error_callback));
+
+  void StartDiscoverySessionWithFilter(
+      scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+      const DiscoverySessionCallback& callback,
+      const ErrorCallback& error_callback);
 
  protected:
   void DeleteOnCorrectThread() const override;

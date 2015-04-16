@@ -41,4 +41,12 @@ void MockBluetoothAdapter::SetDiscoveryFilter(
     const ErrorCallback& error_callback) {
 }
 
+void MockBluetoothAdapter::StartDiscoverySessionWithFilter(
+    scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+    const DiscoverySessionCallback& callback,
+    const ErrorCallback& error_callback) {
+  StartDiscoverySessionWithFilterRaw(discovery_filter.get(), callback,
+                                     error_callback);
+}
+
 }  // namespace device
