@@ -132,7 +132,7 @@ public class PreferencesTest extends ChromeShellTestBase {
 
     /**
      * Make sure that when a user switches to a search engine that uses HTTP, the location
-     * permission is added, just like with HTTPS search engines.
+     * permission is not added.
      */
     @SmallTest
     @Feature({"Preferences"})
@@ -159,7 +159,7 @@ public class PreferencesTest extends ChromeShellTestBase {
 
                 TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
                 assertEquals(index, templateUrlService.getDefaultSearchEngineIndex());
-                assertEquals(ContentSetting.ALLOW, locationPermissionForSearchEngine(index));
+                assertEquals(ContentSetting.ASK, locationPermissionForSearchEngine(index));
             }
         });
     }
@@ -177,7 +177,7 @@ public class PreferencesTest extends ChromeShellTestBase {
             @Override
             public void run() {
                 PrefServiceBridge.maybeCreatePermissionForDefaultSearchEngine(
-                        true, true, getInstrumentation().getTargetContext());
+                        true, getInstrumentation().getTargetContext());
                 assertEquals(ContentSetting.ALLOW, locationPermissionForSearchEngine(
                         TemplateUrlService.getInstance().getDefaultSearchEngineIndex()));
             }
@@ -205,7 +205,7 @@ public class PreferencesTest extends ChromeShellTestBase {
 
                 // See if it overwrites it with an Allowed record (spoiler-alert: it shouldn't).
                 PrefServiceBridge.maybeCreatePermissionForDefaultSearchEngine(
-                        true, true, getInstrumentation().getTargetContext());
+                        true, getInstrumentation().getTargetContext());
                 assertEquals(ContentSetting.BLOCK, locationPermissionForSearchEngine(
                         templateUrlService.getDefaultSearchEngineIndex()));
             }
@@ -231,7 +231,7 @@ public class PreferencesTest extends ChromeShellTestBase {
 
                 // Make sure location permission wasn't populated since HTTP is present.
                 PrefServiceBridge.maybeCreatePermissionForDefaultSearchEngine(
-                        true, true, getInstrumentation().getTargetContext());
+                        true, getInstrumentation().getTargetContext());
                 assertEquals(ContentSetting.ASK, locationPermissionForSearchEngine(index));
             }
         });
