@@ -188,9 +188,9 @@ class Yahoo(WebsiteTest):
 
   def Login(self):
     self.GoTo("https://login.yahoo.com")
-    self.FillUsernameInto("#username")
-    self.FillPasswordInto("#passwd")
-    self.Submit("#passwd")
+    self.FillUsernameInto("#login-username")
+    self.FillPasswordInto("#login-passwd")
+    self.Click("#login-signin")
 
 
 class Yandex(WebsiteTest):
