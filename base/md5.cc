@@ -168,15 +168,13 @@ void MD5Init(MD5Context* context) {
  * of bytes.
  */
 void MD5Update(MD5Context* context, const StringPiece& data) {
-  const uint8_t* inbuf = (const uint8_t*)data.data();
-  size_t len = data.size();
   struct Context* ctx = (struct Context*)context;
-  const uint8_t* buf = (const uint8_t*)inbuf;
-  uint32_t t;
+  const uint8_t* buf = (const uint8_t*)data.data();
+  size_t len = data.size();
 
   /* Update bitcount */
 
-  t = ctx->bits[0];
+  uint32_t t = ctx->bits[0];
   if ((ctx->bits[0] = t + ((uint32_t)len << 3)) < t)
     ctx->bits[1]++; /* Carry from low to high */
   ctx->bits[1] += static_cast<uint32_t>(len >> 29);
