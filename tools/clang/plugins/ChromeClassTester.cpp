@@ -95,9 +95,13 @@ void ChromeClassTester::emitWarning(SourceLocation loc,
   std::string err;
   err = "[chromium-style] ";
   err += raw_error;
+  // TODO(dcheng): Re-enable -Werror for these diagnostics on Windows once all
+  // the pre-existing warnings are cleaned up. https://crbug.com/467287
   DiagnosticIDs::Level level =
+#if !defined(LLVM_ON_WIN32)
       diagnostic().getWarningsAsErrors() ?
       DiagnosticIDs::Error :
+#endif
       DiagnosticIDs::Warning;
   unsigned id = diagnostic().getDiagnosticIDs()->getCustomDiagID(level, err);
   DiagnosticBuilder builder = diagnostic().Report(full, id);

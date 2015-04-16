@@ -560,8 +560,8 @@ FindBadConstructsConsumer::CheckRecordForRefcountIssue(
 // -Werror.
 DiagnosticsEngine::Level FindBadConstructsConsumer::getErrorLevel() {
 #if defined(LLVM_ON_WIN32)
-  // Only warn on Windows, since there are a lot of potential pre-existing
-  // issues.
+  // TODO(dcheng): Re-enable -Werror for these diagnostics on Windows once all
+  // the pre-existing warnings are cleaned up. https://crbug.com/467287
   return DiagnosticsEngine::Warning;
 #else
   return diagnostic().getWarningsAsErrors() ? DiagnosticsEngine::Error
