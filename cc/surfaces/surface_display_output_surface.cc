@@ -80,12 +80,8 @@ bool SurfaceDisplayOutputSurface::BindToClient(OutputSurfaceClient* client) {
 }
 
 void SurfaceDisplayOutputSurface::ForceReclaimResources() {
-  if (!surface_id_.is_null()) {
-    scoped_ptr<CompositorFrame> empty_frame(new CompositorFrame());
-    empty_frame->delegated_frame_data.reset(new DelegatedFrameData);
-    factory_.SubmitFrame(surface_id_, empty_frame.Pass(),
-                         SurfaceFactory::DrawCallback());
-  }
+  if (!surface_id_.is_null())
+    factory_.SubmitFrame(surface_id_, nullptr, SurfaceFactory::DrawCallback());
 }
 
 void SurfaceDisplayOutputSurface::ReturnResources(
