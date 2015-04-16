@@ -433,12 +433,9 @@ public class ImeAdapter {
                                 KeyEvent.changeAction(keyEvent, KeyEvent.ACTION_UP), 0);
             }
 
-            // If we do not have autocomplete=off, then always send compose events rather than a
-            // guessed keyCode. This addresses http://crbug.com/422685 .
-            if ((mTextInputFlags & WebTextInputFlags.AutocompleteOff) == 0) {
-                keyCode = COMPOSITION_KEY_CODE;
-                modifiers = 0;
-            }
+            // Always send compose events. This is a quick fix for http://crbug.com/476497.
+            keyCode = COMPOSITION_KEY_CODE;
+            modifiers = 0;
 
             // When typing, there is no issue sending KeyDown and KeyUp events around the
             // composition event because those key events do nothing (other than call JS
