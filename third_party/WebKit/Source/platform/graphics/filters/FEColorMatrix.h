@@ -59,6 +59,9 @@ private:
     virtual bool affectsTransparentPixels() override;
 
     ColorMatrixType m_type;
+
+    // The m_values vector may not contain the right number of values. Always check
+    // before accessing contents.
     Vector<float> m_values;
 };
 
