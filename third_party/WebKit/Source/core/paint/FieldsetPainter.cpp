@@ -42,7 +42,7 @@ void FieldsetPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, c
 
     BoxDecorationData boxDecorationData(m_layoutFieldset, paintInfo.context);
 
-    if (boxDecorationData.bleedAvoidance() == BackgroundBleedNone)
+    if (boxDecorationData.bleedAvoidance == BackgroundBleedNone)
         BoxPainter::paintBoxShadow(paintInfo, paintRect, m_layoutFieldset.styleRef(), Normal);
     BoxPainter(m_layoutFieldset).paintFillLayers(paintInfo, boxDecorationData.backgroundColor, m_layoutFieldset.style()->backgroundLayers(), paintRect);
     BoxPainter::paintBoxShadow(paintInfo, paintRect, m_layoutFieldset.styleRef(), Inset);

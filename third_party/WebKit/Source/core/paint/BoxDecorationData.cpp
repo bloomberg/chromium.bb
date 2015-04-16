@@ -20,8 +20,7 @@ BoxDecorationData::BoxDecorationData(const LayoutBox& layoutBox, GraphicsContext
     ASSERT(hasBackground == layoutBox.style()->hasBackground());
     hasBorder = layoutBox.style()->hasBorder();
     hasAppearance = layoutBox.style()->hasAppearance();
-
-    m_bleedAvoidance = determineBackgroundBleedAvoidance(layoutBox, context);
+    bleedAvoidance = determineBackgroundBleedAvoidance(layoutBox, context);
 }
 
 namespace {
@@ -73,7 +72,7 @@ BackgroundBleedAvoidance BoxDecorationData::determineBackgroundBleedAvoidance(co
 
     if (!hasBorder || !layoutBox.style()->hasBorderRadius() || layoutBox.canRenderBorderImage()) {
         if (layoutBox.backgroundShouldAlwaysBeClipped())
-            return BackgroundBleedClipBackground;
+            return BackgroundBleedClipOnly;
         return BackgroundBleedNone;
     }
 
@@ -87,7 +86,7 @@ BackgroundBleedAvoidance BoxDecorationData::determineBackgroundBleedAvoidance(co
     if (!hasAppearance && layoutBox.style()->borderObscuresBackground() && layoutBox.backgroundHasOpaqueTopLayer())
         return BackgroundBleedBackgroundOverBorder;
 
-    return BackgroundBleedClipBackground;
+    return BackgroundBleedClipLayer;
 }
 
 } // namespace blink

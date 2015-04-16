@@ -51,7 +51,8 @@ typedef unsigned BorderEdgeFlags;
 enum BackgroundBleedAvoidance {
     BackgroundBleedNone,
     BackgroundBleedShrinkBackground,
-    BackgroundBleedClipBackground,
+    BackgroundBleedClipOnly,
+    BackgroundBleedClipLayer,
     BackgroundBleedBackgroundOverBorder,
 };
 
