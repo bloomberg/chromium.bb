@@ -19,7 +19,7 @@
 
 namespace media {
 
-class MEDIA_EXPORT MidiManagerMac : public MidiManager {
+class MEDIA_EXPORT MidiManagerMac final : public MidiManager {
  public:
   MidiManagerMac();
   ~MidiManagerMac() override;

@@ -21,7 +21,7 @@
 
 namespace media {
 
-class MEDIA_EXPORT MidiManagerAlsa : public MidiManager {
+class MEDIA_EXPORT MidiManagerAlsa final : public MidiManager {
  public:
   MidiManagerAlsa();
   ~MidiManagerAlsa() override;

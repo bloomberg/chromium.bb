@@ -16,7 +16,7 @@ class MidiManagerClient;
 // TODO(crbug.com/467442): Make tasks cancelable per client.
 class MidiScheduler final {
  public:
-  MidiScheduler(MidiManager* manager);
+  explicit MidiScheduler(MidiManager* manager);
   ~MidiScheduler();
 
   // Post |closure| to the current message loop safely. The |closure| will not

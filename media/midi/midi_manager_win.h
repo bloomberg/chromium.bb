@@ -39,7 +39,7 @@ class MidiServiceWin {
                                  base::TimeTicks time) = 0;
 };
 
-class MidiManagerWin : public MidiManager, public MidiServiceWinDelegate {
+class MidiManagerWin final : public MidiManager, public MidiServiceWinDelegate {
  public:
   MidiManagerWin() {}
   virtual ~MidiManagerWin() { midi_service_.reset(); }
