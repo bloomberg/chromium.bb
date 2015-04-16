@@ -47,61 +47,68 @@ class StyledMarkupSerializer;
 class StyledMarkupAccumulator final : public MarkupAccumulator {
     STACK_ALLOCATED();
 public:
-    StyledMarkupAccumulator(StyledMarkupSerializer*, EAbsoluteURLs, const Position& start, const Position& end);
+    enum RangeFullySelectsNode { DoesFullySelectNode, DoesNotFullySelectNode };
+
+    StyledMarkupAccumulator(StyledMarkupSerializer*, EAbsoluteURLs, const Position& start, const Position& end, EAnnotateForInterchange, Node*);
     virtual void appendText(StringBuilder&, Text&) override;
     virtual void appendElement(StringBuilder&, Element&, Namespaces*) override;
+    void appendElement(StringBuilder&, Element&, bool, RangeFullySelectsNode);
+    void appendStyleNodeOpenTag(StringBuilder&, StylePropertySet*, const Document&, bool isBlock = false);
+
+    // TODO(hajimehoshi): These functions are called from the serializer, but
+    // should not.
+    Node* highestNodeToBeSerialized() { return m_highestNodeToBeSerialized.get(); }
+    void setHighestNodeToBeSerialized(Node* node) { m_highestNodeToBeSerialized = node; }
+    bool shouldAnnotate() const { return m_shouldAnnotate == AnnotateForInterchange || m_shouldAnnotate == AnnotateForNavigationTransition; }
+    bool shouldAnnotateForNavigationTransition() const { return m_shouldAnnotate == AnnotateForNavigationTransition; }
 
 private:
     String renderedText(Text&);
     String stringValueForRange(const Node&);
 
+    bool shouldApplyWrappingStyle(const Node&) const;
+
     // StyledMarkupAccumulator is owned by StyledMarkupSerializer and
     // |m_serializer| must be living while this is living.
+    //
+    // TODO(hajimehoshi): m_serializer is used only to access |m_wrappingStyle|.
+    // Remove this.
     StyledMarkupSerializer* m_serializer;
 
     const Position m_start;
     const Position m_end;
+    const EAnnotateForInterchange m_shouldAnnotate;
+    RawPtrWillBeMember<Node> m_highestNodeToBeSerialized;
 };
 
 class StyledMarkupSerializer final {
     STACK_ALLOCATED();
 public:
-    enum RangeFullySelectsNode { DoesFullySelectNode, DoesNotFullySelectNode };
-
     StyledMarkupSerializer(EAbsoluteURLs, EAnnotateForInterchange, const Position& start, const Position& end, Node* highestNodeToBeSerialized = nullptr);
 
     template<typename Strategy>
     Node* serializeNodes(Node* startNode, Node* pastEnd);
+
+    // TODO(hajimehoshi): These functions should be at the accumulator, but are
+    // used at markup.cpp. Move those usages to here.
     void appendString(const String& s) { return m_markupAccumulator.appendString(s); }
-    void wrapWithNode(ContainerNode&, bool convertBlocksToInlines = false, RangeFullySelectsNode = DoesFullySelectNode);
+    void wrapWithNode(ContainerNode&, bool convertBlocksToInlines = false, StyledMarkupAccumulator::RangeFullySelectsNode = StyledMarkupAccumulator::DoesFullySelectNode);
     void wrapWithStyleNode(StylePropertySet*, const Document&, bool isBlock = false);
+
     String takeResults();
 
-private:
-    friend class StyledMarkupAccumulator;
-
+    // TODO(hajimehoshi): This is called by StyledMarkupAccumulator but should
+    // not. Move |m_wrappingStyle| to the accumulator.
     EditingStyle* wrappingStyle() { return m_wrappingStyle.get(); }
 
-    void appendStyleNodeOpenTag(StringBuilder&, StylePropertySet*, const Document&, bool isBlock = false);
-    const String& styleNodeCloseTag(bool isBlock = false);
-    void appendElement(StringBuilder& out, Element&, bool addDisplayInline, RangeFullySelectsNode);
-
+private:
     enum NodeTraversalMode { EmitString, DoNotEmitString };
 
     template<typename Strategy>
     Node* traverseNodesForSerialization(Node* startNode, Node* pastEnd, NodeTraversalMode);
 
-    bool shouldAnnotate() const { return m_shouldAnnotate == AnnotateForInterchange || m_shouldAnnotate == AnnotateForNavigationTransition; }
-    bool shouldApplyWrappingStyle(const Node& node) const
-    {
-        return m_highestNodeToBeSerialized && m_highestNodeToBeSerialized->parentNode() == node.parentNode()
-            && m_wrappingStyle && m_wrappingStyle->style();
-    }
-
     StyledMarkupAccumulator m_markupAccumulator;
     Vector<String> m_reversedPrecedingMarkup;
-    const EAnnotateForInterchange m_shouldAnnotate;
-    RawPtrWillBeMember<Node> m_highestNodeToBeSerialized;
     RefPtrWillBeMember<EditingStyle> m_wrappingStyle;
 };
 

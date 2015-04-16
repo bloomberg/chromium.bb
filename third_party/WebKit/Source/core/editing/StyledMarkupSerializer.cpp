@@ -42,13 +42,26 @@
 
 namespace blink {
 
+namespace {
+
+const String& styleNodeCloseTag(bool isBlock)
+{
+    DEFINE_STATIC_LOCAL(const String, divClose, ("</div>"));
+    DEFINE_STATIC_LOCAL(const String, styleSpanClose, ("</span>"));
+    return isBlock ? divClose : styleSpanClose;
+}
+
+} // namespace
+
 using namespace HTMLNames;
 
-StyledMarkupAccumulator::StyledMarkupAccumulator(StyledMarkupSerializer* serializer, EAbsoluteURLs shouldResolveURLs, const Position& start, const Position& end)
+StyledMarkupAccumulator::StyledMarkupAccumulator(StyledMarkupSerializer* serializer, EAbsoluteURLs shouldResolveURLs, const Position& start, const Position& end, EAnnotateForInterchange shouldAnnotate, Node* highestNodeToBeSerialized)
     : MarkupAccumulator(shouldResolveURLs)
     , m_serializer(serializer)
     , m_start(start.parentAnchoredEquivalent())
     , m_end(end.parentAnchoredEquivalent())
+    , m_shouldAnnotate(shouldAnnotate)
+    , m_highestNodeToBeSerialized(highestNodeToBeSerialized)
 {
     ASSERT(m_start.isNull() == m_end.isNull());
 }
@@ -56,7 +69,7 @@ StyledMarkupAccumulator::StyledMarkupAccumulator(StyledMarkupSerializer* seriali
 void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
 {
     const bool parentIsTextarea = text.parentElement() && text.parentElement()->tagQName() == textareaTag;
-    const bool wrappingSpan = m_serializer->shouldApplyWrappingStyle(text) && !parentIsTextarea;
+    const bool wrappingSpan = shouldApplyWrappingStyle(text) && !parentIsTextarea;
     if (wrappingSpan) {
         RefPtrWillBeRawPtr<EditingStyle> wrappingStyle = m_serializer->wrappingStyle()->copy();
         // FIXME: <rdar://problem/5371536> Style rules that match pasted content can change it's appearance
@@ -65,10 +78,10 @@ void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
         // FIXME: Should this be included in forceInline?
         wrappingStyle->style()->setProperty(CSSPropertyFloat, CSSValueNone);
 
-        m_serializer->appendStyleNodeOpenTag(out, wrappingStyle->style(), text.document());
+        appendStyleNodeOpenTag(out, wrappingStyle->style(), text.document());
     }
 
-    if (!m_serializer->shouldAnnotate() || parentIsTextarea) {
+    if (!shouldAnnotate() || parentIsTextarea) {
         const String& str = text.data();
         unsigned length = str.length();
         unsigned start = 0;
@@ -90,102 +103,18 @@ void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
     }
 
     if (wrappingSpan)
-        out.append(m_serializer->styleNodeCloseTag());
+        out.append(styleNodeCloseTag(false));
 }
 
 void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element, Namespaces*)
 {
-    m_serializer->appendElement(out, element, false, StyledMarkupSerializer::DoesFullySelectNode);
+    appendElement(out, element, false, DoesFullySelectNode);
 }
 
-String StyledMarkupAccumulator::renderedText(Text& textNode)
-{
-    int startOffset = 0;
-    int endOffset = textNode.length();
-    if (m_start.containerNode() == textNode)
-        startOffset = m_start.offsetInContainerNode();
-    if (m_end.containerNode() == textNode)
-        endOffset = m_end.offsetInContainerNode();
-    return plainText(Position(&textNode, startOffset), Position(&textNode, endOffset));
-}
-
-String StyledMarkupAccumulator::stringValueForRange(const Node& node)
-{
-    if (m_start.isNull())
-        return node.nodeValue();
-
-    String str = node.nodeValue();
-    if (m_start.containerNode() == node)
-        str.truncate(m_end.offsetInContainerNode());
-    if (m_end.containerNode() == node)
-        str.remove(0, m_start.offsetInContainerNode());
-    return str;
-}
-
-StyledMarkupSerializer::StyledMarkupSerializer(EAbsoluteURLs shouldResolveURLs, EAnnotateForInterchange shouldAnnotate, const Position& start, const Position& end, Node* highestNodeToBeSerialized)
-    : m_markupAccumulator(this, shouldResolveURLs, start, end)
-    , m_shouldAnnotate(shouldAnnotate)
-    , m_highestNodeToBeSerialized(highestNodeToBeSerialized)
-{
-}
-
-void StyledMarkupSerializer::wrapWithNode(ContainerNode& node, bool convertBlocksToInlines, RangeFullySelectsNode rangeFullySelectsNode)
-{
-    StringBuilder markup;
-    if (node.isElementNode())
-        appendElement(markup, toElement(node), convertBlocksToInlines && isBlock(&node), rangeFullySelectsNode);
-    else
-        m_markupAccumulator.appendStartMarkup(markup, node, 0);
-    m_reversedPrecedingMarkup.append(markup.toString());
-    if (node.isElementNode())
-        m_markupAccumulator.appendEndTag(toElement(node));
-}
-
-void StyledMarkupSerializer::wrapWithStyleNode(StylePropertySet* style, const Document& document, bool isBlock)
-{
-    StringBuilder openTag;
-    appendStyleNodeOpenTag(openTag, style, document, isBlock);
-    m_reversedPrecedingMarkup.append(openTag.toString());
-    appendString(styleNodeCloseTag(isBlock));
-}
-
-void StyledMarkupSerializer::appendStyleNodeOpenTag(StringBuilder& out, StylePropertySet* style, const Document& document, bool isBlock)
-{
-    // wrappingStyleForSerialization should have removed -webkit-text-decorations-in-effect
-    ASSERT(propertyMissingOrEqualToNone(style, CSSPropertyWebkitTextDecorationsInEffect));
-    if (isBlock)
-        out.appendLiteral("<div style=\"");
-    else
-        out.appendLiteral("<span style=\"");
-    m_markupAccumulator.appendAttributeValue(out, style->asText(), document.isHTMLDocument());
-    out.appendLiteral("\">");
-}
-
-const String& StyledMarkupSerializer::styleNodeCloseTag(bool isBlock)
-{
-    DEFINE_STATIC_LOCAL(const String, divClose, ("</div>"));
-    DEFINE_STATIC_LOCAL(const String, styleSpanClose, ("</span>"));
-    return isBlock ? divClose : styleSpanClose;
-}
-
-String StyledMarkupSerializer::takeResults()
-{
-    StringBuilder result;
-    result.reserveCapacity(MarkupAccumulator::totalLength(m_reversedPrecedingMarkup) + m_markupAccumulator.length());
-
-    for (size_t i = m_reversedPrecedingMarkup.size(); i > 0; --i)
-        result.append(m_reversedPrecedingMarkup[i - 1]);
-
-    m_markupAccumulator.concatenateMarkup(result);
-
-    // We remove '\0' characters because they are not visibly rendered to the user.
-    return result.toString().replace(0, "");
-}
-
-void StyledMarkupSerializer::appendElement(StringBuilder& out, Element& element, bool addDisplayInline, RangeFullySelectsNode rangeFullySelectsNode)
+void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element, bool addDisplayInline, StyledMarkupAccumulator::RangeFullySelectsNode rangeFullySelectsNode)
 {
     const bool documentIsHTML = element.document().isHTMLDocument();
-    m_markupAccumulator.appendOpenTag(out, element, 0);
+    appendOpenTag(out, element, 0);
 
     const bool shouldAnnotateOrForceInline = element.isHTMLElement() && (shouldAnnotate() || addDisplayInline);
     const bool shouldOverrideStyleAttr = shouldAnnotateOrForceInline || shouldApplyWrappingStyle(element);
@@ -195,14 +124,14 @@ void StyledMarkupSerializer::appendElement(StringBuilder& out, Element& element,
         // We'll handle the style attribute separately, below.
         if (attribute.name() == styleAttr && shouldOverrideStyleAttr)
             continue;
-        m_markupAccumulator.appendAttribute(out, element, attribute, 0);
+        appendAttribute(out, element, attribute, 0);
     }
 
     if (shouldOverrideStyleAttr) {
         RefPtrWillBeRawPtr<EditingStyle> newInlineStyle = nullptr;
 
         if (shouldApplyWrappingStyle(element)) {
-            newInlineStyle = m_wrappingStyle->copy();
+            newInlineStyle = m_serializer->wrappingStyle()->copy();
             newInlineStyle->removePropertiesInElementDefaultStyle(&element);
             newInlineStyle->removeStyleConflictingWithStyleOfElement(&element);
         } else {
@@ -230,30 +159,110 @@ void StyledMarkupSerializer::appendElement(StringBuilder& out, Element& element,
 
         if (!newInlineStyle->isEmpty()) {
             out.appendLiteral(" style=\"");
-            m_markupAccumulator.appendAttributeValue(out, newInlineStyle->style()->asText(), documentIsHTML);
+            appendAttributeValue(out, newInlineStyle->style()->asText(), documentIsHTML);
             out.append('\"');
         }
     }
 
-    m_markupAccumulator.appendCloseTag(out, element);
+    appendCloseTag(out, element);
+}
+
+void StyledMarkupAccumulator::appendStyleNodeOpenTag(StringBuilder& out, StylePropertySet* style, const Document& document, bool isBlock)
+{
+    // wrappingStyleForSerialization should have removed -webkit-text-decorations-in-effect
+    ASSERT(propertyMissingOrEqualToNone(style, CSSPropertyWebkitTextDecorationsInEffect));
+    if (isBlock)
+        out.appendLiteral("<div style=\"");
+    else
+        out.appendLiteral("<span style=\"");
+    appendAttributeValue(out, style->asText(), document.isHTMLDocument());
+    out.appendLiteral("\">");
+}
+
+String StyledMarkupAccumulator::renderedText(Text& textNode)
+{
+    int startOffset = 0;
+    int endOffset = textNode.length();
+    if (m_start.containerNode() == textNode)
+        startOffset = m_start.offsetInContainerNode();
+    if (m_end.containerNode() == textNode)
+        endOffset = m_end.offsetInContainerNode();
+    return plainText(Position(&textNode, startOffset), Position(&textNode, endOffset));
+}
+
+String StyledMarkupAccumulator::stringValueForRange(const Node& node)
+{
+    if (m_start.isNull())
+        return node.nodeValue();
+
+    String str = node.nodeValue();
+    if (m_start.containerNode() == node)
+        str.truncate(m_end.offsetInContainerNode());
+    if (m_end.containerNode() == node)
+        str.remove(0, m_start.offsetInContainerNode());
+    return str;
+}
+
+bool StyledMarkupAccumulator::shouldApplyWrappingStyle(const Node& node) const
+{
+    return m_highestNodeToBeSerialized && m_highestNodeToBeSerialized->parentNode() == node.parentNode()
+        && m_serializer->wrappingStyle() && m_serializer->wrappingStyle()->style();
+}
+
+StyledMarkupSerializer::StyledMarkupSerializer(EAbsoluteURLs shouldResolveURLs, EAnnotateForInterchange shouldAnnotate, const Position& start, const Position& end, Node* highestNodeToBeSerialized)
+    : m_markupAccumulator(this, shouldResolveURLs, start, end, shouldAnnotate, highestNodeToBeSerialized)
+{
+}
+
+void StyledMarkupSerializer::wrapWithNode(ContainerNode& node, bool convertBlocksToInlines, StyledMarkupAccumulator::RangeFullySelectsNode rangeFullySelectsNode)
+{
+    StringBuilder markup;
+    if (node.isElementNode())
+        m_markupAccumulator.appendElement(markup, toElement(node), convertBlocksToInlines && isBlock(&node), rangeFullySelectsNode);
+    else
+        m_markupAccumulator.appendStartMarkup(markup, node, 0);
+    m_reversedPrecedingMarkup.append(markup.toString());
+    if (node.isElementNode())
+        m_markupAccumulator.appendEndTag(toElement(node));
+}
+
+void StyledMarkupSerializer::wrapWithStyleNode(StylePropertySet* style, const Document& document, bool isBlock)
+{
+    StringBuilder openTag;
+    m_markupAccumulator.appendStyleNodeOpenTag(openTag, style, document, isBlock);
+    m_reversedPrecedingMarkup.append(openTag.toString());
+    appendString(styleNodeCloseTag(isBlock));
+}
+
+String StyledMarkupSerializer::takeResults()
+{
+    StringBuilder result;
+    result.reserveCapacity(MarkupAccumulator::totalLength(m_reversedPrecedingMarkup) + m_markupAccumulator.length());
+
+    for (size_t i = m_reversedPrecedingMarkup.size(); i > 0; --i)
+        result.append(m_reversedPrecedingMarkup[i - 1]);
+
+    m_markupAccumulator.concatenateMarkup(result);
+
+    // We remove '\0' characters because they are not visibly rendered to the user.
+    return result.toString().replace(0, "");
 }
 
 template<typename Strategy>
 Node* StyledMarkupSerializer::serializeNodes(Node* startNode, Node* pastEnd)
 {
-    if (!m_highestNodeToBeSerialized) {
+    if (!m_markupAccumulator.highestNodeToBeSerialized()) {
         Node* lastClosed = traverseNodesForSerialization<Strategy>(startNode, pastEnd, DoNotEmitString);
-        m_highestNodeToBeSerialized = lastClosed;
+        m_markupAccumulator.setHighestNodeToBeSerialized(lastClosed);
     }
 
-    if (m_highestNodeToBeSerialized && Strategy::parent(*m_highestNodeToBeSerialized)) {
-        m_wrappingStyle = EditingStyle::wrappingStyleForSerialization(m_highestNodeToBeSerialized->parentNode(), shouldAnnotate());
-        if (m_shouldAnnotate == AnnotateForNavigationTransition) {
+    if (m_markupAccumulator.highestNodeToBeSerialized() && Strategy::parent(*m_markupAccumulator.highestNodeToBeSerialized())) {
+        m_wrappingStyle = EditingStyle::wrappingStyleForSerialization(m_markupAccumulator.highestNodeToBeSerialized()->parentNode(), m_markupAccumulator.shouldAnnotate());
+        if (m_markupAccumulator.shouldAnnotateForNavigationTransition()) {
             m_wrappingStyle->style()->removeProperty(CSSPropertyBackgroundColor);
             m_wrappingStyle->style()->removeProperty(CSSPropertyBackgroundImage);
         }
     }
-
 
     return traverseNodesForSerialization<Strategy>(startNode, pastEnd, EmitString);
 }
@@ -282,7 +291,7 @@ Node* StyledMarkupSerializer::traverseNodesForSerialization(Node* startNode, Nod
             continue;
         }
 
-        if (!n->layoutObject() && !enclosingElementWithTag(firstPositionInOrBeforeNode(n), selectTag) && m_shouldAnnotate != AnnotateForNavigationTransition) {
+        if (!n->layoutObject() && !enclosingElementWithTag(firstPositionInOrBeforeNode(n), selectTag) && !m_markupAccumulator.shouldAnnotateForNavigationTransition()) {
             next = Strategy::nextSkippingChildren(*n);
             // Don't skip over pastEnd.
             if (pastEnd && Strategy::isDescendantOf(*pastEnd, *n))
