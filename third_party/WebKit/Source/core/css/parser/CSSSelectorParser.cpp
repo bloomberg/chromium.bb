@@ -533,10 +533,10 @@ void CSSSelectorParser::rewriteSpecifiersWithElementName(const AtomicString& nam
     QualifiedName tag(namespacePrefix, elementName, determinedNamespace);
 
     if (specifiers->crossesTreeScopes())
-        return rewriteSpecifiersWithElementNameForCustomPseudoElement(tag, elementName, specifiers, tagIsForNamespaceRule);
+        return rewriteSpecifiersWithElementNameForCustomPseudoElement(tag, specifiers, tagIsForNamespaceRule);
 
     if (specifiers->isContentPseudoElement())
-        return rewriteSpecifiersWithElementNameForContentPseudoElement(tag, elementName, specifiers, tagIsForNamespaceRule);
+        return rewriteSpecifiersWithElementNameForContentPseudoElement(tag, specifiers, tagIsForNamespaceRule);
 
     // *:host never matches, so we can't discard the * otherwise we can't tell the
     // difference between *:host and just :host.
@@ -546,7 +546,7 @@ void CSSSelectorParser::rewriteSpecifiersWithElementName(const AtomicString& nam
         specifiers->prependTagSelector(tag, tagIsForNamespaceRule);
 }
 
-void CSSSelectorParser::rewriteSpecifiersWithElementNameForCustomPseudoElement(const QualifiedName& tag, const AtomicString& elementName, CSSParserSelector* specifiers, bool tagIsForNamespaceRule)
+void CSSSelectorParser::rewriteSpecifiersWithElementNameForCustomPseudoElement(const QualifiedName& tag, CSSParserSelector* specifiers, bool tagIsForNamespaceRule)
 {
     CSSParserSelector* lastShadowPseudo = specifiers;
     CSSParserSelector* history = specifiers;
@@ -569,7 +569,7 @@ void CSSSelectorParser::rewriteSpecifiersWithElementNameForCustomPseudoElement(c
     lastShadowPseudo->setRelation(CSSSelector::ShadowPseudo);
 }
 
-void CSSSelectorParser::rewriteSpecifiersWithElementNameForContentPseudoElement(const QualifiedName& tag, const AtomicString& elementName, CSSParserSelector* specifiers, bool tagIsForNamespaceRule)
+void CSSSelectorParser::rewriteSpecifiersWithElementNameForContentPseudoElement(const QualifiedName& tag, CSSParserSelector* specifiers, bool tagIsForNamespaceRule)
 {
     CSSParserSelector* last = specifiers;
     CSSParserSelector* history = specifiers;

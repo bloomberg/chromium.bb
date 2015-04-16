@@ -53,8 +53,8 @@ private:
     QualifiedName determineNameInNamespace(const AtomicString& prefix, const AtomicString& localName);
     void rewriteSpecifiersWithNamespaceIfNeeded(CSSParserSelector*);
     void rewriteSpecifiersWithElementName(const AtomicString& namespacePrefix, const AtomicString& elementName, CSSParserSelector*, bool tagIsForNamespaceRule = false);
-    void rewriteSpecifiersWithElementNameForCustomPseudoElement(const QualifiedName& tag, const AtomicString& elementName, CSSParserSelector*, bool tagIsForNamespaceRule);
-    void rewriteSpecifiersWithElementNameForContentPseudoElement(const QualifiedName& tag, const AtomicString& elementName, CSSParserSelector*, bool tagIsForNamespaceRule);
+    void rewriteSpecifiersWithElementNameForCustomPseudoElement(const QualifiedName& tag, CSSParserSelector*, bool tagIsForNamespaceRule);
+    void rewriteSpecifiersWithElementNameForContentPseudoElement(const QualifiedName& tag, CSSParserSelector*, bool tagIsForNamespaceRule);
     static PassOwnPtr<CSSParserSelector> rewriteSpecifiers(PassOwnPtr<CSSParserSelector> specifiers, PassOwnPtr<CSSParserSelector> newSpecifier);
 
     const CSSParserContext& m_context;
