@@ -5,6 +5,7 @@
 #include "android_webview/crash_reporter/aw_microdump_crash_reporter.h"
 
 #include "base/lazy_instance.h"
+#include "build/build_config.h"
 #include "components/crash/app/breakpad_linux.h"
 #include "components/crash/app/crash_reporter_client.h"
 
@@ -38,6 +39,13 @@ bool g_enabled = false;
 }  // namespace
 
 void EnableMicrodumpCrashReporter() {
+#if defined(ARCH_CPU_X86_FAMILY)
+  // Don't install signal handler on X86/64 because this breaks binary
+  // translators that handle SIGSEGV in userspace and get chained after our
+  // handler. See crbug.com/477444
+  return;
+#endif
+
   if (g_enabled) {
     NOTREACHED() << "EnableMicrodumpCrashReporter called more than once";
     return;
