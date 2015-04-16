@@ -25,14 +25,13 @@ namespace base {
 class BASE_EXPORT MessagePumpWin : public MessagePump {
  public:
   MessagePumpWin() : have_work_(0), state_(NULL) {}
-  virtual ~MessagePumpWin() {}
 
   // Like MessagePump::Run, but MSG objects are routed through dispatcher.
   void RunWithDispatcher(Delegate* delegate, MessagePumpDispatcher* dispatcher);
 
   // MessagePump methods:
-  virtual void Run(Delegate* delegate) { RunWithDispatcher(delegate, NULL); }
-  virtual void Quit();
+  void Run(Delegate* delegate) override;
+  void Quit() override;
 
  protected:
   struct RunState {
@@ -118,15 +117,15 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
   virtual ~MessagePumpForUI();
 
   // MessagePump methods:
-  virtual void ScheduleWork();
-  virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time);
+  void ScheduleWork() override;
+  void ScheduleDelayedWork(const TimeTicks& delayed_work_time) override;
 
  private:
   static LRESULT CALLBACK WndProcThunk(HWND window_handle,
                                        UINT message,
                                        WPARAM wparam,
                                        LPARAM lparam);
-  virtual void DoRunLoop();
+  void DoRunLoop() override;
   void InitMessageWnd();
   void WaitForWork();
   void HandleWorkMessage();
@@ -267,11 +266,11 @@ class BASE_EXPORT MessagePumpForIO : public MessagePumpWin {
   };
 
   MessagePumpForIO();
-  virtual ~MessagePumpForIO() {}
+  ~MessagePumpForIO() override;
 
   // MessagePump methods:
-  virtual void ScheduleWork();
-  virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time);
+  void ScheduleWork() override;
+  void ScheduleDelayedWork(const TimeTicks& delayed_work_time) override;
 
   // Register the handler to be used when asynchronous IO for the given file
   // completes. The registration persists as long as |file_handle| is valid, so
@@ -311,7 +310,7 @@ class BASE_EXPORT MessagePumpForIO : public MessagePumpWin {
     bool has_valid_io_context;
   };
 
-  virtual void DoRunLoop();
+  void DoRunLoop() override;
   void WaitForWork();
   bool MatchCompletedIOItem(IOHandler* filter, IOItem* item);
   bool GetIOItem(DWORD timeout, IOItem* item);

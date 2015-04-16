@@ -56,7 +56,7 @@ class BASE_EXPORT ObjectWatcher : public MessageLoop::DestructionObserver {
   };
 
   ObjectWatcher();
-  ~ObjectWatcher();
+  ~ObjectWatcher() override;
 
   // When the object is signaled, the given delegate is notified on the thread
   // where StartWatching is called.  The ObjectWatcher is not responsible for
@@ -87,7 +87,7 @@ class BASE_EXPORT ObjectWatcher : public MessageLoop::DestructionObserver {
   void Signal(Delegate* delegate);
 
   // MessageLoop::DestructionObserver implementation:
-  virtual void WillDestroyCurrentMessageLoop();
+  void WillDestroyCurrentMessageLoop() override;
 
   // Internal state.
   Closure callback_;
