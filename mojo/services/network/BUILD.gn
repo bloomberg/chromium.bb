@@ -127,13 +127,4 @@ mojo_native_application("apptests") {
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/bindings:callback",
   ]
-
-  # TODO(msw): Move this to mojo/application:test_support; see crbug.com/477104.
-  data_deps = []
-  if (is_android) {
-    data_deps += [ "//mojo/android" ]
-  }
-  if (!is_component_build) {
-    data_deps += [ "//mojo/shell:mojo_shell" ]
-  }
 }
