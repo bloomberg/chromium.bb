@@ -5,39 +5,42 @@ from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
 from page_sets import key_mobile_sites_pages
+from page_sets import repaint_helpers
 
 
-def _RepaintContinously(action_runner):
-  with action_runner.CreateInteraction('Repaint'):
-    action_runner.RepaintContinuously(seconds=5)
 
-
-def _CreatePageClassWithRepaintInteractions(page_cls):
+def _CreatePageClassWithRepaintInteractions(page_cls, mode, height, width):
   class DerivedRepaintPage(page_cls):  # pylint: disable=W0232
 
     def RunPageInteractions(self, action_runner):
-      _RepaintContinously(action_runner)
+      repaint_helpers.Repaint(
+        action_runner, mode=mode, width=width, height=height)
+
   return DerivedRepaintPage
 
 
 class KeyMobileSitesRepaintPage(page_module.Page):
 
-  def __init__(self, url, page_set, name='', labels=None):
+  def __init__(self, url, page_set, mode, height, width, name='', labels=None):
     super(KeyMobileSitesRepaintPage, self).__init__(
         url=url, page_set=page_set, name=name,
         credentials_path='data/credentials.json', labels=labels)
     self.user_agent_type = 'mobile'
     self.archive_data_file = 'data/key_mobile_sites_repaint.json'
+    self._mode = mode
+    self._width = width
+    self._height = height
 
   def RunPageInteractions(self, action_runner):
-    _RepaintContinously(action_runner)
+    repaint_helpers.Repaint(
+        action_runner, mode=self._mode, width=self._width, height=self._height)
 
 
 class KeyMobileSitesRepaintPageSet(page_set_module.PageSet):
 
   """ Key mobile sites with repaint interactions. """
 
-  def __init__(self):
+  def __init__(self, mode='viewport', width=None, height=None):
     super(KeyMobileSitesRepaintPageSet, self).__init__(
       user_agent_type='mobile',
       archive_data_file='data/key_mobile_sites_repaint.json',
@@ -66,37 +69,39 @@ class KeyMobileSitesRepaintPageSet(page_set_module.PageSet):
     ]
     for page_class in predefined_page_classes:
       self.AddUserStory(
-        _CreatePageClassWithRepaintInteractions(page_class)(self))
+        _CreatePageClassWithRepaintInteractions(
+            page_class, mode=mode, height=height, width=width)(self))
 
     # Add pages with custom labels.
 
     # Why: Top news site.
     self.AddUserStory(KeyMobileSitesRepaintPage(
-      url='http://nytimes.com/', page_set=self, labels=['fastpath']))
+      url='http://nytimes.com/', page_set=self, labels=['fastpath'],
+      mode=mode, height=height, width=width))
 
     # Why: Image-heavy site.
     self.AddUserStory(KeyMobileSitesRepaintPage(
-      url='http://cuteoverload.com', page_set=self, labels=['fastpath']))
+      url='http://cuteoverload.com', page_set=self, labels=['fastpath'],
+      mode=mode, height=height, width=width))
 
     # Why: #11 (Alexa global), google property; some blogger layouts
     # have infinite scroll but more interesting.
     self.AddUserStory(KeyMobileSitesRepaintPage(
       url='http://googlewebmastercentral.blogspot.com/',
-      page_set=self, name='Blogger'))
+      page_set=self, name='Blogger', mode=mode, height=height, width=width))
 
     # Why: #18 (Alexa global), Picked an interesting post """
     self.AddUserStory(KeyMobileSitesRepaintPage(
       # pylint: disable=line-too-long
       url='http://en.blog.wordpress.com/2012/09/04/freshly-pressed-editors-picks-for-august-2012/',
       page_set=self,
-      name='Wordpress'))
+      name='Wordpress', mode=mode, height=height, width=width))
 
    # Why: #6 (Alexa) most visited worldwide, picked an interesting page
     self.AddUserStory(KeyMobileSitesRepaintPage(
       url='http://en.wikipedia.org/wiki/Wikipedia',
       page_set=self,
-      name='Wikipedia (1 tab)'))
-
+      name='Wikipedia (1 tab)', mode=mode, height=height, width=width))
 
     # Why: #8 (Alexa global), picked an interesting page
     # Forbidden (Rate Limit Exceeded)
@@ -107,7 +112,7 @@ class KeyMobileSitesRepaintPageSet(page_set_module.PageSet):
     self.AddUserStory(KeyMobileSitesRepaintPage(
         url='http://pinterest.com',
         page_set=self,
-        name='Pinterest'))
+        name='Pinterest', mode=mode, height=height, width=width))
 
     # Why: #1 sports.
     # Fails often; crbug.com/249722'
@@ -119,17 +124,20 @@ class KeyMobileSitesRepaintPageSet(page_set_module.PageSet):
     #                 url='http://forecast.io', page_set=self))
     # Why: crbug.com/169827
     self.AddUserStory(KeyMobileSitesRepaintPage(
-      url='http://slashdot.org/', page_set=self, labels=['fastpath']))
+      url='http://slashdot.org/', page_set=self, labels=['fastpath'],
+      mode=mode, width=width, height=height))
 
     # Why: #5 Alexa news """
 
     self.AddUserStory(KeyMobileSitesRepaintPage(
       url='http://www.reddit.com/r/programming/comments/1g96ve',
-      page_set=self, labels=['fastpath']))
+      page_set=self, labels=['fastpath'],
+      mode=mode, width=width, height=height))
 
     # Why: Problematic use of fixed position elements """
     self.AddUserStory(KeyMobileSitesRepaintPage(
-      url='http://www.boingboing.net', page_set=self, labels=['fastpath']))
+      url='http://www.boingboing.net', page_set=self, labels=['fastpath'],
+      mode=mode, width=width, height=height))
 
     # Add simple pages with no custom navigation logic or labels.
     urls_list = [
@@ -183,4 +191,5 @@ class KeyMobileSitesRepaintPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(KeyMobileSitesRepaintPage(url, self))
+      self.AddUserStory(KeyMobileSitesRepaintPage(
+          url, self, mode=mode, height=height, width=width))

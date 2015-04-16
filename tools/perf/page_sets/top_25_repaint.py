@@ -5,27 +5,35 @@ from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
 from page_sets import top_pages
+from page_sets import repaint_helpers
 
 
 class TopRepaintPage(page_module.Page):
 
-  def __init__(self, url, page_set, name='', credentials=None):
+  def __init__(self, url, page_set, mode, width, height, name='',
+               credentials=None):
     super(TopRepaintPage, self).__init__(
         url=url, page_set=page_set, name=name,
         credentials_path='data/credentials.json')
     self.user_agent_type = 'desktop'
     self.archive_data_file = 'data/top_25_repaint.json'
     self.credentials = credentials
+    self._mode = mode
+    self._width = width
+    self._height = height
 
   def RunPageInteractions(self, action_runner):
-    action_runner.RepaintContinuously(seconds=5)
+    repaint_helpers.Repaint(
+        action_runner, mode=self._mode, width=self._width, height=self._height)
 
 
-def _CreatePageClassWithRepaintInteractions(page_cls):
+def _CreatePageClassWithRepaintInteractions(page_cls, mode, width, height):
   class DerivedRepaintPage(page_cls):  # pylint: disable=W0232
 
     def RunPageInteractions(self, action_runner):
-      action_runner.RepaintContinuously(seconds=5)
+      repaint_helpers.Repaint(
+          action_runner, mode=mode, width=width, height=height)
+
   return DerivedRepaintPage
 
 
@@ -33,7 +41,7 @@ class Top25RepaintPageSet(page_set_module.PageSet):
 
   """ Pages hand-picked for 2012 CrOS scrolling tuning efforts. """
 
-  def __init__(self):
+  def __init__(self, mode='viewport', width=None, height=None):
     super(Top25RepaintPageSet, self).__init__(
         user_agent_type='desktop',
         archive_data_file='data/top_25_repaint.json',
@@ -60,7 +68,8 @@ class Top25RepaintPageSet(page_set_module.PageSet):
     ]
 
     for cl in top_page_classes:
-      self.AddUserStory(_CreatePageClassWithRepaintInteractions(cl)(self))
+      self.AddUserStory(_CreatePageClassWithRepaintInteractions(
+          cl, mode=mode, width=width, height=height)(self))
 
     other_urls = [
         # Why: #1 news worldwide (Alexa global)
@@ -83,4 +92,5 @@ class Top25RepaintPageSet(page_set_module.PageSet):
     ]
 
     for url in other_urls:
-      self.AddUserStory(TopRepaintPage(url, self))
+      self.AddUserStory(
+          TopRepaintPage(url, self, mode=mode, height=height, width=width))
