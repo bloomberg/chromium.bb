@@ -65,6 +65,8 @@ if __name__ == '__main__':
   parser = optparse.OptionParser(
       description='Runs a server to preview the extension documentation.',
       usage='usage: %prog [option]...')
+  parser.add_option('-a', '--address', default='127.0.0.1',
+      help='the local interface address to bind the server to')
   parser.add_option('-p', '--port', default='8000',
       help='port to run the server on')
   parser.add_option('-r', '--render', default='',
@@ -126,7 +128,7 @@ if __name__ == '__main__':
   print('')
 
   logging.getLogger().setLevel(logging.INFO)
-  server = HTTPServer(('', int(opts.port)), _RequestHandler)
+  server = HTTPServer((opts.address, int(opts.port)), _RequestHandler)
   try:
     server.serve_forever()
   finally:
