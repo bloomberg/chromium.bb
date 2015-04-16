@@ -55,6 +55,8 @@ private:
     int m_activeIndex;
 };
 
+DEFINE_AX_OBJECT_TYPE_CASTS(AXListBox, isAXListBox());
+
 } // namespace blink
 
 #endif // AXListBox_h

@@ -780,7 +780,7 @@ void AXObjectCacheImpl::listboxActiveIndexChanged(HTMLSelectElement* select)
     if (!obj || !obj->isAXListBox())
         return;
 
-    static_cast<AXListBox*>(obj)->activeIndexChanged();
+    toAXListBox(obj)->activeIndexChanged();
 }
 
 void AXObjectCacheImpl::handleScrollbarUpdate(FrameView* view)
@@ -1046,20 +1046,29 @@ void AXObjectCacheImpl::handleValueChanged(Node* node)
 
 void AXObjectCacheImpl::handleUpdateActiveMenuOption(LayoutMenuList* menuList, int optionIndex)
 {
-    if (AXMenuList* axMenuList = static_cast<AXMenuList*>(get(menuList)))
-        axMenuList->didUpdateActiveOption(optionIndex);
+    AXObject* obj = get(menuList);
+    if (!obj || !obj->isMenuList())
+        return;
+
+    toAXMenuList(obj)->didUpdateActiveOption(optionIndex);
 }
 
 void AXObjectCacheImpl::didShowMenuListPopup(LayoutMenuList* menuList)
 {
-    if (AXMenuList* axMenuList = static_cast<AXMenuList*>(get(menuList)))
-        axMenuList->didShowPopup();
+    AXObject* obj = get(menuList);
+    if (!obj || !obj->isMenuList())
+        return;
+
+    toAXMenuList(obj)->didShowPopup();
 }
 
 void AXObjectCacheImpl::didHideMenuListPopup(LayoutMenuList* menuList)
 {
-    if (AXMenuList* axMenuList = static_cast<AXMenuList*>(get(menuList)))
-        axMenuList->didHidePopup();
+    AXObject* obj = get(menuList);
+    if (!obj || !obj->isMenuList())
+        return;
+
+    toAXMenuList(obj)->didHidePopup();
 }
 
 void AXObjectCacheImpl::handleLoadComplete(Document* document)
