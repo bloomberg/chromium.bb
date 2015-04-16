@@ -27,4 +27,12 @@ component("surface") {
     "//ui/gfx/geometry",
     "//ui/gl",
   ]
+
+  if (is_mac) {
+    # Required by accelerated_surface_mac.cc.
+    libs = [
+      "IOSurface.framework",
+      "OpenGL.framework",
+    ]
+  }
 }

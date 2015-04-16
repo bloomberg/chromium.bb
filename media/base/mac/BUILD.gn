@@ -20,6 +20,10 @@ source_set("mac") {
       "avfoundation_glue.h",
       "avfoundation_glue.mm",
     ]
+    libs = [
+      # Required by video_frame_mac.cc.
+      "CoreVideo.framework",
+    ]
   }
   set_sources_assignment_filter(sources_assignment_filter)
   configs += [ "//media:media_config" ]

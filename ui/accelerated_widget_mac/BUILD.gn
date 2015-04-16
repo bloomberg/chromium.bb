@@ -27,9 +27,15 @@ component("accelerated_widget_mac") {
     "//skia",
     "//ui/base",
     "//ui/events",
+    "//ui/events:events_base",
     "//ui/gfx/geometry",
     "//ui/gl",
   ]
 
-  libs = [ "QuartzCore.framework" ]
+  libs = [
+    # Required by io_surface_texture.mm.
+    "IOSurface.framework",
+    "OpenGL.framework",
+    "QuartzCore.framework",
+  ]
 }

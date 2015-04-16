@@ -199,7 +199,19 @@
             'sender/h264_vt_encoder.cc',
             'sender/h264_vt_encoder.h',
           ],
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/CoreVideo.framework',
+            ],
+          },
         }],  # OS=="ios" or OS=="mac"
+        ['OS=="mac"', {
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/AudioToolbox.framework',
+            ],
+          },
+        }],  # OS=="mac"
       ], # conditions
     },
     {

@@ -207,6 +207,11 @@ source_set("common") {
     sources += [
                  "gpu/client/gpu_memory_buffer_impl_io_surface.cc",
                  "gpu/client/gpu_memory_buffer_impl_io_surface.h",
+                 "gpu/gpu_memory_buffer_factory_io_surface.cc",
+                 "gpu/gpu_memory_buffer_factory_io_surface.h",
+                 "gpu/media/vt.h",
+                 "gpu/media/vt_video_decode_accelerator.cc",
+                 "gpu/media/vt_video_decode_accelerator.h",
                ] + get_target_outputs(":libvt_generate_stubs")
 
     sources -= [ "plugin_list_posix.cc" ]
@@ -219,7 +224,11 @@ source_set("common") {
       "//third_party/WebKit/public:resources",
       "//ui/accelerated_widget_mac",
     ]
-    libs += [ "QuartzCore.framework" ]
+    libs += [
+      "IOSurface.framework",
+      "OpenGL.framework",
+      "QuartzCore.framework",
+    ]
   }
 
   if (is_android) {

@@ -165,6 +165,14 @@ source_set("service_sources") {
     ]
   }
 
+  if (is_mac) {
+    # Required by gles2_cmd_decoder.cc on Mac.
+    libs = [
+      "IOSurface.framework",
+      "OpenGL.framework",
+    ]
+  }
+
   if (is_android && !is_debug) {
     # On Android optimize more since this component can be a bottleneck.
     configs -= [ "//build/config/compiler:optimize" ]

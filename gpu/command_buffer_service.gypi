@@ -142,6 +142,15 @@
         '../third_party/khronos',
       ],
     }],
+    ['OS=="mac"', {
+      # Required by gles2_cmd_decoder.cc on Mac.
+      'link_settings': {
+        'libraries': [
+          '$(SDKROOT)/System/Library/Frameworks/IOSurface.framework',
+          '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
+        ],
+      },
+    }],
     ['OS in ("win", "android") or (OS == "linux" and use_x11 == 1)', {
       'sources': [
         'command_buffer/service/async_pixel_transfer_manager_egl.cc',

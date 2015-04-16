@@ -362,8 +362,16 @@ source_set("browser") {
       "geolocation/empty_wifi_data_provider.cc",
       "geolocation/empty_wifi_data_provider.h",
     ]
-    deps += [ "//ui/accelerated_widget_mac" ]
-    libs += [ "bsm" ]
+    deps += [
+      "//sandbox/mac:sandbox",
+      "//third_party/mozilla",
+      "//third_party/sudden_motion_sensor",
+      "//ui/accelerated_widget_mac",
+    ]
+    libs += [
+      "bsm",
+      "QTKit.framework",
+    ]
   }
 
   if (is_chromeos) {
@@ -383,6 +391,8 @@ source_set("browser") {
     ]
   } else {  # Not aura.
     sources -= [
+      "renderer_host/compositor_resize_lock_aura.cc",
+      "renderer_host/compositor_resize_lock_aura.h",
       "renderer_host/input/synthetic_gesture_target_aura.cc",
       "renderer_host/input/synthetic_gesture_target_aura.h",
       "renderer_host/native_web_keyboard_event_aura.cc",
