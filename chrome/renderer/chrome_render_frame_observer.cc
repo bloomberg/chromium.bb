@@ -198,7 +198,7 @@ void ChromeRenderFrameObserver::OnAppBannerPromptRequest(
     int request_id, const std::string& platform) {
   blink::WebAppBannerPromptReply reply = blink::WebAppBannerPromptReply::None;
   render_frame()->GetWebFrame()->willShowInstallBannerPrompt(
-      base::UTF8ToUTF16(platform), &reply);
+      blink::WebString(base::UTF8ToUTF16(platform)), &reply);
 
   Send(new ChromeViewHostMsg_AppBannerPromptReply(
       routing_id(), request_id, reply));
