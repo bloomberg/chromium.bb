@@ -75,6 +75,8 @@ class Brick(object):
         success = False
         try:
           self.UpdateConfig(initial_config)
+          osutils.SafeMakedirs(self.OverlayDir())
+          osutils.SafeMakedirs(self.SourceDir())
           success = True
         except BrickNotFound as e:
           # If BrickNotFound was raised, the dependencies contain a missing
