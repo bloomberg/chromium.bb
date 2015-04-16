@@ -307,7 +307,7 @@ Node::~Node()
         m_treeScope->guardDeref();
 
     if (getFlag(HasWeakReferencesFlag))
-        WeakNodeMap::notifyNodeDestroyed(this);
+        WeakNodeMap::notifyObjectDestroyed(this);
 
     // clearEventTargetData() must be always done,
     // or eventTargetDataMap() may keep a raw pointer to a deleted object.

@@ -2349,7 +2349,7 @@
             'dom/ViewportDescription.h',
             'dom/VisitedLinkState.cpp',
             'dom/VisitedLinkState.h',
-            'dom/WeakNodeMap.cpp',
+            'dom/WeakIdentifierMap.h',
             'dom/WeakNodeMap.h',
             'dom/XMLDocument.cpp',
             'dom/XMLDocument.h',

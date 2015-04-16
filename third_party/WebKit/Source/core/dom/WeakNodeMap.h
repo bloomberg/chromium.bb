@@ -5,39 +5,23 @@
 #ifndef WeakNodeMap_h
 #define WeakNodeMap_h
 
-#include "wtf/HashMap.h"
+// Oilpan supports weak maps, so we no longer need WeakNodeMap.
+#if !ENABLE(OILPAN)
+
+#include "core/dom/Node.h"
+#include "core/dom/WeakIdentifierMap.h"
 
 namespace blink {
 
-// Oilpan supports weak maps, so we no longer need WeakNodeMap.
-#if !ENABLE(OILPAN)
-class Node;
-class NodeToWeakNodeMaps;
-
-class WeakNodeMap {
-public:
-    ~WeakNodeMap();
-
-    void put(Node*, int value);
-    int value(Node*);
-    Node* node(int value);
-
-private:
-    // FIXME: This should not be friends with Node, we should expose a proper API and not
-    // let the map directly set flags.
-    friend class Node;
-    static void notifyNodeDestroyed(Node*);
-
-    friend class NodeToWeakNodeMaps;
-    void nodeDestroyed(Node*);
-
-    typedef HashMap<Node*, int> NodeToValue;
-    NodeToValue m_nodeToValue;
-    typedef HashMap<int, Node*> ValueToNode;
-    ValueToNode m_valueToNode;
+template<> struct WeakIdentifierMapTraits<Node> {
+    static void removedFromIdentifierMap(Node* node) { node->clearFlag(Node::HasWeakReferencesFlag); }
+    static void addedToIdentifierMap(Node* node) { node->setFlag(Node::HasWeakReferencesFlag); }
 };
-#endif
 
-}
+typedef WeakIdentifierMap<Node> WeakNodeMap;
 
-#endif
+} // namespace blink
+
+#endif // !ENABLE(OILPAN)
+
+#endif // WeakNodeMap_h

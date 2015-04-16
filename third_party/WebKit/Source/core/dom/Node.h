@@ -87,7 +87,7 @@ using StaticNodeList = StaticNodeTypeList<Node>;
 class TagCollection;
 class Text;
 class TouchEvent;
-class WeakNodeMap;
+template <typename T> struct WeakIdentifierMapTraits;
 
 const int nodeStyleChangeShift = 19;
 
@@ -797,7 +797,8 @@ protected:
 
 private:
     friend class TreeShared<Node>;
-    friend class WeakNodeMap;
+    // FIXME: consider exposing proper API for this instead.
+    friend struct WeakIdentifierMapTraits<Node>;
 
 #if !ENABLE(OILPAN)
     void removedLastRef();

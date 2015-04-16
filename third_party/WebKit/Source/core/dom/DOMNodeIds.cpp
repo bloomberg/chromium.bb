@@ -58,7 +58,7 @@ int DOMNodeIds::idForNode(Node* node)
 {
     static int s_nextNodeId = 1;
     WeakNodeMap& ids = nodeIds();
-    int result = ids.value(node);
+    int result = ids.identifier(node);
     if (!result) {
         result = s_nextNodeId++;
         ids.put(node, result);
@@ -68,7 +68,7 @@ int DOMNodeIds::idForNode(Node* node)
 
 Node* DOMNodeIds::nodeForId(int id)
 {
-    return nodeIds().node(id);
+    return nodeIds().lookup(id);
 }
 #endif
 
