@@ -188,3 +188,67 @@ testcase.tabindexFocusDirectorySelected = function() {
     }
   ]);
 };
+
+/**
+ * Tests the tab focus in the dialog and closes the dialog.
+ */
+function tabindexFocus(volumeName, expectedSet, expectedTabOrder) {
+  var localEntriesPromise = addEntries(['local'], BASIC_LOCAL_ENTRY_SET);
+  var driveEntriesPromise = addEntries(['drive'], BASIC_DRIVE_ENTRY_SET);
+  var setupPromise = Promise.all([localEntriesPromise, driveEntriesPromise]);
+
+  var checkAndClose = function(appId) {
+    var promise = remoteCall.callRemoteTestUtil('getActiveElement', appId, []);
+    promise = promise.then(function() {
+      return remoteCall.waitForElement(appId, ['#ok-button:not([disabled])']);
+    });
+
+    // Checks initial focus.
+    promise = promise.then(function() {
+      return remoteCall.waitForElement(appId, ['#file-list:focus']);
+    });
+
+    // Checks tabfocus.
+    expectedTabOrder.forEach(function(className) {
+      promise = promise.then(function() {
+        return remoteCall.checkNextTabFocus(appId, className);
+      }).then(function(result) {
+        chrome.test.assertTrue(result);
+      });
+    });
+
+    promise = promise.then(function() {
+      // Closes the window by pressing Enter.
+      return remoteCall.callRemoteTestUtil(
+          'fakeKeyDown',
+          appId,
+          ['#file-list', 'Enter', false]);
+    });
+
+    return promise;
+  };
+
+  return setupPromise.then(function() {
+    return openAndWaitForClosingDialog(volumeName, expectedSet, checkAndClose);
+  });
+}
+
+/**
+ * Tests the tab focus behavior of Open Dialog (Downloads).
+ */
+testcase.tabindexOpenDialogDownloads = function() {
+  testPromise(tabindexFocus(
+        'downloads', BASIC_LOCAL_ENTRY_SET,
+        ['ok-button', 'cancel-button', 'search-button', 'view-button',
+         'gear-button', 'directory-tree', 'file-list']));
+};
+
+/**
+ * Tests the tab focus behavior of Open Dialog (Drive).
+ */
+testcase.tabindexOpenDialogDrive = function() {
+  testPromise(tabindexFocus(
+        'drive', BASIC_DRIVE_ENTRY_SET,
+        ['ok-button', 'cancel-button', 'search-button', 'view-button',
+         'gear-button', 'directory-tree', 'file-list']));
+};

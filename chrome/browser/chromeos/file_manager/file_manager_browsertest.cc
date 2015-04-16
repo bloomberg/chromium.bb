@@ -1159,6 +1159,14 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
                                     "tabindexFocusDirectorySelected")));
 
+INSTANTIATE_TEST_CASE_P(
+    TabindexOpenDialog,
+    FileManagerBrowserTest,
+    ::testing::Values(
+        TestParameter(NOT_IN_GUEST_MODE, "tabindexOpenDialogDrive"),
+        TestParameter(NOT_IN_GUEST_MODE, "tabindexOpenDialogDownloads"),
+        TestParameter(IN_GUEST_MODE, "tabindexOpenDialogDownloads")));
+
 // Fails on official build. http://crbug.com/429294
 // Disabled under MSAN as well. http://crbug.com/468980.
 #if !defined(NDEBUG) || defined(OFFICIAL_BUILD) || defined(MEMORY_SANITIZER)
