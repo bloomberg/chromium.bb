@@ -110,13 +110,22 @@ promise_test(function(t) {
   }, 'Registering invalid chunked encoding script with flush');
 
 promise_test(function(t) {
-    var script = 'resources/plain-text-worker.php';
-    var scope = 'resources/scope/plain-text-worker/';
+    var script = 'resources/mime-type-worker.php';
+    var scope = 'resources/scope/no-mime-type-worker/';
+    return assert_promise_rejects(
+        navigator.serviceWorker.register(script, {scope: scope}),
+        'SecurityError',
+        'Registration of no MIME type script should fail.');
+  }, 'Registering script with no MIME type');
+
+promise_test(function(t) {
+    var script = 'resources/mime-type-worker.php?mime=text/plain';
+    var scope = 'resources/scope/bad-mime-type-worker/';
     return assert_promise_rejects(
         navigator.serviceWorker.register(script, {scope: scope}),
         'SecurityError',
         'Registration of plain text script should fail.');
-  }, 'Registering script without correct MIME type');
+  }, 'Registering script with bad MIME type');
 
 promise_test(function(t) {
     var script = 'resources/redirect.php?Redirect=' +
