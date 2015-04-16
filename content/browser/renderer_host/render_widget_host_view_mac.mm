@@ -544,9 +544,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
   // Paint this view host with |background_color_| when there is no content
   // ready to draw.
   background_layer_.reset([[CALayer alloc] init]);
-  base::ScopedCFTypeRef<CGColorRef> background(
-      gfx::CGColorCreateFromSkColor(background_color_));
-  [background_layer_ setBackgroundColor:background];
   [cocoa_view_ setLayer:background_layer_];
   [cocoa_view_ setWantsLayer:YES];
 
@@ -1608,11 +1605,6 @@ void RenderWidgetHostViewMac::SetBackgroundColor(SkColor color) {
   [cocoa_view_ setOpaque:opaque];
   if (browser_compositor_state_ != BrowserCompositorDestroyed)
     browser_compositor_->compositor()->SetHostHasTransparentBackground(!opaque);
-
-  if (background_layer_) {
-    [background_layer_
-        setBackgroundColor:gfx::CGColorCreateFromSkColor(background_color_)];
-  }
 }
 
 BrowserAccessibilityManager*
