@@ -12,6 +12,7 @@ import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build/module_args/v8.gni")
+import("//remoting/remoting_host.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
@@ -138,6 +139,10 @@ group("gn_all") {
     deps += [ "//extensions/shell:app_shell_unittests" ]
   }
 
+  if (enable_me2me_host) {
+    deps += [ "//remoting/host:remoting_me2me_host" ]
+  }
+
   if (enable_media_router) {
     deps += [
       "//chrome/browser/media/router/",
@@ -145,8 +150,14 @@ group("gn_all") {
     ]
   }
 
-  if (enable_remoting) {
-    deps += [ "//remoting:remoting_all" ]
+  if (enable_remoting_host) {
+    deps += [
+      "//remoting:remoting_unittests",
+      "//remoting:remoting_perftests",
+      "//remoting/host",
+      "//remoting/host:remoting_start_host",
+      "//remoting/host/it2me:remote_assistance_host",
+    ]
   }
 
   if (toolkit_views) {
