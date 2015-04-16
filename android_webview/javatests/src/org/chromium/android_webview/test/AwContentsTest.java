@@ -475,7 +475,7 @@ public class AwContentsTest extends AwTestBase {
         }
     }
 
-    @Feature({"AndroidWebView", "JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     @SmallTest
     public void testJavaBridge() throws Throwable {
         final AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
@@ -488,7 +488,7 @@ public class AwContentsTest extends AwTestBase {
                 AwSettings awSettings = awContents.getSettings();
                 awSettings.setJavaScriptEnabled(true);
                 awContents.addJavascriptInterface(new JavaScriptObject(callback), "bridge");
-                awContents.evaluateJavaScript("javascript:window.bridge.run();", null);
+                awContents.evaluateJavaScript("window.bridge.run();", null);
             }
         });
         callback.waitForCallback(0, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);

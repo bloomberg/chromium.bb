@@ -112,15 +112,15 @@ public class AwTestBase
      * Loads url on the UI thread and blocks until onPageFinished is called.
      */
     public void loadUrlSync(final AwContents awContents,
-                               CallbackHelper onPageFinishedHelper,
-                               final String url) throws Exception {
+            CallbackHelper onPageFinishedHelper,
+            final String url) throws Exception {
         loadUrlSync(awContents, onPageFinishedHelper, url, null);
     }
 
     public void loadUrlSync(final AwContents awContents,
-                               CallbackHelper onPageFinishedHelper,
-                               final String url,
-                               final Map<String, String> extraHeaders) throws Exception {
+            CallbackHelper onPageFinishedHelper,
+            final String url,
+            final Map<String, String> extraHeaders) throws Exception {
         int currentCallCount = onPageFinishedHelper.getCallCount();
         loadUrlAsync(awContents, url, extraHeaders);
         onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_MS,
@@ -144,19 +144,17 @@ public class AwTestBase
      * Loads url on the UI thread but does not block.
      */
     public void loadUrlAsync(final AwContents awContents,
-                                final String url) throws Exception {
+            final String url) throws Exception {
         loadUrlAsync(awContents, url, null);
     }
 
     public void loadUrlAsync(final AwContents awContents,
-                                final String url,
-                                final Map<String, String> extraHeaders) {
+            final String url,
+            final Map<String, String> extraHeaders) {
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                LoadUrlParams params = new LoadUrlParams(url);
-                params.setExtraHeaders(extraHeaders);
-                awContents.loadUrl(params);
+                awContents.loadUrl(url, extraHeaders);
             }
         });
     }
@@ -196,9 +194,9 @@ public class AwTestBase
      * Loads data on the UI thread and blocks until onPageFinished is called.
      */
     public void loadDataSync(final AwContents awContents,
-                                CallbackHelper onPageFinishedHelper,
-                                final String data, final String mimeType,
-                                final boolean isBase64Encoded) throws Exception {
+            CallbackHelper onPageFinishedHelper,
+            final String data, final String mimeType,
+            final boolean isBase64Encoded) throws Exception {
         int currentCallCount = onPageFinishedHelper.getCallCount();
         loadDataAsync(awContents, data, mimeType, isBase64Encoded);
         onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_MS,
@@ -206,9 +204,9 @@ public class AwTestBase
     }
 
     public void loadDataSyncWithCharset(final AwContents awContents,
-                                           CallbackHelper onPageFinishedHelper,
-                                           final String data, final String mimeType,
-                                           final boolean isBase64Encoded, final String charset)
+            CallbackHelper onPageFinishedHelper,
+            final String data, final String mimeType,
+            final boolean isBase64Encoded, final String charset)
             throws Exception {
         int currentCallCount = onPageFinishedHelper.getCallCount();
         getInstrumentation().runOnMainSync(new Runnable() {
@@ -226,7 +224,7 @@ public class AwTestBase
      * Loads data on the UI thread but does not block.
      */
     public void loadDataAsync(final AwContents awContents, final String data,
-                                 final String mimeType, final boolean isBase64Encoded)
+            final String mimeType, final boolean isBase64Encoded)
             throws Exception {
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
@@ -263,7 +261,7 @@ public class AwTestBase
      * Reloads the current page synchronously.
      */
     public void reloadSync(final AwContents awContents,
-                              CallbackHelper onPageFinishedHelper) throws Exception {
+            CallbackHelper onPageFinishedHelper) throws Exception {
         int currentCallCount = onPageFinishedHelper.getCallCount();
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
