@@ -50,6 +50,7 @@
 #include <inttypes.h>
 #include <unistd.h>
 #include <string.h>
+#include <strings.h>
 #include <errno.h>
 #include <sys/poll.h>
 #include <sys/time.h>
