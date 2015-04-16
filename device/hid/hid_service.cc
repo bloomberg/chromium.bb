@@ -106,9 +106,11 @@ void HidService::AddDevice(scoped_refptr<HidDeviceInfo> device_info) {
 
     HID_LOG(USER) << "HID device "
                   << (enumeration_ready_ ? "added" : "detected")
-                  << ": vendorId = " << device_info->vendor_id()
-                  << ", productId = " << device_info->product_id()
-                  << ", deviceId = '" << device_info->device_id() << "'";
+                  << ": vendorId=" << device_info->vendor_id()
+                  << ", productId=" << device_info->product_id() << ", name='"
+                  << device_info->product_name() << "', serial='"
+                  << device_info->serial_number() << "', deviceId='"
+                  << device_info->device_id() << "'";
 
     if (enumeration_ready_) {
       FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceAdded(device_info));
@@ -120,7 +122,7 @@ void HidService::RemoveDevice(const HidDeviceId& device_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DeviceMap::iterator it = devices_.find(device_id);
   if (it != devices_.end()) {
-    HID_LOG(USER) << "HID device removed: deviceId = '" << device_id << "'";
+    HID_LOG(USER) << "HID device removed: deviceId='" << device_id << "'";
 
     if (enumeration_ready_) {
       FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceRemoved(it->second));

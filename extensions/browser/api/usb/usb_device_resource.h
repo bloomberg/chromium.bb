@@ -25,7 +25,7 @@ namespace extensions {
 class UsbDeviceResource : public ApiResource {
  public:
   static const content::BrowserThread::ID kThreadId =
-      content::BrowserThread::FILE;
+      content::BrowserThread::UI;
 
   UsbDeviceResource(const std::string& owner_extension_id,
                     scoped_refptr<device::UsbDeviceHandle> device);

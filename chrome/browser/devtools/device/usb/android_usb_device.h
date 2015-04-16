@@ -15,7 +15,7 @@
 #include "device/usb/usb_device_handle.h"
 
 namespace base {
-class MessageLoop;
+class SingleThreadTaskRunner;
 }
 
 namespace crypto {
@@ -68,10 +68,9 @@ typedef base::Callback<void(const AndroidUsbDevices&)>
 
 class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
  public:
+  static void CountDevices(const base::Callback<void(int)>& callback);
   static void Enumerate(crypto::RSAPrivateKey* rsa_key,
                         const AndroidUsbDevicesCallback& callback);
-
-  static void CountDevices(const base::Callback<void(int)>& callback);
 
   AndroidUsbDevice(crypto::RSAPrivateKey* rsa_key,
                    scoped_refptr<device::UsbDeviceHandle> device,
@@ -130,7 +129,7 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
 
   void SocketDeleted(uint32 socket_id);
 
-  base::MessageLoop* message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   scoped_ptr<crypto::RSAPrivateKey> rsa_key_;
 

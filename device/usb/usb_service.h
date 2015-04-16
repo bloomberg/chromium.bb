@@ -7,13 +7,14 @@
 
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 
 namespace base {
-class SingleThreadTaskRunner;
+class SequencedTaskRunner;
 }
 
 namespace device {
@@ -24,11 +25,11 @@ class UsbDevice;
 // used to manage and dispatch USB events. It is also responsible for device
 // discovery on the system, which allows it to re-use device handles to prevent
 // competition for the same USB device.
-//
-// All functions on this object must be called from a thread with a
-// MessageLoopForIO (for example, BrowserThread::FILE).
 class UsbService : public base::NonThreadSafe {
  public:
+  using GetDevicesCallback =
+      base::Callback<void(const std::vector<scoped_refptr<UsbDevice>>&)>;
+
   class Observer {
    public:
     // These events are delivered from the thread on which the UsbService object
@@ -40,19 +41,15 @@ class UsbService : public base::NonThreadSafe {
     virtual void OnDeviceRemovedCleanup(scoped_refptr<UsbDevice> device);
   };
 
-  // The UI task runner reference is used to talk to the PermissionBrokerClient
-  // on ChromeOS (UI thread). Returns NULL when initialization fails.
+  // The file task runner reference is used for blocking I/O operations.
+  // Returns NULL when initialization fails.
   static UsbService* GetInstance(
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
-
-  static void SetInstanceForTest(UsbService* instance);
+      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
   virtual scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id) = 0;
 
-  // Get all of the devices attached to the system, inserting them into
-  // |devices|. Clears |devices| before use. The result will be sorted by id
-  // in increasing order.
-  virtual void GetDevices(std::vector<scoped_refptr<UsbDevice> >* devices) = 0;
+  // Enumerates available devices.
+  virtual void GetDevices(const GetDevicesCallback& callback) = 0;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -67,7 +64,7 @@ class UsbService : public base::NonThreadSafe {
   ObserverList<Observer, true> observer_list_;
 
  private:
-  class Destroyer;
+  friend void base::DeletePointer<UsbService>(UsbService* service);
 
   DISALLOW_COPY_AND_ASSIGN(UsbService);
 };

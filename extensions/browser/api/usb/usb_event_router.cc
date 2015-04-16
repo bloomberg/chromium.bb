@@ -6,7 +6,6 @@
 
 #include "device/core/device_client.h"
 #include "device/usb/usb_device.h"
-#include "device/usb/usb_service.h"
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/common/api/usb.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -25,7 +24,6 @@ namespace {
 // Returns true iff the given extension has permission to receive events
 // regarding this device.
 bool WillDispatchDeviceEvent(scoped_refptr<UsbDevice> device,
-                             const base::string16& serial_number,
                              content::BrowserContext* browser_context,
                              const Extension* extension,
                              base::ListValue* event_args) {
@@ -39,10 +37,10 @@ bool WillDispatchDeviceEvent(scoped_refptr<UsbDevice> device,
   }
 
   // Check permissions granted through chrome.usb.getUserSelectedDevices.
-  scoped_ptr<DevicePermissions> device_permissions =
+  DevicePermissions* device_permissions =
       DevicePermissionsManager::Get(browser_context)
           ->GetForExtension(extension->id());
-  if (device_permissions->FindEntry(device, serial_number).get()) {
+  if (device_permissions->FindEntry(device).get()) {
     return true;
   }
 
@@ -54,50 +52,6 @@ base::LazyInstance<BrowserContextKeyedAPIFactory<UsbEventRouter>>::Leaky
 
 }  // namespace
 
-class UsbEventRouter::FileThreadHelper : public UsbService::Observer {
- public:
-  FileThreadHelper(base::WeakPtr<UsbEventRouter> usb_event_router)
-      : usb_event_router_(usb_event_router), observer_(this) {}
-  virtual ~FileThreadHelper() {}
-
-  void Start() {
-    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-    UsbService* service = device::DeviceClient::Get()->GetUsbService();
-    if (service) {
-      observer_.Add(service);
-    }
-  }
-
- private:
-  // UsbService::Observer implementation.
-  void OnDeviceAdded(scoped_refptr<device::UsbDevice> device) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-
-    base::string16 serial_number;
-    device->GetSerialNumber(&serial_number);
-
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&UsbEventRouter::DispatchEvent, usb_event_router_,
-                   usb::OnDeviceAdded::kEventName, device, serial_number));
-  }
-
-  void OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-
-    base::string16 serial_number;
-    device->GetSerialNumber(&serial_number);
-
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&UsbEventRouter::DispatchEvent, usb_event_router_,
-                   usb::OnDeviceRemoved::kEventName, device, serial_number));
-  }
-
-  base::WeakPtr<UsbEventRouter> usb_event_router_;
-  ScopedObserver<device::UsbService, device::UsbService::Observer> observer_;
-};
-
 // static
 BrowserContextKeyedAPIFactory<UsbEventRouter>*
 UsbEventRouter::GetFactoryInstance() {
@@ -105,7 +59,7 @@ UsbEventRouter::GetFactoryInstance() {
 }
 
 UsbEventRouter::UsbEventRouter(content::BrowserContext* browser_context)
-    : browser_context_(browser_context), weak_factory_(this) {
+    : browser_context_(browser_context), observer_(this) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
   if (event_router) {
     event_router->RegisterObserver(this, usb::OnDeviceAdded::kEventName);
@@ -121,21 +75,26 @@ void UsbEventRouter::Shutdown() {
   if (event_router) {
     event_router->UnregisterObserver(this);
   }
-  helper_.reset(nullptr);
 }
 
 void UsbEventRouter::OnListenerAdded(const EventListenerInfo& details) {
-  if (!helper_) {
-    helper_.reset(new FileThreadHelper(weak_factory_.GetWeakPtr()));
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&FileThreadHelper::Start, base::Unretained(helper_.get())));
+  UsbService* service = device::DeviceClient::Get()->GetUsbService();
+  if (!observer_.IsObserving(service)) {
+    observer_.Add(service);
   }
 }
 
+void UsbEventRouter::OnDeviceAdded(scoped_refptr<device::UsbDevice> device) {
+  DispatchEvent(usb::OnDeviceAdded::kEventName, device);
+}
+
+void UsbEventRouter::OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) {
+  DispatchEvent(usb::OnDeviceRemoved::kEventName, device);
+}
+
 void UsbEventRouter::DispatchEvent(const std::string& event_name,
-                                   scoped_refptr<UsbDevice> device,
-                                   const base::string16& serial_number) {
+                                   scoped_refptr<UsbDevice> device) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   EventRouter* event_router = EventRouter::Get(browser_context_);
   if (event_router) {
     usb::Device device_obj;
@@ -154,7 +113,7 @@ void UsbEventRouter::DispatchEvent(const std::string& event_name,
     }
 
     event->will_dispatch_callback =
-        base::Bind(&WillDispatchDeviceEvent, device, serial_number);
+        base::Bind(&WillDispatchDeviceEvent, device);
     event_router->BroadcastEvent(event.Pass());
   }
 }

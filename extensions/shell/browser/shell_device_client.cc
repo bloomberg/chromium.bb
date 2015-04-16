@@ -9,6 +9,8 @@
 #include "device/hid/hid_service.h"
 #include "device/usb/usb_service.h"
 
+using content::BrowserThread;
+
 namespace extensions {
 
 ShellDeviceClient::ShellDeviceClient() {}
@@ -16,15 +18,15 @@ ShellDeviceClient::ShellDeviceClient() {}
 ShellDeviceClient::~ShellDeviceClient() {}
 
 device::UsbService* ShellDeviceClient::GetUsbService() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return device::UsbService::GetInstance(
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::UI));
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
 }
 
 device::HidService* ShellDeviceClient::GetHidService() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return device::HidService::GetInstance(
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::FILE));
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
 }
 
 }

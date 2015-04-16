@@ -8,7 +8,12 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace device {
 
@@ -27,7 +32,8 @@ class UsbTestGadget {
   virtual ~UsbTestGadget() {}
 
   static bool IsTestEnabled();
-  static scoped_ptr<UsbTestGadget> Claim();
+  static scoped_ptr<UsbTestGadget> Claim(
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
   virtual bool Unclaim() = 0;
   virtual bool Disconnect() = 0;
@@ -35,7 +41,6 @@ class UsbTestGadget {
   virtual bool SetType(Type type) = 0;
 
   virtual UsbDevice* GetDevice() const = 0;
-  virtual const std::string& GetSerialNumber() const = 0;
 
  protected:
   UsbTestGadget() {}

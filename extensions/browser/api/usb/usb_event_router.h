@@ -6,6 +6,7 @@
 #define EXTENSIONS_BROWSER_API_USB_USB_EVENT_ROUTER_H_
 
 #include "content/public/browser/browser_thread.h"
+#include "device/usb/usb_service.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 
@@ -18,15 +19,14 @@ namespace extensions {
 // A BrowserContext-scoped object which is registered as an observer of the
 // EventRouter and UsbService in order to generate device add/remove events.
 class UsbEventRouter : public BrowserContextKeyedAPI,
-                       public EventRouter::Observer {
+                       public EventRouter::Observer,
+                       public device::UsbService::Observer {
  public:
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<UsbEventRouter>* GetFactoryInstance();
 
  private:
   friend class BrowserContextKeyedAPIFactory<UsbEventRouter>;
-
-  class FileThreadHelper;
 
   explicit UsbEventRouter(content::BrowserContext* context);
   ~UsbEventRouter() override;
@@ -41,16 +41,17 @@ class UsbEventRouter : public BrowserContextKeyedAPI,
   // EventRouter::Observer implementation.
   void OnListenerAdded(const EventListenerInfo& details) override;
 
+  // UsbService::Observer implementation.
+  void OnDeviceAdded(scoped_refptr<device::UsbDevice> device) override;
+  void OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) override;
+
   // Broadcasts a device add or remove event for the given device.
   void DispatchEvent(const std::string& event_name,
-                     scoped_refptr<device::UsbDevice> device,
-                     const base::string16& serial_number);
+                     scoped_refptr<device::UsbDevice> device);
 
   content::BrowserContext* const browser_context_;
-  scoped_ptr<FileThreadHelper, content::BrowserThread::DeleteOnFileThread>
-      helper_;
 
-  base::WeakPtrFactory<UsbEventRouter> weak_factory_;
+  ScopedObserver<device::UsbService, device::UsbService::Observer> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbEventRouter);
 };

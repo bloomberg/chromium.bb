@@ -18,9 +18,10 @@
 #include "base/path_service.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
-#include "base/strings/string_number_conversions.h"
+#include "base/scoped_observer.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_device_handle.h"
@@ -33,28 +34,35 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
-using ::base::PlatformThread;
-using ::base::TimeDelta;
-
 namespace device {
+
+class UsbTestGadgetImpl : public UsbTestGadget {
+ public:
+  UsbTestGadgetImpl(
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      UsbService* usb_service,
+      scoped_refptr<UsbDevice> device);
+  ~UsbTestGadgetImpl() override;
+
+  bool Unclaim() override;
+  bool Disconnect() override;
+  bool Reconnect() override;
+  bool SetType(Type type) override;
+  UsbDevice* GetDevice() const override;
+
+ private:
+  std::string device_address_;
+  scoped_refptr<UsbDevice> device_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  UsbService* usb_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(UsbTestGadgetImpl);
+};
 
 namespace {
 
 static const char kCommandLineSwitch[] = "enable-gadget-tests";
-static const int kClaimRetries = 100;  // 5 seconds
-static const int kDisconnectRetries = 100;  // 5 seconds
-static const int kRetryPeriod = 50;  // 0.05 seconds
-static const int kReconnectRetries = 100;  // 5 seconds
-static const int kUpdateRetries = 100;  // 5 seconds
-
-// Wait for the given time delta while still running the main loop. This is
-// necessary so that device add/remove events are processed by the UsbService.
-void SleepWithRunLoop(base::TimeDelta delta) {
-  base::RunLoop run_loop;
-  base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                                run_loop.QuitClosure(), delta);
-  run_loop.Run();
-}
+static const int kReenumeratePeriod = 100;  // 0.1 seconds
 
 struct UsbTestGadgetConfiguration {
   UsbTestGadget::Type type;
@@ -70,335 +78,7 @@ static const struct UsbTestGadgetConfiguration kConfigurations[] = {
     {UsbTestGadget::ECHO, "/echo/configure", 0x58F4},
 };
 
-class UsbTestGadgetImpl : public UsbTestGadget {
- public:
-  ~UsbTestGadgetImpl() override;
-
-  bool Unclaim() override;
-  bool Disconnect() override;
-  bool Reconnect() override;
-  bool SetType(Type type) override;
-  UsbDevice* GetDevice() const override;
-  const std::string& GetSerialNumber() const override;
-
- protected:
-  UsbTestGadgetImpl();
-
- private:
-  scoped_ptr<net::URLFetcher> CreateURLFetcher(
-      const GURL& url,
-      net::URLFetcher::RequestType request_type,
-      net::URLFetcherDelegate* delegate);
-  int SimplePOSTRequest(const GURL& url, const std::string& form_data);
-  bool FindUnclaimed();
-  bool GetVersion(std::string* version);
-  bool Update();
-  bool FindClaimed();
-  bool ReadLocalVersion(std::string* version);
-  bool ReadLocalPackage(std::string* package);
-  bool ReadFile(const base::FilePath& file_path, std::string* content);
-
-  class Delegate : public net::URLFetcherDelegate {
-   public:
-    Delegate() {}
-    ~Delegate() override {}
-
-    void WaitForCompletion() {
-      run_loop_.Run();
-    }
-
-    void OnURLFetchComplete(const net::URLFetcher* source) override {
-      run_loop_.Quit();
-    }
-
-   private:
-    base::RunLoop run_loop_;
-
-    DISALLOW_COPY_AND_ASSIGN(Delegate);
-  };
-
-  scoped_refptr<UsbDevice> device_;
-  std::string device_address_;
-  scoped_ptr<net::URLRequestContext> request_context_;
-  std::string session_id_;
-  UsbService* usb_service_;
-
-  friend class UsbTestGadget;
-
-  DISALLOW_COPY_AND_ASSIGN(UsbTestGadgetImpl);
-};
-
-}  // namespace
-
-bool UsbTestGadget::IsTestEnabled() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(kCommandLineSwitch);
-}
-
-scoped_ptr<UsbTestGadget> UsbTestGadget::Claim() {
-  scoped_ptr<UsbTestGadgetImpl> gadget(new UsbTestGadgetImpl);
-
-  int retries = kClaimRetries;
-  while (!gadget->FindUnclaimed()) {
-    if (--retries == 0) {
-      LOG(ERROR) << "Failed to find an unclaimed device.";
-      return scoped_ptr<UsbTestGadget>();
-    }
-    SleepWithRunLoop(TimeDelta::FromMilliseconds(kRetryPeriod));
-  }
-  VLOG(1) << "It took " << (kClaimRetries - retries)
-          << " retries to find an unclaimed device.";
-
-  return gadget.Pass();
-}
-
-UsbTestGadgetImpl::UsbTestGadgetImpl() {
-  net::URLRequestContextBuilder context_builder;
-  context_builder.set_proxy_service(net::ProxyService::CreateDirect());
-  request_context_.reset(context_builder.Build());
-
-  base::ProcessId process_id = base::GetCurrentProcId();
-  session_id_ = base::StringPrintf(
-      "%s:%p", base::HexEncode(&process_id, sizeof(process_id)).c_str(), this);
-
-  usb_service_ = UsbService::GetInstance(NULL);
-}
-
-UsbTestGadgetImpl::~UsbTestGadgetImpl() {
-  if (!device_address_.empty()) {
-    Unclaim();
-  }
-}
-
-UsbDevice* UsbTestGadgetImpl::GetDevice() const {
-  return device_.get();
-}
-
-const std::string& UsbTestGadgetImpl::GetSerialNumber() const {
-  return device_address_;
-}
-
-scoped_ptr<net::URLFetcher> UsbTestGadgetImpl::CreateURLFetcher(
-    const GURL& url, net::URLFetcher::RequestType request_type,
-    net::URLFetcherDelegate* delegate) {
-  scoped_ptr<net::URLFetcher> url_fetcher(
-      net::URLFetcher::Create(url, request_type, delegate));
-
-  url_fetcher->SetRequestContext(new net::TrivialURLRequestContextGetter(
-      request_context_.get(), base::MessageLoop::current()->task_runner()));
-
-  return url_fetcher;
-}
-
-int UsbTestGadgetImpl::SimplePOSTRequest(const GURL& url,
-                                         const std::string& form_data) {
-  Delegate delegate;
-  scoped_ptr<net::URLFetcher> url_fetcher =
-    CreateURLFetcher(url, net::URLFetcher::POST, &delegate);
-
-  url_fetcher->SetUploadData("application/x-www-form-urlencoded", form_data);
-  url_fetcher->Start();
-  delegate.WaitForCompletion();
-
-  return url_fetcher->GetResponseCode();
-}
-
-bool UsbTestGadgetImpl::FindUnclaimed() {
-  std::vector<scoped_refptr<UsbDevice> > devices;
-  usb_service_->GetDevices(&devices);
-
-  for (std::vector<scoped_refptr<UsbDevice> >::const_iterator iter =
-         devices.begin(); iter != devices.end(); ++iter) {
-    const scoped_refptr<UsbDevice> &device = *iter;
-    if (device->vendor_id() == 0x18D1 && device->product_id() == 0x58F0) {
-      base::string16 serial_utf16;
-      if (!device->GetSerialNumber(&serial_utf16)) {
-        continue;
-      }
-
-      const std::string serial = base::UTF16ToUTF8(serial_utf16);
-      const GURL url("http://" + serial + "/claim");
-      const std::string form_data = base::StringPrintf(
-          "session_id=%s",
-          net::EscapeUrlEncodedData(session_id_, true).c_str());
-      const int response_code = SimplePOSTRequest(url, form_data);
-
-      if (response_code == 200) {
-        device_address_ = serial;
-        device_ = device;
-        break;
-      }
-
-      // The device is probably claimed by another process.
-      if (response_code != 403) {
-        LOG(WARNING) << "Unexpected HTTP " << response_code << " from /claim.";
-      }
-    }
-  }
-
-  std::string local_version;
-  std::string version;
-  if (!ReadLocalVersion(&local_version) ||
-      !GetVersion(&version)) {
-    return false;
-  }
-
-  if (version == local_version) {
-    return true;
-  }
-
-  return Update();
-}
-
-bool UsbTestGadgetImpl::GetVersion(std::string* version) {
-  Delegate delegate;
-  const GURL url("http://" + device_address_ + "/version");
-  scoped_ptr<net::URLFetcher> url_fetcher =
-      CreateURLFetcher(url, net::URLFetcher::GET, &delegate);
-
-  url_fetcher->Start();
-  delegate.WaitForCompletion();
-
-  const int response_code = url_fetcher->GetResponseCode();
-  if (response_code != 200) {
-    VLOG(2) << "Unexpected HTTP " << response_code << " from /version.";
-    return false;
-  }
-
-  STLClearObject(version);
-  if (!url_fetcher->GetResponseAsString(version)) {
-    VLOG(2) << "Failed to read body from /version.";
-    return false;
-  }
-  return true;
-}
-
-bool UsbTestGadgetImpl::Update() {
-  std::string version;
-  if (!ReadLocalVersion(&version)) {
-    return false;
-  }
-  LOG(INFO) << "Updating " << device_address_ << " to " << version << "...";
-
-  Delegate delegate;
-  const GURL url("http://" + device_address_ + "/update");
-  scoped_ptr<net::URLFetcher> url_fetcher =
-      CreateURLFetcher(url, net::URLFetcher::POST, &delegate);
-
-  const std::string mime_header =
-      base::StringPrintf(
-      "--foo\r\n"
-      "Content-Disposition: form-data; name=\"file\"; "
-          "filename=\"usb_gadget-%s.zip\"\r\n"
-      "Content-Type: application/octet-stream\r\n"
-      "\r\n", version.c_str());
-  const std::string mime_footer("\r\n--foo--\r\n");
-
-  std::string package;
-  if (!ReadLocalPackage(&package)) {
-    return false;
-  }
-
-  url_fetcher->SetUploadData("multipart/form-data; boundary=foo",
-                             mime_header + package + mime_footer);
-  url_fetcher->Start();
-  delegate.WaitForCompletion();
-
-  const int response_code = url_fetcher->GetResponseCode();
-  if (response_code != 200) {
-    LOG(ERROR) << "Unexpected HTTP " << response_code << " from /update.";
-    return false;
-  }
-
-  int retries = kUpdateRetries;
-  std::string new_version;
-  while (!GetVersion(&new_version) || new_version != version) {
-    if (--retries == 0) {
-      LOG(ERROR) << "Device not responding with new version.";
-      return false;
-    }
-    SleepWithRunLoop(TimeDelta::FromMilliseconds(kRetryPeriod));
-  }
-  VLOG(1) << "It took " << (kUpdateRetries - retries)
-          << " retries to see the new version.";
-
-  // Release the old reference to the device and try to open a new one.
-  device_ = NULL;
-  retries = kReconnectRetries;
-  while (!FindClaimed()) {
-    if (--retries == 0) {
-      LOG(ERROR) << "Failed to find updated device.";
-      return false;
-    }
-    SleepWithRunLoop(TimeDelta::FromMilliseconds(kRetryPeriod));
-  }
-  VLOG(1) << "It took " << (kReconnectRetries - retries)
-          << " retries to find the updated device.";
-
-  return true;
-}
-
-bool UsbTestGadgetImpl::FindClaimed() {
-  CHECK(!device_.get());
-
-  std::string expected_serial = GetSerialNumber();
-
-  std::vector<scoped_refptr<UsbDevice> > devices;
-  usb_service_->GetDevices(&devices);
-
-  for (std::vector<scoped_refptr<UsbDevice> >::iterator iter =
-         devices.begin(); iter != devices.end(); ++iter) {
-    scoped_refptr<UsbDevice> &device = *iter;
-
-    if (device->vendor_id() == 0x18D1) {
-      const uint16 product_id = device->product_id();
-      bool found = false;
-      for (size_t i = 0; i < arraysize(kConfigurations); ++i) {
-        if (product_id == kConfigurations[i].product_id) {
-          found = true;
-          break;
-        }
-      }
-      if (!found) {
-        continue;
-      }
-
-      base::string16 serial_utf16;
-      if (!device->GetSerialNumber(&serial_utf16)) {
-        continue;
-      }
-
-      std::string serial = base::UTF16ToUTF8(serial_utf16);
-      if (serial != expected_serial) {
-        continue;
-      }
-
-      device_ = device;
-      return true;
-    }
-  }
-
-  return false;
-}
-
-bool UsbTestGadgetImpl::ReadLocalVersion(std::string* version) {
-  base::FilePath file_path;
-  CHECK(PathService::Get(base::DIR_EXE, &file_path));
-  file_path = file_path.AppendASCII("usb_gadget.zip.md5");
-
-  return ReadFile(file_path, version);
-}
-
-bool UsbTestGadgetImpl::ReadLocalPackage(std::string* package) {
-  base::FilePath file_path;
-  CHECK(PathService::Get(base::DIR_EXE, &file_path));
-  file_path = file_path.AppendASCII("usb_gadget.zip");
-
-  return ReadFile(file_path, package);
-}
-
-bool UsbTestGadgetImpl::ReadFile(const base::FilePath& file_path,
-                                 std::string* content) {
+bool ReadFile(const base::FilePath& file_path, std::string* content) {
   base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!file.IsValid()) {
     LOG(ERROR) << "Cannot open " << file_path.MaybeAsASCII() << ": "
@@ -422,11 +102,445 @@ bool UsbTestGadgetImpl::ReadFile(const base::FilePath& file_path,
   return true;
 }
 
+bool ReadLocalVersion(std::string* version) {
+  base::FilePath file_path;
+  CHECK(PathService::Get(base::DIR_EXE, &file_path));
+  file_path = file_path.AppendASCII("usb_gadget.zip.md5");
+
+  return ReadFile(file_path, version);
+}
+
+bool ReadLocalPackage(std::string* package) {
+  base::FilePath file_path;
+  CHECK(PathService::Get(base::DIR_EXE, &file_path));
+  file_path = file_path.AppendASCII("usb_gadget.zip");
+
+  return ReadFile(file_path, package);
+}
+
+scoped_ptr<net::URLFetcher> CreateURLFetcher(
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    const GURL& url,
+    net::URLFetcher::RequestType request_type,
+    net::URLFetcherDelegate* delegate) {
+  scoped_ptr<net::URLFetcher> url_fetcher(
+      net::URLFetcher::Create(url, request_type, delegate));
+
+  url_fetcher->SetRequestContext(request_context_getter.get());
+
+  return url_fetcher;
+}
+
+class URLRequestContextGetter : public net::URLRequestContextGetter {
+ public:
+  URLRequestContextGetter(
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
+      : network_task_runner_(network_task_runner) {}
+
+ private:
+  ~URLRequestContextGetter() override {}
+
+  // net::URLRequestContextGetter implementation
+  net::URLRequestContext* GetURLRequestContext() override {
+    context_builder_.set_proxy_service(net::ProxyService::CreateDirect());
+    return context_builder_.Build();
+  }
+
+  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
+      const override {
+    return network_task_runner_;
+  }
+
+  net::URLRequestContextBuilder context_builder_;
+  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
+};
+
+class URLFetcherDelegate : public net::URLFetcherDelegate {
+ public:
+  URLFetcherDelegate() {}
+  ~URLFetcherDelegate() override {}
+
+  void WaitForCompletion() { run_loop_.Run(); }
+
+  void OnURLFetchComplete(const net::URLFetcher* source) override {
+    run_loop_.Quit();
+  }
+
+ private:
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(URLFetcherDelegate);
+};
+
+int SimplePOSTRequest(
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    const GURL& url,
+    const std::string& form_data) {
+  URLFetcherDelegate delegate;
+  scoped_ptr<net::URLFetcher> url_fetcher = CreateURLFetcher(
+      request_context_getter, url, net::URLFetcher::POST, &delegate);
+
+  url_fetcher->SetUploadData("application/x-www-form-urlencoded", form_data);
+  url_fetcher->Start();
+  delegate.WaitForCompletion();
+
+  return url_fetcher->GetResponseCode();
+}
+
+class UsbGadgetFactory : public UsbService::Observer,
+                         public net::URLFetcherDelegate {
+ public:
+  UsbGadgetFactory(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
+      : observer_(this), weak_factory_(this) {
+    usb_service_ = UsbService::GetInstance(io_task_runner);
+    request_context_getter_ = new URLRequestContextGetter(io_task_runner);
+
+    static uint32 next_session_id;
+    base::ProcessId process_id = base::GetCurrentProcId();
+    session_id_ = base::StringPrintf("%d-%d", process_id, next_session_id++);
+
+    observer_.Add(usb_service_);
+  }
+
+  ~UsbGadgetFactory() override {}
+
+  scoped_ptr<UsbTestGadget> WaitForDevice() {
+    EnumerateDevices();
+    run_loop_.Run();
+    return make_scoped_ptr(
+        new UsbTestGadgetImpl(request_context_getter_, usb_service_, device_));
+  }
+
+ private:
+  void EnumerateDevices() {
+    if (!device_) {
+      usb_service_->GetDevices(base::Bind(
+          &UsbGadgetFactory::OnDevicesEnumerated, weak_factory_.GetWeakPtr()));
+    }
+  }
+
+  void OnDevicesEnumerated(
+      const std::vector<scoped_refptr<UsbDevice>>& devices) {
+    for (const scoped_refptr<UsbDevice>& device : devices) {
+      OnDeviceAdded(device);
+    }
+
+    if (!device_) {
+      // TODO(reillyg): This timer could be replaced by a way to use long-
+      // polling to wait for claimed devices to become unclaimed.
+      base::MessageLoop::current()->PostDelayedTask(
+          FROM_HERE, base::Bind(&UsbGadgetFactory::EnumerateDevices,
+                                weak_factory_.GetWeakPtr()),
+          base::TimeDelta::FromMilliseconds(kReenumeratePeriod));
+    }
+  }
+
+  void OnDeviceAdded(scoped_refptr<UsbDevice> device) override {
+    if (device_.get()) {
+      // Already trying to claim a device.
+      return;
+    }
+
+    if (device->vendor_id() != 0x18D1 || device->product_id() != 0x58F0 ||
+        device->serial_number().empty()) {
+      return;
+    }
+
+    std::string serial_number = base::UTF16ToUTF8(device->serial_number());
+    if (serial_number == serial_number_) {
+      // We were waiting for the device to reappear after upgrade.
+      device_ = device;
+      run_loop_.Quit();
+      return;
+    }
+
+    device_ = device;
+    serial_number_ = serial_number;
+    Claim();
+  }
+
+  void Claim() {
+    VLOG(1) << "Trying to claim " << serial_number_ << ".";
+
+    GURL url("http://" + serial_number_ + "/claim");
+    std::string form_data = base::StringPrintf(
+        "session_id=%s", net::EscapeUrlEncodedData(session_id_, true).c_str());
+    url_fetcher_ = CreateURLFetcher(request_context_getter_, url,
+                                    net::URLFetcher::POST, this);
+    url_fetcher_->SetUploadData("application/x-www-form-urlencoded", form_data);
+    url_fetcher_->Start();
+  }
+
+  void GetVersion() {
+    GURL url("http://" + serial_number_ + "/version");
+    url_fetcher_ = CreateURLFetcher(request_context_getter_, url,
+                                    net::URLFetcher::GET, this);
+    url_fetcher_->Start();
+  }
+
+  bool Update(const std::string& version) {
+    LOG(INFO) << "Updating " << serial_number_ << " to " << version << "...";
+
+    GURL url("http://" + serial_number_ + "/update");
+    url_fetcher_ = CreateURLFetcher(request_context_getter_, url,
+                                    net::URLFetcher::POST, this);
+    std::string mime_header = base::StringPrintf(
+        "--foo\r\n"
+        "Content-Disposition: form-data; name=\"file\"; "
+        "filename=\"usb_gadget-%s.zip\"\r\n"
+        "Content-Type: application/octet-stream\r\n"
+        "\r\n",
+        version.c_str());
+    std::string mime_footer("\r\n--foo--\r\n");
+
+    std::string package;
+    if (!ReadLocalPackage(&package)) {
+      return false;
+    }
+
+    url_fetcher_->SetUploadData("multipart/form-data; boundary=foo",
+                                mime_header + package + mime_footer);
+    url_fetcher_->Start();
+    device_ = nullptr;
+    return true;
+  }
+
+  void OnURLFetchComplete(const net::URLFetcher* source) override {
+    DCHECK(!serial_number_.empty());
+
+    int response_code = source->GetResponseCode();
+    if (!claimed_) {
+      // Just completed a /claim request.
+      if (response_code == 200) {
+        claimed_ = true;
+        GetVersion();
+      } else {
+        if (response_code != 403) {
+          LOG(WARNING) << "Unexpected HTTP " << response_code
+                       << " from /claim.";
+        }
+        Reset();
+      }
+    } else if (version_.empty()) {
+      // Just completed a /version request.
+      if (response_code != 200) {
+        LOG(WARNING) << "Unexpected HTTP " << response_code
+                     << " from /version.";
+        Reset();
+        return;
+      }
+
+      if (!source->GetResponseAsString(&version_)) {
+        LOG(WARNING) << "Failed to read body from /version.";
+        Reset();
+        return;
+      }
+
+      std::string local_version;
+      if (!ReadLocalVersion(&local_version)) {
+        Reset();
+        return;
+      }
+
+      if (version_ == local_version) {
+        run_loop_.Quit();
+      } else {
+        if (!Update(local_version)) {
+          Reset();
+        }
+      }
+    } else {
+      // Just completed an /update request.
+      if (response_code != 200) {
+        LOG(WARNING) << "Unexpected HTTP " << response_code << " from /update.";
+        Reset();
+        return;
+      }
+
+      // Must wait for the device to reconnect.
+    }
+  }
+
+  void Reset() {
+    device_ = nullptr;
+    serial_number_.clear();
+    claimed_ = false;
+    version_.clear();
+
+    // Wait a bit and then try again to find an available device.
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, base::Bind(&UsbGadgetFactory::EnumerateDevices,
+                              weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(kReenumeratePeriod));
+  }
+
+  UsbService* usb_service_ = nullptr;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  std::string session_id_;
+  scoped_ptr<net::URLFetcher> url_fetcher_;
+  scoped_refptr<UsbDevice> device_;
+  std::string serial_number_;
+  bool claimed_ = false;
+  std::string version_;
+  base::RunLoop run_loop_;
+  ScopedObserver<UsbService, UsbService::Observer> observer_;
+  base::WeakPtrFactory<UsbGadgetFactory> weak_factory_;
+};
+
+class DeviceAddListener : public UsbService::Observer {
+ public:
+  DeviceAddListener(UsbService* usb_service,
+                    const std::string& serial_number,
+                    int product_id)
+      : usb_service_(usb_service),
+        serial_number_(serial_number),
+        product_id_(product_id),
+        observer_(this),
+        weak_factory_(this) {
+    observer_.Add(usb_service_);
+  }
+  virtual ~DeviceAddListener() {}
+
+  scoped_refptr<UsbDevice> WaitForAdd() {
+    usb_service_->GetDevices(base::Bind(&DeviceAddListener::OnDevicesEnumerated,
+                                        weak_factory_.GetWeakPtr()));
+    run_loop_.Run();
+    return device_;
+  }
+
+ private:
+  void OnDevicesEnumerated(
+      const std::vector<scoped_refptr<UsbDevice>>& devices) {
+    for (const scoped_refptr<UsbDevice>& device : devices) {
+      OnDeviceAdded(device);
+    }
+  }
+
+  void OnDeviceAdded(scoped_refptr<UsbDevice> device) override {
+    if (device->vendor_id() == 0x18D1 && !device->serial_number().empty()) {
+      const uint16 product_id = device->product_id();
+      if (product_id_ == -1) {
+        bool found = false;
+        for (size_t i = 0; i < arraysize(kConfigurations); ++i) {
+          if (product_id == kConfigurations[i].product_id) {
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          return;
+        }
+      } else {
+        if (product_id_ != product_id) {
+          return;
+        }
+      }
+
+      if (serial_number_ != base::UTF16ToUTF8(device->serial_number())) {
+        return;
+      }
+
+      device_ = device;
+      run_loop_.Quit();
+    }
+  }
+
+  UsbService* usb_service_;
+  const std::string serial_number_;
+  const int product_id_;
+  base::RunLoop run_loop_;
+  scoped_refptr<UsbDevice> device_;
+  ScopedObserver<UsbService, UsbService::Observer> observer_;
+  base::WeakPtrFactory<DeviceAddListener> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeviceAddListener);
+};
+
+class DeviceRemoveListener : public UsbService::Observer {
+ public:
+  DeviceRemoveListener(UsbService* usb_service, scoped_refptr<UsbDevice> device)
+      : usb_service_(usb_service),
+        device_(device),
+        observer_(this),
+        weak_factory_(this) {
+    observer_.Add(usb_service_);
+  }
+  virtual ~DeviceRemoveListener() {}
+
+  void WaitForRemove() {
+    usb_service_->GetDevices(
+        base::Bind(&DeviceRemoveListener::OnDevicesEnumerated,
+                   weak_factory_.GetWeakPtr()));
+    run_loop_.Run();
+  }
+
+ private:
+  void OnDevicesEnumerated(
+      const std::vector<scoped_refptr<UsbDevice>>& devices) {
+    bool found = false;
+    for (const scoped_refptr<UsbDevice>& device : devices) {
+      if (device_ == device) {
+        found = true;
+      }
+    }
+    if (!found) {
+      run_loop_.Quit();
+    }
+  }
+
+  void OnDeviceRemoved(scoped_refptr<UsbDevice> device) override {
+    if (device_ == device) {
+      run_loop_.Quit();
+    }
+  }
+
+  UsbService* usb_service_;
+  base::RunLoop run_loop_;
+  scoped_refptr<UsbDevice> device_;
+  ScopedObserver<UsbService, UsbService::Observer> observer_;
+  base::WeakPtrFactory<DeviceRemoveListener> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeviceRemoveListener);
+};
+
+}  // namespace
+
+bool UsbTestGadget::IsTestEnabled() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(kCommandLineSwitch);
+}
+
+scoped_ptr<UsbTestGadget> UsbTestGadget::Claim(
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
+  UsbGadgetFactory gadget_factory(io_task_runner);
+  return gadget_factory.WaitForDevice().Pass();
+}
+
+UsbTestGadgetImpl::UsbTestGadgetImpl(
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter_,
+    UsbService* usb_service,
+    scoped_refptr<UsbDevice> device)
+    : device_address_(base::UTF16ToUTF8(device->serial_number())),
+      device_(device),
+      request_context_getter_(request_context_getter_),
+      usb_service_(usb_service) {
+}
+
+UsbTestGadgetImpl::~UsbTestGadgetImpl() {
+  if (!device_address_.empty()) {
+    Unclaim();
+  }
+}
+
+UsbDevice* UsbTestGadgetImpl::GetDevice() const {
+  return device_.get();
+}
+
 bool UsbTestGadgetImpl::Unclaim() {
   VLOG(1) << "Releasing the device at " << device_address_ << ".";
 
-  const GURL url("http://" + device_address_ + "/unclaim");
-  const int response_code = SimplePOSTRequest(url, "");
+  GURL url("http://" + device_address_ + "/unclaim");
+  int response_code = SimplePOSTRequest(request_context_getter_, url, "");
 
   if (response_code != 200) {
     LOG(ERROR) << "Unexpected HTTP " << response_code << " from /unclaim.";
@@ -446,8 +560,8 @@ bool UsbTestGadgetImpl::SetType(Type type) {
   }
   CHECK(config);
 
-  const GURL url("http://" + device_address_ + config->http_resource);
-  const int response_code = SimplePOSTRequest(url, "");
+  GURL url("http://" + device_address_ + config->http_resource);
+  int response_code = SimplePOSTRequest(request_context_getter_, url, "");
 
   if (response_code != 200) {
     LOG(ERROR) << "Unexpected HTTP " << response_code
@@ -456,75 +570,41 @@ bool UsbTestGadgetImpl::SetType(Type type) {
   }
 
   // Release the old reference to the device and try to open a new one.
-  int retries = kReconnectRetries;
-  while (true) {
-    device_ = NULL;
-    if (FindClaimed() && device_->product_id() == config->product_id) {
-      break;
-    }
-    if (--retries == 0) {
-      LOG(ERROR) << "Failed to find updated device.";
-      return false;
-    }
-    SleepWithRunLoop(TimeDelta::FromMilliseconds(kRetryPeriod));
-  }
-  VLOG(1) << "It took " << (kReconnectRetries - retries)
-          << " retries to find the updated device.";
-
+  DeviceAddListener add_listener(usb_service_, device_address_,
+                                 config->product_id);
+  device_ = add_listener.WaitForAdd();
+  DCHECK(device_.get());
   return true;
 }
 
 bool UsbTestGadgetImpl::Disconnect() {
-  const GURL url("http://" + device_address_ + "/disconnect");
-  const int response_code = SimplePOSTRequest(url, "");
+  GURL url("http://" + device_address_ + "/disconnect");
+  int response_code = SimplePOSTRequest(request_context_getter_, url, "");
 
   if (response_code != 200) {
-    LOG(ERROR) << "Unexpected HTTP " << response_code << " from /disconnect.";
+    LOG(ERROR) << "Unexpected HTTP " << response_code << " from " << url << ".";
     return false;
   }
 
   // Release the old reference to the device and wait until it can't be found.
-  int retries = kDisconnectRetries;
-  while (true) {
-    device_ = NULL;
-    if (!FindClaimed()) {
-      break;
-    }
-    if (--retries == 0) {
-      LOG(ERROR) << "Device did not disconnect.";
-      return false;
-    }
-    SleepWithRunLoop(TimeDelta::FromMilliseconds(kRetryPeriod));
-  }
-  VLOG(1) << "It took " << (kDisconnectRetries - retries)
-          << " retries for the device to disconnect.";
-
+  DeviceRemoveListener remove_listener(usb_service_, device_);
+  remove_listener.WaitForRemove();
+  device_ = nullptr;
   return true;
 }
 
 bool UsbTestGadgetImpl::Reconnect() {
-  const GURL url("http://" + device_address_ + "/reconnect");
-  const int response_code = SimplePOSTRequest(url, "");
+  GURL url("http://" + device_address_ + "/reconnect");
+  int response_code = SimplePOSTRequest(request_context_getter_, url, "");
 
   if (response_code != 200) {
-    LOG(ERROR) << "Unexpected HTTP " << response_code << " from /reconnect.";
+    LOG(ERROR) << "Unexpected HTTP " << response_code << " from " << url << ".";
     return false;
   }
 
-  int retries = kDisconnectRetries;
-  while (true) {
-    if (FindClaimed()) {
-      break;
-    }
-    if (--retries == 0) {
-      LOG(ERROR) << "Device did not reconnect.";
-      return false;
-    }
-    SleepWithRunLoop(TimeDelta::FromMilliseconds(kRetryPeriod));
-  }
-  VLOG(1) << "It took " << (kDisconnectRetries - retries)
-          << " retries for the device to reconnect.";
-
+  DeviceAddListener add_listener(usb_service_, device_address_, -1);
+  device_ = add_listener.WaitForAdd();
+  DCHECK(device_.get());
   return true;
 }
 

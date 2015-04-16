@@ -30,13 +30,13 @@ enum UsbTransferStatus {
   USB_TRANSFER_LENGTH_SHORT,
 };
 
-typedef base::Callback<
-    void(UsbTransferStatus, scoped_refptr<net::IOBuffer>, size_t)>
-    UsbTransferCallback;
-
 // UsbDeviceHandle class provides basic I/O related functionalities.
 class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
  public:
+  using ResultCallback = base::Callback<void(bool)>;
+  using TransferCallback = base::Callback<
+      void(UsbTransferStatus, scoped_refptr<net::IOBuffer>, size_t)>;
+
   enum TransferRequestType { STANDARD, CLASS, VENDOR, RESERVED };
   enum TransferRecipient { DEVICE, INTERFACE, ENDPOINT, OTHER };
 
@@ -49,53 +49,52 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
   // The platform device handle will be closed when UsbDeviceHandle destructs.
   virtual void Close() = 0;
 
-  // Device manipulation operations. These methods are blocking and must be
-  // called on FILE thread.
-  virtual bool SetConfiguration(int configuration_value) = 0;
-  virtual bool ClaimInterface(int interface_number) = 0;
+  // Device manipulation operations.
+  virtual void SetConfiguration(int configuration_value,
+                                const ResultCallback& callback) = 0;
+  virtual void ClaimInterface(int interface_number,
+                              const ResultCallback& callback) = 0;
   virtual bool ReleaseInterface(int interface_number) = 0;
-  virtual bool SetInterfaceAlternateSetting(int interface_number,
-                                            int alternate_setting) = 0;
-  virtual bool ResetDevice() = 0;
+  virtual void SetInterfaceAlternateSetting(int interface_number,
+                                            int alternate_setting,
+                                            const ResultCallback& callback) = 0;
+  virtual void ResetDevice(const ResultCallback& callback) = 0;
 
-  // Gets the string descriptor with the given index from the device, or returns
-  // false. This method is blocking and must be called on the FILE thread.
-  virtual bool GetStringDescriptor(uint8 string_id, base::string16* string) = 0;
-
-  // Async IO. Can be called on any thread.
+  // The transfer functions may be called from any thread. The provided callback
+  // will be run on the caller's thread.
   virtual void ControlTransfer(UsbEndpointDirection direction,
                                TransferRequestType request_type,
                                TransferRecipient recipient,
                                uint8 request,
                                uint16 value,
                                uint16 index,
-                               net::IOBuffer* buffer,
+                               scoped_refptr<net::IOBuffer> buffer,
                                size_t length,
                                unsigned int timeout,
-                               const UsbTransferCallback& callback) = 0;
+                               const TransferCallback& callback) = 0;
 
   virtual void BulkTransfer(UsbEndpointDirection direction,
                             uint8 endpoint,
-                            net::IOBuffer* buffer,
+                            scoped_refptr<net::IOBuffer> buffer,
                             size_t length,
                             unsigned int timeout,
-                            const UsbTransferCallback& callback) = 0;
+                            const TransferCallback& callback) = 0;
 
   virtual void InterruptTransfer(UsbEndpointDirection direction,
                                  uint8 endpoint,
-                                 net::IOBuffer* buffer,
+                                 scoped_refptr<net::IOBuffer> buffer,
                                  size_t length,
                                  unsigned int timeout,
-                                 const UsbTransferCallback& callback) = 0;
+                                 const TransferCallback& callback) = 0;
 
   virtual void IsochronousTransfer(UsbEndpointDirection direction,
                                    uint8 endpoint,
-                                   net::IOBuffer* buffer,
+                                   scoped_refptr<net::IOBuffer> buffer,
                                    size_t length,
                                    unsigned int packets,
                                    unsigned int packet_length,
                                    unsigned int timeout,
-                                   const UsbTransferCallback& callback) = 0;
+                                   const TransferCallback& callback) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<UsbDeviceHandle>;

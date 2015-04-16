@@ -28,10 +28,8 @@ namespace extensions {
 DevicePermissionsPrompt::Prompt::DeviceInfo::DeviceInfo(
     scoped_refptr<UsbDevice> device)
     : device(device) {
-  base::string16 manufacturer_string;
-  if (device->GetManufacturer(&manufacturer_string)) {
-    original_manufacturer_string = manufacturer_string;
-  } else {
+  base::string16 manufacturer_string = device->manufacturer_string();
+  if (manufacturer_string.empty()) {
     const char* vendor_name =
         device::UsbIds::GetVendorName(device->vendor_id());
     if (vendor_name) {
@@ -44,10 +42,8 @@ DevicePermissionsPrompt::Prompt::DeviceInfo::DeviceInfo(
     }
   }
 
-  base::string16 product_string;
-  if (device->GetProduct(&product_string)) {
-    original_product_string = product_string;
-  } else {
+  base::string16 product_string = device->product_string();
+  if (product_string.empty()) {
     const char* product_name = device::UsbIds::GetProductName(
         device->vendor_id(), device->product_id());
     if (product_name) {
@@ -60,10 +56,6 @@ DevicePermissionsPrompt::Prompt::DeviceInfo::DeviceInfo(
     }
   }
 
-  if (!device->GetSerialNumber(&serial_number)) {
-    serial_number.clear();
-  }
-
   name = l10n_util::GetStringFUTF16(IDS_DEVICE_PERMISSIONS_DEVICE_NAME,
                                     product_string, manufacturer_string);
 }
@@ -71,21 +63,19 @@ DevicePermissionsPrompt::Prompt::DeviceInfo::DeviceInfo(
 DevicePermissionsPrompt::Prompt::DeviceInfo::~DeviceInfo() {
 }
 
-DevicePermissionsPrompt::Prompt::Prompt()
-    : extension_(nullptr),
-      browser_context_(nullptr),
-      multiple_(false),
-      observer_(nullptr),
-      usb_service_observer_(this) {
+DevicePermissionsPrompt::Prompt::Prompt() : usb_service_observer_(this) {
 }
 
 void DevicePermissionsPrompt::Prompt::SetObserver(Observer* observer) {
   observer_ = observer;
 
   if (observer_) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&DevicePermissionsPrompt::Prompt::DoDeviceQuery, this));
+    UsbService* service = device::DeviceClient::Get()->GetUsbService();
+    if (service && !usb_service_observer_.IsObserving(service)) {
+      service->GetDevices(base::Bind(
+          &DevicePermissionsPrompt::Prompt::OnDevicesEnumerated, this));
+      usb_service_observer_.Add(service);
+    }
   }
 }
 
@@ -115,9 +105,7 @@ void DevicePermissionsPrompt::Prompt::GrantDevicePermission(
       DevicePermissionsManager::Get(browser_context_);
   if (permissions_manager) {
     const DeviceInfo& device = devices_[index];
-    permissions_manager->AllowUsbDevice(
-        extension_->id(), device.device, device.original_product_string,
-        device.original_manufacturer_string, device.serial_number);
+    permissions_manager->AllowUsbDevice(extension_->id(), device.device);
   }
 }
 
@@ -129,82 +117,17 @@ void DevicePermissionsPrompt::Prompt::set_filters(
 DevicePermissionsPrompt::Prompt::~Prompt() {
 }
 
-void DevicePermissionsPrompt::Prompt::DoDeviceQuery() {
-  UsbService* service = device::DeviceClient::Get()->GetUsbService();
-  if (!service) {
+void DevicePermissionsPrompt::Prompt::OnDeviceAdded(
+    scoped_refptr<UsbDevice> device) {
+  if (!(filters_.empty() || UsbDeviceFilter::MatchesAny(device, filters_))) {
     return;
   }
 
-  std::vector<scoped_refptr<UsbDevice>> devices;
-  service->GetDevices(&devices);
-
-  if (!usb_service_observer_.IsObserving(service)) {
-    usb_service_observer_.Add(service);
-  }
-
-  std::vector<DeviceInfo>* device_info = new std::vector<DeviceInfo>();
-  base::Closure barrier = base::BarrierClosure(
-      devices.size(),
-      base::Bind(&DevicePermissionsPrompt::Prompt::DeviceQueryComplete, this,
-                 base::Owned(device_info)));
-
-  for (const auto& device : devices) {
-    if (filters_.empty() || UsbDeviceFilter::MatchesAny(device, filters_)) {
-      device->CheckUsbAccess(
-          base::Bind(&DevicePermissionsPrompt::Prompt::AppendCheckedUsbDevice,
-                     this, device_info, device, barrier));
-    } else {
-      barrier.Run();
-    }
-  }
+  device->CheckUsbAccess(base::Bind(
+      &DevicePermissionsPrompt::Prompt::AddCheckedUsbDevice, this, device));
 }
 
-void DevicePermissionsPrompt::Prompt::AppendCheckedUsbDevice(
-    std::vector<DeviceInfo>* device_info,
-    scoped_refptr<UsbDevice> device,
-    const base::Closure& callback,
-    bool allowed) {
-  if (allowed) {
-    device_info->push_back(DeviceInfo(device));
-  }
-  callback.Run();
-}
-
-void DevicePermissionsPrompt::Prompt::AddCheckedUsbDevice(
-    scoped_refptr<UsbDevice> device,
-    bool allowed) {
-  if (allowed) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&DevicePermissionsPrompt::Prompt::AddDevice, this,
-                   DeviceInfo(device)));
-  }
-}
-
-void DevicePermissionsPrompt::Prompt::DeviceQueryComplete(
-    std::vector<DeviceInfo>* device_info) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&DevicePermissionsPrompt::Prompt::SetDevices, this,
-                 *device_info));
-}
-
-void DevicePermissionsPrompt::Prompt::SetDevices(
-    const std::vector<DeviceInfo>& devices) {
-  devices_ = devices;
-  if (observer_) {
-    observer_->OnDevicesChanged();
-  }
-}
-
-void DevicePermissionsPrompt::Prompt::AddDevice(const DeviceInfo& device) {
-  devices_.push_back(device);
-  if (observer_) {
-    observer_->OnDevicesChanged();
-  }
-}
-
-void DevicePermissionsPrompt::Prompt::RemoveDevice(
+void DevicePermissionsPrompt::Prompt::OnDeviceRemoved(
     scoped_refptr<UsbDevice> device) {
   bool removed_entry = false;
   for (std::vector<DeviceInfo>::iterator it = devices_.begin();
@@ -220,21 +143,25 @@ void DevicePermissionsPrompt::Prompt::RemoveDevice(
   }
 }
 
-void DevicePermissionsPrompt::Prompt::OnDeviceAdded(
-    scoped_refptr<UsbDevice> device) {
-  if (!(filters_.empty() || UsbDeviceFilter::MatchesAny(device, filters_))) {
-    return;
+void DevicePermissionsPrompt::Prompt::OnDevicesEnumerated(
+    const std::vector<scoped_refptr<UsbDevice>>& devices) {
+  for (const auto& device : devices) {
+    if (filters_.empty() || UsbDeviceFilter::MatchesAny(device, filters_)) {
+      device->CheckUsbAccess(base::Bind(
+          &DevicePermissionsPrompt::Prompt::AddCheckedUsbDevice, this, device));
+    }
   }
-
-  device->CheckUsbAccess(base::Bind(
-      &DevicePermissionsPrompt::Prompt::AddCheckedUsbDevice, this, device));
 }
 
-void DevicePermissionsPrompt::Prompt::OnDeviceRemoved(
-    scoped_refptr<UsbDevice> device) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&DevicePermissionsPrompt::Prompt::RemoveDevice, this, device));
+void DevicePermissionsPrompt::Prompt::AddCheckedUsbDevice(
+    scoped_refptr<UsbDevice> device,
+    bool allowed) {
+  if (allowed) {
+    devices_.push_back(DeviceInfo(device));
+    if (observer_) {
+      observer_->OnDevicesChanged();
+    }
+  }
 }
 
 DevicePermissionsPrompt::DevicePermissionsPrompt(

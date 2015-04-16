@@ -233,16 +233,13 @@ std::set<scoped_refptr<DevicePermissionEntry>> GetDevicePermissionEntries(
 }  // namespace
 
 DevicePermissionEntry::DevicePermissionEntry(
-    scoped_refptr<device::UsbDevice> device,
-    const base::string16& serial_number,
-    const base::string16& manufacturer_string,
-    const base::string16& product_string)
+    scoped_refptr<device::UsbDevice> device)
     : device_(device),
       vendor_id_(device->vendor_id()),
       product_id_(device->product_id()),
-      serial_number_(serial_number),
-      manufacturer_string_(manufacturer_string),
-      product_string_(product_string) {
+      serial_number_(device->serial_number()),
+      manufacturer_string_(device->manufacturer_string()),
+      product_string_(device->product_string()) {
 }
 
 DevicePermissionEntry::DevicePermissionEntry(
@@ -341,14 +338,13 @@ DevicePermissions::~DevicePermissions() {
 }
 
 scoped_refptr<DevicePermissionEntry> DevicePermissions::FindEntry(
-    scoped_refptr<device::UsbDevice> device,
-    const base::string16& serial_number) const {
+    scoped_refptr<device::UsbDevice> device) const {
   const auto& ephemeral_device_entry = ephemeral_devices_.find(device);
   if (ephemeral_device_entry != ephemeral_devices_.end()) {
     return ephemeral_device_entry->second;
   }
 
-  if (serial_number.empty()) {
+  if (device->serial_number().empty()) {
     return nullptr;
   }
 
@@ -362,7 +358,7 @@ scoped_refptr<DevicePermissionEntry> DevicePermissions::FindEntry(
     if (entry->product_id() != device->product_id()) {
       continue;
     }
-    if (entry->serial_number() != serial_number) {
+    if (entry->serial_number() != device->serial_number()) {
       continue;
     }
     return entry;
@@ -376,50 +372,22 @@ DevicePermissions::DevicePermissions(BrowserContext* context,
   entries_ = GetDevicePermissionEntries(prefs, extension_id);
 }
 
-DevicePermissions::DevicePermissions(const DevicePermissions* original)
-    : entries_(original->entries_),
-      ephemeral_devices_(original->ephemeral_devices_) {
-}
-
-class DevicePermissionsManager::FileThreadHelper : public UsbService::Observer {
- public:
-  FileThreadHelper(
-      base::WeakPtr<DevicePermissionsManager> device_permissions_manager)
-      : device_permissions_manager_(device_permissions_manager),
-        observer_(this) {}
-  virtual ~FileThreadHelper() {}
-
-  void Start() {
-    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-    UsbService* service = device::DeviceClient::Get()->GetUsbService();
-    if (service) {
-      observer_.Add(service);
-    }
-  }
-
- private:
-  void OnDeviceRemovedCleanup(scoped_refptr<UsbDevice> device) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&DevicePermissionsManager::OnDeviceRemoved,
-                   device_permissions_manager_, device));
-  }
-
-  base::WeakPtr<DevicePermissionsManager> device_permissions_manager_;
-  ScopedObserver<UsbService, UsbService::Observer> observer_;
-};
-
 // static
 DevicePermissionsManager* DevicePermissionsManager::Get(
     BrowserContext* context) {
   return DevicePermissionsManagerFactory::GetForBrowserContext(context);
 }
 
-scoped_ptr<DevicePermissions> DevicePermissionsManager::GetForExtension(
+DevicePermissions* DevicePermissionsManager::GetForExtension(
     const std::string& extension_id) {
   DCHECK(CalledOnValidThread());
-  return make_scoped_ptr(new DevicePermissions(GetOrInsert(extension_id)));
+  DevicePermissions* device_permissions = GetInternal(extension_id);
+  if (!device_permissions) {
+    device_permissions = new DevicePermissions(context_, extension_id);
+    extension_id_to_device_permissions_[extension_id] = device_permissions;
+  }
+
+  return device_permissions;
 }
 
 std::vector<base::string16>
@@ -427,7 +395,7 @@ DevicePermissionsManager::GetPermissionMessageStrings(
     const std::string& extension_id) const {
   DCHECK(CalledOnValidThread());
   std::vector<base::string16> messages;
-  const DevicePermissions* device_permissions = Get(extension_id);
+  const DevicePermissions* device_permissions = GetInternal(extension_id);
   if (device_permissions) {
     for (const scoped_refptr<DevicePermissionEntry>& entry :
          device_permissions->entries()) {
@@ -439,15 +407,12 @@ DevicePermissionsManager::GetPermissionMessageStrings(
 
 void DevicePermissionsManager::AllowUsbDevice(
     const std::string& extension_id,
-    scoped_refptr<device::UsbDevice> device,
-    const base::string16& product_string,
-    const base::string16& manufacturer_string,
-    const base::string16& serial_number) {
+    scoped_refptr<device::UsbDevice> device) {
   DCHECK(CalledOnValidThread());
-  DevicePermissions* device_permissions = GetOrInsert(extension_id);
+  DevicePermissions* device_permissions = GetForExtension(extension_id);
 
-  scoped_refptr<DevicePermissionEntry> device_entry(new DevicePermissionEntry(
-      device, serial_number, manufacturer_string, product_string));
+  scoped_refptr<DevicePermissionEntry> device_entry(
+      new DevicePermissionEntry(device));
 
   if (device_entry->IsPersistent()) {
     for (const auto& entry : device_permissions->entries()) {
@@ -474,13 +439,9 @@ void DevicePermissionsManager::AllowUsbDevice(
     // Only start observing when an ephemeral device has been added so that
     // UsbService is not automatically initialized on profile creation (which it
     // would be if this call were in the constructor).
-    if (!helper_) {
-      helper_ = new FileThreadHelper(weak_factory_.GetWeakPtr());
-      // base::Unretained is safe because any task to delete helper_ will be
-      // executed after this call.
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          base::Bind(&FileThreadHelper::Start, base::Unretained(helper_)));
+    UsbService* usb_service = device::DeviceClient::Get()->GetUsbService();
+    if (!usb_service_observer_.IsObserving(usb_service)) {
+      usb_service_observer_.Add(usb_service);
     }
   }
 }
@@ -499,7 +460,7 @@ void DevicePermissionsManager::RemoveEntry(
     const std::string& extension_id,
     scoped_refptr<DevicePermissionEntry> entry) {
   DCHECK(CalledOnValidThread());
-  DevicePermissions* device_permissions = Get(extension_id);
+  DevicePermissions* device_permissions = GetInternal(extension_id);
   DCHECK(device_permissions);
   DCHECK(ContainsKey(device_permissions->entries_, entry));
   device_permissions->entries_.erase(entry);
@@ -514,7 +475,7 @@ void DevicePermissionsManager::Clear(const std::string& extension_id) {
   DCHECK(CalledOnValidThread());
 
   ClearDevicePermissionEntries(ExtensionPrefs::Get(context_), extension_id);
-  DevicePermissions* device_permissions = Get(extension_id);
+  DevicePermissions* device_permissions = GetInternal(extension_id);
   if (device_permissions) {
     extension_id_to_device_permissions_.erase(extension_id);
     delete device_permissions;
@@ -525,8 +486,7 @@ DevicePermissionsManager::DevicePermissionsManager(
     content::BrowserContext* context)
     : context_(context),
       process_manager_observer_(this),
-      helper_(nullptr),
-      weak_factory_(this) {
+      usb_service_observer_(this) {
   process_manager_observer_.Add(ProcessManager::Get(context));
 }
 
@@ -535,13 +495,9 @@ DevicePermissionsManager::~DevicePermissionsManager() {
     DevicePermissions* device_permissions = map_entry.second;
     delete device_permissions;
   }
-  if (helper_) {
-    BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE, helper_);
-    helper_ = nullptr;
-  }
 }
 
-DevicePermissions* DevicePermissionsManager::Get(
+DevicePermissions* DevicePermissionsManager::GetInternal(
     const std::string& extension_id) const {
   std::map<std::string, DevicePermissions*>::const_iterator it =
       extension_id_to_device_permissions_.find(extension_id);
@@ -552,22 +508,11 @@ DevicePermissions* DevicePermissionsManager::Get(
   return NULL;
 }
 
-DevicePermissions* DevicePermissionsManager::GetOrInsert(
-    const std::string& extension_id) {
-  DevicePermissions* device_permissions = Get(extension_id);
-  if (!device_permissions) {
-    device_permissions = new DevicePermissions(context_, extension_id);
-    extension_id_to_device_permissions_[extension_id] = device_permissions;
-  }
-
-  return device_permissions;
-}
-
 void DevicePermissionsManager::OnBackgroundHostClose(
     const std::string& extension_id) {
   DCHECK(CalledOnValidThread());
 
-  DevicePermissions* device_permissions = Get(extension_id);
+  DevicePermissions* device_permissions = GetInternal(extension_id);
   if (device_permissions) {
     // When all of the app's windows are closed and the background page is
     // suspended all ephemeral device permissions are cleared.
@@ -578,7 +523,7 @@ void DevicePermissionsManager::OnBackgroundHostClose(
   }
 }
 
-void DevicePermissionsManager::OnDeviceRemoved(
+void DevicePermissionsManager::OnDeviceRemovedCleanup(
     scoped_refptr<UsbDevice> device) {
   DCHECK(CalledOnValidThread());
   for (const auto& map_entry : extension_id_to_device_permissions_) {
