@@ -1,4 +1,5 @@
 importScripts('../../resources/worker-testharness.js');
+importScripts('../../../resources/get-host-info.js');
 importScripts('../../resources/test-helpers.js');
 
 async_test(function(t) {

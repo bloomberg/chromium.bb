@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>WebCrypto On An Insecure Origin</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/get-host-info.js"></script>
+</head>
+<body></body>
+<script>
+     if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
+         window.location = get_host_info().UNAUTHENTICATED_ORIGIN +
+                           window.location.pathname;
+     } else {
+         if (window.testRunner)
+             testRunner.overridePreference(
+                 "WebKitStrictPowerfulFeatureRestrictions", true);
+
+         async_test(function () {
+             var jwkKey = {
+                 kty: "oct",
+                 k: "jnOw99oOZFLIEPMrgJB55WL46tJSLGt7jnOw99oOZFI"
+             };
+             Promise.resolve(null).then(this.step_func(function (result) {
+                 return crypto.subtle.importKey("jwk", jwkKey,
+                                                {name: "AES-CBC"},
+                                                true,
+                                                ['encrypt', 'decrypt',
+                                                 'wrapKey', 'unwrapKey']);
+             })).then(this.step_func(function (result) {
+                 assert_unreached('crypto.subtle should fial, but succeeded.');
+                 this.done();
+             }), this.step_func(function (result) {
+                 assert_equals(result.message, 'Only secure origins are allowed (see: https://goo.gl/Y0ZkNV).');
+                 this.done();
+             }));
+         }, "WebCrypto not allowed on insecure origin");
+     }
+</script>
+</html>

@@ -136,7 +136,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
     ExecutionContext* executionContext = scriptState->executionContext();
     RefPtr<SecurityOrigin> documentOrigin = executionContext->securityOrigin();
     String errorMessage;
-    if (!documentOrigin->canAccessFeatureRequiringSecureOrigin(errorMessage)) {
+    if (!executionContext->isPrivilegedContext(errorMessage)) {
         resolver->reject(DOMException::create(NotSupportedError, errorMessage));
         return promise;
     }
@@ -195,7 +195,7 @@ ScriptPromise ServiceWorkerContainer::getRegistration(ScriptState* scriptState, 
     ExecutionContext* executionContext = scriptState->executionContext();
     RefPtr<SecurityOrigin> documentOrigin = executionContext->securityOrigin();
     String errorMessage;
-    if (!documentOrigin->canAccessFeatureRequiringSecureOrigin(errorMessage)) {
+    if (!executionContext->isPrivilegedContext(errorMessage)) {
         resolver->reject(DOMException::create(NotSupportedError, errorMessage));
         return promise;
     }

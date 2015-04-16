@@ -1064,6 +1064,8 @@ public:
 
     NthIndexCache* nthIndexCache() const { return m_nthIndexCache; }
 
+    bool isPrivilegedContext(String& errorMessage, const PrivilegeContextCheck = StandardPrivilegeCheck) override;
+
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
 

@@ -62,7 +62,7 @@ void NavigatorMediaStream::webkitGetUserMedia(Navigator& navigator, const Dictio
     }
 
     String errorMessage;
-    if (navigator.frame()->document()->securityOrigin()->canAccessFeatureRequiringSecureOrigin(errorMessage)) {
+    if (navigator.frame()->document()->isPrivilegedContext(errorMessage)) {
         UseCounter::count(navigator.frame(), UseCounter::GetUserMediaSecureOrigin);
     } else {
         UseCounter::count(navigator.frame(), UseCounter::GetUserMediaInsecureOrigin);

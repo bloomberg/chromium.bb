@@ -60,7 +60,7 @@ TEST(SecurityOriginTest, ValidPortsCreateNonUniqueOrigins)
     }
 }
 
-TEST(SecurityOriginTest, CanAccessFeatureRequringSecureOrigin)
+TEST(SecurityOriginTest, IsPotentiallyTrustworthy)
 {
     struct TestCase {
         bool accessGranted;
@@ -128,14 +128,14 @@ TEST(SecurityOriginTest, CanAccessFeatureRequringSecureOrigin)
         SCOPED_TRACE(i);
         RefPtr<SecurityOrigin> origin = SecurityOrigin::createFromString(inputs[i].url);
         String errorMessage;
-        EXPECT_EQ(inputs[i].accessGranted, origin->canAccessFeatureRequiringSecureOrigin(errorMessage));
+        EXPECT_EQ(inputs[i].accessGranted, origin->isPotentiallyTrustworthy(errorMessage));
         EXPECT_EQ(inputs[i].accessGranted, errorMessage.isEmpty());
     }
 
     // Unique origins are not considered secure.
     RefPtr<SecurityOrigin> uniqueOrigin = SecurityOrigin::createUnique();
     String errorMessage;
-    EXPECT_FALSE(uniqueOrigin->canAccessFeatureRequiringSecureOrigin(errorMessage));
+    EXPECT_FALSE(uniqueOrigin->isPotentiallyTrustworthy(errorMessage));
     EXPECT_EQ("Only secure origins are allowed (see: https://goo.gl/Y0ZkNV).", errorMessage);
 }
 
@@ -167,4 +167,3 @@ TEST(SecurityOriginTest, IsSecure)
 }
 
 } // namespace
-

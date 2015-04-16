@@ -39,4 +39,9 @@ double NullExecutionContext::timerAlignmentInterval() const
     return DOMTimer::visiblePageAlignmentInterval();
 }
 
+bool NullExecutionContext::isPrivilegedContext(String& errorMessage, const PrivilegeContextCheck privilegeContextCheck)
+{
+    return true;
+}
+
 } // namespace blink

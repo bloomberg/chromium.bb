@@ -101,8 +101,9 @@ Notification* Notification::create(ExecutionContext* context, const String& titl
     }
 
     String insecureOriginMessage;
-    UseCounter::Feature feature = context->securityOrigin()->canAccessFeatureRequiringSecureOrigin(insecureOriginMessage)
-        ? UseCounter::NotificationSecureOrigin : UseCounter::NotificationInsecureOrigin;
+    UseCounter::Feature feature = context->isPrivilegedContext(insecureOriginMessage)
+        ? UseCounter::NotificationSecureOrigin
+        : UseCounter::NotificationInsecureOrigin;
     UseCounter::count(context, feature);
 
     notification->scheduleShow();

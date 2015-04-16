@@ -133,6 +133,8 @@ public:
 
     virtual void scriptLoaded(size_t scriptSize, size_t cachedMetadataSize) { }
 
+    bool isPrivilegedContext(String& errorMessage, const PrivilegeContextCheck = StandardPrivilegeCheck) override;
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:

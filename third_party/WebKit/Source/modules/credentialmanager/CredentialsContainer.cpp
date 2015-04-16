@@ -105,9 +105,8 @@ static bool checkBoilerplate(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resol
         return false;
     }
 
-    SecurityOrigin* securityOrigin = resolver->scriptState()->executionContext()->securityOrigin();
     String errorMessage;
-    if (!securityOrigin->canAccessFeatureRequiringSecureOrigin(errorMessage)) {
+    if (!resolver->scriptState()->executionContext()->isPrivilegedContext(errorMessage)) {
         resolver->reject(DOMException::create(SecurityError, errorMessage));
         return false;
     }

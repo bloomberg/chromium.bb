@@ -1,3 +1,4 @@
+importScripts('../../resources/get-host-info.js');
 importScripts('test-helpers.js');
 
 var port = undefined;

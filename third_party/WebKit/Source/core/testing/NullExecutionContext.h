@@ -42,6 +42,8 @@ public:
     virtual void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override { }
     virtual void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) override { }
 
+    bool isPrivilegedContext(String& errorMessage, const PrivilegeContextCheck = StandardPrivilegeCheck);
+
     DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_queue);

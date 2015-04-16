@@ -83,12 +83,11 @@ public:
     // from a given security origin to receive contents from a given URL.
     BLINK_PLATFORM_EXPORT bool canRequest(const WebURL&) const;
 
-    // A "secure origin" as defined by [1] are those that load resources either
-    // from the local machine (necessarily trusted) or over the network from a
-    // cryptographically-authenticated server.
-    //
-    // [1] http://www.chromium.org/Home/chromium-security/security-faq#TOC-Which-origins-are-secure-
-    BLINK_PLATFORM_EXPORT bool canAccessFeatureRequiringSecureOrigin(WebString& errorMessage) const;
+    // Returns true if the origin loads resources either from the local
+    // machine or over the network from a
+    // cryptographically-authenticated origin, as described in
+    // https://w3c.github.io/webappsec/specs/powerfulfeatures/#is-origin-trustworthy.
+    BLINK_PLATFORM_EXPORT bool isPotentiallyTrustworthy(WebString& errorMessage) const;
 
     // Returns a string representation of the WebSecurityOrigin.  The empty
     // WebSecurityOrigin is represented by "null".  The representation of a

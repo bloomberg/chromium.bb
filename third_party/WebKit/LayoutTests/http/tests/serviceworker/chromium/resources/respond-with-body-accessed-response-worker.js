@@ -1,3 +1,4 @@
+importScripts('../../../resources/get-host-info.js');
 importScripts('../../resources/test-helpers.js');
 
 function getQueryParams(url) {

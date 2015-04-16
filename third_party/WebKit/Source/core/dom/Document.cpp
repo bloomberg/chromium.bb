@@ -5644,6 +5644,39 @@ v8::Handle<v8::Object> Document::associateWithWrapper(v8::Isolate* isolate, cons
     return wrapper;
 }
 
+bool Document::isPrivilegedContext(String& errorMessage, const PrivilegeContextCheck privilegeContextCheck)
+{
+    // TODO(estark): look at the responsible document for workers.
+
+    if (securityContext().isSandboxed(SandboxOrigin)) {
+        if (!SecurityOrigin::create(url())->isPotentiallyTrustworthy(errorMessage))
+            return false;
+    } else {
+        if (!securityOrigin()->isPotentiallyTrustworthy(errorMessage))
+            return false;
+    }
+
+    if (privilegeContextCheck == StandardPrivilegeCheck) {
+        Document* context = parentDocument();
+        while (context) {
+            // Skip to the next ancestor if it's a srcdoc.
+            if (!isSrcdocDocument()) {
+                if (securityContext().isSandboxed(SandboxOrigin)) {
+                    // For a sandboxed origin, use the document's URL.
+                    RefPtr<SecurityOrigin> origin = SecurityOrigin::create(context->url());
+                    if (!origin->isPotentiallyTrustworthy(errorMessage))
+                        return false;
+                } else {
+                    if (!context->securityOrigin()->isPotentiallyTrustworthy(errorMessage))
+                        return false;
+                }
+            }
+            context = context->parentDocument();
+        }
+    }
+    return true;
+}
+
 DEFINE_TRACE(Document)
 {
 #if ENABLE(OILPAN)

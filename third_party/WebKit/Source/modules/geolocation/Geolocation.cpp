@@ -148,12 +148,13 @@ void Geolocation::recordOriginTypeAccess() const
     Document* document = this->document();
     ASSERT(document);
 
-    // It is required by canAccessFeatureRequiringSecureOrigin() but isn't
+    // It is required by isPrivilegedContext() but isn't
     // actually used. This could be used later if a warning is shown in the
     // developer console.
     String insecureOriginMsg;
-    UseCounter::Feature counter = document->securityOrigin()->canAccessFeatureRequiringSecureOrigin(insecureOriginMsg)
-        ? UseCounter::GeolocationSecureOrigin : UseCounter::GeolocationInsecureOrigin;
+    UseCounter::Feature counter = document->isPrivilegedContext(insecureOriginMsg)
+        ? UseCounter::GeolocationSecureOrigin
+        : UseCounter::GeolocationInsecureOrigin;
     UseCounter::count(document, counter);
 }
 
@@ -192,7 +193,7 @@ void Geolocation::startRequest(GeoNotifier *notifier)
 {
     if (frame()->settings()->strictPowerfulFeatureRestrictions()) {
         String errorMessage;
-        if (!executionContext()->securityOrigin()->canAccessFeatureRequiringSecureOrigin(errorMessage)) {
+        if (!executionContext()->isPrivilegedContext(errorMessage)) {
             notifier->setFatalError(PositionError::create(PositionError::POSITION_UNAVAILABLE, errorMessage));
             return;
         }

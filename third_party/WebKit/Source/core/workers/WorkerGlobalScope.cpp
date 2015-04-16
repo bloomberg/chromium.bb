@@ -363,6 +363,12 @@ void WorkerGlobalScope::exceptionHandled(int exceptionId, bool isHandled)
         addConsoleMessage(consoleMessage.release());
 }
 
+bool WorkerGlobalScope::isPrivilegedContext(String& errorMessage, const PrivilegeContextCheck privilegeContextCheck)
+{
+    // TODO(estark): check the responsible document at worker creation time
+    return true;
+}
+
 void WorkerGlobalScope::removeURLFromMemoryCache(const KURL& url)
 {
     m_thread->workerLoaderProxy()->postTaskToLoader(createCrossThreadTask(&WorkerGlobalScope::removeURLFromMemoryCacheInternal, url));
