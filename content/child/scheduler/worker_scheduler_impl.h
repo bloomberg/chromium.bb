@@ -30,6 +30,7 @@ class CONTENT_EXPORT WorkerSchedulerImpl
   scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   bool CanExceedIdleDeadlineIfRequired() const override;
+  bool ShouldYieldForHighPriorityWork() override;
   void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer) override;
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override;

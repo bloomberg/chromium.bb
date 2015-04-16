@@ -21,6 +21,7 @@ class NullWorkerScheduler : public WorkerScheduler {
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override;
   bool CanExceedIdleDeadlineIfRequired() const override;
+  bool ShouldYieldForHighPriorityWork() override;
   void Init() override;
   void Shutdown() override;
 

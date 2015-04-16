@@ -42,6 +42,10 @@ bool NullWorkerScheduler::CanExceedIdleDeadlineIfRequired() const {
   return false;
 }
 
+bool NullWorkerScheduler::ShouldYieldForHighPriorityWork() {
+  return false;
+}
+
 void NullWorkerScheduler::Init() {
 }
 

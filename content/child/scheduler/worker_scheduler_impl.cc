@@ -52,6 +52,11 @@ bool WorkerSchedulerImpl::CanExceedIdleDeadlineIfRequired() const {
   return helper_.CanExceedIdleDeadlineIfRequired();
 }
 
+bool WorkerSchedulerImpl::ShouldYieldForHighPriorityWork() {
+  // We don't consider any work as being high priority on workers.
+  return false;
+}
+
 void WorkerSchedulerImpl::AddTaskObserver(
     base::MessageLoop::TaskObserver* task_observer) {
   DCHECK(initialized_);

@@ -191,6 +191,7 @@
       'child/request_info.h',
       'child/scheduler/cancelable_closure_holder.cc',
       'child/scheduler/cancelable_closure_holder.h',
+      'child/scheduler/child_scheduler.h',
       'child/scheduler/nestable_single_thread_task_runner.h',
       'child/scheduler/null_idle_task_runner.cc',
       'child/scheduler/null_idle_task_runner.h',
