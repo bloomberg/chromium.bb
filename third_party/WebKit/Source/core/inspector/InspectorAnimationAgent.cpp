@@ -108,24 +108,20 @@ static PassRefPtr<TypeBuilder::Animation::AnimationNode> buildObjectForAnimation
 
 static PassRefPtr<TypeBuilder::Animation::KeyframeStyle> buildObjectForStyleRuleKeyframe(StyleRuleKeyframe* keyframe, TimingFunction& easing)
 {
-    RefPtrWillBeRawPtr<InspectorStyle> inspectorStyle = InspectorStyle::create(InspectorCSSId(), keyframe->mutableProperties().ensureCSSStyleDeclaration(), 0);
     RefPtr<TypeBuilder::Animation::KeyframeStyle> keyframeObject = TypeBuilder::Animation::KeyframeStyle::create()
         .setOffset(keyframe->keyText())
-        .setStyle(inspectorStyle->buildObjectForStyle())
         .setEasing(easing.toString());
     return keyframeObject.release();
 }
 
 static PassRefPtr<TypeBuilder::Animation::KeyframeStyle> buildObjectForStringKeyframe(const StringKeyframe* keyframe)
 {
-    RefPtrWillBeRawPtr<InspectorStyle> inspectorStyle = InspectorStyle::create(InspectorCSSId(), keyframe->propertySetForInspector().get()->ensureCSSStyleDeclaration(), 0);
     Decimal decimal = Decimal::fromDouble(keyframe->offset() * 100);
     String offset = decimal.toString();
     offset.append("%");
 
     RefPtr<TypeBuilder::Animation::KeyframeStyle> keyframeObject = TypeBuilder::Animation::KeyframeStyle::create()
         .setOffset(offset)
-        .setStyle(inspectorStyle->buildObjectForStyle())
         .setEasing(keyframe->easing().toString());
     return keyframeObject.release();
 }

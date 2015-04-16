@@ -36,7 +36,6 @@ public:
     }
 
     virtual PropertyHandleSet properties() const override;
-    RefPtrWillBeMember<MutableStylePropertySet> propertySetForInspector() const { return m_propertySet; }
 
     DECLARE_VIRTUAL_TRACE();
 
