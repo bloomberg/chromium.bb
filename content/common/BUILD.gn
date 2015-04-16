@@ -238,6 +238,13 @@ source_set("common") {
     libs += [ "android" ]
   }
 
+  if (is_debug && !is_component_build) {
+    # Content depends on the PPAPI message logging stuff; if this isn't here,
+    # some unit test binaries won't compile. This only worked in release mode
+    # because logging is disabled there.
+    deps += [ "//ppapi/proxy:ipc_sources" ]
+  }
+
   if (is_ios) {
     sources -= [ "user_agent.cc" ]
     assert(false, "Need to add lots of conditions here")
