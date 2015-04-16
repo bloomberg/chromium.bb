@@ -46,10 +46,10 @@ var Dir = AutomationUtil.Dir;
  */
 Output = function() {
   // TODO(dtseng): Include braille specific rules.
-  /** @type {!cvox.Spannable} */
-  this.buffer_ = new cvox.Spannable();
-  /** @type {!cvox.Spannable} */
-  this.brailleBuffer_ = new cvox.Spannable();
+  /** @type {!Array<cvox.Spannable>} */
+  this.buffer_ = [];
+  /** @type {!Array<cvox.Spannable>} */
+  this.brailleBuffer_ = [];
   /** @type {!Array<Object>} */
   this.locations_ = [];
   /** @type {function()} */
@@ -90,8 +90,11 @@ Output.ROLE_INFO_ = {
     msgId: 'tag_button',
     earcon: 'BUTTON'
   },
-  checkbox: {
+  checkBox: {
     msgId: 'input_type_checkbox'
+  },
+  dialog: {
+    msgId: 'dialog'
   },
   heading: {
     msgId: 'aria_role_heading',
@@ -127,6 +130,26 @@ Output.ROLE_INFO_ = {
 };
 
 /**
+ * Metadata about supported automation states.
+ * @const {!Object<string,
+ *           {on: {msgId: string, earconId: string},
+ *            off: {msgId: string, earconId: string}}>}
+ * @private
+ */
+Output.STATE_INFO_ = {
+  checked: {
+    on: {
+      earconId: 'CHECK_ON',
+      msgId: 'checkbox_checked_state'
+    },
+    off: {
+      earconId: 'CHECK_OFF',
+      msgId: 'checkbox_unchecked_state'
+    }
+  }
+};
+
+/**
  * Rules specifying format of AutomationNodes for output.
  * @type {!Object<string, Object<string, Object<string, string>>>}
  */
@@ -137,15 +160,10 @@ Output.RULES = {
       braille: ''
     },
     alert: {
-      speak: '!doNotInterrupt ' +
-          '@aria_role_alert $name $earcon(ALERT_NONMODAL) $descendants'
+      speak: '!doNotInterrupt $role $descendants'
     },
     checkBox: {
-      speak: '$if($checked, @describe_checkbox_checked($name), ' +
-          '@describe_checkbox_unchecked($name)) ' +
-          '$if($checked, ' +
-              '$earcon(CHECK_ON, @input_type_checkbox), ' +
-              '$earcon(CHECK_OFF, @input_type_checkbox))'
+      speak: '$name $role $checked'
     },
     dialog: {
       enter: '$name $role'
@@ -158,9 +176,9 @@ Output.RULES = {
       speak: '$value='
     },
     link: {
-      enter: '$name= $visited $earcon(LINK, @tag_link)=',
-      stay: '$name= $visited @tag_link',
-      speak: '$name= $visited $earcon(LINK, @tag_link)='
+      enter: '$name $visited $role',
+      stay: '$name= $visited $role',
+      speak: '$name= $visited $role'
     },
     list: {
       enter: '@aria_role_list @list_with_items($parentChildCount)'
@@ -181,15 +199,12 @@ Output.RULES = {
       speak: '$value'
     },
     popUpButton: {
-      speak: '$value $name @tag_button @aria_has_popup $earcon(LISTBOX) ' +
+      speak: '$value $name $role @aria_has_popup ' +
           '$if($collapsed, @aria_expanded_false, @aria_expanded_true)'
     },
     radioButton: {
       speak: '$if($checked, @describe_radio_selected($name), ' +
-          '@describe_radio_unselected($name)) ' +
-          '$if($checked, ' +
-              '$earcon(CHECK_ON, @input_type_radio), ' +
-              '$earcon(CHECK_OFF, @input_type_radio))'
+          '@describe_radio_unselected($name))'
     },
     slider: {
       speak: '@describe_slider($value, $name)'
@@ -210,12 +225,12 @@ Output.RULES = {
   },
   menuStart: {
     'default': {
-      speak: '@chrome_menu_opened($name) $role $earcon(OBJECT_OPEN)'
+      speak: '@chrome_menu_opened($name)  $earcon(OBJECT_OPEN)'
     }
   },
   menuEnd: {
     'default': {
-      speak: '$earcon(OBJECT_CLOSE)'
+      speak: '@chrome_menu_closed $earcon(OBJECT_CLOSE)'
     }
   },
   menuListValueChanged: {
@@ -234,15 +249,6 @@ Output.RULES = {
 };
 
 /**
- * Alias equivalent attributes.
- * @type {!Object<string, string>}
- */
-Output.ATTRIBUTE_ALIAS = {
-  name: 'value',
-  value: 'name'
-};
-
-/**
  * Custom actions performed while rendering an output string.
  * @param {function()} action
  * @constructor
@@ -255,6 +261,23 @@ Output.Action.prototype = {
   run: function() {
     this.action_();
   }
+};
+
+/**
+ * Action to play a earcon.
+ * @param {string} earconId
+ * @constructor
+ * @extends {Output.Action}
+ */
+Output.EarconAction = function(earconId) {
+  Output.Action.call(this, function() {
+    cvox.ChromeVox.earcons.playEarcon(
+        cvox.AbstractEarcons[earconId]);
+  });
+};
+
+Output.EarconAction.prototype = {
+  __proto__: Output.Action.prototype
 };
 
 /**
@@ -282,8 +305,11 @@ Output.prototype = {
    * Gets the output buffer for speech.
    * @return {!cvox.Spannable}
    */
-  getBuffer: function() {
-    return this.buffer_;
+  toSpannable: function() {
+    return this.buffer_.reduce(function(prev, cur) {
+      prev.append(cur);
+      return prev;
+    }, new cvox.Spannable());
   },
 
   /**
@@ -364,45 +390,56 @@ Output.prototype = {
    */
   go: function() {
     // Speech.
-    var buff = this.buffer_;
-    if (buff.toString()) {
-      if (this.speechStartCallback_)
-        this.speechProperties_['startCallback'] = this.speechStartCallback_;
-      if (this.speechEndCallback_) {
-        this.speechProperties_['endCallback'] = this.speechEndCallback_;
+    var queueMode = cvox.QueueMode.FLUSH;
+    this.buffer_.forEach(function(buff, i, a) {
+      if (buff.toString()) {
+        if (this.speechStartCallback_ && i == 0)
+          this.speechProperties_['startCallback'] = this.speechStartCallback_;
+        else
+          this.speechProperties_['startCallback'] = null;
+        if (this.speechEndCallback_ && i == a.length - 1)
+          this.speechProperties_['endCallback'] = this.speechEndCallback_;
+        else
+          this.speechProperties_['endCallback'] = null;
+        cvox.ChromeVox.tts.speak(
+            buff.toString(), queueMode, this.speechProperties_);
+        queueMode = cvox.QueueMode.QUEUE;
       }
-
-      cvox.ChromeVox.tts.speak(
-          buff.toString(), cvox.QueueMode.FLUSH, this.speechProperties_);
-    }
-
-    var actions = buff.getSpansInstanceOf(Output.Action);
-    if (actions) {
-      actions.forEach(function(a) {
-        a.run();
-      });
-    }
+      var actions = buff.getSpansInstanceOf(Output.Action);
+      if (actions) {
+        actions.forEach(function(a) {
+          a.run();
+        });
+      }
+    }.bind(this));
 
     // Braille.
+    var buff = this.brailleBuffer_.reduce(function(prev, cur) {
+      if (prev.getLength() > 0 && cur.getLength() > 0)
+        prev.append(Output.SPACE);
+      prev.append(cur);
+      return prev;
+    }, new cvox.Spannable());
+
     var selSpan =
-        this.brailleBuffer_.getSpanInstanceOf(Output.SelectionSpan);
+        buff.getSpanInstanceOf(Output.SelectionSpan);
     var startIndex = -1, endIndex = -1;
     if (selSpan) {
       // Casts ok, since the span is known to be in the spannable.
       var valueStart =
-          /** @type {number} */ (this.brailleBuffer_.getSpanStart(selSpan));
+          /** @type {number} */ (buff.getSpanStart(selSpan));
       var valueEnd =
-          /** @type {number} */ (this.brailleBuffer_.getSpanEnd(selSpan));
+          /** @type {number} */ (buff.getSpanEnd(selSpan));
       startIndex = valueStart + selSpan.startIndex;
       endIndex = valueStart + selSpan.endIndex;
-      this.brailleBuffer_.setSpan(new cvox.ValueSpan(0),
+        buff.setSpan(new cvox.ValueSpan(0),
                                   valueStart, valueEnd);
-      this.brailleBuffer_.setSpan(new cvox.ValueSelectionSpan(),
+      buff.setSpan(new cvox.ValueSelectionSpan(),
                                   startIndex, endIndex);
     }
 
     var output = new cvox.NavBraille({
-      text: this.brailleBuffer_,
+      text: buff,
       startIndex: startIndex,
       endIndex: endIndex
     });
@@ -420,7 +457,7 @@ Output.prototype = {
    * @param {!cursors.Range} range
    * @param {cursors.Range} prevRange
    * @param {chrome.automation.EventType|string} type
-   * @param {!cvox.Spannable} buff Buffer to receive rendered output.
+   * @param {!Array<cvox.Spannable>} buff Buffer to receive rendered output.
    * @private
    */
   render_: function(range, prevRange, type, buff) {
@@ -435,7 +472,7 @@ Output.prototype = {
    * @param {chrome.automation.AutomationNode} node
    * @param {string|!Object} format The output format either specified as an
    * output template string or a parsed output format tree.
-   * @param {!cvox.Spannable} buff Buffer to receive rendered output.
+   * @param {!Array<cvox.Spannable>} buff Buffer to receive rendered output.
    * @param {!Object=} opt_exclude A set of attributes to exclude.
    * @private
    */
@@ -469,8 +506,9 @@ Output.prototype = {
 
       // Set suffix options.
       var options = {};
-      options.ifEmpty = token[token.length - 1] == '=';
-      if (options.ifEmpty)
+      options.annotation = [];
+      options.isUnique = token[token.length - 1] == '=';
+      if (options.isUnique)
         token = token.substring(0, token.length - 1);
 
       // Process token based on prefix.
@@ -482,30 +520,31 @@ Output.prototype = {
 
       // All possible tokens based on prefix.
       if (prefix == '$') {
-        options.annotation = token;
         if (token == 'value') {
           var text = node.attributes.value;
           if (text !== undefined) {
-            var offset = buff.getLength();
             if (node.attributes.textSelStart !== undefined) {
-              options.annotation = new Output.SelectionSpan(
+              options.annotation.push(new Output.SelectionSpan(
                   node.attributes.textSelStart,
-                  node.attributes.textSelEnd);
+                  node.attributes.textSelEnd));
             }
-          } else if (node.role == chrome.automation.RoleType.staticText) {
-            // TODO(dtseng): Remove once Blink treats staticText values as
-            // names.
-            text = node.attributes.name;
           }
-          this.addToSpannable_(buff, text, options);
+          // Annotate this as a name so we don't duplicate names from ancestors.
+          if (node.role == chrome.automation.RoleType.inlineTextBox)
+            token = 'name';
+          options.annotation.push(token);
+          this.append_(buff, text, options);
         } else if (token == 'indexInParent') {
-          this.addToSpannable_(buff, node.indexInParent + 1);
+          options.annotation.push(token);
+          this.append_(buff, node.indexInParent + 1);
         } else if (token == 'parentChildCount') {
+          options.annotation.push(token);
           if (node.parent)
-          this.addToSpannable_(buff, node.parent.children.length);
+          this.append_(buff, node.parent.children.length);
         } else if (token == 'state') {
+          options.annotation.push(token);
           Object.getOwnPropertyNames(node.state).forEach(function(s) {
-            this.addToSpannable_(buff, s, options);
+            this.append_(buff, s, options);
           }.bind(this));
         } else if (token == 'find') {
           // Find takes two arguments: JSON query string and format string.
@@ -534,6 +573,7 @@ Output.prototype = {
               new cursors.Cursor(rightmost, 0));
           this.range_(subrange, null, 'navigate', buff);
         } else if (token == 'role') {
+          options.annotation.push(token);
           var msg = node.role;
           var earconId = null;
           var info = Output.ROLE_INFO_[node.role];
@@ -546,17 +586,23 @@ Output.prototype = {
           } else {
             console.error('Missing role info for ' + node.role);
           }
-          if (earconId) {
-            options.annotation = new Output.Action(function() {
-              cvox.ChromeVox.earcons.playEarcon(
-                  cvox.AbstractEarcons[earconId]);
-            });
-          }
-          this.addToSpannable_(buff, msg, options);
-        } else if (node.attributes[token]) {
-          this.addToSpannable_(buff, node.attributes[token], options);
-        } else if (node.state[token]) {
-          this.addToSpannable_(buff, token, options);
+          if (earconId)
+            options.annotation.push(new Output.EarconAction(earconId));
+          this.append_(buff, msg, options);
+        } else if (node.attributes[token] !== undefined) {
+          options.annotation.push(token);
+          this.append_(buff, node.attributes[token], options);
+        } else if (Output.STATE_INFO_[token]) {
+          options.annotation.push('state');
+          var stateInfo = Output.STATE_INFO_[token];
+          var resolvedInfo = node.state[token] ? stateInfo.on : stateInfo.off;
+          options.annotation.push(
+              new Output.EarconAction(resolvedInfo.earconId));
+          var msgId =
+              this.formatOptions_.braille ? resolvedInfo.msgId + '_brl' :
+              resolvedInfo.msgId;
+          var msg = cvox.ChromeVox.msgs.getMsg(msgId);
+          this.append_(buff, msg, options);
         } else if (tree.firstChild) {
           // Custom functions.
           if (token == 'if') {
@@ -567,14 +613,13 @@ Output.prototype = {
             else
               this.format_(node, cond.nextSibling.nextSibling, buff);
           } else if (token == 'earcon') {
-            var contentBuff = new cvox.Spannable();
-            if (tree.firstChild.nextSibling)
-              this.format_(node, tree.firstChild.nextSibling, contentBuff);
-            options.annotation = new Output.Action(function() {
-              cvox.ChromeVox.earcons.playEarcon(
-                  cvox.AbstractEarcons[tree.firstChild.value]);
-            });
-            this.addToSpannable_(buff, contentBuff, options);
+            // Assumes there's existing output in our buffer.
+            var lastBuff = buff[buff.length - 1];
+            if (!lastBuff)
+              return;
+
+            lastBuff.setSpan(
+                new Output.EarconAction(tree.firstChild.value), 0, 0);
           }
         }
       } else if (prefix == '@') {
@@ -588,9 +633,9 @@ Output.prototype = {
             console.error('Unexpected value: ' + arg);
             return;
           }
-          var msgBuff = new cvox.Spannable();
+          var msgBuff = [];
           this.format_(node, arg, msgBuff);
-          msgArgs.push(msgBuff.toString());
+          msgArgs = msgArgs.concat(msgBuff);
           curMsg = curMsg.nextSibling;
         }
           var msg = cvox.ChromeVox.msgs.getMsg(msgId, msgArgs);
@@ -600,7 +645,7 @@ Output.prototype = {
         } catch(e) {}
 
         if (msg) {
-          this.addToSpannable_(buff, msg, options);
+          this.append_(buff, msg, options);
         }
       } else if (prefix == '!') {
         this.speechProperties_[token] = true;
@@ -612,7 +657,7 @@ Output.prototype = {
    * @param {!cursors.Range} range
    * @param {cursors.Range} prevRange
    * @param {chrome.automation.EventType|string} type
-   * @param {!cvox.Spannable} rangeBuff
+   * @param {!Array<cvox.Spannable>} rangeBuff
    * @private
    */
   range_: function(range, prevRange, type, rangeBuff) {
@@ -623,7 +668,7 @@ Output.prototype = {
     var prevNode = prevRange.getStart().getNode();
 
     var formatNodeAndAncestors = function(node, prevNode) {
-      var buff = new cvox.Spannable();
+      var buff = [];
       this.ancestry_(node, prevNode, type, buff);
       this.node_(node, prevNode, type, buff);
       if (this.formatOptions_.location)
@@ -633,22 +678,21 @@ Output.prototype = {
 
     while (cursor.getNode() != range.getEnd().getNode()) {
       var node = cursor.getNode();
-      this.addToSpannable_(
-          rangeBuff, formatNodeAndAncestors(node, prevNode));
+        rangeBuff.push.apply(rangeBuff, formatNodeAndAncestors(node, prevNode));
       prevNode = node;
       cursor = cursor.move(cursors.Unit.NODE,
                            cursors.Movement.DIRECTIONAL,
                            Dir.FORWARD);
     }
     var lastNode = range.getEnd().getNode();
-    this.addToSpannable_(rangeBuff, formatNodeAndAncestors(lastNode, prevNode));
+    rangeBuff.push.apply(rangeBuff, formatNodeAndAncestors(lastNode, prevNode));
   },
 
   /**
    * @param {!chrome.automation.AutomationNode} node
    * @param {!chrome.automation.AutomationNode} prevNode
    * @param {chrome.automation.EventType|string} type
-   * @param {!cvox.Spannable} buff
+   * @param {!Array<cvox.Spannable>} buff
    * @param {!Object=} opt_exclude A list of attributes to exclude from
    * processing.
    * @private
@@ -671,7 +715,7 @@ Output.prototype = {
         this.format_(formatPrevNode, roleBlock.leave, buff, opt_exclude);
     }
 
-    var enterOutput = [];
+    var enterOutputs = [];
     var enterRole = {};
     for (var j = uniqueAncestors.length - 2, formatNode;
          (formatNode = uniqueAncestors[j]);
@@ -681,14 +725,16 @@ Output.prototype = {
         if (enterRole[formatNode.role])
           continue;
         enterRole[formatNode.role] = true;
-        var tempBuff = new cvox.Spannable('');
+        var tempBuff = [];
         this.format_(formatNode, roleBlock.enter, tempBuff, opt_exclude);
-        enterOutput.unshift(tempBuff);
+        enterOutputs.unshift(tempBuff);
       }
+        if (formatNode.role == 'window')
+            break;
     }
-    enterOutput.forEach(function(c) {
-      this.addToSpannable_(buff, c);
-    }.bind(this));
+    enterOutputs.forEach(function(b) {
+      buff.push.apply(buff, b);
+    });
 
     if (!opt_exclude.stay) {
       var commonFormatNode = uniqueAncestors[0];
@@ -706,7 +752,7 @@ Output.prototype = {
    * @param {!chrome.automation.AutomationNode} node
    * @param {!chrome.automation.AutomationNode} prevNode
    * @param {chrome.automation.EventType|string} type
-   * @param {!cvox.Spannable} buff
+   * @param {!Array<cvox.Spannable>} buff
    * @private
    */
   node_: function(node, prevNode, type, buff) {
@@ -721,7 +767,7 @@ Output.prototype = {
    * @param {!cursors.Range} range
    * @param {cursors.Range} prevRange
    * @param {chrome.automation.EventType|string} type
-   * @param {!cvox.Spannable} buff
+   * @param {!Array<cvox.Spannable>} buff
    * @private
    */
   subNode_: function(range, prevRange, type, buff) {
@@ -736,38 +782,47 @@ Output.prototype = {
     var endIndex = range.getEnd().getIndex();
     if (startIndex === endIndex)
       endIndex++;
-    this.addToSpannable_(
+    this.append_(
         buff, range.getStart().getText().substring(startIndex, endIndex));
   },
 
   /**
-   * Adds to the given buffer with proper delimiters added.
-   * @param {!cvox.Spannable} spannable
+   * Appends output to the |buff|.
+   * @param {!Array<cvox.Spannable>} buff
    * @param {string|!cvox.Spannable} value
-   * @param {{ifEmpty: boolean,
-   *      annotation: (string|Output.Action|undefined)}=} opt_options
+   * @param {{isUnique: (boolean|undefined),
+   *      annotation: !Array<*>}=} opt_options
    */
-  addToSpannable_: function(spannable, value, opt_options) {
-    opt_options = opt_options || {ifEmpty: false, annotation: undefined};
-    if ((!value || value.length == 0) && !opt_options.annotation)
+  append_: function(buff, value, opt_options) {
+    opt_options = opt_options || {isUnique: false, annotation: []};
+
+    // Reject empty values without annotations.
+    if ((!value || value.length == 0) && opt_options.annotation.length == 0)
       return;
 
-    var spannableToAdd = new cvox.Spannable(value, opt_options.annotation);
-    if (spannable.getLength() == 0) {
-      spannable.append(spannableToAdd);
+    var spannableToAdd = new cvox.Spannable(value);
+    opt_options.annotation.forEach(function(a) {
+      spannableToAdd.setSpan(a, 0, spannableToAdd.getLength());
+    });
+
+    // Early return if the buffer is empty.
+    if (buff.length == 0) {
+      buff.push(spannableToAdd);
       return;
     }
 
-    if (opt_options.ifEmpty &&
-        opt_options.annotation &&
-        (spannable.getSpanStart(opt_options.annotation) != undefined ||
-            spannable.getSpanStart(
-                Output.ATTRIBUTE_ALIAS[opt_options.annotation]) != undefined))
-      return;
+    // |isUnique| specifies an annotation that cannot be duplicated.
+    if (opt_options.isUnique) {
+      var alreadyAnnotated = buff.some(function(s) {
+        return opt_options.annotation.some(function(annotation) {
+          return s.getSpanStart(annotation) != undefined;
+        });
+      });
+      if (alreadyAnnotated)
+        return;
+    }
 
-    var prefixed = new cvox.Spannable(Output.SPACE);
-    prefixed.append(spannableToAdd);
-    spannable.append(prefixed);
+    buff.push(spannableToAdd);
   },
 
   /**
