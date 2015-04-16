@@ -1122,10 +1122,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
             Add As Search En&amp;gine...
           </message>
         </if>
-
-        <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_TEXT" desc="The text of a bubble that confirms users allows integrating the spelling service of Google to Chrome.">
-          Google Chrome can provide smarter spell-checking by sending what you type in the browser to Google servers, allowing you to use the same spell-checking technology used by Google search.
-        </message>
       </if>
 
       <if expr="not use_titlecase">
@@ -10821,9 +10817,6 @@ Chrome ran out of memory.
         <message name="IDS_RESET_PROFILE_SETTINGS_COMMIT_BUTTON" desc="Reset button of the Reset Profile Settings dialog">
           Reset
         </message>
-        <message name="IDS_RESET_PROFILE_SETTINGS_FEEDBACK" desc="Feedback label in the Reset Profile Settings dialog">
-          Help make Google Chrome better by reporting the current settings
-        </message>
         <message name="IDS_RESET_PROFILE_SETTINGS_LOCALE" desc="Locale field in the feedback details of the Reset Profile Settings dialog">
           Locale
         </message>
@@ -13536,9 +13529,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </message>
       </if>
 
-      <message name="IDS_SAVE_PASSWORD" desc="The title of the save password bubble when a password can be saved.">
-        Do you want Google Chrome to save your password for this site?
-      </message>
       <message name="IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TITLE" desc="The title text that is used in the manage passwords bubble when the user has generated a password.">
         Generated password saved
       </message>
@@ -14844,9 +14834,6 @@ After you create a new supervised user, you can manage their settings at any tim
       </message>
       <message name="IDS_WEBSTORE_NAME_STORE" desc="Name for the WebStore app in the app launcher.">
         Web Store
-      </message>
-      <message name="IDS_WEBSTORE_APP_DESCRIPTION" desc="Description for the WebStore app.">
-        Discover great apps, games, extensions and themes for Google Chrome.
       </message>
 
       <!-- Extension Storage Monitor notification strings -->
