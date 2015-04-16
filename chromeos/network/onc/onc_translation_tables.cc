@@ -120,6 +120,7 @@ const FieldTranslationEntry wifi_fields[] = {
     {::onc::wifi::kHexSSID, shill::kWifiHexSsid},
     {::onc::wifi::kHiddenSSID, shill::kWifiHiddenSsid},
     {::onc::wifi::kPassphrase, shill::kPassphraseProperty},
+    {::onc::wifi::kRoamThreshold, shill::kWifiRoamThresholdProperty},
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::wifi::kSecurity, shill::kSecurityClassProperty },
     {::onc::wifi::kSignalStrength, shill::kSignalStrengthProperty},
