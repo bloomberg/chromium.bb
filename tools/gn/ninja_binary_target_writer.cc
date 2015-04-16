@@ -428,6 +428,13 @@ void NinjaBinaryTargetWriter::ClassifyDependency(
         }
       }
     }
+
+    // Add the source set itself as a non-linkable dependency on the current
+    // target. This will make sure that anything the source set's stamp file
+    // depends on (like data deps) are also built before the current target
+    // can be complete. Otherwise, these will be skipped since this target
+    // will depend only on the source set's object files.
+    non_linkable_deps->push_back(dep);
   } else if (can_link_libs && dep->IsLinkable()) {
     linkable_deps->push_back(dep);
   } else {
@@ -437,8 +444,7 @@ void NinjaBinaryTargetWriter::ClassifyDependency(
 
 void NinjaBinaryTargetWriter::WriteOrderOnlyDependencies(
     const UniqueVector<const Target*>& non_linkable_deps) {
-  const std::vector<SourceFile>& data = target_->data();
-  if (!non_linkable_deps.empty() || !data.empty()) {
+  if (!non_linkable_deps.empty()) {
     out_ << " ||";
 
     // Non-linkable targets.
