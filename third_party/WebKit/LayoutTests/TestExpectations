@@ -1631,7 +1631,6 @@ crbug.com/421854 [ Debug SnowLeopard ] fast/text/zero-width-characters-complex-s
 crbug.com/421854 [ Debug SnowLeopard ] virtual/antialiasedtext/fast/text/zero-width-characters-complex-script.html [ Crash ]
 crbug.com/421854 [ SnowLeopard Debug ] virtual/slimmingpaint/fast/text/zero-width-characters-complex-script.html [ Crash ]
 
-crbug.com/418091 [ Mac ] virtual/antialiasedtext/fast/text/bidi-embedding-pop-and-push-same-2.html [ NeedsRebaseline ]
 crbug.com/418091 [ SnowLeopard ] virtual/antialiasedtext/fast/text/international/zerowidthjoiner.html [ ImageOnlyFailure ]
 
 crbug.com/435865 fast/events/message-port-start-and-close-different-microtask.html [ Pass Failure ]
