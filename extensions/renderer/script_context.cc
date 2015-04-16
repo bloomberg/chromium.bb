@@ -188,12 +188,19 @@ v8::Local<v8::Value> ScriptContext::CallFunction(
         v8::Local<v8::Primitive>(v8::Undefined(isolate())));
   }
 
+#ifdef WEB_FRAME_USES_V8_LOCAL
+  v8::Local<v8::Value>* call_args =
+      reinterpret_cast<v8::Local<v8::Value>*>(argv);
+#else
+  v8::Handle<v8::Value>* call_args = argv;
+#endif
+
   v8::Handle<v8::Object> global = v8_context()->Global();
   if (!web_frame_)
     return handle_scope.Escape(function->Call(global, argc, argv));
   return handle_scope.Escape(
       v8::Local<v8::Value>(web_frame_->callFunctionEvenIfScriptDisabled(
-          function, global, argc, argv)));
+          function, global, argc, call_args)));
 }
 
 Feature::Availability ScriptContext::GetAvailability(

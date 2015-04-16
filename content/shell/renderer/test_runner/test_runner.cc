@@ -105,9 +105,15 @@ class InvokeCallbackTask : public WebMethodTask<TestRunner> {
 
     v8::Context::Scope context_scope(context);
 
+#ifdef WEB_FRAME_USES_V8_LOCAL
+    scoped_ptr<v8::Local<v8::Value>[]> local_argv;
+    if (argc_) {
+      local_argv.reset(new v8::Local<v8::Value>[argc_]);
+#else
     scoped_ptr<v8::Handle<v8::Value>[]> local_argv;
     if (argc_) {
         local_argv.reset(new v8::Handle<v8::Value>[argc_]);
+#endif
         for (int i = 0; i < argc_; ++i)
           local_argv[i] = v8::Local<v8::Value>::New(isolate, argv_[i]);
     }

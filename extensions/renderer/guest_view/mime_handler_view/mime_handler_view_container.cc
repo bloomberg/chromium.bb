@@ -233,7 +233,11 @@ void MimeHandlerViewContainer::PostMessage(v8::Isolate* isolate,
   if (!window_object.Get(std::string(kPostMessageName), &post_message))
     return;
 
+#ifdef WEB_FRAME_USES_V8_LOCAL
+  v8::Local<v8::Value> args[] = {
+#else
   v8::Handle<v8::Value> args[] = {
+#endif
     message,
     // Post the message to any domain inside the browser plugin. The embedder
     // should already know what is embedded.
