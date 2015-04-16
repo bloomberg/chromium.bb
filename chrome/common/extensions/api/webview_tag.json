@@ -30,6 +30,7 @@
         "description": "A set of data types. Missing properties are interpreted as <code>false</code>.",
         "properties": {
           "appcache": { "type": "boolean", "optional": true, "description": "Websites' appcaches." },
+          "cache": { "type": "boolean", "optional": true, "description": "The browser's cache. Note: when removing data, this clears the entire cache; it is not limited to the range you specify." },
           "cookies": { "type": "boolean", "optional": true, "description": "The partition's cookies." },
           "fileSystems": { "type": "boolean", "optional": true, "description": "Websites' filesystems." },
           "indexedDB": { "type": "boolean", "optional": true, "description": "Websites' IndexedDB data." },
@@ -359,7 +360,7 @@
           {
             "name": "options",
             "$ref": "ClearDataOptions",
-            "description": "Options determining exactly what data to clear."
+            "description": "Options determining which data to clear."
           },
           {
             "name": "types",
