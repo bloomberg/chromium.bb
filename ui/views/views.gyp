@@ -726,12 +726,6 @@
           'dependencies': [
             '../accelerated_widget_mac/accelerated_widget_mac.gyp:accelerated_widget_mac',
           ],
-          'link_settings': {
-            'libraries': [
-              # Required by bridged_native_widget.mm.
-              '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
-            ],
-          },
         }],
       ],
     }, # target_name: views
