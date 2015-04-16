@@ -1805,7 +1805,8 @@ void ExtensionService::OnExtensionInstalled(
   }
 
   if (disable_reasons)
-    extension_prefs_->AddDisableReasons(id, disable_reasons);
+    extension_prefs_->AddDisableReason(id,
+        static_cast<Extension::DisableReason>(disable_reasons));
 
   const Extension::State initial_state =
       disable_reasons == Extension::DISABLE_NONE ? Extension::ENABLED
