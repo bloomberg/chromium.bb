@@ -566,6 +566,26 @@ def HostTools(host, options):
   else:
     warning_flags = ['-Wno-unused-function', '-Wno-unused-value']
 
+  # The binutils git checkout includes all the directories in the
+  # upstream binutils-gdb.git repository, but some of these
+  # directories are not included in a binutils release tarball.  The
+  # top-level Makefile will try to build whichever of the whole set
+  # exist, but we don't want these extra directories built.  So we
+  # stub them out by creating dummy <subdir>/Makefile files; having
+  # these exist before the configure-<subdir> target in the
+  # top-level Makefile runs prevents it from doing anything.
+  binutils_dummy_dirs = ['gdb', 'libdecnumber', 'readline', 'sim']
+  def DummyDirCommands(dirs):
+    dummy_makefile = """\
+.DEFAULT:;@echo Ignoring $@
+"""
+    commands = []
+    for dir in dirs:
+      commands.append(command.Mkdir(dir))
+      commands.append(command.WriteData(
+        dummy_makefile, command.path.join(dir, 'Makefile')))
+    return commands
+
   tools = {
       # The binutils_pnacl package is used both for bitcode linking (gold) and
       # for its conventional use with arm-nacl-clang.
@@ -592,7 +612,7 @@ def HostTools(host, options):
                   '--target=arm-nacl',
                   '--with-sysroot=/le32-nacl',
                   '--without-gas'
-                  ]),
+                  ])] + DummyDirCommands(binutils_dummy_dirs) + [
               command.Command(MakeCommand(host)),
               command.Command(MAKE_DESTDIR_CMD + ['install-strip'])] +
               [command.RemoveDirectory(os.path.join('%(output)s', dir))
