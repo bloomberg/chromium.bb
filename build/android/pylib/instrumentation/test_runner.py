@@ -228,7 +228,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     # just quits and does not do anything.  The java test harness will still
     # print the appropriate annotation for us, but will add --NORUN-- for
     # us so we know to ignore the results.
-    # The --NORUN-- tag is managed by MainActivityTestBase.java
+    # The --NORUN-- tag is managed by ChromeTabbedActivityTestBase.java
     if regex.group(1) != '--NORUN--':
 
       # Obtain the relevant perf data.  The data is dumped to a
