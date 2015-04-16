@@ -764,24 +764,16 @@ InjectedScript.prototype = {
      * @param {*} jsonMLObject
      * @throws {string} error message
      */
-    _substituteObjectTagsInCustomPreview: function(objectGroupName, jsonMLObject)
+    _checkObjectTagsInCustomPreview: function(objectGroupName, jsonMLObject)
     {
         if (!isArrayLike(jsonMLObject))
             return;
 
-        var startIndex = 1;
-        if (jsonMLObject[0] === "object") {
-            var attributes = jsonMLObject[1];
-            var originObject = attributes["object"];
-            if (typeof originObject === "undefined")
-                throw "Illegal format: obligatory attribute \"object\" isn't specified";
+        if (jsonMLObject[0] === "object")
+            throw "Illegal format: object tag is forbidden in header";
 
-            jsonMLObject[1] = this._wrapObject(originObject, objectGroupName, false, false, null, false);
-            startIndex = 2;
-        }
-
-        for (var i = startIndex; i < jsonMLObject.length; ++i)
-            this._substituteObjectTagsInCustomPreview(objectGroupName, jsonMLObject[i]);
+        for (var i = 0; i < jsonMLObject.length; ++i)
+            this._checkObjectTagsInCustomPreview(objectGroupName, jsonMLObject[i]);
     },
 
     /**
@@ -1317,7 +1309,7 @@ InjectedScript.RemoteObject.prototype = {
                         continue;
 
                     var hasBody = formatters[i].hasBody(object);
-                    injectedScript._substituteObjectTagsInCustomPreview(objectGroupName, formatted);
+                    injectedScript._checkObjectTagsInCustomPreview(objectGroupName, formatted);
                     var formatterObjectId = injectedScript._bind(formatters[i], objectGroupName);
                     return {header: JSON.stringify(formatted), hasBody: !!hasBody, formatterObjectId: formatterObjectId};
                 } catch (e) {

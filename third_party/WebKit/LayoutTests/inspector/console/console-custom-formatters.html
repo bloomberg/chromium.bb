@@ -76,7 +76,7 @@ function test()
         var viewMessages = consoleView._visibleViewMessages;
         for (var i = 0; i < viewMessages.length; ++i) {
             var uiMessage = viewMessages[i];
-            var customElement = uiMessage.contentElement().querySelector("span /deep/ .custom-expandable-section");
+            var customElement = uiMessage.contentElement().querySelector("span /deep/ .custom-expandable-section-header");
             if (customElement)
                 customElement.click();
         }
