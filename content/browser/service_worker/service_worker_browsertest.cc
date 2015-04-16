@@ -427,6 +427,41 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
   base::Closure done_closure_;
 };
 
+class ConsoleListener : public EmbeddedWorkerInstance::Listener {
+ public:
+  void OnReportConsoleMessage(int source_identifier,
+                              int message_level,
+                              const base::string16& message,
+                              int line_number,
+                              const GURL& source_url) override {
+    messages_.push_back(message);
+    if (!quit_.is_null() && messages_.size() == expected_message_count_) {
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_);
+      quit_.Reset();
+    }
+  }
+
+  void WaitForConsoleMessages(size_t expected_message_count) {
+    if (messages_.size() >= expected_message_count)
+      return;
+
+    expected_message_count_ = expected_message_count;
+    base::RunLoop console_run_loop;
+    quit_ = console_run_loop.QuitClosure();
+    console_run_loop.Run();
+
+    ASSERT_EQ(messages_.size(), expected_message_count);
+  }
+
+  bool OnMessageReceived(const IPC::Message& message) override { return false; }
+  const std::vector<base::string16>& messages() const { return messages_; }
+
+ private:
+  std::vector<base::string16> messages_;
+  size_t expected_message_count_;
+  base::Closure quit_;
+};
+
 class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
  public:
   using self = ServiceWorkerVersionBrowserTest;
@@ -733,6 +768,31 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                     SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED);
 }
 
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
+                       InstallWithWaitUntil_RejectConsoleMessage) {
+  RunOnIOThread(base::Bind(&self::SetUpRegistrationOnIOThread, this,
+                           "/service_worker/worker_install_rejected.js"));
+
+  ConsoleListener console_listener;
+  version_->embedded_worker()->AddListener(&console_listener);
+
+  // Dispatch install on a worker.
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+  base::RunLoop install_run_loop;
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&self::InstallOnIOThread, this,
+                                     install_run_loop.QuitClosure(), &status));
+  install_run_loop.Run();
+  ASSERT_EQ(SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED, status);
+
+  const base::string16 expected =
+      base::ASCIIToUTF16("Rejecting oninstall event");
+  console_listener.WaitForConsoleMessages(1);
+  ASSERT_NE(base::string16::npos,
+            console_listener.messages()[0].find(expected));
+  version_->embedded_worker()->RemoveListener(&console_listener);
+}
+
 class WaitForLoaded : public EmbeddedWorkerInstance::Listener {
  public:
   WaitForLoaded(const base::Closure& quit) : quit_(quit) {}
@@ -824,6 +884,32 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {
       base::Bind(&ReadResponseBody,
                  &body, base::Owned(blob_data_handle.release())));
   EXPECT_EQ("This resource is gone. Gone, gone, gone.", body);
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
+                       FetchEvent_respondWithRejection) {
+  ServiceWorkerFetchEventResult result;
+  ServiceWorkerResponse response;
+  scoped_ptr<storage::BlobDataHandle> blob_data_handle;
+
+  RunOnIOThread(base::Bind(&self::SetUpRegistrationOnIOThread, this,
+                           "/service_worker/fetch_event_rejected.js"));
+
+  ConsoleListener console_listener;
+  version_->embedded_worker()->AddListener(&console_listener);
+
+  FetchOnRegisteredWorker(&result, &response, &blob_data_handle);
+  const base::string16 expected =
+      base::ASCIIToUTF16("Rejecting respondWith promise");
+  console_listener.WaitForConsoleMessages(1);
+  ASSERT_NE(base::string16::npos,
+            console_listener.messages()[0].find(expected));
+  version_->embedded_worker()->RemoveListener(&console_listener);
+
+  ASSERT_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, result);
+  EXPECT_EQ(0, response.status_code);
+
+  ASSERT_FALSE(blob_data_handle);
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
