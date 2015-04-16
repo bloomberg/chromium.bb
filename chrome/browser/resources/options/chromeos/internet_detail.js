@@ -1189,14 +1189,62 @@ cr.define('options.internet', function() {
   };
 
   DetailsInternetPage.loginFromDetails = function() {
+    DetailsInternetPage.configureOrConnect();
+    PageManager.closeOverlay();
+  };
+
+  /**
+   * This function identifies unconfigured networks and networks that are
+   * likely to fail (e.g. due to a bad passphrase on a previous connect
+   * attempt). For such networks a configure dialog will be opened. Otherwise
+   * a connection will be attempted.
+   */
+  DetailsInternetPage.configureOrConnect = function() {
     var detailsPage = DetailsInternetPage.getInstance();
     if (detailsPage.type_ == 'WiFi')
       sendChromeMetricsAction('Options_NetworkConnectToWifi');
     else if (detailsPage.type_ == 'VPN')
       sendChromeMetricsAction('Options_NetworkConnectToVPN');
-    // TODO(stevenjb): chrome.networkingPrivate.startConnect
-    chrome.send('startConnect', [detailsPage.onc_.guid()]);
-    PageManager.closeOverlay();
+
+    var onc = detailsPage.onc_;
+    var guid = onc.guid();
+    var type = onc.getActiveValue('Type');
+
+    // VPNs do not correctly set 'Connectable', so we always show the
+    // configuration UI.
+    if (type == 'VPN') {
+      chrome.send('configureNetwork', [guid]);
+      return;
+    }
+
+    // If 'Connectable' is false for WiFi or WiMAX, Shill requires
+    // additional configuration to connect, so show the configuration UI.
+    if ((type == 'WiFi' || type == 'WiMAX') &&
+        !onc.getActiveValue('Connectable')) {
+      chrome.send('configureNetwork', [guid]);
+      return;
+    }
+
+    // Secure WiFi networks with ErrorState set most likely require
+    // configuration (e.g. a correct passphrase) before connecting.
+    if (type == 'WiFi' && onc.getWiFiSecurity() != 'None') {
+      var errorState = onc.getActiveValue('ErrorState');
+      if (errorState && errorState != 'Unknown') {
+        chrome.send('configureNetwork', [guid]);
+        return;
+      }
+    }
+
+    // Cellular networks need to be activated before they can be connected to.
+    if (type == 'Cellular') {
+      var activationState = onc.getActiveValue('Cellular.ActivationState');
+      if (activationState != 'Activated' && activationState != 'Unknown') {
+        DetailsInternetPage.activateCellular(guid);
+        return;
+      }
+    }
+
+    chrome.networkingPrivate.startConnect(guid);
   };
 
   DetailsInternetPage.disconnectNetwork = function() {

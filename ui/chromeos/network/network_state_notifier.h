@@ -45,6 +45,8 @@ class UI_CHROMEOS_EXPORT NetworkStateNotifier
   ~NetworkStateNotifier() override;
 
   // NetworkConnectionObserver
+  void ConnectToNetworkRequested(const std::string& service_path) override;
+  void ConnectSucceeded(const std::string& service_path) override;
   void ConnectFailed(const std::string& service_path,
                      const std::string& error_name) override;
   void DiconnectRequested(const std::string& service_path) override;
@@ -64,9 +66,6 @@ class UI_CHROMEOS_EXPORT NetworkStateNotifier
 
   // Show a mobile activation error notification.
   void ShowMobileActivationError(const std::string& service_path);
-
-  // Removes any existing connect notifications.
-  void RemoveConnectNotification();
 
   static const char kNotifierNetwork[];
   static const char kNotifierNetworkError[];
@@ -89,6 +88,9 @@ class UI_CHROMEOS_EXPORT NetworkStateNotifier
       const std::string& service_path,
       const base::DictionaryValue& shill_properties);
   void ShowVpnDisconnectedNotification(const chromeos::NetworkState* vpn);
+
+  // Removes any existing connect notifications.
+  void RemoveConnectNotification();
 
   // Returns true if the default network changed.
   bool UpdateDefaultNetwork(const chromeos::NetworkState* network);

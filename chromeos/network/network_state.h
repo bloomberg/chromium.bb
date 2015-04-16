@@ -126,6 +126,9 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // Set the GUID. Called exclusively by NetworkStateHandler.
   void SetGuid(const std::string& guid);
 
+  // Returns |error_| if valid, otherwise returns |last_error_|.
+  std::string GetErrorState() const;
+
   // Helpers (used e.g. when a state, error, or shill dictionary is cached)
   static bool StateIsConnected(const std::string& connection_state);
   static bool StateIsConnecting(const std::string& connection_state);

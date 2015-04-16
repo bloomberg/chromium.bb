@@ -157,7 +157,7 @@ void SendLogEntryToVLogOrErrorLog(
   const bool show_time = true;
   const bool show_file = true;
   const bool show_type = true;
-  const bool show_level = false;
+  const bool show_level = log_entry.log_level != LOG_LEVEL_ERROR;
   const bool format_html = false;
   std::string output = LogEntryToString(log_entry, show_time, show_file,
                                         show_type, show_level, format_html);

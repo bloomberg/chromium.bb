@@ -616,6 +616,19 @@ var availableTests = [
       'non_existent',
       callbackFail('Error.InvalidNetworkGuid'));
   },
+  function getErrorState() {
+    // Both getState and getProperties should have ErrorState set.
+    chrome.networkingPrivate.getState(
+      'stub_wifi1_guid',
+      function(result) {
+        assertEq('TestErrorState', result.ErrorState);
+        chrome.networkingPrivate.getProperties(
+          'stub_wifi1_guid',
+          callbackPass(function(result2) {
+            assertEq('TestErrorState', result2.ErrorState);
+          }));
+      });
+  },
   function onNetworksChangedEventConnect() {
     var network = 'stub_wifi2_guid';
     var done = chrome.test.callbackAdded();
