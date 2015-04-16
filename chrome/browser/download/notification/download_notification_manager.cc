@@ -16,10 +16,8 @@
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
 
-using message_center::Notification;
-
 DownloadNotificationManager::DownloadNotificationManager(Profile* profile)
-    : items_deleter_(&items_) {
+    : profile_(profile), items_deleter_(&items_) {
 }
 
 DownloadNotificationManager::~DownloadNotificationManager() {
@@ -43,6 +41,7 @@ void DownloadNotificationManager::OnDownloadRemoved(
 
 void DownloadNotificationManager::OnNewDownloadReady(
     content::DownloadItem* download) {
-  DownloadNotificationItem* item = new DownloadNotificationItem(download, this);
+  DownloadNotificationItem* item =
+      new DownloadNotificationItem(download, profile_, this);
   items_.insert(item);
 }

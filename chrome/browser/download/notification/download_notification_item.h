@@ -9,14 +9,13 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/download/download_commands.h"
+#include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_delegate.h"
+#include "chrome/browser/notifications/notification_test_util.h"
 #include "content/public/browser/download_item.h"
 #include "grit/theme_resources.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
-#include "ui/message_center/notification.h"
-#include "ui/message_center/notification_delegate.h"
-
-using message_center::Notification;
 
 namespace test {
 class DownloadNotificationItemTest;
@@ -31,35 +30,46 @@ class DownloadNotificationItem : public content::DownloadItem::Observer {
     virtual void OnDownloadRemoved(DownloadNotificationItem* item) = 0;
   };
 
-  DownloadNotificationItem(content::DownloadItem* item, Delegate* delegate);
+  static const char kDownloadNotificationOrigin[];
+
+  DownloadNotificationItem(content::DownloadItem* item,
+                           Profile* profile,
+                           Delegate* delegate);
 
   ~DownloadNotificationItem() override;
 
  private:
-  class NotificationWatcher : public message_center::NotificationDelegate,
-                              public message_center::MessageCenterObserver {
+  friend class test::DownloadNotificationItemTest;
+
+  class NotificationWatcher : public NotificationDelegate {
    public:
     explicit NotificationWatcher(DownloadNotificationItem* item);
 
-   private:
-    ~NotificationWatcher() override;
-
-    // message_center::NotificationDelegate overrides:
+    // NotificationDelegate overrides:
     void Close(bool by_user) override;
     void Click() override;
     bool HasClickedListener() override;
     void ButtonClick(int button_index) override;
+    std::string id() const override;
 
-    // message_center::MessageCenterObserver overrides:
-    void OnNotificationRemoved(const std::string& id, bool by_user) override;
+   private:
+    ~NotificationWatcher() override;
 
     DownloadNotificationItem* item_;
   };
 
+  // For testing. This is set by SetStubNotificationUIManagerForTesting method.
+  static StubNotificationUIManager* stub_notification_ui_manager_for_testing_;
+
+  // Replaces the NotificationUIManager for tests.
+  static void SetStubNotificationUIManagerForTesting(
+      StubNotificationUIManager* stub_notification_ui_manager) {
+    stub_notification_ui_manager_for_testing_ = stub_notification_ui_manager;
+  }
+
+  // Methods called from NotificationWatcher.
   void OnNotificationClick();
   void OnNotificationButtonClick(int button_index);
-  void OnNotificationClose(bool by_user);
-  void OnNotificationRemoved(bool by_user);
 
   // DownloadItem::Observer overrides:
   void OnDownloadUpdated(content::DownloadItem* item) override;
@@ -69,6 +79,8 @@ class DownloadNotificationItem : public content::DownloadItem::Observer {
 
   void UpdateNotificationData();
   void SetNotificationImage(int resource_id);
+
+  NotificationUIManager* notification_ui_manager() const;
 
   // Returns a short one-line status string for the download.
   base::string16 GetTitle() const;
@@ -84,19 +96,16 @@ class DownloadNotificationItem : public content::DownloadItem::Observer {
 
   bool openable_;
   bool downloading_;
-  bool reshow_after_remove_;
   int image_resource_id_;
+  Profile* profile_;
   scoped_refptr<NotificationWatcher> watcher_;
 
-  message_center::MessageCenter* message_center_;
   scoped_ptr<Notification> notification_;
 
   content::DownloadItem* item_;
   scoped_ptr<std::vector<DownloadCommands::Command>> button_actions_;
 
   Delegate* const delegate_;
-
-  friend class test::DownloadNotificationItemTest;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadNotificationItem);
 };

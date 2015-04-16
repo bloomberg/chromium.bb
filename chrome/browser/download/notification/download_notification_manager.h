@@ -28,6 +28,8 @@ class DownloadNotificationManager : public DownloadUIController::Delegate,
   void OnDownloadRemoved(DownloadNotificationItem* item) override;
 
  private:
+  Profile* profile_;
+
   std::set<DownloadNotificationItem*> downloading_items_;
   std::set<DownloadNotificationItem*> items_;
 

@@ -4,11 +4,18 @@
 
 #include "chrome/browser/download/notification/download_notification_item.h"
 
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "chrome/browser/notifications/notification_test_util.h"
+#include "chrome/browser/notifications/platform_notification_service_impl.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/fake_message_center.h"
@@ -64,11 +71,21 @@ namespace test {
 class DownloadNotificationItemTest : public testing::Test {
  public:
   DownloadNotificationItemTest()
-      : runner_(new base::TestSimpleTaskRunner), runner_handler_(runner_) {}
+      : ui_thread_(content::BrowserThread::UI, &message_loop_),
+        profile_(nullptr) {}
 
   void SetUp() override {
     testing::Test::SetUp();
     message_center::MessageCenter::Initialize();
+
+    profile_manager_.reset(
+        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+    ASSERT_TRUE(profile_manager_->SetUp());
+    profile_ = profile_manager_->CreateTestingProfile("test-user");
+
+    ui_manager_.reset(new StubNotificationUIManager);
+    DownloadNotificationItem::SetStubNotificationUIManagerForTesting(
+        ui_manager_.get());
 
     download_item_.reset(new NiceMock<content::MockDownloadItem>());
     ON_CALL(*download_item_, GetId()).WillByDefault(Return(12345));
@@ -84,6 +101,7 @@ class DownloadNotificationItemTest : public testing::Test {
 
   void TearDown() override {
     download_notification_item_.reset();
+    profile_manager_.reset();
     message_center::MessageCenter::Shutdown();
     testing::Test::TearDown();
   }
@@ -93,12 +111,29 @@ class DownloadNotificationItemTest : public testing::Test {
     return message_center::MessageCenter::Get();
   }
 
-  std::string notification_id() {
+  std::string notification_id() const {
     return download_notification_item_->notification_->id();
   }
 
-  message_center::Notification* notification() {
-    return message_center()->FindVisibleNotificationById(notification_id());
+  const Notification* notification() const {
+    return ui_manager_->FindById(download_notification_item_->watcher_->id(),
+                                 NotificationUIManager::GetProfileID(profile_));
+  }
+
+  size_t NotificationCount() const {
+    return ui_manager_
+        ->GetAllIdsByProfileAndSourceOrigin(
+              profile_,
+              GURL(DownloadNotificationItem::kDownloadNotificationOrigin))
+        .size();
+  }
+
+  void RemoveNotification() {
+    ui_manager_->CancelById(download_notification_item_->watcher_->id(),
+                            NotificationUIManager::GetProfileID(profile_));
+
+    // Waits, since removing a notification may cause an async job.
+    base::RunLoop().RunUntilIdle();
   }
 
   // Trampoline methods to access a private method in DownloadNotificationItem.
@@ -109,24 +144,22 @@ class DownloadNotificationItemTest : public testing::Test {
     return download_notification_item_->OnNotificationButtonClick(index);
   }
 
-  bool IsPopupNotification(const std::string& notification_id) {
-    message_center::NotificationList::PopupNotifications popups =
-        message_center()->GetPopupNotifications();
-    for (auto it = popups.begin(); it != popups.end(); it++) {
-      if ((*it)->id() == notification_id) {
-        return true;
-      }
-    }
-    return false;
+  bool ShownAsPopUp() {
+    return !download_notification_item_->notification_->shown_as_popup();
   }
 
   void CreateDownloadNotificationItem() {
-    download_notification_item_.reset(
-        new DownloadNotificationItem(download_item_.get(), &delegate_));
+    download_notification_item_.reset(new DownloadNotificationItem(
+        download_item_.get(), profile_, &delegate_));
   }
 
-  scoped_refptr<base::TestSimpleTaskRunner> runner_;
-  base::ThreadTaskRunnerHandle runner_handler_;
+  base::MessageLoopForUI message_loop_;
+  content::TestBrowserThread ui_thread_;
+
+  scoped_ptr<StubNotificationUIManager> ui_manager_;
+
+  scoped_ptr<TestingProfileManager> profile_manager_;
+  Profile* profile_;
 
   MockDownloadNotificationItemDelegate delegate_;
   scoped_ptr<NiceMock<content::MockDownloadItem>> download_item_;
@@ -134,32 +167,26 @@ class DownloadNotificationItemTest : public testing::Test {
 };
 
 TEST_F(DownloadNotificationItemTest, ShowAndCloseNotification) {
-  EXPECT_EQ(0u, message_center()->NotificationCount());
+  EXPECT_EQ(0u, NotificationCount());
 
   // Shows a notification
   CreateDownloadNotificationItem();
   download_item_->NotifyObserversDownloadOpened();
 
   // Confirms that the notification is shown as a popup.
-  EXPECT_EQ(1u, message_center()->NotificationCount());
-  EXPECT_TRUE(IsPopupNotification(notification_id()));
+  EXPECT_TRUE(ShownAsPopUp());
+  EXPECT_EQ(1u, NotificationCount());
 
   // Makes sure the DownloadItem::Cancel() is not called.
   EXPECT_CALL(*download_item_, Cancel(_)).Times(0);
   // Closes it once.
-  message_center()->RemoveNotification(notification_id(), true);
-
-  // Confirms that the notification is shown but is not a popup.
-  EXPECT_EQ(1u, message_center()->NotificationCount());
-  EXPECT_FALSE(IsPopupNotification(notification_id()));
-
-  // Makes sure the DownloadItem::Cancel() is called once.
-  EXPECT_CALL(*download_item_, Cancel(_)).Times(1);
-  // Closes it again.
-  message_center()->RemoveNotification(notification_id(), true);
+  RemoveNotification();
 
   // Confirms that the notification is closed.
-  EXPECT_EQ(0u, message_center()->NotificationCount());
+  EXPECT_EQ(0u, NotificationCount());
+
+  // Makes sure the DownloadItem::Cancel() is never called.
+  EXPECT_CALL(*download_item_, Cancel(_)).Times(0);
 }
 
 TEST_F(DownloadNotificationItemTest, PauseAndResumeNotification) {
@@ -168,8 +195,7 @@ TEST_F(DownloadNotificationItemTest, PauseAndResumeNotification) {
   download_item_->NotifyObserversDownloadOpened();
 
   // Confirms that the notification is shown as a popup.
-  EXPECT_EQ(message_center()->NotificationCount(), 1u);
-  EXPECT_TRUE(IsPopupNotification(notification_id()));
+  EXPECT_EQ(1u, NotificationCount());
 
   // Pauses and makes sure the DownloadItem::Pause() is called.
   EXPECT_CALL(*download_item_, Pause()).Times(1);

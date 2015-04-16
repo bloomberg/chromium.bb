@@ -42,10 +42,14 @@ int DownloadCommands::GetCommandIconId(Command command) {
       return IDR_DOWNLOAD_NOTIFICATION_MENU_DOWNLOAD;
     case DISCARD:
       return IDR_DOWNLOAD_NOTIFICATION_MENU_DELETE;
+    case CANCEL:
+      // TODO(yoshiki): This is a temporary image for Download Notification
+      // feature behind the flag. We have to replace the image with proper one
+      // before the feature launch. http://crbug.com/468559
+      return IDR_DOWNLOAD_NOTIFICATION_MENU_DELETE;
     case OPEN_WHEN_COMPLETE:
     case ALWAYS_OPEN_TYPE:
     case PLATFORM_OPEN:
-    case CANCEL:
     case LEARN_MORE_SCANNING:
     case LEARN_MORE_INTERRUPTED:
       return -1;
