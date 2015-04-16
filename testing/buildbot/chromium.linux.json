@@ -3,11 +3,7 @@
     "additional_compile_targets": [
       "chrome_shell_apk"
     ],
-    "gtest_tests": [
-      {
-        "test": "base_unittests"
-      }
-    ]
+    "gtest_tests": []
   },
   "Android Tests": {
     "scripts": [
