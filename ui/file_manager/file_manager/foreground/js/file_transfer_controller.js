@@ -700,6 +700,13 @@ FileTransferController.prototype.renderThumbnail_ = function() {
  * @private
  */
 FileTransferController.prototype.onDragStart_ = function(list, event) {
+  // If renaming is in progress, drag operation should be used for selecting
+  // substring of the text. So we don't drag files here.
+  if (this.listContainer_.renameInput.currentEntry) {
+    event.preventDefault();
+    return;
+  }
+
   // Check if a drag selection should be initiated or not.
   if (list.shouldStartDragSelection(event)) {
     event.preventDefault();
