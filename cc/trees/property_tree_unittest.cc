@@ -316,4 +316,42 @@ TEST(PropertyTreeTest, ComputeTransformWithSublayerScale) {
                                   transform);
 }
 
+TEST(PropertyTreeTest, FlatteningWhenDestinationHasOnlyFlatAncestors) {
+  // This tests that flattening is performed correctly when
+  // destination and its ancestors are flat, but there are 3d transforms
+  // and flattening between the source and destination.
+  TransformTree tree;
+
+  int parent = tree.Insert(TransformNode(), 0);
+  tree.Node(parent)->data.content_target_id = parent;
+  tree.Node(parent)->data.target_id = parent;
+  tree.Node(parent)->data.local.Translate(2, 2);
+
+  gfx::Transform rotation_about_x;
+  rotation_about_x.RotateAboutXAxis(15);
+
+  int child = tree.Insert(TransformNode(), parent);
+  tree.Node(child)->data.content_target_id = child;
+  tree.Node(child)->data.target_id = child;
+  tree.Node(child)->data.local = rotation_about_x;
+
+
+  int grand_child = tree.Insert(TransformNode(), child);
+  tree.Node(grand_child)->data.content_target_id = grand_child;
+  tree.Node(grand_child)->data.target_id = grand_child;
+  tree.Node(grand_child)->data.flattens_inherited_transform = true;
+
+  ComputeTransforms(&tree);
+
+  gfx::Transform flattened_rotation_about_x = rotation_about_x;
+  flattened_rotation_about_x.FlattenTo2d();
+
+  gfx::Transform grand_child_to_parent;
+  bool success =
+      tree.ComputeTransform(grand_child, parent, &grand_child_to_parent);
+  EXPECT_TRUE(success);
+  EXPECT_TRANSFORMATION_MATRIX_EQ(flattened_rotation_about_x,
+                                  grand_child_to_parent);
+}
+
 }  // namespace cc

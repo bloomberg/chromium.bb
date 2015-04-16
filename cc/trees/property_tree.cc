@@ -148,7 +148,7 @@ bool TransformTree::CombineTransformsBetween(int source_id,
   // flattened(A * R) won't be R^{-1} * A{-1}, so multiplying C's to_screen and
   // A's from_screen will not produce the correct result.
   if (!dest || (dest->data.ancestors_are_invertible &&
-                current->data.node_and_ancestors_are_flat)) {
+                dest->data.node_and_ancestors_are_flat)) {
     transform->ConcatTransform(current->data.to_screen);
     if (dest)
       transform->ConcatTransform(dest->data.from_screen);
