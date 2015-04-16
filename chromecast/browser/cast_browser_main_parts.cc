@@ -270,7 +270,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   cast_browser_process_->SetConnectivityChecker(
       make_scoped_refptr(new ConnectivityChecker(
           content::BrowserThread::GetMessageLoopProxyForThread(
-              content::BrowserThread::FILE))));
+              content::BrowserThread::IO))));
 
   url_request_context_factory_->InitializeOnUIThread();
 
