@@ -44,6 +44,10 @@ public:
         return adoptRefWillBeNoop(new SVGAnimatedString(contextElement, attributeName, initialValue));
     }
 
+    String baseVal();
+    void setBaseVal(String, ExceptionState&);
+    String animVal();
+
 protected:
     SVGAnimatedString(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGString> initialValue)
         : SVGAnimatedProperty<SVGString>(contextElement, attributeName, initialValue)

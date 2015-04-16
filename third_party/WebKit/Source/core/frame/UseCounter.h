@@ -691,6 +691,8 @@ public:
         V8HTMLInputElement_Autocapitalize_AttributeSetter = 755,
         V8HTMLTextAreaElement_Autocapitalize_AttributeGetter = 756,
         V8HTMLTextAreaElement_Autocapitalize_AttributeSetter = 757,
+        SVGHrefBaseVal = 758,
+        SVGHrefAnimVal = 759,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

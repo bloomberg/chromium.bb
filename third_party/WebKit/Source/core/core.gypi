@@ -3216,6 +3216,8 @@
             'svg/SVGAnimatedNumber.cpp',
             'svg/SVGAnimatedNumberOptionalNumber.cpp',
             'svg/SVGAnimatedPath.cpp',
+            'svg/SVGAnimatedString.cpp',
+            'svg/SVGAnimatedString.h',
             'svg/SVGAnimatedTypeAnimator.cpp',
             'svg/SVGAnimatedTypeAnimator.h',
             'svg/SVGAnimationElement.cpp',
