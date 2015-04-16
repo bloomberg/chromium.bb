@@ -235,6 +235,20 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="DeviceSensors.DeviceMotion" type="ETLD_PLUS_ONE">
+  <owner>timvolodine@chromium.org</owner>
+  <summary>
+    The domain and registry of the URL that is using Device Motion API.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="DeviceSensors.DeviceOrientation" type="ETLD_PLUS_ONE">
+  <owner>timvolodine@chromium.org</owner>
+  <summary>
+    The domain and registry of the URL that is using Device Orientation API.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="Extensions.PossibleAdInjection2" type="ETLD_PLUS_ONE">
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
