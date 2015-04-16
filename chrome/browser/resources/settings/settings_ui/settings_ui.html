@@ -2,10 +2,11 @@
 <link rel="import" href="chrome://resources/polymer/core-icon-button/core-icon-button.html">
 <link rel="import" href="chrome://md-settings/settings_drawer/settings_drawer.html">
 <link rel="import" href="chrome://md-settings/settings_main/settings_main.html">
+<link rel="import" href="settings_ui_style.html">
 
 <polymer-element name="cr-settings-ui">
   <template>
-    <link rel="stylesheet" href="settings_ui.css">
+    <core-style ref="settingsUiStyle"></core-style>
     <core-drawer-panel drawerWidth="280px">
       <cr-settings-drawer drawer id="drawer" pages="{{pages}}"
           selectedId="{{selectedPageId}}">

@@ -7,6 +7,7 @@
 <link rel="import" href="chrome://md-settings/downloads_page/downloads_page.html">
 <link rel="import" href="chrome://md-settings/internet_page/internet_page.html">
 <link rel="import" href="chrome://md-settings/routing/more_routing/more_routing.html">
+<link rel="import" href="settings_main_style.html">
 
 <!-- Drivers manage how the URL is read, and how to navigate to URLs. "path"
      based driver means URLs like /a11y are generated. For more details, see
@@ -14,7 +15,7 @@
 <more-routing-config driver="path"></more-routing-config>
 <polymer-element name="cr-settings-main">
   <template>
-    <link rel="stylesheet" href="settings_main.css">
+    <core-style ref="settingsMainStyle"></core-style>
     <div id="mainContainer">
       <content select="core-icon-button"></content>
       <more-route-selector>

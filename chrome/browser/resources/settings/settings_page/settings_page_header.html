@@ -1,9 +1,10 @@
 <link rel="import" href="chrome://resources/polymer/core-icon/core-icon.html">
 <link rel="import" href="chrome://resources/polymer/core-icons/device-icons.html">
+<link rel="import" href="settings_page_header_style.html">
 
 <polymer-element name="cr-settings-page-header" layout horizontal center>
   <template>
-    <link rel="stylesheet" href="settings_page_header.css">
+    <core-style ref="settingsPageHeaderStyle"></core-style>
     <div class="icon-container">
       <core-icon icon="{{page.icon}}"></core-icon>
     </div>

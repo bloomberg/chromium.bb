@@ -1,9 +1,10 @@
 <link rel="import" href="chrome://resources/polymer/core-menu/core-menu.html">
 <link rel="import" href="chrome://resources/polymer/paper-item/paper-item.html">
+<link rel="import" href="settings_menu_style.html">
 
 <polymer-element name="cr-settings-menu">
   <template>
-    <link rel="stylesheet" href="settings_menu.css">
+    <core-style ref="settingsMenuStyle"></core-style>
     <!-- TODO(jlklein): selectedAttribute here is a workaround for
          https://github.com/Polymer/polymer/issues/946. Remove when core-menu
          is updated. -->

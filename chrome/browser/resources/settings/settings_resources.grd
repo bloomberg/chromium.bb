@@ -32,8 +32,8 @@
       <structure name="IDR_SETTINGS_CHECKBOX_STYLE_HTML"
                  file="checkbox/checkbox_style.html"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_DRAWER_CSS"
-                 file="settings_drawer/settings_drawer.css"
+      <structure name="IDR_SETTINGS_CR_SETTINGS_DRAWER_STYLE_HTML"
+                 file="settings_drawer/settings_drawer_style.html"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_DRAWER_HTML"
                  file="settings_drawer/settings_drawer.html"
@@ -41,8 +41,8 @@
       <structure name="IDR_SETTINGS_CR_SETTINGS_DRAWER_JS"
                  file="settings_drawer/settings_drawer.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_MAIN_CSS"
-                 file="settings_main/settings_main.css"
+      <structure name="IDR_SETTINGS_CR_SETTINGS_MAIN_STYLE_HTML"
+                 file="settings_main/settings_main_style.html"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_MAIN_HTML"
                  file="settings_main/settings_main.html"
@@ -52,8 +52,8 @@
       <structure name="IDR_SETTINGS_CR_SETTINGS_MAIN_JS"
                  file="settings_main/settings_main.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_MENU_CSS"
-                 file="settings_menu/settings_menu.css"
+      <structure name="IDR_SETTINGS_CR_SETTINGS_MENU_STYLE_HTML"
+                 file="settings_menu/settings_menu_style.html"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_MENU_HTML"
                  file="settings_menu/settings_menu.html"
@@ -64,8 +64,8 @@
       <structure name="IDR_SETTINGS_CR_SETTINGS_PAGE_CSS"
                  file="settings_page/settings_page.css"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_PAGE_HEADER_CSS"
-                 file="settings_page/settings_page_header.css"
+      <structure name="IDR_SETTINGS_CR_SETTINGS_PAGE_HEADER_STYLE_HTML"
+                 file="settings_page/settings_page_header_style.html"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_PAGE_HEADER_HTML"
                  file="settings_page/settings_page_header.html"
@@ -73,8 +73,8 @@
       <structure name="IDR_SETTINGS_CR_SETTINGS_PAGE_HEADER_JS"
                  file="settings_page/settings_page_header.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_UI_CSS"
-                 file="settings_ui/settings_ui.css"
+      <structure name="IDR_SETTINGS_CR_SETTINGS_UI_STYLE_HTML"
+                 file="settings_ui/settings_ui_style.html"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_UI_HTML"
                  file="settings_ui/settings_ui.html"
@@ -82,8 +82,8 @@
       <structure name="IDR_SETTINGS_CR_SETTINGS_UI_JS"
                  file="settings_ui/settings_ui.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_DATE_TIME_PAGE_CSS"
-                 file="date_time_page/date_time_page.css"
+      <structure name="IDR_SETTINGS_DATE_TIME_PAGE_STYLE_HTML"
+                 file="date_time_page/date_time_page_style.html"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_DATE_TIME_PAGE_HTML"
                  file="date_time_page/date_time_page.html"
