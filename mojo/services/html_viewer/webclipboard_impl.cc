@@ -100,7 +100,7 @@ bool WebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
 
 blink::WebVector<blink::WebString> WebClipboardImpl::readAvailableTypes(
     Buffer buffer,
-    bool* containsFilenames) {
+    bool* contains_filenames) {
   Clipboard::Type clipboard_type = ConvertBufferType(buffer);
 
   std::vector<std::string> types;
@@ -110,8 +110,8 @@ blink::WebVector<blink::WebString> WebClipboardImpl::readAvailableTypes(
   // Force this to be synchronous.
   clipboard_.WaitForIncomingMethodCall();
 
-  // AFAICT, every instance of setting containsFilenames is false.
-  *containsFilenames = false;
+  // AFAICT, every instance of setting contains_filenames is false.
+  *contains_filenames = false;
 
   blink::WebVector<blink::WebString> output(types.size());
   for (size_t i = 0; i < types.size(); ++i) {
@@ -135,9 +135,9 @@ blink::WebString WebClipboardImpl::readPlainText(Buffer buffer) {
 }
 
 blink::WebString WebClipboardImpl::readHTML(Buffer buffer,
-                                            blink::WebURL* pageURL,
-                                            unsigned* fragmentStart,
-                                            unsigned* fragmentEnd) {
+                                            blink::WebURL* page_url,
+                                            unsigned* fragment_start,
+                                            unsigned* fragment_end) {
   Clipboard::Type type = ConvertBufferType(buffer);
 
   blink::WebString html;
@@ -145,11 +145,11 @@ blink::WebString WebClipboardImpl::readHTML(Buffer buffer,
                            base::Bind(&CopyWebString, &html));
   clipboard_.WaitForIncomingMethodCall();
 
-  *fragmentStart = 0;
-  *fragmentEnd = static_cast<unsigned>(html.length());
+  *fragment_start = 0;
+  *fragment_end = static_cast<unsigned>(html.length());
 
   clipboard_->ReadMimeType(type, Clipboard::MIME_TYPE_URL,
-                           base::Bind(&CopyURL, pageURL));
+                           base::Bind(&CopyURL, page_url));
   clipboard_.WaitForIncomingMethodCall();
 
   return html;
@@ -170,21 +170,21 @@ blink::WebString WebClipboardImpl::readCustomData(
   return data;
 }
 
-void WebClipboardImpl::writePlainText(const blink::WebString& text) {
+void WebClipboardImpl::writePlainText(const blink::WebString& plain_text) {
   Map<String, Array<uint8_t>> data;
-  data[Clipboard::MIME_TYPE_TEXT] = Array<uint8_t>::From(text);
+  data[Clipboard::MIME_TYPE_TEXT] = Array<uint8_t>::From(plain_text);
 
   clipboard_->WriteClipboardData(Clipboard::TYPE_COPY_PASTE, data.Pass());
 }
 
-void WebClipboardImpl::writeHTML(const blink::WebString& htmlText,
-                                 const blink::WebURL& url,
-                                 const blink::WebString& plainText,
+void WebClipboardImpl::writeHTML(const blink::WebString& html_text,
+                                 const blink::WebURL& source_url,
+                                 const blink::WebString& plain_text,
                                  bool writeSmartPaste) {
   Map<String, Array<uint8_t>> data;
-  data[Clipboard::MIME_TYPE_TEXT] = Array<uint8_t>::From(plainText);
-  data[Clipboard::MIME_TYPE_HTML] = Array<uint8_t>::From(htmlText);
-  data[Clipboard::MIME_TYPE_URL] = Array<uint8_t>::From(url.string());
+  data[Clipboard::MIME_TYPE_TEXT] = Array<uint8_t>::From(plain_text);
+  data[Clipboard::MIME_TYPE_HTML] = Array<uint8_t>::From(html_text);
+  data[Clipboard::MIME_TYPE_URL] = Array<uint8_t>::From(source_url.string());
 
   if (writeSmartPaste)
     data[kMimeTypeWebkitSmartPaste] = Array<uint8_t>::From(blink::WebString());

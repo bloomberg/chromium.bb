@@ -15,12 +15,12 @@ namespace html_viewer {
 
 class WebThreadBase : public blink::WebThread {
  public:
-  ~WebThreadBase() override;
+  virtual ~WebThreadBase();
 
-  void addTaskObserver(TaskObserver* observer) override;
-  void removeTaskObserver(TaskObserver* observer) override;
+  virtual void addTaskObserver(TaskObserver* observer);
+  virtual void removeTaskObserver(TaskObserver* observer);
 
-  bool isCurrentThread() const override = 0;
+  virtual bool isCurrentThread() const = 0;
 
  protected:
   WebThreadBase();
@@ -37,18 +37,18 @@ class WebThreadImpl : public WebThreadBase {
   explicit WebThreadImpl(const char* name);
   ~WebThreadImpl() override;
 
-  void postTask(const blink::WebTraceLocation& location, Task* task) override;
-  void postDelayedTask(const blink::WebTraceLocation& location,
-                       Task* task,
-                       long long delay_ms) override;
+  virtual void postTask(const blink::WebTraceLocation& location, Task* task);
+  virtual void postDelayedTask(const blink::WebTraceLocation& location,
+                               Task* task,
+                               long long delay_ms);
 
-  void enterRunLoop() override;
-  void exitRunLoop() override;
+  virtual void enterRunLoop();
+  virtual void exitRunLoop();
 
   base::MessageLoop* message_loop() const { return thread_->message_loop(); }
 
   bool isCurrentThread() const override;
-  blink::PlatformThreadId threadId() const override;
+  virtual blink::PlatformThreadId threadId() const;
 
  private:
   scoped_ptr<base::Thread> thread_;
@@ -60,17 +60,17 @@ class WebThreadImplForMessageLoop : public WebThreadBase {
       base::MessageLoopProxy* message_loop);
   ~WebThreadImplForMessageLoop() override;
 
-  void postTask(const blink::WebTraceLocation& location, Task* task) override;
-  void postDelayedTask(const blink::WebTraceLocation& location,
-                       Task* task,
-                       long long delay_ms) override;
+  virtual void postTask(const blink::WebTraceLocation& location, Task* task);
+  virtual void postDelayedTask(const blink::WebTraceLocation& location,
+                               Task* task,
+                               long long delay_ms);
 
-  void enterRunLoop() override;
-  void exitRunLoop() override;
+  virtual void enterRunLoop();
+  virtual void exitRunLoop();
 
  private:
   bool isCurrentThread() const override;
-  blink::PlatformThreadId threadId() const override;
+  virtual blink::PlatformThreadId threadId() const;
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   blink::PlatformThreadId thread_id_;

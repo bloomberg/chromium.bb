@@ -19,8 +19,8 @@ class TestBlinkPlatformImpl : public BlinkPlatformImpl {
 
  private:
   // blink::Platform methods:
-  blink::WebCookieJar* cookieJar() override;
-  blink::WebClipboard* clipboard() override;
+  virtual blink::WebCookieJar* cookieJar();
+  virtual blink::WebClipboard* clipboard();
 
   blink::WebClipboard clipboard_;
   blink::WebCookieJar cookie_jar_;

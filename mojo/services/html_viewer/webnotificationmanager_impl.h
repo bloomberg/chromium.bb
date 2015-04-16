@@ -14,28 +14,28 @@ namespace html_viewer {
 class WebNotificationManagerImpl : public blink::WebNotificationManager {
  public:
   WebNotificationManagerImpl();
-  ~WebNotificationManagerImpl() override;
+  virtual ~WebNotificationManagerImpl();
 
   // blink::WebNotificationManager methods:
-  void show(const blink::WebSerializedOrigin&,
-            const blink::WebNotificationData&,
-            blink::WebNotificationDelegate*) override;
-  void showPersistent(const blink::WebSerializedOrigin&,
-                      const blink::WebNotificationData&,
-                      blink::WebServiceWorkerRegistration*,
-                      blink::WebNotificationShowCallbacks*) override;
-  void getNotifications(const blink::WebString& filterTag,
-                        blink::WebServiceWorkerRegistration*,
-                        blink::WebNotificationGetCallbacks*) override;
-  void close(blink::WebNotificationDelegate*) override;
-  void closePersistent(const blink::WebSerializedOrigin&,
-                       int64_t persistentNotificationId) override;
-  void closePersistent(const blink::WebSerializedOrigin&,
-                       const blink::WebString& persistentNotificationId)
-      override;
-  void notifyDelegateDestroyed(blink::WebNotificationDelegate*) override;
-  blink::WebNotificationPermission checkPermission(
-      const blink::WebSerializedOrigin&) override;
+  virtual void show(const blink::WebSerializedOrigin&,
+                    const blink::WebNotificationData&,
+                    blink::WebNotificationDelegate*);
+  virtual void showPersistent(const blink::WebSerializedOrigin&,
+                              const blink::WebNotificationData&,
+                              blink::WebServiceWorkerRegistration*,
+                              blink::WebNotificationShowCallbacks*);
+  virtual void getNotifications(const blink::WebString& filterTag,
+                                blink::WebServiceWorkerRegistration*,
+                                blink::WebNotificationGetCallbacks*);
+  virtual void close(blink::WebNotificationDelegate*);
+  virtual void closePersistent(const blink::WebSerializedOrigin&,
+                               int64_t persistentNotificationId);
+  virtual void closePersistent(
+      const blink::WebSerializedOrigin&,
+      const blink::WebString& persistentNotificationId);
+  virtual void notifyDelegateDestroyed(blink::WebNotificationDelegate*);
+  virtual blink::WebNotificationPermission checkPermission(
+      const blink::WebSerializedOrigin&);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebNotificationManagerImpl);

@@ -15,14 +15,14 @@ class WebSchedulerImpl : public blink::WebScheduler {
  public:
   explicit WebSchedulerImpl(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-  ~WebSchedulerImpl() override;
+  virtual ~WebSchedulerImpl();
 
  private:
   // blink::WebScheduler overrides.
-  void postIdleTask(const blink::WebTraceLocation& location,
-                    blink::WebThread::IdleTask* task) override;
-  void postLoadingTask(const blink::WebTraceLocation& location,
-                       blink::WebThread::Task* task) override;
+  virtual void postIdleTask(const blink::WebTraceLocation& location,
+                            blink::WebThread::IdleTask* task);
+  virtual void postLoadingTask(const blink::WebTraceLocation& location,
+                               blink::WebThread::Task* task);
   virtual void postTimerTask(const blink::WebTraceLocation& location,
                              blink::WebThread::Task* task,
                              long long delayMs);

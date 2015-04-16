@@ -22,7 +22,7 @@ namespace html_viewer {
 class WebURLRequestExtraData : public blink::WebURLRequest::ExtraData {
  public:
   WebURLRequestExtraData();
-  ~WebURLRequestExtraData() override;
+  virtual ~WebURLRequestExtraData();
 
   mojo::URLResponsePtr synthetic_response;
 };
@@ -35,14 +35,14 @@ class WebURLLoaderImpl : public blink::WebURLLoader {
   virtual ~WebURLLoaderImpl();
 
   // blink::WebURLLoader methods:
-  void loadSynchronously(const blink::WebURLRequest& request,
-                         blink::WebURLResponse& response,
-                         blink::WebURLError& error,
-                         blink::WebData& data) override;
-  void loadAsynchronously(const blink::WebURLRequest&,
-                          blink::WebURLLoaderClient* client) override;
-  void cancel() override;
-  void setDefersLoading(bool defers_loading) override;
+  virtual void loadSynchronously(const blink::WebURLRequest& request,
+                                 blink::WebURLResponse& response,
+                                 blink::WebURLError& error,
+                                 blink::WebData& data);
+  virtual void loadAsynchronously(const blink::WebURLRequest&,
+                                  blink::WebURLLoaderClient* client);
+  virtual void cancel();
+  virtual void setDefersLoading(bool defers_loading);
 
   void OnReceivedResponse(const blink::WebURLRequest& request,
                           mojo::URLResponsePtr response);
