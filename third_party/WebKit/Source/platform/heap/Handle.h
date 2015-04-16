@@ -179,6 +179,8 @@ protected:
         , m_roots(RootsAccessor::roots())
 #endif
     {
+        // Persistent must belong to a thread that will GC it.
+        ASSERT(m_roots == GlobalPersistents::roots() || ThreadState::current());
         typename RootsAccessor::Lock lock;
         m_prev = RootsAccessor::roots();
         m_next = m_prev->m_next;
@@ -192,6 +194,7 @@ protected:
         , m_roots(RootsAccessor::roots())
 #endif
     {
+        ASSERT(m_roots == GlobalPersistents::roots() || ThreadState::current());
         // We don't support allocation of thread local Persistents while doing
         // thread shutdown/cleanup.
         ASSERT(!ThreadState::current()->isTerminating());
