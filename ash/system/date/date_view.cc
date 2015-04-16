@@ -335,6 +335,7 @@ void TimeView::SetupLabels() {
 void TimeView::SetupLabel(views::Label* label) {
   label->set_owned_by_client();
   SetupLabelForTray(label);
+  label->SetElideBehavior(gfx::NO_ELIDE);
 }
 
 }  // namespace tray
