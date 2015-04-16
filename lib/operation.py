@@ -82,7 +82,7 @@ class ProgressBarOperation(object):
     winsize = struct.unpack('HHHH', data)
     return _TerminalSize(int(winsize[0]), int(winsize[1]))
 
-  def _ProgressBar(self, progress):
+  def ProgressBar(self, progress):
     """This method creates and displays a progress bar.
 
     Args:
@@ -106,14 +106,14 @@ class ProgressBarOperation(object):
       self._stdout = open(self._stdout_path, 'r')
       self._stderr = open(self._stderr_path, 'r')
 
-  def _Cleanup(self):
+  def Cleanup(self):
     """Method to cleanup progress bar.
 
     If progress bar has been printed, then we make sure it displays 100% before
     exiting.
     """
     if self._progress_bar_displayed:
-      self._ProgressBar(1)
+      self.ProgressBar(1)
       sys.stdout.write('\n')
       sys.stdout.flush()
 
@@ -199,7 +199,7 @@ class ProgressBarOperation(object):
       self.ParseOutput()
       # Final sanity check to update the progress bar to 100% if it was used by
       # ParseOutput
-      self._Cleanup()
+      self.Cleanup()
 
 
 class ParallelEmergeOperation(ProgressBarOperation):
@@ -243,7 +243,7 @@ class ParallelEmergeOperation(ProgressBarOperation):
       self._printed_no_packages = True
 
     if self._total:
-      self._ProgressBar(float(self._completed) / self._total)
+      self.ProgressBar(float(self._completed) / self._total)
 
 
 # TODO(sjg): When !isatty(), keep stdout and stderr separate so they can be

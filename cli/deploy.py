@@ -7,14 +7,17 @@
 from __future__ import print_function
 
 import fnmatch
+import functools
 import json
 import os
 
+from chromite.cli import command
 from chromite.cli import flash
 from chromite.lib import blueprint_lib
 from chromite.lib import brick_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import operation
 from chromite.lib import portage_util
 from chromite.lib import project_sdk
 from chromite.lib import remote_access
@@ -39,6 +42,38 @@ _MAX_UPDATES_WARNING = (
 
 class DeployError(Exception):
   """Thrown when an unrecoverable error is encountered during deploy."""
+
+
+class BrilloDeployOperation(operation.ProgressBarOperation):
+  """ProgressBarOperation specific for brillo deploy."""
+
+  def __init__(self, pkg_count, emerge):
+    """Construct BrilloDeployOperation object.
+
+    Args:
+      pkg_count: number of packages being built.
+      emerge: True if emerge, False is unmerge.
+    """
+    super(BrilloDeployOperation, self).__init__()
+    self._merge_events = ['NOTICE: Copying', 'NOTICE: Installing',
+                          'Calculating dependencies', '... done!', 'Extracting '
+                          'info', 'Installing (1 of 1)', 'has been installed.']
+    self._unmerge_events = ['NOTICE: Unmerging', 'has been uninstalled.']
+    if emerge:
+      self._events = self._merge_events
+    else:
+      self._events = self._unmerge_events
+    self._total = pkg_count * len(self._events)
+    self._completed = 0
+
+  def ParseOutput(self):
+    """Parse the output of brillo deploy to update a progress bar."""
+    stdout = self._stdout.read()
+    stderr = self._stderr.read()
+    output = stdout + stderr
+    for event in self._events:
+      self._completed += output.count(event)
+    self.ProgressBar(float(self._completed) / self._total)
 
 
 class _InstallPackageScanner(object):
@@ -738,14 +773,16 @@ def _Emerge(device, pkg, strip, sysroot, root, extra_args=None):
   pkg_dir = os.path.join(pkgroot, pkg_dirname)
   device.RunCommand(['mkdir', '-p', pkg_dir], remote_sudo=True)
 
-  logging.info('Copying %s to device...', latest_pkg)
+  # This message is read by BrilloDeployOperation.
+  logging.notice('Copying %s to device.', pkg_name)
   device.CopyToDevice(latest_pkg, pkg_dir, remote_sudo=True)
 
   portage_tmpdir = os.path.join(device.work_dir, 'portage-tmp')
   device.RunCommand(['mkdir', '-p', portage_tmpdir], remote_sudo=True)
   logging.info('Use portage temp dir %s', portage_tmpdir)
 
-  logging.info('Installing %s...', latest_pkg)
+  # This message is read by BrilloDeployOperation.
+  logging.notice('Installing %s.', pkg_name)
   pkg_path = os.path.join(pkg_dir, pkg_name)
 
   # We set PORTAGE_CONFIGROOT to '/usr/local' because by default all
@@ -767,14 +804,13 @@ def _Emerge(device, pkg, strip, sysroot, root, extra_args=None):
     cmd.append(extra_args)
 
   try:
-    # Always showing the emerge output for clarity.
     device.RunCommand(cmd, extra_env=extra_env, remote_sudo=True,
                       capture_output=False, debug_level=logging.INFO)
   except Exception:
-    logging.error('Failed to emerge package %s', pkg)
+    logging.error('Failed to emerge package %s', pkg_name)
     raise
   else:
-    logging.info('%s has been installed.', pkg)
+    logging.notice('%s has been installed.', pkg_name)
   finally:
     # Free up the space for other packages.
     device.RunCommand(['rm', '-rf', portage_tmpdir, pkg_dir],
@@ -789,7 +825,9 @@ def _Unmerge(device, pkg, root):
     pkg: A package name.
     root: Package installation root path.
   """
-  logging.info('Unmerging %s...', pkg)
+  pkg_name = os.path.basename(pkg)
+  # This message is read by BrilloDeployOperation.
+  logging.notice('Unmerging %s.', pkg_name)
   cmd = ['qmerge', '--yes']
   # Check if qmerge is available on the device. If not, use emerge.
   if device.RunCommand(
@@ -798,14 +836,14 @@ def _Unmerge(device, pkg, root):
 
   cmd.extend(['--unmerge', pkg, '--root=%s' % root])
   try:
-    # Always showing the qmerge/emerge output for clarity.
+    # Always showing the emerge output for clarity.
     device.RunCommand(cmd, capture_output=False, remote_sudo=True,
                       debug_level=logging.INFO)
   except Exception:
-    logging.error('Failed to unmerge package %s', pkg)
+    logging.error('Failed to unmerge package %s', pkg_name)
     raise
   else:
-    logging.info('%s has been uninstalled.', pkg)
+    logging.notice('%s has been uninstalled.', pkg_name)
 
 
 def _ConfirmDeploy(num_updates):
@@ -815,6 +853,18 @@ def _ConfirmDeploy(num_updates):
     return cros_build_lib.BooleanPrompt(default=False)
 
   return True
+
+
+def _EmergePackages(pkgs, device, strip, sysroot, root, emerge_args):
+  """Call _Emerge for each packge in pkgs."""
+  for pkg in pkgs:
+    _Emerge(device, pkg, strip, sysroot, root, extra_args=emerge_args)
+
+
+def _UnmergePackages(pkgs, device, root):
+  """Call _Unmege for each package in pkgs."""
+  for pkg in pkgs:
+    _Unmerge(device, pkg, root)
 
 
 def _CheckDeviceVersion(device):
@@ -953,7 +1003,7 @@ def Deploy(device, packages, board=None, brick_name=None, blueprint=None,
         raise DeployError('No packages found, nothing to deploy.')
 
       if clean_binpkg:
-        logging.info('Cleaning outdated binary packages from %s', sysroot)
+        logging.notice('Cleaning outdated binary packages from %s', sysroot)
         portage_util.CleanOutdatedBinaryPackages(sysroot)
 
       if not device_handler.IsPathWritable(root):
@@ -972,22 +1022,29 @@ def Deploy(device, packages, board=None, brick_name=None, blueprint=None,
         action_str = 'unmerge'
 
       if not pkgs:
-        logging.info('No packages to %s', action_str)
+        logging.notice('No packages to %s', action_str)
         return
 
-      logging.info('These are the packages to %s:', action_str)
+      logging.notice('These are the packages to %s:', action_str)
       for i, pkg in enumerate(pkgs):
-        logging.info('%s %d) %s', '*' if pkg in listed else ' ', i + 1, pkg)
+        logging.notice('%s %d) %s', '*' if pkg in listed else ' ', i + 1, pkg)
 
       if dry_run or not _ConfirmDeploy(num_updates):
         return
 
-      for pkg in pkgs:
-        if emerge:
-          _Emerge(device_handler, pkg, strip, sysroot, root,
-                  extra_args=emerge_args)
-        else:
-          _Unmerge(device_handler, pkg, root)
+      # Select function (emerge or unmerge) and bind args.
+      if emerge:
+        func = functools.partial(_EmergePackages, pkgs, device_handler, strip,
+                                 sysroot, root, emerge_args)
+      else:
+        func = functools.partial(_UnmergePackages, pkgs, device_handler, root)
+
+      # Call the function with the progress bar or with normal output.
+      if command.UseProgressBar():
+        op = BrilloDeployOperation(len(pkgs), emerge)
+        op.Run(func, log_level=logging.DEBUG)
+      else:
+        func()
 
       logging.warning('Please restart any updated services on the device, '
                       'or just reboot it.')

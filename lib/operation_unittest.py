@@ -53,7 +53,7 @@ class ProgressBarOperationTest(cros_test_lib.MockOutputTestCase,
     self._terminal.return_value = operation._TerminalSize(100, terminal_width)
     op = operation.ProgressBarOperation()
     with self.OutputCapturer() as output:
-      op._ProgressBar(percent)
+      op.ProgressBar(percent)
     stdout = output.GetStdout()
 
     #Check that the shaded and unshaded regions are the expected size.

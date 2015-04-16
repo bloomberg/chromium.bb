@@ -38,6 +38,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import gob_util
 from chromite.lib import graphite
+from chromite.lib import operation
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import remote_access
@@ -1514,6 +1515,27 @@ class MoxTempDirTestOutputCase(OutputTestCase, MoxTempDirTestCase):
 
 class MockOutputTestCase(MockTestCase, OutputTestCase):
   """Convenience class mixing Output and Mock."""
+
+
+class ProgressBarTestCase(MockOutputTestCase):
+  """Test class to test the progress bar."""
+
+  # pylint: disable=protected-access
+
+  def setUp(self):
+    self._terminal_size = self.PatchObject(
+        operation.ProgressBarOperation, '_GetTerminalSize',
+        return_value=operation._TerminalSize(100, 20))
+    self.PatchObject(os, 'isatty', return_value=True)
+
+  def SetMockTerminalSize(self, width, height):
+    """Set mock terminal's size."""
+    self._terminal_size.return_value = operation._TerminalSize(width, height)
+
+  def AssertProgressBarAllEvents(self, num_events):
+    """Check that the progress bar is correct for all events."""
+    for i in xrange(num_events + 1):
+      self.AssertOutputContainsLine('%d%%' % (i * 100 / num_events))
 
 
 class MockLoggingTestCase(MockTestCase, LoggingTestCase):

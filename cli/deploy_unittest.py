@@ -7,11 +7,14 @@
 from __future__ import print_function
 
 import json
+import multiprocessing
 import os
 
+from chromite.cli import command
 from chromite.cli import deploy
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import remote_access
 try:
   import portage
 except ImportError:
@@ -20,6 +23,20 @@ except ImportError:
 
 
 # pylint: disable=protected-access
+
+
+class ChromiumOSDeviceFake(object):
+  """Fake for device."""
+
+  def __init__(self):
+    self.board = 'board'
+    self.hostname = None
+    self.username = None
+    self.port = None
+    self.lsb_release = None
+
+  def IsPathWritable(self, _):
+    return True
 
 
 class ChromiumOSDeviceHandlerFake(object):
@@ -34,11 +51,29 @@ class ChromiumOSDeviceHandlerFake(object):
     def RemoteSh(self, *_args, **_kwargs):
       return cros_build_lib.CommandResult(output=self.remote_sh_output)
 
-  def __init__(self):
+  def __init__(self, *_args, **_kwargs):
     self._agent = self.RemoteAccessFake()
 
+  # TODO(dpursell): Mock remote access object in cros_test_lib (brbug.com/986).
   def GetAgent(self):
     return self._agent
+
+  def __exit__(self, _type, _value, _traceback):
+    pass
+
+  def __enter__(self):
+    return ChromiumOSDeviceFake()
+
+
+class BrilloDeployOperationFake(deploy.BrilloDeployOperation):
+  """Fake for deploy.BrilloDeployOperation."""
+  def __init__(self, pkg_count, emerge, queue):
+    super(BrilloDeployOperationFake, self).__init__(pkg_count, emerge)
+    self._queue = queue
+
+  def ParseOutput(self):
+    super(BrilloDeployOperationFake, self).ParseOutput()
+    self._queue.put('advance')
 
 
 class DbApiFake(object):
@@ -58,6 +93,18 @@ class DbApiFake(object):
     return [pkg_info[key] for key in keys]
 
 
+class PackageScannerFake(object):
+  """Fake for PackageScanner."""
+
+  def __init__(self, packages):
+    self.pkgs = packages
+    self.listed = []
+    self.num_updates = None
+
+  def Run(self, _device, _root, _packages, _update, _deep, _deep_rev):
+    return self.pkgs, self.listed, self.num_updates
+
+
 class PortageTreeFake(object):
   """Fake for Portage tree."""
 
@@ -65,7 +112,7 @@ class PortageTreeFake(object):
     self.dbapi = dbapi
 
 
-class TestInstallPackageScanner(cros_test_lib.MockTestCase):
+class TestInstallPackageScanner(cros_test_lib.MockOutputTestCase):
   """Test the update package scanner."""
   _BOARD = 'foo_board'
   _BUILD_ROOT = '/build/%s' % _BOARD
@@ -228,3 +275,102 @@ class TestInstallPackageScanner(cros_test_lib.MockTestCase):
     self.ValidatePkgs(installs, [app1, app7], constraints=[(app1, app7)])
     self.ValidatePkgs(listed, [app1])
     self.assertEquals(num_updates, 1)
+
+
+class TestDeploy(cros_test_lib.ProgressBarTestCase):
+  """Test deploy.Deploy."""
+
+  def setUp(self):
+    self.PatchObject(remote_access, 'ChromiumOSDeviceHandler',
+                     side_effect=ChromiumOSDeviceHandlerFake)
+    self.PatchObject(cros_build_lib, 'GetBoard', return_value=None)
+    self.PatchObject(cros_build_lib, 'GetSysroot', return_value='sysroot')
+    self.package_scanner = self.PatchObject(deploy, '_InstallPackageScanner')
+    self.emerge = self.PatchObject(deploy, '_Emerge', return_value=None)
+    self.unmerge = self.PatchObject(deploy, '_Unmerge', return_value=None)
+
+  def testDeployEmerge(self):
+    """Test that deploy._Emerge is called for each package."""
+    packages = ['foo', 'bar', 'foobar']
+    self.package_scanner.return_value = PackageScannerFake(packages)
+
+    deploy.Deploy(None, 'package', force=True, clean_binpkg=False)
+
+    # Check that deploy._Emerge is called the right number of times.
+    self.assertEqual(self.emerge.call_count, len(packages))
+    self.assertEqual(self.unmerge.call_count, 0)
+
+  def testDeployUnmerge(self):
+    """Test that deploy._Unmerge is called for each package."""
+    packages = ['foo', 'bar', 'foobar']
+    self.package_scanner.return_value = PackageScannerFake(packages)
+
+    deploy.Deploy(None, 'package', force=True, clean_binpkg=False,
+                  emerge=False)
+
+    # Check that deploy._Unmerge is called the right number of times.
+    self.assertEqual(self.emerge.call_count, 0)
+    self.assertEqual(self.unmerge.call_count, len(packages))
+
+  def testDeployMergeWithProgressBar(self):
+    """Test that BrilloDeployOperation.Run() is called for merge."""
+    packages = ['foo', 'bar', 'foobar']
+    self.package_scanner.return_value = PackageScannerFake(packages)
+
+    run = self.PatchObject(deploy.BrilloDeployOperation, 'Run',
+                           return_value=None)
+
+    self.PatchObject(command, 'UseProgressBar', return_value=True)
+    deploy.Deploy(None, 'package', force=True, clean_binpkg=False)
+
+    # Check that BrilloDeployOperation.Run was called.
+    self.assertTrue(run.called)
+
+  def testDeployUnmergeWithProgressBar(self):
+    """Test that BrilloDeployOperation.Run() is called for unmerge."""
+    packages = ['foo', 'bar', 'foobar']
+    self.package_scanner.return_value = PackageScannerFake(packages)
+
+    run = self.PatchObject(deploy.BrilloDeployOperation, 'Run',
+                           return_value=None)
+
+    self.PatchObject(command, 'UseProgressBar', return_value=True)
+    deploy.Deploy(None, 'package', force=True, clean_binpkg=False,
+                  emerge=False)
+
+    # Check that BrilloDeployOperation.Run was called.
+    self.assertTrue(run.called)
+
+  def testBrilloDeployMergeOperation(self):
+    """Test that BrilloDeployOperation works for merge."""
+    def func(queue):
+      for event in op._merge_events:
+        queue.get()
+        print(event)
+
+    queue = multiprocessing.Queue()
+    # Emerge one package.
+    op = BrilloDeployOperationFake(1, True, queue)
+
+    with self.OutputCapturer():
+      op.Run(func, queue)
+
+    # Check that the progress bar prints correctly.
+    self.AssertProgressBarAllEvents(len(op._merge_events))
+
+  def testBrilloDeployUnmergeOperation(self):
+    """Test that BrilloDeployOperation works for unmerge."""
+    def func(queue):
+      for event in op._unmerge_events:
+        queue.get()
+        print(event)
+
+    queue = multiprocessing.Queue()
+    # Unmerge one package.
+    op = BrilloDeployOperationFake(1, False, queue)
+
+    with self.OutputCapturer():
+      op.Run(func, queue)
+
+    # Check that the progress bar prints correctly.
+    self.AssertProgressBarAllEvents(len(op._unmerge_events))
