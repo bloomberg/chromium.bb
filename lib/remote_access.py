@@ -223,15 +223,20 @@ def RemoveKnownHost(host, known_hosts_path=KNOWN_HOSTS_PATH):
   Raises:
     cros_build_lib.RunCommandError if ssh-keygen fails.
   """
-  with tempfile.NamedTemporaryFile() as f:
+  # `ssh-keygen -R` creates a backup file to retain the old 'known_hosts'
+  # content and never deletes it. Using TempDir here to make sure both the temp
+  # files created by us and `ssh-keygen -R` are deleted afterwards.
+  with osutils.TempDir(prefix='remote-access-') as tempdir:
+    temp_file = os.path.join(tempdir, 'temp_known_hosts')
     try:
-      shutil.copyfile(known_hosts_path, f.name)
+      # Using shutil.copy2 to preserve the file ownership and permissions.
+      shutil.copy2(known_hosts_path, temp_file)
     except IOError:
       # If |known_hosts_path| doesn't exist neither does |host| so we're done.
       return
-    cros_build_lib.RunCommand(['ssh-keygen', '-R', host, '-f', f.name],
+    cros_build_lib.RunCommand(['ssh-keygen', '-R', host, '-f', temp_file],
                               quiet=True)
-    shutil.copyfile(f.name, known_hosts_path)
+    shutil.copy2(temp_file, known_hosts_path)
 
 
 class RemoteAccess(object):
