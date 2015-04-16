@@ -33,19 +33,13 @@ class BrowserContext;
 class WebContents;
 }
 
-namespace ui {
-class BaseWindow;
-}
-
 namespace extensions {
 
 class AppDelegate;
 class AppWebContentsHelper;
 class Extension;
-class ExtensionRegistry;
 class NativeAppWindow;
 class PlatformAppBrowserTest;
-class WindowController;
 
 struct DraggableRegion;
 
