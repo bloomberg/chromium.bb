@@ -62,6 +62,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/StringExtras.h"
+#include "wtf/TemporaryChange.h"
 #include "wtf/text/CString.h"
 #include <algorithm>
 #include <utility>
@@ -85,6 +86,7 @@ WindowProxy::WindowProxy(Frame* frame, PassRefPtr<DOMWrapperWorld> world, v8::Is
     : m_frame(frame)
     , m_isolate(isolate)
     , m_world(world)
+    , m_installingDOMWindow(false)
 {
 }
 
@@ -307,6 +309,9 @@ static v8::Local<v8::Object> toInnerGlobalObject(v8::Local<v8::Context> context)
 
 bool WindowProxy::installDOMWindow()
 {
+    RELEASE_ASSERT(!m_installingDOMWindow);
+    TemporaryChange<bool> installing(m_installingDOMWindow, true);
+
     DOMWindow* window = m_frame->domWindow();
     const WrapperTypeInfo* wrapperTypeInfo = window->wrapperTypeInfo();
     v8::Local<v8::Object> windowWrapper;
