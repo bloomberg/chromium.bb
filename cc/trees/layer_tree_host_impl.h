@@ -35,6 +35,7 @@
 #include "cc/resources/ui_resource_client.h"
 #include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/scheduler/draw_result.h"
+#include "cc/scheduler/video_frame_controller.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/proxy.h"
 #include "skia/ext/refptr.h"
@@ -104,6 +105,7 @@ class LayerTreeHostImplClient {
   virtual void SetNeedsAnimateOnImplThread() = 0;
   virtual void SetNeedsCommitOnImplThread() = 0;
   virtual void SetNeedsPrepareTilesOnImplThread() = 0;
+  virtual void SetVideoNeedsBeginFrames(bool needs_begin_frames) = 0;
   virtual void PostAnimationEventsToMainThreadOnImplThread(
       scoped_ptr<AnimationEventsVector> events) = 0;
   // Returns true if resources were deleted by this call.
@@ -136,6 +138,7 @@ class CC_EXPORT LayerTreeHostImpl
       public OutputSurfaceClient,
       public TopControlsManagerClient,
       public ScrollbarAnimationControllerClient,
+      public VideoFrameControllerClient,
       public base::SupportsWeakPtr<LayerTreeHostImpl> {
  public:
   static scoped_ptr<LayerTreeHostImpl> Create(
@@ -277,6 +280,10 @@ class CC_EXPORT LayerTreeHostImpl
   void PostDelayedScrollbarAnimationTask(const base::Closure& task,
                                          base::TimeDelta delay) override;
   void SetNeedsRedrawForScrollbarAnimation() override;
+
+  // VideoBeginFrameSource implementation.
+  void AddVideoFrameController(VideoFrameController* controller) override;
+  void RemoveVideoFrameController(VideoFrameController* controller) override;
 
   // OutputSurfaceClient implementation.
   void CommitVSyncParameters(base::TimeTicks timebase,
@@ -573,6 +580,7 @@ class CC_EXPORT LayerTreeHostImpl
   // Scroll by preferring to move the inner viewport first, only moving the
   // outer if the inner is at its scroll extents.
   void ScrollViewportInnerFirst(gfx::Vector2dF scroll_delta);
+
   void AnimatePageScale(base::TimeTicks monotonic_time);
   void AnimateScrollbars(base::TimeTicks monotonic_time);
   void AnimateTopControls(base::TimeTicks monotonic_time);
@@ -726,6 +734,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   scoped_ptr<AnimationRegistrar> animation_registrar_;
   std::set<ScrollbarAnimationController*> scrollbar_animation_controllers_;
+  std::set<VideoFrameController*> video_frame_controllers_;
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
   MicroBenchmarkControllerImpl micro_benchmark_controller_;

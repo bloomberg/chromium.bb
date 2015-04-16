@@ -254,9 +254,13 @@ class CC_EXPORT SchedulerStateMachine {
     return children_need_begin_frames_;
   }
 
+  void SetVideoNeedsBeginFrames(bool video_needs_begin_frames);
+  bool video_needs_begin_frames() const { return video_needs_begin_frames_; }
+
  protected:
   bool BeginFrameRequiredForAction() const;
   bool BeginFrameRequiredForChildren() const;
+  bool BeginFrameNeededForVideo() const;
   bool ProactiveBeginFrameWanted() const;
 
   bool ShouldTriggerBeginImplFrameDeadlineImmediately() const;
@@ -330,6 +334,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool continuous_painting_;
   bool children_need_begin_frames_;
   bool defer_commits_;
+  bool video_needs_begin_frames_;
   bool last_commit_had_no_updates_;
   bool wait_for_active_tree_ready_to_draw_;
   bool did_request_swap_in_last_frame_;

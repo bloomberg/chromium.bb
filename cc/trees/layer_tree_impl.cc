@@ -1559,6 +1559,11 @@ BlockingTaskRunner* LayerTreeImpl::BlockingMainThreadTaskRunner() const {
   return proxy()->blocking_main_thread_task_runner();
 }
 
+VideoFrameControllerClient* LayerTreeImpl::GetVideoFrameControllerClient()
+    const {
+  return layer_tree_host_impl_;
+}
+
 void LayerTreeImpl::SetPendingPageScaleAnimation(
     scoped_ptr<PendingPageScaleAnimation> pending_animation) {
   pending_page_scale_animation_ = pending_animation.Pass();

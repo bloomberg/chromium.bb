@@ -401,6 +401,11 @@ void Scheduler::SetAuthoritativeVSyncInterval(const base::TimeDelta& interval) {
     vsync_observer_->OnUpdateVSyncParameters(last_vsync_timebase_, interval);
 }
 
+void Scheduler::SetVideoNeedsBeginFrames(bool video_needs_begin_frames) {
+  state_machine_.SetVideoNeedsBeginFrames(video_needs_begin_frames);
+  ProcessScheduledActions();
+}
+
 void Scheduler::OnDrawForOutputSurface() {
   DCHECK(settings_.using_synchronous_renderer_compositor);
   DCHECK_EQ(state_machine_.begin_impl_frame_state(),

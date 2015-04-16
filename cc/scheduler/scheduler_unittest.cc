@@ -454,6 +454,37 @@ TEST_F(SchedulerTest, SendBeginFramesToChildrenWithoutCommit) {
   EXPECT_TRUE(client_->begin_frame_is_sent_to_children());
 }
 
+TEST_F(SchedulerTest, VideoNeedsBeginFrames) {
+  scheduler_settings_.use_external_begin_frame_source = true;
+  SetUpScheduler(true);
+
+  scheduler_->SetVideoNeedsBeginFrames(true);
+  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client_);
+  EXPECT_TRUE(client_->needs_begin_frames());
+
+  client_->Reset();
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+  // WillBeginImplFrame is responsible for sending BeginFrames to video.
+  EXPECT_SINGLE_ACTION("WillBeginImplFrame", client_);
+
+  client_->Reset();
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+  EXPECT_SINGLE_ACTION("WillBeginImplFrame", client_);
+
+  client_->Reset();
+  scheduler_->SetVideoNeedsBeginFrames(false);
+  EXPECT_NO_ACTION(client_);
+
+  client_->Reset();
+  task_runner_->RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  EXPECT_ACTION("SetNeedsBeginFrames(false)", client_, 0, 2);
+  EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 1, 2);
+  EXPECT_FALSE(client_->needs_begin_frames());
+}
+
 TEST_F(SchedulerTest, RequestCommit) {
   scheduler_settings_.use_external_begin_frame_source = true;
   SetUpScheduler(true);

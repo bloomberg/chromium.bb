@@ -52,6 +52,7 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       continuous_painting_(false),
       children_need_begin_frames_(false),
       defer_commits_(false),
+      video_needs_begin_frames_(false),
       last_commit_had_no_updates_(false),
       wait_for_active_tree_ready_to_draw_(false),
       did_request_swap_in_last_frame_(false),
@@ -243,6 +244,7 @@ void SchedulerStateMachine::AsValueInto(
                     skip_next_begin_main_frame_to_reduce_latency_);
   state->SetBoolean("continuous_painting", continuous_painting_);
   state->SetBoolean("children_need_begin_frames", children_need_begin_frames_);
+  state->SetBoolean("video_needs_begin_frames", video_needs_begin_frames_);
   state->SetBoolean("defer_commits", defer_commits_);
   state->SetBoolean("last_commit_had_no_updates", last_commit_had_no_updates_);
   state->SetBoolean("did_request_swap_in_last_frame",
@@ -723,6 +725,9 @@ void SchedulerStateMachine::SetSkipNextBeginMainFrameToReduceLatency() {
 bool SchedulerStateMachine::BeginFrameRequiredForChildren() const {
   return children_need_begin_frames_;
 }
+bool SchedulerStateMachine::BeginFrameNeededForVideo() const {
+  return video_needs_begin_frames_;
+}
 
 bool SchedulerStateMachine::BeginFrameNeeded() const {
   // We can't handle BeginFrames when output surface isn't initialized.
@@ -735,12 +740,17 @@ bool SchedulerStateMachine::BeginFrameNeeded() const {
     return false;
 
   return (BeginFrameRequiredForAction() || BeginFrameRequiredForChildren() ||
-          ProactiveBeginFrameWanted());
+          BeginFrameNeededForVideo() || ProactiveBeginFrameWanted());
 }
 
 void SchedulerStateMachine::SetChildrenNeedBeginFrames(
     bool children_need_begin_frames) {
   children_need_begin_frames_ = children_need_begin_frames;
+}
+
+void SchedulerStateMachine::SetVideoNeedsBeginFrames(
+    bool video_needs_begin_frames) {
+  video_needs_begin_frames_ = video_needs_begin_frames;
 }
 
 void SchedulerStateMachine::SetDeferCommits(bool defer_commits) {

@@ -100,6 +100,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void SetNeedsAnimateOnImplThread() override;
   void SetNeedsPrepareTilesOnImplThread() override;
   void SetNeedsCommitOnImplThread() override;
+  void SetVideoNeedsBeginFrames(bool needs_begin_frames) override;
   void PostAnimationEventsToMainThreadOnImplThread(
       scoped_ptr<AnimationEventsVector> events) override;
   bool ReduceContentsTextureMemoryOnImplThread(size_t limit_bytes,

@@ -536,6 +536,7 @@
         'scheduler/scheduler_settings.h',
         'scheduler/scheduler_state_machine.cc',
         'scheduler/scheduler_state_machine.h',
+        'scheduler/video_frame_controller.h',
         'trees/blocking_task_runner.cc',
         'trees/blocking_task_runner.h',
         'trees/damage_tracker.cc',

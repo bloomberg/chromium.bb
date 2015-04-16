@@ -10,6 +10,7 @@
 #include "base/threading/thread_checker.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/video_frame_provider.h"
+#include "cc/scheduler/video_frame_controller.h"
 #include "ui/gfx/transform.h"
 
 namespace media { class VideoFrame; }
@@ -23,11 +24,13 @@ class VideoLayerImpl;
 // has.
 class CC_EXPORT VideoFrameProviderClientImpl
     : public VideoFrameProvider::Client,
+      public VideoFrameController,
       public base::RefCounted<VideoFrameProviderClientImpl> {
  public:
   // Must be created on the impl thread while the main thread is blocked.
   static scoped_refptr<VideoFrameProviderClientImpl> Create(
-      VideoFrameProvider* provider);
+      VideoFrameProvider* provider,
+      VideoFrameControllerClient* client);
 
   VideoLayerImpl* ActiveVideoLayer() const;
   void SetActiveVideoLayer(VideoLayerImpl* video_layer);
@@ -42,6 +45,9 @@ class CC_EXPORT VideoFrameProviderClientImpl
 
   const gfx::Transform& StreamTextureMatrix() const;
 
+  // VideoFrameController implementation.
+  void OnBeginFrame(const BeginFrameArgs& args) override;
+
   // VideoFrameProvider::Client implementation.
   // Called on the main thread.
   void StopUsingProvider() override;
@@ -54,10 +60,12 @@ class CC_EXPORT VideoFrameProviderClientImpl
  private:
   friend class base::RefCounted<VideoFrameProviderClientImpl>;
 
-  explicit VideoFrameProviderClientImpl(VideoFrameProvider* provider);
+  VideoFrameProviderClientImpl(VideoFrameProvider* provider,
+                               VideoFrameControllerClient* client);
   ~VideoFrameProviderClientImpl() override;
 
   VideoFrameProvider* provider_;
+  VideoFrameControllerClient* client_;
   VideoLayerImpl* active_video_layer_;
   bool stopped_;
 

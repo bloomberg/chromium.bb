@@ -401,6 +401,15 @@ void ThreadProxy::SetNeedsCommitOnImplThread() {
   impl().scheduler->SetNeedsCommit();
 }
 
+void ThreadProxy::SetVideoNeedsBeginFrames(bool needs_begin_frames) {
+  TRACE_EVENT1("cc", "ThreadProxy::SetVideoNeedsBeginFrames",
+               "needs_begin_frames", needs_begin_frames);
+  DCHECK(IsImplThread());
+  // In tests the layer tree is destroyed after the scheduler is.
+  if (impl().scheduler)
+    impl().scheduler->SetVideoNeedsBeginFrames(needs_begin_frames);
+}
+
 void ThreadProxy::PostAnimationEventsToMainThreadOnImplThread(
     scoped_ptr<AnimationEventsVector> events) {
   TRACE_EVENT0("cc",

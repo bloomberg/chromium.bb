@@ -144,6 +144,7 @@ class LayerTreeHostImplTest : public testing::Test,
     did_request_prepare_tiles_ = true;
   }
   void SetNeedsCommitOnImplThread() override { did_request_commit_ = true; }
+  void SetVideoNeedsBeginFrames(bool needs_begin_frames) override {}
   void PostAnimationEventsToMainThreadOnImplThread(
       scoped_ptr<AnimationEventsVector> events) override {}
   bool ReduceContentsTextureMemoryOnImplThread(size_t limit_bytes,

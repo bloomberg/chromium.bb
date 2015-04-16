@@ -47,6 +47,7 @@ class Proxy;
 class ResourceProvider;
 class TileManager;
 class UIResourceRequest;
+class VideoFrameControllerClient;
 struct PendingPageScaleAnimation;
 struct RendererCapabilities;
 struct SelectionHandle;
@@ -110,6 +111,7 @@ class CC_EXPORT LayerTreeImpl {
   BlockingTaskRunner* BlockingMainThreadTaskRunner() const;
   bool RequiresHighResToDraw() const;
   bool SmoothnessTakesPriority() const;
+  VideoFrameControllerClient* GetVideoFrameControllerClient() const;
 
   // Tree specific methods exposed to layer-impl tree.
   // ---------------------------------------------------------------------------

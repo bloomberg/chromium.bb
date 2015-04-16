@@ -1653,6 +1653,9 @@ void LayerTreeHostImpl::WillBeginImplFrame(const BeginFrameArgs& args) {
     // we are beginning now.
     SetNeedsRedraw();
   }
+
+  for (auto& it : video_frame_controllers_)
+    it->OnBeginFrame(args);
 }
 
 void LayerTreeHostImpl::UpdateViewportContainerSizes() {
@@ -3068,6 +3071,21 @@ void LayerTreeHostImpl::PostDelayedScrollbarAnimationTask(
 
 void LayerTreeHostImpl::SetNeedsRedrawForScrollbarAnimation() {
   SetNeedsRedraw();
+}
+
+void LayerTreeHostImpl::AddVideoFrameController(
+    VideoFrameController* controller) {
+  bool was_empty = video_frame_controllers_.empty();
+  video_frame_controllers_.insert(controller);
+  if (was_empty)
+    client_->SetVideoNeedsBeginFrames(true);
+}
+
+void LayerTreeHostImpl::RemoveVideoFrameController(
+    VideoFrameController* controller) {
+  video_frame_controllers_.erase(controller);
+  if (video_frame_controllers_.empty())
+    client_->SetVideoNeedsBeginFrames(false);
 }
 
 void LayerTreeHostImpl::SetTreePriority(TreePriority priority) {

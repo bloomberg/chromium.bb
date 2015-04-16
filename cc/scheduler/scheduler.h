@@ -169,6 +169,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn {
   }
 
   void SetChildrenNeedBeginFrames(bool children_need_begin_frames);
+  void SetVideoNeedsBeginFrames(bool video_needs_begin_frames);
 
   void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval);
 

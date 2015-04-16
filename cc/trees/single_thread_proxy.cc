@@ -458,6 +458,14 @@ void SingleThreadProxy::SetNeedsCommitOnImplThread() {
     scheduler_on_impl_thread_->SetNeedsCommit();
 }
 
+void SingleThreadProxy::SetVideoNeedsBeginFrames(bool needs_begin_frames) {
+  TRACE_EVENT1("cc", "SingleThreadProxy::SetVideoNeedsBeginFrames",
+               "needs_begin_frames", needs_begin_frames);
+  // In tests the layer tree is destroyed after the scheduler is.
+  if (scheduler_on_impl_thread_)
+    scheduler_on_impl_thread_->SetVideoNeedsBeginFrames(needs_begin_frames);
+}
+
 void SingleThreadProxy::PostAnimationEventsToMainThreadOnImplThread(
     scoped_ptr<AnimationEventsVector> events) {
   TRACE_EVENT0(
