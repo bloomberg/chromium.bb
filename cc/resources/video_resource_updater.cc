@@ -27,15 +27,28 @@ const ResourceFormat kRGBResourceFormat = RGBA_8888;
 
 class SyncPointClientImpl : public media::VideoFrame::SyncPointClient {
  public:
-  explicit SyncPointClientImpl(gpu::gles2::GLES2Interface* gl) : gl_(gl) {}
+  explicit SyncPointClientImpl(gpu::gles2::GLES2Interface* gl,
+                               uint32 sync_point)
+      : gl_(gl), sync_point_(sync_point) {}
   ~SyncPointClientImpl() override {}
-  uint32 InsertSyncPoint() override { return gl_->InsertSyncPointCHROMIUM(); }
+  uint32 InsertSyncPoint() override {
+    if (sync_point_)
+      return sync_point_;
+    return gl_->InsertSyncPointCHROMIUM();
+  }
   void WaitSyncPoint(uint32 sync_point) override {
+    if (!sync_point)
+      return;
     gl_->WaitSyncPointCHROMIUM(sync_point);
+    if (sync_point_) {
+      gl_->WaitSyncPointCHROMIUM(sync_point_);
+      sync_point_ = 0;
+    }
   }
 
  private:
   gpu::gles2::GLES2Interface* gl_;
+  uint32 sync_point_;
 };
 
 }  // namespace
@@ -375,10 +388,11 @@ void VideoResourceUpdater::ReturnTexture(
   // resource.
   if (lost_resource || !updater.get())
     return;
-  // VideoFrame::UpdateReleaseSyncPoint() creates new sync point using the same
-  // GL context which created the given |sync_point|, so discard the
-  // |sync_point|.
-  SyncPointClientImpl client(updater->context_provider_->ContextGL());
+  // Update the release sync point in |video_frame| with |sync_point|
+  // returned by the compositor and emit a WaitSyncPointCHROMIUM on
+  // |video_frame|'s previous sync point using the current GL context.
+  SyncPointClientImpl client(updater->context_provider_->ContextGL(),
+                             sync_point);
   video_frame->UpdateReleaseSyncPoint(&client);
 }
 
