@@ -416,6 +416,14 @@ class MetaBuildWrapper(object):
       self.WriteJSON({'status': 'Found dependency (all)'}, output_path)
       return 0
 
+    # TODO: Because of the --type=executable filter below, we don't detect
+    # when files will cause 'all' or 'gn_all' or similar targets to be
+    # dirty. We need to figure out how to handle that properly, but for
+    # now we can just bail out early.
+    if 'gn_all' in inp['targets'] or 'all' in inp['targets']:
+      self.WriteJSON({'status': 'Found dependency (all)'}, output_path)
+      return 0
+
     all_needed_targets = set()
     ret = 0
     for f in inp['files']:

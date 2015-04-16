@@ -138,6 +138,21 @@ class UnitTest(unittest.TestCase):
       'build_targets': ['foo_unittests']
     })
 
+  def test_gn_analyze_all(self):
+    files = {'/tmp/in.json': """{\
+               "files": ["foo/foo_unittest.cc"],
+               "targets": ["all", "bar_unittests"]
+             }"""}
+    mbw = self.fake_mbw(files)
+    mbw.Call = lambda cmd: (0, 'out/Default/foo_unittests\n', '')
+
+    self.check(['analyze', '-c', 'gn_debug', '//out/Default',
+                '/tmp/in.json', '/tmp/out.json'], mbw=mbw, ret=0)
+    out = json.loads(mbw.files['/tmp/out.json'])
+    self.assertEqual(out, {
+      'status': 'Found dependency (all)',
+    })
+
   def test_gyp_analyze(self):
     self.check(['analyze', '-c', 'gyp_rel_bot', '//out/Release',
                 '/tmp/in.json', '/tmp/out.json'],
