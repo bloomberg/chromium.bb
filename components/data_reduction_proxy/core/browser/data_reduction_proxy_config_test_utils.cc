@@ -39,6 +39,7 @@ TestDataReductionProxyConfig::TestDataReductionProxyConfig(
     DataReductionProxyConfigurator* configurator,
     DataReductionProxyEventStore* event_store)
     : DataReductionProxyConfig(task_runner,
+                               task_runner,
                                net_log,
                                config_values.Pass(),
                                configurator,

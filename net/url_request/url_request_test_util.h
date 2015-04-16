@@ -70,8 +70,7 @@ class TestURLRequestContext : public URLRequestContext {
   }
 
   void set_http_network_session_params(
-      scoped_ptr<HttpNetworkSession::Params> params) {
-    http_network_session_params_ = params.Pass();
+      const HttpNetworkSession::Params& params) {
   }
 
   void SetSdchManager(scoped_ptr<SdchManager> sdch_manager) {
