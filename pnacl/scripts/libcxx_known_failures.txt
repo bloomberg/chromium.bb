@@ -25,10 +25,6 @@ libc++::depr/depr.c.headers/stdio_h.pass.cpp
 
 # Need to investigate these.
 libc++::diagnostics/syserr/syserr.errcat/syserr.errcat.objects/system_category.pass.cpp
-libc++::input.output/file.streams/fstreams/fstream.assign/member_swap.pass.cpp
-libc++::input.output/file.streams/fstreams/fstream.assign/nonmember_swap.pass.cpp
-libc++::input.output/file.streams/fstreams/ofstream.assign/member_swap.pass.cpp
-libc++::input.output/file.streams/fstreams/ofstream.assign/nonmember_swap.pass.cpp
 libc++::localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_long_double.pass.cpp
 libc++::localization/locale.categories/category.time/locale.time.put/locale.time.put.members/put2.pass.cpp
 libc++::re/re.traits/isctype.pass.cpp
