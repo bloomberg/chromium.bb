@@ -297,6 +297,17 @@ class PasswordStoreMacInternalsTest : public testing::Test {
          "abc",
          "123",
          false},
+        // Password for an Android application.
+        {kSecAuthenticationTypeHTMLForm,
+         "android://hash@com.domain.some/",
+         kSecProtocolTypeHTTP,
+         "",
+         0,
+         NULL,
+         "20150515141312Z",
+         "joe_user",
+         "secret",
+         false},
     };
 
     keychain_ = new MockAppleKeychain();
@@ -379,6 +390,9 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainToFormTranslation) {
     { PasswordForm::SCHEME_OTHER, "http://a.server.com/",
       "http://a.server.com/", L"abc", L"123", false,
       1601,  1,  1,  0,  0,  0 },
+    { PasswordForm::SCHEME_HTML, "android://hash@com.domain.some/",
+      "", L"joe_user", L"secret", true,
+      2015,  5,  15, 14, 13, 12 },
   };
 
   for (unsigned int i = 0; i < arraysize(expected); ++i) {
@@ -606,6 +620,7 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainAdd) {
     PasswordFormData data;
     bool should_succeed;
   };
+  /* clang-format off */
   TestDataAndExpectation test_data[] = {
     // Test a variety of scheme/port/protocol/path variations.
     { { PasswordForm::SCHEME_HTML, "http://web.site.com/",
@@ -620,6 +635,14 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainAdd) {
     { { PasswordForm::SCHEME_DIGEST, "https://digest.site.com/differentrealm",
         "https://digest.site.com/secure.html", NULL, NULL, NULL, NULL,
         L"testname", L"testpass", false, false, 0 }, true },
+    // Test that Android credentials can be stored. Also check the legacy form
+    // when |origin| was still filled with the Android URI (and not left empty).
+    { { PasswordForm::SCHEME_HTML, "android://hash@com.example.alpha/",
+        "", NULL, NULL, NULL, NULL,
+        L"joe_user", L"password", false, true, 0 }, true },
+    { { PasswordForm::SCHEME_HTML, "android://hash@com.example.beta/",
+        "android://hash@com.example.beta/", NULL, NULL, NULL, NULL,
+        L"jane_user", L"password2", false, true, 0 }, true },
     // Make sure that garbage forms are rejected.
     { { PasswordForm::SCHEME_HTML, "gobbledygook",
         "gobbledygook", NULL, NULL, NULL, NULL,
@@ -631,6 +654,7 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainAdd) {
         "http://some.domain.com/insecure.html", NULL, NULL, NULL, NULL,
         L"joe_user", L"fail_me", false, false, 0 }, false },
   };
+  /* clang-format on */
 
   MacKeychainPasswordFormAdapter owned_keychain_adapter(keychain_);
   owned_keychain_adapter.SetFindsOnlyOwnedItems(true);
@@ -649,6 +673,8 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainAdd) {
   }
 
   // Test that adding duplicate item updates the existing item.
+  // TODO(engedy): Add a test to verify that updating Android credentials work.
+  // See: https://crbug.com/476851.
   {
     PasswordFormData data = {
       PasswordForm::SCHEME_HTML, "http://some.domain.com",
@@ -674,24 +700,36 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainRemove) {
     PasswordFormData data;
     bool should_succeed;
   };
+  /* clang-format off */
   TestDataAndExpectation test_data[] = {
     // Test deletion of an item that we add.
     { { PasswordForm::SCHEME_HTML, "http://web.site.com/",
         "http://web.site.com/path/to/page.html", NULL, NULL, NULL, NULL,
         L"anonymous", L"knock-knock", false, false, 0 }, true },
+    // Test that Android credentials can be removed. Also check the legacy case
+    // when |origin| was still filled with the Android URI (and not left empty).
+    { { PasswordForm::SCHEME_HTML, "android://hash@com.example.alpha/",
+        "", NULL, NULL, NULL, NULL,
+        L"joe_user", L"secret", false, true, 0 }, true },
+    { { PasswordForm::SCHEME_HTML, "android://hash@com.example.beta/",
+        "android://hash@com.example.beta/", NULL, NULL, NULL, NULL,
+        L"jane_user", L"secret", false, true, 0 }, true },
     // Make sure we don't delete items we don't own.
     { { PasswordForm::SCHEME_HTML, "http://some.domain.com/",
         "http://some.domain.com/insecure.html", NULL, NULL, NULL, NULL,
         L"joe_user", NULL, true, false, 0 }, false },
   };
+  /* clang-format on */
 
   MacKeychainPasswordFormAdapter owned_keychain_adapter(keychain_);
   owned_keychain_adapter.SetFindsOnlyOwnedItems(true);
 
-  // Add our test item so that we can delete it.
-  scoped_ptr<PasswordForm> add_form =
-      CreatePasswordFormFromDataForTesting(test_data[0].data);
-  EXPECT_TRUE(owned_keychain_adapter.AddPassword(*add_form));
+  // Add our test items (except the last one) so that we can delete them.
+  for (unsigned int i = 0; i + 1 < arraysize(test_data); ++i) {
+    scoped_ptr<PasswordForm> add_form =
+        CreatePasswordFormFromDataForTesting(test_data[i].data);
+    EXPECT_TRUE(owned_keychain_adapter.AddPassword(*add_form));
+  }
 
   for (unsigned int i = 0; i < arraysize(test_data); ++i) {
     scoped_ptr<PasswordForm> form =
@@ -1086,7 +1124,7 @@ TEST_F(PasswordStoreMacInternalsTest, TestPasswordGetAll) {
 
   ScopedVector<autofill::PasswordForm> all_passwords =
       keychain_adapter.GetAllPasswordFormPasswords();
-  EXPECT_EQ(8 + arraysize(owned_password_data), all_passwords.size());
+  EXPECT_EQ(9 + arraysize(owned_password_data), all_passwords.size());
 
   ScopedVector<autofill::PasswordForm> owned_passwords =
       owned_keychain_adapter.GetAllPasswordFormPasswords();

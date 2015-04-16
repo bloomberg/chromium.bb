@@ -422,6 +422,7 @@ bool FillPasswordFormFromKeychainItem(const AppleKeychain& keychain,
   if (password_manager::IsValidAndroidFacetURI(server)) {
     form->signon_realm = server;
     form->origin = GURL();
+    form->ssl_valid = true;
   } else {
     form->origin = URLFromComponents(form->ssl_valid, server, port, path);
     // TODO(stuartmorgan): Handle proxies, which need a different signon_realm
@@ -812,7 +813,10 @@ SecKeychainItemRef MacKeychainPasswordFormAdapter::KeychainItemForForm(
     return NULL;
   }
 
-  std::string path = form.origin.path();
+  std::string path;
+  // Path doesn't make sense for Android app credentials.
+  if (!password_manager::IsValidAndroidFacetURI(form.signon_realm))
+    path = form.origin.path();
   std::string username = base::UTF16ToUTF8(form.username_value);
   std::vector<SecKeychainItemRef> matches = MatchingKeychainItems(
       form.signon_realm, form.scheme, path.c_str(), username.c_str());
