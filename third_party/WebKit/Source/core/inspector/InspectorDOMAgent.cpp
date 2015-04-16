@@ -2208,7 +2208,7 @@ void InspectorDOMAgent::pushNodesByBackendIdsToFrontend(ErrorString* errorString
         }
 
         Node* node = DOMNodeIds::nodeForId(backendNodeId);
-        if (node && node->document().frame()->instrumentingAgents() == m_pageAgent->inspectedFrame()->instrumentingAgents())
+        if (node && node->document().frame() && node->document().frame()->instrumentingAgents() == m_pageAgent->inspectedFrame()->instrumentingAgents())
             result->addItem(pushNodePathToFrontend(node));
         else
             result->addItem(0);
