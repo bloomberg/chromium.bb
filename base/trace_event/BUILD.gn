@@ -26,6 +26,8 @@ source_set("trace_event") {
     "trace_event_android.cc",
     "trace_event_argument.cc",
     "trace_event_argument.h",
+    "trace_event_etw_export_win.cc",
+    "trace_event_etw_export_win.h",
     "trace_event_impl.cc",
     "trace_event_impl.h",
     "trace_event_impl_constants.cc",
@@ -62,6 +64,10 @@ source_set("trace_event") {
     "//base/process",
     "//base/third_party/dynamic_annotations",
   ]
+
+  if (is_win) {
+    deps += [ "//base/trace_event/etw_manifest:chrome_events_win" ]
+  }
 
   allow_circular_includes_from = [
     "//base/debug",

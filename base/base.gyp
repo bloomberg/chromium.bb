@@ -190,6 +190,9 @@
               ],
             },
           ],
+          'dependencies': [
+           'trace_event/etw_manifest/etw_manifest.gyp:etw_manifest',
+          ],
         }],
         ['OS == "mac" or (OS == "ios" and _toolset == "host")', {
           'link_settings': {

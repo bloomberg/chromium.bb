@@ -298,6 +298,7 @@ CONTENT_EXPORT extern const char kEnableWin32kRendererLockDown[];
 // Switch to uniquely identify names shared memory section for font cache
 // across chromium flavors.
 CONTENT_EXPORT extern const char kFontCacheSharedMemSuffix[];
+CONTENT_EXPORT extern const char kTraceExportEventsToETW[];
 #endif
 
 CONTENT_EXPORT extern const char kEnableNpapi[];

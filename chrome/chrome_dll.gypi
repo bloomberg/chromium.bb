@@ -124,6 +124,7 @@
                 # On Windows, link the dependencies (libraries) that make
                 # up actual Chromium functionality into this .dll.
                 'chrome_version_resources',
+                '../base/trace_event/etw_manifest/etw_manifest.gyp:etw_manifest',
                 '../chrome/chrome_resources.gyp:chrome_unscaled_resources',
                 '../content/app/resources/content_resources.gyp:content_resources',
                 '../crypto/crypto.gyp:crypto',
@@ -132,6 +133,9 @@
               ],
               'sources': [
                 'app/chrome_dll.rc',
+
+                # ETW Manifest.
+                '<(SHARED_INTERMEDIATE_DIR)/base/trace_event/etw_manifest/chrome_events_win.rc',
 
                 '<(SHARED_INTERMEDIATE_DIR)/chrome_version/chrome_dll_version.rc',
 

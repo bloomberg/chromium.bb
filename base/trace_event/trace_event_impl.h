@@ -26,6 +26,7 @@
 
 // Older style trace macros with explicit id and extra data
 // Only these macros result in publishing data to ETW as currently implemented.
+// TODO(georgesak): Update/replace these with new ETW macros.
 #define TRACE_EVENT_BEGIN_ETW(name, id, extra) \
     base::trace_event::TraceLog::AddTraceEventEtw( \
         TRACE_EVENT_PHASE_BEGIN, \
@@ -446,6 +447,8 @@ class BASE_EXPORT TraceLog {
     ENABLED_FOR_MONITORING = 1 << 1,
     // Category group enabled by SetEventCallbackEnabled().
     ENABLED_FOR_EVENT_CALLBACK = 1 << 2,
+    // Category group enabled to export events to ETW.
+    ENABLED_FOR_ETW_EXPORT = 1 << 3
   };
 
   static TraceLog* GetInstance();

@@ -77,6 +77,7 @@
 #include <cstring>
 
 #include "base/strings/string_number_conversions.h"
+#include "base/trace_event/trace_event_etw_export_win.h"
 #include "ui/base/win/atl_module.h"
 #include "ui/gfx/win/dpi.h"
 #elif defined(OS_MACOSX)
@@ -632,6 +633,12 @@ class ContentMainRunnerImpl : public ContentMainRunner {
           base::trace_event::TraceOptions(
               base::trace_event::RECORD_UNTIL_FULL));
     }
+#if defined(OS_WIN)
+    // Enable exporting of events to ETW if requested on the command line.
+    if (command_line.HasSwitch(switches::kTraceExportEventsToETW))
+      base::trace_event::TraceEventETWExport::EnableETWExport();
+#endif  // OS_WIN
+
 #if !defined(OS_ANDROID)
     // Android tracing started at the beginning of the method.
     // Other OSes have to wait till we get here in order for all the memory

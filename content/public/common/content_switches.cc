@@ -991,6 +991,10 @@ const char kEnableWin32kRendererLockDown[] =
 // This switch allows specifying suffix to shared memory section name to avoid
 // clashes between different instances of Chrome.
 const char kFontCacheSharedMemSuffix[] = "font-cache-shared-mem-suffix";
+
+// Enables the exporting of the tracing events to ETW. This is only supported on
+// Windows Vista and later.
+const char kTraceExportEventsToETW[] = "trace-export-events-to-etw";
 #endif
 
 // Enables the use of NPAPI plugins.

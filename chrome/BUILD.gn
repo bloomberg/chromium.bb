@@ -165,6 +165,7 @@ shared_library("main_dll") {
     output_name = "chrome"
 
     sources = [
+      "$root_gen_dir/base/trace_event/etw_manifest/chrome_events_win.rc",
       "//base/win/dllmain.cc",
       "app/chrome_command_ids.h",
       "app/chrome_dll.rc",
@@ -182,6 +183,7 @@ shared_library("main_dll") {
       # On Windows, link the dependencies (libraries) that make up actual
       # Chromium functionality into this .dll.
       ":chrome_version_resources",
+      "//base/trace_event/etw_manifest:chrome_events_win",
       "//chrome/app/theme:chrome_unscaled_resources",
       "//chrome_elf",
       "//content/app/resources",
