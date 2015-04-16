@@ -55,22 +55,17 @@ DEFINE_TRACE(AudioListener)
 {
 }
 
-void AudioListener::addPanner(PannerHandler* panner)
+void AudioListener::addPanner(PannerHandler& panner)
 {
     ASSERT(isMainThread());
-    if (panner)
-        m_panners.append(panner);
+    m_panners.add(&panner);
 }
 
-void AudioListener::removePanner(PannerHandler* panner)
+void AudioListener::removePanner(PannerHandler& panner)
 {
     ASSERT(isMainThread());
-    for (unsigned i = 0; i < m_panners.size(); ++i) {
-        if (panner == m_panners[i]) {
-            m_panners.remove(i);
-            break;
-        }
-    }
+    ASSERT(m_panners.contains(&panner));
+    m_panners.remove(&panner);
 }
 
 void AudioListener::createAndLoadHRTFDatabaseLoader(float sampleRate)
@@ -92,8 +87,8 @@ void AudioListener::waitForHRTFDatabaseLoaderThreadCompletion()
 
 void AudioListener::markPannersAsDirty(unsigned type)
 {
-    for (unsigned i = 0; i < m_panners.size(); ++i)
-        m_panners[i]->markPannerAsDirty(type);
+    for (PannerHandler* panner : m_panners)
+        panner->markPannerAsDirty(type);
 }
 
 void AudioListener::setPosition(const FloatPoint3D& position)

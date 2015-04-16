@@ -152,7 +152,7 @@ void PannerHandler::initialize()
         return;
 
     m_panner = Panner::create(m_panningModel, sampleRate(), listener()->hrtfDatabaseLoader());
-    listener()->addPanner(this);
+    listener()->addPanner(*this);
 
     AudioHandler::initialize();
 }
@@ -163,7 +163,7 @@ void PannerHandler::uninitialize()
         return;
 
     m_panner.clear();
-    listener()->removePanner(this);
+    listener()->removePanner(*this);
 
     AudioHandler::uninitialize();
 }
