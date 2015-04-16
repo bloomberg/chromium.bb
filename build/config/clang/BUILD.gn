@@ -6,20 +6,29 @@ import("clang.gni")
 
 config("find_bad_constructs") {
   if (clang_use_chrome_plugins) {
-    cflags = [
-      "-Xclang",
-      "-load",
-      "-Xclang",
-    ]
+    cflags = []
+
+    # On Windows, the plugin is built directly into clang, so there's
+    # no need to load it dynamically.
 
     if (is_mac || is_ios) {
-      cflags += [ rebase_path(
-              "//third_party/llvm-build/Release+Asserts/lib/libFindBadConstructs.dylib",
-              root_build_dir) ]
+      cflags += [
+        "-Xclang",
+        "-load",
+        "-Xclang",
+        rebase_path(
+            "//third_party/llvm-build/Release+Asserts/lib/libFindBadConstructs.dylib",
+            root_build_dir),
+      ]
     } else if (is_linux) {
-      cflags += [ rebase_path(
-              "//third_party/llvm-build/Release+Asserts/lib/libFindBadConstructs.so",
-              root_build_dir) ]
+      cflags += [
+        "-Xclang",
+        "-load",
+        "-Xclang",
+        rebase_path(
+            "//third_party/llvm-build/Release+Asserts/lib/libFindBadConstructs.so",
+            root_build_dir),
+      ]
     }
 
     cflags += [

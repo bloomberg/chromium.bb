@@ -2148,20 +2148,31 @@
         'grit_defines': ['-D', 'enable_service_discovery'],
         'enable_service_discovery%': 1
       }],
-      ['clang_use_chrome_plugins==1 and OS!="win"', {
+      ['clang_use_chrome_plugins==1', {
         'variables': {
           'conditions': [
-            ['OS=="mac" or OS=="ios"', {
-              'clang_lib_path%': '<!(cd <(DEPTH) && pwd -P)/third_party/llvm-build/Release+Asserts/lib/libFindBadConstructs.dylib',
-            }, { # OS != "mac" or OS != "ios"
-              'clang_lib_path%': '<!(cd <(DEPTH) && pwd -P)/third_party/llvm-build/Release+Asserts/lib/libFindBadConstructs.so',
-            }],
+            ['OS!="win"', {
+              'variables': {
+                'conditions': [
+                  ['OS=="mac" or OS=="ios"', {
+                    'clang_lib_path%': '<!(cd <(DEPTH) && pwd -P)/third_party/llvm-build/Release+Asserts/lib/libFindBadConstructs.dylib',
+                  }, { # OS != "mac" or OS != "ios"
+                    'clang_lib_path%': '<!(cd <(DEPTH) && pwd -P)/third_party/llvm-build/Release+Asserts/lib/libFindBadConstructs.so',
+                  }],
+                ],
+              },
+              'clang_dynlib_flags%': '-Xclang -load -Xclang <(clang_lib_path) ',
+            }, { # OS == "win"
+              # On Windows, the plugin is built directly into clang, so there's
+              # no need to load it dynamically.
+              'clang_dynlib_flags%': '',
+            }]
           ],
         },
         # If you change these, also change build/config/clang/BUILD.gn.
         'clang_chrome_plugins_flags%':
-          '-Xclang -load -Xclang <(clang_lib_path)'
-          ' -Xclang -add-plugin -Xclang find-bad-constructs',
+          '<(clang_dynlib_flags)'
+          '-Xclang -add-plugin -Xclang find-bad-constructs',
       }],
       ['asan==1 or msan==1 or lsan==1 or tsan==1', {
         'clang%': 1,
@@ -2214,9 +2225,9 @@
       }],
 
       ['OS=="win"', {
-        # The Clang plugins don't currently work on Windows.
+        # The Blink GC plugin doesn't currently work on Windows.
         # TODO(hans): One day, this will work. (crbug.com/82385)
-        'clang_use_chrome_plugins%': 0,
+        'blink_gc_plugin%': 0,
       }],
 
       # On valgrind bots, override the optimizer settings so we don't inline too
@@ -5609,6 +5620,13 @@
                 'WarnAsError': 'false',
                 'AdditionalOptions': [
                   '/fallback',
+                ],
+              },
+            }],
+            ['clang==1 and clang_use_chrome_plugins==1', {
+              'VCCLCompilerTool': {
+                'AdditionalOptions': [
+                  '<@(clang_chrome_plugins_flags)',
                 ],
               },
             }],
