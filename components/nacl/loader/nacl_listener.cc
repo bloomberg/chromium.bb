@@ -139,13 +139,16 @@ void DebugStubPortSelectedHandler(uint16_t port) {
 // the given message_loop_proxy runs.
 // Also, creates and sets the corresponding NaClDesc to the given nap with
 // the FD #.
-scoped_refptr<NaClIPCAdapter> SetUpIPCAdapter(
+void SetUpIPCAdapter(
     IPC::ChannelHandle* handle,
     scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
     struct NaClApp* nap,
-    int nacl_fd) {
+    int nacl_fd,
+    NaClIPCAdapter::ResolveFileTokenCallback resolve_file_token_cb) {
   scoped_refptr<NaClIPCAdapter> ipc_adapter(
-      new NaClIPCAdapter(*handle, message_loop_proxy.get()));
+      new NaClIPCAdapter(*handle,
+                         message_loop_proxy.get(),
+                         resolve_file_token_cb));
   ipc_adapter->ConnectChannel();
 #if defined(OS_POSIX)
   handle->socket =
@@ -155,7 +158,6 @@ scoped_refptr<NaClIPCAdapter> SetUpIPCAdapter(
   // Pass a NaClDesc to the untrusted side. This will hold a ref to the
   // NaClIPCAdapter.
   NaClAppSetDesc(nap, nacl_fd, ipc_adapter->MakeNaClDesc());
-  return ipc_adapter;
 }
 
 }  // namespace
@@ -311,17 +313,17 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
     // (browser/renderer) processes. The IRT uses these channels to
     // communicate with the host and to initialize the IPC dispatchers.
     SetUpIPCAdapter(&browser_handle, io_thread_.message_loop_proxy(),
-                    nap, NACL_CHROME_DESC_BASE);
+                    nap, NACL_CHROME_DESC_BASE,
+                    NaClIPCAdapter::ResolveFileTokenCallback());
     SetUpIPCAdapter(&ppapi_renderer_handle, io_thread_.message_loop_proxy(),
-                    nap, NACL_CHROME_DESC_BASE + 1);
-
-    scoped_refptr<NaClIPCAdapter> manifest_ipc_adapter =
-        SetUpIPCAdapter(&manifest_service_handle,
-                        io_thread_.message_loop_proxy(),
-                        nap,
-                        NACL_CHROME_DESC_BASE + 2);
-    manifest_ipc_adapter->set_resolve_file_token_callback(
-        base::Bind(&NaClListener::ResolveFileToken, base::Unretained(this)));
+                    nap, NACL_CHROME_DESC_BASE + 1,
+                    NaClIPCAdapter::ResolveFileTokenCallback());
+    SetUpIPCAdapter(&manifest_service_handle,
+                    io_thread_.message_loop_proxy(),
+                    nap,
+                    NACL_CHROME_DESC_BASE + 2,
+                    base::Bind(&NaClListener::ResolveFileToken,
+                               base::Unretained(this)));
   }
 
   trusted_listener_ = new NaClTrustedListener(

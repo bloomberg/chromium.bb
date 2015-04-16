@@ -72,6 +72,14 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
   };
 #pragma pack(pop)
 
+  typedef base::Callback<void(IPC::PlatformFileForTransit, base::FilePath)>
+      ResolveFileTokenReplyCallback;
+
+  typedef base::Callback<void(uint64_t,  // file_token_lo
+                              uint64_t,  // file_token_hi
+                              ResolveFileTokenReplyCallback)>
+      ResolveFileTokenCallback;
+
   // Creates an adapter, using the thread associated with the given task
   // runner for posting messages. In normal use, the task runner will post to
   // the I/O thread of the process.
@@ -79,7 +87,15 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
   // If you use this constructor, you MUST call ConnectChannel after the
   // NaClIPCAdapter is constructed, or the NaClIPCAdapter's channel will not be
   // connected.
-  NaClIPCAdapter(const IPC::ChannelHandle& handle, base::TaskRunner* runner);
+  //
+  // |resolve_file_token_cb| is an optional callback to be invoked for
+  // resolving file tokens received from the renderer. When the file token
+  // is resolved, the ResolveFileTokenReplyCallback passed inside the
+  // ResolveFileTokenCallback will be invoked.
+  NaClIPCAdapter(
+      const IPC::ChannelHandle& handle,
+      base::TaskRunner* runner,
+      ResolveFileTokenCallback resolve_file_token_cb);
 
   // Initializes with a given channel that's already created for testing
   // purposes. This function will take ownership of the given channel.
@@ -114,22 +130,6 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelConnected(int32 peer_pid) override;
   void OnChannelError() override;
-
-  typedef base::Callback<void(IPC::PlatformFileForTransit, base::FilePath)>
-      ResolveFileTokenReplyCallback;
-
-  typedef base::Callback<void(uint64_t,  // file_token_lo
-                              uint64_t,  // file_token_hi
-                              ResolveFileTokenReplyCallback)>
-      ResolveFileTokenCallback;
-
-  // Sets a callback to be invoked for resolving file tokens received from the
-  // renderer. When the file token is resolved, the
-  // ResolveFileTokenReplyCallback passed inside the ResolveFileTokenCallback
-  // will be invoked.
-  void set_resolve_file_token_callback(ResolveFileTokenCallback cb) {
-    resolve_file_token_cb_ = cb;
-  }
 
  private:
   friend class base::RefCountedThreadSafe<NaClIPCAdapter>;

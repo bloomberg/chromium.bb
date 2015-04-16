@@ -325,10 +325,12 @@ NaClIPCAdapter::IOThreadData::~IOThreadData() {
 }
 
 NaClIPCAdapter::NaClIPCAdapter(const IPC::ChannelHandle& handle,
-                               base::TaskRunner* runner)
+                               base::TaskRunner* runner,
+                               ResolveFileTokenCallback resolve_file_token_cb)
     : lock_(),
       cond_var_(&lock_),
       task_runner_(runner),
+      resolve_file_token_cb_(resolve_file_token_cb),
       locked_data_() {
   io_thread_data_.channel_ = IPC::Channel::CreateServer(handle, this);
   // Note, we can not PostTask for ConnectChannelOnIOThread here. If we did,
