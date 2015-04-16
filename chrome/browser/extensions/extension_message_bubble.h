@@ -11,12 +11,15 @@ class Browser;
 
 namespace extensions {
 
-// The interface between the SuspiciousExtensionBubble bubble and its
-// controller.
+// The interface between an extension message bubble's view and its
+// corresponding ExtensionMessageBubbleController.
 class ExtensionMessageBubble {
  public:
   // Instruct the bubble to appear.
   virtual void Show() = 0;
+
+ protected:
+  virtual ~ExtensionMessageBubble() {}
 };
 
 }  // namespace extensions

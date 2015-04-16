@@ -73,6 +73,10 @@ class BrowserActionsContainerViewSizeDelegate {
   // to large.
   BOOL grippyPinned_;
 
+  // Whether the toolbar is currently highlighting its actions (in which case it
+  // is drawn with an orange background).
+  BOOL isHighlighting_;
+
   // A tracking area to receive mouseEntered events, if tracking is enabled.
   ui::ScopedCrTrackingArea trackingArea_;
 
@@ -85,6 +89,9 @@ class BrowserActionsContainerViewSizeDelegate {
 
 // Sets whether or not tracking (for mouseEntered events) is enabled.
 - (void)setTrackingEnabled:(BOOL)enabled;
+
+// Sets whether or not the container is highlighting.
+- (void)setIsHighlighting:(BOOL)isHighlighting;
 
 // Resizes the container to the given ideal width, optionally animating.
 - (void)resizeToWidth:(CGFloat)width animate:(BOOL)animate;

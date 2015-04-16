@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
-#include "chrome/browser/ui/toolbar/toolbar_actions_bar_bubble_delegate.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/toolbar/test_toolbar_actions_bar_bubble_delegate.h"
 #include "chrome/browser/ui/views/extensions/extension_toolbar_icon_surfacing_bubble_views.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
@@ -13,33 +14,14 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
-namespace {
-
 using ExtensionToolbarIconSurfacingBubbleTest = views::ViewsTestBase;
-
-class TestDelegate : public ToolbarActionsBarBubbleDelegate {
- public:
-  TestDelegate() {}
-  ~TestDelegate() {}
-
-  void OnToolbarActionsBarBubbleShown() override {}
-  void OnToolbarActionsBarBubbleClosed(CloseAction action) override {
-    EXPECT_FALSE(action_);
-    action_.reset(new CloseAction(action));
-  }
-
-  CloseAction* action() const { return action_.get(); }
-
- private:
-  scoped_ptr<CloseAction> action_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDelegate);
-};
-
-}  // namespace
 
 TEST_F(ExtensionToolbarIconSurfacingBubbleTest,
        ExtensionToolbarIconSurfacingBubbleTest) {
+  const base::string16 kHeadingString = base::ASCIIToUTF16("Heading");
+  const base::string16 kBodyString = base::ASCIIToUTF16("Body");
+  const base::string16 kActionString = base::ASCIIToUTF16("Action");
+
   scoped_ptr<views::Widget> anchor_widget(new views::Widget());
   views::Widget::InitParams params =
       CreateParams(views::Widget::InitParams::TYPE_WINDOW);
@@ -48,16 +30,19 @@ TEST_F(ExtensionToolbarIconSurfacingBubbleTest,
 
   {
     // Test clicking on the button.
-    TestDelegate delegate;
+    TestToolbarActionsBarBubbleDelegate delegate(
+        kHeadingString, kBodyString, kActionString);
     ExtensionToolbarIconSurfacingBubble* bubble =
         new ExtensionToolbarIconSurfacingBubble(
             anchor_widget->GetContentsView(),
-            &delegate);
+            delegate.GetDelegate());
     views::Widget* bubble_widget =
         views::BubbleDelegateView::CreateBubble(bubble);
-    bubble_widget->Show();
+    EXPECT_FALSE(delegate.shown());
+    bubble->Show();
+    EXPECT_TRUE(delegate.shown());
     views::test::TestWidgetObserver bubble_observer(bubble_widget);
-    EXPECT_FALSE(delegate.action());
+    EXPECT_FALSE(delegate.close_action());
 
     // Find the button and click on it.
     views::View* button = nullptr;
@@ -76,30 +61,32 @@ TEST_F(ExtensionToolbarIconSurfacingBubbleTest,
 
     // The bubble should be closed, and the delegate should be told that the
     // button was clicked.
-    ASSERT_TRUE(delegate.action());
-    EXPECT_EQ(ToolbarActionsBarBubbleDelegate::ACKNOWLEDGED,
-              *delegate.action());
+    ASSERT_TRUE(delegate.close_action());
+    EXPECT_EQ(ToolbarActionsBarBubbleDelegate::CLOSE_EXECUTE,
+              *delegate.close_action());
     EXPECT_TRUE(bubble_observer.widget_closed());
   }
 
   {
     // Test dismissing the bubble without clicking the button.
-    TestDelegate delegate;
+    TestToolbarActionsBarBubbleDelegate delegate(
+        kHeadingString, kBodyString, kActionString);
     ExtensionToolbarIconSurfacingBubble* bubble =
         new ExtensionToolbarIconSurfacingBubble(
             anchor_widget->GetContentsView(),
-            &delegate);
+            delegate.GetDelegate());
     views::Widget* bubble_widget =
         views::BubbleDelegateView::CreateBubble(bubble);
-    bubble_widget->Show();
+    bubble->Show();
     views::test::TestWidgetObserver bubble_observer(bubble_widget);
-    EXPECT_FALSE(delegate.action());
+    EXPECT_FALSE(delegate.close_action());
 
     // Close the bubble. The delegate should be told it was dismissed.
     bubble_widget->Close();
     base::RunLoop().RunUntilIdle();
-    ASSERT_TRUE(delegate.action());
-    EXPECT_EQ(ToolbarActionsBarBubbleDelegate::DISMISSED, *delegate.action());
+    ASSERT_TRUE(delegate.close_action());
+    EXPECT_EQ(ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS,
+              *delegate.close_action());
     EXPECT_TRUE(bubble_observer.widget_closed());
   }
 }

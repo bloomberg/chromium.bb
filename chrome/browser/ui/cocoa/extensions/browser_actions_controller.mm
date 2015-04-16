@@ -7,16 +7,19 @@
 #include <string>
 
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
+#import "chrome/browser/ui/cocoa/extensions/extension_message_bubble_bridge.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
-#import "chrome/browser/ui/cocoa/extensions/extension_toolbar_icon_surfacing_bubble_mac.h"
+#import "chrome/browser/ui/cocoa/extensions/toolbar_actions_bar_bubble_mac.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#include "chrome/browser/ui/extensions/extension_toolbar_icon_surfacing_bubble_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
@@ -141,6 +144,11 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 // Returns the associated ToolbarController.
 - (ToolbarController*)toolbarController;
 
+// Creates a message bubble anchored to the first action in the toolbar (or the
+// overflow menu, if no actions are present).
+- (ToolbarActionsBarBubbleMac*)createMessageBubble:
+    (scoped_ptr<ToolbarActionsBarBubbleDelegate>)delegate;
+
 @end
 
 namespace {
@@ -253,7 +261,17 @@ void ToolbarActionsBarBridge::OnOverflowedActionWantsToRunChanged(
 
 void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
     scoped_ptr<extensions::ExtensionMessageBubbleController> controller) {
-  NOTREACHED();  // Not yet implemented on Mac.
+  // This goop is a by-product of needing to wire together abstract classes,
+  // C++/Cocoa bridges, and ExtensionMessageBubbleController's somewhat strange
+  // Show() interface. It's ugly, but it's pretty confined, so it's probably
+  // okay (but if we ever need to expand, it might need to be reconsidered).
+  scoped_ptr<ExtensionMessageBubbleBridge> bridge(
+      new ExtensionMessageBubbleBridge(controller.Pass()));
+  ExtensionMessageBubbleBridge* weak_bridge = bridge.get();
+  ToolbarActionsBarBubbleMac* bubble =
+      [controller_ createMessageBubble:bridge.Pass()];
+  weak_bridge->SetBubble(bubble);
+  weak_bridge->controller()->Show(weak_bridge);
 }
 
 }  // namespace
@@ -325,7 +343,8 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
     [self showChevronIfNecessaryInFrame:[containerView_ frame]];
     [self updateGrippyCursors];
     [container setResizable:!isOverflow_];
-    if (toolbarActionsBar_->ShouldShowInfoBubble()) {
+    if (ExtensionToolbarIconSurfacingBubbleDelegate::ShouldShowForProfile(
+            browser_->profile())) {
       [containerView_ setTrackingEnabled:YES];
       [[NSNotificationCenter defaultCenter]
           addObserver:self
@@ -487,6 +506,8 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
 - (void)redraw {
   if (![self updateContainerVisibility])
     return;  // Container is hidden; no need to update.
+
+  [containerView_ setIsHighlighting:toolbarActionsBar_->is_highlighting()];
 
   std::vector<ToolbarActionViewController*> toolbar_actions =
       toolbarActionsBar_->toolbar_actions();
@@ -670,15 +691,12 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
 }
 
 - (void)containerMouseEntered:(NSNotification*)notification {
-  if (toolbarActionsBar_->ShouldShowInfoBubble()) {
-    NSPoint anchor = [self popupPointForId:[[buttons_ objectAtIndex:0]
-                                               viewController]->GetId()];
-    anchor = [[containerView_ window] convertBaseToScreen:anchor];
-    ExtensionToolbarIconSurfacingBubbleMac* bubble =
-        [[ExtensionToolbarIconSurfacingBubbleMac alloc]
-            initWithParentWindow:[containerView_ window]
-                     anchorPoint:anchor
-                        delegate:toolbarActionsBar_.get()];
+  if (ExtensionToolbarIconSurfacingBubbleDelegate::ShouldShowForProfile(
+          browser_->profile())) {
+    ToolbarActionsBarBubbleMac* bubble =
+        [self createMessageBubble:scoped_ptr<ToolbarActionsBarBubbleDelegate>(
+            new ExtensionToolbarIconSurfacingBubbleDelegate(
+                browser_->profile()))];
     [bubble showWindow:nil];
   }
   [containerView_ setTrackingEnabled:NO];
@@ -866,6 +884,18 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
 - (ToolbarController*)toolbarController {
   return [[BrowserWindowController browserWindowControllerForWindow:
              browser_->window()->GetNativeWindow()] toolbarController];
+}
+
+- (ToolbarActionsBarBubbleMac*)createMessageBubble:
+    (scoped_ptr<ToolbarActionsBarBubbleDelegate>)delegate {
+  DCHECK_GE([buttons_ count], 0u);
+  NSPoint anchor = [self popupPointForId:[[buttons_ objectAtIndex:0]
+                                             viewController]->GetId()];
+  anchor = [[containerView_ window] convertBaseToScreen:anchor];
+  return [[ToolbarActionsBarBubbleMac alloc]
+      initWithParentWindow:[containerView_ window]
+               anchorPoint:anchor
+                  delegate:delegate.Pass()];
 }
 
 

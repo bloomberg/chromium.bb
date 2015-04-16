@@ -5,9 +5,6 @@
 #include "chrome/browser/ui/views/extensions/extension_toolbar_icon_surfacing_bubble_views.h"
 
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_bubble_delegate.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
@@ -15,14 +12,18 @@
 
 ExtensionToolbarIconSurfacingBubble::ExtensionToolbarIconSurfacingBubble(
     views::View* anchor_view,
-    ToolbarActionsBarBubbleDelegate* delegate)
+    scoped_ptr<ToolbarActionsBarBubbleDelegate> delegate)
     : views::BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
-      delegate_(delegate),
+      delegate_(delegate.Pass()),
       acknowledged_(false) {
-  delegate_->OnToolbarActionsBarBubbleShown();
 }
 
 ExtensionToolbarIconSurfacingBubble::~ExtensionToolbarIconSurfacingBubble() {
+}
+
+void ExtensionToolbarIconSurfacingBubble::Show() {
+  delegate_->OnBubbleShown();
+  GetWidget()->Show();
 }
 
 void ExtensionToolbarIconSurfacingBubble::Init() {
@@ -41,8 +42,7 @@ void ExtensionToolbarIconSurfacingBubble::Init() {
 
   // Add a header.
   layout->StartRow(0, 0);
-  views::Label* heading_label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_EXTENSION_TOOLBAR_BUBBLE_HEADING));
+  views::Label* heading_label = new views::Label(delegate_->GetHeadingText());
   heading_label->SetFontList(
       ui::ResourceBundle::GetSharedInstance().GetFontList(
           ui::ResourceBundle::MediumFont));
@@ -53,8 +53,7 @@ void ExtensionToolbarIconSurfacingBubble::Init() {
 
   // Add the content string.
   layout->StartRow(0, 0);
-  views::Label* content_label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_EXTENSION_TOOLBAR_BUBBLE_CONTENT));
+  views::Label* content_label = new views::Label(delegate_->GetBodyText());
   content_label->SetMultiLine(true);
   content_label->SizeToFit(width);
   content_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -64,7 +63,7 @@ void ExtensionToolbarIconSurfacingBubble::Init() {
   // Add a "got it" button.
   layout->StartRow(0, 0);
   views::LabelButton* button = new views::LabelButton(
-      this, l10n_util::GetStringUTF16(IDS_EXTENSION_TOOLBAR_BUBBLE_OK));
+      this, delegate_->GetActionButtonText());
   button->SetStyle(views::Button::STYLE_BUTTON);
   layout->AddView(button,
                   1,
@@ -77,8 +76,7 @@ void ExtensionToolbarIconSurfacingBubble::OnWidgetDestroying(
     views::Widget* widget) {
   BubbleDelegateView::OnWidgetDestroying(widget);
   if (!acknowledged_) {
-    delegate_->OnToolbarActionsBarBubbleClosed(
-        ToolbarActionsBarBubbleDelegate::DISMISSED);
+    delegate_->OnBubbleClosed(ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS);
     acknowledged_ = true;
   }
 }
@@ -86,8 +84,7 @@ void ExtensionToolbarIconSurfacingBubble::OnWidgetDestroying(
 void ExtensionToolbarIconSurfacingBubble::ButtonPressed(
     views::Button* sender,
     const ui::Event& event) {
-  delegate_->OnToolbarActionsBarBubbleClosed(
-      ToolbarActionsBarBubbleDelegate::ACKNOWLEDGED);
+  delegate_->OnBubbleClosed(ToolbarActionsBarBubbleDelegate::CLOSE_EXECUTE);
   acknowledged_ = true;
   GetWidget()->Close();
 }

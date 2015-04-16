@@ -36,8 +36,7 @@ class ToolbarActionViewController;
 // (fka wrench) menu. The main bar can have only a single row of icons with
 // flexible width, whereas the overflow bar has multiple rows of icons with a
 // fixed width (the width of the menu).
-class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer,
-                          public ToolbarActionsBarBubbleDelegate {
+class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
  public:
   // A struct to contain the platform settings.
   struct PlatformSettings {
@@ -123,9 +122,6 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer,
                   int dropped_index,
                   DragType drag_type);
 
-  // Returns true if the info bubble about the toolbar redesign should be shown.
-  bool ShouldShowInfoBubble();
-
   const std::vector<ToolbarActionViewController*>& toolbar_actions() const {
     return toolbar_actions_.get();
   }
@@ -176,10 +172,6 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer,
   void OnToolbarHighlightModeChanged(bool is_highlighting) override;
   void OnToolbarModelInitialized() override;
   Browser* GetBrowser() override;
-
-  // ToolbarActionsBarBubbleDelegate:
-  void OnToolbarActionsBarBubbleShown() override;
-  void OnToolbarActionsBarBubbleClosed(CloseAction action) override;
 
   // Resizes the delegate (if necessary) to the preferred size using the given
   // |tween_type| and optionally suppressing the chevron.

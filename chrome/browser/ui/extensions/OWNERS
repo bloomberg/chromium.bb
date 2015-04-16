@@ -7,3 +7,5 @@ per-file extension_installed_bubble*=finnur@chromium.org
 per-file extension_installed_bubble*=rdevlin.cronin@chromium.org
 per-file extension_message_bubble*=finnur@chromium.org
 per-file extension_message_bubble*=rdevlin.cronin@chromium.org
+per-file extension_toolbar*=finnur@chromium.org
+per-file extension_toolbar*=rdevlin.cronin@chromium.org

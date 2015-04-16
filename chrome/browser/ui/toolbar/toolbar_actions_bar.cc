@@ -717,34 +717,6 @@ void ToolbarActionsBar::OnDragDrop(int dragged_index,
   }
 }
 
-bool ToolbarActionsBar::ShouldShowInfoBubble() {
-  // If the redesign isn't running, or the user has already acknowledged it,
-  // we don't show the bubble.
-  PrefService* prefs = browser_->profile()->GetPrefs();
-  if (!extensions::FeatureSwitch::extension_action_redesign()->IsEnabled() ||
-      (prefs->HasPrefPath(prefs::kToolbarIconSurfacingBubbleAcknowledged) &&
-       prefs->GetBoolean(prefs::kToolbarIconSurfacingBubbleAcknowledged)))
-    return false;
-
-  // We don't show more than once per day.
-  if (prefs->HasPrefPath(prefs::kToolbarIconSurfacingBubbleLastShowTime)) {
-    base::Time last_shown_time = base::Time::FromInternalValue(
-        prefs->GetInt64(prefs::kToolbarIconSurfacingBubbleLastShowTime));
-    if (base::Time::Now() - last_shown_time < base::TimeDelta::FromDays(1))
-      return false;
-  }
-
-  if (!model_->RedesignIsShowingNewIcons()) {
-    // We only show the bubble if there are any new icons present - otherwise,
-    // the user won't see anything different, so we treat it as acknowledged.
-    OnToolbarActionsBarBubbleClosed(
-        ToolbarActionsBarBubbleDelegate::ACKNOWLEDGED);
-    return false;
-  }
-
-  return true;
-}
-
 void ToolbarActionsBar::MaybeShowExtensionBubble() {
   scoped_ptr<extensions::ExtensionMessageBubbleController> controller =
       ExtensionMessageBubbleFactory(browser_->profile()).GetController();
@@ -921,24 +893,6 @@ void ToolbarActionsBar::OnToolbarModelInitialized() {
 
 Browser* ToolbarActionsBar::GetBrowser() {
   return browser_;
-}
-
-void ToolbarActionsBar::OnToolbarActionsBarBubbleShown() {
-  // Record the last time the bubble was shown.
-  browser_->profile()->GetPrefs()->SetInt64(
-      prefs::kToolbarIconSurfacingBubbleLastShowTime,
-      base::Time::Now().ToInternalValue());
-}
-
-void ToolbarActionsBar::OnToolbarActionsBarBubbleClosed(CloseAction action) {
-  if (action == ToolbarActionsBarBubbleDelegate::ACKNOWLEDGED) {
-    PrefService* prefs = browser_->profile()->GetPrefs();
-    prefs->SetBoolean(prefs::kToolbarIconSurfacingBubbleAcknowledged, true);
-    // Once the bubble is acknowledged, we no longer need to store the last
-    // show time.
-    if (prefs->HasPrefPath(prefs::kToolbarIconSurfacingBubbleLastShowTime))
-      prefs->ClearPref(prefs::kToolbarIconSurfacingBubbleLastShowTime);
-  }
 }
 
 void ToolbarActionsBar::ReorderActions() {

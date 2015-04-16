@@ -8,6 +8,8 @@
 
 #include "base/basictypes.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
+#include "grit/theme_resources.h"
+#include "ui/base/cocoa/appkit_utils.h"
 
 NSString* const kBrowserActionGrippyDragStartedNotification =
     @"BrowserActionGrippyDragStartedNotification";
@@ -71,6 +73,15 @@ const CGFloat kMinimumContainerWidth = 3.0;
   [super dealloc];
 }
 
+- (void)drawRect:(NSRect)rect {
+  [super drawRect:rect];
+  if (isHighlighting_) {
+    ui::NinePartImageIds imageIds = IMAGE_GRID(IDR_DEVELOPER_MODE_HIGHLIGHT);
+    ui::DrawNinePartImage(
+        [self bounds], imageIds, NSCompositeSourceOver, 1.0, true);
+  }
+}
+
 - (void)setTrackingEnabled:(BOOL)enabled {
   if (enabled) {
     trackingArea_.reset(
@@ -85,6 +96,13 @@ const CGFloat kMinimumContainerWidth = 3.0;
     [self removeTrackingArea:trackingArea_.get()];
     [trackingArea_.get() clearOwner];
     trackingArea_.reset(nil);
+  }
+}
+
+- (void)setIsHighlighting:(BOOL)isHighlighting {
+  if (isHighlighting != isHighlighting_) {
+    isHighlighting_ = isHighlighting;
+    [self setNeedsDisplay:YES];
   }
 }
 
