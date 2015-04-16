@@ -8,6 +8,8 @@
         '../third_party/android_tools/android_tools.gyp:android_support_v13_javalib',
     'cast_build_release': 'internal/build/cast_build_release',
     'cast_is_debug_build%': 0,
+    # Refers to enum CastProductType in components/metrics/proto/cast_logs.proto
+    'cast_product_type%': 0,  # CAST_PRODUCT_TYPE_UNKNOWN
     'chromium_code': 1,
     'chromecast_branding%': 'Chromium',
     'disable_display%': 0,
@@ -338,6 +340,7 @@
             # otherwise, a dev string is used.
             '-e', 'CAST_BUILD_RELEASE="<!(if test -f <(cast_build_release); then cat <(cast_build_release); else echo eng.${USER}; fi)"',
             '-e', 'CAST_IS_DEBUG_BUILD=1 if "<(CONFIGURATION_NAME)" == "Debug" or <(cast_is_debug_build) == 1 else 0',
+            '-e', 'CAST_PRODUCT_TYPE=<(cast_product_type)',
             'common/version.h.in',
             '<@(_outputs)',
           ],
