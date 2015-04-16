@@ -84,12 +84,10 @@ class NavigatorTestWithBrowserSideNavigation
   // Note: caller must invoke ClearMessages on the sink at some point before
   // the tracked commit happens to clear up commit messages from previous
   // navigations.
-  bool DidRenderFrameHostRequestCommit(RenderFrameHostImpl* rfh) {
-    MockRenderProcessHost* rph =
-        static_cast<MockRenderProcessHost*>(rfh->GetProcess());
+  bool DidRenderFrameHostRequestCommit(TestRenderFrameHost* rfh) {
     const FrameMsg_CommitNavigation* commit_message =
         static_cast<const FrameMsg_CommitNavigation*>(
-            rph->sink().GetUniqueMessageMatching(
+            rfh->GetProcess()->sink().GetUniqueMessageMatching(
                 FrameMsg_CommitNavigation::ID));
     return commit_message &&
            rfh->GetRoutingID() == commit_message->routing_id();
@@ -938,9 +936,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   // Now go back to the initial site so that the swapped out RenderFrameHost
   // should be reused.
   process()->sink().ClearMessages();
-  static_cast<MockRenderProcessHost*>(rfh1->GetProcess())
-      ->sink()
-      .ClearMessages();
+  rfh1->GetProcess()->sink().ClearMessages();
   RequestNavigation(node, kUrl1);
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
 

@@ -563,8 +563,7 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
   // be left waiting for a reply.  We pick RunBeforeUnloadConfirm as an example
   // that can run easily within a unit test, and that needs to receive a reply
   // without showing an actual dialog.
-  MockRenderProcessHost* ntp_process_host =
-      static_cast<MockRenderProcessHost*>(ntp_rfh->GetProcess());
+  MockRenderProcessHost* ntp_process_host = ntp_rfh->GetProcess();
   ntp_process_host->sink().ClearMessages();
   const base::string16 msg = base::ASCIIToUTF16("Message");
   bool result = false;
@@ -636,8 +635,7 @@ TEST_F(RenderFrameHostManagerTest, WhiteListSwapCompositorFrame) {
           swapped_out_rfh->GetRenderViewHost()->GetView());
   EXPECT_FALSE(swapped_out_rwhv->did_swap_compositor_frame());
 
-  MockRenderProcessHost* process_host =
-      static_cast<MockRenderProcessHost*>(swapped_out_rfh->GetProcess());
+  MockRenderProcessHost* process_host = swapped_out_rfh->GetProcess();
   process_host->sink().ClearMessages();
 
   cc::CompositorFrame frame;

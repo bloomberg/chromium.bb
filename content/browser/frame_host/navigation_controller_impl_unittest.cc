@@ -3313,8 +3313,7 @@ TEST_F(NavigationControllerTest, IsInPageNavigation) {
 
   // Test allow_universal_access_from_file_urls flag.
   const GURL different_origin_url("http://www.example.com");
-  MockRenderProcessHost* rph =
-      static_cast<MockRenderProcessHost*>(main_test_rfh()->GetProcess());
+  MockRenderProcessHost* rph = main_test_rfh()->GetProcess();
   WebPreferences prefs = test_rvh()->GetWebkitPreferences();
   prefs.allow_universal_access_from_file_urls = true;
   test_rvh()->UpdateWebkitPreferences(prefs);

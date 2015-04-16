@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/test/test_render_view_host.h"
 #include "ui/base/page_transition_types.h"
@@ -45,8 +46,9 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
                       int flags);
   ~TestRenderFrameHost() override;
 
-  // RenderFrameHostImpl overrides (same values, but in Test* types)
+  // RenderFrameHostImpl overrides (same values, but in Test*/Mock* types)
   TestRenderViewHost* GetRenderViewHost() override;
+  MockRenderProcessHost* GetProcess() override;
 
   // RenderFrameHostTester implementation.
   TestRenderFrameHost* AppendChild(const std::string& frame_name) override;

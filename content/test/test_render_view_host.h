@@ -14,6 +14,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/common/web_preferences.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_renderer_host.h"
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/layout.h"
@@ -134,9 +135,9 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   bool LockMouse() override;
   void UnlockMouse() override;
 #if defined(OS_WIN)
-  virtual void SetParentNativeViewAccessible(
+  void SetParentNativeViewAccessible(
       gfx::NativeViewAccessible accessible_parent) override;
-  virtual gfx::NativeViewId GetParentForWindowlessPlugin() const override;
+  gfx::NativeViewId GetParentForWindowlessPlugin() const override;
 #endif
 
   bool is_showing() const { return is_showing_; }
@@ -232,6 +233,9 @@ class TestRenderViewHost
 
   // The opener route id passed to CreateRenderView().
   int opener_route_id() const { return opener_route_id_; }
+
+  // RenderWidgetHost overrides (same value, but in the Mock* type)
+  MockRenderProcessHost* GetProcess() const override;
 
   // RenderViewHost overrides --------------------------------------------------
 

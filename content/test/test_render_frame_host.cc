@@ -67,6 +67,10 @@ TestRenderViewHost* TestRenderFrameHost::GetRenderViewHost() {
       RenderFrameHostImpl::GetRenderViewHost());
 }
 
+MockRenderProcessHost* TestRenderFrameHost::GetProcess() {
+  return static_cast<MockRenderProcessHost*>(RenderFrameHostImpl::GetProcess());
+}
+
 TestRenderFrameHost* TestRenderFrameHost::AppendChild(
     const std::string& frame_name) {
   OnCreateChildFrame(GetProcess()->GetNextRoutingID(), frame_name,
