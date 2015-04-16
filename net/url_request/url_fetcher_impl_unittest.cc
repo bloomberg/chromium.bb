@@ -406,21 +406,6 @@ class URLFetcherUploadProgressTest : public URLFetcherTest {
   int64 number_of_chunks_added_;
 };
 
-// Version of URLFetcherTest that tests bad HTTPS requests.
-class URLFetcherBadHTTPSTest : public URLFetcherTest {
- public:
-  URLFetcherBadHTTPSTest();
-
-  // URLFetcherTest:
-  void SetUpServer() override;
-
-  // URLFetcherDelegate:
-  void OnURLFetchComplete(const URLFetcher* source) override;
-
- private:
-  base::FilePath cert_dir_;
-};
-
 // Version of URLFetcherTest that tests request cancellation on shutdown.
 class URLFetcherCancelTest : public URLFetcherTest {
  public:
@@ -506,14 +491,18 @@ class CancelTestURLRequestContextGetter
   GURL throttle_for_url_;
 };
 
-// Version of URLFetcherTest that tests retying the same request twice.
-class URLFetcherMultipleAttemptTest : public URLFetcherTest {
+// Version of URLFetcherTest that tests bad HTTPS requests.
+class URLFetcherBadHTTPSTest : public URLFetcherTest {
  public:
-  // URLFetcherDelegate:
-  void OnURLFetchComplete(const URLFetcher* source) override;
+  URLFetcherBadHTTPSTest() {}
 
- private:
-  std::string data_;
+  // URLFetcherTest:
+  void SetUpServer() override {
+    SpawnedTestServer::SSLOptions ssl_options(
+        SpawnedTestServer::SSLOptions::CERT_EXPIRED);
+    test_server_.reset(new SpawnedTestServer(
+        SpawnedTestServer::TYPE_HTTPS, ssl_options, base::FilePath(kDocRoot)));
+  }
 };
 
 void URLFetcherDownloadProgressTest::CreateFetcher(const GURL& url) {
@@ -587,39 +576,6 @@ void URLFetcherUploadProgressTest::OnURLFetchUploadProgress(
   }
 }
 
-URLFetcherBadHTTPSTest::URLFetcherBadHTTPSTest() {
-  PathService::Get(base::DIR_SOURCE_ROOT, &cert_dir_);
-  cert_dir_ = cert_dir_.AppendASCII("chrome");
-  cert_dir_ = cert_dir_.AppendASCII("test");
-  cert_dir_ = cert_dir_.AppendASCII("data");
-  cert_dir_ = cert_dir_.AppendASCII("ssl");
-  cert_dir_ = cert_dir_.AppendASCII("certificates");
-}
-
-void URLFetcherBadHTTPSTest::SetUpServer() {
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_EXPIRED);
-  test_server_.reset(new SpawnedTestServer(
-      SpawnedTestServer::TYPE_HTTPS, ssl_options, base::FilePath(kDocRoot)));
-}
-
-// The "server certificate expired" error should result in automatic
-// cancellation of the request by
-// URLRequest::Delegate::OnSSLCertificateError.
-void URLFetcherBadHTTPSTest::OnURLFetchComplete(
-    const URLFetcher* source) {
-  // This part is different from URLFetcherTest::OnURLFetchComplete
-  // because this test expects the request to be cancelled.
-  EXPECT_EQ(URLRequestStatus::CANCELED, source->GetStatus().status());
-  EXPECT_EQ(ERR_ABORTED, source->GetStatus().error());
-  EXPECT_EQ(-1, source->GetResponseCode());
-  EXPECT_TRUE(source->GetCookies().empty());
-  std::string data;
-  EXPECT_TRUE(source->GetResponseAsString(&data));
-  EXPECT_TRUE(data.empty());
-  CleanupAfterFetchComplete();
-}
-
 void URLFetcherCancelTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
   CancelTestURLRequestContextGetter* context_getter =
@@ -645,24 +601,6 @@ void URLFetcherCancelTest::CancelRequest() {
   // The URLFetcher's test context will post a Quit task once it is
   // deleted. So if this test simply hangs, it means cancellation
   // did not work.
-}
-
-void URLFetcherMultipleAttemptTest::OnURLFetchComplete(
-    const URLFetcher* source) {
-  EXPECT_TRUE(source->GetStatus().is_success());
-  EXPECT_EQ(200, source->GetResponseCode());  // HTTP OK
-  std::string data;
-  EXPECT_TRUE(source->GetResponseAsString(&data));
-  EXPECT_FALSE(data.empty());
-  if (!data.empty() && data_.empty()) {
-    data_ = data;
-    fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
-        io_message_loop_proxy().get(), request_context()));
-    fetcher_->Start();
-  } else {
-    EXPECT_EQ(data, data_);
-    CleanupAfterFetchComplete();
-  }
 }
 
 // Create the fetcher on the main thread.  Since network IO will happen on the
@@ -1127,11 +1065,6 @@ TEST_F(URLFetcherTest, ProtectTestPassedThrough) {
   EXPECT_TRUE(Time::Now() - start_time < TimeDelta::FromMinutes(1));
 }
 
-TEST_F(URLFetcherBadHTTPSTest, BadHTTPSTest) {
-  CreateFetcher(test_server_->GetURL(kDefaultResponsePath));
-  base::MessageLoop::current()->Run();
-}
-
 TEST_F(URLFetcherCancelTest, ReleasesContext) {
   GURL url(test_server_->GetURL("files/server-unavailable.html"));
 
@@ -1183,13 +1116,61 @@ TEST_F(URLFetcherCancelTest, CancelWhileDelayedStartTaskPending) {
   base::MessageLoop::current()->Run();
 }
 
-TEST_F(URLFetcherMultipleAttemptTest, SameData) {
-  // Create the fetcher on the main thread.  Since IO will happen on the main
-  // thread, this will test URLFetcher's ability to do everything on one
-  // thread.
-  CreateFetcher(test_server_->GetURL(kDefaultResponsePath));
+// A URLFetcherDelegate that expects to receive a response body of "request1"
+// and then reuses the fetcher for the same URL, setting the "test" request
+// header to "request2".
+class ReuseFetcherDelegate : public WaitingURLFetcherDelegate {
+ public:
+  // |second_request_context_getter| is the context getter used for the second
+  // request. Can't reuse the old one because fetchers release it on completion.
+  ReuseFetcherDelegate(
+      scoped_refptr<URLRequestContextGetter> second_request_context_getter)
+      : first_request_complete_(false),
+        second_request_context_getter_(second_request_context_getter) {}
 
-  base::MessageLoop::current()->Run();
+  ~ReuseFetcherDelegate() override {}
+
+  void OnURLFetchComplete(const URLFetcher* source) override {
+    EXPECT_EQ(fetcher(), source);
+    if (!first_request_complete_) {
+      first_request_complete_ = true;
+      EXPECT_TRUE(fetcher()->GetStatus().is_success());
+      EXPECT_EQ(200, fetcher()->GetResponseCode());
+      std::string data;
+      ASSERT_TRUE(fetcher()->GetResponseAsString(&data));
+      EXPECT_EQ("request1", data);
+
+      fetcher()->SetRequestContext(second_request_context_getter_.get());
+      fetcher()->SetExtraRequestHeaders("test: request2");
+      fetcher()->Start();
+      return;
+    }
+    WaitingURLFetcherDelegate::OnURLFetchComplete(source);
+  }
+
+ private:
+  bool first_request_complete_;
+  scoped_refptr<URLRequestContextGetter> second_request_context_getter_;
+
+  DISALLOW_COPY_AND_ASSIGN(ReuseFetcherDelegate);
+};
+
+TEST_F(URLFetcherTest, ReuseFetcherForSameURL) {
+  // TODO(mmenke):  It's really weird that this is supported, particularly
+  // some fields can be modified between requests, but some (Like upload body)
+  // cannot be. Can we get rid of support for this?
+  ReuseFetcherDelegate delegate(new TrivialURLRequestContextGetter(
+      request_context(), base::MessageLoopProxy::current()));
+  delegate.CreateFetcherWithContext(test_server_->GetURL("echoheader?test"),
+                                    URLFetcher::GET, request_context());
+  delegate.fetcher()->SetExtraRequestHeaders("test: request1");
+  delegate.StartFetcherAndWait();
+
+  EXPECT_TRUE(delegate.fetcher()->GetStatus().is_success());
+  EXPECT_EQ(200, delegate.fetcher()->GetResponseCode());
+  std::string data;
+  ASSERT_TRUE(delegate.fetcher()->GetResponseAsString(&data));
+  EXPECT_EQ("request2", data);
 }
 
 // Get a small file.
@@ -1279,6 +1260,22 @@ TEST_F(URLFetcherTest, TempFileTestLargeGet) {
 // persists even after URLFetcher is gone.
 TEST_F(URLFetcherTest, TempFileTestTakeOwnership) {
   SaveFileTest("simple.html", true, base::FilePath(), true);
+}
+
+TEST_F(URLFetcherBadHTTPSTest, BadHTTPS) {
+  WaitingURLFetcherDelegate delegate;
+  delegate.CreateFetcherWithContext(test_server_->GetURL(kDefaultResponsePath),
+                                    URLFetcher::GET, request_context());
+  delegate.StartFetcherAndWait();
+
+  EXPECT_EQ(URLRequestStatus::CANCELED,
+            delegate.fetcher()->GetStatus().status());
+  EXPECT_EQ(ERR_ABORTED, delegate.fetcher()->GetStatus().error());
+  EXPECT_EQ(-1, delegate.fetcher()->GetResponseCode());
+  EXPECT_TRUE(delegate.fetcher()->GetCookies().empty());
+  std::string data;
+  EXPECT_TRUE(delegate.fetcher()->GetResponseAsString(&data));
+  EXPECT_TRUE(data.empty());
 }
 
 }  // namespace
