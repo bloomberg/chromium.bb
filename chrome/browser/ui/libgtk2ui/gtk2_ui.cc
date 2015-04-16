@@ -688,9 +688,10 @@ void Gtk2UI::SetNonClientMiddleClickAction(NonClientMiddleClickAction action) {
 }
 
 scoped_ptr<ui::LinuxInputMethodContext> Gtk2UI::CreateInputMethodContext(
-    ui::LinuxInputMethodContextDelegate* delegate) const {
+    ui::LinuxInputMethodContextDelegate* delegate,
+    bool is_simple) const {
   return scoped_ptr<ui::LinuxInputMethodContext>(
-      new X11InputMethodContextImplGtk2(delegate));
+      new X11InputMethodContextImplGtk2(delegate, is_simple));
 }
 
 gfx::FontRenderParams Gtk2UI::GetDefaultFontRenderParams() const {

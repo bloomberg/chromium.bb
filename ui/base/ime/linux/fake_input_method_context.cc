@@ -18,12 +18,13 @@ bool FakeInputMethodContext::DispatchKeyEvent(
 void FakeInputMethodContext::Reset() {
 }
 
-void FakeInputMethodContext::OnTextInputTypeChanged(
-    ui::TextInputType /* text_input_type */) {
+void FakeInputMethodContext::Focus() {
 }
 
-void FakeInputMethodContext::OnCaretBoundsChanged(
-    const gfx::Rect& /* caret_bounds */) {
+void FakeInputMethodContext::Blur() {
+}
+
+void FakeInputMethodContext::SetCursorLocation(const gfx::Rect& rect) {
 }
 
 }  // namespace ui

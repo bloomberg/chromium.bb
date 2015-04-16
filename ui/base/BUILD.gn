@@ -684,6 +684,9 @@ test("ui_base_unittests") {
       "ime/win/imm32_manager_unittest.cc",
       "ime/win/tsf_input_scope_unittest.cc",
     ]
+    if (is_linux && use_aura && !is_chromeos) {
+      sources += [ "ime/input_method_auralinux_unittest.cc" ]
+    }
     if (use_x11) {
       sources += [ "ime/composition_text_util_pango_unittest.cc" ]
     }

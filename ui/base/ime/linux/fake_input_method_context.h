@@ -17,8 +17,9 @@ class FakeInputMethodContext : public LinuxInputMethodContext {
   // Overriden from ui::LinuxInputMethodContext
   bool DispatchKeyEvent(const ui::KeyEvent& key_event) override;
   void Reset() override;
-  void OnTextInputTypeChanged(ui::TextInputType text_input_type) override;
-  void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) override;
+  void Focus() override;
+  void Blur() override;
+  void SetCursorLocation(const gfx::Rect& rect) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeInputMethodContext);

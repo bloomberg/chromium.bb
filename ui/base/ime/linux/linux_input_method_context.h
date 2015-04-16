@@ -29,16 +29,19 @@ class UI_BASE_IME_EXPORT LinuxInputMethodContext {
   // before dispatching a key event.
   virtual bool DispatchKeyEvent(const ui::KeyEvent& key_event) = 0;
 
+  // Tells the system IME for the cursor rect which is relative to the
+  // client window rect.
+  virtual void SetCursorLocation(const gfx::Rect& rect) = 0;
+
   // Resets the context.  A client needs to call OnTextInputTypeChanged() again
   // before calling DispatchKeyEvent().
   virtual void Reset() = 0;
 
-  // Notifies the context that the text input type has changed.
-  virtual void OnTextInputTypeChanged(TextInputType text_input_type) = 0;
+  // Focuses the context.
+  virtual void Focus() = 0;
 
-  // Notifies the context that the caret bounds have changed.  |caret_bounds| is
-  // relative to screen coordinates.
-  virtual void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) = 0;
+  // Blurs the context.
+  virtual void Blur() = 0;
 };
 
 // An interface of callback functions called from LinuxInputMethodContext.

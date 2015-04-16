@@ -30,7 +30,8 @@ class UI_BASE_IME_EXPORT LinuxInputMethodContextFactory {
 
   // Returns a native input method context.
   virtual scoped_ptr<LinuxInputMethodContext> CreateInputMethodContext(
-      LinuxInputMethodContextDelegate* delegate) const = 0;
+      LinuxInputMethodContextDelegate* delegate,
+      bool is_simple) const = 0;
 };
 
 }  // namespace ui

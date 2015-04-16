@@ -952,7 +952,6 @@
       # New Task Manager Tests Sources:
       'browser/task_management/providers/browser_process_task_unittest.cc',
       'browser/task_management/providers/child_process_task_unittest.cc',
-      
       # Old Task Manager Tests Sources:
       'browser/task_manager/task_manager_unittest.cc',
       'browser/task_manager/task_manager_util_unittest.cc',
@@ -2181,7 +2180,7 @@
             }],
           ],
         }],
-        ['enable_one_click_signin==1', {        
+        ['enable_one_click_signin==1', {
           'sources': [
             'browser/ui/sync/one_click_signin_sync_observer_unittest.cc',
             'browser/ui/sync/one_click_signin_sync_starter_unittest.cc',
@@ -2242,18 +2241,6 @@
           'dependencies': [
             'browser/ui/libgtk2ui/libgtk2ui.gyp:gtk2ui',
             '../build/linux/system.gyp:gio',
-          ],
-          'conditions': [
-            ['component != "shared_library"', {
-              # TODO(erg): This file does not compile in shared library mode
-              # because it is reaching into the internals of libgtk2ui, which
-              # shouldn't be linked with the rest of chrome. This should either
-              # be fixed by creating a separate unit test target, or by deleting
-              # the test.
-              'sources': [
-                'browser/ui/libgtk2ui/x11_input_method_context_impl_gtk2_unittest.cc',
-              ],
-            }],
           ],
         }],
         ['use_aura==1 or toolkit_views==1', {

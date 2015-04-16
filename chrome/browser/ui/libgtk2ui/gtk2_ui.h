@@ -64,7 +64,8 @@ class Gtk2UI : public views::LinuxUI {
 
   // ui::LinuxInputMethodContextFactory:
   scoped_ptr<ui::LinuxInputMethodContext> CreateInputMethodContext(
-      ui::LinuxInputMethodContextDelegate* delegate) const override;
+      ui::LinuxInputMethodContextDelegate* delegate,
+      bool is_simple) const override;
 
   // gfx::LinuxFontDelegate:
   gfx::FontRenderParams GetDefaultFontRenderParams() const override;

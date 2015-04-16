@@ -12,7 +12,8 @@ FakeInputMethodContextFactory::FakeInputMethodContextFactory() {}
 
 scoped_ptr<LinuxInputMethodContext>
 FakeInputMethodContextFactory::CreateInputMethodContext(
-    LinuxInputMethodContextDelegate* /* delegate */) const {
+    LinuxInputMethodContextDelegate* /* delegate */,
+    bool is_simple) const {
   return make_scoped_ptr(new FakeInputMethodContext());
 }
 

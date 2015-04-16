@@ -114,6 +114,11 @@
             },
           ],
         }],
+        ['OS == "linux" and use_aura==1 and chromeos==0', {
+          'sources': [
+            'ime/input_method_auralinux_unittest.cc',
+          ]
+        }],
         ['OS == "win"', {
           'sources': [
             'dragdrop/os_exchange_data_win_unittest.cc',
