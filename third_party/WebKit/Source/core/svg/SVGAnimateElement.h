@@ -44,6 +44,8 @@ public:
     AnimatedPropertyType animatedPropertyType();
     bool animatedPropertyTypeSupportsAddition();
 
+    static SVGElementInstances findElementInstances(SVGElement* targetElement);
+
 protected:
     SVGAnimateElement(const QualifiedName&, Document&);
 

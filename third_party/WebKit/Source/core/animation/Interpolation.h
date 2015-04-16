@@ -21,6 +21,7 @@ public:
 
     virtual bool isStyleInterpolation() const { return false; }
     virtual bool isLegacyStyleInterpolation() const { return false; }
+    virtual bool isSVGInterpolation() const { return false; }
 
     virtual PropertyHandle property() const = 0;
 

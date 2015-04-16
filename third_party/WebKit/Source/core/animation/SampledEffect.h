@@ -13,6 +13,8 @@
 
 namespace blink {
 
+class SVGElement;
+
 class SampledEffect : public NoBaseWillBeGarbageCollected<SampledEffect> {
 public:
     static PassOwnPtrWillBeRawPtr<SampledEffect> create(Animation* animation, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> interpolations)
@@ -36,6 +38,8 @@ public:
     Animation::Priority priority() const { return m_priority; }
 
     DECLARE_TRACE();
+
+    void applySVGUpdate(SVGElement&);
 
 private:
     SampledEffect(Animation*, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>);

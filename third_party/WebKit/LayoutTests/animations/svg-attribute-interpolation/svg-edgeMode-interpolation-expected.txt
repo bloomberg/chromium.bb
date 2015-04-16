@@ -1,0 +1,15 @@
+
+SVG SMIL:
+PASS: edgeMode from [duplicate] to [wrap] was [duplicate] at 0
+PASS: edgeMode from [duplicate] to [wrap] was [duplicate] at 0.2
+PASS: edgeMode from [duplicate] to [wrap] was [wrap] at 0.6
+PASS: edgeMode from [duplicate] to [wrap] was [wrap] at 1
+
+Web Animations API:
+PASS: edgeMode from [duplicate] to [wrap] was [duplicate] at -0.4
+PASS: edgeMode from [duplicate] to [wrap] was [duplicate] at 0
+PASS: edgeMode from [duplicate] to [wrap] was [duplicate] at 0.2
+PASS: edgeMode from [duplicate] to [wrap] was [wrap] at 0.6
+PASS: edgeMode from [duplicate] to [wrap] was [wrap] at 1
+PASS: edgeMode from [duplicate] to [wrap] was [wrap] at 1.4
+

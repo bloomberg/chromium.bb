@@ -5,7 +5,9 @@
 #include "config.h"
 #include "core/animation/SampledEffect.h"
 
+#include "core/animation/SVGInterpolation.h"
 #include "core/animation/StyleInterpolation.h"
+#include "core/svg/SVGElement.h"
 
 namespace blink {
 
@@ -33,6 +35,15 @@ DEFINE_TRACE(SampledEffect)
 #if ENABLE(OILPAN)
     visitor->trace(m_interpolations);
 #endif
+}
+
+void SampledEffect::applySVGUpdate(SVGElement& targetElement)
+{
+    for (const auto& interpolation : *m_interpolations) {
+        if (interpolation->isSVGInterpolation()) {
+            toSVGInterpolation(interpolation.get())->apply(targetElement);
+        }
+    }
 }
 
 } // namespace blink

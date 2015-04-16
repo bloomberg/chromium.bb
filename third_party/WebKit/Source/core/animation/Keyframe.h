@@ -28,7 +28,7 @@ public:
     void setComposite(AnimationEffect::CompositeOperation composite) { m_composite = composite; }
     AnimationEffect::CompositeOperation composite() const { return m_composite; }
 
-    void setEasing(PassRefPtr<TimingFunction> easing) { m_easing = easing; }
+    void setEasing(PassRefPtrWillBeRawPtr<TimingFunction> easing) { m_easing = easing; }
     TimingFunction& easing() const { return *m_easing; }
 
     static bool compareOffsets(const RefPtrWillBeMember<Keyframe>& a, const RefPtrWillBeMember<Keyframe>& b)
@@ -64,7 +64,8 @@ public:
         virtual const PassRefPtrWillBeRawPtr<AnimatableValue> getAnimatableValue() const = 0;
 
         virtual bool isAnimatableValuePropertySpecificKeyframe() const { return false; }
-        virtual bool isStringPropertySpecificKeyframe() const { return false; }
+        virtual bool isCSSPropertySpecificKeyframe() const { return false; }
+        virtual bool isSVGPropertySpecificKeyframe() const { return false; }
 
         virtual PassOwnPtrWillBeRawPtr<PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const = 0;
         virtual PassRefPtrWillBeRawPtr<Interpolation> maybeCreateInterpolation(PropertyHandle, blink::Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle* baseStyle) const = 0;

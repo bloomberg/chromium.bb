@@ -42,9 +42,6 @@ void InterpolationEffect::addInterpolationsFromKeyframes(PropertyHandle property
         RefPtrWillBeRawPtr<Interpolation> interpolationA = keyframeA.maybeCreateInterpolation(property, keyframeA, element, baseStyle);
         RefPtrWillBeRawPtr<Interpolation> interpolationB = keyframeB.maybeCreateInterpolation(property, keyframeB, element, baseStyle);
 
-        ASSERT(interpolationA);
-        ASSERT(interpolationB);
-
         Vector<TimingFunction::PartitionRegion> regions = Vector<TimingFunction::PartitionRegion>();
         keyframeA.easing().partition(regions);
 
@@ -65,8 +62,10 @@ void InterpolationEffect::addInterpolationsFromKeyframes(PropertyHandle property
                 continue;
             }
 
-            addInterpolation(interpolation.release(),
-                &keyframeA.easing(), regionStart, regionEnd, regionApplyFrom, regionApplyTo);
+            if (interpolation) {
+                addInterpolation(interpolation.release(),
+                    &keyframeA.easing(), regionStart, regionEnd, regionApplyFrom, regionApplyTo);
+            }
 
             regionIndex++;
         }

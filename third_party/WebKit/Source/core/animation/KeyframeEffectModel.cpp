@@ -103,8 +103,8 @@ bool KeyframeEffectModelBase::updateNeutralKeyframeAnimatableValues(CSSPropertyI
     auto& keyframes = m_keyframeGroups->get(PropertyHandle(property))->m_keyframes;
     ASSERT(keyframes.size() >= 2);
 
-    auto& first = toStringPropertySpecificKeyframe(*keyframes.first());
-    auto& last = toStringPropertySpecificKeyframe(*keyframes.last());
+    auto& first = toCSSPropertySpecificKeyframe(*keyframes.first());
+    auto& last = toCSSPropertySpecificKeyframe(*keyframes.last());
 
     if (!first.value())
         first.setAnimatableValue(value);

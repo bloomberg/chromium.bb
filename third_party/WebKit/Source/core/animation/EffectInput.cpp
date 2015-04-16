@@ -33,6 +33,9 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/UnionTypesCore.h"
+#include "core/HTMLNames.h"
+#include "core/SVGNames.h"
+#include "core/XLinkNames.h"
 #include "core/animation/AnimationInputHelpers.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/StringKeyframe.h"
@@ -40,9 +43,59 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeComputedStyle.h"
+#include "core/svg/animation/SVGSMILElement.h"
+#include "wtf/HashSet.h"
 #include "wtf/NonCopyingSort.h"
 
 namespace blink {
+
+namespace {
+
+QualifiedName svgAttributeName(String property)
+{
+    if (property.length() >= 4 && property.startsWith("svg")) {
+        // Replace 'svgTransform' with 'transform', etc.
+        property.remove(0, 3);
+        property = property.lower();
+    }
+
+    if (property == "href")
+        return XLinkNames::hrefAttr;
+
+    return QualifiedName(nullAtom, AtomicString(property), SVGNames::amplitudeAttr.namespaceURI());
+}
+
+const QualifiedName* supportedSVGAttribute(const String& property, SVGElement* svgElement)
+{
+    typedef HashMap<QualifiedName, const QualifiedName*> AttributeNameMap;
+    DEFINE_STATIC_LOCAL(AttributeNameMap, supportedAttributes, ());
+    if (supportedAttributes.isEmpty()) {
+        // Fill the set for the first use.
+        // Animatable attributes from http://www.w3.org/TR/SVG/attindex.html
+        const QualifiedName* attributes[] = {
+            // FIXME: Support all the animatable attributes.
+            &HTMLNames::classAttr,
+            &SVGNames::clipPathUnitsAttr,
+            &SVGNames::edgeModeAttr,
+            &XLinkNames::hrefAttr,
+        };
+        for (size_t i = 0; i < WTF_ARRAY_LENGTH(attributes); i++)
+            supportedAttributes.set(*attributes[i], attributes[i]);
+    }
+
+    if (isSVGSMILElement(*svgElement))
+        return nullptr;
+
+    QualifiedName attributeName = svgAttributeName(property);
+
+    auto iter = supportedAttributes.find(attributeName);
+    if (iter == supportedAttributes.end() || !svgElement->propertyFromAttribute(*iter->value))
+        return nullptr;
+
+    return iter->value;
+}
+
+} // namespace
 
 PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState& exceptionState)
 {
@@ -102,9 +155,25 @@ PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, c
             String value;
             DictionaryHelper::get(keyframeDictionary, property, value);
             CSSPropertyID id = AnimationInputHelpers::keyframeAttributeToCSSPropertyID(property);
-            if (id == CSSPropertyInvalid)
+            if (id != CSSPropertyInvalid) {
+                keyframe->setPropertyValue(id, value, element, styleSheetContents);
                 continue;
-            keyframe->setPropertyValue(id, value, element, styleSheetContents);
+            }
+
+            if (property == "offset"
+                || property == "composite"
+                || property == "easing") {
+                continue;
+            }
+
+            if (!RuntimeEnabledFeatures::webAnimationsSVGEnabled() || !element->isSVGElement())
+                continue;
+
+            SVGElement* svgElement = toSVGElement(element);
+            const QualifiedName* qualifiedName = supportedSVGAttribute(property, svgElement);
+
+            if (qualifiedName)
+                keyframe->setPropertyValue(*qualifiedName, value, svgElement);
         }
     }
 

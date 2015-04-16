@@ -208,7 +208,7 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& tim
         ASSERT(keyframes.size() >= 2);
         for (const auto& keyframe : keyframes) {
             // FIXME: Determine candidacy based on the CSSValue instead of a snapshot AnimatableValue.
-            bool isNeutralKeyframe = keyframe->isStringPropertySpecificKeyframe() && !toStringPropertySpecificKeyframe(keyframe.get())->value() && keyframe->composite() == AnimationEffect::CompositeAdd;
+            bool isNeutralKeyframe = keyframe->isCSSPropertySpecificKeyframe() && !toCSSPropertySpecificKeyframe(keyframe.get())->value() && keyframe->composite() == AnimationEffect::CompositeAdd;
             if ((keyframe->composite() != AnimationEffect::CompositeReplace && !isNeutralKeyframe) || !keyframe->getAnimatableValue())
                 return false;
 

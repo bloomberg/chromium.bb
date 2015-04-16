@@ -1,0 +1,15 @@
+
+SVG SMIL:
+PASS: href from [#A] to [#B] was [#A] at 0
+PASS: href from [#A] to [#B] was [#A] at 0.2
+PASS: href from [#A] to [#B] was [#B] at 0.6
+PASS: href from [#A] to [#B] was [#B] at 1
+
+Web Animations API:
+PASS: href from [#A] to [#B] was [#A] at -0.4
+PASS: href from [#A] to [#B] was [#A] at 0
+PASS: href from [#A] to [#B] was [#A] at 0.2
+PASS: href from [#A] to [#B] was [#B] at 0.6
+PASS: href from [#A] to [#B] was [#B] at 1
+PASS: href from [#A] to [#B] was [#B] at 1.4
+

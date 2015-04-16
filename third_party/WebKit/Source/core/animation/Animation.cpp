@@ -45,6 +45,7 @@
 #include "core/dom/NodeComputedStyle.h"
 #include "core/frame/UseCounter.h"
 #include "core/paint/DeprecatedPaintLayer.h"
+#include "core/svg/SVGElement.h"
 
 namespace blink {
 
@@ -159,6 +160,8 @@ void Animation::applyEffects()
     }
 
     m_target->setNeedsAnimationStyleRecalc();
+    if (m_target->isSVGElement())
+        m_sampledEffect->applySVGUpdate(toSVGElement(*m_target));
 }
 
 void Animation::clearEffects()

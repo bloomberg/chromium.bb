@@ -163,6 +163,7 @@ TouchIconLoading
 UnsafeES3APIs
 UserSelectAll status=experimental
 WebAnimationsAPI status=experimental
+WebAnimationsSVG status=experimental
 WebAudio condition=WEB_AUDIO, status=stable
 WebGLDraftExtensions status=experimental
 WebGLImageChromium
