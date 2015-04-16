@@ -34,12 +34,6 @@ NSInteger StyleMaskForParams(const Widget::InitParams& params) {
   return NSBorderlessWindowMask;
 }
 
-gfx::Size WindowSizeForClientAreaSize(NSWindow* window, const gfx::Size& size) {
-  NSRect content_rect = NSMakeRect(0, 0, size.width(), size.height());
-  NSRect frame_rect = [window frameRectForContentRect:content_rect];
-  return gfx::Size(NSWidth(frame_rect), NSHeight(frame_rect));
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -90,8 +84,6 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   bridge_->Init(window, params);
 
   delegate_->OnNativeWidgetCreated(true);
-
-  OnSizeConstraintsChanged();
 
   bridge_->SetFocusManager(GetWidget()->GetFocusManager());
 
@@ -206,7 +198,8 @@ ui::InputMethod* NativeWidgetMac::GetHostInputMethod() {
 }
 
 void NativeWidgetMac::CenterWindow(const gfx::Size& size) {
-  SetSize(WindowSizeForClientAreaSize(GetNativeWindow(), size));
+  SetSize(
+      BridgedNativeWidget::GetWindowSizeForClientSize(GetNativeWindow(), size));
   // Note that this is not the precise center of screen, but it is the standard
   // location for windows like dialogs to appear on screen for Mac.
   // TODO(tapted): If there is a parent window, center in that instead.
@@ -515,7 +508,9 @@ ui::NativeTheme* NativeWidgetMac::GetNativeTheme() const {
 }
 
 void NativeWidgetMac::OnRootViewLayout() {
-  NOTIMPLEMENTED();
+  // Ensure possible changes to the non-client view (e.g. Minimum/Maximum size)
+  // propagate through to the NSWindow properties.
+  OnSizeConstraintsChanged();
 }
 
 bool NativeWidgetMac::IsTranslucentWindowOpacitySupported() const {

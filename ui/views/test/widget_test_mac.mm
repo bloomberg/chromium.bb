@@ -73,6 +73,11 @@ bool WidgetTest::IsWindowStackedAbove(Widget* above, Widget* below) {
 }
 
 // static
+gfx::Size WidgetTest::GetNativeWidgetMinimumContentSize(Widget* widget) {
+  return gfx::Size([widget->GetNativeWindow() contentMinSize]);
+}
+
+// static
 ui::EventProcessor* WidgetTest::GetEventProcessor(Widget* widget) {
   return static_cast<internal::RootView*>(widget->GetRootView());
 }

@@ -64,9 +64,30 @@ bool PositionWindowInScreenCoordinates(views::Widget* widget,
   return widget && widget->is_top_level();
 }
 
+// Return the content size for a minimum or maximum widget size.
+gfx::Size GetClientSizeForWindowSize(NSWindow* window,
+                                     const gfx::Size& window_size) {
+  NSRect frame_rect =
+      NSMakeRect(0, 0, window_size.width(), window_size.height());
+  // Note gfx::Size will prevent dimensions going negative. They are allowed to
+  // be zero at this point, because Widget::GetMinimumSize() may later increase
+  // the size.
+  return gfx::Size([window contentRectForFrameRect:frame_rect].size);
+}
+
 }  // namespace
 
 namespace views {
+
+// static
+gfx::Size BridgedNativeWidget::GetWindowSizeForClientSize(
+    NSWindow* window,
+    const gfx::Size& content_size) {
+  NSRect content_rect =
+      NSMakeRect(0, 0, content_size.width(), content_size.height());
+  NSRect frame_rect = [window frameRectForContentRect:content_rect];
+  return gfx::Size(NSWidth(frame_rect), NSHeight(frame_rect));
+}
 
 BridgedNativeWidget::BridgedNativeWidget(NativeWidgetMac* parent)
     : native_widget_mac_(parent),
@@ -187,22 +208,31 @@ void BridgedNativeWidget::SetFocusManager(FocusManager* focus_manager) {
 }
 
 void BridgedNativeWidget::SetBounds(const gfx::Rect& new_bounds) {
+  Widget* widget = native_widget_mac_->GetWidget();
+  // -[NSWindow contentMinSize] is only checked by Cocoa for user-initiated
+  // resizes. This is not what toolkit-views expects, so clamp. Note there is
+  // no check for maximum size (consistent with aura::Window::SetBounds()).
+  gfx::Size clamped_content_size =
+      GetClientSizeForWindowSize(window_, new_bounds.size());
+  clamped_content_size.SetToMax(widget->GetMinimumSize());
+
   // A contentRect with zero width or height is a banned practice in ChromeMac,
   // due to unpredictable OSX treatment.
-  DCHECK(!new_bounds.IsEmpty()) << "Zero-sized windows not supported on Mac";
+  DCHECK(!clamped_content_size.IsEmpty())
+      << "Zero-sized windows not supported on Mac";
 
-  if (native_widget_mac_->GetWidget()->IsModal()) {
-    // Modal dialogs are positioned by Cocoa. Just update the size.
-    [window_
-        setContentSize:NSMakeSize(new_bounds.width(), new_bounds.height())];
+  if (!window_visible_ && widget->IsModal()) {
+    // Window-Modal dialogs (i.e. sheets) are positioned by Cocoa when shown for
+    // the first time. They also have no frame, so just update the content size.
+    [window_ setContentSize:NSMakeSize(clamped_content_size.width(),
+                                       clamped_content_size.height())];
     return;
   }
+  gfx::Rect actual_new_bounds(
+      new_bounds.origin(),
+      GetWindowSizeForClientSize(window_, clamped_content_size));
 
-  gfx::Rect actual_new_bounds(new_bounds);
-
-  if (parent_ &&
-      !PositionWindowInScreenCoordinates(native_widget_mac_->GetWidget(),
-                                         widget_type_))
+  if (parent_ && !PositionWindowInScreenCoordinates(widget, widget_type_))
     actual_new_bounds.Offset(parent_->GetRestoredBounds().OffsetFromOrigin());
 
   [window_ setFrame:gfx::ScreenRectToNSRect(actual_new_bounds)

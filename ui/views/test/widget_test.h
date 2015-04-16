@@ -115,6 +115,10 @@ class WidgetTest : public ViewsTestBase {
   // Both windows must be visible.
   static bool IsWindowStackedAbove(Widget* above, Widget* below);
 
+  // Query the native window system for the minimum size configured for user
+  // initiated window resizes.
+  static gfx::Size GetNativeWidgetMinimumContentSize(Widget* widget);
+
   // Return the event processor for |widget|. On aura platforms, this is an
   // aura::WindowEventDispatcher. Otherwise, it is a bridge to the OS event
   // processor.

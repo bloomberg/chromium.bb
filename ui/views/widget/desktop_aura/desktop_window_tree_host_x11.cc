@@ -1612,6 +1612,8 @@ void DesktopWindowTreeHostX11::MapWindow(ui::WindowShowState show_state) {
     ui::X11EventSource::GetInstance()->BlockUntilWindowMapped(xwindow_);
   window_mapped_ = true;
 
+  UpdateMinAndMaxSize();
+
   // Some WMs only respect maximize hints after the window has been mapped.
   // Check whether we need to re-do a maximization.
   if (should_maximize_after_map_) {

@@ -50,6 +50,11 @@ class VIEWS_EXPORT BridgedNativeWidget : public ui::LayerDelegate,
                                // the window above its parent if it has one.
   };
 
+  // Return the size that |window| will take for the given client area |size|,
+  // based on its current style mask.
+  static gfx::Size GetWindowSizeForClientSize(NSWindow* window,
+                                              const gfx::Size& size);
+
   // Creates one side of the bridge. |parent| must not be NULL.
   explicit BridgedNativeWidget(NativeWidgetMac* parent);
   ~BridgedNativeWidget() override;

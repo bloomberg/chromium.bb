@@ -209,6 +209,67 @@ class EventCountHandler : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(EventCountHandler);
 };
 
+// A helper WidgetDelegate for tests that require hooks into WidgetDelegate
+// calls, and removes some of the boilerplate for initializing a Widget. Calls
+// Widget::CloseNow() when destroyed if it hasn't already been done.
+class TestDesktopWidgetDelegate : public WidgetDelegate {
+ public:
+  TestDesktopWidgetDelegate() : widget_(new Widget) {}
+
+  ~TestDesktopWidgetDelegate() override {
+    if (widget_)
+      widget_->CloseNow();
+    EXPECT_FALSE(widget_);
+  }
+
+  // Initialize the Widget, adding some meaningful default InitParams.
+  void InitWidget(Widget::InitParams init_params) {
+    init_params.delegate = this;
+#if !defined(OS_CHROMEOS)
+    init_params.native_widget = new PlatformDesktopNativeWidget(widget_);
+#endif
+    init_params.bounds = initial_bounds_;
+    widget_->Init(init_params);
+  }
+
+  // Set the contents view to be used during Widget initialization. For Widgets
+  // that use non-client views, this will be the contents_view used to
+  // initialize the ClientView in WidgetDelegate::CreateClientView(). Otherwise,
+  // it is the ContentsView of the Widget's RootView. Ownership passes to the
+  // view hierarchy during InitWidget().
+  void set_contents_view(View* contents_view) {
+    contents_view_ = contents_view;
+  }
+
+  int window_closing_count() const { return window_closing_count_; }
+  const gfx::Rect& initial_bounds() { return initial_bounds_; }
+
+  // WidgetDelegate overrides:
+  void WindowClosing() override {
+    window_closing_count_++;
+    widget_ = nullptr;
+  }
+
+  Widget* GetWidget() override { return widget_; }
+  const Widget* GetWidget() const override { return widget_; }
+
+  View* GetContentsView() override {
+    return contents_view_ ? contents_view_ : WidgetDelegate::GetContentsView();
+  }
+
+  bool ShouldAdvanceFocusToTopLevelWidget() const override {
+    return true;  // Same default as DefaultWidgetDelegate in widget.cc.
+  }
+
+ private:
+  Widget* widget_;
+  View* contents_view_ = nullptr;
+  int window_closing_count_ = 0;
+  gfx::Rect initial_bounds_ = gfx::Rect(100, 100, 200, 200);
+
+  DISALLOW_COPY_AND_ASSIGN(TestDesktopWidgetDelegate);
+};
+
 TEST_F(WidgetTest, WidgetInitParams) {
   // Widgets are not transparent by default.
   Widget::InitParams init1;
@@ -1117,6 +1178,54 @@ TEST_F(WidgetTest, GetWindowPlacement) {
   widget->CloseNow();
 }
 
+// Test that widget size constraints are properly applied immediately after
+// Init(), and that SetBounds() calls are appropriately clamped.
+TEST_F(WidgetTest, MinimumSizeConstraints) {
+  TestDesktopWidgetDelegate delegate;
+  gfx::Size minimum_size(100, 100);
+  const gfx::Size smaller_size(90, 90);
+
+  delegate.set_contents_view(new StaticSizedView(minimum_size));
+  delegate.InitWidget(CreateParams(Widget::InitParams::TYPE_WINDOW));
+  Widget* widget = delegate.GetWidget();
+
+  // On desktop Linux, the Widget must be shown to ensure the window is mapped.
+  // On other platforms this line is optional.
+  widget->Show();
+
+  // Sanity checks.
+  EXPECT_GT(delegate.initial_bounds().width(), minimum_size.width());
+  EXPECT_GT(delegate.initial_bounds().height(), minimum_size.height());
+  EXPECT_EQ(delegate.initial_bounds().size(),
+            widget->GetWindowBoundsInScreen().size());
+  // Note: StaticSizedView doesn't currently provide a maximum size.
+  EXPECT_EQ(gfx::Size(), widget->GetMaximumSize());
+
+  if (!widget->ShouldUseNativeFrame()) {
+    // The test environment may have dwm disabled on Windows. In this case,
+    // CustomFrameView is used instead of the NativeFrameView, which will
+    // provide a minimum size that includes frame decorations.
+    minimum_size = widget->non_client_view()->GetWindowBoundsForClientBounds(
+        gfx::Rect(minimum_size)).size();
+  }
+
+  EXPECT_EQ(minimum_size, widget->GetMinimumSize());
+  EXPECT_EQ(minimum_size, GetNativeWidgetMinimumContentSize(widget));
+
+  // Trying to resize smaller than the minimum size should restrict the content
+  // size to the minimum size.
+  widget->SetBounds(gfx::Rect(smaller_size));
+  EXPECT_EQ(minimum_size, widget->GetClientAreaBoundsInScreen().size());
+
+  widget->SetSize(smaller_size);
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // TODO(tapted): Desktop Linux ignores size constraints for SetSize. Fix it.
+  EXPECT_EQ(smaller_size, widget->GetClientAreaBoundsInScreen().size());
+#else
+  EXPECT_EQ(minimum_size, widget->GetClientAreaBoundsInScreen().size());
+#endif
+}
+
 // Tests that SetBounds() and GetWindowBoundsInScreen() is symmetric when the
 // widget is visible and not maximized or fullscreen.
 TEST_F(WidgetTest, GetWindowBoundsInScreen) {
@@ -1768,44 +1877,14 @@ TEST_F(WidgetTest, MouseEventDispatchWhileTouchIsDown) {
 
 #endif  // !defined(OS_MACOSX) || defined(USE_AURA)
 
-// Used by SingleWindowClosing to count number of times WindowClosing() has
-// been invoked.
-class ClosingDelegate : public WidgetDelegate {
- public:
-  ClosingDelegate() : count_(0), widget_(NULL) {}
-
-  int count() const { return count_; }
-
-  void set_widget(views::Widget* widget) { widget_ = widget; }
-
-  // WidgetDelegate overrides:
-  Widget* GetWidget() override { return widget_; }
-  const Widget* GetWidget() const override { return widget_; }
-  void WindowClosing() override { count_++; }
-
- private:
-  int count_;
-  views::Widget* widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClosingDelegate);
-};
-
 // Verifies WindowClosing() is invoked correctly on the delegate when a Widget
 // is closed.
 TEST_F(WidgetTest, SingleWindowClosing) {
-  scoped_ptr<ClosingDelegate> delegate(new ClosingDelegate());
-  Widget* widget = new Widget();  // Destroyed by CloseNow() below.
-  Widget::InitParams init_params =
-      CreateParams(Widget::InitParams::TYPE_WINDOW);
-  init_params.bounds = gfx::Rect(0, 0, 200, 200);
-  init_params.delegate = delegate.get();
-#if !defined(OS_CHROMEOS)
-  init_params.native_widget = new PlatformDesktopNativeWidget(widget);
-#endif
-  widget->Init(init_params);
-  EXPECT_EQ(0, delegate->count());
-  widget->CloseNow();
-  EXPECT_EQ(1, delegate->count());
+  TestDesktopWidgetDelegate delegate;
+  delegate.InitWidget(CreateParams(Widget::InitParams::TYPE_WINDOW));
+  EXPECT_EQ(0, delegate.window_closing_count());
+  delegate.GetWidget()->CloseNow();
+  EXPECT_EQ(1, delegate.window_closing_count());
 }
 
 class WidgetWindowTitleTest : public WidgetTest {
@@ -3093,70 +3172,17 @@ TEST_F(WidgetTest, FullscreenStatePropagated) {
 }
 #if defined(OS_WIN)
 
-// Provides functionality to test widget activation via an activation flag
-// which can be set by an accessor.
-class ModalWindowTestWidgetDelegate : public WidgetDelegate {
- public:
-  ModalWindowTestWidgetDelegate()
-      : widget_(NULL),
-        can_activate_(true) {}
-
-  virtual ~ModalWindowTestWidgetDelegate() {}
-
-  // Overridden from WidgetDelegate:
-  virtual void DeleteDelegate() override {
-    delete this;
-  }
-  virtual Widget* GetWidget() override {
-    return widget_;
-  }
-  virtual const Widget* GetWidget() const override {
-    return widget_;
-  }
-  virtual bool CanActivate() const override {
-    return can_activate_;
-  }
-  virtual bool ShouldAdvanceFocusToTopLevelWidget() const override {
-    return true;
-  }
-
-  void set_can_activate(bool can_activate) {
-    can_activate_ = can_activate;
-  }
-
-  void set_widget(Widget* widget) {
-    widget_ = widget;
-  }
-
- private:
-  Widget* widget_;
-  bool can_activate_;
-
-  DISALLOW_COPY_AND_ASSIGN(ModalWindowTestWidgetDelegate);
-};
-
 // Tests whether we can activate the top level widget when a modal dialog is
 // active.
 TEST_F(WidgetTest, WindowModalityActivationTest) {
-  // Destroyed when the top level widget created below is destroyed.
-  ModalWindowTestWidgetDelegate* widget_delegate =
-      new ModalWindowTestWidgetDelegate;
-  // Create a top level widget.
-  Widget top_level_widget;
-  Widget::InitParams init_params =
-      CreateParams(Widget::InitParams::TYPE_WINDOW);
-  init_params.show_state = ui::SHOW_STATE_NORMAL;
-  gfx::Rect initial_bounds(0, 0, 500, 500);
-  init_params.bounds = initial_bounds;
-  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  init_params.native_widget = new DesktopNativeWidgetAura(&top_level_widget);
-  init_params.delegate = widget_delegate;
-  top_level_widget.Init(init_params);
-  widget_delegate->set_widget(&top_level_widget);
-  top_level_widget.Show();
-  EXPECT_TRUE(top_level_widget.IsVisible());
+  TestDesktopWidgetDelegate widget_delegate;
+  widget_delegate.InitWidget(CreateParams(Widget::InitParams::TYPE_WINDOW));
 
-  HWND win32_window = views::HWNDForWidget(&top_level_widget);
+  Widget* top_level_widget = widget_delegate.GetWidget();
+  top_level_widget->Show();
+  EXPECT_TRUE(top_level_widget->IsVisible());
+
+  HWND win32_window = views::HWNDForWidget(top_level_widget);
   EXPECT_TRUE(::IsWindow(win32_window));
 
   // This instance will be destroyed when the dialog is destroyed.
@@ -3164,10 +3190,10 @@ TEST_F(WidgetTest, WindowModalityActivationTest) {
 
   // We should be able to activate the window even if the WidgetDelegate
   // says no, when a modal dialog is active.
-  widget_delegate->set_can_activate(false);
+  widget_delegate.set_can_activate(false);
 
   Widget* modal_dialog_widget = views::DialogDelegate::CreateDialogWidget(
-      dialog_delegate, NULL, top_level_widget.GetNativeWindow());
+      dialog_delegate, NULL, top_level_widget->GetNativeView());
   modal_dialog_widget->SetBounds(gfx::Rect(100, 100, 200, 200));
   modal_dialog_widget->Show();
   EXPECT_TRUE(modal_dialog_widget->IsVisible());
@@ -3180,7 +3206,6 @@ TEST_F(WidgetTest, WindowModalityActivationTest) {
   EXPECT_EQ(activate_result, MA_ACTIVATE);
 
   modal_dialog_widget->CloseNow();
-  top_level_widget.CloseNow();
 }
 #endif  // defined(OS_WIN)
 #endif  // !defined(OS_CHROMEOS)

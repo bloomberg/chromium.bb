@@ -8,6 +8,11 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(USE_X11)
+#include <X11/Xutil.h>
+#include "ui/gfx/x/x11_types.h"
+#endif
+
 namespace views {
 namespace test {
 
@@ -63,6 +68,27 @@ bool WidgetTest::IsWindowStackedAbove(Widget* above, Widget* below) {
   const ui::Layer* first = below->GetLayer();
   const ui::Layer* second = above->GetLayer();
   return FindLayersInOrder(root_layer->children(), &first, &second);
+}
+
+// static
+gfx::Size WidgetTest::GetNativeWidgetMinimumContentSize(Widget* widget) {
+  // On Windows, HWNDMessageHandler receives a WM_GETMINMAXINFO message whenever
+  // the window manager is interested in knowing the size constraints. On
+  // ChromeOS, it's handled internally. Elsewhere, the size constraints need to
+  // be pushed to the window server when they change.
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
+  return widget->GetNativeWindow()->delegate()->GetMinimumSize();
+#elif defined(USE_X11)
+  XSizeHints hints;
+  long supplied_return;
+  XGetWMNormalHints(
+      gfx::GetXDisplay(),
+      widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget(), &hints,
+      &supplied_return);
+  return gfx::Size(hints.min_width, hints.min_height);
+#else
+  NOTREACHED();
+#endif
 }
 
 // static
