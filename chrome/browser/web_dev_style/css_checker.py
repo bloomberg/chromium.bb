@@ -35,7 +35,8 @@ class CSSChecker(object):
       at_reg = re.compile(r"""
           @(?!\d+x\b)\w+[^'"]*?{  # @at-keyword selector junk {, not @2x
           (.*{.*?})+              # inner { curly } blocks, rules, and selector
-          .*?}                    # stuff up to the first end curly }""",
+          .*?}                    # stuff up to the first end curly }
+          """,
           re.DOTALL | re.VERBOSE)
       return at_reg.sub('\\1', s)
 
@@ -45,7 +46,8 @@ class CSSChecker(object):
     def _remove_grit(s):
       grit_reg = re.compile(r"""
           <if[^>]+>.*?<\s*/\s*if[^>]*>|  # <if> contents </if>
-          <include[^>]+>                 # <include>""",
+          <include[^>]+>                 # <include>
+          """,
           re.DOTALL | re.VERBOSE)
       return re.sub(grit_reg, '', s)
 
@@ -73,7 +75,8 @@ class CSSChecker(object):
       brace_space_reg = re.compile(r"""
           (?:^|\S){|  # selector{ or selector\n{ or
           {\s*\S+\s*  # selector { with stuff after it
-          $           # must be at the end of a line""",
+          $           # must be at the end of a line
+          """,
           re.VERBOSE)
       return brace_space_reg.search(line)
 
@@ -82,7 +85,8 @@ class CSSChecker(object):
       # non-ASCII, escape chars, or whitespace.
       class_reg = re.compile(r"""
           \.(-?[\w-]+).*  # ., then maybe -, then alpha numeric and -
-          [,{]\s*$        # selectors should end with a , or {""",
+          [,{]\s*$        # selectors should end with a , or {
+          """,
           re.VERBOSE)
       m = class_reg.search(line)
       if not m:
@@ -96,7 +100,8 @@ class CSSChecker(object):
           \s*(from|to|\d+%)\s*{   # 50% {
           \s*[\w-]+:              # rule:
           (\s*[\w\(\), -]+)+\s*;  # value;
-          \s*}\s*                 # }""",
+          \s*}\s*                 # }
+          """,
           re.VERBOSE)
       return ('}' in line and re.search(r'[^ }]', line) and
               not frame_reg.match(line))
@@ -105,7 +110,8 @@ class CSSChecker(object):
       colon_space_reg = re.compile(r"""
           (?<!data)    # ignore data URIs
           :(?!//)      # ignore url(http://), etc.
-          \S[^;]+;\s*  # only catch one-line rules for now""",
+          \S[^;]+;\s*  # only catch one-line rules for now
+          """,
           re.VERBOSE)
       return colon_space_reg.search(line)
 
@@ -116,7 +122,8 @@ class CSSChecker(object):
     hex_reg = re.compile(r"""
         \#([a-fA-F0-9]{3}|[a-fA-F0-9]{6})  # pound followed by 3 or 6 hex digits
         (?=[^\w-]|$)                       # no more alphanum chars or at EOL
-        (?!.*(?:{.*|,\s*)$)                # not in a selector""",
+        (?!.*(?:{.*|,\s*)$)                # not in a selector
+        """,
         re.VERBOSE)
 
     def hex_could_be_shorter(line):
@@ -130,7 +137,8 @@ class CSSChecker(object):
     small_seconds_reg = re.compile(r"""
         (?:^|[^\w-])   # start of a line or a non-alphanumeric char
         (0?\.[0-9]+)s  # 1.0s
-        (?!-?[\w-])    # no following - or alphanumeric chars""",
+        (?!-?[\w-])    # no following - or alphanumeric chars
+        """,
         re.VERBOSE)
 
     def milliseconds_for_small_times(line):
@@ -150,7 +158,8 @@ class CSSChecker(object):
       one_rule_reg = re.compile(r"""
           [\w-](?<!data):  # a rule: but no data URIs
           (?!//)[^;]+;     # value; ignoring colons in protocols://
-          \s*[^ }]\s*      # any non-space after the end colon""",
+          \s*[^ }]\s*      # any non-space after the end colon
+          """,
           re.VERBOSE)
       return one_rule_reg.search(line)
 
@@ -216,7 +225,8 @@ class CSSChecker(object):
       pseudo_reg = re.compile(r"""
           (?<!:):       # a single colon, i.e. :after but not ::after
           ([a-zA-Z-]+)  # a pseudo element, class, or function
-          (?=[^{}]+?{)  # make sure a selector, not inside { rules }""",
+          (?=[^{}]+?{)  # make sure a selector, not inside { rules }
+          """,
           re.MULTILINE | re.VERBOSE)
       errors = []
       for p in re.finditer(pseudo_reg, contents):
@@ -227,12 +237,14 @@ class CSSChecker(object):
 
     def one_selector_per_line(contents):
       any_reg = re.compile(r"""
-          :(?:-webkit-)?any\(.*?\)  # :-webkit-any(a, b, i) selector""",
+          :(?:-webkit-)?any\(.*?\)  # :-webkit-any(a, b, i) selector
+          """,
           re.DOTALL | re.VERBOSE)
       multi_sels_reg = re.compile(r"""
           (?:}\s*)?            # ignore 0% { blah: blah; }, from @keyframes
           ([^,]+,(?=[^{}]+?{)  # selector junk {, not in a { rule }
-          .*[,{])\s*$          # has to end with , or {""",
+          .*[,{])\s*$          # has to end with , or {
+          """,
           re.MULTILINE | re.VERBOSE)
       errors = []
       for b in re.finditer(multi_sels_reg, re.sub(any_reg, '', contents)):
@@ -260,16 +272,18 @@ class CSSChecker(object):
 
     def zero_width_lengths(contents):
       hsl_reg = re.compile(r"""
-          hsl\([^\)]*       # hsl(<maybe stuff>
+          hsl\([^\)]*       # hsl(maybestuff
           (?:[, ]|(?<=\())  # a comma or space not followed by a (
-          (?:0?\.?)?0%      # some equivalent to 0%""",
+          (?:0?\.?)?0%      # some equivalent to 0%
+          """,
           re.VERBOSE)
       zeros_reg = re.compile(r"""
           ^.*(?:^|[^0-9.])              # start/non-number
           (?:\.0|0(?:\.0?               # .0, 0, or 0.0
           |px|em|%|in|cm|mm|pc|pt|ex))  # a length unit
           (?:\D|$)                      # non-number/end
-          (?=[^{}]+?}).*$               # only { rules }""",
+          (?=[^{}]+?}).*$               # only { rules }
+          """,
           re.MULTILINE | re.VERBOSE)
       errors = []
       for z in re.finditer(zeros_reg, contents):
