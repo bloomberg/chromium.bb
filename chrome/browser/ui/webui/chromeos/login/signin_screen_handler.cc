@@ -33,6 +33,7 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
@@ -430,7 +431,10 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("removeUserWarningButtonTitle",
                IDS_LOGIN_POD_USER_REMOVE_WARNING_BUTTON);
 
-  builder->Add("samlNotice", IDS_LOGIN_SAML_NOTICE);
+  builder->Add("samlNotice",
+               StartupUtils::IsWebviewSigninEnabled()
+                   ? IDS_LOGIN_SAML_NOTICE_NEW_GAIA_FLOW
+                   : IDS_LOGIN_SAML_NOTICE);
 
   builder->Add("confirmPasswordTitle", IDS_LOGIN_CONFIRM_PASSWORD_TITLE);
   builder->Add("confirmPasswordLabel", IDS_LOGIN_CONFIRM_PASSWORD_LABEL);

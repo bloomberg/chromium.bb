@@ -35,6 +35,11 @@ throbber-notice {
   padding: 75px 0 0;
 }
 
+.new-gaia-flow #gaia-signin.full-width {
+  padding-top: 47px;
+  width: 562px;
+}
+
 #signin-right {
   -webkit-margin-start: 30px;
   margin-top: 80px;
@@ -78,7 +83,8 @@ html[dir=rtl] #close-button-item {
   right: auto;
 }
 
-.loading #close-button-item {
+.loading #close-button-item,
+.new-gaia-flow .full-width #close-button-item {
   background-image: url(chrome://theme/IDR_LOGIN_CLOSE_BUTTTON_ON_WHITE);
 }
 
@@ -107,6 +113,10 @@ html[dir=rtl] #back-button-item {
   -webkit-transform: scaleX(-1);
   left: auto;
   right: 14px;
+}
+
+.new-gaia-flow .full-width #back-button-item {
+  display: none;
 }
 
 #back-button-item:disabled {
@@ -170,7 +180,6 @@ html[dir=rtl] #back-button-item {
 webview#signin-frame {
   -webkit-transition: opacity 500ms ease-in;
   display: block;
-  height: 528px;
   margin-left: 0;
   opacity: 0;
   overflow: hidden;
@@ -251,8 +260,19 @@ webview#signin-frame.show {
   top: 50px;
 }
 
+.new-gaia-flow  #saml-notice-container {
+  -webkit-margin-start: 19px;
+  text-align: start;
+  top: 15px;
+}
+
 #saml-notice-message {
   margin: 0 auto;
+}
+
+.new-gaia-flow #saml-notice-message {
+  color: rgb(106, 106, 106);
+  font-size: 13px;
 }
 
 #gaia-whitelist-error {

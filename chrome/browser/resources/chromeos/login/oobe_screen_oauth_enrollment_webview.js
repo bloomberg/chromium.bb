@@ -79,6 +79,8 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
                                           this.authenticator_.authDomain);
             }
             this.classList.toggle('saml', isSAML);
+            if (Oobe.getInstance().currentScreen === this)
+              Oobe.getInstance().updateScreenSize(this);
           }).bind(this));
 
       this.authenticator_.addEventListener('backButton',

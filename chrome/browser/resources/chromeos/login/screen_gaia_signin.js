@@ -338,6 +338,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       // Reset SAML
       this.classList.toggle('full-width', false);
+      if (Oobe.getInstance().currentScreen === this)
+        Oobe.getInstance().updateScreenSize(this);
       this.samlPasswordConfirmAttempt_ = 0;
 
       this.updateAuthExtension(data);
