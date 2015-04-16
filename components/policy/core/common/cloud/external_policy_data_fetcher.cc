@@ -174,7 +174,7 @@ void ExternalPolicyDataFetcherBackend::StartJob(
       ++last_fetch_id_, job->url, net::URLFetcher::GET, this);
   fetcher->SetRequestContext(request_context_.get());
   fetcher->SetLoadFlags(net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
-                        net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_IS_DOWNLOAD |
+                        net::LOAD_DO_NOT_SAVE_COOKIES |
                         net::LOAD_DO_NOT_SEND_COOKIES |
                         net::LOAD_DO_NOT_SEND_AUTH_DATA);
   fetcher->SetAutomaticallyRetryOnNetworkChanges(3);
