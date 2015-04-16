@@ -54,7 +54,4 @@ declare_args() {
 
   # TODO(GYP): This should be a platform define.
   is_openbsd = false
-
-  # Override to omit code that depends on the X11 and fontconfig libraries.
-  is_ensemble = false
 }

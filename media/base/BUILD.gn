@@ -187,13 +187,11 @@ source_set("base") {
     "yuv_convert.h",
   ]
   defines = []
-  deps = []
+  deps = [
+    "//skia",
+  ]
   libs = []
   configs += [ "//media:media_config" ]
-
-  if (!is_ensemble) {
-    deps += [ "//skia" ]
-  }
 
   if (media_use_ffmpeg) {
     sources += [
@@ -224,7 +222,7 @@ source_set("base") {
     sources += [ "media_posix.cc" ]
   }
 
-  if (is_linux && use_x11 && !is_ensemble) {
+  if (is_linux && use_x11) {
     configs += [
       "//build/config/linux:x11",
       "//build/config/linux:xext",

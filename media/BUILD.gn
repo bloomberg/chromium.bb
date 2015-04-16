@@ -210,8 +210,14 @@ component("media") {
     "renderers/renderer_impl.h",
     "renderers/video_renderer_impl.cc",
     "renderers/video_renderer_impl.h",
+    "video/capture/fake_video_capture_device.cc",
+    "video/capture/fake_video_capture_device.h",
+    "video/capture/fake_video_capture_device_factory.cc",
+    "video/capture/fake_video_capture_device_factory.h",
     "video/capture/file_video_capture_device.cc",
     "video/capture/file_video_capture_device.h",
+    "video/capture/file_video_capture_device_factory.cc",
+    "video/capture/file_video_capture_device_factory.h",
     "video/capture/linux/v4l2_capture_delegate.cc",
     "video/capture/linux/v4l2_capture_delegate.h",
     "video/capture/linux/v4l2_capture_delegate_multi_plane.cc",
@@ -220,6 +226,8 @@ component("media") {
     "video/capture/linux/v4l2_capture_delegate_single_plane.h",
     "video/capture/linux/video_capture_device_chromeos.cc",
     "video/capture/linux/video_capture_device_chromeos.h",
+    "video/capture/linux/video_capture_device_factory_linux.cc",
+    "video/capture/linux/video_capture_device_factory_linux.h",
     "video/capture/linux/video_capture_device_linux.cc",
     "video/capture/linux/video_capture_device_linux.h",
     "video/capture/mac/platform_video_capturing_mac.h",
@@ -235,6 +243,8 @@ component("media") {
     "video/capture/mac/video_capture_device_qtkit_mac.mm",
     "video/capture/video_capture_device.cc",
     "video/capture/video_capture_device.h",
+    "video/capture/video_capture_device_factory.cc",
+    "video/capture/video_capture_device_factory.h",
     "video/capture/video_capture_device_info.cc",
     "video/capture/video_capture_device_info.h",
     "video/capture/win/capability_list_win.cc",
@@ -497,30 +507,11 @@ component("media") {
     "//skia",
     "//third_party/libyuv",
     "//third_party/opus",
+    "//ui/events:events_base",
+    "//ui/gfx",
     "//ui/gfx/geometry",
     "//url",
   ]
-
-  # Add the sources and dependencies that need the X11 or fontconfig libraries.
-  if (!is_ensemble) {
-    sources += [
-      "video/capture/fake_video_capture_device.cc",
-      "video/capture/fake_video_capture_device.h",
-      "video/capture/fake_video_capture_device_factory.cc",
-      "video/capture/fake_video_capture_device_factory.h",
-      "video/capture/file_video_capture_device_factory.cc",
-      "video/capture/file_video_capture_device_factory.h",
-      "video/capture/linux/video_capture_device_factory_linux.cc",
-      "video/capture/linux/video_capture_device_factory_linux.h",
-      "video/capture/video_capture_device_factory.cc",
-      "video/capture/video_capture_device_factory.h",
-    ]
-
-    deps += [
-      "//ui/events:events_base",
-      "//ui/gfx",
-    ]
-  }
 }
 
 # Minimal media component for media/cast on iOS.
