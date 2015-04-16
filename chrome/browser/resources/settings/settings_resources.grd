@@ -215,8 +215,8 @@
         <structure name="IDR_SETTINGS_INTERNET_PAGE_JS"
                    file="internet_page/internet_page.js"
                    type="chrome_html" />
-        <structure name="IDR_SETTINGS_NETWORK_SUMMARY_CSS"
-                   file="internet_page/network_summary.css"
+        <structure name="IDR_SETTINGS_NETWORK_SUMMARY_STYLE_HTML"
+                   file="internet_page/network_summary_style.html"
                    type="chrome_html" />
         <structure name="IDR_SETTINGS_NETWORK_SUMMARY_HTML"
                    file="internet_page/network_summary.html"

@@ -1,10 +1,11 @@
 <link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_network_list_item/cr_network_list_item.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_onc/cr_onc_data.html">
+<link rel="import" href="network_summary_style.html">
 
 <polymer-element name="cr-network-summary">
   <template>
-    <link rel="stylesheet" href="network_summary.css">
+    <core-style ref="networkSummaryStyle"></core-style>
     <div id="summary" vertical layout>
       <cr-network-list-item networkState="{{networkStates.Ethernet}}"
           hidden?="{{!networkStates.Ethernet}}">
