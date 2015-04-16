@@ -195,7 +195,7 @@ protected:
 private:
     bool isAllowedChildOfTree() const;
     void ariaListboxSelectedChildren(AccessibilityChildrenVector&);
-    PlainTextRange ariaSelectedTextRange() const;
+    PlainTextRange visibleSelectionUnderObject() const;
     bool nodeIsTextControl(const Node*) const;
     bool isTabItemSelected() const;
     AXObject* accessibilityImageMapHitTest(HTMLAreaElement*, const IntPoint&) const;

@@ -453,18 +453,6 @@ bool AXObject::isPasswordFieldAndShouldHideValue() const
     return isPasswordField();
 }
 
-bool AXObject::isTextControl() const
-{
-    switch (roleValue()) {
-    case TextFieldRole:
-    case ComboBoxRole:
-    case SearchBoxRole:
-        return true;
-    default:
-        return false;
-    }
-}
-
 bool AXObject::isClickable() const
 {
     switch (roleValue()) {
