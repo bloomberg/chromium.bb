@@ -53,7 +53,7 @@ public:
     virtual void appendText(StringBuilder&, Text&) override;
     virtual void appendElement(StringBuilder&, Element&, Namespaces*) override;
     void appendElement(StringBuilder&, Element&, bool, RangeFullySelectsNode);
-    void appendStyleNodeOpenTag(StringBuilder&, StylePropertySet*, const Document&, bool isBlock = false);
+    void appendStyleNodeOpenTag(StringBuilder&, StylePropertySet*, bool isBlock = false);
 
     // TODO(hajimehoshi): These functions are called from the serializer, but
     // should not.
@@ -93,7 +93,7 @@ public:
     // used at markup.cpp. Move those usages to here.
     void appendString(const String& s) { return m_markupAccumulator.appendString(s); }
     void wrapWithNode(ContainerNode&, bool convertBlocksToInlines = false, StyledMarkupAccumulator::RangeFullySelectsNode = StyledMarkupAccumulator::DoesFullySelectNode);
-    void wrapWithStyleNode(StylePropertySet*, const Document&, bool isBlock = false);
+    void wrapWithStyleNode(StylePropertySet*, bool isBlock = false);
 
     String takeResults();
 

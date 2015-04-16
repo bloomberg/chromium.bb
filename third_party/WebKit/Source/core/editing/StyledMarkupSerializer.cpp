@@ -78,7 +78,7 @@ void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
         // FIXME: Should this be included in forceInline?
         wrappingStyle->style()->setProperty(CSSPropertyFloat, CSSValueNone);
 
-        appendStyleNodeOpenTag(out, wrappingStyle->style(), text.document());
+        appendStyleNodeOpenTag(out, wrappingStyle->style());
     }
 
     if (!shouldAnnotate() || parentIsTextarea) {
@@ -167,7 +167,7 @@ void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element
     appendCloseTag(out, element);
 }
 
-void StyledMarkupAccumulator::appendStyleNodeOpenTag(StringBuilder& out, StylePropertySet* style, const Document& document, bool isBlock)
+void StyledMarkupAccumulator::appendStyleNodeOpenTag(StringBuilder& out, StylePropertySet* style, bool isBlock)
 {
     // wrappingStyleForSerialization should have removed -webkit-text-decorations-in-effect
     ASSERT(propertyMissingOrEqualToNone(style, CSSPropertyWebkitTextDecorationsInEffect));
@@ -175,7 +175,8 @@ void StyledMarkupAccumulator::appendStyleNodeOpenTag(StringBuilder& out, StylePr
         out.appendLiteral("<div style=\"");
     else
         out.appendLiteral("<span style=\"");
-    appendAttributeValue(out, style->asText(), document.isHTMLDocument());
+    ASSERT(m_start.isNotNull());
+    appendAttributeValue(out, style->asText(), m_start.document()->isHTMLDocument());
     out.appendLiteral("\">");
 }
 
@@ -226,10 +227,10 @@ void StyledMarkupSerializer::wrapWithNode(ContainerNode& node, bool convertBlock
         m_markupAccumulator.appendEndTag(toElement(node));
 }
 
-void StyledMarkupSerializer::wrapWithStyleNode(StylePropertySet* style, const Document& document, bool isBlock)
+void StyledMarkupSerializer::wrapWithStyleNode(StylePropertySet* style, bool isBlock)
 {
     StringBuilder openTag;
-    m_markupAccumulator.appendStyleNodeOpenTag(openTag, style, document, isBlock);
+    m_markupAccumulator.appendStyleNodeOpenTag(openTag, style, isBlock);
     m_reversedPrecedingMarkup.append(openTag.toString());
     appendString(styleNodeCloseTag(isBlock));
 }
