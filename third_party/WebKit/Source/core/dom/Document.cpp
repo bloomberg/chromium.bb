@@ -3988,6 +3988,26 @@ String Document::lastModified() const
 
 const KURL& Document::firstPartyForCookies() const
 {
+    if (!RuntimeEnabledFeatures::firstPartyIncludesAncestorsEnabled())
+        return topDocument().url();
+
+    // We're intentionally using the URL of each document rather than the document's SecurityOrigin.
+    // Sandboxing a document into a unique origin shouldn't effect first-/third-party status for
+    // cookies and site data.
+    RefPtr<SecurityOrigin> topOrigin = SecurityOrigin::create(topDocument().url());
+    const Document* currentDocument = this;
+    while (currentDocument) {
+        // Skip over srcdoc documents, as they are always same-origin with their closest non-srcdoc parent.
+        while (currentDocument->isSrcdocDocument())
+            currentDocument = currentDocument->parentDocument();
+        ASSERT(currentDocument);
+
+        if (!topOrigin->canRequest(currentDocument->url()))
+            return SecurityOrigin::urlWithUniqueSecurityOrigin();
+
+        currentDocument = currentDocument->parentDocument();
+    }
+
     return topDocument().url();
 }
 

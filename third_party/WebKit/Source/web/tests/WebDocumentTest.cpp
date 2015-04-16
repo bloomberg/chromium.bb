@@ -13,8 +13,10 @@
 #include "core/html/HTMLElement.h"
 #include "core/style/ComputedStyle.h"
 #include "core/page/Page.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/Color.h"
 #include "platform/testing/URLTestHelpers.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "web/tests/FrameTestHelpers.h"
 #include <gtest/gtest.h>
 
@@ -204,4 +206,200 @@ TEST(WebDocumentTest, SetIsTransitionDocument)
     ASSERT_FALSE(coreDoc->isTransitionDocument());
 }
 
+namespace {
+    const char* baseURLOriginA = "http://example.test:0/";
+    const char* baseURLOriginB = "http://not-example.test:0/";
+    const char* emptyFile = "first_party/empty.html";
+    const char* nestedData = "first_party/nested-data.html";
+    const char* nestedOriginA = "first_party/nested-originA.html";
+    const char* nestedOriginAInOriginA = "first_party/nested-originA-in-originA.html";
+    const char* nestedOriginAInOriginB = "first_party/nested-originA-in-originB.html";
+    const char* nestedOriginB = "first_party/nested-originB.html";
+    const char* nestedOriginBInOriginA = "first_party/nested-originB-in-originA.html";
+    const char* nestedOriginBInOriginB = "first_party/nested-originB-in-originB.html";
+    const char* nestedSrcDoc = "first_party/nested-srcdoc.html";
+
+    static KURL toOriginA(const char* file)
+    {
+        return toKURL(std::string(baseURLOriginA) + file);
+    }
+
+    static KURL toOriginB(const char* file)
+    {
+        return toKURL(std::string(baseURLOriginB) + file);
+    }
+}
+
+class WebDocumentFirstPartyTest : public ::testing::Test {
+public:
+    static void SetUpTestCase();
+
+protected:
+    void load(const char*);
+    Document* topDocument() const;
+    Document* nestedDocument() const;
+    Document* nestedNestedDocument() const;
+
+    WebViewHelper m_webViewHelper;
+};
+
+void WebDocumentFirstPartyTest::SetUpTestCase()
+{
+    URLTestHelpers::registerMockedURLLoad(toOriginA(emptyFile), WebString::fromUTF8(emptyFile));
+    URLTestHelpers::registerMockedURLLoad(toOriginA(nestedData), WebString::fromUTF8(nestedData));
+    URLTestHelpers::registerMockedURLLoad(toOriginA(nestedOriginA), WebString::fromUTF8(nestedOriginA));
+    URLTestHelpers::registerMockedURLLoad(toOriginA(nestedOriginAInOriginA), WebString::fromUTF8(nestedOriginAInOriginA));
+    URLTestHelpers::registerMockedURLLoad(toOriginA(nestedOriginAInOriginB), WebString::fromUTF8(nestedOriginAInOriginB));
+    URLTestHelpers::registerMockedURLLoad(toOriginA(nestedOriginB), WebString::fromUTF8(nestedOriginB));
+    URLTestHelpers::registerMockedURLLoad(toOriginA(nestedOriginBInOriginA), WebString::fromUTF8(nestedOriginBInOriginA));
+    URLTestHelpers::registerMockedURLLoad(toOriginA(nestedOriginBInOriginB), WebString::fromUTF8(nestedOriginBInOriginB));
+    URLTestHelpers::registerMockedURLLoad(toOriginA(nestedSrcDoc), WebString::fromUTF8(nestedSrcDoc));
+
+    URLTestHelpers::registerMockedURLLoad(toOriginB(emptyFile), WebString::fromUTF8(emptyFile));
+    URLTestHelpers::registerMockedURLLoad(toOriginB(nestedOriginA), WebString::fromUTF8(nestedOriginA));
+    URLTestHelpers::registerMockedURLLoad(toOriginB(nestedOriginB), WebString::fromUTF8(nestedOriginB));
+}
+
+void WebDocumentFirstPartyTest::load(const char* file)
+{
+    m_webViewHelper.initializeAndLoad(std::string(baseURLOriginA) + file);
+}
+
+Document* WebDocumentFirstPartyTest::topDocument() const
+{
+    return toLocalFrame(m_webViewHelper.webViewImpl()->page()->mainFrame())->document();
+}
+
+Document* WebDocumentFirstPartyTest::nestedDocument() const
+{
+    return toLocalFrame(m_webViewHelper.webViewImpl()->page()->mainFrame()->tree().firstChild())->document();
+}
+
+Document* WebDocumentFirstPartyTest::nestedNestedDocument() const
+{
+    return toLocalFrame(m_webViewHelper.webViewImpl()->page()->mainFrame()->tree().firstChild()->tree().firstChild())->document();
+}
+
+TEST_F(WebDocumentFirstPartyTest, Empty)
+{
+    load(emptyFile);
+
+    RuntimeEnabledFeatures::setFirstPartyIncludesAncestorsEnabled(false);
+    ASSERT_EQ(toOriginA(emptyFile), topDocument()->firstPartyForCookies());
+
+    RuntimeEnabledFeatures::setFirstPartyIncludesAncestorsEnabled(true);
+    ASSERT_EQ(toOriginA(emptyFile), topDocument()->firstPartyForCookies());
+}
+
+TEST_F(WebDocumentFirstPartyTest, NestedOriginA)
+{
+    load(nestedOriginA);
+
+    RuntimeEnabledFeatures::setFirstPartyIncludesAncestorsEnabled(false);
+    ASSERT_EQ(toOriginA(nestedOriginA), topDocument()->firstPartyForCookies());
+    ASSERT_EQ(toOriginA(nestedOriginA), nestedDocument()->firstPartyForCookies());
+
+    RuntimeEnabledFeatures::setFirstPartyIncludesAncestorsEnabled(true);
+    ASSERT_EQ(toOriginA(nestedOriginA), topDocument()->firstPartyForCookies());
+    ASSERT_EQ(toOriginA(nestedOriginA), nestedDocument()->firstPartyForCookies());
+}
+
+TEST_F(WebDocumentFirstPartyTest, NestedOriginAInOriginA)
+{
+    load(nestedOriginAInOriginA);
+
+    RuntimeEnabledFeatures::setFirstPartyIncludesAncestorsEnabled(false);
+    ASSERT_EQ(toOriginA(nestedOriginAInOriginA), topDocument()->firstPartyForCookies());
+    ASSERT_EQ(toOriginA(nestedOriginAInOriginA), nestedDocument()->firstPartyForCookies());
+    ASSERT_EQ(toOriginA(nestedOriginAInOriginA), nestedNestedDocument()->firstPartyForCookies());
+
+    RuntimeEnabledFeatures::setFirstPartyIncludesAncestorsEnabled(true);
+    ASSERT_EQ(toOriginA(nestedOriginAInOriginA), topDocument()->firstPartyForCookies());
+    ASSERT_EQ(toOriginA(nestedOriginAInOriginA), nestedDocument()->firstPartyForCookies());
+    ASSERT_EQ(toOriginA(nestedOriginAInOriginA), nestedNestedDocument()->firstPartyForCookies());
+}
+
+TEST_F(WebDocumentFirstPartyTest, NestedOriginAInOriginB)
+{
+    load(nestedOriginAInOriginB);
+
+    RuntimeEnabledFeatures::setFirstPartyIncludesAncestorsEnabled(false);
+    ASSERT_EQ(toOriginA(nestedOriginAInOriginB), topDocument()->firstPartyForCookies());
+    ASSERT_EQ(toOriginA(nestedOriginAInOriginB), nestedDocument()->firstPartyForCookies());
+    ASSERT_EQ(toOriginA(nestedOriginAInOriginB), nestedNestedDocument()->firstPartyForCookies());
+
+    RuntimeEnabledFeatures::setFirstPartyIncludesAncestorsEnabled(true);
+    ASSERT_EQ(toOriginA(nestedOriginAInOriginB), topDocument()->firstPartyForCookies());
+    ASSERT_EQ(SecurityOrigin::urlWithUniqueSecurityOrigin(), nestedDocument()->firstPartyForCookies());
+    ASSERT_EQ(SecurityOrigin::urlWithUniqueSecurityOrigin(), nestedNestedDocument()->firstPartyForCookies());
+}
+
+TEST_F(WebDocumentFirstPartyTest, NestedOriginB)
+{
+    load(nestedOriginB);
+
+    RuntimeEnabledFeatures::setFirstPartyIncludesAncestorsEnabled(false);
+    ASSERT_EQ(toOriginA(nestedOriginB), topDocument()->firstPartyForCookies());
+    ASSERT_EQ(toOriginA(nestedOriginB), nestedDocument()->firstPartyForCookies());
+
+    RuntimeEnabledFeatures::setFirstPartyIncludesAncestorsEnabled(true);
+    ASSERT_EQ(toOriginA(nestedOriginB), topDocument()->firstPartyForCookies());
+    ASSERT_EQ(SecurityOrigin::urlWithUniqueSecurityOrigin(), nestedDocument()->firstPartyForCookies());
+}
+
+TEST_F(WebDocumentFirstPartyTest, NestedOriginBInOriginA)
+{
+    load(nestedOriginBInOriginA);
+
+    RuntimeEnabledFeatures::setFirstPartyIncludesAncestorsEnabled(false);
+    ASSERT_EQ(toOriginA(nestedOriginBInOriginA), topDocument()->firstPartyForCookies());
+    ASSERT_EQ(toOriginA(nestedOriginBInOriginA), nestedDocument()->firstPartyForCookies());
+    ASSERT_EQ(toOriginA(nestedOriginBInOriginA), nestedNestedDocument()->firstPartyForCookies());
+
+    RuntimeEnabledFeatures::setFirstPartyIncludesAncestorsEnabled(true);
+    ASSERT_EQ(toOriginA(nestedOriginBInOriginA), topDocument()->firstPartyForCookies());
+    ASSERT_EQ(toOriginA(nestedOriginBInOriginA), nestedDocument()->firstPartyForCookies());
+    ASSERT_EQ(SecurityOrigin::urlWithUniqueSecurityOrigin(), nestedNestedDocument()->firstPartyForCookies());
+}
+
+TEST_F(WebDocumentFirstPartyTest, NestedOriginBInOriginB)
+{
+    load(nestedOriginBInOriginB);
+
+    RuntimeEnabledFeatures::setFirstPartyIncludesAncestorsEnabled(false);
+    ASSERT_EQ(toOriginA(nestedOriginBInOriginB), topDocument()->firstPartyForCookies());
+    ASSERT_EQ(toOriginA(nestedOriginBInOriginB), nestedDocument()->firstPartyForCookies());
+    ASSERT_EQ(toOriginA(nestedOriginBInOriginB), nestedNestedDocument()->firstPartyForCookies());
+
+    RuntimeEnabledFeatures::setFirstPartyIncludesAncestorsEnabled(true);
+    ASSERT_EQ(toOriginA(nestedOriginBInOriginB), topDocument()->firstPartyForCookies());
+    ASSERT_EQ(SecurityOrigin::urlWithUniqueSecurityOrigin(), nestedDocument()->firstPartyForCookies());
+    ASSERT_EQ(SecurityOrigin::urlWithUniqueSecurityOrigin(), nestedNestedDocument()->firstPartyForCookies());
+}
+
+TEST_F(WebDocumentFirstPartyTest, NestedSrcdoc)
+{
+    load(nestedSrcDoc);
+
+    RuntimeEnabledFeatures::setFirstPartyIncludesAncestorsEnabled(false);
+    ASSERT_EQ(toOriginA(nestedSrcDoc), topDocument()->firstPartyForCookies());
+    ASSERT_EQ(toOriginA(nestedSrcDoc), nestedDocument()->firstPartyForCookies());
+
+    RuntimeEnabledFeatures::setFirstPartyIncludesAncestorsEnabled(true);
+    ASSERT_EQ(toOriginA(nestedSrcDoc), topDocument()->firstPartyForCookies());
+    ASSERT_EQ(toOriginA(nestedSrcDoc), nestedDocument()->firstPartyForCookies());
+}
+
+TEST_F(WebDocumentFirstPartyTest, NestedData)
+{
+    load(nestedData);
+
+    RuntimeEnabledFeatures::setFirstPartyIncludesAncestorsEnabled(false);
+    ASSERT_EQ(toOriginA(nestedData), topDocument()->firstPartyForCookies());
+    ASSERT_EQ(toOriginA(nestedData), nestedDocument()->firstPartyForCookies());
+
+    RuntimeEnabledFeatures::setFirstPartyIncludesAncestorsEnabled(true);
+    ASSERT_EQ(toOriginA(nestedData), topDocument()->firstPartyForCookies());
+    ASSERT_EQ(SecurityOrigin::urlWithUniqueSecurityOrigin(), nestedDocument()->firstPartyForCookies());
+}
 }
