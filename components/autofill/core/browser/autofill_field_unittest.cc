@@ -402,6 +402,28 @@ TEST(AutofillFieldTest, FillSelectControlWithFullMonthName) {
   EXPECT_EQ(ASCIIToUTF16("April"), field.value);
 }
 
+TEST(AutofillFieldTest, FillSelectControlWithFrenchMonthName) {
+  const char* const kMonthsFrench[] = {
+    "JANV", "FÉVR.", "MARS", "décembre"
+  };
+  AutofillField field(
+      GenerateSelectFieldWithOptions(kMonthsFrench, arraysize(kMonthsFrench)),
+      base::string16());
+  field.set_heuristic_type(CREDIT_CARD_EXP_MONTH);
+
+  AutofillField::FillFormField(
+      field, ASCIIToUTF16("02"), "fr-FR", "fr-FR", &field);
+  EXPECT_EQ(UTF8ToUTF16("FÉVR."), field.value);
+
+  AutofillField::FillFormField(
+      field, ASCIIToUTF16("01"), "fr-FR", "fr-FR", &field);
+  EXPECT_EQ(UTF8ToUTF16("JANV"), field.value);
+
+  AutofillField::FillFormField(
+      field, ASCIIToUTF16("12"), "fr-FR", "fr-FR", &field);
+  EXPECT_EQ(UTF8ToUTF16("décembre"), field.value);
+}
+
 TEST(AutofillFieldTest, FillSelectControlWithNumericMonthSansLeadingZero) {
   const char* const kMonthsNumeric[] = {
     "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",

@@ -172,6 +172,13 @@ class CreditCard : public AutofillDataModel {
   // Sets |number_| to |number| and computes the appropriate card |type_|.
   void SetNumber(const base::string16& number);
 
+  // Converts a string representation of a month (such as "February" or "feb."
+  // or "2") into a numeric value in [1, 12]. Returns true on successful
+  // conversion or false if a month was not recognized.
+  static bool ConvertMonth(const base::string16& month,
+                           const std::string& app_locale,
+                           int* num);
+
  private:
   // FormGroup:
   void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;

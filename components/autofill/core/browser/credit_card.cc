@@ -52,55 +52,6 @@ bool ConvertYear(const base::string16& year, int* num) {
   return false;
 }
 
-bool ConvertMonth(const base::string16& month,
-                  const std::string& app_locale,
-                  int* num) {
-  // If the |month| is empty, clear the stored value.
-  if (month.empty()) {
-    *num = 0;
-    return true;
-  }
-
-  // Try parsing the |month| as a number.
-  if (base::StringToInt(month, num))
-    return true;
-
-  // If the locale is unknown, give up.
-  if (app_locale.empty())
-    return false;
-
-  // Otherwise, try parsing the |month| as a named month, e.g. "January" or
-  // "Jan".
-  l10n::CaseInsensitiveCompare compare;
-  UErrorCode status = U_ZERO_ERROR;
-  icu::Locale locale(app_locale.c_str());
-  icu::DateFormatSymbols date_format_symbols(locale, status);
-  DCHECK(status == U_ZERO_ERROR || status == U_USING_FALLBACK_WARNING ||
-         status == U_USING_DEFAULT_WARNING);
-
-  int32_t num_months;
-  const icu::UnicodeString* months = date_format_symbols.getMonths(num_months);
-  for (int32_t i = 0; i < num_months; ++i) {
-    const base::string16 icu_month(months[i].getBuffer(), months[i].length());
-    if (compare.StringsEqual(icu_month, month)) {
-      *num = i + 1;  // Adjust from 0-indexed to 1-indexed.
-      return true;
-    }
-  }
-
-  months = date_format_symbols.getShortMonths(num_months);
-  for (int32_t i = 0; i < num_months; ++i) {
-    const base::string16 icu_month(months[i].getBuffer(), months[i].length());
-    if (compare.StringsEqual(icu_month, month)) {
-      *num = i + 1;  // Adjust from 0-indexed to 1-indexed.
-      return true;
-    }
-  }
-
-  *num = 0;
-  return false;
-}
-
 base::string16 TypeForFill(const std::string& type) {
   if (type == kAmericanExpressCard)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_AMEX);
@@ -457,8 +408,9 @@ void CreditCard::GetMatchingTypes(const base::string16& text,
   if (!card_number.empty() && StripSeparators(text) == card_number)
     matching_types->insert(CREDIT_CARD_NUMBER);
 
+NOTIMPLEMENTED() << " GETMATCINGTYPES " << text;
   int month;
-  if (ConvertMonth(text, app_locale, &month) && month != 0 &&
+  if (ConvertMonth(text, app_locale, &month) &&
       month == expiration_month_) {
     matching_types->insert(CREDIT_CARD_EXP_MONTH);
   }
@@ -731,8 +683,8 @@ base::string16 CreditCard::Expiration2DigitYearAsString() const {
 
 void CreditCard::SetExpirationMonthFromString(const base::string16& text,
                                               const std::string& app_locale) {
-  int month;
-  if (!ConvertMonth(text, app_locale, &month))
+  int month = 0;
+  if (!text.empty() && !ConvertMonth(text, app_locale, &month))
     return;
 
   SetExpirationMonth(month);
@@ -753,6 +705,56 @@ void CreditCard::SetNumber(const base::string16& number) {
   // when we have masked cards from the server (last 4 digits).
   if (record_type_ != MASKED_SERVER_CARD)
     type_ = GetCreditCardType(StripSeparators(number_));
+}
+
+// static
+bool CreditCard::ConvertMonth(const base::string16& month,
+                              const std::string& app_locale,
+                              int* num) {
+  if (month.empty())
+    return false;
+
+  // Try parsing the |month| as a number (this doesn't require |app_locale|).
+  if (base::StringToInt(month, num))
+    return true;
+
+  if (app_locale.empty())
+    return false;
+
+  // Otherwise, try parsing the |month| as a named month, e.g. "January" or
+  // "Jan".
+  l10n::CaseInsensitiveCompare compare;
+  UErrorCode status = U_ZERO_ERROR;
+  icu::Locale locale(app_locale.c_str());
+  icu::DateFormatSymbols date_format_symbols(locale, status);
+  DCHECK(status == U_ZERO_ERROR || status == U_USING_FALLBACK_WARNING ||
+         status == U_USING_DEFAULT_WARNING);
+
+  int32_t num_months;
+  const icu::UnicodeString* months = date_format_symbols.getMonths(num_months);
+  for (int32_t i = 0; i < num_months; ++i) {
+    const base::string16 icu_month(months[i].getBuffer(), months[i].length());
+    if (compare.StringsEqual(icu_month, month)) {
+      *num = i + 1;  // Adjust from 0-indexed to 1-indexed.
+      return true;
+    }
+  }
+
+  months = date_format_symbols.getShortMonths(num_months);
+  // Some abbreviations have . at the end (e.g., "janv." in French). We don't
+  // care about matching that.
+  base::string16 trimmed_month;
+  base::TrimString(month, base::ASCIIToUTF16("."), &trimmed_month);
+  for (int32_t i = 0; i < num_months; ++i) {
+    base::string16 icu_month(months[i].getBuffer(), months[i].length());
+    base::TrimString(icu_month, base::ASCIIToUTF16("."), &icu_month);
+    if (compare.StringsEqual(icu_month, trimmed_month)) {
+      *num = i + 1;  // Adjust from 0-indexed to 1-indexed.
+      return true;
+    }
+  }
+
+  return false;
 }
 
 // So we can compare CreditCards with EXPECT_EQ().

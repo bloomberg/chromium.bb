@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/common/autofill_l10n_util.h"
 
 namespace autofill {
 
@@ -160,12 +161,10 @@ NameInfo& NameInfo::operator=(const NameInfo& info) {
 }
 
 bool NameInfo::ParsedNamesAreEqual(const NameInfo& info) {
-  return (base::StringToLowerASCII(given_) ==
-              base::StringToLowerASCII(info.given_) &&
-          base::StringToLowerASCII(middle_) ==
-              base::StringToLowerASCII(info.middle_) &&
-          base::StringToLowerASCII(family_) ==
-              base::StringToLowerASCII(info.family_));
+  l10n::CaseInsensitiveCompare compare;
+  return compare.StringsEqual(given_, info.given_) &&
+         compare.StringsEqual(middle_, info.middle_) &&
+         compare.StringsEqual(family_, info.family_);
 }
 
 void NameInfo::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {

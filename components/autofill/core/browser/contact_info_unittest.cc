@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
+using base::UTF8ToUTF16;
 
 namespace autofill {
 
@@ -216,6 +217,11 @@ TEST(NameInfoTest, ParsedNamesAreEqual) {
       {{"Marion", "Mitchell", "Morrison"},
        {"David", "Mitchell", "Morrison"},
        false},
+
+      // Non-ASCII characters.
+      {{"M\xc3\xa1rion Mitchell", "", "Morrison"},
+       {"M\xc3\x81RION MITCHELL", "", "MORRISON"},
+       true},
   };
 
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
@@ -224,20 +230,20 @@ TEST(NameInfoTest, ParsedNamesAreEqual) {
     // Construct the starting_profile.
     NameInfo starting_profile;
     starting_profile.SetRawInfo(NAME_FIRST,
-                                ASCIIToUTF16(test_cases[i].starting_names[0]));
+                                UTF8ToUTF16(test_cases[i].starting_names[0]));
     starting_profile.SetRawInfo(NAME_MIDDLE,
-                                ASCIIToUTF16(test_cases[i].starting_names[1]));
+                                UTF8ToUTF16(test_cases[i].starting_names[1]));
     starting_profile.SetRawInfo(NAME_LAST,
-                                ASCIIToUTF16(test_cases[i].starting_names[2]));
+                                UTF8ToUTF16(test_cases[i].starting_names[2]));
 
     // Construct the additional_profile.
     NameInfo additional_profile;
     additional_profile.SetRawInfo(
-        NAME_FIRST, ASCIIToUTF16(test_cases[i].additional_names[0]));
+        NAME_FIRST, UTF8ToUTF16(test_cases[i].additional_names[0]));
     additional_profile.SetRawInfo(
-        NAME_MIDDLE, ASCIIToUTF16(test_cases[i].additional_names[1]));
+        NAME_MIDDLE, UTF8ToUTF16(test_cases[i].additional_names[1]));
     additional_profile.SetRawInfo(
-        NAME_LAST, ASCIIToUTF16(test_cases[i].additional_names[2]));
+        NAME_LAST, UTF8ToUTF16(test_cases[i].additional_names[2]));
 
     // Verify the test expectations.
     EXPECT_EQ(test_cases[i].expected_result,

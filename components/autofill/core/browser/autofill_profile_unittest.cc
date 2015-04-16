@@ -1301,10 +1301,10 @@ TEST(AutofillProfileTest, OverwriteOrAppendNames) {
   test_cases.push_back(TestCase(NameParts("Marion", "Mitchell", "Morrison"),
                                 NameParts("MARION", "MITCHELL", "MORRISON"),
                                 NameParts("Marion", "Mitchell", "Morrison")));
-  // Capital A with acute versus lower case a with acute.
-  test_cases.push_back(TestCase(NameParts("M\xc3\xa1rion", "M", "Morrison"),
-                                NameParts("M\xc3\x81rion", "M", "Morrison"),
-                                NameParts("M\xc3\x81rion", "M", "Morrison")));
+  // Capital A with grave versus lower case a with grave.
+  test_cases.push_back(TestCase(NameParts("Màrion", "M", "Morrison"),
+                                NameParts("MÀrion", "M", "Morrison"),
+                                NameParts("Màrion", "M", "Morrison")));
 
   // A parse that has a two-word last name should take precedence over a
   // parse that assumes the two names are a middle and a last name.

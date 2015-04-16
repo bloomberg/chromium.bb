@@ -5,7 +5,7 @@
 #include "components/autofill/core/browser/autofill_field.h"
 
 #include "base/command_line.h"
-#include "base/i18n/string_compare.h"
+#include "base/i18n/string_search.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/sha1.h"
@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/phone_number.h"
 #include "components/autofill/core/browser/state_names.h"
 #include "components/autofill/core/common/autofill_l10n_util.h"
@@ -32,23 +33,11 @@ using base::StringToInt;
 namespace autofill {
 namespace {
 
-const char* const kMonthsAbbreviated[] = {
-  NULL,  // Padding so index 1 = month 1 = January.
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-};
-
-const char* const kMonthsFull[] = {
-  NULL,  // Padding so index 1 = month 1 = January.
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-};
-
 // Returns true if the value was successfully set, meaning |value| was found in
 // the list of select options in |field|.
 bool SetSelectControlValue(const base::string16& value,
                            FormFieldData* field) {
-  base::string16 value_lowercase = base::StringToLowerASCII(value);
+  l10n::CaseInsensitiveCompare compare;
 
   DCHECK_EQ(field->option_values.size(), field->option_contents.size());
   base::string16 best_match;
@@ -60,9 +49,8 @@ bool SetSelectControlValue(const base::string16& value,
       break;
     }
 
-    if (value_lowercase == base::StringToLowerASCII(field->option_values[i]) ||
-        value_lowercase ==
-            base::StringToLowerASCII(field->option_contents[i])) {
+    if (compare.StringsEqual(value, field->option_values[i]) ||
+        compare.StringsEqual(value, field->option_contents[i])) {
       // A match, but not in the same case. Save it in case an exact match is
       // not found.
       best_match = field->option_values[i];
@@ -80,15 +68,13 @@ bool SetSelectControlValue(const base::string16& value,
 // for |value|. For example, "NC - North Carolina" would match "north carolina".
 bool SetSelectControlValueSubstringMatch(const base::string16& value,
                                          FormFieldData* field) {
-  base::string16 value_lowercase = base::StringToLowerASCII(value);
   DCHECK_EQ(field->option_values.size(), field->option_contents.size());
   int best_match = -1;
 
+  base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents searcher(value);
   for (size_t i = 0; i < field->option_values.size(); ++i) {
-    if (base::StringToLowerASCII(field->option_values[i]).find(value_lowercase) !=
-            std::string::npos ||
-        base::StringToLowerASCII(field->option_contents[i]).find(
-            value_lowercase) != std::string::npos) {
+    if (searcher.Search(field->option_values[i], nullptr, nullptr) ||
+        searcher.Search(field->option_contents[i], nullptr, nullptr)) {
       // The best match is the shortest one.
       if (best_match == -1 ||
           field->option_values[best_match].size() >
@@ -111,23 +97,25 @@ bool SetSelectControlValueSubstringMatch(const base::string16& value,
 // tokens. For example, "NC - North Carolina" would match "nc" but not "ca".
 bool SetSelectControlValueTokenMatch(const base::string16& value,
                                      FormFieldData* field) {
-  base::string16 value_lowercase = base::StringToLowerASCII(value);
   std::vector<base::string16> tokenized;
   DCHECK_EQ(field->option_values.size(), field->option_contents.size());
+  l10n::CaseInsensitiveCompare compare;
 
   for (size_t i = 0; i < field->option_values.size(); ++i) {
-    base::SplitStringAlongWhitespace(
-        base::StringToLowerASCII(field->option_values[i]), &tokenized);
-    if (std::find(tokenized.begin(), tokenized.end(), value_lowercase) !=
-        tokenized.end()) {
+    base::SplitStringAlongWhitespace(field->option_values[i], &tokenized);
+    if (std::find_if(tokenized.begin(), tokenized.end(),
+                     [&compare, value](base::string16& rhs) {
+                       return compare.StringsEqual(value, rhs);
+                     }) != tokenized.end()) {
       field->value = field->option_values[i];
       return true;
     }
 
-    base::SplitStringAlongWhitespace(
-        base::StringToLowerASCII(field->option_contents[i]), &tokenized);
-    if (std::find(tokenized.begin(), tokenized.end(), value_lowercase) !=
-        tokenized.end()) {
+    base::SplitStringAlongWhitespace(field->option_contents[i], &tokenized);
+    if (std::find_if(tokenized.begin(), tokenized.end(),
+                     [&compare, value](base::string16& rhs) {
+                       return compare.StringsEqual(value, rhs);
+                     }) != tokenized.end()) {
       field->value = field->option_values[i];
       return true;
     }
@@ -202,18 +190,32 @@ bool FillCountrySelectControl(const base::string16& value,
 }
 
 bool FillExpirationMonthSelectControl(const base::string16& value,
+                                      const std::string& app_locale,
                                       FormFieldData* field) {
   int index = 0;
-  if (!StringToInt(value, &index) ||
-      index <= 0 ||
-      static_cast<size_t>(index) >= arraysize(kMonthsFull))
+  if (!StringToInt(value, &index) || index <= 0 || index > 12)
     return false;
 
-  bool filled =
-      SetSelectControlValue(ASCIIToUTF16(kMonthsAbbreviated[index]), field) ||
-      SetSelectControlValue(ASCIIToUTF16(kMonthsFull[index]), field) ||
-      FillNumericSelectControl(index, field);
-  return filled;
+  for (const base::string16& option_value : field->option_values) {
+    int converted_value = 0;
+    if (CreditCard::ConvertMonth(option_value, app_locale, &converted_value) &&
+        index == converted_value) {
+      field->value = option_value;
+      return true;
+    }
+  }
+
+  for (const base::string16& option_contents : field->option_contents) {
+    int converted_contents = 0;
+    if (CreditCard::ConvertMonth(option_contents, app_locale,
+                                 &converted_contents) &&
+        index == converted_contents) {
+      field->value = option_contents;
+      return true;
+    }
+  }
+
+  return FillNumericSelectControl(index, field);
 }
 
 // Returns true if the last two digits in |year| match those in |str|.
@@ -316,7 +318,7 @@ bool FillSelectControl(const AutofillType& type,
   } else if (storable_type == ADDRESS_HOME_COUNTRY) {
     return FillCountrySelectControl(value, app_locale, field);
   } else if (storable_type == CREDIT_CARD_EXP_MONTH) {
-    return FillExpirationMonthSelectControl(value, field);
+    return FillExpirationMonthSelectControl(value, app_locale, field);
   } else if (storable_type == CREDIT_CARD_EXP_2_DIGIT_YEAR ||
              storable_type == CREDIT_CARD_EXP_4_DIGIT_YEAR) {
     return FillYearSelectControl(value, field);

@@ -447,9 +447,8 @@ TEST(CreditCardTest, SetExpirationMonth) {
   EXPECT_EQ(ASCIIToUTF16("04"), card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
   EXPECT_EQ(4, card.expiration_month());
 
-  card.SetInfo(
-      AutofillType(CREDIT_CARD_EXP_MONTH), UTF8ToUTF16("F\xc3\x89VRIER"),
-      "fr-FR");
+  card.SetInfo(AutofillType(CREDIT_CARD_EXP_MONTH),
+               UTF8ToUTF16("FÉVRIER"), "fr-FR");
   EXPECT_EQ(ASCIIToUTF16("02"), card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
   EXPECT_EQ(2, card.expiration_month());
 }
