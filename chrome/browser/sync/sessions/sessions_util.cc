@@ -39,6 +39,10 @@ bool ShouldSyncTab(const SyncedTabDelegate& tab) {
         !virtual_url.SchemeIs(chrome::kChromeNativeScheme) &&
         !virtual_url.SchemeIsFile()) {
       found_valid_url = true;
+    } else if (virtual_url == GURL(chrome::kChromeUIHistoryURL)) {
+      // The history page is treated specially as we want it to trigger syncable
+      // events for UI purposes.
+      found_valid_url = true;
     }
   }
   return found_valid_url;
