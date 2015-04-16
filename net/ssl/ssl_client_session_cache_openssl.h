@@ -12,6 +12,7 @@
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
@@ -82,7 +83,10 @@ class NET_EXPORT SSLClientSessionCacheOpenSSL {
   CacheEntryMap cache_;
   size_t lookups_since_flush_;
 
-  base::ThreadChecker thread_checker_;
+  // TODO(davidben): After https://crbug.com/458365 is fixed, replace this with
+  // a ThreadChecker. The session cache should be single-threaded like other
+  // classes in net.
+  base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientSessionCacheOpenSSL);
 };

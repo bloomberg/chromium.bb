@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/logging.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 
@@ -20,11 +19,6 @@ SSLClientSessionCacheOpenSSL::SSLClientSessionCacheOpenSSL(const Config& config)
 }
 
 SSLClientSessionCacheOpenSSL::~SSLClientSessionCacheOpenSSL() {
-  // TODO(davidben): The session cache is currently a singleton, so it is
-  // destroyed on a different thread than the one it's created on. When
-  // https://crbug.com/458365 is fixed, this will no longer be an issue.
-  thread_checker_.DetachFromThread();
-
   Flush();
 }
 
@@ -34,7 +28,7 @@ size_t SSLClientSessionCacheOpenSSL::size() const {
 
 SSL_SESSION* SSLClientSessionCacheOpenSSL::Lookup(
     const std::string& cache_key) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  base::AutoLock lock(lock_);
 
   // Expire stale sessions.
   lookups_since_flush_++;
@@ -55,7 +49,7 @@ SSL_SESSION* SSLClientSessionCacheOpenSSL::Lookup(
 
 void SSLClientSessionCacheOpenSSL::Insert(const std::string& cache_key,
                                           SSL_SESSION* session) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  base::AutoLock lock(lock_);
 
   // Make a new entry.
   CacheEntry* entry = new CacheEntry;
@@ -67,15 +61,13 @@ void SSLClientSessionCacheOpenSSL::Insert(const std::string& cache_key,
 }
 
 void SSLClientSessionCacheOpenSSL::Flush() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  base::AutoLock lock(lock_);
 
   cache_.Clear();
 }
 
 void SSLClientSessionCacheOpenSSL::SetClockForTesting(
     scoped_ptr<base::Clock> clock) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
   clock_ = clock.Pass();
 }
 
