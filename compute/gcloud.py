@@ -6,6 +6,8 @@
 
 from __future__ import print_function
 
+import re
+
 from chromite.compute import compute_configs
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -186,25 +188,23 @@ class GCContext(object):
 
     return self.DoCommand(cmd, **kwargs)
 
-
   def GetInstanceIP(self, instance, **kwargs):
     """Returns an instance's ephemeral external IP address.
 
     May not work with all network configurations.
     """
-
-    zone = self.zone
-    if kwargs.get('zone'):
-      zone = self.zone
-
     # It sure would be nice if there were an easier way to fetch
     # the instance's ephemeral IP address...
-    return cros_build_lib.RunCommand(
-        "gcloud compute instances describe %s" % instance
-        + " --zone=%s" % zone
-        + " --format text | grep natIP | awk '{ print $2 }'",
-        shell=True, redirect_stdout=True).output.strip()
-
+    description = self.DoZoneSpecificCommand(
+        ['instances', 'describe', instance, '--format', 'text'],
+        redirect_stdout=True, **kwargs).output
+    match = re.search('natIP: ([.0-9]+)', description)
+    if match:
+      return match.group(1)
+    else:
+      raise GCContextException('Unable to parse instance IP.  '
+                               '"gcloud compute instances describe %s": %s'
+                               % (instance, description))
 
   def CreateInstance(self, instance, image=None, machine_type=None,
                      address=None, wait_until_sshable=True,
