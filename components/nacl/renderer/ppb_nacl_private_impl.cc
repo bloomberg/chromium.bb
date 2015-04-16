@@ -1107,18 +1107,8 @@ bool ManifestResolveKey(PP_Instance instance,
   // keys manually as there is no existing .nmf file to parse.
   if (is_helper_process) {
     pnacl_options->translate = PP_FALSE;
-    // We can only resolve keys in the files/ namespace.
-    const std::string kFilesPrefix = "files/";
-    if (key.find(kFilesPrefix) == std::string::npos) {
-      nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
-      if (load_manager)
-        load_manager->ReportLoadError(PP_NACL_ERROR_MANIFEST_RESOLVE_URL,
-                                      "key did not start with files/");
-      return false;
-    }
-    std::string key_basename = key.substr(kFilesPrefix.length());
     *full_url = std::string(kPNaClTranslatorBaseUrl) + GetSandboxArch() + "/" +
-                key_basename;
+                key;
     return true;
   }
 

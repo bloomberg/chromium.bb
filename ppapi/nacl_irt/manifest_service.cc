@@ -21,8 +21,6 @@
 
 namespace ppapi {
 
-const char kFilePrefix[] = "files/";
-
 // IPC channel is asynchronously set up. So, the NaCl process may try to
 // send a OpenResource message to the host before the connection is
 // established. In such a case, it is necessary to wait for the set up
@@ -101,7 +99,7 @@ bool ManifestService::OpenResource(const char* file, int* fd) {
   uint64_t file_token_lo = 0;
   uint64_t file_token_hi = 0;
   if (!filter_->Send(new PpapiHostMsg_OpenResource(
-          std::string(kFilePrefix) + file,
+          file,
           &ipc_fd,
           &file_token_lo,
           &file_token_hi))) {

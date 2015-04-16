@@ -463,25 +463,8 @@ void JsonManifest::GetPrefetchableFiles(
 bool JsonManifest::ResolveKey(const std::string& key,
                               std::string* full_url,
                               PP_PNaClOptions* pnacl_options) const {
-  // key must be one of kProgramKey or kFileKey '/' file-section-key
   if (full_url == NULL || pnacl_options == NULL)
     return false;
-
-  if (key == kProgramKey)
-    return GetKeyUrl(dictionary_, key, full_url, pnacl_options);
-
-  std::string::const_iterator p = std::find(key.begin(), key.end(), '/');
-  if (p == key.end()) {
-    VLOG(1) << "ResolveKey failed: invalid key, no slash: " << key;
-    return false;
-  }
-
-  // generalize to permit other sections?
-  std::string prefix(key.begin(), p);
-  if (prefix != kFilesKey) {
-    VLOG(1) << "ResolveKey failed: invalid key, no \"files\" prefix: " << key;
-    return false;
-  }
 
   const Json::Value& files = dictionary_[kFilesKey];
   if (!files.isObject()) {
@@ -489,12 +472,11 @@ bool JsonManifest::ResolveKey(const std::string& key,
     return false;
   }
 
-  std::string rest(p + 1, key.end());
-  if (!files.isMember(rest)) {
+  if (!files.isMember(key)) {
     VLOG(1) << "ResolveKey failed: no such \"files\" entry: " << key;
     return false;
   }
-  return GetKeyUrl(files, rest, full_url, pnacl_options);
+  return GetKeyUrl(files, key, full_url, pnacl_options);
 }
 
 bool JsonManifest::MatchesSchema(ErrorInfo* error_info) {
