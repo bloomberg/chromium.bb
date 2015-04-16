@@ -662,6 +662,8 @@
       'browser/guest_view/web_view/javascript_dialog_helper.h',
       'browser/guest_view/web_view/web_view_constants.cc',
       'browser/guest_view/web_view/web_view_constants.h',
+      'browser/guest_view/web_view/web_view_content_script_manager.cc',
+      'browser/guest_view/web_view/web_view_content_script_manager.h',
       'browser/guest_view/web_view/web_view_find_helper.cc',
       'browser/guest_view/web_view/web_view_find_helper.h',
       'browser/guest_view/web_view/web_view_guest.cc',

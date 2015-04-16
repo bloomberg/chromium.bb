@@ -444,25 +444,10 @@ void UserScriptLoader::OnScriptsLoaded(
   // We've got scripts ready to go.
   shared_memory_.reset(shared_memory.release());
 
-  // If user scripts are coming from a <webview>, will only notify the
-  // RenderProcessHost of that <webview>; otherwise will notify all of the
-  // RenderProcessHosts.
-  if (user_scripts_ && !user_scripts_->empty() &&
-      (*user_scripts_)[0].consumer_instance_type() ==
-          UserScript::ConsumerInstanceType::WEBVIEW) {
-    DCHECK_EQ(1u, user_scripts_->size());
-    int render_process_id =
-        (*user_scripts_)[0].routing_info().render_process_id;
-    content::RenderProcessHost* host =
-        content::RenderProcessHost::FromID(render_process_id);
-    if (host)
-      SendUpdate(host, shared_memory_.get(), changed_hosts_);
-  } else {
-    for (content::RenderProcessHost::iterator i(
-            content::RenderProcessHost::AllHostsIterator());
-        !i.IsAtEnd(); i.Advance()) {
-      SendUpdate(i.GetCurrentValue(), shared_memory_.get(), changed_hosts_);
-    }
+  for (content::RenderProcessHost::iterator i(
+           content::RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance()) {
+    SendUpdate(i.GetCurrentValue(), shared_memory_.get(), changed_hosts_);
   }
   changed_hosts_.clear();
 
@@ -475,8 +460,8 @@ void UserScriptLoader::OnScriptsLoaded(
 void UserScriptLoader::SendUpdate(content::RenderProcessHost* process,
                                   base::SharedMemory* shared_memory,
                                   const std::set<HostID>& changed_hosts) {
-  // Don't allow injection of content scripts into <webview>.
-  if (process->IsIsolatedGuest())
+  // Don't allow injection of extensions' content scripts into <webview>.
+  if (process->IsIsolatedGuest() && host_id().id().empty())
     return;
 
   // Make sure we only send user scripts to processes in our browser_context.

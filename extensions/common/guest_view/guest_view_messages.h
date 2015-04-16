@@ -59,3 +59,8 @@ IPC_MESSAGE_CONTROL3(GuestViewHostMsg_ResizeGuest,
                      int /* routing_id */,
                      int /* element_instance_id*/,
                      gfx::Size /* new_size */)
+
+IPC_SYNC_MESSAGE_CONTROL2_1(GuestViewHostMsg_CanExecuteContentScriptSync,
+                            int /* routing_id */,
+                            int /* script_id */,
+                            bool /* allowed */)

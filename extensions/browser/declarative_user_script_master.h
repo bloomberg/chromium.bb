@@ -30,9 +30,17 @@ class DeclarativeUserScriptMaster {
   // script load is in progress.
   void AddScript(const UserScript& script);
 
+  // Adds a set of scripts to shared memory region. This may not happen right
+  // away if a script load is in progress.
+  void AddScripts(const std::set<UserScript>& scripts);
+
   // Removes script from shared memory region. This may not happen right away if
   // a script load is in progress.
   void RemoveScript(const UserScript& script);
+
+  // Removes a set of scripts from shared memory region. This may not happen
+  // right away if a script load is in progress.
+  void RemoveScripts(const std::set<UserScript>& scripts);
 
   // Removes all scripts from shared memory region. This may not happen right
   // away if a script load is in progress.

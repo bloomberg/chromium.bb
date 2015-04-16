@@ -60,6 +60,10 @@ class GuestViewMessageFilter : public content::BrowserMessageFilter {
                      int element_instance_id,
                      const gfx::Size& new_size);
 
+  void OnCanExecuteContentScript(int render_view_id,
+                                 int script_id,
+                                 bool* allowed);
+
   // Runs on UI thread.
   void MimeHandlerViewGuestCreatedCallback(int element_instance_id,
                                            int embedder_render_process_id,

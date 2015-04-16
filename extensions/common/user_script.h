@@ -126,19 +126,6 @@ class UserScript {
 
   typedef std::vector<File> FileList;
 
-  // Render's routing info of a <webview> that the user script will be injected
-  // on. Only user scripts from <webview>s have a custom routing info.
-  struct RoutingInfo {
-    RoutingInfo() : render_process_id(-1), render_view_id(-1) {}
-    RoutingInfo(int render_process_id, int render_view_id)
-        : render_process_id(render_process_id),
-          render_view_id(render_view_id) {}
-    ~RoutingInfo() {}
-
-    int render_process_id;
-    int render_view_id;
-  };
-
   // Type of a API consumer instance that user scripts will be injected on.
   enum ConsumerInstanceType { TAB, WEBVIEW };
 
@@ -224,11 +211,6 @@ class UserScript {
     consumer_instance_type_ = consumer_instance_type;
   }
 
-  const RoutingInfo& routing_info() const { return routing_info_; }
-  void set_routing_info(const RoutingInfo& routing_info) {
-    routing_info_ = routing_info;
-  }
-
   int id() const { return user_script_id_; }
   void set_id(int id) { user_script_id_ = id; }
 
@@ -255,8 +237,6 @@ class UserScript {
   void PickleGlobs(::Pickle* pickle,
                    const std::vector<std::string>& globs) const;
   void PickleHostID(::Pickle* pickle, const HostID& host_id) const;
-  void PickleRoutingInfo(::Pickle* pickle,
-                         const RoutingInfo& routing_info) const;
   void PickleURLPatternSet(::Pickle* pickle,
                            const URLPatternSet& pattern_list) const;
   void PickleScripts(::Pickle* pickle, const FileList& scripts) const;
@@ -267,9 +247,6 @@ class UserScript {
   void UnpickleHostID(const ::Pickle& pickle,
                       PickleIterator* iter,
                       HostID* host_id);
-  void UnpickleRoutingInfo(const ::Pickle& pickle,
-                           PickleIterator* iter,
-                           RoutingInfo* routing_info);
   void UnpickleURLPatternSet(const ::Pickle& pickle, PickleIterator* iter,
                              URLPatternSet* pattern_list);
   void UnpickleScripts(const ::Pickle& pickle, PickleIterator* iter,
@@ -314,9 +291,6 @@ class UserScript {
 
   // The type of the consumer instance that the script will be injected.
   ConsumerInstanceType consumer_instance_type_;
-
-  // The render side's rounting info for content_scripts of <webview>.
-  RoutingInfo routing_info_;
 
   // The globally-unique id associated with this user script. Defaults to
   // -1 for invalid.

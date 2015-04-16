@@ -6,6 +6,7 @@
 #define EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_RENDERER_STATE_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <utility>
 
@@ -25,6 +26,10 @@ class WebViewRendererState {
     int rules_registry_id;
     std::string partition_id;
     std::string owner_extension_id;
+    std::set<int> content_script_ids;
+
+    WebViewInfo();
+    ~WebViewInfo();
   };
 
   static WebViewRendererState* GetInstance();
@@ -46,6 +51,13 @@ class WebViewRendererState {
 
   // Returns true if the given renderer is used by webviews.
   bool IsGuest(int render_process_id);
+
+  void AddContentScriptIDs(int embedder_process_id,
+                           int view_instance_id,
+                           const std::set<int>& script_ids);
+  void RemoveContentScriptIDs(int embedder_process_id,
+                              int view_instance_id,
+                              const std::set<int>& script_ids);
 
  private:
   friend class WebViewGuest;

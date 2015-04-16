@@ -93,6 +93,74 @@
         "id": "SetPermissionAction",
         "type": "string",
         "enum": ["allow", "deny", "default"]
+      },
+      {
+        "id": "RunLocation",
+        "type": "string",
+        "enum": ["document_start", "document_end", "document_idle"]
+      },
+      {
+        "id": "ContentScriptDetails",
+        "type": "object",
+        "description": "Details of the content script to inject.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the content script to inject."
+          },
+          "matches": {
+            "type": "array",
+            "items": { "type": "string"},
+            "description": "Specifies which pages this content script will be injected into."
+          },
+          "exclude_matches": {
+            "type": "array",
+            "items": { "type": "string"},
+            "optional": true,
+            "description": "Excludes pages that this content script would otherwise be injected into."
+          },
+          "match_about_blank": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Whether to insert the content script on about:blank and about:srcdoc. Content scripts will only be injected on pages when their inherit URL is matched by one of the declared patterns in the matches field. The inherit URL is the URL of the document that created the frame or window. Content scripts cannot be inserted in sandboxed frames."
+          },
+          "css": {
+            "type": "array",
+            "items": { "type": "string"},
+            "optional": true,
+            "description": "The list of CSS files to be injected into matching pages. These are injected in the order they appear in this array, before any DOM is constructed or displayed for the page."
+          },
+          "js": {
+            "type": "array",
+            "items": { "type": "string"},
+            "optional": true,
+            "description": "The list of JavaScript files to be injected into matching pages. These are injected in the order they appear in this array."
+          },
+          "run_at": {
+            // TODO(hanxi): change the reference to extensionTypes.RunAt after http://crbug.com/477457 is fixed.
+            "$ref": "RunLocation",
+            "optional": true,
+            "description": "The soonest that the JavaScript or CSS will be injected into the tab. Defaults to \"document_idle\"."
+          },
+          "all_frames": {
+            "type": "boolean",
+            "optional": true,
+            "description": "If allFrames is <code>true</code>, implies that the JavaScript or CSS should be injected into all frames of current page. By default, it's <code>false</code> and is only injected into the top frame."
+          },
+          "include_globs": {
+            "type": "array",
+            "items": { "type": "string"},
+            "optional": true,
+            "description": "Applied after matches to include only those URLs that also match this glob. Intended to emulate the @include Greasemonkey keyword."
+          },
+          "exclude_globs": {
+            "type": "array",
+            "items": { "type": "string"},
+            "optional": true,
+            "description": "Applied after matches to exclude URLs that match this glob. Intended to emulate the @exclude Greasemonkey keyword."
+          }
+        },
+        "required": ["name", "matches"]
       }
     ],
     "functions": [
@@ -158,6 +226,65 @@
             "name": "callback",
             "optional": true,
             "description": "Called when all the CSS has been inserted.",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "addContentScripts",
+        "type": "function",
+        "description": "Adds content scripts into a <webview> page. For details, see the <a href='/extensions/content_scripts#pi'>programmatic injection</a> section of the content scripts doc.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId",
+            "description": "The instance ID of the guest <webview> process."
+          },
+          {
+            "type": "array",
+            "name": "contentScriptList",
+            "items": {
+              "$ref": "ContentScriptDetails",
+              "name": "contentScriptDetails",
+              "minimum": 1
+            },
+            "description": "Details of the content scripts to add."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called when all the content scripts has been added.",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "removeContentScripts",
+        "type": "function",
+        "description": "Removes specified content scripts from a <webview> page. For details, see the <a href='/extensions/content_scripts#pi'>programmatic injection</a> section of the content scripts doc.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId",
+            "description": "The instance ID of the guest <webview> process."
+          },
+          {
+            "type": "array",
+            "name": "scriptNameList",
+            "items": {
+              "type": "string",
+              "minimum": 0,
+              "description": "The name of a content script that will be removed."
+            },
+            "optional": true,
+            "description": "A list of names of content scripts that will be removed. If the list is empty, all the content scripts added to the <webview> page will be removed."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called when all the content scripts has been removed.",
             "parameters": []
           }
         ]

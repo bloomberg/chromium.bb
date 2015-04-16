@@ -17,7 +17,8 @@
 namespace extensions {
 
 UserScriptSetManager::UserScriptSetManager(const ExtensionSet* extensions)
-    : static_scripts_(extensions), extensions_(extensions) {
+    : static_scripts_(extensions),
+      extensions_(extensions) {
   content::RenderThread::Get()->AddObserver(this);
 }
 

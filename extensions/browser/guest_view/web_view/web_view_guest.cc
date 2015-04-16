@@ -38,6 +38,7 @@
 #include "extensions/browser/guest_view/guest_view_event.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
+#include "extensions/browser/guest_view/web_view/web_view_content_script_manager.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_types.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
@@ -872,6 +873,13 @@ void WebViewGuest::PushWebViewStateToIOThread() {
   web_view_info.partition_id = partition_id;
   web_view_info.owner_extension_id = owner_extension_id();
   web_view_info.rules_registry_id = rules_registry_id_;
+
+  // Get content scripts IDs added by the guest.
+  WebViewContentScriptManager* manager =
+      WebViewContentScriptManager::Get(browser_context());
+  DCHECK(manager);
+  web_view_info.content_script_ids = manager->GetContentScriptIDSet(
+      web_view_info.embedder_process_id, web_view_info.instance_id);
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,

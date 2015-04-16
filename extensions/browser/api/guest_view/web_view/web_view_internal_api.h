@@ -129,6 +129,40 @@ class WebViewInternalInsertCSSFunction
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalInsertCSSFunction);
 };
 
+class WebViewInternalAddContentScriptsFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webViewInternal.addContentScripts",
+                             WEBVIEWINTERNAL_ADDCONTENTSCRIPTS);
+
+  WebViewInternalAddContentScriptsFunction();
+
+ protected:
+  ~WebViewInternalAddContentScriptsFunction() override;
+
+ private:
+  ExecuteCodeFunction::ResponseAction Run() override;
+
+  DISALLOW_COPY_AND_ASSIGN(WebViewInternalAddContentScriptsFunction);
+};
+
+class WebViewInternalRemoveContentScriptsFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webViewInternal.removeContentScripts",
+                             WEBVIEWINTERNAL_REMOVECONTENTSCRIPTS);
+
+  WebViewInternalRemoveContentScriptsFunction();
+
+ protected:
+  ~WebViewInternalRemoveContentScriptsFunction() override;
+
+ private:
+  ExecuteCodeFunction::ResponseAction Run() override;
+
+  DISALLOW_COPY_AND_ASSIGN(WebViewInternalRemoveContentScriptsFunction);
+};
+
 class WebViewInternalSetNameFunction : public WebViewInternalExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.setName",

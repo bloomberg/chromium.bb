@@ -8,8 +8,10 @@
 
 #include "base/lazy_instance.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/guest_view/guest_view_messages.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/renderer/injection_host.h"
 #include "extensions/renderer/script_context.h"
@@ -25,10 +27,39 @@ namespace extensions {
 
 namespace {
 
+struct RoutingInfoKey {
+  int routing_id;
+  int script_id;
+
+  RoutingInfoKey(int routing_id, int script_id)
+      : routing_id(routing_id), script_id(script_id) {}
+
+  bool operator<(const RoutingInfoKey& other) const {
+    if (routing_id != other.routing_id)
+      return routing_id < other.routing_id;
+
+    if (script_id != other.script_id)
+      return script_id < other.script_id;
+    return false;  // keys are equal.
+  }
+};
+
+using RoutingInfoMap = std::map<RoutingInfoKey, bool>;
+
 // These two strings are injected before and after the Greasemonkey API and
 // user script to wrap it in an anonymous scope.
 const char kUserScriptHead[] = "(function (unsafeWindow) {\n";
 const char kUserScriptTail[] = "\n})(window);";
+
+// A map records whether a given |script_id| from a webview-added user script
+// is allowed to inject on the render of given |routing_id|.
+// Once a script is added, the decision of whether or not allowed to inject
+// won't be changed.
+// After removed by the webview, the user scipt will also be removed
+// from the render. Therefore, there won't be any query from the same
+// |script_id| and |routing_id| pair.
+base::LazyInstance<RoutingInfoMap> g_routing_info_map =
+    LAZY_INSTANCE_INITIALIZER;
 
 // Greasemonkey API source that is injected with the scripts.
 struct GreasemonkeyApiJsString {
@@ -131,17 +162,35 @@ PermissionsData::AccessType UserScriptInjector::CanExecuteOnFrame(
       web_frame, web_frame->document().url(), script_->match_about_blank());
   PermissionsData::AccessType can_execute = injection_host->CanExecuteOnFrame(
       effective_document_url, top_url, tab_id, is_declarative_);
-
   if (script_->consumer_instance_type() !=
-      UserScript::ConsumerInstanceType::WEBVIEW ||
+          UserScript::ConsumerInstanceType::WEBVIEW ||
       can_execute == PermissionsData::ACCESS_DENIED)
     return can_execute;
 
   int routing_id = content::RenderView::FromWebView(web_frame->top()->view())
                       ->GetRoutingID();
-  return script_->routing_info().render_view_id == routing_id
-      ? PermissionsData::ACCESS_ALLOWED
-      : PermissionsData::ACCESS_DENIED;
+
+  RoutingInfoKey key(routing_id, script_->id());
+
+  RoutingInfoMap& map = g_routing_info_map.Get();
+  auto iter = map.find(key);
+
+  bool allowed = false;
+  if (iter != map.end()) {
+    allowed = iter->second;
+  } else {
+    // Send a SYNC IPC message to the browser to check if this is allowed. This
+    // is not ideal, but is mitigated by the fact that this is only done for
+    // webviews, and then only once per host.
+    // TODO(hanxi): Find a more efficient way to do this.
+    content::RenderThread::Get()->Send(
+        new GuestViewHostMsg_CanExecuteContentScriptSync(
+            routing_id, script_->id(), &allowed));
+    map.insert(std::pair<RoutingInfoKey, bool>(key, allowed));
+  }
+
+  return allowed ? PermissionsData::ACCESS_ALLOWED
+                 : PermissionsData::ACCESS_DENIED;
 }
 
 std::vector<blink::WebScriptSource> UserScriptInjector::GetJsSources(

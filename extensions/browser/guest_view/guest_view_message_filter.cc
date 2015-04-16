@@ -6,11 +6,15 @@
 
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "extensions/browser/guest_view/guest_view_base.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
+#include "extensions/browser/guest_view/web_view/web_view_content_script_manager.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
+#include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/common/guest_view/guest_view_messages.h"
 #include "ipc/ipc_message_macros.h"
 
@@ -61,6 +65,8 @@ bool GuestViewMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GuestViewHostMsg_CreateMimeHandlerViewGuest,
                         OnCreateMimeHandlerViewGuest)
     IPC_MESSAGE_HANDLER(GuestViewHostMsg_ResizeGuest, OnResizeGuest)
+    IPC_MESSAGE_HANDLER(GuestViewHostMsg_CanExecuteContentScriptSync,
+                        OnCanExecuteContentScript)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -131,6 +137,17 @@ void GuestViewMessageFilter::OnResizeGuest(int render_frame_id,
   set_size_params.enable_auto_size.reset(new bool(false));
   set_size_params.normal_size.reset(new gfx::Size(new_size));
   mhvg->SetSize(set_size_params);
+}
+
+void GuestViewMessageFilter::OnCanExecuteContentScript(int render_view_id,
+                                                       int script_id,
+                                                       bool* allowed) {
+  WebViewRendererState::WebViewInfo info;
+  WebViewRendererState::GetInstance()->GetInfo(render_process_id_,
+                                               render_view_id, &info);
+
+  *allowed =
+      info.content_script_ids.find(script_id) != info.content_script_ids.end();
 }
 
 void GuestViewMessageFilter::MimeHandlerViewGuestCreatedCallback(

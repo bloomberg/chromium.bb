@@ -1114,6 +1114,53 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
              NO_TEST_SERVER);
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAddContentScript) {
+  TestHelper("testAddContentScript", "web_view/shim", NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAddMultipleContentScripts) {
+  TestHelper("testAddMultipleContentScripts", "web_view/shim",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebViewTest,
+    Shim_TestAddContentScriptWithSameNameShouldOverwriteTheExistingOne) {
+  TestHelper("testAddContentScriptWithSameNameShouldOverwriteTheExistingOne",
+             "web_view/shim", NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebViewTest,
+    Shim_TestAddContentScriptToOneWebViewShouldNotInjectToTheOtherWebView) {
+  TestHelper("testAddContentScriptToOneWebViewShouldNotInjectToTheOtherWebView",
+             "web_view/shim", NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAddAndRemoveContentScripts) {
+  TestHelper("testAddAndRemoveContentScripts", "web_view/shim",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       Shim_TestAddContentScriptsWithNewWindowAPI) {
+  TestHelper("testAddContentScriptsWithNewWindowAPI", "web_view/shim",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebViewTest,
+    Shim_TestContentScriptIsInjectedAfterTerminateAndReloadWebView) {
+  TestHelper("testContentScriptIsInjectedAfterTerminateAndReloadWebView",
+             "web_view/shim", NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       Shim_TestContentScriptExistsAsLongAsWebViewTagExists) {
+  TestHelper("testContentScriptExistsAsLongAsWebViewTagExists", "web_view/shim",
+             NEEDS_TEST_SERVER);
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestExecuteScriptFail) {
 #if defined(OS_WIN)
   // Flaky on XP bot http://crbug.com/266185

@@ -28,10 +28,20 @@ void DeclarativeUserScriptMaster::AddScript(const UserScript& script) {
   loader_.AddScripts(set);
 }
 
+void DeclarativeUserScriptMaster::AddScripts(
+    const std::set<UserScript>& scripts) {
+  loader_.AddScripts(scripts);
+}
+
 void DeclarativeUserScriptMaster::RemoveScript(const UserScript& script) {
   std::set<UserScript> set;
   set.insert(script);
   loader_.RemoveScripts(set);
+}
+
+void DeclarativeUserScriptMaster::RemoveScripts(
+    const std::set<UserScript>& scripts) {
+  loader_.RemoveScripts(scripts);
 }
 
 void DeclarativeUserScriptMaster::ClearScripts() {

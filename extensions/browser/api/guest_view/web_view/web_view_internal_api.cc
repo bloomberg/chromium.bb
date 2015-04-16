@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/guest_view/web_view/web_view_internal_api.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_context.h"
@@ -13,17 +14,26 @@
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/url_fetcher.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
+#include "extensions/browser/guest_view/web_view/web_view_content_script_manager.h"
 #include "extensions/common/api/web_view_internal.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/manifest_constants.h"
+#include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/user_script.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 
 using content::WebContents;
+using extensions::ExtensionResource;
+using extensions::core_api::web_view_internal::ContentScriptDetails;
 using extensions::core_api::web_view_internal::SetPermission::Params;
 using extensions::core_api::extension_types::InjectDetails;
+using extensions::UserScript;
 using ui_zoom::ZoomController;
+// error messages for content scripts:
+namespace errors = extensions::manifest_errors;
 namespace web_view_internal = extensions::core_api::web_view_internal;
 
 namespace {
@@ -37,6 +47,9 @@ const char kLocalStorageKey[] = "localStorage";
 const char kWebSQLKey[] = "webSQL";
 const char kSinceKey[] = "since";
 const char kLoadFileError[] = "Failed to load file: \"*\". ";
+const char kViewInstanceIdError[] = "view_instance_id is missing.";
+const char kDuplicatedContentScriptNamesError[] =
+    "The given content script name already exists.";
 
 uint32 MaskForKey(const char* key) {
   if (strcmp(key, kAppCacheKey) == 0)
@@ -54,6 +67,169 @@ uint32 MaskForKey(const char* key) {
   if (strcmp(key, kWebSQLKey) == 0)
     return webview::WEB_VIEW_REMOVE_DATA_MASK_WEBSQL;
   return 0;
+}
+
+HostID GenerateHostIDFromEmbedder(const extensions::Extension* extension,
+                                  const content::WebContents* web_contents) {
+  if (extension)
+    return HostID(HostID::EXTENSIONS, extension->id());
+
+  if (web_contents && web_contents->GetWebUI()) {
+    const GURL& url = web_contents->GetSiteInstance()->GetSiteURL();
+    return HostID(HostID::WEBUI, url.spec());
+  }
+  NOTREACHED();
+  return HostID();
+}
+
+// Parses the values stored in ContentScriptDetails, and constructs a
+// UserScript.
+bool ParseContentScript(const ContentScriptDetails& script_value,
+                        const extensions::Extension* extension,
+                        const GURL& owner_base_url,
+                        UserScript* script,
+                        std::string* error) {
+  // matches (required):
+  if (script_value.matches.empty())
+    return false;
+
+  // The default for WebUI is not having special access, but we can change that
+  // if needed.
+  bool allowed_everywhere = false;
+  if (extension &&
+      extensions::PermissionsData::CanExecuteScriptEverywhere(extension))
+    allowed_everywhere = true;
+
+  for (const std::string& match : script_value.matches) {
+    URLPattern pattern(UserScript::ValidUserScriptSchemes(allowed_everywhere));
+    if (pattern.Parse(match) != URLPattern::PARSE_SUCCESS) {
+      *error = errors::kInvalidMatches;
+      return false;
+    }
+    script->add_url_pattern(pattern);
+  }
+
+  // exclude_matches:
+  if (script_value.exclude_matches) {
+    const std::vector<std::string>& exclude_matches =
+        *(script_value.exclude_matches.get());
+    for (const std::string& exclude_match : exclude_matches) {
+      URLPattern pattern(
+          UserScript::ValidUserScriptSchemes(allowed_everywhere));
+
+      if (pattern.Parse(exclude_match) != URLPattern::PARSE_SUCCESS) {
+        *error = errors::kInvalidExcludeMatches;
+        return false;
+      }
+      script->add_exclude_url_pattern(pattern);
+    }
+  }
+  // run_at:
+  if (script_value.run_at) {
+    UserScript::RunLocation run_at = UserScript::UNDEFINED;
+    switch (script_value.run_at) {
+      case extensions::core_api::extension_types::RUN_AT_NONE:
+      case extensions::core_api::extension_types::RUN_AT_DOCUMENT_IDLE:
+        run_at = UserScript::DOCUMENT_IDLE;
+        break;
+      case extensions::core_api::extension_types::RUN_AT_DOCUMENT_START:
+        run_at = UserScript::DOCUMENT_START;
+        break;
+      case extensions::core_api::extension_types::RUN_AT_DOCUMENT_END:
+        run_at = UserScript::DOCUMENT_END;
+        break;
+    }
+    // The default for run_at is RUN_AT_DOCUMENT_IDLE.
+    script->set_run_location(run_at);
+  }
+
+  // match_about_blank:
+  if (script_value.match_about_blank)
+    script->set_match_about_blank(*script_value.match_about_blank);
+
+  // css:
+  if (script_value.css) {
+    for (const std::string& relative : *(script_value.css.get())) {
+      GURL url = owner_base_url.Resolve(relative);
+      if (extension) {
+        ExtensionResource resource = extension->GetResource(relative);
+        script->css_scripts().push_back(UserScript::File(
+            resource.extension_root(), resource.relative_path(), url));
+      } else {
+        script->css_scripts().push_back(extensions::UserScript::File(
+            base::FilePath(), base::FilePath(), url));
+      }
+    }
+  }
+
+  // js:
+  if (script_value.js) {
+    for (const std::string& relative : *(script_value.js.get())) {
+      GURL url = owner_base_url.Resolve(relative);
+      if (extension) {
+        ExtensionResource resource = extension->GetResource(relative);
+        script->js_scripts().push_back(UserScript::File(
+            resource.extension_root(), resource.relative_path(), url));
+      } else {
+        script->js_scripts().push_back(extensions::UserScript::File(
+            base::FilePath(), base::FilePath(), url));
+      }
+    }
+  }
+
+  // all_frames:
+  if (script_value.all_frames)
+    script->set_match_all_frames(*(script_value.all_frames));
+
+  // include_globs:
+  if (script_value.include_globs) {
+    for (const std::string& glob : *(script_value.include_globs.get()))
+      script->add_glob(glob);
+  }
+
+  // exclude_globs:
+  if (script_value.exclude_globs) {
+    for (const std::string& glob : *(script_value.exclude_globs.get()))
+      script->add_exclude_glob(glob);
+  }
+
+  return true;
+}
+
+bool ParseContentScripts(
+    std::vector<linked_ptr<ContentScriptDetails>> content_script_list,
+    const extensions::Extension* extension,
+    const HostID& host_id,
+    bool incognito_enabled,
+    const GURL& owner_base_url,
+    std::set<UserScript>* result,
+    std::string* error) {
+  if (content_script_list.empty())
+    return false;
+
+  std::set<std::string> names;
+  for (const linked_ptr<ContentScriptDetails> script_value :
+       content_script_list) {
+    const std::string& name = script_value->name;
+    if (!names.insert(name).second) {
+      // The name was already in the list.
+      *error = kDuplicatedContentScriptNamesError;
+      return false;
+    }
+
+    UserScript script;
+    if (!ParseContentScript(*script_value, extension, owner_base_url, &script,
+                            error))
+      return false;
+
+    script.set_id(UserScript::GenerateUserScriptID());
+    script.set_name(name);
+    script.set_incognito_enabled(incognito_enabled);
+    script.set_host_id(host_id);
+    script.set_consumer_instance_type(UserScript::WEBVIEW);
+    result->insert(script);
+  }
+  return true;
 }
 
 }  // namespace
@@ -254,6 +430,77 @@ WebViewInternalInsertCSSFunction::WebViewInternalInsertCSSFunction() {
 
 bool WebViewInternalInsertCSSFunction::ShouldInsertCSS() const {
   return true;
+}
+
+WebViewInternalAddContentScriptsFunction::
+    WebViewInternalAddContentScriptsFunction() {
+}
+
+WebViewInternalAddContentScriptsFunction::
+    ~WebViewInternalAddContentScriptsFunction() {
+}
+
+ExecuteCodeFunction::ResponseAction
+WebViewInternalAddContentScriptsFunction::Run() {
+  scoped_ptr<web_view_internal::AddContentScripts::Params> params(
+      web_view_internal::AddContentScripts::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  if (!params->instance_id)
+    return RespondNow(Error(kViewInstanceIdError));
+
+  GURL owner_base_url(
+      render_view_host()->GetSiteInstance()->GetSiteURL().GetWithEmptyPath());
+  std::set<UserScript> result;
+
+  content::WebContents* sender_web_contents = GetSenderWebContents();
+  HostID host_id = GenerateHostIDFromEmbedder(extension(), sender_web_contents);
+  bool incognito_enabled = browser_context()->IsOffTheRecord();
+
+  if (!ParseContentScripts(params->content_script_list, extension(), host_id,
+                           incognito_enabled, owner_base_url, &result, &error_))
+    return RespondNow(Error(error_));
+
+  WebViewContentScriptManager* manager =
+      WebViewContentScriptManager::Get(browser_context());
+  DCHECK(manager);
+
+  manager->AddContentScripts(sender_web_contents, params->instance_id, host_id,
+                             result);
+
+  return RespondNow(NoArguments());
+}
+
+WebViewInternalRemoveContentScriptsFunction::
+    WebViewInternalRemoveContentScriptsFunction() {
+}
+
+WebViewInternalRemoveContentScriptsFunction::
+    ~WebViewInternalRemoveContentScriptsFunction() {
+}
+
+ExecuteCodeFunction::ResponseAction
+WebViewInternalRemoveContentScriptsFunction::Run() {
+  scoped_ptr<web_view_internal::RemoveContentScripts::Params> params(
+      web_view_internal::RemoveContentScripts::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  if (!params->instance_id)
+    return RespondNow(Error(kViewInstanceIdError));
+
+  WebViewContentScriptManager* manager =
+      WebViewContentScriptManager::Get(browser_context());
+  DCHECK(manager);
+
+  content::WebContents* sender_web_contents = GetSenderWebContents();
+  HostID host_id = GenerateHostIDFromEmbedder(extension(), sender_web_contents);
+
+  std::vector<std::string> script_name_list;
+  if (params->script_name_list)
+    script_name_list.swap(*params->script_name_list);
+  manager->RemoveContentScripts(GetSenderWebContents(), params->instance_id,
+                                host_id, script_name_list);
+  return RespondNow(NoArguments());
 }
 
 WebViewInternalSetNameFunction::WebViewInternalSetNameFunction() {

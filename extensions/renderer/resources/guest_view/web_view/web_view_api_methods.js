@@ -11,6 +11,9 @@ var WebViewImpl = require('webView').WebViewImpl;
 // implementations will be given default implementations. Default
 // implementations come from createDefaultApiMethod() in web_view.js.
 var WEB_VIEW_API_METHODS = [
+  // Add content scripts for the guest page.
+  'addContentScripts',
+
   // Navigates to the previous history entry.
   'back',
 
@@ -64,6 +67,9 @@ var WEB_VIEW_API_METHODS = [
   // Prints the contents of the webview.
   'print',
 
+  // Removes content scripts for the guest page.
+  'removeContentScripts',
+
   // Reloads the current top-level page.
   'reload',
 
@@ -88,6 +94,11 @@ var WEB_VIEW_API_METHODS = [
 
 // -----------------------------------------------------------------------------
 // Custom API method implementations.
+
+WebViewImpl.prototype.addContentScripts = function() {
+  var args = $Array.concat([this.viewInstanceId], $Array.slice(arguments));
+  return $Function.apply(WebViewInternal.addContentScripts, null, args);
+};
 
 WebViewImpl.prototype.back = function(callback) {
   return this.go(-1, callback);
@@ -146,6 +157,11 @@ WebViewImpl.prototype.loadDataWithBaseUrl = function(
 
 WebViewImpl.prototype.print = function() {
   return this.executeScript({code: 'window.print();'});
+};
+
+WebViewImpl.prototype.removeContentScripts = function(var_args) {
+  var args = $Array.concat([this.viewInstanceId], $Array.slice(arguments));
+  return $Function.apply(WebViewInternal.removeContentScripts, null, args);
 };
 
 WebViewImpl.prototype.setUserAgentOverride = function(userAgentOverride) {

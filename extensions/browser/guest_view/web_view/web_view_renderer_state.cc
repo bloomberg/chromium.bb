@@ -9,6 +9,12 @@ using content::BrowserThread;
 
 namespace extensions {
 
+WebViewRendererState::WebViewInfo::WebViewInfo() {
+}
+
+WebViewRendererState::WebViewInfo::~WebViewInfo() {
+}
+
 // static
 WebViewRendererState* WebViewRendererState::GetInstance() {
   return Singleton<WebViewRendererState>::get();
@@ -101,6 +107,40 @@ bool WebViewRendererState::GetPartitionID(int guest_process_id,
     return true;
   }
   return false;
+}
+
+void WebViewRendererState::AddContentScriptIDs(
+    int embedder_process_id,
+    int view_instance_id,
+    const std::set<int>& script_ids) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  for (auto& render_id_info : web_view_info_map_) {
+    WebViewInfo& info = render_id_info.second;
+    if (info.embedder_process_id == embedder_process_id &&
+        info.instance_id == view_instance_id) {
+      for (int id : script_ids)
+        info.content_script_ids.insert(id);
+      return;
+    }
+  }
+}
+
+void WebViewRendererState::RemoveContentScriptIDs(
+    int embedder_process_id,
+    int view_instance_id,
+    const std::set<int>& script_ids) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  for (auto& render_id_info : web_view_info_map_) {
+    WebViewInfo& info = render_id_info.second;
+    if (info.embedder_process_id == embedder_process_id &&
+        info.instance_id == view_instance_id) {
+      for (int id : script_ids)
+        info.content_script_ids.erase(id);
+      return;
+    }
+  }
 }
 
 }  // namespace extensions

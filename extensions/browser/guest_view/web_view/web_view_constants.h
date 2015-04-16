@@ -136,6 +136,9 @@ extern const uint32 WEB_VIEW_REMOVE_DATA_MASK_INDEXEDDB;
 extern const uint32 WEB_VIEW_REMOVE_DATA_MASK_LOCAL_STORAGE;
 extern const uint32 WEB_VIEW_REMOVE_DATA_MASK_WEBSQL;
 
+// Other.
+extern const char kWebViewContentScriptManagerKeyName[];
+
 }  // namespace webview
 
 #endif  // EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_CONSTANTS_H_

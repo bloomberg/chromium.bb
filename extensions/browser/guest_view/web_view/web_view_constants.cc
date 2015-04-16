@@ -126,4 +126,7 @@ const uint32 WEB_VIEW_REMOVE_DATA_MASK_INDEXEDDB = 1 << 4;
 const uint32 WEB_VIEW_REMOVE_DATA_MASK_LOCAL_STORAGE = 1 << 5;
 const uint32 WEB_VIEW_REMOVE_DATA_MASK_WEBSQL = 1 << 6;
 
+// Other.
+const char kWebViewContentScriptManagerKeyName[] =
+    "web_view_content_script_manager";
 }  // namespace webview
