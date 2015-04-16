@@ -1551,9 +1551,10 @@ class DeviceUtilsParallelTest(mock_calls.TestCase):
 
   def testParallel_default(self):
     test_serials = ['0123456789abcdef', 'fedcba9876543210']
-    with self.assertCall(
-        mock.call.pylib.device.adb_wrapper.AdbWrapper.GetDevices(),
-        [_AdbWrapperMock(serial) for serial in test_serials]):
+    with self.assertCalls(
+        (mock.call.pylib.device.device_filter.DefaultFilters(), None),
+        (mock.call.pylib.device.adb_wrapper.AdbWrapper.Devices(filters=None),
+         [_AdbWrapperMock(serial) for serial in test_serials])):
       parallel_devices = device_utils.DeviceUtils.parallel()
     for serial, device in zip(test_serials, parallel_devices.pGet(None)):
       self.assertTrue(
@@ -1562,8 +1563,10 @@ class DeviceUtilsParallelTest(mock_calls.TestCase):
           'Expected a DeviceUtils object with serial %s' % serial)
 
   def testParallel_noDevices(self):
-    with self.assertCall(
-        mock.call.pylib.device.adb_wrapper.AdbWrapper.GetDevices(), []):
+    with self.assertCalls(
+        (mock.call.pylib.device.device_filter.DefaultFilters(), None),
+        (mock.call.pylib.device.adb_wrapper.AdbWrapper.Devices(filters=None),
+         [])):
       with self.assertRaises(device_errors.NoDevicesError):
         device_utils.DeviceUtils.parallel()
 

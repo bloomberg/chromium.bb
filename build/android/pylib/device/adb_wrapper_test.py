@@ -16,7 +16,7 @@ from pylib.device import device_errors
 class TestAdbWrapper(unittest.TestCase):
 
   def setUp(self):
-    devices = adb_wrapper.AdbWrapper.GetDevices()
+    devices = adb_wrapper.AdbWrapper.Devices()
     assert devices, 'A device must be attached'
     self._adb = devices[0]
     self._adb.WaitForDevice()

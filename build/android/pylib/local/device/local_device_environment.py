@@ -5,6 +5,7 @@
 from pylib.base import environment
 from pylib.device import adb_wrapper
 from pylib.device import device_errors
+from pylib.device import device_filter
 from pylib.device import device_utils
 from pylib.utils import parallelizer
 
@@ -20,8 +21,8 @@ class LocalDeviceEnvironment(environment.Environment):
 
   #override
   def SetUp(self):
-    # TODO(jbudorick): This can be refined to support filters etc.
-    available_devices = adb_wrapper.AdbWrapper.GetDevices()
+    available_devices = adb_wrapper.AdbWrapper.Devices(
+        filters=device_filter.DefaultFilters())
     if not available_devices:
       raise device_errors.NoDevicesError
     if self._device:
