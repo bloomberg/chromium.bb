@@ -43,7 +43,7 @@ public:
     virtual void notifyAppendData(ScriptResource* resource) { }
 };
 
-class ScriptResource final : public TextResource {
+class CORE_EXPORT ScriptResource final : public TextResource {
 public:
     typedef ScriptResourceClient ClientType;
     static PassOwnPtrWillBeRawPtr<ScriptResource> create(const ResourceRequest& request, const String& charset)

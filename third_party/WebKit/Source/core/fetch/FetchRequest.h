@@ -26,6 +26,7 @@
 #ifndef FetchRequest_h
 #define FetchRequest_h
 
+#include "core/CoreExport.h"
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "platform/network/ResourceLoadPriority.h"
@@ -35,7 +36,7 @@
 namespace blink {
 class SecurityOrigin;
 
-class FetchRequest {
+class CORE_EXPORT FetchRequest {
 public:
     enum DeferOption { NoDefer, LazyLoad, DeferredByClient };
     enum OriginRestriction { UseDefaultOriginRestrictionForType, RestrictToSameOrigin, NoOriginRestriction };

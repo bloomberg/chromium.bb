@@ -24,13 +24,14 @@
 #ifndef MouseRelatedEvent_h
 #define MouseRelatedEvent_h
 
+#include "core/CoreExport.h"
 #include "core/events/UIEventWithKeyState.h"
 #include "platform/geometry/LayoutPoint.h"
 
 namespace blink {
 
     // Internal only: Helper class for what's common between mouse and wheel events.
-    class MouseRelatedEvent : public UIEventWithKeyState {
+    class CORE_EXPORT MouseRelatedEvent : public UIEventWithKeyState {
     public:
         // Note that these values are adjusted to counter the effects of zoom, so that values
         // exposed via DOM APIs are invariant under zooming.

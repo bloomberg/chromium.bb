@@ -31,6 +31,7 @@
 #ifndef FetchContext_h
 #define FetchContext_h
 
+#include "core/CoreExport.h"
 #include "core/fetch/CachePolicy.h"
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/FetchRequest.h"
@@ -53,7 +54,7 @@ enum FetchResourceType {
     FetchSubresource
 };
 
-class FetchContext : public NoBaseWillBeGarbageCollectedFinalized<FetchContext> {
+class CORE_EXPORT FetchContext : public NoBaseWillBeGarbageCollectedFinalized<FetchContext> {
     WTF_MAKE_NONCOPYABLE(FetchContext);
 public:
     static PassOwnPtrWillBeRawPtr<FetchContext> create()

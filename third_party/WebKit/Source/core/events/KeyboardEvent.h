@@ -24,6 +24,7 @@
 #ifndef KeyboardEvent_h
 #define KeyboardEvent_h
 
+#include "core/CoreExport.h"
 #include "core/events/EventDispatchMediator.h"
 #include "core/events/KeyboardEventInit.h"
 #include "core/events/UIEventWithKeyState.h"
@@ -33,7 +34,7 @@ namespace blink {
 class EventDispatcher;
 class PlatformKeyboardEvent;
 
-class KeyboardEvent final : public UIEventWithKeyState {
+class CORE_EXPORT KeyboardEvent final : public UIEventWithKeyState {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum KeyLocationCode {

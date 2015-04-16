@@ -24,6 +24,7 @@
 #ifndef UIEvent_h
 #define UIEvent_h
 
+#include "core/CoreExport.h"
 #include "core/events/Event.h"
 #include "core/events/EventDispatchMediator.h"
 #include "core/events/UIEventInit.h"
@@ -34,7 +35,7 @@ namespace blink {
 // FIXME: Get rid of this typedef.
 typedef DOMWindow AbstractView;
 
-class UIEvent : public Event {
+class CORE_EXPORT UIEvent : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<UIEvent> create()

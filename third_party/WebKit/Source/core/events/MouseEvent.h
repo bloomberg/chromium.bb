@@ -24,6 +24,7 @@
 #ifndef MouseEvent_h
 #define MouseEvent_h
 
+#include "core/CoreExport.h"
 #include "core/events/EventDispatchMediator.h"
 #include "core/events/MouseEventInit.h"
 #include "core/events/MouseRelatedEvent.h"
@@ -34,7 +35,7 @@ namespace blink {
 class DataTransfer;
 class EventDispatcher;
 
-class MouseEvent : public MouseRelatedEvent {
+class CORE_EXPORT MouseEvent : public MouseRelatedEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<MouseEvent> create()

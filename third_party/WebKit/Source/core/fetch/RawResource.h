@@ -23,6 +23,7 @@
 #ifndef RawResource_h
 #define RawResource_h
 
+#include "core/CoreExport.h"
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourcePtr.h"
 #include "public/platform/WebDataConsumerHandle.h"
@@ -31,7 +32,7 @@
 namespace blink {
 class RawResourceClient;
 
-class RawResource final : public Resource {
+class CORE_EXPORT RawResource final : public Resource {
 public:
     typedef RawResourceClient ClientType;
 

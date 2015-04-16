@@ -27,13 +27,14 @@
 #ifndef TouchEvent_h
 #define TouchEvent_h
 
+#include "core/CoreExport.h"
 #include "core/events/EventDispatchMediator.h"
 #include "core/events/MouseRelatedEvent.h"
 #include "core/dom/TouchList.h"
 
 namespace blink {
 
-class TouchEvent final : public UIEventWithKeyState {
+class CORE_EXPORT TouchEvent final : public UIEventWithKeyState {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~TouchEvent();

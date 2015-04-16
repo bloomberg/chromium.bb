@@ -5,13 +5,14 @@
 #ifndef TextResource_h
 #define TextResource_h
 
+#include "core/CoreExport.h"
 #include "core/fetch/ResourcePtr.h"
 
 namespace blink {
 
 class TextResourceDecoder;
 
-class TextResource : public Resource {
+class CORE_EXPORT TextResource : public Resource {
 public:
     // Returns the decoded data in text form. The data has to be available at
     // call time.

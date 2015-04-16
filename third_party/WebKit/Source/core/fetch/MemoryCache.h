@@ -25,6 +25,7 @@
 #ifndef MemoryCache_h
 #define MemoryCache_h
 
+#include "core/CoreExport.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourcePtr.h"
 #include "public/platform/WebThread.h"
@@ -130,7 +131,7 @@ WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::MemoryCacheLRUList);
 
 namespace blink {
 
-class MemoryCache final : public NoBaseWillBeGarbageCollectedFinalized<MemoryCache>, public WebThread::TaskObserver {
+class CORE_EXPORT MemoryCache final : public NoBaseWillBeGarbageCollectedFinalized<MemoryCache>, public WebThread::TaskObserver {
     WTF_MAKE_NONCOPYABLE(MemoryCache); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(MemoryCache);
 public:
     static PassOwnPtrWillBeRawPtr<MemoryCache> create();
@@ -311,7 +312,7 @@ private:
     // objects.
     // FIXME: Can we remove manual lifetime management of Resource and this?
     HeapHashSet<Member<Resource>> m_liveResources;
-    friend RawPtr<MemoryCache> replaceMemoryCacheForTesting(RawPtr<MemoryCache>);
+    friend CORE_EXPORT RawPtr<MemoryCache> replaceMemoryCacheForTesting(RawPtr<MemoryCache>);
 #endif
 
     friend class MemoryCacheTest;
@@ -325,7 +326,7 @@ MemoryCache* memoryCache();
 
 // Sets the global cache, used to swap in a test instance. Returns the old
 // MemoryCache object.
-PassOwnPtrWillBeRawPtr<MemoryCache> replaceMemoryCacheForTesting(PassOwnPtrWillBeRawPtr<MemoryCache>);
+CORE_EXPORT PassOwnPtrWillBeRawPtr<MemoryCache> replaceMemoryCacheForTesting(PassOwnPtrWillBeRawPtr<MemoryCache>);
 
 }
 

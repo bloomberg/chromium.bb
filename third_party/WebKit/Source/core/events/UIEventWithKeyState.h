@@ -24,11 +24,12 @@
 #ifndef UIEventWithKeyState_h
 #define UIEventWithKeyState_h
 
+#include "core/CoreExport.h"
 #include "core/events/UIEvent.h"
 
 namespace blink {
 
-    class UIEventWithKeyState : public UIEvent {
+    class CORE_EXPORT UIEventWithKeyState : public UIEvent {
     public:
         bool ctrlKey() const { return m_ctrlKey; }
         bool shiftKey() const { return m_shiftKey; }

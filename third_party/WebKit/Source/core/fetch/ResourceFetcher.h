@@ -26,6 +26,7 @@
 #ifndef ResourceFetcher_h
 #define ResourceFetcher_h
 
+#include "core/CoreExport.h"
 #include "core/fetch/CachePolicy.h"
 #include "core/fetch/FetchContext.h"
 #include "core/fetch/FetchInitiatorInfo.h"
@@ -64,7 +65,7 @@ class ResourceLoaderSet;
 // RefPtr<ResourceFetcher> for their lifetime (and will create one if they
 // are initialized without a LocalFrame), so a Document can keep a ResourceFetcher
 // alive past detach if scripts still reference the Document.
-class ResourceFetcher final : public RefCountedWillBeGarbageCollectedFinalized<ResourceFetcher>, public ResourceLoaderHost {
+class CORE_EXPORT ResourceFetcher final : public RefCountedWillBeGarbageCollectedFinalized<ResourceFetcher>, public ResourceLoaderHost {
     WTF_MAKE_NONCOPYABLE(ResourceFetcher); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ResourceFetcher);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ResourceFetcher);
 public:

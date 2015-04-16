@@ -31,6 +31,7 @@
 #ifndef ResourceLoaderHost_h
 #define ResourceLoaderHost_h
 
+#include "core/CoreExport.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceLoadPriority.h"
 
@@ -43,7 +44,7 @@ class ResourceResponse;
 
 struct FetchInitiatorInfo;
 
-class ResourceLoaderHost : public WillBeGarbageCollectedMixin {
+class CORE_EXPORT ResourceLoaderHost : public WillBeGarbageCollectedMixin {
 public:
     virtual void didLoadResource() = 0;
     virtual void redirectReceived(Resource*, const ResourceResponse&) = 0;

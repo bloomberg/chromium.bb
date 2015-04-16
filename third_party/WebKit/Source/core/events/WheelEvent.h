@@ -25,6 +25,7 @@
 #ifndef WheelEvent_h
 #define WheelEvent_h
 
+#include "core/CoreExport.h"
 #include "core/events/EventDispatchMediator.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/WheelEventInit.h"
@@ -34,7 +35,7 @@ namespace blink {
 
 class PlatformWheelEvent;
 
-class WheelEvent final : public MouseEvent {
+class CORE_EXPORT WheelEvent final : public MouseEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum { TickMultiplier = 120 };

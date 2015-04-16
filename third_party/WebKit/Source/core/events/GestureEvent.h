@@ -26,13 +26,14 @@
 #ifndef GestureEvent_h
 #define GestureEvent_h
 
+#include "core/CoreExport.h"
 #include "core/events/EventDispatcher.h"
 #include "core/events/MouseRelatedEvent.h"
 #include "platform/PlatformGestureEvent.h"
 
 namespace blink {
 
-class GestureEvent final : public MouseRelatedEvent {
+class CORE_EXPORT GestureEvent final : public MouseRelatedEvent {
 public:
     virtual ~GestureEvent() { }
 
