@@ -14,6 +14,18 @@ import org.chromium.content_public.common.TopControlsState;
  */
 public interface ContextualSearchManagementDelegate {
     /**
+     * Sets the preference state to enabled or disabled.
+     *
+     * @param enabled Whether the preference should be set to enabled.
+     */
+    public void setPreferenceState(boolean enabled);
+
+    /**
+     * @return Whether the Opt-out promo is available to be be shown in the panel.
+     */
+    boolean isOptOutPromoAvailable();
+
+    /**
      * @return Whether or not the Contextual Search Bar is peeking.
      */
     boolean isSearchBarPeeking();

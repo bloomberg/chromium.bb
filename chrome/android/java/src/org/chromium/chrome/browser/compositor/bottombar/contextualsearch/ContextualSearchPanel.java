@@ -139,9 +139,20 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     }
 
     @Override
+    public void setPreferenceState(boolean enabled) {
+        if (mManagementDelegate != null) {
+            mManagementDelegate.setPreferenceState(enabled);
+        }
+    }
+
+    @Override
     protected boolean isPanelPromoAvailable() {
-        // TODO(donnd, pedrosimonetti): Check for field trial here.
-        return false;
+        return mManagementDelegate != null && mManagementDelegate.isOptOutPromoAvailable();
+    }
+
+    @Override
+    public void onPromoButtonClick(boolean accepted) {
+        super.onPromoButtonClick(accepted);
     }
 
     // ============================================================================================

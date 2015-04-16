@@ -27,22 +27,23 @@
         android:bufferType="spannable"
         android:textSize="16sp" />
 
-    <Button
+    <org.chromium.chrome.browser.widget.ButtonCompat
         android:id="@+id/contextual_search_got_it_button"
         android:layout_below="@id/contextual_search_opt_out_text"
         android:layout_alignParentEnd="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
-        android:background="?attr/selectableItemBackground"
         android:fontFamily="sans-serif-medium"
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
         android:text="@string/contextual_search_got_it_button"
         android:textAllCaps="true"
-        android:textColor="@color/light_active_color"
-        android:textSize="14sp" />
+        android:textColor="#FFF"
+        android:textSize="14sp"
+        chrome:buttonColor="#4285F4" />
 
     <Button
         android:id="@+id/contextual_search_no_thanks_button"
@@ -51,20 +52,22 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
-        android:background="?attr/selectableItemBackground"
         android:fontFamily="sans-serif-medium"
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
         android:text="@string/contextual_search_no_thanks_button"
         android:textAllCaps="true"
         android:textColor="@color/light_active_color"
-        android:textSize="14sp" />
+        android:textSize="14sp"
+        style="@style/ButtonCompatBorderless" />
 
     <View
         android:layout_below="@id/contextual_search_got_it_button"
         android:layout_width="match_parent"
         android:layout_height="1px"
+        android:layout_marginTop="16dp"
         android:background="#c2c2c2" />
 
 </org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchOptOutPromo>

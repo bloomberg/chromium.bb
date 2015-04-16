@@ -146,12 +146,14 @@ void ContextualSearchLayer::SetProperties(
     ui::ResourceManager::Resource* search_promo_resource =
         resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_DYNAMIC,
                                        search_promo_resource_id);
+    // Search Promo Container
+    if (search_promo_container_->parent() != layer_) {
+      // NOTE(pedrosimonetti): The Promo layer should be always placed before
+      // Search Bar Shadow to make sure it won't occlude the shadow.
+      layer_->InsertChild(search_promo_container_, 0);
+    }
 
     if (search_promo_resource) {
-      // Search Promo Container
-      if (search_promo_container_->parent() != layer_)
-        layer_->AddChild(search_promo_container_);
-
       int search_promo_content_height = search_promo_resource->size.height();
       gfx::Size search_promo_size(search_panel_width, search_promo_height);
       search_promo_container_->SetBounds(search_promo_size);
@@ -171,9 +173,6 @@ void ContextualSearchLayer::SetProperties(
       search_promo_->SetOpacity(search_promo_opacity);
     }
   } else {
-    // TODO(pedrosimonetti): confirm with dtrainor@ that we don't need to remove
-    // the child too (since it's going to be removed when the parent is gone).
-
     // Search Promo Container
     if (search_promo_container_.get() && search_promo_container_->parent())
       search_promo_container_->RemoveFromParent();
@@ -203,16 +202,16 @@ void ContextualSearchLayer::SetProperties(
     if (search_bar_shadow_resource) {
       if (search_bar_shadow_->parent() != layer_)
         layer_->AddChild(search_bar_shadow_);
+
+      int shadow_height = search_bar_shadow_resource->size.height();
+      gfx::Size shadow_size(search_panel_width, shadow_height);
+
+      search_bar_shadow_->SetUIResourceId(
+          search_bar_shadow_resource->ui_resource->id());
+      search_bar_shadow_->SetBounds(shadow_size);
+      search_bar_shadow_->SetPosition(gfx::PointF(0.f, search_bar_height));
+      search_bar_shadow_->SetOpacity(search_bar_shadow_opacity);
     }
-
-    int shadow_height = search_bar_shadow_resource->size.height();
-    gfx::Size shadow_size(search_panel_width, shadow_height);
-
-    search_bar_shadow_->SetUIResourceId(
-        search_bar_shadow_resource->ui_resource->id());
-    search_bar_shadow_->SetBounds(shadow_size);
-    search_bar_shadow_->SetPosition(gfx::PointF(0.f, search_bar_height));
-    search_bar_shadow_->SetOpacity(search_bar_shadow_opacity);
   } else {
     if (search_bar_shadow_.get() && search_bar_shadow_->parent())
       search_bar_shadow_->RemoveFromParent();

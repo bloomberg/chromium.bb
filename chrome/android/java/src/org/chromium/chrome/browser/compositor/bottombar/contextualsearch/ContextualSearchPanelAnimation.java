@@ -28,6 +28,7 @@ abstract class ContextualSearchPanelAnimation extends ContextualSearchPanelBase
      */
     protected enum Property {
         PANEL_HEIGHT,
+        PROMO_VISIBILITY,
         FIRST_RUN_PANEL_HEIGHT,
     }
 
@@ -66,6 +67,11 @@ abstract class ContextualSearchPanelAnimation extends ContextualSearchPanelBase
      * The animation set.
      */
     private ChromeAnimation<Animatable<?>> mLayoutAnimations;
+
+    /**
+     * Whether the Promo's acceptance animation is running.
+     */
+    private boolean mIsAnimatingPromoAcceptance;
 
     /**
      * The {@link LayoutUpdateHost} used to request a new frame to be updated and rendered.
@@ -178,6 +184,13 @@ abstract class ContextualSearchPanelAnimation extends ContextualSearchPanelBase
     // Animation Helpers
     // ============================================================================================
 
+    @Override
+    protected void animatePromoAcceptance() {
+        hidePromoView();
+        mIsAnimatingPromoAcceptance = true;
+        animateProperty(Property.PROMO_VISIBILITY, 1.f, 0.f, BASE_ANIMATION_DURATION_MS);
+    }
+
     /**
      * Animates the Contextual Search panel after first-run success.
      */
@@ -217,7 +230,17 @@ abstract class ContextualSearchPanelAnimation extends ContextualSearchPanelBase
 
         // Calculate the projected state the Panel will be at the end of the fling movement and the
         // duration of the animation given the current velocity and the projected displacement.
-        final PanelState projectedState = findNearestPanelStateFromHeight(projectedHeight);
+        PanelState projectedState = findNearestPanelStateFromHeight(projectedHeight);
+
+        // Prevent the fling gesture from moving the Panel from PEEKED to MAXIMIZED if the Panel
+        // Promo is available. This is to make sure the Promo will be visible, considering that
+        // the EXPANDED state is the only one that will show the Promo.
+        if (projectedState == PanelState.MAXIMIZED
+                && getPanelState() == PanelState.PEEKED
+                && isPanelPromoAvailable()) {
+            projectedState = PanelState.EXPANDED;
+        }
+
         final float displacement = getPanelHeightFromState(projectedState) - getHeight();
         final long duration = calculateAnimationDuration(velocity, displacement);
 
@@ -321,6 +344,8 @@ abstract class ContextualSearchPanelAnimation extends ContextualSearchPanelBase
     public void setProperty(Property prop, float value) {
         if (prop == Property.PANEL_HEIGHT) {
             setPanelHeight(value);
+        } else if (prop == Property.PROMO_VISIBILITY) {
+            setPromoVisibilityForOptInAnimation(value);
         } else if (prop == Property.FIRST_RUN_PANEL_HEIGHT) {
             setPanelHeightForPromoOptInAnimation(value);
         }
@@ -361,6 +386,11 @@ abstract class ContextualSearchPanelAnimation extends ContextualSearchPanelBase
      * Called when layout-specific actions are needed after the animation finishes.
      */
     protected void onAnimationFinished() {
+        if (mIsAnimatingPromoAcceptance) {
+            mIsAnimatingPromoAcceptance = false;
+            setPreferenceState(true);
+        }
+
         // If animating to a particular PanelState, and after completing
         // resizing the Panel to its desired state, then the Panel's state
         // should be updated. This method also is called when an animation

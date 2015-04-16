@@ -213,9 +213,21 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     protected abstract void closePanel(StateChangeReason reason, boolean animate);
 
     /**
+     * Sets Contextual Search's preference state.
+     *
+     * @param enabled Whether the preference should be enabled.
+     */
+    public abstract void setPreferenceState(boolean enabled);
+
+    /**
      * @return Whether the Panel Promo is available.
      */
     protected abstract boolean isPanelPromoAvailable();
+
+    /**
+     * Animates the acceptance of the Promo.
+     */
+    protected abstract void animatePromoAcceptance();
 
     // ============================================================================================
     // Layout Integration
@@ -560,13 +572,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     private float mPromoOpacity;
 
     /**
-     * @param visible Whether the promo will be set to visible.
-     */
-    protected void setPromoVisible(boolean visible) {
-        mPromoVisible = visible;
-    }
-
-    /**
      * @return Whether the promo is visible.
      */
     public boolean getPromoVisible() {
@@ -869,7 +874,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      */
     private void updatePanelForCloseOrPeek(float percentage) {
         // Update the opt out promo.
-        updatePromo(1.f);
+        updatePromoVisibility(1.f);
 
         // Base page offset.
         mBasePageY = 0.f;
@@ -907,7 +912,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      */
     private void updatePanelForExpansion(float percentage) {
         // Update the opt out promo.
-        updatePromo(1.f);
+        updatePromoVisibility(1.f);
 
         // Base page offset.
         float baseBaseY = MathUtils.interpolate(
@@ -965,7 +970,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      */
     private void updatePanelForMaximization(float percentage) {
         // Update the opt out promo.
-        updatePromo(1.f - percentage);
+        updatePromoVisibility(1.f - percentage);
 
         // Base page offset.
         mBasePageY = getBasePageTargetY();
@@ -1071,7 +1076,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      * Promo is not visible. A visibility of 1 means the Promo is fully visible. And
      * visibility between 0 and 1 means the Promo is partially visible.
      */
-    private void updatePromo(float percentage) {
+    private void updatePromoVisibility(float percentage) {
         if (isPanelPromoAvailable()) {
             mPromoVisible = true;
 
@@ -1080,6 +1085,8 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
             mPromoOpacity = percentage;
         } else {
             mPromoVisible = false;
+            mPromoHeightPx = 0.f;
+            mPromoOpacity = 0.f;
         }
     }
 
@@ -1087,14 +1094,15 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      * Updates the UI state for Search Bar Shadow.
      */
     public void updateSearchBarShadow() {
-        float searchBarShadowHeightPx = 9 / mPxToDp;
+        float searchBarShadowHeightPx = 9.f / mPxToDp;
         if (mPromoVisible && mPromoHeightPx > 0.f) {
             mSearchBarShadowVisible = true;
             float threshold = 2 * searchBarShadowHeightPx;
             mSearchBarShadowOpacity = mPromoHeightPx > searchBarShadowHeightPx ? 1.f :
                 MathUtils.interpolate(0.f, 1.f, mPromoHeightPx / threshold);
         } else {
-            // TODO(pedrosimonetti): Calculate shadow when promo is not displayed.
+            mSearchBarShadowVisible = false;
+            mSearchBarShadowOpacity = 0.f;
         }
     }
 
@@ -1256,8 +1264,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
 
     @Override
     public void onPromoPreferenceClick() {
-        closePanel(StateChangeReason.UNKNOWN, true);
-
         new Handler().post(new Runnable() {
             @Override
             public void run() {
@@ -1269,7 +1275,13 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
 
     @Override
     public void onPromoButtonClick(boolean accepted) {
-        // TODO(pedrosimonetti): Implement this!
+        if (accepted) {
+            animatePromoAcceptance();
+        } else {
+            hidePromoView();
+            setPreferenceState(false);
+            closePanel(StateChangeReason.OPTOUT, true);
+        }
     }
 
     // ============================================================================================
@@ -1361,6 +1373,16 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         mSearchPromoView.setVisibility(View.INVISIBLE);
 
         mIsSearchPromoViewVisible = false;
+    }
+
+    /**
+     * Updates the UI state for Opt In Promo animation.
+     *
+     * @param percentage The visibility percentage of the Promo.
+     */
+    protected void setPromoVisibilityForOptInAnimation(float percentage) {
+        updatePromoVisibility(percentage);
+        updateSearchBarShadow();
     }
 
     // ============================================================================================
