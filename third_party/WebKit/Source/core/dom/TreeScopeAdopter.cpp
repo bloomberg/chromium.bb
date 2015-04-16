@@ -68,18 +68,17 @@ void TreeScopeAdopter::moveTreeToNewScope(Node& root) const
 
         if (!node.isElementNode())
             continue;
+        Element& element = toElement(node);
 
-        if (node.hasRareData()) {
-            if (WillBeHeapVector<RefPtrWillBeMember<Attr>>* attrs = toElement(node).attrNodeList()) {
-                for (unsigned i = 0; i < attrs->size(); ++i)
-                    moveTreeToNewScope(*(*attrs)[i]);
-            }
+        if (WillBeHeapVector<RefPtrWillBeMember<Attr>>* attrs = element.attrNodeList()) {
+            for (const auto& attr : *attrs)
+                moveTreeToNewScope(*attr);
+        }
 
-            for (ShadowRoot* shadow = node.youngestShadowRoot(); shadow; shadow = shadow->olderShadowRoot()) {
-                shadow->setParentTreeScope(newScope());
-                if (willMoveToNewDocument)
-                    moveTreeToNewDocument(*shadow, oldDocument, newDocument);
-            }
+        for (ShadowRoot* shadow = element.youngestShadowRoot(); shadow; shadow = shadow->olderShadowRoot()) {
+            shadow->setParentTreeScope(newScope());
+            if (willMoveToNewDocument)
+                moveTreeToNewDocument(*shadow, oldDocument, newDocument);
         }
     }
 
@@ -94,15 +93,17 @@ void TreeScopeAdopter::moveTreeToNewDocument(Node& root, Document& oldDocument, 
     for (Node& node : NodeTraversal::inclusiveDescendantsOf(root)) {
         moveNodeToNewDocument(node, oldDocument, newDocument);
 
-        if (node.hasRareData()) {
-            if (WillBeHeapVector<RefPtrWillBeMember<Attr>>* attrs = toElement(node).attrNodeList()) {
-                for (unsigned i = 0; i < attrs->size(); ++i)
-                    moveTreeToNewDocument(*(*attrs)[i], oldDocument, newDocument);
-            }
+        if (!node.isElementNode())
+            continue;
+        Element& element = toElement(node);
 
-            for (ShadowRoot* shadow = node.youngestShadowRoot(); shadow; shadow = shadow->olderShadowRoot())
-                moveTreeToNewDocument(*shadow, oldDocument, newDocument);
+        if (WillBeHeapVector<RefPtrWillBeMember<Attr>>* attrs = element.attrNodeList()) {
+            for (const auto& attr : *attrs)
+                moveTreeToNewDocument(*attr, oldDocument, newDocument);
         }
+
+        for (ShadowRoot* shadow = element.youngestShadowRoot(); shadow; shadow = shadow->olderShadowRoot())
+            moveTreeToNewDocument(*shadow, oldDocument, newDocument);
     }
 }
 
