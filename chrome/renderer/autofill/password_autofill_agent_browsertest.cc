@@ -1919,6 +1919,17 @@ TEST_F(PasswordAutofillAgentTest, FindingUsernameWithAutofillPredictions) {
   AutofillMsg_AutofillUsernameDataReceived msg(0, predictions);
   static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
       ->OnMessageReceived(msg);
+
+  // The prediction should still match even if the form changes, as long
+  // as the particular element doesn't change.
+  std::string add_field_to_form =
+      "var form = document.getElementById('LoginTestForm');"
+      "var new_input = document.createElement('input');"
+      "new_input.setAttribute('type', 'text');"
+      "new_input.setAttribute('id', 'other_field');"
+      "form.appendChild(new_input);";
+  ExecuteJavaScript(add_field_to_form.c_str());
+
   static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
       ->WillSendSubmitEvent(username_element_.form());
   static_cast<content::RenderFrameObserver*>(password_autofill_agent_)

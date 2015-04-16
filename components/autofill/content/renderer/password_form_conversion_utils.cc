@@ -192,21 +192,27 @@ void FindPredictedUsernameElement(
     return;
   }
 
-  // Prediction forms are not user submitted, but |form| can be user submitted.
-  // We don't care about this flag for finding predictions, so set it to false.
-  form_data.user_submitted = false;
-  auto predictions_iterator = form_predictions.find(form_data);
+  // Matching only requires that action and name of the form match to allow
+  // the username to be updated even if the form is changed after page load.
+  // See https://crbug.com/476092 for more details.
+  auto predictions_iterator = form_predictions.begin();
+  for (;predictions_iterator != form_predictions.end();
+       ++predictions_iterator) {
+    if (predictions_iterator->first.action == form_data.action &&
+        predictions_iterator->first.name == form_data.name) {
+      break;
+    }
+  }
+
   if (predictions_iterator == form_predictions.end())
     return;
 
   std::vector<blink::WebFormControlElement> autofillable_elements =
       ExtractAutofillableElementsFromSet(*control_elements);
-  DCHECK_EQ(autofillable_elements.size(), form_data.fields.size());
 
   const autofill::FormFieldData& username_field = predictions_iterator->second;
-  autofill::FormFieldData form_field;
   for (size_t i = 0; i < autofillable_elements.size(); ++i) {
-    if (form_data.fields[i].SameFieldAs(username_field)) {
+    if (autofillable_elements[i].nameForAutofill() == username_field.name) {
       WebInputElement* input_element =
           toWebInputElement(&autofillable_elements[i]);
       if (input_element) {
