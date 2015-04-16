@@ -42,7 +42,6 @@
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/permissions/permission_message_provider.h"
-#include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/size.h"
@@ -292,8 +291,8 @@ base::string16 ExtensionDisabledGlobalError::GetBubbleViewTitle() {
 std::vector<base::string16>
 ExtensionDisabledGlobalError::GetBubbleViewMessages() {
   std::vector<base::string16> messages;
-  std::vector<base::string16> permission_warnings =
-      extensions::PermissionMessageProvider::Get()->GetLegacyWarningMessages(
+  extensions::PermissionMessageStrings permission_warnings =
+      extensions::PermissionMessageProvider::Get()->GetPermissionMessageStrings(
           extension_->permissions_data()->active_permissions().get(),
           extension_->GetType());
   if (is_remote_install_) {
@@ -314,9 +313,9 @@ ExtensionDisabledGlobalError::GetBubbleViewMessages() {
     messages.push_back(l10n_util::GetStringUTF16(
         IDS_EXTENSION_PROMPT_WILL_NOW_HAVE_ACCESS_TO));
   }
-  for (size_t i = 0; i < permission_warnings.size(); ++i) {
+  for (const extensions::PermissionMessageString& str : permission_warnings) {
     messages.push_back(l10n_util::GetStringFUTF16(
-        IDS_EXTENSION_PERMISSION_LINE, permission_warnings[i]));
+        IDS_EXTENSION_PERMISSION_LINE, str.message));
   }
   return messages;
 }

@@ -19,6 +19,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
@@ -229,7 +230,8 @@ void AppInfoPermissionsPanel::CreatePermissionsList() {
   // Add regular and host permission messages.
   for (const auto& message : GetActivePermissionMessages()) {
     permissions_list->AddPermissionBullets(
-        message.first, message.second, gfx::ELIDE_MIDDLE, base::Closure());
+        message.message, message.submessages, gfx::ELIDE_MIDDLE,
+        base::Closure());
   }
 
   // Add USB devices, if the app has any.
@@ -259,26 +261,9 @@ bool AppInfoPermissionsPanel::HasActivePermissionMessages() const {
   return !GetActivePermissionMessages().empty();
 }
 
-const std::vector<PermissionStringAndDetailsPair>
+extensions::PermissionMessageStrings
 AppInfoPermissionsPanel::GetActivePermissionMessages() const {
-  std::vector<PermissionStringAndDetailsPair> messages_with_details;
-  std::vector<base::string16> permission_messages =
-      app_->permissions_data()->GetLegacyPermissionMessageStrings();
-  std::vector<base::string16> permission_message_details =
-      app_->permissions_data()->GetLegacyPermissionMessageDetailsStrings();
-  DCHECK_EQ(permission_messages.size(), permission_message_details.size());
-
-  for (size_t i = 0; i < permission_messages.size(); i++) {
-    std::vector<base::string16> details;
-    if (!permission_message_details[i].empty()) {
-      // Make each new line in the details a separate sub-bullet.
-      base::SplitString(
-          permission_message_details[i], base::char16('\n'), &details);
-    }
-    messages_with_details.push_back(
-        PermissionStringAndDetailsPair(permission_messages[i], details));
-  }
-  return messages_with_details;
+  return app_->permissions_data()->GetPermissionMessageStrings();
 }
 
 int AppInfoPermissionsPanel::GetRetainedFileCount() const {

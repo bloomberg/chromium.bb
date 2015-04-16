@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/url_pattern.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
@@ -109,12 +110,8 @@ class ExtensionInstallPrompt
    public:
     explicit Prompt(PromptType type);
 
-    // Sets the permission list for this prompt.
-    void SetPermissions(const std::vector<base::string16>& permissions,
+    void SetPermissions(const extensions::PermissionMessageStrings& permissions,
                         PermissionsType permissions_type);
-    // Sets the permission list details for this prompt.
-    void SetPermissionsDetails(const std::vector<base::string16>& details,
-                               PermissionsType permissions_type);
     void SetIsShowingDetails(DetailsType type,
                              size_t index,
                              bool is_showing_details);

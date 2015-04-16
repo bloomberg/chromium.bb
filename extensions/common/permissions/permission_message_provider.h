@@ -78,25 +78,6 @@ class PermissionMessageProvider {
   virtual CoalescedPermissionMessages GetCoalescedPermissionMessages(
       const PermissionIDSet& permissions) const = 0;
 
-  // Gets the localized permission messages that represent this set (represented
-  // as strings). The set of permission messages shown varies by extension type.
-  // Any permissions added by API, host or manifest permissions need to be added
-  // to |permissions| before this function is called.
-  // Deprecated; use GetPermissionMessageStrings instead.
-  // TODO(treib): Remove this once we've switched to the new system.
-  virtual std::vector<base::string16> GetLegacyWarningMessages(
-      const PermissionSet* permissions,
-      Manifest::Type extension_type) const = 0;
-
-  // Gets the localized permission details for messages that represent this set
-  // (represented as strings). The set of permission messages shown varies by
-  // extension type.
-  // Deprecated; use GetPermissionMessageStrings instead.
-  // TODO(treib): Remove this once we've switched to the new system.
-  virtual std::vector<base::string16> GetLegacyWarningMessagesDetails(
-      const PermissionSet* permissions,
-      Manifest::Type extension_type) const = 0;
-
   // Returns true if |new_permissions| has a greater privilege level than
   // |old_permissions|.
   // Whether certain permissions are considered varies by extension type.
@@ -114,6 +95,26 @@ class PermissionMessageProvider {
   // this type, and make this take as little as is needed to work out the
   // PermissionIDSet.
   virtual PermissionIDSet GetAllPermissionIDs(
+      const PermissionSet* permissions,
+      Manifest::Type extension_type) const = 0;
+
+ private:
+  // Gets the localized permission messages that represent this set (represented
+  // as strings). The set of permission messages shown varies by extension type.
+  // Any permissions added by API, host or manifest permissions need to be added
+  // to |permissions| before this function is called.
+  // Deprecated; use GetPermissionMessageStrings instead.
+  // TODO(treib): Remove this once we've switched to the new system.
+  virtual std::vector<base::string16> GetLegacyWarningMessages(
+      const PermissionSet* permissions,
+      Manifest::Type extension_type) const = 0;
+
+  // Gets the localized permission details for messages that represent this set
+  // (represented as strings). The set of permission messages shown varies by
+  // extension type.
+  // Deprecated; use GetPermissionMessageStrings instead.
+  // TODO(treib): Remove this once we've switched to the new system.
+  virtual std::vector<base::string16> GetLegacyWarningMessagesDetails(
       const PermissionSet* permissions,
       Manifest::Type extension_type) const = 0;
 };

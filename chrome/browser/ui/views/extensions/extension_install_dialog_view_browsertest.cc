@@ -16,11 +16,15 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/test_util.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+
+using extensions::PermissionMessageString;
+using extensions::PermissionMessageStrings;
 
 // A simple delegate implementation that counts the number of times
 // |InstallUIProceed| and |InstallUIAbort| are called.
@@ -81,8 +85,7 @@ class ExtensionInstallDialogViewTestBase : public ExtensionBrowserTest {
   content::WebContents* web_contents() { return web_contents_; }
   MockExtensionInstallPromptDelegate* delegate() { return &delegate_; }
 
-  void SetPromptPermissions(std::vector<base::string16> permissions);
-  void SetPromptDetails(std::vector<base::string16> details);
+  void SetPromptPermissions(const PermissionMessageStrings& permissions);
   void SetPromptRetainedFiles(std::vector<base::FilePath> files);
 
  private:
@@ -120,21 +123,14 @@ void ExtensionInstallDialogViewTestBase::SetUpOnMainThread() {
   gfx::Image icon = gfx::Image::CreateFrom1xBitmap(icon_bitmap);
   prompt_->set_icon(icon);
 
-  this->SetPromptPermissions(std::vector<base::string16>());
-  this->SetPromptDetails(std::vector<base::string16>());
+  this->SetPromptPermissions(PermissionMessageStrings());
   this->SetPromptRetainedFiles(std::vector<base::FilePath>());
 }
 
 void ExtensionInstallDialogViewTestBase::SetPromptPermissions(
-    std::vector<base::string16> permissions) {
+    const PermissionMessageStrings& permissions) {
   prompt_->SetPermissions(permissions,
                           ExtensionInstallPrompt::REGULAR_PERMISSIONS);
-}
-
-void ExtensionInstallDialogViewTestBase::SetPromptDetails(
-    std::vector<base::string16> details) {
-  prompt_->SetPermissionsDetails(details,
-                                 ExtensionInstallPrompt::REGULAR_PERMISSIONS);
 }
 
 void ExtensionInstallDialogViewTestBase::SetPromptRetainedFiles(
@@ -179,14 +175,10 @@ bool ScrollbarTest::IsScrollbarVisible() {
 // install prompt.
 IN_PROC_BROWSER_TEST_F(ScrollbarTest, LongPromptScrollbar) {
   base::string16 permission_string(base::ASCIIToUTF16("Test"));
-  std::vector<base::string16> permissions;
-  std::vector<base::string16> details;
-  for (int i = 0; i < 20; i++) {
-    permissions.push_back(permission_string);
-    details.push_back(base::string16());
-  }
+  PermissionMessageStrings permissions;
+  for (int i = 0; i < 20; i++)
+    permissions.push_back(PermissionMessageString(permission_string));
   this->SetPromptPermissions(permissions);
-  this->SetPromptDetails(details);
   ASSERT_TRUE(IsScrollbarVisible()) << "Scrollbar is not visible";
 }
 
@@ -195,12 +187,9 @@ IN_PROC_BROWSER_TEST_F(ScrollbarTest, LongPromptScrollbar) {
 IN_PROC_BROWSER_TEST_F(ScrollbarTest, ScrollbarRegression) {
   base::string16 permission_string(base::ASCIIToUTF16(
       "Read and modify your data on *.facebook.com"));
-  std::vector<base::string16> permissions;
-  permissions.push_back(permission_string);
+  PermissionMessageStrings permissions;
+  permissions.push_back(PermissionMessageString(permission_string));
   this->SetPromptPermissions(permissions);
-  std::vector<base::string16> details;
-  details.push_back(base::string16());
-  this->SetPromptDetails(details);
   ASSERT_FALSE(IsScrollbarVisible()) << "Scrollbar is visible";
 }
 

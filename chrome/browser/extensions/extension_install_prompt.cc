@@ -37,7 +37,6 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
-#include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
@@ -50,6 +49,8 @@
 using extensions::BundleInstaller;
 using extensions::Extension;
 using extensions::Manifest;
+using extensions::PermissionMessageString;
+using extensions::PermissionMessageStrings;
 using extensions::PermissionSet;
 
 namespace {
@@ -249,38 +250,31 @@ ExtensionInstallPrompt::Prompt::~Prompt() {
 }
 
 void ExtensionInstallPrompt::Prompt::SetPermissions(
-    const std::vector<base::string16>& permissions,
-    PermissionsType permissions_type) {
-  GetPermissionsForType(permissions_type).permissions = permissions;
-}
-
-void ExtensionInstallPrompt::Prompt::SetPermissionsDetails(
-    const std::vector<base::string16>& details,
+    const PermissionMessageStrings& permissions,
     PermissionsType permissions_type) {
   InstallPromptPermissions& install_permissions =
       GetPermissionsForType(permissions_type);
 
-  // Add a dash to the front of each permission detail.
-  for (const auto& details_entry : details) {
-    if (!details_entry.empty()) {
-      std::vector<base::string16> detail_lines;
-      base::SplitString(details_entry, base::char16('\n'), &detail_lines);
+  install_permissions.permissions.clear();
+  install_permissions.details.clear();
+  install_permissions.is_showing_details.clear();
 
+  for (const PermissionMessageString& str : permissions) {
+    install_permissions.permissions.push_back(str.message);
+    // Add a dash to the front of each permission detail.
+    base::string16 details;
+    if (!str.submessages.empty()) {
       std::vector<base::string16> detail_lines_with_bullets;
-      for (const auto& detail_line : detail_lines)
+      for (const auto& detail_line : str.submessages) {
         detail_lines_with_bullets.push_back(base::ASCIIToUTF16("- ") +
                                             detail_line);
+      }
 
-      install_permissions.details.push_back(
-          JoinString(detail_lines_with_bullets, '\n'));
-    } else {
-      install_permissions.details.push_back(details_entry);
+      details = JoinString(detail_lines_with_bullets, '\n');
     }
+    install_permissions.details.push_back(details);
+    install_permissions.is_showing_details.push_back(false);
   }
-
-  install_permissions.is_showing_details.clear();
-  install_permissions.is_showing_details.insert(
-      install_permissions.is_showing_details.begin(), details.size(), false);
 }
 
 void ExtensionInstallPrompt::Prompt::SetIsShowingDetails(
@@ -905,24 +899,17 @@ void ExtensionInstallPrompt::ShowConfirmation() {
         extension_ ? extension_->GetType() : Manifest::TYPE_UNKNOWN;
     const extensions::PermissionMessageProvider* message_provider =
         extensions::PermissionMessageProvider::Get();
-    prompt_->SetPermissions(message_provider->GetLegacyWarningMessages(
+
+    prompt_->SetPermissions(message_provider->GetPermissionMessageStrings(
                                 permissions_to_display.get(), type),
                             REGULAR_PERMISSIONS);
-    prompt_->SetPermissionsDetails(
-        message_provider->GetLegacyWarningMessagesDetails(
-            permissions_to_display.get(), type),
-        REGULAR_PERMISSIONS);
 
     scoped_refptr<const extensions::PermissionSet> withheld =
         extension_ ? extension_->permissions_data()->withheld_permissions()
                    : nullptr;
     if (withheld && !withheld->IsEmpty()) {
       prompt_->SetPermissions(
-          message_provider->GetLegacyWarningMessages(withheld.get(), type),
-          PermissionsType::WITHHELD_PERMISSIONS);
-      prompt_->SetPermissionsDetails(
-          message_provider->GetLegacyWarningMessagesDetails(withheld.get(),
-                                                            type),
+          message_provider->GetPermissionMessageStrings(withheld.get(), type),
           PermissionsType::WITHHELD_PERMISSIONS);
     }
   }

@@ -138,18 +138,10 @@ class PermissionsData {
   PermissionMessageIDs GetLegacyPermissionMessageIDs() const;
 
   // Returns the full list of permission messages that should display at install
-  // time as strings.
+  // time, including their submessages, as strings.
+  // TODO(treib): Remove this and move callers over to
+  // GetCoalescedPermissionMessages once we've fully switched to the new system.
   PermissionMessageStrings GetPermissionMessageStrings() const;
-
-  // Returns the full list of permission messages that should display at install
-  // time as strings.
-  // TODO(sashab): Deprecate this in favor of GetPermissionMessageStrings.
-  std::vector<base::string16> GetLegacyPermissionMessageStrings() const;
-
-  // Returns the full list of permission details for messages that should
-  // display at install time as strings.
-  // TODO(sashab): Deprecate this in favor of GetPermissionMessageStrings.
-  std::vector<base::string16> GetLegacyPermissionMessageDetailsStrings() const;
 
   // Returns the full list of permission details for messages that should
   // display at install time, in a nested format ready for display.

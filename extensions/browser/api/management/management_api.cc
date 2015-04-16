@@ -61,9 +61,9 @@ AutoConfirmForTest auto_confirm_for_test = DO_NOT_SKIP;
 
 std::vector<std::string> CreateWarningsList(const Extension* extension) {
   std::vector<std::string> warnings_list;
-  for (const base::string16& warning :
-       extension->permissions_data()->GetLegacyPermissionMessageStrings()) {
-    warnings_list.push_back(base::UTF16ToUTF8(warning));
+  for (const extensions::PermissionMessageString& str :
+       extension->permissions_data()->GetPermissionMessageStrings()) {
+    warnings_list.push_back(base::UTF16ToUTF8(str.message));
   }
 
   return warnings_list;
