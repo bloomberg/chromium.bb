@@ -2287,6 +2287,8 @@ bool WebViewImpl::setComposition(
     if (m_suppressNextKeypressEvent && !inputMethodController.hasComposition())
         return text.isEmpty();
 
+    UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
+
     // When the range of composition underlines overlap with the range between
     // selectionStart and selectionEnd, WebKit somehow won't paint the selection
     // at all (see InlineTextBox::paint() function in InlineTextBox.cpp).

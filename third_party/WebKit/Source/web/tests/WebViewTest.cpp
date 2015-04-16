@@ -51,6 +51,7 @@
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/DeprecatedPaintLayerPainter.h"
 #include "platform/KeyboardCodes.h"
+#include "platform/UserGestureIndicator.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/Color.h"
 #include "platform/testing/URLTestHelpers.h"
@@ -1559,6 +1560,7 @@ class MockAutofillClient : public WebAutofillClient {
 public:
     MockAutofillClient()
         : m_ignoreTextChanges(false)
+        , m_textChangesFromUserGesture(0)
         , m_textChangesWhileIgnored(0)
         , m_textChangesWhileNotIgnored(0)
         , m_userGestureNotificationsCount(0) { }
@@ -1572,6 +1574,9 @@ public:
             ++m_textChangesWhileIgnored;
         else
             ++m_textChangesWhileNotIgnored;
+
+        if (UserGestureIndicator::processingUserGesture())
+            ++m_textChangesFromUserGesture;
     }
     virtual void firstUserGestureObserved() override { ++m_userGestureNotificationsCount; }
 
@@ -1581,12 +1586,14 @@ public:
         m_textChangesWhileNotIgnored = 0;
     }
 
+    int textChangesFromUserGesture() { return m_textChangesFromUserGesture; }
     int textChangesWhileIgnored() { return m_textChangesWhileIgnored; }
     int textChangesWhileNotIgnored() { return m_textChangesWhileNotIgnored; }
     int getUserGestureNotificationsCount() { return m_userGestureNotificationsCount; }
 
 private:
     bool m_ignoreTextChanges;
+    int m_textChangesFromUserGesture;
     int m_textChangesWhileIgnored;
     int m_textChangesWhileNotIgnored;
     int m_userGestureNotificationsCount;
@@ -2499,6 +2506,23 @@ TEST_F(WebViewTest, FirstUserGestureObservedGestureTap)
     EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target")));
 
     EXPECT_EQ(1, client.getUserGestureNotificationsCount());
+    frame->setAutofillClient(0);
+}
+
+TEST_F(WebViewTest, CompositionIsUserGesture)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("input_field_populated.html"));
+    WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "input_field_populated.html");
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
+    MockAutofillClient client;
+    frame->setAutofillClient(&client);
+    webView->setInitialFocus(false);
+
+    EXPECT_TRUE(webView->setComposition(WebString::fromUTF8(std::string("hello").c_str()), WebVector<WebCompositionUnderline>(), 3, 3));
+    EXPECT_EQ(1, client.textChangesFromUserGesture());
+    EXPECT_FALSE(UserGestureIndicator::processingUserGesture());
+    EXPECT_TRUE(frame->hasMarkedText());
+
     frame->setAutofillClient(0);
 }
 
