@@ -790,7 +790,7 @@ bool Node::shouldHaveFocusAppearance() const
 bool Node::isInert() const
 {
     const HTMLDialogElement* dialog = document().activeModalDialog();
-    if (dialog && this != document() && !LayoutTreeBuilderTraversal::contains(*dialog, *this))
+    if (dialog && this != document() && (!canParticipateInComposedTree() || !ComposedTreeTraversal::containsIncludingPseudoElement(*dialog, *this)))
         return true;
     return document().ownerElement() && document().ownerElement()->isInert();
 }

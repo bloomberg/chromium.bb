@@ -59,15 +59,6 @@ ContainerNode* parent(const Node& node, ParentDetails* details)
     return ComposedTreeTraversal::parent(node, details);
 }
 
-bool contains(const ContainerNode& container, const Node& node)
-{
-    for (const Node* current = &node; current; current = LayoutTreeBuilderTraversal::parent(*current)) {
-        if (current == &container)
-            return true;
-    }
-    return false;
-}
-
 Node* nextSibling(const Node& node)
 {
     if (node.isBeforePseudoElement()) {

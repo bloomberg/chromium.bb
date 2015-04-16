@@ -92,6 +92,8 @@ public:
         return container == node || isDescendantOf(node, container);
     }
 
+    static bool containsIncludingPseudoElement(const ContainerNode&, const Node&);
+
     // Returns a common ancestor of |nodeA| and |nodeB| if exists, otherwise
     // returns |nullptr|.
     static Node* commonAncestor(const Node& nodeA, const Node& nodeB);

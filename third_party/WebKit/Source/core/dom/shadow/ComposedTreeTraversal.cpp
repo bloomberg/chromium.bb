@@ -119,6 +119,7 @@ Node* ComposedTreeTraversal::traverseBackToYoungerShadowRoot(const Node& node, T
 // https://bugs.webkit.org/show_bug.cgi?id=90415
 ContainerNode* ComposedTreeTraversal::traverseParent(const Node& node, ParentTraversalDetails* details)
 {
+    // TODO(hayato): Stop this hack for a pseudo element because a pseudo element is not a child of its parentOrShadowHostNode() in a composed tree.
     if (node.isPseudoElement())
         return node.parentOrShadowHostNode();
 
@@ -168,6 +169,19 @@ Node* ComposedTreeTraversal::nextSkippingChildren(const Node& node)
     if (Node* nextSibling = traverseNextSibling(node))
         return nextSibling;
     return traverseNextAncestorSibling(node);
+}
+
+bool ComposedTreeTraversal::containsIncludingPseudoElement(const ContainerNode& container, const Node& node)
+{
+    assertPrecondition(container);
+    assertPrecondition(node);
+    // This can be slower than ComposedTreeTraversal::contains() because we
+    // can't early exit even when container doesn't have children.
+    for (const Node* current = &node; current; current = traverseParent(*current)) {
+        if (current == &container)
+            return true;
+    }
+    return false;
 }
 
 Node* ComposedTreeTraversal::previousSkippingChildren(const Node& node)

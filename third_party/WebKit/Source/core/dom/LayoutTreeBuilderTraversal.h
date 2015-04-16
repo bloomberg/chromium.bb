@@ -58,7 +58,6 @@ private:
 };
 
 CORE_EXPORT ContainerNode* parent(const Node&, ParentDetails* = 0);
-bool contains(const ContainerNode&, const Node&);
 CORE_EXPORT Node* firstChild(const Node&);
 CORE_EXPORT Node* nextSibling(const Node&);
 Node* previousSibling(const Node&);
