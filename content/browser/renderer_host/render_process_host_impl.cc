@@ -2250,10 +2250,8 @@ void RenderProcessHostImpl::SetBackgrounded(bool backgrounded) {
   // get coverage on the perf waterfall.
   base::FieldTrial* trial =
       base::FieldTrialList::Find("BackgroundRendererProcesses");
-  if (!trial || (trial->group_name() != "Disallow" &&
-                 trial->group_name() != "AllowBackgroundModeFromRenderer")) {
+  if (!trial || trial->group_name() != "Disallow")
     child_process_launcher_->SetProcessBackgrounded(backgrounded);
-  }
 #else
   // Control the background state from the browser process, otherwise the task
   // telling the renderer to "unbackground" itself may be preempted by other

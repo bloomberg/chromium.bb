@@ -689,23 +689,6 @@ void ChildThreadImpl::OnProcessBackgrounded(bool background) {
   if (background)
     timer_slack = base::TIMER_SLACK_MAXIMUM;
   base::MessageLoop::current()->SetTimerSlack(timer_slack);
-
-#ifdef OS_WIN
-  // Windows Vista+ has a fancy process backgrounding mode that can only be set
-  // from within the process. This used to be how chrome set its renderers into
-  // background mode on Windows but was removed due to http://crbug.com/398103.
-  // As we experiment with bringing back some other form of background mode for
-  // hidden renderers, add a bucket to allow us to trigger this undesired method
-  // of setting background state in order to confirm that the metrics which were
-  // added to prevent regressions on the aforementioned issue indeed catch such
-  // regressions and are thus a reliable way to confirm that our latest proposal
-  // doesn't cause such issues. TODO(gab): Remove this once the experiment is
-  // over (http://crbug.com/458594).
-  base::FieldTrial* trial =
-      base::FieldTrialList::Find("BackgroundRendererProcesses");
-  if (trial && trial->group_name() == "AllowBackgroundModeFromRenderer")
-    base::Process::Current().SetProcessBackgrounded(background);
-#endif  // OS_WIN
 }
 
 }  // namespace content
