@@ -19,6 +19,7 @@ android_library("chrome_java_test_support") {
     "//net/android:net_java_test_support",
     "//sync/android:sync_java",
     "//sync:sync_java_test_support",
+    "//third_party/jsr-305:jsr_305_javalib",
     "//ui/android:ui_java",
   ]
 }
