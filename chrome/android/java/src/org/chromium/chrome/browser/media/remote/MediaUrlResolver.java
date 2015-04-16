@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.media.remote;
 
-import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.text.TextUtils;
@@ -12,7 +11,6 @@ import android.util.Log;
 
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.ChromeSwitches;
-import org.chromium.chrome.browser.ChromiumApplication;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -93,14 +91,17 @@ public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Res
     private final Delegate mDelegate;
     private boolean mDebug;
 
+    private final String mUserAgent;
+
     /**
      * The constructor
-     * @param context the context to use to resolve the URL
      * @param delegate The customer for this URL resolver.
+     * @param userAgent The browser user agent
      */
-    public MediaUrlResolver(Context context, Delegate delegate) {
+    public MediaUrlResolver(Delegate delegate, String userAgent) {
         mDebug = CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_CAST_DEBUG_LOGS);
         mDelegate = delegate;
+        mUserAgent = userAgent;
     }
 
     @Override
@@ -108,7 +109,6 @@ public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Res
         Uri uri = mDelegate.getUri();
         String url = uri.toString();
         String cookies = mDelegate.getCookies();
-        String userAgent = ChromiumApplication.getBrowserUserAgent();
         // URL may already be partially percent encoded; double percent encoding will break
         // things, so decode it before sanitizing it.
         String sanitizedUrl = sanitizeUrl(Uri.decode(url));
@@ -126,7 +126,7 @@ public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Res
                 if (!TextUtils.isEmpty(cookies)) {
                     urlConnection.setRequestProperty(COOKIES_HEADER_NAME, cookies);
                 }
-                urlConnection.setRequestProperty(USER_AGENT_HEADER_NAME, userAgent);
+                urlConnection.setRequestProperty(USER_AGENT_HEADER_NAME, mUserAgent);
                 urlConnection.setRequestProperty(RANGE_HEADER_NAME, RANGE_HEADER_VALUE);
 
                 // This triggers resolving the URL and receiving the headers.
@@ -169,10 +169,12 @@ public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Res
         if (url.isEmpty()) return false;
 
         // HLS media requires Cors headers.
-        if ((headers == null || isEnhancedMedia(url) && !headers.containsKey(CORS_HEADER_NAME))) {
+        if (isEnhancedMedia(url) && (headers == null || !headers.containsKey(CORS_HEADER_NAME))) {
             if (mDebug) Log.d(TAG, "HLS stream without CORs header: " + url);
             return false;
         }
+        // TODO(aberent) Return false for media types that are not playable on Chromecast
+        // (getMediaType would need to know about more types to implement this).
         return true;
     }
 

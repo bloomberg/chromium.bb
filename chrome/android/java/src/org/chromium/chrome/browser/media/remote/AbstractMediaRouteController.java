@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.media.remote;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Handler;
 import android.support.v7.media.MediaControlIntent;
 import android.support.v7.media.MediaItemStatus;
@@ -579,4 +580,19 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
         if (mMediaStateListener == null) return null;
         return mMediaStateListener.getPosterBitmap();
     }
+
+    // TODO(aberent): Temp to change args while avoiding need for two sided patch for YT.
+    @Override
+    public void setDataSource(Uri uri, String cookies, String userAgent) {
+        setDataSource(uri, cookies);
+    };
+
+    /**
+     * Temp default version to allow override in YouTubeMediaRouteController, while not
+     * requiring it in DefaultMediaRouteController.
+     * TODO(aberent): Fix YT and remove.
+     * @param uri
+     * @param cookies
+     */
+    public void setDataSource(Uri uri, String cookies) {};
 }

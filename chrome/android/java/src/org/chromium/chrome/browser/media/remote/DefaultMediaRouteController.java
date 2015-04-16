@@ -159,6 +159,8 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
                 }
             };
 
+    private String mUserAgent;
+
     /**
      * Default and only constructor.
      */
@@ -1013,10 +1015,11 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
     }
 
     @Override
-    public void setDataSource(Uri uri, String cookies) {
+    public void setDataSource(Uri uri, String cookies, String userAgent) {
         if (mDebug) Log.d(TAG, "setDataSource called, uri = " + uri);
         mLocalVideoUri = uri;
         mLocalVideoCookies = cookies;
+        mUserAgent = userAgent;
     }
 
     @Override
@@ -1031,7 +1034,7 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
 
         // Create a new MediaUrlResolver since the previous one may still be running despite the
         // cancel() call.
-        mMediaUrlResolver = new MediaUrlResolver(getContext(), mMediaUrlResolverDelegate);
+        mMediaUrlResolver = new MediaUrlResolver(mMediaUrlResolverDelegate, mUserAgent);
 
         mStartPositionMillis = startPositionMillis;
         mMediaUrlResolver.execute();

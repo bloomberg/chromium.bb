@@ -279,7 +279,7 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
     @CalledByNative
     protected boolean setDataSource(
             Context context, String url, String cookies, String userAgent, boolean hideUrlLog) {
-        mRouteController.setDataSource(Uri.parse(url), cookies);
+        mRouteController.setDataSource(Uri.parse(url), cookies, userAgent);
         return true;
     }
 

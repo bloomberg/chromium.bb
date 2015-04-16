@@ -175,8 +175,9 @@ public interface MediaRouteController extends TransportControl.Listener {
      * {@link MediaUrlResolver}.
      *
      * @param uri The video URL.
+     * @param userAgent The browser user agent.
      */
-    public void setDataSource(Uri uri, String cookies);
+    public void setDataSource(Uri uri, String cookies, String userAgent);
 
     /**
      * Setup this object to discover new routes and register the necessary players.
