@@ -2311,6 +2311,20 @@ TEST_F(CookieMonsterTest, ComputeCookieDiff) {
   EXPECT_FALSE(IsCookieInList(cookie7_with_new_path, cookies_to_delete));
 }
 
+// Check that DeleteAll does flush (as a sanity check that flush_count()
+// works).
+TEST_F(CookieMonsterTest, DeleteAll) {
+  scoped_refptr<FlushablePersistentStore> store(new FlushablePersistentStore());
+  scoped_refptr<CookieMonster> cm(new CookieMonster(store.get(), NULL));
+  cm->SetPersistSessionCookies(true);
+
+  EXPECT_TRUE(SetCookie(cm.get(), url_google_, "X=Y; path=/"));
+
+  ASSERT_EQ(0, store->flush_count());
+  EXPECT_EQ(1, DeleteAll(cm.get()));
+  EXPECT_EQ(1, store->flush_count());
+}
+
 TEST_F(CookieMonsterTest, HistogramCheck) {
   scoped_refptr<CookieMonster> cm(new CookieMonster(NULL, NULL));
   // Should match call in InitializeHistograms, but doesn't really matter
