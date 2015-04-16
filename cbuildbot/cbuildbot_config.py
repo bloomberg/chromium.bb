@@ -1444,6 +1444,7 @@ _arm_internal_release_boards = frozenset([
   'veyron_pinky',
   'veyron_rialto',
   'veyron_speedy',
+  'veyron_thea',
   'whirlwind',
 ])
 
@@ -2959,7 +2960,9 @@ _AddGroupConfig('veyron-b', 'veyron_gus', (
 
 _AddGroupConfig('veyron-c', 'veyron_brain', (
     'veyron_danger',
+    'veyron_thea',
     ),
+    important=False,
 )
 
 # jecht-based boards
@@ -3257,6 +3260,7 @@ _waterfall_config_map = {
       'pineview-freon-release-group',
       'rambi-d-release-group',
       'veyron-b-release-group',
+      'veyron-c-release-group',
 
       # Experimental Canaries
       'bobcat-release',
