@@ -53,7 +53,7 @@ var PointerOverlay = options.PointerOverlay;
 var PowerOverlay = options.PowerOverlay;
 var UIAccountTweaks = uiAccountTweaks.UIAccountTweaks;
 </if>
-<if expr="use_nss">
+<if expr="use_nss_certs">
 <include src="certificate_tree.js">
 <include src="certificate_manager.js">
 <include src="certificate_restore_overlay.js">

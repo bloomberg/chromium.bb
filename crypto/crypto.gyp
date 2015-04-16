@@ -255,7 +255,7 @@
         },
       ],
     }],
-    ['use_nss==1', {
+    ['use_nss_certs==1', {
       'targets': [
         {
           'target_name': 'crypto_test_support',
@@ -273,7 +273,7 @@
             'scoped_test_system_nss_key_slot.h',
           ],
           'conditions': [
-            ['use_nss==0', {
+            ['use_nss_certs==0', {
               'sources!': [
                 'scoped_test_nss_db.cc',
                 'scoped_test_nss_db.h',
@@ -289,7 +289,7 @@
             }],
           ],
         }
-      ]}, {  # use_nss==0
+      ]}, {  # use_nss_certs==0
       'targets': [
         {
           'target_name': 'crypto_test_support',

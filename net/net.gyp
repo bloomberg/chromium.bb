@@ -179,7 +179,7 @@
             'net_test_jni_headers',
           ],
         }],
-        [ 'use_nss != 1', {
+        [ 'use_nss_certs != 1', {
           'sources!': [
             'ssl/client_cert_store_chromeos_unittest.cc',
             'ssl/client_cert_store_nss_unittest.cc',
@@ -607,7 +607,7 @@
             '../third_party/protobuf/protobuf.gyp:py_proto',
           ],
         }],
-        ['use_openssl == 0 and (use_nss == 1 or OS == "ios")', {
+        ['use_openssl == 0 and (use_nss_certs == 1 or OS == "ios")', {
           'conditions': [
             [ 'desktop_linux == 1 or chromeos == 1', {
               'dependencies': [
@@ -651,7 +651,7 @@
               'dns/mock_mdns_socket_factory.h'
             ]
         }],
-        [ 'use_nss != 1', {
+        [ 'use_nss_certs != 1', {
             'sources!': [
               'test/cert_test_util_nss.cc',
             ],

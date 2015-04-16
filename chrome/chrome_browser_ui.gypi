@@ -2930,7 +2930,7 @@
             '../ui/gl/gl.gyp:gl',
           ],
         }],
-        ['use_nss==1', {
+        ['use_nss_certs==1', {
           'sources': [ '<@(chrome_browser_ui_nss_sources)' ],
         }],
         ['enable_themes==0', {

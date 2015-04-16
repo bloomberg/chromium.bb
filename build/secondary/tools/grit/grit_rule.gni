@@ -146,7 +146,7 @@ if (use_ash) {
 if (use_nss_certs) {
   grit_defines += [
     "-D",
-    "use_nss",
+    "use_nss_certs",
   ]
 }
 

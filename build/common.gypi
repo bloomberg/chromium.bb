@@ -682,8 +682,14 @@
 
         # NSS usage.
         ['(OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris") and use_openssl==0', {
+          'use_nss_certs%': 1,
+          # TODO(davidben): use_nss is deprecated and will be removed. See
+          # https://crbug.com/462040.
           'use_nss%': 1,
         }, {
+          'use_nss_certs%': 0,
+          # TODO(davidben): use_nss is deprecated and will be removed. See
+          # https://crbug.com/462040.
           'use_nss%': 0,
         }],
 
@@ -1086,6 +1092,7 @@
     'use_openssl%': '<(use_openssl)',
     'use_openssl_certs%': '<(use_openssl_certs)',
     'use_nss%': '<(use_nss)',
+    'use_nss_certs%': '<(use_nss_certs)',
     'use_udev%': '<(use_udev)',
     'os_bsd%': '<(os_bsd)',
     'os_posix%': '<(os_posix)',
@@ -2030,8 +2037,8 @@
       ['use_ash==1', {
         'grit_defines': ['-D', 'use_ash'],
       }],
-      ['use_nss==1', {
-        'grit_defines': ['-D', 'use_nss'],
+      ['use_nss_certs==1', {
+        'grit_defines': ['-D', 'use_nss_certs'],
       }],
       ['use_ozone==1', {
         'grit_defines': ['-D', 'use_ozone'],
@@ -3008,7 +3015,8 @@
       ['<(use_glib)==1 and >(nacl_untrusted_build)==0', {
         'defines': ['USE_GLIB=1'],
       }],
-      ['<(use_nss)==1 and >(nacl_untrusted_build)==0', {
+      ['<(use_nss_certs)==1 and >(nacl_untrusted_build)==0', {
+        # TODO(davidben): Rename this to USE_NSS_CERTS. https://crbug.com/462040
         'defines': ['USE_NSS=1'],
       }],
       ['<(chromeos)==1 and >(nacl_untrusted_build)==0', {

@@ -3423,7 +3423,7 @@
             '../components/components.gyp:crash_component',
           ],
         }],
-        ['use_nss==1', {
+        ['use_nss_certs==1', {
           'sources': [ '<@(chrome_browser_nss_sources)' ],
           'conditions': [
             ['chromeos==1', {

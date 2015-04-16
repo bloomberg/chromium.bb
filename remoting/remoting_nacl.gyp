@@ -12,7 +12,7 @@
     'protoc': '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
     'proto_out_base': '<(SHARED_INTERMEDIATE_DIR)/protoc_out',
     'proto_out_dir': '<(proto_out_base)/remoting/proto',
-    'use_nss': 0,
+    'use_nss_certs': 0,
     'nacl_untrusted_build': 1,
     'chromium_code': 1,
   },
