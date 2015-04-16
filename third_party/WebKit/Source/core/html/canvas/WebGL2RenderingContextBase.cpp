@@ -548,6 +548,19 @@ void WebGL2RenderingContextBase::vertexAttribIPointer(GLuint index, GLint size, 
 {
     if (isContextLost())
         return;
+
+    switch (type) {
+    case GL_BYTE:
+    case GL_UNSIGNED_BYTE:
+    case GL_SHORT:
+    case GL_UNSIGNED_SHORT:
+    case GL_INT:
+    case GL_UNSIGNED_INT:
+        break;
+    default:
+        synthesizeGLError(GL_INVALID_ENUM, "vertexAttribIPointer", "invalid type");
+        return;
+    }
     if (index >= m_maxVertexAttribs) {
         synthesizeGLError(GL_INVALID_VALUE, "vertexAttribIPointer", "index out of range");
         return;
