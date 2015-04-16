@@ -38,12 +38,11 @@ var BandwidthView = (function() {
   // IDs for special HTML elements in bandwidth_view.html
   BandwidthView.MAIN_BOX_ID = 'bandwidth-view-tab-content';
   BandwidthView.ENABLED_ID = 'data-reduction-proxy-enabled';
-  BandwidthView.PRIMARY_PROXY_ID = 'data-reduction-proxy-primary';
-  BandwidthView.SECONDARY_PROXY_ID = 'data-reduction-proxy-secondary';
+  BandwidthView.PROXY_CONFIG_ID = 'data-reduction-proxy-config';
   BandwidthView.PROBE_STATUS_ID = 'data-reduction-proxy-probe-status';
-  BandwidthView.BYPASS_STATE_ID = 'data-reduction-proxy-bypass-state';
   BandwidthView.BYPASS_STATE_CONTAINER_ID =
       'data-reduction-proxy-bypass-state-container';
+  BandwidthView.BYPASS_STATE_ID = 'data-reduction-proxy-bypass-state-details';
   BandwidthView.EVENTS_TBODY_ID = 'data-reduction-proxy-view-events-tbody';
   BandwidthView.EVENTS_UL = 'data-reduction-proxy-view-events-list';
   BandwidthView.STATS_BOX_ID = 'bandwidth-stats-table';
@@ -96,8 +95,7 @@ var BandwidthView = (function() {
         $(BandwidthView.ENABLED_ID).innerText = 'Enabled';
         $(BandwidthView.PROBE_STATUS_ID).innerText =
             info.probe != null ? info.probe : 'N/A';
-        this.last_bypass_ = info.last_bypass != null ?
-            this.parseBypassEvent_(info.last_bypass) : null;
+        this.last_bypass_ = info.last_bypass;
         this.data_reduction_proxy_config_ = info.proxy_config.params;
       } else {
         $(BandwidthView.ENABLED_ID).innerText = 'Disabled';
@@ -120,24 +118,7 @@ var BandwidthView = (function() {
         detailsCell.className = 'data-reduction-proxy-view-events-details';
         var eventTime = timeutil.convertTimeTicksToDate(event.time);
         timeutil.addNodeWithDate(timeCell, eventTime);
-
-        switch (event.type) {
-          case EventType.DATA_REDUCTION_PROXY_ENABLED:
-            this.buildEnabledRow_(event, actionCell, detailsCell);
-            break;
-          case EventType.DATA_REDUCTION_PROXY_CANARY_REQUEST:
-            this.buildProbeRow_(event, actionCell, detailsCell);
-            break;
-          case EventType.DATA_REDUCTION_PROXY_CANARY_RESPONSE_RECEIVED:
-            this.buildProbeResponseRow_(event, actionCell, detailsCell);
-            break;
-          case EventType.DATA_REDUCTION_PROXY_BYPASS_REQUESTED:
-            this.buildBypassRow_(event, actionCell, detailsCell);
-            break;
-          case EventType.DATA_REDUCTION_PROXY_FALLBACK:
-            this.buildFallbackRow_(event, actionCell, detailsCell);
-            break;
-        }
+        this.buildEventRow_(event, actionCell, detailsCell);
       }
 
       return true;
@@ -213,204 +194,78 @@ var BandwidthView = (function() {
     },
 
     /**
-     * Renders a data reduction proxy enabled/disabled event into the event
-     * tbody.
+     * Renders a Data Reduction Proxy event into the event tbody
      */
-    buildEnabledRow_: function(event, actionCell, detailsCell) {
-      if (event.params.enabled == 1) {
-        addTextNode(actionCell, 'Proxy: Enabled');
-        var proxyWrapper = addNode(detailsCell, 'div');
-        addNodeWithText(proxyWrapper, 'div', 'Proxy configuration:');
-
-        if (event.params.primary_origin != null &&
-            event.params.primary_origin.trim() != '') {
-          var proxyText = 'Primary: ' + event.params.primary_origin;
-          if (event.params.primary_restricted != null &&
-              event.params.primary_restricted) {
-            proxyText += ' (restricted)';
-          }
-          addNodeWithText(proxyWrapper, 'div', proxyText);
-        }
-
-        if (event.params.fallback_origin != null &&
-            event.params.fallback_origin.trim() != '') {
-          var proxyText = 'Fallback: ' + event.params.fallback_origin;
-          if (event.params.fallback_restricted != null &&
-              event.params.fallback_restricted) {
-            proxyText += ' (restricted)';
-          }
-          addNodeWithText(proxyWrapper, 'div', proxyText);
-        }
-
-        if (event.params.ssl_origin != null &&
-            event.params.ssl_origin.trim() != '') {
-          addNodeWithText(proxyWrapper, 'div',
-              'SSL: ' + event.params.ssl_origin);
-        }
+    buildEventRow_: function(event, actionCell, detailsCell) {
+      if (event.type == EventType.DATA_REDUCTION_PROXY_ENABLED &&
+          event.params.enabled == 0) {
+        addTextNode(actionCell, 'DISABLED');
       } else {
-        addTextNode(actionCell, 'Proxy: Disabled');
-      }
-    },
-
-    /**
-     * Renders a Data Reduction Proxy probe request event into the event
-     * tbody.
-     */
-    buildProbeRow_: function(event, actionCell, detailsCell) {
-      if (event.phase == EventPhase.PHASE_BEGIN) {
-        addTextNode(actionCell, 'Probe request sent');
-        addTextNode(detailsCell, 'URL: ' + event.params.url);
-      } else if (event.phase == EventPhase.PHASE_END) {
-        addTextNode(actionCell, 'Probe request completed');
-        if (event.params.net_error == 0) {
-          addTextNode(detailsCell, 'Result: OK');
-        } else {
-          addTextNode(detailsCell,
-                      'Result: ' + netErrorToString(event.params.net_error));
+        var actionText =
+            EventTypeNames[event.type].replace('DATA_REDUCTION_PROXY_', '');
+        if (event.phase == EventPhase.PHASE_BEGIN ||
+            event.phase == EventPhase.PHASE_END) {
+          actionText = actionText + ' (' +
+              getKeyWithValue(EventPhase, event.phase)
+                  .replace('PHASE_', '') + ')';
         }
+
+        addTextNode(actionCell, actionText);
+        this.createEventTable_(event.params, detailsCell);
       }
-    },
-
-    /**
-     * Renders a Data Reduction Proxy probe response event into the event
-     * tbody.
-     */
-    buildProbeResponseRow_: function(event, actionCell, detailsCell) {
-      addTextNode(actionCell, 'Probe response received');
-    },
-
-    /**
-     * Renders a data reduction proxy bypass event into the event tbody.
-     */
-    buildBypassRow_: function(event, actionCell, detailsCell) {
-      var parsedBypass = this.parseBypassEvent_(event);
-
-      addTextNode(actionCell,
-                  'Bypass received (' + parsedBypass.bypass_reason + ')');
-      var bypassWrapper = addNode(detailsCell, 'div');
-      addNodeWithText(bypassWrapper, 'div', 'URL: ' + parsedBypass.origin_url);
-      addNodeWithText(
-          bypassWrapper, 'div',
-          'Bypassed for ' + parsedBypass.bypass_duration_seconds + ' seconds.');
-    },
-
-    /**
-     * Renders a data reduction proxy fallback event into the event tbody.
-     */
-    buildFallbackRow_: function(event, actionCell, detailsCell) {
-      addTextNode(actionCell, 'Proxy fallback');
-    },
-
-    /**
-     * Parses a data reduction proxy bypass event for use in the summary and
-     * in the event tbody.
-     */
-    parseBypassEvent_: function(event) {
-      var reason;
-      if (event.params.action != null) {
-        reason = event.params.action;
-      } else {
-        reason = getKeyWithValue(
-            DataReductionProxyBypassEventType, event.params.bypass_type);
-      }
-
-      var parsedBypass = {
-        bypass_reason: reason,
-        origin_url: event.params.url,
-        bypass_duration_seconds: event.params.bypass_duration_seconds,
-        bypass_expiration: event.params.expiration,
-      };
-
-      return parsedBypass;
     },
 
     /**
      * Updates the data reduction proxy summary block.
      */
     updateDataReductionProxyConfig_: function() {
-      $(BandwidthView.PRIMARY_PROXY_ID).innerHTML = '';
-      $(BandwidthView.SECONDARY_PROXY_ID).innerHTML = '';
+      $(BandwidthView.PROXY_CONFIG_ID).innerHTML = '';
       setNodeDisplay($(BandwidthView.BYPASS_STATE_CONTAINER_ID), false);
 
       if (this.data_reduction_proxy_config_) {
-        var primaryProxy = '';
-        var secondaryProxy = '';
         var hasBypassedProxy = false;
         var now = timeutil.getCurrentTimeTicks();
 
         if (this.last_bypass_ &&
-            this.hasTimePassedLogTime_(+this.last_bypass_.bypass_expiration)) {
-          var input = new JsEvalContext(this.last_bypass_);
-          jstProcess(input, $(BandwidthView.BYPASS_STATE_CONTAINER_ID));
+            this.hasTimePassedLogTime_(+this.last_bypass_.params.expiration)) {
+          // Best effort on iterating the config to search for a bad proxy.
+          // A server could exist in a string member of
+          // data_reduction_proxy_config_ or within an array of servers in an
+          // array member of data_reduction_proxy_config_. As such, search
+          // through all string members and string arrays.
+          for (var key in this.data_reduction_proxy_config_) {
+            var value = this.data_reduction_proxy_config_[key];
+            if (typeof value == 'string') {
+              if (this.isMarkedAsBad_(value)) {
+                hasBypassedProxy = true;
+                break;
+              }
+            } else if (value instanceof Array) {
+              for (var index = 1; index < value.length; index++) {
+                if (this.isMarkedAsBad_(value[index])) {
+                  hasBypassedProxy = true;
+                }
+              }
+
+              if (hasBypassedProxy) {
+                break;
+              }
+            }
+          }
+        }
+
+        if (hasBypassedProxy) {
+          this.createEventTable_(this.last_bypass_.params,
+                                 $(BandwidthView.BYPASS_STATE_ID));
         } else {
-          var input = new JsEvalContext();
-          jstProcess(input, $(BandwidthView.BYPASS_STATE_CONTAINER_ID));
+          $(BandwidthView.BYPASS_STATE_ID).innerHtml = '';
         }
 
-        if (this.data_reduction_proxy_config_.ssl_origin) {
-          if (this.isMarkedAsBad_(this.data_reduction_proxy_config_.ssl_origin))
-            hasBypassedProxy = true;
-
-          primaryProxy = 'HTTPS Tunnel: ' + this.buildProxyString_(
-              this.data_reduction_proxy_config_.ssl_origin, false);
-        }
-
-        if (this.data_reduction_proxy_config_.primary_origin) {
-          if (this.isMarkedAsBad_(
-              this.data_reduction_proxy_config_.primary_origin))
-            hasBypassedProxy = true;
-
-          var proxyString = this.buildProxyString_(
-              this.data_reduction_proxy_config_.primary_origin,
-              this.data_reduction_proxy_config_.primary_restricted);
-
-          if (primaryProxy == '')
-            primaryProxy = proxyString;
-          else
-            secondaryProxy = proxyString;
-        }
-
-        if (this.data_reduction_proxy_config_.fallback_origin) {
-          if (this.isMarkedAsBad_(
-              this.data_reduction_proxy_config_.fallback_origin))
-            hasBypassedProxy = true;
-
-          var proxyString = this.buildProxyString_(
-              this.data_reduction_proxy_config_.fallback_origin,
-              this.data_reduction_proxy_config_.fallback_restricted);
-
-          if (primaryProxy == '')
-            primaryProxy = proxyString;
-          else if (secondaryProxy == '')
-            secondaryProxy = proxyString;
-        }
-
-        $(BandwidthView.PRIMARY_PROXY_ID).innerText = primaryProxy;
-        $(BandwidthView.SECONDARY_PROXY_ID).innerText = secondaryProxy;
-        if (hasBypassedProxy)
-          setNodeDisplay($(BandwidthView.BYPASS_STATE_CONTAINER_ID), true);
+        this.createEventTable_(this.data_reduction_proxy_config_,
+                               $(BandwidthView.PROXY_CONFIG_ID));
+        setNodeDisplay($(BandwidthView.BYPASS_STATE_CONTAINER_ID),
+                       hasBypassedProxy);
       }
-    },
-
-    /**
-     * Takes a data reduction proxy configuration and renders to a friendly
-     * string.
-     */
-    buildProxyString_: function(proxy, restricted) {
-      var markedAsBad = this.isMarkedAsBad_(proxy);
-      var proxyString = '';
-      if (restricted) {
-        proxyString += proxy + ' (RESTRICTED)';
-      } else {
-        proxyString += proxy;
-        if (markedAsBad) {
-          proxyString += ' (BYPASSED)';
-        } else {
-          proxyString += ' (ACTIVE)';
-        }
-      }
-
-      return proxyString;
     },
 
     /**
@@ -441,6 +296,36 @@ var BandwidthView = (function() {
       }
 
       return timeutil.convertTimeTicksToTime(timeTicks) > logTime;
+    },
+
+    /**
+     * Creates a table of the object obj. Certain keys are special cased for
+     * ease of readability.
+     */
+    createEventTable_: function(obj, parentNode) {
+      if (Object.keys(obj).length > 0) {
+        var tableNode = addNode(parentNode, 'table');
+        tableNode.className = 'borderless-table';
+        for (var key in obj) {
+          var value = obj[key];
+          if (value != null && value.toString() != '') {
+            if (key == 'net_error') {
+              if (value == 0) {
+                value = 'OK';
+              } else {
+                value = netErrorToString(value);
+              }
+            } else if (key == 'bypass_type') {
+              value = getKeyWithValue(DataReductionProxyBypassEventType, value);
+            } else if (key == 'expiration') {
+              value = timeutil.convertTimeTicksToDate(value);
+            }
+            var tableRow = addNode(tableNode, 'tr');
+            addNodeWithText(tableRow, 'td', key);
+            addNodeWithText(tableRow, 'td', value);
+          }
+        }
+      }
     }
   };
 
