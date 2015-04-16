@@ -313,7 +313,7 @@ def main():
 
   parser = argparse.ArgumentParser(description='Build Clang.')
   parser.add_argument('--no-clobber', dest='clobber', action='store_false')
-  parser.add_argument('--tools', nargs='*', default=[])
+  parser.add_argument('--tools', nargs='*', default=['plugins'])
   # For now, this flag is only used for the non-Windows flow, but argparser gets
   # mad if it sees a flag it doesn't recognize.
   parser.add_argument('--if-needed', action='store_true')

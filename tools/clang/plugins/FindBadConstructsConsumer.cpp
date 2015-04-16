@@ -559,8 +559,14 @@ FindBadConstructsConsumer::CheckRecordForRefcountIssue(
 // Adds either a warning or error, based on the current handling of
 // -Werror.
 DiagnosticsEngine::Level FindBadConstructsConsumer::getErrorLevel() {
+#if defined(LLVM_ON_WIN32)
+  // Only warn on Windows, since there are a lot of potential pre-existing
+  // issues.
+  return DiagnosticsEngine::Warning;
+#else
   return diagnostic().getWarningsAsErrors() ? DiagnosticsEngine::Error
                                             : DiagnosticsEngine::Warning;
+#endif
 }
 
 // Returns true if |base| specifies one of the Chromium reference counted
