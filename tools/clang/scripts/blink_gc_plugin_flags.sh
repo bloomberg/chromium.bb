@@ -25,8 +25,10 @@ for arg in "$@"; do
     FLAGS="$FLAGS $PREFIX warn-raw-ptr"
   elif [[ "$arg" = "warn-unneeded-finalizer=1" ]]; then
     FLAGS="$FLAGS $PREFIX warn-unneeded-finalizer"
+  elif [[ "$arg" = custom_clang_lib_path=* ]]; then
+    CLANG_LIB_PATH="$(cd "${arg#*=}" && echo $PWD)"
   fi
 done
 
-echo -Xclang -load -Xclang $CLANG_LIB_PATH/libBlinkGCPlugin.$LIBSUFFIX \
+echo -Xclang -load -Xclang \"$CLANG_LIB_PATH/libBlinkGCPlugin.$LIBSUFFIX\" \
   -Xclang -add-plugin -Xclang blink-gc-plugin $FLAGS
