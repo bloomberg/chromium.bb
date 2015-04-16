@@ -26,8 +26,6 @@ const int64 kDefaultTtl = 600000;  // 10 minutes
 
 namespace copresence {
 
-void IgnoreDirectiveUpdates(const std::vector<Directive>& /* directives */) {}
-
 const Directive CreateDirective(const std::string& publish_id,
                                 const std::string& subscribe_id,
                                 const std::string& token,
@@ -105,7 +103,6 @@ class DirectiveHandlerTest : public testing::Test {
       : whispernet_client_(new audio_modem::StubWhispernetClient),
         audio_handler_(new FakeAudioDirectiveHandler),
         directive_handler_(
-            base::Bind(&IgnoreDirectiveUpdates),
             make_scoped_ptr<AudioDirectiveHandler>(audio_handler_)) {}
 
  protected:

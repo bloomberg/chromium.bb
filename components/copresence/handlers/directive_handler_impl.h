@@ -20,10 +20,10 @@ namespace copresence {
 // The directive handler manages transmit and receive directives.
 class DirectiveHandlerImpl final : public DirectiveHandler {
  public:
+  DirectiveHandlerImpl();
   explicit DirectiveHandlerImpl(
       const DirectivesCallback& update_directives_callback);
   DirectiveHandlerImpl(
-      const DirectivesCallback& update_directives_callback,
       scoped_ptr<AudioDirectiveHandler> audio_handler);
   ~DirectiveHandlerImpl() override;
 
