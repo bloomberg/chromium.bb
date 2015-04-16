@@ -44,8 +44,6 @@ public:
     virtual void setCookie(const WebURL&, const WebURL& firstPartyForCookies, const WebString& cookie) { }
     virtual WebString cookies(const WebURL&, const WebURL& firstPartyForCookies) { return WebString(); }
     virtual WebString cookieRequestHeaderFieldValue(const WebURL&, const WebURL& firstPartyForCookies) { return WebString(); }
-    virtual void rawCookies(const WebURL&, const WebURL& firstPartyForCookies, WebVector<WebCookie>&) { }
-    virtual void deleteCookie(const WebURL&, const WebString& cookieName) { }
     virtual bool cookiesEnabled(const WebURL&, const WebURL& firstPartyForCookies) { return true; }
 
 protected:
