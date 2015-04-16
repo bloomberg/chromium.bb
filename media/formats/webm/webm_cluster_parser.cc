@@ -25,7 +25,10 @@ const uint16_t WebMClusterParser::kOpusFrameDurationsMu[] = {
 enum {
   // Limits the number of MEDIA_LOG() calls in the path of reading encoded
   // duration to avoid spamming for corrupted data.
-  kMaxDurationLogs = 10,
+  kMaxDurationErrorLogs = 10,
+  // Limits the number of MEDIA_LOG() calls warning the user that buffer
+  // durations have been estimated.
+  kMaxDurationEstimateLogs = 10,
 };
 
 WebMClusterParser::WebMClusterParser(
@@ -185,7 +188,8 @@ base::TimeDelta WebMClusterParser::ReadOpusDuration(const uint8_t* data,
       base::TimeDelta::FromMilliseconds(120);
 
   if (size < 1) {
-    LIMITED_MEDIA_LOG(DEBUG, log_cb_, num_duration_errors_, kMaxDurationLogs)
+    LIMITED_MEDIA_LOG(DEBUG, log_cb_, num_duration_errors_,
+                      kMaxDurationErrorLogs)
         << "Invalid zero-byte Opus packet; demuxed block duration may be "
            "imprecise.";
     return kNoTimestamp();
@@ -207,7 +211,7 @@ base::TimeDelta WebMClusterParser::ReadOpusDuration(const uint8_t* data,
       // Type 3 indicates an arbitrary frame count described in the next byte.
       if (size < 2) {
         LIMITED_MEDIA_LOG(DEBUG, log_cb_, num_duration_errors_,
-                          kMaxDurationLogs)
+                          kMaxDurationErrorLogs)
             << "Second byte missing from 'Code 3' Opus packet; demuxed block "
                "duration may be imprecise.";
         return kNoTimestamp();
@@ -217,7 +221,7 @@ base::TimeDelta WebMClusterParser::ReadOpusDuration(const uint8_t* data,
 
       if (frame_count == 0) {
         LIMITED_MEDIA_LOG(DEBUG, log_cb_, num_duration_errors_,
-                          kMaxDurationLogs)
+                          kMaxDurationErrorLogs)
             << "Illegal 'Code 3' Opus packet with frame count zero; demuxed "
                "block duration may be imprecise.";
         return kNoTimestamp();
@@ -225,7 +229,8 @@ base::TimeDelta WebMClusterParser::ReadOpusDuration(const uint8_t* data,
 
       break;
     default:
-      LIMITED_MEDIA_LOG(DEBUG, log_cb_, num_duration_errors_, kMaxDurationLogs)
+      LIMITED_MEDIA_LOG(DEBUG, log_cb_, num_duration_errors_,
+                        kMaxDurationErrorLogs)
           << "Unexpected Opus frame count type: " << frame_count_type << "; "
           << "demuxed block duration may be imprecise.";
       return kNoTimestamp();
@@ -243,7 +248,8 @@ base::TimeDelta WebMClusterParser::ReadOpusDuration(const uint8_t* data,
     // Intentionally allowing packet to pass through for now. Decoder should
     // either handle or fail gracefully. MEDIA_LOG as breadcrumbs in case
     // things go sideways.
-    LIMITED_MEDIA_LOG(DEBUG, log_cb_, num_duration_errors_, kMaxDurationLogs)
+    LIMITED_MEDIA_LOG(DEBUG, log_cb_, num_duration_errors_,
+                      kMaxDurationErrorLogs)
         << "Warning, demuxed Opus packet with encoded duration: " << duration
         << ". Should be no greater than " << kPacketDurationMax;
   }
@@ -562,7 +568,7 @@ bool WebMClusterParser::OnBlock(bool is_simple_block,
           base::TimeDelta::FromMicroseconds(timecode_multiplier_ * 2);
       if (duration_difference.magnitude() > kWarnDurationDiff) {
         LIMITED_MEDIA_LOG(DEBUG, log_cb_, num_duration_errors_,
-                          kMaxDurationLogs)
+                          kMaxDurationErrorLogs)
             << "BlockDuration "
             << "(" << block_duration_time_delta << ") "
             << "differs significantly from encoded duration "
@@ -589,7 +595,8 @@ WebMClusterParser::Track::Track(int track_num,
                                 bool is_video,
                                 base::TimeDelta default_duration,
                                 const LogCB& log_cb)
-    : track_num_(track_num),
+    : num_duration_estimates_(0),
+      track_num_(track_num),
       is_video_(is_video),
       default_duration_(default_duration),
       estimated_next_frame_duration_(kNoTimestamp()),
@@ -682,10 +689,25 @@ void WebMClusterParser::Track::ApplyDurationEstimateIfNeeded() {
   if (!last_added_buffer_missing_duration_.get())
     return;
 
-  last_added_buffer_missing_duration_->set_duration(GetDurationEstimate());
+  base::TimeDelta estimated_duration = GetDurationEstimate();
+  last_added_buffer_missing_duration_->set_duration(estimated_duration);
 
-  DVLOG(2) << "ApplyDurationEstimateIfNeeded() : new dur : "
-           << " ts "
+  if (is_video_) {
+    // Exposing estimation so splicing/overlap frame processing can make
+    // informed decisions downstream.
+    // TODO(chcunningham): Set this for audio as well in later change where
+    // audio is switched to max estimation and splicing is disabled.
+    last_added_buffer_missing_duration_->set_is_duration_estimated(true);
+  }
+
+  LIMITED_MEDIA_LOG(INFO, log_cb_, num_duration_estimates_,
+                    kMaxDurationEstimateLogs)
+      << "Estimating WebM block duration to be " << estimated_duration << " "
+      << "for the last (Simple)Block in the Cluster for this Track. Use "
+      << "BlockGroups with BlockDurations at the end of each Track in a "
+      << "Cluster to avoid estimation.";
+
+  DVLOG(2) << __FUNCTION__ << " new dur : ts "
            << last_added_buffer_missing_duration_->timestamp().InSecondsF()
            << " dur "
            << last_added_buffer_missing_duration_->duration().InSecondsF()
@@ -751,15 +773,34 @@ bool WebMClusterParser::Track::QueueBuffer(
     return false;
   }
 
-  // The estimated frame duration is the minimum non-zero duration since the
-  // last initialization segment.  The minimum is used to ensure frame durations
-  // aren't overestimated.
+  // The estimated frame duration is the minimum (for audio) or the maximum
+  // (for video) non-zero duration since the last initialization segment. The
+  // minimum is used for audio to ensure frame durations aren't overestimated,
+  // triggering unnecessary frame splicing. For video, splicing does not apply,
+  // so maximum is used and overlap is simply resolved by showing the
+  // later of the overlapping frames at its given PTS, effectively trimming down
+  // the over-estimated duration of the previous frame.
+  // TODO(chcunningham): Use max for audio and disable splicing whenever
+  // estimated buffers are encountered.
   if (duration > base::TimeDelta()) {
+    base::TimeDelta orig_duration_estimate = estimated_next_frame_duration_;
     if (estimated_next_frame_duration_ == kNoTimestamp()) {
       estimated_next_frame_duration_ = duration;
+    } else if (is_video_) {
+      estimated_next_frame_duration_ =
+          std::max(duration, estimated_next_frame_duration_);
     } else {
       estimated_next_frame_duration_ =
           std::min(duration, estimated_next_frame_duration_);
+    }
+
+    if (orig_duration_estimate != estimated_next_frame_duration_) {
+      DVLOG(3) << "Updated duration estimate:"
+               << orig_duration_estimate
+               << " -> "
+               << estimated_next_frame_duration_
+               << " at timestamp: "
+               << buffer->GetDecodeTimestamp().InSecondsF();
     }
   }
 

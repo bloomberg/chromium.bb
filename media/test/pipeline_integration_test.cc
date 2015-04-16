@@ -91,10 +91,13 @@ const int kAppendWholeFile = -1;
 const int kAppendTimeSec = 1;
 const int kAppendTimeMs = kAppendTimeSec * 1000;
 const int k320WebMFileDurationMs = 2736;
+#if !defined(DISABLE_EME_TESTS)
+const int k320EncWebMFileDurationMs = 2737;
+#endif  // !defined(DISABLE_EME_TESTS)
 const int k640WebMFileDurationMs = 2749;
 const int kOpusEndTrimmingWebMFileDurationMs = 2741;
 const int kVP9WebMFileDurationMs = 2736;
-const int kVP8AWebMFileDurationMs = 2733;
+const int kVP8AWebMFileDurationMs = 2734;
 
 #if defined(USE_PROPRIETARY_CODECS)
 #if !defined(DISABLE_EME_TESTS)
@@ -1055,7 +1058,7 @@ TEST_F(PipelineIntegrationTest,
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
   // The second video was not added, so its time has not been added.
-  EXPECT_EQ(k320WebMFileDurationMs,
+  EXPECT_EQ(k320EncWebMFileDurationMs,
             pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
   Play();

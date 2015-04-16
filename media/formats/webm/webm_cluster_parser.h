@@ -27,11 +27,15 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
   typedef std::deque<scoped_refptr<StreamParserBuffer> > BufferQueue;
   typedef std::map<TrackId, const BufferQueue> TextBufferQueueMap;
 
-  // Arbitrarily-chosen numbers to estimate the duration of a buffer if none is
-  // set and there is not enough information to get a better estimate.
+  // Numbers chosen to estimate the duration of a buffer if none is set and
+  // there is not enough information to get a better estimate.
   enum {
-    kDefaultAudioBufferDurationInMs = 23,  // Common 1k samples @44.1kHz
-    kDefaultVideoBufferDurationInMs = 42  // Low 24fps to reduce stalls
+    // Common 1k samples @44.1kHz
+    kDefaultAudioBufferDurationInMs = 23,
+
+    // Chosen to represent 16fps duration, which will prevent MSE stalls in
+    // videos with frame-rates as low as 8fps.
+    kDefaultVideoBufferDurationInMs = 63
   };
 
   // Opus packets encode the duration and other parameters in the 5 most
@@ -72,8 +76,8 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
     bool AddBuffer(const scoped_refptr<StreamParserBuffer>& buffer);
 
     // If |last_added_buffer_missing_duration_| is set, updates its duration to
-    // be non-kNoTimestamp() value of |estimated_next_frame_duration_| or an
-    // arbitrary default, then adds it to |buffers_| and unsets
+    // be non-kNoTimestamp() value of |estimated_next_frame_duration_| or a
+    // hard-coded default, then adds it to |buffers_| and unsets
     // |last_added_buffer_missing_duration_|. (This method helps stream parser
     // emit all buffers in a media segment before signaling end of segment.)
     void ApplyDurationEstimateIfNeeded();
@@ -107,6 +111,10 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
     // ApplyDurationEstimateIfNeeded().
     base::TimeDelta GetDurationEstimate();
 
+    // Counts the number of estimated durations used in this track. Used to
+    // prevent log spam for MEDIA_LOG()s about estimated duration.
+    int num_duration_estimates_;
+
     int track_num_;
     bool is_video_;
 
@@ -129,8 +137,10 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
     base::TimeDelta default_duration_;
 
     // If kNoTimestamp(), then a default value will be used. This estimate is
-    // the maximum duration seen or derived so far for this track, and is valid
-    // only if |default_duration_| is kNoTimestamp().
+    // the maximum (for video), or minimum (for audio) duration seen so far for
+    // this track, and is used only if |default_duration_| is kNoTimestamp().
+    // TODO(chcunningham): Use maximum for audio too, adding checks to disable
+    // splicing when these estimates are observed in SourceBufferStream.
     base::TimeDelta estimated_next_frame_duration_;
 
     LogCB log_cb_;

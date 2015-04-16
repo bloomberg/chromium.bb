@@ -206,6 +206,12 @@ class SourceBufferRange {
  private:
   typedef std::map<DecodeTimestamp, int> KeyframeMap;
 
+  // Called during AppendBuffersToEnd to adjust estimated duration at the
+  // end of the last append to match the delta in timestamps between
+  // the last append and the upcoming append. This is a workaround for
+  // WebM media where a duration is not always specified.
+  void AdjustEstimatedDurationForNewAppend(const BufferQueue& new_buffers);
+
   // Seeks the range to the next keyframe after |timestamp|. If
   // |skip_given_timestamp| is true, the seek will go to a keyframe with a
   // timestamp strictly greater than |timestamp|.
@@ -225,7 +231,7 @@ class SourceBufferRange {
 
   // Returns an iterator in |keyframe_map_| pointing to the first keyframe
   // before or at |timestamp|.
-  KeyframeMap::iterator GetFirstKeyframeBefore(DecodeTimestamp timestamp);
+  KeyframeMap::iterator GetFirstKeyframeAtOrBefore(DecodeTimestamp timestamp);
 
   // Helper method to delete buffers in |buffers_| starting at
   // |starting_point|, an iterator in |buffers_|.

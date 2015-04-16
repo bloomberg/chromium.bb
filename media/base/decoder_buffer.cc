@@ -26,8 +26,10 @@ DecoderBuffer::DecoderBuffer(int size)
   Initialize();
 }
 
-DecoderBuffer::DecoderBuffer(const uint8* data, int size,
-                             const uint8* side_data, int side_data_size)
+DecoderBuffer::DecoderBuffer(const uint8* data,
+                             int size,
+                             const uint8* side_data,
+                             int side_data_size)
     : size_(size),
       side_data_size_(side_data_size),
       is_key_frame_(false) {

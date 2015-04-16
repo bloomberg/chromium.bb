@@ -803,9 +803,11 @@ TEST_F(WebMClusterParserTest, ParseWithoutAnyDurationsSimpleBlocks) {
   InSequence s;
 
   // Absent DefaultDuration information, SimpleBlock durations are derived from
-  // inter-buffer track timestamp delta if within the cluster, and are estimated
-  // as the lowest non-zero duration seen so far if the last buffer in the track
-  // in the cluster (independently for each track in the cluster).
+  // inter-buffer track timestamp delta if within the cluster. Duration for the
+  // last block in a cluster is estimated independently for each track in the
+  // cluster. For video tracks we use the maximum seen so far. For audio we use
+  // the the minimum.
+  // TODO(chcunningham): Move audio over to use the maximum.
   const BlockInfo kBlockInfo1[] = {
       {kAudioTrackNum, 0, 23, true, NULL, 0},
       {kAudioTrackNum, 23, 22, true, NULL, 0},
@@ -814,8 +816,8 @@ TEST_F(WebMClusterParserTest, ParseWithoutAnyDurationsSimpleBlocks) {
       {kVideoTrackNum, 66, 34, true, NULL, 0},
       // Estimated from minimum audio dur
       {kAudioTrackNum, 68, 22, true, NULL, 0},
-      // Estimated from minimum video dur
-      {kVideoTrackNum, 100, 33, true, NULL, 0},
+      // Estimated from maximum video dur
+      {kVideoTrackNum, 100, 34, true, NULL, 0},
   };
 
   int block_count1 = arraysize(kBlockInfo1);
@@ -846,7 +848,7 @@ TEST_F(WebMClusterParserTest, ParseWithoutAnyDurationsSimpleBlocks) {
       // Estimate carries over across clusters
       {kAudioTrackNum, 200, 22, true, NULL, 0},
       // Estimate carries over across clusters
-      {kVideoTrackNum, 201, 33, true, NULL, 0},
+      {kVideoTrackNum, 201, 34, true, NULL, 0},
   };
 
   int block_count2 = arraysize(kBlockInfo2);
@@ -861,9 +863,10 @@ TEST_F(WebMClusterParserTest, ParseWithoutAnyDurationsBlockGroups) {
 
   // Absent DefaultDuration and BlockDuration information, BlockGroup block
   // durations are derived from inter-buffer track timestamp delta if within the
-  // cluster, and are estimated as the lowest non-zero duration seen so far if
-  // the last buffer in the track in the cluster (independently for each track
-  // in the cluster).
+  // cluster. Duration for the last block in a cluster is estimated
+  // independently for each track in the cluster. For video tracks we use the
+  // maximum seen so far. For audio we use the the minimum.
+  // TODO(chcunningham): Move audio over to use the maximum.
   const BlockInfo kBlockInfo1[] = {
       {kAudioTrackNum, 0, -23, false, NULL, 0},
       {kAudioTrackNum, 23, -22, false, NULL, 0},
@@ -872,8 +875,8 @@ TEST_F(WebMClusterParserTest, ParseWithoutAnyDurationsBlockGroups) {
       {kVideoTrackNum, 66, -34, false, NULL, 0},
       // Estimated from minimum audio dur
       {kAudioTrackNum, 68, -22, false, NULL, 0},
-      // Estimated from minimum video dur
-      {kVideoTrackNum, 100, -33, false, NULL, 0},
+      // Estimated from maximum video dur
+      {kVideoTrackNum, 100, -34, false, NULL, 0},
   };
 
   int block_count1 = arraysize(kBlockInfo1);
@@ -902,7 +905,7 @@ TEST_F(WebMClusterParserTest, ParseWithoutAnyDurationsBlockGroups) {
   // each track.
   const BlockInfo kBlockInfo2[] = {
       {kAudioTrackNum, 200, -22, false, NULL, 0},
-      {kVideoTrackNum, 201, -33, false, NULL, 0},
+      {kVideoTrackNum, 201, -34, false, NULL, 0},
   };
 
   int block_count2 = arraysize(kBlockInfo2);

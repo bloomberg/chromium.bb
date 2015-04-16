@@ -48,6 +48,9 @@ void SourceBufferRange::AppendBuffersToEnd(const BufferQueue& new_buffers) {
   DCHECK(media_segment_start_time_ == kNoDecodeTimestamp() ||
          media_segment_start_time_ <=
              new_buffers.front()->GetDecodeTimestamp());
+
+  AdjustEstimatedDurationForNewAppend(new_buffers);
+
   for (BufferQueue::const_iterator itr = new_buffers.begin();
        itr != new_buffers.end();
        ++itr) {
@@ -63,11 +66,35 @@ void SourceBufferRange::AppendBuffersToEnd(const BufferQueue& new_buffers) {
   }
 }
 
+void SourceBufferRange::AdjustEstimatedDurationForNewAppend(
+    const BufferQueue& new_buffers) {
+  if (buffers_.empty() || new_buffers.empty()) {
+    return;
+  }
+
+  // If the last of the previously appended buffers contains estimated duration,
+  // we now refine that estimate by taking the PTS delta from the first new
+  // buffer being appended.
+  const auto& last_appended_buffer = buffers_.back();
+  if (last_appended_buffer->is_duration_estimated()) {
+    base::TimeDelta timestamp_delta =
+        new_buffers.front()->timestamp() - last_appended_buffer->timestamp();
+    DCHECK(timestamp_delta > base::TimeDelta());
+    if (last_appended_buffer->duration() != timestamp_delta) {
+      DVLOG(1) << "Replacing estimated duration ("
+               << last_appended_buffer->duration()
+               << ") from previous range-end with derived duration ("
+               << timestamp_delta << ").";
+      last_appended_buffer->set_duration(timestamp_delta);
+    }
+  }
+}
+
 void SourceBufferRange::Seek(DecodeTimestamp timestamp) {
   DCHECK(CanSeekTo(timestamp));
   DCHECK(!keyframe_map_.empty());
 
-  KeyframeMap::iterator result = GetFirstKeyframeBefore(timestamp);
+  KeyframeMap::iterator result = GetFirstKeyframeAtOrBefore(timestamp);
   next_buffer_index_ = result->second - keyframe_map_index_base_;
   DCHECK_LT(next_buffer_index_, static_cast<int>(buffers_.size()));
 }
@@ -173,7 +200,7 @@ SourceBufferRange::GetFirstKeyframeAt(DecodeTimestamp timestamp,
 }
 
 SourceBufferRange::KeyframeMap::iterator
-SourceBufferRange::GetFirstKeyframeBefore(DecodeTimestamp timestamp) {
+SourceBufferRange::GetFirstKeyframeAtOrBefore(DecodeTimestamp timestamp) {
   KeyframeMap::iterator result = keyframe_map_.lower_bound(timestamp);
   // lower_bound() returns the first element >= |timestamp|, so we want the
   // previous element if it did not return the element exactly equal to
@@ -286,7 +313,7 @@ int SourceBufferRange::GetRemovalGOP(
   BufferQueue::iterator buffer_itr = buffers_.begin() + keyframe_index;
   KeyframeMap::iterator gop_end = keyframe_map_.end();
   if (end_timestamp < GetBufferedEndTimestamp())
-    gop_end = GetFirstKeyframeBefore(end_timestamp);
+    gop_end = GetFirstKeyframeAtOrBefore(end_timestamp);
 
   // Check if the removal range is within a GOP and skip the loop if so.
   // [keyframe]...[start_timestamp]...[end_timestamp]...[keyframe]
@@ -526,7 +553,7 @@ DecodeTimestamp SourceBufferRange::KeyframeBeforeTimestamp(
   if (timestamp < GetStartTimestamp() || timestamp >= GetBufferedEndTimestamp())
     return kNoDecodeTimestamp();
 
-  return GetFirstKeyframeBefore(timestamp)->first;
+  return GetFirstKeyframeAtOrBefore(timestamp)->first;
 }
 
 bool SourceBufferRange::IsNextInSequence(

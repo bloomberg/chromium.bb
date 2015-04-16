@@ -26,6 +26,7 @@ static scoped_refptr<StreamParserBuffer> CopyBuffer(
   copied_buffer->SetConfigId(buffer.GetConfigId());
   copied_buffer->set_timestamp(buffer.timestamp());
   copied_buffer->set_duration(buffer.duration());
+  copied_buffer->set_is_duration_estimated(buffer.is_duration_estimated());
   copied_buffer->set_discard_padding(buffer.discard_padding());
   copied_buffer->set_splice_timestamp(buffer.splice_timestamp());
   const DecryptConfig* decrypt_config = buffer.decrypt_config();
@@ -73,15 +74,19 @@ void StreamParserBuffer::SetDecodeTimestamp(DecodeTimestamp timestamp) {
     preroll_buffer_->SetDecodeTimestamp(timestamp);
 }
 
-StreamParserBuffer::StreamParserBuffer(const uint8* data, int data_size,
+StreamParserBuffer::StreamParserBuffer(const uint8* data,
+                                       int data_size,
                                        const uint8* side_data,
-                                       int side_data_size, bool is_key_frame,
-                                       Type type, TrackId track_id)
+                                       int side_data_size,
+                                       bool is_key_frame,
+                                       Type type,
+                                       TrackId track_id)
     : DecoderBuffer(data, data_size, side_data, side_data_size),
       decode_timestamp_(kNoDecodeTimestamp()),
       config_id_(kInvalidConfigId),
       type_(type),
-      track_id_(track_id) {
+      track_id_(track_id),
+      is_duration_estimated_(false) {
   // TODO(scherkus): Should DataBuffer constructor accept a timestamp and
   // duration to force clients to set them? Today they end up being zero which
   // is both a common and valid value and could lead to bugs.
@@ -120,6 +125,11 @@ void StreamParserBuffer::ConvertToSpliceBuffer(
       << " dts " << GetDecodeTimestamp().InSecondsF()
       << " dur " << duration().InSecondsF();
   DCHECK(!end_of_stream());
+
+  // Splicing requires non-estimated sample accurate durations to be confident
+  // things will sound smooth. Also, we cannot be certain whether estimated
+  // overlap is really a splice scenario, or just over estimation.
+  DCHECK(!is_duration_estimated_);
 
   // Make a copy of this first, before making any changes.
   scoped_refptr<StreamParserBuffer> overlapping_buffer = CopyBuffer(*this);
@@ -168,6 +178,7 @@ void StreamParserBuffer::ConvertToSpliceBuffer(
     DCHECK(!buffer->end_of_stream());
     DCHECK(!buffer->preroll_buffer().get());
     DCHECK(buffer->splice_buffers().empty());
+    DCHECK(!buffer->is_duration_estimated());
     splice_buffers_.push_back(CopyBuffer(*buffer.get()));
     splice_buffers_.back()->set_splice_timestamp(splice_timestamp());
   }
