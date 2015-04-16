@@ -463,7 +463,12 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, SimpleLoad) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/simpleLoad")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Failures) {
+#if defined(OS_WIN)  // http://crbug.com/477840
+#define MAYBE_Failures DISABLED_Failures
+#else
+#define MAYBE_Failures Failures
+#endif
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_Failures) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webnavigation/failures")) << message_;
 }
