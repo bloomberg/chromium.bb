@@ -348,6 +348,7 @@
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         'cc.gyp:cc',
+        'cc.gyp:cc_surfaces',
         'cc_test_support',
       ],
       'sources': [
@@ -360,6 +361,7 @@
         'resources/texture_compressor_perftest.cc',
         'resources/tile_manager_perftest.cc',
         'resources/tile_task_worker_pool_perftest.cc',
+        'surfaces/surface_aggregator_perftest.cc',
         'test/cc_test_suite.cc',
         'test/run_all_perftests.cc',
         'trees/layer_tree_host_common_perftest.cc',
