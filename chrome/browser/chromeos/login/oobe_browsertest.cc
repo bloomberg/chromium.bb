@@ -5,7 +5,6 @@
 #include "base/command_line.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
-#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
@@ -15,8 +14,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
-#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "google_apis/gaia/fake_gaia.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -28,17 +27,28 @@ using namespace net::test_server;
 
 namespace chromeos {
 
-// Boolean parameter is used to run this test for webview (true) and for
-// iframe (false) GAIA sign in.
-class OobeTest : public OobeBaseTest, public testing::WithParamInterface<bool> {
+class OobeTest : public InProcessBrowserTest {
  public:
-  OobeTest() { set_use_webview(GetParam()); }
+  OobeTest() {}
   ~OobeTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kOobeSkipPostLogin);
+    command_line->AppendSwitch(chromeos::switches::kLoginManager);
+    command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
+    command_line->AppendSwitchASCII(
+        ::switches::kAuthExtensionPath, "gaia_auth");
+    fake_gaia_.Initialize();
+  }
 
-    OobeBaseTest::SetUpCommandLine(command_line);
+  void SetUpOnMainThread() override {
+    CHECK(embedded_test_server()->InitializeAndWaitUntilReady());
+    embedded_test_server()->RegisterRequestHandler(
+        base::Bind(&FakeGaia::HandleRequest, base::Unretained(&fake_gaia_)));
+    LOG(INFO) << "Set up http server at " << embedded_test_server()->base_url();
+
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        ::switches::kGaiaUrl, embedded_test_server()->base_url().spec());
   }
 
   void TearDownOnMainThread() override {
@@ -48,8 +58,6 @@ class OobeTest : public OobeBaseTest, public testing::WithParamInterface<bool> {
                                              base::Bind(&chrome::AttemptExit));
       content::RunMessageLoop();
     }
-
-    OobeBaseTest::TearDownOnMainThread();
   }
 
   chromeos::WebUILoginDisplay* GetLoginDisplay() {
@@ -67,24 +75,40 @@ class OobeTest : public OobeBaseTest, public testing::WithParamInterface<bool> {
   }
 
  private:
+  FakeGaia fake_gaia_;
   DISALLOW_COPY_AND_ASSIGN(OobeTest);
 };
 
-IN_PROC_BROWSER_TEST_P(OobeTest, NewUser) {
-  WaitForGaiaPageLoad();
+IN_PROC_BROWSER_TEST_F(OobeTest, NewUser) {
+  chromeos::WizardController::SkipPostLoginScreensForTesting();
+  chromeos::WizardController* wizard_controller =
+      chromeos::WizardController::default_controller();
+  CHECK(wizard_controller);
+  wizard_controller->SkipToLoginForTesting(LoginScreenContext());
 
-  content::WindowedNotificationObserver session_start_waiter(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources());
+  content::WindowedNotificationObserver(
+    chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+    content::NotificationService::AllSources()).Wait();
 
-  GetLoginDisplay()->ShowSigninScreenForCreds(OobeBaseTest::kFakeUserEmail,
-                                              OobeBaseTest::kFakeUserPassword);
+  // TODO(glotov): mock GAIA server (test_server()) should support
+  // username/password configuration.
+  GetLoginDisplay()->ShowSigninScreenForCreds("username", "password");
 
-  session_start_waiter.Wait();
+  content::WindowedNotificationObserver(
+    chrome::NOTIFICATION_SESSION_STARTED,
+    content::NotificationService::AllSources()).Wait();
 }
 
-IN_PROC_BROWSER_TEST_P(OobeTest, Accelerator) {
-  WaitForGaiaPageLoad();
+IN_PROC_BROWSER_TEST_F(OobeTest, Accelerator) {
+  chromeos::WizardController::SkipPostLoginScreensForTesting();
+  chromeos::WizardController* wizard_controller =
+      chromeos::WizardController::default_controller();
+  CHECK(wizard_controller);
+  wizard_controller->SkipToLoginForTesting(LoginScreenContext());
+
+  content::WindowedNotificationObserver(
+    chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+    content::NotificationService::AllSources()).Wait();
 
   gfx::NativeWindow login_window = GetLoginWindowWidget()->GetNativeWindow();
 
@@ -96,7 +120,5 @@ IN_PROC_BROWSER_TEST_P(OobeTest, Accelerator) {
                             false);  // command
   OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_ENROLLMENT).Wait();
 }
-
-INSTANTIATE_TEST_CASE_P(OobeSuite, OobeTest, testing::Bool());
 
 }  // namespace chromeos

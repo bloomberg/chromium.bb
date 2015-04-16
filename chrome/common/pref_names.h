@@ -677,7 +677,7 @@ extern const char kLogoutStartedLast[];
 extern const char kConsumerManagementStage[];
 extern const char kNewOobe[];
 extern const char kConsumerManagementEnrollmentStage[];
-extern const char kWebviewSigninDisabled[];
+extern const char kWebviewSigninEnabled[];
 #endif  // defined(OS_CHROMEOS)
 
 extern const char kClearPluginLSODataEnabled[];

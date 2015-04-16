@@ -119,18 +119,17 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
     }
   }
   for (int i = 0; i < repeat_count; ++i) {
-    const bool use_cached_picture = true;
-    display_list_ =
-        DisplayItemList::Create(recorded_viewport_, use_cached_picture);
-    painter->PaintContentsToDisplayList(display_list_.get(), recorded_viewport_,
-                                        painting_control);
+    display_list_ = painter->PaintContentsToDisplayList(recorded_viewport_,
+                                                        painting_control);
   }
-  display_list_->CreateAndCacheSkPicture();
-
+  display_list_->set_layer_rect(recorded_viewport_);
   is_suitable_for_gpu_rasterization_ =
       display_list_->IsSuitableForGpuRasterization();
+
   DetermineIfSolidColor();
   display_list_->EmitTraceSnapshot();
+
+  display_list_->CreateAndCacheSkPicture();
   if (gather_pixel_refs_)
     display_list_->GatherPixelRefs(grid_cell_size_);
 

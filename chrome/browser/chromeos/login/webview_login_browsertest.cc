@@ -10,15 +10,45 @@
 #include "content/public/test/test_utils.h"
 
 namespace chromeos {
+namespace {
+const char kFakeUserEmail[] = "fake-email@gmail.com";
+const char kFakeUserPassword[] = "fake-password";
+const char kFakeSIDCookie[] = "fake-SID-cookie";
+const char kFakeLSIDCookie[] = "fake-LSID-cookie";
+}
 
 class WebviewLoginTest : public OobeBaseTest {
  public:
-  WebviewLoginTest() { set_use_webview(true); }
+  WebviewLoginTest() { use_webview_ = true; }
   ~WebviewLoginTest() override {}
+
+  void SetUpOnMainThread() override {
+    fake_gaia_->SetFakeMergeSessionParams(kFakeUserEmail, kFakeSIDCookie,
+                                          kFakeLSIDCookie);
+
+    OobeBaseTest::SetUpOnMainThread();
+  }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kOobeSkipPostLogin);
     OobeBaseTest::SetUpCommandLine(command_line);
+  }
+
+  void WaitForGaiaPageLoaded() {
+    WaitForSigninScreen();
+
+    ASSERT_TRUE(content::ExecuteScript(
+        GetLoginUI()->GetWebContents(),
+        "$('gaia-signin').gaiaAuthHost_.addEventListener('ready',"
+          "function() {"
+            "window.domAutomationController.setAutomationId(0);"
+            "window.domAutomationController.send('GaiaReady');"
+          "});"));
+
+    content::DOMMessageQueue message_queue;
+    std::string message;
+    ASSERT_TRUE(message_queue.WaitForMessage(&message));
+    EXPECT_EQ("\"GaiaReady\"", message);
   }
 
  private:
@@ -26,11 +56,11 @@ class WebviewLoginTest : public OobeBaseTest {
 };
 
 IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
-  WaitForGaiaPageLoad();
+  WaitForGaiaPageLoaded();
 
   JsExpect("$('close-button-item').hidden");
 
-  SetSignFormField("identifier", OobeBaseTest::kFakeUserEmail);
+  SetSignFormField("identifier", kFakeUserEmail);
   ExecuteJsInSigninFrame("document.getElementById('nextButton').click();");
 
   JsExpect("$('close-button-item').hidden");
@@ -39,21 +69,21 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources());
 
-  SetSignFormField("password", OobeBaseTest::kFakeUserPassword);
+  SetSignFormField("password", kFakeUserPassword);
   ExecuteJsInSigninFrame("document.getElementById('nextButton').click();");
 
   session_start_waiter.Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(WebviewLoginTest, BackButton) {
-  WaitForGaiaPageLoad();
+  WaitForGaiaPageLoaded();
 
   // Start: no back button, first page.
   JsExpect("$('back-button-item').hidden");
   JsExpect("$('signin-frame').src.indexOf('#identifier') != -1");
 
   // Next step: back button active, second page.
-  SetSignFormField("identifier", OobeBaseTest::kFakeUserEmail);
+  SetSignFormField("identifier", kFakeUserEmail);
   ExecuteJsInSigninFrame("document.getElementById('nextButton').click();");
   JsExpect("!$('back-button-item').hidden");
   JsExpect("$('signin-frame').src.indexOf('#challengepassword') != -1");
@@ -73,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, BackButton) {
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources());
 
-  SetSignFormField("password", OobeBaseTest::kFakeUserPassword);
+  SetSignFormField("password", kFakeUserPassword);
   ExecuteJsInSigninFrame("document.getElementById('nextButton').click();");
 
   session_start_waiter.Wait();

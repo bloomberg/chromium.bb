@@ -4,10 +4,7 @@
 
 #include "content/child/notifications/notification_manager.h"
 
-#include <cmath>
-
 #include "base/lazy_instance.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
@@ -98,24 +95,6 @@ void NotificationManager::showPersistent(
           service_worker_registration)->registration_id();
 
   scoped_ptr<blink::WebNotificationShowCallbacks> owned_callbacks(callbacks);
-
-  // Verify that the author-provided payload size does not exceed our limit.
-  // This is an implementation-defined limit to prevent abuse of notification
-  // data as a storage mechanism. A UMA histogram records the requested sizes,
-  // which enables us to track how much data authors are attempting to store.
-  //
-  // If the size exceeds this limit, reject the showNotification() promise. This
-  // is outside of the boundaries set by the specification, but it gives authors
-  // an indication that something has gone wrong.
-  size_t author_data_size = notification_data.data.size();
-  UMA_HISTOGRAM_MEMORY_KB("Notifications.AuthorDataSizeKB",
-                          static_cast<int>(ceil(author_data_size / 1024.0)));
-
-  if (author_data_size > PlatformNotificationData::kMaximumDeveloperDataSize) {
-    owned_callbacks->onError();
-    return;
-  }
-
   if (notification_data.icon.isEmpty()) {
     DisplayPersistentNotification(origin,
                                   notification_data,

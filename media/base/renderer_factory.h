@@ -18,7 +18,6 @@ class SingleThreadTaskRunner;
 namespace media {
 
 class AudioRendererSink;
-class VideoRendererSink;
 
 // A factory class for creating media::Renderer to be used by media pipeline.
 class MEDIA_EXPORT RendererFactory {
@@ -29,12 +28,10 @@ class MEDIA_EXPORT RendererFactory {
   // Creates and returns a Renderer. All methods of the created Renderer except
   // for GetMediaTime() will be called on the |media_task_runner|.
   // GetMediaTime() could be called on any thread.
-  // The created Renderer can use |audio_renderer_sink| to render audio and
-  // |video_renderer_sink| to render video.
+  // The created Renderer can use the |audio_renderer_sink| to render audio.
   virtual scoped_ptr<Renderer> CreateRenderer(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-      AudioRendererSink* audio_renderer_sink,
-      VideoRendererSink* video_renderer_sink) = 0;
+      AudioRendererSink* audio_renderer_sink) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RendererFactory);

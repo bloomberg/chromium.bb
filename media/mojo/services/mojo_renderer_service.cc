@@ -14,7 +14,6 @@
 #include "media/base/decryptor.h"
 #include "media/base/media_log.h"
 #include "media/base/video_renderer.h"
-#include "media/base/video_renderer_sink.h"
 #include "media/mojo/services/demuxer_stream_provider_shim.h"
 #include "media/mojo/services/renderer_config.h"
 #include "media/renderers/audio_renderer_impl.h"
@@ -25,6 +24,9 @@ namespace media {
 
 // Time interval to update media time.
 const int kTimeUpdateIntervalMs = 50;
+
+static void PaintNothing(const scoped_refptr<VideoFrame>& frame) {
+}
 
 MojoRendererService::MojoRendererService()
     : state_(STATE_UNINITIALIZED),
@@ -38,7 +40,6 @@ MojoRendererService::MojoRendererService()
   scoped_refptr<MediaLog> media_log(new MediaLog());
   RendererConfig* renderer_config = RendererConfig::Get();
   audio_renderer_sink_ = renderer_config->GetAudioRendererSink();
-  video_renderer_sink_ = renderer_config->GetVideoRendererSink();
 
   scoped_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(
       task_runner, audio_renderer_sink_.get(),
@@ -48,7 +49,7 @@ MojoRendererService::MojoRendererService()
       renderer_config->GetAudioHardwareConfig(), media_log));
 
   scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
-      task_runner, video_renderer_sink_.get(),
+      task_runner,
       renderer_config->GetVideoDecoders(task_runner,
                                         base::Bind(&MediaLog::AddLogEvent,
                                                    media_log)).Pass(),
@@ -112,6 +113,7 @@ void MojoRendererService::OnStreamReady(const mojo::Closure& callback) {
           &MojoRendererService::OnRendererInitializeDone, weak_this_, callback),
       base::Bind(&MojoRendererService::OnUpdateStatistics, weak_this_),
       base::Bind(&MojoRendererService::OnBufferingStateChanged, weak_this_),
+      base::Bind(&PaintNothing),
       base::Bind(&MojoRendererService::OnRendererEnded, weak_this_),
       base::Bind(&MojoRendererService::OnError, weak_this_),
       base::Bind(base::DoNothing));

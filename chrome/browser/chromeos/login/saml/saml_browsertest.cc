@@ -170,7 +170,7 @@ void FakeSamlIdp::SetUp(const std::string& base_path, const GURL& gaia_url) {
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
   html_template_dir_ = test_data_dir.Append("login");
 
-  login_path_ = base_path;
+  login_path_= base_path;
   login_auth_path_ = base_path + "Auth";
   gaia_assertion_url_ = gaia_url.Resolve("/SSO");
 }
@@ -259,14 +259,9 @@ scoped_ptr<HttpResponse> FakeSamlIdp::BuildHTMLResponse(
 
 }  // namespace
 
-// Boolean parameter is used to run this test for webview (true) and for
-// iframe (false) GAIA sign in.
 class SamlTest : public OobeBaseTest, public testing::WithParamInterface<bool> {
  public:
-  SamlTest() : saml_load_injected_(false) {
-    set_use_webview(GetParam());
-    set_initialize_fake_merge_session(false);
-  }
+  SamlTest() : saml_load_injected_(false) { use_webview_ = GetParam(); }
   ~SamlTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -370,13 +365,13 @@ IN_PROC_BROWSER_TEST_P(SamlTest, SamlUI) {
 
   // Saml flow UI expectations.
   JsExpect("$('gaia-signin').classList.contains('full-width')");
-  if (!use_webview()) {
+  if (!use_webview_) {
     JsExpect("!$('cancel-add-user-button').hidden");
   }
 
   // Click on 'cancel'.
   content::DOMMessageQueue message_queue;  // Observe before 'cancel'.
-  if (use_webview()) {
+  if (use_webview_) {
     ASSERT_TRUE(content::ExecuteScript(
         GetLoginUI()->GetWebContents(),
         "$('close-button-item').click();"));
@@ -402,7 +397,7 @@ IN_PROC_BROWSER_TEST_P(SamlTest, CredentialPassingAPI) {
   // webview.executeScript and there is no way to control the injection time.
   // As a result, this test is flaky and fails about 20% of the time.
   // TODO(xiyuan): Re-enable when webview.addContentScript API is ready.
-  if (use_webview())
+  if (use_webview_)
     return;
 
   fake_saml_idp()->SetLoginHTMLTemplate("saml_api_login.html");

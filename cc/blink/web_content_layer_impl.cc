@@ -72,15 +72,16 @@ void WebContentLayerImpl::PaintContents(
   client_->paintContents(canvas, clip, PaintingControlToWeb(painting_control));
 }
 
-void WebContentLayerImpl::PaintContentsToDisplayList(
-    cc::DisplayItemList* display_list,
+scoped_refptr<cc::DisplayItemList>
+WebContentLayerImpl::PaintContentsToDisplayList(
     const gfx::Rect& clip,
     cc::ContentLayerClient::PaintingControlSetting painting_control) {
   if (!client_)
-    return;
+    return cc::DisplayItemList::Create();
 
-  WebDisplayItemListImpl list(display_list);
+  WebDisplayItemListImpl list;
   client_->paintContents(&list, clip, PaintingControlToWeb(painting_control));
+  return list.ToDisplayItemList();
 }
 
 bool WebContentLayerImpl::FillsBoundsCompletely() const {

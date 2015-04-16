@@ -6,7 +6,9 @@
 
 namespace content {
 
-PlatformNotificationData::PlatformNotificationData() {}
+PlatformNotificationData::PlatformNotificationData()
+    : direction(NotificationDirectionLeftToRight),
+      silent(false) {}
 
 PlatformNotificationData::~PlatformNotificationData() {}
 

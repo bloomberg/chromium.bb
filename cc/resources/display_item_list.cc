@@ -20,36 +20,12 @@
 
 namespace cc {
 
-DisplayItemList::DisplayItemList(gfx::Rect layer_rect, bool use_cached_picture)
-    : recorder_(new SkPictureRecorder()),
-      use_cached_picture_(use_cached_picture),
-      retain_individual_display_items_(!use_cached_picture),
-      layer_rect_(layer_rect),
-      is_suitable_for_gpu_rasterization_(true),
-      approximate_op_count_(0) {
-  if (use_cached_picture_) {
-    SkRTreeFactory factory;
-    recorder_.reset(new SkPictureRecorder());
-    canvas_ = skia::SharePtr(recorder_->beginRecording(
-        layer_rect_.width(), layer_rect_.height(), &factory));
-    canvas_->translate(-layer_rect_.x(), -layer_rect_.y());
-    canvas_->clipRect(gfx::RectToSkRect(layer_rect_));
-
-    bool tracing_enabled;
-    TRACE_EVENT_CATEGORY_GROUP_ENABLED(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug.picture") ","
-      TRACE_DISABLED_BY_DEFAULT("devtools.timeline.picture"),
-      &tracing_enabled);
-    if (tracing_enabled)
-      retain_individual_display_items_ = true;
-  }
+DisplayItemList::DisplayItemList()
+    : is_suitable_for_gpu_rasterization_(true), approximate_op_count_(0) {
 }
 
-scoped_refptr<DisplayItemList> DisplayItemList::Create(
-    gfx::Rect layer_rect,
-    bool use_cached_picture) {
-  return make_scoped_refptr(
-      new DisplayItemList(layer_rect, use_cached_picture));
+scoped_refptr<DisplayItemList> DisplayItemList::Create() {
+  return make_scoped_refptr(new DisplayItemList());
 }
 
 DisplayItemList::~DisplayItemList() {
@@ -58,7 +34,7 @@ DisplayItemList::~DisplayItemList() {
 void DisplayItemList::Raster(SkCanvas* canvas,
                              SkDrawPictureCallback* callback,
                              float contents_scale) const {
-  if (!use_cached_picture_) {
+  if (!picture_) {
     canvas->save();
     canvas->scale(contents_scale, contents_scale);
     for (size_t i = 0; i < items_.size(); ++i) {
@@ -86,25 +62,25 @@ void DisplayItemList::Raster(SkCanvas* canvas,
 }
 
 void DisplayItemList::CreateAndCacheSkPicture() {
-  // Convert to an SkPicture for faster rasterization.
-  DCHECK(use_cached_picture_);
-  picture_ = skia::AdoptRef(recorder_->endRecordingAsPicture());
+  // Convert to an SkPicture for faster rasterization. Code is identical to
+  // that in Picture::Record.
+  SkRTreeFactory factory;
+  SkPictureRecorder recorder;
+  skia::RefPtr<SkCanvas> canvas;
+  canvas = skia::SharePtr(recorder.beginRecording(
+      layer_rect_.width(), layer_rect_.height(), &factory));
+  canvas->translate(-layer_rect_.x(), -layer_rect_.y());
+  canvas->clipRect(gfx::RectToSkRect(layer_rect_));
+  for (size_t i = 0; i < items_.size(); ++i)
+    items_[i]->Raster(canvas.get(), NULL);
+  picture_ = skia::AdoptRef(recorder.endRecordingAsPicture());
   DCHECK(picture_);
-  recorder_.reset();
-  canvas_.clear();
 }
 
 void DisplayItemList::AppendItem(scoped_ptr<DisplayItem> item) {
   is_suitable_for_gpu_rasterization_ &= item->IsSuitableForGpuRasterization();
   approximate_op_count_ += item->ApproximateOpCount();
-
-  if (use_cached_picture_) {
-    DCHECK(canvas_);
-    item->Raster(canvas_.get(), NULL);
-  }
-
-  if (retain_individual_display_items_)
-    items_.push_back(item.Pass());
+  items_.push_back(item.Pass());
 }
 
 bool DisplayItemList::IsSuitableForGpuRasterization() const {
@@ -150,7 +126,8 @@ DisplayItemList::AsValue() const {
       recorder.beginRecording(layer_rect_.width(), layer_rect_.height());
   canvas->translate(-layer_rect_.x(), -layer_rect_.y());
   canvas->clipRect(gfx::RectToSkRect(layer_rect_));
-  Raster(canvas, NULL, 1.f);
+  for (size_t i = 0; i < items_.size(); ++i)
+    items_[i]->RasterForTracing(canvas);
   skia::RefPtr<SkPicture> picture =
       skia::AdoptRef(recorder.endRecordingAsPicture());
 

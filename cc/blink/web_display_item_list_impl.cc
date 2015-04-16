@@ -25,9 +25,12 @@
 
 namespace cc_blink {
 
-WebDisplayItemListImpl::WebDisplayItemListImpl(
-    cc::DisplayItemList* display_list)
-    : display_item_list_(display_list) {
+WebDisplayItemListImpl::WebDisplayItemListImpl()
+    : display_item_list_(cc::DisplayItemList::Create()) {
+}
+
+scoped_refptr<cc::DisplayItemList> WebDisplayItemListImpl::ToDisplayItemList() {
+  return display_item_list_;
 }
 
 void WebDisplayItemListImpl::appendDrawingItem(const SkPicture* picture) {

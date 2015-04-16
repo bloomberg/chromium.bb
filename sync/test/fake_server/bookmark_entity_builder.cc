@@ -45,10 +45,6 @@ BookmarkEntityBuilder::BookmarkEntityBuilder(
 BookmarkEntityBuilder::~BookmarkEntityBuilder() {
 }
 
-void BookmarkEntityBuilder::SetParentId(const std::string& parent_id) {
-  parent_id_ = parent_id;
-}
-
 scoped_ptr<FakeServerEntity> BookmarkEntityBuilder::Build() {
   if (!url_.is_valid()) {
     return make_scoped_ptr<FakeServerEntity>(NULL);
@@ -66,10 +62,6 @@ scoped_ptr<FakeServerEntity> BookmarkEntityBuilder::Build() {
                                                originator_client_item_id_);
   syncer::UniquePosition::FromInt64(0, suffix).ToProto(&unique_position);
 
-  if (parent_id_.empty()) {
-    parent_id_ = FakeServerEntity::CreateId(syncer::BOOKMARKS, "bookmark_bar");
-  }
-
   return make_scoped_ptr<FakeServerEntity>(
       new BookmarkEntity(id_,
                          kUnusedVersion,
@@ -80,7 +72,10 @@ scoped_ptr<FakeServerEntity> BookmarkEntityBuilder::Build() {
                          entity_specifics,
                          // TODO(pvalenzuela): Support bookmark folders.
                          false,
-                         parent_id_,
+                         // TODO(pvalenzuela): Support caller specification of
+                         // the parent bookmark folder.
+                         FakeServerEntity::CreateId(syncer::BOOKMARKS,
+                                                    "bookmark_bar"),
                          kDefaultTime,
                          kDefaultTime));
 }

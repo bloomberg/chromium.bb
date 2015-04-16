@@ -46,11 +46,11 @@ class MaskContentLayerClient : public ContentLayerClient {
     }
   }
 
-  void PaintContentsToDisplayList(
-      DisplayItemList* display_list,
+  scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
       PaintingControlSetting picture_control) override {
     NOTIMPLEMENTED();
+    return DisplayItemList::Create();
   }
 
  private:
@@ -303,11 +303,11 @@ class CheckerContentLayerClient : public ContentLayerClient {
       }
     }
   }
-  void PaintContentsToDisplayList(
-      DisplayItemList* display_list,
+  scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
       PaintingControlSetting picture_control) override {
     NOTIMPLEMENTED();
+    return DisplayItemList::Create();
   }
 
  private:
@@ -334,11 +334,11 @@ class CircleContentLayerClient : public ContentLayerClient {
                        bounds_.width() / 4,
                        paint);
   }
-  void PaintContentsToDisplayList(
-      DisplayItemList* display_list,
+  scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
       PaintingControlSetting picture_control) override {
     NOTIMPLEMENTED();
+    return DisplayItemList::Create();
   }
 
  private:

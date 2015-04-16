@@ -200,58 +200,6 @@ class URLFetcherTest : public testing::Test,
     return num_upload_streams_created_;
   }
 
-  // Downloads |file_to_fetch| and checks the contents when done.  If
-  // |save_to_temporary_file| is true, saves it to a temporary file, and
-  // |requested_out_path| is ignored. Otherwise, saves it to
-  // |requested_out_path|. Takes ownership of the file if |take_ownership| is
-  // true. Deletes file when done.
-  void SaveFileTest(const char* file_to_fetch,
-                    bool save_to_temporary_file,
-                    const base::FilePath& requested_out_path,
-                    bool take_ownership) {
-    scoped_ptr<WaitingURLFetcherDelegate> delegate(
-        new WaitingURLFetcherDelegate());
-    delegate->CreateFetcherWithContext(
-        test_server_->GetURL(std::string(kTestServerFilePrefix) +
-                             file_to_fetch),
-        URLFetcher::GET, request_context());
-    if (save_to_temporary_file) {
-      delegate->fetcher()->SaveResponseToTemporaryFile(
-          scoped_refptr<base::MessageLoopProxy>(
-              base::MessageLoopProxy::current()));
-    } else {
-      delegate->fetcher()->SaveResponseToFileAtPath(
-          requested_out_path, scoped_refptr<base::MessageLoopProxy>(
-                                  base::MessageLoopProxy::current()));
-    }
-    delegate->StartFetcherAndWait();
-
-    EXPECT_TRUE(delegate->fetcher()->GetStatus().is_success());
-    EXPECT_EQ(200, delegate->fetcher()->GetResponseCode());
-
-    base::FilePath out_path;
-    EXPECT_TRUE(
-        delegate->fetcher()->GetResponseAsFilePath(take_ownership, &out_path));
-    if (!save_to_temporary_file) {
-      EXPECT_EQ(requested_out_path, out_path);
-    }
-
-    EXPECT_TRUE(base::ContentsEqual(
-        test_server_->GetDocumentRoot().AppendASCII(file_to_fetch), out_path));
-
-    // Delete the delegate and run the message loop to give the fetcher's
-    // destructor a chance to delete the file.
-    delegate.reset();
-    base::RunLoop().RunUntilIdle();
-
-    // File should only exist if |take_ownership| was true.
-    EXPECT_EQ(take_ownership, base::PathExists(out_path));
-
-    // Cleanup.
-    if (base::PathExists(out_path))
-      base::DeleteFile(out_path, false);
-  }
-
   // Returns a URL that hangs on DNS resolution.  Only hangs when using the
   // request context returned by request_context().
   const GURL& hanging_url() const { return hanging_url_; }
@@ -516,6 +464,30 @@ class URLFetcherMultipleAttemptTest : public URLFetcherTest {
   std::string data_;
 };
 
+class URLFetcherFileTest : public URLFetcherTest {
+ public:
+  URLFetcherFileTest() : take_ownership_of_file_(false),
+                         expected_file_error_(OK) {}
+
+  void CreateFetcherForFile(const GURL& url, const base::FilePath& file_path);
+  void CreateFetcherForTempFile(const GURL& url);
+
+  // URLFetcherDelegate:
+  void OnURLFetchComplete(const URLFetcher* source) override;
+
+ protected:
+  base::FilePath expected_file_;
+  base::FilePath file_path_;
+
+  // Set by the test. Used in OnURLFetchComplete() to decide if
+  // the URLFetcher should own the temp file, so that we can test
+  // disowning prevents the file from being deleted.
+  bool take_ownership_of_file_;
+
+  // Expected file error code for the test.  OK when expecting success.
+  int expected_file_error_;
+};
+
 void URLFetcherDownloadProgressTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
@@ -663,6 +635,44 @@ void URLFetcherMultipleAttemptTest::OnURLFetchComplete(
     EXPECT_EQ(data, data_);
     CleanupAfterFetchComplete();
   }
+}
+
+void URLFetcherFileTest::CreateFetcherForFile(const GURL& url,
+                                              const base::FilePath& file_path) {
+  fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
+  fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
+      io_message_loop_proxy().get(), request_context()));
+
+  // Use the IO message loop to do the file operations in this test.
+  fetcher_->SaveResponseToFileAtPath(file_path, io_message_loop_proxy());
+  fetcher_->Start();
+}
+
+void URLFetcherFileTest::CreateFetcherForTempFile(const GURL& url) {
+  fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
+  fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
+      io_message_loop_proxy().get(), request_context()));
+
+  // Use the IO message loop to do the file operations in this test.
+  fetcher_->SaveResponseToTemporaryFile(io_message_loop_proxy());
+  fetcher_->Start();
+}
+
+void URLFetcherFileTest::OnURLFetchComplete(const URLFetcher* source) {
+  if (expected_file_error_ == OK) {
+    EXPECT_TRUE(source->GetStatus().is_success());
+    EXPECT_EQ(OK, source->GetStatus().error());
+    EXPECT_EQ(200, source->GetResponseCode());
+
+    EXPECT_TRUE(source->GetResponseAsFilePath(
+        take_ownership_of_file_, &file_path_));
+
+    EXPECT_TRUE(base::ContentsEqual(expected_file_, file_path_));
+  } else {
+    EXPECT_FALSE(source->GetStatus().is_success());
+    EXPECT_EQ(expected_file_error_, source->GetStatus().error());
+  }
+  CleanupAfterFetchComplete();
 }
 
 // Create the fetcher on the main thread.  Since network IO will happen on the
@@ -1192,93 +1202,149 @@ TEST_F(URLFetcherMultipleAttemptTest, SameData) {
   base::MessageLoop::current()->Run();
 }
 
-// Get a small file.
-TEST_F(URLFetcherTest, FileTestSmallGet) {
-  const char kFileToFetch[] = "simple.html";
-
+TEST_F(URLFetcherFileTest, SmallGet) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath out_path = temp_dir.path().AppendASCII(kFileToFetch);
-  SaveFileTest(kFileToFetch, false, out_path, false);
+
+  // Get a small file.
+  static const char kFileToFetch[] = "simple.html";
+  expected_file_ = test_server_->GetDocumentRoot().AppendASCII(kFileToFetch);
+  CreateFetcherForFile(
+      test_server_->GetURL(std::string(kTestServerFilePrefix) + kFileToFetch),
+      temp_dir.path().AppendASCII(kFileToFetch));
+
+  base::MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
+
+  ASSERT_FALSE(base::PathExists(file_path_))
+      << file_path_.value() << " not removed.";
 }
 
-// Get a file large enough to require more than one read into URLFetcher::Core's
-// IOBuffer.
-TEST_F(URLFetcherTest, FileTestLargeGet) {
-  const char kFileToFetch[] = "animate1.gif";
-
+TEST_F(URLFetcherFileTest, LargeGet) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath out_path = temp_dir.path().AppendASCII(kFileToFetch);
-  SaveFileTest(kFileToFetch, false, out_path, false);
+
+  // Get a file large enough to require more than one read into
+  // URLFetcher::Core's IOBuffer.
+  static const char kFileToFetch[] = "animate1.gif";
+  expected_file_ = test_server_->GetDocumentRoot().AppendASCII(kFileToFetch);
+  CreateFetcherForFile(
+      test_server_->GetURL(std::string(kTestServerFilePrefix) + kFileToFetch),
+      temp_dir.path().AppendASCII(kFileToFetch));
+
+  base::MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
 }
 
-// If the caller takes the ownership of the output file, the file should persist
-// even after URLFetcher is gone.
-TEST_F(URLFetcherTest, FileTestTakeOwnership) {
-  const char kFileToFetch[] = "simple.html";
+TEST_F(URLFetcherFileTest, SavedOutputFileOwnerhisp) {
+  // If the caller takes the ownership of the output file, the file should
+  // persist even after URLFetcher is gone. If not, the file must be deleted.
+  const bool kTake[] = {false, true};
+  for (size_t i = 0; i < arraysize(kTake); ++i) {
+    take_ownership_of_file_ = kTake[i];
+    base::ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath out_path = temp_dir.path().AppendASCII(kFileToFetch);
-  SaveFileTest(kFileToFetch, false, out_path, true);
+    // Get a small file.
+    static const char kFileToFetch[] = "simple.html";
+    expected_file_ = test_server_->GetDocumentRoot().AppendASCII(kFileToFetch);
+    CreateFetcherForFile(
+        test_server_->GetURL(std::string(kTestServerFilePrefix) + kFileToFetch),
+        temp_dir.path().AppendASCII(kFileToFetch));
+
+    base::MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
+
+    base::MessageLoop::current()->RunUntilIdle();
+    ASSERT_EQ(kTake[i], base::PathExists(file_path_)) <<
+        "FilePath: " << file_path_.value();
+  }
 }
 
-// Test that an existing file can be overwritten be a fetcher.
-TEST_F(URLFetcherTest, FileTestOverwriteExisting) {
+TEST_F(URLFetcherFileTest, OverwriteExistingFile) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   // Create a file before trying to fetch.
-  const char kFileToFetch[] = "simple.html";
+  static const char kFileToFetch[] = "simple.html";
   std::string data(10000, '?');  // Meant to be larger than simple.html.
-  base::FilePath out_path = temp_dir.path().AppendASCII(kFileToFetch);
+  file_path_ = temp_dir.path().AppendASCII(kFileToFetch);
   ASSERT_EQ(static_cast<int>(data.size()),
-            base::WriteFile(out_path, data.data(), data.size()));
-  ASSERT_TRUE(base::PathExists(out_path));
+            base::WriteFile(file_path_, data.data(), data.size()));
+  ASSERT_TRUE(base::PathExists(file_path_));
+  expected_file_ = test_server_->GetDocumentRoot().AppendASCII(kFileToFetch);
+  ASSERT_FALSE(base::ContentsEqual(file_path_, expected_file_));
 
-  SaveFileTest(kFileToFetch, false, out_path, true);
+  // Get a small file.
+  CreateFetcherForFile(
+      test_server_->GetURL(std::string(kTestServerFilePrefix) + kFileToFetch),
+      file_path_);
+
+  base::MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
 }
 
-// Test trying to overwrite a directory with a file when using a fetcher fails.
-TEST_F(URLFetcherTest, FileTestTryToOverwriteDirectory) {
+TEST_F(URLFetcherFileTest, TryToOverwriteDirectory) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   // Create a directory before trying to fetch.
   static const char kFileToFetch[] = "simple.html";
-  base::FilePath out_path = temp_dir.path().AppendASCII(kFileToFetch);
-  ASSERT_TRUE(base::CreateDirectory(out_path));
-  ASSERT_TRUE(base::PathExists(out_path));
+  file_path_ = temp_dir.path().AppendASCII(kFileToFetch);
+  ASSERT_TRUE(base::CreateDirectory(file_path_));
+  ASSERT_TRUE(base::PathExists(file_path_));
 
-  WaitingURLFetcherDelegate delegate;
-  delegate.CreateFetcherWithContext(
+  // Get a small file.
+  expected_file_error_ = ERR_ACCESS_DENIED;
+  expected_file_ = test_server_->GetDocumentRoot().AppendASCII(kFileToFetch);
+  CreateFetcherForFile(
       test_server_->GetURL(std::string(kTestServerFilePrefix) + kFileToFetch),
-      URLFetcher::GET, request_context());
-  delegate.fetcher()->SaveResponseToFileAtPath(
-      out_path,
-      scoped_refptr<base::MessageLoopProxy>(base::MessageLoopProxy::current()));
-  delegate.StartFetcherAndWait();
+      file_path_);
 
-  EXPECT_FALSE(delegate.fetcher()->GetStatus().is_success());
-  EXPECT_EQ(ERR_ACCESS_DENIED, delegate.fetcher()->GetStatus().error());
+  base::MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
+
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
-// Get a small file and save it to a temp file.
-TEST_F(URLFetcherTest, TempFileTestSmallGet) {
-  SaveFileTest("simple.html", true, base::FilePath(), false);
+TEST_F(URLFetcherFileTest, SmallGetToTempFile) {
+  // Get a small file.
+  static const char kFileToFetch[] = "simple.html";
+  expected_file_ = test_server_->GetDocumentRoot().AppendASCII(kFileToFetch);
+  CreateFetcherForTempFile(
+      test_server_->GetURL(std::string(kTestServerFilePrefix) + kFileToFetch));
+
+  base::MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
+
+  ASSERT_FALSE(base::PathExists(file_path_))
+      << file_path_.value() << " not removed.";
 }
 
-// Get a file large enough to require more than one read into URLFetcher::Core's
-// IOBuffer and save it to a temp file.
-TEST_F(URLFetcherTest, TempFileTestLargeGet) {
-  SaveFileTest("animate1.gif", true, base::FilePath(), false);
+TEST_F(URLFetcherFileTest, LargeGetToTempFile) {
+  // Get a file large enough to require more than one read into
+  // URLFetcher::Core's IOBuffer.
+  static const char kFileToFetch[] = "animate1.gif";
+  expected_file_ = test_server_->GetDocumentRoot().AppendASCII(kFileToFetch);
+  CreateFetcherForTempFile(
+      test_server_->GetURL(std::string(kTestServerFilePrefix) + kFileToFetch));
+
+  base::MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
 }
 
-// If the caller takes the ownership of the temp file, check that the file
-// persists even after URLFetcher is gone.
-TEST_F(URLFetcherTest, TempFileTestTakeOwnership) {
-  SaveFileTest("simple.html", true, base::FilePath(), true);
+TEST_F(URLFetcherFileTest, SavedOutputTempFileOwnerhisp) {
+  // If the caller takes the ownership of the temp file, the file should persist
+  // even after URLFetcher is gone. If not, the file must be deleted.
+  const bool kTake[] = {false, true};
+  for (size_t i = 0; i < arraysize(kTake); ++i) {
+    take_ownership_of_file_ = kTake[i];
+
+    // Get a small file.
+    static const char kFileToFetch[] = "simple.html";
+    expected_file_ = test_server_->GetDocumentRoot().AppendASCII(kFileToFetch);
+    CreateFetcherForTempFile(test_server_->GetURL(
+        std::string(kTestServerFilePrefix) + kFileToFetch));
+
+    base::MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
+
+    base::MessageLoop::current()->RunUntilIdle();
+    ASSERT_EQ(kTake[i], base::PathExists(file_path_)) <<
+        "FilePath: " << file_path_.value();
+  }
 }
 
 }  // namespace

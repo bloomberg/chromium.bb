@@ -1326,11 +1326,11 @@ class TestOpacityChangeLayerDelegate : public ContentLayerClient {
     if (test_layer_)
       test_layer_->SetOpacity(0.f);
   }
-  void PaintContentsToDisplayList(
-      DisplayItemList* display_list,
+  scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
       PaintingControlSetting picture_control) override {
     NOTIMPLEMENTED();
+    return DisplayItemList::Create();
   }
   bool FillsBoundsCompletely() const override { return false; }
 
@@ -2791,11 +2791,11 @@ class LayerTreeHostTestChangeLayerPropertiesInPaintContents
       layer_->SetBounds(gfx::Size(2, 2));
     }
 
-    void PaintContentsToDisplayList(
-        DisplayItemList* display_list,
+    scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
         const gfx::Rect& clip,
         PaintingControlSetting picture_control) override {
       NOTIMPLEMENTED();
+      return DisplayItemList::Create();
     }
 
     bool FillsBoundsCompletely() const override { return false; }

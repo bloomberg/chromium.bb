@@ -4,7 +4,6 @@
 # found in the LICENSE file.
 
 import os
-import json
 import sys
 
 import bb_utils
@@ -86,9 +85,7 @@ def BisectPerfRegression(options):
   RunCmd([SrcPath('tools', 'prepare-bisect-perf-regression.py'),
           '-w', os.path.join(constants.DIR_SOURCE_ROOT, os.pardir)])
   RunCmd([SrcPath('tools', 'run-bisect-perf-regression.py'),
-          '-w', os.path.join(constants.DIR_SOURCE_ROOT, os.pardir),
-          '--build-properties=%s' % json.dumps(options.build_properties)] +
-          args)
+          '-w', os.path.join(constants.DIR_SOURCE_ROOT, os.pardir)] + args)
 
 
 def GetHostStepCmds():

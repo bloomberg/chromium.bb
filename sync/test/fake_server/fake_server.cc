@@ -34,29 +34,17 @@ using syncer::GetModelType;
 using syncer::ModelType;
 using syncer::ModelTypeSet;
 
-namespace fake_server {
-
-class FakeServerEntity;
-
-namespace {
-
 // The default store birthday value.
 static const char kDefaultStoreBirthday[] = "1234567890";
 
 // The default keystore key.
 static const char kDefaultKeystoreKey[] = "1111111111111111";
 
-// Properties of the bookmark bar permanent folder.
-static const char kBookmarkBarFolderServerTag[] = "bookmark_bar";
-static const char kBookmarkBarFolderName[] = "Bookmark Bar";
+namespace fake_server {
 
-// Properties of the other bookmarks permanent folder.
-static const char kOtherBookmarksFolderServerTag[] =  "other_bookmarks";
-static const char kOtherBookmarksFolderName[] = "Other Bookmarks";
+class FakeServerEntity;
 
-// Properties of the synced bookmarks permanent folder.
-static const char kSyncedBookmarksFolderServerTag[] = "synced_bookmarks";
-static const char kSyncedBookmarksFolderName[] = "Synced Bookmarks";
+namespace {
 
 // A filter used during GetUpdates calls to determine what information to
 // send back to the client. There is a 1:1 correspondence between any given
@@ -179,8 +167,8 @@ FakeServer::~FakeServer() {
   STLDeleteContainerPairSecondPointers(entities_.begin(), entities_.end());
 }
 
-bool FakeServer::CreatePermanentBookmarkFolder(const std::string& server_tag,
-                                               const std::string& name) {
+bool FakeServer::CreatePermanentBookmarkFolder(const char* server_tag,
+                                               const char* name) {
   FakeServerEntity* entity =
       PermanentEntity::Create(syncer::BOOKMARKS, server_tag, name,
                               ModelTypeToRootTag(syncer::BOOKMARKS));
@@ -203,15 +191,28 @@ bool FakeServer::CreateDefaultPermanentItems() {
     SaveEntity(top_level_entity);
 
     if (model_type == syncer::BOOKMARKS) {
-      if (!CreatePermanentBookmarkFolder(kBookmarkBarFolderServerTag,
-                                         kBookmarkBarFolderName))
+      if (!CreatePermanentBookmarkFolder("bookmark_bar", "Bookmark Bar"))
         return false;
-      if (!CreatePermanentBookmarkFolder(kOtherBookmarksFolderServerTag,
-                                         kOtherBookmarksFolderName))
+      if (!CreatePermanentBookmarkFolder("other_bookmarks", "Other Bookmarks"))
         return false;
     }
   }
 
+  return true;
+}
+
+bool FakeServer::CreateMobileBookmarksPermanentItem() {
+  // This folder is called "Synced Bookmarks" by sync and is renamed
+  // "Mobile Bookmarks" by the mobile client UIs.
+  FakeServerEntity* mobile_bookmarks_entity =
+      PermanentEntity::Create(syncer::BOOKMARKS,
+                              "synced_bookmarks",
+                              "Synced Bookmarks",
+                              ModelTypeToRootTag(syncer::BOOKMARKS));
+  if (mobile_bookmarks_entity == NULL) {
+    return false;
+  }
+  SaveEntity(mobile_bookmarks_entity);
   return true;
 }
 
@@ -290,11 +291,8 @@ bool FakeServer::HandleGetUpdatesRequest(
 
   scoped_ptr<UpdateSieve> sieve = UpdateSieve::Create(get_updates);
 
-  // This folder is called "Synced Bookmarks" by sync and is renamed
-  // "Mobile Bookmarks" by the mobile client UIs.
   if (get_updates.create_mobile_bookmarks_folder() &&
-      !CreatePermanentBookmarkFolder(kSyncedBookmarksFolderServerTag,
-                                     kSyncedBookmarksFolderName)) {
+      !CreateMobileBookmarksPermanentItem()) {
     return false;
   }
 
@@ -601,20 +599,6 @@ void FakeServer::EnableNetwork() {
 
 void FakeServer::DisableNetwork() {
   network_enabled_ = false;
-}
-
-std::string FakeServer::GetBookmarkBarFolderId() const {
-  for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
-       ++it) {
-    FakeServerEntity* entity = it->second;
-    if (entity->GetName() == kBookmarkBarFolderName &&
-        entity->IsFolder() &&
-        entity->GetModelType() == syncer::BOOKMARKS) {
-      return entity->GetId();
-    }
-  }
-  NOTREACHED() << "Bookmark Bar entity not found.";
-  return "";
 }
 
 }  // namespace fake_server

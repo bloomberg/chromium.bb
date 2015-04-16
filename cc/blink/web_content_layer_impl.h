@@ -39,8 +39,7 @@ class WebContentLayerImpl : public blink::WebContentLayer,
   void PaintContents(SkCanvas* canvas,
                      const gfx::Rect& clip,
                      PaintingControlSetting painting_control) override;
-  void PaintContentsToDisplayList(
-      cc::DisplayItemList* display_list,
+  scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
       PaintingControlSetting painting_control) override;
   bool FillsBoundsCompletely() const override;
