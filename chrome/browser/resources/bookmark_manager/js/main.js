@@ -503,7 +503,7 @@ function handleCanExecuteForDocument(e) {
     case 'undo-command':
       // Because the global undo command has no visible UI, always enable it,
       // and just make it a no-op if undo is not possible.
-      e.canExecute = e.currentTarget.activeElement !== $('term');
+      e.canExecute = true;
       break;
 
     default:
