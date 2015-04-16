@@ -40,9 +40,6 @@ class CONTENT_EXPORT WebURLLoaderImpl
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   virtual ~WebURLLoaderImpl();
 
-  static blink::WebURLError CreateError(const blink::WebURL& unreachable_url,
-                                        bool stale_copy_in_cache,
-                                        int reason);
   static void PopulateURLResponse(
       const GURL& url,
       const ResourceResponseInfo& info,

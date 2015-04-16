@@ -652,6 +652,10 @@ class CONTENT_EXPORT RenderFrameImpl
                           const GURL& stream_url,
                           const CommonNavigationParams& common_params,
                           const RequestNavigationParams& request_params);
+  void OnFailedNavigation(const CommonNavigationParams& common_params,
+                          const RequestNavigationParams& request_params,
+                          bool has_stale_copy_in_cache,
+                          int error_code);
 
   // Virtual since overridden by WebTestProxy for layout tests.
   virtual blink::WebNavigationPolicy DecidePolicyForNavigation(
@@ -730,6 +734,15 @@ class CONTENT_EXPORT RenderFrameImpl
   // Loads a data url.
   void LoadDataURL(const CommonNavigationParams& params,
                    blink::WebFrame* frame);
+
+  // Sends a proper FrameHostMsg_DidFailProvisionalLoadWithError_Params IPC for
+  // the failed request |request|.
+  void SendFailedProvisionalLoad(const blink::WebURLRequest& request,
+                                 const blink::WebURLError& error,
+                                 blink::WebLocalFrame* frame);
+
+  bool ShouldDisplayErrorPageForFailedLoad(int error_code,
+                                           const GURL& unreachable_url);
 
   // Returns the URL being loaded by the |frame_|'s request.
   GURL GetLoadingUrl() const;

@@ -568,6 +568,15 @@ IPC_MESSAGE_ROUTED4(FrameMsg_CommitNavigation,
                     content::CommonNavigationParams, /* common_params */
                     content::RequestNavigationParams /* request_params */)
 
+// PlzNavigate
+// Tells the renderer that a navigation failed with the error code |error_code|
+// and that the renderer should display an appropriate error page.
+IPC_MESSAGE_ROUTED4(FrameMsg_FailedNavigation,
+                    content::CommonNavigationParams,  /* common_params */
+                    content::RequestNavigationParams, /* request_params */
+                    bool,                             /* stale_copy_in_cache */
+                    int                               /* error_code */)
+
 #if defined(ENABLE_PLUGINS)
 // Notifies the renderer of updates to the Plugin Power Saver origin whitelist.
 IPC_MESSAGE_ROUTED1(FrameMsg_UpdatePluginContentOriginWhitelist,

@@ -1741,6 +1741,19 @@ void RenderFrameHostImpl::CommitNavigation(
   stream_handle_ = body.Pass();
 }
 
+void RenderFrameHostImpl::FailedNavigation(
+    const CommonNavigationParams& common_params,
+    const RequestNavigationParams& request_params,
+    bool has_stale_copy_in_cache,
+    int error_code) {
+  // Get back to a clean state, in case a new navigation started without
+  // completing a RFH swap or unload handler.
+  SetState(RenderFrameHostImpl::STATE_DEFAULT);
+
+  Send(new FrameMsg_FailedNavigation(routing_id_, common_params, request_params,
+                                     has_stale_copy_in_cache, error_code));
+}
+
 void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   if (service_registry_.get())
     return;

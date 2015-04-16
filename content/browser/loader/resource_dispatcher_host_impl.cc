@@ -1870,7 +1870,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
           info.common_params.url,
           resource_type,
           resource_context))) {
-    loader->NotifyRequestFailed(net::ERR_ABORTED);
+    loader->NotifyRequestFailed(false, net::ERR_ABORTED);
     return;
   }
 

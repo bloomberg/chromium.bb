@@ -12,7 +12,9 @@
 #include "content/public/common/resource_type.h"
 
 namespace blink {
+class WebURL;
 class WebURLRequest;
+struct WebURLError;
 }
 
 namespace content {
@@ -29,6 +31,11 @@ int GetLoadFlagsForWebURLRequest(const blink::WebURLRequest& request);
 // if the request body is not present.
 scoped_refptr<ResourceRequestBody> GetRequestBodyForWebURLRequest(
     const blink::WebURLRequest& request);
+
+// Generates a WebURLError based on |reason|.
+blink::WebURLError CreateWebURLError(const blink::WebURL& unreachable_url,
+                                     bool stale_copy_in_cache,
+                                     int reason);
 
 }  // namespace content
 

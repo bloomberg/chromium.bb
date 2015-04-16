@@ -29,7 +29,7 @@ NavigationResourceHandler::NavigationResourceHandler(
 
 NavigationResourceHandler::~NavigationResourceHandler() {
   if (core_) {
-    core_->NotifyRequestFailed(net::ERR_ABORTED);
+    core_->NotifyRequestFailed(false, net::ERR_ABORTED);
     DetachFromCore();
   }
 }
@@ -131,7 +131,8 @@ void NavigationResourceHandler::OnResponseCompleted(
 
   if (core_) {
     DCHECK_NE(net::OK, status.error());
-    core_->NotifyRequestFailed(status.error());
+    core_->NotifyRequestFailed(request()->response_info().was_cached,
+                               status.error());
     DetachFromCore();
   }
 }

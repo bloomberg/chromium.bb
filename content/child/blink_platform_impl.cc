@@ -44,6 +44,7 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/child/web_discardable_memory_impl.h"
 #include "content/child/web_url_loader_impl.h"
+#include "content/child/web_url_request_util.h"
 #include "content/child/websocket_bridge.h"
 #include "content/child/worker_task_runner.h"
 #include "content/public/common/content_client.h"
@@ -494,7 +495,7 @@ WebData BlinkPlatformImpl::parseDataURL(const WebURL& url,
 
 WebURLError BlinkPlatformImpl::cancelledError(
     const WebURL& unreachableURL) const {
-  return WebURLLoaderImpl::CreateError(unreachableURL, false, net::ERR_ABORTED);
+  return CreateWebURLError(unreachableURL, false, net::ERR_ABORTED);
 }
 
 bool BlinkPlatformImpl::isReservedIPAddress(

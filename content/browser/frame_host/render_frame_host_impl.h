@@ -422,6 +422,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
                         const CommonNavigationParams& common_params,
                         const RequestNavigationParams& request_params);
 
+  // PlzNavigate
+  // Indicates that a navigation failed and that this RenderFrame should display
+  // an error page.
+  void FailedNavigation(const CommonNavigationParams& common_params,
+                        const RequestNavigationParams& request_params,
+                        bool has_stale_copy_in_cache,
+                        int error_code);
+
   // Sets up the Mojo connection between this instance and its associated render
   // frame if it has not yet been set up.
   void SetUpMojoIfNeeded();

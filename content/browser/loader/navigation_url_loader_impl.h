@@ -47,7 +47,7 @@ class NavigationURLLoaderImpl : public NavigationURLLoader {
                              scoped_ptr<StreamHandle> body);
 
   // Notifies the delegate the request failed to return a response.
-  void NotifyRequestFailed(int net_error);
+  void NotifyRequestFailed(bool in_cache, int net_error);
 
   // Notifies the delegate the begin navigation request was handled and a
   // potential first network request is about to be made.

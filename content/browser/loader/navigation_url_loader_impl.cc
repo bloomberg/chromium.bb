@@ -64,10 +64,11 @@ void NavigationURLLoaderImpl::NotifyResponseStarted(
   delegate_->OnResponseStarted(response, body.Pass());
 }
 
-void NavigationURLLoaderImpl::NotifyRequestFailed(int net_error) {
+void NavigationURLLoaderImpl::NotifyRequestFailed(bool in_cache,
+                                                  int net_error) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  delegate_->OnRequestFailed(net_error);
+  delegate_->OnRequestFailed(in_cache, net_error);
 }
 
 void NavigationURLLoaderImpl::NotifyRequestStarted(base::TimeTicks timestamp) {

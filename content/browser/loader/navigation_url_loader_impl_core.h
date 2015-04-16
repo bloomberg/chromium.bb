@@ -59,7 +59,7 @@ class NavigationURLLoaderImplCore {
                              scoped_ptr<StreamHandle> body);
 
   // Notifies |loader_| on the UI thread that the request failed.
-  void NotifyRequestFailed(int net_error);
+  void NotifyRequestFailed(bool in_cache, int net_error);
 
  private:
   base::WeakPtr<NavigationURLLoaderImpl> loader_;

@@ -723,6 +723,29 @@ void NavigatorImpl::CommitNavigation(FrameTreeNode* frame_tree_node,
 }
 
 // PlzNavigate
+void NavigatorImpl::FailedNavigation(FrameTreeNode* frame_tree_node,
+                                     bool has_stale_copy_in_cache,
+                                     int error_code) {
+  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBrowserSideNavigation));
+
+  NavigationRequest* navigation_request =
+      navigation_request_map_.get(frame_tree_node->frame_tree_node_id());
+  DCHECK(navigation_request);
+
+  // Select an appropriate renderer to show the error page.
+  RenderFrameHostImpl* render_frame_host =
+      frame_tree_node->render_manager()->GetFrameHostForNavigation(
+          *navigation_request);
+  CheckWebUIRendererDoesNotDisplayNormalURL(
+      render_frame_host, navigation_request->common_params().url);
+
+  render_frame_host->FailedNavigation(navigation_request->common_params(),
+                                      navigation_request->request_params(),
+                                      has_stale_copy_in_cache, error_code);
+}
+
+// PlzNavigate
 void NavigatorImpl::CancelNavigation(FrameTreeNode* frame_tree_node) {
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));

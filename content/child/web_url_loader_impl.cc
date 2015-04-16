@@ -71,9 +71,6 @@ namespace content {
 
 namespace {
 
-const char kThrottledErrorDescription[] =
-    "Request throttled. Visit http://dev.chromium.org/throttling for more "
-    "information.";
 const size_t kBodyStreamPipeCapacity = 4 * 1024;
 
 typedef ResourceDevToolsInfo::HeadersVector HeadersVector;
@@ -692,10 +689,8 @@ void WebURLLoaderImpl::Context::OnReceivedData(const char* data,
     // TODO(yhirano): Support ftp listening and multipart.
     MojoResult rv = WriteDataOnBodyStream(data, data_length);
     if (rv != MOJO_RESULT_OK && client_) {
-      client_->didFail(loader_,
-                       loader_->CreateError(request_.url(),
-                                            false,
-                                            net::ERR_FAILED));
+      client_->didFail(
+          loader_, CreateWebURLError(request_.url(), false, net::ERR_FAILED));
     }
   } else if (ftp_listing_delegate_) {
     // The FTP listing delegate will make the appropriate calls to
@@ -745,9 +740,9 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
 
   if (client_) {
     if (error_code != net::OK) {
-      client_->didFail(loader_, CreateError(request_.url(),
-                                            stale_copy_in_cache,
-                                            error_code));
+      client_->didFail(
+          loader_,
+          CreateWebURLError(request_.url(), stale_copy_in_cache, error_code));
     } else {
       if (request_.useStreamOnResponse()) {
         got_all_stream_body_data_ = true;
@@ -903,10 +898,8 @@ MojoResult WebURLLoaderImpl::Context::WriteDataOnBodyStream(const char* data,
 void WebURLLoaderImpl::Context::OnHandleGotWritable(MojoResult result) {
   if (result != MOJO_RESULT_OK) {
     if (client_) {
-      client_->didFail(loader_,
-                       loader_->CreateError(request_.url(),
-                                            false,
-                                            net::ERR_FAILED));
+      client_->didFail(
+          loader_, CreateWebURLError(request_.url(), false, net::ERR_FAILED));
       // |this| can be deleted here.
     }
     return;
@@ -928,9 +921,8 @@ void WebURLLoaderImpl::Context::OnHandleGotWritable(MojoResult result) {
     }
   } else {
     if (client_) {
-      client_->didFail(loader_, loader_->CreateError(request_.url(),
-                                                     false,
-                                                     net::ERR_FAILED));
+      client_->didFail(
+          loader_, CreateWebURLError(request_.url(), false, net::ERR_FAILED));
       // |this| can be deleted here.
     }
   }
@@ -946,26 +938,6 @@ WebURLLoaderImpl::WebURLLoaderImpl(
 
 WebURLLoaderImpl::~WebURLLoaderImpl() {
   cancel();
-}
-
-WebURLError WebURLLoaderImpl::CreateError(const WebURL& unreachable_url,
-                                          bool stale_copy_in_cache,
-                                          int reason) {
-  WebURLError error;
-  error.domain = WebString::fromUTF8(net::kErrorDomain);
-  error.reason = reason;
-  error.unreachableURL = unreachable_url;
-  error.staleCopyInCache = stale_copy_in_cache;
-  if (reason == net::ERR_ABORTED) {
-    error.isCancellation = true;
-  } else if (reason == net::ERR_TEMPORARILY_THROTTLED) {
-    error.localizedDescription = WebString::fromUTF8(
-        kThrottledErrorDescription);
-  } else {
-    error.localizedDescription = WebString::fromUTF8(
-        net::ErrorToString(reason));
-  }
-  return error;
 }
 
 void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,

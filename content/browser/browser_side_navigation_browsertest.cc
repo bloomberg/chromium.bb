@@ -15,6 +15,7 @@
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/url_request/url_request_failed_job.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -157,6 +158,31 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
   // The RenderFrameHost should not have changed.
   EXPECT_EQ(initial_rfh, static_cast<WebContentsImpl*>(shell()->web_contents())
                              ->GetFrameTree()->root()->current_frame_host());
+}
+
+// Ensure that browser side navigation handles navigation failures.
+IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest, FailedNavigation) {
+  // Perform a navigation with no live renderer.
+  {
+    TestNavigationObserver observer(shell()->web_contents());
+    GURL url(embedded_test_server()->GetURL("/title1.html"));
+    NavigateToURL(shell(), url);
+    EXPECT_EQ(url, observer.last_navigation_url());
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+  }
+
+  // Now navigate to an unreachable url.
+  {
+    TestNavigationObserver observer(shell()->web_contents());
+    GURL error_url(
+        net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_RESET));
+    net::URLRequestFailedJob::AddUrlHandler();
+    NavigateToURL(shell(), error_url);
+    EXPECT_EQ(error_url, observer.last_navigation_url());
+    NavigationEntry* entry =
+        shell()->web_contents()->GetController().GetLastCommittedEntry();
+    EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
+  }
 }
 
 }  // namespace content

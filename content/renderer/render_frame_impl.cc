@@ -1057,6 +1057,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_SetTextTrackSettings,
                         OnTextTrackSettingsChanged)
     IPC_MESSAGE_HANDLER(FrameMsg_PostMessageEvent, OnPostMessageEvent)
+    IPC_MESSAGE_HANDLER(FrameMsg_FailedNavigation, OnFailedNavigation)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(FrameMsg_SelectPopupMenuItems, OnSelectPopupMenuItems)
 #elif defined(OS_MACOSX)
@@ -2602,45 +2603,10 @@ void RenderFrameImpl::didFailProvisionalLoad(
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
                     DidFailProvisionalLoad(error));
 
-  bool show_repost_interstitial =
-      (error.reason == net::ERR_CACHE_MISS &&
-       EqualsASCII(failed_request.httpMethod(), "POST"));
+  SendFailedProvisionalLoad(failed_request, error, frame);
 
-  FrameHostMsg_DidFailProvisionalLoadWithError_Params params;
-  params.error_code = error.reason;
-  GetContentClient()->renderer()->GetNavigationErrorStrings(
-      render_view_.get(),
-      frame,
-      failed_request,
-      error,
-      NULL,
-      &params.error_description);
-  params.url = error.unreachableURL;
-  params.showing_repost_interstitial = show_repost_interstitial;
-  Send(new FrameHostMsg_DidFailProvisionalLoadWithError(
-      routing_id_, params));
-
-  // Don't display an error page if this is simply a cancelled load.  Aside
-  // from being dumb, Blink doesn't expect it and it will cause a crash.
-  if (error.reason == net::ERR_ABORTED)
+  if (!ShouldDisplayErrorPageForFailedLoad(error.reason, error.unreachableURL))
     return;
-
-  // Don't display "client blocked" error page if browser has asked us not to.
-  if (error.reason == net::ERR_BLOCKED_BY_CLIENT &&
-      render_view_->renderer_preferences_.disable_client_blocked_error_page) {
-    return;
-  }
-
-  // Allow the embedder to suppress an error page.
-  if (GetContentClient()->renderer()->ShouldSuppressErrorPage(this,
-          error.unreachableURL)) {
-    return;
-  }
-
-  if (RenderThreadImpl::current() &&
-      RenderThreadImpl::current()->layout_test_mode()) {
-    return;
-  }
 
   // Make sure we never show errors in view source mode.
   frame->enableViewSourceMode(false);
@@ -4163,6 +4129,56 @@ void RenderFrameImpl::OnCommitNavigation(
                               renderer_navigation_start);
 }
 
+void RenderFrameImpl::OnFailedNavigation(
+    const CommonNavigationParams& common_params,
+    const RequestNavigationParams& request_params,
+    bool has_stale_copy_in_cache,
+    int error_code) {
+  bool is_reload = IsReload(common_params.navigation_type);
+  bool is_history_navigation = request_params.page_state.IsValid();
+  WebURLRequest::CachePolicy cache_policy =
+      WebURLRequest::UseProtocolCachePolicy;
+  if (!RenderFrameImpl::PrepareRenderViewForNavigation(
+          common_params.url, is_history_navigation, request_params, &is_reload,
+          &cache_policy)) {
+    return;
+  }
+
+  GetContentClient()->SetActiveURL(common_params.url);
+
+  pending_navigation_params_.reset(new NavigationParams(
+      common_params, StartNavigationParams(), request_params));
+
+  // Inform the browser of the start of the provisional load. This is needed so
+  // that the load is properly tracked by the WebNavigation API.
+  // TODO(clamy): Properly set is_transition_navigation.
+  Send(new FrameHostMsg_DidStartProvisionalLoadForFrame(
+      routing_id_, common_params.url, false));
+
+  // Send the provisional load failure.
+  blink::WebURLError error =
+      CreateWebURLError(common_params.url, has_stale_copy_in_cache, error_code);
+  WebURLRequest failed_request = CreateURLRequestForNavigation(
+      common_params, scoped_ptr<StreamOverrideParameters>(),
+      frame_->isViewSourceModeEnabled());
+  SendFailedProvisionalLoad(failed_request, error, frame_);
+
+  if (!ShouldDisplayErrorPageForFailedLoad(error_code, common_params.url))
+    return;
+
+  // Make sure errors are not shown in view source mode.
+  frame_->enableViewSourceMode(false);
+
+  // Replace the current history entry in reloads, history navigations and loads
+  // of the same url. This corresponds to Blink's notion of a standard
+  // commit.
+  // TODO(clamy): see if initial commits in subframes should be handled
+  // separately.
+  bool replace = is_reload || is_history_navigation ||
+                 common_params.url == GetLoadingUrl();
+  LoadNavigationErrorPage(failed_request, error, replace);
+}
+
 WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
     RenderFrame* render_frame,
     const NavigationPolicyInfo& info) {
@@ -4660,6 +4676,51 @@ void RenderFrameImpl::LoadDataURL(const CommonNavigationParams& params,
   }
 }
 
+void RenderFrameImpl::SendFailedProvisionalLoad(
+    const blink::WebURLRequest& request,
+    const blink::WebURLError& error,
+    blink::WebLocalFrame* frame) {
+  bool show_repost_interstitial = (error.reason == net::ERR_CACHE_MISS &&
+                                   EqualsASCII(request.httpMethod(), "POST"));
+
+  FrameHostMsg_DidFailProvisionalLoadWithError_Params params;
+  params.error_code = error.reason;
+  GetContentClient()->renderer()->GetNavigationErrorStrings(
+      render_view_.get(), frame, request, error, NULL,
+      &params.error_description);
+  params.url = error.unreachableURL;
+  params.showing_repost_interstitial = show_repost_interstitial;
+  Send(new FrameHostMsg_DidFailProvisionalLoadWithError(routing_id_, params));
+}
+
+bool RenderFrameImpl::ShouldDisplayErrorPageForFailedLoad(
+    int error_code,
+    const GURL& unreachable_url) {
+  // Don't display an error page if this is simply a cancelled load.  Aside
+  // from being dumb, Blink doesn't expect it and it will cause a crash.
+  if (error_code == net::ERR_ABORTED)
+    return false;
+
+  // Don't display "client blocked" error page if browser has asked us not to.
+  if (error_code == net::ERR_BLOCKED_BY_CLIENT &&
+      render_view_->renderer_preferences_.disable_client_blocked_error_page) {
+    return false;
+  }
+
+  // Allow the embedder to suppress an error page.
+  if (GetContentClient()->renderer()->ShouldSuppressErrorPage(
+          this, unreachable_url)) {
+    return false;
+  }
+
+  if (RenderThreadImpl::current() &&
+      RenderThreadImpl::current()->layout_test_mode()) {
+    return false;
+  }
+
+  return true;
+}
+
 GURL RenderFrameImpl::GetLoadingUrl() const {
   WebDataSource* ds = frame_->dataSource();
   if (ds->hasUnreachableURL())
@@ -4724,6 +4785,7 @@ NavigationState* RenderFrameImpl::CreateNavigationStateFromPending() {
   }
   return NavigationStateImpl::CreateContentInitiated();
 }
+
 #if defined(OS_ANDROID)
 
 WebMediaPlayer* RenderFrameImpl::CreateAndroidWebMediaPlayer(

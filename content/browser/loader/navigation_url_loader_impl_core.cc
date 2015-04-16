@@ -95,13 +95,14 @@ void NavigationURLLoaderImplCore::NotifyResponseStarted(
                  response->DeepCopy(), base::Passed(&body)));
 }
 
-void NavigationURLLoaderImplCore::NotifyRequestFailed(int net_error) {
+void NavigationURLLoaderImplCore::NotifyRequestFailed(bool in_cache,
+                                                      int net_error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&NavigationURLLoaderImpl::NotifyRequestFailed, loader_,
-                 net_error));
+                 in_cache, net_error));
 }
 
 }  // namespace content

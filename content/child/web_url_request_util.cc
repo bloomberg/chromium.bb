@@ -7,8 +7,11 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 
 using blink::WebHTTPBody;
@@ -18,6 +21,10 @@ using blink::WebURLRequest;
 namespace content {
 
 namespace {
+
+const char kThrottledErrorDescription[] =
+    "Request throttled. Visit http://dev.chromium.org/throttling for more "
+    "information.";
 
 class HeaderFlattener : public blink::WebHTTPHeaderVisitor {
  public:
@@ -270,6 +277,26 @@ scoped_refptr<ResourceRequestBody> GetRequestBodyForWebURLRequest(
   }
   request_body->set_identifier(request.httpBody().identifier());
   return request_body;
+}
+
+blink::WebURLError CreateWebURLError(const blink::WebURL& unreachable_url,
+                                     bool stale_copy_in_cache,
+                                     int reason) {
+  blink::WebURLError error;
+  error.domain = WebString::fromUTF8(net::kErrorDomain);
+  error.reason = reason;
+  error.unreachableURL = unreachable_url;
+  error.staleCopyInCache = stale_copy_in_cache;
+  if (reason == net::ERR_ABORTED) {
+    error.isCancellation = true;
+  } else if (reason == net::ERR_TEMPORARILY_THROTTLED) {
+    error.localizedDescription =
+        WebString::fromUTF8(kThrottledErrorDescription);
+  } else {
+    error.localizedDescription =
+        WebString::fromUTF8(net::ErrorToString(reason));
+  }
+  return error;
 }
 
 }  // namespace content

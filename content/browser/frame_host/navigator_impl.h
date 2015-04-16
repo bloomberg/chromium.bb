@@ -77,6 +77,9 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   void CommitNavigation(FrameTreeNode* frame_tree_node,
                         ResourceResponse* response,
                         scoped_ptr<StreamHandle> body) override;
+  void FailedNavigation(FrameTreeNode* frame_tree_node,
+                        bool has_stale_copy_in_cache,
+                        int error_code) override;
   void LogResourceRequestTime(base::TimeTicks timestamp,
                               const GURL& url) override;
   void LogBeforeUnloadTime(

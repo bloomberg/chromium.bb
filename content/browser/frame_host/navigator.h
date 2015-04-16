@@ -143,6 +143,15 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
                                 scoped_ptr<StreamHandle> body);
 
   // PlzNavigate
+  // Called when a NavigationRequest for |frame_tree_node| failed. An
+  // appropriate RenderFrameHost should be selected and asked to show an error
+  // page. |has_stale_copy_in_cache| is true if there is a stale copy of the
+  // unreachable page in cache.
+  virtual void FailedNavigation(FrameTreeNode* frame_tree_node,
+                                bool has_stale_copy_in_cache,
+                                int error_code) {}
+
+  // PlzNavigate
   // Cancel a NavigationRequest for |frame_tree_node|. Called when
   // |frame_tree_node| is destroyed.
   virtual void CancelNavigation(FrameTreeNode* frame_tree_node) {}

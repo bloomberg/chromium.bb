@@ -134,7 +134,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       const scoped_refptr<ResourceResponse>& response) override;
   void OnResponseStarted(const scoped_refptr<ResourceResponse>& response,
                          scoped_ptr<StreamHandle> body) override;
-  void OnRequestFailed(int net_error) override;
+  void OnRequestFailed(bool has_stale_copy_in_cache, int net_error) override;
   void OnRequestStarted(base::TimeTicks timestamp) override;
 
   FrameTreeNode* frame_tree_node_;

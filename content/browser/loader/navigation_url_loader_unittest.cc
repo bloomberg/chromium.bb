@@ -114,7 +114,7 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
     response_started_->Quit();
   }
 
-  void OnRequestFailed(int net_error) override {
+  void OnRequestFailed(bool in_cache, int net_error) override {
     net_error_ = net_error;
     ASSERT_TRUE(request_failed_);
     request_failed_->Quit();
