@@ -98,6 +98,11 @@ class SessionRestore {
   static CallbackSubscription RegisterOnSessionRestoredCallback(
       const base::Callback<void(int)>& callback);
 
+  // Returns true if only active tabs are to be loaded during session restore
+  // (lazy load). Otherwise returns false if all tabs will be loaded when
+  // restored.
+  static bool WillLoadActiveTabsOnly();
+
  private:
   SessionRestore();
 

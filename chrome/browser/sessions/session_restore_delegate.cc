@@ -10,17 +10,12 @@
 #include "components/favicon/content/content_favicon_driver.h"
 
 // static
-void SessionRestoreDelegate::RestoreTabs(
-    const std::vector<RestoredTab>& tabs,
-    const base::TimeTicks& restore_started) {
-  // TODO(georgesak): make tests aware of that behavior so that they succeed if
-  // tab loading is disabled.
-  base::FieldTrial* trial =
-      base::FieldTrialList::Find("SessionRestoreBackgroundLoading");
-  bool active_only = true;
-  if (!trial || trial->group_name() == "Restore") {
+void SessionRestoreDelegate::RestoreTabs(const std::vector<RestoredTab>& tabs,
+                                         const base::TimeTicks& restore_started,
+                                         bool active_only) {
+  SessionRestoreStatsCollector::TrackTabs(tabs, restore_started, active_only);
+  if (!active_only) {
     TabLoader::RestoreTabs(tabs, restore_started);
-    active_only = false;
   } else {
     // If we are not loading inactive tabs, restore their favicons (title has
     // already been set by now).
@@ -32,5 +27,4 @@ void SessionRestoreDelegate::RestoreTabs(
       }
     }
   }
-  SessionRestoreStatsCollector::TrackTabs(tabs, restore_started, active_only);
 }

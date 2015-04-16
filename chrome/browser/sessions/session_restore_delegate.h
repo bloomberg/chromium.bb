@@ -23,7 +23,8 @@ class SessionRestoreDelegate {
   };
 
   static void RestoreTabs(const std::vector<RestoredTab>& tabs,
-                          const base::TimeTicks& restore_started);
+                          const base::TimeTicks& restore_started,
+                          bool active_only);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SessionRestoreDelegate);
