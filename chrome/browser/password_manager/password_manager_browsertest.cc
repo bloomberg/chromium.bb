@@ -1366,8 +1366,17 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoLastLoadGoodLastLoad) {
 // all-but-action match. Normally, the former should be preferred, but if the
 // former has not finished matching, and the latter has, the latter should be
 // used (otherwise we'd give up even though we could have saved the password).
+//
+// Disabled on Mac due to flakiness: http://crbug.com/477812
+#if defined(OS_MACOSX)
+#define MAYBE_PreferPasswordFormManagerWhichFinishedMatching \
+  DISABLED_PreferPasswordFormManagerWhichFinishedMatching
+#else
+#define MAYBE_PreferPasswordFormManagerWhichFinishedMatching \
+  PreferPasswordFormManagerWhichFinishedMatching
+#endif
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
-                       PreferPasswordFormManagerWhichFinishedMatching) {
+                       MAYBE_PreferPasswordFormManagerWhichFinishedMatching) {
   NavigateToFile("/password/create_form_copy_on_submit.html");
 
   NavigationObserver observer(WebContents());
