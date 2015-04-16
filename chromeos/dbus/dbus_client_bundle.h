@@ -23,6 +23,7 @@ class BluetoothGattDescriptorClient;
 class BluetoothGattManagerClient;
 class BluetoothGattServiceClient;
 class BluetoothInputClient;
+class BluetoothLEAdvertisingManagerClient;
 class BluetoothMediaClient;
 class BluetoothMediaTransportClient;
 class BluetoothProfileManagerClient;
@@ -121,6 +122,11 @@ class CHROMEOS_EXPORT DBusClientBundle {
 
   BluetoothAdapterClient* bluetooth_adapter_client() {
     return bluetooth_adapter_client_.get();
+  }
+
+  BluetoothLEAdvertisingManagerClient*
+  bluetooth_le_advertising_manager_client() {
+    return bluetooth_le_advertising_manager_client_.get();
   }
 
   BluetoothAgentManagerClient* bluetooth_agent_manager_client() {
@@ -296,6 +302,8 @@ class CHROMEOS_EXPORT DBusClientBundle {
   scoped_ptr<ApManagerClient> ap_manager_client_;
   scoped_ptr<AudioDspClient> audio_dsp_client_;
   scoped_ptr<BluetoothAdapterClient> bluetooth_adapter_client_;
+  scoped_ptr<BluetoothLEAdvertisingManagerClient>
+      bluetooth_le_advertising_manager_client_;
   scoped_ptr<BluetoothAgentManagerClient> bluetooth_agent_manager_client_;
   scoped_ptr<BluetoothDeviceClient> bluetooth_device_client_;
   scoped_ptr<BluetoothGattCharacteristicClient>

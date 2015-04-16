@@ -21,6 +21,7 @@
 #include "chromeos/dbus/bluetooth_gatt_manager_client.h"
 #include "chromeos/dbus/bluetooth_gatt_service_client.h"
 #include "chromeos/dbus/bluetooth_input_client.h"
+#include "chromeos/dbus/bluetooth_le_advertising_manager_client.h"
 #include "chromeos/dbus/bluetooth_media_client.h"
 #include "chromeos/dbus/bluetooth_media_transport_client.h"
 #include "chromeos/dbus/bluetooth_profile_manager_client.h"
@@ -40,6 +41,7 @@
 #include "chromeos/dbus/fake_bluetooth_gatt_manager_client.h"
 #include "chromeos/dbus/fake_bluetooth_gatt_service_client.h"
 #include "chromeos/dbus/fake_bluetooth_input_client.h"
+#include "chromeos/dbus/fake_bluetooth_le_advertising_manager_client.h"
 #include "chromeos/dbus/fake_bluetooth_media_client.h"
 #include "chromeos/dbus/fake_bluetooth_media_transport_client.h"
 #include "chromeos/dbus/fake_bluetooth_profile_manager_client.h"
@@ -161,6 +163,8 @@ DBusClientBundle::DBusClientBundle(DBusClientTypeMask unstub_client_mask)
 
   if (!IsUsingStub(BLUETOOTH)) {
     bluetooth_adapter_client_.reset(BluetoothAdapterClient::Create());
+    bluetooth_le_advertising_manager_client_.reset(
+        BluetoothLEAdvertisingManagerClient::Create());
     bluetooth_agent_manager_client_.reset(
         BluetoothAgentManagerClient::Create());
     bluetooth_device_client_.reset(BluetoothDeviceClient::Create());
@@ -180,6 +184,8 @@ DBusClientBundle::DBusClientBundle(DBusClientTypeMask unstub_client_mask)
         BluetoothGattServiceClient::Create());
   } else {
     bluetooth_adapter_client_.reset(new FakeBluetoothAdapterClient);
+    bluetooth_le_advertising_manager_client_.reset(
+        new FakeBluetoothLEAdvertisingManagerClient);
     bluetooth_agent_manager_client_.reset(new FakeBluetoothAgentManagerClient);
     bluetooth_device_client_.reset(new FakeBluetoothDeviceClient);
     bluetooth_input_client_.reset(new FakeBluetoothInputClient);

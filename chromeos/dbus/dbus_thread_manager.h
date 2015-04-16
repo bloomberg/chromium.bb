@@ -29,6 +29,7 @@ class AmplifierClient;
 class ApManagerClient;
 class AudioDspClient;
 class BluetoothAdapterClient;
+class BluetoothLEAdvertisingManagerClient;
 class BluetoothAgentManagerClient;
 class BluetoothDeviceClient;
 class BluetoothGattCharacteristicClient;
@@ -126,6 +127,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
   ApManagerClient* GetApManagerClient();
   AudioDspClient* GetAudioDspClient();
   BluetoothAdapterClient* GetBluetoothAdapterClient();
+  BluetoothLEAdvertisingManagerClient* GetBluetoothLEAdvertisingManagerClient();
   BluetoothAgentManagerClient* GetBluetoothAgentManagerClient();
   BluetoothDeviceClient* GetBluetoothDeviceClient();
   BluetoothGattCharacteristicClient* GetBluetoothGattCharacteristicClient();
@@ -213,6 +215,8 @@ class CHROMEOS_EXPORT DBusThreadManagerSetter {
   void SetAmplifierClient(scoped_ptr<AmplifierClient> client);
   void SetAudioDspClient(scoped_ptr<AudioDspClient> client);
   void SetBluetoothAdapterClient(scoped_ptr<BluetoothAdapterClient> client);
+  void SetBluetoothLEAdvertisingManagerClient(
+      scoped_ptr<BluetoothLEAdvertisingManagerClient> client);
   void SetBluetoothAgentManagerClient(
       scoped_ptr<BluetoothAgentManagerClient> client);
   void SetBluetoothDeviceClient(scoped_ptr<BluetoothDeviceClient> client);

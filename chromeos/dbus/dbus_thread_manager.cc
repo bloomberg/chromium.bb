@@ -19,6 +19,7 @@
 #include "chromeos/dbus/bluetooth_gatt_manager_client.h"
 #include "chromeos/dbus/bluetooth_gatt_service_client.h"
 #include "chromeos/dbus/bluetooth_input_client.h"
+#include "chromeos/dbus/bluetooth_le_advertising_manager_client.h"
 #include "chromeos/dbus/bluetooth_media_client.h"
 #include "chromeos/dbus/bluetooth_media_transport_client.h"
 #include "chromeos/dbus/bluetooth_profile_manager_client.h"
@@ -130,6 +131,11 @@ AudioDspClient* DBusThreadManager::GetAudioDspClient() {
 
 BluetoothAdapterClient* DBusThreadManager::GetBluetoothAdapterClient() {
   return client_bundle_->bluetooth_adapter_client();
+}
+
+BluetoothLEAdvertisingManagerClient*
+DBusThreadManager::GetBluetoothLEAdvertisingManagerClient() {
+  return client_bundle_->bluetooth_le_advertising_manager_client();
 }
 
 BluetoothAgentManagerClient*
@@ -486,6 +492,12 @@ void DBusThreadManagerSetter::SetBluetoothAdapterClient(
     scoped_ptr<BluetoothAdapterClient> client) {
   DBusThreadManager::Get()->client_bundle_->bluetooth_adapter_client_ =
       client.Pass();
+}
+
+void DBusThreadManagerSetter::SetBluetoothLEAdvertisingManagerClient(
+    scoped_ptr<BluetoothLEAdvertisingManagerClient> client) {
+  DBusThreadManager::Get()->client_bundle_->
+      bluetooth_le_advertising_manager_client_ = client.Pass();
 }
 
 void DBusThreadManagerSetter::SetBluetoothAgentManagerClient(
