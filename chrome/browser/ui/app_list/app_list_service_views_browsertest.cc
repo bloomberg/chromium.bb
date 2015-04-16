@@ -97,7 +97,13 @@ IN_PROC_BROWSER_TEST_F(AppListServiceViewsBrowserTest, NativeClose) {
 // Dismiss the app list via an accelerator when it is the only thing keeping
 // Chrome alive and expect everything to clean up properly. This is a regression
 // test for http://crbug.com/395937.
-IN_PROC_BROWSER_TEST_F(AppListServiceViewsBrowserTest, AcceleratorClose) {
+// Flaky on Win and Linux. https://crbug.com/477697
+#if defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_AcceleratorClose DISABLED_AcceleratorClose
+#else
+#define MAYBE_AcceleratorClose AcceleratorClose
+#endif
+IN_PROC_BROWSER_TEST_F(AppListServiceViewsBrowserTest, MAYBE_AcceleratorClose) {
   AppListService* service = test::GetAppListService();
   service->ShowForProfile(browser()->profile());
   EXPECT_TRUE(service->GetAppListWindow());
