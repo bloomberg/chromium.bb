@@ -18790,6 +18790,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.HttpHeaderParserEvent" enum="HttpHeaderParserEvent">
+  <owner>mmenke@chromium.org</owner>
+  <summary>
+    Records the frequency with which a number of hacky HTTP header parsing rules
+    are invoked.  This histogram should be removed after we have enough data to
+    know if we can remove the hacks.
+  </summary>
+</histogram>
+
 <histogram name="net.HttpIdentSrcURL" units="requests">
   <owner>tsepez@chromium.org</owner>
   <summary>
@@ -52930,6 +52939,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="13" label="Negotiate Secure Proxy"/>
   <int value="14" label="Negotiate Server"/>
   <int value="15" label="Negotiate Secure Server"/>
+</enum>
+
+<enum name="HttpHeaderParserEvent" type="int">
+  <int value="0" label="PARSER_INVOKED"/>
+  <int value="1" label="HTTP_09_RESPONSE"/>
+  <int value="2" label="ALLOWED_TRUNCATED_HEADERS"/>
+  <int value="3" label="SKIPPED_WS_PREFIX"/>
+  <int value="4" label="SKIPPED_NON_WS_PREFIX"/>
 </enum>
 
 <enum name="HttpPipelineStatus" type="int">

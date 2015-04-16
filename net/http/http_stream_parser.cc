@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -24,6 +25,20 @@
 namespace net {
 
 namespace {
+
+enum HttpHeaderParserEvent {
+  HEADER_PARSER_INVOKED = 0,
+  HEADER_HTTP_09_RESPONSE = 1,
+  HEADER_ALLOWED_TRUNCATED_HEADERS = 2,
+  HEADER_SKIPPED_WS_PREFIX = 3,
+  HEADER_SKIPPED_NON_WS_PREFIX = 4,
+  NUM_HEADER_EVENTS
+};
+
+void RecordHeaderParserEvent(HttpHeaderParserEvent header_event) {
+  UMA_HISTOGRAM_ENUMERATION("Net.HttpHeaderParserEvent", header_event,
+                            NUM_HEADER_EVENTS);
+}
 
 const uint64 kMaxMergedHeaderAndBodySize = 1400;
 const size_t kRequestBodyBufferSize = 1 << 14;  // 16KB
@@ -828,13 +843,16 @@ int HttpStreamParser::HandleReadHeaderResult(int result) {
     // Parse things as well as we can and let the caller decide what to do.
     int end_offset;
     if (response_header_start_offset_ >= 0) {
+      // The response looks to be a truncated set of HTTP headers.
       io_state_ = STATE_READ_BODY_COMPLETE;
       end_offset = read_buf_->offset();
+      RecordHeaderParserEvent(HEADER_ALLOWED_TRUNCATED_HEADERS);
     } else {
-      // Now waiting for the body to be read.
+      // The response is apparently using HTTP/0.9.  Treat the entire response
+      // the body.
       end_offset = 0;
     }
-    int rv = DoParseResponseHeaders(end_offset);
+    int rv = ParseResponseHeaders(end_offset);
     if (rv < 0)
       return rv;
     return result;
@@ -844,7 +862,7 @@ int HttpStreamParser::HandleReadHeaderResult(int result) {
   DCHECK_LE(read_buf_->offset(), read_buf_->capacity());
   DCHECK_GE(result,  0);
 
-  int end_of_header_offset = ParseResponseHeaders();
+  int end_of_header_offset = FindAndParseResponseHeaders();
 
   // Note: -1 is special, it indicates we haven't found the end of headers.
   // Anything less than -1 is a net::Error, so we bail out.
@@ -895,7 +913,7 @@ int HttpStreamParser::HandleReadHeaderResult(int result) {
   return result;
 }
 
-int HttpStreamParser::ParseResponseHeaders() {
+int HttpStreamParser::FindAndParseResponseHeaders() {
   int end_offset = -1;
   DCHECK_EQ(0, read_buf_unused_offset_);
 
@@ -918,15 +936,32 @@ int HttpStreamParser::ParseResponseHeaders() {
   if (end_offset == -1)
     return -1;
 
-  int rv = DoParseResponseHeaders(end_offset);
+  int rv = ParseResponseHeaders(end_offset);
   if (rv < 0)
     return rv;
   return end_offset;
 }
 
-int HttpStreamParser::DoParseResponseHeaders(int end_offset) {
+int HttpStreamParser::ParseResponseHeaders(int end_offset) {
   scoped_refptr<HttpResponseHeaders> headers;
   DCHECK_EQ(0, read_buf_unused_offset_);
+
+  RecordHeaderParserEvent(HEADER_PARSER_INVOKED);
+
+  if (response_header_start_offset_ > 0) {
+    bool has_non_whitespace_in_prefix = false;
+    for (int i = 0; i < response_header_start_offset_; ++i) {
+      if (!strchr(" \t\r\n", read_buf_->StartOfBuffer()[i])) {
+        has_non_whitespace_in_prefix = true;
+        break;
+      }
+    }
+    if (has_non_whitespace_in_prefix) {
+      RecordHeaderParserEvent(HEADER_SKIPPED_NON_WS_PREFIX);
+    } else {
+      RecordHeaderParserEvent(HEADER_SKIPPED_WS_PREFIX);
+    }
+  }
 
   if (response_header_start_offset_ >= 0) {
     received_bytes_ += end_offset;
@@ -935,6 +970,7 @@ int HttpStreamParser::DoParseResponseHeaders(int end_offset) {
   } else {
     // Enough data was read -- there is no status line.
     headers = new HttpResponseHeaders(std::string("HTTP/0.9 200 OK"));
+    RecordHeaderParserEvent(HEADER_HTTP_09_RESPONSE);
   }
 
   // Check for multiple Content-Length headers with no Transfer-Encoding header.

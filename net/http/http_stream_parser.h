@@ -160,11 +160,11 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   // found, parse them with DoParseResponseHeaders().  Return the offset for
   // the end of the headers, or -1 if the complete headers were not found, or
   // with a net::Error if we encountered an error during parsing.
-  int ParseResponseHeaders();
+  int FindAndParseResponseHeaders();
 
   // Parse the headers into response_.  Returns OK on success or a net::Error on
   // failure.
-  int DoParseResponseHeaders(int end_of_header_offset);
+  int ParseResponseHeaders(int end_of_header_offset);
 
   // Examine the parsed headers to try to determine the response body size.
   void CalculateResponseBodySize();
