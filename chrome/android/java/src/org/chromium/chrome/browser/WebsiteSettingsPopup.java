@@ -4,6 +4,10 @@
 
 package org.chromium.chrome.browser;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -41,9 +45,11 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -188,6 +194,13 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         }
     }
 
+    // Delay enter to allow the triggering button to animate before we cover it.
+    private static final int ENTER_START_DELAY = 100;
+    private static final int FADE_DURATION = 200;
+    private static final int FADE_IN_BASE_DELAY = 150;
+    private static final int FADE_IN_DELAY_OFFSET = 20;
+    private static final int CLOSE_CLEANUP_DELAY = 10;
+
     private static final int MAX_TABLET_DIALOG_WIDTH_DP = 400;
 
     private final Context mContext;
@@ -212,6 +225,9 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
 
     // The dialog the container is placed in.
     private final Dialog mDialog;
+
+    // Animation which is currently running, if there is one.
+    private AnimatorSet mCurrentAnimation = null;
 
     // The full URL from the URL bar, which is copied to the user's clipboard when they select 'Copy
     // URL'.
@@ -247,6 +263,17 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         // Find the container and all it's important subviews.
         mContainer = (LinearLayout) LayoutInflater.from(mContext).inflate(
                 R.layout.website_settings, null);
+        mContainer.setVisibility(View.INVISIBLE);
+        mContainer.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            public void onLayoutChange(
+                    View v, int l, int t, int r, int b, int ol, int ot, int or, int ob) {
+                // Trigger the entrance animations once the main container has been laid out and has
+                // a height.
+                mContainer.removeOnLayoutChangeListener(this);
+                mContainer.setVisibility(View.VISIBLE);
+                createAllAnimations(true).start();
+            }
+        });
 
         mUrlTitle = (ElidedUrlTextView) mContainer.findViewById(R.id.website_settings_url);
         mUrlTitle.setProfile(mProfile);
@@ -277,7 +304,36 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         setVisibilityOfLowerDialogArea(false);
 
         // Create the dialog.
-        mDialog = new Dialog(mContext);
+        mDialog = new Dialog(mContext) {
+            private void superDismiss() {
+                super.dismiss();
+            }
+
+            @Override
+            public void dismiss() {
+                if (DeviceFormFactor.isTablet(mContext)) {
+                    // Dismiss the dialog without any custom animations on tablet.
+                    super.dismiss();
+                } else {
+                    Animator animator = createAllAnimations(false);
+                    animator.addListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            // onAnimationEnd is called during the final frame of the animation.
+                            // Delay the cleanup by a tiny amount to give this frame a chance to be
+                            // displayed before we destroy the dialog.
+                            mContainer.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    superDismiss();
+                                }
+                            }, CLOSE_CLEANUP_DELAY);
+                        }
+                    });
+                    animator.start();
+                }
+            }
+        };
         mDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         mDialog.setCanceledOnTouchOutside(true);
 
@@ -554,6 +610,98 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
             // Expand/collapse the displayed URL title.
             mUrlTitle.toggleTruncation();
         }
+    }
+
+    /**
+     * Create a list of all the views which we want to individually fade in.
+     */
+    private List<View> collectAnimatableViews() {
+        List<View> animatableViews = new ArrayList<View>();
+        animatableViews.add(mUrlTitle);
+        animatableViews.add(mUrlConnectionMessage);
+        animatableViews.add(mCopyUrlButton);
+        animatableViews.add(mHorizontalSeparator);
+        for (int i = 0; i < mPermissionsList.getChildCount(); i++) {
+            animatableViews.add(mPermissionsList.getChildAt(i));
+        }
+
+        return animatableViews;
+    }
+
+    /**
+     * Create an animator to fade an individual dialog element.
+     */
+    private Animator createInnerFadeAnimator(final View view, int position, boolean isEnter) {
+        ObjectAnimator alphaAnim;
+
+        if (isEnter) {
+            view.setAlpha(0f);
+            alphaAnim = ObjectAnimator.ofFloat(view, View.ALPHA, 1f);
+            alphaAnim.setStartDelay(FADE_IN_BASE_DELAY + FADE_IN_DELAY_OFFSET * position);
+        } else {
+            alphaAnim = ObjectAnimator.ofFloat(view, View.ALPHA, 0f);
+        }
+
+        alphaAnim.setDuration(FADE_DURATION);
+        return alphaAnim;
+    }
+
+    /**
+     * Create an animator to slide in the entire dialog from the top of the screen.
+     */
+    private Animator createDialogSlideAnimator(boolean isEnter) {
+        final float animHeight = -1f * mContainer.getHeight();
+        ObjectAnimator translateAnim;
+        if (isEnter) {
+            mContainer.setTranslationY(animHeight);
+            translateAnim = ObjectAnimator.ofFloat(mContainer, View.TRANSLATION_Y, 0f);
+            translateAnim.setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
+        } else {
+            translateAnim = ObjectAnimator.ofFloat(mContainer, View.TRANSLATION_Y, animHeight);
+            translateAnim.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
+        }
+        translateAnim.setDuration(FADE_DURATION);
+        return translateAnim;
+    }
+
+    /**
+     * Create animations for showing/hiding the popup.
+     *
+     * Tablets use the default Dialog fade-in instead of sliding in manually.
+     */
+    private Animator createAllAnimations(boolean isEnter) {
+        AnimatorSet animation = new AnimatorSet();
+        AnimatorSet.Builder builder = null;
+        Animator startAnim;
+
+        if (DeviceFormFactor.isTablet(mContext)) {
+            // The start time of the entire AnimatorSet is the start time of the first animation
+            // added to the Builder. We use a blank AnimatorSet on tablet as an easy way to
+            // co-ordinate this start time.
+            startAnim = new AnimatorSet();
+        } else {
+            startAnim = createDialogSlideAnimator(isEnter);
+        }
+
+        if (isEnter) startAnim.setStartDelay(ENTER_START_DELAY);
+        builder = animation.play(startAnim);
+
+        List<View> animatableViews = collectAnimatableViews();
+        for (int i = 0; i < animatableViews.size(); i++) {
+            View view = animatableViews.get(i);
+            Animator anim = createInnerFadeAnimator(view, i, isEnter);
+            builder.with(anim);
+        }
+
+        animation.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mCurrentAnimation = null;
+            }
+        });
+        if (mCurrentAnimation != null) mCurrentAnimation.cancel();
+        mCurrentAnimation = animation;
+        return animation;
     }
 
     /**
