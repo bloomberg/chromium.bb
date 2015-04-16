@@ -18,6 +18,7 @@
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/variations/generated_resources_map.h"
+#include "chrome/browser/metrics/variations/url_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_state_manager.h"
@@ -52,9 +53,6 @@ namespace chrome_variations {
 
 namespace {
 
-// Default server of Variations seed info.
-const char kDefaultVariationsServerURL[] =
-    "https://clients4.google.com/chrome-variations/seed";
 const int kMaxRetrySeedFetch = 5;
 
 // TODO(mad): To be removed when we stop updating the NetworkTimeTracker.
@@ -383,7 +381,7 @@ GURL VariationsService::GetVariationsServerURL(
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kVariationsServerURL));
   if (server_url_string.empty())
-    server_url_string = kDefaultVariationsServerURL;
+    server_url_string = kDefaultServerUrl;
   GURL server_url = GURL(server_url_string);
 
   const std::string restrict_param = !restrict_mode_override.empty() ?
@@ -403,7 +401,7 @@ GURL VariationsService::GetVariationsServerURL(
 
 // static
 std::string VariationsService::GetDefaultVariationsServerURLForTesting() {
-  return kDefaultVariationsServerURL;
+  return kDefaultServerUrl;
 }
 
 // static

@@ -1771,6 +1771,8 @@
       'browser/metrics/time_ticks_experiment_win.h',
       'browser/metrics/variations/generated_resources_map.h',
       'browser/metrics/variations/generated_resources_map_lookup.cc',
+      'browser/metrics/variations/url_constants.cc',
+      'browser/metrics/variations/url_constants.h',
       'browser/metrics/variations/variations_registry_syncer_win.cc',
       'browser/metrics/variations/variations_registry_syncer_win.h',
       'browser/metrics/variations/variations_request_scheduler.cc',
@@ -2872,7 +2874,7 @@
       'browser/task_management/providers/task_provider.h',
       'browser/task_management/providers/task.cc',
       'browser/task_management/providers/task.h',
-      
+
       # Old Task Manager Sources:
       'browser/task_manager/background_information.cc',
       'browser/task_manager/background_information.h',
