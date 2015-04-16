@@ -170,21 +170,21 @@ TEST(Target, InheritLibs) {
   ASSERT_TRUE(a.OnResolved(&err));
 
   // C should have D in its inherited libs.
-  const UniqueVector<const Target*>& c_inherited = c.inherited_libraries();
-  EXPECT_EQ(1u, c_inherited.size());
-  EXPECT_TRUE(c_inherited.IndexOf(&d) != static_cast<size_t>(-1));
+  std::vector<const Target*> c_inherited = c.inherited_libraries().GetOrdered();
+  ASSERT_EQ(1u, c_inherited.size());
+  EXPECT_EQ(&d, c_inherited[0]);
 
   // B should have C and D in its inherited libs.
-  const UniqueVector<const Target*>& b_inherited = b.inherited_libraries();
-  EXPECT_EQ(2u, b_inherited.size());
-  EXPECT_TRUE(b_inherited.IndexOf(&c) != static_cast<size_t>(-1));
-  EXPECT_TRUE(b_inherited.IndexOf(&d) != static_cast<size_t>(-1));
+  std::vector<const Target*> b_inherited = b.inherited_libraries().GetOrdered();
+  ASSERT_EQ(2u, b_inherited.size());
+  EXPECT_EQ(&c, b_inherited[0]);
+  EXPECT_EQ(&d, b_inherited[1]);
 
   // A should have B in its inherited libs, but not any others (the shared
   // library will include the static library and source set).
-  const UniqueVector<const Target*>& a_inherited = a.inherited_libraries();
-  EXPECT_EQ(1u, a_inherited.size());
-  EXPECT_TRUE(a_inherited.IndexOf(&b) != static_cast<size_t>(-1));
+  std::vector<const Target*> a_inherited = a.inherited_libraries().GetOrdered();
+  ASSERT_EQ(1u, a_inherited.size());
+  EXPECT_EQ(&b, a_inherited[0]);
 }
 
 TEST(Target, InheritCompleteStaticLib) {
@@ -214,15 +214,15 @@ TEST(Target, InheritCompleteStaticLib) {
   ASSERT_TRUE(a.OnResolved(&err));
 
   // B should have C in its inherited libs.
-  const UniqueVector<const Target*>& b_inherited = b.inherited_libraries();
-  EXPECT_EQ(1u, b_inherited.size());
-  EXPECT_TRUE(b_inherited.IndexOf(&c) != static_cast<size_t>(-1));
+  std::vector<const Target*> b_inherited = b.inherited_libraries().GetOrdered();
+  ASSERT_EQ(1u, b_inherited.size());
+  EXPECT_EQ(&c, b_inherited[0]);
 
   // A should have B in its inherited libs, but not any others (the complete
   // static library will include the source set).
-  const UniqueVector<const Target*>& a_inherited = a.inherited_libraries();
+  std::vector<const Target*> a_inherited = a.inherited_libraries().GetOrdered();
   EXPECT_EQ(1u, a_inherited.size());
-  EXPECT_TRUE(a_inherited.IndexOf(&b) != static_cast<size_t>(-1));
+  EXPECT_EQ(&b, a_inherited[0]);
 }
 
 TEST(Target, InheritCompleteStaticLibNoDirectStaticLibDeps) {
@@ -515,4 +515,58 @@ TEST(Target, LinkAndDepOutputs) {
 
   EXPECT_EQ("./liba.so", target.link_output_file().value());
   EXPECT_EQ("./liba.so.TOC", target.dependency_output_file().value());
+}
+
+// Shared libraries should be inherited across public shared liobrary
+// boundaries.
+TEST(Target, SharedInheritance) {
+  TestWithScope setup;
+  Err err;
+
+  // Create two leaf shared libraries.
+  Target pub(setup.settings(), Label(SourceDir("//foo/"), "pub"));
+  pub.set_output_type(Target::SHARED_LIBRARY);
+  pub.visibility().SetPublic();
+  pub.SetToolchain(setup.toolchain());
+  ASSERT_TRUE(pub.OnResolved(&err));
+
+  Target priv(setup.settings(), Label(SourceDir("//foo/"), "priv"));
+  priv.set_output_type(Target::SHARED_LIBRARY);
+  priv.visibility().SetPublic();
+  priv.SetToolchain(setup.toolchain());
+  ASSERT_TRUE(priv.OnResolved(&err));
+
+  // Intermediate shared library with the leaf shared libraries as
+  // dependencies, one public, one private.
+  Target inter(setup.settings(), Label(SourceDir("//foo/"), "inter"));
+  inter.set_output_type(Target::SHARED_LIBRARY);
+  inter.visibility().SetPublic();
+  inter.public_deps().push_back(LabelTargetPair(&pub));
+  inter.private_deps().push_back(LabelTargetPair(&priv));
+  inter.SetToolchain(setup.toolchain());
+  ASSERT_TRUE(inter.OnResolved(&err));
+
+  // The intermediate shared library should have both "pub" and "priv" in its
+  // inherited libraries.
+  std::vector<const Target*> inter_inherited =
+      inter.inherited_libraries().GetOrdered();
+  ASSERT_EQ(2u, inter_inherited.size());
+  EXPECT_EQ(&pub, inter_inherited[0]);
+  EXPECT_EQ(&priv, inter_inherited[1]);
+
+  // Make a toplevel executable target depending on the intermediate one.
+  Target exe(setup.settings(), Label(SourceDir("//foo/"), "exe"));
+  exe.set_output_type(Target::SHARED_LIBRARY);
+  exe.visibility().SetPublic();
+  exe.private_deps().push_back(LabelTargetPair(&inter));
+  exe.SetToolchain(setup.toolchain());
+  ASSERT_TRUE(exe.OnResolved(&err));
+
+  // The exe's inherited libraries should be "inter" (because it depended
+  // directly on it) and "pub" (because inter depended publicly on it).
+  std::vector<const Target*> exe_inherited =
+      exe.inherited_libraries().GetOrdered();
+  ASSERT_EQ(2u, exe_inherited.size());
+  EXPECT_EQ(&inter, exe_inherited[0]);
+  EXPECT_EQ(&pub, exe_inherited[1]);
 }

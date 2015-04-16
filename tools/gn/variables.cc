@@ -319,9 +319,8 @@ const char kTargetOutDir_Help[] =
     "     the \"deps\" list. This is done recursively. If a config appears\n" \
     "     more than once, only the first occurance will be used.\n" \
     "  6. public_configs pulled from dependencies, in the order of the\n" \
-    "     \"deps\" list. If a dependency has " \
-              "\"forward_dependent_configs_from\",\n" \
-    "     or are public dependencies, they will be applied recursively.\n"
+    "     \"deps\" list. If a dependency is public, they will be applied\n" \
+    "     recursively.\n"
 
 const char kAllDependentConfigs[] = "all_dependent_configs";
 const char kAllDependentConfigs_HelpShort[] =
@@ -612,13 +611,16 @@ const char kDeps_Help[] =
     "\n"
     "  See also \"public_deps\" and \"data_deps\".\n";
 
+// TODO(brettw) remove this, deprecated.
 const char kForwardDependentConfigsFrom[] = "forward_dependent_configs_from";
 const char kForwardDependentConfigsFrom_HelpShort[] =
-    "forward_dependent_configs_from: [label list] Forward dependent's configs.";
+    "forward_dependent_configs_from: [label list] DEPRECATED.";
 const char kForwardDependentConfigsFrom_Help[] =
     "forward_dependent_configs_from\n"
     "\n"
     "  A list of target labels.\n"
+    "\n"
+    "  DEPRECATED. Use public_deps instead which will have the same effect.\n"
     "\n"
     "  Exposes the public_configs from a private dependent target as\n"
     "  public_configs of the current one. Each label in this list\n"
@@ -907,14 +909,17 @@ const char kPublicDeps_Help[] =
     "  additionally express that the current target exposes the listed deps\n"
     "  as part of its public API.\n"
     "\n"
-    "  This has two ramifications:\n"
+    "  This has several ramifications:\n"
     "\n"
     "    - public_configs that are part of the dependency are forwarded\n"
-    "      to direct dependents (this is the same as using\n"
-    "      forward_dependent_configs_from).\n"
+    "      to direct dependents.\n"
     "\n"
-    "    - public headers in the dependency are usable by dependents\n"
+    "    - Public headers in the dependency are usable by dependents\n"
     "      (includes do not require a direct dependency or visibility).\n"
+    "\n"
+    "    - If the current target is a shared library, other shared libraries\n"
+    "      that it publicly depends on (directly or indirectly) are\n"
+    "      propagated up the dependency tree to dependents for linking.\n"
     "\n"
     "Discussion\n"
     "\n"

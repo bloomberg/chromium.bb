@@ -126,7 +126,7 @@ bool Target::OnResolved(Err* err) {
     all_libs_.append(cur.libs().begin(), cur.libs().end());
   }
 
-  PullDependentTargetInfo();
+  PullDependentTargets();
   PullForwardedDependentConfigs();
   PullRecursiveHardDeps();
 
@@ -208,30 +208,54 @@ bool Target::SetToolchain(const Toolchain* toolchain, Err* err) {
   return false;
 }
 
-void Target::PullDependentTargetInfo() {
-  // Gather info from our dependents we need.
-  for (const auto& pair : GetDeps(DEPS_LINKED)) {
-    const Target* dep = pair.ptr;
-    MergeAllDependentConfigsFrom(dep, &configs_, &all_dependent_configs_);
-    MergePublicConfigsFrom(dep, &configs_);
+void Target::PullDependentTarget(const Target* dep, bool is_public) {
+  MergeAllDependentConfigsFrom(dep, &configs_, &all_dependent_configs_);
+  MergePublicConfigsFrom(dep, &configs_);
 
-    // Direct dependent libraries.
-    if (dep->output_type() == STATIC_LIBRARY ||
-        dep->output_type() == SHARED_LIBRARY ||
-        dep->output_type() == SOURCE_SET)
-      inherited_libraries_.push_back(dep);
+  // Direct dependent libraries.
+  if (dep->output_type() == STATIC_LIBRARY ||
+      dep->output_type() == SHARED_LIBRARY ||
+      dep->output_type() == SOURCE_SET)
+    inherited_libraries_.Append(dep, is_public);
 
-    // Inherited libraries and flags are inherited across static library
-    // boundaries.
-    if (!dep->IsFinal()) {
-      inherited_libraries_.Append(dep->inherited_libraries().begin(),
-                                  dep->inherited_libraries().end());
+  if (dep->output_type() == SHARED_LIBRARY) {
+    // Shared library dependendencies are inherited across public shared
+    // library boundaries.
+    //
+    // In this case:
+    //   EXE -> INTERMEDIATE_SHLIB --[public]--> FINAL_SHLIB
+    // The EXE will also link to to FINAL_SHLIB. The public dependeny means
+    // that the EXE can use the headers in FINAL_SHLIB so the FINAL_SHLIB
+    // will need to appear on EXE's link line.
+    //
+    // However, if the dependency is private:
+    //   EXE -> INTERMEDIATE_SHLIB --[private]--> FINAL_SHLIB
+    // the dependency will not be propogated because INTERMEDIATE_SHLIB is
+    // not granting permission to call functiosn from FINAL_SHLIB. If EXE
+    // wants to use functions (and link to) FINAL_SHLIB, it will need to do
+    // so explicitly.
+    //
+    // Static libraries and source sets aren't inherited across shared
+    // library boundaries because they will be linked into the shared
+    // library.
+    inherited_libraries_.AppendPublicSharedLibraries(
+        dep->inherited_libraries(), is_public);
+  } else if (!dep->IsFinal()) {
+    // The current target isn't linked, so propogate linked deps and
+    // libraries up the dependency tree.
+    inherited_libraries_.AppendInherited(dep->inherited_libraries(), is_public);
 
-      // Inherited library settings.
-      all_lib_dirs_.append(dep->all_lib_dirs());
-      all_libs_.append(dep->all_libs());
-    }
+    // Inherited library settings.
+    all_lib_dirs_.append(dep->all_lib_dirs());
+    all_libs_.append(dep->all_libs());
   }
+}
+
+void Target::PullDependentTargets() {
+  for (const auto& dep : public_deps_)
+    PullDependentTarget(dep.ptr, true);
+  for (const auto& dep : private_deps_)
+    PullDependentTarget(dep.ptr, false);
 }
 
 void Target::PullForwardedDependentConfigs() {
@@ -377,7 +401,7 @@ bool Target::CheckNoNestedStaticLibs(Err* err) const {
   }
 
   // Verify no inherited libraries are static libraries.
-  for (const auto& lib : inherited_libraries()) {
+  for (const auto& lib : inherited_libraries().GetOrdered()) {
     if (lib->output_type() == Target::STATIC_LIBRARY) {
       *err = MakeStaticLibDepsError(this, lib);
       return false;

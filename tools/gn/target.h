@@ -15,6 +15,7 @@
 #include "base/synchronization/lock.h"
 #include "tools/gn/action_values.h"
 #include "tools/gn/config_values.h"
+#include "tools/gn/inherited_libraries.h"
 #include "tools/gn/item.h"
 #include "tools/gn/label_ptr.h"
 #include "tools/gn/ordered_set.h"
@@ -189,7 +190,7 @@ class Target : public Item {
     return allow_circular_includes_from_;
   }
 
-  const UniqueVector<const Target*>& inherited_libraries() const {
+  const InheritedLibraries& inherited_libraries() const {
     return inherited_libraries_;
   }
 
@@ -241,7 +242,8 @@ class Target : public Item {
  private:
   // Pulls necessary information from dependencies to this one when all
   // dependencies have been resolved.
-  void PullDependentTargetInfo();
+  void PullDependentTarget(const Target* dep, bool is_public);
+  void PullDependentTargets();
 
   // These each pull specific things from dependencies to this one when all
   // deps have been resolved.
@@ -281,12 +283,9 @@ class Target : public Item {
 
   std::set<Label> allow_circular_includes_from_;
 
-  // Static libraries and source sets from transitive deps. These things need
-  // to be linked only with the end target (executable, shared library). Source
-  // sets do not get pushed beyond static library boundaries, and neither
-  // source sets nor static libraries get pushed beyond sahred library
-  // boundaries.
-  UniqueVector<const Target*> inherited_libraries_;
+  // Static libraries, shared libraries, and source sets from transitive deps
+  // that need to be linked.
+  InheritedLibraries inherited_libraries_;
 
   // These libs and dirs are inherited from statically linked deps and all
   // configs applying to this target.
