@@ -1468,6 +1468,7 @@ _x86_internal_release_boards = frozenset([
   'cid',
   'clapper',
   'cranky',
+  'cyan',
   'enguarde',
   'expresso',
   'falco',
@@ -2998,6 +2999,13 @@ _AddGroupConfig('jecht', 'jecht', (
     important=False,
 )
 
+# strago-based boards
+_AddGroupConfig('strago', 'strago', (
+    'cyan',
+    ),
+    important=False,
+)
+
 # Factory and Firmware releases much inherit from these classes.  Modifications
 # for these release builders should go here.
 
@@ -3058,6 +3066,7 @@ _firmware_boards = frozenset([
   'butterfly',
   'candy',
   'clapper',
+  'cyan',
   'daisy',
   'daisy_skate',
   'daisy_spring',
@@ -3103,6 +3112,7 @@ _x86_depthcharge_firmware_boards = frozenset([
   'bayleybay',
   'candy',
   'clapper',
+  'cyan',
   'enguarde',
   'expresso',
   'glimmer',
@@ -3283,6 +3293,7 @@ _waterfall_config_map = {
       'peach-freon-release-group',
       'pineview-freon-release-group',
       'rambi-d-release-group',
+      'strago-release-group',
       'veyron-b-release-group',
       'veyron-c-release-group',
 
