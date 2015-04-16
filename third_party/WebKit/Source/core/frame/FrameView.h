@@ -274,7 +274,7 @@ public:
     bool isScrollable();
 
     enum ScrollbarModesCalculationStrategy { RulesFromWebContentOnly, AnyRule };
-    void calculateScrollbarModesForLayoutAndSetViewportRenderer(ScrollbarMode& hMode, ScrollbarMode& vMode, ScrollbarModesCalculationStrategy = AnyRule);
+    void calculateScrollbarModesForLayoutAndSetViewportLayoutObject(ScrollbarMode& hMode, ScrollbarMode& vMode, ScrollbarModesCalculationStrategy = AnyRule);
 
     virtual IntPoint lastKnownMousePosition() const override;
     bool shouldSetCursor() const;
@@ -576,6 +576,10 @@ public:
 
     LayoutAnalyzer& layoutAnalyzer() { return m_analyzer; }
 
+    // LayoutObject for the viewport-defining element (see Document::viewportDefiningElement).
+    LayoutObject* viewportLayoutObject() { return m_viewportLayoutObject; }
+    void clearViewportLayoutObject() { m_viewportLayoutObject = nullptr; }
+
 protected:
     // Scroll the content via the compositor.
     bool scrollContentsFastPath(const IntSize& scrollDelta);
@@ -637,7 +641,7 @@ private:
 
     bool contentsInCompositedLayer() const;
 
-    void applyOverflowToViewportAndSetRenderer(LayoutObject*, ScrollbarMode& hMode, ScrollbarMode& vMode);
+    void applyOverflowToViewportAndSetLayoutObject(LayoutObject*, ScrollbarMode& hMode, ScrollbarMode& vMode);
     void updateOverflowStatus(bool horizontalOverflow, bool verticalOverflow);
 
     void updateCounters();
@@ -768,7 +772,7 @@ private:
     bool m_overflowStatusDirty;
     bool m_horizontalOverflow;
     bool m_verticalOverflow;
-    LayoutObject* m_viewportRenderer;
+    LayoutObject* m_viewportLayoutObject;
 
     bool m_wasScrolledByUser;
     bool m_inProgrammaticScroll;

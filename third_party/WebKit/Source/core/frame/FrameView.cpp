@@ -114,7 +114,7 @@ FrameView::FrameView(LocalFrame* frame)
     , m_baseBackgroundColor(Color::white)
     , m_mediaType(MediaTypeNames::screen)
     , m_overflowStatusDirty(true)
-    , m_viewportRenderer(0)
+    , m_viewportLayoutObject(0)
     , m_wasScrolledByUser(false)
     , m_inProgrammaticScroll(false)
     , m_safeToPropagateScrollToParent(true)
@@ -542,7 +542,7 @@ void FrameView::adjustViewSize()
     setContentsSize(size);
 }
 
-void FrameView::applyOverflowToViewportAndSetRenderer(LayoutObject* o, ScrollbarMode& hMode, ScrollbarMode& vMode)
+void FrameView::applyOverflowToViewportAndSetLayoutObject(LayoutObject* o, ScrollbarMode& hMode, ScrollbarMode& vMode)
 {
     // Handle the overflow:hidden/scroll case for the body/html elements.  WinIE treats
     // overflow:hidden and overflow:scroll on <body> as applying to the document's
@@ -597,12 +597,12 @@ void FrameView::applyOverflowToViewportAndSetRenderer(LayoutObject* o, Scrollbar
             ;
     }
 
-    m_viewportRenderer = o;
+    m_viewportLayoutObject = o;
 }
 
-void FrameView::calculateScrollbarModesForLayoutAndSetViewportRenderer(ScrollbarMode& hMode, ScrollbarMode& vMode, ScrollbarModesCalculationStrategy strategy)
+void FrameView::calculateScrollbarModesForLayoutAndSetViewportLayoutObject(ScrollbarMode& hMode, ScrollbarMode& vMode, ScrollbarModesCalculationStrategy strategy)
 {
-    m_viewportRenderer = nullptr;
+    m_viewportLayoutObject = nullptr;
 
     // FIXME: How do we handle this for OOPI?
     const HTMLFrameOwnerElement* owner = m_frame->deprecatedLocalOwner();
@@ -627,9 +627,9 @@ void FrameView::calculateScrollbarModesForLayoutAndSetViewportRenderer(Scrollbar
             vMode = ScrollbarAlwaysOff;
             hMode = ScrollbarAlwaysOff;
         } else if (Element* viewportElement = document->viewportDefiningElement()) {
-            if (LayoutObject* viewportRenderer = viewportElement->layoutObject()) {
-                if (viewportRenderer->style())
-                    applyOverflowToViewportAndSetRenderer(viewportRenderer, hMode, vMode);
+            if (LayoutObject* viewportLayoutObject = viewportElement->layoutObject()) {
+                if (viewportLayoutObject->style())
+                    applyOverflowToViewportAndSetLayoutObject(viewportLayoutObject, hMode, vMode);
             }
         }
     }
@@ -971,7 +971,7 @@ void FrameView::layout()
 
         ScrollbarMode hMode;
         ScrollbarMode vMode;
-        calculateScrollbarModesForLayoutAndSetViewportRenderer(hMode, vMode);
+        calculateScrollbarModesForLayoutAndSetViewportLayoutObject(hMode, vMode);
 
         if (!inSubtreeLayout) {
             // Now set our scrollbar state for the layout.
@@ -2113,7 +2113,7 @@ void FrameView::updateCounters()
 
 void FrameView::updateOverflowStatus(bool horizontalOverflow, bool verticalOverflow)
 {
-    if (!m_viewportRenderer)
+    if (!m_viewportLayoutObject)
         return;
 
     if (m_overflowStatusDirty) {
@@ -2131,7 +2131,7 @@ void FrameView::updateOverflowStatus(bool horizontalOverflow, bool verticalOverf
         m_verticalOverflow = verticalOverflow;
 
         RefPtrWillBeRawPtr<OverflowEvent> event = OverflowEvent::create(horizontalOverflowChanged, horizontalOverflow, verticalOverflowChanged, verticalOverflow);
-        event->setTarget(m_viewportRenderer->node());
+        event->setTarget(m_viewportLayoutObject->node());
         m_frame->document()->enqueueAnimationFrameEvent(event.release());
     }
 
@@ -2328,7 +2328,7 @@ FrameView::ScrollingReasons FrameView::scrollingReasons()
     // Cover #3 and #4.
     ScrollbarMode horizontalMode;
     ScrollbarMode verticalMode;
-    calculateScrollbarModesForLayoutAndSetViewportRenderer(horizontalMode, verticalMode, RulesFromWebContentOnly);
+    calculateScrollbarModesForLayoutAndSetViewportLayoutObject(horizontalMode, verticalMode, RulesFromWebContentOnly);
     if (horizontalMode == ScrollbarAlwaysOff && verticalMode == ScrollbarAlwaysOff)
         return NotScrollableExplicitlyDisabled;
 
@@ -3117,10 +3117,10 @@ void FrameView::setScrollbarModes(ScrollbarMode horizontalMode, ScrollbarMode ve
 
     // If the page's overflow setting has disabled scrolling, do not allow anything to override that setting.
     // http://crbug.com/426447
-    if (m_viewportRenderer && !shouldIgnoreOverflowHidden()) {
-        if (m_viewportRenderer->style()->overflowX() == OHIDDEN)
+    if (m_viewportLayoutObject && !shouldIgnoreOverflowHidden()) {
+        if (m_viewportLayoutObject->style()->overflowX() == OHIDDEN)
             horizontalMode = ScrollbarAlwaysOff;
-        if (m_viewportRenderer->style()->overflowY() == OHIDDEN)
+        if (m_viewportLayoutObject->style()->overflowY() == OHIDDEN)
             verticalMode = ScrollbarAlwaysOff;
     }
 
