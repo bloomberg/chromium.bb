@@ -48,6 +48,7 @@ class SharedRendererState {
   void SwapReturnedResourcesOnUI(cc::ReturnedResourceArray* resources);
   bool ReturnedResourcesEmptyOnUI() const;
   scoped_ptr<ChildFrame> PassUncommittedFrameOnUI();
+  void DeleteHardwareRendererOnUI();
 
   // RT thread methods.
   gfx::Vector2d GetScrollOffsetOnRT();
@@ -78,6 +79,7 @@ class SharedRendererState {
   void UpdateParentDrawConstraintsOnUI();
   bool IsInsideHardwareRelease() const;
   void SetInsideHardwareRelease(bool inside);
+  void ReleaseCompositorResourcesIfNeededOnUI(bool release_hardware_draw);
 
   // Accessed by UI thread.
   scoped_refptr<base::SingleThreadTaskRunner> ui_loop_;

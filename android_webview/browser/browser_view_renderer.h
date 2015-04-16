@@ -146,7 +146,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
 
   gfx::Vector2d max_scroll_offset() const;
 
-  size_t CalculateDesiredMemoryPolicy();
+  void UpdateMemoryPolicy();
 
   // For debug tracing or logging. Return the string representation of this
   // view renderer's state.

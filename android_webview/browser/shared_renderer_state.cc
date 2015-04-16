@@ -285,11 +285,22 @@ void SharedRendererState::DrawGL(AwDrawGLInfo* draw_info) {
 }
 
 void SharedRendererState::ReleaseHardwareDrawIfNeededOnUI() {
+  ReleaseCompositorResourcesIfNeededOnUI(true);
+}
+
+void SharedRendererState::DeleteHardwareRendererOnUI() {
+  ReleaseCompositorResourcesIfNeededOnUI(false);
+}
+
+void SharedRendererState::ReleaseCompositorResourcesIfNeededOnUI(
+    bool release_hardware_draw) {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   InsideHardwareReleaseReset auto_inside_hardware_release_reset(this);
 
   browser_view_renderer_->DetachFunctorFromView();
   bool hardware_initialized = browser_view_renderer_->hardware_enabled();
+  // If the WebView gets onTrimMemory >= MODERATE twice in a row, the 2nd
+  // onTrimMemory will result in an unnecessary Render Thread DrawGL call.
   if (hardware_initialized) {
     bool draw_functor_succeeded = browser_view_renderer_->RequestDrawGL(true);
     if (!draw_functor_succeeded) {
@@ -300,7 +311,8 @@ void SharedRendererState::ReleaseHardwareDrawIfNeededOnUI() {
       DrawGL(&info);
     }
 
-    browser_view_renderer_->ReleaseHardware();
+    if (release_hardware_draw)
+      browser_view_renderer_->ReleaseHardware();
   }
 
   GLViewRendererManager* manager = GLViewRendererManager::GetInstance();

@@ -118,7 +118,6 @@ bool BrowserViewRenderer::RequestDrawGL(bool wait_for_completion) {
   return client_->RequestDrawGL(wait_for_completion);
 }
 
-// This function updates the resource allocation in GlobalTileManager.
 void BrowserViewRenderer::TrimMemory(const int level, const bool visible) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   // Constants from Android ComponentCallbacks2.
@@ -145,32 +144,44 @@ void BrowserViewRenderer::TrimMemory(const int level, const bool visible) {
 
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::TrimMemory");
 
-  // Drop everything in hardware.
+  // If offscreen pre-raster is disabled, drop everything in hardware. Otherwise
+  // keep the tiles and just delete the HardwareRenderer.
   if (level >= TRIM_MEMORY_MODERATE) {
-    shared_renderer_state_.ReleaseHardwareDrawIfNeededOnUI();
+    if (offscreen_pre_raster_)
+      shared_renderer_state_.DeleteHardwareRendererOnUI();
+    else
+      shared_renderer_state_.ReleaseHardwareDrawIfNeededOnUI();
     return;
   }
 
   // Just set the memory limit to 0 and drop all tiles. This will be reset to
   // normal levels in the next DrawGL call.
-  compositor_->SetMemoryPolicy(0u);
-  ForceFakeCompositeSW();
+  if (!offscreen_pre_raster_)
+    compositor_->SetMemoryPolicy(0u);
 }
 
-size_t BrowserViewRenderer::CalculateDesiredMemoryPolicy() {
-  if (g_memory_override_in_bytes)
-    return static_cast<size_t>(g_memory_override_in_bytes);
+void BrowserViewRenderer::UpdateMemoryPolicy() {
+  if (!hardware_enabled_) {
+    compositor_->SetMemoryPolicy(0u);
+    return;
+  }
 
-  gfx::Rect interest_rect = offscreen_pre_raster_
-                                ? gfx::Rect(size_)
-                                : last_on_draw_global_visible_rect_;
-  size_t width = interest_rect.width();
-  size_t height = interest_rect.height();
-  size_t bytes_limit = kMemoryMultiplier * kBytesPerPixel * width * height;
-  // Round up to a multiple of kMemoryAllocationStep.
-  bytes_limit =
-      (bytes_limit / kMemoryAllocationStep + 1) * kMemoryAllocationStep;
-  return bytes_limit;
+  size_t bytes_limit = 0u;
+  if (g_memory_override_in_bytes) {
+    bytes_limit = static_cast<size_t>(g_memory_override_in_bytes);
+  } else {
+    gfx::Rect interest_rect = offscreen_pre_raster_
+                                  ? gfx::Rect(size_)
+                                  : last_on_draw_global_visible_rect_;
+    size_t width = interest_rect.width();
+    size_t height = interest_rect.height();
+    bytes_limit = kMemoryMultiplier * kBytesPerPixel * width * height;
+    // Round up to a multiple of kMemoryAllocationStep.
+    bytes_limit =
+        (bytes_limit / kMemoryAllocationStep + 1) * kMemoryAllocationStep;
+  }
+
+  compositor_->SetMemoryPolicy(bytes_limit);
 }
 
 void BrowserViewRenderer::PrepareToDraw(const gfx::Vector2d& scroll,
@@ -213,7 +224,7 @@ bool BrowserViewRenderer::CompositeHw() {
   CancelFallbackTick();
 
   ReturnResourceFromParent();
-  compositor_->SetMemoryPolicy(CalculateDesiredMemoryPolicy());
+  UpdateMemoryPolicy();
 
   ParentCompositorDrawConstraints parent_draw_constraints =
       shared_renderer_state_.GetParentDrawConstraintsOnUI();
@@ -337,7 +348,9 @@ void BrowserViewRenderer::ClearView() {
 }
 
 void BrowserViewRenderer::SetOffscreenPreRaster(bool enable) {
-  // TODO(hush): anything to do when the setting is toggled?
+  if (offscreen_pre_raster_ != enable && compositor_)
+    UpdateMemoryPolicy();
+
   offscreen_pre_raster_ = enable;
 }
 
