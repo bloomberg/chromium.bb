@@ -1358,6 +1358,9 @@ void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
             exceptionState.throwDOMException(InvalidStateError, "The HTMLImageElement provided is in the 'broken' state.");
         if (!image || !image->width() || !image->height())
             return;
+    } else {
+        if (!static_cast<HTMLVideoElement*>(imageSource)->hasAvailableVideoFrame())
+            return;
     }
 
     if (!std::isfinite(dx) || !std::isfinite(dy) || !std::isfinite(dw) || !std::isfinite(dh)

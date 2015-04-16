@@ -75,6 +75,8 @@ public:
 
     KURL posterImageURL() const;
 
+    bool hasAvailableVideoFrame() const;
+
     // FIXME: Remove this when WebMediaPlayerClientImpl::loadInternal does not depend on it.
     virtual KURL mediaPlayerPosterURL() override;
 
@@ -101,7 +103,6 @@ private:
     virtual bool isURLAttribute(const Attribute&) const override;
     virtual const AtomicString imageSourceURL() const override;
 
-    bool hasAvailableVideoFrame() const;
     virtual void updateDisplayState() override;
     virtual void didMoveToNewDocument(Document& oldDocument) override;
     virtual void setDisplayMode(DisplayMode) override;
