@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       var percentDefaultZoom =
-          parseFloat(zoomSettings.default_zoom_factor) * 100;
+          parseFloat(zoomSettings.defaultZoomFactor) * 100;
       document.getElementById('defaultLabel').textContent =
           'Default: ' + percentDefaultZoom.toFixed(1) + '%';
     });

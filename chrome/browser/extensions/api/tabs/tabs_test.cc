@@ -792,7 +792,7 @@ testing::AssertionResult ExtensionTabsZoomTest::RunGetDefaultZoom(
   if (!get_zoom_settings_result)
     return testing::AssertionFailure() << "no result";
 
-  if (!get_zoom_settings_result->GetDouble("default_zoom_factor",
+  if (!get_zoom_settings_result->GetDouble("defaultZoomFactor",
                                            default_zoom_factor)) {
     return testing::AssertionFailure()
            << "default zoom factor not found in result";

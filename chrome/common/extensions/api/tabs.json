@@ -79,9 +79,8 @@
             "description": "Defines whether zoom changes will persist for the page's origin, or only take effect in this tab; defaults to <code>per-origin</code> when in <code>automatic</code> mode, and <code>per-tab</code> otherwise.",
             "optional": true
           },
-          "default_zoom_factor": {
+          "defaultZoomFactor": {
             "type": "number",
-            "name": "defaultZoomFactor",
             "optional": true,
             "description": "Used to return the default zoom level for the current tab in calls to tabs.getZoomSettings."
           }
