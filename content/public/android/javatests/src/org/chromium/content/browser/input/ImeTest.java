@@ -324,8 +324,12 @@ public class ImeTest extends ContentShellTestBase {
         assertWaitForKeyboardStatus(true);
     }
 
+    /*
     @SmallTest
     @Feature({"TextInput", "Main"})
+    http://crbug.com/477632
+    */
+    @DisabledTest
     public void testFinishComposingText() throws Throwable {
         DOMUtils.focusNode(mWebContents, "input_radio");
         assertWaitForKeyboardStatus(false);
