@@ -820,16 +820,9 @@ static inline void layoutFromRootObject(LayoutObject& root)
     root.layout();
 }
 
-void FrameView::prepareAnalyzer()
-{
-    if (!m_analyzer.get())
-        m_analyzer = adoptPtr(new LayoutAnalyzer());
-    m_analyzer->reset();
-}
-
 PassRefPtr<TracedValue> FrameView::analyzerCounters()
 {
-    RefPtr<TracedValue> value = layoutAnalyzer()->toTracedValue();
+    RefPtr<TracedValue> value = layoutAnalyzer().toTracedValue();
     value->setString("host", layoutView()->document().location()->host());
     return value;
 }
@@ -841,7 +834,7 @@ void FrameView::performLayout(bool inSubtreeLayout)
     ASSERT(inSubtreeLayout || m_layoutSubtreeRoots.isEmpty());
 
     TRACE_EVENT_BEGIN0(PERFORM_LAYOUT_TRACE_CATEGORIES, "FrameView::performLayout");
-    prepareAnalyzer();
+    layoutAnalyzer().reset();
 
     ScriptForbiddenScope forbidScript;
 
@@ -857,7 +850,7 @@ void FrameView::performLayout(bool inSubtreeLayout)
     forceLayoutParentViewIfNeeded();
 
     if (inSubtreeLayout) {
-        layoutAnalyzer()->increment(LayoutAnalyzer::PerformLayoutRootLayoutObjects, m_layoutSubtreeRoots.size());
+        layoutAnalyzer().increment(LayoutAnalyzer::PerformLayoutRootLayoutObjects, m_layoutSubtreeRoots.size());
         while (m_layoutSubtreeRoots.size()) {
             LayoutObject& root = *m_layoutSubtreeRoots.takeAny();
             if (!root.needsLayout())
@@ -878,8 +871,7 @@ void FrameView::performLayout(bool inSubtreeLayout)
 
     lifecycle().advanceTo(DocumentLifecycle::AfterPerformLayout);
 
-    if (layoutAnalyzer())
-        layoutAnalyzer()->recordCounters();
+    layoutAnalyzer().recordCounters();
     TRACE_EVENT_END1(PERFORM_LAYOUT_TRACE_CATEGORIES, "FrameView::performLayout",
         "counters", analyzerCounters());
 }

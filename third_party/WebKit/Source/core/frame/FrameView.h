@@ -27,6 +27,7 @@
 
 #include "core/CoreExport.h"
 #include "core/frame/FrameViewAutoSizeInfo.h"
+#include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/PaintPhase.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/Widget.h"
@@ -56,7 +57,6 @@ class LocalFrame;
 class KURL;
 class Node;
 class Page;
-class LayoutAnalyzer;
 class LayoutBox;
 class LayoutEmbeddedObject;
 class LayoutObject;
@@ -574,7 +574,7 @@ public:
 
     int viewportWidth() const;
 
-    LayoutAnalyzer* layoutAnalyzer() { return m_analyzer.get(); }
+    LayoutAnalyzer& layoutAnalyzer() { return m_analyzer; }
 
 protected:
     // Scroll the content via the compositor.
@@ -717,7 +717,6 @@ private:
 
     ScrollingCoordinator* scrollingCoordinator();
 
-    void prepareAnalyzer();
     PassRefPtr<TracedValue> analyzerCounters();
 
     LayoutSize m_size;
@@ -849,7 +848,7 @@ private:
 
     bool m_clipsRepaints;
 
-    OwnPtr<LayoutAnalyzer> m_analyzer;
+    LayoutAnalyzer m_analyzer;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count)

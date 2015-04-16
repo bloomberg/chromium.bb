@@ -48,7 +48,7 @@ public:
 
     private:
         const LayoutObject& m_layoutObject;
-        LayoutAnalyzer* m_analyzer;
+        LayoutAnalyzer& m_analyzer;
     };
 
     LayoutAnalyzer() { }
