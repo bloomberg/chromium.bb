@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/file_system_provider/operations/abort.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/add_watcher.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/close_file.h"
+#include "chrome/browser/chromeos/file_system_provider/operations/configure.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/copy_entry.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/create_directory.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/create_file.h"
@@ -488,6 +489,16 @@ void ProvidedFileSystem::Notify(
                         base::Passed(make_scoped_ptr(new NotifyInQueueArgs(
                             token, entry_path, recursive, change_type,
                             changes.Pass(), tag, callback)))));
+}
+
+void ProvidedFileSystem::Configure(
+    const storage::AsyncFileUtil::StatusCallback& callback) {
+  const int request_id = request_manager_->CreateRequest(
+      CONFIGURE,
+      scoped_ptr<RequestManager::HandlerInterface>(new operations::Configure(
+          event_router_, file_system_info_, callback)));
+  if (!request_id)
+    callback.Run(base::File::FILE_ERROR_SECURITY);
 }
 
 void ProvidedFileSystem::Abort(int operation_request_id) {

@@ -1204,6 +1204,7 @@
       'browser/chromeos/file_system_provider/operations/abort_unittest.cc',
       'browser/chromeos/file_system_provider/operations/add_watcher_unittest.cc',
       'browser/chromeos/file_system_provider/operations/close_file_unittest.cc',
+      'browser/chromeos/file_system_provider/operations/configure_unittest.cc',
       'browser/chromeos/file_system_provider/operations/copy_entry_unittest.cc',
       'browser/chromeos/file_system_provider/operations/create_directory_unittest.cc',
       'browser/chromeos/file_system_provider/operations/create_file_unittest.cc',

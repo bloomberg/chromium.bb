@@ -8,6 +8,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/stl_util.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/observer.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/chromeos/file_system_provider/registry_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/service_factory.h"
 #include "chrome/browser/chromeos/file_system_provider/throttled_file_system.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "storage/browser/fileapi/external_mount_points.h"
@@ -242,6 +244,28 @@ bool Service::RequestUnmount(const std::string& extension_id,
       base::Bind(&Service::OnRequestUnmountStatus,
                  weak_ptr_factory_.GetWeakPtr(),
                  file_system_it->second->GetFileSystemInfo()));
+  return true;
+}
+
+bool Service::RequestMount(const std::string& extension_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  extensions::EventRouter* const event_router =
+      extensions::EventRouter::Get(profile_);
+  DCHECK(event_router);
+
+  if (!event_router->ExtensionHasEventListener(
+          extension_id, extensions::api::file_system_provider::
+                            OnMountRequested::kEventName)) {
+    return false;
+  }
+
+  event_router->DispatchEventToExtension(
+      extension_id,
+      make_scoped_ptr(new extensions::Event(
+          extensions::api::file_system_provider::OnMountRequested::kEventName,
+          scoped_ptr<base::ListValue>(nullptr))));
+
   return true;
 }
 

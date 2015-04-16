@@ -218,6 +218,12 @@ class ProvidedFileSystemInterface {
       const std::string& tag,
       const storage::AsyncFileUtil::StatusCallback& callback) = 0;
 
+  // Requests showing UI for configuring the file system by user. Once the
+  // configuration process is completed, base::File::FILE_OK or an error code is
+  // returned via the |callback|.
+  virtual void Configure(
+      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
+
   // Returns a provided file system info for this file system.
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const = 0;
 

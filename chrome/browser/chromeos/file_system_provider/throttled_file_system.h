@@ -117,6 +117,8 @@ class ThrottledFileSystem : public ProvidedFileSystemInterface {
               scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
               const std::string& tag,
               const storage::AsyncFileUtil::StatusCallback& callback) override;
+  void Configure(
+      const storage::AsyncFileUtil::StatusCallback& callback) override;
   base::WeakPtr<ProvidedFileSystemInterface> GetWeakPtr() override;
 
  private:

@@ -41,6 +41,7 @@ enum RequestType {
   ABORT,
   ADD_WATCHER,
   REMOVE_WATCHER,
+  CONFIGURE,
   TESTING
 };
 

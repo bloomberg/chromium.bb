@@ -372,6 +372,12 @@ void FakeProvidedFileSystem::Notify(
   callback.Run(base::File::FILE_ERROR_SECURITY);
 }
 
+void FakeProvidedFileSystem::Configure(
+    const storage::AsyncFileUtil::StatusCallback& callback) {
+  NOTREACHED();
+  callback.Run(base::File::FILE_ERROR_SECURITY);
+}
+
 ProvidedFileSystemInterface* FakeProvidedFileSystem::Create(
     Profile* profile,
     const ProvidedFileSystemInfo& file_system_info) {

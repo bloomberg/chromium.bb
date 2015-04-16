@@ -93,11 +93,15 @@ class Service : public KeyedService,
                                       const std::string& file_system_id,
                                       UnmountReason reason);
 
-  // Requests unmounting of the file system. The callback is called when the
-  // request is accepted or rejected, with an error code. Returns false if the
-  // request could not been created, true otherwise.
+  // Requests unmounting of the file system. Returns false if the request could
+  // not been created, true otherwise.
   bool RequestUnmount(const std::string& extension_id,
                       const std::string& file_system_id);
+
+  // Requests mounting a new file system by the providing extension with
+  // |extension_id|. Returns false if the request could not been created, true
+  // otherwise.
+  bool RequestMount(const std::string& extension_id);
 
   // Returns a list of information of all currently provided file systems. All
   // items are copied.

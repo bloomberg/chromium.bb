@@ -183,6 +183,11 @@ void ThrottledFileSystem::Notify(
                               changes.Pass(), tag, callback);
 }
 
+void ThrottledFileSystem::Configure(
+    const storage::AsyncFileUtil::StatusCallback& callback) {
+  return file_system_->Configure(callback);
+}
+
 base::WeakPtr<ProvidedFileSystemInterface> ThrottledFileSystem::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }

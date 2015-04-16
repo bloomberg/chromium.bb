@@ -44,7 +44,7 @@ namespace fileSystemProvider {
   // Source of the file system data.
   enum FileSystemSource {
     // The file system is handling a file, eg. an archive file obtained via the
-    // <code>OnLaunched</code> event and the <code>file_handlers</code> manifest
+    // <code>onLaunched</code> event and the <code>file_handlers</code> manifest
     // entry.
     FILE,
 
@@ -171,6 +171,8 @@ namespace fileSystemProvider {
   dictionary UnmountRequestedOptions {
     // The identifier of the file system to be unmounted.
     DOMString fileSystemId;
+
+    // The unique identifier of this request.
     long requestId;
   };
 
@@ -432,6 +434,15 @@ namespace fileSystemProvider {
     DOMString? tag;
   };
 
+  // Options for the <code>onConfigureRequested()</code> event.
+  [nodoc] dictionary ConfigureRequestedOptions {
+    // The identifier of the file system to be configured.
+    DOMString fileSystemId;
+
+    // The unique identifier of this request.
+    long requestId;
+  };
+
   // Callback to receive the result of getAll() function.
   callback GetAllCallback = void(FileSystemInfo[] fileSystems);
 
@@ -644,6 +655,21 @@ namespace fileSystemProvider {
     // errorCallback</code>, the request may be forcibly aborted. 
     [maxListeners=1] static void onAbortRequested(
         AbortRequestedOptions options,
+        ProviderSuccessCallback successCallback,
+        ProviderErrorCallback errorCallback);
+
+    // Raised when showing a configuration dialog for <code>fileSystemId</code>
+    // is requested. If it's not supported, then this event must not be handled.
+    [maxListeners=1, nodoc] static void onConfigureRequested(
+        ConfigureRequestedOptions options,
+        ProviderSuccessCallback successCallback,
+        ProviderErrorCallback errorCallback);
+
+    // Raised when showing a dialog for mounting a new file system is requested.
+    // If the extension/app is a file handler, then this event shouldn't be
+    // handled. Instead <code>onLaunched</code> should be handled in order to
+    // mount new file systems when a file is opened.
+    [maxListeners=1, nodoc] static void onMountRequested(
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
 

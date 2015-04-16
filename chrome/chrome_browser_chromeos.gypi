@@ -290,6 +290,8 @@
         'browser/chromeos/file_system_provider/operations/add_watcher.h',
         'browser/chromeos/file_system_provider/operations/close_file.cc',
         'browser/chromeos/file_system_provider/operations/close_file.h',
+        'browser/chromeos/file_system_provider/operations/configure.cc',
+        'browser/chromeos/file_system_provider/operations/configure.h',
         'browser/chromeos/file_system_provider/operations/copy_entry.cc',
         'browser/chromeos/file_system_provider/operations/copy_entry.h',
         'browser/chromeos/file_system_provider/operations/create_directory.cc',

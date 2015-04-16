@@ -52,6 +52,8 @@ std::string RequestTypeToString(RequestType type) {
       return "ADD_WATCHER";
     case REMOVE_WATCHER:
       return "REMOVE_WATCHER";
+    case CONFIGURE:
+      return "CONFIGURE";
     case TESTING:
       return "TESTING";
   }
