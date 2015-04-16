@@ -871,8 +871,6 @@ public:
     void invalidatePaintRectangle(const LayoutRect&) const;
     void invalidatePaintRectangleNotInvalidatingDisplayItemClients(const LayoutRect& r) const { invalidatePaintRectangleInternal(r); }
 
-    void invalidateSelectionIfNeeded(const LayoutBoxModelObject&, PaintInvalidationReason);
-
     // Walk the tree after layout issuing paint invalidations for renderers that have changed or moved, updating bounds that have changed, and clearing paint invalidation state.
     virtual void invalidateTreeIfNeeded(PaintInvalidationState&);
 
@@ -1214,6 +1212,8 @@ protected:
     virtual void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const;
 
 private:
+    inline void invalidateSelectionIfNeeded(const LayoutBoxModelObject&, PaintInvalidationReason);
+
     inline void invalidateContainerPreferredLogicalWidths();
 
     void clearMayNeedPaintInvalidation();
