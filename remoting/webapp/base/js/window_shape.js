@@ -24,11 +24,13 @@ remoting.WindowShape = function() {
 };
 
 /**
- * @return {boolean} True if setShape is available.
+ * @return {boolean} True if setShape is available and implemented for the
+ *     current platform.
  */
 remoting.WindowShape.isSupported = function() {
   return base.isAppsV2() &&
-      typeof(chrome.app.window.current().setShape) != 'undefined';
+      typeof(chrome.app.window.current().setShape) != 'undefined' &&
+      !remoting.platformIsMac();
 }
 
 /**
