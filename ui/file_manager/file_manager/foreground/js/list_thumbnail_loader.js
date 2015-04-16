@@ -411,8 +411,12 @@ ListThumbnailLoader.Task = function(
  */
 ListThumbnailLoader.Task.prototype.fetch = function() {
   return this.thumbnailModel_.get([this.entry_]).then(function(metadatas) {
-    // When an error happens during metadata fetch, abort here.
-    if (metadatas[0].thumbnail.urlError)
+    // When it failed to read exif header with an IO error, do not generate
+    // thumbnail at this time since it may success in the second try. If it
+    // failed to read at 0 byte, it would be an IO error.
+    if (metadatas[0].thumbnail.urlError &&
+        metadatas[0].thumbnail.urlError.errorDescription ===
+            'Error: Unexpected EOF @0')
       throw metadatas[0].thumbnail.urlError;
 
     return new this.thumbnailLoaderConstructor_(
