@@ -184,12 +184,14 @@ HTML5 introduced many storage APIs that let you  store a large amount of data lo
 <p>The following code snippet shows how you can ask about storage space:</p>
 <pre class="prettyprint">
 // Request storage usage and capacity left
-window.webkitStorageInfo.queryUsageAndQuota(webkitStorageInfo.TEMPORARY, //the type can be either TEMPORARY or PERSISTENT
-function(used, remaining) {
-  console.log("Used quota: " + used + ", remaining quota: " + remaining);
-}, function(e) {
-  console.log('Error', e); 
-} );</pre>
+// Choose either Temporary or Persistent
+navigator.webkitTemporaryStorage.queryUsageAndQuota ( 
+    function(usedBytes, grantedBytes) {  
+        console.log('we are using ', usedBytes, ' of ', grantedBytes, 'bytes');
+    }, 
+    function(e) { console.log('Error', e);  }
+);
+</pre>
 <p>If you want to ask for the status of persistent storage, simply replace <span class="prettyprint"><code>webkitStorageInfo.<strong>TEMPORARY</strong></code></span> with <span class="prettyprint"><code>webkitStorageInfo.<strong>PERSISTENT</strong></code></span>. The enum is also in the <code>window</code> object (global namespace), so you can also use <code>window.<strong>PERSISTENT</strong></code> and  <code>window.<strong>TEMPORARY</strong></code>.</p>
 <p class="backtotop"><a href="#top">Back to top</a></p>
 
@@ -211,10 +213,14 @@ function(used, remaining) {
 <p>The following shows how you can ask for more storage space:</p>
 <pre class="prettyprint">
 // Request Quota (only for File System API) </span> 
-window.webkitStorageInfo.requestQuota(PERSISTENT, 1024*1024, function(grantedBytes) {
-  window.webkitRequestFileSystem(PERSISTENT, grantedBytes, onInitFs, errorHandler); 
-}, function(e) {
-  console.log('Error', e); 
+var requestedBytes = 1024*1024*10; // 10MB
+
+navigator.webkitPersistentStorage.requestQuota (
+    requestedBytes, function(grantedBytes) {  
+        window.requestFileSystem(PERSISTENT, grantedBytes, onInitFs, errorHandler);
+
+    }, function(e) { console.log('Error', e); }
+);
 });</pre>
 <p class="backtotop"><a href="#top">Back to top</a></p>
 
@@ -270,17 +276,10 @@ window.webkitStorageInfo.requestQuota(PERSISTENT, 1024*1024, function(grantedByt
 <h4 id="queryUsageAndQuota">queryUsageAndQuota</h4>
 <p>Check the storage size that is being used and the available space left for the host.</p>
 
-<pre class="prettyprint">webkitStorageInfo.queryUsageAndQuota(
-      webkitStorageInfo.TEMPORARY,   // or PERSISTENT
-      usageCallback,
+<pre class="prettyprint"> // you could also use it from webkitPersistentStorage
+navigator.webkitTemporaryStorage.queryUsageAndQuota(
+      successCallback,
       errorCallback);</pre>
-
-
-<h5>Parameters</h5>
-<dl>
-<dt>storageType</dt>
-<dd>The type of storage for the current usage. The value could either be <code>TEMPORARY</code> or <code>PERSISTENT</code>. </dd>
-</dl>
 <dl>
   <dt>successCallback</dt>
   <dd>Optional callback with two parameters: <ul>
@@ -300,16 +299,15 @@ window.webkitStorageInfo.requestQuota(PERSISTENT, 1024*1024, function(grantedByt
 
 <p>Ask for more storage. The browser presents an info bar to prompt user to grant or deny the app the permission to have more storage.</p>
 
-<pre class="prettyprint">webkitStorageInfo.requestQuota(
-      webkitStorageInfo.PERSISTENT // or TEMPORARY
+<pre class="prettyprint"> // you could also use it from webkitTemporaryStorage
+navigator.webkitPersistentStorage.requestQuota (
       newQuotaInBytes,
       quotaCallback,
       errorCallback);</pre>
 
 <h5>Parameters</h5>
 <dl>
-  <dt>storageType</dt>
-  <dd>The type of storage for the current usage. The value could either be <code>TEMPORARY</code> or <code>PERSISTENT</code>. Temporary storage is automatically allocated, so only call the method for   <code>PERSISTENT</code> storage. </dd>
+ 
   <dt>newQuotaInBytes</dt>
   <dd>The amount of bytes you want in your storage quota.  </dd>
 </dl>
