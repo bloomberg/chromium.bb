@@ -7,11 +7,11 @@
 
 
 import os
+import platform
 import shutil
+import stat
 import sys
 import tempfile
-
-import platform
 import time
 
 
@@ -120,11 +120,23 @@ def RemoveDirectoryIfPresent(path):
   Args:
     path: Directory to remove.
   """
-  # On Windows, attempts to remove read-only files get Error 5. This
-  # error handler fixes the permissions and retries the removal.
+
+  # On POSIX systems, attempts to remove a file fail if the containing
+  # directory lacks write and execute (search) permissions.  So change
+  # the directory permissions before trying again.
+  def make_parents_accessible(path):
+    did_anything = False
+    while not os.access(path, os.F_OK):
+      path = os.path.dirname(path)
+      if os.path.exists(path) and not os.access(path, os.W_OK | os.X_OK):
+        os.chmod(path, stat.S_IRWXU)
+        did_anything = True
+    return did_anything
+
+  # On Windows, attempts to remove read-only files get Error 5.
+  # This error handler fixes the permissions and retries the removal.
   def onerror_readonly(func, path, exc_info):
-    import stat
-    if not os.access(path, os.W_OK):
+    if make_parents_accessible(path) or not os.access(path, os.W_OK):
       os.chmod(path, stat.S_IWUSR)
       func(path)
 

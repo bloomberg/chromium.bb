@@ -255,15 +255,20 @@ def Mkdir(path, parents=False, run_cond=None):
   return Runnable(run_cond, mkdir, path)
 
 
-def Copy(src, dst, run_cond=None):
+def Copy(src, dst, permissions=False, run_cond=None):
   """Convenience method for generating cp commands."""
-  def copy(logger, subst, src, dst):
+  def copy(logger, subst, src, dst, permissions):
     src = subst.SubstituteAbsPaths(src)
     dst = subst.SubstituteAbsPaths(dst)
-    logger.debug('Copying: %s -> %s', src, dst)
+    logger.debug('Copying: %s %s-> %s',
+                 src,
+                 '(with permissions) ' if permissions else '',
+                 dst)
     shutil.copyfile(src, dst)
+    if permissions:
+      shutil.copymode(src, dst)
 
-  return Runnable(run_cond, copy, src, dst)
+  return Runnable(run_cond, copy, src, dst, permissions)
 
 
 def CopyRecursive(src, dst, run_cond=None):

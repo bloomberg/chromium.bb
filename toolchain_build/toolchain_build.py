@@ -57,6 +57,13 @@ GIT_REVISIONS = {
         # Upstream tag newlib_2_1_0:
         'upstream-base': '99fc6c167467b41466ec90e8260e9c49cbe3d13c',
         },
+    'glibc': {
+        'rev': 'd1e44df1fa5fefd8a083f6c1e909bbcdc97c6438',
+        'upstream-branch': 'upstream/master',
+        'upstream-name': 'glibc-2.21',
+        # Upstream tag glibc-2.21:
+        'upstream-base': '4e42b5b8f89f0e288e68be7ad70f9525aebc2cff',
+        },
     'gdb': {
         'rev': '5deb4793a5e3f2f48d7899f424bb4484686020f8',
         'repo': 'binutils',
@@ -261,6 +268,13 @@ TARGET_GCC_CONFIG = {
 PACKAGE_NAME = 'Native Client SDK [%(build_signature)s]'
 BUG_URL = 'http://gonacl.com/reportissue'
 
+CONFIGURE_COMMON = [
+    '--with-pkgversion=' + PACKAGE_NAME,
+    '--with-bugurl=' + BUG_URL,
+    '--prefix=',
+    '--disable-silent-rules',
+    ]
+
 TAR_XV = ['tar', '-x', '-v']
 EXTRACT_STRIP_TGZ = TAR_XV + ['--gzip', '--strip-components=1', '-f']
 EXTRACT_STRIP_TBZ2 = TAR_XV + ['--bzip2', '--strip-components=1', '-f']
@@ -326,9 +340,7 @@ def ConfigureHostArch(host):
 
 
 def ConfigureHostCommon(host):
-  return ConfigureHostArch(host) + [
-      '--prefix=',
-      '--disable-silent-rules',
+  return CONFIGURE_COMMON + ConfigureHostArch(host) + [
       '--without-gcc-arch',
       ]
 
@@ -341,8 +353,6 @@ def ConfigureHostLib(host):
 
 def ConfigureHostTool(host):
   return ConfigureHostCommon(host) + [
-      '--with-pkgversion=' + PACKAGE_NAME,
-      '--with-bugurl=' + BUG_URL,
       '--without-zlib',
       ]
 
@@ -863,12 +873,16 @@ def HostTools(host, target):
 
   return tools
 
-def TargetCommands(host, target, command_list):
+def TargetCommands(host, target, command_list,
+                   host_deps=['binutils', 'gcc'],
+                   target_deps=[]):
   # First we have to copy the host tools into a common directory.
   # We can't just have both directories in our PATH, because the
   # compiler looks for the assembler and linker relative to itself.
-  commands = PopulateDeps(['%(' + ForHost('binutils_' + target, host) + ')s',
-                           '%(' + ForHost('gcc_' + target, host) + ')s'])
+  commands = PopulateDeps(['%(' + ForHost(dep + '_' + target, host) + ')s'
+                           for dep in host_deps] +
+                          ['%(' + dep + '_' + target + ')s'
+                           for dep in target_deps])
   bindir = command.path.join('%(cwd)s', 'all_deps', 'bin')
   commands += [command.Command(cmd, path_dirs=[bindir])
                for cmd in command_list]
@@ -916,6 +930,86 @@ def TargetLibs(host, target):
       for header in ('pthread.h', 'semaphore.h')
       ]
 
+  # The 'minisdk_<target>' component is a workalike subset of what the full
+  # NaCl SDK provides.  The glibc build uses a handful of things from the
+  # SDK (ncval, sel_ldr, etc.), and expects them relative to $NACL_SDK_ROOT
+  # in the layout that the SDK uses.  We provide a small subset built here
+  # using SCons (and explicit copying, below), containing only the things
+  # the build actually needs.
+  def SconsCommand(args):
+    return command.Command([sys.executable, '%(scons.py)s',
+                            '--verbose', '-j%(cores)s',
+                            'DESTINATION_ROOT=%(abs_work_dir)s'] + args,
+                           cwd=NACL_DIR)
+
+  scons_target = pynacl.platform.GetArch3264(target)
+  sdk_target = scons_target.replace('-', '_')
+  irt_scons_out = 'nacl_irt-' + scons_target
+  trusted_scons_out = 'opt-linux-' + scons_target
+  host_scons_out = 'opt-%s-%s' % (pynacl.platform.GetOS(),
+                                  pynacl.platform.GetArch3264())
+  support = {
+    'minisdk_' + target: {
+      'type': 'work',
+      'inputs': {
+          'src': os.path.join(NACL_DIR, 'src'),
+          'sconstruct': os.path.join(NACL_DIR, 'SConstruct'),
+          'scons.py': os.path.join(NACL_DIR, 'scons.py'),
+          'site_scons': os.path.join(NACL_DIR, 'site_scons'),
+          'arm_trusted': os.path.join(NACL_DIR, 'toolchain', 'linux_x86',
+                                      'arm_trusted'),
+      },
+      'commands': [
+          SconsCommand(['platform=' + scons_target,
+                        'nacl_helper_bootstrap', 'sel_ldr', 'irt_core']),
+          command.Mkdir(command.path.join('%(output)s', 'tools')),
+          command.Copy(command.path.join(irt_scons_out, 'staging',
+                                         'irt_core.nexe'),
+                       command.path.join('%(output)s', 'tools',
+                                         'irt_core_' + sdk_target + '.nexe')),
+      ] + [command.Copy(command.path.join(trusted_scons_out, 'staging', name),
+                        command.path.join('%(output)s', 'tools',
+                                          name + '_' + sdk_target),
+                        permissions=True)
+           for name in ['sel_ldr', 'nacl_helper_bootstrap']] + [
+          SconsCommand(['platform=' + pynacl.platform.GetArch3264(),
+                        'ncval_new']),
+          command.Copy(command.path.join(host_scons_out, 'staging',
+                                         'ncval_new'),
+                       command.path.join('%(output)s', 'tools', 'ncval'),
+                       permissions=True),
+          command.Mkdir(command.path.join('%(output)s', 'tools',
+                                           'arm_trusted', 'lib'),
+                        parents=True),
+      ] + [command.Copy(command.path.join('%(arm_trusted)s', *(dir + [name])),
+                        command.path.join('%(output)s', 'tools', 'arm_trusted',
+                                          'lib', name))
+           for dir, name in [
+               (['lib', 'arm-linux-gnueabihf'], 'librt.so.1'),
+               (['lib', 'arm-linux-gnueabihf'], 'libpthread.so.0'),
+               (['lib', 'arm-linux-gnueabihf'], 'libgcc_s.so.1'),
+               (['lib', 'arm-linux-gnueabihf'], 'libc.so.6'),
+               (['lib', 'arm-linux-gnueabihf'], 'ld-linux-armhf.so.3'),
+               (['lib', 'arm-linux-gnueabihf'], 'libm.so.6'),
+               (['usr', 'lib', 'arm-linux-gnueabihf'], 'libstdc++.so.6')
+           ]]
+      }
+    }
+
+  minisdk_root = 'NACL_SDK_ROOT=%(abs_minisdk_' + target + ')s'
+
+  glibc_configparms = """
+# TODO(mcgrathr): Make this the default in the compiler driver for !-static.
+rtld-LDFLAGS = $(if $(filter %.so,$@),,-Wl,-Ttext-segment=0x100000) \\
+               -Wl,-dynamic-linker=$(rtlddir)/$(rtld-installed-name)
+
+# Avoid -lgcc_s and -lgcc_eh, which we do not have yet.
+override gnulib-tests := -lgcc
+override static-gnulib-tests := -lgcc
+
+# Work around a compiler bug.
+CFLAGS-doasin.c = -mtune=generic-armv7-a
+"""
 
   libs = {
       'newlib_' + target: {
@@ -936,6 +1030,32 @@ def TargetLibs(host, target):
                        newlib_post_install +
                        InstallDocFiles('newlib', ['COPYING.NEWLIB'])),
           },
+
+      'glibc_' + target: {
+          'type': 'build',
+          # The glibc build needs a libgcc.a (and the unwind.h header).
+          # For now, we just use the one built for the newlib toolchain
+          # and that seems to suffice.
+          # TODO(mcgrathr): Eventually figure out a proper minimal build
+          # of just the libgcc bits needed for the glibc build.
+          'dependencies': ['glibc', 'minisdk_' + target,
+                           'gcc_libs_' + target] + lib_deps,
+          'commands': (ConfigureTargetPrep(target) +
+                       [command.WriteData(glibc_configparms, 'configparms')] +
+                       TargetCommands(host, target, [
+                           ConfigureCommand('glibc') + CONFIGURE_COMMON + [
+                               '--host=%s-nacl' % target,
+                               '--with-headers=%(abs_top_srcdir)s/..',
+                               'STRIP=%(cwd)s/strip_for_target',
+                           ],
+                           MakeCommand(host) + [minisdk_root],
+                           # TODO(mcgrathr): Enable test suite later.
+                           #MakeCommand(host) + [minisdk_root, 'check'],
+                           ['make', 'install', minisdk_root,
+                            'install_root=%(abs_output)s'],
+                           ], target_deps=['gcc_libs']) +
+                       InstallDocFiles('glibc', ['COPYING.LIB'])),
+        },
 
       'gcc_libs_' + target: {
           'type': 'build',
@@ -965,6 +1085,8 @@ def TargetLibs(host, target):
               ],
           },
       }
+
+  libs.update(support)
   return libs
 
 # Compute it once.
@@ -1035,6 +1157,8 @@ def GetPackageTargets():
       raw_packages = shared_packages + platform_packages
       all_packages = raw_packages + sdk_lib_packages
 
+      glibc_packages = platform_packages + ['glibc_' + target_arch]
+
       os_name = pynacl.platform.GetOS(host_target.os)
       if host_target.differ3264:
         arch_name = pynacl.platform.GetArch3264(host_target.arch)
@@ -1049,6 +1173,12 @@ def GetPackageTargets():
       package_target_dict = package_targets.setdefault(package_target, {})
       package_target_dict.setdefault(raw_package_name, []).extend(raw_packages)
       package_target_dict.setdefault(package_name, []).extend(all_packages)
+
+      glibc_package_name = (package_prefix +
+                            ('nacl_%s_glibc' %
+                             pynacl.platform.GetArch(target_arch)))
+      package_target_dict.setdefault(glibc_package_name,
+                                     []).extend(glibc_packages)
 
   # GDB is a special and shared, we will inject it into various other packages.
   for platform, arch in GDB_INJECT_HOSTS:
