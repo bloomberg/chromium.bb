@@ -17,7 +17,7 @@ namespace {
 
 class QuitDelegate : public ObjectWatcher::Delegate {
  public:
-  virtual void OnObjectSignaled(HANDLE object) {
+  void OnObjectSignaled(HANDLE object) override {
     MessageLoop::current()->QuitWhenIdle();
   }
 };
@@ -26,9 +26,8 @@ class DecrementCountDelegate : public ObjectWatcher::Delegate {
  public:
   explicit DecrementCountDelegate(int* counter) : counter_(counter) {
   }
-  virtual void OnObjectSignaled(HANDLE object) {
-    --(*counter_);
-  }
+  void OnObjectSignaled(HANDLE object) override { --(*counter_); }
+
  private:
   int* counter_;
 };

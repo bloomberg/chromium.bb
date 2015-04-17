@@ -27,21 +27,21 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
         recursive_watch_(false) {}
 
   // FilePathWatcher::PlatformDelegate overrides.
-  virtual bool Watch(const FilePath& path,
-                     bool recursive,
-                     const FilePathWatcher::Callback& callback) override;
-  virtual void Cancel() override;
+  bool Watch(const FilePath& path,
+             bool recursive,
+             const FilePathWatcher::Callback& callback) override;
+  void Cancel() override;
 
   // Deletion of the FilePathWatcher will call Cancel() to dispose of this
   // object in the right thread. This also observes destruction of the required
   // cleanup thread, in case it quits before Cancel() is called.
-  virtual void WillDestroyCurrentMessageLoop() override;
+  void WillDestroyCurrentMessageLoop() override;
 
   // Callback from MessageLoopForIO.
-  virtual void OnObjectSignaled(HANDLE object) override;
+  void OnObjectSignaled(HANDLE object) override;
 
  private:
-  virtual ~FilePathWatcherImpl() {}
+  ~FilePathWatcherImpl() override {}
 
   // Setup a watch handle for directory |dir|. Set |recursive| to true to watch
   // the directory sub trees. Returns true if no fatal error occurs. |handle|

@@ -39,7 +39,7 @@ class BASE_EXPORT EnumVariant
   STDMETHODIMP Clone(IEnumVARIANT** out_cloned_object) override;
 
  private:
-  ~EnumVariant();
+  ~EnumVariant() override;
 
   scoped_ptr<VARIANT[]> items_;
   unsigned long count_;

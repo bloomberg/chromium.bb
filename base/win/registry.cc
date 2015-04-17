@@ -38,7 +38,7 @@ const REGSAM kWow64AccessMask = KEY_WOW64_32KEY | KEY_WOW64_64KEY;
 class RegKey::Watcher : public ObjectWatcher::Delegate {
  public:
   explicit Watcher(RegKey* owner) : owner_(owner) {}
-  ~Watcher() {}
+  ~Watcher() override {}
 
   bool StartWatching(HKEY key, const ChangeCallback& callback);
 

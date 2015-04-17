@@ -92,7 +92,7 @@ class TraceEventWinTest: public testing::Test {
   TraceEventWinTest() {
   }
 
-  void SetUp() {
+  void SetUp() override {
     bool is_xp = win::GetVersion() < base::win::VERSION_VISTA;
 
     if (is_xp) {
@@ -151,7 +151,7 @@ class TraceEventWinTest: public testing::Test {
     EXPECT_TRUE(tracelog->IsTracing());
   }
 
-  void TearDown() {
+  void TearDown() override {
     EtwTraceProperties prop;
     if (controller_.session() != 0)
       EXPECT_HRESULT_SUCCEEDED(controller_.Stop(&prop));

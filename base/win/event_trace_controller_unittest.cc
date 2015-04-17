@@ -42,12 +42,8 @@ class TestingProvider: public EtwTraceProvider {
   }
 
  private:
-  virtual void OnEventsEnabled() {
-    ::SetEvent(callback_event_.Get());
-  }
-  virtual void PostEventsDisabled() {
-    ::SetEvent(callback_event_.Get());
-  }
+  void OnEventsEnabled() override { ::SetEvent(callback_event_.Get()); }
+  void PostEventsDisabled() override { ::SetEvent(callback_event_.Get()); }
 
   ScopedHandle callback_event_;
 
@@ -113,7 +109,7 @@ class EtwTraceControllerTest : public testing::Test {
       : session_name_(StringPrintf(L"TestSession-%d", GetCurrentProcId())) {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     EtwTraceProperties ignore;
     EtwTraceController::Stop(session_name_.c_str(), &ignore);
 
@@ -121,7 +117,7 @@ class EtwTraceControllerTest : public testing::Test {
     ASSERT_HRESULT_SUCCEEDED(::CoCreateGuid(&test_provider_));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     EtwTraceProperties prop;
     EtwTraceController::Stop(session_name_.c_str(), &prop);
   }

@@ -92,7 +92,7 @@ class BASE_EXPORT WaitableEventWatcher
 
  private:
 #if defined(OS_WIN)
-  virtual void OnObjectSignaled(HANDLE h) override;
+  void OnObjectSignaled(HANDLE h) override;
   win::ObjectWatcher watcher_;
 #else
   // Implementation of MessageLoop::DestructionObserver

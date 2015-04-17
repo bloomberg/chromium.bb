@@ -238,7 +238,7 @@ class PEImageAsData : public PEImage {
  public:
   explicit PEImageAsData(HMODULE hModule) : PEImage(hModule) {}
 
-  virtual PVOID RVAToAddr(DWORD rva) const;
+  PVOID RVAToAddr(DWORD rva) const override;
 };
 
 inline bool PEImage::IsOrdinal(LPCSTR name) {

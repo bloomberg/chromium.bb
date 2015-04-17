@@ -15,9 +15,7 @@ class TestIUnknownImplSubclass : public IUnknownImpl {
   TestIUnknownImplSubclass() {
     ++instance_count;
   }
-  virtual ~TestIUnknownImplSubclass() {
-    --instance_count;
-  }
+  ~TestIUnknownImplSubclass() override { --instance_count; }
   static int instance_count;
 };
 

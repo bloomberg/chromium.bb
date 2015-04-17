@@ -61,8 +61,8 @@ class BASE_EXPORT LogEventProvider : public base::win::EtwTraceProvider {
 
  protected:
   // Overridden to manipulate the log level on ETW control callbacks.
-  virtual void OnEventsEnabled();
-  virtual void OnEventsDisabled();
+  void OnEventsEnabled() override;
+  void OnEventsDisabled() override;
 
  private:
   LogEventProvider();

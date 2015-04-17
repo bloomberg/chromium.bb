@@ -38,12 +38,12 @@ static const int kWaitInterval = 2000;
 class TimerExpiredTask : public win::ObjectWatcher::Delegate {
  public:
   explicit TimerExpiredTask(Process process);
-  ~TimerExpiredTask();
+  ~TimerExpiredTask() override;
 
   void TimedOut();
 
   // MessageLoop::Watcher -----------------------------------------------------
-  virtual void OnObjectSignaled(HANDLE object);
+  void OnObjectSignaled(HANDLE object) override;
 
  private:
   void KillProcess();

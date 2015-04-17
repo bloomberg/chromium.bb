@@ -124,11 +124,11 @@ class BASE_EXPORT CancelableSyncSocket : public SyncSocket {
   // and there isn't a way to cancel a blocking synchronous Read that is
   // supported on <Vista. So, for Windows only, we override these
   // SyncSocket methods in order to support shutting down the 'socket'.
-  virtual bool Close() override;
-  virtual size_t Receive(void* buffer, size_t length) override;
-  virtual size_t ReceiveWithTimeout(void* buffer,
-                                    size_t length,
-                                    TimeDelta timeout) override;
+  bool Close() override;
+  size_t Receive(void* buffer, size_t length) override;
+  size_t ReceiveWithTimeout(void* buffer,
+                            size_t length,
+                            TimeDelta timeout) override;
 #endif
 
   // Send() is overridden to catch cases where the remote end is not responding

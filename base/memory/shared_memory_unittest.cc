@@ -101,10 +101,10 @@ const char* const MultipleThreadMain::s_test_name_ =
 class MultipleLockThread : public PlatformThread::Delegate {
  public:
   explicit MultipleLockThread(int id) : id_(id) {}
-  virtual ~MultipleLockThread() {}
+  ~MultipleLockThread() override {}
 
   // PlatformThread::Delegate interface.
-  virtual void ThreadMain() override {
+  void ThreadMain() override {
     const uint32 kDataSize = sizeof(int);
     SharedMemoryHandle handle = NULL;
     {

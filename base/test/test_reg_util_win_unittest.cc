@@ -32,7 +32,7 @@ class RegistryOverrideManagerTest : public testing::Test {
     key.DeleteKey(kTestKeyPath);
   }
 
-  virtual ~RegistryOverrideManagerTest() {
+  ~RegistryOverrideManagerTest() override {
     base::win::RegKey key(HKEY_CURRENT_USER);
     key.DeleteKey(fake_test_key_root_.c_str());
   }

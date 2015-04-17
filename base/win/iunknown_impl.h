@@ -19,11 +19,11 @@ class BASE_EXPORT IUnknownImpl : public IUnknown {
  public:
   IUnknownImpl();
 
-  virtual ULONG STDMETHODCALLTYPE AddRef() override;
-  virtual ULONG STDMETHODCALLTYPE Release() override;
+  ULONG STDMETHODCALLTYPE AddRef() override;
+  ULONG STDMETHODCALLTYPE Release() override;
 
   // Subclasses should extend this to return any interfaces they provide.
-  virtual STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
+  STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
 
  protected:
   virtual ~IUnknownImpl();

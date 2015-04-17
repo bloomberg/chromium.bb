@@ -425,7 +425,7 @@ class DispatcherImpl : public MessagePumpDispatcher {
  public:
   DispatcherImpl() : dispatch_count_(0) {}
 
-  virtual uint32_t Dispatch(const NativeEvent& msg) override {
+  uint32_t Dispatch(const NativeEvent& msg) override {
     ::TranslateMessage(&msg);
     ::DispatchMessage(&msg);
     // Do not count WM_TIMER since it is not what we post and it will cause
@@ -489,8 +489,9 @@ class TestIOHandler : public MessageLoopForIO::IOHandler {
  public:
   TestIOHandler(const wchar_t* name, HANDLE signal, bool wait);
 
-  virtual void OnIOCompleted(MessageLoopForIO::IOContext* context,
-                             DWORD bytes_transfered, DWORD error);
+  void OnIOCompleted(MessageLoopForIO::IOContext* context,
+                     DWORD bytes_transfered,
+                     DWORD error) override;
 
   void Init();
   void WaitForIO();

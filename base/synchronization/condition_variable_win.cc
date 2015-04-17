@@ -72,12 +72,12 @@ class ConditionVarImpl {
 class WinVistaCondVar: public ConditionVarImpl {
  public:
   WinVistaCondVar(Lock* user_lock);
-  ~WinVistaCondVar() {};
+  ~WinVistaCondVar() override {}
   // Overridden from ConditionVarImpl.
-  virtual void Wait() override;
-  virtual void TimedWait(const TimeDelta& max_time) override;
-  virtual void Broadcast() override;
-  virtual void Signal() override;
+  void Wait() override;
+  void TimedWait(const TimeDelta& max_time) override;
+  void Broadcast() override;
+  void Signal() override;
 
  private:
   base::Lock& user_lock_;
@@ -127,12 +127,12 @@ void WinVistaCondVar::Signal() {
 class WinXPCondVar : public ConditionVarImpl {
  public:
   WinXPCondVar(Lock* user_lock);
-  ~WinXPCondVar();
+  ~WinXPCondVar() override;
   // Overridden from ConditionVarImpl.
-  virtual void Wait() override;
-  virtual void TimedWait(const TimeDelta& max_time) override;
-  virtual void Broadcast() override;
-  virtual void Signal() override;
+  void Wait() override;
+  void TimedWait(const TimeDelta& max_time) override;
+  void Broadcast() override;
+  void Signal() override;
 
   // Define Event class that is used to form circularly linked lists.
   // The list container is an element with NULL as its handle_ value.

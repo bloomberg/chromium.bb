@@ -114,7 +114,7 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
   static const int kMessageFilterCode = 0x5001;
 
   MessagePumpForUI();
-  virtual ~MessagePumpForUI();
+  ~MessagePumpForUI() override;
 
   // MessagePump methods:
   void ScheduleWork() override;
