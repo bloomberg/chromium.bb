@@ -23,22 +23,13 @@ Polymer('offline-gaia', (function() {
     ready: function() {
       var emailInput = this.$.emailInput;
       var passwordInput = this.$.passwordInput;
-      var passwordHeader = this.$.passwordHeader;
-      var animatedPages = this.$.animatedPages;
       emailInput.addEventListener('buttonClick', function() {
         if (emailInput.checkValidity()) {
-          passwordHeader.email = emailInput.inputValue;
-          passwordInput.setValid(true);
-          animatedPages.selected += 1;
+          this.switchToPasswordCard(emailInput.inputValue);
         } else {
           emailInput.focus();
         }
-      });
-
-      passwordHeader.addEventListener('backClick', function() {
-        passwordInput.inputValue = '';
-        animatedPages.selected -= 1;
-      });
+      }.bind(this));
 
       passwordInput.addEventListener('buttonClick', function() {
         if (this.$.passwordInput.checkValidity()) {
@@ -56,14 +47,30 @@ Polymer('offline-gaia', (function() {
 
     setEmail: function(email) {
       if (email) {
-        this.$.emailInput.inputValue = email;
-        this.$.passwordHeader.email = email;
-        this.$.animatedPages.selected = 1;
+        this.switchToPasswordCard(email);
         this.$.passwordInput.setValid(false);
       } else {
         this.$.emailInput.inputValue = '';
-        this.$.animatedPages.selected = 0;
+        this.switchToEmailCard();
       }
+    },
+
+    onBack: function() {
+      this.switchToEmailCard();
+    },
+
+    switchToEmailCard() {
+      this.$.passwordInput.inputValue = '';
+      this.$.passwordInput.setValid(true);
+      this.$.backButton.hidden = true;
+      this.$.animatedPages.selected = 0;
+    },
+
+    switchToPasswordCard(email) {
+      this.$.emailInput.inputValue = email;
+      this.$.passwordHeader.email = email;
+      this.$.backButton.hidden = false;
+      this.$.animatedPages.selected = 1;
     }
   };
 })());

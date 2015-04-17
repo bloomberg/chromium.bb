@@ -19,3 +19,17 @@ h1 {
   font-size: 20px;
   font-weight: normal;
 }
+
+#backButton {
+  color: rgb(255, 255, 255);
+  left: 0;
+  position: absolute;
+  top: 0;
+  z-index: 1;
+}
+
+:host-context(html[dir=rtl]) #backButton {
+  left: auto;
+  right: 0;
+  transform: scaleX(-1);
+}

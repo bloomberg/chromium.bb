@@ -1,35 +1,20 @@
 <link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/polymer/layout.html">
-<link rel="import" href="chrome://resources/polymer/core-icon-button/core-icon-button.html">
 
 <!--
   Blue header for New Gaia UI, contains blue avatar logo and user email.
-  Could also contain back button
 
   Example:
-    <gaia-header id="passwordHeader" hasBackButton="true">
+    <gaia-header id="passwordHeader">
     </gaia-header>
 
   Attributes:
    'email' - displayed email.
-   'hasBackButton' - whether the element would have back button in the top left
-                     corner.
-
-  Events:
-    'backclick' - fired when back button is clicked.
 -->
-<polymer-element name="gaia-header" vertical layout class="newgaia-header"
-                 attributes="email hasBackButton">
+<polymer-element name="gaia-header" flex vertical layout noscript
+                 attributes="email">
   <template>
-    <link rel="stylesheet" href="gaia_header.css">
-    <div id="buttonHeader" horizontal layout>
-      <template if="{{hasBackButton}}">
-        <core-icon-button id="back-button" icon="arrow-back"
-                          on-tap="{{onBack}}" self-start>
-        </core-icon-button>
-      </template>
-    </div>
-    <div class="newgaia-padded" flex vertical justified layout start>
+    <div flex vertical justified layout start>
       <img self-start src="chrome://theme/IDR_LOGO_AVATAR_CIRCLE_BLUE_COLOR"
            alt>
       <p id="email">{{email}}</p>

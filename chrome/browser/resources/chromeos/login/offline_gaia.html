@@ -2,6 +2,7 @@
 <link rel="import" href="chrome://resources/polymer/polymer/layout.html">
 <link rel="import" href="chrome://resources/polymer/core-animated-pages/core-animated-pages.html">
 <link rel="import" href="chrome://resources/polymer/core-animated-pages/transitions/slide-from-right.html">
+<link rel="import" href="chrome://resources/polymer/core-icon-button/core-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/paper-dialog/paper-action-dialog.html">
 
@@ -30,30 +31,34 @@
                  screen to password input and shows error that previously
                  entered password is incorrect.
 -->
-<polymer-element name="offline-gaia" vertical layout>
+<polymer-element name="offline-gaia" vertical layout attributes="enterpriseInfo">
   <template>
-    <link rel="stylesheet" href="offline_gaia.css" attributes="enterpriseInfo">
+    <link rel="stylesheet" href="offline_gaia.css">
+    <core-icon-button id="backButton" icon="arrow-back" on-tap="{{onBack}}">
+    </core-icon-button>
     <core-animated-pages id="animatedPages" transitions="slide-from-right"
         on-core-animated-pages-transition-end="{{onTransitionEnd}}" flex>
-      <section flex vertical layout>
-        <div class="newgaia-header newgaia-padded" vertical layout end-justified
-            start>
-          <h1 i18n-content="offlineLoginWelcome"></h1>
-          <p hidden?="{{!enterpriseInfo}}">{{enterpriseInfo}}</p>
-        </div>
-        <div class="gaia-footer newgaia-padded">
-          <gaia-input-form id="emailInput" inputType="email"
+      <section flex>
+        <gaia-card>
+          <div class="header" flex vertical layout end-justified start>
+            <h1 i18n-content="offlineLoginWelcome"></h1>
+            <p hidden?="{{!enterpriseInfo}}">
+              {{enterpriseInfo}}
+            </p>
+          </div>
+          <gaia-input-form class="footer" id="emailInput" inputType="email"
               i18n-values="errorMsg:offlineLoginInvalidEmail;
                            inputLabel:offlineLoginEmail;
                            buttonText:offlineLoginNextBtn">
           </gaia-input-form>
-        </div>
+        </gaia-card>
       </section>
-      <section flex vertical layout>
-        <gaia-header id="passwordHeader" hasBackButton>
-        </gaia-header>
-        <div class="gaia-footer newgaia-padded">
-          <gaia-input-form id="passwordInput" inputType="password"
+      <section flex>
+        <gaia-card>
+          <gaia-header class="header" id="passwordHeader">
+          </gaia-header>
+          <gaia-input-form id="passwordInput" class="footer"
+              inputType="password"
               i18n-values="errorMsg:offlineLoginInvalidPassword;
                            inputLabel:offlineLoginPassword;
                            buttonText:offlineLoginNextBtn">
@@ -69,7 +74,7 @@
               </paper-button>
             </paper-action-dialog>
           </gaia-input-form>
-        </div>
+        </gaia-card>
       </section>
     </core-animated-pages>
   </template>

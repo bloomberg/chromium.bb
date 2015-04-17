@@ -310,32 +310,3 @@ html /deep/ #forgotPasswordDlg {
 html /deep/ #forgotPasswordDlg paper-button[autofocus] {
   color: rgb(66, 133, 244);
 }
-
-.new-gaia-flow /deep/ .gaia-footer {
-  background-color: rgb(238, 238, 238);
-  display: flex;
-  flex: 1;
-  flex-basis: 0.000000001px;
-  flex-direction: column;
-}
-
-.new-gaia-flow /deep/ a.newgaia-link {
-  color: rgb(66, 133, 244);
-  font-size: 14px;
-  text-decoration: none;
-}
-
-.new-gaia-flow /deep/ p.newgaia-body-text {
-  color: rgb(0, 0, 0);
-  font-size: 15px;
-}
-
-.new-gaia-flow /deep/ .newgaia-header {
-  background-color: rgb(66, 133, 244);
-  color: rgb(255, 255, 255);
-  height: 198px;
-}
-
-.new-gaia-flow /deep/ .newgaia-padded {
-  padding: 0 40px;
-}

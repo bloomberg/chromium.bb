@@ -3,5 +3,4 @@
 // found in the LICENSE file.
 
 <include src="gaia_input_form.js">
-<include src="gaia_header.js">
 <include src="offline_gaia.js">

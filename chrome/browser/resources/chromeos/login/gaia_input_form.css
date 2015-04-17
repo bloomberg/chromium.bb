@@ -7,11 +7,6 @@
   font-size: 16px;
 }
 
-paper-button.colored {
-  background-color: rgb(66, 133, 244);
-  color: rgb(255, 255, 255);
-}
-
 paper-input-decorator {
   margin-bottom: 50px;
 }

@@ -1,0 +1,38 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+:host {
+  height: 528px;
+  width: 448px;
+}
+
+.gaia-header {
+  background-color: rgb(66, 133, 244);
+  color: rgb(255, 255, 255);
+  height: 164px;
+  padding-top: 34px;
+}
+
+.gaia-footer {
+  background-color: rgb(238, 238, 238);
+}
+
+.gaia-header,
+.gaia-footer {
+  padding-left: 40px;
+  padding-right: 40px;
+}
+
+::content /deep/ a.newgaia-link {
+  color: rgb(66, 133, 244);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+::content /deep/ paper-button.blue-button {
+  background-color: rgb(66, 133, 244);
+  color: rgb(255, 255, 255);
+  min-width: 88px
+}
