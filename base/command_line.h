@@ -142,7 +142,7 @@ class BASE_EXPORT CommandLine {
   void SetProgram(const FilePath& program);
 
   // Returns true if this command line contains the given switch.
-  // (Switch names are case-insensitive).
+  // Switch names should only be lowercase.
   // The second override provides an optimized version to avoid inlining the
   // codegen for the string allocation.
   bool HasSwitch(const std::string& switch_string) const;

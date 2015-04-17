@@ -60,12 +60,13 @@ TEST(CommandLineTest, CommandLineConstructor) {
             cl.GetProgram().value());
 
   EXPECT_TRUE(cl.HasSwitch("foo"));
-  EXPECT_TRUE(cl.HasSwitch("bAr"));
+#if defined(OS_WIN)
+  EXPECT_TRUE(cl.HasSwitch("bar"));
+#else
+  EXPECT_FALSE(cl.HasSwitch("bar"));
+#endif
   EXPECT_TRUE(cl.HasSwitch("baz"));
   EXPECT_TRUE(cl.HasSwitch("spaetzle"));
-#if defined(OS_WIN)
-  EXPECT_TRUE(cl.HasSwitch("SPAETZLE"));
-#endif
   EXPECT_TRUE(cl.HasSwitch("other-switches"));
   EXPECT_TRUE(cl.HasSwitch("input-translation"));
 
@@ -128,7 +129,6 @@ TEST(CommandLineTest, CommandLineFromString) {
   EXPECT_TRUE(cl.HasSwitch("bar"));
   EXPECT_TRUE(cl.HasSwitch("baz"));
   EXPECT_TRUE(cl.HasSwitch("spaetzle"));
-  EXPECT_TRUE(cl.HasSwitch("SPAETZLE"));
   EXPECT_TRUE(cl.HasSwitch("other-switches"));
   EXPECT_TRUE(cl.HasSwitch("input-translation"));
   EXPECT_TRUE(cl.HasSwitch("quotes"));
