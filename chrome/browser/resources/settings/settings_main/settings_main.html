@@ -6,32 +6,29 @@
 <link rel="import" href="chrome://md-settings/date_time_page/date_time_page.html">
 <link rel="import" href="chrome://md-settings/downloads_page/downloads_page.html">
 <link rel="import" href="chrome://md-settings/internet_page/internet_page.html">
-<link rel="import" href="chrome://md-settings/routing/more_routing/more_routing.html">
+<link rel="import" href="chrome://md-settings/routes.html">
 <link rel="import" href="settings_main_style.html">
 
-<!-- Drivers manage how the URL is read, and how to navigate to URLs. "path"
-     based driver means URLs like /a11y are generated. For more details, see
-     http://goo.gl/maQU6V -->
-<more-routing-config driver="path"></more-routing-config>
 <polymer-element name="cr-settings-main">
   <template>
     <core-style ref="settingsMainStyle"></core-style>
     <div id="mainContainer">
+      <cr-settings-page-header selectedPage="{{$.pageContainer.selectedItem}}">
+      </cr-settings-page-header>
       <content select="core-icon-button"></content>
       <more-route-selector>
         <core-animated-pages id="pageContainer" selected="{{selectedPageId}}"
             valueattr="PAGE_ID" transitions="cross-fade">
 <if expr="chromeos">
-          <cr-settings-internet-page route="/internet">
-          </cr-settings-internet-page>
+          <cr-settings-internet-page route="internet"></cr-settings-internet-page>
 </if>
-          <cr-settings-a11y-page prefs="{{prefs}}" route="/a11y">
+          <cr-settings-a11y-page prefs="{{prefs}}" route="a11y">
           </cr-settings-a11y-page>
 <if expr="chromeos">
-          <cr-settings-date-time-page prefs="{{prefs}}" route="/datetime">
+          <cr-settings-date-time-page prefs="{{prefs}}" route="dateTime">
           </cr-settings-date-time-page>
 </if>
-          <cr-settings-downloads-page prefs="{{prefs}}" route="/downloads">
+          <cr-settings-downloads-page prefs="{{prefs}}" route="downloads">
           </cr-settings-downloads-page>
         </core-animated-pages>
       </more-route-selector>

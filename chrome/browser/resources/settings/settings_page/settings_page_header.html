@@ -5,10 +5,20 @@
 <polymer-element name="cr-settings-page-header" layout horizontal center>
   <template>
     <core-style ref="settingsPageHeaderStyle"></core-style>
-    <div class="icon-container">
-      <core-icon icon="{{page.icon}}"></core-icon>
-    </div>
-    <h1>{{page.pageTitle}}</h1>
+    <paper-shadow layout horizontal>
+      <div layout horizontal center class="breadcrumbs">
+        <div class="icon-container">
+          <core-icon icon="{{topPage.icon}}"></core-icon>
+        </div>
+
+        <template repeat="{{page in parentPages}}">
+          <a href="{{page.route ? urlFor(page.route) : ''}}">
+          {{page.pageTitle}}</a>&nbsp;&gt;
+        </template>
+
+        {{currentPage.pageTitle}}
+      </div>
+    </paper-shadow>
   </template>
   <script src="settings_page_header.js"></script>
 </polymer-element>

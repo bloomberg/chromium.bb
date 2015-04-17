@@ -17,49 +17,57 @@
 Polymer('cr-settings-page-header', {
   publish: {
     /**
-     * Page to show a header for.
-     *
-     * @attribute page
-     * @type Object
-     * @default null
-     */
-    page: null,
-
-    /**
      * The current stack of pages being viewed. I.e., may contain subpages.
      *
      * @attribute pageStack
-     * @type Array
+     * @type Array<HTMLElement>
      * @default null
      */
     pageStack: null,
 
     /**
-     * The selector determining which page is currently selected.
+     * The currently selected page.
      *
-     * @attribute selector
+     * @attribute selectedPage
      * @type HTMLElement
      * @default null
      */
-    selector: null,
+    selectedPage: null,
+
+    computed: {
+      currentPage: 'pageStack[pageStack.length - 1]',
+      parentPages: 'getParentPages_(pageStack)',
+      topPage: 'pageStack[0]'
+    }
   },
 
   ready: function() {
     this.pageStack = [];
   },
 
-  selectorChanged: function() {
-    this.selector.addEventListener('core-select', function() {
-      // core-select gets fired once for deselection and once for selection;
-      // ignore the deselection case.
-      if (!this.selector.selectedItem)
-        return;
+  selectedPageChanged: function() {
+    if (this.selectedPage.subpage) {
+      // NOTE: Must reassign pageStack rather than doing push() so that the
+      // computed property (parentPages) will be notified of the update.
+      this.pageStack = this.pageStack.concat(this.selectedPage);
+    } else {
+      this.pageStack = [this.selectedPage];
+    }
+  },
 
-      if (this.selector.selectedItem.subpage) {
-        this.pageStack.push(this.selector.selectedItem);
-      } else {
-        this.pageStack = [this.selector.selectedItem];
-      }
-    }.bind(this));
-  }
+  /**
+   * Gets the parent pages in the given page stack; i.e. returns all pages but
+   * the topmost subpage.
+   *
+   * @param {Array<HTMLElement>} stack
+   * @return {!Array<HTMLElement>}
+   * @private
+   */
+  getParentPages_: function(stack) {
+    if (!stack || stack.length <= 1) {
+      return [];
+    }
+
+    return stack.slice(0, stack.length - 1);
+  },
 });

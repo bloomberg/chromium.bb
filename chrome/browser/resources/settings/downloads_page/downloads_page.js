@@ -30,6 +30,15 @@ Polymer('cr-settings-downloads-page', {
     prefs: null,
 
     /**
+     * Route for the page.
+     *
+     * @attribute route
+     * @type string
+     * @default ''
+     */
+    route: '',
+
+    /**
      * Whether the page is a subpage.
      *
      * @attribute subpage

@@ -1,0 +1,12 @@
+<link rel="import" href="chrome://md-settings/routing/more_routing/more_routing.html">
+
+<!-- Drivers manage how the URL is read, and how to navigate to URLs. "hash"
+     based driver means URLs like /#!/a11y are generated. This is preferred to
+     ensure that navigating between pages via links does not trigger a page
+     reload. For more details, see http://goo.gl/maQU6V. -->
+<more-routing-config driver="hash"></more-routing-config>
+
+<more-route name="a11y" path="/a11y"></more-route>
+<more-route name="dateTime" path="/dateTime"></more-route>
+<more-route name="downloads" path="/downloads"></more-route>
+<more-route name="internet" path="/internet"></more-route>
