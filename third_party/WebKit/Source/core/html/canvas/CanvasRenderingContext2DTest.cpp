@@ -153,6 +153,18 @@ public:
 
 //============================================================================
 
+class MockCanvasObserver : public CanvasObserver {
+public:
+    virtual ~MockCanvasObserver() { }
+    MOCK_METHOD2(canvasChanged, void(HTMLCanvasElement*, const FloatRect&));
+    MOCK_METHOD1(canvasResized, void(HTMLCanvasElement*));
+#if !ENABLE(OILPAN)
+    void canvasDestroyed(HTMLCanvasElement*) override { };
+#endif
+};
+
+//============================================================================
+
 #define TEST_OVERDRAW_SETUP(EXPECTED_OVERDRAWS) \
         OwnPtr<MockImageBufferSurfaceForOverwriteTesting> mockSurface = adoptPtr(new MockImageBufferSurfaceForOverwriteTesting(IntSize(10, 10), NonOpaque)); \
         MockImageBufferSurfaceForOverwriteTesting* surfacePtr = mockSurface.get(); \
@@ -522,6 +534,21 @@ TEST_F(CanvasRenderingContext2DTest, FallbackWithLargeState)
         context2d()->translate(1.0f, 0.0f);
     }
     canvasElement().doDeferredPaintInvalidation(); // To close the current frame
+}
+
+TEST_F(CanvasRenderingContext2DTest, CanvasObserver)
+{
+    createContext(NonOpaque);
+    MockCanvasObserver observer;
+    canvasElement().addObserver(&observer);
+
+    // The canvasChanged notification must be immediate, and not deferred until paint time
+    // because offscreen canvases, which are not painted, also need to emit notifications.
+    EXPECT_CALL(observer, canvasChanged(&canvasElement(), FloatRect(0, 0, 1, 1))).Times(1);
+    context2d()->fillRect(0, 0, 1, 1);
+    Mock::VerifyAndClearExpectations(&observer);
+
+    canvasElement().removeObserver(&observer);
 }
 
 } // unnamed namespace
