@@ -44,6 +44,8 @@ const TypedPrefMap& GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["settings.a11y.virtual_keyboard"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["settings.clock.use_24hour_clock"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["settings.touchpad.enable_tap_dragging"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 #endif
