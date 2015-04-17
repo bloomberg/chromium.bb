@@ -24,22 +24,32 @@ TEST(RenderWidgetHostLatencyTrackerTest, Basic) {
   {
     auto scroll = SyntheticWebGestureEventBuilder::BuildScrollUpdate(
         5.f, -5.f, 0, blink::WebGestureDeviceTouchscreen);
+    scroll.timeStampSeconds =
+        (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
     ui::LatencyInfo scroll_latency;
     tracker.OnInputEvent(scroll, &scroll_latency);
     EXPECT_TRUE(
         scroll_latency.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
                                    tracker.latency_component_id(), nullptr));
+    EXPECT_TRUE(
+        scroll_latency.FindLatency(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
+                                   0, nullptr));
     EXPECT_EQ(1U, scroll_latency.input_coordinates_size);
   }
 
   {
     auto wheel = SyntheticWebMouseWheelEventBuilder::Build(
         blink::WebMouseWheelEvent::PhaseChanged);
+    wheel.timeStampSeconds =
+        (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
     ui::LatencyInfo wheel_latency;
     tracker.OnInputEvent(wheel, &wheel_latency);
     EXPECT_TRUE(
         wheel_latency.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
                                   tracker.latency_component_id(), nullptr));
+    EXPECT_TRUE(
+        wheel_latency.FindLatency(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
+                                   0, nullptr));
     EXPECT_EQ(1U, wheel_latency.input_coordinates_size);
   }
 
@@ -52,6 +62,9 @@ TEST(RenderWidgetHostLatencyTrackerTest, Basic) {
     EXPECT_TRUE(
         touch_latency.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
                                   tracker.latency_component_id(), nullptr));
+    EXPECT_TRUE(
+        touch_latency.FindLatency(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
+                                   0, nullptr));
     EXPECT_EQ(2U, touch_latency.input_coordinates_size);
   }
 }

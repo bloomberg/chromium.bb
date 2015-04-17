@@ -307,6 +307,18 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
     return;
   }
 
+  if (event.timeStampSeconds &&
+      !latency->FindLatency(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
+                            0, NULL)) {
+    latency->AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
+        0,
+        0,
+        base::TimeTicks() +
+        base::TimeDelta::FromSecondsD(event.timeStampSeconds),
+        1);
+  }
+
   latency->AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
                             latency_component_id_, ++last_event_id_);
   latency->TraceEventType(WebInputEventTraits::GetName(event.type));

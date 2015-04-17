@@ -31,7 +31,6 @@ bool GestureProviderAura::OnTouchEvent(TouchEvent* event) {
     return false;
 
   last_unique_touch_event_id_ = event->unique_event_id();
-  last_touch_event_latency_info_ = *event->latency();
 
   auto result = filtered_gesture_provider_.OnTouchEvent(pointer_state_);
   if (!result.succeeded)
@@ -47,7 +46,6 @@ void GestureProviderAura::OnAsyncTouchEventAck(bool event_consumed) {
   DCHECK(!handling_event_);
   base::AutoReset<bool> handling_event(&handling_event_, true);
   filtered_gesture_provider_.OnAsyncTouchEventAck(event_consumed);
-  last_touch_event_latency_info_.Clear();
 }
 
 void GestureProviderAura::OnSyncTouchEventAck(const uint64 unique_event_id,
@@ -57,7 +55,6 @@ void GestureProviderAura::OnSyncTouchEventAck(const uint64 unique_event_id,
   DCHECK(!handling_event_);
   base::AutoReset<bool> handling_event(&handling_event_, true);
   filtered_gesture_provider_.OnSyncTouchEventAck(event_consumed);
-  last_touch_event_latency_info_.Clear();
 }
 
 void GestureProviderAura::OnGestureEvent(
@@ -85,18 +82,6 @@ void GestureProviderAura::OnGestureEvent(
                            gesture.flags,
                            gesture.time - base::TimeTicks(),
                            details));
-
-  ui::LatencyInfo* gesture_latency = event->latency();
-
-  gesture_latency->CopyLatencyFrom(
-      last_touch_event_latency_info_,
-      ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT);
-  gesture_latency->CopyLatencyFrom(
-      last_touch_event_latency_info_,
-      ui::INPUT_EVENT_LATENCY_UI_COMPONENT);
-  gesture_latency->CopyLatencyFrom(
-      last_touch_event_latency_info_,
-      ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT);
 
   if (!handling_event_) {
     // Dispatching event caused by timer.

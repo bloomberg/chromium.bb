@@ -261,22 +261,6 @@ void CopyFromCompositingSurfaceFinished(
   callback.Run(*bitmap, response);
 }
 
-ui::LatencyInfo CreateLatencyInfo(const blink::WebInputEvent& event) {
-  ui::LatencyInfo latency_info;
-  // The latency number should only be added if the timestamp is valid.
-  if (event.timeStampSeconds) {
-    const int64 time_micros = static_cast<int64>(
-        event.timeStampSeconds * base::Time::kMicrosecondsPerSecond);
-    latency_info.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
-        0,
-        0,
-        base::TimeTicks() + base::TimeDelta::FromMicroseconds(time_micros),
-        1);
-  }
-  return latency_info;
-}
-
 scoped_ptr<ui::TouchSelectionController> CreateSelectionController(
     ui::TouchSelectionControllerClient* client,
     ContentViewCore* content_view_core) {
@@ -821,8 +805,7 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
 
   blink::WebTouchEvent web_event =
       ui::CreateWebTouchEventFromMotionEvent(event, result.did_generate_scroll);
-  host_->ForwardTouchEventWithLatencyInfo(web_event,
-                                          CreateLatencyInfo(web_event));
+  host_->ForwardTouchEventWithLatencyInfo(web_event, ui::LatencyInfo());
 
   // Send a proactive BeginFrame on the next vsync to reduce latency.
   // This is good enough as long as the first touch event has Begin semantics
@@ -1780,7 +1763,7 @@ void RenderWidgetHostViewAndroid::SendGestureEvent(
     overscroll_controller_->Enable();
 
   if (host_)
-    host_->ForwardGestureEventWithLatencyInfo(event, CreateLatencyInfo(event));
+    host_->ForwardGestureEventWithLatencyInfo(event, ui::LatencyInfo());
 }
 
 void RenderWidgetHostViewAndroid::MoveCaret(const gfx::Point& point) {

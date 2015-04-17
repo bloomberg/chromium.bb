@@ -138,7 +138,6 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
     tap_count_ = 0;
     scale_ = 0;
     flags_ = 0;
-    latency_info_.Clear();
   }
 
   const std::vector<ui::EventType>& events() const { return events_; };
@@ -188,7 +187,6 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   const gfx::Rect& bounding_box() const { return bounding_box_; }
   int tap_count() const { return tap_count_; }
   int flags() const { return flags_; }
-  const ui::LatencyInfo& latency_info() const { return latency_info_; }
 
   void WaitUntilReceivedGesture(ui::EventType type) {
     wait_until_event_ = type;
@@ -200,7 +198,6 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
     events_.push_back(gesture->type());
     bounding_box_ = gesture->details().bounding_box();
     flags_ = gesture->flags();
-    latency_info_ = *gesture->latency();
     switch (gesture->type()) {
       case ui::ET_GESTURE_TAP:
         tap_location_ = gesture->location();
@@ -325,7 +322,6 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   gfx::Rect bounding_box_;
   int tap_count_;
   int flags_;
-  ui::LatencyInfo latency_info_;
 
   ui::EventType wait_until_event_;
 
@@ -4072,63 +4068,6 @@ TEST_F(GestureRecognizerTest, GestureEventFlagsPassedFromTouchEvent) {
 
   DispatchEventUsingWindowDispatcher(&move1);
   EXPECT_NE(default_flags, delegate->flags());
-}
-
-// Test that latency info is passed through to the gesture event.
-TEST_F(GestureRecognizerTest, LatencyPassedFromTouchEvent) {
-  scoped_ptr<GestureEventConsumeDelegate> delegate(
-      new GestureEventConsumeDelegate());
-  TimedEvents tes;
-  const int kWindowWidth = 123;
-  const int kWindowHeight = 45;
-  const int kTouchId = 6;
-
-  const base::TimeTicks time_original = base::TimeTicks::FromInternalValue(100);
-  const base::TimeTicks time_ui = base::TimeTicks::FromInternalValue(200);
-  const base::TimeTicks time_acked = base::TimeTicks::FromInternalValue(300);
-
-  gfx::Rect bounds(100, 200, kWindowWidth, kWindowHeight);
-  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
-      delegate.get(), -1234, bounds, root_window()));
-
-  delegate->Reset();
-
-  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
-                        kTouchId, tes.Now());
-
-  // Ensure the only components around are the ones we add.
-  press1.latency()->Clear();
-
-  press1.latency()->AddLatencyNumberWithTimestamp(
-      ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, 0, time_original, 1);
-
-  press1.latency()->AddLatencyNumberWithTimestamp(
-      ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0, time_ui, 1);
-
-  press1.latency()->AddLatencyNumberWithTimestamp(
-      ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0, 0, time_acked, 1);
-
-  DispatchEventUsingWindowDispatcher(&press1);
-  EXPECT_TRUE(delegate->tap_down());
-
-  ui::LatencyInfo::LatencyComponent component;
-
-  EXPECT_EQ(3U, delegate->latency_info().latency_components.size());
-  ASSERT_TRUE(delegate->latency_info().FindLatency(
-      ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, &component));
-  EXPECT_EQ(time_original, component.event_time);
-
-  ASSERT_TRUE(delegate->latency_info().FindLatency(
-      ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, &component));
-  EXPECT_EQ(time_ui, component.event_time);
-
-  ASSERT_TRUE(delegate->latency_info().FindLatency(
-      ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0, &component));
-  EXPECT_EQ(time_acked, component.event_time);
-
-  delegate->WaitUntilReceivedGesture(ui::ET_GESTURE_SHOW_PRESS);
-  EXPECT_TRUE(delegate->show_press());
-  EXPECT_EQ(0U, delegate->latency_info().latency_components.size());
 }
 
 // A delegate that deletes a window on long press.
