@@ -74,6 +74,17 @@
     Ask where to save each file before downloading
   </message>
 
+  <!-- Date/time Page -->
+  <message name="IDS_SETTINGS_DATE_TIME_TIME_ZONE_LABEL" desc="Label for the picker which allows users to choose their time zone.">
+    Time zone:
+  </message>
+  <message name="IDS_SETTINGS_DATE_TIME_24_HOUR_CLOCK_LABEL" desc="Label for the checkbox which enables a 24-hour clock (as opposed to a 12-hour clock).">
+    Use 24-hour clock
+  </message>
+  <message name="IDS_SETTINGS_DATE_TIME_AUTOMATICALLY_SET" desc="Text which explains that the date and time are automatically set.">
+    Date and time are set automatically.
+  </message>
+
   <!-- Internet Page -->
   <message name="IDS_SETTINGS_INTERNET_PAGE_TITLE" desc="Name of the settings page which displays internet preferences.">
     Internet Connection

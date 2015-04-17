@@ -85,6 +85,18 @@ void AddDownloadsStrings(content::WebUIDataSource* html_source) {
       IDS_SETTINGS_DOWNLOADS_PROMPT_FOR_DOWNLOAD_LABEL);
 }
 
+void AddDateTimeStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString(
+      "dateTimeTimeZoneLabel",
+      IDS_SETTINGS_DATE_TIME_TIME_ZONE_LABEL);
+  html_source->AddLocalizedString(
+      "dateTime24HourClockLabel",
+      IDS_SETTINGS_DATE_TIME_24_HOUR_CLOCK_LABEL);
+  html_source->AddLocalizedString(
+      "dateTimeAutomaticallySet",
+      IDS_SETTINGS_DATE_TIME_AUTOMATICALLY_SET);
+}
+
 #if defined(OS_CHROMEOS)
 void AddInternetStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
@@ -99,6 +111,7 @@ namespace settings {
 void AddLocalizedStrings(content::WebUIDataSource* html_source) {
   AddA11yStrings(html_source);
   AddDownloadsStrings(html_source);
+  AddDateTimeStrings(html_source);
 #if defined(OS_CHROMEOS)
   AddInternetStrings(html_source);
 #endif

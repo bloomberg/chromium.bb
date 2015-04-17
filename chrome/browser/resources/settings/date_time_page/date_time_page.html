@@ -13,14 +13,14 @@
     <paper-shadow layout vertical cross-fade>
       <div horizontal layout center>
         <core-label horizontal layout center>
-          <span class="time-zone-label">Time zone:</span>
+          <span class="time-zone-label" i18n-content="dateTimeTimeZoneLabel"></span>
         </core-label>
       </div>
       <cr-settings-checkbox
           pref="{{prefs.settings.settings.clock.use_24hour_clock}}"
-          label="Use 24-hour clock">
+          i18n-values="label:dateTime24HourClockLabel">
       </cr-settings-checkbox>
-      <span id="setAutomatically">Date and time are set automatically.</span>
+      <span id="setAutomatically" i18n-content="dateTimeAutomaticallySet"></span>
     </paper-shadow>
   </template>
   <script src="date_time_page.js"></script>
