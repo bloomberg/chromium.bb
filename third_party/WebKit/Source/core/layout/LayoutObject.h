@@ -1061,9 +1061,6 @@ public:
     virtual bool supportsPaintInvalidationStateCachedOffsets() const { return !hasColumns() && !hasTransformRelatedProperty() && !hasReflection() && !style()->isFlippedBlocksWritingMode(); }
 
     void setNeedsOverflowRecalcAfterStyleChange();
-    // FIXME: This should be 'markContaingBoxChainForOverflowRecalc when we make RenderBox
-    // recomputeOverflow-capable. crbug.com/437012 and crbug.com/434700.
-    void markContainingBlocksForOverflowRecalc();
 
     virtual LayoutRect viewRect() const;
 
@@ -1205,6 +1202,10 @@ protected:
     virtual void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const;
 
 private:
+    // FIXME: This should be 'markContaingBoxChainForOverflowRecalc when we make LayoutBox
+    // recomputeOverflow-capable. crbug.com/437012 and crbug.com/434700.
+    inline void markContainingBlocksForOverflowRecalc();
+
     inline void markContainerChainForPaintInvalidation();
 
     inline void invalidateSelectionIfNeeded(const LayoutBoxModelObject&, PaintInvalidationReason);
