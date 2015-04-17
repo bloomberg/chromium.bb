@@ -5,6 +5,7 @@
 #ifndef UI_EVENTS_DEVICES_INPUT_DEVICE_H_
 #define UI_EVENTS_DEVICES_INPUT_DEVICE_H_
 
+#include <stdint.h>
 #include <string>
 
 #include "ui/events/devices/events_devices_export.h"
@@ -24,7 +25,12 @@ struct EVENTS_DEVICES_EXPORT InputDevice {
   // Creates an invalid input device.
   InputDevice();
 
-  InputDevice(int id, InputDeviceType type);
+  InputDevice(int id, InputDeviceType type, const std::string& name);
+  InputDevice(int id,
+              InputDeviceType type,
+              const std::string& name,
+              uint16_t vendor,
+              uint16_t product);
   virtual ~InputDevice();
 
   // ID of the device. This ID is unique between all input devices.
@@ -32,6 +38,13 @@ struct EVENTS_DEVICES_EXPORT InputDevice {
 
   // The type of the input device.
   InputDeviceType type;
+
+  // Name of the device.
+  std::string name;
+
+  // USB-style device identifiers, where available, or 0 if unavailable.
+  uint16_t vendor_id;
+  uint16_t product_id;
 };
 
 }  // namespace ui

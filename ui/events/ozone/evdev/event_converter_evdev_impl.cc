@@ -31,7 +31,13 @@ EventConverterEvdevImpl::EventConverterEvdevImpl(
     const EventDeviceInfo& devinfo,
     CursorDelegateEvdev* cursor,
     DeviceEventDispatcherEvdev* dispatcher)
-    : EventConverterEvdev(fd, path, id, type),
+    : EventConverterEvdev(fd,
+                          path,
+                          id,
+                          type,
+                          devinfo.name(),
+                          devinfo.vendor_id(),
+                          devinfo.product_id()),
       has_keyboard_(devinfo.HasKeyboard()),
       has_touchpad_(devinfo.HasTouchpad()),
       has_caps_lock_led_(devinfo.HasLedEvent(LED_CAPSL)),
@@ -178,7 +184,8 @@ void EventConverterEvdevImpl::OnKeyChange(unsigned int key,
   // State transition: !(down) -> (down)
   key_state_.set(key, down);
 
-  dispatcher_->DispatchKeyEvent(KeyEventParams(id_, key, down, timestamp));
+  dispatcher_->DispatchKeyEvent(
+      KeyEventParams(input_device_.id, key, down, timestamp));
 }
 
 void EventConverterEvdevImpl::ReleaseKeys() {
@@ -223,9 +230,9 @@ void EventConverterEvdevImpl::OnButtonChange(int code,
 
   mouse_button_state_.set(button_offset, down);
 
-  dispatcher_->DispatchMouseButtonEvent(
-      MouseButtonEventParams(id_, cursor_->GetLocation(), code, down,
-                             /* allow_remap */ true, timestamp));
+  dispatcher_->DispatchMouseButtonEvent(MouseButtonEventParams(
+      input_device_.id, cursor_->GetLocation(), code, down,
+      /* allow_remap */ true, timestamp));
 }
 
 void EventConverterEvdevImpl::FlushEvents(const input_event& input) {
@@ -234,8 +241,9 @@ void EventConverterEvdevImpl::FlushEvents(const input_event& input) {
 
   cursor_->MoveCursor(gfx::Vector2dF(x_offset_, y_offset_));
 
-  dispatcher_->DispatchMouseMoveEvent(MouseMoveEventParams(
-      id_, cursor_->GetLocation(), TimeDeltaFromInputEvent(input)));
+  dispatcher_->DispatchMouseMoveEvent(
+      MouseMoveEventParams(input_device_.id, cursor_->GetLocation(),
+                           TimeDeltaFromInputEvent(input)));
 
   x_offset_ = 0;
   y_offset_ = 0;

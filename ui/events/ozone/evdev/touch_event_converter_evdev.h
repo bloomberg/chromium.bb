@@ -30,6 +30,7 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
                            base::FilePath path,
                            int id,
                            InputDeviceType type,
+                           const EventDeviceInfo& devinfo,
                            DeviceEventDispatcherEvdev* dispatcher);
   ~TouchEventConverterEvdev() override;
 

@@ -32,6 +32,10 @@
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/gfx/x/x11_types.h"
 
+#ifndef XI_PROP_PRODUCT_ID
+#define XI_PROP_PRODUCT_ID "Device Product ID"
+#endif
+
 namespace ui {
 
 namespace {
@@ -52,6 +56,7 @@ const char* kCachedAtomList[] = {
   XI_MOUSE,
   XI_TOUCHPAD,
   XI_TOUCHSCREEN,
+  XI_PROP_PRODUCT_ID,
   NULL,
 };
 
@@ -113,9 +118,13 @@ struct TouchClassInfo {
 struct DeviceInfo {
   DeviceInfo(const XIDeviceInfo& device,
              DeviceType type,
-             const base::FilePath& path)
+             const base::FilePath& path,
+             uint16_t vendor,
+             uint16_t product)
       : id(device.deviceid),
         name(device.name),
+        vendor_id(vendor),
+        product_id(product),
         use(device.use),
         type(type),
         path(path) {
@@ -143,6 +152,10 @@ struct DeviceInfo {
 
   // Internal device name.
   std::string name;
+
+  // USB-style device identifiers.
+  uint16_t vendor_id;
+  uint16_t product_id;
 
   // Device type (ie: XIMasterPointer)
   int use;
@@ -246,7 +259,8 @@ void HandleKeyboardDevicesInWorker(
     if (IsKnownInvalidKeyboardDevice(device_info.name))
       continue;  // Skip invalid devices.
     InputDeviceType type = GetInputDeviceTypeFromPath(device_info.path);
-    devices.push_back(KeyboardDevice(device_info.id, type));
+    KeyboardDevice keyboard(device_info.id, type, device_info.name);
+    devices.push_back(keyboard);
   }
 
   reply_runner->PostTask(FROM_HERE, base::Bind(callback, devices));
@@ -265,7 +279,7 @@ void HandleMouseDevicesInWorker(const std::vector<DeviceInfo>& device_infos,
     }
 
     InputDeviceType type = GetInputDeviceTypeFromPath(device_info.path);
-    devices.push_back(InputDevice(device_info.id, type));
+    devices.push_back(InputDevice(device_info.id, type, device_info.name));
   }
 
   reply_runner->PostTask(FROM_HERE, base::Bind(callback, devices));
@@ -284,7 +298,7 @@ void HandleTouchpadDevicesInWorker(const std::vector<DeviceInfo>& device_infos,
     }
 
     InputDeviceType type = GetInputDeviceTypeFromPath(device_info.path);
-    devices.push_back(InputDevice(device_info.id, type));
+    devices.push_back(InputDevice(device_info.id, type, device_info.name));
   }
 
   reply_runner->PostTask(FROM_HERE, base::Bind(callback, devices));
@@ -337,9 +351,10 @@ void HandleTouchscreenDevicesInWorker(
       InputDeviceType type = GetInputDeviceTypeFromPath(device_info.path);
       // |max_x| and |max_y| are inclusive values, so we need to add 1 to get
       // the size.
-      devices.push_back(TouchscreenDevice(
-          device_info.id, type, gfx::Size(max_x + 1, max_y + 1),
-          device_info.touch_class_info.num_touches));
+      devices.push_back(
+          TouchscreenDevice(device_info.id, type, device_info.name,
+                            gfx::Size(max_x + 1, max_y + 1),
+                            device_info.touch_class_info.num_touches));
     }
   }
 
@@ -428,8 +443,29 @@ void X11HotplugEventHandler::OnHotplugEvent() {
         (device.deviceid >= 0 && device.deviceid < kMaxDeviceNum)
             ? device_types[device.deviceid]
             : DEVICE_TYPE_OTHER;
-    device_infos.push_back(
-        DeviceInfo(device, device_type, GetDevicePath(display, device)));
+
+    // Obtain the USB-style vendor and product identifiers.
+    // (On Linux, XI2 makes this available for all evdev devices.
+    uint32_t* product_info;
+    Atom type;
+    int format_return;
+    unsigned long num_items_return;
+    unsigned long bytes_after_return;
+    uint16_t vendor = 0;
+    uint16_t product = 0;
+    if (XIGetProperty(gfx::GetXDisplay(), device.deviceid,
+                      atom_cache_.GetAtom(XI_PROP_PRODUCT_ID), 0, 2, 0,
+                      XA_INTEGER, &type, &format_return, &num_items_return,
+                      &bytes_after_return,
+                      reinterpret_cast<unsigned char**>(&product_info)) == 0 &&
+        product_info) {
+      vendor = product_info[0];
+      product = product_info[1];
+      XFree(product_info);
+    }
+
+    device_infos.push_back(DeviceInfo(
+        device, device_type, GetDevicePath(display, device), vendor, product));
   }
 
   // X11 is not thread safe, so first get all the required state.
@@ -446,13 +482,11 @@ void X11HotplugEventHandler::OnHotplugEvent() {
   // Parsing the device information may block, so delegate the operation to a
   // worker thread. Once the device information is extracted the parsed devices
   // will be returned via the callbacks.
-  base::WorkerPool::PostTask(FROM_HERE,
-                             base::Bind(&HandleHotplugEventInWorker,
-                                        device_infos,
-                                        display_state,
-                                        base::ThreadTaskRunnerHandle::Get(),
-                                        callbacks),
-                             true /* task_is_slow */);
+  base::WorkerPool::PostTask(
+      FROM_HERE,
+      base::Bind(&HandleHotplugEventInWorker, device_infos, display_state,
+                 base::ThreadTaskRunnerHandle::Get(), callbacks),
+      true /* task_is_slow */);
 }
 
 }  // namespace ui

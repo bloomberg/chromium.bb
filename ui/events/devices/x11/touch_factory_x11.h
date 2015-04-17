@@ -98,7 +98,7 @@ class EVENTS_DEVICES_EXPORT TouchFactory {
   // Requirement for Singleton
   friend struct DefaultSingletonTraits<TouchFactory>;
 
-  void CacheTouchscreenIds(Display* display, int id);
+  void CacheTouchscreenIds(int id);
 
   // NOTE: To keep track of touch devices, we currently maintain a lookup table
   // to quickly decide if a device is a touch device or not. We also maintain a

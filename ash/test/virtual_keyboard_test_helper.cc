@@ -17,13 +17,14 @@ void VirtualKeyboardTestHelper::SuppressKeyboard() {
   ui::DeviceHotplugEventObserver* manager =
       ui::DeviceDataManager::GetInstance();
   std::vector<ui::TouchscreenDevice> screens;
-  screens.push_back(ui::TouchscreenDevice(
-      1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, gfx::Size(1024, 768), 0));
+  screens.push_back(
+      ui::TouchscreenDevice(1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
+                            "Touchscreen", gfx::Size(1024, 768), 0));
   manager->OnTouchscreenDevicesUpdated(screens);
 
   std::vector<ui::KeyboardDevice> keyboards;
-  keyboards.push_back(
-      ui::KeyboardDevice(2, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL));
+  keyboards.push_back(ui::KeyboardDevice(
+      2, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "keyboard"));
   manager->OnKeyboardDevicesUpdated(keyboards);
 }
 

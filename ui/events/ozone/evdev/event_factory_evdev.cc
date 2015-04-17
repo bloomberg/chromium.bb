@@ -150,7 +150,8 @@ scoped_ptr<SystemInputInjector> EventFactoryEvdev::CreateSystemInputInjector() {
 }
 
 void EventFactoryEvdev::DispatchKeyEvent(const KeyEventParams& params) {
-  keyboard_.OnKeyChange(params.code, params.down, params.timestamp);
+  keyboard_.OnKeyChange(params.code, params.down, params.timestamp,
+                        params.device_id);
 }
 
 void EventFactoryEvdev::DispatchMouseMoveEvent(
