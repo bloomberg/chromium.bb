@@ -101,12 +101,10 @@ TEST_F(HardwareDisplayControllerTest, CheckStateAfterPageFlip) {
 
   ui::OverlayPlane plane2(scoped_refptr<ui::ScanoutBuffer>(
       new MockScanoutBuffer(kDefaultModeSize)));
-  std::vector<ui::OverlayPlane> planes =
-      std::vector<ui::OverlayPlane>(1, plane2);
+  controller_->QueueOverlayPlane(plane2);
   EXPECT_TRUE(controller_->SchedulePageFlip(
-      planes, false,
-      base::Bind(&HardwareDisplayControllerTest::PageFlipCallback,
-                 base::Unretained(this))));
+      false, base::Bind(&HardwareDisplayControllerTest::PageFlipCallback,
+                        base::Unretained(this))));
   drm_->RunCallbacks();
   EXPECT_TRUE(plane1.buffer->HasOneRef());
   EXPECT_FALSE(plane2.buffer->HasOneRef());
@@ -134,14 +132,11 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfPageFlipFails) {
 
   ui::OverlayPlane plane2(scoped_refptr<ui::ScanoutBuffer>(
       new MockScanoutBuffer(kDefaultModeSize)));
-  std::vector<ui::OverlayPlane> planes =
-      std::vector<ui::OverlayPlane>(1, plane2);
+  controller_->QueueOverlayPlane(plane2);
   EXPECT_FALSE(controller_->SchedulePageFlip(
-      planes, false,
-      base::Bind(&HardwareDisplayControllerTest::PageFlipCallback,
-                 base::Unretained(this))));
+      false, base::Bind(&HardwareDisplayControllerTest::PageFlipCallback,
+                        base::Unretained(this))));
   drm_->RunCallbacks();
-  planes.clear();
 
   EXPECT_FALSE(plane1.buffer->HasOneRef());
   EXPECT_TRUE(plane2.buffer->HasOneRef());
@@ -155,20 +150,18 @@ TEST_F(HardwareDisplayControllerTest, VerifyNoDRMCallsWhenDisabled) {
   controller_->Disable();
   ui::OverlayPlane plane2(scoped_refptr<ui::ScanoutBuffer>(
       new MockScanoutBuffer(kDefaultModeSize)));
-  std::vector<ui::OverlayPlane> planes =
-      std::vector<ui::OverlayPlane>(1, plane2);
+  controller_->QueueOverlayPlane(plane2);
   EXPECT_TRUE(controller_->SchedulePageFlip(
-      planes, false,
-      base::Bind(&HardwareDisplayControllerTest::PageFlipCallback,
-                 base::Unretained(this))));
+      false, base::Bind(&HardwareDisplayControllerTest::PageFlipCallback,
+                        base::Unretained(this))));
   drm_->RunCallbacks();
   EXPECT_EQ(0, drm_->get_page_flip_call_count());
 
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
+  controller_->QueueOverlayPlane(plane2);
   EXPECT_TRUE(controller_->SchedulePageFlip(
-      planes, false,
-      base::Bind(&HardwareDisplayControllerTest::PageFlipCallback,
-                 base::Unretained(this))));
+      false, base::Bind(&HardwareDisplayControllerTest::PageFlipCallback,
+                        base::Unretained(this))));
   drm_->RunCallbacks();
   EXPECT_EQ(1, drm_->get_page_flip_call_count());
 }
@@ -183,14 +176,12 @@ TEST_F(HardwareDisplayControllerTest, CheckOverlayPresent) {
 
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
 
-  std::vector<ui::OverlayPlane> planes;
-  planes.push_back(plane1);
-  planes.push_back(plane2);
+  controller_->QueueOverlayPlane(plane1);
+  controller_->QueueOverlayPlane(plane2);
 
   EXPECT_TRUE(controller_->SchedulePageFlip(
-      planes, false,
-      base::Bind(&HardwareDisplayControllerTest::PageFlipCallback,
-                 base::Unretained(this))));
+      false, base::Bind(&HardwareDisplayControllerTest::PageFlipCallback,
+                        base::Unretained(this))));
   drm_->RunCallbacks();
   EXPECT_EQ(1, drm_->get_page_flip_call_count());
   EXPECT_EQ(1, drm_->get_overlay_flip_call_count());
@@ -207,12 +198,10 @@ TEST_F(HardwareDisplayControllerTest, PageflipMirroredControllers) {
 
   ui::OverlayPlane plane2(scoped_refptr<ui::ScanoutBuffer>(
       new MockScanoutBuffer(kDefaultModeSize)));
-  std::vector<ui::OverlayPlane> planes =
-      std::vector<ui::OverlayPlane>(1, plane2);
+  controller_->QueueOverlayPlane(plane2);
   EXPECT_TRUE(controller_->SchedulePageFlip(
-      planes, false,
-      base::Bind(&HardwareDisplayControllerTest::PageFlipCallback,
-                 base::Unretained(this))));
+      false, base::Bind(&HardwareDisplayControllerTest::PageFlipCallback,
+                        base::Unretained(this))));
   drm_->RunCallbacks();
   EXPECT_EQ(2, drm_->get_page_flip_call_count());
   EXPECT_EQ(1, page_flips_);
@@ -222,12 +211,10 @@ TEST_F(HardwareDisplayControllerTest, PlaneStateAfterRemoveCrtc) {
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
       new MockScanoutBuffer(kDefaultModeSize)));
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
-  std::vector<ui::OverlayPlane> planes =
-      std::vector<ui::OverlayPlane>(1, plane1);
+  controller_->QueueOverlayPlane(plane1);
   EXPECT_TRUE(controller_->SchedulePageFlip(
-      planes, false,
-      base::Bind(&HardwareDisplayControllerTest::PageFlipCallback,
-                 base::Unretained(this))));
+      false, base::Bind(&HardwareDisplayControllerTest::PageFlipCallback,
+                        base::Unretained(this))));
   drm_->RunCallbacks();
 
   const ui::HardwareDisplayPlane* owned_plane = nullptr;
@@ -246,12 +233,10 @@ TEST_F(HardwareDisplayControllerTest, ModesetWhilePageFlipping) {
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
       new MockScanoutBuffer(kDefaultModeSize)));
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
-  std::vector<ui::OverlayPlane> planes =
-      std::vector<ui::OverlayPlane>(1, plane1);
+  controller_->QueueOverlayPlane(plane1);
   EXPECT_TRUE(controller_->SchedulePageFlip(
-      planes, false,
-      base::Bind(&HardwareDisplayControllerTest::PageFlipCallback,
-                 base::Unretained(this))));
+      false, base::Bind(&HardwareDisplayControllerTest::PageFlipCallback,
+                        base::Unretained(this))));
 
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
   drm_->RunCallbacks();
@@ -262,12 +247,10 @@ TEST_F(HardwareDisplayControllerTest, AddCrtcMidPageFlip) {
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
       new MockScanoutBuffer(kDefaultModeSize)));
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
-  std::vector<ui::OverlayPlane> planes =
-      std::vector<ui::OverlayPlane>(1, plane1);
+  controller_->QueueOverlayPlane(plane1);
   EXPECT_TRUE(controller_->SchedulePageFlip(
-      planes, false,
-      base::Bind(&HardwareDisplayControllerTest::PageFlipCallback,
-                 base::Unretained(this))));
+      false, base::Bind(&HardwareDisplayControllerTest::PageFlipCallback,
+                        base::Unretained(this))));
 
   controller_->AddCrtc(scoped_ptr<ui::CrtcController>(
       new ui::CrtcController(drm_.get(), kSecondaryCrtc, kSecondaryConnector)));
@@ -280,12 +263,10 @@ TEST_F(HardwareDisplayControllerTest, RemoveCrtcMidPageFlip) {
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
       new MockScanoutBuffer(kDefaultModeSize)));
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
-  std::vector<ui::OverlayPlane> planes =
-      std::vector<ui::OverlayPlane>(1, plane1);
+  controller_->QueueOverlayPlane(plane1);
   EXPECT_TRUE(controller_->SchedulePageFlip(
-      planes, false,
-      base::Bind(&HardwareDisplayControllerTest::PageFlipCallback,
-                 base::Unretained(this))));
+      false, base::Bind(&HardwareDisplayControllerTest::PageFlipCallback,
+                        base::Unretained(this))));
 
   controller_->RemoveCrtc(drm_, kPrimaryCrtc);
 

@@ -191,9 +191,14 @@ bool GbmSurfaceFactory::ScheduleOverlayPlane(
     LOG(ERROR) << "ScheduleOverlayPlane passed NULL buffer.";
     return false;
   }
-  screen_manager_->GetWindow(widget)->QueueOverlayPlane(
-      OverlayPlane(pixmap->buffer(), plane_z_order, plane_transform,
-                   display_bounds, crop_rect));
+  HardwareDisplayController* hdc =
+      screen_manager_->GetWindow(widget)->GetController();
+  if (!hdc)
+    return true;
+
+  hdc->QueueOverlayPlane(OverlayPlane(pixmap->buffer(), plane_z_order,
+                                      plane_transform, display_bounds,
+                                      crop_rect));
   return true;
 }
 

@@ -12,7 +12,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/ozone_export.h"
-#include "ui/ozone/platform/drm/gpu/overlay_plane.h"
 
 class SkBitmap;
 
@@ -74,16 +73,6 @@ class OZONE_EXPORT DrmWindow {
   // Move the HW cursor to the specified location.
   void MoveCursor(const gfx::Point& location);
 
-  // Queue overlay planes and page flips.
-  // If hardware display controller is available, forward the information
-  // immediately, otherwise queue up on the window and forward when the hardware
-  // is once again ready.
-  void QueueOverlayPlane(const OverlayPlane& plane);
-  bool SchedulePageFlip(bool is_sync, const base::Closure& callback);
-
-  // About to enable hardware display controller, aquire pending frames.
-  bool PrepareController(HardwareDisplayController* controller);
-
  private:
   // Draw the last set cursor & update the cursor plane.
   void ResetCursor(bool bitmap_only);
@@ -116,12 +105,6 @@ class OZONE_EXPORT DrmWindow {
   gfx::Point cursor_location_;
   int cursor_frame_;
   int cursor_frame_delay_ms_;
-
-  // Planes and flips currently being queued in the absence of hardware display
-  // controller.
-  OverlayPlaneList pending_planes_;
-  OverlayPlaneList last_submitted_planes_;
-  bool last_swap_sync_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmWindow);
 };

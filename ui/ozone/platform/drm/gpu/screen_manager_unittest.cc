@@ -121,8 +121,8 @@ TEST_F(ScreenManagerTest, CheckDuplicateConfiguration) {
       drm_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
       kDefaultMode);
 
-  // Should not hold onto buffers.
-  EXPECT_NE(framebuffer, drm_->current_framebuffer());
+  // Should reuse existing framebuffer.
+  EXPECT_EQ(framebuffer, drm_->current_framebuffer());
 
   EXPECT_TRUE(screen_manager_->GetDisplayController(GetPrimaryBounds()));
   EXPECT_FALSE(screen_manager_->GetDisplayController(GetSecondaryBounds()));
@@ -254,8 +254,8 @@ TEST_F(ScreenManagerTest, ReuseFramebufferIfDisabledThenReEnabled) {
       drm_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
       kDefaultMode);
 
-  // Buffers are released when disabled.
-  EXPECT_NE(framebuffer, drm_->current_framebuffer());
+  // Should reuse existing framebuffer.
+  EXPECT_EQ(framebuffer, drm_->current_framebuffer());
 }
 
 TEST_F(ScreenManagerTest, CheckMirrorModeAfterBeginReEnabled) {
