@@ -19,63 +19,70 @@ namespace browser_watcher {
 // and timing the response.
 class WindowHangMonitor {
  public:
+  // Represents a detected window event.
   enum WindowEvent {
+    // The target process exited before the window was detected.
+    WINDOW_NOT_FOUND,
+    // The window failed to respond to a ping within the configured timeout.
     WINDOW_HUNG,
+    // The window disappeared.
     WINDOW_VANISHED,
   };
-  // Called when a hang is detected or when the window has gone away.
-  // Called precisely zero or one time(s).
+
+  // Called when a window event is detected. Called precisely zero or one
+  // time(s).
   typedef base::Callback<void(WindowEvent)> WindowEventCallback;
 
-  // Initialize the monitor with an event callback.
-  explicit WindowHangMonitor(const WindowEventCallback& callback);
+  // Initialize the monitor with |callback|. The callback is guaranteed
+  // to be called no more than once, and never after the WindowHangMonitor is
+  // destroyed. The monitor will be configured to issue pings according to
+  // |ping_interval|. A failure to respond within |timeout| will be interpreted
+  // as a hang.
+  WindowHangMonitor(base::TimeDelta ping_interval,
+                    base::TimeDelta timeout,
+                    const WindowEventCallback& callback);
   ~WindowHangMonitor();
 
-  // Initializes the watcher to monitor the window answering to |window_name|.
-  // Returns true on success.
-  bool Initialize(const base::string16& window_name);
-
-  // Testing accessors.
-  bool IsIdleForTesting() const { return !timer_.IsRunning(); }
-  void SetPingIntervalForTesting(base::TimeDelta ping_interval);
-  void SetHangTimeoutForTesting(base::TimeDelta hang_timeout);
-
-  HWND window() const { return window_; }
-  const base::Process& window_process() const { return window_process_; }
+  // Initializes the watcher to monitor a window named |window_name| and owned
+  // by |process|. May be invoked prior to the appearance of the window.
+  void Initialize(base::Process process, const base::string16& window_name);
 
  private:
   struct OutstandingPing {
     WindowHangMonitor* monitor;
   };
 
+  // Schedules a delayed task to poll for the appearance of the target window.
+  void ScheduleFindWindow();
+
+  // Checks for the appearance of the target window. If found, initiates the
+  // ping cycle. Otherwise, calls ScheduleFindWindow.
+  void PollForWindow();
+
   static void CALLBACK
   OnPongReceived(HWND window, UINT msg, ULONG_PTR data, LRESULT lresult);
 
-  // Checks that |window_| is still valid, and sends it a ping.
-  // Issues a |WINDOW_VANISHED| callback if the window's no longer valid.
-  // Schedules OnHangTimeout in case of success.
-  // Returns true on success, false if the window is no longer valid or other
-  // failure.
-  bool MaybeSendPing();
+  // Sends a ping to |hwnd|. Issues a |WINDOW_VANISHED| callback if the
+  // operation fails. Schedules OnHangTimeout otherwise.
+  void SendPing(HWND hwnd);
 
-  // Runs after a |hang_timeout_| delay after sending a ping. Checks whether
-  // a pong was received. Either issues a callback or schedules OnRetryTimeout.
-  void OnHangTimeout();
+  // Runs after a |hang_timeout_| delay after sending a ping to |hwnd|. Checks
+  // whether a pong was received. Either issues a callback or schedules
+  // OnRetryTimeout.
+  void OnHangTimeout(HWND hwnd);
 
   // Runs periodically at |ping_interval_| interval, as long as the window is
-  // still valid and not hung.
+  // still valid and not hung. Verifies that the target window still exists. If
+  // so, invokes SendPing. Otherwise, issues a |WINDOW_VANISHED| callback.
   void OnRetryTimeout();
 
-  // Invoked on significant window events.
+  // Invoked when a window event is detected.
   WindowEventCallback callback_;
 
   // The name of the (message) window to monitor.
   base::string16 window_name_;
 
-  // The monitored window handle.
-  HWND window_;
-
-  // The process that owned |window_| when Initialize was called.
+  // The target process in which the monitored window is expected to exist.
   base::Process window_process_;
 
   // The time the last message was sent.

@@ -14,6 +14,7 @@
 #include "base/debug/asan_invalid_access.h"
 #include "base/debug/profiler.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/waitable_event.h"
 #include "cc/base/switches.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/public/browser/browser_thread.h"
@@ -172,6 +173,11 @@ bool HandleDebugURL(const GURL& url, ui::PageTransition transition) {
   if (url == GURL(kChromeUIBrowserCrashURL)) {
     // Induce an intentional crash in the browser process.
     CHECK(false);
+    return true;
+  }
+
+  if (url == GURL(kChromeUIBrowserUIHang)) {
+    base::WaitableEvent(false, false).Wait();
     return true;
   }
 

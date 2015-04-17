@@ -36,6 +36,7 @@ const char kChromeUITracingHost[] = "tracing";
 const char kChromeUIWebRTCInternalsHost[] = "webrtc-internals";
 
 const char kChromeUIBrowserCrashURL[] = "chrome://inducebrowsercrashforrealz";
+const char kChromeUIBrowserUIHang[] = "chrome://uithreadhang";
 const char kChromeUICrashURL[] = "chrome://crash";
 const char kChromeUIDumpURL[] = "chrome://crashdump";
 const char kChromeUIGpuCleanURL[] = "chrome://gpuclean";

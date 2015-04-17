@@ -26,6 +26,7 @@
 #include "components/browser_watcher/endsession_watcher_window_win.h"
 #include "components/browser_watcher/exit_code_watcher_win.h"
 #include "components/browser_watcher/exit_funnel_win.h"
+#include "components/browser_watcher/window_hang_monitor_win.h"
 
 #ifdef KASKO
 #include "syzygy/kasko/api/reporter.h"
@@ -111,7 +112,7 @@ bool BrowserMonitor::StartWatching(
     return false;
 
   if (!exit_funnel_.Init(registry_path,
-                        exit_code_watcher_.process().Handle())) {
+                         exit_code_watcher_.process().Handle())) {
     return false;
   }
 
@@ -197,6 +198,29 @@ void BrowserMonitor::BrowserExited() {
   }
 }
 
+void OnWindowEvent(
+    const base::string16& registry_path,
+    base::Process process,
+    browser_watcher::WindowHangMonitor::WindowEvent window_event) {
+  browser_watcher::ExitFunnel exit_funnel;
+  if (exit_funnel.Init(registry_path.c_str(), process.Handle())) {
+    switch (window_event) {
+      case browser_watcher::WindowHangMonitor::WINDOW_NOT_FOUND:
+        exit_funnel.RecordEvent(L"MessageWindowNotFound");
+        break;
+      case browser_watcher::WindowHangMonitor::WINDOW_HUNG:
+        exit_funnel.RecordEvent(L"MessageWindowHung");
+        break;
+      case browser_watcher::WindowHangMonitor::WINDOW_VANISHED:
+        exit_funnel.RecordEvent(L"MessageWindowVanished");
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+}
+
 }  // namespace
 
 // The main entry point to the watcher, declared as extern "C" to avoid name
@@ -204,7 +228,8 @@ void BrowserMonitor::BrowserExited() {
 extern "C" int WatcherMain(const base::char16* registry_path,
                            HANDLE process_handle,
                            HANDLE on_initialized_event_handle,
-                           const base::char16* browser_data_directory) {
+                           const base::char16* browser_data_directory,
+                           const base::char16* message_window_name) {
   base::Process process(process_handle);
   base::win::ScopedHandle on_initialized_event(on_initialized_event_handle);
 
@@ -239,10 +264,16 @@ extern "C" int WatcherMain(const base::char16* registry_path,
 
   base::RunLoop run_loop;
   BrowserMonitor monitor(&run_loop, registry_path);
-  if (!monitor.StartWatching(registry_path, process.Pass(),
+  if (!monitor.StartWatching(registry_path, process.Duplicate(),
                              on_initialized_event.Pass())) {
     return 1;
   }
+
+  browser_watcher::WindowHangMonitor hang_monitor(
+      base::TimeDelta::FromSeconds(60), base::TimeDelta::FromSeconds(20),
+      base::Bind(&OnWindowEvent, registry_path,
+                 base::Passed(process.Duplicate())));
+  hang_monitor.Initialize(process.Duplicate(), message_window_name);
 
   run_loop.Run();
 

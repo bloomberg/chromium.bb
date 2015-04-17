@@ -20,15 +20,18 @@ extern const base::FilePath::CharType kPermanentlyFailedReportsSubdir[];
 
 // The type of the watcher DLL's main entry point.
 // Watches |parent_process| and records its exit code under |registry_path| in
-// HKCU. If SyzyASAN is enabled, a Kasko reporter process is also instantiated,
-// using |browser_data_directory| to store crash reports. |on_initialized_event|
-// will be signaled once the process is fully initialized. Takes ownership of
-// |parent_process| and |on_initialized_event|.
+// HKCU. A window named |message_window_name|, owned by |parent_process|, will
+// be monitored for responsiveness. If SyzyASAN is enabled, a Kasko reporter
+// process is also instantiated, using |browser_data_directory| to store crash
+// reports. |on_initialized_event| will be signaled once the watcher process is
+// fully initialized. Takes ownership of |parent_process| and
+// |on_initialized_event|.
 typedef int (*ChromeWatcherMainFunction)(
     const base::char16* registry_path,
     HANDLE parent_process,
     HANDLE on_initialized_event,
-    const base::char16* browser_data_directory);
+    const base::char16* browser_data_directory,
+    const base::char16* message_window_name);
 
 // Returns an RPC endpoint name for the identified client process. This method
 // may be invoked in both the client and the watcher process with the PID of the

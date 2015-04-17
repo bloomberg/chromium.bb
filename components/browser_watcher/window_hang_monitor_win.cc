@@ -4,6 +4,7 @@
 #include "components/browser_watcher/window_hang_monitor_win.h"
 
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/win/message_window.h"
@@ -12,43 +13,27 @@ namespace browser_watcher {
 
 namespace {
 
-const size_t kPingIntervalSeconds = 60;
-const size_t kHangTimeoutSeconds = 20;
-
-bool IsWindowValid(HWND window,
-                   const base::string16& window_name,
-                   base::ProcessId pid) {
-  // Validate the Window in two respects:
-  // 1. The window handle might have been re-assigned to a different window
-  //    from the time we found it to the point where we query for its owning
-  //    process.
-  // 2. The window handle might have been re-assigned to a different process
-  //    at any point after we found it.
-  if (window != base::win::MessageWindow::FindWindow(window_name)) {
-    // The window handle has been reassigned, bail.
-    return false;
+HWND FindNamedWindowForProcess(const base::string16 name, base::ProcessId pid) {
+  HWND candidate = base::win::MessageWindow::FindWindow(name);
+  if (candidate) {
+    DWORD actual_process_id = 0;
+    ::GetWindowThreadProcessId(candidate, &actual_process_id);
+    if (actual_process_id == pid)
+      return candidate;
   }
-
-  // Re-do the process ID lookup.
-  DWORD new_process_id = 0;
-  DWORD thread_id = ::GetWindowThreadProcessId(window, &new_process_id);
-  if (thread_id == 0 || pid != new_process_id) {
-    // Another process has taken over the handle.
-    return false;
-  }
-
-  return true;
+  return nullptr;
 }
 
 }  // namespace
 
-WindowHangMonitor::WindowHangMonitor(const WindowEventCallback& callback)
+WindowHangMonitor::WindowHangMonitor(base::TimeDelta ping_interval,
+                                     base::TimeDelta timeout,
+                                     const WindowEventCallback& callback)
     : callback_(callback),
-      window_(NULL),
       outstanding_ping_(nullptr),
       timer_(false /* don't retain user task */, false /* don't repeat */),
-      ping_interval_(base::TimeDelta::FromSeconds(kPingIntervalSeconds)),
-      hang_timeout_(base::TimeDelta::FromSeconds(kHangTimeoutSeconds)) {
+      ping_interval_(ping_interval),
+      hang_timeout_(timeout) {
 }
 
 WindowHangMonitor::~WindowHangMonitor() {
@@ -60,42 +45,39 @@ WindowHangMonitor::~WindowHangMonitor() {
   }
 }
 
-bool WindowHangMonitor::Initialize(const base::string16& window_name) {
+void WindowHangMonitor::Initialize(base::Process process,
+                                   const base::string16& window_name) {
   window_name_ = window_name;
+  window_process_ = process.Pass();
   timer_.SetTaskRunner(base::MessageLoop::current()->task_runner());
 
-  // This code is fraught with all kinds of races. As the purpose here is
-  // only monitoring, this code simply bails if any kind of race is encountered.
-  // Find the window to monitor by name.
-  window_ = base::win::MessageWindow::FindWindow(window_name);
-  if (window_ == NULL)
-    return false;
-
-  // Find and open the process owning this window.
-  DWORD process_id = 0;
-  DWORD thread_id = ::GetWindowThreadProcessId(window_, &process_id);
-  if (thread_id == 0 || process_id == 0) {
-    // The window has vanished or there was some other problem with the handle.
-    return false;
-  }
-
-  // Keep an open handle on the process to make sure the PID isn't reused.
-  window_process_ = base::Process::Open(process_id);
-  if (!window_process_.IsValid()) {
-    // The process may be at a different security level.
-    return false;
-  }
-
-  return MaybeSendPing();
+  ScheduleFindWindow();
 }
 
-void WindowHangMonitor::SetPingIntervalForTesting(
-    base::TimeDelta ping_interval) {
-  ping_interval_ = ping_interval;
+void WindowHangMonitor::ScheduleFindWindow() {
+  // TODO(erikwright): We could reduce the polling by using WaitForInputIdle,
+  // but it is hard to test (requiring a non-Console executable).
+  timer_.Start(
+      FROM_HERE, ping_interval_,
+      base::Bind(&WindowHangMonitor::PollForWindow, base::Unretained(this)));
 }
 
-void WindowHangMonitor::SetHangTimeoutForTesting(base::TimeDelta hang_timeout) {
-  hang_timeout_ = hang_timeout;
+void WindowHangMonitor::PollForWindow() {
+  int exit_code = 0;
+  if (window_process_.WaitForExitWithTimeout(base::TimeDelta(), &exit_code)) {
+    callback_.Run(WINDOW_NOT_FOUND);
+    return;
+  }
+
+  HWND hwnd = FindNamedWindowForProcess(window_name_, window_process_.Pid());
+  if (hwnd) {
+    // Sends a ping and schedules a timeout task. Upon receiving a ping response
+    // further pings will be scheduled ad infinitum. Will signal any failure now
+    // or later via the callback.
+    SendPing(hwnd);
+  } else {
+    ScheduleFindWindow();
+  }
 }
 
 void CALLBACK WindowHangMonitor::OnPongReceived(HWND window,
@@ -111,26 +93,16 @@ void CALLBACK WindowHangMonitor::OnPongReceived(HWND window,
   delete outstanding;
 }
 
-bool WindowHangMonitor::MaybeSendPing() {
-  DCHECK(window_process_.IsValid());
-  DCHECK(window_);
-  DCHECK(!outstanding_ping_);
-
-  if (!IsWindowValid(window_, window_name_, window_process_.Pid())) {
-    // The window is no longer valid, issue the callback.
-    callback_.Run(WINDOW_VANISHED);
-    return false;
-  }
-
-  // The window checks out, issue a ping against it. Set up all state ahead of
-  // time to allow for the possibility of the callback being invoked from within
-  // SendMessageCallback.
+void WindowHangMonitor::SendPing(HWND hwnd) {
+  // Set up all state ahead of time to allow for the possibility of the callback
+  // being invoked from within SendMessageCallback.
   outstanding_ping_ = new OutstandingPing;
   outstanding_ping_->monitor = this;
 
-  // Note that this is still racy to |window_| having been re-assigned, but
-  // the race is as small as we can make it, and the next attempt will re-try.
-  if (!::SendMessageCallback(window_, WM_NULL, 0, 0, &OnPongReceived,
+  // Note that this is racy to |hwnd| having been re-assigned. If that occurs,
+  // we might fail to identify the disappearance of the window with this ping.
+  // This is acceptable, as the next ping should detect it.
+  if (!::SendMessageCallback(hwnd, WM_NULL, 0, 0, &OnPongReceived,
                              reinterpret_cast<ULONG_PTR>(outstanding_ping_))) {
     // Message sending failed, assume the window is no longer valid,
     // issue the callback and stop the polling.
@@ -138,20 +110,17 @@ bool WindowHangMonitor::MaybeSendPing() {
     outstanding_ping_ = nullptr;
 
     callback_.Run(WINDOW_VANISHED);
-    return false;
+    return;
   }
 
   // Issue the count-out callback.
-  timer_.Start(
-      FROM_HERE, hang_timeout_,
-      base::Bind(&WindowHangMonitor::OnHangTimeout, base::Unretained(this)));
-
-  return true;
+  timer_.Start(FROM_HERE, hang_timeout_,
+               base::Bind(&WindowHangMonitor::OnHangTimeout,
+                          base::Unretained(this), hwnd));
 }
 
-void WindowHangMonitor::OnHangTimeout() {
+void WindowHangMonitor::OnHangTimeout(HWND hwnd) {
   DCHECK(window_process_.IsValid());
-  DCHECK(window_);
 
   if (outstanding_ping_) {
     // The ping is still outstanding, the window is hung or has vanished.
@@ -160,7 +129,8 @@ void WindowHangMonitor::OnHangTimeout() {
     outstanding_ping_->monitor = NULL;
     outstanding_ping_ = NULL;
 
-    if (!IsWindowValid(window_, window_name_, window_process_.Pid())) {
+    if (hwnd !=
+        FindNamedWindowForProcess(window_name_, window_process_.Pid())) {
       // The window vanished.
       callback_.Run(WINDOW_VANISHED);
     } else {
@@ -176,7 +146,20 @@ void WindowHangMonitor::OnHangTimeout() {
 }
 
 void WindowHangMonitor::OnRetryTimeout() {
-  MaybeSendPing();
+  DCHECK(window_process_.IsValid());
+  DCHECK(!outstanding_ping_);
+  // We can't simply hold onto the previously located HWND due to potential
+  // aliasing.
+  // 1. The window handle might have been re-assigned to a different window
+  //    from the time we found it to the point where we query for its owning
+  //    process.
+  // 2. The window handle might have been re-assigned to a different process
+  //    at any point after we found it.
+  HWND hwnd = FindNamedWindowForProcess(window_name_, window_process_.Pid());
+  if (hwnd)
+    SendPing(hwnd);
+  else
+    callback_.Run(WINDOW_VANISHED);
 }
 
 }  // namespace browser_watcher
