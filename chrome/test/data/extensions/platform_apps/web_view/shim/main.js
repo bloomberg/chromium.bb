@@ -1131,14 +1131,14 @@ function testContentScriptExistsAsLongAsWebViewTagExists() {
       }, function(results) {
         embedder.test.assertEq(1, results.length);
         embedder.test.assertEq('red', results[0]);
+
+        console.log('Step 3: remove webview from the DOM.');
+        document.body.removeChild(webview);
+
+        console.log('Step 4: add webview back to the DOM.');
+        document.body.appendChild(webview);
+        ++count;
       });
-
-      console.log('Step 3: remove webview from the DOM.');
-      document.body.removeChild(webview);
-
-      console.log('Step 4: add webview back to the DOM.');
-      document.body.appendChild(webview);
-      ++count;
     } else if (count == 1) {
       webview.executeScript({
         code: 'document.body.style.backgroundColor;'
