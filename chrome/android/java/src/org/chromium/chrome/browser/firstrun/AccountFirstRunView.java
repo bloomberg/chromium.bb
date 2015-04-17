@@ -164,6 +164,11 @@ public class AccountFirstRunView extends FrameLayout
             }
         });
 
+        // A workaround for Android support library ignoring padding set in XML. b/20307607
+        int padding = getResources().getDimensionPixelSize(R.dimen.fre_button_padding);
+        ApiCompatibilityUtils.setPaddingRelative(mPositiveButton, padding, 0, padding, 0);
+        ApiCompatibilityUtils.setPaddingRelative(mNegativeButton, padding, 0, padding, 0);
+
         mDescriptionText = (TextView) findViewById(R.id.description);
         mDescriptionTextId = R.string.fre_account_choice_description;
 
