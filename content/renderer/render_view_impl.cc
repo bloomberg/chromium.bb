@@ -708,7 +708,8 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
 
   RenderThread::Get()->AddRoute(routing_id_, this);
   // Take a reference on behalf of the RenderThread.  This will be balanced
-  // when we receive ViewMsg_ClosePage.
+  // when we receive ViewMsg_Close in the RenderWidget (which RenderView
+  // inherits from).
   AddRef();
   if (RenderThreadImpl::current()) {
     RenderThreadImpl::current()->WidgetCreated();
