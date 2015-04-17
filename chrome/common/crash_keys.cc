@@ -11,6 +11,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/common/chrome_switches.h"
+#include "content/public/common/content_switches.h"
+#include "ipc/ipc_switches.h"
 
 #if defined(OS_MACOSX)
 #include "breakpad/src/common/simple_string_dictionary.h"
@@ -281,51 +284,34 @@ void ClearMetricsClientId() {
 }
 
 static bool IsBoringSwitch(const std::string& flag) {
-#if defined(OS_WIN)
-  return StartsWithASCII(flag, "--channel=", true) ||
-
-         // No point to including this since we already have a ptype field.
-         StartsWithASCII(flag, "--type=", true) ||
-
-         // Not particularly interesting
-         StartsWithASCII(flag, "--flash-broker=", true) ||
-
-         // Just about everything has this, don't bother.
-         StartsWithASCII(flag, "/prefetch:", true) ||
-
-         // We handle the plugin path separately since it is usually too big
-         // to fit in the switches (limited to 63 characters).
-         StartsWithASCII(flag, "--plugin-path=", true) ||
-
-         // This is too big so we end up truncating it anyway.
-         StartsWithASCII(flag, "--force-fieldtrials=", true) ||
-
-         // These surround the flags that were added by about:flags, it lets
-         // you distinguish which flags were added manually via the command
-         // line versus those added through about:flags. For the most part
-         // we don't care how an option was enabled, so we strip these.
-         // (If you need to know can always look at the PEB).
-         flag == "--flag-switches-begin" ||
-         flag == "--flag-switches-end";
-#elif defined(OS_MACOSX)
-  // These are carried in their own fields.
-  return StartsWithASCII(flag, "--channel=", true) ||
-         StartsWithASCII(flag, "--type=", true) ||
-         StartsWithASCII(flag, "--metrics-client-id=", true);
-#elif defined(OS_CHROMEOS)
   static const char* const kIgnoreSwitches[] = {
-    ::switches::kEnableLogging,
-    ::switches::kFlagSwitchesBegin,
-    ::switches::kFlagSwitchesEnd,
-    ::switches::kLoggingLevel,
-    ::switches::kPpapiFlashArgs,
-    ::switches::kPpapiFlashPath,
-    ::switches::kRegisterPepperPlugins,
-    ::switches::kUIPrioritizeInGpuProcess,
-    ::switches::kUseGL,
-    ::switches::kUserDataDir,
-    ::switches::kV,
-    ::switches::kVModule,
+    switches::kEnableLogging,
+    switches::kFlagSwitchesBegin,
+    switches::kFlagSwitchesEnd,
+    switches::kLoggingLevel,
+#if defined(OS_WIN)
+    // This file is linked into both chrome.dll and chrome.exe. However //ipc
+    // is only in the .dll, so this needs to be a literal rather than the
+    // constant.
+    "channel",  // switches::kProcessChannelID
+#else
+    switches::kProcessChannelID,
+#endif
+    switches::kProcessType,
+    switches::kV,
+    switches::kVModule,
+#if defined(OS_WIN)
+    switches::kForceFieldTrials,
+    switches::kPluginPath,
+#elif defined(OS_MACOSX)
+    switches::kMetricsClientID,
+#elif defined(OS_CHROMEOS)
+    switches::kPpapiFlashArgs,
+    switches::kPpapiFlashPath,
+    switches::kRegisterPepperPlugins,
+    switches::kUIPrioritizeInGpuProcess,
+    switches::kUseGL,
+    switches::kUserDataDir,
     // Cros/CC flgas are specified as raw strings to avoid dependency.
     "child-wallpaper-large",
     "child-wallpaper-small",
@@ -342,19 +328,24 @@ static bool IsBoringSwitch(const std::string& flag) {
     "max-unused-resource-memory-usage-percentage",
     "termination-message-file",
     "use-cras",
+#endif
   };
+
+#if defined(OS_WIN)
+  // Just about everything has this, don't bother.
+  if (StartsWithASCII(flag, "/prefetch:", true))
+    return true;
+#endif
+
   if (!StartsWithASCII(flag, "--", true))
     return false;
-  std::size_t end = flag.find("=");
-  int len = (end == std::string::npos) ? flag.length() - 2 : end - 2;
+  size_t end = flag.find("=");
+  size_t len = (end == std::string::npos) ? flag.length() - 2 : end - 2;
   for (size_t i = 0; i < arraysize(kIgnoreSwitches); ++i) {
     if (flag.compare(2, len, kIgnoreSwitches[i]) == 0)
       return true;
   }
   return false;
-#else
-  return false;
-#endif
 }
 
 void SetSwitchesFromCommandLine(const base::CommandLine* command_line) {
