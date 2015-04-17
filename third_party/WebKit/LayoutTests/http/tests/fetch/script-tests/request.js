@@ -273,20 +273,55 @@ test(function() {
                  'Request should not be flagged as used if it has not been ' +
                  'consumed.');
     var req2 = new Request(req);
-    assert_true(req.bodyUsed,
-                'Request should be flagged as used if it is used as a ' +
-                'construction argument of another Request.');
+    assert_false(req.bodyUsed,
+                'Request should not be flagged as used if it does not have' +
+                'body.');
     assert_false(req2.bodyUsed,
                  'Request should not be flagged as used if it has not been ' +
                  'consumed.');
-    assert_throws(new TypeError(), function() { new Request(req); },
-                  'Request cannot be constructed with a request that has ' +
-                  'been flagged as used.');
-    assert_throws(new TypeError(), function() { req.clone(); },
-                  'Request.clone: If used flag is set, throw a TypeError.');
-  },
-  'Request construction behavior regarding "used" body flag and exceptions.');
+  }, 'Request construction without body behavior regardning "bodyUsed"');
 
+test(function() {
+    var req = new Request(URL, {method: 'POST', body: 'hello'});
+    assert_false(req.bodyUsed,
+                 'Request should not be flagged as used if it has not been ' +
+                 'consumed.');
+    var req2 = new Request(req);
+    assert_true(req.bodyUsed,
+                'Request should be flagged as used if it has been consumed.');
+    assert_false(req2.bodyUsed,
+                 'Request should not be flagged as used if it has not been ' +
+                 'consumed.');
+    // Now we can create a Request from |req|, because creating |req2| from
+    // |req| sets |req|'s body to null as specified.
+    var req3 = new Request(req);
+    assert_true(req.bodyUsed,
+                'Request should be flagged as used if it has been consumed.');
+  }, 'Request construction without body behavior regardning "bodyUsed"');
+
+test(function() {
+    var req = new Request(URL, {method: 'POST', body: 'hello'});
+    assert_false(req.bodyUsed,
+                 'Request should not be flagged as used if it has not been ' +
+                 'consumed.');
+    assert_throws(
+      {name: 'TypeError'},
+      function() { new Request(req, {method: 'GET'}); },
+      'A get request may not have body.');
+
+    assert_false(req.bodyUsed, 'After the GET case');
+
+    assert_throws(
+      {name: 'TypeError'},
+      function() { new Request(req, {method: 'CONNECT'}); },
+      'Request() with a forbidden method must throw.');
+
+    assert_false(req.bodyUsed, 'After the forbidden method case');
+
+    var req2 = new Request(req);
+    assert_true(req.bodyUsed,
+                'Request should be flagged as used if it has been consumed.');
+  }, 'Request construction failure should not set "bodyUsed"');
 
 // Spec: https://fetch.spec.whatwg.org/#dom-request
 // Step 21:
@@ -490,6 +525,10 @@ promise_test(function(t) {
       .then(function(blob) {
           assert_equals(blob.type, 'text/plain');
           assert_equals(req.headers.get('Content-Type'), 'text/plain');
+// TODO(yhirano): Currently blob() calling sets |bodyUsed| parmanently. Fix it.
+//          return new Request(req).blob();
+//        }).then(function(blob) {
+//          assert_equals(blob.type, 'text/plain');
         });
   }, 'MIME type for Blob with non-empty type');
 
