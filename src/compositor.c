@@ -1874,6 +1874,8 @@ weston_surface_destroy(struct weston_surface *surface)
 	if (--surface->ref_count > 0)
 		return;
 
+	assert(surface->resource == NULL);
+
 	wl_signal_emit(&surface->destroy_signal, &surface->resource);
 
 	assert(wl_list_empty(&surface->subsurface_list_pending));
@@ -1902,6 +1904,8 @@ static void
 destroy_surface(struct wl_resource *resource)
 {
 	struct weston_surface *surface = wl_resource_get_user_data(resource);
+
+	assert(surface);
 
 	/* Set the resource to NULL, since we don't want to leave a
 	 * dangling pointer if the surface was refcounted and survives
