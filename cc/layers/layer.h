@@ -55,7 +55,6 @@ class Animation;
 class AnimationDelegate;
 struct AnimationEvent;
 class CopyOutputRequest;
-class LayerAnimationDelegate;
 class LayerAnimationEventObserver;
 class LayerClient;
 class LayerImpl;
@@ -547,6 +546,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // knows immediately that a commit is required.  This implies SetNeedsUpdate
   // as well as SetNeedsPushProperties to push that property.
   void SetNeedsCommit();
+  // This is identical to SetNeedsCommit, but the former requests a rebuild of
+  // the property trees.
+  void SetNeedsCommitNoRebuild();
   // Called when there's been a change in layer structure.  Implies both
   // SetNeedsUpdate and SetNeedsCommit, but not SetNeedsPushProperties.
   void SetNeedsFullTreeSync();

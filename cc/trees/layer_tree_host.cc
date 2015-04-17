@@ -511,6 +511,8 @@ void LayerTreeHost::SetNeedsCommit() {
 
 void LayerTreeHost::SetNeedsFullTreeSync() {
   needs_full_tree_sync_ = true;
+
+  property_trees_.needs_rebuild = true;
   SetNeedsCommit();
 }
 
@@ -628,6 +630,7 @@ void LayerTreeHost::SetViewportSize(const gfx::Size& device_viewport_size) {
 
   device_viewport_size_ = device_viewport_size;
 
+  property_trees_.needs_rebuild = true;
   SetNeedsCommit();
 }
 
@@ -651,7 +654,10 @@ void LayerTreeHost::SetTopControlsShownRatio(float ratio) {
 
 void LayerTreeHost::ApplyPageScaleDeltaFromImplSide(float page_scale_delta) {
   DCHECK(CommitRequested());
+  if (page_scale_delta == 1.f)
+    return;
   page_scale_factor_ *= page_scale_delta;
+  property_trees_.needs_rebuild = true;
 }
 
 void LayerTreeHost::SetPageScaleFactorAndLimits(float page_scale_factor,
@@ -665,6 +671,7 @@ void LayerTreeHost::SetPageScaleFactorAndLimits(float page_scale_factor,
   page_scale_factor_ = page_scale_factor;
   min_page_scale_factor_ = min_page_scale_factor;
   max_page_scale_factor_ = max_page_scale_factor;
+  property_trees_.needs_rebuild = true;
   SetNeedsCommit();
 }
 
@@ -798,7 +805,6 @@ bool LayerTreeHost::UpdateLayers(Layer* root_layer,
     // that we won't be able to detect if a layer is part of |update_list|.
     // Change this if this information is required.
     int render_surface_layer_list_id = 0;
-    PropertyTrees property_trees;
     LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(
         root_layer, device_viewport_size(), gfx::Transform(),
         device_scale_factor_, page_scale_factor_, page_scale_layer,
@@ -808,7 +814,7 @@ bool LayerTreeHost::UpdateLayers(Layer* root_layer,
         can_render_to_separate_surface,
         settings_.layer_transforms_should_scale_layer_contents,
         settings_.verify_property_trees, &update_list,
-        render_surface_layer_list_id, &property_trees);
+        render_surface_layer_list_id, &property_trees_);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   }
 
@@ -1121,6 +1127,7 @@ void LayerTreeHost::SetDeviceScaleFactor(float device_scale_factor) {
     return;
   device_scale_factor_ = device_scale_factor;
 
+  property_trees_.needs_rebuild = true;
   SetNeedsCommit();
 }
 
@@ -1141,8 +1148,12 @@ void LayerTreeHost::AnimateLayers(base::TimeTicks monotonic_time) {
   if (!settings_.accelerated_animation_enabled)
     return;
 
-  if (animation_registrar_->AnimateLayers(monotonic_time))
-    animation_registrar_->UpdateAnimationState(true, NULL);
+  AnimationEventsVector events;
+  if (animation_registrar_->AnimateLayers(monotonic_time)) {
+    animation_registrar_->UpdateAnimationState(true, &events);
+    if (!events.empty())
+      property_trees_.needs_rebuild = true;
+  }
 }
 
 UIResourceId LayerTreeHost::CreateUIResource(UIResourceClient* client) {

@@ -2555,7 +2555,10 @@ void LayerTreeHostCommon::CalculateDrawProperties(
           current_layer->draw_opacity() ==
           current_layer->DrawOpacityFromPropertyTrees(
               inputs->property_trees->opacity_tree);
-      CHECK(draw_opacities_match);
+      CHECK(draw_opacities_match)
+          << "expected: " << current_layer->draw_opacity() << " actual: "
+          << current_layer->DrawOpacityFromPropertyTrees(
+                 inputs->property_trees->opacity_tree);
     }
   }
 
@@ -2590,6 +2593,16 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   // A root layer render_surface should always exist after
   // CalculateDrawProperties.
   DCHECK(inputs->root_layer->render_surface());
+}
+
+PropertyTrees* GetPropertyTrees(Layer* layer,
+                                PropertyTrees* trees_from_inputs) {
+  return layer->layer_tree_host()->property_trees();
+}
+
+PropertyTrees* GetPropertyTrees(LayerImpl* layer,
+                                PropertyTrees* trees_from_inputs) {
+  return trees_from_inputs;
 }
 
 }  // namespace cc

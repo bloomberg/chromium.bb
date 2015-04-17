@@ -51,6 +51,15 @@ static ClipNode* GetClipParent(const DataForRecursion& data, Layer* layer) {
   return data.clip_tree->Node(id);
 }
 
+static bool HasPotentiallyRunningAnimation(Layer* layer,
+                                           Animation::TargetProperty property) {
+  if (Animation* animation =
+          layer->layer_animation_controller()->GetAnimation(property)) {
+    return !animation->is_finished();
+  }
+  return false;
+}
+
 static bool RequiresClipNode(Layer* layer,
                              const DataForRecursion& data,
                              int parent_transform_id,
@@ -123,6 +132,7 @@ void AddClipNodeIfNeeded(const DataForRecursion& data_from_ancestor,
     node.data.transform_id = transform_parent->transform_tree_index();
     node.data.target_id =
         data_for_children->render_target->transform_tree_index();
+    node.owner_id = layer->id();
 
     data_for_children->clip_tree_parent =
         data_for_children->clip_tree->Insert(node, parent_id);
@@ -148,6 +158,9 @@ bool AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
   const bool has_significant_transform =
       !layer->transform().IsIdentityOr2DTranslation();
 
+  const bool has_potentially_animated_transform =
+      HasPotentiallyRunningAnimation(layer, Animation::TRANSFORM);
+
   const bool has_animated_transform =
       layer->layer_animation_controller()->IsAnimatingProperty(
           Animation::TRANSFORM);
@@ -155,7 +168,7 @@ bool AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
   const bool has_surface = !!layer->render_surface();
 
   bool requires_node = is_root || is_scrollable || has_significant_transform ||
-                       has_animated_transform || has_surface ||
+                       has_potentially_animated_transform || has_surface ||
                        is_page_scale_application_layer;
 
   Layer* transform_parent = GetTransformParent(data_from_ancestor, layer);
@@ -230,14 +243,14 @@ bool AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
   DCHECK_NE(node->data.target_id, -1);
   node->data.is_animated = has_animated_transform;
 
-  float scale_factors = 1.0f;
+  float post_local_scale_factor = 1.0f;
   if (is_root) {
     node->data.post_local = *data_from_ancestor.device_transform;
-    scale_factors = data_from_ancestor.device_scale_factor;
+    post_local_scale_factor = data_from_ancestor.device_scale_factor;
   }
 
   if (is_page_scale_application_layer)
-    scale_factors *= data_from_ancestor.page_scale_factor;
+    post_local_scale_factor *= data_from_ancestor.page_scale_factor;
 
   if (has_surface && !is_root) {
     node->data.needs_sublayer_scale = true;
@@ -246,11 +259,15 @@ bool AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
       node->data.layer_scale_factor *= data_from_ancestor.page_scale_factor;
   }
 
-  node->data.post_local.Scale(scale_factors, scale_factors);
-  node->data.post_local.Translate3d(
-      layer->position().x() + parent_offset.x() + layer->transform_origin().x(),
-      layer->position().y() + parent_offset.y() + layer->transform_origin().y(),
-      layer->transform_origin().z());
+  if (is_root) {
+    node->data.post_local.Scale(post_local_scale_factor,
+                                post_local_scale_factor);
+  } else {
+    node->data.post_local_scale_factor = post_local_scale_factor;
+    node->data.parent_offset = parent_offset;
+    node->data.update_post_local_transform(layer->position(),
+                                           layer->transform_origin());
+  }
 
   if (!layer->scroll_parent()) {
     node->data.scroll_offset =
@@ -272,6 +289,9 @@ bool AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
 
   data_for_children->scroll_compensation_adjustment +=
       layer->ScrollCompensationAdjustment() - node->data.scroll_snap;
+
+  node->owner_id = layer->id();
+
   return true;
 }
 
@@ -281,8 +301,7 @@ void AddOpacityNodeIfNeeded(const DataForRecursion& data_from_ancestor,
   const bool is_root = !layer->parent();
   const bool has_transparency = layer->opacity() != 1.f;
   const bool has_animated_opacity =
-      layer->layer_animation_controller()->IsAnimatingProperty(
-          Animation::OPACITY) ||
+      HasPotentiallyRunningAnimation(layer, Animation::OPACITY) ||
       layer->OpacityCanAnimateOnImplThread();
   bool requires_node = is_root || has_transparency || has_animated_opacity;
 
@@ -295,6 +314,7 @@ void AddOpacityNodeIfNeeded(const DataForRecursion& data_from_ancestor,
   }
 
   OpacityNode node;
+  node.owner_id = layer->id();
   node.data = layer->opacity();
   data_for_children->opacity_tree_parent =
       data_for_children->opacity_tree->Insert(node, parent_id);
@@ -343,6 +363,9 @@ void PropertyTreeBuilder::BuildPropertyTrees(
     const gfx::Rect& viewport,
     const gfx::Transform& device_transform,
     PropertyTrees* property_trees) {
+  if (!property_trees->needs_rebuild)
+    return;
+
   DataForRecursion data_for_recursion;
   data_for_recursion.transform_tree = &property_trees->transform_tree;
   data_for_recursion.clip_tree = &property_trees->clip_tree;
@@ -360,12 +383,17 @@ void PropertyTreeBuilder::BuildPropertyTrees(
   data_for_recursion.ancestor_clips_subtree = true;
   data_for_recursion.device_transform = &device_transform;
 
+  data_for_recursion.transform_tree->clear();
+  data_for_recursion.clip_tree->clear();
+  data_for_recursion.opacity_tree->clear();
+
   ClipNode root_clip;
   root_clip.data.clip = viewport;
   root_clip.data.transform_id = 0;
   data_for_recursion.clip_tree_parent =
       data_for_recursion.clip_tree->Insert(root_clip, 0);
   BuildPropertyTreesInternal(root_layer, data_for_recursion);
+  property_trees->needs_rebuild = false;
 }
 
 }  // namespace cc

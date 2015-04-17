@@ -105,7 +105,7 @@ class CC_EXPORT LayerTreeHostCommon {
 
    private:
     const gfx::Transform identity_transform_;
-    PropertyTrees property_trees;
+    PropertyTrees temporary_property_trees;
   };
 
   typedef CalcDrawPropsInputs<Layer, RenderSurfaceLayerList>
@@ -233,6 +233,11 @@ void LayerTreeHostCommon::CallFunctionForSubtree(LayerType* layer,
   }
 }
 
+CC_EXPORT PropertyTrees* GetPropertyTrees(Layer* layer,
+                                          PropertyTrees* trees_from_inputs);
+CC_EXPORT PropertyTrees* GetPropertyTrees(LayerImpl* layer,
+                                          PropertyTrees* trees_from_inputs);
+
 template <typename LayerType, typename RenderSurfaceLayerListType>
 LayerTreeHostCommon::CalcDrawPropsInputsForTesting<LayerType,
                                                    RenderSurfaceLayerListType>::
@@ -258,7 +263,7 @@ LayerTreeHostCommon::CalcDrawPropsInputsForTesting<LayerType,
           true,
           render_surface_layer_list,
           0,
-          &property_trees) {
+          GetPropertyTrees(root_layer, &temporary_property_trees)) {
   DCHECK(root_layer);
   DCHECK(render_surface_layer_list);
 }
@@ -287,7 +292,7 @@ LayerTreeHostCommon::CalcDrawPropsInputsForTesting<LayerType,
           true,
           render_surface_layer_list,
           0,
-          &property_trees) {
+          GetPropertyTrees(root_layer, &temporary_property_trees)) {
   DCHECK(root_layer);
   DCHECK(render_surface_layer_list);
 }

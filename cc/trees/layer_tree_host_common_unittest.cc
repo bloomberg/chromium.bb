@@ -1183,6 +1183,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
         root.get(), root->bounds(), translate, &render_surface_layer_list);
     inputs.can_adjust_raster_scales = true;
+    inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     EXPECT_EQ(translate, root->draw_properties().target_space_transform);
     EXPECT_EQ(translate, child->draw_properties().target_space_transform);
@@ -1198,6 +1199,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
         root.get(), root->bounds(), scale, &render_surface_layer_list);
     inputs.can_adjust_raster_scales = true;
+    inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     EXPECT_EQ(scale, root->draw_properties().target_space_transform);
     EXPECT_EQ(scale, child->draw_properties().target_space_transform);
@@ -1213,6 +1215,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
         root.get(), root->bounds(), rotate, &render_surface_layer_list);
     inputs.can_adjust_raster_scales = true;
+    inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     EXPECT_EQ(rotate, root->draw_properties().target_space_transform);
     EXPECT_EQ(rotate, child->draw_properties().target_space_transform);
@@ -1230,6 +1233,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
         root.get(), root->bounds(), composite, &render_surface_layer_list);
     inputs.can_adjust_raster_scales = true;
+    inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     EXPECT_EQ(composite, root->draw_properties().target_space_transform);
     EXPECT_EQ(composite, child->draw_properties().target_space_transform);
@@ -1245,6 +1249,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
         root.get(), root->bounds(), translate, &render_surface_layer_list);
     inputs.device_scale_factor = device_scale_factor;
     inputs.can_adjust_raster_scales = true;
+    inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     gfx::Transform device_scaled_translate = translate;
     device_scaled_translate.Scale(device_scale_factor, device_scale_factor);
@@ -1268,6 +1273,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     inputs.page_scale_factor = page_scale_factor;
     inputs.page_scale_application_layer = root.get();
     inputs.can_adjust_raster_scales = true;
+    inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     gfx::Transform page_scaled_translate = translate;
     page_scaled_translate.Scale(page_scale_factor, page_scale_factor);
@@ -4703,6 +4709,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScale) {
     inputs.page_scale_factor = page_scale_factor;
     inputs.page_scale_application_layer = root.get();
     inputs.can_adjust_raster_scales = true;
+    inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     EXPECT_CONTENTS_SCALE_EQ(
@@ -4731,6 +4738,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScale) {
     inputs.page_scale_factor = page_scale_factor;
     inputs.page_scale_application_layer = root.get();
     inputs.can_adjust_raster_scales = true;
+    inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor *
@@ -4756,6 +4764,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScale) {
     inputs.page_scale_factor = page_scale_factor;
     inputs.page_scale_application_layer = root.get();
     inputs.can_adjust_raster_scales = true;
+    inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor *
@@ -9159,6 +9168,31 @@ TEST_F(LayerTreeHostCommonTest, FixedClipsShouldBeAssociatedWithTheRightNode) {
 
   gfx::Rect expected(0, 0, 50, 50);
   EXPECT_EQ(expected, fixed->visible_rect_from_property_trees());
+}
+
+TEST_F(LayerTreeHostCommonTest, ChangingAxisAlignmentTriggersRebuild) {
+  gfx::Transform identity;
+  gfx::Transform translate;
+  gfx::Transform rotate;
+
+  translate.Translate(10, 10);
+  rotate.Rotate(45);
+
+  scoped_refptr<Layer> root = Layer::Create();
+  SetLayerPropertiesForTesting(root.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(800, 800), true, false);
+  root->SetIsContainerForFixedPositionLayers(true);
+
+  scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
+  host->SetRootLayer(root);
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  root->SetTransform(translate);
+  EXPECT_FALSE(host->property_trees()->needs_rebuild);
+
+  root->SetTransform(rotate);
+  EXPECT_TRUE(host->property_trees()->needs_rebuild);
 }
 
 }  // namespace

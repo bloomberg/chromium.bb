@@ -16,9 +16,10 @@ namespace cc {
 
 template <typename T>
 struct CC_EXPORT TreeNode {
-  TreeNode() : id(-1), parent_id(-1), data() {}
+  TreeNode() : id(-1), parent_id(-1), owner_id(-1), data() {}
   int id;
   int parent_id;
+  int owner_id;
   T data;
 };
 
@@ -82,6 +83,10 @@ struct CC_EXPORT TransformNodeData {
   // This is used as a fallback when we either cannot adjust raster scale or if
   // the raster scale cannot be extracted from the screen space transform.
   float layer_scale_factor;
+
+  // TODO(vollick): will be moved when accelerated effects are implemented.
+  float post_local_scale_factor;
+
   gfx::Vector2dF sublayer_scale;
 
   // TODO(vollick): will be moved when accelerated effects are implemented.
@@ -92,10 +97,16 @@ struct CC_EXPORT TransformNodeData {
   // This value stores the snapped amount for this purpose.
   gfx::Vector2dF scroll_snap;
 
+  // TODO(vollick): will be moved when accelerated effects are implemented.
+  gfx::Vector2dF parent_offset;
+
   void set_to_parent(const gfx::Transform& transform) {
     to_parent = transform;
     is_invertible = to_parent.IsInvertible();
   }
+
+  void update_post_local_transform(const gfx::PointF& position,
+                                   const gfx::Point3F& transform_origin);
 };
 
 typedef TreeNode<TransformNodeData> TransformNode;
@@ -124,19 +135,15 @@ class CC_EXPORT PropertyTree {
   T* Node(int i) { return i > -1 ? &nodes_[i] : nullptr; }
   const T* Node(int i) const { return i > -1 ? &nodes_[i] : nullptr; }
 
-  T* parent(const T* t) {
-    return t->parent_id > -1 ? Node(t->parent_id) : nullptr;
-  }
-  const T* parent(const T* t) const {
-    return t->parent_id > -1 ? Node(t->parent_id) : nullptr;
-  }
+  T* parent(const T* t) { return Node(t->parent_id); }
+  const T* parent(const T* t) const { return Node(t->parent_id); }
 
   T* back() { return size() ? &nodes_[nodes_.size() - 1] : nullptr; }
   const T* back() const {
     return size() ? &nodes_[nodes_.size() - 1] : nullptr;
   }
 
-  void clear() { nodes_.clear(); }
+  void clear();
   size_t size() const { return nodes_.size(); }
 
  private:
@@ -213,9 +220,12 @@ class CC_EXPORT OpacityTree final : public PropertyTree<OpacityNode> {};
 
 class CC_EXPORT PropertyTrees final {
  public:
+  PropertyTrees();
+
   TransformTree transform_tree;
   OpacityTree opacity_tree;
   ClipTree clip_tree;
+  bool needs_rebuild;
 };
 
 }  // namespace cc

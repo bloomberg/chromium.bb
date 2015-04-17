@@ -56,6 +56,7 @@ class LayerTreeHostImplClient;
 class LayerTreeHostSingleThreadClient;
 class PrioritizedResource;
 class PrioritizedResourceManager;
+class PropertyTrees;
 class Region;
 class RenderingStatsInstrumentation;
 class ResourceProvider;
@@ -308,6 +309,8 @@ class CC_EXPORT LayerTreeHost {
 
   void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval);
 
+  PropertyTrees* property_trees() { return &property_trees_; }
+
  protected:
   LayerTreeHost(LayerTreeHostClient* client,
                 SharedBitmapManager* shared_bitmap_manager,
@@ -450,6 +453,8 @@ class CC_EXPORT LayerTreeHost {
 
   ScopedPtrVector<SwapPromise> swap_promise_list_;
   std::set<SwapPromiseMonitor*> swap_promise_monitor_;
+
+  PropertyTrees property_trees_;
 
   uint32_t surface_id_namespace_;
   uint32_t next_surface_sequence_;

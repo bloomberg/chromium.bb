@@ -118,6 +118,9 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
   if (layer_tree_host_ == host)
     return;
 
+  if (layer_tree_host_)
+    layer_tree_host_->property_trees()->needs_rebuild = true;
+
   layer_tree_host_ = host;
 
   // When changing hosts, the layer needs to commit its properties to the impl
@@ -150,6 +153,19 @@ void Layer::SetNeedsUpdate() {
 }
 
 void Layer::SetNeedsCommit() {
+  if (!layer_tree_host_)
+    return;
+
+  SetNeedsPushProperties();
+  layer_tree_host_->property_trees()->needs_rebuild = true;
+
+  if (ignore_set_needs_commit_)
+    return;
+
+  layer_tree_host_->SetNeedsCommit();
+}
+
+void Layer::SetNeedsCommitNoRebuild() {
   if (!layer_tree_host_)
     return;
 
@@ -335,9 +351,19 @@ void Layer::SetBounds(const gfx::Size& size) {
   DCHECK(IsPropertyChangeAllowed());
   if (bounds() == size)
     return;
-
   bounds_ = size;
-  SetNeedsCommit();
+
+  if (!layer_tree_host_)
+    return;
+
+  if (ClipNode* clip_node = layer_tree_host_->property_trees()->clip_tree.Node(
+          clip_tree_index())) {
+    if (clip_node->owner_id == id()) {
+      clip_node->data.clip.set_size(size);
+    }
+  }
+
+  SetNeedsCommitNoRebuild();
 }
 
 Layer* Layer::RootLayer() {
@@ -577,6 +603,22 @@ void Layer::SetPosition(const gfx::PointF& position) {
   if (position_ == position)
     return;
   position_ = position;
+
+  if (!layer_tree_host_)
+    return;
+
+  if (TransformNode* transform_node =
+          layer_tree_host_->property_trees()->transform_tree.Node(
+              transform_tree_index())) {
+    if (transform_node->owner_id == id()) {
+      transform_node->data.update_post_local_transform(position,
+                                                       transform_origin());
+      transform_node->data.needs_local_transform_update = true;
+      SetNeedsCommitNoRebuild();
+      return;
+    }
+  }
+
   SetNeedsCommit();
 }
 
@@ -588,12 +630,53 @@ bool Layer::IsContainerForFixedPositionLayers() const {
   return is_container_for_fixed_position_layers_;
 }
 
+bool Are2dAxisAligned(const gfx::Transform& a,
+                      const gfx::Transform& b,
+                      bool* is_invertible) {
+  if (a.IsScaleOrTranslation() && b.IsScaleOrTranslation()) {
+    *is_invertible = b.IsInvertible();
+    return true;
+  }
+
+  gfx::Transform inverse(gfx::Transform::kSkipInitialization);
+  *is_invertible = b.GetInverse(&inverse);
+
+  inverse *= a;
+  return inverse.Preserves2dAxisAlignment();
+}
+
 void Layer::SetTransform(const gfx::Transform& transform) {
   DCHECK(IsPropertyChangeAllowed());
   if (transform_ == transform)
     return;
+
+  if (layer_tree_host_) {
+    if (TransformNode* transform_node =
+            layer_tree_host_->property_trees()->transform_tree.Node(
+                transform_tree_index())) {
+      if (transform_node->owner_id == id()) {
+        // We need to trigger a rebuild if we could have affected 2d axis
+        // alignment. We'll check to see if transform and transform_ are axis
+        // align with respect to one another.
+        bool invertible = false;
+        bool preserves_2d_axis_alignment =
+            Are2dAxisAligned(transform_, transform, &invertible);
+        transform_node->data.local = transform;
+        transform_node->data.needs_local_transform_update = true;
+        if (preserves_2d_axis_alignment)
+          SetNeedsCommitNoRebuild();
+        else
+          SetNeedsCommit();
+        transform_ = transform;
+        transform_is_invertible_ = invertible;
+        return;
+      }
+    }
+  }
+
   transform_ = transform;
   transform_is_invertible_ = transform.IsInvertible();
+
   SetNeedsCommit();
 }
 
@@ -602,6 +685,22 @@ void Layer::SetTransformOrigin(const gfx::Point3F& transform_origin) {
   if (transform_origin_ == transform_origin)
     return;
   transform_origin_ = transform_origin;
+
+  if (!layer_tree_host_)
+    return;
+
+  if (TransformNode* transform_node =
+          layer_tree_host_->property_trees()->transform_tree.Node(
+              transform_tree_index())) {
+    if (transform_node->owner_id == id()) {
+      transform_node->data.update_post_local_transform(position(),
+                                                       transform_origin);
+      transform_node->data.needs_local_transform_update = true;
+      SetNeedsCommitNoRebuild();
+      return;
+    }
+  }
+
   SetNeedsCommit();
 }
 
@@ -679,6 +778,22 @@ void Layer::SetScrollOffset(const gfx::ScrollOffset& scroll_offset) {
   if (scroll_offset_ == scroll_offset)
     return;
   scroll_offset_ = scroll_offset;
+
+  if (!layer_tree_host_)
+    return;
+
+  if (TransformNode* transform_node =
+          layer_tree_host_->property_trees()->transform_tree.Node(
+              transform_tree_index())) {
+    if (transform_node->owner_id == id()) {
+      transform_node->data.scroll_offset =
+          gfx::ScrollOffsetToVector2dF(CurrentScrollOffset());
+      transform_node->data.needs_local_transform_update = true;
+      SetNeedsCommitNoRebuild();
+      return;
+    }
+  }
+
   SetNeedsCommit();
 }
 
@@ -704,6 +819,22 @@ void Layer::SetScrollOffsetFromImplSide(
     return;
   scroll_offset_ = scroll_offset;
   SetNeedsPushProperties();
+
+  bool needs_rebuild = true;
+  if (TransformNode* transform_node =
+          layer_tree_host_->property_trees()->transform_tree.Node(
+              transform_tree_index())) {
+    if (transform_node->owner_id == id()) {
+      transform_node->data.scroll_offset =
+          gfx::ScrollOffsetToVector2dF(CurrentScrollOffset());
+      transform_node->data.needs_local_transform_update = true;
+      needs_rebuild = false;
+    }
+  }
+
+  if (needs_rebuild)
+    layer_tree_host_->property_trees()->needs_rebuild = true;
+
   if (!did_scroll_callback_.is_null())
     did_scroll_callback_.Run();
   // The callback could potentially change the layer structure:
@@ -1019,6 +1150,8 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
                        base::Passed(&original_request)));
     main_thread_copy_requests.push_back(main_thread_request.Pass());
   }
+  if (!copy_requests_.empty() && layer_tree_host_)
+    layer_tree_host_->property_trees()->needs_rebuild = true;
   copy_requests_.clear();
   layer->PassCopyRequests(&main_thread_copy_requests);
 
@@ -1157,6 +1290,14 @@ void Layer::OnFilterAnimated(const FilterOperations& filters) {
 
 void Layer::OnOpacityAnimated(float opacity) {
   opacity_ = opacity;
+  if (layer_tree_host_) {
+    if (OpacityNode* node =
+            layer_tree_host_->property_trees()->opacity_tree.Node(
+                opacity_tree_index_)) {
+      if (node->owner_id == id())
+        node->data = opacity;
+    }
+  }
 }
 
 void Layer::OnTransformAnimated(const gfx::Transform& transform) {
@@ -1164,6 +1305,17 @@ void Layer::OnTransformAnimated(const gfx::Transform& transform) {
     return;
   transform_ = transform;
   transform_is_invertible_ = transform.IsInvertible();
+  if (layer_tree_host_) {
+    if (TransformNode* node =
+            layer_tree_host_->property_trees()->transform_tree.Node(
+                transform_tree_index_)) {
+      if (node->owner_id == id()) {
+        node->data.local = transform;
+        node->data.needs_local_transform_update = true;
+        node->data.is_animated = true;
+      }
+    }
+  }
 }
 
 void Layer::OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) {

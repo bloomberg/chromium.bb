@@ -32,6 +32,14 @@ int PropertyTree<T>::Insert(const T& tree_node, int parent_id) {
   return node.id;
 }
 
+template <typename T>
+void PropertyTree<T>::clear() {
+  nodes_.clear();
+  nodes_.push_back(T());
+  back()->id = 0;
+  back()->parent_id = -1;
+}
+
 template class PropertyTree<TransformNode>;
 template class PropertyTree<ClipNode>;
 template class PropertyTree<OpacityNode>;
@@ -52,6 +60,17 @@ TransformNodeData::TransformNodeData()
 }
 
 TransformNodeData::~TransformNodeData() {
+}
+
+void TransformNodeData::update_post_local_transform(
+    const gfx::PointF& position,
+    const gfx::Point3F& transform_origin) {
+  post_local.MakeIdentity();
+  post_local.Scale(post_local_scale_factor, post_local_scale_factor);
+  post_local.Translate3d(
+      position.x() + parent_offset.x() + transform_origin.x(),
+      position.y() + parent_offset.y() + transform_origin.y(),
+      transform_origin.z());
 }
 
 ClipNodeData::ClipNodeData() : transform_id(-1), target_id(-1) {
@@ -323,6 +342,9 @@ void TransformTree::UpdateSnapping(TransformNode* node) {
                                                 -translation.y(), 0);
 
   node->data.scroll_snap = translation;
+}
+
+PropertyTrees::PropertyTrees() : needs_rebuild(true) {
 }
 
 }  // namespace cc
