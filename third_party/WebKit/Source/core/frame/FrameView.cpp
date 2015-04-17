@@ -1069,6 +1069,8 @@ void FrameView::layout()
     // ASSERT(frame()->page());
     if (frame().page())
         frame().page()->chrome().client().layoutUpdated(m_frame.get());
+
+    frame().document()->markers().updateRenderedRectsForMarkers();
 }
 
 // The plan is to move to compositor-queried paint invalidation, in which case this

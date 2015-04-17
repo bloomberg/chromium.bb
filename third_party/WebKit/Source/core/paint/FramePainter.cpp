@@ -118,9 +118,6 @@ void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
             m_frameView.setPaintBehavior(m_frameView.paintBehavior() | PaintBehaviorFlattenCompositingLayers);
     }
 
-    if (m_frameView.paintBehavior() == PaintBehaviorNormal)
-        document->markers().invalidateRenderedRectsForMarkersInRect(LayoutRect(rect));
-
     if (document->printing())
         m_frameView.setPaintBehavior(m_frameView.paintBehavior() | PaintBehaviorFlattenCompositingLayers);
 

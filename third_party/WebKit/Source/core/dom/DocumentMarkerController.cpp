@@ -113,20 +113,8 @@ void DocumentMarkerController::addMarker(const Position& start, const Position& 
 void DocumentMarkerController::addTextMatchMarker(const Range* range, bool activeMatch)
 {
     // Use a TextIterator to visit the potentially multiple nodes the range covers.
-    for (TextIterator markedText(range->startPosition(), range->endPosition()); !markedText.atEnd(); markedText.advance()) {
-        unsigned startOffset = markedText.startOffsetInCurrentContainer();
-        unsigned endOffset = markedText.endOffsetInCurrentContainer();
-        addMarker(markedText.currentContainer(), DocumentMarker(startOffset, endOffset, activeMatch));
-        if (endOffset > startOffset) {
-            // Rendered rects for markers in WebKit are not populated until each time
-            // the markers are painted. However, we need it to happen sooner, because
-            // the whole purpose of tickmarks on the scrollbar is to show where
-            // matches off-screen are (that haven't been painted yet).
-            Node* node = markedText.currentContainer();
-            DocumentMarkerVector markers = markersFor(node);
-            toRenderedDocumentMarker(markers[markers.size() - 1])->setRenderedRect(LayoutRect(range->boundingBox()));
-        }
-    }
+    for (TextIterator markedText(range->startPosition(), range->endPosition()); !markedText.atEnd(); markedText.advance())
+        addMarker(markedText.currentContainer(), DocumentMarker(markedText.startOffsetInCurrentContainer(), markedText.endOffsetInCurrentContainer(), activeMatch));
 }
 
 void DocumentMarkerController::prepareForDestruction()
@@ -189,6 +177,22 @@ static bool doesNotInclude(const OwnPtrWillBeMember<RenderedDocumentMarker>& mar
     return marker->endOffset() < startOffset;
 }
 
+static void updateMarkerRenderedRect(Node* node, RenderedDocumentMarker& marker)
+{
+    RefPtrWillBeRawPtr<Range> range = Range::create(node->document());
+    // The offsets of the marker may be out-dated, so check for exceptions.
+    TrackExceptionState exceptionState;
+    range->setStart(node, marker.startOffset(), exceptionState);
+    if (!exceptionState.hadException())
+        range->setEnd(node, marker.endOffset(), IGNORE_EXCEPTION);
+    if (exceptionState.hadException()) {
+        marker.invalidateRenderedRect();
+        return;
+    }
+
+    marker.setRenderedRect(LayoutRect(range->boundingBox()));
+}
+
 // Markers are stored in order sorted by their start offset.
 // Markers of the same type do not overlap each other.
 
@@ -212,15 +216,16 @@ void DocumentMarkerController::addMarker(Node* node, const DocumentMarker& newMa
     }
 
     OwnPtrWillBeMember<MarkerList>& list = markers->at(markerListIndex);
+    OwnPtrWillBeRawPtr<RenderedDocumentMarker> newRenderedMarker = RenderedDocumentMarker::create(newMarker);
+    updateMarkerRenderedRect(node, *newRenderedMarker);
     if (list->isEmpty() || list->last()->endOffset() < newMarker.startOffset()) {
-        list->append(RenderedDocumentMarker::create(newMarker));
+        list->append(newRenderedMarker.release());
     } else {
-        DocumentMarker toInsert(newMarker);
-        if (toInsert.type() != DocumentMarker::TextMatch) {
-            mergeOverlapping(list.get(), toInsert);
+        if (newMarker.type() != DocumentMarker::TextMatch) {
+            mergeOverlapping(list.get(), newRenderedMarker.release());
         } else {
-            MarkerList::iterator pos = std::lower_bound(list->begin(), list->end(), &toInsert, startsFurther);
-            list->insert(pos - list->begin(), RenderedDocumentMarker::create(toInsert));
+            MarkerList::iterator pos = std::lower_bound(list->begin(), list->end(), &newMarker, startsFurther);
+            list->insert(pos - list->begin(), newRenderedMarker.release());
         }
     }
 
@@ -229,11 +234,11 @@ void DocumentMarkerController::addMarker(Node* node, const DocumentMarker& newMa
         node->layoutObject()->setShouldDoFullPaintInvalidation();
 }
 
-void DocumentMarkerController::mergeOverlapping(MarkerList* list, DocumentMarker& toInsert)
+void DocumentMarkerController::mergeOverlapping(MarkerList* list, PassOwnPtrWillBeRawPtr<RenderedDocumentMarker> toInsert)
 {
-    MarkerList::iterator firstOverlapping = std::lower_bound(list->begin(), list->end(), &toInsert, doesNotOverlap);
+    MarkerList::iterator firstOverlapping = std::lower_bound(list->begin(), list->end(), toInsert.get(), doesNotOverlap);
     size_t index = firstOverlapping - list->begin();
-    list->insert(index, RenderedDocumentMarker::create(toInsert));
+    list->insert(index, toInsert);
     MarkerList::iterator inserted = list->begin() + index;
     firstOverlapping = inserted + 1;
     for (MarkerList::iterator i = firstOverlapping; i != list->end() && (*i)->startOffset() <= (*inserted)->endOffset(); ) {
@@ -486,6 +491,19 @@ Vector<IntRect> DocumentMarkerController::renderedRectsForMarkers(DocumentMarker
     return result;
 }
 
+void DocumentMarkerController::updateRenderedRectsForMarkers()
+{
+    for (auto& nodeMarkers : m_markers) {
+        const Node* node = nodeMarkers.key;
+        for (auto& markerList : *nodeMarkers.value) {
+            if (!markerList)
+                continue;
+            for (auto& marker : *markerList)
+                updateMarkerRenderedRect(const_cast<Node*>(node), *marker);
+        }
+    }
+}
+
 DEFINE_TRACE(DocumentMarkerController)
 {
 #if ENABLE(OILPAN)
@@ -611,22 +629,6 @@ void DocumentMarkerController::repaintMarkers(DocumentMarker::MarkerTypes marker
     }
 }
 
-void DocumentMarkerController::invalidateRenderedRectsForMarkersInRect(const LayoutRect& r)
-{
-    // outer loop: process each markered node in the document
-    MarkerMap::iterator end = m_markers.end();
-    for (MarkerMap::iterator i = m_markers.begin(); i != end; ++i) {
-
-        // inner loop: process each rect in the current node
-        MarkerLists* markers = i->value.get();
-        for (size_t markerListIndex = 0; markerListIndex < DocumentMarker::MarkerTypeIndexesCount; ++markerListIndex) {
-            OwnPtrWillBeMember<MarkerList>& list = (*markers)[markerListIndex];
-            for (size_t markerIndex = 0; list.get() && markerIndex < list->size(); ++markerIndex)
-                list->at(markerIndex)->invalidate(r);
-        }
-    }
-}
-
 void DocumentMarkerController::shiftMarkers(Node* node, unsigned startOffset, int delta)
 {
     if (!possiblyHasMarkers(DocumentMarker::AllMarkers()))
@@ -651,8 +653,7 @@ void DocumentMarkerController::shiftMarkers(Node* node, unsigned startOffset, in
             (*marker)->shiftOffsets(delta);
             docDirty = true;
 
-            // Marker moved, so previously-computed rendered rectangle is now invalid
-            (*marker)->invalidate();
+            updateMarkerRenderedRect(node, **marker);
         }
     }
 

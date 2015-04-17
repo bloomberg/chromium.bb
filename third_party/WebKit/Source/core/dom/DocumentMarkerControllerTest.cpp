@@ -34,6 +34,7 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
 #include "core/dom/Range.h"
+#include "core/dom/RenderedDocumentMarker.h"
 #include "core/dom/Text.h"
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
@@ -198,6 +199,24 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedBySetInnerHTML)
     // No more reference to marked node.
     Heap::collectAllGarbage();
     EXPECT_EQ(0u, markerController().markers().size());
+}
+
+TEST_F(DocumentMarkerControllerTest, UpdateRenderedRects)
+{
+    LayoutRect invalidRect = RenderedDocumentMarker::create(DocumentMarker(0, 0, false))->renderedRect();
+
+    setBodyInnerHTML("<div style='margin: 100px'>foo</div>");
+    RefPtrWillBeRawPtr<Element> div = toElement(document().body()->firstChild());
+    markNodeContents(div);
+    Vector<IntRect> renderedRects = markerController().renderedRectsForMarkers(DocumentMarker::Spelling);
+    EXPECT_EQ(1u, renderedRects.size());
+    EXPECT_NE(invalidRect, renderedRects[0]);
+
+    div->setAttribute(HTMLNames::styleAttr, "margin: 200px");
+    document().updateLayout();
+    Vector<IntRect> newRenderedRects = markerController().renderedRectsForMarkers(DocumentMarker::Spelling);
+    EXPECT_EQ(1u, newRenderedRects.size());
+    EXPECT_NE(renderedRects[0], newRenderedRects[0]);
 }
 
 }

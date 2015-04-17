@@ -402,14 +402,6 @@ void InlineTextBoxPainter::paintDocumentMarker(GraphicsContext* pt, const FloatP
         IntRect markerRect = enclosingIntRect(font.selectionRectForText(run, startPoint, selHeight, startPosition, endPosition));
         start = markerRect.x() - startPoint.x();
         width = markerRect.width();
-
-        // Store rendered rects for bad grammar markers, so we can hit-test against it elsewhere in order to
-        // display a toolTip. We don't do this for misspelling markers.
-        if (grammar) {
-            markerRect.move(-boxOrigin.x(), -boxOrigin.y());
-            markerRect = m_inlineTextBox.layoutObject().localToAbsoluteQuad(FloatRect(markerRect)).enclosingBoundingBox();
-            toRenderedDocumentMarker(marker)->setRenderedRect(LayoutRect(markerRect));
-        }
     }
 
     // IMPORTANT: The misspelling underline is not considered when calculating the text bounds, so we have to
@@ -803,11 +795,6 @@ void InlineTextBoxPainter::paintTextMatchMarker(GraphicsContext* pt, const Float
     int sPos = std::max(marker->startOffset() - m_inlineTextBox.start(), (unsigned)0);
     int ePos = std::min(marker->endOffset() - m_inlineTextBox.start(), m_inlineTextBox.len());
     TextRun run = m_inlineTextBox.constructTextRun(style, font);
-
-    // Always compute and store the rect associated with this marker. The computed rect is in absolute coordinates.
-    IntRect markerRect = enclosingIntRect(font.selectionRectForText(run, IntPoint(m_inlineTextBox.x(), m_inlineTextBox.root().selectionTop()), selHeight, sPos, ePos));
-    markerRect = m_inlineTextBox.layoutObject().localToAbsoluteQuad(FloatRect(markerRect)).enclosingBoundingBox();
-    toRenderedDocumentMarker(marker)->setRenderedRect(LayoutRect(markerRect));
 
     // Optionally highlight the text
     if (m_inlineTextBox.layoutObject().frame()->editor().markedTextMatchesAreHighlighted()) {

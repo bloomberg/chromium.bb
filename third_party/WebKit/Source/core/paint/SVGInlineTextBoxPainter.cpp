@@ -410,7 +410,6 @@ void SVGInlineTextBoxPainter::paintTextMatchMarker(GraphicsContext* context, con
 
     LayoutSVGInlineText& textRenderer = toLayoutSVGInlineText(m_svgInlineTextBox.layoutObject());
 
-    FloatRect markerRect;
     AffineTransform fragmentTransform;
     for (InlineTextBox* box = textRenderer.firstTextBox(); box; box = box->nextTextBox()) {
         if (!box->isSVGInlineTextBox())
@@ -448,13 +447,8 @@ void SVGInlineTextBoxPainter::paintTextMatchMarker(GraphicsContext* context, con
                 context->setFillColor(color);
                 context->fillRect(fragmentRect, color);
             }
-
-            fragmentRect = fragmentTransform.mapRect(fragmentRect);
-            markerRect.unite(fragmentRect);
         }
     }
-
-    toRenderedDocumentMarker(marker)->setRenderedRect(LayoutRect(textRenderer.localToAbsoluteQuad(markerRect).enclosingBoundingBox()));
 }
 
 } // namespace blink

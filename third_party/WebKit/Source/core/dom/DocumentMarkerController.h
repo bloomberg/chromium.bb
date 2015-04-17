@@ -80,7 +80,6 @@ public:
     void removeMarkers(Node*, DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
     void removeMarkers(const MarkerRemoverPredicate& shouldRemoveMarker);
     void repaintMarkers(DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
-    void invalidateRenderedRectsForMarkersInRect(const LayoutRect&);
     void shiftMarkers(Node*, unsigned startOffset, int delta);
     void setMarkersActive(Range*, bool);
     void setMarkersActive(Node*, unsigned startOffset, unsigned endOffset, bool);
@@ -90,6 +89,7 @@ public:
     DocumentMarkerVector markersInRange(Range*, DocumentMarker::MarkerTypes);
     DocumentMarkerVector markers();
     Vector<IntRect> renderedRectsForMarkers(DocumentMarker::MarkerType);
+    void updateRenderedRectsForMarkers();
 
     DECLARE_TRACE();
 
@@ -103,7 +103,7 @@ private:
     using MarkerList = WillBeHeapVector<OwnPtrWillBeMember<RenderedDocumentMarker>>;
     using MarkerLists = WillBeHeapVector<OwnPtrWillBeMember<MarkerList>, DocumentMarker::MarkerTypeIndexesCount>;
     using MarkerMap = WillBeHeapHashMap<RawPtrWillBeWeakMember<const Node>, OwnPtrWillBeMember<MarkerLists>>;
-    void mergeOverlapping(MarkerList*, DocumentMarker&);
+    void mergeOverlapping(MarkerList*, PassOwnPtrWillBeRawPtr<RenderedDocumentMarker>);
     bool possiblyHasMarkers(DocumentMarker::MarkerTypes);
     void removeMarkersFromList(MarkerMap::iterator, DocumentMarker::MarkerTypes);
     void removeMarkers(TextIterator&, DocumentMarker::MarkerTypes, RemovePartiallyOverlappingMarkerOrNot);
