@@ -31,8 +31,8 @@ class URLSecurityManagerWin : public URLSecurityManager {
   explicit URLSecurityManagerWin(const HttpAuthFilter* whitelist_delegate);
 
   // URLSecurityManager methods:
-  virtual bool CanUseDefaultCredentials(const GURL& auth_origin) const;
-  virtual bool CanDelegate(const GURL& auth_origin) const;
+  bool CanUseDefaultCredentials(const GURL& auth_origin) const override;
+  bool CanDelegate(const GURL& auth_origin) const override;
 
  private:
   bool EnsureSystemSecurityManager();

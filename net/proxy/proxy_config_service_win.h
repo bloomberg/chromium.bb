@@ -48,10 +48,10 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceWin
     : public PollingProxyConfigService {
  public:
   ProxyConfigServiceWin();
-  virtual ~ProxyConfigServiceWin();
+  ~ProxyConfigServiceWin() override;
 
   // Overrides a function from PollingProxyConfigService.
-  virtual void AddObserver(Observer* observer) override;
+  void AddObserver(Observer* observer) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ProxyConfigServiceWinTest, SetFromIEConfig);

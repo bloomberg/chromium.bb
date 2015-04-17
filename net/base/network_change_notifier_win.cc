@@ -32,18 +32,14 @@ class NetworkChangeNotifierWin::DnsConfigServiceThread : public base::Thread {
  public:
   DnsConfigServiceThread() : base::Thread("DnsConfigService") {}
 
-  virtual ~DnsConfigServiceThread() {
-    Stop();
-  }
+  ~DnsConfigServiceThread() override { Stop(); }
 
-  virtual void Init() override {
+  void Init() override {
     service_ = DnsConfigService::CreateSystemService();
     service_->WatchConfig(base::Bind(&NetworkChangeNotifier::SetDnsConfig));
   }
 
-  virtual void CleanUp() override {
-    service_.reset();
-  }
+  void CleanUp() override { service_.reset(); }
 
  private:
   scoped_ptr<DnsConfigService> service_;

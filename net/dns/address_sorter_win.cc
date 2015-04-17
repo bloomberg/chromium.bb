@@ -27,11 +27,11 @@ class AddressSorterWin : public AddressSorter {
     EnsureWinsockInit();
   }
 
-  virtual ~AddressSorterWin() {}
+  ~AddressSorterWin() override {}
 
   // AddressSorter:
-  virtual void Sort(const AddressList& list,
-                    const CallbackType& callback) const override {
+  void Sort(const AddressList& list,
+            const CallbackType& callback) const override {
     DCHECK(!list.empty());
     scoped_refptr<Job> job = new Job(list, callback);
   }
@@ -156,11 +156,11 @@ void MergeResults(const AddressSorter::CallbackType& callback,
 class AddressSorterWinXP : public AddressSorter {
  public:
   AddressSorterWinXP() {}
-  virtual ~AddressSorterWinXP() {}
+  ~AddressSorterWinXP() override {}
 
   // AddressSorter:
-  virtual void Sort(const AddressList& list,
-                    const CallbackType& callback) const override {
+  void Sort(const AddressList& list,
+            const CallbackType& callback) const override {
     AddressList list_ipv4;
     AddressList list_ipv6;
     for (size_t i = 0; i < list.size(); ++i) {

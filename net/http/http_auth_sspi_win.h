@@ -70,55 +70,55 @@ class SSPILibrary {
 class SSPILibraryDefault : public SSPILibrary {
  public:
   SSPILibraryDefault() {}
-  virtual ~SSPILibraryDefault() {}
+  ~SSPILibraryDefault() override {}
 
-  virtual SECURITY_STATUS AcquireCredentialsHandle(LPWSTR pszPrincipal,
-                                                   LPWSTR pszPackage,
-                                                   unsigned long fCredentialUse,
-                                                   void* pvLogonId,
-                                                   void* pvAuthData,
-                                                   SEC_GET_KEY_FN pGetKeyFn,
-                                                   void* pvGetKeyArgument,
-                                                   PCredHandle phCredential,
-                                                   PTimeStamp ptsExpiry) {
+  SECURITY_STATUS AcquireCredentialsHandle(LPWSTR pszPrincipal,
+                                           LPWSTR pszPackage,
+                                           unsigned long fCredentialUse,
+                                           void* pvLogonId,
+                                           void* pvAuthData,
+                                           SEC_GET_KEY_FN pGetKeyFn,
+                                           void* pvGetKeyArgument,
+                                           PCredHandle phCredential,
+                                           PTimeStamp ptsExpiry) override {
     return ::AcquireCredentialsHandle(pszPrincipal, pszPackage, fCredentialUse,
                                       pvLogonId, pvAuthData, pGetKeyFn,
                                       pvGetKeyArgument, phCredential,
                                       ptsExpiry);
   }
 
-  virtual SECURITY_STATUS InitializeSecurityContext(PCredHandle phCredential,
-                                                    PCtxtHandle phContext,
-                                                    SEC_WCHAR* pszTargetName,
-                                                    unsigned long fContextReq,
-                                                    unsigned long Reserved1,
-                                                    unsigned long TargetDataRep,
-                                                    PSecBufferDesc pInput,
-                                                    unsigned long Reserved2,
-                                                    PCtxtHandle phNewContext,
-                                                    PSecBufferDesc pOutput,
-                                                    unsigned long* contextAttr,
-                                                    PTimeStamp ptsExpiry) {
+  SECURITY_STATUS InitializeSecurityContext(PCredHandle phCredential,
+                                            PCtxtHandle phContext,
+                                            SEC_WCHAR* pszTargetName,
+                                            unsigned long fContextReq,
+                                            unsigned long Reserved1,
+                                            unsigned long TargetDataRep,
+                                            PSecBufferDesc pInput,
+                                            unsigned long Reserved2,
+                                            PCtxtHandle phNewContext,
+                                            PSecBufferDesc pOutput,
+                                            unsigned long* contextAttr,
+                                            PTimeStamp ptsExpiry) override {
     return ::InitializeSecurityContext(phCredential, phContext, pszTargetName,
                                        fContextReq, Reserved1, TargetDataRep,
                                        pInput, Reserved2, phNewContext, pOutput,
                                        contextAttr, ptsExpiry);
   }
 
-  virtual SECURITY_STATUS QuerySecurityPackageInfo(LPWSTR pszPackageName,
-                                                   PSecPkgInfoW *pkgInfo) {
+  SECURITY_STATUS QuerySecurityPackageInfo(LPWSTR pszPackageName,
+                                           PSecPkgInfoW* pkgInfo) override {
     return ::QuerySecurityPackageInfo(pszPackageName, pkgInfo);
   }
 
-  virtual SECURITY_STATUS FreeCredentialsHandle(PCredHandle phCredential) {
+  SECURITY_STATUS FreeCredentialsHandle(PCredHandle phCredential) override {
     return ::FreeCredentialsHandle(phCredential);
   }
 
-  virtual SECURITY_STATUS DeleteSecurityContext(PCtxtHandle phContext) {
+  SECURITY_STATUS DeleteSecurityContext(PCtxtHandle phContext) override {
     return ::DeleteSecurityContext(phContext);
   }
 
-  virtual SECURITY_STATUS FreeContextBuffer(PVOID pvContextBuffer) {
+  SECURITY_STATUS FreeContextBuffer(PVOID pvContextBuffer) override {
     return ::FreeContextBuffer(pvContextBuffer);
   }
 };

@@ -18,23 +18,22 @@ namespace net {
 class NET_EXPORT_PRIVATE ProxyResolverWinHttp : public ProxyResolver {
  public:
   ProxyResolverWinHttp();
-  virtual ~ProxyResolverWinHttp();
+  ~ProxyResolverWinHttp() override;
 
   // ProxyResolver implementation:
-  virtual int GetProxyForURL(const GURL& url,
-                             ProxyInfo* results,
-                             const net::CompletionCallback& /*callback*/,
-                             RequestHandle* /*request*/,
-                             const BoundNetLog& /*net_log*/) override;
-  virtual void CancelRequest(RequestHandle request) override;
+  int GetProxyForURL(const GURL& url,
+                     ProxyInfo* results,
+                     const net::CompletionCallback& /*callback*/,
+                     RequestHandle* /*request*/,
+                     const BoundNetLog& /*net_log*/) override;
+  void CancelRequest(RequestHandle request) override;
 
-  virtual LoadState GetLoadState(RequestHandle request) const override;
+  LoadState GetLoadState(RequestHandle request) const override;
 
-  virtual void CancelSetPacScript() override;
+  void CancelSetPacScript() override;
 
-  virtual int SetPacScript(
-      const scoped_refptr<ProxyResolverScriptData>& script_data,
-      const net::CompletionCallback& /*callback*/) override;
+  int SetPacScript(const scoped_refptr<ProxyResolverScriptData>& script_data,
+                   const net::CompletionCallback& /*callback*/) override;
 
  private:
   bool OpenWinHttpSession();

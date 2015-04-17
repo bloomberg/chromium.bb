@@ -111,7 +111,7 @@ class NET_EXPORT StreamListenSocket
 
 #if defined(OS_WIN)
   // ObjectWatcher delegate.
-  virtual void OnObjectSignaled(HANDLE object);
+  void OnObjectSignaled(HANDLE object) override;
   base::win::ObjectWatcher watcher_;
   HANDLE socket_event_;
 #elif defined(OS_POSIX)

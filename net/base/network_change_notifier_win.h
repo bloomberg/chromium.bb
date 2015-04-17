@@ -39,7 +39,7 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierWin
   void WatchForAddressChange();
 
  protected:
-  virtual ~NetworkChangeNotifierWin();
+  ~NetworkChangeNotifierWin() override;
 
   // For unit tests only.
   bool is_watching() { return is_watching_; }
@@ -51,11 +51,11 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierWin
   friend class NetworkChangeNotifierWinTest;
 
   // NetworkChangeNotifier methods:
-  virtual ConnectionType GetCurrentConnectionType() const override;
+  ConnectionType GetCurrentConnectionType() const override;
 
   // ObjectWatcher::Delegate methods:
   // Must only be called on the thread |this| was created on.
-  virtual void OnObjectSignaled(HANDLE object) override;
+  void OnObjectSignaled(HANDLE object) override;
 
   // Does the actual work to determine the current connection type.
   // It is not thread safe, see crbug.com/324913.

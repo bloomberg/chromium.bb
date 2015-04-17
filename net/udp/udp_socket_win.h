@@ -32,7 +32,7 @@ class NET_EXPORT UDPSocketWin
                const RandIntCallback& rand_int_cb,
                net::NetLog* net_log,
                const net::NetLog::Source& source);
-  virtual ~UDPSocketWin();
+  ~UDPSocketWin() override;
 
   // Opens the socket.
   // Returns a net error code.
@@ -195,7 +195,7 @@ class NET_EXPORT UDPSocketWin
   void DidCompleteWrite();
 
   // base::ObjectWatcher::Delegate implementation.
-  virtual void OnObjectSignaled(HANDLE object);
+  void OnObjectSignaled(HANDLE object) override;
   void OnReadSignaled();
   void OnWriteSignaled();
 

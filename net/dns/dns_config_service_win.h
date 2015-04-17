@@ -117,7 +117,7 @@ ConfigParseWinResult NET_EXPORT_PRIVATE ConvertSettingsToDnsConfig(
 class NET_EXPORT_PRIVATE DnsConfigServiceWin : public DnsConfigService {
  public:
   DnsConfigServiceWin();
-  virtual ~DnsConfigServiceWin();
+  ~DnsConfigServiceWin() override;
 
  private:
   class Watcher;
@@ -125,8 +125,8 @@ class NET_EXPORT_PRIVATE DnsConfigServiceWin : public DnsConfigService {
   class HostsReader;
 
   // DnsConfigService:
-  virtual void ReadNow() override;
-  virtual bool StartWatching() override;
+  void ReadNow() override;
+  bool StartWatching() override;
 
   void OnConfigChanged(bool succeeded);
   void OnHostsChanged(bool succeeded);

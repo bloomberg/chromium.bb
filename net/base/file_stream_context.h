@@ -61,7 +61,7 @@ class FileStream::Context {
   explicit Context(const scoped_refptr<base::TaskRunner>& task_runner);
   Context(base::File file, const scoped_refptr<base::TaskRunner>& task_runner);
 #if defined(OS_WIN)
-  virtual ~Context();
+  ~Context() override;
 #elif defined(OS_POSIX)
   ~Context();
 #endif
@@ -157,9 +157,9 @@ class FileStream::Context {
   void IOCompletionIsPending(const CompletionCallback& callback, IOBuffer* buf);
 
   // Implementation of MessageLoopForIO::IOHandler.
-  virtual void OnIOCompleted(base::MessageLoopForIO::IOContext* context,
-                             DWORD bytes_read,
-                             DWORD error) override;
+  void OnIOCompleted(base::MessageLoopForIO::IOContext* context,
+                     DWORD bytes_read,
+                     DWORD error) override;
 
   // Invokes the user callback.
   void InvokeUserCallback();

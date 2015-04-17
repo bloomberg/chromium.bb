@@ -35,7 +35,7 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptFetcherWin
   // |url_request_context|. |url_request_context| must remain valid for
   // the lifetime of DhcpProxyScriptFetcherWin.
   explicit DhcpProxyScriptFetcherWin(URLRequestContext* url_request_context);
-  virtual ~DhcpProxyScriptFetcherWin();
+  ~DhcpProxyScriptFetcherWin() override;
 
   // DhcpProxyScriptFetcher implementation.
   int Fetch(base::string16* utf16_text,

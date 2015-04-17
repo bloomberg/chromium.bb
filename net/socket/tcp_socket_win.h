@@ -28,7 +28,7 @@ class NET_EXPORT TCPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe),
                                 public base::win::ObjectWatcher::Delegate  {
  public:
   TCPSocketWin(NetLog* net_log, const NetLog::Source& source);
-  virtual ~TCPSocketWin();
+  ~TCPSocketWin() override;
 
   int Open(AddressFamily family);
 
@@ -101,7 +101,7 @@ class NET_EXPORT TCPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe),
   class Core;
 
   // base::ObjectWatcher::Delegate implementation.
-  virtual void OnObjectSignaled(HANDLE object) override;
+  void OnObjectSignaled(HANDLE object) override;
 
   int AcceptInternal(scoped_ptr<TCPSocketWin>* socket,
                      IPEndPoint* address);

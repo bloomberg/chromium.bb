@@ -17,12 +17,12 @@ namespace net {
 class NET_EXPORT ClientCertStoreWin : public ClientCertStore {
  public:
   ClientCertStoreWin();
-  virtual ~ClientCertStoreWin();
+  ~ClientCertStoreWin() override;
 
   // ClientCertStore:
-  virtual void GetClientCerts(const SSLCertRequestInfo& cert_request_info,
-                              CertificateList* selected_certs,
-                              const base::Closure& callback) override;
+  void GetClientCerts(const SSLCertRequestInfo& cert_request_info,
+                      CertificateList* selected_certs,
+                      const base::Closure& callback) override;
 
  private:
   friend class ClientCertStoreWinTestDelegate;

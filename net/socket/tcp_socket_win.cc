@@ -167,10 +167,10 @@ class TCPSocketWin::Core : public base::RefCounted<Core> {
   class ReadDelegate : public base::win::ObjectWatcher::Delegate {
    public:
     explicit ReadDelegate(Core* core) : core_(core) {}
-    virtual ~ReadDelegate() {}
+    ~ReadDelegate() override {}
 
     // base::ObjectWatcher::Delegate methods:
-    virtual void OnObjectSignaled(HANDLE object);
+    void OnObjectSignaled(HANDLE object) override;
 
    private:
     Core* const core_;
@@ -179,10 +179,10 @@ class TCPSocketWin::Core : public base::RefCounted<Core> {
   class WriteDelegate : public base::win::ObjectWatcher::Delegate {
    public:
     explicit WriteDelegate(Core* core) : core_(core) {}
-    virtual ~WriteDelegate() {}
+    ~WriteDelegate() override {}
 
     // base::ObjectWatcher::Delegate methods:
-    virtual void OnObjectSignaled(HANDLE object);
+    void OnObjectSignaled(HANDLE object) override;
 
    private:
     Core* const core_;
