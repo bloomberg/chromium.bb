@@ -315,7 +315,7 @@ def RunWebkitLayoutTests(options):
       '--build-name', options.build_properties.get('buildername', ''),
       '--platform=android']
 
-  for flag in 'test_results_server', 'driver_name', 'additional_drt_flag':
+  for flag in 'test_results_server', 'driver_name', 'additional_driver_flag':
     if flag in options.factory_properties:
       cmd_args.extend(['--%s' % flag.replace('_', '-'),
                        options.factory_properties.get(flag)])
