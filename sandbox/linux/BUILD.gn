@@ -288,15 +288,16 @@ component("sandbox_services") {
 
 source_set("sandbox_services_headers") {
   sources = [
-    "system_headers/android_arm64_ucontext.h",
-    "system_headers/android_arm_ucontext.h",
-    "system_headers/android_i386_ucontext.h",
-    "system_headers/android_ucontext.h",
     "system_headers/arm64_linux_syscalls.h",
+    "system_headers/arm64_linux_ucontext.h",
     "system_headers/arm_linux_syscalls.h",
+    "system_headers/arm_linux_ucontext.h",
+    "system_headers/i386_linux_ucontext.h",
     "system_headers/linux_futex.h",
     "system_headers/linux_seccomp.h",
+    "system_headers/linux_signal.h",
     "system_headers/linux_syscalls.h",
+    "system_headers/linux_ucontext.h",
     "system_headers/x86_32_linux_syscalls.h",
     "system_headers/x86_64_linux_syscalls.h",
   ]

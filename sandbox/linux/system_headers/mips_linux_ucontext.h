@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_LINUX_SYSTEM_HEADERS_ANDROID_MIPS_UCONTEXT_H_
-#define SANDBOX_LINUX_SYSTEM_HEADERS_ANDROID_MIPS_UCONTEXT_H_
+#ifndef SANDBOX_LINUX_SYSTEM_HEADERS_MIPS_LINUX_UCONTEXT_H_
+#define SANDBOX_LINUX_SYSTEM_HEADERS_MIPS_LINUX_UCONTEXT_H_
 
 // This is mostly copied from breakpad (common/android/include/sys/ucontext.h),
 // except we do use sigset_t for uc_sigmask instead of a custom type.
@@ -48,4 +48,4 @@ typedef struct ucontext {
 #include <sys/ucontext.h>
 #endif  // __BIONIC_HAVE_UCONTEXT_T
 
-#endif  // SANDBOX_LINUX_SYSTEM_HEADERS_ANDROID_MIPS_UCONTEXT_H_
+#endif  // SANDBOX_LINUX_SYSTEM_HEADERS_MIPS_LINUX_UCONTEXT_H_
