@@ -33,6 +33,7 @@
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/connect.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/data_pipe.h"
 #include "third_party/mojo/src/mojo/public/interfaces/application/shell.mojom.h"
@@ -336,6 +337,8 @@ void HTMLDocument::OnViewBoundsChanged(View* view,
 void HTMLDocument::OnViewDestroyed(View* view) {
   DCHECK_EQ(view, root_);
   root_ = nullptr;
+  delete this;
+  mojo::ApplicationImpl::Terminate();
 }
 
 void HTMLDocument::OnViewInputEvent(View* view, const mojo::EventPtr& event) {
