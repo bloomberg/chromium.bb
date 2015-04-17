@@ -29,12 +29,19 @@ WORD default_attributes;
 #endif
 bool is_console = false;
 
+bool is_markdown = false;
+
 void EnsureInitialized() {
   if (initialized)
     return;
   initialized = true;
 
   const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  if (cmdline->HasSwitch(switches::kMarkdown)) {
+    // Output help in Markdown's syntax, not color-highlighted.
+    is_markdown = true;
+  }
+
   if (cmdline->HasSwitch(switches::kNoColor)) {
     // Force color off.
     is_console = false;
@@ -61,13 +68,35 @@ void WriteToStdOut(const std::string& output) {
   DCHECK_EQ(output.size(), written_bytes);
 }
 
+void OutputMarkdownDec(TextDecoration dec) {
+  // The markdown rendering turns "dim" text to italics and any
+  // other colored text to bold.
+
+#if defined(OS_WIN)
+  DWORD written = 0;
+  if (dec == DECORATION_DIM)
+    ::WriteFile(hstdout, "*", 1, &written, nullptr);
+  else if (dec != DECORATION_NONE)
+    ::WriteFile(hstdout, "**", 2, &written, nullptr);
+#else
+  if (dec == DECORATION_DIM)
+    WriteToStdOut("*");
+  else if (dec != DECORATION_NONE)
+    WriteToStdOut("**");
+#endif
+}
+
 }  // namespace
 
 #if defined(OS_WIN)
 
 void OutputString(const std::string& output, TextDecoration dec) {
   EnsureInitialized();
-  if (is_console) {
+  DWORD written = 0;
+
+  if (is_markdown) {
+    OutputMarkdownDec(dec);
+  } else if (is_console) {
     switch (dec) {
       case DECORATION_NONE:
         break;
@@ -93,19 +122,23 @@ void OutputString(const std::string& output, TextDecoration dec) {
     }
   }
 
-  DWORD written = 0;
   ::WriteFile(hstdout, output.c_str(), static_cast<DWORD>(output.size()),
               &written, nullptr);
 
-  if (is_console)
+  if (is_markdown) {
+    OutputMarkdownDec(dec);
+  } else if (is_console) {
     ::SetConsoleTextAttribute(hstdout, default_attributes);
+  }
 }
 
 #else
 
 void OutputString(const std::string& output, TextDecoration dec) {
   EnsureInitialized();
-  if (is_console) {
+  if (is_markdown) {
+    OutputMarkdownDec(dec);
+  } else if (is_console) {
     switch (dec) {
       case DECORATION_NONE:
         break;
@@ -129,13 +162,18 @@ void OutputString(const std::string& output, TextDecoration dec) {
 
   WriteToStdOut(output.data());
 
-  if (is_console && dec != DECORATION_NONE)
+  if (is_markdown) {
+    OutputMarkdownDec(dec);
+  } else if (is_console && dec != DECORATION_NONE) {
     WriteToStdOut("\e[0m");
+  }
 }
 
 #endif
 
 void PrintShortHelp(const std::string& line) {
+  EnsureInitialized();
+
   size_t colon_offset = line.find(':');
   size_t first_normal = 0;
   if (colon_offset != std::string::npos) {
@@ -162,25 +200,54 @@ void PrintShortHelp(const std::string& line) {
 }
 
 void PrintLongHelp(const std::string& text) {
+  EnsureInitialized();
+
   std::vector<std::string> lines;
   base::SplitStringDontTrim(text, '\n', &lines);
 
+  bool first_header = true;
+  bool in_body = false;
   for (const auto& line : lines) {
     // Check for a heading line.
     if (!line.empty() && line[0] != ' ') {
+      if (is_markdown) {
+        // GN's block-level formatting is converted to markdown as follows:
+        // * The first heading is treated as an H2.
+        // * Subsequent heading are treated as H3s.
+        // * Any other text is wrapped in a code block and displayed as-is.
+        //
+        // Span-level formatting (the decorations) is converted inside
+        // OutputString().
+        if (in_body) {
+          OutputString("```\n\n", DECORATION_NONE);
+          in_body = false;
+        }
+
+        if (first_header) {
+          OutputString("## ", DECORATION_NONE);
+          first_header = false;
+        } else {
+          OutputString("### ", DECORATION_NONE);
+        }
+      }
+
       // Highlight up to the colon (if any).
       size_t chars_to_highlight = line.find(':');
       if (chars_to_highlight == std::string::npos)
         chars_to_highlight = line.size();
+
       OutputString(line.substr(0, chars_to_highlight), DECORATION_YELLOW);
       OutputString(line.substr(chars_to_highlight) + "\n");
       continue;
+    } else if (!line.empty() && !in_body) {
+      OutputString("```\n", DECORATION_NONE);
+      in_body = true;
     }
 
     // Check for a comment.
     TextDecoration dec = DECORATION_NONE;
     for (const auto& elem : line) {
-      if (elem == '#') {
+      if (elem == '#' && !is_markdown) {
         // Got a comment, draw dimmed.
         dec = DECORATION_DIM;
         break;
@@ -191,5 +258,8 @@ void PrintLongHelp(const std::string& text) {
 
     OutputString(line + "\n", dec);
   }
+
+  if (is_markdown && in_body)
+    OutputString("\n```\n");
 }
 

@@ -94,6 +94,7 @@ Read these links:
   * [FAQ](docs/faq.md)
   * [GYP conversion cookbook](docs/cookbook.md)
   * [Language and operation details](docs/language.md)
+  * [Reference](docs/reference.md) The built-in `gn help` documentation.
   * [Style guide](docs/style_guide.md)
   * [Cross compiling and toolchains](docs/cross_compiles.md)
   * [Hacking on GN itself](docs/hacking.md)

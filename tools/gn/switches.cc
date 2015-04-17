@@ -69,6 +69,12 @@ const char kDotfile_Help[] =
     "  Note that this interacts with \"--root\" in a possibly incorrect way.\n"
     "  It would be nice to test the edge cases and document or fix.\n";
 
+const char kMarkdown[] = "markdown";
+const char kMarkdown_HelpShort[] =
+    "--markdown: write the output in the Markdown format.";
+const char kMarkdown_Help[] =
+    "--markdown: write the output in the Markdown format.\n";
+
 const char kNoColor[] = "nocolor";
 const char kNoColor_HelpShort[] =
     "--nocolor: Force non-colored output.";
@@ -184,6 +190,7 @@ const SwitchInfoMap& GetSwitches() {
     INSERT_VARIABLE(Args)
     INSERT_VARIABLE(Color)
     INSERT_VARIABLE(Dotfile)
+    INSERT_VARIABLE(Markdown)
     INSERT_VARIABLE(NoColor)
     INSERT_VARIABLE(Root)
     INSERT_VARIABLE(Quiet)

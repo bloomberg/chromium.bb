@@ -69,18 +69,35 @@ void PrintToplevelHelp() {
 }
 
 void PrintSwitchHelp() {
+  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  bool use_markdown = cmdline->HasSwitch(switches::kMarkdown);
+
   OutputString("Available global switches\n", DECORATION_YELLOW);
   OutputString(
       "  Do \"gn help --the_switch_you_want_help_on\" for more. Individual\n"
       "  commands may take command-specific switches not listed here. See the\n"
       "  help on your specific command for more.\n\n");
 
+  if (use_markdown)
+    OutputString("```\n\n", DECORATION_NONE);
+
   for (const auto& s : switches::GetSwitches())
     PrintShortHelp(s.second.short_help);
+
+  if (use_markdown)
+    OutputString("\n```\n", DECORATION_NONE);
 }
 
 void PrintAllHelp() {
-  PrintToplevelHelp();
+  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  if (cmdline->HasSwitch(switches::kMarkdown)) {
+    OutputString("# GN Reference\n\n");
+    OutputString("[TOC]\n\n");
+    OutputString("*This page is automatically generated from* "
+                 "`gn help --markdown all`.\n\n");
+  } else {
+    PrintToplevelHelp();
+  }
 
   for (const auto& s : switches::GetSwitches())
     PrintLongHelp(s.second.long_help);
