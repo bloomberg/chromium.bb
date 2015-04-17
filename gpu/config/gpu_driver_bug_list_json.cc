@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "7.21",
+  "version": "7.22",
   "entries": [
     {
       "id": 1,
@@ -1216,6 +1216,18 @@ LONG_STRING_CONST(
       },
       "features": [
         "disable_discard_framebuffer"
+      ]
+    },
+    {
+      "id": 106,
+      "description": "EXT_occlusion_query hangs on PowerVR SGX 544 (IMG) drivers",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "Imagination.*",
+      "gl_renderer": "PowerVR SGX 544",
+      "features": [
+        "disable_ext_occlusion_query"
       ]
     }
   ]
