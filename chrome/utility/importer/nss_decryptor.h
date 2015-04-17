@@ -18,7 +18,7 @@
 // that is going to take some non-trivial refactoring so in the meantime we're
 // just falling back to a no-op implementation.
 #include "chrome/utility/importer/nss_decryptor_null.h"
-#elif defined(USE_NSS)
+#elif defined(USE_NSS_CERTS)
 #include "chrome/utility/importer/nss_decryptor_system_nss.h"
 #endif
 

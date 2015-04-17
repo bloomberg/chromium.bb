@@ -410,8 +410,9 @@
         ['include', '^base/network_config_watcher_mac\\.cc$'],
         ['include', '^base/platform_mime_util_mac\\.mm$'],
         # The iOS implementation only partially uses NSS and thus does not
-        # defines |use_nss_certs|. In particular the |USE_NSS| preprocessor
-        # definition is not used. The following files are needed though:
+        # defines |use_nss_certs|. In particular the |USE_NSS_CERTS|
+        # preprocessor definition is not used. The following files are needed
+        # though:
         ['include', '^cert/cert_verify_proc_nss\\.cc$'],
         ['include', '^cert/cert_verify_proc_nss\\.h$'],
         ['include', '^cert/test_root_certs_nss\\.cc$'],

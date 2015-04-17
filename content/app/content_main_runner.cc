@@ -683,7 +683,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     }
 #endif
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
     crypto::EarlySetupForNSSInit();
 #endif
 

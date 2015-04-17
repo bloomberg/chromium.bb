@@ -58,11 +58,11 @@
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/url_request_context.h"
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
 #include "chrome/browser/net/nss_context.h"
 #include "net/base/crypto_module.h"
 #include "net/cert/nss_cert_database.h"
-#endif  // defined(USE_NSS)
+#endif  // defined(USE_NSS_CERTS)
 
 using base::ASCIIToUTF16;
 using chrome_browser_interstitials::SecurityInterstitialIDNTest;
@@ -972,7 +972,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCertAndGoForward) {
   EXPECT_TRUE(LowerCaseEqualsASCII(result, "pass"));
 }
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
 class SSLUITestWithClientCert : public SSLUITest {
   public:
    SSLUITestWithClientCert() : cert_db_(NULL) {}
@@ -1058,7 +1058,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithClientCert, TestWSSClientCert) {
   const base::string16 result = watcher.WaitAndGetTitle();
   EXPECT_TRUE(LowerCaseEqualsASCII(result, "pass"));
 }
-#endif  // defined(USE_NSS)
+#endif  // defined(USE_NSS_CERTS)
 
 // Flaky on CrOS http://crbug.com/92292
 #if defined(OS_CHROMEOS)

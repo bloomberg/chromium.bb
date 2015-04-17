@@ -212,7 +212,7 @@ TEST_F(CertVerifyProcTest, PaypalNullCertParsing) {
                      NULL,
                      empty_cert_list_,
                      &verify_result);
-#if defined(USE_NSS) || defined(OS_IOS) || defined(OS_ANDROID)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS) || defined(OS_ANDROID)
   EXPECT_EQ(ERR_CERT_COMMON_NAME_INVALID, error);
 #else
   // TOOD(bulach): investigate why macosx and win aren't returning
@@ -222,7 +222,7 @@ TEST_F(CertVerifyProcTest, PaypalNullCertParsing) {
   // Either the system crypto library should correctly report a certificate
   // name mismatch, or our certificate blacklist should cause us to report an
   // invalid certificate.
-#if defined(USE_NSS) || defined(OS_WIN) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_WIN) || defined(OS_IOS)
   EXPECT_TRUE(verify_result.cert_status &
               (CERT_STATUS_COMMON_NAME_INVALID | CERT_STATUS_INVALID));
 #endif
@@ -754,7 +754,7 @@ TEST_F(CertVerifyProcTest, InvalidKeyUsage) {
 #endif
   // TODO(wtc): fix http://crbug.com/75520 to get all the certificate errors
   // from NSS.
-#if !defined(USE_NSS) && !defined(OS_IOS) && !defined(OS_ANDROID)
+#if !defined(USE_NSS_CERTS) && !defined(OS_IOS) && !defined(OS_ANDROID)
   // The certificate is issued by an unknown CA.
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_AUTHORITY_INVALID);
 #endif
@@ -1166,7 +1166,8 @@ TEST_F(CertVerifyProcTest, CybertrustGTERoot) {
 }
 #endif
 
-#if defined(USE_NSS) || defined(OS_IOS) || defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS) || defined(OS_WIN) || \
+    defined(OS_MACOSX)
 // Test that CRLSets are effective in making a certificate appear to be
 // revoked.
 TEST_F(CertVerifyProcTest, CRLSet) {
@@ -1420,7 +1421,7 @@ const WeakDigestTestData kVerifyIntermediateCATestData[] = {
     "weak_digest_sha1_ee.pem", EXPECT_MD2 | EXPECT_SHA1 },
 };
 // Disabled on NSS - MD4 is not supported, and MD2 and MD5 are disabled.
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
 #define MAYBE_VerifyIntermediate DISABLED_VerifyIntermediate
 #else
 #define MAYBE_VerifyIntermediate VerifyIntermediate
@@ -1445,7 +1446,7 @@ const WeakDigestTestData kVerifyEndEntityTestData[] = {
 // Disabled on NSS - NSS caches chains/signatures in such a way that cannot
 // be cleared until NSS is cleanly shutdown, which is not presently supported
 // in Chromium.
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
 #define MAYBE_VerifyEndEntity DISABLED_VerifyEndEntity
 #else
 #define MAYBE_VerifyEndEntity VerifyEndEntity
@@ -1468,7 +1469,7 @@ const WeakDigestTestData kVerifyIncompleteIntermediateTestData[] = {
 };
 // Disabled on NSS - libpkix does not return constructed chains on error,
 // preventing us from detecting/inspecting the verified chain.
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
 #define MAYBE_VerifyIncompleteIntermediate \
     DISABLED_VerifyIncompleteIntermediate
 #else
@@ -1493,7 +1494,7 @@ const WeakDigestTestData kVerifyIncompleteEETestData[] = {
 };
 // Disabled on NSS - libpkix does not return constructed chains on error,
 // preventing us from detecting/inspecting the verified chain.
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
 #define MAYBE_VerifyIncompleteEndEntity DISABLED_VerifyIncompleteEndEntity
 #else
 #define MAYBE_VerifyIncompleteEndEntity VerifyIncompleteEndEntity
@@ -1518,7 +1519,7 @@ const WeakDigestTestData kVerifyMixedTestData[] = {
 };
 // NSS does not support MD4 and does not enable MD2 by default, making all
 // permutations invalid.
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
 #define MAYBE_VerifyMixed DISABLED_VerifyMixed
 #else
 #define MAYBE_VerifyMixed VerifyMixed

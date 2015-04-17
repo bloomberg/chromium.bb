@@ -8262,7 +8262,7 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
     CHECK_NE(static_cast<X509Certificate*>(NULL), root_cert.get());
     test_root_.reset(new ScopedTestRoot(root_cert.get()));
 
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
     SetURLRequestContextForNSSHttpIO(&context_);
     EnsureNSSHttpIOInit();
 #endif
@@ -8291,7 +8291,7 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
   }
 
   ~HTTPSOCSPTest() override {
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
     ShutdownNSSHttpIO();
 #endif
   }
@@ -8331,7 +8331,7 @@ static CertStatus ExpectedCertStatusForFailedOnlineRevocationCheck() {
 // If it does not, then tests which rely on 'hard fail' behaviour should be
 // skipped.
 static bool SystemSupportsHardFailRevocationChecking() {
-#if defined(OS_WIN) || defined(USE_NSS) || defined(OS_IOS)
+#if defined(OS_WIN) || defined(USE_NSS_CERTS) || defined(OS_IOS)
   return true;
 #else
   return false;
@@ -8370,7 +8370,7 @@ static bool SystemSupportsOCSP() {
 }
 
 static bool SystemSupportsOCSPStapling() {
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
   return true;
 #elif defined(OS_WIN)
   return base::win::GetVersion() >= base::win::VERSION_VISTA;
@@ -8467,7 +8467,7 @@ TEST_F(HTTPSOCSPTest, ValidStapled) {
 }
 
 // Disabled on NSS ports. See https://crbug.com/431716.
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
 #define MAYBE_RevokedStapled DISABLED_RevokedStapled
 #else
 #define MAYBE_RevokedStapled RevokedStapled

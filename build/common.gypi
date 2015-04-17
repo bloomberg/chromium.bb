@@ -3016,8 +3016,12 @@
         'defines': ['USE_GLIB=1'],
       }],
       ['<(use_nss_certs)==1 and >(nacl_untrusted_build)==0', {
-        # TODO(davidben): Rename this to USE_NSS_CERTS. https://crbug.com/462040
-        'defines': ['USE_NSS=1'],
+        'defines': [
+          'USE_NSS_CERTS=1',
+          # TODO(davidben): USE_NSS is a deprecated alias for USE_NSS_CERTS and
+          # will be removed. See https://crbug.com/462040.
+          'USE_NSS=1',
+        ],
       }],
       ['<(chromeos)==1 and >(nacl_untrusted_build)==0', {
         'defines': ['OS_CHROMEOS=1'],

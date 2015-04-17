@@ -33,7 +33,7 @@
 #include "net/url_request/url_request_throttler_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
 #include "net/cert_net/nss_ocsp.h"
 #endif
 
@@ -320,14 +320,14 @@ class URLFetcherTest : public testing::Test,
     context_->set_throttler_manager(&throttler_manager_);
     context_->Init();
 
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
     crypto::EnsureNSSInit();
     EnsureNSSHttpIOInit();
 #endif
   }
 
   void TearDown() override {
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
     ShutdownNSSHttpIO();
 #endif
   }

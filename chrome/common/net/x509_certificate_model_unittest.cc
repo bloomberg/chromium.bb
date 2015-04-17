@@ -9,7 +9,7 @@
 #include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
 #include "crypto/scoped_test_nss_db.h"
 #include "net/cert/nss_cert_database.h"
 #endif

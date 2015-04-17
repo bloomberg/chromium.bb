@@ -20,13 +20,13 @@ bool MockOwnerKeyUtil::ImportPublicKey(std::vector<uint8>* output) {
   return !public_key_.empty();
 }
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
 crypto::RSAPrivateKey* MockOwnerKeyUtil::FindPrivateKeyInSlot(
     const std::vector<uint8>& key,
     PK11SlotInfo* slot) {
   return private_key_.get() ? private_key_->Copy() : NULL;
 }
-#endif  // defined(USE_NSS)
+#endif  // defined(USE_NSS_CERTS)
 
 bool MockOwnerKeyUtil::IsPublicKeyPresent() {
   return !public_key_.empty();

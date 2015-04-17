@@ -92,7 +92,7 @@ TEST(EncryptorTest, DecryptWrongKey) {
   // determine the padding length without checking every padding byte,
   // Encryptor::Decrypt() will still return true.  This is the case for NSS
   // (crbug.com/124434).
-#if !defined(USE_NSS) && !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(USE_NSS_CERTS) && !defined(OS_WIN) && !defined(OS_MACOSX)
   crypto::Encryptor decryptor;
   EXPECT_TRUE(decryptor.Init(wrong_key.get(), crypto::Encryptor::CBC, iv));
   EXPECT_FALSE(decryptor.Decrypt(ciphertext, &decrypted));

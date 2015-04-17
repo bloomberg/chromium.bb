@@ -30,7 +30,7 @@ namespace onc {
 
 namespace {
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
 // In NSS 3.13, CERTDB_VALID_PEER was renamed CERTDB_TERMINAL_RECORD. So we use
 // the new name of the macro.
 #if !defined(CERTDB_TERMINAL_RECORD)
@@ -58,7 +58,7 @@ net::CertType GetCertType(net::X509Certificate::OSCertHandle cert) {
   NOTIMPLEMENTED();
   return net::OTHER_CERT;
 }
-#endif  // USE_NSS
+#endif  // USE_NSS_CERTS
 
 }  // namespace
 

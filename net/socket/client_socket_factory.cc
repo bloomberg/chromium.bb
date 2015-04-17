@@ -12,7 +12,7 @@
 #include "net/socket/client_socket_handle.h"
 #if defined(USE_OPENSSL)
 #include "net/socket/ssl_client_socket_openssl.h"
-#elif defined(USE_NSS) || defined(OS_MACOSX) || defined(OS_WIN)
+#elif defined(USE_NSS_CERTS) || defined(OS_MACOSX) || defined(OS_WIN)
 #include "net/socket/ssl_client_socket_nss.h"
 #endif
 #include "net/socket/tcp_client_socket.h"
@@ -107,7 +107,7 @@ class DefaultClientSocketFactory : public ClientSocketFactory,
     return scoped_ptr<SSLClientSocket>(
         new SSLClientSocketOpenSSL(transport_socket.Pass(), host_and_port,
                                    ssl_config, context));
-#elif defined(USE_NSS) || defined(OS_MACOSX) || defined(OS_WIN)
+#elif defined(USE_NSS_CERTS) || defined(OS_MACOSX) || defined(OS_WIN)
     return scoped_ptr<SSLClientSocket>(
         new SSLClientSocketNSS(nss_task_runner.get(),
                                transport_socket.Pass(),

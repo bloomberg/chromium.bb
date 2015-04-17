@@ -281,7 +281,7 @@ class BrowserOptionsHandler
   void ShowNetworkProxySettings(const base::ListValue* args);
 #endif
 
-#if !defined(USE_NSS)
+#if !defined(USE_NSS_CERTS)
   // Callback for the "showManageSSLCertificates" message. This will invoke
   // an appropriate certificate management action based on the platform.
   void ShowManageSSLCertificates(const base::ListValue* args);

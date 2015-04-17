@@ -14,7 +14,7 @@
 #if defined(USE_OPENSSL)
 // Forward declaration for openssl/*.h
 typedef struct env_md_ctx_st EVP_MD_CTX;
-#elif defined(USE_NSS) || defined(OS_WIN) || defined(OS_MACOSX)
+#elif defined(USE_NSS_CERTS) || defined(OS_WIN) || defined(OS_MACOSX)
 // Forward declaration.
 struct SGNContextStr;
 #endif
@@ -61,7 +61,7 @@ class CRYPTO_EXPORT SignatureCreator {
 
 #if defined(USE_OPENSSL)
   EVP_MD_CTX* sign_context_;
-#elif defined(USE_NSS) || defined(OS_WIN) || defined(OS_MACOSX)
+#elif defined(USE_NSS_CERTS) || defined(OS_WIN) || defined(OS_MACOSX)
   SGNContextStr* sign_context_;
 #endif
 

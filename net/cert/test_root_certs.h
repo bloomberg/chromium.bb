@@ -10,7 +10,7 @@
 #include "build/build_config.h"
 #include "net/base/net_export.h"
 
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
 #include <list>
 #elif defined(USE_OPENSSL_CERTS) && !defined(OS_ANDROID)
 #include <vector>
@@ -23,7 +23,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #endif
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
 typedef struct CERTCertificateStr CERTCertificate;
 #elif defined(USE_OPENSSL_CERTS) && !defined(OS_ANDROID)
 typedef struct x509_st X509;
@@ -64,7 +64,7 @@ class NET_EXPORT TestRootCerts {
   // Returns true if there are no certificates that have been marked trusted.
   bool IsEmpty() const;
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
   bool Contains(CERTCertificate* cert) const;
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   CFArrayRef temporary_roots() const { return temporary_roots_; }
@@ -101,7 +101,7 @@ class NET_EXPORT TestRootCerts {
   // Performs platform-dependent initialization.
   void Init();
 
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
   // It is necessary to maintain a cache of the original certificate trust
   // settings, in order to restore them when Clear() is called.
   class TrustEntry;

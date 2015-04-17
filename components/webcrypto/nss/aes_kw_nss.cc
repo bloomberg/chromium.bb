@@ -46,7 +46,7 @@ Status DoUnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
   // The plaintext length is always 64 bits less than the data size.
   const unsigned int plaintext_length = wrapped_key_data.byte_length() - 8;
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
   // Part of workaround for
   // https://bugzilla.mozilla.org/show_bug.cgi?id=981170. See the explanation
   // later in this function.
@@ -63,7 +63,7 @@ Status DoUnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
   if (!new_key)
     return Status::OperationError();
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
   // Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=981170
   // which was fixed in NSS 3.16.0.
   // If unwrap fails, NSS nevertheless returns a valid-looking PK11SymKey,

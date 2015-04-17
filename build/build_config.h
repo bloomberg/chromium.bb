@@ -61,7 +61,10 @@
 #error Please add support for your platform in build/build_config.h
 #endif
 
-#if defined(USE_OPENSSL) && defined(USE_NSS)
+#if defined(USE_OPENSSL) && defined(USE_NSS_CERTS)
+// TODO(davidben): This constraint compares somewhat orthogonal things and will
+// be fixed when BoringSSL with NSS for certificates is added as a build
+// configuration. See https://crbug.com/462040.
 #error Cannot use both OpenSSL and NSS
 #endif
 

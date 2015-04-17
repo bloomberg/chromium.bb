@@ -97,7 +97,7 @@
 #include "chrome/browser/ui/webui/options/chromeos/user_image_source.h"
 #endif
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
 #include "chrome/browser/ui/webui/options/certificate_manager_handler.h"
 #endif
 
@@ -347,7 +347,7 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
       new chromeos::options::ConsumerManagementHandler(consumer_management);
   AddOptionsPageUIHandler(localized_strings, consumer_management_handler);
 #endif
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
   AddOptionsPageUIHandler(localized_strings,
                           new CertificateManagerHandler(false));
 #endif

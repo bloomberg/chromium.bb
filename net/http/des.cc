@@ -9,7 +9,7 @@
 #if defined(USE_OPENSSL)
 #include <openssl/des.h>
 #include "crypto/openssl_util.h"
-#elif defined(USE_NSS)
+#elif defined(USE_NSS_CERTS)
 #include <nss.h>
 #include <pk11pub.h>
 #include "crypto/nss_util.h"
@@ -100,7 +100,7 @@ void DESEncrypt(const uint8* key, const uint8* src, uint8* hash) {
                   reinterpret_cast<DES_cblock*>(hash), &ks, DES_ENCRYPT);
 }
 
-#elif defined(USE_NSS)
+#elif defined(USE_NSS_CERTS)
 
 void DESEncrypt(const uint8* key, const uint8* src, uint8* hash) {
   CK_MECHANISM_TYPE cipher_mech = CKM_DES_ECB;

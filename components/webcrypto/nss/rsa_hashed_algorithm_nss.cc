@@ -22,7 +22,7 @@ namespace webcrypto {
 
 namespace {
 
-#if defined(USE_NSS) && !defined(OS_CHROMEOS)
+#if defined(USE_NSS_CERTS) && !defined(OS_CHROMEOS)
 Status ErrorRsaPrivateKeyImportNotSupported() {
   return Status::ErrorUnsupported(
       "NSS version must be at least 3.16.2 for RSA private key import. See "
@@ -125,7 +125,7 @@ struct RSAPrivateKey {
 // The system NSS library doesn't have the new PK11_ExportDERPrivateKeyInfo
 // function yet (https://bugzilla.mozilla.org/show_bug.cgi?id=519255). So we
 // provide a fallback implementation.
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
 const SEC_ASN1Template RSAPrivateKeyTemplate[] = {
     {SEC_ASN1_SEQUENCE, 0, NULL, sizeof(RSAPrivateKey)},
     {SEC_ASN1_INTEGER, offsetof(RSAPrivateKey, version)},
@@ -138,7 +138,7 @@ const SEC_ASN1Template RSAPrivateKeyTemplate[] = {
     {SEC_ASN1_INTEGER, offsetof(RSAPrivateKey, exponent2)},
     {SEC_ASN1_INTEGER, offsetof(RSAPrivateKey, coefficient)},
     {0}};
-#endif  // defined(USE_NSS)
+#endif  // defined(USE_NSS_CERTS)
 
 // On success |value| will be filled with data which must be freed by
 // SECITEM_FreeItem(value, PR_FALSE);
@@ -252,7 +252,7 @@ Status ExportKeyPkcs8Nss(SECKEYPrivateKey* key, std::vector<uint8_t>* buffer) {
 
 // TODO(rsleevi): Implement OAEP support according to the spec.
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
   // PK11_ExportDERPrivateKeyInfo isn't available. Use our fallback code.
   const SECOidTag algorithm = SEC_OID_PKCS1_RSA_ENCRYPTION;
   const int kPrivateKeyInfoVersion = 0;
@@ -290,9 +290,9 @@ Status ExportKeyPkcs8Nss(SECKEYPrivateKey* key, std::vector<uint8_t>* buffer) {
   crypto::ScopedSECItem encoded_key(
       SEC_ASN1EncodeItem(NULL, NULL, &private_key_info,
                          SEC_ASN1_GET(SECKEY_PrivateKeyInfoTemplate)));
-#else   // defined(USE_NSS)
+#else   // defined(USE_NSS_CERTS)
   crypto::ScopedSECItem encoded_key(PK11_ExportDERPrivateKeyInfo(key, NULL));
-#endif  // defined(USE_NSS)
+#endif  // defined(USE_NSS_CERTS)
 
   if (!encoded_key.get())
     return Status::OperationError();

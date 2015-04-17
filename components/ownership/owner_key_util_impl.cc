@@ -50,13 +50,13 @@ bool OwnerKeyUtilImpl::ImportPublicKey(std::vector<uint8>* output) {
   return data_read == safe_file_size;
 }
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
 crypto::RSAPrivateKey* OwnerKeyUtilImpl::FindPrivateKeyInSlot(
     const std::vector<uint8>& key,
     PK11SlotInfo* slot) {
   return crypto::RSAPrivateKey::FindFromPublicKeyInfoInSlot(key, slot);
 }
-#endif  // defined(USE_NSS)
+#endif  // defined(USE_NSS_CERTS)
 
 bool OwnerKeyUtilImpl::IsPublicKeyPresent() {
   return base::PathExists(public_key_file_);

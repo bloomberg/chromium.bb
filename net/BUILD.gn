@@ -461,7 +461,7 @@ component("net") {
 
   if (is_ios) {
     # Add back some sources that were otherwise filtered out. iOS additionally
-    # doesn't set USE_NSS but needs some of the files.
+    # doesn't set USE_NSS_CERTS but needs some of the files.
     set_sources_assignment_filter([])
     sources += [
       "base/net_util_mac.cc",

@@ -64,10 +64,10 @@ class URLRequestContextFactory::URLRequestContextGetter
         request_context_.reset(factory_->CreateMediaRequestContext());
       } else {
         request_context_.reset(factory_->CreateSystemRequestContext());
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
         // Set request context used by NSS for Crl requests.
         net::SetURLRequestContextForNSSHttpIO(request_context_.get());
-#endif  // defined(USE_NSS)
+#endif  // defined(USE_NSS_CERTS)
       }
     }
     return request_context_.get();

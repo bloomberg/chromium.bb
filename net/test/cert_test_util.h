@@ -11,7 +11,7 @@
 #include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_certificate.h"
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
 #include "base/memory/scoped_ptr.h"
 
 // From <pk11pub.h>
@@ -30,7 +30,7 @@ namespace net {
 
 class EVRootCAMetadata;
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
 // Imports a private key from file |key_filename| in |dir|. The file must
 // contain a PKCS#8 PrivateKeyInfo in DER encoding. The key is imported to
 // |slot|.

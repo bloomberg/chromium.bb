@@ -135,7 +135,7 @@
 #include "net/ssl/client_cert_store_chromeos.h"
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
 #include "chrome/browser/ui/crypto_module_delegate_nss.h"
 #include "net/ssl/client_cert_store_nss.h"
 #endif
@@ -341,7 +341,7 @@ void StartNSSInitOnIOThread(const std::string& username,
 }
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
 void InitializeAndPassKeygenHandler(
     scoped_ptr<net::KeygenHandler> keygen_handler,
     const base::Callback<void(scoped_ptr<net::KeygenHandler>)>& callback,
@@ -350,7 +350,7 @@ void InitializeAndPassKeygenHandler(
     keygen_handler->set_crypto_module_delegate(delegate.Pass());
   callback.Run(keygen_handler.Pass());
 }
-#endif  // defined(USE_NSS)
+#endif  // defined(USE_NSS_CERTS)
 
 void InvalidateContextGettersOnIO(
     scoped_ptr<ProfileIOData::ChromeURLRequestContextGetterVector> getters) {
@@ -918,7 +918,7 @@ ProfileIOData::ResourceContext::CreateClientCertStore() {
           io_data_->use_system_key_slot(), io_data_->username_hash())),
       base::Bind(&CreateCryptoModuleBlockingPasswordDelegate,
                  chrome::kCryptoModulePasswordClientAuth)));
-#elif defined(USE_NSS)
+#elif defined(USE_NSS_CERTS)
   return scoped_ptr<net::ClientCertStore>(new net::ClientCertStoreNSS(
       base::Bind(&CreateCryptoModuleBlockingPasswordDelegate,
                  chrome::kCryptoModulePasswordClientAuth)));
@@ -942,7 +942,7 @@ void ProfileIOData::ResourceContext::CreateKeygenHandler(
     const GURL& url,
     const base::Callback<void(scoped_ptr<net::KeygenHandler>)>& callback) {
   DCHECK(!callback.is_null());
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
   scoped_ptr<net::KeygenHandler> keygen_handler(
       new net::KeygenHandler(key_size_in_bits, challenge_string, url));
 

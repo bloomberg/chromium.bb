@@ -10,7 +10,7 @@
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
 #include <dlfcn.h>
 #include <secoid.h>
 #endif
@@ -42,7 +42,7 @@ NssRuntimeSupport* NssRuntimeSupport::Get() {
 }
 
 NssRuntimeSupport::NssRuntimeSupport() : internal_slot_does_oaep_(false) {
-#if !defined(USE_NSS)
+#if !defined(USE_NSS_CERTS)
   // Using a bundled version of NSS that is guaranteed to have this symbol.
   pk11_encrypt_func_ = PK11_Encrypt;
   pk11_decrypt_func_ = PK11_Decrypt;

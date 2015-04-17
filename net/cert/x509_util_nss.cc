@@ -194,7 +194,7 @@ bool SignCertificate(
   return true;
 }
 
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
 // Callback for CERT_DecodeCertPackage(), used in
 // CreateOSCertHandlesFromBytes().
 SECStatus PR_CALLBACK CollectCertsCallback(void* arg,
@@ -244,7 +244,7 @@ CERTName* CreateCertNameFromEncoded(PLArenaPool* arena,
   return name.release();
 }
 
-#endif  // defined(USE_NSS) || defined(OS_IOS)
+#endif  // defined(USE_NSS_CERTS) || defined(OS_IOS)
 
 }  // namespace
 
@@ -368,7 +368,7 @@ bool CreateChannelIDEC(crypto::ECPrivateKey* key,
   return true;
 }
 
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
 void ParsePrincipal(CERTName* name, CertPrincipal* principal) {
 // Starting in NSS 3.15, CERTGetNameFunc takes a const CERTName* argument.
 #if NSS_VMINOR >= 15
@@ -631,7 +631,7 @@ std::string GetUniqueNicknameForSlot(const std::string& nickname,
   return new_name;
 }
 
-#endif  // defined(USE_NSS) || defined(OS_IOS)
+#endif  // defined(USE_NSS_CERTS) || defined(OS_IOS)
 
 } // namespace x509_util
 

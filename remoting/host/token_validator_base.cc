@@ -19,7 +19,7 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/ssl/client_cert_store.h"
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
 #include "net/ssl/client_cert_store_nss.h"
 #elif defined(OS_WIN)
 #include "net/ssl/client_cert_store_win.h"
@@ -113,7 +113,7 @@ void TokenValidatorBase::OnCertificateRequested(
   DCHECK_EQ(request_.get(), source);
 
   net::ClientCertStore* client_cert_store;
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
   client_cert_store = new net::ClientCertStoreNSS(
       net::ClientCertStoreNSS::PasswordDelegateFactory());
 #elif defined(OS_WIN)

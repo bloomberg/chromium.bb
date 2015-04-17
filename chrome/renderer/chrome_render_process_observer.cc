@@ -234,7 +234,7 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver()
   // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && defined(USE_NSS)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && defined(USE_NSS_CERTS)
   // On platforms where we use system NSS shared libraries,
   // initialize NSS now because it won't be able to load the .so's
   // after we engage the sandbox.

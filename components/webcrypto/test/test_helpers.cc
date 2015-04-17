@@ -113,7 +113,7 @@ bool SupportsRsaOaep() {
 #else
   crypto::EnsureNSSInit();
 // TODO(eroman): Exclude version test for OS_CHROMEOS
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
   if (!NSS_VersionCheck("3.16.2"))
     return false;
 #endif
@@ -124,7 +124,7 @@ bool SupportsRsaOaep() {
 
 bool SupportsRsaPrivateKeyImport() {
 // TODO(eroman): Exclude version test for OS_CHROMEOS
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
   crypto::EnsureNSSInit();
   if (!NSS_VersionCheck("3.16.2")) {
     LOG(WARNING) << "RSA key import is not supported by this version of NSS. "

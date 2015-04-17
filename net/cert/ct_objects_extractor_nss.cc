@@ -41,7 +41,7 @@ struct NSSCertWrapper {
 };
 
 NSSCertWrapper::NSSCertWrapper(X509Certificate::OSCertHandle cert_handle) {
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
   cert.reset(CERT_DupCertificate(cert_handle));
 #else
   SECItem der_cert;

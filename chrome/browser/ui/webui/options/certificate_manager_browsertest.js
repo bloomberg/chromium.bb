@@ -4,7 +4,7 @@
 
 // Mac and Windows go to native certificate manager, and certificate manager
 // isn't implemented if OpenSSL is used.
-GEN('#if defined(USE_NSS)');
+GEN('#if defined(USE_NSS_CERTS)');
 
 /**
  * TestFixture for certificate manager WebUI testing.
@@ -286,4 +286,4 @@ TEST_F('CertificateManagerWebUITest',
   expectTrue($('caCertsTab-delete').disabled);
 });
 
-GEN('#endif  // defined(USE_NSS)');
+GEN('#endif  // defined(USE_NSS_CERTS)');

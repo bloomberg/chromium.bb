@@ -4,9 +4,9 @@
 
 #include "net/base/keygen_handler.h"
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
 #include "crypto/nss_crypto_module_delegate.h"
-#endif  // defined(USE_NSS)
+#endif  // defined(USE_NSS_CERTS)
 
 namespace net {
 

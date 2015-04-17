@@ -23,7 +23,7 @@
 #include "net/cert/x509_certificate.h"
 #include "url/url_canon.h"
 
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
 #include "net/cert/cert_verify_proc_nss.h"
 #elif defined(USE_OPENSSL_CERTS) && !defined(OS_ANDROID)
 #include "net/cert/cert_verify_proc_openssl.h"
@@ -169,7 +169,7 @@ bool ExaminePublicKeys(const scoped_refptr<X509Certificate>& cert,
 
 // static
 CertVerifyProc* CertVerifyProc::CreateDefault() {
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
   return new CertVerifyProcNSS();
 #elif defined(USE_OPENSSL_CERTS) && !defined(OS_ANDROID)
   return new CertVerifyProcOpenSSL();

@@ -20,7 +20,7 @@
 #include "net/test/test_certificate_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
 #include <cert.h>
 #endif
 
@@ -796,7 +796,7 @@ TEST(X509CertificateTest, FreeNullHandle) {
   X509Certificate::FreeOSCertHandle(NULL);
 }
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
 TEST(X509CertificateTest, GetDefaultNickname) {
   base::FilePath certs_dir = GetTestCertsDirectory();
 

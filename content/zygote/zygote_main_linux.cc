@@ -338,7 +338,7 @@ static void ZygotePreSandboxInit() {
   // cached and there's no more need to access the file system.
   scoped_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
   // NSS libraries are loaded before sandbox is activated. This is to allow
   // successful initialization of NSS which tries to load extra library files.
   crypto::LoadNSSLibraries();

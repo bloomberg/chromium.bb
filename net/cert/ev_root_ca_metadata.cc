@@ -4,7 +4,7 @@
 
 #include "net/cert/ev_root_ca_metadata.h"
 
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
 #include <cert.h>
 #include <pkcs11n.h>
 #include <secerr.h>
@@ -15,13 +15,13 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
 #include "crypto/nss_util.h"
 #endif
 
 namespace net {
 
-#if defined(USE_NSS) || defined(OS_IOS) || defined(OS_WIN)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS) || defined(OS_WIN)
 // Raw metadata.
 struct EVMetadata {
   // kMaxOIDsPerCA is the number of OIDs that we can support per root CA. At
@@ -498,7 +498,7 @@ static const EVMetadata ev_root_ca_metadata[] = {
   }
 };
 
-#endif  // defined(USE_NSS) || defined(OS_IOS) || defined(OS_WIN)
+#endif  // defined(USE_NSS_CERTS) || defined(OS_IOS) || defined(OS_WIN)
 
 static base::LazyInstance<EVRootCAMetadata>::Leaky
     g_ev_root_ca_metadata = LAZY_INSTANCE_INITIALIZER;
@@ -508,7 +508,7 @@ EVRootCAMetadata* EVRootCAMetadata::GetInstance() {
   return g_ev_root_ca_metadata.Pointer();
 }
 
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
 bool EVRootCAMetadata::IsEVPolicyOID(PolicyOID policy_oid) const {
   return policy_oids_.find(policy_oid) != policy_oids_.end();
 }
@@ -654,7 +654,7 @@ bool EVRootCAMetadata::RemoveEVCA(const SHA1HashValue& fingerprint) {
 
 EVRootCAMetadata::EVRootCAMetadata() {
   // Constructs the object from the raw metadata in ev_root_ca_metadata.
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
   crypto::EnsureNSSInit();
 
   for (size_t i = 0; i < arraysize(ev_root_ca_metadata); i++) {

@@ -41,24 +41,24 @@ class NET_EXPORT KeygenHandler {
   // Exposed only for unit tests.
   void set_stores_key(bool store) { stores_key_ = store;}
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
   // Register the delegate to be used to get the token to store the key in, and
   // to get the password if the token is unauthenticated.
   // GenKeyAndSignChallenge runs on a worker thread, so using a blocking
   // password callback is okay here.
   void set_crypto_module_delegate(
       scoped_ptr<crypto::NSSCryptoModuleDelegate> delegate);
-#endif  // defined(USE_NSS)
+#endif  // defined(USE_NSS_CERTS)
 
  private:
   int key_size_in_bits_;  // key size in bits (usually 2048)
   std::string challenge_;  // challenge string sent by server
   GURL url_;  // the URL that requested the key
   bool stores_key_;  // should the generated key-pair be stored persistently?
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
   // The callback for requesting a password to the PKCS#11 token.
   scoped_ptr<crypto::NSSCryptoModuleDelegate> crypto_module_delegate_;
-#endif  // defined(USE_NSS)
+#endif  // defined(USE_NSS_CERTS)
 };
 
 }  // namespace net

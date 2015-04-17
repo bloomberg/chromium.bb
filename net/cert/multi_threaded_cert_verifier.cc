@@ -26,7 +26,7 @@
 #include "net/cert/x509_certificate_net_log_param.h"
 #include "net/log/net_log.h"
 
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
 #include <private/pprthred.h>  // PR_DetachThread
 #endif
 
@@ -263,7 +263,7 @@ class CertVerifierWorker {
                                   crl_set_.get(),
                                   additional_trust_anchors_,
                                   &verify_result_);
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
     // Detach the thread from NSPR.
     // Calling NSS functions attaches the thread to NSPR, which stores
     // the NSPR thread ID in thread-specific data.

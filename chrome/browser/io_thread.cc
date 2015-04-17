@@ -96,7 +96,7 @@
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #endif
 
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
 #include "net/cert_net/nss_ocsp.h"
 #endif
 
@@ -152,7 +152,7 @@ void ObserveKeychainEvents() {
 class SystemURLRequestContext : public net::URLRequestContext {
  public:
   SystemURLRequestContext() {
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
     net::SetURLRequestContextForNSSHttpIO(this);
 #endif
   }
@@ -160,7 +160,7 @@ class SystemURLRequestContext : public net::URLRequestContext {
  private:
   ~SystemURLRequestContext() override {
     AssertNoURLRequests();
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
     net::SetURLRequestContextForNSSHttpIO(NULL);
 #endif
   }
@@ -626,7 +626,7 @@ void IOThread::InitAsync() {
   TRACE_EVENT0("startup", "IOThread::InitAsync");
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
   net::SetMessageLoopForNSSHttpIO();
 #endif
 
@@ -898,7 +898,7 @@ void IOThread::InitAsync() {
 void IOThread::CleanUp() {
   base::debug::LeakTracker<SafeBrowsingURLRequestContext>::CheckForLeaks();
 
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
   net::ShutdownNSSHttpIO();
 #endif
 

@@ -38,7 +38,7 @@ static bool ReadAttribute(SECKEYPrivateKey* key,
   return true;
 }
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
 struct PublicKeyInfoDeleter {
   inline void operator()(CERTSubjectPublicKeyInfo* spki) {
     SECKEY_DestroySubjectPublicKeyInfo(spki);
@@ -67,7 +67,7 @@ crypto::ScopedSECKEYPublicKey GetRSAPublicKey(const std::vector<uint8>& input) {
     return crypto::ScopedSECKEYPublicKey();
   return result.Pass();
 }
-#endif  // defined(USE_NSS)
+#endif  // defined(USE_NSS_CERTS)
 
 }  // namespace
 
@@ -104,7 +104,7 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
       false /* not sensitive */);
 }
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
 // static
 RSAPrivateKey* RSAPrivateKey::CreateSensitive(PK11SlotInfo* slot,
                                               uint16 num_bits) {
@@ -313,7 +313,7 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfoWithParams(
   return result.release();
 }
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
 // static
 RSAPrivateKey* RSAPrivateKey::InitPublicPart(const std::vector<uint8>& input) {
   EnsureNSSInit();
@@ -327,6 +327,6 @@ RSAPrivateKey* RSAPrivateKey::InitPublicPart(const std::vector<uint8>& input) {
 
   return result.release();
 }
-#endif  // defined(USE_NSS)
+#endif  // defined(USE_NSS_CERTS)
 
 }  // namespace crypto

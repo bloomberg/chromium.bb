@@ -110,7 +110,7 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
 #include <dlfcn.h>
 #endif
 
@@ -159,7 +159,7 @@ const int kSendBufferSize = 17 * 1024;
 // overlap with any value of the net::Error range, including net::OK).
 const int kNoPendingReadResult = 1;
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
 typedef SECStatus
 (*CacheOCSPResponseFromSideChannelFunction)(
     CERTCertDBHandle *handle, CERTCertificate *cert, PRTime time,
@@ -2071,7 +2071,7 @@ void SSLClientSocketNSS::Core::UpdateStapledOCSPResponse() {
       ocsp_responses->items[0].len);
 
   if (IsOCSPStaplingSupported()) {
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
     CacheOCSPResponseFromSideChannelFunction cache_ocsp_response =
         GetCacheOCSPResponseFromSideChannelFunction();
 
@@ -2739,7 +2739,7 @@ int SSLClientSocketNSS::Init() {
   EnsureNSSSSLInit();
   if (!NSS_IsInitialized())
     return ERR_UNEXPECTED;
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
   if (ssl_config_.cert_io_enabled) {
     // We must call EnsureNSSHttpIOInit() here, on the IO thread, to get the IO
     // loop by MessageLoopForIO::current().

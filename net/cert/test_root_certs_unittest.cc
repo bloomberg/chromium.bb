@@ -14,7 +14,7 @@
 #include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
 #include <nss.h>
 #endif
 
@@ -68,7 +68,7 @@ TEST(TestRootCertsTest, AddFromFile) {
 // the results of the rest of net_unittests, ensuring that the trust status
 // is properly being set and cleared.
 TEST(TestRootCertsTest, OverrideTrust) {
-#if defined(USE_NSS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
   if (NSS_VersionCheck("3.14.2") && !NSS_VersionCheck("3.15")) {
     // See http://bugzil.la/863947 for details
     LOG(INFO) << "Skipping test for NSS 3.14.2 - NSS 3.15";
@@ -135,7 +135,8 @@ TEST(TestRootCertsTest, OverrideTrust) {
   EXPECT_EQ(bad_verify_result.cert_status, restored_verify_result.cert_status);
 }
 
-#if defined(USE_NSS) || (defined(USE_OPENSSL_CERTS) && !defined(OS_ANDROID))
+#if defined(USE_NSS_CERTS) || \
+    (defined(USE_OPENSSL_CERTS) && !defined(OS_ANDROID))
 TEST(TestRootCertsTest, Contains) {
   // Another test root certificate.
   const char kRootCertificateFile2[] = "2048-rsa-root.pem";

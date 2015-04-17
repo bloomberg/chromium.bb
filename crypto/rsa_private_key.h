@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "crypto/crypto_export.h"
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
 #include "base/gtest_prod_util.h"
 #endif
 
@@ -180,7 +180,7 @@ class CRYPTO_EXPORT RSAPrivateKey {
   static RSAPrivateKey* CreateFromPrivateKeyInfo(
       const std::vector<uint8>& input);
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
   // Create a new random instance in |slot|. Can return NULL if initialization
   // fails.  The created key is permanent and is not exportable in plaintext
   // form.
@@ -241,7 +241,7 @@ class CRYPTO_EXPORT RSAPrivateKey {
   bool ExportPublicKey(std::vector<uint8>* output) const;
 
  private:
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
   FRIEND_TEST_ALL_PREFIXES(RSAPrivateKeyNSSTest, FindFromPublicKey);
   FRIEND_TEST_ALL_PREFIXES(RSAPrivateKeyNSSTest, FailedFindFromPublicKey);
 #endif
@@ -254,7 +254,7 @@ class CRYPTO_EXPORT RSAPrivateKey {
   // Shared helper for Create() and CreateSensitive().
   // TODO(cmasone): consider replacing |permanent| and |sensitive| with a
   //                flags arg created by ORing together some enumerated values.
-  // Note: |permanent| is only supported when USE_NSS is defined.
+  // Note: |permanent| is only supported when USE_NSS_CERTS is defined.
   static RSAPrivateKey* CreateWithParams(PK11SlotInfo* slot,
                                          uint16 num_bits,
                                          bool permanent,
@@ -262,7 +262,7 @@ class CRYPTO_EXPORT RSAPrivateKey {
 
   // Shared helper for CreateFromPrivateKeyInfo() and
   // CreateSensitiveFromPrivateKeyInfo().
-  // Note: |permanent| is only supported when USE_NSS is defined.
+  // Note: |permanent| is only supported when USE_NSS_CERTS is defined.
   static RSAPrivateKey* CreateFromPrivateKeyInfoWithParams(
       PK11SlotInfo* slot,
       const std::vector<uint8>& input,
@@ -270,7 +270,7 @@ class CRYPTO_EXPORT RSAPrivateKey {
       bool sensitive);
 #endif
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
   // Import an existing public key. The format of the public key blob
   // is an X509 SubjectPublicKeyInfo block. This can return NULL if
   // initialization fails.  The caller takes ownership of the returned

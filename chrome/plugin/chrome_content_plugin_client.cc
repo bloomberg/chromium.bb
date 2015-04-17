@@ -12,7 +12,7 @@
 #if defined(OS_WIN)
 #include "base/logging.h"
 #include "base/native_library.h"
-#elif defined(OS_POSIX) && !defined(OS_MACOSX) && defined(USE_NSS)
+#elif defined(OS_POSIX) && !defined(OS_MACOSX) && defined(USE_NSS_CERTS)
 #include "crypto/nss_util.h"
 #endif
 #endif
@@ -31,7 +31,7 @@ void ChromeContentPluginClient::PreSandboxInitialization() {
 #if defined(ENABLE_REMOTING)
 
   // Load crypto libraries for the Chromoting client plugin.
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && defined(USE_NSS)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && defined(USE_NSS_CERTS)
   // On platforms where we use system NSS libraries, the .so's must be loaded
   // before the sandbox is initialized.
   crypto::ForceNSSNoDBInit();

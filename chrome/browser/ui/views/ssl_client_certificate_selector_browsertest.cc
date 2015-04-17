@@ -27,7 +27,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
 #include "crypto/scoped_test_nss_db.h"
 #endif
 
@@ -50,18 +50,18 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
   void SetUpInProcessBrowserTestFixture() override {
     base::FilePath certs_dir = net::GetTestCertsDirectory();
 
-#if defined(USE_NSS)
-    // If USE_NSS, the selector tries to unlock the slot where the private key
-    // of each certificate is stored. If no private key is found, the slot would
-    // be null and the unlock will crash.
+#if defined(USE_NSS_CERTS)
+    // If USE_NSS_CERTS, the selector tries to unlock the slot where the
+    // private key of each certificate is stored. If no private key is found,
+    // the slot would be null and the unlock will crash.
     ASSERT_TRUE(test_nssdb_.is_open());
     client_cert_1_ = net::ImportClientCertAndKeyFromFile(
         certs_dir, "client_1.pem", "client_1.pk8", test_nssdb_.slot());
     client_cert_2_ = net::ImportClientCertAndKeyFromFile(
         certs_dir, "client_2.pem", "client_2.pk8", test_nssdb_.slot());
 #else
-    // No unlock is attempted if !USE_NSS. Thus, there is no need to import a
-    // private key.
+    // No unlock is attempted if !USE_NSS_CERTS. Thus, there is no need to
+    // import a private key.
     client_cert_1_ = net::ImportCertFromFile(certs_dir, "client_1.pem");
     client_cert_2_ = net::ImportCertFromFile(certs_dir, "client_2.pem");
 #endif
@@ -140,7 +140,7 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
   scoped_refptr<StrictMock<SSLClientAuthRequestorMock> > auth_requestor_;
   // The selector will be deleted when a cert is selected or the tab is closed.
   SSLClientCertificateSelector* selector_;
-#if defined(USE_NSS)
+#if defined(USE_NSS_CERTS)
   crypto::ScopedTestNSSDB test_nssdb_;
 #endif
 };
