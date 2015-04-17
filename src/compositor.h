@@ -883,7 +883,7 @@ struct weston_surface_state {
 
 struct weston_surface {
 	struct wl_resource *resource;
-	struct wl_signal destroy_signal;
+	struct wl_signal destroy_signal; /* callback argument: this surface */
 	struct weston_compositor *compositor;
 
 	/** Damage in local coordinates from the client, for tex upload. */

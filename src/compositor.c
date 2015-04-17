@@ -1876,7 +1876,7 @@ weston_surface_destroy(struct weston_surface *surface)
 
 	assert(surface->resource == NULL);
 
-	wl_signal_emit(&surface->destroy_signal, &surface->resource);
+	wl_signal_emit(&surface->destroy_signal, surface);
 
 	assert(wl_list_empty(&surface->subsurface_list_pending));
 	assert(wl_list_empty(&surface->subsurface_list));
@@ -3483,7 +3483,7 @@ subsurface_handle_surface_destroy(struct wl_listener *listener, void *data)
 	struct weston_subsurface *sub =
 		container_of(listener, struct weston_subsurface,
 			     surface_destroy_listener);
-	assert(data == &sub->surface->resource);
+	assert(data == sub->surface);
 
 	/* The protocol object (wl_resource) is left inert. */
 	if (sub->resource)
@@ -3498,7 +3498,7 @@ subsurface_handle_parent_destroy(struct wl_listener *listener, void *data)
 	struct weston_subsurface *sub =
 		container_of(listener, struct weston_subsurface,
 			     parent_destroy_listener);
-	assert(data == &sub->parent->resource);
+	assert(data == sub->parent);
 	assert(sub->surface != sub->parent);
 
 	if (weston_surface_is_mapped(sub->surface))
