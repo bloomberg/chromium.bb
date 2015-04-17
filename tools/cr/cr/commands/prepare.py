@@ -31,14 +31,12 @@ class PrepareCommand(cr.Command):
 
   @classmethod
   def UpdateContext(cls):
-    for preparation in PrepareOut.Plugins():
-      preparation.UpdateContext()
+    PrepareOut.GetActivePlugin().UpdateContext()
 
   @classmethod
   def Prepare(cls):
     cls.UpdateContext()
-    for preparation in PrepareOut.Plugins():
-      preparation.Prepare()
+    PrepareOut.GetActivePlugin().Prepare()
 
 
 class PrepareOut(cr.Plugin, cr.Plugin.Type):
@@ -46,6 +44,18 @@ class PrepareOut(cr.Plugin, cr.Plugin.Type):
 
   See PrepareCommand for details.
   """
+
+  SELECTOR = 'CR_GENERATOR'
+
+  @classmethod
+  def AddArguments(cls, parser):
+    parser.add_argument(
+        '--generator', dest=cls.SELECTOR,
+        choices=cls.Choices(),
+        default=None,
+        help=('Sets the build file generator to use. ' +
+              'Overrides %s.' % cls.SELECTOR)
+    )
 
   def UpdateContext(self):
     """Update the context if needed.

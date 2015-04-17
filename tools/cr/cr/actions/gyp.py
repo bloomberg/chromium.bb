@@ -12,7 +12,7 @@ GYP_DEFINE_PREFIX = 'GYP_DEF_'
 class GypPrepareOut(cr.PrepareOut):
   """A prepare action that runs gyp whenever you select an output directory."""
 
-  ENABLED = cr.Config.From(
+  ACTIVE = cr.Config.From(
       GYP_GENERATORS='ninja',
       GYP_GENERATOR_FLAGS='output_dir={CR_OUT_BASE} config={CR_BUILDTYPE}',
       GYP_DEF_target_arch='{CR_ENVSETUP_ARCH}',

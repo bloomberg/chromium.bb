@@ -11,8 +11,12 @@ import cr
 # The set of variables to store in the per output configuration.
 OUT_CONFIG_VARS = [
     'CR_VERSION',
-    cr.Platform.SELECTOR, cr.BuildType.SELECTOR, cr.Arch.SELECTOR,
-    'CR_OUT_BASE', 'CR_OUT_FULL',
+    cr.Platform.SELECTOR,
+    cr.BuildType.SELECTOR,
+    cr.Arch.SELECTOR,
+    cr.PrepareOut.SELECTOR,
+    'CR_OUT_BASE',
+    'CR_OUT_FULL',
 ]
 
 
@@ -43,6 +47,7 @@ class InitCommand(cr.Command):
     cr.BuildType.AddArguments(parser)
     cr.Arch.AddArguments(parser)
     cr.SelectCommand.AddPrepareArguments(parser)
+    cr.PrepareOut.AddArguments(parser)
     parser.add_argument(
         '-s', '--set', dest='_settings', metavar='settings',
         action='append',
@@ -85,11 +90,15 @@ class InitCommand(cr.Command):
             print 'Matched all of', ','.join(matches)
           exit(1)
         platform = matches[0]
+      generator = cr.context.args.CR_GENERATOR
+      if not generator:
+        generator = 'gyp'
       cr.context.derived.Set(
           CR_OUT_FULL=out,
           CR_OUT_BASE=base,
           CR_PLATFORM=platform,
           CR_BUILDTYPE=buildtype,
+          CR_GENERATOR=generator
       )
     if not 'CR_OUT_BASE' in cr.context:
       cr.context.derived['CR_OUT_BASE'] = 'out_{CR_PLATFORM}'
