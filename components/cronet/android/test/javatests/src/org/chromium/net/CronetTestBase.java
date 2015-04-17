@@ -14,8 +14,6 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.base.PathUtils;
 
-import org.chromium.net.urlconnection.CronetHttpURLConnectionTest;
-
 import java.io.File;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -145,8 +143,8 @@ public class CronetTestBase extends
 
     @Override
     protected void runTest() throws Throwable {
-        if (!getClass().getName().equals(
-                CronetHttpURLConnectionTest.class.getName())) {
+        if (!getClass().getPackage().getName().equals(
+                "org.chromium.net.urlconnection")) {
             super.runTest();
             return;
         }

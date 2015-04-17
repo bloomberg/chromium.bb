@@ -20,6 +20,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -39,7 +41,6 @@ import java.util.regex.Pattern;
  * See {@link CronetTestBase#runTest()} for details.
  */
 public class CronetHttpURLConnectionTest extends CronetTestBase {
-    private CronetTestActivity mActivity;
 
     @Override
     protected void setUp() throws Exception {
@@ -50,7 +51,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
                 1000 * 1024);
         String[] commandLineArgs = {
                 CronetTestActivity.CONFIG_KEY, config.toString()};
-        mActivity = launchCronetTestAppWithUrlAndCommandLineArgs(null,
+        launchCronetTestAppWithUrlAndCommandLineArgs(null,
                 commandLineArgs);
         assertTrue(NativeTestServer.startNativeTestServer(
                 getInstrumentation().getTargetContext()));
@@ -73,6 +74,51 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         assertEquals("OK", urlConnection.getResponseMessage());
         assertEquals("GET", getResponseAsString(urlConnection));
         urlConnection.disconnect();
+    }
+
+    /**
+     * Tests that using reflection to find {@code fixedContentLengthLong} works.
+     */
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunCronetHttpURLConnection
+    public void testSetFixedLengthStreamingModeLong() throws Exception {
+        URL url = new URL(NativeTestServer.getEchoBodyURL());
+        HttpURLConnection connection =
+                (HttpURLConnection) url.openConnection();
+        connection.setDoOutput(true);
+        connection.setRequestMethod("POST");
+        if (Build.VERSION.SDK_INT >= 19) {
+            String dataString = "some very important data";
+            byte[] data = dataString.getBytes();
+            Class<?> c = connection.getClass();
+            Method method = c.getMethod("setFixedLengthStreamingMode",
+                    new Class[] {long.class});
+            method.invoke(connection, (long) data.length);
+            OutputStream out = connection.getOutputStream();
+            out.write(data);
+            assertEquals(200, connection.getResponseCode());
+            assertEquals("OK", connection.getResponseMessage());
+            assertEquals(dataString, getResponseAsString(connection));
+            connection.disconnect();
+        }
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunCronetHttpURLConnection
+    // TODO(xunjieli): Change the test after chunked support is added.
+    public void testPostChunked() throws Exception {
+        URL url = new URL(NativeTestServer.getEchoBodyURL());
+        HttpURLConnection connection =
+                (HttpURLConnection) url.openConnection();
+        connection.setDoOutput(true);
+        connection.setRequestMethod("POST");
+        try {
+            connection.setChunkedStreamingMode(0);
+        } catch (UnsupportedOperationException e) {
+            assertEquals("Chunked mode not supported yet", e.getMessage());
+        }
     }
 
     @SmallTest
@@ -117,8 +163,12 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         NativeTestServer.shutdownNativeTestServer();
         HttpURLConnection secondConnection =
                 (HttpURLConnection) url.openConnection();
+        // Default implementation reports this type of error in connect().
+        // However, since Cronet's wrapper only receives the error in its listener
+        // callback when message loop is running, Cronet's wrapper only knows
+        // about the error when it starts to read response.
         try {
-            secondConnection.connect();
+            secondConnection.getResponseCode();
             fail();
         } catch (IOException e) {
             assertTrue(e instanceof java.net.ConnectException
@@ -139,8 +189,12 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         URL url = new URL("http://0.0.0.0/");
         HttpURLConnection urlConnection =
                 (HttpURLConnection) url.openConnection();
+        // Default implementation reports this type of error in connect().
+        // However, since Cronet's wrapper only receives the error in its listener
+        // callback when message loop is running, Cronet's wrapper only knows
+        // about the error when it starts to read response.
         try {
-            urlConnection.connect();
+            urlConnection.getResponseCode();
             fail();
         } catch (IOException e) {
             assertTrue(e instanceof java.net.ConnectException
@@ -158,8 +212,12 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         URL url = new URL("http://this-weird-host-name-does-not-exist/");
         HttpURLConnection urlConnection =
                 (HttpURLConnection) url.openConnection();
+        // Default implementation reports this type of error in connect().
+        // However, since Cronet's wrapper only receives the error in its listener
+        // callback when message loop is running, Cronet's wrapper only knows
+        // about the error when it starts to read response.
         try {
-            urlConnection.connect();
+            urlConnection.getResponseCode();
             fail();
         } catch (java.net.UnknownHostException e) {
             // Expected.
@@ -220,6 +278,22 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
             fail();
         } catch (Exception e) {
             // Ignored.
+        }
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @CompareDefaultWithCronet
+    public void testMultipleDisconnect() throws Exception {
+        URL url = new URL(NativeTestServer.getEchoMethodURL());
+        HttpURLConnection urlConnection =
+                (HttpURLConnection) url.openConnection();
+        assertEquals(200, urlConnection.getResponseCode());
+        assertEquals("OK", urlConnection.getResponseMessage());
+        assertEquals("GET", getResponseAsString(urlConnection));
+        // Disconnect multiple times should be fine.
+        for (int i = 0; i < 10; i++) {
+            urlConnection.disconnect();
         }
     }
 
@@ -879,13 +953,6 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
 
     private void checkExceptionsAreThrown(HttpURLConnection connection)
             throws Exception {
-        try {
-            connection.connect();
-            fail();
-        } catch (IOException e) {
-            // Expected.
-        }
-
         try {
             connection.getInputStream();
             fail();
