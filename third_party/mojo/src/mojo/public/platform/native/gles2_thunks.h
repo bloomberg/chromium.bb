@@ -30,6 +30,11 @@ struct MojoGLES2ControlThunks {
   // type-unsafe way.
   void* (*GLES2GetGLES2Interface)(MojoGLES2Context context);
   void* (*GLES2GetContextSupport)(MojoGLES2Context context);
+
+  void (*GLES2SignalSyncPoint)(MojoGLES2Context context,
+                               uint32_t sync_point,
+                               MojoGLES2SignalSyncPointCallback callback,
+                               void* closure);
 };
 #pragma pack(pop)
 
@@ -37,13 +42,14 @@ struct MojoGLES2ControlThunks {
 // contain pointers to each of the embedder's MojoGLES2ControlThunks functions.
 inline MojoGLES2ControlThunks MojoMakeGLES2ControlThunks() {
   MojoGLES2ControlThunks gles2_control_thunks = {
-    sizeof(MojoGLES2ControlThunks),
-    MojoGLES2CreateContext,
-    MojoGLES2DestroyContext,
-    MojoGLES2MakeCurrent,
-    MojoGLES2SwapBuffers,
-    MojoGLES2GetGLES2Interface,
-    MojoGLES2GetContextSupport
+      sizeof(MojoGLES2ControlThunks),
+      MojoGLES2CreateContext,
+      MojoGLES2DestroyContext,
+      MojoGLES2MakeCurrent,
+      MojoGLES2SwapBuffers,
+      MojoGLES2GetGLES2Interface,
+      MojoGLES2GetContextSupport,
+      MojoGLES2SignalSyncPoint,
   };
 
   return gles2_control_thunks;

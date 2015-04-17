@@ -14,7 +14,7 @@ abstract class {{interface|name}} {
     {%- endfor -%}
     );
 {%- else %}
-{%- set response_struct = method|response_struct_from_method %}
+{%- set response_struct = method.response_param_struct %}
   Future<{{response_struct|name}}> {{method|name}}(
   {%- for parameter in method.parameters -%}
     {{parameter.kind|dart_type}} {{parameter|name}},
@@ -25,7 +25,7 @@ abstract class {{interface|name}} {
 
 {#--- Interface Constants #}
 {% for constant in interface.constants %}
-  static final {{constant|name}} = {{constant.value|expression_to_text}};
+  static const {{constant|name}} = {{constant.value|expression_to_text}};
 {%-   endfor %}
 
 {#--- Interface Enums #}
@@ -55,7 +55,7 @@ class {{interface|name}}ProxyImpl extends bindings.Proxy {
     switch (message.header.type) {
 {%- for method in interface.methods %}
 {%- if method.response_parameters != None %}
-{%- set response_struct = method|response_struct_from_method %}
+{%- set response_struct = method.response_param_struct %}
       case k{{interface|name}}_{{method|name}}_name:
         var r = {{response_struct|name}}.deserialize(
             message.payload);
@@ -96,7 +96,7 @@ class _{{interface|name}}ProxyCalls implements {{interface|name}} {
   {%- for parameter in method.parameters -%}
       {{parameter.kind|dart_type}} {{parameter|name}}{% if not loop.last %}, {% endif %}
   {%- endfor -%}
-  {%- set request_struct = method|struct_from_method -%}
+  {%- set request_struct = method.param_struct -%}
     ) {
       assert(_proxyImpl.isBound);
       var params = new {{request_struct|name}}();
@@ -106,8 +106,8 @@ class _{{interface|name}}ProxyCalls implements {{interface|name}} {
       _proxyImpl.sendMessage(params, k{{interface|name}}_{{method|name}}_name);
     }
   {% else %}
-  {%- set response_struct = method|response_struct_from_method %}
-  {%- set request_struct = method|struct_from_method %}
+  {%- set response_struct = method.response_param_struct %}
+  {%- set request_struct = method.param_struct %}
     Future<{{response_struct|name}}> {{method|name}}(
   {%- for parameter in method.parameters -%}
       {{parameter.kind|dart_type}} {{parameter|name}},
@@ -186,7 +186,7 @@ class {{interface|name}}Stub extends bindings.Stub {
 
 {% for method in interface.methods %}
 {%- if method.response_parameters != None %}
-{%- set response_struct = method|response_struct_from_method %}
+{%- set response_struct = method.response_param_struct %}
   {{response_struct|name}} _{{response_struct|name}}Factory(
     {%- for param in method.response_parameters -%}
       {{param.kind|dart_type}} {{param|name}}{% if not loop.last %}, {% endif %}
@@ -205,7 +205,7 @@ class {{interface|name}}Stub extends bindings.Stub {
     assert(_impl != null);
     switch (message.header.type) {
 {%- for method in interface.methods %}
-{%- set request_struct = method|struct_from_method %}
+{%- set request_struct = method.param_struct %}
       case k{{interface|name}}_{{method|name}}_name:
         var params = {{request_struct|name}}.deserialize(
             message.payload);
@@ -216,7 +216,7 @@ class {{interface|name}}Stub extends bindings.Stub {
           {%- endfor -%}
         );
 {%- else %}
-{%- set response_struct = method|response_struct_from_method %}
+{%- set response_struct = method.response_param_struct %}
         return _impl.{{method|name}}(
           {%- for parameter in method.parameters -%}
               params.{{parameter|name}},

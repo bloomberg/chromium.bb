@@ -33,14 +33,16 @@ bool {{class_name}}::Validate(const void* data,
 
   switch (object->tag) {
 {%  for field in union.fields %}
-    case {{enum_name}}::{{field.name|upper}}:
-{{ validation_macros.validate_union_field(field, union)|indent(6) }}
+    case {{enum_name}}::{{field.name|upper}}: {
+{{ validation_macros.validate_union_field(field, union)|indent(8) }}
+    }
 {%- endfor %}
-    default:
+    default: {
       ReportValidationError(
           mojo::internal::VALIDATION_ERROR_UNKNOWN_UNION_TAG,
           "unknown tag in {{union.name}}");
       return false;
+    }
   }
 }
 

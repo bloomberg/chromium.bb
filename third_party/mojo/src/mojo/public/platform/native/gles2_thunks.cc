@@ -46,6 +46,14 @@ void* MojoGLES2GetContextSupport(MojoGLES2Context context) {
   return g_control_thunks.GLES2GetContextSupport(context);
 }
 
+void MojoGLES2SignalSyncPoint(MojoGLES2Context context,
+                              uint32_t sync_point,
+                              MojoGLES2SignalSyncPointCallback callback,
+                              void* closure) {
+  assert(g_control_thunks.GLES2SignalSyncPoint);
+  g_control_thunks.GLES2SignalSyncPoint(context, sync_point, callback, closure);
+}
+
 extern "C" THUNK_EXPORT size_t MojoSetGLES2ControlThunks(
     const MojoGLES2ControlThunks* gles2_control_thunks) {
   if (gles2_control_thunks->size >= sizeof(g_control_thunks))

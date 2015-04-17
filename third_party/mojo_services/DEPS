@@ -5,6 +5,7 @@ include_rules = [
   "+mojo",
 
   # internal includes.
+  "+http_server",
   "+geometry",
   "+input_events",
   "+surfaces",

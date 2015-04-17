@@ -5,7 +5,7 @@
 #ifndef SERVICES_HTTP_SERVER_PUBLIC_HTTP_SERVER_UTIL_H_
 #define SERVICES_HTTP_SERVER_PUBLIC_HTTP_SERVER_UTIL_H_
 
-#include "mojo/services/http_server/public/interfaces/http_response.mojom.h"
+#include "http_server/public/interfaces/http_response.mojom.h"
 
 namespace http_server {
 

@@ -13,11 +13,11 @@
 
 
 {% macro declare_request_params(method) %}
-({{declare_params(method|struct_from_method)}})
+({{declare_params(method.param_struct)}})
 {%- if method.response_parameters|is_none_or_empty -%}
 	{{' (err error)'}}
 {%- else -%}
-	{{' '}}({{declare_params(method|response_struct_from_method)}}, err error)
+	{{' '}}({{declare_params(method.response_param_struct)}}, err error)
 {%- endif -%}
 {% endmacro %}
 
@@ -101,13 +101,13 @@ func (p *{{interface|name}}Proxy) Close_proxy() {
 }
 
 {% for method in interface.methods %}
-{{struct_macros.define(method|struct_from_method, False)}}
+{{struct_macros.define(method.param_struct, False)}}
 {%-  if method.response_parameters %}
-{{struct_macros.define(method|response_struct_from_method, False)}}
+{{struct_macros.define(method.response_param_struct, False)}}
 {%-   endif %}
 func (p *{{interface|name}}Proxy) {{method|name}}{{declare_request_params(method)}} {
-	payload := &{{method|struct_from_method|name(False)}}{
-{%   for field in (method|struct_from_method).fields %}
+	payload := &{{method.param_struct|name(False)}}{
+{%   for field in (method.param_struct).fields %}
 		{{field|name(False)}},
 {%   endfor %}
 	}
@@ -130,13 +130,13 @@ func (p *{{interface|name}}Proxy) {{method|name}}{{declare_request_params(method
 		p.Close_proxy()
 		return
 	}
-	var response {{method|response_struct_from_method|name(False)}}
+	var response {{method.response_param_struct|name(False)}}
 	if err = readResult.Message.DecodePayload(&response); err != nil {
 		err = fmt.Errorf("can't decode response: %v", err.Error())
 		p.Close_proxy()
 		return
 	}
-{%   for field in (method|response_struct_from_method).fields %}
+{%   for field in (method.response_param_struct).fields %}
 	{{field|name(False)}} = response.{{field|name(False)}}
 {%   endfor %}
 {% else %}
@@ -163,21 +163,21 @@ func (s *{{interface|name(False)}}Stub) Accept(message *bindings.Message) (err e
 	switch message.Header.Type {
 {% for method in interface.methods %}
 	case {{interface|name(False)}}_{{method|name}}_Name:
-		var request {{method|struct_from_method|name(False)}}
+		var request {{method.param_struct|name(False)}}
 		if err := message.DecodePayload(&request); err != nil {
 			return fmt.Errorf("can't decode request: %v", err.Error())
 		}
 {%   if method.response_parameters %}
-		var response {{method|response_struct_from_method|name(False)}}
+		var response {{method.response_param_struct|name(False)}}
 {%   endif %}
 {%   if method.response_parameters|is_none_or_empty %}
 		err = s.impl.{{method|name}}(
 {%-   else -%}
-{%	 for field in (method|response_struct_from_method).fields %}
+{%	 for field in (method.response_param_struct).fields %}
 		response.{{field|name(False)}}{{', '}}
 {%-	endfor -%}err = s.impl.{{method|name}}(
 {%-   endif -%}
-{%-	for field in (method|struct_from_method).fields -%}
+{%-	for field in (method.param_struct).fields -%}
 			request.{{field|name(False)}}{% if not loop.last %}, {% endif %}
 {%-	endfor -%}
 		)

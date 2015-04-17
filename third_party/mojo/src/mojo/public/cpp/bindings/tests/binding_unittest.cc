@@ -5,6 +5,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/utility/run_loop.h"
+#include "mojo/public/interfaces/bindings/tests/sample_interfaces.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/sample_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,6 +26,19 @@ class ServiceImpl : public sample::Service {
     callback.Run(1);
   }
   void GetPort(InterfaceRequest<sample::Port> port) override {}
+};
+
+class IntegerAccessorImpl : public sample::IntegerAccessor {
+ public:
+  IntegerAccessorImpl() {}
+  ~IntegerAccessorImpl() override {}
+
+ private:
+  // sample::IntegerAccessor implementation.
+  void GetInteger(const GetIntegerCallback& callback) override {
+    callback.Run(1, sample::ENUM_VALUE);
+  }
+  void SetInteger(int64_t data, sample::Enum type) override {}
 };
 
 class RecordingErrorHandler : public ErrorHandler {
@@ -48,20 +62,20 @@ class BindingTest : public testing::Test {
 
  protected:
   RecordingErrorHandler handler_;
-  ServiceImpl impl_;
   Environment env_;
   RunLoop loop_;
 };
 
 // Tests that destroying a mojo::Binding closes the bound message pipe handle.
 TEST_F(BindingTest, DestroyClosesMessagePipe) {
+  ServiceImpl impl;
   sample::ServicePtr ptr;
   auto request = GetProxy(&ptr);
   ptr.set_error_handler(&handler_);
   bool called = false;
   auto called_cb = [&called](int32_t result) { called = true; };
   {
-    Binding<sample::Service> binding(&impl_, request.Pass());
+    Binding<sample::Service> binding(&impl, request.Pass());
     ptr->Frobinate(nullptr, sample::Service::BAZ_OPTIONS_REGULAR, nullptr,
                    called_cb);
     loop_.RunUntilIdle();
@@ -83,8 +97,9 @@ TEST_F(BindingTest, DestroyClosesMessagePipe) {
 
 // Tests that explicitly calling Unbind followed by rebinding works.
 TEST_F(BindingTest, Unbind) {
+  ServiceImpl impl;
   sample::ServicePtr ptr;
-  Binding<sample::Service> binding(&impl_, GetProxy(&ptr));
+  Binding<sample::Service> binding(&impl, GetProxy(&ptr));
 
   bool called = false;
   auto called_cb = [&called](int32_t result) { called = true; };
@@ -110,6 +125,13 @@ TEST_F(BindingTest, Unbind) {
                  called_cb);
   loop_.RunUntilIdle();
   EXPECT_TRUE(called);
+}
+
+TEST_F(BindingTest, SetInterfacePtrVersion) {
+  IntegerAccessorImpl impl;
+  sample::IntegerAccessorPtr ptr;
+  Binding<sample::IntegerAccessor> binding(&impl, &ptr);
+  EXPECT_EQ(3u, ptr.version());
 }
 
 }  // namespace

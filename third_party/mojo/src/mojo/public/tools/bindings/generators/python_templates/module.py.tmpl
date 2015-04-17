@@ -42,11 +42,9 @@ class {{interface|name}}(object):
       {
         'name': '{{method|name}}',
         'ordinal': {{method.ordinal}},
-{%    set request_struct = method|struct_from_method %}
-        'parameters': {{struct_descriptor(request_struct)|indent(8)}},
+        'parameters': {{struct_descriptor(method.param_struct)|indent(8)}},
 {%    if method.response_parameters != None %}
-{%      set response_struct = method|response_struct_from_method %}
-        'responses': {{struct_descriptor(response_struct)|indent(8)}},
+        'responses': {{struct_descriptor(method.response_param_struct)|indent(8)}},
 {%    endif %}
       },
 {%  endfor %}

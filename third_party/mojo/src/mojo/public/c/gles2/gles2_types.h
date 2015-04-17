@@ -17,6 +17,7 @@ extern "C" {
 
 typedef struct MojoGLES2ContextPrivate* MojoGLES2Context;
 typedef void (*MojoGLES2ContextLost)(void* closure);
+typedef void (*MojoGLES2SignalSyncPointCallback)(void* closure);
 
 #ifdef __cplusplus
 }  // extern "C"

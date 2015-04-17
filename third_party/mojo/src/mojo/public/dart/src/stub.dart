@@ -33,8 +33,15 @@ abstract class Stub extends core.MojoEventStreamListener {
     assert(result.status.isOk || result.status.isResourceExhausted);
 
     // Prepare the response.
-    var message = new ServiceMessage.fromMessage(new Message(bytes, handles));
-    var responseFuture = _isClosing ? null : handleMessage(message);
+    var message;
+    var responseFuture;
+    try {
+      message = new ServiceMessage.fromMessage(new Message(bytes, handles));
+      responseFuture = _isClosing ? null : handleMessage(message);
+    } catch (e, s) {
+      handles.forEach((h) => h.close());
+      rethrow;
+    }
 
     // If there's a response, send it.
     if (responseFuture != null) {

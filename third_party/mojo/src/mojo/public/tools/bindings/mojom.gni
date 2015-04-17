@@ -113,6 +113,7 @@ template("mojom") {
       "$generator_root/pylib/mojom/__init__.py",
       "$generator_root/pylib/mojom/error.py",
       "$generator_root/pylib/mojom/generate/__init__.py",
+      "$generator_root/pylib/mojom/generate/constant_resolver.py",
       "$generator_root/pylib/mojom/generate/data.py",
       "$generator_root/pylib/mojom/generate/generator.py",
       "$generator_root/pylib/mojom/generate/module.py",
@@ -181,7 +182,6 @@ template("mojom") {
                 generator_js_outputs + generator_python_outputs
       args = [
         "{{source}}",
-        "--dart_mojo_root=${mojo_root}",
         "--use_bundled_pylibs",
         "-d",
         rebase_path("//", root_build_dir),
@@ -336,14 +336,8 @@ template("mojom") {
       output,
     ]
 
-    invoker_import_from = ""
-    if (defined(invoker.import_from)) {
-      invoker_import_from =
-          rebase_path(invoker.import_from, "$root_build_dir/../../", ".")
-    }
-
     rebase_import_from =
-        rebase_path("$root_build_dir/gen/$invoker_import_from", root_build_dir)
+        rebase_path("$root_build_dir/gen/dart-gen", root_build_dir)
     if (defined(invoker.sources)) {
       rebase_inputs = rebase_path(inputs, root_build_dir)
     }
@@ -355,7 +349,7 @@ template("mojom") {
       "--output=$rebase_output",
     ]
     if (defined(invoker.sources)) {
-      args += [ "--inputs=$rebase_inputs" ]
+      args += [ "--link-inputs=$rebase_inputs" ]
     }
   }
 

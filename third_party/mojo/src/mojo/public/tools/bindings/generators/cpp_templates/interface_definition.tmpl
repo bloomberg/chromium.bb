@@ -31,6 +31,7 @@ p_{{param.name}}
 
 {#--- Begin #}
 const char* {{class_name}}::Name_ = "{{namespace_as_string}}::{{class_name}}";
+const uint32_t {{class_name}}::Version_ = {{interface.version}};
 {#--- Constants #}
 {%  for constant in interface.constants %}
 const {{constant.kind|cpp_pod_type}} {{interface.name}}::{{constant.name}} = {{constant|constant_value}};
@@ -58,7 +59,7 @@ bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
           message->mutable_payload());
 
   params->DecodePointersAndHandles(message->mutable_handles());
-  {{alloc_params(method|response_struct_from_method)}}
+  {{alloc_params(method.response_param_struct)}}
   callback_.Run({{pass_params(method.response_parameters)}});
   return true;
 }
@@ -74,7 +75,7 @@ bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
 {%- for method in interface.methods %}
 {%-   set message_name =
           "internal::k%s_%s_Name"|format(interface.name, method.name) %}
-{%-   set params_struct = method|struct_from_method %}
+{%-   set params_struct = method.param_struct %}
 {%-   set params_description =
           "%s.%s request"|format(interface.name, method.name) %}
 void {{proxy_name}}::{{method.name}}(
@@ -108,7 +109,7 @@ void {{proxy_name}}::{{method.name}}(
 {%-   if method.response_parameters != None %}
 {%-     set message_name =
             "internal::k%s_%s_Name"|format(interface.name, method.name) %}
-{%-     set response_params_struct = method|response_struct_from_method %}
+{%-     set response_params_struct = method.response_param_struct %}
 {%-     set params_description =
             "%s.%s response"|format(interface.name, method.name) %}
 class {{class_name}}_{{method.name}}_ProxyToResponder
@@ -176,7 +177,7 @@ bool {{class_name}}Stub::Accept(mojo::Message* message) {
               message->mutable_payload());
 
       params->DecodePointersAndHandles(message->mutable_handles());
-      {{alloc_params(method|struct_from_method)|indent(4)}}
+      {{alloc_params(method.param_struct)|indent(4)}}
       // A null |sink_| means no implementation was bound.
       assert(sink_);
       sink_->{{method.name}}({{pass_params(method.parameters)}});
@@ -207,7 +208,7 @@ bool {{class_name}}Stub::AcceptWithResponder(
           new {{class_name}}_{{method.name}}_ProxyToResponder(
               message->request_id(), responder);
       {{class_name}}::{{method.name}}Callback callback(runnable);
-      {{alloc_params(method|struct_from_method)|indent(4)}}
+      {{alloc_params(method.param_struct)|indent(4)}}
       // A null |sink_| means no implementation was bound.
       assert(sink_);
       sink_->{{method.name}}(

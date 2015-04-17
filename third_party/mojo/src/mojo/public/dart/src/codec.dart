@@ -8,7 +8,7 @@ int align(int size) => size + (kAlignment - (size % kAlignment)) % kAlignment;
 
 const int kAlignment = 8;
 const int kSerializedHandleSize = 4;
-const int kSerializedInterfaceSize = 8;  // 4-byte handle + 4-byte version
+const int kSerializedInterfaceSize = 8; // 4-byte handle + 4-byte version
 const int kPointerSize = 8;
 // TODO(yzshen): In order to work with other bindings which still interprets
 // the |version| field as |num_fields|, set it to version 2 for now.
@@ -380,11 +380,10 @@ class Encoder {
       encodeNullPointer(offset, isArrayNullable(nullability));
       return;
     }
-    var encoder = encoderForArray(
-        elementSize, value.length, offset, expectedLength);
+    var encoder =
+        encoderForArray(elementSize, value.length, offset, expectedLength);
     for (int i = 0; i < value.length; ++i) {
-      int elementOffset =
-          ArrayDataHeader.kHeaderSize + elementSize * i;
+      int elementOffset = ArrayDataHeader.kHeaderSize + elementSize * i;
       elementEncoder(
           encoder, value[i], elementOffset, isElementNullable(nullability));
     }
@@ -489,6 +488,7 @@ class _Validator {
   final int _numberOfHandles;
   int _minNextClaimedHandle = 0;
   int _minNextMemory = 0;
+  List<int> _skippedIndices = [];
 
   _Validator(this._maxMemory, this._numberOfHandles);
 
@@ -498,6 +498,9 @@ class _Validator {
     }
     if (handle >= _numberOfHandles) {
       throw new MojoCodecError('Trying to access non present handle.');
+    }
+    for (int i = _minNextClaimedHandle; i < handle; i++) {
+      _skippedIndices.add(i);
     }
     _minNextClaimedHandle = handle + 1;
   }
@@ -539,6 +542,9 @@ class Decoder {
 
   ByteData get _buffer => _message.buffer;
   List<core.MojoHandle> get _handles => _message.handles;
+  List<core.MojoHandle> get excessHandles => new List.from(_message.handles
+      .getRange(_validator._minNextClaimedHandle, _message.handles.length))
+    ..addAll(_validator._skippedIndices.map((i) => _message.handles[i]));
 
   int decodeInt8(int offset) => _buffer.getInt8(_base + offset);
   int decodeUint8(int offset) => _buffer.getUint8(_base + offset);

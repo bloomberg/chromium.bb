@@ -91,9 +91,9 @@ try {
 {%   for method in interface.methods %}
 {%     if (with_response and method.response_parameters != None) or
         (not with_response and method.response_parameters == None) %}
-{%       set request_struct = method|struct_from_method %}
+{%       set request_struct = method.param_struct %}
 {%       if with_response %}
-{%         set response_struct = method|response_struct_from_method %}
+{%         set response_struct = method.response_param_struct %}
 {%       endif %}
         case {{method|method_ordinal_name}}: {
 {%       if method.parameters %}
@@ -162,7 +162,7 @@ class {{interface|name}}_Internal {
 
         @Override
         public void {{method|name}}({{declare_request_params(method)}}) {
-{%   set request_struct = method|struct_from_method %}
+{%   set request_struct = method.param_struct %}
             {{request_struct|name}} _message = new {{request_struct|name}}();
 {%   for param in method.parameters %}
             _message.{{param|name}} = {{param|name}};
@@ -175,7 +175,7 @@ class {{interface|name}}_Internal {
                                     {{method|method_ordinal_name}},
                                     {{flags_for_method(method, True)}},
                                     0)),
-                    new {{method|response_struct_from_method|name}}ForwardToCallback(callback));
+                    new {{method.response_param_struct|name}}ForwardToCallback(callback));
 {%   else %}
             getMessageReceiver().accept(
                     _message.serializeWithHeader(
@@ -205,9 +205,9 @@ class {{interface|name}}_Internal {
     }
 {% for method in interface.methods %}
 
-    {{ struct_def(method|struct_from_method, True)|indent(4) }}
+    {{ struct_def(method.param_struct, True)|indent(4) }}
 {%   if method.response_parameters != None %}
-{%   set response_struct = method|response_struct_from_method %}
+{%   set response_struct = method.response_param_struct %}
 
     {{ struct_def(response_struct, True)|indent(4) }}
 
