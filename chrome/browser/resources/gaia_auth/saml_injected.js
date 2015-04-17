@@ -162,7 +162,7 @@
 
       // Use an invalid char for URL as delimiter to concatenate page url and
       // password field index to construct a unique ID for the password field.
-      var passwordId = this.pageURL_ + '|' + index;
+      var passwordId = this.pageURL_.split('#')[0].split('?')[0] + '|' + index;
       this.channel_.send({
         name: 'updatePassword',
         id: passwordId,
