@@ -281,6 +281,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_LEGACY_STROKE_CURVES
 #endif
 
+#ifndef    SK_SUPPORT_LEGACY_COLOR32_MATH
+#   define SK_SUPPORT_LEGACY_COLOR32_MATH
+#endif
+
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
 /* In some places Skia can use static initializers for global initialization,
