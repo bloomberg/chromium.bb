@@ -150,8 +150,7 @@ bool GbmSurface::OnSwapBuffersAsync(const SwapCompletionCallback& callback) {
   }
 
   // The primary buffer is a special case.
-  if (window_delegate_->GetController())
-    window_delegate_->GetController()->QueueOverlayPlane(OverlayPlane(primary));
+  window_delegate_->QueueOverlayPlane(OverlayPlane(primary));
 
   if (!GbmSurfaceless::OnSwapBuffersAsync(
           base::Bind(&GbmSurface::OnSwapBuffersCallback,

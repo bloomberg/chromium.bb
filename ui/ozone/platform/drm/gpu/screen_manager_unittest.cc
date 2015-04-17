@@ -121,8 +121,8 @@ TEST_F(ScreenManagerTest, CheckDuplicateConfiguration) {
       drm_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
       kDefaultMode);
 
-  // Should reuse existing framebuffer.
-  EXPECT_EQ(framebuffer, drm_->current_framebuffer());
+  // Should not hold onto buffers.
+  EXPECT_NE(framebuffer, drm_->current_framebuffer());
 
   EXPECT_TRUE(screen_manager_->GetDisplayController(GetPrimaryBounds()));
   EXPECT_FALSE(screen_manager_->GetDisplayController(GetSecondaryBounds()));
@@ -254,8 +254,8 @@ TEST_F(ScreenManagerTest, ReuseFramebufferIfDisabledThenReEnabled) {
       drm_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
       kDefaultMode);
 
-  // Should reuse existing framebuffer.
-  EXPECT_EQ(framebuffer, drm_->current_framebuffer());
+  // Buffers are released when disabled.
+  EXPECT_NE(framebuffer, drm_->current_framebuffer());
 }
 
 TEST_F(ScreenManagerTest, CheckMirrorModeAfterBeginReEnabled) {
@@ -394,6 +394,36 @@ TEST_F(ScreenManagerTest, ShouldDissociateWindowOnControllerRemoval) {
   screen_manager_->RemoveDisplayController(drm_, kPrimaryCrtc);
 
   EXPECT_FALSE(screen_manager_->GetWindow(window_id)->GetController());
+
+  window = screen_manager_->RemoveWindow(1);
+  window->Shutdown();
+}
+
+TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasNoBuffer) {
+  ui::DrmDeviceManager device_manager(drm_);
+  scoped_ptr<ui::DrmWindow> window(
+      new ui::DrmWindow(1, &device_manager, screen_manager_.get()));
+  window->Initialize();
+  window->OnBoundsChanged(GetPrimaryBounds());
+  screen_manager_->AddWindow(1, window.Pass());
+
+  screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);
+  screen_manager_->ConfigureDisplayController(
+      drm_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
+
+  EXPECT_TRUE(screen_manager_->GetWindow(1)->GetController());
+  // There is a buffer after initial config.
+  uint32_t framebuffer = drm_->current_framebuffer();
+  EXPECT_NE(0U, framebuffer);
+
+  screen_manager_->ConfigureDisplayController(
+      drm_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
+
+  // There is a new buffer after we configured with the same mode but no
+  // pending frames on the window.
+  EXPECT_NE(framebuffer, drm_->current_framebuffer());
 
   window = screen_manager_->RemoveWindow(1);
   window->Shutdown();

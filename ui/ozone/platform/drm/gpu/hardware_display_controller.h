@@ -98,13 +98,8 @@ class OZONE_EXPORT HardwareDisplayController
   // framebuffer for |primary| with |mode|.
   bool Modeset(const OverlayPlane& primary, drmModeModeInfo mode);
 
-  // Reconfigures the CRTC with the current surface and mode.
-  bool Enable();
-
   // Disables the CRTC.
   void Disable();
-
-  void QueueOverlayPlane(const OverlayPlane& plane);
 
   // Schedules the |overlays|' framebuffers to be displayed on the next vsync
   // event. The event will be posted on the graphics card file descriptor |fd_|
@@ -122,7 +117,9 @@ class OZONE_EXPORT HardwareDisplayController
   // called again before the page flip occurrs.
   //
   // Returns true if the page flip was successfully registered, false otherwise.
-  bool SchedulePageFlip(bool is_sync, const base::Closure& callback);
+  bool SchedulePageFlip(const OverlayPlaneList& plane_list,
+                        bool is_sync,
+                        const base::Closure& callback);
 
   // Set the hardware cursor to show the contents of |surface|.
   bool SetCursor(const scoped_refptr<ScanoutBuffer>& buffer);

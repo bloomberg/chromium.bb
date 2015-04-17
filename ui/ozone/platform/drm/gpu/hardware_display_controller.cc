@@ -67,45 +67,34 @@ bool HardwareDisplayController::Modeset(const OverlayPlane& primary,
   return status;
 }
 
-bool HardwareDisplayController::Enable() {
-  TRACE_EVENT0("drm", "HDC::Enable");
-  DCHECK(!current_planes_.empty());
-
-  const OverlayPlane* primary = nullptr;
-  // Use the last scheduled buffer to modeset to preserve request order.
-  if (!requests_.empty())
-    primary = OverlayPlane::GetPrimaryPlane(requests_.back().planes);
-  else
-    primary = OverlayPlane::GetPrimaryPlane(current_planes_);
-
-  return Modeset(*primary, mode_);
-}
-
 void HardwareDisplayController::Disable() {
   TRACE_EVENT0("drm", "HDC::Disable");
   for (size_t i = 0; i < crtc_controllers_.size(); ++i)
     crtc_controllers_[i]->Disable();
 
+  // Don't hold onto any requests because we don't track fron buffer while
+  // disabled.
+  while (requests_.size())
+    ProcessPageFlipRequest();
+
+  current_planes_.clear();
+
   is_disabled_ = true;
 }
 
-void HardwareDisplayController::QueueOverlayPlane(const OverlayPlane& plane) {
-  pending_planes_.push_back(plane);
-}
-
 bool HardwareDisplayController::SchedulePageFlip(
+    const OverlayPlaneList& plane_list,
     bool is_sync,
     const base::Closure& callback) {
   TRACE_EVENT0("drm", "HDC::SchedulePageFlip");
 
   // Ignore requests with no planes to schedule.
-  if (pending_planes_.empty()) {
+  if (plane_list.empty()) {
     callback.Run();
     return true;
   }
 
-  requests_.push_back(PageFlipRequest(pending_planes_, is_sync, callback));
-  pending_planes_.clear();
+  requests_.push_back(PageFlipRequest(plane_list, is_sync, callback));
 
   // A request is being serviced right now.
   if (HasPendingPageFlips())

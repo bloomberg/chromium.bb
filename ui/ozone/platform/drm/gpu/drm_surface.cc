@@ -65,16 +65,13 @@ void DrmSurface::ResizeCanvas(const gfx::Size& viewport_size) {
 void DrmSurface::PresentCanvas(const gfx::Rect& damage) {
   DCHECK(base::MessageLoopForUI::IsCurrent());
 
-  HardwareDisplayController* controller = window_delegate_->GetController();
-  if (!controller)
-    return;
-
   DCHECK(buffers_[front_buffer_ ^ 1].get());
-  controller->QueueOverlayPlane(OverlayPlane(buffers_[front_buffer_ ^ 1]));
+  window_delegate_->QueueOverlayPlane(
+      OverlayPlane(buffers_[front_buffer_ ^ 1]));
 
   UpdateNativeSurface(damage);
-  controller->SchedulePageFlip(false /* is_sync */,
-                               base::Bind(&base::DoNothing));
+  window_delegate_->SchedulePageFlip(false /* is_sync */,
+                                     base::Bind(&base::DoNothing));
 
   // Update our front buffer pointer.
   front_buffer_ ^= 1;

@@ -51,7 +51,8 @@ DrmWindow::DrmWindow(gfx::AcceleratedWidget widget,
       controller_(NULL),
       cursor_frontbuffer_(0),
       cursor_frame_(0),
-      cursor_frame_delay_ms_(0) {
+      cursor_frame_delay_ms_(0),
+      last_swap_sync_(false) {
 }
 
 DrmWindow::~DrmWindow() {
@@ -114,6 +115,28 @@ void DrmWindow::MoveCursor(const gfx::Point& location) {
 
   if (controller_)
     controller_->MoveCursor(location);
+}
+
+void DrmWindow::QueueOverlayPlane(const OverlayPlane& plane) {
+  pending_planes_.push_back(plane);
+}
+
+bool DrmWindow::SchedulePageFlip(bool is_sync, const base::Closure& callback) {
+  last_submitted_planes_.clear();
+  last_submitted_planes_.swap(pending_planes_);
+  last_swap_sync_ = is_sync;
+
+  if (controller_) {
+    return controller_->SchedulePageFlip(last_submitted_planes_, is_sync,
+                                         callback);
+  }
+
+  callback.Run();
+  return true;
+}
+
+const OverlayPlane* DrmWindow::GetLastModesetBuffer() {
+  return OverlayPlane::GetPrimaryPlane(last_submitted_planes_);
 }
 
 void DrmWindow::ResetCursor(bool bitmap_only) {
