@@ -481,7 +481,8 @@ all_tests = {
 }
 
 
-def SaveResults(environment_tests_results, environment_save_path):
+def SaveResults(environment_tests_results, environment_save_path,
+                save_only_failures):
   """Save the test results in an xml file.
 
   Args:
@@ -495,9 +496,10 @@ def SaveResults(environment_tests_results, environment_save_path):
   if environment_save_path:
     xml = "<result>"
     for (name, test_type, success, failure_log) in environment_tests_results:
-      xml += (
-          "<test name='{0}' successful='{1}' type='{2}'>{3}</test>".format(
-              name, success, test_type, failure_log))
+      if not (save_only_failures and success):
+        xml += (
+            "<test name='{0}' successful='{1}' type='{2}'>{3}</test>".format(
+                name, success, test_type, failure_log))
     xml += "</result>"
     with open(environment_save_path, "w") as save_file:
       save_file.write(xml)
@@ -560,6 +562,10 @@ def main():
   parser.add_argument("--save-path", action="store", dest="save_path",
                       help="Write the results in a file.")
   parser.add_argument("test", help="Test to be run.")
+  parser.add_argument("--save-only-failures",
+                      help="Only save logs for failing tests.",
+                      dest="save_only_failures", action="store_true",
+                      default=False)
 
   args = parser.parse_args()
 
@@ -579,7 +585,8 @@ def main():
       args.chrome_path, args.chromedriver_path, args.profile_path,
       args.passwords_path, args.test, WebsiteTest.TEST_TYPE_SAVE_AND_AUTOFILL)
 
-  SaveResults(tests_results, save_path)
+  SaveResults(tests_results, save_path,
+              save_only_failures=args.save_only_failures)
 
 if __name__ == "__main__":
   main()
