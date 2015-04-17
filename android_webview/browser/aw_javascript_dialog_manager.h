@@ -29,7 +29,7 @@ class AwJavaScriptDialogManager : public content::JavaScriptDialogManager {
                              const DialogClosedCallback& callback) override;
   void CancelActiveAndPendingDialogs(
       content::WebContents* web_contents) override;
-  void WebContentsDestroyed(content::WebContents* web_contents) override;
+  void ResetDialogState(content::WebContents* web_contents) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AwJavaScriptDialogManager);

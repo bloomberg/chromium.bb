@@ -35,7 +35,7 @@ class JavaScriptDialogHelper : public content::JavaScriptDialogManager {
                               const base::string16* prompt_override) override;
   void CancelActiveAndPendingDialogs(
       content::WebContents* web_contents) override;
-  void WebContentsDestroyed(content::WebContents* web_contents) override;
+  void ResetDialogState(content::WebContents* web_contents) override;
 
  private:
   void OnPermissionResponse(

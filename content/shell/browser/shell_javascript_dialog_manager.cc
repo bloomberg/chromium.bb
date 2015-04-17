@@ -114,8 +114,7 @@ void ShellJavaScriptDialogManager::CancelActiveAndPendingDialogs(
 #endif
 }
 
-void ShellJavaScriptDialogManager::WebContentsDestroyed(
-    WebContents* web_contents) {
+void ShellJavaScriptDialogManager::ResetDialogState(WebContents* web_contents) {
 }
 
 void ShellJavaScriptDialogManager::DialogClosed(ShellJavaScriptDialog* dialog) {

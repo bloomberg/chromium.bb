@@ -36,7 +36,7 @@ class ShellJavaScriptDialogManager : public JavaScriptDialogManager {
 
   void CancelActiveAndPendingDialogs(WebContents* web_contents) override;
 
-  void WebContentsDestroyed(WebContents* web_contents) override;
+  void ResetDialogState(WebContents* web_contents) override;
 
   // Called by the ShellJavaScriptDialog when it closes.
   void DialogClosed(ShellJavaScriptDialog* dialog);

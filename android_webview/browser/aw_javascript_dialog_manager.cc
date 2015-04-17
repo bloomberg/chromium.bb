@@ -58,7 +58,7 @@ void AwJavaScriptDialogManager::CancelActiveAndPendingDialogs(
     content::WebContents* web_contents) {
 }
 
-void AwJavaScriptDialogManager::WebContentsDestroyed(
+void AwJavaScriptDialogManager::ResetDialogState(
     content::WebContents* web_contents) {
 }
 

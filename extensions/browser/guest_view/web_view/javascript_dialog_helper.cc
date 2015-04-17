@@ -91,7 +91,7 @@ void JavaScriptDialogHelper::CancelActiveAndPendingDialogs(
     content::WebContents* web_contents) {
 }
 
-void JavaScriptDialogHelper::WebContentsDestroyed(
+void JavaScriptDialogHelper::ResetDialogState(
     content::WebContents* web_contents) {
 }
 

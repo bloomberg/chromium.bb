@@ -55,9 +55,8 @@ class CONTENT_EXPORT JavaScriptDialogManager {
   // Cancels all active and pending dialogs for the given WebContents.
   virtual void CancelActiveAndPendingDialogs(WebContents* web_contents) = 0;
 
-  // The given WebContents is being destroyed; discards any saved state tied
-  // to it.
-  virtual void WebContentsDestroyed(WebContents* web_contents) = 0;
+  // Reset any saved state tied to the given WebContents.
+  virtual void ResetDialogState(WebContents* web_contents) = 0;
 
   virtual ~JavaScriptDialogManager() {}
 };

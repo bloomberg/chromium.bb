@@ -370,7 +370,7 @@ WebContentsImpl::~WebContentsImpl() {
 
   // Clear out any JavaScript state.
   if (dialog_manager_)
-    dialog_manager_->WebContentsDestroyed(this);
+    dialog_manager_->ResetDialogState(this);
 
   if (color_chooser_info_.get())
     color_chooser_info_->chooser->End();
@@ -4064,9 +4064,11 @@ void WebContentsImpl::UpdateRenderViewSizeForRenderManager() {
 
 void WebContentsImpl::CancelModalDialogsForRenderManager() {
   // We need to cancel modal dialogs when doing a process swap, since the load
-  // deferrer would prevent us from swapping out.
+  // deferrer would prevent us from swapping out. We also clear the state
+  // because this is a cross-process navigation, which means that it's a new
+  // site that should not have to pay for the sins of its predecessor.
   if (dialog_manager_)
-    dialog_manager_->CancelActiveAndPendingDialogs(this);
+    dialog_manager_->ResetDialogState(this);
 }
 
 void WebContentsImpl::NotifySwappedFromRenderManager(RenderFrameHost* old_host,

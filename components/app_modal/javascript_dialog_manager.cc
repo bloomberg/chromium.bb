@@ -128,6 +128,16 @@ void JavaScriptDialogManager::RunBeforeUnloadDialog(
     const base::string16& message_text,
     bool is_reload,
     const DialogClosedCallback& callback) {
+  ChromeJavaScriptDialogExtraData* extra_data =
+      &javascript_dialog_extra_data_[web_contents];
+
+  if (extra_data->suppress_javascript_messages_) {
+    // If a site harassed the user enough for them to put it on mute, then it
+    // lost its privilege to deny unloading.
+    callback.Run(true, base::string16());
+    return;
+  }
+
   const base::string16 title = l10n_util::GetStringUTF16(is_reload ?
       IDS_BEFORERELOAD_MESSAGEBOX_TITLE : IDS_BEFOREUNLOAD_MESSAGEBOX_TITLE);
   const base::string16 footer = l10n_util::GetStringUTF16(is_reload ?
@@ -174,7 +184,7 @@ bool JavaScriptDialogManager::HandleJavaScriptDialog(
   return true;
 }
 
-void JavaScriptDialogManager::WebContentsDestroyed(
+void JavaScriptDialogManager::ResetDialogState(
     content::WebContents* web_contents) {
   CancelActiveAndPendingDialogs(web_contents);
   javascript_dialog_extra_data_.erase(web_contents);
