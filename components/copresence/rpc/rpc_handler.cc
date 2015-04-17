@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,7 +46,7 @@ const char RpcHandler::kReportRequestRpcName[] = "report";
 namespace {
 
 const int kTokenLoggingSuffix = 5;
-const int kInvalidTokenExpiryTimeMinutes = 10;
+const int kInvalidTokenExpiryTimeMs = 10 * 60 * 1000;  // 10 minutes.
 const int kMaxInvalidTokens = 10000;
 const char kRegisterDeviceRpcName[] = "registerdevice";
 const char kDefaultCopresenceServer[] =
@@ -60,6 +60,7 @@ std::string ToUrlSafe(std::string token) {
   base::ReplaceChars(token, "/", "_", &token);
   return token;
 }
+
 
 // Logging
 
@@ -103,11 +104,12 @@ const std::string LoggingStrForToken(const std::string& auth_token) {
 
   std::string token_suffix = auth_token.substr(
       auth_token.length() - kTokenLoggingSuffix, kTokenLoggingSuffix);
-  return "token ..." + token_suffix;
+  return base::StringPrintf("token ...%s", token_suffix.c_str());
 }
 
 
 // Request construction
+// TODO(ckehoe): Move these into a separate file?
 
 template <typename T>
 BroadcastScanConfiguration GetBroadcastScanConfig(const T& msg) {
@@ -165,19 +167,19 @@ void AddTokenToRequest(const AudioToken& token, ReportRequest* request) {
 // Public functions.
 
 RpcHandler::RpcHandler(CopresenceDelegate* delegate,
-                       DirectiveHandler* directive_handler,
                        CopresenceStateImpl* state,
+                       DirectiveHandler* directive_handler,
                        GCMHandler* gcm_handler,
                        const MessagesCallback& new_messages_callback,
                        const PostCallback& server_post_callback)
     : delegate_(delegate),
-      directive_handler_(directive_handler),
       state_(state),
+      directive_handler_(directive_handler),
       gcm_handler_(gcm_handler),
       new_messages_callback_(new_messages_callback),
       server_post_callback_(server_post_callback),
       invalid_audio_token_cache_(
-          base::TimeDelta::FromMinutes(kInvalidTokenExpiryTimeMinutes),
+          base::TimeDelta::FromMilliseconds(kInvalidTokenExpiryTimeMs),
           kMaxInvalidTokens) {
     DCHECK(delegate_);
     DCHECK(directive_handler_);
@@ -195,7 +197,8 @@ RpcHandler::RpcHandler(CopresenceDelegate* delegate,
   }
 
 RpcHandler::~RpcHandler() {
-  // TODO(ckehoe): Cancel the GCM callback?
+  // Do not use |directive_handler_| or |gcm_handler_| here.
+  // They will already have been destructed.
   for (HttpPost* post : pending_posts_)
     delete post;
 }
@@ -255,16 +258,15 @@ void RpcHandler::SendReportRequest(scoped_ptr<ReportRequest> request,
 
   AddPlayingTokens(request.get());
 
-  request->set_allocated_header(CreateRequestHeader(app_id, device_id));
-  server_post_callback_.Run(delegate_->GetRequestContext(),
-                            kReportRequestRpcName,
-                            delegate_->GetAPIKey(app_id),
-                            auth_token,
-                            make_scoped_ptr<MessageLite>(request.release()),
-                            // On destruction, this request will be cancelled.
-                            base::Bind(&RpcHandler::ReportResponseHandler,
-                                       base::Unretained(this),
-                                       status_callback));
+  SendServerRequest(kReportRequestRpcName,
+                    device_id,
+                    app_id,
+                    authenticated,
+                    request.Pass(),
+                    // On destruction, this request will be cancelled.
+                    base::Bind(&RpcHandler::ReportResponseHandler,
+                               base::Unretained(this),
+                               status_callback));
 }
 
 void RpcHandler::ReportTokens(const std::vector<AudioToken>& tokens) {
@@ -295,7 +297,7 @@ RpcHandler::PendingRequest::PendingRequest(scoped_ptr<ReportRequest> report,
 
 RpcHandler::PendingRequest::~PendingRequest() {}
 
-void RpcHandler::RegisterDevice(const bool authenticated) {
+void RpcHandler::RegisterDevice(bool authenticated) {
   DVLOG(2) << "Sending " << (authenticated ? "authenticated" : "anonymous")
            << " registration to server.";
 
@@ -326,25 +328,22 @@ void RpcHandler::RegisterDevice(const bool authenticated) {
 
   bool gcm_pending = authenticated && gcm_handler_ && gcm_id_.empty();
   pending_registrations_.insert(authenticated);
-  request->set_allocated_header(CreateRequestHeader(
-     // The device is empty on first registration.
-     // When re-registering to pass on the GCM ID, it will be present.
-     std::string(), delegate_->GetDeviceId(authenticated)));
-  if (authenticated)
-    DCHECK(!auth_token_.empty());
-  server_post_callback_.Run(delegate_->GetRequestContext(),
-                            kRegisterDeviceRpcName,
-                            std::string(),
-                            authenticated ? auth_token_ : std::string(),
-                            make_scoped_ptr<MessageLite>(request.release()),
-                            // On destruction, this request will be cancelled.
-                            base::Bind(&RpcHandler::RegisterResponseHandler,
-                                       base::Unretained(this),
-                                       authenticated,
-                                       gcm_pending));
+  SendServerRequest(
+      kRegisterDeviceRpcName,
+      // The device is empty on first registration.
+      // When re-registering to pass on the GCM ID, it will be present.
+      delegate_->GetDeviceId(authenticated),
+      std::string(),  // app ID
+      authenticated,
+      request.Pass(),
+      base::Bind(&RpcHandler::RegisterResponseHandler,
+                 // On destruction, this request will be cancelled.
+                 base::Unretained(this),
+                 authenticated,
+                 gcm_pending));
 }
 
-void RpcHandler::ProcessQueuedRequests(const bool authenticated) {
+void RpcHandler::ProcessQueuedRequests(bool authenticated) {
   // Track requests that are not in this auth state.
   ScopedVector<PendingRequest> still_pending_requests;
 
@@ -433,13 +432,13 @@ void RpcHandler::RegisterResponseHandler(
     int http_status_code,
     const std::string& response_data) {
   if (completed_post) {
-    size_t elements_erased = pending_posts_.erase(completed_post);
-    DCHECK_GT(elements_erased, 0u);
+    int elements_erased = pending_posts_.erase(completed_post);
+    DCHECK_GT(elements_erased, 0);
     delete completed_post;
   }
 
-  size_t registrations_completed = pending_registrations_.erase(authenticated);
-  DCHECK_GT(registrations_completed, 0u);
+  int registrations_completed = pending_registrations_.erase(authenticated);
+  DCHECK_GT(registrations_completed, 0);
 
   RegisterDeviceResponse response;
   const std::string token_str =
@@ -470,8 +469,8 @@ void RpcHandler::ReportResponseHandler(const StatusCallback& status_callback,
                                        int http_status_code,
                                        const std::string& response_data) {
   if (completed_post) {
-    size_t elements_erased = pending_posts_.erase(completed_post);
-    DCHECK_GT(elements_erased, 0u);
+    int elements_erased = pending_posts_.erase(completed_post);
+    DCHECK(elements_erased);
     delete completed_post;
   }
 
@@ -515,8 +514,7 @@ void RpcHandler::ReportResponseHandler(const StatusCallback& status_callback,
       directive_handler_->AddDirective(directive);
 
     for (const Token& token : update_response.token()) {
-      if (state_)
-        state_->UpdateTokenStatus(token.id(), token.status());
+      state_->UpdateTokenStatus(token.id(), token.status());
       switch (token.status()) {
         case VALID:
           // TODO(rkc/ckehoe): Store the token in a |valid_token_cache_| with a
@@ -591,6 +589,25 @@ RequestHeader* RpcHandler::CreateRequestHeader(
   header->set_allocated_device_fingerprint(fingerprint);
 
   return header;
+}
+
+template <class T>
+void RpcHandler::SendServerRequest(
+    const std::string& rpc_name,
+    const std::string& device_id,
+    const std::string& app_id,
+    bool authenticated,
+    scoped_ptr<T> request,
+    const PostCleanupCallback& response_handler) {
+  request->set_allocated_header(CreateRequestHeader(app_id, device_id));
+  if (authenticated)
+    DCHECK(!auth_token_.empty());
+  server_post_callback_.Run(delegate_->GetRequestContext(),
+                            rpc_name,
+                            delegate_->GetAPIKey(app_id),
+                            authenticated ? auth_token_ : std::string(),
+                            make_scoped_ptr<MessageLite>(request.release()),
+                            response_handler);
 }
 
 void RpcHandler::SendHttpPost(net::URLRequestContextGetter* url_context_getter,

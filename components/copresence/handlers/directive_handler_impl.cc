@@ -21,16 +21,14 @@ namespace copresence {
 
 // Public functions.
 
-DirectiveHandlerImpl::DirectiveHandlerImpl()
-    : DirectiveHandlerImpl(make_scoped_ptr(new AudioDirectiveHandlerImpl(
-                               DirectivesCallback()))) {}
-
 DirectiveHandlerImpl::DirectiveHandlerImpl(
     const DirectivesCallback& update_directives_callback)
-    : DirectiveHandlerImpl(make_scoped_ptr(new AudioDirectiveHandlerImpl(
+    : DirectiveHandlerImpl(update_directives_callback,
+                           make_scoped_ptr(new AudioDirectiveHandlerImpl(
                                update_directives_callback))) {}
 
 DirectiveHandlerImpl::DirectiveHandlerImpl(
+    const DirectivesCallback& update_directives_callback,
     scoped_ptr<AudioDirectiveHandler> audio_handler)
     : audio_handler_(audio_handler.Pass()),
       is_started_(false) {}
