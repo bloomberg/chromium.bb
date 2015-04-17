@@ -169,3 +169,54 @@ MathJax.InputJax.TeX;
  * @typedef {Object}
  */
 function mediaWiki() {}
+
+
+/**
+ * This is the definition of the type that's returned from the PDF plug-in.
+ * @constructor
+ */
+var PDFAccessibilityJSONReply = function() {};
+
+/**
+ * Whether the PDF has finished loading or not.
+ * @type {boolean}
+ */
+PDFAccessibilityJSONReply.prototype.loaded;
+
+/**
+ * Whether the PDF allows accessible text access. Unfortunately PDFs can
+ * mark themselves as not copyable even for accessibility.
+ * @type {boolean}
+ */
+PDFAccessibilityJSONReply.prototype.copyable;
+
+/**
+ * The number of pages in the PDF.
+ * @type {number}
+ */
+PDFAccessibilityJSONReply.prototype.numberOfPages;
+
+/**
+ * The height of each PDF page in points.
+ * @type {number}
+ */
+PDFAccessibilityJSONReply.prototype.height;
+
+/**
+ * The width of each PDF page in points.
+ * @type {number}
+ */
+PDFAccessibilityJSONReply.prototype.width;
+
+/**
+ * The text boxes in the PDF, this is where most of the content is returned.
+ * Each text box has a bounding box (left, top, width, height) and
+ * each of these contains an array of nodes of type 'text' or 'url'.
+ * @type {Array<
+ *           {left: number, top: number, width: number, height: number,
+ *            textNodes: Array<
+ *                {type: string, text: string, url: string}>
+ *           }>
+ *       }
+ */
+PDFAccessibilityJSONReply.prototype.textBox;
