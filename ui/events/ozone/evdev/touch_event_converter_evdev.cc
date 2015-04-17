@@ -152,9 +152,10 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
 
   if (has_mt_) {
     for (size_t i = 0; i < events_.size(); ++i) {
-      events_[i].x = info.GetAbsMtSlotValue(ABS_MT_POSITION_X, i);
-      events_[i].y = info.GetAbsMtSlotValue(ABS_MT_POSITION_Y, i);
-      events_[i].tracking_id = info.GetAbsMtSlotValue(ABS_MT_TRACKING_ID, i);
+      events_[i].x = info.GetAbsMtSlotValueWithDefault(ABS_MT_POSITION_X, i, 0);
+      events_[i].y = info.GetAbsMtSlotValueWithDefault(ABS_MT_POSITION_Y, i, 0);
+      events_[i].tracking_id =
+          info.GetAbsMtSlotValueWithDefault(ABS_MT_TRACKING_ID, i, -1);
       events_[i].touching = (events_[i].tracking_id >= 0);
       events_[i].slot = i;
 
@@ -168,8 +169,8 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
           info.GetAbsMtSlotValueWithDefault(ABS_MT_TOUCH_MAJOR, i, 0) / 2.0f;
       events_[i].radius_y =
           info.GetAbsMtSlotValueWithDefault(ABS_MT_TOUCH_MINOR, i, 0) / 2.0f;
-      events_[i].pressure =
-          ScalePressure(info.GetAbsMtSlotValue(ABS_MT_PRESSURE, i));
+      events_[i].pressure = ScalePressure(
+          info.GetAbsMtSlotValueWithDefault(ABS_MT_PRESSURE, i, 0));
     }
   } else {
     // TODO(spang): Add key state to EventDeviceInfo to allow initial contact.
