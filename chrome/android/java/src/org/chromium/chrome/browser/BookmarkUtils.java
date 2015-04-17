@@ -45,7 +45,7 @@ public class BookmarkUtils {
     public static final String REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB =
             "REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB";
     private static final int INSET_DIMENSION_FOR_TOUCHICON = 1;
-    private static final int TOUCHICON_BORDER_RADII = 10;
+    private static final int TOUCHICON_BORDER_RADII_DP = 4;
     private static final int GENERATED_ICON_SIZE_DP = 40;
     private static final int GENERATED_ICON_ROUNDED_CORNERS_DP = 2;
     private static final int GENERATED_ICON_FONT_SIZE_DP = 16;
@@ -184,7 +184,7 @@ public class BookmarkUtils {
         canvas.drawBitmap(touchIcon, src, iconBounds, paint);
         // Convert dp to px.
         int borderRadii = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                TOUCHICON_BORDER_RADII, context.getResources().getDisplayMetrics());
+                TOUCHICON_BORDER_RADII_DP, context.getResources().getDisplayMetrics());
         Path path = new Path();
         path.setFillType(Path.FillType.INVERSE_WINDING);
         RectF rect = new RectF(iconBounds);
