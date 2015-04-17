@@ -65,6 +65,7 @@
     'sync_driver.gypi',
     'translate.gypi',
     'ui_zoom.gypi',
+    'undo.gypi',
     'update_client.gypi',
     'url_fixer.gypi',
     'url_matcher.gypi',

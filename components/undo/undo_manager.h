@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UNDO_UNDO_MANAGER_H_
-#define CHROME_BROWSER_UNDO_UNDO_MANAGER_H_
+#ifndef COMPONENTS_UNDO_UNDO_MANAGER_H_
+#define COMPONENTS_UNDO_UNDO_MANAGER_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -131,4 +131,4 @@ class UndoManager {
   DISALLOW_COPY_AND_ASSIGN(UndoManager);
 };
 
-#endif  // CHROME_BROWSER_UNDO_UNDO_MANAGER_H_
+#endif  // COMPONENTS_UNDO_UNDO_MANAGER_H_

@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UNDO_BOOKMARK_UNDO_SERVICE_H_
-#define CHROME_BROWSER_UNDO_BOOKMARK_UNDO_SERVICE_H_
+#ifndef COMPONENTS_UNDO_BOOKMARK_UNDO_SERVICE_H_
+#define COMPONENTS_UNDO_BOOKMARK_UNDO_SERVICE_H_
 
 #include <map>
 
 #include "base/scoped_observer.h"
-#include "chrome/browser/undo/bookmark_renumber_observer.h"
-#include "chrome/browser/undo/undo_manager.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/undo/bookmark_renumber_observer.h"
+#include "components/undo/undo_manager.h"
 
 namespace bookmarks {
 class BookmarkModel;
@@ -77,4 +77,4 @@ class BookmarkUndoService : public bookmarks::BaseBookmarkModelObserver,
   DISALLOW_COPY_AND_ASSIGN(BookmarkUndoService);
 };
 
-#endif  // CHROME_BROWSER_UNDO_BOOKMARK_UNDO_SERVICE_H_
+#endif  // COMPONENTS_UNDO_BOOKMARK_UNDO_SERVICE_H_

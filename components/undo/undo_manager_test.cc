@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/auto_reset.h"
-#include "chrome/browser/undo/undo_manager.h"
-#include "chrome/browser/undo/undo_manager_observer.h"
-#include "chrome/browser/undo/undo_operation.h"
+#include "components/undo/undo_manager.h"
+#include "components/undo/undo_manager_observer.h"
+#include "components/undo/undo_operation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

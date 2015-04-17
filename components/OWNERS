@@ -256,10 +256,13 @@ per-file translate_strings.grdp=toyoshim@chromium.org
 
 per-file startup_metric_utils.gypi=jeremy@chromium.org
 
+per-file undo.gypi=sky@chromium.org
+per-file undo.gypi=tom.cassiotis@gmail.com
 per-file undo_strings.grdp=sky@chromium.org
 per-file undo_strings.grdp=tom.cassiotis@gmail.com
 
 # For refactoring only during componentization of //chrome/browser/undo.
+per-file undo.gypi=sdefresne@chromium.org
 per-file undo_strings.grdp=sdefresne@chromium.org
 
 per-file user_manager.gypi=antrim@chromium.org

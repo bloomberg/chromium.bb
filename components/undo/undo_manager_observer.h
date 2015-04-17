@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UNDO_UNDO_MANAGER_OBSERVER_H_
-#define CHROME_BROWSER_UNDO_UNDO_MANAGER_OBSERVER_H_
+#ifndef COMPONENTS_UNDO_UNDO_MANAGER_OBSERVER_H_
+#define COMPONENTS_UNDO_UNDO_MANAGER_OBSERVER_H_
 
 // Observer for the UndoManager.
 class UndoManagerObserver {
@@ -15,4 +15,4 @@ class UndoManagerObserver {
   virtual ~UndoManagerObserver() {}
 };
 
-#endif  // CHROME_BROWSER_UNDO_UNDO_MANAGER_OBSERVER_H_
+#endif  // COMPONENTS_UNDO_UNDO_MANAGER_OBSERVER_H_

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/undo/undo_manager.h"
+#include "components/undo/undo_manager.h"
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
-#include "chrome/browser/undo/undo_manager_observer.h"
-#include "chrome/browser/undo/undo_operation.h"
+#include "components/undo/undo_manager_observer.h"
+#include "components/undo/undo_operation.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 

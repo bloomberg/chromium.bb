@@ -5,8 +5,8 @@
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/undo/bookmark_undo_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/undo/bookmark_undo_service.h"
 
 // static
 BookmarkUndoService* BookmarkUndoServiceFactory::GetForProfile(

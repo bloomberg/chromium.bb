@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/undo/bookmark_undo_utils.h"
+#include "components/undo/bookmark_undo_utils.h"
 
-#include "chrome/browser/undo/bookmark_undo_service.h"
-#include "chrome/browser/undo/undo_manager.h"
+#include "components/undo/bookmark_undo_service.h"
+#include "components/undo/undo_manager.h"
 
 // ScopedSuspendBookmarkUndo --------------------------------------------------
 

@@ -162,6 +162,10 @@
       'favicon/content/content_favicon_driver_unittest.cc',
       'favicon/core/favicon_handler_unittest.cc',
     ],
+    'undo_unittest_sources': [
+      'undo/bookmark_undo_service_test.cc',
+      'undo/undo_manager_test.cc',
+    ],
 
     # Note: GN tests converted to here, need to do the rest.
     'audio_modem_unittest_sources': [
@@ -649,6 +653,7 @@
         '<@(suggestions_unittest_sources)',
         '<@(sync_driver_unittest_sources)',
         '<@(translate_unittest_sources)',
+        '<@(undo_unittest_sources)',
         '<@(update_client_unittest_sources)',
         '<@(url_fixer_unittest_sources)',
         '<@(url_matcher_unittest_sources)',
@@ -759,6 +764,7 @@
         'components.gyp:translate_core_common',
         'components.gyp:translate_core_language_detection',
         'components.gyp:ui_zoom',
+        'components.gyp:undo_component',
         'components.gyp:update_client',
         'components.gyp:update_client_test_support',
         'components.gyp:url_fixer',

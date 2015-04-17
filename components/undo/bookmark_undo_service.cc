@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/undo/bookmark_undo_service.h"
+#include "components/undo/bookmark_undo_service.h"
 
-#include "chrome/browser/undo/bookmark_renumber_observer.h"
-#include "chrome/browser/undo/undo_operation.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/browser/scoped_group_bookmark_actions.h"
+#include "components/undo/bookmark_renumber_observer.h"
+#include "components/undo/undo_operation.h"
 #include "grit/components_strings.h"
 
 using bookmarks::BookmarkModel;
