@@ -2158,9 +2158,10 @@ def MakeGTestEnv(env):
   # Create an environment to run unit tests using Gtest.
   gtest_env = env.Clone()
 
-  # This became necessary for the arm cross TC v4.6
-  # but probable applies to all new gcc TCs
-  gtest_env.Append(LINKFLAGS=['-pthread'])
+  if gtest_env['NACL_BUILD_FAMILY'] != 'TRUSTED' or not gtest_env.Bit('mac'):
+    # This became necessary for the arm cross TC v4.6 but probable applies
+    # to all new gcc TCs.  MacOS does not have this switch.
+    gtest_env.Append(LINKFLAGS=['-pthread'])
 
   # Define compile-time flag that communicates that we are compiling in the test
   # environment (rather than for the TCB).
@@ -2532,10 +2533,14 @@ def MakeUnixLikeEnv(platform=None):
   if not unix_like_env.Bit('clang'):
     unix_like_env.Append(CCFLAGS=['--param', 'ssp-buffer-size=4'])
 
+  if unix_like_env.Bit('werror'):
+    unix_like_env.Append(LINKFLAGS=['-Werror'])
+
   if unix_like_env.Bit('enable_tmpfs_redirect_var'):
     unix_like_env.Append(CPPDEFINES=[['NACL_ENABLE_TMPFS_REDIRECT_VAR', '1']])
   else:
     unix_like_env.Append(CPPDEFINES=[['NACL_ENABLE_TMPFS_REDIRECT_VAR', '0']])
+
   return unix_like_env
 
 
@@ -2821,10 +2826,20 @@ def MakeGenericLinuxEnv(platform=None):
   # noexecstack: ensure that the executable does not get a PT_GNU_STACK
   #              header that causes the kernel to set the READ_IMPLIES_EXEC
   #              personality flag, which disables NX page protection.
-  linux_env.Prepend(
-      CPPDEFINES=[['-D_FORTIFY_SOURCE', '2']],
-      LINKFLAGS=['-pie', '-Wl,-z,relro', '-Wl,-z,now', '-Wl,-z,noexecstack'],
-      )
+  linux_env.Prepend(CPPDEFINES=[['-D_FORTIFY_SOURCE', '2']])
+  # By default SHLINKFLAGS uses $LINKFLAGS, but we do not want -pie
+  # in $SHLINKFLAGS, only in $LINKFLAGS.  So move LINKFLAGS over to
+  # COMMON_LINKFLAGS, and add the "hardening" options there.  Then
+  # make both LINKFLAGS and SHLINKFLAGS refer to that, and add -pie
+  # only to LINKFLAGS.
+  linux_env.Replace(COMMON_LINKFLAGS=linux_env['LINKFLAGS'],
+                    LINKFLAGS=['$COMMON_LINKFLAGS'])
+  linux_env.FilterOut(SHLINKFLAGS=['$LINKFLAGS'])
+  linux_env.Prepend(SHLINKFLAGS=['$COMMON_LINKFLAGS'])
+  linux_env.Prepend(COMMON_LINKFLAGS=['-Wl,-z,relro',
+                                      '-Wl,-z,now',
+                                      '-Wl,-z,noexecstack'])
+  linux_env.Prepend(LINKFLAGS=['-pie'])
   # The ARM toolchain has a linker that doesn't handle the code its
   # compiler generates under -fPIE.
   if linux_env.Bit('build_arm') or linux_env.Bit('build_mips32'):
@@ -2929,7 +2944,8 @@ nacl_env = nacl_env.Clone(
     RPATHLINKSUFFIX = '',
 
     LIBS = [],
-    LINKFLAGS = ['${RPATH_LINK_FLAGS}'],
+    LINKFLAGS = ['${RPATH_LINK_FLAGS}'] + (['-Werror'] if nacl_env.Bit('werror')
+                                           else []),
 
     # These are settings for in-tree, non-browser tests to use.
     # They use libraries that circumvent the IRT-based implementations
