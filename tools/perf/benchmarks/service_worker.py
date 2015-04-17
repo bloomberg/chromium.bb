@@ -173,8 +173,8 @@ class _ServiceWorkerMicroBenchmarkMeasurement(page_test.PageTest):
         browser_process, 'IOThread', filter_text , results)
 
 
-# TODO(simonhatch): Temporarily disabling (http://crbug.com/433943)
-@benchmark.Disabled
+# TODO(ksakamoto): Disabled due to Android One failure. crbug.com/469841
+@benchmark.Disabled('android')
 class ServiceWorkerPerfTest(benchmark.Benchmark):
   """Performance test on public applications using ServiceWorker"""
   test = _ServiceWorkerMeasurement
