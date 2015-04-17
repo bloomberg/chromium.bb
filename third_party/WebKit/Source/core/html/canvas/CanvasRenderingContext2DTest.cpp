@@ -153,8 +153,14 @@ public:
 
 //============================================================================
 
-class MockCanvasObserver : public CanvasObserver {
+class MockCanvasObserver : public NoBaseWillBeGarbageCollectedFinalized<MockCanvasObserver>, public CanvasObserver {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MockCanvasObserver);
 public:
+    static PassOwnPtrWillBeRawPtr<MockCanvasObserver> create()
+    {
+        return adoptPtrWillBeNoop(new MockCanvasObserver);
+    }
+
     virtual ~MockCanvasObserver() { }
     MOCK_METHOD2(canvasChanged, void(HTMLCanvasElement*, const FloatRect&));
     MOCK_METHOD1(canvasResized, void(HTMLCanvasElement*));
@@ -539,16 +545,16 @@ TEST_F(CanvasRenderingContext2DTest, FallbackWithLargeState)
 TEST_F(CanvasRenderingContext2DTest, CanvasObserver)
 {
     createContext(NonOpaque);
-    MockCanvasObserver observer;
-    canvasElement().addObserver(&observer);
+    OwnPtrWillBeRawPtr<MockCanvasObserver> observer = MockCanvasObserver::create();
+    canvasElement().addObserver(observer.get());
 
     // The canvasChanged notification must be immediate, and not deferred until paint time
     // because offscreen canvases, which are not painted, also need to emit notifications.
-    EXPECT_CALL(observer, canvasChanged(&canvasElement(), FloatRect(0, 0, 1, 1))).Times(1);
+    EXPECT_CALL(*observer, canvasChanged(&canvasElement(), FloatRect(0, 0, 1, 1))).Times(1);
     context2d()->fillRect(0, 0, 1, 1);
-    Mock::VerifyAndClearExpectations(&observer);
+    Mock::VerifyAndClearExpectations(observer.get());
 
-    canvasElement().removeObserver(&observer);
+    canvasElement().removeObserver(observer.get());
 }
 
 } // unnamed namespace
