@@ -101,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(ActivityLogPrerenderTest, TestScriptInjected) {
 
   const gfx::Size kSize(640, 480);
   scoped_ptr<prerender::PrerenderHandle> prerender_handle(
-      prerender_manager->AddPrerenderFromLocalPredictor(
+      prerender_manager->AddPrerenderFromOmnibox(
           url,
           web_contents->GetController().GetDefaultSessionStorageNamespace(),
           kSize));

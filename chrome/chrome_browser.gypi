@@ -584,8 +584,6 @@
       'browser/prerender/prerender_link_manager.h',
       'browser/prerender/prerender_link_manager_factory.cc',
       'browser/prerender/prerender_link_manager_factory.h',
-      'browser/prerender/prerender_local_predictor.cc',
-      'browser/prerender/prerender_local_predictor.h',
       'browser/prerender/prerender_manager.cc',
       'browser/prerender/prerender_manager.h',
       'browser/prerender/prerender_manager_factory.cc',

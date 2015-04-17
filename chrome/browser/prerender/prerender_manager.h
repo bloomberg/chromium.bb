@@ -17,7 +17,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
-#include "chrome/browser/predictors/logged_in_predictor_table.h"
 #include "chrome/browser/prerender/prerender_config.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
@@ -88,8 +87,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     CLEAR_MAX = 0x1 << 2
   };
 
-  typedef predictors::LoggedInPredictorTable::LoggedInStateMap LoggedInStateMap;
-
   // ID indicating that no experiment is active.
   static const uint8 kNoExperiment = 0;
 
@@ -124,11 +121,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // tab at the time the prerender is generated from the omnibox. Returns a
   // caller-owned PrerenderHandle*, or NULL.
   PrerenderHandle* AddPrerenderFromOmnibox(
-      const GURL& url,
-      content::SessionStorageNamespace* session_storage_namespace,
-      const gfx::Size& size);
-
-  PrerenderHandle* AddPrerenderFromLocalPredictor(
       const GURL& url,
       content::SessionStorageNamespace* session_storage_namespace,
       const gfx::Size& size);
@@ -271,17 +263,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // provided URL.
   void RecordNavigation(const GURL& url);
 
-  // Updates the LoggedInPredictor state to reflect that a login has likely
-  // on the URL provided.
-  void RecordLikelyLoginOnURL(const GURL& url);
-
-  // Checks if the LoggedInPredictor shows that the user is likely logged on
-  // to the site for the URL provided.
-  void CheckIfLikelyLoggedInOnURL(const GURL& url,
-                                  bool* lookup_result,
-                                  bool* database_was_present,
-                                  const base::Closure& result_cb);
-
   Profile* profile() const { return profile_; }
 
   // Classes which will be tested in prerender unit browser tests should use
@@ -289,15 +270,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // mock advancing/retarding time.
   virtual base::Time GetCurrentTime() const;
   virtual base::TimeTicks GetCurrentTimeTicks() const;
-
-  scoped_refptr<predictors::LoggedInPredictorTable>
-  logged_in_predictor_table() {
-    return logged_in_predictor_table_;
-  }
-
-  PrerenderLocalPredictor* local_predictor() {
-    return local_predictor_.get();
-  }
 
   // Notification that a prerender has completed and its bytes should be
   // recorded.
@@ -508,11 +480,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       FinalStatus final_status) const;
 
 
-  void CookieChanged(ChromeCookieDetails* details);
-  void CookieChangedAnyCookiesLeftLookupResult(const std::string& domain_key,
-                                               bool cookies_exist);
-  void LoggedInPredictorDataReceived(scoped_ptr<LoggedInStateMap> new_map);
-
   // Swaps a prerender |prerender_data| for |url| into the tab, replacing
   // |web_contents|.  Returns the new WebContents that was swapped in, or NULL
   // if a swap-in was not possible.  If |should_replace_current_entry| is true,
@@ -560,18 +527,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   scoped_ptr<PrerenderHistory> prerender_history_;
 
   scoped_ptr<PrerenderHistograms> histograms_;
-
-  scoped_ptr<PrerenderLocalPredictor> local_predictor_;
-
-  scoped_refptr<predictors::LoggedInPredictorTable> logged_in_predictor_table_;
-
-  // Here, we keep the logged in predictor state, but potentially a superset
-  // of its actual (database-backed) state, since we do not incorporate
-  // browser data deletion. We do not use this for actual lookups, but only
-  // to query cookie data for domains we know there was a login before.
-  // This is required to avoid a large number of cookie lookups on bulk
-  // deletion of cookies.
-  scoped_ptr<LoggedInStateMap> logged_in_state_;
 
   content::NotificationRegistrar notification_registrar_;
 

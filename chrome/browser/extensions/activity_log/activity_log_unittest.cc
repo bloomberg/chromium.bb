@@ -248,7 +248,7 @@ TEST_F(ActivityLogTest, LogPrerender) {
 
   const gfx::Size kSize(640, 480);
   scoped_ptr<prerender::PrerenderHandle> prerender_handle(
-      prerender_manager->AddPrerenderFromLocalPredictor(
+      prerender_manager->AddPrerenderFromOmnibox(
           url,
           web_contents()->GetController().GetDefaultSessionStorageNamespace(),
           kSize));

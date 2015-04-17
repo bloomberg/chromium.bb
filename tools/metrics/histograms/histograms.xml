@@ -29203,6 +29203,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Prerender.LocalPredictorEvent"
     enum="PrerenderLocalPredictorEvents">
+  <obsolete>
+    Deprecated April 2015
+  </obsolete>
   <owner>tburkard@chromium.org</owner>
   <summary>
     Enumeration of what events related to the local predictor have occurred
@@ -29211,6 +29214,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Prerender.LocalPredictorLoggedInLookupTime"
     units="milliseconds">
+  <obsolete>
+    Deprecated April 2015
+  </obsolete>
   <owner>tburkard@chromium.org</owner>
   <summary>
     Time to perform the LoggedIn Lookup for the local predictor. This operation
@@ -29220,6 +29226,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.LocalPredictorPrefetchMatchPLT" units="milliseconds">
+  <obsolete>
+    Deprecated April 2015
+  </obsolete>
   <owner>tburkard@chromium.org</owner>
   <summary>
     The PrerenderLocalPredictor uses local browsing history and the prerender
@@ -29233,6 +29242,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Prerender.LocalPredictorServiceLookupTime"
     units="milliseconds">
+  <obsolete>
+    Deprecated April 2015
+  </obsolete>
   <owner>tburkard@chromium.org</owner>
   <summary>
     Time to perform the Service Lookup for the local predictor. This operation
@@ -29242,6 +29254,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.LocalPredictorTimeUntilUsed" units="milliseconds">
+  <obsolete>
+    Deprecated April 2015
+  </obsolete>
   <owner>tburkard@chromium.org</owner>
   <summary>
     Time from when a prerendered page is started to when it is first used due to
@@ -29251,6 +29266,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.LocalPredictorURLLookupTime" units="milliseconds">
+  <obsolete>
+    Deprecated April 2015
+  </obsolete>
   <owner>tburkard@chromium.org</owner>
   <summary>
     Time to perform the URL Lookup for the local predictor. This operation
@@ -29844,6 +29862,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Prerender.SimulatedLocalBrowsingBaselinePLT"
     units="milliseconds">
+  <obsolete>
+    Deprecated April 2015
+  </obsolete>
   <owner>tburkard@chromium.org</owner>
   <summary>
     For simulated local browsing prerendering, the baseline PLT of pages without
@@ -29852,6 +29873,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.SimulatedLocalBrowsingPLT" units="milliseconds">
+  <obsolete>
+    Deprecated April 2015
+  </obsolete>
   <owner>tburkard@chromium.org</owner>
   <summary>
     For simulated local browsing prerendering, the estimated PLT of pages with
@@ -29878,6 +29902,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.TabHelperEvent" enum="PrerenderTabHelperEvents">
+  <obsolete>
+    Deprecated April 2015
+  </obsolete>
   <owner>tburkard@chromium.org</owner>
   <summary>
     Enumeration of what events related to the TabHelper class have occurred.
@@ -58573,6 +58600,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="PrerenderCookieSendType" type="int">
+  <obsolete>
+    Deprecated March 13 2015.
+  </obsolete>
   <int value="0" label="no cookies sent"/>
   <int value="1" label="first party cookies sent"/>
   <int value="2" label="third party cookies sent"/>
@@ -58580,6 +58610,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="PrerenderCookieStatus" type="int">
+  <obsolete>
+    Deprecated March 13 2015.
+  </obsolete>
   <int value="0" label="no action"/>
   <int value="1" label="[main frame send]"/>
   <int value="2" label="[main frame change]"/>
@@ -58600,6 +58633,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="PrerenderEvent" type="int">
+  <obsolete>
+    Deprecated Dec 12 2014.
+  </obsolete>
   <int value="0" label="Swapin no delegate"/>
   <int value="1" label="Swapin candidate"/>
   <int value="2" label="Swapin candidate namespace matces"/>
@@ -58691,6 +58727,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="PrerenderLocalPredictorEvents" type="int">
+  <obsolete>
+    Deprecated April 2015
+  </obsolete>
   <int value="0" label="Constructed"/>
   <int value="1" label="Init scheduled"/>
   <int value="2" label="Init started"/>
@@ -58792,6 +58831,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="PrerenderLocalVisitCoreTransition" type="int">
+  <obsolete>
+    Deprecated Nov 16 2012
+  </obsolete>
   <int value="0" label="LINK"/>
   <int value="1" label="TYPED"/>
   <int value="2" label="AUTO_BOOKMARK"/>
@@ -58806,6 +58848,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="PrerenderLocalVisitEvents" type="int">
+  <obsolete>
+    Deprecated Nov 16 2012
+  </obsolete>
   <int value="0" label="V1_VISIT"/>
   <int value="1" label="V1_PRERENDER_STARTED_1"/>
   <int value="2" label="V1_PRERENDER_USED_1"/>
@@ -58826,6 +58871,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="PrerenderMode" type="int">
+  <obsolete>
+    deprecated Nov 16 2012
+  </obsolete>
   <int value="0" label="PRERENDER_MODE_DISABLED"/>
   <int value="1" label="PRERENDER_MODE_ENABLED"/>
   <int value="2" label="PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP"/>
@@ -58838,6 +58886,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="PrerenderPageviewEvents" type="int">
+  <obsolete>
+    deprecated Nov 16 2012
+  </obsolete>
   <int value="0" label="PAGEVIEW_EVENT_NEW_URL"/>
   <int value="1" label="PAGEVIEW_EVENT_TOP_SITE_NEW_URL"/>
   <int value="2" label="PAGEVIEW_EVENT_LOAD_START"/>
@@ -58866,6 +58917,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="PrerenderTabHelperEvents" type="int">
+  <obsolete>
+    Deprecated April 2015
+  </obsolete>
   <int value="0" label="Table requested"/>
   <int value="1" label="Table present"/>
   <int value="2" label="Mainframe change"/>
@@ -66963,7 +67017,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="gws" label="GWS triggered prerender."/>
   <suffix name="externalrequest" label="Externally triggered prerender."/>
   <suffix name="Instant" label="Instant search prerender."/>
-  <suffix name="localpredictor" label="Local predictor triggered prerender."/>
+  <suffix name="localpredictor" label="Local predictor triggered prerender.">
+    <obsolete>
+      Deprecated April 2015
+    </obsolete>
+  </suffix>
   <suffix name="omnibox" label="Triggered from the omnibox."/>
   <suffix name="wash" label="Multiple sources could have triggered."/>
   <suffix name="web" label="Link triggered prerender."/>

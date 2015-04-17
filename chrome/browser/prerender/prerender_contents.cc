@@ -277,11 +277,6 @@ void PrerenderContents::StartPrerendering(
   if (prerender_manager_->IsControlGroup(experiment_id()))
     return;
 
-  if (origin_ == ORIGIN_LOCAL_PREDICTOR &&
-      IsLocalPredictorPrerenderAlwaysControlEnabled()) {
-    return;
-  }
-
   prerendering_has_started_ = true;
 
   prerender_contents_.reset(CreateWebContents(session_storage_namespace));

@@ -56,8 +56,6 @@ std::string GetHistogramName(Origin origin, uint8 experiment_id,
       return ComposeHistogramName("websame", name);
     case ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN:
       return ComposeHistogramName("webcross", name);
-    case ORIGIN_LOCAL_PREDICTOR:
-      return ComposeHistogramName("localpredictor", name);
     case ORIGIN_EXTERNAL_REQUEST:
         return ComposeHistogramName("externalrequest", name);
     case ORIGIN_INSTANT:
@@ -126,8 +124,6 @@ bool OriginIsOmnibox(Origin origin) {
   } else if (origin == ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN) { \
     HISTOGRAM; \
   } else if (origin == ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN) { \
-    HISTOGRAM; \
-  } else if (origin == ORIGIN_LOCAL_PREDICTOR) { \
     HISTOGRAM; \
   } else if (origin == ORIGIN_EXTERNAL_REQUEST) { \
     HISTOGRAM; \

@@ -1123,72 +1123,6 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kEnableNpapi);
   }
 
-  void SetPreference(NetworkPredictionOptions value) {
-    browser()->profile()->GetPrefs()->SetInteger(
-        prefs::kNetworkPredictionOptions, value);
-  }
-
-  // Verifies whether ShouldDisableLocalPredictorDueToPreferencesAndNetwork
-  // produces the desired output.
-  void TestShouldDisableLocalPredictorPreferenceNetworkMatrix(
-      bool preference_wifi_network_wifi,
-      bool preference_wifi_network_4g,
-      bool preference_always_network_wifi,
-      bool preference_always_network_4g,
-      bool preference_never_network_wifi,
-      bool preference_never_network_4g) {
-    Profile* profile = browser()->profile();
-
-    // Set real NetworkChangeNotifier singleton aside.
-    scoped_ptr<NetworkChangeNotifier::DisableForTest> disable_for_test(
-        new NetworkChangeNotifier::DisableForTest);
-
-    // Set preference to WIFI_ONLY: prefetch when not on cellular.
-    SetPreference(NetworkPredictionOptions::NETWORK_PREDICTION_WIFI_ONLY);
-    {
-      scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifierWIFI);
-      EXPECT_EQ(
-          ShouldDisableLocalPredictorDueToPreferencesAndNetwork(profile),
-          preference_wifi_network_wifi);
-    }
-    {
-      scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifier4G);
-      EXPECT_EQ(
-          ShouldDisableLocalPredictorDueToPreferencesAndNetwork(profile),
-          preference_wifi_network_4g);
-    }
-
-    // Set preference to ALWAYS: always prefetch.
-    SetPreference(NetworkPredictionOptions::NETWORK_PREDICTION_ALWAYS);
-    {
-      scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifierWIFI);
-      EXPECT_EQ(
-          ShouldDisableLocalPredictorDueToPreferencesAndNetwork(profile),
-          preference_always_network_wifi);
-    }
-    {
-      scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifier4G);
-      EXPECT_EQ(
-          ShouldDisableLocalPredictorDueToPreferencesAndNetwork(profile),
-          preference_always_network_4g);
-    }
-
-    // Set preference to NEVER: never prefetch.
-    SetPreference(NetworkPredictionOptions::NETWORK_PREDICTION_NEVER);
-    {
-      scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifierWIFI);
-      EXPECT_EQ(
-          ShouldDisableLocalPredictorDueToPreferencesAndNetwork(profile),
-          preference_never_network_wifi);
-    }
-    {
-      scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifier4G);
-      EXPECT_EQ(
-          ShouldDisableLocalPredictorDueToPreferencesAndNetwork(profile),
-          preference_never_network_4g);
-    }
-  }
-
   void SetUpOnMainThread() override {
     current_browser()->profile()->GetPrefs()->SetBoolean(
         prefs::kPromptForDownload, false);
@@ -4143,19 +4077,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxBrowserTest,
   // Prerender should be running, but abandoned.
   EXPECT_TRUE(
       GetAutocompleteActionPredictor()->IsPrerenderAbandonedForTesting());
-}
-
-// Prefetch should be allowed depending on preference and network type.
-// This test is for the bsae case: no Finch overrides should never disable.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       LocalPredictorDisableWorksBaseCase) {
-  TestShouldDisableLocalPredictorPreferenceNetworkMatrix(
-      false /*preference_wifi_network_wifi*/,
-      false /*preference_wifi_network_4g*/,
-      false /*preference_always_network_wifi*/,
-      false /*preference_always_network_4g*/,
-      false /*preference_never_network_wifi*/,
-      false /*preference_never_network_4g*/);
 }
 
 }  // namespace prerender

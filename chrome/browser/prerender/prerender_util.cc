@@ -45,8 +45,6 @@ void ReportPrerenderSchemeCancelReason(PrerenderSchemeCancelReason reason) {
 
 }  // namespace
 
-const char kChromeNavigateExtraDataKey[] = "chrome_navigate";
-
 bool MaybeGetQueryStringBasedAliasURL(
     const GURL& url, GURL* alias_url) {
   DCHECK(alias_url);

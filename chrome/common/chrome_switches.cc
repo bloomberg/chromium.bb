@@ -314,10 +314,6 @@ const char kDisablePopupBlocking[]          = "disable-popup-blocking";
 // Disable speculative TCP/IP preconnection.
 const char kDisablePreconnect[]             = "disable-preconnect";
 
-// Disable prerendering based on local browsing history.
-const char kDisablePrerenderLocalPredictor[] =
-    "disable-prerender-local-predictor";
-
 // Disables print preview (For testing, and for users who don't like us. :[ )
 const char kDisablePrintPreview[]           = "disable-print-preview";
 
