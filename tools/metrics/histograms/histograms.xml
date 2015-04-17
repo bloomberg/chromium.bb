@@ -3813,21 +3813,33 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Cookie.TimeDatabaseMigrationToV5" units="ms">
+  <obsolete>
+    Deprecated as of 04/2015. The migration has finished for most users.
+  </obsolete>
   <owner>erikwright@chromium.org</owner>
   <summary>The amount of time (ms) to migrate a v4 database to v5.</summary>
 </histogram>
 
 <histogram name="Cookie.TimeDatabaseMigrationToV6" units="ms">
+  <obsolete>
+    Deprecated as of 04/2015. The migration has finished for most users.
+  </obsolete>
   <owner>erikwright@chromium.org</owner>
   <summary>The amount of time (ms) to migrate a v5 database to v6.</summary>
 </histogram>
 
 <histogram name="Cookie.TimeDatabaseMigrationToV7" units="ms">
+  <obsolete>
+    Deprecated as of 04/2015. The migration has finished for most users.
+  </obsolete>
   <owner>erikwright@chromium.org</owner>
   <summary>The amount of time (ms) to migrate a v6 database to v7.</summary>
 </histogram>
 
 <histogram name="Cookie.TimeDatabaseMigrationToV8" units="ms">
+  <obsolete>
+    Deprecated as of 04/2015. The migration has finished for most users.
+  </obsolete>
   <owner>erikwright@chromium.org</owner>
   <summary>The amount of time (ms) to migrate a v7 database to v8.</summary>
 </histogram>
