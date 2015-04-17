@@ -58,9 +58,8 @@ const String& styleNodeCloseTag(bool isBlock)
 
 using namespace HTMLNames;
 
-StyledMarkupAccumulator::StyledMarkupAccumulator(StyledMarkupSerializer* serializer, EAbsoluteURLs shouldResolveURLs, const Position& start, const Position& end, EAnnotateForInterchange shouldAnnotate, Node* highestNodeToBeSerialized)
+StyledMarkupAccumulator::StyledMarkupAccumulator(EAbsoluteURLs shouldResolveURLs, const Position& start, const Position& end, EAnnotateForInterchange shouldAnnotate, Node* highestNodeToBeSerialized)
     : MarkupAccumulator(shouldResolveURLs)
-    , m_serializer(serializer)
     , m_start(start.parentAnchoredEquivalent())
     , m_end(end.parentAnchoredEquivalent())
     , m_shouldAnnotate(shouldAnnotate)
@@ -74,7 +73,7 @@ void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
     const bool parentIsTextarea = text.parentElement() && text.parentElement()->tagQName() == textareaTag;
     const bool wrappingSpan = shouldApplyWrappingStyle(text) && !parentIsTextarea;
     if (wrappingSpan) {
-        RefPtrWillBeRawPtr<EditingStyle> wrappingStyle = m_serializer->wrappingStyle()->copy();
+        RefPtrWillBeRawPtr<EditingStyle> wrappingStyle = m_wrappingStyle->copy();
         // FIXME: <rdar://problem/5371536> Style rules that match pasted content can change it's appearance
         // Make sure spans are inline style in paste side e.g. span { display: block }.
         wrappingStyle->forceInline();
@@ -134,7 +133,7 @@ void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element
         RefPtrWillBeRawPtr<EditingStyle> newInlineStyle = nullptr;
 
         if (shouldApplyWrappingStyle(element)) {
-            newInlineStyle = m_serializer->wrappingStyle()->copy();
+            newInlineStyle = m_wrappingStyle->copy();
             newInlineStyle->removePropertiesInElementDefaultStyle(&element);
             newInlineStyle->removeStyleConflictingWithStyleOfElement(&element);
         } else {
@@ -210,11 +209,11 @@ String StyledMarkupAccumulator::stringValueForRange(const Node& node)
 bool StyledMarkupAccumulator::shouldApplyWrappingStyle(const Node& node) const
 {
     return m_highestNodeToBeSerialized && m_highestNodeToBeSerialized->parentNode() == node.parentNode()
-        && m_serializer->wrappingStyle() && m_serializer->wrappingStyle()->style();
+        && m_wrappingStyle && m_wrappingStyle->style();
 }
 
 StyledMarkupSerializer::StyledMarkupSerializer(EAbsoluteURLs shouldResolveURLs, EAnnotateForInterchange shouldAnnotate, const Position& start, const Position& end, Node* highestNodeToBeSerialized)
-    : m_markupAccumulator(this, shouldResolveURLs, start, end, shouldAnnotate, highestNodeToBeSerialized)
+    : m_markupAccumulator(shouldResolveURLs, start, end, shouldAnnotate, highestNodeToBeSerialized)
     , m_start(start)
     , m_end(end)
 {
@@ -370,14 +369,15 @@ Node* StyledMarkupSerializer::serializeNodes(Node* startNode, Node* pastEnd)
         m_markupAccumulator.setHighestNodeToBeSerialized(lastClosed);
     }
 
-    if (m_markupAccumulator.highestNodeToBeSerialized() && Strategy::parent(*m_markupAccumulator.highestNodeToBeSerialized())) {
-        m_wrappingStyle = EditingStyle::wrappingStyleForSerialization(m_markupAccumulator.highestNodeToBeSerialized()->parentNode(), m_markupAccumulator.shouldAnnotate());
+    Node* highestNodeToBeSerialized = m_markupAccumulator.highestNodeToBeSerialized();
+    if (highestNodeToBeSerialized && Strategy::parent(*highestNodeToBeSerialized)) {
+        RefPtrWillBeRawPtr<EditingStyle> wrappingStyle = EditingStyle::wrappingStyleForSerialization(Strategy::parent(*highestNodeToBeSerialized), m_markupAccumulator.shouldAnnotate());
         if (m_markupAccumulator.shouldAnnotateForNavigationTransition()) {
-            m_wrappingStyle->style()->removeProperty(CSSPropertyBackgroundColor);
-            m_wrappingStyle->style()->removeProperty(CSSPropertyBackgroundImage);
+            wrappingStyle->style()->removeProperty(CSSPropertyBackgroundColor);
+            wrappingStyle->style()->removeProperty(CSSPropertyBackgroundImage);
         }
+        m_markupAccumulator.setWrappingStyle(wrappingStyle.release());
     }
-
     return traverseNodesForSerialization<Strategy>(startNode, pastEnd, EmitString);
 }
 
