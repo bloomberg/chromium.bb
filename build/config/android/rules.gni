@@ -49,9 +49,6 @@ template("generate_jni") {
     script = "//base/android/jni_generator/jni_generator.py"
     depfile = "$target_gen_dir/$target_name.{{source_name_part}}.d"
     sources = invoker.sources
-    inputs = [
-      jni_generator_include,
-    ]
     outputs = [
       depfile,
       "${jni_output_dir}/{{source_name_part}}_jni.h",
@@ -66,7 +63,7 @@ template("generate_jni") {
       "--output_dir",
       rebase_path(jni_output_dir, root_build_dir),
       "--includes",
-      rebase_path(jni_generator_include, "//"),
+      rebase_path(jni_generator_include, jni_output_dir),
       "--native_exports_optional",
     ]
     if (defined(invoker.jni_generator_jarjar_file)) {
@@ -166,7 +163,6 @@ template("generate_jar_jni") {
       script = "//base/android/jni_generator/jni_generator.py"
       sources = [
         jar_file,
-        jni_generator_include,
       ]
       outputs = [
         depfile,
@@ -185,7 +181,7 @@ template("generate_jar_jni") {
         "--output_dir",
         rebase_path(jni_output_dir, root_build_dir),
         "--includes",
-        rebase_path(jni_generator_include, root_build_dir),
+        rebase_path(jni_generator_include, jni_output_dir),
         "--native_exports_optional",
       ]
     }
