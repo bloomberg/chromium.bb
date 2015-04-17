@@ -77,9 +77,8 @@ KeyboardCode KeyboardCodeFromAndroidKeyCode(int keycode) {
       return VKEY_LSHIFT;
     case AKEYCODE_SHIFT_RIGHT:
       return VKEY_RSHIFT;
-    // Back will serve as escape, although we may not have access to it.
     case AKEYCODE_BACK:
-      return VKEY_ESCAPE;
+      return VKEY_BROWSER_BACK;
     case AKEYCODE_SPACE:
       return VKEY_SPACE;
     case AKEYCODE_MOVE_HOME:
