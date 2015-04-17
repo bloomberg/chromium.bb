@@ -21,12 +21,18 @@ var orientationChangeEventHandlerCalls = 0;
 // Count the number of calls received from the listener set with screen.orientation.addEventListene().
 var orientationChangeEventListenerCalls = 0;
 
+var orientationChangeContinuation = null;
+
 function getNextIndex() {
   return (currentIndex + 1) % orientations.length;
 }
 
 window.screen.orientation.onchange = function() {
   orientationChangeEventHandlerCalls++;
+  if (orientationChangeEventContinuation) {
+    setTimeout(orientationChangeEventContinuation);
+    orientationChangeEventContinuation = null;
+  }
 };
 
 window.screen.orientation.addEventListener('change', function() {
@@ -36,15 +42,13 @@ window.screen.orientation.addEventListener('change', function() {
 function runNoChangeTest() {
   window.testRunner.setMockScreenOrientation(orientations[currentIndex]);
 
-  setTimeout(function() {
-    noChangeTest.step(function() {
-      assert_equals(screen.orientation.type, orientations[currentIndex]);
-      assert_equals(orientationChangeEventHandlerCalls, 4);
-      assert_equals(orientationChangeEventListenerCalls, 4);
-    });
-
-    noChangeTest.done();
+  noChangeTest.step(function() {
+    assert_equals(screen.orientation.type, orientations[currentIndex]);
+    assert_equals(orientationChangeEventHandlerCalls, 4);
+    assert_equals(orientationChangeEventListenerCalls, 4);
   });
+
+  noChangeTest.done();
 }
 
 var i = 0;
@@ -52,7 +56,7 @@ function runChangeTest() {
   window.testRunner.setMockScreenOrientation(orientations[getNextIndex()]);
   currentIndex = getNextIndex();
 
-  setTimeout(function() {
+  orientationChangeEventContinuation = function() {
     changeTest.step(function() {
       assert_equals(screen.orientation.type, orientations[currentIndex]);
       assert_equals(orientationChangeEventHandlerCalls, i + 1);
@@ -66,7 +70,7 @@ function runChangeTest() {
     } else {
       runChangeTest();
     }
-  });
+  };
 }
 
 runChangeTest();
