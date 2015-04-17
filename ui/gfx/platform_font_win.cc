@@ -12,6 +12,7 @@
 #include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -65,17 +66,45 @@ void SetLogFontStyle(int font_style, LOGFONT* font_info) {
   font_info->lfWeight = (font_style & gfx::Font::BOLD) ? FW_BOLD : FW_NORMAL;
 }
 
-// Returns a matching IDWriteFont for the |font_info| passed in. If we fail
-// to find a matching font, then we return the IDWriteFont corresponding to
-// the default font on the system.
+// Returns the family name for the |IDWriteFont| interface passed in.
+// The family name is returned in the |family_name_ret| parameter.
 // Returns S_OK on success.
-HRESULT GetMatchingDirectWriteFont(const LOGFONT& font_info,
-                                   int font_style,
-                                   IDWriteFactory* factory,
-                                   IDWriteFont** dwrite_font) {
-  // First try the GDI compat route to convert the LOGFONT to a IDWriteFont
-  // If that succeeds then we are good. If that fails then try and find a
-  // match from the DirectWrite font collection.
+// TODO(ananta)
+// Remove the CHECKs in this function once this stabilizes on the field.
+HRESULT GetFamilyNameFromDirectWriteFont(IDWriteFont* dwrite_font,
+                                         base::string16* family_name_ret) {
+  base::win::ScopedComPtr<IDWriteFontFamily> font_family;
+  HRESULT hr = dwrite_font->GetFontFamily(font_family.Receive());
+  if (FAILED(hr))
+    CHECK(false);
+
+  base::win::ScopedComPtr<IDWriteLocalizedStrings> family_name;
+  hr = font_family->GetFamilyNames(family_name.Receive());
+  if (FAILED(hr))
+    CHECK(false);
+
+  // TODO(ananta)
+  // Add support for retrieving the family for the current locale.
+  wchar_t family_name_for_locale[MAX_PATH] = {0};
+  hr = family_name->GetString(0,
+                              family_name_for_locale,
+                              arraysize(family_name_for_locale));
+  if (FAILED(hr))
+    CHECK(false);
+
+  *family_name_ret = family_name_for_locale;
+  return hr;
+}
+
+// Uses the GDI interop functionality exposed by DirectWrite to find a
+// matching DirectWrite font for the LOGFONT passed in. If we fail to
+// find a direct match then we try the DirectWrite font substitution
+// route to find a match.
+// The contents of the LOGFONT pointer |font_info| may be modified on
+// return.
+HRESULT FindDirectWriteFontForLOGFONT(IDWriteFactory* factory,
+                                      LOGFONT* font_info,
+                                      IDWriteFont** dwrite_font) {
   base::win::ScopedComPtr<IDWriteGdiInterop> gdi_interop;
   HRESULT hr = factory->GetGdiInterop(gdi_interop.Receive());
   if (FAILED(hr)) {
@@ -83,11 +112,52 @@ HRESULT GetMatchingDirectWriteFont(const LOGFONT& font_info,
     return hr;
   }
 
-  hr = gdi_interop->CreateFontFromLOGFONT(&font_info, dwrite_font);
+  hr = gdi_interop->CreateFontFromLOGFONT(font_info, dwrite_font);
   if (SUCCEEDED(hr))
     return hr;
 
-  // Get the matching font from the system font collection exposed by
+  // We try to find a matching font by triggering DirectWrite to substitute the
+  // font passed in with a matching font (FontSubstitutes registry key)
+  // If this succeeds we return the matched font.
+  base::win::ScopedGDIObject<HFONT> font(::CreateFontIndirect(font_info));
+  base::win::ScopedGetDC screen_dc(NULL);
+  base::win::ScopedSelectObject scoped_font(screen_dc, font);
+
+  base::win::ScopedComPtr<IDWriteFontFace> font_face;
+  hr = gdi_interop->CreateFontFaceFromHdc(screen_dc, font_face.Receive());
+  if (FAILED(hr))
+    return hr;
+
+  LOGFONT converted_font = {0};
+  hr = gdi_interop->ConvertFontFaceToLOGFONT(font_face.get(), &converted_font);
+  if (SUCCEEDED(hr)) {
+    wcscpy_s(font_info->lfFaceName, arraysize(font_info->lfFaceName),
+              converted_font.lfFaceName);
+    // This has to succeed.
+    hr = gdi_interop->CreateFontFromLOGFONT(font_info, dwrite_font);
+    CHECK(SUCCEEDED(hr));
+  }
+  return hr;
+}
+
+// Returns a matching IDWriteFont for the |font_info| passed in. If we fail
+// to find a matching font, then we return the IDWriteFont corresponding to
+// the default font on the system.
+// Returns S_OK on success.
+// The contents of the LOGFONT pointer |font_info| may be modified on
+// return.
+HRESULT GetMatchingDirectWriteFont(LOGFONT* font_info,
+                                   int font_style,
+                                   IDWriteFactory* factory,
+                                   IDWriteFont** dwrite_font) {
+  // First try the GDI compat route to get a matching DirectWrite font.
+  // If that succeeds then we are good. If that fails then try and find a
+  // match from the DirectWrite font collection.
+  HRESULT hr = FindDirectWriteFontForLOGFONT(factory, font_info, dwrite_font);
+  if (SUCCEEDED(hr))
+    return hr;
+
+  // Get a matching font from the system font collection exposed by
   // DirectWrite.
   base::win::ScopedComPtr<IDWriteFontCollection> font_collection;
   hr = factory->GetSystemFontCollection(font_collection.Receive());
@@ -111,7 +181,7 @@ HRESULT GetMatchingDirectWriteFont(const LOGFONT& font_info,
   base::win::ScopedComPtr<IDWriteFontFamily> font_family;
   BOOL exists = FALSE;
   uint32 index = 0;
-  hr = font_collection->FindFamilyName(font_info.lfFaceName, &index, &exists);
+  hr = font_collection->FindFamilyName(font_info->lfFaceName, &index, &exists);
   // If we fail to find a match then try fallback to the default font on the
   // system. This is what skia does as well.
   if (FAILED(hr) || (index == UINT_MAX) || !exists) {
@@ -124,9 +194,23 @@ HRESULT GetMatchingDirectWriteFont(const LOGFONT& font_info,
       CHECK(false);
       return E_FAIL;
     }
-    hr = font_collection->FindFamilyName(metrics.lfMessageFont.lfFaceName,
-                                         &index,
-                                         &exists);
+
+    if (base::strncmp16(font_info->lfFaceName, metrics.lfMessageFont.lfFaceName,
+                        arraysize(font_info->lfFaceName))) {
+      // First try the GDI compat route to get a matching DirectWrite font. If
+      // that succeeds we are good. If not find a matching font from the font
+      // collection.
+      wcscpy_s(font_info->lfFaceName, arraysize(font_info->lfFaceName),
+                metrics.lfMessageFont.lfFaceName);
+      hr = FindDirectWriteFontForLOGFONT(factory, font_info, dwrite_font);
+      if (SUCCEEDED(hr))
+        return hr;
+
+      // Best effort to find a matching font from the system font collection.
+      hr = font_collection->FindFamilyName(metrics.lfMessageFont.lfFaceName,
+                                           &index,
+                                           &exists);
+    }
   }
 
   if (index != UINT_MAX && exists) {
@@ -176,6 +260,11 @@ HRESULT GetMatchingDirectWriteFont(const LOGFONT& font_info,
     base::debug::Alias(&matching_font_count);
     CHECK(false);
   }
+
+  base::string16 font_name;
+  GetFamilyNameFromDirectWriteFont(*dwrite_font, &font_name);
+  wcscpy_s(font_info->lfFaceName, arraysize(font_info->lfFaceName),
+           font_name.c_str());
   return hr;
 }
 
@@ -471,7 +560,7 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
   // DirectWrite and remove the code here which retrieves metrics from
   // DirectWrite to calculate the cap height.
   base::win::ScopedComPtr<IDWriteFont> dwrite_font;
-  HRESULT hr = GetMatchingDirectWriteFont(font_info,
+  HRESULT hr = GetMatchingDirectWriteFont(&font_info,
                                           skia_style,
                                           direct_write_factory_,
                                           dwrite_font.Receive());
@@ -529,6 +618,11 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
     style |= Font::UNDERLINE;
   if (font_info.lfWeight >= kTextMetricWeightBold)
     style |= Font::BOLD;
+
+  // DirectWrite may have substituted the GDI font name with a fallback
+  // font. Ensure that it is updated here.
+  DeleteObject(gdi_font);
+  gdi_font = ::CreateFontIndirect(&font_info);
   return new HFontRef(gdi_font, -font_info.lfHeight, height, baseline,
                       cap_height, ave_char_width, style);
 }

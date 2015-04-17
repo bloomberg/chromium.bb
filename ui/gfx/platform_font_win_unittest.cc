@@ -158,4 +158,52 @@ TEST(PlatformFontWinTest, Metrics_SkiaVersusGDI) {
   }
 }
 
+// Test if DirectWrite font fallback works correctly, i.e. whether DirectWrite
+// fonts handle the font names in the
+// HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes key
+// correctly. The expectation is that the actual font created should be the
+// one specified by the value for the substituted font. For e.g. MS Shell Dlg
+// should create Microsoft Sans Serif, etc.
+// For random fonts which are not substitutes, DirectWrite should fallback
+// to Arial on a properly configured machine.
+TEST(PlatformFontWinTest, DirectWriteFontSubstitution) {
+  if (!gfx::win::IsDirectWriteEnabled())
+    return;
+
+  // Describes the font being tested.
+  struct FontInfo {
+    base::string16 font_name;
+    std::string expected_font_name;
+  };
+
+  FontInfo fonts[] = {
+    {base::ASCIIToUTF16("MS Shell Dlg"), "Microsoft Sans Serif"},
+    {base::ASCIIToUTF16("MS Shell Dlg 2"), "Tahoma"},
+    {base::ASCIIToUTF16("FooBar"), "Arial"},
+  };
+
+  base::win::ScopedGetDC screen_dc(NULL);
+  gfx::ScopedSetMapMode mode(screen_dc, MM_TEXT);
+
+  for (int i = 0; i < arraysize(fonts); ++i) {
+    LOGFONT font_info = {0};
+
+    font_info.lfHeight = -10;
+    font_info.lfWeight = FW_NORMAL;
+    wcscpy_s(font_info.lfFaceName,
+             fonts[i].font_name.length() + 1,
+             fonts[i].font_name.c_str());
+
+    HFONT font = CreateFontIndirect(&font_info);
+
+    TEXTMETRIC font_metrics;
+    PlatformFontWin::GetTextMetricsForFont(screen_dc, font, &font_metrics);
+
+    scoped_refptr<PlatformFontWin::HFontRef> h_font_skia(
+        PlatformFontWin::CreateHFontRefFromSkia(font, font_metrics));
+
+    EXPECT_EQ(fonts[i].expected_font_name, h_font_skia->font_name());
+  }
+}
+
 }  // namespace gfx

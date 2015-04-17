@@ -83,6 +83,7 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_UniscribeFallback);
   FRIEND_TEST_ALL_PREFIXES(PlatformFontWinTest, Metrics_SkiaVersusGDI);
+  FRIEND_TEST_ALL_PREFIXES(PlatformFontWinTest, DirectWriteFontSubstitution);
 
   virtual ~PlatformFontWin() {}
 
@@ -128,6 +129,7 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
     friend class base::RefCounted<HFontRef>;
     FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_UniscribeFallback);
     FRIEND_TEST_ALL_PREFIXES(PlatformFontWinTest, Metrics_SkiaVersusGDI);
+    FRIEND_TEST_ALL_PREFIXES(PlatformFontWinTest, DirectWriteFontSubstitution);
 
     ~HFontRef();
 

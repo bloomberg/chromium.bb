@@ -75,30 +75,30 @@ TEST(FontListTest, ParseDescription) {
 
 TEST(FontListTest, Fonts_FromDescString) {
   // Test init from font name size string.
-  FontList font_list = FontList("serif,Sans serif, 13px");
+  FontList font_list = FontList("arial, Courier New, 13px");
   const std::vector<Font>& fonts = font_list.GetFonts();
   ASSERT_EQ(2U, fonts.size());
-  EXPECT_EQ("serif|13", FontToString(fonts[0]));
-  EXPECT_EQ("Sans serif|13", FontToString(fonts[1]));
+  EXPECT_EQ("arial|13", FontToString(fonts[0]));
+  EXPECT_EQ("Courier New|13", FontToString(fonts[1]));
 }
 
 TEST(FontListTest, Fonts_FromDescStringInFlexibleFormat) {
   // Test init from font name size string with flexible format.
-  FontList font_list = FontList("  serif   ,   Sans serif ,   13px");
+  FontList font_list = FontList("  arial   ,   Courier New ,   13px");
   const std::vector<Font>& fonts = font_list.GetFonts();
   ASSERT_EQ(2U, fonts.size());
-  EXPECT_EQ("serif|13", FontToString(fonts[0]));
-  EXPECT_EQ("Sans serif|13", FontToString(fonts[1]));
+  EXPECT_EQ("arial|13", FontToString(fonts[0]));
+  EXPECT_EQ("Courier New|13", FontToString(fonts[1]));
 }
 
 TEST(FontListTest, Fonts_FromDescStringWithStyleInFlexibleFormat) {
   // Test init from font name style size string with flexible format.
-  FontList font_list = FontList("  serif  ,  Sans serif ,  Bold   "
+  FontList font_list = FontList("  arial  ,  Courier New ,  Bold   "
                                 "  Italic   13px");
   const std::vector<Font>& fonts = font_list.GetFonts();
   ASSERT_EQ(2U, fonts.size());
-  EXPECT_EQ("serif|13|bold|italic", FontToString(fonts[0]));
-  EXPECT_EQ("Sans serif|13|bold|italic", FontToString(fonts[1]));
+  EXPECT_EQ("arial|13|bold|italic", FontToString(fonts[0]));
+  EXPECT_EQ("Courier New|13|bold|italic", FontToString(fonts[1]));
 }
 
 TEST(FontListTest, Fonts_FromFont) {
@@ -127,7 +127,7 @@ TEST(FontListTest, Fonts_FromFontWithNonNormalStyle) {
 TEST(FontListTest, Fonts_FromFontVector) {
   // Test init from Font vector.
   Font font("Arial", 8);
-  Font font_1("Sans serif", 10);
+  Font font_1("Courier New", 10);
   std::vector<Font> input_fonts;
   input_fonts.push_back(font.Derive(0, Font::BOLD));
   input_fonts.push_back(font_1.Derive(-2, Font::BOLD));
@@ -135,7 +135,7 @@ TEST(FontListTest, Fonts_FromFontVector) {
   const std::vector<Font>& fonts = font_list.GetFonts();
   ASSERT_EQ(2U, fonts.size());
   EXPECT_EQ("Arial|8|bold", FontToString(fonts[0]));
-  EXPECT_EQ("Sans serif|8|bold", FontToString(fonts[1]));
+  EXPECT_EQ("Courier New|8|bold", FontToString(fonts[1]));
 }
 
 TEST(FontListTest, FontDescString_GetStyle) {
@@ -167,7 +167,7 @@ TEST(FontListTest, Fonts_GetStyle) {
 TEST(FontListTest, Fonts_Derive) {
   std::vector<Font> fonts;
   fonts.push_back(gfx::Font("Arial", 8));
-  fonts.push_back(gfx::Font("Sans serif", 8));
+  fonts.push_back(gfx::Font("Courier New", 8));
   FontList font_list = FontList(fonts);
 
   FontList derived = font_list.Derive(5, Font::BOLD | Font::UNDERLINE);
@@ -175,13 +175,13 @@ TEST(FontListTest, Fonts_Derive) {
 
   EXPECT_EQ(2U, derived_fonts.size());
   EXPECT_EQ("Arial|13|bold|underline", FontToString(derived_fonts[0]));
-  EXPECT_EQ("Sans serif|13|bold|underline", FontToString(derived_fonts[1]));
+  EXPECT_EQ("Courier New|13|bold|underline", FontToString(derived_fonts[1]));
 }
 
 TEST(FontListTest, Fonts_DeriveWithSizeDelta) {
   std::vector<Font> fonts;
   fonts.push_back(gfx::Font("Arial", 18).Derive(0, Font::ITALIC));
-  fonts.push_back(gfx::Font("Sans serif", 18).Derive(0, Font::ITALIC));
+  fonts.push_back(gfx::Font("Courier New", 18).Derive(0, Font::ITALIC));
   FontList font_list = FontList(fonts);
 
   FontList derived = font_list.DeriveWithSizeDelta(-5);
@@ -189,7 +189,7 @@ TEST(FontListTest, Fonts_DeriveWithSizeDelta) {
 
   EXPECT_EQ(2U, derived_fonts.size());
   EXPECT_EQ("Arial|13|italic", FontToString(derived_fonts[0]));
-  EXPECT_EQ("Sans serif|13|italic", FontToString(derived_fonts[1]));
+  EXPECT_EQ("Courier New|13|italic", FontToString(derived_fonts[1]));
 }
 
 TEST(FontListTest, Fonts_GetHeight_GetBaseline) {
