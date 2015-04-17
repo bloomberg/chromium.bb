@@ -118,6 +118,8 @@ def RetryCommand(functor, max_retry, *args, **kwargs):
     retry_on: If provided, we will retry on any exit codes in the given list.
       Note: A process will exit with a negative exit code if it is killed by a
       signal. By default, we retry on all non-negative exit codes.
+    error_check: Optional callback to check the error output.  Return None to
+      fall back to |retry_on|, or True/False to set the retry directly.
     args: Positional args passed to RunCommand; see RunCommand for specifics.
     kwargs: Optional args passed to RunCommand; see RunCommand for specifics.
 
@@ -128,6 +130,8 @@ def RetryCommand(functor, max_retry, *args, **kwargs):
     Exception:  Raises RunCommandError on error with optional error_message.
   """
   values = kwargs.pop('retry_on', None)
+  error_check = kwargs.pop('error_check', lambda x: None)
+
   def ShouldRetry(exc):
     """Return whether we should retry on a given exception."""
     if not ShouldRetryCommandCommon(exc):
@@ -136,7 +140,11 @@ def RetryCommand(functor, max_retry, *args, **kwargs):
       logging.info('Child process received signal %d; not retrying.',
                    -exc.result.returncode)
       return False
+    ret = error_check(exc)
+    if ret is not None:
+      return ret
     return values is None or exc.result.returncode in values
+
   return GenericRetry(ShouldRetry, max_retry, functor, *args, **kwargs)
 
 
@@ -177,15 +185,36 @@ def RunCurl(args, **kwargs):
   # retry related (dns failed, timeout occurred, etc, see  the manpage for
   # exact specifics of each).
   # Note we allow 22 to deal w/ 500's- they're thrown by google storage
-  # occasionally.
+  # occasionally.  This is also thrown when getting 4xx, but curl doesn't
+  # make it easy to differentiate between them.
   # Note we allow 35 to deal w/ Unknown SSL Protocol error, thrown by
   # google storage occasionally.
   # Finally, we do not use curl's --retry option since it generally doesn't
   # actually retry anything; code 18 for example, it will not retry on.
   retriable_exits = frozenset([5, 6, 7, 15, 18, 22, 26, 28, 35, 52, 56])
+
+  def _CheckExit(exc):
+    """Filter out specific error codes when getting exit 22
+
+    Curl will exit(22) for a wide range of HTTP codes -- both the 4xx and 5xx
+    set.  For the 4xx, we don't want to retry.  We have to look at the output.
+    """
+    if exc.result.returncode == 22:
+      if '404 Not Found' in exc.result.error:
+        return False
+      else:
+        return True
+    else:
+      # We'll let the common exit code filter do the right thing.
+      return None
+
+  kwargs.update({
+      'retry_on': retriable_exits,
+      'error_check': _CheckExit,
+      'capture_output': True,
+  })
   try:
-    return RunCommandWithRetries(5, cmd, sleep=3, retry_on=retriable_exits,
-                                 **kwargs)
+    return RunCommandWithRetries(5, cmd, sleep=3, **kwargs)
   except cros_build_lib.RunCommandError as e:
     code = e.result.returncode
     if code in (51, 58, 60):
@@ -194,7 +223,6 @@ def RunCurl(args, **kwargs):
       cros_build_lib.Die(msg)
     else:
       try:
-        return RunCommandWithRetries(5, cmd, sleep=60, retry_on=retriable_exits,
-                                     **kwargs)
+        return RunCommandWithRetries(5, cmd, sleep=60, **kwargs)
       except cros_build_lib.RunCommandError as e:
         cros_build_lib.Die("Curl failed w/ exit code %i", code)
