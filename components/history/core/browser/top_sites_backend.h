@@ -26,6 +26,15 @@ class TopSitesDatabase;
 // thread.
 class TopSitesBackend : public base::RefCountedThreadSafe<TopSitesBackend> {
  public:
+  // TODO(yiyaoliu): Remove the enums and related code when crbug/223430 is
+  // fixed.
+  // An enum representing whether the UpdateTopSites execution time related
+  // histogram should be recorded.
+  enum RecordHistogram {
+    RECORD_HISTOGRAM_YES,
+    RECORD_HISTOGRAM_NO
+  };
+
   // The boolean parameter indicates if the DB existed on disk or needs to be
   // migrated.
   typedef base::Callback<void(const scoped_refptr<MostVisitedThumbnails>&)>
@@ -45,7 +54,8 @@ class TopSitesBackend : public base::RefCountedThreadSafe<TopSitesBackend> {
       base::CancelableTaskTracker* tracker);
 
   // Updates top sites database from the specified delta.
-  void UpdateTopSites(const TopSitesDelta& delta);
+  void UpdateTopSites(const TopSitesDelta& delta,
+                      const RecordHistogram record_or_not);
 
   // Sets the thumbnail.
   void SetPageThumbnail(const MostVisitedURL& url,
@@ -77,7 +87,8 @@ class TopSitesBackend : public base::RefCountedThreadSafe<TopSitesBackend> {
       scoped_refptr<MostVisitedThumbnails> thumbnails);
 
   // Updates top sites.
-  void UpdateTopSitesOnDBThread(const TopSitesDelta& delta);
+  void UpdateTopSitesOnDBThread(const TopSitesDelta& delta,
+                                const RecordHistogram record_or_not);
 
   // Sets the thumbnail.
   void SetPageThumbnailOnDBThread(const MostVisitedURL& url,

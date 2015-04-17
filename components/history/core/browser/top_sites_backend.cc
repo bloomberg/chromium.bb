@@ -47,10 +47,12 @@ void TopSitesBackend::GetMostVisitedThumbnails(
       base::Bind(callback, thumbnails));
 }
 
-void TopSitesBackend::UpdateTopSites(const TopSitesDelta& delta) {
+void TopSitesBackend::UpdateTopSites(const TopSitesDelta& delta,
+                                     const RecordHistogram record_or_not) {
   db_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&TopSitesBackend::UpdateTopSitesOnDBThread, this, delta));
+      base::Bind(&TopSitesBackend::UpdateTopSitesOnDBThread, this, delta,
+                 record_or_not));
 }
 
 void TopSitesBackend::SetPageThumbnail(const MostVisitedURL& url,
@@ -101,14 +103,13 @@ void TopSitesBackend::GetMostVisitedThumbnailsOnDBThread(
   }
 }
 
-void TopSitesBackend::UpdateTopSitesOnDBThread(const TopSitesDelta& delta) {
+void TopSitesBackend::UpdateTopSitesOnDBThread(
+    const TopSitesDelta& delta, const RecordHistogram record_or_not) {
   TRACE_EVENT0("startup", "history::TopSitesBackend::UpdateTopSitesOnDBThread");
 
   if (!db_)
     return;
 
-  // TODO(yiyaoliu): Remove the histogram and related code when crbug/223430 is
-  // fixed.
   base::TimeTicks begin_time = base::TimeTicks::Now();
 
   for (size_t i = 0; i < delta.deleted.size(); ++i)
@@ -120,8 +121,10 @@ void TopSitesBackend::UpdateTopSitesOnDBThread(const TopSitesDelta& delta) {
   for (size_t i = 0; i < delta.moved.size(); ++i)
     db_->UpdatePageRank(delta.moved[i].url, delta.moved[i].rank);
 
-  UMA_HISTOGRAM_TIMES("History.UpdateTopSitesOnDBThreadTime",
-                      base::TimeTicks::Now() - begin_time);
+  if (record_or_not == RECORD_HISTOGRAM_YES) {
+    UMA_HISTOGRAM_TIMES("History.FirstUpdateTime",
+                        base::TimeTicks::Now() - begin_time);
+  }
 }
 
 void TopSitesBackend::SetPageThumbnailOnDBThread(const MostVisitedURL& url,

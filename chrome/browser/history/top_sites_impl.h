@@ -98,6 +98,20 @@ class TopSitesImpl : public TopSites,
   ~TopSitesImpl() override;
 
  private:
+  // TODO(yiyaoliu): Remove the enums and related code when crbug/223430 is
+  // fixed.
+  // An enum representing different situations under which function
+  // SetTopSites can be initiated.
+  // This is needed because a histogram is used to record speed related metrics
+  // when SetTopSites are initiated from OnGotMostVisitedThumbnails, which
+  // usually happens early and might affect Chrome startup speed.
+  enum CallLocation {
+    // SetTopSites is called from function OnGotMostVisitedThumbnails.
+    CALL_LOCATION_FROM_ON_GOT_MOST_VISITED_THUMBNAILS,
+    // All other situations.
+    CALL_LOCATION_FROM_OTHER_PLACES
+  };
+
   friend class TopSitesImplTest;
   FRIEND_TEST_ALL_PREFIXES(TopSitesImplTest, DiffMostVisited);
   FRIEND_TEST_ALL_PREFIXES(TopSitesImplTest, DiffMostVisitedWithForced);
@@ -195,7 +209,8 @@ class TopSitesImpl : public TopSites,
   // if the list of forced URLs overflows, the oldest ones are dropped.
   // All mutations to cache_ *must* go through this. Should
   // be called from the UI thread.
-  void SetTopSites(const MostVisitedURLList& new_top_sites);
+  void SetTopSites(const MostVisitedURLList& new_top_sites,
+                   const CallLocation location);
 
   // Returns the number of most visited results to request from history. This
   // changes depending upon how many urls have been blacklisted. Should be
@@ -275,6 +290,10 @@ class TopSitesImpl : public TopSites,
 
   // Are we loaded?
   bool loaded_;
+
+  // Have the SetTopSites execution time related histograms been recorded?
+  // The histogram should only be recorded once for each Chrome execution.
+  static bool histogram_recorded_;
 
   ScopedObserver<HistoryService, HistoryServiceObserver>
       history_service_observer_;

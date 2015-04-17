@@ -11721,6 +11721,25 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="History.FirstSetTopSitesDeltaSize">
+  <owner>yiyaoliu@chromium.org</owner>
+  <summary>
+    The count of differences between cached top sites and up-to-date top sites
+    when function TopSitesImpl::SetTopSites is firstly called at startup.
+  </summary>
+</histogram>
+
+<histogram name="History.FirstUpdateTime" units="milliseconds">
+  <owner>yiyaoliu@chromium.org</owner>
+  <summary>
+    The amount of time for function
+    history::TopSitesBackend::UpdateTopSitesOnDBThread to execute when this
+    function is called during startup. Excludes the case where local
+    TopSitesDatabase db_ is unavailable, i.e. where the update doesn't really
+    happen.
+  </summary>
+</histogram>
+
 <histogram name="History.HistoryServiceInitTime" units="milliseconds">
   <owner>rkaplow@chromium.org</owner>
   <summary>
@@ -11818,6 +11837,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="History.UpdateTopSitesOnDBThreadTime" units="milliseconds">
+  <obsolete>
+    Deprecated because only the execution time at startup is of interest. See
+    histogram History.UpdateTopSitesOnDBThread_Startup_Time.
+  </obsolete>
   <owner>yiyaoliu@chromium.org</owner>
   <summary>
     The amount of time for function

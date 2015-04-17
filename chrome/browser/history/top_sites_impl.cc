@@ -96,6 +96,9 @@ static const int64 kMaxUpdateIntervalMinutes = 60;
 // artifacts for these small sized, highly detailed images.
 static const int kTopSitesImageQuality = 100;
 
+// Initially, histogram is not recorded.
+bool TopSitesImpl::histogram_recorded_ = false;
+
 TopSitesImpl::TopSitesImpl(Profile* profile,
                            const PrepopulatedPageList& prepopulated_pages)
     : backend_(NULL),
@@ -625,7 +628,7 @@ bool TopSitesImpl::AddForcedURL(const GURL& url, const base::Time& time) {
   new_list.insert(mid, new_url);
   mid = new_list.begin() + num_forced;  // Mid was invalidated.
   std::inplace_merge(new_list.begin(), mid, mid + 1, ForcedURLComparator);
-  SetTopSites(new_list);
+  SetTopSites(new_list, CALL_LOCATION_FROM_OTHER_PLACES);
   return true;
 }
 
@@ -752,7 +755,8 @@ void TopSitesImpl::Observe(int type,
     }
 }
 
-void TopSitesImpl::SetTopSites(const MostVisitedURLList& new_top_sites) {
+void TopSitesImpl::SetTopSites(const MostVisitedURLList& new_top_sites,
+                               const CallLocation location) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   MostVisitedURLList top_sites(new_top_sites);
@@ -761,8 +765,26 @@ void TopSitesImpl::SetTopSites(const MostVisitedURLList& new_top_sites) {
 
   TopSitesDelta delta;
   DiffMostVisited(cache_->top_sites(), top_sites, &delta);
+
+  TopSitesBackend::RecordHistogram record_or_not =
+      TopSitesBackend::RECORD_HISTOGRAM_NO;
+
+  // Record the delta size into a histogram if this function is called from
+  // function OnGotMostVisitedThumbnails and no histogram value has been
+  // recorded before.
+  if (location == CALL_LOCATION_FROM_ON_GOT_MOST_VISITED_THUMBNAILS &&
+      !histogram_recorded_) {
+    size_t delta_size =
+        delta.deleted.size() + delta.added.size() + delta.moved.size();
+    UMA_HISTOGRAM_COUNTS_100("History.FirstSetTopSitesDeltaSize", delta_size);
+    // Will be passed to TopSitesBackend to let it record the histogram too.
+    record_or_not = TopSitesBackend::RECORD_HISTOGRAM_YES;
+    // Change it to true so that the histogram will not be recorded any more.
+    histogram_recorded_ = true;
+  }
+
   if (!delta.deleted.empty() || !delta.added.empty() || !delta.moved.empty()) {
-    backend_->UpdateTopSites(delta);
+    backend_->UpdateTopSites(delta, record_or_not);
   }
 
   last_num_urls_changed_ = delta.added.size() + delta.moved.size();
@@ -879,7 +901,8 @@ void TopSitesImpl::OnGotMostVisitedThumbnails(
   // Set the top sites directly in the cache so that SetTopSites diffs
   // correctly.
   cache_->SetTopSites(thumbnails->most_visited);
-  SetTopSites(thumbnails->most_visited);
+  SetTopSites(thumbnails->most_visited,
+              CALL_LOCATION_FROM_ON_GOT_MOST_VISITED_THUMBNAILS);
   cache_->SetThumbnails(thumbnails->url_to_images_map);
 
   ResetThreadSafeImageCache();
@@ -894,7 +917,7 @@ void TopSitesImpl::OnGotMostVisitedThumbnails(
 void TopSitesImpl::OnTopSitesAvailableFromHistory(
     const MostVisitedURLList* pages) {
   DCHECK(pages);
-  SetTopSites(*pages);
+  SetTopSites(*pages, CALL_LOCATION_FROM_OTHER_PLACES);
 }
 
 void TopSitesImpl::OnURLsDeleted(HistoryService* history_service,
@@ -906,7 +929,7 @@ void TopSitesImpl::OnURLsDeleted(HistoryService* history_service,
     return;
 
   if (all_history) {
-    SetTopSites(MostVisitedURLList());
+    SetTopSites(MostVisitedURLList(), CALL_LOCATION_FROM_OTHER_PLACES);
     backend_->ResetDatabase();
   } else {
     std::set<size_t> indices_to_delete;  // Indices into top_sites_.
@@ -923,7 +946,7 @@ void TopSitesImpl::OnURLsDeleted(HistoryService* history_service,
          i != indices_to_delete.rend(); i++) {
       new_top_sites.erase(new_top_sites.begin() + *i);
     }
-    SetTopSites(new_top_sites);
+    SetTopSites(new_top_sites, CALL_LOCATION_FROM_OTHER_PLACES);
   }
   StartQueryForMostVisited();
 }
