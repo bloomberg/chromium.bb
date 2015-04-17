@@ -116,9 +116,10 @@ enum IPCMessageStart {
   CastMediaMsgStart,
   AwMessagePortMsgStart,
   GuestViewMsgStart,
-  // Note: CastCryptoMsgStart reserved for Chromecast internal code.
-  // Contact gunsch@ before changing/removing.
+  // Note: CastCryptoMsgStart and CastChannelMsgStart reserved for Chromecast
+  // internal code. Contact gunsch@ before changing/removing.
   CastCryptoMsgStart,
+  CastChannelMsgStart,
   DataReductionProxyStart,
   ContentSettingsMsgStart,
   LastIPCMsgStart  // Must come last.
