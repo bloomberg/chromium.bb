@@ -28,6 +28,7 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
+#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::UserMetricsAction;
