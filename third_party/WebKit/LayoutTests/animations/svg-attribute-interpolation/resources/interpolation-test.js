@@ -203,12 +203,22 @@
     if (attributeName === 'class')
       attributeName = 'className';
 
+    // The attribute 'orient' is exposed in IDL as 'orientType' and 'orientAngle'
+    if (attributeName === 'orient') {
+      if (element['orientType'] && element['orientType'].animVal === SVGMarkerElement.SVG_MARKER_ORIENT_AUTO)
+        return 'auto';
+      attributeName = 'orientAngle';
+    }
+
     var result = element[attributeName].animVal;
 
     if (!result) {
       console.log('Unknown attribute, cannot get ' + element.className.baseVal + ' ' + attributeName);
       return null;
     }
+
+    if (result instanceof SVGAngle)
+      result = result.value;
 
     if (typeof result !== 'string' && typeof result !== 'number' && typeof result !== 'boolean') {
       console.log('Attribute value has unexpected type: ' + result);
@@ -219,7 +229,8 @@
 
   function setAttributeValue(element, attributeName, expectation) {
     if (!element[attributeName]
-        && attributeName !== 'class') {
+        && attributeName !== 'class'
+        && (attributeName !== 'orient' || !element['orientType'])) {
       console.log('Unknown attribute, cannot set ' + element.className.baseVal + ' ' + attributeName);
       return;
     }

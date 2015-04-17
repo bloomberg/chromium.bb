@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/animation/StringKeyframe.h"
 
+#include "core/animation/AngleSVGInterpolation.h"
 #include "core/animation/ColorStyleInterpolation.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/ConstantStyleInterpolation.h"
@@ -465,6 +466,27 @@ PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> SVGPropertySpecificKe
     return adoptPtrWillBeNoop(new SVGPropertySpecificKeyframe(offset, easing, "", AnimationEffect::CompositeAdd));
 }
 
+namespace {
+
+PassRefPtrWillBeRawPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fromValue, SVGPropertyBase* toValue, SVGAnimatedPropertyBase* attribute)
+{
+    ASSERT(fromValue->type() == toValue->type());
+    switch (fromValue->type()) {
+    case AnimatedAngle:
+        if (AngleSVGInterpolation::canCreateFrom(fromValue) && AngleSVGInterpolation::canCreateFrom(toValue))
+            return AngleSVGInterpolation::create(fromValue, toValue, attribute);
+        break;
+
+    // FIXME: Support more animation types.
+    default:
+        break;
+    }
+
+    return DefaultSVGInterpolation::create(fromValue, toValue, attribute);
+}
+
+} // namespace
+
 PassRefPtrWillBeRawPtr<Interpolation> SVGPropertySpecificKeyframe::maybeCreateInterpolation(PropertyHandle propertyHandle, blink::Keyframe::PropertySpecificKeyframe& end, Element* element, const ComputedStyle* baseStyle) const
 {
     ASSERT(element);
@@ -477,8 +499,7 @@ PassRefPtrWillBeRawPtr<Interpolation> SVGPropertySpecificKeyframe::maybeCreateIn
     if (!fromValue || !toValue)
         return nullptr;
 
-    // FIXME: Support more animation types.
-    return DefaultSVGInterpolation::create(fromValue.get(), toValue.get(), attribute);
+    return createSVGInterpolation(fromValue.get(), toValue.get(), attribute.get());
 }
 
 }
