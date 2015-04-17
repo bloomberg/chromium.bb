@@ -211,12 +211,14 @@ void AudioDirectiveHandlerImpl::ProcessNextInstruction() {
 
   // TODO(crbug.com/436584): Instead of this, store the directives
   // in a single list, and prune them when expired.
-  std::vector<Directive> directives;
-  ConvertDirectives(transmits_lists_[AUDIBLE]->directives(), &directives);
-  ConvertDirectives(transmits_lists_[INAUDIBLE]->directives(), &directives);
-  ConvertDirectives(receives_lists_[AUDIBLE]->directives(), &directives);
-  ConvertDirectives(receives_lists_[INAUDIBLE]->directives(), &directives);
-  update_directives_callback_.Run(directives);
+  if (!update_directives_callback_.is_null()) {
+    std::vector<Directive> directives;
+    ConvertDirectives(transmits_lists_[AUDIBLE]->directives(), &directives);
+    ConvertDirectives(transmits_lists_[INAUDIBLE]->directives(), &directives);
+    ConvertDirectives(receives_lists_[AUDIBLE]->directives(), &directives);
+    ConvertDirectives(receives_lists_[INAUDIBLE]->directives(), &directives);
+    update_directives_callback_.Run(directives);
+  }
 }
 
 bool AudioDirectiveHandlerImpl::GetNextInstructionExpiry(

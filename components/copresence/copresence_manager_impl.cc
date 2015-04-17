@@ -83,8 +83,8 @@ CopresenceManagerImpl::CopresenceManagerImpl(CopresenceDelegate* delegate)
                                           messages_callback));
 
   rpc_handler_.reset(new RpcHandler(delegate,
-                                    state_.get(),
                                     directive_handler_.get(),
+                                    state_.get(),
                                     gcm_handler_.get(),
                                     messages_callback));
 

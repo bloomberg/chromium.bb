@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,10 +50,9 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
       : whispernet_client_(new audio_modem::StubWhispernetClient),
         // TODO(ckehoe): Use a FakeCopresenceState here
         // and test that it gets called correctly.
-        state_(new CopresenceStateImpl),
         rpc_handler_(this,
-                     state_.get(),
                      &directive_handler_,
+                     nullptr,
                      nullptr,
                      base::Bind(&IgnoreMessages),
                      base::Bind(&RpcHandlerTest::CaptureHttpPost,
@@ -164,7 +163,6 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
 
   scoped_ptr<WhispernetClient> whispernet_client_;
   FakeDirectiveHandler directive_handler_;
-  scoped_ptr<CopresenceStateImpl> state_;
   RpcHandler rpc_handler_;
 
   std::map<bool, std::string> device_id_by_auth_state_;

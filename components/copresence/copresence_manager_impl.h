@@ -85,12 +85,11 @@ class CopresenceManagerImpl : public CopresenceManager {
 
   bool init_failed_;
 
-  // This order is required because each object
-  // makes calls to those listed before it.
+  // The RpcHandler makes calls to the other objects here, so it must come last.
   scoped_ptr<CopresenceStateImpl> state_;
-  scoped_ptr<RpcHandler> rpc_handler_;
   scoped_ptr<DirectiveHandler> directive_handler_;
   scoped_ptr<GCMHandler> gcm_handler_;
+  scoped_ptr<RpcHandler> rpc_handler_;
 
   scoped_ptr<base::Timer> poll_timer_;
   scoped_ptr<base::Timer> audio_check_timer_;
