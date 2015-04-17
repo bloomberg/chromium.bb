@@ -37,7 +37,8 @@
                 <ImageView
                     android:layout_height="wrap_content"
                     android:layout_width="wrap_content"
-                    android:src="@drawable/empty_host_list"/>
+                    android:src="@drawable/empty_host_list"
+                    android:contentDescription="@null"/>
                 <TextView
                     android:gravity="center"
                     android:layout_height="wrap_content"
