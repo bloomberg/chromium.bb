@@ -15,19 +15,26 @@ function test()
         {"name": "LongSnapshot", "ts": 20000, args: {"snapshot": "abcdef".repeat(10000)}, "dur": 1000, "ph": "O", "tid": mainThread, "pid": 100, "cat":"test"}
     ];
 
+    function getEventByName(name)
+    {
+        return thread.events().filter(function(event) { return event.name === name; })[0];
+    }
+
     var model = InspectorTest.createTracingModel();
     model.setEventsForTest(testData);
     var process = model.sortedProcesses()[0];
-    process.objectsByName("ShortSnapshot")[0].requestObject(step1);
+    var thread = process.sortedThreads()[0];
+    InspectorTest.assertEquals("лет ми спик фром май харт", getEventByName("NonAscii").args["nonascii"]);
+    getEventByName("ShortSnapshot").requestObject(step1);
     function step1(object)
     {
         InspectorTest.assertEquals("short snapshot data", object);
-        process.objectsByName("LongSnapshot")[0].requestObject(step2);
+        getEventByName("LongSnapshot").requestObject(step2);
     }
     function step2(object)
     {
         InspectorTest.assertEquals("abcdef".repeat(10000), object);
-        process.objectsByName("NonAsciiSnapshot")[0].requestObject(step3);
+        getEventByName("NonAsciiSnapshot").requestObject(step3);
     }
     function step3(object)
     {
