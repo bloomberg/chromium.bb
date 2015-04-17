@@ -407,6 +407,16 @@ void PasswordManager::CreatePendingLoginManagers(
 
     UMA_HISTOGRAM_BOOLEAN("PasswordManager.EmptyUsernames.ParsedUsernameField",
                           iter->username_element.empty());
+
+    // Out of the forms not containing a username field, determine how many
+    // are password change forms.
+    if (iter->username_element.empty()) {
+      UMA_HISTOGRAM_BOOLEAN(
+          "PasswordManager.EmptyUsernames."
+          "FormWithoutUsernameFieldIsPasswordChangeForm",
+          !iter->new_password_element.empty());
+    }
+
     if (logger)
       logger->LogFormSignatures(Logger::STRING_ADDING_SIGNATURE, *iter);
     bool ssl_valid = iter->origin.SchemeIsSecure();

@@ -25424,6 +25424,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram
+    name="PasswordManager.EmptyUsernames.FormWithoutUsernameFieldIsPasswordChangeForm"
+    enum="PasswordManagerEmptyUsernamePasswordChangeForm">
+  <owner>msramek@chromium.org</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    When parsing a password form, and no username field is detected, whether
+    this was a password change form.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.EmptyUsernames.OfferedToSave"
     enum="PasswordManagerShowEmptyUsername">
   <owner>vasilii@chromium.org</owner>
@@ -57976,6 +57987,11 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="PasswordManagerEmptyUsernameField" type="int">
   <int value="0" label="Has username field"/>
   <int value="1" label="No username field"/>
+</enum>
+
+<enum name="PasswordManagerEmptyUsernamePasswordChangeForm" type="int">
+  <int value="0" label="Not a password change form"/>
+  <int value="1" label="A password change form"/>
 </enum>
 
 <enum name="PasswordManagerOsPasswordStatus" type="int">
