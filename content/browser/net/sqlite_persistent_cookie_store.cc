@@ -307,6 +307,11 @@ namespace {
 
 // Version number of the database.
 //
+// Version 9 adds a partial index to track non-persistent cookies.
+// Non-persistent cookies sometimes need to be deleted on startup. There are
+// frequently few or no non-persistent cookies, so the partial index allows the
+// deletion to be sped up or skipped, without having to page in the DB.
+//
 // Version 8 adds "first-party only" cookies.
 //
 // Version 7 adds encrypted values.  Old values will continue to be used but
@@ -332,7 +337,7 @@ namespace {
 // Version 3 updated the database to include the last access time, so we can
 // expire them in decreasing order of use when we've reached the maximum
 // number of cookies.
-const int kCurrentVersionNumber = 8;
+const int kCurrentVersionNumber = 9;
 const int kCompatibleVersionNumber = 5;
 
 // Possible values for the 'priority' column.
@@ -395,35 +400,37 @@ class IncrementTimeDelta {
 
 // Initializes the cookies table, returning true on success.
 bool InitTable(sql::Connection* db) {
-  if (!db->DoesTableExist("cookies")) {
-    std::string stmt(base::StringPrintf(
-        "CREATE TABLE cookies ("
-        "creation_utc INTEGER NOT NULL UNIQUE PRIMARY KEY,"
-        "host_key TEXT NOT NULL,"
-        "name TEXT NOT NULL,"
-        "value TEXT NOT NULL,"
-        "path TEXT NOT NULL,"
-        "expires_utc INTEGER NOT NULL,"
-        "secure INTEGER NOT NULL,"
-        "httponly INTEGER NOT NULL,"
-        "last_access_utc INTEGER NOT NULL, "
-        "has_expires INTEGER NOT NULL DEFAULT 1, "
-        "persistent INTEGER NOT NULL DEFAULT 1,"
-        "priority INTEGER NOT NULL DEFAULT %d,"
-        "encrypted_value BLOB DEFAULT '',"
-        "firstpartyonly INTEGER NOT NULL DEFAULT 0)",
-        CookiePriorityToDBCookiePriority(net::COOKIE_PRIORITY_DEFAULT)));
-    if (!db->Execute(stmt.c_str()))
-      return false;
+  if (db->DoesTableExist("cookies"))
+    return true;
+
+  std::string stmt(base::StringPrintf(
+      "CREATE TABLE cookies ("
+      "creation_utc INTEGER NOT NULL UNIQUE PRIMARY KEY,"
+      "host_key TEXT NOT NULL,"
+      "name TEXT NOT NULL,"
+      "value TEXT NOT NULL,"
+      "path TEXT NOT NULL,"
+      "expires_utc INTEGER NOT NULL,"
+      "secure INTEGER NOT NULL,"
+      "httponly INTEGER NOT NULL,"
+      "last_access_utc INTEGER NOT NULL, "
+      "has_expires INTEGER NOT NULL DEFAULT 1, "
+      "persistent INTEGER NOT NULL DEFAULT 1,"
+      "priority INTEGER NOT NULL DEFAULT %d,"
+      "encrypted_value BLOB DEFAULT '',"
+      "firstpartyonly INTEGER NOT NULL DEFAULT 0)",
+      CookiePriorityToDBCookiePriority(net::COOKIE_PRIORITY_DEFAULT)));
+  if (!db->Execute(stmt.c_str()))
+    return false;
+
+  if (!db->Execute("CREATE INDEX domain ON cookies(host_key)"))
+    return false;
+
+  if (!db->Execute(
+          "CREATE INDEX is_transient ON cookies(persistent) "
+          "where persistent != 1")) {
+    return false;
   }
-
-  // Older code created an index on creation_utc, which is already
-  // primary key for the table.
-  if (!db->Execute("DROP INDEX IF EXISTS cookie_times"))
-    return false;
-
-  if (!db->Execute("CREATE INDEX IF NOT EXISTS domain ON cookies(host_key)"))
-    return false;
 
   return true;
 }
@@ -947,6 +954,40 @@ bool SQLitePersistentCookieStore::Backend::EnsureDatabaseVersion() {
         std::min(cur_version, kCompatibleVersionNumber));
     transaction.Commit();
     UMA_HISTOGRAM_TIMES("Cookie.TimeDatabaseMigrationToV8",
+                        base::TimeTicks::Now() - start_time);
+  }
+
+  if (cur_version == 8) {
+    const base::TimeTicks start_time = base::TimeTicks::Now();
+    sql::Transaction transaction(db_.get());
+    if (!transaction.Begin())
+      return false;
+
+    if (!db_->Execute("DROP INDEX IF EXISTS cookie_times")) {
+      LOG(WARNING)
+          << "Unable to drop table cookie_times in update to version 9.";
+      return false;
+    }
+
+    if (!db_->Execute(
+        "CREATE INDEX IF NOT EXISTS domain ON cookies(host_key)")) {
+      LOG(WARNING) << "Unable to create index domain in update to version 9.";
+      return false;
+    }
+
+    if (!db_->Execute(
+            "CREATE INDEX IF NOT EXISTS is_transient ON cookies(persistent) "
+            "where persistent != 1")) {
+      LOG(WARNING)
+          << "Unable to create index is_transient in update to version 9.";
+      return false;
+    }
+    ++cur_version;
+    meta_table_.SetVersionNumber(cur_version);
+    meta_table_.SetCompatibleVersionNumber(
+        std::min(cur_version, kCompatibleVersionNumber));
+    transaction.Commit();
+    UMA_HISTOGRAM_TIMES("Cookie.TimeDatabaseMigrationToV9",
                         base::TimeTicks::Now() - start_time);
   }
 
