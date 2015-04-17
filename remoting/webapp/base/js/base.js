@@ -773,6 +773,16 @@ base.jsonParseSafe = function(jsonString) {
 };
 
 /**
+ * Return the current time as a formatted string suitable for logging.
+ *
+ * @return {string} The current time, formatted as the standard ISO string.
+ *     [yyyy-mm-ddDhh:mm:ss.xyz]
+ */
+base.timestamp = function() {
+  return '[' + new Date().toISOString() + ']';
+};
+
+/**
  * Size the current window to fit its content vertically.
  */
 base.resizeWindowToContent = function() {

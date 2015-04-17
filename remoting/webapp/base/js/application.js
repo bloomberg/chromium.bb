@@ -13,6 +13,13 @@
 var remoting = remoting || {};
 
 /**
+ * @type {base.EventSourceImpl} An event source object for handling global
+ *    events. This is an interim hack.  Eventually, we should move
+ *    functionalities away from the remoting namespace and into smaller objects.
+ */
+remoting.testEvents;
+
+/**
  * @constructor
  */
 remoting.Application = function() {
@@ -80,7 +87,7 @@ remoting.Application.prototype.start = function() {
   // global 'remoting' namespace.
   remoting.settings = new remoting.Settings();
 
-  remoting.initGlobalObjects();
+  this.initGlobalObjects_();
   remoting.initIdentity();
 
   this.initApplication_();
@@ -95,6 +102,42 @@ remoting.Application.prototype.start = function() {
       that.signInFailed_(error);
     }
   });
+};
+
+/** @private */
+remoting.Application.prototype.initGlobalObjects_ = function() {
+  if (base.isAppsV2()) {
+    var htmlNode = /** @type {HTMLElement} */ (document.body.parentNode);
+    htmlNode.classList.add('apps-v2');
+  }
+
+  console.log(this.getExtensionInfo());
+  l10n.localize();
+  var sandbox =
+      /** @type {HTMLIFrameElement} */ (document.getElementById('wcs-sandbox'));
+  remoting.wcsSandbox = new remoting.WcsSandboxContainer(sandbox.contentWindow);
+  remoting.initModalDialogs();
+
+  remoting.testEvents = new base.EventSourceImpl();
+  /** @enum {string} */
+  remoting.testEvents.Names = {
+    uiModeChanged: 'uiModeChanged'
+  };
+  remoting.testEvents.defineEvents(base.values(remoting.testEvents.Names));
+};
+
+/**
+ * @return {string} Information about the current extension.
+ */
+remoting.Application.prototype.getExtensionInfo = function() {
+  var v2OrLegacy = base.isAppsV2() ? " (v2)" : " (legacy)";
+  var manifest = chrome.runtime.getManifest();
+  if (manifest && manifest.version) {
+    var name = this.getApplicationName();
+    return name + ' version: ' + manifest.version + v2OrLegacy;
+  } else {
+    return 'Failed to get product version. Corrupt manifest?';
+  }
 };
 
 /**

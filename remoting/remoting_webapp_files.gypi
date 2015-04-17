@@ -180,7 +180,6 @@
       'webapp/crd/js/error.js',
       'webapp/crd/js/event_handlers.js',
       'webapp/crd/js/plugin_settings.js',
-      'webapp/crd/js/remoting.js',
       'webapp/crd/js/typecheck.js',
       'webapp/crd/js/xhr.js',
       'webapp/crd/js/gcd_client.js',

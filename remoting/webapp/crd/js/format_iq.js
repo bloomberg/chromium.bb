@@ -14,10 +14,14 @@ var remoting = remoting || {};
 
 /**
  * @constructor
+ * @param {string} clientJid
+ * @param {string} hostJid
  */
-remoting.FormatIq = function() {
-  this.clientJid = '';
-  this.hostJid = '';
+remoting.FormatIq = function(clientJid, hostJid) {
+  /** @private */
+  this.clientJid_ = clientJid;
+  /** @private */
+  this.hostJid_ = hostJid;
 };
 
 /**
@@ -41,18 +45,6 @@ remoting.FormatIq.prototype.verifyAttributes = function(node, validAttrs) {
     }
   }
   return true;
-};
-
-/**
- * Record the client and host JIDs so that we can check them against the
- * params in the IQ packets.
- *
- * @param {string} clientJid The client JID string.
- * @param {string} hostJid The host JID string.
- */
-remoting.FormatIq.prototype.setJids = function(clientJid, hostJid) {
-  this.clientJid = clientJid;
-  this.hostJid = hostJid;
 };
 
 /**
@@ -623,11 +615,11 @@ remoting.FormatIq.prototype.prettyIq = function(send, message) {
     var action = '';
     var bot = remoting.settings.DIRECTORY_BOT_JID;
     if (send) {
-      if (to && to != this.hostJid && to != bot) {
+      if (to && to != this.hostJid_ && to != bot) {
         console.warn('FormatIq: bad to: ' + to);
         return null;
       }
-      if (from && from != this.clientJid) {
+      if (from && from != this.clientJid_) {
         console.warn('FormatIq: bad from: ' + from);
         return null;
       }
@@ -637,11 +629,11 @@ remoting.FormatIq.prototype.prettyIq = function(send, message) {
         action = action + " (to bot)";
       }
     } else {
-      if (to && to != this.clientJid) {
+      if (to && to != this.clientJid_) {
         console.warn('FormatIq: bad to: ' + to);
         return null;
       }
-      if (from && from != this.hostJid && from != bot) {
+      if (from && from != this.hostJid_ && from != bot) {
         console.warn('FormatIq: bad from: ' + from);
         return null;
       }
@@ -704,6 +696,3 @@ remoting.FormatIq.prototype.prettifyReceiveIq = function(message) {
   }
   return result;
 };
-
-/** @type {remoting.FormatIq} */
-remoting.formatIq = null;

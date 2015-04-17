@@ -57,7 +57,10 @@ remoting.ClientSession = function(plugin, host, signalStrategy) {
                     remoting.SignalStrategy.State.CONNECTED);
   this.signalStrategy_.setIncomingStanzaCallback(
       this.onIncomingMessage_.bind(this));
-  remoting.formatIq.setJids(this.signalStrategy_.getJid(), host.jabberId);
+
+  /** @private */
+  this.iqFormatter_ =
+      new remoting.FormatIq(this.signalStrategy_.getJid(), host.jabberId);
 
   /**
    * Allow host-offline error reporting to be suppressed in situations where it
@@ -366,7 +369,7 @@ remoting.ClientSession.prototype.sendIq_ = function(message) {
     }
   }
 
-  console.log(remoting.timestamp(), remoting.formatIq.prettifySendIq(message));
+  console.log(base.timestamp() + this.iqFormatter_.prettifySendIq(message));
   if (this.signalStrategy_.getState() !=
       remoting.SignalStrategy.State.CONNECTED) {
     console.log("Message above is dropped because signaling is not connected.");
@@ -399,8 +402,8 @@ remoting.ClientSession.prototype.onIncomingMessage_ = function(message) {
     return;
   }
   var formatted = new XMLSerializer().serializeToString(message);
-  console.log(remoting.timestamp(),
-              remoting.formatIq.prettifyReceiveIq(formatted));
+  console.log(base.timestamp() +
+              this.iqFormatter_.prettifyReceiveIq(formatted));
   this.plugin_.onIncomingIq(formatted);
 };
 

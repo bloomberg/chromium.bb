@@ -45,7 +45,7 @@ remoting.sendFeedback_ = function() {
     feedbackInfo: {
       description: '',
       systemInformation: [
-        { key: 'version', value: remoting.getExtensionInfo() }
+        { key: 'version', value: remoting.app.getExtensionInfo() }
       ]
     }
   };
