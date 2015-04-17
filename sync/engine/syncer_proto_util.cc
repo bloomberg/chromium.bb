@@ -522,28 +522,6 @@ bool SyncerProtoUtil::ShouldMaintainPosition(
 }
 
 // static
-void SyncerProtoUtil::CopyProtoBytesIntoBlob(const std::string& proto_bytes,
-                                             syncable::Blob* blob) {
-  syncable::Blob proto_blob(proto_bytes.begin(), proto_bytes.end());
-  blob->swap(proto_blob);
-}
-
-// static
-bool SyncerProtoUtil::ProtoBytesEqualsBlob(const std::string& proto_bytes,
-                                           const syncable::Blob& blob) {
-  if (proto_bytes.size() != blob.size())
-    return false;
-  return std::equal(proto_bytes.begin(), proto_bytes.end(), blob.begin());
-}
-
-// static
-void SyncerProtoUtil::CopyBlobIntoProtoBytes(const syncable::Blob& blob,
-                                             std::string* proto_bytes) {
-  std::string blob_string(blob.begin(), blob.end());
-  proto_bytes->swap(blob_string);
-}
-
-// static
 const std::string& SyncerProtoUtil::NameFromSyncEntity(
     const sync_pb::SyncEntity& entry) {
   if (entry.has_non_unique_name())

@@ -72,7 +72,6 @@ using std::vector;
 namespace syncer {
 
 using syncable::BaseTransaction;
-using syncable::Blob;
 using syncable::CountEntriesWithName;
 using syncable::Directory;
 using syncable::Entry;
