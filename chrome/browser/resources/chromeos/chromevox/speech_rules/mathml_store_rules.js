@@ -95,13 +95,14 @@ cvox.MathmlStoreRules.initCustomFunctions_ = function() {
 cvox.MathmlStoreRules.initDefaultRules_ = function() {
   // Initial rule
   defineDefaultMathmlRule('math', '[m] ./*');
+  defineDefaultMathmlRule('semantics', '[n] ./*[1]');
 
   // Space elements
   defineDefaultMathmlRule('mspace', '[p] (pause:250)');
   defineDefaultMathmlRule('mstyle', '[m] ./*');
   defineDefaultMathmlRule('mpadded', '[m] ./*');
-  defineDefaultMathmlRule('merror', '[m] ./*');
-  defineDefaultMathmlRule('mphantom', '[m] ./*');
+  defineDefaultMathmlRule('merror', '[t] ""');
+  defineDefaultMathmlRule('mphantom', '[t] ""');
 
   // Token elements.
   defineDefaultMathmlRule('mtext', '[t] text(); [p] (pause:200)');
@@ -164,31 +165,58 @@ cvox.MathmlStoreRules.initDefaultRules_ = function() {
   defineDefaultMathmlRule(
       'mfrac', ' [p] (pause:400); [n] ./*[1] (pitch:0.3);' +
           ' [t] "divided by"; [n] ./*[2] (pitch:-0.3); [p] (pause:400)');
+  defineRule(
+      'mfrac', 'default.short', '[p] (pause:200); [t] "start frac";' +
+          '[n] ./*[1] (pitch:0.3); [t] "over"; ' +
+          '[n] ./*[2] (pitch:-0.3); [p] (pause:400); [t] "end frac"',
+      'self::mathml:mfrac');
 
 
   defineRule(
       'mfenced-single', 'default.default',
-      '[t] @open (context:"opening"); [m] ./* (separator:@separators);' +
-          '[t] @close (context:"closing")',
+      '[t] concat(substring(@open, 0 div boolean(@open)), ' +
+          'substring("(", 0 div not(boolean(@open)))) (context:"opening"); ' +
+          '[m] ./* (separator:@separators); ' +
+          '[t] concat(substring(@close, 0 div boolean(@close)), ' +
+          'substring(")", 0 div not(boolean(@close)))) (context:"closing")',
       'self::mathml:mfenced', 'string-length(string(@separators))=1');
 
   defineRule(
+      'mfenced-omit', 'default.default',
+      '[t] concat(substring(@open, 0 div boolean(@open)), ' +
+          'substring("(", 0 div not(boolean(@open)))) (context:"opening"); ' +
+          '[m] ./*; ' +
+          '[t] concat(substring(@close, 0 div boolean(@close)), ' +
+          'substring(")", 0 div not(boolean(@close)))) (context:"closing")',
+      'self::mathml:mfenced', '@separators',
+      'string-length(string(@separators))=0', 'string(@separators)=""');
+
+  defineRule(
       'mfenced-empty', 'default.default',
-      '[t] @open (context:"opening"); [m] ./*;' +
-          '[t] @close (context:"closing")',
+      '[t] concat(substring(@open, 0 div boolean(@open)), ' +
+          'substring("(", 0 div not(boolean(@open)))) (context:"opening"); ' +
+          '[m] ./*;' +
+          '[t] concat(substring(@close, 0 div boolean(@close)), ' +
+          'substring(")", 0 div not(boolean(@close)))) (context:"closing")',
       'self::mathml:mfenced', 'string-length(string(@separators))=1',
       'string(@separators)=" "');
 
   defineRule(
       'mfenced-comma', 'default.default',
-      '[t] @open (context:"opening"); [m] ./* (separator:"comma");' +
-          '[t] @close (context:"closing")',
+      '[t] concat(substring(@open, 0 div boolean(@open)), ' +
+          'substring("(", 0 div not(boolean(@open)))) (context:"opening"); ' +
+          '[m] ./* (separator:"comma");' +
+          '[t] concat(substring(@close, 0 div boolean(@close)), ' +
+          'substring(")", 0 div not(boolean(@close)))) (context:"closing")',
       'self::mathml:mfenced');
 
   defineRule(
       'mfenced-multi', 'default.default',
-      '[t] @open (context:"opening"); [m] ./* (sepFunc:CTXFmfSeparators,' +
-          'separator:@separators); [t] @close (context:"closing")',
+      '[t] concat(substring(@open, 0 div boolean(@open)), ' +
+          'substring("(", 0 div not(boolean(@open)))) (context:"opening"); ' +
+          '[m] ./* (sepFunc:CTXFmfSeparators, separator:@separators); ' +
+          '[t] concat(substring(@close, 0 div boolean(@close)), ' +
+          'substring(")", 0 div not(boolean(@close)))) (context:"closing")',
       'self::mathml:mfenced', 'string-length(string(@separators))>1');
 
   // Mtable rules.
