@@ -219,7 +219,7 @@ TEST_F(SupervisedUserServiceTest, ShutDownCustodianProfileDownloader) {
   // Emulate being logged in, then start to download a profile so a
   // ProfileDownloader gets created.
   SigninManagerFactory::GetForProfile(profile_.get())->
-      SetAuthenticatedUsername("Logged In");
+      SetAuthenticatedAccountInfo("12345", "Logged In");
   downloader_service->DownloadProfile(base::Bind(&OnProfileDownloadedFail));
 }
 

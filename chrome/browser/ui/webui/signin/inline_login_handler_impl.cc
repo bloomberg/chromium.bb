@@ -306,13 +306,10 @@ void InlineSigninHelper::OnClientOAuthSuccess(const ClientOAuthResult& result) {
       AboutSigninInternalsFactory::GetForProfile(profile_);
   about_signin_internals->OnRefreshTokenReceived("Successful");
 
-  AccountTrackerService* account_tracker =
-      AccountTrackerServiceFactory::GetForProfile(profile_);
-  std::string account_id =
-      account_tracker->PickAccountIdForAccount(gaia_id_, email_);
-
   // Prime the account tracker with this combination of gaia id/display email.
-  account_tracker->SeedAccountInfo(gaia_id_, email_);
+  std::string account_id =
+      AccountTrackerServiceFactory::GetForProfile(profile_)
+          ->SeedAccountInfo(gaia_id_, email_);
 
   signin_metrics::Source source = signin::GetSourceForPromoURL(current_url_);
 
@@ -387,7 +384,7 @@ void InlineSigninHelper::OnClientOAuthSuccess(const ClientOAuthResult& result) {
       // OneClickSigninSyncStarter will delete itself once the job is done.
       new OneClickSigninSyncStarter(
           profile_, browser,
-          email_, password_, result.refresh_token,
+          gaia_id_, email_, password_, result.refresh_token,
           start_mode,
           contents,
           confirmation_required,
@@ -448,7 +445,7 @@ void InlineSigninHelper::ConfirmEmailAction(
       break;
     case ConfirmEmailDialogDelegate::START_SYNC:
       new OneClickSigninSyncStarter(
-          profile_, browser, email_, password_, refresh_token,
+          profile_, browser, gaia_id_, email_, password_, refresh_token,
           start_mode, web_contents, confirmation_required, GURL(),
           base::Bind(&InlineLoginHandlerImpl::SyncStarterCallback, handler_));
       break;

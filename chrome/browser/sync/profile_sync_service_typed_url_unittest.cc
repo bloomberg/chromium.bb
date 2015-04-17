@@ -21,6 +21,7 @@
 #include "chrome/browser/invalidation/fake_invalidation_service.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -47,6 +48,7 @@
 #include "components/invalidation/invalidation_service.h"
 #include "components/invalidation/profile_invalidation_provider.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/data_type_error_handler_mock.h"
 #include "content/public/browser/notification_service.h"
@@ -258,8 +260,11 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   TypedUrlModelAssociator* StartSyncService(const base::Closure& callback) {
     TypedUrlModelAssociator* model_associator = NULL;
     if (!sync_service_) {
+      std::string account_id =
+            AccountTrackerServiceFactory::GetForProfile(profile_)
+                ->SeedAccountInfo("gaia_id", "test");
       SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile_);
-      signin->SetAuthenticatedUsername("test");
+      signin->SetAuthenticatedAccountInfo("gaia_id", "test");
       sync_service_ = TestProfileSyncService::BuildAutoStartAsyncInit(profile_,
                                                                       callback);
       ProfileSyncComponentsFactoryMock* components =
@@ -279,7 +284,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
 
       ProfileOAuth2TokenService* oauth2_token_service =
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-      oauth2_token_service->UpdateCredentials("test", "oauth2_login_token");
+      oauth2_token_service->UpdateCredentials(account_id, "oauth2_login_token");
 
       sync_service_->RegisterDataTypeController(data_type_controller);
 

@@ -157,7 +157,8 @@ TEST_F(ExternalProviderImplChromeOSTest, PolicyDisabled) {
       new ProfileManagerWithoutInit(temp_dir().path()));
   SigninManagerBase* signin =
       SigninManagerFactory::GetForProfile(profile_.get());
-  signin->SetAuthenticatedUsername("test_user@gmail.com");
+  signin->SetAuthenticatedAccountInfo("gaia-id-test_user@gmail.com",
+                                      "test_user@gmail.com");
   ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get())
       ->UpdateCredentials("test_user@gmail.com", "oauth2_login_token");
 
@@ -184,7 +185,8 @@ TEST_F(ExternalProviderImplChromeOSTest, PriorityCompleted) {
   // User is logged in.
   SigninManagerBase* signin =
       SigninManagerFactory::GetForProfile(profile_.get());
-  signin->SetAuthenticatedUsername("test_user@gmail.com");
+  signin->SetAuthenticatedAccountInfo("gaia-id-test_user@gmail.com",
+                                      "test_user@gmail.com");
 
   // App sync will wait for priority sync to complete.
   service_->CheckForExternalUpdates();

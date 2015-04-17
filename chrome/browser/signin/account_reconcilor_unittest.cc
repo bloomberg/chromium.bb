@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
@@ -23,6 +24,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/signin/core/browser/account_reconcilor.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -37,8 +39,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-
-const char kTestEmail[] = "user@gmail.com";
 
 class MockAccountReconcilor : public testing::StrictMock<AccountReconcilor> {
  public:
@@ -87,6 +87,7 @@ class AccountReconcilorTest : public ::testing::TestWithParam<bool> {
   FakeSigninManagerForTesting* signin_manager() { return signin_manager_; }
   FakeProfileOAuth2TokenService* token_service() { return token_service_; }
   TestSigninClient* test_signin_client() { return test_signin_client_; }
+  AccountTrackerService* account_tracker() { return account_tracker_; }
   base::HistogramTester* histogram_tester() { return &histogram_tester_; }
 
   void SetFakeResponse(const std::string& url,
@@ -97,6 +98,12 @@ class AccountReconcilorTest : public ::testing::TestWithParam<bool> {
   }
 
   MockAccountReconcilor* GetMockReconcilor();
+
+  std::string ConnectProfileToAccount(const std::string& gaia_id,
+                                      const std::string& username);
+
+  std::string PickAccountIdForAccount(const std::string& gaia_id,
+                                      const std::string& username);
 
   void SimulateAddAccountToCookieCompleted(
       GaiaCookieManagerService::Observer* observer,
@@ -118,6 +125,7 @@ class AccountReconcilorTest : public ::testing::TestWithParam<bool> {
   FakeSigninManagerForTesting* signin_manager_;
   FakeProfileOAuth2TokenService* token_service_;
   TestSigninClient* test_signin_client_;
+  AccountTrackerService* account_tracker_;
   MockAccountReconcilor* mock_reconcilor_;
   net::FakeURLFetcherFactory url_fetcher_factory_;
   scoped_ptr<TestingProfileManager> testing_profile_manager_;
@@ -173,17 +181,20 @@ void AccountReconcilorTest::SetUp() {
                               base::UTF8ToUTF16("name"), 0, std::string(),
                               factories);
 
-  signin_manager_ =
-      static_cast<FakeSigninManagerForTesting*>(
-          SigninManagerFactory::GetForProfile(profile()));
+  test_signin_client_ =
+      static_cast<TestSigninClient*>(
+          ChromeSigninClientFactory::GetForProfile(profile()));
 
   token_service_ =
       static_cast<FakeProfileOAuth2TokenService*>(
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile()));
 
-  test_signin_client_ =
-      static_cast<TestSigninClient*>(
-          ChromeSigninClientFactory::GetForProfile(profile()));
+  account_tracker_ =
+      AccountTrackerServiceFactory::GetForProfile(profile());
+
+  signin_manager_ =
+      static_cast<FakeSigninManagerForTesting*>(
+          SigninManagerFactory::GetForProfile(profile()));
 }
 
 MockAccountReconcilor* AccountReconcilorTest::GetMockReconcilor() {
@@ -194,6 +205,24 @@ MockAccountReconcilor* AccountReconcilorTest::GetMockReconcilor() {
   }
 
   return mock_reconcilor_;
+}
+
+std::string AccountReconcilorTest::ConnectProfileToAccount(
+    const std::string& gaia_id,
+    const std::string& username) {
+  const std::string account_id = PickAccountIdForAccount(gaia_id, username);
+#if !defined(OS_CHROMEOS)
+  signin_manager()->set_password("password");
+#endif
+  signin_manager()->SetAuthenticatedAccountInfo(gaia_id, username);
+  token_service()->UpdateCredentials(account_id, "refresh_token");
+  return account_id;
+}
+
+std::string AccountReconcilorTest::PickAccountIdForAccount(
+    const std::string& gaia_id,
+    const std::string& username) {
+  return account_tracker()->PickAccountIdForAccount(gaia_id, username);
 }
 
 void AccountReconcilorTest::SimulateAddAccountToCookieCompleted(
@@ -231,8 +260,8 @@ TEST_F(AccountReconcilorTest, SigninManagerRegistration) {
   ASSERT_TRUE(reconcilor);
   ASSERT_FALSE(reconcilor->IsRegisteredWithTokenService());
 
-  signin_manager()->set_password("password");
-  signin_manager()->OnExternalSigninCompleted(kTestEmail);
+  account_tracker()->SeedAccountInfo("12345", "user@gmail.com");
+  signin_manager()->SignIn("12345", "user@gmail.com", "password");
   ASSERT_TRUE(reconcilor->IsRegisteredWithTokenService());
 
   EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction());
@@ -246,8 +275,9 @@ TEST_F(AccountReconcilorTest, SigninManagerRegistration) {
 // method with an empty implementation. On MacOS, the normal implementation
 // causes the try_bots to time out.
 TEST_F(AccountReconcilorTest, Reauth) {
-  signin_manager()->SetAuthenticatedUsername(kTestEmail);
-  signin_manager()->set_password("password");
+  const std::string email = "user@gmail.com";
+  const std::string account_id =
+      ConnectProfileToAccount("12345", email);
 
   AccountReconcilor* reconcilor =
       AccountReconcilorFactory::GetForProfile(profile());
@@ -255,14 +285,14 @@ TEST_F(AccountReconcilorTest, Reauth) {
   ASSERT_TRUE(reconcilor->IsRegisteredWithTokenService());
 
   // Simulate reauth.  The state of the reconcilor should not change.
-  signin_manager()->OnExternalSigninCompleted(kTestEmail);
+  signin_manager()->OnExternalSigninCompleted(email);
   ASSERT_TRUE(reconcilor->IsRegisteredWithTokenService());
 }
 
 #endif  // !defined(OS_CHROMEOS)
 
 TEST_F(AccountReconcilorTest, ProfileAlreadyConnected) {
-  signin_manager()->SetAuthenticatedUsername(kTestEmail);
+  ConnectProfileToAccount("12345", "user@gmail.com");
 
   AccountReconcilor* reconcilor =
       AccountReconcilorFactory::GetForProfile(profile());
@@ -271,9 +301,10 @@ TEST_F(AccountReconcilorTest, ProfileAlreadyConnected) {
 }
 
 TEST_F(AccountReconcilorTest, GetAccountsFromCookieSuccess) {
-  signin_manager()->SetAuthenticatedUsername(kTestEmail);
-  token_service()->UpdateCredentials(kTestEmail, "refresh_token");
-  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(kTestEmail));
+  const std::string account_id =
+      ConnectProfileToAccount("12345", "user@gmail.com");
+  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id));
+
   AccountReconcilor* reconcilor =
       AccountReconcilorFactory::GetForProfile(profile());
   ASSERT_TRUE(reconcilor);
@@ -290,12 +321,11 @@ TEST_F(AccountReconcilorTest, GetAccountsFromCookieSuccess) {
   const std::vector<std::pair<std::string, bool> >& accounts =
       reconcilor->GetGaiaAccountsForTesting();
   ASSERT_EQ(1u, accounts.size());
-  ASSERT_EQ("user@gmail.com", accounts[0].first);
+  ASSERT_EQ(account_id, accounts[0].first);
 }
 
 TEST_F(AccountReconcilorTest, GetAccountsFromCookieFailure) {
-  signin_manager()->SetAuthenticatedUsername(kTestEmail);
-  token_service()->UpdateCredentials(kTestEmail, "refresh_token");
+  ConnectProfileToAccount("12345", "user@gmail.com");
   AccountReconcilor* reconcilor =
       AccountReconcilorFactory::GetForProfile(profile());
   ASSERT_TRUE(reconcilor);
@@ -311,8 +341,8 @@ TEST_F(AccountReconcilorTest, GetAccountsFromCookieFailure) {
 }
 
 TEST_P(AccountReconcilorTest, StartReconcileNoop) {
-  signin_manager()->SetAuthenticatedUsername(kTestEmail);
-  token_service()->UpdateCredentials(kTestEmail, "refresh_token");
+  const std::string account_id =
+      ConnectProfileToAccount("12345", "user@gmail.com");
 
   AccountReconcilor* reconcilor =
       AccountReconcilorFactory::GetForProfile(profile());
@@ -338,8 +368,9 @@ TEST_P(AccountReconcilorTest, StartReconcileNoop) {
 }
 
 TEST_P(AccountReconcilorTest, StartReconcileCookiesDisabled) {
-  signin_manager()->SetAuthenticatedUsername(kTestEmail);
-  token_service()->UpdateCredentials(kTestEmail, "refresh_token");
+  const std::string account_id =
+      ConnectProfileToAccount("12345", "user@gmail.com");
+  token_service()->UpdateCredentials(account_id, "refresh_token");
   test_signin_client()->set_are_signin_cookies_allowed(false);
 
   AccountReconcilor* reconcilor =
@@ -355,8 +386,9 @@ TEST_P(AccountReconcilorTest, StartReconcileCookiesDisabled) {
 }
 
 TEST_P(AccountReconcilorTest, StartReconcileContentSettings) {
-  signin_manager()->SetAuthenticatedUsername(kTestEmail);
-  token_service()->UpdateCredentials(kTestEmail, "refresh_token");
+  const std::string account_id =
+      ConnectProfileToAccount("12345", "user@gmail.com");
+  token_service()->UpdateCredentials(account_id, "refresh_token");
 
   AccountReconcilor* reconcilor =
       AccountReconcilorFactory::GetForProfile(profile());
@@ -374,8 +406,9 @@ TEST_P(AccountReconcilorTest, StartReconcileContentSettings) {
 }
 
 TEST_P(AccountReconcilorTest, StartReconcileContentSettingsGaiaUrl) {
-  signin_manager()->SetAuthenticatedUsername(kTestEmail);
-  token_service()->UpdateCredentials(kTestEmail, "refresh_token");
+  const std::string account_id =
+      ConnectProfileToAccount("12345", "user@gmail.com");
+  token_service()->UpdateCredentials(account_id, "refresh_token");
 
   AccountReconcilor* reconcilor =
       AccountReconcilorFactory::GetForProfile(profile());
@@ -388,8 +421,9 @@ TEST_P(AccountReconcilorTest, StartReconcileContentSettingsGaiaUrl) {
 }
 
 TEST_P(AccountReconcilorTest, StartReconcileContentSettingsNonGaiaUrl) {
-  signin_manager()->SetAuthenticatedUsername(kTestEmail);
-  token_service()->UpdateCredentials(kTestEmail, "refresh_token");
+  const std::string account_id =
+      ConnectProfileToAccount("12345", "user@gmail.com");
+  token_service()->UpdateCredentials(account_id, "refresh_token");
 
   AccountReconcilor* reconcilor =
       AccountReconcilorFactory::GetForProfile(profile());
@@ -402,8 +436,9 @@ TEST_P(AccountReconcilorTest, StartReconcileContentSettingsNonGaiaUrl) {
 }
 
 TEST_P(AccountReconcilorTest, StartReconcileContentSettingsInvalidPattern) {
-  signin_manager()->SetAuthenticatedUsername(kTestEmail);
-  token_service()->UpdateCredentials(kTestEmail, "refresh_token");
+  const std::string account_id =
+      ConnectProfileToAccount("12345", "user@gmail.com");
+  token_service()->UpdateCredentials(account_id, "refresh_token");
 
   AccountReconcilor* reconcilor =
       AccountReconcilorFactory::GetForProfile(profile());
@@ -417,7 +452,7 @@ TEST_P(AccountReconcilorTest, StartReconcileContentSettingsInvalidPattern) {
   ASSERT_TRUE(reconcilor->is_reconcile_started_);
 }
 
-// This is test is needed until chrome changes to use gaia obfuscated id.
+// This test is needed until chrome changes to use gaia obfuscated id.
 // The signin manager and token service use the gaia "email" property, which
 // preserves dots in usernames and preserves case. gaia::ParseListAccountsData()
 // however uses gaia "displayEmail" which does not preserve case, and then
@@ -426,9 +461,13 @@ TEST_P(AccountReconcilorTest, StartReconcileContentSettingsInvalidPattern) {
 // token service, will be considered the same as "dots@gmail.com" as returned
 // by gaia::ParseListAccountsData().
 TEST_P(AccountReconcilorTest, StartReconcileNoopWithDots) {
-  signin_manager()->SetAuthenticatedUsername("Dot.S@gmail.com");
-  token_service()->UpdateCredentials("Dot.S@gmail.com", "refresh_token");
+  if (account_tracker()->GetMigrationState() !=
+      AccountTrackerService::MIGRATION_NOT_STARTED) {
+    return;
+  }
 
+  const std::string account_id =
+      ConnectProfileToAccount("12345", "Dot.S@gmail.com");
   AccountReconcilor* reconcilor =
       AccountReconcilorFactory::GetForProfile(profile());
   ASSERT_TRUE(reconcilor);
@@ -450,9 +489,11 @@ TEST_P(AccountReconcilorTest, StartReconcileNoopWithDots) {
 }
 
 TEST_P(AccountReconcilorTest, StartReconcileNoopMultiple) {
-  signin_manager()->SetAuthenticatedUsername("user@gmail.com");
-  token_service()->UpdateCredentials("user@gmail.com", "refresh_token");
-  token_service()->UpdateCredentials("other@gmail.com", "refresh_token");
+  const std::string account_id =
+      ConnectProfileToAccount("12345", "user@gmail.com");
+  const std::string account_id2 =
+      PickAccountIdForAccount("67890", "other@gmail.com");
+  token_service()->UpdateCredentials(account_id2, "refresh_token");
 
   AccountReconcilor* reconcilor =
       AccountReconcilorFactory::GetForProfile(profile());
@@ -477,11 +518,15 @@ TEST_P(AccountReconcilorTest, StartReconcileNoopMultiple) {
 }
 
 TEST_P(AccountReconcilorTest, StartReconcileAddToCookie) {
-  signin_manager()->SetAuthenticatedUsername("user@gmail.com");
-  token_service()->UpdateCredentials("user@gmail.com", "refresh_token");
-  token_service()->UpdateCredentials("other@gmail.com", "refresh_token");
+  const std::string account_id =
+      ConnectProfileToAccount("12345", "user@gmail.com");
+  token_service()->UpdateCredentials(account_id, "refresh_token");
 
-  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction("other@gmail.com"));
+  const std::string account_id2 =
+      PickAccountIdForAccount("67890", "other@gmail.com");
+  token_service()->UpdateCredentials(account_id2, "refresh_token");
+
+  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id2));
 
   SetFakeResponse(list_accounts_url().spec(),
       "[\"f\", [[\"b\", 0, \"n\", \"user@gmail.com\", \"p\", 0, 0, 0, 0, 1]]]",
@@ -492,7 +537,7 @@ TEST_P(AccountReconcilorTest, StartReconcileAddToCookie) {
 
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(reconcilor->is_reconcile_started_);
-  SimulateAddAccountToCookieCompleted(reconcilor, "other@gmail.com",
+  SimulateAddAccountToCookieCompleted(reconcilor, account_id2,
                                       GoogleServiceAuthError::AuthErrorNone());
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 
@@ -507,11 +552,12 @@ TEST_P(AccountReconcilorTest, StartReconcileAddToCookie) {
 }
 
 TEST_P(AccountReconcilorTest, StartReconcileRemoveFromCookie) {
-  signin_manager()->SetAuthenticatedUsername("user@gmail.com");
-  token_service()->UpdateCredentials("user@gmail.com", "refresh_token");
+  const std::string account_id =
+      ConnectProfileToAccount("12345", "user@gmail.com");
+  token_service()->UpdateCredentials(account_id, "refresh_token");
 
   EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction());
-  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction("user@gmail.com"));
+  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id));
 
   SetFakeResponse(list_accounts_url().spec(),
       "[\"f\", [[\"b\", 0, \"n\", \"user@gmail.com\", \"p\", 0, 0, 0, 0, 1], "
@@ -538,12 +584,17 @@ TEST_P(AccountReconcilorTest, StartReconcileRemoveFromCookie) {
 }
 
 TEST_P(AccountReconcilorTest, StartReconcileAddToCookieTwice) {
-  signin_manager()->SetAuthenticatedUsername("user@gmail.com");
-  token_service()->UpdateCredentials("user@gmail.com", "refresh_token");
-  token_service()->UpdateCredentials("other@gmail.com", "refresh_token");
+  const std::string account_id =
+      ConnectProfileToAccount("12345", "user@gmail.com");
+  const std::string account_id2 =
+      PickAccountIdForAccount("67890", "other@gmail.com");
+  const std::string account_id3 =
+      PickAccountIdForAccount("34567", "third@gmail.com");
 
-  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction("other@gmail.com"));
-  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction("third@gmail.com"));
+  token_service()->UpdateCredentials(account_id2, "refresh_token");
+
+  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id2));
+  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id3));
 
   SetFakeResponse(
       list_accounts_url().spec(),
@@ -557,7 +608,7 @@ TEST_P(AccountReconcilorTest, StartReconcileAddToCookieTwice) {
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(reconcilor->is_reconcile_started_);
   SimulateAddAccountToCookieCompleted(
-      reconcilor, "other@gmail.com", GoogleServiceAuthError::AuthErrorNone());
+      reconcilor, account_id2, GoogleServiceAuthError::AuthErrorNone());
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 
   histogram_tester()->ExpectUniqueSample(
@@ -578,13 +629,12 @@ TEST_P(AccountReconcilorTest, StartReconcileAddToCookieTwice) {
       net::HTTP_OK,
       net::URLRequestStatus::SUCCESS);
   // This will cause the reconcilor to fire.
-  token_service()->UpdateCredentials("third@gmail.com", "refresh_token");
-
+  token_service()->UpdateCredentials(account_id3, "refresh_token");
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(reconcilor->is_reconcile_started_);
   SimulateAddAccountToCookieCompleted(
-      reconcilor, "third@gmail.com", GoogleServiceAuthError::AuthErrorNone());
+      reconcilor, account_id3, GoogleServiceAuthError::AuthErrorNone());
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 
   histogram_tester()->ExpectUniqueSample(
@@ -606,13 +656,16 @@ TEST_P(AccountReconcilorTest, StartReconcileAddToCookieTwice) {
 }
 
 TEST_P(AccountReconcilorTest, StartReconcileBadPrimary) {
-  signin_manager()->SetAuthenticatedUsername("user@gmail.com");
-  token_service()->UpdateCredentials("user@gmail.com", "refresh_token");
-  token_service()->UpdateCredentials("other@gmail.com", "refresh_token");
+  const std::string account_id =
+      ConnectProfileToAccount("12345", "user@gmail.com");
+  const std::string account_id2 =
+      PickAccountIdForAccount("67890", "other@gmail.com");
+
+  token_service()->UpdateCredentials(account_id2, "refresh_token");
 
   EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction());
-  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction("user@gmail.com"));
-  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction("other@gmail.com"));
+  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id));
+  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id2));
 
   SetFakeResponse(list_accounts_url().spec(),
       "[\"f\", [[\"b\", 0, \"n\", \"other@gmail.com\", \"p\", 0, 0, 0, 0, 1], "
@@ -624,10 +677,10 @@ TEST_P(AccountReconcilorTest, StartReconcileBadPrimary) {
 
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(reconcilor->is_reconcile_started_);
-  SimulateAddAccountToCookieCompleted(reconcilor, "other@gmail.com",
+  SimulateAddAccountToCookieCompleted(reconcilor, account_id2,
                                       GoogleServiceAuthError::AuthErrorNone());
   ASSERT_TRUE(reconcilor->is_reconcile_started_);
-  SimulateAddAccountToCookieCompleted(reconcilor, "user@gmail.com",
+  SimulateAddAccountToCookieCompleted(reconcilor, account_id,
                                       GoogleServiceAuthError::AuthErrorNone());
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 
@@ -642,8 +695,8 @@ TEST_P(AccountReconcilorTest, StartReconcileBadPrimary) {
 }
 
 TEST_P(AccountReconcilorTest, StartReconcileOnlyOnce) {
-  signin_manager()->SetAuthenticatedUsername(kTestEmail);
-  token_service()->UpdateCredentials(kTestEmail, "refresh_token");
+  const std::string account_id =
+      ConnectProfileToAccount("12345", "user@gmail.com");
 
   AccountReconcilor* reconcilor =
       AccountReconcilorFactory::GetForProfile(profile());
@@ -662,11 +715,13 @@ TEST_P(AccountReconcilorTest, StartReconcileOnlyOnce) {
 }
 
 TEST_P(AccountReconcilorTest, StartReconcileWithSessionInfoExpiredDefault) {
-  signin_manager()->SetAuthenticatedUsername("user@gmail.com");
-  token_service()->UpdateCredentials("user@gmail.com", "refresh_token");
-  token_service()->UpdateCredentials("other@gmail.com", "refresh_token");
+  const std::string account_id =
+      ConnectProfileToAccount("12345", "user@gmail.com");
+  const std::string account_id2 =
+      PickAccountIdForAccount("67890", "other@gmail.com");
+  token_service()->UpdateCredentials(account_id2, "refresh_token");
 
-  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction("user@gmail.com"));
+  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id));
 
   SetFakeResponse(list_accounts_url().spec(),
       "[\"f\", [[\"b\", 0, \"n\", \"user@gmail.com\", \"p\", 0, 0, 0, 0, 0],"
@@ -682,16 +737,16 @@ TEST_P(AccountReconcilorTest, StartReconcileWithSessionInfoExpiredDefault) {
   ASSERT_TRUE(reconcilor->is_reconcile_started_);
 
   base::RunLoop().RunUntilIdle();
-  SimulateAddAccountToCookieCompleted(reconcilor, "user@gmail.com",
+  SimulateAddAccountToCookieCompleted(reconcilor, account_id,
                                       GoogleServiceAuthError::AuthErrorNone());
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 }
 
 TEST_F(AccountReconcilorTest, AddAccountToCookieCompletedWithBogusAccount) {
-  signin_manager()->SetAuthenticatedUsername("user@gmail.com");
-  token_service()->UpdateCredentials("user@gmail.com", "refresh_token");
+  const std::string account_id =
+      ConnectProfileToAccount("12345", "user@gmail.com");
 
-  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction("user@gmail.com"));
+  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id));
 
   SetFakeResponse(list_accounts_url().spec(),
       "[\"f\", [[\"b\", 0, \"n\", \"user@gmail.com\", \"p\", 0, 0, 0, 0, 0]]]",
@@ -708,11 +763,11 @@ TEST_F(AccountReconcilorTest, AddAccountToCookieCompletedWithBogusAccount) {
   base::RunLoop().RunUntilIdle();
 
   // If an unknown account id is sent, it should not upset the state.
-  SimulateAddAccountToCookieCompleted(reconcilor, "bogus@gmail.com",
+  SimulateAddAccountToCookieCompleted(reconcilor, "bogus_account_id",
                                       GoogleServiceAuthError::AuthErrorNone());
   ASSERT_TRUE(reconcilor->is_reconcile_started_);
 
-  SimulateAddAccountToCookieCompleted(reconcilor, "user@gmail.com",
+  SimulateAddAccountToCookieCompleted(reconcilor, account_id,
                                       GoogleServiceAuthError::AuthErrorNone());
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 }

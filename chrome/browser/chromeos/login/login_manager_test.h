@@ -67,6 +67,8 @@ class LoginManagerTest : public MixinBasedBrowserTest {
 
   test::JSChecker& js_checker() { return js_checker_; }
 
+  static std::string GetGaiaIDForUserID(const std::string& user_id);
+
  protected:
   bool use_webview() { return use_webview_; }
   void set_use_webview(bool use_webview) { use_webview_ = use_webview; }

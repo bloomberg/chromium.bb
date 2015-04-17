@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -36,7 +36,8 @@ static KeyedService* BuildSigninManagerFake(content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
 #if defined (OS_CHROMEOS)
   SigninManagerBase* signin = new SigninManagerBase(
-      ChromeSigninClientFactory::GetInstance()->GetForProfile(profile));
+      ChromeSigninClientFactory::GetInstance()->GetForProfile(profile),
+      AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile));
   signin->Initialize(NULL);
   return signin;
 #else

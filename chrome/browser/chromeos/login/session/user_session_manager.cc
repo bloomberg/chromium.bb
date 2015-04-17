@@ -929,15 +929,18 @@ void UserSessionManager::InitProfilePreferences(
                                    supervised_user_sync_id);
   } else if (user_manager::UserManager::Get()->
       IsLoggedInAsUserWithGaiaAccount()) {
-    // Prime the account tracker with this combination of gaia id/display email.
-    // Don't do this unless both email and gaia_id are valid.  They may not
-    // be when simply unlocking the profile.
-    if (!user_context.GetGaiaID().empty() &&
-        !user_context.GetUserID().empty()) {
+    // Get the Gaia ID from the user context.  If it's not available, this may
+    // not be available when unlocking a previously opened profile, or when
+    // creating a supervised users.  However, in these cases the gaia_id should
+    // be already available in the account tracker.
+    std::string gaia_id = user_context.GetGaiaID();
+    if (gaia_id.empty()) {
       AccountTrackerService* account_tracker =
           AccountTrackerServiceFactory::GetForProfile(profile);
-      account_tracker->SeedAccountInfo(user_context.GetGaiaID(),
-                                       user_context.GetUserID());
+      AccountTrackerService::AccountInfo info =
+          account_tracker->FindAccountInfoByEmail(user_context.GetUserID());
+      gaia_id = info.gaia;
+      DCHECK(!gaia_id.empty());
     }
 
     // Make sure that the google service username is properly set (we do this
@@ -945,7 +948,8 @@ void UserSessionManager::InitProfilePreferences(
     // profiles that might not have it set yet).
     SigninManagerBase* signin_manager =
         SigninManagerFactory::GetForProfile(profile);
-    signin_manager->SetAuthenticatedUsername(user_context.GetUserID());
+    signin_manager->SetAuthenticatedAccountInfo(gaia_id,
+                                                user_context.GetUserID());
   }
 }
 

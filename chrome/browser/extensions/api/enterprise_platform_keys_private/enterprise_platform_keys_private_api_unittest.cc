@@ -200,7 +200,7 @@ class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
   // user in the SigninManager class.
   virtual void SetAuthenticatedUser() {
     SigninManagerFactory::GetForProfile(browser()->profile())->
-        SetAuthenticatedUsername("test@google.com");
+        SetAuthenticatedAccountInfo("12345", "test@google.com");
   }
 
   NiceMock<chromeos::MockCryptohomeClient> mock_cryptohome_client_;
@@ -517,7 +517,7 @@ class EPKPChallengeMachineKeyUnmanagedUserTest
  protected:
   void SetAuthenticatedUser() override {
     SigninManagerFactory::GetForProfile(browser()->profile())->
-        SetAuthenticatedUsername("test@chromium.com");
+        SetAuthenticatedAccountInfo("12345", "test@chromium.com");
   }
 };
 
@@ -530,7 +530,7 @@ class EPKPChallengeUserKeyUnmanagedUserTest : public EPKPChallengeUserKeyTest {
  protected:
   void SetAuthenticatedUser() override {
     SigninManagerFactory::GetForProfile(browser()->profile())->
-        SetAuthenticatedUsername("test@chromium.com");
+        SetAuthenticatedAccountInfo("12345", "test@chromium.com");
   }
 };
 

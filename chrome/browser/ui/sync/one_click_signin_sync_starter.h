@@ -94,6 +94,7 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   // It can be empty.
   OneClickSigninSyncStarter(Profile* profile,
                             Browser* browser,
+                            const std::string& gaia_id,
                             const std::string& email,
                             const std::string& password,
                             const std::string& refresh_token,

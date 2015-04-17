@@ -84,6 +84,12 @@ KeyedService* BuildFakeProfileInvalidationProvider(
           new invalidation::FakeInvalidationService));
 }
 
+#if !defined(OS_CHROMEOS)
+const char* GetTestGaiaId() {
+  return "gaia-id-user@example.com";
+}
+#endif
+
 const char* GetTestUser() {
 #if defined(OS_CHROMEOS)
   return chromeos::login::kStubUser;
@@ -246,7 +252,7 @@ class CloudPolicyTest : public InProcessBrowserTest,
     SigninManager* signin_manager =
         SigninManagerFactory::GetForProfile(browser()->profile());
     ASSERT_TRUE(signin_manager);
-    signin_manager->SetAuthenticatedUsername(GetTestUser());
+    signin_manager->SetAuthenticatedAccountInfo(GetTestGaiaId(), GetTestUser());
 
     UserCloudPolicyManager* policy_manager =
         UserCloudPolicyManagerFactory::GetForBrowserContext(

@@ -468,7 +468,7 @@ TEST_F(BookmarkBubbleControllerTest, SyncPromoNotSignedIn) {
 // Confirm that the sync promo is not displayed when the user is signed in.
 TEST_F(BookmarkBubbleControllerTest, SyncPromoSignedIn) {
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile());
-  signin->SetAuthenticatedUsername("fake_username");
+  signin->SetAuthenticatedAccountInfo("fake_username", "fake_username");
 
   const BookmarkNode* node = CreateTestBookmark();
   BookmarkBubbleController* controller = ControllerForNode(node);

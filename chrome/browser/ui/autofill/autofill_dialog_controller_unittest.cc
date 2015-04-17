@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_i18n_input.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
@@ -48,6 +49,7 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -267,10 +269,12 @@ class TestAutofillDialogController
   }
 
   void Init(content::BrowserContext* browser_context) {
+    Profile* profile = Profile::FromBrowserContext(browser_context);
     test_manager_.Init(WebDataServiceFactory::GetAutofillWebDataForProfile(
-                           Profile::FromBrowserContext(browser_context),
+                           profile,
                            ServiceAccessType::EXPLICIT_ACCESS),
                        user_prefs::UserPrefs::Get(browser_context),
+                       AccountTrackerServiceFactory::GetForProfile(profile),
                        browser_context->IsOffTheRecord());
   }
 

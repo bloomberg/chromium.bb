@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/invalidation/fake_invalidation_service.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -28,6 +29,8 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/invalidation/invalidation_service.h"
 #include "components/invalidation/profile_invalidation_provider.h"
+#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/data_type_manager.h"
 #include "components/sync_driver/pref_names.h"
@@ -45,6 +48,9 @@ class BrowserContext;
 namespace browser_sync {
 
 namespace {
+
+const char kGaiaId[] = "12345";
+const char kEmail[] = "test_user@gmail.com";
 
 class FakeDataTypeManager : public sync_driver::DataTypeManager {
  public:
@@ -205,14 +211,17 @@ class ProfileSyncServiceTest : public ::testing::Test {
   }
 
   void IssueTestTokens() {
+    std::string account_id =
+        AccountTrackerServiceFactory::GetForProfile(profile_)
+            ->SeedAccountInfo(kGaiaId, kEmail);
     ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)
-        ->UpdateCredentials("test", "oauth2_login_token");
+        ->UpdateCredentials(account_id, "oauth2_login_token");
   }
 
   void CreateService(ProfileSyncServiceStartBehavior behavior) {
     SigninManagerBase* signin =
         SigninManagerFactory::GetForProfile(profile_);
-    signin->SetAuthenticatedUsername("test");
+    signin->SetAuthenticatedAccountInfo(kGaiaId, kEmail);
     ProfileOAuth2TokenService* oauth2_token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
     components_factory_ = new ProfileSyncComponentsFactoryMock();
@@ -526,7 +535,7 @@ TEST_F(ProfileSyncServiceTest, BackupBeforeFirstSync) {
   InitializeForFirstSync();
 
   SigninManagerFactory::GetForProfile(profile())
-      ->SetAuthenticatedUsername("test");
+      ->SetAuthenticatedAccountInfo(kGaiaId, kEmail);
   IssueTestTokens();
   PumpLoop();
 

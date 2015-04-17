@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/ui/autofill/account_chooser_model.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_i18n_input.h"
@@ -43,6 +44,7 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_details.h"
@@ -104,9 +106,12 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
         use_validation_(false),
         sign_in_user_index_(0U),
         weak_ptr_factory_(this) {
+    Profile* profile =
+        Profile::FromBrowserContext(contents->GetBrowserContext());
     test_manager_.Init(
         NULL,
-        Profile::FromBrowserContext(contents->GetBrowserContext())->GetPrefs(),
+        profile->GetPrefs(),
+        AccountTrackerServiceFactory::GetForProfile(profile),
         false);
   }
 

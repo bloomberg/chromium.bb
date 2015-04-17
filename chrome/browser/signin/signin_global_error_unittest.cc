@@ -30,7 +30,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-static const char kTestAccountId[] = "testuser@test.com";
+static const char kTestAccountId[] = "id-testuser@test.com";
 static const char kTestUsername[] = "testuser@test.com";
 
 class SigninGlobalErrorTest : public testing::Test {
@@ -54,12 +54,12 @@ class SigninGlobalErrorTest : public testing::Test {
         base::UTF8ToUTF16("Person 1"), 0, std::string(), testing_factories);
 
     SigninManagerFactory::GetForProfile(profile())
-        ->SetAuthenticatedUsername(kTestAccountId);
+        ->SetAuthenticatedAccountInfo(kTestAccountId, kTestUsername);
     ProfileInfoCache& cache =
         profile_manager_.profile_manager()->GetProfileInfoCache();
     cache.SetUserNameOfProfileAtIndex(
         cache.GetIndexOfProfileWithPath(profile()->GetPath()),
-            base::UTF8ToUTF16(kTestAccountId));
+            base::UTF8ToUTF16(kTestUsername));
 
     global_error_ = SigninGlobalErrorFactory::GetForProfile(profile());
     error_controller_ = SigninErrorControllerFactory::GetForProfile(profile());

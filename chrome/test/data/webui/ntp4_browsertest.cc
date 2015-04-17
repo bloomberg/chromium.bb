@@ -17,5 +17,5 @@ NTP4LoggedInWebUITest::~NTP4LoggedInWebUITest() {}
 
 void NTP4LoggedInWebUITest::SetLoginName(const std::string& name) {
   SigninManagerFactory::GetForProfile(browser()->profile())->
-      SetAuthenticatedUsername(name);
+      SetAuthenticatedAccountInfo(name, name);
 }

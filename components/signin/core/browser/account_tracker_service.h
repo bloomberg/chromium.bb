@@ -115,8 +115,10 @@ class AccountTrackerService : public KeyedService,
                                              const std::string& email);
 
   // Seeds the account whose account_id is given by PickAccountIdForAccount()
-  // with its corresponding gaia id and email address.
-  void SeedAccountInfo(const std::string& gaia, const std::string& email);
+  // with its corresponding gaia id and email address.  Returns the same
+  // value PickAccountIdForAccount() when given the same arguments.
+  std::string SeedAccountInfo(const std::string& gaia,
+                              const std::string& email);
 
   AccountIdMigrationState GetMigrationState();
   static AccountIdMigrationState GetMigrationState(PrefService* pref_service);

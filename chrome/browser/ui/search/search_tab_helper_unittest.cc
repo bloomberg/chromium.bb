@@ -99,7 +99,7 @@ class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
 
     if (!username.empty()) {
       ASSERT_TRUE(signin_manager);
-      signin_manager->SetAuthenticatedUsername(username);
+      signin_manager->SetAuthenticatedAccountInfo(username, username);
     }
   }
 

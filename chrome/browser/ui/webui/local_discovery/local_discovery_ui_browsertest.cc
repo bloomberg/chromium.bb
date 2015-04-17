@@ -275,6 +275,7 @@ const char kURLRegisterComplete[] =
 const char kURLGaiaToken[] =
     "https://accounts.google.com/o/oauth2/token";
 
+const char kSampleGaiaId[] = "12345";
 const char kSampleUser[] = "user@host.com";
 
 class TestMessageLoopCondition {
@@ -364,7 +365,7 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
         SigninManagerFactory::GetForProfile(browser()->profile());
 
     DCHECK(signin_manager);
-    signin_manager->SetAuthenticatedUsername(kSampleUser);
+    signin_manager->SetAuthenticatedAccountInfo(kSampleGaiaId, kSampleUser);
 
     fake_fetcher_factory().SetFakeResponse(
         GURL(kURLInfo),

@@ -35,7 +35,10 @@ void StubAuthenticator::CompleteLogin(content::BrowserContext* context,
 void StubAuthenticator::AuthenticateToLogin(content::BrowserContext* context,
                                             const UserContext& user_context) {
   authentication_context_ = context;
-  if (user_context == expected_user_context_) {
+  // Don't compare the entire |expected_user_context_| to |user_context| because
+  // during non-online re-auth |user_context| does not have a gaia id.
+  if (expected_user_context_.GetUserID() == user_context.GetUserID() &&
+      *expected_user_context_.GetKey() == *user_context.GetKey()) {
     message_loop_->PostTask(
         FROM_HERE, base::Bind(&StubAuthenticator::OnAuthSuccess, this));
     return;

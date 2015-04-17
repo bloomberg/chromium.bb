@@ -8,11 +8,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/signin_names_io_thread.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
@@ -59,7 +61,12 @@ void SigninNamesOnIOThreadTest::TearDown() {
 }
 
 void SigninNamesOnIOThreadTest::SimulateSignin(const base::string16& email) {
-  signin_manager_->SignIn(base::UTF16ToUTF8(email), "password");
+  const std::string gaia_id = "gaia_id";
+  const std::string email_str = base::UTF16ToUTF8(email);
+  AccountTrackerService* service =
+      AccountTrackerServiceFactory::GetForProfile(profile_.get());
+  service->SeedAccountInfo(gaia_id, email_str);
+  signin_manager_->SignIn(gaia_id, email_str, "password");
 }
 
 void SigninNamesOnIOThreadTest::AddNewProfile(const base::string16& name,

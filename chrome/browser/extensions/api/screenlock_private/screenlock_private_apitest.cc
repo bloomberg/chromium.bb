@@ -22,6 +22,7 @@ namespace extensions {
 
 namespace {
 
+const char kTestGaiaId[] = "gaia-id-testuser@gmail.com";
 const char kAttemptClickAuthMessage[] = "attemptClickAuth";
 const char kTestExtensionId[] = "lkegkdgachcnekllcdfkijonogckdnjo";
 const char kTestUser[] = "testuser@gmail.com";
@@ -49,7 +50,7 @@ class ScreenlockPrivateApiTest : public ExtensionApiTest,
 
   void SetUpOnMainThread() override {
     SigninManagerFactory::GetForProfile(profile())
-        ->SetAuthenticatedUsername(kTestUser);
+        ->SetAuthenticatedAccountInfo(kTestGaiaId, kTestUser);
     ProfileInfoCache& info_cache =
         g_browser_process->profile_manager()->GetProfileInfoCache();
     size_t index = info_cache.GetIndexOfProfileWithPath(profile()->GetPath());

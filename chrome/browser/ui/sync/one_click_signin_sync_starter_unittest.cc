@@ -8,18 +8,23 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+const char* kTestingGaiaId = "gaia_id";
 const char* kTestingUsername = "fake_username";
+
 }  // namespace
 
 class OneClickSigninSyncStarterTest : public ChromeRenderViewHostTestHarness {
@@ -41,7 +46,8 @@ class OneClickSigninSyncStarterTest : public ChromeRenderViewHostTestHarness {
         SigninManagerFactory::GetForProfile(profile()));
 
     signin_manager->Initialize(NULL);
-    signin_manager->SetAuthenticatedUsername(kTestingUsername);
+    signin_manager->SetAuthenticatedAccountInfo(kTestingGaiaId,
+                                                kTestingUsername);
   }
 
   void Callback(OneClickSigninSyncStarter::SyncSetupResult result) {
@@ -67,6 +73,7 @@ class OneClickSigninSyncStarterTest : public ChromeRenderViewHostTestHarness {
     sync_starter_ = new OneClickSigninSyncStarter(
         profile(),
         NULL,
+        kTestingGaiaId,
         kTestingUsername,
         std::string(),
         "refresh_token",

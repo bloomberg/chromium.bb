@@ -25,6 +25,7 @@
 
 namespace app_list {
 
+static const char* kTestGaiaId = "gaia_id";
 static const char* kTestUser = "test.user@chromium.org.test";
 static const char* kScope = "https://www.googleapis.com/auth/webhistory";
 static const char* kAccessToken = "fake_access_token";
@@ -53,8 +54,8 @@ class SpeechAuthHelperTest : public testing::Test {
         factories);
 
     // Set up the authenticated user name and ID.
-    SigninManagerFactory::GetForProfile(profile_)->SetAuthenticatedUsername(
-        kTestUser);
+    SigninManagerFactory::GetForProfile(profile_)->SetAuthenticatedAccountInfo(
+        kTestGaiaId, kTestUser);
   }
 
  protected:

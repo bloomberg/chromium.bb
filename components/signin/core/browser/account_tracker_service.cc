@@ -601,12 +601,8 @@ std::string AccountTrackerService::PickAccountIdForAccount(
   }
 }
 
-void AccountTrackerService::SeedAccountInfo(const std::string& gaia,
-                                            const std::string& email) {
-  DVLOG(1) << "AccountTrackerService::SeedAccountInfo"
-           << " gaia_id=" << gaia
-           << " email=" << email;
-
+std::string AccountTrackerService::SeedAccountInfo(const std::string& gaia,
+                                                   const std::string& email) {
   DCHECK(!gaia.empty());
   DCHECK(!email.empty());
   const std::string account_id = PickAccountIdForAccount(gaia, email);
@@ -617,4 +613,11 @@ void AccountTrackerService::SeedAccountInfo(const std::string& gaia,
   state.info.gaia = gaia;
   state.info.email = email;
   SaveToPrefs(state);
+
+  DVLOG(1) << "AccountTrackerService::SeedAccountInfo"
+           << " account_id=" << account_id
+           << " gaia_id=" << gaia
+           << " email=" << email;
+
+  return account_id;
 }

@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_cache_unittest.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/test_signin_client_builder.h"
@@ -19,6 +20,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -280,7 +282,7 @@ TEST_F(GAIAInfoUpdateServiceTest, ScheduleUpdate) {
 TEST_F(GAIAInfoUpdateServiceTest, LogOut) {
   SigninManager* signin_manager =
       SigninManagerFactory::GetForProfile(profile());
-  signin_manager->SetAuthenticatedUsername("pat@example.com");
+  signin_manager->SetAuthenticatedAccountInfo("gaia_id", "pat@example.com");
   base::string16 gaia_name = base::UTF8ToUTF16("Pat Foo");
   GetCache()->SetGAIANameOfProfileAtIndex(0, gaia_name);
   gfx::Image gaia_picture = gfx::test::CreateImage(256,256);
@@ -303,9 +305,12 @@ TEST_F(GAIAInfoUpdateServiceTest, LogOut) {
 TEST_F(GAIAInfoUpdateServiceTest, LogIn) {
   // Log in.
   EXPECT_CALL(*service(), Update());
+  std::string account_id =
+        AccountTrackerServiceFactory::GetForProfile(profile())
+            ->SeedAccountInfo("gaia_id", "pat@example.com");
   SigninManager* signin_manager =
       SigninManagerFactory::GetForProfile(profile());
-  signin_manager->OnExternalSigninCompleted("pat@example.com");
+  signin_manager->OnExternalSigninCompleted(account_id);
 }
 
 #endif

@@ -69,10 +69,11 @@ class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
   void SetUpSigninManager(const std::string& username) {
     if (username.empty())
       return;
+
     SigninManagerBase* signin_manager = static_cast<SigninManagerBase*>(
         SigninManagerFactory::GetForProfile(profile()));
     ASSERT_TRUE(signin_manager);
-    signin_manager->SetAuthenticatedUsername(username);
+    signin_manager->SetAuthenticatedAccountInfo(username, username);
   }
 
   scoped_ptr<BookmarkBubbleView> bubble_;

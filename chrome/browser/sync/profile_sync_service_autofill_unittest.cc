@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -47,6 +48,7 @@
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "components/webdata/common/web_database.h"
@@ -497,6 +499,7 @@ class ProfileSyncServiceAutofillTest
         WebDataServiceFactory::GetAutofillWebDataForProfile(
             profile_, ServiceAccessType::EXPLICIT_ACCESS),
         profile_->GetPrefs(),
+        AccountTrackerServiceFactory::GetForProfile(profile_),
         profile_->IsOffTheRecord());
 
     web_data_service_->StartSyncableService();
@@ -534,7 +537,7 @@ class ProfileSyncServiceAutofillTest
                         syncer::ModelType type) {
     AbstractAutofillFactory* factory = GetFactory(type);
     SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile_);
-    signin->SetAuthenticatedUsername("test_user@gmail.com");
+    signin->SetAuthenticatedAccountInfo("12345", "test_user@gmail.com");
     sync_service_ = TestProfileSyncService::BuildAutoStartAsyncInit(profile_,
                                                                     callback);
 
@@ -556,7 +559,8 @@ class ProfileSyncServiceAutofillTest
 
     // We need tokens to get the tests going
     ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)
-        ->UpdateCredentials("test_user@gmail.com", "oauth2_login_token");
+        ->UpdateCredentials(signin->GetAuthenticatedAccountId(),
+                            "oauth2_login_token");
 
     sync_service_->RegisterDataTypeController(data_type_controller);
     sync_service_->Initialize();

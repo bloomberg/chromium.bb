@@ -136,6 +136,7 @@ bool LoginManagerTest::AddUserToSession(const UserContext& user_context) {
 
 void LoginManagerTest::LoginUser(const std::string& user_id) {
   UserContext user_context(user_id);
+  user_context.SetGaiaID(GetGaiaIDForUserID(user_id));
   user_context.SetKey(Key("password"));
   SetExpectedCredentials(user_context);
   EXPECT_TRUE(TryToLogin(user_context));
@@ -143,9 +144,15 @@ void LoginManagerTest::LoginUser(const std::string& user_id) {
 
 void LoginManagerTest::AddUser(const std::string& user_id) {
   UserContext user_context(user_id);
+  user_context.SetGaiaID(GetGaiaIDForUserID(user_id));
   user_context.SetKey(Key("password"));
   SetExpectedCredentials(user_context);
   EXPECT_TRUE(AddUserToSession(user_context));
+}
+
+// static
+std::string LoginManagerTest::GetGaiaIDForUserID(const std::string& user_id) {
+  return "gaia-id-" + user_id;
 }
 
 void LoginManagerTest::JSExpect(const std::string& expression) {

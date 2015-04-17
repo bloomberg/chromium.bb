@@ -295,6 +295,7 @@ void SupervisedUserTestBase::StartFlowLoginAsManager() {
   // Next button is now enabled.
   JSExpect("!$('supervised-user-creation-next-button').disabled");
   UserContext user_context(kTestManager);
+  user_context.SetGaiaID(GetGaiaIDForUserID(kTestManager));
   user_context.SetKey(Key(kTestManagerPassword));
   SetExpectedCredentials(user_context);
   content::WindowedNotificationObserver login_observer(

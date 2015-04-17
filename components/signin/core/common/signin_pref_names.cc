@@ -14,14 +14,23 @@ const char kAccountIdMigrationState[] = "account_id_migration_state";
 // Boolean identifying whether reverse auto-login is enabled.
 const char kAutologinEnabled[] = "autologin.enabled";
 
+
 // The profile's hosted domain; empty if unset;
 // AccountTrackerService::kNoHostedDomainFound if there is none.
+
+const char kGoogleServicesAccountId[] = "google.services.account_id";
+
+// The profile's hosted domain; empty if unset; Profile::kNoHostedDomainFound
+// if there is none.
 const char kGoogleServicesHostedDomain[] = "google.services.hosted_domain";
 
 // String the identifies the last user that logged into sync and other
 // google services. As opposed to kGoogleServicesUsername, this value is not
 // cleared on signout, but while the user is signed in the two values will
-// be the same.
+// be the same.  This pref remains in order to pre-fill the sign in page when
+// reconnecting a profile, but programmatic checks to see if a given account
+// is the same as the last account should use kGoogleServicesLastAccountId
+// instead.
 const char kGoogleServicesLastUsername[] = "google.services.last_username";
 
 // Int64 as time from epoch of when next RefreshTokenAnnotationRequest should be
@@ -41,6 +50,7 @@ const char kGoogleServicesUserAccountId[] = "google.services.user_account_id";
 
 // String that identifies the current user logged into sync and other google
 // services.
+// DEPRECATED.
 const char kGoogleServicesUsername[] = "google.services.username";
 
 // Local state pref containing a string regex that restricts which accounts

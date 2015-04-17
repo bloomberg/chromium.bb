@@ -30,6 +30,7 @@
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_formatter.h"
@@ -241,14 +242,17 @@ PersonalDataManager::PersonalDataManager(const std::string& app_locale)
       pending_server_creditcards_query_(0),
       app_locale_(app_locale),
       pref_service_(NULL),
+      account_tracker_(NULL),
       is_off_the_record_(false),
       has_logged_profile_count_(false) {}
 
 void PersonalDataManager::Init(scoped_refptr<AutofillWebDataService> database,
                                PrefService* pref_service,
+                               AccountTrackerService* account_tracker,
                                bool is_off_the_record) {
   database_ = database;
   SetPrefService(pref_service);
+  account_tracker_ = account_tracker;
   is_off_the_record_ = is_off_the_record;
 
   if (!is_off_the_record_)
@@ -306,8 +310,11 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
                               &server_profiles_);
 
         if (!server_profiles_.empty()) {
-          base::string16 email = base::UTF8ToUTF16(
-              pref_service_->GetString(::prefs::kGoogleServicesUsername));
+          std::string account_id =
+              pref_service_->GetString(::prefs::kGoogleServicesAccountId);
+          base::string16 email =
+              base::UTF8ToUTF16(
+                  account_tracker_->GetAccountInfo(account_id).email);
           DCHECK(!email.empty());
           for (AutofillProfile* profile : server_profiles_)
             profile->SetRawInfo(EMAIL_ADDRESS, email);

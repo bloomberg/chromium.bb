@@ -13,9 +13,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_account_id_helper.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/core/browser/signin_manager_cookie_helper.h"
@@ -33,12 +33,11 @@ SigninManager::SigninManager(SigninClient* client,
                              ProfileOAuth2TokenService* token_service,
                              AccountTrackerService* account_tracker_service,
                              GaiaCookieManagerService* cookie_manager_service)
-    : SigninManagerBase(client),
+    : SigninManagerBase(client, account_tracker_service),
       prohibit_signout_(false),
       type_(SIGNIN_TYPE_NONE),
       client_(client),
       token_service_(token_service),
-      account_tracker_service_(account_tracker_service),
       cookie_manager_service_(cookie_manager_service),
       signin_manager_signed_in_(false),
       user_info_fetched_by_account_tracker_(false),
@@ -64,11 +63,14 @@ std::string SigninManager::SigninTypeToString(SigninManager::SigninType type) {
 }
 
 bool SigninManager::PrepareForSignin(SigninType type,
+                                     const std::string& gaia_id,
                                      const std::string& username,
                                      const std::string& password) {
-  DCHECK(possibly_invalid_username_.empty() ||
-         possibly_invalid_username_ == username);
-  DCHECK(!username.empty());
+  std::string account_id =
+      account_tracker_service()->PickAccountIdForAccount(gaia_id, username);
+  DCHECK(possibly_invalid_account_id_.empty() ||
+         possibly_invalid_account_id_ == account_id);
+  DCHECK(!account_id.empty());
 
   if (!IsAllowedUsername(username)) {
     // Account is not allowed by admin policy.
@@ -84,7 +86,9 @@ bool SigninManager::PrepareForSignin(SigninType type,
   // restart we don't think sync setup has never completed.
   ClearTransientSigninData();
   type_ = type;
-  possibly_invalid_username_.assign(username);
+  possibly_invalid_account_id_.assign(account_id);
+  possibly_invalid_gaia_id_.assign(gaia_id);
+  possibly_invalid_email_.assign(username);
   password_.assign(password);
   signin_manager_signed_in_ = false;
   user_info_fetched_by_account_tracker_ = false;
@@ -94,18 +98,19 @@ bool SigninManager::PrepareForSignin(SigninType type,
 
 void SigninManager::StartSignInWithRefreshToken(
     const std::string& refresh_token,
+    const std::string& gaia_id,
     const std::string& username,
     const std::string& password,
     const OAuthTokenFetchedCallback& callback) {
-  DCHECK(!IsAuthenticated() ||
-         gaia::AreEmailsSame(username, GetAuthenticatedUsername()));
+  DCHECK(!IsAuthenticated());
 
-  if (!PrepareForSignin(SIGNIN_TYPE_WITH_REFRESH_TOKEN, username, password))
+  if (!PrepareForSignin(SIGNIN_TYPE_WITH_REFRESH_TOKEN, gaia_id, username,
+                        password)) {
     return;
+  }
 
-  // Store our callback and token.
+  // Store our token.
   temp_refresh_token_ = refresh_token;
-  possibly_invalid_username_ = username;
 
   if (!callback.is_null() && !temp_refresh_token_.empty()) {
     callback.Run(temp_refresh_token_);
@@ -117,7 +122,9 @@ void SigninManager::StartSignInWithRefreshToken(
 
 void SigninManager::CopyCredentialsFrom(const SigninManager& source) {
   DCHECK_NE(this, &source);
-  possibly_invalid_username_ = source.possibly_invalid_username_;
+  possibly_invalid_account_id_ = source.possibly_invalid_account_id_;
+  possibly_invalid_gaia_id_ = source.possibly_invalid_gaia_id_;
+  possibly_invalid_email_ = source.possibly_invalid_email_;
   temp_refresh_token_ = source.temp_refresh_token_;
   password_ = source.password_;
 }
@@ -125,7 +132,9 @@ void SigninManager::CopyCredentialsFrom(const SigninManager& source) {
 void SigninManager::ClearTransientSigninData() {
   DCHECK(IsInitialized());
 
-  possibly_invalid_username_.clear();
+  possibly_invalid_account_id_.clear();
+  possibly_invalid_gaia_id_.clear();
+  possibly_invalid_email_.clear();
   password_.clear();
   type_ = SIGNIN_TYPE_NONE;
   temp_refresh_token_.clear();
@@ -172,9 +181,10 @@ void SigninManager::SignOut(
   const base::Time signin_time =
       base::Time::FromInternalValue(
           client_->GetPrefs()->GetInt64(prefs::kSignedInTime));
-  ClearAuthenticatedUsername();
+  clear_authenticated_user();
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesHostedDomain);
-  client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
+  client_->GetPrefs()->ClearPref(prefs::kGoogleServicesAccountId);
+  client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUserAccountId);
   client_->GetPrefs()->ClearPref(prefs::kSignedInTime);
   client_->OnSignedOut();
 
@@ -213,31 +223,28 @@ void SigninManager::Initialize(PrefService* local_state) {
                        base::Bind(&SigninManager::OnSigninAllowedPrefChanged,
                                   base::Unretained(this)));
 
-  std::string user =
-      client_->GetPrefs()->GetString(prefs::kGoogleServicesUsername);
-  if ((!user.empty() && !IsAllowedUsername(user)) || !IsSigninAllowed()) {
+  std::string account_id =
+      client_->GetPrefs()->GetString(prefs::kGoogleServicesAccountId);
+  std::string user = account_id.empty() ? std::string() :
+      account_tracker_service()->GetAccountInfo(account_id).email;
+  if ((!account_id.empty() && !IsAllowedUsername(user)) || !IsSigninAllowed()) {
     // User is signed in, but the username is invalid - the administrator must
     // have changed the policy since the last signin, so sign out the user.
     SignOut(signin_metrics::SIGNIN_PREF_CHANGED_DURING_SIGNIN);
   }
 
   InitTokenService();
-  account_id_helper_.reset(
-      new SigninAccountIdHelper(client_, token_service_, this));
-
-  account_tracker_service_->AddObserver(this);
+  account_tracker_service()->AddObserver(this);
 }
 
 void SigninManager::Shutdown() {
-  account_tracker_service_->RemoveObserver(this);
+  account_tracker_service()->RemoveObserver(this);
   local_state_pref_registrar_.RemoveAll();
-  account_id_helper_.reset();
   SigninManagerBase::Shutdown();
 }
 
 void SigninManager::OnGoogleServicesUsernamePatternChanged() {
-  if (IsAuthenticated() &&
-      !IsAllowedUsername(GetAuthenticatedUsername())) {
+  if (IsAuthenticated() && !IsAllowedUsername(GetAuthenticatedUsername())) {
     // Signed in user is invalid according to the current policy so sign
     // the user out.
     SignOut(signin_metrics::GOOGLE_SERVICE_NAME_PATTERN_CHANGED);
@@ -297,11 +304,15 @@ bool SigninManager::IsAllowedUsername(const std::string& username) const {
 }
 
 bool SigninManager::AuthInProgress() const {
-  return !possibly_invalid_username_.empty();
+  return !possibly_invalid_account_id_.empty();
+}
+
+const std::string& SigninManager::GetAccountIdForAuthInProgress() const {
+  return possibly_invalid_account_id_;
 }
 
 const std::string& SigninManager::GetUsernameForAuthInProgress() const {
-  return possibly_invalid_username_;
+  return possibly_invalid_email_;
 }
 
 void SigninManager::DisableOneClickSignIn(PrefService* prefs) {
@@ -320,28 +331,38 @@ void SigninManager::MergeSigninCredentialIntoCookieJar() {
 
 void SigninManager::CompletePendingSignin() {
   NotifyDiagnosticsObservers(SIGNIN_COMPLETED, "Successful");
-
-  DCHECK(!possibly_invalid_username_.empty());
-  OnSignedIn(possibly_invalid_username_);
+  DCHECK(!possibly_invalid_account_id_.empty());
+  OnSignedIn();
 
   DCHECK(!temp_refresh_token_.empty());
   DCHECK(IsAuthenticated());
-  token_service_->UpdateCredentials(GetAuthenticatedAccountId(),
-                                    temp_refresh_token_);
+
+  std::string account_id = GetAuthenticatedAccountId();
+  token_service_->UpdateCredentials(account_id, temp_refresh_token_);
   temp_refresh_token_.clear();
 
   MergeSigninCredentialIntoCookieJar();
 }
 
 void SigninManager::OnExternalSigninCompleted(const std::string& username) {
-  OnSignedIn(username);
+  AccountTrackerService::AccountInfo info =
+      account_tracker_service()->FindAccountInfoByEmail(username);
+  DCHECK(!info.gaia.empty());
+  DCHECK(!info.email.empty());
+  possibly_invalid_account_id_ = info.account_id;
+  possibly_invalid_gaia_id_ = info.gaia;
+  possibly_invalid_email_ = info.email;
+  OnSignedIn();
 }
 
-void SigninManager::OnSignedIn(const std::string& username) {
+void SigninManager::OnSignedIn() {
   client_->GetPrefs()->SetInt64(prefs::kSignedInTime,
                                 base::Time::Now().ToInternalValue());
-  SetAuthenticatedUsername(username);
-  possibly_invalid_username_.clear();
+  SetAuthenticatedAccountInfo(possibly_invalid_gaia_id_,
+                              possibly_invalid_email_);
+  possibly_invalid_account_id_.clear();
+  possibly_invalid_gaia_id_.clear();
+  possibly_invalid_email_.clear();
   signin_manager_signed_in_ = true;
 
   FOR_EACH_OBSERVER(

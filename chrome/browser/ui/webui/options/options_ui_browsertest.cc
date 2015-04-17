@@ -9,6 +9,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -18,6 +19,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -248,10 +250,13 @@ IN_PROC_BROWSER_TEST_F(OptionsUIBrowserTest, MAYBE_VerifyManagedSignout) {
 }
 
 IN_PROC_BROWSER_TEST_F(OptionsUIBrowserTest, VerifyUnmanagedSignout) {
+  const std::string user = "test@example.com";
+  std::string account_id =
+      AccountTrackerServiceFactory::GetForProfile(browser()->profile())
+      ->SeedAccountInfo("12345", user);
   SigninManager* signin =
       SigninManagerFactory::GetForProfile(browser()->profile());
-  const std::string user = "test@example.com";
-  signin->OnExternalSigninCompleted(user);
+  signin->OnExternalSigninCompleted(account_id);
 
   NavigateToSettingsFrame();
 

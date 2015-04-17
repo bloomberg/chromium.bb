@@ -23,6 +23,7 @@
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -45,6 +46,7 @@
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/pref_names.h"
 #include "components/variations/entropy_provider.h"
@@ -3242,7 +3244,7 @@ TEST_F(SearchProviderTest, CanSendURL) {
       GURL("https://www.google.com/complete/search"), &google_template_url,
       metrics::OmniboxEventProto::OTHER, SearchTermsData(), &client));
   SigninManagerBase* signin = SigninManagerFactory::GetForProfile(&profile_);
-  signin->SetAuthenticatedUsername("test");
+  signin->SetAuthenticatedAccountInfo("gaia_id", "test");
 
   // All conditions should be met.
   EXPECT_TRUE(SearchProvider::CanSendURL(

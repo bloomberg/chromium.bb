@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_auth_status_provider.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -69,9 +71,20 @@ class SigninTrackerTest : public testing::Test {
     tracker_ =
         SigninTrackerFactory::CreateForProfile(profile_.get(), &observer_);
   }
+
   void TearDown() override {
     tracker_.reset();
     profile_.reset();
+  }
+
+  // Seed the account tracker with information from logged in user.  Normally
+  // this is done by UI code before calling SigninManager.  Returns the string
+  // to use as the account_id.
+  std::string AddToAccountTracker(const std::string& gaia_id,
+                                  const std::string& email) {
+    AccountTrackerService* service =
+        AccountTrackerServiceFactory::GetForProfile(profile_.get());
+    return service->SeedAccountInfo(gaia_id, email);
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -99,7 +112,13 @@ TEST_F(SigninTrackerTest, SignInSucceeds) {
   EXPECT_CALL(observer_, SigninSuccess());
   EXPECT_CALL(observer_, SigninFailed(_)).Times(0);
 
-  mock_signin_manager_->SetAuthenticatedUsername("user@gmail.com");
-  fake_oauth2_token_service_->IssueRefreshTokenForUser(
-      "user@gmail.com", "refresh_token");
+  AccountTrackerService* service =
+    AccountTrackerServiceFactory::GetForProfile(profile_.get());
+  std::string gaia_id = "gaia_id";
+  std::string email = "user@gmail.com";
+  std::string account_id = service->SeedAccountInfo(gaia_id, email);
+
+  mock_signin_manager_->SetAuthenticatedAccountInfo(gaia_id, email);
+  fake_oauth2_token_service_->IssueRefreshTokenForUser(account_id,
+                                                       "refresh_token");
 }

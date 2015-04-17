@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.sync;
 
 import android.accounts.Account;
 import android.app.Activity;
+import android.content.Context;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.util.Log;
 
@@ -16,6 +17,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
+import org.chromium.chrome.browser.signin.AccountIdProvider;
 import org.chromium.chrome.shell.ChromeShellActivity;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
@@ -57,6 +59,22 @@ public class SyncTest extends ChromeShellTestBase {
         super.setUp();
 
         clearAppData();
+
+        // Setup fake mapper from accountNames to Ids.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                if (AccountIdProvider.getInstance() != null) {
+                    return;
+                }
+
+                AccountIdProvider.setInstance(new AccountIdProvider() {
+                    public String getAccountId(Context ctx, String accountName) {
+                        return "gaia-id-" + accountName;
+                    }
+                });
+            }
+        });
 
         // Mock out the account manager on the device.
         mContext = new SyncTestUtil.SyncTestContext(getInstrumentation().getTargetContext());

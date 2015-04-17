@@ -26,6 +26,7 @@
 class Browser;
 class PrefService;
 class RemoveAutofillTester;
+class AccountTrackerService;
 
 namespace autofill {
 class AutofillInteractiveTest;
@@ -58,6 +59,7 @@ class PersonalDataManager : public KeyedService,
   // context.
   void Init(scoped_refptr<AutofillWebDataService> database,
             PrefService* pref_service,
+            AccountTrackerService* account_tracker,
             bool is_off_the_record);
 
   // WebDataServiceConsumer:
@@ -309,6 +311,10 @@ class PersonalDataManager : public KeyedService,
     database_ = database;
   }
 
+  void set_account_tracker(AccountTrackerService* account_tracker) {
+    account_tracker_ = account_tracker;
+  }
+
   // The backing database that this PersonalDataManager uses.
   scoped_refptr<AutofillWebDataService> database_;
 
@@ -371,6 +377,10 @@ class PersonalDataManager : public KeyedService,
 
   // The PrefService that this instance uses. Must outlive this instance.
   PrefService* pref_service_;
+
+  // The AccountTrackerService that this instance uses. Must outlive this
+  // instance.
+  AccountTrackerService* account_tracker_;
 
   // Whether the user is currently operating in an off-the-record context.
   // Default value is false.

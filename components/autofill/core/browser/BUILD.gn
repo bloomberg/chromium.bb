@@ -262,6 +262,7 @@ source_set("unit_tests") {
     "//components/os_crypt",
     "//components/rappor:test_support",
     "//components/resources",
+    "//components/signin/core/browser:test_support",
     "//components/strings",
     "//components/webdata/common",
     "//net:test_support",

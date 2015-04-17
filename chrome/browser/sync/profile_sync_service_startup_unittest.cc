@@ -7,6 +7,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
@@ -21,6 +22,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/data_type_manager.h"
@@ -46,6 +48,14 @@ using testing::InvokeArgument;
 using testing::Mock;
 using testing::Return;
 using testing::SaveArg;
+
+namespace {
+
+const char kGaiaId[] = "12345";
+const char kEmail[] = "test_user@gmail.com";
+const char kDummyPassword[] = "";
+
+}  // namespace
 
 ACTION_P(InvokeOnConfigureStart, pss) {
   ProfileSyncService* service =
@@ -129,9 +139,9 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     sync_->AddObserver(&observer_);
   }
 
-  void IssueTestTokens() {
+  void IssueTestTokens(const std::string& account_id) {
     ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)
-        ->UpdateCredentials("test_user@gmail.com", "oauth2_login_token");
+        ->UpdateCredentials(account_id, "oauth2_login_token");
   }
 
   ProfileSyncComponentsFactoryMock* components_factory_mock() {
@@ -153,15 +163,23 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   }
 
  protected:
-  void SimulateTestUserSignin() {
+  static std::string SimulateTestUserSignin(
+      Profile* profile,
+      FakeSigninManagerForTesting* fake_signin,
+      ProfileSyncService* sync) {
+    std::string account_id =
+        AccountTrackerServiceFactory::GetForProfile(profile)
+            ->SeedAccountInfo(kGaiaId, kEmail);
+    profile->GetPrefs()->SetString(prefs::kGoogleServicesAccountId,
+                                   account_id);
 #if !defined(OS_CHROMEOS)
-    fake_signin()->SignIn("test_user@gmail.com", "");
+    fake_signin->SignIn(kGaiaId, kEmail, kDummyPassword);
 #else
-    fake_signin()->SetAuthenticatedUsername("test_user@gmail.com");
-    sync_->GoogleSigninSucceeded("test_user@gmail.com",
-                                 "test_user@gmail.com",
-                                 "");
+    fake_signin->SetAuthenticatedAccountInfo(kGaiaId, kEmail);
+    if (sync)
+      sync->GoogleSigninSucceeded(account_id, kEmail, kDummyPassword);
 #endif
+    return account_id;
   }
 
   DataTypeManagerMock* SetUpDataTypeManager() {
@@ -201,9 +219,10 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
 
   static KeyedService* BuildCrosService(content::BrowserContext* context) {
     Profile* profile = static_cast<Profile*>(context);
-    SigninManagerBase* signin =
-        SigninManagerFactory::GetForProfile(profile);
-    signin->SetAuthenticatedUsername("test_user@gmail.com");
+    FakeSigninManagerForTesting* signin =
+        static_cast<FakeSigninManagerForTesting*>(
+        SigninManagerFactory::GetForProfile(profile));
+    SimulateTestUserSignin(profile, signin, nullptr);
     ProfileOAuth2TokenService* oauth2_token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
     EXPECT_TRUE(signin->IsAuthenticated());
@@ -250,9 +269,10 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   sync_->SetSetupInProgress(true);
 
   // Simulate successful signin as test_user.
-  SimulateTestUserSignin();
+  std::string account_id =
+      SimulateTestUserSignin(profile_, fake_signin(), sync_);
   // Create some tokens in the token service.
-  IssueTestTokens();
+  IssueTestTokens(account_id);
 
   // Simulate the UI telling sync it has finished setting up.
   sync_->SetSetupInProgress(false);
@@ -283,11 +303,12 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartNoCredentials) {
   sync_->SetSetupInProgress(true);
 
   // Simulate successful signin as test_user.
-  SimulateTestUserSignin();
+  std::string account_id =
+      SimulateTestUserSignin(profile_, fake_signin(), sync_);
 
   ProfileOAuth2TokenService* token_service =
     ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  token_service->LoadCredentials("test_user@gmail.com");
+  token_service->LoadCredentials(account_id);
 
   sync_->SetSetupInProgress(false);
   // ProfileSyncService should try to start by requesting access token.
@@ -299,8 +320,9 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartNoCredentials) {
 
 // TODO(pavely): Reenable test once android is switched to oauth2.
 TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartInvalidCredentials) {
-  sync_->signin()->SetAuthenticatedUsername("test_user@gmail.com");
   CreateSyncService();
+  std::string account_id =
+      SimulateTestUserSignin(profile_, fake_signin(), sync_);
   SyncBackendHostMock* mock_sbh = SetUpSyncBackendHost();
 
   // Tell the backend to stall while downloading control types (simulating an
@@ -324,7 +346,7 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartInvalidCredentials) {
   sync_->SetSetupInProgress(true);
 
   // Simulate successful signin.
-  SimulateTestUserSignin();
+  SimulateTestUserSignin(profile_, fake_signin(), sync_);
 
   sync_->SetSetupInProgress(false);
 
@@ -365,7 +387,9 @@ TEST_F(ProfileSyncServiceStartupCrosTest, StartFirstTime) {
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
-  IssueTestTokens();
+  IssueTestTokens(
+      AccountTrackerServiceFactory::GetForProfile(profile_)
+          ->PickAccountIdForAccount("12345", kEmail));
   sync_->Initialize();
   EXPECT_TRUE(sync_->SyncActive());
 }
@@ -378,9 +402,9 @@ TEST_F(ProfileSyncServiceStartupCrosTest, StartFirstTime) {
 #endif
 TEST_F(ProfileSyncServiceStartupTest, MAYBE_StartNormal) {
   // Pre load the tokens
-  SigninManagerFactory::GetForProfile(profile_)
-      ->SetAuthenticatedUsername("test_user@gmail.com");
   CreateSyncService();
+  std::string account_id =
+      SimulateTestUserSignin(profile_, fake_signin(), sync_);
   sync_->SetSyncSetupCompleted();
   SetUpSyncBackendHost();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
@@ -390,7 +414,7 @@ TEST_F(ProfileSyncServiceStartupTest, MAYBE_StartNormal) {
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
-  IssueTestTokens();
+  IssueTestTokens(account_id);
 
   sync_->Initialize();
 }
@@ -410,9 +434,9 @@ TEST_F(ProfileSyncServiceStartupTest, StartRecoverDatatypePrefs) {
   }
 
   // Pre load the tokens
-  SigninManagerFactory::GetForProfile(profile_)
-      ->SetAuthenticatedUsername("test_user@gmail.com");
   CreateSyncService();
+  std::string account_id =
+      SimulateTestUserSignin(profile_, fake_signin(), sync_);
   sync_->SetSyncSetupCompleted();
   SetUpSyncBackendHost();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
@@ -422,7 +446,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartRecoverDatatypePrefs) {
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
-  IssueTestTokens();
+  IssueTestTokens(account_id);
   sync_->Initialize();
 
   EXPECT_TRUE(profile_->GetPrefs()->GetBoolean(
@@ -444,9 +468,9 @@ TEST_F(ProfileSyncServiceStartupTest, MAYBE_StartDontRecoverDatatypePrefs) {
       sync_driver::prefs::kSyncKeepEverythingSynced, false);
 
   // Pre load the tokens
-  SigninManagerFactory::GetForProfile(profile_)
-      ->SetAuthenticatedUsername("test_user@gmail.com");
   CreateSyncService();
+  std::string account_id =
+      SimulateTestUserSignin(profile_, fake_signin(), sync_);
   sync_->SetSyncSetupCompleted();
   SetUpSyncBackendHost();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
@@ -455,7 +479,7 @@ TEST_F(ProfileSyncServiceStartupTest, MAYBE_StartDontRecoverDatatypePrefs) {
       WillRepeatedly(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
-  IssueTestTokens();
+  IssueTestTokens(account_id);
   sync_->Initialize();
 
   EXPECT_FALSE(profile_->GetPrefs()->GetBoolean(
@@ -470,8 +494,8 @@ TEST_F(ProfileSyncServiceStartupTest, MAYBE_StartDontRecoverDatatypePrefs) {
 #endif
 TEST_F(ProfileSyncServiceStartupTest, MAYBE_ManagedStartup) {
   // Service should not be started by Initialize() since it's managed.
-  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
-                                  "test_user@gmail.com");
+  profile_->GetPrefs()->SetString(prefs::kGoogleServicesAccountId,
+                                  kEmail);
   CreateSyncService();
 
   // Disable sync through policy.
@@ -484,15 +508,15 @@ TEST_F(ProfileSyncServiceStartupTest, MAYBE_ManagedStartup) {
 }
 
 TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
-  SigninManagerFactory::GetForProfile(profile_)
-      ->SetAuthenticatedUsername("test_user@gmail.com");
   CreateSyncService();
+  std::string account_id =
+      SimulateTestUserSignin(profile_, fake_signin(), sync_);
   sync_->SetSyncSetupCompleted();
   SetUpSyncBackendHost();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   EXPECT_CALL(*data_type_manager, Configure(_, _));
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
-  IssueTestTokens();
+  IssueTestTokens(account_id);
   sync_->Initialize();
 
   // The service should stop when switching to managed mode.
@@ -513,9 +537,9 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
 }
 
 TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
-  SigninManagerFactory::GetForProfile(profile_)
-      ->SetAuthenticatedUsername("test_user@gmail.com");
   CreateSyncService();
+  std::string account_id =
+      SimulateTestUserSignin(profile_, fake_signin(), sync_);
   sync_->SetSyncSetupCompleted();
   SetUpSyncBackendHost();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
@@ -533,16 +557,16 @@ TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
   EXPECT_CALL(*data_type_manager, state()).
       WillOnce(Return(DataTypeManager::STOPPED));
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
-  IssueTestTokens();
+  IssueTestTokens(account_id);
   sync_->Initialize();
   EXPECT_TRUE(sync_->HasUnrecoverableError());
 }
 
 TEST_F(ProfileSyncServiceStartupTest, StartDownloadFailed) {
   // Pre load the tokens
-  SigninManagerFactory::GetForProfile(profile_)
-      ->SetAuthenticatedUsername("test_user@gmail.com");
   CreateSyncService();
+  std::string account_id =
+      SimulateTestUserSignin(profile_, fake_signin(), sync_);
   SyncBackendHostMock* mock_sbh = SetUpSyncBackendHost();
   mock_sbh->set_fail_initial_download(true);
 
@@ -552,7 +576,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartDownloadFailed) {
   sync_->Initialize();
 
   sync_->SetSetupInProgress(true);
-  IssueTestTokens();
+  IssueTestTokens(account_id);
   sync_->SetSetupInProgress(false);
   EXPECT_FALSE(sync_->SyncActive());
 }

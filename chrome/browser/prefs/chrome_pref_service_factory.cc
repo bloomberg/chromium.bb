@@ -221,6 +221,8 @@ const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
     PrefHashFilter::VALUE_IMPERSONAL
   },
 #endif
+  // This pref is deprecated and will be removed a few releases after M43.
+  // kGoogleServicesAccountId replaces it.
   {
     21, prefs::kGoogleServicesUsername,
     PrefHashFilter::ENFORCE_ON_LOAD,
@@ -235,6 +237,12 @@ const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
     PrefHashFilter::VALUE_IMPERSONAL
   },
 #endif
+  {
+    23, prefs::kGoogleServicesAccountId,
+    PrefHashFilter::ENFORCE_ON_LOAD,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_PERSONAL
+  },
   // See note at top, new items added here also need to be added to
   // histograms.xml's TrackedPreference enum.
 };

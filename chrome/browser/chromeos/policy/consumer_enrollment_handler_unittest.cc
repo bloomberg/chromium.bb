@@ -4,8 +4,11 @@
 
 #include "chrome/browser/chromeos/policy/consumer_enrollment_handler.h"
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -16,6 +19,7 @@
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/policy/fake_consumer_management_service.h"
 #include "chrome/browser/chromeos/policy/fake_device_cloud_policy_initializer.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -65,17 +69,21 @@ class ConsumerEnrollmentHandlerTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(testing_profile_manager_->SetUp());
-    profile_ = testing_profile_manager_->CreateTestingProfile(kTestUser);
-
-    // Set up FakeProfileOAuth2TokenService and issue a fake refresh token.
-    ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
-        profile_, &BuildAutoIssuingFakeProfileOAuth2TokenService);
-    GetFakeProfileOAuth2TokenService()->
-        IssueRefreshTokenForUser(kTestOwner, "fake_token");
+    TestingProfile::TestingFactories factories;
+    factories.push_back(
+        std::make_pair(ProfileOAuth2TokenServiceFactory::GetInstance(),
+                       BuildAutoIssuingFakeProfileOAuth2TokenService));
+    profile_ = testing_profile_manager_->CreateTestingProfile(
+        kTestUser, scoped_ptr<PrefServiceSyncable>(),
+        base::UTF8ToUTF16(kTestUser), 0, std::string(), factories);
 
     // Set up the authenticated user name and ID.
-    SigninManagerFactory::GetForProfile(profile_)->
-        SetAuthenticatedUsername(kTestOwner);
+    SigninManagerFactory::GetForProfile(profile_)
+        ->SetAuthenticatedAccountInfo(kTestOwner, kTestOwner);
+
+    // Issue a fake refresh token.
+    GetFakeProfileOAuth2TokenService()->IssueRefreshTokenForUser(kTestOwner,
+                                                                 "fake_token");
   }
 
   FakeProfileOAuth2TokenService* GetFakeProfileOAuth2TokenService() {

@@ -6,10 +6,19 @@
 
 #include "chrome/browser/devtools/device/webrtc/devtools_bridge_client.h"
 #include "chrome/browser/local_discovery/gcd_api_flow.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "content/public/browser/web_ui_message_handler.h"
+
+namespace {
+
+const char kGaiaId[] = "stub-user@example.com";
+const char kUsername[] = "stub-user@example.com";
+
+}  // namespace
 
 class DevToolsBridgeClientBrowserTest::GCDApiFlowMock
     : public local_discovery::GCDApiFlow {
@@ -79,10 +88,14 @@ class DevToolsBridgeClientBrowserTest::DevToolsBridgeClientMock
 
   void GoogleSigninSucceeded() {
     // This username is checked on Chrome OS.
-    const std::string username = "stub-user@example.com";
-    test_->fake_signin_manager_->SetAuthenticatedUsername(username);
-    identity_provider().GoogleSigninSucceeded("test_account", username,
-                                              "testing");
+    const std::string account_id =
+        AccountTrackerServiceFactory::GetForProfile(
+            test_->browser()->profile())
+                ->PickAccountIdForAccount(kGaiaId, kUsername);
+    test_->fake_signin_manager_->SetAuthenticatedAccountInfo(kGaiaId,
+                                                             kUsername);
+    identity_provider().GoogleSigninSucceeded(account_id, kUsername,
+                                              "password");
   }
 
  private:
@@ -109,8 +122,11 @@ class DevToolsBridgeClientBrowserTest::MessageHandler
   void SignIn(const base::ListValue*) {
     if (test_->client_mock_.get())
       test_->client_mock_->GoogleSigninSucceeded();
-    test_->fake_token_service_->UpdateCredentials("test_user@gmail.com",
-                                                  "token");
+    const std::string account_id =
+        AccountTrackerServiceFactory::GetForProfile(
+            test_->browser()->profile())->PickAccountIdForAccount(kGaiaId,
+                                                                  kUsername);
+    test_->fake_token_service_->UpdateCredentials(account_id, "token");
   }
 
   void GCDApiResponse(const base::ListValue* params) {

@@ -370,7 +370,7 @@ TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
   // Set up the signin manager and the OAuth2Tokens.
   Profile* profile = browser()->profile();
   SigninManagerFactory::GetForProfile(profile)->
-      SetAuthenticatedUsername(kEmail);
+      SetAuthenticatedAccountInfo(kEmail, kEmail);
   ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
       UpdateCredentials(kEmail, kLoginToken);
   ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->

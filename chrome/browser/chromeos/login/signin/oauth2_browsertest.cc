@@ -29,6 +29,7 @@
 #include "chromeos/login/auth/user_context.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/app_modal/native_app_modal_dialog.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -58,8 +59,9 @@ namespace chromeos {
 namespace {
 
 // Email of owner account for test.
-const char kTestAccountId[] = "username@gmail.com";
-const char kTestRawAccountId[] = "User.Name";
+const char kTestGaiaId[] = "12345";
+const char kTestEmail[] = "username@gmail.com";
+const char kTestRawEmail[] = "User.Name@gmail.com";
 const char kTestAccountPassword[] = "fake-password";
 const char kTestAuthCode[] = "fake-auth-code";
 const char kTestGaiaUberToken[] = "fake-uber-token";
@@ -75,6 +77,13 @@ const char kTestUserinfoToken[] = "fake-userinfo-token";
 const char kTestLoginToken[] = "fake-login-token";
 const char kTestSyncToken[] = "fake-sync-token";
 const char kTestAuthLoginToken[] = "fake-oauthlogin-token";
+
+std::string PickAccountId(Profile* profile,
+                          const std::string& gaia_id,
+                          const std::string& email) {
+  return AccountTrackerService::PickAccountIdForAccount(profile->GetPrefs(),
+                                                        gaia_id, email);
+}
 
 class OAuth2LoginManagerStateWaiter : public OAuth2LoginManager::Observer {
  public:
@@ -162,7 +171,7 @@ class OAuth2Test : public OobeBaseTest,
 
   void SetupGaiaServerForUnexpiredAccount() {
     FakeGaia::MergeSessionParams params;
-    params.email = kTestAccountId;
+    params.email = kTestEmail;
     fake_gaia_->SetMergeSessionParams(params);
     SetupGaiaServerWithAccessTokens();
   }
@@ -184,10 +193,14 @@ class OAuth2Test : public OobeBaseTest,
     JsExpect("!!document.querySelector('#account-picker')");
     JsExpect("!!document.querySelector('#pod-row')");
 
-    EXPECT_EQ(GetOAuthStatusFromLocalState(kTestAccountId),
+    std::string account_id = PickAccountId(
+        ProfileManager::GetPrimaryUserProfile(), kTestGaiaId, kTestEmail);
+
+    EXPECT_EQ(GetOAuthStatusFromLocalState(account_id),
               user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
 
-    EXPECT_TRUE(TryToLogin(kTestAccountId, kTestAccountPassword));
+    // Try login.  Primary profile has changed.
+    EXPECT_TRUE(TryToLogin(kTestGaiaId, kTestEmail, kTestAccountPassword));
     Profile* profile = ProfileManager::GetPrimaryUserProfile();
 
     // Wait for the session merge to finish.
@@ -196,15 +209,16 @@ class OAuth2Test : public OobeBaseTest,
     // Check for existance of refresh token.
     ProfileOAuth2TokenService* token_service =
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-    EXPECT_TRUE(token_service->RefreshTokenIsAvailable(kTestAccountId));
+    EXPECT_TRUE(token_service->RefreshTokenIsAvailable(account_id));
 
-    EXPECT_EQ(GetOAuthStatusFromLocalState(kTestAccountId),
+    EXPECT_EQ(GetOAuthStatusFromLocalState(account_id),
               user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
   }
 
-  bool TryToLogin(const std::string& username,
+  bool TryToLogin(const std::string& gaia_id,
+                  const std::string& username,
                   const std::string& password) {
-    if (!AddUserToSession(username, password))
+    if (!AddUserToSession(gaia_id, username, password))
       return false;
 
     if (const user_manager::User* active_user =
@@ -216,14 +230,14 @@ class OAuth2Test : public OobeBaseTest,
   }
 
   user_manager::User::OAuthTokenStatus GetOAuthStatusFromLocalState(
-      const std::string& user_id) const {
+      const std::string& account_id) const {
     PrefService* local_state = g_browser_process->local_state();
     const base::DictionaryValue* prefs_oauth_status =
         local_state->GetDictionary("OAuthTokenStatus");
     int oauth_token_status = user_manager::User::OAUTH_TOKEN_STATUS_UNKNOWN;
     if (prefs_oauth_status &&
         prefs_oauth_status->GetIntegerWithoutPathExpansion(
-            user_id, &oauth_token_status)) {
+            account_id, &oauth_token_status)) {
       user_manager::User::OAuthTokenStatus result =
           static_cast<user_manager::User::OAuthTokenStatus>(oauth_token_status);
       return result;
@@ -240,7 +254,8 @@ class OAuth2Test : public OobeBaseTest,
     return OobeBaseTest::profile();
   }
 
-  bool AddUserToSession(const std::string& username,
+  bool AddUserToSession(const std::string& gaia_id,
+                        const std::string& username,
                         const std::string& password) {
     ExistingUserController* controller =
         ExistingUserController::current_controller();
@@ -250,6 +265,7 @@ class OAuth2Test : public OobeBaseTest,
     }
 
     UserContext user_context(username);
+    user_context.SetGaiaID(gaia_id);
     user_context.SetKey(Key(password));
     controller->Login(user_context, SigninSpecifics());
     content::WindowedNotificationObserver(
@@ -267,6 +283,8 @@ class OAuth2Test : public OobeBaseTest,
   }
 
   void SetupGaiaServerWithAccessTokens() {
+    fake_gaia_->MapEmailToGaiaId(kTestEmail, kTestGaiaId);
+
     // Configure OAuth authentication.
     GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
 
@@ -277,7 +295,7 @@ class OAuth2Test : public OobeBaseTest,
     userinfo_token_info.scopes.insert(
         "https://www.googleapis.com/auth/userinfo.email");
     userinfo_token_info.audience = gaia_urls->oauth2_chrome_client_id();
-    userinfo_token_info.email = kTestAccountId;
+    userinfo_token_info.email = kTestEmail;
     fake_gaia_->IssueOAuthToken(kTestRefreshToken, userinfo_token_info);
 
     FakeGaia::AccessTokenInfo userinfo_profile_token_info;
@@ -285,7 +303,7 @@ class OAuth2Test : public OobeBaseTest,
     userinfo_profile_token_info.scopes.insert(
         "https://www.googleapis.com/auth/userinfo.profile");
     userinfo_profile_token_info.audience = gaia_urls->oauth2_chrome_client_id();
-    userinfo_profile_token_info.email = kTestAccountId;
+    userinfo_profile_token_info.email = kTestEmail;
     fake_gaia_->IssueOAuthToken(kTestRefreshToken, userinfo_profile_token_info);
 
     // The any-api access token for accessing the token minting endpoint.
@@ -339,7 +357,7 @@ class OAuth2Test : public OobeBaseTest,
 
     // Use capitalized and dotted user name on purpose to make sure
     // our email normalization kicks in.
-    GetLoginDisplay()->ShowSigninScreenForCreds(kTestRawAccountId,
+    GetLoginDisplay()->ShowSigninScreenForCreds(kTestRawEmail,
                                                 kTestAccountPassword);
     session_start_waiter.Wait();
 
@@ -415,12 +433,13 @@ class CookieReader : public base::RefCountedThreadSafe<CookieReader> {
 IN_PROC_BROWSER_TEST_P(OAuth2Test, PRE_PRE_PRE_MergeSession) {
   StartNewUserSession(true);
   // Check for existance of refresh token.
+  std::string account_id = PickAccountId(profile(), kTestGaiaId, kTestEmail);
   ProfileOAuth2TokenService* token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(
             profile());
-  EXPECT_TRUE(token_service->RefreshTokenIsAvailable(kTestAccountId));
+  EXPECT_TRUE(token_service->RefreshTokenIsAvailable(account_id));
 
-  EXPECT_EQ(GetOAuthStatusFromLocalState(kTestAccountId),
+  EXPECT_EQ(GetOAuthStatusFromLocalState(account_id),
             user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
   scoped_refptr<CookieReader> cookie_reader(new CookieReader());
   cookie_reader->ReadCookies(profile());
@@ -472,15 +491,16 @@ IN_PROC_BROWSER_TEST_P(OAuth2Test, MergeSession) {
   JsExpect("!!document.querySelector('#account-picker')");
   JsExpect("!!document.querySelector('#pod-row')");
 
-  EXPECT_EQ(GetOAuthStatusFromLocalState(kTestAccountId),
+  std::string account_id = PickAccountId(profile(), kTestGaiaId, kTestEmail);
+  EXPECT_EQ(GetOAuthStatusFromLocalState(account_id),
             user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
 
-  EXPECT_TRUE(TryToLogin(kTestAccountId, kTestAccountPassword));
+  EXPECT_TRUE(TryToLogin(kTestGaiaId, kTestEmail, kTestAccountPassword));
 
   // Wait for the session merge to finish.
   WaitForMergeSessionCompletion(OAuth2LoginManager::SESSION_RESTORE_FAILED);
 
-  EXPECT_EQ(GetOAuthStatusFromLocalState(kTestAccountId),
+  EXPECT_EQ(GetOAuthStatusFromLocalState(account_id),
             user_manager::User::OAUTH2_TOKEN_STATUS_INVALID);
 }
 

@@ -182,7 +182,7 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
     SigninManager* signin_manager =
         SigninManagerFactory::GetForProfile(browser()->profile());
     ASSERT_TRUE(signin_manager);
-    signin_manager->SetAuthenticatedUsername("user@example.com");
+    signin_manager->SetAuthenticatedAccountInfo("12345", "user@example.com");
 
     UserCloudPolicyManager* policy_manager =
         UserCloudPolicyManagerFactory::GetForBrowserContext(

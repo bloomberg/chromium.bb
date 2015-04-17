@@ -47,7 +47,7 @@ ProfileSyncServiceMock::~ProfileSyncServiceMock() {
 TestingProfile* ProfileSyncServiceMock::MakeSignedInTestingProfile() {
   TestingProfile* profile = new TestingProfile();
   SigninManagerFactory::GetForProfile(profile)->
-      SetAuthenticatedUsername("foo");
+      SetAuthenticatedAccountInfo("12345", "foo");
   return profile;
 }
 

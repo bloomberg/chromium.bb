@@ -137,7 +137,7 @@ void InlineLoginUIBrowserTest::SetUpSigninManager(const std::string& username) {
 
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(browser()->profile());
-  signin_manager->SetAuthenticatedUsername(username);
+  signin_manager->SetAuthenticatedAccountInfo(username, username);
 }
 
 void InlineLoginUIBrowserTest::EnableSigninAllowed(bool enable) {

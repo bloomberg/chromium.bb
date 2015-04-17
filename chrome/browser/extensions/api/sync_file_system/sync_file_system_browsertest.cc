@@ -135,8 +135,8 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
   }
 
   void SignIn() {
-    fake_signin_manager_->SetAuthenticatedUsername("tester");
-    sync_engine()->GoogleSigninSucceeded("test_account", "tester", "testing");
+    fake_signin_manager_->SetAuthenticatedAccountInfo("12345", "tester");
+    sync_engine()->GoogleSigninSucceeded("12345", "tester", "password");
   }
 
   void SetSyncEnabled(bool enabled) {

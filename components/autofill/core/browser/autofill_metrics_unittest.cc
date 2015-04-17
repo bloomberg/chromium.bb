@@ -25,6 +25,8 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/rappor/test_rappor_service.h"
+#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/webdata/common/web_data_results.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,6 +47,7 @@ class TestPersonalDataManager : public PersonalDataManager {
     CreateTestAutofillProfiles(&web_profiles_);
   }
 
+  using PersonalDataManager::set_account_tracker;
   using PersonalDataManager::set_database;
   using PersonalDataManager::SetPrefService;
 
@@ -284,6 +287,8 @@ class AutofillMetricsTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   TestAutofillClient autofill_client_;
+  scoped_ptr<AccountTrackerService> account_tracker_;
+  scoped_ptr<TestSigninClient> signin_client_;
   scoped_ptr<TestAutofillDriver> autofill_driver_;
   scoped_ptr<TestAutofillManager> autofill_manager_;
   scoped_ptr<TestPersonalDataManager> personal_data_;
@@ -302,9 +307,17 @@ void AutofillMetricsTest::SetUp() {
   // Ensure Mac OS X does not pop up a modal dialog for the Address Book.
   test::DisableSystemServices(autofill_client_.GetPrefs());
 
+  // Setup account tracker.
+  signin_client_.reset(new TestSigninClient(autofill_client_.GetPrefs()));
+  account_tracker_.reset(new AccountTrackerService());
+  account_tracker_->Initialize(
+      autofill_client_.GetIdentityProvider()->GetTokenService(),
+      signin_client_.get());
+
   personal_data_.reset(new TestPersonalDataManager());
   personal_data_->set_database(autofill_client_.GetDatabase());
   personal_data_->SetPrefService(autofill_client_.GetPrefs());
+  personal_data_->set_account_tracker(account_tracker_.get());
   autofill_driver_.reset(new TestAutofillDriver());
   autofill_manager_.reset(new TestAutofillManager(
       autofill_driver_.get(), &autofill_client_, personal_data_.get()));
@@ -321,13 +334,18 @@ void AutofillMetricsTest::TearDown() {
   autofill_manager_.reset();
   autofill_driver_.reset();
   personal_data_.reset();
+  account_tracker_->Shutdown();
+  account_tracker_.reset();
+  signin_client_.reset();
 }
 
 void AutofillMetricsTest::EnableWalletSync() {
   autofill_client_.GetPrefs()->SetBoolean(
       prefs::kAutofillWalletSyncExperimentEnabled, true);
+  std::string account_id =
+      account_tracker_->SeedAccountInfo("12345", "syncuser@example.com");
   autofill_client_.GetPrefs()->SetString(
-      ::prefs::kGoogleServicesUsername, "syncuser@example.com");
+      ::prefs::kGoogleServicesAccountId, account_id);
 }
 
 // Test that we log quality metrics appropriately.
@@ -1051,7 +1069,8 @@ TEST_F(AutofillMetricsTest, AutofillIsEnabledAtStartup) {
   base::HistogramTester histogram_tester;
   personal_data_->set_autofill_enabled(true);
   personal_data_->Init(
-      autofill_client_.GetDatabase(), autofill_client_.GetPrefs(), false);
+      autofill_client_.GetDatabase(), autofill_client_.GetPrefs(),
+      account_tracker_.get(), false);
   histogram_tester.ExpectUniqueSample("Autofill.IsEnabled.Startup", true, 1);
 }
 
@@ -1060,7 +1079,8 @@ TEST_F(AutofillMetricsTest, AutofillIsDisabledAtStartup) {
   base::HistogramTester histogram_tester;
   personal_data_->set_autofill_enabled(false);
   personal_data_->Init(
-      autofill_client_.GetDatabase(), autofill_client_.GetPrefs(), false);
+      autofill_client_.GetDatabase(), autofill_client_.GetPrefs(),
+      account_tracker_.get(), false);
   histogram_tester.ExpectUniqueSample("Autofill.IsEnabled.Startup", false, 1);
 }
 

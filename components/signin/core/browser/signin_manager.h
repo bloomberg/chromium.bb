@@ -42,7 +42,6 @@ class GaiaCookieManagerService;
 class GoogleServiceAuthError;
 class PrefService;
 class ProfileOAuth2TokenService;
-class SigninAccountIdHelper;
 class SigninClient;
 
 class SigninManager : public SigninManagerBase,
@@ -78,6 +77,7 @@ class SigninManager : public SigninManagerBase,
   // continue or cancel the in-process signin.
   virtual void StartSignInWithRefreshToken(
       const std::string& refresh_token,
+      const std::string& gaia_id,
       const std::string& username,
       const std::string& password,
       const OAuthTokenFetchedCallback& oauth_fetched_callback);
@@ -104,7 +104,9 @@ class SigninManager : public SigninManagerBase,
   virtual void CompletePendingSignin();
 
   // Invoked from SigninManagerAndroid to indicate that the sign-in process
-  // has completed for |username|.
+  // has completed for the email |username|.  SigninManager assumes that
+  // |username| can be used to look up the corresponding account_id and gaia_id
+  // for this email.
   void OnExternalSigninCompleted(const std::string& username);
 
   // Returns true if there's a signin in progress.
@@ -115,6 +117,10 @@ class SigninManager : public SigninManagerBase,
   // Returns true if the passed username is allowed by policy. Virtual for
   // mocking in tests.
   virtual bool IsAllowedUsername(const std::string& username) const;
+
+  // If an authentication is in progress, return the account id being
+  // authenticated. Returns an empty string if no auth is in progress.
+  const std::string& GetAccountIdForAuthInProgress() const;
 
   // If an authentication is in progress, return the username being
   // authenticated. Returns an empty string if no auth is in progress.
@@ -153,14 +159,16 @@ class SigninManager : public SigninManagerBase,
   // StartSigninXXX methods.  |type| indicates which of the methods is being
   // used to perform the signin while |username| and |password| identify the
   // account to be signed in. Returns false and generates an auth error if the
-  // passed |username| is not allowed by policy.
+  // passed |username| is not allowed by policy.  |gaia_id| is the obfuscated
+  // gaia id corresponding to |username|.
   bool PrepareForSignin(SigninType type,
+                        const std::string& gaia_id,
                         const std::string& username,
                         const std::string& password);
 
-  // Persists |username| as the currently signed-in account, and triggers
+  // Persists |account_id| as the currently signed-in account, and triggers
   // a sign-in success notification.
-  void OnSignedIn(const std::string& username);
+  void OnSignedIn();
 
   // Waits for the AccountTrackerService, then sends GoogleSigninSucceeded to
   // the client and clears the local password.
@@ -184,12 +192,10 @@ class SigninManager : public SigninManagerBase,
   void OnSigninAllowedPrefChanged();
   void OnGoogleServicesUsernamePatternChanged();
 
-  // ClientLogin identity.
-  std::string possibly_invalid_username_;
+  std::string possibly_invalid_account_id_;
+  std::string possibly_invalid_gaia_id_;
+  std::string possibly_invalid_email_;
   std::string password_;  // This is kept empty whenever possible.
-
-  // Fetcher for the obfuscated user id.
-  scoped_ptr<SigninAccountIdHelper> account_id_helper_;
 
   // The type of sign being performed.  This value is valid only between a call
   // to one of the StartSigninXXX methods and when the sign in is either
@@ -207,10 +213,6 @@ class SigninManager : public SigninManagerBase,
   // The ProfileOAuth2TokenService instance associated with this object. Must
   // outlive this object.
   ProfileOAuth2TokenService* token_service_;
-
-  // The AccountTrackerService instance associated with this object. Must
-  // outlive this object.
-  AccountTrackerService* account_tracker_service_;
 
   // Object used to use the token to push a GAIA cookie into the cookie jar.
   GaiaCookieManagerService* cookie_manager_service_;

@@ -139,7 +139,8 @@ class SharedOptionsTest : public LoginManagerTest {
   Browser* CreateBrowserForUser(const user_manager::User* user) {
     Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
     SigninManagerFactory::GetForProfile(profile)->
-        SetAuthenticatedUsername(user->email());
+        SetAuthenticatedAccountInfo(GetGaiaIDForUserID(user->email()),
+                                    user->email());
 
     ui_test_utils::BrowserAddedObserver observer;
     Browser* browser = CreateBrowser(profile);

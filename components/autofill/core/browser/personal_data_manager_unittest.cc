@@ -25,9 +25,12 @@
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_database_service.h"
+#include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -94,6 +97,14 @@ class PersonalDataManagerTest : public testing::Test {
     web_database_ = new WebDatabaseService(path,
                                            base::MessageLoopProxy::current(),
                                            base::MessageLoopProxy::current());
+
+    // Setup account tracker.
+    signin_client_.reset(new TestSigninClient(prefs_.get()));
+    fake_oauth2_token_service_.reset(new FakeOAuth2TokenService());
+    account_tracker_.reset(new AccountTrackerService());
+    account_tracker_->Initialize(fake_oauth2_token_service_.get(),
+                                 signin_client_.get());
+
     // Hacky: hold onto a pointer but pass ownership.
     autofill_table_ = new AutofillTable("en-US");
     web_database_->AddTable(scoped_ptr<WebDatabaseTable>(autofill_table_));
@@ -109,12 +120,22 @@ class PersonalDataManagerTest : public testing::Test {
     ResetPersonalDataManager(USER_MODE_NORMAL);
   }
 
+  void TearDown() override {
+    // Order of destruction is important as AutofillManager relies on
+    // PersonalDataManager to be around when it gets destroyed.
+    account_tracker_->Shutdown();
+    fake_oauth2_token_service_.reset();
+    account_tracker_.reset();
+    signin_client_.reset();
+  }
+
   void ResetPersonalDataManager(UserMode user_mode) {
     bool is_incognito = (user_mode == USER_MODE_INCOGNITO);
     personal_data_.reset(new PersonalDataManager("en"));
     personal_data_->Init(
         scoped_refptr<AutofillWebDataService>(autofill_database_service_),
         prefs_.get(),
+        account_tracker_.get(),
         is_incognito);
     personal_data_->AddObserver(&personal_data_observer_);
 
@@ -126,7 +147,9 @@ class PersonalDataManagerTest : public testing::Test {
 
   void EnableWalletCardImport() {
     prefs_->SetBoolean(prefs::kAutofillWalletSyncExperimentEnabled, true);
-    prefs_->SetString(::prefs::kGoogleServicesUsername, "syncuser@example.com");
+    std::string account_id =
+        account_tracker_->SeedAccountInfo("12345", "syncuser@example.com");
+    prefs_->SetString(::prefs::kGoogleServicesAccountId, account_id);
   }
 
   // The temporary directory should be deleted at the end to ensure that
@@ -134,6 +157,9 @@ class PersonalDataManagerTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   base::MessageLoopForUI message_loop_;
   scoped_ptr<PrefService> prefs_;
+  scoped_ptr<FakeOAuth2TokenService> fake_oauth2_token_service_;
+  scoped_ptr<AccountTrackerService> account_tracker_;
+  scoped_ptr<TestSigninClient> signin_client_;
   scoped_refptr<AutofillWebDataService> autofill_database_service_;
   scoped_refptr<WebDatabaseService> web_database_;
   AutofillTable* autofill_table_;  // weak ref

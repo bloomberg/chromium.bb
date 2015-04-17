@@ -26,7 +26,7 @@ void StubLoginSessionManagerDelegate::Start() {
 
   // For dev machines and stub user emulate as if sync has been initialized.
   SigninManagerFactory::GetForProfile(profile())
-      ->SetAuthenticatedUsername(login_user_id());
+      ->SetAuthenticatedAccountInfo(login_user_id(), login_user_id());
   RestoreAfterCrashSessionManagerDelegate::Start();
 }
 

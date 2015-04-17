@@ -71,6 +71,7 @@ namespace chromeos {
 
 namespace {
 
+const char kGaiaID[] = "12345";
 const char kUsername[] = "test_user@gmail.com";
 const char kSupervisedUserID[] = "supervised_user@locally-managed.localhost";
 const char kPassword[] = "test_password";
@@ -227,6 +228,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, ExistingUserLogin) {
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))
       .Times(2);
   UserContext user_context(kUsername);
+  user_context.SetGaiaID(kGaiaID);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(kUsername);
   test::UserSessionManagerTestApi session_manager_test_api(
@@ -277,6 +279,7 @@ void ExistingUserControllerUntrustedTest::SetUpSessionManager() {
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
                        ExistingUserLoginForbidden) {
   UserContext user_context(kUsername);
+  user_context.SetGaiaID(kGaiaID);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(kUsername);
   existing_user_controller()->Login(user_context, SigninSpecifics());
@@ -285,6 +288,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
                        NewUserLoginForbidden) {
   UserContext user_context(kUsername);
+  user_context.SetGaiaID(kGaiaID);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(kUsername);
   existing_user_controller()->CompleteLogin(user_context);
@@ -569,6 +573,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
                        LoginStopsAutoLogin) {
   // Set up mocks to check login success.
   UserContext user_context(kUsername);
+  user_context.SetGaiaID(kGaiaID);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(user_context.GetUserID());
   ExpectSuccessfulLogin(user_context);
@@ -602,6 +607,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))
       .Times(2);
   UserContext user_context(kUsername);
+  user_context.SetGaiaID(kGaiaID);
   user_context.SetKey(Key(kPassword));
   test::UserSessionManagerTestApi session_manager_test_api(
       UserSessionManager::GetInstance());
@@ -631,6 +637,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
                        CompleteLoginStopsAutoLogin) {
   // Set up mocks to check login success.
   UserContext user_context(kUsername);
+  user_context.SetGaiaID(kGaiaID);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(user_context.GetUserID());
   ExpectSuccessfulLogin(user_context);
@@ -703,6 +710,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   // Check that the attempt to start a public session fails with an error.
   ExpectLoginFailure();
   UserContext user_context(kUsername);
+  user_context.SetGaiaID(kGaiaID);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(user_context.GetUserID());
   existing_user_controller()->Login(user_context, SigninSpecifics());

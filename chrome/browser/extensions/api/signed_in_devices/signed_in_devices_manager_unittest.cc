@@ -28,7 +28,7 @@ KeyedService* CreateProfileSyncServiceMock(content::BrowserContext* profile) {
 TEST(SignedInDevicesManager, UpdateListener) {
   scoped_ptr<TestingProfile> profile(new TestingProfile());
   SigninManagerFactory::GetForProfile(profile.get())->
-      SetAuthenticatedUsername("foo");
+      SetAuthenticatedAccountInfo("gaia_id", "foo");
   ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
       profile.get(), CreateProfileSyncServiceMock);
   SignedInDevicesManager manager(profile.get());

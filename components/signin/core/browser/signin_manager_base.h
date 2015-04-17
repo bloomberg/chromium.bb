@@ -36,8 +36,8 @@
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
+class AccountTrackerService;
 class PrefService;
-
 class SigninClient;
 
 class SigninManagerBase : public KeyedService {
@@ -60,7 +60,8 @@ class SigninManagerBase : public KeyedService {
     virtual ~Observer() {}
   };
 
-  SigninManagerBase(SigninClient* client);
+  SigninManagerBase(SigninClient* client,
+                    AccountTrackerService* account_tracker_service);
   ~SigninManagerBase() override;
 
   // If user was signed in, load tokens from DB if available.
@@ -78,7 +79,7 @@ class SigninManagerBase : public KeyedService {
   // If a user has previously signed in (and has not signed out), this returns
   // the normalized email address of the account. Otherwise, it returns an empty
   // string.
-  const std::string& GetAuthenticatedUsername() const;
+  std::string GetAuthenticatedUsername() const;
 
   // If a user has previously signed in (and has not signed out), this returns
   // the account id. Otherwise, it returns an empty string.  This id can be used
@@ -96,11 +97,11 @@ class SigninManagerBase : public KeyedService {
   // in the hotdog menu.
   const std::string& GetAuthenticatedAccountId() const;
 
-  // Sets the user name.  Note: |username| should be already authenticated as
-  // this is a sticky operation (in contrast to StartSignIn).
-  // TODO(tim): Remove this in favor of passing username on construction by
-  // (by platform / depending on StartBehavior). Bug 88109.
-  void SetAuthenticatedUsername(const std::string& username);
+  // Sets the authenticated user's Gaia ID and display email.  Internally,
+  // this will seed the account information in AccountTrackerService and pick
+  // the right account_id for this account.
+  void SetAuthenticatedAccountInfo(const std::string& gaia_id,
+                                   const std::string& email);
 
   // Returns true if there is an authenticated user.
   bool IsAuthenticated() const;
@@ -122,10 +123,19 @@ class SigninManagerBase : public KeyedService {
       signin_internals_util::SigninDiagnosticsObserver* observer);
 
  protected:
-  // Used by subclass to clear authenticated_username_ instead of using
-  // SetAuthenticatedUsername, which enforces special preconditions due
+  AccountTrackerService* account_tracker_service() const {
+    return account_tracker_service_;
+  }
+
+  SigninClient* signin_client() const { return client_; }
+
+  // Sets the authenticated user's account id.
+  void SetAuthenticatedAccountId(const std::string& account_id);
+
+  // Used by subclass to clear the authenticated user instead of using
+  // SetAuthenticatedAccountId, which enforces special preconditions due
   // to the fact that it is part of the public API and called by clients.
-  void ClearAuthenticatedUsername();
+  void clear_authenticated_user() { authenticated_account_id_.clear(); }
 
   // List of observers to notify on signin events.
   // Makes sure list is empty on destruction.
@@ -141,10 +151,10 @@ class SigninManagerBase : public KeyedService {
   friend class FakeSigninManager;
 
   SigninClient* client_;
+  AccountTrackerService* account_tracker_service_;
   bool initialized_;
 
-  // Actual username and account_id after successful authentication.
-  std::string authenticated_username_;
+  // Account id after successful authentication.
   std::string authenticated_account_id_;
 
   // The list of SigninDiagnosticObservers.

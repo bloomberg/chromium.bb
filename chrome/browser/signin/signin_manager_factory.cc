@@ -98,11 +98,11 @@ void SigninManagerFactory::RegisterProfilePrefs(
       std::string(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterStringPref(
-      prefs::kGoogleServicesUserAccountId,
+      prefs::kGoogleServicesAccountId,
       std::string(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterStringPref(
-      prefs::kGoogleServicesUsername,
+      prefs::kGoogleServicesUserAccountId,
       std::string(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
@@ -120,7 +120,14 @@ void SigninManagerFactory::RegisterProfilePrefs(
       prefs::kSignedInTime,
       base::Time().ToInternalValue(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+
   LocalAuth::RegisterLocalAuthPrefs(registry);
+
+  // Deprecated prefs: will be removed in a future release.
+  registry->RegisterStringPref(
+      prefs::kGoogleServicesUsername,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static
@@ -149,7 +156,9 @@ KeyedService* SigninManagerFactory::BuildServiceInstanceFor(
   SigninClient* client =
       ChromeSigninClientFactory::GetInstance()->GetForProfile(profile);
 #if defined(OS_CHROMEOS)
-  service = new SigninManagerBase(client);
+  service = new SigninManagerBase(
+      client,
+      AccountTrackerServiceFactory::GetForProfile(profile));
 #else
   service = new SigninManager(
       client,

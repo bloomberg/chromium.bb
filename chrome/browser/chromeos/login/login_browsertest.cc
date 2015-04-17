@@ -42,6 +42,7 @@ using ::testing::Return;
 
 namespace {
 
+const char kGaiaId[] = "12345";
 const char kTestUser[] = "test-user@gmail.com";
 const char kPassword[] = "password";
 
@@ -262,6 +263,7 @@ IN_PROC_BROWSER_TEST_F(LoginOfflineTest, GaiaAuthOffline) {
   StartGaiaAuthOffline();
 
   chromeos::UserContext user_context(kTestUser);
+  user_context.SetGaiaID(kGaiaId);
   user_context.SetKey(chromeos::Key(kPassword));
   SetExpectedCredentials(user_context);
 

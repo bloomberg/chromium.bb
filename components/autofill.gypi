@@ -105,6 +105,7 @@
         'os_crypt',
         'pref_registry',
         'rappor',
+        'signin_core_browser',
         'signin_core_common',
         'webdata_common',
       ],
@@ -254,6 +255,7 @@
         'os_crypt',
         'pref_registry',
         'rappor',
+        'signin_core_browser_test_support',
       ],
       'sources': [
         'autofill/core/browser/autofill_test_utils.cc',

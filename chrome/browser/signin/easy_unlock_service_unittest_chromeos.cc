@@ -280,7 +280,7 @@ class EasyUnlockServiceTest : public testing::Test {
 
     SigninManagerBase* signin_manager =
         SigninManagerFactory::GetForProfile(profile->get());
-    signin_manager->SetAuthenticatedUsername(user_id);
+    signin_manager->SetAuthenticatedAccountInfo(user_id, user_id);
   }
 
  protected:

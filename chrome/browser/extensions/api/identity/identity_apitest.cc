@@ -573,20 +573,22 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
   }
 
  protected:
-  void SignIn(const std::string account_key) {
-#if defined(OS_CHROMEOS)
-    signin_manager_->SetAuthenticatedUsername(account_key);
-#else
-    signin_manager_->SignIn(account_key, "password");
-#endif
-    token_service_->IssueRefreshTokenForUser(account_key, "refresh_token");
+  void SignIn(const std::string& account_key) {
+    SignIn(account_key, account_key);
   }
 
-  void SignIn(const std::string& account_key, const std::string& gaia) {
+  void SignIn(const std::string& email, const std::string& gaia) {
     AccountTrackerService* account_tracker =
         AccountTrackerServiceFactory::GetForProfile(profile());
-    account_tracker->SeedAccountInfo(gaia, account_key);
-    SignIn(account_key);
+    std::string account_id =
+        account_tracker->SeedAccountInfo(gaia, email);
+
+#if defined(OS_CHROMEOS)
+    signin_manager_->SetAuthenticatedAccountInfo(gaia, email);
+#else
+    signin_manager_->SignIn(gaia, email, "password");
+#endif
+    token_service_->IssueRefreshTokenForUser(account_id, "refresh_token");
   }
 
   FakeSigninManagerForTesting* signin_manager_;
