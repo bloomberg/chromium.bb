@@ -660,6 +660,7 @@
       'graphics/paint/FloatClipDisplayItem.h',
       'graphics/paint/ScrollDisplayItem.cpp',
       'graphics/paint/ScrollDisplayItem.h',
+      'graphics/paint/SkPictureRecorder.h',
       'graphics/paint/SubtreeDisplayItem.cpp',
       'graphics/paint/SubtreeDisplayItem.h',
       'graphics/paint/Transform3DDisplayItem.cpp',

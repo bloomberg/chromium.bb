@@ -24,7 +24,7 @@
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/paint/SVGPaintContext.h"
 #include "core/svg/SVGElement.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
@@ -70,15 +70,11 @@ PassRefPtr<const SkPicture> LayoutSVGResourceMasker::createContentPicture(Affine
     // userSpaceOnUse units (http://crbug.com/294900).
     FloatRect bounds = strokeBoundingBox();
 
-    OwnPtr<DisplayItemList> displayItemList;
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        displayItemList = DisplayItemList::create();
-    GraphicsContext context(displayItemList.get());
-    context.beginRecording(bounds);
+    SkPictureBuilder pictureBuilder(bounds);
 
     ColorFilter maskContentFilter = style()->svgStyle().colorInterpolation() == CI_LINEARRGB
         ? ColorFilterSRGBToLinearRGB : ColorFilterNone;
-    context.setColorFilter(maskContentFilter);
+    pictureBuilder.context().setColorFilter(maskContentFilter);
 
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
         LayoutObject* layoutObject = childElement->layoutObject();
@@ -88,12 +84,10 @@ PassRefPtr<const SkPicture> LayoutSVGResourceMasker::createContentPicture(Affine
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
             continue;
 
-        SVGPaintContext::paintSubtree(&context, layoutObject);
+        SVGPaintContext::paintSubtree(&pictureBuilder.context(), layoutObject);
     }
 
-    if (displayItemList)
-        displayItemList->commitNewDisplayItemsAndReplay(context);
-    m_maskContentPicture = context.endRecording();
+    m_maskContentPicture = pictureBuilder.endRecording();
     return m_maskContentPicture;
 }
 

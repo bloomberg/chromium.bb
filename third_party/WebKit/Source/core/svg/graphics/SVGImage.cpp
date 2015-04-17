@@ -57,6 +57,7 @@
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/DisplayItemListContextRecorder.h"
+#include "platform/graphics/paint/SkPictureBuilder.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "wtf/PassRefPtr.h"
 
@@ -243,26 +244,16 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
     FloatRect spacedTile(tile);
     spacedTile.expand(repeatSpacing);
 
-    OwnPtr<DisplayItemList> displayItemList;
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        displayItemList = DisplayItemList::create();
-
-    // Record using a dedicated GC, to avoid inheriting unwanted state (pending color filters
-    // for example must be applied atomically during the final fill/composite phase).
-    GraphicsContext recordingContext(displayItemList.get());
-    recordingContext.beginRecording(spacedTile);
+    SkPictureBuilder pictureBuilder(spacedTile);
     {
         // When generating an expanded tile, make sure we don't draw into the spacing area.
         OwnPtr<FloatClipRecorder> clipRecorder;
         if (tile != spacedTile)
-            clipRecorder = adoptPtr(new FloatClipRecorder(recordingContext, *this, PaintPhaseForeground, tile));
-        drawForContainer(&recordingContext, containerSize, zoom, tile, srcRect, SkXfermode::kSrcOver_Mode);
+            clipRecorder = adoptPtr(new FloatClipRecorder(pictureBuilder.context(), *this, PaintPhaseForeground, tile));
+        drawForContainer(&pictureBuilder.context(), containerSize, zoom, tile, srcRect, SkXfermode::kSrcOver_Mode);
     }
 
-    if (displayItemList)
-        displayItemList->commitNewDisplayItemsAndReplay(recordingContext);
-
-    RefPtr<const SkPicture> tilePicture = recordingContext.endRecording();
+    RefPtr<const SkPicture> tilePicture = pictureBuilder.endRecording();
 
     SkMatrix patternTransform;
     patternTransform.setTranslate(phase.x() + spacedTile.x(), phase.y() + spacedTile.y());

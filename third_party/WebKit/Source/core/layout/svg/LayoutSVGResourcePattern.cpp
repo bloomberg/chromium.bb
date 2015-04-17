@@ -30,6 +30,7 @@
 #include "core/svg/SVGPatternElement.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/SkPictureBuilder.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
 namespace blink {
@@ -165,12 +166,8 @@ PassRefPtr<const SkPicture> LayoutSVGResourcePattern::asPicture(const FloatRect&
     if (attributes().patternContentUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
         contentTransform = tileTransform;
 
-    // Draw the content into a Picture.
-    OwnPtr<DisplayItemList> displayItemList;
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        displayItemList = DisplayItemList::create();
-    GraphicsContext recordingContext(displayItemList.get());
-    recordingContext.beginRecording(FloatRect(FloatPoint(), tileBounds.size()));
+    FloatRect bounds(FloatPoint(), tileBounds.size());
+    SkPictureBuilder pictureBuilder(bounds);
 
     ASSERT(attributes().patternContentElement());
     LayoutSVGResourceContainer* patternLayoutObject =
@@ -181,14 +178,12 @@ PassRefPtr<const SkPicture> LayoutSVGResourcePattern::asPicture(const FloatRect&
     SubtreeContentTransformScope contentTransformScope(contentTransform);
 
     {
-        TransformRecorder transformRecorder(recordingContext, *patternLayoutObject, tileTransform);
+        TransformRecorder transformRecorder(pictureBuilder.context(), *patternLayoutObject, tileTransform);
         for (LayoutObject* child = patternLayoutObject->firstChild(); child; child = child->nextSibling())
-            SVGPaintContext::paintSubtree(&recordingContext, child);
+            SVGPaintContext::paintSubtree(&pictureBuilder.context(), child);
     }
 
-    if (displayItemList)
-        displayItemList->commitNewDisplayItemsAndReplay(recordingContext);
-    return recordingContext.endRecording();
+    return pictureBuilder.endRecording();
 }
 
 }
