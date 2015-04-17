@@ -96,6 +96,7 @@ class TestGitCl(TestCase):
     self.mock(git_cl.upload, 'RealMain', self.fail)
     self.mock(git_cl.watchlists, 'Watchlists', WatchlistsMock)
     self.mock(git_cl.auth, 'get_authenticator_for_host', AuthenticatorMock)
+    self.mock(git_cl.auth, '_should_use_oauth2', lambda: False)
     # It's important to reset settings to not have inter-tests interference.
     git_cl.settings = None
 

@@ -8,6 +8,7 @@ import BaseHTTPServer
 import collections
 import datetime
 import functools
+import hashlib
 import json
 import logging
 import optparse
@@ -62,6 +63,7 @@ AuthConfig = collections.namedtuple('AuthConfig', [
     'save_cookies', # deprecated, will be removed
     'use_local_webserver',
     'webserver_port',
+    'refresh_token_json',
 ])
 
 
@@ -69,6 +71,14 @@ AuthConfig = collections.namedtuple('AuthConfig', [
 AccessToken = collections.namedtuple('AccessToken', [
     'token',
     'expires_at',
+])
+
+
+# Refresh token passed via --auth-refresh-token-json.
+RefreshToken = collections.namedtuple('RefreshToken', [
+    'client_id',
+    'client_secret',
+    'refresh_token',
 ])
 
 
@@ -91,7 +101,8 @@ def make_auth_config(
     use_oauth2=None,
     save_cookies=None,
     use_local_webserver=None,
-    webserver_port=None):
+    webserver_port=None,
+    refresh_token_json=None):
   """Returns new instance of AuthConfig.
 
   If some config option is None, it will be set to a reasonable default value.
@@ -103,7 +114,8 @@ def make_auth_config(
       default(use_oauth2, _should_use_oauth2()),
       default(save_cookies, True),
       default(use_local_webserver, not _is_headless()),
-      default(webserver_port, 8090))
+      default(webserver_port, 8090),
+      default(refresh_token_json, ''))
 
 
 def add_auth_options(parser, default_config=None):
@@ -148,6 +160,10 @@ def add_auth_options(parser, default_config=None):
       default=default_config.webserver_port,
       help='Port a local web server should listen on. Used only if '
           '--auth-no-local-webserver is not set. [default: %default]')
+  parser.auth_group.add_option(
+      '--auth-refresh-token-json',
+      default=default_config.refresh_token_json,
+      help='Path to a JSON file with role account refresh token to use.')
 
 
 def extract_auth_config_from_options(options):
@@ -159,7 +175,8 @@ def extract_auth_config_from_options(options):
       use_oauth2=options.use_oauth2,
       save_cookies=False if options.use_oauth2 else options.save_cookies,
       use_local_webserver=options.use_local_webserver,
-      webserver_port=options.auth_host_port)
+      webserver_port=options.auth_host_port,
+      refresh_token_json=options.auth_refresh_token_json)
 
 
 def auth_config_to_command_options(auth_config):
@@ -181,6 +198,9 @@ def auth_config_to_command_options(auth_config):
       opts.append('--auth-no-local-webserver')
   if auth_config.webserver_port != defaults.webserver_port:
     opts.extend(['--auth-host-port', str(auth_config.webserver_port)])
+  if auth_config.refresh_token_json != defaults.refresh_token_json:
+    opts.extend([
+        '--auth-refresh-token-json', str(auth_config.refresh_token_json)])
   return opts
 
 
@@ -222,6 +242,9 @@ class Authenticator(object):
     self._config = config
     self._lock = threading.Lock()
     self._token_cache_key = token_cache_key
+    self._external_token = None
+    if config.refresh_token_json:
+      self._external_token = _read_refresh_token_json(config.refresh_token_json)
 
   def login(self):
     """Performs interactive login flow if necessary.
@@ -229,24 +252,29 @@ class Authenticator(object):
     Raises:
       AuthenticationError on error or if interrupted.
     """
+    if self._external_token:
+      raise AuthenticationError(
+          'Can\'t run login flow when using --auth-refresh-token-json.')
     return self.get_access_token(
         force_refresh=True, allow_user_interaction=True)
 
   def logout(self):
     """Revokes the refresh token and deletes it from the cache.
 
-    Returns True if actually revoked a token.
+    Returns True if had some credentials cached.
     """
-    revoked = False
     with self._lock:
       self._access_token = None
       storage = self._get_storage()
       credentials = storage.get()
-      if credentials:
-        credentials.revoke(httplib2.Http())
-        revoked = True
+      had_creds = bool(credentials)
+      if credentials and credentials.refresh_token and credentials.revoke_uri:
+        try:
+          credentials.revoke(httplib2.Http())
+        except client.TokenRevokeError as e:
+          logging.warning('Failed to revoke refresh token: %s', e)
       storage.delete()
-    return revoked
+    return had_creds
 
   def has_cached_credentials(self):
     """Returns True if long term credentials (refresh token) are in cache.
@@ -262,8 +290,7 @@ class Authenticator(object):
     it.
     """
     with self._lock:
-      credentials = self._get_storage().get()
-      return credentials and not credentials.invalid
+      return bool(self._get_cached_credentials())
 
   def get_access_token(self, force_refresh=False, allow_user_interaction=False):
     """Returns AccessToken, refreshing it if necessary.
@@ -348,17 +375,57 @@ class Authenticator(object):
 
   def _get_storage(self):
     """Returns oauth2client.Storage with cached tokens."""
+    # Do not mix cache keys for different externally provided tokens.
+    if self._external_token:
+      token_hash = hashlib.sha1(self._external_token.refresh_token).hexdigest()
+      cache_key = '%s:refresh_tok:%s' % (self._token_cache_key, token_hash)
+    else:
+      cache_key = self._token_cache_key
     return multistore_file.get_credential_storage_custom_string_key(
-        OAUTH_TOKENS_CACHE, self._token_cache_key)
+        OAUTH_TOKENS_CACHE, cache_key)
+
+  def _get_cached_credentials(self):
+    """Returns oauth2client.Credentials loaded from storage."""
+    storage = self._get_storage()
+    credentials = storage.get()
+
+    # Is using --auth-refresh-token-json?
+    if self._external_token:
+      # Cached credentials are valid and match external token -> use them. It is
+      # important to reuse credentials from the storage because they contain
+      # cached access token.
+      valid = (
+          credentials and not credentials.invalid and
+          credentials.refresh_token == self._external_token.refresh_token and
+          credentials.client_id == self._external_token.client_id and
+          credentials.client_secret == self._external_token.client_secret)
+      if valid:
+        return credentials
+      # Construct new credentials from externally provided refresh token,
+      # associate them with cache storage (so that access_token will be placed
+      # in the cache later too).
+      credentials = client.OAuth2Credentials(
+          access_token=None,
+          client_id=self._external_token.client_id,
+          client_secret=self._external_token.client_secret,
+          refresh_token=self._external_token.refresh_token,
+          token_expiry=None,
+          token_uri='https://accounts.google.com/o/oauth2/token',
+          user_agent=None,
+          revoke_uri=None)
+      credentials.set_store(storage)
+      storage.put(credentials)
+      return credentials
+
+    # Not using external refresh token -> return whatever is cached.
+    return credentials if (credentials and not credentials.invalid) else None
 
   def _load_access_token(self):
     """Returns cached AccessToken if it is not expired yet."""
-    credentials = self._get_storage().get()
-    if not credentials or credentials.invalid:
+    creds = self._get_cached_credentials()
+    if not creds or not creds.access_token or creds.access_token_expired:
       return None
-    if not credentials.access_token or credentials.access_token_expired:
-      return None
-    return AccessToken(str(credentials.access_token), credentials.token_expiry)
+    return AccessToken(str(creds.access_token), creds.token_expiry)
 
   def _create_access_token(self, allow_user_interaction=False):
     """Mints and caches a new access token, launching OAuth2 dance if necessary.
@@ -379,11 +446,9 @@ class Authenticator(object):
       LoginRequiredError if user interaction is required, but
           allow_user_interaction is False.
     """
-    storage = self._get_storage()
-    credentials = None
+    credentials = self._get_cached_credentials()
 
     # 3-legged flow with (perhaps cached) refresh token.
-    credentials = storage.get()
     refreshed = False
     if credentials and not credentials.invalid:
       try:
@@ -391,11 +456,15 @@ class Authenticator(object):
         refreshed = True
       except client.Error as err:
         logging.warning(
-            'OAuth error during access token refresh: %s. '
+            'OAuth error during access token refresh (%s). '
             'Attempting a full authentication flow.', err)
 
     # Refresh token is missing or invalid, go through the full flow.
     if not refreshed:
+      # Can't refresh externally provided token.
+      if self._external_token:
+        raise AuthenticationError(
+            'Token provided via --auth-refresh-token-json is no longer valid.')
       if not allow_user_interaction:
         raise LoginRequiredError(self._token_cache_key)
       credentials = _run_oauth_dance(self._config)
@@ -403,6 +472,7 @@ class Authenticator(object):
     logging.info(
         'OAuth access_token refreshed. Expires in %s.',
         credentials.token_expiry - datetime.datetime.utcnow())
+    storage = self._get_storage()
     credentials.set_store(storage)
     storage.put(credentials)
     return AccessToken(str(credentials.access_token), credentials.token_expiry)
@@ -422,6 +492,23 @@ def _should_use_oauth2():
 def _is_headless():
   """True if machine doesn't seem to have a display."""
   return sys.platform == 'linux2' and not os.environ.get('DISPLAY')
+
+
+def _read_refresh_token_json(path):
+  """Returns RefreshToken by reading it from the JSON file."""
+  try:
+    with open(path, 'r') as f:
+      data = json.load(f)
+      return RefreshToken(
+          client_id=str(data.get('client_id', OAUTH_CLIENT_ID)),
+          client_secret=str(data.get('client_secret', OAUTH_CLIENT_SECRET)),
+          refresh_token=str(data['refresh_token']))
+  except (IOError, ValueError) as e:
+    raise AuthenticationError(
+        'Failed to read refresh token from %s: %s' % (path, e))
+  except KeyError as e:
+    raise AuthenticationError(
+        'Failed to read refresh token from %s: missing key %s' % (path, e))
 
 
 def _needs_refresh(access_token):
