@@ -478,7 +478,7 @@ class CalculateSuspects(object):
   def FilterChangesForInfraFail(cls, changes):
     """Returns a list of changes responsible for infra failures."""
     # Chromite changes could cause infra failures.
-    return [x for x in changes if x.project == constants.CHROMITE_PROJECT]
+    return [x for x in changes if x.project in constants.INFRA_PROJECTS]
 
   @classmethod
   def _MatchesFailureType(cls, messages, fail_type, strict=True):

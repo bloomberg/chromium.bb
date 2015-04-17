@@ -2332,7 +2332,7 @@ class ValidationPool(object):
     else:
       if infra_fail:
         msg.append('The build failure may have been caused by infrastructure '
-                   'issues and/or bad chromite changes.')
+                   'issues and/or bad %s changes.' % constants.INFRA_PROJECTS)
 
       if change in suspects:
         if other_suspects_str:

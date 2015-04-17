@@ -259,6 +259,9 @@ LKGM_MANIFEST = 'LKGM/lkgm.xml'
 
 SHARED_CACHE_ENVVAR = 'CROS_CACHEDIR'
 
+# These projects can be responsible for infra failures.
+INFRA_PROJECTS = (CHROMITE_PROJECT,)
+
 # CrOS remotes specified in the manifests.
 EXTERNAL_REMOTE = 'cros'
 INTERNAL_REMOTE = 'cros-internal'
