@@ -49,7 +49,9 @@ void MemoryAllocatorDump::AsValueInto(TracedValue* value) const {
 
   value->BeginDictionary(name_.c_str());
 
-  value->SetString("parent", parent_ ? parent_->name_ : "");
+  if (parent_)
+    value->SetString("parent", parent_->name_);
+
   value->SetString("physical_size_in_bytes",
                    StringPrintf(kHexFmt, physical_size_in_bytes_));
   value->SetString("allocated_objects_count",
