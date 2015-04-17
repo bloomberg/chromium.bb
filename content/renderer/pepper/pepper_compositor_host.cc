@@ -4,6 +4,8 @@
 
 #include "content/renderer/pepper/pepper_compositor_host.h"
 
+#include <limits>
+
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
 #include "cc/layers/layer.h"
@@ -35,6 +37,14 @@ namespace content {
 
 namespace {
 
+bool CheckPPFloatRect(const PP_FloatRect& rect, float width, float height) {
+    const float kEpsilon = std::numeric_limits<float>::epsilon();
+    return (rect.point.x >= -kEpsilon &&
+            rect.point.y >= -kEpsilon &&
+            rect.point.x + rect.size.width <= width + kEpsilon &&
+            rect.point.y + rect.size.height <= height + kEpsilon);
+}
+
 int32_t VerifyCommittedLayer(
     const ppapi::CompositorLayerData* old_layer,
     const ppapi::CompositorLayerData* new_layer,
@@ -63,6 +73,11 @@ int32_t VerifyCommittedLayer(
     }
     if (!new_layer->texture->mailbox.Verify())
       return PP_ERROR_BADARGUMENT;
+
+    // Make sure the source rect is not beyond the dimensions of the
+    // texture.
+    if (!CheckPPFloatRect(new_layer->texture->source_rect, 1.0f, 1.0f))
+      return PP_ERROR_BADARGUMENT;
     return PP_OK;
   }
 
@@ -79,6 +94,7 @@ int32_t VerifyCommittedLayer(
         return PP_OK;
       }
     }
+
     EnterResourceNoLock<PPB_ImageData_API> enter(new_layer->image->resource,
                                                  true);
     if (enter.failed())
@@ -89,6 +105,13 @@ int32_t VerifyCommittedLayer(
     if (enter.object()->Describe(&desc) != PP_TRUE ||
         desc.stride != desc.size.width * 4 ||
         desc.format != PP_IMAGEDATAFORMAT_RGBA_PREMUL) {
+      return PP_ERROR_BADARGUMENT;
+    }
+
+    // Make sure the source rect is not beyond the dimensions of the
+    // image.
+    if (!CheckPPFloatRect(new_layer->image->source_rect,
+                          desc.size.width, desc.size.height)) {
       return PP_ERROR_BADARGUMENT;
     }
 

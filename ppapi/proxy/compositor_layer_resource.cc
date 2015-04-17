@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/compositor_layer_resource.h"
 
+#include <limits>
+
 #include "base/logging.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -217,7 +219,7 @@ int32_t CompositorLayerResource::SetImage(
   if (desc.format != PP_IMAGEDATAFORMAT_RGBA_PREMUL)
     return PP_ERROR_BADARGUMENT;
 
-  if (!size || size->width <= 0 || size->height <= 0)
+  if (size && (size->width <= 0 || size->height <= 0))
     return PP_ERROR_BADARGUMENT;
 
   // Set the source size to image's size. It will be used to verify
@@ -301,11 +303,12 @@ int32_t CompositorLayerResource::SetSourceRect(
   if (compositor_->IsInProgress())
     return PP_ERROR_INPROGRESS;
 
+  const float kEpsilon = std::numeric_limits<float>::epsilon();
   if (!rect ||
-      rect->point.x < 0.0f ||
-      rect->point.y < 0.0f ||
-      rect->point.x + rect->size.width > source_size_.width ||
-      rect->point.y + rect->size.height > source_size_.height) {
+      rect->point.x < -kEpsilon ||
+      rect->point.y < -kEpsilon ||
+      rect->point.x + rect->size.width > source_size_.width + kEpsilon ||
+      rect->point.y + rect->size.height > source_size_.height + kEpsilon) {
     return PP_ERROR_BADARGUMENT;
   }
 
