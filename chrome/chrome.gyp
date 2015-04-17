@@ -383,7 +383,7 @@
               ],
               'dependencies': [
                 'chrome',
-                '../breakpad/breakpad.gyp:dump_syms',
+                '../breakpad/breakpad.gyp:dump_syms#host',
               ],
             }],
           ],

@@ -538,7 +538,7 @@
             }],
             ['OS=="linux"', {
               'dependencies': [
-                '../breakpad/breakpad.gyp:dump_syms',
+                '../breakpad/breakpad.gyp:dump_syms#host',
               ],
             }],
           ],

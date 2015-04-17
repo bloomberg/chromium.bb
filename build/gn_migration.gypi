@@ -378,7 +378,7 @@
         ['OS=="linux"', {
           'dependencies': [
             '../breakpad/breakpad.gyp:breakpad_unittests',
-            '../breakpad/breakpad.gyp:dump_syms',
+            '../breakpad/breakpad.gyp:dump_syms#host',
             '../breakpad/breakpad.gyp:generate_test_dump',
             '../breakpad/breakpad.gyp:minidump-2-core',
             '../dbus/dbus.gyp:dbus_test_server',
