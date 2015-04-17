@@ -7,7 +7,6 @@
 
 include digits6Dots.uti
 include latinLetterDef6Dots.uti
-include litdigits6Dots.uti
 
 space \s 0                   # blank x0020
 space \x001b 1b              # escape character for html back-translation # dec 27
@@ -142,6 +141,9 @@ uplow \x0160\x0161 46-234    # Šš LATIN CAPITAL LETTER S WITH CARON - LATIN SM
 
 # ------------------- End char definitions --------------------
 
+include litdigits6Dots.uti
+include braille-patterns.cti # unicode braille
+
 numsign 3456
 capsign 6                    # single capital letter indicator
 begcaps 6-6                  # a block of consecutive capital letters indicator
@@ -234,5 +236,3 @@ compbrl .zip
 pass2 @126-246-3 @126
 pass2 @135-2-345 @345
 
-# unicode braille
-include braille-patterns.cti
