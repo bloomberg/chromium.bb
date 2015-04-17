@@ -56,13 +56,11 @@ public:
 
     InterpolationQuality chooseInterpolationQuality(GraphicsContext*, LayoutObject*, Image*, const void* layer, const LayoutSize&);
 
-    // For testing.
-    static bool has(LayoutObject*);
-    // This is public for testing. Do not call this from other classes.
-    void set(LayoutObject*, LayerSizeMap* innerMap, const void* layer, const LayoutSize&);
-
 private:
     ImageQualityController();
+
+    static bool has(LayoutObject*);
+    void set(LayoutObject*, LayerSizeMap* innerMap, const void* layer, const LayoutSize&);
 
     bool shouldPaintAtLowQuality(GraphicsContext*, LayoutObject*, Image*, const void* layer, const LayoutSize&);
     void removeLayer(LayoutObject*, LayerSizeMap* innerMap, const void* layer);
@@ -72,10 +70,21 @@ private:
     void highQualityRepaintTimerFired(Timer<ImageQualityController>*);
     void restartTimer();
 
+    // Only for use in testing.
+    void setTimer(Timer<ImageQualityController>*);
+
     ObjectLayerSizeMap m_objectLayerSizeMap;
-    Timer<ImageQualityController> m_timer;
+    OwnPtr<Timer<ImageQualityController>> m_timer;
     bool m_animatedResizeIsActive;
     bool m_liveResizeOptimizationIsActive;
+
+    // For calling set().
+    friend class LayoutPartTest_DestroyUpdatesImageQualityController_Test;
+
+    // For calling setTimer(),
+    friend class ImageQualityControllerTest_LowQualityFilterForLiveResize_Test;
+    friend class ImageQualityControllerTest_LowQualityFilterForResizingImage_Test;
+    friend class ImageQualityControllerTest_DontKickTheAnimationTimerWhenPaintingAtTheSameSize_Test;
 };
 
 } // namespace blink

@@ -130,14 +130,14 @@ public:
 };
 
 template <typename TimerFiredClass>
-class Timer final : public TimerBase {
+class Timer : public TimerBase {
 public:
     typedef void (TimerFiredClass::*TimerFiredFunction)(Timer*);
 
     Timer(TimerFiredClass* o, TimerFiredFunction f)
         : m_object(o), m_function(f) { }
 
-private:
+protected:
     virtual void fired() override
     {
         if (!TimerIsObjectAliveTrait<TimerFiredClass>::isHeapObjectAlive(m_object))
@@ -145,6 +145,7 @@ private:
         (m_object->*m_function)(this);
     }
 
+private:
     // FIXME: oilpan: TimerBase should be moved to the heap and m_object should be traced.
     // This raw pointer is safe as long as Timer<X> is held by the X itself (That's the case
     // in the current code base).
