@@ -137,6 +137,7 @@
   'masters': {
     'chromium.chromiumos': {
       'Linux ChromiumOS GN': 'chromeos_gn_release_bot',
+      'Linux ChromiumOS GN (dbg)': 'chromeos_gn_debug_bot',
     },
     'chromium.linux': {
       'Android GN': 'android_gn_release_bot',
@@ -150,6 +151,8 @@
       'Mac GN (dbg)': 'gn_debug_static_bot',
     },
     'chromium.win': {
+      'Win x64 GN': 'gn_release_bot',
+      'Win x64 GN (dbg)': 'gn_debug_static_bot',
       'Win8 GN': 'gn_release_bot_x86',
       'Win8 GN (dbg)': 'gn_debug_static_bot_x86',
     },
@@ -179,6 +182,8 @@
       'mac_chromium_gn_upload': 'gn_release_bot',
     },
     'tryserver.chromium.win': {
+      'win_chromium_gn_x64_dbg': 'gn_debug_static_bot',
+      'win_chromium_gn_x64_rel': 'gn_release_trybot',
       'win8_chromium_gn_dbg': 'gn_debug_static_bot_x86',
       'win8_chromium_gn_rel': 'gn_release_trybot_x86',
       'win8_chromium_gn_upload': 'gn_release_bot',
