@@ -131,7 +131,7 @@ class ProjectSdkVerifyFake(cros_test_lib.MockTestCase):
     """Test with mock of no curl present."""
     self.rc_mock.AddCmdResult(['/bin/bash', '--version'])
     self.rc_mock.AddCmdResult(['git', '--version'],
-                              output='git version 1.7.10.4')
+                              output='git version 2.2.0.rc0.207.ga3a616c')
     self.rc_mock.AddCmdResult(['curl', '--version'], returncode=127)
 
     self.assertFalse(project_sdk.VerifyEnvironment())
@@ -142,3 +142,7 @@ class ProjectSdkVerifyReal(cros_test_lib.TestCase):
   def testVerifyEnvironment(self):
     """Test, assuming production environment is valid."""
     self.assertTrue(project_sdk.VerifyEnvironment())
+
+  def testGetExecutableVersionNonExistent(self):
+    """Tests _GetExecutableVersion() when the executable doesn't exist."""
+    self.assertIsNone(project_sdk._GetExecutableVersion('/not/a/real/program'))

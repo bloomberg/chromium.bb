@@ -70,6 +70,24 @@ def FindVersion(sdk_dir=None):
   return osutils.ReadFile(v_file) if os.path.exists(v_file) else None
 
 
+def _GetExecutableVersion(cmd, version_arg='--version'):
+  """Gets an executable version string using |version_flag|.
+
+  Args:
+    cmd: Executable to check (for example, '/bin/bash').
+    version_arg: Argument to get |cmd| to print its version.
+
+  Returns:
+    Output string or None if the program doesn't exist or gave a
+    non-zero exit code.
+  """
+  try:
+    return cros_build_lib.RunCommand(
+        [cmd, version_arg], print_cmd=False, capture_output=True).output
+  except cros_build_lib.RunCommandError:
+    return None
+
+
 def VerifyEnvironment():
   """Verify the environment we are installed to.
 
@@ -83,45 +101,30 @@ def VerifyEnvironment():
   #   However, we can add imports here to check for any required external
   #   packages.
 
-  # Verify that bash is available in the expected place.
-  test = cros_build_lib.RunCommand(
-      ['/bin/bash', '--version'],
-      error_code_ok=True, print_cmd=False, capture_output=True)
+  # Verify executables that just need to exist.
+  for cmd in ('/bin/bash', 'curl'):
+    if _GetExecutableVersion(cmd) is None:
+      logging.warn('%s is required to use the SDK.', cmd)
+      result = False
 
-  if test.returncode:
-    logging.warn('/bin/bash is required to use the SDK.')
+  # Verify Git version.
+  git_requirement_message = 'git 1.8 or greater is required to use the SDK.'
+  git_version = _GetExecutableVersion('git')
+  if git_version is None:
+    logging.warn(git_requirement_message)
     result = False
 
-  # Verify Git.
-  test = cros_build_lib.RunCommand(
-      ['git', '--version'],
-      error_code_ok=True, print_cmd=False, capture_output=True)
-
-  if test.returncode:
-    logging.warn('Git is required to use the SDK.')
+  # Example version string: 'git version 2.2.0.rc0.207.ga3a616c'.
+  m = re.match(r'git version (\d+)\.(\d+)', git_version)
+  if not m:
+    logging.warn(git_requirement_message)
+    logging.warn("git version not recognized from: '%s'.", git_version)
     result = False
   else:
-    # Eg: 'git version 2.2.0.rc0.207.ga3a616c'.
-    git_version = test.output
-
-    m = re.match(r'git version (\d+)\.(\d+)', git_version)
-    if not m:
-      logging.warn("Git version not recognized from: '%s'", git_version)
+    gv_int_list = [int(d) for d in m.groups()] # Something like [2, 3]
+    if gv_int_list < [1, 8]:
+      logging.warn(git_requirement_message)
+      logging.warn("Current version: '%s'.", git_version)
       result = False
-    else:
-      gv_int_list = [int(d) for d in m.groups()] # Something like [2, 3]
-      if gv_int_list < [1, 8]:
-        logging.warn("Git 1.8 or greater required. Not supported: %s",
-                     git_version)
-        result = False
-
-  # Verify curl.
-  test = cros_build_lib.RunCommand(
-      ['curl', '--version'],
-      error_code_ok=True, print_cmd=False, capture_output=True)
-
-  if test.returncode:
-    logging.warn('Curl is required to use the SDK.')
-    result = False
 
   return result
