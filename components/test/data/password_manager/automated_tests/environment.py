@@ -261,7 +261,7 @@ class Environment:
 
     self._ClearDataForCheckbox("#delete-cookies-checkbox")
 
-  def RunTestsOnSites(self, test_type):
+  def RunTestsOnSites(self, test_case_name):
     """Runs the specified test on the known websites.
 
     Also saves the test results in the environment. Note that test types
@@ -271,7 +271,7 @@ class Environment:
     on construction.
 
     Args:
-      test_type: A test identifier understood by WebsiteTest.run_test().
+      test_case_name: A test name which is a method of WebsiteTest.
     """
 
     self.DeleteCookies()
@@ -282,12 +282,15 @@ class Environment:
       successful = True
       error = ""
       try:
-        websitetest.RunTest(test_type)
+        # TODO(melandory): Implement a decorator for WesiteTest methods
+        # which allows to mark them as test cases. And then add a check if
+        # test_case_name is a valid test case.
+        getattr(websitetest, test_case_name)()
       except Exception as e:
         successful = False
         error = e.message
       self.tests_results.append(
-          (websitetest.name, test_type, successful, error))
+          (websitetest.name, test_case_name, successful, error))
 
   def Quit(self):
     """Shuts down the driver."""

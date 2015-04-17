@@ -18,6 +18,9 @@ of the following structure:
   tests_in_parallel=<number of parallel tests>
   # |tests_to_runs| field is optional, if it is absent all tests will be run.
   tests_to_run=<test names to run, comma delimited>
+  # |test_cases_to_run| field is optional, if it is absent all test cases
+  # will be run.
+  test_cases_to_run=<test names to run, comma delimited>
   [logging]
   # |save-only-failures| is oprional, the default is false.
   save-only-failures=<Boolean parameter which enforces saving results of only
@@ -212,6 +215,10 @@ def run_tests(config_path):
   if (config.has_option("logging", "save-only-failures") and
       config.getboolean("logging", "save-only-failures")):
     general_test_cmd.append("--save-only-failures")
+
+  if config.has_option("run_options", "test_cases_to_run"):
+    general_test_cmd += ["--test-cases-to-run",
+        config.get("run_options", "test_cases_to_run").replace(",", " ")]
 
   logger = logging.getLogger("run_tests")
   logger.log(SCRIPT_DEBUG, "%d tests to run: %s", len(tests_to_run),

@@ -30,11 +30,6 @@ class WebsiteTest:
   # interaction.
   MAX_WAIT_TIME_IN_SECONDS = 200
 
-  # Types of test to be passed to self.RunTest().
-  TEST_TYPE_PROMPT_FAIL = 1
-  TEST_TYPE_PROMPT_SUCCESS = 2
-  TEST_TYPE_SAVE_AND_AUTOFILL = 3
-
   def __init__(self, name, username_not_auto=False):
     """Creates a new WebsiteTest.
 
@@ -368,18 +363,3 @@ class WebsiteTest:
         True,
         "Error: failed autofilled login on website: %s" % self.name)
 
-  def RunTest(self, test_type):
-    """Runs test according to the |test_type|.
-
-    Raises:
-      Exception: If |test_type| is not one of the TEST_TYPE_* constants.
-    """
-
-    if test_type == WebsiteTest.TEST_TYPE_PROMPT_FAIL:
-      self.PromptFailTest()
-    elif test_type == WebsiteTest.TEST_TYPE_PROMPT_SUCCESS:
-      self.PromptSuccessTest()
-    elif test_type == WebsiteTest.TEST_TYPE_SAVE_AND_AUTOFILL:
-      self.SaveAndAutofillTest()
-    else:
-      raise Exception("Unknown test type {}.".format(test_type))
