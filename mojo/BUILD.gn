@@ -39,20 +39,3 @@ group("tests") {
     "//third_party/mojo/src/mojo/edk/test:mojo_public_utility_unittests",
   ]
 }
-
-# TODO(GYP): Not included in the mojo group meta-target; missing gyp targets.
-#            See the gn_all and gn_only comments in //src/BUILD.gn.
-group("apptests") {
-  testonly = true
-  deps = []
-  if (!is_component_build) {
-    deps += [
-      "//mojo/services/clipboard:apptests",
-      "//mojo/services/html_viewer:apptests",
-      "//mojo/services/network:apptests",
-      "//mojo/services/view_manager:mojo_view_manager_client_apptests",
-      "//mojo/services/view_manager:view_manager_service_apptests",
-      "//mojo/services/window_manager:window_manager_apptests",
-    ]
-  }
-}
