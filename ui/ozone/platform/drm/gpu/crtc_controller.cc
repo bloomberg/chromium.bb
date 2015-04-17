@@ -54,8 +54,7 @@ bool CrtcController::Modeset(const OverlayPlane& plane, drmModeModeInfo mode) {
   if (page_flip_pending_)
     pending_planes_ = current_planes_;
 
-  if (!ResetCursor())
-    return false;
+  ResetCursor();
 
   return true;
 }
