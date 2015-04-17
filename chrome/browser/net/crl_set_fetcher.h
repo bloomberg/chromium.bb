@@ -25,7 +25,7 @@ namespace component_updater {
 class ComponentUpdateService;
 }
 
-class CRLSetFetcher : public update_client::ComponentInstaller {
+class CRLSetFetcher : public update_client::CrxInstaller {
  public:
   CRLSetFetcher();
 

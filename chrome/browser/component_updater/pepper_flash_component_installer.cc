@@ -180,7 +180,7 @@ void RegisterPepperFlashWithChrome(const base::FilePath& path,
 
 }  // namespace
 
-class PepperFlashComponentInstaller : public update_client::ComponentInstaller {
+class PepperFlashComponentInstaller : public update_client::CrxInstaller {
  public:
   explicit PepperFlashComponentInstaller(const Version& version);
 
@@ -263,7 +263,7 @@ void FinishPepperFlashUpdateRegistration(ComponentUpdateService* cus,
   pepflash.installer = new PepperFlashComponentInstaller(version);
   pepflash.version = version;
   pepflash.pk_hash.assign(kSha2Hash, &kSha2Hash[sizeof(kSha2Hash)]);
-  if (cus->RegisterComponent(pepflash) != ComponentUpdateService::kOk) {
+  if (cus->RegisterComponent(pepflash) != ComponentUpdateService::Status::kOk) {
     NOTREACHED() << "Pepper Flash component registration failed.";
   }
 }

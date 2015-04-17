@@ -43,7 +43,7 @@ base::ListValue* ReadCommands(const base::FilePath& unpack_path) {
 ComponentPatcher::ComponentPatcher(
     const base::FilePath& input_dir,
     const base::FilePath& unpack_dir,
-    scoped_refptr<ComponentInstaller> installer,
+    scoped_refptr<CrxInstaller> installer,
     scoped_refptr<OutOfProcessPatcher> out_of_process_patcher,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : input_dir_(input_dir),

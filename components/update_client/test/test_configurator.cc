@@ -68,6 +68,10 @@ int TestConfigurator::OnDemandDelay() const {
   return ondemand_time_;
 }
 
+int TestConfigurator::UpdateDelay() const {
+  return 1;
+}
+
 std::vector<GURL> TestConfigurator::UpdateUrl() const {
   return MakeDefaultUrls();
 }

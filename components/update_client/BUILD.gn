@@ -4,6 +4,14 @@
 
 source_set("update_client") {
   sources = [
+    "action.cc",
+    "action.h",
+    "action_update.cc",
+    "action_update.h",
+    "action_update_check.cc",
+    "action_update_check.h",
+    "action_wait.cc",
+    "action_wait.h",
     "background_downloader_win.cc",
     "background_downloader_win.h",
     "component_patcher.cc",
@@ -20,10 +28,16 @@ source_set("update_client") {
     "ping_manager.h",
     "request_sender.cc",
     "request_sender.h",
+    "task.h",
+    "task_update.cc",
+    "task_update.h",
     "update_checker.cc",
     "update_checker.h",
     "update_client.cc",
     "update_client.h",
+    "update_client_internal.h",
+    "update_engine.cc",
+    "update_engine.h",
     "update_query_params.cc",
     "update_query_params.h",
     "update_query_params_delegate.cc",
@@ -77,6 +91,7 @@ source_set("unit_tests") {
     "test/ping_manager_unittest.cc",
     "test/request_sender_unittest.cc",
     "test/update_checker_unittest.cc",
+    "test/update_client_unittest.cc",
     "test/update_response_unittest.cc",
   ]
 

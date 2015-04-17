@@ -31,10 +31,8 @@ class OutOfProcessPatcher;
 // TODO(sorin): this class will be split soon in two. One class controls
 // the behavior of the update client, and the other class controls the
 // behavior of the component updater.
-class Configurator {
+class Configurator : public base::RefCountedThreadSafe<Configurator> {
  public:
-  virtual ~Configurator() {}
-
   // Delay in seconds from calling Start() to the first update check.
   virtual int InitialDelay() const = 0;
 
@@ -56,6 +54,10 @@ class Configurator {
   // Minimum delta time in seconds before an on-demand check is allowed
   // for the same component.
   virtual int OnDemandDelay() const = 0;
+
+  // The time delay in seconds between applying updates for different
+  // components.
+  virtual int UpdateDelay() const = 0;
 
   // The URLs for the update checks. The URLs are tried in order, the first one
   // that succeeds wins.
@@ -112,6 +114,11 @@ class Configurator {
   // initialized for use of COM objects.
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   GetSingleThreadTaskRunner() const = 0;
+
+ protected:
+  friend class base::RefCountedThreadSafe<Configurator>;
+
+  virtual ~Configurator() {}
 };
 
 }  // namespace update_client

@@ -102,7 +102,7 @@ ComponentUnpacker::ComponentUnpacker(
     const std::vector<uint8_t>& pk_hash,
     const base::FilePath& path,
     const std::string& fingerprint,
-    const scoped_refptr<ComponentInstaller>& installer,
+    const scoped_refptr<CrxInstaller>& installer,
     const scoped_refptr<OutOfProcessPatcher>& oop_patcher,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : pk_hash_(pk_hash),
@@ -270,7 +270,8 @@ void ComponentUnpacker::Finish() {
     base::DeleteFile(unpack_diff_path_, true);
   if (!unpack_path_.empty())
     base::DeleteFile(unpack_path_, true);
-  callback_.Run(error_, extended_error_);
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(callback_, error_, extended_error_));
 }
 
 ComponentUnpacker::~ComponentUnpacker() {

@@ -79,13 +79,19 @@ class CrxDownloader {
   // download. The callback interface can be extended if needed to provide
   // more visibility into how the download has been handled, including
   // specific error codes and download metrics.
-  typedef base::Callback<void(const Result& result)> DownloadCallback;
+  using DownloadCallback = base::Callback<void(const Result& result)>;
 
   // The callback may fire 0 or many times during a download. Since this
   // class implements a chain of responsibility, the callback can fire for
   // different urls and different downloaders. The number of actual downloaded
   // bytes is not guaranteed to monotonically increment over time.
-  typedef base::Callback<void(const Result& result)> ProgressCallback;
+  using ProgressCallback = base::Callback<void(const Result& result)>;
+
+  using Factory = scoped_ptr<CrxDownloader>(*)(
+      bool,
+      net::URLRequestContextGetter*,
+      const scoped_refptr<base::SequencedTaskRunner>&,
+      const scoped_refptr<base::SingleThreadTaskRunner>&);
 
   // Factory method to create an instance of this class and build the
   // chain of responsibility. |is_background_download| specifies that a
@@ -93,11 +99,12 @@ class CrxDownloader {
   // |url_fetcher_task_runner| should be an IO capable task runner able to
   // support UrlFetcherDownloader. |background_task_runner| should be an
   // IO capable thread able to support BackgroundDownloader.
-  static CrxDownloader* Create(
+  static scoped_ptr<CrxDownloader> Create(
       bool is_background_download,
       net::URLRequestContextGetter* context_getter,
-      scoped_refptr<base::SequencedTaskRunner> url_fetcher_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> background_task_runner);
+      const scoped_refptr<base::SequencedTaskRunner>& url_fetcher_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>&
+          background_task_runner);
   virtual ~CrxDownloader();
 
   void set_progress_callback(const ProgressCallback& progress_callback);

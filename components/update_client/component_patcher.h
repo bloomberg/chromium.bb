@@ -40,7 +40,7 @@ class FilePath;
 
 namespace update_client {
 
-class ComponentInstaller;
+class CrxInstaller;
 class DeltaUpdateOp;
 class OutOfProcessPatcher;
 
@@ -61,7 +61,7 @@ class ComponentPatcher : public base::RefCountedThreadSafe<ComponentPatcher> {
   // out-of-process.
   ComponentPatcher(const base::FilePath& input_dir,
                    const base::FilePath& unpack_dir,
-                   scoped_refptr<ComponentInstaller> installer,
+                   scoped_refptr<CrxInstaller> installer,
                    scoped_refptr<OutOfProcessPatcher> out_of_process_patcher,
                    scoped_refptr<base::SequencedTaskRunner> task_runner);
 
@@ -86,7 +86,7 @@ class ComponentPatcher : public base::RefCountedThreadSafe<ComponentPatcher> {
 
   const base::FilePath input_dir_;
   const base::FilePath unpack_dir_;
-  scoped_refptr<ComponentInstaller> installer_;
+  scoped_refptr<CrxInstaller> installer_;
   scoped_refptr<OutOfProcessPatcher> out_of_process_patcher_;
   ComponentUnpacker::Callback callback_;
   scoped_ptr<base::ListValue> commands_;
