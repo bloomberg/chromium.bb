@@ -83,8 +83,8 @@ static inline InlineTextBox* createInlineBoxForText(BidiRun& run, bool isOnlyRun
 static inline void dirtyLineBoxesForRenderer(LayoutObject* o, bool fullLayout)
 {
     if (o->isText()) {
-        LayoutText* renderText = toLayoutText(o);
-        renderText->dirtyOrDeleteLineBoxesIfNeeded(fullLayout);
+        LayoutText* layoutText = toLayoutText(o);
+        layoutText->dirtyOrDeleteLineBoxesIfNeeded(fullLayout);
     } else {
         toLayoutInline(o)->dirtyLineBoxes(fullLayout);
     }
@@ -182,14 +182,14 @@ static bool reachedEndOfTextRenderer(const BidiRunList<BidiRun>& bidiRuns)
     LayoutObject* r = run->m_object;
     if (!r->isText() || r->isBR())
         return false;
-    LayoutText* renderText = toLayoutText(r);
-    unsigned length = renderText->textLength();
+    LayoutText* layoutText = toLayoutText(r);
+    unsigned length = layoutText->textLength();
     if (pos >= length)
         return true;
 
-    if (renderText->is8Bit())
-        return endsWithASCIISpaces(renderText->characters8(), pos, length);
-    return endsWithASCIISpaces(renderText->characters16(), pos, length);
+    if (layoutText->is8Bit())
+        return endsWithASCIISpaces(layoutText->characters8(), pos, length);
+    return endsWithASCIISpaces(layoutText->characters16(), pos, length);
 }
 
 RootInlineBox* LayoutBlockFlow::constructLine(BidiRunList<BidiRun>& bidiRuns, const LineInfo& lineInfo)

@@ -55,14 +55,14 @@ using namespace Unicode;
 
 namespace blink {
 
-struct SameSizeAsRenderText : public LayoutObject {
+struct SameSizeAsLayoutText : public LayoutObject {
     uint32_t bitfields : 16;
     float widths[4];
     String text;
     void* pointers[2];
 };
 
-static_assert(sizeof(LayoutText) == sizeof(SameSizeAsRenderText), "LayoutText should stay small");
+static_assert(sizeof(LayoutText) == sizeof(SameSizeAsLayoutText), "LayoutText should stay small");
 
 class SecureTextTimer;
 typedef HashMap<LayoutText*, SecureTextTimer*> SecureTextTimerMap;
@@ -70,8 +70,8 @@ static SecureTextTimerMap* gSecureTextTimers = 0;
 
 class SecureTextTimer final : public TimerBase {
 public:
-    SecureTextTimer(LayoutText* renderText)
-        : m_renderText(renderText)
+    SecureTextTimer(LayoutText* layoutText)
+        : m_layoutText(layoutText)
         , m_lastTypedCharacterOffset(-1)
     {
     }
@@ -79,7 +79,7 @@ public:
     void restartWithNewText(unsigned lastTypedCharacterOffset)
     {
         m_lastTypedCharacterOffset = lastTypedCharacterOffset;
-        if (Settings* settings = m_renderText->document().settings())
+        if (Settings* settings = m_layoutText->document().settings())
             startOneShot(settings->passwordEchoDurationInSeconds(), FROM_HERE);
     }
     void invalidate() { m_lastTypedCharacterOffset = -1; }
@@ -88,11 +88,11 @@ public:
 private:
     virtual void fired() override
     {
-        ASSERT(gSecureTextTimers->contains(m_renderText));
-        m_renderText->setText(m_renderText->text().impl(), true /* forcing setting text as it may be masked later */);
+        ASSERT(gSecureTextTimers->contains(m_layoutText));
+        m_layoutText->setText(m_layoutText->text().impl(), true /* forcing setting text as it may be masked later */);
     }
 
-    LayoutText* m_renderText;
+    LayoutText* m_layoutText;
     int m_lastTypedCharacterOffset;
 };
 

@@ -127,7 +127,7 @@ AXObject* AXInlineTextBox::computeParent() const
     if (!m_inlineTextBox || !m_axObjectCache)
         return 0;
 
-    LayoutText* layoutText = m_inlineTextBox->renderText();
+    LayoutText* layoutText = m_inlineTextBox->layoutText();
     return m_axObjectCache->getOrCreate(layoutText);
 }
 

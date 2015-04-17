@@ -47,8 +47,8 @@ class InlineTextBox;
 // get information about InlineTextBoxes without tight coupling.
 class CORE_EXPORT AbstractInlineTextBox : public RefCounted<AbstractInlineTextBox> {
 private:
-    AbstractInlineTextBox(LayoutText* renderText, InlineTextBox* inlineTextBox)
-        : m_renderText(renderText)
+    AbstractInlineTextBox(LayoutText* layoutText, InlineTextBox* inlineTextBox)
+        : m_renderText(layoutText)
         , m_inlineTextBox(inlineTextBox)
     {
     }
@@ -73,7 +73,7 @@ public:
         BottomToTop
     };
 
-    LayoutText* renderText() const { return m_renderText; }
+    LayoutText* layoutText() const { return m_renderText; }
 
     PassRefPtr<AbstractInlineTextBox> nextInlineTextBox() const;
     LayoutRect bounds() const;

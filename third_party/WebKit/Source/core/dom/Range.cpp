@@ -1367,11 +1367,11 @@ void Range::textRects(Vector<IntRect>& rects, bool useSelectionHeight, RangeInFi
         LayoutObject* r = node->layoutObject();
         if (!r || !r->isText())
             continue;
-        LayoutText* renderText = toLayoutText(r);
+        LayoutText* layoutText = toLayoutText(r);
         int startOffset = node == startContainer ? m_start.offset() : 0;
         int endOffset = node == endContainer ? m_end.offset() : std::numeric_limits<int>::max();
         bool isFixed = false;
-        renderText->absoluteRectsForRange(rects, startOffset, endOffset, useSelectionHeight, &isFixed);
+        layoutText->absoluteRectsForRange(rects, startOffset, endOffset, useSelectionHeight, &isFixed);
         allFixed &= isFixed;
         someFixed |= isFixed;
     }
@@ -1395,11 +1395,11 @@ void Range::textQuads(Vector<FloatQuad>& quads, bool useSelectionHeight, RangeIn
         LayoutObject* r = node->layoutObject();
         if (!r || !r->isText())
             continue;
-        LayoutText* renderText = toLayoutText(r);
+        LayoutText* layoutText = toLayoutText(r);
         int startOffset = node == startContainer ? m_start.offset() : 0;
         int endOffset = node == endContainer ? m_end.offset() : std::numeric_limits<int>::max();
         bool isFixed = false;
-        renderText->absoluteQuadsForRange(quads, startOffset, endOffset, useSelectionHeight, &isFixed);
+        layoutText->absoluteQuadsForRange(quads, startOffset, endOffset, useSelectionHeight, &isFixed);
         allFixed &= isFixed;
         someFixed |= isFixed;
     }
@@ -1669,13 +1669,13 @@ void Range::getBorderAndTextQuads(Vector<FloatQuad>& quads) const
                 }
             }
         } else if (node->isTextNode()) {
-            if (LayoutText* renderText = toText(node)->layoutObject()) {
+            if (LayoutText* layoutText = toText(node)->layoutObject()) {
                 int startOffset = (node == startContainer) ? m_start.offset() : 0;
                 int endOffset = (node == endContainer) ? m_end.offset() : INT_MAX;
 
                 Vector<FloatQuad> textQuads;
-                renderText->absoluteQuadsForRange(textQuads, startOffset, endOffset);
-                m_ownerDocument->adjustFloatQuadsForScrollAndAbsoluteZoom(textQuads, *renderText);
+                layoutText->absoluteQuadsForRange(textQuads, startOffset, endOffset);
+                m_ownerDocument->adjustFloatQuadsForScrollAndAbsoluteZoom(textQuads, *layoutText);
 
                 quads.appendVector(textQuads);
             }

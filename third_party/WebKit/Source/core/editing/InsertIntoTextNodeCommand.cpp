@@ -55,9 +55,9 @@ void InsertIntoTextNodeCommand::doApply()
         return;
 
     if (passwordEchoEnabled) {
-        LayoutText* renderText = m_node->layoutObject();
-        if (renderText && renderText->isSecure())
-            renderText->momentarilyRevealLastTypedCharacter(m_offset + m_text.length() - 1);
+        LayoutText* layoutText = m_node->layoutObject();
+        if (layoutText && layoutText->isSecure())
+            layoutText->momentarilyRevealLastTypedCharacter(m_offset + m_text.length() - 1);
     }
 
     m_node->insertData(m_offset, m_text, IGNORE_EXCEPTION, CharacterData::DeprecatedRecalcStyleImmediatlelyForEditing);
