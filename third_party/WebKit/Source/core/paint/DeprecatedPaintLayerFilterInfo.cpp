@@ -31,13 +31,11 @@
 #include "core/paint/DeprecatedPaintLayerFilterInfo.h"
 
 #include "core/fetch/DocumentResourceReference.h"
-#include "core/layout/FilterEffectRenderer.h"
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/layout/svg/ReferenceFilterBuilder.h"
 #include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/FilterEffectBuilder.h"
 #include "core/svg/SVGFilterElement.h"
-#include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
-#include "core/svg/graphics/filters/SVGFilter.h"
 
 namespace blink {
 
@@ -95,9 +93,9 @@ DeprecatedPaintLayerFilterInfo::~DeprecatedPaintLayerFilterInfo()
     removeReferenceFilterClients();
 }
 
-void DeprecatedPaintLayerFilterInfo::setRenderer(PassRefPtrWillBeRawPtr<FilterEffectRenderer> renderer)
+void DeprecatedPaintLayerFilterInfo::setBuilder(PassRefPtrWillBeRawPtr<FilterEffectBuilder> builder)
 {
-    m_renderer = renderer;
+    m_builder = builder;
 }
 
 void DeprecatedPaintLayerFilterInfo::notifyFinished(Resource*)

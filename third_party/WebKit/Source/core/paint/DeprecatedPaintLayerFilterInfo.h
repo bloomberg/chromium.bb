@@ -40,7 +40,7 @@
 
 namespace blink {
 
-class FilterEffectRenderer;
+class FilterEffectBuilder;
 class FilterOperations;
 class DeprecatedPaintLayer;
 class DeprecatedPaintLayerFilterInfo;
@@ -53,8 +53,8 @@ public:
     static DeprecatedPaintLayerFilterInfo* createFilterInfoForLayerIfNeeded(DeprecatedPaintLayer*);
     static void removeFilterInfoForLayer(DeprecatedPaintLayer*);
 
-    FilterEffectRenderer* renderer() const { return m_renderer.get(); }
-    void setRenderer(PassRefPtrWillBeRawPtr<FilterEffectRenderer>);
+    FilterEffectBuilder* builder() const { return m_builder.get(); }
+    void setBuilder(PassRefPtrWillBeRawPtr<FilterEffectBuilder>);
 
     void updateReferenceFilterClients(const FilterOperations&);
     virtual void notifyFinished(Resource*) override;
@@ -66,7 +66,7 @@ private:
 
     DeprecatedPaintLayer* m_layer;
 
-    RefPtrWillBePersistent<FilterEffectRenderer> m_renderer;
+    RefPtrWillBePersistent<FilterEffectBuilder> m_builder;
 
     static DeprecatedPaintLayerFilterInfoMap* s_filterMap;
     WillBePersistentHeapVector<RefPtrWillBeMember<Element>> m_internalSVGReferences;

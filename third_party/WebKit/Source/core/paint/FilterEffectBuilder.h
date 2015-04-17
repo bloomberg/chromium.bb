@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FilterEffectRenderer_h
-#define FilterEffectRenderer_h
+#ifndef FilterEffectBuilder_h
+#define FilterEffectBuilder_h
 
 #include "platform/graphics/filters/FilterEffect.h"
 #include "platform/heap/Handle.h"
@@ -39,15 +39,15 @@ class FilterOperations;
 class ReferenceFilter;
 class LayoutObject;
 
-class FilterEffectRenderer final : public RefCountedWillBeGarbageCollectedFinalized<FilterEffectRenderer> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(FilterEffectRenderer);
+class FilterEffectBuilder final : public RefCountedWillBeGarbageCollectedFinalized<FilterEffectBuilder> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(FilterEffectBuilder);
 public:
-    static PassRefPtrWillBeRawPtr<FilterEffectRenderer> create()
+    static PassRefPtrWillBeRawPtr<FilterEffectBuilder> create()
     {
-        return adoptRefWillBeNoop(new FilterEffectRenderer());
+        return adoptRefWillBeNoop(new FilterEffectBuilder());
     }
 
-    virtual ~FilterEffectRenderer();
+    virtual ~FilterEffectBuilder();
     DECLARE_TRACE();
 
     bool build(LayoutObject* renderer, const FilterOperations&);
@@ -59,7 +59,7 @@ public:
     }
 
 private:
-    FilterEffectRenderer();
+    FilterEffectBuilder();
 
     RefPtrWillBeMember<FilterEffect> m_lastEffect;
     WillBeHeapVector<RefPtrWillBeMember<ReferenceFilter>> m_referenceFilters;
@@ -67,4 +67,4 @@ private:
 
 } // namespace blink
 
-#endif // FilterEffectRenderer_h
+#endif // FilterEffectBuilder_h

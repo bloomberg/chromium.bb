@@ -25,21 +25,13 @@
  */
 
 #include "config.h"
+#include "core/paint/FilterEffectBuilder.h"
 
-#include "core/layout/FilterEffectRenderer.h"
-
-#include "core/fetch/DocumentResource.h"
-#include "core/fetch/DocumentResourceReference.h"
-#include "core/frame/Settings.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/svg/ReferenceFilterBuilder.h"
-#include "core/page/Page.h"
-#include "core/svg/SVGElement.h"
-#include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "platform/FloatConversion.h"
 #include "platform/LengthFunctions.h"
 #include "platform/graphics/ColorSpace.h"
-#include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/filters/FEColorMatrix.h"
 #include "platform/graphics/filters/FEComponentTransfer.h"
 #include "platform/graphics/filters/FEDropShadow.h"
@@ -65,21 +57,21 @@ static inline void lastMatrixRow(Vector<float>& parameters)
     parameters.append(0);
 }
 
-FilterEffectRenderer::FilterEffectRenderer()
+FilterEffectBuilder::FilterEffectBuilder()
 {
 }
 
-FilterEffectRenderer::~FilterEffectRenderer()
+FilterEffectBuilder::~FilterEffectBuilder()
 {
 }
 
-DEFINE_TRACE(FilterEffectRenderer)
+DEFINE_TRACE(FilterEffectBuilder)
 {
     visitor->trace(m_lastEffect);
     visitor->trace(m_referenceFilters);
 }
 
-bool FilterEffectRenderer::build(LayoutObject* renderer, const FilterOperations& operations)
+bool FilterEffectBuilder::build(LayoutObject* renderer, const FilterOperations& operations)
 {
     const ComputedStyle* style = renderer->style();
     float zoom = style ? style->effectiveZoom() : 1.0f;
@@ -251,7 +243,7 @@ bool FilterEffectRenderer::build(LayoutObject* renderer, const FilterOperations&
     return true;
 }
 
-void FilterEffectRenderer::clearIntermediateResults()
+void FilterEffectBuilder::clearIntermediateResults()
 {
     if (m_lastEffect.get())
         m_lastEffect->clearResultsRecursive();

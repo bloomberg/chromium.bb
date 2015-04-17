@@ -7,7 +7,6 @@
 
 #include "core/frame/Settings.h"
 #include "core/layout/ClipPathOperation.h"
-#include "core/layout/FilterEffectRenderer.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"

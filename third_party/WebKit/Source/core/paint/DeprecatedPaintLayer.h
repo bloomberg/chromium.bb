@@ -60,7 +60,7 @@
 
 namespace blink {
 
-class FilterEffectRenderer;
+class FilterEffectBuilder;
 class FilterOperations;
 class HitTestRequest;
 class HitTestResult;
@@ -348,10 +348,10 @@ public:
 
     FilterOperations computeFilterOperations(const ComputedStyle&);
     bool paintsWithFilters() const;
-    FilterEffectRenderer* filterRenderer() const
+    FilterEffectBuilder* filterEffectBuilder() const
     {
         DeprecatedPaintLayerFilterInfo* filterInfo = this->filterInfo();
-        return filterInfo ? filterInfo->renderer() : 0;
+        return filterInfo ? filterInfo->builder() : 0;
     }
 
     DeprecatedPaintLayerFilterInfo* filterInfo() const { return hasFilterInfo() ? DeprecatedPaintLayerFilterInfo::filterInfoForLayer(this) : 0; }
@@ -493,7 +493,7 @@ public:
     void updateDescendantDependentFlags();
     void updateDescendantDependentFlagsForEntireSubtree();
 
-    void updateOrRemoveFilterEffectRenderer();
+    void updateOrRemoveFilterEffectBuilder();
 
     void updateSelfPaintingLayer();
 

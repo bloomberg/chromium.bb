@@ -5,9 +5,8 @@
 #include "config.h"
 #include "core/paint/FilterPainter.h"
 
-#include "core/layout/FilterEffectRenderer.h"
-#include "core/layout/LayoutView.h"
 #include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/FilterEffectBuilder.h"
 #include "core/paint/LayerClipRecorder.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -28,13 +27,13 @@ FilterPainter::FilterPainter(DeprecatedPaintLayer& layer, GraphicsContext* conte
     , m_context(context)
     , m_layoutObject(layer.layoutObject())
 {
-    if (!layer.filterRenderer() || !layer.paintsWithFilters())
+    if (!layer.filterEffectBuilder() || !layer.paintsWithFilters())
         return;
 
     ASSERT(layer.filterInfo());
 
     SkiaImageFilterBuilder builder(context);
-    RefPtrWillBeRawPtr<FilterEffect> lastEffect = layer.filterRenderer()->lastEffect();
+    RefPtrWillBeRawPtr<FilterEffect> lastEffect = layer.filterEffectBuilder()->lastEffect();
     lastEffect->determineFilterPrimitiveSubregion(MapRectForward);
     RefPtr<SkImageFilter> imageFilter = builder.build(lastEffect.get(), ColorSpaceDeviceRGB);
     if (!imageFilter)

@@ -54,7 +54,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameElement.h"
 #include "core/layout/ColumnInfo.h"
-#include "core/layout/FilterEffectRenderer.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/HitTestingTransformState.h"
@@ -73,6 +72,7 @@
 #include "core/layout/svg/ReferenceFilterBuilder.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/paint/FilterEffectBuilder.h"
 #include "platform/LengthFunctions.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
@@ -2552,7 +2552,7 @@ void DeprecatedPaintLayer::ensureCompositedDeprecatedPaintLayerMapping()
     m_compositedDeprecatedPaintLayerMapping = adoptPtr(new CompositedDeprecatedPaintLayerMapping(*this));
     m_compositedDeprecatedPaintLayerMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
 
-    updateOrRemoveFilterEffectRenderer();
+    updateOrRemoveFilterEffectBuilder();
 }
 
 void DeprecatedPaintLayer::clearCompositedDeprecatedPaintLayerMapping(bool layerBeingDestroyed)
@@ -2569,7 +2569,7 @@ void DeprecatedPaintLayer::clearCompositedDeprecatedPaintLayerMapping(bool layer
     m_compositedDeprecatedPaintLayerMapping.clear();
 
     if (!layerBeingDestroyed)
-        updateOrRemoveFilterEffectRenderer();
+        updateOrRemoveFilterEffectBuilder();
 }
 
 void DeprecatedPaintLayer::setGroupedMapping(CompositedDeprecatedPaintLayerMapping* groupedMapping, bool layerBeingDestroyed)
@@ -2722,7 +2722,7 @@ void DeprecatedPaintLayer::updateFilters(const ComputedStyle* oldStyle, const Co
         return;
 
     updateOrRemoveFilterClients();
-    updateOrRemoveFilterEffectRenderer();
+    updateOrRemoveFilterEffectBuilder();
 }
 
 bool DeprecatedPaintLayer::attemptDirectCompositingUpdate(StyleDifference diff, const ComputedStyle* oldStyle)
@@ -2858,30 +2858,28 @@ void DeprecatedPaintLayer::updateOrRemoveFilterClients()
         filterInfo()->removeReferenceFilterClients();
 }
 
-void DeprecatedPaintLayer::updateOrRemoveFilterEffectRenderer()
+void DeprecatedPaintLayer::updateOrRemoveFilterEffectBuilder()
 {
-    // FilterEffectRenderer is only used to render the filters in software mode,
-    // so we always need to run updateOrRemoveFilterEffectRenderer after the composited
+    // FilterEffectBuilder is only used to render the filters in software mode,
+    // so we always need to run updateOrRemoveFilterEffectBuilder after the composited
     // mode might have changed for this layer.
     if (!paintsWithFilters()) {
         // Don't delete the whole filter info here, because we might use it
         // for loading CSS shader files.
         if (DeprecatedPaintLayerFilterInfo* filterInfo = this->filterInfo())
-            filterInfo->setRenderer(nullptr);
+            filterInfo->setBuilder(nullptr);
 
         return;
     }
 
     DeprecatedPaintLayerFilterInfo* filterInfo = ensureFilterInfo();
-    if (!filterInfo->renderer()) {
-        RefPtrWillBeRawPtr<FilterEffectRenderer> filterRenderer = FilterEffectRenderer::create();
-        filterInfo->setRenderer(filterRenderer.release());
-    }
+    if (!filterInfo->builder())
+        filterInfo->setBuilder(FilterEffectBuilder::create());
 
     // If the filter fails to build, remove it from the layer. It will still attempt to
     // go through regular processing (e.g. compositing), but never apply anything.
-    if (!filterInfo->renderer()->build(layoutObject(), computeFilterOperations(layoutObject()->styleRef())))
-        filterInfo->setRenderer(nullptr);
+    if (!filterInfo->builder()->build(layoutObject(), computeFilterOperations(layoutObject()->styleRef())))
+        filterInfo->setBuilder(nullptr);
 }
 
 void DeprecatedPaintLayer::filterNeedsPaintInvalidation()
