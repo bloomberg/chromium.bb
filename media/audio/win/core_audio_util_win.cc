@@ -187,24 +187,6 @@ static ScopedComPtr<IMMDeviceEnumerator> CreateDeviceEnumeratorInternal() {
   return device_enumerator;
 }
 
-static bool IsRemoteSession() {
-  return !!GetSystemMetrics(SM_REMOTESESSION);
-}
-
-static bool IsRemoteDeviceInternal(IMMDevice* device) {
-  DCHECK(IsRemoteSession());
-
-  std::string device_name;
-  HRESULT hr = GetDeviceFriendlyNameInternal(device, &device_name);
-
-  // This method should only be called if IsRemoteSession() is true, so assume
-  // we have a remote audio device if we can't tell.
-  if (FAILED(hr))
-    return true;
-
-  return device_name == "Remote Audio";
-}
-
 static bool IsSupportedInternal() {
   // It is possible to force usage of WaveXxx APIs by using a command line flag.
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
@@ -241,26 +223,7 @@ static bool IsSupportedInternal() {
     return false;
   }
 
-  // Don't use CoreAudio when a remote desktop session with remote audio is
-  // present; several users report only WaveAudio working for them and crash
-  // reports show hangs when calling into the OS for CoreAudio API calls. See
-  // http://crbug.com/422522 and http://crbug.com/180591.
-  //
-  // Note: There's another check in WASAPIAudioOutputStream::Open() for the case
-  // where a remote session is created after Chrome has been started.  Graceful
-  // fallback to WaveOut will occur in this case via AudioOutputResampler.
-  if (!IsRemoteSession())
-    return true;
-
-  ScopedComPtr<IMMDevice> device;
-  HRESULT hr = device_enumerator->GetDefaultAudioEndpoint(eRender, eConsole,
-                                                          device.Receive());
-
-  // Assume remote audio playback if we can't tell.
-  if (FAILED(hr))
-    return false;
-
-  return !IsRemoteDeviceInternal(device.get());
+  return true;
 }
 
 bool CoreAudioUtil::IsSupported() {
@@ -904,17 +867,6 @@ bool CoreAudioUtil::FillRenderEndpointBufferWithSilence(
   DVLOG(2) << "filling up " << num_frames_to_fill << " frames with silence";
   return SUCCEEDED(render_client->ReleaseBuffer(num_frames_to_fill,
                                                 AUDCLNT_BUFFERFLAGS_SILENT));
-}
-
-bool CoreAudioUtil::IsRemoteOutputDevice(const std::string& device_id) {
-  DCHECK(IsSupported());
-  if (!IsRemoteSession())
-    return false;
-  ScopedComPtr<IMMDevice> device(device_id.empty()
-                                     ? CreateDefaultDevice(eRender, eConsole)
-                                     : CreateDevice(device_id));
-  // Assume remote audio if we can't tell.
-  return device ? IsRemoteDeviceInternal(device.get()) : true;
 }
 
 }  // namespace media

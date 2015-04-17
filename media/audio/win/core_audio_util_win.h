@@ -229,9 +229,6 @@ class MEDIA_EXPORT CoreAudioUtil {
   static bool FillRenderEndpointBufferWithSilence(
       IAudioClient* client, IAudioRenderClient* render_client);
 
-  // Returns true if the given output device is a remote audio endpoint.
-  static bool IsRemoteOutputDevice(const std::string& device_id);
-
  private:
   CoreAudioUtil() {}
   ~CoreAudioUtil() {}
