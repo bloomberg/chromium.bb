@@ -14,7 +14,7 @@ NetworkChangeNotifierFactoryAndroid::NetworkChangeNotifierFactoryAndroid() {}
 NetworkChangeNotifierFactoryAndroid::~NetworkChangeNotifierFactoryAndroid() {}
 
 NetworkChangeNotifier* NetworkChangeNotifierFactoryAndroid::CreateInstance() {
-  return new NetworkChangeNotifierAndroid(&delegate_);
+  return new NetworkChangeNotifierAndroid(&delegate_, nullptr);
 }
 
 }  // namespace net

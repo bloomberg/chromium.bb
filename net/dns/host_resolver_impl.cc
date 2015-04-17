@@ -2289,7 +2289,15 @@ void HostResolverImpl::OnIPAddressChanged() {
   // |this| may be deleted inside AbortAllInProgressJobs().
 }
 
+void HostResolverImpl::OnInitialDNSConfigRead() {
+  UpdateDNSConfig(false);
+}
+
 void HostResolverImpl::OnDNSChanged() {
+  UpdateDNSConfig(true);
+}
+
+void HostResolverImpl::UpdateDNSConfig(bool config_changed) {
   DnsConfig dns_config;
   NetworkChangeNotifier::GetDnsConfig(&dns_config);
 
@@ -2310,27 +2318,33 @@ void HostResolverImpl::OnDNSChanged() {
   // the newly started jobs use the new config.
   if (dns_client_.get()) {
     dns_client_->SetConfig(dns_config);
-    if (dns_client_->GetConfig())
+    if (dns_client_->GetConfig()) {
       UMA_HISTOGRAM_BOOLEAN("AsyncDNS.DnsClientEnabled", true);
+      // If we just switched DnsClients, restart jobs using new resolver.
+      // TODO(pauljensen): Is this necessary?
+      config_changed = true;
+    }
   }
 
-  // If the DNS server has changed, existing cached info could be wrong so we
-  // have to drop our internal cache :( Note that OS level DNS caches, such
-  // as NSCD's cache should be dropped automatically by the OS when
-  // resolv.conf changes so we don't need to do anything to clear that cache.
-  if (cache_.get())
-    cache_->clear();
+  if (config_changed) {
+    // If the DNS server has changed, existing cached info could be wrong so we
+    // have to drop our internal cache :( Note that OS level DNS caches, such
+    // as NSCD's cache should be dropped automatically by the OS when
+    // resolv.conf changes so we don't need to do anything to clear that cache.
+    if (cache_.get())
+      cache_->clear();
 
-  // Life check to bail once |this| is deleted.
-  base::WeakPtr<HostResolverImpl> self = weak_ptr_factory_.GetWeakPtr();
+    // Life check to bail once |this| is deleted.
+    base::WeakPtr<HostResolverImpl> self = weak_ptr_factory_.GetWeakPtr();
 
-  // Existing jobs will have been sent to the original server so they need to
-  // be aborted.
-  AbortAllInProgressJobs();
+    // Existing jobs will have been sent to the original server so they need to
+    // be aborted.
+    AbortAllInProgressJobs();
 
-  // |this| may be deleted inside AbortAllInProgressJobs().
-  if (self.get())
-    TryServingAllJobsFromHosts();
+    // |this| may be deleted inside AbortAllInProgressJobs().
+    if (self.get())
+      TryServingAllJobsFromHosts();
+  }
 }
 
 bool HostResolverImpl::HaveDnsConfig() const {

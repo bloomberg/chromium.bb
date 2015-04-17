@@ -13,6 +13,7 @@
 
 namespace net {
 
+struct DnsConfig;
 class NetworkChangeNotifierAndroidTest;
 class NetworkChangeNotifierFactoryAndroid;
 
@@ -66,8 +67,8 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierAndroid
 
   class DnsConfigServiceThread;
 
-  explicit NetworkChangeNotifierAndroid(
-      NetworkChangeNotifierDelegateAndroid* delegate);
+  NetworkChangeNotifierAndroid(NetworkChangeNotifierDelegateAndroid* delegate,
+                               const DnsConfig* dns_config_for_testing);
 
   static NetworkChangeCalculatorParams NetworkChangeCalculatorParamsAndroid();
 

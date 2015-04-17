@@ -102,6 +102,9 @@ class NetWatcher :
 
   // net::NetworkChangeNotifier::DNSObserver implementation.
   void OnDNSChanged() override { LOG(INFO) << "OnDNSChanged()"; }
+  void OnInitialDNSConfigRead() override {
+    LOG(INFO) << "OnInitialDNSConfigRead()";
+  }
 
   // net::NetworkChangeNotifier::NetworkChangeObserver implementation.
   void OnNetworkChanged(

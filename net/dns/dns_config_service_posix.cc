@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/lazy_instance.h"
@@ -58,22 +59,14 @@ class DnsConfigWatcher {
 
 #elif defined(OS_ANDROID)
 // On Android, assume DNS config may have changed on every network change.
-class DnsConfigWatcher : public NetworkChangeNotifier::NetworkChangeObserver {
+class DnsConfigWatcher {
  public:
-  DnsConfigWatcher() {
-    NetworkChangeNotifier::AddNetworkChangeObserver(this);
-  }
-
-  ~DnsConfigWatcher() override {
-    NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
-  }
-
   bool Watch(const base::Callback<void(bool succeeded)>& callback) {
     callback_ = callback;
     return true;
   }
 
-  void OnNetworkChanged(NetworkChangeNotifier::ConnectionType type) override {
+  void OnNetworkChanged(NetworkChangeNotifier::ConnectionType type) {
     if (!callback_.is_null() && type != NetworkChangeNotifier::CONNECTION_NONE)
       callback_.Run(true);
   }
@@ -201,8 +194,7 @@ ConfigParsePosixResult ReadDnsConfig(DnsConfig* dns_config) {
 class DnsConfigServicePosix::Watcher {
  public:
   explicit Watcher(DnsConfigServicePosix* service)
-      : service_(service),
-        weak_factory_(this) {}
+      : service_(service), weak_factory_(this) {}
   ~Watcher() {}
 
   bool Watch() {
@@ -215,9 +207,9 @@ class DnsConfigServicePosix::Watcher {
                                 DNS_CONFIG_WATCH_FAILED_TO_START_CONFIG,
                                 DNS_CONFIG_WATCH_MAX);
     }
-    if (!hosts_watcher_.Watch(base::FilePath(kFilePathHosts), false,
-                              base::Bind(&Watcher::OnHostsChanged,
-                                         base::Unretained(this)))) {
+    if (!hosts_watcher_.Watch(
+            base::FilePath(service_->file_path_hosts_), false,
+            base::Bind(&Watcher::OnHostsChanged, base::Unretained(this)))) {
       LOG(ERROR) << "DNS hosts watch failed to start.";
       success = false;
       UMA_HISTOGRAM_ENUMERATION("AsyncDNS.WatchStatus",
@@ -227,8 +219,17 @@ class DnsConfigServicePosix::Watcher {
     return success;
   }
 
+#if defined(OS_ANDROID)
+  void OnNetworkChanged(NetworkChangeNotifier::ConnectionType type) {
+    config_watcher_.OnNetworkChanged(type);
+  }
+#endif  // defined(OS_ANDROID)
+
  private:
   void OnConfigChanged(bool succeeded) {
+#if defined(OS_ANDROID)
+    service_->seen_config_change_ = true;
+#endif  // defined(OS_ANDROID)
     // Ignore transient flutter of resolv.conf by delaying the signal a bit.
     const base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(50);
     base::MessageLoop::current()->PostDelayedTask(
@@ -265,6 +266,10 @@ class DnsConfigServicePosix::ConfigReader : public SerialWorker {
   void DoWork() override {
     base::TimeTicks start_time = base::TimeTicks::Now();
     ConfigParsePosixResult result = ReadDnsConfig(&dns_config_);
+    if (service_->dns_config_for_testing_) {
+      dns_config_ = *service_->dns_config_for_testing_;
+      result = CONFIG_PARSE_POSIX_OK;
+    }
     switch (result) {
       case CONFIG_PARSE_POSIX_MISSING_OPTIONS:
       case CONFIG_PARSE_POSIX_UNHANDLED_OPTIONS:
@@ -308,14 +313,15 @@ class DnsConfigServicePosix::ConfigReader : public SerialWorker {
 class DnsConfigServicePosix::HostsReader : public SerialWorker {
  public:
   explicit HostsReader(DnsConfigServicePosix* service)
-      :  service_(service), path_(kFilePathHosts), success_(false) {}
+      : service_(service), success_(false) {}
 
  private:
   ~HostsReader() override {}
 
   void DoWork() override {
     base::TimeTicks start_time = base::TimeTicks::Now();
-    success_ = ParseHostsFile(path_, &hosts_);
+    success_ =
+        ParseHostsFile(base::FilePath(service_->file_path_hosts_), &hosts_);
     UMA_HISTOGRAM_BOOLEAN("AsyncDNS.HostParseResult", success_);
     UMA_HISTOGRAM_TIMES("AsyncDNS.HostsParseDuration",
                         base::TimeTicks::Now() - start_time);
@@ -330,7 +336,6 @@ class DnsConfigServicePosix::HostsReader : public SerialWorker {
   }
 
   DnsConfigServicePosix* service_;
-  const base::FilePath path_;
   // Written in DoWork, read in OnWorkFinished, no locking necessary.
   DnsHosts hosts_;
   bool success_;
@@ -339,8 +344,16 @@ class DnsConfigServicePosix::HostsReader : public SerialWorker {
 };
 
 DnsConfigServicePosix::DnsConfigServicePosix()
-    : config_reader_(new ConfigReader(this)),
-      hosts_reader_(new HostsReader(this)) {}
+    : file_path_hosts_(kFilePathHosts),
+      dns_config_for_testing_(nullptr),
+      config_reader_(new ConfigReader(this)),
+      hosts_reader_(new HostsReader(this))
+#if defined(OS_ANDROID)
+      ,
+      seen_config_change_(false)
+#endif  // defined(OS_ANDROID)
+{
+}
 
 DnsConfigServicePosix::~DnsConfigServicePosix() {
   config_reader_->Cancel();
@@ -384,6 +397,12 @@ void DnsConfigServicePosix::OnHostsChanged(bool succeeded) {
                               DNS_CONFIG_WATCH_FAILED_HOSTS,
                               DNS_CONFIG_WATCH_MAX);
   }
+}
+
+void DnsConfigServicePosix::SetDnsConfigForTesting(
+    const DnsConfig* dns_config) {
+  DCHECK(CalledOnValidThread());
+  dns_config_for_testing_ = dns_config;
 }
 
 #if !defined(OS_ANDROID)
@@ -493,7 +512,39 @@ ConfigParsePosixResult ConvertResStateToDnsConfig(const struct __res_state& res,
   }
   return CONFIG_PARSE_POSIX_OK;
 }
-#endif  // !defined(OS_ANDROID)
+
+#else   // defined(OS_ANDROID)
+
+bool DnsConfigServicePosix::SeenChangeSince(
+    const base::Time& since_time) const {
+  DCHECK(CalledOnValidThread());
+  if (seen_config_change_)
+    return true;
+  base::File hosts(base::FilePath(file_path_hosts_),
+                   base::File::FLAG_OPEN | base::File::FLAG_READ);
+  base::File::Info hosts_info;
+  // File last modified times are not nearly as accurate as Time::Now() and are
+  // rounded down.  This means a file modified at 1:23.456 might only
+  // be given a last modified time of 1:23.450.  If we compared the last
+  // modified time directly to |since_time| we might miss changes to the hosts
+  // file because of this rounding down.  To account for this the |since_time|
+  // is pushed back by 1s which should more than account for any rounding.
+  // In practice file modified times on Android are two orders of magnitude
+  // more accurate than this 1s.  In practice the hosts file on Android always
+  // contains "127.0.0.1 localhost" and is never modified after Android is
+  // installed.
+  return !hosts.GetInfo(&hosts_info) ||
+         hosts_info.last_modified >=
+             (since_time - base::TimeDelta::FromSeconds(1));
+}
+
+void DnsConfigServicePosix::OnNetworkChanged(
+    NetworkChangeNotifier::ConnectionType type) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(watcher_);
+  watcher_->OnNetworkChanged(type);
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace internal
 

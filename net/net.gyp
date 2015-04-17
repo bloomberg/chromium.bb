@@ -170,9 +170,6 @@
           'sources!': [
             # See bug http://crbug.com/344533.
             'disk_cache/blockfile/index_table_v3_unittest.cc',
-            # No res_ninit() et al on Android, so this doesn't make a lot of
-            # sense.
-            'dns/dns_config_service_posix_unittest.cc',
           ],
           'dependencies': [
             'net_javatests',
@@ -401,12 +398,6 @@
               'disk_cache/blockfile/index_table_v3_unittest.cc',
             ],
         }],
-        [ 'OS == "android"', {
-            'sources!': [
-              'dns/dns_config_service_posix_unittest.cc',
-            ],
-          },
-        ],
         ['OS == "android"', {
           # TODO(mmenke):  This depends on test_support_base, which depends on
           #                icu.  Figure out a way to remove that dependency.

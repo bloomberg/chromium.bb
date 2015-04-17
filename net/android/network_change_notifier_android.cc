@@ -61,29 +61,43 @@
 
 #include "base/threading/thread.h"
 #include "net/base/address_tracker_linux.h"
-#include "net/dns/dns_config_service.h"
+#include "net/dns/dns_config_service_posix.h"
 
 namespace net {
 
 // Thread on which we can run DnsConfigService, which requires a TYPE_IO
 // message loop to monitor /system/etc/hosts.
 class NetworkChangeNotifierAndroid::DnsConfigServiceThread
-    : public base::Thread {
+    : public base::Thread,
+      public NetworkChangeNotifier::NetworkChangeObserver {
  public:
-  DnsConfigServiceThread()
+  DnsConfigServiceThread(const DnsConfig* dns_config_for_testing)
       : base::Thread("DnsConfigService"),
+        dns_config_for_testing_(dns_config_for_testing),
+        creation_time_(base::Time::Now()),
         address_tracker_(base::Bind(base::DoNothing),
                          base::Bind(base::DoNothing),
                          // We're only interested in tunnel interface changes.
                          base::Bind(NotifyNetworkChangeNotifierObservers)) {}
 
-  ~DnsConfigServiceThread() override { Stop(); }
+  ~DnsConfigServiceThread() override {
+    NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+    Stop();
+  }
+
+  void InitAfterStart() {
+    DCHECK(IsRunning());
+    NetworkChangeNotifier::AddNetworkChangeObserver(this);
+  }
 
   void Init() override {
     address_tracker_.Init();
-    dns_config_service_ = DnsConfigService::CreateSystemService();
+    dns_config_service_.reset(new internal::DnsConfigServicePosix());
+    if (dns_config_for_testing_)
+      dns_config_service_->SetDnsConfigForTesting(dns_config_for_testing_);
     dns_config_service_->WatchConfig(
-        base::Bind(&NetworkChangeNotifier::SetDnsConfig));
+        base::Bind(&DnsConfigServiceThread::DnsConfigChangeCallback,
+                   base::Unretained(this)));
   }
 
   void CleanUp() override { dns_config_service_.reset(); }
@@ -94,7 +108,26 @@ class NetworkChangeNotifierAndroid::DnsConfigServiceThread
   }
 
  private:
-  scoped_ptr<DnsConfigService> dns_config_service_;
+  void DnsConfigChangeCallback(const DnsConfig& config) {
+    DCHECK(task_runner()->BelongsToCurrentThread());
+    if (dns_config_service_->SeenChangeSince(creation_time_)) {
+      NetworkChangeNotifier::SetDnsConfig(config);
+    } else {
+      NetworkChangeNotifier::SetInitialDnsConfig(config);
+    }
+  }
+
+  // NetworkChangeNotifier::NetworkChangeObserver implementation:
+  void OnNetworkChanged(NetworkChangeNotifier::ConnectionType type) override {
+    task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&internal::DnsConfigServicePosix::OnNetworkChanged,
+                   base::Unretained(dns_config_service_.get()), type));
+  }
+
+  const DnsConfig* dns_config_for_testing_;
+  const base::Time creation_time_;
+  scoped_ptr<internal::DnsConfigServicePosix> dns_config_service_;
   // Used to detect tunnel state changes.
   internal::AddressTrackerLinux address_tracker_;
 
@@ -130,13 +163,16 @@ bool NetworkChangeNotifierAndroid::Register(JNIEnv* env) {
 }
 
 NetworkChangeNotifierAndroid::NetworkChangeNotifierAndroid(
-    NetworkChangeNotifierDelegateAndroid* delegate)
+    NetworkChangeNotifierDelegateAndroid* delegate,
+    const DnsConfig* dns_config_for_testing)
     : NetworkChangeNotifier(NetworkChangeCalculatorParamsAndroid()),
       delegate_(delegate),
-      dns_config_service_thread_(new DnsConfigServiceThread()) {
+      dns_config_service_thread_(
+          new DnsConfigServiceThread(dns_config_for_testing)) {
   delegate_->AddObserver(this);
   dns_config_service_thread_->StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+  dns_config_service_thread_->InitAfterStart();
 }
 
 // static

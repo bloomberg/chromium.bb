@@ -39,6 +39,7 @@ class DnsProbeService : public net::NetworkChangeNotifier::DNSObserver {
 
   // NetworkChangeNotifier::DNSObserver implementation:
   void OnDNSChanged() override;
+  void OnInitialDNSConfigRead() override;
 
   void SetSystemClientForTesting(scoped_ptr<net::DnsClient> system_client);
   void SetPublicClientForTesting(scoped_ptr<net::DnsClient> public_client);

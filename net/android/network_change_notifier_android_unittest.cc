@@ -12,6 +12,8 @@
 #include "net/android/network_change_notifier_android.h"
 #include "net/android/network_change_notifier_delegate_android.h"
 #include "net/base/network_change_notifier.h"
+#include "net/dns/dns_config_service.h"
+#include "net/dns/dns_protocol.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -58,6 +60,30 @@ class NetworkChangeNotifierObserver
 
  private:
   int notifications_count_;
+};
+
+class DNSChangeObserver : public NetworkChangeNotifier::DNSObserver {
+ public:
+  DNSChangeObserver()
+      : change_notifications_count_(0), initial_notifications_count_(0) {}
+
+  // NetworkChangeNotifier::DNSObserver:
+  void OnDNSChanged() override { change_notifications_count_++; }
+
+  void OnInitialDNSConfigRead() override {
+    initial_notifications_count_++;
+    base::MessageLoop::current()->Quit();
+  }
+
+  int change_notifications_count() const { return change_notifications_count_; }
+
+  int initial_notifications_count() const {
+    return initial_notifications_count_;
+  }
+
+ private:
+  int change_notifications_count_;
+  int initial_notifications_count_;
 };
 
 }  // namespace
@@ -175,7 +201,12 @@ TEST_F(NetworkChangeNotifierDelegateAndroidTest, DelegateObserverNotified) {
 class NetworkChangeNotifierAndroidTest
     : public BaseNetworkChangeNotifierAndroidTest {
  protected:
-  NetworkChangeNotifierAndroidTest() : notifier_(&delegate_) {
+  void SetUp() override {
+    IPAddressNumber dns_number;
+    ASSERT_TRUE(ParseIPLiteralToNumber("8.8.8.8", &dns_number));
+    dns_config_.nameservers.push_back(
+        IPEndPoint(dns_number, dns_protocol::kDefaultPort));
+    notifier_.reset(new NetworkChangeNotifierAndroid(&delegate_, &dns_config_));
     NetworkChangeNotifier::AddConnectionTypeObserver(
         &connection_type_observer_);
     NetworkChangeNotifier::AddConnectionTypeObserver(
@@ -185,7 +216,8 @@ class NetworkChangeNotifierAndroidTest
   NetworkChangeNotifierObserver connection_type_observer_;
   NetworkChangeNotifierObserver other_connection_type_observer_;
   NetworkChangeNotifier::DisableForTest disable_for_test_;
-  NetworkChangeNotifierAndroid notifier_;
+  DnsConfig dns_config_;
+  scoped_ptr<NetworkChangeNotifierAndroid> notifier_;
 };
 
 // When a NetworkChangeNotifierAndroid is observing a
@@ -194,13 +226,10 @@ class NetworkChangeNotifierAndroidTest
 // NetworkChangeNotifierAndroid should reflect that state.
 TEST_F(NetworkChangeNotifierAndroidTest,
        NotificationsSentToNetworkChangeNotifierAndroid) {
-  RunTest(
-      base::Bind(
-          &NetworkChangeNotifierObserver::notifications_count,
-          base::Unretained(&connection_type_observer_)),
-      base::Bind(
-          &NetworkChangeNotifierAndroid::GetCurrentConnectionType,
-          base::Unretained(&notifier_)));
+  RunTest(base::Bind(&NetworkChangeNotifierObserver::notifications_count,
+                     base::Unretained(&connection_type_observer_)),
+          base::Bind(&NetworkChangeNotifierAndroid::GetCurrentConnectionType,
+                     base::Unretained(notifier_.get())));
 }
 
 // When a NetworkChangeNotifierAndroid's connection state changes, it should
@@ -220,13 +249,13 @@ TEST_F(NetworkChangeNotifierAndroidTest,
 TEST_F(NetworkChangeNotifierAndroidTest, MaxBandwidth) {
   SetOnline();
   EXPECT_EQ(NetworkChangeNotifier::CONNECTION_UNKNOWN,
-            notifier_.GetConnectionType());
+            notifier_->GetConnectionType());
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
-            notifier_.GetMaxBandwidth());
+            notifier_->GetMaxBandwidth());
   SetOffline();
   EXPECT_EQ(NetworkChangeNotifier::CONNECTION_NONE,
-            notifier_.GetConnectionType());
-  EXPECT_EQ(0.0, notifier_.GetMaxBandwidth());
+            notifier_->GetConnectionType());
+  EXPECT_EQ(0.0, notifier_->GetMaxBandwidth());
 }
 
 TEST_F(NetworkChangeNotifierDelegateAndroidTest,
@@ -238,6 +267,15 @@ TEST_F(NetworkChangeNotifierDelegateAndroidTest,
   EXPECT_EQ(2, delegate_observer_.bandwidth_notifications_count());
   SetOnline();
   EXPECT_EQ(2, delegate_observer_.bandwidth_notifications_count());
+}
+
+TEST_F(NetworkChangeNotifierAndroidTest, InitialSignal) {
+  DNSChangeObserver dns_change_observer;
+  NetworkChangeNotifier::AddDNSObserver(&dns_change_observer);
+  base::MessageLoop::current()->Run();
+  EXPECT_EQ(1, dns_change_observer.initial_notifications_count());
+  EXPECT_EQ(0, dns_change_observer.change_notifications_count());
+  NetworkChangeNotifier::RemoveDNSObserver(&dns_change_observer);
 }
 
 }  // namespace net

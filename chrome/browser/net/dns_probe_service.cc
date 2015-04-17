@@ -120,6 +120,10 @@ void DnsProbeService::OnDNSChanged() {
   SetSystemClientToCurrentConfig();
 }
 
+void DnsProbeService::OnInitialDNSConfigRead() {
+  OnDNSChanged();
+}
+
 void DnsProbeService::SetSystemClientForTesting(
     scoped_ptr<DnsClient> system_client) {
   system_runner_.SetClient(system_client.Pass());

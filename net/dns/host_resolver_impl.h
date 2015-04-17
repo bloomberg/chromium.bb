@@ -228,6 +228,9 @@ class NET_EXPORT HostResolverImpl
 
   // NetworkChangeNotifier::DNSObserver:
   void OnDNSChanged() override;
+  void OnInitialDNSConfigRead() override;
+
+  void UpdateDNSConfig(bool config_changed);
 
   // True if have a DnsClient with a valid DnsConfig.
   bool HaveDnsConfig() const;

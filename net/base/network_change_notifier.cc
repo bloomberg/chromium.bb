@@ -776,6 +776,12 @@ void NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
 }
 
 // static
+void NetworkChangeNotifier::NotifyObserversOfInitialDNSConfigReadForTests() {
+  if (g_network_change_notifier)
+    g_network_change_notifier->NotifyObserversOfInitialDNSConfigReadImpl();
+}
+
+// static
 void NetworkChangeNotifier::SetTestNotificationsOnly(bool test_only) {
   if (g_network_change_notifier)
     g_network_change_notifier->test_notifications_only_ = test_only;
@@ -941,11 +947,33 @@ void NetworkChangeNotifier::NotifyObserversOfDNSChange() {
 }
 
 // static
+void NetworkChangeNotifier::NotifyObserversOfInitialDNSConfigRead() {
+  if (g_network_change_notifier &&
+      !g_network_change_notifier->test_notifications_only_) {
+    g_network_change_notifier->NotifyObserversOfInitialDNSConfigReadImpl();
+  }
+}
+
+// static
 void NetworkChangeNotifier::SetDnsConfig(const DnsConfig& config) {
   if (!g_network_change_notifier)
     return;
   g_network_change_notifier->network_state_->SetDnsConfig(config);
   NotifyObserversOfDNSChange();
+}
+
+// static
+void NetworkChangeNotifier::SetInitialDnsConfig(const DnsConfig& config) {
+  if (!g_network_change_notifier)
+    return;
+#if DCHECK_IS_ON()
+  // Verify we've never received a valid DnsConfig previously.
+  DnsConfig old_config;
+  g_network_change_notifier->network_state_->GetDnsConfig(&old_config);
+  DCHECK(!old_config.IsValid());
+#endif
+  g_network_change_notifier->network_state_->SetDnsConfig(config);
+  NotifyObserversOfInitialDNSConfigRead();
 }
 
 void NetworkChangeNotifier::NotifyObserversOfIPAddressChangeImpl() {
@@ -969,6 +997,11 @@ void NetworkChangeNotifier::NotifyObserversOfDNSChangeImpl() {
   resolver_state_observer_list_->Notify(FROM_HERE, &DNSObserver::OnDNSChanged);
 }
 
+void NetworkChangeNotifier::NotifyObserversOfInitialDNSConfigReadImpl() {
+  resolver_state_observer_list_->Notify(FROM_HERE,
+                                        &DNSObserver::OnInitialDNSConfigRead);
+}
+
 void NetworkChangeNotifier::NotifyObserversOfMaxBandwidthChangeImpl(
     double max_bandwidth_mbps) {
   max_bandwidth_observer_list_->Notify(
@@ -985,6 +1018,9 @@ NetworkChangeNotifier::DisableForTest::DisableForTest()
 NetworkChangeNotifier::DisableForTest::~DisableForTest() {
   DCHECK(!g_network_change_notifier);
   g_network_change_notifier = network_change_notifier_;
+}
+
+void NetworkChangeNotifier::DNSObserver::OnInitialDNSConfigRead() {
 }
 
 }  // namespace net

@@ -135,6 +135,9 @@ class NET_EXPORT NetworkChangeNotifier {
     // Will be called when the DNS settings of the system may have changed.
     // Use GetDnsConfig to obtain the current settings.
     virtual void OnDNSChanged() = 0;
+    // Will be called when DNS settings of the system have been loaded.
+    // Use GetDnsConfig to obtain the current settings.
+    virtual void OnInitialDNSConfigRead();
 
    protected:
     DNSObserver() {}
@@ -305,6 +308,7 @@ class NET_EXPORT NetworkChangeNotifier {
   static void NotifyObserversOfConnectionTypeChangeForTests(
       ConnectionType type);
   static void NotifyObserversOfNetworkChangeForTests(ConnectionType type);
+  static void NotifyObserversOfInitialDNSConfigReadForTests();
 
   // Enable or disable notifications from the host. After setting to true, be
   // sure to pump the RunLoop until idle to finish any preexisting
@@ -400,11 +404,15 @@ class NET_EXPORT NetworkChangeNotifier {
   static void NotifyObserversOfIPAddressChange();
   static void NotifyObserversOfConnectionTypeChange();
   static void NotifyObserversOfDNSChange();
+  static void NotifyObserversOfInitialDNSConfigRead();
   static void NotifyObserversOfNetworkChange(ConnectionType type);
   static void NotifyObserversOfMaxBandwidthChange(double max_bandwidth_mbps);
 
-  // Stores |config| in NetworkState and notifies observers.
+  // Stores |config| in NetworkState and notifies OnDNSChanged observers.
   static void SetDnsConfig(const DnsConfig& config);
+  // Stores |config| in NetworkState and notifies OnInitialDNSConfigRead
+  // observers.
+  static void SetInitialDnsConfig(const DnsConfig& config);
 
  private:
   friend class HostResolverImplDnsTest;
@@ -418,6 +426,7 @@ class NET_EXPORT NetworkChangeNotifier {
   void NotifyObserversOfIPAddressChangeImpl();
   void NotifyObserversOfConnectionTypeChangeImpl(ConnectionType type);
   void NotifyObserversOfDNSChangeImpl();
+  void NotifyObserversOfInitialDNSConfigReadImpl();
   void NotifyObserversOfNetworkChangeImpl(ConnectionType type);
   void NotifyObserversOfMaxBandwidthChangeImpl(double max_bandwidth_mbps);
 

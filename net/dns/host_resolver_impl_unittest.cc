@@ -899,7 +899,8 @@ TEST_F(HostResolverImplTest, BypassCache) {
   EXPECT_EQ(2u, proc_->GetCaptureList().size());
 }
 
-// Test that IP address changes flush the cache.
+// Test that IP address changes flush the cache but initial DNS config reads do
+// not.
 TEST_F(HostResolverImplTest, FlushCacheOnIPAddressChange) {
   proc_->SignalMultiple(2u);  // One before the flush, one after.
 
@@ -907,6 +908,11 @@ TEST_F(HostResolverImplTest, FlushCacheOnIPAddressChange) {
   EXPECT_EQ(ERR_IO_PENDING, req->Resolve());
   EXPECT_EQ(OK, req->WaitForResult());
 
+  req = CreateRequest("host1", 75);
+  EXPECT_EQ(OK, req->Resolve());  // Should complete synchronously.
+
+  // Verify initial DNS config read does not flush cache.
+  NetworkChangeNotifier::NotifyObserversOfInitialDNSConfigReadForTests();
   req = CreateRequest("host1", 75);
   EXPECT_EQ(OK, req->Resolve());  // Should complete synchronously.
 
@@ -934,6 +940,20 @@ TEST_F(HostResolverImplTest, AbortOnIPAddressChanged) {
 
   EXPECT_EQ(ERR_NETWORK_CHANGED, req->WaitForResult());
   EXPECT_EQ(0u, resolver_->GetHostCache()->size());
+}
+
+// Test that initial DNS config read signals do not abort pending requests.
+TEST_F(HostResolverImplTest, DontAbortOnInitialDNSConfigRead) {
+  Request* req = CreateRequest("host1", 70);
+  EXPECT_EQ(ERR_IO_PENDING, req->Resolve());
+
+  EXPECT_TRUE(proc_->WaitFor(1u));
+  // Triggering initial DNS config read signal.
+  NetworkChangeNotifier::NotifyObserversOfInitialDNSConfigReadForTests();
+  base::MessageLoop::current()->RunUntilIdle();  // Notification happens async.
+  proc_->SignalAll();
+
+  EXPECT_EQ(OK, req->WaitForResult());
 }
 
 // Obey pool constraints after IP address has changed.
