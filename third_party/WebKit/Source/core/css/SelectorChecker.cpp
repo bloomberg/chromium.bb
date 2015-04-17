@@ -592,7 +592,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
             // We cannot determine whether :host or :scope matches a given element or not.
             if (m_mode == SharingRules && (subContext.selector->isHostPseudoClass() || subContext.selector->pseudoType() == CSSSelector::PseudoScope))
                 return true;
-            if (!checkOne(subContext, DOMSiblingTraversalStrategy()))
+            if (!checkOne(subContext, siblingTraversalStrategy))
                 return true;
         }
         return false;
