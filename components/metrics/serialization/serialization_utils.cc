@@ -122,7 +122,7 @@ void SerializationUtils::ReadAndTruncateMetricsFromFile(
   result = stat(filename.c_str(), &stat_buf);
   if (result < 0) {
     if (errno != ENOENT)
-      DPLOG(ERROR) << filename << ": bad metrics file stat";
+      DPLOG(ERROR) << "bad metrics file stat: " << filename;
 
     // Nothing to collect---try later.
     return;
@@ -133,12 +133,12 @@ void SerializationUtils::ReadAndTruncateMetricsFromFile(
   }
   base::ScopedFD fd(open(filename.c_str(), O_RDWR));
   if (fd.get() < 0) {
-    DPLOG(ERROR) << filename << ": cannot open";
+    DPLOG(ERROR) << "cannot open: " << filename;
     return;
   }
   result = flock(fd.get(), LOCK_EX);
   if (result < 0) {
-    DPLOG(ERROR) << filename << ": cannot lock";
+    DPLOG(ERROR) << "cannot lock: " << filename;
     return;
   }
 
@@ -157,11 +157,11 @@ void SerializationUtils::ReadAndTruncateMetricsFromFile(
 
   result = ftruncate(fd.get(), 0);
   if (result < 0)
-    DPLOG(ERROR) << "truncate metrics log";
+    DPLOG(ERROR) << "truncate metrics log: " << filename;
 
   result = flock(fd.get(), LOCK_UN);
   if (result < 0)
-    DPLOG(ERROR) << "unlock metrics log";
+    DPLOG(ERROR) << "unlock metrics log: " << filename;
 }
 
 bool SerializationUtils::WriteMetricToFile(const MetricSample& sample,
@@ -174,7 +174,7 @@ bool SerializationUtils::WriteMetricToFile(const MetricSample& sample,
                                       READ_WRITE_ALL_FILE_FLAGS));
 
   if (file_descriptor.get() < 0) {
-    DLOG(ERROR) << "error openning the file";
+    DPLOG(ERROR) << "error openning the file: " << filename;
     return false;
   }
 
@@ -183,14 +183,14 @@ bool SerializationUtils::WriteMetricToFile(const MetricSample& sample,
   // underneath us. Keep the file locked as briefly as possible.
   // Freeing file_descriptor will close the file and and remove the lock.
   if (HANDLE_EINTR(flock(file_descriptor.get(), LOCK_EX)) < 0) {
-    DLOG(ERROR) << "error locking" << filename << " : " << errno;
+    DPLOG(ERROR) << "error locking: " << filename;
     return false;
   }
 
   std::string msg = sample.ToString();
   int32 size = msg.length() + sizeof(int32);
   if (size > kMessageMaxLength) {
-    DLOG(ERROR) << "cannot write message: too long";
+    DPLOG(ERROR) << "cannot write message: too long: " << filename;
     return false;
   }
 
@@ -199,13 +199,13 @@ bool SerializationUtils::WriteMetricToFile(const MetricSample& sample,
   if (!base::WriteFileDescriptor(file_descriptor.get(),
                                  reinterpret_cast<char*>(&size),
                                  sizeof(size))) {
-    DPLOG(ERROR) << "error writing message length";
+    DPLOG(ERROR) << "error writing message length: " << filename;
     return false;
   }
 
   if (!base::WriteFileDescriptor(
           file_descriptor.get(), msg.c_str(), msg.size())) {
-    DPLOG(ERROR) << "error writing message";
+    DPLOG(ERROR) << "error writing message: " << filename;
     return false;
   }
 
