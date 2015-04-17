@@ -6,6 +6,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "content/browser/background_sync/background_sync_network_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/public/browser/browser_thread.h"
@@ -45,6 +46,8 @@ scoped_ptr<BackgroundSyncManager> BackgroundSyncManager::Create(
 }
 
 BackgroundSyncManager::~BackgroundSyncManager() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
   service_worker_context_->RemoveObserver(this);
 }
 
@@ -155,6 +158,10 @@ BackgroundSyncManager::BackgroundSyncManager(
       disabled_(false),
       weak_ptr_factory_(this) {
   service_worker_context_->AddObserver(this);
+
+  network_observer_.reset(new BackgroundSyncNetworkObserver(
+      base::Bind(&BackgroundSyncManager::OnNetworkChanged,
+                 weak_ptr_factory_.GetWeakPtr())));
 }
 
 void BackgroundSyncManager::Init() {
@@ -535,6 +542,11 @@ void BackgroundSyncManager::OnStorageWipedImpl(const base::Closure& callback) {
   sw_to_registrations_map_.clear();
   disabled_ = false;
   InitImpl(callback);
+}
+
+void BackgroundSyncManager::OnNetworkChanged() {
+  // TODO(jkarlin): Run the scheduling algorithm here if initialized and not
+  // disabled.
 }
 
 void BackgroundSyncManager::PendingStatusAndRegistrationCallback(

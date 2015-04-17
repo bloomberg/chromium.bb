@@ -432,6 +432,8 @@
       'browser/appcache/view_appcache_internals_job.h',
       'browser/background_sync/background_sync_manager.cc',
       'browser/background_sync/background_sync_manager.h',
+      'browser/background_sync/background_sync_network_observer.cc',
+      'browser/background_sync/background_sync_network_observer.h',      
       'browser/bad_message.cc',
       'browser/bad_message.h',
       'browser/bluetooth/bluetooth_dispatcher_host.cc',
