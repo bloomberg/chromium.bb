@@ -493,10 +493,24 @@ namespace developerPrivate {
                              optional VoidCallback callback);
 
     // Delete reported extension erors.
-    // | properties | : The properties specifying the errors to remove.
+    // |properties| : The properties specifying the errors to remove.
     static void deleteExtensionErrors(
         DeleteExtensionErrorsProperties properties,
         optional VoidCallback callback);
+
+    // Repairs the extension specified.
+    // |extensionId| : The id of the extension to repair.
+    static void repairExtension(DOMString extensionId,
+                                optional VoidCallback callback);
+
+    // Shows the options page for the extension specified.
+    // |extensionId| : The id of the extension to show the options page for.
+    static void showOptions(DOMString extensionId,
+                            optional VoidCallback callback);
+
+    // Shows the path of the extension specified.
+    // |extensionId| : The id of the extension to show the path for.
+    static void showPath(DOMString extensionId, optional VoidCallback callback);
 
     [nocompile, deprecated="Use management.setEnabled"]
         static void enable(DOMString id,

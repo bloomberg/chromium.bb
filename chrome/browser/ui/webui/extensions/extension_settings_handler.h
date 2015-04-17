@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/extension_management.h"
-#include "chrome/common/extensions/webstore_install_result.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -84,35 +83,11 @@ class ExtensionSettingsHandler
   // Helper method that reloads all unpacked extensions.
   void ReloadUnpackedExtensions();
 
-  // Callback for "extensionSettingsLaunch" message.
-  void HandleLaunchMessage(const base::ListValue* args);
-
-  // Callback for "extensionSettingsRepair" message.
-  void HandleRepairMessage(const base::ListValue* args);
-
-  // Callback for "extensionSettingsOptions" message.
-  void HandleOptionsMessage(const base::ListValue* args);
-
-  // Callback for "extensionSettingsAutoupdate" message.
-  void HandleAutoUpdateMessage(const base::ListValue* args);
-
-  // Callback for the "extensionSettingsShowPath" message.
-  void HandleShowPath(const base::ListValue* args);
-
   // Callback for the "extensionSettingsRegister" message.
   void HandleRegisterMessage(const base::ListValue* args);
 
-  // Utility for callbacks that get an extension ID as the sole argument.
-  // Returns NULL if the extension isn't active.
-  const Extension* GetActiveExtension(const base::ListValue* args);
-
   // Forces a UI update if appropriate after a notification is received.
   void MaybeUpdateAfterNotification();
-
-  // Called when the reinstallation is complete.
-  void OnReinstallComplete(bool success,
-                           const std::string& error,
-                           webstore_install::Result result);
 
   // Our model.  Outlives us since it's owned by our containing profile.
   ExtensionService* extension_service_;

@@ -619,6 +619,30 @@ chrome.developerPrivate.openDevTools = function(properties, callback) {};
 chrome.developerPrivate.deleteExtensionErrors = function(properties, callback) {};
 
 /**
+ * Repairs the extension specified.
+ * @param {string} extensionId
+ * @param {function():void=} callback
+ * @see https://developer.chrome.com/extensions/developerPrivate#method-repairExtension
+ */
+chrome.developerPrivate.repairExtension = function(extensionId, callback) {};
+
+/**
+ * Shows the options page for the extension specified.
+ * @param {string} extensionId
+ * @param {function():void=} callback
+ * @see https://developer.chrome.com/extensions/developerPrivate#method-showOptions
+ */
+chrome.developerPrivate.showOptions = function(extensionId, callback) {};
+
+/**
+ * Shows the path of the extension specified.
+ * @param {string} extensionId
+ * @param {function():void=} callback
+ * @see https://developer.chrome.com/extensions/developerPrivate#method-showPath
+ */
+chrome.developerPrivate.showPath = function(extensionId, callback) {};
+
+/**
  * @param {string} id
  * @param {boolean} enabled
  * @param {function():void=} callback

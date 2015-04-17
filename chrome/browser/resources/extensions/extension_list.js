@@ -450,12 +450,12 @@ cr.define('extensions', function() {
 
       // The 'Options' button or link, depending on its behaviour.
       // Set an href to get the correct mouse-over appearance (link,
-      // footer) - but the actual link opening is done through chrome.send
-      // with a preventDefault().
+      // footer) - but the actual link opening is done through developerPrivate
+      // API with a preventDefault().
       row.querySelector('.options-link').href =
           extension.optionsPage ? extension.optionsPage.url : '';
       row.setupColumn('.options-link', 'options', 'click', function(e) {
-        chrome.send('extensionSettingsOptions', [extension.id]);
+        chrome.developerPrivate.showOptions(extension.id);
         e.preventDefault();
       });
 
@@ -487,7 +487,7 @@ cr.define('extensions', function() {
 
       // The 'Launch' link.
       row.setupColumn('.launch-link', 'launch', 'click', function(e) {
-        chrome.send('extensionSettingsLaunch', [extension.id]);
+        chrome.management.launchApp(extension.id);
       });
 
       // The 'Reload' terminated link.
@@ -499,7 +499,7 @@ cr.define('extensions', function() {
       // The 'Repair' corrupted link.
       row.setupColumn('.corrupted-repair-button', 'repair', 'click',
                       function(e) {
-        chrome.send('extensionSettingsRepair', [extension.id]);
+        chrome.developerPrivate.repairExtension(extension.id);
       });
 
       // The 'Enabled' checkbox.
@@ -554,7 +554,7 @@ cr.define('extensions', function() {
       // The path, if provided by unpacked extension.
       row.setupColumn('.load-path a:first-of-type', 'dev-loadPath', 'click',
                       function(e) {
-        chrome.send('extensionSettingsShowPath', [String(extension.id)]);
+        chrome.developerPrivate.showPath(extension.id);
         e.preventDefault();
       });
 

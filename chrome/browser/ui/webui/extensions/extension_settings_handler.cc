@@ -21,15 +21,10 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
-#include "chrome/browser/extensions/updater/extension_updater.h"
-#include "chrome/browser/extensions/webstore_reinstaller.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -64,7 +59,6 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest.h"
-#include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "grit/browser_resources.h"
 #include "grit/components_strings.h"
@@ -315,21 +309,6 @@ void ExtensionSettingsHandler::RegisterMessages() {
   extension_service_ =
       extensions::ExtensionSystem::Get(profile)->extension_service();
 
-  web_ui()->RegisterMessageCallback("extensionSettingsLaunch",
-      base::Bind(&ExtensionSettingsHandler::HandleLaunchMessage,
-                 AsWeakPtr()));
-  web_ui()->RegisterMessageCallback("extensionSettingsRepair",
-      base::Bind(&ExtensionSettingsHandler::HandleRepairMessage,
-                 AsWeakPtr()));
-  web_ui()->RegisterMessageCallback("extensionSettingsOptions",
-      base::Bind(&ExtensionSettingsHandler::HandleOptionsMessage,
-                 AsWeakPtr()));
-  web_ui()->RegisterMessageCallback("extensionSettingsAutoupdate",
-      base::Bind(&ExtensionSettingsHandler::HandleAutoUpdateMessage,
-                 AsWeakPtr()));
-  web_ui()->RegisterMessageCallback("extensionSettingsShowPath",
-      base::Bind(&ExtensionSettingsHandler::HandleShowPath,
-                 AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsRegister",
       base::Bind(&ExtensionSettingsHandler::HandleRegisterMessage,
                  AsWeakPtr()));
@@ -417,66 +396,6 @@ void ExtensionSettingsHandler::ReloadUnpackedExtensions() {
   }
 }
 
-void ExtensionSettingsHandler::HandleLaunchMessage(
-    const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
-  std::string extension_id;
-  CHECK(args->GetString(0, &extension_id));
-  const Extension* extension =
-      extension_service_->GetExtensionById(extension_id, false);
-  OpenApplication(AppLaunchParams(extension_service_->profile(), extension,
-                                  extensions::LAUNCH_CONTAINER_WINDOW,
-                                  NEW_WINDOW,
-                                  extensions::SOURCE_EXTENSIONS_PAGE));
-}
-
-void ExtensionSettingsHandler::HandleRepairMessage(
-    const base::ListValue* args) {
-  std::string extension_id = base::UTF16ToUTF8(ExtractStringValue(args));
-  CHECK(!extension_id.empty());
-  scoped_refptr<WebstoreReinstaller> reinstaller(new WebstoreReinstaller(
-      web_contents(),
-      extension_id,
-      base::Bind(&ExtensionSettingsHandler::OnReinstallComplete,
-                 AsWeakPtr())));
-  reinstaller->BeginReinstall();
-}
-
-void ExtensionSettingsHandler::HandleOptionsMessage(
-    const base::ListValue* args) {
-  const Extension* extension = GetActiveExtension(args);
-  if (!extension || OptionsPageInfo::GetOptionsPage(extension).is_empty())
-    return;
-  ExtensionTabUtil::OpenOptionsPage(extension,
-      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()));
-}
-
-void ExtensionSettingsHandler::HandleAutoUpdateMessage(
-    const base::ListValue* args) {
-  ExtensionUpdater* updater = extension_service_->updater();
-  if (updater) {
-    ExtensionUpdater::CheckParams params;
-    params.install_immediately = true;
-    updater->CheckNow(params);
-  }
-}
-
-void ExtensionSettingsHandler::HandleShowPath(const base::ListValue* args) {
-  DCHECK(!args->empty());
-  std::string extension_id = base::UTF16ToUTF8(ExtractStringValue(args));
-
-  Profile* profile = Profile::FromWebUI(web_ui());
-  ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
-  const Extension* extension = registry->GetExtensionById(
-      extension_id,
-      ExtensionRegistry::EVERYTHING);
-  CHECK(extension);
-  // We explicitly show manifest.json in order to work around an issue in OSX
-  // where opening the directory doesn't focus the Finder.
-  platform_util::ShowItemInFolder(profile,
-                                  extension->path().Append(kManifestFilename));
-}
-
 void ExtensionSettingsHandler::HandleRegisterMessage(
     const base::ListValue* args) {
   if (!registrar_.IsEmpty())
@@ -520,13 +439,6 @@ void ExtensionSettingsHandler::HandleRegisterMessage(
   profile->GetPrefs()->ClearPref(prefs::kExtensionsUIDismissedADTPromo);
 }
 
-const Extension* ExtensionSettingsHandler::GetActiveExtension(
-    const base::ListValue* args) {
-  std::string extension_id = base::UTF16ToUTF8(ExtractStringValue(args));
-  CHECK(!extension_id.empty());
-  return extension_service_->GetExtensionById(extension_id, false);
-}
-
 void ExtensionSettingsHandler::MaybeUpdateAfterNotification() {
   content::WebContents* contents = web_ui()->GetWebContents();
   if (!ignore_notifications_ && contents && contents->GetRenderViewHost()) {
@@ -534,13 +446,6 @@ void ExtensionSettingsHandler::MaybeUpdateAfterNotification() {
         "extensions.ExtensionSettings.onExtensionsChanged");
   }
   deleting_rvh_ = NULL;
-}
-
-void ExtensionSettingsHandler::OnReinstallComplete(
-    bool success,
-    const std::string& error,
-    webstore_install::Result result) {
-  MaybeUpdateAfterNotification();
 }
 
 }  // namespace extensions

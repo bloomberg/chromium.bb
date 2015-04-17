@@ -303,7 +303,7 @@ cr.define('extensions', function() {
      * @private
      */
     handleUpdateExtensionNow_: function(e) {
-      chrome.send('extensionSettingsAutoupdate');
+      chrome.developerPrivate.autoUpdate();
     },
 
     /**

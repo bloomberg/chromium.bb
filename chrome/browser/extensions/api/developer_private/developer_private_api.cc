@@ -21,16 +21,21 @@
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/devtools_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
+#include "chrome/browser/extensions/webstore_reinstaller.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/api/developer_private.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -62,6 +67,7 @@
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
+#include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "storage/browser/fileapi/external_mount_points.h"
@@ -95,16 +101,14 @@ const char kCouldNotFindWebContentsError[] =
     "Could not find a valid web contents.";
 const char kCannotUpdateSupervisedProfileSettingsError[] =
     "Cannot change settings for a supervised profile.";
+const char kNoOptionsPageForExtensionError[] =
+    "Extension does not have an options page.";
 
 const char kUnpackedAppsFolder[] = "apps_target";
 const char kManifestFile[] = "manifest.json";
 
 ExtensionService* GetExtensionService(content::BrowserContext* context) {
   return ExtensionSystem::Get(context)->extension_service();
-}
-
-ExtensionUpdater* GetExtensionUpdater(Profile* profile) {
-  return GetExtensionService(profile)->updater();
 }
 
 GURL GetImageURLFromData(const std::string& contents) {
@@ -365,15 +369,24 @@ const Extension* DeveloperPrivateAPIFunction::GetExtensionById(
       id, ExtensionRegistry::EVERYTHING);
 }
 
-bool DeveloperPrivateAutoUpdateFunction::RunSync() {
-  ExtensionUpdater* updater = GetExtensionUpdater(GetProfile());
-  if (updater)
-    updater->CheckNow(ExtensionUpdater::CheckParams());
-  SetResult(new base::FundamentalValue(true));
-  return true;
+const Extension* DeveloperPrivateAPIFunction::GetEnabledExtensionById(
+    const std::string& id) {
+  return ExtensionRegistry::Get(browser_context())->enabled_extensions().
+      GetByID(id);
 }
 
 DeveloperPrivateAutoUpdateFunction::~DeveloperPrivateAutoUpdateFunction() {}
+
+ExtensionFunction::ResponseAction DeveloperPrivateAutoUpdateFunction::Run() {
+  ExtensionUpdater* updater =
+      ExtensionSystem::Get(browser_context())->extension_service()->updater();
+  if (updater) {
+    ExtensionUpdater::CheckParams params;
+    params.install_immediately = true;
+    updater->CheckNow(params);
+  }
+  return RespondNow(NoArguments());
+}
 
 DeveloperPrivateGetExtensionsInfoFunction::
 ~DeveloperPrivateGetExtensionsInfoFunction() {
@@ -1187,8 +1200,7 @@ DeveloperPrivateOpenDevToolsFunction::Run() {
   if (properties.render_process_id == -1) {
     // This is a lazy background page.
     const Extension* extension = properties.extension_id ?
-        ExtensionRegistry::Get(browser_context())->enabled_extensions().GetByID(
-            *properties.extension_id) : nullptr;
+        GetEnabledExtensionById(*properties.extension_id) : nullptr;
     if (!extension)
       return RespondNow(Error(kNoSuchExtensionError));
 
@@ -1268,6 +1280,79 @@ DeveloperPrivateDeleteExtensionErrorsFunction::Run() {
   error_console->RemoveErrors(ErrorMap::Filter(
       properties.extension_id, type, error_ids, false));
 
+  return RespondNow(NoArguments());
+}
+
+DeveloperPrivateRepairExtensionFunction::
+~DeveloperPrivateRepairExtensionFunction() {}
+
+ExtensionFunction::ResponseAction
+DeveloperPrivateRepairExtensionFunction::Run() {
+  scoped_ptr<developer::RepairExtension::Params> params(
+      developer::RepairExtension::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  const Extension* extension = GetExtensionById(params->extension_id);
+  if (!extension)
+    return RespondNow(Error(kNoSuchExtensionError));
+
+  content::WebContents* web_contents = GetSenderWebContents();
+  if (!web_contents)
+    return RespondNow(Error(kCouldNotFindWebContentsError));
+
+  scoped_refptr<WebstoreReinstaller> reinstaller(new WebstoreReinstaller(
+      web_contents,
+      params->extension_id,
+      base::Bind(&DeveloperPrivateRepairExtensionFunction::OnReinstallComplete,
+                 this)));
+  reinstaller->BeginReinstall();
+
+  return RespondLater();
+}
+
+void DeveloperPrivateRepairExtensionFunction::OnReinstallComplete(
+    bool success,
+    const std::string& error,
+    webstore_install::Result result) {
+  Respond(success ? NoArguments() : Error(error));
+}
+
+DeveloperPrivateShowOptionsFunction::~DeveloperPrivateShowOptionsFunction() {}
+
+ExtensionFunction::ResponseAction DeveloperPrivateShowOptionsFunction::Run() {
+  scoped_ptr<developer::ShowOptions::Params> params(
+      developer::ShowOptions::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  const Extension* extension = GetEnabledExtensionById(params->extension_id);
+  if (!extension)
+    return RespondNow(Error(kNoSuchExtensionError));
+
+  if (OptionsPageInfo::GetOptionsPage(extension).is_empty())
+    return RespondNow(Error(kNoOptionsPageForExtensionError));
+
+  content::WebContents* web_contents = GetSenderWebContents();
+  if (!web_contents)
+    return RespondNow(Error(kCouldNotFindWebContentsError));
+
+  ExtensionTabUtil::OpenOptionsPage(
+      extension,
+      chrome::FindBrowserWithWebContents(web_contents));
+  return RespondNow(NoArguments());
+}
+
+DeveloperPrivateShowPathFunction::~DeveloperPrivateShowPathFunction() {}
+
+ExtensionFunction::ResponseAction DeveloperPrivateShowPathFunction::Run() {
+  scoped_ptr<developer::ShowPath::Params> params(
+      developer::ShowPath::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  const Extension* extension = GetExtensionById(params->extension_id);
+  if (!extension)
+    return RespondNow(Error(kNoSuchExtensionError));
+
+  // We explicitly show manifest.json in order to work around an issue in OSX
+  // where opening the directory doesn't focus the Finder.
+  platform_util::ShowItemInFolder(GetProfile(),
+                                  extension->path().Append(kManifestFilename));
   return RespondNow(NoArguments());
 }
 
