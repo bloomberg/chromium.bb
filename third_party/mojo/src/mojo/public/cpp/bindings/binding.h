@@ -8,7 +8,6 @@
 #include "mojo/public/c/environment/async_waiter.h"
 #include "mojo/public/cpp/bindings/error_handler.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
-#include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/lib/filter_chain.h"
 #include "mojo/public/cpp/bindings/lib/message_header_validator.h"
@@ -133,9 +132,7 @@ class Binding : public ErrorHandler {
       InterfacePtr<Interface>* ptr,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
     MessagePipe pipe;
-    ptr->Bind(
-        InterfacePtrInfo<Interface>(pipe.handle0.Pass(), Interface::Version_),
-        waiter);
+    ptr->Bind(pipe.handle0.Pass(), waiter);
     Bind(pipe.handle1.Pass(), waiter);
   }
 

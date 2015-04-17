@@ -89,7 +89,7 @@ class {{struct|name}} extends bindings.Struct {
 
 {#--- Constants #}
 {%-  for constant in struct.constants %}
-  static const {{constant.name}} = {{constant.value|expression_to_text}};
+  static final {{constant.name}} = {{constant.value|expression_to_text}};
 {%-  endfor %}
 
 {#--- initDefaults() #}
@@ -100,10 +100,7 @@ class {{struct|name}} extends bindings.Struct {
   {{struct|name}}() : super(kVersions.last.size);
 
   static {{struct|name}} deserialize(bindings.Message message) {
-    var decoder = new bindings.Decoder(message);
-    var result = decode(decoder);
-    decoder.excessHandles.forEach((h) => h.close());
-    return result;
+    return decode(new bindings.Decoder(message));
   }
 
   static {{struct|name}} decode(bindings.Decoder decoder0) {

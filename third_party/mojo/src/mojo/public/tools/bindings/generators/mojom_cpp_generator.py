@@ -360,6 +360,8 @@ class Generator(generator.Generator):
     "is_struct_with_handles": IsStructWithHandles,
     "is_union_kind": mojom.IsUnionKind,
     "struct_size": lambda ps: ps.GetTotalSize() + _HEADER_SIZE,
+    "struct_from_method": generator.GetStructFromMethod,
+    "response_struct_from_method": generator.GetResponseStructFromMethod,
     "stylize_method": generator.StudlyCapsToCamel,
     "to_all_caps": generator.CamelCaseToAllCaps,
     "under_to_camel": generator.UnderToCamel,
@@ -375,7 +377,7 @@ class Generator(generator.Generator):
       "enums": self.module.enums,
       "structs": self.GetStructs(),
       "unions": self.module.unions,
-      "interfaces": self.GetInterfaces(),
+      "interfaces": self.module.interfaces,
     }
 
   @UseJinja("cpp_templates/module.h.tmpl", filters=cpp_filters)

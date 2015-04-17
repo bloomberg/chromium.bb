@@ -410,6 +410,8 @@ class Generator(generator.Generator):
     'method_ordinal_name': GetMethodOrdinalName,
     'name': GetNameForElement,
     'new_array': NewArray,
+    'response_struct_from_method': generator.GetResponseStructFromMethod,
+    'struct_from_method': generator.GetStructFromMethod,
   }
 
   def GetJinjaExports(self):
@@ -462,7 +464,7 @@ class Generator(generator.Generator):
       self.Write(self.GenerateEnumSource(enum),
                  '%s.java' % GetNameForElement(enum))
 
-    for interface in self.GetInterfaces():
+    for interface in self.module.interfaces:
       self.Write(self.GenerateInterfaceSource(interface),
                  '%s.java' % GetNameForElement(interface))
       self.Write(self.GenerateInterfaceInternalSource(interface),
