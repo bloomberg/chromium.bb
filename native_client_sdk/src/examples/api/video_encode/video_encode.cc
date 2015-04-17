@@ -281,7 +281,7 @@ void VideoEncoderInstance::OnEncoderProbed(
   pp::VarArray js_profiles;
   dict.Set(pp::Var("profiles"), js_profiles);
 
-  if (result != PP_OK) {
+  if (result < 0) {
     LogError(result, "Cannot get supported profiles");
     PostMessage(dict);
   }

@@ -462,11 +462,8 @@ TEST_F(VideoEncoderResourceTest, GetSupportedProfiles) {
     profiles_response.push_back(profile);
 
     SendGetSupportedProfilesReply(params, profiles_response);
-    ASSERT_EQ(PP_OK, cb.result());
-
-    ASSERT_EQ(2U, profiles_response.size());
-    ASSERT_EQ(0, memcmp(&profiles[0], &profiles_response[0],
-                        sizeof(PP_VideoProfileDescription) * 2));
+    ASSERT_EQ(profiles_response.size(), static_cast<uint32_t>(cb.result()));
+    ASSERT_EQ(0, memcmp(&profiles[0], &profiles_response[0], sizeof(profiles)));
   }
 }
 

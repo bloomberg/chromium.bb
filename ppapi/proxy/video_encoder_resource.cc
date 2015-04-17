@@ -267,7 +267,8 @@ void VideoEncoderResource::OnPluginMsgGetSupportedProfilesReply(
     return;
   }
 
-  RunCallback(&get_supported_profiles_callback_, PP_OK);
+  RunCallback(&get_supported_profiles_callback_,
+              base::checked_cast<int32_t>(profiles.size()));
 }
 
 void VideoEncoderResource::OnPluginMsgInitializeReply(

@@ -32,7 +32,7 @@ std::string TestVideoEncoder::TestCreate() {
     callback.WaitForResult(
         video_encoder.GetSupportedProfiles(callback.GetCallback()));
 
-    ASSERT_EQ(PP_OK, callback.result());
+    ASSERT_GE(callback.result(), 1U);
 
     const std::vector<PP_VideoProfileDescription> video_profiles =
         callback.output();
