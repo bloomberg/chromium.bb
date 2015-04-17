@@ -169,8 +169,8 @@ Output.RULES = {
       enter: '$name $role'
     },
     heading: {
-      enter: '@aria_role_heading',
-      speak: '@aria_role_heading $name='
+      enter: '@tag_h+$hierarchicalLevel',
+      speak: '@tag_h+$hierarchicalLevel $name='
     },
     inlineTextBox: {
       speak: '$value='
@@ -623,6 +623,14 @@ Output.prototype = {
           }
         }
       } else if (prefix == '@') {
+        // Tokens can have substitutions.
+        var pieces = token.split('+');
+        token = pieces.reduce(function(prev, cur) {
+          var lookup = cur;
+          if (cur[0] == '$')
+            lookup = node.attributes[cur.slice(1)];
+          return prev + lookup;
+        }.bind(this), '');
         var msgId = token;
         var msgArgs = [];
         var curMsg = tree.firstChild;

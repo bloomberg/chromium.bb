@@ -83,3 +83,57 @@ TEST_F('OutputE2ETest', 'InLineTextBoxValueGetsIgnored', function() {
       ]}, o.toSpannable());
   });
 });
+
+TEST_F('OutputE2ETest', 'Headings', function() {
+  this.runWithLoadedTree(
+      '<h1>a</h1><h2>b</h2><h3>c</h3><h4>d</h4><h5>e</h5><h6>f</h6>',
+    function(root) {
+      var el = root.firstChild;
+      var range = cursors.Range.fromNode(el);
+      var o = new Output().withSpeechAndBraille(range, null, 'navigate');
+      assertEqualsJSON({string_: 'Heading 1a', 'spans_': [
+        // Attributes.
+        {value: 'name', start: 9, end: 10}
+      ]}, o.toSpannable());
+
+      el = el.nextSibling;
+      range = cursors.Range.fromNode(el);
+      o = new Output().withSpeechAndBraille(range, null, 'navigate');
+      assertEqualsJSON({string_: 'Heading 2b', 'spans_': [
+        // Attributes.
+        {value: 'name', start: 9, end: 10}
+      ]}, o.toSpannable());
+
+      el = el.nextSibling;
+      range = cursors.Range.fromNode(el);
+      o = new Output().withSpeechAndBraille(range, null, 'navigate');
+      assertEqualsJSON({string_: 'Heading 3c', 'spans_': [
+        // Attributes.
+        {value: 'name', start: 9, end: 10}
+      ]}, o.toSpannable());
+
+      el = el.nextSibling;
+      range = cursors.Range.fromNode(el);
+      o = new Output().withSpeechAndBraille(range, null, 'navigate');
+      assertEqualsJSON({string_: 'Heading 4d', 'spans_': [
+        // Attributes.
+        {value: 'name', start: 9, end: 10}
+      ]}, o.toSpannable());
+
+      el = el.nextSibling;
+      range = cursors.Range.fromNode(el);
+      o = new Output().withSpeechAndBraille(range, null, 'navigate');
+      assertEqualsJSON({string_: 'Heading 5e', 'spans_': [
+        // Attributes.
+        {value: 'name', start: 9, end: 10}
+      ]}, o.toSpannable());
+
+      el = el.nextSibling;
+      range = cursors.Range.fromNode(el);
+      o = new Output().withSpeechAndBraille(range, null, 'navigate');
+      assertEqualsJSON({string_: 'Heading 6f', 'spans_': [
+        // Attributes.
+        {value: 'name', start: 9, end: 10}
+      ]}, o.toSpannable());
+  });
+});
