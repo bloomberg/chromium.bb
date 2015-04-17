@@ -21,8 +21,10 @@ The information can include symbol names, offsets, and source locations.
 
 import glob
 import itertools
+import logging
 import os
 import re
+import struct
 import subprocess
 import zipfile
 
@@ -35,6 +37,19 @@ CHROME_SYMBOLS_DIR = CHROME_SRC
 ARCH = "arm"
 
 TOOLCHAIN_INFO = None
+
+# See:
+# http://bugs.python.org/issue14315
+# https://hg.python.org/cpython/rev/6dd5e9556a60#l2.8
+def PatchZipFile():
+  oldDecodeExtra = zipfile.ZipInfo._decodeExtra
+  def decodeExtra(self):
+    try:
+      oldDecodeExtra(self)
+    except struct.error:
+      pass
+  zipfile.ZipInfo._decodeExtra = decodeExtra
+PatchZipFile()
 
 def Uname():
   """'uname' for constructing prebuilt/<...> and out/host/<...> paths."""
@@ -121,6 +136,7 @@ def FindToolchain():
   else:
     known_toolchains = []
 
+  logging.debug('FindToolcahin: known_toolchains=%s' % known_toolchains)
   # Look for addr2line to check for valid toolchain path.
   for (label, platform, target) in known_toolchains:
     toolchain_info = (label, platform, target);
@@ -206,6 +222,7 @@ def GetCandidates(dirs, filepart, candidate_fun):
   candidates = PathListJoin([out_dir], buildtype_list) + [CHROME_SYMBOLS_DIR]
   candidates = PathListJoin(candidates, dirs)
   candidates = PathListJoin(candidates, [filepart])
+  logging.debug('GetCandidates: prefiltered candidates = %s' % candidates)
   candidates = list(
       itertools.chain.from_iterable(map(candidate_fun, candidates)))
   candidates = sorted(candidates, key=os.path.getmtime, reverse=True)
@@ -237,7 +254,13 @@ def GetCrazyLib(apk_filename):
     if match:
       return match.group(1)
 
-def GetMatchingApks(device_apk_name):
+def GetApkFromLibrary(device_library_path):
+  match = re.match(r'.*/([^/]*)-[0-9]+(\/[^/]*)?\.apk$', device_library_path)
+  if not match:
+    return None
+  return match.group(1)
+
+def GetMatchingApks(package_name):
   """Find any APKs which match the package indicated by the device_apk_name.
 
   Args:
@@ -246,10 +269,6 @@ def GetMatchingApks(device_apk_name):
   Returns:
      A list of APK filenames which could contain the desired library.
   """
-  match = re.match('(.*)-[0-9]+[.]apk$', device_apk_name)
-  if not match:
-    return None
-  package_name = match.group(1)
   return filter(
       lambda candidate_apk:
           ApkMatchPackageName(GetAapt(), candidate_apk, package_name),
@@ -265,6 +284,7 @@ def MapDeviceApkToLibrary(device_apk_name):
     Name of the library which corresponds to that APK.
   """
   matching_apks = GetMatchingApks(device_apk_name)
+  logging.debug('MapDeviceApkToLibrary: matching_apks=%s' % matching_apks)
   for matching_apk in matching_apks:
     crazy_lib = GetCrazyLib(matching_apk)
     if crazy_lib:
@@ -280,10 +300,24 @@ def GetCandidateLibraries(library_name):
     A list of matching library filenames for library_name.
   """
   return GetCandidates(
-      ['lib', 'lib.target'], library_name,
+      ['lib', 'lib.target', '.'], library_name,
       lambda filename: filter(os.path.exists, [filename]))
 
 def TranslateLibPath(lib):
+  # The filename in the stack trace maybe an APK name rather than a library
+  # name. This happens when the library was loaded directly from inside the
+  # APK. If this is the case we try to figure out the library name by looking
+  # for a matching APK file and finding the name of the library in contains.
+  # The name of the APK file on the device is of the form
+  # <package_name>-<number>.apk. The APK file on the host may have any name
+  # so we look at the APK badging to see if the package name matches.
+  apk = GetApkFromLibrary(lib)
+  if apk is not None:
+    logging.debug('TranslateLibPath: apk=%s' % apk)
+    mapping = MapDeviceApkToLibrary(apk)
+    if mapping:
+      lib = mapping
+
   # SymbolInformation(lib, addr) receives lib as the path from symbols
   # root to the symbols file. This needs to be translated to point to the
   # correct .so path. If the user doesn't explicitly specify which directory to
@@ -292,23 +326,15 @@ def TranslateLibPath(lib):
   # untranslated in case it is an Android symbol in SYMBOLS_DIR.
   library_name = os.path.basename(lib)
 
-  # The filename in the stack trace maybe an APK name rather than a library
-  # name. This happens when the library was loaded directly from inside the
-  # APK. If this is the case we try to figure out the library name by looking
-  # for a matching APK file and finding the name of the library in contains.
-  # The name of the APK file on the device is of the form
-  # <package_name>-<number>.apk. The APK file on the host may have any name
-  # so we look at the APK badging to see if the package name matches.
-  if re.search('-[0-9]+[.]apk$', library_name):
-    mapping = MapDeviceApkToLibrary(library_name)
-    if mapping:
-      library_name = mapping
+  logging.debug('TranslateLibPath: lib=%s library_name=%s' % (lib, library_name))
 
   candidate_libraries = GetCandidateLibraries(library_name)
+  logging.debug('TranslateLibPath: candidate_libraries=%s' % candidate_libraries)
   if not candidate_libraries:
     return lib
 
   library_path = os.path.relpath(candidate_libraries[0], SYMBOLS_DIR)
+  logging.debug('TranslateLibPath: library_path=%s' % library_path)
   return '/' + library_path
 
 def SymbolInformation(lib, addr, get_detailed_info):
