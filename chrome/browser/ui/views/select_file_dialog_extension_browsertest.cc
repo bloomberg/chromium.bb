@@ -250,8 +250,14 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest, DestroyListener) {
 // page element, as that uses different memory management pathways.
 // crbug.com/98791
 
+// Flaky on Chrome OS, see: http://crbug.com/477360
+#if defined(OS_CHROMEOS)
+#define MAYBE_SelectFileAndCancel DISABLED_SelectFileAndCancel
+#else
+#define MAYBE_SelectFileAndCancel SelectFileAndCancel
+#endif
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
-                       SelectFileAndCancel) {
+                       MAYBE_SelectFileAndCancel) {
   AddMountPoint(downloads_dir_);
 
   gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
@@ -269,8 +275,14 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
   ASSERT_EQ(this, listener_->params());
 }
 
+// Flaky on Chrome OS, see: http://crbug.com/477360
+#if defined(OS_CHROMEOS)
+#define MAYBE_SelectFileAndOpen DISABLED_SelectFileAndOpen
+#else
+#define MAYBE_SelectFileAndOpen SelectFileAndOpen
+#endif
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
-                       SelectFileAndOpen) {
+                       MAYBE_SelectFileAndOpen) {
   AddMountPoint(downloads_dir_);
 
   base::FilePath test_file =
@@ -300,8 +312,14 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
   ASSERT_EQ(this, listener_->params());
 }
 
+// Flaky on Chrome OS, see: http://crbug.com/477360
+#if defined(OS_CHROMEOS)
+#define MAYBE_SelectFileAndSave DISABLED_SelectFileAndSave
+#else
+#define MAYBE_SelectFileAndSave SelectFileAndSave
+#endif
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
-                       SelectFileAndSave) {
+                       MAYBE_SelectFileAndSave) {
   AddMountPoint(downloads_dir_);
 
   base::FilePath test_file =
@@ -326,8 +344,14 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
   ASSERT_EQ(this, listener_->params());
 }
 
+// Flaky on Chrome OS, see: http://crbug.com/477360
+#if defined(OS_CHROMEOS)
+#define MAYBE_OpenSingletonTabAndCancel DISABLED_OpenSingletonTabAndCancel
+#else
+#define MAYBE_OpenSingletonTabAndCancel OpenSingletonTabAndCancel
+#endif
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
-                       OpenSingletonTabAndCancel) {
+                       MAYBE_OpenSingletonTabAndCancel) {
   AddMountPoint(downloads_dir_);
 
   gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
@@ -351,8 +375,14 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
   ASSERT_EQ(this, listener_->params());
 }
 
+// Flaky on Chrome OS, see: http://crbug.com/477360
+#if defined(OS_CHROMEOS)
+#define MAYBE_OpenTwoDialogs DISABLED_OpenTwoDialogs
+#else
+#define MAYBE_OpenTwoDialogs OpenTwoDialogs
+#endif
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
-                       OpenTwoDialogs) {
+                       MAYBE_OpenTwoDialogs) {
   AddMountPoint(downloads_dir_);
 
   gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
