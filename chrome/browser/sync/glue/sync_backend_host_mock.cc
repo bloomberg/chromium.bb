@@ -55,12 +55,14 @@ scoped_ptr<base::Thread> SyncBackendHostMock::Shutdown(
 
 void SyncBackendHostMock::UnregisterInvalidationIds() {}
 
-void SyncBackendHostMock::ConfigureDataTypes(
+syncer::ModelTypeSet SyncBackendHostMock::ConfigureDataTypes(
     syncer::ConfigureReason reason,
     const DataTypeConfigStateMap& config_state_map,
-    const base::Callback<void(syncer::ModelTypeSet,
-                              syncer::ModelTypeSet)>& ready_task,
-    const base::Callback<void()>& retry_callback) {}
+    const base::Callback<void(syncer::ModelTypeSet, syncer::ModelTypeSet)>&
+        ready_task,
+    const base::Callback<void()>& retry_callback) {
+  return syncer::ModelTypeSet();
+}
 
 void SyncBackendHostMock::EnableEncryptEverything() {}
 

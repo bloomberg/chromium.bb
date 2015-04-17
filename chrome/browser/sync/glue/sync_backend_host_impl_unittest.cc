@@ -176,13 +176,10 @@ class SyncBackendHostTest : public testing::Test {
     // NOTE: We can't include Passwords or Typed URLs due to the Sync Backend
     // Registrar removing them if it can't find their model workers.
     enabled_types_.Put(syncer::BOOKMARKS);
-    enabled_types_.Put(syncer::NIGORI);
-    enabled_types_.Put(syncer::DEVICE_INFO);
     enabled_types_.Put(syncer::PREFERENCES);
     enabled_types_.Put(syncer::SESSIONS);
     enabled_types_.Put(syncer::SEARCH_ENGINES);
     enabled_types_.Put(syncer::AUTOFILL);
-    enabled_types_.Put(syncer::EXPERIMENTS);
 
     network_resources_.reset(new syncer::HttpBridgeNetworkResources());
   }
@@ -231,9 +228,10 @@ class SyncBackendHostTest : public testing::Test {
   }
 
   // Synchronously configures the backend's datatypes.
-  void ConfigureDataTypes(syncer::ModelTypeSet types_to_add,
-                          syncer::ModelTypeSet types_to_remove,
-                          syncer::ModelTypeSet types_to_unapply) {
+  syncer::ModelTypeSet ConfigureDataTypes(
+      syncer::ModelTypeSet types_to_add,
+      syncer::ModelTypeSet types_to_remove,
+      syncer::ModelTypeSet types_to_unapply) {
     sync_driver::BackendDataTypeConfigurer::DataTypeConfigStateMap
         config_state_map;
     sync_driver::BackendDataTypeConfigurer::SetDataTypesState(
@@ -248,11 +246,9 @@ class SyncBackendHostTest : public testing::Test {
         types_to_unapply, &config_state_map);
 
     types_to_add.PutAll(syncer::ControlTypes());
-    backend_->ConfigureDataTypes(
-        syncer::CONFIGURE_REASON_RECONFIGURATION,
-        config_state_map,
-        base::Bind(&SyncBackendHostTest::DownloadReady,
-                   base::Unretained(this)),
+    syncer::ModelTypeSet ready_types = backend_->ConfigureDataTypes(
+        syncer::CONFIGURE_REASON_RECONFIGURATION, config_state_map,
+        base::Bind(&SyncBackendHostTest::DownloadReady, base::Unretained(this)),
         base::Bind(&SyncBackendHostTest::OnDownloadRetry,
                    base::Unretained(this)));
     base::RunLoop run_loop;
@@ -260,6 +256,7 @@ class SyncBackendHostTest : public testing::Test {
                                    run_loop.QuitClosure(),
                                    TestTimeouts::action_timeout());
     run_loop.Run();
+    return ready_types;
   }
 
   void IssueRefreshRequest(syncer::ModelTypeSet types) {
@@ -316,10 +313,13 @@ TEST_F(SyncBackendHostTest, FirstTimeSync) {
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       syncer::ControlTypes()).Empty());
 
-  ConfigureDataTypes(enabled_types_,
-                     Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_),
-                     syncer::ModelTypeSet());
+  syncer::ModelTypeSet ready_types = ConfigureDataTypes(
+      enabled_types_, Difference(syncer::ModelTypeSet::All(), enabled_types_),
+      syncer::ModelTypeSet());
+  // Nigori is always downloaded so won't be ready.
+  EXPECT_TRUE(ready_types.Equals(syncer::Difference(
+      syncer::ControlTypes(),
+      syncer::ModelTypeSet(syncer::NIGORI))));
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().HasAll(
       Difference(enabled_types_, syncer::ControlTypes())));
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(enabled_types_));
@@ -343,10 +343,10 @@ TEST_F(SyncBackendHostTest, Restart) {
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       enabled_types_).Empty());
 
-  ConfigureDataTypes(enabled_types_,
-                     Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_),
-                     syncer::ModelTypeSet());
+  syncer::ModelTypeSet ready_types = ConfigureDataTypes(
+      enabled_types_, Difference(syncer::ModelTypeSet::All(), enabled_types_),
+      syncer::ModelTypeSet());
+  EXPECT_TRUE(ready_types.Equals(enabled_types_));
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Empty());
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
                            enabled_types_).Empty());
@@ -381,10 +381,10 @@ TEST_F(SyncBackendHostTest, PartialTypes) {
           Difference(partial_types, syncer::ModelTypeSet(syncer::NIGORI))));
 
   // Now do the actual configuration, which should download and apply bookmarks.
-  ConfigureDataTypes(enabled_types_,
-                     Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_),
-                     syncer::ModelTypeSet());
+  syncer::ModelTypeSet ready_types = ConfigureDataTypes(
+      enabled_types_, Difference(syncer::ModelTypeSet::All(), enabled_types_),
+      syncer::ModelTypeSet());
+  EXPECT_TRUE(ready_types.Equals(full_types));
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
                            enabled_types_).Empty());
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Equals(
@@ -415,10 +415,13 @@ TEST_F(SyncBackendHostTest, LostDB) {
   fake_manager_->GetAndResetCleanedTypes();
 
   // The actual configuration should redownload and apply all the enabled types.
-  ConfigureDataTypes(enabled_types_,
-                     Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_),
-                     syncer::ModelTypeSet());
+  syncer::ModelTypeSet ready_types = ConfigureDataTypes(
+      enabled_types_, Difference(syncer::ModelTypeSet::All(), enabled_types_),
+      syncer::ModelTypeSet());
+  // Nigori is always downloaded so won't be ready.
+  EXPECT_TRUE(ready_types.Equals(syncer::Difference(
+      syncer::ControlTypes(),
+      syncer::ModelTypeSet(syncer::NIGORI))));
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().HasAll(
       Difference(enabled_types_, syncer::ControlTypes())));
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
@@ -433,10 +436,13 @@ TEST_F(SyncBackendHostTest, DisableTypes) {
   // Simulate first time sync.
   InitializeBackend(true);
   fake_manager_->GetAndResetCleanedTypes();
-  ConfigureDataTypes(enabled_types_,
-                     Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_),
-                     syncer::ModelTypeSet());
+  syncer::ModelTypeSet ready_types = ConfigureDataTypes(
+      enabled_types_, Difference(syncer::ModelTypeSet::All(), enabled_types_),
+      syncer::ModelTypeSet());
+  // Nigori is always downloaded so won't be ready.
+  EXPECT_TRUE(ready_types.Equals(syncer::Difference(
+      syncer::ControlTypes(),
+      syncer::ModelTypeSet(syncer::NIGORI))));
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Equals(
       enabled_types_));
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
@@ -450,13 +456,13 @@ TEST_F(SyncBackendHostTest, DisableTypes) {
                                       syncer::SEARCH_ENGINES);
   syncer::ModelTypeSet old_types = enabled_types_;
   enabled_types_.RemoveAll(disabled_types);
-  ConfigureDataTypes(enabled_types_,
-                     Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_),
-                     syncer::ModelTypeSet());
+  ready_types = ConfigureDataTypes(
+      enabled_types_, Difference(syncer::ModelTypeSet::All(), enabled_types_),
+      syncer::ModelTypeSet());
 
   // Only those datatypes disabled should be cleaned. Nothing should be
   // downloaded.
+  EXPECT_TRUE(ready_types.Equals(enabled_types_));
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Empty());
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
                            old_types).Equals(disabled_types));
@@ -470,10 +476,13 @@ TEST_F(SyncBackendHostTest, AddTypes) {
   // Simulate first time sync.
   InitializeBackend(true);
   fake_manager_->GetAndResetCleanedTypes();
-  ConfigureDataTypes(enabled_types_,
-                     Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_),
-                     syncer::ModelTypeSet());
+  syncer::ModelTypeSet ready_types = ConfigureDataTypes(
+      enabled_types_, Difference(syncer::ModelTypeSet::All(), enabled_types_),
+      syncer::ModelTypeSet());
+  // Nigori is always downloaded so won't be ready.
+  EXPECT_TRUE(ready_types.Equals(syncer::Difference(
+      syncer::ControlTypes(),
+      syncer::ModelTypeSet(syncer::NIGORI))));
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Equals(
       enabled_types_));
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
@@ -486,15 +495,16 @@ TEST_F(SyncBackendHostTest, AddTypes) {
   syncer::ModelTypeSet new_types(syncer::EXTENSIONS,
                                  syncer::APPS);
   enabled_types_.PutAll(new_types);
-  ConfigureDataTypes(enabled_types_,
-                     Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_),
-                     syncer::ModelTypeSet());
+  ready_types = ConfigureDataTypes(
+      enabled_types_, Difference(syncer::ModelTypeSet::All(), enabled_types_),
+      syncer::ModelTypeSet());
 
   // Only those datatypes added should be downloaded (plus nigori). Nothing
   // should be cleaned aside from the disabled types.
-  EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Equals(
-      Union(new_types, syncer::ModelTypeSet(syncer::NIGORI))));
+  new_types.Put(syncer::NIGORI);
+  EXPECT_TRUE(
+      ready_types.Equals(syncer::Difference(enabled_types_, new_types)));
+  EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Equals(new_types));
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
                            enabled_types_).Empty());
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(enabled_types_));
@@ -508,10 +518,13 @@ TEST_F(SyncBackendHostTest, AddDisableTypes) {
   // Simulate first time sync.
   InitializeBackend(true);
   fake_manager_->GetAndResetCleanedTypes();
-  ConfigureDataTypes(enabled_types_,
-                     Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_),
-                     syncer::ModelTypeSet());
+  syncer::ModelTypeSet ready_types = ConfigureDataTypes(
+      enabled_types_, Difference(syncer::ModelTypeSet::All(), enabled_types_),
+      syncer::ModelTypeSet());
+  // Nigori is always downloaded so won't be ready.
+  EXPECT_TRUE(ready_types.Equals(syncer::Difference(
+      syncer::ControlTypes(),
+      syncer::ModelTypeSet(syncer::NIGORI))));
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Equals(
       enabled_types_));
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
@@ -528,15 +541,16 @@ TEST_F(SyncBackendHostTest, AddDisableTypes) {
                                  syncer::APPS);
   enabled_types_.PutAll(new_types);
   enabled_types_.RemoveAll(disabled_types);
-  ConfigureDataTypes(enabled_types_,
-                     Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_),
-                     syncer::ModelTypeSet());
+  ready_types = ConfigureDataTypes(
+      enabled_types_, Difference(syncer::ModelTypeSet::All(), enabled_types_),
+      syncer::ModelTypeSet());
 
   // Only those datatypes added should be downloaded (plus nigori). Nothing
   // should be cleaned aside from the disabled types.
-  EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Equals(
-      Union(new_types, syncer::ModelTypeSet(syncer::NIGORI))));
+  new_types.Put(syncer::NIGORI);
+  EXPECT_TRUE(
+      ready_types.Equals(syncer::Difference(enabled_types_, new_types)));
+  EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Equals(new_types));
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
                            old_types).Equals(disabled_types));
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(enabled_types_));
@@ -567,13 +581,15 @@ TEST_F(SyncBackendHostTest, NewlySupportedTypes) {
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       enabled_types_).Equals(new_types));
 
-  // Downloads and applies the new types.
-  ConfigureDataTypes(enabled_types_,
-                     Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_),
-                     syncer::ModelTypeSet());
-  EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Equals(
-      Union(new_types, syncer::ModelTypeSet(syncer::NIGORI))));
+  // Downloads and applies the new types (plus nigori).
+  syncer::ModelTypeSet ready_types = ConfigureDataTypes(
+      enabled_types_, Difference(syncer::ModelTypeSet::All(), enabled_types_),
+      syncer::ModelTypeSet());
+
+  new_types.Put(syncer::NIGORI);
+  EXPECT_TRUE(ready_types.Equals(
+      syncer::Difference(old_types, syncer::ModelTypeSet(syncer::NIGORI))));
+  EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Equals(new_types));
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
                            enabled_types_).Empty());
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(enabled_types_));
@@ -613,10 +629,10 @@ TEST_F(SyncBackendHostTest, NewlySupportedTypesWithPartialTypes) {
 
   // Downloads and applies the new types and partial types (which includes
   // nigori anyways).
-  ConfigureDataTypes(enabled_types_,
-                     Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_),
-                     syncer::ModelTypeSet());
+  syncer::ModelTypeSet ready_types = ConfigureDataTypes(
+      enabled_types_, Difference(syncer::ModelTypeSet::All(), enabled_types_),
+      syncer::ModelTypeSet());
+  EXPECT_TRUE(ready_types.Equals(full_types));
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Equals(
       Union(new_types, partial_types)));
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
@@ -747,25 +763,31 @@ TEST_F(SyncBackendHostTest, DisableThenPurgeType) {
   InitializeBackend(true);
 
   // First enable the types.
-  ConfigureDataTypes(enabled_types_,
-                     Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_),
-                     syncer::ModelTypeSet());
+  syncer::ModelTypeSet ready_types = ConfigureDataTypes(
+      enabled_types_, Difference(syncer::ModelTypeSet::All(), enabled_types_),
+      syncer::ModelTypeSet());
+
+  // Nigori is always downloaded so won't be ready.
+  EXPECT_TRUE(ready_types.Equals(syncer::Difference(
+      syncer::ControlTypes(),
+      syncer::ModelTypeSet(syncer::NIGORI))));
 
   // Then mark the error types as unready (disables without purging).
-  ConfigureDataTypes(enabled_types_,
-                     Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_),
-                     error_types);
+  ready_types = ConfigureDataTypes(
+      enabled_types_, Difference(syncer::ModelTypeSet::All(), enabled_types_),
+      error_types);
+  EXPECT_TRUE(
+      ready_types.Equals(syncer::Difference(enabled_types_, error_types)));
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       error_types).Empty());
 
   // Lastly explicitly disable the error types, which should result in a purge.
   enabled_types_.RemoveAll(error_types);
-  ConfigureDataTypes(enabled_types_,
-                     Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_),
-                     syncer::ModelTypeSet());
+  ready_types = ConfigureDataTypes(
+      enabled_types_, Difference(syncer::ModelTypeSet::All(), enabled_types_),
+      syncer::ModelTypeSet());
+  EXPECT_TRUE(
+      ready_types.Equals(syncer::Difference(enabled_types_, error_types)));
   EXPECT_FALSE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       error_types).Empty());
 }

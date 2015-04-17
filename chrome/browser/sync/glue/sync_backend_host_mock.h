@@ -53,7 +53,7 @@ class SyncBackendHostMock : public SyncBackendHost {
 
   void UnregisterInvalidationIds() override;
 
-  void ConfigureDataTypes(
+  syncer::ModelTypeSet ConfigureDataTypes(
       syncer::ConfigureReason reason,
       const DataTypeConfigStateMap& config_state_map,
       const base::Callback<void(syncer::ModelTypeSet, syncer::ModelTypeSet)>&

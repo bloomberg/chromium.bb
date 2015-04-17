@@ -42,17 +42,19 @@ class BackendDataTypeConfigurer {
   // is called when configuration is done with the set of data types
   // that succeeded/failed configuration (i.e., configuration succeeded iff
   // the failed set is empty).
+  // Returns: the set of types that are already configured and are ready to
+  // start.
   //
   // TODO(akalin): Use a Delegate class with
   // OnConfigureSuccess/OnConfigureFailure/OnConfigureRetry instead of
   // a pair of callbacks.  The awkward part is handling when
   // SyncBackendHost calls ConfigureDataTypes on itself to configure
   // Nigori.
-  virtual void ConfigureDataTypes(
+  virtual syncer::ModelTypeSet ConfigureDataTypes(
       syncer::ConfigureReason reason,
       const DataTypeConfigStateMap& config_state_map,
-      const base::Callback<void(syncer::ModelTypeSet,
-                                syncer::ModelTypeSet)>& ready_task,
+      const base::Callback<void(syncer::ModelTypeSet, syncer::ModelTypeSet)>&
+          ready_task,
       const base::Callback<void()>& retry_callback) = 0;
 
   // Return model types in |state_map| that match |state|.

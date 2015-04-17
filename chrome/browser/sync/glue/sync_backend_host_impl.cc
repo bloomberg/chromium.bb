@@ -324,11 +324,11 @@ void SyncBackendHostImpl::UnregisterInvalidationIds() {
   }
 }
 
-void SyncBackendHostImpl::ConfigureDataTypes(
+syncer::ModelTypeSet SyncBackendHostImpl::ConfigureDataTypes(
     syncer::ConfigureReason reason,
     const DataTypeConfigStateMap& config_state_map,
-    const base::Callback<void(syncer::ModelTypeSet,
-                              syncer::ModelTypeSet)>& ready_task,
+    const base::Callback<void(syncer::ModelTypeSet, syncer::ModelTypeSet)>&
+        ready_task,
     const base::Callback<void()>& retry_callback) {
   // Only one configure is allowed at a time.  This is guaranteed by our
   // callers.  The SyncBackendHostImpl requests one configure as the backend is
@@ -445,6 +445,12 @@ void SyncBackendHostImpl::ConfigureDataTypes(
                          routing_info,
                          ready_task,
                          retry_callback);
+
+  DCHECK(syncer::Intersection(active_types, types_to_purge).Empty());
+  DCHECK(syncer::Intersection(active_types, fatal_types).Empty());
+  DCHECK(syncer::Intersection(active_types, unapply_types).Empty());
+  DCHECK(syncer::Intersection(active_types, inactive_types).Empty());
+  return syncer::Difference(active_types, types_to_download);
 }
 
 void SyncBackendHostImpl::EnableEncryptEverything() {

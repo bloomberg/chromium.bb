@@ -100,7 +100,7 @@ class SyncBackendHostImpl
   void StopSyncingForShutdown() override;
   scoped_ptr<base::Thread> Shutdown(syncer::ShutdownReason reason) override;
   void UnregisterInvalidationIds() override;
-  void ConfigureDataTypes(
+  syncer::ModelTypeSet ConfigureDataTypes(
       syncer::ConfigureReason reason,
       const DataTypeConfigStateMap& config_state_map,
       const base::Callback<void(syncer::ModelTypeSet, syncer::ModelTypeSet)>&

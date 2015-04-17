@@ -82,7 +82,7 @@ class FakeBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
   FakeBackendDataTypeConfigurer() {}
   ~FakeBackendDataTypeConfigurer() override {}
 
-  void ConfigureDataTypes(
+  syncer::ModelTypeSet ConfigureDataTypes(
       syncer::ConfigureReason reason,
       const DataTypeConfigStateMap& config_state_map,
       const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task,
@@ -98,6 +98,7 @@ class FakeBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
           << ModelTypeSetToString(
               GetDataTypesInState(CONFIGURE_ACTIVE, config_state_map));
     }
+    return syncer::ModelTypeSet();
   }
 
   void ActivateDataType(syncer::ModelType type,
