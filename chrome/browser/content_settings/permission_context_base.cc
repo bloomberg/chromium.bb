@@ -11,13 +11,13 @@
 #include "chrome/browser/content_settings/permission_queue_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
+#include "chrome/common/origin_util.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/permission_request_id.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "net/base/net_util.h"
 
 PermissionContextBase::PermissionContextBase(
     Profile* profile,
@@ -105,12 +105,9 @@ void PermissionContextBase::DecidePermission(
     return;
   }
 
-  // The Web MIDI API is not available for origin with non secure schemes.
-  // Access to the MIDI API is blocked.
-  // TODO(crbug.com/362214): Use a standard way to check the secure origin.
+  // The Web MIDI SYSEX API is only available to secure origins.
   if (permission_type_ == CONTENT_SETTINGS_TYPE_MIDI_SYSEX &&
-      !requesting_origin.SchemeIsSecure() &&
-      !net::IsLocalhost(requesting_origin.host())) {
+      !IsOriginSecure(requesting_origin)) {
     NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
                         false /* persist */, CONTENT_SETTING_BLOCK);
     return;
