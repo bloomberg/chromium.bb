@@ -132,6 +132,11 @@ typedef struct _drm_intel_bufmgr_gem {
 	unsigned int has_vebox : 1;
 	bool fenced_relocs;
 
+	struct {
+		void *ptr;
+		uint32_t handle;
+	} userptr_active;
+
 	char *aub_filename;
 	FILE *aub_file;
 	uint32_t aub_offset;
@@ -943,7 +948,6 @@ has_userptr(drm_intel_bufmgr_gem *bufmgr_gem)
 	void *ptr;
 	long pgsz;
 	struct drm_i915_gem_userptr userptr;
-	struct drm_gem_close close_bo;
 
 	pgsz = sysconf(_SC_PAGESIZE);
 	assert(pgsz > 0);
@@ -970,15 +974,15 @@ retry:
 		return false;
 	}
 
-	memclear(close_bo);
-	close_bo.handle = userptr.handle;
-	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_GEM_CLOSE, &close_bo);
-	free(ptr);
-	if (ret) {
-		fprintf(stderr, "Failed to release test userptr object! (%d) "
-				"i915 kernel driver may not be sane!\n", errno);
-		return false;
-	}
+	/* We don't release the userptr bo here as we want to keep the
+	 * kernel mm tracking alive for our lifetime. The first time we
+	 * create a userptr object the kernel has to install a mmu_notifer
+	 * which is a heavyweight operation (e.g. it requires taking all
+	 * mm_locks and stop_machine()).
+	 */
+
+	bufmgr_gem->userptr_active.ptr = ptr;
+	bufmgr_gem->userptr_active.handle = userptr.handle;
 
 	return true;
 }
@@ -1805,7 +1809,8 @@ static void
 drm_intel_bufmgr_gem_destroy(drm_intel_bufmgr *bufmgr)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bufmgr;
-	int i;
+	struct drm_gem_close close_bo;
+	int i, ret;
 
 	free(bufmgr_gem->exec2_objects);
 	free(bufmgr_gem->exec_objects);
@@ -1827,6 +1832,18 @@ drm_intel_bufmgr_gem_destroy(drm_intel_bufmgr *bufmgr)
 
 			drm_intel_gem_bo_free(&bo_gem->bo);
 		}
+	}
+
+	/* Release userptr bo kept hanging around for optimisation. */
+	if (bufmgr_gem->userptr_active.ptr) {
+		memclear(close_bo);
+		close_bo.handle = bufmgr_gem->userptr_active.handle;
+		ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_GEM_CLOSE, &close_bo);
+		free(bufmgr_gem->userptr_active.ptr);
+		if (ret)
+			fprintf(stderr,
+				"Failed to release test userptr object! (%d) "
+				"i915 kernel driver may not be sane!\n", errno);
 	}
 
 	free(bufmgr);
