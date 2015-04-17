@@ -98,8 +98,8 @@ struct format_info {
 	const struct yuv_info yuv;
 };
 
-#define MAKE_RGB_INFO(rl, ro, bl, bo, gl, go, al, ao) \
-	.rgb = { { (rl), (ro) }, { (bl), (bo) }, { (gl), (go) }, { (al), (ao) } }
+#define MAKE_RGB_INFO(rl, ro, gl, go, bl, bo, al, ao) \
+	.rgb = { { (rl), (ro) }, { (gl), (go) }, { (bl), (bo) }, { (al), (ao) } }
 
 #define MAKE_YUV_INFO(order, xsub, ysub, chroma_stride) \
 	.yuv = { (order), (xsub), (ysub), (chroma_stride) }
