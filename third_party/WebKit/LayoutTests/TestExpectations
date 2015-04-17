@@ -2034,6 +2034,8 @@ crbug.com/471066 [ SnowLeopard ] virtual/antialiasedtext/fast/text/bidi-explicit
 crbug.com/471066 [ SnowLeopard ] virtual/antialiasedtext/fast/text/emphasis-overlap.html [ Failure ]
 crbug.com/471066 [ SnowLeopard ] virtual/antialiasedtext/fast/text/fake-italic.html [ Failure ]
 
+crbug.com/478109 [ Debug SnowLeopard ] virtual/antialiasedtext/fast/text/bidi-embedding-pop-and-push-same-2.html [ Failure ]
+
 crbug.com/470549 inspector/tracing/worker-events.html [ Pass Crash Timeout ]
 
 crbug.com/471093 [ Win Debug ] inspector/sources/debugger/frameworks-dom-xhr-event-breakpoints.html [ Pass Timeout ]
