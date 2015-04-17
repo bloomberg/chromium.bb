@@ -27,6 +27,11 @@ MOJO_GLES2_EXPORT MojoGLES2Context
 MOJO_GLES2_EXPORT void MojoGLES2DestroyContext(MojoGLES2Context context);
 MOJO_GLES2_EXPORT void MojoGLES2MakeCurrent(MojoGLES2Context context);
 MOJO_GLES2_EXPORT void MojoGLES2SwapBuffers(void);
+MOJO_GLES2_EXPORT void MojoGLES2SignalSyncPoint(
+    MojoGLES2Context context,
+    uint32_t sync_point,
+    MojoGLES2SignalSyncPointCallback callback,
+    void* closure);
 
 // TODO(piman): We shouldn't have to leak those 2 interfaces, especially in a
 // type-unsafe way.

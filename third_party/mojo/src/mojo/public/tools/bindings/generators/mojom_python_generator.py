@@ -5,8 +5,8 @@
 """Generates Python source files from a mojom.Module."""
 
 import re
-from itertools import ifilter
 
+import mojom.generate.constant_resolver as resolver
 import mojom.generate.generator as generator
 import mojom.generate.data as data
 import mojom.generate.module as mojom
@@ -95,7 +95,7 @@ def GetNameForElement(element):
 
 def ExpressionToText(token):
   if isinstance(token, (mojom.EnumValue, mojom.NamedValue)):
-    return str(token.computed_value)
+    return str(token.resolved_value)
 
   if isinstance(token, mojom.BuiltinValue):
     if token.value == 'double.INFINITY' or token.value == 'float.INFINITY':
@@ -191,84 +191,6 @@ def GetFieldGroup(byte):
   assert len(byte.packed_fields) == 1
   return GetFieldDescriptor(byte.packed_fields[0])
 
-def ComputeStaticValues(module):
-  in_progress = set()
-  computed = set()
-
-  def GetComputedValue(named_value):
-    if isinstance(named_value, mojom.EnumValue):
-      field = next(ifilter(lambda field: field.name == named_value.name,
-                           named_value.enum.fields), None)
-      if not field:
-        raise RuntimeError(
-            'Unable to get computed value for field %s of enum %s' %
-            (named_value.name, named_value.enum.name))
-      if field not in computed:
-        ResolveEnum(named_value.enum)
-      return field.computed_value
-    elif isinstance(named_value, mojom.ConstantValue):
-      ResolveConstant(named_value.constant)
-      named_value.computed_value = named_value.constant.computed_value
-      return named_value.computed_value
-    else:
-      print named_value
-
-  def ResolveConstant(constant):
-    if constant in computed:
-      return
-    if constant in in_progress:
-      raise RuntimeError('Circular dependency for constant: %s' % constant.name)
-    in_progress.add(constant)
-    if isinstance(constant.value, (mojom.EnumValue, mojom.ConstantValue)):
-      computed_value = GetComputedValue(constant.value)
-    else:
-      computed_value = ExpressionToText(constant.value)
-    constant.computed_value = computed_value
-    in_progress.remove(constant)
-    computed.add(constant)
-
-  def ResolveEnum(enum):
-    def ResolveEnumField(enum, field, default_value):
-      if field in computed:
-        return
-      if field in in_progress:
-        raise RuntimeError('Circular dependency for enum: %s' % enum.name)
-      in_progress.add(field)
-      if field.value:
-        if isinstance(field.value, mojom.EnumValue):
-          computed_value = GetComputedValue(field.value)
-        elif isinstance(field.value, str):
-          computed_value = int(field.value, 0)
-        else:
-          raise RuntimeError('Unexpected value: %s' % field.value)
-      else:
-        computed_value = default_value
-      field.computed_value = computed_value
-      in_progress.remove(field)
-      computed.add(field)
-
-    current_value = 0
-    for field in enum.fields:
-      ResolveEnumField(enum, field, current_value)
-      current_value = field.computed_value + 1
-
-  for constant in module.constants:
-    ResolveConstant(constant)
-
-  for enum in module.enums:
-    ResolveEnum(enum)
-
-  for struct in module.structs:
-    for constant in struct.constants:
-      ResolveConstant(constant)
-    for enum in struct.enums:
-      ResolveEnum(enum)
-    for field in struct.fields:
-      if isinstance(field.default, (mojom.ConstantValue, mojom.EnumValue)):
-        field.default.computed_value = GetComputedValue(field.default)
-
-  return module
-
 def MojomToPythonImport(mojom):
   return mojom.replace('.mojom', '_mojom')
 
@@ -279,8 +201,6 @@ class Generator(generator.Generator):
     'field_group': GetFieldGroup,
     'fully_qualified_name': GetFullyQualifiedName,
     'name': GetNameForElement,
-    'response_struct_from_method': generator.GetResponseStructFromMethod,
-    'struct_from_method': generator.GetStructFromMethod,
   }
 
   @UseJinja('python_templates/module.py.tmpl', filters=python_filters)
@@ -288,8 +208,8 @@ class Generator(generator.Generator):
     return {
       'enums': self.module.enums,
       'imports': self.GetImports(),
-      'interfaces': self.module.interfaces,
-      'module': ComputeStaticValues(self.module),
+      'interfaces': self.GetInterfaces(),
+      'module': resolver.ResolveConstants(self.module, ExpressionToText),
       'namespace': self.module.namespace,
       'structs': self.GetStructs(),
     }

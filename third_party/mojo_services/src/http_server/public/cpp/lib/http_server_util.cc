@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/http_server/public/cpp/http_server_util.h"
+#include "http_server/public/cpp/http_server_util.h"
 
 #include "mojo/public/cpp/environment/logging.h"
 #include "mojo/public/cpp/system/data_pipe.h"

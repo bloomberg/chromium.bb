@@ -15,6 +15,4 @@ mojom("interfaces") {
   deps = [
     "../../../geometry/public/interfaces",
   ]
-
-  import_from = mojo_root
 }

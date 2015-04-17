@@ -1,6 +1,6 @@
 {#--- Constants #}
 {%-  for constant in module.constants %}
-final {{constant.name}} = {{constant.value|expression_to_text}};
+const {{constant.name}} = {{constant.value|expression_to_text}};
 {%- endfor %}
 
 {#--- Enums #}

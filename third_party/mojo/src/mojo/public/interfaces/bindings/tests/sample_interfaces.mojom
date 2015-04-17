@@ -20,3 +20,9 @@ interface Provider {
   EchoEnum(Enum a) => (Enum a);
   EchoInt(int32 a) => (int32 a);
 };
+
+interface IntegerAccessor {
+  GetInteger() => (int64 data, [MinVersion=2] Enum type);
+  [MinVersion=1]
+  SetInteger(int64 data, [MinVersion=3] Enum type);
+};

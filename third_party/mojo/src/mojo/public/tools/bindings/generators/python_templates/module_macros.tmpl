@@ -5,7 +5,7 @@
 {%- macro enum_values(enum) -%}
 [
 {% for field in enum.fields %}
-  ('{{field.name}}', {{field.computed_value}}),
+  ('{{field.name}}', {{field.resolved_value}}),
 {% endfor %}
 ]
 {%- endmacro -%}

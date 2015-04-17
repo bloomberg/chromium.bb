@@ -92,7 +92,7 @@ class InterfacePtr {
   Interface& operator*() const { return *get(); }
 
   // Returns the version number of the interface that the remote side supports.
-  uint32_t version() const { return internal_state_->version(); }
+  uint32_t version() const { return internal_state_.version(); }
 
   // Closes the bound message pipe (if any) and returns the pointer to the
   // unbound state.

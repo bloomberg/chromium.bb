@@ -340,7 +340,7 @@ class Generator(generator.Generator):
       "enums": self.module.enums,
       "module": self.module,
       "structs": self.GetStructs() + self.GetStructsFromMethods(),
-      "interfaces": self.module.interfaces,
+      "interfaces": self.GetInterfaces(),
       "imported_interfaces": self.GetImportedInterfaces(),
     }
 
