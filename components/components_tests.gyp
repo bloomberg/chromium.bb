@@ -546,6 +546,22 @@
       'web_resource/eula_accepted_notifier_unittest.cc',
       'web_resource/resource_request_allowed_notifier_unittest.cc',
     ],
+    'webcrypto_unittest_sources': [
+      'webcrypto/test/aes_cbc_unittest.cc',
+      'webcrypto/test/aes_ctr_unittest.cc',
+      'webcrypto/test/aes_gcm_unittest.cc',
+      'webcrypto/test/aes_kw_unittest.cc',
+      'webcrypto/test/ecdh_unittest.cc',
+      'webcrypto/test/ecdsa_unittest.cc',
+      'webcrypto/test/hmac_unittest.cc',
+      'webcrypto/test/rsa_oaep_unittest.cc',
+      'webcrypto/test/rsa_pss_unittest.cc',
+      'webcrypto/test/rsa_ssa_unittest.cc',
+      'webcrypto/test/sha_unittest.cc',
+      'webcrypto/test/status_unittest.cc',
+      'webcrypto/test/test_helpers.cc',
+      'webcrypto/test/test_helpers.h',
+    ],
     'webdata_unittest_sources': [
       'webdata/common/web_database_migration_unittest.cc',
     ],
@@ -791,6 +807,7 @@
             '<@(ui_unittest_sources)',
             '<@(visitedlink_unittest_sources)',
             '<@(web_cache_unittest_sources)',
+            '<@(webcrypto_unittest_sources)',
             '<@(web_modal_unittest_sources)',
           ],
           'dependencies': [
@@ -819,6 +836,33 @@
             'components.gyp:web_cache_browser',
             'components.gyp:web_modal',
             'components.gyp:web_modal_test_support',
+            'webcrypto/webcrypto.gyp:webcrypto',
+            '../third_party/re2/re2.gyp:re2',
+          ],
+          'conditions': [
+            ['OS=="android"', {
+              'dependencies': [
+                '../build/android/ndk.gyp:cpu_features',
+              ],
+            }],
+            ['use_openssl==1', {
+              'dependencies': [
+                '../third_party/boringssl/boringssl.gyp:boringssl',
+              ],
+            }, {
+              'conditions': [
+                ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
+                  'dependencies': [
+                    '../build/linux/system.gyp:ssl',
+                  ],
+                }, {
+                  'dependencies': [
+                    '../third_party/nss/nss.gyp:nspr',
+                    '../third_party/nss/nss.gyp:nss',
+                  ],
+                }],
+              ],
+            }],
           ],
         }, { # 'OS == "ios"'
           'sources': [

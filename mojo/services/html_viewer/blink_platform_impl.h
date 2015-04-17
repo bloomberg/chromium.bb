@@ -10,6 +10,7 @@
 #include "base/threading/thread_local_storage.h"
 #include "base/timer/timer.h"
 #include "cc/blink/web_compositor_support_impl.h"
+#include "components/webcrypto/webcrypto_impl.h"
 #include "mojo/services/html_viewer/blink_resource_map.h"
 #include "mojo/services/html_viewer/webmimeregistry_impl.h"
 #include "mojo/services/html_viewer/webnotificationmanager_impl.h"
@@ -62,6 +63,7 @@ class BlinkPlatformImpl : public blink::Platform {
       blink::WebGestureDevice device_source,
       const blink::WebFloatPoint& velocity,
       const blink::WebSize& cumulative_scroll);
+  virtual blink::WebCrypto* crypto();
   virtual blink::WebNotificationManager* notificationManager();
 
  private:
@@ -86,6 +88,7 @@ class BlinkPlatformImpl : public blink::Platform {
   WebThemeEngineImpl theme_engine_;
   WebMimeRegistryImpl mime_registry_;
   WebSchedulerImpl scheduler_;
+  webcrypto::WebCryptoImpl web_crypto_;
   WebNotificationManagerImpl web_notification_manager_;
   blink::WebScrollbarBehavior scrollbar_behavior_;
   BlinkResourceMap blink_resource_map_;

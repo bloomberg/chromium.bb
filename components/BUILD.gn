@@ -110,6 +110,7 @@ group("all_components") {
     "//components/web_cache/renderer",
     "//components/web_modal",
     "//components/web_resource",
+    "//components/webcrypto",
     "//components/webdata/common",
     "//components/webui_generator",
     "//components/wifi",
@@ -269,6 +270,7 @@ test("components_unittests") {
     "//components/update_client:unit_tests",
     "//components/variations:unit_tests",
     "//components/web_resource:unit_tests",
+    "//components/webcrypto:unit_tests",
     "//components/webdata/common:unit_tests",
 
     # These are the deps required by the code in this target.

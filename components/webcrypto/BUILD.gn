@@ -1,0 +1,115 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/crypto.gni")
+import("//testing/test.gni")
+
+source_set("webcrypto") {
+  sources = [
+    "algorithm_dispatch.cc",
+    "algorithm_dispatch.h",
+    "algorithm_implementation.cc",
+    "algorithm_implementation.h",
+    "algorithm_registry.cc",
+    "algorithm_registry.h",
+    "crypto_data.cc",
+    "crypto_data.h",
+    "generate_key_result.cc",
+    "generate_key_result.h",
+    "jwk.cc",
+    "jwk.h",
+    "platform_crypto.h",
+    "status.cc",
+    "status.h",
+    "webcrypto_impl.cc",
+    "webcrypto_impl.h",
+    "webcrypto_util.cc",
+    "webcrypto_util.h",
+  ]
+
+  deps = [
+    "//crypto:platform",
+  ]
+
+  if (!use_openssl) {
+    sources += [
+      "nss/aes_algorithm_nss.cc",
+      "nss/aes_algorithm_nss.h",
+      "nss/aes_cbc_nss.cc",
+      "nss/aes_gcm_nss.cc",
+      "nss/aes_kw_nss.cc",
+      "nss/hmac_nss.cc",
+      "nss/key_nss.cc",
+      "nss/key_nss.h",
+      "nss/rsa_hashed_algorithm_nss.cc",
+      "nss/rsa_hashed_algorithm_nss.h",
+      "nss/rsa_oaep_nss.cc",
+      "nss/rsa_ssa_nss.cc",
+      "nss/sha_nss.cc",
+      "nss/sym_key_nss.cc",
+      "nss/sym_key_nss.h",
+      "nss/util_nss.cc",
+      "nss/util_nss.h",
+    ]
+  } else {
+    sources += [
+      "openssl/aes_algorithm_openssl.cc",
+      "openssl/aes_algorithm_openssl.h",
+      "openssl/aes_cbc_openssl.cc",
+      "openssl/aes_ctr_openssl.cc",
+      "openssl/aes_gcm_openssl.cc",
+      "openssl/aes_kw_openssl.cc",
+      "openssl/ec_algorithm_openssl.cc",
+      "openssl/ec_algorithm_openssl.h",
+      "openssl/ecdh_openssl.cc",
+      "openssl/ecdsa_openssl.cc",
+      "openssl/hkdf_openssl.cc",
+      "openssl/hmac_openssl.cc",
+      "openssl/key_openssl.cc",
+      "openssl/key_openssl.h",
+      "openssl/pbkdf2_openssl.cc",
+      "openssl/rsa_hashed_algorithm_openssl.cc",
+      "openssl/rsa_hashed_algorithm_openssl.h",
+      "openssl/rsa_oaep_openssl.cc",
+      "openssl/rsa_pss_openssl.cc",
+      "openssl/rsa_sign_openssl.cc",
+      "openssl/rsa_sign_openssl.h",
+      "openssl/rsa_ssa_openssl.cc",
+      "openssl/sha_openssl.cc",
+      "openssl/util_openssl.cc",
+      "openssl/util_openssl.h",
+    ]
+  }
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "test/aes_cbc_unittest.cc",
+    "test/aes_ctr_unittest.cc",
+    "test/aes_gcm_unittest.cc",
+    "test/aes_kw_unittest.cc",
+    "test/ecdh_unittest.cc",
+    "test/ecdsa_unittest.cc",
+    "test/hmac_unittest.cc",
+    "test/rsa_oaep_unittest.cc",
+    "test/rsa_pss_unittest.cc",
+    "test/rsa_ssa_unittest.cc",
+    "test/sha_unittest.cc",
+    "test/status_unittest.cc",
+    "test/test_helpers.cc",
+    "test/test_helpers.h",
+  ]
+
+  deps = [
+    ":webcrypto",
+    "//base/test:test_support",
+    "//crypto",
+    "//crypto:platform",
+    "//testing/perf",
+    "//testing/gtest",
+    "//third_party/WebKit/public:blink",
+    "//third_party/re2",
+  ]
+}

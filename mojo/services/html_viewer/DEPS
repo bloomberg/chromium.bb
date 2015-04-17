@@ -3,6 +3,7 @@ include_rules = [
   "+base/test",
   "+blink/public/resources",
   "+cc",
+  "+components/webcrypto",
   "+gin",
   "+media",
   "+mojo/cc",

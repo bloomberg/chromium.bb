@@ -23,6 +23,7 @@ source_set("child") {
   deps = [
     "//base",
     "//components/tracing",
+    "//components/webcrypto",
     "//content/common:mojo_bindings",
     "//mojo/common",
     "//mojo/environment:chromium",
@@ -127,15 +128,5 @@ source_set("child") {
 
   if (is_win || !use_aura) {
     sources -= [ "npapi/webplugin_delegate_impl_aura.cc" ]
-  }
-
-  if (!use_openssl) {
-    sources += rebase_path(content_child_gypi_values.webcrypto_nss_sources,
-                           ".",
-                           "//content")
-  } else {
-    sources += rebase_path(content_child_gypi_values.webcrypto_openssl_sources,
-                           ".",
-                           "//content")
   }
 }

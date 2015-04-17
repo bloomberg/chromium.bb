@@ -269,6 +269,10 @@ blink::WebGestureCurve* BlinkPlatformImpl::createFlingAnimationCurve(
              is_main_thread).release();
 }
 
+blink::WebCrypto* BlinkPlatformImpl::crypto() {
+  return &web_crypto_;
+}
+
 blink::WebNotificationManager*
 BlinkPlatformImpl::notificationManager() {
   return &web_notification_manager_;

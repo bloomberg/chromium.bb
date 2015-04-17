@@ -9,7 +9,7 @@
 #include "base/threading/thread_local_storage.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"
-#include "content/child/webcrypto/webcrypto_impl.h"
+#include "components/webcrypto/webcrypto_impl.h"
 #include "content/child/webfallbackthemeengine_impl.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/Platform.h"
@@ -194,7 +194,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
   bool shared_timer_fire_time_was_set_while_suspended_;
   int shared_timer_suspended_;  // counter
   base::ThreadLocalStorage::Slot current_thread_slot_;
-  WebCryptoImpl web_crypto_;
+  webcrypto::WebCryptoImpl web_crypto_;
   scoped_ptr<WebGeofencingProviderImpl> geofencing_provider_;
   scoped_ptr<WebBluetoothImpl> bluetooth_;
 
