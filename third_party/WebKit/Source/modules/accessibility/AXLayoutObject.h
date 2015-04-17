@@ -123,7 +123,7 @@ protected:
 
     virtual bool ariaHasPopup() const override;
     virtual bool ariaRoleHasPresentationalChildren() const override;
-    virtual bool isPresentationalChildOfAriaRole() const override;
+    virtual AXObject* ancestorForWhichThisIsAPresentationalChild() const override;
     virtual bool shouldFocusActiveDescendant() const override;
     virtual bool supportsARIADragging() const override;
     virtual bool supportsARIADropping() const override;
@@ -193,7 +193,7 @@ protected:
     virtual void lineBreaks(Vector<int>&) const override;
 
 private:
-    bool isAllowedChildOfTree() const;
+    AXObject* treeAncestorDisallowingChild() const;
     void ariaListboxSelectedChildren(AccessibilityChildrenVector&);
     PlainTextRange visibleSelectionUnderObject() const;
     bool nodeIsTextControl(const Node*) const;

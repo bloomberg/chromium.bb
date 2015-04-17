@@ -498,7 +498,7 @@ bool AXLayoutObject::computeAccessibilityIsIgnored() const
         return true;
 
     // If this element is within a parent that cannot have children, it should not be exposed.
-    if (isDescendantOfBarrenParent())
+    if (isDescendantOfLeafNode())
         return true;
 
     if (roleValue() == IgnoredRole)
@@ -508,7 +508,7 @@ bool AXLayoutObject::computeAccessibilityIsIgnored() const
         return true;
 
     // An ARIA tree can only have tree items and static text as children.
-    if (!isAllowedChildOfTree())
+    if (treeAncestorDisallowingChild())
         return true;
 
     // TODO: we should refactor this - but right now this is necessary to make
@@ -1012,7 +1012,7 @@ bool AXLayoutObject::ariaRoleHasPresentationalChildren() const
     }
 }
 
-bool AXLayoutObject::isPresentationalChildOfAriaRole() const
+AXObject* AXLayoutObject::ancestorForWhichThisIsAPresentationalChild() const
 {
     // Walk the parent chain looking for a parent that has presentational children
     AXObject* parent;
@@ -1839,26 +1839,26 @@ void AXLayoutObject::lineBreaks(Vector<int>& lineBreaks) const
 // Private.
 //
 
-bool AXLayoutObject::isAllowedChildOfTree() const
+AXObject* AXLayoutObject::treeAncestorDisallowingChild() const
 {
     // Determine if this is in a tree. If so, we apply special behavior to make it work like an AXOutline.
     AXObject* axObj = parentObject();
-    bool isInTree = false;
+    AXObject* treeAncestor = 0;
     while (axObj) {
         if (axObj->isTree()) {
-            isInTree = true;
+            treeAncestor = axObj;
             break;
         }
         axObj = axObj->parentObject();
     }
 
     // If the object is in a tree, only tree items should be exposed (and the children of tree items).
-    if (isInTree) {
+    if (treeAncestor) {
         AccessibilityRole role = roleValue();
         if (role != TreeItemRole && role != StaticTextRole)
-            return false;
+            return treeAncestor;
     }
-    return true;
+    return 0;
 }
 
 void AXLayoutObject::ariaListboxSelectedChildren(AccessibilityChildrenVector& result)

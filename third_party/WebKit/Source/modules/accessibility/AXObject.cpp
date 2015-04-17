@@ -28,6 +28,7 @@
 
 #include "config.h"
 #include "modules/accessibility/AXObject.h"
+
 #include "core/dom/NodeTraversal.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
@@ -370,7 +371,7 @@ AXObject::AXObject(AXObjectCacheImpl* axObjectCache)
     , m_lastModificationCount(-1)
     , m_cachedIsIgnored(false)
     , m_cachedIsInertOrAriaHidden(false)
-    , m_cachedIsDescendantOfBarrenParent(false)
+    , m_cachedIsDescendantOfLeafNode(false)
     , m_cachedIsDescendantOfDisabledNode(false)
     , m_cachedHasInheritedPresentationalRole(false)
     , m_cachedLiveRegionRoot(0)
@@ -493,9 +494,9 @@ void AXObject::updateCachedAttributeValuesIfNeeded() const
 
     m_lastModificationCount = cache->modificationCount();
     m_cachedIsInertOrAriaHidden = computeIsInertOrAriaHidden();
-    m_cachedIsDescendantOfBarrenParent = computeIsDescendantOfBarrenParent();
-    m_cachedIsDescendantOfDisabledNode = computeIsDescendantOfDisabledNode();
-    m_cachedHasInheritedPresentationalRole = computeHasInheritedPresentationalRole();
+    m_cachedIsDescendantOfLeafNode = (leafNodeAncestor() != 0);
+    m_cachedIsDescendantOfDisabledNode = (disabledAncestor() != 0);
+    m_cachedHasInheritedPresentationalRole = (inheritsPresentationalRoleFrom() != 0);
     m_cachedIsIgnored = computeAccessibilityIsIgnored();
     m_cachedLiveRegionRoot = isLiveRegion() ?
         this :
@@ -520,7 +521,7 @@ AXObjectInclusion AXObject::defaultObjectInclusion() const
     if (isInertOrAriaHidden())
         return IgnoreObject;
 
-    if (isPresentationalChildOfAriaRole())
+    if (ancestorForWhichThisIsAPresentationalChild())
         return IgnoreObject;
 
     return accessibilityPlatformIncludesObject();
@@ -546,22 +547,22 @@ bool AXObject::computeIsInertOrAriaHidden() const
     return ariaHiddenRoot() != 0;
 }
 
-bool AXObject::isDescendantOfBarrenParent() const
+bool AXObject::isDescendantOfLeafNode() const
 {
     updateCachedAttributeValuesIfNeeded();
-    return m_cachedIsDescendantOfBarrenParent;
+    return m_cachedIsDescendantOfLeafNode;
 }
 
-bool AXObject::computeIsDescendantOfBarrenParent() const
+AXObject* AXObject::leafNodeAncestor() const
 {
     if (AXObject* parent = parentObject()) {
         if (!parent->canHaveChildren())
-            return true;
+            return parent;
 
-        return parent->isDescendantOfBarrenParent();
+        return parent->leafNodeAncestor();
     }
 
-    return false;
+    return 0;
 }
 
 const AXObject* AXObject::ariaHiddenRoot() const
@@ -580,18 +581,18 @@ bool AXObject::isDescendantOfDisabledNode() const
     return m_cachedIsDescendantOfDisabledNode;
 }
 
-bool AXObject::computeIsDescendantOfDisabledNode() const
+const AXObject* AXObject::disabledAncestor() const
 {
     const AtomicString& disabled = getAttribute(aria_disabledAttr);
     if (equalIgnoringCase(disabled, "true"))
-        return true;
+        return this;
     if (equalIgnoringCase(disabled, "false"))
-        return false;
+        return 0;
 
     if (AXObject* parent = parentObject())
-        return parent->isDescendantOfDisabledNode();
+        return parent->disabledAncestor();
 
-    return false;
+    return 0;
 }
 
 bool AXObject::lastKnownIsIgnoredValue()

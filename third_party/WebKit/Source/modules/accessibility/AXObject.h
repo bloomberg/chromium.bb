@@ -449,10 +449,10 @@ public:
     bool isInertOrAriaHidden() const;
     const AXObject* ariaHiddenRoot() const;
     bool computeIsInertOrAriaHidden() const;
-    bool isDescendantOfBarrenParent() const;
-    bool computeIsDescendantOfBarrenParent() const;
+    bool isDescendantOfLeafNode() const;
+    AXObject* leafNodeAncestor() const;
     bool isDescendantOfDisabledNode() const;
-    bool computeIsDescendantOfDisabledNode() const;
+    const AXObject* disabledAncestor() const;
     bool lastKnownIsIgnoredValue();
     void setLastKnownIsIgnoredValue(bool);
 
@@ -548,7 +548,7 @@ public:
     virtual AccessibilityRole ariaRoleAttribute() const { return UnknownRole; }
     virtual bool ariaRoleHasPresentationalChildren() const { return false; }
     virtual AccessibilityOptionalBool isAriaGrabbed() const { return OptionalBoolUndefined; }
-    virtual bool isPresentationalChildOfAriaRole() const { return false; }
+    virtual AXObject* ancestorForWhichThisIsAPresentationalChild() const { return 0; }
     virtual bool shouldFocusActiveDescendant() const { return false; }
     bool supportsARIAAttributes() const;
     virtual bool supportsARIADragging() const { return false; }
@@ -682,7 +682,7 @@ protected:
     LayoutRect m_explicitElementRect;
 
     virtual bool computeAccessibilityIsIgnored() const { return true; }
-    virtual bool computeHasInheritedPresentationalRole() const { return false; }
+    virtual const AXObject* inheritsPresentationalRoleFrom() const { return 0; }
 
     // If this object itself scrolls, return its ScrollableArea.
     virtual ScrollableArea* getScrollableAreaIfScrollable() const { return 0; }
@@ -701,7 +701,7 @@ protected:
     mutable int m_lastModificationCount;
     mutable bool m_cachedIsIgnored : 1;
     mutable bool m_cachedIsInertOrAriaHidden : 1;
-    mutable bool m_cachedIsDescendantOfBarrenParent : 1;
+    mutable bool m_cachedIsDescendantOfLeafNode : 1;
     mutable bool m_cachedIsDescendantOfDisabledNode : 1;
     mutable bool m_cachedHasInheritedPresentationalRole : 1;
     mutable const AXObject* m_cachedLiveRegionRoot;

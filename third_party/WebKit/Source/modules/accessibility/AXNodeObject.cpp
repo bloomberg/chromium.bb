@@ -167,7 +167,7 @@ bool AXNodeObject::computeAccessibilityIsIgnored() const
 #endif
 
     // If this element is within a parent that cannot have children, it should not be exposed.
-    if (isDescendantOfBarrenParent())
+    if (isDescendantOfLeafNode())
         return true;
 
     // Ignore labels that are already referenced by a control's title UI element.
@@ -233,33 +233,35 @@ static bool isRequiredOwnedElement(AXObject* parent, AccessibilityRole childRole
     return false;
 }
 
-bool AXNodeObject::computeHasInheritedPresentationalRole() const
+const AXObject* AXNodeObject::inheritsPresentationalRoleFrom() const
 {
     // ARIA states if an item can get focus, it should not be presentational.
     if (canSetFocusAttribute())
-        return false;
+        return 0;
 
     if (isPresentational())
-        return true;
+        return this;
 
     // http://www.w3.org/TR/wai-aria/complete#presentation
     // ARIA spec says that the user agent MUST apply an inherited role of presentation
     // to any owned elements that do not have an explicit role defined.
     if (ariaRoleAttribute() != UnknownRole)
-        return false;
+        return 0;
 
     AXObject* parent = parentObject();
     if (!parent)
-        return false;
+        return 0;
 
     Node* curNode = node();
     if (!parent->hasInheritedPresentationalRole()
         && !isPresentationRoleInTable(parent, curNode))
-        return false;
+        return 0;
 
     // ARIA spec says that when a parent object is presentational and this object
     // is a required owned element of that parent, then this object is also presentational.
-    return isRequiredOwnedElement(parent, roleValue(), curNode);
+    if (isRequiredOwnedElement(parent, roleValue(), curNode))
+        return parent;
+    return 0;
 }
 
 bool AXNodeObject::isDescendantOfElementType(const HTMLQualifiedName& tagName) const
@@ -1468,7 +1470,7 @@ static bool shouldUseAccessibilityObjectInnerText(AXObject* obj)
 
     // If something doesn't expose any children, then we can always take the inner text content.
     // This is what we want when someone puts an <a> inside a <button> for example.
-    if (obj->isDescendantOfBarrenParent())
+    if (obj->isDescendantOfLeafNode())
         return true;
 
     // Skip focusable children, so we don't include the text of links and controls.
