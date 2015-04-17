@@ -252,6 +252,8 @@ void AppWindow::Init(const GURL& url,
   app_window_contents_.reset(app_window_contents);
   app_window_contents_->Initialize(browser_context(), url);
 
+  initial_url_ = url;
+
   content::WebContentsObserver::Observe(web_contents());
   SetViewType(web_contents(), VIEW_TYPE_APP_WINDOW);
   app_delegate_->InitWebContents(web_contents());

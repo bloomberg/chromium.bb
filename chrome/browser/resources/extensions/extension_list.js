@@ -241,9 +241,6 @@ cr.define('extensions', function() {
         switch (eventData.event_type) {
           case EventType.VIEW_REGISTERED:
           case EventType.VIEW_UNREGISTERED:
-            // For now, view notifications are handled through the WebUI.
-            // TODO(devlin): Transition these.
-            break;
           case EventType.INSTALLED:
           case EventType.LOADED:
           case EventType.UNLOADED:

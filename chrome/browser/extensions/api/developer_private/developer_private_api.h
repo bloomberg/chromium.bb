@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/common/extensions/webstore_install_result.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -63,7 +64,8 @@ typedef std::vector<linked_ptr<developer::ItemInspectView> >
 
 class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
                                     public ErrorConsole::Observer,
-                                    public ProcessManagerObserver {
+                                    public ProcessManagerObserver,
+                                    public AppWindowRegistry::Observer {
  public:
   explicit DeveloperPrivateEventRouter(Profile* profile);
   ~DeveloperPrivateEventRouter() override;
@@ -99,11 +101,17 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
       const std::string& extension_id,
       content::RenderFrameHost* render_frame_host) override;
 
+  // AppWindowRegistry::Observer:
+  void OnAppWindowAdded(AppWindow* window) override;
+  void OnAppWindowRemoved(AppWindow* window) override;
+
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
   ScopedObserver<ErrorConsole, ErrorConsole::Observer> error_console_observer_;
   ScopedObserver<ProcessManager, ProcessManagerObserver>
       process_manager_observer_;
+  ScopedObserver<AppWindowRegistry, AppWindowRegistry::Observer>
+      app_window_registry_observer_;
 
   Profile* profile_;
 

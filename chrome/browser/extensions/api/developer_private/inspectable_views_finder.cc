@@ -21,11 +21,8 @@
 
 namespace extensions {
 
-InspectableViewsFinder::InspectableViewsFinder(
-    Profile* profile,
-    content::RenderViewHost* deleting_rvh)
-    : profile_(profile),
-      deleting_rvh_(deleting_rvh) {
+InspectableViewsFinder::InspectableViewsFinder(Profile* profile)
+    : profile_(profile) {
 }
 
 InspectableViewsFinder::~InspectableViewsFinder() {
@@ -134,8 +131,7 @@ void InspectableViewsFinder::GetViewsForExtensionProcess(
     content::WebContents* web_contents =
         content::WebContents::FromRenderFrameHost(host);
     ViewType host_type = GetViewType(web_contents);
-    if (host->GetRenderViewHost() == deleting_rvh_ ||
-        host_type == VIEW_TYPE_EXTENSION_POPUP ||
+    if (host_type == VIEW_TYPE_EXTENSION_POPUP ||
         host_type == VIEW_TYPE_EXTENSION_DIALOG) {
       continue;
     }
@@ -163,15 +159,21 @@ void InspectableViewsFinder::GetAppWindowViewsForExtension(
 
   for (const AppWindow* window : windows) {
     content::WebContents* web_contents = window->web_contents();
+
+    // If the window just opened, there might not be a committed (or visible)
+    // url yet. In this case, use the initial url.
+    GURL url = web_contents->GetLastCommittedURL();
+    if (url.is_empty())
+      url = window->initial_url();
+
     content::RenderViewHost* host = web_contents->GetRenderViewHost();
     content::RenderProcessHost* process = host->GetProcess();
 
-    result->push_back(ConstructView(
-        web_contents->GetURL(),
-        process->GetID(),
-        host->GetRoutingID(),
-        false,
-        GetViewType(web_contents)));
+    result->push_back(ConstructView(url,
+                                    process->GetID(),
+                                    web_contents->GetRoutingID(),
+                                    false,
+                                    GetViewType(web_contents)));
   }
 }
 

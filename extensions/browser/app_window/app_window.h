@@ -224,6 +224,7 @@ class AppWindow : public content::WebContentsDelegate,
   const GURL& app_icon_url() const { return app_icon_url_; }
   const gfx::Image& badge_icon() const { return badge_icon_; }
   const GURL& badge_icon_url() const { return badge_icon_url_; }
+  const GURL& initial_url() const { return initial_url_; }
   bool is_hidden() const { return is_hidden_; }
 
   const Extension* GetExtension() const;
@@ -517,6 +518,9 @@ class AppWindow : public content::WebContentsDelegate,
   scoped_ptr<AppWindowContents> app_window_contents_;
   scoped_ptr<AppDelegate> app_delegate_;
   scoped_ptr<AppWebContentsHelper> helper_;
+
+  // The initial url this AppWindow was navigated to.
+  GURL initial_url_;
 
   // Manages popup windows (bubbles, tab-modals) visible overlapping the
   // app window.

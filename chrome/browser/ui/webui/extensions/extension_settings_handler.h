@@ -92,21 +92,6 @@ class ExtensionSettingsHandler
   // Our model.  Outlives us since it's owned by our containing profile.
   ExtensionService* extension_service_;
 
-  // If true, we will ignore notifications in ::Observe(). This is needed
-  // to prevent reloading the page when we were the cause of the
-  // notification.
-  bool ignore_notifications_;
-
-  // The page may be refreshed in response to a RenderViewHost being destroyed,
-  // but the iteration over RenderViewHosts will include the host because the
-  // notification is sent when it is in the process of being deleted (and before
-  // it is removed from the process). Keep a pointer to it so we can exclude
-  // it from the active views.
-  content::RenderViewHost* deleting_rvh_;
-  // Do the same for a deleting RenderWidgetHost ID and RenderProcessHost ID.
-  int deleting_rwh_id_;
-  int deleting_rph_id_;
-
   content::NotificationRegistrar registrar_;
 
   ScopedObserver<WarningService, WarningService::Observer>

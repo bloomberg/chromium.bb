@@ -244,10 +244,12 @@ DeveloperPrivateEventRouter::DeveloperPrivateEventRouter(Profile* profile)
     : extension_registry_observer_(this),
       error_console_observer_(this),
       process_manager_observer_(this),
+      app_window_registry_observer_(this),
       profile_(profile) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   error_console_observer_.Add(ErrorConsole::Get(profile));
   process_manager_observer_.Add(ProcessManager::Get(profile));
+  app_window_registry_observer_.Add(AppWindowRegistry::Get(profile));
 }
 
 DeveloperPrivateEventRouter::~DeveloperPrivateEventRouter() {
@@ -323,6 +325,17 @@ void DeveloperPrivateEventRouter::OnExtensionFrameUnregistered(
     content::RenderFrameHost* render_frame_host) {
   BroadcastItemStateChanged(
       profile_, developer::EVENT_TYPE_VIEW_UNREGISTERED, extension_id);
+}
+
+void DeveloperPrivateEventRouter::OnAppWindowAdded(AppWindow* window) {
+  BroadcastItemStateChanged(
+      profile_, developer::EVENT_TYPE_VIEW_REGISTERED, window->extension_id());
+}
+
+void DeveloperPrivateEventRouter::OnAppWindowRemoved(AppWindow* window) {
+  BroadcastItemStateChanged(profile_,
+                            developer::EVENT_TYPE_VIEW_UNREGISTERED,
+                            window->extension_id());
 }
 
 void DeveloperPrivateAPI::SetLastUnpackedDirectory(const base::FilePath& path) {

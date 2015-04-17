@@ -18,7 +18,6 @@
 #include "base/version.h"
 #include "chrome/browser/background/background_contents.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
@@ -51,6 +50,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/browser/warning_set.h"
 #include "extensions/common/constants.h"
@@ -76,10 +76,6 @@ namespace extensions {
 
 ExtensionSettingsHandler::ExtensionSettingsHandler()
     : extension_service_(NULL),
-      ignore_notifications_(false),
-      deleting_rvh_(NULL),
-      deleting_rwh_id_(-1),
-      deleting_rph_id_(-1),
       warning_service_observer_(this),
       extension_prefs_observer_(this),
       extension_management_observer_(this) {
@@ -289,7 +285,6 @@ void ExtensionSettingsHandler::GetLocalizedValues(
 
 void ExtensionSettingsHandler::RenderViewDeleted(
     content::RenderViewHost* render_view_host) {
-  deleting_rvh_ = render_view_host;
   Profile* source_profile = Profile::FromBrowserContext(
       render_view_host->GetSiteInstance()->GetBrowserContext());
   if (!Profile::FromWebUI(web_ui())->IsSameProfile(source_profile))
@@ -318,53 +313,10 @@ void ExtensionSettingsHandler::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  Profile* source_profile = NULL;
-  switch (type) {
-    // We listen for notifications that will result in the page being
-    // repopulated with data twice for the same event in certain cases.
-    // For instance, EXTENSION_LOADED & EXTENSION_HOST_CREATED because
-    // we don't know about the views for an extension at EXTENSION_LOADED, but
-    // if we only listen to EXTENSION_HOST_CREATED, we'll miss extensions
-    // that don't have a process at startup.
-    //
-    // Doing it this way gets everything but causes the page to be rendered
-    // more than we need. It doesn't seem to result in any noticeable flicker.
-    case chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED:
-      deleting_rvh_ = content::Details<BackgroundContents>(details)->
-          web_contents()->GetRenderViewHost();
-      // Fall through.
-    case chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED:
-    case extensions::NOTIFICATION_EXTENSION_HOST_CREATED:
-      source_profile = content::Source<Profile>(source).ptr();
-      if (!profile->IsSameProfile(source_profile))
-        return;
-      MaybeUpdateAfterNotification();
-      break;
-    case content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED: {
-      content::RenderWidgetHost* rwh =
-          content::Source<content::RenderWidgetHost>(source).ptr();
-      deleting_rwh_id_ = rwh->GetRoutingID();
-      deleting_rph_id_ = rwh->GetProcess()->GetID();
-      MaybeUpdateAfterNotification();
-      break;
-    }
-    case extensions::NOTIFICATION_EXTENSION_UPDATE_DISABLED:
-    case extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED:
-      MaybeUpdateAfterNotification();
-      break;
-    case extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED:
-       // This notification is sent when the extension host destruction begins,
-       // not when it finishes. We use PostTask to delay the update until after
-       // the destruction finishes.
-       base::MessageLoop::current()->PostTask(
-           FROM_HERE,
-           base::Bind(&ExtensionSettingsHandler::MaybeUpdateAfterNotification,
-                      AsWeakPtr()));
-       break;
-    default:
-      NOTREACHED();
-  }
+  DCHECK_EQ(
+      extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
+      type);
+  MaybeUpdateAfterNotification();
 }
 
 void ExtensionSettingsHandler::OnExtensionDisableReasonsChanged(
@@ -402,35 +354,14 @@ void ExtensionSettingsHandler::HandleRegisterMessage(
     return;  // Only register once.
 
   Profile* profile = Profile::FromWebUI(web_ui());
-
-  // Register for notifications that we need to reload the page.
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
-                 content::Source<Profile>(profile));
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_HOST_CREATED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
-                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(
       this,
       extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
       content::Source<ExtensionPrefs>(ExtensionPrefs::Get(profile)));
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this,
-                 content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-                 content::NotificationService::AllBrowserContextsAndSources());
 
   content::WebContentsObserver::Observe(web_ui()->GetWebContents());
 
   warning_service_observer_.Add(WarningService::Get(profile));
-
   extension_management_observer_.Add(
       ExtensionManagementFactory::GetForBrowserContext(profile));
 
@@ -441,11 +372,10 @@ void ExtensionSettingsHandler::HandleRegisterMessage(
 
 void ExtensionSettingsHandler::MaybeUpdateAfterNotification() {
   content::WebContents* contents = web_ui()->GetWebContents();
-  if (!ignore_notifications_ && contents && contents->GetRenderViewHost()) {
+  if (contents && contents->GetRenderViewHost()) {
     web_ui()->CallJavascriptFunction(
         "extensions.ExtensionSettings.onExtensionsChanged");
   }
-  deleting_rvh_ = NULL;
 }
 
 }  // namespace extensions

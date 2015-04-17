@@ -358,7 +358,7 @@ ExtensionInfoGenerator::CreateExtensionInfo(const Extension& extension,
   info->version = extension.GetVersionForDisplay();
 
   if (state != developer::EXTENSION_STATE_TERMINATED) {
-    info->views = InspectableViewsFinder(profile, nullptr).
+    info->views = InspectableViewsFinder(profile).
                       GetViewsForExtension(extension, is_enabled);
   }
   return info.Pass();

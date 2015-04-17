@@ -36,11 +36,7 @@ class InspectableViewsFinder {
   using View = linked_ptr<api::developer_private::ExtensionView>;
   using ViewList = std::vector<View>;
 
-  // |deleting_rvh| refers to a RenderViewHost that is being deleted, and
-  // should thus be omitted from any lists.
-  // TODO(devlin): This is hacky.
-  InspectableViewsFinder(Profile* profile,
-                         content::RenderViewHost* deleting_rvh);
+  explicit InspectableViewsFinder(Profile* profile);
   ~InspectableViewsFinder();
 
   // Construct a view from the given parameters.
@@ -73,8 +69,6 @@ class InspectableViewsFinder {
                                      ViewList* result);
 
   Profile* profile_;
-
-  content::RenderViewHost* deleting_rvh_;
 
   DISALLOW_COPY_AND_ASSIGN(InspectableViewsFinder);
 };
