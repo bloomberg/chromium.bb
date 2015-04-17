@@ -703,15 +703,8 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
         if (!selector.parseNth())
             break;
         if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
-            if (m_mode == ResolvingStyle) {
+            if (m_mode == ResolvingStyle)
                 parent->setChildrenAffectedByForwardPositionalRules();
-                // TODO(esprehn): This code is not actually needed and covers up
-                // a MatchedPropertiesCache bug in the css3/flexbox/flex-flow.html
-                // test. See http://crbug.com/477497
-                ComputedStyle* childStyle = context.elementStyle ? context.elementStyle : element.mutableComputedStyle();
-                if (childStyle)
-                    childStyle->setUnique();
-            }
             return selector.matchNth(1 + siblingTraversalStrategy.countElementsBefore(element));
         }
         break;
