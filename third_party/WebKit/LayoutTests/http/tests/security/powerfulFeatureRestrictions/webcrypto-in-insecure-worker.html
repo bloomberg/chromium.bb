@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>WebCrypto On An Insecure Origin</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/get-host-info.js"></script>
+</head>
+<body></body>
+<script>
+     if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
+         window.location = get_host_info().UNAUTHENTICATED_ORIGIN +
+                           window.location.pathname;
+     } else {
+         if (window.testRunner)
+             testRunner.overridePreference(
+                 "WebKitStrictPowerfulFeatureRestrictions", true);
+
+         async_test(function () {
+             var worker = new Worker("resources/webcrypto-worker.js");
+             worker.addEventListener("message", this.step_func(function (evt) {
+                 assert_equals(evt.data.message,
+                               'Only secure origins are allowed (see: ' +
+                               'https://goo.gl/Y0ZkNV).');
+                 this.done();
+             }));
+             worker.postMessage("go");
+         }, "WebCrypto not allowed on insecure origin");
+     }
+</script>
+</html>

@@ -365,8 +365,13 @@ void WorkerGlobalScope::exceptionHandled(int exceptionId, bool isHandled)
 
 bool WorkerGlobalScope::isPrivilegedContext(String& errorMessage, const PrivilegeContextCheck privilegeContextCheck)
 {
-    // TODO(estark): check the responsible document at worker creation time
-    return true;
+    // Until there are APIs that are available in workers and that
+    // require a privileged context test that checks ancestors, just do
+    // a simple check here. Once we have a need for a real
+    // |isPrivilegedContext| check here, we can check the responsible
+    // document for a privileged context at worker creation time, pass
+    // it in via WorkerThreadStartupData, and check it here.
+    return securityOrigin()->isPotentiallyTrustworthy(errorMessage);
 }
 
 void WorkerGlobalScope::removeURLFromMemoryCache(const KURL& url)

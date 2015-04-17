@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>WebCrypto On A Secure Origin</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+</head>
+<body></body>
+<script>
+    if (window.testRunner)
+        testRunner.overridePreference(
+            "WebKitStrictPowerfulFeatureRestrictions", true);
+
+    async_test(function () {
+        var worker = new Worker("resources/webcrypto-worker.js");
+        worker.addEventListener("message", this.step_func(function (evt) {
+            assert_equals(evt.data.success, true);
+            this.done();
+        }));
+        worker.postMessage("go");
+     }, "WebCrypto allowed on secure origin");
+</script>
+</html>
