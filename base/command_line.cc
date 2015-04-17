@@ -263,8 +263,7 @@ void CommandLine::SetProgram(const FilePath& program) {
 }
 
 bool CommandLine::HasSwitch(const std::string& switch_string) const {
-  DCHECK_EQ(StringToLowerASCII(switch_string), switch_string);
-  return switches_.find(switch_string) != switches_.end();
+  return switches_.find(LowerASCIIOnWindows(switch_string)) != switches_.end();
 }
 
 bool CommandLine::HasSwitch(const char string_constant[]) const {
