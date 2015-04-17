@@ -75,6 +75,7 @@ QUnit.module('host_controller', {
   beforeEach: function(/** QUnit.Assert */ assert) {
     chromeMocks.activate(['identity', 'runtime']);
     chromeMocks.identity.mock$setToken(FAKE_IDENTITY_TOKEN);
+    remoting.settings = new remoting.Settings();
     remoting.identity = new remoting.Identity();
     remoting.MockXhr.activate();
     base.debug.assert(remoting.oauth2 === null);
