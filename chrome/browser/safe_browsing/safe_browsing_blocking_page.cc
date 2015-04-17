@@ -281,9 +281,7 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
     }
     case CMD_OPEN_DIAGNOSTIC: {
       // User wants to see why this page is blocked.
-      // TODO(felt): element_index will always be 0. See crbug.com/464732
-      size_t element_index = 0;
-      const UnsafeResource& unsafe_resource = unsafe_resources_[element_index];
+      const UnsafeResource& unsafe_resource = unsafe_resources_[0];
       std::string bad_url_spec = unsafe_resource.url.spec();
       metrics_helper()->RecordUserInteraction(
           SecurityInterstitialMetricsHelper::SHOW_DIAGNOSTIC);
