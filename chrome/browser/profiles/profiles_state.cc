@@ -97,6 +97,16 @@ base::string16 GetAvatarButtonTextForProfile(Profile* profile) {
   return name;
 }
 
+base::string16 GetProfileSwitcherTextForItem(const AvatarMenu::Item& item) {
+  if (item.legacy_supervised) {
+    return l10n_util::GetStringFUTF16(IDS_SUPERVISED_USER_NEW_AVATAR_LABEL,
+                                      item.name);
+  }
+  if (item.child_account)
+    return l10n_util::GetStringFUTF16(IDS_CHILD_AVATAR_LABEL, item.name);
+  return item.name;
+}
+
 void UpdateProfileName(Profile* profile,
                        const base::string16& new_profile_name) {
   const ProfileInfoCache& cache =

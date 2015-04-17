@@ -7,6 +7,7 @@
 
 #include <vector>
 #include "base/strings/string16.h"
+#include "chrome/browser/profiles/avatar_menu.h"
 
 class Browser;
 class PrefRegistrySimple;
@@ -38,6 +39,10 @@ base::string16 GetAvatarNameForProfile(const base::FilePath& profile_path);
 // This is essentially the name returned by GetAvatarNameForProfile, but it
 // may be elided and contain an indicator for supervised users.
 base::string16 GetAvatarButtonTextForProfile(Profile* profile);
+
+// Returns the string to use in the fast user switcher menu for the specified
+// menu item. Adds a supervision indicator to the profile name if appropriate.
+base::string16 GetProfileSwitcherTextForItem(const AvatarMenu::Item& item);
 
 // Update the name of |profile| to |new_profile_name|. This updates the
 // profile preferences, which triggers an update in the ProfileInfoCache.

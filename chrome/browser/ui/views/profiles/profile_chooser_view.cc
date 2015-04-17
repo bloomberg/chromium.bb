@@ -1291,20 +1291,12 @@ views::View* ProfileChooserView::CreateOtherProfilesView(
     AvatarMenu::GetImageForMenuButton(
         item.profile_path, &item_icon, &is_rectangle);
 
-    base::string16 title = item.name;
-    if (item.legacy_supervised) {
-      title = l10n_util::GetStringFUTF16(IDS_SUPERVISED_USER_NEW_AVATAR_LABEL,
-                                         title);
-    } else if (item.child_account) {
-      title = l10n_util::GetStringFUTF16(IDS_CHILD_AVATAR_LABEL, title);
-    }
-
     gfx::Image image = profiles::GetSizedAvatarIcon(
         item_icon, true, kSmallImageSide, kSmallImageSide);
 
     views::LabelButton* button = new BackgroundColorHoverButton(
         this,
-        title,
+        profiles::GetProfileSwitcherTextForItem(item),
         *image.ToImageSkia());
     open_other_profile_indexes_map_[button] = index;
 
