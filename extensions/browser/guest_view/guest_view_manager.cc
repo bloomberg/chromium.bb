@@ -188,6 +188,14 @@ bool GuestViewManager::ForEachGuest(WebContents* owner_web_contents,
   return false;
 }
 
+WebContents* GuestViewManager::GetFullPageGuest(
+    WebContents* embedder_web_contents) {
+  WebContents* result = nullptr;
+  ForEachGuest(embedder_web_contents,
+               base::Bind(&GuestViewManager::GetFullPageGuestHelper, &result));
+  return result;
+}
+
 void GuestViewManager::AddGuest(int guest_instance_id,
                                 WebContents* guest_web_contents) {
   CHECK(!ContainsKey(guest_web_contents_by_instance_id_, guest_instance_id));
@@ -283,6 +291,18 @@ bool GuestViewManager::CanUseGuestInstanceID(int guest_instance_id) {
   if (guest_instance_id <= last_instance_id_removed_)
     return false;
   return !ContainsKey(removed_instance_ids_, guest_instance_id);
+}
+
+// static
+bool GuestViewManager::GetFullPageGuestHelper(
+    content::WebContents** result,
+    content::WebContents* guest_web_contents) {
+  auto guest_view = GuestViewBase::FromWebContents(guest_web_contents);
+  if (guest_view && guest_view->is_full_page_plugin()) {
+    *result = guest_web_contents;
+    return true;
+  }
+  return false;
 }
 
 bool GuestViewManager::CanEmbedderAccessInstanceID(

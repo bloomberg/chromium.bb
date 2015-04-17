@@ -18,5 +18,10 @@ bool BrowserPluginGuestManager::ForEachGuest(
   return false;
 }
 
+WebContents* BrowserPluginGuestManager::GetFullPageGuest(
+    WebContents* embedder_web_contents) {
+  return nullptr;
+}
+
 }  // content
 

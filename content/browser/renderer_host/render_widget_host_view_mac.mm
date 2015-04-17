@@ -47,6 +47,8 @@
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/webplugin_geometry.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
@@ -105,6 +107,23 @@ BOOL EventIsReservedBySystem(NSEvent* event) {
   content::SystemHotkeyHelperMac* helper =
       content::SystemHotkeyHelperMac::GetInstance();
   return helper->map()->IsEventReserved(event);
+}
+
+RenderWidgetHostViewMac* GetRenderWidgetHostViewToUse(
+    RenderWidgetHostViewMac* render_widget_host_view) {
+  WebContents* web_contents = render_widget_host_view->GetWebContents();
+  if (!web_contents)
+    return render_widget_host_view;
+  content::BrowserPluginGuestManager* guest_manager =
+      web_contents->GetBrowserContext()->GetGuestManager();
+  if (!guest_manager)
+    return render_widget_host_view;
+  content::WebContents* guest =
+      guest_manager->GetFullPageGuest(web_contents);
+  if (!guest)
+    return render_widget_host_view;
+  return static_cast<RenderWidgetHostViewMac*>(
+      guest->GetRenderWidgetHostView());
 }
 
 }  // namespace
@@ -3274,11 +3293,11 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)startSpeaking:(id)sender {
-  renderWidgetHostView_->SpeakSelection();
+  GetRenderWidgetHostViewToUse(renderWidgetHostView_.get())->SpeakSelection();
 }
 
 - (void)stopSpeaking:(id)sender {
-  renderWidgetHostView_->StopSpeaking();
+  GetRenderWidgetHostViewToUse(renderWidgetHostView_.get())->StopSpeaking();
 }
 
 - (void)cancelComposition {
