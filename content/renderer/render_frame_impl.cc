@@ -4089,6 +4089,7 @@ void RenderFrameImpl::OnCommitNavigation(
   if (!RenderFrameImpl::PrepareRenderViewForNavigation(
           common_params.url, is_history_navigation, request_params, &is_reload,
           &cache_policy)) {
+    Send(new FrameHostMsg_DidDropNavigation(routing_id_));
     return;
   }
 
@@ -4141,6 +4142,7 @@ void RenderFrameImpl::OnFailedNavigation(
   if (!RenderFrameImpl::PrepareRenderViewForNavigation(
           common_params.url, is_history_navigation, request_params, &is_reload,
           &cache_policy)) {
+    Send(new FrameHostMsg_DidDropNavigation(routing_id_));
     return;
   }
 
@@ -4163,8 +4165,10 @@ void RenderFrameImpl::OnFailedNavigation(
       frame_->isViewSourceModeEnabled());
   SendFailedProvisionalLoad(failed_request, error, frame_);
 
-  if (!ShouldDisplayErrorPageForFailedLoad(error_code, common_params.url))
+  if (!ShouldDisplayErrorPageForFailedLoad(error_code, common_params.url)) {
+    Send(new FrameHostMsg_DidDropNavigation(routing_id_));
     return;
+  }
 
   // Make sure errors are not shown in view source mode.
   frame_->enableViewSourceMode(false);
