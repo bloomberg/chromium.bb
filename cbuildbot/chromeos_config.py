@@ -183,7 +183,7 @@ class HWTestList(object):
     """
     default_dict = dict(pool=constants.HWTEST_PALADIN_POOL, timeout=120 * 60,
                         file_bugs=False, priority=constants.HWTEST_CQ_PRIORITY,
-                        minimum_duts=4)
+                        minimum_duts=4, offload_failures_only=True)
     # Allows kwargs overrides to default_dict for cq.
     default_dict.update(kwargs)
     return HWTestList.DefaultListNonCanary(**default_dict)

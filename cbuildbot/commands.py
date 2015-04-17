@@ -831,7 +831,8 @@ def ArchiveVMFiles(buildroot, test_results_dir, archive_path):
 def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
                    wait_for_results=None, priority=None, timeout_mins=None,
                    retry=None, max_retries=None,
-                   minimum_duts=0, suite_min_duts=0, debug=True):
+                   minimum_duts=0, suite_min_duts=0,
+                   offload_failures_only=None, debug=True):
   """Run the test suite in the Autotest lab.
 
   Args:
@@ -856,11 +857,13 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     suite_min_duts: Preferred minimum duts, lab will prioritize on getting
                     such many duts even if the suite is competing with
                     a suite that has higher priority.
+    offload_failures_only: Only offload failed tests to Google Storage.
     debug: Whether we are in debug mode.
   """
   cmd = _CreateRunSuiteCommand(build, suite, board, pool, num, file_bugs,
                                wait_for_results, priority, timeout_mins, retry,
-                               max_retries, minimum_duts, suite_min_duts)
+                               max_retries, minimum_duts, suite_min_duts,
+                               offload_failures_only)
   try:
     HWTestCreateAndWait(cmd, debug)
   except cros_build_lib.RunCommandError as e:
@@ -905,7 +908,7 @@ def _CreateRunSuiteCommand(build, suite, board, pool=None, num=None,
                            file_bugs=None, wait_for_results=None,
                            priority=None, timeout_mins=None,
                            retry=None, max_retries=None, minimum_duts=0,
-                           suite_min_duts=0):
+                           suite_min_duts=0, offload_failures_only=None):
   """Create a proxied run_suite command for the given arguments.
 
   Args:
@@ -951,6 +954,9 @@ def _CreateRunSuiteCommand(build, suite, board, pool=None, num=None,
 
   if suite_min_duts != 0:
     cmd += ['--suite_min_duts', str(suite_min_duts)]
+
+  if offload_failures_only is not None:
+    cmd += ['--offload_failures_only', str(offload_failures_only)]
 
   return cmd
 # pylint: enable=docstring-missing-args

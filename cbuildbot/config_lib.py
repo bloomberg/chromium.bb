@@ -283,7 +283,8 @@ class HWTestConfig(object):
                pool=constants.HWTEST_MACH_POOL, timeout=DEFAULT_HW_TEST_TIMEOUT,
                async=False, warn_only=False, critical=False, blocking=False,
                file_bugs=False, priority=constants.HWTEST_BUILD_PRIORITY,
-               retry=True, max_retries=10, minimum_duts=0, suite_min_duts=0):
+               retry=True, max_retries=10, minimum_duts=0, suite_min_duts=0,
+               offload_failures_only=False):
     """Constructor -- see members above."""
     assert not async or (not blocking and not retry)
     assert not warn_only or not critical
@@ -301,6 +302,7 @@ class HWTestConfig(object):
     self.max_retries = max_retries
     self.minimum_duts = minimum_duts
     self.suite_min_duts = suite_min_duts
+    self.offload_failures_only = offload_failures_only
 
   def SetBranchedValues(self):
     """Changes the HW Test timeout/priority values to branched values."""

@@ -269,20 +269,19 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
       debug = self._run.options.debug
 
     self._CheckLabStatus()
-    commands.RunHWTestSuite(build,
-                            self.suite_config.suite,
-                            self._current_board,
-                            pool=self.suite_config.pool,
-                            num=self.suite_config.num,
-                            file_bugs=self.suite_config.file_bugs,
-                            wait_for_results=self.wait_for_results,
-                            priority=self.suite_config.priority,
-                            timeout_mins=self.suite_config.timeout_mins,
-                            retry=self.suite_config.retry,
-                            max_retries=self.suite_config.max_retries,
-                            minimum_duts=self.suite_config.minimum_duts,
-                            suite_min_duts=self.suite_config.suite_min_duts,
-                            debug=debug)
+    commands.RunHWTestSuite(
+        build, self.suite_config.suite, self._current_board,
+        pool=self.suite_config.pool, num=self.suite_config.num,
+        file_bugs=self.suite_config.file_bugs,
+        wait_for_results=self.wait_for_results,
+        priority=self.suite_config.priority,
+        timeout_mins=self.suite_config.timeout_mins,
+        retry=self.suite_config.retry,
+        max_retries=self.suite_config.max_retries,
+        minimum_duts=self.suite_config.minimum_duts,
+        suite_min_duts=self.suite_config.suite_min_duts,
+        offload_failures_only=self.suite_config.offload_failures_only,
+        debug=debug)
 
 
 class AUTestStage(HWTestStage):
