@@ -58,7 +58,7 @@ GIT_REVISIONS = {
         'upstream-base': '99fc6c167467b41466ec90e8260e9c49cbe3d13c',
         },
     'glibc': {
-        'rev': 'd1e44df1fa5fefd8a083f6c1e909bbcdc97c6438',
+        'rev': 'aa4980fc31e9ce176fe954bd0f29bcd65a61556a',
         'upstream-branch': 'upstream/master',
         'upstream-name': 'glibc-2.21',
         # Upstream tag glibc-2.21:
@@ -1052,9 +1052,20 @@ CFLAGS-doasin.c = -mtune=generic-armv7-a
                            # TODO(mcgrathr): Enable test suite later.
                            #MakeCommand(host) + [minisdk_root, 'check'],
                            ['make', 'install', minisdk_root,
-                            'install_root=%(abs_output)s'],
+                            # glibc's install rules always use a layout
+                            # appropriate for a native installation.
+                            # To install it in a cross-compilation layout
+                            # we have to explicitly point it at the target
+                            # subdirectory.  However, documentation files
+                            # should not go there.
+                            'install_root=%(abs_output)s/' + target + '-nacl',
+                            'inst_infodir=%(abs_output)s/share/info',
+                           ],
                            ], target_deps=['gcc_libs']) +
-                       InstallDocFiles('glibc', ['COPYING.LIB'])),
+                       InstallDocFiles('glibc', ['COPYING.LIB']) + [
+                           REMOVE_INFO_DIR,
+                       ]
+                       ),
         },
 
       'gcc_libs_' + target: {
