@@ -330,7 +330,6 @@ crbug.com/472812 virtual/slimmingpaint/fast/js/getOwnPropertyDescriptor.html [ S
 crbug.com/472812 virtual/slimmingpaint/fast/js/mozilla/strict/15.3.5.1.html [ Skip ]
 crbug.com/472812 virtual/slimmingpaint/fast/js/mozilla/strict/assign-to-callee-name.html [ Skip ]
 crbug.com/472812 virtual/slimmingpaint/fast/js/reserved-words-as-property.html [ Skip ]
-crbug.com/470713 virtual/slimmingpaint/fast/sub-pixel/sub-pixel-transparency-layer.html [ Skip ]
 crbug.com/472822 virtual/slimmingpaint/fast/text-autosizing/first-line-scale-factor.html [ Skip ]
 crbug.com/382491 virtual/slimmingpaint/fast/transforms/diamond.html [ Skip ]
 crbug.com/382491 virtual/slimmingpaint/fast/transforms/rotated-transform-affects-scrolling-1.html [ Skip ]
@@ -342,6 +341,9 @@ crbug.com/382491 virtual/slimmingpaint/fast/transforms/transformed-caret.html [ 
 crbug.com/470713 virtual/slimmingpaint/fast/repaint/multicol-as-paint-container.html [ Skip ]
 crbug.com/470713 virtual/slimmingpaint/fast/dom/Element/getBoundingClientRect.html [ Skip ]
 crbug.com/470713 virtual/slimmingpaint/fast/repaint/multicol-repaint.html [ Skip ]
+
+# ref-test failing due to missing --enable-slimming-paint virtual suite reference_args
+crbug.com/470713 virtual/slimmingpaint/fast/sub-pixel/sub-pixel-transparency-layer.html [ Skip ]
 
 crbug.com/443615 [ Linux Win ] imported/csswg-test/css-shapes-1/shape-outside/supported-shapes/circle/shape-outside-circle-027.html [ ImageOnlyFailure ]
 
