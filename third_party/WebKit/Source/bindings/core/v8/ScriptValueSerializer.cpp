@@ -604,7 +604,7 @@ static bool isHostObject(v8::Local<v8::Object> object)
     // them; conveniently, this is also a quick way to detect DOM wrapper objects, because
     // the mechanism for these relies on data stored in these fields. We should
     // catch external array data as a special case.
-    return object->InternalFieldCount() || object->HasIndexedPropertiesInExternalArrayData();
+    return object->InternalFieldCount();
 }
 
 ScriptValueSerializer::ScriptValueSerializer(SerializedScriptValueWriter& writer, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, ScriptState* scriptState)
