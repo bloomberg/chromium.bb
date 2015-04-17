@@ -131,6 +131,8 @@
             'src/processor/minidump.cc',
             'src/processor/minidump_processor.cc',
             'src/processor/minidump_stackwalk.cc',
+            'src/processor/symbolic_constants_win.cc',
+            'src/processor/symbolic_constants_win.h',
           ],
           'conditions': [
             ['OS=="ios"', {

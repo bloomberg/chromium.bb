@@ -173,6 +173,8 @@ if (current_toolchain == host_toolchain && !is_win) {
       "src/processor/exploitability_linux.h",
       "src/processor/exploitability_win.cc",
       "src/processor/exploitability_win.h",
+      "src/processor/symbolic_constants_win.cc",
+      "src/processor/symbolic_constants_win.h",
     ]
   }
 
