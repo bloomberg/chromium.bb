@@ -16,17 +16,28 @@
 #include "mojo/services/html_viewer/webnotificationmanager_impl.h"
 #include "mojo/services/html_viewer/webscheduler_impl.h"
 #include "mojo/services/html_viewer/webthemeengine_impl.h"
+#include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebScrollbarBehavior.h"
 
+namespace mojo {
+class ApplicationImpl;
+}
+
 namespace html_viewer {
+
+class WebClipboardImpl;
+class WebCookieJarImpl;
 
 class BlinkPlatformImpl : public blink::Platform {
  public:
-  explicit BlinkPlatformImpl();
+  // |app| may be null in tests.
+  explicit BlinkPlatformImpl(mojo::ApplicationImpl* app);
   virtual ~BlinkPlatformImpl();
 
   // blink::Platform methods:
+  virtual blink::WebCookieJar* cookieJar();
+  virtual blink::WebClipboard* clipboard();
   virtual blink::WebMimeRegistry* mimeRegistry();
   virtual blink::WebThemeEngine* themeEngine();
   virtual blink::WebScheduler* scheduler();
@@ -92,6 +103,9 @@ class BlinkPlatformImpl : public blink::Platform {
   WebNotificationManagerImpl web_notification_manager_;
   blink::WebScrollbarBehavior scrollbar_behavior_;
   BlinkResourceMap blink_resource_map_;
+  mojo::NetworkServicePtr network_service_;
+  scoped_ptr<WebCookieJarImpl> cookie_jar_;
+  scoped_ptr<WebClipboardImpl> clipboard_;
 
   DISALLOW_COPY_AND_ASSIGN(BlinkPlatformImpl);
 };

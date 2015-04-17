@@ -13,12 +13,17 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "mojo/services/html_viewer/blink_resource_constants.h"
+#include "mojo/services/html_viewer/webclipboard_impl.h"
+#include "mojo/services/html_viewer/webcookiejar_impl.h"
+#include "mojo/services/html_viewer/websockethandle_impl.h"
 #include "mojo/services/html_viewer/webthread_impl.h"
+#include "mojo/services/html_viewer/weburlloader_impl.h"
 #include "net/base/data_url.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/public/platform/WebWaitableEvent.h"
+#include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
 #include "ui/events/gestures/blink/web_gesture_curve_impl.h"
 
 namespace html_viewer {
@@ -51,7 +56,7 @@ class WebWaitableEventImpl : public blink::WebWaitableEvent {
 
 }  // namespace
 
-BlinkPlatformImpl::BlinkPlatformImpl()
+BlinkPlatformImpl::BlinkPlatformImpl(mojo::ApplicationImpl* app)
     : main_loop_(base::MessageLoop::current()),
       shared_timer_func_(NULL),
       shared_timer_fire_time_(0.0),
@@ -59,9 +64,28 @@ BlinkPlatformImpl::BlinkPlatformImpl()
       shared_timer_suspended_(0),
       current_thread_slot_(&DestroyCurrentThread),
       scheduler_(main_loop_->message_loop_proxy()) {
+  if (app) {
+    app->ConnectToService("mojo:network_service", &network_service_);
+
+    mojo::CookieStorePtr cookie_store;
+    network_service_->GetCookieStore(GetProxy(&cookie_store));
+    cookie_jar_.reset(new WebCookieJarImpl(cookie_store.Pass()));
+
+    mojo::ClipboardPtr clipboard;
+    app->ConnectToService("mojo:clipboard", &clipboard);
+    clipboard_.reset(new WebClipboardImpl(clipboard.Pass()));
+  }
 }
 
 BlinkPlatformImpl::~BlinkPlatformImpl() {
+}
+
+blink::WebCookieJar* BlinkPlatformImpl::cookieJar() {
+  return cookie_jar_.get();
+}
+
+blink::WebClipboard* BlinkPlatformImpl::clipboard() {
+  return clipboard_.get();
 }
 
 blink::WebMimeRegistry* BlinkPlatformImpl::mimeRegistry() {
@@ -170,11 +194,11 @@ blink::WebData BlinkPlatformImpl::loadResource(const char* resource) {
 }
 
 blink::WebURLLoader* BlinkPlatformImpl::createURLLoader() {
-  return NULL;
+  return new WebURLLoaderImpl(network_service_.get());
 }
 
 blink::WebSocketHandle* BlinkPlatformImpl::createWebSocketHandle() {
-  return NULL;
+  return new WebSocketHandleImpl(network_service_.get());
 }
 
 blink::WebString BlinkPlatformImpl::userAgent() {

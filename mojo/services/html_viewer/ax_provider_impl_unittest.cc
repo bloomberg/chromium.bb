@@ -49,7 +49,7 @@ class AxProviderImplTest : public testing::Test {
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
     gin::V8Initializer::LoadV8Snapshot();
 #endif
-    blink::initialize(new html_viewer::BlinkPlatformImpl());
+    blink::initialize(new html_viewer::BlinkPlatformImpl(nullptr));
   }
 
   ~AxProviderImplTest() override { blink::shutdown(); }

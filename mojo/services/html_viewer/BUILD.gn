@@ -62,8 +62,6 @@ source_set("lib") {
     "discardable_memory_allocator.h",
     "html_document.cc",
     "html_document.h",
-    "mojo_blink_platform_impl.cc",
-    "mojo_blink_platform_impl.h",
     "touch_handler.cc",
     "touch_handler.h",
     "webclipboard_impl.cc",
