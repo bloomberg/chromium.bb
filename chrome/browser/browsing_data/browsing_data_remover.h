@@ -284,13 +284,6 @@ class BrowsingDataRemover
   // Invoked on the IO thread to clear the hostname resolution cache.
   void ClearHostnameResolutionCacheOnIOThread(IOThread* io_thread);
 
-  // Callback for when the LoggedIn Predictor has been cleared.
-  // Clears the respective waiting flag and invokes NotifyAndDeleteIfDone.
-  void OnClearedLoggedInPredictor();
-
-  // Clears the LoggedIn Predictor.
-  void ClearLoggedInPredictor();
-
   // Callback for when speculative data in the network Predictor has been
   // cleared. Clears the respective waiting flag and invokes
   // NotifyAndDeleteIfDone.
@@ -413,7 +406,6 @@ class BrowsingDataRemover
   bool waiting_for_clear_history_;
   bool waiting_for_clear_hostname_resolution_cache_;
   bool waiting_for_clear_keyword_data_;
-  bool waiting_for_clear_logged_in_predictor_;
   bool waiting_for_clear_nacl_cache_;
   bool waiting_for_clear_network_predictor_;
   bool waiting_for_clear_networking_history_;
