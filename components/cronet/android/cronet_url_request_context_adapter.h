@@ -22,7 +22,7 @@ class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace net {
-class NetLogLogger;
+class WriteToFileNetLogObserver;
 class URLRequestContext;
 class ProxyConfigService;
 }  // namespace net
@@ -87,7 +87,7 @@ class CronetURLRequestContextAdapter {
   // Network thread is owned by |this|, but is destroyed from java thread.
   base::Thread* network_thread_;
   // |net_log_logger_| and |context_| should only be accessed on network thread.
-  scoped_ptr<net::NetLogLogger> net_log_logger_;
+  scoped_ptr<net::WriteToFileNetLogObserver> net_log_logger_;
   scoped_ptr<net::URLRequestContext> context_;
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
 

@@ -254,7 +254,7 @@ TEST_P(SpdyStreamTest, StreamError) {
 
   AddReadEOF();
 
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
 
   DeterministicSocketData data(GetReads(), GetNumReads(), GetWrites(),
                                GetNumWrites());
@@ -294,7 +294,7 @@ TEST_P(SpdyStreamTest, StreamError) {
   EXPECT_TRUE(data.at_write_eof());
 
   // Check that the NetLog was filled reasonably.
-  net::CapturingNetLog::CapturedEntryList entries;
+  net::TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   EXPECT_LT(0u, entries.size());
 
@@ -738,7 +738,7 @@ TEST_P(SpdyStreamTest, IncreaseSendWindowSizeOverflow) {
 
   AddReadEOF();
 
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
 
   DeterministicSocketData data(GetReads(), GetNumReads(),
                                GetWrites(), GetNumWrites());

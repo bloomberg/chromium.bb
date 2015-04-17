@@ -149,7 +149,7 @@ void UDPSocketTest::ConnectTest(bool use_nonblocking_io) {
   // Setup the server to listen.
   IPEndPoint bind_address;
   CreateUDPAddress("127.0.0.1", kPort, &bind_address);
-  CapturingNetLog server_log;
+  TestNetLog server_log;
   scoped_ptr<UDPServerSocket> server(
       new UDPServerSocket(&server_log, NetLog::Source()));
 #if defined(OS_WIN)
@@ -163,7 +163,7 @@ void UDPSocketTest::ConnectTest(bool use_nonblocking_io) {
   // Setup the client.
   IPEndPoint server_address;
   CreateUDPAddress("127.0.0.1", kPort, &server_address);
-  CapturingNetLog client_log;
+  TestNetLog client_log;
   scoped_ptr<UDPClientSocket> client(
       new UDPClientSocket(DatagramSocket::DEFAULT_BIND, RandIntCallback(),
                           &client_log, NetLog::Source()));
@@ -213,7 +213,7 @@ void UDPSocketTest::ConnectTest(bool use_nonblocking_io) {
   client.reset();
 
   // Check the server's log.
-  CapturingNetLog::CapturedEntryList server_entries;
+  TestNetLog::CapturedEntryList server_entries;
   server_log.GetEntries(&server_entries);
   EXPECT_EQ(5u, server_entries.size());
   EXPECT_TRUE(
@@ -228,7 +228,7 @@ void UDPSocketTest::ConnectTest(bool use_nonblocking_io) {
       LogContainsEndEvent(server_entries, 4, NetLog::TYPE_SOCKET_ALIVE));
 
   // Check the client's log.
-  CapturingNetLog::CapturedEntryList client_entries;
+  TestNetLog::CapturedEntryList client_entries;
   client_log.GetEntries(&client_entries);
   EXPECT_EQ(7u, client_entries.size());
   EXPECT_TRUE(
@@ -277,7 +277,7 @@ TEST_F(UDPSocketTest, Broadcast) {
   IPEndPoint listen_address;
   CreateUDPAddress("0.0.0.0", kPort, &listen_address);
 
-  CapturingNetLog server1_log, server2_log;
+  TestNetLog server1_log, server2_log;
   scoped_ptr<UDPServerSocket> server1(
       new UDPServerSocket(&server1_log, NetLog::Source()));
   scoped_ptr<UDPServerSocket> server2(

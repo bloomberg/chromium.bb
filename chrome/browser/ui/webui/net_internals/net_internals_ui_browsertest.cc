@@ -37,7 +37,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/log/net_log.h"
-#include "net/log/net_log_logger.h"
+#include "net/log/write_to_file_net_log_observer.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -282,7 +282,8 @@ void NetInternalsTest::MessageHandler::GetNetLogLoggerLog(
   ASSERT_TRUE(temp_file_handle);
 
   scoped_ptr<base::Value> constants(NetInternalsUI::GetConstants());
-  scoped_ptr<net::NetLogLogger> net_log_logger(new net::NetLogLogger());
+  scoped_ptr<net::WriteToFileNetLogObserver> net_log_logger(
+      new net::WriteToFileNetLogObserver());
   net_log_logger->StartObserving(
       g_browser_process->net_log(), temp_file_handle.Pass(), constants.get(),
       nullptr);

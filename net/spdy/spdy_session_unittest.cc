@@ -1610,7 +1610,7 @@ TEST_P(SpdySessionTest, ClearSettingsStorageOnIPAddressChanged) {
 }
 
 TEST_P(SpdySessionTest, Initialize) {
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   session_deps_.host_resolver->set_synchronous_mode(true);
 
@@ -1632,7 +1632,7 @@ TEST_P(SpdySessionTest, Initialize) {
   // Flush the read completion task.
   base::MessageLoop::current()->RunUntilIdle();
 
-  net::CapturingNetLog::CapturedEntryList entries;
+  net::TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   EXPECT_LT(0u, entries.size());
 
@@ -1642,7 +1642,7 @@ TEST_P(SpdySessionTest, Initialize) {
       net::NetLog::PHASE_NONE);
   EXPECT_LT(0, pos);
 
-  CapturingNetLog::CapturedEntry entry = entries[pos];
+  TestNetLog::CapturedEntry entry = entries[pos];
   NetLog::Source socket_source;
   EXPECT_TRUE(NetLog::Source::FromEventParameters(entry.params.get(),
                                                   &socket_source));
@@ -1666,7 +1666,7 @@ TEST_P(SpdySessionTest, NetLogOnSessionGoaway) {
 
   CreateNetworkSession();
 
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   base::WeakPtr<SpdySession> session =
       CreateInsecureSpdySession(http_session_, key_, log.bound());
   EXPECT_TRUE(HasSpdySession(spdy_session_pool_, key_));
@@ -1678,7 +1678,7 @@ TEST_P(SpdySessionTest, NetLogOnSessionGoaway) {
   EXPECT_TRUE(session == NULL);
 
   // Check that the NetLog was filled reasonably.
-  net::CapturingNetLog::CapturedEntryList entries;
+  net::TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   EXPECT_LT(0u, entries.size());
 
@@ -1688,7 +1688,7 @@ TEST_P(SpdySessionTest, NetLogOnSessionGoaway) {
       net::NetLog::PHASE_NONE);
 
   if (pos < static_cast<int>(entries.size())) {
-    CapturingNetLog::CapturedEntry entry = entries[pos];
+    TestNetLog::CapturedEntry entry = entries[pos];
     int error_code = 0;
     ASSERT_TRUE(entry.GetNetErrorCode(&error_code));
     EXPECT_EQ(OK, error_code);
@@ -1711,7 +1711,7 @@ TEST_P(SpdySessionTest, NetLogOnSessionEOF) {
 
   CreateNetworkSession();
 
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   base::WeakPtr<SpdySession> session =
       CreateInsecureSpdySession(http_session_, key_, log.bound());
   EXPECT_TRUE(HasSpdySession(spdy_session_pool_, key_));
@@ -1723,7 +1723,7 @@ TEST_P(SpdySessionTest, NetLogOnSessionEOF) {
   EXPECT_TRUE(session == NULL);
 
   // Check that the NetLog was filled reasonably.
-  net::CapturingNetLog::CapturedEntryList entries;
+  net::TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   EXPECT_LT(0u, entries.size());
 
@@ -1733,7 +1733,7 @@ TEST_P(SpdySessionTest, NetLogOnSessionEOF) {
       net::NetLog::PHASE_NONE);
 
   if (pos < static_cast<int>(entries.size())) {
-    CapturingNetLog::CapturedEntry entry = entries[pos];
+    TestNetLog::CapturedEntry entry = entries[pos];
     int error_code = 0;
     ASSERT_TRUE(entry.GetNetErrorCode(&error_code));
     EXPECT_EQ(ERR_CONNECTION_CLOSED, error_code);

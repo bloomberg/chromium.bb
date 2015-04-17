@@ -773,7 +773,7 @@ class SSLClientSocketTest : public PlatformTest {
   scoped_ptr<TransportSecurityState> transport_security_state_;
   SSLClientSocketContext context_;
   scoped_ptr<SSLClientSocket> sock_;
-  CapturingNetLog log_;
+  TestNetLog log_;
 
  private:
   scoped_ptr<StreamSocket> transport_;
@@ -799,7 +799,7 @@ class SSLClientSocketCertRequestInfoTest : public SSLClientSocketTest {
       return NULL;
 
     TestCompletionCallback callback;
-    CapturingNetLog log;
+    TestNetLog log;
     scoped_ptr<StreamSocket> transport(
         new TCPClientSocket(addr, &log, NetLog::Source()));
     int rv = transport->Connect(callback.callback());
@@ -970,7 +970,7 @@ class SSLClientSocketChannelIDTest : public SSLClientSocketTest {
 // timeout. This means that an SSL connect end event may appear as a socket
 // write.
 static bool LogContainsSSLConnectEndEvent(
-    const CapturingNetLog::CapturedEntryList& log,
+    const TestNetLog::CapturedEntryList& log,
     int i) {
   return LogContainsEndEvent(log, i, NetLog::TYPE_SSL_CONNECT) ||
          LogContainsEvent(
@@ -999,7 +999,7 @@ TEST_F(SSLClientSocketTest, Connect) {
   ASSERT_TRUE(test_server.GetAddressList(&addr));
 
   TestCompletionCallback callback;
-  CapturingNetLog log;
+  TestNetLog log;
   scoped_ptr<StreamSocket> transport(
       new TCPClientSocket(addr, &log, NetLog::Source()));
   int rv = transport->Connect(callback.callback());
@@ -1014,7 +1014,7 @@ TEST_F(SSLClientSocketTest, Connect) {
 
   rv = sock->Connect(callback.callback());
 
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsBeginEvent(entries, 5, NetLog::TYPE_SSL_CONNECT));
   if (rv == ERR_IO_PENDING)
@@ -1041,7 +1041,7 @@ TEST_F(SSLClientSocketTest, ConnectExpired) {
   ASSERT_TRUE(test_server.GetAddressList(&addr));
 
   TestCompletionCallback callback;
-  CapturingNetLog log;
+  TestNetLog log;
   scoped_ptr<StreamSocket> transport(
       new TCPClientSocket(addr, &log, NetLog::Source()));
   int rv = transport->Connect(callback.callback());
@@ -1056,7 +1056,7 @@ TEST_F(SSLClientSocketTest, ConnectExpired) {
 
   rv = sock->Connect(callback.callback());
 
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsBeginEvent(entries, 5, NetLog::TYPE_SSL_CONNECT));
   if (rv == ERR_IO_PENDING)
@@ -1085,7 +1085,7 @@ TEST_F(SSLClientSocketTest, ConnectMismatched) {
   ASSERT_TRUE(test_server.GetAddressList(&addr));
 
   TestCompletionCallback callback;
-  CapturingNetLog log;
+  TestNetLog log;
   scoped_ptr<StreamSocket> transport(
       new TCPClientSocket(addr, &log, NetLog::Source()));
   int rv = transport->Connect(callback.callback());
@@ -1100,7 +1100,7 @@ TEST_F(SSLClientSocketTest, ConnectMismatched) {
 
   rv = sock->Connect(callback.callback());
 
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsBeginEvent(entries, 5, NetLog::TYPE_SSL_CONNECT));
   if (rv == ERR_IO_PENDING)
@@ -1129,7 +1129,7 @@ TEST_F(SSLClientSocketTest, ConnectClientAuthCertRequested) {
   ASSERT_TRUE(test_server.GetAddressList(&addr));
 
   TestCompletionCallback callback;
-  CapturingNetLog log;
+  TestNetLog log;
   scoped_ptr<StreamSocket> transport(
       new TCPClientSocket(addr, &log, NetLog::Source()));
   int rv = transport->Connect(callback.callback());
@@ -1144,7 +1144,7 @@ TEST_F(SSLClientSocketTest, ConnectClientAuthCertRequested) {
 
   rv = sock->Connect(callback.callback());
 
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsBeginEvent(entries, 5, NetLog::TYPE_SSL_CONNECT));
   if (rv == ERR_IO_PENDING)
@@ -1188,7 +1188,7 @@ TEST_F(SSLClientSocketTest, ConnectClientAuthSendNullCert) {
   ASSERT_TRUE(test_server.GetAddressList(&addr));
 
   TestCompletionCallback callback;
-  CapturingNetLog log;
+  TestNetLog log;
   scoped_ptr<StreamSocket> transport(
       new TCPClientSocket(addr, &log, NetLog::Source()));
   int rv = transport->Connect(callback.callback());
@@ -1209,7 +1209,7 @@ TEST_F(SSLClientSocketTest, ConnectClientAuthSendNullCert) {
   // TODO(davidben): Add a test which requires them and verify the error.
   rv = sock->Connect(callback.callback());
 
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsBeginEvent(entries, 5, NetLog::TYPE_SSL_CONNECT));
   if (rv == ERR_IO_PENDING)
@@ -2105,7 +2105,7 @@ TEST_F(SSLClientSocketTest, Read_FullLogging) {
   ASSERT_TRUE(test_server.GetAddressList(&addr));
 
   TestCompletionCallback callback;
-  CapturingNetLog log;
+  TestNetLog log;
   log.SetLogLevel(NetLog::LOG_ALL);
   scoped_ptr<StreamSocket> transport(
       new TCPClientSocket(addr, &log, NetLog::Source()));
@@ -2136,7 +2136,7 @@ TEST_F(SSLClientSocketTest, Read_FullLogging) {
     rv = callback.WaitForResult();
   EXPECT_EQ(static_cast<int>(arraysize(request_text) - 1), rv);
 
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   size_t last_index = ExpectLogContainsSomewhereAfter(
       entries, 5, NetLog::TYPE_SSL_SOCKET_BYTES_SENT, NetLog::PHASE_NONE);
@@ -2230,7 +2230,7 @@ TEST_F(SSLClientSocketTest, CipherSuiteDisables) {
   ASSERT_TRUE(test_server.GetAddressList(&addr));
 
   TestCompletionCallback callback;
-  CapturingNetLog log;
+  TestNetLog log;
   scoped_ptr<StreamSocket> transport(
       new TCPClientSocket(addr, &log, NetLog::Source()));
   int rv = transport->Connect(callback.callback());
@@ -2248,7 +2248,7 @@ TEST_F(SSLClientSocketTest, CipherSuiteDisables) {
   EXPECT_FALSE(sock->IsConnected());
 
   rv = sock->Connect(callback.callback());
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsBeginEvent(entries, 5, NetLog::TYPE_SSL_CONNECT));
 
@@ -2529,7 +2529,7 @@ TEST_F(SSLClientSocketTest, VerifyReturnChainProperlyOrdered) {
   ASSERT_TRUE(test_server.GetAddressList(&addr));
 
   TestCompletionCallback callback;
-  CapturingNetLog log;
+  TestNetLog log;
   scoped_ptr<StreamSocket> transport(
       new TCPClientSocket(addr, &log, NetLog::Source()));
   int rv = transport->Connect(callback.callback());
@@ -2542,7 +2542,7 @@ TEST_F(SSLClientSocketTest, VerifyReturnChainProperlyOrdered) {
   EXPECT_FALSE(sock->IsConnected());
   rv = sock->Connect(callback.callback());
 
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsBeginEvent(entries, 5, NetLog::TYPE_SSL_CONNECT));
   if (rv == ERR_IO_PENDING)

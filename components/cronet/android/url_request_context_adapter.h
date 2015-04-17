@@ -21,7 +21,7 @@
 
 namespace net {
 
-class NetLogLogger;
+class WriteToFileNetLogObserver;
 
 class ProxyConfigService;
 
@@ -107,7 +107,7 @@ class URLRequestContextAdapter : public net::URLRequestContextGetter {
   bool load_disable_cache_;
   base::Thread* network_thread_;
   scoped_ptr<NetLogObserver> net_log_observer_;
-  scoped_ptr<net::NetLogLogger> net_log_logger_;
+  scoped_ptr<net::WriteToFileNetLogObserver> net_log_logger_;
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
   scoped_ptr<URLRequestContextConfig> config_;
 

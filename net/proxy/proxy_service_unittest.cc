@@ -249,7 +249,7 @@ TEST_F(ProxyServiceTest, Direct) {
 
   ProxyInfo info;
   TestCompletionCallback callback;
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   int rv = service.ResolveProxy(
       url, net::LOAD_NORMAL, &info, callback.callback(), NULL, NULL,
       log.bound());
@@ -261,7 +261,7 @@ TEST_F(ProxyServiceTest, Direct) {
   EXPECT_TRUE(info.proxy_resolve_end_time().is_null());
 
   // Check the NetLog was filled correctly.
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
 
   EXPECT_EQ(3u, entries.size());
@@ -287,7 +287,7 @@ TEST_F(ProxyServiceTest, OnResolveProxyCallbackAddProxy) {
 
   ProxyInfo info;
   TestCompletionCallback callback;
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
 
   // First, warm up the ProxyService.
   int rv = service.ResolveProxy(
@@ -346,7 +346,7 @@ TEST_F(ProxyServiceTest, OnResolveProxyCallbackRemoveProxy) {
 
   ProxyInfo info;
   TestCompletionCallback callback;
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
 
   // First, warm up the ProxyService.
   int rv = service.ResolveProxy(
@@ -393,7 +393,7 @@ TEST_F(ProxyServiceTest, PAC) {
   ProxyInfo info;
   TestCompletionCallback callback;
   ProxyService::PacRequest* request;
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
 
   int rv = service.ResolveProxy(
       url, net::LOAD_NORMAL, &info, callback.callback(), &request, NULL,
@@ -423,7 +423,7 @@ TEST_F(ProxyServiceTest, PAC) {
   EXPECT_LE(info.proxy_resolve_start_time(), info.proxy_resolve_end_time());
 
   // Check the NetLog was filled correctly.
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
 
   EXPECT_EQ(5u, entries.size());
@@ -1913,7 +1913,7 @@ TEST_F(ProxyServiceTest, CancelWhilePACFetching) {
   ProxyInfo info1;
   TestCompletionCallback callback1;
   ProxyService::PacRequest* request1;
-  CapturingBoundNetLog log1;
+  BoundTestNetLog log1;
   int rv = service.ResolveProxy(GURL("http://request1"), net::LOAD_NORMAL,
                                 &info1, callback1.callback(), &request1, NULL,
                                 log1.bound());
@@ -1970,7 +1970,7 @@ TEST_F(ProxyServiceTest, CancelWhilePACFetching) {
   EXPECT_FALSE(callback1.have_result());  // Cancelled.
   EXPECT_FALSE(callback2.have_result());  // Cancelled.
 
-  CapturingNetLog::CapturedEntryList entries1;
+  TestNetLog::CapturedEntryList entries1;
   log1.GetEntries(&entries1);
 
   // Check the NetLog for request 1 (which was cancelled) got filled properly.
@@ -2423,7 +2423,7 @@ TEST_F(ProxyServiceTest, NetworkChangeTriggersPacRefetch) {
 
   MockAsyncProxyResolverExpectsBytes resolver;
 
-  CapturingNetLog log;
+  TestNetLog log;
 
   ProxyService service(
       config_service,
@@ -2520,7 +2520,7 @@ TEST_F(ProxyServiceTest, NetworkChangeTriggersPacRefetch) {
   // Check that the expected events were output to the log stream. In particular
   // PROXY_CONFIG_CHANGED should have only been emitted once (for the initial
   // setup), and NOT a second time when the IP address changed.
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
 
   EXPECT_TRUE(LogContainsEntryWithType(entries, 0,
@@ -3131,7 +3131,7 @@ TEST_F(ProxyServiceTest, SynchronousWithPAC) {
 
   ProxyInfo info;
   info.UseDirect();
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
 
   bool synchronous_success = service.TryResolveProxySynchronously(
       url, net::LOAD_NORMAL, &info, NULL, log.bound());
@@ -3160,7 +3160,7 @@ TEST_F(ProxyServiceTest, SynchronousWithFixedConfiguration) {
   GURL url("http://www.google.com/");
 
   ProxyInfo info;
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
 
   bool synchronous_success = service.TryResolveProxySynchronously(
       url, net::LOAD_NORMAL, &info, NULL, log.bound());

@@ -11,8 +11,8 @@
 #include "base/files/scoped_file.h"
 #include "base/values.h"
 #include "content/public/common/content_switches.h"
-#include "net/log/net_log_logger.h"
 #include "net/log/net_log_util.h"
+#include "net/log/write_to_file_net_log_observer.h"
 
 namespace content {
 
@@ -63,7 +63,7 @@ ShellNetLog::ShellNetLog(const std::string& app_name) {
                  << " for net logging";
     } else {
       scoped_ptr<base::Value> constants(GetShellConstants(app_name));
-      net_log_logger_.reset(new net::NetLogLogger());
+      net_log_logger_.reset(new net::WriteToFileNetLogObserver());
       net_log_logger_->StartObserving(this, file.Pass(), constants.get(),
                                       nullptr);
     }

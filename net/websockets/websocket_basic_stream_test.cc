@@ -16,7 +16,7 @@
 #include "base/big_endian.h"
 #include "base/port.h"
 #include "net/base/test_completion_callback.h"
-#include "net/log/capturing_net_log.h"
+#include "net/log/test_net_log.h"
 #include "net/socket/socket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -75,7 +75,7 @@ WebSocketMaskingKey GenerateNonNulMaskingKey() { return kNonNulMaskingKey; }
 class WebSocketBasicStreamTest : public ::testing::Test {
  protected:
   scoped_ptr<WebSocketBasicStream> stream_;
-  CapturingNetLog net_log_;
+  TestNetLog net_log_;
 };
 
 // A subclass of StaticSocketDataProvider modified to require that all data
@@ -164,7 +164,7 @@ class WebSocketBasicStreamSocketTest : public WebSocketBasicStreamTest {
   scoped_ptr<SocketDataProvider> socket_data_;
   MockClientSocketFactory factory_;
   MockTransportClientSocketPool pool_;
-  CapturingBoundNetLog(bound_net_log_);
+  BoundTestNetLog(bound_net_log_);
   ScopedVector<WebSocketFrame> frames_;
   TestCompletionCallback cb_;
   scoped_refptr<GrowableIOBuffer> http_read_buffer_;

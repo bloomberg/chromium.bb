@@ -21,8 +21,8 @@
 #include "net/cert/sct_status_flags.h"
 #include "net/cert/signed_certificate_timestamp.h"
 #include "net/cert/x509_certificate.h"
-#include "net/log/capturing_net_log.h"
 #include "net/log/net_log.h"
+#include "net/log/test_net_log.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/ct_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -71,20 +71,20 @@ class MultiLogCTVerifierTest : public ::testing::Test {
         (result.verified_scts[0]->origin == origin);
   }
 
-  bool CheckForEmbeddedSCTInNetLog(CapturingNetLog& net_log) {
-    CapturingNetLog::CapturedEntryList entries;
+  bool CheckForEmbeddedSCTInNetLog(TestNetLog& net_log) {
+    TestNetLog::CapturedEntryList entries;
     net_log.GetEntries(&entries);
     if (entries.size() != 2)
       return false;
 
-    const CapturingNetLog::CapturedEntry& received = entries[0];
+    const TestNetLog::CapturedEntry& received = entries[0];
     std::string embedded_scts;
     if (!received.GetStringValue("embedded_scts", &embedded_scts))
       return false;
     if (embedded_scts.empty())
       return false;
 
-    const CapturingNetLog::CapturedEntry& parsed = entries[1];
+    const TestNetLog::CapturedEntry& parsed = entries[1];
     base::ListValue* verified_scts;
     if (!parsed.GetListValue("verified_scts", &verified_scts) ||
         verified_scts->GetSize() != 1) {
@@ -139,7 +139,7 @@ class MultiLogCTVerifierTest : public ::testing::Test {
 
   bool VerifySinglePrecertificateChain(scoped_refptr<X509Certificate> chain) {
     ct::CTVerifyResult result;
-    CapturingNetLog net_log;
+    TestNetLog net_log;
     BoundNetLog bound_net_log =
         BoundNetLog::Make(&net_log, NetLog::SOURCE_CONNECT_JOB);
 
@@ -152,7 +152,7 @@ class MultiLogCTVerifierTest : public ::testing::Test {
 
   bool CheckPrecertificateVerification(scoped_refptr<X509Certificate> chain) {
     ct::CTVerifyResult result;
-    CapturingNetLog net_log;
+    TestNetLog net_log;
     BoundNetLog bound_net_log =
       BoundNetLog::Make(&net_log, NetLog::SOURCE_CONNECT_JOB);
     return (VerifySinglePrecertificateChain(chain, bound_net_log, &result) &&

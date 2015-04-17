@@ -96,8 +96,8 @@ class MockErrorObserver : public ProxyResolverErrorObserver {
 };
 
 TEST_F(ProxyResolverV8TracingTest, Simple) {
-  CapturingNetLog log;
-  CapturingBoundNetLog request_log;
+  TestNetLog log;
+  BoundTestNetLog request_log;
   MockCachingHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
   ProxyResolverV8Tracing resolver(&host_resolver, error_observer, &log);
@@ -127,8 +127,8 @@ TEST_F(ProxyResolverV8TracingTest, Simple) {
 }
 
 TEST_F(ProxyResolverV8TracingTest, JavascriptError) {
-  CapturingNetLog log;
-  CapturingBoundNetLog request_log;
+  TestNetLog log;
+  BoundTestNetLog request_log;
   MockCachingHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
   ProxyResolverV8Tracing resolver(&host_resolver, error_observer, &log);
@@ -152,12 +152,12 @@ TEST_F(ProxyResolverV8TracingTest, JavascriptError) {
 
   // Check the NetLogs -- there was 1 alert and 1 javascript error, and they
   // were output to both the global log, and per-request log.
-  CapturingNetLog::CapturedEntryList entries_list[2];
+  TestNetLog::CapturedEntryList entries_list[2];
   log.GetEntries(&entries_list[0]);
   request_log.GetEntries(&entries_list[1]);
 
   for (size_t list_i = 0; list_i < arraysize(entries_list); list_i++) {
-    const CapturingNetLog::CapturedEntryList& entries = entries_list[list_i];
+    const TestNetLog::CapturedEntryList& entries = entries_list[list_i];
     EXPECT_EQ(2u, entries.size());
     EXPECT_TRUE(
         LogContainsEvent(entries, 0, NetLog::TYPE_PAC_JAVASCRIPT_ALERT,
@@ -173,8 +173,8 @@ TEST_F(ProxyResolverV8TracingTest, JavascriptError) {
 }
 
 TEST_F(ProxyResolverV8TracingTest, TooManyAlerts) {
-  CapturingNetLog log;
-  CapturingBoundNetLog request_log;
+  TestNetLog log;
+  BoundTestNetLog request_log;
   MockCachingHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
   ProxyResolverV8Tracing resolver(&host_resolver, error_observer, &log);
@@ -206,12 +206,12 @@ TEST_F(ProxyResolverV8TracingTest, TooManyAlerts) {
 
   // Check the NetLogs -- the script generated 50 alerts, which were mirrored
   // to both the global and per-request logs.
-  CapturingNetLog::CapturedEntryList entries_list[2];
+  TestNetLog::CapturedEntryList entries_list[2];
   log.GetEntries(&entries_list[0]);
   request_log.GetEntries(&entries_list[1]);
 
   for (size_t list_i = 0; list_i < arraysize(entries_list); list_i++) {
-    const CapturingNetLog::CapturedEntryList& entries = entries_list[list_i];
+    const TestNetLog::CapturedEntryList& entries = entries_list[list_i];
     EXPECT_EQ(50u, entries.size());
     for (size_t i = 0; i < entries.size(); ++i) {
       ASSERT_TRUE(
@@ -224,8 +224,8 @@ TEST_F(ProxyResolverV8TracingTest, TooManyAlerts) {
 // Verify that buffered alerts cannot grow unboundedly, even when the message is
 // empty string.
 TEST_F(ProxyResolverV8TracingTest, TooManyEmptyAlerts) {
-  CapturingNetLog log;
-  CapturingBoundNetLog request_log;
+  TestNetLog log;
+  BoundTestNetLog request_log;
   MockCachingHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
   ProxyResolverV8Tracing resolver(&host_resolver, error_observer, &log);
@@ -254,12 +254,12 @@ TEST_F(ProxyResolverV8TracingTest, TooManyEmptyAlerts) {
 
   // Check the NetLogs -- the script generated 50 alerts, which were mirrored
   // to both the global and per-request logs.
-  CapturingNetLog::CapturedEntryList entries_list[2];
+  TestNetLog::CapturedEntryList entries_list[2];
   log.GetEntries(&entries_list[0]);
   request_log.GetEntries(&entries_list[1]);
 
   for (size_t list_i = 0; list_i < arraysize(entries_list); list_i++) {
-    const CapturingNetLog::CapturedEntryList& entries = entries_list[list_i];
+    const TestNetLog::CapturedEntryList& entries = entries_list[list_i];
     EXPECT_EQ(1000u, entries.size());
     for (size_t i = 0; i < entries.size(); ++i) {
       ASSERT_TRUE(
@@ -273,8 +273,8 @@ TEST_F(ProxyResolverV8TracingTest, TooManyEmptyAlerts) {
 // verifies the final result, and that the underlying DNS resolver received
 // the correct set of queries.
 TEST_F(ProxyResolverV8TracingTest, Dns) {
-  CapturingNetLog log;
-  CapturingBoundNetLog request_log;
+  TestNetLog log;
+  BoundTestNetLog request_log;
   MockCachingHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
   ProxyResolverV8Tracing resolver(&host_resolver, error_observer, &log);
@@ -332,12 +332,12 @@ TEST_F(ProxyResolverV8TracingTest, Dns) {
 
   // Check the NetLogs -- the script generated 1 alert, mirrored to both
   // the per-request and global logs.
-  CapturingNetLog::CapturedEntryList entries_list[2];
+  TestNetLog::CapturedEntryList entries_list[2];
   log.GetEntries(&entries_list[0]);
   request_log.GetEntries(&entries_list[1]);
 
   for (size_t list_i = 0; list_i < arraysize(entries_list); list_i++) {
-    const CapturingNetLog::CapturedEntryList& entries = entries_list[list_i];
+    const TestNetLog::CapturedEntryList& entries = entries_list[list_i];
     EXPECT_EQ(1u, entries.size());
     EXPECT_TRUE(
         LogContainsEvent(entries, 0, NetLog::TYPE_PAC_JAVASCRIPT_ALERT,
@@ -350,8 +350,8 @@ TEST_F(ProxyResolverV8TracingTest, Dns) {
 // "dnsResolve()". This requires 2 restarts. However once the HostResolver's
 // cache is warmed, subsequent calls should take 0 restarts.
 TEST_F(ProxyResolverV8TracingTest, DnsChecksCache) {
-  CapturingNetLog log;
-  CapturingBoundNetLog request_log;
+  TestNetLog log;
+  BoundTestNetLog request_log;
   MockCachingHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
   ProxyResolverV8Tracing resolver(&host_resolver, error_observer, &log);
@@ -407,8 +407,8 @@ TEST_F(ProxyResolverV8TracingTest, DnsChecksCache) {
 // optimization. The proxy resolver should detect the inconsistency and
 // fall-back to synchronous mode execution.
 TEST_F(ProxyResolverV8TracingTest, FallBackToSynchronous1) {
-  CapturingNetLog log;
-  CapturingBoundNetLog request_log;
+  TestNetLog log;
+  BoundTestNetLog request_log;
   MockCachingHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
   ProxyResolverV8Tracing resolver(&host_resolver, error_observer, &log);
@@ -441,12 +441,12 @@ TEST_F(ProxyResolverV8TracingTest, FallBackToSynchronous1) {
 
   // Check the NetLogs -- the script generated 1 alert, mirrored to both
   // the per-request and global logs.
-  CapturingNetLog::CapturedEntryList entries_list[2];
+  TestNetLog::CapturedEntryList entries_list[2];
   log.GetEntries(&entries_list[0]);
   request_log.GetEntries(&entries_list[1]);
 
   for (size_t list_i = 0; list_i < arraysize(entries_list); list_i++) {
-    const CapturingNetLog::CapturedEntryList& entries = entries_list[list_i];
+    const TestNetLog::CapturedEntryList& entries = entries_list[list_i];
     EXPECT_EQ(1u, entries.size());
     EXPECT_TRUE(
         LogContainsEvent(entries, 0, NetLog::TYPE_PAC_JAVASCRIPT_ALERT,
@@ -459,8 +459,8 @@ TEST_F(ProxyResolverV8TracingTest, FallBackToSynchronous1) {
 // optimization. The proxy resolver should detect the inconsistency and
 // fall-back to synchronous mode execution.
 TEST_F(ProxyResolverV8TracingTest, FallBackToSynchronous2) {
-  CapturingNetLog log;
-  CapturingBoundNetLog request_log;
+  TestNetLog log;
+  BoundTestNetLog request_log;
   MockCachingHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
   ProxyResolverV8Tracing resolver(&host_resolver, error_observer, &log);
@@ -499,8 +499,8 @@ TEST_F(ProxyResolverV8TracingTest, FallBackToSynchronous2) {
 // DNS resolves per request limit (20) after which every DNS resolve will
 // fail.
 TEST_F(ProxyResolverV8TracingTest, InfiniteDNSSequence) {
-  CapturingNetLog log;
-  CapturingBoundNetLog request_log;
+  TestNetLog log;
+  BoundTestNetLog request_log;
   MockCachingHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
   ProxyResolverV8Tracing resolver(&host_resolver, error_observer, &log);
@@ -542,8 +542,8 @@ TEST_F(ProxyResolverV8TracingTest, InfiniteDNSSequence) {
 // DNS resolves per request limit (20) after which every DNS resolve will
 // fail.
 TEST_F(ProxyResolverV8TracingTest, InfiniteDNSSequence2) {
-  CapturingNetLog log;
-  CapturingBoundNetLog request_log;
+  TestNetLog log;
+  BoundTestNetLog request_log;
   MockCachingHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
   ProxyResolverV8Tracing resolver(&host_resolver, error_observer, &log);
@@ -575,8 +575,8 @@ TEST_F(ProxyResolverV8TracingTest, InfiniteDNSSequence2) {
 }
 
 void DnsDuringInitHelper(bool synchronous_host_resolver) {
-  CapturingNetLog log;
-  CapturingBoundNetLog request_log;
+  TestNetLog log;
+  BoundTestNetLog request_log;
   MockCachingHostResolver host_resolver;
   host_resolver.set_synchronous_mode(synchronous_host_resolver);
   MockErrorObserver* error_observer = new MockErrorObserver;
@@ -614,7 +614,7 @@ void DnsDuringInitHelper(bool synchronous_host_resolver) {
 
   // Check the NetLogs -- the script generated 2 alerts during initialization.
   EXPECT_EQ(0u, request_log.GetSize());
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
 
   ASSERT_EQ(2u, entries.size());
@@ -949,8 +949,8 @@ TEST_F(ProxyResolverV8TracingTest, CancelSetPacWhileOutstandingBlockingDns) {
 // This tests that the execution of a PAC script is terminated when the DNS
 // dependencies are missing. If the test fails, then it will hang.
 TEST_F(ProxyResolverV8TracingTest, Terminate) {
-  CapturingNetLog log;
-  CapturingBoundNetLog request_log;
+  TestNetLog log;
+  BoundTestNetLog request_log;
   MockCachingHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
   ProxyResolverV8Tracing resolver(&host_resolver, error_observer, &log);

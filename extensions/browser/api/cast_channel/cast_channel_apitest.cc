@@ -23,7 +23,7 @@
 #include "extensions/test/result_catcher.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
-#include "net/log/capturing_net_log.h"
+#include "net/log/test_net_log.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
 
@@ -232,7 +232,7 @@ class CastChannelAPITest : public ExtensionApiTest {
   net::IPEndPoint ip_endpoint_;
   LastErrors last_errors_;
   CastTransport::Delegate* message_delegate_;
-  net::CapturingNetLog capturing_net_log_;
+  net::TestNetLog capturing_net_log_;
   int channel_id_;
 };
 

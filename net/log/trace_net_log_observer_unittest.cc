@@ -17,8 +17,8 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "base/values.h"
-#include "net/log/capturing_net_log.h"
 #include "net/log/net_log.h"
+#include "net/log/test_net_log.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::trace_event::TraceLog;
@@ -131,7 +131,7 @@ class TraceNetLogObserverTest : public testing::Test {
 
   base::ListValue* trace_events() const { return trace_events_.get(); }
 
-  CapturingNetLog* net_log() { return &net_log_; }
+  TestNetLog* net_log() { return &net_log_; }
 
   TraceNetLogObserver* trace_net_log_observer() const {
     return trace_net_log_observer_.get();
@@ -141,7 +141,7 @@ class TraceNetLogObserverTest : public testing::Test {
   scoped_ptr<base::ListValue> trace_events_;
   base::trace_event::TraceResultBuffer trace_buffer_;
   base::trace_event::TraceResultBuffer::SimpleOutput json_output_;
-  CapturingNetLog net_log_;
+  TestNetLog net_log_;
   scoped_ptr<TraceNetLogObserver> trace_net_log_observer_;
 };
 
@@ -156,7 +156,7 @@ TEST_F(TraceNetLogObserverTest, TracingNotEnabled) {
 }
 
 TEST_F(TraceNetLogObserverTest, TraceEventCaptured) {
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   net_log()->GetEntries(&entries);
   EXPECT_TRUE(entries.empty());
 
@@ -223,7 +223,7 @@ TEST_F(TraceNetLogObserverTest, EnableAndDisableTracing) {
   EndTraceAndFlush();
   trace_net_log_observer()->StopWatchForTraceStart();
 
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   net_log()->GetEntries(&entries);
   EXPECT_EQ(3u, entries.size());
   EXPECT_EQ(2u, trace_events()->GetSize());
@@ -263,7 +263,7 @@ TEST_F(TraceNetLogObserverTest, DestroyObserverWhileTracing) {
 
   EndTraceAndFlush();
 
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   net_log()->GetEntries(&entries);
   EXPECT_EQ(2u, entries.size());
   EXPECT_EQ(1u, trace_events()->GetSize());
@@ -292,7 +292,7 @@ TEST_F(TraceNetLogObserverTest, DestroyObserverWhileNotTracing) {
 
   EndTraceAndFlush();
 
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   net_log()->GetEntries(&entries);
   EXPECT_EQ(3u, entries.size());
   EXPECT_EQ(0u, trace_events()->GetSize());
@@ -310,7 +310,7 @@ TEST_F(TraceNetLogObserverTest, CreateObserverAfterTracingStarts) {
 
   EndTraceAndFlush();
 
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   net_log()->GetEntries(&entries);
   EXPECT_EQ(3u, entries.size());
   EXPECT_EQ(0u, trace_events()->GetSize());
@@ -329,7 +329,7 @@ TEST_F(TraceNetLogObserverTest, EventsWithAndWithoutParameters) {
   EndTraceAndFlush();
   trace_net_log_observer()->StopWatchForTraceStart();
 
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   net_log()->GetEntries(&entries);
   EXPECT_EQ(2u, entries.size());
   EXPECT_EQ(2u, trace_events()->GetSize());

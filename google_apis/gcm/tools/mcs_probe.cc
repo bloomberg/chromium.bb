@@ -40,7 +40,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/transport_security_state.h"
-#include "net/log/net_log_logger.h"
+#include "net/log/write_to_file_net_log_observer.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/channel_id_service.h"
@@ -222,7 +222,7 @@ class MCSProbe {
   // Network state.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   net::NetLog net_log_;
-  scoped_ptr<net::NetLogLogger> logger_;
+  scoped_ptr<net::WriteToFileNetLogObserver> logger_;
   scoped_ptr<net::HostResolver> host_resolver_;
   scoped_ptr<net::CertVerifier> cert_verifier_;
   scoped_ptr<net::ChannelIDService> system_channel_id_service_;
@@ -358,7 +358,7 @@ void MCSProbe::InitializeNetworkState() {
 #endif
   }
   if (log_file.get()) {
-    logger_.reset(new net::NetLogLogger());
+    logger_.reset(new net::WriteToFileNetLogObserver());
     logger_->set_log_level(net::NetLog::LOG_ALL_BUT_BYTES);
     logger_->StartObserving(&net_log_, log_file.Pass(), nullptr, nullptr);
   }

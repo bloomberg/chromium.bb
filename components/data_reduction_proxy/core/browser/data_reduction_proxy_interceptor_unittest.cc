@@ -24,7 +24,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
-#include "net/log/capturing_net_log.h"
+#include "net/log/test_net_log.h"
 #include "net/proxy/proxy_server.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -235,7 +235,7 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
   }
 
  private:
-  net::CapturingNetLog net_log_;
+  net::TestNetLog net_log_;
   net::TestNetworkDelegate network_delegate_;
   net::TestURLRequestContext context_;
   net::test_server::EmbeddedTestServer proxy_;

@@ -19,7 +19,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.h"
 #include "net/base/backoff_entry.h"
-#include "net/log/capturing_net_log.h"
+#include "net/log/test_net_log.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class TestingPrefServiceSimple;
@@ -391,7 +391,7 @@ class DataReductionProxyTestContext {
       scoped_ptr<base::MessageLoop> loop,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       scoped_ptr<TestingPrefServiceSimple> simple_pref_service,
-      scoped_ptr<net::CapturingNetLog> net_log,
+      scoped_ptr<net::TestNetLog> net_log,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       net::MockClientSocketFactory* mock_socket_factory,
       scoped_ptr<TestDataReductionProxyIOData> io_data,
@@ -410,7 +410,7 @@ class DataReductionProxyTestContext {
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_ptr<TestingPrefServiceSimple> simple_pref_service_;
-  scoped_ptr<net::CapturingNetLog> net_log_;
+  scoped_ptr<net::TestNetLog> net_log_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   // Non-owned pointer. Will be NULL if |this| was built without specifying a
   // |net::MockClientSocketFactory|.

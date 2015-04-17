@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/log/net_log_logger.h"
+#include "net/log/write_to_file_net_log_observer.h"
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -22,7 +22,7 @@ namespace net {
 
 namespace {
 
-class NetLogLoggerTest : public testing::Test {
+class WriteToFileNetLogObserverTest : public testing::Test {
  public:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -35,11 +35,11 @@ class NetLogLoggerTest : public testing::Test {
   NetLog net_log_;
 };
 
-TEST_F(NetLogLoggerTest, GeneratesValidJSONForNoEvents) {
+TEST_F(WriteToFileNetLogObserverTest, GeneratesValidJSONForNoEvents) {
   // Create and destroy a logger.
   base::ScopedFILE file(base::OpenFile(log_path_, "w"));
   ASSERT_TRUE(file);
-  scoped_ptr<NetLogLogger> logger(new NetLogLogger());
+  scoped_ptr<WriteToFileNetLogObserver> logger(new WriteToFileNetLogObserver());
   logger->StartObserving(&net_log_, file.Pass(), nullptr, nullptr);
   logger->StopObserving(nullptr);
   logger.reset();
@@ -61,10 +61,10 @@ TEST_F(NetLogLoggerTest, GeneratesValidJSONForNoEvents) {
   ASSERT_TRUE(dict->GetDictionary("constants", &constants));
 }
 
-TEST_F(NetLogLoggerTest, LogLevel) {
+TEST_F(WriteToFileNetLogObserverTest, LogLevel) {
   base::ScopedFILE file(base::OpenFile(log_path_, "w"));
   ASSERT_TRUE(file);
-  NetLogLogger logger;
+  WriteToFileNetLogObserver logger;
   logger.StartObserving(&net_log_, file.Pass(), nullptr, nullptr);
   EXPECT_EQ(NetLog::LOG_STRIP_PRIVATE_DATA, logger.log_level());
   EXPECT_EQ(NetLog::LOG_STRIP_PRIVATE_DATA, net_log_.GetLogLevel());
@@ -79,10 +79,10 @@ TEST_F(NetLogLoggerTest, LogLevel) {
   logger.StopObserving(nullptr);
 }
 
-TEST_F(NetLogLoggerTest, GeneratesValidJSONWithOneEvent) {
+TEST_F(WriteToFileNetLogObserverTest, GeneratesValidJSONWithOneEvent) {
   base::ScopedFILE file(base::OpenFile(log_path_, "w"));
   ASSERT_TRUE(file);
-  scoped_ptr<NetLogLogger> logger(new NetLogLogger());
+  scoped_ptr<WriteToFileNetLogObserver> logger(new WriteToFileNetLogObserver());
   logger->StartObserving(&net_log_, file.Pass(), nullptr, nullptr);
 
   const int kDummyId = 1;
@@ -109,10 +109,10 @@ TEST_F(NetLogLoggerTest, GeneratesValidJSONWithOneEvent) {
   ASSERT_EQ(1u, events->GetSize());
 }
 
-TEST_F(NetLogLoggerTest, GeneratesValidJSONWithMultipleEvents) {
+TEST_F(WriteToFileNetLogObserverTest, GeneratesValidJSONWithMultipleEvents) {
   base::ScopedFILE file(base::OpenFile(log_path_, "w"));
   ASSERT_TRUE(file);
-  scoped_ptr<NetLogLogger> logger(new NetLogLogger());
+  scoped_ptr<WriteToFileNetLogObserver> logger(new WriteToFileNetLogObserver());
   logger->StartObserving(&net_log_, file.Pass(), nullptr, nullptr);
 
   const int kDummyId = 1;
@@ -142,12 +142,12 @@ TEST_F(NetLogLoggerTest, GeneratesValidJSONWithMultipleEvents) {
   ASSERT_EQ(2u, events->GetSize());
 }
 
-TEST_F(NetLogLoggerTest, CustomConstants) {
+TEST_F(WriteToFileNetLogObserverTest, CustomConstants) {
   const char kConstantString[] = "awesome constant";
   scoped_ptr<base::Value> constants(new base::StringValue(kConstantString));
   base::ScopedFILE file(base::OpenFile(log_path_, "w"));
   ASSERT_TRUE(file);
-  scoped_ptr<NetLogLogger> logger(new NetLogLogger());
+  scoped_ptr<WriteToFileNetLogObserver> logger(new WriteToFileNetLogObserver());
   logger->StartObserving(&net_log_, file.Pass(), constants.get(), nullptr);
   logger->StopObserving(nullptr);
   logger.reset();
@@ -166,7 +166,7 @@ TEST_F(NetLogLoggerTest, CustomConstants) {
   ASSERT_EQ(kConstantString, constants_string);
 }
 
-TEST_F(NetLogLoggerTest, GeneratesValidJSONWithContext) {
+TEST_F(WriteToFileNetLogObserverTest, GeneratesValidJSONWithContext) {
   // Create context, start a request.
   TestURLRequestContext context(true);
   context.set_net_log(&net_log_);
@@ -175,7 +175,7 @@ TEST_F(NetLogLoggerTest, GeneratesValidJSONWithContext) {
   // Create and destroy a logger.
   base::ScopedFILE file(base::OpenFile(log_path_, "w"));
   ASSERT_TRUE(file);
-  scoped_ptr<NetLogLogger> logger(new NetLogLogger());
+  scoped_ptr<WriteToFileNetLogObserver> logger(new WriteToFileNetLogObserver());
   logger->StartObserving(&net_log_, file.Pass(), nullptr, &context);
   logger->StopObserving(&context);
   logger.reset();
@@ -198,7 +198,8 @@ TEST_F(NetLogLoggerTest, GeneratesValidJSONWithContext) {
   ASSERT_TRUE(dict->GetDictionary("tabInfo", &tab_info));
 }
 
-TEST_F(NetLogLoggerTest, GeneratesValidJSONWithContextWithActiveRequest) {
+TEST_F(WriteToFileNetLogObserverTest,
+       GeneratesValidJSONWithContextWithActiveRequest) {
   // Create context, start a request.
   TestURLRequestContext context(true);
   context.set_net_log(&net_log_);
@@ -213,7 +214,7 @@ TEST_F(NetLogLoggerTest, GeneratesValidJSONWithContextWithActiveRequest) {
   // Create and destroy a logger.
   base::ScopedFILE file(base::OpenFile(log_path_, "w"));
   ASSERT_TRUE(file);
-  scoped_ptr<NetLogLogger> logger(new NetLogLogger());
+  scoped_ptr<WriteToFileNetLogObserver> logger(new WriteToFileNetLogObserver());
   logger->StartObserving(&net_log_, file.Pass(), nullptr, &context);
   logger->StopObserving(&context);
   logger.reset();

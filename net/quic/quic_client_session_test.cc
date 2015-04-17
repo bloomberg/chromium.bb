@@ -13,7 +13,7 @@
 #include "net/base/test_data_directory.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/http/transport_security_state.h"
-#include "net/log/capturing_net_log.h"
+#include "net/log/test_net_log.h"
 #include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
@@ -81,7 +81,7 @@ class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
   }
 
   PacketSavingConnection* connection_;
-  CapturingNetLog net_log_;
+  TestNetLog net_log_;
   MockClientSocketFactory socket_factory_;
   StaticSocketDataProvider socket_data_;
   TransportSecurityState transport_security_state_;

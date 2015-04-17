@@ -90,7 +90,7 @@ class TransportClientSocketTest
 
  protected:
   uint16 listen_port_;
-  CapturingNetLog net_log_;
+  TestNetLog net_log_;
   ClientSocketFactory* const socket_factory_;
   scoped_ptr<StreamSocket> sock_;
 
@@ -185,7 +185,7 @@ TEST_P(TransportClientSocketTest, Connect) {
 
   int rv = sock_->Connect(callback.callback());
 
-  net::CapturingNetLog::CapturedEntryList net_log_entries;
+  net::TestNetLog::CapturedEntryList net_log_entries;
   net_log_.GetEntries(&net_log_entries);
   EXPECT_TRUE(net::LogContainsBeginEvent(
       net_log_entries, 0, net::NetLog::TYPE_SOCKET_ALIVE));

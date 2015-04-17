@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_LOG_NET_LOG_LOGGER_H_
-#define NET_LOG_NET_LOG_LOGGER_H_
+#ifndef WRITE_TO_FILE_NET_LOG_OBSERVER_H_
+#define WRITE_TO_FILE_NET_LOG_OBSERVER_H_
 
 #include <stdio.h>
 
@@ -22,14 +22,14 @@ namespace net {
 
 class URLRequestContext;
 
-// NetLogLogger watches the NetLog event stream, and sends all entries to
-// a file specified on creation.
+// WriteToFileNetLogObserver watches the NetLog event stream, and sends all
+// entries to a file specified on creation.
 //
 // The text file will contain a single JSON object.
-class NET_EXPORT NetLogLogger : public NetLog::ThreadSafeObserver {
+class NET_EXPORT WriteToFileNetLogObserver : public NetLog::ThreadSafeObserver {
  public:
-  NetLogLogger();
-  ~NetLogLogger() override;
+  WriteToFileNetLogObserver();
+  ~WriteToFileNetLogObserver() override;
 
   // Sets the log level to log at. Must be called before StartObserving.
   void set_log_level(NetLog::LogLevel log_level);
@@ -52,7 +52,7 @@ class NET_EXPORT NetLogLogger : public NetLog::ThreadSafeObserver {
                       net::URLRequestContext* url_request_context);
 
   // Stops observing net_log().  Must already be watching.  Must be called
-  // before destruction of the NetLogLogger and the NetLog.
+  // before destruction of the WriteToFileNetLogObserver and the NetLog.
   //
   // |url_request_context| is an optional argument used to added additional
   // network stack state to the log.  If the context is non-NULL, this must be
@@ -71,9 +71,9 @@ class NET_EXPORT NetLogLogger : public NetLog::ThreadSafeObserver {
   // True if OnAddEntry() has been called at least once.
   bool added_events_;
 
-  DISALLOW_COPY_AND_ASSIGN(NetLogLogger);
+  DISALLOW_COPY_AND_ASSIGN(WriteToFileNetLogObserver);
 };
 
 }  // namespace net
 
-#endif  // NET_LOG_NET_LOG_LOGGER_H_
+#endif  // WRITE_TO_FILE_NET_LOG_OBSERVER_H_

@@ -296,7 +296,7 @@ DataReductionProxyTestContext::Builder::Build() {
   scoped_refptr<net::URLRequestContextGetter> request_context_getter;
   scoped_ptr<TestingPrefServiceSimple> pref_service(
       new TestingPrefServiceSimple());
-  scoped_ptr<net::CapturingNetLog> net_log(new net::CapturingNetLog());
+  scoped_ptr<net::TestNetLog> net_log(new net::TestNetLog());
   if (request_context_) {
     request_context_getter = new net::TrivialURLRequestContextGetter(
         request_context_, task_runner);
@@ -400,7 +400,7 @@ DataReductionProxyTestContext::DataReductionProxyTestContext(
     scoped_ptr<base::MessageLoop> loop,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     scoped_ptr<TestingPrefServiceSimple> simple_pref_service,
-    scoped_ptr<net::CapturingNetLog> net_log,
+    scoped_ptr<net::TestNetLog> net_log,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     net::MockClientSocketFactory* mock_socket_factory,
     scoped_ptr<TestDataReductionProxyIOData> io_data,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/log/net_log_logger.h"
+#include "net/log/write_to_file_net_log_observer.h"
 
 #include <stdio.h>
 
@@ -17,22 +17,23 @@
 
 namespace net {
 
-NetLogLogger::NetLogLogger()
+WriteToFileNetLogObserver::WriteToFileNetLogObserver()
     : log_level_(NetLog::LOG_STRIP_PRIVATE_DATA), added_events_(false) {
 }
 
-NetLogLogger::~NetLogLogger() {
+WriteToFileNetLogObserver::~WriteToFileNetLogObserver() {
 }
 
-void NetLogLogger::set_log_level(net::NetLog::LogLevel log_level) {
+void WriteToFileNetLogObserver::set_log_level(net::NetLog::LogLevel log_level) {
   DCHECK(!net_log());
   log_level_ = log_level;
 }
 
-void NetLogLogger::StartObserving(net::NetLog* net_log,
-                                  base::ScopedFILE file,
-                                  base::Value* constants,
-                                  net::URLRequestContext* url_request_context) {
+void WriteToFileNetLogObserver::StartObserving(
+    net::NetLog* net_log,
+    base::ScopedFILE file,
+    base::Value* constants,
+    net::URLRequestContext* url_request_context) {
   DCHECK(file.get());
   file_ = file.Pass();
   added_events_ = false;
@@ -64,7 +65,8 @@ void NetLogLogger::StartObserving(net::NetLog* net_log,
   net_log->DeprecatedAddObserver(this, log_level_);
 }
 
-void NetLogLogger::StopObserving(net::URLRequestContext* url_request_context) {
+void WriteToFileNetLogObserver::StopObserving(
+    net::URLRequestContext* url_request_context) {
   net_log()->DeprecatedRemoveObserver(this);
 
   // End events array.
@@ -85,7 +87,7 @@ void NetLogLogger::StopObserving(net::URLRequestContext* url_request_context) {
   file_.reset();
 }
 
-void NetLogLogger::OnAddEntry(const net::NetLog::Entry& entry) {
+void WriteToFileNetLogObserver::OnAddEntry(const net::NetLog::Entry& entry) {
   // Add a comma and newline for every event but the first.  Newlines are needed
   // so can load partial log files by just ignoring the last line.  For this to
   // work, lines cannot be pretty printed.

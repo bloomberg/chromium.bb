@@ -2,68 +2,67 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/log/capturing_net_log.h"
+#include "net/log/test_net_log.h"
 
 namespace net {
 
-CapturingNetLog::CapturingNetLog() {
+TestNetLog::TestNetLog() {
   DeprecatedAddObserver(&capturing_net_log_observer_, LOG_ALL_BUT_BYTES);
 }
 
-CapturingNetLog::~CapturingNetLog() {
+TestNetLog::~TestNetLog() {
   DeprecatedRemoveObserver(&capturing_net_log_observer_);
 }
 
-void CapturingNetLog::SetLogLevel(NetLog::LogLevel log_level) {
+void TestNetLog::SetLogLevel(NetLog::LogLevel log_level) {
   SetObserverLogLevel(&capturing_net_log_observer_, log_level);
 }
 
-void CapturingNetLog::GetEntries(
-    CapturingNetLog::CapturedEntryList* entry_list) const {
+void TestNetLog::GetEntries(TestNetLog::CapturedEntryList* entry_list) const {
   capturing_net_log_observer_.GetEntries(entry_list);
 }
 
-void CapturingNetLog::GetEntriesForSource(NetLog::Source source,
-                                          CapturedEntryList* entry_list) const {
+void TestNetLog::GetEntriesForSource(NetLog::Source source,
+                                     CapturedEntryList* entry_list) const {
   capturing_net_log_observer_.GetEntriesForSource(source, entry_list);
 }
 
-size_t CapturingNetLog::GetSize() const {
+size_t TestNetLog::GetSize() const {
   return capturing_net_log_observer_.GetSize();
 }
 
-void CapturingNetLog::Clear() {
+void TestNetLog::Clear() {
   capturing_net_log_observer_.Clear();
 }
 
-CapturingBoundNetLog::CapturingBoundNetLog()
+BoundTestNetLog::BoundTestNetLog()
     : net_log_(
           BoundNetLog::Make(&capturing_net_log_, net::NetLog::SOURCE_NONE)) {
 }
 
-CapturingBoundNetLog::~CapturingBoundNetLog() {
+BoundTestNetLog::~BoundTestNetLog() {
 }
 
-void CapturingBoundNetLog::GetEntries(
-    CapturingNetLog::CapturedEntryList* entry_list) const {
+void BoundTestNetLog::GetEntries(
+    TestNetLog::CapturedEntryList* entry_list) const {
   capturing_net_log_.GetEntries(entry_list);
 }
 
-void CapturingBoundNetLog::GetEntriesForSource(
+void BoundTestNetLog::GetEntriesForSource(
     NetLog::Source source,
-    CapturingNetLog::CapturedEntryList* entry_list) const {
+    TestNetLog::CapturedEntryList* entry_list) const {
   capturing_net_log_.GetEntriesForSource(source, entry_list);
 }
 
-size_t CapturingBoundNetLog::GetSize() const {
+size_t BoundTestNetLog::GetSize() const {
   return capturing_net_log_.GetSize();
 }
 
-void CapturingBoundNetLog::Clear() {
+void BoundTestNetLog::Clear() {
   capturing_net_log_.Clear();
 }
 
-void CapturingBoundNetLog::SetLogLevel(NetLog::LogLevel log_level) {
+void BoundTestNetLog::SetLogLevel(NetLog::LogLevel log_level) {
   capturing_net_log_.SetLogLevel(log_level);
 }
 

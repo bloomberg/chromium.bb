@@ -16,7 +16,7 @@
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
-#include "net/log/capturing_net_log.h"
+#include "net/log/test_net_log.h"
 #include "net/socket/socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

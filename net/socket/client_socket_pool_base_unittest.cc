@@ -721,7 +721,7 @@ class ClientSocketPoolBaseTest : public testing::Test {
   ScopedVector<TestSocketRequest>* requests() { return test_base_.requests(); }
   size_t completion_count() const { return test_base_.completion_count(); }
 
-  CapturingNetLog net_log_;
+  TestNetLog net_log_;
   bool connect_backup_jobs_enabled_;
   bool cleanup_timer_enabled_;
   MockClientSocketFactory client_socket_factory_;
@@ -754,7 +754,7 @@ TEST_F(ClientSocketPoolBaseTest, ConnectJob_NoTimeoutOnSynchronousCompletion) {
 TEST_F(ClientSocketPoolBaseTest, ConnectJob_TimedOut) {
   TestConnectJobDelegate delegate;
   ClientSocketHandle ignored;
-  CapturingNetLog log;
+  TestNetLog log;
 
   TestClientSocketPoolBase::Request request(
       &ignored, CompletionCallback(), DEFAULT_PRIORITY,
@@ -773,7 +773,7 @@ TEST_F(ClientSocketPoolBaseTest, ConnectJob_TimedOut) {
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
   EXPECT_EQ(ERR_TIMED_OUT, delegate.WaitForResult());
 
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
 
   EXPECT_EQ(6u, entries.size());
@@ -798,7 +798,7 @@ TEST_F(ClientSocketPoolBaseTest, BasicSynchronous) {
 
   TestCompletionCallback callback;
   ClientSocketHandle handle;
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   TestLoadTimingInfoNotConnected(handle);
 
   EXPECT_EQ(OK,
@@ -815,7 +815,7 @@ TEST_F(ClientSocketPoolBaseTest, BasicSynchronous) {
   handle.Reset();
   TestLoadTimingInfoNotConnected(handle);
 
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
 
   EXPECT_EQ(4u, entries.size());
@@ -835,7 +835,7 @@ TEST_F(ClientSocketPoolBaseTest, InitConnectionFailure) {
   CreatePool(kDefaultMaxSockets, kDefaultMaxSocketsPerGroup);
 
   connect_job_factory_->set_job_type(TestConnectJob::kMockFailingJob);
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
@@ -856,7 +856,7 @@ TEST_F(ClientSocketPoolBaseTest, InitConnectionFailure) {
   EXPECT_TRUE(handle.ssl_error_response_info().headers.get() == NULL);
   TestLoadTimingInfoNotConnected(handle);
 
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
 
   EXPECT_EQ(3u, entries.size());
@@ -1672,7 +1672,7 @@ TEST_F(ClientSocketPoolBaseTest, BasicAsynchronous) {
   connect_job_factory_->set_job_type(TestConnectJob::kMockPendingJob);
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   int rv = handle.Init("a",
                        params_,
                        LOWEST,
@@ -1691,7 +1691,7 @@ TEST_F(ClientSocketPoolBaseTest, BasicAsynchronous) {
   handle.Reset();
   TestLoadTimingInfoNotConnected(handle);
 
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
 
   EXPECT_EQ(4u, entries.size());
@@ -1714,7 +1714,7 @@ TEST_F(ClientSocketPoolBaseTest,
   connect_job_factory_->set_job_type(TestConnectJob::kMockPendingFailingJob);
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   // Set the additional error state members to ensure that they get cleared.
   handle.set_is_ssl_error(true);
   HttpResponseInfo info;
@@ -1731,7 +1731,7 @@ TEST_F(ClientSocketPoolBaseTest,
   EXPECT_FALSE(handle.is_ssl_error());
   EXPECT_TRUE(handle.ssl_error_response_info().headers.get() == NULL);
 
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
 
   EXPECT_EQ(3u, entries.size());
@@ -1778,7 +1778,7 @@ TEST_F(ClientSocketPoolBaseTest, TwoRequestsCancelOne) {
                         callback.callback(),
                         pool_.get(),
                         BoundNetLog()));
-  CapturingBoundNetLog log2;
+  BoundTestNetLog log2;
   EXPECT_EQ(ERR_IO_PENDING,
             handle2.Init("a",
                          params_,
@@ -2215,7 +2215,7 @@ TEST_F(ClientSocketPoolBaseTest, DisableCleanupTimerReuse) {
 
   // Request a new socket. This should reuse the old socket and complete
   // synchronously.
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   rv = handle.Init("a",
                    params_,
                    LOWEST,
@@ -2230,7 +2230,7 @@ TEST_F(ClientSocketPoolBaseTest, DisableCleanupTimerReuse) {
   EXPECT_EQ(0, pool_->IdleSocketCountInGroup("a"));
   EXPECT_EQ(1, pool_->NumActiveSocketsInGroup("a"));
 
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsEntryWithType(
       entries, 1, NetLog::TYPE_SOCKET_POOL_REUSED_AN_EXISTING_SOCKET));
@@ -2295,7 +2295,7 @@ TEST_F(ClientSocketPoolBaseTest, DisableCleanupTimerNoReuse) {
 
   // Request a new socket. This should cleanup the unused and timed out ones.
   // A new socket will be created rather than reusing the idle one.
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   TestCompletionCallback callback3;
   rv = handle.Init("a",
                    params_,
@@ -2312,7 +2312,7 @@ TEST_F(ClientSocketPoolBaseTest, DisableCleanupTimerNoReuse) {
   EXPECT_EQ(0, pool_->IdleSocketCountInGroup("a"));
   EXPECT_EQ(1, pool_->NumActiveSocketsInGroup("a"));
 
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   EXPECT_FALSE(LogContainsEntryWithType(
       entries, 1, NetLog::TYPE_SOCKET_POOL_REUSED_AN_EXISTING_SOCKET));
@@ -2374,7 +2374,7 @@ TEST_F(ClientSocketPoolBaseTest, CleanupTimedOutIdleSockets) {
   // used socket.  Request it to make sure that it's used.
 
   pool_->CleanupTimedOutIdleSockets();
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   rv = handle.Init("a",
                    params_,
                    LOWEST,
@@ -2384,7 +2384,7 @@ TEST_F(ClientSocketPoolBaseTest, CleanupTimedOutIdleSockets) {
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(handle.is_reused());
 
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsEntryWithType(
       entries, 1, NetLog::TYPE_SOCKET_POOL_REUSED_AN_EXISTING_SOCKET));

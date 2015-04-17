@@ -534,7 +534,7 @@ class FakeWebSocketHandshakeStreamCreateHelper
 // Returns true if |entry| is not one of the log types paid attention to in this
 // test. Note that TYPE_HTTP_CACHE_WRITE_INFO and TYPE_HTTP_CACHE_*_DATA are
 // ignored.
-bool ShouldIgnoreLogEntry(const net::CapturingNetLog::CapturedEntry& entry) {
+bool ShouldIgnoreLogEntry(const net::TestNetLog::CapturedEntry& entry) {
   switch (entry.type) {
     case net::NetLog::TYPE_HTTP_CACHE_GET_BACKEND:
     case net::NetLog::TYPE_HTTP_CACHE_OPEN_ENTRY:
@@ -550,15 +550,15 @@ bool ShouldIgnoreLogEntry(const net::CapturingNetLog::CapturedEntry& entry) {
 
 // Modifies |entries| to only include log entries created by the cache layer and
 // asserted on in these tests.
-void FilterLogEntries(net::CapturingNetLog::CapturedEntryList* entries) {
+void FilterLogEntries(net::TestNetLog::CapturedEntryList* entries) {
   entries->erase(std::remove_if(entries->begin(), entries->end(),
                                 &ShouldIgnoreLogEntry),
                  entries->end());
 }
 
-bool LogContainsEventType(const net::CapturingBoundNetLog& log,
+bool LogContainsEventType(const net::BoundTestNetLog& log,
                           net::NetLog::EventType expected) {
-  net::CapturingNetLog::CapturedEntryList entries;
+  net::TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   for (size_t i = 0; i < entries.size(); i++) {
     if (entries[i].type == expected)
@@ -593,7 +593,7 @@ TEST(HttpCache, GetBackend) {
 
 TEST(HttpCache, SimpleGET) {
   MockHttpCache cache;
-  net::CapturingBoundNetLog log;
+  net::BoundTestNetLog log;
   net::LoadTimingInfo load_timing_info;
 
   // Write to the cache.
@@ -611,7 +611,7 @@ TEST(HttpCache, SimpleGETNoDiskCache) {
 
   cache.disk_cache()->set_fail_requests();
 
-  net::CapturingBoundNetLog log;
+  net::BoundTestNetLog log;
   net::LoadTimingInfo load_timing_info;
 
   // Read from the network, and don't use the cache.
@@ -620,7 +620,7 @@ TEST(HttpCache, SimpleGETNoDiskCache) {
 
   // Check that the NetLog was filled as expected.
   // (We attempted to both Open and Create entries, but both failed).
-  net::CapturingNetLog::CapturedEntryList entries;
+  net::TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   FilterLogEntries(&entries);
 
@@ -777,7 +777,7 @@ TEST(HttpCache, SimpleGETWithDiskFailures3) {
 TEST(HttpCache, SimpleGET_LoadOnlyFromCache_Hit) {
   MockHttpCache cache;
 
-  net::CapturingBoundNetLog log;
+  net::BoundTestNetLog log;
   net::LoadTimingInfo load_timing_info;
 
   // Write to the cache.
@@ -785,7 +785,7 @@ TEST(HttpCache, SimpleGET_LoadOnlyFromCache_Hit) {
                                  log.bound(), &load_timing_info);
 
   // Check that the NetLog was filled as expected.
-  net::CapturingNetLog::CapturedEntryList entries;
+  net::TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   FilterLogEntries(&entries);
 
@@ -940,7 +940,7 @@ TEST(HttpCache, SimpleGET_LoadPreferringCache_VaryMismatch) {
   // the network again.
   transaction.load_flags |= net::LOAD_PREFERRING_CACHE;
   transaction.request_headers = "Foo: none\r\n";
-  net::CapturingBoundNetLog log;
+  net::BoundTestNetLog log;
   net::LoadTimingInfo load_timing_info;
   RunTransactionTestAndGetTiming(cache.http_cache(), transaction, log.bound(),
                                  &load_timing_info);
@@ -1135,7 +1135,7 @@ TEST(HttpCache, SimpleGET_LoadBypassCache) {
   MockTransaction transaction(kSimpleGET_Transaction);
   transaction.load_flags |= net::LOAD_BYPASS_CACHE;
 
-  net::CapturingBoundNetLog log;
+  net::BoundTestNetLog log;
   net::LoadTimingInfo load_timing_info;
 
   // Write to the cache.
@@ -1143,7 +1143,7 @@ TEST(HttpCache, SimpleGET_LoadBypassCache) {
                                  &load_timing_info);
 
   // Check that the NetLog was filled as expected.
-  net::CapturingNetLog::CapturedEntryList entries;
+  net::TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   FilterLogEntries(&entries);
 
@@ -1219,7 +1219,7 @@ TEST(HttpCache, SimpleGET_LoadValidateCache) {
   transaction.load_flags |= net::LOAD_VALIDATE_CACHE;
 
   net::HttpResponseInfo response_info;
-  net::CapturingBoundNetLog log;
+  net::BoundTestNetLog log;
   net::LoadTimingInfo load_timing_info;
   RunTransactionTestWithResponseInfoAndGetTiming(
       cache.http_cache(), transaction, &response_info, log.bound(),
@@ -2012,7 +2012,7 @@ TEST(HttpCache, TypicalGET_ConditionalRequest) {
 
   // Get the same URL again, but this time we expect it to result
   // in a conditional request.
-  net::CapturingBoundNetLog log;
+  net::BoundTestNetLog log;
   net::LoadTimingInfo load_timing_info;
   RunTransactionTestAndGetTiming(cache.http_cache(), kTypicalGET_Transaction,
                                  log.bound(), &load_timing_info);
@@ -2051,7 +2051,7 @@ TEST(HttpCache, ETagGET_ConditionalRequest_304) {
   // in a conditional request.
   transaction.load_flags = net::LOAD_VALIDATE_CACHE;
   transaction.handler = ETagGet_ConditionalRequest_Handler;
-  net::CapturingBoundNetLog log;
+  net::BoundTestNetLog log;
   net::LoadTimingInfo load_timing_info;
   RunTransactionTestAndGetTiming(cache.http_cache(), transaction, log.bound(),
                                  &load_timing_info);
@@ -2126,7 +2126,7 @@ TEST(HttpCache, GET_ValidateCache_VaryMatch) {
   // Read from the cache.
   RevalidationServer server;
   transaction.handler = server.Handler;
-  net::CapturingBoundNetLog log;
+  net::BoundTestNetLog log;
   net::LoadTimingInfo load_timing_info;
   RunTransactionTestAndGetTiming(cache.http_cache(), transaction, log.bound(),
                                  &load_timing_info);
@@ -2160,7 +2160,7 @@ TEST(HttpCache, GET_ValidateCache_VaryMismatch) {
   RevalidationServer server;
   transaction.handler = server.Handler;
   transaction.request_headers = "Foo: none\r\n";
-  net::CapturingBoundNetLog log;
+  net::BoundTestNetLog log;
   net::LoadTimingInfo load_timing_info;
   RunTransactionTestAndGetTiming(cache.http_cache(), transaction, log.bound(),
                                  &load_timing_info);
@@ -2193,7 +2193,7 @@ TEST(HttpCache, GET_DontValidateCache_VaryMismatch) {
   RevalidationServer server;
   transaction.handler = server.Handler;
   transaction.request_headers = "Foo: none\r\n";
-  net::CapturingBoundNetLog log;
+  net::BoundTestNetLog log;
   net::LoadTimingInfo load_timing_info;
   RunTransactionTestAndGetTiming(cache.http_cache(), transaction, log.bound(),
                                  &load_timing_info);
@@ -3811,7 +3811,7 @@ TEST(HttpCache, RangeGET_SkipsCache2) {
 TEST(HttpCache, SimpleGET_DoesntLogHeaders) {
   MockHttpCache cache;
 
-  net::CapturingBoundNetLog log;
+  net::BoundTestNetLog log;
   RunTransactionTestWithLog(cache.http_cache(), kSimpleGET_Transaction,
                             log.bound());
 
@@ -3822,7 +3822,7 @@ TEST(HttpCache, SimpleGET_DoesntLogHeaders) {
 TEST(HttpCache, RangeGET_LogsHeaders) {
   MockHttpCache cache;
 
-  net::CapturingBoundNetLog log;
+  net::BoundTestNetLog log;
   RunTransactionTestWithLog(cache.http_cache(), kRangeGET_Transaction,
                             log.bound());
 
@@ -3833,7 +3833,7 @@ TEST(HttpCache, RangeGET_LogsHeaders) {
 TEST(HttpCache, ExternalValidation_LogsHeaders) {
   MockHttpCache cache;
 
-  net::CapturingBoundNetLog log;
+  net::BoundTestNetLog log;
   MockTransaction transaction(kSimpleGET_Transaction);
   transaction.request_headers = "If-None-Match: foo\r\n" EXTRA_HEADER;
   RunTransactionTestWithLog(cache.http_cache(), transaction, log.bound());
@@ -3845,7 +3845,7 @@ TEST(HttpCache, ExternalValidation_LogsHeaders) {
 TEST(HttpCache, SpecialHeaders_LogsHeaders) {
   MockHttpCache cache;
 
-  net::CapturingBoundNetLog log;
+  net::BoundTestNetLog log;
   MockTransaction transaction(kSimpleGET_Transaction);
   transaction.request_headers = "cache-control: no-cache\r\n" EXTRA_HEADER;
   RunTransactionTestWithLog(cache.http_cache(), transaction, log.bound());
@@ -3962,7 +3962,7 @@ TEST(HttpCache, RangeGET_NoValidation_LogsRestart) {
   RunTransactionTest(cache.http_cache(), transaction);
 
   // Now verify that the cached data is not used.
-  net::CapturingBoundNetLog log;
+  net::BoundTestNetLog log;
   RunTransactionTestWithLog(cache.http_cache(), kRangeGET_TransactionOK,
                             log.bound());
 
@@ -4124,7 +4124,7 @@ TEST(HttpCache, RangeGET_OK) {
   // Write and read from the cache (20-59).
   transaction.request_headers = "Range: bytes = 20-59\r\n" EXTRA_HEADER;
   transaction.data = "rg: 20-29 rg: 30-39 rg: 40-49 rg: 50-59 ";
-  net::CapturingBoundNetLog log;
+  net::BoundTestNetLog log;
   net::LoadTimingInfo load_timing_info;
   RunTransactionTestWithResponseAndGetTiming(
       cache.http_cache(), transaction, &headers, log.bound(),
@@ -4184,7 +4184,7 @@ TEST(HttpCache, RangeGET_SyncOK) {
   // Write and read from the cache (20-59).
   transaction.request_headers = "Range: bytes = 20-59\r\n" EXTRA_HEADER;
   transaction.data = "rg: 20-29 rg: 30-39 rg: 40-49 rg: 50-59 ";
-  net::CapturingBoundNetLog log;
+  net::BoundTestNetLog log;
   net::LoadTimingInfo load_timing_info;
   RunTransactionTestWithResponseAndGetTiming(
       cache.http_cache(), transaction, &headers, log.bound(),
@@ -4221,7 +4221,7 @@ TEST(HttpCache, RangeGET_Revalidate1) {
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
   // Read from the cache (40-49).
-  net::CapturingBoundNetLog log;
+  net::BoundTestNetLog log;
   net::LoadTimingInfo load_timing_info;
   RunTransactionTestWithResponseAndGetTiming(
       cache.http_cache(), transaction, &headers, log.bound(),
@@ -4720,7 +4720,7 @@ TEST(HttpCache, GET_Previous206) {
   MockHttpCache cache;
   AddMockTransaction(&kRangeGET_TransactionOK);
   std::string headers;
-  net::CapturingBoundNetLog log;
+  net::BoundTestNetLog log;
   net::LoadTimingInfo load_timing_info;
 
   // Write to the cache (40-49).
@@ -4759,7 +4759,7 @@ TEST(HttpCache, GET_Previous206_NotModified) {
   MockTransaction transaction(kRangeGET_TransactionOK);
   AddMockTransaction(&transaction);
   std::string headers;
-  net::CapturingBoundNetLog log;
+  net::BoundTestNetLog log;
   net::LoadTimingInfo load_timing_info;
 
   // Write to the cache (0-9).
@@ -4829,7 +4829,7 @@ TEST(HttpCache, GET_Previous206_NewContent) {
   transaction2.data = "Not a range";
   RangeTransactionServer handler;
   handler.set_modified(true);
-  net::CapturingBoundNetLog log;
+  net::BoundTestNetLog log;
   net::LoadTimingInfo load_timing_info;
   RunTransactionTestWithResponseAndGetTiming(
       cache.http_cache(), transaction2, &headers, log.bound(),
@@ -4877,7 +4877,7 @@ TEST(HttpCache, GET_Previous206_NotSparse) {
 
   // Now see that we don't use the stored entry.
   std::string headers;
-  net::CapturingBoundNetLog log;
+  net::BoundTestNetLog log;
   net::LoadTimingInfo load_timing_info;
   RunTransactionTestWithResponseAndGetTiming(
       cache.http_cache(), kSimpleGET_Transaction, &headers, log.bound(),
@@ -5445,7 +5445,7 @@ TEST(HttpCache, RangeGET_FastFlakyServer) {
   RangeTransactionServer handler;
   handler.set_bad_200(true);
   transaction.data = "Not a range";
-  net::CapturingBoundNetLog log;
+  net::BoundTestNetLog log;
   RunTransactionTestWithLog(cache.http_cache(), transaction, log.bound());
 
   EXPECT_EQ(3, cache.network_layer()->transaction_count());

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_LOG_CAPTURING_NET_LOG_H_
-#define NET_LOG_CAPTURING_NET_LOG_H_
+#ifndef NET_LOG_TEST_NET_LOG_H_
+#define NET_LOG_TEST_NET_LOG_H_
 
 #include <string>
 #include <vector>
@@ -16,17 +16,17 @@
 
 namespace net {
 
-// CapturingNetLog is convenience class which combines a NetLog and a
+// TestNetLog is convenience class which combines a NetLog and a
 // CapturingNetLogObserver.  It is intended for testing only, and is part of the
 // net_test_support project.
-class CapturingNetLog : public NetLog {
+class TestNetLog : public NetLog {
  public:
   // TODO(mmenke):  Get rid of these.
   typedef CapturedNetLogEntry CapturedEntry;
   typedef CapturedNetLogEntry::List CapturedEntryList;
 
-  CapturingNetLog();
-  ~CapturingNetLog() override;
+  TestNetLog();
+  ~TestNetLog() override;
 
   void SetLogLevel(LogLevel log_level);
 
@@ -39,45 +39,44 @@ class CapturingNetLog : public NetLog {
  private:
   CapturingNetLogObserver capturing_net_log_observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(CapturingNetLog);
+  DISALLOW_COPY_AND_ASSIGN(TestNetLog);
 };
 
 // Helper class that exposes a similar API as BoundNetLog, but uses a
-// CapturingNetLog rather than the more generic NetLog.
+// TestNetLog rather than the more generic NetLog.
 //
-// A CapturingBoundNetLog can easily be converted to a BoundNetLog using the
+// A BoundTestNetLog can easily be converted to a BoundNetLog using the
 // bound() method.
-class CapturingBoundNetLog {
+class BoundTestNetLog {
  public:
-  CapturingBoundNetLog();
-  ~CapturingBoundNetLog();
+  BoundTestNetLog();
+  ~BoundTestNetLog();
 
   // The returned BoundNetLog is only valid while |this| is alive.
   BoundNetLog bound() const { return net_log_; }
 
   // Fills |entry_list| with all entries in the log.
-  void GetEntries(CapturingNetLog::CapturedEntryList* entry_list) const;
+  void GetEntries(TestNetLog::CapturedEntryList* entry_list) const;
 
   // Fills |entry_list| with all entries in the log from the specified Source.
-  void GetEntriesForSource(
-      NetLog::Source source,
-      CapturingNetLog::CapturedEntryList* entry_list) const;
+  void GetEntriesForSource(NetLog::Source source,
+                           TestNetLog::CapturedEntryList* entry_list) const;
 
   // Returns number of entries in the log.
   size_t GetSize() const;
 
   void Clear();
 
-  // Sets the log level of the underlying CapturingNetLog.
+  // Sets the log level of the underlying TestNetLog.
   void SetLogLevel(NetLog::LogLevel log_level);
 
  private:
-  CapturingNetLog capturing_net_log_;
+  TestNetLog capturing_net_log_;
   const BoundNetLog net_log_;
 
-  DISALLOW_COPY_AND_ASSIGN(CapturingBoundNetLog);
+  DISALLOW_COPY_AND_ASSIGN(BoundTestNetLog);
 };
 
 }  // namespace net
 
-#endif  // NET_LOG_CAPTURING_NET_LOG_H_
+#endif  // NET_LOG_TEST_NET_LOG_H_

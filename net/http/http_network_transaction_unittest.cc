@@ -50,9 +50,9 @@
 #include "net/http/http_stream_factory.h"
 #include "net/http/http_stream_parser.h"
 #include "net/http/http_transaction_test_util.h"
-#include "net/log/capturing_net_log.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_unittest.h"
+#include "net/log/test_net_log.h"
 #include "net/proxy/mock_proxy_resolver.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_info.h"
@@ -317,7 +317,7 @@ class HttpNetworkTransactionTest
     request.url = GURL("http://www.google.com/");
     request.load_flags = 0;
 
-    CapturingBoundNetLog log;
+    BoundTestNetLog log;
     session_deps_.net_log = log.bound().net_log();
     scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
     scoped_ptr<HttpTransaction> trans(
@@ -358,7 +358,7 @@ class HttpNetworkTransactionTest
     rv = ReadTransaction(trans.get(), &out.response_data);
     EXPECT_EQ(OK, rv);
 
-    net::CapturingNetLog::CapturedEntryList entries;
+    net::TestNetLog::CapturedEntryList entries;
     log.GetEntries(&entries);
     size_t pos = ExpectLogContainsSomewhere(
         entries, 0, NetLog::TYPE_HTTP_TRANSACTION_SEND_REQUEST_HEADERS,
@@ -1273,7 +1273,7 @@ void HttpNetworkTransactionTest::KeepAliveConnectionResendRequestTest(
   request.url = GURL("http://www.foo.com/");
   request.load_flags = 0;
 
-  CapturingNetLog net_log;
+  TestNetLog net_log;
   session_deps_.net_log = &net_log;
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -1363,7 +1363,7 @@ void HttpNetworkTransactionTest::PreconnectErrorResendRequestTest(
   request.url = GURL("https://www.foo.com/");
   request.load_flags = 0;
 
-  CapturingNetLog net_log;
+  TestNetLog net_log;
   session_deps_.net_log = &net_log;
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -1777,7 +1777,7 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveAfterUnreadBody) {
   request.url = GURL("http://www.foo.com/");
   request.load_flags = 0;
 
-  CapturingNetLog net_log;
+  TestNetLog net_log;
   session_deps_.net_log = &net_log;
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -1886,7 +1886,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuth) {
   request.url = GURL("http://www.google.com/");
   request.load_flags = 0;
 
-  CapturingNetLog log;
+  TestNetLog log;
   session_deps_.net_log = &log;
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   scoped_ptr<HttpTransaction> trans(
@@ -2033,7 +2033,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthKeepAlive) {
   request.url = GURL("http://www.google.com/");
   request.load_flags = 0;
 
-  CapturingNetLog log;
+  TestNetLog log;
   session_deps_.net_log = &log;
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -2383,7 +2383,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp10) {
   // Configure against proxy server "myproxy:70".
   session_deps_.proxy_service.reset(
       ProxyService::CreateFixedFromPacResult("PROXY myproxy:70"));
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -2439,7 +2439,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp10) {
 
   rv = callback1.WaitForResult();
   EXPECT_EQ(OK, rv);
-  net::CapturingNetLog::CapturedEntryList entries;
+  net::TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLog::TYPE_HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
@@ -2501,7 +2501,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp11) {
   // Configure against proxy server "myproxy:70".
   session_deps_.proxy_service.reset(
       ProxyService::CreateFixedFromPacResult("PROXY myproxy:70"));
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -2555,7 +2555,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp11) {
 
   rv = callback1.WaitForResult();
   EXPECT_EQ(OK, rv);
-  net::CapturingNetLog::CapturedEntryList entries;
+  net::TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLog::TYPE_HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
@@ -2618,7 +2618,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp10) {
 
   // Configure against proxy server "myproxy:70".
   session_deps_.proxy_service.reset(ProxyService::CreateFixed("myproxy:70"));
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -2671,7 +2671,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp10) {
 
   rv = callback1.WaitForResult();
   EXPECT_EQ(OK, rv);
-  net::CapturingNetLog::CapturedEntryList entries;
+  net::TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLog::TYPE_HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
@@ -2725,7 +2725,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp11) {
 
   // Configure against proxy server "myproxy:70".
   session_deps_.proxy_service.reset(ProxyService::CreateFixed("myproxy:70"));
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -2774,7 +2774,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp11) {
 
   rv = callback1.WaitForResult();
   EXPECT_EQ(OK, rv);
-  net::CapturingNetLog::CapturedEntryList entries;
+  net::TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLog::TYPE_HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
@@ -2993,7 +2993,7 @@ TEST_P(HttpNetworkTransactionTest,
   request.url = GURL("https://www.google.com/");
 
   session_deps_.proxy_service.reset(ProxyService::CreateFixed("myproxy:70"));
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -3033,7 +3033,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   rv = callback1.WaitForResult();
   EXPECT_EQ(ERR_UNEXPECTED_PROXY_AUTH, rv);
-  net::CapturingNetLog::CapturedEntryList entries;
+  net::TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLog::TYPE_HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
@@ -3057,7 +3057,7 @@ TEST_P(HttpNetworkTransactionTest, HttpProxyLoadTimingNoPacTwoRequests) {
   // Configure against proxy server "myproxy:70".
   session_deps_.proxy_service.reset(
       ProxyService::CreateFixed("PROXY myproxy:70"));
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -3155,7 +3155,7 @@ TEST_P(HttpNetworkTransactionTest, HttpProxyLoadTimingWithPacTwoRequests) {
   // Configure against proxy server "myproxy:70".
   session_deps_.proxy_service.reset(
       ProxyService::CreateFixedFromPacResult("PROXY myproxy:70"));
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -3250,7 +3250,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxyGet) {
   // Configure against https proxy server "proxy:70".
   session_deps_.proxy_service.reset(ProxyService::CreateFixed(
       "https://proxy:70"));
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -3312,7 +3312,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyGet) {
   // Configure against https proxy server "proxy:70".
   session_deps_.proxy_service.reset(ProxyService::CreateFixed(
       "https://proxy:70"));
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -3377,7 +3377,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyGetWithSessionRace) {
   // Configure SPDY proxy server "proxy:70".
   session_deps_.proxy_service.reset(
       ProxyService::CreateFixed("https://proxy:70"));
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -3451,7 +3451,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyGetWithProxyAuth) {
   // Configure against https proxy server "myproxy:70".
   session_deps_.proxy_service.reset(
       ProxyService::CreateFixed("https://myproxy:70"));
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -3554,7 +3554,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyConnectHttps) {
   // Configure against https proxy server "proxy:70".
   session_deps_.proxy_service.reset(ProxyService::CreateFixed(
       "https://proxy:70"));
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -3641,7 +3641,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyConnectSpdy) {
   // Configure against https proxy server "proxy:70".
   session_deps_.proxy_service.reset(ProxyService::CreateFixed(
       "https://proxy:70"));
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -3730,7 +3730,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyConnectFailure) {
   // Configure against https proxy server "proxy:70".
   session_deps_.proxy_service.reset(ProxyService::CreateFixed(
       "https://proxy:70"));
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -3785,7 +3785,7 @@ TEST_P(HttpNetworkTransactionTest,
   // Configure against https proxy server "proxy:70".
   session_deps_.proxy_service.reset(ProxyService::CreateFixed(
       "https://proxy:70"));
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(
       SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_));
@@ -3935,7 +3935,7 @@ TEST_P(HttpNetworkTransactionTest,
   // Configure against https proxy server "proxy:70".
   session_deps_.proxy_service.reset(ProxyService::CreateFixed(
       "https://proxy:70"));
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(
       SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_));
@@ -4066,7 +4066,7 @@ TEST_P(HttpNetworkTransactionTest,
   // Configure against https proxy server "proxy:70".
   session_deps_.proxy_service.reset(ProxyService::CreateFixed(
       "https://proxy:70"));
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(
       SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_));
@@ -4184,7 +4184,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxyAuthRetry) {
   // Configure against https proxy server "myproxy:70".
   session_deps_.proxy_service.reset(
       ProxyService::CreateFixed("https://myproxy:70"));
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -6374,7 +6374,7 @@ TEST_P(HttpNetworkTransactionTest, HTTPSBadCertificateViaProxy) {
 TEST_P(HttpNetworkTransactionTest, HTTPSViaHttpsProxy) {
   session_deps_.proxy_service.reset(
       ProxyService::CreateFixedFromPacResult("HTTPS proxy:70"));
-  CapturingNetLog net_log;
+  TestNetLog net_log;
   session_deps_.net_log = &net_log;
 
   HttpRequestInfo request;
@@ -6438,7 +6438,7 @@ TEST_P(HttpNetworkTransactionTest, HTTPSViaHttpsProxy) {
 TEST_P(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaHttpsProxy) {
   session_deps_.proxy_service.reset(
       ProxyService::CreateFixedFromPacResult("HTTPS proxy:70"));
-  CapturingNetLog net_log;
+  TestNetLog net_log;
   session_deps_.net_log = &net_log;
 
   HttpRequestInfo request;
@@ -6691,7 +6691,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
   // Configure against https proxy server "myproxy:70".
   session_deps_.proxy_service.reset(
       ProxyService::CreateFixedFromPacResult("HTTPS myproxy:70"));
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -6771,7 +6771,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
 
   rv = callback1.WaitForResult();
   EXPECT_EQ(OK, rv);
-  net::CapturingNetLog::CapturedEntryList entries;
+  net::TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLog::TYPE_HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
@@ -6832,7 +6832,7 @@ TEST_P(HttpNetworkTransactionTest, CrossOriginProxyPush) {
   // Configure against https proxy server "myproxy:70".
   session_deps_.proxy_service.reset(
       ProxyService::CreateFixedFromPacResult("HTTPS myproxy:70"));
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
 
   // Enable cross-origin push.
@@ -6947,7 +6947,7 @@ TEST_P(HttpNetworkTransactionTest, CrossOriginProxyPushCorrectness) {
   // Configure against https proxy server "myproxy:70".
   session_deps_.proxy_service.reset(
       ProxyService::CreateFixed("https://myproxy:70"));
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
 
   // Enable cross-origin push.
@@ -7498,7 +7498,7 @@ TEST_P(HttpNetworkTransactionTest, SOCKS4_HTTP_GET) {
 
   session_deps_.proxy_service.reset(
       ProxyService::CreateFixedFromPacResult("SOCKS myproxy:1080"));
-  CapturingNetLog net_log;
+  TestNetLog net_log;
   session_deps_.net_log = &net_log;
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -7557,7 +7557,7 @@ TEST_P(HttpNetworkTransactionTest, SOCKS4_SSL_GET) {
 
   session_deps_.proxy_service.reset(
       ProxyService::CreateFixedFromPacResult("SOCKS myproxy:1080"));
-  CapturingNetLog net_log;
+  TestNetLog net_log;
   session_deps_.net_log = &net_log;
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -7621,7 +7621,7 @@ TEST_P(HttpNetworkTransactionTest, SOCKS4_HTTP_GET_no_PAC) {
 
   session_deps_.proxy_service.reset(
       ProxyService::CreateFixed("socks4://myproxy:1080"));
-  CapturingNetLog net_log;
+  TestNetLog net_log;
   session_deps_.net_log = &net_log;
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -7680,7 +7680,7 @@ TEST_P(HttpNetworkTransactionTest, SOCKS5_HTTP_GET) {
 
   session_deps_.proxy_service.reset(
       ProxyService::CreateFixedFromPacResult("SOCKS5 myproxy:1080"));
-  CapturingNetLog net_log;
+  TestNetLog net_log;
   session_deps_.net_log = &net_log;
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -7753,7 +7753,7 @@ TEST_P(HttpNetworkTransactionTest, SOCKS5_SSL_GET) {
 
   session_deps_.proxy_service.reset(
       ProxyService::CreateFixedFromPacResult("SOCKS5 myproxy:1080"));
-  CapturingNetLog net_log;
+  TestNetLog net_log;
   session_deps_.net_log = &net_log;
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -9524,7 +9524,7 @@ TEST_P(HttpNetworkTransactionTest,
       make_scoped_ptr(
           new ForwardingProxyResolverFactory(&capturing_proxy_resolver)),
       NULL));
-  CapturingNetLog net_log;
+  TestNetLog net_log;
   session_deps_.net_log = &net_log;
 
   HttpRequestInfo request;
@@ -10455,7 +10455,7 @@ TEST_P(HttpNetworkTransactionTest, SpdyAlternateProtocolThroughProxy) {
 
   session_deps_.proxy_service.reset(
       ProxyService::CreateFixedFromPacResult("PROXY myproxy:70"));
-  CapturingNetLog net_log;
+  TestNetLog net_log;
   session_deps_.net_log = &net_log;
   GURL request_url;
   {
@@ -10639,7 +10639,7 @@ TEST_P(HttpNetworkTransactionTest, SimpleCancel) {
 
   TestCompletionCallback callback;
 
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   int rv = trans->Start(&request, callback.callback(), log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   trans.reset();  // Cancel the transaction here.
@@ -10701,7 +10701,7 @@ TEST_P(HttpNetworkTransactionTest, CancelAfterHeaders) {
 TEST_P(HttpNetworkTransactionTest, ProxyGet) {
   session_deps_.proxy_service.reset(
       ProxyService::CreateFixedFromPacResult("PROXY myproxy:70"));
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -10764,7 +10764,7 @@ TEST_P(HttpNetworkTransactionTest, ProxyGet) {
 TEST_P(HttpNetworkTransactionTest, ProxyTunnelGet) {
   session_deps_.proxy_service.reset(
       ProxyService::CreateFixedFromPacResult("PROXY myproxy:70"));
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -10808,7 +10808,7 @@ TEST_P(HttpNetworkTransactionTest, ProxyTunnelGet) {
 
   rv = callback1.WaitForResult();
   EXPECT_EQ(OK, rv);
-  net::CapturingNetLog::CapturedEntryList entries;
+  net::TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLog::TYPE_HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
@@ -10839,7 +10839,7 @@ TEST_P(HttpNetworkTransactionTest, ProxyTunnelGet) {
 // while establishing the tunnel.
 TEST_P(HttpNetworkTransactionTest, ProxyTunnelGetHangup) {
   session_deps_.proxy_service.reset(ProxyService::CreateFixed("myproxy:70"));
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -10880,7 +10880,7 @@ TEST_P(HttpNetworkTransactionTest, ProxyTunnelGetHangup) {
 
   rv = callback1.WaitForResult();
   EXPECT_EQ(ERR_EMPTY_RESPONSE, rv);
-  net::CapturingNetLog::CapturedEntryList entries;
+  net::TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLog::TYPE_HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
@@ -11225,7 +11225,7 @@ TEST_P(HttpNetworkTransactionTest,
 TEST_P(HttpNetworkTransactionTest, ClientAuthCertCache_Proxy_Fail) {
   session_deps_.proxy_service.reset(
       ProxyService::CreateFixed("https://proxy:70"));
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
 
   scoped_refptr<SSLCertRequestInfo> cert_request(new SSLCertRequestInfo());
@@ -11819,7 +11819,7 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
 
   session_deps_.proxy_service.reset(
       ProxyService::CreateFixedFromPacResult("HTTPS proxy:70"));
-  CapturingNetLog log;
+  TestNetLog log;
   session_deps_.net_log = &log;
   SSLSocketDataProvider ssl1(ASYNC, OK);  // to the proxy
   ssl1.SetNextProto(GetParam());

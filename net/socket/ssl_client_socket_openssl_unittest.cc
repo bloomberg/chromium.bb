@@ -184,7 +184,7 @@ class SSLClientSocketOpenSSLClientAuthTest : public PlatformTest {
   scoped_ptr<SpawnedTestServer> test_server_;
   AddressList addr_;
   TestCompletionCallback callback_;
-  CapturingNetLog log_;
+  TestNetLog log_;
   scoped_ptr<StreamSocket> transport_;
   scoped_ptr<SSLClientSocket> sock_;
 };

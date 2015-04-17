@@ -18,7 +18,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate_impl.h"
 #include "net/http/http_auth_handler_factory.h"
-#include "net/log/net_log_logger.h"
+#include "net/log/write_to_file_net_log_observer.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -293,7 +293,7 @@ void CronetURLRequestContextAdapter::StartNetLogToFileOnNetworkThread(
   if (!file)
     return;
 
-  net_log_logger_.reset(new net::NetLogLogger());
+  net_log_logger_.reset(new net::WriteToFileNetLogObserver());
   net_log_logger_->StartObserving(context_->net_log(), file.Pass(), nullptr,
                                   context_.get());
 }

@@ -25,8 +25,8 @@ base::Value* NetLogLevelCallback(NetLog::LogLevel log_level) {
 }
 
 TEST(NetLogTest, Basic) {
-  CapturingNetLog net_log;
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog net_log;
+  TestNetLog::CapturedEntryList entries;
   net_log.GetEntries(&entries);
   EXPECT_EQ(0u, entries.size());
 
@@ -44,7 +44,7 @@ TEST(NetLogTest, Basic) {
 
 // Check that the correct LogLevel is sent to NetLog Value callbacks.
 TEST(NetLogTest, LogLevels) {
-  CapturingNetLog net_log;
+  TestNetLog net_log;
   for (int log_level = NetLog::LOG_ALL; log_level < NetLog::LOG_NONE;
        ++log_level) {
     net_log.SetLogLevel(static_cast<NetLog::LogLevel>(log_level));
@@ -53,7 +53,7 @@ TEST(NetLogTest, LogLevels) {
     net_log.AddGlobalEntry(NetLog::TYPE_SOCKET_ALIVE,
                            base::Bind(NetLogLevelCallback));
 
-    CapturingNetLog::CapturedEntryList entries;
+    TestNetLog::CapturedEntryList entries;
     net_log.GetEntries(&entries);
 
     ASSERT_EQ(1u, entries.size());

@@ -20,7 +20,7 @@
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "net/log/net_log.h"
-#include "net/log/net_log_logger.h"
+#include "net/log/write_to_file_net_log_observer.h"
 
 class IOThread;
 
@@ -113,7 +113,7 @@ class LogPrivateAPI : public BrowserContextKeyedAPI,
   api::log_private::EventSink event_sink_;
   std::set<std::string> net_internal_watches_;
   scoped_ptr<base::ListValue> pending_entries_;
-  scoped_ptr<net::NetLogLogger> net_log_logger_;
+  scoped_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
   // Listen to extension unloaded notifications.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;

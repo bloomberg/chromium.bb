@@ -11,8 +11,8 @@
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_auth_handler_mock.h"
 #include "net/http/http_request_info.h"
-#include "net/log/capturing_net_log.h"
 #include "net/log/net_log_unittest.h"
+#include "net/log/test_net_log.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -38,7 +38,7 @@ TEST(HttpAuthHandlerTest, NetLog) {
         HttpAuthChallengeTokenizer tokenizer(
             challenge.begin(), challenge.end());
         HttpAuthHandlerMock mock_handler;
-        CapturingNetLog capturing_net_log;
+        TestNetLog capturing_net_log;
         BoundNetLog bound_net_log(BoundNetLog::Make(&capturing_net_log,
                                                     net::NetLog::SOURCE_NONE));
 
@@ -50,7 +50,7 @@ TEST(HttpAuthHandlerTest, NetLog) {
         if (async)
           test_callback.WaitForResult();
 
-        CapturingNetLog::CapturedEntryList entries;
+        TestNetLog::CapturedEntryList entries;
         capturing_net_log.GetEntries(&entries);
 
         EXPECT_EQ(2u, entries.size());

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "net/log/net_log_logger.h"
+#include "net/log/write_to_file_net_log_observer.h"
 
 namespace content {
 
@@ -18,7 +18,7 @@ class ShellNetLog : public net::NetLog {
   ~ShellNetLog() override;
 
  private:
-  scoped_ptr<net::NetLogLogger> net_log_logger_;
+  scoped_ptr<net::WriteToFileNetLogObserver> net_log_logger_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellNetLog);
 };

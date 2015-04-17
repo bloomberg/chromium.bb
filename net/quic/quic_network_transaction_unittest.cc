@@ -19,8 +19,8 @@
 #include "net/http/http_stream_factory.h"
 #include "net/http/http_transaction_test_util.h"
 #include "net/http/transport_security_state.h"
-#include "net/log/capturing_net_log.h"
 #include "net/log/net_log_unittest.h"
+#include "net/log/test_net_log.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_resolver.h"
 #include "net/proxy/proxy_service.h"
@@ -353,7 +353,7 @@ class QuicNetworkTransactionTest
   HttpServerPropertiesImpl http_server_properties;
   HttpNetworkSession::Params params_;
   HttpRequestInfo request_;
-  CapturingBoundNetLog net_log_;
+  BoundTestNetLog net_log_;
   StaticSocketDataProvider hanging_data_;
 
  private:
@@ -405,7 +405,7 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
   SendRequestAndExpectQuicResponse("hello!");
 
   // Check that the NetLog was filled reasonably.
-  net::CapturingNetLog::CapturedEntryList entries;
+  net::TestNetLog::CapturedEntryList entries;
   net_log_.GetEntries(&entries);
   EXPECT_LT(0u, entries.size());
 

@@ -8,7 +8,7 @@
 #include "chrome/browser/extensions/api/dial/dial_device_data.h"
 #include "chrome/browser/extensions/api/dial/dial_service.h"
 #include "net/base/ip_endpoint.h"
-#include "net/log/capturing_net_log.h"
+#include "net/log/test_net_log.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,13 +43,13 @@ class MockObserver : public DialService::Observer {
 class DialServiceTest : public testing::Test {
  public:
   DialServiceTest()
-    : dial_service_(&capturing_net_log_) {
+    : dial_service_(&test_net_log_) {
     CHECK(net::ParseIPLiteralToNumber("0.0.0.0", &mock_ip_));
     dial_service_.AddObserver(&mock_observer_);
     dial_socket_ = dial_service_.CreateDialSocket();
   }
  protected:
-  net::CapturingNetLog capturing_net_log_;
+  net::TestNetLog test_net_log_;
   net::IPAddressNumber mock_ip_;
   DialServiceImpl dial_service_;
   scoped_ptr<DialServiceImpl::DialSocket> dial_socket_;

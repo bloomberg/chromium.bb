@@ -91,7 +91,7 @@ void UDPSocketPerfTest::WriteBenchmark(bool use_nonblocking_io) {
   // Setup the server to listen.
   net::IPEndPoint bind_address;
   CreateUDPAddress("127.0.0.1", kPort, &bind_address);
-  net::CapturingNetLog server_log;
+  net::TestNetLog server_log;
   scoped_ptr<net::UDPServerSocket> server(
       new net::UDPServerSocket(&server_log, net::NetLog::Source()));
 #if defined(OS_WIN)
@@ -104,7 +104,7 @@ void UDPSocketPerfTest::WriteBenchmark(bool use_nonblocking_io) {
   // Setup the client.
   net::IPEndPoint server_address;
   CreateUDPAddress("127.0.0.1", kPort, &server_address);
-  net::CapturingNetLog client_log;
+  net::TestNetLog client_log;
   scoped_ptr<net::UDPClientSocket> client(new net::UDPClientSocket(
       net::DatagramSocket::DEFAULT_BIND, net::RandIntCallback(), &client_log,
       net::NetLog::Source()));

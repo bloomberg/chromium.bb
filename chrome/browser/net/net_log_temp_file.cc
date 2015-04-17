@@ -10,7 +10,7 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/log/net_log_logger.h"
+#include "net/log/write_to_file_net_log_observer.h"
 
 using content::BrowserThread;
 
@@ -144,7 +144,7 @@ void NetLogTempFile::StartNetLog(LogType log_type) {
   state_ = STATE_LOGGING;
 
   scoped_ptr<base::Value> constants(NetInternalsUI::GetConstants());
-  net_log_logger_.reset(new net::NetLogLogger());
+  net_log_logger_.reset(new net::WriteToFileNetLogObserver());
   net_log_logger_->set_log_level(GetLogLevelForLogType(log_type));
   net_log_logger_->StartObserving(chrome_net_log_, file.Pass(), constants.get(),
                                   nullptr);

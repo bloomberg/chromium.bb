@@ -3653,7 +3653,7 @@ TEST_P(SpdyNetworkTransactionTest, NetLog) {
     MockRead(ASYNC, 0, 0)  // EOF
   };
 
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
 
   DelayedSocketData data(1, reads, arraysize(reads),
                          writes, arraysize(writes));
@@ -3670,7 +3670,7 @@ TEST_P(SpdyNetworkTransactionTest, NetLog) {
   // This test is intentionally non-specific about the exact ordering of the
   // log; instead we just check to make sure that certain events exist, and that
   // they are in the right order.
-  CapturingNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
 
   EXPECT_LT(0u, entries.size());

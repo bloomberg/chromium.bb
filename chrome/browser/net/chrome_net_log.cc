@@ -16,8 +16,8 @@
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/content_switches.h"
-#include "net/log/net_log_logger.h"
 #include "net/log/trace_net_log_observer.h"
+#include "net/log/write_to_file_net_log_observer.h"
 
 ChromeNetLog::ChromeNetLog()
     : net_log_temp_file_(new NetLogTempFile(this)) {
@@ -45,7 +45,7 @@ ChromeNetLog::ChromeNetLog()
                  << " for net logging";
     } else {
       scoped_ptr<base::Value> constants(NetInternalsUI::GetConstants());
-      net_log_logger_.reset(new net::NetLogLogger());
+      net_log_logger_.reset(new net::WriteToFileNetLogObserver());
       if (command_line->HasSwitch(switches::kNetLogLevel)) {
         std::string log_level_string =
             command_line->GetSwitchValueASCII(switches::kNetLogLevel);

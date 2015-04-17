@@ -23,7 +23,7 @@
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
-#include "net/log/capturing_net_log.h"
+#include "net/log/test_net_log.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/tcp_client_socket.h"
@@ -310,7 +310,7 @@ class TestCastSocket : public CastSocketImpl {
 
   base::Timer* GetTimer() override { return mock_timer_.get(); }
 
-  net::CapturingNetLog capturing_net_log_;
+  net::TestNetLog capturing_net_log_;
   net::IPEndPoint ip_;
   // Simulated connect data
   scoped_ptr<net::MockConnect> tcp_connect_data_[2];

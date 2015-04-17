@@ -10,7 +10,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
-#include "net/log/capturing_net_log.h"
+#include "net/log/test_net_log.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,7 +20,7 @@ class DataReductionProxyConfiguratorTest : public testing::Test {
  public:
   void SetUp() override {
     task_runner_ = new base::TestSimpleTaskRunner();
-    net_log_.reset(new net::CapturingNetLog());
+    net_log_.reset(new net::TestNetLog());
     data_reduction_proxy_event_store_.reset(
         new data_reduction_proxy::DataReductionProxyEventStore(task_runner_));
     config_.reset(new DataReductionProxyConfigurator(

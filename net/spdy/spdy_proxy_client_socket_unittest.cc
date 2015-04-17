@@ -13,9 +13,9 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
-#include "net/log/capturing_net_log.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_unittest.h"
+#include "net/log/test_net_log.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_test_util.h"
@@ -119,7 +119,7 @@ class SpdyProxyClientSocketTest
   TestCompletionCallback read_callback_;
   TestCompletionCallback write_callback_;
   scoped_ptr<DeterministicSocketData> data_;
-  CapturingBoundNetLog net_log_;
+  BoundTestNetLog net_log_;
 
  private:
   scoped_refptr<HttpNetworkSession> session_;
@@ -1274,7 +1274,7 @@ TEST_P(SpdyProxyClientSocketTest, NetLog) {
   NetLog::Source sock_source = sock_->NetLog().source();
   sock_.reset();
 
-  CapturingNetLog::CapturedEntryList entry_list;
+  TestNetLog::CapturedEntryList entry_list;
   net_log_.GetEntriesForSource(sock_source, &entry_list);
 
   ASSERT_EQ(entry_list.size(), 10u);

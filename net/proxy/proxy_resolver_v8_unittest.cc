@@ -145,7 +145,7 @@ TEST(ProxyResolverV8Test, Direct) {
   EXPECT_EQ(OK, result);
 
   ProxyInfo proxy_info;
-  CapturingBoundNetLog log;
+  BoundTestNetLog log;
   result = resolver.GetProxyForURL(
       kQueryUrl, &proxy_info, CompletionCallback(), NULL, log.bound());
 
@@ -155,7 +155,7 @@ TEST(ProxyResolverV8Test, Direct) {
   EXPECT_EQ(0U, resolver.mock_js_bindings()->alerts.size());
   EXPECT_EQ(0U, resolver.mock_js_bindings()->errors.size());
 
-  net::CapturingNetLog::CapturedEntryList entries;
+  net::TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   // No bindings were called, so no log entries.
   EXPECT_EQ(0u, entries.size());

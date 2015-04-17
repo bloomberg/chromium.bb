@@ -16,7 +16,7 @@
 #include "net/base/net_util.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/log/capturing_net_log.h"
+#include "net/log/test_net_log.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/stream_socket.h"
@@ -90,7 +90,7 @@ class TransportClientSocketPoolTest : public testing::Test {
   size_t completion_count() const { return test_base_.completion_count(); }
 
   bool connect_backup_jobs_enabled_;
-  CapturingNetLog net_log_;
+  TestNetLog net_log_;
   scoped_refptr<TransportSocketParams> params_;
   scoped_ptr<MockHostResolver> host_resolver_;
   MockTransportClientSocketFactory client_socket_factory_;
