@@ -30,7 +30,9 @@
 #include "core/dom/Element.h"
 #include "core/dom/ScriptLoader.h"
 #include "platform/heap/Handle.h"
-#include "platform/scheduler/Scheduler.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebScheduler.h"
+#include "public/platform/WebThread.h"
 #include "wtf/Functional.h"
 
 // This bit of magic is needed by oilpan to prevent the ScriptRunner from leaking.
@@ -210,7 +212,7 @@ void ScriptRunner::executeScripts()
 
 bool ScriptRunner::yieldForHighPriorityWork()
 {
-    if (!Scheduler::shared()->shouldYieldForHighPriorityWork())
+    if (!Platform::current()->currentThread()->scheduler()->shouldYieldForHighPriorityWork())
         return false;
 
     postTaskIfOneIsNotAlreadyInFlight();
@@ -223,7 +225,7 @@ void ScriptRunner::postTaskIfOneIsNotAlreadyInFlight()
         return;
 
     // FIXME: Rename task() so that it's obvious it cancels any pending task.
-    Scheduler::shared()->postLoadingTask(FROM_HERE, m_executeScriptsTaskFactory.task());
+    Platform::current()->currentThread()->scheduler()->postLoadingTask(FROM_HERE, m_executeScriptsTaskFactory.task());
 }
 
 DEFINE_TRACE(ScriptRunner)

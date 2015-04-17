@@ -56,8 +56,9 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/heap/AddressSanitizer.h"
-#include "platform/scheduler/Scheduler.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebScheduler.h"
+#include "public/platform/WebThread.h"
 #include "wtf/ArrayBufferContents.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
@@ -320,15 +321,15 @@ static void idleGCTaskInMainThread(double deadlineSeconds)
     ASSERT(RuntimeEnabledFeatures::v8IdleTasksEnabled());
     bool gcFinished = false;
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    if (deadlineSeconds > Platform::current()->monotonicallyIncreasingTime())
+
+    Platform* platform = Platform::current();
+    if (deadlineSeconds > platform->monotonicallyIncreasingTime())
         gcFinished = isolate->IdleNotificationDeadline(deadlineSeconds);
 
-    Scheduler* scheduler = Scheduler::shared();
-    ASSERT(scheduler);
     if (gcFinished)
-        scheduler->postIdleTaskAfterWakeup(FROM_HERE, WTF::bind<double>(idleGCTaskInMainThread));
+        platform->currentThread()->scheduler()->postIdleTaskAfterWakeup(FROM_HERE, WTF::bind<double>(idleGCTaskInMainThread));
     else
-        scheduler->postIdleTask(FROM_HERE, WTF::bind<double>(idleGCTaskInMainThread));
+        platform->currentThread()->scheduler()->postIdleTask(FROM_HERE, WTF::bind<double>(idleGCTaskInMainThread));
 }
 
 static void timerTraceProfilerInMainThread(const char* name, int status)
@@ -397,7 +398,7 @@ void V8Initializer::initializeMainThreadIfNeeded()
     v8::V8::SetAllowCodeGenerationFromStringsCallback(codeGenerationCheckCallbackInMainThread);
 
     if (RuntimeEnabledFeatures::v8IdleTasksEnabled())
-        Scheduler::shared()->postIdleTask(FROM_HERE, WTF::bind<double>(idleGCTaskInMainThread));
+        Platform::current()->currentThread()->scheduler()->postIdleTask(FROM_HERE, WTF::bind<double>(idleGCTaskInMainThread));
 
     isolate->SetEventLogger(timerTraceProfilerInMainThread);
     isolate->SetPromiseRejectCallback(promiseRejectHandlerInMainThread);

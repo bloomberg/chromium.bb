@@ -303,6 +303,12 @@ private:
 
         virtual void exitRunLoop() override { ASSERT_NOT_REACHED(); }
 
+        virtual WebScheduler* scheduler() const override
+        {
+            ASSERT_NOT_REACHED();
+            return nullptr;
+        }
+
     private:
         TaskObserver* m_taskObserver;
         Task* m_task;

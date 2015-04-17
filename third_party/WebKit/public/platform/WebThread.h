@@ -33,6 +33,7 @@
 #endif
 
 namespace blink {
+class WebScheduler;
 class WebTraceLocation;
 
 // Always an integer value.
@@ -76,6 +77,9 @@ public:
 
     virtual void addTaskObserver(TaskObserver*) { }
     virtual void removeTaskObserver(TaskObserver*) { }
+
+    // Returns the scheduler associated with the thread.
+    virtual WebScheduler* scheduler() const = 0;
 
     // enterRunLoop() processes tasks posted to this WebThread. This call does not return until some task calls exitRunLoop().
     // WebThread does not support nesting, meaning that once the run loop is entered for a given WebThread it is not valid to

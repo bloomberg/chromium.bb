@@ -31,8 +31,8 @@
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/parser/XSSAuditor.h"
 #include "platform/scheduler/ClosureRunnerTask.h"
-#include "platform/scheduler/Scheduler.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebScheduler.h"
 #include "wtf/text/TextPosition.h"
 
 namespace blink {
@@ -79,13 +79,13 @@ static void checkThatXSSInfosAreSafeToSendToAnotherThread(const XSSInfoStream& i
 
 #endif
 
-void BackgroundHTMLParser::start(PassRefPtr<WeakReference<BackgroundHTMLParser>> reference, PassOwnPtr<Configuration> config, Scheduler* scheduler)
+void BackgroundHTMLParser::start(PassRefPtr<WeakReference<BackgroundHTMLParser>> reference, PassOwnPtr<Configuration> config, WebScheduler* scheduler)
 {
     new BackgroundHTMLParser(reference, config, scheduler);
     // Caller must free by calling stop().
 }
 
-BackgroundHTMLParser::BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHTMLParser>> reference, PassOwnPtr<Configuration> config, Scheduler* scheduler)
+BackgroundHTMLParser::BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHTMLParser>> reference, PassOwnPtr<Configuration> config, WebScheduler* scheduler)
     : m_weakFactory(reference, this)
     , m_token(adoptPtr(new HTMLToken))
     , m_tokenizer(HTMLTokenizer::create(config->options))

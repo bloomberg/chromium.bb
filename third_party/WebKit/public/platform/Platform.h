@@ -97,7 +97,6 @@ class WebPushProvider;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
 class WebSandboxSupport;
-class WebScheduler;
 class WebSecurityOrigin;
 class WebScrollbarBehavior;
 class WebServiceWorkerCacheStorage;
@@ -361,9 +360,6 @@ public:
 
     // Yield the current thread so another thread can be scheduled.
     virtual void yieldCurrentThread() { }
-
-    // May return null.
-    virtual WebScheduler* scheduler() { return 0; }
 
     // WaitableEvent -------------------------------------------------------
 

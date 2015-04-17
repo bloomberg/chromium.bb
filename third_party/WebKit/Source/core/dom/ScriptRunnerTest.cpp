@@ -8,7 +8,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ScriptLoader.h"
-#include "platform/scheduler/Scheduler.h"
 #include "public/platform/Platform.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -29,14 +28,41 @@ public:
     MOCK_CONST_METHOD0(isReady, bool());
 };
 
+class MockWebThread : public WebThread {
+public:
+    explicit MockWebThread(WebScheduler* webScheduler) : m_webScheduler(webScheduler) { }
+    ~MockWebThread() override { }
+
+    void postTask(const WebTraceLocation&, Task*) override { ASSERT_NOT_REACHED(); }
+    void postDelayedTask(const WebTraceLocation&, Task*, long long) override { ASSERT_NOT_REACHED(); }
+
+    bool isCurrentThread() const override
+    {
+        ASSERT_NOT_REACHED();
+        return false;
+    }
+
+    PlatformThreadId threadId() const override
+    {
+        ASSERT_NOT_REACHED();
+        return 0;
+    }
+
+    void addTaskObserver(TaskObserver*) override { ASSERT_NOT_REACHED(); }
+    void removeTaskObserver(TaskObserver*) override { ASSERT_NOT_REACHED(); }
+
+    WebScheduler* scheduler() const override { return m_webScheduler; }
+
+    void enterRunLoop() override { ASSERT_NOT_REACHED(); }
+    void exitRunLoop() override { ASSERT_NOT_REACHED(); }
+
+private:
+    WebScheduler* m_webScheduler;
+};
+
 class MockPlatform : public Platform, private WebScheduler {
 public:
-    MockPlatform() : m_shouldYield(false), m_shouldYieldEveryOtherTime(false) { }
-
-    WebScheduler* scheduler() override
-    {
-        return this;
-    }
+    MockPlatform() : m_mockWebThread(this), m_shouldYield(false), m_shouldYieldEveryOtherTime(false) { }
 
     void postLoadingTask(const WebTraceLocation&, WebThread::Task* task) override
     {
@@ -44,6 +70,8 @@ public:
     }
 
     void cryptographicallyRandomValues(unsigned char* buffer, size_t length) override { }
+
+    WebThread* currentThread() override { return &m_mockWebThread; }
 
     void runSingleTask()
     {
@@ -77,6 +105,7 @@ public:
     }
 
 private:
+    MockWebThread m_mockWebThread;
     Deque<OwnPtr<WebThread::Task>> m_tasks;
     bool m_shouldYield;
     bool m_shouldYieldEveryOtherTime;
@@ -91,10 +120,8 @@ public:
 
         m_scriptRunner = ScriptRunner::create(m_document.get());
         m_oldPlatform = Platform::current();
-        m_oldScheduler = Scheduler::shared();
 
         // Force Platform::initialize to create a new one pointing at MockPlatform.
-        Scheduler::setForTesting(nullptr);
         Platform::initialize(&m_platform);
         m_platform.setShouldYield(false);
         m_platform.setShouldYieldEveryOtherTime(false);
@@ -103,8 +130,6 @@ public:
     void TearDown() override
     {
         m_scriptRunner.release();
-        Scheduler::shutdown();
-        Scheduler::setForTesting(m_oldScheduler);
         Platform::initialize(m_oldPlatform);
     }
 
@@ -114,7 +139,6 @@ public:
     std::vector<int> m_order; // gmock matchers don't work nicely with WTF::Vector
     MockPlatform m_platform;
     Platform* m_oldPlatform; // NOT OWNED
-    Scheduler* m_oldScheduler; // NOT OWNED
 };
 
 TEST_F(ScriptRunnerTest, QueueSingleScript_Async)

@@ -51,7 +51,6 @@
 #include "platform/heap/Heap.h"
 #include "platform/heap/glue/MessageLoopInterruptor.h"
 #include "platform/heap/glue/PendingGCRunner.h"
-#include "platform/scheduler/Scheduler.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebPrerenderingSupport.h"
 #include "public/platform/WebThread.h"
@@ -244,7 +243,6 @@ void shutdownWithoutV8()
 {
     ASSERT(!s_endOfTaskRunner);
     CoreInitializer::shutdown();
-    Scheduler::shutdown();
     Heap::shutdown();
     WTF::shutdown();
     Platform::shutdown();

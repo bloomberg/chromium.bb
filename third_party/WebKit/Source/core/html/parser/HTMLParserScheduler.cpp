@@ -29,7 +29,9 @@
 #include "core/dom/Document.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/frame/FrameView.h"
-#include "platform/scheduler/Scheduler.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebScheduler.h"
+#include "public/platform/WebThread.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {
@@ -94,7 +96,7 @@ HTMLParserScheduler::~HTMLParserScheduler()
 void HTMLParserScheduler::scheduleForResume()
 {
     ASSERT(!m_isSuspendedWithActiveTimer);
-    Scheduler::shared()->postLoadingTask(FROM_HERE, m_cancellableContinueParse.task());
+    Platform::current()->currentThread()->scheduler()->postLoadingTask(FROM_HERE, m_cancellableContinueParse.task());
 }
 
 void HTMLParserScheduler::suspend()
@@ -113,12 +115,12 @@ void HTMLParserScheduler::resume()
         return;
     m_isSuspendedWithActiveTimer = false;
 
-    Scheduler::shared()->postLoadingTask(FROM_HERE, m_cancellableContinueParse.task());
+    Platform::current()->currentThread()->scheduler()->postLoadingTask(FROM_HERE, m_cancellableContinueParse.task());
 }
 
 inline bool HTMLParserScheduler::shouldYield(const SpeculationsPumpSession& session, bool startingScript) const
 {
-    if (Scheduler::shared()->shouldYieldForHighPriorityWork())
+    if (Platform::current()->currentThread()->scheduler()->shouldYieldForHighPriorityWork())
         return true;
 
     const double parserTimeLimit = 0.5;
