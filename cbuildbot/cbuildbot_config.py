@@ -1473,6 +1473,7 @@ _x86_internal_release_boards = frozenset([
   'expresso',
   'falco',
   'falco_li',
+  'gandof',
   'glimmer',
   'gnawty',
   'guado',
@@ -2964,7 +2965,9 @@ _AddGroupConfig('auron', 'auron', (
 
 _AddGroupConfig('auron-b', 'lulu', (
     'cid',
+    'gandof',
     ),
+    important=False,
 )
 
 # veyron-based boards
