@@ -378,9 +378,6 @@ class CONTENT_EXPORT WebContentsImpl
   const GURL& GetMainFrameLastCommittedURL() const override;
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
-  void DidStartLoading(RenderFrameHost* render_frame_host,
-                       bool to_different_document) override;
-  void DidStopLoading() override;
   void SwappedOut(RenderFrameHost* render_frame_host) override;
   void DidDeferAfterResponseStarted(
       const TransitionLayerData& transition_data) override;
@@ -547,6 +544,10 @@ class CONTENT_EXPORT WebContentsImpl
   void RequestOpenURL(RenderFrameHostImpl* render_frame_host,
                       const OpenURLParams& params) override;
   bool ShouldPreserveAbortedURLs() override;
+  void DidStartLoading(FrameTreeNode* frame_tree_node,
+                       bool to_different_document) override;
+  void DidStopLoading() override;
+  void DidChangeLoadProgress() override;
 
   // RenderWidgetHostDelegate --------------------------------------------------
 
@@ -786,9 +787,6 @@ class CONTENT_EXPORT WebContentsImpl
                                const GURL& target_url);
   void OnDocumentLoadedInFrame();
   void OnDidFinishLoad(const GURL& url);
-  void OnDidStartLoading(bool to_different_document);
-  void OnDidStopLoading();
-  void OnDidChangeLoadProgress(double load_progress);
   void OnGoToEntryAtOffset(int offset);
   void OnUpdateZoomLimits(int minimum_percent,
                           int maximum_percent);
@@ -919,11 +917,11 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Tracking loading progress -------------------------------------------------
 
-  // Resets the tracking state of the current load.
+  // Resets the tracking state of the current load progress.
   void ResetLoadProgressState();
 
-  // Calculates the progress of the current load and notifies the delegate.
-  void SendLoadProgressChanged();
+  // Notifies the delegate that the load progress was updated.
+  void SendChangeLoadProgress();
 
   // Misc non-view stuff -------------------------------------------------------
 
@@ -1079,8 +1077,6 @@ class CONTENT_EXPORT WebContentsImpl
   // The current load state and the URL associated with it.
   net::LoadStateWithParam load_state_;
   base::string16 load_state_host_;
-
-  double loading_total_progress_;
 
   base::TimeTicks loading_last_progress_update_;
 

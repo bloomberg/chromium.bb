@@ -130,8 +130,11 @@ class CONTENT_EXPORT FrameTree {
   // the listener installed by SetFrameRemoveListener.
   void FrameRemoved(FrameTreeNode* frame);
 
+  // Updates the overall load progress and notifies the WebContents.
+  void UpdateLoadProgress();
+
   // Returns this FrameTree's total load progress.
-  double GetLoadProgress();
+  double load_progress() { return load_progress_; }
 
   // Resets the load progress on all nodes in this FrameTree.
   void ResetLoadProgress();
@@ -177,6 +180,9 @@ class CONTENT_EXPORT FrameTree {
   int64 focused_frame_tree_node_id_;
 
   base::Callback<void(RenderFrameHost*)> on_frame_removed_;
+
+  // Overall load progress.
+  double load_progress_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTree);
 };

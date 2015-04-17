@@ -106,6 +106,10 @@ NavigatorImpl::NavigatorImpl(
 
 NavigatorImpl::~NavigatorImpl() {}
 
+NavigatorDelegate* NavigatorImpl::GetDelegate() {
+  return delegate_;
+}
+
 NavigationController* NavigatorImpl::GetController() {
   return controller_;
 }

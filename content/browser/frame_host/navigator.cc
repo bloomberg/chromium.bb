@@ -10,6 +10,10 @@
 
 namespace content {
 
+NavigatorDelegate* Navigator::GetDelegate() {
+  return nullptr;
+}
+
 NavigationController* Navigator::GetController() {
   return NULL;
 }

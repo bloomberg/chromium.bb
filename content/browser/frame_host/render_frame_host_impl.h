@@ -203,11 +203,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   RenderFrameHostDelegate* delegate() { return delegate_; }
   FrameTreeNode* frame_tree_node() { return frame_tree_node_; }
 
-  // Sets this RenderFrameHost's loading state.
-  void set_is_loading(bool is_loading) {
-    is_loading_ = is_loading;
-  }
-
   // Returns this RenderFrameHost's loading state. This method is only used by
   // FrameTreeNode. The proper way to check whether a frame is loading is to
   // call FrameTreeNode::IsLoading.
@@ -529,6 +524,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnAccessibilitySnapshotResponse(int callback_id,
                                        const ui::AXTreeUpdate& snapshot);
   void OnToggleFullscreen(bool enter_fullscreen);
+  void OnDidStartLoading(bool to_different_document);
+  void OnDidStopLoading();
+  void OnDidChangeLoadProgress(double load_progress);
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
   void OnShowPopup(const FrameHostMsg_ShowPopup_Params& params);

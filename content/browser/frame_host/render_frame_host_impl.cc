@@ -388,6 +388,10 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     // The following message is synthetic and doesn't come from RenderFrame, but
     // from RenderProcessHost.
     IPC_MESSAGE_HANDLER(FrameHostMsg_RenderProcessGone, OnRenderProcessGone)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidStartLoading, OnDidStartLoading)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidStopLoading, OnDidStopLoading)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeLoadProgress,
+                        OnDidChangeLoadProgress)
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
     IPC_MESSAGE_HANDLER(FrameHostMsg_HidePopup, OnHidePopup)
@@ -847,11 +851,11 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
 }
 
 void RenderFrameHostImpl::OnDidDropNavigation() {
-  // At the end of Navigate(), the delegate's DidStartLoading is called to force
-  // the spinner to start, even if the renderer didn't yet begin the load. If it
-  // turns out that the renderer dropped the navigation, we need to turn off the
-  // spinner.
-  delegate_->DidStopLoading();
+  // At the end of Navigate(), the FrameTreeNode's DidStartLoading is called to
+  // force the spinner to start, even if the renderer didn't yet begin the load.
+  // If it turns out that the renderer dropped the navigation, the spinner needs
+  // to be turned off.
+  frame_tree_node_->DidStopLoading();
 }
 
 RenderWidgetHostImpl* RenderFrameHostImpl::GetRenderWidgetHost() {
@@ -1430,6 +1434,45 @@ void RenderFrameHostImpl::OnToggleFullscreen(bool enter_fullscreen) {
   render_view_host_->WasResized();
 }
 
+void RenderFrameHostImpl::OnDidStartLoading(bool to_different_document) {
+  // Any main frame load to a new document should reset the load since it will
+  // replace the current page and any frames.
+  if (to_different_document && !GetParent())
+    is_loading_ = false;
+
+  // This method should never be called when the frame is loading.
+  // Unfortunately, it can happen if a history navigation happens during a
+  // BeforeUnload or Unload event.
+  // TODO(fdegans): Change this to a DCHECK after LoadEventProgress has been
+  // refactored in Blink. See crbug.com/466089
+  if (is_loading_) {
+    LOG(WARNING) << "OnDidStartLoading was called twice.";
+    return;
+  }
+
+  frame_tree_node_->DidStartLoading(to_different_document);
+  is_loading_ = true;
+}
+
+void RenderFrameHostImpl::OnDidStopLoading() {
+  // This method should never be called when the frame is not loading.
+  // Unfortunately, it can happen if a history navigation happens during a
+  // BeforeUnload or Unload event.
+  // TODO(fdegans): Change this to a DCHECK after LoadEventProgress has been
+  // refactored in Blink. See crbug.com/466089
+  if (!is_loading_) {
+    LOG(WARNING) << "OnDidStopLoading was called twice.";
+    return;
+  }
+
+  is_loading_ = false;
+  frame_tree_node_->DidStopLoading();
+}
+
+void RenderFrameHostImpl::OnDidChangeLoadProgress(double load_progress) {
+  frame_tree_node_->DidChangeLoadProgress(load_progress);
+}
+
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
 void RenderFrameHostImpl::OnShowPopup(
     const FrameHostMsg_ShowPopup_Params& params) {
@@ -1588,19 +1631,19 @@ void RenderFrameHostImpl::Navigate(
                                request_params));
   }
 
-  // Force the throbber to start. We do this because Blink's "started
-  // loading" message will be received asynchronously from the UI of the
-  // browser. But we want to keep the throbber in sync with what's happening
-  // in the UI. For example, we want to start throbbing immediately when the
-  // user navigates even if the renderer is delayed. There is also an issue
-  // with the throbber starting because the WebUI (which controls whether the
-  // favicon is displayed) happens synchronously. If the start loading
-  // messages was asynchronous, then the default favicon would flash in.
+  // Force the throbber to start. This is done because Blink's "started loading"
+  // message will be received asynchronously from the UI of the browser. But the
+  // throbber needs to be kept in sync with what's happening in the UI. For
+  // example, the throbber will start immediately when the user navigates even
+  // if the renderer is delayed. There is also an issue with the throbber
+  // starting because the WebUI (which controls whether the favicon is
+  // displayed) happens synchronously. If the start loading messages was
+  // asynchronous, then the default favicon would flash in.
   //
-  // Blink doesn't send throb notifications for JavaScript URLs, so we
-  // don't want to either.
+  // Blink doesn't send throb notifications for JavaScript URLs, so it is not
+  // done here either.
   if (!common_params.url.SchemeIs(url::kJavaScriptScheme))
-    delegate_->DidStartLoading(this, true);
+    frame_tree_node_->DidStartLoading(true);
 }
 
 void RenderFrameHostImpl::NavigateToURL(const GURL& url) {

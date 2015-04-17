@@ -17,6 +17,10 @@ InterstitialPageNavigatorImpl::InterstitialPageNavigatorImpl(
     : interstitial_(interstitial),
       controller_(navigation_controller) {}
 
+NavigatorDelegate* InterstitialPageNavigatorImpl::GetDelegate() {
+  return interstitial_;
+}
+
 NavigationController* InterstitialPageNavigatorImpl::GetController() {
   return controller_;
 }

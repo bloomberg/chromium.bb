@@ -17,6 +17,7 @@ struct FrameHostMsg_DidFailProvisionalLoadWithError_Params;
 
 namespace content {
 
+class FrameTreeNode;
 class RenderFrameHostImpl;
 struct LoadCommittedDetails;
 struct OpenURLParams;
@@ -99,6 +100,20 @@ class CONTENT_EXPORT NavigatorDelegate {
   // Returns whether URLs for aborted browser-initiated navigations should be
   // preserved in the omnibox.  Defaults to false.
   virtual bool ShouldPreserveAbortedURLs();
+
+  // A RenderFrameHost in the specified |frame_tree_node| started loading a new
+  // document. This correponds to Blink's notion of the throbber starting.
+  // |to_different_document| will be true unless the load is a fragment
+  // navigation, or triggered by history.pushState/replaceState.
+  virtual void DidStartLoading(FrameTreeNode* frame_tree_node,
+                               bool to_different_document) {}
+
+  // A document stopped loading. This corresponds to Blink's notion of the
+  // throbber stopping.
+  virtual void DidStopLoading() {}
+
+  // The load progress was changed.
+  virtual void DidChangeLoadProgress() {}
 };
 
 }  // namspace content

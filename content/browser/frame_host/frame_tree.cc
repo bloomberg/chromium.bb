@@ -52,19 +52,18 @@ bool CollectLoadProgress(double* progress,
                          int* frame_count,
                          FrameTreeNode* node) {
   // Ignore the current frame if it has not started loading.
-  double frame_progress = node->loading_progress();
-  if (frame_progress == FrameTreeNode::kLoadingProgressNotStarted)
+  if (!node->has_started_loading())
     return true;
 
   // Collect progress.
-  *progress += frame_progress;
+  *progress += node->loading_progress();
   (*frame_count)++;
   return true;
 }
 
 // Helper function used with FrameTree::ForEach() to reset the load progress.
 bool ResetNodeLoadProgress(FrameTreeNode* node) {
-  node->set_loading_progress(FrameTreeNode::kLoadingProgressNotStarted);
+  node->reset_loading_progress();
   return true;
 }
 
@@ -97,7 +96,8 @@ FrameTree::FrameTree(Navigator* navigator,
                               render_widget_delegate,
                               manager_delegate,
                               std::string())),
-      focused_frame_tree_node_id_(-1) {
+      focused_frame_tree_node_id_(-1),
+      load_progress_(0.0) {
 }
 
 FrameTree::~FrameTree() {
@@ -347,18 +347,25 @@ void FrameTree::FrameRemoved(FrameTreeNode* frame) {
     on_frame_removed_.Run(frame->current_frame_host());
 }
 
-double FrameTree::GetLoadProgress() {
+void FrameTree::UpdateLoadProgress() {
   double progress = 0.0;
   int frame_count = 0;
 
   ForEach(base::Bind(&CollectLoadProgress, &progress, &frame_count));
   if (frame_count != 0)
     progress /= frame_count;
-  return progress;
+
+  if (progress <= load_progress_)
+    return;
+  load_progress_ = progress;
+
+  // Notify the WebContents.
+  root_->navigator()->GetDelegate()->DidChangeLoadProgress();
 }
 
 void FrameTree::ResetLoadProgress() {
   ForEach(base::Bind(&ResetNodeLoadProgress));
+  load_progress_ = 0.0;
 }
 
 bool FrameTree::IsLoading() {

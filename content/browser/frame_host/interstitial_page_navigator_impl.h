@@ -22,6 +22,7 @@ class CONTENT_EXPORT InterstitialPageNavigatorImpl : public Navigator {
       InterstitialPageImpl* interstitial,
       NavigationControllerImpl* navigation_controller);
 
+  NavigatorDelegate* GetDelegate() override;
   NavigationController* GetController() override;
   void DidNavigate(RenderFrameHostImpl* render_frame_host,
                    const FrameHostMsg_DidCommitProvisionalLoad_Params&

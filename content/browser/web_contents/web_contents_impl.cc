@@ -202,7 +202,6 @@ void SetAccessibilityModeOnFrame(AccessibilityMode mode,
   static_cast<RenderFrameHostImpl*>(frame_host)->SetAccessibilityMode(mode);
 }
 
-
 }  // namespace
 
 WebContents* WebContents::Create(const WebContents::CreateParams& params) {
@@ -311,7 +310,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context,
       crashed_error_code_(0),
       waiting_for_response_(false),
       load_state_(net::LOAD_STATE_IDLE, base::string16()),
-      loading_total_progress_(0.0),
       upload_size_(0),
       upload_position_(0),
       displayed_insecure_content_(false),
@@ -513,10 +511,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishDocumentLoad,
                         OnDocumentLoadedInFrame)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishLoad, OnDidFinishLoad)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidStartLoading, OnDidStartLoading)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidStopLoading, OnDidStopLoading)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeLoadProgress,
-                        OnDidChangeLoadProgress)
     IPC_MESSAGE_HANDLER(FrameHostMsg_OpenColorChooser, OnOpenColorChooser)
     IPC_MESSAGE_HANDLER(FrameHostMsg_EndColorChooser, OnEndColorChooser)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SetSelectedColorInColorChooser,
@@ -2862,146 +2856,6 @@ void WebContentsImpl::OnDidFinishLoad(const GURL& url) {
       WebContentsObserver, observers_, DidFinishLoad(rfh, validated_url));
 }
 
-void WebContentsImpl::OnDidStartLoading(bool to_different_document) {
-  if (!HasValidFrameSource())
-    return;
-
-  RenderFrameHostImpl* rfh =
-      static_cast<RenderFrameHostImpl*>(render_frame_message_source_);
-
-  // Any main frame load to a new document should reset the load progress, since
-  // it will replace the current page and any frames.
-  if (to_different_document && !rfh->GetParent()) {
-    ResetLoadProgressState();
-    rfh->set_is_loading(false);
-  }
-
-  // This method should never be called when the frame is loading.
-  // Unfortunately, it can happen if a history navigation happens during a
-  // BeforeUnload or Unload event.
-  // TODO(fdegans): Change this to a DCHECK after LoadEventProgress has been
-  // refactored in Blink. See crbug.com/466089
-  if (rfh->is_loading()) {
-    LOG(WARNING) << "OnDidStartLoading was called twice.";
-    return;
-  }
-
-  if (!frame_tree_.IsLoading())
-    DidStartLoading(rfh, to_different_document);
-
-  rfh->set_is_loading(true);
-
-  FrameTreeNode* ftn = rfh->frame_tree_node();
-  ftn->set_loading_progress(FrameTreeNode::kLoadingProgressMinimum);
-
-  // Notify the RenderFrameHostManager of the event.
-  ftn->render_manager()->OnDidStartLoading();
-
-  SendLoadProgressChanged();
-}
-
-void WebContentsImpl::OnDidStopLoading() {
-  // TODO(erikchen): Remove ScopedTracker below once crbug.com/465796 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "465796 WebContentsImpl::OnDidStopLoading::Start"));
-
-  if (!HasValidFrameSource())
-    return;
-
-  RenderFrameHostImpl* rfh =
-      static_cast<RenderFrameHostImpl*>(render_frame_message_source_);
-
-  // This method should never be called when the frame is not loading.
-  // Unfortunately, it can happen if a history navigation happens during a
-  // BeforeUnload or Unload event.
-  // TODO(fdegans): Change this to a DCHECK after LoadEventProgress has been
-  // refactored in Blink. See crbug.com/466089
-  if (!rfh->is_loading()) {
-    LOG(WARNING) << "OnDidStopLoading was called twice.";
-    return;
-  }
-
-  rfh->set_is_loading(false);
-
-  FrameTreeNode* ftn = rfh->frame_tree_node();
-  ftn->set_loading_progress(FrameTreeNode::kLoadingProgressDone);
-
-  // TODO(erikchen): Remove ScopedTracker below once crbug.com/465796 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "465796 "
-          "WebContentsImpl::OnDidStopLoading::SendLoadProgressChanged"));
-
-  // Update progress based on this frame's completion.
-  SendLoadProgressChanged();
-
-  // Then clean-up the states.
-  if (loading_total_progress_ == 1.0)
-    ResetLoadProgressState();
-
-  // TODO(erikchen): Remove ScopedTracker below once crbug.com/465796 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "465796 WebContentsImpl::OnDidStopLoading::NotifyRenderManager"));
-  // Notify the RenderFrameHostManager of the event.
-  ftn->render_manager()->OnDidStopLoading();
-
-  if (!frame_tree_.IsLoading()) {
-    // TODO(erikchen): Remove ScopedTracker below once crbug.com/465796 is
-    // fixed.
-    tracked_objects::ScopedTracker tracking_profile4(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "465796 WebContentsImpl::OnDidStopLoading::WCIDidStopLoading"));
-    DidStopLoading();
-  }
-
-  // TODO(erikchen): Remove ScopedTracker below once crbug.com/465796 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile4(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "465796 WebContentsImpl::OnDidStopLoading::End"));
-}
-
-void WebContentsImpl::OnDidChangeLoadProgress(double load_progress) {
-  if (!HasValidFrameSource())
-    return;
-
-  RenderFrameHostImpl* rfh =
-      static_cast<RenderFrameHostImpl*>(render_frame_message_source_);
-  FrameTreeNode* ftn = rfh->frame_tree_node();
-
-  ftn->set_loading_progress(load_progress);
-
-  // We notify progress change immediately for the first and last updates.
-  // Also, since the message loop may be pretty busy when a page is loaded, it
-  // might not execute a posted task in a timely manner so we make sure to
-  // immediately send progress report if enough time has passed.
-  base::TimeDelta min_delay =
-      base::TimeDelta::FromMilliseconds(kMinimumDelayBetweenLoadingUpdatesMS);
-  if (load_progress == 1.0 || loading_last_progress_update_.is_null() ||
-      base::TimeTicks::Now() - loading_last_progress_update_ > min_delay) {
-    // If there is a pending task to send progress, it is now obsolete.
-    loading_weak_factory_.InvalidateWeakPtrs();
-    SendLoadProgressChanged();
-    if (loading_total_progress_ == 1.0)
-      ResetLoadProgressState();
-    return;
-  }
-
-  if (loading_weak_factory_.HasWeakPtrs())
-    return;
-
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&WebContentsImpl::SendLoadProgressChanged,
-                 loading_weak_factory_.GetWeakPtr()),
-      min_delay);
-}
-
 void WebContentsImpl::OnGoToEntryAtOffset(int offset) {
   if (!delegate_ || delegate_->OnGoToEntryOffset(offset))
     controller_.GoToOffset(offset);
@@ -3450,23 +3304,14 @@ bool WebContentsImpl::UpdateTitleForEntry(NavigationEntryImpl* entry,
   return true;
 }
 
-void WebContentsImpl::SendLoadProgressChanged() {
+void WebContentsImpl::SendChangeLoadProgress() {
   loading_last_progress_update_ = base::TimeTicks::Now();
-  double progress = frame_tree_.GetLoadProgress();
-
-  DCHECK_LE(progress, 1.0);
-
-  if (progress <= loading_total_progress_)
-    return;
-  loading_total_progress_ = progress;
-
   if (delegate_)
-    delegate_->LoadProgressChanged(this, progress);
+    delegate_->LoadProgressChanged(this, frame_tree_.load_progress());
 }
 
 void WebContentsImpl::ResetLoadProgressState() {
   frame_tree_.ResetLoadProgress();
-  loading_total_progress_ = 0.0;
   loading_weak_factory_.InvalidateWeakPtrs();
   loading_last_progress_update_ = base::TimeTicks();
 }
@@ -3867,7 +3712,7 @@ void WebContentsImpl::RequestMove(const gfx::Rect& new_bounds) {
     delegate_->MoveContents(this, new_bounds);
 }
 
-void WebContentsImpl::DidStartLoading(RenderFrameHost* render_frame_host,
+void WebContentsImpl::DidStartLoading(FrameTreeNode* frame_tree_node,
                                       bool to_different_document) {
   SetIsLoading(true, to_different_document, nullptr);
 
@@ -3875,10 +3720,8 @@ void WebContentsImpl::DidStartLoading(RenderFrameHost* render_frame_host,
   // current document.
   //
   // TODO(dmazzoni): do this using a WebContentsObserver.
-  FrameTreeNode* ftn = static_cast<RenderFrameHostImpl*>(render_frame_host)->
-      frame_tree_node();
   BrowserAccessibilityManager* manager =
-      ftn->current_frame_host()->browser_accessibility_manager();
+      frame_tree_node->current_frame_host()->browser_accessibility_manager();
   if (manager)
     manager->UserIsNavigatingAway();
 }
@@ -3906,6 +3749,41 @@ void WebContentsImpl::DidStopLoading() {
   }
 
   SetIsLoading(false, true, details.get());
+}
+
+void WebContentsImpl::DidChangeLoadProgress() {
+  double load_progress = frame_tree_.load_progress();
+
+  // The delegate is notified immediately for the first and last updates. Also,
+  // since the message loop may be pretty busy when a page is loaded, it might
+  // not execute a posted task in a timely manner so the progress report is sent
+  // immediately if enough time has passed.
+  base::TimeDelta min_delay =
+      base::TimeDelta::FromMilliseconds(kMinimumDelayBetweenLoadingUpdatesMS);
+  bool delay_elapsed = loading_last_progress_update_.is_null() ||
+      base::TimeTicks::Now() - loading_last_progress_update_ > min_delay;
+
+  if (load_progress == 0.0 || load_progress == 1.0 || delay_elapsed) {
+    // If there is a pending task to send progress, it is now obsolete.
+    loading_weak_factory_.InvalidateWeakPtrs();
+
+    // Notify the load progress change.
+    SendChangeLoadProgress();
+
+    // Clean-up the states if needed.
+    if (load_progress == 1.0)
+      ResetLoadProgressState();
+    return;
+  }
+
+  if (loading_weak_factory_.HasWeakPtrs())
+    return;
+
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&WebContentsImpl::SendChangeLoadProgress,
+                 loading_weak_factory_.GetWeakPtr()),
+      min_delay);
 }
 
 void WebContentsImpl::DidCancelLoading() {

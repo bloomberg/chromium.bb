@@ -31,15 +31,6 @@ class RenderFrameHostImpl;
 // are frame-specific (as opposed to page-specific).
 class CONTENT_EXPORT FrameTreeNode {
  public:
-  // These values indicate the loading progress status. The minimum progress
-  // value matches what Blink's ProgressTracker has traditionally used for a
-  // minimum progress value.
-  // TODO(fdegans): Move these values to the implementation when the relevant
-  // IPCs are moved from WebContentsImpl to RenderFrameHost.
-  static const double kLoadingProgressNotStarted;
-  static const double kLoadingProgressMinimum;
-  static const double kLoadingProgressDone;
-
   // Returns the FrameTreeNode with the given global |frame_tree_node_id|,
   // regardless of which FrameTree it is in.
   static FrameTreeNode* GloballyFindByID(int64 frame_tree_node_id);
@@ -135,11 +126,6 @@ class CONTENT_EXPORT FrameTreeNode {
   // Returns true if this node is in a loading state.
   bool IsLoading() const;
 
-  // Sets this node's loading progress (from 0 to 1).
-  void set_loading_progress(double loading_progress) {
-    loading_progress_ = loading_progress;
-  }
-
   // Returns this node's loading progress.
   double loading_progress() const { return loading_progress_; }
 
@@ -156,6 +142,26 @@ class CONTENT_EXPORT FrameTreeNode {
   // Resets the current navigation request. |is_commit| is true if the reset is
   // due to the commit of the navigation.
   void ResetNavigationRequest(bool is_commit);
+
+  // Returns true if this node is in a state where the loading progress is being
+  // tracked.
+  bool has_started_loading() const;
+
+  // Resets this node's loading progress.
+  void reset_loading_progress();
+
+  // A RenderFrameHost in this node started loading.
+  // |to_different_document| will be true unless the load is a fragment
+  // navigation, or triggered by history.pushState/replaceState.
+  void DidStartLoading(bool to_different_document);
+
+  // A RenderFrameHost in this node stopped loading.
+  void DidStopLoading();
+
+  // The load progress for a RenderFrameHost in this node was updated to
+  // |load_progress|. This will notify the FrameTree which will in turn notify
+  // the WebContents.
+  void DidChangeLoadProgress(double load_progress);
 
  private:
   void set_parent(FrameTreeNode* parent) { parent_ = parent; }

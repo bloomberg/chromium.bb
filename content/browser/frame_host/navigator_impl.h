@@ -34,6 +34,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                 NavigatorDelegate* delegate);
 
   // Navigator implementation.
+  NavigatorDelegate* GetDelegate() override;
   NavigationController* GetController() override;
   void DidStartProvisionalLoad(RenderFrameHostImpl* render_frame_host,
                                const GURL& url,
