@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 // ======= Global state =======
 
 var curDelta = 0;
@@ -336,6 +335,26 @@ function addSvgIfMissing() {
   }
 }
 
+/**
+ * Updates the SVG filter based on the RGB correction/simulation matrix.
+ * @param {!Object} matrix  3x3 RGB transformation matrix.
+ */
+function setFilter(matrix) {
+  addSvgIfMissing();
+  var next = 1 - curFilter;
+
+  debugPrint('update: matrix#' + next + '=' +
+      humanReadbleStringFrom3x3(matrix));
+
+  var matrixElem = document.getElementById('cvd_matrix_' + next);
+  matrixElem.setAttribute('values', svgMatrixStringFrom3x3(matrix));
+
+  var html = document.documentElement;
+  html.classList.remove('filter' + curFilter);
+  html.classList.add('filter' + next);
+
+  curFilter = next;
+}
 
 /**
  * Updates the SVG matrix using the current settings.
@@ -345,27 +364,15 @@ function update() {
     document.addEventListener('DOMContentLoaded', update);
     return;
   }
-  addSvgIfMissing();
-  var next = 1 - curFilter;
 
   var effectiveMatrix = getEffectiveCvdMatrix(
       curType, curSeverity, curDelta * 2 - 1, curSimulate, curEnable);
-  // TODO(mustaq): delta range fixing needs refactoring.
 
-  debugPrint('update: matrix#' + next + '=' +
-      humanReadbleStringFrom3x3(effectiveMatrix));
-
-  var matrixElem = document.getElementById('cvd_matrix_' + next);
-  matrixElem.setAttribute('values', svgMatrixStringFrom3x3(effectiveMatrix));
-
-  var html = document.documentElement;
-  html.classList.remove('filter' + curFilter);
-  html.offsetTop;
-  html.classList.add('filter' + next);
-
-  curFilter = next;
+  setFilter(effectiveMatrix);
 
   // TODO(wnwen): Figure out whether this hack is still necessary.
+  // TODO(kevers): Check if a call to getComputedStyle is sufficient to force an
+  // update.
   window.scrollBy(0, 1);
   window.scrollBy(0, -1);
 }
@@ -432,3 +439,36 @@ function onExtensionMessage(request) {
   chrome.extension.onRequest.addListener(onExtensionMessage);
   chrome.extension.sendRequest({'init': true}, onExtensionMessage);
 })();
+
+/**
+ * Global exports.  Used by popup to show effect of filter during setup.
+ */
+(function(exports) {
+  /**
+   * Generate SVG filter for color enhancement based on type and severity using
+   * default color adjustment.
+   * @param {string} type Type type of color vision defficiency (CVD).
+   * @param {number} severity The degree of CVD ranging from 0 for normal
+   *     vision to 1 for dichromats.
+   */
+  exports.getDefaultCvdCorrectionFilter = function(type, severity) {
+      return getEffectiveCvdMatrix(type, severity, 0, false, true);
+  };
+
+  /**
+   * Adds support for a color enhancement filter.
+   * @param {!Object} matrix 3x3 RGB transformation matrix.
+   */
+  exports.injectColorEnhancementFilter = function(matrix) {
+    setFilter(matrix);
+  };
+
+  /**
+   * Clears color correction filter.
+   */
+  exports.clearColorEnhancementFilter = function() {
+    var html = document.documentElement;
+    html.classList.remove('filter0');
+    html.classList.remove('filter1');
+  };
+})(this);

@@ -131,6 +131,7 @@
             'colorenhancer/res/cvd-38.png',
             'colorenhancer/res/cvd-48.png',
             'colorenhancer/res/cvd.css',
+            'colorenhancer/res/setup.css',
           ]
         },
       ],

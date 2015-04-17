@@ -117,7 +117,7 @@ function setDefaultSeverity(severity) {
 
 // ======= Type setting =======
 
-/** @const {string} */ var DEFAULT_TYPE = 'PROTANOMALY';
+/** @const {string} */ var INVALID_TYPE_PLACEHOLDER = '';
 /** @const {string} */ var LOCAL_STORAGE_TAG_TYPE = 'cvd_type';
 
 
@@ -133,15 +133,12 @@ function getDefaultType() {
   if (validType(type)) {
     return type;
   }
-  type = DEFAULT_TYPE;
-  localStorage[LOCAL_STORAGE_TAG_TYPE] = type;
-  return type;
 }
 
 
 function setDefaultType(type) {
   if (!validType(type)) {
-    type = DEFAULT_TYPE;
+    type = INVALID_TYPE_PLACEHOLDER;
   }
   localStorage[LOCAL_STORAGE_TAG_TYPE] = type;
 }

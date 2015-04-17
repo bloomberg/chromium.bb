@@ -35,7 +35,8 @@
         "<all_urls>"
       ],
       "css": [
-        "res/cvd.css"
+        "res/cvd.css",
+        "res/setup.css"
       ],
       "js": [
         "src/common.js",
