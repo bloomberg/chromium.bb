@@ -64,7 +64,7 @@ class RenderViewHostTest : public RenderViewHostImplTestHarness {
 // All about URLs reported by the renderer should get rewritten to about:blank.
 // See RenderViewHost::OnNavigate for a discussion.
 TEST_F(RenderViewHostTest, FilterAbout) {
-  contents()->GetMainFrame()->SendNavigate(1, GURL("about:cache"));
+  main_test_rfh()->NavigateAndCommitRendererInitiated(1, GURL("about:cache"));
   ASSERT_TRUE(controller().GetVisibleEntry());
   EXPECT_EQ(GURL(url::kAboutBlankURL),
             controller().GetVisibleEntry()->GetURL());
@@ -232,11 +232,15 @@ TEST_F(RenderViewHostTest, NavigationWithBadHistoryItemFiles) {
   EXPECT_TRUE(PathService::Get(base::DIR_TEMP, &file_path));
   file_path = file_path.AppendASCII("bar");
   EXPECT_EQ(0, process()->bad_msg_count());
+  main_test_rfh()->SendRendererInitiatedNavigationRequest(url, false);
+  main_test_rfh()->PrepareForCommit();
   contents()->GetMainFrame()->SendNavigateWithFile(1, url, file_path);
   EXPECT_EQ(1, process()->bad_msg_count());
 
   ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
       process()->GetID(), file_path);
+  main_test_rfh()->SendRendererInitiatedNavigationRequest(url, false);
+  main_test_rfh()->PrepareForCommit();
   contents()->GetMainFrame()->SendNavigateWithFile(process()->GetID(), url,
                                                    file_path);
   EXPECT_EQ(1, process()->bad_msg_count());

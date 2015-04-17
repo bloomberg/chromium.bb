@@ -673,6 +673,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // document or not.
   bool is_loading_;
 
+  // PlzNavigate
+  // Used to track whether a commit is expected in this frame. Only used in
+  // tests.
+  bool pending_commit_;
+
   // Used to swap out or shut down this RFH when the unload event is taking too
   // long to execute, depending on the number of active frames in the
   // SiteInstance.

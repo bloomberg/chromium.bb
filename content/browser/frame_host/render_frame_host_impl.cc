@@ -151,6 +151,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       is_waiting_for_beforeunload_ack_(false),
       unload_ack_is_for_navigation_(false),
       is_loading_(false),
+      pending_commit_(false),
       accessibility_reset_token_(0),
       accessibility_reset_count_(0),
       no_create_browser_accessibility_manager_for_testing_(false),
@@ -846,6 +847,12 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
 
   accessibility_reset_count_ = 0;
   frame_tree_node()->navigator()->DidNavigate(this, validated_params);
+
+  // PlzNavigate
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    pending_commit_ = false;
+  }
 }
 
 void RenderFrameHostImpl::OnDidDropNavigation() {
@@ -1782,6 +1789,7 @@ void RenderFrameHostImpl::CommitNavigation(
   // TODO(clamy): Release the stream handle once the renderer has finished
   // reading it.
   stream_handle_ = body.Pass();
+  pending_commit_ = true;
 }
 
 void RenderFrameHostImpl::FailedNavigation(

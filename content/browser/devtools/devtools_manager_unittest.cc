@@ -279,7 +279,7 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
   contents()->GetMainFrame()->PrepareForCommit();
   contents()->TestDidNavigate(
       contents()->GetMainFrame(), 1, url, ui::PAGE_TRANSITION_TYPED);
-  EXPECT_FALSE(contents()->cross_navigation_pending());
+  EXPECT_FALSE(contents()->CrossProcessNavigationPending());
 
   TestDevToolsClientHost client_host;
   client_host.InspectAgentHost(
@@ -290,7 +290,7 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
   controller().LoadURL(
       url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   contents()->GetMainFrame()->PrepareForCommit();
-  EXPECT_TRUE(contents()->cross_navigation_pending());
+  EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(client_host.agent_host(),
             DevToolsAgentHost::GetOrCreateFor(web_contents()).get());
 
@@ -300,7 +300,7 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
   contents()->GetMainFrame()->PrepareForCommit();
   contents()->TestDidNavigate(
       contents()->GetMainFrame(), 1, url, ui::PAGE_TRANSITION_TYPED);
-  EXPECT_FALSE(contents()->cross_navigation_pending());
+  EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(client_host.agent_host(),
             DevToolsAgentHost::GetOrCreateFor(web_contents()).get());
   client_host.Close();

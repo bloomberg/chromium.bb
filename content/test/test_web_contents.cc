@@ -103,6 +103,17 @@ void TestWebContents::TestDidNavigateWithReferrer(
   rfhi->frame_tree_node()->navigator()->DidNavigate(rfhi, params);
 }
 
+bool TestWebContents::CrossProcessNavigationPending() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    return GetRenderManager()->speculative_render_frame_host_ &&
+           static_cast<TestRenderFrameHost*>(
+               GetRenderManager()->speculative_render_frame_host_.get())
+               ->pending_commit();
+  }
+  return GetRenderManager()->cross_navigation_pending_;
+}
+
 bool TestWebContents::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host,
     int opener_route_id,

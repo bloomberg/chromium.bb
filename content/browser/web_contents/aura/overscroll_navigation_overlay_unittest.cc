@@ -103,10 +103,10 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
     GetOverlay()->OnOverscrollCompleting();
     main_test_rfh()->PrepareForCommit();
     if (window) {
-      EXPECT_TRUE(contents()->cross_navigation_pending());
+      EXPECT_TRUE(contents()->CrossProcessNavigationPending());
       EXPECT_EQ(GetOverlay()->direction_, OverscrollNavigationOverlay::BACK);
     } else {
-      EXPECT_FALSE(contents()->cross_navigation_pending());
+      EXPECT_FALSE(contents()->CrossProcessNavigationPending());
       EXPECT_EQ(GetOverlay()->direction_, OverscrollNavigationOverlay::NONE);
     }
     window->SetBounds(gfx::Rect(root_window()->bounds().size()));
@@ -237,7 +237,7 @@ TEST_F(OverscrollNavigationOverlayTest, CancelNavigation) {
   EXPECT_EQ(GetOverlay()->direction_, OverscrollNavigationOverlay::BACK);
 
   GetOverlay()->OnOverscrollCancelled();
-  EXPECT_FALSE(contents()->cross_navigation_pending());
+  EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(GetOverlay()->direction_, OverscrollNavigationOverlay::NONE);
 }
 
@@ -252,7 +252,7 @@ TEST_F(OverscrollNavigationOverlayTest, CancelAfterSuccessfulNavigation) {
   GetOverlay()->OnOverscrollCancelled();
   EXPECT_EQ(GetOverlay()->direction_, OverscrollNavigationOverlay::NONE);
 
-  EXPECT_TRUE(contents()->cross_navigation_pending());
+  EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   main_test_rfh()->SendNavigate(
       1, contents()->GetController().GetPendingEntry()->GetURL());
   EXPECT_EQ(contents()->GetURL(), third());

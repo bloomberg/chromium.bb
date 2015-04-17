@@ -422,6 +422,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, CrossSiteNavigation) {
   // Receive the beforeUnload ACK.
   main_test_rfh()->SendBeforeUnloadACK(true);
   EXPECT_TRUE(GetSpeculativeRenderFrameHost(node));
+  EXPECT_FALSE(contents()->CrossProcessNavigationPending());
 
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
   GetLoaderForNavigationRequest(main_request)->CallOnResponseStarted(
@@ -430,6 +431,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, CrossSiteNavigation) {
   ASSERT_TRUE(speculative_rfh);
   EXPECT_TRUE(DidRenderFrameHostRequestCommit(speculative_rfh));
   EXPECT_FALSE(DidRenderFrameHostRequestCommit(main_test_rfh()));
+  EXPECT_TRUE(contents()->CrossProcessNavigationPending());
 
   speculative_rfh->SendNavigate(0, kUrl2);
 

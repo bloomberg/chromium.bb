@@ -662,8 +662,7 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // Whether a navigation requiring different RenderFrameHosts is pending. This
   // is either for cross-site requests or when required for the process type
   // (like WebUI).
-  // PlzNavigate: |cross_navigation_pending_| is not used for browser-side
-  // navigation.
+  // PlzNavigate: not used.
   bool cross_navigation_pending_;
 
   // Implemented by the owner of this class.  These delegates are installed into

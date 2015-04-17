@@ -88,6 +88,9 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
       const base::FilePath* file_path_for_history_item,
       const std::vector<GURL>& redirects);
 
+  // Simulate a renderer-initiated navigation up until commit.
+  void NavigateAndCommitRendererInitiated(int page_id, const GURL& url);
+
   // With the current navigation logic this method is a no-op.
   // PlzNavigate: this method simulates receiving a BeginNavigation IPC.
   void SendRendererInitiatedNavigationRequest(const GURL& url,
@@ -115,6 +118,10 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // also simulate a server redirect to |redirect_url|. If the URL is empty the
   // redirect step is ignored.
   void PrepareForCommitWithServerRedirect(const GURL& redirect_url);
+
+  // PlzNavigate
+  void set_pending_commit(bool pending) { pending_commit_ = pending; }
+  bool pending_commit() const { return pending_commit_; }
 
  private:
   TestRenderFrameHostCreationObserver child_creation_observer_;

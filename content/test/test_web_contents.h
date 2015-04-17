@@ -48,10 +48,8 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
                                    const Referrer& referrer,
                                    ui::PageTransition transition) override;
 
-  // State accessor.
-  bool cross_navigation_pending() {
-    return GetRenderManager()->cross_navigation_pending_;
-  }
+  // True if a cross-site navigation is pending.
+  bool CrossProcessNavigationPending();
 
   // Prevent interaction with views.
   bool CreateRenderViewForRenderManager(RenderViewHost* render_view_host,

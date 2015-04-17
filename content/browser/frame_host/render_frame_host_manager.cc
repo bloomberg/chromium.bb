@@ -455,10 +455,7 @@ void RenderFrameHostManager::DidNavigateFrame(
 void RenderFrameHostManager::CommitPendingIfNecessary(
     RenderFrameHostImpl* render_frame_host,
     bool was_caused_by_user_gesture) {
-  // Note: In PlzNavigate |cross_navigation_pending_| being false means there is
-  // *no* speculative RenderFrameHost set.
-  if (!cross_navigation_pending_) {
-    DCHECK(!speculative_render_frame_host_);
+  if (!cross_navigation_pending_ && !speculative_render_frame_host_) {
     DCHECK(!pending_render_frame_host_);
     DCHECK_IMPLIES(should_reuse_web_ui_, web_ui_);
 
@@ -828,7 +825,6 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     }
   }
 
-  cross_navigation_pending_ = navigation_rfh != render_frame_host_.get();
   return navigation_rfh;
 }
 
