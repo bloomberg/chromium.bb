@@ -124,5 +124,9 @@ if (!is_mac) {
       "video_frame_compositor_unittest.cc",
       "webaudiosourceprovider_impl_unittest.cc",
     ]
+
+    if (is_android) {
+      deps += [ "//ui/gl" ]
+    }
   }
 }

@@ -76,8 +76,6 @@ group("all_components") {
     "//components/precache/core",
     "//components/precache/content",
     "//components/pref_registry",
-    "//components/proximity_auth",
-    "//components/proximity_auth/cryptauth",
     "//components/query_parser",
     "//components/rappor",
     "//components/renderer_context_menu",
@@ -117,6 +115,13 @@ group("all_components") {
     "//components/wifi",
     "//components/wifi_sync",
   ]
+
+  if (!is_android && !is_ios) {
+    deps += [
+      "//components/proximity_auth",
+      "//components/proximity_auth/cryptauth",
+    ]
+  }
 
   if (!enable_configuration_policy) {
     deps -= [ "//components/policy" ]
@@ -261,7 +266,6 @@ test("components_unittests") {
     "//components/omnibox:unit_tests",
     "//components/ownership:unit_tests",
     "//components/packed_ct_ev_whitelist:unit_tests",
-    "//components/proximity_auth:unit_tests",
     "//components/update_client:unit_tests",
     "//components/variations:unit_tests",
     "//components/web_resource:unit_tests",
@@ -274,6 +278,10 @@ test("components_unittests") {
     "//ui/base",
   ]
   data_deps = [ ":components_tests_pak" ]
+
+  if (!is_android && !is_ios) {
+    deps += [ "//components/proximity_auth:unit_tests" ]
+  }
 
   # TODO(GYP) need this target.
   #'breakpad/app/crash_keys_win_unittest.cc',

@@ -497,6 +497,8 @@ component("base") {
     "third_party/dmg_fp/g_fmt.cc",
     "third_party/icu/icu_utf.cc",
     "third_party/icu/icu_utf.h",
+    "third_party/nspr/prtime.cc",
+    "third_party/nspr/prtime.h",
     "third_party/superfasthash/superfasthash.c",
     "thread_task_runner_handle.cc",
     "thread_task_runner_handle.h",
@@ -640,7 +642,6 @@ component("base") {
     ":base_static",
     "//base/allocator:allocator_extension_thunks",
     "//base/third_party/dynamic_annotations",
-    "//base/third_party/nspr",
     "//third_party/modp_b64",
   ]
 
@@ -1308,7 +1309,6 @@ test("base_unittests") {
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations",
-    "//base/third_party/nspr",
     "//base/trace_event:trace_event_unittests",
     "//testing/gmock",
     "//testing/gtest",

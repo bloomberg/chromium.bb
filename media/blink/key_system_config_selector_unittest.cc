@@ -218,7 +218,7 @@ class KeySystemConfigSelectorTest : public testing::Test {
   scoped_ptr<FakeMediaPermission> media_permission_;
 
   // Held values for the call to SelectConfig().
-  blink::WebString key_system_ = kSupported;
+  blink::WebString key_system_ = blink::WebString::fromUTF8(kSupported);
   std::vector<blink::WebMediaKeySystemConfiguration> configs_;
   blink::WebSecurityOrigin security_origin_ =
       blink::WebSecurityOrigin::createFromString(kDefaultSecurityOrigin);
