@@ -10,10 +10,17 @@
 
 namespace switches {
 
-extern const char kEnableReaderModeOGArticleHeuristics[];
-extern const char kEnableReaderModeAdaBoostHeuristics[];
-extern const char kEnableReaderModeAlwaysTrueHeuristics[];
+// Switch to enable specific heuristics for detecting if a page is distillable
+// or not.
+extern const char kReaderModeHeuristics[];
 
+namespace reader_mode_heuristics {
+extern const char kAdaBoost[];
+extern const char kOGArticle[];
+extern const char kAlwaysTrue[];
+extern const char kNone[];
 };
+
+}  // namespace switches
 
 #endif  // COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_SWITCHES_H_

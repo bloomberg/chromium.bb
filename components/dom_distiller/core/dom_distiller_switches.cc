@@ -5,10 +5,14 @@
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 
 namespace switches {
-const char kEnableReaderModeOGArticleHeuristics[] =
-    "enable-reader-mode-og-article-heuristics";
-const char kEnableReaderModeAdaBoostHeuristics[] =
-    "enable-reader-mode-adaboost-heuristics";
-const char kEnableReaderModeAlwaysTrueHeuristics[] =
-    "enable-reader-mode-always-true-heuristics";
+
+const char kReaderModeHeuristics[] = "reader-mode-heuristics";
+
+namespace reader_mode_heuristics {
+const char kAdaBoost[] = "adaboost";
+const char kOGArticle[] = "opengraph";
+const char kAlwaysTrue[] = "alwaystrue";
+const char kNone[] = "none";
 };
+
+}  // namespace switches

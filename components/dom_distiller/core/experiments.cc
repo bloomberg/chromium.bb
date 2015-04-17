@@ -13,18 +13,30 @@ DistillerHeuristicsType GetDistillerHeuristicsType() {
   // Get the field trial name first to ensure the experiment is initialized.
   const std::string group_name =
       base::FieldTrialList::FindFullName("ReaderModeUI");
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableReaderModeAlwaysTrueHeuristics) ||
-      group_name == "ForcedAlwaysTrue") {
-    return DistillerHeuristicsType::ALWAYS_TRUE;
-  } else if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-                 switches::kEnableReaderModeOGArticleHeuristics) ||
-             group_name == "OGArticle" || group_name == "ForcedOGArticle") {
-    return DistillerHeuristicsType::OG_ARTICLE;
-  } else if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-                 switches::kEnableReaderModeAdaBoostHeuristics) ||
-             group_name == "AdaBoost" || group_name == "ForcedAdaBoost") {
-    return DistillerHeuristicsType::ADABOOST_MODEL;
+  const std::string switch_value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kReaderModeHeuristics);
+  if (switch_value != "") {
+    if (switch_value == switches::reader_mode_heuristics::kAdaBoost) {
+      return DistillerHeuristicsType::ADABOOST_MODEL;
+    }
+    if (switch_value == switches::reader_mode_heuristics::kOGArticle) {
+      return DistillerHeuristicsType::OG_ARTICLE;
+    }
+    if (switch_value == switches::reader_mode_heuristics::kAlwaysTrue) {
+      return DistillerHeuristicsType::ALWAYS_TRUE;
+    }
+    if (switch_value == switches::reader_mode_heuristics::kNone) {
+      return DistillerHeuristicsType::NONE;
+    }
+    NOTREACHED() << "Invalid value for " << switches::kReaderModeHeuristics;
+  } else {
+    if (group_name == "AdaBoost") {
+      return DistillerHeuristicsType::ADABOOST_MODEL;
+    }
+    if (group_name == "OGArticle") {
+      return DistillerHeuristicsType::OG_ARTICLE;
+    }
   }
   return DistillerHeuristicsType::NONE;
 }
