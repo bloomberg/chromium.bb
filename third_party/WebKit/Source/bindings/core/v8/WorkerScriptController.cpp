@@ -149,6 +149,8 @@ bool WorkerScriptController::initializeContextIfNeeded()
     // Create a new JS object and use it as the prototype for the shadow global object.
     const WrapperTypeInfo* wrapperTypeInfo = m_workerGlobalScope.wrapperTypeInfo();
     v8::Local<v8::Function> workerGlobalScopeConstructor = m_scriptState->perContextData()->constructorForType(wrapperTypeInfo);
+    if (workerGlobalScopeConstructor.IsEmpty())
+        return false;
     v8::Local<v8::Object> jsWorkerGlobalScope;
     if (!V8ObjectConstructor::newInstance(isolate(), workerGlobalScopeConstructor).ToLocal(&jsWorkerGlobalScope)) {
         m_scriptState->disposePerContextData();
