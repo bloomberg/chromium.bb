@@ -21,13 +21,13 @@ const base::FilePath::CharType kDefaultAppOrderFileName[] =
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
 const base::FilePath::CharType kDefaultUserPolicyKeysDir[] =
-    FILE_PATH_LITERAL("/var/run/user_policy");
+    FILE_PATH_LITERAL("/run/user_policy");
 
 const base::FilePath::CharType kOwnerKeyFileName[] =
     FILE_PATH_LITERAL("/var/lib/whitelist/owner.key");
 
 const base::FilePath::CharType kInstallAttributesFileName[] =
-    FILE_PATH_LITERAL("/var/run/lockbox/install_attributes.pb");
+    FILE_PATH_LITERAL("/run/lockbox/install_attributes.pb");
 
 const base::FilePath::CharType kMachineHardwareInfoFileName[] =
     FILE_PATH_LITERAL("/tmp/machine-info");
@@ -36,7 +36,7 @@ const base::FilePath::CharType kUptimeFileName[] =
     FILE_PATH_LITERAL("/proc/uptime");
 
 const base::FilePath::CharType kUpdateRebootNeededUptimeFile[] =
-    FILE_PATH_LITERAL("/var/run/chrome/update_reboot_needed_uptime");
+    FILE_PATH_LITERAL("/run/chrome/update_reboot_needed_uptime");
 
 const base::FilePath::CharType kDeviceLocalAccountExtensionDir[] =
     FILE_PATH_LITERAL("/var/cache/device_local_account_extensions");
