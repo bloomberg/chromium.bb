@@ -766,7 +766,6 @@ void MTPDeviceDelegateImplLinux::AddWatcher(
     return;
   }
 
-  // TODO(yawano) Checks existence of |file_path|.
   const auto it = subscribers_.find(file_path);
   if (it != subscribers_.end()) {
     // Adds to existing origin callback map.
@@ -1062,7 +1061,8 @@ void MTPDeviceDelegateImplLinux::MoveFileLocalInternal(
       const MTPDeviceTaskHelper::RenameObjectSuccessCallback
           success_callback_wrapper = base::Bind(
               &MTPDeviceDelegateImplLinux::OnDidMoveFileLocalWithRename,
-              weak_ptr_factory_.GetWeakPtr(), success_callback, file_id);
+              weak_ptr_factory_.GetWeakPtr(), success_callback,
+              source_file_path, file_id);
       const MTPDeviceTaskHelper::ErrorCallback error_callback_wrapper =
           base::Bind(&MTPDeviceDelegateImplLinux::HandleDeviceFileError,
                      weak_ptr_factory_.GetWeakPtr(), error_callback, file_id);
@@ -1108,7 +1108,7 @@ void MTPDeviceDelegateImplLinux::OnDidOpenFDToCopyFileFromLocal(
     CopyFileFromLocalSuccessCallback success_callback_wrapper =
         base::Bind(&MTPDeviceDelegateImplLinux::OnDidCopyFileFromLocal,
                    weak_ptr_factory_.GetWeakPtr(), success_callback,
-                   source_file_descriptor);
+                   device_file_path, source_file_descriptor);
 
     ErrorCallback error_callback_wrapper = base::Bind(
         &MTPDeviceDelegateImplLinux::HandleCopyFileFromLocalError,
@@ -1143,7 +1143,8 @@ void MTPDeviceDelegateImplLinux::DeleteFileInternal(
   } else {
     uint32 file_id;
     if (CachedPathToId(file_path, &file_id))
-      RunDeleteObjectOnUIThread(file_id, success_callback, error_callback);
+      RunDeleteObjectOnUIThread(file_path, file_id, success_callback,
+                                error_callback);
     else
       error_callback.Run(base::File::FILE_ERROR_NOT_FOUND);
   }
@@ -1181,8 +1182,8 @@ void MTPDeviceDelegateImplLinux::DeleteDirectoryInternal(
   const MTPDeviceTaskHelper::ReadDirectorySuccessCallback
       success_callback_wrapper = base::Bind(
           &MTPDeviceDelegateImplLinux::OnDidReadDirectoryToDeleteDirectory,
-          weak_ptr_factory_.GetWeakPtr(), directory_id, success_callback,
-          error_callback);
+          weak_ptr_factory_.GetWeakPtr(), file_path, directory_id,
+          success_callback, error_callback);
   const MTPDeviceTaskHelper::ErrorCallback error_callback_wrapper =
       base::Bind(&MTPDeviceDelegateImplLinux::HandleDeviceFileError,
                  weak_ptr_factory_.GetWeakPtr(), error_callback, directory_id);
@@ -1238,6 +1239,7 @@ void MTPDeviceDelegateImplLinux::OnDidReadDirectoryToCreateDirectory(
 }
 
 void MTPDeviceDelegateImplLinux::OnDidReadDirectoryToDeleteDirectory(
+    const base::FilePath& directory_path,
     const uint32 directory_id,
     const DeleteDirectorySuccessCallback& success_callback,
     const ErrorCallback& error_callback,
@@ -1246,22 +1248,26 @@ void MTPDeviceDelegateImplLinux::OnDidReadDirectoryToDeleteDirectory(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!has_more);
 
-  if (entries.size() > 0)
+  if (entries.size() > 0) {
     error_callback.Run(base::File::FILE_ERROR_NOT_EMPTY);
-  else
-    RunDeleteObjectOnUIThread(directory_id, success_callback, error_callback);
+  } else {
+    RunDeleteObjectOnUIThread(directory_path, directory_id, success_callback,
+                              error_callback);
+  }
 
   PendingRequestDone();
 }
 
 void MTPDeviceDelegateImplLinux::RunDeleteObjectOnUIThread(
+    const base::FilePath& object_path,
     const uint32 object_id,
     const DeleteObjectSuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
   const MTPDeviceTaskHelper::DeleteObjectSuccessCallback
-      success_callback_wrapper = base::Bind(
-          &MTPDeviceDelegateImplLinux::OnDidDeleteObject,
-          weak_ptr_factory_.GetWeakPtr(), object_id, success_callback);
+      success_callback_wrapper =
+          base::Bind(&MTPDeviceDelegateImplLinux::OnDidDeleteObject,
+                     weak_ptr_factory_.GetWeakPtr(), object_path, object_id,
+                     success_callback);
 
   const MTPDeviceTaskHelper::ErrorCallback error_callback_wrapper =
       base::Bind(&MTPDeviceDelegateImplLinux::HandleDeleteFileOrDirectoryError,
@@ -1724,16 +1730,22 @@ void MTPDeviceDelegateImplLinux::OnDidCopyFileFromLocalOfCopyFileLocal(
 
 void MTPDeviceDelegateImplLinux::OnDidMoveFileLocalWithRename(
     const MoveFileLocalSuccessCallback& success_callback,
+    const base::FilePath& source_file_path,
     const uint32 file_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   EvictCachedPathToId(file_id);
   success_callback.Run();
+  NotifyFileChange(source_file_path,
+                   storage::WatcherManager::ChangeType::DELETED);
+  NotifyFileChange(source_file_path.DirName(),
+                   storage::WatcherManager::ChangeType::CHANGED);
   PendingRequestDone();
 }
 
 void MTPDeviceDelegateImplLinux::OnDidCopyFileFromLocal(
     const CopyFileFromLocalSuccessCallback& success_callback,
+    const base::FilePath& file_path,
     const int source_file_descriptor) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
@@ -1744,6 +1756,8 @@ void MTPDeviceDelegateImplLinux::OnDidCopyFileFromLocal(
                                    closure);
 
   success_callback.Run();
+  NotifyFileChange(file_path.DirName(),
+                   storage::WatcherManager::ChangeType::CHANGED);
   PendingRequestDone();
 }
 
@@ -1774,12 +1788,16 @@ void MTPDeviceDelegateImplLinux::HandleCopyFileFromLocalError(
 }
 
 void MTPDeviceDelegateImplLinux::OnDidDeleteObject(
+    const base::FilePath& object_path,
     const uint32 object_id,
     const DeleteObjectSuccessCallback success_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   EvictCachedPathToId(object_id);
   success_callback.Run();
+  NotifyFileChange(object_path, storage::WatcherManager::ChangeType::DELETED);
+  NotifyFileChange(object_path.DirName(),
+                   storage::WatcherManager::ChangeType::CHANGED);
   PendingRequestDone();
 }
 

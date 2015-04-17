@@ -205,6 +205,7 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
 
   // Called when ReadDirectory succeeds.
   virtual void OnDidReadDirectoryToDeleteDirectory(
+      const base::FilePath& directory_path,
       const uint32 directory_id,
       const DeleteDirectorySuccessCallback& success_callback,
       const ErrorCallback& error_callback,
@@ -213,6 +214,7 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
 
   // Calls DeleteObjectOnUIThread on UI thread.
   virtual void RunDeleteObjectOnUIThread(
+      const base::FilePath& object_path,
       const uint32 object_id,
       const DeleteObjectSuccessCallback& success_callback,
       const ErrorCallback& error_callback);
@@ -408,11 +410,13 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   // Called when MoveFileLocal() succeeds with rename operation.
   void OnDidMoveFileLocalWithRename(
       const MoveFileLocalSuccessCallback& success_callback,
+      const base::FilePath& source_file_path,
       const uint32 file_id);
 
   // Called when CopyFileFromLocal() succeeds.
   void OnDidCopyFileFromLocal(
       const CopyFileFromLocalSuccessCallback& success_callback,
+      const base::FilePath& file_path,
       const int source_file_descriptor);
 
   // Called when CopyFileLocal() fails.
@@ -426,7 +430,8 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
                                     base::File::Error error);
 
   // Called when DeleteObject() succeeds.
-  void OnDidDeleteObject(const uint32 object_id,
+  void OnDidDeleteObject(const base::FilePath& object_path,
+                         const uint32 object_id,
                          const DeleteObjectSuccessCallback success_callback);
 
   // Called when DeleteFileOrDirectory() fails.
