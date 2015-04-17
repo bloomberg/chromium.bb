@@ -154,8 +154,8 @@
       'Win8 GN (dbg)': 'gn_debug_static_bot_x86',
     },
     'chromium.webkit': {
-      'Android GN': 'gn_release_bot',
-      'Android GN (dbg)': 'gn_debug_bot',
+      'Android GN': 'android_gn_release_bot',
+      'Android GN (dbg)': 'android_gn_debug_bot',
       'Linux GN': 'gn_release_bot',
       'Linux GN (dbg)': 'gn_debug_bot'
     },
