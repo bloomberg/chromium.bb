@@ -13,6 +13,7 @@
 #include "modules/device_orientation/DeviceMotionDispatcher.h"
 #include "modules/device_orientation/DeviceMotionEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/Platform.h"
 
 namespace blink {
 
@@ -58,6 +59,9 @@ void DeviceMotionController::didAddEventListener(LocalDOMWindow* window, const A
                 return;
         }
     }
+
+    if (!m_hasEventListener)
+        Platform::current()->recordRapporURL("DeviceSensors.DeviceMotion", WebURL(document().url()));
 
     DeviceSingleWindowEventController::didAddEventListener(window, eventType);
 }

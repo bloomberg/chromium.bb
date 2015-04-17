@@ -13,6 +13,7 @@
 #include "modules/device_orientation/DeviceOrientationDispatcher.h"
 #include "modules/device_orientation/DeviceOrientationEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/Platform.h"
 
 namespace blink {
 
@@ -65,6 +66,9 @@ void DeviceOrientationController::didAddEventListener(LocalDOMWindow* window, co
                 return;
         }
     }
+
+    if (!m_hasEventListener)
+        Platform::current()->recordRapporURL("DeviceSensors.DeviceOrientation", WebURL(document().url()));
 
     DeviceSingleWindowEventController::didAddEventListener(window, eventType);
 }

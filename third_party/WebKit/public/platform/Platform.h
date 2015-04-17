@@ -552,8 +552,11 @@ public:
     virtual void histogramEnumeration(const char* name, int sample, int boundaryValue) { }
     // Unlike enumeration histograms, sparse histograms only allocate memory for non-empty buckets.
     virtual void histogramSparse(const char* name, int sample) { }
-    // Record to RAPPOR.
+
+    // Record to a RAPPOR privacy-preserving metric, see: https://www.chromium.org/developers/design-documents/rappor.
+    // recordRappor records a sample string, while recordRapporURL records the domain and registry of a url.
     virtual void recordRappor(const char* metric, const WebString& sample) { }
+    virtual void recordRapporURL(const char* metric, const blink::WebURL& url) { }
 
     // GPU ----------------------------------------------------------------
     //
