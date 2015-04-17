@@ -6,6 +6,8 @@
 #include <set>
 
 #include "base/command_line.h"
+#include "base/files/file_util.h"
+#include "base/strings/string_split.h"
 #include "tools/gn/commands.h"
 #include "tools/gn/deps_iterator.h"
 #include "tools/gn/filesystem_utils.h"
@@ -266,7 +268,8 @@ const char kRefs[] = "refs";
 const char kRefs_HelpShort[] =
     "refs: Find stuff referencing a target or file.";
 const char kRefs_Help[] =
-    "gn refs <out_dir> (<label_pattern>|<label>|<file>)* [--all]\n"
+    "gn refs <out_dir> (<label_pattern>|<label>|<file>|@<response_file>)* "
+    "[--all]\n"
     "        [--all-toolchains] [--as=...] [--testonly=...] [--type=...]\n"
     "\n"
     "  Finds reverse dependencies (which targets reference something). The\n"
@@ -286,6 +289,11 @@ const char kRefs_Help[] =
     "     its \"inputs\", \"sources\", \"public\", or \"data\". Any input\n"
     "     that does not contain wildcards and does not match a target or a\n"
     "     config will be treated as a file.\n"
+    "\n"
+    "   - Response file: If the input starts with an \"@\", it will be\n"
+    "     interpreted as a path to a file containing a list of labels or\n"
+    "     file names, one per line. This allows us to handle long lists\n"
+    "     of inputs without worrying about command line limits.\n"
     "\n"
     "Options\n"
     "\n"
@@ -388,7 +396,29 @@ int RunRefs(const std::vector<std::string>& args) {
     return 1;
 
   // The inputs are everything but the first arg (which is the build dir).
-  std::vector<std::string> inputs(args.begin() + 1, args.end());
+  std::vector<std::string> inputs;
+  for (size_t i = 1; i < args.size(); i++) {
+    if (args[i][0] == '@') {
+      // The argument is as a path to a response file.
+      std::string contents;
+      std::vector<std::string> lines;
+      bool ret = base::ReadFileToString(UTF8ToFilePath(args[i].substr(1)),
+                                        &contents);
+      if (!ret) {
+        Err(Location(), "Response file " + args[i].substr(1) + " not found.")
+            .PrintToStdout();
+        return 1;
+      }
+      base::SplitString(contents, '\n', &lines);
+      for (const auto& line : lines) {
+        if (!line.empty())
+          inputs.push_back(line);
+      }
+    } else {
+      // The argument is a label or a path.
+      inputs.push_back(args[i]);
+    }
+  }
 
   // Get the matches for the command-line input.
   UniqueVector<const Target*> target_matches;
