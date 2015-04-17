@@ -74,6 +74,8 @@ private:
     Response(ExecutionContext*, FetchResponseData*);
     Response(ExecutionContext*, FetchResponseData*, Headers*);
 
+    void refreshBody();
+
     const Member<FetchResponseData> m_response;
     const Member<Headers> m_headers;
 };

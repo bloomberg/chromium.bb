@@ -50,17 +50,41 @@ private:
     Member<Body> m_body;
 };
 
-class Body::ReadableStreamSource : public BodyStreamBuffer::Observer , public UnderlyingSource, public FileReaderLoaderClient {
+// This class is an ActiveDOMObject subclass only for holding the
+// ExecutionContext used in |pullSource|.
+class Body::ReadableStreamSource : public BodyStreamBuffer::Observer, public UnderlyingSource, public FileReaderLoaderClient, public ActiveDOMObject {
     USING_GARBAGE_COLLECTED_MIXIN(ReadableStreamSource);
 public:
     enum State {
         Initial,
         Streaming,
-        ReadingBlob,
         Closed,
         Errored,
     };
-    ReadableStreamSource(Body* body) : m_body(body), m_state(Initial) { }
+    ReadableStreamSource(ExecutionContext* executionContext, PassRefPtr<BlobDataHandle> handle)
+        : ActiveDOMObject(executionContext)
+        , m_blobDataHandle(handle ? handle : BlobDataHandle::create(BlobData::create(), 0))
+        , m_state(Initial)
+    {
+        suspendIfNeeded();
+    }
+
+    ReadableStreamSource(ExecutionContext* executionContext, BodyStreamBuffer* buffer)
+        : ActiveDOMObject(executionContext)
+        , m_bodyStreamBuffer(buffer)
+        , m_state(Initial)
+    {
+        suspendIfNeeded();
+    }
+
+    explicit ReadableStreamSource(ExecutionContext* executionContext)
+        : ActiveDOMObject(executionContext)
+        , m_blobDataHandle(BlobDataHandle::create(BlobData::create(), 0))
+        , m_state(Initial)
+    {
+        suspendIfNeeded();
+    }
+
     ~ReadableStreamSource() override { }
 
     State state() const { return m_state; }
@@ -102,12 +126,12 @@ public:
     }
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
-        visitor->trace(m_body);
         visitor->trace(m_bodyStreamBuffer);
         visitor->trace(m_drainingStreamBuffer);
         visitor->trace(m_stream);
         BodyStreamBuffer::Observer::trace(visitor);
         UnderlyingSource::trace(visitor);
+        ActiveDOMObject::trace(visitor);
     }
 
     void close()
@@ -156,11 +180,9 @@ private:
         // Note that one |pull| is called only when |read| is called on the
         // associated ReadableByteStreamReader because we create a stream with
         // StrictStrategy.
-
         if (m_state == Initial) {
-            if (m_body->buffer()) {
-                m_bodyStreamBuffer = m_body->buffer();
-                m_state = Streaming;
+            m_state = Streaming;
+            if (m_bodyStreamBuffer) {
                 m_bodyStreamBuffer->registerObserver(this);
                 onWrite();
                 if (m_bodyStreamBuffer->hasError())
@@ -168,11 +190,9 @@ private:
                 if (m_bodyStreamBuffer->isClosed())
                     return onClose();
             } else {
-                m_blobDataHandle = m_body->blobDataHandle() ? m_body->blobDataHandle() : BlobDataHandle::create(BlobData::create(), 0);
-                m_state = ReadingBlob;
                 FileReaderLoader::ReadType readType = FileReaderLoader::ReadAsArrayBuffer;
                 m_loader = adoptPtr(new FileReaderLoader(readType, this));
-                m_loader->start(m_body->executionContext(), m_blobDataHandle);
+                m_loader->start(executionContext(), m_blobDataHandle);
             }
         }
     }
@@ -209,13 +229,13 @@ private:
     void didReceiveData() override { }
     void didFinishLoading() override
     {
-        ASSERT(m_state == ReadingBlob);
+        ASSERT(m_state == Streaming);
         write(m_loader->arrayBufferResult());
         close();
     }
     void didFail(FileError::ErrorCode) override
     {
-        ASSERT(m_state == ReadingBlob);
+        ASSERT(m_state == Streaming);
         error();
     }
 
@@ -252,7 +272,6 @@ private:
         return DOMException::create(NetworkError, "network error");
     }
 
-    Member<Body> m_body;
     // Set when the data container of the Body is a BodyStreamBuffer.
     Member<BodyStreamBuffer> m_bodyStreamBuffer;
     // Set when the data container of the Body is a BlobDataHandle.
@@ -442,9 +461,9 @@ bool Body::isBodyConsumed() const
     return false;
 }
 
-void Body::refreshBody()
+void Body::setBody(ReadableStreamSource* source)
 {
-    m_streamSource = new ReadableStreamSource(this);
+    m_streamSource = source;
     m_stream = new ReadableByteStream(m_streamSource, new ReadableByteStream::StrictStrategy);
     m_streamSource->startStream(m_stream);
 }
@@ -472,6 +491,16 @@ bool Body::hasPendingActivity() const
     return false;
 }
 
+Body::ReadableStreamSource* Body::createBodySource(PassRefPtr<BlobDataHandle> handle)
+{
+    return new ReadableStreamSource(executionContext(), handle);
+}
+
+Body::ReadableStreamSource* Body::createBodySource(BodyStreamBuffer* buffer)
+{
+    return new ReadableStreamSource(executionContext(), buffer);
+}
+
 DEFINE_TRACE(Body)
 {
     visitor->trace(m_resolver);
@@ -484,7 +513,7 @@ Body::Body(ExecutionContext* context)
     : ActiveDOMObject(context)
     , m_bodyUsed(false)
     , m_responseType(ResponseType::ResponseUnknown)
-    , m_streamSource(new ReadableStreamSource(this))
+    , m_streamSource(new ReadableStreamSource(context))
     , m_stream(new ReadableByteStream(m_streamSource, new ReadableByteStream::StrictStrategy))
 {
     m_streamSource->startStream(m_stream);

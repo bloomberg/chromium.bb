@@ -470,6 +470,7 @@ void Request::populateWebServiceWorkerRequest(WebServiceWorkerRequest& webReques
 void Request::setBodyBlobHandle(PassRefPtr<BlobDataHandle> blobDataHandle)
 {
     m_request->setBlobDataHandle(blobDataHandle);
+    setBody(m_request->blobDataHandle());
 }
 
 void Request::clearHeaderList()

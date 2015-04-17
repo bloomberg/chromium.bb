@@ -206,6 +206,7 @@ Response* Response::create(ExecutionContext* context, Blob* body, const Response
         // "If object's type attribute is not the empty byte sequence, set
         // Content-Type to its value."
         r->m_response->setBlobDataHandle(body->blobDataHandle());
+        r->setBody(body->blobDataHandle());
         if (!body->type().isEmpty() && !r->m_response->headerList()->has("Content-Type"))
             r->m_response->headerList()->append("Content-Type", body->type());
     }
@@ -308,15 +309,17 @@ Response* Response::clone(ExceptionState& exceptionState)
         BodyStreamBuffer* drainingStream = createDrainingStream();
         m_response->replaceBodyStreamBuffer(drainingStream);
     }
-    // Lock the old body and set |body| property to the new one.
-    lockBody();
-    refreshBody();
 
     FetchResponseData* response = m_response->clone();
     Headers* headers = Headers::create(response->headerList());
     headers->setGuard(m_headers->guard());
     Response* r = new Response(executionContext(), response, headers);
     r->suspendIfNeeded();
+
+    // Lock the old body and set |body| property to the new one.
+    lockBody();
+    refreshBody();
+
     return r;
 }
 
@@ -339,10 +342,15 @@ Response::Response(ExecutionContext* context, FetchResponseData* response)
     , m_headers(Headers::create(m_response->headerList()))
 {
     m_headers->setGuard(Headers::ResponseGuard);
+
+    refreshBody();
 }
 
 Response::Response(ExecutionContext* context, FetchResponseData* response, Headers* headers)
-    : Body(context) , m_response(response) , m_headers(headers) { }
+    : Body(context) , m_response(response) , m_headers(headers)
+{
+    refreshBody();
+}
 
 bool Response::hasBody() const
 {
@@ -377,6 +385,14 @@ BodyStreamBuffer* Response::internalBuffer() const
 String Response::internalMIMEType() const
 {
     return m_response->internalMIMEType();
+}
+
+void Response::refreshBody()
+{
+    if (m_response->buffer())
+        setBody(m_response->buffer());
+    else
+        setBody(m_response->blobDataHandle());
 }
 
 DEFINE_TRACE(Response)

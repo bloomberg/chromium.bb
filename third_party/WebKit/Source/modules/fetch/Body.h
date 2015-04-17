@@ -19,6 +19,7 @@
 namespace blink {
 
 class BodyStreamBuffer;
+class BodyStreamSource;
 class ReadableByteStream;
 class ScriptState;
 
@@ -30,6 +31,7 @@ class Body
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Body);
 public:
+    class ReadableStreamSource;
     enum ResponseType {
         ResponseUnknown,
         ResponseAsArrayBuffer,
@@ -58,7 +60,17 @@ public:
 
     // Returns true if the body stream is (possibly partially) consumed.
     bool isBodyConsumed() const;
-    void refreshBody();
+    // Sets |m_stream| to a newly created stream from |source|.
+    void setBody(ReadableStreamSource* /* source */);
+
+    void setBody(PassRefPtr<BlobDataHandle> handle)
+    {
+        setBody(createBodySource(handle));
+    }
+    void setBody(BodyStreamBuffer* buffer)
+    {
+        setBody(createBodySource(buffer));
+    }
 
     // Creates a new BodyStreamBuffer to drain the data from the ReadableStream.
     BodyStreamBuffer* createDrainingStream();
@@ -67,12 +79,14 @@ public:
     virtual void stop() override;
     virtual bool hasPendingActivity() const override;
 
+    ReadableStreamSource* createBodySource(PassRefPtr<BlobDataHandle>);
+    ReadableStreamSource* createBodySource(BodyStreamBuffer*);
+
     DECLARE_VIRTUAL_TRACE();
 
     BodyStreamBuffer* bufferForTest() const { return buffer(); }
 
 private:
-    class ReadableStreamSource;
     class BlobHandleReceiver;
 
     void pullSource();
