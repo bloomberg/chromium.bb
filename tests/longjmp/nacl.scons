@@ -12,16 +12,12 @@ env.AddNodeToTestSuite(node,
                        ['small_tests', 'toolchain_tests'],
                        'run_longjmp_test')
 
-# Longjmp has a bug in for x86-64 newlib. See:
-# https://code.google.com/p/nativeclient/issues/detail?id=4117
-longjmp_is_broken = not env.Bit('nacl_glibc') and env.Bit('build_x86_64')
 nexe = env.ComponentProgram('setlongjmp', 'setlongjmp.c',
                             EXTRA_LIBS=['${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl('setlongjmp.out', nexe, exit_status=55)
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'toolchain_tests'],
-                       'run_setlongjmp_test',
-                       is_broken=longjmp_is_broken)
+                       'run_setlongjmp_test')
 
 nexe = env.ComponentProgram(
     'longjmp_stackslots_test', 'longjmp_stackslots_test.c',
