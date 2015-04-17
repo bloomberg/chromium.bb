@@ -116,10 +116,8 @@ Response EmulationHandler::CanEmulate(bool* result) {
   *result = false;
 #else
   *result = true;
-#if defined(DEBUG_DEVTOOLS)
   if (WebContentsImpl* web_contents = GetWebContents())
     *result &= !web_contents->GetVisibleURL().SchemeIs(kChromeDevToolsScheme);
-#endif  // defined(DEBUG_DEVTOOLS)
 #endif  // defined(OS_ANDROID)
   return Response::OK();
 }
