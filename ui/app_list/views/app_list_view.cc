@@ -777,7 +777,11 @@ void AppListView::OnSpeechRecognitionStateChanged(
     speech_view_->SetVisible(true);
   } else {
     app_list_main_view_->SetVisible(true);
-    search_box_view_->search_box()->RequestFocus();
+    // Refocus the search box. However, if the app list widget does not have
+    // focus, it means another window has already taken focus, and we *must not*
+    // focus the search box (or we would steal focus back into the app list).
+    if (GetWidget()->IsActive())
+      search_box_view_->search_box()->RequestFocus();
   }
 }
 
