@@ -57,6 +57,7 @@ void PrintToplevelHelp() {
     PrintShortHelp(target.second.help_short);
 
   OutputString("\nOther help topics:\n");
+  PrintShortHelp("all: Print all the help at once");
   PrintShortHelp("buildargs: How build arguments work.");
   PrintShortHelp("dotfile: Info about the toplevel .gn file.");
   PrintShortHelp("grammar: Formal grammar for GN build files.");
@@ -76,6 +77,32 @@ void PrintSwitchHelp() {
 
   for (const auto& s : switches::GetSwitches())
     PrintShortHelp(s.second.short_help);
+}
+
+void PrintAllHelp() {
+  PrintToplevelHelp();
+
+  for (const auto& s : switches::GetSwitches())
+    PrintLongHelp(s.second.long_help);
+
+  for (const auto& c: commands::GetCommands())
+    PrintLongHelp(c.second.help);
+
+  for (const auto& f: functions::GetFunctions())
+    PrintLongHelp(f.second.help);
+
+  for (const auto& v: variables::GetBuiltinVariables())
+    PrintLongHelp(v.second.help);
+
+  for (const auto& v: variables::GetTargetVariables())
+    PrintLongHelp(v.second.help);
+
+  PrintLongHelp(kBuildArgs_Help);
+  PrintLongHelp(kDotfile_Help);
+  PrintLongHelp(kInputConversion_Help);
+  PrintLongHelp(kLabelPattern_Help);
+  PrintLongHelp(kSourceExpansion_Help);
+  PrintSwitchHelp();
 }
 
 // Prints help on the given switch. There should be no leading hyphens. Returns
@@ -163,6 +190,10 @@ int RunHelp(const std::vector<std::string>& args) {
   }
 
   // Random other topics.
+  if (what == "all") {
+    PrintAllHelp();
+    return 0;
+  }
   if (what == "buildargs") {
     PrintLongHelp(kBuildArgs_Help);
     return 0;
