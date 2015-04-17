@@ -1042,14 +1042,7 @@ public:
     void setMayNeedPaintInvalidation();
 
     bool shouldInvalidateSelection() const { return m_bitfields.shouldInvalidateSelection(); }
-    void setShouldInvalidateSelection()
-    {
-        if (!canUpdateSelectionOnRootLineBoxes())
-            return;
-
-        m_bitfields.setShouldInvalidateSelection(true);
-        markContainerChainForPaintInvalidation();
-    }
+    void setShouldInvalidateSelection();
     void clearShouldInvalidateSelection() { m_bitfields.setShouldInvalidateSelection(false); }
 
     bool neededLayoutBecauseOfChildren() const { return m_bitfields.neededLayoutBecauseOfChildren(); }
@@ -1212,20 +1205,15 @@ protected:
     virtual void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const;
 
 private:
+    inline void markContainerChainForPaintInvalidation();
+
     inline void invalidateSelectionIfNeeded(const LayoutBoxModelObject&, PaintInvalidationReason);
 
     inline void invalidateContainerPreferredLogicalWidths();
 
     void clearMayNeedPaintInvalidation();
 
-    void setLayoutDidGetCalledSinceLastFrame()
-    {
-        m_bitfields.setLayoutDidGetCalledSinceLastFrame(true);
-
-        // Make sure our parent is marked as needing invalidation.
-        // This would be unneeded if we allowed sub-tree invalidation (akin to sub-tree layouts).
-        markContainerChainForPaintInvalidation();
-    }
+    void setLayoutDidGetCalledSinceLastFrame();
     void clearLayoutDidGetCalledSinceLastFrame() { m_bitfields.setLayoutDidGetCalledSinceLastFrame(false); }
 
     void invalidatePaintIncludingNonCompositingDescendantsInternal(const LayoutBoxModelObject* repaintContainer);
@@ -1249,8 +1237,6 @@ private:
 #if ENABLE(ASSERT)
     void checkBlockPositionedObjectsNeedLayout();
 #endif
-
-    void markContainerChainForPaintInvalidation();
 
     bool isTextOrSVGChild() const { return isText() || (isSVG() && !isSVGRoot()); }
 

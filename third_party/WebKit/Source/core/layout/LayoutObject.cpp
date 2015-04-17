@@ -3144,6 +3144,29 @@ static PaintInvalidationReason documentLifecycleBasedPaintInvalidationReason(con
     }
 }
 
+inline void LayoutObject::markContainerChainForPaintInvalidation()
+{
+    for (LayoutObject* container = this->container(); container && !container->shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState(); container = container->container())
+        container->setSelfMayNeedPaintInvalidation();
+}
+
+void LayoutObject::setLayoutDidGetCalledSinceLastFrame()
+{
+    m_bitfields.setLayoutDidGetCalledSinceLastFrame(true);
+
+    // Make sure our parent is marked as needing invalidation.
+    // This would be unneeded if we allowed sub-tree invalidation (akin to sub-tree layouts).
+    markContainerChainForPaintInvalidation();
+}
+
+void LayoutObject::setShouldInvalidateSelection()
+{
+    if (!canUpdateSelectionOnRootLineBoxes())
+        return;
+
+    m_bitfields.setShouldInvalidateSelection(true);
+    markContainerChainForPaintInvalidation();
+}
 void LayoutObject::setShouldDoFullPaintInvalidation(PaintInvalidationReason reason)
 {
     // Only full invalidation reasons are allowed.
@@ -3178,12 +3201,6 @@ void LayoutObject::clearMayNeedPaintInvalidation()
 void LayoutObject::setSelfMayNeedPaintInvalidation()
 {
     m_bitfields.setMayNeedPaintInvalidation(true);
-}
-
-void LayoutObject::markContainerChainForPaintInvalidation()
-{
-    for (LayoutObject* container = this->container(); container && !container->shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState(); container = container->container())
-        container->setSelfMayNeedPaintInvalidation();
 }
 
 void LayoutObject::clearPaintInvalidationState(const PaintInvalidationState& paintInvalidationState)
