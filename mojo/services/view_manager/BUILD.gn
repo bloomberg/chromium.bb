@@ -156,24 +156,37 @@ test("view_manager_service_unittests") {
   }
 }
 
-mojo_native_application("apptests") {
-  output_name = "view_manager_apptests"
+mojo_native_application("mojo_view_manager_client_apptests") {
   testonly = true
 
   sources = [
     "view_manager_client_apptest.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_config",
+    "//mojo/application",
+    "//mojo/application:test_support",
+    "//third_party/mojo_services/src/geometry/public/cpp:cpp",
+    "//third_party/mojo_services/src/view_manager/public/cpp",
+  ]
+}
+
+mojo_native_application("view_manager_service_apptests") {
+  testonly = true
+
+  sources = [
     "view_manager_service_apptest.cc",
   ]
 
   deps = [
     ":test_support",
     "//base",
-    "//base/test:test_config",
     "//mojo/application",
     "//mojo/application:test_support",
     "//mojo/common",
     "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
-    "//third_party/mojo_services/src/geometry/public/cpp:cpp",
     "//third_party/mojo_services/src/geometry/public/interfaces",
     "//third_party/mojo_services/src/view_manager/public/cpp",
     "//third_party/mojo_services/src/view_manager/public/interfaces",

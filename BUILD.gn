@@ -684,8 +684,6 @@ group("gn_mojo_targets") {
       "//media/mojo/interfaces:interfaces_python",
       "//media/mojo/services:cdm_service",
       "//media/mojo:tests",
-      "//mojo/services:apptests",
-      "//mojo/services:tests",
       "//net/interfaces:interfaces_dart",
       "//net/interfaces:interfaces_python",
       "//third_party/mojo/src/mojo/edk/js/test:js_integration_tests",
@@ -699,6 +697,14 @@ group("gn_mojo_targets") {
       "//third_party/mojo_services/src/window_manager/public/interfaces:interfaces_dart",
       "//third_party/mojo_services/src/window_manager/public/interfaces:interfaces_python",
     ]
+
+    if (!is_debug) {
+      deps += [
+        "//mojo/services/html_viewer:apptests",
+        "//mojo/services/html_viewer:tests",
+        "//mojo/services/network:apptests",
+      ]
+    }
   }
 }
 
