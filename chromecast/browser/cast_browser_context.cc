@@ -131,23 +131,19 @@ CastBrowserContext::GetDownloadManagerDelegate() {
 }
 
 content::BrowserPluginGuestManager* CastBrowserContext::GetGuestManager() {
-  NOTIMPLEMENTED();
-  return NULL;
+  return nullptr;
 }
 
 storage::SpecialStoragePolicy* CastBrowserContext::GetSpecialStoragePolicy() {
-  NOTIMPLEMENTED();
-  return NULL;
+  return nullptr;
 }
 
 content::PushMessagingService* CastBrowserContext::GetPushMessagingService() {
-  NOTIMPLEMENTED();
-  return NULL;
+  return nullptr;
 }
 
 content::SSLHostStateDelegate* CastBrowserContext::GetSSLHostStateDelegate() {
-  NOTIMPLEMENTED();
-  return NULL;
+  return nullptr;
 }
 
 content::PermissionManager* CastBrowserContext::GetPermissionManager() {
