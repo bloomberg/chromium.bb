@@ -946,7 +946,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_SYNC_PASSPHRASE_CANNOT_BE_BLANK" desc="Inform user that they cannot use a blank password [CHAR-LIMIT=40]">
         This field cannot be blank
       </message>
-      <message name="IDS_SYNC_PASSPHRASE_RESET_INSTRUCTIONS" desc="Inform the user how they can reset their passphrase if they have forgotten it.">
+      <message name="IDS_SYNC_PASSPHRASE_RESET_INSTRUCTIONS" desc="Inform the user how they can reset their passphrase if they have forgotten it." meaning="Android">
         If you've forgotten your passphrase, stop and reset Sync via <ph name="BEGIN_LINK">&lt;link&gt;</ph>Google Dashboard<ph name="END_LINK">&lt;/link&gt;</ph>.
       </message>
       <message name="IDS_SYNC_PASSPHRASES_DO_NOT_MATCH" desc="Inform user that their sync password does not match.">
