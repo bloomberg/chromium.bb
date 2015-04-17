@@ -131,7 +131,11 @@ html {
 }
 
 input[type=checkbox] {
-  visibility: hidden;
+  opacity: 0;
+}
+
+input[type=checkbox]:focus ~ .checkbox {
+  outline: -webkit-focus-ring-color auto 5px;
 }
 
 .interstitial-wrapper {
