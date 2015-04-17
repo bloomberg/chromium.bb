@@ -7,16 +7,17 @@
 
 #include <map>
 
+#include "base/scoped_observer.h"
 #include "chrome/browser/undo/bookmark_renumber_observer.h"
 #include "chrome/browser/undo/undo_manager.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-class Profile;
-namespace {
-class BookmarkUndoOperation;
-}  // namespace
+namespace bookmarks {
+class BookmarkModel;
+class BookmarkModelObserver;
+}
 
 // BookmarkUndoService --------------------------------------------------------
 
@@ -26,10 +27,18 @@ class BookmarkUndoService : public bookmarks::BaseBookmarkModelObserver,
                             public KeyedService,
                             public BookmarkRenumberObserver {
  public:
-  explicit BookmarkUndoService(Profile* profile);
+  BookmarkUndoService();
   ~BookmarkUndoService() override;
 
+  // Starts the BookmarkUndoService and register it as a BookmarkModelObserver.
+  // Calling this method is optional, but the service will be inactive until it
+  // is called.
+  void Start(bookmarks::BookmarkModel* model);
+
   UndoManager* undo_manager() { return &undo_manager_; }
+
+  // KeyedService:
+  void Shutdown() override;
 
  private:
   // bookmarks::BaseBookmarkModelObserver:
@@ -61,8 +70,9 @@ class BookmarkUndoService : public bookmarks::BaseBookmarkModelObserver,
   // BookmarkRenumberObserver:
   void OnBookmarkRenumbered(int64 old_id, int64 new_id) override;
 
-  Profile* profile_;
   UndoManager undo_manager_;
+  ScopedObserver<bookmarks::BookmarkModel, bookmarks::BookmarkModelObserver>
+      scoped_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkUndoService);
 };

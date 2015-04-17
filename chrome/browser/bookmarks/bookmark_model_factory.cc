@@ -48,6 +48,7 @@ BookmarkModelFactory::BookmarkModelFactory()
     : BrowserContextKeyedServiceFactory(
         "BookmarkModel",
         BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(BookmarkUndoServiceFactory::GetInstance());
   DependsOn(ChromeBookmarkClientFactory::GetInstance());
   DependsOn(StartupTaskRunnerServiceFactory::GetInstance());
 }
@@ -57,7 +58,7 @@ BookmarkModelFactory::~BookmarkModelFactory() {
 
 KeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = static_cast<Profile*>(context);
+  Profile* profile = Profile::FromBrowserContext(context);
   ChromeBookmarkClient* bookmark_client =
       ChromeBookmarkClientFactory::GetForProfile(profile);
   BookmarkModel* bookmark_model = new BookmarkModel(bookmark_client);
@@ -74,11 +75,9 @@ KeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
   register_bookmark_undo_service_as_observer =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBookmarkUndo);
-#endif  // !defined(OS_IOS)
-  if (register_bookmark_undo_service_as_observer) {
-    bookmark_model->AddObserver(
-        BookmarkUndoServiceFactory::GetForProfile(profile));
-  }
+#endif  // !defined(OS_IOS) && !defined(OS_ANDROID)
+  if (register_bookmark_undo_service_as_observer)
+    BookmarkUndoServiceFactory::GetForProfile(profile)->Start(bookmark_model);
   return bookmark_model;
 }
 
