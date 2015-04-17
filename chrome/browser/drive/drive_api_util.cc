@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/cancellation_flag.h"
 #include "base/values.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "net/base/escape.h"
@@ -135,7 +136,8 @@ std::string CanonicalizeResourceId(const std::string& resource_id) {
   return resource_id;
 }
 
-std::string GetMd5Digest(const base::FilePath& file_path) {
+std::string GetMd5Digest(const base::FilePath& file_path,
+                         const base::CancellationFlag* cancellation_flag) {
   base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!file.IsValid())
     return std::string();
@@ -146,6 +148,9 @@ std::string GetMd5Digest(const base::FilePath& file_path) {
   int64 offset = 0;
   scoped_ptr<char[]> buffer(new char[kMd5DigestBufferSize]);
   while (true) {
+    if (cancellation_flag && cancellation_flag->IsSet()) {  // Cancelled.
+      return std::string();
+    }
     int result = file.Read(offset, buffer.get(), kMd5DigestBufferSize);
     if (result < 0) {
       // Found an error.

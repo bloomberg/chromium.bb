@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/synchronization/cancellation_flag.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
 
@@ -166,6 +167,8 @@ class FileCache {
   const base::FilePath cache_file_directory_;
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+
+  base::CancellationFlag in_shutdown_;
 
   ResourceMetadataStorage* storage_;
 

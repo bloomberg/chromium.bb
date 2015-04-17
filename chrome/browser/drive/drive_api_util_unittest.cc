@@ -75,7 +75,7 @@ TEST(DriveAPIUtilTest, GetMd5Digest) {
   const char kTestData[] = "abcdefghijklmnopqrstuvwxyz0123456789";
   ASSERT_TRUE(google_apis::test_util::WriteStringToFile(path, kTestData));
 
-  EXPECT_EQ(base::MD5String(kTestData), GetMd5Digest(path));
+  EXPECT_EQ(base::MD5String(kTestData), GetMd5Digest(path, nullptr));
 }
 
 TEST(DriveAPIUtilTest, HasHostedDocumentExtension) {

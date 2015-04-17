@@ -310,7 +310,10 @@ FileError FileCache::UpdateMd5(const std::string& id) {
   if (!entry.file_specific_info().cache_state().is_present())
     return FILE_ERROR_NOT_FOUND;
 
-  const std::string& md5 = util::GetMd5Digest(GetCacheFilePath(id));
+  const std::string& md5 =
+      util::GetMd5Digest(GetCacheFilePath(id), &in_shutdown_);
+  if (in_shutdown_.IsSet())
+    return FILE_ERROR_ABORT;
   if (md5.empty())
     return FILE_ERROR_NOT_FOUND;
 
@@ -416,6 +419,8 @@ bool FileCache::Initialize() {
 void FileCache::Destroy() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  in_shutdown_.Set();
+
   // Destroy myself on the blocking pool.
   // Note that base::DeletePointer<> cannot be used as the destructor of this
   // class is private.
@@ -460,7 +465,7 @@ bool FileCache::RecoverFilesFromCacheDirectory(
       // Due to the DB corruption, cache info might be recovered from old
       // revision. Perform MD5 check even when is_dirty is false just in case.
       if (!it->second.is_dirty &&
-          it->second.md5 == util::GetMd5Digest(current)) {
+          it->second.md5 == util::GetMd5Digest(current, &in_shutdown_)) {
         base::DeleteFile(current, false /* recursive */);
         continue;
       }

@@ -15,6 +15,7 @@
 class GURL;
 
 namespace base {
+class CancellationFlag;
 class FilePath;
 class Value;
 }  // namespace base
@@ -71,7 +72,8 @@ std::string CanonicalizeResourceId(const std::string& resource_id);
 
 // Returns the (base-16 encoded) MD5 digest of the file content at |file_path|,
 // or an empty string if an error is found.
-std::string GetMd5Digest(const base::FilePath& file_path);
+std::string GetMd5Digest(const base::FilePath& file_path,
+                         const base::CancellationFlag* cancellation_flag);
 
 // Computes the (base-16 encoded) MD5 digest of data extracted from a file
 // stream.
