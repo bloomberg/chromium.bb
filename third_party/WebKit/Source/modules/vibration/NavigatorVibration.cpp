@@ -20,16 +20,53 @@
 #include "config.h"
 #include "modules/vibration/NavigatorVibration.h"
 
+#include "bindings/modules/v8/UnionTypesModules.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
 #include "core/page/PageVisibilityState.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebVibration.h"
 
-namespace blink {
-
 // Maximum number of entries in a vibration pattern.
 const unsigned kVibrationPatternLengthMax = 99;
+
+blink::NavigatorVibration::VibrationPattern sanitizeVibrationPatternInternal(const blink::NavigatorVibration::VibrationPattern& pattern)
+{
+    blink::NavigatorVibration::VibrationPattern sanitized = pattern;
+    size_t length = sanitized.size();
+
+    // If the pattern is too long then truncate it.
+    if (length > kVibrationPatternLengthMax) {
+        sanitized.shrink(kVibrationPatternLengthMax);
+        length = kVibrationPatternLengthMax;
+    }
+
+    // If any pattern entry is too long then truncate it.
+    for (size_t i = 0; i < length; ++i) {
+        if (sanitized[i] > blink::kVibrationDurationMax)
+            sanitized[i] = blink::kVibrationDurationMax;
+    }
+
+    // If the last item in the pattern is a pause then discard it.
+    if (length && !(length % 2))
+        sanitized.removeLast();
+
+    return sanitized;
+}
+
+namespace blink {
+
+NavigatorVibration::VibrationPattern NavigatorVibration::sanitizeVibrationPattern(const UnsignedLongOrUnsignedLongSequence& pattern)
+{
+    VibrationPattern sanitized;
+
+    if (pattern.isUnsignedLong())
+        sanitized.append(pattern.getAsUnsignedLong());
+    else if (pattern.isUnsignedLongSequence())
+        sanitized = pattern.getAsUnsignedLongSequence();
+
+    return sanitizeVibrationPatternInternal(sanitized);
+}
 
 NavigatorVibration::NavigatorVibration(Page& page)
     : PageLifecycleObserver(&page)
@@ -47,30 +84,11 @@ NavigatorVibration::~NavigatorVibration()
 
 bool NavigatorVibration::vibrate(const VibrationPattern& pattern)
 {
-    VibrationPattern sanitized = pattern;
-    size_t length = sanitized.size();
-
-    // If the pattern is too long then truncate it.
-    if (length > kVibrationPatternLengthMax) {
-        sanitized.shrink(kVibrationPatternLengthMax);
-        length = kVibrationPatternLengthMax;
-    }
-
-    // If any pattern entry is too long then truncate it.
-    for (size_t i = 0; i < length; ++i) {
-        if (sanitized[i] > kVibrationDurationMax)
-            sanitized[i] = kVibrationDurationMax;
-    }
-
-    // If the last item in the pattern is a pause then discard it.
-    if (length && !(length % 2))
-        sanitized.removeLast();
-
     // Cancelling clears the stored pattern so do it before setting the new one.
     if (m_isVibrating)
         cancelVibration();
 
-    m_pattern = sanitized;
+    m_pattern = sanitizeVibrationPatternInternal(pattern);
 
     if (m_timerStart.isActive())
         m_timerStart.stop();

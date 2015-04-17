@@ -7,6 +7,7 @@ include_rules = [
     "+modules/EventTargetModules.h",
     "+modules/notifications",
     "+modules/serviceworkers",
+    "+modules/vibration",
     "+platform",
     "+public/platform",
     "-web",

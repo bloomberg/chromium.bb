@@ -79,6 +79,12 @@ Notification* Notification::create(ExecutionContext* context, const String& titl
         return nullptr;
     }
 
+    // If options's silent is true, and options's vibrate is present, throw a TypeError exception.
+    if (options.hasVibrate() && options.silent()) {
+        exceptionState.throwTypeError("Silent notifications must not specify vibration patterns.");
+        return nullptr;
+    }
+
     RefPtr<SerializedScriptValue> data;
     if (options.hasData()) {
         data = SerializedScriptValueFactory::instance().create(options.data(), nullptr, exceptionState, options.data().isolate());
@@ -92,6 +98,7 @@ Notification* Notification::create(ExecutionContext* context, const String& titl
     notification->setTag(options.tag());
     notification->setLang(options.lang());
     notification->setDir(options.dir());
+    notification->setVibrate(NavigatorVibration::sanitizeVibrationPattern(options.vibrate()));
     notification->setSilent(options.silent());
     notification->setSerializedData(data.release());
     if (options.hasIcon()) {
@@ -124,6 +131,12 @@ Notification* Notification::create(ExecutionContext* context, int64_t persistent
 
     if (!data.icon.isEmpty())
         notification->setIconUrl(data.icon);
+
+    if (!data.vibrate.isEmpty()) {
+        NavigatorVibration::VibrationPattern pattern;
+        pattern.appendRange(data.vibrate.begin(), data.vibrate.end());
+        notification->setVibrate(pattern);
+    }
 
     const WebVector<char>& dataBytes = data.data;
     if (!dataBytes.isEmpty()) {
@@ -178,7 +191,7 @@ void Notification::show()
     // they were created by, and thus the data doesn't have to be known to the embedder.
     Vector<char> emptyDataWireBytes;
 
-    WebNotificationData notificationData(m_title, dir, m_lang, m_body, m_tag, m_iconUrl, m_silent, emptyDataWireBytes);
+    WebNotificationData notificationData(m_title, dir, m_lang, m_body, m_tag, m_iconUrl, m_vibrate, m_silent, emptyDataWireBytes);
     notificationManager()->show(WebSerializedOrigin(*origin), notificationData, this);
 
     m_state = NotificationStateShowing;
@@ -231,6 +244,12 @@ void Notification::dispatchCloseEvent()
 
     m_state = NotificationStateClosed;
     dispatchEvent(Event::create(EventTypeNames::close));
+}
+
+NavigatorVibration::VibrationPattern Notification::vibrate(bool& isNull) const
+{
+    isNull = m_vibrate.isEmpty();
+    return m_vibrate;
 }
 
 TextDirection Notification::direction() const

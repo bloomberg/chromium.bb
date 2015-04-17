@@ -3483,6 +3483,7 @@ interface Notification
     getter silent
     getter tag
     getter title
+    getter vibrate
     method close
     method constructor
     setter onclick

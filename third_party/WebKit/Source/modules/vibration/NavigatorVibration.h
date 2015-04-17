@@ -30,6 +30,7 @@ namespace blink {
 
 class LocalFrame;
 class Navigator;
+class UnsignedLongOrUnsignedLongSequence;
 
 class NavigatorVibration final
     : public NoBaseWillBeGarbageCollectedFinalized<NavigatorVibration>
@@ -53,6 +54,7 @@ public:
     static bool vibrate(Navigator&, unsigned time);
     static bool vibrate(Navigator&, const VibrationPattern&);
     static NavigatorVibration& from(Page&);
+    static VibrationPattern sanitizeVibrationPattern(const UnsignedLongOrUnsignedLongSequence&);
 
     bool isVibrating() const { return m_isVibrating; }
 

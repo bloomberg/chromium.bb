@@ -55,6 +55,8 @@
     readonly attribute DOMString body;
     readonly attribute DOMString tag;
     readonly attribute DOMString icon;
+
+    [RuntimeEnabled=NotificationExperimental] readonly attribute sequence<unsigned long>? vibrate;
     readonly attribute boolean silent;
     [RuntimeEnabled=NotificationExperimental, CallWith=ScriptState] readonly attribute any data;
 
