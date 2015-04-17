@@ -33,6 +33,8 @@ source_set("unit_tests") {
     "server_log_entry_client_unittest.cc",
   ]
 
+  configs += [ "//remoting:version" ]
+
   deps = [
     ":client",
     "//remoting/proto",

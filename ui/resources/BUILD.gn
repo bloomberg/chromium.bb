@@ -72,7 +72,13 @@ if (is_ios || is_mac) {
     ]
   }
 } else {
-  group("ui_test_pak") {
+  copy("ui_test_pak") {
+    sources = [
+      "$root_out_dir/ui_test.pak",
+    ]
+    outputs = [
+      "$root_out_dir/ui/en-US.pak",
+    ]
     deps = [
       ":repack_ui_test_pak",
     ]

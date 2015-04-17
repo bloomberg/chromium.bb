@@ -32,7 +32,10 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
 
     libs = []
 
-    configs += [ "//build/config/compiler:wexit_time_destructors" ]
+    configs += [
+      "//build/config/compiler:wexit_time_destructors",
+      "//remoting:version",
+    ]
 
     defines = [ "WEBRTC_CHROMIUM_BUILD" ]
 
@@ -170,6 +173,8 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       "fake_mouse_cursor_monitor.h",
     ]
 
+    configs += [ "//remoting:version" ]
+
     deps = [
       "//remoting/proto",
       "//testing/gtest",
@@ -248,6 +253,8 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
     if (is_chromeos) {
       sources -= [ "linux/x_server_clipboard_unittest.cc" ]
     }
+
+    configs += [ "//remoting:version" ]
 
     deps = [
       ":host",

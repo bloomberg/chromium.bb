@@ -63,6 +63,12 @@ TEST(ServerLogEntryHostTest, AddHostFields) {
 #elif defined(OS_LINUX)
   key_value_pairs["os-name"] = "Linux";
 #endif
+
+  // The check below will compile but fail if VERSION isn't defined (STRINGIZE
+  // silently converts undefined values).
+  #ifndef VERSION
+  #error VERSION must be defined
+  #endif
   key_value_pairs["host-version"] = STRINGIZE(VERSION);
   ASSERT_TRUE(VerifyStanza(key_value_pairs, keys, stanza.get(), &error)) <<
       error;

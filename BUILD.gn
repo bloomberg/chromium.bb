@@ -756,7 +756,7 @@ if (is_linux) {
       "//net:net_unittests",  # PASSES 2/25/2015
       "//ppapi:ppapi_unittests",  # PASSES 2/26/2015
       "//printing:printing_unittests",  # PASSES 2/25/2015
-      "//remoting:remoting_unittests",  # Some crashes.
+      "//remoting:remoting_unittests",  # PASSES 4/17/2015
       "//sandbox/linux:sandbox_linux_unittests",  # PASSES 2/25/2015
       "//skia:skia_unittests",  # PASSES 2/25/2015
       "//sql:sql_unittests",  # PASSES 2/25/2015
@@ -769,7 +769,7 @@ if (is_linux) {
       "//ui/accessibility:accessibility_unittests",  # PASSES 2/25/2015
       "//ui/app_list:app_list_unittests",  # PASSES 2/25/2015
       "//ui/aura:aura_unittests",  # PASSES 2/25/2015
-      "//ui/base:ui_base_unittests",  # TODO(GYP) ResourceBundleTest.* fails.
+      "//ui/base:ui_base_unittests",  # PASSES 4/17/2015
       "//ui/compositor:compositor_unittests",  # PASSES 2/25/2015
       "//ui/display:display_unittests",  # PASSES 2/25/2015
       "//ui/events:events_unittests",  # PASSES 2/25/2015

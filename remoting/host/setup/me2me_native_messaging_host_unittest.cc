@@ -36,6 +36,12 @@ void VerifyHelloResponse(scoped_ptr<base::DictionaryValue> response) {
   EXPECT_TRUE(response->GetString("type", &value));
   EXPECT_EQ("helloResponse", value);
   EXPECT_TRUE(response->GetString("version", &value));
+
+  // The check below will compile but fail if VERSION isn't defined (STRINGIZE
+  // silently converts undefined values).
+  #ifndef VERSION
+  #error VERSION must be defined
+  #endif
   EXPECT_EQ(STRINGIZE(VERSION), value);
 }
 

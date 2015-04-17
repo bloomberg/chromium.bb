@@ -96,8 +96,12 @@ if (!is_win && !is_mac) {
       "test/test_chromoting_client_unittest.cc",
     ]
 
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+    configs += [
+      ":version",
+
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      "//build/config/compiler:no_size_t_to_int_warning",
+    ]
 
     deps = [
       ":test_support",
