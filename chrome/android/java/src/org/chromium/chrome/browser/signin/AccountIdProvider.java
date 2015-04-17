@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.signin;
 import android.content.Context;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 
 /**
  * Returns a stable id that can be used to identify a Google Account.  This
@@ -47,6 +48,15 @@ public abstract class AccountIdProvider {
     public static AccountIdProvider getInstance() {
         ThreadUtils.assertOnUiThread();
         return sProvider;
+    }
+
+    /**
+     * For testing purposes only, allows to set the provider even if it has already been
+     * initialized.
+     */
+    @VisibleForTesting
+    public static void setInstanceForTest(AccountIdProvider provider) {
+        sProvider = provider;
     }
 }
 
