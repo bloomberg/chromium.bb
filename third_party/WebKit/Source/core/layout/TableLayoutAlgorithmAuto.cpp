@@ -154,7 +154,8 @@ void TableLayoutAlgorithmAuto::fullRecalc()
             groupLogicalWidth = column->style()->logicalWidth();
         } else {
             Length colLogicalWidth = column->style()->logicalWidth();
-            if (colLogicalWidth.isAuto())
+            // FIXME: calc() on tables should be handled consistently with other lengths. See bug: https://crbug.com/382725
+            if (colLogicalWidth.isCalculated() || colLogicalWidth.isAuto())
                 colLogicalWidth = groupLogicalWidth;
             if ((colLogicalWidth.isFixed() || colLogicalWidth.isPercent()) && colLogicalWidth.isZero())
                 colLogicalWidth = Length();
