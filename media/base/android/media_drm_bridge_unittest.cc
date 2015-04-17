@@ -12,14 +12,14 @@
 
 namespace media {
 
-#define EXPECT_TRUE_IF_AVAILABLE(a)                   \
-  do {                                                \
-    if (!MediaDrmBridge::IsAvailable()) {             \
-      VLOG(0) << "MediaDrm not supported on device."; \
-      EXPECT_FALSE(a);                                \
-    } else {                                          \
-      EXPECT_TRUE(a);                                 \
-    }                                                 \
+#define EXPECT_TRUE_IF_WIDEVINE_AVAILABLE(a)                              \
+  do {                                                                    \
+    if (!MediaDrmBridge::IsKeySystemSupported(kWidevineKeySystem)) {      \
+      VLOG(0) << "Widevine not supported on device.";                     \
+      EXPECT_FALSE(a);                                                    \
+    } else {                                                              \
+      EXPECT_TRUE(a);                                                     \
+    }                                                                     \
   } while (0)
 
 const char kAudioMp4[] = "audio/mp4";
@@ -42,21 +42,20 @@ static bool IsKeySystemSupportedWithType(
 }
 
 TEST(MediaDrmBridgeTest, IsKeySystemSupported_Widevine) {
-  EXPECT_TRUE_IF_AVAILABLE(
-      MediaDrmBridge::IsKeySystemSupported(kWidevineKeySystem));
-
   // TODO(xhwang): Enable when b/13564917 is fixed.
   // EXPECT_TRUE_IF_AVAILABLE(
   //     IsKeySystemSupportedWithType(kWidevineKeySystem, kAudioMp4));
-  EXPECT_TRUE_IF_AVAILABLE(
+  EXPECT_TRUE_IF_WIDEVINE_AVAILABLE(
       IsKeySystemSupportedWithType(kWidevineKeySystem, kVideoMp4));
 
   if (base::android::BuildInfo::GetInstance()->sdk_int() <= 19) {
     EXPECT_FALSE(IsKeySystemSupportedWithType(kWidevineKeySystem, kAudioWebM));
     EXPECT_FALSE(IsKeySystemSupportedWithType(kWidevineKeySystem, kVideoWebM));
   } else {
-    EXPECT_TRUE(IsKeySystemSupportedWithType(kWidevineKeySystem, kAudioWebM));
-    EXPECT_TRUE(IsKeySystemSupportedWithType(kWidevineKeySystem, kVideoWebM));
+    EXPECT_TRUE_IF_WIDEVINE_AVAILABLE(
+        IsKeySystemSupportedWithType(kWidevineKeySystem, kAudioWebM));
+    EXPECT_TRUE_IF_WIDEVINE_AVAILABLE(
+        IsKeySystemSupportedWithType(kWidevineKeySystem, kVideoWebM));
   }
 
   EXPECT_FALSE(IsKeySystemSupportedWithType(kWidevineKeySystem, "unknown"));
@@ -77,7 +76,7 @@ TEST(MediaDrmBridgeTest, IsKeySystemSupported_InvalidKeySystem) {
 }
 
 TEST(MediaDrmBridgeTest, CreateWithoutSessionSupport_Widevine) {
-  EXPECT_TRUE_IF_AVAILABLE(
+  EXPECT_TRUE_IF_WIDEVINE_AVAILABLE(
       MediaDrmBridge::CreateWithoutSessionSupport(kWidevineKeySystem));
 }
 
@@ -89,7 +88,7 @@ TEST(MediaDrmBridgeTest, CreateWithoutSessionSupport_InvalidKeySystem) {
 TEST(MediaDrmBridgeTest, SetSecurityLevel_Widevine) {
   scoped_ptr<MediaDrmBridge> media_drm_bridge =
       MediaDrmBridge::CreateWithoutSessionSupport(kWidevineKeySystem);
-  EXPECT_TRUE_IF_AVAILABLE(media_drm_bridge);
+  EXPECT_TRUE_IF_WIDEVINE_AVAILABLE(media_drm_bridge);
   if (!media_drm_bridge)
     return;
 
