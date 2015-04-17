@@ -118,6 +118,58 @@ void PlatformNotificationContextImpl::DoReadNotificationData(
       base::Bind(callback, false /* success */, NotificationDatabaseData()));
 }
 
+void PlatformNotificationContextImpl::
+    ReadAllNotificationDataForServiceWorkerRegistration(
+    const GURL& origin,
+    int64_t service_worker_registration_id,
+    const ReadAllResultCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  LazyInitialize(
+       base::Bind(&PlatformNotificationContextImpl::
+                      DoReadAllNotificationDataForServiceWorkerRegistration,
+                  this, origin, service_worker_registration_id, callback),
+       base::Bind(callback,
+                  false /* success */,
+                  std::vector<NotificationDatabaseData>()));
+}
+
+void PlatformNotificationContextImpl::
+    DoReadAllNotificationDataForServiceWorkerRegistration(
+    const GURL& origin,
+    int64_t service_worker_registration_id,
+    const ReadAllResultCallback& callback) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
+  std::vector<NotificationDatabaseData> notification_datas;
+
+  NotificationDatabase::Status status =
+      database_->ReadAllNotificationDataForServiceWorkerRegistration(
+          origin, service_worker_registration_id, &notification_datas);
+
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Database.ReadForServiceWorkerResult",
+                            status, NotificationDatabase::STATUS_COUNT);
+
+  if (status == NotificationDatabase::STATUS_OK) {
+    BrowserThread::PostTask(BrowserThread::IO,
+                            FROM_HERE,
+                            base::Bind(callback,
+                                       true /* success */,
+                                       notification_datas));
+    return;
+  }
+
+  // Blow away the database if reading data failed due to corruption.
+  if (status == NotificationDatabase::STATUS_ERROR_CORRUPTED)
+    DestroyDatabase();
+
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(callback,
+                 false /* success */,
+                 std::vector<NotificationDatabaseData>()));
+}
+
 void PlatformNotificationContextImpl::WriteNotificationData(
     const GURL& origin,
     const NotificationDatabaseData& database_data,
@@ -284,8 +336,9 @@ void PlatformNotificationContextImpl::OpenDatabase(
     if (DestroyDatabase()) {
       status = database_->Open(true /* create_if_missing */);
 
-      // TODO(peter): Record UMA on |status| for re-opening the database after
-      // corruption was detected.
+      UMA_HISTOGRAM_ENUMERATION(
+          "Notifications.Database.OpenAfterCorruptionResult",
+          status, NotificationDatabase::STATUS_COUNT);
     }
   }
 

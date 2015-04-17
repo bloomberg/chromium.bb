@@ -24353,11 +24353,29 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Notifications.Database.OpenAfterCorruptionResult"
+    enum="NotificationDatabaseStatus">
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Records the result status codes of opening the Web Notification database
+    after it has been destroyed in response to data corruption.
+  </summary>
+</histogram>
+
 <histogram name="Notifications.Database.OpenResult"
     enum="NotificationDatabaseStatus">
   <owner>peter@chromium.org</owner>
   <summary>
     Records the result status codes of opening the Web Notification database.
+  </summary>
+</histogram>
+
+<histogram name="Notifications.Database.ReadForServiceWorkerResult"
+    enum="NotificationDatabaseStatus">
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Records the result status codes of reading data of all notifications
+    associated with a Service Worker from the Web Notification database.
   </summary>
 </histogram>
 

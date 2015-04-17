@@ -62,6 +62,10 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   void DeleteNotificationData(int64_t notification_id,
                               const GURL& origin,
                               const DeleteResultCallback& callback) override;
+  void ReadAllNotificationDataForServiceWorkerRegistration(
+      const GURL& origin,
+      int64_t service_worker_registration_id,
+      const ReadAllResultCallback& callback) override;
 
   // ServiceWorkerContextObserver implementation.
   void OnRegistrationDeleted(int64_t registration_id,
@@ -99,6 +103,14 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   void DoReadNotificationData(int64_t notification_id,
                               const GURL& origin,
                               const ReadResultCallback& callback);
+
+  // Actually reads all notification data from the database. Must only be
+  // called on the |task_runner_| thread. |callback| will be invoked on the
+  // IO thread when the operation has completed.
+  void DoReadAllNotificationDataForServiceWorkerRegistration(
+      const GURL& origin,
+      int64_t service_worker_registration_id,
+      const ReadAllResultCallback& callback);
 
   // Actually writes the notification database to the database. Must only be
   // called on the |task_runner_| thread. |callback| will be invoked on the

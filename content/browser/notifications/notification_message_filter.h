@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/browser/notification_database_data.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationPermission.h"
 
 class GURL;
@@ -80,6 +81,16 @@ class NotificationMessageFilter : public BrowserMessageFilter {
       const PlatformNotificationData& notification_data,
       bool success,
       int64_t persistent_notification_id);
+
+  // Callback to be invoked when all notifications belonging to a Service Worker
+  // registration have been read from the database. The |success| argument
+  // indicates whether the data could be read successfully, whereas the actual
+  // notifications will be stored in |notifications|.
+  void DidGetNotifications(
+      int request_id,
+      const std::string& filter_tag,
+      bool success,
+      const std::vector<NotificationDatabaseData>& notifications);
 
   // Callback to be invoked when the data associated with a persistent
   // notification has been removed by the database, unless an error occurred,

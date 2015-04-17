@@ -175,14 +175,44 @@ void NotificationMessageFilter::OnGetNotifications(
     const GURL& origin,
     const std::string& filter_tag) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (GetPermissionForOriginOnIO(origin) !=
+          blink::WebNotificationPermissionAllowed) {
+    // No permission has been granted for the given origin. It is harmless to
+    // try to get notifications without permission, so return an empty vector
+    // indicating that no (accessible) notifications exist at this time.
+    Send(new PlatformNotificationMsg_DidGetNotifications(
+        request_id, std::vector<PersistentNotificationInfo>()));
+    return;
+  }
 
-  // TODO(peter): Implement retrieval of persistent Web Notifications from the
-  // database. Reply with an empty vector until this has been implemented.
-  // Tracked in https://crbug.com/442143.
+  notification_context_->ReadAllNotificationDataForServiceWorkerRegistration(
+      origin,
+      service_worker_registration_id,
+      base::Bind(&NotificationMessageFilter::DidGetNotifications,
+                 weak_factory_io_.GetWeakPtr(),
+                 request_id,
+                 filter_tag));
+}
+
+void NotificationMessageFilter::DidGetNotifications(
+    int request_id,
+    const std::string& filter_tag,
+    bool success,
+    const std::vector<NotificationDatabaseData>& notifications) {
+  std::vector<PersistentNotificationInfo> persistent_notifications;
+  for (const NotificationDatabaseData& database_data : notifications) {
+    if (!filter_tag.empty()) {
+      const std::string& tag = database_data.notification_data.tag;
+      if (tag != filter_tag)
+        continue;
+    }
+
+    persistent_notifications.push_back(std::make_pair(
+        database_data.notification_id, database_data.notification_data));
+  }
 
   Send(new PlatformNotificationMsg_DidGetNotifications(
-      request_id,
-      std::vector<PersistentNotificationInfo>()));
+      request_id, persistent_notifications));
 }
 
 void NotificationMessageFilter::OnClosePlatformNotification(

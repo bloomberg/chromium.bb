@@ -6,14 +6,14 @@
 #define CONTENT_PUBLIC_BROWSER_PLATFORM_NOTIFICATION_CONTEXT_H_
 
 #include <stdint.h>
+#include <vector>
 
 #include "base/callback.h"
+#include "content/public/browser/notification_database_data.h"
 
 class GURL;
 
 namespace content {
-
-struct NotificationDatabaseData;
 
 // Represents the storage context for persistent Web Notifications, specific to
 // the storage partition owning the instance. All methods defined in this
@@ -23,6 +23,10 @@ class PlatformNotificationContext {
   using ReadResultCallback =
       base::Callback<void(bool /* success */,
                           const NotificationDatabaseData&)>;
+
+  using ReadAllResultCallback =
+      base::Callback<void(bool /* success */,
+                          const std::vector<NotificationDatabaseData>&)>;
 
   using WriteResultCallback =
       base::Callback<void(bool /* success */,
@@ -36,6 +40,14 @@ class PlatformNotificationContext {
   virtual void ReadNotificationData(int64_t notification_id,
                                     const GURL& origin,
                                     const ReadResultCallback& callback) = 0;
+
+  // Reads all data associated with |service_worker_registration_id| belonging
+  // to |origin| from the database. |callback| will be invoked with the success
+  // status and a vector with all read notification data when completed.
+  virtual void ReadAllNotificationDataForServiceWorkerRegistration(
+      const GURL& origin,
+      int64_t service_worker_registration_id,
+      const ReadAllResultCallback& callback) = 0;
 
   // Writes the data associated with a notification to a database. When this
   // action completed, |callback| will be invoked with the success status and
