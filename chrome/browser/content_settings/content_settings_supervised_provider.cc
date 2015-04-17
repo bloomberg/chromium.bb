@@ -57,20 +57,20 @@ RuleIterator* SupervisedProvider::GetRuleIterator(
 
 void SupervisedProvider::OnSupervisedSettingsAvailable(
     const base::DictionaryValue* settings) {
-  if (!settings)
-    return;
   std::vector<ContentSettingsType> to_notify;
   // Entering locked scope to update content settings.
   {
     base::AutoLock auto_lock(lock_);
-    bool new_value, old_value;
     for (const auto& entry : kContentSettingsFromSupervisedSettingsMap) {
-      if (settings->GetBoolean(entry.setting_name, &new_value)) {
-        old_value = !value_map_.IsContentSettingEnabled(entry.content_type);
-        if (new_value != old_value) {
-          to_notify.push_back(entry.content_type);
-          value_map_.SetContentSettingDisabled(entry.content_type, new_value);
-        }
+      bool new_value = false;
+      if (settings && settings->HasKey(entry.setting_name)) {
+        bool is_bool = settings->GetBoolean(entry.setting_name, &new_value);
+        DCHECK(is_bool);
+      }
+      bool old_value = !value_map_.IsContentSettingEnabled(entry.content_type);
+      if (new_value != old_value) {
+        to_notify.push_back(entry.content_type);
+        value_map_.SetContentSettingDisabled(entry.content_type, new_value);
       }
     }
   }
