@@ -345,7 +345,7 @@ public class AccountManagementFragment extends PreferenceFragment
             childContent.setSelectable(false);
 
             final String safeSearchText = res.getString(
-                    prefService.isForceSafeSearch() ? R.string.text_on : R.string.text_off);
+                    prefService.isForceGoogleSafeSearch() ? R.string.text_on : R.string.text_off);
             childSafeSearch.setSummary(safeSearchText);
             childSafeSearch.setSelectable(false);
         } else {

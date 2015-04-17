@@ -285,7 +285,6 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
     : profile_(NULL),
       enable_referrers_(enable_referrers),
       enable_do_not_track_(NULL),
-      force_safe_search_(NULL),
       force_google_safe_search_(NULL),
       force_youtube_safety_mode_(NULL),
 #if defined(ENABLE_CONFIGURATION_POLICY)
@@ -334,7 +333,6 @@ void ChromeNetworkDelegate::NeverThrottleRequests() {
 void ChromeNetworkDelegate::InitializePrefsOnUIThread(
     BooleanPrefMember* enable_referrers,
     BooleanPrefMember* enable_do_not_track,
-    BooleanPrefMember* force_safe_search,
     BooleanPrefMember* force_google_safe_search,
     BooleanPrefMember* force_youtube_safety_mode,
     PrefService* pref_service) {
@@ -345,11 +343,6 @@ void ChromeNetworkDelegate::InitializePrefsOnUIThread(
   if (enable_do_not_track) {
     enable_do_not_track->Init(prefs::kEnableDoNotTrack, pref_service);
     enable_do_not_track->MoveToThread(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
-  }
-  if (force_safe_search) {
-    force_safe_search->Init(prefs::kForceSafeSearch, pref_service);
-    force_safe_search->MoveToThread(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
   }
   if (force_google_safe_search) {
@@ -398,7 +391,6 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
     request->SetExtraRequestHeaderByName(kDNTHeader, "1", true /* override */);
 
   bool force_safe_search =
-      (force_safe_search_ && force_safe_search_->GetValue()) ||
       (force_google_safe_search_ && force_google_safe_search_->GetValue());
 
   net::CompletionCallback wrapped_callback = callback;
@@ -425,10 +417,7 @@ int ChromeNetworkDelegate::OnBeforeSendHeaders(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
-  bool force_safety_mode =
-      (force_safe_search_ && force_safe_search_->GetValue()) ||
-      (force_youtube_safety_mode_ && force_youtube_safety_mode_->GetValue());
-  if (force_safety_mode)
+  if (force_youtube_safety_mode_ && force_youtube_safety_mode_->GetValue())
     safe_search_util::ForceYouTubeSafetyMode(request, headers);
 
   return extensions_delegate_->OnBeforeSendHeaders(request, callback, headers);

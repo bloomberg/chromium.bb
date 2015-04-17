@@ -893,7 +893,7 @@
       'example_value': False,
       'id': 162,
       'caption': '''Force SafeSearch''',
-      'desc': '''This policy is deprecated, please use ForceGoogleSafeSearch and ForceYouTubeSafetyMode instead.
+      'desc': '''This policy is deprecated, please use ForceGoogleSafeSearch and ForceYouTubeSafetyMode instead. This policy will be ignored if either the ForceGoogleSafeSearch or ForceYouTubeSafetyMode policies are set.
 
       Forces queries in Google Web Search to be done with SafeSearch set to active and prevents users from changing this setting. This setting also forces Safety Mode on YouTube.
 

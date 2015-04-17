@@ -96,11 +96,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
     enable_do_not_track_ = enable_do_not_track;
   }
 
-  void set_force_safe_search(
-      BooleanPrefMember* force_safe_search) {
-    force_safe_search_ = force_safe_search;
-  }
-
   void set_force_google_safe_search(
       BooleanPrefMember* force_google_safe_search) {
     force_google_safe_search_ = force_google_safe_search;
@@ -126,7 +121,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   static void InitializePrefsOnUIThread(
       BooleanPrefMember* enable_referrers,
       BooleanPrefMember* enable_do_not_track,
-      BooleanPrefMember* force_safe_search,
       BooleanPrefMember* force_google_safe_search,
       BooleanPrefMember* force_youtube_safety_mode,
       PrefService* pref_service);
@@ -197,7 +191,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   // Weak, owned by our owner.
   BooleanPrefMember* enable_referrers_;
   BooleanPrefMember* enable_do_not_track_;
-  BooleanPrefMember* force_safe_search_;
   BooleanPrefMember* force_google_safe_search_;
   BooleanPrefMember* force_youtube_safety_mode_;
 

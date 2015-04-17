@@ -452,7 +452,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   ChromeNetworkDelegate::InitializePrefsOnUIThread(
       &enable_referrers_,
       &enable_do_not_track_,
-      &force_safesearch_,
       &force_google_safesearch_,
       &force_youtube_safety_mode_,
       pref_service);
@@ -1025,7 +1024,6 @@ void ProfileIOData::Init(
   network_delegate->set_profile_path(profile_params_->path);
   network_delegate->set_cookie_settings(profile_params_->cookie_settings.get());
   network_delegate->set_enable_do_not_track(&enable_do_not_track_);
-  network_delegate->set_force_safe_search(&force_safesearch_);
   network_delegate->set_force_google_safe_search(&force_google_safesearch_);
   network_delegate->set_force_youtube_safety_mode(&force_youtube_safety_mode_);
   fraudulent_certificate_reporter_.reset(
@@ -1210,7 +1208,6 @@ void ProfileIOData::ShutdownOnUIThread(
   google_services_user_account_id_.Destroy();
   enable_referrers_.Destroy();
   enable_do_not_track_.Destroy();
-  force_safesearch_.Destroy();
   force_google_safesearch_.Destroy();
   force_youtube_safety_mode_.Destroy();
 #if !defined(OS_CHROMEOS)

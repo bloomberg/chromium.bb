@@ -841,10 +841,10 @@ public final class PrefServiceBridge {
     }
 
     /**
-     * @return whether ForceSafeSearch is set
+     * @return whether ForceGoogleSafeSearch is set
      */
-    public boolean isForceSafeSearch() {
-        return nativeGetForceSafeSearch();
+    public boolean isForceGoogleSafeSearch() {
+        return nativeGetForceGoogleSafeSearch();
     }
 
     /**
@@ -913,7 +913,7 @@ public final class PrefServiceBridge {
     private native boolean nativeGetIncognitoModeManaged();
     private native boolean nativeGetPrintingEnabled();
     private native boolean nativeGetPrintingManaged();
-    private native boolean nativeGetForceSafeSearch();
+    private native boolean nativeGetForceGoogleSafeSearch();
     private native void nativeSetTranslateEnabled(boolean enabled);
     private native void nativeResetTranslateDefaults();
     private native void nativeMigrateJavascriptPreference();

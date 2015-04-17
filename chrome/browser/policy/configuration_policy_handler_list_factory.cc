@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/memory/scoped_vector.h"
+#include "base/prefs/pref_value_map.h"
 #include "base/values.h"
 #include "chrome/browser/net/proxy_policy_handler.h"
 #include "chrome/browser/policy/managed_bookmarks_policy_handler.h"
@@ -98,9 +99,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::TYPE_BOOLEAN },
   { key::kSafeBrowsingEnabled,
     prefs::kSafeBrowsingEnabled,
-    base::Value::TYPE_BOOLEAN },
-  { key::kForceSafeSearch,
-    prefs::kForceSafeSearch,
     base::Value::TYPE_BOOLEAN },
   { key::kForceGoogleSafeSearch,
     prefs::kForceGoogleSafeSearch,
@@ -503,6 +501,34 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
 };
 
+class ForceSafeSearchPolicyHandler : public TypeCheckingPolicyHandler {
+ public:
+  ForceSafeSearchPolicyHandler()
+      : TypeCheckingPolicyHandler(key::kForceSafeSearch,
+                                  base::Value::TYPE_BOOLEAN) {}
+  ~ForceSafeSearchPolicyHandler() override {}
+
+  // ConfigurationPolicyHandler implementation:
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override {
+    // If either of the new GoogleSafeSearch or YouTubeSafetyMode policies is
+    // defined, then this one should be ignored. crbug.com/476908
+    // Note: Those policies are declared in kSimplePolicyMap above.
+    if (policies.GetValue(key::kForceGoogleSafeSearch) ||
+        policies.GetValue(key::kForceYouTubeSafetyMode)) {
+      return;
+    }
+    const base::Value* value = policies.GetValue(policy_name());
+    if (value) {
+      prefs->SetValue(prefs::kForceGoogleSafeSearch, value->DeepCopy());
+      prefs->SetValue(prefs::kForceYouTubeSafetyMode, value->DeepCopy());
+    }
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ForceSafeSearchPolicyHandler);
+};
+
 #if defined(ENABLE_EXTENSIONS)
 void GetExtensionAllowedTypesMap(
     ScopedVector<StringMappingListPolicyHandler::MappingEntry>* result) {
@@ -555,6 +581,7 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
 
   handlers->AddHandler(make_scoped_ptr(new AutofillPolicyHandler()));
   handlers->AddHandler(make_scoped_ptr(new DefaultSearchPolicyHandler()));
+  handlers->AddHandler(make_scoped_ptr(new ForceSafeSearchPolicyHandler()));
   handlers->AddHandler(make_scoped_ptr(new IncognitoModePolicyHandler()));
   handlers->AddHandler(
       make_scoped_ptr(new ManagedBookmarksPolicyHandler(chrome_schema)));

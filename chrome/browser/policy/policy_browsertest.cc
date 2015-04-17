@@ -794,6 +794,47 @@ class PolicyTest : public InProcessBrowserTest {
     contents->GetRenderViewHost()->ForwardMouseEvent(click_event);
   }
 
+  void SetPolicy(PolicyMap* policies, const char* key, base::Value* value) {
+    if (value) {
+      policies->Set(key,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_USER,
+                    value,
+                    nullptr);
+    } else {
+      policies->Erase(key);
+    }
+  }
+
+  void ApplySafeSearchPolicy(base::FundamentalValue* legacy_safe_search,
+                             base::FundamentalValue* google_safe_search,
+                             base::FundamentalValue* youtube_safety_mode) {
+    PolicyMap policies;
+    SetPolicy(&policies, key::kForceSafeSearch, legacy_safe_search);
+    SetPolicy(&policies, key::kForceGoogleSafeSearch, google_safe_search);
+    SetPolicy(&policies, key::kForceYouTubeSafetyMode, youtube_safety_mode);
+    UpdateProviderPolicy(policies);
+  }
+
+  void CheckSafeSearch(bool expect_safe_search) {
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    content::TestNavigationObserver observer(web_contents);
+    chrome::FocusLocationBar(browser());
+    LocationBar* location_bar = browser()->window()->GetLocationBar();
+    ui_test_utils::SendToOmniboxAndSubmit(location_bar, "http://google.com/");
+    OmniboxEditModel* model = location_bar->GetOmniboxView()->model();
+    observer.Wait();
+    EXPECT_TRUE(model->CurrentMatch(NULL).destination_url.is_valid());
+
+    std::string expected_url("http://google.com/");
+    if (expect_safe_search) {
+      expected_url += "?" + std::string(chrome::kSafeSearchSafeParameter) +
+                      "&" + chrome::kSafeSearchSsuiParameter;
+    }
+    EXPECT_EQ(GURL(expected_url), web_contents->GetURL());
+  }
+
   MockConfigurationPolicyProvider provider_;
   scoped_ptr<extensions::ExtensionCacheFake> test_extension_cache_;
 #if defined(OS_CHROMEOS)
@@ -1083,54 +1124,39 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ForceSafeSearch) {
 
   // Verifies that requests to Google Search engine with the SafeSearch
   // enabled set the safe=active&ssui=on parameters at the end of the query.
-  TemplateURLService* service = TemplateURLServiceFactory::GetForProfile(
-      browser()->profile());
-  ui_test_utils::WaitForTemplateURLServiceToLoad(service);
-
   // First check that nothing happens.
-  content::TestNavigationObserver no_safesearch_observer(
-      browser()->tab_strip_model()->GetActiveWebContents());
-  chrome::FocusLocationBar(browser());
-  LocationBar* location_bar = browser()->window()->GetLocationBar();
-  ui_test_utils::SendToOmniboxAndSubmit(location_bar, "http://google.com/");
-  OmniboxEditModel* model = location_bar->GetOmniboxView()->model();
-  no_safesearch_observer.Wait();
-  EXPECT_TRUE(model->CurrentMatch(NULL).destination_url.is_valid());
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  GURL expected_without("http://google.com/");
-  EXPECT_EQ(expected_without, web_contents->GetURL());
+  CheckSafeSearch(false);
 
-  PrefService* prefs = browser()->profile()->GetPrefs();
-  EXPECT_FALSE(prefs->IsManagedPreference(prefs::kForceSafeSearch));
-  EXPECT_FALSE(prefs->GetBoolean(prefs::kForceSafeSearch));
+  // Go over all combinations of (undefined,true,false) for the three policies.
+  for (int i = 0; i < 3 * 3 * 3; i++) {
+    int legacy = i % 3;
+    int google = (i / 3) % 3;
+    int youtube = i / (3 * 3);
 
-  // Override the default SafeSearch setting using policies.
-  PolicyMap policies;
-  policies.Set(key::kForceSafeSearch,
-               POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER,
-               new base::FundamentalValue(true),
-               NULL);
-  UpdateProviderPolicy(policies);
+    // Override the default SafeSearch setting using policies.
+    ApplySafeSearchPolicy(
+        legacy == 0 ? nullptr : new base::FundamentalValue(legacy == 1),
+        google == 0 ? nullptr : new base::FundamentalValue(google == 1),
+        youtube == 0 ? nullptr : new base::FundamentalValue(youtube == 1));
 
-  EXPECT_TRUE(prefs->IsManagedPreference(prefs::kForceSafeSearch));
-  EXPECT_TRUE(prefs->GetBoolean(prefs::kForceSafeSearch));
+    // The legacy policy should only have an effect if both google and youtube
+    // are undefined.
+    bool legacy_in_effect = (google == 0 && youtube == 0 && legacy != 0);
+    bool legacy_enabled = legacy_in_effect && legacy == 1;
 
-  content::TestNavigationObserver safesearch_observer(
-      browser()->tab_strip_model()->GetActiveWebContents());
+    PrefService* prefs = browser()->profile()->GetPrefs();
+    EXPECT_EQ(google != 0 || legacy_in_effect,
+              prefs->IsManagedPreference(prefs::kForceGoogleSafeSearch));
+    EXPECT_EQ(google == 1 || legacy_enabled,
+              prefs->GetBoolean(prefs::kForceGoogleSafeSearch));
 
-  // Verify that searching from google.com works.
-  chrome::FocusLocationBar(browser());
-  ui_test_utils::SendToOmniboxAndSubmit(location_bar, "http://google.com/");
-  safesearch_observer.Wait();
-  EXPECT_TRUE(model->CurrentMatch(NULL).destination_url.is_valid());
-  web_contents = browser()->tab_strip_model()->GetActiveWebContents();
-  std::string expected_url("http://google.com/?");
-  expected_url += std::string(chrome::kSafeSearchSafeParameter) + "&" +
-                  chrome::kSafeSearchSsuiParameter;
-  GURL expected_with_parameters(expected_url);
-  EXPECT_EQ(expected_with_parameters, web_contents->GetURL());
+    EXPECT_EQ(youtube != 0 || legacy_in_effect,
+              prefs->IsManagedPreference(prefs::kForceYouTubeSafetyMode));
+    EXPECT_EQ(youtube == 1 || legacy_enabled,
+              prefs->GetBoolean(prefs::kForceYouTubeSafetyMode));
+
+    CheckSafeSearch(google == 1 || legacy_enabled);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {

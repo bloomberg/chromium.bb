@@ -322,10 +322,6 @@ void ProfileImpl::RegisterProfilePrefs(
       true,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kForceSafeSearch,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
       prefs::kForceGoogleSafeSearch,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
