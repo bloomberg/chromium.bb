@@ -61,6 +61,7 @@ public:
     void setHighestNodeToBeSerialized(Node* node) { m_highestNodeToBeSerialized = node; }
     bool shouldAnnotate() const { return m_shouldAnnotate == AnnotateForInterchange || m_shouldAnnotate == AnnotateForNavigationTransition; }
     bool shouldAnnotateForNavigationTransition() const { return m_shouldAnnotate == AnnotateForNavigationTransition; }
+    bool shouldAnnotateForInterchange() const { return m_shouldAnnotate == AnnotateForInterchange; }
 
 private:
     String renderedText(Text&);
@@ -86,14 +87,10 @@ class StyledMarkupSerializer final {
 public:
     StyledMarkupSerializer(EAbsoluteURLs, EAnnotateForInterchange, const Position& start, const Position& end, Node* highestNodeToBeSerialized = nullptr);
 
+    String createMarkup(bool convertBlocksToInlines, Node* specialCommonAncestor);
+
     template<typename Strategy>
     Node* serializeNodes(Node* startNode, Node* pastEnd);
-
-    // TODO(hajimehoshi): These functions should be at the accumulator, but are
-    // used at markup.cpp. Move those usages to here.
-    void appendString(const String& s) { return m_markupAccumulator.appendString(s); }
-    void wrapWithNode(ContainerNode&, bool convertBlocksToInlines = false, StyledMarkupAccumulator::RangeFullySelectsNode = StyledMarkupAccumulator::DoesFullySelectNode);
-    void wrapWithStyleNode(StylePropertySet*, bool isBlock = false);
 
     String takeResults();
 
@@ -107,7 +104,13 @@ private:
     template<typename Strategy>
     Node* traverseNodesForSerialization(Node* startNode, Node* pastEnd, NodeTraversalMode);
 
+    // TODO(hajimehoshi): These functions should be at the accumulator.
+    void wrapWithNode(ContainerNode&, bool convertBlocksToInlines = false, StyledMarkupAccumulator::RangeFullySelectsNode = StyledMarkupAccumulator::DoesFullySelectNode);
+    void wrapWithStyleNode(StylePropertySet*, bool isBlock = false);
+
     StyledMarkupAccumulator m_markupAccumulator;
+    const Position m_start;
+    const Position m_end;
     Vector<String> m_reversedPrecedingMarkup;
     RefPtrWillBeMember<EditingStyle> m_wrappingStyle;
 };

@@ -34,9 +34,12 @@
 #include "core/dom/Element.h"
 #include "core/dom/Text.h"
 #include "core/editing/EditingStyle.h"
+#include "core/editing/VisibleSelection.h"
+#include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/markup.h"
+#include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLElement.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -212,7 +215,117 @@ bool StyledMarkupAccumulator::shouldApplyWrappingStyle(const Node& node) const
 
 StyledMarkupSerializer::StyledMarkupSerializer(EAbsoluteURLs shouldResolveURLs, EAnnotateForInterchange shouldAnnotate, const Position& start, const Position& end, Node* highestNodeToBeSerialized)
     : m_markupAccumulator(this, shouldResolveURLs, start, end, shouldAnnotate, highestNodeToBeSerialized)
+    , m_start(start)
+    , m_end(end)
 {
+}
+
+static bool needInterchangeNewlineAfter(const VisiblePosition& v)
+{
+    VisiblePosition next = v.next();
+    Node* upstreamNode = next.deepEquivalent().upstream().deprecatedNode();
+    Node* downstreamNode = v.deepEquivalent().downstream().deprecatedNode();
+    // Add an interchange newline if a paragraph break is selected and a br won't already be added to the markup to represent it.
+    return isEndOfParagraph(v) && isStartOfParagraph(next) && !(isHTMLBRElement(*upstreamNode) && upstreamNode == downstreamNode);
+}
+
+static bool needInterchangeNewlineAt(const VisiblePosition& v)
+{
+    // FIXME: |v.previous()| works on a DOM tree. We need to fix this to work on
+    // a composed tree.
+    return needInterchangeNewlineAfter(v.previous());
+}
+
+static bool areSameRanges(Node* node, const Position& startPosition, const Position& endPosition)
+{
+    ASSERT(node);
+    Position otherStartPosition;
+    Position otherEndPosition;
+    VisibleSelection::selectionFromContentsOfNode(node).toNormalizedPositions(otherStartPosition, otherEndPosition);
+    return startPosition == otherStartPosition && endPosition == otherEndPosition;
+}
+
+static PassRefPtrWillBeRawPtr<EditingStyle> styleFromMatchedRulesAndInlineDecl(const HTMLElement* element)
+{
+    RefPtrWillBeRawPtr<EditingStyle> style = EditingStyle::create(element->inlineStyle());
+    // FIXME: Having to const_cast here is ugly, but it is quite a bit of work to untangle
+    // the non-const-ness of styleFromMatchedRulesForElement.
+    style->mergeStyleFromRules(const_cast<HTMLElement*>(element));
+    return style.release();
+}
+
+String StyledMarkupSerializer::createMarkup(bool convertBlocksToInlines, Node* specialCommonAncestor)
+{
+    DEFINE_STATIC_LOCAL(const String, interchangeNewlineString, ("<br class=\"" AppleInterchangeNewline "\">"));
+
+    Node* pastEnd = m_end.nodeAsRangePastLastNode();
+
+    Node* firstNode = m_start.nodeAsRangeFirstNode();
+    VisiblePosition visibleStart(m_start, VP_DEFAULT_AFFINITY);
+    VisiblePosition visibleEnd(m_end, VP_DEFAULT_AFFINITY);
+    if (m_markupAccumulator.shouldAnnotateForInterchange() && needInterchangeNewlineAfter(visibleStart)) {
+        if (visibleStart == visibleEnd.previous())
+            return interchangeNewlineString;
+
+        m_markupAccumulator.appendString(interchangeNewlineString);
+        firstNode = visibleStart.next().deepEquivalent().deprecatedNode();
+
+        if (pastEnd && Position::beforeNode(firstNode).compareTo(Position::beforeNode(pastEnd)) >= 0) {
+            // This condition hits in editing/pasteboard/copy-display-none.html.
+            return interchangeNewlineString;
+        }
+    }
+
+    Node* lastClosed = serializeNodes<EditingStrategy>(firstNode, pastEnd);
+
+    if (specialCommonAncestor && lastClosed) {
+        // TODO(hajimehoshi): This is calculated at createMarkupInternal too.
+        Node* commonAncestor = NodeTraversal::commonAncestor(*m_start.containerNode(), *m_end.containerNode());
+        ASSERT(commonAncestor);
+        HTMLBodyElement* body = toHTMLBodyElement(enclosingElementWithTag(firstPositionInNode(commonAncestor), bodyTag));
+        HTMLBodyElement* fullySelectedRoot = nullptr;
+        // FIXME: Do this for all fully selected blocks, not just the body.
+        if (body && areSameRanges(body, m_start, m_end))
+            fullySelectedRoot = body;
+
+        // Also include all of the ancestors of lastClosed up to this special ancestor.
+        // FIXME: What is ancestor?
+        for (ContainerNode* ancestor = NodeTraversal::parent(*lastClosed); ancestor; ancestor = NodeTraversal::parent(*ancestor)) {
+            if (ancestor == fullySelectedRoot && !convertBlocksToInlines) {
+                RefPtrWillBeRawPtr<EditingStyle> fullySelectedRootStyle = styleFromMatchedRulesAndInlineDecl(fullySelectedRoot);
+
+                // Bring the background attribute over, but not as an attribute because a background attribute on a div
+                // appears to have no effect.
+                if ((!fullySelectedRootStyle || !fullySelectedRootStyle->style() || !fullySelectedRootStyle->style()->getPropertyCSSValue(CSSPropertyBackgroundImage))
+                    && fullySelectedRoot->hasAttribute(backgroundAttr))
+                    fullySelectedRootStyle->style()->setProperty(CSSPropertyBackgroundImage, "url('" + fullySelectedRoot->getAttribute(backgroundAttr) + "')");
+
+                if (fullySelectedRootStyle->style()) {
+                    // Reset the CSS properties to avoid an assertion error in addStyleMarkup().
+                    // This assertion is caused at least when we select all text of a <body> element whose
+                    // 'text-decoration' property is "inherit", and copy it.
+                    if (!propertyMissingOrEqualToNone(fullySelectedRootStyle->style(), CSSPropertyTextDecoration))
+                        fullySelectedRootStyle->style()->setProperty(CSSPropertyTextDecoration, CSSValueNone);
+                    if (!propertyMissingOrEqualToNone(fullySelectedRootStyle->style(), CSSPropertyWebkitTextDecorationsInEffect))
+                        fullySelectedRootStyle->style()->setProperty(CSSPropertyWebkitTextDecorationsInEffect, CSSValueNone);
+                    wrapWithStyleNode(fullySelectedRootStyle->style(), true);
+                }
+            } else {
+                // Since this node and all the other ancestors are not in the selection we want to set RangeFullySelectsNode to DoesNotFullySelectNode
+                // so that styles that affect the exterior of the node are not included.
+                wrapWithNode(*ancestor, convertBlocksToInlines, StyledMarkupAccumulator::DoesNotFullySelectNode);
+            }
+
+            if (ancestor == specialCommonAncestor)
+                break;
+        }
+    }
+
+    // FIXME: The interchange newline should be placed in the block that it's in, not after all of the content, unconditionally.
+    if (m_markupAccumulator.shouldAnnotateForInterchange() && needInterchangeNewlineAt(visibleEnd))
+        m_markupAccumulator.appendString(interchangeNewlineString);
+
+    return takeResults();
 }
 
 void StyledMarkupSerializer::wrapWithNode(ContainerNode& node, bool convertBlocksToInlines, StyledMarkupAccumulator::RangeFullySelectsNode rangeFullySelectsNode)
@@ -232,7 +345,7 @@ void StyledMarkupSerializer::wrapWithStyleNode(StylePropertySet* style, bool isB
     StringBuilder openTag;
     m_markupAccumulator.appendStyleNodeOpenTag(openTag, style, isBlock);
     m_reversedPrecedingMarkup.append(openTag.toString());
-    appendString(styleNodeCloseTag(isBlock));
+    m_markupAccumulator.appendString(styleNodeCloseTag(isBlock));
 }
 
 String StyledMarkupSerializer::takeResults()
