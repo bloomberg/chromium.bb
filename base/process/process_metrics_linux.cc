@@ -669,13 +669,13 @@ bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
   }
 
 #if defined(OS_CHROMEOS)
-  // Report on Chrome OS GEM object graphics memory. /var/run/debugfs_gpu is a
+  // Report on Chrome OS GEM object graphics memory. /run/debugfs_gpu is a
   // bind mount into /sys/kernel/debug and synchronously reading the in-memory
   // files in /sys is fast.
 #if defined(ARCH_CPU_ARM_FAMILY)
-  FilePath geminfo_file("/var/run/debugfs_gpu/exynos_gem_objects");
+  FilePath geminfo_file("/run/debugfs_gpu/exynos_gem_objects");
 #else
-  FilePath geminfo_file("/var/run/debugfs_gpu/i915_gem_objects");
+  FilePath geminfo_file("/run/debugfs_gpu/i915_gem_objects");
 #endif
   std::string geminfo_data;
   meminfo->gem_objects = -1;
