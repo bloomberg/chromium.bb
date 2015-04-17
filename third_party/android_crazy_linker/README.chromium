@@ -70,3 +70,5 @@ Local Modifications:
 
 - Speculative fix for crbug/450659.
 
+- Add basic LD_PRELOAD handling, for crbug/448968.
+

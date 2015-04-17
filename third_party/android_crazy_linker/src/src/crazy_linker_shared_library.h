@@ -63,6 +63,7 @@ class SharedLibrary {
   // loaded in |lib_list|. On failure, return false and set |error|
   // message.
   bool Relocate(LibraryList* lib_list,
+                Vector<LibraryView*>* preloads,
                 Vector<LibraryView*>* dependencies,
                 Error* error);
 
@@ -149,7 +150,7 @@ class SharedLibrary {
   //    }
   class DependencyIterator {
    public:
-    DependencyIterator(SharedLibrary* lib)
+    explicit DependencyIterator(SharedLibrary* lib)
         : iter_(&lib->view_), symbols_(&lib->symbols_), dep_name_(NULL) {}
 
     bool GetNext();

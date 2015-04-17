@@ -33,11 +33,14 @@ class Globals {
 
   static RDebug* GetRDebug() { return &Get()->rdebug_; }
 
+  static int* GetSDKBuildVersion() { return &sdk_build_version_; }
+
  private:
   pthread_mutex_t lock_;
   LibraryList libraries_;
   SearchPathList search_paths_;
   RDebug rdebug_;
+  static int sdk_build_version_;
 };
 
 // Helper class to access the globals with scoped locking.

@@ -34,4 +34,7 @@ Globals* Globals::Get() {
   return g_globals;
 }
 
+// static
+int Globals::sdk_build_version_ = 0;
+
 }  // namespace crazy

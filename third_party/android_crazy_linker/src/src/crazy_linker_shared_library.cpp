@@ -98,12 +98,12 @@ class SharedLibraryResolver : public ElfRelocations::SymbolResolver {
  public:
   SharedLibraryResolver(SharedLibrary* lib,
                         LibraryList* lib_list,
+                        Vector<LibraryView*>* preloads,
                         Vector<LibraryView*>* dependencies)
-      : lib_(lib), dependencies_(dependencies) {}
+      : main_program_handle_(::dlopen(NULL, RTLD_NOW)),
+        lib_(lib), preloads_(preloads), dependencies_(dependencies) {}
 
   virtual void* Lookup(const char* symbol_name) {
-    // TODO(digit): Add the ability to lookup inside the main executable.
-
     // First, look inside the current library.
     const ELF::Sym* entry = lib_->LookupSymbolEntry(symbol_name);
     if (entry)
@@ -116,39 +116,38 @@ class SharedLibraryResolver : public ElfRelocations::SymbolResolver {
     if (address)
       return address;
 
+    // Then look inside the preloads.
+    //
+    // Note that searching preloads *before* the main executable is opposite
+    // to the search ordering used by the system linker, but it is required
+    // to work round a dlsym() bug in some Android releases (on releases
+    // without this dlsym() bug preloads_ will be empty, making this preloads
+    // search a no-op).
+    //
+    // For more, see commentary in LibraryList(), and
+    //   https://code.google.com/p/android/issues/detail?id=74255
+    for (size_t n = 0; n < preloads_->GetCount(); ++n) {
+      LibraryView* wrap = (*preloads_)[n];
+      // LOG("%s: Looking into preload %p (%s)\n", __FUNCTION__, wrap,
+      // wrap->GetName());
+      address = LookupInWrap(symbol_name, wrap);
+      if (address)
+        return address;
+    }
+
+    // Then lookup inside the main executable.
+    address = ::dlsym(main_program_handle_, symbol_name);
+    if (address)
+      return address;
+
     // Then look inside the dependencies.
     for (size_t n = 0; n < dependencies_->GetCount(); ++n) {
       LibraryView* wrap = (*dependencies_)[n];
       // LOG("%s: Looking into dependency %p (%s)\n", __FUNCTION__, wrap,
       // wrap->GetName());
-      if (wrap->IsSystem()) {
-        address = ::dlsym(wrap->GetSystem(), symbol_name);
-#ifdef __arm__
-        // Android libm.so defines isnanf as weak. This means that its
-        // address cannot be found by dlsym(), which always returns NULL
-        // for weak symbols. However, libm.so contains the real isnanf
-        // as __isnanf. If we encounter isnanf and fail to resolve it in
-        // libm.so, retry with __isnanf.
-        //
-        // This occurs only in clang, which lacks __builtin_isnanf. The
-        // gcc compiler implements isnanf as a builtin, so the symbol
-        // isnanf never need be resolved in gcc builds.
-        //
-        // http://code.google.com/p/chromium/issues/detail?id=376828
-        if (!address &&
-            !strcmp(symbol_name, "isnanf") &&
-            !strcmp(wrap->GetName(), "libm.so"))
-          address = ::dlsym(wrap->GetSystem(), "__isnanf");
-#endif
-        if (address)
-          return address;
-      }
-      if (wrap->IsCrazy()) {
-        SharedLibrary* dep = wrap->GetCrazy();
-        entry = dep->LookupSymbolEntry(symbol_name);
-        if (entry)
-          return reinterpret_cast<void*>(dep->load_bias() + entry->st_value);
-      }
+      address = LookupInWrap(symbol_name, wrap);
+      if (address)
+        return address;
     }
 
     // Nothing found here.
@@ -156,7 +155,42 @@ class SharedLibraryResolver : public ElfRelocations::SymbolResolver {
   }
 
  private:
+  virtual void* LookupInWrap(const char* symbol_name, LibraryView* wrap) {
+    if (wrap->IsSystem()) {
+      void* address = ::dlsym(wrap->GetSystem(), symbol_name);
+#ifdef __arm__
+      // Android libm.so defines isnanf as weak. This means that its
+      // address cannot be found by dlsym(), which returns NULL for weak
+      // symbols prior to Android 5.0. However, libm.so contains the real
+      // isnanf as __isnanf. If we encounter isnanf and fail to resolve
+      // it in libm.so, retry with __isnanf.
+      //
+      // This occurs only in clang, which lacks __builtin_isnanf. The
+      // gcc compiler implements isnanf as a builtin, so the symbol
+      // isnanf never need be resolved in gcc builds.
+      //
+      // http://code.google.com/p/chromium/issues/detail?id=376828
+      if (!address &&
+          !strcmp(symbol_name, "isnanf") &&
+          !strcmp(wrap->GetName(), "libm.so"))
+        address = ::dlsym(wrap->GetSystem(), "__isnanf");
+#endif
+      return address;
+    }
+
+    if (wrap->IsCrazy()) {
+      SharedLibrary* crazy = wrap->GetCrazy();
+      const ELF::Sym* entry = crazy->LookupSymbolEntry(symbol_name);
+      if (entry)
+        return reinterpret_cast<void*>(crazy->load_bias() + entry->st_value);
+    }
+
+    return NULL;
+  }
+
+  void* main_program_handle_;
   SharedLibrary* lib_;
+  Vector<LibraryView*>* preloads_;
   Vector<LibraryView*>* dependencies_;
 };
 
@@ -391,6 +425,7 @@ bool SharedLibrary::Load(const char* full_path,
 }
 
 bool SharedLibrary::Relocate(LibraryList* lib_list,
+                             Vector<LibraryView*>* preloads,
                              Vector<LibraryView*>* dependencies,
                              Error* error) {
   // Apply relocations.
@@ -405,7 +440,7 @@ bool SharedLibrary::Relocate(LibraryList* lib_list,
   relocations.RegisterPackedRelocations(packed_relocations_);
 #endif
 
-  SharedLibraryResolver resolver(this, lib_list, dependencies);
+  SharedLibraryResolver resolver(this, lib_list, preloads, dependencies);
   if (!relocations.ApplyAll(&symbols_, &resolver, error))
     return false;
 

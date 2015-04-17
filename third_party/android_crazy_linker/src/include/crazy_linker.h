@@ -208,6 +208,10 @@ void crazy_context_get_callback_poster(crazy_context_t* context,
 // per callback.
 void crazy_callback_run(crazy_callback_t* callback);
 
+// Pass the platform's SDK build version to the crazy linker. The value is
+// from android.os.Build.VERSION.SDK_INT.
+void crazy_set_sdk_build_version(int sdk_build_version);
+
 // Opaque handle to a library as seen/loaded by the crazy linker.
 typedef struct crazy_library_t crazy_library_t;
 

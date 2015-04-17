@@ -21,6 +21,9 @@ namespace crazy {
 
 namespace {
 
+// From android.os.Build.VERSION_CODES.LOLLIPOP.
+static const int SDK_VERSION_CODE_LOLLIPOP = 21;
+
 // Page size for alignment in a zip file.
 const size_t kZipAlignmentPageSize = 4096;
 COMPILE_ASSERT(kZipAlignmentPageSize % PAGE_SIZE == 0,
@@ -58,8 +61,28 @@ struct SymbolLookupState {
 
 }  // namespace
 
-LibraryList::LibraryList() : head_(0), count_(0), has_error_(false) {
-  // Nothing for now
+LibraryList::LibraryList() : head_(0), has_error_(false) {
+  const int sdk_build_version = *Globals::GetSDKBuildVersion();
+
+  // If SDK version is Lollipop or earlier, we need to load anything
+  // listed in LD_PRELOAD explicitly, because dlsym() on the main executable
+  // fails to lookup in preloads on those releases. Also, when doing our
+  // symbol resolution we need to explicity search preloads *before* we
+  // search the main executable, to ensure that preloads override symbols
+  // correctly. Searching preloads before main is opposite to the way the
+  // system linker's ordering of these searches, but it is required here to
+  // work round the platform's dlsym() issue.
+  //
+  // If SDK version is Lollipop-mr1 or later then dlsym() will search
+  // preloads when invoked on the main executable, meaning that we do not
+  // want (or need) to load them here. The platform itself will take care
+  // of them for us, and so by not loading preloads here our preloads list
+  // remains empty, so that searching it for name lookups is a no-op.
+  //
+  // For more, see:
+  //   https://code.google.com/p/android/issues/detail?id=74255
+  if (sdk_build_version <= SDK_VERSION_CODE_LOLLIPOP)
+    LoadPreloads();
 }
 
 LibraryList::~LibraryList() {
@@ -70,6 +93,63 @@ LibraryList::~LibraryList() {
   while (!known_libraries_.IsEmpty()) {
     LibraryView* wrap = known_libraries_.PopLast();
     delete wrap;
+  }
+}
+
+void LibraryList::LoadPreloads() {
+  const char* ld_preload = GetEnv("LD_PRELOAD");
+  if (!ld_preload)
+    return;
+
+  SearchPathList search_path_list;
+  search_path_list.ResetFromEnv("LD_LIBRARY_PATH");
+
+  LOG("%s: Preloads list is: %s\n", __FUNCTION__, ld_preload);
+  const char* current = ld_preload;
+  const char* end = ld_preload + strlen(ld_preload);
+
+  // Iterate over library names listed in the environment. The separator
+  // here may be either space or colon.
+  while (current < end) {
+    const char* item = current;
+    const size_t item_length = strcspn(current, " :");
+    if (item_length == 0) {
+      current += 1;
+      continue;
+    }
+    current = item + item_length + 1;
+
+    String lib_name(item, item_length);
+    LOG("%s: Attempting to preload %s\n", __FUNCTION__, lib_name.c_str());
+
+    if (FindKnownLibrary(lib_name.c_str())) {
+      LOG("%s: already loaded %s: ignoring\n", __FUNCTION__, lib_name.c_str());
+      continue;
+    }
+
+    Error error;
+    const bool no_map_exec_support_fallback_enabled = false;
+    LibraryView* preload = LoadLibrary(lib_name.c_str(),
+                                       RTLD_NOW | RTLD_GLOBAL,
+                                       0U /* load address */,
+                                       0U /* file offset */,
+                                       &search_path_list,
+                                       no_map_exec_support_fallback_enabled,
+                                       &error);
+    if (!preload) {
+      LOG("'%s' cannot be preloaded: ignored\n", lib_name.c_str());
+      continue;
+    }
+
+    preloaded_libraries_.PushBack(preload);
+  }
+
+  if (CRAZY_DEBUG) {
+    LOG("%s: Preloads loaded\n", __FUNCTION__);
+    for (size_t n = 0; n < preloaded_libraries_.GetCount(); ++n)
+      LOG("  ... %p %s\n",
+          preloaded_libraries_[n], preloaded_libraries_[n]->GetName());
+    LOG("    preloads @%p\n", &preloaded_libraries_);
   }
 }
 
@@ -236,7 +316,6 @@ LibraryView* LibraryList::LoadLibrary(const char* lib_name,
                                       SearchPathList* search_path_list,
                                       bool no_map_exec_support_fallback_enabled,
                                       Error* error) {
-
   const char* base_name = GetBaseNamePtr(lib_name);
 
   LOG("%s: lib_name='%s'\n", __FUNCTION__, lib_name);
@@ -349,7 +428,7 @@ LibraryView* LibraryList::LoadLibrary(const char* lib_name,
 
   // Relocate the library.
   LOG("%s: Relocating %s\n", __FUNCTION__, base_name);
-  if (!lib->Relocate(this, &dependencies, error))
+  if (!lib->Relocate(this, &preloaded_libraries_, &dependencies, error))
     return NULL;
 
   // Notify GDB of load.
