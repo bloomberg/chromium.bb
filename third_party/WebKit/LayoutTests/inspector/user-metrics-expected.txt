@@ -4,6 +4,7 @@ recordActionTaken:
 {
     AnimationsPlaybackRateChanged : 11
     AuditsStarted : 7
+    CommandEvaluatedInConsolePanel : 15
     ConsoleEvaluated : 8
     DeviceModeEnabled : 10
     FileSavedInWorkspace : 9
