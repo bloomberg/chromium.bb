@@ -30,35 +30,8 @@
 
 using std::string;
 
-namespace {
-
-bool IsSyncBackingDatabase32KEnabled() {
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("SyncBackingDatabase32K");
-  return group_name == "Enabled";
-}
-
-void OnSqliteError(const base::Closure& catastrophic_error_handler,
-                   int err,
-                   sql::Statement* statement) {
-  // An error has been detected. Ignore unless it is catastrophic.
-  if (sql::IsErrorCatastrophic(err)) {
-    // At this point sql::* and DirectoryBackingStore may be on the callstack so
-    // don't invoke the error handler directly. Instead, PostTask to this thread
-    // to avoid potential reentrancy issues.
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           catastrophic_error_handler);
-  }
-}
-
-}  // namespace
-
 namespace syncer {
 namespace syncable {
-
-// This just has to be big enough to hold an UPDATE or INSERT statement that
-// modifies all the columns in the entry table.
-static const string::size_type kUpdateStatementBufferSize = 2048;
 
 // Increment this version whenever updating DB tables.
 const int32 kCurrentDBVersion = 89;
@@ -164,6 +137,29 @@ scoped_ptr<EntryKernel> UnpackEntry(sql::Statement* statement) {
 
 namespace {
 
+// This just has to be big enough to hold an UPDATE or INSERT statement that
+// modifies all the columns in the entry table.
+static const string::size_type kUpdateStatementBufferSize = 2048;
+
+bool IsSyncBackingDatabase32KEnabled() {
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("SyncBackingDatabase32K");
+  return group_name == "Enabled";
+}
+
+void OnSqliteError(const base::Closure& catastrophic_error_handler,
+                   int err,
+                   sql::Statement* statement) {
+  // An error has been detected. Ignore unless it is catastrophic.
+  if (sql::IsErrorCatastrophic(err)) {
+    // At this point sql::* and DirectoryBackingStore may be on the callstack so
+    // don't invoke the error handler directly. Instead, PostTask to this thread
+    // to avoid potential reentrancy issues.
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           catastrophic_error_handler);
+  }
+}
+
 string ComposeCreateTableColumnSpecs() {
   const ColumnSpec* begin = g_metas_columns;
   const ColumnSpec* end = g_metas_columns + arraysize(g_metas_columns);
@@ -189,6 +185,12 @@ void AppendColumnList(std::string* output) {
     output->append(ColumnName(i));
     joiner = ", ";
   }
+}
+
+bool SaveEntryToDB(sql::Statement* save_statement, const EntryKernel& entry) {
+  save_statement->Reset(true);
+  BindFields(entry, save_statement);
+  return save_statement->Run();
 }
 
 }  // namespace
@@ -697,14 +699,6 @@ bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
     DCHECK(s.Succeeded());
   }
   return true;
-}
-
-/* static */
-bool DirectoryBackingStore::SaveEntryToDB(sql::Statement* save_statement,
-                                          const EntryKernel& entry) {
-  save_statement->Reset(true);
-  BindFields(entry, save_statement);
-  return save_statement->Run();
 }
 
 bool DirectoryBackingStore::SafeDropTable(const char* table_name) {
