@@ -36,9 +36,14 @@ bool StoreFullPagePlugin(content::WebContents** result,
 // guest's WebContents instead.
 content::WebContents* GetWebContentsToUse(content::WebContents* contents) {
 #if defined(ENABLE_EXTENSIONS)
-  extensions::GuestViewManager::FromBrowserContext(
-      contents->GetBrowserContext())
-      ->ForEachGuest(contents, base::Bind(&StoreFullPagePlugin, &contents));
+  extensions::GuestViewManager* guest_view_manager =
+      extensions::GuestViewManager::FromBrowserContextIfAvailable(
+          contents->GetBrowserContext());
+  if (guest_view_manager) {
+    guest_view_manager->ForEachGuest(
+        contents,
+        base::Bind(&StoreFullPagePlugin, &contents));
+  }
 #endif  // defined(ENABLE_EXTENSIONS)
   return contents;
 }

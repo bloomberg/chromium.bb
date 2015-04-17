@@ -64,8 +64,11 @@ bool FindGuestByPartitionName(const std::string& partition_name,
 content::StoragePartition* GetPartition(content::WebContents* embedder,
                                         const std::string& partition_name) {
   extensions::GuestViewManager* manager =
-      extensions::GuestViewManager::FromBrowserContext(
+      extensions::GuestViewManager::FromBrowserContextIfAvailable(
           embedder->GetBrowserContext());
+  if (!manager)
+    return nullptr;
+
   content::WebContents* guest_contents = nullptr;
   manager->ForEachGuest(embedder, base::Bind(&FindGuestByPartitionName,
                                              partition_name, &guest_contents));

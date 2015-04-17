@@ -284,7 +284,7 @@ void WebViewGuest::CreateWebContents(
   // If we already have a webview tag in the same app using the same storage
   // partition, we should use the same SiteInstance so the existing tag and
   // the new tag can script each other.
-  auto guest_view_manager = GuestViewManager::FromBrowserContext(
+  auto guest_view_manager = GuestViewManager::FromBrowserContextIfAvailable(
       owner_render_process_host->GetBrowserContext());
   content::SiteInstance* guest_site_instance =
       guest_view_manager->GetGuestSiteInstance(guest_site);
@@ -562,7 +562,7 @@ void WebViewGuest::LoadAbort(bool is_top_level,
 void WebViewGuest::CreateNewGuestWebViewWindow(
     const content::OpenURLParams& params) {
   GuestViewManager* guest_manager =
-      GuestViewManager::FromBrowserContext(browser_context());
+      GuestViewManager::FromBrowserContextIfAvailable(browser_context());
   // Set the attach params to use the same partition as the opener.
   // We pull the partition information from the site's URL, which is of the
   // form guest://site/{persist}?{partition_name}.

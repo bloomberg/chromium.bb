@@ -27,6 +27,8 @@ bool GuestViewInternalCreateGuestFunction::RunAsync() {
   base::DictionaryValue* create_params;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &create_params));
 
+  // Since we are creating a new guest, we will create a GuestViewManager
+  // if we don't already have one.
   GuestViewManager* guest_view_manager =
       GuestViewManager::FromBrowserContext(browser_context());
 

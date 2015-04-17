@@ -157,7 +157,7 @@ GuestViewBase::GuestViewBase(content::WebContents* owner_web_contents)
     : owner_web_contents_(owner_web_contents),
       browser_context_(owner_web_contents->GetBrowserContext()),
       guest_instance_id_(
-          GuestViewManager::FromBrowserContext(browser_context_)->
+          GuestViewManager::FromBrowserContextIfAvailable(browser_context_)->
               GetNextInstanceID()),
       view_instance_id_(guestview::kInstanceIDNone),
       element_instance_id_(guestview::kInstanceIDNone),
@@ -176,7 +176,7 @@ void GuestViewBase::Init(const base::DictionaryValue& create_params,
     return;
   initialized_ = true;
 
-  if (!GuestViewManager::FromBrowserContext(browser_context_)->
+  if (!GuestViewManager::FromBrowserContextIfAvailable(browser_context_)->
           IsGuestAvailableToContext(this, &owner_extension_id_)) {
     // The derived class did not create a WebContents so this class serves no
     // purpose. Let's self-destruct.
@@ -219,7 +219,7 @@ void GuestViewBase::InitWithWebContents(
   guest_web_contents->SetDelegate(this);
   webcontents_guestview_map.Get().insert(
       std::make_pair(guest_web_contents, this));
-  GuestViewManager::FromBrowserContext(browser_context_)->
+  GuestViewManager::FromBrowserContextIfAvailable(browser_context_)->
       AddGuest(guest_instance_id_, guest_web_contents);
 
   // Populate the view instance ID if we have it on creation.
@@ -366,8 +366,9 @@ GuestViewBase* GuestViewBase::From(int owner_process_id,
     return nullptr;
 
   content::WebContents* guest_web_contents =
-      GuestViewManager::FromBrowserContext(host->GetBrowserContext())->
-          GetGuestByInstanceIDSafely(guest_instance_id, owner_process_id);
+      GuestViewManager::FromBrowserContextIfAvailable(
+          host->GetBrowserContext())->
+              GetGuestByInstanceIDSafely(guest_instance_id, owner_process_id);
   if (!guest_web_contents)
     return nullptr;
 
@@ -397,7 +398,8 @@ bool GuestViewBase::ZoomPropagatesFromEmbedderToGuest() const {
 
 content::WebContents* GuestViewBase::CreateNewGuestWindow(
     const content::WebContents::CreateParams& create_params) {
-  auto guest_manager = GuestViewManager::FromBrowserContext(browser_context());
+  auto guest_manager =
+      GuestViewManager::FromBrowserContextIfAvailable(browser_context());
   return guest_manager->CreateGuestWithWebContentsParams(
       GetViewType(),
       owner_web_contents(),
@@ -425,7 +427,8 @@ void GuestViewBase::DidAttach(int guest_proxy_routing_id) {
 }
 
 void GuestViewBase::DidDetach() {
-  GuestViewManager::FromBrowserContext(browser_context_)->DetachGuest(this);
+  GuestViewManager::FromBrowserContextIfAvailable(browser_context_)->
+      DetachGuest(this);
   StopTrackingEmbedderZoomLevel();
   owner_web_contents()->Send(new GuestViewMsg_GuestDetached(
       element_instance_id_));
@@ -475,7 +478,7 @@ void GuestViewBase::Destroy() {
   guest_host_ = nullptr;
 
   webcontents_guestview_map.Get().erase(web_contents());
-  GuestViewManager::FromBrowserContext(browser_context_)->
+  GuestViewManager::FromBrowserContextIfAvailable(browser_context_)->
       RemoveGuest(guest_instance_id_);
   pending_events_.clear();
 

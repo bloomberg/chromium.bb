@@ -35,7 +35,7 @@ ShellBrowserContext::~ShellBrowserContext() {
 }
 
 content::BrowserPluginGuestManager* ShellBrowserContext::GetGuestManager() {
-  return GuestViewManager::FromBrowserContext(this);
+  return GuestViewManager::FromBrowserContextIfAvailable(this);
 }
 
 storage::SpecialStoragePolicy* ShellBrowserContext::GetSpecialStoragePolicy() {

@@ -138,10 +138,12 @@ content::RenderFrameHost* InlineLoginUI::GetAuthFrame(
 #endif
   if (is_webview) {
     extensions::GuestViewManager* manager =
-        extensions::GuestViewManager::FromBrowserContext(
+        extensions::GuestViewManager::FromBrowserContextIfAvailable(
             web_contents->GetBrowserContext());
-    manager->ForEachGuest(web_contents,
-                          base::Bind(&AddToSetIfSigninWebview, &frame_set));
+    if (manager) {
+      manager->ForEachGuest(web_contents,
+                            base::Bind(&AddToSetIfSigninWebview, &frame_set));
+    }
   } else {
     web_contents->ForEachFrame(
         base::Bind(&AddToSetIfIsAuthIframe, &frame_set,

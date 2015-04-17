@@ -77,7 +77,10 @@ void GuestViewMessageFilter::OnAttachGuest(
     int guest_instance_id,
     const base::DictionaryValue& params) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto manager = GuestViewManager::FromBrowserContext(browser_context_);
+  auto manager =
+      GuestViewManager::FromBrowserContextIfAvailable(browser_context_);
+  // We should have a GuestViewManager at this point. If we don't then the
+  // embedder is misbehaving.
   if (!manager)
     return;
 
@@ -93,9 +96,10 @@ void GuestViewMessageFilter::OnCreateMimeHandlerViewGuest(
     int element_instance_id,
     const gfx::Size& element_size) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // Since we are creating a new guest, we will create a GuestViewManager
+  // if we don't already have one.
   auto manager = GuestViewManager::FromBrowserContext(browser_context_);
-  if (!manager)
-    return;
+  DCHECK(manager);
 
   auto rfh = RenderFrameHost::FromID(render_process_id_, render_frame_id);
   auto embedder_web_contents = WebContents::FromRenderFrameHost(rfh);
@@ -123,7 +127,10 @@ void GuestViewMessageFilter::OnCreateMimeHandlerViewGuest(
 void GuestViewMessageFilter::OnResizeGuest(int render_frame_id,
                                            int element_instance_id,
                                            const gfx::Size& new_size) {
-  auto manager = GuestViewManager::FromBrowserContext(browser_context_);
+  auto manager =
+      GuestViewManager::FromBrowserContextIfAvailable(browser_context_);
+  // We should have a GuestViewManager at this point. If we don't then the
+  // embedder is misbehaving.
   if (!manager)
     return;
 
@@ -156,10 +163,6 @@ void GuestViewMessageFilter::MimeHandlerViewGuestCreatedCallback(
     int embedder_render_frame_id,
     const gfx::Size& element_size,
     WebContents* web_contents) {
-  auto manager = GuestViewManager::FromBrowserContext(browser_context_);
-  if (!manager)
-    return;
-
   auto guest_view = MimeHandlerViewGuest::FromWebContents(web_contents);
   if (!guest_view)
     return;
@@ -173,6 +176,9 @@ void GuestViewMessageFilter::MimeHandlerViewGuestCreatedCallback(
   base::DictionaryValue attach_params;
   attach_params.SetInteger(guestview::kElementWidth, element_size.width());
   attach_params.SetInteger(guestview::kElementHeight, element_size.height());
+  auto manager =
+      GuestViewManager::FromBrowserContextIfAvailable(browser_context_);
+  CHECK(manager);
   manager->AttachGuest(embedder_render_process_id,
                        element_instance_id,
                        guest_instance_id,

@@ -64,10 +64,17 @@ void BrowserPluginMessageFilter::ForwardMessageToGuest(
   bool success = iter.ReadInt(&browser_plugin_instance_id);
   DCHECK(success);
 
+  // BrowserPlugin cannot create guests, it only serves as a container for
+  // guests. Thus, we should not be getting BrowserPlugin messages without
+  // an already created GuestManager.
+  BrowserPluginGuestManager* manager =
+      rph->GetBrowserContext()->GetGuestManager();
+  if (!manager)
+    return;
+
   WebContents* guest_web_contents =
-      rph->GetBrowserContext()->GetGuestManager()
-          ->GetGuestByInstanceID(render_process_id_,
-                                 browser_plugin_instance_id);
+      manager->GetGuestByInstanceID(render_process_id_,
+                                    browser_plugin_instance_id);
   if (!guest_web_contents)
     return;
 

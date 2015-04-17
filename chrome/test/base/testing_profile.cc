@@ -959,7 +959,7 @@ HostContentSettingsMap* TestingProfile::GetHostContentSettingsMap() {
 
 content::BrowserPluginGuestManager* TestingProfile::GetGuestManager() {
 #if defined(ENABLE_EXTENSIONS)
-  return extensions::GuestViewManager::FromBrowserContext(this);
+  return extensions::GuestViewManager::FromBrowserContextIfAvailable(this);
 #else
   return NULL;
 #endif
