@@ -141,16 +141,6 @@ void ServiceWorkerGlobalScopeProxy::dispatchNotificationClickEvent(int eventID, 
     m_workerGlobalScope->dispatchExtendableEvent(event.release(), observer);
 }
 
-void ServiceWorkerGlobalScopeProxy::dispatchNotificationClickEvent(int eventID, const WebString& notificationID, const WebNotificationData& data)
-{
-    ASSERT(m_workerGlobalScope);
-    WaitUntilObserver* observer = WaitUntilObserver::create(m_workerGlobalScope, WaitUntilObserver::NotificationClick, eventID);
-    NotificationEventInit eventInit;
-    eventInit.setNotification(Notification::create(m_workerGlobalScope, notificationID, data));
-    RefPtrWillBeRawPtr<Event> event(NotificationEvent::create(EventTypeNames::notificationclick, eventInit, observer));
-    m_workerGlobalScope->dispatchExtendableEvent(event.release(), observer);
-}
-
 void ServiceWorkerGlobalScopeProxy::dispatchPushEvent(int eventID, const WebString& data)
 {
     ASSERT(m_workerGlobalScope);

@@ -77,7 +77,6 @@ public:
     virtual void dispatchInstallEvent(int) override;
     virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) override;
     virtual void dispatchNotificationClickEvent(int, int64_t notificationID, const WebNotificationData&) override;
-    virtual void dispatchNotificationClickEvent(int, const WebString& notificationID, const WebNotificationData&) override;
     virtual void dispatchPushEvent(int, const WebString& data) override;
     virtual void dispatchSyncEvent(int) override;
 

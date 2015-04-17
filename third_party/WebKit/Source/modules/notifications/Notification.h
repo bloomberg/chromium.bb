@@ -65,8 +65,6 @@ public:
 
     // Used for embedder-created Notification objects. Will initialize the Notification's state as showing.
     static Notification* create(ExecutionContext*, int64_t persistentId, const WebNotificationData&);
-    // TODO(peter): Remove this method when the embedder only passes us int64_t persistent notification ids.
-    static Notification* create(ExecutionContext*, const String& persistentId, const WebNotificationData&);
 
     virtual ~Notification();
 
@@ -133,7 +131,6 @@ private:
     void setSerializedData(PassRefPtr<SerializedScriptValue> data) { m_serializedData = data; }
 
     void setPersistentId(int64_t persistentId) { m_persistentId = persistentId; }
-    void setPersistentIdString(const String& persistentId) { m_persistentIdString = persistentId; }
 
 private:
     String m_title;
@@ -150,7 +147,6 @@ private:
     // their delegate, or persistent, which means they're identified by a persistent Id
     // given to us by the embedder. This influences how we close the notification.
     int64_t m_persistentId;
-    String m_persistentIdString;
 
     enum NotificationState {
         NotificationStateIdle,

@@ -136,31 +136,6 @@ Notification* Notification::create(ExecutionContext* context, int64_t persistent
     return notification;
 }
 
-Notification* Notification::create(ExecutionContext* context, const String& persistentId, const WebNotificationData& data)
-{
-    Notification* notification = new Notification(data.title, context);
-
-    notification->setPersistentIdString(persistentId);
-    notification->setDir(data.direction == WebNotificationData::DirectionLeftToRight ? "ltr" : "rtl");
-    notification->setLang(data.lang);
-    notification->setBody(data.body);
-    notification->setTag(data.tag);
-    notification->setSilent(data.silent);
-
-    if (!data.icon.isEmpty())
-        notification->setIconUrl(data.icon);
-
-    const WebVector<char>& dataBytes = data.data;
-    if (!dataBytes.isEmpty()) {
-        notification->setSerializedData(SerializedScriptValueFactory::instance().createFromWireBytes(dataBytes.data(), dataBytes.size()));
-        notification->serializedData()->registerMemoryAllocatedWithCurrentScriptContext();
-    }
-
-    notification->setState(NotificationStateShowing);
-    notification->suspendIfNeeded();
-    return notification;
-}
-
 Notification::Notification(const String& title, ExecutionContext* context)
     : ActiveDOMObject(context)
     , m_title(title)
@@ -214,7 +189,7 @@ void Notification::close()
     if (m_state != NotificationStateShowing)
         return;
 
-    if (m_persistentIdString.isEmpty() && m_persistentId == kInvalidPersistentId) {
+    if (m_persistentId == kInvalidPersistentId) {
         // Fire the close event asynchronously.
         executionContext()->postTask(FROM_HERE, createSameThreadTask(&Notification::dispatchCloseEvent, this));
 
@@ -226,10 +201,7 @@ void Notification::close()
         SecurityOrigin* origin = executionContext()->securityOrigin();
         ASSERT(origin);
 
-        if (!m_persistentIdString.isEmpty())
-            notificationManager()->closePersistent(WebSerializedOrigin(*origin), m_persistentIdString);
-        else
-            notificationManager()->closePersistent(WebSerializedOrigin(*origin), m_persistentId);
+        notificationManager()->closePersistent(WebSerializedOrigin(*origin), m_persistentId);
     }
 }
 
