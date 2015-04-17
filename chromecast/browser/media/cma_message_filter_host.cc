@@ -37,7 +37,16 @@ namespace {
 
 const size_t kMaxSharedMem = 8 * 1024 * 1024;
 
-void DestroyMediaPipeline(scoped_ptr<MediaPipelineHost> media_pipeline) {
+void DestroyMediaPipelineUi(
+    scoped_refptr<base::SingleThreadTaskRunner> cma_task_runner,
+    scoped_ptr<MediaPipelineHost> media_pipeline) {
+  // Note: the longest path that uses MediaPipelineHost from
+  // CmaMessageFilterHost is the "SetCdm" message, which travels:
+  //   IO thread (msg) --> UI thread (get BrowserCdm) --> CMA thread (SetCdm)
+  // Teardown follows the same path to avoid MediaPipelineHost being destroyed
+  // while SetCdm is on/waiting for the UI thread.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  cma_task_runner->DeleteSoon(FROM_HERE, media_pipeline.release());
 }
 
 void UpdateVideoSurfaceHost(int surface_id, const gfx::QuadF& quad) {
@@ -103,9 +112,11 @@ void CmaMessageFilterHost::DeleteEntries() {
        it != media_pipelines_.end(); ) {
     scoped_ptr<MediaPipelineHost> media_pipeline(it->second);
     media_pipelines_.erase(it++);
-    task_runner_->PostTask(
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI,
         FROM_HERE,
-        base::Bind(&DestroyMediaPipeline, base::Passed(&media_pipeline)));
+        base::Bind(&DestroyMediaPipelineUi, task_runner_,
+                   base::Passed(&media_pipeline)));
   }
 }
 
@@ -153,9 +164,11 @@ void CmaMessageFilterHost::DestroyMedia(int media_id) {
 
   scoped_ptr<MediaPipelineHost> media_pipeline(it->second);
   media_pipelines_.erase(it);
-  task_runner_->PostTask(
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&DestroyMediaPipeline, base::Passed(&media_pipeline)));
+      base::Bind(&DestroyMediaPipelineUi, task_runner_,
+                 base::Passed(&media_pipeline)));
 }
 
 void CmaMessageFilterHost::SetCdm(int media_id,
