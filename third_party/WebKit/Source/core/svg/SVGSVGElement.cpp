@@ -609,8 +609,7 @@ bool SVGSVGElement::selfHasRelativeLengths() const
     return m_x->currentValue()->isRelative()
         || m_y->currentValue()->isRelative()
         || m_width->currentValue()->isRelative()
-        || m_height->currentValue()->isRelative()
-        || hasAttribute(SVGNames::viewBoxAttr);
+        || m_height->currentValue()->isRelative();
 }
 
 FloatRect SVGSVGElement::currentViewBoxRect() const
