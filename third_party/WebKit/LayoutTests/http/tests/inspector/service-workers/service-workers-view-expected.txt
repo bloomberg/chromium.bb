@@ -1,9 +1,9 @@
-CONSOLE MESSAGE: line 98: registerServiceWorker success
-CONSOLE MESSAGE: line 98: registerServiceWorker success
-CONSOLE MESSAGE: line 115: unregisterServiceWorker success
-CONSOLE MESSAGE: line 115: unregisterServiceWorker success
 Tests ServiceWorkersView on resources panel.
 
+[page] registerServiceWorker success
+[page] registerServiceWorker success
+[page] unregisterServiceWorker success
+[page] unregisterServiceWorker success
 Select ServiceWorkers tree element.
 Register ServiceWorker for scope1
 ==== ServiceWorkersView ====
