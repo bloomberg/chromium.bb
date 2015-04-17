@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/app_session_lifetime.h"
 #include "chrome/browser/chromeos/app_mode/certificate_manager_dialog.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -40,6 +42,18 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace chromeos {
+
+namespace {
+
+// Returns the current running kiosk app profile in a kiosk session. Otherwise,
+// returns nullptr.
+Profile* GetAppProfile() {
+  return chrome::IsRunningInForcedAppMode()
+             ? ProfileManager::GetActiveUserProfile()
+             : nullptr;
+}
+
+}  // namespace
 
 ErrorScreen::ErrorScreen(BaseScreenDelegate* base_screen_delegate,
                          NetworkErrorView* view)
@@ -250,12 +264,12 @@ void ErrorScreen::OnConfigureCerts() {
   gfx::NativeWindow native_window =
       LoginDisplayHostImpl::default_host()->GetNativeWindow();
   CertificateManagerDialog* dialog = new CertificateManagerDialog(
-      ProfileHelper::GetSigninProfile(), NULL, native_window);
+      GetAppProfile(), NULL, native_window);
   dialog->Show();
 }
 
 void ErrorScreen::OnDiagnoseButtonClicked() {
-  Profile* profile = ProfileHelper::GetSigninProfile();
+  Profile* profile = GetAppProfile();
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
 

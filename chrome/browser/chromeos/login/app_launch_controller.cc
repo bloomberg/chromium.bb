@@ -195,6 +195,9 @@ void AppLaunchController::SetNeedOwnerAuthToConfigureNetworkCallbackForTesting(
 
 void AppLaunchController::OnConfigureNetwork() {
   DCHECK(profile_);
+  if (showing_network_dialog_)
+    return;
+
   showing_network_dialog_ = true;
   if (CanConfigureNetwork() && NeedOwnerAuthToConfigureNetwork()) {
     signin_screen_.reset(new AppLaunchSigninScreen(
