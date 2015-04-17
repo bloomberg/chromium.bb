@@ -1283,6 +1283,32 @@ InvalidState AXNodeObject::invalidState() const
     return InvalidStateUndefined;
 }
 
+int AXNodeObject::posInSet() const
+{
+    if (supportsSetSizeAndPosInSet()) {
+        if (hasAttribute(aria_posinsetAttr))
+            return getAttribute(aria_posinsetAttr).toInt();
+        return AXObject::indexInParent() + 1;
+    }
+
+    return 0;
+}
+
+int AXNodeObject::setSize() const
+{
+    if (supportsSetSizeAndPosInSet()) {
+        if (hasAttribute(aria_setsizeAttr))
+            return getAttribute(aria_setsizeAttr).toInt();
+
+        if (parentObject()) {
+            const auto& siblings = parentObject()->children();
+            return siblings.size();
+        }
+    }
+
+    return 0;
+}
+
 String AXNodeObject::ariaInvalidValue() const
 {
     if (invalidState() == InvalidStateOther)

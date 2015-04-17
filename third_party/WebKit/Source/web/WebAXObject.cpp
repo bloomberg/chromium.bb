@@ -501,6 +501,22 @@ bool WebAXObject::isMultiline() const
     return m_private->isMultiline();
 }
 
+int WebAXObject::posInSet() const
+{
+    if (isDetached())
+        return 0;
+
+    return m_private->posInSet();
+}
+
+int WebAXObject::setSize() const
+{
+    if (isDetached())
+        return 0;
+
+    return m_private->setSize();
+}
+
 bool WebAXObject::isInLiveRegion() const
 {
     if (isDetached())

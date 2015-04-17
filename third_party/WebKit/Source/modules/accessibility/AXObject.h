@@ -558,6 +558,14 @@ public:
     bool supportsRangeValue() const;
     virtual SortDirection sortDirection() const { return SortDirectionUndefined; }
 
+    // Returns 0-based index.
+    int indexInParent() const;
+
+    // Returns 1-based position in set.
+    virtual int posInSet() const { return 0; }
+    virtual int setSize() const { return 0; }
+    bool supportsSetSizeAndPosInSet() const;
+
     // ARIA trees.
     // Used by an ARIA tree to get all its rows.
     void ariaTreeRows(AccessibilityChildrenVector&);

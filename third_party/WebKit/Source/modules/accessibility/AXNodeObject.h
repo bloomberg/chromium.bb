@@ -198,6 +198,10 @@ protected:
     virtual void textChanged() override;
     virtual void updateAccessibilityRole() override final;
 
+    // Position in set and Size of set
+    virtual int posInSet() const override;
+    virtual int setSize() const override;
+
 private:
     Node* m_node;
 

@@ -707,6 +707,42 @@ bool AXObject::supportsRangeValue() const
         || isSpinButton();
 }
 
+bool AXObject::supportsSetSizeAndPosInSet() const
+{
+    AXObject* parent = parentObject();
+    if (!parent)
+        return false;
+
+    int role = roleValue();
+    int parentRole = parent->roleValue();
+
+    if ((role == ListBoxOptionRole && parentRole == ListBoxRole)
+        || (role == ListItemRole && parentRole == ListRole)
+        || (role == MenuItemRole && parentRole == MenuRole)
+        || (role == RadioButtonRole && parentRole == RadioGroupRole)
+        || (role == TabRole && parentRole == TabListRole)
+        || (role == TreeItemRole && parentRole == TreeRole))
+        return true;
+
+    return false;
+}
+
+int AXObject::indexInParent() const
+{
+    if (!parentObject())
+        return 0;
+
+    const auto& siblings = parentObject()->children();
+    int childCount = siblings.size();
+
+    for (int index = 0; index < childCount; ++index) {
+        if (siblings[index].get() == this) {
+            return index;
+        }
+    }
+    return 0;
+}
+
 void AXObject::ariaTreeRows(AccessibilityChildrenVector& result)
 {
     for (const auto& child : children()) {

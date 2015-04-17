@@ -192,6 +192,10 @@ public:
     // exposed by one of the two functions above.
     BLINK_EXPORT WebString placeholder(WebAXNameFrom, WebAXDescriptionFrom);
 
+    // 1-based position in set & Size of set.
+    BLINK_EXPORT int posInSet() const;
+    BLINK_EXPORT int setSize() const;
+
     // Live regions.
     BLINK_EXPORT bool isInLiveRegion() const;
     BLINK_EXPORT bool liveRegionAtomic() const;
