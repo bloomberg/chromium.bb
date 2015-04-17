@@ -146,7 +146,7 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(RenderFrameHost* rfh)
       tracing_handler_(new devtools::tracing::TracingHandler(
           devtools::tracing::TracingHandler::Renderer)),
       emulation_handler_(nullptr),
-      frame_trace_recorder_(new DevToolsFrameTraceRecorder()),
+      frame_trace_recorder_(nullptr),
       reattaching_(false) {
   DevToolsProtocolDispatcher* dispatcher = protocol_handler_->dispatcher();
   dispatcher->SetDOMHandler(dom_handler_.get());
@@ -211,6 +211,8 @@ void RenderFrameDevToolsAgentHost::InnerOnClientAttached() {
   power_save_blocker_->InitDisplaySleepBlocker(
       WebContents::FromRenderFrameHost(render_frame_host_));
 #endif
+
+  frame_trace_recorder_.reset(new DevToolsFrameTraceRecorder());
 }
 
 void RenderFrameDevToolsAgentHost::OnClientDetached() {
@@ -256,6 +258,7 @@ void RenderFrameDevToolsAgentHost::InnerClientDetachedFromRenderer() {
     ChildProcessSecurityPolicyImpl::GetInstance()->RevokeReadRawCookies(
         render_process_host->GetID());
   }
+  frame_trace_recorder_.reset();
 }
 
 RenderFrameDevToolsAgentHost::~RenderFrameDevToolsAgentHost() {
@@ -503,8 +506,10 @@ void RenderFrameDevToolsAgentHost::OnSwapCompositorFrame(
     return;
   if (page_handler_)
     page_handler_->OnSwapCompositorFrame(get<1>(param).metadata);
-  frame_trace_recorder_->OnSwapCompositorFrame(
-      render_frame_host_, get<1>(param).metadata);
+  if (frame_trace_recorder_) {
+    frame_trace_recorder_->OnSwapCompositorFrame(
+        render_frame_host_, get<1>(param).metadata);
+  }
 }
 
 void RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame(
@@ -513,8 +518,10 @@ void RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame(
     return;
   if (page_handler_)
     page_handler_->OnSwapCompositorFrame(frame_metadata);
-  frame_trace_recorder_->OnSwapCompositorFrame(
-      render_frame_host_, frame_metadata);
+  if (frame_trace_recorder_) {
+    frame_trace_recorder_->OnSwapCompositorFrame(
+        render_frame_host_, frame_metadata);
+  }
 }
 
 bool RenderFrameDevToolsAgentHost::HasRenderFrameHost(
