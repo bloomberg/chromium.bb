@@ -5,7 +5,6 @@
 #ifndef SANDBOX_LINUX_SERVICES_SYSCALL_WRAPPERS_H_
 #define SANDBOX_LINUX_SERVICES_SYSCALL_WRAPPERS_H_
 
-#include <signal.h>
 #include <stdint.h>
 #include <sys/types.h>
 
@@ -66,17 +65,6 @@ SANDBOX_EXPORT int sys_chroot(const char* path);
 
 // Some libcs do not expose a unshare wrapper.
 SANDBOX_EXPORT int sys_unshare(int flags);
-
-// Some libcs do not expose a sigprocmask. Note that oldset must be a nullptr,
-// because of some ABI gap between toolchain's and Linux's.
-SANDBOX_EXPORT int sys_sigprocmask(int how,
-                                   const sigset_t* set,
-                                   decltype(nullptr) oldset);
-
-// Some libcs do not expose a sigaction().
-SANDBOX_EXPORT int sys_sigaction(int signum,
-                                 const struct sigaction* act,
-                                 struct sigaction* oldact);
 
 }  // namespace sandbox
 

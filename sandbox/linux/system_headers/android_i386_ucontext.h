@@ -11,16 +11,7 @@
 // except we do use sigset_t for uc_sigmask instead of a custom type.
 
 #if !defined(__BIONIC_HAVE_UCONTEXT_T)
-#if !defined(__native_client_nonsfi__)
 #include <asm/sigcontext.h>
-#else
-// In PNaCl toolchain, sigcontext is not defined. So here declare it.
-typedef struct sigaltstack {
-  void* ss_sp;
-  int ss_flags;
-  size_t ss_size;
-} stack_t;
-#endif
 
 /* 80-bit floating-point register */
 struct _libc_fpreg {
@@ -77,12 +68,7 @@ typedef struct ucontext {
   struct ucontext* uc_link;
   stack_t uc_stack;
   mcontext_t uc_mcontext;
-  // Android and PNaCl toolchain's sigset_t has only 32 bits, though Linux
-  // ABI requires 64 bits.
-  union {
-    sigset_t uc_sigmask;
-    uint32_t kernel_sigmask[2];
-  };
+  sigset_t uc_sigmask;
   struct _libc_fpstate __fpregs_mem;
 } ucontext_t;
 

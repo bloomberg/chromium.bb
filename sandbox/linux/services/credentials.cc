@@ -27,11 +27,15 @@
 #include "sandbox/linux/services/syscall_wrappers.h"
 #include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/system_headers/capability.h"
-#include "sandbox/linux/system_headers/linux_signal.h"
 
 namespace sandbox {
 
 namespace {
+
+// Signal ABI for some toolchain is incompatible with Linux's. In particular,
+// PNaCl toolchain defines SIGCHLD = 20. So, here, directly define Linux's
+// value.
+const int kLinuxSIGCHLD = 17;
 
 bool IsRunningOnValgrind() { return RUNNING_ON_VALGRIND; }
 
@@ -92,8 +96,8 @@ bool ChrootToSafeEmptyDir() {
 #endif
 
   pid = clone(ChrootToSelfFdinfo, stack,
-              CLONE_VM | CLONE_VFORK | CLONE_FS | LINUX_SIGCHLD, nullptr,
-              nullptr, nullptr, nullptr);
+              CLONE_VM | CLONE_VFORK | CLONE_FS | kLinuxSIGCHLD,
+              nullptr, nullptr, nullptr, nullptr);
   PCHECK(pid != -1);
 
   int status = -1;
