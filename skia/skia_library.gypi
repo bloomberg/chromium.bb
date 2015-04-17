@@ -117,7 +117,6 @@
   '../third_party/skia/src/utils/SkNinePatch.cpp',
   '../third_party/skia/src/utils/SkOSFile.cpp',
   '../third_party/skia/src/utils/SkParsePath.cpp',
-  '../third_party/skia/src/utils/SkPathUtils.cpp',
   '../third_party/skia/src/utils/SkSHA1.cpp',
   '../third_party/skia/src/utils/SkSHA1.h',
   '../third_party/skia/src/utils/SkTFitsIn.h',
