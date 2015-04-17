@@ -97,7 +97,9 @@ cr.define('cr.ui.login.ResourceLoader', function() {
    * @param {HTMLElement} to Element to which nodes should be appended.
    */
   function moveNodes(from, to) {
-    Array.prototype.forEach.call(from.children, to.appendChild, to);
+    Array.prototype.forEach.call(from.children, function(child) {
+      to.appendChild(document.importNode(child, true));
+    });
   }
 
   /**
