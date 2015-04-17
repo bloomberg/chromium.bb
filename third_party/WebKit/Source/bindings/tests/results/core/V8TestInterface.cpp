@@ -2429,24 +2429,24 @@ void V8TestInterface::installConditionallyEnabledMethods(v8::Local<v8::Object> p
     ASSERT(context);
 
     if (context && (context->isWorkerGlobalScope())) {
-        prototypeObject->Set(v8AtomicString(isolate, "workerExposedMethod"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::workerExposedMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
+        prototypeObject->Set(v8AtomicString(isolate, "workerExposedMethod"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::workerExposedMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction(isolate->GetCurrentContext()).ToLocalChecked());
     }
     if (context && (context->isDocument())) {
-        prototypeObject->Set(v8AtomicString(isolate, "windowExposedMethod"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::windowExposedMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
+        prototypeObject->Set(v8AtomicString(isolate, "windowExposedMethod"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::windowExposedMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction(isolate->GetCurrentContext()).ToLocalChecked());
     }
     if (context && (context->isDocument())) {
         if (RuntimeEnabledFeatures::featureNameEnabled()) {
-            prototypeObject->Set(v8AtomicString(isolate, "methodWithExposedAndRuntimeEnabledFlag"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::methodWithExposedAndRuntimeEnabledFlagMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
+            prototypeObject->Set(v8AtomicString(isolate, "methodWithExposedAndRuntimeEnabledFlag"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::methodWithExposedAndRuntimeEnabledFlagMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction(isolate->GetCurrentContext()).ToLocalChecked());
         }
     }
     if (context && (context->isDocument())) {
-        prototypeObject->Set(v8AtomicString(isolate, "overloadMethodWithExposedAndRuntimeEnabledFlag"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::overloadMethodWithExposedAndRuntimeEnabledFlagMethodCallback, v8Undefined(), defaultSignature, 1)->GetFunction());
+        prototypeObject->Set(v8AtomicString(isolate, "overloadMethodWithExposedAndRuntimeEnabledFlag"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::overloadMethodWithExposedAndRuntimeEnabledFlagMethodCallback, v8Undefined(), defaultSignature, 1)->GetFunction(isolate->GetCurrentContext()).ToLocalChecked());
     }
     if (context && ((context->isDocument() && RuntimeEnabledFeatures::featureNameEnabled()) || (context->isWorkerGlobalScope() && RuntimeEnabledFeatures::featureName2Enabled()))) {
-        prototypeObject->Set(v8AtomicString(isolate, "methodWithExposedHavingRuntimeEnabldFlag"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::methodWithExposedHavingRuntimeEnabldFlagMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
+        prototypeObject->Set(v8AtomicString(isolate, "methodWithExposedHavingRuntimeEnabldFlag"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::methodWithExposedHavingRuntimeEnabldFlagMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction(isolate->GetCurrentContext()).ToLocalChecked());
     }
     if (context && (context->isDocument() || context->isServiceWorkerGlobalScope())) {
-        prototypeObject->Set(v8AtomicString(isolate, "windowAndServiceWorkerExposedMethod"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::windowAndServiceWorkerExposedMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
+        prototypeObject->Set(v8AtomicString(isolate, "windowAndServiceWorkerExposedMethod"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::windowAndServiceWorkerExposedMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction(isolate->GetCurrentContext()).ToLocalChecked());
     }
 }
 

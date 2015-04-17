@@ -314,7 +314,7 @@ void V8TestInterfacePartial::installConditionallyEnabledMethods(v8::Local<v8::Ob
     ASSERT(context);
 
     if (context && context->isDocument() && ContextFeatures::partialContextName3Enabled(toDocument(context))) {
-        prototypeObject->Set(v8AtomicString(isolate, "partialVoidTestEnumModulesArgMethod"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationPartialV8Internal::partialVoidTestEnumModulesArgMethodMethodCallback, v8Undefined(), defaultSignature, 1)->GetFunction());
+        prototypeObject->Set(v8AtomicString(isolate, "partialVoidTestEnumModulesArgMethod"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationPartialV8Internal::partialVoidTestEnumModulesArgMethodMethodCallback, v8Undefined(), defaultSignature, 1)->GetFunction(isolate->GetCurrentContext()).ToLocalChecked());
     }
 }
 

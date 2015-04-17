@@ -12775,7 +12775,7 @@ void V8TestObject::installConditionallyEnabledMethods(v8::Local<v8::Object> prot
     ASSERT(context);
 
     if (context && context->isDocument() && ContextFeatures::featureNameEnabled(toDocument(context))) {
-        prototypeObject->Set(v8AtomicString(isolate, "perContextEnabledVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectV8Internal::perContextEnabledVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
+        prototypeObject->Set(v8AtomicString(isolate, "perContextEnabledVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectV8Internal::perContextEnabledVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction(isolate->GetCurrentContext()).ToLocalChecked());
     }
 }
 

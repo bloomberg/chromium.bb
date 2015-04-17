@@ -96,8 +96,8 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(const Wrapp
     ASSERT(type->domTemplateFunction);
     v8::Handle<v8::FunctionTemplate> functionTemplate = type->domTemplate(m_isolate);
     // Getting the function might fail if we're running out of stack or memory.
-    v8::Local<v8::Function> function = functionTemplate->GetFunction();
-    if (function.IsEmpty())
+    v8::Local<v8::Function> function;
+    if (!functionTemplate->GetFunction(currentContext).ToLocal(&function))
         return v8::Local<v8::Function>();
 
     if (type->parentClass) {

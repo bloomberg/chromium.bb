@@ -57,8 +57,8 @@ static v8::Local<v8::Object> wrapInShadowTemplate(v8::Local<v8::Object> wrapper,
         data->setDOMTemplate(&shadowTemplateKey, shadowTemplate);
     }
 
-    v8::Local<v8::Function> shadowConstructor = shadowTemplate->GetFunction();
-    if (shadowConstructor.IsEmpty())
+    v8::Local<v8::Function> shadowConstructor;
+    if (!shadowTemplate->GetFunction(isolate->GetCurrentContext()).ToLocal(&shadowConstructor))
         return v8::Local<v8::Object>();
 
     v8::Local<v8::Object> shadow;
@@ -79,7 +79,10 @@ v8::Local<v8::Object> V8DOMWrapper::createWrapper(v8::Isolate* isolate, v8::Loca
     if (perContextData) {
         wrapper = perContextData->createWrapperFromCache(type);
     } else {
-        if (!V8ObjectConstructor::newInstance(isolate, type->domTemplate(isolate)->GetFunction()).ToLocal(&wrapper))
+        v8::Local<v8::Function> function;
+        if (!type->domTemplate(isolate)->GetFunction(isolate->GetCurrentContext()).ToLocal(&function))
+            return v8::Local<v8::Object>();
+        if (!V8ObjectConstructor::newInstance(isolate, function).ToLocal(&wrapper))
             return v8::Local<v8::Object>();
     }
 

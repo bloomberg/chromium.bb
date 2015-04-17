@@ -1024,13 +1024,13 @@ void V8TestInterface5::installConditionallyEnabledMethods(v8::Local<v8::Object> 
     ASSERT(context);
 
     if (context && (context->isWorkerGlobalScope())) {
-        prototypeObject->Set(v8AtomicString(isolate, "workerExposedMethod"), v8::FunctionTemplate::New(isolate, TestInterface5ImplementationV8Internal::workerExposedMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
+        prototypeObject->Set(v8AtomicString(isolate, "workerExposedMethod"), v8::FunctionTemplate::New(isolate, TestInterface5ImplementationV8Internal::workerExposedMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction(isolate->GetCurrentContext()).ToLocalChecked());
     }
     if (context && (context->isDocument())) {
-        prototypeObject->Set(v8AtomicString(isolate, "windowExposedMethod"), v8::FunctionTemplate::New(isolate, TestInterface5ImplementationV8Internal::windowExposedMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
+        prototypeObject->Set(v8AtomicString(isolate, "windowExposedMethod"), v8::FunctionTemplate::New(isolate, TestInterface5ImplementationV8Internal::windowExposedMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction(isolate->GetCurrentContext()).ToLocalChecked());
     }
     if (context && (context->isDocument() || context->isServiceWorkerGlobalScope())) {
-        prototypeObject->Set(v8AtomicString(isolate, "windowAndServiceWorkerExposedMethod"), v8::FunctionTemplate::New(isolate, TestInterface5ImplementationV8Internal::windowAndServiceWorkerExposedMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
+        prototypeObject->Set(v8AtomicString(isolate, "windowAndServiceWorkerExposedMethod"), v8::FunctionTemplate::New(isolate, TestInterface5ImplementationV8Internal::windowAndServiceWorkerExposedMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction(isolate->GetCurrentContext()).ToLocalChecked());
     }
 }
 

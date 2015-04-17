@@ -60,8 +60,13 @@ static v8::Local<v8::Value> compileAndRunPrivateScript(ScriptState* scriptState,
         v8::Local<v8::Object> privateScriptControllerObject = privateScriptController.As<v8::Object>();
         v8::Local<v8::Value> importFunctionValue = privateScriptControllerObject->Get(context, v8String(isolate, "import")).ToLocalChecked();
         if (importFunctionValue->IsUndefined()) {
-            if (!v8CallBoolean(privateScriptControllerObject->Set(context, v8String(isolate, "import"), v8::FunctionTemplate::New(isolate, importFunction)->GetFunction())))
+            v8::Local<v8::Function> function;
+            if (!v8::FunctionTemplate::New(isolate, importFunction)->GetFunction(context).ToLocal(&function)
+                || !v8CallBoolean(privateScriptControllerObject->Set(context, v8String(isolate, "import"), function))) {
+                fprintf(stderr, "Private script error: Setting import function failed. (Class name = %s)\n", scriptClassName.utf8().data());
+                dumpV8Message(context, block.Message());
                 RELEASE_ASSERT_NOT_REACHED();
+            }
         }
     }
 

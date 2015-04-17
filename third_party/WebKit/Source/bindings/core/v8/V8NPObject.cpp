@@ -276,7 +276,9 @@ static v8::Local<v8::Value> npObjectGetProperty(v8::Local<v8::Object> self, NPId
             functionTemplate->SetCallHandler(npObjectMethodHandler, key);
             V8NPTemplateMap::sharedInstance(isolate).set(id, functionTemplate);
         }
-        v8::Local<v8::Function> v8Function = functionTemplate->GetFunction();
+        v8::Local<v8::Function> v8Function;
+        if (!functionTemplate->GetFunction(isolate->GetCurrentContext()).ToLocal(&v8Function))
+            return v8Undefined();
         v8Function->SetName(v8::Local<v8::String>::Cast(key));
         return v8Function;
     }
@@ -465,10 +467,12 @@ v8::Local<v8::Object> createV8ObjectForNPObject(v8::Isolate* isolate, NPObject* 
     // Use V8DOMWrapper::createWrapper() and
     // V8DOMWrapper::associateObjectWithWrapper()
     // to create a wrapper object.
-    v8::Local<v8::Function> v8Function = npObjectDesc.Get(isolate)->GetFunction();
+    v8::Local<v8::Function> v8Function;
+    if (!npObjectDesc.Get(isolate)->GetFunction(isolate->GetCurrentContext()).ToLocal(&v8Function))
+        return v8::Local<v8::Object>();
     v8::Local<v8::Object> value;
     if (!V8ObjectConstructor::newInstance(isolate, v8Function).ToLocal(&value))
-        return value;
+        return v8::Local<v8::Object>();
 
     V8DOMWrapper::setNativeInfo(value, npObjectTypeInfo(), npObjectToScriptWrappable(object));
 
