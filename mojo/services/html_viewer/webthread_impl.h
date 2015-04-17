@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
+#include "mojo/services/html_viewer/webscheduler_impl.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
 
 namespace html_viewer {
@@ -45,6 +46,8 @@ class WebThreadImpl : public WebThreadBase {
   virtual void enterRunLoop();
   virtual void exitRunLoop();
 
+  virtual blink::WebScheduler* scheduler() const;
+
   base::MessageLoop* message_loop() const { return thread_->message_loop(); }
 
   bool isCurrentThread() const override;
@@ -52,6 +55,7 @@ class WebThreadImpl : public WebThreadBase {
 
  private:
   scoped_ptr<base::Thread> thread_;
+  scoped_ptr<WebSchedulerImpl> web_scheduler_;
 };
 
 class WebThreadImplForMessageLoop : public WebThreadBase {
@@ -68,11 +72,14 @@ class WebThreadImplForMessageLoop : public WebThreadBase {
   virtual void enterRunLoop();
   virtual void exitRunLoop();
 
+  virtual blink::WebScheduler* scheduler() const;
+
  private:
   bool isCurrentThread() const override;
   virtual blink::PlatformThreadId threadId() const;
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_ptr<WebSchedulerImpl> web_scheduler_;
   blink::PlatformThreadId thread_id_;
 };
 

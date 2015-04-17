@@ -57,7 +57,8 @@ void WebThreadBase::removeTaskObserver(TaskObserver* observer) {
 }
 
 WebThreadImpl::WebThreadImpl(const char* name)
-    : thread_(new base::Thread(name)) {
+    : thread_(new base::Thread(name)),
+      web_scheduler_(new WebSchedulerImpl(thread_->task_runner())) {
   thread_->Start();
 }
 
@@ -116,6 +117,10 @@ void WebThreadImpl::exitRunLoop() {
   thread_->message_loop()->Quit();
 }
 
+blink::WebScheduler* WebThreadImpl::scheduler() const {
+  return web_scheduler_.get();
+}
+
 bool WebThreadImpl::isCurrentThread() const {
   return thread_->thread_id() == base::PlatformThread::CurrentId();
 }
@@ -130,7 +135,9 @@ WebThreadImpl::~WebThreadImpl() {
 
 WebThreadImplForMessageLoop::WebThreadImplForMessageLoop(
     base::MessageLoopProxy* message_loop)
-    : message_loop_(message_loop) {}
+    : message_loop_(message_loop),
+      web_scheduler_(new WebSchedulerImpl(message_loop_)) {
+}
 
 void WebThreadImplForMessageLoop::postTask(
     const blink::WebTraceLocation& location,
@@ -161,6 +168,10 @@ void WebThreadImplForMessageLoop::exitRunLoop() {
   CHECK(isCurrentThread());
   CHECK(base::MessageLoop::current()->is_running());
   base::MessageLoop::current()->Quit();
+}
+
+blink::WebScheduler* WebThreadImplForMessageLoop::scheduler() const {
+  return web_scheduler_.get();
 }
 
 bool WebThreadImplForMessageLoop::isCurrentThread() const {
