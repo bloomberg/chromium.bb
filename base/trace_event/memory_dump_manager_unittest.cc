@@ -23,7 +23,7 @@ class MemoryDumpManagerDelegateForTesting : public MemoryDumpManagerDelegate {
   void RequestGlobalMemoryDump(
       const base::trace_event::MemoryDumpRequestArgs& args,
       const MemoryDumpCallback& callback) override {
-    MemoryDumpManager::GetInstance()->CreateProcessDump(args);
+    CreateProcessDump(args);
   }
 };
 
@@ -44,7 +44,7 @@ class MemoryDumpManagerTest : public testing::Test {
   }
 
  protected:
-  const char* const kTraceCategory = MemoryDumpManager::kTraceCategory;
+  const char* kTraceCategory = MemoryDumpManager::kTraceCategoryForTesting;
 
   void EnableTracing(const char* category) {
     TraceLog::GetInstance()->SetEnabled(
@@ -66,7 +66,7 @@ class MockDumpProvider : public MemoryDumpProvider {
  public:
   MOCK_METHOD1(DumpInto, bool(ProcessMemoryDump* pmd));
 
-  // DumpInto() override for the ActiveDumpProviderConsistency test,
+  // DumpInto() override for the ActiveDumpProviderConsistency test.
   bool DumpIntoAndCheckDumpProviderCurrentlyActive(ProcessMemoryDump* pmd) {
     EXPECT_EQ(
         this,

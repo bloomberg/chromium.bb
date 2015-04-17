@@ -17,6 +17,10 @@ namespace trace_event {
 
 namespace {
 
+// TODO(primiano): this should be smarter and should do something similar to
+// trace event synthetic delays.
+const char kTraceCategory[] = TRACE_DISABLED_BY_DEFAULT("memory-dumps");
+
 MemoryDumpManager* g_instance_for_testing = nullptr;
 const int kTraceEventNumArgs = 1;
 const char* kTraceEventArgNames[] = {"dumps"};
@@ -38,12 +42,45 @@ const char* MemoryDumpTypeToString(const MemoryDumpType& dump_type) {
   return "UNKNOWN";
 }
 
+// Internal class used to hold details about ProcessMemoryDump requests for the
+// current process.
+// TODO(primiano): In the upcoming CLs, ProcessMemoryDump will become async.
+// and this class will be used to convey more details across PostTask()s.
+class ProcessMemoryDumpHolder
+    : public RefCountedThreadSafe<ProcessMemoryDumpHolder> {
+ public:
+  ProcessMemoryDumpHolder(MemoryDumpRequestArgs req_args)
+      : req_args(req_args) {}
+
+  ProcessMemoryDump process_memory_dump;
+  const MemoryDumpRequestArgs req_args;
+
+ private:
+  friend class RefCountedThreadSafe<ProcessMemoryDumpHolder>;
+  virtual ~ProcessMemoryDumpHolder() {}
+  DISALLOW_COPY_AND_ASSIGN(ProcessMemoryDumpHolder);
+};
+
+void FinalizeDumpAndAddToTrace(
+    const scoped_refptr<ProcessMemoryDumpHolder>& pmd_holder) {
+  scoped_refptr<ConvertableToTraceFormat> event_value(new TracedValue());
+  pmd_holder->process_memory_dump.AsValueInto(
+      static_cast<TracedValue*>(event_value.get()));
+  const char* const event_name =
+      MemoryDumpTypeToString(pmd_holder->req_args.dump_type);
+
+  TRACE_EVENT_API_ADD_TRACE_EVENT(
+      TRACE_EVENT_PHASE_MEMORY_DUMP,
+      TraceLog::GetCategoryGroupEnabled(kTraceCategory), event_name,
+      pmd_holder->req_args.dump_guid, kTraceEventNumArgs, kTraceEventArgNames,
+      kTraceEventArgTypes, nullptr /* arg_values */, &event_value,
+      TRACE_EVENT_FLAG_HAS_ID);
+}
+
 }  // namespace
 
-// TODO(primiano): this should be smarter and should do something similar to
-// trace event synthetic delays.
-const char MemoryDumpManager::kTraceCategory[] =
-    TRACE_DISABLED_BY_DEFAULT("memory-dumps");
+// static
+const char* const MemoryDumpManager::kTraceCategoryForTesting = kTraceCategory;
 
 // static
 MemoryDumpManager* MemoryDumpManager::GetInstance() {
@@ -83,29 +120,15 @@ void MemoryDumpManager::SetDelegate(MemoryDumpManagerDelegate* delegate) {
 
 void MemoryDumpManager::RegisterDumpProvider(MemoryDumpProvider* mdp) {
   AutoLock lock(lock_);
-  if (std::find(dump_providers_registered_.begin(),
-                dump_providers_registered_.end(),
-                mdp) != dump_providers_registered_.end()) {
-    return;
-  }
-  dump_providers_registered_.push_back(mdp);
+  dump_providers_registered_.insert(mdp);
 }
 
 void MemoryDumpManager::UnregisterDumpProvider(MemoryDumpProvider* mdp) {
   AutoLock lock(lock_);
-
-  // Remove from the registered providers list.
-  auto it = std::find(dump_providers_registered_.begin(),
-                      dump_providers_registered_.end(), mdp);
-  if (it != dump_providers_registered_.end())
-    dump_providers_registered_.erase(it);
-
   // Remove from the enabled providers list. This is to deal with the case that
   // UnregisterDumpProvider is called while the trace is enabled.
-  it = std::find(dump_providers_enabled_.begin(), dump_providers_enabled_.end(),
-                 mdp);
-  if (it != dump_providers_enabled_.end())
-    dump_providers_enabled_.erase(it);
+  dump_providers_enabled_.erase(mdp);
+  dump_providers_registered_.erase(mdp);
 }
 
 void MemoryDumpManager::RequestGlobalDump(
@@ -141,47 +164,48 @@ void MemoryDumpManager::RequestGlobalDump(MemoryDumpType dump_type) {
 }
 
 // Creates a memory dump for the current process and appends it to the trace.
-void MemoryDumpManager::CreateProcessDump(
-    const MemoryDumpRequestArgs& args) {
+void MemoryDumpManager::CreateProcessDump(const MemoryDumpRequestArgs& args) {
+  scoped_refptr<ProcessMemoryDumpHolder> pmd_holder(
+      new ProcessMemoryDumpHolder(args));
+  ProcessMemoryDump* pmd = &pmd_holder->process_memory_dump;
   bool did_any_provider_dump = false;
-  scoped_ptr<ProcessMemoryDump> pmd(new ProcessMemoryDump());
 
   // Serialize dump generation so that memory dump providers don't have to deal
   // with thread safety.
   {
     AutoLock lock(lock_);
-    for (auto it = dump_providers_enabled_.begin();
-         it != dump_providers_enabled_.end();) {
-      dump_provider_currently_active_ = *it;
-      if (dump_provider_currently_active_->DumpInto(pmd.get())) {
-        did_any_provider_dump = true;
-        ++it;
-      } else {
-        LOG(ERROR) << "The memory dumper "
-                   << dump_provider_currently_active_->GetFriendlyName()
-                   << " failed, possibly due to sandboxing (crbug.com/461788), "
-                      "disabling it for current process. Try restarting chrome "
-                      "with the --no-sandbox switch.";
-        it = dump_providers_enabled_.erase(it);
-      }
-      dump_provider_currently_active_ = nullptr;
+    for (auto dump_provider_iter = dump_providers_enabled_.begin();
+         dump_provider_iter != dump_providers_enabled_.end();) {
+      // InvokeDumpProviderLocked will remove the MDP from the set if it fails.
+      MemoryDumpProvider* mdp = *dump_provider_iter;
+      ++dump_provider_iter;
+      // Invoke the dump provider synchronously.
+      did_any_provider_dump |= InvokeDumpProviderLocked(mdp, pmd);
     }
+  }  // AutoLock
+
+  // If at least one synchronous provider did dump, add the dump to the trace.
+  if (did_any_provider_dump)
+    FinalizeDumpAndAddToTrace(pmd_holder);
+}
+
+// Invokes the MemoryDumpProvider.DumpInto(), taking care of the failsafe logic
+// which disables the dumper when failing (crbug.com/461788). The caller must
+// hold the |lock_| when invoking this.
+bool MemoryDumpManager::InvokeDumpProviderLocked(MemoryDumpProvider* mdp,
+                                                 ProcessMemoryDump* pmd) {
+  lock_.AssertAcquired();
+  dump_provider_currently_active_ = mdp;
+  bool dump_successful = mdp->DumpInto(pmd);
+  dump_provider_currently_active_ = nullptr;
+  if (!dump_successful) {
+    LOG(ERROR) << "The memory dumper " << mdp->GetFriendlyName()
+               << " failed, possibly due to sandboxing (crbug.com/461788), "
+                  "disabling it for current process. Try restarting chrome "
+                  "with the --no-sandbox switch.";
+    dump_providers_enabled_.erase(mdp);
   }
-
-  // Don't create a memory dump if all the dumpers failed.
-  if (!did_any_provider_dump)
-    return;
-
-  scoped_refptr<ConvertableToTraceFormat> event_value(new TracedValue());
-  pmd->AsValueInto(static_cast<TracedValue*>(event_value.get()));
-  const char* const event_name = MemoryDumpTypeToString(args.dump_type);
-
-  TRACE_EVENT_API_ADD_TRACE_EVENT(
-      TRACE_EVENT_PHASE_MEMORY_DUMP,
-      TraceLog::GetCategoryGroupEnabled(kTraceCategory), event_name,
-      args.dump_guid, kTraceEventNumArgs, kTraceEventArgNames,
-      kTraceEventArgTypes, nullptr /* arg_values */, &event_value,
-      TRACE_EVENT_FLAG_HAS_ID);
+  return dump_successful;
 }
 
 void MemoryDumpManager::OnTraceLogEnabled() {
@@ -193,8 +217,7 @@ void MemoryDumpManager::OnTraceLogEnabled() {
 
   AutoLock lock(lock_);
   if (enabled) {
-    dump_providers_enabled_.assign(dump_providers_registered_.begin(),
-                                   dump_providers_registered_.end());
+    dump_providers_enabled_ = dump_providers_registered_;
   } else {
     dump_providers_enabled_.clear();
   }

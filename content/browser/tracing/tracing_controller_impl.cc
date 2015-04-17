@@ -912,7 +912,7 @@ void TracingControllerImpl::RequestGlobalMemoryDump(
   pending_memory_dump_filters_.clear();
   failed_memory_dump_count_ = 0;
 
-  base::trace_event::MemoryDumpManager::GetInstance()->CreateProcessDump(args);
+  MemoryDumpManagerDelegate::CreateProcessDump(args);
 
   // If there are no child processes we are just done.
   TraceMessageFilterSet::iterator it = trace_message_filters_.begin();

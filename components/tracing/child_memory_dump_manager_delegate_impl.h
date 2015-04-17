@@ -36,6 +36,10 @@ class ChildMemoryDumpManagerDelegateImpl
 
   void SetChildTraceMessageFilter(ChildTraceMessageFilter* ctmf);
 
+ protected:
+  // Make CreateProcessDump() visible to ChildTraceMessageFilter.
+  friend class ChildTraceMessageFilter;
+
  private:
   friend struct DefaultSingletonTraits<ChildMemoryDumpManagerDelegateImpl>;
 

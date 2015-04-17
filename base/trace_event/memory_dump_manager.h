@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/atomicops.h"
+#include "base/containers/hash_tables.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/memory_dump_request_args.h"
@@ -18,12 +20,15 @@ namespace trace_event {
 
 class MemoryDumpManagerDelegate;
 class MemoryDumpProvider;
+class ProcessMemoryDump;
 
 // This is the interface exposed to the rest of the codebase to deal with
 // memory tracing. The main entry point for clients is represented by
 // RequestDumpPoint(). The extension by Un(RegisterDumpProvider).
 class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
  public:
+  static const char* const kTraceCategoryForTesting;
+
   static MemoryDumpManager* GetInstance();
 
   // Invoked once per process to register the TraceLog observer.
@@ -34,7 +39,7 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   void SetDelegate(MemoryDumpManagerDelegate* delegate);
 
   // MemoryDumpManager does NOT take memory ownership of |mdp|, which is
-  // expected to be a singleton.
+  // expected to either be a singleton or unregister itself.
   void RegisterDumpProvider(MemoryDumpProvider* mdp);
   void UnregisterDumpProvider(MemoryDumpProvider* mdp);
 
@@ -50,9 +55,6 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   // Same as above, but without callback.
   void RequestGlobalDump(MemoryDumpType dump_type);
 
-  // Creates a memory dump for the current process and appends it to the trace.
-  void CreateProcessDump(const MemoryDumpRequestArgs& args);
-
   // TraceLog::EnabledStateObserver implementation.
   void OnTraceLogEnabled() override;
   void OnTraceLogDisabled() override;
@@ -66,17 +68,23 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
  private:
   friend struct DefaultDeleter<MemoryDumpManager>;  // For the testing instance.
   friend struct DefaultSingletonTraits<MemoryDumpManager>;
+  friend class MemoryDumpManagerDelegate;
   friend class MemoryDumpManagerTest;
-
-  static const char kTraceCategory[];
 
   static void SetInstanceForTesting(MemoryDumpManager* instance);
 
   MemoryDumpManager();
   virtual ~MemoryDumpManager();
 
-  std::vector<MemoryDumpProvider*> dump_providers_registered_;  // Not owned.
-  std::vector<MemoryDumpProvider*> dump_providers_enabled_;     // Not owned.
+  // Internal, used only by MemoryDumpManagerDelegate.
+  // Creates a memory dump for the current process and appends it to the trace.
+  void CreateProcessDump(const MemoryDumpRequestArgs& args);
+
+  bool InvokeDumpProviderLocked(MemoryDumpProvider* mdp,
+                                ProcessMemoryDump* pmd);
+
+  hash_set<MemoryDumpProvider*> dump_providers_registered_;  // Not owned.
+  hash_set<MemoryDumpProvider*> dump_providers_enabled_;     // Not owned.
 
   // TODO(primiano): this is required only until crbug.com/466121 gets fixed.
   MemoryDumpProvider* dump_provider_currently_active_;  // Not owned.
@@ -104,6 +112,10 @@ class BASE_EXPORT MemoryDumpManagerDelegate {
  protected:
   MemoryDumpManagerDelegate() {}
   virtual ~MemoryDumpManagerDelegate() {}
+
+  void CreateProcessDump(const MemoryDumpRequestArgs& args) {
+    MemoryDumpManager::GetInstance()->CreateProcessDump(args);
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MemoryDumpManagerDelegate);

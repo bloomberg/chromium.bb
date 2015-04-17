@@ -24,7 +24,7 @@ enum class MemoryDumpType {
   LAST = EXPLICITLY_TRIGGERED // For IPC macros.
 };
 
-using MemoryDumpCallback = Callback<void(uint64 dump_guid, bool status)>;
+using MemoryDumpCallback = Callback<void(uint64 dump_guid, bool success)>;
 
 struct BASE_EXPORT MemoryDumpRequestArgs {
   // Globally unique identifier. In multi-process dumps, all processes issue a
