@@ -4,72 +4,37 @@
 
 #include "config.h"
 #include "core/dom/DOMNodeIds.h"
-
-#if ENABLE(OILPAN)
 #include "core/dom/Node.h"
-#else
-#include "core/dom/WeakNodeMap.h"
-#endif
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-#if ENABLE(OILPAN)
-typedef HeapHashMap<WeakMember<Node>, int> NodeToIdMap;
-typedef HeapHashMap<int, WeakMember<Node>> IdToNodeMap;
-
-static NodeToIdMap& nodeToIdMap()
+#if !ENABLE(OILPAN)
+void WeakIdentifierMapTraits<Node>::removedFromIdentifierMap(Node* node)
 {
-    DEFINE_STATIC_LOCAL(Persistent<NodeToIdMap>, nodeToIdMap, (new NodeToIdMap()));
-    return *nodeToIdMap;
+    node->clearFlag(Node::HasWeakReferencesFlag);
 }
 
-static IdToNodeMap& idToNodeMap()
+void WeakIdentifierMapTraits<Node>::addedToIdentifierMap(Node* node)
 {
-    DEFINE_STATIC_LOCAL(Persistent<IdToNodeMap>, idToNodeMap, (new IdToNodeMap()));
-    return *idToNodeMap;
+    node->setFlag(Node::HasWeakReferencesFlag);
 }
+#endif
 
-int DOMNodeIds::idForNode(Node* node)
-{
-    static int s_nextNodeId = 1;
-    NodeToIdMap::iterator it = nodeToIdMap().find(node);
-    if (it != nodeToIdMap().end())
-        return it->value;
-    int id = s_nextNodeId++;
-    nodeToIdMap().set(node, id);
-    ASSERT(idToNodeMap().find(id) == idToNodeMap().end());
-    idToNodeMap().set(id, node);
-    return id;
-}
-
-Node* DOMNodeIds::nodeForId(int id)
-{
-    return idToNodeMap().get(id);
-}
-#else
 static WeakNodeMap& nodeIds()
 {
-    DEFINE_STATIC_LOCAL(WeakNodeMap, self, ());
-    return self;
+    DEFINE_STATIC_LOCAL(RawPtrWillBePersistent<WeakNodeMap>, self, (new WeakNodeMap()));
+    return *self;
 }
 
 int DOMNodeIds::idForNode(Node* node)
 {
-    static int s_nextNodeId = 1;
-    WeakNodeMap& ids = nodeIds();
-    int result = ids.identifier(node);
-    if (!result) {
-        result = s_nextNodeId++;
-        ids.put(node, result);
-    }
-    return result;
+    return nodeIds().identifier(node);
 }
 
 Node* DOMNodeIds::nodeForId(int id)
 {
     return nodeIds().lookup(id);
 }
-#endif
 
 }

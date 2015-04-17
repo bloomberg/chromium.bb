@@ -2351,7 +2351,6 @@
             'dom/VisitedLinkState.cpp',
             'dom/VisitedLinkState.h',
             'dom/WeakIdentifierMap.h',
-            'dom/WeakNodeMap.h',
             'dom/XMLDocument.cpp',
             'dom/XMLDocument.h',
             'dom/custom/CustomElement.cpp',

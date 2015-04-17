@@ -5,9 +5,13 @@
 #ifndef WeakIdentifierMap_h
 #define WeakIdentifierMap_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
+#include "wtf/Vector.h"
 
 namespace blink {
+
+#if !ENABLE(OILPAN)
 template<typename T> struct WeakIdentifierMapTraits {
     static void removedFromIdentifierMap(T*) { }
     static void addedToIdentifierMap(T*) { }
@@ -25,20 +29,15 @@ public:
         }
     }
 
-    void put(T* object, int identifier)
-    {
-        ASSERT(object && !m_objectToIdentifier.contains(object));
-        m_objectToIdentifier.set(object, identifier);
-        m_identifierToObject.set(identifier, object);
-
-        ObjectToWeakIdentifierMaps& maps = ObjectToWeakIdentifierMaps::instance();
-        if (maps.addedToMap(object, this))
-            Traits::addedToIdentifierMap(object);
-    }
-
     int identifier(T* object)
     {
-        return m_objectToIdentifier.get(object);
+        int result = m_objectToIdentifier.get(object);
+        if (!result) {
+            static int s_lastId = 0;
+            result = ++s_lastId;
+            put(object, result);
+        }
+        return result;
     }
 
     T* lookup(int identifier)
@@ -52,6 +51,17 @@ public:
     }
 
 private:
+    void put(T* object, int identifier)
+    {
+        ASSERT(object && !m_objectToIdentifier.contains(object));
+        m_objectToIdentifier.set(object, identifier);
+        m_identifierToObject.set(identifier, object);
+
+        ObjectToWeakIdentifierMaps& maps = ObjectToWeakIdentifierMaps::instance();
+        if (maps.addedToMap(object, this))
+            Traits::addedToIdentifierMap(object);
+    }
+
     class ObjectToWeakIdentifierMaps {
         typedef WeakIdentifierMap<T> IdentifierMap;
     public:
@@ -106,10 +116,63 @@ private:
     }
 
     typedef HashMap<T*, int> ObjectToIdentifier;
-    ObjectToIdentifier m_objectToIdentifier;
     typedef HashMap<int, T*> IdentifierToObject;
+
+    ObjectToIdentifier m_objectToIdentifier;
     IdentifierToObject m_identifierToObject;
 };
 
+#else // ENABLE(OILPAN)
+
+template<typename T> class WeakIdentifierMap : public GarbageCollected<WeakIdentifierMap<T>> {
+public:
+    WeakIdentifierMap()
+        : m_objectToIdentifier(new ObjectToIdentifier())
+        , m_identifierToObject(new IdentifierToObject())
+    {
+    }
+
+    int identifier(T* object)
+    {
+        int result = m_objectToIdentifier->get(object);
+        if (!result) {
+            static int s_lastId = 0;
+            result = ++s_lastId;
+            put(object, result);
+        }
+        return result;
+    }
+
+    T* lookup(int identifier)
+    {
+        return m_identifierToObject->get(identifier);
+    }
+
+    static void notifyObjectDestroyed(T* object) { }
+
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_objectToIdentifier);
+        visitor->trace(m_identifierToObject);
+    }
+
+private:
+    void put(T* object, int identifier)
+    {
+        ASSERT(object && !m_objectToIdentifier->contains(object));
+        m_objectToIdentifier->set(object, identifier);
+        m_identifierToObject->set(identifier, object);
+    }
+
+    typedef HeapHashMap<WeakMember<T>, int> ObjectToIdentifier;
+    typedef HeapHashMap<int, WeakMember<T>> IdentifierToObject;
+
+    Member<ObjectToIdentifier> m_objectToIdentifier;
+    Member<IdentifierToObject> m_identifierToObject;
+};
+
+#endif // ENABLE(OILPAN)
+
 }
+
 #endif // WeakIdentifierMap_h
