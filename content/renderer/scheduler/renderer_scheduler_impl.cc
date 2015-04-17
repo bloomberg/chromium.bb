@@ -21,6 +21,7 @@ RendererSchedulerImpl::RendererSchedulerImpl(
               this,
               "renderer.scheduler",
               TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+              "RendererSchedulerIdlePeriod",
               TASK_QUEUE_COUNT,
               base::TimeDelta()),
       control_task_runner_(helper_.ControlTaskRunner()),

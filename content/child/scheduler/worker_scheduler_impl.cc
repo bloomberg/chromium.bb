@@ -18,6 +18,7 @@ WorkerSchedulerImpl::WorkerSchedulerImpl(
               this,
               "worker.scheduler",
               TRACE_DISABLED_BY_DEFAULT("worker.scheduler"),
+              "WorkerSchedulerIdlePeriod",
               SchedulerHelper::TASK_QUEUE_COUNT,
               base::TimeDelta::FromMilliseconds(300)) {
   initialized_ = false;

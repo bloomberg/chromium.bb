@@ -47,6 +47,7 @@ class CONTENT_EXPORT SchedulerHelper {
       SchedulerHelperDelegate* scheduler_helper_delegate,
       const char* tracing_category,
       const char* disabled_by_default_tracing_category,
+      const char* idle_period_tracing_name,
       size_t total_task_queue_count,
       base::TimeDelta required_quiescence_duration_before_long_idle_period);
   ~SchedulerHelper();
@@ -199,6 +200,7 @@ class CONTENT_EXPORT SchedulerHelper {
 
   const char* tracing_category_;
   const char* disabled_by_default_tracing_category_;
+  const char* idle_period_tracing_name_;
 
   base::WeakPtr<SchedulerHelper> weak_scheduler_ptr_;
   base::WeakPtrFactory<SchedulerHelper> weak_factory_;

@@ -119,6 +119,7 @@ class SchedulerHelperForTest : public SchedulerHelper,
                         this,
                         "test.scheduler",
                         TRACE_DISABLED_BY_DEFAULT("test.scheduler"),
+                        "TestSchedulerIdlePeriod",
                         TASK_QUEUE_COUNT,
                         required_quiescence_duration_before_long_idle_period) {}
 

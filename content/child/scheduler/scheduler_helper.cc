@@ -16,6 +16,7 @@ SchedulerHelper::SchedulerHelper(
     SchedulerHelperDelegate* scheduler_helper_delegate,
     const char* tracing_category,
     const char* disabled_by_default_tracing_category,
+    const char* idle_period_tracing_name,
     size_t total_task_queue_count,
     base::TimeDelta required_quiescence_duration_before_long_idle_period)
     : task_queue_selector_(new PrioritizingTaskQueueSelector()),
@@ -42,6 +43,7 @@ SchedulerHelper::SchedulerHelper(
       tracing_category_(tracing_category),
       disabled_by_default_tracing_category_(
           disabled_by_default_tracing_category),
+      idle_period_tracing_name_(idle_period_tracing_name),
       weak_factory_(this) {
   DCHECK_GE(total_task_queue_count,
             static_cast<size_t>(QueueId::TASK_QUEUE_COUNT));
@@ -229,7 +231,7 @@ void SchedulerHelper::EnableLongIdlePeriodAfterWakeup() {
     // Since we were asleep until now, end the async idle period trace event at
     // the time when it would have ended were we awake.
     TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0(
-        tracing_category_, "RendererSchedulerIdlePeriod", this,
+        tracing_category_, idle_period_tracing_name_, this,
         std::min(idle_period_deadline_, Now()).ToInternalValue());
     idle_period_state_ = IdlePeriodState::ENDING_LONG_IDLE_PERIOD;
     EndIdlePeriod();
@@ -248,8 +250,7 @@ void SchedulerHelper::StartIdlePeriod(IdlePeriodState new_state,
                                       base::TimeTicks idle_period_deadline,
                                       bool post_end_idle_period) {
   DCHECK_GT(idle_period_deadline, now);
-  TRACE_EVENT_ASYNC_BEGIN0(tracing_category_, "RendererSchedulerIdlePeriod",
-                           this);
+  TRACE_EVENT_ASYNC_BEGIN0(tracing_category_, idle_period_tracing_name_, this);
   CheckOnValidThread();
   DCHECK(IsInIdlePeriod(new_state));
 
@@ -287,11 +288,10 @@ void SchedulerHelper::EndIdlePeriod() {
     if (is_tracing && !idle_period_deadline_.is_null() &&
         base::TimeTicks::Now() > idle_period_deadline_) {
       TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(
-          tracing_category_, "RendererSchedulerIdlePeriod", this,
-          "DeadlineOverrun", idle_period_deadline_.ToInternalValue());
+          tracing_category_, idle_period_tracing_name_, this, "DeadlineOverrun",
+          idle_period_deadline_.ToInternalValue());
     }
-    TRACE_EVENT_ASYNC_END0(tracing_category_, "RendererSchedulerIdlePeriod",
-                           this);
+    TRACE_EVENT_ASYNC_END0(tracing_category_, idle_period_tracing_name_, this);
   }
 
   task_queue_selector_->DisableQueue(QueueId::IDLE_TASK_QUEUE);
