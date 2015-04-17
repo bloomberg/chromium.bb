@@ -2,71 +2,71 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "google_apis/gaia/oauth2_access_token_fetcher_permanent_error.h"
+#include "google_apis/gaia/oauth2_access_token_fetcher_immediate_error.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 
-OAuth2AccessTokenFetcherPermanentError::FailCaller::FailCaller(
-    OAuth2AccessTokenFetcherPermanentError* fetcher)
+OAuth2AccessTokenFetcherImmediateError::FailCaller::FailCaller(
+    OAuth2AccessTokenFetcherImmediateError* fetcher)
     : fetcher_(fetcher) {
   base::MessageLoop* looper = base::MessageLoop::current();
   DCHECK(looper);
   looper->PostTask(
       FROM_HERE,
-      base::Bind(&OAuth2AccessTokenFetcherPermanentError::FailCaller::run,
+      base::Bind(&OAuth2AccessTokenFetcherImmediateError::FailCaller::run,
                  this));
 }
 
-OAuth2AccessTokenFetcherPermanentError::FailCaller::~FailCaller() {
+OAuth2AccessTokenFetcherImmediateError::FailCaller::~FailCaller() {
 }
 
-void OAuth2AccessTokenFetcherPermanentError::FailCaller::run() {
+void OAuth2AccessTokenFetcherImmediateError::FailCaller::run() {
   if (fetcher_) {
     fetcher_->Fail();
     fetcher_ = NULL;
   }
 }
 
-void OAuth2AccessTokenFetcherPermanentError::FailCaller::detach() {
+void OAuth2AccessTokenFetcherImmediateError::FailCaller::detach() {
   fetcher_ = NULL;
 }
 
 
-OAuth2AccessTokenFetcherPermanentError::OAuth2AccessTokenFetcherPermanentError(
+OAuth2AccessTokenFetcherImmediateError::OAuth2AccessTokenFetcherImmediateError(
     OAuth2AccessTokenConsumer* consumer,
     const GoogleServiceAuthError& error)
     : OAuth2AccessTokenFetcher(consumer),
-      permanent_error_(error) {
-  DCHECK(!permanent_error_.IsTransientError());
+      immediate_error_(error) {
+  DCHECK(immediate_error_ != GoogleServiceAuthError::AuthErrorNone());
 }
 
-OAuth2AccessTokenFetcherPermanentError::
-    ~OAuth2AccessTokenFetcherPermanentError() {
+OAuth2AccessTokenFetcherImmediateError::
+    ~OAuth2AccessTokenFetcherImmediateError() {
   CancelRequest();
 }
 
-void OAuth2AccessTokenFetcherPermanentError::CancelRequest() {
+void OAuth2AccessTokenFetcherImmediateError::CancelRequest() {
   if (failer_) {
     failer_->detach();
     failer_ = NULL;
   }
 }
 
-void OAuth2AccessTokenFetcherPermanentError::Start(
+void OAuth2AccessTokenFetcherImmediateError::Start(
     const std::string& client_id,
     const std::string& client_secret,
     const std::vector<std::string>& scopes) {
   failer_ = new FailCaller(this);
 }
 
-void OAuth2AccessTokenFetcherPermanentError::Fail() {
+void OAuth2AccessTokenFetcherImmediateError::Fail() {
   // The call below will likely destruct this object.  We have to make a copy
   // of the error into a local variable because the class member thus will
   // be destroyed after which the copy-passed-by-reference will cause a
   // memory violation when accessed.
-  GoogleServiceAuthError error_copy = permanent_error_;
+  GoogleServiceAuthError error_copy = immediate_error_;
   FireOnGetTokenFailure(error_copy);
 }

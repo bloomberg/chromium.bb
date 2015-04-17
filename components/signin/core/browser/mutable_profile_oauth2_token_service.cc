@@ -12,8 +12,8 @@
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/gaia/oauth2_access_token_fetcher_immediate_error.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
-#include "google_apis/gaia/oauth2_access_token_fetcher_permanent_error.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {
@@ -125,8 +125,18 @@ MutableProfileOAuth2TokenService::AccountInfo::GetAuthStatus() const {
 }
 
 MutableProfileOAuth2TokenService::MutableProfileOAuth2TokenService()
-    : web_data_service_request_(0)  {
+    : web_data_service_request_(0),
+      backoff_entry_(&backoff_policy_),
+      backoff_error_(GoogleServiceAuthError::NONE) {
   VLOG(1) << "MutablePO2TS::MutablePO2TS";
+  // It's okay to fill the backoff policy after being used in construction.
+  backoff_policy_.num_errors_to_ignore = 0;
+  backoff_policy_.initial_delay_ms = 1000;
+  backoff_policy_.multiply_factor = 2.0;
+  backoff_policy_.jitter_factor = 0.2;
+  backoff_policy_.maximum_backoff_ms = 15 * 60 * 1000;
+  backoff_policy_.entry_lifetime_ms = -1;
+  backoff_policy_.always_use_initial_delay = false;
 }
 
 MutableProfileOAuth2TokenService::~MutableProfileOAuth2TokenService() {
@@ -157,7 +167,7 @@ std::string MutableProfileOAuth2TokenService::GetRefreshToken(
   return std::string();
 }
 
-bool MutableProfileOAuth2TokenService::HasPermanentError(
+bool MutableProfileOAuth2TokenService::HasPersistentError(
     const std::string& account_id) {
   return refresh_tokens_[account_id]->GetAuthStatus().IsPersistentError();
 }
@@ -168,9 +178,16 @@ MutableProfileOAuth2TokenService::CreateAccessTokenFetcher(
     net::URLRequestContextGetter* getter,
     OAuth2AccessTokenConsumer* consumer) {
   ValidateAccountId(account_id);
-  if (HasPermanentError(account_id)) {
-    return new OAuth2AccessTokenFetcherPermanentError(
+  if (HasPersistentError(account_id)) {
+    VLOG(1) << "Request for token has been rejected due to persistent error #"
+            << refresh_tokens_[account_id]->GetAuthStatus().state();
+    return new OAuth2AccessTokenFetcherImmediateError(
         consumer, refresh_tokens_[account_id]->GetAuthStatus());
+  }
+  if (backoff_entry_.ShouldRejectRequest()) {
+    VLOG(1) << "Request for token has been rejected due to backoff rules from"
+            << " previous error #" << backoff_error_.state();
+    return new OAuth2AccessTokenFetcherImmediateError(consumer, backoff_error_);
   }
   std::string refresh_token = GetRefreshToken(account_id);
   DCHECK(!refresh_token.empty());
@@ -301,13 +318,17 @@ void MutableProfileOAuth2TokenService::UpdateAuthError(
     const std::string& account_id,
     const GoogleServiceAuthError& error) {
   VLOG(1) << "MutablePO2TS::UpdateAuthError. Error: " << error.state();
+  backoff_entry_.InformOfRequest(!error.IsTransientError());
   ValidateAccountId(account_id);
 
   // Do not report connection errors as these are not actually auth errors.
   // We also want to avoid masking a "real" auth error just because we
-  // subsequently get a transient network error.
-  if (error.IsTransientError())
+  // subsequently get a transient network error.  We do keep it around though
+  // to report for future requests being denied for "backoff" reasons.
+  if (error.IsTransientError()) {
+    backoff_error_ = error;
     return;
+  }
 
   if (refresh_tokens_.count(account_id) == 0) {
     // This could happen if the preferences have been corrupted (see

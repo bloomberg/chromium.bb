@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GOOGLE_APIS_GAIA_OAUTH2_ACCESS_TOKEN_FETCHER_PERMANENT_ERROR_H_
-#define GOOGLE_APIS_GAIA_OAUTH2_ACCESS_TOKEN_FETCHER_PERMANENT_ERROR_H_
+#ifndef GOOGLE_APIS_GAIA_OAUTH2_ACCESS_TOKEN_FETCHER_IMMEDIATE_ERROR_H_
+#define GOOGLE_APIS_GAIA_OAUTH2_ACCESS_TOKEN_FETCHER_IMMEDIATE_ERROR_H_
 
 #include "base/memory/ref_counted.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -12,7 +12,7 @@
 
 // This is an implementation of the OAuth2 fetcher that immediately returns
 // an error.  This is useful as a replacement to a real fetcher when a
-// permanent error has previously been seen.
+// immediate error has previously been seen.
 //
 // This class should be used on a single thread, but it can be whichever thread
 // that you like.
@@ -27,11 +27,11 @@
 //
 // This class can handle one request at a time. To parallelize requests,
 // create multiple instances.
-class OAuth2AccessTokenFetcherPermanentError : public OAuth2AccessTokenFetcher {
+class OAuth2AccessTokenFetcherImmediateError : public OAuth2AccessTokenFetcher {
  public:
-  OAuth2AccessTokenFetcherPermanentError(OAuth2AccessTokenConsumer* consumer,
+  OAuth2AccessTokenFetcherImmediateError(OAuth2AccessTokenConsumer* consumer,
                                          const GoogleServiceAuthError& error);
-  ~OAuth2AccessTokenFetcherPermanentError() override;
+  ~OAuth2AccessTokenFetcherImmediateError() override;
 
   void Start(const std::string& client_id,
              const std::string& client_secret,
@@ -42,7 +42,7 @@ class OAuth2AccessTokenFetcherPermanentError : public OAuth2AccessTokenFetcher {
  private:
   class FailCaller : public base::RefCounted<FailCaller> {
    public:
-    FailCaller(OAuth2AccessTokenFetcherPermanentError* fetcher);
+    FailCaller(OAuth2AccessTokenFetcherImmediateError* fetcher);
 
     void run();
     void detach();
@@ -51,14 +51,14 @@ class OAuth2AccessTokenFetcherPermanentError : public OAuth2AccessTokenFetcher {
     friend class base::RefCounted<FailCaller>;
     ~FailCaller();
 
-    OAuth2AccessTokenFetcherPermanentError* fetcher_;
+    OAuth2AccessTokenFetcherImmediateError* fetcher_;
   };
 
   void Fail();
 
   scoped_refptr<FailCaller> failer_;
-  GoogleServiceAuthError permanent_error_;
-  DISALLOW_COPY_AND_ASSIGN(OAuth2AccessTokenFetcherPermanentError);
+  GoogleServiceAuthError immediate_error_;
+  DISALLOW_COPY_AND_ASSIGN(OAuth2AccessTokenFetcherImmediateError);
 };
 
-#endif  // GOOGLE_APIS_GAIA_OAUTH2_ACCESS_TOKEN_FETCHER_PERMANENT_ERROR_H_
+#endif  // GOOGLE_APIS_GAIA_OAUTH2_ACCESS_TOKEN_FETCHER_IMMEDIATE_ERROR_H_
