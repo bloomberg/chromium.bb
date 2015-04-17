@@ -12,43 +12,16 @@ TestServerViewDelegate::TestServerViewDelegate() {
 TestServerViewDelegate::~TestServerViewDelegate() {
 }
 
-void TestServerViewDelegate::OnWillDestroyView(ServerView* view) {
+void TestServerViewDelegate::PrepareToDestroyView(ServerView* view) {
 }
 
-void TestServerViewDelegate::OnViewDestroyed(const ServerView* view) {
+void TestServerViewDelegate::PrepareToChangeViewHierarchy(
+    ServerView* view,
+    ServerView* new_parent,
+    ServerView* old_parent) {
 }
 
-void TestServerViewDelegate::OnWillChangeViewHierarchy(ServerView* view,
-                                                       ServerView* new_parent,
-                                                       ServerView* old_parent) {
-}
-
-void TestServerViewDelegate::OnViewHierarchyChanged(
-    const ServerView* view,
-    const ServerView* new_parent,
-    const ServerView* old_parent) {
-}
-
-void TestServerViewDelegate::OnViewBoundsChanged(const ServerView* view,
-                                                 const gfx::Rect& old_bounds,
-                                                 const gfx::Rect& new_bounds) {
-}
-
-void TestServerViewDelegate::OnViewSurfaceIdChanged(const ServerView* view) {
-}
-
-void TestServerViewDelegate::OnViewReordered(const ServerView* view,
-                                             const ServerView* relative,
-                                             mojo::OrderDirection direction) {
-}
-
-void TestServerViewDelegate::OnWillChangeViewVisibility(ServerView* view) {
-}
-
-void TestServerViewDelegate::OnViewSharedPropertyChanged(
-    const ServerView* view,
-    const std::string& name,
-    const std::vector<uint8_t>* new_data) {
+void TestServerViewDelegate::PrepareToChangeViewVisibility(ServerView* view) {
 }
 
 void TestServerViewDelegate::OnScheduleViewPaint(const ServerView* view) {

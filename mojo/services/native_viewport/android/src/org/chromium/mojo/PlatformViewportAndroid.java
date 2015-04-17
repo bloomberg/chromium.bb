@@ -25,10 +25,12 @@ public class PlatformViewportAndroid extends SurfaceView {
     private long mNativeMojoViewport;
     private final SurfaceHolder.Callback mSurfaceCallback;
 
-    @SuppressWarnings("unused")
     @CalledByNative
-    public static void createForActivity(Activity activity, long nativeViewport) {
-        activity.setContentView(new PlatformViewportAndroid(activity, nativeViewport));
+    public static PlatformViewportAndroid createForActivity(
+            Activity activity, long nativeViewport) {
+        PlatformViewportAndroid rv = new PlatformViewportAndroid(activity, nativeViewport);
+        activity.setContentView(rv);
+        return rv;
     }
 
     public PlatformViewportAndroid(Context context, long nativeViewport) {
@@ -65,10 +67,9 @@ public class PlatformViewportAndroid extends SurfaceView {
 
     }
 
-    // TODO(abarth): Someone needs to call destroy at some point.
-    public void destroy() {
+    @CalledByNative
+    public void detach() {
         getHolder().removeCallback(mSurfaceCallback);
-        nativeDestroy(mNativeMojoViewport);
         mNativeMojoViewport = 0;
     }
 

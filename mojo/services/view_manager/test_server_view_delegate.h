@@ -17,26 +17,11 @@ class TestServerViewDelegate : public ServerViewDelegate {
 
  private:
   // ServerViewDelegate:
-  void OnWillDestroyView(ServerView* view) override;
-  void OnViewDestroyed(const ServerView* view) override;
-  void OnWillChangeViewHierarchy(ServerView* view,
-                                 ServerView* new_parent,
-                                 ServerView* old_parent) override;
-  void OnViewHierarchyChanged(const ServerView* view,
-                              const ServerView* new_parent,
-                              const ServerView* old_parent) override;
-  void OnViewBoundsChanged(const ServerView* view,
-                           const gfx::Rect& old_bounds,
-                           const gfx::Rect& new_bounds) override;
-  void OnViewSurfaceIdChanged(const ServerView* view) override;
-  void OnViewReordered(const ServerView* view,
-                       const ServerView* relative,
-                       mojo::OrderDirection direction) override;
-  void OnWillChangeViewVisibility(ServerView* view) override;
-  void OnViewSharedPropertyChanged(
-      const ServerView* view,
-      const std::string& name,
-      const std::vector<uint8_t>* new_data) override;
+  void PrepareToDestroyView(ServerView* view) override;
+  void PrepareToChangeViewHierarchy(ServerView* view,
+                                    ServerView* new_parent,
+                                    ServerView* old_parent) override;
+  void PrepareToChangeViewVisibility(ServerView* view) override;
   void OnScheduleViewPaint(const ServerView* view) override;
 
   DISALLOW_COPY_AND_ASSIGN(TestServerViewDelegate);

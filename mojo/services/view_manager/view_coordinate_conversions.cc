@@ -5,38 +5,65 @@
 #include "mojo/services/view_manager/view_coordinate_conversions.h"
 
 #include "mojo/services/view_manager/server_view.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 namespace view_manager {
 
 namespace {
 
-gfx::Vector2d CalculateOffsetToAncestor(const ServerView* view,
-                                        const ServerView* ancestor) {
+gfx::Vector2dF CalculateOffsetToAncestor(const ServerView* view,
+                                         const ServerView* ancestor) {
   DCHECK(ancestor->Contains(view));
   gfx::Vector2d result;
   for (const ServerView* v = view; v != ancestor; v = v->parent())
     result += v->bounds().OffsetFromOrigin();
-  return result;
+  return gfx::Vector2dF(result.x(), result.y());
 }
 
 }  // namespace
+
+gfx::Point ConvertPointBetweenViews(const ServerView* from,
+                                    const ServerView* to,
+                                    const gfx::Point& point) {
+  return gfx::ToFlooredPoint(
+      ConvertPointFBetweenViews(from, to, gfx::PointF(point.x(), point.y())));
+}
+
+gfx::PointF ConvertPointFBetweenViews(const ServerView* from,
+                                      const ServerView* to,
+                                      const gfx::PointF& point) {
+  DCHECK(from);
+  DCHECK(to);
+  if (from == to)
+    return point;
+
+  if (from->Contains(to)) {
+    const gfx::Vector2dF offset(CalculateOffsetToAncestor(to, from));
+    return point - offset;
+  }
+  DCHECK(to->Contains(from));
+  const gfx::Vector2dF offset(CalculateOffsetToAncestor(from, to));
+  return point + offset;
+}
 
 gfx::Rect ConvertRectBetweenViews(const ServerView* from,
                                   const ServerView* to,
                                   const gfx::Rect& rect) {
   DCHECK(from);
+  DCHECK(to);
   if (from == to)
     return rect;
 
-  if (from->Contains(to)) {
-    const gfx::Vector2d offset(CalculateOffsetToAncestor(to, from));
-    return gfx::Rect(rect.origin() - offset, rect.size());
-  }
-  DCHECK(to->Contains(from));
-  const gfx::Vector2d offset(CalculateOffsetToAncestor(from, to));
-  return gfx::Rect(rect.origin() + offset, rect.size());
+  const gfx::Point top_left(ConvertPointBetweenViews(from, to, rect.origin()));
+  const gfx::Point bottom_right(gfx::ToCeiledPoint(ConvertPointFBetweenViews(
+      from, to, gfx::PointF(rect.right(), rect.bottom()))));
+  return gfx::Rect(top_left.x(), top_left.y(), bottom_right.x() - top_left.x(),
+                   bottom_right.y() - top_left.y());
 }
 
 }  // namespace view_manager

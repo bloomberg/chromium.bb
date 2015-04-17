@@ -8,6 +8,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "mojo/services/view_manager/server_view_delegate.h"
+#include "mojo/services/view_manager/server_view_observer.h"
 
 namespace view_manager {
 
@@ -16,12 +17,17 @@ ServerView::ServerView(ServerViewDelegate* delegate, const ViewId& id)
       id_(id),
       parent_(nullptr),
       visible_(false),
-      opacity_(1) {
+      opacity_(1),
+      // Don't notify newly added observers during notification. This causes
+      // problems for code that adds an observer as part of an observer
+      // notification (such as ServerViewDrawTracker).
+      observers_(ObserverList<ServerViewObserver>::NOTIFY_EXISTING_ONLY) {
   DCHECK(delegate);  // Must provide a delegate.
 }
 
 ServerView::~ServerView() {
-  delegate_->OnWillDestroyView(this);
+  delegate_->PrepareToDestroyView(this);
+  FOR_EACH_OBSERVER(ServerViewObserver, observers_, OnWillDestroyView(this));
 
   while (!children_.empty())
     children_.front()->parent()->Remove(children_.front());
@@ -29,7 +35,15 @@ ServerView::~ServerView() {
   if (parent_)
     parent_->Remove(this);
 
-  delegate_->OnViewDestroyed(this);
+  FOR_EACH_OBSERVER(ServerViewObserver, observers_, OnViewDestroyed(this));
+}
+
+void ServerView::AddObserver(ServerViewObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ServerView::RemoveObserver(ServerViewObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void ServerView::Add(ServerView* child) {
@@ -45,13 +59,17 @@ void ServerView::Add(ServerView* child) {
   }
 
   ServerView* old_parent = child->parent();
-  child->delegate_->OnWillChangeViewHierarchy(child, this, old_parent);
+  child->delegate_->PrepareToChangeViewHierarchy(child, this, old_parent);
+  FOR_EACH_OBSERVER(ServerViewObserver, child->observers_,
+                    OnWillChangeViewHierarchy(child, this, old_parent));
+
   if (child->parent())
     child->parent()->RemoveImpl(child);
 
   child->parent_ = this;
   children_.push_back(child);
-  child->delegate_->OnViewHierarchyChanged(child, this, old_parent);
+  FOR_EACH_OBSERVER(ServerViewObserver, child->observers_,
+                    OnViewHierarchyChanged(child, this, old_parent));
 }
 
 void ServerView::Remove(ServerView* child) {
@@ -60,9 +78,12 @@ void ServerView::Remove(ServerView* child) {
   DCHECK(child != this);
   DCHECK(child->parent() == this);
 
-  child->delegate_->OnWillChangeViewHierarchy(child, NULL, this);
+  child->delegate_->PrepareToChangeViewHierarchy(child, NULL, this);
+  FOR_EACH_OBSERVER(ServerViewObserver, child->observers_,
+                    OnWillChangeViewHierarchy(child, nullptr, this));
   RemoveImpl(child);
-  child->delegate_->OnViewHierarchyChanged(child, NULL, this);
+  FOR_EACH_OBSERVER(ServerViewObserver, child->observers_,
+                    OnViewHierarchyChanged(child, nullptr, this));
 }
 
 void ServerView::Reorder(ServerView* child,
@@ -81,7 +102,8 @@ void ServerView::Reorder(ServerView* child,
     DCHECK(i != children_.end());
     children_.insert(i, child);
   }
-  delegate_->OnViewReordered(this, relative, direction);
+  FOR_EACH_OBSERVER(ServerViewObserver, observers_,
+                    OnViewReordered(this, relative, direction));
 }
 
 void ServerView::SetBounds(const gfx::Rect& bounds) {
@@ -90,7 +112,8 @@ void ServerView::SetBounds(const gfx::Rect& bounds) {
 
   const gfx::Rect old_bounds = bounds_;
   bounds_ = bounds;
-  delegate_->OnViewBoundsChanged(this, old_bounds, bounds);
+  FOR_EACH_OBSERVER(ServerViewObserver, observers_,
+                    OnViewBoundsChanged(this, old_bounds, bounds));
 }
 
 const ServerView* ServerView::GetRoot() const {
@@ -125,8 +148,12 @@ void ServerView::SetVisible(bool value) {
   if (visible_ == value)
     return;
 
-  delegate_->OnWillChangeViewVisibility(this);
+  delegate_->PrepareToChangeViewVisibility(this);
+  FOR_EACH_OBSERVER(ServerViewObserver, observers_,
+                    OnWillChangeViewVisibility(this));
   visible_ = value;
+  FOR_EACH_OBSERVER(ServerViewObserver, observers_,
+                    OnViewVisibilityChanged(this));
 }
 
 void ServerView::SetOpacity(float value) {
@@ -162,7 +189,8 @@ void ServerView::SetProperty(const std::string& name,
     properties_.erase(it);
   }
 
-  delegate_->OnViewSharedPropertyChanged(this, name, value);
+  FOR_EACH_OBSERVER(ServerViewObserver, observers_,
+                    OnViewSharedPropertyChanged(this, name, value));
 }
 
 bool ServerView::IsDrawn(const ServerView* root) const {
@@ -176,7 +204,7 @@ bool ServerView::IsDrawn(const ServerView* root) const {
 
 void ServerView::SetSurfaceId(cc::SurfaceId surface_id) {
   surface_id_ = surface_id;
-  delegate_->OnViewSurfaceIdChanged(this);
+  delegate_->OnScheduleViewPaint(this);
 }
 
 #if !defined(NDEBUG)

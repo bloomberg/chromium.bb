@@ -101,7 +101,7 @@ mojo::ErrorCode ViewManagerServiceImpl::CreateView(const ViewId& view_id) {
     return mojo::ERROR_CODE_ILLEGAL_ARGUMENT;
   if (view_map_.find(view_id.view_id) != view_map_.end())
     return mojo::ERROR_CODE_VALUE_IN_USE;
-  view_map_[view_id.view_id] = new ServerView(connection_manager_, view_id);
+  view_map_[view_id.view_id] = connection_manager_->CreateServerView(view_id);
   known_views_.insert(ViewIdToTransportId(view_id));
   return mojo::ERROR_CODE_NONE;
 }

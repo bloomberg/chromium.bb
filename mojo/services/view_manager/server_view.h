@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/observer_list.h"
 #include "cc/surfaces/surface_id.h"
 #include "mojo/services/view_manager/ids.h"
 #include "third_party/mojo_services/src/view_manager/public/interfaces/view_manager.mojom.h"
@@ -17,6 +18,7 @@
 namespace view_manager {
 
 class ServerViewDelegate;
+class ServerViewObserver;
 
 // Server side representation of a view. Delegate is informed of interesting
 // events.
@@ -24,10 +26,17 @@ class ServerViewDelegate;
 // It is assumed that all functions that mutate the tree have validated the
 // mutation is possible before hand. For example, Reorder() assumes the supplied
 // view is a child and not already in position.
+//
+// ServerViews do not own their children. If you delete a view that has children
+// the children are implicitly removed. Similarly if a view has a parent and the
+// view is deleted the deleted view is implicitly removed from the parent.
 class ServerView {
  public:
   ServerView(ServerViewDelegate* delegate, const ViewId& id);
   virtual ~ServerView();
+
+  void AddObserver(ServerViewObserver* observer);
+  void RemoveObserver(ServerViewObserver* observer);
 
   const ViewId& id() const { return id_; }
 
@@ -100,6 +109,8 @@ class ServerView {
   gfx::Transform transform_;
 
   std::map<std::string, std::vector<uint8_t>> properties_;
+
+  ObserverList<ServerViewObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ServerView);
 };

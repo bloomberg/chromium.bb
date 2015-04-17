@@ -61,6 +61,11 @@ PlatformViewportAndroid::PlatformViewportAndroid(Delegate* delegate)
 PlatformViewportAndroid::~PlatformViewportAndroid() {
   if (window_)
     ReleaseWindow();
+  if (!java_platform_viewport_android_.is_empty()) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_PlatformViewportAndroid_detach(
+        env, java_platform_viewport_android_.get(env).obj());
+  }
 }
 
 void PlatformViewportAndroid::Destroy(JNIEnv* env, jobject obj) {
@@ -161,10 +166,10 @@ bool PlatformViewportAndroid::KeyEvent(JNIEnv* env,
 
 void PlatformViewportAndroid::Init(const gfx::Rect& bounds) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_PlatformViewportAndroid_createForActivity(
-      env,
-      base::android::GetApplicationContext(),
-      reinterpret_cast<jlong>(this));
+  java_platform_viewport_android_ = JavaObjectWeakGlobalRef(
+      env, Java_PlatformViewportAndroid_createForActivity(
+               env, base::android::GetApplicationContext(),
+               reinterpret_cast<jlong>(this)).obj());
 }
 
 void PlatformViewportAndroid::Show() {

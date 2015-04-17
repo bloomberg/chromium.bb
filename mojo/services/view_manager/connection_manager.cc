@@ -116,7 +116,7 @@ ConnectionManager::ConnectionManager(ConnectionManagerDelegate* delegate,
       window_manager_client_connection_(nullptr),
       next_connection_id_(1),
       display_manager_(display_manager.Pass()),
-      root_(new ServerView(this, RootViewId())),
+      root_(CreateServerView(RootViewId())),
       wm_internal_(wm_internal),
       current_change_(nullptr),
       in_destructor_(false),
@@ -133,6 +133,12 @@ ConnectionManager::~ConnectionManager() {
   // All the connections should have been destroyed.
   DCHECK(connection_map_.empty());
   root_.reset();
+}
+
+ServerView* ConnectionManager::CreateServerView(const ViewId& id) {
+  ServerView* view = new ServerView(this, id);
+  view->AddObserver(this);
+  return view;
 }
 
 ConnectionSpecificId ConnectionManager::GetAndAdvanceNextConnectionId() {
@@ -340,7 +346,7 @@ void ConnectionManager::AddConnection(ClientConnection* connection) {
   connection_map_[connection->service()->id()] = connection;
 }
 
-void ConnectionManager::OnWillDestroyView(ServerView* view) {
+void ConnectionManager::PrepareToDestroyView(ServerView* view) {
   if (!in_destructor_ && root_->Contains(view) && view != root_.get() &&
       view->id() != ClonedViewId()) {
     // We're about to destroy a view. Any cloned views need to be reparented
@@ -353,14 +359,9 @@ void ConnectionManager::OnWillDestroyView(ServerView* view) {
   animation_runner_.CancelAnimationForView(view);
 }
 
-void ConnectionManager::OnViewDestroyed(const ServerView* view) {
-  if (!in_destructor_)
-    ProcessViewDeleted(view->id());
-}
-
-void ConnectionManager::OnWillChangeViewHierarchy(ServerView* view,
-                                                  ServerView* new_parent,
-                                                  ServerView* old_parent) {
+void ConnectionManager::PrepareToChangeViewHierarchy(ServerView* view,
+                                                     ServerView* new_parent,
+                                                     ServerView* old_parent) {
   if (view->id() == ClonedViewId() || in_destructor_)
     return;
 
@@ -373,14 +374,49 @@ void ConnectionManager::OnWillChangeViewHierarchy(ServerView* view,
     ReparentClonedViews(view->parent(), &parent_above, view);
   }
 
-  ProcessWillChangeViewHierarchy(view, new_parent, old_parent);
-
   animation_runner_.CancelAnimationForView(view);
 }
 
-void ConnectionManager::OnViewHierarchyChanged(const ServerView* view,
-                                               const ServerView* new_parent,
-                                               const ServerView* old_parent) {
+void ConnectionManager::PrepareToChangeViewVisibility(ServerView* view) {
+  if (in_destructor_)
+    return;
+
+  if (view != root_.get() && view->id() != ClonedViewId() &&
+      root_->Contains(view) && view->IsDrawn(root_.get())) {
+    // We're about to hide |view|, this would implicitly make any cloned views
+    // hide too. Reparent so that animations are still visible.
+    ServerView* parent_above = view;
+    ReparentClonedViews(view->parent(), &parent_above, view);
+  }
+
+  const bool is_parent_drawn =
+      view->parent() && view->parent()->IsDrawn(root_.get());
+  if (!is_parent_drawn || !view->visible())
+    animation_runner_.CancelAnimationForView(view);
+}
+
+void ConnectionManager::OnScheduleViewPaint(const ServerView* view) {
+  if (!in_destructor_)
+    display_manager_->SchedulePaint(view, gfx::Rect(view->bounds().size()));
+}
+
+void ConnectionManager::OnViewDestroyed(ServerView* view) {
+  if (!in_destructor_)
+    ProcessViewDeleted(view->id());
+}
+
+void ConnectionManager::OnWillChangeViewHierarchy(ServerView* view,
+                                                  ServerView* new_parent,
+                                                  ServerView* old_parent) {
+  if (view->id() == ClonedViewId() || in_destructor_)
+    return;
+
+  ProcessWillChangeViewHierarchy(view, new_parent, old_parent);
+}
+
+void ConnectionManager::OnViewHierarchyChanged(ServerView* view,
+                                               ServerView* new_parent,
+                                               ServerView* old_parent) {
   if (in_destructor_)
     return;
 
@@ -397,7 +433,7 @@ void ConnectionManager::OnViewHierarchyChanged(const ServerView* view,
   }
 }
 
-void ConnectionManager::OnViewBoundsChanged(const ServerView* view,
+void ConnectionManager::OnViewBoundsChanged(ServerView* view,
                                             const gfx::Rect& old_bounds,
                                             const gfx::Rect& new_bounds) {
   if (in_destructor_)
@@ -412,13 +448,8 @@ void ConnectionManager::OnViewBoundsChanged(const ServerView* view,
   display_manager_->SchedulePaint(view->parent(), new_bounds);
 }
 
-void ConnectionManager::OnViewSurfaceIdChanged(const ServerView* view) {
-  if (!in_destructor_)
-    display_manager_->SchedulePaint(view, gfx::Rect(view->bounds().size()));
-}
-
-void ConnectionManager::OnViewReordered(const ServerView* view,
-                                        const ServerView* relative,
+void ConnectionManager::OnViewReordered(ServerView* view,
+                                        ServerView* relative,
                                         mojo::OrderDirection direction) {
   if (!in_destructor_)
     display_manager_->SchedulePaint(view, gfx::Rect(view->bounds().size()));
@@ -428,45 +459,27 @@ void ConnectionManager::OnWillChangeViewVisibility(ServerView* view) {
   if (in_destructor_)
     return;
 
-  // Need to repaint if the view was drawn (which means it'll in the process of
+  // Need to repaint if the view was drawn (which means it's in the process of
   // hiding) or the view is transitioning to drawn.
   if (view->IsDrawn(root_.get()) || (!view->visible() && view->parent() &&
                                      view->parent()->IsDrawn(root_.get()))) {
     display_manager_->SchedulePaint(view->parent(), view->bounds());
   }
 
-  if (view != root_.get() && view->id() != ClonedViewId() &&
-      root_->Contains(view) && view->IsDrawn(root_.get())) {
-    // We're about to hide |view|, this would implicitly make any cloned views
-    // hide to. Reparent so that animations are still visible.
-    ServerView* parent_above = view;
-    ReparentClonedViews(view->parent(), &parent_above, view);
-  }
-
   for (auto& pair : connection_map_) {
     pair.second->service()->ProcessWillChangeViewVisibility(
         view, IsChangeSource(pair.first));
   }
-
-  const bool is_parent_drawn =
-      view->parent() && view->parent()->IsDrawn(root_.get());
-  if (!is_parent_drawn || !view->visible())
-    animation_runner_.CancelAnimationForView(view);
 }
 
 void ConnectionManager::OnViewSharedPropertyChanged(
-    const ServerView* view,
+    ServerView* view,
     const std::string& name,
     const std::vector<uint8_t>* new_data) {
   for (auto& pair : connection_map_) {
     pair.second->service()->ProcessViewPropertyChanged(
         view, name, new_data, IsChangeSource(pair.first));
   }
-}
-
-void ConnectionManager::OnScheduleViewPaint(const ServerView* view) {
-  if (!in_destructor_)
-    display_manager_->SchedulePaint(view, gfx::Rect(view->bounds().size()));
 }
 
 void ConnectionManager::DispatchInputEventToView(mojo::Id transport_view_id,
