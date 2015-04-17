@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import os
+import tempfile
 
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
@@ -152,6 +153,24 @@ class Page8(WebrtcCasesPage):
     action_runner.ClickElement('button[id="connect"]')
     action_runner.Wait(45)
 
+class Page9(WebrtcCasesPage):
+
+  """ Why: Transfer as much data as possible through a data channel in 20s. """
+
+  def __init__(self, page_set):
+    super(Page9, self).__init__(
+        url=WEBRTC_GITHUB_SAMPLES_URL + 'datachannel/datatransfer',
+        name="30s_datachannel_transfer",
+        page_set=page_set)
+
+  def RunPageInteractions(self, action_runner):
+    # It won't have time to finish the 512 MB, but we're only interested in
+    # cpu + memory anyway rather than how much data we manage to transfer.
+    action_runner.ExecuteJavaScript('megsToSend.value = 512;')
+    action_runner.ClickElement('button[id="sendTheData"]')
+    action_runner.Wait(30)
+
+
 class WebrtcCasesPageSet(page_set_module.PageSet):
 
   """ WebRTC tests for Real-time audio and video communication. """
@@ -167,3 +186,4 @@ class WebrtcCasesPageSet(page_set_module.PageSet):
     # Disable page 4-7 until we can implement http://crbug.com/468732. We can
     # get data out from the tests, but it's not very useful yet.
     self.AddUserStory(Page8(self))
+    self.AddUserStory(Page9(self))
