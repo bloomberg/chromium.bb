@@ -184,6 +184,10 @@ def RunCommandWithRetries(max_retry, *args, **kwargs):
   return RetryCommand(cros_build_lib.RunCommand, max_retry, *args, **kwargs)
 
 
+class DownloadError(Exception):
+  """Fetching file via curl failed"""
+
+
 def RunCurl(args, **kwargs):
   """Runs curl and wraps around all necessary hacks."""
   cmd = ['curl']
@@ -227,10 +231,11 @@ def RunCurl(args, **kwargs):
     code = e.result.returncode
     if code in (51, 58, 60):
       # These are the return codes of failing certs as per 'man curl'.
-      msg = 'Download failed with certificate error? Try "sudo c_rehash".'
-      cros_build_lib.Die(msg)
+      raise DownloadError(
+          'Download failed with certificate error? Try "sudo c_rehash".')
     else:
       try:
         return RunCommandWithRetries(5, cmd, sleep=60, **kwargs)
       except cros_build_lib.RunCommandError as e:
-        cros_build_lib.Die("Curl failed w/ exit code %i", code)
+        raise DownloadError('Curl failed w/ exit code %i: %s' %
+                            (e.result.returncode, e.result.error))
