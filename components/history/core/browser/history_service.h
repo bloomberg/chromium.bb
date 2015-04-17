@@ -565,9 +565,6 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
 
   // Observers ----------------------------------------------------------------
 
-  // Notify all Observers registered that the VisitDatabase was changed.
-  void NotifyAddVisit(const BriefVisitInfo& info);
-
   // Notify all HistoryServiceObservers registered that user is visiting a URL.
   // The |row| ID will be set to the value that is currently in effect in the
   // main history database. |redirects| is the list of redirects leading up to

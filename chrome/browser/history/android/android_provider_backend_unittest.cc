@@ -76,7 +76,6 @@ class AndroidProviderBackendDelegate : public HistoryBackend::Delegate {
   void NotifyProfileError(sql::InitStatus init_status) override {}
   void SetInMemoryBackend(
       scoped_ptr<InMemoryHistoryBackend> backend) override {}
-  void NotifyAddVisit(const history::BriefVisitInfo& info) override {}
   void NotifyFaviconChanged(const std::set<GURL>& url) override {
     favicon_changed_.reset(new std::set<GURL>(url.begin(), url.end()));
   }

@@ -507,13 +507,6 @@ struct FaviconBitmap {
   gfx::Size pixel_size;
 };
 
-// Abbreviated information about a visit.
-struct BriefVisitInfo {
-  URLID url_id;
-  base::Time time;
-  ui::PageTransition transition;
-};
-
 struct ExpireHistoryArgs {
   ExpireHistoryArgs();
   ~ExpireHistoryArgs();

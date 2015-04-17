@@ -39,10 +39,6 @@ class HistoryServiceObserver {
   virtual void OnURLsModified(HistoryService* history_service,
                               const URLRows& changed_urls) {}
 
-  // Called on changes to the VisitDatabase.
-  virtual void OnAddVisit(HistoryService* history_service,
-                          const BriefVisitInfo& info) {}
-
   // Called when one or more of URLs are deleted.
   //
   // |all_history| is set to true, if all the URLs are deleted.

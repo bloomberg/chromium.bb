@@ -118,12 +118,6 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
                               history_service_, base::Passed(&backend)));
   }
 
-  void NotifyAddVisit(const BriefVisitInfo& info) override {
-    service_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&HistoryService::NotifyAddVisit, history_service_, info));
-  }
-
   void NotifyFaviconChanged(const std::set<GURL>& urls) override {
     // Send the notification to the history service on the main thread.
     service_task_runner_->PostTask(
@@ -1040,11 +1034,6 @@ bool HistoryService::GetRowForURL(const GURL& url, URLRow* url_row) {
   DCHECK(thread_checker_.CalledOnValidThread());
   URLDatabase* db = InMemoryDatabase();
   return db && (db->GetRowForURL(url, url_row) != 0);
-}
-
-void HistoryService::NotifyAddVisit(const BriefVisitInfo& info) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(HistoryServiceObserver, observers_, OnAddVisit(this, info));
 }
 
 void HistoryService::NotifyURLVisited(ui::PageTransition transition,

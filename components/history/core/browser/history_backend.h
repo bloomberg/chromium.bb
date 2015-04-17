@@ -118,10 +118,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
     virtual void SetInMemoryBackend(
         scoped_ptr<InMemoryHistoryBackend> backend) = 0;
 
-    // Notify HistoryService that VisitDatabase was changed. The event will be
-    // forwarded to the HistoryServiceObservers in the UI thread.
-    virtual void NotifyAddVisit(const BriefVisitInfo& info) = 0;
-
     // Notify HistoryService that some URLs favicon changed that will forward
     // the events to the FaviconChangedObservers in the correct thread.
     virtual void NotifyFaviconChanged(const std::set<GURL>& urls) = 0;
@@ -741,9 +737,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Returns the HistoryClient, blocking until the bookmarks are loaded. This
   // may return null during testing.
   HistoryClient* GetHistoryClient();
-
-  // Notify any observers of an addition to the visit database.
-  void NotifyVisitObservers(const VisitRow& visit);
 
   // Data ----------------------------------------------------------------------
 
