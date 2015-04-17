@@ -676,7 +676,7 @@ void ThreadState::scheduleIdleLazySweep()
 
     // TODO(haraken): Remove this. Lazy sweeping is not yet enabled in non-oilpan builds.
 #if ENABLE(OILPAN)
-    Scheduler::shared()->postIdleTask(FROM_HERE, WTF::bind<double>(&ThreadState::performIdleLazySweep, this));
+    Platform::current()->currentThread()->scheduler()->postIdleTask(FROM_HERE, WTF::bind<double>(&ThreadState::performIdleLazySweep, this));
 #endif
 }
 
