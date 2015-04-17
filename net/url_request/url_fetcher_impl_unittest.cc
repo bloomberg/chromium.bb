@@ -92,18 +92,60 @@ class WaitingURLFetcherDelegate : public URLFetcherDelegate {
 
   URLFetcher* fetcher() const { return fetcher_.get(); }
 
+  // Wait until the request has completed or been canceled.
   void StartFetcherAndWait() {
     fetcher_->Start();
     WaitForComplete();
   }
 
-  // Wait until the request has completed, if it's already been started.
+  // Wait until the request has completed or been canceled. Does not start the
+  // request.
   void WaitForComplete() { run_loop_.Run(); }
 
+  // Cancels the fetch by deleting the fetcher.
+  void CancelFetch() {
+    EXPECT_TRUE(fetcher_);
+    fetcher_.reset();
+    run_loop_.Quit();
+  }
+
+  // URLFetcherDelegate:
   void OnURLFetchComplete(const URLFetcher* source) override {
+    EXPECT_FALSE(did_complete_);
+    EXPECT_TRUE(fetcher_);
     EXPECT_EQ(fetcher_.get(), source);
     did_complete_ = true;
     run_loop_.Quit();
+  }
+
+  void OnURLFetchDownloadProgress(const URLFetcher* source,
+                                  int64 current,
+                                  int64 total) override {
+    // Note that the current progress may be greater than the previous progress,
+    // in the case of retrying the request.
+    EXPECT_FALSE(did_complete_);
+    EXPECT_TRUE(fetcher_);
+    EXPECT_EQ(source, fetcher_.get());
+
+    EXPECT_LE(0, current);
+    // If file size is not known, |total| is -1.
+    if (total >= 0)
+      EXPECT_LE(current, total);
+  }
+
+  void OnURLFetchUploadProgress(const URLFetcher* source,
+                                int64 current,
+                                int64 total) override {
+    // Note that the current progress may be greater than the previous progress,
+    // in the case of retrying the request.
+    EXPECT_FALSE(did_complete_);
+    EXPECT_TRUE(fetcher_);
+    EXPECT_EQ(source, fetcher_.get());
+
+    EXPECT_LE(0, current);
+    // If file size is not known, |total| is -1.
+    if (total >= 0)
+      EXPECT_LE(current, total);
   }
 
   bool did_complete() const { return did_complete_; }
@@ -349,63 +391,6 @@ void URLFetcherTest::CleanupAfterFetchComplete() {
 
 namespace {
 
-// Version of URLFetcherTest that tests download progress reports.
-class URLFetcherDownloadProgressTest : public URLFetcherTest {
- public:
-  URLFetcherDownloadProgressTest()
-      : previous_progress_(0),
-        expected_total_(0) {
-  }
-
-  // URLFetcherTest:
-  void CreateFetcher(const GURL& url) override;
-
-  // URLFetcherDelegate:
-  void OnURLFetchDownloadProgress(const URLFetcher* source,
-                                  int64 current,
-                                  int64 total) override;
-
- protected:
-  // Download progress returned by the previous callback.
-  int64 previous_progress_;
-  // Size of the file being downloaded, known in advance (provided by each test
-  // case).
-  int64 expected_total_;
-};
-
-// Version of URLFetcherTest that tests progress reports at cancellation.
-class URLFetcherDownloadProgressCancelTest : public URLFetcherTest {
- public:
-  // URLFetcherTest:
-  void CreateFetcher(const GURL& url) override;
-
-  // URLFetcherDelegate:
-  void OnURLFetchComplete(const URLFetcher* source) override;
-  void OnURLFetchDownloadProgress(const URLFetcher* source,
-                                  int64 current,
-                                  int64 total) override;
-
- protected:
-  bool cancelled_;
-};
-
-// Version of URLFetcherTest that tests upload progress reports.
-class URLFetcherUploadProgressTest : public URLFetcherTest {
- public:
-  // URLFetcherTest:
-  void CreateFetcher(const GURL& url) override;
-
-  // URLFetcherDelegate:
-  void OnURLFetchUploadProgress(const URLFetcher* source,
-                                int64 current,
-                                int64 total) override;
-
- protected:
-  int64 previous_progress_;
-  std::string chunk_;
-  int64 number_of_chunks_added_;
-};
-
 // Version of URLFetcherTest that tests request cancellation on shutdown.
 class URLFetcherCancelTest : public URLFetcherTest {
  public:
@@ -504,77 +489,6 @@ class URLFetcherBadHTTPSTest : public URLFetcherTest {
         SpawnedTestServer::TYPE_HTTPS, ssl_options, base::FilePath(kDocRoot)));
   }
 };
-
-void URLFetcherDownloadProgressTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
-  fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
-      io_message_loop_proxy().get(), request_context()));
-  fetcher_->Start();
-}
-
-void URLFetcherDownloadProgressTest::OnURLFetchDownloadProgress(
-    const URLFetcher* source, int64 progress, int64 total) {
-  // Increasing between 0 and total.
-  EXPECT_LE(0, progress);
-  EXPECT_GE(total, progress);
-  EXPECT_LE(previous_progress_, progress);
-  EXPECT_EQ(expected_total_, total);
-  previous_progress_ = progress;
-}
-
-void URLFetcherDownloadProgressCancelTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
-  fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
-      io_message_loop_proxy().get(), request_context()));
-  cancelled_ = false;
-  fetcher_->Start();
-}
-
-void URLFetcherDownloadProgressCancelTest::OnURLFetchDownloadProgress(
-    const URLFetcher* source, int64 current, int64 total) {
-  EXPECT_FALSE(cancelled_);
-  if (!cancelled_) {
-    cancelled_ = true;
-    CleanupAfterFetchComplete();
-  }
-}
-
-void URLFetcherDownloadProgressCancelTest::OnURLFetchComplete(
-    const URLFetcher* source) {
-  // Should have been cancelled.
-  ADD_FAILURE();
-  CleanupAfterFetchComplete();
-}
-
-void URLFetcherUploadProgressTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, URLFetcher::POST, this);
-  fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
-      io_message_loop_proxy().get(), request_context()));
-  previous_progress_ = 0;
-  // Large enough data to require more than one read from UploadDataStream.
-  chunk_.assign(1<<16, 'a');
-  // Use chunked upload to wait for a timer event of progress notification.
-  fetcher_->SetChunkedUpload("application/x-www-form-urlencoded");
-  fetcher_->Start();
-  number_of_chunks_added_ = 1;
-  fetcher_->AppendChunkToUpload(chunk_, false);
-}
-
-void URLFetcherUploadProgressTest::OnURLFetchUploadProgress(
-    const URLFetcher* source, int64 current, int64 total) {
-  // Increasing between 0 and total.
-  EXPECT_LE(0, current);
-  EXPECT_GE(static_cast<int64>(chunk_.size()) * number_of_chunks_added_,
-            current);
-  EXPECT_LE(previous_progress_, current);
-  previous_progress_ = current;
-  EXPECT_EQ(-1, total);
-
-  if (number_of_chunks_added_ < 2) {
-    number_of_chunks_added_ += 1;
-    fetcher_->AppendChunkToUpload(chunk_, true);
-  }
-}
 
 void URLFetcherCancelTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
@@ -885,35 +799,191 @@ TEST_F(URLFetcherTest, PostWithUploadStreamFactoryAndRetries) {
   EXPECT_EQ(2u, num_upload_streams_created());
 }
 
-TEST_F(URLFetcherUploadProgressTest, Basic) {
-  CreateFetcher(test_server_->GetURL("echo"));
-  base::MessageLoop::current()->Run();
+// Checks that upload progress increases over time, never exceeds what's already
+// been sent, and adds a chunk whenever all previously appended chunks have
+// been uploaded.
+class CheckUploadProgressDelegate : public WaitingURLFetcherDelegate {
+ public:
+  CheckUploadProgressDelegate()
+      : chunk_(1 << 16, 'a'), num_chunks_appended_(0), last_seen_progress_(0) {}
+  ~CheckUploadProgressDelegate() override {}
+
+  void OnURLFetchUploadProgress(const URLFetcher* source,
+                                int64 current,
+                                int64 total) override {
+    // Run default checks.
+    WaitingURLFetcherDelegate::OnURLFetchUploadProgress(source, current, total);
+
+    EXPECT_LE(last_seen_progress_, current);
+    EXPECT_LE(current, bytes_appended());
+    last_seen_progress_ = current;
+    MaybeAppendChunk();
+  }
+
+  // Append the next chunk if all previously appended chunks have been sent.
+  void MaybeAppendChunk() {
+    const int kNumChunks = 5;
+    if (last_seen_progress_ == bytes_appended() &&
+        num_chunks_appended_ < kNumChunks) {
+      ++num_chunks_appended_;
+      fetcher()->AppendChunkToUpload(chunk_,
+                                     num_chunks_appended_ == kNumChunks);
+    }
+  }
+
+ private:
+  int64 bytes_appended() const { return num_chunks_appended_ * chunk_.size(); }
+
+  const std::string chunk_;
+
+  int64 num_chunks_appended_;
+  int64 last_seen_progress_;
+
+  DISALLOW_COPY_AND_ASSIGN(CheckUploadProgressDelegate);
+};
+
+TEST_F(URLFetcherTest, UploadProgress) {
+  CheckUploadProgressDelegate delegate;
+  delegate.CreateFetcherWithContext(test_server_->GetURL("echo"),
+                                    URLFetcher::POST, request_context());
+  // Use a chunked upload so that the upload can be paused after uploading data.
+  // Since upload progress uses a timer, the delegate may not receive any
+  // notification otherwise.
+  delegate.fetcher()->SetChunkedUpload("application/x-www-form-urlencoded");
+
+  delegate.fetcher()->Start();
+  // Append the first chunk.  Others will be appended automatically in response
+  // to OnURLFetchUploadProgress events.
+  delegate.MaybeAppendChunk();
+  delegate.WaitForComplete();
+
+  // Make sure there are no pending events that cause problems when run.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(delegate.fetcher()->GetStatus().is_success());
+  EXPECT_EQ(200, delegate.fetcher()->GetResponseCode());
+  EXPECT_TRUE(delegate.did_complete());
 }
 
-TEST_F(URLFetcherDownloadProgressTest, Basic) {
+// Checks that download progress never decreases, never exceeds file size, and
+// that file size is correctly reported.
+class CheckDownloadProgressDelegate : public WaitingURLFetcherDelegate {
+ public:
+  CheckDownloadProgressDelegate(int64 file_size)
+      : file_size_(file_size), last_seen_progress_(0) {}
+  ~CheckDownloadProgressDelegate() override {}
+
+  void OnURLFetchDownloadProgress(const URLFetcher* source,
+                                  int64 current,
+                                  int64 total) override {
+    // Run default checks.
+    WaitingURLFetcherDelegate::OnURLFetchDownloadProgress(source, current,
+                                                          total);
+
+    EXPECT_LE(last_seen_progress_, current);
+    EXPECT_EQ(file_size_, total);
+    last_seen_progress_ = current;
+  }
+
+ private:
+  int64 file_size_;
+  int64 last_seen_progress_;
+
+  DISALLOW_COPY_AND_ASSIGN(CheckDownloadProgressDelegate);
+};
+
+TEST_F(URLFetcherTest, DownloadProgress) {
+  // Get a file large enough to require more than one read into
+  // URLFetcher::Core's IOBuffer.
+  const char kFileToFetch[] = "animate1.gif";
+
+  std::string file_contents;
+  ASSERT_TRUE(base::ReadFileToString(
+      test_server_->GetDocumentRoot().AppendASCII(kFileToFetch),
+      &file_contents));
+
+  CheckDownloadProgressDelegate delegate(file_contents.size());
+  delegate.CreateFetcherWithContext(
+      test_server_->GetURL(std::string(kTestServerFilePrefix) + kFileToFetch),
+      URLFetcher::GET, request_context());
+  delegate.StartFetcherAndWait();
+
+  EXPECT_TRUE(delegate.fetcher()->GetStatus().is_success());
+  EXPECT_EQ(200, delegate.fetcher()->GetResponseCode());
+  std::string data;
+  ASSERT_TRUE(delegate.fetcher()->GetResponseAsString(&data));
+  EXPECT_EQ(file_contents, data);
+}
+
+class CancelOnUploadProgressDelegate : public WaitingURLFetcherDelegate {
+ public:
+  CancelOnUploadProgressDelegate() {}
+  ~CancelOnUploadProgressDelegate() override {}
+
+  void OnURLFetchUploadProgress(const URLFetcher* source,
+                                int64 current,
+                                int64 total) override {
+    CancelFetch();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CancelOnUploadProgressDelegate);
+};
+
+// Check that a fetch can be safely cancelled/deleted during an upload progress
+// callback.
+TEST_F(URLFetcherTest, CancelInUploadProgressCallback) {
+  CancelOnUploadProgressDelegate delegate;
+  delegate.CreateFetcherWithContext(test_server_->GetURL("echo"),
+                                    URLFetcher::POST, request_context());
+  delegate.fetcher()->SetChunkedUpload("application/x-www-form-urlencoded");
+  delegate.fetcher()->Start();
+  // Use a chunked upload so that the upload can be paused after uploading data.
+  // Since uploads progress uses a timer, may not receive any notification,
+  // otherwise.
+  std::string upload_data(1 << 16, 'a');
+  delegate.fetcher()->AppendChunkToUpload(upload_data, false);
+  delegate.WaitForComplete();
+
+  // Make sure there are no pending events that cause problems when run.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(delegate.did_complete());
+  EXPECT_FALSE(delegate.fetcher());
+}
+
+class CancelOnDownloadProgressDelegate : public WaitingURLFetcherDelegate {
+ public:
+  CancelOnDownloadProgressDelegate() {}
+  ~CancelOnDownloadProgressDelegate() override {}
+
+  void OnURLFetchDownloadProgress(const URLFetcher* source,
+                                  int64 current,
+                                  int64 total) override {
+    CancelFetch();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CancelOnDownloadProgressDelegate);
+};
+
+// Check that a fetch can be safely cancelled/deleted during a download progress
+// callback.
+TEST_F(URLFetcherTest, CancelInDownloadProgressCallback) {
   // Get a file large enough to require more than one read into
   // URLFetcher::Core's IOBuffer.
   static const char kFileToFetch[] = "animate1.gif";
-  // Hardcoded file size - it cannot be easily fetched when a remote http server
-  // is used for testing.
-  static const int64 kFileSize = 19021;
+  CancelOnDownloadProgressDelegate delegate;
+  delegate.CreateFetcherWithContext(
+      test_server_->GetURL(std::string(kTestServerFilePrefix) + kFileToFetch),
+      URLFetcher::GET, request_context());
+  delegate.StartFetcherAndWait();
 
-  expected_total_ = kFileSize;
+  // Make sure there are no pending events that cause problems when run.
+  base::RunLoop().RunUntilIdle();
 
-  CreateFetcher(
-      test_server_->GetURL(std::string(kTestServerFilePrefix) + kFileToFetch));
-
-  base::MessageLoop::current()->Run();
-}
-
-TEST_F(URLFetcherDownloadProgressCancelTest, CancelWhileProgressReport) {
-  // Get a file large enough to require more than one read into
-  // URLFetcher::Core's IOBuffer.
-  static const char kFileToFetch[] = "animate1.gif";
-  CreateFetcher(
-      test_server_->GetURL(std::string(kTestServerFilePrefix) + kFileToFetch));
-
-  base::MessageLoop::current()->Run();
+  EXPECT_FALSE(delegate.did_complete());
+  EXPECT_FALSE(delegate.fetcher());
 }
 
 TEST_F(URLFetcherTest, Headers) {
