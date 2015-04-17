@@ -3,6 +3,7 @@
 <g font-family="Arial" font-size="18">
     <text x="10" y="50"><tspan direction="ltr" unicode-bidi="bidi-override">نشاط التدويل، W3C</tspan></text>
     <text x="10" y="80"><tspan direction="ltr" unicode-bidi="normal">نشاط التدويل، W3C</tspan></text>
+    <text x="10" y="110" text-anchor="end" direction="rtl">W3C <tspan>نشاط التدويل،</tspan></text>
     <g id="container"/>
 
     <script type="text/javascript"><![CDATA[

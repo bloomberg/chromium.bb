@@ -12,6 +12,9 @@ crbug.com/452320 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbar-t
 
 crbug.com/474117 compositing/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
 
+crbug.com/470326 svg/text/bidi-text-query.svg [ NeedsRebaseline ]
+crbug.com/470326 virtual/slimmingpaint/svg/text/bidi-text-query.svg [ NeedsRebaseline ]
+
 # These need a manual rebaseline after crbug.com/452967
 crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/svg-as-mask.html [ ImageOnlyFailure NeedsManualRebaseline ]
 crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/transformed-body-background.html [ ImageOnlyFailure NeedsManualRebaseline ]

@@ -5,11 +5,13 @@
 <script src="../../resources/testharnessreport.js"></script>
 <svg width="50px" height="120px" font-family="Arial" font-size="30px">
   <text id="ltrtext" y="30">إعلانات</text>
-  <text id="rtltext" y="90" x="75" direction="rtl">إعلانات</text>
+  <text id="rtltext" y="60" x="75" direction="rtl">إعلانات</text>
+  <text id="ltrmixed" y="90">Fooإعلانات</text>
+  <text id="rtlmixed" y="120" x="75" direction="rtl">Fooإعلانات</text>
 </svg>
 <script>
 test(function() {
-  var textElms = document.querySelectorAll('text');
+  var textElms = document.getElementsByTagName('text');
   var ltr = textElms[0];
   var rtl = textElms[1];
   var subExtentsLtr = [];
@@ -21,4 +23,12 @@ test(function() {
 
   assert_array_equals(subExtentsLtr, subExtentsRtl);
 }, '"direction" does not affect sub string lengths.');
+
+test(function() {
+  var textElms = document.getElementsByTagName('text');
+  var extentsLtr = textElms[2].getSubStringLength(2, 7);
+  var extentsRtl = textElms[3].getSubStringLength(2, 7);
+
+  assert_equals(extentsLtr, extentsRtl);
+}, '"direction" does not affect sub string lengths across BiDi runs w/ different levels.');
 </script>
