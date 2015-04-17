@@ -127,13 +127,11 @@ class DataReductionProxyConfigTest : public testing::Test {
             !config()->restricted_by_carrier_,
             request_succeeded && (response == "OK")),
         request_succeeded, 1);
-    MockDataReductionProxyService* service =
-        test_context_->mock_data_reduction_proxy_service();
     TestResponder responder;
     responder.response = response;
     responder.status =
         net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK);
-    EXPECT_CALL(*service, SecureProxyCheck(_, _))
+    EXPECT_CALL(*config(), SecureProxyCheck(_, _))
         .Times(1)
         .WillRepeatedly(testing::WithArgs<1>(
             testing::Invoke(&responder, &TestResponder::ExecuteCallback)));
@@ -161,9 +159,8 @@ class DataReductionProxyConfigTest : public testing::Test {
       scoped_ptr<DataReductionProxyParams> params) {
     params->EnableQuic(false);
     return make_scoped_ptr(new DataReductionProxyConfig(
-        test_context_->task_runner(), test_context_->task_runner(),
-        test_context_->net_log(), params.Pass(), test_context_->configurator(),
-        test_context_->event_store()));
+        test_context_->task_runner(), test_context_->net_log(), params.Pass(),
+        test_context_->configurator(), test_context_->event_store()));
   }
 
   MockDataReductionProxyConfig* config() {
