@@ -1783,7 +1783,8 @@ void Document::updateRenderTree(StyleRecalcChange change)
 
 void Document::updateStyle(StyleRecalcChange change)
 {
-    TRACE_EVENT0("blink", "Document::updateStyle");
+    TRACE_EVENT_BEGIN0("blink", "Document::updateStyle");
+    unsigned initialResolverAccessCount = styleEngine().resolverAccessCount();
 
     HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
     m_lifecycle.advanceTo(DocumentLifecycle::InStyleRecalc);
@@ -1843,6 +1844,7 @@ void Document::updateStyle(StyleRecalcChange change)
     ASSERT(!childNeedsStyleRecalc());
     ASSERT(inStyleRecalc());
     m_lifecycle.advanceTo(DocumentLifecycle::StyleClean);
+    TRACE_EVENT_END1("blink", "Document::updateStyle", "resolverAccessCount", styleEngine().resolverAccessCount() - initialResolverAccessCount);
 }
 
 void Document::updateRenderTreeForNodeIfNeeded(Node* node)
