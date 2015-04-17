@@ -636,6 +636,23 @@ void DeviceStatusCollector::GetLocation(
   }
 }
 
+int DeviceStatusCollector::ConvertWifiSignalStrength(int signal_strength) {
+  // Shill attempts to convert WiFi signal strength from its internal dBm to a
+  // percentage range (from 0-100) by adding 120 to the raw dBm value,
+  // and then clamping the result to the range 0-100 (see
+  // shill::WiFiService::SignalToStrength()).
+  //
+  // To convert back to dBm, we subtract 120 from the percentage value to yield
+  // a clamped dBm value in the range of -119 to -20dBm.
+  //
+  // TODO(atwilson): Tunnel the raw dBm signal strength from Shill instead of
+  // doing the conversion here so we can report non-clamped values
+  // (crbug.com/463334).
+  DCHECK_GT(signal_strength, 0);
+  DCHECK_LE(signal_strength, 100);
+  return signal_strength - 120;
+}
+
 void DeviceStatusCollector::GetNetworkInterfaces(
     em::DeviceStatusReportRequest* request) {
   // Maps shill device type strings to proto enum constants.
@@ -708,8 +725,8 @@ void DeviceStatusCollector::GetNetworkInterfaces(
   chromeos::NetworkStateHandler::NetworkStateList state_list;
   network_state_handler->GetNetworkListByType(
       chromeos::NetworkTypePattern::Default(),
-      true,  // configured_only
-      false,  // visible_only,
+      true,   // configured_only
+      false,  // visible_only
       0,      // no limit to number of results
       &state_list);
 
@@ -728,7 +745,19 @@ void DeviceStatusCollector::GetNetworkInterfaces(
     // Copy fields from NetworkState into the status report.
     em::NetworkState* proto_state = request->add_network_state();
     proto_state->set_connection_state(connection_state_enum);
-    proto_state->set_signal_strength(state->signal_strength());
+
+    // Report signal strength for wifi connections.
+    if (state->type() == shill::kTypeWifi) {
+      // If shill has provided a signal strength, convert it to dBm and store it
+      // in the status report. A signal_strength() of 0 connotes "no signal"
+      // rather than "really weak signal", so we only report signal strength if
+      // it is non-zero.
+      if (state->signal_strength()) {
+        proto_state->set_signal_strength(
+            ConvertWifiSignalStrength(state->signal_strength()));
+      }
+    }
+
     if (!state->device_path().empty())
       proto_state->set_device_path(state->device_path());
 

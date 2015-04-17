@@ -985,6 +985,7 @@ struct FakeNetworkState {
   const char* device_path;
   const char* type;
   int signal_strength;
+  int expected_signal_strength;
   const char* connection_status;
   int expected_state;
   const char* address;
@@ -996,36 +997,38 @@ struct FakeNetworkState {
 // by convention shill will not report a signal strength of 0 for a visible
 // network, so we use 1 below.
 static const FakeNetworkState kFakeNetworks[] = {
-  { "offline", "/device/wifi", shill::kTypeWifi, 35,
+  { "offline", "/device/wifi", shill::kTypeWifi, 35, -85,
     shill::kStateOffline, em::NetworkState::OFFLINE, "", "" },
-  { "ethernet", "/device/ethernet", shill::kTypeEthernet, 0,
+  { "ethernet", "/device/ethernet", shill::kTypeEthernet, 0, 0,
     shill::kStateOnline, em::NetworkState::ONLINE,
     "192.168.0.1", "8.8.8.8" },
-  { "wifi", "/device/wifi", shill::kTypeWifi, 23, shill::kStatePortal,
+  { "wifi", "/device/wifi", shill::kTypeWifi, 23, -97, shill::kStatePortal,
     em::NetworkState::PORTAL, "", "" },
-  { "idle", "/device/cellular1", shill::kTypeCellular, 0, shill::kStateIdle,
+  { "idle", "/device/cellular1", shill::kTypeCellular, 0, 0, shill::kStateIdle,
     em::NetworkState::IDLE, "", "" },
-  { "carrier", "/device/cellular1", shill::kTypeCellular, 0,
+  { "carrier", "/device/cellular1", shill::kTypeCellular, 0, 0,
     shill::kStateCarrier, em::NetworkState::CARRIER, "", "" },
-  { "association", "/device/cellular1", shill::kTypeCellular, 0,
+  { "association", "/device/cellular1", shill::kTypeCellular, 0, 0,
     shill::kStateAssociation, em::NetworkState::ASSOCIATION, "", "" },
-  { "config", "/device/cellular1", shill::kTypeCellular, 0,
+  { "config", "/device/cellular1", shill::kTypeCellular, 0, 0,
     shill::kStateConfiguration, em::NetworkState::CONFIGURATION, "", "" },
-  { "ready", "/device/cellular1", shill::kTypeCellular, 0, shill::kStateReady,
-    em::NetworkState::READY, "", "" },
-  { "disconnect", "/device/wifi", shill::kTypeWifi, 1,
+  // Set signal strength for this network to -20, but expected strength to 0
+  // to test that we only report signal_strength for wifi connections.
+  { "ready", "/device/cellular1", shill::kTypeCellular, -20, 0,
+    shill::kStateReady, em::NetworkState::READY, "", "" },
+  { "disconnect", "/device/wifi", shill::kTypeWifi, 1, -119,
     shill::kStateDisconnect, em::NetworkState::DISCONNECT, "", "" },
-  { "failure", "/device/wifi", shill::kTypeWifi, 1, shill::kStateFailure,
+  { "failure", "/device/wifi", shill::kTypeWifi, 1, -119, shill::kStateFailure,
     em::NetworkState::FAILURE, "", "" },
-  { "activation-failure", "/device/cellular1", shill::kTypeCellular, 0,
+  { "activation-failure", "/device/cellular1", shill::kTypeCellular, 0, 0,
     shill::kStateActivationFailure, em::NetworkState::ACTIVATION_FAILURE,
     "", "" },
-  { "unknown", "", shill::kTypeWifi, 1, "unknown", em::NetworkState::UNKNOWN,
-    "", "" },
+  { "unknown", "", shill::kTypeWifi, 1, -119, "unknown",
+    em::NetworkState::UNKNOWN, "", "" },
 };
 
 static const FakeNetworkState kUnconfiguredNetwork = {
-  "unconfigured", "/device/unconfigured", shill::kTypeWifi, 35,
+  "unconfigured", "/device/unconfigured", shill::kTypeWifi, 35, -85,
   shill::kStateOffline, em::NetworkState::OFFLINE, "", ""
 };
 
@@ -1129,7 +1132,7 @@ class DeviceStatusCollectorNetworkInterfacesTest
         chromeos::NetworkHandler::Get()->network_state_handler();
     network_state_handler->GetNetworkListByType(
         chromeos::NetworkTypePattern::Default(),
-        true,  // configured_only
+        true,   // configured_only
         false,  // visible_only,
         0,      // no limit to number of results
         &state_list);
@@ -1210,8 +1213,10 @@ TEST_F(DeviceStatusCollectorNetworkInterfacesTest, NetworkInterfaces) {
     bool found_match = false;
     for (const em::NetworkState& proto_state : status_.network_state()) {
       // Make sure every item has a matching entry in the proto.
+      bool should_have_signal_strength = state.expected_signal_strength != 0;
       if (proto_state.has_device_path() == (strlen(state.device_path) > 0) &&
-          proto_state.signal_strength() == state.signal_strength &&
+          proto_state.has_signal_strength() == should_have_signal_strength &&
+          proto_state.signal_strength() == state.expected_signal_strength &&
           proto_state.connection_state() == state.expected_state) {
         if (proto_state.has_ip_address())
           EXPECT_EQ(proto_state.ip_address(), state.address);

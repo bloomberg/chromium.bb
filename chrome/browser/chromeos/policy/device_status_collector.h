@@ -185,6 +185,10 @@ class DeviceStatusCollector {
   // Callback invoked to update our cpu usage information.
   void ReceiveCPUStatistics(const std::string& statistics);
 
+  // Helper routine to convert from Shill-provided signal strength (percent)
+  // to dBm units expected by server.
+  int ConvertWifiSignalStrength(int signal_strength);
+
   PrefService* local_state_;
 
   // The last time an idle state check was performed.
