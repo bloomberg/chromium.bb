@@ -188,9 +188,23 @@ class DownloadError(Exception):
   """Fetching file via curl failed"""
 
 
-def RunCurl(args, **kwargs):
-  """Runs curl and wraps around all necessary hacks."""
+def RunCurl(args, fail=True, **kwargs):
+  """Runs curl and wraps around all necessary hacks.
+
+  Args:
+    args: Command line to pass to curl.
+    fail: Whether to use --fail w/curl.
+    **kwargs: See RunCommandWithRetries and RunCommand.
+
+  Returns:
+    A CommandResult object.
+
+  Raises:
+    DownloadError: Whenever curl fails for any reason.
+  """
   cmd = ['curl']
+  if fail:
+    cmd.append('--fail')
   cmd.extend(args)
 
   # These values were discerned via scraping the curl manpage; they're all
