@@ -49669,7 +49669,6 @@
         ]
     },
     "strago-release": {
-        "active_waterfall": "chromeos",
         "afdo_use": true,
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",

@@ -917,6 +917,24 @@ class OverrideForTrybotTest(cros_test_lib.TestCase):
                      "Manual waterfall configs are automatically included: "
                      "%s" % (sorted(redundant),))
 
+  def testNoDuplicateCanaryBuildersOnWaterfall(self):
+    seen = {}
+    for config in cbuildbot_config.config.itervalues():
+      waterfall = config['active_waterfall']
+      btype = config['build_type']
+      if not (waterfall and cbuildbot_config.IsCanaryType(btype)):
+        continue
+
+      waterfall_seen = seen.setdefault(waterfall, set())
+      stack = [config]
+      while stack:
+        current_config = stack.pop()
+        self.assertNotIn(current_config['name'], waterfall_seen,
+                         "Multiple builders for '%s' on '%s' waterfall" % (
+                             current_config['name'], waterfall))
+        waterfall_seen.add(current_config['name'])
+        stack += current_config['child_configs']
+
   def testBinhostTest(self):
     """Builders with the binhost_test setting shouldn't have boards."""
     for config in cbuildbot_config.config.values():

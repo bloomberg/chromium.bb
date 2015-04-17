@@ -3305,7 +3305,6 @@ _waterfall_config_map = {
       'nyan_freon-release',
       'panther_moblab-release',
       'rush_ryu-release',
-      'strago-release',
       'lakitu-release',
 
       # Experimental PFQs.
