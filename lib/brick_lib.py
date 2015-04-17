@@ -144,19 +144,6 @@ class Brick(object):
     content_str = osutils.ReadFile(self._LayoutConfPath())
     return dict(ParseConfLine(line) for line in content_str.splitlines())
 
-  def _WriteParents(self, parents):
-    """Writes the parents profile.
-
-    Args:
-      parents: list of overlay names
-    """
-    if self.legacy:
-      raise BrickFeatureNotSupported()
-
-    osutils.WriteFile(os.path.join(self.OverlayDir(), 'profiles', 'base',
-                                   'parent'),
-                      ''.join([p + '\n' for p in parents]), makedirs=True)
-
   def UpdateConfig(self, config, regenerate=True):
     """Updates the brick's configuration.
 
@@ -199,10 +186,6 @@ class Brick(object):
         {'masters': ' '.join(
             ['eclass-overlay', 'portage-stable', 'chromiumos'] + deps),
          'repo-name': self.config['name']})
-
-    parents = self.config.get('experimental_profiles',
-                              [m + ':base' for m in deps])
-    self._WriteParents(parents)
 
   def Dependencies(self):
     """Returns the dependent bricks."""

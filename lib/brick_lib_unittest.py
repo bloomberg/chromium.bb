@@ -51,18 +51,6 @@ class BrickLibTest(cros_test_lib.MockTempDirTestCase,
     for line in expected_lines:
       self.assertTrue(line in layout_conf)
 
-  def testWriteParents(self):
-    """Test that the parent file is correctly formatted."""
-    (self.brick, self.brick_path) = self.CreateBrick()
-    parents = ['hello:bonjour',
-               'foo:bar']
-
-    self.brick._WriteParents(parents)
-    path = os.path.join(self.brick.OverlayDir(), 'profiles', 'base', 'parent')
-    parents_content = osutils.ReadFile(path)
-
-    self.assertEqual('hello:bonjour\nfoo:bar\n', parents_content)
-
   def testConfigurationGenerated(self):
     """Test that portage's files are generated when brick.json changes."""
     (self.brick, self.brick_path) = self.CreateBrick()
@@ -71,8 +59,6 @@ class BrickLibTest(cros_test_lib.MockTempDirTestCase,
 
     self.brick.UpdateConfig(sample_config)
 
-    self.assertExists(os.path.join(self.brick.OverlayDir(), 'profiles', 'base',
-                                   'parent'))
     self.assertExists(self.brick._LayoutConfPath())
 
   def testFindBrickInPath(self):
@@ -162,7 +148,7 @@ class BrickLibTest(cros_test_lib.MockTempDirTestCase,
   def testOverlayDir(self):
     """Tests that overlay directory is returned correctly."""
     (self.brick, self.brick_path) = self.CreateBrick()
-    self.assertExists(os.path.join(self.brick.OverlayDir(), 'profiles'))
+    self.assertExists(self.brick.OverlayDir())
 
   def testOpenUsingLocator(self):
     """Tests that we can open a brick given a locator."""
@@ -232,13 +218,3 @@ class BrickLibTest(cros_test_lib.MockTempDirTestCase,
 
     self.assertEqual(['//first', '//second', '//fourth'],
                      [b.brick_locator for b in fourth.BrickStack()])
-
-  def testProfilesOverride(self):
-    """Tests that the 'experimental_profiles' field is respected."""
-    profiles = ['chromiumos:base', '../foo']
-    config = {'name': 'foo', 'experimental_profiles': profiles}
-    b = brick_lib.Brick('//foo', initial_config=config)
-
-    parents = osutils.ReadFile(os.path.join(b.OverlayDir(), 'profiles', 'base',
-                                            'parent'))
-    self.assertEquals(profiles, parents.splitlines())

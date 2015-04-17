@@ -520,6 +520,32 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
         osutils.SafeSymlink(make_conf, link, sudo=True)
         return
 
+  def _GenerateProfile(self):
+    """Generates the portage profile for this sysroot.
+
+    The generated portage profile depends on the profiles of all used bricks in
+    order as well as the general brillo profile for this architecture.
+    """
+    overlays = self.GetStandardField('BOARD_OVERLAY').splitlines()
+    profile_list = [os.path.join(o, 'profiles', 'base') for o in overlays]
+
+    # Keep only the profiles that exist.
+    profile_list = [p for p in profile_list if os.path.exists(p)]
+
+    # Add the arch specific profile.
+    # The profile list is ordered from the lowest to the highest priority. This
+    # profile has to go first so that other profiles can override it.
+    arch = self.GetStandardField('ARCH')
+    profile_list.insert(0, 'chromiumos:default/linux/%s/brillo' % arch)
+
+    generated_parent = os.path.join(self.path, 'build', 'generated_profile',
+                                    'parent')
+    osutils.WriteFile(
+        generated_parent, '\n'.join(profile_list), sudo=True, makedirs=True)
+    osutils.SafeSymlink(os.path.dirname(generated_parent),
+                        os.path.join(self.path, 'etc', 'make.profile'),
+                        sudo=True)
+
   def GeneratePortageConfig(self):
     """Generates the portage config.
 
@@ -532,6 +558,7 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
     """
     self.CreateAllWrappers()
     self._SelectDefaultMakeConf()
+    self._GenerateProfile()
 
     make_conf = self.GenerateMakeConf()
     make_conf_path = os.path.join(self.path, 'etc', 'make.conf.board')
@@ -543,9 +570,6 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
     osutils.WriteFile(make_conf_path,
                       '\n'.join([make_conf, self.GenerateBinhostConf()]),
                       sudo=True)
-
-    cros_build_lib.RunCommand(['cros_choose_profile',
-                               '--board_root=%s' % self.path])
 
   def UpdateToolchain(self):
     """Updates the toolchain packages.

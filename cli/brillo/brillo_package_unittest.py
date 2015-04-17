@@ -155,7 +155,7 @@ class PackageCommandTest(cros_test_lib.OutputTestCase,
     existing_category = 'existing_package_category'
     self.SetupCommandMock(['--create-source', '.', self._PACKAGE])
     osutils.WriteFile(self.cwd_brick_categories_file,
-                      '%s\n' % existing_category)
+                      '%s\n' % existing_category, makedirs=True)
     self.cmd_mock.inst.Run()
     # Our new package category should be appended to the existing file.
     self.assertEqual('%s\n%s\n' % (existing_category, self._PACKAGE_CATEGORY),
