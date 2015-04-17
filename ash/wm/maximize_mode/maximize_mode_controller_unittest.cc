@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 #include <math.h>
-#include <map>
-#include <string>
 
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 
@@ -17,10 +15,9 @@
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/test/test_volume_control_delegate.h"
 #include "ash/wm/overview/window_selector_controller.h"
-#include "base/bind.h"
 #include "base/command_line.h"
-#include "base/metrics/user_metrics.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/user_action_tester.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/accelerometer/accelerometer_types.h"
 #include "ui/events/event_handler.h"
@@ -42,53 +39,6 @@ const float kMeanGravity = 9.8066f;
 const char kTouchViewInitiallyDisabled[] = "Touchview_Initially_Disabled";
 const char kTouchViewEnabled[] = "Touchview_Enabled";
 const char kTouchViewDisabled[] = "Touchview_Disabled";
-
-// TODO(bruthig): Move this to base/metrics/ so that it can be reused.
-// This class observes and collects user action notifications that are sent
-// by the tests, so that they can be examined afterwards for correctness.
-class UserActionObserver {
- public:
-  UserActionObserver();
-  ~UserActionObserver();
-
-  int GetMetricCount(const std::string& name) const;
-
-  void ResetCounts();
-
- private:
-  typedef std::map<std::string, int> UserActionCountMap;
-
-  void OnUserAction(const std::string& action);
-
-  UserActionCountMap count_map_;
-
-  base::ActionCallback action_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(UserActionObserver);
-};
-
-UserActionObserver::UserActionObserver()
-    : action_callback_(base::Bind(&UserActionObserver::OnUserAction,
-                                  base::Unretained(this))) {
-  base::AddActionCallback(action_callback_);
-}
-
-UserActionObserver::~UserActionObserver() {
-  base::RemoveActionCallback(action_callback_);
-}
-
-int UserActionObserver::GetMetricCount(const std::string& name) const {
-  UserActionCountMap::const_iterator i = count_map_.find(name);
-  return i == count_map_.end() ? 0 : i->second;
-}
-
-void UserActionObserver::ResetCounts() {
-  count_map_.clear();
-}
-
-void UserActionObserver::OnUserAction(const std::string& action) {
-  ++(count_map_[action]);
-}
 
 }  // namespace
 
@@ -212,39 +162,39 @@ class MaximizeModeControllerTest : public test::AshTestBase {
     return maximize_mode_controller()->WasLidOpenedRecently();
   }
 
-  UserActionObserver* user_action_observer() { return &user_action_observer_; }
+  base::UserActionTester* user_action_tester() { return &user_action_tester_; }
 
  private:
   base::SimpleTestTickClock* test_tick_clock_;
 
   // Tracks user action counts.
-  UserActionObserver user_action_observer_;
+  base::UserActionTester user_action_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(MaximizeModeControllerTest);
 };
 
 // Verify TouchView enabled/disabled user action metrics are recorded.
 TEST_F(MaximizeModeControllerTest, VerifyTouchViewEnabledDisabledCounts) {
-  ASSERT_EQ(
-      1, user_action_observer()->GetMetricCount(kTouchViewInitiallyDisabled));
-  ASSERT_EQ(0, user_action_observer()->GetMetricCount(kTouchViewEnabled));
-  ASSERT_EQ(0, user_action_observer()->GetMetricCount(kTouchViewDisabled));
+  ASSERT_EQ(1,
+            user_action_tester()->GetActionCount(kTouchViewInitiallyDisabled));
+  ASSERT_EQ(0, user_action_tester()->GetActionCount(kTouchViewEnabled));
+  ASSERT_EQ(0, user_action_tester()->GetActionCount(kTouchViewDisabled));
 
-  user_action_observer()->ResetCounts();
+  user_action_tester()->ResetCounts();
   maximize_mode_controller()->EnableMaximizeModeWindowManager(true);
-  EXPECT_EQ(1, user_action_observer()->GetMetricCount(kTouchViewEnabled));
-  EXPECT_EQ(0, user_action_observer()->GetMetricCount(kTouchViewDisabled));
+  EXPECT_EQ(1, user_action_tester()->GetActionCount(kTouchViewEnabled));
+  EXPECT_EQ(0, user_action_tester()->GetActionCount(kTouchViewDisabled));
   maximize_mode_controller()->EnableMaximizeModeWindowManager(true);
-  EXPECT_EQ(1, user_action_observer()->GetMetricCount(kTouchViewEnabled));
-  EXPECT_EQ(0, user_action_observer()->GetMetricCount(kTouchViewDisabled));
+  EXPECT_EQ(1, user_action_tester()->GetActionCount(kTouchViewEnabled));
+  EXPECT_EQ(0, user_action_tester()->GetActionCount(kTouchViewDisabled));
 
-  user_action_observer()->ResetCounts();
+  user_action_tester()->ResetCounts();
   maximize_mode_controller()->EnableMaximizeModeWindowManager(false);
-  EXPECT_EQ(0, user_action_observer()->GetMetricCount(kTouchViewEnabled));
-  EXPECT_EQ(1, user_action_observer()->GetMetricCount(kTouchViewDisabled));
+  EXPECT_EQ(0, user_action_tester()->GetActionCount(kTouchViewEnabled));
+  EXPECT_EQ(1, user_action_tester()->GetActionCount(kTouchViewDisabled));
   maximize_mode_controller()->EnableMaximizeModeWindowManager(false);
-  EXPECT_EQ(0, user_action_observer()->GetMetricCount(kTouchViewEnabled));
-  EXPECT_EQ(1, user_action_observer()->GetMetricCount(kTouchViewDisabled));
+  EXPECT_EQ(0, user_action_tester()->GetActionCount(kTouchViewEnabled));
+  EXPECT_EQ(1, user_action_tester()->GetActionCount(kTouchViewDisabled));
 }
 
 // Verify that closing the lid will exit maximize mode.
