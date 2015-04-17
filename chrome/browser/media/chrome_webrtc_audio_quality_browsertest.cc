@@ -13,6 +13,7 @@
 #include "base/scoped_native_library.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/webrtc_browsertest_audio.h"
 #include "chrome/browser/media/webrtc_browsertest_base.h"
 #include "chrome/browser/media/webrtc_browsertest_common.h"
@@ -336,7 +337,7 @@ bool RemoveSilence(const base::FilePath& input_file,
   // THRESHOLD: value used to indicate what sample value is treats as silence.
   const char* kAbovePeriods = "1";
   const char* kDuration = "2";
-  const char* kTreshold = "3%";
+  const char* kTreshold = "1.5%";
 
   base::CommandLine command_line = MakeSoxCommandLine();
   if (command_line.GetProgram().empty())
@@ -361,11 +362,12 @@ bool RemoveSilence(const base::FilePath& input_file,
   return ok;
 }
 
-// Looks for 0.3-second silences (under 1% audio power) and splits the input
-// file on those silences. Output files are written according to the output file
-// template (e.g. /tmp/out.wav writes /tmp/out001.wav, /tmp/out002.wav, etc if
-// there are two silence-padded regions in the file). The silences between
-// speech segments must be at least 500 ms for this to be reliable.
+// Looks for 0.2 second audio segments surrounded by silences under 0.3% audio
+// power and splits the input file on those silences. Output files are written
+// according to the output file template (e.g. /tmp/out.wav writes
+// /tmp/out001.wav, /tmp/out002.wav, etc if there are two silence-padded
+// regions in the file). The silences between speech segments must be at
+// least 500 ms for this to be reliable.
 bool SplitFileOnSilence(const base::FilePath& input_file,
                         const base::FilePath& output_file_template) {
   base::CommandLine command_line = MakeSoxCommandLine();
@@ -375,8 +377,8 @@ bool SplitFileOnSilence(const base::FilePath& input_file,
   // These are experimentally determined and work on the files we use.
   const char* kAbovePeriods = "1";
   const char* kUnderPeriods = "1";
-  const char* kDuration = "0.3";
-  const char* kTreshold = "1%";
+  const char* kDuration = "0.2";
+  const char* kTreshold = "0.5%";
   command_line.AppendArgPath(input_file);
   command_line.AppendArgPath(output_file_template);
   command_line.AppendArg("silence");
@@ -515,6 +517,18 @@ float AnalyzeOneSegment(const base::FilePath& ref_segment,
   return actual_energy - ref_energy;
 }
 
+std::string MakeTraceName(const base::FilePath& ref_filename,
+                          size_t segment_number) {
+  std::string ascii_filename;
+#if defined(OS_WIN)
+  ascii_filename = base::WideToUTF8(ref_filename.BaseName().value());
+#else
+  ascii_filename = ref_filename.BaseName().value();
+#endif
+  return base::StringPrintf(
+      "%s_segment_%d", ascii_filename.c_str(), (int)segment_number);
+}
+
 void AnalyzeSegmentsAndPrintResult(
     const std::vector<base::FilePath>& ref_segments,
     const std::vector<base::FilePath>& actual_segments,
@@ -531,8 +545,7 @@ void AnalyzeSegmentsAndPrintResult(
     float difference_in_decibel = AnalyzeOneSegment(ref_segments[i],
                                                     actual_segments[i],
                                                     i);
-    std::string trace_name = base::StringPrintf(
-        "%s_segment_%zu", reference_file.BaseName().value().c_str(), i);
+    std::string trace_name = MakeTraceName(reference_file, i);
     perf_test::PrintResult("agc_energy_diff", perf_modifier, trace_name,
                            difference_in_decibel, "dB", false);
   }
@@ -740,34 +753,16 @@ void MAYBE_WebRtcAudioQualityBrowserTest::TestAutoGainControl(
   EXPECT_TRUE(base::DeleteFile(recording, false));
 }
 
-// Only implemented for Linux for now.
-#if defined(OS_LINUX)
-#define MAYBE_MANUAL_TestAutoGainControlOnLowAudio \
-        MANUAL_TestAutoGainControlOnLowAudio
-#else
-#define MAYBE_MANUAL_TestAutoGainControlOnLowAudio \
-        DISABLED_MANUAL_TestAutoGainControlOnLowAudio
-#endif
-
 // The AGC should apply non-zero gain here.
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
-                       MAYBE_MANUAL_TestAutoGainControlOnLowAudio) {
+                       MANUAL_TestAutoGainControlOnLowAudio) {
   ASSERT_NO_FATAL_FAILURE(TestAutoGainControl(
       kReferenceFile, kAudioOnlyCallConstraints, "_with_agc"));
 }
 
-// Only implemented for Linux for now.
-#if defined(OS_LINUX)
-#define MAYBE_MANUAL_TestAutoGainIsOffWithAudioProcessingOff \
-        MANUAL_TestAutoGainIsOffWithAudioProcessingOff
-#else
-#define MAYBE_MANUAL_TestAutoGainIsOffWithAudioProcessingOff \
-        DISABLED_MANUAL_TestAutoGainIsOffWithAudioProcessingOff
-#endif
-
 // Since the AGC is off here there should be no gain at all.
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
-                       MAYBE_MANUAL_TestAutoGainIsOffWithAudioProcessingOff) {
+                       MANUAL_TestAutoGainIsOffWithAudioProcessingOff) {
   const char* kAudioCallWithoutAudioProcessing =
       "{audio: { mandatory: { echoCancellation: false } } }";
   ASSERT_NO_FATAL_FAILURE(TestAutoGainControl(
