@@ -13,5 +13,5 @@
 /** @constructor @extends {HTMLElement} */
 var CrOncDataElement = function() {};
 
-/** @type {CrOnc.NetworkConfigType} */
+/** @type {chrome.networkingPrivate.NetworkStateProperties} */
 CrOncDataElement.prototype.data;

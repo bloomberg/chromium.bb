@@ -58,8 +58,8 @@ var NetworkUI = (function() {
    * nested property, e.g. 'WiFi.Security'. If any part of a nested key is
    * missing, this will return undefined.
    *
-   * @param {!CrOnc.NetworkConfigType} networkState The network state
-   *     property dictionary.
+   * @param {!chrome.networkingPrivate.NetworkStateProperties} networkState The
+   *     network state property dictionary.
    * @param {string} key The ONC key for the property.
    * @return {*} The value associated with the property or undefined if the
    *     key (any part of it) is not defined.
@@ -99,7 +99,8 @@ var NetworkUI = (function() {
   /**
    * Creates a cell with an icon representing the network state.
    *
-   * @param {CrOnc.NetworkConfigType} networkState The network state properties.
+   * @param {!chrome.networkingPrivate.NetworkStateProperties} networkState The
+   *     network state properties.
    * @return {!HTMLTableCellElement} The created td element that displays the
    *     icon.
    */
@@ -131,7 +132,8 @@ var NetworkUI = (function() {
    * Creates a row in the network state table.
    *
    * @param {Array} stateFields The state fields to use for the row.
-   * @param {CrOnc.NetworkConfigType} networkState The network state properties.
+   * @param {!chrome.networkingPrivate.NetworkStateProperties} networkState The
+   *     network state properties.
    * @return {!HTMLTableRowElement} The created tr element that contains the
    *     network state information.
    */
@@ -164,8 +166,9 @@ var NetworkUI = (function() {
    * Creates a table for networks or favorites.
    *
    * @param {string} tablename The name of the table to be created.
-   * @param {Array} stateFields The list of fields for the table.
-   * @param {Array} states An array of network or favorite states.
+   * @param {!Array<string>} stateFields The list of fields for the table.
+   * @param {!Array<!chrome.networkingPrivate.NetworkStateProperties>} states
+   *     An array of network or favorite states.
    */
   var createStateTable = function(tablename, stateFields, states) {
     var table = $(tablename);
@@ -173,8 +176,7 @@ var NetworkUI = (function() {
     for (var i = 0; i < oldRows.length; ++i)
       table.removeChild(oldRows[i]);
     states.forEach(function(state) {
-      table.appendChild(createStateTableRow(
-          stateFields, /** @type {!CrOnc.NetworkConfigType} */(state)));
+      table.appendChild(createStateTableRow(stateFields, state));
     });
   };
 
@@ -191,15 +193,16 @@ var NetworkUI = (function() {
   /**
    * This callback function is triggered when visible networks are received.
    *
-   * @param {!Array<!Object>} states A list of network state information for
-   *     each visible network.
+   * @param {!Array<!chrome.networkingPrivate.NetworkStateProperties>} states
+   *     A list of network state information for each visible network.
    */
   var onVisibleNetworksReceived = function(states) {
-    /** @type {CrOnc.NetworkConfigType} */ var defaultState;
+    /** @type {chrome.networkingPrivate.NetworkStateProperties} */ var
+        defaultState;
     if (states.length > 0)
-      defaultState = /** @type {!CrOnc.NetworkConfigType} */(states[0]);
+      defaultState = states[0];
     var icon = /** @type {CrNetworkIconElement} */($('default-network-icon'));
-    if (defaultState && defaultState.Type != 'VPN') {
+    if (defaultState && defaultState.Type != CrOnc.Type.VPN) {
       $('default-network-text').textContent =
           loadTimeData.getStringF('defaultNetworkText',
                                   defaultState.Name,
@@ -218,8 +221,8 @@ var NetworkUI = (function() {
   /**
    * This callback function is triggered when favorite networks are received.
    *
-   * @param {!Array<!Object>} states A list of network state information for
-   *     each favorite network.
+   * @param {!Array<!chrome.networkingPrivate.NetworkStateProperties>} states
+   *     A list of network state information for each favorite network.
    */
   var onFavoriteNetworksReceived = function(states) {
     createStateTable('favorite-state-table', FAVORITE_STATE_FIELDS, states);

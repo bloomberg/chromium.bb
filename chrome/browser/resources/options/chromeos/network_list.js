@@ -5,8 +5,8 @@
 /**
  * This partially describes the network list entries passed to
  * refreshNetworkData. The contents of those lists actually match
- * CrOnc.NetworkConfigType with the addition of the policyManaged property.
- * TODO(stevenjb): Use networkingPrivate.getNetworks.
+ * chrome.networkingPrivate.NetworkStateProperties with the addition of the
+ * policyManaged property. TODO(stevenjb): Use networkingPrivate.getNetworks.
  * @typedef {{
  *   ConnectionState: string,
  *   GUID: string,
@@ -243,7 +243,8 @@ cr.define('options.network', function() {
         return;
       var networkIcon = this.getNetworkIcon();
       networkIcon.networkState = CrOncDataElement.create(
-          /** @type {CrOnc.NetworkConfigType} */ (data));
+          /** @type {chrome.networkingPrivate.NetworkStateProperties} */ (
+              data));
     },
 
     /**

@@ -5,8 +5,7 @@
 /**
  * @fileoverview ONC network configuration support class. Wraps a dictionary
  * object containing ONC managed or unmanaged dictionaries. Also provides
- * special accessors for ONC properties. See cr-onc-types for ONC types,
- * e.g. CrOnc.NetworkConfigType. Used by consumers of the
+ * special accessors for ONC properties. Used by consumers of the
  * chrome.networkingPrivate API. See components/onc/docs/onc_spec.html.
  */
 Polymer('cr-onc-data', {
@@ -16,7 +15,7 @@ Polymer('cr-onc-data', {
      * chrome.networkingPrivate.getProperties() call.
      *
      * @attribute data
-     * @type CrOnc.NetworkConfigType
+     * @type {chrome.networkingPrivate.NetworkStateProperties}
      * @default null
      */
     data: null,
@@ -24,7 +23,8 @@ Polymer('cr-onc-data', {
 
   /** @override */
   created: function() {
-    this.data = /** @type {CrOnc.NetworkConfigType} */({});
+    this.data =
+        /** @type {chrome.networkingPrivate.NetworkStateProperties} */({});
   },
 
   /** @return {boolean} True if the network is connected. */
@@ -83,7 +83,8 @@ var CrOncDataElement = {};
  * Helper method to create and return a typed cr-onc-data Polymer element.
  * Sets the data property of the element to |state|.
  *
- * @param {!CrOnc.NetworkConfigType} state The network state properties.
+ * @param {!chrome.networkingPrivate.NetworkStateProperties} state The network
+ *     state properties.
  * @return {!CrOncDataElement} A cr-onc-data element.
  */
 CrOncDataElement.create = function(state) {

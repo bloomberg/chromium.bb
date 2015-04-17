@@ -58,38 +58,3 @@ CrOnc.Security = {
   WPA_EAP: 'WPA-EAP',
   WPA_PSK: 'WPA-PSK',
 };
-
-/** @typedef {string|!Object} */
-CrOnc.ManagedStringType;
-
-/**
- * @typedef {{
- *   NetworkTechnology: CrOnc.NetworkTechnology,
- *   RoamingState: CrOnc.RoamingState,
- *   Strength: number
- * }}
- */
-CrOnc.CellularType;
-
-/**
- * @typedef {{Security: CrOnc.Security, Strength: number}}
- */
-CrOnc.WiFiType;
-
-/**
- * @typedef {{Strength: number}}
- */
-CrOnc.WiMAXType;
-
-/**
- * @typedef {{
- *   Cellular: CrOnc.CellularType,
- *   ConnectionState: CrOnc.ConnectionState,
- *   GUID: string,
- *   Name: CrOnc.ManagedStringType,
- *   Type: CrOnc.Type,
- *   WiFi: CrOnc.WiFiType,
- *   WiMAX: CrOnc.WiMAXType
- * }}
- */
-CrOnc.NetworkConfigType;
