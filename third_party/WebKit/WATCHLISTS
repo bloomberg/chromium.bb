@@ -414,7 +414,7 @@
     'prerender': [ 'gavinp+prerender@chromium.org',
                    'yoav@yoav.ws' ],
     'preloadScanner': [ 'yoav@yoav.ws' ],
-    'push_messaging': [ 'johnme+watch@chromium.org', 'peter+watch@chromium.org' ],
+    'push_messaging': [ 'johnme+watch@chromium.org', 'mvanouwerkerk+watch@chromium.org', 'peter+watch@chromium.org' ],
     'client_hints': [ 'yoav@yoav.ws' ],
     'scheduler': [ 'scheduler-bugs@chromium.org' ],
     'track': [ 'vcarbune@chromium.org', 'silviapf@chromium.org', 'philipj@opera.com', 'glenn@chromium.org', 'fs@opera.com', 'eric.carlson@apple.com' ],
