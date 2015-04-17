@@ -682,6 +682,32 @@ base.RepeatingTimer.prototype.dispose = function() {
 };
 
 /**
+ * A disposable one shot timer.
+ *
+ * @param {Function} callback
+ * @param {number} timeout
+ *
+ * @constructor
+ * @implements {base.Disposable}
+ */
+base.OneShotTimer = function(callback, timeout) {
+  var that = this;
+
+  /** @private */
+  this.timerId_ = window.setTimeout(function() {
+    that.timerId_ = null;
+    callback();
+  }, timeout);
+};
+
+base.OneShotTimer.prototype.dispose = function() {
+  if (this.timerId_ !== null) {
+    window.clearTimeout(this.timerId_);
+    this.timerId_ = null;
+  }
+};
+
+/**
   * Converts UTF-8 string to ArrayBuffer.
   *
   * @param {string} string

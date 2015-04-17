@@ -12,10 +12,12 @@
  * |connector| to reconnect the session.
  */
 
-'use strict';
-
 /** @suppress {duplicate} */
 var remoting = remoting || {};
+
+(function () {
+
+'use strict';
 
 /**
  * @constructor
@@ -37,101 +39,90 @@ remoting.SmartReconnector =
   /** @private */
   this.clientSession_ = clientSession;
 
-  /** @private */
-  this.reconnectTimerId_ = null;
+  /**
+   * Placeholder of any pending reconnect operations, e.g. Waiting for online,
+   * or a timeout to reconnect.
+   *
+   * @private {base.Disposable}
+   */
+  this.pending_ = null;
 
+  var Events = remoting.ClientSession.Events;
   /** @private */
-  this.connectionTimeoutTimerId_ = null;
-
-  /** @private */
-  this.bound_ = {
-    reconnect: this.reconnect_.bind(this),
-    reconnectAsync: this.reconnectAsync_.bind(this),
-    startReconnectTimeout: this.startReconnectTimeout_.bind(this),
-    stateChanged: this.stateChanged_.bind(this),
-    videoChannelStateChanged: this.videoChannelStateChanged_.bind(this)
-  };
-
-  clientSession.addEventListener(
-      remoting.ClientSession.Events.stateChanged,
-      this.bound_.stateChanged);
-  clientSession.addEventListener(
-      remoting.ClientSession.Events.videoChannelStateChanged,
-      this.bound_.videoChannelStateChanged);
+  this.eventHooks_ = new base.Disposables(
+      new base.EventHook(clientSession, Events.stateChanged,
+                         this.stateChanged_.bind(this)),
+      new base.EventHook(clientSession, Events.videoChannelStateChanged,
+                         this.videoChannelStateChanged_.bind(this)));
 };
 
 // The online event only means the network adapter is enabled, but
 // it doesn't necessarily mean that we have a working internet connection.
-// Therefore, delay the connection by |kReconnectDelay| to allow for the network
-// to connect.
-remoting.SmartReconnector.kReconnectDelay = 2000;
+// Therefore, delay the connection by |RECONNECT_DELAY_MS| to allow for the
+// network to connect.
+var RECONNECT_DELAY_MS = 2000;
 
 // If the video channel is inactive for 10 seconds reconnect the session.
-remoting.SmartReconnector.kConnectionTimeout = 10000;
+var CONNECTION_TIMEOUT_MS = 10000;
 
-remoting.SmartReconnector.prototype = {
-  reconnect_: function() {
+remoting.SmartReconnector.prototype.reconnect_ = function() {
+  this.cancelPending_();
+  this.disconnectCallback_();
+  remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
+  this.reconnectCallback_();
+};
+
+remoting.SmartReconnector.prototype.reconnectAsync_ = function() {
+  this.cancelPending_();
+  remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
+  this.pending_ =
+      new base.OneShotTimer(this.reconnect_.bind(this), RECONNECT_DELAY_MS);
+};
+
+/**
+ * @param {remoting.ClientSession.StateEvent=} event
+ */
+remoting.SmartReconnector.prototype.stateChanged_ = function(event) {
+  var State = remoting.ClientSession.State;
+  if (event.previous === State.CONNECTED && event.current === State.FAILED) {
     this.cancelPending_();
-    this.disconnectCallback_();
-    remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
-    this.reconnectCallback_();
-  },
-
-  reconnectAsync_: function() {
-    this.cancelPending_();
-    remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
-    this.reconnectTimerId_ = window.setTimeout(
-        this.bound_.reconnect, remoting.SmartReconnector.kReconnectDelay);
-  },
-
-  /**
-   * @param {remoting.ClientSession.StateEvent=} event
-   */
-  stateChanged_: function(event) {
-    var State = remoting.ClientSession.State;
-    if (event.previous === State.CONNECTED && event.current === State.FAILED) {
-      this.cancelPending_();
-      if (navigator.onLine) {
-        this.reconnect_();
-      } else {
-        window.addEventListener('online', this.bound_.reconnectAsync, false);
-      }
+    if (navigator.onLine) {
+      this.reconnect_();
+    } else {
+      this.pending_ = new base.DomEventHook(
+          window, 'online', this.reconnectAsync_.bind(this), false);
     }
-  },
-
-  /**
-   * @param {boolean=} active  True if the video channel is active.
-   */
-  videoChannelStateChanged_: function (active) {
-    this.cancelPending_();
-    if (!active) {
-      window.addEventListener(
-          'online', this.bound_.startReconnectTimeout, false);
-    }
-  },
-
-  startReconnectTimeout_: function () {
-    this.cancelPending_();
-    this.connectionTimeoutTimerId_ = window.setTimeout(
-          this.bound_.reconnect, remoting.SmartReconnector.kConnectionTimeout);
-  },
-
-  cancelPending_: function() {
-    window.removeEventListener(
-        'online', this.bound_.startReconnectTimeout, false);
-    window.removeEventListener('online', this.bound_.reconnectAsync, false);
-    window.clearTimeout(this.reconnectTimerId_);
-    window.clearTimeout(this.connectionTimeoutTimerId_);
-    this.reconnectTimerId_ = null;
-    this.connectionTimeoutTimerId_ = null;
-  },
-
-  dispose: function() {
-    this.clientSession_.removeEventListener(
-        remoting.ClientSession.Events.stateChanged,
-        this.bound_.stateChanged);
-    this.clientSession_.removeEventListener(
-        remoting.ClientSession.Events.videoChannelStateChanged,
-        this.bound_.videoChannelStateChanged);
   }
 };
+
+/**
+ * @param {boolean=} active  True if the video channel is active.
+ */
+remoting.SmartReconnector.prototype.videoChannelStateChanged_ =
+    function (active) {
+  this.cancelPending_();
+  if (!active) {
+    this.pending_ = new base.DomEventHook(
+        window, 'online', this.startReconnectTimeout_.bind(this), false);
+  }
+};
+
+remoting.SmartReconnector.prototype.startReconnectTimeout_ = function() {
+  this.cancelPending_();
+  this.pending_ =
+      new base.OneShotTimer(this.reconnect_.bind(this), CONNECTION_TIMEOUT_MS);
+};
+
+/** @private */
+remoting.SmartReconnector.prototype.cancelPending_ = function() {
+  base.dispose(this.pending_);
+  this.pending_ = null;
+};
+
+remoting.SmartReconnector.prototype.dispose = function() {
+  this.cancelPending_();
+  base.dispose(this.eventHooks_);
+  this.eventHooks_ = null;
+};
+
+})();
