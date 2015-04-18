@@ -100,6 +100,7 @@
 #define glGetFragDataLocation GLES2_GET_FUN(GetFragDataLocation)
 #define glGetFramebufferAttachmentParameteriv \
   GLES2_GET_FUN(GetFramebufferAttachmentParameteriv)
+#define glGetInteger64v GLES2_GET_FUN(GetInteger64v)
 #define glGetIntegerv GLES2_GET_FUN(GetIntegerv)
 #define glGetInternalformativ GLES2_GET_FUN(GetInternalformativ)
 #define glGetProgramiv GLES2_GET_FUN(GetProgramiv)

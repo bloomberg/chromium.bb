@@ -234,6 +234,7 @@ class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
                                            GLenum attachment,
                                            GLenum pname,
                                            GLint* params) override;
+  void GetInteger64v(GLenum pname, GLint64* params) override;
   void GetIntegerv(GLenum pname, GLint* params) override;
   void GetInternalformativ(GLenum target,
                            GLenum format,

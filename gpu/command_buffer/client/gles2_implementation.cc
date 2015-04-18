@@ -740,6 +740,7 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
     case GL_SAMPLES:
     case GL_SCISSOR_BOX:
     case GL_SCISSOR_TEST:
+    case GL_SHADER_BINARY_FORMATS:
     case GL_SHADER_COMPILER:
     case GL_STENCIL_BACK_FAIL:
     case GL_STENCIL_BACK_FUNC:
@@ -899,7 +900,6 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
     case GL_READ_BUFFER:
     case GL_READ_FRAMEBUFFER_BINDING:
     case GL_SAMPLER_BINDING:
-    case GL_SHADER_BINARY_FORMATS:
     case GL_TEXTURE_BINDING_2D_ARRAY:
     case GL_TEXTURE_BINDING_3D:
     case GL_TRANSFORM_FEEDBACK_BINDING:
@@ -940,6 +940,16 @@ bool GLES2Implementation::GetFloatvHelper(GLenum pname, GLfloat* params) {
     return false;
   }
   *params = static_cast<GLfloat>(value);
+  return true;
+}
+
+bool GLES2Implementation::GetInteger64vHelper(GLenum pname, GLint64* params) {
+  // TODO(zmo): we limit values to 32-bit, which is OK for now.
+  GLint value;
+  if (!GetHelper(pname, &value)) {
+    return false;
+  }
+  *params = value;
   return true;
 }
 

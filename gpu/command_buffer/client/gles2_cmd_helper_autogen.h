@@ -833,6 +833,15 @@ void GetFramebufferAttachmentParameteriv(GLenum target,
   }
 }
 
+void GetInteger64v(GLenum pname,
+                   uint32_t params_shm_id,
+                   uint32_t params_shm_offset) {
+  gles2::cmds::GetInteger64v* c = GetCmdSpace<gles2::cmds::GetInteger64v>();
+  if (c) {
+    c->Init(pname, params_shm_id, params_shm_offset);
+  }
+}
+
 void GetIntegerv(GLenum pname,
                  uint32_t params_shm_id,
                  uint32_t params_shm_offset) {

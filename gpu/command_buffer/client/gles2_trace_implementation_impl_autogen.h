@@ -595,6 +595,11 @@ void GLES2TraceImplementation::GetFramebufferAttachmentParameteriv(
   gl_->GetFramebufferAttachmentParameteriv(target, attachment, pname, params);
 }
 
+void GLES2TraceImplementation::GetInteger64v(GLenum pname, GLint64* params) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetInteger64v");
+  gl_->GetInteger64v(pname, params);
+}
+
 void GLES2TraceImplementation::GetIntegerv(GLenum pname, GLint* params) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetIntegerv");
   gl_->GetIntegerv(pname, params);

@@ -20,14 +20,6 @@ namespace gles2 {
 
 namespace {
 
-static void EnableDisable(GLenum pname, bool enable) {
-  if (enable) {
-    glEnable(pname);
-  } else {
-    glDisable(pname);
-  }
-}
-
 GLuint Get2dServiceId(const TextureUnit& unit) {
   return unit.bound_texture_2d.get()
       ? unit.bound_texture_2d->service_id() : 0;
@@ -96,7 +88,7 @@ ContextState::ContextState(FeatureInfo* feature_info,
       bound_renderbuffer_valid(false),
       pack_reverse_row_order(false),
       ignore_cached_state(false),
-      fbo_binding_for_scissor_workaround_dirty_(false),
+      fbo_binding_for_scissor_workaround_dirty(false),
       feature_info_(feature_info),
       error_state_(ErrorState::Create(error_state_client, logger)) {
   Initialize();
@@ -289,6 +281,26 @@ void ContextState::RestoreState(const ContextState* prev_state) {
 
 ErrorState* ContextState::GetErrorState() {
   return error_state_.get();
+}
+
+void ContextState::EnableDisable(GLenum pname, bool enable) const {
+  if (pname == GL_PRIMITIVE_RESTART_FIXED_INDEX) {
+    // This is only available on Desktop GL 4.3+, but we emulate ES 3.0 on top
+    // of Desktop GL 4.2+.
+    const gfx::GLVersionInfo& gl_version = feature_info_->gl_version_info();
+    if (!gl_version.is_es &&
+        (gl_version.major_version < 4 ||
+         (gl_version.major_version == 4 && gl_version.minor_version < 3))) {
+      // TODO(zmo): Ignoring it may not be the best emulation.
+      NOTIMPLEMENTED();
+      return;
+    }
+  }
+  if (enable) {
+    glEnable(pname);
+  } else {
+    glDisable(pname);
+  }
 }
 
 // Include the auto-generated part of this file. We split this because it means

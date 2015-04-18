@@ -51,13 +51,13 @@ template <typename T>
 class SizedResultHelper {
  public:
   explicit SizedResultHelper(T result)
-      : size_(sizeof(result)),
-        result_(result) {
+      : size_(sizeof(result)) {
+    memcpy(result_, &result, sizeof(T));
   }
 
  private:
   uint32 size_;
-  T result_;
+  char result_[sizeof(T)];
 };
 
 // Struct to make it easy to pass a vec4 worth of floats.

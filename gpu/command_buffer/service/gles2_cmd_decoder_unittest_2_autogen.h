@@ -12,6 +12,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 
+// TODO(gman): GetShaderSource
 // TODO(gman): GetString
 
 TEST_P(GLES2DecoderTest2, GetSyncivValidArgs) {
@@ -1584,20 +1585,6 @@ TEST_P(GLES2DecoderTest2, VertexAttrib1fValidArgs) {
   cmds::VertexAttrib1f cmd;
   cmd.Init(1, 2);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest2, VertexAttrib1fvImmediateValidArgs) {
-  cmds::VertexAttrib1fvImmediate& cmd =
-      *GetImmediateAs<cmds::VertexAttrib1fvImmediate>();
-  SpecializedSetup<cmds::VertexAttrib1fvImmediate, 0>(true);
-  GLfloat temp[1] = {
-      0,
-  };
-  cmd.Init(1, &temp[0]);
-  EXPECT_CALL(*gl_, VertexAttrib1fv(1, reinterpret_cast<GLfloat*>(
-                                           ImmediateDataAddress(&cmd))));
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_

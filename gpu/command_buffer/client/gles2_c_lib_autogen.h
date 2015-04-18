@@ -403,6 +403,9 @@ void GLES2GetFramebufferAttachmentParameteriv(GLenum target,
   gles2::GetGLContext()->GetFramebufferAttachmentParameteriv(target, attachment,
                                                              pname, params);
 }
+void GLES2GetInteger64v(GLenum pname, GLint64* params) {
+  gles2::GetGLContext()->GetInteger64v(pname, params);
+}
 void GLES2GetIntegerv(GLenum pname, GLint* params) {
   gles2::GetGLContext()->GetIntegerv(pname, params);
 }
@@ -1694,6 +1697,10 @@ extern const NameToFunc g_gles2_function_table[] = {
      "glGetFramebufferAttachmentParameteriv",
      reinterpret_cast<GLES2FunctionPointer>(
          glGetFramebufferAttachmentParameteriv),
+    },
+    {
+     "glGetInteger64v",
+     reinterpret_cast<GLES2FunctionPointer>(glGetInteger64v),
     },
     {
      "glGetIntegerv",

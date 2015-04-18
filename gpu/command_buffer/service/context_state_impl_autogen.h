@@ -32,7 +32,9 @@ ContextState::EnableFlags::EnableFlags()
       stencil_test(false),
       cached_stencil_test(false),
       rasterizer_discard(false),
-      cached_rasterizer_discard(false) {
+      cached_rasterizer_discard(false),
+      primitive_restart_fixed_index(false),
+      cached_primitive_restart_fixed_index(false) {
 }
 
 void ContextState::Initialize() {
@@ -178,6 +180,11 @@ void ContextState::InitCapabilities(const ContextState* prev_state) const {
         EnableDisable(GL_RASTERIZER_DISCARD,
                       enable_flags.cached_rasterizer_discard);
       }
+      if (prev_state->enable_flags.cached_primitive_restart_fixed_index !=
+          enable_flags.cached_primitive_restart_fixed_index) {
+        EnableDisable(GL_PRIMITIVE_RESTART_FIXED_INDEX,
+                      enable_flags.cached_primitive_restart_fixed_index);
+      }
     }
   } else {
     EnableDisable(GL_BLEND, enable_flags.cached_blend);
@@ -194,6 +201,8 @@ void ContextState::InitCapabilities(const ContextState* prev_state) const {
     if (feature_info_->IsES3Capable()) {
       EnableDisable(GL_RASTERIZER_DISCARD,
                     enable_flags.cached_rasterizer_discard);
+      EnableDisable(GL_PRIMITIVE_RESTART_FIXED_INDEX,
+                    enable_flags.cached_primitive_restart_fixed_index);
     }
   }
 }
@@ -386,6 +395,8 @@ bool ContextState::GetEnabled(GLenum cap) const {
       return enable_flags.stencil_test;
     case GL_RASTERIZER_DISCARD:
       return enable_flags.rasterizer_discard;
+    case GL_PRIMITIVE_RESTART_FIXED_INDEX:
+      return enable_flags.primitive_restart_fixed_index;
     default:
       NOTREACHED();
       return false;
@@ -734,6 +745,13 @@ bool ContextState::GetStateAsGLint(GLenum pname,
         params[0] = static_cast<GLint>(enable_flags.rasterizer_discard);
       }
       return true;
+    case GL_PRIMITIVE_RESTART_FIXED_INDEX:
+      *num_written = 1;
+      if (params) {
+        params[0] =
+            static_cast<GLint>(enable_flags.primitive_restart_fixed_index);
+      }
+      return true;
     default:
       return false;
   }
@@ -1075,6 +1093,13 @@ bool ContextState::GetStateAsGLfloat(GLenum pname,
       *num_written = 1;
       if (params) {
         params[0] = static_cast<GLfloat>(enable_flags.rasterizer_discard);
+      }
+      return true;
+    case GL_PRIMITIVE_RESTART_FIXED_INDEX:
+      *num_written = 1;
+      if (params) {
+        params[0] =
+            static_cast<GLfloat>(enable_flags.primitive_restart_fixed_index);
       }
       return true;
     default:

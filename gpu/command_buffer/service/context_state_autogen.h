@@ -34,6 +34,8 @@ struct EnableFlags {
   bool cached_stencil_test;
   bool rasterizer_discard;
   bool cached_rasterizer_discard;
+  bool primitive_restart_fixed_index;
+  bool cached_primitive_restart_fixed_index;
 };
 
 GLfloat blend_color_red;
@@ -157,6 +159,12 @@ inline void SetDeviceCapabilityState(GLenum cap, bool enable) {
           !ignore_cached_state)
         return;
       enable_flags.cached_rasterizer_discard = enable;
+      break;
+    case GL_PRIMITIVE_RESTART_FIXED_INDEX:
+      if (enable_flags.cached_primitive_restart_fixed_index == enable &&
+          !ignore_cached_state)
+        return;
+      enable_flags.cached_primitive_restart_fixed_index = enable;
       break;
     default:
       NOTREACHED();

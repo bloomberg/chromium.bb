@@ -763,51 +763,54 @@ TEST_F(GLES2ImplementationTest, GetBooleanv) {
   struct Cmds {
     cmds::GetBooleanv cmd;
   };
-  typedef cmds::GetBooleanv::Result Result;
-  Result::Type result = 0;
+  typedef cmds::GetBooleanv::Result::Type ResultType;
+  ResultType result = 0;
   Cmds expected;
-  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(uint32_t) + sizeof(ResultType));
   expected.cmd.Init(123, result1.id, result1.offset);
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<ResultType>(1)))
       .RetiresOnSaturation();
   gl_->GetBooleanv(123, &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  EXPECT_EQ(static_cast<Result::Type>(1), result);
+  EXPECT_EQ(static_cast<ResultType>(1), result);
 }
 
 TEST_F(GLES2ImplementationTest, GetBufferParameteriv) {
   struct Cmds {
     cmds::GetBufferParameteriv cmd;
   };
-  typedef cmds::GetBufferParameteriv::Result Result;
-  Result::Type result = 0;
+  typedef cmds::GetBufferParameteriv::Result::Type ResultType;
+  ResultType result = 0;
   Cmds expected;
-  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(uint32_t) + sizeof(ResultType));
   expected.cmd.Init(123, GL_BUFFER_SIZE, result1.id, result1.offset);
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<ResultType>(1)))
       .RetiresOnSaturation();
   gl_->GetBufferParameteriv(123, GL_BUFFER_SIZE, &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  EXPECT_EQ(static_cast<Result::Type>(1), result);
+  EXPECT_EQ(static_cast<ResultType>(1), result);
 }
 
 TEST_F(GLES2ImplementationTest, GetFloatv) {
   struct Cmds {
     cmds::GetFloatv cmd;
   };
-  typedef cmds::GetFloatv::Result Result;
-  Result::Type result = 0;
+  typedef cmds::GetFloatv::Result::Type ResultType;
+  ResultType result = 0;
   Cmds expected;
-  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(uint32_t) + sizeof(ResultType));
   expected.cmd.Init(123, result1.id, result1.offset);
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<ResultType>(1)))
       .RetiresOnSaturation();
   gl_->GetFloatv(123, &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  EXPECT_EQ(static_cast<Result::Type>(1), result);
+  EXPECT_EQ(static_cast<ResultType>(1), result);
 }
 // TODO(zmo): Implement unit test for GetFragDataLocation
 
@@ -815,73 +818,95 @@ TEST_F(GLES2ImplementationTest, GetFramebufferAttachmentParameteriv) {
   struct Cmds {
     cmds::GetFramebufferAttachmentParameteriv cmd;
   };
-  typedef cmds::GetFramebufferAttachmentParameteriv::Result Result;
-  Result::Type result = 0;
+  typedef cmds::GetFramebufferAttachmentParameteriv::Result::Type ResultType;
+  ResultType result = 0;
   Cmds expected;
-  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(uint32_t) + sizeof(ResultType));
   expected.cmd.Init(123, GL_COLOR_ATTACHMENT0,
                     GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, result1.id,
                     result1.offset);
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<ResultType>(1)))
       .RetiresOnSaturation();
   gl_->GetFramebufferAttachmentParameteriv(
       123, GL_COLOR_ATTACHMENT0, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE,
       &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  EXPECT_EQ(static_cast<Result::Type>(1), result);
+  EXPECT_EQ(static_cast<ResultType>(1), result);
+}
+
+TEST_F(GLES2ImplementationTest, GetInteger64v) {
+  struct Cmds {
+    cmds::GetInteger64v cmd;
+  };
+  typedef cmds::GetInteger64v::Result::Type ResultType;
+  ResultType result = 0;
+  Cmds expected;
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(uint32_t) + sizeof(ResultType));
+  expected.cmd.Init(123, result1.id, result1.offset);
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<ResultType>(1)))
+      .RetiresOnSaturation();
+  gl_->GetInteger64v(123, &result);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_EQ(static_cast<ResultType>(1), result);
 }
 
 TEST_F(GLES2ImplementationTest, GetIntegerv) {
   struct Cmds {
     cmds::GetIntegerv cmd;
   };
-  typedef cmds::GetIntegerv::Result Result;
-  Result::Type result = 0;
+  typedef cmds::GetIntegerv::Result::Type ResultType;
+  ResultType result = 0;
   Cmds expected;
-  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(uint32_t) + sizeof(ResultType));
   expected.cmd.Init(123, result1.id, result1.offset);
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<ResultType>(1)))
       .RetiresOnSaturation();
   gl_->GetIntegerv(123, &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  EXPECT_EQ(static_cast<Result::Type>(1), result);
+  EXPECT_EQ(static_cast<ResultType>(1), result);
 }
 
 TEST_F(GLES2ImplementationTest, GetInternalformativ) {
   struct Cmds {
     cmds::GetInternalformativ cmd;
   };
-  typedef cmds::GetInternalformativ::Result Result;
-  Result::Type result = 0;
+  typedef cmds::GetInternalformativ::Result::Type ResultType;
+  ResultType result = 0;
   Cmds expected;
-  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(uint32_t) + sizeof(ResultType));
   expected.cmd.Init(123, GL_RGBA4, GL_RENDERBUFFER_RED_SIZE, 4, result1.id,
                     result1.offset);
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<ResultType>(1)))
       .RetiresOnSaturation();
   gl_->GetInternalformativ(123, GL_RGBA4, GL_RENDERBUFFER_RED_SIZE, 4, &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  EXPECT_EQ(static_cast<Result::Type>(1), result);
+  EXPECT_EQ(static_cast<ResultType>(1), result);
 }
 
 TEST_F(GLES2ImplementationTest, GetProgramiv) {
   struct Cmds {
     cmds::GetProgramiv cmd;
   };
-  typedef cmds::GetProgramiv::Result Result;
-  Result::Type result = 0;
+  typedef cmds::GetProgramiv::Result::Type ResultType;
+  ResultType result = 0;
   Cmds expected;
-  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(uint32_t) + sizeof(ResultType));
   expected.cmd.Init(123, GL_DELETE_STATUS, result1.id, result1.offset);
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<ResultType>(1)))
       .RetiresOnSaturation();
   gl_->GetProgramiv(123, GL_DELETE_STATUS, &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  EXPECT_EQ(static_cast<Result::Type>(1), result);
+  EXPECT_EQ(static_cast<ResultType>(1), result);
 }
 // TODO(zmo): Implement unit test for GetProgramInfoLog
 
@@ -889,68 +914,72 @@ TEST_F(GLES2ImplementationTest, GetRenderbufferParameteriv) {
   struct Cmds {
     cmds::GetRenderbufferParameteriv cmd;
   };
-  typedef cmds::GetRenderbufferParameteriv::Result Result;
-  Result::Type result = 0;
+  typedef cmds::GetRenderbufferParameteriv::Result::Type ResultType;
+  ResultType result = 0;
   Cmds expected;
-  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(uint32_t) + sizeof(ResultType));
   expected.cmd.Init(123, GL_RENDERBUFFER_RED_SIZE, result1.id, result1.offset);
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<ResultType>(1)))
       .RetiresOnSaturation();
   gl_->GetRenderbufferParameteriv(123, GL_RENDERBUFFER_RED_SIZE, &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  EXPECT_EQ(static_cast<Result::Type>(1), result);
+  EXPECT_EQ(static_cast<ResultType>(1), result);
 }
 
 TEST_F(GLES2ImplementationTest, GetSamplerParameterfv) {
   struct Cmds {
     cmds::GetSamplerParameterfv cmd;
   };
-  typedef cmds::GetSamplerParameterfv::Result Result;
-  Result::Type result = 0;
+  typedef cmds::GetSamplerParameterfv::Result::Type ResultType;
+  ResultType result = 0;
   Cmds expected;
-  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(uint32_t) + sizeof(ResultType));
   expected.cmd.Init(123, GL_TEXTURE_MAG_FILTER, result1.id, result1.offset);
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<ResultType>(1)))
       .RetiresOnSaturation();
   gl_->GetSamplerParameterfv(123, GL_TEXTURE_MAG_FILTER, &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  EXPECT_EQ(static_cast<Result::Type>(1), result);
+  EXPECT_EQ(static_cast<ResultType>(1), result);
 }
 
 TEST_F(GLES2ImplementationTest, GetSamplerParameteriv) {
   struct Cmds {
     cmds::GetSamplerParameteriv cmd;
   };
-  typedef cmds::GetSamplerParameteriv::Result Result;
-  Result::Type result = 0;
+  typedef cmds::GetSamplerParameteriv::Result::Type ResultType;
+  ResultType result = 0;
   Cmds expected;
-  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(uint32_t) + sizeof(ResultType));
   expected.cmd.Init(123, GL_TEXTURE_MAG_FILTER, result1.id, result1.offset);
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<ResultType>(1)))
       .RetiresOnSaturation();
   gl_->GetSamplerParameteriv(123, GL_TEXTURE_MAG_FILTER, &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  EXPECT_EQ(static_cast<Result::Type>(1), result);
+  EXPECT_EQ(static_cast<ResultType>(1), result);
 }
 
 TEST_F(GLES2ImplementationTest, GetShaderiv) {
   struct Cmds {
     cmds::GetShaderiv cmd;
   };
-  typedef cmds::GetShaderiv::Result Result;
-  Result::Type result = 0;
+  typedef cmds::GetShaderiv::Result::Type ResultType;
+  ResultType result = 0;
   Cmds expected;
-  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(uint32_t) + sizeof(ResultType));
   expected.cmd.Init(123, GL_SHADER_TYPE, result1.id, result1.offset);
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<ResultType>(1)))
       .RetiresOnSaturation();
   gl_->GetShaderiv(123, GL_SHADER_TYPE, &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  EXPECT_EQ(static_cast<Result::Type>(1), result);
+  EXPECT_EQ(static_cast<ResultType>(1), result);
 }
 // TODO(zmo): Implement unit test for GetShaderInfoLog
 // TODO(zmo): Implement unit test for GetShaderPrecisionFormat
@@ -959,52 +988,55 @@ TEST_F(GLES2ImplementationTest, GetSynciv) {
   struct Cmds {
     cmds::GetSynciv cmd;
   };
-  typedef cmds::GetSynciv::Result Result;
-  Result::Type result = 0;
+  typedef cmds::GetSynciv::Result::Type ResultType;
+  ResultType result = 0;
   Cmds expected;
-  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(uint32_t) + sizeof(ResultType));
   expected.cmd.Init(123, GL_SYNC_STATUS, result1.id, result1.offset);
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<ResultType>(1)))
       .RetiresOnSaturation();
   gl_->GetSynciv(reinterpret_cast<GLsync>(123), GL_SYNC_STATUS, 3, nullptr,
                  &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  EXPECT_EQ(static_cast<Result::Type>(1), result);
+  EXPECT_EQ(static_cast<ResultType>(1), result);
 }
 
 TEST_F(GLES2ImplementationTest, GetTexParameterfv) {
   struct Cmds {
     cmds::GetTexParameterfv cmd;
   };
-  typedef cmds::GetTexParameterfv::Result Result;
-  Result::Type result = 0;
+  typedef cmds::GetTexParameterfv::Result::Type ResultType;
+  ResultType result = 0;
   Cmds expected;
-  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(uint32_t) + sizeof(ResultType));
   expected.cmd.Init(123, GL_TEXTURE_MAG_FILTER, result1.id, result1.offset);
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<ResultType>(1)))
       .RetiresOnSaturation();
   gl_->GetTexParameterfv(123, GL_TEXTURE_MAG_FILTER, &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  EXPECT_EQ(static_cast<Result::Type>(1), result);
+  EXPECT_EQ(static_cast<ResultType>(1), result);
 }
 
 TEST_F(GLES2ImplementationTest, GetTexParameteriv) {
   struct Cmds {
     cmds::GetTexParameteriv cmd;
   };
-  typedef cmds::GetTexParameteriv::Result Result;
-  Result::Type result = 0;
+  typedef cmds::GetTexParameteriv::Result::Type ResultType;
+  ResultType result = 0;
   Cmds expected;
-  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(uint32_t) + sizeof(ResultType));
   expected.cmd.Init(123, GL_TEXTURE_MAG_FILTER, result1.id, result1.offset);
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<ResultType>(1)))
       .RetiresOnSaturation();
   gl_->GetTexParameteriv(123, GL_TEXTURE_MAG_FILTER, &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  EXPECT_EQ(static_cast<Result::Type>(1), result);
+  EXPECT_EQ(static_cast<ResultType>(1), result);
 }
 // TODO(zmo): Implement unit test for GetTransformFeedbackVarying
 // TODO(zmo): Implement unit test for GetUniformBlockIndex
@@ -1017,36 +1049,38 @@ TEST_F(GLES2ImplementationTest, GetVertexAttribfv) {
   struct Cmds {
     cmds::GetVertexAttribfv cmd;
   };
-  typedef cmds::GetVertexAttribfv::Result Result;
-  Result::Type result = 0;
+  typedef cmds::GetVertexAttribfv::Result::Type ResultType;
+  ResultType result = 0;
   Cmds expected;
-  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(uint32_t) + sizeof(ResultType));
   expected.cmd.Init(123, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, result1.id,
                     result1.offset);
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<ResultType>(1)))
       .RetiresOnSaturation();
   gl_->GetVertexAttribfv(123, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  EXPECT_EQ(static_cast<Result::Type>(1), result);
+  EXPECT_EQ(static_cast<ResultType>(1), result);
 }
 
 TEST_F(GLES2ImplementationTest, GetVertexAttribiv) {
   struct Cmds {
     cmds::GetVertexAttribiv cmd;
   };
-  typedef cmds::GetVertexAttribiv::Result Result;
-  Result::Type result = 0;
+  typedef cmds::GetVertexAttribiv::Result::Type ResultType;
+  ResultType result = 0;
   Cmds expected;
-  ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(uint32_t) + sizeof(ResultType));
   expected.cmd.Init(123, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, result1.id,
                     result1.offset);
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<ResultType>(1)))
       .RetiresOnSaturation();
   gl_->GetVertexAttribiv(123, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  EXPECT_EQ(static_cast<Result::Type>(1), result);
+  EXPECT_EQ(static_cast<ResultType>(1), result);
 }
 
 TEST_F(GLES2ImplementationTest, Hint) {

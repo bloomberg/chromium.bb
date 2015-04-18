@@ -1412,6 +1412,9 @@ class GLES2DecoderImpl : public GLES2Decoder,
   void DoGetFramebufferAttachmentParameteriv(
       GLenum target, GLenum attachment, GLenum pname, GLint* params);
 
+  // Wrapper for glGetInteger64v.
+  void DoGetInteger64v(GLenum pname, GLint64* params);
+
   // Wrapper for glGetIntegerv.
   void DoGetIntegerv(GLenum pname, GLint* params);
 
@@ -4387,7 +4390,7 @@ void GLES2DecoderImpl::SetIgnoreCachedStateForTest(bool ignore) {
 
 void GLES2DecoderImpl::OnFboChanged() const {
   if (workarounds().restore_scissor_on_fbo_change)
-    state_.fbo_binding_for_scissor_workaround_dirty_ = true;
+    state_.fbo_binding_for_scissor_workaround_dirty = true;
 
   if (workarounds().gl_begin_gl_end_on_fbo_change_to_backbuffer) {
     GLint bound_fbo_unsigned = -1;
@@ -4400,8 +4403,8 @@ void GLES2DecoderImpl::OnFboChanged() const {
 
 // Called after the FBO is checked for completeness.
 void GLES2DecoderImpl::OnUseFramebuffer() const {
-  if (state_.fbo_binding_for_scissor_workaround_dirty_) {
-    state_.fbo_binding_for_scissor_workaround_dirty_ = false;
+  if (state_.fbo_binding_for_scissor_workaround_dirty) {
+    state_.fbo_binding_for_scissor_workaround_dirty = false;
     // The driver forgets the correct scissor when modifying the FBO binding.
     glScissor(state_.scissor_x,
               state_.scissor_y,
@@ -5177,6 +5180,12 @@ void GLES2DecoderImpl::DoGetFloatv(GLenum pname, GLfloat* params) {
       glGetFloatv(pname, params);
     }
   }
+}
+
+void GLES2DecoderImpl::DoGetInteger64v(GLenum pname, GLint64* params) {
+  DCHECK(params);
+  pname = AdjustGetPname(pname);
+  glGetInteger64v(pname, params);
 }
 
 void GLES2DecoderImpl::DoGetIntegerv(GLenum pname, GLint* params) {

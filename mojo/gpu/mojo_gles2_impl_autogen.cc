@@ -475,6 +475,9 @@ void MojoGLES2Impl::GetFramebufferAttachmentParameteriv(GLenum target,
   MojoGLES2MakeCurrent(context_);
   glGetFramebufferAttachmentParameteriv(target, attachment, pname, params);
 }
+void MojoGLES2Impl::GetInteger64v(GLenum pname, GLint64* params) {
+  NOTREACHED() << "Unimplemented GetInteger64v.";
+}
 void MojoGLES2Impl::GetIntegerv(GLenum pname, GLint* params) {
   MojoGLES2MakeCurrent(context_);
   glGetIntegerv(pname, params);

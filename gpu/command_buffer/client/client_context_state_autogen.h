@@ -24,6 +24,7 @@ struct EnableFlags {
   bool scissor_test;
   bool stencil_test;
   bool rasterizer_discard;
+  bool primitive_restart_fixed_index;
 };
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_CLIENT_CONTEXT_STATE_AUTOGEN_H_

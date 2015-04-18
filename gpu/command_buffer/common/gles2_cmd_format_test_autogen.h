@@ -1283,6 +1283,20 @@ TEST_F(GLES2FormatTest, GetFramebufferAttachmentParameteriv) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, GetInteger64v) {
+  cmds::GetInteger64v& cmd = *GetBufferAs<cmds::GetInteger64v>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<uint32_t>(12),
+              static_cast<uint32_t>(13));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::GetInteger64v::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.pname);
+  EXPECT_EQ(static_cast<uint32_t>(12), cmd.params_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(13), cmd.params_shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, GetIntegerv) {
   cmds::GetIntegerv& cmd = *GetBufferAs<cmds::GetIntegerv>();
   void* next_cmd =

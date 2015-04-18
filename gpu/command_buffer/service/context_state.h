@@ -211,10 +211,12 @@ struct GPU_EXPORT ContextState {
   bool pack_reverse_row_order;
   bool ignore_cached_state;
 
-  mutable bool fbo_binding_for_scissor_workaround_dirty_;
-  FeatureInfo* feature_info_;
+  mutable bool fbo_binding_for_scissor_workaround_dirty;
 
  private:
+  void EnableDisable(GLenum pname, bool enable) const;
+
+  FeatureInfo* feature_info_;
   scoped_ptr<ErrorState> error_state_;
 };
 

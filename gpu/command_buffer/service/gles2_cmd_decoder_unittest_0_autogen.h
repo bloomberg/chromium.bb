@@ -24,6 +24,7 @@ void GLES2DecoderTestBase::SetupInitCapabilitiesExpectations(bool es3_capable) {
   ExpectEnableDisable(GL_STENCIL_TEST, false);
   if (es3_capable) {
     ExpectEnableDisable(GL_RASTERIZER_DISCARD, false);
+    ExpectEnableDisable(GL_PRIMITIVE_RESTART_FIXED_INDEX, false);
   }
 }
 
