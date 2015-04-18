@@ -704,7 +704,7 @@ class CuePoint {
     // reference = clusters containing req'd referenced blocks
     //  reftime = timecode of the referenced block
 
-    void Parse(IMkvReader*, long long, long long);
+    bool Parse(IMkvReader*, long long, long long);
   };
 
   const TrackPosition* Find(const Track*) const;

@@ -2237,7 +2237,9 @@ bool CuePoint::Load(IMkvReader* pReader) {
 
     if (id == 0x37) {  // CueTrackPosition(s) ID
       TrackPosition& tp = *p++;
-      tp.Parse(pReader, pos, size);
+      if (!tp.Parse(pReader, pos, size)) {
+        return false;
+      }
     }
 
     pos += size;  // consume payload
@@ -2252,7 +2254,7 @@ bool CuePoint::Load(IMkvReader* pReader) {
   return true;
 }
 
-void CuePoint::TrackPosition::Parse(IMkvReader* pReader, long long start_,
+bool CuePoint::TrackPosition::Parse(IMkvReader* pReader, long long start_,
                                     long long size_) {
   const long long stop = start_ + size_;
   long long pos = start_;
@@ -2265,17 +2267,21 @@ void CuePoint::TrackPosition::Parse(IMkvReader* pReader, long long start_,
     long len;
 
     const long long id = ReadUInt(pReader, pos, len);
-    assert(id >= 0);  // TODO
-    assert((pos + len) <= stop);
+    if ((id < 0) || ((pos + len) > stop)) {
+      return false;
+    }
 
     pos += len;  // consume ID
 
     const long long size = ReadUInt(pReader, pos, len);
-    assert(size >= 0);
-    assert((pos + len) <= stop);
+    if ((size < 0) || ((pos + len) > stop)) {
+      return false;
+    }
 
     pos += len;  // consume Size field
-    assert((pos + size) <= stop);
+    if ((pos + size) > stop) {
+      return false;
+    }
 
     if (id == 0x77)  // CueTrack ID
       m_track = UnserializeUInt(pReader, pos, size);
@@ -2287,12 +2293,13 @@ void CuePoint::TrackPosition::Parse(IMkvReader* pReader, long long start_,
       m_block = UnserializeUInt(pReader, pos, size);
 
     pos += size;  // consume payload
-    assert(pos <= stop);
   }
 
-  assert(m_pos >= 0);
-  assert(m_track > 0);
-  // assert(m_block > 0);
+  if ((m_pos < 0) || (m_track <= 0)) {
+    return false;
+  }
+
+  return true;
 }
 
 const CuePoint::TrackPosition* CuePoint::Find(const Track* pTrack) const {
