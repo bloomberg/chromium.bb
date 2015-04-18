@@ -146,8 +146,8 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #endif
 
-// The blacklist tests rely on safe browsing.
-#if defined(FULL_SAFE_BROWSING) || defined(MOBILE_SAFE_BROWSING)
+// The blacklist tests rely on the safe-browsing database.
+#if defined(SAFE_BROWSING_DB_LOCAL)
 #define ENABLE_BLACKLIST_TESTS
 #endif
 
@@ -3631,7 +3631,6 @@ TEST_F(ExtensionServiceTest, ReloadBlacklistedExtension) {
   EXPECT_EQ(StringSet(good1, good2),
             registry()->blacklisted_extensions().GetIDs());
 }
-
 #endif  // defined(ENABLE_BLACKLIST_TESTS)
 
 // Tests blocking then unblocking enabled extensions after the service has been

@@ -275,7 +275,7 @@ class RemoveCookieTester {
   DISALLOW_COPY_AND_ASSIGN(RemoveCookieTester);
 };
 
-#if defined(FULL_SAFE_BROWSING) || defined(MOBILE_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_SERVICE)
 class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
  public:
   RemoveSafeBrowsingCookieTester()
@@ -905,7 +905,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveCookieLastHour) {
   EXPECT_EQ(removal_data.remove_begin, GetBeginTime());
 }
 
-#if defined(FULL_SAFE_BROWSING) || defined(MOBILE_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_SERVICE)
 TEST_F(BrowsingDataRemoverTest, RemoveSafeBrowsingCookieForever) {
   RemoveSafeBrowsingCookieTester tester;
 

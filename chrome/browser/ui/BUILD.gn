@@ -155,7 +155,6 @@ source_set("ui") {
     deps += [ "//ppapi/proxy:ipc" ]
   }
   if (safe_browsing_mode == 1) {
-    defines += [ "FULL_SAFE_BROWSING" ]
     deps += [
       "//chrome/browser/safe_browsing:chunk_proto",
       "//chrome/common/safe_browsing:proto",

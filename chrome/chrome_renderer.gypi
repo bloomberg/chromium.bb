@@ -307,17 +307,9 @@
           'sources': [
             '<@(chrome_renderer_safe_browsing_sources)',
           ],
-          'defines': [
-            'FULL_SAFE_BROWSING',
-          ],
           'dependencies': [
             'safe_browsing_proto',
             '../third_party/smhasher/smhasher.gyp:murmurhash3',
-          ],
-        }],
-        ['safe_browsing==2', {
-          'defines': [
-            'MOBILE_SAFE_BROWSING',
           ],
         }],
         ['enable_extensions==1', {

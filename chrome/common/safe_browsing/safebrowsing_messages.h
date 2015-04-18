@@ -10,7 +10,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "url/gurl.h"
 
-#if !defined(FULL_SAFE_BROWSING) && !defined(MOBILE_SAFE_BROWSING)
+#if !defined(SAFE_BROWSING_SERVICE)
 #error "Safe browsing should be enabled"
 #endif
 

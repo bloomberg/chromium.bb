@@ -220,12 +220,17 @@ void SafeBrowsingService::Initialize() {
           make_scoped_refptr(g_browser_process->system_request_context())));
 
 #if defined(FULL_SAFE_BROWSING)
-#if !defined(OS_ANDROID)
+#if !defined(SAFE_BROWSING_CSD)
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableClientSidePhishingDetection)) {
     csd_service_.reset(safe_browsing::ClientSideDetectionService::Create(
         url_request_context_getter_.get()));
   }
+#endif  // !defined(SAFE_BROWSING_CSD)
+
+// TODO(nparker): Adding SAFE_BROWSING_SERVICE_DOWNLOAD to control this might
+// allow removing FULL_SAFE_BROWSING above.
+#if !defined(OS_ANDROID)
   download_service_.reset(new safe_browsing::DownloadProtectionService(
       this, url_request_context_getter_.get()));
 #endif
@@ -239,7 +244,7 @@ void SafeBrowsingService::Initialize() {
 
   off_domain_inclusion_detector_.reset(
       new safe_browsing::OffDomainInclusionDetector(database_manager_));
-#endif
+#endif  // !defined(OS_ANDROID)
 
   // Track the safe browsing preference of existing profiles.
   // The SafeBrowsingService will be started if any existing profile has the
@@ -374,7 +379,7 @@ SafeBrowsingUIManager* SafeBrowsingService::CreateUIManager() {
 }
 
 SafeBrowsingDatabaseManager* SafeBrowsingService::CreateDatabaseManager() {
-#if defined(FULL_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_DB_LOCAL)
   return new SafeBrowsingDatabaseManager(this);
 #else
   return NULL;
@@ -483,11 +488,12 @@ void SafeBrowsingService::StartOnIOThread(
 
   SafeBrowsingProtocolConfig config = GetProtocolConfig();
 
-#if defined(FULL_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_DB_LOCAL)
   // TODO(pkasting): Remove ScopedTracker below once crbug.com/455469 is fixed.
   tracked_objects::ScopedTracker tracking_profile2(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "455469 SafeBrowsingService::StartOnIOThread 2"));
+
   DCHECK(database_manager_.get());
   database_manager_->StartOnIOThread();
 
@@ -513,7 +519,7 @@ void SafeBrowsingService::StartOnIOThread(
 void SafeBrowsingService::StopOnIOThread(bool shutdown) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-#if defined(FULL_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_DB_LOCAL)
   database_manager_->StopOnIOThread(shutdown);
 #endif
   ui_manager_->StopOnIOThread(shutdown);
@@ -521,7 +527,7 @@ void SafeBrowsingService::StopOnIOThread(bool shutdown) {
   if (enabled_) {
     enabled_ = false;
 
-#if defined(FULL_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_DB_LOCAL)
     // This cancels all in-flight GetHash requests. Note that database_manager_
     // relies on the protocol_manager_ so if the latter is destroyed, the
     // former must be stopped.

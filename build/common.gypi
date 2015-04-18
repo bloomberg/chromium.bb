@@ -2995,6 +2995,27 @@
       ['v8_use_external_startup_data==1', {
        'defines': ['V8_USE_EXTERNAL_STARTUP_DATA'],
       }],
+
+      # SAFE_BROWSING_SERVICE - browser manages a safe-browsing service.
+      # SAFE_BROWSING_DB_LOCAL - service manages a local database.
+      # SAFE_BROWSING_DB_REMOTE - service talks via API to a database
+      # SAFE_BROWSING_CSD - enable client-side phishing detection.
+      ['safe_browsing==1', {
+        # TODO(nparker): Remove existing uses of FULL_SAFE_BROWSING
+        'defines': [
+          'FULL_SAFE_BROWSING',
+          'SAFE_BROWSING_CSD',
+          'SAFE_BROWSING_DB_LOCAL',
+          'SAFE_BROWSING_SERVICE',
+        ],
+      }],
+      ['safe_browsing==2', {
+        'defines': [
+          # TODO(nparker): Remove existing uses of MOBILE_SAFE_BROWSING
+          'MOBILE_SAFE_BROWSING',
+          'SAFE_BROWSING_SERVICE',
+        ],
+      }],
     ],  # conditions for 'target_defaults'
     'target_conditions': [
       ['<(use_libpci)==1', {

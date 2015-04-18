@@ -234,6 +234,15 @@ config("feature_flags") {
   if (enable_video_hole) {
     defines += [ "VIDEO_HOLE=1" ]
   }
+  if (safe_browsing_mode == 1) {
+    defines += [ "FULL_SAFE_BROWSING" ]
+    defines += [ "SAFE_BROWSING_CSD" ]
+    defines += [ "SAFE_BROWSING_DB_LOCAL" ]
+    defines += [ "SAFE_BROWSING_SERVICE" ]
+  } else if (safe_browsing_mode == 2) {
+    defines += [ "MOBILE_SAFE_BROWSING" ]
+    defines += [ "SAFE_BROWSING_SERVICE" ]
+  }
 }
 
 # Debug/release ----------------------------------------------------------------

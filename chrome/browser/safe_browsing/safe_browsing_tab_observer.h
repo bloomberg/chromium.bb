@@ -23,7 +23,7 @@ class SafeBrowsingTabObserver
  public:
   ~SafeBrowsingTabObserver() override;
 
-  // Forwards to detection host is client-side detection is enabled.
+  // Forward to detection host, if safe-browsing is enabled.
   bool DidPageReceiveSafeBrowsingMatch() const;
 
  private:

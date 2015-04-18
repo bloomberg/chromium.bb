@@ -826,7 +826,6 @@ if (!is_android) {
               chrome_tests_gypi_values.chrome_browser_tests_full_safe_browsing_sources,
               ".",
               "//chrome")
-      defines += [ "FULL_SAFE_BROWSING" ]
     }
     if (enable_captive_portal_detection) {
       sources += [ "../browser/captive_portal/captive_portal_browsertest.cc" ]
@@ -1423,7 +1422,6 @@ if (!is_android) {
               unit_gypi_values.chrome_unit_tests_full_safe_browsing_sources,
               ".",
               "//chrome")
-      defines += [ "FULL_SAFE_BROWSING" ]
       deps += [ ":test_proto" ]
       if (is_android) {
         deps -= [ ":test_proto" ]

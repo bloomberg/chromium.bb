@@ -15,7 +15,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
-#if defined(FULL_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_CSD)
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
 #endif
 
@@ -23,16 +23,17 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(safe_browsing::SafeBrowsingTabObserver);
 
 namespace safe_browsing {
 
-#if !defined(FULL_SAFE_BROWSING)
+#if !defined(SAFE_BROWSING_CSD)
 // Provide a dummy implementation so that scoped_ptr<ClientSideDetectionHost>
 // has a concrete destructor to call. This is necessary because it is used
 // as a member of SafeBrowsingTabObserver, even if it only ever contains NULL.
+// TODO(shess): This is weird, why not just guard the instance variable?
 class ClientSideDetectionHost { };
 #endif
 
 SafeBrowsingTabObserver::SafeBrowsingTabObserver(
     content::WebContents* web_contents) : web_contents_(web_contents) {
-#if defined(FULL_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_CSD)
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
@@ -59,7 +60,7 @@ SafeBrowsingTabObserver::~SafeBrowsingTabObserver() {
 // Internal helpers
 
 void SafeBrowsingTabObserver::UpdateSafebrowsingDetectionHost() {
-#if defined(FULL_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_CSD)
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
@@ -80,9 +81,8 @@ void SafeBrowsingTabObserver::UpdateSafebrowsingDetectionHost() {
 #endif
 }
 
-  // Forwards to detection host is client-side detection is enabled.
 bool SafeBrowsingTabObserver::DidPageReceiveSafeBrowsingMatch() const {
-#if defined(FULL_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_CSD)
   return safebrowsing_detection_host_ &&
       safebrowsing_detection_host_->DidPageReceiveSafeBrowsingMatch();
 #else

@@ -167,13 +167,6 @@ static_library("extensions") {
     ]
   }
 
-  if (safe_browsing_mode == 1) {
-    defines += [ "FULL_SAFE_BROWSING" ]
-  }
-  if (safe_browsing_mode == 2) {
-    defines += [ "MOBILE_SAFE_BROWSING" ]
-  }
-
   if (is_win || is_mac) {
     deps += [ "//components/wifi" ]
     sources += rebase_path(

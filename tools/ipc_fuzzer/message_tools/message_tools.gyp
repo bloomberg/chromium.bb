@@ -27,9 +27,6 @@
     {
       'target_name': 'ipc_message_list',
       'type': 'executable',
-      'defines': [
-        'FULL_SAFE_BROWSING',
-      ],
       'dependencies': [
         '../../../chrome/chrome.gyp:safe_browsing_proto',
         '../message_lib/message_lib.gyp:ipc_message_lib',

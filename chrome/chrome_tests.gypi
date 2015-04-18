@@ -2201,11 +2201,9 @@
         ['enable_web_speech==1', {
           'sources': [ '<@(chrome_browser_tests_speech_sources)' ],
         }],
+        # TODO(nparker) enable tests for safe_browsing==2.
         ['safe_browsing==1', {
           'sources': [ '<@(chrome_browser_tests_full_safe_browsing_sources)' ],
-          'defines': [
-            'FULL_SAFE_BROWSING',
-          ],
         }],
         ['enable_captive_portal_detection==1', {
           'sources': [ 'browser/captive_portal/captive_portal_browsertest.cc' ],

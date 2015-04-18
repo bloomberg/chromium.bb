@@ -450,6 +450,8 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppLauncherTest, BlockedByPolicy) {
   EXPECT_FALSE(GetInstalledExtension(kDefaultAppId));
 }
 
+// The blacklist relies on safe-browsing database infrastructure.
+#if defined(SAFE_BROWSING_DB_LOCAL)
 // Verifies that an app blacklisted for malware is not installed ephemerally.
 IN_PROC_BROWSER_TEST_F(EphemeralAppLauncherTest, BlacklistedForMalware) {
   // Mock a BLACKLISTED_MALWARE return status.
@@ -474,6 +476,7 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppLauncherTest, BlacklistStateUnknown) {
   RunLaunchTest(kDefaultAppId, webstore_install::SUCCESS, true);
   ValidateAppInstalledEphemerally(kDefaultAppId);
 }
+#endif
 
 // Verifies that an app with unsupported requirements is not installed
 // ephemerally.

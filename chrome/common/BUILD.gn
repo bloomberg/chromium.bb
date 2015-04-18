@@ -229,13 +229,9 @@ static_library("common") {
   }
 
   if (safe_browsing_mode == 1) {
-    defines += [ "FULL_SAFE_BROWSING" ]
     sources += rebase_path(gypi_values.chrome_common_full_safe_browsing_sources,
                            ".",
                            "//chrome")
-  }
-  if (safe_browsing_mode == 2) {
-    defines += [ "MOBILE_SAFE_BROWSING" ]
   }
   if (enable_media_router) {
     defines += [ "ENABLE_MEDIA_ROUTER=1" ]

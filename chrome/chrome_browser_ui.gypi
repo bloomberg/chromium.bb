@@ -2841,9 +2841,6 @@
           ],
         }],
         ['safe_browsing==1', {
-          'defines': [
-            'FULL_SAFE_BROWSING',
-          ],
           'dependencies': [
             'safe_browsing_chunk_proto',
             'safe_browsing_proto',

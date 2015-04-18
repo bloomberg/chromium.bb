@@ -2301,7 +2301,6 @@
         ['safe_browsing==1', {
           # TODO(sgurun): enable tests for safe_browsing==2.
           'sources': [ '<@(chrome_unit_tests_full_safe_browsing_sources)' ],
-          'defines': [ 'FULL_SAFE_BROWSING' ],
           'dependencies': [
             'ipc_protobuf_message_test_proto',
           ],

@@ -527,11 +527,7 @@
           ],
         }],
         ['safe_browsing==1', {
-          'defines': [ 'FULL_SAFE_BROWSING' ],
           'sources': [ '<@(chrome_common_full_safe_browsing_sources)', ],
-        }],
-        ['safe_browsing==2', {
-          'defines': [ 'MOBILE_SAFE_BROWSING' ],
         }],
       ],
       'target_conditions': [

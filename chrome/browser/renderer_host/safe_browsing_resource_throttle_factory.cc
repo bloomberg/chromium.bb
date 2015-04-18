@@ -5,7 +5,16 @@
 #include "chrome/browser/renderer_host/safe_browsing_resource_throttle_factory.h"
 
 #include "content/public/browser/resource_context.h"
-#if defined(FULL_SAFE_BROWSING)
+
+// Compiling this file only makes sense if SAFE_BROWSING_SERVICE is enabled.
+// If the build is breaking here, it probably means that a gyp or gn file has
+// been modified to build this file with safe_browsing=0 (gn
+// safe_browsing_mode=0).
+#if !defined(SAFE_BROWSING_SERVICE)
+#error Need to define safe_browsing mode.
+#endif
+
+#if defined(SAFE_BROWSING_DB_LOCAL)
 #include "chrome/browser/renderer_host/safe_browsing_resource_throttle.h"
 #endif
 
@@ -31,11 +40,10 @@ ResourceThrottle* SafeBrowsingResourceThrottleFactory::Create(
     return factory_->CreateResourceThrottle(
         request, resource_context, resource_type, service);
 
-#if defined(FULL_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_DB_LOCAL)
+  // Throttle consults a local database before proceeding.
   return new SafeBrowsingResourceThrottle(request, resource_type, service);
-#elif defined(MOBILE_SAFE_BROWSING)
-  return NULL;
 #else
-#error Need to define {FULL|MOBILE} SAFE_BROWSING mode.
+  return NULL;
 #endif
 }

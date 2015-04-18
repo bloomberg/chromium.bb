@@ -484,12 +484,14 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   }
 
   void CreateCSDService() {
+#if defined(SAFE_BROWSING_CSD)
     safe_browsing::ClientSideDetectionService* csd_service =
         safe_browsing::ClientSideDetectionService::Create(NULL);
     SafeBrowsingService* sb_service =
         g_browser_process->safe_browsing_service();
     sb_service->csd_service_.reset(csd_service);
     sb_service->RefreshState();
+#endif
   }
 
   void ProceedAndWhitelist(

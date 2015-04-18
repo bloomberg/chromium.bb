@@ -38,6 +38,6 @@
 #include "chrome/common/media/webrtc_logging_messages.h"
 #endif
 
-#if defined(FULL_SAFE_BROWSING) || defined(MOBILE_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_SERVICE)
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #endif

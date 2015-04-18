@@ -34,7 +34,7 @@ namespace {
 class LazySafeBrowsingDatabaseManager {
  public:
   LazySafeBrowsingDatabaseManager() {
-#if defined(FULL_SAFE_BROWSING) || defined(MOBILE_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_DB_LOCAL)
     if (g_browser_process && g_browser_process->safe_browsing_service()) {
       instance_ =
           g_browser_process->safe_browsing_service()->database_manager();

@@ -3321,16 +3321,8 @@
           'conditions': [
             ['safe_browsing == 1', {
               'sources': [ '<@(chrome_browser_safe_browsing_full_sources)' ],
-              'defines': [
-                'FULL_SAFE_BROWSING',
-              ],
               'dependencies': [
                 'safe_browsing_proto',
-              ],
-            }],
-            ['safe_browsing == 2', {
-              'defines': [
-                'MOBILE_SAFE_BROWSING',
               ],
             }],
           ],

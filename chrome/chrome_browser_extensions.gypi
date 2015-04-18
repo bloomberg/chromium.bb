@@ -980,16 +980,6 @@
             }],
           ],
         }],
-        ['safe_browsing==1', {
-          'defines': [
-            'FULL_SAFE_BROWSING',
-          ],
-        }],
-        ['safe_browsing==2', {
-          'defines': [
-            'MOBILE_SAFE_BROWSING',
-          ],
-        }],
         ['configuration_policy==1', {
           'dependencies': [
             '../components/components.gyp:policy',
