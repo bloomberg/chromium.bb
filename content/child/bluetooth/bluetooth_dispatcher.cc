@@ -130,7 +130,7 @@ void BluetoothDispatcher::OnRequestDeviceSuccess(
           WebString::fromUTF8(device.instance_id), WebString(device.name),
           device.device_class, GetWebVendorIdSource(device.vendor_id_source),
           device.vendor_id, device.product_id, device.product_version,
-          device.paired, device.connected, uuids));
+          device.paired, uuids));
   pending_requests_.Remove(request_id);
 }
 

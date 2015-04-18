@@ -103,7 +103,6 @@ void BluetoothDispatcherHost::OnRequestDeviceOnUI(int thread_id,
             device->GetProductID(),       // product_id
             device->GetDeviceID(),        // product_version
             device->IsPaired(),           // paired
-            device->IsConnected(),        // connected
             content::BluetoothDevice::UUIDsFromBluetoothUUIDs(
                 device->GetUUIDs()));  // uuids
         Send(new BluetoothMsg_RequestDeviceSuccess(thread_id, request_id,
@@ -129,7 +128,6 @@ void BluetoothDispatcherHost::OnRequestDeviceOnUI(int thread_id,
           1,                                             // product_id
           2,                                             // product_version
           true,                                          // paired
-          false,                                         // connected
           uuids);                                        // uuids
       Send(new BluetoothMsg_RequestDeviceSuccess(thread_id, request_id,
                                                  device_ipc));
