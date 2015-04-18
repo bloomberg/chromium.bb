@@ -247,14 +247,12 @@ TEST_F(FrameTreeTest, ObserverWalksTreeAfterCrash) {
       activity.GetLog());
 
   // Crash the renderer
-  main_test_rfh()->OnMessageReceived(FrameHostMsg_RenderProcessGone(
-      main_test_rfh()->GetRoutingID(), base::TERMINATION_STATUS_PROCESS_CRASHED,
-      -1));
+  main_test_rfh()->GetProcess()->SimulateCrash();
   EXPECT_EQ(
-      "RenderFrameDeleted(22) -> 1: []\n"
-      "RenderFrameDeleted(23) -> 1: []\n"
-      "RenderFrameDeleted(1) -> 1: []\n"
-      "RenderProcessGone -> 1: []",
+      "RenderFrameDeleted(23) -> 1: [22: [], 23*: []]\n"
+      "RenderFrameDeleted(22) -> 1: [22*: [], 23*: []]\n"
+      "RenderFrameDeleted(1) -> 1: []\n"  // TODO(nick): Should be "1*:"
+      "RenderProcessGone -> 1*: []",
       activity.GetLog());
 }
 
@@ -295,8 +293,7 @@ TEST_F(FrameTreeTest, ProcessCrashClearsGlobalMap) {
   EXPECT_TRUE(FrameTreeNode::GloballyFindByID(id3));
 
   // Crash the renderer.
-  main_test_rfh()->OnMessageReceived(FrameHostMsg_RenderProcessGone(
-      0, base::TERMINATION_STATUS_PROCESS_CRASHED, -1));
+  main_test_rfh()->GetProcess()->SimulateCrash();
 
   // Ensure they cannot be found by id after the process has crashed.
   EXPECT_FALSE(FrameTreeNode::GloballyFindByID(id1));

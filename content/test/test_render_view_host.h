@@ -224,13 +224,6 @@ class TestRenderViewHost
     delete_counter_ = delete_counter;
   }
 
-  // Sets whether the RenderView currently exists or not. This controls the
-  // return value from IsRenderViewLive, which the rest of the system uses to
-  // check whether the RenderView has crashed or not.
-  void set_render_view_created(bool created) {
-    render_view_created_ = created;
-  }
-
   // The opener route id passed to CreateRenderView().
   int opener_route_id() const { return opener_route_id_; }
 
@@ -244,7 +237,6 @@ class TestRenderViewHost
                         int proxy_route_id,
                         int32 max_page_id,
                         bool window_was_created_with_opener) override;
-  bool IsRenderViewLive() const override;
   bool IsFullscreenGranted() const override;
 
  private:
@@ -265,10 +257,6 @@ class TestRenderViewHost
       const GURL& original_request_url,
       int response_code,
       const base::FilePath* file_path_for_history_item);
-
-  // Tracks if the caller thinks if it created the RenderView. This is so we can
-  // respond to IsRenderViewLive appropriately.
-  bool render_view_created_;
 
   // See set_delete_counter() above. May be NULL.
   int* delete_counter_;

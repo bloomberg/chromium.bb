@@ -4,6 +4,10 @@
 
 #include "content/public/test/mock_render_process_host.h"
 
+#include <algorithm>
+#include <utility>
+#include <vector>
+
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
@@ -13,8 +17,13 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/child_process_host_impl.h"
+#include "content/common/frame_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/storage_partition.h"
 
@@ -47,6 +56,32 @@ MockRenderProcessHost::~MockRenderProcessHost() {
                       observers_,
                       RenderProcessHostDestroyed(this));
     RenderProcessHostImpl::UnregisterHost(GetID());
+  }
+}
+
+void MockRenderProcessHost::SimulateCrash() {
+  RenderProcessHost::RendererClosedDetails details(
+      base::TERMINATION_STATUS_PROCESS_CRASHED, 0);
+  NotificationService::current()->Notify(
+      NOTIFICATION_RENDERER_PROCESS_CLOSED, Source<RenderProcessHost>(this),
+      Details<RenderProcessHost::RendererClosedDetails>(&details));
+
+  // Send every routing ID a FrameHostMsg_RenderProcessGone message. To ensure a
+  // predictable order for unittests which may assert against the order, we sort
+  // the listeners by descending routing ID, instead of using the arbitrary
+  // hash-map order like RenderProcessHostImpl.
+  std::vector<std::pair<int32, IPC::Listener*>> sorted_listeners_;
+  IDMap<IPC::Listener>::iterator iter(&listeners_);
+  while (!iter.IsAtEnd()) {
+    sorted_listeners_.push_back(
+        std::make_pair(iter.GetCurrentKey(), iter.GetCurrentValue()));
+    iter.Advance();
+  }
+  std::sort(sorted_listeners_.rbegin(), sorted_listeners_.rend());
+
+  for (auto& entry_pair : sorted_listeners_) {
+    entry_pair.second->OnMessageReceived(FrameHostMsg_RenderProcessGone(
+        entry_pair.first, static_cast<int>(details.status), details.exit_code));
   }
 }
 

@@ -405,24 +405,6 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
     return manager->pending_frame_host();
   }
 
-  void CrashFrame(TestRenderFrameHost* frame) {
-    // TODO(nick): Standardize how we simulate crashes in content unittests. The
-    // test method |set_render_view_created| should probably be eliminated
-    // altogether, and maybe there should be a CrashProcess() method on
-    // MockRenderProcessHost.
-    ASSERT_TRUE(frame->IsRenderFrameLive());
-    frame->OnMessageReceived(FrameHostMsg_RenderProcessGone(
-        0, base::TERMINATION_STATUS_PROCESS_CRASHED, -1));
-    RenderProcessHost::RendererClosedDetails details(
-        base::TERMINATION_STATUS_PROCESS_CRASHED, 0);
-    NotificationService::current()->Notify(
-        NOTIFICATION_RENDERER_PROCESS_CLOSED,
-        Source<RenderProcessHost>(frame->GetProcess()),
-        Details<RenderProcessHost::RendererClosedDetails>(&details));
-    frame->GetRenderViewHost()->set_render_view_created(false);
-    ASSERT_FALSE(frame->IsRenderFrameLive());
-  }
-
  private:
   RenderFrameHostManagerTestWebUIControllerFactory factory_;
 };
@@ -1479,7 +1461,7 @@ TEST_F(RenderFrameHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
       opener1_manager->GetSwappedOutRenderViewHost(rfh1->GetSiteInstance()));
 
   // Fake a process crash.
-  CrashFrame(rfh1);
+  rfh1->GetProcess()->SimulateCrash();
 
   // Ensure that the RenderFrameProxyHost stays around and the RenderFrameProxy
   // is deleted.
@@ -2016,9 +1998,11 @@ TEST_F(RenderFrameHostManagerTest, TwoTabsCrashOneReloadsOneLeaves) {
       TestWebContents::Create(browser_context(), contents1->GetSiteInstance()));
   contents1->NavigateAndCommit(kUrl1);
   contents2->NavigateAndCommit(kUrl1);
-  CrashFrame(contents1->GetMainFrame());
-  CrashFrame(contents2->GetMainFrame());
-
+  MockRenderProcessHost* rph = contents1->GetMainFrame()->GetProcess();
+  EXPECT_EQ(rph, contents2->GetMainFrame()->GetProcess());
+  rph->SimulateCrash();
+  EXPECT_FALSE(contents1->GetMainFrame()->IsRenderFrameLive());
+  EXPECT_FALSE(contents2->GetMainFrame()->IsRenderFrameLive());
   EXPECT_EQ(contents1->GetSiteInstance(), contents2->GetSiteInstance());
 
   // Reload |contents1|.

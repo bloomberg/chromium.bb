@@ -219,7 +219,6 @@ TestRenderViewHost::TestRenderViewHost(
                          swapped_out,
                          false /* hidden */,
                          false /* has_initialized_audio_host */),
-      render_view_created_(false),
       delete_counter_(NULL),
       opener_route_id_(MSG_ROUTING_NONE) {
   // TestRenderWidgetHostView installs itself into this->view_ in its
@@ -239,14 +238,11 @@ bool TestRenderViewHost::CreateRenderView(
     int proxy_route_id,
     int32 max_page_id,
     bool window_was_created_with_opener) {
-  DCHECK(!render_view_created_);
-  render_view_created_ = true;
+  DCHECK(!IsRenderViewLive());
+  set_renderer_initialized(true);
+  DCHECK(IsRenderViewLive());
   opener_route_id_ = opener_route_id;
   return true;
-}
-
-bool TestRenderViewHost::IsRenderViewLive() const {
-  return render_view_created_;
 }
 
 bool TestRenderViewHost::IsFullscreenGranted() const {

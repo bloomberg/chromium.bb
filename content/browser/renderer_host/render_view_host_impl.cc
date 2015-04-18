@@ -290,7 +290,7 @@ bool RenderViewHostImpl::CreateRenderView(
   DCHECK(GetProcess()->HasConnection());
   DCHECK(GetProcess()->GetBrowserContext());
 
-  renderer_initialized_ = true;
+  set_renderer_initialized(true);
 
   GpuSurfaceTracker::Get()->SetSurfaceHandle(
       surface_id(), GetCompositingSurface());
@@ -353,7 +353,7 @@ bool RenderViewHostImpl::CreateRenderView(
 }
 
 bool RenderViewHostImpl::IsRenderViewLive() const {
-  return GetProcess()->HasConnection() && renderer_initialized_;
+  return GetProcess()->HasConnection() && renderer_initialized();
 }
 
 void RenderViewHostImpl::SyncRendererPrefs() {
@@ -742,7 +742,7 @@ void RenderViewHostImpl::AllowBindings(int bindings_flags) {
   }
 
   enabled_bindings_ |= bindings_flags;
-  if (renderer_initialized_)
+  if (renderer_initialized())
     Send(new ViewMsg_AllowBindings(GetRoutingID(), enabled_bindings_));
 }
 

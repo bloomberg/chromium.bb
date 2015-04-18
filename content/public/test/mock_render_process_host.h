@@ -32,6 +32,9 @@ class MockRenderProcessHost : public RenderProcessHost {
   // Provides test access to how many times a bad message has been received.
   int bad_msg_count() const { return bad_msg_count_; }
 
+  // Provides tests a way to simulate this render process crashing.
+  void SimulateCrash();
+
   // RenderProcessHost implementation (public portion).
   void EnableSendQueue() override;
   bool Init() override;

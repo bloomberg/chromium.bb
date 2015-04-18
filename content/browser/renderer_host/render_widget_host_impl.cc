@@ -159,9 +159,9 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
                                            int routing_id,
                                            bool hidden)
     : view_(NULL),
-      renderer_initialized_(false),
       hung_renderer_delay_(
           base::TimeDelta::FromMilliseconds(kHungRendererDelayMs)),
+      renderer_initialized_(false),
       delegate_(delegate),
       process_(process),
       routing_id_(routing_id),

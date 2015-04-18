@@ -235,8 +235,10 @@ TEST_F(DevToolsManagerTest, OpenAndManuallyCloseDevToolsClientHost) {
 }
 
 TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedContents) {
+  const GURL url("http://www.google.com");
+  contents()->NavigateAndCommit(url);
   TestRenderViewHost* inspected_rvh = test_rvh();
-  inspected_rvh->set_render_view_created(true);
+  EXPECT_TRUE(inspected_rvh->IsRenderViewLive());
   EXPECT_FALSE(contents()->GetDelegate());
   TestWebContentsDelegate delegate;
   contents()->SetDelegate(&delegate);

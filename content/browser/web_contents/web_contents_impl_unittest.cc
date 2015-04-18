@@ -599,8 +599,9 @@ TEST_F(WebContentsImplTest, CrossSiteBoundariesAfterCrash) {
   EXPECT_EQ(orig_rfh->GetRenderViewHost(), contents()->GetRenderViewHost());
 
   // Simulate a renderer crash.
-  orig_rfh->GetRenderViewHost()->set_render_view_created(false);
-  orig_rfh->SetRenderFrameCreated(false);
+  EXPECT_TRUE(orig_rfh->IsRenderFrameLive());
+  orig_rfh->GetProcess()->SimulateCrash();
+  EXPECT_FALSE(orig_rfh->IsRenderFrameLive());
 
   // Navigate to new site.  We should not go into PENDING.
   const GURL url2("http://www.yahoo.com");
@@ -1401,9 +1402,7 @@ TEST_F(WebContentsImplTest, TerminateHidesValidationMessage) {
   EXPECT_FALSE(fake_delegate.hide_validation_message_was_called());
 
   // Crash the renderer.
-  contents()->GetMainFrame()->OnMessageReceived(
-      FrameHostMsg_RenderProcessGone(
-          0, base::TERMINATION_STATUS_PROCESS_CRASHED, -1));
+  contents()->GetMainFrame()->GetProcess()->SimulateCrash();
 
   // Confirm HideValidationMessage was called.
   EXPECT_TRUE(fake_delegate.hide_validation_message_was_called());
@@ -1436,9 +1435,7 @@ TEST_F(WebContentsImplTest, CrashExitsFullscreen) {
   EXPECT_TRUE(fake_delegate.IsFullscreenForTabOrPending(contents()));
 
   // Crash the renderer.
-  main_rfh()->OnMessageReceived(
-      FrameHostMsg_RenderProcessGone(
-          0, base::TERMINATION_STATUS_PROCESS_CRASHED, -1));
+  main_test_rfh()->GetProcess()->SimulateCrash();
 
   // Confirm fullscreen has exited.
   EXPECT_FALSE(test_rvh()->IsFullscreenGranted());
@@ -1843,9 +1840,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialCrashRendererThenGoBack) {
   interstitial->TestDidNavigate(2, interstitial_url);
 
   // Crash the renderer
-  main_rfh()->OnMessageReceived(
-      FrameHostMsg_RenderProcessGone(
-          0, base::TERMINATION_STATUS_PROCESS_CRASHED, -1));
+  contents()->GetMainFrame()->GetProcess()->SimulateCrash();
 
   // While the interstitial is showing, go back.
   controller().GoBack();
@@ -1883,9 +1878,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialCrashRendererThenNavigate) {
   interstitial->Show();
 
   // Crash the renderer
-  main_rfh()->OnMessageReceived(
-      FrameHostMsg_RenderProcessGone(
-          0, base::TERMINATION_STATUS_PROCESS_CRASHED, -1));
+  contents()->GetMainFrame()->GetProcess()->SimulateCrash();
 
   interstitial->TestDidNavigate(2, interstitial_url);
 }
@@ -1925,8 +1918,8 @@ TEST_F(WebContentsImplTest, ShowInterstitialThenCloseAndShutdown) {
   TestInterstitialPageStateGuard state_guard(interstitial);
   interstitial->Show();
   interstitial->TestDidNavigate(1, url);
-  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      interstitial->GetMainFrame()->GetRenderViewHost());
+  TestRenderFrameHost* rfh =
+      static_cast<TestRenderFrameHost*>(interstitial->GetMainFrame());
 
   // Now close the contents.
   DeleteContents();
@@ -1935,8 +1928,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialThenCloseAndShutdown) {
   // Before the interstitial has a chance to process its shutdown task,
   // simulate quitting the browser.  This goes through all processes and
   // tells them to destruct.
-  rvh->GetMainFrame()->OnMessageReceived(
-        FrameHostMsg_RenderProcessGone(0, 0, 0));
+  rfh->GetProcess()->SimulateCrash();
 
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(deleted);
@@ -3038,9 +3030,7 @@ TEST_F(WebContentsImplTest, MediaPowerSaveBlocking) {
             !audio_state->IsAudioStateAvailable());
 
   // Crash the renderer.
-  contents()->GetMainFrame()->OnMessageReceived(
-      FrameHostMsg_RenderProcessGone(
-          0, base::TERMINATION_STATUS_PROCESS_CRASHED, -1));
+  contents()->GetMainFrame()->GetProcess()->SimulateCrash();
 
   // Verify that all the power save blockers have been released.
   EXPECT_FALSE(contents()->has_video_power_save_blocker_for_testing());

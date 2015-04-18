@@ -568,6 +568,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     return --in_flight_event_count_;
   }
 
+  void set_renderer_initialized(bool renderer_initialized) {
+    renderer_initialized_ = renderer_initialized;
+  }
+
+  bool renderer_initialized() const { return renderer_initialized_; }
+
   // The View associated with the RenderViewHost. The lifetime of this object
   // is associated with the lifetime of the Render process. If the Renderer
   // crashes, its View is destroyed and this pointer becomes NULL, even though
@@ -580,11 +586,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // TODO(ccameron): Fix this.
   // http://crbug.com/404828
   base::WeakPtr<RenderWidgetHostViewBase> view_weak_;
-
-  // true if a renderer has once been valid. We use this flag to display a sad
-  // tab only when we lose our renderer and not if a paint occurs during
-  // initialization.
-  bool renderer_initialized_;
 
   // This value indicates how long to wait before we consider a renderer hung.
   base::TimeDelta hung_renderer_delay_;
@@ -693,6 +694,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnSnapshotDataReceivedAsync(
       int snapshot_id,
       scoped_refptr<base::RefCountedBytes> png_data);
+
+  // true if a renderer has once been valid. We use this flag to display a sad
+  // tab only when we lose our renderer and not if a paint occurs during
+  // initialization.
+  bool renderer_initialized_;
 
   // Our delegate, which wants to know mainly about keyboard events.
   // It will remain non-NULL until DetachDelegate() is called.

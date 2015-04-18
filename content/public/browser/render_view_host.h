@@ -169,8 +169,7 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
 
   virtual SiteInstance* GetSiteInstance() const = 0;
 
-  // Returns true if the RenderView is active and has not crashed. Virtual
-  // because it is overridden by TestRenderViewHost.
+  // Returns true if the RenderView is active and has not crashed.
   virtual bool IsRenderViewLive() const = 0;
 
   // Notification that a move or resize renderer's containing window has
