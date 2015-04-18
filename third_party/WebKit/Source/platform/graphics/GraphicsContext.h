@@ -38,6 +38,7 @@
 #include "platform/graphics/GraphicsContextAnnotation.h"
 #include "platform/graphics/GraphicsContextState.h"
 #include "platform/graphics/skia/SkiaUtils.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
@@ -422,6 +423,10 @@ private:
     // null indicates painting is contextDisabled. Never delete this object.
     SkCanvas* m_canvas;
 
+    // This stores the canvas object used to construct the GraphicsContext, if any. It is only
+    // used when Slimming Paint is active.
+    SkCanvas* m_originalCanvas;
+
     // This being null indicates not to paint into a DisplayItemList, and instead directly into the canvas.
     DisplayItemList* m_displayItemList;
 
@@ -438,7 +443,9 @@ private:
 
     AnnotationModeFlags m_annotationMode;
 
+    // Only used when Slimming Paint is off. When it is on, m_pictureRecorder is used instead.
     Vector<OwnPtr<RecordingState>> m_recordingStateStack;
+    SkPictureRecorder m_pictureRecorder;
 
 #if ENABLE(ASSERT)
     unsigned m_layerCount;
