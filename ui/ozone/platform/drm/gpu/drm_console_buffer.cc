@@ -27,6 +27,9 @@ DrmConsoleBuffer::~DrmConsoleBuffer() {
   if (mmap_base_)
     if (munmap(mmap_base_, mmap_size_))
       PLOG(ERROR) << "munmap";
+
+  if (handle_ && !drm_->CloseBufferHandle(handle_))
+    PLOG(ERROR) << "DrmConsoleBuffer: CloseBufferHandle: handle " << handle_;
 }
 
 bool DrmConsoleBuffer::Initialize() {

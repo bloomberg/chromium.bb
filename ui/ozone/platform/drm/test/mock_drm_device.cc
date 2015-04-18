@@ -219,6 +219,10 @@ void MockDrmDevice::DestroyDumbBuffer(const SkImageInfo& info,
   delete[] static_cast<char*>(pixels);
 }
 
+bool MockDrmDevice::CloseBufferHandle(uint32_t handle) {
+  return true;
+}
+
 bool MockDrmDevice::CommitProperties(drmModePropertySet* properties,
                                      uint32_t flags,
                                      const PageFlipCallback& callback) {

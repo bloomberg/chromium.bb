@@ -478,6 +478,14 @@ void DrmDevice::DestroyDumbBuffer(const SkImageInfo& info,
   DrmDestroyDumbBuffer(file_.GetPlatformFile(), handle);
 }
 
+bool DrmDevice::CloseBufferHandle(uint32_t handle) {
+  struct drm_gem_close close_request;
+  memset(&close_request, 0, sizeof(close_request));
+  close_request.handle = handle;
+  return !drmIoctl(file_.GetPlatformFile(), DRM_IOCTL_GEM_CLOSE,
+                   &close_request);
+}
+
 bool DrmDevice::CommitProperties(drmModePropertySet* properties,
                                  uint32_t flags,
                                  const PageFlipCallback& callback) {

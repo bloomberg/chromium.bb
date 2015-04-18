@@ -106,6 +106,8 @@ class MockDrmDevice : public ui::DrmDevice {
                          uint32_t handle,
                          uint32_t stride,
                          void* pixels) override;
+
+  bool CloseBufferHandle(uint32_t handle) override;
   bool CommitProperties(drmModePropertySet* properties,
                         uint32_t flags,
                         const PageFlipCallback& callback) override;
