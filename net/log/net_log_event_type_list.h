@@ -553,8 +553,7 @@ EVENT_TYPE(SOCKET_WRITE_ERROR)
 EVENT_TYPE(SOCKET_CLOSED)
 
 // Certificates were received from the SSL server (during a handshake or
-// renegotiation). This event is only present when logging at LOG_ALL.
-// The following parameters are attached to the event:
+// renegotiation). The following parameters are attached to the event:
 //  {
 //    "certificates": <A list of PEM encoded certificates in the order that
 //                     they were sent by the server>,
