@@ -267,7 +267,8 @@ uint32 BrowserGpuChannelHostFactory::GetImageTextureTarget() {
 
   switch (type) {
     case gfx::SURFACE_TEXTURE_BUFFER:
-      // Surface texture backed GPU memory buffers require
+    case gfx::OZONE_NATIVE_BUFFER:
+      // GPU memory buffers that are shared with the GL using EGLImages require
       // TEXTURE_EXTERNAL_OES.
       return GL_TEXTURE_EXTERNAL_OES;
     case gfx::IO_SURFACE_BUFFER:
