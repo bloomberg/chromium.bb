@@ -5,8 +5,6 @@
 #include "sandbox/win/src/target_process.h"
 
 #include "base/basictypes.h"
-#include "base/debug/alias.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/pe_image.h"
 #include "base/win/startup_information.h"
@@ -159,10 +157,6 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
                          NULL,   // Use current directory of the caller.
                          startup_info.startup_info(),
                          &temp_process_info)) {
-      // TODO(shrikant): Remove following code once we gather some dumps for
-      // debugging appcontainer related failures (crbug.com/467920).
-      base::debug::Alias(exe_path);
-      base::debug::DumpWithoutCrashing();
       return ::GetLastError();
     }
   } else {
@@ -188,12 +182,6 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
     // Assign the suspended target to the windows job object.
     if (!::AssignProcessToJobObject(job_, process_info.process_handle())) {
       win_result = ::GetLastError();
-      if (set_lockdown_token_after_create) {
-        // TODO(shrikant): Remove this code once we gather some dumps for
-        // debugging appcontainer related failures (crbug.com/467920).
-        base::debug::Alias(&win_result);
-        base::debug::DumpWithoutCrashing();
-      }
       ::TerminateProcess(process_info.process_handle(), 0);
       return win_result;
     }
@@ -206,12 +194,6 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
     HANDLE temp_thread = process_info.thread_handle();
     if (!::SetThreadToken(&temp_thread, initial_token_.Get())) {
       win_result = ::GetLastError();
-      if (set_lockdown_token_after_create) {
-        // TODO(shrikant): Remove this code once we gather some dumps for
-        // debugging appcontainer related failures (crbug.com/467920).
-        base::debug::Alias(&win_result);
-        base::debug::DumpWithoutCrashing();
-      }
       // It might be a security breach if we let the target run outside the job
       // so kill it before it causes damage.
       ::TerminateProcess(process_info.process_handle(), 0);
@@ -235,10 +217,6 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
         sizeof(process_access_token));
     if (!NT_SUCCESS(status)) {
       win_result = ::GetLastError();
-      // TODO(shrikant): Remove this code once we gather some dumps for
-      // debugging appcontainer related failures (crbug.com/467920).
-      base::debug::Alias(&win_result);
-      base::debug::DumpWithoutCrashing();
       ::TerminateProcess(process_info.process_handle(), 0);  // exit code
       return win_result;
     }
@@ -248,12 +226,6 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
   context.ContextFlags = CONTEXT_ALL;
   if (!::GetThreadContext(process_info.thread_handle(), &context)) {
     win_result = ::GetLastError();
-    if (set_lockdown_token_after_create) {
-      // TODO(shrikant): Remove this code once we gather some dumps for
-      // debugging appcontainer related failures (crbug.com/467920).
-      base::debug::Alias(&win_result);
-      base::debug::DumpWithoutCrashing();
-    }
     ::TerminateProcess(process_info.process_handle(), 0);
     return win_result;
   }
@@ -270,12 +242,6 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
 
   if (!target_info->DuplicateFrom(process_info)) {
     win_result = ::GetLastError();  // This may or may not be correct.
-    if (set_lockdown_token_after_create) {
-      // TODO(shrikant): Remove this code once we gather some dumps for
-      // debugging appcontainer related failures (crbug.com/467920).
-      base::debug::Alias(&win_result);
-      base::debug::DumpWithoutCrashing();
-    }
     ::TerminateProcess(process_info.process_handle(), 0);
     return win_result;
   }
