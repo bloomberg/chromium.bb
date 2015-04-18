@@ -945,6 +945,8 @@
         'test/mock_chrome_application_mac.mm',
         'test/mock_devices_changed_observer.cc',
         'test/mock_devices_changed_observer.h',
+        'test/mock_entropy_provider.cc',
+        'test/mock_entropy_provider.h',
         'test/mock_log.cc',
         'test/mock_log.h',
         'test/multiprocess_test.cc',

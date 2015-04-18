@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "base/test/mock_entropy_provider.h"
 #include "chrome/browser/io_thread.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/http/http_network_session.h"
@@ -15,16 +16,6 @@
 namespace test {
 
 using ::testing::ElementsAre;
-
-class BadEntropyProvider : public base::FieldTrial::EntropyProvider {
- public:
-  ~BadEntropyProvider() override {}
-
-  double GetEntropyForTrial(const std::string& trial_name,
-                            uint32 randomization_seed) const override {
-    return 0.5;
-  }
-};
 
 class IOThreadPeer {
  public:
@@ -218,7 +209,7 @@ TEST_F(IOThreadTest, EnableQuicFromFieldTrialGroup) {
 }
 
 TEST_F(IOThreadTest, EnableQuicFromQuicProxyFieldTrialGroup) {
-  base::FieldTrialList field_trial_list(new BadEntropyProvider());
+  base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
   base::FieldTrialList::CreateFieldTrial(
       data_reduction_proxy::DataReductionProxyParams::GetQuicFieldTrialName(),
       "Enabled");

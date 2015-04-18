@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/md5.h"
 #include "base/metrics/field_trial.h"
+#include "base/test/mock_entropy_provider.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
@@ -22,16 +23,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace data_reduction_proxy {
-
-class BadEntropyProvider : public base::FieldTrial::EntropyProvider {
- public:
-  ~BadEntropyProvider() override {}
-
-  double GetEntropyForTrial(const std::string& trial_name,
-                            uint32 randomization_seed) const override {
-    return 0.5;
-  }
-};
 
 class DataReductionProxySettingsTest
     : public ConcreteDataReductionProxySettingsTest<
@@ -425,7 +416,7 @@ TEST_F(DataReductionProxySettingsTest, CheckQUICFieldTrials) {
          test_context_->pref_service(), test_context_->io_data(),
          test_context_->CreateDataReductionProxyService());
 
-    base::FieldTrialList field_trial_list(new BadEntropyProvider());
+    base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
     if (enable_quic) {
       base::FieldTrialList::CreateFieldTrial(
           DataReductionProxyParams::GetQuicFieldTrialName(),

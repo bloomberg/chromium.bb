@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/mock_entropy_provider.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
@@ -1840,16 +1841,6 @@ TEST_F(DiskCacheTest, WrongVersion) {
   ASSERT_EQ(net::ERR_FAILED, cb.GetResult(rv));
 }
 
-class BadEntropyProvider : public base::FieldTrial::EntropyProvider {
- public:
-  ~BadEntropyProvider() override {}
-
-  double GetEntropyForTrial(const std::string& trial_name,
-                            uint32 randomization_seed) const override {
-    return 0.5;
-  }
-};
-
 // Tests that the disk cache successfully joins the control group, dropping the
 // existing cache in favour of a new empty cache.
 // Disabled on android since this test requires cache creator to create
@@ -1867,7 +1858,7 @@ TEST_F(DiskCacheTest, SimpleCacheControlJoin) {
 
   // Instantiate the SimpleCacheTrial, forcing this run into the
   // ExperimentControl group.
-  base::FieldTrialList field_trial_list(new BadEntropyProvider());
+  base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
   base::FieldTrialList::CreateFieldTrial("SimpleCacheTrial",
                                          "ExperimentControl");
   net::TestCompletionCallback cb;
@@ -1891,7 +1882,7 @@ TEST_F(DiskCacheTest, SimpleCacheControlJoin) {
 TEST_F(DiskCacheTest, SimpleCacheControlRestart) {
   // Instantiate the SimpleCacheTrial, forcing this run into the
   // ExperimentControl group.
-  base::FieldTrialList field_trial_list(new BadEntropyProvider());
+  base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
   base::FieldTrialList::CreateFieldTrial("SimpleCacheTrial",
                                          "ExperimentControl");
 
@@ -1931,7 +1922,7 @@ TEST_F(DiskCacheTest, SimpleCacheControlLeave) {
   {
     // Instantiate the SimpleCacheTrial, forcing this run into the
     // ExperimentControl group.
-    base::FieldTrialList field_trial_list(new BadEntropyProvider());
+    base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
     base::FieldTrialList::CreateFieldTrial("SimpleCacheTrial",
                                            "ExperimentControl");
 
@@ -1942,7 +1933,7 @@ TEST_F(DiskCacheTest, SimpleCacheControlLeave) {
 
   // Instantiate the SimpleCacheTrial, forcing this run into the
   // ExperimentNo group.
-  base::FieldTrialList field_trial_list(new BadEntropyProvider());
+  base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
   base::FieldTrialList::CreateFieldTrial("SimpleCacheTrial", "ExperimentNo");
   net::TestCompletionCallback cb;
 

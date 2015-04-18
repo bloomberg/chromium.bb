@@ -11,6 +11,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/mock_entropy_provider.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
@@ -59,16 +60,6 @@ class SimpleURLRequestInterceptor : public net::URLRequestInterceptor {
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
     return net::URLRequestHttpJob::Factory(request, network_delegate, "http");
-  }
-};
-
-class BadEntropyProvider : public base::FieldTrial::EntropyProvider {
- public:
-  ~BadEntropyProvider() override {}
-
-  double GetEntropyForTrial(const std::string& trial_name,
-                            uint32 randomization_seed) const override {
-    return 0.5;
   }
 };
 
@@ -784,7 +775,7 @@ TEST_F(DataReductionProxyProtocolTest,
   std::string primary = test_context_->config()->test_params()->DefaultOrigin();
   std::string fallback =
       test_context_->config()->test_params()->DefaultFallbackOrigin();
-  base::FieldTrialList field_trial_list(new BadEntropyProvider());
+  base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
   base::FieldTrialList::CreateFieldTrial(
       "DataReductionProxyRemoveMissingViaHeaderOtherBypass", "Relaxed");
 

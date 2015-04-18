@@ -7,6 +7,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/mock_entropy_provider.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
@@ -245,16 +246,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
                                       kResponseContentLength, 1);
 }
 
-class BadEntropyProvider : public base::FieldTrial::EntropyProvider {
- public:
-  ~BadEntropyProvider() override {}
-
-  double GetEntropyForTrial(const std::string& trial_name,
-                            uint32 randomization_seed) const override {
-    return 0.5;
-  }
-};
-
 TEST_F(DataReductionProxyNetworkDelegateTest, OnResolveProxyHandler) {
   int load_flags = net::LOAD_NORMAL;
   GURL url("http://www.google.com/");
@@ -365,7 +356,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, OnResolveProxyHandler) {
 
   // With Finch trial set, should only bypass if LOAD flag is set and the
   // effective proxy is the data compression proxy.
-  base::FieldTrialList field_trial_list(new BadEntropyProvider());
+  base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
   base::FieldTrialList::CreateFieldTrial("DataCompressionProxyCriticalBypass",
                                          "Enabled");
   EXPECT_TRUE(
