@@ -88,7 +88,6 @@ safe_browsing_util::ListType GetHashSeverestThreatListType(
         case safe_browsing_util::DOWNLOADWHITELIST:        // Falls through.
         case safe_browsing_util::INCLUSIONWHITELIST:       // Falls through.
         case safe_browsing_util::EXTENSIONBLACKLIST:       // Falls through.
-        case safe_browsing_util::SIDEEFFECTFREEWHITELIST:  // Falls through.
         case safe_browsing_util::IPBLACKLIST:
           if (index)
             *index = i;
@@ -134,7 +133,6 @@ safe_browsing_util::ListType GetUrlSeverestThreatListType(
       case safe_browsing_util::DOWNLOADWHITELIST:        // Falls through.
       case safe_browsing_util::INCLUSIONWHITELIST:       // Falls through.
       case safe_browsing_util::EXTENSIONBLACKLIST:       // Falls through.
-      case safe_browsing_util::SIDEEFFECTFREEWHITELIST:  // Falls through.
       case safe_browsing_util::IPBLACKLIST:
         return threat;
       case safe_browsing_util::UNWANTEDURL:
@@ -261,7 +259,6 @@ SafeBrowsingDatabaseManager::SafeBrowsingDatabaseManager(
       enable_csd_whitelist_(false),
       enable_download_whitelist_(false),
       enable_extension_blacklist_(false),
-      enable_side_effect_free_whitelist_(false),
       enable_ip_blacklist_(false),
       enable_unwanted_software_blacklist_(false),
       update_in_progress_(false),
@@ -293,10 +290,6 @@ SafeBrowsingDatabaseManager::SafeBrowsingDatabaseManager(
   enable_extension_blacklist_ =
       !cmdline->HasSwitch(switches::kSbDisableExtensionBlacklist);
 
-  enable_side_effect_free_whitelist_ =
-      prerender::IsSideEffectFreeWhitelistEnabled() &&
-      !cmdline->HasSwitch(switches::kSbDisableSideEffectFreeWhitelist);
-
   // The client-side IP blacklist feature is tightly integrated with client-side
   // phishing protection for now.
   enable_ip_blacklist_ = enable_csd_whitelist_;
@@ -304,20 +297,6 @@ SafeBrowsingDatabaseManager::SafeBrowsingDatabaseManager(
   // The UwS blacklist feature is controlled by a flag for M40.
   enable_unwanted_software_blacklist_ =
       safe_browsing_util::GetUnwantedTrialGroup() > safe_browsing_util::UWS_OFF;
-
-  enum SideEffectFreeWhitelistStatus {
-    SIDE_EFFECT_FREE_WHITELIST_ENABLED,
-    SIDE_EFFECT_FREE_WHITELIST_DISABLED,
-    SIDE_EFFECT_FREE_WHITELIST_STATUS_MAX
-  };
-
-  SideEffectFreeWhitelistStatus side_effect_free_whitelist_status =
-      enable_side_effect_free_whitelist_ ? SIDE_EFFECT_FREE_WHITELIST_ENABLED :
-      SIDE_EFFECT_FREE_WHITELIST_DISABLED;
-
-  UMA_HISTOGRAM_ENUMERATION("SB2.SideEffectFreeWhitelistStatus",
-                            side_effect_free_whitelist_status,
-                            SIDE_EFFECT_FREE_WHITELIST_STATUS_MAX);
 #endif
 }
 
@@ -388,17 +367,6 @@ bool SafeBrowsingDatabaseManager::CheckExtensionIDs(
       base::Bind(&SafeBrowsingDatabaseManager::CheckExtensionIDsOnSBThread,
                  this, prefixes));
   return false;
-}
-
-bool SafeBrowsingDatabaseManager::CheckSideEffectFreeWhitelistUrl(
-    const GURL& url) {
-  if (!enabled_)
-    return false;
-
-  if (!CanCheckUrl(url))
-    return false;
-
-  return database_->ContainsSideEffectFreeWhitelistUrl(url);
 }
 
 bool SafeBrowsingDatabaseManager::MatchMalwareIP(
@@ -789,8 +757,8 @@ SafeBrowsingDatabase* SafeBrowsingDatabaseManager::GetDatabase() {
   SafeBrowsingDatabase* database = SafeBrowsingDatabase::Create(
       safe_browsing_task_runner_, enable_download_protection_,
       enable_csd_whitelist_, enable_download_whitelist_,
-      enable_extension_blacklist_, enable_side_effect_free_whitelist_,
-      enable_ip_blacklist_, enable_unwanted_software_blacklist_);
+      enable_extension_blacklist_, enable_ip_blacklist_,
+      enable_unwanted_software_blacklist_);
 
   database->Init(SafeBrowsingService::GetBaseFilename());
   {

@@ -39,7 +39,6 @@ class SafeBrowsingDatabaseFactory {
       bool enable_client_side_whitelist,
       bool enable_download_whitelist,
       bool enable_extension_blacklist,
-      bool enable_side_effect_free_whitelist,
       bool enable_ip_blacklist,
       bool enable_unwanted_software_list) = 0;
 
@@ -71,7 +70,6 @@ class SafeBrowsingDatabase {
       bool enable_client_side_whitelist,
       bool enable_download_whitelist,
       bool enable_extension_blacklist,
-      bool side_effect_free_whitelist,
       bool enable_ip_blacklist,
       bool enable_unwanted_software_list);
 
@@ -143,10 +141,6 @@ class SafeBrowsingDatabase {
   virtual bool ContainsExtensionPrefixes(
       const std::vector<SBPrefix>& prefixes,
       std::vector<SBPrefix>* prefix_hits) = 0;
-
-  // Returns false unless the hash of |url| is on the side-effect free
-  // whitelist. This function is safe to call from any thread.
-  virtual bool ContainsSideEffectFreeWhitelistUrl(const GURL& url) = 0;
 
   // Returns true iff the given IP is currently on the csd malware IP blacklist.
   // This function is safe to call from any thread.
@@ -229,7 +223,8 @@ class SafeBrowsingDatabase {
   static base::FilePath ExtensionBlacklistDBFilename(
       const base::FilePath& extension_blacklist_base_filename);
 
-  // Filename for side-effect free whitelist database.
+  // Filename for side-effect free whitelist database. This database no longer
+  // exists, but the filename is retained so the database may be deleted.
   static base::FilePath SideEffectFreeWhitelistDBFilename(
       const base::FilePath& side_effect_free_whitelist_base_filename);
 
@@ -269,12 +264,12 @@ class SafeBrowsingDatabase {
     FAILURE_EXTENSION_BLACKLIST_UPDATE_BEGIN = 17,
     FAILURE_EXTENSION_BLACKLIST_UPDATE_FINISH = 18,
     FAILURE_EXTENSION_BLACKLIST_DELETE = 19,
-    FAILURE_SIDE_EFFECT_FREE_WHITELIST_UPDATE_BEGIN = 20,
-    FAILURE_SIDE_EFFECT_FREE_WHITELIST_UPDATE_FINISH = 21,
-    FAILURE_SIDE_EFFECT_FREE_WHITELIST_DELETE = 22,
-    FAILURE_SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_READ = 23,
-    FAILURE_SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_WRITE = 24,
-    FAILURE_SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_DELETE = 25,
+    // Obsolete: FAILURE_SIDE_EFFECT_FREE_WHITELIST_UPDATE_BEGIN = 20,
+    // Obsolete: FAILURE_SIDE_EFFECT_FREE_WHITELIST_UPDATE_FINISH = 21,
+    // Obsolete: FAILURE_SIDE_EFFECT_FREE_WHITELIST_DELETE = 22,
+    // Obsolete: FAILURE_SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_READ = 23,
+    // Obsolete: FAILURE_SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_WRITE = 24,
+    // Obsolete: FAILURE_SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_DELETE = 25,
     FAILURE_IP_BLACKLIST_UPDATE_BEGIN = 26,
     FAILURE_IP_BLACKLIST_UPDATE_FINISH = 27,
     FAILURE_IP_BLACKLIST_UPDATE_INVALID = 28,
@@ -312,7 +307,6 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
       SafeBrowsingStore* download_whitelist_store,
       SafeBrowsingStore* inclusion_whitelist_store,
       SafeBrowsingStore* extension_blacklist_store,
-      SafeBrowsingStore* side_effect_free_whitelist_store,
       SafeBrowsingStore* ip_blacklist_store,
       SafeBrowsingStore* unwanted_software_store);
 
@@ -336,7 +330,6 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   bool ContainsInclusionWhitelistedUrl(const GURL& url) override;
   bool ContainsExtensionPrefixes(const std::vector<SBPrefix>& prefixes,
                                  std::vector<SBPrefix>* prefix_hits) override;
-  bool ContainsSideEffectFreeWhitelistUrl(const GURL& url) override;
   bool ContainsMalwareIP(const std::string& ip_address) override;
   bool UpdateStarted(std::vector<SBListChunkRanges>* lists) override;
   void InsertChunks(const std::string& list_name,
@@ -395,7 +388,6 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
     };
     enum class PrefixSetId {
       BROWSE,
-      SIDE_EFFECT_FREE_WHITELIST,
       UNWANTED_SOFTWARE,
     };
 
@@ -441,8 +433,6 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
     // PrefixSet themselves are never modified, instead a new one is swapped in
     // on update.
     scoped_ptr<const safe_browsing::PrefixSet> browse_prefix_set_;
-    scoped_ptr<const safe_browsing::PrefixSet>
-        side_effect_free_whitelist_prefix_set_;
     scoped_ptr<const safe_browsing::PrefixSet> unwanted_software_prefix_set_;
 
     // Cache of gethash results for prefix stores. Entries should not be used if
@@ -662,7 +652,6 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   //   - |inclusion_whitelist_store_|: For the inclusion whitelist. Same format
   //     as |download_whitelist_store_|.
   //   - |extension_blacklist_store_|: For extension IDs.
-  //   - |side_effect_free_whitelist_store_|: For side-effect free whitelist.
   //   - |ip_blacklist_store_|: For IP blacklist.
   //   - |unwanted_software_store_|: For unwanted software list (format
   //     identical to browsing lists).
@@ -678,7 +667,6 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   const scoped_ptr<SafeBrowsingStore> download_whitelist_store_;
   const scoped_ptr<SafeBrowsingStore> inclusion_whitelist_store_;
   const scoped_ptr<SafeBrowsingStore> extension_blacklist_store_;
-  const scoped_ptr<SafeBrowsingStore> side_effect_free_whitelist_store_;
   const scoped_ptr<SafeBrowsingStore> ip_blacklist_store_;
   const scoped_ptr<SafeBrowsingStore> unwanted_software_store_;
 

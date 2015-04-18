@@ -298,10 +298,6 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
     // TODO(kalman): Generate new testing data that includes the extension
     // blacklist.
     command_line->AppendSwitch(switches::kSbDisableExtensionBlacklist);
-
-    // TODO(tburkard): Generate new testing data that includes the side-effect
-    // free whitelist.
-    command_line->AppendSwitch(switches::kSbDisableSideEffectFreeWhitelist);
   }
 
   void SetTestStep(int step) {

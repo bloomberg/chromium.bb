@@ -166,8 +166,6 @@ extern const char kCsdWhiteList[];
 extern const char kDownloadWhiteList[];
 // SafeBrowsing extension list name.
 extern const char kExtensionBlacklist[];
-// SafeBrowsing side-effect free whitelist name.
-extern const char kSideEffectFreeWhitelist[];
 // SafeBrowsing csd malware IP blacklist name.
 extern const char kIPBlacklist[];
 // SafeBrowsing unwanted URL list.
@@ -176,7 +174,7 @@ extern const char kUnwantedUrlList[];
 extern const char kInclusionWhitelist[];
 
 // This array must contain all Safe Browsing lists.
-extern const char* kAllLists[10];
+extern const char* kAllLists[9];
 
 enum ListType {
   INVALID = -1,
@@ -192,7 +190,7 @@ enum ListType {
   // See above comment. Leave 7 available.
   EXTENSIONBLACKLIST = 8,
   // See above comment. Leave 9 available.
-  SIDEEFFECTFREEWHITELIST = 10,
+  // Obsolete SIDEEFFECTFREEWHITELIST = 10,
   // See above comment. Leave 11 available.
   IPBLACKLIST = 12,
   // See above comment.  Leave 13 available.

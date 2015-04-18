@@ -983,10 +983,6 @@ const char kSbDisableDownloadProtection[] =
 const char kSbDisableExtensionBlacklist[] =
     "safebrowsing-disable-extension-blacklist";
 
-// Disables safebrowsing feature that provides a side-effect free whitelist.
-const char kSbDisableSideEffectFreeWhitelist[] =
-    "safebrowsing-disable-side-effect-free-whitelist";
-
 // Causes the process to run as a service process.
 const char kServiceProcess[]                = "service";
 

@@ -22,9 +22,6 @@ void ConfigurePrerender(const base::CommandLine& command_line);
 // prerendering from Omnibox experiment.
 bool IsOmniboxEnabled(Profile* profile);
 
-// Returns true iff the side-effect free whitelist is enabled.
-bool IsSideEffectFreeWhitelistEnabled();
-
 }  // namespace prerender
 
 #endif  // CHROME_BROWSER_PRERENDER_PRERENDER_FIELD_TRIAL_H_

@@ -286,8 +286,6 @@ class SafeBrowsingDatabaseTest : public PlatformTest {
         new SafeBrowsingStoreFile(task_runner_);
     SafeBrowsingStoreFile* extension_blacklist_store =
         new SafeBrowsingStoreFile(task_runner_);
-    SafeBrowsingStoreFile* side_effect_free_whitelist_store =
-        new SafeBrowsingStoreFile(task_runner_);
     SafeBrowsingStoreFile* ip_blacklist_store =
         new SafeBrowsingStoreFile(task_runner_);
     SafeBrowsingStoreFile* unwanted_software_store =
@@ -295,8 +293,8 @@ class SafeBrowsingDatabaseTest : public PlatformTest {
     database_.reset(new SafeBrowsingDatabaseNew(
         task_runner_, browse_store, download_store, csd_whitelist_store,
         download_whitelist_store, inclusion_whitelist_store,
-        extension_blacklist_store, side_effect_free_whitelist_store,
-        ip_blacklist_store, unwanted_software_store));
+        extension_blacklist_store, ip_blacklist_store,
+        unwanted_software_store));
     database_->Init(database_filename_);
   }
 
@@ -445,11 +443,6 @@ TEST_F(SafeBrowsingDatabaseTest, ListNames) {
                           chunks.get());
 
   chunks.clear();
-  chunks.push_back(AddChunkFullHashValue(9, "www.sideeffectfree.com"));
-  database_->InsertChunks(safe_browsing_util::kSideEffectFreeWhitelist,
-                          chunks.get());
-
-  chunks.clear();
   chunks.push_back(AddChunkHashedIpValue(10, "::ffff:192.168.1.0", 120));
   database_->InsertChunks(safe_browsing_util::kIPBlacklist, chunks.get());
 
@@ -460,7 +453,7 @@ TEST_F(SafeBrowsingDatabaseTest, ListNames) {
   database_->UpdateFinished(true);
 
   GetListsInfo(&lists);
-  ASSERT_EQ(10U, lists.size());
+  ASSERT_EQ(9U, lists.size());
   EXPECT_EQ(safe_browsing_util::kMalwareList, lists[0].name);
   EXPECT_EQ("1", lists[0].adds);
   EXPECT_TRUE(lists[0].subs.empty());
@@ -482,15 +475,12 @@ TEST_F(SafeBrowsingDatabaseTest, ListNames) {
   EXPECT_EQ(safe_browsing_util::kExtensionBlacklist, lists[6].name);
   EXPECT_EQ("8", lists[6].adds);
   EXPECT_TRUE(lists[6].subs.empty());
-  EXPECT_EQ(safe_browsing_util::kSideEffectFreeWhitelist, lists[7].name);
-  EXPECT_EQ("9", lists[7].adds);
+  EXPECT_EQ(safe_browsing_util::kIPBlacklist, lists[7].name);
+  EXPECT_EQ("10", lists[7].adds);
   EXPECT_TRUE(lists[7].subs.empty());
-  EXPECT_EQ(safe_browsing_util::kIPBlacklist, lists[8].name);
-  EXPECT_EQ("10", lists[8].adds);
+  EXPECT_EQ(safe_browsing_util::kUnwantedUrlList, lists[8].name);
+  EXPECT_EQ("11", lists[8].adds);
   EXPECT_TRUE(lists[8].subs.empty());
-  EXPECT_EQ(safe_browsing_util::kUnwantedUrlList, lists[9].name);
-  EXPECT_EQ("11", lists[9].adds);
-  EXPECT_TRUE(lists[9].subs.empty());
 
   database_.reset();
 }
@@ -511,7 +501,7 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseAndUnwantedDatabasesAndPrefixSets) {
       &SafeBrowsingDatabase::ContainsBrowseUrl },
     { safe_browsing_util::kPhishingList, 1U,
       &SafeBrowsingDatabase::ContainsBrowseUrl },
-    { safe_browsing_util::kUnwantedUrlList, 9U,
+    { safe_browsing_util::kUnwantedUrlList, 8U,
       &SafeBrowsingDatabase::ContainsUnwantedSoftwareUrl },
   };
 
@@ -1125,7 +1115,7 @@ TEST_F(SafeBrowsingDatabaseTest, DISABLED_FileCorruptionHandling) {
   base::MessageLoop loop;
   SafeBrowsingStoreFile* store = new SafeBrowsingStoreFile(task_runner_);
   database_.reset(new SafeBrowsingDatabaseNew(
-      task_runner_, store, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
+      task_runner_, store, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   database_->Init(database_filename_);
 
   // This will cause an empty database to be created.
@@ -1300,7 +1290,7 @@ TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
   // If the whitelist is disabled everything should match the whitelist.
   database_.reset(new SafeBrowsingDatabaseNew(
       task_runner_, new SafeBrowsingStoreFile(task_runner_), NULL, NULL, NULL,
-      NULL, NULL, NULL, NULL, NULL));
+      NULL, NULL, NULL, NULL));
   database_->Init(database_filename_);
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(std::string("Tested list at fault => ") +

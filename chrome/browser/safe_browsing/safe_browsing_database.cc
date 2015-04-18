@@ -325,7 +325,6 @@ class SafeBrowsingDatabaseFactoryImpl : public SafeBrowsingDatabaseFactory {
       bool enable_client_side_whitelist,
       bool enable_download_whitelist,
       bool enable_extension_blacklist,
-      bool enable_side_effect_free_whitelist,
       bool enable_ip_blacklist,
       bool enable_unwanted_software_list) override {
     return new SafeBrowsingDatabaseNew(
@@ -335,7 +334,6 @@ class SafeBrowsingDatabaseFactoryImpl : public SafeBrowsingDatabaseFactory {
         CreateStore(enable_download_whitelist, db_task_runner),
         CreateStore(true, db_task_runner),  // inclusion_whitelist_store
         CreateStore(enable_extension_blacklist, db_task_runner),
-        CreateStore(enable_side_effect_free_whitelist, db_task_runner),
         CreateStore(enable_ip_blacklist, db_task_runner),
         CreateStore(enable_unwanted_software_list, db_task_runner));
   }
@@ -360,7 +358,6 @@ SafeBrowsingDatabase* SafeBrowsingDatabase::Create(
     bool enable_client_side_whitelist,
     bool enable_download_whitelist,
     bool enable_extension_blacklist,
-    bool enable_side_effect_free_whitelist,
     bool enable_ip_blacklist,
     bool enable_unwanted_software_list) {
   DCHECK(current_task_runner->RunsTasksOnCurrentThread());
@@ -369,8 +366,8 @@ SafeBrowsingDatabase* SafeBrowsingDatabase::Create(
   return factory_->CreateSafeBrowsingDatabase(
       current_task_runner, enable_download_protection,
       enable_client_side_whitelist, enable_download_whitelist,
-      enable_extension_blacklist, enable_side_effect_free_whitelist,
-      enable_ip_blacklist, enable_unwanted_software_list);
+      enable_extension_blacklist, enable_ip_blacklist,
+      enable_unwanted_software_list);
 }
 
 SafeBrowsingDatabase::~SafeBrowsingDatabase() {
@@ -471,8 +468,6 @@ SafeBrowsingStore* SafeBrowsingDatabaseNew::GetStore(const int list_id) {
     return inclusion_whitelist_store_.get();
   } else if (list_id == safe_browsing_util::EXTENSIONBLACKLIST) {
     return extension_blacklist_store_.get();
-  } else if (list_id == safe_browsing_util::SIDEEFFECTFREEWHITELIST) {
-    return side_effect_free_whitelist_store_.get();
   } else if (list_id == safe_browsing_util::IPBLACKLIST) {
     return ip_blacklist_store_.get();
   } else if (list_id == safe_browsing_util::UNWANTEDURL) {
@@ -508,8 +503,6 @@ class SafeBrowsingDatabaseNew::ThreadSafeStateManager::ReadTransaction {
     switch (id) {
       case PrefixSetId::BROWSE:
         return outer_->browse_prefix_set_.get();
-      case PrefixSetId::SIDE_EFFECT_FREE_WHITELIST:
-        return outer_->side_effect_free_whitelist_prefix_set_.get();
       case PrefixSetId::UNWANTED_SOFTWARE:
         return outer_->unwanted_software_prefix_set_.get();
     }
@@ -582,9 +575,6 @@ class SafeBrowsingDatabaseNew::ThreadSafeStateManager::WriteTransaction {
     switch (id) {
       case PrefixSetId::BROWSE:
         outer_->browse_prefix_set_.swap(new_prefix_set);
-        break;
-      case PrefixSetId::SIDE_EFFECT_FREE_WHITELIST:
-        outer_->side_effect_free_whitelist_prefix_set_.swap(new_prefix_set);
         break;
       case PrefixSetId::UNWANTED_SOFTWARE:
         outer_->unwanted_software_prefix_set_.swap(new_prefix_set);
@@ -667,7 +657,6 @@ SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew(
     SafeBrowsingStore* download_whitelist_store,
     SafeBrowsingStore* inclusion_whitelist_store,
     SafeBrowsingStore* extension_blacklist_store,
-    SafeBrowsingStore* side_effect_free_whitelist_store,
     SafeBrowsingStore* ip_blacklist_store,
     SafeBrowsingStore* unwanted_software_store)
     : db_task_runner_(db_task_runner),
@@ -679,7 +668,6 @@ SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew(
       download_whitelist_store_(download_whitelist_store),
       inclusion_whitelist_store_(inclusion_whitelist_store),
       extension_blacklist_store_(extension_blacklist_store),
-      side_effect_free_whitelist_store_(side_effect_free_whitelist_store),
       ip_blacklist_store_(ip_blacklist_store),
       unwanted_software_store_(unwanted_software_store),
       reset_factory_(this) {
@@ -734,26 +722,15 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
           FAILURE_UNWANTED_SOFTWARE_PREFIX_SET_READ);
     }
 
-    if (side_effect_free_whitelist_store_.get()) {
-      const base::FilePath side_effect_free_whitelist_filename =
-          SideEffectFreeWhitelistDBFilename(db_state_manager_.filename_base());
-      side_effect_free_whitelist_store_->Init(
-          side_effect_free_whitelist_filename,
-          base::Bind(&SafeBrowsingDatabaseNew::HandleCorruptDatabase,
-                     base::Unretained(this)));
-
-      LoadPrefixSet(side_effect_free_whitelist_filename, txn.get(),
-                    PrefixSetId::SIDE_EFFECT_FREE_WHITELIST,
-                    FAILURE_SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_READ);
-    } else {
-      // Delete any files of the side-effect free sidelist that may be around
-      // from when it was previously enabled.
-      SafeBrowsingStoreFile::DeleteStore(
-          SideEffectFreeWhitelistDBFilename(db_state_manager_.filename_base()));
-      base::DeleteFile(PrefixSetForFilename(SideEffectFreeWhitelistDBFilename(
-                           db_state_manager_.filename_base())),
-                       false);
-    }
+    // Delete any files of the side-effect free sidelist that may be around
+    // from when it was previously enabled.
+    //
+    // TODO(davidben): Remove this after April 15, 2016.
+    SafeBrowsingStoreFile::DeleteStore(
+        SideEffectFreeWhitelistDBFilename(db_state_manager_.filename_base()));
+    base::DeleteFile(PrefixSetForFilename(SideEffectFreeWhitelistDBFilename(
+                         db_state_manager_.filename_base())),
+                     false);
   }
   // Note: End the transaction early because LoadWhiteList() and
   // WhitelistEverything() manage their own transactions.
@@ -854,7 +831,6 @@ bool SafeBrowsingDatabaseNew::ResetDatabase() {
   scoped_ptr<WriteTransaction> txn = state_manager_.BeginWriteTransaction();
   txn->clear_prefix_gethash_cache();
   txn->SwapPrefixSet(PrefixSetId::BROWSE, nullptr);
-  txn->SwapPrefixSet(PrefixSetId::SIDE_EFFECT_FREE_WHITELIST, nullptr);
   txn->SwapPrefixSet(PrefixSetId::UNWANTED_SOFTWARE, nullptr);
   txn->clear_ip_blacklist();
   txn->WhitelistEverything(SBWhitelistId::CSD);
@@ -984,31 +960,6 @@ bool SafeBrowsingDatabaseNew::ContainsExtensionPrefixes(
                           safe_browsing_util::EXTENSIONBLACKLIST % 2,
                           prefixes,
                           prefix_hits);
-}
-
-bool SafeBrowsingDatabaseNew::ContainsSideEffectFreeWhitelistUrl(
-    const GURL& url) {
-  std::string host;
-  std::string path;
-  std::string query;
-  safe_browsing_util::CanonicalizeUrl(url, &host, &path, &query);
-  std::string url_to_check = host + path;
-  if (!query.empty())
-    url_to_check +=  "?" + query;
-  SBFullHash full_hash = SBFullHashForString(url_to_check);
-
-  scoped_ptr<ReadTransaction> txn = state_manager_.BeginReadTransaction();
-
-  const PrefixSet* side_effect_free_whitelist_prefix_set =
-      txn->GetPrefixSet(PrefixSetId::SIDE_EFFECT_FREE_WHITELIST);
-
-  // |side_effect_free_whitelist_prefix_set_| is empty until it is either read
-  // from disk, or the first update populates it.  Bail out without a hit if
-  // not yet available.
-  if (!side_effect_free_whitelist_prefix_set)
-    return false;
-
-  return side_effect_free_whitelist_prefix_set->Exists(full_hash);
 }
 
 bool SafeBrowsingDatabaseNew::ContainsMalwareIP(const std::string& ip_address) {
@@ -1263,13 +1214,6 @@ bool SafeBrowsingDatabaseNew::UpdateStarted(
     return false;
   }
 
-  if (side_effect_free_whitelist_store_ &&
-      !side_effect_free_whitelist_store_->BeginUpdate()) {
-    RecordFailure(FAILURE_SIDE_EFFECT_FREE_WHITELIST_UPDATE_BEGIN);
-    HandleCorruptDatabase();
-    return false;
-  }
-
   if (ip_blacklist_store_ && !ip_blacklist_store_->BeginUpdate()) {
     RecordFailure(FAILURE_IP_BLACKLIST_UPDATE_BEGIN);
     HandleCorruptDatabase();
@@ -1309,9 +1253,6 @@ bool SafeBrowsingDatabaseNew::UpdateStarted(
 
   UpdateChunkRangesForList(extension_blacklist_store_.get(),
                            safe_browsing_util::kExtensionBlacklist, lists);
-
-  UpdateChunkRangesForList(side_effect_free_whitelist_store_.get(),
-                           safe_browsing_util::kSideEffectFreeWhitelist, lists);
 
   UpdateChunkRangesForList(ip_blacklist_store_.get(),
                            safe_browsing_util::kIPBlacklist, lists);
@@ -1359,12 +1300,6 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
       DLOG(ERROR) << "Safe-browsing extension blacklist database corrupt.";
     }
 
-    if (side_effect_free_whitelist_store_ &&
-        !side_effect_free_whitelist_store_->CheckValidity()) {
-      DLOG(ERROR) << "Safe-browsing side-effect free whitelist database "
-                  << "corrupt.";
-    }
-
     if (ip_blacklist_store_ && !ip_blacklist_store_->CheckValidity()) {
       DLOG(ERROR) << "Safe-browsing IP blacklist database corrupt.";
     }
@@ -1396,8 +1331,6 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
       inclusion_whitelist_store_->CancelUpdate();
     if (extension_blacklist_store_)
       extension_blacklist_store_->CancelUpdate();
-    if (side_effect_free_whitelist_store_)
-      side_effect_free_whitelist_store_->CancelUpdate();
     if (ip_blacklist_store_)
       ip_blacklist_store_->CancelUpdate();
     if (unwanted_software_store_)
@@ -1431,15 +1364,6 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
         ExtensionBlacklistDBFilename(db_state_manager_.filename_base()),
         extension_blacklist_store_.get(),
         FAILURE_EXTENSION_BLACKLIST_UPDATE_FINISH);
-  }
-
-  if (side_effect_free_whitelist_store_) {
-    UpdatePrefixSetUrlStore(
-        SideEffectFreeWhitelistDBFilename(db_state_manager_.filename_base()),
-        side_effect_free_whitelist_store_.get(),
-        PrefixSetId::SIDE_EFFECT_FREE_WHITELIST,
-        FAILURE_SIDE_EFFECT_FREE_WHITELIST_UPDATE_FINISH,
-        FAILURE_SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_WRITE, false);
   }
 
   if (ip_blacklist_store_)
@@ -1728,33 +1652,17 @@ bool SafeBrowsingDatabaseNew::Delete() {
   if (!r8)
     RecordFailure(FAILURE_EXTENSION_BLACKLIST_DELETE);
 
-  const base::FilePath side_effect_free_whitelist_filename =
-      SideEffectFreeWhitelistDBFilename(db_state_manager_.filename_base());
-  const bool r9 = base::DeleteFile(side_effect_free_whitelist_filename,
-                                   false);
-  if (!r9)
-    RecordFailure(FAILURE_SIDE_EFFECT_FREE_WHITELIST_DELETE);
-
-  const base::FilePath side_effect_free_whitelist_prefix_set_filename =
-      PrefixSetForFilename(side_effect_free_whitelist_filename);
-  const bool r10 = base::DeleteFile(
-      side_effect_free_whitelist_prefix_set_filename,
-      false);
-  if (!r10)
-    RecordFailure(FAILURE_SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_DELETE);
-
-  const bool r11 = base::DeleteFile(
+  const bool r9 = base::DeleteFile(
       IpBlacklistDBFilename(db_state_manager_.filename_base()), false);
-  if (!r11)
+  if (!r9)
     RecordFailure(FAILURE_IP_BLACKLIST_DELETE);
 
-  const bool r12 = base::DeleteFile(
+  const bool r10 = base::DeleteFile(
       UnwantedSoftwareDBFilename(db_state_manager_.filename_base()), false);
-  if (!r12)
+  if (!r10)
     RecordFailure(FAILURE_UNWANTED_SOFTWARE_PREFIX_SET_DELETE);
 
-  return r1 && r2 && r3 && r4 && r5 && r6 && r7 && r8 && r9 && r10 && r11 &&
-         r12;
+  return r1 && r2 && r3 && r4 && r5 && r6 && r7 && r8 && r9 && r10;
 }
 
 void SafeBrowsingDatabaseNew::WritePrefixSet(const base::FilePath& db_filename,
@@ -1909,8 +1817,6 @@ void SafeBrowsingDatabaseNew::RecordFileSizeHistogram(
     histogram_name.append(".InclusionWhitelist");
   else if (EndsWith(filename, kExtensionBlacklistDBFile, true))
     histogram_name.append(".ExtensionBlacklist");
-  else if (EndsWith(filename, kSideEffectFreeWhitelistDBFile, true))
-    histogram_name.append(".SideEffectFreeWhitelist");
   else if (EndsWith(filename, kIPBlacklistDBFile, true))
     histogram_name.append(".IPBlacklist");
   else if (EndsWith(filename, kUnwantedSoftwareDBFile, true))

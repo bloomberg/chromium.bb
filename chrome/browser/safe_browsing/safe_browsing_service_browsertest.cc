@@ -168,9 +168,6 @@ class TestSafeBrowsingDatabase :  public SafeBrowsingDatabase {
                                  std::vector<SBPrefix>* prefix_hits) override {
     return false;
   }
-  bool ContainsSideEffectFreeWhitelistUrl(const GURL& url) override {
-    return true;
-  }
   bool ContainsMalwareIP(const std::string& ip_address) override {
     return true;
   }
@@ -277,7 +274,6 @@ class TestSafeBrowsingDatabaseFactory : public SafeBrowsingDatabaseFactory {
       bool enable_client_side_whitelist,
       bool enable_download_whitelist,
       bool enable_extension_blacklist,
-      bool enable_side_effect_free_whitelist,
       bool enable_ip_blacklist,
       bool enabled_unwanted_software_list) override {
     db_ = new TestSafeBrowsingDatabase();

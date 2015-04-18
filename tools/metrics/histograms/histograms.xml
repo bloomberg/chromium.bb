@@ -33495,6 +33495,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SB2.SideEffectFreeWhitelistStatus"
     enum="SB2SideEffectFreeWhitelistStatus">
+  <obsolete>
+    Deprecated 4/2015.
+  </obsolete>
   <owner>shess@chromium.org</owner>
   <summary>The instantiation status of the SideEffectFreeWhitelist.</summary>
 </histogram>
@@ -67629,7 +67632,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="DownloadWhitelist" label="DownloadWhitelist"/>
   <suffix name="InclusionWhitelist" label="InclusionWhitelist"/>
   <suffix name="ExtensionBlacklist" label="ExtensionBlacklist"/>
-  <suffix name="SideEffectFreeWhitelist" label="SideEffectFreeWhitelist"/>
+  <suffix name="SideEffectFreeWhitelist" label="SideEffectFreeWhitelist">
+    <obsolete>
+      Deprecated 4/2015.
+    </obsolete>
+  </suffix>
   <suffix name="IPBlacklist" label="IPBlacklist"/>
   <suffix name="UnwantedSoftware" label="UnwantedSoftware"/>
   <affected-histogram name="SB2.DatabaseSizeKilobytes"/>

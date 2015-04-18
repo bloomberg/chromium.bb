@@ -66,8 +66,4 @@ bool IsOmniboxEnabled(Profile* profile) {
           "OmniboxPrerenderDisabled");
 }
 
-bool IsSideEffectFreeWhitelistEnabled() {
-  return false;
-}
-
 }  // namespace prerender
