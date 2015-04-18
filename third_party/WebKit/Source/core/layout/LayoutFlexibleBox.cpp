@@ -834,7 +834,7 @@ void LayoutFlexibleBox::prepareOrderIteratorAndMargins()
     }
 }
 
-LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(LayoutBox& child, LayoutUnit childSize)
+LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(LayoutBox& child, LayoutUnit childSize, bool childShrunk)
 {
     Length max = isHorizontalFlow() ? child.style()->maxWidth() : child.style()->maxHeight();
     LayoutUnit maxExtent = -1;
@@ -851,7 +851,7 @@ LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(LayoutBox& child, Layo
         // computeMainAxisExtentForChild can return -1 when the child has a percentage
         // min size, but we have an indefinite size in that axis.
         minExtent = std::max(LayoutUnit(), minExtent);
-    } else if (min.isAuto() && mainAxisOverflowForChild(child) == OVISIBLE) {
+    } else if (childShrunk && min.isAuto() && mainAxisOverflowForChild(child) == OVISIBLE) {
         // css-flexbox section 4.5
         LayoutUnit contentSize = computeMainAxisExtentForChild(child, MinSize, Length(MinContent));
         ASSERT(contentSize >= 0);
@@ -954,14 +954,17 @@ bool LayoutFlexibleBox::resolveFlexibleLengths(FlexSign flexSign, const OrderedF
             LayoutUnit preferredChildSize = preferredMainAxisContentExtentForChild(*child);
             LayoutUnit childSize = preferredChildSize;
             double extraSpace = 0;
-            if (availableFreeSpace > 0 && totalFlexGrow > 0 && flexSign == PositiveFlexibility && std::isfinite(totalFlexGrow))
+            bool childShrunk = false;
+            if (availableFreeSpace > 0 && totalFlexGrow > 0 && flexSign == PositiveFlexibility && std::isfinite(totalFlexGrow)) {
                 extraSpace = availableFreeSpace * child->style()->flexGrow() / totalFlexGrow;
-            else if (availableFreeSpace < 0 && totalWeightedFlexShrink > 0 && flexSign == NegativeFlexibility && std::isfinite(totalWeightedFlexShrink))
+            } else if (availableFreeSpace < 0 && totalWeightedFlexShrink > 0 && flexSign == NegativeFlexibility && std::isfinite(totalWeightedFlexShrink) && child->style()->flexShrink()) {
                 extraSpace = availableFreeSpace * child->style()->flexShrink() * preferredChildSize / totalWeightedFlexShrink;
+                childShrunk = true;
+            }
             if (std::isfinite(extraSpace))
                 childSize += LayoutUnit::fromFloatRound(extraSpace);
 
-            LayoutUnit adjustedChildSize = adjustChildSizeForMinAndMax(*child, childSize);
+            LayoutUnit adjustedChildSize = adjustChildSizeForMinAndMax(*child, childSize, childShrunk);
             ASSERT(adjustedChildSize >= 0);
             childSizes.append(adjustedChildSize);
             usedFreeSpace += adjustedChildSize - preferredChildSize;

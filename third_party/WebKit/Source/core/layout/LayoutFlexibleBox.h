@@ -144,7 +144,7 @@ private:
 
     LayoutUnit computeChildMarginValue(Length margin);
     void prepareOrderIteratorAndMargins();
-    LayoutUnit adjustChildSizeForMinAndMax(LayoutBox& child, LayoutUnit childSize);
+    LayoutUnit adjustChildSizeForMinAndMax(LayoutBox& child, LayoutUnit childSize, bool childShrunk = false);
     // The hypothetical main size of an item is the flex base size clamped according to its min and max main size properties
     bool computeNextFlexLine(OrderedFlexItemList& orderedChildren, LayoutUnit& sumFlexBaseSize, double& totalFlexGrow, double& totalWeightedFlexShrink, LayoutUnit& sumHypotheticalMainSize, bool relayoutChildren);
 
