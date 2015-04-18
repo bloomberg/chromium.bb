@@ -420,6 +420,13 @@ source_set("sync_core") {
     deps += [ "//chromeos" ]
   }
 
+  if (is_mac) {
+    libs = [
+      # Required by get_session_name_mac.mm on Mac.
+      "SystemConfiguration.framework",
+    ]
+  }
+
   defines = [ "SYNC_IMPLEMENTATION" ]
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }

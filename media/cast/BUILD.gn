@@ -163,11 +163,24 @@ source_set("sender") {
     ]
   }
 
+  libs = []
+
   # iOS and OS X encoders
   if (is_ios || is_mac) {
     sources += [
       "sender/h264_vt_encoder.cc",
       "sender/h264_vt_encoder.h",
+    ]
+
+    libs += [
+      "CoreVideo.framework",
+    ]
+  }
+
+  if (is_mac) {
+    # Required by audio_encoder.cc.
+    libs += [
+      "AudioToolbox.framework",
     ]
   }
 }

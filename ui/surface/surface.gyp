@@ -14,9 +14,11 @@
         ],
       }],
       ['OS == "mac"', {
+        # Required by accelerated_surface_mac.cc.
         'link_settings': {
           'libraries': [
             '$(SDKROOT)/System/Library/Frameworks/IOSurface.framework',
+            '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
           ],
         },
       }],

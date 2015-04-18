@@ -5,43 +5,6 @@
 import("//build/config/mac/mac_sdk.gni")
 import("//testing/test.gni")
 
-component("sandbox") {
-  sources = [
-    "bootstrap_sandbox.cc",
-    "bootstrap_sandbox.h",
-    "dispatch_source_mach.cc",
-    "dispatch_source_mach.h",
-    "launchd_interception_server.cc",
-    "launchd_interception_server.h",
-    "mach_message_server.cc",
-    "mach_message_server.h",
-    "message_server.h",
-    "os_compatibility.cc",
-    "os_compatibility.h",
-    "policy.cc",
-    "policy.h",
-    "xpc.cc",
-    "xpc.h",
-    "xpc_message_server.cc",
-    "xpc_message_server.h",
-  ]
-
-  defines = [ "SANDBOX_IMPLEMENTATION" ]
-  libs = [ "bsm" ]
-
-  deps = [
-    "//base",
-  ]
-
-  # When the build SDK is 10.6, generate a dynamic stub loader. When the
-  # SDK is higher, then libxpc.dylib will be loaded automatically as part
-  # of libSystem, and only forward declarations of private symbols are
-  # necessary.
-  if (mac_sdk_version == "10.6") {
-    deps += [ ":generate_stubs" ]
-  }
-}
-
 generate_stubs_script = "//tools/generate_stubs/generate_stubs.py"
 generate_stubs_header = "xpc_stubs_header.fragment"
 generate_stubs_sig_public = "xpc_stubs.sig"
@@ -79,6 +42,44 @@ action("generate_stubs") {
     "SANDBOX_EXPORT",
   ]
   args += rebase_path(sources, root_build_dir)
+}
+
+component("sandbox") {
+  sources = [
+    "bootstrap_sandbox.cc",
+    "bootstrap_sandbox.h",
+    "dispatch_source_mach.cc",
+    "dispatch_source_mach.h",
+    "launchd_interception_server.cc",
+    "launchd_interception_server.h",
+    "mach_message_server.cc",
+    "mach_message_server.h",
+    "message_server.h",
+    "os_compatibility.cc",
+    "os_compatibility.h",
+    "policy.cc",
+    "policy.h",
+    "xpc.cc",
+    "xpc.h",
+    "xpc_message_server.cc",
+    "xpc_message_server.h",
+  ]
+
+  defines = [ "SANDBOX_IMPLEMENTATION" ]
+  libs = [ "bsm" ]
+
+  deps = [
+    "//base",
+  ]
+
+  # When the build SDK is 10.6, generate a dynamic stub loader. When the
+  # SDK is higher, then libxpc.dylib will be loaded automatically as part
+  # of libSystem, and only forward declarations of private symbols are
+  # necessary.
+  if (mac_sdk_version == "10.6") {
+    deps += [ ":generate_stubs" ]
+    sources += get_target_outputs(":generate_stubs")
+  }
 }
 
 test("sandbox_mac_unittests") {

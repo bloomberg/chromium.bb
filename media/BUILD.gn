@@ -673,6 +673,10 @@ test("media_unittests") {
       "midi/midi_manager_mac_unittest.cc",
       "video/capture/mac/video_capture_device_factory_mac_unittest.mm",
     ]
+    libs = [
+      # Required by midi_manager_mac_unittest.cc.
+      "CoreMIDI.framework",
+    ]
   }
 
   if (use_alsa) {

@@ -460,6 +460,14 @@
             '../chromeos/chromeos.gyp:chromeos',
             ],
         }],
+        ['OS=="mac"', {
+          'link_settings': {
+            'libraries': [
+              # Required by get_session_name_mac.mm on Mac.
+              '$(SDKROOT)/System/Library/Frameworks/SystemConfiguration.framework',
+            ]
+          },
+        }],
       ],
     },
     {

@@ -39,6 +39,9 @@
       ],
       'link_settings': {
         'libraries': [
+          # Required by io_surface_texture.mm.
+          '$(SDKROOT)/System/Library/Frameworks/IOSurface.framework',
+          '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
           '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
         ],
       },
