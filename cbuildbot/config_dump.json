@@ -1256,6 +1256,7 @@
         "name": "auron-b-full-group"
     },
     "auron-b-release-group": {
+        "active_waterfall": "chromeos",
         "child_configs": [
             {
                 "afdo_use": true,

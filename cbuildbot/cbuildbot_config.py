@@ -3291,6 +3291,7 @@ _waterfall_config_map = {
       'x86-alex_freon-paladin',
 
       # Experimental Canaries (Group)
+      'auron-b-release-group',
       'daisy-freon-release-group',
       'jecht-release-group',
       'peach-freon-release-group',
