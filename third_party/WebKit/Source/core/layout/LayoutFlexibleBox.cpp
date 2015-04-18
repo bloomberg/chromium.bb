@@ -99,9 +99,16 @@ void LayoutFlexibleBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidt
             continue;
 
         LayoutUnit margin = marginIntrinsicLogicalWidthForChild(*child);
+
+        LayoutUnit minPreferredLogicalWidth;
+        LayoutUnit maxPreferredLogicalWidth;
         bool hasOrthogonalWritingMode = child->isHorizontalWritingMode() != isHorizontalWritingMode();
-        LayoutUnit minPreferredLogicalWidth = hasOrthogonalWritingMode ? child->logicalHeight() : child->minPreferredLogicalWidth();
-        LayoutUnit maxPreferredLogicalWidth = hasOrthogonalWritingMode ? child->logicalHeight() : child->maxPreferredLogicalWidth();
+        if (hasOrthogonalWritingMode) {
+            minPreferredLogicalWidth = maxPreferredLogicalWidth = child->computeLogicalHeightWithoutLayout();
+        } else {
+            minPreferredLogicalWidth = child->minPreferredLogicalWidth();
+            maxPreferredLogicalWidth = child->maxPreferredLogicalWidth();
+        }
         minPreferredLogicalWidth += margin;
         maxPreferredLogicalWidth += margin;
         if (!isColumnFlow()) {

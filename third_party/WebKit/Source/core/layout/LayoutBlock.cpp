@@ -3056,10 +3056,7 @@ void LayoutBlock::computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth
 
         LayoutUnit childMinPreferredLogicalWidth, childMaxPreferredLogicalWidth;
         if (child->isBox() && child->isHorizontalWritingMode() != isHorizontalWritingMode()) {
-            LayoutBox* childBox = toLayoutBox(child);
-            LogicalExtentComputedValues computedValues;
-            childBox->computeLogicalHeight(childBox->borderAndPaddingLogicalHeight(), 0, computedValues);
-            childMinPreferredLogicalWidth = childMaxPreferredLogicalWidth = computedValues.m_extent;
+            childMinPreferredLogicalWidth = childMaxPreferredLogicalWidth = toLayoutBox(child)->computeLogicalHeightWithoutLayout();
         } else {
             childMinPreferredLogicalWidth = child->minPreferredLogicalWidth();
             childMaxPreferredLogicalWidth = child->maxPreferredLogicalWidth();

@@ -2385,6 +2385,15 @@ void LayoutBox::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logica
     }
 }
 
+LayoutUnit LayoutBox::computeLogicalHeightWithoutLayout() const
+{
+    // TODO(cbiesinger): We should probably return something other than just border + padding, but for now
+    // we have no good way to do anything else without layout, so we just use that.
+    LogicalExtentComputedValues computedValues;
+    computeLogicalHeight(borderAndPaddingLogicalHeight(), 0, computedValues);
+    return computedValues.m_extent;
+}
+
 LayoutUnit LayoutBox::computeLogicalHeightUsing(SizeType heightType, const Length& height, LayoutUnit intrinsicContentHeight) const
 {
     LayoutUnit logicalHeight = computeContentAndScrollbarLogicalHeightUsing(heightType, height, intrinsicContentHeight);

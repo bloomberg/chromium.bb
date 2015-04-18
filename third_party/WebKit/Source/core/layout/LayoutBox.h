@@ -487,6 +487,11 @@ public:
     virtual void updateLogicalWidth();
     void updateLogicalHeight();
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const;
+    // This function will compute the logical border-box height, without laying out the box. This means that the result
+    // is only "correct" when the height is explicitly specified. This function exists so that intrinsic width calculations
+    // have a way to deal with children that have orthogonal flows.
+    // When there is no explicit height, this function assumes a content height of zero (and returns just border+padding)
+    LayoutUnit computeLogicalHeightWithoutLayout() const;
 
     void computeLogicalWidth(LogicalExtentComputedValues&) const;
 
