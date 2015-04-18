@@ -73,14 +73,8 @@ PassRefPtr<AudioBufferSourceHandler> AudioBufferSourceHandler::create(AudioNode&
 
 AudioBufferSourceHandler::~AudioBufferSourceHandler()
 {
-    ASSERT(!isInitialized());
-}
-
-void AudioBufferSourceHandler::dispose()
-{
     clearPannerNode();
     uninitialize();
-    AudioScheduledSourceHandler::dispose();
 }
 
 void AudioBufferSourceHandler::process(size_t framesToProcess)

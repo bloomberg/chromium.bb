@@ -49,10 +49,8 @@ public:
     virtual ~ScriptProcessorHandler();
 
     // AudioHandler
-    virtual void dispose() override;
     virtual void process(size_t framesToProcess) override;
     virtual void initialize() override;
-    virtual void uninitialize() override;
 
     size_t bufferSize() const { return m_bufferSize; }
 
@@ -85,6 +83,9 @@ private:
     RefPtr<AudioBus> m_internalInputBus;
     // Synchronize process() with fireProcessEvent().
     mutable Mutex m_processEventLock;
+
+    // TODO(tkent): Use FRIEND_TEST macro provided by gtest_prod.h
+    friend class ScriptProcessorNodeTest_BufferLifetime_Test;
 };
 
 class ScriptProcessorNode final : public AudioNode {

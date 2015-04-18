@@ -84,13 +84,7 @@ PassRefPtr<PannerHandler> PannerHandler::create(AudioNode& node, float sampleRat
 
 PannerHandler::~PannerHandler()
 {
-    ASSERT(!isInitialized());
-}
-
-void PannerHandler::dispose()
-{
     uninitialize();
-    AudioHandler::dispose();
 }
 
 void PannerHandler::process(size_t framesToProcess)

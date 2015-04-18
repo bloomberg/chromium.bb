@@ -67,13 +67,7 @@ PassRefPtr<ConvolverHandler> ConvolverHandler::create(AudioNode& node, float sam
 
 ConvolverHandler::~ConvolverHandler()
 {
-    ASSERT(!isInitialized());
-}
-
-void ConvolverHandler::dispose()
-{
     uninitialize();
-    AudioHandler::dispose();
 }
 
 void ConvolverHandler::process(size_t framesToProcess)
@@ -97,23 +91,6 @@ void ConvolverHandler::process(size_t framesToProcess)
         // Too bad - the tryLock() failed.  We must be in the middle of setting a new impulse response.
         outputBus->zero();
     }
-}
-
-void ConvolverHandler::initialize()
-{
-    if (isInitialized())
-        return;
-
-    AudioHandler::initialize();
-}
-
-void ConvolverHandler::uninitialize()
-{
-    if (!isInitialized())
-        return;
-
-    m_reverb.clear();
-    AudioHandler::uninitialize();
 }
 
 void ConvolverHandler::setBuffer(AudioBuffer* buffer, ExceptionState& exceptionState)

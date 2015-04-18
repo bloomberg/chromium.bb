@@ -49,13 +49,8 @@ PassRefPtr<AudioBasicProcessorHandler> AudioBasicProcessorHandler::create(NodeTy
 
 AudioBasicProcessorHandler::~AudioBasicProcessorHandler()
 {
-    ASSERT(!isInitialized());
-}
-
-void AudioBasicProcessorHandler::dispose()
-{
+    // Safe to call the virtual uninitialize() because it's final.
     uninitialize();
-    AudioHandler::dispose();
 }
 
 void AudioBasicProcessorHandler::initialize()

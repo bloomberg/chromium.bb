@@ -95,6 +95,7 @@ public:
     // dispose() is called when the owner AudioNode is about to be
     // destructed. This must be called in the main thread, and while the graph
     // lock is held.
+    // Do not release resources used by an audio rendering thread in dispose().
     virtual void dispose();
     static unsigned instanceCount() { return s_instanceCount; }
 

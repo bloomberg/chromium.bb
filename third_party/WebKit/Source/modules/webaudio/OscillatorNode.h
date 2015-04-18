@@ -56,7 +56,6 @@ public:
     virtual ~OscillatorHandler();
 
     // AudioHandler
-    virtual void dispose() override;
     virtual void process(size_t framesToProcess) override;
 
     String type() const;

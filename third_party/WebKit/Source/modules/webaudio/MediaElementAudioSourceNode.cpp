@@ -60,14 +60,12 @@ PassRefPtr<MediaElementAudioSourceHandler> MediaElementAudioSourceHandler::creat
 
 MediaElementAudioSourceHandler::~MediaElementAudioSourceHandler()
 {
-    ASSERT(!isInitialized());
-    ASSERT(isMainThread());
+    uninitialize();
 }
 
 void MediaElementAudioSourceHandler::dispose()
 {
     m_mediaElement->setAudioSourceNode(nullptr);
-    uninitialize();
     AudioHandler::dispose();
 }
 

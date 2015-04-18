@@ -58,13 +58,7 @@ PassRefPtr<MediaStreamAudioDestinationHandler> MediaStreamAudioDestinationHandle
 
 MediaStreamAudioDestinationHandler::~MediaStreamAudioDestinationHandler()
 {
-    ASSERT(!isInitialized());
-}
-
-void MediaStreamAudioDestinationHandler::dispose()
-{
     uninitialize();
-    AudioBasicInspectorHandler::dispose();
 }
 
 void MediaStreamAudioDestinationHandler::process(size_t numberOfFrames)

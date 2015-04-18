@@ -42,7 +42,6 @@ public:
     virtual ~AudioDestinationHandler();
 
     // AudioHandler
-    virtual void dispose() override;
     virtual void process(size_t) override final { } // we're pulled by hardware so this is never called
 
     // The audio hardware calls render() to get the next render quantum of audio into destinationBus.

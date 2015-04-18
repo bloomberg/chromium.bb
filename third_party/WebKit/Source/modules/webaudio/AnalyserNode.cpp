@@ -47,13 +47,7 @@ PassRefPtr<AnalyserHandler> AnalyserHandler::create(AudioNode& node, float sampl
 
 AnalyserHandler::~AnalyserHandler()
 {
-    ASSERT(!isInitialized());
-}
-
-void AnalyserHandler::dispose()
-{
     uninitialize();
-    AudioBasicInspectorHandler::dispose();
 }
 
 void AnalyserHandler::process(size_t framesToProcess)

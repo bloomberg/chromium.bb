@@ -56,7 +56,6 @@ public:
     virtual ~PannerHandler();
 
     // AudioHandler
-    virtual void dispose() override;
     virtual void process(size_t framesToProcess) override;
     virtual void initialize() override;
     virtual void uninitialize() override;

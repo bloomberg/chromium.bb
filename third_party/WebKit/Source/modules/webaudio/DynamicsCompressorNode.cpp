@@ -65,13 +65,7 @@ PassRefPtr<DynamicsCompressorHandler> DynamicsCompressorHandler::create(
 
 DynamicsCompressorHandler::~DynamicsCompressorHandler()
 {
-    ASSERT(!isInitialized());
-}
-
-void DynamicsCompressorHandler::dispose()
-{
     uninitialize();
-    AudioHandler::dispose();
 }
 
 void DynamicsCompressorHandler::process(size_t framesToProcess)
@@ -104,15 +98,6 @@ void DynamicsCompressorHandler::initialize()
 
     AudioHandler::initialize();
     m_dynamicsCompressor = adoptPtr(new DynamicsCompressor(sampleRate(), defaultNumberOfOutputChannels));
-}
-
-void DynamicsCompressorHandler::uninitialize()
-{
-    if (!isInitialized())
-        return;
-
-    m_dynamicsCompressor.clear();
-    AudioHandler::uninitialize();
 }
 
 void DynamicsCompressorHandler::clearInternalStateWhenDisabled()

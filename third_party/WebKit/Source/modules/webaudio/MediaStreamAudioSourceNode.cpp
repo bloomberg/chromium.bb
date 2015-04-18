@@ -54,13 +54,7 @@ PassRefPtr<MediaStreamAudioSourceHandler> MediaStreamAudioSourceHandler::create(
 
 MediaStreamAudioSourceHandler::~MediaStreamAudioSourceHandler()
 {
-    ASSERT(!isInitialized());
-}
-
-void MediaStreamAudioSourceHandler::dispose()
-{
     uninitialize();
-    AudioHandler::dispose();
 }
 
 void MediaStreamAudioSourceHandler::setFormat(size_t numberOfChannels, float sourceSampleRate)

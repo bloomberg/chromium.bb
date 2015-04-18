@@ -45,7 +45,6 @@ public:
     MediaStream* stream() { return m_stream.get(); }
 
     // AudioHandler.
-    virtual void dispose() override;
     virtual void process(size_t framesToProcess) override;
 
 private:

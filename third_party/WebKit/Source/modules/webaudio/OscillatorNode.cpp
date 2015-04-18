@@ -65,13 +65,7 @@ PassRefPtr<OscillatorHandler> OscillatorHandler::create(AudioNode& node, float s
 
 OscillatorHandler::~OscillatorHandler()
 {
-    ASSERT(!isInitialized());
-}
-
-void OscillatorHandler::dispose()
-{
     uninitialize();
-    AudioScheduledSourceHandler::dispose();
 }
 
 String OscillatorHandler::type() const

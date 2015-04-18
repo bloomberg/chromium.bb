@@ -42,10 +42,7 @@ public:
     virtual ~ConvolverHandler();
 
     // AudioHandler
-    virtual void dispose() override;
     virtual void process(size_t framesToProcess) override;
-    virtual void initialize() override;
-    virtual void uninitialize() override;
 
     // Impulse responses
     void setBuffer(AudioBuffer*, ExceptionState&);
@@ -69,6 +66,9 @@ private:
 
     // Normalize the impulse response or not. Must default to true.
     bool m_normalize;
+
+    // TODO(tkent): Use FRIEND_TEST macro provided by gtest_prod.h
+    friend class ConvolverNodeTest_ReverbLifetime_Test;
 };
 
 class ConvolverNode final : public AudioNode {
@@ -84,6 +84,9 @@ public:
 private:
     ConvolverNode(AudioContext&, float sampleRate);
     ConvolverHandler& convolverHandler() const;
+
+    // TODO(tkent): Use FRIEND_TEST macro provided by gtest_prod.h
+    friend class ConvolverNodeTest_ReverbLifetime_Test;
 };
 
 } // namespace blink

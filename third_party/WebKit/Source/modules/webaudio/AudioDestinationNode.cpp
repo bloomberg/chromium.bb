@@ -46,12 +46,6 @@ AudioDestinationHandler::~AudioDestinationHandler()
     ASSERT(!isInitialized());
 }
 
-void AudioDestinationHandler::dispose()
-{
-    uninitialize();
-    AudioHandler::dispose();
-}
-
 void AudioDestinationHandler::render(AudioBus* sourceBus, AudioBus* destinationBus, size_t numberOfFrames)
 {
     // We don't want denormals slowing down any of the audio processing

@@ -48,7 +48,6 @@ public:
     virtual ~AudioBufferSourceHandler();
 
     // AudioHandler
-    virtual void dispose() override;
     virtual void process(size_t framesToProcess) override;
 
     // setBuffer() is called on the main thread. This is the buffer we use for playback.

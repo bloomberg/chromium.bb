@@ -36,13 +36,11 @@ class DynamicsCompressor;
 class DynamicsCompressorHandler final : public AudioHandler {
 public:
     static PassRefPtr<DynamicsCompressorHandler> create(AudioNode&, float sampleRate, AudioParamHandler& threshold, AudioParamHandler& knee, AudioParamHandler& ratio, AudioParamHandler& reduction, AudioParamHandler& attack, AudioParamHandler& release);
-    virtual ~DynamicsCompressorHandler();
+    ~DynamicsCompressorHandler();
 
     // AudioHandler
-    virtual void dispose() override;
     virtual void process(size_t framesToProcess) override;
     virtual void initialize() override;
-    virtual void uninitialize() override;
     virtual void clearInternalStateWhenDisabled() override;
 
 private:
@@ -57,6 +55,9 @@ private:
     RefPtr<AudioParamHandler> m_reduction;
     RefPtr<AudioParamHandler> m_attack;
     RefPtr<AudioParamHandler> m_release;
+
+    // TODO(tkent): Use FRIEND_TEST macro provided by gtest_prod.h
+    friend class DynamicsCompressorNodeTest_ProcessorLifetime_Test;
 };
 
 class DynamicsCompressorNode final : public AudioNode {
@@ -82,6 +83,9 @@ private:
     Member<AudioParam> m_reduction;
     Member<AudioParam> m_attack;
     Member<AudioParam> m_release;
+
+    // TODO(tkent): Use FRIEND_TEST macro provided by gtest_prod.h
+    friend class DynamicsCompressorNodeTest_ProcessorLifetime_Test;
 };
 
 } // namespace blink

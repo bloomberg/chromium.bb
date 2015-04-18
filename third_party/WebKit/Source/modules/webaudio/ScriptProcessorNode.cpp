@@ -71,13 +71,7 @@ PassRefPtr<ScriptProcessorHandler> ScriptProcessorHandler::create(AudioNode& nod
 
 ScriptProcessorHandler::~ScriptProcessorHandler()
 {
-    ASSERT(!isInitialized());
-}
-
-void ScriptProcessorHandler::dispose()
-{
     uninitialize();
-    AudioHandler::dispose();
 }
 
 void ScriptProcessorHandler::initialize()
@@ -98,17 +92,6 @@ void ScriptProcessorHandler::initialize()
     }
 
     AudioHandler::initialize();
-}
-
-void ScriptProcessorHandler::uninitialize()
-{
-    if (!isInitialized())
-        return;
-
-    m_inputBuffers.clear();
-    m_outputBuffers.clear();
-
-    AudioHandler::uninitialize();
 }
 
 void ScriptProcessorHandler::process(size_t framesToProcess)

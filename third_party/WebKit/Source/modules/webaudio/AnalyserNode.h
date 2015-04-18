@@ -39,7 +39,6 @@ public:
     virtual ~AnalyserHandler();
 
     // AudioHandler
-    virtual void dispose() override;
     virtual void process(size_t framesToProcess) override;
 
     unsigned fftSize() const { return m_analyser.fftSize(); }

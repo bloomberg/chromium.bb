@@ -42,13 +42,7 @@ PassRefPtr<StereoPannerHandler> StereoPannerHandler::create(AudioNode& node, flo
 
 StereoPannerHandler::~StereoPannerHandler()
 {
-    ASSERT(!isInitialized());
-}
-
-void StereoPannerHandler::dispose()
-{
     uninitialize();
-    AudioHandler::dispose();
 }
 
 void StereoPannerHandler::process(size_t framesToProcess)
@@ -87,16 +81,6 @@ void StereoPannerHandler::initialize()
     m_stereoPanner = Spatializer::create(Spatializer::PanningModelEqualPower, sampleRate());
 
     AudioHandler::initialize();
-}
-
-void StereoPannerHandler::uninitialize()
-{
-    if (!isInitialized())
-        return;
-
-    m_stereoPanner.clear();
-
-    AudioHandler::uninitialize();
 }
 
 void StereoPannerHandler::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)

@@ -41,7 +41,6 @@ public:
     virtual ~AudioBasicProcessorHandler();
 
     // AudioHandler
-    virtual void dispose() override final;
     virtual void process(size_t framesToProcess) override final;
     virtual void pullInputs(size_t framesToProcess) override final;
     virtual void initialize() override final;

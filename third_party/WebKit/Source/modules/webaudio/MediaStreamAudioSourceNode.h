@@ -47,7 +47,6 @@ public:
     MediaStream* mediaStream() { return m_mediaStream.get(); }
 
     // AudioHandler
-    virtual void dispose() override;
     virtual void process(size_t framesToProcess) override;
 
     // A helper for AudioSourceProviderClient implementation of

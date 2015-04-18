@@ -19,10 +19,8 @@ public:
     static PassRefPtr<StereoPannerHandler> create(AudioNode&, float sampleRate, AudioParamHandler& pan);
     virtual ~StereoPannerHandler();
 
-    virtual void dispose() override;
     virtual void process(size_t framesToProcess) override;
     virtual void initialize() override;
-    virtual void uninitialize() override;
 
     virtual void setChannelCount(unsigned long, ExceptionState&) final;
     virtual void setChannelCountMode(const String&, ExceptionState&) final;
@@ -34,6 +32,9 @@ private:
     RefPtr<AudioParamHandler> m_pan;
 
     AudioFloatArray m_sampleAccuratePanValues;
+
+    // TODO(tkent): Use FRIEND_TEST macro provided by gtest_prod.h
+    friend class StereoPannerNodeTest_StereoPannerLifetime_Test;
 };
 
 class StereoPannerNode final : public AudioNode {
