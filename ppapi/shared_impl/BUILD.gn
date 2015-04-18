@@ -101,8 +101,6 @@ component("shared_impl") {
     "scoped_pp_var.h",
     "socket_option_data.cc",
     "socket_option_data.h",
-    "test_harness_utils.cc",
-    "test_harness_utils.h",
     "thread_aware_callback.cc",
     "thread_aware_callback.h",
     "time_conversion.cc",

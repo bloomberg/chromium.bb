@@ -53,6 +53,7 @@
 #if defined(ENABLE_PLUGINS)
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/webplugininfo.h"
+#include "content/public/test/ppapi_test_utils.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -86,15 +87,6 @@ const char kRedirectResponsePath[] = "/server-redirect";
 const char kUserAgentRedirectResponsePath[] = "/detect-user-agent";
 const char kRedirectResponseFullPath[] =
     "/extensions/platform_apps/web_view/shim/guest_redirect.html";
-
-// Platform-specific filename relative to the chrome executable.
-#if defined(OS_WIN)
-const wchar_t library_name[] = L"ppapi_tests.dll";
-#elif defined(OS_MACOSX)
-const char library_name[] = "ppapi_tests.plugin";
-#elif defined(OS_POSIX)
-const char library_name[] = "libppapi_tests.so";
-#endif
 
 class EmptyHttpResponse : public net::test_server::HttpResponse {
  public:
@@ -2631,22 +2623,7 @@ class WebViewPluginTest : public WebViewTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WebViewTest::SetUpCommandLine(command_line);
-
-    // Append the switch to register the pepper plugin.
-    // library name = <out dir>/<test_name>.<library_extension>
-    // MIME type = application/x-ppapi-<test_name>
-    base::FilePath plugin_lib = GetPluginPath();
-    EXPECT_TRUE(base::PathExists(plugin_lib));
-    base::FilePath::StringType pepper_plugin = plugin_lib.value();
-    pepper_plugin.append(FILE_PATH_LITERAL(";application/x-ppapi-tests"));
-    command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
-                                     pepper_plugin);
-  }
-
-  base::FilePath GetPluginPath() const {
-    base::FilePath plugin_dir;
-    EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
-    return plugin_dir.Append(library_name);
+    ASSERT_TRUE(ppapi::RegisterTestPlugin(command_line));
   }
 };
 

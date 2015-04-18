@@ -26,11 +26,11 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/ppapi_test_utils.h"
 #include "media/base/media_switches.h"
 #include "net/base/filename_util.h"
 #include "net/base/test_data_directory.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
-#include "ppapi/shared_impl/test_harness_utils.h"
 #include "ui/gl/gl_switches.h"
 
 using content::DomOperationNotificationDetails;
@@ -280,24 +280,14 @@ PPAPITest::PPAPITest() : in_process_(true) {
 void PPAPITest::SetUpCommandLine(base::CommandLine* command_line) {
   PPAPITestBase::SetUpCommandLine(command_line);
 
-  base::FilePath plugin_dir;
-  EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
-
-  base::FilePath plugin_lib = plugin_dir.Append(ppapi::GetTestLibraryName());
-  EXPECT_TRUE(base::PathExists(plugin_lib));
-
-  // Append the switch to register the pepper plugin.
-  // library path = <out dir>/<test_name>.<library_extension>
   // library name = "PPAPI Tests"
   // version = "1.2.3"
-  // MIME type = application/x-ppapi-<test_name>
-  base::FilePath::StringType pepper_plugin = plugin_lib.value();
-  pepper_plugin.append(FILE_PATH_LITERAL("#PPAPI Tests"));
-  pepper_plugin.append(FILE_PATH_LITERAL("#"));  // No description.
-  pepper_plugin.append(FILE_PATH_LITERAL("#1.2.3"));
-  pepper_plugin.append(FILE_PATH_LITERAL(";application/x-ppapi-tests"));
-  command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
-                                   pepper_plugin);
+  base::FilePath::StringType parameters;
+  parameters.append(FILE_PATH_LITERAL("#PPAPI Tests"));
+  parameters.append(FILE_PATH_LITERAL("#"));  // No description.
+  parameters.append(FILE_PATH_LITERAL("#1.2.3"));
+  ASSERT_TRUE(
+      ppapi::RegisterTestPluginWithExtraParameters(command_line, parameters));
 
   command_line->AppendSwitchASCII(switches::kAllowNaClSocketAPI, "127.0.0.1");
   if (in_process_)

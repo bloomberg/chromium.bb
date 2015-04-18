@@ -63,6 +63,8 @@
       'public/test/mock_special_storage_policy.h',
       'public/test/mock_storage_client.cc',
       'public/test/mock_storage_client.h',
+      'public/test/ppapi_test_utils.cc',
+      'public/test/ppapi_test_utils.h',
       'public/test/render_view_test.cc',
       'public/test/render_view_test.h',
       'public/test/render_widget_test.cc',
@@ -818,6 +820,7 @@
       'conditions': [
         ['enable_plugins==0', {
           'sources!': [
+            'public/test/ppapi_test_utils.cc',
             'test/ppapi_unittest.cc',
           ],
         }],

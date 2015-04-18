@@ -84,6 +84,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/ppapi_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/constants.h"
@@ -1072,7 +1073,6 @@ base::FilePath GetTestPath(const std::string& file_name) {
 
 }  // namespace
 
-// Many of these tests are flaky. See http://crbug.com/249179
 class PrerenderBrowserTest : virtual public InProcessBrowserTest {
  public:
   PrerenderBrowserTest()
@@ -1110,17 +1110,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kPrerenderMode,
                                     switches::kPrerenderModeSwitchValueEnabled);
-#if defined(OS_MACOSX)
-    // The plugins directory isn't read by default on the Mac, so it needs to be
-    // explicitly registered.
-    base::FilePath app_dir;
-    PathService::Get(chrome::DIR_APP, &app_dir);
-    command_line->AppendSwitchPath(
-        switches::kExtraPluginDir,
-        app_dir.Append(FILE_PATH_LITERAL("plugins")));
-#endif
-    command_line->AppendSwitch(switches::kAlwaysAuthorizePlugins);
-    command_line->AppendSwitch(switches::kEnableNpapi);
+    ASSERT_TRUE(ppapi::RegisterTestPlugin(command_line));
   }
 
   void SetUpOnMainThread() override {
@@ -1979,45 +1969,34 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAlertAfterOnload) {
 
 // Checks that plugins are not loaded while a page is being preloaded, but
 // are loaded when the page is displayed.
-#if defined(USE_AURA) && !defined(OS_WIN)
-// http://crbug.com/103496
-#define MAYBE_PrerenderDelayLoadPlugin DISABLED_PrerenderDelayLoadPlugin
-#define MAYBE_PrerenderPluginPowerSaver DISABLED_PrerenderPluginPowerSaver
-#elif defined(OS_MACOSX)
-// http://crbug.com/100514
-#define MAYBE_PrerenderDelayLoadPlugin DISABLED_PrerenderDelayLoadPlugin
-#define MAYBE_PrerenderPluginPowerSaver DISABLED_PrerenderPluginPowerSaver
-#elif defined(OS_WIN) && defined(ARCH_CPU_X86_64)
-// TODO(jschuh): Failing plugin tests. crbug.com/244653
-#define MAYBE_PrerenderDelayLoadPlugin DISABLED_PrerenderDelayLoadPlugin
-#define MAYBE_PrerenderPluginPowerSaver DISABLED_PrerenderPluginPowerSaver
-#elif defined(OS_LINUX)
-// http://crbug.com/306715
-#define MAYBE_PrerenderDelayLoadPlugin DISABLED_PrerenderDelayLoadPlugin
-#define MAYBE_PrerenderPluginPowerSaver DISABLED_PrerenderPluginPowerSaver
-#else
-#define MAYBE_PrerenderDelayLoadPlugin PrerenderDelayLoadPlugin
-#define MAYBE_PrerenderPluginPowerSaver PrerenderPluginPowerSaver
-#endif
-// http://crbug.com/306715
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderDelayLoadPlugin) {
-  PrerenderTestURL("files/prerender/plugin_delay_load.html",
-                   FINAL_STATUS_USED,
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDelayLoadPlugin) {
+  PrerenderTestURL("files/prerender/plugin_delay_load.html", FINAL_STATUS_USED,
                    1);
   NavigateToDestURL();
 }
 
-// For enabled Plugin Power Saver, checks that plugins are not loaded while
+// For Content Setting DETECT, checks that plugins are not loaded while
 // a page is being preloaded, but are loaded when the page is displayed.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderPluginPowerSaver) {
-  // Enable click-to-play.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderContentSettingDetect) {
   HostContentSettingsMap* content_settings_map =
       current_browser()->profile()->GetHostContentSettingsMap();
   content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
 
-  PrerenderTestURL("files/prerender/prerender_plugin_power_saver.html",
-                   FINAL_STATUS_USED, 1);
+  PrerenderTestURL("files/prerender/plugin_delay_load.html", FINAL_STATUS_USED,
+                   1);
+  NavigateToDestURL();
+}
+
+// For Content Setting BLOCK, checks that plugins are never loaded.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderContentSettingBlock) {
+  HostContentSettingsMap* content_settings_map =
+      current_browser()->profile()->GetHostContentSettingsMap();
+  content_settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                                 CONTENT_SETTING_BLOCK);
+
+  PrerenderTestURL("files/prerender/plugin_never_load.html", FINAL_STATUS_USED,
+                   1);
   NavigateToDestURL();
 }
 

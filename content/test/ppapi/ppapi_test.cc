@@ -12,10 +12,10 @@
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/ppapi_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "net/base/filename_util.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
-#include "ppapi/shared_impl/test_harness_utils.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
@@ -103,19 +103,7 @@ PPAPITest::PPAPITest() : in_process_(true) {
 
 void PPAPITest::SetUpCommandLine(base::CommandLine* command_line) {
   PPAPITestBase::SetUpCommandLine(command_line);
-
-  // Append the switch to register the pepper plugin.
-  // library name = <out dir>/<test_name>.<library_extension>
-  // MIME type = application/x-ppapi-<test_name>
-  base::FilePath plugin_dir;
-  EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
-
-  base::FilePath plugin_lib = plugin_dir.Append(ppapi::GetTestLibraryName());
-  EXPECT_TRUE(base::PathExists(plugin_lib));
-  base::FilePath::StringType pepper_plugin = plugin_lib.value();
-  pepper_plugin.append(FILE_PATH_LITERAL(";application/x-ppapi-tests"));
-  command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
-                                   pepper_plugin);
+  ASSERT_TRUE(ppapi::RegisterTestPlugin(command_line));
 
   if (in_process_)
     command_line->AppendSwitch(switches::kPpapiInProcess);

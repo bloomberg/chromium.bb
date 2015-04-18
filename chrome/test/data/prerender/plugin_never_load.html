@@ -1,13 +1,14 @@
 <html>
 <!--
 This test checks to make sure plugins aren't loaded when a page is prerendered,
-but are loaded once the page is displayed.
+and are also not loaded once the page is displayed. This is used to test certain
+content settings that do not allow plugin loading.
 
 This test relies on the Pepper plugin (but not the placeholder) implementing
 the postMessage() function on the plugin object.
 -->
 <head>
-<title>Prerender Plugin Delay Loading</title>
+<title>Prerender Plugin Never Load</title>
 
 <script>
 // Make sure plugin was not loaded while prerendering.
@@ -18,10 +19,10 @@ function DidPrerenderPass() {
   return plugin.postMessage == undefined;
 }
 
-// Make sure plugin loads once the page is displayed.
+// Make sure plugin still does not load once the page is displayed.
 function DidDisplayPass() {
   var plugin = window.document['plugin'];
-  return plugin.postMessage != undefined;
+  return plugin.postMessage == undefined;
 }
 </script>
 
