@@ -64,7 +64,7 @@ class CC_EXPORT ResourceProvider {
  public:
   typedef unsigned ResourceId;
   typedef std::vector<ResourceId> ResourceIdArray;
-  typedef std::set<ResourceId> ResourceIdSet;
+  typedef base::hash_set<ResourceId> ResourceIdSet;
   typedef base::hash_map<ResourceId, ResourceId> ResourceIdMap;
   enum TextureHint {
     TEXTURE_HINT_DEFAULT = 0x0,
@@ -203,9 +203,8 @@ class CC_EXPORT ResourceProvider {
   // Once a set of resources have been received, they may or may not be used.
   // This declares what set of resources are currently in use from the child,
   // releasing any other resources back to the child.
-  void DeclareUsedResourcesFromChild(
-      int child,
-      const ResourceIdArray& resources_from_child);
+  void DeclareUsedResourcesFromChild(int child,
+                                     const ResourceIdSet& resources_from_child);
 
   // Receives resources from the parent, moving them from mailboxes. Resource
   // IDs passed are in the child namespace.
@@ -514,7 +513,6 @@ class CC_EXPORT ResourceProvider {
     ResourceIdMap child_to_parent_map;
     ResourceIdMap parent_to_child_map;
     ReturnCallback return_callback;
-    ResourceIdSet in_use_resources;
     bool marked_for_deletion;
     bool needs_sync_points;
   };

@@ -146,7 +146,7 @@ static ResourceProvider::ResourceId ResourceRemapHelper(
 static ResourceProvider::ResourceId ValidateResourceHelper(
     bool* invalid_frame,
     const ResourceProvider::ResourceIdMap& child_to_parent_map,
-    ResourceProvider::ResourceIdArray* resources_in_frame,
+    ResourceProvider::ResourceIdSet* resources_in_frame,
     ResourceProvider::ResourceId id) {
   ResourceProvider::ResourceIdMap::const_iterator it =
       child_to_parent_map.find(id);
@@ -154,7 +154,7 @@ static ResourceProvider::ResourceId ValidateResourceHelper(
     *invalid_frame = true;
     return id;
   }
-  resources_in_frame->push_back(id);
+  resources_in_frame->insert(id);
   return id;
 }
 
@@ -169,8 +169,7 @@ bool SurfaceAggregator::ValidateResources(
     surface->factory()->RefResources(frame_data->resource_list);
   provider_->ReceiveFromChild(child_id, frame_data->resource_list);
 
-  typedef ResourceProvider::ResourceIdArray IdArray;
-  IdArray referenced_resources;
+  ResourceProvider::ResourceIdSet referenced_resources;
 
   bool invalid_frame = false;
   DrawQuad::ResourceIteratorCallback remap =

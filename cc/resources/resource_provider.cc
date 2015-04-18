@@ -1301,8 +1301,6 @@ void ResourceProvider::DestroyChildInternal(ChildMap::iterator it,
     resources_for_child.push_back(id);
   }
 
-  // If the child is going away, don't consider any resources in use.
-  child.in_use_resources.clear();
   child.marked_for_deletion = true;
 
   DeleteAndReturnUnusedResourcesToChild(it, style, resources_for_child);
@@ -1401,31 +1399,20 @@ void ResourceProvider::ReceiveFromChild(
 
 void ResourceProvider::DeclareUsedResourcesFromChild(
     int child,
-    const ResourceIdArray& resources_from_child) {
+    const ResourceIdSet& resources_from_child) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   ChildMap::iterator child_it = children_.find(child);
   DCHECK(child_it != children_.end());
   Child& child_info = child_it->second;
   DCHECK(!child_info.marked_for_deletion);
-  child_info.in_use_resources.clear();
-
-  for (size_t i = 0; i < resources_from_child.size(); ++i) {
-    ResourceIdMap::iterator it =
-        child_info.child_to_parent_map.find(resources_from_child[i]);
-    DCHECK(it != child_info.child_to_parent_map.end());
-
-    ResourceId local_id = it->second;
-    DCHECK(!GetResource(local_id)->marked_for_deletion);
-    child_info.in_use_resources.insert(local_id);
-  }
 
   ResourceIdArray unused;
   for (ResourceIdMap::iterator it = child_info.child_to_parent_map.begin();
        it != child_info.child_to_parent_map.end();
        ++it) {
     ResourceId local_id = it->second;
-    bool resource_is_in_use = child_info.in_use_resources.count(local_id) > 0;
+    bool resource_is_in_use = resources_from_child.count(it->first) > 0;
     if (!resource_is_in_use)
       unused.push_back(local_id);
   }
@@ -1569,7 +1556,6 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
     Resource& resource = it->second;
 
     DCHECK(!resource.locked_for_write);
-    DCHECK_EQ(0u, child_info->in_use_resources.count(local_id));
     DCHECK(child_info->parent_to_child_map.count(local_id));
 
     ResourceId child_id = child_info->parent_to_child_map[local_id];

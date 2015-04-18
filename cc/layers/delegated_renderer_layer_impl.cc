@@ -47,9 +47,8 @@ bool DelegatedRendererLayerImpl::HasContributingDelegatedRenderPasses() const {
 static ResourceProvider::ResourceId ResourceRemapHelper(
     bool* invalid_frame,
     const ResourceProvider::ResourceIdMap& child_to_parent_map,
-    ResourceProvider::ResourceIdArray* resources_in_frame,
+    ResourceProvider::ResourceIdSet* resources_in_frame,
     ResourceProvider::ResourceId id) {
-
   ResourceProvider::ResourceIdMap::const_iterator it =
       child_to_parent_map.find(id);
   if (it == child_to_parent_map.end()) {
@@ -59,7 +58,7 @@ static ResourceProvider::ResourceId ResourceRemapHelper(
 
   DCHECK_EQ(it->first, id);
   ResourceProvider::ResourceId remapped_id = it->second;
-  resources_in_frame->push_back(id);
+  resources_in_frame->insert(id);
   return remapped_id;
 }
 
@@ -119,7 +118,7 @@ void DelegatedRendererLayerImpl::SetFrameData(
   RenderPass::CopyAll(frame_data->render_pass_list, &render_pass_list);
 
   bool invalid_frame = false;
-  ResourceProvider::ResourceIdArray resources_in_frame;
+  ResourceProvider::ResourceIdSet resources_in_frame;
   DrawQuad::ResourceIteratorCallback remap_resources_to_parent_callback =
       base::Bind(&ResourceRemapHelper,
                  &invalid_frame,

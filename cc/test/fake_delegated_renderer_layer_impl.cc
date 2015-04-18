@@ -39,12 +39,7 @@ static ResourceProvider::ResourceId AddResourceToFrame(
 
 ResourceProvider::ResourceIdSet FakeDelegatedRendererLayerImpl::Resources()
     const {
-  ResourceProvider::ResourceIdSet set;
-  ResourceProvider::ResourceIdArray array;
-  array = ResourcesForTesting();
-  for (size_t i = 0; i < array.size(); ++i)
-    set.insert(array[i]);
-  return set;
+  return ResourcesForTesting();
 }
 
 void NoopReturnCallback(const ReturnedResourceArray& returned,
