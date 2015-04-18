@@ -106,7 +106,8 @@ mojo_native_application("test_window_manager") {
   ]
 }
 
-mojo_native_application("window_manager_apptests") {
+mojo_native_application("apptests") {
+  output_name = "window_manager_apptests"
   testonly = true
 
   sources = [
