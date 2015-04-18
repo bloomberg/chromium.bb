@@ -323,3 +323,11 @@ class SmoothnessSyncScrollPathologicalMobileSites(benchmark.Benchmark):
   @classmethod
   def Name(cls):
     return 'smoothness.sync_scroll.pathological_mobile_sites'
+
+class SmoothnessToughAnimatedImageCases(benchmark.Benchmark):
+  test = smoothness.Smoothness
+  page_set = page_sets.ToughAnimatedImageCasesPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'smoothness.tough_animated_image_cases'
