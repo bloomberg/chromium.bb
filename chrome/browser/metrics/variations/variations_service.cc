@@ -18,7 +18,7 @@
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/variations/generated_resources_map.h"
-#include "chrome/browser/metrics/variations/url_constants.h"
+#include "chrome/browser/metrics/variations/variations_url_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_state_manager.h"
