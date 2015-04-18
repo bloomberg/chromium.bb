@@ -46,12 +46,20 @@ int RecordStack(CONTEXT* context,
       RtlVirtualUnwind(0, image_base, context->Rip, runtime_function, context,
                        &handler_data, &establisher_frame, &nvcontext);
     } else {
-      // If we don't have a RUNTIME_FUNCTION, then we've encountered a leaf
-      // function.  Adjust the stack appropriately prior to the next function
-      // lookup.
-      context->Rip = *reinterpret_cast<PDWORD64>(context->Rsp);
-      context->Rsp += 8;
-      *last_frame_is_unknown_function = true;
+      // If we don't have a RUNTIME_FUNCTION, then in theory this should be a
+      // leaf function whose frame contains only a return address, at
+      // RSP. However, crash data also indicates that some third party libraries
+      // do not provide RUNTIME_FUNCTION information for non-leaf functions. We
+      // could manually unwind the stack in the former case, but attempting to
+      // do so in the latter case would produce wrong results and likely crash,
+      // so just bail out.
+      //
+      // Ad hoc runs with instrumentation show that ~5% of stack traces end with
+      // a valid leaf function. To avoid selectively omitting these traces it
+      // makes sense to ultimately try to distinguish these two cases and
+      // selectively unwind the stack for legitimate leaf functions. For the
+      // purposes of avoiding crashes though, just ignore them all for now.
+      return i;
     }
   }
   return i;
