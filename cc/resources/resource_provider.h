@@ -507,10 +507,6 @@ class CC_EXPORT ResourceProvider {
   };
   typedef base::hash_map<ResourceId, Resource> ResourceMap;
 
-  static bool CompareResourceMapIteratorsByChildId(
-      const std::pair<ReturnedResource, ResourceMap::iterator>& a,
-      const std::pair<ReturnedResource, ResourceMap::iterator>& b);
-
   struct Child {
     Child();
     ~Child();
