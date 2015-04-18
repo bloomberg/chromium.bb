@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "net/quic/spdy_utils.h"
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_protocol.h"
@@ -23,14 +24,15 @@ using std::string;
 
 namespace net {
 namespace tools {
+namespace {
 
 const char kV4Host[] = ":authority";
 
 const char kV3Host[] = ":host";
 const char kV3Path[] = ":path";
 const char kV3Scheme[] = ":scheme";
-const char kV3Status[] = ":status";
 const char kV3Method[] = ":method";
+const char kV3Status[] = ":status";
 const char kV3Version[] = ":version";
 
 void PopulateSpdyHeaderBlock(const BalsaHeaders& headers,
@@ -110,126 +112,24 @@ void PopulateSpdy4RequestHeaderBlock(const BalsaHeaders& headers,
   }
 }
 
-void PopulateSpdyResponseHeaderBlock(const BalsaHeaders& headers,
+void PopulateSpdyResponseHeaderBlock(SpdyMajorVersion version,
+                                     const BalsaHeaders& headers,
                                      SpdyHeaderBlock* block) {
-  string status = headers.response_code().as_string();
-  status.append(" ");
-  status.append(headers.response_reason_phrase().as_string());
-  (*block)[kV3Status] = status;
-  (*block)[kV3Version] =
-      headers.response_version().as_string();
+  if (version <= SPDY3) {
+    string status = headers.response_code().as_string();
+    status.append(" ");
+    status.append(headers.response_reason_phrase().as_string());
+    (*block)[kV3Status] = status;
+    (*block)[kV3Version] = headers.response_version().as_string();
+  } else {
+    (*block)[kV3Status] = headers.response_code().as_string();
+  }
 
-  // Empty header values are only allowed because this is spdy3.
   PopulateSpdyHeaderBlock(headers, block, true);
 }
 
-// static
-SpdyHeaderBlock SpdyUtils::RequestHeadersToSpdyHeaders(
-    const BalsaHeaders& request_headers) {
-  string scheme;
-  string host_and_port;
-  string path;
-
-  string url = request_headers.request_uri().as_string();
-  if (url.empty() || url[0] == '/') {
-    path = url;
-  } else {
-    GURL request_uri(url);
-    if (request_headers.request_method() == "CONNECT") {
-      path = url;
-    } else {
-      path = request_uri.path();
-      if (!request_uri.query().empty()) {
-        path = path + "?" + request_uri.query();
-      }
-      host_and_port = request_uri.host();
-      scheme = request_uri.scheme();
-    }
-  }
-
-  DCHECK(!scheme.empty());
-  DCHECK(!host_and_port.empty());
-  DCHECK(!path.empty());
-
-  SpdyHeaderBlock block;
-  PopulateSpdy3RequestHeaderBlock(
-      request_headers, scheme, host_and_port, path, &block);
-  if (block.find("host") != block.end()) {
-    block.erase(block.find("host"));
-  }
-  return block;
-}
-
-// static
-SpdyHeaderBlock SpdyUtils::RequestHeadersToSpdy4Headers(
-    const BalsaHeaders& request_headers) {
-  string scheme;
-  string host_and_port;
-  string path;
-
-  string url = request_headers.request_uri().as_string();
-  if (url.empty() || url[0] == '/') {
-    path = url;
-  } else {
-    GURL request_uri(url);
-    if (request_headers.request_method() == "CONNECT") {
-      path = url;
-    } else {
-      path = request_uri.path();
-      if (!request_uri.query().empty()) {
-        path = path + "?" + request_uri.query();
-      }
-      host_and_port = request_uri.host();
-      scheme = request_uri.scheme();
-    }
-  }
-
-  DCHECK(!scheme.empty());
-  DCHECK(!host_and_port.empty());
-  DCHECK(!path.empty());
-
-  SpdyHeaderBlock block;
-  PopulateSpdy4RequestHeaderBlock(request_headers, scheme, host_and_port, path,
-                                  &block);
-  if (block.find("host") != block.end()) {
-    block.erase(block.find("host"));
-  }
-  return block;
-}
-
-// static
-string SpdyUtils::SerializeRequestHeaders(const BalsaHeaders& request_headers) {
-  SpdyHeaderBlock block = RequestHeadersToSpdyHeaders(request_headers);
-  return SerializeUncompressedHeaders(block);
-}
-
-// static
-SpdyHeaderBlock SpdyUtils::ResponseHeadersToSpdyHeaders(
-    const BalsaHeaders& response_headers) {
-  SpdyHeaderBlock block;
-  PopulateSpdyResponseHeaderBlock(response_headers, &block);
-  return block;
-}
-
-// static
-string SpdyUtils::SerializeResponseHeaders(
-    const BalsaHeaders& response_headers) {
-  SpdyHeaderBlock block = ResponseHeadersToSpdyHeaders(response_headers);
-
-  return SerializeUncompressedHeaders(block);
-}
-
-// static
-string SpdyUtils::SerializeUncompressedHeaders(const SpdyHeaderBlock& headers) {
-  size_t length = SpdyFramer::GetSerializedLength(SPDY3, &headers);
-  SpdyFrameBuilder builder(length, SPDY3);
-  SpdyFramer::WriteHeaderBlock(&builder, SPDY3, &headers);
-  scoped_ptr<SpdyFrame> block(builder.take());
-  return string(block->data(), length);
-}
-
 bool IsSpecialSpdyHeader(SpdyHeaderBlock::const_iterator header,
-                            BalsaHeaders* headers) {
+                         BalsaHeaders* headers) {
   if (header->first.empty() || header->second.empty()) {
     return true;
   }
@@ -237,49 +137,22 @@ bool IsSpecialSpdyHeader(SpdyHeaderBlock::const_iterator header,
   return header_name.c_str()[0] == ':';
 }
 
-bool SpdyUtils::FillBalsaRequestHeaders(
-    const SpdyHeaderBlock& header_block,
-    BalsaHeaders* request_headers) {
-  typedef SpdyHeaderBlock::const_iterator BlockIt;
-
-  BlockIt host_it = header_block.find(kV3Host);
-  BlockIt path_it = header_block.find(kV3Path);
-  BlockIt scheme_it = header_block.find(kV3Scheme);
-  BlockIt method_it = header_block.find(kV3Method);
-  BlockIt end_it = header_block.end();
-  if (host_it == end_it || path_it == end_it || scheme_it == end_it ||
-      method_it == end_it) {
-    return false;
-  }
-  string url = scheme_it->second;
-  url.append("://");
-  url.append(host_it->second);
-  url.append(path_it->second);
-  request_headers->SetRequestUri(url);
-  request_headers->SetRequestMethod(method_it->second);
-
-  BlockIt cl_it = header_block.find("content-length");
-  if (cl_it != header_block.end()) {
-    int content_length;
-    if (!base::StringToInt(cl_it->second, &content_length)) {
-      return false;
-    }
-    request_headers->SetContentLength(content_length);
-  }
-
-  for (BlockIt it = header_block.begin(); it != header_block.end(); ++it) {
-   if (!IsSpecialSpdyHeader(it, request_headers)) {
-     request_headers->AppendHeader(it->first, it->second);
-   }
-  }
-
-  return true;
-}
-
 // The reason phrase should match regexp [\d\d\d [^\r\n]+].  If not, we will
 // fail to parse it.
 bool ParseReasonAndStatus(StringPiece status_and_reason,
-                          BalsaHeaders* headers) {
+                          BalsaHeaders* headers,
+                          QuicVersion quic_version) {
+  if (quic_version > QUIC_VERSION_24) {
+    int status;
+    if (!base::StringToInt(status_and_reason, &status)) {
+      return false;
+    }
+    headers->SetResponseCode(status_and_reason);
+    headers->SetResponseCode(status_and_reason);
+    headers->set_parsed_response_code(status);
+    return true;
+  }
+
   if (status_and_reason.size() < 5)
     return false;
 
@@ -302,35 +175,103 @@ bool ParseReasonAndStatus(StringPiece status_and_reason,
   return true;
 }
 
-bool SpdyUtils::FillBalsaResponseHeaders(
+}  // namespace
+
+// static
+SpdyHeaderBlock SpdyUtils::RequestHeadersToSpdyHeaders(
+    const BalsaHeaders& request_headers,
+    QuicVersion quic_version) {
+  string scheme;
+  string host_and_port;
+  string path;
+
+  string url = request_headers.request_uri().as_string();
+  if (url.empty() || url[0] == '/') {
+    path = url;
+  } else {
+    GURL request_uri(url);
+    if (request_headers.request_method() == "CONNECT") {
+      path = url;
+    } else {
+      path = request_uri.path();
+      if (!request_uri.query().empty()) {
+        path = path + "?" + request_uri.query();
+      }
+      host_and_port = request_uri.host();
+      scheme = request_uri.scheme();
+    }
+  }
+
+  DCHECK(!scheme.empty());
+  DCHECK(!host_and_port.empty());
+  DCHECK(!path.empty());
+
+  SpdyHeaderBlock block;
+  if (net::SpdyUtils::GetSpdyVersionForQuicVersion(quic_version) == SPDY3) {
+    PopulateSpdy3RequestHeaderBlock(request_headers, scheme, host_and_port,
+                                    path, &block);
+  } else {
+    PopulateSpdy4RequestHeaderBlock(request_headers, scheme, host_and_port,
+                                    path, &block);
+  }
+  if (block.find("host") != block.end()) {
+    block.erase(block.find("host"));
+  }
+  return block;
+}
+
+// static
+SpdyHeaderBlock SpdyUtils::ResponseHeadersToSpdyHeaders(
+    const BalsaHeaders& response_headers,
+    QuicVersion quic_version) {
+  SpdyHeaderBlock block;
+  PopulateSpdyResponseHeaderBlock(
+      net::SpdyUtils::GetSpdyVersionForQuicVersion(quic_version),
+      response_headers, &block);
+  return block;
+}
+
+// static
+string SpdyUtils::SerializeResponseHeaders(const BalsaHeaders& response_headers,
+                                           QuicVersion quic_version) {
+  SpdyHeaderBlock block =
+      ResponseHeadersToSpdyHeaders(response_headers, quic_version);
+
+  return net::SpdyUtils::SerializeUncompressedHeaders(block, quic_version);
+}
+
+// static
+void SpdyUtils::SpdyHeadersToResponseHeaders(
     const SpdyHeaderBlock& header_block,
-    BalsaHeaders* request_headers) {
+    BalsaHeaders* request_headers,
+    QuicVersion quic_version) {
   typedef SpdyHeaderBlock::const_iterator BlockIt;
 
   BlockIt status_it = header_block.find(kV3Status);
   BlockIt version_it = header_block.find(kV3Version);
   BlockIt end_it = header_block.end();
-  if (status_it == end_it || version_it == end_it) {
-    return false;
+  if (quic_version > QUIC_VERSION_24) {
+    if (status_it == end_it) {
+      return;
+    }
+  } else {
+    if (status_it == end_it || version_it == end_it) {
+      return;
+    }
   }
 
-  if (!ParseReasonAndStatus(status_it->second, request_headers)) {
-    return false;
+  if (!ParseReasonAndStatus(status_it->second, request_headers, quic_version)) {
+    return;
   }
-  request_headers->SetResponseVersion(version_it->second);
+
+  if (quic_version <= QUIC_VERSION_24) {
+    request_headers->SetResponseVersion(version_it->second);
+  }
   for (BlockIt it = header_block.begin(); it != header_block.end(); ++it) {
-   if (!IsSpecialSpdyHeader(it, request_headers)) {
-     request_headers->AppendHeader(it->first, it->second);
-   }
+    if (!IsSpecialSpdyHeader(it, request_headers)) {
+      request_headers->AppendHeader(it->first, it->second);
+    }
   }
-  return true;
-}
-
-// static
-void SpdyUtils::SpdyHeadersToResponseHeaders(
-    const SpdyHeaderBlock& block,
-    BalsaHeaders* headers) {
-  FillBalsaResponseHeaders(block, headers);
 }
 
 }  // namespace tools

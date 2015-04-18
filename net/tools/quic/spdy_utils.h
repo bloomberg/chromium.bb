@@ -6,7 +6,7 @@
 #define NET_TOOLS_QUIC_SPDY_UTILS_H_
 
 #include <string>
-
+#include "net/quic/quic_protocol.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_header_block.h"
 #include "net/spdy/spdy_protocol.h"
@@ -17,32 +17,21 @@ namespace tools {
 
 class SpdyUtils {
  public:
-  static std::string SerializeRequestHeaders(
-      const BalsaHeaders& request_headers);
-
   static std::string SerializeResponseHeaders(
-      const BalsaHeaders& response_headers);
-
-  static bool FillBalsaRequestHeaders(const SpdyHeaderBlock& header_block,
-                                      BalsaHeaders* request_headers);
-
-  static bool FillBalsaResponseHeaders(const SpdyHeaderBlock& header_block,
-                                       BalsaHeaders* response_headers);
+      const BalsaHeaders& response_headers,
+      QuicVersion quic_version);
 
   static SpdyHeaderBlock RequestHeadersToSpdyHeaders(
-      const BalsaHeaders& request_headers);
-
-  static SpdyHeaderBlock RequestHeadersToSpdy4Headers(
-      const BalsaHeaders& request_headers);
+      const BalsaHeaders& request_headers,
+      QuicVersion quic_version);
 
   static SpdyHeaderBlock ResponseHeadersToSpdyHeaders(
-      const BalsaHeaders& response_headers);
-
-  static std::string SerializeUncompressedHeaders(
-      const SpdyHeaderBlock& headers);
+      const BalsaHeaders& response_headers,
+      QuicVersion quic_version);
 
   static void SpdyHeadersToResponseHeaders(const SpdyHeaderBlock& block,
-                                           BalsaHeaders* headers);
+                                           BalsaHeaders* headers,
+                                           QuicVersion quic_version);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SpdyUtils);

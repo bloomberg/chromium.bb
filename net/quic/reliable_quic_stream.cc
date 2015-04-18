@@ -419,6 +419,10 @@ bool ReliableQuicStream::HasBufferedData() const {
   return !queued_data_.empty();
 }
 
+QuicVersion ReliableQuicStream::version() const {
+  return session_->connection()->version();
+}
+
 void ReliableQuicStream::OnClose() {
   CloseReadSide();
   CloseWriteSide();

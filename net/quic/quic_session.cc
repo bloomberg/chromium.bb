@@ -106,13 +106,12 @@ QuicSession::QuicSession(QuicConnection* connection, const QuicConfig& config)
       write_blocked_streams_(true),
       largest_peer_created_stream_id_(0),
       error_(QUIC_NO_ERROR),
-      flow_controller_(new QuicFlowController(
-          connection_.get(),
-          0,
-          perspective(),
-          kMinimumFlowControlSendWindow,
-          config_.GetInitialSessionFlowControlWindowToSend(),
-          config_.GetInitialSessionFlowControlWindowToSend())),
+      flow_controller_(connection_.get(),
+                       0,
+                       perspective(),
+                       kMinimumFlowControlSendWindow,
+                       config_.GetInitialSessionFlowControlWindowToSend(),
+                       config_.GetInitialSessionFlowControlWindowToSend()),
       goaway_received_(false),
       goaway_sent_(false),
       has_pending_handshake_(false) {
@@ -255,7 +254,7 @@ void QuicSession::OnWindowUpdateFrames(
       DVLOG(1) << ENDPOINT
                << "Received connection level flow control window update with "
                   "byte offset: " << frames[i].byte_offset;
-      if (flow_controller_->UpdateSendWindowOffset(frames[i].byte_offset)) {
+      if (flow_controller_.UpdateSendWindowOffset(frames[i].byte_offset)) {
         connection_window_updated = true;
       }
       continue;
@@ -290,7 +289,7 @@ void QuicSession::OnCanWrite() {
   // cause the connection to request resumption before yielding to other
   // connections.
   size_t num_writes = write_blocked_streams_.NumBlockedStreams();
-  if (flow_controller_->IsBlocked()) {
+  if (flow_controller_.IsBlocked()) {
     // If we are connection level flow control blocked, then only allow the
     // crypto and headers streams to try writing as all other streams will be
     // blocked.
@@ -338,7 +337,7 @@ bool QuicSession::WillingAndAbleToWrite() const {
   // schedule a write if we are not flow control blocked at the connection
   // level.
   return write_blocked_streams_.HasWriteBlockedCryptoOrHeadersStream() ||
-         (!flow_controller_->IsBlocked() &&
+         (!flow_controller_.IsBlocked() &&
           write_blocked_streams_.HasWriteBlockedDataStreams());
 }
 
@@ -436,17 +435,17 @@ void QuicSession::UpdateFlowControlOnFinalReceivedByteOffset(
   DVLOG(1) << ENDPOINT << "Received final byte offset " << final_byte_offset
            << " for stream " << stream_id;
   QuicByteCount offset_diff = final_byte_offset - it->second;
-  if (flow_controller_->UpdateHighestReceivedOffset(
-      flow_controller_->highest_received_byte_offset() + offset_diff)) {
+  if (flow_controller_.UpdateHighestReceivedOffset(
+          flow_controller_.highest_received_byte_offset() + offset_diff)) {
     // If the final offset violates flow control, close the connection now.
-    if (flow_controller_->FlowControlViolation()) {
+    if (flow_controller_.FlowControlViolation()) {
       connection_->SendConnectionClose(
           QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA);
       return;
     }
   }
 
-  flow_controller_->AddBytesConsumed(offset_diff);
+  flow_controller_.AddBytesConsumed(offset_diff);
   locally_closed_streams_highest_offset_.erase(it);
 }
 
@@ -517,7 +516,7 @@ void QuicSession::OnNewSessionFlowControlWindow(QuicStreamOffset new_window) {
     return;
   }
 
-  flow_controller_->UpdateSendWindowOffset(new_window);
+  flow_controller_.UpdateSendWindowOffset(new_window);
 }
 
 void QuicSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
@@ -728,7 +727,7 @@ void QuicSession::PostProcessAfterData() {
 }
 
 bool QuicSession::IsConnectionFlowControlBlocked() const {
-  return flow_controller_->IsBlocked();
+  return flow_controller_.IsBlocked();
 }
 
 bool QuicSession::IsStreamFlowControlBlocked() {

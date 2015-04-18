@@ -151,16 +151,6 @@ class NET_EXPORT_PRIVATE QuicFramerVisitorInterface {
   virtual void OnPacketComplete() = 0;
 };
 
-class NET_EXPORT_PRIVATE QuicFecBuilderInterface {
- public:
-  virtual ~QuicFecBuilderInterface() {}
-
-  // Called when a data packet is constructed that is part of an FEC group.
-  // |payload| is the non-encrypted FEC protected payload of the packet.
-  virtual void OnBuiltFecProtectedPayload(const QuicPacketHeader& header,
-                                          base::StringPiece payload) = 0;
-};
-
 // This class calculates the received entropy of the ack packet being
 // framed, should it get truncated.
 class NET_EXPORT_PRIVATE QuicReceivedEntropyHashCalculatorInterface {
@@ -201,13 +191,6 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // will be used.
   void set_visitor(QuicFramerVisitorInterface* visitor) {
     visitor_ = visitor;
-  }
-
-  // Set a builder to be called from the framer when building FEC protected
-  // packets.  If this is called multiple times, only the last builder
-  // will be used.  The builder need not be set.
-  void set_fec_builder(QuicFecBuilderInterface* builder) {
-    fec_builder_ = builder;
   }
 
   const QuicVersionVector& supported_versions() const {
@@ -266,7 +249,10 @@ class NET_EXPORT_PRIVATE QuicFramer {
   static size_t GetStopWaitingFrameSize(
       QuicSequenceNumberLength sequence_number_length);
   // Size in bytes of all reset stream frame without the error details.
+  // Used before QUIC_VERSION_25.
   static size_t GetMinRstStreamFrameSize();
+  // Size in bytes of all reset stream frame fields.
+  static size_t GetRstStreamFrameSize();
   // Size in bytes of all connection close frame fields without the error
   // details and the missing packets from the enclosed ack frame.
   static size_t GetMinConnectionCloseFrameSize();
@@ -503,7 +489,6 @@ class NET_EXPORT_PRIVATE QuicFramer {
   std::string detailed_error_;
   scoped_ptr<QuicDataReader> reader_;
   QuicFramerVisitorInterface* visitor_;
-  QuicFecBuilderInterface* fec_builder_;
   QuicReceivedEntropyHashCalculatorInterface* entropy_calculator_;
   QuicErrorCode error_;
   // Updated by ProcessPacketHeader when it succeeds.

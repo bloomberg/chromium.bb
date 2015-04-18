@@ -28,18 +28,14 @@ class QuicAckNotifier;
 class QuicRandom;
 class QuicRandomBoolSource;
 
-class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
+class NET_EXPORT_PRIVATE QuicPacketCreator {
  public:
   // QuicRandom* required for packet entropy.
   QuicPacketCreator(QuicConnectionId connection_id,
                     QuicFramer* framer,
                     QuicRandom* random_generator);
 
-  ~QuicPacketCreator() override;
-
-  // QuicFecBuilderInterface
-  void OnBuiltFecProtectedPayload(const QuicPacketHeader& header,
-                                  base::StringPiece payload) override;
+  ~QuicPacketCreator();
 
   // Turn on FEC protection for subsequently created packets. FEC should be
   // enabled first (max_packets_per_fec_group should be non-zero) for FEC
@@ -223,6 +219,11 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   // Updates lengths and also starts an FEC group if FEC protection is on and
   // there is not already an FEC group open.
   InFecGroup MaybeUpdateLengthsAndStartFec();
+
+  // Called when a data packet is constructed that is part of an FEC group.
+  // |payload| is the non-encrypted FEC protected payload of the packet.
+  void OnBuiltFecProtectedPayload(const QuicPacketHeader& header,
+                                  base::StringPiece payload);
 
   void FillPacketHeader(QuicFecGroupNumber fec_group,
                         bool fec_flag,

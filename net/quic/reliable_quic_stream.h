@@ -126,6 +126,9 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   // Returns true if the stream has queued data waiting to write.
   bool HasBufferedData() const;
 
+  // Returns the version of QUIC being used for this stream.
+  QuicVersion version() const;
+
  protected:
   // Sends as much of 'data' to the connection as the connection will consume,
   // and then buffers any remaining data in queued_data_.

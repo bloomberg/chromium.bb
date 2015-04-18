@@ -258,7 +258,8 @@ int main(int argc, char *argv[]) {
 
   // Send the request.
   map<string, string> header_block =
-      net::tools::SpdyUtils::RequestHeadersToSpdy4Headers(headers);
+      net::tools::SpdyUtils::RequestHeadersToSpdyHeaders(
+          headers, client.session()->connection()->version());
   client.SendRequestAndWaitForResponse(headers, FLAGS_body, /*fin=*/true);
 
   // Print request and response details.

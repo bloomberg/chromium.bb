@@ -101,6 +101,8 @@ class NET_EXPORT_PRIVATE QuicHttpStream :
 
   void BufferResponseBody(const char* data, int length);
 
+  SpdyMajorVersion GetSpdyVersion();
+
   State next_state_;
 
   base::WeakPtr<QuicClientSession> session_;

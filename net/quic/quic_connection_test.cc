@@ -756,35 +756,33 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
       data_packet.reset(ConstructDataPacket(number, 1, !kEntropyFlag));
     }
 
-    header_.public_header.connection_id = connection_id_;
-    header_.public_header.reset_flag = false;
-    header_.public_header.version_flag = false;
-    header_.public_header.sequence_number_length = sequence_number_length_;
-    header_.public_header.connection_id_length = connection_id_length_;
-    header_.packet_sequence_number = number;
-    header_.entropy_flag = entropy_flag;
-    header_.fec_flag = true;
-    header_.is_in_fec_group = IN_FEC_GROUP;
-    header_.fec_group = min_protected_packet;
+    QuicPacketHeader header;
+    header.public_header.connection_id = connection_id_;
+    header.public_header.sequence_number_length = sequence_number_length_;
+    header.public_header.connection_id_length = connection_id_length_;
+    header.packet_sequence_number = number;
+    header.entropy_flag = entropy_flag;
+    header.fec_flag = true;
+    header.is_in_fec_group = IN_FEC_GROUP;
+    header.fec_group = min_protected_packet;
     QuicFecData fec_data;
-    fec_data.fec_group = header_.fec_group;
+    fec_data.fec_group = header.fec_group;
 
     // Since all data packets in this test have the same payload, the
     // redundancy is either equal to that payload or the xor of that payload
     // with itself, depending on the number of packets.
     if (((number - min_protected_packet) % 2) == 0) {
       for (size_t i = GetStartOfFecProtectedData(
-               header_.public_header.connection_id_length,
-               header_.public_header.version_flag,
-               header_.public_header.sequence_number_length);
+               header.public_header.connection_id_length,
+               header.public_header.version_flag,
+               header.public_header.sequence_number_length);
            i < data_packet->length(); ++i) {
         data_packet->mutable_data()[i] ^= data_packet->data()[i];
       }
     }
     fec_data.redundancy = data_packet->FecProtectedData();
 
-    scoped_ptr<QuicPacket> fec_packet(
-        framer_.BuildFecPacket(header_, fec_data));
+    scoped_ptr<QuicPacket> fec_packet(framer_.BuildFecPacket(header, fec_data));
     scoped_ptr<QuicEncryptedPacket> encrypted(
         framer_.EncryptPacket(ENCRYPTION_NONE, number, *fec_packet));
 
@@ -832,48 +830,43 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
     return IsAwaitingPacket(*outgoing_ack(), number);
   }
 
+  QuicPacket* ConstructPacket(QuicPacketHeader header, QuicFrames frames) {
+    QuicPacket* packet = BuildUnsizedDataPacket(&framer_, header, frames);
+    EXPECT_NE(nullptr, packet);
+    return packet;
+  }
+
   QuicPacket* ConstructDataPacket(QuicPacketSequenceNumber number,
                                   QuicFecGroupNumber fec_group,
                                   bool entropy_flag) {
-    header_.public_header.connection_id = connection_id_;
-    header_.public_header.reset_flag = false;
-    header_.public_header.version_flag = false;
-    header_.public_header.sequence_number_length = sequence_number_length_;
-    header_.public_header.connection_id_length = connection_id_length_;
-    header_.entropy_flag = entropy_flag;
-    header_.fec_flag = false;
-    header_.packet_sequence_number = number;
-    header_.is_in_fec_group = fec_group == 0u ? NOT_IN_FEC_GROUP : IN_FEC_GROUP;
-    header_.fec_group = fec_group;
+    QuicPacketHeader header;
+    header.public_header.connection_id = connection_id_;
+    header.public_header.sequence_number_length = sequence_number_length_;
+    header.public_header.connection_id_length = connection_id_length_;
+    header.entropy_flag = entropy_flag;
+    header.packet_sequence_number = number;
+    header.is_in_fec_group = fec_group == 0u ? NOT_IN_FEC_GROUP : IN_FEC_GROUP;
+    header.fec_group = fec_group;
 
     QuicFrames frames;
-    QuicFrame frame(&frame1_);
-    frames.push_back(frame);
-    QuicPacket* packet = BuildUnsizedDataPacket(&framer_, header_, frames);
-    EXPECT_TRUE(packet != nullptr);
-    return packet;
+    frames.push_back(QuicFrame(&frame1_));
+    return ConstructPacket(header, frames);
   }
 
   QuicPacket* ConstructClosePacket(QuicPacketSequenceNumber number,
                                    QuicFecGroupNumber fec_group) {
-    header_.public_header.connection_id = connection_id_;
-    header_.packet_sequence_number = number;
-    header_.public_header.reset_flag = false;
-    header_.public_header.version_flag = false;
-    header_.entropy_flag = false;
-    header_.fec_flag = false;
-    header_.is_in_fec_group = fec_group == 0u ? NOT_IN_FEC_GROUP : IN_FEC_GROUP;
-    header_.fec_group = fec_group;
+    QuicPacketHeader header;
+    header.public_header.connection_id = connection_id_;
+    header.packet_sequence_number = number;
+    header.is_in_fec_group = fec_group == 0u ? NOT_IN_FEC_GROUP : IN_FEC_GROUP;
+    header.fec_group = fec_group;
 
     QuicConnectionCloseFrame qccf;
     qccf.error_code = QUIC_PEER_GOING_AWAY;
 
     QuicFrames frames;
-    QuicFrame frame(&qccf);
-    frames.push_back(frame);
-    QuicPacket* packet = BuildUnsizedDataPacket(&framer_, header_, frames);
-    EXPECT_TRUE(packet != nullptr);
-    return packet;
+    frames.push_back(QuicFrame(&qccf));
+    return ConstructPacket(header, frames);
   }
 
   QuicTime::Delta DefaultRetransmissionTime() {
@@ -967,7 +960,6 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
   QuicSentPacketManager* manager_;
   StrictMock<MockConnectionVisitor> visitor_;
 
-  QuicPacketHeader header_;
   QuicStreamFrame frame1_;
   QuicStreamFrame frame2_;
   QuicAckFrame ack_;
@@ -990,21 +982,11 @@ TEST_P(QuicConnectionTest, MaxPacketSize) {
 }
 
 TEST_P(QuicConnectionTest, SmallerServerMaxPacketSize) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_small_default_packet_size, true);
   QuicConnectionId connection_id = 42;
   TestConnection connection(connection_id, IPEndPoint(), helper_.get(),
                             factory_, Perspective::IS_SERVER, version());
   EXPECT_EQ(Perspective::IS_SERVER, connection.perspective());
   EXPECT_EQ(1000u, connection.max_packet_length());
-}
-
-TEST_P(QuicConnectionTest, ServerMaxPacketSize) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_small_default_packet_size, false);
-  QuicConnectionId connection_id = 42;
-  TestConnection connection(connection_id, IPEndPoint(), helper_.get(),
-                            factory_, Perspective::IS_SERVER, version());
-  EXPECT_EQ(Perspective::IS_SERVER, connection.perspective());
-  EXPECT_EQ(1350u, connection.max_packet_length());
 }
 
 TEST_P(QuicConnectionTest, IncreaseServerMaxPacketSize) {
@@ -1015,20 +997,14 @@ TEST_P(QuicConnectionTest, IncreaseServerMaxPacketSize) {
 
   QuicPacketHeader header;
   header.public_header.connection_id = connection_id_;
-  header.public_header.reset_flag = false;
   header.public_header.version_flag = true;
-  header.entropy_flag = false;
-  header.fec_flag = false;
   header.packet_sequence_number = 1;
-  header.fec_group = 0;
 
   QuicFrames frames;
   QuicPaddingFrame padding;
   frames.push_back(QuicFrame(&frame1_));
   frames.push_back(QuicFrame(&padding));
-
-  scoped_ptr<QuicPacket> packet(
-      BuildUnsizedDataPacket(&framer_, header, frames));
+  scoped_ptr<QuicPacket> packet(ConstructPacket(header, frames));
   scoped_ptr<QuicEncryptedPacket> encrypted(
       framer_.EncryptPacket(ENCRYPTION_NONE, 12, *packet));
   EXPECT_EQ(kMaxPacketSize, encrypted->length());
@@ -3735,18 +3711,12 @@ TEST_P(QuicConnectionTest, ServerSendsVersionNegotiationPacket) {
 
   QuicPacketHeader header;
   header.public_header.connection_id = connection_id_;
-  header.public_header.reset_flag = false;
   header.public_header.version_flag = true;
-  header.entropy_flag = false;
-  header.fec_flag = false;
   header.packet_sequence_number = 12;
-  header.fec_group = 0;
 
   QuicFrames frames;
-  QuicFrame frame(&frame1_);
-  frames.push_back(frame);
-  scoped_ptr<QuicPacket> packet(
-      BuildUnsizedDataPacket(&framer_, header, frames));
+  frames.push_back(QuicFrame(&frame1_));
+  scoped_ptr<QuicPacket> packet(ConstructPacket(header, frames));
   scoped_ptr<QuicEncryptedPacket> encrypted(
       framer_.EncryptPacket(ENCRYPTION_NONE, 12, *packet));
 
@@ -3773,18 +3743,12 @@ TEST_P(QuicConnectionTest, ServerSendsVersionNegotiationPacketSocketBlocked) {
 
   QuicPacketHeader header;
   header.public_header.connection_id = connection_id_;
-  header.public_header.reset_flag = false;
   header.public_header.version_flag = true;
-  header.entropy_flag = false;
-  header.fec_flag = false;
   header.packet_sequence_number = 12;
-  header.fec_group = 0;
 
   QuicFrames frames;
-  QuicFrame frame(&frame1_);
-  frames.push_back(frame);
-  scoped_ptr<QuicPacket> packet(
-      BuildUnsizedDataPacket(&framer_, header, frames));
+  frames.push_back(QuicFrame(&frame1_));
+  scoped_ptr<QuicPacket> packet(ConstructPacket(header, frames));
   scoped_ptr<QuicEncryptedPacket> encrypted(
       framer_.EncryptPacket(ENCRYPTION_NONE, 12, *packet));
 
@@ -3818,18 +3782,12 @@ TEST_P(QuicConnectionTest,
 
   QuicPacketHeader header;
   header.public_header.connection_id = connection_id_;
-  header.public_header.reset_flag = false;
   header.public_header.version_flag = true;
-  header.entropy_flag = false;
-  header.fec_flag = false;
   header.packet_sequence_number = 12;
-  header.fec_group = 0;
 
   QuicFrames frames;
-  QuicFrame frame(&frame1_);
-  frames.push_back(frame);
-  scoped_ptr<QuicPacket> packet(
-      BuildUnsizedDataPacket(&framer_, header, frames));
+  frames.push_back(QuicFrame(&frame1_));
+  scoped_ptr<QuicPacket> packet(ConstructPacket(header, frames));
   scoped_ptr<QuicEncryptedPacket> encrypted(
       framer_.EncryptPacket(ENCRYPTION_NONE, 12, *packet));
 
@@ -3849,12 +3807,8 @@ TEST_P(QuicConnectionTest, ClientHandlesVersionNegotiation) {
 
   QuicPacketHeader header;
   header.public_header.connection_id = connection_id_;
-  header.public_header.reset_flag = false;
   header.public_header.version_flag = true;
-  header.entropy_flag = false;
-  header.fec_flag = false;
   header.packet_sequence_number = 12;
-  header.fec_group = 0;
 
   QuicVersionVector supported_versions;
   for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
@@ -3871,10 +3825,8 @@ TEST_P(QuicConnectionTest, ClientHandlesVersionNegotiation) {
   // NEGOTIATED_VERSION state and tell the packet creator to StopSendingVersion.
   header.public_header.version_flag = false;
   QuicFrames frames;
-  QuicFrame frame(&frame1_);
-  frames.push_back(frame);
-  scoped_ptr<QuicPacket> packet(
-      BuildUnsizedDataPacket(&framer_, header, frames));
+  frames.push_back(QuicFrame(&frame1_));
+  scoped_ptr<QuicPacket> packet(ConstructPacket(header, frames));
   encrypted.reset(framer_.EncryptPacket(ENCRYPTION_NONE, 12, *packet));
   EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(1);
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
@@ -3886,12 +3838,8 @@ TEST_P(QuicConnectionTest, ClientHandlesVersionNegotiation) {
 TEST_P(QuicConnectionTest, BadVersionNegotiation) {
   QuicPacketHeader header;
   header.public_header.connection_id = connection_id_;
-  header.public_header.reset_flag = false;
   header.public_header.version_flag = true;
-  header.entropy_flag = false;
-  header.fec_flag = false;
   header.packet_sequence_number = 12;
-  header.fec_group = 0;
 
   QuicVersionVector supported_versions;
   for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
@@ -3999,24 +3947,18 @@ TEST_P(QuicConnectionTest, TestFecGroupLimits) {
 
 TEST_P(QuicConnectionTest, ProcessFramesIfPacketClosedConnection) {
   // Construct a packet with stream frame and connection close frame.
-  header_.public_header.connection_id = connection_id_;
-  header_.packet_sequence_number = 1;
-  header_.public_header.reset_flag = false;
-  header_.public_header.version_flag = false;
-  header_.entropy_flag = false;
-  header_.fec_flag = false;
-  header_.fec_group = 0;
+  QuicPacketHeader header;
+  header.public_header.connection_id = connection_id_;
+  header.packet_sequence_number = 1;
+  header.public_header.version_flag = false;
 
   QuicConnectionCloseFrame qccf;
   qccf.error_code = QUIC_PEER_GOING_AWAY;
-  QuicFrame close_frame(&qccf);
-  QuicFrame stream_frame(&frame1_);
 
   QuicFrames frames;
-  frames.push_back(stream_frame);
-  frames.push_back(close_frame);
-  scoped_ptr<QuicPacket> packet(
-      BuildUnsizedDataPacket(&framer_, header_, frames));
+  frames.push_back(QuicFrame(&frame1_));
+  frames.push_back(QuicFrame(&qccf));
+  scoped_ptr<QuicPacket> packet(ConstructPacket(header, frames));
   EXPECT_TRUE(nullptr != packet.get());
   scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPacket(
       ENCRYPTION_NONE, 1, *packet));

@@ -145,7 +145,6 @@ QuicFramer::QuicFramer(const QuicVersionVector& supported_versions,
                        QuicTime creation_time,
                        Perspective perspective)
     : visitor_(nullptr),
-      fec_builder_(nullptr),
       entropy_calculator_(nullptr),
       error_(QUIC_NO_ERROR),
       last_sequence_number_(0),
@@ -198,6 +197,12 @@ size_t QuicFramer::GetMinRstStreamFrameSize() {
   return kQuicFrameTypeSize + kQuicMaxStreamIdSize +
       kQuicMaxStreamOffsetSize + kQuicErrorCodeSize +
       kQuicErrorDetailsLengthSize;
+}
+
+// static
+size_t QuicFramer::GetRstStreamFrameSize() {
+  return kQuicFrameTypeSize + kQuicMaxStreamIdSize + kQuicMaxStreamOffsetSize +
+         kQuicErrorCodeSize;
 }
 
 // static
@@ -409,11 +414,6 @@ QuicPacket* QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
                      header.public_header.connection_id_length,
                      header.public_header.version_flag,
                      header.public_header.sequence_number_length);
-
-  if (fec_builder_) {
-    fec_builder_->OnBuiltFecProtectedPayload(header,
-                                             packet->FecProtectedData());
-  }
 
   return packet;
 }
@@ -1482,13 +1482,14 @@ bool QuicFramer::ProcessRstStreamFrame(QuicRstStreamFrame* frame) {
   }
 
   frame->error_code = static_cast<QuicRstStreamErrorCode>(error_code);
-
-  StringPiece error_details;
-  if (!reader_->ReadStringPiece16(&error_details)) {
-    set_detailed_error("Unable to read rst stream error details.");
-    return false;
+  if (quic_version_ <= QUIC_VERSION_24) {
+    StringPiece error_details;
+    if (!reader_->ReadStringPiece16(&error_details)) {
+      set_detailed_error("Unable to read rst stream error details.");
+      return false;
+    }
+    frame->error_details = error_details.as_string();
   }
-  frame->error_details = error_details.as_string();
 
   return true;
 }
@@ -1766,8 +1767,11 @@ size_t QuicFramer::ComputeFrameLength(
       // Ping has no payload.
       return kQuicFrameTypeSize;
     case RST_STREAM_FRAME:
-      return GetMinRstStreamFrameSize() +
-          frame.rst_stream_frame->error_details.size();
+      if (quic_version_ <= QUIC_VERSION_24) {
+        return GetMinRstStreamFrameSize() +
+               frame.rst_stream_frame->error_details.size();
+      }
+      return GetRstStreamFrameSize();
     case CONNECTION_CLOSE_FRAME:
       return GetMinConnectionCloseFrameSize() +
           frame.connection_close_frame->error_details.size();
@@ -1890,7 +1894,6 @@ bool QuicFramer::AppendStreamFrame(
   return true;
 }
 
-// static
 void QuicFramer::set_version(const QuicVersion version) {
   DCHECK(IsSupportedVersion(version)) << QuicVersionToString(version);
   quic_version_ = version;
@@ -2137,9 +2140,8 @@ bool QuicFramer::AppendStopWaitingFrame(
   return true;
 }
 
-bool QuicFramer::AppendRstStreamFrame(
-        const QuicRstStreamFrame& frame,
-        QuicDataWriter* writer) {
+bool QuicFramer::AppendRstStreamFrame(const QuicRstStreamFrame& frame,
+                                      QuicDataWriter* writer) {
   if (!writer->WriteUInt32(frame.stream_id)) {
     return false;
   }
@@ -2153,8 +2155,10 @@ bool QuicFramer::AppendRstStreamFrame(
     return false;
   }
 
-  if (!writer->WriteStringPiece16(frame.error_details)) {
-    return false;
+  if (quic_version_ <= QUIC_VERSION_24) {
+    if (!writer->WriteStringPiece16(frame.error_details)) {
+      return false;
+    }
   }
   return true;
 }
@@ -2210,7 +2214,8 @@ bool QuicFramer::AppendBlockedFrame(const QuicBlockedFrame& frame,
 }
 
 bool QuicFramer::RaiseError(QuicErrorCode error) {
-  DVLOG(1) << "Error detail: " << detailed_error_;
+  DVLOG(1) << "Error: " << QuicUtils::ErrorToString(error)
+           << " detail: " << detailed_error_;
   set_error(error);
   visitor_->OnError(this);
   reader_.reset(nullptr);

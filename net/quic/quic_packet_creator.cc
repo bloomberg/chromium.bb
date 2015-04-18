@@ -82,7 +82,6 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
       sequence_number_length_(next_sequence_number_length_),
       packet_size_(0) {
   SetMaxPacketLength(kDefaultMaxPacketSize);
-  framer_->set_fec_builder(this);
 }
 
 QuicPacketCreator::~QuicPacketCreator() {
@@ -380,8 +379,8 @@ SerializedPacket QuicPacketCreator::SerializePacket() {
   // truncation due to length occurred, then GetSerializedFrameLength will have
   // returned all bytes free.
   bool possibly_truncated_by_length = packet_size_ == max_plaintext_size_ &&
-      queued_frames_.size() == 1 &&
-      queued_frames_.back().type == ACK_FRAME;
+                                      queued_frames_.size() == 1 &&
+                                      queued_frames_.back().type == ACK_FRAME;
   char buffer[kMaxPacketSize];
   scoped_ptr<QuicPacket> packet;
   // Use the packet_size_ instead of the buffer size to ensure smaller
@@ -395,6 +394,8 @@ SerializedPacket QuicPacketCreator::SerializePacket() {
     packet.reset(framer_->BuildDataPacket(header, queued_frames_,
                                           large_buffer.get(), packet_size_));
   }
+  OnBuiltFecProtectedPayload(header, packet->FecProtectedData());
+
   LOG_IF(DFATAL, packet == nullptr) << "Failed to serialize "
                                     << queued_frames_.size() << " frames.";
   // Because of possible truncation, we can't be confident that our

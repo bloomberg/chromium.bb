@@ -118,6 +118,9 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   // Minimum congestion window in packets.
   QuicPacketCount min_congestion_window_;
 
+  // Whether to use 4 packets as the actual min, but pace lower.
+  bool min4_mode_;
+
   // Slow start congestion window in packets, aka ssthresh.
   QuicPacketCount slowstart_threshold_;
 

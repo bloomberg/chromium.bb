@@ -188,19 +188,15 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // connection, or in a write-blocked stream.
   bool HasDataToWrite() const;
 
-  bool goaway_received() const {
-    return goaway_received_;
-  }
+  bool goaway_received() const { return goaway_received_; }
 
-  bool goaway_sent() const {
-    return goaway_sent_;
-  }
+  bool goaway_sent() const { return goaway_sent_; }
 
   QuicErrorCode error() const { return error_; }
 
   Perspective perspective() const { return connection_->perspective(); }
 
-  QuicFlowController* flow_controller() { return flow_controller_.get(); }
+  QuicFlowController* flow_controller() { return &flow_controller_; }
 
   // Returns true if connection is flow controller blocked.
   bool IsConnectionFlowControlBlocked() const;
@@ -209,9 +205,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   bool IsStreamFlowControlBlocked();
 
   // Returns true if this is a secure QUIC session.
-  bool IsSecure() const {
-    return connection()->is_secure();
-  }
+  bool IsSecure() const { return connection()->is_secure(); }
 
   size_t get_max_open_streams() const { return max_open_streams_; }
 
@@ -323,7 +317,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   QuicErrorCode error_;
 
   // Used for session level flow control.
-  scoped_ptr<QuicFlowController> flow_controller_;
+  QuicFlowController flow_controller_;
 
   // Whether a GoAway has been received.
   bool goaway_received_;

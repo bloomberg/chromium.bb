@@ -109,8 +109,8 @@ class RetransmissionAlarm : public QuicAlarm::Delegate {
   DISALLOW_COPY_AND_ASSIGN(RetransmissionAlarm);
 };
 
-// An alarm that is scheduled when the sent scheduler requires a
-// a delay before sending packets and fires when the packet may be sent.
+// An alarm that is scheduled when the SentPacketManager requires a delay
+// before sending packets and fires when the packet may be sent.
 class SendAlarm : public QuicAlarm::Delegate {
  public:
   explicit SendAlarm(QuicConnection* connection)
@@ -277,8 +277,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
   framer_.set_received_entropy_calculator(&received_packet_manager_);
   stats_.connection_creation_time = clock_->ApproximateNow();
   sent_packet_manager_.set_network_change_visitor(this);
-  if (FLAGS_quic_small_default_packet_size &&
-      perspective_ == Perspective::IS_SERVER) {
+  if (perspective_ == Perspective::IS_SERVER) {
     set_max_packet_length(kDefaultServerMaxPacketSize);
   }
 }
@@ -390,8 +389,7 @@ void QuicConnection::OnPacket() {
   last_packet_revived_ = false;
 }
 
-void QuicConnection::OnPublicResetPacket(
-    const QuicPublicResetPacket& packet) {
+void QuicConnection::OnPublicResetPacket(const QuicPublicResetPacket& packet) {
   // Check that any public reset packet with a different connection ID that was
   // routed to this QuicConnection has been redirected before control reaches
   // here.  (Check for a bug regression.)
@@ -557,7 +555,7 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
     return false;
   }
 
-  // Will be decrement below if we fall through to return true;
+  // Will be decremented below if we fall through to return true.
   ++stats_.packets_dropped;
 
   if (!Near(header.packet_sequence_number,
@@ -569,8 +567,8 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
     return false;
   }
 
-  // If this packet has already been seen, or that the sender
-  // has told us will not be retransmitted, then stop processing the packet.
+  // If this packet has already been seen, or the sender has told us that it
+  // will not be retransmitted, then stop processing the packet.
   if (!received_packet_manager_.IsAwaitingPacket(
           header.packet_sequence_number)) {
     DVLOG(1) << ENDPOINT << "Packet " << header.packet_sequence_number
@@ -1882,12 +1880,7 @@ void QuicConnection::SendConnectionCloseWithDetails(QuicErrorCode error,
   // If we're write blocked, WritePacket() will not send, but will capture the
   // serialized packet.
   SendConnectionClosePacket(error, details);
-  if (connected_) {
-    // It's possible that while sending the connection close packet, we get a
-    // socket error and disconnect right then and there.  Avoid a double
-    // disconnect in that case.
-    CloseConnection(error, false);
-  }
+  CloseConnection(error, false);
 }
 
 void QuicConnection::SendConnectionClosePacket(QuicErrorCode error,
@@ -1911,8 +1904,7 @@ void QuicConnection::SendConnectionClosePacket(QuicErrorCode error,
 
 void QuicConnection::CloseConnection(QuicErrorCode error, bool from_peer) {
   if (!connected_) {
-    DLOG(DFATAL) << "Error: attempt to close an already closed connection"
-                 << base::debug::StackTrace().ToString();
+    DVLOG(1) << "Connection is already closed.";
     return;
   }
   connected_ = false;

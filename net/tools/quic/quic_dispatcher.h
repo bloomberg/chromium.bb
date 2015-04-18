@@ -132,16 +132,26 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   virtual bool OnUnauthenticatedPublicHeader(
       const QuicPacketPublicHeader& header);
 
+  // Values to be returned by ValidityChecks() to indicate what should
+  // be done with a packet.  Fates with greater values are considered
+  // to be higher priority, in that if one validity test indicates a
+  // lower-valued fate and another validity test indicates a
+  // higher-valued fate, the higher-valued fate should be obeyed.
+  enum QuicPacketFate {
+    // Process the packet normally, which is usually to establish a connection.
+    kFateProcess,
+    // Put the connection ID into time-wait state and send a public reset.
+    kFateTimeWait,
+    // Drop the packet (ignore and give no response).
+    kFateDrop,
+  };
+
   // Called by OnUnauthenticatedPublicHeader when the packet is not for a
-  // connection that the dispatcher has a record of, but is not handled by
-  // certain simple processing rules.  This method may apply validity checks to
-  // reject stray packets.  If the packet appears to be valid, it calls
-  // CreateQuicSession to create a new session for the packet.  Returns the
-  // QuicServerSession that was created, or nullptr if the packet failed the
-  // validity checks.
-  virtual QuicServerSession* AdditionalValidityChecksThenCreateSession(
-      const QuicPacketPublicHeader& header,
-      QuicConnectionId connection_id);
+  // connection that the dispatcher has a record of.  This method applies
+  // validity checks and returns a QuicPacketFate to tell what should be done
+  // with the packet.
+  virtual QuicPacketFate ValidityChecks(const QuicPacketPublicHeader& header,
+                                        QuicConnectionId connection_id);
 
   // Create and return the time wait list manager for this dispatcher, which
   // will be owned by the dispatcher as time_wait_list_manager_

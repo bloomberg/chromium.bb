@@ -592,5 +592,26 @@ TEST_F(TcpCubicBytesSenderTest, BandwidthResumption) {
             sender_->GetCongestionWindow());
 }
 
+TEST_F(TcpCubicBytesSenderTest, PaceBelowCWND) {
+  QuicConfig config;
+
+  // Verify that kCOPT: kMIN4 forces the min CWND to 1 packet, but allows up
+  // to 4 to be sent.
+  QuicTagVector options;
+  options.push_back(kMIN4);
+  QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
+  sender_->SetFromConfig(config, Perspective::IS_SERVER);
+  sender_->OnRetransmissionTimeout(true);
+  EXPECT_EQ(kDefaultTCPMSS, sender_->GetCongestionWindow());
+  EXPECT_TRUE(sender_->TimeUntilSend(QuicTime::Zero(), kDefaultTCPMSS,
+                                     HAS_RETRANSMITTABLE_DATA).IsZero());
+  EXPECT_TRUE(sender_->TimeUntilSend(QuicTime::Zero(), 2 * kDefaultTCPMSS,
+                                     HAS_RETRANSMITTABLE_DATA).IsZero());
+  EXPECT_TRUE(sender_->TimeUntilSend(QuicTime::Zero(), 3 * kDefaultTCPMSS,
+                                     HAS_RETRANSMITTABLE_DATA).IsZero());
+  EXPECT_FALSE(sender_->TimeUntilSend(QuicTime::Zero(), 4 * kDefaultTCPMSS,
+                                      HAS_RETRANSMITTABLE_DATA).IsZero());
+}
+
 }  // namespace test
 }  // namespace net

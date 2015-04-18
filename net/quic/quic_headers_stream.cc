@@ -211,7 +211,7 @@ QuicHeadersStream::QuicHeadersStream(QuicSession* session)
       stream_id_(kInvalidStreamId),
       fin_(false),
       frame_len_(0) {
-  InitializeFramer(session->connection()->version());
+  InitializeFramer(version());
   // The headers stream is exempt from connection level flow control.
   DisableConnectionFlowControlForThisStream();
 }

@@ -320,6 +320,8 @@ enum QuicVersion {
 
   QUIC_VERSION_23 = 23,  // Timestamp in the ack frame.
   QUIC_VERSION_24 = 24,  // SPDY/4 header compression.
+  QUIC_VERSION_25 = 25,  // SPDY/4 header keys, and removal of error_details
+                         // from QuicRstStreamFrame
 };
 
 // This vector contains QUIC versions which we currently support.
@@ -329,7 +331,8 @@ enum QuicVersion {
 //
 // IMPORTANT: if you are adding to this list, follow the instructions at
 // http://sites/quic/adding-and-removing-versions
-static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_24,
+static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_25,
+                                                     QUIC_VERSION_24,
                                                      QUIC_VERSION_23};
 
 typedef std::vector<QuicVersion> QuicVersionVector;
@@ -780,6 +783,7 @@ struct NET_EXPORT_PRIVATE QuicRstStreamFrame {
 
   QuicStreamId stream_id;
   QuicRstStreamErrorCode error_code;
+  // Only used in versions <= QUIC_VERSION_24.
   std::string error_details;
 
   // Used to update flow control windows. On termination of a stream, both

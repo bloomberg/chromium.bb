@@ -86,8 +86,6 @@ media/filters/vp8_bool_decoder.cc
 # Native client not used in Android. Contains the word "Copyright"
 native_client_sdk/doc_generated/rest-devsite-examples.html
 # String '(c)' used in certificates organization names
-net/quic/crypto/common_cert_set_0a.inc
-net/quic/crypto/common_cert_set_0b.inc
 net/quic/crypto/common_cert_set_1a.inc
 net/quic/crypto/common_cert_set_1b.inc
 # String '(c)' used in certificates organization names

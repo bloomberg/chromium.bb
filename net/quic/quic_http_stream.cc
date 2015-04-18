@@ -15,6 +15,7 @@
 #include "net/quic/quic_http_utils.h"
 #include "net/quic/quic_reliable_client_stream.h"
 #include "net/quic/quic_utils.h"
+#include "net/quic/spdy_utils.h"
 #include "net/socket/next_proto.h"
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_framer.h"
@@ -132,7 +133,8 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   stream_->set_priority(priority);
   // Store the serialized request headers.
   CreateSpdyHeadersFromHttpRequest(*request_info_, request_headers,
-                                   SPDY3, /*direct=*/true, &request_headers_);
+                                   GetSpdyVersion(),
+                                   /*direct=*/true, &request_headers_);
 
   // Store the request body.
   request_body_stream_ = request_info_->upload_data_stream;
@@ -528,7 +530,7 @@ int QuicHttpStream::DoSendBodyComplete(int rv) {
 
 int QuicHttpStream::ParseResponseHeaders() {
   size_t read_buf_len = static_cast<size_t>(read_buf_->offset());
-  SpdyFramer framer(SPDY3);
+  SpdyFramer framer(GetSpdyVersion());
   SpdyHeaderBlock headers;
   char* data = read_buf_->StartOfBuffer();
   size_t len = framer.ParseHeaderBlockInBuffer(data, read_buf_->offset(),
@@ -550,7 +552,7 @@ int QuicHttpStream::ParseResponseHeaders() {
       NetLog::TYPE_QUIC_HTTP_STREAM_READ_RESPONSE_HEADERS,
       base::Bind(&SpdyHeaderBlockNetLogCallback, &headers));
 
-  if (!SpdyHeadersToHttpResponse(headers, SPDY3, response_info_)) {
+  if (!SpdyHeadersToHttpResponse(headers, GetSpdyVersion(), response_info_)) {
     DLOG(WARNING) << "Invalid headers";
     return ERR_QUIC_PROTOCOL_ERROR;
   }
@@ -576,6 +578,10 @@ void QuicHttpStream::BufferResponseBody(const char* data, int length) {
   IOBufferWithSize* io_buffer = new IOBufferWithSize(length);
   memcpy(io_buffer->data(), data, length);
   response_body_.push_back(make_scoped_refptr(io_buffer));
+}
+
+SpdyMajorVersion QuicHttpStream::GetSpdyVersion() {
+  return SpdyUtils::GetSpdyVersionForQuicVersion(stream_->version());
 }
 
 }  // namespace net

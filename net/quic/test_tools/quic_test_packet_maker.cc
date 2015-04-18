@@ -217,10 +217,16 @@ SpdyHeaderBlock QuicTestPacketMaker::GetRequestHeaders(
     const std::string& path) {
   SpdyHeaderBlock headers;
   headers[":method"] = method;
-  headers[":host"] = "www.google.com";
+  if (version_ <= QUIC_VERSION_24) {
+    headers[":host"] = "www.google.com";
+  } else {
+    headers[":authority"] = "www.google.com";
+  }
   headers[":path"] = path;
   headers[":scheme"] = scheme;
-  headers[":version"] = "HTTP/1.1";
+  if (version_ <= QUIC_VERSION_24) {
+    headers[":version"] = "HTTP/1.1";
+  }
   return headers;
 }
 
@@ -228,7 +234,9 @@ SpdyHeaderBlock QuicTestPacketMaker::GetResponseHeaders(
     const std::string& status) {
   SpdyHeaderBlock headers;
   headers[":status"] = status;
-  headers[":version"] = "HTTP/1.1";
+  if (version_ <= QUIC_VERSION_24) {
+    headers[":version"] = "HTTP/1.1";
+  }
   headers["content-type"] = "text/plain";
   return headers;
 }

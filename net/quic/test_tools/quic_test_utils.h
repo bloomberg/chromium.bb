@@ -61,6 +61,18 @@ IPAddressNumber Loopback6();
 void GenerateBody(std::string* body, int length);
 
 // Create an encrypted packet for testing.
+// If versions == nullptr, uses &QuicSupportedVersions().
+QuicEncryptedPacket* ConstructEncryptedPacket(
+    QuicConnectionId connection_id,
+    bool version_flag,
+    bool reset_flag,
+    QuicPacketSequenceNumber sequence_number,
+    const std::string& data,
+    QuicConnectionIdLength connection_id_length,
+    QuicSequenceNumberLength sequence_number_length,
+    QuicVersionVector* versions);
+
+// This form assumes |versions| == nullptr.
 QuicEncryptedPacket* ConstructEncryptedPacket(
     QuicConnectionId connection_id,
     bool version_flag,
@@ -70,14 +82,27 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
     QuicConnectionIdLength connection_id_length,
     QuicSequenceNumberLength sequence_number_length);
 
-// This form assumes |connection_id_length| == PACKET_8BYTE_CONNECTION_ID and
-// |sequence_number_length| == PACKET_6BYTE_SEQUENCE_NUMBER.
+// This form assumes |connection_id_length| == PACKET_8BYTE_CONNECTION_ID,
+// |sequence_number_length| == PACKET_6BYTE_SEQUENCE_NUMBER and
+// |versions| == nullptr.
 QuicEncryptedPacket* ConstructEncryptedPacket(
     QuicConnectionId connection_id,
     bool version_flag,
     bool reset_flag,
     QuicPacketSequenceNumber sequence_number,
     const std::string& data);
+
+// Create an encrypted packet for testing whose data portion contains
+// a framing error.
+QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
+    QuicConnectionId connection_id,
+    bool version_flag,
+    bool reset_flag,
+    QuicPacketSequenceNumber sequence_number,
+    const std::string& data,
+    QuicConnectionIdLength connection_id_length,
+    QuicSequenceNumberLength sequence_number_length,
+    QuicVersionVector* versions);
 
 void CompareCharArraysWithHexError(const std::string& description,
                                    const char* actual,
@@ -311,6 +336,12 @@ class MockConnection : public QuicConnection {
   MockConnection(Perspective perspective,
                  const QuicVersionVector& supported_versions);
 
+  MockConnection(QuicConnectionId connection_id,
+                 IPEndPoint address,
+                 Perspective perspective,
+                 bool is_secure,
+                 const QuicVersionVector& supported_versions);
+
   ~MockConnection() override;
 
   // If the constructor that uses a MockHelper has been used then this method
@@ -340,6 +371,11 @@ class MockConnection : public QuicConnection {
   MOCK_METHOD1(OnSendConnectionState, void(const CachedNetworkParameters&));
   MOCK_METHOD2(ResumeConnectionState,
                bool(const CachedNetworkParameters&, bool));
+
+  MOCK_METHOD1(OnError, void(QuicFramer* framer));
+  void QuicConnection_OnError(QuicFramer* framer) {
+    QuicConnection::OnError(framer);
+  }
 
   void ReallyProcessUdpPacket(const IPEndPoint& self_address,
                               const IPEndPoint& peer_address,

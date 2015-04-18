@@ -9,6 +9,7 @@
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
+#include "net/quic/spdy_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
@@ -84,7 +85,8 @@ class QuicSpdyServerStreamTest : public ::testing::TestWithParam<QuicVersion> {
     request_headers[":version"] = "HTTP/1.1";
     request_headers["content-length"] = "11";
 
-    headers_string_ = SpdyUtils::SerializeUncompressedHeaders(request_headers);
+    headers_string_ = net::SpdyUtils::SerializeUncompressedHeaders(
+        request_headers, GetParam());
 
     // New streams rely on having the peer's flow control receive window
     // negotiated in the config.

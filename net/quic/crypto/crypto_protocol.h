@@ -30,6 +30,7 @@ const QuicTag kCHLO = TAG('C', 'H', 'L', 'O');   // Client hello
 const QuicTag kSHLO = TAG('S', 'H', 'L', 'O');   // Server hello
 const QuicTag kSCFG = TAG('S', 'C', 'F', 'G');   // Server config
 const QuicTag kREJ  = TAG('R', 'E', 'J', '\0');  // Reject
+const QuicTag kSREJ = TAG('S', 'R', 'E', 'J');   // Stateless reject
 const QuicTag kCETV = TAG('C', 'E', 'T', 'V');   // Client encrypted tag-value
                                                  // pairs
 const QuicTag kPRST = TAG('P', 'R', 'S', 'T');   // Public reset
@@ -55,13 +56,15 @@ const QuicTag kTBBR = TAG('T', 'B', 'B', 'R');   // Reduced Buffer Bloat TCP
 const QuicTag kRENO = TAG('R', 'E', 'N', 'O');   // Reno Congestion Control
 const QuicTag kBYTE = TAG('B', 'Y', 'T', 'E');   // TCP cubic or reno in bytes
 const QuicTag kIW10 = TAG('I', 'W', '1', '0');   // Force ICWND to 10
-const QuicTag kPACE = TAG('P', 'A', 'C', 'E');   // Paced TCP cubic
+const QuicTag kPACE = TAG('P', 'A', 'C', 'E');   // Enable pacing
 const QuicTag k1CON = TAG('1', 'C', 'O', 'N');   // Emulate a single connection
 const QuicTag kNTLP = TAG('N', 'T', 'L', 'P');   // No tail loss probe
 const QuicTag kNCON = TAG('N', 'C', 'O', 'N');   // N Connection Congestion Ctrl
 const QuicTag kNRTO = TAG('N', 'R', 'T', 'O');   // CWND reduction on loss
-const QuicTag kTIME = TAG('T', 'I', 'M', 'E');   // Time based
+const QuicTag kTIME = TAG('T', 'I', 'M', 'E');   // Time based loss detection
 const QuicTag kMIN1 = TAG('M', 'I', 'N', '1');   // Min CWND of 1 packet
+const QuicTag kMIN4 = TAG('M', 'I', 'N', '4');   // Min CWND of 4 packets,
+                                                 // with a min rate of 1 BDP.
 
 // Optional support of truncated Connection IDs.  If sent by a peer, the value
 // is the minimum number of bytes allowed for the connection ID sent to the
@@ -118,8 +121,9 @@ const QuicTag kUAID = TAG('U', 'A', 'I', 'D');   // Client's User Agent ID.
 
 // Rejection tags
 const QuicTag kRREJ = TAG('R', 'R', 'E', 'J');   // Reasons for server sending
-                                                 // rejection message tag.
-
+// Stateless Reject tags
+const QuicTag kRCID = TAG('R', 'C', 'I', 'D');  // Server-designated
+                                                // connection ID
 // Server hello tags
 const QuicTag kCADR = TAG('C', 'A', 'D', 'R');   // Client IP address and port
 

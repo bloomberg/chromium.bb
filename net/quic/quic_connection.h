@@ -771,8 +771,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   scoped_ptr<QuicAlarm> ack_alarm_;
   // An alarm that fires when a packet needs to be retransmitted.
   scoped_ptr<QuicAlarm> retransmission_alarm_;
-  // An alarm that is scheduled when the sent scheduler requires a
-  // a delay before sending packets and fires when the packet may be sent.
+  // An alarm that is scheduled when the SentPacketManager requires a delay
+  // before sending packets and fires when the packet may be sent.
   scoped_ptr<QuicAlarm> send_alarm_;
   // An alarm that is scheduled when the connection can still write and there
   // may be more data to send.

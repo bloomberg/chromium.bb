@@ -92,7 +92,7 @@ INSTANTIATE_TEST_CASE_P(Version, QuicReliableClientStreamTest,
 TEST_P(QuicReliableClientStreamTest, OnFinRead) {
   InitializeHeaders();
   std::string uncompressed_headers =
-      SpdyUtils::SerializeUncompressedHeaders(headers_);
+      SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
   EXPECT_CALL(delegate_, OnDataReceived(StrEq(uncompressed_headers.data()),
                                         uncompressed_headers.size()));
   QuicStreamOffset offset = 0;

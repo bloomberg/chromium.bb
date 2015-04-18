@@ -400,7 +400,8 @@ TEST_P(QuicHttpStreamTest, GetRequestLargeResponse) {
   headers["content-type"] = "text/plain";
   headers["big6"] = std::string(10000, 'x');  // Lots of x's.
 
-  std::string response = SpdyUtils::SerializeUncompressedHeaders(headers);
+  std::string response =
+      SpdyUtils::SerializeUncompressedHeaders(headers, GetParam());
   EXPECT_LT(4096u, response.length());
   stream_->OnDataReceived(response.data(), response.length());
   stream_->OnClose(QUIC_NO_ERROR);

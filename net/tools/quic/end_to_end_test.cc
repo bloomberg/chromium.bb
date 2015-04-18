@@ -109,44 +109,53 @@ struct TestParams {
 
 // Constructs various test permutations.
 vector<TestParams> GetTestParams() {
-  vector<TestParams> params;
+  // Divide the versions into buckets in which the intra-frame format
+  // is compatible. When clients encounter QUIC version negotiation
+  // they simply retransmit all packets using the new version's
+  // QUIC framing. However, they are unable to change the intra-frame
+  // layout (for example to change SPDY/4 headers to SPDY/3). So
+  // these tests need to ensure that clients are never attempting
+  // to do 0-RTT across incompatible versions. Chromium only supports
+  // a single version at a time anyway. :)
   QuicVersionVector all_supported_versions = QuicSupportedVersions();
-  // TODO(rtenneti): Add kTBBR after BBR code is checked in.
-  // QuicTag congestion_control_tags[] = {kRENO, kTBBR, kQBIC};
-  QuicTag congestion_control_tags[] = {kRENO, kQBIC};
   QuicVersionVector spdy3_versions;
   QuicVersionVector spdy4_versions;
-  for (QuicVersion version : all_supported_versions) {
-    if (version > QUIC_VERSION_23) {
-      spdy4_versions.push_back(version);
+  QuicVersionVector client_version_buckets[3];
+  for (const QuicVersion version : all_supported_versions) {
+    if (version <= QUIC_VERSION_23) {
+      // SPDY/3
+      client_version_buckets[0].push_back(version);
+    } else if (version > QUIC_VERSION_24) {
+      // SPDY/4
+      client_version_buckets[1].push_back(version);
     } else {
-      spdy3_versions.push_back(version);
+      // SPDY/4 compression but SPDY/3 headers
+      client_version_buckets[2].push_back(version);
     }
   }
-  for (size_t congestion_control_index = 0;
-       congestion_control_index < arraysize(congestion_control_tags);
-       congestion_control_index++) {
-    QuicTag congestion_control_tag =
-        congestion_control_tags[congestion_control_index];
-    for (int use_fec = 0; use_fec < 2; ++use_fec) {
-      for (int spdy_version = 3; spdy_version <= 4; ++spdy_version) {
-        const QuicVersionVector* client_versions =
-            spdy_version == 3 ? &spdy3_versions : &spdy4_versions;
+
+  vector<TestParams> params;
+  // TODO(rtenneti): Add kTBBR after BBR code is checked in.
+  // for (const QuicTag congestion_control_tag : {kRENO, kTBBR, kQBIC}) {
+  for (const QuicTag congestion_control_tag : {kRENO, kQBIC}) {
+    for (const bool use_fec : {false, true}) {
+      for (const QuicVersionVector& client_versions : client_version_buckets) {
+        CHECK(!client_versions.empty());
         // Add an entry for server and client supporting all versions.
-        params.push_back(TestParams(*client_versions, all_supported_versions,
-                                    (*client_versions)[0], use_fec != 0,
+        params.push_back(TestParams(client_versions, all_supported_versions,
+                                    client_versions.front(), use_fec != 0,
                                     congestion_control_tag));
 
         // Test client supporting all versions and server supporting 1
         // version. Simulate an old server and exercise version downgrade in
         // the client. Protocol negotiation should occur. Skip the i = 0 case
         // because it is essentially the same as the default case.
-        for (QuicVersion version : *client_versions) {
+        for (const QuicVersion version : client_versions) {
           QuicVersionVector server_supported_versions;
           server_supported_versions.push_back(version);
-          params.push_back(TestParams(*client_versions,
+          params.push_back(TestParams(client_versions,
                                       server_supported_versions,
-                                      server_supported_versions[0],
+                                      server_supported_versions.front(),
                                       use_fec != 0, congestion_control_tag));
         }
       }
@@ -381,9 +390,10 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
   void VerifyCleanConnection(bool had_packet_loss) {
     QuicConnectionStats client_stats =
         client_->client()->session()->connection()->GetStats();
-    if (!had_packet_loss) {
-      EXPECT_EQ(0u, client_stats.packets_lost);
-    }
+    // TODO(ianswett): Re-enable this check once b/19572432 is fixed.
+    // if (!had_packet_loss) {
+    //   EXPECT_EQ(0u, client_stats.packets_lost);
+    // }
     EXPECT_EQ(0u, client_stats.packets_discarded);
     EXPECT_EQ(0u, client_stats.packets_dropped);
     EXPECT_EQ(client_stats.packets_received, client_stats.packets_processed);
@@ -394,9 +404,10 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     ASSERT_EQ(1u, dispatcher->session_map().size());
     QuicSession* session = dispatcher->session_map().begin()->second;
     QuicConnectionStats server_stats = session->connection()->GetStats();
-    if (!had_packet_loss) {
-      EXPECT_EQ(0u, server_stats.packets_lost);
-    }
+    // TODO(ianswett): Re-enable this check once b/19572432 is fixed.
+    // if (!had_packet_loss) {
+    //   EXPECT_EQ(0u, server_stats.packets_lost);
+    // }
     EXPECT_EQ(0u, server_stats.packets_discarded);
     // TODO(ianswett): Restore the check for packets_dropped equals 0.
     // The expect for packets received is equal to packets processed fails

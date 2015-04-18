@@ -14,13 +14,36 @@ using std::string;
 namespace net {
 
 // static
-string SpdyUtils::SerializeUncompressedHeaders(const SpdyHeaderBlock& headers) {
-  int length = SpdyFramer::GetSerializedLength(kDefaultSpdyMajorVersion,
-                                               &headers);
+SpdyMajorVersion SpdyUtils::GetSpdyVersionForQuicVersion(
+    QuicVersion quic_version) {
+  if (quic_version > QUIC_VERSION_24) {
+    return SPDY4;
+  }
+  return SPDY3;
+}
+
+// static
+string SpdyUtils::SerializeUncompressedHeaders(const SpdyHeaderBlock& headers,
+                                               QuicVersion quic_version) {
+  SpdyMajorVersion spdy_version = GetSpdyVersionForQuicVersion(quic_version);
+
+  int length = SpdyFramer::GetSerializedLength(spdy_version, &headers);
   SpdyFrameBuilder builder(length, kDefaultSpdyMajorVersion);
   SpdyFramer::WriteHeaderBlock(&builder, kDefaultSpdyMajorVersion, &headers);
   scoped_ptr<SpdyFrame> block(builder.take());
   return string(block->data(), length);
+}
+
+// static
+SpdyHeaderBlock SpdyUtils::ConvertSpdy3ResponseHeadersToSpdy4(
+    SpdyHeaderBlock response_headers) {
+  // SPDY/4 headers include neither the version field nor the response details.
+  response_headers.erase(":version");
+  size_t end_of_code = response_headers[":status"].find(' ');
+  if (end_of_code != string::npos) {
+    response_headers[":status"].erase(end_of_code);
+  }
+  return response_headers;
 }
 
 }  // namespace net

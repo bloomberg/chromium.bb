@@ -15,6 +15,8 @@
 #include "net/tools/quic/quic_spdy_client_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using net::test::ConstructEncryptedPacket;
+using net::test::ConstructMisFramedEncryptedPacket;
 using net::test::CryptoTestUtils;
 using net::test::DefaultQuicConfig;
 using net::test::MockConnection;
@@ -25,6 +27,7 @@ using net::test::TestPeerIPAddress;
 using net::test::ValueRestore;
 using net::test::kTestPort;
 using testing::Invoke;
+using testing::Truly;
 using testing::_;
 
 namespace net {
@@ -112,23 +115,25 @@ TEST_P(ToolsQuicClientSessionTest, SetFecProtectionFromConfig) {
   EXPECT_EQ(FEC_PROTECT_OPTIONAL, stream->fec_policy());
 }
 
+static bool CheckForDecryptionError(QuicFramer* framer) {
+  return framer->error() == QUIC_DECRYPTION_FAILURE;
+}
+
 // Regression test for b/17206611.
 TEST_P(ToolsQuicClientSessionTest, InvalidPacketReceived) {
-  // Create Packet with 0 length.
-  QuicEncryptedPacket invalid_packet(nullptr, 0, false);
   IPEndPoint server_address(TestPeerIPAddress(), kTestPort);
   IPEndPoint client_address(TestPeerIPAddress(), kTestPort);
 
-  EXPECT_CALL(*reinterpret_cast<MockConnection*>(session_->connection()),
+  EXPECT_CALL(*implicit_cast<MockConnection*>(connection_),
               ProcessUdpPacket(server_address, client_address, _))
-      .WillRepeatedly(
-          Invoke(reinterpret_cast<MockConnection*>(session_->connection()),
-                 &MockConnection::ReallyProcessUdpPacket));
+      .WillRepeatedly(Invoke(implicit_cast<MockConnection*>(connection_),
+                             &MockConnection::ReallyProcessUdpPacket));
 
-  // Validate that empty packets don't close the connection.
+  // Verify that empty packets don't close the connection.
+  QuicEncryptedPacket zero_length_packet(nullptr, 0, false);
   EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(_, _)).Times(0);
   session_->connection()->ProcessUdpPacket(client_address, server_address,
-                                           invalid_packet);
+                                           zero_length_packet);
 
   // Verifiy that small, invalid packets don't close the connection.
   char buf[2] = {0x00, 0x01};
@@ -137,6 +142,38 @@ TEST_P(ToolsQuicClientSessionTest, InvalidPacketReceived) {
   EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(_, _)).Times(0);
   session_->connection()->ProcessUdpPacket(client_address, server_address,
                                            valid_packet);
+
+  // Verify that a non-decryptable packet doesn't close the connection.
+  QuicConnectionId connection_id = session_->connection()->connection_id();
+  scoped_ptr<QuicEncryptedPacket> packet(
+      ConstructEncryptedPacket(connection_id, false, false, 100, "data"));
+  // Change the last byte of the encrypted data.
+  *(const_cast<char*>(packet->data() + packet->length() - 1)) += 1;
+  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(_, _)).Times(0);
+  EXPECT_CALL(*implicit_cast<MockConnection*>(connection_),
+              OnError(Truly(CheckForDecryptionError))).Times(1);
+  session_->connection()->ProcessUdpPacket(client_address, server_address,
+                                           *packet);
+}
+
+// A packet with invalid framing should cause a connection to be closed.
+TEST_P(ToolsQuicClientSessionTest, InvalidFramedPacketReceived) {
+  IPEndPoint server_address(TestPeerIPAddress(), kTestPort);
+  IPEndPoint client_address(TestPeerIPAddress(), kTestPort);
+
+  EXPECT_CALL(*implicit_cast<MockConnection*>(connection_),
+              ProcessUdpPacket(server_address, client_address, _))
+      .WillRepeatedly(Invoke(implicit_cast<MockConnection*>(connection_),
+                             &MockConnection::ReallyProcessUdpPacket));
+
+  // Verify that a decryptable packet with bad frames does close the connection.
+  QuicConnectionId connection_id = session_->connection()->connection_id();
+  scoped_ptr<QuicEncryptedPacket> packet(ConstructMisFramedEncryptedPacket(
+      connection_id, false, false, 100, "data", PACKET_8BYTE_CONNECTION_ID,
+      PACKET_6BYTE_SEQUENCE_NUMBER, nullptr));
+  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(_, _)).Times(1);
+  session_->connection()->ProcessUdpPacket(client_address, server_address,
+                                           *packet);
 }
 
 }  // namespace

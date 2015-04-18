@@ -41,7 +41,8 @@ class QuicSpdyClientStreamTest : public TestWithParam<QuicVersion> {
     headers_.SetResponseFirstlineFromStringPieces("HTTP/1.1", "200", "Ok");
     headers_.ReplaceOrAppendHeader("content-length", "11");
 
-    headers_string_ = SpdyUtils::SerializeResponseHeaders(headers_);
+    headers_string_ =
+        net::tools::SpdyUtils::SerializeResponseHeaders(headers_, GetParam());
 
     // New streams rely on having the peer's flow control receive window
     // negotiated in the config.
@@ -68,7 +69,11 @@ TEST_P(QuicSpdyClientStreamTest, TestFraming) {
   stream_->OnStreamHeaders(headers_string_);
   stream_->OnStreamHeadersComplete(false, headers_string_.size());
   EXPECT_EQ(body_.size(), stream_->ProcessData(body_.c_str(), body_.size()));
-  EXPECT_EQ("200 Ok", stream_->headers().find(":status")->second);
+  if (GetParam() > QUIC_VERSION_24) {
+    EXPECT_EQ("200", stream_->headers().find(":status")->second);
+  } else {
+    EXPECT_EQ("200 Ok", stream_->headers().find(":status")->second);
+  }
   EXPECT_EQ(200, stream_->response_code());
   EXPECT_EQ(body_, stream_->data());
 }
@@ -77,7 +82,11 @@ TEST_P(QuicSpdyClientStreamTest, TestFramingOnePacket) {
   stream_->OnStreamHeaders(headers_string_);
   stream_->OnStreamHeadersComplete(false, headers_string_.size());
   EXPECT_EQ(body_.size(), stream_->ProcessData(body_.c_str(), body_.size()));
-  EXPECT_EQ("200 Ok", stream_->headers().find(":status")->second);
+  if (GetParam() > QUIC_VERSION_24) {
+    EXPECT_EQ("200", stream_->headers().find(":status")->second);
+  } else {
+    EXPECT_EQ("200 Ok", stream_->headers().find(":status")->second);
+  }
   EXPECT_EQ(200, stream_->response_code());
   EXPECT_EQ(body_, stream_->data());
 }
@@ -89,7 +98,11 @@ TEST_P(QuicSpdyClientStreamTest, DISABLED_TestFramingExtraData) {
   stream_->OnStreamHeadersComplete(false, headers_string_.size());
   // The headers should parse successfully.
   EXPECT_EQ(QUIC_STREAM_NO_ERROR, stream_->stream_error());
-  EXPECT_EQ("200 Ok", stream_->headers().find(":status")->second);
+  if (GetParam() > QUIC_VERSION_24) {
+    EXPECT_EQ("200", stream_->headers().find(":status")->second);
+  } else {
+    EXPECT_EQ("200 Ok", stream_->headers().find(":status")->second);
+  }
   EXPECT_EQ(200, stream_->response_code());
 
   EXPECT_CALL(*connection_,

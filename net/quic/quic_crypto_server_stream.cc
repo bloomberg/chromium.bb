@@ -223,15 +223,12 @@ QuicErrorCode QuicCryptoServerStream::ProcessClientHello(
   }
   previous_source_address_tokens_ = result.info.source_address_tokens;
 
+  QuicConnection* connection = session()->connection();
   return crypto_config_->ProcessClientHello(
-      result, session()->connection()->connection_id(),
-      session()->connection()->self_address().address(),
-      session()->connection()->peer_address(),
-      session()->connection()->version(),
-      session()->connection()->supported_versions(),
-      session()->connection()->clock(),
-      session()->connection()->random_generator(), &crypto_negotiated_params_,
-      reply, error_details);
+      result, connection->connection_id(), connection->self_address().address(),
+      connection->peer_address(), version(), connection->supported_versions(),
+      connection->clock(), connection->random_generator(),
+      &crypto_negotiated_params_, reply, error_details);
 }
 
 void QuicCryptoServerStream::OverrideQuicConfigDefaults(QuicConfig* config) {

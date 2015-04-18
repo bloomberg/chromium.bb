@@ -117,6 +117,9 @@ class NET_EXPORT_PRIVATE TcpCubicBytesSender : public SendAlgorithmInterface {
   // Minimum congestion window in bytes.
   QuicByteCount min_congestion_window_;
 
+  // Whether to use 4 packets as the actual min, but pace lower.
+  bool min4_mode_;
+
   // Maximum congestion window in bytes.
   QuicByteCount max_congestion_window_;
 

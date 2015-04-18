@@ -46,13 +46,11 @@ TcpCubicSender::TcpCubicSender(const QuicClock* clock,
       largest_sent_at_last_cutback_(0),
       congestion_window_(initial_tcp_congestion_window),
       min_congestion_window_(kDefaultMinimumCongestionWindow),
+      min4_mode_(false),
       slowstart_threshold_(max_tcp_congestion_window),
       last_cutback_exited_slowstart_(false),
       max_tcp_congestion_window_(max_tcp_congestion_window),
       clock_(clock) {
-  // Disable the ack train mode in hystart when pacing is enabled, since it
-  // may be falsely triggered.
-  hybrid_slow_start_.set_ack_train_detection(false);
 }
 
 TcpCubicSender::~TcpCubicSender() {
@@ -70,6 +68,12 @@ void TcpCubicSender::SetFromConfig(const QuicConfig& config,
     if (config.HasReceivedConnectionOptions() &&
         ContainsQuicTag(config.ReceivedConnectionOptions(), kMIN1)) {
       // Min CWND experiment.
+      min_congestion_window_ = 1;
+    }
+    if (config.HasReceivedConnectionOptions() &&
+        ContainsQuicTag(config.ReceivedConnectionOptions(), kMIN4)) {
+      // Min CWND of 4 experiment.
+      min4_mode_ = true;
       min_congestion_window_ = 1;
     }
   }
@@ -235,6 +239,9 @@ QuicTime::Delta TcpCubicSender::TimeUntilSend(
                               slowstart_threshold_ * kMaxSegmentSize);
   }
   if (GetCongestionWindow() > bytes_in_flight) {
+    return QuicTime::Delta::Zero();
+  }
+  if (min4_mode_ && bytes_in_flight < 4 * kMaxSegmentSize) {
     return QuicTime::Delta::Zero();
   }
   return QuicTime::Delta::Infinite();
