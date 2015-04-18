@@ -1295,16 +1295,4 @@ v8::Handle<v8::Object> WebAXObjectProxyList::GetOrCreate(
   return handle;
 }
 
-v8::Handle<v8::Object> WebAXObjectProxyList::CreateRoot(
-    const blink::WebAXObject& object) {
-  v8::Isolate* isolate = blink::mainThreadIsolate();
-  v8::Handle<v8::Value> value_handle = gin::CreateHandle(
-      isolate, new RootWebAXObjectProxy(object, this)).ToV8();
-  if (value_handle.IsEmpty())
-    return v8::Handle<v8::Object>();
-  v8::Handle<v8::Object> handle = value_handle->ToObject(isolate);
-  elements_.Append(handle);
-  return handle;
-}
-
 }  // namespace content

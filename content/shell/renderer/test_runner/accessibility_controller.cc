@@ -239,7 +239,7 @@ v8::Handle<v8::Object> AccessibilityController::FocusedElement() {
 v8::Handle<v8::Object> AccessibilityController::RootElement() {
   if (root_element_.isNull())
     root_element_ = web_view_->accessibilityObject();
-  return elements_.CreateRoot(root_element_);
+  return elements_.GetOrCreate(root_element_);
 }
 
 v8::Handle<v8::Object>

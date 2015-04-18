@@ -178,7 +178,6 @@ class WebAXObjectProxyList : public WebAXObjectProxy::Factory {
 
   void Clear();
   v8::Handle<v8::Object> GetOrCreate(const blink::WebAXObject&) override;
-  v8::Handle<v8::Object> CreateRoot(const blink::WebAXObject&);
 
  private:
   typedef v8::PersistentValueVector<v8::Object> ElementList;
