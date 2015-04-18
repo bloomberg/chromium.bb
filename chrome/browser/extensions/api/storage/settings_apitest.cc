@@ -67,7 +67,6 @@ class MockSchemaRegistryObserver : public policy::SchemaRegistry::Observer {
   virtual ~MockSchemaRegistryObserver() {}
 
   MOCK_METHOD1(OnSchemaRegistryUpdated, void(bool));
-  MOCK_METHOD0(OnSchemaRegistryReady, void());
 };
 
 }  // namespace

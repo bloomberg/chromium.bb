@@ -143,10 +143,6 @@ void CombinedSchemaRegistry::OnSchemaRegistryUpdated(bool has_new_schemas) {
   Combine(has_new_schemas);
 }
 
-void CombinedSchemaRegistry::OnSchemaRegistryReady() {
-  // Ignore.
-}
-
 void CombinedSchemaRegistry::OnSchemaRegistryShuttingDown(
     SchemaRegistry* registry) {
   registry->RemoveObserver(this);
@@ -222,10 +218,6 @@ void ForwardingSchemaRegistry::UnregisterComponent(const PolicyNamespace& ns) {
 void ForwardingSchemaRegistry::OnSchemaRegistryUpdated(bool has_new_schemas) {
   schema_map_ = wrapped_->schema_map();
   Notify(has_new_schemas);
-}
-
-void ForwardingSchemaRegistry::OnSchemaRegistryReady() {
-  // Ignore.
 }
 
 void ForwardingSchemaRegistry::OnSchemaRegistryShuttingDown(

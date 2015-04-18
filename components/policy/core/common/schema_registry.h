@@ -37,7 +37,7 @@ class POLICY_EXPORT SchemaRegistry : public base::NonThreadSafe {
     virtual void OnSchemaRegistryUpdated(bool has_new_schemas) = 0;
 
     // Invoked when all policy domains become ready.
-    virtual void OnSchemaRegistryReady() = 0;
+    virtual void OnSchemaRegistryReady() {}
 
    protected:
     virtual ~Observer();
@@ -113,7 +113,6 @@ class POLICY_EXPORT CombinedSchemaRegistry
 
   // SchemaRegistry::Observer:
   void OnSchemaRegistryUpdated(bool has_new_schemas) override;
-  void OnSchemaRegistryReady() override;
 
   // SchemaRegistry::InternalObserver:
   void OnSchemaRegistryShuttingDown(SchemaRegistry* registry) override;
@@ -145,7 +144,6 @@ class POLICY_EXPORT ForwardingSchemaRegistry
 
   // SchemaRegistry::Observer:
   void OnSchemaRegistryUpdated(bool has_new_schemas) override;
-  void OnSchemaRegistryReady() override;
 
   // SchemaRegistry::InternalObserver:
   void OnSchemaRegistryShuttingDown(SchemaRegistry* registry) override;

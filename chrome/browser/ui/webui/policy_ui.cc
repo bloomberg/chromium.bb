@@ -378,7 +378,6 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
                        const policy::PolicyMap& current) override;
 
   // policy::SchemaRegistry::Observer implementation.
-  void OnSchemaRegistryReady() override;
   void OnSchemaRegistryUpdated(bool has_new_schemas) override;
 
  private:
@@ -636,10 +635,6 @@ void PolicyUIHandler::OnExtensionUnloaded(
   SendPolicyValues();
 }
 #endif
-
-// TODO(limasdf): Add default implementation and remove this override.
-void PolicyUIHandler::OnSchemaRegistryReady() {
-}
 
 void PolicyUIHandler::OnSchemaRegistryUpdated(bool has_new_schemas) {
   // Update UI when new schema is added.
