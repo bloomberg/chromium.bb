@@ -1,7 +1,5 @@
 set noparent
 # Please keep these in alphabetical order
-bradchen@google.com
-bsy@google.com
 kschimpf@google.com
 mseaborn@chromium.org
 ncbray@chromium.org
@@ -10,4 +8,3 @@ sehr@chromium.org
 
 # For build file review
 per-file *.gn=bradnelson@chromium.org
-per-file *.gn=noelallen@chromium.org
