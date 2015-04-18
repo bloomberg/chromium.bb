@@ -8,8 +8,9 @@
  *
  * The ClientSession class controls lifetime of the client plugin
  * object and provides the plugin with the functionality it needs to
- * establish connection, e.g. delivers incoming/outgoing signaling
- * messages.
+ * establish connection. Specifically it:
+ *  - Delivers incoming/outgoing signaling messages,
+ *  - Adjusts plugin size and position when destop resolution changes,
  *
  * This class should not access the plugin directly, instead it should
  * do it through ClientPlugin class which abstracts plugin version
@@ -23,15 +24,15 @@ var remoting = remoting || {};
 
 /**
  * @param {remoting.ClientPlugin} plugin
+ * @param {remoting.Host} host The host to connect to.
  * @param {remoting.SignalStrategy} signalStrategy Signal strategy.
- * @param {remoting.ClientSession.EventHandler} listener
  *
  * @constructor
  * @extends {base.EventSourceImpl}
  * @implements {base.Disposable}
  * @implements {remoting.ClientPlugin.ConnectionEventHandler}
  */
-remoting.ClientSession = function(plugin, signalStrategy, listener) {
+remoting.ClientSession = function(plugin, host, signalStrategy) {
   base.inherits(this, base.EventSourceImpl);
 
   /** @private */
@@ -40,17 +41,11 @@ remoting.ClientSession = function(plugin, signalStrategy, listener) {
   /** @private {!remoting.Error} */
   this.error_ = remoting.Error.none();
 
-  /** @private {remoting.Host} */
-  this.host_ = null;
-
-  /** @private {remoting.CredentialsProvider} */
-  this.credentialsProvider_ = null;
+  /** @private */
+  this.host_ = host;
 
   /** @private */
   this.sessionId_ = '';
-
-  /** @private */
-  this.listener_ = listener;
 
   /** @private */
   this.hasReceivedFrame_ = false;
@@ -63,8 +58,9 @@ remoting.ClientSession = function(plugin, signalStrategy, listener) {
   this.signalStrategy_.setIncomingStanzaCallback(
       this.onIncomingMessage_.bind(this));
 
- /** @private {remoting.FormatIq} */
-  this.iqFormatter_ = null;
+  /** @private */
+  this.iqFormatter_ =
+      new remoting.FormatIq(this.signalStrategy_.getJid(), host.jabberId);
 
   /**
    * Allow host-offline error reporting to be suppressed in situations where it
@@ -259,21 +255,6 @@ remoting.ClientSession.Capability = {
 };
 
 /**
- * Connects to |host| using |credentialsProvider| as the credentails.
- *
- * @param {remoting.Host} host
- * @param {remoting.CredentialsProvider} credentialsProvider
- */
-remoting.ClientSession.prototype.connect = function(host, credentialsProvider) {
-  this.host_ = host;
-  this.credentialsProvider_ = credentialsProvider;
-  this.iqFormatter_ =
-      new remoting.FormatIq(this.signalStrategy_.getJid(), host.jabberId);
-  this.plugin_.connect(this.host_, this.signalStrategy_.getJid(),
-                       credentialsProvider);
-};
-
-/**
  * Disconnect the current session with a particular |error|.  The session will
  * raise a |stateChanged| event in response to it.  The caller should then call
  * dispose() to remove and destroy the <embed> element.
@@ -316,7 +297,6 @@ remoting.ClientSession.prototype.disconnect = function(error) {
 remoting.ClientSession.prototype.dispose = function() {
   base.dispose(this.connectedDisposables_);
   this.connectedDisposables_ = null;
-  base.dispose(this.plugin_);
   this.plugin_ = null;
 };
 
@@ -508,65 +488,7 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
     this.connectedDisposables_ = null;
   }
 
-  this.notifyStateChanges_(oldState, this.state_);
   this.logToServer.logClientSessionStateChange(this.state_, this.error_);
-};
-
-/**
- * @param {remoting.ClientSession.State} oldState The new state for the session.
- * @param {remoting.ClientSession.State} newState The new state for the session.
- * @private
- */
-remoting.ClientSession.prototype.notifyStateChanges_ =
-    function(oldState, newState) {
-  /** @type {remoting.Error} */
-  var error;
-  switch (this.state_) {
-    case remoting.ClientSession.State.CONNECTED:
-      console.log('Connection established.');
-      var connectionInfo = new remoting.ConnectionInfo(
-          this.host_, this.credentialsProvider_, this, this.plugin_);
-      this.listener_.onConnected(connectionInfo);
-      break;
-
-    case remoting.ClientSession.State.CONNECTING:
-      remoting.identity.getEmail().then(function(/** string */ email) {
-        console.log('Connecting as ' + email);
-      });
-      break;
-
-    case remoting.ClientSession.State.AUTHENTICATED:
-      console.log('Connection authenticated.');
-      break;
-
-    case remoting.ClientSession.State.INITIALIZING:
-      console.log('Connection initializing .');
-      break;
-
-    case remoting.ClientSession.State.CLOSED:
-      console.log('Connection closed.');
-      this.listener_.onDisconnected();
-      break;
-
-    case remoting.ClientSession.State.FAILED:
-      error = this.getError();
-      console.error('Connection failed: ' + error.toString());
-      this.listener_.onConnectionFailed(error);
-      break;
-
-    case remoting.ClientSession.State.CONNECTION_DROPPED:
-      error = this.getError();
-      console.error('Connection dropped: ' + error.toString());
-      this.listener_.onError(error);
-      break;
-
-    default:
-      console.error('Unexpected client plugin state: ' + newState);
-      // This should only happen if the web-app and client plugin get out of
-      // sync, and even then the version check should ensure compatibility.
-      this.listener_.onError(
-          new remoting.Error(remoting.Error.Tag.MISSING_PLUGIN));
-  }
 
   this.raiseEvent(remoting.ClientSession.Events.stateChanged,
     new remoting.ClientSession.StateEvent(newState, oldState)

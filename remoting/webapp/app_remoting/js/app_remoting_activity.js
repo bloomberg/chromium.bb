@@ -35,9 +35,9 @@ remoting.AppRemotingActivity = function(appCapabilities) {
   this.connectedView_ = null;
 
   /** @private */
-  this.sessionFactory_ = new remoting.ClientSessionFactory(
-      document.querySelector('#client-container .client-plugin-container'),
-      appCapabilities);
+  this.connector_ = remoting.SessionConnector.factory.createConnector(
+      document.getElementById('client-container'), appCapabilities,
+      this);
 
   /** @private {remoting.ClientSession} */
   this.session_ = null;
@@ -69,7 +69,6 @@ remoting.AppRemotingActivity.prototype.stop = function() {
 remoting.AppRemotingActivity.prototype.cleanup_ = function() {
   base.dispose(this.connectedView_);
   this.connectedView_ = null;
-  base.dispose(this.session_);
   this.session_ = null;
 };
 
@@ -128,17 +127,11 @@ remoting.AppRemotingActivity.prototype.onAppHostResponse_ =
                                  host['sharedSecret']);
       };
 
-      remoting.app.setConnectionMode(remoting.Application.Mode.APP_REMOTING);
-      var credentialsProvider = new remoting.CredentialsProvider(
-              {fetchThirdPartyToken: fetchThirdPartyToken});
-      var that = this;
+      this.connector_.connect(
+          remoting.Application.Mode.APP_REMOTING, host,
+          new remoting.CredentialsProvider(
+              {fetchThirdPartyToken: fetchThirdPartyToken}));
 
-      this.sessionFactory_.createSession(this).then(
-        function(/** remoting.ClientSession */ session) {
-          that.session_ = session;
-          session.logHostOfflineErrors(true);
-          session.connect(host, credentialsProvider);
-      });
     } else if (response && response.status == 'pending') {
       this.onError(new remoting.Error(
           remoting.Error.Tag.SERVICE_UNAVAILABLE));
@@ -156,6 +149,7 @@ remoting.AppRemotingActivity.prototype.onConnected = function(connectionInfo) {
   this.connectedView_ = new remoting.AppConnectedView(
       document.getElementById('client-container'), connectionInfo);
 
+  this.session_ = connectionInfo.session();
   var idleDetector = new remoting.IdleDetector(
       document.getElementById('idle-dialog'), this.stop.bind(this));
 

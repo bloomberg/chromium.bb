@@ -72,9 +72,14 @@ remoting.Me2MeActivity.prototype.connect_ = function(suppressHostOfflineError) {
   remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
   base.dispose(this.desktopActivity_);
   this.desktopActivity_ = new remoting.DesktopRemotingActivity(this);
-  remoting.app.setConnectionMode(remoting.Application.Mode.ME2ME);
-  this.desktopActivity_.start(this.host_, this.createCredentialsProvider_(),
-                              suppressHostOfflineError);
+  var connector = remoting.SessionConnector.factory.createConnector(
+        document.getElementById('client-container'),
+        remoting.app_capabilities(),
+        this.desktopActivity_);
+
+  connector.connect(
+      remoting.Application.Mode.ME2ME,
+      this.host_, this.createCredentialsProvider_(), suppressHostOfflineError);
 };
 
 /**
