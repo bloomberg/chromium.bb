@@ -181,6 +181,23 @@ void AssignOptionalValue(const scoped_ptr<T>& source,
   }
 }
 
+ui::WindowShowState ConvertToWindowShowState(windows::WindowState state) {
+  switch (state) {
+    case windows::WINDOW_STATE_NORMAL:
+      return ui::SHOW_STATE_NORMAL;
+    case windows::WINDOW_STATE_MINIMIZED:
+      return ui::SHOW_STATE_MINIMIZED;
+    case windows::WINDOW_STATE_MAXIMIZED:
+      return ui::SHOW_STATE_MAXIMIZED;
+    case windows::WINDOW_STATE_FULLSCREEN:
+      return ui::SHOW_STATE_FULLSCREEN;
+    case windows::WINDOW_STATE_NONE:
+      return ui::SHOW_STATE_DEFAULT;
+  }
+  NOTREACHED();
+  return ui::SHOW_STATE_DEFAULT;
+}
+
 }  // namespace
 
 void ZoomModeToZoomSettings(ZoomController::ZoomMode zoom_mode,
@@ -558,6 +575,10 @@ bool WindowsCreateFunction::RunSync() {
         host_desktop_type);
   }
   create_params.initial_show_state = ui::SHOW_STATE_NORMAL;
+  if (create_data && create_data->state) {
+    create_params.initial_show_state =
+        ConvertToWindowShowState(create_data->state);
+  }
   create_params.host_desktop_type = chrome::GetActiveDesktop();
 
   Browser* new_window = new Browser(create_params);
@@ -599,15 +620,32 @@ bool WindowsCreateFunction::RunSync() {
   else
     new_window->window()->ShowInactive();
 
+  WindowController* controller = new_window->extension_window_controller();
+
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+  // On Desktop Linux, window managers may ignore hints until the X11 window is
+  // mapped, which happens in the blocking call to Show() above.
+  // DesktopWindowTreeHostX11 currently only checks for an attempt to maximize
+  // once mapped, but not minimize or fullscreen.
+  // For ChromeOS, manually Minimize(). Because minimzied window is not
+  // considered to create new window. See http://crbug.com/473228.
+  if (create_params.initial_show_state == ui::SHOW_STATE_MINIMIZED)
+    new_window->window()->Minimize();
+#endif
+#if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_WIN)
+  // On Desktop Linux and Windows, managers don't handle fullscreen state to
+  // create window for now.
+  if (create_params.initial_show_state == ui::SHOW_STATE_FULLSCREEN)
+    controller->SetFullscreenMode(true, extension()->url());
+#endif
+
   if (new_window->profile()->IsOffTheRecord() &&
       !GetProfile()->IsOffTheRecord() && !include_incognito()) {
     // Don't expose incognito windows if extension itself works in non-incognito
     // profile and CanCrossIncognito isn't allowed.
     SetResult(base::Value::CreateNullValue());
   } else {
-    SetResult(
-        new_window->extension_window_controller()->CreateWindowValueWithTabs(
-            extension()));
+    SetResult(controller->CreateWindowValueWithTabs(extension()));
   }
 
   return true;
@@ -623,26 +661,8 @@ bool WindowsUpdateFunction::RunSync() {
                                             &controller))
     return false;
 
-  ui::WindowShowState show_state = ui::SHOW_STATE_DEFAULT;  // No change.
-  switch (params->update_info.state) {
-    case windows::WINDOW_STATE_NORMAL:
-      show_state = ui::SHOW_STATE_NORMAL;
-      break;
-    case windows::WINDOW_STATE_MINIMIZED:
-      show_state = ui::SHOW_STATE_MINIMIZED;
-      break;
-    case windows::WINDOW_STATE_MAXIMIZED:
-      show_state = ui::SHOW_STATE_MAXIMIZED;
-      break;
-    case windows::WINDOW_STATE_FULLSCREEN:
-      show_state = ui::SHOW_STATE_FULLSCREEN;
-      break;
-    case windows::WINDOW_STATE_NONE:
-      break;
-    default:
-      error_ = keys::kInvalidWindowStateError;
-      return false;
-  }
+  ui::WindowShowState show_state =
+      ConvertToWindowShowState(params->update_info.state);
 
   if (show_state != ui::SHOW_STATE_FULLSCREEN &&
       show_state != ui::SHOW_STATE_DEFAULT)

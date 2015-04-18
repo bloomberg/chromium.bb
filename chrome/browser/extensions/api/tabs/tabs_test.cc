@@ -41,10 +41,8 @@ namespace keys = tabs_constants;
 namespace utils = extension_function_test_utils;
 
 namespace {
-
-class ExtensionTabsTest : public InProcessBrowserTest {
-};
-
+using ExtensionTabsTest = InProcessBrowserTest;
+using ExtensionWindowCreateTest = InProcessBrowserTest;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetWindow) {
@@ -562,6 +560,38 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, InvalidUpdateWindowState) {
           base::StringPrintf(kArgsMaximizedWithBounds, window_id),
           browser()),
       keys::kInvalidWindowStateError));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, AcceptState) {
+  scoped_refptr<WindowsCreateFunction> function(new WindowsCreateFunction());
+  scoped_refptr<Extension> extension(test_util::CreateEmptyExtension());
+  function->set_extension(extension.get());
+
+  scoped_ptr<base::DictionaryValue> result(
+      utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
+          function.get(), "[{\"state\": \"fullscreen\"}]", browser(),
+          utils::INCLUDE_INCOGNITO)));
+  int window_id = api_test_utils::GetInteger(result.get(), "id");
+  std::string error;
+  Browser* new_window = ExtensionTabUtil::GetBrowserFromWindowID(
+      function.get(), window_id, &error);
+  EXPECT_TRUE(new_window->window()->IsFullscreen());
+  EXPECT_TRUE(error.empty());
+
+  function = new WindowsCreateFunction();
+  function->set_extension(extension.get());
+  result.reset(utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
+      function.get(), "[{\"state\": \"minimized\"}]", browser(),
+      utils::INCLUDE_INCOGNITO)));
+  window_id = api_test_utils::GetInteger(result.get(), "id");
+  new_window = ExtensionTabUtil::GetBrowserFromWindowID(function.get(),
+                                                        window_id, &error);
+  EXPECT_TRUE(error.empty());
+#if !defined(OS_LINUX) || defined(OS_CHROMEOS)
+  // DesktopWindowTreeHostX11::IsMinimized() relies on an asynchronous update
+  // from the window server.
+  EXPECT_TRUE(new_window->window()->IsMinimized());
+#endif
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTab) {
