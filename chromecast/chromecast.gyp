@@ -306,6 +306,7 @@
           ],
           'dependencies': [
             '../components/components.gyp:metrics_serialization',
+            '../ui/aura/aura.gyp:aura_test_support',
           ],
         }],
       ],
@@ -549,7 +550,6 @@
             'cast_shell_media',
             'cast_shell_common',
             'media/media.gyp:cast_media',
-            '../ui/aura/aura.gyp:aura_test_support',
           ],
           'conditions': [
             ['chromecast_branding=="Chrome"', {
