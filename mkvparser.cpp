@@ -6440,12 +6440,16 @@ long Cluster::CreateBlockGroup(long long start_offset, long long size,
         bsize = size;
       }
     } else if (id == 0x1B) {  // Duration ID
-      assert(size <= 8);
+      if (size > 8)
+        return E_FILE_FORMAT_INVALID;
 
       duration = UnserializeUInt(pReader, pos, size);
-      assert(duration >= 0);  // TODO
+
+      if (duration < 0)
+        return E_FILE_FORMAT_INVALID;
     } else if (id == 0x7B) {  // ReferenceBlock
-      assert(size <= 8);
+      if (size > 8 || size <= 0)
+        return E_FILE_FORMAT_INVALID;
       const long size_ = static_cast<long>(size);
 
       long long time;
@@ -6464,9 +6468,10 @@ long Cluster::CreateBlockGroup(long long start_offset, long long size,
     pos += size;  // consume payload
     assert(pos <= stop);
   }
+  if (bpos < 0)
+    return E_FILE_FORMAT_INVALID;
 
   assert(pos == stop);
-  assert(bpos >= 0);
   assert(bsize >= 0);
 
   const long idx = m_entries_count;
