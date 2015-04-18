@@ -691,7 +691,7 @@ class CuePoint {
   long long m_element_start;
   long long m_element_size;
 
-  void Load(IMkvReader*);
+  bool Load(IMkvReader*);
 
   long long GetTimeCode() const;  // absolute but unscaled
   long long GetTime(const Segment*) const;  // absolute and scaled (ns units)

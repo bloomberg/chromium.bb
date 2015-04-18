@@ -1856,7 +1856,10 @@ bool Cues::LoadCuePoint() const {
     if (pCP->GetTimeCode() < 0 && (-pCP->GetTimeCode() != idpos))
       return false;
 
-    pCP->Load(pReader);
+    if (!pCP->Load(pReader)) {
+      m_pos = stop;
+      return false;
+    }
     ++m_count;
     --m_preload_count;
 
@@ -2132,12 +2135,12 @@ CuePoint::CuePoint(long idx, long long pos)
 
 CuePoint::~CuePoint() { delete[] m_track_positions; }
 
-void CuePoint::Load(IMkvReader* pReader) {
+bool CuePoint::Load(IMkvReader* pReader) {
   // odbgstream os;
   // os << "CuePoint::Load(begin): timecode=" << m_timecode << endl;
 
   if (m_timecode >= 0)  // already loaded
-    return;
+    return true;
 
   assert(m_track_positions == NULL);
   assert(m_track_positions_count == 0);
@@ -2153,7 +2156,7 @@ void CuePoint::Load(IMkvReader* pReader) {
     const long long id = ReadUInt(pReader, pos_, len);
     assert(id == 0x3B);  // CuePoint ID
     if (id != 0x3B)
-      return;
+      return false;
 
     pos_ += len;  // consume ID
 
@@ -2176,17 +2179,21 @@ void CuePoint::Load(IMkvReader* pReader) {
     long len;
 
     const long long id = ReadUInt(pReader, pos, len);
-    assert(id >= 0);  // TODO
-    assert((pos + len) <= stop);
+    if ((id < 0) || (pos + len > stop)) {
+       return false;
+    }
 
     pos += len;  // consume ID
 
     const long long size = ReadUInt(pReader, pos, len);
-    assert(size >= 0);
-    assert((pos + len) <= stop);
+    if ((size < 0) || (pos + len > stop)) {
+      return false;
+    }
 
     pos += len;  // consume Size field
-    assert((pos + size) <= stop);
+    if ((pos + size) > stop) {
+	return false;
+    }
 
     if (id == 0x33)  // CueTime ID
       m_timecode = UnserializeUInt(pReader, pos, size);
@@ -2195,11 +2202,11 @@ void CuePoint::Load(IMkvReader* pReader) {
       ++m_track_positions_count;
 
     pos += size;  // consume payload
-    assert(pos <= stop);
   }
 
-  assert(m_timecode >= 0);
-  assert(m_track_positions_count > 0);
+  if (m_timecode < 0 || m_track_positions_count <= 0) {
+    return false;
+  }
 
   // os << "CuePoint::Load(cont'd): idpos=" << idpos
   //   << " timecode=" << m_timecode
@@ -2216,7 +2223,7 @@ void CuePoint::Load(IMkvReader* pReader) {
     long len;
 
     const long long id = ReadUInt(pReader, pos, len);
-    assert(id >= 0);  // TODO
+    assert(id >= 0);
     assert((pos + len) <= stop);
 
     pos += len;  // consume ID
@@ -2241,6 +2248,8 @@ void CuePoint::Load(IMkvReader* pReader) {
 
   m_element_start = element_start;
   m_element_size = element_size;
+  
+  return true;
 }
 
 void CuePoint::TrackPosition::Parse(IMkvReader* pReader, long long start_,
