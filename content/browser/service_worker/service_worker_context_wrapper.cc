@@ -242,6 +242,24 @@ void ServiceWorkerContextWrapper::UnregisterServiceWorker(
       base::Bind(&FinishUnregistrationOnIO, continuation));
 }
 
+void ServiceWorkerContextWrapper::UpdateRegistration(const GURL& pattern) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ServiceWorkerContextWrapper::UpdateRegistration, this,
+                   pattern));
+    return;
+  }
+  if (!context_core_.get()) {
+    LOG(ERROR) << "ServiceWorkerContextCore is no longer alive.";
+    return;
+  }
+  context_core_->storage()->FindRegistrationForPattern(
+      pattern,
+      base::Bind(&ServiceWorkerContextWrapper::DidFindRegistrationForUpdate,
+                 this));
+}
+
 void ServiceWorkerContextWrapper::StartServiceWorker(
     const GURL& pattern,
     const StatusCallback& callback) {
@@ -341,6 +359,22 @@ void ServiceWorkerContextWrapper::DidFindRegistrationForCheckHasServiceWorker(
       base::Bind(callback, registration->active_version() &&
                                ServiceWorkerUtils::ScopeMatches(
                                    registration->pattern(), other_url)));
+}
+
+void ServiceWorkerContextWrapper::DidFindRegistrationForUpdate(
+    ServiceWorkerStatusCode status,
+    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (status != SERVICE_WORKER_OK)
+    return;
+  if (!context_core_.get()) {
+    LOG(ERROR) << "ServiceWorkerContextCore is no longer alive.";
+    return;
+  }
+  DCHECK(registration);
+  context_core_->UpdateServiceWorker(registration.get(),
+                                     true /* force_bypass_cache */);
 }
 
 namespace {

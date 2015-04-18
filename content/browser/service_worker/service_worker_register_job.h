@@ -50,7 +50,8 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
   // For update jobs.
   CONTENT_EXPORT ServiceWorkerRegisterJob(
       base::WeakPtr<ServiceWorkerContextCore> context,
-      ServiceWorkerRegistration* registration);
+      ServiceWorkerRegistration* registration,
+      bool force_bypass_cache);
   ~ServiceWorkerRegisterJob() override;
 
   // Registers a callback to be called when the promise would resolve (whether
@@ -157,6 +158,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
   bool doom_installing_worker_;
   bool is_promise_resolved_;
   bool should_uninstall_on_failure_;
+  bool force_bypass_cache_;
   ServiceWorkerStatusCode promise_resolved_status_;
   std::string promise_resolved_status_message_;
   scoped_refptr<ServiceWorkerRegistration> promise_resolved_registration_;

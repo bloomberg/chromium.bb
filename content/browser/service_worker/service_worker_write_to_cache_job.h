@@ -48,6 +48,8 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
                            UpdateBefore24Hours);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
                            UpdateAfter24Hours);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
+                           UpdateForceBypassCache);
 
   ~ServiceWorkerWriteToCacheJob() override;
 

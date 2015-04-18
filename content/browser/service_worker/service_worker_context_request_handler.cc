@@ -68,8 +68,10 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
     int extra_load_flags = 0;
     base::TimeDelta time_since_last_check =
         base::Time::Now() - registration->last_update_check();
-    if (time_since_last_check > base::TimeDelta::FromHours(24))
+    if (time_since_last_check > base::TimeDelta::FromHours(24) ||
+        version_->force_bypass_cache_for_scripts()) {
       extra_load_flags = net::LOAD_BYPASS_CACHE;
+    }
 
     return new ServiceWorkerWriteToCacheJob(request,
                                             network_delegate,

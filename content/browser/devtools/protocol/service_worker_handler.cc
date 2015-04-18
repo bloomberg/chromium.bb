@@ -336,6 +336,16 @@ Response ServiceWorkerHandler::StopWorker(const std::string& version_id) {
   return Response::OK();
 }
 
+Response ServiceWorkerHandler::UpdateRegistration(
+    const std::string& scope_url) {
+  if (!enabled_)
+    return Response::OK();
+  if (!context_)
+    return CreateContextErrorResoponse();
+  context_->UpdateRegistration(GURL(scope_url));
+  return Response::OK();
+}
+
 Response ServiceWorkerHandler::InspectWorker(const std::string& version_id) {
   if (!enabled_)
     return Response::OK();

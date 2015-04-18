@@ -294,6 +294,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   bool skip_waiting() const { return skip_waiting_; }
 
+  bool force_bypass_cache_for_scripts() {
+    return force_bypass_cache_for_scripts_;
+  }
+  void set_force_bypass_cache_for_scripts(bool force_bypass_cache_for_scripts) {
+    force_bypass_cache_for_scripts_ = force_bypass_cache_for_scripts;
+  }
+
   void SetDevToolsAttached(bool attached);
 
   // Sets the HttpResponseInfo used to load the main script.
@@ -535,6 +542,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool is_doomed_ = false;
   bool skip_waiting_ = false;
   bool skip_recording_startup_time_ = false;
+  bool force_bypass_cache_for_scripts_ = false;
 
   std::vector<int> pending_skip_waiting_requests_;
   scoped_ptr<net::HttpResponseInfo> main_script_http_info_;

@@ -176,7 +176,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // if any did not succeed.
   void UnregisterServiceWorkers(const GURL& origin,
                                 const UnregistrationCallback& callback);
-  void UpdateServiceWorker(ServiceWorkerRegistration* registration);
+  void UpdateServiceWorker(ServiceWorkerRegistration* registration,
+                           bool force_bypass_cache);
 
   // This class maintains collections of live instances, this class
   // does not own these object or influence their lifetime.

@@ -94,6 +94,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
                                const ResultCallback& done);
 
   void StartServiceWorker(const GURL& pattern, const StatusCallback& callback);
+  void UpdateRegistration(const GURL& pattern);
   void AddObserver(ServiceWorkerContextObserver* observer);
   void RemoveObserver(ServiceWorkerContextObserver* observer);
 
@@ -127,6 +128,10 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       const CheckHasServiceWorkerCallback& callback,
       ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
+
+  void DidFindRegistrationForUpdate(
+      ServiceWorkerStatusCode status,
+      const scoped_refptr<content::ServiceWorkerRegistration>& registration);
 
   const scoped_refptr<ObserverListThreadSafe<ServiceWorkerContextObserver> >
       observer_list_;

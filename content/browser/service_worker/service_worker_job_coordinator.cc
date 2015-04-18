@@ -123,12 +123,14 @@ void ServiceWorkerJobCoordinator::Unregister(
 }
 
 void ServiceWorkerJobCoordinator::Update(
-    ServiceWorkerRegistration* registration) {
+    ServiceWorkerRegistration* registration,
+    bool force_bypass_cache) {
   DCHECK(registration);
   DCHECK(registration->GetNewestVersion());
   job_queues_[registration->pattern()].Push(
       make_scoped_ptr<ServiceWorkerRegisterJobBase>(
-          new ServiceWorkerRegisterJob(context_, registration)));
+          new ServiceWorkerRegisterJob(context_, registration,
+                                       force_bypass_cache)));
 }
 
 void ServiceWorkerJobCoordinator::AbortAll() {

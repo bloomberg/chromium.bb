@@ -133,4 +133,31 @@ TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateAfter24Hours) {
   EXPECT_TRUE(sw_job->net_request_->load_flags() & net::LOAD_BYPASS_CACHE);
 }
 
+TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateForceBypassCache) {
+  // Give the registration a very recent last update time and pretend
+  // we're installing a new version.
+  registration_->set_last_update_check(base::Time::Now());
+  version_->SetStatus(ServiceWorkerVersion::NEW);
+  version_->set_force_bypass_cache_for_scripts(true);
+  provider_host_->running_hosted_version_ = version_;
+
+  // Conduct a resource fetch for the main script.
+  const GURL kScriptUrl("http://host/script.js");
+  scoped_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
+      kScriptUrl, net::DEFAULT_PRIORITY, &url_request_delegate_);
+  scoped_ptr<ServiceWorkerContextRequestHandler> handler(
+      new ServiceWorkerContextRequestHandler(
+          context()->AsWeakPtr(), provider_host_,
+          base::WeakPtr<storage::BlobStorageContext>(),
+          RESOURCE_TYPE_SERVICE_WORKER));
+  scoped_refptr<net::URLRequestJob> job =
+      handler->MaybeCreateJob(request.get(), nullptr, nullptr);
+  ASSERT_TRUE(job.get());
+  ServiceWorkerWriteToCacheJob* sw_job =
+      static_cast<ServiceWorkerWriteToCacheJob*>(job.get());
+
+  // Verify the net request is initialized to bypass the browser cache.
+  EXPECT_TRUE(sw_job->net_request_->load_flags() & net::LOAD_BYPASS_CACHE);
+}
+
 }  // namespace content

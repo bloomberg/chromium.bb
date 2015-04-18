@@ -39,13 +39,15 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       doom_installing_worker_(false),
       is_promise_resolved_(false),
       should_uninstall_on_failure_(false),
+      force_bypass_cache_(false),
       promise_resolved_status_(SERVICE_WORKER_OK),
       weak_factory_(this) {
 }
 
 ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
     base::WeakPtr<ServiceWorkerContextCore> context,
-    ServiceWorkerRegistration* registration)
+    ServiceWorkerRegistration* registration,
+    bool force_bypass_cache)
     : context_(context),
       job_type_(UPDATE_JOB),
       pattern_(registration->pattern()),
@@ -54,6 +56,7 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       doom_installing_worker_(false),
       is_promise_resolved_(false),
       should_uninstall_on_failure_(false),
+      force_bypass_cache_(force_bypass_cache),
       promise_resolved_status_(SERVICE_WORKER_OK),
       weak_factory_(this) {
   internal_.registration = registration;
@@ -315,7 +318,7 @@ void ServiceWorkerRegisterJob::UpdateAndContinue() {
                                            script_url_,
                                            context_->storage()->NewVersionId(),
                                            context_));
-
+  new_version()->set_force_bypass_cache_for_scripts(force_bypass_cache_);
   bool pause_after_download = job_type_ == UPDATE_JOB;
   if (pause_after_download)
     new_version()->embedded_worker()->AddListener(this);
@@ -524,7 +527,8 @@ void ServiceWorkerRegisterJob::OnCompareScriptResourcesComplete(
     // Only bump the last check time when we've bypassed the browser cache.
     base::TimeDelta time_since_last_check =
         base::Time::Now() - registration()->last_update_check();
-    if (time_since_last_check > base::TimeDelta::FromHours(24)) {
+    if (time_since_last_check > base::TimeDelta::FromHours(24) ||
+        new_version()->force_bypass_cache_for_scripts()) {
       registration()->set_last_update_check(base::Time::Now());
       context_->storage()->UpdateLastUpdateCheckTime(registration());
     }

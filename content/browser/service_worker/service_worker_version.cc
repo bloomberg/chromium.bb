@@ -506,7 +506,7 @@ void ServiceWorkerVersion::StartUpdate() {
       context_->GetLiveRegistration(registration_id_);
   if (!registration || !registration->GetNewestVersion())
     return;
-  context_->UpdateServiceWorker(registration);
+  context_->UpdateServiceWorker(registration, false /* force_bypass_cache */);
 }
 
 void ServiceWorkerVersion::DispatchMessageEvent(

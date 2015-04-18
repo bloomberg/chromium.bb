@@ -324,11 +324,12 @@ void ServiceWorkerContextCore::DidGetAllRegistrationsForUnregisterForOrigin(
 }
 
 void ServiceWorkerContextCore::UpdateServiceWorker(
-    ServiceWorkerRegistration* registration) {
+    ServiceWorkerRegistration* registration,
+    bool force_bypass_cache) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (storage()->IsDisabled())
     return;
-  job_coordinator_->Update(registration);
+  job_coordinator_->Update(registration, force_bypass_cache);
 }
 
 void ServiceWorkerContextCore::RegistrationComplete(
