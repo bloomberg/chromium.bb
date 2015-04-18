@@ -57,7 +57,7 @@ remoting.DesktopRemotingActivity.prototype.onConnected =
     connectionInfo.plugin().setRemapKeys('0x0700e4>0x0700e7');
   }
 
-  if (connectionInfo.session().hasCapability(
+  if (connectionInfo.plugin().hasCapability(
           remoting.ClientSession.Capability.VIDEO_RECORDER)) {
     var recorder = new remoting.VideoFrameRecorder();
     connectionInfo.plugin().extensions().register(recorder);

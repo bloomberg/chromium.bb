@@ -96,6 +96,14 @@ remoting.ClientPlugin.prototype.isSupportedVersion = function() {};
  */
 remoting.ClientPlugin.prototype.hasFeature = function(feature) {};
 
+
+/**
+ * @param {remoting.ClientSession.Capability} capability
+ * @return {boolean} True if the capability has been negotiated between
+ *     the client and host.
+ */
+remoting.ClientPlugin.prototype.hasCapability = function(capability) {};
+
 /**
  * Sends a clipboard item to the host.
  *
@@ -224,13 +232,6 @@ remoting.ClientPlugin.ConnectionEventHandler.prototype.onRouteChanged =
  */
 remoting.ClientPlugin.ConnectionEventHandler.prototype.onConnectionReady =
     function(ready) {};
-
-/**
- * @param {!Array<string>} capabilities The set of capabilities negotiated
- *     between the client and host.
- */
-remoting.ClientPlugin.ConnectionEventHandler.prototype.onSetCapabilities =
-    function(capabilities) {};
 
 /** Called when the first video frame is received */
 remoting.ClientPlugin.ConnectionEventHandler.prototype.onFirstFrameReceived =

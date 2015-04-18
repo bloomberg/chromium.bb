@@ -62,8 +62,16 @@ remoting.ClientPluginImpl = function(container,
   this.pluginApiFeatures_ = [];
   /** @private {number} */
   this.pluginApiMinVersion_ = -1;
-  /** @private {!Array<string>} */
+  /**
+   * Capabilities to be used for the next connect request.
+   * @private {!Array<string>}
+   */
   this.capabilities_ = [];
+  /**
+   * Capabilities that are negotiated between the client and the host.
+   * @private {Array<remoting.ClientSession.Capability>}
+   */
+  this.hostCapabilities_ = null;
   /** @private {boolean} */
   this.helloReceived_ = false;
   /** @private {function(boolean)|null} */
@@ -225,16 +233,21 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
       handler.onDebugMessage(base.getStringAttr(message.data, 'message'));
 
     } else if (message.method == 'onConnectionStatus') {
-      var state = remoting.ClientSession.State.fromString(
-          base.getStringAttr(message.data, 'state'));
+      var stateString = base.getStringAttr(message.data, 'state');
+      var state = remoting.ClientSession.State.fromString(stateString);
       var error = remoting.ClientSession.ConnectionError.fromString(
           base.getStringAttr(message.data, 'error'));
-      handler.onConnectionStatusUpdate(state, error);
-      // TODO(kelvinp): Refactor the ClientSession.State into its own file as
-      // the plugin should not depend on ClientSession.
+
+      // Delay firing the CONNECTED event until the capabilities are negotiated,
+      // TODO(kelvinp): Fix the client plugin to fire capabilities and the
+      // connected event in the same message.
       if (state === remoting.ClientSession.State.CONNECTED) {
-        this.extensions_.start();
+        base.debug.assert(this.hostCapabilities_ === null,
+            'Capabilities should only be set after the session is connected');
+        return;
       }
+      handler.onConnectionStatusUpdate(state, error);
+
     } else if (message.method == 'onRouteChanged') {
       var channel = base.getStringAttr(message.data, 'channel');
       var connectionType = base.getStringAttr(message.data, 'connectionType');
@@ -245,10 +258,17 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
       handler.onConnectionReady(ready);
 
     } else if (message.method == 'setCapabilities') {
-      /** @type {!Array<string>} */
-      var capabilities = tokenize(
-          base.getStringAttr(message.data, 'capabilities'));
-      handler.onSetCapabilities(capabilities);
+      var capabilityString = base.getStringAttr(message.data, 'capabilities');
+      console.log('plugin: setCapabilities: [' + capabilityString + ']');
+
+      base.debug.assert(this.hostCapabilities_ === null,
+                        'setCapabilities() should only be called once');
+      this.hostCapabilities_ = tokenize(capabilityString);
+
+      handler.onConnectionStatusUpdate(
+          remoting.ClientSession.State.CONNECTED,
+          remoting.ClientSession.ConnectionError.NONE);
+      this.extensions_.start();
 
     } else if (message.method == 'onFirstFrameReceived') {
       handler.onFirstFrameReceived();
@@ -435,6 +455,18 @@ remoting.ClientPluginImpl.prototype.hasFeature = function(feature) {
     return false;
   }
   return this.pluginApiFeatures_.indexOf(feature) > -1;
+};
+
+
+/**
+ * @param {remoting.ClientSession.Capability} capability The capability to test
+ *     for.
+ * @return {boolean} True if the capability has been negotiated between
+ *     the client and host.
+ */
+remoting.ClientPluginImpl.prototype.hasCapability = function(capability) {
+  return this.hostCapabilities_ !== null &&
+         this.hostCapabilities_.indexOf(capability) > -1;
 };
 
 /**

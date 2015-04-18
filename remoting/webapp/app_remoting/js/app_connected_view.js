@@ -79,7 +79,7 @@ remoting.AppConnectedView = function(containerElement, connectionInfo) {
       baseView, windowShapeHook, desktopSizeHook, this.contextMenu_);
 
   /** @private */
-  this.supportsGoogleDrive_ = connectionInfo.session().hasCapability(
+  this.supportsGoogleDrive_ = this.plugin_.hasCapability(
       remoting.ClientSession.Capability.GOOGLE_DRIVE);
 
   this.resizeHostToClientArea_();

@@ -159,8 +159,7 @@ remoting.Me2MeActivity.prototype.onConnected = function(connectionInfo) {
   this.retryOnHostOffline_ = true;
 
   var plugin = connectionInfo.plugin();
-  var session = connectionInfo.session();
-  if (session.hasCapability(remoting.ClientSession.Capability.CAST)) {
+  if (plugin.hasCapability(remoting.ClientSession.Capability.CAST)) {
     plugin.extensions().register(new remoting.CastExtensionHandler());
   }
   plugin.extensions().register(new remoting.GnubbyAuthHandler());

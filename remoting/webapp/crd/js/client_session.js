@@ -244,7 +244,7 @@ remoting.ClientSession.Capability = {
   // Indicates that host/client supports Google Drive integration, and that the
   // client should send to the host the OAuth tokens to be used by Google Drive
   // on the host.
-  GOOGLE_DRIVE: "googleDrive",
+  GOOGLE_DRIVE: 'googleDrive',
 
   // Indicates that the client supports the video frame-recording extension.
   VIDEO_RECORDER: 'videoRecorder',
@@ -252,26 +252,6 @@ remoting.ClientSession.Capability = {
   // Indicates that the client supports 'cast'ing the video stream to a
   // cast-enabled device.
   CAST: 'casting',
-};
-
-/**
- * The set of capabilities negotiated between the client and host.
- * @type {Array<string>}
- * @private
- */
-remoting.ClientSession.prototype.capabilities_ = null;
-
-/**
- * @param {remoting.ClientSession.Capability} capability The capability to test
- *     for.
- * @return {boolean} True if the capability has been negotiated between
- *     the client and host.
- */
-remoting.ClientSession.prototype.hasCapability = function(capability) {
-  if (this.capabilities_ == null)
-    return false;
-
-  return this.capabilities_.indexOf(capability) > -1;
 };
 
 /**
@@ -480,23 +460,6 @@ remoting.ClientSession.prototype.onConnectionReady = function(ready) {
 
   this.raiseEvent(remoting.ClientSession.Events.videoChannelStateChanged,
                   ready);
-};
-
-/**
- * Called when the client-host capabilities negotiation is complete.
- * TODO(kelvinp): Move this function out of ClientSession.
- *
- * @param {!Array<string>} capabilities The set of capabilities negotiated
- *     between the client and host.
- * @return {void} Nothing.
- * @private
- */
-remoting.ClientSession.prototype.onSetCapabilities = function(capabilities) {
-  if (this.capabilities_ != null) {
-    console.error('onSetCapabilities_() is called more than once');
-    return;
-  }
-  this.capabilities_ = capabilities;
 };
 
 /** @return {boolean} */
