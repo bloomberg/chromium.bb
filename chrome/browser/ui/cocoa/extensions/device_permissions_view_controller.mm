@@ -4,28 +4,28 @@
 
 #import "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
+#import "chrome/browser/ui/cocoa/extensions/device_permissions_dialog_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/device_permissions_view_controller.h"
 #include "chrome/grit/generated_resources.h"
-#include "device/usb/usb_device.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
 using extensions::DevicePermissionsPrompt;
 
 @implementation DevicePermissionsViewController
 
-- (id)initWithDelegate:(DevicePermissionsPrompt::Delegate*)delegate
-                prompt:(scoped_refptr<DevicePermissionsPrompt::Prompt>)prompt {
+- (id)initWithController:(DevicePermissionsDialogController*)controller
+                  prompt:
+                      (scoped_refptr<DevicePermissionsPrompt::Prompt>)prompt {
   if ((self = [super initWithNibName:@"DevicePermissionsPrompt"
                               bundle:base::mac::FrameworkBundle()])) {
-    delegate_ = delegate;
+    controller_ = controller;
     prompt_ = prompt;
   }
   return self;
 }
 
 - (IBAction)cancel:(id)sender {
-  std::vector<scoped_refptr<device::UsbDevice>> empty;
-  delegate_->OnUsbDevicesChosen(empty);
+  controller_->Dismissed();
 }
 
 - (IBAction)ok:(id)sender {
@@ -33,9 +33,8 @@ using extensions::DevicePermissionsPrompt;
   [[tableView_ selectedRowIndexes]
       enumerateIndexesUsingBlock:^(NSUInteger index, BOOL* stop) {
           prompt_->GrantDevicePermission(index);
-          devices.push_back(prompt_->GetDevice(index));
       }];
-  delegate_->OnUsbDevicesChosen(devices);
+  controller_->Dismissed();
 }
 
 - (void)devicesChanged {

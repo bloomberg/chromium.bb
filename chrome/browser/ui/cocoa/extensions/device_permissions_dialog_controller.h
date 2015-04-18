@@ -20,19 +20,15 @@ class WebContents;
 // Displays an device permissions selector prompt as a modal sheet constrained
 // to the window/tab displaying the given web contents.
 class DevicePermissionsDialogController
-    : public extensions::DevicePermissionsPrompt::Delegate,
-      public extensions::DevicePermissionsPrompt::Prompt::Observer,
+    : public extensions::DevicePermissionsPrompt::Prompt::Observer,
       public ConstrainedWindowMacDelegate {
  public:
   DevicePermissionsDialogController(
       content::WebContents* web_contents,
-      extensions::DevicePermissionsPrompt::Delegate* delegate,
       scoped_refptr<extensions::DevicePermissionsPrompt::Prompt> prompt);
   ~DevicePermissionsDialogController() override;
 
-  // extensions::DevicePermissionsPrompt::Delegate implementation.
-  void OnUsbDevicesChosen(
-      const std::vector<scoped_refptr<device::UsbDevice>>& devices) override;
+  void Dismissed();
 
   // extensions::DevicePermissionsPrompt::Prompt::Observer implementation.
   void OnDevicesChanged() override;
@@ -40,15 +36,7 @@ class DevicePermissionsDialogController
   // ConstrainedWindowMacDelegate implementation.
   void OnConstrainedWindowClosed(ConstrainedWindowMac* window) override;
 
-  ConstrainedWindowMac* constrained_window() const {
-    return constrained_window_.get();
-  }
-  DevicePermissionsViewController* view_controller() const {
-    return view_controller_;
-  }
-
  private:
-  extensions::DevicePermissionsPrompt::Delegate* delegate_;
   scoped_refptr<extensions::DevicePermissionsPrompt::Prompt> prompt_;
   base::scoped_nsobject<DevicePermissionsViewController> view_controller_;
   scoped_ptr<ConstrainedWindowMac> constrained_window_;

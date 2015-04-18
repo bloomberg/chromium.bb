@@ -10,8 +10,10 @@
 #include "base/mac/scoped_nsobject.h"
 #include "extensions/browser/api/device_permissions_prompt.h"
 
+class DevicePermissionsDialogController;
+
 // Displays the device permissions prompt, and notifies the
-// DevicePermissionsPrompt::Delegate of success or failure.
+// DevicePermissionsDialogController of selected devices.
 @interface DevicePermissionsViewController
     : NSViewController<NSTableViewDataSource, NSTableViewDelegate> {
   IBOutlet NSTextField* titleField_;
@@ -23,11 +25,12 @@
   IBOutlet NSTableColumn* serialNumberColumn_;
   IBOutlet NSScrollView* scrollView_;
 
-  extensions::DevicePermissionsPrompt::Delegate* delegate_;  // weak
+  DevicePermissionsDialogController* controller_;  // weak
   scoped_refptr<extensions::DevicePermissionsPrompt::Prompt> prompt_;
 }
 
-- (id)initWithDelegate:(extensions::DevicePermissionsPrompt::Delegate*)delegate
+- (id)
+    initWithController:(DevicePermissionsDialogController*)controller
                 prompt:
                     (scoped_refptr<extensions::DevicePermissionsPrompt::Prompt>)
                         prompt;

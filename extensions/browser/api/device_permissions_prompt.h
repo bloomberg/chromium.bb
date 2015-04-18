@@ -33,6 +33,16 @@ class Extension;
 // (similar to choosing files).
 class DevicePermissionsPrompt {
  public:
+  class Delegate {
+   public:
+    // Called with the list of selected USB devices.
+    virtual void OnUsbDevicesChosen(
+        const std::vector<scoped_refptr<device::UsbDevice>>& devices) = 0;
+
+   protected:
+    virtual ~Delegate();
+  };
+
   // Context information available to the UI implementation.
   class Prompt : public base::RefCounted<Prompt>,
                  public device::UsbService::Observer {
@@ -44,6 +54,7 @@ class DevicePermissionsPrompt {
 
       scoped_refptr<device::UsbDevice> device;
       base::string16 name;
+      bool granted = false;
     };
 
     // Since the set of devices can change while the UI is visible an
@@ -51,9 +62,14 @@ class DevicePermissionsPrompt {
     class Observer {
      public:
       virtual void OnDevicesChanged() = 0;
+
+     protected:
+      virtual ~Observer();
     };
 
-    Prompt();
+    Prompt(Delegate* delegate,
+           const Extension* extension,
+           content::BrowserContext* context);
 
     // Only one observer may be registered at a time.
     void SetObserver(Observer* observer);
@@ -61,35 +77,17 @@ class DevicePermissionsPrompt {
     base::string16 GetHeading() const;
     base::string16 GetPromptMessage() const;
     size_t GetDeviceCount() const { return devices_.size(); }
-    scoped_refptr<device::UsbDevice> GetDevice(size_t index) const;
-    base::string16 GetDeviceName(size_t index) const {
-      DCHECK_LT(index, devices_.size());
-      return devices_[index].name;
-    }
-    base::string16 GetDeviceSerialNumber(size_t index) const {
-      DCHECK_LT(index, devices_.size());
-      return devices_[index].device->serial_number();
-    }
+    base::string16 GetDeviceName(size_t index) const;
+    base::string16 GetDeviceSerialNumber(size_t index) const;
 
     // Notifies the DevicePermissionsManager for the current extension that
     // access to the device at the given index is now granted.
-    void GrantDevicePermission(size_t index) const;
-
-    const extensions::Extension* extension() const { return extension_; }
-    void set_extension(const extensions::Extension* extension) {
-      extension_ = extension;
-    }
-
-    void set_browser_context(content::BrowserContext* context) {
-      browser_context_ = context;
-    }
+    void GrantDevicePermission(size_t index);
+    void Dismissed();
 
     bool multiple() const { return multiple_; }
-    void set_multiple(bool multiple) { multiple_ = multiple; }
 
-    const std::vector<device::UsbDeviceFilter>& filters() const {
-      return filters_;
-    }
+    void set_multiple(bool multiple) { multiple_ = multiple; }
     void set_filters(const std::vector<device::UsbDeviceFilter>& filters);
 
    private:
@@ -108,22 +106,13 @@ class DevicePermissionsPrompt {
 
     const extensions::Extension* extension_ = nullptr;
     content::BrowserContext* browser_context_ = nullptr;
+    Delegate* delegate_ = nullptr;
     bool multiple_ = false;
     std::vector<device::UsbDeviceFilter> filters_;
     std::vector<DeviceInfo> devices_;
     Observer* observer_ = nullptr;
     ScopedObserver<device::UsbService, device::UsbService::Observer>
         usb_service_observer_;
-  };
-
-  class Delegate {
-   public:
-    // Called with the list of selected USB devices.
-    virtual void OnUsbDevicesChosen(
-        const std::vector<scoped_refptr<device::UsbDevice>>& devices) = 0;
-
-   protected:
-    virtual ~Delegate() {}
   };
 
   DevicePermissionsPrompt(content::WebContents* web_contents);
@@ -139,15 +128,11 @@ class DevicePermissionsPrompt {
   virtual void ShowDialog() = 0;
 
   content::WebContents* web_contents() { return web_contents_; }
-  Delegate* delegate() { return delegate_; }
   scoped_refptr<Prompt> prompt() { return prompt_; }
 
  private:
   // Parent web contents of the device permissions UI dialog.
   content::WebContents* web_contents_;
-
-  // The delegate called after the UI has been dismissed.
-  Delegate* delegate_;
 
   // Parameters available to the UI implementation.
   scoped_refptr<Prompt> prompt_;

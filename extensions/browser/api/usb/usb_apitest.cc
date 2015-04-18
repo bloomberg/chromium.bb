@@ -54,15 +54,13 @@ class TestDevicePermissionsPrompt
   void ShowDialog() override { prompt()->SetObserver(this); }
 
   void OnDevicesChanged() override {
-    std::vector<scoped_refptr<UsbDevice>> devices;
     for (size_t i = 0; i < prompt()->GetDeviceCount(); ++i) {
       prompt()->GrantDevicePermission(i);
-      devices.push_back(prompt()->GetDevice(i));
       if (!prompt()->multiple()) {
         break;
       }
     }
-    delegate()->OnUsbDevicesChosen(devices);
+    prompt()->Dismissed();
   }
 };
 

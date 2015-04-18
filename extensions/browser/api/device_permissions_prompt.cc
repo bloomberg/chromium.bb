@@ -25,6 +25,9 @@ using device::UsbService;
 
 namespace extensions {
 
+DevicePermissionsPrompt::Delegate::~Delegate() {
+}
+
 DevicePermissionsPrompt::Prompt::DeviceInfo::DeviceInfo(
     scoped_refptr<UsbDevice> device)
     : device(device) {
@@ -63,7 +66,16 @@ DevicePermissionsPrompt::Prompt::DeviceInfo::DeviceInfo(
 DevicePermissionsPrompt::Prompt::DeviceInfo::~DeviceInfo() {
 }
 
-DevicePermissionsPrompt::Prompt::Prompt() : usb_service_observer_(this) {
+DevicePermissionsPrompt::Prompt::Observer::~Observer() {
+}
+
+DevicePermissionsPrompt::Prompt::Prompt(Delegate* delegate,
+                                        const Extension* extension,
+                                        content::BrowserContext* context)
+    : extension_(extension),
+      browser_context_(context),
+      delegate_(delegate),
+      usb_service_observer_(this) {
 }
 
 void DevicePermissionsPrompt::Prompt::SetObserver(Observer* observer) {
@@ -92,21 +104,36 @@ base::string16 DevicePermissionsPrompt::Prompt::GetPromptMessage() const {
                                     base::UTF8ToUTF16(extension_->name()));
 }
 
-scoped_refptr<UsbDevice> DevicePermissionsPrompt::Prompt::GetDevice(
+base::string16 DevicePermissionsPrompt::Prompt::GetDeviceName(
     size_t index) const {
   DCHECK_LT(index, devices_.size());
-  return devices_[index].device;
+  return devices_[index].name;
 }
 
-void DevicePermissionsPrompt::Prompt::GrantDevicePermission(
+base::string16 DevicePermissionsPrompt::Prompt::GetDeviceSerialNumber(
     size_t index) const {
   DCHECK_LT(index, devices_.size());
+  return devices_[index].device->serial_number();
+}
+
+void DevicePermissionsPrompt::Prompt::GrantDevicePermission(size_t index) {
+  DCHECK_LT(index, devices_.size());
+  devices_[index].granted = true;
+}
+
+void DevicePermissionsPrompt::Prompt::Dismissed() {
   DevicePermissionsManager* permissions_manager =
       DevicePermissionsManager::Get(browser_context_);
-  if (permissions_manager) {
-    const DeviceInfo& device = devices_[index];
-    permissions_manager->AllowUsbDevice(extension_->id(), device.device);
+  std::vector<scoped_refptr<UsbDevice>> devices;
+  for (const DeviceInfo& device : devices_) {
+    if (device.granted) {
+      devices.push_back(device.device);
+      if (permissions_manager) {
+        permissions_manager->AllowUsbDevice(extension_->id(), device.device);
+      }
+    }
   }
+  delegate_->OnUsbDevicesChosen(devices);
 }
 
 void DevicePermissionsPrompt::Prompt::set_filters(
@@ -166,7 +193,7 @@ void DevicePermissionsPrompt::Prompt::AddCheckedUsbDevice(
 
 DevicePermissionsPrompt::DevicePermissionsPrompt(
     content::WebContents* web_contents)
-    : web_contents_(web_contents), delegate_(nullptr) {
+    : web_contents_(web_contents) {
 }
 
 DevicePermissionsPrompt::~DevicePermissionsPrompt() {
@@ -178,12 +205,9 @@ void DevicePermissionsPrompt::AskForUsbDevices(
     content::BrowserContext* context,
     bool multiple,
     const std::vector<UsbDeviceFilter>& filters) {
-  prompt_ = new Prompt();
-  prompt_->set_extension(extension);
-  prompt_->set_browser_context(context);
+  prompt_ = new Prompt(delegate, extension, context);
   prompt_->set_multiple(multiple);
   prompt_->set_filters(filters);
-  delegate_ = delegate;
 
   ShowDialog();
 }

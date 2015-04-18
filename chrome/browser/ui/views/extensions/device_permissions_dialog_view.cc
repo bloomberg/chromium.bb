@@ -75,9 +75,8 @@ void DevicePermissionsTableModel::OnDevicesChanged() {
 }
 
 DevicePermissionsDialogView::DevicePermissionsDialogView(
-    DevicePermissionsPrompt::Delegate* delegate,
     scoped_refptr<DevicePermissionsPrompt::Prompt> prompt)
-    : delegate_(delegate), prompt_(prompt) {
+    : prompt_(prompt) {
   views::BoxLayout* layout =
       new views::BoxLayout(views::BoxLayout::kVertical,
                            views::kButtonHEdgeMarginNew,
@@ -122,18 +121,15 @@ DevicePermissionsDialogView::~DevicePermissionsDialogView() {
 }
 
 bool DevicePermissionsDialogView::Cancel() {
-  std::vector<scoped_refptr<UsbDevice>> empty;
-  delegate_->OnUsbDevicesChosen(empty);
+  prompt_->Dismissed();
   return true;
 }
 
 bool DevicePermissionsDialogView::Accept() {
-  std::vector<scoped_refptr<UsbDevice>> devices;
   for (int index : table_view_->selection_model().selected_indices()) {
     prompt_->GrantDevicePermission(index);
-    devices.push_back(prompt_->GetDevice(index));
   }
-  delegate_->OnUsbDevicesChosen(devices);
+  prompt_->Dismissed();
   return true;
 }
 
@@ -160,5 +156,5 @@ gfx::Size DevicePermissionsDialogView::GetPreferredSize() const {
 void ChromeDevicePermissionsPrompt::ShowDialog() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   constrained_window::ShowWebModalDialogViews(
-      new DevicePermissionsDialogView(delegate(), prompt()), web_contents());
+      new DevicePermissionsDialogView(prompt()), web_contents());
 }

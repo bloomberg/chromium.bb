@@ -19,7 +19,6 @@ class DevicePermissionsTableModel;
 class DevicePermissionsDialogView : public views::DialogDelegateView {
  public:
   DevicePermissionsDialogView(
-      extensions::DevicePermissionsPrompt::Delegate* delegate,
       scoped_refptr<extensions::DevicePermissionsPrompt::Prompt> prompt);
   ~DevicePermissionsDialogView() override;
 
@@ -38,7 +37,6 @@ class DevicePermissionsDialogView : public views::DialogDelegateView {
   gfx::Size GetPreferredSize() const override;
 
  private:
-  extensions::DevicePermissionsPrompt::Delegate* delegate_;
   scoped_refptr<extensions::DevicePermissionsPrompt::Prompt> prompt_;
 
   // Displays the list of devices.
