@@ -1,6 +1,8 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+"""Measurement smoke test to make sure that no new action_name_to_run is
+defined."""
 
 import logging
 import optparse
@@ -8,7 +10,6 @@ import os
 import unittest
 
 from telemetry import benchmark as benchmark_module
-from telemetry.core import browser_options
 from telemetry.core import discover
 from telemetry.page import page_test
 from telemetry.unittest_util import options_for_unittests
@@ -41,15 +42,9 @@ def _GetAllPossiblePageTestInstances():
   for benchmark_class in all_benchmarks_classes:
     options = options_for_unittests.GetCopy()
     parser = optparse.OptionParser()
-    browser_options.BrowserOptions.AddCommandLineArgs(parser)
-    try:
-      benchmark_class.AddCommandLineArgs(parser)
-      benchmark_module.AddCommandLineArgs(parser)
-      benchmark_class.SetArgumentDefaults(parser)
-    except Exception:
-      logging.error('Exception raised when processing benchmark %s'
-          % benchmark_class)
-      raise
+    benchmark_class.AddCommandLineArgs(parser)
+    benchmark_module.AddCommandLineArgs(parser)
+    benchmark_class.SetArgumentDefaults(parser)
     options.MergeDefaultValues(parser.get_default_values())
     pt = benchmark_class().CreatePageTest(options)
     if not isinstance(pt, timeline_based_measurement.TimelineBasedMeasurement):
