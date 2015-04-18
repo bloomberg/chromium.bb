@@ -344,13 +344,13 @@
         "name": "canGoBack",
         "type": "function",
         "returns": { "type": "boolean" },
-        "description": "Indicates whether or not it is possible to navigate backward through history."
+        "description": "Indicates whether or not it is possible to navigate backward through history. The state of this function is cached, and updated before each <code>loadcommit</code>, so the best place to call it is on <code>loadcommit</code>."
       },
       {
         "name": "canGoForward",
         "type": "function",
         "returns": { "type": "boolean" },
-        "description": "Indicates whether or not it is possible to navigate forward through history."
+        "description": "Indicates whether or not it is possible to navigate forward through history. The state of this function is cached, and updated before each <code>loadcommit</code>, so the best place to call it is on <code>loadcommit</code>."
       },
       {
         "name": "clearData",
