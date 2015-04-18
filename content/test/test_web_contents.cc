@@ -111,7 +111,7 @@ bool TestWebContents::CrossProcessNavigationPending() {
                GetRenderManager()->speculative_render_frame_host_.get())
                ->pending_commit();
   }
-  return GetRenderManager()->cross_navigation_pending_;
+  return GetRenderManager()->pending_frame_host() != nullptr;
 }
 
 bool TestWebContents::CreateRenderViewForRenderManager(

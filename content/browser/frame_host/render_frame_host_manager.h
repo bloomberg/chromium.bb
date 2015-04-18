@@ -659,12 +659,6 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // Our delegate, not owned by us. Guaranteed non-NULL.
   Delegate* delegate_;
 
-  // Whether a navigation requiring different RenderFrameHosts is pending. This
-  // is either for cross-site requests or when required for the process type
-  // (like WebUI).
-  // PlzNavigate: not used.
-  bool cross_navigation_pending_;
-
   // Implemented by the owner of this class.  These delegates are installed into
   // all the RenderFrameHosts that we create.
   RenderFrameHostDelegate* render_frame_delegate_;

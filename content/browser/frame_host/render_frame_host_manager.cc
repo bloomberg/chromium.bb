@@ -57,7 +57,6 @@ RenderFrameHostManager::RenderFrameHostManager(
     Delegate* delegate)
     : frame_tree_node_(frame_tree_node),
       delegate_(delegate),
-      cross_navigation_pending_(false),
       render_frame_delegate_(render_frame_delegate),
       render_view_delegate_(render_view_delegate),
       render_widget_delegate_(render_widget_delegate),
@@ -262,9 +261,10 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
 void RenderFrameHostManager::Stop() {
   render_frame_host_->Stop();
 
-  // If we are cross-navigating, we should stop the pending renderers.  This
-  // will lead to a DidFailProvisionalLoad, which will properly destroy them.
-  if (cross_navigation_pending_) {
+  // If we are navigating cross-process, we should stop the pending renderers.
+  // This will lead to a DidFailProvisionalLoad, which will properly destroy
+  // them.
+  if (pending_render_frame_host_) {
     pending_render_frame_host_->Send(new FrameMsg_Stop(
         pending_render_frame_host_->GetRoutingID()));
   }
@@ -282,7 +282,7 @@ bool RenderFrameHostManager::ShouldCloseTabOnUnresponsiveRenderer() {
   // cases that we arrive here with no navigation in progress, since there are
   // some tab closure paths that don't set is_waiting_for_close_ack to true.
   // TODO(creis): Clean this up in http://crbug.com/418266.
-  if (!cross_navigation_pending_ ||
+  if (!pending_render_frame_host_ ||
       render_frame_host_->render_view_host()->is_waiting_for_close_ack())
     return true;
 
@@ -295,7 +295,7 @@ bool RenderFrameHostManager::ShouldCloseTabOnUnresponsiveRenderer() {
   CHECK(!render_frame_host_->IsWaitingForUnloadACK());
 
   // If the tab becomes unresponsive during beforeunload while doing a
-  // cross-site navigation, proceed with the navigation.  (This assumes that
+  // cross-process navigation, proceed with the navigation.  (This assumes that
   // the pending RenderFrameHost is still responsive.)
   if (render_frame_host_->IsWaitingForBeforeUnloadACK()) {
     // Haven't gotten around to starting the request, because we're still
@@ -319,12 +319,12 @@ void RenderFrameHostManager::OnBeforeUnloadACK(
   if (for_cross_site_transition) {
     DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableBrowserSideNavigation));
-    // Ignore if we're not in a cross-site navigation.
-    if (!cross_navigation_pending_)
+    // Ignore if we're not in a cross-process navigation.
+    if (!pending_render_frame_host_)
       return;
 
     if (proceed) {
-      // Ok to unload the current page, so proceed with the cross-site
+      // Ok to unload the current page, so proceed with the cross-process
       // navigation.  Note that if navigations are not currently suspended, it
       // might be because the renderer was deemed unresponsive and this call was
       // already made by ShouldCloseTabOnUnresponsiveRenderer.  In that case, it
@@ -337,10 +337,9 @@ void RenderFrameHostManager::OnBeforeUnloadACK(
     } else {
       // Current page says to cancel.
       CancelPending();
-      cross_navigation_pending_ = false;
     }
   } else {
-    // Non-cross site transition means closing the entire tab.
+    // Non-cross-process transition means closing the entire tab.
     bool proceed_to_fire_unload;
     delegate_->BeforeUnloadFiredFromRenderManager(proceed, proceed_time,
                                                   &proceed_to_fire_unload);
@@ -351,10 +350,9 @@ void RenderFrameHostManager::OnBeforeUnloadACK(
       // close in the current RFH, we'll lose the tab close.
       if (pending_render_frame_host_) {
         CancelPending();
-        cross_navigation_pending_ = false;
       }
 
-      // This is not a cross-site navigation, the tab is being closed.
+      // This is not a cross-process navigation; the tab is being closed.
       render_frame_host_->render_view_host()->ClosePage();
     }
   }
@@ -455,8 +453,7 @@ void RenderFrameHostManager::DidNavigateFrame(
 void RenderFrameHostManager::CommitPendingIfNecessary(
     RenderFrameHostImpl* render_frame_host,
     bool was_caused_by_user_gesture) {
-  if (!cross_navigation_pending_ && !speculative_render_frame_host_) {
-    DCHECK(!pending_render_frame_host_);
+  if (!pending_render_frame_host_ && !speculative_render_frame_host_) {
     DCHECK_IMPLIES(should_reuse_web_ui_, web_ui_);
 
     // We should only hear this from our current renderer.
@@ -470,7 +467,7 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
 
   if (render_frame_host == pending_render_frame_host_ ||
       render_frame_host == speculative_render_frame_host_) {
-    // The pending cross-site navigation completed, so show the renderer.
+    // The pending cross-process navigation completed, so show the renderer.
     CommitPending();
   } else if (render_frame_host == render_frame_host_) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -483,7 +480,6 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
         // prevent page doing any shenanigans to prevent user from navigating.
         // See https://code.google.com/p/chromium/issues/detail?id=75195
         CancelPending();
-        cross_navigation_pending_ = false;
       }
     }
   } else {
@@ -803,9 +799,9 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     if (!render_frame_host_->IsRenderFrameLive()) {
       // The current RFH is not live.  There's no reason to sit around with a
       // sad tab or a newly created RFH while we wait for the navigation to
-      // complete. Just switch to the speculative RFH now and go back to non
-      // cross-navigating (Note that we don't care about on{before}unload
-      // handlers if the current RFH isn't live.)
+      // complete. Just switch to the speculative RFH now and go back to normal.
+      // (Note that we don't care about on{before}unload handlers if the current
+      // RFH isn't live.)
       CommitPending();
     }
   }
@@ -1197,7 +1193,7 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
     return SiteInstanceDescriptor(current_instance_impl);
   }
 
-  // Otherwise, only create a new SiteInstance for a cross-site navigation.
+  // Otherwise, only create a new SiteInstance for a cross-process navigation.
 
   // TODO(creis): Once we intercept links and script-based navigations, we
   // will be able to enforce that all entries in a SiteInstance actually have
@@ -1440,7 +1436,7 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
   // Swapped out views should always be hidden.
   DCHECK(!swapped_out || (flags & CREATE_RF_HIDDEN));
 
-  // TODO(nasko): Remove the following CHECK once cross-site navigation no
+  // TODO(nasko): Remove the following CHECK once cross-process navigation no
   // longer relies on swapped out RFH for the top-level frame.
   if (!frame_tree_node_->IsMainFrame())
     CHECK(!swapped_out);
@@ -1722,7 +1718,6 @@ void RenderFrameHostManager::CommitPending() {
     old_render_frame_host =
         SetRenderFrameHost(speculative_render_frame_host_.Pass());
   }
-  cross_navigation_pending_ = false;
 
   if (is_main_frame)
     render_frame_host_->render_view_host()->AttachToFrameTree();
@@ -1855,11 +1850,8 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
     int bindings) {
   // If we are currently navigating cross-process, we want to get back to normal
   // and then navigate as usual.
-  if (cross_navigation_pending_) {
-    if (pending_render_frame_host_)
-      CancelPending();
-    cross_navigation_pending_ = false;
-  }
+  if (pending_render_frame_host_)
+    CancelPending();
 
   SiteInstance* current_instance = render_frame_host_->GetSiteInstance();
   scoped_refptr<SiteInstance> new_instance = GetSiteInstanceForNavigation(
@@ -1869,7 +1861,7 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
   const NavigationEntry* current_entry =
       delegate_->GetLastCommittedNavigationEntryForRenderManager();
 
-  DCHECK(!cross_navigation_pending_);
+  DCHECK(!pending_render_frame_host_);
 
   if (new_instance.get() != current_instance) {
     TRACE_EVENT_INSTANT2(
@@ -1890,34 +1882,27 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
     SetPendingWebUI(dest_url, bindings);
     CreatePendingRenderFrameHost(current_instance, new_instance.get(),
                                  frame_tree_node_->IsMainFrame());
-    if (!pending_render_frame_host_.get()) {
+    if (!pending_render_frame_host_.get())
       return nullptr;
-    }
 
     // Check if our current RFH is live before we set up a transition.
     if (!render_frame_host_->IsRenderFrameLive()) {
-      if (!cross_navigation_pending_) {
-        // The current RFH is not live.  There's no reason to sit around with a
-        // sad tab or a newly created RFH while we wait for the pending RFH to
-        // navigate.  Just switch to the pending RFH now and go back to non
-        // cross-navigating (Note that we don't care about on{before}unload
-        // handlers if the current RFH isn't live.)
-        CommitPending();
-        return render_frame_host_.get();
-      } else {
-        NOTREACHED();
-        return render_frame_host_.get();
-      }
+      // The current RFH is not live.  There's no reason to sit around with a
+      // sad tab or a newly created RFH while we wait for the pending RFH to
+      // navigate.  Just switch to the pending RFH now and go back to normal.
+      // (Note that we don't care about on{before}unload handlers if the current
+      // RFH isn't live.)
+      CommitPending();
+      return render_frame_host_.get();
     }
-    // Otherwise, it's safe to treat this as a pending cross-site transition.
+    // Otherwise, it's safe to treat this as a pending cross-process transition.
 
     // We now have a pending RFH.
-    DCHECK(!cross_navigation_pending_);
-    cross_navigation_pending_ = true;
+    DCHECK(pending_render_frame_host_);
 
     // We need to wait until the beforeunload handler has run, unless we are
     // transferring an existing request (in which case it has already run).
-    // Suspend the new render view (i.e., don't let it send the cross-site
+    // Suspend the new render view (i.e., don't let it send the cross-process
     // Navigate message) until we hear back from the old renderer's
     // beforeunload handler.  If the handler returns false, we'll have to
     // cancel the request.
