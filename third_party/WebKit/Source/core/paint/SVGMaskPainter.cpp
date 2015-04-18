@@ -8,6 +8,7 @@
 #include "core/layout/PaintInfo.h"
 #include "core/layout/svg/LayoutSVGResourceMasker.h"
 #include "core/paint/CompositingRecorder.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/TransformRecorder.h"
 #include "platform/graphics/paint/CompositingDisplayItem.h"
 #include "platform/graphics/paint/DisplayItemList.h"
@@ -70,13 +71,9 @@ void SVGMaskPainter::drawMaskForLayoutObject(GraphicsContext* context, const Lay
 
     TransformRecorder recorder(*context, layoutObject, contentTransformation);
 
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        ASSERT(context->displayItemList());
-        context->displayItemList()->add(DrawingDisplayItem::create(layoutObject, DisplayItem::SVGMask, maskContentPicture));
-    } else {
-        DrawingDisplayItem maskPicture(layoutObject, DisplayItem::SVGMask, maskContentPicture);
-        maskPicture.replay(*context);
-    }
+    LayoutObjectDrawingRecorder drawingRecorder(*context, layoutObject, DisplayItem::SVGMask, LayoutRect::infiniteIntRect());
+    if (!drawingRecorder.canUseCachedDrawing())
+        context->drawPicture(maskContentPicture.get());
 }
 
 }

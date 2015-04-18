@@ -19,28 +19,33 @@ class SkPictureBuilder {
     STACK_ALLOCATED();
 public:
     SkPictureBuilder(const FloatRect& bounds)
+        : m_bounds(bounds)
     {
         if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
             m_displayItemList = DisplayItemList::create();
             m_context = adoptPtr(new GraphicsContext(m_displayItemList.get()));
         } else {
             m_context = GraphicsContext::deprecatedCreateWithCanvas(nullptr);
+            m_context->beginRecording(m_bounds);
         }
-        m_context->beginRecording(bounds);
     }
 
     GraphicsContext& context() { return *m_context; }
 
     PassRefPtr<const SkPicture> endRecording()
     {
-        if (m_displayItemList)
-            m_displayItemList->commitNewDisplayItemsAndReplay(*m_context);
+        if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
+            return m_context->endRecording();
+
+        m_context->beginRecording(m_bounds);
+        m_displayItemList->commitNewDisplayItemsAndReplay(*m_context);
         return m_context->endRecording();
     }
 
 private:
     OwnPtr<DisplayItemList> m_displayItemList;
     OwnPtr<GraphicsContext> m_context;
+    FloatRect m_bounds;
 };
 
 } // namespace blink
