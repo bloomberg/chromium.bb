@@ -22,7 +22,6 @@
   'target_defaults': {
     'defines': [
       'LEVELDB_PLATFORM_CHROMIUM=1',
-      'USE_SNAPPY=1',
     ],
     'include_dirs': [
       '.',

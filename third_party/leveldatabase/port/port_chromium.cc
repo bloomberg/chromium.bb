@@ -5,11 +5,8 @@
 #include "port/port_chromium.h"
 
 #include "base/threading/platform_thread.h"
+#include "third_party/snappy/src/snappy.h"
 #include "util/logging.h"
-
-#if defined(USE_SNAPPY)
-#  include "third_party/snappy/src/snappy.h"
-#endif
 
 namespace leveldb {
 namespace port {
@@ -71,37 +68,27 @@ void InitOnceImpl(OnceType* once, void (*initializer)()) {
   }
 }
 
-bool Snappy_Compress(const char* input, size_t input_length,
+bool Snappy_Compress(const char* input,
+                     size_t input_length,
                      std::string* output) {
-#if defined(USE_SNAPPY)
   output->resize(snappy::MaxCompressedLength(input_length));
   size_t outlen;
   snappy::RawCompress(input, input_length, &(*output)[0], &outlen);
   output->resize(outlen);
   return true;
-#else
-  return false;
-#endif
 }
 
 bool Snappy_GetUncompressedLength(const char* input_data,
                                   size_t input_length,
                                   size_t* result) {
-#if defined(USE_SNAPPY)
   return snappy::GetUncompressedLength(input_data, input_length, result);
-#else
-  return false;
-#endif
 }
 
-bool Snappy_Uncompress(const char* input_data, size_t input_length,
+bool Snappy_Uncompress(const char* input_data,
+                       size_t input_length,
                        char* output) {
-#if defined(USE_SNAPPY)
   return snappy::RawUncompress(input_data, input_length, output);
-#else
-  return false;
-#endif
 }
 
-}
-}
+}  // namespace port
+}  // namespace leveldb
