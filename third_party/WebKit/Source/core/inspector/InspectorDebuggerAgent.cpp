@@ -188,6 +188,7 @@ void InspectorDebuggerAgent::enable()
     // FIXME(WK44513): breakpoints activated flag should be synchronized between all front-ends
     scriptDebugServer().setBreakpointsActivated(true);
 
+    m_state->setBoolean(DebuggerAgentState::debuggerEnabled, true);
     if (m_listener)
         m_listener->debuggerWasEnabled();
 }
@@ -222,7 +223,6 @@ void InspectorDebuggerAgent::enable(ErrorString*)
         return;
 
     enable();
-    m_state->setBoolean(DebuggerAgentState::debuggerEnabled, true);
 
     ASSERT(frontend());
 }
