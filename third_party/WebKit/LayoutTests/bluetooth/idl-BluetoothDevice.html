@@ -28,7 +28,6 @@ async_test(function(t) {
         device.productID = "overwritten";
         device.productVersion = "overwritten";
         device.paired = "overwritten";
-        device.connected = "overwritten";
         device.uuids = "overwritten"
 
         assert_equals(device.instanceID, "Empty Mock Device instanceID");
@@ -39,7 +38,6 @@ async_test(function(t) {
         assert_equals(device.productID, 1);
         assert_equals(device.productVersion, 2);
         assert_equals(device.paired, true);
-        assert_equals(device.connected, false);
         assert_equals(device.uuids[0], "00001800-0000-1000-8000-00805f9b34fb");
         assert_equals(device.uuids[1], "00001801-0000-1000-8000-00805f9b34fb");
 

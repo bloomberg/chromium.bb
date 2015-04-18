@@ -291,6 +291,17 @@ interface Blob
     method close
     method constructor
     method slice
+interface BluetoothDevice
+    getter deviceClass
+    getter instanceID
+    getter name
+    getter paired
+    getter productID
+    getter productVersion
+    getter uuids
+    getter vendorID
+    getter vendorIDSource
+    method constructor
 interface BluetoothGATTRemoteServer
     method constructor
 interface Boolean

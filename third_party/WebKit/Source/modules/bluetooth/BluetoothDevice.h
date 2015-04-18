@@ -45,9 +45,8 @@ public:
     unsigned vendorID(bool& isNull);
     unsigned productID(bool& isNull);
     unsigned productVersion(bool& isNull);
-    bool paired(bool& isNull);
-    bool connected(bool& isNull);
-    Vector<String> uuids(bool& isNull);
+    bool paired();
+    Vector<String> uuids();
 
 private:
     WebBluetoothDevice m_webDevice;

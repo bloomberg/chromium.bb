@@ -65,21 +65,13 @@ unsigned BluetoothDevice::productVersion(bool& isNull)
     return m_webDevice.productVersion;
 }
 
-bool BluetoothDevice::paired(bool& isNull)
+bool BluetoothDevice::paired()
 {
-    isNull = false;
     return m_webDevice.paired;
 }
 
-bool BluetoothDevice::connected(bool& isNull)
+Vector<String> BluetoothDevice::uuids()
 {
-    isNull = false;
-    return m_webDevice.connected;
-}
-
-Vector<String> BluetoothDevice::uuids(bool& isNull)
-{
-    isNull = false;
     Vector<String> uuids(m_webDevice.uuids.size());
     for (size_t i = 0; i < m_webDevice.uuids.size(); ++i)
         uuids[i] = m_webDevice.uuids[i];
