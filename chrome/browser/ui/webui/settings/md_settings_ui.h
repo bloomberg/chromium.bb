@@ -5,23 +5,15 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_MD_SETTINGS_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_MD_SETTINGS_UI_H_
 
-#include "chrome/browser/ui/webui/options/core_options_handler.h"
-#include "chrome/browser/ui/webui/options/options_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 
 // The WebUI handler for chrome://md-settings.
-class MdSettingsUI : public content::WebUIController,
-                     public options::OptionsPageUIHandlerHost {
+class MdSettingsUI : public content::WebUIController {
  public:
   explicit MdSettingsUI(content::WebUI* web_ui);
   ~MdSettingsUI() override;
 
-  // OptionsPageUIHandlerHost:
-  void InitializeHandlers() override;
-
  private:
-  options::CoreOptionsHandler* core_handler_;
-
   DISALLOW_COPY_AND_ASSIGN(MdSettingsUI);
 };
 
