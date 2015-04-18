@@ -25,8 +25,6 @@ remoting.testEvents;
 remoting.Application = function() {
   // Create global factories.
   remoting.ClientPlugin.factory = new remoting.DefaultClientPluginFactory();
-  remoting.SessionConnector.factory =
-      new remoting.DefaultSessionConnectorFactory();
 
   /** @protected {remoting.Application.Mode} */
   this.connectionMode_ = remoting.Application.Mode.ME2ME;

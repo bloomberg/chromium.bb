@@ -185,13 +185,9 @@ remoting.It2MeActivity.prototype.onHostInfo_ = function(xhrResponse) {
 remoting.It2MeActivity.prototype.connect_ = function(host) {
   base.dispose(this.desktopActivity_);
   this.desktopActivity_ = new remoting.DesktopRemotingActivity(this);
-  var sessionConnector = remoting.SessionConnector.factory.createConnector(
-      document.getElementById('client-container'),
-      remoting.app_capabilities(),
-      this.desktopActivity_);
-  sessionConnector.connect(
-      remoting.Application.Mode.IT2ME, host,
-      new remoting.CredentialsProvider({ accessCode: this.passCode_ }));
+  remoting.app.setConnectionMode(remoting.Application.Mode.IT2ME);
+  this.desktopActivity_.start(
+      host, new remoting.CredentialsProvider({ accessCode: this.passCode_ }));
 };
 
 /**
