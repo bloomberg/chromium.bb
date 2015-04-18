@@ -55,7 +55,6 @@
 
 #include <list>
 
-#include "base/containers/hash_tables.h"
 #include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_sent_packet_manager.h"

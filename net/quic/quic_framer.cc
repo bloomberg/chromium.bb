@@ -4,7 +4,8 @@
 
 #include "net/quic/quic_framer.h"
 
-#include "base/containers/hash_tables.h"
+#include "base/basictypes.h"
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "net/quic/crypto/crypto_framer.h"
 #include "net/quic/crypto/crypto_handshake_message.h"
@@ -748,8 +749,8 @@ bool QuicFramer::AppendPacketHeader(const QuicPacketHeader& header,
     DCHECK_EQ(Perspective::IS_CLIENT, perspective_);
     QuicTag tag = QuicVersionToQuicTag(quic_version_);
     writer->WriteUInt32(tag);
-    DVLOG(1) << "version = " << quic_version_
-               << ", tag = '" << QuicUtils::TagToString(tag) << "'";
+    DVLOG(1) << "version = " << quic_version_ << ", tag = '"
+             << QuicUtils::TagToString(tag) << "'";
   }
 
   if (!AppendPacketSequenceNumber(header.public_header.sequence_number_length,

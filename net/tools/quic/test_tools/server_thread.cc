@@ -12,7 +12,7 @@ namespace tools {
 namespace test {
 
 ServerThread::ServerThread(QuicServer* server,
-                           IPEndPoint address,
+                           const IPEndPoint& address,
                            bool strike_register_no_startup_period)
     : SimpleThread("server_thread"),
       confirmed_(true, false),

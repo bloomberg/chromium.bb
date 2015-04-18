@@ -123,10 +123,6 @@ uint32 QuicDataStream::ProcessRawData(const char* data, uint32 data_len) {
   return ProcessData(data, data_len);
 }
 
-const IPEndPoint& QuicDataStream::GetPeerAddress() {
-  return session()->peer_address();
-}
-
 uint32 QuicDataStream::ProcessHeaderData() {
   if (decompressed_headers_.empty()) {
     return 0;

@@ -4,6 +4,8 @@
 
 #include "net/quic/quic_packet_creator.h"
 
+#include <algorithm>
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "net/quic/crypto/quic_random.h"

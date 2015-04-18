@@ -17,6 +17,7 @@
 #include "base/basictypes.h"
 #include "base/strings/string_piece.h"
 #include "net/base/iovec.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_protocol.h"
@@ -31,7 +32,6 @@ class QuicDataStreamPeer;
 class ReliableQuicStreamPeer;
 }  // namespace test
 
-class IPEndPoint;
 class QuicSession;
 
 // All this does right now is send data to subclasses via the sequencer.
@@ -103,8 +103,6 @@ class NET_EXPORT_PRIVATE QuicDataStream : public ReliableQuicStream {
   void set_visitor(Visitor* visitor) { visitor_ = visitor; }
 
   bool headers_decompressed() const { return headers_decompressed_; }
-
-  const IPEndPoint& GetPeerAddress();
 
  protected:
   // Sets priority_ to priority.  This should only be called before bytes are

@@ -13,6 +13,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/strings/string_piece.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_crypto_stream.h"

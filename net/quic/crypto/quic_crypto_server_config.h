@@ -15,6 +15,7 @@
 #include "base/synchronization/lock.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
+#include "net/base/net_util.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/crypto_handshake_message.h"
 #include "net/quic/crypto/crypto_protocol.h"
@@ -59,7 +60,7 @@ struct ClientHelloInfo {
 
   // Errors from EvaluateClientHello.
   std::vector<uint32> reject_reasons;
-  COMPILE_ASSERT(sizeof(QuicTag) == sizeof(uint32), header_out_of_sync);
+  static_assert(sizeof(QuicTag) == sizeof(uint32), "header out of sync");
 };
 
 namespace test {

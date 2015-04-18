@@ -557,7 +557,7 @@ int QuicHttpStream::ParseResponseHeaders() {
     return ERR_QUIC_PROTOCOL_ERROR;
   }
   // Put the peer's IP address and port into the response.
-  IPEndPoint address = stream_->GetPeerAddress();
+  IPEndPoint address = session_->peer_address();
   response_info_->socket_address = HostPortPair::FromIPEndPoint(address);
   response_info_->connection_info =
       HttpResponseInfo::CONNECTION_INFO_QUIC1_SPDY3;

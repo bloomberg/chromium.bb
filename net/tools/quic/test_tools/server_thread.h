@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_QUIC_SERVER_THREAD_H_
-#define NET_TOOLS_QUIC_SERVER_THREAD_H_
+#ifndef NET_TOOLS_QUIC_TEST_TOOLS_SERVER_THREAD_H_
+#define NET_TOOLS_QUIC_TEST_TOOLS_SERVER_THREAD_H_
 
 #include "base/threading/simple_thread.h"
 #include "net/base/ip_endpoint.h"
@@ -14,11 +14,11 @@ namespace net {
 namespace tools {
 namespace test {
 
-// Simple wrapper class to run server in a thread.
+// Simple wrapper class to run QuicServer in a dedicated thread.
 class ServerThread : public base::SimpleThread {
  public:
   ServerThread(QuicServer* server,
-               IPEndPoint address,
+               const IPEndPoint& address,
                bool strike_register_no_startup_period);
 
   ~ServerThread() override;
@@ -77,4 +77,4 @@ class ServerThread : public base::SimpleThread {
 }  // namespace tools
 }  // namespace net
 
-#endif  // NET_TOOLS_QUIC_SERVER_THREAD_H_
+#endif  // NET_TOOLS_QUIC_TEST_TOOLS_SERVER_THREAD_H_

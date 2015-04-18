@@ -136,6 +136,7 @@ void QuicInMemoryCache::InitializeFromDirectory(const string& cache_directory) {
     if (path[path.length() - 1] == ',') {
       path.remove_suffix(1);
     }
+
     StringPiece body(file_contents.data() + headers_end,
                      file_contents.size() - headers_end);
     // QUIC_VERSION_24 and below use SPDY/3 headers, which includes the

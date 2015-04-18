@@ -19,8 +19,8 @@ QuicPacketWriterWrapper::~QuicPacketWriterWrapper() {}
 WriteResult QuicPacketWriterWrapper::WritePacket(
     const char* buffer,
     size_t buf_len,
-    const net::IPAddressNumber& self_address,
-    const net::IPEndPoint& peer_address) {
+    const IPAddressNumber& self_address,
+    const IPEndPoint& peer_address) {
   return writer_->WritePacket(buffer, buf_len, self_address, peer_address);
 }
 
