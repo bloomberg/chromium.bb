@@ -62,9 +62,8 @@ namespace blink {
 
 using namespace HTMLNames;
 
-SelectorChecker::SelectorChecker(Document& document, Mode mode)
-    : m_strictParsing(!document.inQuirksMode())
-    , m_mode(mode)
+SelectorChecker::SelectorChecker(Mode mode)
+    : m_mode(mode)
 {
 }
 
@@ -113,6 +112,20 @@ static inline bool nextSelectorExceedsScope(const SelectorChecker::SelectorCheck
         return context.element == context.scope->shadowHost();
 
     return false;
+}
+
+static bool shouldMatchHoverOrActive(const SelectorChecker::SelectorCheckingContext& context)
+{
+    // If we're in quirks mode, then :hover and :active should never match anchors with no
+    // href and *:hover and *:active should not match anything. This is specified in
+    // https://quirks.spec.whatwg.org/#the-:active-and-:hover-quirk
+    if (!context.element->document().inQuirksMode())
+        return true;
+    if (context.isSubSelector)
+        return true;
+    if (context.selector->relation() == CSSSelector::SubSelector && context.selector->tagHistory())
+        return true;
+    return context.element->isLink();
 }
 
 // Recursive check of selectors and combinators
@@ -776,26 +789,26 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
         }
         return matchesFocusPseudoClass(element);
     case CSSSelector::PseudoHover:
-        if (!shouldMatchHoverOrActive(context))
-            return false;
         if (m_mode == ResolvingStyle) {
             if (context.elementStyle)
                 context.elementStyle->setAffectedByHover();
             else
                 element.setChildrenOrSiblingsAffectedByHover();
         }
+        if (!shouldMatchHoverOrActive(context))
+            return false;
         if (InspectorInstrumentation::forcePseudoState(&element, CSSSelector::PseudoHover))
             return true;
         return element.hovered();
     case CSSSelector::PseudoActive:
-        if (!shouldMatchHoverOrActive(context))
-            return false;
         if (m_mode == ResolvingStyle) {
             if (context.elementStyle)
                 context.elementStyle->setAffectedByActive();
             else
                 element.setChildrenOrSiblingsAffectedByActive();
         }
+        if (!shouldMatchHoverOrActive(context))
+            return false;
         if (InspectorInstrumentation::forcePseudoState(&element, CSSSelector::PseudoActive))
             return true;
         return element.active();
