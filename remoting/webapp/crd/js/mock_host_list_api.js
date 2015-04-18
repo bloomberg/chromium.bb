@@ -17,6 +17,13 @@ var remoting = remoting || {};
  * @implements {remoting.HostListApi}
  */
 remoting.MockHostListApi = function() {
+  /**
+   * The auth code for the |register| method to return, or null if it
+   * should fail.
+   * @type {?string}
+   */
+  this.registerResult = null;
+
   /** @type {Array<remoting.Host>} */
   this.hosts = [
     {
@@ -38,6 +45,17 @@ remoting.MockHostListApi = function() {
       'updatedTime': new Date(1970, 1, 1).toISOString()
     }
   ];
+};
+
+/** @override */
+remoting.MockHostListApi.prototype.register = function(
+    newHostId, hostName, publicKey, hostClientId) {
+  if (this.registerResult === null) {
+    return Promise.reject(
+        new remoting.Error(remoting.Error.Tag.REGISTRATION_FAILED));
+  } else {
+    return Promise.resolve(this.registerResult);
+  }
 };
 
 /**

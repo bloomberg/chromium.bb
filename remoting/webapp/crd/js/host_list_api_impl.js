@@ -21,6 +21,41 @@ var remoting = remoting || {};
 remoting.HostListApiImpl = function() {
 };
 
+/** @override */
+remoting.HostListApiImpl.prototype.register = function(
+    newHostId, hostName, publicKey, hostClientId) {
+  var newHostDetails = { data: {
+    hostId: newHostId,
+    hostName: hostName,
+    publicKey: publicKey
+  } };
+
+  return new remoting.Xhr({
+    method: 'POST',
+    url: remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts',
+    urlParams: {
+      hostClientId: hostClientId
+    },
+    jsonContent: newHostDetails,
+    acceptJson: true,
+    useIdentity: true
+  }).start().then(function(response) {
+    if (response.status == 200) {
+      var result = response.getJson();
+      if (result['data']) {
+        return base.getStringAttr(result['data'], 'authorizationCode', '');
+      } else {
+        return '';
+      }
+    } else {
+      console.log(
+          'Failed to register the host. Status: ' + response.status +
+          ' response: ' + response.getText());
+      throw new remoting.Error(remoting.Error.Tag.REGISTRATION_FAILED);
+    }
+  });
+};
+
 /**
  * Fetch the list of hosts for a user.
  *

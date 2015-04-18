@@ -71,13 +71,18 @@ var unregisterHostByIdSpy;
 /** @type {sinon.Spy} */
 var onLocalHostStartedSpy;
 
+/** @type {remoting.MockHostListApi} */
+var mockHostListApi;
+
 QUnit.module('host_controller', {
   beforeEach: function(/** QUnit.Assert */ assert) {
     chromeMocks.activate(['identity', 'runtime']);
     chromeMocks.identity.mock$setToken(FAKE_IDENTITY_TOKEN);
     remoting.settings = new remoting.Settings();
     remoting.identity = new remoting.Identity();
-    remoting.MockXhr.activate();
+    mockHostListApi = new remoting.MockHostListApi;
+    mockHostListApi.registerResult = FAKE_AUTH_CODE;
+    remoting.hostListApi = mockHostListApi;
     base.debug.assert(remoting.oauth2 === null);
     remoting.oauth2 = new remoting.OAuth2();
     base.debug.assert(remoting.hostList === null);
@@ -167,8 +172,8 @@ QUnit.module('host_controller', {
     signalStrategyCreateStub.restore();
     remoting.hostList = null;
     remoting.oauth2 = null;
-    remoting.MockXhr.restore();
     chromeMocks.restore();
+    remoting.hostListApi = null;
     remoting.identity = null;
   }
 });
@@ -180,35 +185,6 @@ QUnit.module('host_controller', {
  */
 function fakePinHashFunc(hostId, pin) {
   return '<FAKE_PIN:' + hostId + ':' + pin + '>';
-}
-
-/**
- * Install an HTTP response for requests to the registry.
- * @param {QUnit.Assert} assert
- * @param {boolean} withAuthCode
- */
-function queueRegistryResponse(assert, withAuthCode) {
-  var responseJson = {
-      data: {
-        authorizationCode: FAKE_AUTH_CODE
-      }
-  };
-  if (!withAuthCode) {
-    delete responseJson.data.authorizationCode;
-  }
-
-  remoting.MockXhr.setResponseFor(
-      'POST', 'DIRECTORY_API_BASE_URL/@me/hosts',
-      function(/** remoting.MockXhr */ xhr) {
-        assert.deepEqual(
-            xhr.params.jsonContent,
-            { data: {
-              hostId: FAKE_HOST_ID,
-              hostName: FAKE_HOST_NAME,
-              publicKey: FAKE_PUBLIC_KEY
-            } });
-        xhr.setTextResponse(200, JSON.stringify(responseJson));
-      });
 }
 
 /**
@@ -274,8 +250,7 @@ QUnit.test('start with getHostClientId failure', function(assert) {
 // Check what happens when the registry returns an HTTP when we try to
 // register a host.
 QUnit.test('start with host registration failure', function(assert) {
-  remoting.MockXhr.setEmptyResponseFor(
-      'POST', 'DIRECTORY_API_BASE_URL/@me/hosts', 500);
+  mockHostListApi.registerResult = null;
   return controller.start(FAKE_HOST_PIN, true).then(function() {
     throw 'test failed';
   }, function(/** remoting.Error */ e) {
@@ -291,7 +266,6 @@ QUnit.test('start with host registration failure', function(assert) {
 QUnit.test('start with getCredentialsFromAuthCode failure', function(assert) {
   mockHostDaemonFacade.useEmail = null;
   mockHostDaemonFacade.refreshToken = null;
-  queueRegistryResponse(assert, true);
   return controller.start(FAKE_HOST_PIN, true).then(function() {
     throw 'test failed';
   }, function(/** remoting.Error */ e) {
@@ -308,7 +282,7 @@ QUnit.test('start with getCredentialsFromAuthCode failure', function(assert) {
 // does't return an auth code.
 QUnit.test('start with getRefreshToken+getPinHash failure', function(assert) {
   mockHostDaemonFacade.pinHashFunc = null;
-  queueRegistryResponse(assert, false);
+  mockHostListApi.registerResult = '';
   return controller.start(FAKE_HOST_PIN, true).then(function() {
     throw 'test failed';
   }, function(/** remoting.Error */ e) {
@@ -321,7 +295,6 @@ QUnit.test('start with getRefreshToken+getPinHash failure', function(assert) {
 
 // Check what happens when the SignalStrategy fails to connect.
 QUnit.test('start with signalStrategy failure', function(assert) {
-  queueRegistryResponse(assert, true);
   stubSignalStrategyConnect(false);
   return controller.start(FAKE_HOST_PIN, true).then(function() {
     throw 'test failed';
@@ -336,7 +309,6 @@ QUnit.test('start with signalStrategy failure', function(assert) {
 // fails and calls its onError argument.
 // TODO(jrw): Should startDaemon even have an onError callback?
 QUnit.test('start with startDaemon failure', function(assert) {
-  queueRegistryResponse(assert, true);
   stubSignalStrategyConnect(true);
   mockHostDaemonFacade.startDaemonResult = null;
   return controller.start(FAKE_HOST_PIN, true).then(function() {
@@ -353,7 +325,6 @@ QUnit.test('start with startDaemon failure', function(assert) {
 // Check what happens when the HostDaemonFacade's startDaemon method
 // calls is onDone method with a CANCELLED error code.
 QUnit.test('start with startDaemon cancelled', function(assert) {
-  queueRegistryResponse(assert, true);
   stubSignalStrategyConnect(true);
   mockHostDaemonFacade.startDaemonResult =
       remoting.HostController.AsyncResult.CANCELLED;
@@ -370,7 +341,6 @@ QUnit.test('start with startDaemon cancelled', function(assert) {
 // Check what happens when the HostDaemonFacade's startDaemon method
 // calls is onDone method with an async error code.
 QUnit.test('start with startDaemon returning failure code', function(assert) {
-  queueRegistryResponse(assert, true);
   stubSignalStrategyConnect(true);
   mockHostDaemonFacade.startDaemonResult =
       remoting.HostController.AsyncResult.FAILED;
@@ -389,7 +359,6 @@ QUnit.test('start with startDaemon returning failure code', function(assert) {
   QUnit.test('start with auth code, consent=' + consent, function(assert) {
     /** @const */
     var fakePinHash = fakePinHashFunc(FAKE_HOST_ID, FAKE_HOST_PIN);
-    queueRegistryResponse(assert, true);
     stubSignalStrategyConnect(true);
     return controller.start(FAKE_HOST_PIN, consent).then(function() {
       assert.equal(getCredentialsFromAuthCodeSpy.callCount, 1);
@@ -425,7 +394,7 @@ QUnit.test('start with startDaemon returning failure code', function(assert) {
   QUnit.test('start without auth code, consent=' + consent, function(assert) {
     /** @const */
     var fakePinHash = fakePinHashFunc(FAKE_HOST_ID, FAKE_HOST_PIN);
-    queueRegistryResponse(assert, false);
+    mockHostListApi.registerResult = '';
     stubSignalStrategyConnect(true);
     return controller.start(FAKE_HOST_PIN, consent).then(function() {
       assert.equal(getCredentialsFromAuthCodeSpy.callCount, 0);

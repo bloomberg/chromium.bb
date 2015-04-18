@@ -17,6 +17,15 @@ remoting.HostListApi = function() {
 };
 
 /**
+ * @param {string} newHostId
+ * @param {string} hostName
+ * @param {string} publicKey
+ * @param {?string} hostClientId
+ * @return {!Promise<string>} An OAuth2 auth code or the empty string.
+ */
+remoting.HostListApi.prototype.register;
+
+/**
  * Fetch the list of hosts for a user.
  *
  * @param {function(Array<remoting.Host>):void} onDone

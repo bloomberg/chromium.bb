@@ -156,7 +156,6 @@ remoting.HostController.prototype.start = function(hostPin, consent) {
   var hasOauthPromise =
       this.hasFeature(remoting.HostController.Feature.OAUTH_CLIENT);
   var keyPairPromise = this.hostDaemonFacade_.generateKeyPair();
-  var oauthTokenPromise = remoting.identity.getToken();
   var hostClientIdPromise = hasOauthPromise.then(function(hasOauth) {
     if (hasOauth) {
       return that.hostDaemonFacade_.getHostClientId();
@@ -167,57 +166,27 @@ remoting.HostController.prototype.start = function(hostPin, consent) {
   var newHostId = base.generateUuid();
   var pinHashPromise = this.hostDaemonFacade_.getPinHash(newHostId, hostPin);
 
-  // Try to register the host.
-  /** @type {!Promise<!remoting.Xhr.Response>} */
-  var registrationResultPromise = Promise.all([
+  /** @type {boolean} */
+  var hostRegistered = false;
+
+  // Register the host and extract an optional auth code from the host
+  // response.  The absence of an auth code is represented by an empty
+  // string.
+  /** @type {!Promise<string>} */
+  var authCodePromise = Promise.all([
     hostClientIdPromise,
     hostNamePromise,
-    oauthTokenPromise,
     keyPairPromise
   ]).then(function(/** Array */ a) {
     var hostClientId = /** @type {string} */ (a[0]);
     var hostName = /** @type {string} */ (a[1]);
-    var oauthToken = /** @type {string} */ (a[2]);
-    var keyPair = /** @type {remoting.KeyPair} */ (a[3]);
+    var keyPair = /** @type {remoting.KeyPair} */ (a[2]);
 
-    var newHostDetails = { data: {
-      hostId: newHostId,
-      hostName: hostName,
-      publicKey: keyPair.publicKey
-    } };
-
-    return new remoting.Xhr({
-      method: 'POST',
-      url: remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts',
-      urlParams: {
-        hostClientId: hostClientId
-      },
-      jsonContent: newHostDetails,
-      oauthToken: oauthToken
-    }).start();
-  });
-
-  /** @type {boolean} */
-  var hostRegistered = false;
-
-  // Extract an optional auth code from the host response.  The
-  // absence of an auth code is represented by an empty string.
-  /** @type {!Promise<string>} */
-  var authCodePromise = registrationResultPromise.then(function(response) {
-    if (response.status == 200) {
-      hostRegistered = true;
-      var result = base.jsonParseSafe(response.getText());
-      if (result['data']) {
-        return base.getStringAttr(result['data'], 'authorizationCode', '');
-      } else {
-        return '';
-      }
-    } else {
-      console.log(
-          'Failed to register the host. Status: ' + response.status +
-          ' response: ' + response.getText());
-      throw new remoting.Error(remoting.Error.Tag.REGISTRATION_FAILED);
-    }
+    return remoting.hostListApi.register(
+        newHostId, hostName, keyPair.publicKey, hostClientId);
+  }).then(function(/** string */ authCode) {
+    hostRegistered = true;
+    return authCode;
   });
 
   // Get XMPP creditials.
