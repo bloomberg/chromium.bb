@@ -58,6 +58,9 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
   // Overridden from WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
   void OnWindowAdded(aura::Window* window) override;
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;

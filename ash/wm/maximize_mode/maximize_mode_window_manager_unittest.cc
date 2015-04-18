@@ -1297,6 +1297,76 @@ TEST_F(MaximizeModeWindowManagerTest,
   DestroyMaximizeModeWindowManager();
 }
 
+// Tests that windows with the always-on-top property are not managed by
+// the MaximizeModeWindowManager while maximize mode is engaged (i.e.,
+// they remain free-floating).
+TEST_F(MaximizeModeWindowManagerTest, AlwaysOnTopWindows) {
+  gfx::Rect rect1(10, 10, 200, 50);
+  gfx::Rect rect2(20, 140, 100, 100);
+
+  // Create two windows with the always-on-top property.
+  scoped_ptr<aura::Window> w1(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect1));
+  scoped_ptr<aura::Window> w2(
+      CreateFixedSizeNonMaximizableWindow(ui::wm::WINDOW_TYPE_NORMAL, rect2));
+  w1->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  w2->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  EXPECT_FALSE(wm::GetWindowState(w1.get())->IsMaximized());
+  EXPECT_FALSE(wm::GetWindowState(w2.get())->IsMaximized());
+  EXPECT_EQ(rect1.ToString(), w1->bounds().ToString());
+  EXPECT_EQ(rect2.ToString(), w2->bounds().ToString());
+  EXPECT_TRUE(wm::GetWindowState(w1.get())->can_be_dragged());
+  EXPECT_TRUE(wm::GetWindowState(w2.get())->can_be_dragged());
+
+  // Enter maximize mode. Neither window should be managed because they have
+  // the always-on-top property set, which means that none of their properties
+  // should change.
+  ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  ASSERT_TRUE(manager);
+  EXPECT_EQ(0, manager->GetNumberOfManagedWindows());
+  EXPECT_FALSE(wm::GetWindowState(w1.get())->IsMaximized());
+  EXPECT_FALSE(wm::GetWindowState(w2.get())->IsMaximized());
+  EXPECT_EQ(rect1.ToString(), w1->bounds().ToString());
+  EXPECT_EQ(rect2.ToString(), w2->bounds().ToString());
+  EXPECT_TRUE(wm::GetWindowState(w1.get())->can_be_dragged());
+  EXPECT_TRUE(wm::GetWindowState(w2.get())->can_be_dragged());
+
+  // Remove the always-on-top property from both windows while in maximize
+  // mode. The windows should become managed, which means they should be
+  // maximized/centered and no longer be draggable.
+  w1->SetProperty(aura::client::kAlwaysOnTopKey, false);
+  w2->SetProperty(aura::client::kAlwaysOnTopKey, false);
+  EXPECT_EQ(2, manager->GetNumberOfManagedWindows());
+  EXPECT_TRUE(wm::GetWindowState(w1.get())->IsMaximized());
+  EXPECT_FALSE(wm::GetWindowState(w2.get())->IsMaximized());
+  EXPECT_NE(rect1.origin().ToString(), w1->bounds().origin().ToString());
+  EXPECT_NE(rect1.size().ToString(), w1->bounds().size().ToString());
+  EXPECT_NE(rect2.origin().ToString(), w2->bounds().origin().ToString());
+  EXPECT_EQ(rect2.size().ToString(), w2->bounds().size().ToString());
+  EXPECT_FALSE(wm::GetWindowState(w1.get())->can_be_dragged());
+  EXPECT_FALSE(wm::GetWindowState(w2.get())->can_be_dragged());
+
+  // Applying the always-on-top property to both windows while in maximize
+  // mode should cause both windows to return to their original size,
+  // position, and state.
+  w1->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  w2->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  EXPECT_EQ(0, manager->GetNumberOfManagedWindows());
+  EXPECT_FALSE(wm::GetWindowState(w1.get())->IsMaximized());
+  EXPECT_FALSE(wm::GetWindowState(w2.get())->IsMaximized());
+  EXPECT_EQ(rect1.ToString(), w1->bounds().ToString());
+  EXPECT_EQ(rect2.ToString(), w2->bounds().ToString());
+  EXPECT_TRUE(wm::GetWindowState(w1.get())->can_be_dragged());
+  EXPECT_TRUE(wm::GetWindowState(w2.get())->can_be_dragged());
+
+  // The always-on-top windows should not change when leaving maximize mode.
+  DestroyMaximizeModeWindowManager();
+  EXPECT_FALSE(wm::GetWindowState(w1.get())->IsMaximized());
+  EXPECT_FALSE(wm::GetWindowState(w2.get())->IsMaximized());
+  EXPECT_EQ(rect1.ToString(), w1->bounds().ToString());
+  EXPECT_EQ(rect2.ToString(), w2->bounds().ToString());
+  EXPECT_TRUE(wm::GetWindowState(w1.get())->can_be_dragged());
+  EXPECT_TRUE(wm::GetWindowState(w2.get())->can_be_dragged());
+}
 #endif  // OS_WIN
 
 }  // namespace ash

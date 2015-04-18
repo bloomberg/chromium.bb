@@ -17,6 +17,7 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/command_line.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/screen.h"
 
@@ -119,6 +120,16 @@ void MaximizeModeWindowManager::OnWindowAdded(aura::Window* window) {
       wm::WMEvent event(wm::WM_EVENT_ADDED_TO_WORKSPACE);
       wm::GetWindowState(window)->OnWMEvent(&event);
     }
+  }
+}
+
+void MaximizeModeWindowManager::OnWindowPropertyChanged(aura::Window* window,
+                                                        const void* key,
+                                                        intptr_t old) {
+  // Stop managing |window| if the always-on-top property is added.
+  if (key == aura::client::kAlwaysOnTopKey &&
+      window->GetProperty(aura::client::kAlwaysOnTopKey)) {
+    ForgetWindow(window);
   }
 }
 
@@ -236,13 +247,19 @@ void MaximizeModeWindowManager::ForgetWindow(aura::Window* window) {
   window->RemoveObserver(this);
 
   // By telling the state object to revert, it will switch back the old
-  // State object and destroy itself, calling WindowStateDerstroyed().
+  // State object and destroy itself, calling WindowStateDestroyed().
   it->second->LeaveMaximizeMode(wm::GetWindowState(it->first));
   DCHECK(window_state_map_.find(window) == window_state_map_.end());
 }
 
 bool MaximizeModeWindowManager::ShouldHandleWindow(aura::Window* window) {
   DCHECK(window);
+
+  // Windows with the always-on-top property should be free-floating and thus
+  // not managed by us.
+  if (window->GetProperty(aura::client::kAlwaysOnTopKey))
+    return false;
+
   return window->type() == ui::wm::WINDOW_TYPE_NORMAL;
 }
 
