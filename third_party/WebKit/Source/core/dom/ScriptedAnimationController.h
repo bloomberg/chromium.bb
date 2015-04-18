@@ -77,12 +77,14 @@ private:
     void executeCallbacks(double monotonicTimeNow);
     void callMediaQueryListListeners();
 
+    bool hasScheduledItems() const;
+
     RawPtrWillBeMember<Document> m_document;
     FrameRequestCallbackCollection m_callbackCollection;
     int m_suspendCount;
     WillBeHeapVector<RefPtrWillBeMember<Event>> m_eventQueue;
     WillBeHeapListHashSet<std::pair<RawPtrWillBeMember<const EventTarget>, const StringImpl*>> m_perFrameEvents;
-    typedef WillBeHeapListHashSet<RefPtrWillBeMember<MediaQueryListListener>> MediaQueryListListeners;
+    using MediaQueryListListeners = WillBeHeapListHashSet<RefPtrWillBeMember<MediaQueryListListener>>;
     MediaQueryListListeners m_mediaQueryListListeners;
 };
 

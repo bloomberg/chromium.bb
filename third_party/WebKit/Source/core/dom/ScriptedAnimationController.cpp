@@ -151,12 +151,17 @@ void ScriptedAnimationController::callMediaQueryListListeners()
     }
 }
 
+bool ScriptedAnimationController::hasScheduledItems() const
+{
+    if (m_suspendCount)
+        return false;
+
+    return !m_callbackCollection.isEmpty() || !m_eventQueue.isEmpty() || !m_mediaQueryListListeners.isEmpty();
+}
+
 void ScriptedAnimationController::serviceScriptedAnimations(double monotonicTimeNow)
 {
-    if (m_callbackCollection.isEmpty() && !m_eventQueue.size() && !m_mediaQueryListListeners.size())
-        return;
-
-    if (m_suspendCount)
+    if (!hasScheduledItems())
         return;
 
     RefPtrWillBeRawPtr<ScriptedAnimationController> protect(this);
@@ -192,13 +197,10 @@ void ScriptedAnimationController::enqueueMediaQueryChangeListeners(WillBeHeapVec
 
 void ScriptedAnimationController::scheduleAnimationIfNeeded()
 {
+    if (!hasScheduledItems())
+        return;
+
     if (!m_document)
-        return;
-
-    if (m_suspendCount)
-        return;
-
-    if (m_callbackCollection.isEmpty() && !m_eventQueue.size() && !m_mediaQueryListListeners.size())
         return;
 
     if (FrameView* frameView = m_document->view())
