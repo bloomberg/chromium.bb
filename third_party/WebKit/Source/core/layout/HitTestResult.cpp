@@ -24,6 +24,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/DocumentMarkerController.h"
+#include "core/dom/PseudoElement.h"
 #include "core/dom/shadow/ComposedTreeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
@@ -152,11 +153,43 @@ void HitTestResult::setToShadowHostIfInUserAgentShadowRoot()
     }
 }
 
+// With PseudoElements the DOM tree and Layout tree can differ. When you attach
+// a, first-letter for example, into the DOM we walk down the Layout
+// tree to find the correct insertion point for the LayoutObject. But, this
+// means if we ask for the parentOrShadowHost Node from the first-letter
+// pseudo element we will get some arbitrary ancestor of the LayoutObject.
+//
+// For hit testing, we need the parent Node of the LayoutObject for the
+// first-letter pseudo element. So, by walking up the Layout tree we know
+// we will get the parent and not some other ancestor.
+static Node* findAssociatedNodeForPseudoElement(Node& n)
+{
+    ASSERT(n.isPseudoElement());
+
+    // The ::backdrop element is parented to the LayoutView, not to the node
+    // that it's associated with. We need to make sure ::backdrop sends the
+    // events to the parent node correctly.
+    if (toPseudoElement(n).pseudoId() == BACKDROP)
+        return n.parentOrShadowHostNode();
+
+    ASSERT(n.layoutObject());
+    ASSERT(n.layoutObject()->parent());
+
+    // We can have any number of anonymous layout objects inserted between
+    // us and our parent so make sure we skip over them.
+    LayoutObject* ancestor = n.layoutObject()->parent();
+    while (ancestor->isAnonymous() || (ancestor->node() && ancestor->node()->isPseudoElement())) {
+        ASSERT(ancestor->parent());
+        ancestor = ancestor->parent();
+    }
+    return ancestor->node();
+}
+
 void HitTestResult::setInnerNode(Node* n)
 {
     m_innerPossiblyPseudoNode = n;
     if (n && n->isPseudoElement())
-        n = n->parentOrShadowHostNode();
+        n = findAssociatedNodeForPseudoElement(*n);
     m_innerNode = n;
 }
 
