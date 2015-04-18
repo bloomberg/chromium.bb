@@ -344,9 +344,7 @@ class BrowserView : public BrowserWindow,
                               bool* is_keyboard_shortcut) override;
   void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) override;
-  void Cut() override;
-  void Copy() override;
-  void Paste() override;
+  void CutCopyPaste(int command_id) override;
   WindowOpenDisposition GetDispositionForPopupBounds(
       const gfx::Rect& bounds) override;
   FindBar* CreateFindBar() override;
@@ -551,12 +549,6 @@ class BrowserView : public BrowserWindow,
   // learning about how frequently the top-row keys are used.
   void UpdateAcceleratorMetrics(const ui::Accelerator& accelerator,
                                 int command_id);
-
-  // Calls |method| which is either WebContents::Cut, ::Copy, or ::Paste,
-  // first trying the content WebContents, then the devtools WebContents, and
-  // lastly the Views::Textfield if one is focused.
-  void DoCutCopyPaste(void (content::WebContents::*method)(),
-                      int command_id);
 
   // Calls |method| which is either WebContents::Cut, ::Copy, or ::Paste on
   // the given WebContents, returning true if it consumed the event.

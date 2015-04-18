@@ -119,9 +119,7 @@ bool CanBasicPrint(Browser* browser);
 #endif  // ENABLE_BASIC_PRINTING
 void EmailPageLocation(Browser* browser);
 bool CanEmailPageLocation(const Browser* browser);
-void Cut(Browser* browser);
-void Copy(Browser* browser);
-void Paste(Browser* browser);
+void CutCopyPaste(Browser* browser, int command_id);
 void Find(Browser* browser);
 void FindNext(Browser* browser);
 void FindPrevious(Browser* browser);

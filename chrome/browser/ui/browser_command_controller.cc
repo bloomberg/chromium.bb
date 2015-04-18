@@ -606,13 +606,9 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
 
     // Clipboard commands
     case IDC_CUT:
-      Cut(browser_);
-      break;
     case IDC_COPY:
-      Copy(browser_);
-      break;
     case IDC_PASTE:
-      Paste(browser_);
+      CutCopyPaste(browser_, id);
       break;
 
     // Find-in-page

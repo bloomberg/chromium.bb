@@ -809,6 +809,14 @@ void Textfield::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
+// This function is called by BrowserView to execute clipboard commands.
+bool Textfield::AcceleratorPressed(const ui::Accelerator& accelerator) {
+  ui::KeyEvent event(accelerator.type(), accelerator.key_code(),
+                     accelerator.modifiers());
+  ExecuteCommand(GetCommandForKeyEvent(event, HasSelection()));
+  return true;
+}
+
 void Textfield::AboutToRequestFocusFromTabTraversal(bool reverse) {
   SelectAll(false);
 }

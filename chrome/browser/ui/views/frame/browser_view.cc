@@ -1461,20 +1461,35 @@ void BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 // to windows. The real fix to this bug is to disable the commands when they
 // won't do anything. We'll need something like an overall clipboard command
 // manager to do that.
-void BrowserView::Cut() {
-  // If a WebContent is focused, call WebContents::Cut. Otherwise, e.g. if
-  // Omnibox is focused, send a Ctrl+x key event to Chrome. Using RWH interface
-  // rather than the fake key event for a WebContent is important since the fake
-  // event might be consumed by the web content (crbug.com/137908).
-  DoCutCopyPaste(&content::WebContents::Cut, IDS_APP_CUT);
-}
+void BrowserView::CutCopyPaste(int command_id) {
+  // If a WebContents is focused, call its member method.
+  WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
+  if (contents) {
+    void (WebContents::*method)();
+    if (command_id == IDC_CUT)
+      method = &content::WebContents::Cut;
+    else if (command_id == IDC_COPY)
+      method = &content::WebContents::Copy;
+    else
+      method = &content::WebContents::Paste;
+    if (DoCutCopyPasteForWebContents(contents, method))
+      return;
 
-void BrowserView::Copy() {
-  DoCutCopyPaste(&content::WebContents::Copy, IDS_APP_COPY);
-}
+    WebContents* devtools =
+        DevToolsWindow::GetInTabWebContents(contents, nullptr);
+    if (devtools && DoCutCopyPasteForWebContents(devtools, method))
+      return;
+  }
 
-void BrowserView::Paste() {
-  DoCutCopyPaste(&content::WebContents::Paste, IDS_APP_PASTE);
+  // Execute the command on the focused view, if possible, by calling
+  // AcceleratorPressed().  Textfields override this to translate and execute
+  // the provided accelerator.
+  views::View* focused = GetFocusManager()->GetFocusedView();
+  if (focused->CanHandleAccelerators()) {
+    ui::Accelerator accelerator;
+    GetAccelerator(command_id, &accelerator);
+    focused->AcceleratorPressed(accelerator);
+  }
 }
 
 WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
@@ -2514,32 +2529,11 @@ ExclusiveAccessContext* BrowserView::GetExclusiveAccessContext() {
   return this;
 }
 
-void BrowserView::DoCutCopyPaste(void (WebContents::*method)(),
-                                 int command_id) {
-  WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
-  if (!contents)
-    return;
-  if (DoCutCopyPasteForWebContents(contents, method))
-    return;
-
-  WebContents* devtools = DevToolsWindow::GetInTabWebContents(contents,
-                                                              nullptr);
-  if (devtools && DoCutCopyPasteForWebContents(devtools, method))
-    return;
-
-  views::FocusManager* focus_manager = GetFocusManager();
-  views::View* focused = focus_manager->GetFocusedView();
-  if (focused &&
-      (!strcmp(focused->GetClassName(), views::Textfield::kViewClassName) ||
-       !strcmp(focused->GetClassName(), OmniboxViewViews::kViewClassName))) {
-    views::Textfield* textfield = static_cast<views::Textfield*>(focused);
-    textfield->ExecuteCommand(command_id);
-  }
-}
-
 bool BrowserView::DoCutCopyPasteForWebContents(
     WebContents* contents,
     void (WebContents::*method)()) {
+  // Using RWH interface rather than a fake key event for a WebContent is
+  // important since a fake event might be consumed by the web content.
   if (contents->GetRenderWidgetHostView()->HasFocus()) {
     (contents->*method)();
     return true;

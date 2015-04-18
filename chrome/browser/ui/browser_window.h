@@ -328,9 +328,7 @@ class BrowserWindow : public ui::BaseWindow {
       const content::NativeWebKeyboardEvent& event) = 0;
 
   // Clipboard commands applied to the whole browser window.
-  virtual void Cut() = 0;
-  virtual void Copy() = 0;
-  virtual void Paste() = 0;
+  virtual void CutCopyPaste(int command_id) = 0;
 
   // Return the correct disposition for a popup window based on |bounds|.
   virtual WindowOpenDisposition GetDispositionForPopupBounds(

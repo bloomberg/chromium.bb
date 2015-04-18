@@ -918,19 +918,14 @@ bool CanEmailPageLocation(const Browser* browser) {
       browser->tab_strip_model()->GetActiveWebContents()->GetURL().is_valid();
 }
 
-void Cut(Browser* browser) {
-  content::RecordAction(UserMetricsAction("Cut"));
-  browser->window()->Cut();
-}
-
-void Copy(Browser* browser) {
-  content::RecordAction(UserMetricsAction("Copy"));
-  browser->window()->Copy();
-}
-
-void Paste(Browser* browser) {
-  content::RecordAction(UserMetricsAction("Paste"));
-  browser->window()->Paste();
+void CutCopyPaste(Browser* browser, int command_id) {
+  if (command_id == IDC_CUT)
+    content::RecordAction(UserMetricsAction("Cut"));
+  else if (command_id == IDC_COPY)
+    content::RecordAction(UserMetricsAction("Copy"));
+  else
+    content::RecordAction(UserMetricsAction("Paste"));
+  browser->window()->CutCopyPaste(command_id);
 }
 
 void Find(Browser* browser) {

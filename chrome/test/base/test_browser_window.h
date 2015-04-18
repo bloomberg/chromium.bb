@@ -135,9 +135,7 @@ class TestBrowserWindow : public BrowserWindow {
                            content::WebContents* web_contents,
                            const GURL& url,
                            const content::SSLStatus& ssl) override {}
-  void Cut() override {}
-  void Copy() override {}
-  void Paste() override {}
+  void CutCopyPaste(int command_id) override {}
   WindowOpenDisposition GetDispositionForPopupBounds(
       const gfx::Rect& bounds) override;
   FindBar* CreateFindBar() override;

@@ -733,16 +733,13 @@ void BrowserWindowCocoa::HandleKeyboardEvent(
     [BrowserWindowUtils handleKeyboardEvent:event.os_event inWindow:window()];
 }
 
-void BrowserWindowCocoa::Cut() {
-  [NSApp sendAction:@selector(cut:) to:nil from:nil];
-}
-
-void BrowserWindowCocoa::Copy() {
-  [NSApp sendAction:@selector(copy:) to:nil from:nil];
-}
-
-void BrowserWindowCocoa::Paste() {
-  [NSApp sendAction:@selector(paste:) to:nil from:nil];
+void BrowserWindowCocoa::CutCopyPaste(int command_id) {
+  if (command_id == IDC_CUT)
+    [NSApp sendAction:@selector(cut:) to:nil from:nil];
+  else if (command_id == IDC_COPY)
+    [NSApp sendAction:@selector(copy:) to:nil from:nil];
+  else
+    [NSApp sendAction:@selector(paste:) to:nil from:nil];
 }
 
 WindowOpenDisposition BrowserWindowCocoa::GetDispositionForPopupBounds(

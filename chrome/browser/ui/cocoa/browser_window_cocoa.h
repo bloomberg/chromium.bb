@@ -144,9 +144,7 @@ class BrowserWindowCocoa
                               bool* is_keyboard_shortcut) override;
   void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) override;
-  void Cut() override;
-  void Copy() override;
-  void Paste() override;
+  void CutCopyPaste(int command_id) override;
   WindowOpenDisposition GetDispositionForPopupBounds(
       const gfx::Rect& bounds) override;
   FindBar* CreateFindBar() override;
