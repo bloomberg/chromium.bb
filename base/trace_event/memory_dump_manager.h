@@ -52,7 +52,7 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   void RequestGlobalDump(MemoryDumpType dump_type,
                          const MemoryDumpCallback& callback);
 
-  // Same as above, but without callback.
+  // Same as above (still asynchronous), but without callback.
   void RequestGlobalDump(MemoryDumpType dump_type);
 
   // TraceLog::EnabledStateObserver implementation.
@@ -78,7 +78,10 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
 
   // Internal, used only by MemoryDumpManagerDelegate.
   // Creates a memory dump for the current process and appends it to the trace.
-  void CreateProcessDump(const MemoryDumpRequestArgs& args);
+  // |callback| will be invoked upon completion on the same thread on which
+  // CreateProcessDump() was called.
+  void CreateProcessDump(const MemoryDumpRequestArgs& args,
+                         const MemoryDumpCallback& callback);
 
   bool InvokeDumpProviderLocked(MemoryDumpProvider* mdp,
                                 ProcessMemoryDump* pmd);
@@ -113,8 +116,9 @@ class BASE_EXPORT MemoryDumpManagerDelegate {
   MemoryDumpManagerDelegate() {}
   virtual ~MemoryDumpManagerDelegate() {}
 
-  void CreateProcessDump(const MemoryDumpRequestArgs& args) {
-    MemoryDumpManager::GetInstance()->CreateProcessDump(args);
+  void CreateProcessDump(const MemoryDumpRequestArgs& args,
+                         const MemoryDumpCallback& callback) {
+    MemoryDumpManager::GetInstance()->CreateProcessDump(args, callback);
   }
 
  private:

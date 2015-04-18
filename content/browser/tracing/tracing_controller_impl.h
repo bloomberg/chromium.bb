@@ -130,6 +130,12 @@ class TracingControllerImpl
   void OnProcessMemoryDumpResponse(TraceMessageFilter* trace_message_filter,
                                    uint64 dump_guid,
                                    bool success);
+
+  // Callback of MemoryDumpManager::CreateProcessDump().
+  void OnBrowserProcessMemoryDumpDone(uint64 dump_guid, bool success);
+
+  void FinalizeGlobalMemoryDumpIfAllProcessesReplied();
+
   void OnWatchEventMatched();
 
   void SetEnabledOnFileThread(
@@ -168,6 +174,7 @@ class TracingControllerImpl
   size_t approximate_event_count_;
 
   // Pending acks for memory RequestGlobalDumpPoint.
+  int pending_memory_dump_ack_count_;
   int failed_memory_dump_count_;
   TraceMessageFilterSet pending_memory_dump_filters_;
   uint64 pending_memory_dump_guid_;

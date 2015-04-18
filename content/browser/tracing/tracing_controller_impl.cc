@@ -168,6 +168,7 @@ TracingControllerImpl::TracingControllerImpl()
       pending_trace_log_status_ack_count_(0),
       maximum_trace_buffer_usage_(0),
       approximate_event_count_(0),
+      pending_memory_dump_ack_count_(0),
       failed_memory_dump_count_(0),
     // Tracing may have been enabled by ContentMainRunner if kTraceStartup
     // is specified in command line.
@@ -650,15 +651,17 @@ void TracingControllerImpl::RemoveTraceMessageFilter(
                      base::trace_event::TraceLogStatus()));
     }
   }
-  TraceMessageFilterSet::const_iterator it =
-      pending_memory_dump_filters_.find(trace_message_filter);
-  if (it != pending_memory_dump_filters_.end()) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&TracingControllerImpl::OnProcessMemoryDumpResponse,
-                   base::Unretained(this),
-                   make_scoped_refptr(trace_message_filter),
-                   pending_memory_dump_guid_, false /* success */));
+  if (pending_memory_dump_ack_count_ > 0) {
+    TraceMessageFilterSet::const_iterator it =
+        pending_memory_dump_filters_.find(trace_message_filter);
+    if (it != pending_memory_dump_filters_.end()) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(&TracingControllerImpl::OnProcessMemoryDumpResponse,
+                     base::Unretained(this),
+                     make_scoped_refptr(trace_message_filter),
+                     pending_memory_dump_guid_, false /* success */));
+    }
   }
   trace_message_filters_.erase(trace_message_filter);
 }
@@ -909,14 +912,18 @@ void TracingControllerImpl::RequestGlobalMemoryDump(
     return;
   }
 
+  // Count myself (local trace) in pending_memory_dump_ack_count_, acked by
+  // OnBrowserProcessMemoryDumpDone().
+  pending_memory_dump_ack_count_ = trace_message_filters_.size() + 1;
   pending_memory_dump_filters_.clear();
   failed_memory_dump_count_ = 0;
 
-  MemoryDumpManagerDelegate::CreateProcessDump(args);
+  MemoryDumpManagerDelegate::CreateProcessDump(
+      args, base::Bind(&TracingControllerImpl::OnBrowserProcessMemoryDumpDone,
+                       base::Unretained(this)));
 
   // If there are no child processes we are just done.
-  TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
-  if (it == trace_message_filters_.end()) {
+  if (pending_memory_dump_ack_count_ == 1) {
     if (!callback.is_null())
       callback.Run(args.dump_guid, true /* success */);
     return;
@@ -926,8 +933,8 @@ void TracingControllerImpl::RequestGlobalMemoryDump(
   pending_memory_dump_callback_ = callback;
   pending_memory_dump_filters_ = trace_message_filters_;
 
-  for (; it != trace_message_filters_.end(); ++it)
-    it->get()->SendProcessMemoryDumpRequest(args);
+  for (const scoped_refptr<TraceMessageFilter>& tmf : trace_message_filters_)
+    tmf->SendProcessMemoryDumpRequest(args);
 }
 
 void TracingControllerImpl::OnProcessMemoryDumpResponse(
@@ -953,20 +960,36 @@ void TracingControllerImpl::OnProcessMemoryDumpResponse(
     return;
   }
 
-  if (!success)
-    failed_memory_dump_count_++;
-
+  DCHECK_GT(pending_memory_dump_ack_count_, 0);
+  --pending_memory_dump_ack_count_;
   pending_memory_dump_filters_.erase(it);
-
-  if (pending_memory_dump_filters_.empty()) {
-    // Got response from all child proceses.
-    if (!pending_memory_dump_callback_.is_null()) {
-      const bool global_success = failed_memory_dump_count_ == 0;
-      pending_memory_dump_callback_.Run(dump_guid, global_success);
-      pending_memory_dump_callback_ = base::trace_event::MemoryDumpCallback();
-    }
-    pending_memory_dump_guid_ = 0;
+  if (!success) {
+    ++failed_memory_dump_count_;
+    DLOG(WARNING) << "Global memory dump failed because of NACK from child "
+                  << trace_message_filter->peer_pid();
   }
+  FinalizeGlobalMemoryDumpIfAllProcessesReplied();
+}
+
+void TracingControllerImpl::OnBrowserProcessMemoryDumpDone(uint64 dump_guid,
+                                                           bool success) {
+  DCHECK_GT(pending_memory_dump_ack_count_, 0);
+  --pending_memory_dump_ack_count_;
+  FinalizeGlobalMemoryDumpIfAllProcessesReplied();
+}
+
+void TracingControllerImpl::FinalizeGlobalMemoryDumpIfAllProcessesReplied() {
+  if (pending_memory_dump_ack_count_ > 0)
+    return;
+
+  DCHECK_NE(0u, pending_memory_dump_guid_);
+  const bool global_success = failed_memory_dump_count_ == 0;
+  if (!pending_memory_dump_callback_.is_null()) {
+    pending_memory_dump_callback_.Run(pending_memory_dump_guid_,
+                                      global_success);
+    pending_memory_dump_callback_.Reset();
+  }
+  pending_memory_dump_guid_ = 0;
 }
 
 void TracingControllerImpl::OnMonitoringStateChanged(bool is_monitoring) {

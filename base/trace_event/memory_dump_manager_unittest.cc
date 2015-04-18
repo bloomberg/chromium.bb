@@ -23,7 +23,7 @@ class MemoryDumpManagerDelegateForTesting : public MemoryDumpManagerDelegate {
   void RequestGlobalMemoryDump(
       const base::trace_event::MemoryDumpRequestArgs& args,
       const MemoryDumpCallback& callback) override {
-    CreateProcessDump(args);
+    CreateProcessDump(args, callback);
   }
 };
 

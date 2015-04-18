@@ -64,6 +64,8 @@ class ChildTraceMessageFilter : public IPC::MessageFilter {
       const scoped_refptr<base::RefCountedString>& events_str_ptr,
       bool has_more_events);
 
+  void OnProcessMemoryDumpDone(uint64 dump_guid, bool success);
+
   IPC::Sender* sender_;
   base::MessageLoopProxy* ipc_message_loop_;
 

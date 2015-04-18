@@ -182,9 +182,15 @@ void ChildTraceMessageFilter::OnMonitoringTraceDataCollected(
 // Sent by the Browser's MemoryDumpManager when coordinating a global dump.
 void ChildTraceMessageFilter::OnProcessMemoryDumpRequest(
     const base::trace_event::MemoryDumpRequestArgs& args) {
-  ChildMemoryDumpManagerDelegateImpl::GetInstance()->CreateProcessDump(args);
+  ChildMemoryDumpManagerDelegateImpl::GetInstance()->CreateProcessDump(
+      args,
+      base::Bind(&ChildTraceMessageFilter::OnProcessMemoryDumpDone, this));
+}
+
+void ChildTraceMessageFilter::OnProcessMemoryDumpDone(uint64 dump_guid,
+                                                      bool success) {
   sender_->Send(
-      new TracingHostMsg_ProcessMemoryDumpResponse(args.dump_guid, true));
+      new TracingHostMsg_ProcessMemoryDumpResponse(dump_guid, success));
 }
 
 // Initiates a dump request, asking the Browser's MemoryDumpManager to

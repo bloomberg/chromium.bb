@@ -49,11 +49,13 @@ const char* MemoryDumpTypeToString(const MemoryDumpType& dump_type) {
 class ProcessMemoryDumpHolder
     : public RefCountedThreadSafe<ProcessMemoryDumpHolder> {
  public:
-  ProcessMemoryDumpHolder(MemoryDumpRequestArgs req_args)
-      : req_args(req_args) {}
+  ProcessMemoryDumpHolder(MemoryDumpRequestArgs req_args,
+                          MemoryDumpCallback callback)
+      : req_args(req_args), callback(callback) {}
 
   ProcessMemoryDump process_memory_dump;
   const MemoryDumpRequestArgs req_args;
+  MemoryDumpCallback callback;
 
  private:
   friend class RefCountedThreadSafe<ProcessMemoryDumpHolder>;
@@ -75,6 +77,11 @@ void FinalizeDumpAndAddToTrace(
       pmd_holder->req_args.dump_guid, kTraceEventNumArgs, kTraceEventArgNames,
       kTraceEventArgTypes, nullptr /* arg_values */, &event_value,
       TRACE_EVENT_FLAG_HAS_ID);
+
+  if (!pmd_holder->callback.is_null()) {
+    pmd_holder->callback.Run(pmd_holder->req_args.dump_guid, true);
+    pmd_holder->callback.Reset();
+  }
 }
 
 }  // namespace
@@ -164,9 +171,10 @@ void MemoryDumpManager::RequestGlobalDump(MemoryDumpType dump_type) {
 }
 
 // Creates a memory dump for the current process and appends it to the trace.
-void MemoryDumpManager::CreateProcessDump(const MemoryDumpRequestArgs& args) {
+void MemoryDumpManager::CreateProcessDump(const MemoryDumpRequestArgs& args,
+                                          const MemoryDumpCallback& callback) {
   scoped_refptr<ProcessMemoryDumpHolder> pmd_holder(
-      new ProcessMemoryDumpHolder(args));
+      new ProcessMemoryDumpHolder(args, callback));
   ProcessMemoryDump* pmd = &pmd_holder->process_memory_dump;
   bool did_any_provider_dump = false;
 
