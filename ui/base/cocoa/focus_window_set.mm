@@ -31,25 +31,25 @@ void FocusWindowSetHelper(const std::set<NSWindow*>& windows,
       all_miniaturized = false;
       frontmost_window_all_spaces = win;
       if ([win isOnActiveSpace]) {
-        [win orderFront:nil];
+        // Raise the old |frontmost_window| (if any). The topmost |win| will be
+        // raised with makeKeyAndOrderFront: below.
+        [frontmost_window orderFront:nil];
         frontmost_window = win;
       }
     }
   }
   if (all_miniaturized && frontmost_miniaturized_window) {
+    DCHECK(!frontmost_window);
     [frontmost_miniaturized_window deminiaturize:nil];
     frontmost_window = frontmost_miniaturized_window;
   }
-  // If we couldn't find one on this window, consider all spaces.
-  if (allow_workspace_switch &&
-      !frontmost_window && frontmost_window_all_spaces) {
+  // If we couldn't find one on the active space, consider all spaces.
+  if (allow_workspace_switch && !frontmost_window)
     frontmost_window = frontmost_window_all_spaces;
-    [frontmost_window orderFront:nil];
-  }
+
   if (frontmost_window) {
+    [frontmost_window makeKeyAndOrderFront:nil];
     [NSApp activateIgnoringOtherApps:YES];
-    [frontmost_window makeMainWindow];
-    [frontmost_window makeKeyWindow];
   }
 }
 
