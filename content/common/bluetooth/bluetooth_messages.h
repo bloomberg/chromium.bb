@@ -33,20 +33,24 @@
 // access Bluetooth devices (requestDevice).
 // """
 //
-// From: Device Discovery:
+// From: Per-origin Bluetooth device properties:
 // """
-// The UA must maintain an allowed devices list for each origin, storing a set
-// of Bluetooth devices the origin is allowed to access. For each device in the
-// allowed devices list for an origin, the UA must maintain an allowed services
-// list consisting of UUIDs for GATT Primary Services the origin is allowed to
-// access on the device. The UA may remove devices from the allowed devices list
-// at any time based on signals from the user. For example, if the user chooses
-// not to remember access, the UA might remove a device when the tab that was
-// granted access to it is closed. Or the UA might provide a revocation UI that
-// allows the user to explicitly remove a device even while a tab is actively
-// using that device. If a device is removed from this list while a Promise is
-// pending to do something with the device, it must be treated the same as if
-// the device moved out of Bluetooth range.
+// For each origin, the UA must maintain an allowed devices map, whose keys are
+// the Bluetooth devices the origin is allowed to access, and whose values are
+// pairs of a DOMString device id and an allowed services list consisting of
+// UUIDs for GATT Primary Services the origin is allowed to access on the
+// device.
+//
+// The UA may remove devices from the allowed devices map at any time based on
+// signals from the user. This needs a definition involving removing
+// BluetoothDevice instances from device instance maps and clearing out their
+// [[representedDevice]] fields. For example, if the user chooses not to
+// remember access, the UA might remove a device when the tab that was granted
+// access to it is closed. Or the UA might provide a revocation UI that allows
+// the user to explicitly remove a device even while a tab is actively using
+// that device. If a device is removed from this list while a Promise is pending
+// to do something with the device, it must be treated the same as if the device
+// moved out of Bluetooth range.
 // """
 //
 // From: Device Discovery: requestDevice
