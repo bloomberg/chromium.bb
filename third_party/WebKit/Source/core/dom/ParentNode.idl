@@ -28,16 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://dom.spec.whatwg.org/#interface-parentnode
+
 [
     LegacyTreatAsPartialInterface,
     NoInterfaceObject, // Always used on target of 'implements'
 ] interface ParentNode {
-    [PerWorldBindings] readonly attribute HTMLCollection children;
-    [PerWorldBindings] readonly attribute Element firstElementChild;
-    [PerWorldBindings] readonly attribute Element lastElementChild;
+    [SameObject, PerWorldBindings] readonly attribute HTMLCollection children;
+    [PerWorldBindings] readonly attribute Element? firstElementChild;
+    [PerWorldBindings] readonly attribute Element? lastElementChild;
     readonly attribute unsigned long childElementCount;
 
-    // NodeSelector - Selector API
-    [RaisesException] Element querySelector(DOMString selectors);
-    [RaisesException] NodeList querySelectorAll(DOMString selectors);
+    // [Unscopeable] void prepend((Node or DOMString)... nodes);
+    // [Unscopeable] void append((Node or DOMString)... nodes);
+
+    // [Unscopeable] Element? query(DOMString relativeSelectors);
+    // [NewObject, Unscopeable] Elements queryAll(DOMString relativeSelectors);
+    [RaisesException] Element? querySelector(DOMString selectors);
+    [NewObject, RaisesException] NodeList querySelectorAll(DOMString selectors);
 };
