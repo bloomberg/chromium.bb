@@ -7,7 +7,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
-#include "base/metrics/user_metrics.h"
+#include "base/test/user_action_tester.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "components/variations/variations_associated_data.h"
 
@@ -66,55 +66,12 @@ struct SparseHistogram {
   {"test.sparse.2", 1, {{24, 2}}},
   {"test.sparse.3", 3, {{1, 1}, {2, 2}, {3, 3}}}};
 
-// This class observes and collects user action notifications that are sent
-// by the tests, so that they can be examined afterwards for correctness.
-class UserActionObserver {
- public:
-  UserActionObserver();
-  ~UserActionObserver();
-
-  void ValidateUserActions(const RecordedUserAction* recorded, int count);
-
- private:
-  typedef std::map<std::string, int> UserActionCountMap;
-
-  void OnUserAction(const std::string& action);
-
-  int num_metrics() const {
-    return count_map_.size();
-  }
-
-  int GetMetricCount(const std::string& name) const {
-    UserActionCountMap::const_iterator i = count_map_.find(name);
-    return i == count_map_.end() ? -1 : i->second;
-  }
-
-  UserActionCountMap count_map_;
-
-  base::ActionCallback action_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(UserActionObserver);
-};
-
-UserActionObserver::UserActionObserver()
-    : action_callback_(base::Bind(&UserActionObserver::OnUserAction,
-                                  base::Unretained(this))) {
-  base::AddActionCallback(action_callback_);
-}
-
-UserActionObserver::~UserActionObserver() {
-  base::RemoveActionCallback(action_callback_);
-}
-
-void UserActionObserver::OnUserAction(const std::string& action) {
-  ++(count_map_[action]);
-}
-
-void UserActionObserver::ValidateUserActions(const RecordedUserAction* recorded,
-                                             int count) {
+void ValidateUserActions(const base::UserActionTester& user_action_tester,
+                         const RecordedUserAction* recorded,
+                         int count) {
   for (int i = 0; i < count; ++i) {
     const RecordedUserAction& ua = recorded[i];
-    EXPECT_EQ(ua.count, GetMetricCount(ua.name));
+    EXPECT_EQ(ua.count, user_action_tester.GetActionCount(ua.name));
   }
 }
 
@@ -169,7 +126,7 @@ void ValidateHistograms(const RecordedHistogram* recorded,
 }  // anonymous namespace
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Metrics) {
-  UserActionObserver observer;
+  base::UserActionTester user_action_tester;
 
   base::FieldTrialList::CreateFieldTrial("apitestfieldtrial2", "group1");
 
@@ -181,6 +138,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Metrics) {
 
   ASSERT_TRUE(RunComponentExtensionTest("metrics")) << message_;
 
-  observer.ValidateUserActions(g_user_actions, arraysize(g_user_actions));
+  ValidateUserActions(user_action_tester, g_user_actions,
+                      arraysize(g_user_actions));
   ValidateHistograms(g_histograms, arraysize(g_histograms));
 }
