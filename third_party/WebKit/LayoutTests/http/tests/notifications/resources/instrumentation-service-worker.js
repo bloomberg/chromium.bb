@@ -1,5 +1,10 @@
 importScripts('/resources/testharness-helpers.js');
 
+// Copies the serializable attributes of |notification|.
+function cloneNotification(notification) {
+    return JSON.parse(stringifyDOMObject(notification));
+}
+
 // Allows a document to exercise the Notifications API within a service worker by sending commands.
 var messagePort = null;
 
@@ -28,6 +33,26 @@ addEventListener('message', function(workerEvent) {
                 });
                 break;
 
+            case 'get':
+                var filter = {};
+                if (typeof (event.data.filter) !== 'undefined')
+                    filter = event.data.filter;
+
+                registration.getNotifications(filter).then(function(notifications) {
+                    var clonedNotifications = [];
+                    for (var notification of notifications)
+                        clonedNotifications.push(cloneNotification(notification));
+
+                    messagePort.postMessage({ command: event.data.command,
+                                              success: true,
+                                              notifications: clonedNotifications });
+                }, function(error) {
+                    messagePort.postMessage({ command: event.data.command,
+                                              success: false,
+                                              message: error.message });
+                });
+                break;
+
             default:
                 messagePort.postMessage({ command: 'error', message: 'Invalid command: ' + event.data.command });
                 break;
@@ -39,8 +64,7 @@ addEventListener('message', function(workerEvent) {
 });
 
 addEventListener('notificationclick', function(event) {
-    // Copies the serializable attributes of the Notification instance on |event|.
-    var notificationCopy = JSON.parse(stringifyDOMObject(event.notification));
+    var notificationCopy = cloneNotification(event.notification);
 
     // Notifications containing "ACTION:CLOSE" in their message will be closed
     // immediately by the Service Worker.
