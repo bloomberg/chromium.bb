@@ -62,7 +62,7 @@ class Hash {
   }
 
   std::string Base16() const {
-    return MD5DigestToBase16(digest_);
+    return base::MD5DigestToBase16(digest_);
   }
 
   base::MD5Digest digest_;
