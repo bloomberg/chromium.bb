@@ -557,12 +557,16 @@ size_t ToolbarActionsBar::GetIconCount() const {
     for (ToolbarActionViewController* action : toolbar_actions_) {
       // No component action should ever have a valid extension id, so we can
       // use this to check the extension amount.
-      // TODO(devlin): Fix this to just check model size when the model also
-      // includes component actions.
       if (crx_file::id_util::IdIsValid(action->GetId()))
         ++num_extension_actions;
     }
-    DCHECK_LE(visible_icons, num_extension_actions);
+
+    int num_component_actions =
+        ComponentToolbarActionsFactory::GetInstance()->
+            GetNumComponentActions();
+    size_t num_total_actions = num_extension_actions + num_component_actions;
+
+    DCHECK_LE(visible_icons, num_total_actions);
     DCHECK_EQ(model_->toolbar_items().size(), num_extension_actions);
   }
 #endif

@@ -412,6 +412,11 @@ source_set("ui") {
             ".",
             "//chrome")
   }
+  if (enable_media_router) {
+    sources += rebase_path(gypi_values.chrome_browser_ui_media_router_sources,
+                           ".",
+                           "//chrome")
+  }
   if (enable_webrtc) {
     sources += rebase_path(gypi_values.chrome_browser_ui_webrtc_sources,
                            ".",

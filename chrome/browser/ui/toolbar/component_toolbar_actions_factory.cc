@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 
 #include "base/lazy_instance.h"
+#include "chrome/browser/ui/toolbar/media_router_action.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "extensions/common/feature_switch.h"
 
@@ -17,7 +18,9 @@ base::LazyInstance<ComponentToolbarActionsFactory> lazy_factory =
 
 }  // namespace
 
-ComponentToolbarActionsFactory::ComponentToolbarActionsFactory() {}
+ComponentToolbarActionsFactory::ComponentToolbarActionsFactory()
+    : num_component_actions_(-1),
+      media_router_ui_enabled_(false) {}
 ComponentToolbarActionsFactory::~ComponentToolbarActionsFactory() {}
 
 // static
@@ -40,8 +43,17 @@ ComponentToolbarActionsFactory::GetComponentToolbarActions() {
   // (since each will have an action in the toolbar or overflow menu), this
   // should be okay. If this changes, we should rethink this design to have,
   // e.g., RegisterChromeAction().
+  if (media_router_ui_enabled_)
+    component_actions.push_back(new MediaRouterAction());
 
   return component_actions.Pass();
+}
+
+int ComponentToolbarActionsFactory::GetNumComponentActions() {
+  if (num_component_actions_ == -1)
+    num_component_actions_ = GetComponentToolbarActions().size();
+
+  return num_component_actions_;
 }
 
 // static

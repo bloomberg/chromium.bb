@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Media Router-specific strings (included from generated_resources.grd). -->
+<grit-part>
+  <message name="IDS_MEDIA_ROUTER_TITLE" desc="Title for media router">
+    Media Router
+  </message>
+</grit-part>

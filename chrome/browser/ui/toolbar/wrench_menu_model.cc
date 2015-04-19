@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/bookmark_sub_menu_model.h"
+#include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
 #include "chrome/browser/upgrade_detector.h"
@@ -1012,9 +1013,13 @@ bool WrenchMenuModel::AddGlobalErrorMenuItems() {
 
 void WrenchMenuModel::CreateExtensionToolbarOverflowMenu() {
   // We only add the extensions overflow container if there are any icons that
-  // aren't shown in the main container.
+  // aren't shown in the main container or if there are component actions.
+  // TODO(apacible): Remove check for component actions when
+  // ExtensionToolbarModel can support them.
   if (!extensions::ExtensionToolbarModel::Get(browser_->profile())->
-          all_icons_visible()) {
+          all_icons_visible() ||
+      ComponentToolbarActionsFactory::GetInstance()->
+          GetNumComponentActions() > 0) {
     AddItem(IDC_EXTENSIONS_OVERFLOW_MENU, base::string16());
     AddSeparator(ui::UPPER_SEPARATOR);
   }
