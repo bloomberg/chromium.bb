@@ -46,7 +46,7 @@ AudioBasicInspectorHandler::AudioBasicInspectorHandler(NodeType nodeType, AudioN
 void AudioBasicInspectorHandler::pullInputs(size_t framesToProcess)
 {
     // Render input stream - try to render directly into output bus for pass-through processing where process() doesn't need to do anything...
-    input(0)->pull(output(0)->bus(), framesToProcess);
+    input(0).pull(output(0).bus(), framesToProcess);
 }
 
 void AudioBasicInspectorNode::connect(AudioNode* destination, unsigned outputIndex, unsigned inputIndex, ExceptionState& exceptionState)
@@ -74,15 +74,15 @@ void AudioBasicInspectorHandler::checkNumberOfChannelsForInput(AudioNodeInput* i
     ASSERT(context()->isAudioThread());
     ASSERT(context()->isGraphOwner());
 
-    ASSERT(input == this->input(0));
-    if (input != this->input(0))
+    ASSERT(input == &this->input(0));
+    if (input != &this->input(0))
         return;
 
     unsigned numberOfChannels = input->numberOfChannels();
 
-    if (numberOfChannels != output(0)->numberOfChannels()) {
+    if (numberOfChannels != output(0).numberOfChannels()) {
         // This will propagate the channel count to any nodes connected further downstream in the graph.
-        output(0)->setNumberOfChannels(numberOfChannels);
+        output(0).setNumberOfChannels(numberOfChannels);
     }
 
     AudioHandler::checkNumberOfChannelsForInput(input);
@@ -94,7 +94,7 @@ void AudioBasicInspectorHandler::updatePullStatus()
 {
     ASSERT(context()->isGraphOwner());
 
-    if (output(0)->isConnected()) {
+    if (output(0).isConnected()) {
         // When an AudioBasicInspectorNode is connected to a downstream node, it will get pulled by the
         // downstream node, thus remove it from the context's automatic pull list.
         if (m_needAutomaticPull) {
@@ -102,7 +102,7 @@ void AudioBasicInspectorHandler::updatePullStatus()
             m_needAutomaticPull = false;
         }
     } else {
-        unsigned numberOfInputConnections = input(0)->numberOfRenderingConnections();
+        unsigned numberOfInputConnections = input(0).numberOfRenderingConnections();
         if (numberOfInputConnections && !m_needAutomaticPull) {
             // When an AudioBasicInspectorNode is not connected to any downstream node while still connected from
             // upstream node(s), add it to the context's automatic pull list.

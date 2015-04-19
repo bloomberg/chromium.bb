@@ -77,15 +77,15 @@ void AudioBasicProcessorHandler::uninitialize()
 
 void AudioBasicProcessorHandler::process(size_t framesToProcess)
 {
-    AudioBus* destinationBus = output(0)->bus();
+    AudioBus* destinationBus = output(0).bus();
 
     if (!isInitialized() || !processor() || processor()->numberOfChannels() != numberOfChannels()) {
         destinationBus->zero();
     } else {
-        AudioBus* sourceBus = input(0)->bus();
+        AudioBus* sourceBus = input(0).bus();
 
         // FIXME: if we take "tail time" into account, then we can avoid calling processor()->process() once the tail dies down.
-        if (!input(0)->isConnected())
+        if (!input(0).isConnected())
             sourceBus->zero();
 
         processor()->process(sourceBus, destinationBus, framesToProcess);
@@ -96,7 +96,7 @@ void AudioBasicProcessorHandler::process(size_t framesToProcess)
 void AudioBasicProcessorHandler::pullInputs(size_t framesToProcess)
 {
     // Render input stream - suggest to the input to render directly into output bus for in-place processing in process() if possible.
-    input(0)->pull(output(0)->bus(), framesToProcess);
+    input(0).pull(output(0).bus(), framesToProcess);
 }
 
 // As soon as we know the channel count of our input, we can lazily initialize.
@@ -107,8 +107,8 @@ void AudioBasicProcessorHandler::checkNumberOfChannelsForInput(AudioNodeInput* i
     ASSERT(context()->isAudioThread());
     ASSERT(context()->isGraphOwner());
 
-    ASSERT(input == this->input(0));
-    if (input != this->input(0))
+    ASSERT(input == &this->input(0));
+    if (input != &this->input(0))
         return;
 
     ASSERT(processor());
@@ -117,14 +117,14 @@ void AudioBasicProcessorHandler::checkNumberOfChannelsForInput(AudioNodeInput* i
 
     unsigned numberOfChannels = input->numberOfChannels();
 
-    if (isInitialized() && numberOfChannels != output(0)->numberOfChannels()) {
+    if (isInitialized() && numberOfChannels != output(0).numberOfChannels()) {
         // We're already initialized but the channel count has changed.
         uninitialize();
     }
 
     if (!isInitialized()) {
         // This will propagate the channel count to any nodes connected further down the chain...
-        output(0)->setNumberOfChannels(numberOfChannels);
+        output(0).setNumberOfChannels(numberOfChannels);
 
         // Re-initialize the processor with the new channel count.
         processor()->setNumberOfChannels(numberOfChannels);
@@ -136,7 +136,7 @@ void AudioBasicProcessorHandler::checkNumberOfChannelsForInput(AudioNodeInput* i
 
 unsigned AudioBasicProcessorHandler::numberOfChannels()
 {
-    return output(0)->numberOfChannels();
+    return output(0).numberOfChannels();
 }
 
 double AudioBasicProcessorHandler::tailTime() const

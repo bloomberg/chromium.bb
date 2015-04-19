@@ -89,14 +89,14 @@ PannerHandler::~PannerHandler()
 
 void PannerHandler::process(size_t framesToProcess)
 {
-    AudioBus* destination = output(0)->bus();
+    AudioBus* destination = output(0).bus();
 
-    if (!isInitialized() || !input(0)->isConnected() || !m_panner.get()) {
+    if (!isInitialized() || !input(0).isConnected() || !m_panner.get()) {
         destination->zero();
         return;
     }
 
-    AudioBus* source = input(0)->bus();
+    AudioBus* source = input(0).bus();
     if (!source) {
         destination->zero();
         return;

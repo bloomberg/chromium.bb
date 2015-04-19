@@ -79,7 +79,7 @@ AudioBufferSourceHandler::~AudioBufferSourceHandler()
 
 void AudioBufferSourceHandler::process(size_t framesToProcess)
 {
-    AudioBus* outputBus = output(0)->bus();
+    AudioBus* outputBus = output(0).bus();
 
     if (!isInitialized()) {
         outputBus->zero();
@@ -362,7 +362,7 @@ void AudioBufferSourceHandler::setBuffer(AudioBuffer* buffer, ExceptionState& ex
             return;
         }
 
-        output(0)->setNumberOfChannels(numberOfChannels);
+        output(0).setNumberOfChannels(numberOfChannels);
 
         m_sourceChannels = adoptArrayPtr(new const float* [numberOfChannels]);
         m_destinationChannels = adoptArrayPtr(new float* [numberOfChannels]);
@@ -382,7 +382,7 @@ void AudioBufferSourceHandler::setBuffer(AudioBuffer* buffer, ExceptionState& ex
 
 unsigned AudioBufferSourceHandler::numberOfChannels()
 {
-    return output(0)->numberOfChannels();
+    return output(0).numberOfChannels();
 }
 
 void AudioBufferSourceHandler::clampGrainParameters(const AudioBuffer* buffer)

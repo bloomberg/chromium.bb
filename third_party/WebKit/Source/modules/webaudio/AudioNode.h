@@ -154,8 +154,10 @@ public:
     unsigned numberOfInputs() const { return m_inputs.size(); }
     unsigned numberOfOutputs() const { return m_outputs.size(); }
 
-    AudioNodeInput* input(unsigned);
-    AudioNodeOutput* output(unsigned);
+    // The argument must be less than numberOfInputs().
+    AudioNodeInput& input(unsigned);
+    // The argument must be less than numberOfOutputs().
+    AudioNodeOutput& output(unsigned);
 
     virtual float sampleRate() const { return m_sampleRate; }
 

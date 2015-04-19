@@ -205,7 +205,7 @@ bool OscillatorHandler::calculateSampleAccuratePhaseIncrements(size_t framesToPr
 
 void OscillatorHandler::process(size_t framesToProcess)
 {
-    AudioBus* outputBus = output(0)->bus();
+    AudioBus* outputBus = output(0).bus();
 
     if (!isInitialized() || !outputBus->numberOfChannels()) {
         outputBus->zero();

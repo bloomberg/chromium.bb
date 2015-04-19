@@ -55,13 +55,13 @@ void GainHandler::process(size_t framesToProcess)
     // happen in the summing junction input of the AudioNode we're connected to.
     // Then we can avoid all of the following:
 
-    AudioBus* outputBus = output(0)->bus();
+    AudioBus* outputBus = output(0).bus();
     ASSERT(outputBus);
 
-    if (!isInitialized() || !input(0)->isConnected()) {
+    if (!isInitialized() || !input(0).isConnected()) {
         outputBus->zero();
     } else {
-        AudioBus* inputBus = input(0)->bus();
+        AudioBus* inputBus = input(0).bus();
 
         if (m_gain->hasSampleAccurateValues()) {
             // Apply sample-accurate gain scaling for precise envelopes, grain windows, etc.
@@ -89,20 +89,20 @@ void GainHandler::checkNumberOfChannelsForInput(AudioNodeInput* input)
     ASSERT(context()->isGraphOwner());
 
     ASSERT(input);
-    ASSERT(input == this->input(0));
-    if (input != this->input(0))
+    ASSERT(input == &this->input(0));
+    if (input != &this->input(0))
         return;
 
     unsigned numberOfChannels = input->numberOfChannels();
 
-    if (isInitialized() && numberOfChannels != output(0)->numberOfChannels()) {
+    if (isInitialized() && numberOfChannels != output(0).numberOfChannels()) {
         // We're already initialized but the channel count has changed.
         uninitialize();
     }
 
     if (!isInitialized()) {
         // This will propagate the channel count to any nodes connected further downstream in the graph.
-        output(0)->setNumberOfChannels(numberOfChannels);
+        output(0).setNumberOfChannels(numberOfChannels);
         initialize();
     }
 

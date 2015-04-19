@@ -78,14 +78,14 @@ void MediaStreamAudioSourceHandler::setFormat(size_t numberOfChannels, float sou
             AudioContext::AutoLocker contextLocker(context());
 
             // Do any necesssary re-configuration to the output's number of channels.
-            output(0)->setNumberOfChannels(numberOfChannels);
+            output(0).setNumberOfChannels(numberOfChannels);
         }
     }
 }
 
 void MediaStreamAudioSourceHandler::process(size_t numberOfFrames)
 {
-    AudioBus* outputBus = output(0)->bus();
+    AudioBus* outputBus = output(0).bus();
 
     if (!audioSourceProvider()) {
         outputBus->zero();

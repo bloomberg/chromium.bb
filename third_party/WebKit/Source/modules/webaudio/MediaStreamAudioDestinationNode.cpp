@@ -63,7 +63,7 @@ MediaStreamAudioDestinationHandler::~MediaStreamAudioDestinationHandler()
 
 void MediaStreamAudioDestinationHandler::process(size_t numberOfFrames)
 {
-    m_mixBus->copyFrom(*input(0)->bus());
+    m_mixBus->copyFrom(*input(0).bus());
     m_source->consumeAudio(m_mixBus.get(), numberOfFrames);
 }
 

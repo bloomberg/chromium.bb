@@ -47,14 +47,14 @@ StereoPannerHandler::~StereoPannerHandler()
 
 void StereoPannerHandler::process(size_t framesToProcess)
 {
-    AudioBus* outputBus = output(0)->bus();
+    AudioBus* outputBus = output(0).bus();
 
-    if (!isInitialized() || !input(0)->isConnected() || !m_stereoPanner.get()) {
+    if (!isInitialized() || !input(0).isConnected() || !m_stereoPanner.get()) {
         outputBus->zero();
         return;
     }
 
-    AudioBus* inputBus = input(0)->bus();
+    AudioBus* inputBus = input(0).bus();
     if (!inputBus) {
         outputBus->zero();
         return;

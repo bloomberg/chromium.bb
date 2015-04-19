@@ -194,18 +194,14 @@ void AudioHandler::addOutput(unsigned numberOfChannels)
     node()->didAddOutput(numberOfOutputs());
 }
 
-AudioNodeInput* AudioHandler::input(unsigned i)
+AudioNodeInput& AudioHandler::input(unsigned i)
 {
-    if (i < m_inputs.size())
-        return m_inputs[i].get();
-    return nullptr;
+    return *m_inputs[i];
 }
 
-AudioNodeOutput* AudioHandler::output(unsigned i)
+AudioNodeOutput& AudioHandler::output(unsigned i)
 {
-    if (i < m_outputs.size())
-        return m_outputs[i].get();
-    return nullptr;
+    return *m_outputs[i];
 }
 
 unsigned long AudioHandler::channelCount()
@@ -294,8 +290,8 @@ void AudioHandler::setChannelInterpretation(const String& interpretation, Except
 
 void AudioHandler::updateChannelsForInputs()
 {
-    for (unsigned i = 0; i < m_inputs.size(); ++i)
-        input(i)->changedOutputs();
+    for (auto& input : m_inputs)
+        input->changedOutputs();
 }
 
 void AudioHandler::processIfNecessary(size_t framesToProcess)
@@ -360,14 +356,14 @@ void AudioHandler::pullInputs(size_t framesToProcess)
     ASSERT(context()->isAudioThread());
 
     // Process all of the AudioNodes connected to our inputs.
-    for (unsigned i = 0; i < m_inputs.size(); ++i)
-        input(i)->pull(0, framesToProcess);
+    for (auto& input : m_inputs)
+        input->pull(0, framesToProcess);
 }
 
 bool AudioHandler::inputsAreSilent()
 {
-    for (unsigned i = 0; i < m_inputs.size(); ++i) {
-        if (!input(i)->bus()->isSilent())
+    for (auto& input : m_inputs) {
+        if (!input->bus()->isSilent())
             return false;
     }
     return true;
@@ -375,14 +371,14 @@ bool AudioHandler::inputsAreSilent()
 
 void AudioHandler::silenceOutputs()
 {
-    for (unsigned i = 0; i < m_outputs.size(); ++i)
-        output(i)->bus()->zero();
+    for (auto& output : m_outputs)
+        output->bus()->zero();
 }
 
 void AudioHandler::unsilenceOutputs()
 {
-    for (unsigned i = 0; i < m_outputs.size(); ++i)
-        output(i)->bus()->clearSilentFlag();
+    for (auto& output : m_outputs)
+        output->bus()->clearSilentFlag();
 }
 
 void AudioHandler::enableOutputsIfNecessary()
@@ -392,8 +388,8 @@ void AudioHandler::enableOutputsIfNecessary()
         AudioContext::AutoLocker locker(context());
 
         m_isDisabled = false;
-        for (unsigned i = 0; i < m_outputs.size(); ++i)
-            output(i)->enable();
+        for (auto& output : m_outputs)
+            output->enable();
     }
 }
 
@@ -418,8 +414,8 @@ void AudioHandler::disableOutputsIfNecessary()
         if (nodeType() != NodeTypeConvolver && nodeType() != NodeTypeDelay) {
             m_isDisabled = true;
             clearInternalStateWhenDisabled();
-            for (unsigned i = 0; i < m_outputs.size(); ++i)
-                output(i)->disable();
+            for (auto& output : m_outputs)
+                output->disable();
         }
     }
 }
@@ -586,7 +582,7 @@ void AudioNode::connect(AudioNode* destination, unsigned outputIndex, unsigned i
         return;
     }
 
-    destination->handler().input(inputIndex)->connect(*handler().output(outputIndex));
+    destination->handler().input(inputIndex).connect(handler().output(outputIndex));
     if (!m_connectedNodes[outputIndex])
         m_connectedNodes[outputIndex] = new HeapHashSet<Member<AudioNode>>();
     m_connectedNodes[outputIndex]->add(destination);
@@ -628,7 +624,7 @@ void AudioNode::connect(AudioParam* param, unsigned outputIndex, ExceptionState&
         return;
     }
 
-    param->handler().connect(*handler().output(outputIndex));
+    param->handler().connect(handler().output(outputIndex));
     if (!m_connectedParams[outputIndex])
         m_connectedParams[outputIndex] = new HeapHashSet<Member<AudioParam>>();
     m_connectedParams[outputIndex]->add(param);
@@ -636,28 +632,28 @@ void AudioNode::connect(AudioParam* param, unsigned outputIndex, ExceptionState&
 
 void AudioNode::disconnectAllFromOutput(unsigned outputIndex)
 {
-    handler().output(outputIndex)->disconnectAll();
+    handler().output(outputIndex).disconnectAll();
     m_connectedNodes[outputIndex] = nullptr;
     m_connectedParams[outputIndex] = nullptr;
 }
 
 bool AudioNode::disconnectFromOutputIfConnected(unsigned outputIndex, AudioNode& destination, unsigned inputIndexOfDestination)
 {
-    AudioNodeOutput* output = handler().output(outputIndex);
-    AudioNodeInput& input = *destination.handler().input(inputIndexOfDestination);
-    if (!output->isConnectedToInput(input))
+    AudioNodeOutput& output = handler().output(outputIndex);
+    AudioNodeInput& input = destination.handler().input(inputIndexOfDestination);
+    if (!output.isConnectedToInput(input))
         return false;
-    output->disconnectInput(input);
+    output.disconnectInput(input);
     m_connectedNodes[outputIndex]->remove(&destination);
     return true;
 }
 
 bool AudioNode::disconnectFromOutputIfConnected(unsigned outputIndex, AudioParam& param)
 {
-    AudioNodeOutput* output = handler().output(outputIndex);
-    if (!output->isConnectedToAudioParam(param.handler()))
+    AudioNodeOutput& output = handler().output(outputIndex);
+    if (!output.isConnectedToAudioParam(param.handler()))
         return false;
-    output->disconnectAudioParam(param.handler());
+    output.disconnectAudioParam(param.handler());
     m_connectedParams[outputIndex]->remove(&param);
     return true;
 }

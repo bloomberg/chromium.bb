@@ -103,8 +103,8 @@ void ScriptProcessorHandler::process(size_t framesToProcess)
     // The JavaScript code is the consumer of inputBuffer and the producer for outputBuffer.
 
     // Get input and output busses.
-    AudioBus* inputBus = this->input(0)->bus();
-    AudioBus* outputBus = this->output(0)->bus();
+    AudioBus* inputBus = input(0).bus();
+    AudioBus* outputBus = output(0).bus();
 
     // Get input and output buffers. We double-buffer both the input and output sides.
     unsigned doubleBufferIndex = this->doubleBufferIndex();
