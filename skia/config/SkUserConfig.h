@@ -245,10 +245,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_GETTOPDEVICE
 #endif
 
-#ifndef    SK_SUPPORT_LEGACY_BLITANTIH2V2
-#   define SK_SUPPORT_LEGACY_BLITANTIH2V2
-#endif
-
 #ifndef    SK_LEGACY_DRAWPICTURECALLBACK
 #   define SK_LEGACY_DRAWPICTURECALLBACK
 #endif
