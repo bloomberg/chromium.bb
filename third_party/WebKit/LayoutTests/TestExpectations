@@ -796,8 +796,7 @@ crbug.com/231910 fast/dom/vertical-scrollbar-in-rtl.html [ Failure Pass ]
 crbug.com/310323 http/tests/pointer-lock/iframe-sandboxed-allow-pointer-lock.html [ Crash Pass ]
 crbug.com/469190 [ XP Release ] fast/transforms/transformed-document-element.html [ Pass ImageOnlyFailure ]
 crbug.com/469190 [ XP Release ] virtual/slimmingpaint/fast/transforms/transformed-document-element.html [ Pass ImageOnlyFailure ]
-# TODO(fmalita): re-enable after SK_SUPPORT_LEGACY_BLITANTIH2V2 rebaseline
-# crbug.com/469190 [ XP Release ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Pass ImageOnlyFailure Failure ]
+crbug.com/469190 [ XP Release ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Pass ImageOnlyFailure Failure ]
 crbug.com/469190 [ XP Release ] svg/as-background-image/svg-as-background-4.html [ Pass ImageOnlyFailure Failure ]
 crbug.com/469190 [ XP ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ ImageOnlyFailure ]
 
@@ -931,8 +930,7 @@ crbug.com/439457 [ Android ] css1/font_properties/font_variant.html [ Timeout Cr
 crbug.com/439457 [ Android ] css1/formatting_model/canvas.html [ Timeout Crash ]
 crbug.com/439457 [ Android ] css1/formatting_model/horizontal_formatting.html [ Timeout Crash ]
 crbug.com/439457 [ Android ] css1/text_properties/text_align.html [ Timeout Crash ]
-# TODO(fmalita): re-enable after SK_SUPPORT_LEGACY_BLITANTIH2V2 rebaseline
-# crbug.com/439457 [ Android ] editing/caret/caret-color.html [ Timeout Crash ]
+crbug.com/439457 [ Android ] editing/caret/caret-color.html [ Timeout Crash ]
 crbug.com/439457 [ Android ] fast/compact/002.html [ Timeout Crash ]
 crbug.com/439457 [ Android ] fast/inline-block/overflow-clip.html [ Timeout Crash ]
 crbug.com/439457 [ Android ] fast/text/chromium-linux-fontconfig-renderstyle.html [ Timeout Crash ]
@@ -1139,8 +1137,7 @@ crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 crbug.com/306222 virtual/slimmingpaint/fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 
-# TODO(fmalita): re-enable after SK_SUPPORT_LEGACY_BLITANTIH2V2 rebaseline
-# crbug.com/362434 [ Mac ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ ImageOnlyFailure Pass ]
+crbug.com/362434 [ Mac ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ ImageOnlyFailure Pass ]
 
 crbug.com/362499 [ Mac ] touchadjustment/context-menu-text-subtargets.html [ Failure Pass ]
 crbug.com/362499 [ Mac ] touchadjustment/touch-inlines.html [ Failure Pass ]
@@ -1662,8 +1659,7 @@ crbug.com/382491 virtual/slimmingpaint/fast/forms/textarea/textarea-appearance-b
 # fast/text/international/bidi-neutral-run.html is missing here, since it has a NeedsManualRebaseline expectation up above.
 crbug.com/421854 [ SnowLeopard ] virtual/antialiasedtext/fast/text/sub-pixel/text-scaling-rtl.html [ Pass Crash ]
 crbug.com/421854 [ Debug SnowLeopard ] virtual/antialiasedtext/fast/text/atsui-bidi-control.html [ Timeout Crash ]
-# TODO(fmalita): re-enable after SK_SUPPORT_LEGACY_BLITANTIH2V2 rebaseline
-# crbug.com/421854 [ Debug SnowLeopard ] fast/dom/52776.html [ Crash ]
+crbug.com/421854 [ Debug SnowLeopard ] fast/dom/52776.html [ Crash ]
 crbug.com/421854 [ Debug SnowLeopard ] fast/text/zero-width-characters-complex-script.html [ Crash ]
 crbug.com/421854 [ Debug SnowLeopard ] virtual/antialiasedtext/fast/text/zero-width-characters-complex-script.html [ Crash ]
 crbug.com/421854 [ SnowLeopard Debug ] virtual/slimmingpaint/fast/text/zero-width-characters-complex-script.html [ Crash ]
@@ -2044,9 +2040,8 @@ crbug.com/463358 [ Debug ] svg/as-background-image/svg-as-background-4.html [ Pa
 crbug.com/463358 svg/custom/massive-coordinates.svg [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/hixie/perf/005.xml [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/hixie/perf/006.xml [ Pass ImageOnlyFailure ]
-# TODO(fmalita): re-enable after SK_SUPPORT_LEGACY_BLITANTIH2V2 rebaseline
-# crbug.com/463358 [ Debug ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ Pass ImageOnlyFailure ]
-# crbug.com/463358 [ Debug ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Pass ImageOnlyFailure ]
+crbug.com/463358 [ Debug ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ Pass ImageOnlyFailure ]
+crbug.com/463358 [ Debug ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Pass ImageOnlyFailure ]
 crbug.com/463358 transforms/2d/hindi-rotated.html [ Pass Failure ImageOnlyFailure ]
 crbug.com/463358 [ Mac ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ Failure NeedsManualRebaseline ]
 
