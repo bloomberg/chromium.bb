@@ -18,29 +18,6 @@ struct WebBluetoothDevice {
         USB
     };
 
-    // TODO(scheib) Remove after http://crrev.com/1052963006
-    WebBluetoothDevice(const WebString& instanceID,
-        const WebString& name,
-        int32_t deviceClass,
-        VendorIDSource vendorIDSource,
-        uint16_t vendorID,
-        uint16_t productID,
-        uint16_t productVersion,
-        bool paired,
-        bool /* connected */,
-        const WebVector<WebString>& uuids)
-        : instanceID(instanceID)
-        , name(name)
-        , deviceClass(deviceClass)
-        , vendorIDSource(vendorIDSource)
-        , vendorID(vendorID)
-        , productID(productID)
-        , productVersion(productVersion)
-        , paired(paired)
-        , uuids(uuids)
-    {
-    }
-
     WebBluetoothDevice(const WebString& instanceID,
         const WebString& name,
         int32_t deviceClass,
