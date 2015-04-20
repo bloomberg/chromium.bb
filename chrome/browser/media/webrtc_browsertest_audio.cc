@@ -6,6 +6,7 @@
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "media/audio/audio_parameters.h"
 #include "media/audio/audio_power_monitor.h"
 #include "media/audio/sounds/wav_audio_handler.h"
 #include "media/base/audio_bus.h"
@@ -60,10 +61,9 @@ float ComputeAudioEnergyForWavFile(const base::FilePath& wav_filename,
   scoped_ptr<media::WavAudioHandler> wav_audio_handler = CreateWavAudioHandler(
       wav_filename, wav_file_data.get(), file_length);
 
-  scoped_ptr<media::AudioBus> audio_bus =
-      media::AudioBus::Create(wav_audio_handler->params());
-  base::TimeDelta file_duration =
-      wav_audio_handler->params().GetBufferDuration();
+  scoped_ptr<media::AudioBus> audio_bus = media::AudioBus::Create(
+      wav_audio_handler->num_channels(), wav_audio_handler->total_frames());
+  base::TimeDelta file_duration = wav_audio_handler->GetDuration();
 
   size_t bytes_written;
   wav_audio_handler->CopyTo(audio_bus.get(), 0, &bytes_written);
@@ -72,11 +72,16 @@ float ComputeAudioEnergyForWavFile(const base::FilePath& wav_filename,
 
   // Set the filter coefficient to the whole file's duration; this will make the
   // power monitor take the entire file into account.
-  media::AudioPowerMonitor power_monitor(
-      wav_audio_handler->params().sample_rate(), file_duration);
+  media::AudioPowerMonitor power_monitor(wav_audio_handler->sample_rate(),
+                                         file_duration);
   power_monitor.Scan(*audio_bus, audio_bus->frames());
 
-  *file_parameters = wav_audio_handler->params();
+  file_parameters->Reset(
+      media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+      media::GuessChannelLayout(wav_audio_handler->num_channels()),
+      wav_audio_handler->num_channels(), wav_audio_handler->sample_rate(),
+      wav_audio_handler->bits_per_sample(), wav_audio_handler->total_frames());
+
   return power_monitor.ReadCurrentPowerAndClip().first;
 }
 

@@ -55,9 +55,7 @@ T ReadInt(const base::StringPiece& data, size_t offset) {
 namespace media {
 
 WavAudioHandler::WavAudioHandler(const base::StringPiece& wav_data)
-    : num_channels_(0),
-      sample_rate_(0),
-      bits_per_sample_(0) {
+    : num_channels_(0), sample_rate_(0), bits_per_sample_(0), total_frames_(0) {
   CHECK_LE(kWavFileHeaderSize, wav_data.size()) << "wav data is too small";
   CHECK(wav_data.starts_with(kChunkId) &&
         memcmp(wav_data.data() + 8, kFormat, 4) == 0)
@@ -72,12 +70,7 @@ WavAudioHandler::WavAudioHandler(const base::StringPiece& wav_data)
     offset += length;
   }
 
-  const int frame_count = data_.size() * 8 / num_channels_ / bits_per_sample_;
-  params_ = AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                            GuessChannelLayout(num_channels_),
-                            sample_rate_,
-                            bits_per_sample_,
-                            frame_count);
+  total_frames_ = data_.size() * 8 / num_channels_ / bits_per_sample_;
 }
 
 WavAudioHandler::~WavAudioHandler() {}
@@ -91,22 +84,27 @@ bool WavAudioHandler::CopyTo(AudioBus* bus,
                              size_t* bytes_written) const {
   if (!bus)
     return false;
-  if (bus->channels() != params_.channels()) {
-    DVLOG(1) << "Number of channel mismatch.";
+  if (bus->channels() != num_channels_) {
+    DVLOG(1) << "Number of channels mismatch.";
     return false;
   }
   if (AtEnd(cursor)) {
     bus->Zero();
     return true;
   }
-  const int remaining_frames =
-      (data_.size() - cursor) / params_.GetBytesPerFrame();
+  const int bytes_per_frame = num_channels_ * bits_per_sample_ / 8;
+  const int remaining_frames = (data_.size() - cursor) / bytes_per_frame;
   const int frames = std::min(bus->frames(), remaining_frames);
-  bus->FromInterleaved(data_.data() + cursor, frames,
-                       params_.bits_per_sample() / 8);
-  *bytes_written = frames * params_.GetBytesPerFrame();
+
+  bus->FromInterleaved(data_.data() + cursor, frames, bits_per_sample_ / 8);
+  *bytes_written = frames * bytes_per_frame;
   bus->ZeroFramesPartial(frames, bus->frames() - frames);
   return true;
+}
+
+base::TimeDelta WavAudioHandler::GetDuration() const {
+  return base::TimeDelta::FromSecondsD(total_frames_ /
+                                       static_cast<double>(sample_rate_));
 }
 
 int WavAudioHandler::ParseSubChunk(const base::StringPiece& data) {

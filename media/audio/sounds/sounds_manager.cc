@@ -73,7 +73,7 @@ base::TimeDelta SoundsManagerImpl::GetDuration(SoundKey key) {
     return base::TimeDelta();
   }
   const WavAudioHandler& wav_audio = handlers_[key]->wav_audio_handler();
-  return wav_audio.params().GetBufferDuration();
+  return wav_audio.GetDuration();
 }
 
 }  // namespace

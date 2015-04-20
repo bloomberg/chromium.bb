@@ -186,10 +186,9 @@ void FileSource::LoadWavFile(const base::FilePath& path_to_wav_file) {
   // modify the wav file's audio parameters since we'll be reading small slices
   // of it at a time and not the whole thing (like 10 ms at a time).
   AudioParameters file_audio_slice(
-      wav_audio_handler_->params().format(),
-      wav_audio_handler_->params().channel_layout(),
-      wav_audio_handler_->params().sample_rate(),
-      wav_audio_handler_->params().bits_per_sample(),
+      AudioParameters::AUDIO_PCM_LOW_LATENCY,
+      GuessChannelLayout(wav_audio_handler_->num_channels()),
+      wav_audio_handler_->sample_rate(), wav_audio_handler_->bits_per_sample(),
       params_.frames_per_buffer());
 
   file_audio_converter_.reset(
@@ -225,7 +224,7 @@ double FileSource::ProvideInput(AudioBus* audio_bus_into_converter,
                              &bytes_written);
   wav_file_read_pos_ += bytes_written;
   return 1.0;
-};
+}
 
 void FileSource::OnError(AudioOutputStream* stream) {
 }
