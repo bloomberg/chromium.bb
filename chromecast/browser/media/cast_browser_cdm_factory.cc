@@ -9,6 +9,8 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "chromecast/browser/media/cma_message_loop.h"
 #include "chromecast/media/cdm/browser_cdm_cast.h"
+#include "media/base/bind_to_current_loop.h"
+#include "media/base/cdm_key_information.h"
 
 namespace chromecast {
 namespace media {
@@ -36,9 +38,12 @@ scoped_ptr<::media::BrowserCdm> CastBrowserCdmFactory::CreateBrowserCdm(
     CmaMessageLoop::GetMessageLoopProxy()->PostTask(
         FROM_HERE,
         base::Bind(&BrowserCdmCast::Initialize,
-                   base::Unretained(browser_cdm.get()), session_message_cb,
-                   session_closed_cb, legacy_session_error_cb,
-                   session_keys_change_cb, session_expiration_update_cb));
+                   base::Unretained(browser_cdm.get()),
+                   ::media::BindToCurrentLoop(session_message_cb),
+                   ::media::BindToCurrentLoop(session_closed_cb),
+                   ::media::BindToCurrentLoop(legacy_session_error_cb),
+                   ::media::BindToCurrentLoop(session_keys_change_cb),
+                   ::media::BindToCurrentLoop(session_expiration_update_cb)));
     return make_scoped_ptr(
         new BrowserCdmCastUi(browser_cdm.Pass(),
                              CmaMessageLoop::GetMessageLoopProxy()));
