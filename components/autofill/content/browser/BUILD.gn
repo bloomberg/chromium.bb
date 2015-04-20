@@ -48,7 +48,6 @@ static_library("browser") {
     "//base:prefs",
     "//components/autofill/content/common",
     "//components/autofill/core/browser",
-    "//components/autofill/core/browser:regexes",
     "//components/autofill/core/common",
     "//components/os_crypt",
     "//components/resources",

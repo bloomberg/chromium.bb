@@ -2,25 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: components/autofill.gyp:autofill_regexes
-action("regexes") {
-  visibility = [ "//components/autofill/*" ]
-  script = "//build/escape_unicode.py"
-
-  inputs = [
-    "autofill_regex_constants.cc.utf8",
-  ]
-  outputs = [
-    "$target_gen_dir/autofill_regex_constants.cc",
-  ]
-
-  args = [
-    "-o",
-    rebase_path(target_gen_dir, root_build_dir),
-  ]
-  args += rebase_path(inputs, root_build_dir)
-}
-
 # GYP version: components/autofill.gyp:autofill_core_browser
 static_library("browser") {
   sources = [
@@ -59,7 +40,7 @@ static_library("browser") {
     "autofill_popup_delegate.h",
     "autofill_profile.cc",
     "autofill_profile.h",
-    "autofill_regex_constants.cc.utf8",
+    "autofill_regex_constants.cc",
     "autofill_regex_constants.h",
     "autofill_regexes.cc",
     "autofill_regexes.h",
@@ -138,9 +119,6 @@ static_library("browser") {
     "webdata/autofill_webdata_service_observer.h",
   ]
 
-  # Compile the generated regex file.
-  sources += get_target_outputs(":regexes")
-
   # Controls whether Wallet cards can be saved to the local instance of chrome.
   if (is_desktop_linux) {
     defines = [ "ENABLE_SAVE_WALLET_CARDS_LOCALLY=0" ]
@@ -149,7 +127,6 @@ static_library("browser") {
   }
 
   deps = [
-    ":regexes",
     "//base",
     "//base:i18n",
     "//base:prefs",
