@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="de">
+<translation id="2774256287122201187">Sie können zu der Seite gehen. In diesem Fall wird diese Warnung fünf Minuten lang nicht mehr angezeigt.</translation>
 <translation id="7485870689360869515">Keine Daten gefunden</translation>
 <translation id="3884278016824448484">In Konflikt stehende Gerätekennung</translation>
 <translation id="6779575937362063477">Dieser Kartentyp wird von Google Wallet nicht unterstützt. Bitte verwenden Sie eine andere Karte.</translation>
@@ -39,6 +40,7 @@
 <translation id="2704283930420550640">Wert stimmt nicht mit dem Format überein.</translation>
 <translation id="4850886885716139402">Anzeigen</translation>
 <translation id="8091372947890762290">Aktivierung auf dem Server steht noch aus.</translation>
+<translation id="4607653538520819196">Datenkomprimierungs-Proxy kann für diese Seite nicht verwendet werden</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Stadtteil</translation>
 <translation id="1871208020102129563">Der Proxy ist zur Verwendung von festen Proxyservern konfiguriert, nicht zur Verwendung einer PAC-Skript-URL.</translation>
@@ -50,6 +52,7 @@
 <translation id="7441627299479586546">Falsche(r) Nutzername/Domain der Richtlinie</translation>
 <translation id="3885155851504623709">Gemeinde</translation>
 <translation id="6973656660372572881">Sowohl feste Proxyserver als auch eine PAC-Skript-URL sind festgelegt.</translation>
+<translation id="1426410128494586442">Ja</translation>
 <translation id="4506176782989081258">Fehler bei der Überprüfung: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">Bei der Übersetzung (<ph name="TARGET_LANGUAGE"/>) ist ein Fehler aufgetreten.</translation>
 <translation id="4103249731201008433">Seriennummer des Geräts ist ungültig.</translation>
@@ -68,12 +71,15 @@
 <translation id="1132774398110320017">AutoFill-Einstellungen für Chrome...</translation>
 <translation id="6458467102616083041">Ignoriert, da Standardsuche durch Richtlinie deaktiviert</translation>
 <translation id="1227224963052638717">Unbekannte Richtlinie</translation>
+<translation id="4250680216510889253">Nein</translation>
 <translation id="9207861905230894330">Der Artikel konnte nicht hinzugefügt werden.</translation>
 <translation id="5872918882028971132">Vorschläge für Eltern</translation>
 <translation id="337363190475750230">Bereitstellung aufgehoben</translation>
 <translation id="2367567093518048410">Ebene</translation>
 <translation id="7977590112176369853">&lt;Suchanfrage eingeben&gt;</translation>
+<translation id="552553974213252141">Wurde der Text korrekt extrahiert?</translation>
 <translation id="7610193165460212391">Wert liegt außerhalb des zulässigen Bereichs (<ph name="VALUE"/>).</translation>
+<translation id="3739623965217189342">Von Ihnen kopierter Link</translation>
 <translation id="8311778656528046050">Möchten Sie diese Seite wirklich aktualisieren?</translation>
 <translation id="370665806235115550">Wird geladen...</translation>
 <translation id="2096368010154057602">Verwaltungsbezirk</translation>
@@ -81,7 +87,6 @@
 <translation id="3024663005179499861">Falscher Richtlinientyp</translation>
 <translation id="2030481566774242610">Meinten Sie <ph name="LINK"/>?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
-<translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, gültig bis: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="225207911366869382">Dieser Wert für die Richtlinie ist veraltet.</translation>
 <translation id="3145945101586104090">Fehler beim Dekodieren der Antwort</translation>
@@ -130,6 +135,7 @@
 <translation id="3228969707346345236">Die Übersetzung ist fehlgeschlagen, weil die Seite bereits auf <ph name="LANGUAGE"/> ist.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="8034522405403831421">Diese Seite ist auf <ph name="SOURCE_LANGUAGE"/>. In folgende Sprache übersetzen: <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="1734864079702812349">American Express</translation>
 <translation id="8891727572606052622">Ungültiger Proxy-Modus</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">Nicht verwaltet</translation>
@@ -203,6 +209,7 @@
 <translation id="8713130696108419660">Erste Signatur ungültig</translation>
 <translation id="20817612488360358">Die System-Proxy-Einstellungen sind zur Verwendung angegeben, gleichzeitig wurde aber auch eine explizite Proxy-Konfiguration festgelegt.</translation>
 <translation id="2639739919103226564">Status:</translation>
+<translation id="4968547170521245791">Proxynutzung nicht möglich</translation>
 <translation id="385051799172605136">Zurück</translation>
 <translation id="5095208057601539847">Provinz</translation>
 <translation id="2581221116934462656">Soll in <ph name="PRODUCT_NAME"/> ab dem nächsten Aufruf eine Übersetzung von Seiten dieser Website angeboten werden, die auf <ph name="LANGUAGE_NAME"/> sind?</translation>
@@ -210,6 +217,7 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Anfrage erfolgreich</translation>
 <translation id="2455981314101692989">Auf dieser Webseite ist die AutoFill-Funktion für das Formular deaktiviert.</translation>
+<translation id="6597614308054261376">Sie versuchen, <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/> zu erreichen. Für diese Seite kann der Datenkomprimierungs-Proxy derzeit nicht verwendet werden.</translation>
 <translation id="8308427013383895095">Die Übersetzung ist aufgrund eines Problems mit der Netzwerkverbindung fehlgeschlagen.</translation>
 <translation id="5720705177508910913">Aktueller Nutzer</translation>
 <translation id="3380864720620200369">Client-ID:</translation>

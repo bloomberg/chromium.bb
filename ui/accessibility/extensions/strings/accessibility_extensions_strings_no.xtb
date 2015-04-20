@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="no">
 <translation id="1408730541890277710">Erstatt bildene med den alternative teksten for dem.</translation>
+<translation id="6017514345406065928">Grønn</translation>
 <translation id="595639123821853262">Inverterte gråtoner</translation>
 <translation id="8260673944985561857">Alternativer for markørsurfing</translation>
 <translation id="3410969471888629217">Fjern tilpasninger av nettsted</translation>
@@ -14,6 +15,8 @@
 <translation id="2394933097471027016">Prøv det nå – markørsurfing er alltid aktivert på denne siden!</translation>
 <translation id="3622586652998721735">Angi som standardvalg</translation>
 <translation id="2179565792157161713">Åpne lang beskrivelse i ny fane</translation>
+<translation id="7942349550061667556">Rød</translation>
+<translation id="1555130319947370107">Blå</translation>
 <translation id="2471847333270902538">Fargevalg for <ph name="SITE"/>:</translation>
 <translation id="381767806621926835">Høyreklikk på noe med et «longdesc»- eller «aria-describedat»-attributt for å få tilgang til den lange beskrivelsen.</translation>
 <translation id="786423340267544509">Legg til kantlinje på elementer med «aria-describedat»- eller «longdesc»-attributter.</translation>

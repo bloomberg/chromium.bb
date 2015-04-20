@@ -156,6 +156,7 @@ Se il problema non si risolve, dovresti riattivare questa opzione per ottenere p
 <translation id="7787950393032327779">Sembra che il profilo sia in uso in un altro processo Google Chrome (<ph name="PROCESS_ID"/>) su un altro computer (<ph name="HOST_NAME"/>). Chrome ha bloccato il profilo affinché non venga danneggiato. Se sei sicuro che nessun altro processo stia utilizzando questo profilo, puoi sbloccare il profilo e riavviare Chrome.</translation>
 <translation id="1469002951682717133">Avvio applicazioni di Chrome</translation>
 <translation id="8568392309447938879">Per poter utilizzare le app, devi eseguire l'accesso su Chrome. Chrome potrà così sincronizzare app, Preferiti, cronologia, password e altre impostazioni tra dispositivi.</translation>
+<translation id="6883876366448858277">invia una parola e il contesto circostante alla Ricerca Google affinché possano essere restituiti definizioni, immagini e altri risultati di ricerca.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome ti permette di scegliere un numero di telefono sul Web e di chiamarlo con Skype.</translation>
 <translation id="3612333635265770873">Un modulo con lo stesso nome risulta in conflitto con Google Chrome.</translation>
@@ -200,7 +201,6 @@ Se il problema non si risolve, dovresti riattivare questa opzione per ottenere p
 <translation id="7396375882099008034">Consenti a Chrome di accedere alla rete nelle impostazioni del firewall o del software
         antivirus.</translation>
 <translation id="9102715433345326100">Il file è dannoso ed è stato bloccato da Chrome.</translation>
-<translation id="3170677364322086041">Questo sito utilizza il plug-in Chrome Frame, che non riceve più aggiornamenti su sicurezza e stabilità perché è stato ritirato. Disinstallalo ed esegui l'upgrade a un browser moderno.</translation>
 <translation id="8205111949707227942">Facoltativo: aiutaci a migliorare Google Chrome OS inviando automaticamente a Google le statistiche sull'utilizzo e segnalazioni sugli arresti anomali.</translation>
 <translation id="7253415505590551024">Sono in corso dei download. Vuoi uscire da Google Chrome e annullare i download?</translation>
 <translation id="487887346205285304">Chrome ha un comportamento insolito?</translation>
@@ -222,7 +222,6 @@ Se il problema non si risolve, dovresti riattivare questa opzione per ottenere p
 <translation id="7825851276765848807">Installazione non riuscita a causa di un errore non specificato. Scarica nuovamente Google Chrome.</translation>
 <translation id="1150979032973867961">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN"/>; il relativo certificato di sicurezza non è considerato attendibile dal sistema operativo del computer. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>
 <translation id="4458285410772214805">Esci ed esegui di nuovo l'accesso per applicare la modifica.</translation>
-<translation id="5489213858994471184">Chrome ha rilevato che le impostazioni del browser potrebbero essere state modificate da un programma del computer a tua insaputa. Puoi utilizzare lo Strumento di rimozione software di Google per rimuovere il programma.</translation>
 <translation id="8679801911857917785">Controlla anche la pagina visualizzata all'avvio di Chrome.</translation>
 <translation id="5334545119300433702">Questo modulo è in conflitto con Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>

@@ -1,21 +1,17 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ko">
 <translation id="6676384891291319759">인터넷 연결</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR"/> The Chromium Authors. All rights reserved.</translation>
-<translation id="7180611975245234373">새로고침</translation>
 <translation id="6373523479360886564">Chromium을 제거하시겠습니까?</translation>
-<translation id="1260240842868558614">보기:</translation>
 <translation id="6510925080656968729">Chromium 설치 제거</translation>
 <translation id="2615699638672665509">이 컴퓨터의 하드웨어가 더 이상 지원되지 않으므로 Chromium 업데이트가 곧 중단됩니다.</translation>
 <translation id="5532301346661895910">Chromium은 비밀번호를 |Google에 저장된 비밀번호|에 저장하여 다음에 필요할 때 제공합니다.</translation>
 <translation id="6893813176749746474">Chromium이 업데이트되었지만, 최소 30일 동안 사용하지 않았습니다.</translation>
 <translation id="2732467638532545152">컴퓨터에서 이 웹사이트의 보안 인증서를 처리할 수 없는 이전 버전의 Microsoft Windows를 실행 중입니다. 이 문제로 인해 <ph name="SITE"/>에서 제공한 인증서인지 <ph name="SITE"/>(으)로 위장한 네트워크의 사용자가 제공한 인증서인지 Chromium에서 확인할 수 없습니다. 컴퓨터를 최신 버전의 Windows로 업데이트하시기 바랍니다.</translation>
 <translation id="2770231113462710648">다음으로 기본 브라우저 변경:</translation>
-<translation id="7982789257301363584">네트워크</translation>
 <translation id="6613594504749178791">변경사항은 다음에 Chromium을 다시 시작할 때 적용됩니다.</translation>
 <translation id="9089354809943900324">Chromium이 이전 버전임</translation>
 <translation id="59625444380784159">연락처 세부정보를 사용하면 Chromium에서 양식을 더욱 신속하게 작성할 수 있습니다.</translation>
 <translation id="3748537968684000502">지금 안전한 Chromium 페이지를 보고 계십니다.</translation>
-<translation id="1165039591588034296">오류</translation>
 <translation id="2077129598763517140">가능한 경우 하드웨어 가속 사용</translation>
 <translation id="1065672644894730302">환경설정을 읽을 수 없습니다.
 
@@ -46,7 +42,6 @@
 <translation id="8987477933582888019">웹브라우저</translation>
 <translation id="4050175100176540509">최신 버전에는 중요한 보안 개선사항 및 새로운 기능이 포함되어 있습니다.</translation>
 <translation id="2886012850691518054">선택사항: 사용 통계 및 오류 보고서가 Google로 자동 전송되도록 선택하시면 Chromium을 개선하는 데 도움이 됩니다.</translation>
-<translation id="1124772482545689468">사용자</translation>
 <translation id="580822234363523061">Chromium 메뉴 &gt;
           <ph name="SETTINGS_TITLE"/>
           &gt;
@@ -54,7 +49,6 @@
           &gt;
           <ph name="PROXIES_TITLE"/>
           (으)로 이동하여 '프록시 없음' 또는 '직접 연결'로 설정되어 있는지 확인합니다.</translation>
-<translation id="1864111464094315414">로그인</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="7729447699958282447">도메인에서 동기화를 사용할 수 없어 Chromium에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="3738139272394829648">터치하여 검색</translation>
@@ -81,12 +75,10 @@
 <translation id="734373864078049451">웹, 북마크 및 기타 Chromium 콘텐츠가 여기에 저장됩니다.</translation>
 <translation id="3197823471738295152">기기가 최신 버전입니다.</translation>
 <translation id="3065280201209294872">사이트에서 오래된 보안 설정을 사용하고 있으므로 향후 Chromium 버전에서 안전하게 액세스하지 못할 수 있습니다.</translation>
-<translation id="2660779039299703961">이벤트</translation>
 <translation id="8551886023433311834">업데이트가 거의 완료되었습니다. 업데이트를 완료하려면 기기를 다시 시작하세요.</translation>
 <translation id="8353224596138547809">Chromium이 이 사이트에서 비밀번호를 저장하도록 하시겠습니까?</translation>
 <translation id="8738058698779197622">보안 연결을 설정하려면 시계가 올바로 설정되어 있어야 합니다. 웹사이트가 자신을 식별하는 데 사용하는 인증서가 특정 기간에만 유효하기 때문입니다. 기기의 시계가 잘못 설정되어 Chromium에서 이 인증서를 확인할 수 없습니다.</translation>
 <translation id="7339898014177206373">새 창</translation>
-<translation id="2739191690716947896">디버그</translation>
 <translation id="7463979740390522693">Chromium - 알림(읽지 않은 알림 <ph name="QUANTITY"/>개)</translation>
 <translation id="225614027745146050">환영합니다.</translation>
 <translation id="5823381412099532241">Chromium을 최신 버전으로 자동 업데이트할 수 없기 때문에 새로운 기능과 보안 수정사항 업데이트가 누락될 수 있습니다. Chromium을 업데이트해야 합니다.</translation>
@@ -104,7 +96,6 @@
 <translation id="3296368748942286671">Chromium 종료 후에도 백그라운드 앱을 계속 실행</translation>
 <translation id="473775607612524610">업데이트</translation>
 <translation id="5466153949126434691">Chromium이 자동으로 업데이트되므로 항상 최신 버전을 사용할 수 있습니다. 이 다운로드가 완료되면 Chromium이 다시 시작되며 계속 작업할 수 있습니다.</translation>
-<translation id="7707841053049645517">이 사이트는 곧 지원이 중단되는 Chromium 프레임 플러그인을 사용 중입니다. 이 플러그인을 제거하고 최신 브라우저로 업그레이드하세요.</translation>
 <translation id="3656661827369545115">컴퓨터를 시작하면 Chromium 자동 실행</translation>
 <translation id="2241627712206172106">컴퓨터를 공유하는 경우 친구와 가족이 개별적으로 탐색하고 원하는 대로 Chromium을 설정할 수 있습니다.</translation>
 <translation id="1763864636252898013">이 서버가 <ph name="DOMAIN"/>임을 입증할 수 없으며 기기의 운영체제에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
@@ -140,7 +131,6 @@
 <translation id="4365115785552740256">Chromium은 <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> 오픈소스 프로젝트를 비롯한 여러 <ph name="BEGIN_LINK_OSS"/>오픈소스 소프트웨어<ph name="END_LINK_OSS"/>에 기초해 만들어진 브라우저입니다.</translation>
 <translation id="9190841055450128916">Chromium(mDNS-In)</translation>
 <translation id="4987820182225656817">손님으로 사용 기록을 남기지 않고 Chromium을 사용할 수 있습니다.</translation>
-<translation id="2216475571518225820">이 사이트는 곧 지원이 중단되는 Chromium 프레임 플러그인을 사용 중입니다. 이 플러그인을 제거하고 호환되는 브라우저를 다운로드하세요.</translation>
 <translation id="3487263810738775861">Chromium을 시작하면 표시되는 페이지가 확장 프로그램으로 인해 변경되었습니다.</translation>
 <translation id="5877064549588274448">채널이 변경되었습니다. 변경사항을 적용하려면 기기를 다시 시작하세요.</translation>
 <translation id="7549178288319965365">Chromium OS 정보</translation>
@@ -162,8 +152,8 @@
 <translation id="8684913864886094367">Chromium이 제대로 종료되지 않았습니다.</translation>
 <translation id="3582788516608077514">Chromium 업데이트 중...</translation>
 <translation id="7223968959479464213">작업 관리자 - Chromium</translation>
-<translation id="6723839937902243910">전원</translation>
 <translation id="1779356040007214683">Google에서는 Chromium의 보안을 강화하기 위해 <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>에 표시되지 않고 사용자 모르게 추가되었을 수 있는 일부 확장 프로그램의 사용을 중지했습니다.</translation>
+<translation id="6883876366448858277">단어와 관련 컨텍스트를 Google 검색에 전송하며 정의, 사진, 기타 검색결과를 표시합니다.</translation>
 <translation id="6638567566961868659">Chromium 메뉴 또는 북마크바에서 북마크를 검색합니다.</translation>
 <translation id="2673087257647337101">업데이트가 거의 완료되었습니다. 업데이트를 완료하려면 Chromium을 다시 시작하세요.</translation>
 <translation id="1293235220023151515">Chromium을 시스템에 설치하는 중에 이전 설치와 충돌이 발생했습니다. 제거한 다음 다시 시도해 주세요.</translation>
@@ -172,7 +162,6 @@
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/>이(가) Chromium에 추가되었습니다.</translation>
 <translation id="549669000822060376">Chromium에서 최신 시스템 업데이트를 설치하는 동안 잠시 기다려 주세요.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4130199216115862831">기기 로그</translation>
 <translation id="4559775032954821361">Chromium 메뉴 &gt;
           <ph name="SETTINGS_TITLE"/>
           &gt;
@@ -226,7 +215,6 @@
 <translation id="7196020411877309443">이 메시지가 표시되는 이유</translation>
 <translation id="457845228957001925">Chromium 데이터 관련 중요 정보</translation>
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS"/>(으)로 로그인되어 있습니다. 이제 로그인한 모든 기기에서 북마크, 방문 기록 및 기타 설정에 액세스할 수 있습니다.</translation>
-<translation id="6429869149766938">Chromium에서 브라우저 설정이 사용자가 모르는 사이에 컴퓨터의 특정 프로그램에 의해 변경된 것을 감지했습니다. Google의 소프트웨어 제거 도구를 사용하면 해당 프로그램을 제거할 수 있습니다.</translation>
 <translation id="7483335560992089831">이미 실행 중인 Chromium과 동일한 버전을 설치할 수 없습니다. Chromium을 종료한 뒤 다시 시도하세요.</translation>
 <translation id="1150979032973867961">이 서버가 <ph name="DOMAIN"/>임을 입증할 수 없으며 컴퓨터의 운영체제에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="7641113255207688324">Chromium이 기본 브라우저로 설정되어 있지 않습니다.</translation>
@@ -237,7 +225,6 @@
 <translation id="2119636228670142020">Chromium OS 정보</translation>
 <translation id="1708666629004767631">새롭고 안전한 Chromium의 새 버전을 사용할 수 있습니다.</translation>
 <translation id="378917192836375108">Chromium을 사용하면 웹에서 전화번호를 클릭하여 Skype로 통화할 수 있습니다.</translation>
-<translation id="2242687258748107519">파일 정보</translation>
 <translation id="8724049448828509830">현재 한 개의 다운로드가 진행 중입니다. Chromium을 종료하고 다운로드를 취소하시겠습니까?</translation>
 <translation id="608189560609172163">로그인 중 오류가 발생하여 Chromium에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="4888717733111232871">Chromium이 mDNS 트래픽을 허용하는 인바운드 규칙입니다.</translation>
@@ -248,7 +235,6 @@
 로그인하면 북마크, 방문 기록 및 기타 설정과 같은 Chromium 정보가 <ph name="ACCOUNT_EMAIL_NEW"/>에 병합됩니다.</translation>
 <translation id="2739631515503418643">현재 여러 개의 다운로드가 진행 중입니다. Chromium을 종료하고 다운로드를 취소하시겠습니까?</translation>
 <translation id="9013262824292842194">Chromium은 Windows Vista 또는 Windows XP 서비스 팩 2 이상이 설치된 컴퓨터에서 사용하실 수 있습니다.</translation>
-<translation id="6231881193380278751">검색어 매개변수를 URL에 추가하여 다음 페이지를 자동으로 새로고침하세요. chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="1967743265616885482">같은 이름의 모듈이 Chromium과 충돌하는 것으로 알려져 있습니다.</translation>
 <translation id="7962572577636132072">Chromium은 자동으로 업데이트되므로 항상 최신 버전을 사용할 수 있습니다.</translation>
 <translation id="722928257909516027">Chromium 메뉴 표시</translation>
@@ -262,7 +248,6 @@
 Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="918373042641772655"><ph name="USERNAME"/>의 연결을 해제하면 이 기기에 저장된 방문 기록, 북마크, 설정 및 Chromium 데이터가 삭제됩니다. Google 계정에 저장된 데이터는 삭제되지 않으며 <ph name="GOOGLE_DASHBOARD_LINK"/>Google 대시보드<ph name="END_GOOGLE_DASHBOARD_LINK"/>에서 관리될 수 있습니다.</translation>
 <translation id="6403826409255603130">Chromium은 빠른 속도로 웹페이지와 애플리케이션을 실행하는 웹 브라우저입니다. 빠르고 안정적이며 사용하기에 편리합니다. Chromium에 내장된 멀웨어 및 악성 코드 방지 기능을 사용하여 더욱 안전하게 웹을 검색하세요.</translation>
-<translation id="930268624053534560">상세 타임스탬프</translation>
 <translation id="4230135487732243613">Chromium 데이터를 이 계정에 연결하시겠습니까?</translation>
 <translation id="2572494885440352020">Chromium 도우미</translation>
 <translation id="7617377681829253106">더욱 업그레이드된 Chromium</translation>

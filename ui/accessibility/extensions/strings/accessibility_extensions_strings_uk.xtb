@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="uk">
 <translation id="1408730541890277710">Заміна зображень альтернативним текстом.</translation>
+<translation id="6017514345406065928">Зелений</translation>
 <translation id="595639123821853262">Інвертовані відтінки сірого</translation>
 <translation id="8260673944985561857">Параметри клавішної навігації</translation>
 <translation id="3410969471888629217">Видалити налаштування сайтів</translation>
@@ -14,6 +15,8 @@
 <translation id="2394933097471027016">Спробуйте. На цій сторінці клавішну навігацію завжди ввімкнено.</translation>
 <translation id="3622586652998721735">Зробити схемою за умовчанням</translation>
 <translation id="2179565792157161713">Відкрити докладний опис у новій вкладці</translation>
+<translation id="7942349550061667556">Червоний</translation>
+<translation id="1555130319947370107">Синій</translation>
 <translation id="2471847333270902538">Схема кольорів для веб-сайту <ph name="SITE"/>:</translation>
 <translation id="381767806621926835">Натисніть правою кнопкою миші будь-який вміст з атрибутом &quot;longdesc&quot; або &quot;aria-describedat&quot;, щоб перейти до його докладного опису.</translation>
 <translation id="786423340267544509">Додавайте контур до елементів за допомогою атрибутів &quot;aria-describedat&quot; або &quot;longdesc&quot;.</translation>

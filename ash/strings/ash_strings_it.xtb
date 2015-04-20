@@ -61,6 +61,7 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="1723752762323179280">Uscita dalla sessione</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
 <translation id="1426410128494586442">Sì</translation>
+<translation id="4804818685124855865">Disconnetti</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Esci</translation>
 <translation id="2391579633712104609">180°</translation>
@@ -142,7 +143,7 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="1753067873202720523">Il Chromebook potrebbe non ricaricarsi mentre è acceso.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> non supporta <ph name="SPECIFIED_RESOLUTION"/>. La risoluzione è stata modificata in <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">Attiva dati mobili</translation>
-<translation id="68610848741840742">ChromeVox (feedback vocale)</translation>
+<translation id="68610848741840742">ChromeVox (lettura vocale)</translation>
 <translation id="6981982820502123353">Accessibilità</translation>
 <translation id="6585808820553845416">La sessione terminerà tra <ph name="SESSION_TIME_REMAINING"/>.</translation>
 <translation id="5977415296283489383">Cuffia</translation>
@@ -189,7 +190,7 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Torna a &quot;<ph name="FROM_LOCALE"/>&quot; (è necessario riavviare)</translation>
 <translation id="8103386449138765447">Messaggi SMS: <ph name="MESSAGE_COUNT"/></translation>
-<translation id="7097613348211027502">ChromeVox (feedback vocale) attivo.
+<translation id="7097613348211027502">ChromeVox (lettura vocale) attivo.
 Premi Ctrl+Alt+Z per disattivarlo.</translation>
 <translation id="5045002648206642691">Impostazioni Google Drive...</translation>
 <translation id="1510238584712386396">Avvio applicazioni</translation>

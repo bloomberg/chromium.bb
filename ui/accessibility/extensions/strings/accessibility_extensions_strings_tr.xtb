@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="tr">
 <translation id="1408730541890277710">Resimleri &quot;alt&quot; metinleri ile değiştirme.</translation>
+<translation id="6017514345406065928">Yeşil</translation>
 <translation id="595639123821853262">Ters Gri Tonlaması</translation>
 <translation id="8260673944985561857">Caret Browsing Seçenekleri</translation>
 <translation id="3410969471888629217">Site özelleştirmelerini unut</translation>
@@ -14,6 +15,8 @@
 <translation id="2394933097471027016">Caret Browsing bu sayfada her zaman etkindir, hemen deneyin!</translation>
 <translation id="3622586652998721735">Varsayılan düzen olarak belirle</translation>
 <translation id="2179565792157161713">Uzun Açıklamayı Yeni Sekmede Aç</translation>
+<translation id="7942349550061667556">Kırmızı</translation>
+<translation id="1555130319947370107">Mavi</translation>
 <translation id="2471847333270902538"><ph name="SITE"/> için renk düzeni:</translation>
 <translation id="381767806621926835">&quot;longdesc&quot; veya &quot;aria-describedat&quot; özelliği olan herhangi bir şeyi sağ tıklayıp uzun açıklamasına erişin.</translation>
 <translation id="786423340267544509">aria-describedat veya longdesc özelliği olan öğelere sınır ekleyin.</translation>

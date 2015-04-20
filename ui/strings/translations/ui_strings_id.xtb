@@ -9,7 +9,7 @@
 <translation id="9213479837033539041">Tersisa <ph name="NUMBER_MANY"/> detik</translation>
 <translation id="1209866192426315618">Tersisa <ph name="NUMBER_DEFAULT"/> menit</translation>
 <translation id="1801827354178857021">Periode</translation>
-<translation id="1190609913194133056">Pusat Pemberitahuan</translation>
+<translation id="1190609913194133056">Pusat Notifikasi</translation>
 <translation id="7470933019269157899">Tersisa <ph name="NUMBER_DEFAULT"/> menit</translation>
 <translation id="5613020302032141669">Panah Kiri</translation>
 <translation id="4971687151119236543">Lacak Media Sebelumnya</translation>
@@ -113,7 +113,7 @@
 <translation id="7634624804467787019"><ph name="NUMBER_ONE"/> menit</translation>
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> dtk. yang lalu</translation>
 <translation id="4927753642311223124">Tidak ada apa-apa di sini, lihat yang lain saja.</translation>
-<translation id="2482878487686419369">Pemberitahuan</translation>
+<translation id="2482878487686419369">Notifikasi</translation>
 <translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> days</translation>
 <translation id="3183922693828471536">Gulir ke Sini</translation>
 <translation id="4552416320897244156">PgDwn</translation>

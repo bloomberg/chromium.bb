@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ru">
 <translation id="1408730541890277710">Замена изображений альтернативным текстом</translation>
+<translation id="6017514345406065928">Зеленый</translation>
 <translation id="595639123821853262">Негатив</translation>
 <translation id="8260673944985561857">Режим активного курсора</translation>
 <translation id="3410969471888629217">Сбросить настройки</translation>
@@ -14,6 +15,8 @@
 <translation id="2394933097471027016">На этой странице можно включить режим активного курсора. Попробуйте!</translation>
 <translation id="3622586652998721735">Установить по умолчанию</translation>
 <translation id="2179565792157161713">Открыть подробное описание в новой вкладке</translation>
+<translation id="7942349550061667556">Красный</translation>
+<translation id="1555130319947370107">Синий</translation>
 <translation id="2471847333270902538">Цветовая схема сайта <ph name="SITE"/>:</translation>
 <translation id="381767806621926835">Нажмите правой кнопкой мыши на элемент с атрибутами longdesc или aria-describedat, чтобы просмотреть его подробное описание.</translation>
 <translation id="786423340267544509">Добавить границу к элементам с атрибутами aria-describedat или longdesc</translation>

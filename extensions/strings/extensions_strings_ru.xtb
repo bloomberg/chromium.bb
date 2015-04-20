@@ -38,7 +38,7 @@
 <translation id="5127881134400491887">Управление сетевыми подключениями</translation>
 <translation id="6344170822609224263">Доступ к списку сетевых подключений</translation>
 <translation id="7039326228527141150">Доступ к USB-устройствам от <ph name="VENDOR_NAME"/></translation>
-<translation id="2616366145935564096">Просмотр и изменение данных на сайте <ph name="WEBSITE_1"/></translation>
+<translation id="2616366145935564096">Просмотр и изменение данных: <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Обмен данными с компьютерами <ph name="HOSTNAMES"/></translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">Доступ к сканерам, подключенным через USB-порт или локальную сеть</translation>

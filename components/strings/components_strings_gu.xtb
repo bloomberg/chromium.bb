@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="gu">
+<translation id="2774256287122201187">તમે ચાલુ રાખી શકો છો. જો તમે પૃષ્ઠ પર ચાલુ રહો છો, તો આ ચેતવણી પાંચ મિનિટ માટે ફરીથી દેખાશે નહીં.</translation>
 <translation id="7485870689360869515">કોઈ ડેટા મળ્યો નથી.</translation>
 <translation id="3884278016824448484">વિરોધાભાસી ઉપકરણ ઓળખકર્તા</translation>
 <translation id="6779575937362063477">Google Wallet દ્વારા આ પ્રકારના કાર્ડને સમર્થન નથી. કૃપા કરીને બીજું કાર્ડ પસંદ કરો.</translation>
@@ -39,6 +40,7 @@
 <translation id="2704283930420550640">મૂલ્ય ફોર્મેટથી મેળ ખાતું  નથી.</translation>
 <translation id="4850886885716139402">જુઓ</translation>
 <translation id="8091372947890762290">સક્રિયતા સર્વર પર બાકી છે</translation>
+<translation id="4607653538520819196">આ પૃષ્ઠ ડેટા સેવર દ્વારા પ્રોક્સી કરી શકાતું નથી.</translation>
 <translation id="719464814642662924">વિઝા</translation>
 <translation id="6839929833149231406">વિસ્તાર</translation>
 <translation id="1871208020102129563">પ્રોક્સી નિયત કરેલા પ્રોક્સી સર્વરનો ઉપયોગ કરવા માટે સેટ કરેલી છે, .pac સ્ક્રિપ્ટ URL નથી.</translation>
@@ -50,6 +52,7 @@
 <translation id="7441627299479586546">ખોટો નીતિ વિષય</translation>
 <translation id="3885155851504623709">પૅરિશ</translation>
 <translation id="6973656660372572881">નિયત પ્રોક્સી સર્વર્સ અને .pac script URL બન્નેનો ઉલ્લેખ કરેલો છે.</translation>
+<translation id="1426410128494586442">હા</translation>
 <translation id="4506176782989081258">માન્યતા ભૂલ: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/> માં અનુવાદ નિષ્ફળ રહ્યો.</translation>
 <translation id="4103249731201008433">ઉપકરણ અનુક્ર્માંક નંબર અમાન્ય છે</translation>
@@ -68,12 +71,15 @@
 <translation id="1132774398110320017">Chrome સ્વતઃભરણ સેટિંગ્સ...</translation>
 <translation id="6458467102616083041">અવગણો કારણ કે નીતિ દ્વારા ડિફૉલ્ટ શોધ અક્ષમ કરેલી છે.</translation>
 <translation id="1227224963052638717">અજ્ઞાત નીતિ.</translation>
+<translation id="4250680216510889253">નહીં</translation>
 <translation id="9207861905230894330">લેખ ઉમેરવામાં નિષ્ફળ થયાં.</translation>
 <translation id="5872918882028971132">પેરેન્ટ સૂચનો</translation>
 <translation id="337363190475750230">જોગવાઈ દૂર કરી</translation>
 <translation id="2367567093518048410">સ્તર</translation>
 <translation id="7977590112176369853">&lt;ક્વેરી દાખલ કરો&gt;</translation>
+<translation id="552553974213252141">શું ટેક્સ્ટ ઠીકથી કાઢી હતી?</translation>
 <translation id="7610193165460212391">મૂલ્ય <ph name="VALUE"/> શ્રેણી બહારનું છે.</translation>
+<translation id="3739623965217189342">તમે કૉપિ કરેલ લિંક</translation>
 <translation id="8311778656528046050">શું તમે ખરેખર આ પૃષ્ઠને ફરીથી લોડ કરવા માંગો છો?</translation>
 <translation id="370665806235115550">લોડ કરી રહ્યું છે...</translation>
 <translation id="2096368010154057602">વિભાગ</translation>
@@ -81,7 +87,6 @@
 <translation id="3024663005179499861">ખોટો નીતિ પ્રકાર</translation>
 <translation id="2030481566774242610">શું તમારો અર્થ <ph name="LINK"/> છે?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
-<translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, સમાપ્તિ: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="225207911366869382">આ નીતિ માટે આ મૂલ્યને નાપસંદ કરેલું છે.</translation>
 <translation id="3145945101586104090">પ્રતિક્રિયા ડિકોડ કરવી નિષ્ફળ થઇ</translation>
@@ -130,6 +135,7 @@
 <translation id="3228969707346345236">ભાષાંતર નિષ્ફળ રહ્યું કારણ કે પૃષ્ઠ પહેલાથી જ <ph name="LANGUAGE"/> માં છે.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="8034522405403831421">આ પૃષ્ઠ <ph name="SOURCE_LANGUAGE"/> માં છે. શું તેનો અનુવાદ <ph name="TARGET_LANGUAGE"/> માં કરીએ?</translation>
+<translation id="1734864079702812349">Amex</translation>
 <translation id="8891727572606052622">અમાન્ય પ્રોક્સી મોડ.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">બિનસંચાલિત</translation>
@@ -203,6 +209,7 @@
 <translation id="8713130696108419660">ખોટી ટૂંકી સહી</translation>
 <translation id="20817612488360358">સિસ્ટમ પ્રોક્સી સેટિંગ્સ ઉપયોગમાં લેવા માટે સેટ છે પણ એક સ્પષ્ટ પ્રોક્સી ગોઠવણી પણ ઉલ્લેખિત કરેલી છે.</translation>
 <translation id="2639739919103226564">સ્થિતિ:</translation>
+<translation id="4968547170521245791">પ્રોક્સી કરી શકાતું નથી</translation>
 <translation id="385051799172605136">પાછળ</translation>
 <translation id="5095208057601539847">પ્રાંત</translation>
 <translation id="2581221116934462656">શું તમે <ph name="PRODUCT_NAME"/> ને આ સાઇટથી આગલી વખતે <ph name="LANGUAGE_NAME"/> પૃષ્ઠોમાં અનુવાદની ઓફર કરવા માગો છો?</translation>
@@ -210,6 +217,7 @@
 <translation id="6965382102122355670">ઓકે</translation>
 <translation id="2721148159707890343">વિનંતી સફળ થઇ</translation>
 <translation id="2455981314101692989">આ વેબપૃષ્ઠે આ ફોર્મનું આપમેળે ભરણ અક્ષમ કર્યું છે.</translation>
+<translation id="6597614308054261376">તમે <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/> પર પહોંચવાનો પ્રયાસ કરી રહ્યાં છો. ડેટા સેવર દ્વારા આ સમયે આ પૃષ્ઠ પ્રોક્સી કરી શકાતું નથી.</translation>
 <translation id="8308427013383895095">નેટવર્ક કનેક્શનમાં સમસ્યાને કારણે ભાષાંતર નિષ્ફળ રહ્યું.</translation>
 <translation id="5720705177508910913">વર્તમાન વપરાશકર્તા</translation>
 <translation id="3380864720620200369">ક્લાઇન્ટ ID:</translation>

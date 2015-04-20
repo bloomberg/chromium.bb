@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sv">
 <translation id="1408730541890277710">Ersätta bilder med deras alternativa text.</translation>
+<translation id="6017514345406065928">Grön</translation>
 <translation id="595639123821853262">Omvänd gråskala</translation>
 <translation id="8260673944985561857">Alternativ för textmarkörläget</translation>
 <translation id="3410969471888629217">Glöm anpassningar av webbplats</translation>
@@ -14,6 +15,8 @@
 <translation id="2394933097471027016">Prova nu – textmarkörläget är alltid aktiverat på den här sidan!</translation>
 <translation id="3622586652998721735">Ange som standardschema</translation>
 <translation id="2179565792157161713">Öppna lång beskrivning på ny flik</translation>
+<translation id="7942349550061667556">Röd</translation>
+<translation id="1555130319947370107">Blå</translation>
 <translation id="2471847333270902538">Färgschema för <ph name="SITE"/>:</translation>
 <translation id="381767806621926835">Högerklicka på någonting med attributet longdesc eller aria-describedat för att komma åt den långa beskrivningen.</translation>
 <translation id="786423340267544509">Lägg till ramar i element med attributen aria-describedat eller longdesc.</translation>

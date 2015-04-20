@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ja">
+<translation id="2774256287122201187">続行できますが、このページに移動するとこの警告は今後 5 分間表示されません。</translation>
 <translation id="7485870689360869515">データが見つかりません。</translation>
 <translation id="3884278016824448484">競合するデバイス識別子です</translation>
 <translation id="6779575937362063477">この種類のカードは Google ウォレットでご利用いただけません。別のカードを選択してください。</translation>
@@ -39,6 +40,7 @@
 <translation id="2704283930420550640">値が有効な形式ではありません。</translation>
 <translation id="4850886885716139402">表示</translation>
 <translation id="8091372947890762290">サーバーで有効化が保留になっています</translation>
+<translation id="4607653538520819196">データセーバーはこのページをプロキシ送信できません。</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">地域</translation>
 <translation id="1871208020102129563">プロキシは .pac スクリプト URL ではなく固定プロキシ サーバーを使用するように設定されています。</translation>
@@ -50,6 +52,7 @@
 <translation id="7441627299479586546">ポリシーの対象が間違っています</translation>
 <translation id="3885155851504623709">教区</translation>
 <translation id="6973656660372572881">固定プロキシ サーバーと .pac スクリプト URL の両方が指定されています。</translation>
+<translation id="1426410128494586442">はい</translation>
 <translation id="4506176782989081258">検証エラー: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/>に翻訳できませんでした。</translation>
 <translation id="4103249731201008433">デバイスのシリアル番号が無効です</translation>
@@ -68,12 +71,15 @@
 <translation id="1132774398110320017">Chrome の自動入力設定...</translation>
 <translation id="6458467102616083041">ポリシーによってデフォルトの検索が無効にされているため無視されます。</translation>
 <translation id="1227224963052638717">不明なポリシー。</translation>
+<translation id="4250680216510889253">いいえ</translation>
 <translation id="9207861905230894330">記事を追加できませんでした。</translation>
 <translation id="5872918882028971132">保護者からのおすすめ</translation>
 <translation id="337363190475750230">プロビジョニングが解除されました</translation>
 <translation id="2367567093518048410">レベル</translation>
 <translation id="7977590112176369853">&lt;検索キーワードを入力&gt;</translation>
+<translation id="552553974213252141">テキストは正しく抽出されましたか？</translation>
 <translation id="7610193165460212391">値（<ph name="VALUE"/>）が範囲外です。</translation>
+<translation id="3739623965217189342">コピーしたリンク</translation>
 <translation id="8311778656528046050">このページを再読み込みしてもよろしいですか？</translation>
 <translation id="370665806235115550">読み込み中...</translation>
 <translation id="2096368010154057602">県</translation>
@@ -81,7 +87,6 @@
 <translation id="3024663005179499861">ポリシー タイプが間違っています</translation>
 <translation id="2030481566774242610">もしかして: <ph name="LINK"/></translation>
 <translation id="3450660100078934250">MasterCard</translation>
-<translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>、有効期限: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="225207911366869382">この値は、このポリシーではサポートが終了しています。</translation>
 <translation id="3145945101586104090">応答をデコードできませんでした</translation>
@@ -130,6 +135,7 @@
 <translation id="3228969707346345236">このページは既に<ph name="LANGUAGE"/>なので、翻訳できません。</translation>
 <translation id="7521387064766892559">Javascript</translation>
 <translation id="8034522405403831421">このページの言語は<ph name="SOURCE_LANGUAGE"/>です。<ph name="TARGET_LANGUAGE"/>に翻訳しますか？</translation>
+<translation id="1734864079702812349">AMEX</translation>
 <translation id="8891727572606052622">プロキシ モードが無効です。</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">管理されていません</translation>
@@ -203,6 +209,7 @@
 <translation id="8713130696108419660">無効なイニシャル署名です</translation>
 <translation id="20817612488360358">システム プロキシ設定を使用するように設定されていますが、明示的なプロキシの設定も指定されています。</translation>
 <translation id="2639739919103226564">ステータス:</translation>
+<translation id="4968547170521245791">プロキシ不可</translation>
 <translation id="385051799172605136">戻る</translation>
 <translation id="5095208057601539847">地方</translation>
 <translation id="2581221116934462656">次回、<ph name="PRODUCT_NAME"/> でこのサイトの<ph name="LANGUAGE_NAME"/>ページを翻訳しますか？</translation>
@@ -210,6 +217,7 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">リクエストを正常に送信しました</translation>
 <translation id="2455981314101692989">このウェブページでは、フォームへの自動入力が無効になっています。</translation>
+<translation id="6597614308054261376"><ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/> にアクセスしようとしています。データセーバーは現在、このページをプロキシ送信できません。</translation>
 <translation id="8308427013383895095">ネットワーク接続に問題があったため翻訳できませんでした。</translation>
 <translation id="5720705177508910913">現在のユーザー</translation>
 <translation id="3380864720620200369">クライアント ID:</translation>

@@ -169,6 +169,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="7787950393032327779">Dường như cấu hình này đang được quy trình Google Chrome khác (<ph name="PROCESS_ID"/>) trên máy tính khác (<ph name="HOST_NAME"/>) sử dụng. Chrome đã khóa cấu hình này để cấu hình không bị lỗi. Nếu bạn chắc chắn không có quy trình nào khác đang sử dụng cấu hình này, bạn có thể mở khóa cấu hình và chạy lại Chrome.</translation>
 <translation id="1469002951682717133">Trình chạy ứng dụng Chrome</translation>
 <translation id="8568392309447938879">Bạn cần đăng nhập vào Chrome để sử dụng ứng dụng. Điều này cho phép Chrome đồng bộ hóa ứng dụng, dấu trang, lịch sử, mật khẩu và cài đặt khác của bạn trên các thiết bị.</translation>
+<translation id="6883876366448858277">gửi một từ và ngữ cảnh xung quanh từ đó tới Google Tìm kiếm, trả về định nghĩa, hình ảnh và các kết quả tìm kiếm khác.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome cho phép bạn nhấp vào số điện thoại trên web và gọi tới số đó bằng Skype!</translation>
 <translation id="3612333635265770873">Một mô-đun có cùng tên đã được xác định là xung đột với Google Chrome.</translation>
@@ -213,7 +214,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="7396375882099008034">Cho phép Chrome truy cập mạng trong cài đặt tường lửa hoặc diệt vi-rút
         của bạn.</translation>
 <translation id="9102715433345326100">Đây là tệp độc hại và Chrome đã chặn tệp này.</translation>
-<translation id="3170677364322086041">Trang web này đang sử dụng plugin Chrome Frame đã ngừng hoạt động. Plugin này không còn nhận được các bản cập nhật về bảo mật và độ ổn định. Vui lòng gỡ cài đặt và nâng cấp lên trình duyệt hiện đại.</translation>
 <translation id="8205111949707227942">Tùy chọn: Giúp cải thiện Hệ điều hành Chrome bằng cách tự động gửi về Google thống kê sử dụng và báo cáo sự cố.</translation>
 <translation id="7253415505590551024">Quá trình tải xuống hiện đang diễn ra. Bạn có muốn thoát Google Chrome và hủy tải xuống không?</translation>
 <translation id="487887346205285304">Chrome hoạt động không bình thường?</translation>
@@ -235,7 +235,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="7825851276765848807">Không thể cài đặt do lỗi không xác định. Hãy tải xuống lại Google Chrome.</translation>
 <translation id="1150979032973867961">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN"/>; chứng chỉ bảo mật của máy chủ này không được hệ điều hành máy tính của bạn tin cậy. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="4458285410772214805">Vui lòng đăng xuất và đăng nhập lại để thay đổi này có hiệu lực.</translation>
-<translation id="5489213858994471184">Chrome phát hiện thấy cài đặt trình duyệt có thể đã bị một chương trình trên máy tính của bạn thay đổi mà bạn không hề biết. Bạn có thể sử dụng Công cụ xóa phần mềm của Google để xóa chương trình đó.</translation>
 <translation id="8679801911857917785">Tiện ích này cũng điều khiển trang nào được hiển thị khi bạn khởi động Chrome.</translation>
 <translation id="5334545119300433702">Mô-đun này được xác định là xung đột với Google Chrome.</translation>
 <translation id="4407807842708586359">Hệ điều hành Google Chrome</translation>

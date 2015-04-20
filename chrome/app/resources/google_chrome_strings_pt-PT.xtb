@@ -164,6 +164,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="7787950393032327779">O perfil parece estar a ser utilizado por outro processo do Google Chrome (<ph name="PROCESS_ID"/>) noutro computador (<ph name="HOST_NAME"/>). O Chrome bloqueou o perfil para que não seja danificado. Se tiver a certeza de que não existem outros processos a utilizar este perfil, pode desbloqueá-lo e reiniciar o Chrome.</translation>
 <translation id="1469002951682717133">Iniciador de Aplicações do Chrome</translation>
 <translation id="8568392309447938879">Tem de ter sessão iniciada no Chrome para utilizar aplicações. Deste modo, o Chrome pode sincronizar as aplicações, os marcadores, o histórico, as palavras-passe e outras definições entre dispositivos.</translation>
+<translation id="6883876366448858277">envia uma palavra e o respetivo contexto circundante à Pesquisa Google, que devolve definições, imagens e outros resultados da pesquisa.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">O Google Chrome permite-lhe clicar num número de telefone na Web e fazer a chamada com o Skype!</translation>
 <translation id="3612333635265770873">É conhecido um módulo com o mesmo nome que entra em conflito com o Google Chrome.</translation>
@@ -205,7 +206,6 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="8255190535488645436">O Google Chrome está a utilizar a câmara e o microfone.</translation>
 <translation id="7396375882099008034">Permita que o Chrome aceda à rede nas definições da sua firewall ou antivírus.</translation>
 <translation id="9102715433345326100">Este ficheiro é malicioso e o Chrome bloqueou-o.</translation>
-<translation id="3170677364322086041">Este site utiliza o plug-in Google Chrome Frame descontinuado, que deixou de receber atualizações de segurança e estabilidade. Desinstale-o e atualize para um navegador moderno.</translation>
 <translation id="8205111949707227942">Opcional: Ajude a melhorar o Chrome OS ao enviar automaticamente estatísticas de utilização e relatórios de falhas para a Google.</translation>
 <translation id="7253415505590551024">As transferências estão atualmente em curso. Pretende sair do Google Chrome e cancelar as transferências?</translation>
 <translation id="487887346205285304">O Chrome está a comportar-se de forma estranha?</translation>
@@ -227,7 +227,6 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="7825851276765848807">Ocorreu uma falha na instalação devido a um erro não especificado. Transfira novamente o Google Chrome.</translation>
 <translation id="1150979032973867961">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN"/>; o sistema operativo do seu computador não confia no respetivo certificado de segurança. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="4458285410772214805">Termine sessão e volte a iniciar sessão para que esta alteração tenha efeito.</translation>
-<translation id="5489213858994471184">O Chrome detetou a possível alteração das definições do seu navegador por um programa no seu computador, sem o seu conhecimento. Pode utilizar a Software Removal Tool da Google para remover esse programa.</translation>
 <translation id="8679801911857917785">Também controla a página apresentada quando inicia o Chrome.</translation>
 <translation id="5334545119300433702">Este módulo é conhecido por entrar em conflito com o Google Chrome.</translation>
 <translation id="4407807842708586359">SO do Google Chrome</translation>

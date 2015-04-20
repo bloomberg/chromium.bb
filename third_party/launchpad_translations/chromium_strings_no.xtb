@@ -1,21 +1,17 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="no">
 <translation id="6676384891291319759">Gå til Internett</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR"/> – The Chromium Authors. Med enerett.</translation>
-<translation id="7180611975245234373">Last inn på nytt</translation>
 <translation id="6373523479360886564">Er du sikker på at du vil avinstallere Chromium?</translation>
-<translation id="1260240842868558614">Vis:</translation>
 <translation id="6510925080656968729">Avinstaller Chromium</translation>
 <translation id="2615699638672665509">Denne datamaskinen slutter snart å motta Chromium-oppdateringer. Dette skjer fordi maskinvaren ikke støttes lenger.</translation>
 <translation id="5532301346661895910">Chromium lagrer dette i de |Google-lagrede passordene| dine og husker det neste gang du trenger det.</translation>
 <translation id="6893813176749746474">Chromium har blitt oppdatert, men du har ikke brukt den på minst 30 dager.</translation>
 <translation id="2732467638532545152">Datamaskinen din kjører en gammel versjon av Microsoft Windows som ikke kan behandle dette nettstedets sikkerhetssertifikat. På grunn av dette problemet kan ikke Chromium vite om sertifikatet kom fra <ph name="SITE"/> eller fra noen på nettverket ditt som utgir seg for å være <ph name="SITE"/>. Oppdater datamaskinen din til en nyere versjon av Windows.</translation>
 <translation id="2770231113462710648">Endre standardnettleser til:</translation>
-<translation id="7982789257301363584">Nettverk</translation>
 <translation id="6613594504749178791">Endringene dine trer i kraft neste gang du starter Chromium.</translation>
 <translation id="9089354809943900324">Chromium er utdatert</translation>
 <translation id="59625444380784159">Informasjon fra kontaktene dine kan hjelpe deg med å fylle ut skjemaer raskere i Chromium.</translation>
 <translation id="3748537968684000502">Du ser på en sikker Chromium-side.</translation>
-<translation id="1165039591588034296">Feil</translation>
 <translation id="2077129598763517140">Bruk maskinvareakselerasjon når det er tilgjengelig</translation>
 <translation id="1065672644894730302">Kan ikke lese innstillingene. Enkelte funksjoner kan være utilgjengelige, og endringer av innstillingene blir ikke lagret.</translation>
 <translation id="7861509383340276692">Gå til
@@ -45,7 +41,6 @@
 <translation id="8987477933582888019">Nettleser</translation>
 <translation id="4050175100176540509">Viktige sikkerhetsforbedringer og nye funksjoner er tilgjengelige i den nyeste versjonen.</translation>
 <translation id="2886012850691518054">Valgfritt: Bidra til å gjøre Chromium bedre ved å sende brukerstatistikk og krasjrapporter automatisk til Google.</translation>
-<translation id="1124772482545689468">Bruker</translation>
 <translation id="580822234363523061">Gå til
           Chromium-menyen &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -54,7 +49,6 @@
           &gt;
           <ph name="PROXIES_TITLE"/>
           og sørg for at konfigurasjonen din er angitt til «ingen mellomtjener» eller «direkte».</translation>
-<translation id="1864111464094315414">Pålogging</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> – Chromium</translation>
 <translation id="7729447699958282447">Chromium kunne ikke synkronisere dataene dine. Dette skyldes at synkronisering ikke er tilgjengelig for domenet ditt.</translation>
 <translation id="3738139272394829648">Trykk for å søke</translation>
@@ -81,12 +75,10 @@
 <translation id="734373864078049451">Her finner du nettinnholdet, bokmerkene og de andre Chromium-tingene dine.</translation>
 <translation id="3197823471738295152">Enheten er oppdatert.</translation>
 <translation id="3065280201209294872">Dette nettstedet bruker utdaterte sikkerhetsinnstillinger som kan føre til at fremtidige versjoner av Chromium ikke kan opprette sikre tilkoblinger til det.</translation>
-<translation id="2660779039299703961">Aktivitet</translation>
 <translation id="8551886023433311834">Nesten oppdatert! Start enheten på nytt for å fullføre oppdateringen.</translation>
 <translation id="8353224596138547809">Vil du at Chromium skal lagre passordet du bruker på dette nettstedet?</translation>
 <translation id="8738058698779197622">Klokken din må være riktig stilt for at du skal kunne opprette en sikker forbindelse. Sertifikatene som nettsteder bruker til å identifisere seg med, er nemlig bare gyldige i en viss tid. Siden enhetens klokke er feil, kan ikke Chromium kontrollere disse sertifikatene.</translation>
 <translation id="7339898014177206373">Nytt vindu</translation>
-<translation id="2739191690716947896">Feilsøk</translation>
 <translation id="7463979740390522693">Chromium – varsler (<ph name="QUANTITY"/> uleste)</translation>
 <translation id="225614027745146050">Velkommen</translation>
 <translation id="5823381412099532241">Chromium kunne ikke oppdatere seg selv til den nyeste versjonen, så du går glipp av fantastiske nye funksjoner og sikkerhetsforbedringer. Du må oppdatere Chromium.</translation>
@@ -104,7 +96,6 @@
 <translation id="3296368748942286671">Fortsett å kjøre bakgrunnsprogrammer når Chromium er lukket</translation>
 <translation id="473775607612524610">Oppdater</translation>
 <translation id="5466153949126434691">Chromium oppdateres automatisk, sånn at du alltid har den nyeste versjonen. Når denne nedlastingen er fullført, kommer Chromium til å starte på nytt, og du er i gang.</translation>
-<translation id="7707841053049645517">Dette nettstedet bruker Chromium Frame-programtillegget, som snart ikke lenger støttes. Avinstaller det og oppgrader til en nyere nettleser.</translation>
 <translation id="3656661827369545115">Start Chromium automatisk når datamaskinen din starter</translation>
 <translation id="2241627712206172106">Hvis du deler en datamaskin med andre, kan venner og familie surfe hver for seg og konfigurere Chromium akkurat slik de vil.</translation>
 <translation id="1763864636252898013">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN"/>. Sikkerhetssertifikatet til tjeneren er ikke klarert av enhetens operativsystem. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
@@ -140,7 +131,6 @@
 <translation id="4365115785552740256">Chromium er gjort mulig av åpen kilde-prosjektet <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> og annen <ph name="BEGIN_LINK_OSS"/>åpen kilde-programvare<ph name="END_LINK_OSS"/>.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-Inn)</translation>
 <translation id="4987820182225656817">Gjester kan bruke Chromium uten å etterlate seg spor.</translation>
-<translation id="2216475571518225820">Dette nettstedet bruker Chromium Frame-programtillegget, som snart ikke lenger støttes. Avinstaller det og last ned en kompatibel nettleser.</translation>
 <translation id="3487263810738775861">En utvidelse har endret hvilken side som vises når du starter Chromium.</translation>
 <translation id="5877064549588274448">Kanalen ble endret. Start enheten på nytt for å aktivere endringene.</translation>
 <translation id="7549178288319965365">Om Chromium OS</translation>
@@ -162,8 +152,8 @@ og feil legitimasjon. Enten utgir en hacker seg for å være <ph name="SITE"/>, 
 <translation id="8684913864886094367">Chromium ble ikke avsluttet på riktig måte.</translation>
 <translation id="3582788516608077514">Oppdaterer Chromium …</translation>
 <translation id="7223968959479464213">Oppgavebehandling – Chromium</translation>
-<translation id="6723839937902243910">Strøm</translation>
 <translation id="1779356040007214683">For å gjøre Chromium tryggere, har vi deaktivert noen utvidelser som ikke er oppført i <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>, og som kan ha blitt lagt uten at du har vært klar over det.</translation>
+<translation id="6883876366448858277">sender et ord og den omkringliggende konteksten til Google Søk. Definisjoner, bilder og andre søkeresultater blir sendt tilbake.</translation>
 <translation id="6638567566961868659">Finn bokmerkene dine i Chromium-menyen eller på bokmerkeraden.</translation>
 <translation id="2673087257647337101">Nå er oppdateringen snart ferdig! Start Chromium på nytt for å fullføre oppdateringen.</translation>
 <translation id="1293235220023151515">Det ble funnet en konfliktskapende installasjon av Chromium på systemet. Avinstaller den og prøv på nytt.</translation>
@@ -172,7 +162,6 @@ og feil legitimasjon. Enten utgir en hacker seg for å være <ph name="SITE"/>, 
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> har blitt lagt til i Chromium.</translation>
 <translation id="549669000822060376">Vent mens Chromium installerer de nyeste systemoppdateringene.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4130199216115862831">Enhetslogg</translation>
 <translation id="4559775032954821361">Gå til
           Chromium-menyen &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -225,7 +214,6 @@ Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilka
 <translation id="7196020411877309443">Hvorfor vises dette?</translation>
 <translation id="457845228957001925">Viktig informasjon om Chromium-dataene dine</translation>
 <translation id="4567424176335768812">Du er logget på som <ph name="USER_EMAIL_ADDRESS"/>. Nå kan du bruke bokmerkene, loggen og andre innstillinger på alle enhetene du er logget på.</translation>
-<translation id="6429869149766938">Chromium har oppdaget at nettleserinnstillingene dine kanskje har blitt endret av et program på datamaskinen din, uten ditt samtykke. Du kan bruke Googles Software Removal Tool til å fjerne det aktuelle programmet.</translation>
 <translation id="7483335560992089831">Kan ikke installere den samme Chromium-versjonen som kjører. Lukk Chromium og prøv på nytt.</translation>
 <translation id="1150979032973867961">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN"/>. Sikkerhetssertifikatet til tjeneren er ikke klarert av datamaskinens operativsystem. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="7641113255207688324">Chromium er ikke standard nettleser.</translation>
@@ -236,7 +224,6 @@ Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilka
 <translation id="2119636228670142020">Om &amp;Chromium OS</translation>
 <translation id="1708666629004767631">En ny, sikrere versjon av Chromium er tilgjengelig.</translation>
 <translation id="378917192836375108">Med Chromium kan du klikke på et telefonnummer på nettet og ringe til det med Skype.</translation>
-<translation id="2242687258748107519">Filinformasjon</translation>
 <translation id="8724049448828509830">Du har en aktiv nedlasting. Vil du avslutte Chromium og avbryte nedlastingen?</translation>
 <translation id="608189560609172163">Chromium kunne ikke synkronisere dataene dine på grunn av en feil under påloggingen.</translation>
 <translation id="4888717733111232871">Regel om innkommende trafikk for Chromium for å tillate mDNS-trafikk.</translation>
@@ -247,7 +234,6 @@ Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilka
 Hvis du logger deg på allikevel, blir Chromium-informasjon som bokmerker, loggen og andre innstillinger slått sammen med <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Du har aktive nedlastinger. Vil du avslutte Chromium og avbryte nedlastingene?</translation>
 <translation id="9013262824292842194">Chromium krever Windows Vista eller Windows XP med SP2 eller høyere.</translation>
-<translation id="6231881193380278751">Legg til en forespørselsparameter i nettadressen for å laste inn siden på nytt automatisk: chrome://device-log/?refresh=&lt;sek&gt;</translation>
 <translation id="1967743265616885482">Vi har tidligere lagt merke til at en modul med det samme navnet, har kommet i konflikt med Chromium.</translation>
 <translation id="7962572577636132072">Chromium oppdateres automatisk, sånn at du alltid har den nyeste versjonen.</translation>
 <translation id="722928257909516027">Vis Chromium-menyen</translation>
@@ -261,7 +247,6 @@ Hvis du logger deg på allikevel, blir Chromium-informasjon som bokmerker, logge
 Chromium kan ikke gjenopprette innstillingen dine.</translation>
 <translation id="918373042641772655">Hvis du kobler fra <ph name="USERNAME"/>, slettes loggen din, bokmerkene, innstillingene og andre Chromium-data som er lagret på denne enheten. Data som er lagret i Google-kontoen din, blir ikke tømt og kan administreres på <ph name="GOOGLE_DASHBOARD_LINK"/>Google Oversikt<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="6403826409255603130">Chromium er en nettleser som kjører nettsider og programmer i lynets hastighet. Den er rask, stabil og enkel å bruke. Surf på nettet på en tryggere måte med Chromium, som har innebygd beskyttelse mot skadelig programvare og nettfisking.</translation>
-<translation id="930268624053534560">Detaljerte tidsstempler</translation>
 <translation id="4230135487732243613">Vil du koble Chromium-dataene dine til denne kontoen?</translation>
 <translation id="2572494885440352020">Chromium-hjelper</translation>
 <translation id="7617377681829253106">Nå er Chromium blitt enda bedre</translation>

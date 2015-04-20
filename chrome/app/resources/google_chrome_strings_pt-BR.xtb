@@ -166,6 +166,7 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="7787950393032327779">O perfil parece estar em uso por outro processo do Google Chrome (<ph name="PROCESS_ID"/>) em outro computador (<ph name="HOST_NAME"/>). O Chrome bloqueou o perfil para que ele não seja corrompido. Se você tiver certeza de que nenhum outro processo está usando este perfil, pode desbloquear o perfil e reiniciar o Chrome.</translation>
 <translation id="1469002951682717133">Inicializador de aplicativos do Google Chrome</translation>
 <translation id="8568392309447938879">É necessário fazer login no Google Chrome para usar aplicativos. Isso permite que o Chrome sincronize seus aplicativos, favoritos, histórico, senhas e outras configurações entre os dispositivos.</translation>
+<translation id="6883876366448858277">envia uma palavra e o contexto relacionado para a Pesquisa Google, retornando definições, imagens e outros resultados de pesquisa.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">O Google Chrome permite que você clique em um número de telefone na web e ligue para ele com o Skype!</translation>
 <translation id="3612333635265770873">Um módulo com o mesmo nome é conhecido por entrar em conflito com o Google Chrome.</translation>
@@ -210,7 +211,6 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="7396375882099008034">Permitir que o Google Chrome acesse a rede em suas configurações de
         firewall ou antivírus.</translation>
 <translation id="9102715433345326100">Este arquivo é malicioso e foi bloqueado pelo Google Chrome.</translation>
-<translation id="3170677364322086041">Este site está usando o plug-in do Google Chrome Frame, que não recebe mais atualizações de segurança e de estabilidade. Desinstale o plug-in e faça upgrade para um navegador moderno.</translation>
 <translation id="8205111949707227942">Opcional: ajude a melhorar este sistema operacional enviando-nos estatísticas de uso e relatórios de erros.</translation>
 <translation id="7253415505590551024">Há downloads em andamento. Deseja sair do Google Chrome e cancelar os downloads?</translation>
 <translation id="487887346205285304">O Google Chrome está se comportando de forma estranha?</translation>
@@ -232,7 +232,6 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="7825851276765848807">Houve uma falha na instalação devido a um erro não-especificado. Faça o download do Google Chrome novamente.</translation>
 <translation id="1150979032973867961">Este servidor não conseguiu provar que é <ph name="DOMAIN"/>. O certificado de segurança não é confiável para o sistema operacional do seu computador. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
 <translation id="4458285410772214805">Saia e faça login novamente para que esta alteração entre em vigor.</translation>
-<translation id="5489213858994471184">O Google Chrome detectou que as configurações do navegador podem ter sido alteradas por um programa no seu computador sem seu conhecimento. Use a Ferramenta de Remoção de Software do Google para remover o programa.</translation>
 <translation id="8679801911857917785">Controla também qual página deve ser exibida quando você inicia o Chrome.</translation>
 <translation id="5334545119300433702">Este módulo é conhecido por entrar em conflito com o Google Chrome.</translation>
 <translation id="4407807842708586359">Sistema operacional (OS) do Google Chrome</translation>

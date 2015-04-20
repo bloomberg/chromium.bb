@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ca">
 <translation id="1408730541890277710">Substitueix les imatges pel text alternatiu.</translation>
+<translation id="6017514345406065928">Verd</translation>
 <translation id="595639123821853262">Escala de grisos invertida</translation>
 <translation id="8260673944985561857">Opcions de navegació mitjançant la marca d'inserció</translation>
 <translation id="3410969471888629217">Oblida les personalitzacions del lloc</translation>
@@ -14,6 +15,8 @@
 <translation id="2394933097471027016">Proveu-ho ara. La navegació mitjançant la marca d'inserció està sempre activada en aquesta pàgina.</translation>
 <translation id="3622586652998721735">Estableix com a esquema predeterminat</translation>
 <translation id="2179565792157161713">Obre la descripció llarga en una pestanya nova</translation>
+<translation id="7942349550061667556">Vermell</translation>
+<translation id="1555130319947370107">Blau</translation>
 <translation id="2471847333270902538">Esquema de color per a <ph name="SITE"/>:</translation>
 <translation id="381767806621926835">Feu clic en qualsevol element amb un atribut &quot;longdesc&quot; o &quot;aria-describedat&quot; per accedir a la seva descripció llarga.</translation>
 <translation id="786423340267544509">Afegeix una vora als elements amb atributs &quot;aria-describedat&quot; o &quot;longdesc&quot;.</translation>

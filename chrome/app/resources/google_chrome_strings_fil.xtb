@@ -173,6 +173,7 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW"/> ang impor
 <translation id="7787950393032327779">Mukhang ginagamit ang profile ng iba pang proseso ng Google Chrome (<ph name="PROCESS_ID"/>) sa iba pang computer (<ph name="HOST_NAME"/>).  Ni-lock ng Chrome ang profile upang hindi ito ma-corrupt.  Kung nakakatiyak ka na walang ibang mga proseso ang gumagamit sa profile na ito, maaari mong i-unlock ang profile at ilunsad muli ang Chrome.</translation>
 <translation id="1469002951682717133">App Launcher ng Chrome</translation>
 <translation id="8568392309447938879">Kailangang naka-sign in ka sa Chrome upang makagamit ng mga app. Nagbibigay-daan ito sa Chrome na i-sync ang iyong mga app, bookmark, kasaysayan, password at iba pang mga setting sa mga device.</translation>
+<translation id="6883876366448858277">ipapadala ang isang salita at ang konteksto nito sa Google Search, at magbibigay ng mga pagpapakahulugan, larawan at iba pang mga resulta ng paghahanap.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Pinapayagan ka ng Google Chrome na mag-click sa isang numero ng telepono sa web at tawagan ito gamit ang Skype!</translation>
 <translation id="3612333635265770873">Ang module na may parehong pangalan ay kilalang salungat sa Google Chrome.</translation>
@@ -217,7 +218,6 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW"/> ang impor
 <translation id="7396375882099008034">Payagan ang Chrome na i-access ang network sa mga setting ng iyong firewall
         o antivirus.</translation>
 <translation id="9102715433345326100">Nakakahamak ang file na ito, at na-block ito ng Chrome.</translation>
-<translation id="3170677364322086041">Ginagamit ng site na ito ang itinigil nang plug-in ng Chrome Frame na hindi na nakakatanggap ng mga update sa seguridad at katatagan. Paki-uninstall ito at mag-upgrade sa isang modernong browser.</translation>
 <translation id="8205111949707227942">Opsyonal: Tulungang mapagbuti ang Chrome OS sa pamamagitan ng awtomatikong pagpapadala ng mga istatistika ng paggamit at mga ulat ng pag-crash sa Google.</translation>
 <translation id="7253415505590551024">Kasalukuyang ginagawa ang pag-download. Nais mo bang lumabas ng Chromium at kanselahin ang mga pag-download?</translation>
 <translation id="487887346205285304">May kakaiba ba sa Chrome?</translation>
@@ -239,7 +239,6 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW"/> ang impor
 <translation id="7825851276765848807">Nabigo ang pag-install dahil sa hindi natukoy na error. Paki-download muli ang Google Chrome.</translation>
 <translation id="1150979032973867961">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN"/>; hindi pinagkakatiwalaan ng operating system ng iyong computer ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
 <translation id="4458285410772214805">Mangyaring mag-sign out at mag-sign in muli upang magkabisa ang pagbabagong ito.</translation>
-<translation id="5489213858994471184">Natukoy ng Chrome na maaaring nabago ang mga setting ng iyong browser ng isang program sa iyong computer nang hindi mo nalalaman. Maaari mong gamitin ang Software Removal Tool ng Google upang alisin ang program na iyon.</translation>
 <translation id="8679801911857917785">Kinokontrol din nito kung anong pahina ang ipinapakita kapag sinimulan mo ang Chrome.</translation>
 <translation id="5334545119300433702">Ang module na ito ay kilala bilang salungat sa Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>

@@ -163,6 +163,7 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="7787950393032327779">Izgleda da neki drugi proces preglednika Google Chrome (<ph name="PROCESS_ID"/>) na nekom drugom računalu (<ph name="HOST_NAME"/>) upotrebljava taj profil. Chrome je zaključao profil da se profil ne bi promijenio. Ako ste sigurni da nijedan drugi proces ne upotrebljava taj profil, možete ga otključati i ponovo pokrenuti Chrome.</translation>
 <translation id="1469002951682717133">Pokretač aplikacija sustava Chrome</translation>
 <translation id="8568392309447938879">Morate se prijaviti na Chrome da biste upotrebljavali aplikacije. To omogućuje Chromeu sinkronizaciju vaših aplikacija, oznaka, povijesti, zaporki i ostalih postavki na različitim uređajima.</translation>
+<translation id="6883876366448858277">Šalje riječ i njezin okolni kontekst na Google pretraživanje te vraća definicije, slike i ostale rezultate pretraživanja.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome omogućuje da kliknete telefonski broj na webu i nazovete ga koristeći se Skypeom!</translation>
 <translation id="3612333635265770873">Modul s tim nazivom već je bio u konfliktu s preglednikom Google Chrome.</translation>
@@ -206,7 +207,6 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="8255190535488645436">Google Chrome upotrebljava vašu kameru i mikrofon.</translation>
 <translation id="7396375882099008034">U postavkama vatrozida ili antivirusnog programa omogućite Chromeu da pristupa mreži.</translation>
 <translation id="9102715433345326100">Datoteka je zlonamjerna i Chrome ju je blokirao.</translation>
-<translation id="3170677364322086041">Ova web-lokacije upotrebljava zastarjeli dodatak Okvir Chrome koji više ne prima sigurnosna ažuriranja i ona za stabilnost. Deinstalirajte ga i nadogradite na suvremeni preglednik.</translation>
 <translation id="8205111949707227942">Dodatno: Pomozite nam da poboljšamo OS Chrome automatskim slanjem statistike o upotrebi i izvješća o padu sustava Googleu.</translation>
 <translation id="7253415505590551024">Preuzimanja su u tijeku. Želite li napustiti Google Chrome i otkazati ta preuzimanja?</translation>
 <translation id="487887346205285304">Chrome se ponaša čudno?</translation>
@@ -228,7 +228,6 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="7825851276765848807">Instalacija nije uspjela zbog neodređene pogreške. Ponovo preuzmite Google Chrome.</translation>
 <translation id="1150979032973867961">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN"/>; operativni sustav vašeg računala smatra da njegov sigurnosni certifikat nije pouzdan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="4458285410772214805">Odjavite se i prijavite se ponovo da bi ta promjena postala aktivna.</translation>
-<translation id="5489213858994471184">Chrome je otkrio da je postavke preglednika možda promijenio program na vašem računalu bez vašeg znanja. Taj program možete ukloniti pomoću Googleova alata za uklanjanje softvera.</translation>
 <translation id="8679801911857917785">Upravlja i time koja se stranica prikazuje prilikom pokretanja Chromea.</translation>
 <translation id="5334545119300433702">Za taj se modul već zna da je u konfliktu s programom Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>

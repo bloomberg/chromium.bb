@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="pl">
 <translation id="1408730541890277710">Zastąp obrazy ich tekstem alternatywnym.</translation>
+<translation id="6017514345406065928">Zielony</translation>
 <translation id="595639123821853262">Odwrócona skala odcieni szarości</translation>
 <translation id="8260673944985561857">Opcje przeglądania przy użyciu kursora</translation>
 <translation id="3410969471888629217">Zapomnij dostosowania zapisane w witrynie</translation>
@@ -14,6 +15,8 @@
 <translation id="2394933097471027016">Wypróbuj teraz – przeglądanie przy użyciu kursora jest zawsze włączone na tej stronie.</translation>
 <translation id="3622586652998721735">Ustaw jako schemat domyślny</translation>
 <translation id="2179565792157161713">Otwórz długi opis w nowej karcie</translation>
+<translation id="7942349550061667556">Czerwony</translation>
+<translation id="1555130319947370107">Niebieski</translation>
 <translation id="2471847333270902538">Schemat kolorów dla <ph name="SITE"/>:</translation>
 <translation id="381767806621926835">Kliknij prawym przyciskiem myszy dowolny element z atrybutem „longdesc” lub „aria-describedat”, by zobaczyć długi opis.</translation>
 <translation id="786423340267544509">Dodaj obramowanie do elementów z atrybutem aria-describedat lub longdesc.</translation>

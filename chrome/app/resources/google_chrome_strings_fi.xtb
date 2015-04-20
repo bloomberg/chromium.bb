@@ -165,6 +165,7 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="7787950393032327779">Profiili näyttäisi olevan toisen Google Chrome -prosessin (<ph name="PROCESS_ID"/>) käytössä toisella tietokoneella (<ph name="HOST_NAME"/>). Chrome on lukinnut profiilin, jotta se ei vioitu. Jos olet varma, että mikään toinen prosessi ei käytä tätä profiilia, voit poistaa profiilin lukituksen ja käynnistää Chromen uudelleen.</translation>
 <translation id="1469002951682717133">Chromen sovellusten käynnistysohjelma</translation>
 <translation id="8568392309447938879">Sinun täytyy kirjautua Chromeen käyttääksesi sovelluksia. Kirjauduttuasi Chrome voi synkronoida sovelluksesi, kirjanmerkkisi, historiasi, salasanasi ja muut asetuksesi eri laitteille.</translation>
+<translation id="6883876366448858277">lähettää sanan ja sen kontekstin Google-hakuun ja palauttaa määritelmiä, kuvia ja muita hakutuloksia.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chromen avulla voit klikata puhelinnumeroa verkossa ja soittaa siihen Skypellä!</translation>
 <translation id="3612333635265770873">Samanniminen moduuli on aiheuttanut aiemmin ristiriitoja Google Chromen kanssa.</translation>
@@ -208,7 +209,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="8255190535488645436">Google Chrome käyttää kameraasi ja mikrofoniasi.</translation>
 <translation id="7396375882099008034">Salli verkon käyttö Chromelle palomuurin tai virustorjunnan asetuksissa.</translation>
 <translation id="9102715433345326100">Tämä tiedosto on haitallinen, ja Chrome on estänyt sen.</translation>
-<translation id="3170677364322086041">Tämä sivusto käyttää vanhaa Chrome-kehyslaajennusta, johon ei ole enää saatavilla tietoturva- ja vakauspäivityksiä. Poista sen asennus ja päivitä uudempaan selaimeen.</translation>
 <translation id="8205111949707227942">Valinnainen: lähetä automaattisesti käyttötilastoja ja virheraportteja Googlelle Chrome-käyttöjärjestelmän kehittämiseksi.</translation>
 <translation id="7253415505590551024">Latauksia on käynnissä. Haluatko sulkea Google Chromen ja peruuttaa lataukset?</translation>
 <translation id="487887346205285304">Käyttäytyykö Chrome omituisesti?</translation>
@@ -230,7 +230,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="7825851276765848807">Asennus epäonnistui tuntemattoman virheen vuoksi. Lataa Google Chrome uudelleen.</translation>
 <translation id="1150979032973867961">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN"/>; tietokoneesi käyttöjärjestelmä ei luota sen suojausvarmenteeseen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
 <translation id="4458285410772214805">Kirjaudu ulos ja kirjaudu uudelleen sisään, jotta muutos tulee voimaan.</translation>
-<translation id="5489213858994471184">Chrome havaitsi, että jokin tietokoneellasi oleva ohjelma on saattanut muuttaa selainasetuksiasi tietämättäsi. Voit poistaa kyseisen ohjelman Googlen Software Removal Toolilla.</translation>
 <translation id="8679801911857917785">Määrittää myös Chromen aloitussivun.</translation>
 <translation id="5334545119300433702">Tämän moduulin tiedetään aiheuttavan ristiriitoja Google Chromen kanssa.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>

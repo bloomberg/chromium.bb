@@ -166,6 +166,7 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="7787950393032327779">Wygląda na to, że profil jest używany przez inny proces Google Chrome (<ph name="PROCESS_ID"/>) na innym komputerze (<ph name="HOST_NAME"/>). Chrome zablokował profil, by zapobiec jego uszkodzeniu. Jeśli masz pewność, że żadne inne procesy nie używają tego profilu, możesz go odblokować i ponownie uruchomić Chrome.</translation>
 <translation id="1469002951682717133">Program uruchamiający aplikacje Chrome</translation>
 <translation id="8568392309447938879">Jeśli chcesz korzystać z aplikacji, musisz zalogować się w Chrome, by Twoje aplikacje, zakładki, historia, hasła i inne ustawienia były synchronizowane między urządzeniami.</translation>
+<translation id="6883876366448858277">przesyła słowo i jego kontekst do wyszukiwarki Google, by wyświetlić definicje, zdjęcia i inne wyniki wyszukiwania.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">W przeglądarce Google Chrome możesz kliknąć numer telefonu zamieszczony w sieci i zadzwonić na niego za pośrednictwem usługi Skype!</translation>
 <translation id="3612333635265770873">Znane są przypadki konfliktu modułu o takiej nazwie z przeglądarką Google Chrome.</translation>
@@ -210,7 +211,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="7396375882099008034">Zezwalaj Chrome na korzystanie z sieci w ustawieniach zapory sieciowej
         lub oprogramowania antywirusowego.</translation>
 <translation id="9102715433345326100">Ten plik jest złośliwy i został zablokowany przez Chrome.</translation>
-<translation id="3170677364322086041">Ta witryna korzysta z wycofanej wtyczki Chrome Frame, której zabezpieczenia i stabilność nie są już aktualizowane. Odinstaluj wtyczkę i zacznij korzystać z nowej wersji przeglądarki.</translation>
 <translation id="8205111949707227942">Opcjonalnie: pomóż nam udoskonalać system operacyjny Chrome poprzez automatyczne wysyłanie do Google statystyk użytkowania i raportów o awariach.</translation>
 <translation id="7253415505590551024">Trwa pobieranie plików. Czy chcesz wyjść z Google Chrome i anulować pobieranie?</translation>
 <translation id="487887346205285304">Chrome zachowuje się dziwnie?</translation>
@@ -232,7 +232,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="7825851276765848807">Instalacja nie powiodła się z powodu nieokreślonego błędu. Pobierz Google Chrome ponownie.</translation>
 <translation id="1150979032973867961">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN"/>. Jego certyfikat bezpieczeństwa nie jest zaufany w systemie operacyjnym tego komputera. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="4458285410772214805">Wyloguj się i zaloguj ponownie, by zmiana zaczęła obowiązywać.</translation>
-<translation id="5489213858994471184">Przeglądarka Chrome wykryła, że program na komputerze mógł bez Twojej wiedzy zmienić jej ustawienia. Aby usunąć ten program, możesz użyć Narzędzia Google do usuwania oprogramowania.</translation>
 <translation id="8679801911857917785">Kontroluje także to, jaka strona wyświetla się po uruchomieniu Chrome.</translation>
 <translation id="5334545119300433702">Znane są przypadki konfliktu tego modułu z przeglądarką Google Chrome.</translation>
 <translation id="4407807842708586359">System operacyjny Google Chrome</translation>

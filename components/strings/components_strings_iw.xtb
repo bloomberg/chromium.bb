@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="iw">
+<translation id="2774256287122201187">אתה רשאי להמשיך. אם תמשיך אל הדף, האזהרה הזו לא תופיע שוב למשך חמש דקות.</translation>
 <translation id="7485870689360869515">לא נמצאו נתונים.</translation>
 <translation id="3884278016824448484">מזהה מכשיר מתנגש</translation>
 <translation id="6779575937362063477">‏סוג כרטיס זה אינו נתמך על ידי ארנק Google. בחר כרטיס אחר.</translation>
@@ -39,6 +40,7 @@
 <translation id="2704283930420550640">הערך לא תואם לפורמט.</translation>
 <translation id="4850886885716139402">הצג</translation>
 <translation id="8091372947890762290">ההפעלה ממתינה בשרת</translation>
+<translation id="4607653538520819196">‏לא ניתן להעביר את הדף הזה דרך שרת proxy באמצעות חוסך הנתונים (Data Saver).</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">אזור</translation>
 <translation id="1871208020102129563">‏שרת ה-Proxy מוגדר להשתמש בשרתי Proxy קבועים, לא בכתובת אתר של סקריפט ‎.Pac</translation>
@@ -50,6 +52,7 @@
 <translation id="7441627299479586546">נושא המדיניות שגוי</translation>
 <translation id="3885155851504623709">קהילה</translation>
 <translation id="6973656660372572881">‏צוינו שרתי Proxy קבועים וכתובת אתר של הסקריפט מסוג ‎.Pac</translation>
+<translation id="1426410128494586442">כן</translation>
 <translation id="4506176782989081258">שגיאת אימות: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">התרגום ל<ph name="TARGET_LANGUAGE"/> נכשל.</translation>
 <translation id="4103249731201008433">המספר הסידורי של המכשיר אינו חוקי</translation>
@@ -68,12 +71,15 @@
 <translation id="1132774398110320017">‏הגדרות מילוי אוטומטי של Chrome...</translation>
 <translation id="6458467102616083041">המערכת התעלמה מערך מדיניות זה, משום שלפי המדיניות, חיפוש ברירת המחדל מושבת.</translation>
 <translation id="1227224963052638717">מדיניות לא ידועה.</translation>
+<translation id="4250680216510889253">לא</translation>
 <translation id="9207861905230894330">הוספת הפריט נכשלה.</translation>
 <translation id="5872918882028971132">הצעות להורים</translation>
 <translation id="337363190475750230">ניהול התצורה בוטל</translation>
 <translation id="2367567093518048410">רמה</translation>
 <translation id="7977590112176369853">&lt;הזן שאילתה&gt;</translation>
+<translation id="552553974213252141">האם הטקסט נשלף כראוי?</translation>
 <translation id="7610193165460212391">הערך מחוץ לטווח <ph name="VALUE"/>.</translation>
+<translation id="3739623965217189342">קישור שהעתקת</translation>
 <translation id="8311778656528046050">האם אתה בטוח שברצונך לטעון מחדש דף זה?</translation>
 <translation id="370665806235115550">טוען...</translation>
 <translation id="2096368010154057602">מחלקה</translation>
@@ -81,7 +87,6 @@
 <translation id="3024663005179499861">סוג המדיניות שגוי</translation>
 <translation id="2030481566774242610">האם התכוונת ל-<ph name="LINK"/>?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
-<translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, תפוגה: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="225207911366869382">ערך זה הוצא משימוש עבור מדיניות זו.</translation>
 <translation id="3145945101586104090">פענוח התגובה נכשל</translation>
@@ -130,6 +135,7 @@
 <translation id="3228969707346345236">התרגום נכשל כיוון שהדף כבר ב<ph name="LANGUAGE"/>.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="8034522405403831421">דף זה מוצג ב<ph name="SOURCE_LANGUAGE"/>. האם לתרגם אותו ל<ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="1734864079702812349">Amex</translation>
 <translation id="8891727572606052622">‏מצב שרת Proxy לא חוקי.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">ללא ניהול</translation>
@@ -203,6 +209,7 @@
 <translation id="8713130696108419660">חתימה ראשונית פגומה</translation>
 <translation id="20817612488360358">‏נקבע שימוש בהגדרות שרת Proxy של מערכת אך בנוסף מצוינת גם תצורה מפורשת של שרת Proxy.</translation>
 <translation id="2639739919103226564">סטטוס:</translation>
+<translation id="4968547170521245791">‏לא ניתן להעביר דרך שרת proxy</translation>
 <translation id="385051799172605136">חזור</translation>
 <translation id="5095208057601539847">פרובינציה</translation>
 <translation id="2581221116934462656">האם תרצה ש-<ph name="PRODUCT_NAME"/> יציע לתרגם דפים ב<ph name="LANGUAGE_NAME"/> מהאתר הזה בפעם הבאה?</translation>
@@ -210,6 +217,7 @@
 <translation id="6965382102122355670">אישור</translation>
 <translation id="2721148159707890343">הבקשה בוצעה בהצלחה</translation>
 <translation id="2455981314101692989">דף אינטרנט זה השבית מילוי אוטומטי של טופס זה.</translation>
+<translation id="6597614308054261376">‏אתה מנסה ליצור קשר עם <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. לא ניתן כעת להעביר את הדף הזה דרך שרת proxy באמצעות חוסך הנתונים (Data Saver).</translation>
 <translation id="8308427013383895095">התרגום נכשל עקב בעיה בחיבור הרשת.</translation>
 <translation id="5720705177508910913">משתמש נוכחי:</translation>
 <translation id="3380864720620200369">מזהה לקוח:</translation>

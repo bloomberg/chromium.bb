@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="bg">
+<translation id="2774256287122201187">Може да продължите към страницата. Ако го направите, това предупреждение няма да се показва пет минути.</translation>
 <translation id="7485870689360869515">Няма намерени данни.</translation>
 <translation id="3884278016824448484">Идентификационният номер на устройството е несъвместим</translation>
 <translation id="6779575937362063477">Този тип карта не се поддържа от Google Wallet. Моля, изберете друга.</translation>
@@ -39,6 +40,7 @@
 <translation id="2704283930420550640">Стойността не съответства на формата.</translation>
 <translation id="4850886885716139402">Изглед</translation>
 <translation id="8091372947890762290">В сървъра се изчаква активиране</translation>
+<translation id="4607653538520819196">Икономия на данни не може да служи като прокси сървър за тази страница.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Район</translation>
 <translation id="1871208020102129563">За прокси сървъра е зададено да използва фиксирани прокси сървъри, а не URL адрес на скрипт във формат .pac.</translation>
@@ -50,6 +52,7 @@
 <translation id="7441627299479586546">Грешен предмет на правилото</translation>
 <translation id="3885155851504623709">Община</translation>
 <translation id="6973656660372572881">Посочени са както фиксирани прокси сървъри, така и URL адрес на скрипт във формат .pac.</translation>
+<translation id="1426410128494586442">Да</translation>
 <translation id="4506176782989081258">Грешка при потвърждаването: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">Преводът на <ph name="TARGET_LANGUAGE"/> не бе успешен.</translation>
 <translation id="4103249731201008433">Серийният номер на устройството е невалиден</translation>
@@ -68,12 +71,15 @@
 <translation id="1132774398110320017">Настройки за Автоматично попълване в Chrome...</translation>
 <translation id="6458467102616083041">Бе пренебрегнато, защото основното търсене е деактивирано от правило.</translation>
 <translation id="1227224963052638717">Неизвестно правило.</translation>
+<translation id="4250680216510889253">Не</translation>
 <translation id="9207861905230894330">Добавянето на статията не бе успешно.</translation>
 <translation id="5872918882028971132">Основни предложения</translation>
 <translation id="337363190475750230">Обезпечаването е отменено</translation>
 <translation id="2367567093518048410">Ниво</translation>
 <translation id="7977590112176369853">&lt;въведете заявка&gt;</translation>
+<translation id="552553974213252141">Текстът правилно ли бе извлечен?</translation>
 <translation id="7610193165460212391">Стойността е извън обхват <ph name="VALUE"/>.</translation>
+<translation id="3739623965217189342">Копирана от вас връзка</translation>
 <translation id="8311778656528046050">Наистина ли искате да презаредите тази страница?</translation>
 <translation id="370665806235115550">Зарежда се...</translation>
 <translation id="2096368010154057602">Департамент</translation>
@@ -81,7 +87,6 @@
 <translation id="3024663005179499861">Грешен тип на правилото</translation>
 <translation id="2030481566774242610">Може би имахте предвид <ph name="LINK"/>?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
-<translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, Изтича: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="225207911366869382">Стойността е оттеглена за това правило.</translation>
 <translation id="3145945101586104090">Декодирането на отговора не бе успешно</translation>
@@ -130,6 +135,7 @@
 <translation id="3228969707346345236">Преводът не бе успешен, защото страницата вече е на <ph name="LANGUAGE"/>.</translation>
 <translation id="7521387064766892559">Javascript</translation>
 <translation id="8034522405403831421">Тази страница е на <ph name="SOURCE_LANGUAGE"/>. Да се преведе ли на <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="1734864079702812349">Amex</translation>
 <translation id="8891727572606052622">Невалиден режим на прокси сървъра.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">Не се управлява</translation>
@@ -203,6 +209,7 @@
 <translation id="8713130696108419660">Лош подпис посредством първоначалния ключ</translation>
 <translation id="20817612488360358">За използване са зададени системни настройки за прокси сървъра, но е посочена и изрична конфигурация.</translation>
 <translation id="2639739919103226564">Състояние:</translation>
+<translation id="4968547170521245791">Работата като прокси сървър не е възможна</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="5095208057601539847">Провинция</translation>
 <translation id="2581221116934462656">Искате ли следващия път <ph name="PRODUCT_NAME"/> да предложи превод на написаните на <ph name="LANGUAGE_NAME"/> страници от този сайт?</translation>
@@ -210,6 +217,7 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Заявката е успешна</translation>
 <translation id="2455981314101692989">Тази уеб страница е деактивирала автоматичното попълване за този формуляр.</translation>
+<translation id="6597614308054261376">Опитвате се да достигнете до <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. Понастоящем Икономия на данни не може да служи като прокси сървър за тази страница.</translation>
 <translation id="8308427013383895095">Преводът не бе успешен поради проблем с връзката към мрежата.</translation>
 <translation id="5720705177508910913">Текущият потребител</translation>
 <translation id="3380864720620200369">Идент. № на клиентската програма:</translation>

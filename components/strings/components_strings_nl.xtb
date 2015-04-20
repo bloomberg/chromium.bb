@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="nl">
+<translation id="2774256287122201187">Je kunt doorgaan. Als je doorgaat naar de pagina, wordt deze waarschuwing gedurende vijf minuten niet opnieuw weergegeven.</translation>
 <translation id="7485870689360869515">Geen gegevens gevonden.</translation>
 <translation id="3884278016824448484">Conflicterende apparaat-ID's</translation>
 <translation id="6779575937362063477">Dit type kaart wordt niet ondersteund door Google Wallet. Selecteer een andere kaart.</translation>
@@ -39,6 +40,7 @@
 <translation id="2704283930420550640">Waarde komt niet overeen met notatie.</translation>
 <translation id="4850886885716139402">Weergave</translation>
 <translation id="8091372947890762290">Activering is in behandeling op de server</translation>
+<translation id="4607653538520819196">Deze pagina kan niet via proxy worden overgedragen door Databesparing.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Gebied</translation>
 <translation id="1871208020102129563">Proxy is ingesteld op het gebruik van vaste proxyservers, niet op een script-URL van het PAC-type.</translation>
@@ -50,6 +52,7 @@
 <translation id="7441627299479586546">Onjuist beleidsonderwerp</translation>
 <translation id="3885155851504623709">Gemeente</translation>
 <translation id="6973656660372572881">Zowel vaste proxyservers als een pac-script-URL worden gespecificeerd.</translation>
+<translation id="1426410128494586442">Ja</translation>
 <translation id="4506176782989081258">Validatiefout: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">De vertaling naar het <ph name="TARGET_LANGUAGE"/> is mislukt.</translation>
 <translation id="4103249731201008433">Serienummer van apparaat is ongeldig</translation>
@@ -68,12 +71,15 @@
 <translation id="1132774398110320017">Instellingen voor automatisch aanvullen in Chrome...</translation>
 <translation id="6458467102616083041">Genegeerd omdat de standaardzoekoptie door het beleid is uitgeschakeld.</translation>
 <translation id="1227224963052638717">Onbekend beleid.</translation>
+<translation id="4250680216510889253">Nee</translation>
 <translation id="9207861905230894330">Kan artikel niet toevoegen.</translation>
 <translation id="5872918882028971132">Bovenliggende suggesties</translation>
 <translation id="337363190475750230">Uitgeschreven</translation>
 <translation id="2367567093518048410">Niveau</translation>
 <translation id="7977590112176369853">&lt;geef hier uw zoekopdracht op&gt;</translation>
+<translation id="552553974213252141">Is de tekst correct geëxtraheerd?</translation>
 <translation id="7610193165460212391">Waarde <ph name="VALUE"/> is buiten bereik.</translation>
+<translation id="3739623965217189342">Link die je hebt gekopieerd</translation>
 <translation id="8311778656528046050">Weet je zeker dat je deze pagina opnieuw wilt laden?</translation>
 <translation id="370665806235115550">Laden...</translation>
 <translation id="2096368010154057602">Departement</translation>
@@ -81,7 +87,6 @@
 <translation id="3024663005179499861">Onjuist beleidstype</translation>
 <translation id="2030481566774242610">Bedoelde je <ph name="LINK"/>?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
-<translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, Exp: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="225207911366869382">Deze waarde is verouderd voor dit beleid.</translation>
 <translation id="3145945101586104090">Kan reactie niet decoderen</translation>
@@ -130,6 +135,7 @@
 <translation id="3228969707346345236">De vertaling is mislukt omdat de pagina al in het <ph name="LANGUAGE"/> is.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="8034522405403831421">Deze pagina is in het <ph name="SOURCE_LANGUAGE"/>. Vertalen naar het <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="1734864079702812349">Amex</translation>
 <translation id="8891727572606052622">Ongeldige proxymodus.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">Niet-beheerd</translation>
@@ -203,6 +209,7 @@
 <translation id="8713130696108419660">Onjuiste eerste handtekening</translation>
 <translation id="20817612488360358">De proxyinstellingen van het systeem moeten worden gebruikt, maar er is ook een expliciete proxyconfiguratie opgegeven.</translation>
 <translation id="2639739919103226564">Status:</translation>
+<translation id="4968547170521245791">Kan niet overdragen via proxy</translation>
 <translation id="385051799172605136">Vorige</translation>
 <translation id="5095208057601539847">Provincie</translation>
 <translation id="2581221116934462656">Wil je dat <ph name="PRODUCT_NAME"/> de pagina's op deze site die in het <ph name="LANGUAGE_NAME"/> zijn geschreven, voortaan vertaalt?</translation>
@@ -210,6 +217,7 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Verzoek geslaagd</translation>
 <translation id="2455981314101692989">Deze webpagina heeft Automatisch aanvullen uitgeschakeld voor dit formulier.</translation>
+<translation id="6597614308054261376">Je probeert <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/> te bereiken. Deze pagina kan momenteel niet via proxy worden overgedragen door Databesparing.</translation>
 <translation id="8308427013383895095">De vertaling is mislukt omdat er een probleem is opgetreden met de netwerkverbinding.</translation>
 <translation id="5720705177508910913">Huidige gebruiker</translation>
 <translation id="3380864720620200369">Klant-ID:</translation>

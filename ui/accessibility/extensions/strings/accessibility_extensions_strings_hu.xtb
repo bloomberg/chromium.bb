@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="hu">
 <translation id="1408730541890277710">A képek lecserélése az „alt” szövegükre.</translation>
+<translation id="6017514345406065928">Zöld</translation>
 <translation id="595639123821853262">Inverz szürkeárnyalat</translation>
 <translation id="8260673944985561857">Caret Browsing – beállítások</translation>
 <translation id="3410969471888629217">Webhelyek személyre szabásának elfelejtése</translation>
@@ -14,6 +15,8 @@
 <translation id="2394933097471027016">Próbálja ki most! A Caret Browsing mindig engedélyezve van ezen az oldalon.</translation>
 <translation id="3622586652998721735">Beállítás alapértelmezett sémaként</translation>
 <translation id="2179565792157161713">Hosszú leírás megnyitása új lapon</translation>
+<translation id="7942349550061667556">Piros</translation>
+<translation id="1555130319947370107">Kék</translation>
 <translation id="2471847333270902538">Színséma a(z) <ph name="SITE"/> webhelyhez:</translation>
 <translation id="381767806621926835">Kattintson jobb gombbal bármelyik „longdesc” vagy az „aria-describedat” attribútumot tartalmazó elemnél a hosszú leírás eléréséhez.</translation>
 <translation id="786423340267544509">Szegély hozzáadása az aria-describedat és a longdesc attribútumokkal rendelkező elemekhez.</translation>

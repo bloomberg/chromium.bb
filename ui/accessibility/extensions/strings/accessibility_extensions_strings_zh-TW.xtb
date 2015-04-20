@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-TW">
 <translation id="1408730541890277710">使用替代文字取代圖片。</translation>
+<translation id="6017514345406065928">綠色</translation>
 <translation id="595639123821853262">反轉灰階</translation>
 <translation id="8260673944985561857">鍵盤瀏覽選項</translation>
 <translation id="3410969471888629217">清除網站自訂設定</translation>
@@ -14,6 +15,8 @@
 <translation id="2394933097471027016">這個網頁會一律啟用鍵盤瀏覽功能，歡迎立即體驗！</translation>
 <translation id="3622586652998721735">設為預設配置</translation>
 <translation id="2179565792157161713">在新分頁中開啟詳細說明</translation>
+<translation id="7942349550061667556">紅色</translation>
+<translation id="1555130319947370107">藍色</translation>
 <translation id="2471847333270902538"><ph name="SITE"/> 的色彩配置：</translation>
 <translation id="381767806621926835">對任何含有「longdesc」或「aria-describedat」屬性的元素按一下滑鼠右鍵，即可查看其完整說明。</translation>
 <translation id="786423340267544509">為含有 aria-describedat 或 longdesc 屬性的元素加上框線。</translation>

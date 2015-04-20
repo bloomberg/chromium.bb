@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="mr">
+<translation id="2774256287122201187">आपण सुरु ठेवू शकता. आपण पृष्ठावर सुरु ठेवल्यास, ही चेतावणी पाच मिनिटे पुन्हा दिसणार नाही.</translation>
 <translation id="7485870689360869515">डेटा आढळला नाही.</translation>
 <translation id="3884278016824448484">संघर्ष करणारा डिव्हाइस अभिज्ञापक</translation>
 <translation id="6779575937362063477">या प्रकारचे कार्ड Google Wallet द्वारे समर्थित नाही. कृपया एक भिन्न कार्ड निवडा.</translation>
@@ -39,6 +40,7 @@
 <translation id="2704283930420550640">मूल्य स्वरुपनाशी जुळत नाही.</translation>
 <translation id="4850886885716139402">पहा</translation>
 <translation id="8091372947890762290">सक्रियकरण सर्व्हरवर प्रलंबित आहे</translation>
+<translation id="4607653538520819196">डेटा बचतकर्त्याद्वारे हे पृष्ठ प्रॉक्सी केले जाऊ शकत नाही.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">क्षेत्र</translation>
 <translation id="1871208020102129563">प्रॉक्सी निश्चित प्रॉक्सी सर्व्हर वापरण्‍यास सेट करण्‍यात आले आहे, .pac स्क्रिप्ट URL नव्हे.</translation>
@@ -50,6 +52,7 @@
 <translation id="7441627299479586546">चुकीचे धोरण विषय</translation>
 <translation id="3885155851504623709">पॅरिश</translation>
 <translation id="6973656660372572881">निश्चित प्रॉक्सी सर्व्हर आणि .pac स्क्रिप्ट URL निर्दिष्‍ट करण्‍यात आले आहेत.</translation>
+<translation id="1426410128494586442">होय</translation>
 <translation id="4506176782989081258">प्रमाणीकरण त्रुटी: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/> मध्ये भाषांतर अयशस्वी झाले.</translation>
 <translation id="4103249731201008433">डिव्हाइस सिरीयल क्रमांक अवैध आहे</translation>
@@ -68,12 +71,15 @@
 <translation id="1132774398110320017">Chrome स्वयंभरण सेटिंग्ज...</translation>
 <translation id="6458467102616083041">धोरणानुसार डीफॉल्ट शोध अक्षम केल्याने दुर्लक्ष करण्‍यात आले.</translation>
 <translation id="1227224963052638717">अज्ञात धोरण.</translation>
+<translation id="4250680216510889253">नाही</translation>
 <translation id="9207861905230894330">लेख जोडण्यात अयशस्वी.</translation>
 <translation id="5872918882028971132">पालक सूचना</translation>
 <translation id="337363190475750230">तरतूद रद्द केली</translation>
 <translation id="2367567093518048410">दर्जा</translation>
 <translation id="7977590112176369853">&lt;क्वेरी प्रविष्ट करा&gt;</translation>
+<translation id="552553974213252141">मजकूर योग्यरितीने काढला होता?</translation>
 <translation id="7610193165460212391">मूल्य <ph name="VALUE"/> श्रेणीच्या बाहेर आहे.</translation>
+<translation id="3739623965217189342">आपण कॉपी केलेल्याचा दुवा जोडा</translation>
 <translation id="8311778656528046050">आपल्याला खात्री आहे की हे पृष्ठ आपण रीलोड करू इच्छिता?</translation>
 <translation id="370665806235115550">लोड करीत आहे...</translation>
 <translation id="2096368010154057602">विभाग</translation>
@@ -81,7 +87,6 @@
 <translation id="3024663005179499861">चुकीचा धोरण प्रकार</translation>
 <translation id="2030481566774242610">आपल्याला असे म्हणायचे होते <ph name="LINK"/>?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
-<translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, कालबाह्य: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="225207911366869382">हे मूल्य या धोरणासाठी नापसंत करण्‍यात आले आहे.</translation>
 <translation id="3145945101586104090">प्रतिसाद डीकोड करण्यात अयशस्वी</translation>
@@ -130,6 +135,7 @@
 <translation id="3228969707346345236">व्यवहार अयशस्वी झाला कारण पृष्ठ पूर्वीपासून <ph name="LANGUAGE"/> मध्ये आहे.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="8034522405403831421">हे पृष्‍ठ <ph name="SOURCE_LANGUAGE"/> मध्ये आहे. त्यास <ph name="TARGET_LANGUAGE"/> मध्ये भाषांतरीत करायचे?</translation>
+<translation id="1734864079702812349">Amex</translation>
 <translation id="8891727572606052622">अवैध प्रॉक्सी मोड.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">व्यवस्थापित न केलेले</translation>
@@ -203,6 +209,7 @@
 <translation id="8713130696108419660">खराब मूळ स्वाक्षरी</translation>
 <translation id="20817612488360358">सिस्टम प्रॉक्सी सेटिंग्ज वापरण्‍यास सेट करण्‍यात आल्या परंतु एक सुस्पष्‍ट प्रॉक्सी कॉन्फिगरेशन देखील निर्दिष्‍ट करण्‍यात आले.</translation>
 <translation id="2639739919103226564">स्थिती:</translation>
+<translation id="4968547170521245791">प्रॉक्सी करू शकत नाही</translation>
 <translation id="385051799172605136">मागील</translation>
 <translation id="5095208057601539847">प्रांत</translation>
 <translation id="2581221116934462656">आपण पुढील वेळी या साइटवरून <ph name="PRODUCT_NAME"/> ने <ph name="LANGUAGE_NAME"/> पृष्‍ठे भाषांतरित करण्‍याची ऑफर द्यावी असे इच्छिता?</translation>
@@ -210,6 +217,7 @@
 <translation id="6965382102122355670">ठिक आहे</translation>
 <translation id="2721148159707890343">विनंती यशस्वी</translation>
 <translation id="2455981314101692989">या वेबपृष्ठाने या फॉर्मकरिता स्वयंचलितरित्या भरणे अक्षम केले आहे.</translation>
+<translation id="6597614308054261376">आपण <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/> पर्यंत पोहोचण्याचा प्रयत्न करीत आहात. यावेळी डेटा बचतकर्त्याद्वारे हे पृष्ठ प्रॉक्सी केले जाऊ शकत नाही.</translation>
 <translation id="8308427013383895095">नेटवर्क कनेक्शनसह समस्या असल्यामुळे अनुवाद अयशस्वी झाला.</translation>
 <translation id="5720705177508910913">वर्तमान वापरकर्ता</translation>
 <translation id="3380864720620200369">क्लायंट ID:</translation>

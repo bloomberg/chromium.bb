@@ -149,6 +149,7 @@
 <translation id="7787950393032327779">其他计算机 (<ph name="HOST_NAME"/>) 的另一个 Google Chrome 进程 (<ph name="PROCESS_ID"/>) 好像正在使用此个人资料。Chrome 已锁定此个人资料以防止其受损。如果您确定其他进程目前未使用此个人资料，请为其解锁并重新启动 Chrome。</translation>
 <translation id="1469002951682717133">Chrome 应用启动器</translation>
 <translation id="8568392309447938879">您需要先登录Chrome，再使用各项应用。这样，Chrome就可以在各个设备上同步您的应用、书签、历史记录、密码和其他设置。</translation>
+<translation id="6883876366448858277">将某个字词及上下文一起发送至 Google 搜索，后者将返回相应的定义、图片及其他搜索结果。</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">您可以在 Google Chrome 浏览器中点击网上的电话号码，然后通过 Skype 拨打！</translation>
 <translation id="3612333635265770873">已发现一个同名的模块与 Google Chrome 浏览器存在冲突。</translation>
@@ -190,7 +191,6 @@
 <translation id="8255190535488645436">Google Chrome 正在使用您的摄像头和麦克风。</translation>
 <translation id="7396375882099008034">对防火墙或防病毒软件进行设置，以允许 Chrome 访问该网络。</translation>
 <translation id="9102715433345326100">这是恶意文件，Chrome 已将其拦截。</translation>
-<translation id="3170677364322086041">该网站使用的Chrome内嵌框架插件已停止使用，并且不再接收安全性和稳定性更新。请将其卸载，然后升级到新式浏览器。</translation>
 <translation id="8205111949707227942">可选：将使用情况统计信息和崩溃报告自动发送给Google，帮助完善Chrome操作系统。</translation>
 <translation id="7253415505590551024">正在进行多项下载。您希望退出 Google Chrome 浏览器并取消这些下载吗？</translation>
 <translation id="487887346205285304">Chrome 存在异常？</translation>
@@ -203,7 +203,6 @@
 <translation id="7825851276765848807">由于未指定的错误导致安装失败。请重新下载 Google Chrome 浏览器。</translation>
 <translation id="1150979032973867961">此服务器无法证明它是<ph name="DOMAIN"/>；您计算机的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="4458285410772214805">请先退出，然后重新登录，以便此更改生效。</translation>
-<translation id="5489213858994471184">Chrome 检测到您的浏览器设置可能在您不知情的情况下被计算机中的某个程序篡改了。您可以使用 Google 的软件清理工具清除该程序。</translation>
 <translation id="8679801911857917785">它还能够控制Chrome启动后显示的页面。</translation>
 <translation id="5334545119300433702">已知此模块与 Google Chrome 浏览器存在冲突。</translation>
 <translation id="4407807842708586359">Google Chrome 操作系统</translation>

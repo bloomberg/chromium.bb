@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="am">
 <translation id="1408730541890277710">ምስሎችን በተለዋጭ ጽሑፋቸው ተካ።</translation>
+<translation id="6017514345406065928">አረንጓዴ</translation>
 <translation id="595639123821853262">የተገለበጠ ግራጫማ ምጥጥን</translation>
 <translation id="8260673944985561857">የካሬት የአሰሳ አማራጭ</translation>
 <translation id="3410969471888629217">የጣቢያ ብጁ ማድረጎችን እርሳ</translation>
@@ -14,6 +15,8 @@
 <translation id="2394933097471027016">አሁኑኑ ይሞክሩት - Caret Browsing በዚህ ገጽ ላይ ሁልጊዜ እንደነቃ ነው!</translation>
 <translation id="3622586652998721735">እንደ ነባሪ ገጽታ አዘጋጅ</translation>
 <translation id="2179565792157161713">ረዥም ማብራሪያን በአዲስ ትር ክፈት</translation>
+<translation id="7942349550061667556">ቀይ</translation>
+<translation id="1555130319947370107">ሰማያዊ</translation>
 <translation id="2471847333270902538">የቀለም ገጽታ ለ<ph name="SITE"/>፦</translation>
 <translation id="381767806621926835">ረጅም መግለጫውን ለመድረስ የ«longdesc» ወይም የ«aria-describedat» አይነታ ያለው ማንኛውም ነገር በቀኝ ጠቅ ያድርጉ።</translation>
 <translation id="786423340267544509">የaria-describedat ወይም የlongdesc አይነታዎች ባላቸው አባላት ላይ ክፈፍ አክል</translation>

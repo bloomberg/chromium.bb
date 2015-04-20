@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="bn">
 <translation id="1408730541890277710">তাদের বৈকল্পিক পাঠ্যের সাথে চিত্রগুলি প্রতিস্থাপন করুন৷</translation>
+<translation id="6017514345406065928">সবুজ</translation>
 <translation id="595639123821853262">ইনভার্টেড গ্রেস্কেল</translation>
 <translation id="8260673944985561857">ক্যারেট ব্রাউজিং বিকল্পগুলি</translation>
 <translation id="3410969471888629217">সাইট কাস্টমাইজেশনগুলি মুছুন</translation>
@@ -14,6 +15,8 @@
 <translation id="2394933097471027016">এখনই এটি ব্যবহার করে দেখুন - ক্যারেট ব্রাউজিং সর্বদা এই পৃষ্ঠায় সক্ষম করা থাকে!</translation>
 <translation id="3622586652998721735">ডিফল্ট স্কীম হিসাবে সেট করুন</translation>
 <translation id="2179565792157161713">নতুন ট্যাবে দীর্ঘ বিবরণ খুলুন</translation>
+<translation id="7942349550061667556">লাল</translation>
+<translation id="1555130319947370107">নীল</translation>
 <translation id="2471847333270902538"><ph name="SITE"/> এর জন্য রঙের স্কীম:</translation>
 <translation id="381767806621926835">কোনো &quot;longdesc&quot; বা &quot;aria-describedat&quot; অ্যাট্রিবিউটগুলির সাথে যেকোনো কিছুর উপর ডান-ক্লিক করুন৷</translation>
 <translation id="786423340267544509">aria-describedat বা longdesc অ্যাট্রিবিউটগুলির সাথে উপাদানগুলিতে সীমানা যোগ করুন৷</translation>

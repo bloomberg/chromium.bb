@@ -1,23 +1,33 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sk">
 <translation id="8588878054171169263">Uložiť obrázok</translation>
+<translation id="2709516037105925701">Automatické dopĺňanie</translation>
+<translation id="666268767214822976">Použite službu predpovedí na zobrazovanie súvisiacich dopytov a populárnych webových stránok počas zadávania textu do panela s adresou</translation>
 <translation id="3303414029551471755">Pokračovať a stiahnuť obsah?</translation>
+<translation id="6448273550210938826">Návrhy pre vyhľadávanie a webové adresy</translation>
 <translation id="7998918019931843664">Znova otvoriť zavretú kartu</translation>
 <translation id="8425213833346101688">Zmeniť</translation>
 <translation id="4996978546172906250">Zdieľať prostredníctvom</translation>
 <translation id="6292937202013477045">Útočníci sa pravdepodobne pokúšajú ukradnúť vaše informácie (ako sú napríklad heslá, správy alebo čísla kreditných kariet) z domény <ph name="DOMAIN_NAME"/>.</translation>
+<translation id="8518901949365209398">Tento web používa slabú konfiguráciu zabezpečenia (podpisy SHA-1). Pripojenie preto nemusí byť súkromné.</translation>
 <translation id="1506061864768559482">Vyhľadávač</translation>
 <translation id="346339498574870680">Kopírovať adresu URL obrázka</translation>
 <translation id="5063480226653192405">Použitie</translation>
 <translation id="6657585470893396449">Heslo</translation>
 <translation id="5578795271662203820">Hľadať obrázok v službe <ph name="SEARCH_ENGINE"/></translation>
 <translation id="7764225426217299476">Pridať adresu</translation>
-<translation id="6085885345161726829">Karty budú po overení miestne uložené prehliadačom Chrome do vyrovnávacej pamäte</translation>
+<translation id="4042870126885713738">Zobrazte návrhy v prípade, že webovú adresu nie je možné vyhľadať alebo nie je možné nadviazať spojenie</translation>
 <translation id="8237438615979997762">Údaje uložené na tomto zariadení aj údaje uložené v účte Google zostanú na oboch miestach. Nové údaje ani zmeny súčasných údajov sa už však medzi týmito miestami synchronizovať nebudú.</translation>
 <translation id="6831043979455480757">Preložiť</translation>
 <translation id="6504836143156866575">Verzia JavaScriptu</translation>
+<translation id="3244271242291266297">MM</translation>
 <translation id="869891660844655955">Koniec platnosti</translation>
 <translation id="7644305409888602715">Prebieha preklad stránky do jazyka <ph name="SOURCE_LANGUAGE"/>...</translation>
+<translation id="5335200807405507442">Predbežné načítanie zdrojov stránky</translation>
+<translation id="9050666287014529139">Prístupová fráza</translation>
 <translation id="326254929494722411">Na tomto zariadení ste zatiaľ účet Google nenastavili</translation>
+<translation id="8820817407110198400">Záložky</translation>
+<translation id="8069239273282989646">Po kompresii</translation>
+<translation id="1644574205037202324">História</translation>
 <translation id="1446450296470737166">Povoliť úplné ovlád. zar. MIDI</translation>
 <translation id="1404122904123200417">Vložené na webe <ph name="WEBSITE_URL"/></translation>
 <translation id="3895926599014793903">Vynútiť povolenie priblíženia</translation>
@@ -32,10 +42,12 @@
 <translation id="5210365745912300556">Zatvoriť kartu</translation>
 <translation id="5902828464777634901">Všetky miestne údaje uložené týmito stránkami (vrátane súborov cookie) budú odstránené.</translation>
 <translation id="7658239707568436148">Zrušiť</translation>
-<translation id="3435896845095436175">Aktivovať</translation>
 <translation id="2154710561487035718">Kopírovať webovú adresu</translation>
+<translation id="6770414673596662518">Systém Bezpečné prehliadanie v prehliadači Chrome sa použije aj na rozpoznanie škodlivých stránok a ochranu pred phishingom, malvérom a sťahovaním škodlivých súborov.</translation>
+<translation id="2354750644801399986">„Nesledovať“</translation>
 <translation id="2351097562818989364">Nastavenia prekladov boli resetované.</translation>
 <translation id="119944043368869598">Vymazať všetko</translation>
+<translation id="7665369617277396874">Pridať účet</translation>
 <translation id="6458785801851713928">Synchronizácia nie je pre vašu doménu k dispozícii.</translation>
 <translation id="2731700343119398978">Počkajte...</translation>
 <translation id="6846298663435243399">Prebieha načítanie…</translation>
@@ -46,24 +58,29 @@
 <translation id="2381756643783702095">Spýtať sa pred odoslaním (odporúčané)</translation>
 <translation id="9019902583201351841">Spravované vašimi rodičmi</translation>
 <translation id="3738139272394829648">Vyhľadávanie klepnutím</translation>
+<translation id="5118309162436926908">Prihláste sa a synchronizujte karty, záložky, históriu a nastavenia do všetkých svojich zariadení.</translation>
 <translation id="7596558890252710462">Operačný systém</translation>
 <translation id="3358663646935160692">Tento účet spravuje doména <ph name="DOMAIN_NAME"/>.
 
 Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete úplnú kontrolu nad vaším profilom Chrome. Vaše údaje prehliadača Chrome sa natrvalo prepoja s týmto účtom. Po odpojení tohto účtu sa odstránia miestne údaje prehliadača Chrome.</translation>
+<translation id="4684427112815847243">Synchronizovať všetko</translation>
 <translation id="563535393368633106">Spýtať sa pred pristupovaním (odporúčané)</translation>
 <translation id="666981079809192359">Upozornenie o ochrane osobných údajov prehliadača Chrome</translation>
 <translation id="1966710179511230534">Aktualizujte svoje prihlasovacie údaje.</translation>
+<translation id="9099292894781394535">Úspora dát</translation>
 <translation id="3410346880900521918">Ak sa vám táto stránka zobrazuje často, skúste použiť tieto <ph name="BEGIN_LINK"/>návrhy<ph name="END_LINK"/>.</translation>
-<translation id="5618939757577581490">Importovať údaje Peňaženky</translation>
 <translation id="1623104350909869708">Zakázať tejto stránke otvárať ďalšie dialógové okná</translation>
 <translation id="7375125077091615385">Typ:</translation>
+<translation id="6159335304067198720">Úspora dát: <ph name="PERCENT"/></translation>
 <translation id="1086169178231554178">Karta SD je nedostupná</translation>
 <translation id="2498359688066513246">Pomocník a spätná väzba</translation>
 <translation id="1091134514807961917">Ste prihlásený/-á do nasledujúceho účtu Google.</translation>
 <translation id="7019652137705190998">Ak chcete prehliadať v súkromí alebo sa len dočasne prihlásiť, prejdite do režimu inkognito.</translation>
 <translation id="1426410128494586442">Áno</translation>
-<translation id="908263542783690259">Vyčistiť históriu prehľadávania</translation>
+<translation id="2206488550163399966"><ph name="APP_NAME"/>, webová aplikácia: <ph name="APP_URL"/></translation>
 <translation id="5595485650161345191">Upraviť adresu</translation>
+<translation id="2100273922101894616">Automaticky prihlásiť</translation>
+<translation id="5733727110006255111">Keď je táto funkcia zapnutá, Chrome navštívené stránky pred stiahnutím komprimuje pomocou serverov Google. Funkcia nemá vplyv na stránky používajúce protokol SSL a stránky navštívené v režime Inkognito.</translation>
 <translation id="4256782883801055595">Licencie otvoreného zdroja</translation>
 <translation id="8218346974737627104">Potvrdenie prihlásenia</translation>
 <translation id="3350687908700087792">Zavrieť všetky karty inkognito</translation>
@@ -71,9 +88,12 @@ Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete 
 <translation id="8997842057643556822">V úložisku USB nie je možné vytvoriť priečinok pre stiahnuté súbory</translation>
 <translation id="6948694623901096205">Kamera alebo mikrofón</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE"/>, karta</translation>
+<translation id="8157532349231307196">Počet účtov: <ph name="NUMBER_OF_ACCOUNTS"/></translation>
+<translation id="1272079795634619415">Zastaviť</translation>
 <translation id="624558823898732418">Jazyk prekladu: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Vyberte certifikát na overenie totožnosti</translation>
 <translation id="6140912465461743537">Krajina alebo oblasť</translation>
+<translation id="7562080006725997899">Vymazávajú sa údaje prehliadania</translation>
 <translation id="7791543448312431591">Pridať</translation>
 <translation id="8719023831149562936">Aktuálna karta sa nedá preniesť</translation>
 <translation id="4378154925671717803">Telefón</translation>
@@ -88,12 +108,12 @@ Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete 
 <translation id="4250680216510889253">Nie</translation>
 <translation id="6388207532828177975">Vymazať a obnoviť</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> uložených údajov</translation>
-<translation id="7378810950367401542">/</translation>
 <translation id="7473891865547856676">Nie, ďakujem</translation>
-<translation id="4089663545127310568">Vyčistiť uložené heslá</translation>
 <translation id="3656115297268584622">Zapnúť polohu v <ph name="BEGIN_LINK"/>nastaveniach systému Android<ph name="END_LINK"/>.</translation>
+<translation id="1886021608051665693">Zvoľte účet zo svojej funkcie Google Smart Lock</translation>
 <translation id="7423098979219808738">Najprv sa spýtať</translation>
 <translation id="8073388330009372546">Otvoriť obrázok na novej karte</translation>
+<translation id="9060538597317784206">Zobraziť aplikáciu <ph name="APP_NAME"/> v Obchode Play. Hodnotenie: <ph name="APP_RATING"/>.</translation>
 <translation id="552553974213252141">Bol text vyňatý správne?</translation>
 <translation id="5317780077021120954">Uložiť</translation>
 <translation id="1151972924205500581">Vyžaduje sa heslo</translation>
@@ -101,6 +121,7 @@ Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete 
 <translation id="2718352093833049315">Len s Wi-Fi</translation>
 <translation id="7029809446516969842">Heslá</translation>
 <translation id="5487729733663684359">Pre túto verziu systému Android už nie sú podporované aktualizácie prehliadača Chrome</translation>
+<translation id="1201402288615127009">Ďalej</translation>
 <translation id="2414886740292270097">Tmavý režim</translation>
 <translation id="5911030830365207728">Prekladač Google</translation>
 <translation id="3927692899758076493">Bezpätkové</translation>
@@ -115,21 +136,32 @@ Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete 
 <translation id="7053983685419859001">Blokovať</translation>
 <translation id="8374821112118309944">Aplikáciu TalkBack je potrebné aktualizovať na novšiu verziu.</translation>
 <translation id="6406506848690869874">Synchronizácia</translation>
-<translation id="6026160407467558998">Povoliť webovým stránkam spúšťať JavaScript</translation>
+<translation id="6857778194843072568">Odosielať len v sieťach Wi-Fi</translation>
+<translation id="5380554235172449987">Nikdy neodosielať</translation>
+<translation id="1379156015317873965">Zlepšite výkonnosť načítania stránok</translation>
 <translation id="8481940801237642152">Vaše pripojenie k týmto stránkam je súkromné, ale niekto v sieti možno dokáže zmeniť vzhľad danej stránky.</translation>
 <translation id="2593272815202181319">Neproporcionálne</translation>
 <translation id="4807098396393229769">Meno na karte</translation>
+<translation id="6036158371062192100">Ak povolíte možnosť Nesledovať, k odosielaným údajom prehliadania sa pridá žiadosť. Akýkoľvek účinok závisí od toho, či budú webové stránky na žiadosť reagovať, a od interpretácie žiadosti.
+
+Niektoré webové stránky môžu napríklad na túto žiadosť reagovať tak, že vám zobrazia reklamy, ktoré nie sú založené na ostatných webových stránkach, ktoré ste navštívili. Mnoho webových stránok bude stále zhromažďovať a používať vaše údaje prehliadania, napríklad na zlepšenie zabezpečenia, poskytovanie obsahu, reklám a odporúčaní na svojich webových stránkach a na generovanie štatistiky prehľadov.</translation>
 <translation id="656628257199996201">Vždy prekladať jazyk <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="2387895666653383613">Mierka textu</translation>
 <translation id="6447842834002726250">Súbory cookie</translation>
 <translation id="2748463065602559597">Práve si prezeráte zabezpečenú stránku prehliadača Google Chrome.</translation>
+<translation id="5511351932351731210">Vždy odosielať</translation>
 <translation id="1383876407941801731">Vyhľadávanie</translation>
 <translation id="5626370437647899551">Pridať účet Google</translation>
 <translation id="9137013805542155359">Zobraziť originál</translation>
 <translation id="4543661749405994812">Kopírovať e-mailovú adresu</translation>
 <translation id="5646376287012673985">Poloha</translation>
 <translation id="5659593005791499971">E-mail</translation>
+<translation id="360480449234699036">Získajte informácie o témach na weboch bez toho, aby ste danú stránku museli opustiť. Funkcia Vyhľadávanie klepnutím odošle slovo a súvisiaci kontext do Vyhľadávania Google a vráti definície, obrázky, výsledky vyhľadávania a ďalšie podrobnosti.
+
+Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vyhľadávanie spresniť, posuňte panel úplne hore a klepnite na vyhľadávacie pole.</translation>
+<translation id="7498271377022651285">Čakajte…</translation>
 <translation id="7987073022710626672">Zmluvné podmienky prehliadača Chrome</translation>
+<translation id="588258955323874662">Celá obrazovka</translation>
 <translation id="5668404140385795438">Ignorovať požiadavku webových stránok na zákaz priblíženia</translation>
 <translation id="8428213095426709021">Nastavenia</translation>
 <translation id="7493994139787901920"><ph name="VERSION"/> (Aktualizované <ph name="TIME_SINCE_UPDATE"/>)</translation>
@@ -140,15 +172,17 @@ Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete 
 <translation id="2903493209154104877">Adresy</translation>
 <translation id="3661699943263275414">Webové stránky tretej strany môžu ukladať a čítať údaje súborov cookie</translation>
 <translation id="1173289567081511873">Ste prihlásený/-á do nasledujúcich účtov Google. Účty môžete pridať alebo odstrániť v nastaveniach platformy Android.</translation>
+<translation id="3950820424414687140">Prihlásiť sa</translation>
 <translation id="8026334261755873520">Vymazať údaje prehliadania</translation>
 <translation id="8503813439785031346">Meno používateľa</translation>
+<translation id="583891442612896534">Prehliadaču Chrome sa nepodarilo nadviazať spojenie so servermi Google s cieľom vykonať kompresiu údajov. Ukladanie vašich údajov môže byť obmedzené.</translation>
 <translation id="4827948050554950725">Pridať kreditnú kartu</translation>
 <translation id="4278390842282768270">Povolené</translation>
 <translation id="4686372254213217147">Pôvodná veľkosť</translation>
+<translation id="7626032353295482388">Víta vás prehliadač Chrome</translation>
 <translation id="7817177303494746697">Verzia nástroja Blink</translation>
 <translation id="2532336938189706096">Webové zobrazenie</translation>
 <translation id="6571070086367343653">Upraviť kreditnú kartu</translation>
-<translation id="7080851568148064063">Pridať na plochu</translation>
 <translation id="6192792657125177640">Výnimky</translation>
 <translation id="1984937141057606926">Povolené (okrem tretích strán)</translation>
 <translation id="4619298195800598081">Pôv. obrázok na novej karte</translation>
@@ -164,12 +198,14 @@ Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete 
 <translation id="3063601790762993062">Uložiť video</translation>
 <translation id="8106211421800660735">Číslo kreditnej karty</translation>
 <translation id="6042308850641462728">Viac</translation>
+<translation id="2496180316473517155">História prehliadania</translation>
 <translation id="6108923351542677676">Inštaluje sa...</translation>
 <translation id="7358682983403815415">Otvorené karty, záložky, história a ďalšie údaje sa synchronizujú s vaším účtom Google.</translation>
 <translation id="1943432128510653496">Ukladanie hesiel</translation>
 <translation id="4113030288477039509">Spravované vaším správcom</translation>
 <translation id="9100610230175265781">Vyžaduje sa prístupová fráza</translation>
 <translation id="4148957013307229264">Inštaluje sa...</translation>
+<translation id="7096034533295549981">Načítanie videa</translation>
 <translation id="5271967389191913893">Zariadenie nemôže otvoriť obsah na stiahnutie</translation>
 <translation id="3992315671621218278">Uložiť odkaz</translation>
 <translation id="5324858694974489420">Rodičovské nastavenia</translation>
@@ -181,21 +217,25 @@ Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete 
 <translation id="6978479750597523876">Obnoviť nastavenia prekladov</translation>
 <translation id="2476578072172137802">Nastavenia stránok</translation>
 <translation id="6820686453637990663">CVC</translation>
+<translation id="3774280986422214650">Ak povolíte túto funkciu, zúčastníte sa experimentu, ktorý vedie stránky HTTPS cez servery Google.</translation>
 <translation id="4195643157523330669">Otvoriť na novej karte</translation>
 <translation id="651048280540227067">Zavrieť ponuku</translation>
 <translation id="748127970106343339">Potvrdiť odstránenie poverení zariadenia</translation>
 <translation id="3089395242580810162">Otvoriť na karte inkognito</translation>
 <translation id="1082482054625560856">Spravovať uložené heslá vo vašom <ph name="BEGIN_LINK"/>účte Google<ph name="END_LINK"/></translation>
 <translation id="2360035970720276770">Stiahnuť sa dajú len webové adresy typu http alebo https</translation>
+<translation id="6570560778840017462">Nebudete odhlásený/-á zo svojich <ph name="BEGIN_LINK"/>účtov Google<ph name="END_LINK"/></translation>
 <translation id="4376501731284077108">Nespravované</translation>
 <translation id="2699916814609764774">Cesta profilu</translation>
 <translation id="6981982820502123353">Dostupnosť</translation>
 <translation id="8725066075913043281">Skúsiť znova</translation>
 <translation id="7977858705483383621">Bezpečné vyhľadávanie</translation>
 <translation id="8909135823018751308">Zdieľať…</translation>
+<translation id="1056898198331236512">Upozornenie</translation>
 <translation id="3338301885994755905">Blokovať (odporúčané)</translation>
 <translation id="6575643671698722332">Resetovanie zlyhalo. Uistite sa, že je zariadenie online, a skúste to znova.</translation>
 <translation id="654446541061731451">Vyberte kartu, ktorú chcete preniesť</translation>
+<translation id="4089831646916293264">Táto funkcia môže byť v konflikte s prémiovými dátovými službami poskytovanými vaším operátorom.</translation>
 <translation id="4269820728363426813">Kopírovať adresu odkazu</translation>
 <translation id="2359808026110333948">Pokračovať</translation>
 <translation id="2512222046227390255">Automatické dopĺňanie formulárov</translation>
@@ -217,13 +257,15 @@ Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete 
 <translation id="8941248009481596111">Vaše pripojenie k týmto stránkam je súkromné.</translation>
 <translation id="1285320974508926690">Nikdy neprekladať tieto webové stránky</translation>
 <translation id="4165986682804962316">Nastavenia webovej stránky</translation>
+<translation id="3672452749423051839">Návrhy v prípade chýb navigácie</translation>
 <translation id="2956410042958133412">Tento účet je spravovaný používateľmi <ph name="PARENT_NAME_1"/> a <ph name="PARENT_NAME_2"/>.</translation>
-<translation id="7048229856657573547">Spravovať údaje Peňaženky</translation>
+<translation id="780301667611848630">Nie, ďakujem</translation>
 <translation id="5164482624172255778">Chcete, aby prehliadač Google Chrome nabudúce ponúkol možnosť prekladu stránok v jazyku <ph name="LANGUAGE"/> z tejto lokality?</translation>
 <translation id="4062305924942672200">Právne informácie</translation>
 <translation id="515227803646670480">Vymazanie uložených údajov</translation>
 <translation id="8528538445849828817">Jazyk stránky: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="7963646190083259054">Dodávateľ:</translation>
+<translation id="9065203028668620118">Upraviť</translation>
 <translation id="4881695831933465202">Otvoriť</translation>
 <translation id="6512448926095770873">Odísť z tejto stránky</translation>
 <translation id="3414952576877147120">Veľkosť:</translation>
@@ -231,6 +273,7 @@ Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete 
 <translation id="5626134646977739690">Názov:</translation>
 <translation id="8617240290563765734">Otvoriť navrhovanú webovú adresu určenú v stiahnutom obsahu?</translation>
 <translation id="5565871407246142825">Kreditné karty</translation>
+<translation id="7324738665594301612">Vedenie stránok HTTPS cez servery Google testujeme ako súčasť experimentu.</translation>
 <translation id="7947953824732555851">Prijať a prihl. sa</translation>
 <translation id="6333140779060797560">Zdieľať prostredníctvom aplikácie <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Zatvoriť</translation>
@@ -247,16 +290,21 @@ Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete 
 Ak je VYPNUTÝ, je možné, že nebudete môcť prehrať prémiové videá na tomto zariadení.</translation>
 <translation id="8928220460877261598">Prihlásili ste sa do prehliadača Chrome.</translation>
 <translation id="5032574515228824816">Výzva</translation>
+<translation id="7772032839648071052">Potvrďte prístupovú frázu</translation>
 <translation id="8920114477895755567">Čaká sa na podrobnosti o rodičoch.</translation>
+<translation id="8912362522468806198">účtu Google</translation>
 <translation id="6165508094623778733">Viac informácií</translation>
 <translation id="3003595280608617736">Žiadna karta SD</translation>
+<translation id="6337234675334993532">Šifrovanie</translation>
 <translation id="862875433388403934">Obsah (filmy, hudba atď.) stiahnutý v iných aplikáciách sa nemusí dať prehrať, pokiaľ aplikácie opätovne nezískajú licencie na základe nových poverení zariadenia. Ak chcete získať nové licencie, pripojte sa k internetu a prehrajte stiahnutý obsah.</translation>
-<translation id="2913733558842973836">Tieto stránky prešli do režimu celej obrazovky.
-Presunutím tento režim ukončíte.</translation>
+<translation id="5869522115854928033">Uložené heslá</translation>
 <translation id="1692118695553449118">Synchronizácia je zapnutá.</translation>
 <translation id="7961015016161918242">Nikdy</translation>
+<translation id="7607002721634913082">Pozastavené</translation>
 <translation id="5040262127954254034">Súkromie</translation>
 <translation id="6820607729870073286">Nemáte uložené žiadne nastavenia webových stránok.</translation>
+<translation id="6990079615885386641">Získať aplikáciu z Obchodu Google Play: <ph name="APP_ACTION"/></translation>
+<translation id="1121094540300013208">Správy o použití a o zlyhaní</translation>
 <translation id="1159783623621444829">Toto je detský účet</translation>
 <translation id="8109148095642131923">Stiahnutú položku sa nepodarilo pridať do správcu sťahovania.</translation>
 <translation id="6295158916970320988">Všetky stránky</translation>
@@ -265,11 +313,11 @@ Presunutím tento režim ukončíte.</translation>
 <translation id="4056223980640387499">Sépia</translation>
 <translation id="8310344678080805313">Štandardné karty</translation>
 <translation id="8396312449826231789">Iba schválené stránky</translation>
+<translation id="17513872634828108">Otvorené karty</translation>
 <translation id="411254640334432676">Sťahovanie zlyhalo.</translation>
 <translation id="6277522088822131679">Pri tlačení stránky sa vyskytol problém. Skúste to znova.</translation>
 <translation id="7634554953375732414">Vaše pripojenie k týmto stránkam nie je súkromné.</translation>
 <translation id="6409731863280057959">Kontextové okná</translation>
-<translation id="6518133107902771759">Overiť</translation>
 <translation id="6612358246767739896">Chránený obsah</translation>
 <translation id="1742134235943978220">Preložené do jazyka <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6738867403308150051">Sťahuje sa...</translation>
@@ -277,9 +325,10 @@ Presunutím tento režim ukončíte.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6375900123462779979">Prístup k mikrofónu a kamere</translation>
 <translation id="7437998757836447326">Odhlásenie z prehliadača Chrome</translation>
-<translation id="8773248244177230992">Vymazať vyrovnávaciu pamäť</translation>
+<translation id="1178581264944972037">Pozastaviť</translation>
 <translation id="5127805178023152808">Synchronizácia je vypnutá.</translation>
 <translation id="5677928146339483299">Zablokované</translation>
-<translation id="5645050752379834274">Keď je táto funkcia zapnutá, prehliadač Chrome ponúkne možnosť vyplniť formuláre pomocou adries a kreditných kariet vo vašej Peňaženke.</translation>
+<translation id="1709438864123551175">Šetrič dát</translation>
 <translation id="7561196759112975576">Vždy</translation>
+<translation id="605721222689873409">RR</translation>
 </translationbundle>

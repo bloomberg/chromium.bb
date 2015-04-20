@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="cs">
+<translation id="2774256287122201187">Můžete pokračovat. Pokud na stránku budete pokračovat, toto upozornění se pět minut nebude zobrazovat.</translation>
 <translation id="7485870689360869515">Nebyla nalezena žádná data.</translation>
 <translation id="3884278016824448484">Konfliktní identifikátor zařízení</translation>
 <translation id="6779575937362063477">Peněženka Google tento typ karty nepodporuje. Vyberte jinou kartu.</translation>
@@ -39,6 +40,7 @@
 <translation id="2704283930420550640">Hodnota neodpovídá formátu.</translation>
 <translation id="4850886885716139402">Zobrazit</translation>
 <translation id="8091372947890762290">Čeká se na aktivaci na serveru</translation>
+<translation id="4607653538520819196">Tuto stránku prostřednictvím proxy serverů Spořiče dat nelze zprostředkovat.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Region</translation>
 <translation id="1871208020102129563">Proxy je nastaveno na používání pevně daných serverů proxy, nikoliv adresy URL skriptu PAC.</translation>
@@ -50,6 +52,7 @@
 <translation id="7441627299479586546">Chybný předmět zásady</translation>
 <translation id="3885155851504623709">Okrsek</translation>
 <translation id="6973656660372572881">Určeny jsou pevně dané servery proxy i adresa URL skriptu PAC.</translation>
+<translation id="1426410128494586442">Ano</translation>
 <translation id="4506176782989081258">Chyba ověřování: <ph name="VALIDATION_ERROR"/>.</translation>
 <translation id="7108649287766967076">Překlad do jazyka <ph name="TARGET_LANGUAGE"/> se nezdařil.</translation>
 <translation id="4103249731201008433">Sériové číslo zařízení je neplatné</translation>
@@ -68,12 +71,15 @@
 <translation id="1132774398110320017">Nastavení Automatického vyplňování v prohlížeči Chrome...</translation>
 <translation id="6458467102616083041">Ignorováno, protože výchozí vyhledávání je zakázáno zásadou.</translation>
 <translation id="1227224963052638717">Neznámá zásada.</translation>
+<translation id="4250680216510889253">Ne</translation>
 <translation id="9207861905230894330">Přidání článku se nezdařilo.</translation>
 <translation id="5872918882028971132">Návrhy rodičů</translation>
 <translation id="337363190475750230">Vyřazeno</translation>
 <translation id="2367567093518048410">Úroveň</translation>
 <translation id="7977590112176369853">&lt;zadat dotaz&gt;</translation>
+<translation id="552553974213252141">Byl text extrahován správně?</translation>
 <translation id="7610193165460212391">Hodnota <ph name="VALUE"/> je mimo rozsah.</translation>
+<translation id="3739623965217189342">Zkopírovaný odkaz</translation>
 <translation id="8311778656528046050">Opravdu chcete tuto stránku znovu načíst?</translation>
 <translation id="370665806235115550">Načítání...</translation>
 <translation id="2096368010154057602">Oddělení</translation>
@@ -81,7 +87,6 @@
 <translation id="3024663005179499861">Chybný typ zásady</translation>
 <translation id="2030481566774242610">Měli jste na mysli <ph name="LINK"/>?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
-<translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, platí do: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="225207911366869382">Tato hodnota již pro tuto zásadu není podporována.</translation>
 <translation id="3145945101586104090">Dekódování odpovědi se nezdařilo</translation>
@@ -130,6 +135,7 @@
 <translation id="3228969707346345236">Překlad se nezdařil. Stránka je již v jazyce <ph name="LANGUAGE"/>.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="8034522405403831421">Stránka je v jazyce <ph name="SOURCE_LANGUAGE"/>. Chcete ji přeložit do jazyka <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="1734864079702812349">Amex</translation>
 <translation id="8891727572606052622">Neplatný režim proxy serveru.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">Nespravováno</translation>
@@ -203,6 +209,7 @@
 <translation id="8713130696108419660">Nesprávný počáteční podpis</translation>
 <translation id="20817612488360358">Jako aktivní jsou nakonfigurována systémová nastavení proxy serveru, je však určena i explicitní konfigurace proxy serveru.</translation>
 <translation id="2639739919103226564">Stav:</translation>
+<translation id="4968547170521245791">Nelze zprostředkovat</translation>
 <translation id="385051799172605136">Zpět</translation>
 <translation id="5095208057601539847">Provincie</translation>
 <translation id="2581221116934462656">Chcete, aby prohlížeč <ph name="PRODUCT_NAME"/> příště pro stránky v jazyce <ph name="LANGUAGE_NAME"/> z tohoto webu nabízel překlad?</translation>
@@ -210,6 +217,7 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Požadavek byl úspěšný</translation>
 <translation id="2455981314101692989">U tohoto formuláře je na dané webové stránce vypnuto automatické vyplňování.</translation>
+<translation id="6597614308054261376">Pokoušíte se přejít na stránku <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. Tuto stránku v současné době prostřednictvím proxy serverů Spořiče dat nelze zprostředkovat.</translation>
 <translation id="8308427013383895095">Překlad se nezdařil kvůli problému s připojením k síti.</translation>
 <translation id="5720705177508910913">Aktuální uživatel</translation>
 <translation id="3380864720620200369">Číslo klienta:</translation>

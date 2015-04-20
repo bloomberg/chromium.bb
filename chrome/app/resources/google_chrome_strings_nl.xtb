@@ -167,6 +167,7 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
 <translation id="7787950393032327779">Het profiel lijkt te worden gebruikt door een ander proces in Google Chrome (<ph name="PROCESS_ID"/>) op een andere computer (<ph name="HOST_NAME"/>). Het profiel is vergrendeld zodat het niet wordt beschadigd. Als je zeker weet dat dit profiel niet door andere processen wordt gebruikt, kun je het profiel ontgrendelen en Chrome opnieuw starten.</translation>
 <translation id="1469002951682717133">App-opstartprogramma van Chrome</translation>
 <translation id="8568392309447938879">Je moet zijn ingelogd bij Chrome om apps te gebruiken. Zo kan Chrome je apps, bladwijzers, geschiedenis, wachtwoorden en andere instellingen synchroniseren met al je apparaten.</translation>
+<translation id="6883876366448858277">stuurt een woord met de context naar Google Zoeken en retourneert definities, foto's en andere zoekresultaten.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Met Google Chrome kun je klikken op een telefoonnummer op internet om dit via Skype te bellen!</translation>
 <translation id="3612333635265770873">Van een module met dezelfde naam is bekend dat deze conflicteert met Google Chrome.</translation>
@@ -208,7 +209,6 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
 <translation id="8255190535488645436">Google Chrome gebruikt je camera en microfoon.</translation>
 <translation id="7396375882099008034">Sta Chrome via je firewall- of antivirusinstellingen toe het netwerk te gebruiken.</translation>
 <translation id="9102715433345326100">Dit bestand is schadelijk en is daarom door Chrome geblokkeerd.</translation>
-<translation id="3170677364322086041">Deze site maakt gebruikt van de Chrome Frame-plug-in die uit roulatie is genomen en waarvoor geen beveiligings- en stabiliteitsupdates meer beschikbaar komen. Verwijder de plug-in en voer een upgrade uit naar een moderne browser.</translation>
 <translation id="8205111949707227942">Optioneel: help Chrome OS beter te maken door Google automatisch gebruiksstatistieken en crashmeldingen te sturen.</translation>
 <translation id="7253415505590551024">Er worden momenteel downloads uitgevoerd. Wil je Google Chrome afsluiten en de downloads annuleren?</translation>
 <translation id="487887346205285304">Werkt Chrome niet naar behoren?</translation>
@@ -230,7 +230,6 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
 <translation id="7825851276765848807">De installatie is mislukt vanwege een onbekende fout. Download Google Chrome opnieuw.</translation>
 <translation id="1150979032973867961">De server kan niet bewijzen dat dit <ph name="DOMAIN"/> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door het besturingssysteem van je computer. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="4458285410772214805">Log uit en log weer in om deze wijziging door te voeren.</translation>
-<translation id="5489213858994471184">Chrome heeft vastgesteld dat de instellingen van je browser mogelijk zijn gewijzigd door een programma op je computer zonder dat je dit weet. Je kunt de tool voor softwareverwijdering van Google gebruiken om dat programma te verwijderen.</translation>
 <translation id="8679801911857917785">Hiermee wordt ook gecontroleerd welke pagina wordt weergegeven wanneer je Chrome start.</translation>
 <translation id="5334545119300433702">Van deze module is bekend dat deze conflicteert met Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>

@@ -1,21 +1,17 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="de">
 <translation id="6676384891291319759">Internetzugriff</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR"/> Die Chromium-Autoren. Alle Rechte vorbehalten.</translation>
-<translation id="7180611975245234373">Aktualisieren</translation>
 <translation id="6373523479360886564">Möchten Sie Chromium wirklich deinstallieren?</translation>
-<translation id="1260240842868558614">Anzeigen:</translation>
 <translation id="6510925080656968729">Chromium deinstallieren</translation>
 <translation id="2615699638672665509">Für diesen Computer werden in Kürze keine weiteren Chromium-Updates mehr bereitgestellt, da die Hardware des Geräts nicht mehr unterstützt wird.</translation>
 <translation id="5532301346661895910">Chromium fügt dies Ihren |in Google gespeicherten Passwörtern| hinzu, sodass es bei Bedarf verfügbar ist.</translation>
 <translation id="6893813176749746474">Chromium wurde aktualisiert, Sie haben den Browser jedoch mindestens 30 Tage nicht verwendet.</translation>
 <translation id="2732467638532545152">Auf Ihrem Computer wird eine alte Version von Microsoft Windows ausgeführt, die das Sicherheitszertifikat dieser Website nicht verarbeiten kann. Chromium kann daher nicht feststellen, ob das Zertifikat von <ph name="SITE"/> oder von jemandem aus Ihrem Netzwerk stammt, der sich als <ph name="SITE"/> ausgibt. Bitte installieren Sie eine neuere Version von Windows auf Ihrem Computer.</translation>
 <translation id="2770231113462710648">Standardbrowser ändern in:</translation>
-<translation id="7982789257301363584">Netzwerk</translation>
 <translation id="6613594504749178791">Ihre Änderungen werden beim nächsten Neustart von Chromium wirksam.</translation>
 <translation id="9089354809943900324">Chromium ist veraltet.</translation>
 <translation id="59625444380784159">Mithilfe von Angaben aus Ihren Kontakten können Sie Formulare in Chromium schneller ausfüllen.</translation>
 <translation id="3748537968684000502">Dies ist eine sichere Chromium-Seite.</translation>
-<translation id="1165039591588034296">Fehler</translation>
 <translation id="2077129598763517140">Hardwarebeschleunigung verwenden, falls verfügbar</translation>
 <translation id="1065672644894730302">Ihre Einstellungen können nicht gelesen werden. Einige Funktionen sind möglicherweise nicht verfügbar und Änderungen an Einstellungen werden nicht gespeichert.</translation>
 <translation id="7861509383340276692">Öffnen Sie
@@ -45,9 +41,7 @@
 <translation id="8987477933582888019">Webbrowser</translation>
 <translation id="4050175100176540509">Wichtige Sicherheitsverbesserungen und neue Funktionen sind in der aktuellen Version verfügbar.</translation>
 <translation id="2886012850691518054">Optional: Unterstützen Sie Google bei der Verbesserung von Chromium durch automatisches Senden von Nutzungsstatistiken und Absturzberichten.</translation>
-<translation id="1124772482545689468">Nutzer</translation>
 <translation id="580822234363523061">Gehen Sie zum Chromium-Menü &gt; &quot;<ph name="SETTINGS_TITLE"/>&quot; &gt; &quot;<ph name="ADVANCED_TITLE"/>&quot; &gt; &quot;<ph name="PROXIES_TITLE"/>&quot; und vergewissern Sie sich, dass in Ihrer Konfiguration die Einstellung &quot;Kein Proxy&quot; oder &quot;Direkt&quot; verwendet wird.</translation>
-<translation id="1864111464094315414">Anmeldung</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="7729447699958282447">Chromium konnte Ihre Daten nicht synchronisieren, da die Synchronisierung für Ihre Domain nicht zur Verfügung steht.</translation>
 <translation id="3738139272394829648">Zum Suchen tippen</translation>
@@ -74,12 +68,10 @@
 <translation id="734373864078049451">Hier können Sie im Web surfen und Ihre Lesezeichen und andere Chromium-Inhalte speichern.</translation>
 <translation id="3197823471738295152">Ihr Gerät ist auf dem neuesten Stand.</translation>
 <translation id="3065280201209294872">Die Website verwendet veraltete Sicherheitseinstellungen, aufgrund derer künftige Chromium-Versionen möglicherweise nicht mehr sicher auf sie zugreifen können.</translation>
-<translation id="2660779039299703961">Ereignis</translation>
 <translation id="8551886023433311834">Fast fertig! Starten Sie Ihr Gerät neu, um die Aktualisierung abzuschließen.</translation>
 <translation id="8353224596138547809">Soll Chromium Ihr Passwort für diese Website speichern?</translation>
 <translation id="8738058698779197622">Zum Aufbau einer sicheren Verbindung muss die Uhrzeit richtig eingestellt sein. Der Grund hierfür ist, dass Websites sich mithilfe von Zertifikaten identifizieren, die nur für einen bestimmten Zeitraum gelten. Da die Uhrzeit Ihres Geräts falsch ist, kann Chromium diese Zertifikate nicht bestätigen.</translation>
 <translation id="7339898014177206373">Neues Fenster</translation>
-<translation id="2739191690716947896">Fehlerbehebung</translation>
 <translation id="7463979740390522693">Chromium – Benachrichtigungen (<ph name="QUANTITY"/> ungelesen)</translation>
 <translation id="225614027745146050">Willkommen</translation>
 <translation id="5823381412099532241">Chromium konnte nicht automatisch auf die neueste Version aktualisiert werden. In Ihrer Version fehlen einige neue Funktionen und Sicherheitsmerkmale. Aktualisieren Sie Chromium manuell.</translation>
@@ -97,7 +89,6 @@
 <translation id="3296368748942286671">Apps weiter im Hintergrund ausführen, wenn Chromium geschlossen wird</translation>
 <translation id="473775607612524610">Aktualisieren</translation>
 <translation id="5466153949126434691">Chromium wird automatisch aktualisiert, sodass Sie immer über die neueste Version verfügen. Nach Abschluss des Downloads wird Chromium neu gestartet und Sie können fortfahren.</translation>
-<translation id="7707841053049645517">Diese Website verwendet das Chromium Frame-Plug-in, das bald nicht mehr unterstützt wird. Bitte deinstallieren Sie das Plug-in und führen Sie ein Upgrade auf einen neueren Browser aus.</translation>
 <translation id="3656661827369545115">Chromium beim Starten des Computers automatisch ausführen</translation>
 <translation id="2241627712206172106">Bei gemeinsam genutzten Computern können die verschiedenen Personen separat surfen und Chromium jeweils nach ihren Wünschen einrichten.</translation>
 <translation id="1763864636252898013">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN"/> ist. Sein Sicherheitszertifikat wird vom Betriebssystem Ihres Geräts als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
@@ -133,7 +124,6 @@
 <translation id="4365115785552740256">Chromium wird durch das Open-Source-Projekt <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> und andere <ph name="BEGIN_LINK_OSS"/>Open-Source-Software<ph name="END_LINK_OSS"/> ermöglicht.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="4987820182225656817">Gastnutzer können Chromium verwenden, ohne Daten zu hinterlassen.</translation>
-<translation id="2216475571518225820">Diese Website verwendet das Chromium Frame-Plug-in, das bald nicht mehr unterstützt wird. Bitte deinstallieren Sie das Plug-in und laden Sie einen kompatiblen Browser herunter.</translation>
 <translation id="3487263810738775861">Die beim Start von Chromium angezeigte Seite wurde durch eine Erweiterung geändert.</translation>
 <translation id="5877064549588274448">Kanal wurde geändert. Starten Sie Ihr Gerät neu, um die Änderungen zu übernehmen.</translation>
 <translation id="7549178288319965365">Über Chromium OS</translation>
@@ -154,8 +144,8 @@
 <translation id="8684913864886094367">Chromium wurde nicht richtig beendet.</translation>
 <translation id="3582788516608077514">Chromium wird aktualisiert...</translation>
 <translation id="7223968959479464213">Taskmanager - Chromium</translation>
-<translation id="6723839937902243910">Akkuleistung</translation>
 <translation id="1779356040007214683">Um Chromium sicherer zu machen, haben wir einige Erweiterungen deaktiviert, die nicht im <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> aufgeführt sind und möglicherweise ohne Ihr Wissen hinzugefügt wurden.</translation>
+<translation id="6883876366448858277">sendet ein Wort und den Kontext an die Google-Suche. Als Ergebnis werden Definitionen, Bilder, Suchergebnisse und andere Details zurückgegeben.</translation>
 <translation id="6638567566961868659">Ihre Lesezeichen finden Sie im Chromium-Menü oder in der Lesezeichenleiste.</translation>
 <translation id="2673087257647337101">Fast fertig! Starten Sie Chromium neu, um die Aktualisierung abzuschließen.</translation>
 <translation id="1293235220023151515">Auf dem System wurde eine Installation von Chromium gefunden, die einen Konflikt verursacht. Bitte deinstallieren Sie sie und versuchen Sie es erneut.</translation>
@@ -164,7 +154,6 @@
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> wurde zu Chromium hinzugefügt.</translation>
 <translation id="549669000822060376">Bitte warten Sie, bis die aktuellen Systemupdates von Chromium installiert wurden.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4130199216115862831">Geräteprotokoll</translation>
 <translation id="4559775032954821361">Gehen Sie zum Chromium-Menü &gt; &quot;<ph name="SETTINGS_TITLE"/>&quot; &gt; &quot;<ph name="ADVANCED_TITLE"/>&quot; &gt; &quot;<ph name="PROXIES_TITLE"/>&quot; &gt; &quot;LAN-Einstellungen&quot; und deaktivieren Sie das Kontrollkästchen &quot;Proxyserver für LAN verwenden&quot;.</translation>
 <translation id="8621669128220841554">Die Installation konnte aufgrund eines undefinierten Fehlers nicht abgeschlossen werden. Bitte laden Sie Chromium erneut herunter.</translation>
 <translation id="6717134281241384636">Ihr Profil kann nicht verwendet werden, da es aus einer neueren Version von Chromium stammt.
@@ -208,7 +197,6 @@ Einige Funktionen stehen möglicherweise nicht zur Verfügung. Geben Sie bitte e
 <translation id="7196020411877309443">Warum wird diese Meldung angezeigt?</translation>
 <translation id="457845228957001925">Wichtige Informationen zu Ihren Chromium-Daten</translation>
 <translation id="4567424176335768812">Sie sind als <ph name="USER_EMAIL_ADDRESS"/> angemeldet. Auf allen Geräten, auf denen Sie angemeldet sind, sind nun Ihre Lesezeichen, Ihr Verlauf und andere Einstellungen verfügbar.</translation>
-<translation id="6429869149766938">Chromium hat festgestellt, dass Ihre Browsereinstellungen möglicherweise ohne Ihr Wissen durch ein Programm auf Ihrem Computer geändert wurden. Sie können das Programm mit dem Google-Tool zum Entfernen schädlicher Software entfernen.</translation>
 <translation id="7483335560992089831">Die Chromium-Version kann nicht installiert werden, da sie aktuell ausgeführt wird. Schließen Sie Chromium bitte und versuchen Sie es erneut.</translation>
 <translation id="1150979032973867961">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN"/> ist. Sein Sicherheitszertifikat wird vom Betriebssystem Ihres Computers als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="7641113255207688324">Chromium ist nicht als Ihr Standardbrowser festgelegt.</translation>
@@ -219,7 +207,6 @@ Einige Funktionen stehen möglicherweise nicht zur Verfügung. Geben Sie bitte e
 <translation id="2119636228670142020">Über &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Es gibt eine neue, sicherere Version von Chromium.</translation>
 <translation id="378917192836375108">In Chromium können Sie auf eine Telefonnummer im Web klicken und diese mit Skype anrufen.</translation>
-<translation id="2242687258748107519">Dateiinformationen</translation>
 <translation id="8724049448828509830">Momentan wird ein Download durchgeführt. Möchten Sie Chromium beenden und den Download abbrechen?</translation>
 <translation id="608189560609172163">Chromium konnte Ihre Daten aufgrund eines Fehlers bei der Anmeldung nicht synchronisieren.</translation>
 <translation id="4888717733111232871">Eingangsregel für die Zulassung von mDNS-Verkehr in Chromium</translation>
@@ -230,7 +217,6 @@ Einige Funktionen stehen möglicherweise nicht zur Verfügung. Geben Sie bitte e
 Sollten Sie sich trotzdem anmelden, werden die Chromium-Daten wie Lesezeichen, Verlauf und andere Einstellungen in <ph name="ACCOUNT_EMAIL_NEW"/> zusammengeführt.</translation>
 <translation id="2739631515503418643">Momentan werden Downloads durchgeführt. Möchten Sie Chromium beenden und die Downloads abbrechen?</translation>
 <translation id="9013262824292842194">Für Chromium ist Windows Vista oder Windows XP SP2 oder höher erforderlich.</translation>
-<translation id="6231881193380278751">Abfrageparameter in URL zum automatischen Aktualisieren der Seite hinzufügen: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="1967743265616885482">Es ist bekannt, dass ein Modul mit dem gleichen Namen einen Konflikt mit Chromium verursacht.</translation>
 <translation id="7962572577636132072">Chromium wird automatisch aktualisiert, sodass Sie immer über die neueste Version verfügen.</translation>
 <translation id="722928257909516027">Chromium-Menü anzeigen</translation>
@@ -244,7 +230,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chromium-Daten wie Lesezeichen, V
 Chromium kann Ihre Einstellungen nicht wiederherstellen.</translation>
 <translation id="918373042641772655">Wenn Sie die Verbindung zu <ph name="USERNAME"/> trennen, werden Ihr Verlauf sowie Ihre Lesezeichen, Einstellungen und sonstigen auf diesem Gerät gespeicherten Chromium-Daten gelöscht. In Ihrem Google-Konto gespeicherte Daten bleiben erhalten und können über das <ph name="GOOGLE_DASHBOARD_LINK"/>Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK"/> verwaltet werden.</translation>
 <translation id="6403826409255603130">Chromium ist ein Webbrowser, der Webseiten und Apps in Sekundenschnelle lädt und dabei äußerst stabil und nutzerfreundlich ist. Dank des integrierten Malware- und Phishing-Schutzes können Sie bedenkenlos im Internet surfen.</translation>
-<translation id="930268624053534560">Detaillierter Zeitstempel</translation>
 <translation id="4230135487732243613">Ihre Chromium-Daten mit diesem Konto verknüpfen?</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="7617377681829253106">Chromium ist jetzt noch besser</translation>

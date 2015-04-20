@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="de">
 <translation id="1408730541890277710">Bilder werden durch ihren alternativen Text ersetzt.</translation>
+<translation id="6017514345406065928">Grün</translation>
 <translation id="595639123821853262">Umgekehrte Graustufen</translation>
 <translation id="8260673944985561857">Optionen für die Tastaturnavigation</translation>
 <translation id="3410969471888629217">Websiteanpassungen aufheben</translation>
@@ -14,6 +15,8 @@
 <translation id="2394933097471027016">Probieren Sie es aus. Die Tastaturnavigation ist auf dieser Seite immer aktiviert.</translation>
 <translation id="3622586652998721735">Als Standardschema festlegen</translation>
 <translation id="2179565792157161713">Ausführliche Beschreibung in neuem Tab öffnen</translation>
+<translation id="7942349550061667556">Rot</translation>
+<translation id="1555130319947370107">Blau</translation>
 <translation id="2471847333270902538">Farbschema für <ph name="SITE"/>:</translation>
 <translation id="381767806621926835">Klicken Sie mit der rechten Maustaste auf Elemente mit einem &quot;longdesc&quot;- oder &quot;aria-describedat&quot;-Attribut, um die ausführliche Beschreibung aufzurufen.</translation>
 <translation id="786423340267544509">Rahmen zu Elementen mit &quot;aria-describedat&quot;- oder &quot;longdesc&quot;-Attribut hinzufügen</translation>

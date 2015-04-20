@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="et">
+<translation id="2774256287122201187">Võite jätkata. Kui liigute edasi lehele, ei ilmu see hoiatus järgmise viie minuti jooksul uuesti.</translation>
 <translation id="7485870689360869515">Andmeid ei leitud.</translation>
 <translation id="3884278016824448484">Seadme identifikaator on konfliktne</translation>
 <translation id="6779575937362063477">Google Wallet ei toeta seda kaarditüüpi. Valige teistsugune kaart.</translation>
@@ -39,6 +40,7 @@
 <translation id="2704283930420550640">Väärtus ei vasta vormingule.</translation>
 <translation id="4850886885716139402">Kuva</translation>
 <translation id="8091372947890762290">Aktiveerimine on serveris ootel</translation>
+<translation id="4607653538520819196">Andmemahu säästja ei saa seda lehte puhverdada.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Piirkond</translation>
 <translation id="1871208020102129563">Puhverserver on seatud kasutama fikseeritud puhverservereid, mitte pac-skripti URL-i.</translation>
@@ -50,6 +52,7 @@
 <translation id="7441627299479586546">Reegli objekt on vale</translation>
 <translation id="3885155851504623709">Vald</translation>
 <translation id="6973656660372572881">Määratud on nii fikseeritud puhverserverid kui ka pac-skriptiga URL.</translation>
+<translation id="1426410128494586442">Jah</translation>
 <translation id="4506176782989081258">Valideerimisviga: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">Tõlkimine <ph name="TARGET_LANGUAGE"/> keelde ebaõnnestus.</translation>
 <translation id="4103249731201008433">Seadme seerianumber on kehtetu</translation>
@@ -68,12 +71,15 @@
 <translation id="1132774398110320017">Chrome'i automaattäite seaded ...</translation>
 <translation id="6458467102616083041">Seda eiratakse, kuna vaikeotsing on reegliga keelatud.</translation>
 <translation id="1227224963052638717">Tundmatud eeskirjad.</translation>
+<translation id="4250680216510889253">Ei</translation>
 <translation id="9207861905230894330">Artikli lisamine ebaõnnestus.</translation>
 <translation id="5872918882028971132">Vanema soovitused</translation>
 <translation id="337363190475750230">Eraldatud</translation>
 <translation id="2367567093518048410">Tase</translation>
 <translation id="7977590112176369853">&lt;sisesta päring&gt;</translation>
+<translation id="552553974213252141">Kas tekst ekstraktiti õigesti?</translation>
 <translation id="7610193165460212391">Väärtus on vahemikust (<ph name="VALUE"/>) väljaspool.</translation>
+<translation id="3739623965217189342">Teie kopeeritud link</translation>
 <translation id="8311778656528046050">Kas soovite kindlasti lehe uuesti laadida?</translation>
 <translation id="370665806235115550">Laadimine...</translation>
 <translation id="2096368010154057602">Osakond</translation>
@@ -81,7 +87,6 @@
 <translation id="3024663005179499861">Reegli tüüp on vale</translation>
 <translation id="2030481566774242610">Kas mõtlesite aadressi <ph name="LINK"/>?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
-<translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, aegub: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="225207911366869382">Väärtus on eeskirjade jaoks aegunud.</translation>
 <translation id="3145945101586104090">Vastuse dekodeerimine ebaõnnestus</translation>
@@ -130,6 +135,7 @@
 <translation id="3228969707346345236">Tõlkimine nurjus, kuna lehe keel on juba <ph name="LANGUAGE"/>.</translation>
 <translation id="7521387064766892559">Javascript</translation>
 <translation id="8034522405403831421">Leht on <ph name="SOURCE_LANGUAGE"/> keeles. Kas tõlkida <ph name="TARGET_LANGUAGE"/> keelde?</translation>
+<translation id="1734864079702812349">Amex</translation>
 <translation id="8891727572606052622">Kehtetu puhverserveri režiim.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">Haldamata</translation>
@@ -203,6 +209,7 @@
 <translation id="8713130696108419660">Sobimatu esialgne allkiri</translation>
 <translation id="20817612488360358">Kasutamiseks on määratud süsteemi puhverserveri seaded, kuid määratud on ka konkreetne puhverserveri konfigureerimine.</translation>
 <translation id="2639739919103226564">Olek:</translation>
+<translation id="4968547170521245791">Puhverserverit ei saa kasutada</translation>
 <translation id="385051799172605136">Tagasi</translation>
 <translation id="5095208057601539847">Provints</translation>
 <translation id="2581221116934462656">Kas soovite, et rakendus <ph name="PRODUCT_NAME"/> pakub järgmisel korral sellel saidil <ph name="LANGUAGE_NAME"/> keeles lehtede tõlkimise võimalust?</translation>
@@ -210,6 +217,7 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Taotlus õnnestus</translation>
 <translation id="2455981314101692989">See veebileht on keelanud automaatse täitmise selle vormi puhul.</translation>
+<translation id="6597614308054261376">Soovite pääseda lehele <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. Andmemahu säästja ei saa seda lehte praegu puhverdada.</translation>
 <translation id="8308427013383895095">Tõlkimine ebaõnnestus võrguühenduse probleemi tõttu.</translation>
 <translation id="5720705177508910913">Praegune kasutaja</translation>
 <translation id="3380864720620200369">Kliendi ID:</translation>

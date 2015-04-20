@@ -486,7 +486,9 @@
 <translation id="3381968327636295719">Używaj domyślnie przeglądarki hosta</translation>
 <translation id="3627678165642179114">Włącz lub wyłącz internetową usługę sprawdzania pisowni</translation>
 <translation id="6520802717075138474">Importuj wyszukiwarki z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
-<translation id="4039085364173654945">Określa, czy umieszczona na stronie treść dodatkowa innej firmy może wyświetlać okno dialogowe z podstawowym uwierzytelnianiem HTTP. Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku nieskonfigurowania zasady ustawienie jest wyłączone i treść dodatkowa innej firmy nie może wyświetlać okna dialogowego z podstawowym uwierzytelnianiem HTTP.</translation>
+<translation id="4039085364173654945">Określa, czy umieszczona na stronie treść dodatkowa innej firmy może wyświetlać okno dialogowe z podstawowym uwierzytelnianiem HTTP. 
+
+Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku nieskonfigurowania zasady ustawienie jest wyłączone i treść dodatkowa innej firmy nie może wyświetlać okna dialogowego z podstawowym uwierzytelnianiem HTTP.</translation>
 <translation id="4946368175977216944">Określa flagi, które należy zastosować przy uruchomieniu Chrome. Wskazane flagi są stosowane przed uruchomieniem Chrome nawet dla ekranu logowania.</translation>
 <translation id="7447786363267535722">Umożliwia zapisanie haseł i używanie ich w <ph name="PRODUCT_NAME"/>. Jeśli włączysz to ustawienie, <ph name="PRODUCT_NAME"/> może zapamiętywać hasła użytkowników i wprowadzać je za nich automatycznie podczas kolejnego logowania do witryny. Jeśli zaś je wyłączysz, użytkownicy nie będą mogli zapisywać nowych ani używać dotychczas zapisanych haseł. W przypadku ustawienia tej zasady użytkownicy nie będą mogli zmienić ani zastąpić tego ustawienia w <ph name="PRODUCT_NAME"/>. Jeśli ta zasada nie zostanie skonfigurowana, ustawienie będzie włączone, ale użytkownik będzie mógł to zmienić.</translation>
 <translation id="1138294736309071213">Ta zasada jest aktywna tylko w trybie sklepu.

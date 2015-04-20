@@ -1,21 +1,17 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ro">
 <translation id="6676384891291319759">Accesează internetul</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR"/> The Chromium Authors. Toate drepturile rezervate.</translation>
-<translation id="7180611975245234373">Actualizați</translation>
 <translation id="6373523479360886564">Sigur doriți să dezinstalați Chromium?</translation>
-<translation id="1260240842868558614">Afișați:</translation>
 <translation id="6510925080656968729">Dezinstalați Chromium</translation>
 <translation id="2615699638672665509">În curând, acest computer nu va mai primi actualizări Chromium, deoarece hardware-ul său nu mai este acceptat.</translation>
 <translation id="5532301346661895910">Chromium o va stoca în |parolele Google salvate| și o va reține data următoare când ai nevoie.</translation>
 <translation id="6893813176749746474">Chromium a fost actualizat, dar nu l-ați utilizat de cel puțin 30 de zile.</translation>
 <translation id="2732467638532545152">Computerul rulează o versiune veche de Microsoft Windows care nu poate procesa certificatul de securitate al acestui site. Din cauza acestei probleme, Chromium nu poate stabili dacă certificatul a provenit de la <ph name="SITE"/> sau de la o entitate din rețeaua ta care pretinde că este <ph name="SITE"/>. Actualizează computerul cu o versiune mai recentă de Windows.</translation>
 <translation id="2770231113462710648">Schimbă browserul prestabilit la:</translation>
-<translation id="7982789257301363584">Rețea</translation>
 <translation id="6613594504749178791">Modificările dvs. vor intra în vigoare următoarea dată când reporniți Chromium.</translation>
 <translation id="9089354809943900324">Chromium nu este actualizat</translation>
 <translation id="59625444380784159">Detaliile din agendă vă pot ajuta să completați mai rapid formularele în Chromium.</translation>
 <translation id="3748537968684000502">Acum afișați o pagină Chromium securizată.</translation>
-<translation id="1165039591588034296">Eroare</translation>
 <translation id="2077129598763517140">Utilizează accelerarea hardware când este disponibilă</translation>
 <translation id="1065672644894730302">Preferințele dvs. nu pot fi citite. Este posibil ca unele funcții să nu fie disponibile, iar modificările aduse preferințelor nu vor fi salvate.</translation>
 <translation id="7861509383340276692">Accesează
@@ -45,7 +41,6 @@
 <translation id="8987477933582888019">Browser web</translation>
 <translation id="4050175100176540509">În cea mai recentă versiune sunt disponibile îmbunătățiri de securitate și funcții noi importante.</translation>
 <translation id="2886012850691518054">Opțional: contribuie la îmbunătățirea Chromium prin trimiterea automată de statistici privind utilizarea și rapoarte de blocare la Google.</translation>
-<translation id="1124772482545689468">Utilizator</translation>
 <translation id="580822234363523061">Accesați
           meniul Chromium &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -54,7 +49,6 @@
           &gt;
           <ph name="PROXIES_TITLE"/>
           și asigurați-vă că aveți configurația setată la „fără proxy” sau „direct”.</translation>
-<translation id="1864111464094315414">Conectați-vă</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="7729447699958282447">Chromium nu a putut sincroniza datele, deoarece sincronizarea nu este disponibilă pentru domeniul dvs.</translation>
 <translation id="3738139272394829648">Atinge pentru a căuta</translation>
@@ -81,12 +75,10 @@
 <translation id="734373864078049451">Experiența web personalizată, marcajele și celelalte date Chromium chiar aici.</translation>
 <translation id="3197823471738295152">Dispozitivul dvs. este actualizat.</translation>
 <translation id="3065280201209294872">Acest site utilizează setări de securitate expirate care pot împiedica viitoarele versiuni de Chromium să poată să îl acceseze în siguranță.</translation>
-<translation id="2660779039299703961">Eveniment</translation>
 <translation id="8551886023433311834">Actualizare aproape efectuată! Reporniți dispozitivul pentru a finaliza actualizarea.</translation>
 <translation id="8353224596138547809">Doriți ca parola pentru acest site să fie salvată de Chromium?</translation>
 <translation id="8738058698779197622">Pentru a stabili o conexiune securizată, ceasul trebuie să fie setat corect. Aceasta deoarece certificatele pe care site-urile le folosesc pentru a se identifica sunt valabile numai pentru anumite intervale de timp. Din moment ce ora de pe dispozitiv este incorectă, Chromium nu poate verifica aceste certificate.</translation>
 <translation id="7339898014177206373">Fereastră nouă</translation>
-<translation id="2739191690716947896">Remediați erorile</translation>
 <translation id="7463979740390522693">Chromium – Notificări (<ph name="QUANTITY"/> necitite)</translation>
 <translation id="225614027745146050">Bun venit</translation>
 <translation id="5823381412099532241">Chromium nu s-a putut actualiza automat la cea mai recentă versiune, astfel încât pierdeți noi funcții excelente și remedieri de securitate. Trebuie să actualizați Chromium.</translation>
@@ -104,7 +96,6 @@
 <translation id="3296368748942286671">Rulați în continuare aplicații de fundal când Chromium este închis</translation>
 <translation id="473775607612524610">Actualizează</translation>
 <translation id="5466153949126434691">Chromium se actualizează automat, deci ai întotdeauna cea mai recentă versiune. După această descărcare, Chromium va reporni și va fi gata de utilizare.</translation>
-<translation id="7707841053049645517">Acest site utilizează pluginul Chromium Frame, care nu va mai fi acceptat în curând. Dezinstalați-l și faceți upgrade la un browser modern.</translation>
 <translation id="3656661827369545115">Chromium se lansează automat la pornirea computerului</translation>
 <translation id="2241627712206172106">Dacă permiteți accesul la un computer, familia și prietenii pot să navigheze separat și să configureze Chromium cum doresc.</translation>
 <translation id="1763864636252898013">Acest server nu a putut dovedi că este <ph name="DOMAIN"/>; sistemul de operare al dispozitivului nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
@@ -140,7 +131,6 @@
 <translation id="4365115785552740256">Chromium există mulțumită proiectului open source <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> și a altor <ph name="BEGIN_LINK_OSS"/>produse software open source<ph name="END_LINK_OSS"/>.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="4987820182225656817">Invitații pot folosi Chromium fără a lăsa nicio urmă.</translation>
-<translation id="2216475571518225820">Acest site utilizează pluginul Chromium Frame, care nu va mai fi acceptat în curând. Dezinstalați-l și descărcați un browser compatibil.</translation>
 <translation id="3487263810738775861">O extensie a modificat ce pagină se afișează când porniți Chromium.</translation>
 <translation id="5877064549588274448">Canalul a fost schimbat. Reporniți dispozitivul pentru a aplica modificările.</translation>
 <translation id="7549178288319965365">Despre sistemul de operare Chromium</translation>
@@ -161,8 +151,8 @@
 <translation id="8684913864886094367">Chromium nu s-a închis corect.</translation>
 <translation id="3582788516608077514">Se actualizează Chromium...</translation>
 <translation id="7223968959479464213">Manager de activități - Chromium</translation>
-<translation id="6723839937902243910">Alimentare</translation>
 <translation id="1779356040007214683">Pentru mai multă siguranță în Chromium, am dezactivat câteva extensii care nu sunt incluse în <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> și care este posibil să fi fost adăugate fără știrea dvs.</translation>
+<translation id="6883876366448858277">trimite un cuvânt și contextul aferent către Căutarea Google, afișând definiții, imagini, rezultate ale căutării.</translation>
 <translation id="6638567566961868659">Găsiți marcajele în meniul Chromium sau în bara de marcaje.</translation>
 <translation id="2673087257647337101">Sistemul de operare este aproape actualizat! Reporniți Chromium pentru a finaliza actualizarea.</translation>
 <translation id="1293235220023151515">În sistem a fost găsită o instalare Chromium care generează conflicte. Dezinstalați-o și încercați din nou.</translation>
@@ -171,7 +161,6 @@
 <translation id="5942520288919337908">Extensia <ph name="EXTENSION_NAME"/> a fost adăugată la Chromium.</translation>
 <translation id="549669000822060376">Așteaptă până când Chromium instalează cele mai recente actualizări de sistem.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4130199216115862831">Jurnalul dispozitivului</translation>
 <translation id="4559775032954821361">Accesați
           meniul Chromium &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -227,7 +216,6 @@ Este posibil ca unele funcții să nu fie disponibile. Specificați un director 
 <translation id="7196020411877309443">De ce văd acest lucru?</translation>
 <translation id="457845228957001925">Informații importante cu privire la datele dvs. Chromium</translation>
 <translation id="4567424176335768812">V-ați conectat ca <ph name="USER_EMAIL_ADDRESS"/>. Acum vă puteți accesa marcajele, istoricul și alte setări de pe toate dispozitivele pe care v-ați conectat.</translation>
-<translation id="6429869149766938">Chromium a detectat că este posibil ca setările browserului să fi fost modificate de un program de pe computer fără știrea ta. Poți utiliza Instrumentul pentru eliminare de software de la Google pentru a elimina programul respectiv.</translation>
 <translation id="7483335560992089831">Nu se poate instala aceeași versiune de Chromium care rulează în prezent. Închideți Chromium și încercați din nou.</translation>
 <translation id="1150979032973867961">Acest server nu a putut dovedi că este <ph name="DOMAIN"/>; sistemul de operare al computerului nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="7641113255207688324">Chromium nu este browserul dvs. prestabilit.</translation>
@@ -238,7 +226,6 @@ Este posibil ca unele funcții să nu fie disponibile. Specificați un director 
 <translation id="2119636228670142020">Despre sistemul de operare &amp;Chromium</translation>
 <translation id="1708666629004767631">Chromium este disponibil într-o versiune nouă și mai sigură.</translation>
 <translation id="378917192836375108">Chromium vă permite să faceți clic pe un număr de telefon de pe web pentru a-l apela cu Skype!</translation>
-<translation id="2242687258748107519">Informații fișier</translation>
 <translation id="8724049448828509830">O descărcare este în desfășurare. Doriți să ieșiți din Chromium și să anulați descărcarea?</translation>
 <translation id="608189560609172163">Chromium nu a putut sincroniza datele din cauza unei erori la conectare.</translation>
 <translation id="4888717733111232871">Regula de intrare pentru Chromium pentru a permite traficul mDNS.</translation>
@@ -249,7 +236,6 @@ Este posibil ca unele funcții să nu fie disponibile. Specificați un director 
 Dacă totuși vă conectați, informațiile Chromium cum ar fi marcajele, istoricul și alte setări vor fi îmbinate cu <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Mai multe descărcări sunt în desfășurare. Doriți să ieșiți din Chromium și să anulați descărcările?</translation>
 <translation id="9013262824292842194">Chromium necesită Windows Vista sau Windows XP cu SP2 sau o versiune ulterioară.</translation>
-<translation id="6231881193380278751">Adaugă un parametru de interogare în adresa URL pentru a actualiza automat pagina: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="1967743265616885482">Despre un modul cu același nume se cunoaște că intră în conflict cu Chromium.</translation>
 <translation id="7962572577636132072">Chromium se actualizează automat, deci vei avea întotdeauna cea mai recentă versiune.</translation>
 <translation id="722928257909516027">Afișează meniul Chromium</translation>
@@ -263,7 +249,6 @@ Dacă totuși vă conectați, informațiile Chromium cum ar fi marcajele, istori
 Chromium nu poate recupera setările.</translation>
 <translation id="918373042641772655">Dacă deconectați utilizatorul <ph name="USERNAME"/>, vor fi șterse istoricul, marcajele, setările și alte date Chromium salvate pe acest dispozitiv. Datele salvate în Contul Google nu vor fi șterse și pot fi gestionate din <ph name="GOOGLE_DASHBOARD_LINK"/>Tabloul de bord Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="6403826409255603130">Chromium este un browser web care rulează pagini web și aplicații cu viteza fulgerului. Este rapid, stabil și ușor de utilizat. Navigați pe web în condiții de mai multă siguranță, beneficiind de o protecție sporită, încorporată în Chromium, împotriva programelor malware și a tentativelor de phishing.</translation>
-<translation id="930268624053534560">Marcaje temporale detaliate</translation>
 <translation id="4230135487732243613">Vă conectați datele Chromium cu acest cont?</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="7617377681829253106">Chromium a devenit și mai bun</translation>

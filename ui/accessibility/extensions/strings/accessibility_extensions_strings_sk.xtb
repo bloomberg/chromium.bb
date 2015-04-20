@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sk">
 <translation id="1408730541890277710">Nahradenie obrázkov ich alternatívnym textom.</translation>
+<translation id="6017514345406065928">Zelená</translation>
 <translation id="595639123821853262">Invertované odtiene sivej</translation>
 <translation id="8260673944985561857">Možnosti prehliadania Caret</translation>
 <translation id="3410969471888629217">Odstrániť prispôsobenia stránok</translation>
@@ -14,6 +15,8 @@
 <translation id="2394933097471027016">Vyskúšajte to – prehliadanie Caret je na tejto stránke vždy povolené!</translation>
 <translation id="3622586652998721735">Nastaviť ako predvolenú schému</translation>
 <translation id="2179565792157161713">Otvoriť dlhý popis na novej karte</translation>
+<translation id="7942349550061667556">Červená</translation>
+<translation id="1555130319947370107">Modrá</translation>
 <translation id="2471847333270902538">Farebná schéma pre stránky <ph name="SITE"/>:</translation>
 <translation id="381767806621926835">Kliknutím pravým tlačidlom na ľubovoľný prvok s atribútom „longdesc“ alebo „aria-describedat“ získate jeho dlhý popis.</translation>
 <translation id="786423340267544509">Pridať ohraničenie k prvkom s atribútom aria-describedat alebo longdesc.</translation>

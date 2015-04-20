@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="cs">
 <translation id="1408730541890277710">Umožňuje nahradit obrázky alternativním textem.</translation>
+<translation id="6017514345406065928">Zelená</translation>
 <translation id="595639123821853262">Převrácené stupně šedé</translation>
 <translation id="8260673944985561857">Možnosti procházení pomocí kurzoru</translation>
 <translation id="3410969471888629217">Zapomenout přizpůsobení webu</translation>
@@ -14,6 +15,8 @@
 <translation id="2394933097471027016">Vyzkoušejte to – procházení pomocí kurzoru je na této stránce vždy aktivováno.</translation>
 <translation id="3622586652998721735">Nastavit jako výchozí schéma</translation>
 <translation id="2179565792157161713">Otevřít dlouhý popis na nové kartě</translation>
+<translation id="7942349550061667556">Červená</translation>
+<translation id="1555130319947370107">Modrá</translation>
 <translation id="2471847333270902538">Barevné schéma webu <ph name="SITE"/>:</translation>
 <translation id="381767806621926835">Kliknutím pravým tlačítkem na libovolný prvek s atributem „longdesc“ nebo „aria-describedat“ získáte jeho dlouhý popis.</translation>
 <translation id="786423340267544509">Přidat k prvkům s atributem aria-describedat nebo longdesc ohraničení.</translation>

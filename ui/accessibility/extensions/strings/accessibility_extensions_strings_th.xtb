@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="th">
 <translation id="1408730541890277710">แทนที่รูปภาพด้วยข้อความ alt ของภาพ</translation>
+<translation id="6017514345406065928">สีเขียว</translation>
 <translation id="595639123821853262">ระดับสีเทาแบบสลับ</translation>
 <translation id="8260673944985561857">ตัวเลือกการเรียกดูด้วยแป้นพิมพ์</translation>
 <translation id="3410969471888629217">ลืมการกำหนดค่าไซต์เอง</translation>
@@ -14,6 +15,8 @@
 <translation id="2394933097471027016">ลองใช้งานเลย การเรียกดูด้วยแป้นพิมพ์จะเปิดใช้บนหน้านี้เสมอ!</translation>
 <translation id="3622586652998721735">ตั้งค่าเป็นรูปแบบเริ่มต้น</translation>
 <translation id="2179565792157161713">เปิดคำอธิบายแบบยาวในแท็บใหม่</translation>
+<translation id="7942349550061667556">สีแดง</translation>
+<translation id="1555130319947370107">สีน้ำเงิน</translation>
 <translation id="2471847333270902538">รูปแบบชุดสีสำหรับ <ph name="SITE"/>:</translation>
 <translation id="381767806621926835">คลิกขวาที่ใดก็ได้ด้วยแอตทริบิวต์ &quot;longdesc&quot; หรือ &quot;aria-describedat&quot; เพื่อเข้าถึงคำอธิบายแบบยาว</translation>
 <translation id="786423340267544509">เพิ่มขอบให้กับองค์ประกอบด้วยแอตทริบิวต์ aria-describedat หรือ longdesc</translation>

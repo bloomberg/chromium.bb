@@ -166,6 +166,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="7787950393032327779">另一台電腦 (<ph name="HOST_NAME"/>) 的 Google Chrome 處理程序 (<ph name="PROCESS_ID"/>) 正在使用這個設定檔。Chrome 已鎖定此設定檔，確保其不致受損。如果您確定其他處理程序目前未使用此設定檔，請予以解除鎖定，然後重新啟動 Chrome。</translation>
 <translation id="1469002951682717133">Chrome 應用程式啟動器</translation>
 <translation id="8568392309447938879">您必須登入 Chrome 才能使用應用程式。在登入狀態下，Chrome 可同步處理您在多個裝置上的應用程式、書籤、紀錄、密碼和其他設定。</translation>
+<translation id="6883876366448858277">將特定字詞及其上下文內容傳送至 Google 搜尋，並傳回字詞定義、相關圖片和其他搜尋結果。</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome 可讓您按一下網頁上的電話號碼，隨即透過 Skype 撥打電話！</translation>
 <translation id="3612333635265770873">依據名稱判斷，這個模組可能會與 Google Chrome 衝突。</translation>
@@ -210,7 +211,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="7396375882099008034">允許 Chrome 存取受到防火牆或防毒軟體設定所阻擋的
         網路。</translation>
 <translation id="9102715433345326100">這個檔案是惡意軟體，因此已遭到 Chrome 封鎖。</translation>
-<translation id="3170677364322086041">這個網站使用的 Chrome 內嵌框架外掛程式已淘汰，無法再接收安全性和穩定性更新。請解除安裝該外掛程式，並升級至新世代瀏覽器。</translation>
 <translation id="8205111949707227942">選擇性：把使用統計資料及當機報告自動傳送給 Google，將有助於 Chrome OS 更臻完美。</translation>
 <translation id="7253415505590551024">目前正在進行下載，您要結束 Google Chrome 並取消下載嗎？</translation>
 <translation id="487887346205285304">Chrome 出現異常行為？</translation>
@@ -232,7 +232,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="7825851276765848807">不明錯誤導致安裝失敗，請再次下載 Google Chrome。</translation>
 <translation id="1150979032973867961">伺服器無法證明其屬於 <ph name="DOMAIN"/> 網域；其安全性憑證未取得您電腦作業系統的信任。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
 <translation id="4458285410772214805">請先登出，然後重新登入，這項變更才會生效。</translation>
-<translation id="5489213858994471184">Chrome 偵測到您電腦上的程式擅自變更了您的瀏覽器設定。您可以使用 Google 的軟體移除工具來移除該程式。</translation>
 <translation id="8679801911857917785">這個擴充功能也會控管 Chrome 啟動時所顯示的網頁。</translation>
 <translation id="5334545119300433702">已知這個模組與 Google Chrome 衝突。</translation>
 <translation id="4407807842708586359">Google Chrome 作業系統</translation>

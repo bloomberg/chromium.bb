@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="da">
 <translation id="1408730541890277710">Udskift billeder med deres &quot;alt&quot;-tekst.</translation>
+<translation id="6017514345406065928">Grøn</translation>
 <translation id="595639123821853262">Omvendt gråtone</translation>
 <translation id="8260673944985561857">Muligheder for tastebrowsing</translation>
 <translation id="3410969471888629217">Glem websitets tilpasninger</translation>
@@ -14,6 +15,8 @@
 <translation id="2394933097471027016">Prøv det nu. Tastebrowsing er altid aktiveret på denne side.</translation>
 <translation id="3622586652998721735">Vælg som standardtema</translation>
 <translation id="2179565792157161713">Åbn lang beskrivelse på en ny fane</translation>
+<translation id="7942349550061667556">Rød</translation>
+<translation id="1555130319947370107">Blå</translation>
 <translation id="2471847333270902538">Farvetema for <ph name="SITE"/>:</translation>
 <translation id="381767806621926835">Højreklik på indhold med en &quot;longdesc&quot;- eller &quot;Aria-describedat&quot;-attribut for at få adgang den lange version af beskrivelsen.</translation>
 <translation id="786423340267544509">Føj en grænse til elementer med aria-describedat- eller longdesc-attributter.</translation>

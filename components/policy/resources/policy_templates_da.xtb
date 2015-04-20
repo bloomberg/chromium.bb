@@ -531,7 +531,7 @@
 
       Hvis denne politik er indstillet til False, vises en fejlmeddelelse i stedet for meddelelsen om netværkskonfiguration.</translation>
 <translation id="1426410128494586442">Ja</translation>
-<translation id="4897928009230106190">Angiver de parametre, der anvendes ved forslagssøgning med POST. De består af kommaseparerede navne/værdipar. Hvis en værdi er en skabelonparameter såsom {searchTerms} i ovenstående eksempel, erstattes den med rigtige søgeord.
+<translation id="4897928009230106190">Angiver de parametre, der anvendes ved forslagssøgning med POST. De består af kommaseparerede navne/værdipar. Hvis en værdi er en skabelonparameter såsom {searchTerms} i ovenstående eksempel, erstattes den med rigtige søgetermdata.
 
           Denne politik er valgfri. Hvis dette ikke angives, sendes der søgeforslag ved hjælp af GET-metoden.
 
@@ -539,7 +539,7 @@
 <translation id="8140204717286305802">Rapportér en liste over netværksgrænseflader med deres typer og hardwareadresser til serveren.
 
       Hvis politikken er angivet til Falsk, rapporteres listen over grænseflader ikke.</translation>
-<translation id="4962195944157514011">Angiver webadressen for den søgemaskine, der bruges ved standardsøgninger. Webadressen skal indeholde strengen &quot;<ph name="SEARCH_TERM_MARKER"/>&quot;, som erstattes af søgeord, når brugeren foretager en søgning. Denne indstilling skal aktiveres, når politikken &quot;DefaultSearchProviderEnabled&quot; er aktiveret, og den vil kun blive respekteret, hvis dette er tilfældet.</translation>
+<translation id="4962195944157514011">Angiver webadressen for den søgemaskine, der bruges ved standardsøgninger. Webadressen skal indeholde strengen &quot;<ph name="SEARCH_TERM_MARKER"/>&quot;, som erstattes af brugerens termer, når denne foretager en søgning. Denne indstilling skal aktiveres, når politikken &quot;DefaultSearchProviderEnabled&quot; er aktiveret, og den vil kun blive respekteret, hvis dette er tilfældet.</translation>
 <translation id="6009903244351574348">Tillad, at <ph name="PRODUCT_FRAME_NAME"/> kan håndtere de angivne indholdstyper. Hvis denne politik ikke er angivet, anvendes standardgengiveren for alle websites som angivet i politikken &quot;ChromeFrameRendererSettings&quot;.</translation>
 <translation id="3381968327636295719">Brug værtsbrowseren som standard</translation>
 <translation id="3627678165642179114">Aktivér eller deaktiver webtjenesten stavekontrol</translation>
@@ -943,7 +943,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
           Hvis denne politik ikke er angivet eller er angivet til Falsk, kan brugerne overføre filer til Google Drev.</translation>
 <translation id="1964634611280150550">Inkognitotilstand er deaktiveret</translation>
 <translation id="5971128524642832825">Deaktiverer Drev i Chrome OS-appen Filer</translation>
-<translation id="1847960418907100918">Angiver de parametre, der anvendes ved direkte søgning med POST. Det består af kommaseparerede navne/værdipar. Hvis en værdi er en skabelonparameter såsom {searchTerms} i ovenstående eksempel, erstattes den med rigtige søgeord.
+<translation id="1847960418907100918">Angiver de parametre, der anvendes ved direkte søgning med POST. Det består af kommaseparerede navne/værdipar. Hvis en værdi er en skabelonparameter såsom {searchTerms} i ovenstående eksempel, erstattes den med rigtige søgetermdata.
 
           Denne politik er valgfri. Hvis den ikke er angivet, sendes anmodninger om direkte søgning ved hjælp af GET-metoden.
 
@@ -1436,7 +1436,7 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME"/> tillade br
 <translation id="1843117931376765605">Opdateringsfrekvens for brugerpolitik</translation>
 <translation id="5535973522252703021">Hvidliste for Kerberos-delegeringsserver</translation>
 <translation id="9187743794267626640">Deaktiver isætning af eksternt lager</translation>
-<translation id="6353901068939575220">Specificerer de anvendte parametre ved søgning efter en webadresse med POST. De består af kommaseparerede navne/værdipar. Hvis en værdi er en skabelonparameter såsom {searchTerms} i ovenstående eksempel, erstattes de med rigtige søgeord.
+<translation id="6353901068939575220">Specificerer de anvendte parametre ved søgning efter en webadresse med POST. De består af kommaseparerede navne/værdipar. Hvis en værdi er en skabelonparameter såsom {searchTerms} i ovenstående eksempel, erstattes de med rigtige søgetermdata.
 
           Denne politik er valgfri. Hvis den ikke angives, sendes der søgeanmodninger ved hjælp af GET-metoden.
 

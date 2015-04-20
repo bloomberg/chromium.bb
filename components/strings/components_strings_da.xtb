@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="da">
+<translation id="2774256287122201187">Du kan nu fortsætte. Denne advarsel vises ikke igen i de næste fem minutter, hvis du fortsætter til siden.</translation>
 <translation id="7485870689360869515">Der blev ikke fundet nogen data.</translation>
 <translation id="3884278016824448484">Modstridende enheds-id</translation>
 <translation id="6779575937362063477">Denne korttype understøttes ikke af Google Wallet. Vælg et andet kort.</translation>
@@ -39,6 +40,7 @@
 <translation id="2704283930420550640">Værdien stemmer ikke overens med formatet.</translation>
 <translation id="4850886885716139402">Vis</translation>
 <translation id="8091372947890762290">Aktivering afventer serveren</translation>
+<translation id="4607653538520819196">Denne side kan ikke oprettes via proxy med datasparefunktion.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Område</translation>
 <translation id="1871208020102129563">Proxy er indstillet til at bruge faste proxyservere, ikke webadresser til .pac-scripts.</translation>
@@ -50,6 +52,7 @@
 <translation id="7441627299479586546">Forkert emne for politik</translation>
 <translation id="3885155851504623709">Sogn</translation>
 <translation id="6973656660372572881">Både faste proxyservere og en webadresse for .pac-script angives.</translation>
+<translation id="1426410128494586442">Ja</translation>
 <translation id="4506176782989081258">Valideringsfejl: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">Oversættelsen til <ph name="TARGET_LANGUAGE"/> mislykkedes.</translation>
 <translation id="4103249731201008433">Enhedens serienummer er ugyldigt</translation>
@@ -68,12 +71,15 @@
 <translation id="1132774398110320017">Indstillinger for Autofyld i Chrome...</translation>
 <translation id="6458467102616083041">Ignoreret, fordi standardsøgning er deaktiveret af politikken.</translation>
 <translation id="1227224963052638717">Ukendt politik.</translation>
+<translation id="4250680216510889253">Nej</translation>
 <translation id="9207861905230894330">Artiklen kunne ikke tilføjes.</translation>
 <translation id="5872918882028971132">Forslag fra forældre</translation>
 <translation id="337363190475750230">Fjernet</translation>
 <translation id="2367567093518048410">Niveau</translation>
 <translation id="7977590112176369853">&lt;indtast forespørgsel&gt;</translation>
+<translation id="552553974213252141">Blev teksten trukket korrekt ud?</translation>
 <translation id="7610193165460212391">Værdien er uden for intervallet <ph name="VALUE"/>.</translation>
+<translation id="3739623965217189342">Link, du har kopieret</translation>
 <translation id="8311778656528046050">Er du sikker på, at du vil genindlæse denne side?</translation>
 <translation id="370665806235115550">Indlæser...</translation>
 <translation id="2096368010154057602">Departement</translation>
@@ -81,7 +87,6 @@
 <translation id="3024663005179499861">Forkert politiktype</translation>
 <translation id="2030481566774242610">Mente du <ph name="LINK"/>?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
-<translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, Udl.: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="225207911366869382">Denne værdi er forældet for denne politik.</translation>
 <translation id="3145945101586104090">Svaret kunne ikke afkodes</translation>
@@ -130,6 +135,7 @@
 <translation id="3228969707346345236">Oversættelsen mislykkedes, fordi siden allerede er på <ph name="LANGUAGE"/>.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="8034522405403831421">Denne side er på <ph name="SOURCE_LANGUAGE"/>. Vil du oversætte den til <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="1734864079702812349">Amex</translation>
 <translation id="8891727572606052622">Ugyldig proxytilstand.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">Administreres ikke</translation>
@@ -203,6 +209,7 @@
 <translation id="8713130696108419660">Ugyldig første signatur</translation>
 <translation id="20817612488360358">Indstillingerne for systemproxy er angivet at blive brugt, men en eksplicit proxykonfiguration er også angivet.</translation>
 <translation id="2639739919103226564">Status:</translation>
+<translation id="4968547170521245791">Kan ikke oprettes via proxy</translation>
 <translation id="385051799172605136">Tilbage</translation>
 <translation id="5095208057601539847">Provins</translation>
 <translation id="2581221116934462656">Skal <ph name="PRODUCT_NAME"/> tilbyde at oversætte sider på <ph name="LANGUAGE_NAME"/> fra dette website næste gang?</translation>
@@ -210,6 +217,7 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Anmodning lykkedes</translation>
 <translation id="2455981314101692989">Denne webside har deaktiveret automatisk udfyldning af denne formular.</translation>
+<translation id="6597614308054261376">Du forsøger at gå til <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. Denne side kan ikke oprettes via proxy med datasparefunktion på nuværende tidspunkt.</translation>
 <translation id="8308427013383895095">Oversættelsen mislykkedes på grund af problemer med netværksforbindelsen.</translation>
 <translation id="5720705177508910913">Aktuel bruger</translation>
 <translation id="3380864720620200369">Klient-id:</translation>

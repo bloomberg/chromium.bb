@@ -169,6 +169,7 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="7787950393032327779">Tundub, et mõni muu Google Chrome'i protsess (<ph name="PROCESS_ID"/>) mõnes teises arvutis (<ph name="HOST_NAME"/>) kasutab profiili.  Chrome on profiili lukustanud, et seda ei saaks rikkuda.  Kui olete kindel, et ükski teine protsess seda profiili ei kasuta, võite selle avada ja Chrome'i taaskäivitada.</translation>
 <translation id="1469002951682717133">Chrome'i rakenduste käiviti</translation>
 <translation id="8568392309447938879">Rakenduste kasutamiseks peate olema Chrome'i sisse logitud. See võimaldab Chrome'il sünkroonida teie rakendusi, järjehoidjaid, ajalugu, paroole ja muid seadeid erinevates seadmetes.</translation>
+<translation id="6883876366448858277">saadab sõna ja ümbritseva konteksti Google'i otsingule, tagastades definitsioonid, kujutised, otsingutulemused ja muud otsingutulemused.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome võimaldab teil veebis telefoninumbril klõpsata ja sellele Skype'i abil helistada!</translation>
 <translation id="3612333635265770873">Samanimeline moodul on teadaolevalt Google Chrome'iga vastuolus.</translation>
@@ -213,7 +214,6 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="7396375882099008034">Juurdepääsuks võrgule tulemüüri või viirusetõrje seadetes lubage
         Chrome.</translation>
 <translation id="9102715433345326100">See fail on pahatahtlik ja Chrome on selle blokeerinud.</translation>
-<translation id="3170677364322086041">See sait kasutab aegunud pistikprogrammi Chrome Frame, millele ei edastata enam turva- ja stabiilsusvärskendusi. Desinstallige see ja täiendage moodsale brauserile.</translation>
 <translation id="8205111949707227942">Valikuline: aidake muuta Chrome OS paremaks, saates Google'ile automaatselt kasutusstatistikat ja kokkujooksuaruandeid.</translation>
 <translation id="7253415505590551024">Allalaadimised on pooleli. Kas soovite Google Chrome'ist väljuda ja allalaadimised tühistada?</translation>
 <translation id="487887346205285304">Kas Chrome käitub veidralt?</translation>
@@ -235,7 +235,6 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="7825851276765848807">Installimine nurjus määramata vea tõttu. Laadige Google Chrome uuesti alla.</translation>
 <translation id="1150979032973867961">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN"/>, arvuti operatsioonisüsteem ei usalda selle turvasertifikaati. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
 <translation id="4458285410772214805">Muudatuse jõustamiseks logige välja ja uuesti sisse.</translation>
-<translation id="5489213858994471184">Chrome tuvastas, et mõni arvutis olev programm võis teie brauseri seadeid ilma teie teadmata muuta. Saate selle programmi eemaldada Google'i tarkvara eemaldamise tööriista abil.</translation>
 <translation id="8679801911857917785">Lisaks juhib see Chrome'i käivitamisel kuvatavat lehte.</translation>
 <translation id="5334545119300433702">Sel moodulil on teadaolev vastuolu Google Chrome'iga.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>

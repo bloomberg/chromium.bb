@@ -1,6 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="cs">
 <translation id="337167041784729019">Zobrazit statistiky</translation>
-<translation id="3233367171080043075">Asistenci lze kdykoli ukončit.</translation>
 <translation id="7606912958770842224">Povolit vzdálená připojení</translation>
 <translation id="3785447812627779171">Hostitel
 funkce
@@ -17,11 +16,11 @@ Chromoting</translation>
 <translation id="3905196214175737742">Neplatná doména vlastníka hostitele.</translation>
 <translation id="9213184081240281106">Neplatná konfigurace hostitele.</translation>
 <translation id="6998989275928107238">Hostitel</translation>
-<translation id="406849768426631008">Chcete někomu pomáhat a zároveň s nimi komunikovat pomocí videochatu? Zkuste funkci <ph name="LINK_BEGIN"/> Vzdálená plocha ve službě Google Hangouts<ph name="LINK_END"/>.</translation>
 <translation id="906458777597946297">Maximalizovat okno</translation>
 <translation id="5397086374758643919">Nástroj k odinstalaci hostitele Vzdálené plochy Chrome</translation>
 <translation id="3258789396564295715">K tomuto počítači se můžete bezpečně připojit pomocí Vzdálené plochy Chrome.</translation>
 <translation id="5070121137485264635">Vzdálený hostitelský server vyžaduje, abyste provedli ověření na stránce třetí strany. Aby bylo možné pokračovat, je nutné udělit Vzdálené ploše Chrome dodatečná oprávnění k přístupu na tuto adresu:</translation>
+<translation id="5168917394043976756">Otevřít vysouvací panel navigace</translation>
 <translation id="2124408767156847088">Bezpečně ze svého zařízení Android přistupujte k počítačům.</translation>
 <translation id="3194245623920924351">Vzdálená plocha Chrome</translation>
 <translation id="5537725057119320332">Odeslat</translation>
@@ -32,7 +31,6 @@ Chromoting</translation>
 <translation id="4368630973089289038">Chcete pomoci vylepšit funkci Chromoting? <ph name="LINK_BEGIN"/>Vyplňte dotazník.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Upravit název počítače</translation>
 <translation id="1996161829609978754">Chrome stahuje instalační program hostitele funkce Chromoting. Po stažení instalační program spusťte a poté pokračujte.</translation>
-<translation id="222632161986885959">Účastník tohoto Hangoutu vám nabídl, že vám pomůže a bude ovládat váš počítač. Pokud přijmete:</translation>
 <translation id="2046651113449445291">Následující klienti byli spárováni s tímto počítačem a mohou se připojit bez zadávání kódu PIN. Toto oprávnění lze kdykoli zrušit (buď u jednotlivých, nebo u všech klientů).</translation>
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="7836926030608666805">Chybí některé povinné komponenty. Zkontrolujte, zda máte nejnovější verzi Chromu, a zkuste to znovu.</translation>
@@ -125,15 +123,12 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="2599300881200251572">Tato služba umožňuje příchozí připojení od klientů Vzdálené plochy Chrome.</translation>
 <translation id="6091564239975589852">Odeslat kombinaci kláves</translation>
 <translation id="4572065712096155137">Přístup</translation>
-<translation id="5908809458024685848">Nejste přihlášeni do aplikace Chromoting. Přihlaste se prosím a zkuste to znovu.</translation>
 <translation id="7401733114166276557">Vzdálená plocha Chrome</translation>
 <translation id="5510035215749041527">Odpojit</translation>
 <translation id="3362124771485993931">Ověření kódu PIN</translation>
 <translation id="8196755618196986400">Abychom vás mohli kontaktovat kvůli dalším informacím, všechny zpětné vazby, které odešlete, budou obsahovat vaši e-mailovou adresu.</translation>
-<translation id="5231421057630485350">Osoba, která vám pomáhá, bude moci ovládat vaši myš a klávesnici.</translation>
 <translation id="154040539590487450">Spuštění služby pro vzdálený přístup se nezdařilo.</translation>
 <translation id="7948001860594368197">Možnosti obrazovky</translation>
-<translation id="8172070902751707422">Ověření selhalo. Přihlaste se prosím ke Vzdálené ploše Chrome znovu.</translation>
 <translation id="5254120496627797685">Pokud opustíte tuto stránku, relace Vzdálené plochy Chrome bude ukončena.</translation>
 <translation id="7019153418965365059">Neznámá chyba hostitele: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Připojení k zařízení Cast se nezdařilo.</translation>
@@ -166,6 +161,7 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí společnosti Google (http://goo.gl/SyrVzj) a zásadách ochrany soukromí prohlížeče Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="4361728918881830843">Chcete-li umožnit vzdálené připojení k jinému počítači, nainstalujte do něj Vzdálenou plochu Chrome a poté klikněte na tlačítko <ph name="BUTTON_NAME"/>.</translation>
 <translation id="7444276978508498879">Klient připojen: <ph name="CLIENT_USERNAME"/>.</translation>
+<translation id="189172778771606813">Zavřít vysouvací panel navigace</translation>
 <translation id="4913529628896049296">čeká se na připojení...</translation>
 <translation id="811307782653349804">Přistupujte ke svému počítači odkudkoli.</translation>
 <translation id="2939145106548231838">Ověření v hostitelském počítači</translation>
@@ -204,7 +200,6 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="2089514346391228378">Vzdálená připojení k tomuto počítači byla povolena.</translation>
 <translation id="7693372326588366043">Obnovit seznam hostitelů</translation>
 <translation id="8445362773033888690">Zobrazit v Obchodě Google Play</translation>
-<translation id="8246880134154544773">Ověření selhalo. Přihlaste se prosím do aplikace Chromoting znovu.</translation>
 <translation id="1654128982815600832">Povolování vzdálených připojení k tomuto počítači…</translation>
 <translation id="8187079423890319756">Copyright 2013 Autoři prohlížeče Chromium. Všechna práva vyhrazena.</translation>
 <translation id="7038683108611689168">Pomozte nám funkci Chromoting vylepšit tím, že nám povolíte shromažďovat statistiky využití a zprávy o selhání.</translation>
@@ -237,7 +232,6 @@ plochy Chrome</translation>
 <translation id="6550675742724504774">Možnosti</translation>
 <translation id="3339299787263251426">Přistupujte ke svému počítači bezpečně přes internet</translation>
 <translation id="979100198331752041">Vzdálená plocha Chrome v počítači <ph name="HOSTNAME"/> je zastaralá a potřebuje aktualizovat.</translation>
-<translation id="7729639150174291243">Nejste přihlášeni ke Vzdálené ploše Chrome. Přihlaste se prosím a zkuste to znovu.</translation>
 <translation id="2841013758207633010">Čas</translation>
 <translation id="6011539954251327702">Funkce Chromoting umožňuje bezpečné sdílení počítače na webu. Oba uživatelé musí mít spuštěnou aplikaci Chromoting, kterou najdete na adrese <ph name="URL"/>.</translation>
 <translation id="2919669478609886916">Momentálně sdílíte tento počítač s jiným uživatelem. Chcete ve sdílení pokračovat?</translation>
@@ -246,6 +240,8 @@ plochy Chrome</translation>
 <translation id="6570205395680337606">Resetovat aplikace. Veškerá neuložená práce bude ztracena.</translation>
 <translation id="6284412385303060032">Hostitel spuštěný na obrazovce logiky konzole byl ukončen za účelem zajištění podpory režimu opony prostřednictvím přepnutí na hostitele spuštěného v relaci specifické pro uživatele.</translation>
 <translation id="3596628256176442606">Tato služba umožňuje příchozí připojení od klientů funkce Chromoting.</translation>
+<translation id="1978866438647250517">• Vylepšeno uživatelské rozhraní.
+• Sníženo využití sítě při běhu na pozadí.</translation>
 <translation id="4277463233460010382">Tento počítač je nakonfigurován tak, aby jednomu nebo více klientům umožnil připojení bez zadávání kódu PIN.</translation>
 <translation id="837021510621780684">Z tohoto počítače</translation>
 <translation id="518094545883702183">Tyto informace jsou využity pouze při diagnostikování problému, který jste nahlásili, jsou dostupné pouze osobě, která vaši zprávu prošetřuje, a nejsou uchovávány déle než 30 dní.</translation>

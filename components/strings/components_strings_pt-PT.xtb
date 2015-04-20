@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="pt-PT">
+<translation id="2774256287122201187">Pode continuar. Se avançar para a página, este aviso só volta a aparecer dentro de cinco minutos.</translation>
 <translation id="7485870689360869515">Não foram encontrados dados.</translation>
 <translation id="3884278016824448484">Identificador do dispositivo em conflito</translation>
 <translation id="6779575937362063477">O Google Wallet não suporta este tipo de cartão. Selecione outro cartão.</translation>
@@ -39,6 +40,7 @@
 <translation id="2704283930420550640">O valor não corresponde ao formato.</translation>
 <translation id="4850886885716139402">Ver</translation>
 <translation id="8091372947890762290">Ativação pendente no servidor</translation>
+<translation id="4607653538520819196">A Poupança de dados não consegue utilizar esta página com proxy.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Área</translation>
 <translation id="1871208020102129563">O proxy está definido para utilizar servidores proxy fixos e não um URL de script .pac.</translation>
@@ -50,6 +52,7 @@
 <translation id="7441627299479586546">Assunto da política incorreto</translation>
 <translation id="3885155851504623709">Freguesia</translation>
 <translation id="6973656660372572881">Foram especificados servidores proxy fixos e um URL de script .pac.</translation>
+<translation id="1426410128494586442">Sim</translation>
 <translation id="4506176782989081258">Erro de validação: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">A tradução para <ph name="TARGET_LANGUAGE"/> falhou.</translation>
 <translation id="4103249731201008433">Número de série do dispositivo é inválido</translation>
@@ -68,12 +71,15 @@
 <translation id="1132774398110320017">Definições de Preenchimento automático do Chrome...</translation>
 <translation id="6458467102616083041">Ignorado porque a pesquisa predefinida foi desativada pela política.</translation>
 <translation id="1227224963052638717">Política desconhecida.</translation>
+<translation id="4250680216510889253">Não</translation>
 <translation id="9207861905230894330">Falha ao adicionar o artigo.</translation>
 <translation id="5872918882028971132">Sugestões superiores</translation>
 <translation id="337363190475750230">Desaprovisionado</translation>
 <translation id="2367567093518048410">Nível</translation>
 <translation id="7977590112176369853">&lt;introduzir consulta&gt;</translation>
+<translation id="552553974213252141">O texto foi extraído corretamente?</translation>
 <translation id="7610193165460212391">O valor está fora do intervalo <ph name="VALUE"/> .</translation>
+<translation id="3739623965217189342">Link copiado por si</translation>
 <translation id="8311778656528046050">Tem a certeza de que pretende atualizar esta página?</translation>
 <translation id="370665806235115550">A carregar...</translation>
 <translation id="2096368010154057602">Departamento</translation>
@@ -81,7 +87,6 @@
 <translation id="3024663005179499861">Tipo de política incorreto</translation>
 <translation id="2030481566774242610">Será que quis dizer <ph name="LINK"/>?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
-<translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, Exp: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="225207911366869382">Este valor está desatualizado para esta política.</translation>
 <translation id="3145945101586104090">Falha ao descodificar resposta</translation>
@@ -130,6 +135,7 @@
 <translation id="3228969707346345236">Não foi possível traduzir, porque a página já está em <ph name="LANGUAGE"/>.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="8034522405403831421">Esta página está em <ph name="SOURCE_LANGUAGE"/>. Pretende traduzi-la para <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="1734864079702812349">Amex</translation>
 <translation id="8891727572606052622">Modo de proxy inválido.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">Não gerido</translation>
@@ -203,6 +209,7 @@
 <translation id="8713130696108419660">Rubrica incorreta</translation>
 <translation id="20817612488360358">As definições de proxy do sistema estão definidas para serem utilizadas, mas também está especificada uma configuração de proxy explícita.</translation>
 <translation id="2639739919103226564">Estado:</translation>
+<translation id="4968547170521245791">Não é possível utilizar com proxy</translation>
 <translation id="385051799172605136">Anterior</translation>
 <translation id="5095208057601539847">Província</translation>
 <translation id="2581221116934462656">Pretende que o <ph name="PRODUCT_NAME"/> se ofereça para traduzir as páginas em <ph name="LANGUAGE_NAME"/> deste site da próxima vez?</translation>
@@ -210,6 +217,7 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Pedido com êxito</translation>
 <translation id="2455981314101692989">Esta página Web desactivou o preenchimento automático para este formulário.</translation>
+<translation id="6597614308054261376">Está a tentar comunicar com <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. De momento, a Poupança de dados não consegue utilizar esta página com proxy.</translation>
 <translation id="8308427013383895095">A tradução falhou devido a um problema com a ligação de rede.</translation>
 <translation id="5720705177508910913">Utilizador atual</translation>
 <translation id="3380864720620200369">ID do Cliente:</translation>

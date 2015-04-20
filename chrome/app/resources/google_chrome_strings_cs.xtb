@@ -162,6 +162,7 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="7787950393032327779">Profil je zřejmě využíván jiným procesem prohlížeče Google Chrome (<ph name="PROCESS_ID"/>) nebo v jiném počítač (<ph name="HOST_NAME"/>). Chrome profil uzamkl, aby nedošlo k jeho poškození. Pokud jste si jisti, že žádný jiný proces tento profil nevyužívá, můžete jej odemknout a Chrome znovu spustit.</translation>
 <translation id="1469002951682717133">Spouštěč aplikací Chrome</translation>
 <translation id="8568392309447938879">Chcete-li používat aplikace, musíte být do Chromu přihlášeni. To Chromu umožňuje synchronizovat vaše aplikace, záložky, historii, hesla a další nastavení mezi zařízeními.</translation>
+<translation id="6883876366448858277">odesílá slovo a jeho okolní kontext do Vyhledávání Google a vrací definice, obrázky a další výsledky vyhledávání.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome umožňuje kliknout na telefonní číslo na webu a volat na něj prostřednictvím aplikace Skype.</translation>
 <translation id="3612333635265770873">Je známo, že s aplikací Google Chrome koliduje modul se stejným názvem.</translation>
@@ -206,7 +207,6 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="7396375882099008034">V nastavení firewallu a antivirového programu povolte prohlížeči Chrome
         přístup k síti.</translation>
 <translation id="9102715433345326100">Tento soubor je škodlivý a prohlížeč Chrome jej zablokoval.</translation>
-<translation id="3170677364322086041">Tento web využívá plugin Chrome Frame, pro který již nejsou dodávány aktualizace zabezpečení a stability. Odinstalujte jej a přejděte na moderní prohlížeč.</translation>
 <translation id="8205111949707227942">Volitelné: Pomozte zlepšit operační systém Chrome OS tím, že budete společnosti Google automaticky zasílat statistiky využití a zprávy o selhání.</translation>
 <translation id="7253415505590551024">Probíhá stahování. Chcete Google Chrome ukončit a stahování zrušit?</translation>
 <translation id="487887346205285304">Chrome se chová zvláštně?</translation>
@@ -228,7 +228,6 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="7825851276765848807">Instalace se z neznámého důvodu nezdařila. Stáhněte prosím aplikaci Google Chrome znovu.</translation>
 <translation id="1150979032973867961">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN"/>. Operační systém vašeho počítače nedůvěřuje jeho bezpečnostnímu certifikátu.Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
 <translation id="4458285410772214805">Chcete-li, aby se změny projevily, odhlaste se a znovu se přihlaste.</translation>
-<translation id="5489213858994471184">Chrome zjistil, že nastavení prohlížeče mohlo být bez vašeho vědomí změněno programem ve vašem počítači. Pomocí nástroje Google na odstraňování softwaru můžete tento program odstranit.</translation>
 <translation id="8679801911857917785">Také řídí, která stránka se zobrazí při spuštění Chromu.</translation>
 <translation id="5334545119300433702">U tohoto modulu se vyskytuje známý konflikt s aplikací Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome</translation>

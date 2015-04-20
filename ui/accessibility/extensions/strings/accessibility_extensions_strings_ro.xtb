@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ro">
 <translation id="1408730541890277710">Înlocuiește imaginile cu textul alternativ.</translation>
+<translation id="6017514345406065928">Verde</translation>
 <translation id="595639123821853262">Tonuri de gri inversate</translation>
 <translation id="8260673944985561857">Opțiuni de navigare cu tastatura</translation>
 <translation id="3410969471888629217">Șterge personalizările site-ului</translation>
@@ -14,6 +15,8 @@
 <translation id="2394933097471027016">Încearcă acum. Navigarea cu tastatura este activată întotdeauna în această pagină!</translation>
 <translation id="3622586652998721735">Setează ca schemă prestabilită</translation>
 <translation id="2179565792157161713">Deschide descrierea lungă într-o filă nouă</translation>
+<translation id="7942349550061667556">Roșu</translation>
+<translation id="1555130319947370107">Albastru</translation>
 <translation id="2471847333270902538">Schemă de culori pentru <ph name="SITE"/>:</translation>
 <translation id="381767806621926835">Dă clic dreapta pe orice cu un atribut „longdesc” sau „aria-describedat” pentru a accesa descrierea lungă.</translation>
 <translation id="786423340267544509">Adaugă chenare la elementele cu atributele aria-describedat sau longdesc.</translation>

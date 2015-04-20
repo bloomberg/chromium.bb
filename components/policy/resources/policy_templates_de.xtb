@@ -334,7 +334,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, t
 
           Wenn diese Einstellung nicht konfiguriert wurde, bestehen keine Einschränkungen für zulässige Erweiterungs- bzw. App-Typen.</translation>
 <translation id="6378076389057087301">Angaben zum Einfluss von Audioaktivitäten auf den Energiesparmodus</translation>
-<translation id="8818173863808665831">Meldet den geografischen Standort des Geräts.
+<translation id="8818173863808665831">Meldet den Standort des Geräts.
 
       Wenn die Richtlinie nicht oder auf &quot;False&quot; festgelegt wird, wird der Standort nicht gemeldet.</translation>
 <translation id="4899708173828500852">Safe Browsing aktivieren</translation>
@@ -461,7 +461,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 
       Wenn diese Richtlinie auf &quot;True&quot; gesetzt ist, ist im Datei-Browser kein externer Speicher verfügbar.
 
-      Diese Richtlinie gilt für alle Arten von Speichermedien, wie USB-Speichersticks, externe Festplatten, SD-Karten und andere Speicherkarten sowie optische Speichermedien. Der interne Speicher ist nicht betroffen, im Download-Ordner gespeicherte Dateien können darum weiterhin abgerufen werden. Diese Richtlinie hat ebenfalls keine Auswirkungen auf Google Drive.
+      Diese Richtlinie gilt für alle Arten von Speichermedien, wie USB-Speichersticks, externe Festplatten, SD-Karten und andere Speicherkarten sowie optische Speichermedien. Der interne Speicher ist nicht betroffen, im Downloadordner gespeicherte Dateien können darum weiterhin abgerufen werden. Diese Richtlinie hat ebenfalls keine Auswirkungen auf Google Drive.
 
       Ist diese Einstellung deaktiviert oder nicht konfiguriert, können die Nutzer alle unterstützten externen Speichermedien auf ihrem Gerät verwenden.</translation>
 <translation id="6936894225179401731">Legt die maximale Anzahl gleichzeitiger Verbindungen zum Proxyserver fest.

@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="te">
+<translation id="2774256287122201187">మీరు కొనసాగించవచ్చు. మీరు పేజీకి కొనసాగిస్తే, ఈ హెచ్చరిక ఐదు నిమిషాల పాటు మళ్లీ కనిపించదు.</translation>
 <translation id="7485870689360869515">డేటా కనుగొనబడలేదు.</translation>
 <translation id="3884278016824448484">వైరుధ్యమైన పరికరం ఐడెంటిఫైయర్</translation>
 <translation id="6779575937362063477">ఈ రకమైన కార్డ్‌కు Google Wallet మద్దతు ఇవ్వదు. దయచేసి మరో కార్డ్‌ని ఎంచుకోండి.</translation>
@@ -39,6 +40,7 @@
 <translation id="2704283930420550640">విలువ ఆకృతికి సరిపోలలేదు.</translation>
 <translation id="4850886885716139402">వీక్షణ</translation>
 <translation id="8091372947890762290">సక్రియం సర్వర్‌లో పెండింగ్‌లో ఉంది</translation>
+<translation id="4607653538520819196">ఈ పేజీ డేటా సేవర్ ద్వారా ప్రాక్సీ చేయబడదు.</translation>
 <translation id="719464814642662924">వీసా</translation>
 <translation id="6839929833149231406">ప్రాంతం</translation>
 <translation id="1871208020102129563">ప్రాక్సీ స్థిరమైన ప్రాక్సీ సర్వర్‌లను ఉపయోగించడానికి సెట్ చేయబడింది, .pac స్క్రిప్ట్ URLను కాదు.</translation>
@@ -50,6 +52,7 @@
 <translation id="7441627299479586546">చెల్లని విధాన విషయం</translation>
 <translation id="3885155851504623709">పారిష్</translation>
 <translation id="6973656660372572881">రెండు స్థిర ప్రాక్సీ సర్వర్లు మరియు ఒక .pac స్క్రిప్ట్ URL పేర్కొనబడ్డాయి.</translation>
+<translation id="1426410128494586442">అవును</translation>
 <translation id="4506176782989081258">ధృవీకరణ లోపం: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/>కు అనువాదం విఫలమైంది.</translation>
 <translation id="4103249731201008433">పరికరం క్రమ సంఖ్య చెల్లదు</translation>
@@ -68,12 +71,15 @@
 <translation id="1132774398110320017">Chrome స్వయంపూర్తి సెట్టింగ్‌లు...</translation>
 <translation id="6458467102616083041">విధానంచే డిపాల్ట్ శోధన ఆపివేయబడినందున విస్మరించబడింది.</translation>
 <translation id="1227224963052638717">తెలియని విధానం.</translation>
+<translation id="4250680216510889253">కాదు</translation>
 <translation id="9207861905230894330">కథనాన్ని జోడించడంలో విఫలమైంది.</translation>
 <translation id="5872918882028971132">తల్లి/తండ్రి సూచనలు</translation>
 <translation id="337363190475750230">కేటాయింపు తీసివేయబడింది</translation>
 <translation id="2367567093518048410">స్థాయి</translation>
 <translation id="7977590112176369853">&lt;ప్రశ్నను ఎంటర్ చెయ్యండి&gt;</translation>
+<translation id="552553974213252141">వచనం సరిగ్గా సంగ్రహించబడిందా?</translation>
 <translation id="7610193165460212391">విలువ <ph name="VALUE"/> పరిధి వెలుపల ఉంది.</translation>
+<translation id="3739623965217189342">మీరు కాపీ చేసిన లింక్</translation>
 <translation id="8311778656528046050">మీరు ఈ పేజీని మళ్లీ లోడ్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="370665806235115550">లోడ్ అవుతోంది...</translation>
 <translation id="2096368010154057602">శాఖ</translation>
@@ -81,7 +87,6 @@
 <translation id="3024663005179499861">చెల్లని విధాన రకం</translation>
 <translation id="2030481566774242610">మీ ఉద్దేశ్యం <ph name="LINK"/>?</translation>
 <translation id="3450660100078934250">మాస్టర్‌కార్డ్</translation>
-<translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, గడువు తేదీ: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">అమెరికన్ ఎక్స్‌ప్రెస్</translation>
 <translation id="225207911366869382">ఈ విధానం కోసం ఈ విలువ తగ్గించబడింది.</translation>
 <translation id="3145945101586104090">ప్రతిస్పందనను డీకోడ్ చేయడంలో విఫలమైంది</translation>
@@ -130,6 +135,7 @@
 <translation id="3228969707346345236">పేజీ ఇప్పటికే <ph name="LANGUAGE"/>లో ఉన్నందున అనువాదం విఫలమైంది.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="8034522405403831421">ఈ పేజీ <ph name="SOURCE_LANGUAGE"/>లో ఉంది. దీన్ని <ph name="TARGET_LANGUAGE"/>లోకి అనువదించాలా?</translation>
+<translation id="1734864079702812349">Amex</translation>
 <translation id="8891727572606052622">చెల్లని ప్రాక్సీ మోడ్.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">నిర్వహించడం లేదు</translation>
@@ -203,6 +209,7 @@
 <translation id="8713130696108419660">చెల్లని ప్రారంభ సంతకం</translation>
 <translation id="20817612488360358">సిస్టమ్ ప్రాక్సీ సెట్టింగ్‌లు ఉపయోగించడానికి సెట్ చేయబడ్డాయి కానీ స్పష్టమైన ప్రాక్సీ కాన్ఫిగరేషన్ కూడా పేర్కొనబడింది.</translation>
 <translation id="2639739919103226564">స్థితి: </translation>
+<translation id="4968547170521245791">ప్రాక్సీ చేయలేనివి</translation>
 <translation id="385051799172605136">వెనుకకు</translation>
 <translation id="5095208057601539847">ప్రావిన్స్</translation>
 <translation id="2581221116934462656">మీరు ఈ సైట్‌కు తదుపరిసారి వచ్చినప్పుడు <ph name="LANGUAGE_NAME"/>లో ఉన్న పేజీలకు <ph name="PRODUCT_NAME"/> అనువాదం ఆఫర్ చేయాలని కోరుకుంటున్నారా?</translation>
@@ -210,6 +217,7 @@
 <translation id="6965382102122355670">సరే</translation>
 <translation id="2721148159707890343">అభ్యర్థన విజయవంతం అయింది</translation>
 <translation id="2455981314101692989">ఈ వెబ్‌పేజీ ఈ ఫారమ్‌ కోసం స్వయంచాలకంగా పూర్తి చెయ్యడాన్ని ఆపివేసింది.</translation>
+<translation id="6597614308054261376">మీరు <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>ని సందర్శించడానికి ప్రయత్నిస్తున్నారు. ప్రస్తుతం ఈ పేజీ డేటా సేవర్ ద్వారా ప్రాక్సీ చేయబడదు.</translation>
 <translation id="8308427013383895095">నెట్‌వర్క్ కనెక్షన్‌తో సమస్య ఉన్నందున అనువాదం విఫలమైంది.</translation>
 <translation id="5720705177508910913">ప్రస్తుత వినియోగదారు</translation>
 <translation id="3380864720620200369">క్లయింట్ ID:</translation>

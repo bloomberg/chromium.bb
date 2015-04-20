@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ko">
+<translation id="2774256287122201187">계속 사용할 수 있습니다. 이 페이지를 계속 이용하는 경우 5분 동안 이 경고가 다시 표시되지 않습니다.</translation>
 <translation id="7485870689360869515">데이터 없음</translation>
 <translation id="3884278016824448484">기기 식별자 충돌</translation>
 <translation id="6779575937362063477">Google 월렛에서 지원하지 않는 카드 유형입니다. 다른 카드를 선택해 주세요.</translation>
@@ -39,6 +40,7 @@
 <translation id="2704283930420550640">값이 형식과 일치하지 않습니다.</translation>
 <translation id="4850886885716139402">보기</translation>
 <translation id="8091372947890762290">활성화 요청이 서버에서 대기 중</translation>
+<translation id="4607653538520819196">이 페이지는 데이터 세이버에 의해 프록시될 수 없습니다.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">지역</translation>
 <translation id="1871208020102129563">프록시가 .pac 스크립트 URL이 아닌 고정 프록시 서버를 사용하도록 설정됩니다.</translation>
@@ -50,6 +52,7 @@
 <translation id="7441627299479586546">잘못된 정책 주체</translation>
 <translation id="3885155851504623709">교구</translation>
 <translation id="6973656660372572881">고정 프록시 서버와 .pac 스크립트 URL이 모두 지정되어 있습니다.</translation>
+<translation id="1426410128494586442">예</translation>
 <translation id="4506176782989081258">유효성 검사 오류 <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/>로 번역하지 못했습니다.</translation>
 <translation id="4103249731201008433">기기 일련번호가 잘못됨</translation>
@@ -68,12 +71,15 @@
 <translation id="1132774398110320017">Chrome 자동완성 설정...</translation>
 <translation id="6458467102616083041">정책에 의해 기본 검색의 사용이 중지되었기 때문에 무시됨</translation>
 <translation id="1227224963052638717">알 수 없는 정책입니다.</translation>
+<translation id="4250680216510889253">아니요</translation>
 <translation id="9207861905230894330">글을 추가하지 못했습니다.</translation>
 <translation id="5872918882028971132">상위 추천</translation>
 <translation id="337363190475750230">사용 중단됨</translation>
 <translation id="2367567093518048410">수준</translation>
 <translation id="7977590112176369853">&lt;검색어 입력&gt;</translation>
+<translation id="552553974213252141">텍스트가 올바로 추출되었습니까?</translation>
 <translation id="7610193165460212391">값(<ph name="VALUE"/>)이 범위를 벗어났습니다.</translation>
+<translation id="3739623965217189342">복사한 링크</translation>
 <translation id="8311778656528046050">이 페이지를 새로고침 하시겠습니까?</translation>
 <translation id="370665806235115550">로드 중...</translation>
 <translation id="2096368010154057602">자치구</translation>
@@ -81,7 +87,6 @@
 <translation id="3024663005179499861">잘못된 정책 유형</translation>
 <translation id="2030481566774242610"><ph name="LINK"/>을(를) 찾으셨나요?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
-<translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, 만료일: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="225207911366869382">이 값은 이 정책에 사용되지 않습니다.</translation>
 <translation id="3145945101586104090">응답 디코딩 실패</translation>
@@ -130,6 +135,7 @@
 <translation id="3228969707346345236">페이지가 <ph name="LANGUAGE"/>(으)로 되어 있으므로 번역하지 못했습니다.</translation>
 <translation id="7521387064766892559">자바스크립트</translation>
 <translation id="8034522405403831421">이 페이지는 <ph name="SOURCE_LANGUAGE"/>로 되어 있습니다. <ph name="TARGET_LANGUAGE"/>로 번역하시겠습니까?</translation>
+<translation id="1734864079702812349">Amex</translation>
 <translation id="8891727572606052622">프록시 모드가 잘못되었습니다.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">관리되지 않음</translation>
@@ -203,6 +209,7 @@
 <translation id="8713130696108419660">잘못된 초기 서명</translation>
 <translation id="20817612488360358">시스템 프록시 설정이 사용하도록 설정되었지만 명시적 프록시 설정도 지정되어 있습니다.</translation>
 <translation id="2639739919103226564">상태:</translation>
+<translation id="4968547170521245791">프록시할 수 없음</translation>
 <translation id="385051799172605136">뒤로</translation>
 <translation id="5095208057601539847">주/도</translation>
 <translation id="2581221116934462656">다음에 <ph name="PRODUCT_NAME"/>에서 이 사이트의 <ph name="LANGUAGE_NAME"/> 페이지를 번역하시겠습니까?</translation>
@@ -210,6 +217,7 @@
 <translation id="6965382102122355670">확인</translation>
 <translation id="2721148159707890343">요청 성공</translation>
 <translation id="2455981314101692989">이 웹페이지에서는 이 양식에 대한 자동완성 기능을 사용할 수 없습니다.</translation>
+<translation id="6597614308054261376"><ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>에 접속을 시도하고 있습니다. 이 페이지는 현재 데이터 세이버에 의해 프록시될 수 없습니다.</translation>
 <translation id="8308427013383895095">네트워크 연결 문제로 인해 번역에 실패했습니다.</translation>
 <translation id="5720705177508910913">현재 사용자</translation>
 <translation id="3380864720620200369">클라이언트 ID:</translation>

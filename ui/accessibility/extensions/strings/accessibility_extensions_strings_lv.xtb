@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="lv">
 <translation id="1408730541890277710">Aizstāt attēlus ar to alternatīvo tekstu.</translation>
+<translation id="6017514345406065928">Zaļa</translation>
 <translation id="595639123821853262">Apgriezti pelēktoņi</translation>
 <translation id="8260673944985561857">Taustiņpārlūkošanas opcijas</translation>
 <translation id="3410969471888629217">Aizmirst vietnes pielāgojumus</translation>
@@ -14,6 +15,8 @@
 <translation id="2394933097471027016">Izmēģiniet tūlīt — šajā lapā vienmēr ir iespējota taustiņpārlūkošana!</translation>
 <translation id="3622586652998721735">Iestatīt kā noklusējuma shēmu</translation>
 <translation id="2179565792157161713">Atvērt garo aprakstu jaunā cilnē</translation>
+<translation id="7942349550061667556">Sarkana</translation>
+<translation id="1555130319947370107">Zila</translation>
 <translation id="2471847333270902538">Vietnes <ph name="SITE"/> krāsu shēma:</translation>
 <translation id="381767806621926835">Lai piekļūtu garajam aprakstam, ar peles labo pogu noklikšķiniet uz jebkura elementa, kuram ir atribūts “longdesc” vai “aria-describedat”.</translation>
 <translation id="786423340267544509">Pievienot apmali elementiem, kuriem ir atribūts “aria-describedat” vai “longdesc”.</translation>

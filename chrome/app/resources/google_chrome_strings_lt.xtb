@@ -175,6 +175,7 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="7787950393032327779">Atrodo, kad profilį naudoja kitas „Google Chrome“ procesas (<ph name="PROCESS_ID"/>) kitame kompiuteryje (<ph name="HOST_NAME"/>). „Chrome“ užrakino profilį, kad jis nebūtų sugadintas. Jei esate tikri, kad jokie kiti procesai nenaudoja šio profilio, galite atrakinti profilį ir iš naujo paleisti „Chrome“.</translation>
 <translation id="1469002951682717133">„Chrome“ programų paleidimo priemonė</translation>
 <translation id="8568392309447938879">Jei norite naudoti programas, turite būti prisijungę prie „Chrome“. Tada „Chrome“ galės sinchronizuoti jūsų programas, žymes, istoriją, slaptažodžius ir kitus nustatymus įrenginiuose.</translation>
+<translation id="6883876366448858277">siunčiamas žodis ir jo kontekstas „Google“ paieškai, kuri pateikia apibrėžimų, nuotraukų ir kitų paieškos rezultatų.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Naudodami „Google Chrome“ galite spustelėti telefono numerį žiniatinklyje ir skambinti juo naudodami „Skype“!</translation>
 <translation id="3612333635265770873">Modulis tokiu pačiu pavadinimu žinomas kaip prieštaraujantis „Google Chrome“.</translation>
@@ -219,7 +220,6 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="7396375882099008034">Leiskite „Chrome“ pasiekti tinklą užkardos ar antivirusinės
         programos nustatymuose.</translation>
 <translation id="9102715433345326100">Šis failas yra kenkėjiškas, todėl „Chrome“ jį užblokavo.</translation>
-<translation id="3170677364322086041">Šioje svetainėje naudojamas nebepalaikomas „Google Chrome Frame“ papildinys, kuriam nebeteikiami saugos ir stabilumo naujiniai. Pašalinkite jį ir atnaujinkite naršyklę į modernią.</translation>
 <translation id="8205111949707227942">Pasirenkama: padėkite tobulinti „Chrome“ OS automatiškai siųsdami „Google“ naudojimo statistiką ir strigčių ataskaitas.</translation>
 <translation id="7253415505590551024">Šiuo metu vykdomi atsisiuntimai. Ar norite išeiti iš „Google Chrome“ ir atšaukti atsisiuntimus?</translation>
 <translation id="487887346205285304">„Chrome“ elgsena keista?</translation>
@@ -241,7 +241,6 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="7825851276765848807">Nepavyko įdiegti dėl nenustatytos klaidos. Atsisiųskite „Google Chrome“ dar kartą.</translation>
 <translation id="1150979032973867961">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN"/>; jo saugos sertifikatas nėra patikimas kompiuterio operacinei sistemai. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="4458285410772214805">Atsijunkite ir prisijunkite iš naujo, kad šis pakeitimas būtų pritaikytas.</translation>
-<translation id="5489213858994471184">„Chrome“ aptiko, kad kompiuterio programa be jūsų žinios galėjo pakeisti naršyklės nustatymus. Pašalinti šią programą galite naudodami „Google“ programinės įrangos pašalinimo įrankį.</translation>
 <translation id="8679801911857917785">Ji taip pat kontroliuoja, koks puslapis rodomas, kai paleidžiate „Chrome“.</translation>
 <translation id="5334545119300433702">Šis modulis žinomas kaip prieštaraujantis „Google Chrome“.</translation>
 <translation id="4407807842708586359">„Google Chrome OS“</translation>

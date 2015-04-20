@@ -769,7 +769,7 @@ Questa norma viene applicata per tutti i tipi di ingressi video e non soltanto p
 
           Se questa norma viene impostata su False, l'attività video non impedisce di considerare inattivo l'utente.</translation>
 <translation id="3965339130942650562">Timeout fino a esecuzione uscita utente non attivo</translation>
-<translation id="5814301096961727113">Impostazione stato predefinito dei feedback vocali nella schermata di accesso</translation>
+<translation id="5814301096961727113">Impostazione stato predefinito della lettura vocale nella schermata di accesso</translation>
 <translation id="1950814444940346204">Attiva funzioni piattaforma web obsolete</translation>
 <translation id="9084985621503260744">Specifica se l'attività video incide sulla gestione dell'alimentazione</translation>
 <translation id="7091198954851103976">Esegue sempre i plug-in che richiedono l'autorizzazione</translation>
@@ -803,7 +803,7 @@ Se la norma viene impostata su false, il puntatore grande sarà sempre disattiva
 Se la norma viene impostata, gli utenti non potranno modificarla o ignorarla.
 
 Se la norma non viene impostata, il puntatore grande sarà inizialmente disattivato ma gli utenti potranno attivarlo in qualsiasi momento.</translation>
-<translation id="2633084400146331575">Attiva feedback vocali</translation>
+<translation id="2633084400146331575">Attiva la funzione di lettura vocale</translation>
 <translation id="687046793986382807">Questa norma è stata ritirata a partire dalla versione 35 di <ph name="PRODUCT_NAME"/>.
 
       Le informazioni sulla memoria sono comunque riportate sulla pagina, indipendentemente dal valore opzione, ma le dimensioni segnalate presentano
@@ -1204,15 +1204,15 @@ Se questa norma viene impostata su False o non viene impostata, i ritardi di ges
           I client di accesso remoto non sono interessati da questa impostazione e utilizzeranno sempre &quot;chromoting-client.talkgadget.google.com&quot; per accedere a TalkGadget.</translation>
 <translation id="1103860406762205913">Attiva il vecchio accesso basato sul Web</translation>
 <translation id="5765780083710877561">Descrizione:</translation>
-<translation id="6915442654606973733">Consente di attivare la funzione di accessibilità del feedback vocale.
+<translation id="6915442654606973733">Consente di attivare la funzione di accessibilità di lettura vocale.
 
-Se questa norma viene impostata su true, il feedback vocale sarà sempre attivo.
+Se questa norma viene impostata su true, la lettura vocale sarà sempre attiva.
 
-Se la norma viene impostata su false, il feedback vocale sarà sempre disattivato.
+Se la norma viene impostata su false, la lettura vocale sarà sempre disattivata.
 
-Se la norma viene impostata gli utenti non potranno modificarla o ignorarla.
+Se la norma viene impostata, gli utenti non potranno modificarla o ignorarla.
 
-Se la norma non viene configurata, il feedback vocale viene inizialmente disattivato ma potrà essere attivato dagli utenti in qualsiasi momento.</translation>
+Se la norma non viene configurata, la lettura vocale viene inizialmente disattivata ma potrà essere attivata dagli utenti in qualsiasi momento.</translation>
 <translation id="7796141075993499320">Consente di impostare un elenco di pattern URL che specificano i siti in cui è consentita l'esecuzione dei plug-in. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma &quot;DefaultPluginsSetting&quot;, se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="3809527282695568696">Se come azione all'avvio è stata impostata &quot;Apri un elenco di URL&quot;, puoi specificare l'elenco di URL da aprire. Se questa norma non viene impostata, all'avvio non verrà aperto alcun URL. Questa norma funziona soltanto se la norma &quot;RestoreOnStartup&quot; viene impostata su &quot;RestoreOnStartupIsURLs&quot;.</translation>
 <translation id="649418342108050703">Consente di disattivare il supporto delle API grafiche 3D. L'attivazione di questa impostazione impedisce alle pagine web di accedere all'unità di elaborazione grafica (GPU). Nello specifico, le pagine web non possono accedere all'API di WebGL e i plug-in non possono utilizzare l'API 3D di Pepper. Se l'impostazione viene disattivata o non viene impostata, le pagine web potrebbero utilizzare l'API di WebGL e i plug-in l'API 3D di Pepper. Per poter utilizzare tali API, le impostazioni predefinite del browser potrebbero richiedere la convalida degli argomenti della riga di comando.</translation>
@@ -1592,15 +1592,15 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
       Se la norma non è specificata, l'URL di recupero del numero di inizializzazione delle varianti non verrà modificato.</translation>
 <translation id="7049373494483449255">Permette di consentire a <ph name="PRODUCT_NAME"/> di inviare documenti da stampare a <ph name="CLOUD_PRINT_NAME"/>. NOTA. Questo riguarda soltanto il supporto di <ph name="CLOUD_PRINT_NAME"/> in <ph name="PRODUCT_NAME"/>. Non impedisce agli utenti di inviare processi di stampa su siti web. Se questa impostazione viene attivata o non viene configurata, gli utenti potranno stampare con <ph name="CLOUD_PRINT_NAME"/> utilizzando la finestra di dialogo di stampa di <ph name="PRODUCT_NAME"/>. Se questa impostazione viene disattivata, gli utenti non potranno stampare con <ph name="CLOUD_PRINT_NAME"/> utilizzando la finestra di dialogo di stampa di <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="4088589230932595924">Modalità di navigazione in incognito forzata</translation>
-<translation id="5862253018042179045">Consente di impostare lo stato predefinito della funzione di accessibilità del feedback vocale nella schermata di accesso.
+<translation id="5862253018042179045">Consente di impostare lo stato predefinito della funzione di accessibilità di lettura vocale nella schermata di accesso.
 
-Se questa norma viene impostata su true, il feedback vocale viene attivato quando viene visualizzata la schermata di accesso.
+Se questa norma viene impostata su true, la lettura vocale viene attivata quando viene visualizzata la schermata di accesso.
 
-Se la norma viene impostata su false, il feedback vocale viene disattivato quando viene visualizzata la schermata di accesso.
+Se la norma viene impostata su false, la lettura vocale viene disattivata quando viene visualizzata la schermata di accesso.
 
-Se la norma viene impostata, gli utenti possono ignorarla temporaneamente attivando o disattivando il feedback vocale. La scelta dell'utente non è però permanente e viene ripristinato il valore predefinito quando viene visualizzata di nuovo la schermata di accesso o quando l'utente rimane inattivo nella schermata di accesso per un minuto.
+Se la norma viene impostata, gli utenti possono ignorarla temporaneamente attivando o disattivando la lettura vocale. La scelta dell'utente non è però permanente e viene ripristinato il valore predefinito quando viene visualizzata di nuovo la schermata di accesso o quando l'utente rimane inattivo nella schermata di accesso per un minuto.
 
-Se la norma non viene impostata, il feedback vocale viene disattivato alla prima visualizzazione della schermata di accesso. Gli utenti possono attivare o disattivare il feedback vocale in qualsiasi momento e il relativo stato nella schermata di accesso persiste per tutti gli utenti.</translation>
+Se la norma non viene impostata, la lettura vocale viene disattivata alla prima visualizzazione della schermata di accesso. Gli utenti possono attivare o disattivare la lettura vocale in qualsiasi momento e il relativo stato nella schermata di accesso persiste per tutti gli utenti.</translation>
 <translation id="8197918588508433925">Questa norma specifica le estensioni autorizzate a utilizzare chrome.enterprise.platformKeysPrivate.challengeUserKey() dell'API Enterprise Platform Keys per l'attestazione da remoto. Le estensioni devono essere aggiunte a questo elenco per utilizzare l'API.
 
           Se un'estensione non è presente nell'elenco o l'elenco non è impostato, la chiamata all'API non riuscirà e verrà generato un codice di errore.</translation>

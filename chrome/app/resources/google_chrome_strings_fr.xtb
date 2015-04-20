@@ -173,6 +173,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="7787950393032327779">Le profil semble être utilisé dans le cadre d'un autre processus Google Chrome (<ph name="PROCESS_ID"/>) sur un autre ordinateur (<ph name="HOST_NAME"/>). Le profil a été verrouillé de sorte qu'il ne soit pas endommagé. Si vous êtes sûr que le profil n'est utilisé dans le cadre d'aucun autre processus, vous pouvez le déverrouiller et relancer Google Chrome.</translation>
 <translation id="1469002951682717133">Lanceur d'applications Google Chrome</translation>
 <translation id="8568392309447938879">Vous devez être connecté à Chrome pour utiliser les applications. Cela permet de synchroniser vos applications, vos favoris, votre historique, vos mots de passe et d'autres paramètres dans Chrome sur tous vos appareils.</translation>
+<translation id="6883876366448858277">envoie un mot et son contexte à la recherche Google, qui renvoie à son tour des définitions, des photos et d'autres résultats de recherche.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Avec Google Chrome, cliquez sur un numéro de téléphone sur le Web et appelez-le dans Skype !</translation>
 <translation id="3612333635265770873">Nous avons constaté qu'un module du même nom crée des conflits avec Google Chrome.</translation>
@@ -217,7 +218,6 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="7396375882099008034">Autoriser Chrome à accéder au réseau dans les paramètres de votre pare-feu ou
         de votre antivirus</translation>
 <translation id="9102715433345326100">Ce fichier est malveillant. Il a donc été bloqué dans Chrome.</translation>
-<translation id="3170677364322086041">Ce site utilise le plug-in Chrome Frame, qui ne bénéficie plus des mises à jour de sécurité et de stabilité. Veuillez le désinstaller et utiliser un navigateur récent.</translation>
 <translation id="8205111949707227942">Facultatif : Aidez-nous à améliorer Google Chrome OS en envoyant automatiquement des statistiques d'utilisation et des rapports d'erreur à Google.</translation>
 <translation id="7253415505590551024">Des téléchargements sont actuellement en cours. Voulez-vous quitter Google Chrome et annuler les téléchargements ?</translation>
 <translation id="487887346205285304">Le fonctionnement de Chrome vous semble étrange ?</translation>
@@ -239,7 +239,6 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="7825851276765848807">Échec de l'installation en raison d'erreurs non spécifiées. Veuillez télécharger Google Chrome à nouveau.</translation>
 <translation id="1150979032973867961">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN"/>, car son certificat de sécurité n'est pas considéré comme fiable par le système d'exploitation de votre ordinateur. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="4458285410772214805">Pour que cette modification soit prise en compte, veuillez vous déconnecter, puis vous reconnecter.</translation>
-<translation id="5489213858994471184">Nous avons détecté que les paramètres de votre navigateur ont pu être modifiés à votre insu par un programme sur votre ordinateur. Vous pouvez utiliser l'outil de suppression de logiciels de Google pour le supprimer.</translation>
 <translation id="8679801911857917785">Elle contrôle également la page qui s'affiche au démarrage de Chrome.</translation>
 <translation id="5334545119300433702">Ce module entraîne un conflit avec Google Chrome.</translation>
 <translation id="4407807842708586359">Système d'exploitation Google Chrome</translation>
@@ -250,7 +249,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="3360895254066713204">Aide de Chrome</translation>
 <translation id="1877026089748256423">Version de Chrome obsolète</translation>
 <translation id="7592736734348559088">Impossible de synchroniser vos données dans Google Chrome, car les informations de connexion de votre compte ne sont plus à jour.</translation>
-<translation id="7810280330588098283">Chrome stockera ce mot de passe avec vos mots de passe Google enregistrés et s'en souviendra la prochaine fois que vous en aurez besoin.</translation>
+<translation id="7810280330588098283">Chrome stockera ce mot de passe avec vos |mots de passe Google enregistrés| et s'en souviendra la prochaine fois que vous en aurez besoin.</translation>
 <translation id="6991142834212251086">Lier mes données Google Chrome à ce compte</translation>
 <translation id="3451115285585441894">Ajout à Google Chrome en cours…</translation>
 <translation id="3047079729301751317">La déconnexion de <ph name="USERNAME"/> a pour effet d'effacer votre historique, vos favoris, vos paramètres et les autres données Chrome stockées sur cet appareil. Les données stockées dans votre compte Google ne sont pas effacées ; vous pouvez les gérer dans <ph name="GOOGLE_DASHBOARD_LINK"/>Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>

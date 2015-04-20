@@ -50,14 +50,14 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="4050175100176540509">Den senaste versionen har viktiga säkerhetsförbättringar och nya funktioner.</translation>
 <translation id="4728575227883772061">Installationen misslyckades på grund av ett ospecificerat fel. Stäng Google Chrome, om det är igång, och försök sedan igen.</translation>
 <translation id="3080151273017101988">Fortsätt köra bakgrundsappar när Google Chrome avslutas</translation>
-<translation id="4149882025268051530">Det gick inte att packa upp arkivet med installationsfilen. Hämta Google Chrome igen.</translation>
+<translation id="4149882025268051530">Det gick inte att packa upp arkivet med installationsfilen. Ladda ned Google Chrome igen.</translation>
 <translation id="7054640471403081847">Den här datorn slutar snart att få uppdateringar för Google Chrome eftersom maskinvaran inte längre stöds.</translation>
 <translation id="6989339256997917931">Chrome har uppdaterats men du har inte använt det på över 30 dagar.</translation>
 <translation id="7060865993964054389">Startprogrammet för appar i Google Chrome</translation>
 <translation id="1682634494516646069">Google Chrome kan inte läsa och skriva till datakatalogen:
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
-<translation id="127345590676626841">Chrome uppdateras automatiskt så att du alltid har den senaste versionen. När den här hämtningen är klar startas Chrome om och sedan är du igång.</translation>
+<translation id="127345590676626841">Chrome uppdateras automatiskt så att du alltid har den senaste versionen. När den här nedladdningen är klar startas Chrome om och sedan är du igång.</translation>
 <translation id="3738139272394829648">Tryck för att söka</translation>
 <translation id="8227755444512189073">Google Chrome måste starta ett externt program för att hantera <ph name="SCHEME"/>-länkar. Den begärda länken är <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Hoppsan! Google Chrome har kraschat. Vill du starta om nu?</translation>
@@ -162,7 +162,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="103396972844768118">Viktig information om uppgifter i Chrome</translation>
 <translation id="6757767188268205357">Stör mig inte</translation>
 <translation id="2290095356545025170">Är du säker på att du vill avinstallera Google Chrome?</translation>
-<translation id="7062966102157262887">En hämtning pågår. Vill du avsluta Google Chrome och avbryta hämtningen?</translation>
+<translation id="7062966102157262887">En nedladdning pågår. Vill du avsluta Google Chrome och avbryta nedladdningen?</translation>
 <translation id="4273752058983339720">Google Chrome är konfigurerad för att starta automatiskt när du startar datorn.</translation>
 <translation id="2316129865977710310">Nej tack</translation>
 <translation id="415994390253732730">Fungerar Chrome konstigt?</translation>
@@ -173,6 +173,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="7787950393032327779">Profilen verkar användas av en annan Google Chrome-process (<ph name="PROCESS_ID"/>) på en annan dator (<ph name="HOST_NAME"/>). Profilen har låsts så att den inte används på otillåtet sätt. Om du är säker på att profilen inte används i några andra processer låser du upp profilen och startar om Chrome.</translation>
 <translation id="1469002951682717133">Startprogrammet för appar i Chrome</translation>
 <translation id="8568392309447938879">Du måste logga in i Chrome om du vill använda appar. När du gör det synkroniseras appar, bokmärken, historik, lösenord och andra inställningar på de enheter där Chrome används.</translation>
+<translation id="6883876366448858277">skickar ett ord med omgivande sammanhang till Google Sök och returnerar definitioner, bilder och andra sökresultat.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">I Google Chrome kan du klicka på ett telefonnummer på nätet och ringa det med Skype!</translation>
 <translation id="3612333635265770873">En modul med samma namn har tidigare varit i konflikt med Google Chrome.</translation>
@@ -217,9 +218,8 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="7396375882099008034">Tillåt att Chrome får åtkomst till nätverket i inställningarna för brandväggen eller
         antivirusprogrammet.</translation>
 <translation id="9102715433345326100">Filen är skadlig och har blockerats av Chrome.</translation>
-<translation id="3170677364322086041">Den här webbplatsen använder Chrome Frame. Denna plugin är inaktuell och inga nya säkerhets- eller stabilitetsuppdateringar släpps. Du bör avinstallera den och uppgradera till en modern webbläsare.</translation>
 <translation id="8205111949707227942">Valfritt: Hjälp till att göra Chrome bättre genom att automatiskt skicka användningsstatistik och kraschrapporter till Google.</translation>
-<translation id="7253415505590551024">Hämtningar pågår. Vill du avsluta Google Chrome och avbryta hämtningarna?</translation>
+<translation id="7253415505590551024">Nedladdningar pågår. Vill du avsluta Google Chrome och avbryta nedladdningarna?</translation>
 <translation id="487887346205285304">Fungerar Chrome konstigt?</translation>
 <translation id="3622797965165704966">Nu är det enklare att använda Chrome med ditt Google-konto och på delade datorer.</translation>
 <translation id="7196020411877309443">Varför visas det här?</translation>
@@ -236,10 +236,9 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
           LAN-inställningar
           och avmarkera Använd en proxyserver för nätverket.</translation>
 <translation id="6598387184982954187">Du använder <ph name="PROFILE_EMAIL"/> för att synkronisera dina grejer i Chrome. Om du vill uppdatera synkroniseringsinställningen eller använda Chrome utan ett Google-konto besöker du <ph name="SETTINGS_LINK"/>.</translation>
-<translation id="7825851276765848807">Installationen misslyckades på grund av ett okänt fel. Hämta Google Chrome igen.</translation>
+<translation id="7825851276765848807">Installationen misslyckades på grund av ett okänt fel. Ladda ned Google Chrome igen.</translation>
 <translation id="1150979032973867961">Servern kunde inte bevisa att den är <ph name="DOMAIN"/> eftersom datorns operativsystem inte litar på dess säkerhetscertifikat. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="4458285410772214805">Den här ändringen träder inte i kraft förrän du loggat ut och sedan loggar in igen.</translation>
-<translation id="5489213858994471184">Chrome har identifierat att dina webbläsarinställningar kan ha ändrats av ett program i datorn utan att du märkte det. Du kan ta bort programmet med Googles verktyg för programborttagning.</translation>
 <translation id="8679801911857917785">Det styr också vilken sida som visas när du startar Chrome.</translation>
 <translation id="5334545119300433702">Den här modulen har tidigare varit i konflikt med Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
@@ -254,7 +253,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="6991142834212251086">Koppla mina uppgifter i Chrome till det här kontot</translation>
 <translation id="3451115285585441894">Lägger till i Chrome ...</translation>
 <translation id="3047079729301751317">Om du kopplar från <ph name="USERNAME"/> rensas din historik, dina bokmärken, dina inställningar och annan Chrome-data som du har lagrat på enheten. Data som lagras i Google-kontot rensas inte utan kan hanteras via <ph name="GOOGLE_DASHBOARD_LINK"/>Google Översikt<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
-<translation id="1001534784610492198">Arkivet för installationsfilen är skadat eller ogiltigt. Hämta Google Chrome igen.</translation>
+<translation id="1001534784610492198">Arkivet för installationsfilen är skadat eller ogiltigt. Ladda ned Google Chrome igen.</translation>
 <translation id="2246246234298806438">Förhandsgranskningen av utskriften kan inte visas i Google Chrome eftersom den inbyggda PDF-läsaren saknas.</translation>
 <translation id="6626317981028933585">Inställningarna för Mozilla Firefox är tyvärr inte tillgängliga medan webbläsaren körs. Om du vill importera dessa inställningar till Google Chrome måste du spara ditt arbete och stänga alla Firefox-fönster. Klicka sedan på Fortsätt.</translation>
 <translation id="7242029209006116544">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din Google Chrome-profil. Dina Chrome-uppgifter, t.ex. dina appar, bokmärken, din historik, dina lösenord och andra inställningar, knyts permanent till <ph name="USER_NAME"/>. Du kommer att kunna ta bort dessa uppgifter via instrumentpanelen i Google Konton, men du kommer inte att kunna koppla dessa uppgifter till ett annat konto. Du kan skapa en ny profil om du vill hålla dina befintliga Chrome-uppgifter separata. <ph name="LEARN_MORE"/></translation>
@@ -272,7 +271,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="3836351788193713666">Nästan klart! Slutför uppdateringen genom att starta om Google Chrome.</translation>
 <translation id="884296878221830158">Det styr också vilken sida som visas när du startar Chrome eller klickar på knappen Startsida.</translation>
 <translation id="7106741999175697885">Aktivitetshanteraren - Google Chrome</translation>
-<translation id="3396977131400919238">Ett operativsystemsfel inträffade under installationen. Hämta Google Chrome igen.</translation>
+<translation id="3396977131400919238">Ett operativsystemsfel inträffade under installationen. Ladda ned Google Chrome igen.</translation>
 <translation id="8037887340639533879">Det finns ingen installation av Google Chrome att uppdatera.</translation>
 <translation id="5495581687705680288">Moduler som är inlästa i Google Chrome</translation>
 <translation id="8129812357326543296">Om &amp;Google Chrome</translation>

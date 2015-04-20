@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fil">
 <translation id="1408730541890277710">Palitan ang mga larawan ng alt text ng mga ito.</translation>
+<translation id="6017514345406065928">Berde</translation>
 <translation id="595639123821853262">Naka-invert na Grayscale</translation>
 <translation id="8260673944985561857">Mga Opsyon sa Pagba-browse ng Caret</translation>
 <translation id="3410969471888629217">Kalimutan ang mga pag-customize ng site</translation>
@@ -14,6 +15,8 @@
 <translation id="2394933097471027016">Subukan ito ngayon - palaging naka-enable ang Pagba-browse ng Caret sa page na ito!</translation>
 <translation id="3622586652998721735">Itakda bilang default na scheme</translation>
 <translation id="2179565792157161713">Buksan Ang Mahabang Paglalarawan Sa Bagong Tab</translation>
+<translation id="7942349550061667556">Pula</translation>
+<translation id="1555130319947370107">Asul</translation>
 <translation id="2471847333270902538">Scheme ng kulay para sa <ph name="SITE"/>:</translation>
 <translation id="381767806621926835">Mag-right click sa anumang bagay na may attribute na &quot;longdesc&quot; o &quot;aria-describedat&quot; upang i-access ang mahabang paglalarawan nito.</translation>
 <translation id="786423340267544509">Magdagdag ng border sa mga elementong may mga attribute na aria-describedat o longdesc.</translation>

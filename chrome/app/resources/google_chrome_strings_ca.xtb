@@ -164,6 +164,7 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="7787950393032327779">Sembla que un altre procés de Google Chrome (<ph name="PROCESS_ID"/>) està fent servir el perfil en un altre ordinador (<ph name="HOST_NAME"/>). Chrome ha bloquejat el perfil perquè no es malmeti. Si esteu segur que no hi ha cap altre procés que utilitzi el perfil, podeu desbloquejar-lo i tornar a iniciar Chrome.</translation>
 <translation id="1469002951682717133">Menú d'aplicacions de Chrome</translation>
 <translation id="8568392309447938879">Heu de tenir la sessió iniciada a Chrome per utilitzar les aplicacions. Això permet que Chrome sincronitzi les aplicacions, les adreces d'interès, l'historial, les contrasenyes i altres configuracions a tots els dispositius.</translation>
+<translation id="6883876366448858277">Envia una paraula i el seu context a Cerca de Google i, a continuació, mostra definicions, imatges i altres resultats de la cerca.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome us permet fer clic en un número de telèfon al web i trucar-hi amb Skype!</translation>
 <translation id="3612333635265770873">Se sap que un mòdul amb el mateix nom entra en conflicte amb Google Chrome.</translation>
@@ -207,7 +208,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="8255190535488645436">Google Chrome està utilitzant la càmera i el micròfon.</translation>
 <translation id="7396375882099008034">Configureu el tallafoc o l'antivirus per permetre que Chrome accedeixi a la xarxa.</translation>
 <translation id="9102715433345326100">Aquest fitxer és maliciós i Chrome l'ha bloquejat.</translation>
-<translation id="3170677364322086041">Aquest lloc utilitza un connector de Chrome Frame que ja s'ha retirat i no rep actualitzacions de seguretat ni d'estabilitat. Desinstal·leu-lo i instal·leu un navegador més modern.</translation>
 <translation id="8205111949707227942">Opcional: ajudeu-nos a millorar Chrome OS enviant estadístiques d'ús i informes d'error a Google automàticament.</translation>
 <translation id="7253415505590551024">En aquests moments hi ha baixades en curs. Voleu sortir de Google Chrome i cancel·lar les baixades?</translation>
 <translation id="487887346205285304">Chrome es comporta de manera estranya?</translation>
@@ -229,7 +229,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="7825851276765848807">La instal·lació ha fallat a causa d'un error no especificat. Torneu a baixar Google Chrome.</translation>
 <translation id="1150979032973867961">Aquest servidor no ha pogut comprovar que sigui <ph name="DOMAIN"/> perquè el sistema operatiu del vostre ordinador considera que el seu certificat de seguretat no és de confiança. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
 <translation id="4458285410772214805">Tanqueu la sessió i torneu a iniciar-la perquè aquest canvi es faci efectiu.</translation>
-<translation id="5489213858994471184">Chrome ha detectat que la configuració del navegador podria haver estat modificada per un programa o pel vostre ordinador sense que ho sabéssiu. Si el voleu suprimir, podeu fer servir l'eina per suprimir programari de Google.</translation>
 <translation id="8679801911857917785">També controla la pàgina que es mostra quan inicieu Chrome.</translation>
 <translation id="5334545119300433702">Se sap que aquest mòdul entra en conflicte amb Google Chrome.</translation>
 <translation id="4407807842708586359">SO de Google Chrome</translation>

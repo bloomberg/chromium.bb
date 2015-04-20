@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sr">
 <translation id="1408730541890277710">Замените слике њиховим алтернативним текстом.</translation>
+<translation id="6017514345406065928">Зелена</translation>
 <translation id="595639123821853262">Обрнути сиви тонови</translation>
 <translation id="8260673944985561857">Опције за навигацију курсором</translation>
 <translation id="3410969471888629217">Заборави прилагођавања сајта</translation>
@@ -14,6 +15,8 @@
 <translation id="2394933097471027016">Испробајте одмах – Навигација курсором је увек омогућена на овој страници!</translation>
 <translation id="3622586652998721735">Подеси као подразумевану шему</translation>
 <translation id="2179565792157161713">Отвори пун опис на новој картици</translation>
+<translation id="7942349550061667556">Црвена</translation>
+<translation id="1555130319947370107">Плава</translation>
 <translation id="2471847333270902538">Шема боја за <ph name="SITE"/>:</translation>
 <translation id="381767806621926835">Кликните десним тастером на било шта са атрибутима „longdesc“ или „aria-describedat“ да бисте приступили дужем опису те ставке.</translation>
 <translation id="786423340267544509">Додај оквир елементима са атрибутима aria-describedat или longdesc.</translation>

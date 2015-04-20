@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="en-GB">
 <translation id="1408730541890277710">Replace images with their alt text.</translation>
+<translation id="6017514345406065928">Green</translation>
 <translation id="595639123821853262">Inverted Greyscale</translation>
 <translation id="8260673944985561857">Caret Browsing Options</translation>
 <translation id="3410969471888629217">Forget site customisations</translation>
@@ -14,6 +15,8 @@
 <translation id="2394933097471027016">Try it out now – Caret Browsing is always enabled on this page!</translation>
 <translation id="3622586652998721735">Set as default scheme</translation>
 <translation id="2179565792157161713">Open Long Description In New Tab</translation>
+<translation id="7942349550061667556">Red</translation>
+<translation id="1555130319947370107">Blue</translation>
 <translation id="2471847333270902538">Colour scheme for <ph name="SITE"/>:</translation>
 <translation id="381767806621926835">Right-click on anything with a &quot;longdesc&quot; or &quot;aria-describedat&quot; attribute to access its long description.</translation>
 <translation id="786423340267544509">Add border to elements with aria-describedat or longdesc attributes.</translation>

@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ca">
+<translation id="2774256287122201187">Podeu continuar. Si accediu a la pàgina, no es tornarà a mostrar aquest advertiment fins d'aquí a cinc minuts.</translation>
 <translation id="7485870689360869515">No s'han trobat dades.</translation>
 <translation id="3884278016824448484">L'identificador del dispositiu ja s'està utilitzant</translation>
 <translation id="6779575937362063477">No s'admet aquest tipus de targeta a Google Wallet. Seleccioneu-ne una altra.</translation>
@@ -39,6 +40,7 @@
 <translation id="2704283930420550640">El valor no coincideix amb el format.</translation>
 <translation id="4850886885716139402">Visualització</translation>
 <translation id="8091372947890762290">L'activació està pendent al servidor</translation>
+<translation id="4607653538520819196">Economitzador de dades no pot enviar aquesta pàgina a un servidor intermediari.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Àrea</translation>
 <translation id="1871208020102129563">El servidor intermediari està configurat perquè utilitzi servidors intermediaris fixos, en lloc d'un URL d'script .pac.</translation>
@@ -50,6 +52,7 @@
 <translation id="7441627299479586546">Usuari de la política incorrecte</translation>
 <translation id="3885155851504623709">Diòcesi</translation>
 <translation id="6973656660372572881">S'especifiquen tant els servidors intermediaris fixos com un URL d'script .pac.</translation>
+<translation id="1426410128494586442">Sí</translation>
 <translation id="4506176782989081258">Error de validació: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">La traducció a <ph name="TARGET_LANGUAGE"/> ha fallat.</translation>
 <translation id="4103249731201008433">El número de sèrie del dispositiu no és vàlid</translation>
@@ -68,12 +71,15 @@
 <translation id="1132774398110320017">Configuració d'Emplenament automàtic de Chrome...</translation>
 <translation id="6458467102616083041">S'ha ignorat perquè la política ha desactivat la cerca predeterminada.</translation>
 <translation id="1227224963052638717">Política desconeguda.</translation>
+<translation id="4250680216510889253">No</translation>
 <translation id="9207861905230894330">No s'ha pogut afegir l'article.</translation>
 <translation id="5872918882028971132">Suggeriments per als responsables</translation>
 <translation id="337363190475750230">No administrat</translation>
 <translation id="2367567093518048410">Nivell</translation>
 <translation id="7977590112176369853">&lt;introdueix la consulta&gt;</translation>
+<translation id="552553974213252141">S'ha extret correctament el text?</translation>
 <translation id="7610193165460212391">El valor es troba fora de l'interval <ph name="VALUE"/> .</translation>
+<translation id="3739623965217189342">Enllaç que heu copiat</translation>
 <translation id="8311778656528046050">Esteu segur que voleu tornar a carregar aquesta pàgina?</translation>
 <translation id="370665806235115550">S'està carregant...</translation>
 <translation id="2096368010154057602">Departament</translation>
@@ -81,7 +87,6 @@
 <translation id="3024663005179499861">Tipus de política incorrecte</translation>
 <translation id="2030481566774242610">Volíeu dir <ph name="LINK"/>?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
-<translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, caducitat: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="225207911366869382">El valor d'aquesta política és obsolet.</translation>
 <translation id="3145945101586104090">No s'ha pogut descodificar la resposta</translation>
@@ -130,6 +135,7 @@
 <translation id="3228969707346345236">S'ha produït un error en fer la traducció perquè la pàgina ja està en <ph name="LANGUAGE"/>.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="8034522405403831421">Aquesta pàgina està escrita en <ph name="SOURCE_LANGUAGE"/>. Voleu traduir-la a <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="1734864079702812349">Amex</translation>
 <translation id="8891727572606052622">El mode de servidor intermediari no és vàlid.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">Sense gestionar</translation>
@@ -203,6 +209,7 @@
 <translation id="8713130696108419660">Signatura inicial incorrecta</translation>
 <translation id="20817612488360358">S'ha definit la configuració del servidor intermediari del sistema perquè es pugui utilitzar, però també s'ha especificat una configuració del servidor intermediari explícita.</translation>
 <translation id="2639739919103226564">Estat:</translation>
+<translation id="4968547170521245791">No es pot utilitzar el servidor intermediari</translation>
 <translation id="385051799172605136">Enrere</translation>
 <translation id="5095208057601539847">Província</translation>
 <translation id="2581221116934462656">La propera vegada, voleu que <ph name="PRODUCT_NAME"/> ofereixi la traducció de les pàgines escrites en <ph name="LANGUAGE_NAME"/> d'aquest lloc?</translation>
@@ -210,6 +217,7 @@
 <translation id="6965382102122355670">D'acord</translation>
 <translation id="2721148159707890343">Sol·licitud realitzada correctament</translation>
 <translation id="2455981314101692989">Aquesta pàgina web ha desactivat l'emplenament automàtic per a aquest formulari.</translation>
+<translation id="6597614308054261376">Esteu intentant accedir a <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. En aquest moment Economitzador de dades no pot enviar aquesta pàgina a un servidor intermediari.</translation>
 <translation id="8308427013383895095">No s'ha pogut executar la traducció a causa d'un problema amb la connexió de xarxa.</translation>
 <translation id="5720705177508910913">Usuari actual</translation>
 <translation id="3380864720620200369">Identificador de client:</translation>

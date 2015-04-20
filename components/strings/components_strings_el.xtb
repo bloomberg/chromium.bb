@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="el">
+<translation id="2774256287122201187">Μπορείτε να συνεχίσετε. Αν συνεχίσετε στη σελίδα, αυτή η προειδοποίηση δεν θα εμφανιστεί ξανά για πέντε λεπτά.</translation>
 <translation id="7485870689360869515">Δεν βρέθηκαν δεδομένα</translation>
 <translation id="3884278016824448484">Αναγνωριστικό συσκευής που προκαλεί διένεξη</translation>
 <translation id="6779575937362063477">Αυτός ο τύπος κάρτας δεν υποστηρίζεται από το Πορτοφόλι Google. Επιλέξτε άλλη κάρτα.</translation>
@@ -39,6 +40,7 @@
 <translation id="2704283930420550640">Η τιμή δεν συμφωνεί με τη μορφή.</translation>
 <translation id="4850886885716139402">Προβολή</translation>
 <translation id="8091372947890762290">Η ενεργοποίηση στο διακομιστή εκκρεμεί</translation>
+<translation id="4607653538520819196">Δεν είναι δυνατή η μεσολάβηση αυτής της σελίδας από την Εξοικονόμηση δεδομένων.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Περιοχή</translation>
 <translation id="1871208020102129563">Ο διακομιστής μεσολάβησης έχει ρυθμιστεί να χρησιμοποιεί διακομιστές μεσολάβησης και όχι μια διεύθυνση URL σεναρίου .pac.</translation>
@@ -50,6 +52,7 @@
 <translation id="7441627299479586546">Εσφαλμένο θέμα πολιτικής</translation>
 <translation id="3885155851504623709">Ενορία</translation>
 <translation id="6973656660372572881">Καθορίζονται τόσο οι σταθεροί διακομιστές μεσολάβησης όσο και μια διεύθυνση URL σεναρίου .pac.</translation>
+<translation id="1426410128494586442">Ναι</translation>
 <translation id="4506176782989081258">Σφάλμα επικύρωσης: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">Η μετάφραση στα <ph name="TARGET_LANGUAGE"/> απέτυχε.</translation>
 <translation id="4103249731201008433">Ο σειριακός αριθμός της συσκευής δεν είναι έγκυρος</translation>
@@ -68,12 +71,15 @@
 <translation id="1132774398110320017">Ρυθμίσεις Αυτόματης συμπλήρωσης Chrome…</translation>
 <translation id="6458467102616083041">Αγνοήθηκε επειδή η προεπιλεγμένη αναζήτηση είναι απενεργοποιημένη από την πολιτική.</translation>
 <translation id="1227224963052638717">Άγνωστη πολιτική.</translation>
+<translation id="4250680216510889253">Όχι</translation>
 <translation id="9207861905230894330">Αποτυχία προσθήκης άρθρου.</translation>
 <translation id="5872918882028971132">Γονικές προτάσεις</translation>
 <translation id="337363190475750230">Κατάργηση παροχής</translation>
 <translation id="2367567093518048410">Επίπεδο</translation>
 <translation id="7977590112176369853">&lt;πληκτρολογήστε ερώτημα&gt;</translation>
+<translation id="552553974213252141">Έγινε σωστή εξαγωγή του κειμένου;</translation>
 <translation id="7610193165460212391">Η τιμή είναι εκτός του εύρους τιμών <ph name="VALUE"/>.</translation>
+<translation id="3739623965217189342">Σύνδεσμος που αντιγρ.</translation>
 <translation id="8311778656528046050">Είστε βέβαιοι ότι επιθυμείτε να φορτώσετε ξανά αυτήν τη σελίδα;</translation>
 <translation id="370665806235115550">Φόρτωση...</translation>
 <translation id="2096368010154057602">Νομός</translation>
@@ -81,7 +87,6 @@
 <translation id="3024663005179499861">Λανθασμένος τύπος πολιτικής</translation>
 <translation id="2030481566774242610">Μήπως εννοείτε <ph name="LINK"/>;</translation>
 <translation id="3450660100078934250">MasterCard</translation>
-<translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, Λήξη: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="225207911366869382">Αυτή η πολιτική έχει καταργηθεί για τη συγκεκριμένη πολιτική.</translation>
 <translation id="3145945101586104090">Αποτυχία αποκωδικοποίησης απόκρισης</translation>
@@ -130,6 +135,7 @@
 <translation id="3228969707346345236">Η μετάφραση απέτυχε επειδή η σελίδα είναι ήδη στα <ph name="LANGUAGE"/>.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="8034522405403831421">Αυτή η σελίδα είναι στα <ph name="SOURCE_LANGUAGE"/>. Μετάφρασή της στα <ph name="TARGET_LANGUAGE"/>;</translation>
+<translation id="1734864079702812349">Amex</translation>
 <translation id="8891727572606052622">Μη έγκυρη λειτουργία διακομιστή μεσολάβησης.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">Χωρίς διαχείριση</translation>
@@ -203,6 +209,7 @@
 <translation id="8713130696108419660">Εσφαλμένη αρχική υπογραφή</translation>
 <translation id="20817612488360358">Οι ρυθμίσεις διακομιστή μεσολάβησης του συστήματος έχουν οριστεί για να χρησιμοποιηθούν, αλλά καθορίζεται επίσης μια ρητή διαμόρφωση του διακομιστή μεσολάβησης.</translation>
 <translation id="2639739919103226564">Κατάσταση:</translation>
+<translation id="4968547170521245791">Δεν είναι δυνατή η μεσολάβηση</translation>
 <translation id="385051799172605136">Πίσω</translation>
 <translation id="5095208057601539847">Επαρχία</translation>
 <translation id="2581221116934462656">Θέλετε το <ph name="PRODUCT_NAME"/> να προσφέρει τη μετάφραση σελίδων στα <ph name="LANGUAGE_NAME"/> από αυτόν τον ιστότοπο την επόμενη φορά;</translation>
@@ -210,6 +217,7 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Το αίτημα ήταν επιτυχές</translation>
 <translation id="2455981314101692989">Σε αυτήν την ιστοσελίδα έχει απενεργοποιηθεί η αυτόματη συμπλήρωση για τη συγκεκριμένη φόρμα.</translation>
+<translation id="6597614308054261376">Προσπαθείτε να φτάσετε στο <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. Προς το παρόν δεν είναι δυνατή η μεσολάβηση αυτής της σελίδας από την Εξοικονόμηση δεδομένων.</translation>
 <translation id="8308427013383895095">Η μετάφραση απέτυχε λόγω προβλήματος με τη σύνδεση δικτύου.</translation>
 <translation id="5720705177508910913">Τρέχων χρήστης</translation>
 <translation id="3380864720620200369">Αναγνωριστικό πελάτη:</translation>

@@ -170,6 +170,7 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="7787950393032327779">Parece que otro proceso de Google Chrome (<ph name="PROCESS_ID"/>) está utilizando el perfil en otro ordenador (<ph name="HOST_NAME"/>). Chrome ha bloqueado el perfil para que no se dañe. Si estás seguro de que ningún otro proceso está utilizando este perfil, puedes desbloquearlo y volver a iniciar Chrome.</translation>
 <translation id="1469002951682717133">Menú de aplicaciones de Chrome</translation>
 <translation id="8568392309447938879">Para usar las aplicaciones, debes iniciar sesión en Chrome. De ese modo, Chrome podrá sincronizar tus aplicaciones, tus marcadores, tu historial, tus contraseñas y otras opciones en distintos dispositivos.</translation>
+<translation id="6883876366448858277">envía una palabra y su contexto a la Búsqueda de Google y muestra definiciones, imágenes y otros resultados de búsqueda.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome te permite hacer clic en un número de teléfono en la Web y llamar mediante Skype.</translation>
 <translation id="3612333635265770873">Se ha detectado que un módulo con el mismo nombre provoca un conflicto con Google Chrome.</translation>
@@ -214,7 +215,6 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="7396375882099008034">Configura tu cortafuegos o tu antivirus para permitir el acceso de
         Chrome a la red.</translation>
 <translation id="9102715433345326100">Este archivo es malicioso y Chrome lo ha bloqueado.</translation>
-<translation id="3170677364322086041">Este sitio utiliza el complemento Chrome Frame que se ha retirado y ya no recibe actualizaciones de seguridad y estabilidad. Desinstálalo e instala un navegador actual.</translation>
 <translation id="8205111949707227942">Opcional: Ayúdanos a mejorar Chrome OS enviando estadísticas de uso e informes de errores de forma automática.</translation>
 <translation id="7253415505590551024">Actualmente hay descargas en curso. ¿Quieres salir de Google Chrome y cancelarlas?</translation>
 <translation id="487887346205285304">¿Chrome tiene un comportamiento extraño?</translation>
@@ -236,7 +236,6 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="7825851276765848807">La instalación no se ha podido realizar a causa de un error no especificado. Vuelve a descargar Google Chrome.</translation>
 <translation id="1150979032973867961">Este servidor no ha podido probar que su dominio es <ph name="DOMAIN"/>, el sistema operativo de tu ordenador no confía en su certificado de seguridad. Este problema puede deberse a una configuración incorrecta o a que un atacante haya interceptado la conexión.</translation>
 <translation id="4458285410772214805">Cierra la sesión y vuelve a iniciarla para que se aplique el cambio.</translation>
-<translation id="5489213858994471184">Chrome ha detectado que la configuración de tu navegador puede haber sido modificada por un programa del ordenador sin tu conocimiento. Puedes utilizar la Herramienta de eliminación de software de Google para eliminar ese programa.</translation>
 <translation id="8679801911857917785">También controla qué página se muestra al iniciar Chrome.</translation>
 <translation id="5334545119300433702">Se ha detectado que este módulo provoca un conflicto con Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>

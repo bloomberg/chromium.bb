@@ -1,21 +1,17 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fa">
 <translation id="6676384891291319759">دسترسی به اینترنت</translation>
 <translation id="8586442755830160949">‏حق نسخه‌برداری <ph name="YEAR"/> نویسندگان Chromium. کلیه حقوق محفوظ است.</translation>
-<translation id="7180611975245234373">بازخوانی</translation>
 <translation id="6373523479360886564">‏آیا مطمئن هستید که می‌خواهید Chromium را حذف نصب کنید؟</translation>
-<translation id="1260240842868558614">نمایش:</translation>
 <translation id="6510925080656968729">‏حذف نصب Chromium </translation>
 <translation id="2615699638672665509">‏دریافت به‌روزرسانی‌های Chromium به زودی در این رایانه متوقف خواهد شد زیرا سخت‌افزار آن دیگر پشتیبانی نمی‌شود.</translation>
 <translation id="5532301346661895910">‏Chromium این مورد را در |گذرواژه‌های ذخیره‌شده Google| شما ذخیره می‌کند و دفعه بعدی که به آن نیاز داشتید آن را به خاطر دارد.</translation>
 <translation id="6893813176749746474">‏Chromium به‌روز شده است اما حداقل ۳۰ روز از آن استفاده نکرده‌اید.</translation>
 <translation id="2732467638532545152">‏رایانه شما از نسخه‌ای قدیمی از Microsoft Windows استفاده می‌کند که نمی‌تواند گواهی امنیت این وب‌سایت را پردازش نماید. به علت این مشکل، Chromium نمی‌تواند تعیین کند که آیا گواهی از طرف <ph name="SITE"/> است یا از طرف شخصی در شبکه شما است که وانمود می‌کند <ph name="SITE"/> است. لطفاً رایانه‌تان را به جدیدترین نسخه Windows به‌روزرسانی کنید.</translation>
 <translation id="2770231113462710648">تغییر مرورگر پیش‌فرض به:</translation>
-<translation id="7982789257301363584">شبکه</translation>
 <translation id="6613594504749178791">‏دفعه بعدی که Chromium را مجدداً راه‌اندازی می‌کنید، این تغییرات اعمال می‌شوند.</translation>
 <translation id="9089354809943900324">‏نسخه Chromium قدیمی است</translation>
 <translation id="59625444380784159">‏جزئیات مخاطبین شما می‌تواند به شما کمک کند فرم‌ها را سریع‌تر در Chromium تکمیل کنید.</translation>
 <translation id="3748537968684000502">‏شما در حال مشاهده یک صفحه Chromium امن هستید.</translation>
-<translation id="1165039591588034296">خطا</translation>
 <translation id="2077129598763517140">در صورت امکان از شتاب سخت‌افزاری استفاده شود</translation>
 <translation id="1065672644894730302">تنظیمات برگزیده شما را نمی‌توان خواند. بعضی ویژگی‌ها ممکن است در دسترس نباشند و تغییرات تنظیمات برگزیده ذخیره نخواهد شد.</translation>
 <translation id="7861509383340276692">‏به
@@ -45,7 +41,6 @@
 <translation id="8987477933582888019">مرورگر وب</translation>
 <translation id="4050175100176540509">بهبودهای امنیتی مهم و ویژگی‌های جدید در جدیدترین نسخه در دسترس است.</translation>
 <translation id="2886012850691518054">‏اختیاری: با ارسال خودکار آمار کاربرد و گزارش‌های خرابی برنامه به Chromium، به پیشرفت Chrome کمک کنید.</translation>
-<translation id="1124772482545689468">کاربر</translation>
 <translation id="580822234363523061">‏به
           منوی Chromium &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -54,7 +49,6 @@
           &gt;
           <ph name="PROXIES_TITLE"/>
           بروید و مطمئن شوید که تنظیمات بر روی «بدون پراکسی» یا «مستقیم» است.</translation>
-<translation id="1864111464094315414">ورود به سیستم</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="7729447699958282447">‏Chromium قادر به همگام‌سازی داده‌های شما نبود زیرا همگام‌سازی برای دامنه شما قابل دسترسی نیست.</translation>
 <translation id="3738139272394829648">لمس کردن برای جستجو</translation>
@@ -81,12 +75,10 @@
 <translation id="734373864078049451">‏وب، نشانک‌ها و موارد دیگر Chromium شما در اینجا هستند.</translation>
 <translation id="3197823471738295152">دستگاه شما به‌روزرسانی شده است.</translation>
 <translation id="3065280201209294872">‏این سایت از تنظیمات امنیتی تاریخ گذشته‌ای استفاده می‌کند که ممکن است باعث شود نسخه‌های آینده Chromium نتوانند به صورت ایمن به آن دسترسی داشته باشند.</translation>
-<translation id="2660779039299703961">رویداد</translation>
 <translation id="8551886023433311834">تقریباً به‌روزرسانی شده است! دستگاه خود را دوباره راه‌اندازی کنید تا به‌روزرسانی تمام شود.</translation>
 <translation id="8353224596138547809">‏آیا می‌خواهید Chromium گذرواژه این سایت را ذخیره کند؟</translation>
 <translation id="8738058698779197622">‏به منظور برقراری یک اتصال امن، لازم است که ساعت شما به درستی تنظیم شود. زیرا گواهینامه‌هایی که وب‌سایت‌ها برای شناسایی خودشان استفاده می‌کنند تنها برای دوره‌های زمانی خاصی معتبر هستند. از آنجایی که ساعت دستگاه نادرست است، Chromium نمی‌تواند این گواهینامه‌ها را تأیید کند.</translation>
 <translation id="7339898014177206373">پنجرهٔ جدید</translation>
-<translation id="2739191690716947896">رفع اشکال</translation>
 <translation id="7463979740390522693">‏Chromium - اعلان‌ها (<ph name="QUANTITY"/> خوانده نشده)</translation>
 <translation id="225614027745146050">خوش آمدید</translation>
 <translation id="5823381412099532241">‏Chromium نتوانست به صورت خودکار به جدیدترین نسخه به‌روزرسانی شود، بنابراین ویژگی‌های جدید فوق‌العاده و اشکال‌زدایی‌های امنیتی را از دست می‌دهید. باید Chromium را به‌روزرسانی کنید.</translation>
@@ -104,7 +96,6 @@
 <translation id="3296368748942286671">‏ادامه اجرای برنامه‌ها در پس‌زمینه هنگامیکه Chromium بسته می‌شود</translation>
 <translation id="473775607612524610">به‌روزرسانی</translation>
 <translation id="5466153949126434691">‏Chromium به صورت خودکار به‌روزرسانی می‌شود بنابراین همیشه جدیدترین نسخه را دارید. وقتی این دانلود تمام شد، Chromium دوباره شروع به کار می‌کند و می‌توانید کارتان را ادامه دهید.</translation>
-<translation id="7707841053049645517">‏این سایت از افزونه Chromium Frame استفاده می‌کند که به زودی پشتیبانی از آن متوقف می‌شود. لطفاً آن را حذف نصب کرده، به مرورگر جدیدی ارتقا دهید.</translation>
 <translation id="3656661827369545115">‏راه‌اندازی خودکار Chromium هنگام شروع به کار رایانه</translation>
 <translation id="2241627712206172106">‏اگر رایانه‌ای را به صورت مشترک استفاده می‌کنید، دوستان و خانواده می‌توانند به صورت جداگانه مرور کنند و Chromium را به صورتی که مایلند تنظیم کنند.</translation>
 <translation id="1763864636252898013">این سرور نتوانست اثبات کند که این <ph name="DOMAIN"/> است؛ گواهی امنیتی آن مورد اعتماد سیستم عامل دستگاه شما نیست. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجی اتصال شما را قطع کرده است.</translation>
@@ -139,7 +130,6 @@
 <translation id="4365115785552740256">‏Chromium با پروژه منبع باز <ph name="BEGIN_LINK_CHROMIUM"/>Chromium <ph name="END_LINK_CHROMIUM"/> و سایر <ph name="BEGIN_LINK_OSS"/>نرم‌افزار منبع باز<ph name="END_LINK_OSS"/> امکان‌پذیر است.</translation>
 <translation id="9190841055450128916">‏Chromium‏ (mDNS ورودی)</translation>
 <translation id="4987820182225656817">‏مهمان‌ها می توانند از Chromium استفاده کنند بدون این‌که اثری از خود به جا بگذارند.</translation>
-<translation id="2216475571518225820">‏این سایت از افزونه Chromium Frame استفاده می‌کند که به زودی پشتیبانی از آن متوقف می‌شود. لطفاً آن را حذف نصب کرده، مرورگر سازگاری را دانلود کنید.</translation>
 <translation id="3487263810738775861">‏یک برنامه افزودنی، صفحه‌ای را که هنگام راه‌اندازی Chromium نشان داده می‌شود، تغییر داده است.</translation>
 <translation id="5877064549588274448">کانال تغییر کرد. برای اعمال تغییرات دستگاه خود را مجدداً راه‌اندازی کنید.</translation>
 <translation id="7549178288319965365">‏درباره سیستم عامل Chromium </translation>
@@ -160,8 +150,8 @@
 <translation id="8684913864886094367">‏Chromium به درستی خاموش نشده است.</translation>
 <translation id="3582788516608077514">‏در حال به‌روزرسانی Chromium…</translation>
 <translation id="7223968959479464213">‏مدیر فعالیت‌ها - Chromium</translation>
-<translation id="6723839937902243910">نیرو</translation>
 <translation id="1779356040007214683">‏برای ایمن‌تر کردن Chromium، برخی از برنامه‌های افزودنی را که در <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> فهرست شده‌اند و ممکن است بدون اطلاع شما اضافه شده باشند، غیرفعال کردیم.</translation>
+<translation id="6883876366448858277">‏کلمه و نوشتار اطرافش را به جستجوی Google ارسال می‌کند و معانی، تصاویر و نتایج جستجوی دیگر را برمی‌گرداند.</translation>
 <translation id="6638567566961868659">‏نشانک‌های خود را در منوی Chromium یا از نوار نشانک‌ها پیدا کنید.</translation>
 <translation id="2673087257647337101">‏تقریباً به روز است! برای پایان به‌روزرسانی، Chromium را راه‌اندازی مجدد کنید.</translation>
 <translation id="1293235220023151515">‏یک مورد نصب شده متناقض از Chromium در سیستم یافت شد. لطفاً آنرا حذف نصب کنید و دوباره امتحان کنید.</translation>
@@ -170,7 +160,6 @@
 <translation id="5942520288919337908">‏<ph name="EXTENSION_NAME"/> به Chromium اضافه شده است.</translation>
 <translation id="549669000822060376">‏وقتی Chromium جدیدترین به‌روزرسانی‌های سیستم را نصب می‌کند، لطفاً صبر کنید.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
-<translation id="4130199216115862831">گزارش دستگاه</translation>
 <translation id="4559775032954821361">‏به
          منوی Chromium  &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -226,7 +215,6 @@
 <translation id="7196020411877309443">چرا من این را می‌بینم؟</translation>
 <translation id="457845228957001925">‏اطلاعات مهم در مورد داده‌های Chromium</translation>
 <translation id="4567424176335768812">به عنوان <ph name="USER_EMAIL_ADDRESS"/> وارد سیستم شده‌اید. اکنون می‌توانید به نشانک‌ها، سابقه و دیگر تنظیماتتان در همه دستگاه‌هایی که با آنها به سیستم وارد شده‌اید، دسترسی یابید.</translation>
-<translation id="6429869149766938">‏Chromium متوجه شده است که ممکن است برنامه‌ای بدون اطلاع شما تنظیمات مرورگرتان را در رایانه‌تان تغییر داده باشد. می‌توانید برای حذف برنامه از «ابزار حذف نرم‌افزار Google» استفاده کنید.</translation>
 <translation id="7483335560992089831">‏نمی‌توانید Chromium دارای نسخه مشابه با نسخه در حال اجرا را نصب کنید. لطفاً Chromium را ببندید و دوباره سعی کنید.</translation>
 <translation id="1150979032973867961">این سرور نتوانست اثبات کند که این <ph name="DOMAIN"/> است؛ گواهی امنیتی آن مورد اعتماد سیستم عامل رایانه شما نیست. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجی اتصال شما را قطع کرده است.</translation>
 <translation id="7641113255207688324">‏Chromium مرورگر پیش‌فرض شما نیست.</translation>
@@ -237,7 +225,6 @@
 <translation id="2119636228670142020">‏درباره &amp;سیستم عامل Chromium </translation>
 <translation id="1708666629004767631">‏نسخه جدید و امن‌تری از Chromium موجود است.</translation>
 <translation id="378917192836375108">‏Chromium به شما اجازه می‌دهد بر روی شماره تلفن روی وب کلیک کرده و از طریق Skype تماس بگیرید!</translation>
-<translation id="2242687258748107519">اطلاعات فایل</translation>
 <translation id="8724049448828509830">‏دانلود اکنون در حال انجام است. آیا می‌خواهید از Chromium خارج شوید و دانلود را لغو کنید.</translation>
 <translation id="608189560609172163">‏به دلیل وجود خطا در ورود به سیستم، Chromium قادر به همگام‌سازی داده‌های شما نبود.</translation>
 <translation id="4888717733111232871">‏قانون ترافیک ورودی برای Chromium جهت اجازه به ترافیک mDNS.</translation>
@@ -248,7 +235,6 @@
 ورود به سیستم به هر حال اطلاعات Chromium مانند نشانک‌ها، سابقه، و سایر تنظیمات را در <ph name="ACCOUNT_EMAIL_NEW"/> ادغام می‌کند.</translation>
 <translation id="2739631515503418643">‏دانلودهایی اکنون در حال انجام هستند. آیا می‌خواهید از Chromium خارج شوید و دانلودها را لغو کنید؟</translation>
 <translation id="9013262824292842194">‏Chromium به Windows Vista یا Windows XP دارای SP2 یا بالاتر نیاز دارد.</translation>
-<translation id="6231881193380278751">‏افزودن پارامتر جستار در نشانی اینترنتی برای بازخوانی خودکار صفحه: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="1967743265616885482">‏یک مدول همنام با Chromium تداخل دارد.</translation>
 <translation id="7962572577636132072">‏Chromium به صورت خودکار به‌روزرسانی می‌شود بنابراین همیشه جدیدترین نسخه را دارید.</translation>
 <translation id="722928257909516027">‏نمایش منوی Chromium</translation>
@@ -261,7 +247,6 @@
 Chromium قادر به بازیابی تنظیمات شما نیست.</translation>
 <translation id="918373042641772655">‏قطع اتصال <ph name="USERNAME"/>، سابقه، نشانک‌ها، تنظیمات و سایر داده‌های Chromium شما را که در این دستگاه ذخیره شدند، پاک می‌کند. داده‌های ذخیره شده در حساب Google شما پاک نمی‌شود و می‌توان آنها را در <ph name="GOOGLE_DASHBOARD_LINK"/>داشبورد Google<ph name="END_GOOGLE_DASHBOARD_LINK"/> مدیریت کرد.</translation>
 <translation id="6403826409255603130">‏Chromium یک مرورگر وب است که صفحات وب و برنامه‌ها را با سرعت بسیار زیاد اجرا می‌کند. این مرورگر خیلی سریع، پایدار و دارای کاربرد آسان است. با محافظت در مقابل بدافزار و فیشینگ طراحی شده در داخل Chromium، با امنیت بیشتری وب را مرور کنید.</translation>
-<translation id="930268624053534560">مهرهای زمان با جزئیات</translation>
 <translation id="4230135487732243613">‏داده‌های Chromium به این حساب مرتبط شود؟</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="7617377681829253106">‏Chromium اکنون بهتر شده است</translation>

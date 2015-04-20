@@ -163,6 +163,7 @@
 <translation id="7787950393032327779">プロフィールは、別のコンピュータ（<ph name="HOST_NAME"/>）の別の Google Chrome プロセス（<ph name="PROCESS_ID"/>）で使用されているようです。Chrome はプロフィールが破損しないようにプロフィールをロックしています。他のプロセスがこのプロフィールを使用していないことが確実であれば、プロフィールのロックを解除して Chrome を再起動できます。</translation>
 <translation id="1469002951682717133">Chrome アプリ ランチャー</translation>
 <translation id="8568392309447938879">アプリを使用するには Chrome にログインする必要があります。ログインすると、Chrome ではアプリ、ブックマーク、履歴、パスワードなどの設定をデバイス間で同期できるようになります。</translation>
+<translation id="6883876366448858277">機能は、単語とその周辺のコンテキストを Google 検索に送信し、定義、画像などの検索結果を返します。</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome では、ウェブサイト上の電話番号をクリックするだけで Skype で通話を発信できます。</translation>
 <translation id="3612333635265770873">同じ名前のモジュールは Google Chrome と競合することがわかっています。</translation>
@@ -207,7 +208,6 @@
 <translation id="7396375882099008034">ファイアウォールやウイルス対策の設定で、Chrome からネットワークへのアクセスを
         許可します。</translation>
 <translation id="9102715433345326100">不正なファイルです。Chrome はこのファイルをブロックしました。</translation>
-<translation id="3170677364322086041">このサイトは廃止された Chrome Frame プラグインを使用しています。セキュリティと安定性のアップデートはこのプラグインで受信されなくなりました。プラグインをアンインストールし、最新のブラウザにアップグレードしてください。</translation>
 <translation id="8205111949707227942">オプション: 使用状況データと障害レポートを Google に自動送信して Chrome OS の機能向上に役立てる。</translation>
 <translation id="7253415505590551024">現在ダウンロードを実行中です。ダウンロードがキャンセルされますが、Google Chrome を終了してもよろしいですか？</translation>
 <translation id="487887346205285304">Chrome の動作がおかしい場合</translation>
@@ -229,7 +229,6 @@
 <translation id="7825851276765848807">原因不明のエラーによりインストールに失敗しました。Google Chrome をもう一度ダウンロードしてください。</translation>
 <translation id="1150979032973867961">このサーバーが <ph name="DOMAIN"/> であることを確認できませんでした。このサーバーのセキュリティ証明書は、ご使用のパソコンのオペレーティング システムによって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="4458285410772214805">変更内容を反映するには、一度ログアウトして、もう一度ログインしてください。</translation>
-<translation id="5489213858994471184">パソコン上の不正なプログラムによってブラウザの設定が変更された可能性があります。プログラムを削除するには Google のソフトウェア削除ツールを使用できます。</translation>
 <translation id="8679801911857917785">この拡張機能では、Chrome の起動時に表示されるページも制御されます。</translation>
 <translation id="5334545119300433702">このモジュールは Google Chrome と競合することがわかっています。</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>

@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="pl">
+<translation id="2774256287122201187">Możesz kontynuować. Jeśli otworzysz tę stronę, ostrzeżenie nie będzie wyświetlane przez pięć minut.</translation>
 <translation id="7485870689360869515">Nie znaleziono danych.</translation>
 <translation id="3884278016824448484">Konflikt identyfikatorów urządzeń</translation>
 <translation id="6779575937362063477">Karty tego typu nie są obsługiwane w Portfelu Google. Wybierz inną kartę.</translation>
@@ -39,6 +40,7 @@
 <translation id="2704283930420550640">Wartość nie pasuje do formatu.</translation>
 <translation id="4850886885716139402">Widok</translation>
 <translation id="8091372947890762290">Aktywacja oczekuje na serwerze</translation>
+<translation id="4607653538520819196">Oszczędzanie danych nie może przekazać tej strony.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Dzielnica</translation>
 <translation id="1871208020102129563">Proxy skonfigurowano do używania stałych serwerów proxy, a nie URL-a skryptu PAC.</translation>
@@ -50,6 +52,7 @@
 <translation id="7441627299479586546">Nieprawidłowy podmiot zasady</translation>
 <translation id="3885155851504623709">Gmina</translation>
 <translation id="6973656660372572881">Określono zarówno stałe serwery proxy, jak i URL skryptu PAC.</translation>
+<translation id="1426410128494586442">Tak</translation>
 <translation id="4506176782989081258">Błąd sprawdzania poprawności: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">Tłumaczenie na <ph name="TARGET_LANGUAGE"/> nie powiodło się.</translation>
 <translation id="4103249731201008433">Numer seryjny urządzenia jest nieprawidłowy</translation>
@@ -68,12 +71,15 @@
 <translation id="1132774398110320017">Ustawienia autouzupełniania Chrome...</translation>
 <translation id="6458467102616083041">Ignorowana, ponieważ wyszukiwarka domyślna jest wyłączona przez zasadę.</translation>
 <translation id="1227224963052638717">Nieznana zasada.</translation>
+<translation id="4250680216510889253">Nie</translation>
 <translation id="9207861905230894330">Nie udało się dodać artykułu.</translation>
 <translation id="5872918882028971132">Propozycje rodziców</translation>
 <translation id="337363190475750230">Anulowano obsługę</translation>
 <translation id="2367567093518048410">Poziom</translation>
 <translation id="7977590112176369853">&lt;wprowadź zapytanie&gt;</translation>
+<translation id="552553974213252141">Czy tekst został prawidłowo wyodrębniony?</translation>
 <translation id="7610193165460212391">Wartość spoza zakresu (<ph name="VALUE"/>)</translation>
+<translation id="3739623965217189342">Skopiowany link</translation>
 <translation id="8311778656528046050">Czy na pewno chcesz załadować ponownie tę stronę?</translation>
 <translation id="370665806235115550">Ładowanie...</translation>
 <translation id="2096368010154057602">Departament</translation>
@@ -81,7 +87,6 @@
 <translation id="3024663005179499861">Nieprawidłowy typ zasady</translation>
 <translation id="2030481566774242610">Czy chodziło Ci o <ph name="LINK"/>?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
-<translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, ważna do: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="225207911366869382">Ta wartość tej zasady została wycofana.</translation>
 <translation id="3145945101586104090">Dekodowanie odpowiedzi nie powiodło się</translation>
@@ -130,6 +135,7 @@
 <translation id="3228969707346345236">Tłumaczenie nie powiodło się, ponieważ strona jest już w języku: <ph name="LANGUAGE"/>.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="8034522405403831421">Język tej strony to <ph name="SOURCE_LANGUAGE"/>. Przetłumaczyć ją na <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="1734864079702812349">Amex</translation>
 <translation id="8891727572606052622">Nieprawidłowy tryb proxy</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">Niezarządzany</translation>
@@ -203,6 +209,7 @@
 <translation id="8713130696108419660">Błędny podpis wstępny</translation>
 <translation id="20817612488360358">Skonfigurowano używanie systemowych ustawień proxy, ale podano też jawną konfigurację proxy.</translation>
 <translation id="2639739919103226564">Stan:</translation>
+<translation id="4968547170521245791">Nie można przekazać</translation>
 <translation id="385051799172605136">Wstecz</translation>
 <translation id="5095208057601539847">Prowincja</translation>
 <translation id="2581221116934462656">Czy następnym razem <ph name="PRODUCT_NAME"/> ma zaproponować Ci tłumaczenie stron tej witryny, których język to <ph name="LANGUAGE_NAME"/>?</translation>
@@ -210,6 +217,7 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Żądanie wykonane pomyślnie</translation>
 <translation id="2455981314101692989">Automatyczne wypełnianie tego formularza zostało wyłączone przez stronę internetową.</translation>
+<translation id="6597614308054261376">Próbujesz otworzyć <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. Oszczędzanie danych nie może obecnie przekazać tej strony.</translation>
 <translation id="8308427013383895095">Tłumaczenie nie powiodło się z powodu problemu z połączeniem sieciowym.</translation>
 <translation id="5720705177508910913">Bieżący użytkownik</translation>
 <translation id="3380864720620200369">Identyfikator klienta:</translation>

@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="nl">
 <translation id="1408730541890277710">Afbeeldingen vervangen door hun alternatieve tekst.</translation>
+<translation id="6017514345406065928">Groen</translation>
 <translation id="595639123821853262">Omgekeerde grijstinten</translation>
 <translation id="8260673944985561857">Opties voor het bladeren met navigatietoetsen</translation>
 <translation id="3410969471888629217">Aanpassingen voor site negeren</translation>
@@ -14,6 +15,8 @@
 <translation id="2394933097471027016">Nu uitproberen - Bladeren met navigatietoetsen is altijd ingeschakeld op deze pagina!</translation>
 <translation id="3622586652998721735">Instellen als standaardschema</translation>
 <translation id="2179565792157161713">Lange beschrijving openen in nieuw tabblad</translation>
+<translation id="7942349550061667556">Rood</translation>
+<translation id="1555130319947370107">Blauw</translation>
 <translation id="2471847333270902538">Kleurenschema voor <ph name="SITE"/>:</translation>
 <translation id="381767806621926835">Klik op een item met een kenmerk 'longdesc' of 'aria-describedat' om de lange beschrijving te openen.</translation>
 <translation id="786423340267544509">Een kader toevoegen aan elementen met een kenmerk 'aria-describedat' of 'longdesc'.</translation>

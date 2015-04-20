@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="bg">
 <translation id="1408730541890277710">Замяна на изображенията с текста от атрибута им alt.</translation>
+<translation id="6017514345406065928">зелено</translation>
 <translation id="595639123821853262">Сива скала с негативен ефект</translation>
 <translation id="8260673944985561857">Опции за Caret Browsing</translation>
 <translation id="3410969471888629217">Забравяне на персонализиранията за сайта</translation>
@@ -14,6 +15,8 @@
 <translation id="2394933097471027016">Изпробвайте разширението Caret Browsing още сега – то е винаги активирано на тази страница!</translation>
 <translation id="3622586652998721735">Задаване като стандартна схема</translation>
 <translation id="2179565792157161713">Отваряне на дългото описание в нов раздел</translation>
+<translation id="7942349550061667556">червено</translation>
+<translation id="1555130319947370107">синьо</translation>
 <translation id="2471847333270902538">Цветова схема за <ph name="SITE"/>:</translation>
 <translation id="381767806621926835">Кликнете с десния бутон на мишката върху всеки елемент с атрибут „aria-describedat“ или „longdesc“, за да осъществите достъп до дългото му описание.</translation>
 <translation id="786423340267544509">Добавяне на контури към елементите с атрибути „aria-describedat“ или „longdesc“.</translation>

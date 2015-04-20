@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-CN">
 <translation id="1408730541890277710">将图片替换成对应的替代文字。</translation>
+<translation id="6017514345406065928">绿色</translation>
 <translation id="595639123821853262">反转灰度</translation>
 <translation id="8260673944985561857">光标浏览模式相关选项</translation>
 <translation id="3410969471888629217">取消网站自定义设置</translation>
@@ -14,6 +15,8 @@
 <translation id="2394933097471027016">您可以立即试用 - 光标浏览模式在此页面上始终处于启用状态！</translation>
 <translation id="3622586652998721735">设为默认方案</translation>
 <translation id="2179565792157161713">在新标签页中打开详细说明</translation>
+<translation id="7942349550061667556">红色</translation>
+<translation id="1555130319947370107">蓝色</translation>
 <translation id="2471847333270902538"><ph name="SITE"/> 的颜色方案：</translation>
 <translation id="381767806621926835">右键点击任何具有“longdesc”或“aria-describedat”属性的内容，可查看其详细说明。</translation>
 <translation id="786423340267544509">为具有“aria-describedat”或“longdesc”属性的元素添加边框。</translation>

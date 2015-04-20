@@ -1,6 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="it">
 <translation id="337167041784729019">Mostra statistiche</translation>
-<translation id="3233367171080043075">Puoi chiudere in qualsiasi momento.</translation>
 <translation id="7606912958770842224">Attiva connessioni remote</translation>
 <translation id="3785447812627779171">Host
 Chromoting</translation>
@@ -16,11 +15,11 @@ Chromoting</translation>
 <translation id="3905196214175737742">Dominio proprietario host non valido.</translation>
 <translation id="9213184081240281106">Configurazione host non valida.</translation>
 <translation id="6998989275928107238">A</translation>
-<translation id="406849768426631008">Vuoi aiutare qualcuno mentre videochatti con lui? Prova <ph name="LINK_BEGIN"/>Desktop remoto in Google Hangouts<ph name="LINK_END"/>.</translation>
 <translation id="906458777597946297">Ingrandisci la finestra</translation>
 <translation id="5397086374758643919">Programma di disinstallazione host Chrome Remote Desktop</translation>
 <translation id="3258789396564295715">Puoi accedere a questo computer in sicurezza utilizzando Chrome Remote Desktop.</translation>
 <translation id="5070121137485264635">L'host remoto richiede l'autenticazione su un sito web di terze parti. Per continuare, devi concedere a Chrome Remote Desktop ulteriori autorizzazioni per accedere a questo indirizzo:</translation>
+<translation id="5168917394043976756">Apri riquadro di navigazione a scomparsa</translation>
 <translation id="2124408767156847088">Accedi in sicurezza ai tuoi computer dal tuo dispositivo Android.</translation>
 <translation id="3194245623920924351">Chrome Remote Desktop</translation>
 <translation id="5537725057119320332">Trasmetti</translation>
@@ -31,7 +30,6 @@ Chromoting</translation>
 <translation id="4368630973089289038">Vuoi contribuire a migliorare Chromoting? <ph name="LINK_BEGIN"/>Rispondi al sondaggio<ph name="LINK_END"/>.</translation>
 <translation id="332624996707057614">Modifica il nome del computer</translation>
 <translation id="1996161829609978754">Chrome sta scaricando il programma di installazione di Chromoting Host. Al termine del download esegui il programma di installazione prima di continuare.</translation>
-<translation id="222632161986885959">Un partecipante a questo Hangout si è offerto di aiutarti controllando il tuo computer. Se accetti:</translation>
 <translation id="2046651113449445291">I client seguenti sono stati accoppiati con questo computer e possono connettersi senza fornire un PIN. Puoi revocare questa autorizzazione in qualsiasi momento per ogni client o per tutti i client.</translation>
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7836926030608666805">Mancano alcuni componenti obbligatori. Assicurati di avere l'ultima versione di Chrome e riprova.</translation>
@@ -124,15 +122,12 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="2599300881200251572">Questo servizio consente connessioni in entrata da client Chrome Remote Desktop.</translation>
 <translation id="6091564239975589852">Invia tasti</translation>
 <translation id="4572065712096155137">Accesso</translation>
-<translation id="5908809458024685848">Non hai eseguito l'accesso a Chromoting. Accedi e riprova.</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="5510035215749041527">Scollegati ora</translation>
 <translation id="3362124771485993931">Digita di nuovo PIN</translation>
 <translation id="8196755618196986400">Per poterti contattare qualora ci servissero ulteriori informazioni, il tuo indirizzo email verrà incluso in ogni feedback da te inviato.</translation>
-<translation id="5231421057630485350">La persona che ti aiuta avrà il controllo del tuo mouse e della tastiera.</translation>
 <translation id="154040539590487450">Impossibile avviare il servizio di accesso remoto.</translation>
 <translation id="7948001860594368197">Opzioni schermo</translation>
-<translation id="8172070902751707422">Autenticazione non riuscita. Accedi nuovamente a Chrome Remote Desktop.</translation>
 <translation id="5254120496627797685">Se esci da questa pagina, la sessione Chrome Remote Desktop verrà terminata.</translation>
 <translation id="7019153418965365059">Errore host non riconosciuto: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Impossibile connettersi al dispositivo di trasmissione.</translation>
@@ -165,6 +160,7 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://goo.gl/SyrVzj) e le Norme sulla privacy di Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="4361728918881830843">Per attivare le connessioni remote su un altro computer, installa Chrome Remote Desktop sul computer e fai clic su &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
 <translation id="7444276978508498879">Client connesso: <ph name="CLIENT_USERNAME"/>.</translation>
+<translation id="189172778771606813">Chiudi riquadro di navigazione a scomparsa</translation>
 <translation id="4913529628896049296">In attesa di connessione...</translation>
 <translation id="811307782653349804">Accedi al tuo computer ovunque tu sia.</translation>
 <translation id="2939145106548231838">Esegui autenticazione host</translation>
@@ -203,7 +199,6 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="2089514346391228378">Le connessioni remote per questo computer sono state attivate.</translation>
 <translation id="7693372326588366043">Aggiorna l'elenco degli host</translation>
 <translation id="8445362773033888690">Visualizza nel Google Play Store</translation>
-<translation id="8246880134154544773">Autenticazione non riuscita. Accedi nuovamente a Chromoting.</translation>
 <translation id="1654128982815600832">Attivazione connessioni remote per questo computer in corso…</translation>
 <translation id="8187079423890319756">Copyright 2013 The Chromium Authors. Tutti i diritti riservati.</translation>
 <translation id="7038683108611689168">Aiutaci a migliorare Chromoting consentendo l'acquisizione di dati per statistiche di utilizzo e rapporti sugli arresti anomali.</translation>
@@ -236,7 +231,6 @@ Remote Desktop</translation>
 <translation id="6550675742724504774">Opzioni</translation>
 <translation id="3339299787263251426">Accedi al computer in modo sicuro tramite Internet</translation>
 <translation id="979100198331752041">Chrome Remote Desktop su <ph name="HOSTNAME"/> è obsoleto e deve essere aggiornato.</translation>
-<translation id="7729639150174291243">Non hai eseguito l'accesso a Chrome Remote Desktop. Accedi e riprova.</translation>
 <translation id="2841013758207633010">Ora</translation>
 <translation id="6011539954251327702">Chromoting ti consente di condividere in modo sicuro il computer sul Web. Entrambi gli utenti devono eseguire l'app Chromoting, reperibile all'indirizzo <ph name="URL"/>.</translation>
 <translation id="2919669478609886916">Stai condividendo questo computer con un altro utente. Continuare la condivisione?</translation>
@@ -245,6 +239,8 @@ Remote Desktop</translation>
 <translation id="6570205395680337606">Ripristina l'applicazione. Perderai gli eventuali lavori non salvati.</translation>
 <translation id="6284412385303060032">L'esecuzione dell'host nella schermata di accesso alla console si è interrotta per supportare la modalità Curtain, pertanto l'host viene ora eseguito in una sessione specifica dell'utente.</translation>
 <translation id="3596628256176442606">Questo servizio consente connessioni in entrata da client Chromoting.</translation>
+<translation id="1978866438647250517">• Miglioramenti all'interfaccia utente.
+• Utilizzo ridotto della rete se in esecuzione in background.</translation>
 <translation id="4277463233460010382">Questo computer è configurato per consentire la connessione di uno o più client senza l'inserimento di un codice PIN.</translation>
 <translation id="837021510621780684">Da questo computer</translation>
 <translation id="518094545883702183">Queste informazioni vengono utilizzate soltanto per identificare il problema segnalato, sono disponibili soltanto a chi effettua accertamenti in merito alla tua segnalazione e vengono conservate per massimo 30 giorni.</translation>

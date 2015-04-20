@@ -1,5 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="pt-PT">
 <translation id="1408730541890277710">Substitua imagens pelo respetivo texto alternativo.</translation>
+<translation id="6017514345406065928">Verde</translation>
 <translation id="595639123821853262">Tons de cinzento invertidos</translation>
 <translation id="8260673944985561857">Opções da Navegação por cursor</translation>
 <translation id="3410969471888629217">Esquecer personalizações do site</translation>
@@ -14,6 +15,8 @@
 <translation id="2394933097471027016">Experimente agora: a Navegação por cursor está sempre ativada nesta página!</translation>
 <translation id="3622586652998721735">Definir como esquema predefinido</translation>
 <translation id="2179565792157161713">Abrir a descrição longa num novo separador</translation>
+<translation id="7942349550061667556">Vermelho</translation>
+<translation id="1555130319947370107">Azul</translation>
 <translation id="2471847333270902538">Esquema de cores para <ph name="SITE"/>:</translation>
 <translation id="381767806621926835">Clique com o botão direito do rato em qualquer item que tenha o atributo &quot;longdesc&quot; ou &quot;aria-describedat&quot; para aceder à descrição longa.</translation>
 <translation id="786423340267544509">Adicionar limite aos elementos com os atributos &quot;aria-describedat&quot; ou &quot;longdesc&quot;.</translation>

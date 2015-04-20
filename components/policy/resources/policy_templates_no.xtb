@@ -1346,7 +1346,7 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
           Hvis denne innstillingen er deaktivert, er ikke funksjonen tilgjengelig.</translation>
 <translation id="1675002386741412210">Støttes på:</translation>
 <translation id="1608755754295374538">Nettadresser som uten forespørsel blir gitt tilgang til enheter med lydopptak</translation>
-<translation id="3547954654003013442">Innstillinger for mellomtjener</translation>
+<translation id="3547954654003013442">Innstillinger for proxy-tjener</translation>
 <translation id="5921713479449475707">Tillat automatisk oppdatering av nedlastinger via HTTP</translation>
 <translation id="4482640907922304445">Viser Startside-knappen i verktøylinjen til <ph name="PRODUCT_NAME"/>.
 

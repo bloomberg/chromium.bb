@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="id">
+<translation id="2774256287122201187">Anda dapat melanjutkannya. Jika Anda melanjutkan ke laman tersebut, peringatan ini tidak akan muncul lagi selama lima menit.</translation>
 <translation id="7485870689360869515">Tidak ada data yang ditemukan.</translation>
 <translation id="3884278016824448484">Pengenal perangkat bertentangan</translation>
 <translation id="6779575937362063477">Kartu kredit jenis ini tidak didukung oleh Google Wallet. Mohon pilih kartu kredit yang lain.</translation>
@@ -39,6 +40,7 @@
 <translation id="2704283930420550640">Nilai tidak sesuai format.</translation>
 <translation id="4850886885716139402">Lihat</translation>
 <translation id="8091372947890762290">Aktivasi ditunda di server</translation>
+<translation id="4607653538520819196">Laman ini tidak dapat diberi proxy oleh Penghemat Data.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Area</translation>
 <translation id="1871208020102129563">Proxy disetel untuk menggunakan server proxy tetap, bukan URL skrip .pac.</translation>
@@ -50,6 +52,7 @@
 <translation id="7441627299479586546">Subjek kebijakan salah</translation>
 <translation id="3885155851504623709">Parish</translation>
 <translation id="6973656660372572881">Server proxy tetap dan URL skrip .pac telah ditentukan.</translation>
+<translation id="1426410128494586442">Ya</translation>
 <translation id="4506176782989081258">Kesalahan validasi: <ph name="VALIDATION_ERROR"/></translation>
 <translation id="7108649287766967076">Penerjemahan ke <ph name="TARGET_LANGUAGE"/> gagal.</translation>
 <translation id="4103249731201008433">Nomor seri perangkat tidak valid</translation>
@@ -68,12 +71,15 @@
 <translation id="1132774398110320017">Setelan IsiOtomatis Chrome...</translation>
 <translation id="6458467102616083041">Diabaikan karena penelusuran default dinonaktifkan oleh kebijakan.</translation>
 <translation id="1227224963052638717">Kebijakan tidak dikenal.</translation>
+<translation id="4250680216510889253">Tidak</translation>
 <translation id="9207861905230894330">Gagal menambahkan artikel.</translation>
 <translation id="5872918882028971132">Saran Induk</translation>
 <translation id="337363190475750230">Tidak ditetapkan</translation>
 <translation id="2367567093518048410">Tingkat</translation>
 <translation id="7977590112176369853">&lt;masukkan permintaan&gt;</translation>
+<translation id="552553974213252141">Apakah teks diekstrak dengan benar?</translation>
 <translation id="7610193165460212391">Nilai di luar jangkauan <ph name="VALUE"/>.</translation>
+<translation id="3739623965217189342">Tautan yang Anda salin</translation>
 <translation id="8311778656528046050">Yakin ingin memuat ulang laman ini?</translation>
 <translation id="370665806235115550">Membuka...</translation>
 <translation id="2096368010154057602">Departemen</translation>
@@ -81,7 +87,6 @@
 <translation id="3024663005179499861">Jenis kebijakan salah</translation>
 <translation id="2030481566774242610">Mungkin maksud Anda <ph name="LINK"/>?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
-<translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, Kedaluwarsa: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="225207911366869382">Nilai ini sudah usang untuk kebijakan ini.</translation>
 <translation id="3145945101586104090">Gagal mendekodekan tanggapan</translation>
@@ -130,6 +135,7 @@
 <translation id="3228969707346345236">Terjemahan gagal karena laman sudah dalam bahasa <ph name="LANGUAGE"/>.</translation>
 <translation id="7521387064766892559">Javascript</translation>
 <translation id="8034522405403831421">Laman ini berbahasa <ph name="SOURCE_LANGUAGE"/>. Terjemahkan ke <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="1734864079702812349">Amex</translation>
 <translation id="8891727572606052622">Mode proxy tidak valid.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="7752995774971033316">Tidak terkelola</translation>
@@ -203,6 +209,7 @@
 <translation id="8713130696108419660">Tanda tangan awal yang buruk</translation>
 <translation id="20817612488360358">Setelan proxy sistem disetel untuk digunakan namun konfigurasi proxy eksplisit juga ditentukan.</translation>
 <translation id="2639739919103226564">Status:</translation>
+<translation id="4968547170521245791">Tidak Dapat Memberi Proxy</translation>
 <translation id="385051799172605136">Mundur</translation>
 <translation id="5095208057601539847">Provinsi</translation>
 <translation id="2581221116934462656">Apakah Anda ingin <ph name="PRODUCT_NAME"/> menawarkan terjemahan laman <ph name="LANGUAGE_NAME"/> dari situs ini saat mengunjunginya nanti?</translation>
@@ -210,6 +217,7 @@
 <translation id="6965382102122355670">Oke</translation>
 <translation id="2721148159707890343">Permintaan berhasil</translation>
 <translation id="2455981314101692989">Laman web ini telah menonaktifkan pengisian otomatis untuk formulir ini.</translation>
+<translation id="6597614308054261376">Anda mencoba menjangkau <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. Saat ini, laman ini tidak dapat diberi proxy oleh Penghemat Data.</translation>
 <translation id="8308427013383895095">Terjemahan gagal karena ada masalah dengan koneksi jaringan.</translation>
 <translation id="5720705177508910913">Pengguna saat ini</translation>
 <translation id="3380864720620200369">ID Klien:</translation>

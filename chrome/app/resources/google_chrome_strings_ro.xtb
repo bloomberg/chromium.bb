@@ -164,6 +164,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="7787950393032327779">Profilul pare să fie utilizat de alt proces Google Chrome (<ph name="PROCESS_ID"/>), pe alt computer (<ph name="HOST_NAME"/>). Chrome a blocat profilul pentru a nu se deteriora. Dacă aveți certitudinea că profilul nu este utilizat de alte procese, puteți să îl deblocați și să relansați Chrome.</translation>
 <translation id="1469002951682717133">Lansatorul de aplicații Chrome</translation>
 <translation id="8568392309447938879">Trebuie să vă conectați la Chrome pentru a folosi aplicațiile. Astfel, Chrome vă poate sincroniza aplicațiile, marcajele, istoricul, parolele și alte setări pe toate dispozitivele.</translation>
+<translation id="6883876366448858277">trimite un cuvânt și contextul aferent către Căutarea Google, afișând definiții, imagini, rezultate ale căutării.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Cu Google Chrome, poți să dai clic pe un număr de telefon de pe web pentru a-l apela cu Skype!</translation>
 <translation id="3612333635265770873">Un modul cu același nume este cunoscut ca având conflicte cu Google Chrome.</translation>
@@ -208,7 +209,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="7396375882099008034">Permiteți browserului Chrome să acceseze rețeaua din setările pentru firewall sau
         antivirus.</translation>
 <translation id="9102715433345326100">Acest fișier este rău-intenționat și a fost blocat de Chrome.</translation>
-<translation id="3170677364322086041">Acest site utilizează pluginul Chrome Frame, care a fost retras și nu mai primește actualizări de securitate sau de stabilitate. Dezinstalați-l sau faceți upgrade la un browser modern.</translation>
 <translation id="8205111949707227942">Opțional: ajută-ne să îmbunătățim sistemul de operare Chrome prin trimiterea automată de statistici de utilizare și rapoarte de blocare către Google.</translation>
 <translation id="7253415505590551024">Mai multe descărcări sunt în desfășurare. Doriți să ieșiți din Google Chrome și să anulați descărcările?</translation>
 <translation id="487887346205285304">Chrome se comportă ciudat?</translation>
@@ -230,7 +230,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="7825851276765848807">Instalarea nu a reușit din cauza unei erori neprecizate. Descarci Google Chrome din nou.</translation>
 <translation id="1150979032973867961">Acest server nu a putut dovedi că este <ph name="DOMAIN"/>; sistemul de operare al computerului nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="4458285410772214805">Pentru ca modificarea să fie aplicată, deconectați-vă și conectați-vă din nou.</translation>
-<translation id="5489213858994471184">Chrome a detectat că este posibil ca setările browserului să fi fost modificate de un program de pe computer fără știrea ta. Poți utiliza Instrumentul pentru eliminare de software de la Google pentru a elimina programul respectiv.</translation>
 <translation id="8679801911857917785">Stabilește și ce pagină se afișează când porniți Chrome.</translation>
 <translation id="5334545119300433702">Acest modul este cunoscut că intră în conflict cu Google Chrome.</translation>
 <translation id="4407807842708586359">Sistemul de operare Google Chrome</translation>

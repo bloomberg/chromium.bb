@@ -172,6 +172,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="7787950393032327779">The profile appears to be in use by another Google Chrome process (<ph name="PROCESS_ID"/>) on another computer (<ph name="HOST_NAME"/>). Chrome has locked the profile so that it doesn't get corrupted. If you are sure no other processes are using this profile, you can unlock the profile and relaunch Chrome.</translation>
 <translation id="1469002951682717133">Chrome App Launcher</translation>
 <translation id="8568392309447938879">You need to be signed in to Chrome to use apps. This allows Chrome to sync your apps, bookmarks, history, passwords and other settings across devices.</translation>
+<translation id="6883876366448858277">sends a word and its surrounding context to Google Search, returning definitions, pictures and other search results.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome lets you click a phone number on the web and call it with Skype!</translation>
 <translation id="3612333635265770873">A module with the same name has been known to conflict with Google Chrome.</translation>
@@ -216,7 +217,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="7396375882099008034">Allow Chrome to access the network in your firewall or antivirus
         settings.</translation>
 <translation id="9102715433345326100">This file is malicious and Chrome has blocked it.</translation>
-<translation id="3170677364322086041">This site is using the retired Chrome Frame plug-in which no longer receives security and stability updates. Please uninstall it and upgrade to a modern browser.</translation>
 <translation id="8205111949707227942">Optional: Help make Chrome OS better by sending usage statistics and crash reports automatically to Google.</translation>
 <translation id="7253415505590551024">Downloads are currently in progress. Do you want to exit Google Chrome and cancel the downloads?</translation>
 <translation id="487887346205285304">Chrome behaving strangely?</translation>
@@ -238,7 +238,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="7825851276765848807">Installation failed due to unspecified error. Please download Google Chrome again.</translation>
 <translation id="1150979032973867961">This server could not prove that it is <ph name="DOMAIN"/>; its security certificate is not trusted by your computer's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="4458285410772214805">Please sign out and sign in again for this change to take effect.</translation>
-<translation id="5489213858994471184">Chrome detected that your browser settings may have been changed by a program on your computer without your knowledge. You can use Google's Software Removal Tool to remove that program.</translation>
 <translation id="8679801911857917785">It also controls what page is shown when you start Chrome.</translation>
 <translation id="5334545119300433702">This module is known to conflict with Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>

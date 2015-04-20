@@ -46,7 +46,7 @@
 <translation id="961805664415579088">Utväxla data med datorer i domänen <ph name="DOMAIN"/></translation>
 <translation id="8670869118777164560">Det gick inte att omdirigera nätverksbegäran till <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> eftersom ett annat tillägg (<ph name="EXTENSION_NAME"/>) omdirigerade det till <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="6840444547062817500">Det här tillägget lästes in på nytt för ofta.</translation>
-<translation id="8047248493720652249">Det gick inte att namnge hämtningen <ph name="ATTEMPTED_FILENAME"/> eftersom ett annat tillägg (<ph name="EXTENSION_NAME"/>) valde ett annat filnamn <ph name="ACTUAL_FILENAME"/>.</translation>
+<translation id="8047248493720652249">Det gick inte att namnge nedladdningen <ph name="ATTEMPTED_FILENAME"/> eftersom ett annat tillägg (<ph name="EXTENSION_NAME"/>) valde ett annat filnamn <ph name="ACTUAL_FILENAME"/>.</translation>
 <translation id="452039078290142656">okända enheter från <ph name="VENDOR_NAME"/></translation>
 <translation id="4968399700653439437">Utväxla data med datorer i domänerna: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Webbvy: <ph name="WEBVIEW_TAG_NAME"/></translation>

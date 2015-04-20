@@ -1,6 +1,6 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sv">
 <translation id="1503959756075098984">Tilläggs-ID:n och uppdateringsadresser ska installeras obemärkt</translation>
-<translation id="793134539373873765">Anger om p2p ska användas för uppdateringar av betalningar i operativsystemet. Om policyn är inställd på Sant kommer enheterna att dela och försöka använda uppdateringar av betalningar i det lokala nätverket och eventuellt reducera användningen av bandbredd och överbelastning. Om uppdateringar av betalningar inte är tillgängliga i det lokala nätverket kommer enheten att återgå till att hämtning från en uppdateringsserver. Om policyn är inställd på Falskt eller inte konfigurerad kommer p2p inte att användas.</translation>
+<translation id="793134539373873765">Anger om p2p ska användas för uppdateringar av betalningar i operativsystemet. Om policyn är inställd på Sant kommer enheterna att dela och försöka använda uppdateringar av betalningar i det lokala nätverket och eventuellt reducera användningen av bandbredd och överbelastning. Om uppdateringar av betalningar inte är tillgängliga i det lokala nätverket kommer enheten att återgå till att ladda ned från en uppdateringsserver. Om policyn är inställd på Falskt eller inte konfigurerad kommer p2p inte att användas.</translation>
 <translation id="2463365186486772703">Appens språkversion</translation>
 <translation id="1397855852561539316">Standardsökleverantörens förslagsadress</translation>
 <translation id="3347897589415241400">Standardinställningen för webbplatser som inte har något innehållspaket.
@@ -84,16 +84,16 @@
 <translation id="3185009703220253572">sedan version <ph name="SINCE_VERSION"/></translation>
 <translation id="5298412045697677971">Konfigurera avatarbild för användare.
 
-      Den här policyn gör att du kan konfigurera avatarbilden som representerar användaren på inloggningsskärmen. Ange policyn genom att ange en webbadress som <ph name="PRODUCT_OS_NAME"/> kan hämta avatarbilden från och en kryptografisk hash som används för att verifiera hämtningens integritet. Bilden måste vara i JPEG-format och dess storlek får inte överskrida 512 kB. Webbadressen måste vara tillgänglig utan autentisering.
+      Den här policyn gör att du kan konfigurera avatarbilden som representerar användaren på inloggningsskärmen. Ange policyn genom att ange en webbadress som <ph name="PRODUCT_OS_NAME"/> kan ladda ned avatarbilden från och en kryptografisk hash som används för att verifiera nedladdningens integritet. Bilden måste vara i JPEG-format och dess storlek får inte överskrida 512 kB. Webbadressen måste vara tillgänglig utan autentisering.
 
-      Avatarbilden hämtas och lagras i cacheminnet. Den hämtas igen varje gång webbadressen eller hashen ändras.
+      Avatarbilden laddas ned och lagras i cacheminnet. Den laddas ned igen varje gång webbadressen eller hashen ändras.
 
       Den här policyn ska anges som en sträng som uttrycker webbadressen och hashen i JSON-format enligt följande schema:
       {
         &quot;type&quot;: &quot;object&quot;,
         &quot;properties&quot;: {
           &quot;url&quot;: {
-            &quot;description&quot;: &quot;Den webbadress som bilden ska hämtas från.&quot;,
+            &quot;description&quot;: &quot;Den webbadress som bilden ska laddas ned från.&quot;,
             &quot;type&quot;: &quot;string&quot;
           },
           &quot;hash&quot;: {
@@ -103,7 +103,7 @@
         }
       }
 
-      Om policyn anges hämtar och använder <ph name="PRODUCT_OS_NAME"/> avatarbilden.
+      Om policyn anges laddar och använder <ph name="PRODUCT_OS_NAME"/> avatarbilden.
 
       Om du ställer in den här policyn kan den inte ändras eller åsidosättas av användaren.
 
@@ -203,7 +203,7 @@
       ändras utan föregående meddelande. Listan över principer som stöds
       är gemensam för Chromium och Google Chrome.)
 
-      Du behöver inte ändra de här inställningarna manuellt! Du kan hämta lättanvända mallar från
+      Du behöver inte ändra de här inställningarna manuellt! Du kan ladda ned lättanvända mallar från
       <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>.
 
       De här principerna är enbart avsedda för att konfigurera instanser av Chrome inom organisationen. Användning av principerna utanför organisationen (till exempel i ett program som sprids till allmänheten) ses som skadlig kod och skulle sannolikt stämplas som skadlig programvara av Google och leverantörer av antivirusprogram.
@@ -242,7 +242,7 @@
 <translation id="7567380065339179813">Tillåt plugin-program på dessa webbplatser</translation>
 <translation id="4555850956567117258">Aktivera fjärrattestering för användaren</translation>
 <translation id="5966615072639944554">Tilläggen får använda API:et för fjärrattestering</translation>
-<translation id="1617235075406854669">Aktivera borttagning av webb- och hämtningshistorik</translation>
+<translation id="1617235075406854669">Aktivera borttagning av webb- och nedladdningshistorik</translation>
 <translation id="5290940294294002042">Ange en lista med plugin-program som användaren kan aktivera och inaktivera</translation>
 <translation id="3153348162326497318">Policyn gör att du kan ange vilka tillägg användarna INTE får installera. Tillägg som redan finns installerade tas bort om du svartlistar dem.
 
@@ -412,9 +412,9 @@
       Policyn anges i millisekunder.</translation>
 <translation id="7275334191706090484">Hanterade bokmärken</translation>
 <translation id="3570008976476035109">Blockera plugin-program för dessa webbplatser</translation>
-<translation id="8749370016497832113">Aktiverar borttagning av webb- och hämtningshistorik i <ph name="PRODUCT_NAME"/> och förhindrar att användare ändrar den här inställningen.
+<translation id="8749370016497832113">Aktiverar borttagning av webb- och nedladdningshistorik i <ph name="PRODUCT_NAME"/> och förhindrar att användare ändrar den här inställningen.
 
-      Tänk på att även om policyn är inaktiverad finns det ingen garanti för att webb- och hämtningshistoriken behålls. Användare kan eventuellt redigera eller ta bort databasfiler i historiken direkt och webbläsaren kan sluta att gälla eller arkivera några eller alla historikobjekt när som helst.
+      Tänk på att även om policyn är inaktiverad finns det ingen garanti för att webb- och nedladdningshistoriken behålls. Användare kan eventuellt redigera eller ta bort databasfiler i historiken direkt och webbläsaren kan sluta att gälla eller arkivera några eller alla historikobjekt när som helst.
 
       Om inställningen är aktiverad eller inte angiven kan webb- och hämtningshistoriken tas bort.
 
@@ -473,7 +473,7 @@
 <translation id="838870586332499308">Aktivera dataroaming</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/> kan använda en webbtjänst från Google för att åtgärda stavfel. Om inställningen aktiveras används alltid den här tjänsten. Om den inaktiveras används tjänsten aldrig.
 
-      Du kan fortfarande göra en stavningskontroll med hjälp av en ordlista som du hämtar. Policyn styr endast användningen av onlinetjänsten.
+      Du kan fortfarande göra en stavningskontroll med hjälp av en ordlista som du laddar ned. Policyn styr endast användningen av onlinetjänsten.
 
       Om den här inställningen inte konfigureras kan användare välja om de vill använda stavningskontrollen eller inte.</translation>
 <translation id="8782750230688364867">Anger den procentsats med vilken fördröjningen av skärmdämpningen skalanpassas när enheten är i presentationsläge.
@@ -691,7 +691,7 @@
 <translation id="253135976343875019">Inaktivitetstid när enheten är ansluten till elnätet</translation>
 <translation id="480987484799365700">Om den här policyn är aktiverad tvingas profilen till kortlivat läge. Om policyn anges som en OS-policy (t.ex. GPO i Windows) gäller den för alla profiler i systemet. Om policyn ställs in som en molnpolicy gäller den bara för en profil som är inloggad med ett hanterat konto.
 
-      I det här läget sparas profildata bara på hårddisken under användarsessionen. Funktioner som webbhistorik, webbläsartillägg och webbläsardata, webbdata som cookies och webbdatabaser sparas inte när webbläsaren stängs. Detta förhindrar dock inte att användaren hämtar data till disken manuellt, sparar sidor eller skriver ut dem.
+      I det här läget sparas profildata bara på hårddisken under användarsessionen. Funktioner som webbhistorik, webbläsartillägg och webbläsardata, webbdata som cookies och webbdatabaser sparas inte när webbläsaren stängs. Detta förhindrar dock inte att användaren laddar ned data till disken manuellt, sparar sidor eller skriver ut dem.
 
       Om användaren har aktiverad synkronisering sparas all data i hans eller hennes synkprofil precis som för vanliga profiler. Inkognitoläge är också tillgängligt om det inte har inaktiverats explicit av en policy.
 
@@ -704,9 +704,9 @@
 <translation id="5182055907976889880">Konfigurera Google Drive i <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="8704831857353097849">Lista med inaktiverade plugin-program</translation>
 <translation id="467449052039111439">Öppna följande sidor</translation>
-<translation id="1988371335297483117">Betalningar med automatisk uppdatering i <ph name="PRODUCT_OS_NAME"/> kan hämtas via HTTP i stället för HTTPS. Detta möjliggör transparent HTTP-cachelagring av HTTP-hämtningar.
+<translation id="1988371335297483117">Betalningar med automatisk uppdatering i <ph name="PRODUCT_OS_NAME"/> kan laddas ned via HTTP i stället för HTTPS. Detta möjliggör transparent HTTP-cachelagring av HTTP-nedladdningar.
 
-      Om policyn är inställd på sant kommer <ph name="PRODUCT_OS_NAME"/> att försöka hämta betalningar med automatisk uppdatering via HTTP. Om policyn är inställd på falskt eller inte har angetts kommer HTTPS att användas för att hämta betalningar med automatisk uppdatering.</translation>
+      Om policyn är inställd på sant kommer <ph name="PRODUCT_OS_NAME"/> att försöka ladda ned betalningar med automatisk uppdatering via HTTP. Om policyn är inställd på falskt eller inte har angetts kommer HTTPS att användas för att ladda ned betalningar med automatisk uppdatering.</translation>
 <translation id="5883015257301027298">Standardinställning för cookies</translation>
 <translation id="5017500084427291117">Policyn blockerar åtkomst till de angivna webbadresserna.
 
@@ -832,7 +832,7 @@
 
       Obs! Den här principen stöds för närvarande enbart i kioskläge.</translation>
 <translation id="489803897780524242">Parameter som styr sökordsplacering för standardsökleverantören</translation>
-<translation id="316778957754360075">Den här inställningen finns inte med i version 29 av <ph name="PRODUCT_NAME"/> och senare. Det rekommenderade sättet att konfigurera tillägg/appsamlingar som värdlagras hos företaget är att ta med platsen där CRX-paketen finns på listan ExtensionInstallSources och infoga direkta hämtningslänkar till paketen på en webbsida. Det går att skapa ett startprogram för den aktuella webbsidan med hjälp av principen ExtensionInstallForcelist.</translation>
+<translation id="316778957754360075">Den här inställningen finns inte med i version 29 av <ph name="PRODUCT_NAME"/> och senare. Det rekommenderade sättet att konfigurera tillägg/appsamlingar som värdlagras hos företaget är att ta med platsen där CRX-paketen finns på listan ExtensionInstallSources och infoga direkta nedladdningslänkar till paketen på en webbsida. Det går att skapa ett startprogram för den aktuella webbsidan med hjälp av principen ExtensionInstallForcelist.</translation>
 <translation id="6401669939808766804">Logga ut användaren</translation>
 <translation id="4826326557828204741">Åtgärd som ska vidtas när fördröjning på grund av inaktivitet har uppnåtts vid batteridrift</translation>
 <translation id="7912255076272890813">Konfigurera tillåtna app- och tilläggstyper</translation>
@@ -1072,9 +1072,9 @@
           Policyn är valfri. Om den inte anges används standarden UTF-8.
 
           Policyn används bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
-<translation id="1349276916170108723">Inaktiverar Google Drive-synkronisering i appen Filer i Chrome OS när du använder inställningen sant. I dessa fall överförs ingen data till Google Drive.
+<translation id="1349276916170108723">Inaktiverar Google Drive-synkronisering i appen Filer i Chrome OS när du använder inställningen sant. I dessa fall laddas ingen data upp till Google Drive.
 
-          Om det inte finns någon inställning eller om den är inställd på falskt kommer användaren att kunna överföra filer till Google Drive.</translation>
+          Om det inte finns någon inställning eller om den är inställd på falskt kommer användaren att kunna ladda upp filer till Google Drive.</translation>
 <translation id="1964634611280150550">Inkognitoläget är inaktiverat</translation>
 <translation id="5971128524642832825">Inaktiverar Drive i appen Filer i Chrome OS</translation>
 <translation id="1847960418907100918">Anger parametrarna som används vid sökningar på Instant med POST. Den består av kommaavgränsade namn-/värdepar. Om ett värde är en mallparameter, t.ex. {searchTerms} i ovanstående exempel, kommer det att ersättas med riktiga söktermer.
@@ -1383,9 +1383,9 @@
 <translation id="8099880303030573137">Inaktivitetstid när enheten drivs av batteriet</translation>
 <translation id="1709037111685927635">Konfigurera bakgrundsbild.
 
-      Med den här principen kan du konfigurera bakgrundsbilden som visas på skrivbordet och på bakgrunden på användarens inloggningsskärm. Principen ställs in genom att ange webbadressen där <ph name="PRODUCT_OS_NAME"/> kan hämta bakgrundsbilden och en kryptografisk hash som används för att kontrollera hämtningens integritet. Bilden måste vara i JPEG-format och den får inte vara större än 16 MB. Webbadressen måste vara tillgänglig utan verifiering.
+      Med den här principen kan du konfigurera bakgrundsbilden som visas på skrivbordet och på bakgrunden på användarens inloggningsskärm. Principen ställs in genom att ange webbadressen där <ph name="PRODUCT_OS_NAME"/> kan hämta bakgrundsbilden och en kryptografisk hash som används för att kontrollera nedladdningens integritet. Bilden måste vara i JPEG-format och den får inte vara större än 16 MB. Webbadressen måste vara tillgänglig utan verifiering.
 
-      Bakgrundsbilden hämtas och cachas. Det hämtas igen om webbadressen eller hash ändras.
+      Bakgrundsbilden laddas ned och cachas. Det laddas ned igen om webbadressen eller hash ändras.
 
       Principen ska anges som en sträng med webbadress och hash i JSON-format och enligt följande schema:
       {
@@ -1402,7 +1402,7 @@
         }
       }
 
-      Om principen ställs in kan <ph name="PRODUCT_OS_NAME"/> hämta och använda bakgrundsbilden.
+      Om principen ställs in kan <ph name="PRODUCT_OS_NAME"/> ladda ned och använda bakgrundsbilden.
 
       Om du ställer in principen kan användarna inte ändra eller åsidosätta den.
 
@@ -1428,7 +1428,7 @@
 <translation id="1675002386741412210">Stöds av:</translation>
 <translation id="1608755754295374538">Webbadresser som ska ges tillgång till ljudinspelningsenheter utan meddelande</translation>
 <translation id="3547954654003013442">Proxyinställningar</translation>
-<translation id="5921713479449475707">Tillåt hämtningar av automatiska uppdateringar via HTTP</translation>
+<translation id="5921713479449475707">Tillåt nedladdning av automatiska uppdateringar via HTTP</translation>
 <translation id="4482640907922304445">Policyn visar knappen Startsida i verktygsfältet i <ph name="PRODUCT_NAME"/>.
 
       Om du aktiverar inställningen visas alltid knappen Startsida.
@@ -1547,7 +1547,7 @@
       Om policyn inte anges kommer proxyfunktionen för datakomprimering kommer användaren att kunna välja om han eller hon vill använda den.</translation>
 <translation id="2170233653554726857">Aktivera WPAD-optimering</translation>
 <translation id="7424751532654212117">Lista med undantag till listan med inaktiverade plugin-program</translation>
-<translation id="6233173491898450179">Ange hämtningskatalog</translation>
+<translation id="6233173491898450179">Ange nedladdningskatalog</translation>
 <translation id="8908294717014659003">Gör att du kan ange om webbplatser ska kunna komma åt medieenheter. Åtkomst till medieenheter kan tillåtas som standard eller så kan användaren få en fråga varje gång en webbplats vill komma åt dem.
 
          Om du inte anger någon policy kommer PromptOnAccess att användas och användaren kommer att kunna ändra den.</translation>
@@ -1742,7 +1742,7 @@
       Avgör ID för det tillägg som ska användas som skärmsläckare på inloggningsskärmen. Tillägget måste finnas i det AppPack som är konfigurerat för domänen i policyn DeviceAppPack.</translation>
 <translation id="1796466452925192872">Här kan du ange med vilka webbadresser det ska vara tillåtet att installera tillägg, program och teman.
 
-          Från och med Chrome 21 är det svårare att installera tillägg, appar och användarskript utanför Chrome Web Store. Tidigare kunde användare klicka på en länk till en *.CRX-fil och sedan installera filen via Chrome efter att några varningar visades. Efter Chrome 21 måste sådana filer hämtas och dras till Chromes inställningssida. Med den här inställningen kan du göra det möjligt för särskilda webbadresser att använda det äldre och enklare installationsflödet.
+          Från och med Chrome 21 är det svårare att installera tillägg, appar och användarskript utanför Chrome Web Store. Tidigare kunde användare klicka på en länk till en *.CRX-fil och sedan installera filen via Chrome efter att några varningar visades. Efter Chrome 21 måste sådana filer laddas ned och dras till Chromes inställningssida. Med den här inställningen kan du göra det möjligt för särskilda webbadresser att använda det äldre och enklare installationsflödet.
 
           Varje objekt i listan motsvarar en matchning i form av ett tillägg (se http://code.google.com/chrome/extensions/match_patterns.html). Användarna kan enkelt installera objekt från alla webbadresser som matchar ett objekt i listan.
 
@@ -1803,7 +1803,7 @@
 <translation id="1509692106376861764">Den här principen gäller inte från version 29 av <ph name="PRODUCT_NAME"/> och senare.</translation>
 <translation id="5464816904705580310">Konfigurera inställningar för hanterade användare.</translation>
 <translation id="3219421230122020860">Inkognitoläget är tillgängligt</translation>
-<translation id="7690740696284155549">Konfigurerar vilken katalog som ska användas av <ph name="PRODUCT_NAME"/> för att hämta filer.
+<translation id="7690740696284155549">Konfigurerar vilken katalog som ska användas av <ph name="PRODUCT_NAME"/> för att ladda ned filer.
 
       Om du ställer in den här policyn används den angivna katalogen av <ph name="PRODUCT_NAME"/> oavsett om användaren har angett en katalog eller aktiverat flaggan för att bli tillfrågad om hämtningsplats varje gång.
 
@@ -1858,11 +1858,11 @@
 <translation id="3780152581321609624">Inkludera port som inte är standard i Kerberos SPN</translation>
 <translation id="1749815929501097806">Anger de användarvillkor som användaren måste godkänna innan en session med ett konto som är lokalt i enheten kan påbörjas.
 
-      Om policyn ställs in hämtar <ph name="PRODUCT_OS_NAME"/> användarvillkoren och de visas för användaren varje gång en session med ett konto som är lokalt i enheten påbörjas. Användaren får inte påbörja sessionen förrän användarvillkoren har godkänts.
+      Om policyn ställs in laddar <ph name="PRODUCT_OS_NAME"/> ned användarvillkoren och de visas för användaren varje gång en session med ett konto som är lokalt i enheten påbörjas. Användaren får inte påbörja sessionen förrän användarvillkoren har godkänts.
 
       Om policyn inte ställs in visas inga användarvillkor.
 
-      Den här policyn ska ställas in på en webbadress som <ph name="PRODUCT_OS_NAME"/> kan hämta användarvillkoren från. Användarvillkoren måste vara oformaterad text av MIME-typ. Ingen kod får användas.</translation>
+      Den här policyn ska ställas in på en webbadress som <ph name="PRODUCT_OS_NAME"/> kan ladda ned användarvillkoren från. Användarvillkoren måste vara oformaterad text av MIME-typ. Ingen kod får användas.</translation>
 <translation id="2623014935069176671">Vänta på inledande användaraktivitet</translation>
 <translation id="2660846099862559570">Använd aldrig en proxy</translation>
 <translation id="637934607141010488">Rapportera en lista över enhetsanvändare som nyligen har loggat in.
@@ -1902,12 +1902,12 @@
 
           Mer detaljerade exempel finns på:
           <ph name="PROXY_HELP_URL"/></translation>
-<translation id="6658245400435704251">Anger hur många sekunder en hämtning av en uppdatering via en enhet får försenas slumpmässigt från den tidpunkt då uppdateringen först skickades till servern. Enheten kan hållas i vänteläge dels under en vanlig tidsperiod, dels beroende på antalet uppdateringskontroller. Spridningen är alltid bunden till en övre tidsgräns så att en enhet aldrig fastnar för gott medan en uppdatering håller på att hämtas.</translation>
+<translation id="6658245400435704251">Anger hur många sekunder en hämtning av en uppdatering via en enhet får försenas slumpmässigt från den tidpunkt då uppdateringen först skickades till servern. Enheten kan hållas i vänteläge dels under en vanlig tidsperiod, dels beroende på antalet uppdateringskontroller. Spridningen är alltid bunden till en övre tidsgräns så att en enhet aldrig fastnar för gott medan en uppdatering håller på att laddas ned.</translation>
 <translation id="102492767056134033">Ange standardläget för skärmtangentbordet på inloggningsskärmen</translation>
 <translation id="523505283826916779">Inställningar för tillgänglighet</translation>
 <translation id="1948757837129151165">Policy för HTTP-autentisering</translation>
 <translation id="5946082169633555022">Betakanal</translation>
-<translation id="7187256234726597551">Om detta är sant är vidimering på distans tillåtet för enheten och ett certifikat genereras automatiskt. Det läggs upp på enhetshanteringsservern.
+<translation id="7187256234726597551">Om detta är sant är vidimering på distans tillåtet för enheten och ett certifikat genereras automatiskt. Det laddas upp till enhetshanteringsservern.
 
           Om detta är falskt, eller om alternativet inte har angetts, skapas inget certifikat och anrop till tilläggs-API:et enterprise.platformKeysPrivate misslyckas.</translation>
 <translation id="5242696907817524533">Konfigurerar en lista med hanterade bokmärken.
