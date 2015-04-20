@@ -24,7 +24,6 @@
 #define FEDisplacementMap_h
 
 #include "platform/graphics/filters/FilterEffect.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -48,8 +47,6 @@ public:
 
     float scale() const;
     bool setScale(float);
-
-    virtual void setResultColorSpace(ColorSpace) override;
 
     virtual FloatRect mapPaintRect(const FloatRect&, bool forward = true) override final;
 

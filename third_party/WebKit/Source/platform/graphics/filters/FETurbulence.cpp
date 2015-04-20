@@ -31,7 +31,6 @@
 #include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
-#include "wtf/MathExtras.h"
 
 namespace blink {
 

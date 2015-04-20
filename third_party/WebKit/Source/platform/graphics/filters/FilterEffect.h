@@ -66,7 +66,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     void clearResult();
-    void clearResultsRecursive();
 
     FilterEffectVector& inputEffects() { return m_inputEffects; }
     FilterEffect* inputEffect(unsigned) const;
@@ -76,10 +75,6 @@ public:
     {
         return m_imageFilters[0] || m_imageFilters[1] || m_imageFilters[2] || m_imageFilters[3];
     }
-
-    // Solid black image with different alpha values.
-    bool isAlphaImage() const { return m_alphaImage; }
-    void setIsAlphaImage(bool alphaImage) { m_alphaImage = alphaImage; }
 
     IntRect absolutePaintRect() const { return m_absolutePaintRect; }
 
@@ -105,11 +100,6 @@ public:
         return mapRect(rect, forward);
     }
     FloatRect mapRectRecursive(const FloatRect&);
-
-    // This is a recursive version of a backwards mapRect(), which also takes
-    // into account the filter primitive subregion of each effect.
-    // Note: This works in absolute coordinates!
-    FloatRect getSourceRect(const FloatRect& destRect, const FloatRect& clipRect);
 
     virtual FilterEffectType filterEffectType() const { return FilterEffectTypeUnknown; }
 
@@ -143,11 +133,8 @@ public:
 
     ColorSpace operatingColorSpace() const { return m_operatingColorSpace; }
     virtual void setOperatingColorSpace(ColorSpace colorSpace) { m_operatingColorSpace = colorSpace; }
-    ColorSpace resultColorSpace() const { return m_resultColorSpace; }
-    virtual void setResultColorSpace(ColorSpace colorSpace) { m_resultColorSpace = colorSpace; }
 
     FloatRect determineFilterPrimitiveSubregion(DetermineSubregionFlags = DetermineSubregionNone);
-    void determineAllAbsolutePaintRects();
 
     virtual FloatRect determineAbsolutePaintRect(const FloatRect& requestedAbsoluteRect);
     virtual bool affectsTransparentPixels() { return false; }
@@ -170,8 +157,6 @@ protected:
 
 private:
     FilterEffectVector m_inputEffects;
-
-    bool m_alphaImage;
 
     IntRect m_absolutePaintRect;
 
@@ -199,7 +184,6 @@ private:
     bool m_clipsToBounds;
 
     ColorSpace m_operatingColorSpace;
-    ColorSpace m_resultColorSpace;
 
     RefPtr<SkImageFilter> m_imageFilters[4];
 };

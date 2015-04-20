@@ -41,7 +41,6 @@ public:
     // feFlood does not perform color interpolation of any kind, so the result is always in the current
     // color space regardless of the value of color-interpolation-filters.
     virtual void setOperatingColorSpace(ColorSpace) override { }
-    virtual void setResultColorSpace(ColorSpace) override { }
 
     virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
 

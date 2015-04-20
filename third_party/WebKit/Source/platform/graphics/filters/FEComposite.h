@@ -25,7 +25,6 @@
 
 #include "SkXfermode.h"
 #include "platform/graphics/filters/FilterEffect.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -73,12 +72,6 @@ private:
     FEComposite(Filter*, const CompositeOperationType&, float, float, float, float);
 
     PassRefPtr<SkImageFilter> createImageFilterInternal(SkiaImageFilterBuilder*, bool requiresPMColorValidation);
-
-    template <int b1, int b4>
-    static inline void computeArithmeticPixelsNeon(unsigned char* source, unsigned  char* destination,
-        unsigned pixelArrayLength, float k1, float k2, float k3, float k4);
-    static inline void platformArithmeticNeon(unsigned char* source, unsigned  char* destination,
-        unsigned pixelArrayLength, float k1, float k2, float k3, float k4);
 
     CompositeOperationType m_type;
     float m_k1;

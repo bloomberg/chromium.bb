@@ -243,12 +243,5 @@ bool FilterEffectBuilder::build(LayoutObject* renderer, const FilterOperations& 
     return true;
 }
 
-void FilterEffectBuilder::clearIntermediateResults()
-{
-    if (m_lastEffect.get())
-        m_lastEffect->clearResultsRecursive();
-}
-
-
 } // namespace blink
 

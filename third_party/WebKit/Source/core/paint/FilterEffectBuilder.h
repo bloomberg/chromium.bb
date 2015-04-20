@@ -51,7 +51,6 @@ public:
     DECLARE_TRACE();
 
     bool build(LayoutObject* renderer, const FilterOperations&);
-    void clearIntermediateResults();
 
     PassRefPtrWillBeRawPtr<FilterEffect> lastEffect() const
     {

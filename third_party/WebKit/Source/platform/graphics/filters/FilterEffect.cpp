@@ -30,15 +30,13 @@
 namespace blink {
 
 FilterEffect::FilterEffect(Filter* filter)
-    : m_alphaImage(false)
-    , m_filter(filter)
+    : m_filter(filter)
     , m_hasX(false)
     , m_hasY(false)
     , m_hasWidth(false)
     , m_hasHeight(false)
     , m_clipsToBounds(true)
     , m_operatingColorSpace(ColorSpaceLinearRGB)
-    , m_resultColorSpace(ColorSpaceDeviceRGB)
 {
     ASSERT(m_filter);
 }
@@ -96,33 +94,6 @@ FloatRect FilterEffect::mapRectRecursive(const FloatRect& rect)
     return mapRect(result);
 }
 
-FloatRect FilterEffect::getSourceRect(const FloatRect& destRect, const FloatRect& destClipRect)
-{
-    FloatRect sourceRect = mapRect(destRect, false);
-    FloatRect sourceClipRect = mapRect(destClipRect, false);
-
-    FloatRect boundaries = filter()->mapLocalRectToAbsoluteRect(effectBoundaries());
-    if (hasX())
-        sourceClipRect.setX(boundaries.x());
-    if (hasY())
-        sourceClipRect.setY(boundaries.y());
-    if (hasWidth())
-        sourceClipRect.setWidth(boundaries.width());
-    if (hasHeight())
-        sourceClipRect.setHeight(boundaries.height());
-
-    FloatRect result;
-    if (m_inputEffects.size() > 0) {
-        result = m_inputEffects.at(0)->getSourceRect(sourceRect, sourceClipRect);
-        for (unsigned i = 1; i < m_inputEffects.size(); ++i)
-            result.unite(m_inputEffects.at(i)->getSourceRect(sourceRect, sourceClipRect));
-    } else {
-        result = sourceRect;
-        result.intersect(sourceClipRect);
-    }
-    return result;
-}
-
 FilterEffect* FilterEffect::inputEffect(unsigned number) const
 {
     ASSERT_WITH_SECURITY_IMPLICATION(number < m_inputEffects.size());
@@ -146,13 +117,6 @@ void FilterEffect::clearResult()
     for (int i = 0; i < 4; i++) {
         m_imageFilters[i] = nullptr;
     }
-}
-
-void FilterEffect::clearResultsRecursive()
-{
-    unsigned size = m_inputEffects.size();
-    for (unsigned i = 0; i < size; ++i)
-        m_inputEffects.at(i).get()->clearResultsRecursive();
 }
 
 Color FilterEffect::adaptColorToOperatingColorSpace(const Color& deviceColor)

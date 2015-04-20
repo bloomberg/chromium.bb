@@ -59,8 +59,6 @@ public:
     bool stitchTiles() const;
     bool setStitchTiles(bool);
 
-    static void fillRegionWorker(void*);
-
     virtual TextStream& externalRepresentation(TextStream&, int indention) const override;
 
 private:
