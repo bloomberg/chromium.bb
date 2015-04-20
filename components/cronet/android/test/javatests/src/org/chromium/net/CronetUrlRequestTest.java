@@ -436,7 +436,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         assertEquals(MockUrlRequestJobFactory.SUCCESS_URL,
                 mResponseInfo.getUrlChain()[2]);
         assertTrue(listener.mHttpResponseDataLength != 0);
-        assertEquals(3, listener.mRedirectCount);
+        assertEquals(2, listener.mRedirectCount);
         assertEquals(listener.mResponseStep, ResponseStep.ON_SUCCEEDED);
     }
 
