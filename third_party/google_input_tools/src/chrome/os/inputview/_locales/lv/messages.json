@@ -1,12 +1,12 @@
 {
   "add_to_dictionary": {
-    "message": "Add to dictionary"
+    "message": "Pievienot v\u0101rdn\u012bcai"
   },
   "add_to_personal_dictionary": {
     "message": "Pievienot personiskajai v\u0101rdn\u012bcai"
   },
   "add_word_to_dictionary": {
-    "message": "Add \"$1\" to dictionary",
+    "message": "Pievienot \u201c$1\u201d v\u0101rdn\u012bcai",
     "placeholders": {
       "1": {
         "content": "$1"

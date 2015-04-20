@@ -260,12 +260,12 @@ def copy_dir(input_path, sub_dir):
     input_path: Path to the google-input-tools-sandbox.
     sub_dir: Subdirectory to copy within google-input-tools sandbox.
   """
-  source_dir = os.path.join(input_path, 'chrome', 'os', 'inputview', sub_dir)
+  source_dir = os.path.join(input_path, 'chrome', 'os', sub_dir)
   for (root, _, files) in os.walk(source_dir):
     for name in files:
       filename = os.path.join(root, name)
       relative_path = filename[len(source_dir) + 1:]
-      target = os.path.join('src', 'chrome', 'os', 'inputview', sub_dir,
+      target = os.path.join('src', 'chrome', 'os', sub_dir,
                             relative_path)
       copy_file(filename, target)
 
@@ -315,10 +315,10 @@ def main():
   generate_build_file(target_files)
 
   # Copy resources
-  copy_dir(input_path, '_locales')
-  copy_dir(input_path, 'images')
-  copy_dir(input_path, 'config')
-  copy_dir(input_path, 'layouts')
+  copy_dir(input_path, 'inputview/_locales')
+  copy_dir(input_path, 'inputview/images')
+  copy_dir(input_path, 'inputview/config')
+  copy_dir(input_path, 'inputview/layouts')
   copy_dir(input_path, 'sounds')
 
   # Copy extra support files.

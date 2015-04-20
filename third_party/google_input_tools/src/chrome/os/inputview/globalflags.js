@@ -19,4 +19,4 @@ goog.provide('i18n.input.chrome.inputview.GlobalFlags');
  *
  * @type {boolean}
  */
-i18n.input.chrome.inputview.GlobalFlags.isQPInputView = false;
+i18n.input.chrome.inputview.GlobalFlags.isQPInputView = true;

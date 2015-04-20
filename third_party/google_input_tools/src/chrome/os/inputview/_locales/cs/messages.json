@@ -1,12 +1,12 @@
 {
   "add_to_dictionary": {
-    "message": "Add to dictionary"
+    "message": "P\u0159idat do slovn\u00edku"
   },
   "add_to_personal_dictionary": {
     "message": "P\u0159idat do osobn\u00edho slovn\u00edku"
   },
   "add_word_to_dictionary": {
-    "message": "Add \"$1\" to dictionary",
+    "message": "P\u0159idat slovo \u201e$1\u201c do slovn\u00edku",
     "placeholders": {
       "1": {
         "content": "$1"

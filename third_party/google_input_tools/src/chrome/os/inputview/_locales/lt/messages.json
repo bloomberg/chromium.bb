@@ -1,12 +1,12 @@
 {
   "add_to_dictionary": {
-    "message": "Add to dictionary"
+    "message": "Prid\u0117ti \u012f \u017eodyn\u0105"
   },
   "add_to_personal_dictionary": {
     "message": "Prid\u0117ti prie asmeninio \u017eodyno"
   },
   "add_word_to_dictionary": {
-    "message": "Add \"$1\" to dictionary",
+    "message": "Prid\u0117ti \u017eod\u012f \u201e$1\u201c \u012f \u017eodyn\u0105",
     "placeholders": {
       "1": {
         "content": "$1"

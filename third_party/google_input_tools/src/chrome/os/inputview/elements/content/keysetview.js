@@ -278,10 +278,6 @@ KeysetView.prototype.createDom = function() {
   var elem = this.getElement();
   elem.id = this.keyboardCode_.replace(/\./g, '-');
   goog.dom.classlist.add(elem, i18n.input.chrome.inputview.Css.VIEW);
-  if (this.disableCandidateView) {
-    goog.dom.classlist.add(
-        elem, i18n.input.chrome.inputview.Css.CANDIDATE_VIEW_DISABLED);
-  }
 
   var children = this.layoutData_['children'];
   for (var i = 0; i < children.length; i++) {
@@ -687,6 +683,11 @@ KeysetView.prototype.createKey_ = function(spec, hasAltGrCharacterInTheKeyset) {
           compactKeyModel, undefined);
       break;
     case ElementType.CHARACTER_KEY:
+      if (characters.length == 1) {
+        // If there is no character for shift state, just make the character of
+        // default state to be that one.
+        characters.push(characters[0]);
+      }
       var isLetterKey = i18n.input.chrome.inputview.util.isLetterKey(
           characters);
       var enableShiftRendering = false;
@@ -810,11 +811,6 @@ KeysetView.prototype.activate = function(rawKeyset) {
     goog.dom.classlist.add(this.getElement(), Css.PINYIN);
   } else {
     goog.dom.classlist.remove(this.getElement(), Css.PINYIN);
-  }
-  // Switches between compact zhuyin and zhuyin needs to change the controlelr,
-  // since they use different background controllers.
-  if (rawKeyset.indexOf('zhuyin') != -1) {
-    this.adapter.setController(rawKeyset, this.languageCode);
   }
 };
 

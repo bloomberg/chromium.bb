@@ -13,10 +13,11 @@
 //
 goog.provide('i18n.input.chrome.inputview.content.compact.symbol');
 
-goog.require('i18n.input.chrome.inputview.content.constants');
+goog.require('i18n.input.chrome.inputview.content.Constants');
 
 goog.scope(function() {
-var NonLetterKeys = i18n.input.chrome.inputview.content.constants.NonLetterKeys;
+var NON_LETTER_KEYS =
+    i18n.input.chrome.inputview.content.Constants.NON_LETTER_KEYS;
 
 
 /**
@@ -51,7 +52,7 @@ i18n.input.chrome.inputview.content.compact.symbol.keyNASymbolCharacters =
     /* 9 */ { 'text': '0',
       'moreKeys': {
         'characters': ['\u207F', '\u2205']}},
-    /* 10 */ NonLetterKeys.BACKSPACE,
+    /* 10 */ NON_LETTER_KEYS.BACKSPACE,
     /* 11 */ { 'text': '@', 'marginLeftPercent': 0.33 },
     /* 12 */ { 'text': '#' },
     /* 13 */ { 'text': '$',
@@ -74,8 +75,8 @@ i18n.input.chrome.inputview.content.compact.symbol.keyNASymbolCharacters =
     /* 19 */ { 'text': ')',
       'moreKeys': {
         'characters': ['>', '}', ']']}},
-    /* 20 */ NonLetterKeys.ENTER,
-    /* 21 */ NonLetterKeys.SWITCHER,
+    /* 20 */ NON_LETTER_KEYS.ENTER,
+    /* 21 */ NON_LETTER_KEYS.SWITCHER,
     /* 22 */ { 'text': '\\' },
     /* 23 */ { 'text': '=' },
     /* 24 */ { 'text': '*',
@@ -95,18 +96,18 @@ i18n.input.chrome.inputview.content.compact.symbol.keyNASymbolCharacters =
     /* 30 */ { 'text': '?',
       'moreKeys': {
         'characters': ['\u00BF']}},
-    /* 31 */ NonLetterKeys.SWITCHER,
-    /* 32 */ NonLetterKeys.SWITCHER,
+    /* 31 */ NON_LETTER_KEYS.SWITCHER,
+    /* 32 */ NON_LETTER_KEYS.SWITCHER,
     /* 33 */ { 'text': '_', 'isGrey': true },
-    /* 34 */ NonLetterKeys.MENU,
+    /* 34 */ NON_LETTER_KEYS.MENU,
     /* 35 */ { 'text': '/', 'isGrey': true },
-    /* 36 */ NonLetterKeys.SPACE,
+    /* 36 */ NON_LETTER_KEYS.SPACE,
     /* 37 */ { 'text': ',', 'isGrey': true },
     // Keep in sync with row_symbols4.xml in android input tool.
     /* 38 */ { 'text': '.', 'isGrey': true,
       'moreKeys': {
         'characters': ['\u2026']}},
-    /* 39 */ NonLetterKeys.HIDE
+    /* 39 */ NON_LETTER_KEYS.HIDE
   ];
 };
 

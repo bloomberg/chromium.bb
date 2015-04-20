@@ -1,12 +1,12 @@
 {
   "add_to_dictionary": {
-    "message": "Add to dictionary"
+    "message": "\u8f9e\u66f8\u306b\u8ffd\u52a0"
   },
   "add_to_personal_dictionary": {
     "message": "\u30e6\u30fc\u30b6\u30fc\u8f9e\u66f8\u306b\u8ffd\u52a0"
   },
   "add_word_to_dictionary": {
-    "message": "Add \"$1\" to dictionary",
+    "message": "\u300c$1\u300d\u3092\u8f9e\u66f8\u306b\u8ffd\u52a0",
     "placeholders": {
       "1": {
         "content": "$1"

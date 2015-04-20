@@ -80,6 +80,8 @@ i18n.input.chrome.inputview.events.KeyCodes = {
   NUM_LOCK: 'NumLock',
   O_S: 'OS',
   SHIFT: 'Shift',
+  SHIFT_LEFT: 'ShiftLeft',
+  SHIFT_RIGHT: 'ShiftRight',
   SUPER: 'Super',
   SYMBOL: 'Symbol',
   SYMBOL_LOCK: 'SymbolLock',

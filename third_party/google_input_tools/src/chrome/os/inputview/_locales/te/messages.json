@@ -1,12 +1,12 @@
 {
   "add_to_dictionary": {
-    "message": "Add to dictionary"
+    "message": "\u0c28\u0c3f\u0c18\u0c02\u0c1f\u0c41\u0c35\u0c41\u0c15\u0c3f \u0c1c\u0c4b\u0c21\u0c3f\u0c02\u0c1a\u0c41"
   },
   "add_to_personal_dictionary": {
     "message": "\u0c35\u0c4d\u0c2f\u0c15\u0c4d\u0c24\u0c3f\u0c17\u0c24 \u0c28\u0c3f\u0c18\u0c02\u0c1f\u0c41\u0c35\u0c41\u0c15\u0c3f \u0c1c\u0c4b\u0c21\u0c3f\u0c02\u0c1a\u0c02\u0c21\u0c3f"
   },
   "add_word_to_dictionary": {
-    "message": "Add \"$1\" to dictionary",
+    "message": "\"$1\"\u0c28\u0c3f \u0c28\u0c3f\u0c18\u0c02\u0c1f\u0c41\u0c35\u0c41\u0c15\u0c3f \u0c1c\u0c4b\u0c21\u0c3f\u0c02\u0c1a\u0c41",
     "placeholders": {
       "1": {
         "content": "$1"

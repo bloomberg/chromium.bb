@@ -13,10 +13,11 @@
 //
 goog.provide('i18n.input.chrome.inputview.content.compact.more');
 
-goog.require('i18n.input.chrome.inputview.content.constants');
+goog.require('i18n.input.chrome.inputview.content.Constants');
 
 goog.scope(function() {
-var NonLetterKeys = i18n.input.chrome.inputview.content.constants.NonLetterKeys;
+var NON_LETTER_KEYS =
+    i18n.input.chrome.inputview.content.Constants.NON_LETTER_KEYS;
 
 
 /**
@@ -45,7 +46,7 @@ i18n.input.chrome.inputview.content.compact.more.keyNAMoreCharacters =
       'moreKeys': {
         'characters': ['\u00A7']}},
     /* 9 */ { 'text': '\u0394' },
-    /* 10 */ NonLetterKeys.BACKSPACE,
+    /* 10 */ NON_LETTER_KEYS.BACKSPACE,
     /* 11 */ { 'text': '\u00A3', 'marginLeftPercent': 0.33 },
     /* 12 */ { 'text': '\u00A2' },
     /* 13 */ { 'text': '\u20AC' },
@@ -64,8 +65,8 @@ i18n.input.chrome.inputview.content.compact.more.keyNAMoreCharacters =
         'characters': ['\u2260', '\u2248', '\u221E']}},
     /* 18 */ { 'text': '{' },
     /* 19 */ { 'text': '}' },
-    /* 20 */ NonLetterKeys.ENTER,
-    /* 21 */ NonLetterKeys.SWITCHER,
+    /* 20 */ NON_LETTER_KEYS.ENTER,
+    /* 21 */ NON_LETTER_KEYS.SWITCHER,
     /* 22 */ { 'text': '\\' },
     /* 23 */ { 'text': '\u00A9' },
     /* 24 */ { 'text': '\u00AE' },
@@ -75,24 +76,24 @@ i18n.input.chrome.inputview.content.compact.more.keyNAMoreCharacters =
     /* 28 */ { 'text': ']' },
     /* 29 */ { 'text': '\u00A1' },
     /* 30 */ { 'text': '\u00BF' },
-    /* 31 */ NonLetterKeys.SWITCHER,
-    /* 32 */ NonLetterKeys.SWITCHER,
+    /* 31 */ NON_LETTER_KEYS.SWITCHER,
+    /* 32 */ NON_LETTER_KEYS.SWITCHER,
     // Keep in sync with row_symbols_shift4.xml in android input tool.
     /* 33 */ { 'text': '<', 'isGrey': true,
       'moreKeys': {
         'characters': ['\u2039', '\u2264', '\u00AB']}},
-    /* 34 */ NonLetterKeys.MENU,
+    /* 34 */ NON_LETTER_KEYS.MENU,
     // Keep in sync with row_symbols_shift4.xml in android input tool.
     /* 35 */ { 'text': '>', 'isGrey': true,
       'moreKeys': {
         'characters': ['\u203A', '\u2265', '\u00BB']}},
-    /* 36 */ NonLetterKeys.SPACE,
+    /* 36 */ NON_LETTER_KEYS.SPACE,
     /* 37 */ { 'text': ',', 'isGrey': true },
     // Keep in sync with row_symbols_shift4.xml in android input tool.
     /* 38 */ { 'text': '.', 'isGrey': true,
       'moreKeys': {
         'characters': ['\u2026']}},
-    /* 39 */ NonLetterKeys.HIDE
+    /* 39 */ NON_LETTER_KEYS.HIDE
   ];
 };
 

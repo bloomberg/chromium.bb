@@ -1,12 +1,12 @@
 {
   "add_to_dictionary": {
-    "message": "Add to dictionary"
+    "message": "Dodaj v slovar"
   },
   "add_to_personal_dictionary": {
     "message": "Dodaj v osebni slovar"
   },
   "add_word_to_dictionary": {
-    "message": "Add \"$1\" to dictionary",
+    "message": "Dodaj besedo \u00bb$1\u00ab v slovar",
     "placeholders": {
       "1": {
         "content": "$1"

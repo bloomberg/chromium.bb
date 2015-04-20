@@ -1,12 +1,12 @@
 {
   "add_to_dictionary": {
-    "message": "Add to dictionary"
+    "message": "Tambahkan ke kamus"
   },
   "add_to_personal_dictionary": {
     "message": "Tambahkan ke kamus pribadi"
   },
   "add_word_to_dictionary": {
-    "message": "Add \"$1\" to dictionary",
+    "message": "Tambah \"$1\" ke kamus",
     "placeholders": {
       "1": {
         "content": "$1"

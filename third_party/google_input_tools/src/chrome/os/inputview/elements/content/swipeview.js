@@ -338,9 +338,8 @@ SwipeView.prototype.swipeToDelete_ = function(e) {
 
 
 /**
- * Handles swipe actions on the selection track. Swipes cause an alternatation
- * between selecting a word and moving the cursor to the next blank space in the
- * direction of the swipe.
+ * Handles swipe actions on the selection track. Swipes cause the cursor to move
+ * to the next blank space in the direction of the swipe.
  *
  * @param {!i18n.input.chrome.inputview.events.SwipeEvent} e The swipe event.
  * @private
@@ -358,9 +357,8 @@ SwipeView.prototype.swipeToSelect_ = function(e) {
     console.error('Invalid track index.');
     return;
   }
-  // Alternate between selecting a word if the element index is odd, and
-  // navigating to the next blank space if it's even.
-  var selectWord = index % 2 == 1;
+  // TODO: Set selectWord to true if the shift key is currently pressed.
+  var selectWord = false;
   var direction = e.direction;
   var code;
   if (direction & i18n.input.chrome.inputview.SwipeDirection.LEFT) {
@@ -370,18 +368,9 @@ SwipeView.prototype.swipeToSelect_ = function(e) {
   } else {
     return;
   }
-  // If anchor == focus we are either at the end or the start of the word
-  // and no selection is in place.
-  if (this.surroundingTextAnchor_ == this.surroundingTextFocus_) {
-    // Do not move carat at all, as this will either have no effect or cause
-    // us to splice the word.
-    if (!selectWord) {
-      return;
-    }
-  }
   this.adapter_.sendKeyDownAndUpEvent(
       '', code, undefined, undefined, {
-        ctrl: selectWord,
+        ctrl: true,
         shift: selectWord
       });
 };
@@ -416,7 +405,9 @@ SwipeView.prototype.handleSwipeAction_ = function(e) {
     if (e.direction & i18n.input.chrome.inputview.SwipeDirection.LEFT) {
       var key = /** @type {!content.FunctionalKey} */ (e.view);
       // Equivalent to a longpress.
-      this.showDeletionTrack(key);
+        if (this.adapter_.isGestureDeletionEnabled()) {
+          this.showDeletionTrack(key);
+        }
     }
     return;
   }
@@ -447,9 +438,9 @@ SwipeView.prototype.handlePointerAction_ = function(e) {
           this.armed_ = false;
         }
       } else if (e.type == EventType.LONG_PRESS) {
-        if (this.adapter_.isGestureDeletionEnabled()) {
-          this.showDeletionTrack(key);
-        }
+          if (this.adapter_.isGestureDeletionEnabled()) {
+            this.showDeletionTrack(key);
+          }
       }
       break;
     case ElementType.SWIPE_VIEW:
@@ -654,13 +645,14 @@ SwipeView.prototype.showDeletionTrack = function(key) {
  * @param {number} y
  */
 SwipeView.prototype.showSelectionTrack = function(x, y) {
-  var ltr = x <= (screen.width / 2);
+  var ltr = (x <= (screen.width / 2));
+  var halfWidth = SwipeView.SEGMENT_WIDTH_ / 2;
   // Center track on finger but force containment.
-  var width = Math.max(y - (SwipeView.SEGMENT_WIDTH_ / 2),
-      SwipeView.SEGMENT_WIDTH_ / 2);
+  var trackY = Math.max(y - halfWidth, halfWidth);
+  trackY = Math.min(trackY, window.innerHeight - 3 * halfWidth);
   this.showSelectionTrack_(
       ltr ? 0 : screen.width,
-      width,
+      trackY,
       SwipeView.SEGMENT_WIDTH_,
       SwipeView.SEGMENT_WIDTH_,
       x > (screen.width / 2) ? '<' : '>');

@@ -14,6 +14,7 @@
 goog.provide('i18n.input.chrome.inputview.elements.content.HandwritingView');
 
 goog.require('goog.dom.classlist');
+goog.require('goog.i18n.bidi');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.elements.content.KeysetView');
 
@@ -53,7 +54,6 @@ goog.inherits(HandwritingView, KeysetView);
 
 /** @override */
 HandwritingView.prototype.activate = function(rawKeyset) {
-  this.adapter.setController('hwt', this.languageCode);
   goog.dom.classlist.add(this.getElement().parentElement.parentElement,
       Css.HANDWRITING);
   // Clears stroke when switches keyboard.
@@ -78,5 +78,8 @@ HandwritingView.prototype.deactivate = function(rawKeyset) {
  */
 HandwritingView.prototype.setLanguagecode = function(languageCode) {
   this.languageCode = languageCode;
+  this.adapter.setController('hwt', this.languageCode);
+  this.canvasView.setPrivacyInfoDirection(
+      goog.i18n.bidi.isRtlLanguage(languageCode) ? 'rtl' : 'ltr');
 };
 });  // goog.scope

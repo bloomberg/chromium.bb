@@ -21,11 +21,11 @@ goog.require('goog.math.Coordinate');
 goog.require('goog.object');
 goog.require('goog.style');
 goog.require('i18n.input.chrome.inputview.Css');
-goog.require('i18n.input.chrome.inputview.content.constants');
+goog.require('i18n.input.chrome.inputview.content.Constants');
 goog.require('i18n.input.chrome.inputview.elements.Element');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
-goog.require('i18n.input.chrome.inputview.util');
 goog.require('i18n.input.chrome.inputview.handler.Util');
+goog.require('i18n.input.chrome.inputview.util');
 
 
 goog.scope(function() {
@@ -175,6 +175,15 @@ AltDataView.prototype.identifier = Util.INVALID_EVENT_IDENTIFIER;
 AltDataView.prototype.useIMEWindow_ = false;
 
 
+/**
+ * True if show is called and false if hide is called.
+ *
+ * @type {boolean}
+ * @private
+ */
+AltDataView.prototype.visible_ = false;
+
+
 /** @override */
 AltDataView.prototype.createDom = function() {
   goog.base(this, 'createDom');
@@ -227,7 +236,7 @@ AltDataView.prototype.show = function(key, isRTL, identifier) {
     fixedColumns = key.getFixedColumns();
     if (key.hintText) {
       var index = goog.array.indexOf(characters,
-          i18n.input.chrome.inputview.content.constants.HintTextPlaceHolder);
+          i18n.input.chrome.inputview.content.Constants.HINT_TEXT_PLACE_HOLDER);
       if (index != -1) {
         goog.array.splice(characters, index, 1, key.hintText);
       } else {
@@ -239,6 +248,7 @@ AltDataView.prototype.show = function(key, isRTL, identifier) {
     return;
   }
 
+  this.visible_ = true;
   goog.style.setElementShown(this.getElement(), true);
   this.getDomHelper().removeChildren(this.getElement());
 
@@ -278,7 +288,7 @@ AltDataView.prototype.show = function(key, isRTL, identifier) {
           var contentWindow = self.altdataWindow_.contentWindow;
           contentWindow.addEventListener('load', function() {
             contentWindow.accents.setAccents(characters, numOfColumns,
-                numOfRows, w, h, startKeyIndex);
+                numOfRows, w, h, startKeyIndex, isCompact);
             self.highlightItem(
                 Math.ceil(parentKeyLeftTop.x + w / 2),
                 Math.ceil(parentKeyLeftTop.y + h / 2),
@@ -293,7 +303,14 @@ AltDataView.prototype.show = function(key, isRTL, identifier) {
             outerBounds.width += (marginBox.left + marginBox.right);
             outerBounds.height += (marginBox.top + marginBox.bottom);
             self.altdataWindow_.outerBounds = outerBounds;
-            self.altdataWindow_.show();
+            // Function hide maybe called before loading complete. Do not show
+            // the window in this case.
+            if (self.visible_) {
+              self.altdataWindow_.show();
+            } else {
+              self.altdataWindow_.close();
+              self.altdataWindow_ = null;
+            }
           });
         });
   } else {
@@ -405,6 +422,7 @@ AltDataView.prototype.getOptimizedMaxColumns_ = function(numOfKeys) {
  * Hides the alt data view.
  */
 AltDataView.prototype.hide = function() {
+  this.visible_ = false;
   if (this.useIMEWindow_ && this.altdataWindow_) {
     this.altdataWindow_.close();
     this.altdataWindow_ = null;

@@ -1,12 +1,12 @@
 {
   "add_to_dictionary": {
-    "message": "Add to dictionary"
+    "message": "\u05d4\u05d5\u05e1\u05e3 \u05dc\u05de\u05d9\u05dc\u05d5\u05df"
   },
   "add_to_personal_dictionary": {
     "message": "\u05d4\u05d5\u05e1\u05e3 \u05dc\u05de\u05d9\u05dc\u05d5\u05df \u05d4\u05d0\u05d9\u05e9\u05d9"
   },
   "add_word_to_dictionary": {
-    "message": "Add \"$1\" to dictionary",
+    "message": "\u05d4\u05d5\u05e1\u05e3 \u05d0\u05ea \"$1\" \u05dc\u05de\u05d9\u05dc\u05d5\u05df",
     "placeholders": {
       "1": {
         "content": "$1"

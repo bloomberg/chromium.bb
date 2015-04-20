@@ -20,13 +20,13 @@ goog.provide('i18n.input.chrome.sounds.Sounds');
  * @enum {string}
  */
 i18n.input.chrome.sounds.Sounds = {
-  DELETE: 'keypress-delete',
-  RETURN: 'keypress-return',
-  SPACEBAR: 'keypress-spacebar',
-  STANDARD: 'keypress-standard',
+  DELETE: 'KeypressDelete',
+  RETURN: 'KeypressReturn',
+  SPACEBAR: 'KeypressSpacebar',
+  STANDARD: 'KeypressStandard',
   NONE: 'none',
-  VOICE_RECOG_START: 'voice_recog_start',
-  VOICE_RECOG_END: 'voice_recog_end',
-  AUTO_CORRECTION: 'auto_correction'
+  VOICE_RECOG_START: 'audio_initiate',
+  VOICE_RECOG_END: 'audio_end',
+  AUTO_CORRECTION: 'KeypressStandard'
 };
 

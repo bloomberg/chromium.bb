@@ -1,12 +1,12 @@
 {
   "add_to_dictionary": {
-    "message": "Add to dictionary"
+    "message": "A\u00f1adir al diccionario"
   },
   "add_to_personal_dictionary": {
     "message": "A\u00f1adir a diccionario personal"
   },
   "add_word_to_dictionary": {
-    "message": "Add \"$1\" to dictionary",
+    "message": "A\u00f1adir \"$1\" al diccionario",
     "placeholders": {
       "1": {
         "content": "$1"
@@ -2591,7 +2591,7 @@
     "message": "cambiar a emoji"
   },
   "footer_handwriting_button": {
-    "message": "cambiar a escritura t\u00e1ctil"
+    "message": "cambiar a escritura a mano"
   },
   "footer_settings_button": {
     "message": "abrir la configuraci\u00f3n del m\u00e9todo de entrada"
@@ -2624,7 +2624,7 @@
     "message": "Atr\u00e1s"
   },
   "handwriting_netowrk_error": {
-    "message": "No se puede utilizar la escritura t\u00e1ctil porque la red no est\u00e1 disponible."
+    "message": "No se puede utilizar la escritura a mano porque la red no est\u00e1 disponible."
   },
   "handwriting_privacy_info": {
     "message": "Tu entrada se enviar\u00e1 a los servidores de Google para reconocer el texto."

@@ -140,7 +140,7 @@ Adapter.prototype.textBeforeCursor = '';
 
 
 /** @type {boolean} */
-Adapter.prototype.isQPInputView = false;
+Adapter.prototype.isQPInputView = true;
 
 
 /**
@@ -458,8 +458,9 @@ Adapter.prototype.onContextFocus_ = function(message) {
 Adapter.prototype.initBackground_ = function() {
   chrome.runtime.getBackgroundPage((function() {
     this.isBgControllerSwitching_ = true;
-    chrome.runtime.sendMessage(
-        goog.object.create(Name.TYPE, Type.CONNECT));
+    chrome.runtime.sendMessage(goog.object.create(
+        Name.TYPE, Type.CONNECT,
+        Name.VISIBILITY, this.isVisible));
   }).bind(this));
 };
 

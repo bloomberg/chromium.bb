@@ -1,12 +1,12 @@
 {
   "add_to_dictionary": {
-    "message": "Add to dictionary"
+    "message": "\u12c8\u12f0 \u1218\u12dd\u1308\u1260-\u1243\u120b\u1275 \u12a0\u12ad\u120d"
   },
   "add_to_personal_dictionary": {
     "message": "\u12c8\u12f0 \u12e8\u130d\u120d \u1218\u12dd\u1308\u1260 \u1243\u120b\u1275 \u12a0\u12ad\u120d"
   },
   "add_word_to_dictionary": {
-    "message": "Add \"$1\" to dictionary",
+    "message": "$1/}\u00bb\u1295 \u12c8\u12f0 \u1218\u12dd\u1308\u1260-\u1243\u120b\u1275 \u12a0\u12ad\u120d",
     "placeholders": {
       "1": {
         "content": "$1"

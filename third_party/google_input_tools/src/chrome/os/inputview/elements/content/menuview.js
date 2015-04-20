@@ -77,7 +77,7 @@ MenuView.Command = {
  * @type {number}
  * @private
  */
-MenuView.MAXIMAL_VISIBLE_IMES_ = 4;
+MenuView.prototype.visibleItems_ = 4;
 
 
 /**
@@ -157,15 +157,17 @@ MenuView.prototype.enterDocument = function() {
  * @param {boolean} hasHwt Whether to add handwriting button.
  * @param {boolean} enableSettings Whether to add a link to settings page.
  * @param {boolean} hasEmoji Whether to enable emoji.
+ * @param {boolean} isA11y .
  */
 MenuView.prototype.show = function(key, currentKeysetId, isCompact,
     enableCompactLayout, currentInputMethod, inputMethods, hasHwt,
-    enableSettings, hasEmoji) {
+    enableSettings, hasEmoji, isA11y) {
   if (i18n.input.chrome.inputview.GlobalFlags.isQPInputView) {
     // Temporary overwrites the value for material design.
     MenuView.width_ = 259;
     MenuView.paddingLeft_ = 41;
   }
+  this.visibleItems_ = isA11y ? 3 : 4;
   var ElementType = i18n.input.chrome.inputview.elements.ElementType;
   var dom = this.getDomHelper();
   if (key.type != ElementType.MENU_KEY) {
@@ -251,8 +253,8 @@ MenuView.prototype.addInputMethodItems_ = function(currentInputMethod,
         MenuView.LIST_ITEM_HEIGHT_);
   }
 
-  var containerHeight = inputMethods.length > MenuView.MAXIMAL_VISIBLE_IMES_ ?
-      MenuView.LIST_ITEM_HEIGHT_ * MenuView.MAXIMAL_VISIBLE_IMES_ :
+  var containerHeight = inputMethods.length > this.visibleItems_ ?
+      MenuView.LIST_ITEM_HEIGHT_ * this.visibleItems_ :
       MenuView.LIST_ITEM_HEIGHT_ * inputMethods.length;
   goog.style.setSize(container, MenuView.width_ + MenuView.paddingLeft_,
       containerHeight);

@@ -18,14 +18,11 @@ goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
 goog.require('i18n.input.chrome.inputview.Css');
-goog.require('i18n.input.chrome.inputview.elements.content.FunctionalKey');
-goog.require('i18n.input.chrome.message.Name');
-goog.require('i18n.input.chrome.message.Type');
+goog.require('i18n.input.chrome.inputview.elements.content.SoftKey');
 
 goog.scope(function() {
 
-var Type = i18n.input.chrome.message.Type;
-var Name = i18n.input.chrome.message.Name;
+var EMOJI_KEY_MARGIN = 6;
 
 
 
@@ -36,16 +33,22 @@ var Name = i18n.input.chrome.message.Name;
  * @param {!i18n.input.chrome.inputview.elements.ElementType} type The element
  *     type.
  * @param {string} text The text.
- * @param {string} iconCssClass The css class for the icon.
  * @param {boolean} isEmoticon Wether it is an emoticon.
  * @param {goog.events.EventTarget=} opt_eventTarget The event target.
  * @constructor
- * @extends {i18n.input.chrome.inputview.elements.content.FunctionalKey}
+ * @extends {i18n.input.chrome.inputview.elements.content.SoftKey}
  */
 i18n.input.chrome.inputview.elements.content.EmojiKey = function(id, type,
-    text, iconCssClass, isEmoticon, opt_eventTarget) {
+    text, isEmoticon, opt_eventTarget) {
   i18n.input.chrome.inputview.elements.content.EmojiKey.base(
-      this, 'constructor', id, type, text, '', opt_eventTarget);
+      this, 'constructor', id, type, opt_eventTarget);
+  /**
+   * The text in the key.
+   *
+   * @type {string}
+   */
+  this.text = text;
+
 
   /**
    * Wether it is an emoticon.
@@ -58,7 +61,7 @@ i18n.input.chrome.inputview.elements.content.EmojiKey = function(id, type,
   this.pointerConfig.dblClick = true;
 };
 goog.inherits(i18n.input.chrome.inputview.elements.content.EmojiKey,
-    i18n.input.chrome.inputview.elements.content.FunctionalKey);
+    i18n.input.chrome.inputview.elements.content.SoftKey);
 var EmojiKey = i18n.input.chrome.inputview.elements.content.EmojiKey;
 
 
@@ -70,39 +73,34 @@ EmojiKey.prototype.createDom = function() {
   if (!this.textElem) {
     this.textElem = dom.createDom(goog.dom.TagName.DIV,
         i18n.input.chrome.inputview.Css.SPECIAL_KEY_NAME, this.text);
-    dom.appendChild(this.tableCell, this.textElem);
   }
-  goog.dom.classlist.add(elem,
-      i18n.input.chrome.inputview.Css.EMOJI_KEY);
-  var emojiName = this.getLocalizedName();
-  if (emojiName) {
-    goog.a11y.aria.setState(/** @type {!Element} */ (elem),
-        goog.a11y.aria.State.LABEL, emojiName);
-  }
-
+  goog.dom.classlist.add(elem, i18n.input.chrome.inputview.Css.EMOJI_KEY);
+  elem.style.margin = EMOJI_KEY_MARGIN + 'px';
   this.updateText(this.text, this.isEmoticon);
+  dom.appendChild(elem, this.textElem);
+  // Sets aria label after UI is ready.
+  setTimeout(this.setAriaLable_.bind(this), 0);
 };
 
 
-/**
- * Gets the localized name for the emoji.
- *
- * @return {string} .
- */
-EmojiKey.prototype.getLocalizedName = function() {
-  if (this.isEmoticon) {
-    return chrome.i18n.getMessage('smiley');
+/** @override */
+EmojiKey.prototype.resize = function(width, height) {
+  var elem = this.getElement();
+  var w = width - EMOJI_KEY_MARGIN * 2;
+  var h = height - EMOJI_KEY_MARGIN * 2;
+  elem.style.width = w + 'px';
+  elem.style.height = h + 'px';
+  this.availableWidth = w;
+  this.availableHeight = h;
+};
+
+
+/** @override */
+EmojiKey.prototype.setHighlighted = function(highlight) {
+  if (this.text == '') {
+    return;
   }
-  var lead = this.text.charCodeAt(0);
-  if (!lead) {
-    return '';
-  }
-  var trail = this.text.charCodeAt(1);
-  var msgName = lead.toString(16);
-  if (!!trail) {
-    msgName += '_' + trail.toString(16);
-  }
-  return chrome.i18n.getMessage(msgName.toLowerCase());
+  goog.base(this, 'setHighlighted', highlight);
 };
 
 
@@ -128,6 +126,31 @@ EmojiKey.prototype.updateText = function(text, isEmoticon) {
     goog.dom.classlist.add(elem, i18n.input.chrome.inputview.Css.EMOTICON);
   } else {
     goog.dom.classlist.remove(elem, i18n.input.chrome.inputview.Css.EMOTICON);
+  }
+};
+
+
+/**
+ * Sets the aria label for this emoji key if any.
+ *
+ * @private
+ */
+EmojiKey.prototype.setAriaLable_ = function() {
+  var emojiName = '';
+  var lead = this.text.charCodeAt(0);
+  if (this.isEmoticon) {
+    emojiName = chrome.i18n.getMessage('smiley');
+  } else if (lead) {
+    var trail = this.text.charCodeAt(1);
+    var msgName = lead.toString(16);
+    if (!!trail) {
+      msgName += '_' + trail.toString(16);
+    }
+    emojiName = chrome.i18n.getMessage(msgName.toLowerCase());
+  }
+  if (emojiName) {
+    goog.a11y.aria.setState(/** @type {!Element} */ (this.getElement()),
+        goog.a11y.aria.State.LABEL, emojiName);
   }
 };
 });  // goog.scope

@@ -662,23 +662,18 @@
   background: no-repeat url('images/error.png');
   padding: 0 0 0 50px;
   position: absolute;
-  width: 600px;
-  height: 100px;
 }
 
 .inputview-handwriting-privacy-cover {
   position: relative;
   bottom: 0;
   left: 0;
-  background-color: white;
   opacity: 0.5;
   z-index: 1;
 }
 
 .inputview-handwriting-privacy-info {
   position: absolute;
-  width: 600px;
-  height: 100px;
   z-index: 2;
 }
 

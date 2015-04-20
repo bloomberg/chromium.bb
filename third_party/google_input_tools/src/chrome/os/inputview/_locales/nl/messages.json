@@ -1,12 +1,12 @@
 {
   "add_to_dictionary": {
-    "message": "Add to dictionary"
+    "message": "Toevoegen aan woordenboek"
   },
   "add_to_personal_dictionary": {
     "message": "Toevoegen aan persoonlijk woordenboek"
   },
   "add_word_to_dictionary": {
-    "message": "Add \"$1\" to dictionary",
+    "message": "$1 toevoegen aan woordenboek",
     "placeholders": {
       "1": {
         "content": "$1"

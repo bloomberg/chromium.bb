@@ -1,12 +1,12 @@
 {
   "add_to_dictionary": {
-    "message": "Add to dictionary"
+    "message": "Dodaj do s\u0142ownika"
   },
   "add_to_personal_dictionary": {
     "message": "Dodaj do s\u0142ownika osobistego"
   },
   "add_word_to_dictionary": {
-    "message": "Add \"$1\" to dictionary",
+    "message": "Dodaj \u201e$1\u201d do s\u0142ownika",
     "placeholders": {
       "1": {
         "content": "$1"

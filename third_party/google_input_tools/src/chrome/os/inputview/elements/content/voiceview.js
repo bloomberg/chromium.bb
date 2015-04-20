@@ -18,12 +18,13 @@ goog.require('goog.asserts');
 goog.require('goog.async.Delay');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
-goog.require('goog.events.EventType');
 goog.require('goog.style');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.elements.Element');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
+goog.require('i18n.input.chrome.inputview.elements.content.SpanElement');
 goog.require('i18n.input.chrome.message.Name');
+goog.require('i18n.input.chrome.message.Type');
 goog.require('i18n.input.chrome.sounds.Sounds');
 
 
@@ -33,6 +34,7 @@ var ElementType = i18n.input.chrome.inputview.elements.ElementType;
 var FunctionalKey = i18n.input.chrome.inputview.elements.content.FunctionalKey;
 var Name = i18n.input.chrome.message.Name;
 var Sounds = i18n.input.chrome.sounds.Sounds;
+var SpanElement = i18n.input.chrome.inputview.elements.content.SpanElement;
 var TagName = goog.dom.TagName;
 var Type = i18n.input.chrome.message.Type;
 
@@ -106,12 +108,8 @@ VoiceView.prototype.voicePanel_ = null;
 VoiceView.prototype.privacyDiv_;
 
 
-/**
- * The "got it" confirm span for privacy info.
- *
- * @private {!Element}
- */
-VoiceView.prototype.confirmSpan_;
+/** @private {boolean} */
+VoiceView.prototype.visible_ = false;
 
 
 /** @override */
@@ -140,10 +138,11 @@ VoiceView.prototype.createDom = function() {
   dom.setTextContent(textDiv,
       chrome.i18n.getMessage('VOICE_PRIVACY_INFO'));
   dom.appendChild(this.privacyDiv_, textDiv);
-  this.confirmSpan_ = dom.createDom(goog.dom.TagName.SPAN,
-      Css.VOICE_GOT_IT);
-  dom.setTextContent(this.confirmSpan_, chrome.i18n.getMessage('GOT_IT'));
-  dom.appendChild(this.privacyDiv_, this.confirmSpan_);
+  var spanView = new SpanElement('', ElementType.VOICE_PRIVACY_GOT_IT);
+  spanView.render(this.privacyDiv_);
+  var spanElement = spanView.getElement();
+  goog.dom.classlist.add(spanElement, Css.VOICE_GOT_IT);
+  dom.setTextContent(spanElement, chrome.i18n.getMessage('GOT_IT'));
   dom.appendChild(elem, this.privacyDiv_);
 
   // Shows or hides the privacy information.
@@ -159,8 +158,7 @@ VoiceView.prototype.createDom = function() {
 /** @override */
 VoiceView.prototype.enterDocument = function() {
   goog.base(this, 'enterDocument');
-  this.getHandler().listen(this.confirmSpan_,
-      [goog.events.EventType.CLICK, goog.events.EventType.TOUCHEND],
+  this.getHandler().listen(this.adapter_, Type.VOICE_PRIVACY_GOT_IT,
       this.onConfirmPrivacyInfo_);
 };
 
@@ -185,12 +183,6 @@ VoiceView.prototype.start = function() {
  * Stop recognition.
  */
 VoiceView.prototype.stop = function() {
-  // TODO(wuyingbing) This is a hack. Since "got it" link is a raw element.
-  // Click it will fire touch event then pass to controller to call stop.
-  // So stop it here. In future, should wrap "got it" link as content.Element.
-  if (!this.isPrivacyAllowed_) {
-    return;
-  }
   // invisible -> visible
   if (this.isVisible()) {
     this.soundController_.playSound(Sounds.VOICE_RECOG_END, true);
@@ -203,6 +195,7 @@ VoiceView.prototype.stop = function() {
 /** @override */
 VoiceView.prototype.setVisible = function(visible) {
   VoiceView.base(this, 'setVisible', visible);
+  this.visible_ = visible;
   var elem = this.getElement();
   goog.style.setElementShown(elem, true);
   elem.style.visibility = visible ? 'visible' : 'hidden';
@@ -233,10 +226,11 @@ VoiceView.prototype.resize = function(width, height) {
   VoiceView.base(this, 'resize', width, height);
   this.voicePanel_.style.left = (width - VoiceView.WIDTH_) + 'px';
 
+  var elem = this.getElement();
   var size = goog.style.getSize(this.privacyDiv_);
-  this.privacyDiv_.style.top =
+  this.privacyDiv_.style.top = elem.offsetTop +
       Math.round((height - size.height) / 2) + 'px';
-  this.privacyDiv_.style.left =
+  this.privacyDiv_.style.left = elem.offsetLeft +
       Math.round((width - size.width) / 2) + 'px';
 };
 
@@ -272,5 +266,12 @@ VoiceView.prototype.onConfirmPrivacyInfo_ = function() {
   this.soundController_.playSound(Sounds.VOICE_RECOG_START, true);
   goog.dom.classlist.add(this.privacyDiv_, Css.HANDWRITING_PRIVACY_INFO_HIDDEN);
   goog.dom.classlist.remove(this.maskElem_, Css.VOICE_OPACITY_NONE);
+};
+
+
+
+/** @override */
+VoiceView.prototype.isVisible = function() {
+  return this.visible_;
 };
 });  // goog.scope

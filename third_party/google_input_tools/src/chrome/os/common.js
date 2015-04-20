@@ -32,6 +32,7 @@ i18n.input.chrome.MessageKey = {
   CORRECTION: 'correction',
   DELETE: 'delete',
   ENABLE_USER_DICT: 'enable_user_dict',
+  ENTRIES: 'entries',
   FREQUENCY: 'frequency',
   FUZZY_PAIRS: 'fuzzy_pairs',
   HIGHLIGHT: 'highlight',
@@ -44,7 +45,9 @@ i18n.input.chrome.MessageKey = {
   SELECT: 'select',
   SELECT_HIGHLIGHT: 'select_highlight',
   SOURCE: 'source',
-  UPDATE_ALL: 'update_all'
+  TARGET: 'target',
+  UPDATE_ALL: 'update_all',
+  USER_DICT: 'user_dict'
 };
 
 

@@ -1,12 +1,12 @@
 {
   "add_to_dictionary": {
-    "message": "Add to dictionary"
+    "message": "F\u00f8j til ordbogen"
   },
   "add_to_personal_dictionary": {
     "message": "F\u00f8j til personlig ordbog"
   },
   "add_word_to_dictionary": {
-    "message": "Add \"$1\" to dictionary",
+    "message": "F\u00f8j \"$1\" til ordbogen",
     "placeholders": {
       "1": {
         "content": "$1"

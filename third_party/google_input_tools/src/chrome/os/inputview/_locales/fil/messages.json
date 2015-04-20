@@ -1,12 +1,12 @@
 {
   "add_to_dictionary": {
-    "message": "Add to dictionary"
+    "message": "Idagdag sa diksyunaryo"
   },
   "add_to_personal_dictionary": {
     "message": "Idagdag sa personal na diksyunaryo"
   },
   "add_word_to_dictionary": {
-    "message": "Add \"$1\" to dictionary",
+    "message": "Idagdag ang \"$1\" sa diksyunaryo",
     "placeholders": {
       "1": {
         "content": "$1"

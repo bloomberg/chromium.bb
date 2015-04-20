@@ -1,12 +1,12 @@
 {
   "add_to_dictionary": {
-    "message": "Add to dictionary"
+    "message": "Lisa s\u00f5nastikku"
   },
   "add_to_personal_dictionary": {
     "message": "Isiklikku s\u00f5nastikku lisamine"
   },
   "add_word_to_dictionary": {
-    "message": "Add \"$1\" to dictionary",
+    "message": "Lisa \u201e$1\u201d s\u00f5nastikku",
     "placeholders": {
       "1": {
         "content": "$1"

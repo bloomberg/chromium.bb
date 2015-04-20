@@ -1,12 +1,12 @@
 {
   "add_to_dictionary": {
-    "message": "Add to dictionary"
+    "message": "Lis\u00e4\u00e4 sanakirjaan"
   },
   "add_to_personal_dictionary": {
     "message": "Lis\u00e4\u00e4 omaan sanakirjaan"
   },
   "add_word_to_dictionary": {
-    "message": "Add \"$1\" to dictionary",
+    "message": "Lis\u00e4\u00e4 $1 sanakirjaan",
     "placeholders": {
       "1": {
         "content": "$1"

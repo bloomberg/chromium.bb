@@ -1,12 +1,12 @@
 {
   "add_to_dictionary": {
-    "message": "Add to dictionary"
+    "message": "Prida\u0165 do slovn\u00edka"
   },
   "add_to_personal_dictionary": {
     "message": "Prida\u0165 do osobn\u00e9ho slovn\u00edka"
   },
   "add_word_to_dictionary": {
-    "message": "Add \"$1\" to dictionary",
+    "message": "Prida\u0165 slovo \u201e$1\u201c do slovn\u00edka",
     "placeholders": {
       "1": {
         "content": "$1"
@@ -2615,7 +2615,7 @@
     "message": "prepn\u00fa\u0165 na predch\u00e1dzaj\u00facu kl\u00e1vesnicu"
   },
   "got_it": {
-    "message": "Rozumiem"
+    "message": "Dobre"
   },
   "gr_gre_settings_page": {
     "message": "Str\u00e1nka s nastaveniami gr\u00e9ckej kl\u00e1vesnice"

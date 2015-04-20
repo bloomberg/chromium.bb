@@ -1,12 +1,12 @@
 {
   "add_to_dictionary": {
-    "message": "Add to dictionary"
+    "message": "Hozz\u00e1ad\u00e1s a sz\u00f3t\u00e1rhoz"
   },
   "add_to_personal_dictionary": {
     "message": "Hozz\u00e1ad\u00e1s a szem\u00e9lyes sz\u00f3t\u00e1rhoz"
   },
   "add_word_to_dictionary": {
-    "message": "Add \"$1\" to dictionary",
+    "message": "$1/}\u201d hozz\u00e1ad\u00e1sa a sz\u00f3t\u00e1rhoz",
     "placeholders": {
       "1": {
         "content": "$1"

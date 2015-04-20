@@ -123,10 +123,12 @@ Accents.getHighlightedItem_ = function(x, y, offset) {
  * @param {number} width The width of accent key.
  * @param {number} height The height of accent key.
  * @param {number} startKeyIndex The index of the start key in bottom row.
+ * @param {boolean} isCompact True if this accents window is for compact
+ * keyboard.
  * @private
  */
 Accents.setAccents_ = function(accents, numOfColumns, numOfRows, width,
-    height, startKeyIndex) {
+    height, startKeyIndex, isCompact) {
   var TagName = goog.dom.TagName;
   var dom = goog.dom.getDomHelper();
   var container = dom.createDom(TagName.DIV, Css.ACCENT_CONTAINER);
@@ -145,7 +147,7 @@ Accents.setAccents_ = function(accents, numOfColumns, numOfRows, width,
     textDiv.textContent = text;
     // If accent is a word use a smaller font size.
     goog.dom.classlist.add(textDiv, text.length > 1 ? Css.FONT_SMALL :
-        Css.FONT);
+        (isCompact ? Css.ACCENT_COMPACT_FONT : Css.ACCENT_FULL_FONT));
 
     goog.style.setStyle(textDiv, 'lineHeight', height + 'px');
     dom.appendChild(keyElem, textDiv);

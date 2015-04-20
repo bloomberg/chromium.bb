@@ -227,12 +227,24 @@ CandidateView.HANDWRITING_VIEW_CODE_ = 'hwt';
 CandidateView.EMOJI_VIEW_CODE_ = 'emoji';
 
 
+/** @private {string} */
+CandidateView.prototype.keyset_ = '';
+
+
 /**
  * The width of the inter container.
  *
  * @private {number}
  */
 CandidateView.prototype.interContainerWidth_ = 0;
+
+
+/** @private {boolean} */
+CandidateView.prototype.navigation_ = false;
+
+
+/** @private {number} */
+CandidateView.prototype.sumOfCandidates_ = 0;
 
 
 /** @override */
@@ -321,6 +333,7 @@ CandidateView.prototype.showNumberRow = function() {
 CandidateView.prototype.showCandidates = function(candidates,
     showThreeCandidates, opt_expandable) {
   this.clearCandidates();
+  this.sumOfCandidates_ = candidates.length;
   if (candidates.length > 0) {
     if (showThreeCandidates) {
       this.addThreeCandidates_(candidates);
@@ -365,6 +378,7 @@ CandidateView.prototype.addThreeCandidates_ = function(candidates) {
  * Clears the candidates.
  */
 CandidateView.prototype.clearCandidates = function() {
+  this.sumOfCandidates_ = 0;
   if (this.showingCandidates) {
     this.candidateCount = 0;
     this.getDomHelper().removeChildren(this.interContainer_);
@@ -427,17 +441,16 @@ CandidateView.prototype.setWidthInWeight = function(widthInWeight,
 /** @override */
 CandidateView.prototype.resize = function(width, height) {
   if (this.backspaceWeight_ > 0) {
-    var weightArray = [];
-    var keys = Math.round(this.widthInWeight_ - this.backspaceWeight_);
-    for (var i = 0; i < keys; i++) {
-      weightArray.push(1);
-    }
+    var weightArray = [Math.round(this.widthInWeight_ - this.backspaceWeight_)];
     weightArray.push(this.backspaceWeight_);
     var values = util.splitValue(weightArray, width);
     this.iconWidth_ = values[values.length - 1];
   }
   goog.style.setSize(this.getElement(), width, height);
-  goog.style.setSize(this.interContainer_, (width - this.iconWidth_), height);
+  if (!goog.dom.classlist.contains(this.getElement(),
+      i18n.input.chrome.inputview.Css.THREE_CANDIDATES)) {
+    goog.style.setSize(this.interContainer_, (width - this.iconWidth_), height);
+  }
   for (var i = 0; i < this.iconButtons_.length; i++) {
     var button = this.iconButtons_[i];
     button.resize(this.iconWidth_, height);
@@ -476,23 +489,21 @@ CandidateView.prototype.resize = function(width, height) {
  * @param {boolean} visible The visibility of back button.
  */
 CandidateView.prototype.switchToIcon = function(type, visible) {
-  for (var i = 0; i < this.iconButtons_.length; i++) {
-    this.iconButtons_[i].setVisible(false);
-  }
-
   if (visible) {
-    if (type != IconType.VOICE) {
-      this.iconButtons_[type].setVisible(true);
-    } else if (this.adapter_.isVoiceInputEnabled &&
-        this.adapter_.contextType != 'password') {
-      // Don't enable voice when focus in password box.
-      this.iconButtons_[type].setVisible(true);
+    for (var i = 0; i < this.iconButtons_.length; i++) {
+      if (type != IconType.VOICE) {
+        this.iconButtons_[i].setVisible(i == type);
+      } else {
+        this.iconButtons_[i].setVisible(i == type &&
+            this.needToShowVoiceIcon_());
+      }
     }
-  } else if (this.adapter_.isVoiceInputEnabled &&
-      type != IconType.VOICE &&
-      this.adapter_.contextType != 'password') {
-    // Default to show voice icon.
-    this.iconButtons_[IconType.VOICE].setVisible(true);
+  } else {
+    this.iconButtons_[type].setVisible(false);
+    // When some icon turn to invisible, need to show voice icon.
+    if (!visible && type != IconType.VOICE && this.needToShowVoiceIcon_()) {
+      this.iconButtons_[IconType.VOICE].setVisible(true);
+    }
   }
 };
 
@@ -511,7 +522,8 @@ CandidateView.prototype.setToolbarVisible = function(visible) {
 
 
 /**
- * Updates the candidate view by key set changing.
+ * Updates the candidate view by key set changing. Whether to show voice icon
+ * or not.
  *
  * @param {string} keyset .
  * @param {boolean} isPasswordBox .
@@ -519,17 +531,18 @@ CandidateView.prototype.setToolbarVisible = function(visible) {
  */
 CandidateView.prototype.updateByKeyset = function(
     keyset, isPasswordBox, isRTL) {
-  if (!i18n.input.chrome.inputview.GlobalFlags.isQPInputView && (
-      keyset == CandidateView.HANDWRITING_VIEW_CODE_ ||
-      keyset == CandidateView.EMOJI_VIEW_CODE_)) {
-    this.switchToIcon(IconType.BACK, true);
-  } else if (keyset != CandidateView.HANDWRITING_VIEW_CODE_ &&
-      keyset != CandidateView.EMOJI_VIEW_CODE_) {
-    this.switchToIcon(IconType.VOICE,
-        this.adapter_.isVoiceInputEnabled &&
-        this.adapter_.contextType != 'password');
+  this.keyset_ = keyset;
+  if (keyset == CandidateView.HANDWRITING_VIEW_CODE_ ||
+      keyset == CandidateView.EMOJI_VIEW_CODE_) {
+    // Handwriting and emoji keyset do not allow to show voice icon.
+    // When it's not material design style, need to show BACK icon.
+    if (!i18n.input.chrome.inputview.GlobalFlags.isQPInputView) {
+      this.switchToIcon(IconType.BACK, true);
+    } else {
+      this.switchToIcon(IconType.VOICE, false);
+    }
   } else {
-    this.switchToIcon(IconType.VOICE, false);
+    this.switchToIcon(IconType.VOICE, this.needToShowVoiceIcon_());
   }
 
   if (isPasswordBox && (keyset.indexOf('compact') != -1 &&
@@ -548,5 +561,30 @@ CandidateView.prototype.disposeInternal = function() {
   goog.disposeAll(this.iconButtons_);
 
   goog.base(this, 'disposeInternal');
+};
+
+
+/**
+ * Whether need to show voice icon on candidate view bar.
+ *
+ * @return {boolean}
+ * @private
+ */
+CandidateView.prototype.needToShowVoiceIcon_ = function() {
+  return this.adapter_.isVoiceInputEnabled &&
+      this.adapter_.contextType != 'password' &&
+      this.keyset_ != CandidateView.HANDWRITING_VIEW_CODE_ &&
+      this.keyset_ != CandidateView.EMOJI_VIEW_CODE_ &&
+      (!this.navigation_ || this.candidateCount == this.sumOfCandidates_);
+};
+
+
+/**
+ * Sets the navigation value.
+ *
+ * @param {boolean} navigation .
+ */
+CandidateView.prototype.setNavigation = function(navigation) {
+  this.navigation_ = navigation;
 };
 });  // goog.scope

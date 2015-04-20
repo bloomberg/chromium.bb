@@ -1,12 +1,12 @@
 {
   "add_to_dictionary": {
-    "message": "Add to dictionary"
+    "message": "\uc0ac\uc804\uc5d0 \ucd94\uac00"
   },
   "add_to_personal_dictionary": {
     "message": "\uac1c\uc778 \uc0ac\uc804\uc5d0 \ucd94\uac00"
   },
   "add_word_to_dictionary": {
-    "message": "Add \"$1\" to dictionary",
+    "message": "\uc0ac\uc804\uc5d0 '$1' \ucd94\uac00",
     "placeholders": {
       "1": {
         "content": "$1"

@@ -100,8 +100,7 @@ SoftKey.prototype.createDom = function() {
 
 
 /** @override */
-SoftKey.prototype.resize = function(width,
-    height) {
+SoftKey.prototype.resize = function(width, height) {
   goog.base(this, 'resize', width, height);
 
   var elem = this.getElement();

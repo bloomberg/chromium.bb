@@ -102,8 +102,7 @@ ModifierKey.prototype.isDoubleClicking = false;
 ModifierKey.prototype.createDom = function() {
   goog.base(this, 'createDom');
 
-  if (this.toState == i18n.input.chrome.inputview.StateType.CAPSLOCK ||
-      this.supportSticky) {
+  if (this.toState == i18n.input.chrome.inputview.StateType.CAPSLOCK) {
     var dom = this.getDomHelper();
     this.dotIcon_ = dom.createDom(goog.dom.TagName.DIV, Css.CAPSLOCK_DOT);
     dom.appendChild(this.tableCell, this.dotIcon_);

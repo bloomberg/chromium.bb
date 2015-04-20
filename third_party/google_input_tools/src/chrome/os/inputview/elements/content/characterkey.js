@@ -231,8 +231,7 @@ CharacterKey.prototype.getAltCharacters =
  *
  * @return {string} The active letter.
  */
-CharacterKey.prototype.getActiveCharacter =
-    function() {
+CharacterKey.prototype.getActiveCharacter = function() {
   if (this.flickerredCharacter) {
     return this.flickerredCharacter;
   }
@@ -244,7 +243,7 @@ CharacterKey.prototype.getActiveCharacter =
       return child.getContent();
     }
   }
-  return this.getChildAt(0).getContent();
+  return '';
 };
 
 

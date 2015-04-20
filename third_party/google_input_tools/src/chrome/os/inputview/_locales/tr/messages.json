@@ -1,12 +1,12 @@
 {
   "add_to_dictionary": {
-    "message": "Add to dictionary"
+    "message": "S\u00f6zl\u00fc\u011fe ekle"
   },
   "add_to_personal_dictionary": {
     "message": "Ki\u015fisel s\u00f6zl\u00fc\u011fe ekle"
   },
   "add_word_to_dictionary": {
-    "message": "Add \"$1\" to dictionary",
+    "message": "\"$1\" kelimesini s\u00f6zl\u00fc\u011fe ekle",
     "placeholders": {
       "1": {
         "content": "$1"

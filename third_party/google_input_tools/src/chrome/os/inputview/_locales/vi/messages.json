@@ -1,12 +1,12 @@
 {
   "add_to_dictionary": {
-    "message": "Add to dictionary"
+    "message": "Th\u00eam v\u00e0o t\u1eeb \u0111i\u1ec3n"
   },
   "add_to_personal_dictionary": {
     "message": "Th\u00eam v\u00e0o t\u1eeb \u0111i\u1ec3n c\u00e1 nh\u00e2n"
   },
   "add_word_to_dictionary": {
-    "message": "Add \"$1\" to dictionary",
+    "message": "Th\u00eam \"$1\" v\u00e0o t\u1eeb \u0111i\u1ec3n",
     "placeholders": {
       "1": {
         "content": "$1"

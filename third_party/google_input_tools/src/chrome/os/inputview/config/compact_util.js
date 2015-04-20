@@ -15,11 +15,13 @@ goog.provide('i18n.input.chrome.inputview.content.compact.util');
 goog.provide('i18n.input.chrome.inputview.content.compact.util.CompactKeysetSpec');
 
 goog.require('i18n.input.chrome.inputview.Css');
-goog.require('i18n.input.chrome.inputview.content.constants');
+goog.require('i18n.input.chrome.inputview.content.Constants');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
 
 goog.scope(function() {
 var util = i18n.input.chrome.inputview.content.compact.util;
+var NON_LETTER_KEYS =
+    i18n.input.chrome.inputview.content.Constants.NON_LETTER_KEYS;
 var Css = i18n.input.chrome.inputview.Css;
 
 
@@ -90,8 +92,7 @@ util.createCompactData = function(keysetSpec, viewIdPrefix, keyIdPrefix) {
   var keysetSpecNode = util.CompactKeysetSpec;
   for (var i = 0; i < keysetSpec[keysetSpecNode.DATA].length; i++) {
     var keySpec = keysetSpec[keysetSpecNode.DATA][i];
-    if (keySpec ==
-        i18n.input.chrome.inputview.content.constants.NonLetterKeys.MENU) {
+    if (keySpec == NON_LETTER_KEYS.MENU) {
       keySpec['toKeyset'] = keysetSpec[keysetSpecNode.ID].split('.')[0];
     }
     var id = keySpec['id'] ? keySpec['id'] : keyIdPrefix + i;
@@ -141,8 +142,7 @@ util.createCompactKey = function(id, keySpec) {
 util.customizeSwitchers = function(keyCharacters, switcherKeys) {
   var j = 0;
   for (var i = 0; i < keyCharacters.length; i++) {
-    if (keyCharacters[i] ==
-        i18n.input.chrome.inputview.content.constants.NonLetterKeys.SWITCHER) {
+    if (keyCharacters[i] == NON_LETTER_KEYS.SWITCHER) {
       if (j >= switcherKeys.length) {
         console.error('The number of switcher key spec is less than' +
             ' the number of switcher keys in the keyset.');

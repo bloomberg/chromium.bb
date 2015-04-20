@@ -63,10 +63,10 @@
       <include name="IDR_KEYBOARD_LAYOUTS_MATERIAL_EMOJI" file="${input_tools_root_dir}/inputview/layouts/material/emoji_layout.js" type="BINDATA" />
       <include name="IDR_KEYBOARD_LAYOUTS_MATERIAL_HWT" file="${input_tools_root_dir}/inputview/layouts/material/handwriting_layout.js" type="BINDATA" />
       <include name="IDR_KEYBOARD_MANIFEST" file="resources/manifest.json" type="BINDATA" />
-      <include name="IDR_KEYBOARD_SOUNDS_KEYPRESS_DELETE" file="${input_tools_root_dir}/sounds/keypress-delete.wav" type="BINDATA" />
-      <include name="IDR_KEYBOARD_SOUNDS_KEYPRESS_RETURN" file="${input_tools_root_dir}/sounds/keypress-return.wav" type="BINDATA" />
-      <include name="IDR_KEYBOARD_SOUNDS_KEYPRESS_SPACEBAR" file="${input_tools_root_dir}/sounds/keypress-spacebar.wav" type="BINDATA" />
-      <include name="IDR_KEYBOARD_SOUNDS_KEYPRESS_STANDARD" file="${input_tools_root_dir}/sounds/keypress-standard.wav" type="BINDATA" />
+      <include name="IDR_KEYBOARD_SOUNDS_KEYPRESS_DELETE" file="${input_tools_root_dir}/sounds/KeypressDelete.wav" type="BINDATA" />
+      <include name="IDR_KEYBOARD_SOUNDS_KEYPRESS_RETURN" file="${input_tools_root_dir}/sounds/KeypressReturn.wav" type="BINDATA" />
+      <include name="IDR_KEYBOARD_SOUNDS_KEYPRESS_SPACEBAR" file="${input_tools_root_dir}/sounds/KeypressSpacebar.wav" type="BINDATA" />
+      <include name="IDR_KEYBOARD_SOUNDS_KEYPRESS_STANDARD" file="${input_tools_root_dir}/sounds/KeypressStandard.wav" type="BINDATA" />
     </includes>
   </release>
 </grit>

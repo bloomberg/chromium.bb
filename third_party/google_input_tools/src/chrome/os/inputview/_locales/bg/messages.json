@@ -1,12 +1,12 @@
 {
   "add_to_dictionary": {
-    "message": "Add to dictionary"
+    "message": "\u0414\u043e\u0431\u0430\u0432\u044f\u043d\u0435 \u043a\u044a\u043c \u0440\u0435\u0447\u043d\u0438\u043a\u0430"
   },
   "add_to_personal_dictionary": {
     "message": "\u0414\u043e\u0431\u0430\u0432\u044f\u043d\u0435 \u043a\u044a\u043c \u043b\u0438\u0447\u043d\u0438\u044f \u0440\u0435\u0447\u043d\u0438\u043a"
   },
   "add_word_to_dictionary": {
-    "message": "Add \"$1\" to dictionary",
+    "message": "\u0414\u043e\u0431\u0430\u0432\u044f\u043d\u0435 \u043d\u0430 \u201e$1\u201c \u043a\u044a\u043c \u0440\u0435\u0447\u043d\u0438\u043a\u0430",
     "placeholders": {
       "1": {
         "content": "$1"

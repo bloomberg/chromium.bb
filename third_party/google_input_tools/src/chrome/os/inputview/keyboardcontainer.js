@@ -294,6 +294,8 @@ KeyboardContainer.prototype.setContainerSize = function(width, height,
   this.candidateView.setWidthInWeight(
       this.currentKeysetView.getWidthInWeight(), backspaceWeight);
   this.candidateView.resize(w, candidateViewHeight);
+  this.expandedCandidateView.setWidthInWeight(
+      this.currentKeysetView.getWidthInWeight(), backspaceWeight);
   this.expandedCandidateView.resize(w, h);
   if (i18n.input.chrome.inputview.GlobalFlags.isQPInputView) {
     var candidateElem = this.candidateView.getElement();

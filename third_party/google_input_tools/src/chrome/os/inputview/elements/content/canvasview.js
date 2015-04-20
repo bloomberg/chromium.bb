@@ -17,13 +17,13 @@ goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
-goog.require('goog.events.EventType');
 goog.require('goog.style');
 goog.require('i18n.input.chrome.DataSource');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.elements.Element');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.Weightable');
+goog.require('i18n.input.chrome.inputview.elements.content.SpanElement');
 goog.require('i18n.input.chrome.message.Name');
 goog.require('i18n.input.chrome.message.Type');
 goog.require('i18n.input.hwt.Canvas');
@@ -36,6 +36,7 @@ var Canvas = i18n.input.hwt.Canvas;
 var Css = i18n.input.chrome.inputview.Css;
 var ElementType = i18n.input.chrome.inputview.elements.ElementType;
 var Name = i18n.input.chrome.message.Name;
+var SpanElement = i18n.input.chrome.inputview.elements.content.SpanElement;
 var Type = i18n.input.chrome.message.Type;
 
 
@@ -129,14 +130,6 @@ CanvasView.prototype.privacyDiv_;
 
 
 /**
- * The "got it" confirm span for privacy info.
- *
- * @private {!Element}
- */
-CanvasView.prototype.confirmSpan_;
-
-
-/**
  * The cover mask element.
  *
  * @private {!Element}
@@ -173,10 +166,12 @@ CanvasView.prototype.createDom = function() {
   dom.setTextContent(textSpan,
       chrome.i18n.getMessage('HANDWRITING_PRIVACY_INFO'));
   dom.appendChild(this.privacyDiv_, textSpan);
-  this.confirmSpan_ = dom.createDom(goog.dom.TagName.SPAN,
-      Css.HANDWRITING_GOT_IT);
-  dom.setTextContent(this.confirmSpan_, chrome.i18n.getMessage('GOT_IT'));
-  dom.appendChild(this.privacyDiv_, this.confirmSpan_);
+
+  var spanView = new SpanElement('', ElementType.HWT_PRIVACY_GOT_IT);
+  spanView.render(this.privacyDiv_);
+  var spanElement = spanView.getElement();
+  goog.dom.classlist.add(spanElement, Css.HANDWRITING_GOT_IT);
+  dom.setTextContent(spanElement, chrome.i18n.getMessage('GOT_IT'));
 
   // Shows or hide the privacy information.
   if (localStorage.getItem(Name.HWT_PRIVACY_INFO)) {
@@ -200,8 +195,7 @@ CanvasView.prototype.enterDocument = function() {
           [i18n.input.chrome.DataSource.EventType.CANDIDATES_BACK,
            Type.HWT_NETWORK_ERROR],
           this.onNetworkState_).
-      listen(this.confirmSpan_,
-          [goog.events.EventType.CLICK, goog.events.EventType.TOUCHEND],
+      listen(this.adapter_, Type.HWT_PRIVACY_GOT_IT,
           this.onConfirmPrivacyInfo_);
 };
 
@@ -231,15 +225,15 @@ CanvasView.prototype.resize = function(width, height) {
   elem.style.height = this.coverElement_.style.height = height + 'px';
 
   var size = goog.style.getSize(this.networkErrorDiv_);
-  this.networkErrorDiv_.style.top =
+  this.networkErrorDiv_.style.top = elem.offsetTop +
       Math.round((height - size.height) / 2) + 'px';
-  this.networkErrorDiv_.style.left =
+  this.networkErrorDiv_.style.left = elem.offsetLeft +
       Math.round((width - size.width) / 2) + 'px';
 
   size = goog.style.getSize(this.privacyDiv_);
-  this.privacyDiv_.style.top =
+  this.privacyDiv_.style.top = elem.offsetTop +
       Math.round((height - size.height) / 2) + 'px';
-  this.privacyDiv_.style.left =
+  this.privacyDiv_.style.left = elem.offsetLeft +
       Math.round((width - size.width) / 2) + 'px';
 
   this.canvas_.setSize(height, width);
@@ -311,5 +305,15 @@ CanvasView.prototype.onConfirmPrivacyInfo_ = function() {
   localStorage.setItem(Name.HWT_PRIVACY_INFO, 'true');
   goog.style.setElementShown(this.coverElement_, false);
   goog.dom.classlist.add(this.privacyDiv_, Css.HANDWRITING_PRIVACY_INFO_HIDDEN);
+};
+
+
+/**
+ * Sets the privacy info dialog's direction.
+ *
+ * @param {string} dir The direction "ltr" or "rtl".
+ */
+CanvasView.prototype.setPrivacyInfoDirection = function(dir) {
+  this.getElement().style.direction = dir;
 };
 });  // goog.scope

@@ -21,6 +21,7 @@ goog.require('goog.dom.classlist');
 goog.require('goog.events.Event');
 goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventType');
+goog.require('goog.events.KeyCodes');
 goog.require('goog.i18n.bidi');
 goog.require('goog.object');
 goog.require('i18n.input.chrome.DataSource');
@@ -40,7 +41,6 @@ goog.require('i18n.input.chrome.inputview.SizeSpec');
 goog.require('i18n.input.chrome.inputview.SpecNodeName');
 goog.require('i18n.input.chrome.inputview.StateType');
 goog.require('i18n.input.chrome.inputview.SwipeDirection');
-goog.require('i18n.input.chrome.inputview.elements.Element');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.Candidate');
 goog.require('i18n.input.chrome.inputview.elements.content.CandidateView');
@@ -539,6 +539,7 @@ Controller.prototype.onUpdateSettings_ = function(e) {
   }
   if (goog.isDef(e.msg['candidatesNavigation'])) {
     settings.candidatesNavigation = e.msg['candidatesNavigation'];
+    this.container_.candidateView.setNavigation(settings.candidatesNavigation);
   }
   if (goog.isDef(e.msg[Name.KEYSET])) {
     this.setDefaultKeyset_(e.msg[Name.KEYSET]);
@@ -863,7 +864,7 @@ Controller.prototype.handlePointerAction_ = function(view, e) {
           Controller.HANDWRITING_VIEW_CODE_,
           Controller.EMOJI_VIEW_CODE_];
         if (goog.array.contains(tabbableKeysets, this.currentKeyset_)) {
-          this.resetAll_();
+          this.resetAll();
           this.switchToKeyset(this.container_.currentKeysetView.fromKeyset);
         }
       }
@@ -941,7 +942,7 @@ Controller.prototype.handlePointerAction_ = function(view, e) {
         this.executeCommand_.apply(this, view.getCommand());
         this.container_.menuView.hide();
         this.soundController_.onKeyUp(view.type);
-        this.resetAll_();
+        this.resetAll();
       }
       view.setHighlighted(e.type == EventType.POINTER_DOWN ||
           e.type == EventType.POINTER_OVER);
@@ -980,15 +981,6 @@ Controller.prototype.handlePointerAction_ = function(view, e) {
       this.adapter_.dispatchEvent(new goog.events.Event(
           Type.VOICE_PRIVACY_GOT_IT));
       return;
-
-    case ElementType.VOICE_BTN:
-      if (e.type == EventType.POINTER_UP) {
-        this.container_.candidateView.switchToIcon(
-            CandidateView.IconType.VOICE, false);
-        this.container_.voiceView.start();
-      }
-      return;
-
 
     case ElementType.VOICE_VIEW:
       if (e.type == EventType.POINTER_UP) {
@@ -1067,6 +1059,13 @@ Controller.prototype.handlePointerAction_ = function(view, e) {
 Controller.prototype.handlePointerEventForSoftKey_ = function(softKey, e) {
   var key;
   switch (softKey.type) {
+    case ElementType.VOICE_BTN:
+      if (e.type == EventType.POINTER_UP) {
+        this.container_.candidateView.switchToIcon(
+            CandidateView.IconType.VOICE, false);
+        this.container_.voiceView.start();
+      }
+      break;
     case ElementType.CANDIDATES_PAGE_UP:
       if (e.type == EventType.POINTER_UP) {
         this.container_.expandedCandidateView.pageUp();
@@ -1087,8 +1086,10 @@ Controller.prototype.handlePointerEventForSoftKey_ = function(softKey, e) {
       } else if (e.type == EventType.POINTER_UP) {
         this.model_.stateManager.triggerChording();
         var ch = key.getActiveCharacter();
-        this.adapter_.sendKeyDownAndUpEvent(ch, key.id, key.keyCode,
-            this.getSpatialData_(key, e.x, e.y));
+        if (ch) {
+          this.adapter_.sendKeyDownAndUpEvent(ch, key.id, key.keyCode,
+              this.getSpatialData_(key, e.x, e.y));
+        }
         this.clearUnstickyState_();
         key.flickerredCharacter = '';
       }
@@ -1221,7 +1222,7 @@ Controller.prototype.handlePointerEventForSoftKey_ = function(softKey, e) {
           this.updateContextModifierState_();
           this.container_.menuView.hide();
         } else {
-          this.resetAll_();
+          this.resetAll();
         }
         // Switch to the specific keyboard.
         this.switchToKeyset(key.toKeyset);
@@ -1293,7 +1294,7 @@ Controller.prototype.handlePointerEventForSoftKey_ = function(softKey, e) {
         this.adapter_.getInputMethods(function(inputMethods) {
           this.container_.menuView.show(key, defaultFullKeyset, isCompact,
               enableCompact, this.currentInputMethod_, inputMethods, hasHwt,
-              enableSettings, hasEmoji);
+              enableSettings, hasEmoji, this.adapter_.isA11yMode);
         }.bind(this));
       }
       break;
@@ -1302,10 +1303,11 @@ Controller.prototype.handlePointerEventForSoftKey_ = function(softKey, e) {
       if (e.type == EventType.POINTER_UP) {
         this.adapter_.clearModifierStates();
         this.adapter_.setModifierState(
-            i18n.input.chrome.inputview.StateType.CTRL, true);
-        this.adapter_.sendKeyDownAndUpEvent(' ', KeyCodes.SPACE, 0x20);
+            i18n.input.chrome.inputview.StateType.ALT, true);
+        this.adapter_.sendKeyDownAndUpEvent(
+            KeyCodes.SHIFT, KeyCodes.SHIFT_LEFT, goog.events.KeyCodes.SHIFT);
         this.adapter_.setModifierState(
-            i18n.input.chrome.inputview.StateType.CTRL, false);
+            i18n.input.chrome.inputview.StateType.ALT, false);
       }
       break;
     case ElementType.IME_SWITCH:
@@ -1393,7 +1395,7 @@ Controller.prototype.onVisibilityChange_ = function() {
         Math.floor((new Date() - this.showTimeStamp_) / 1000), 4096, 50);
     this.statsForClosing_ = {};
     this.showTimeStamp_ = new Date();
-    this.resetAll_();
+    this.resetAll();
   }
 };
 
@@ -1401,10 +1403,8 @@ Controller.prototype.onVisibilityChange_ = function() {
 /**
  * Resets the whole keyboard include clearing candidates,
  * reset modifier state, etc.
- *
- * @private
  */
-Controller.prototype.resetAll_ = function() {
+Controller.prototype.resetAll = function() {
   this.clearCandidates_();
   this.container_.cleanStroke();
   this.model_.stateManager.reset();
@@ -1437,7 +1437,7 @@ Controller.prototype.shouldShowToolBar_ = function() {
  * @private
  */
 Controller.prototype.onContextFocus_ = function() {
-  this.resetAll_();
+  this.resetAll();
   this.model_.stateManager.contextType = this.adapter_.contextType;
   this.switchToKeyset(this.getActiveKeyset_());
 };
@@ -1612,7 +1612,10 @@ Controller.prototype.showCandidates_ = function(source, candidates,
   this.container_.candidateView.showCandidates(candidates, isThreeCandidates,
       this.model_.settings.candidatesNavigation && !isHwt);
 
-  if (expand) {
+  // Only sum of candidate is greater than top line count. Need to update
+  // expand view.
+  if (expand && this.container_.candidateView.candidateCount <
+      candidates.length) {
     expandView.state = state;
     this.container_.currentKeysetView.setVisible(false);
     expandView.showCandidates(candidates,
@@ -1622,6 +1625,8 @@ Controller.prototype.showCandidates_ = function(source, candidates,
   } else {
     expandView.state = ExpandedCandidateView.State.NONE;
     expandView.setVisible(false);
+    this.container_.candidateView.switchToIcon(CandidateView.IconType.
+        SHRINK_CANDIDATES, false);
     this.container_.currentKeysetView.setVisible(true);
   }
 };
@@ -1641,18 +1646,21 @@ Controller.prototype.clearCandidates_ = function() {
   if (this.container_.currentKeysetView) {
     this.container_.currentKeysetView.setVisible(true);
   }
-  if (!this.adapter_.isQPInputView &&
-      (this.currentKeyset_ == Controller.HANDWRITING_VIEW_CODE_ ||
-       this.currentKeyset_ == Controller.EMOJI_VIEW_CODE_)) {
-    this.container_.candidateView.switchToIcon(
-        CandidateView.IconType.BACK, true);
-  } else if (this.currentKeyset_ != Controller.HANDWRITING_VIEW_CODE_ &&
-      this.currentKeyset_ != Controller.EMOJI_VIEW_CODE_) {
-    this.container_.candidateView.switchToIcon(CandidateView.IconType.VOICE,
-        this.adapter_.isVoiceInputEnabled);
+
+  if (this.currentKeyset_ == Controller.HANDWRITING_VIEW_CODE_ ||
+      this.currentKeyset_ == Controller.EMOJI_VIEW_CODE_) {
+    if (!this.adapter_.isQPInputView) {
+      this.container_.candidateView.switchToIcon(
+          CandidateView.IconType.BACK, true);
+    } else {
+      this.container_.candidateView.switchToIcon(
+          CandidateView.IconType.VOICE, false);
+      this.container_.candidateView.switchToIcon(
+          CandidateView.IconType.EXPAND_CANDIDATES, false);
+    }
   } else {
     this.container_.candidateView.switchToIcon(CandidateView.IconType.VOICE,
-        false);
+        this.adapter_.isVoiceInputEnabled);
   }
 };
 
@@ -1969,7 +1977,10 @@ Controller.prototype.initialize = function(keyset, languageCode, passwordLayout,
     }
     this.languageCode_ = languageCode;
     this.currentInputMethod_ = currentInputMethod;
-    var keySetMap = this.contextTypeToKeysetMap_[this.currentInputMethod_] = {};
+    var keySetMap = this.contextTypeToKeysetMap_[this.currentInputMethod_];
+    if (!keySetMap) {
+      keySetMap = this.contextTypeToKeysetMap_[this.currentInputMethod_] = {};
+    }
     keySetMap[ContextType.PASSWORD] = passwordLayout;
     keySetMap[ContextType.DEFAULT] = keyset;
 
@@ -2135,7 +2146,7 @@ Controller.prototype.onUpdateToggleLanguateState_ = function(e) {
       }
     }
     if (toKeyset) {
-      this.resetAll_();
+      this.resetAll();
       this.switchToKeyset(toKeyset);
     }
   }

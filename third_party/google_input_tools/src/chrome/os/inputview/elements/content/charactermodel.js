@@ -157,8 +157,10 @@ CharacterModel.prototype.isVisible = function() {
   var enableShiftLetter = !this.belongToLetterKey_ || hasShift;
   var enableDefaultLetter = !this.belongToLetterKey_ || !hasShift;
   if (this.isQpInputView_) {
-    enableShiftLetter = this.enableShiftRendering_ || hasShift;
-    enableDefaultLetter = this.enableShiftRendering_ || !hasShift;
+    enableShiftLetter = (this.enableShiftRendering_ &&
+        !this.belongToLetterKey_) || hasShift;
+    enableDefaultLetter = (this.enableShiftRendering_ &&
+        !this.belongToLetterKey_) || !hasShift;
   }
   if (this.stateType_ == StateType.DEFAULT) {
     return !this.stateManager_.hasState(StateType.ALTGR) && enableDefaultLetter;
@@ -222,7 +224,7 @@ CharacterModel.prototype.isHorizontalAlignCenter = function() {
         !this.hasAltGrCharacterInTheKeyset_;
   }
 
-  return false;
+  return true;
 };
 
 
