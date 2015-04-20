@@ -993,8 +993,7 @@ inline void BisonCSSTokenizer::detectAtToken(int length, bool hasEscape)
             m_token = IMPORT_SYM;
         }
         CASE("keyframes") {
-            if (RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled())
-                m_token = KEYFRAMES_SYM;
+            m_token = KEYFRAMES_SYM;
         }
         CASE("left-top") {
             if (LIKELY(!hasEscape))

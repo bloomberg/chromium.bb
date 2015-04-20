@@ -428,14 +428,14 @@ z-index animatable, type_name=int, custom_all
 // FIXME: We should see if any of these should actually be unreachable
 
 all builder_skip
-animation-delay runtime_flag=CSSAnimationUnprefixed, builder_skip
-animation-direction runtime_flag=CSSAnimationUnprefixed, builder_skip
-animation-duration runtime_flag=CSSAnimationUnprefixed, builder_skip
-animation-fill-mode runtime_flag=CSSAnimationUnprefixed, builder_skip
-animation-iteration-count runtime_flag=CSSAnimationUnprefixed, builder_skip
-animation-name runtime_flag=CSSAnimationUnprefixed, builder_skip
-animation-play-state runtime_flag=CSSAnimationUnprefixed, builder_skip
-animation-timing-function runtime_flag=CSSAnimationUnprefixed, builder_skip
+animation-delay builder_skip
+animation-direction builder_skip
+animation-duration builder_skip
+animation-fill-mode builder_skip
+animation-iteration-count builder_skip
+animation-name builder_skip
+animation-play-state builder_skip
+animation-timing-function builder_skip
 enable-background builder_skip
 max-zoom builder_skip
 min-zoom builder_skip
@@ -453,7 +453,7 @@ user-zoom builder_skip
 
 // Shorthands
 
-animation runtime_flag=CSSAnimationUnprefixed, longhands=animation-name;animation-duration;animation-timing-function;animation-delay;animation-iteration-count;animation-direction;animation-fill-mode;animation-play-state
+animation longhands=animation-name;animation-duration;animation-timing-function;animation-delay;animation-iteration-count;animation-direction;animation-fill-mode;animation-play-state
 background longhands=background-image;background-position-x;background-position-y;background-size;background-repeat-x;background-repeat-y;background-attachment;background-origin;background-clip;background-color
 background-position longhands=background-position-x;background-position-y
 background-repeat longhands=background-repeat-x;background-repeat-y

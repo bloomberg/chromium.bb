@@ -176,9 +176,9 @@
     [MeasureAs=PrefixedMutationObserverConstructor] attribute MutationObserverConstructor WebKitMutationObserver;
 
     // Event handler attributes
-    [RuntimeEnabled=CSSAnimationUnprefixed] attribute EventHandler onanimationend;
-    [RuntimeEnabled=CSSAnimationUnprefixed] attribute EventHandler onanimationiteration;
-    [RuntimeEnabled=CSSAnimationUnprefixed] attribute EventHandler onanimationstart;
+    attribute EventHandler onanimationend;
+    attribute EventHandler onanimationiteration;
+    attribute EventHandler onanimationstart;
     [RuntimeEnabled=OrientationEvent] attribute EventHandler onorientationchange;
     attribute EventHandler onsearch;
     [RuntimeEnabled=Touch] attribute EventHandler ontouchcancel;

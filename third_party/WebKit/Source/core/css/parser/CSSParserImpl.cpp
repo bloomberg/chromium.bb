@@ -290,7 +290,7 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeAtRule(CSSParserToke
         return consumeFontFaceRule(prelude, block);
     if (name.equalIgnoringCase("-webkit-keyframes"))
         return consumeKeyframesRule(true, prelude, block);
-    if (RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled() && name.equalIgnoringCase("keyframes"))
+    if (name.equalIgnoringCase("keyframes"))
         return consumeKeyframesRule(false, prelude, block);
     if (name.equalIgnoringCase("page"))
         return consumePageRule(prelude, block);

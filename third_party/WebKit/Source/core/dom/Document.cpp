@@ -3831,11 +3831,11 @@ void Document::addListenerTypeIfNeeded(const AtomicString& eventType)
     } else if (eventType == EventTypeNames::overflowchanged && RuntimeEnabledFeatures::overflowChangedEventEnabled()) {
         UseCounter::countDeprecation(*this, UseCounter::OverflowChangedEvent);
         addListenerType(OVERFLOWCHANGED_LISTENER);
-    } else if (eventType == EventTypeNames::webkitAnimationStart || (RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled() && eventType == EventTypeNames::animationstart)) {
+    } else if (eventType == EventTypeNames::webkitAnimationStart || eventType == EventTypeNames::animationstart) {
         addListenerType(ANIMATIONSTART_LISTENER);
-    } else if (eventType == EventTypeNames::webkitAnimationEnd || (RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled() && eventType == EventTypeNames::animationend)) {
+    } else if (eventType == EventTypeNames::webkitAnimationEnd || eventType == EventTypeNames::animationend) {
         addListenerType(ANIMATIONEND_LISTENER);
-    } else if (eventType == EventTypeNames::webkitAnimationIteration || (RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled() && eventType == EventTypeNames::animationiteration)) {
+    } else if (eventType == EventTypeNames::webkitAnimationIteration || eventType == EventTypeNames::animationiteration) {
         addListenerType(ANIMATIONITERATION_LISTENER);
         if (view()) {
             // Need to re-evaluate time-to-effect-change for any running animations.

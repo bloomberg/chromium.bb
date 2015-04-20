@@ -36,7 +36,6 @@ ContextMenu status=experimental
 CredentialManager status=test
 CSS3Text status=experimental
 CSS3TextDecorations status=experimental
-CSSAnimationUnprefixed status=stable
 CSSAttributeCaseSensitivity status=experimental
 CSSCompositing status=stable
 CSSFontSizeAdjust status=experimental

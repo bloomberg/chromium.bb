@@ -1205,7 +1205,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyAnimationPlayState:
     case CSSPropertyAnimationIterationCount:
     case CSSPropertyAnimationTimingFunction:
-        ASSERT(RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled());
     case CSSPropertyWebkitAnimationDelay:
     case CSSPropertyWebkitAnimationDirection:
     case CSSPropertyWebkitAnimationDuration:
@@ -1465,7 +1464,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitTextStroke:
         return parseShorthand(propId, webkitTextStrokeShorthand(), important);
     case CSSPropertyAnimation:
-        ASSERT(RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled());
     case CSSPropertyWebkitAnimation:
         return parseAnimationShorthand(propId, important);
     case CSSPropertyTransition:
@@ -1832,10 +1830,7 @@ bool CSSPropertyParser::parseAnimationShorthand(CSSPropertyID propId, bool impor
         if (!parsedProperty[i])
             values[i]->append(cssValuePool().createImplicitInitialValue());
 
-        if (RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled())
-            addPropertyWithPrefixingVariant(animationProperties.properties()[i], values[i].release(), important);
-        else
-            addProperty(animationProperties.properties()[i], values[i].release(), important);
+        addPropertyWithPrefixingVariant(animationProperties.properties()[i], values[i].release(), important);
     }
 
     return true;
