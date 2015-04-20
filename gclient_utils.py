@@ -679,7 +679,7 @@ def GetPrimarySolutionPath():
       pass
     top_dir = top_dir[0]
     if os.path.exists(os.path.join(top_dir, 'buildtools')):
-      return os.path.join(top_dir, 'buildtools')
+      return top_dir
     return None
 
   # Some projects' top directory is not named 'src'.
