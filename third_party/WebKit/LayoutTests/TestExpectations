@@ -32,12 +32,6 @@ crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/013.html [ P
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/014.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/018.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
 
-# These baselines need to be reviewed and perhaps updated after crbug.com/452967
-crbug.com/452967 compositing/color-matching/pdf-image-match.html [ Pass Failure ImageOnlyFailure ]
-crbug.com/452967 virtual/slimmingpaint/compositing/color-matching/pdf-image-match.html [ Pass Failure ImageOnlyFailure ]
-crbug.com/452967 [ Mac ] ietestcenter/css3/text/textshadow-005.htm [ Pass Failure ImageOnlyFailure ]
-crbug.com/452967 [ Mac ] ietestcenter/css3/text/textshadow-007.htm [ Pass Failure ImageOnlyFailure ]
-crbug.com/452967 [ Mac ] ietestcenter/css3/text/textshadow-008.htm [ Pass Failure ImageOnlyFailure ]
 crbug.com/452967 [ Mac ] svg/batik/text/xmlSpace.svg [ Pass Failure ImageOnlyFailure ]
 
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/scale-and-scroll-iframe-body.html [ ImageOnlyFailure ]
@@ -564,23 +558,17 @@ crbug.com/378610 [ Win7 ] fast/table/td-width-fifty-percent-regression.html [ Im
 crbug.com/475882 [ Mac Win7 ] fast/writing-mode/table-vertical-child-width.html [ ImageOnlyFailure ]
 crbug.com/396940 ietestcenter/css3/multicolumn/column-containing-block-001.htm [ ImageOnlyFailure ]
 crbug.com/396940 ietestcenter/css3/multicolumn/column-containing-block-002.htm [ ImageOnlyFailure ]
-crbug.com/396941 [ Linux Win ] ietestcenter/css3/multicolumn/column-width-applies-to-007.htm [ ImageOnlyFailure ]
-crbug.com/396941 [ Linux Win ] ietestcenter/css3/multicolumn/column-width-applies-to-009.htm [ ImageOnlyFailure ]
-crbug.com/396941 [ Linux Win ] ietestcenter/css3/multicolumn/column-width-applies-to-010.htm [ ImageOnlyFailure ]
-crbug.com/396941 [ Linux Win ] ietestcenter/css3/multicolumn/column-width-applies-to-012.htm [ ImageOnlyFailure ]
-crbug.com/396941 [ Linux Win ] ietestcenter/css3/multicolumn/column-width-applies-to-015.htm [ ImageOnlyFailure ]
+crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-007.htm [ ImageOnlyFailure ]
+crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-009.htm [ ImageOnlyFailure ]
+crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-010.htm [ ImageOnlyFailure ]
+crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-012.htm [ ImageOnlyFailure ]
+crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-015.htm [ ImageOnlyFailure ]
 crbug.com/396945 ietestcenter/css3/namespaces/syntax-021.xml [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] svg/custom/focus-ring-text.svg [ ImageOnlyFailure ]
 
 crbug.com/371725 http/tests/webfont/slow-loading.html [ Pass ImageOnlyFailure Timeout ]
 
 crbug.com/474987 [ Win7 Mac ] css3/flexbox/auto-margins.html [ ImageOnlyFailure ]
-
-crbug.com/452967 [ Mac ] ietestcenter/css3/multicolumn/column-width-applies-to-007.htm [ ImageOnlyFailure ]
-crbug.com/452967 [ Mac ] ietestcenter/css3/multicolumn/column-width-applies-to-009.htm [ ImageOnlyFailure ]
-crbug.com/452967 [ Mac ] ietestcenter/css3/multicolumn/column-width-applies-to-010.htm [ ImageOnlyFailure ]
-crbug.com/452967 [ Mac ] ietestcenter/css3/multicolumn/column-width-applies-to-012.htm [ ImageOnlyFailure ]
-crbug.com/452967 [ Mac ] ietestcenter/css3/multicolumn/column-width-applies-to-015.htm [ ImageOnlyFailure ]
 
 crbug.com/393157 [ Mac ] virtual/threaded/printing/print-document-without-documentElement-crash.html [ Pass Crash ]
 
