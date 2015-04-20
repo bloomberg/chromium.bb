@@ -24,6 +24,8 @@ struct GFX_EXPORT FontRenderParams {
     HINTING_SLIGHT,
     HINTING_MEDIUM,
     HINTING_FULL,
+
+    HINTING_MAX = HINTING_FULL,
   };
 
   // Different subpixel orders to be used for subpixel rendering.
@@ -33,6 +35,8 @@ struct GFX_EXPORT FontRenderParams {
     SUBPIXEL_RENDERING_BGR,
     SUBPIXEL_RENDERING_VRGB,
     SUBPIXEL_RENDERING_VBGR,
+
+    SUBPIXEL_RENDERING_MAX = SUBPIXEL_RENDERING_VBGR,
   };
 
   // Antialiasing (grayscale if |subpixel_rendering| is SUBPIXEL_RENDERING_NONE

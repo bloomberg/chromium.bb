@@ -86,7 +86,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTextDirection,
                           blink::WebTextDirection::WebTextDirectionLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebDisplayMode,
                           blink::WebDisplayMode::WebDisplayModeLast)
-IPC_ENUM_TRAITS(WindowContainerType)
+IPC_ENUM_TRAITS_MAX_VALUE(WindowContainerType, WINDOW_CONTAINER_TYPE_MAX_VALUE)
 IPC_ENUM_TRAITS(content::FaviconURL::IconType)
 IPC_ENUM_TRAITS(content::FileChooserParams::Mode)
 IPC_ENUM_TRAITS(content::MenuItem::Type)
@@ -95,8 +95,10 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::NavigationGesture,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::PageZoom,
                               content::PageZoom::PAGE_ZOOM_OUT,
                               content::PageZoom::PAGE_ZOOM_IN)
-IPC_ENUM_TRAITS(gfx::FontRenderParams::Hinting)
-IPC_ENUM_TRAITS(gfx::FontRenderParams::SubpixelRendering)
+IPC_ENUM_TRAITS_MAX_VALUE(gfx::FontRenderParams::Hinting,
+                          gfx::FontRenderParams::HINTING_MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(gfx::FontRenderParams::SubpixelRendering,
+                          gfx::FontRenderParams::SUBPIXEL_RENDERING_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(content::TapMultipleTargetsStrategy,
                           content::TAP_MULTIPLE_TARGETS_STRATEGY_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(content::StopFindAction,
@@ -107,7 +109,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::ChannelLayout, media::CHANNEL_LAYOUT_MAX - 1)
 IPC_ENUM_TRAITS_MAX_VALUE(media::MediaLogEvent::Type,
                           media::MediaLogEvent::TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::TextInputMode, ui::TEXT_INPUT_MODE_MAX)
-IPC_ENUM_TRAITS(ui::TextInputType)
+IPC_ENUM_TRAITS_MAX_VALUE(ui::TextInputType, ui::TEXT_INPUT_TYPE_MAX)
 
 #if defined(OS_MACOSX)
 IPC_STRUCT_TRAITS_BEGIN(FontDescriptor)
