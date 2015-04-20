@@ -362,6 +362,28 @@ fi
 AM_CONDITIONAL(HAVE_AMDGPU, [test "x$AMDGPU" = xyes])
 if test "x$AMDGPU" = xyes; then
 	AC_DEFINE(HAVE_AMDGPU, 1, [Have amdgpu support])
+
+	# Detect cunit library
+	PKG_CHECK_MODULES([CUNIT], [cunit >= 2.1], [have_cunit=yes], [have_cunit=no])
+
+	# If pkg-config does not find cunit, check it using AC_CHECK_LIB.  We
+	# do this because Debian (Ubuntu) lacks pkg-config file for cunit.
+	if test "x${have_cunit}" = "xno"; then
+		AC_CHECK_LIB([cunit], [CU_initialize_registry], [have_cunit=yes], [have_cunit=no])
+		if test "x${have_cunit}" = "xyes"; then
+			CUNIT_LIBS="-lcunit"
+			CUNIT_CFLAGS=""
+			AC_SUBST([CUNIT_LIBS])
+			AC_SUBST([CUNIT_CFLAGS])
+		fi
+	fi
+
+	AM_CONDITIONAL(HAVE_CUNIT, [test "x$have_cunit" != "xno"])
+	AC_DEFINE(HAVE_CUNIT, [test "x$have_cunit" != "xno"], [Enable CUNIT Have amdgpu support])
+
+	if test "x$have_cunit" = "xno"; then
+		AC_MSG_WARN([Could not find cunit library. Disabling amdgpu tests])
+	fi
 fi
 
 AM_CONDITIONAL(HAVE_TEGRA, [test "x$TEGRA" = xyes])
@@ -480,6 +502,7 @@ AC_CONFIG_FILES([
 	tests/kmstest/Makefile
 	tests/proptest/Makefile
 	tests/radeon/Makefile
+	tests/amdgpu/Makefile
 	tests/vbltest/Makefile
 	tests/exynos/Makefile
 	tests/tegra/Makefile

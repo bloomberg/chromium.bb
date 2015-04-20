@@ -62,6 +62,7 @@ static const char *drivers[] = {
 	"nouveau",
 	"vmwgfx",
 	"exynos",
+	"amdgpu",
 	"imx-drm",
 	"rockchip",
 	"atmel-hlcdc",

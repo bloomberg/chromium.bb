@@ -8,6 +8,12 @@ if HAVE_RADEON
 SUBDIRS += radeon
 endif
 
+if HAVE_AMDGPU
+if HAVE_CUNIT
+SUBDIRS += amdgpu
+endif
+endif
+
 if HAVE_EXYNOS
 SUBDIRS += exynos
 endif
