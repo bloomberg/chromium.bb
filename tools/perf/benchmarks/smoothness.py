@@ -67,7 +67,6 @@ class SmoothnessToughWebGLCases(benchmark.Benchmark):
 
 @benchmark.Enabled('android')
 class SmoothnessMaps(benchmark.Benchmark):
-  test = smoothness.Smoothness
   page_set = page_sets.MapsPageSet
 
   @classmethod
@@ -77,6 +76,9 @@ class SmoothnessMaps(benchmark.Benchmark):
   @classmethod
   def Name(cls):
     return 'smoothness.maps'
+
+  def CreatePageTest(self, options):  # pylint: disable=unused-argument
+    return smoothness.Smoothness(enable_auto_issuing_marker=False)
 
 
 @benchmark.Disabled('android')
@@ -95,12 +97,14 @@ class SmoothnessKeyMobileSites(benchmark.Benchmark):
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks
   """
-  test = smoothness.Smoothness
   page_set = page_sets.KeyMobileSitesSmoothPageSet
 
   @classmethod
   def Name(cls):
     return 'smoothness.key_mobile_sites_smooth'
+
+  def CreatePageTest(self, options):  # pylint: disable=unused-argument
+    return smoothness.Smoothness(enable_auto_issuing_marker=False)
 
 
 class SmoothnessToughAnimationCases(benchmark.Benchmark):
@@ -117,12 +121,14 @@ class SmoothnessKeySilkCases(benchmark.Benchmark):
   """Measures rendering statistics for the key silk cases without GPU
   rasterization.
   """
-  test = smoothness.Smoothness
   page_set = page_sets.KeySilkCasesPageSet
 
   @classmethod
   def Name(cls):
     return 'smoothness.key_silk_cases'
+
+  def CreatePageTest(self, options):  # pylint: disable=unused-argument
+    return smoothness.Smoothness(enable_auto_issuing_marker=False)
 
 
 @benchmark.Enabled('android')
@@ -130,7 +136,6 @@ class SmoothnessGpuRasterizationTop25(benchmark.Benchmark):
   """Measures rendering statistics for the top 25 with GPU rasterization.
   """
   tag = 'gpu_rasterization'
-  test = smoothness.Smoothness
   page_set = page_sets.Top25SmoothPageSet
 
   def CustomizeBrowserOptions(self, options):
@@ -140,6 +145,9 @@ class SmoothnessGpuRasterizationTop25(benchmark.Benchmark):
   def Name(cls):
     return 'smoothness.gpu_rasterization.top_25_smooth'
 
+  def CreatePageTest(self, options):  # pylint: disable=unused-argument
+    return smoothness.Smoothness(enable_auto_issuing_marker=False)
+
 
 @benchmark.Enabled('android')
 class SmoothnessGpuRasterizationKeyMobileSites(benchmark.Benchmark):
@@ -147,7 +155,6 @@ class SmoothnessGpuRasterizationKeyMobileSites(benchmark.Benchmark):
   rasterization.
   """
   tag = 'gpu_rasterization'
-  test = smoothness.Smoothness
   page_set = page_sets.KeyMobileSitesSmoothPageSet
 
   def CustomizeBrowserOptions(self, options):
@@ -157,6 +164,9 @@ class SmoothnessGpuRasterizationKeyMobileSites(benchmark.Benchmark):
   def Name(cls):
     return 'smoothness.gpu_rasterization.key_mobile_sites_smooth'
 
+  def CreatePageTest(self, options):  # pylint: disable=unused-argument
+    return smoothness.Smoothness(enable_auto_issuing_marker=False)
+
 
 @benchmark.Enabled('android')
 class SmoothnessSyncScrollKeyMobileSites(benchmark.Benchmark):
@@ -164,7 +174,6 @@ class SmoothnessSyncScrollKeyMobileSites(benchmark.Benchmark):
   (main thread) scrolling.
   """
   tag = 'sync_scroll'
-  test = smoothness.Smoothness
   page_set = page_sets.KeyMobileSitesSmoothPageSet
 
   def CustomizeBrowserOptions(self, options):
@@ -174,17 +183,23 @@ class SmoothnessSyncScrollKeyMobileSites(benchmark.Benchmark):
   def Name(cls):
     return 'smoothness.sync_scroll.key_mobile_sites_smooth'
 
+  def CreatePageTest(self, options):  # pylint: disable=unused-argument
+    return smoothness.Smoothness(enable_auto_issuing_marker=False)
+
 
 @benchmark.Enabled('android')
 class SmoothnessSimpleMobilePages(benchmark.Benchmark):
   """Measures rendering statistics for simple mobile sites page set.
   """
-  test = smoothness.Smoothness
   page_set = page_sets.SimpleMobileSitesPageSet
 
   @classmethod
   def Name(cls):
     return 'smoothness.simple_mobile_sites'
+
+  def CreatePageTest(self, options):  # pylint: disable=unused-argument
+    return smoothness.Smoothness(enable_auto_issuing_marker=False)
+
 
 @benchmark.Enabled('android')
 class SmoothnessFlingSimpleMobilePages(benchmark.Benchmark):

@@ -63,7 +63,8 @@ class Page2(KeySilkCasesPage):
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
   def PerformPageInteractions(self, action_runner):
-    action_runner.Wait(2)
+    with action_runner.CreateInteraction('SimpleAnimation'):
+      action_runner.Wait(2)
 
 
 class Page3(KeySilkCasesPage):
@@ -97,7 +98,8 @@ class Page4(KeySilkCasesPage):
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
   def PerformPageInteractions(self, action_runner):
-    action_runner.Wait(3)
+    with action_runner.CreateInteraction('CardExpansionAnimation'):
+      action_runner.Wait(3)
 
 
 class Page5(KeySilkCasesPage):
@@ -114,7 +116,8 @@ class Page5(KeySilkCasesPage):
     self.gpu_raster = True
 
   def PerformPageInteractions(self, action_runner):
-    action_runner.Wait(4)
+    with action_runner.CreateInteraction('CardExpansionAnimation'):
+      action_runner.Wait(4)
 
 
 class Page6(KeySilkCasesPage):
@@ -130,7 +133,8 @@ class Page6(KeySilkCasesPage):
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
   def PerformPageInteractions(self, action_runner):
-    action_runner.Wait(3)
+    with action_runner.CreateInteraction('CardFlyingAnimation'):
+      action_runner.Wait(3)
 
 
 class Page7(KeySilkCasesPage):
@@ -147,7 +151,8 @@ class Page7(KeySilkCasesPage):
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
   def PerformPageInteractions(self, action_runner):
-    action_runner.Wait(3)
+    with action_runner.CreateInteraction('ZoominAnimation'):
+      action_runner.Wait(3)
 
 
 class Page8(KeySilkCasesPage):
@@ -164,7 +169,8 @@ class Page8(KeySilkCasesPage):
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
   def PerformPageInteractions(self, action_runner):
-    action_runner.Wait(3)
+    with action_runner.CreateInteraction('SwipeToDismissAnimation'):
+      action_runner.Wait(3)
 
 
 class Page9(KeySilkCasesPage):
@@ -182,7 +188,8 @@ class Page9(KeySilkCasesPage):
     self.gpu_raster = True
 
   def PerformPageInteractions(self, action_runner):
-    action_runner.Wait(4)
+    with action_runner.CreateInteraction('CardExpansionAnimation'):
+      action_runner.Wait(4)
 
 
 class Page10(KeySilkCasesPage):
@@ -200,7 +207,8 @@ class Page10(KeySilkCasesPage):
     self.gpu_raster = True
 
   def PerformPageInteractions(self, action_runner):
-    action_runner.Wait(4)
+    with action_runner.CreateInteraction('CardExpansionAnimation'):
+      action_runner.Wait(4)
 
 
 class Page11(KeySilkCasesPage):
@@ -218,7 +226,8 @@ class Page11(KeySilkCasesPage):
     self.gpu_raster = True
 
   def PerformPageInteractions(self, action_runner):
-    action_runner.Wait(4)
+    with action_runner.CreateInteraction('ParallaxAnimation'):
+      action_runner.Wait(4)
 
 
 class Page12(KeySilkCasesPage):
@@ -231,7 +240,8 @@ class Page12(KeySilkCasesPage):
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
   def PerformPageInteractions(self, action_runner):
-    action_runner.Wait(5)
+    with action_runner.CreateInteraction('CoordinatedAnimation'):
+      action_runner.Wait(5)
 
 
 class Page13(KeySilkCasesPage):
@@ -246,7 +256,8 @@ class Page13(KeySilkCasesPage):
     self.gpu_raster = True
 
   def PerformPageInteractions(self, action_runner):
-    action_runner.Wait(4)
+    with action_runner.CreateInteraction('MaskTransitionAnimation'):
+      action_runner.Wait(4)
 
 
 class Page14(KeySilkCasesPage):
@@ -261,7 +272,8 @@ class Page14(KeySilkCasesPage):
     self.gpu_raster = True
 
   def PerformPageInteractions(self, action_runner):
-    action_runner.Wait(4)
+    with action_runner.CreateInteraction('CardExpansionAnimation'):
+      action_runner.Wait(4)
 
 
 class Page15(KeySilkCasesPage):
@@ -274,7 +286,8 @@ class Page15(KeySilkCasesPage):
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
   def PerformPageInteractions(self, action_runner):
-    action_runner.Wait(5)
+    with action_runner.CreateInteraction('CoordinatedAnimation'):
+      action_runner.Wait(5)
 
 
 class Page16(KeySilkCasesPage):
