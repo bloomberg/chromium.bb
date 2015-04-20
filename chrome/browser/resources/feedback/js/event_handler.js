@@ -123,6 +123,11 @@ function requestFeedbackHandler(request, sender, sendResponse) {
  */
 function startFeedbackUI(feedbackInfo) {
   initialFeedbackInfo = feedbackInfo;
+  var win = chrome.app.window.get('default_window');
+  if (win) {
+    win.show();
+    return;
+  }
   chrome.app.window.create('html/default.html', {
       frame: 'none',
       id: 'default_window',
