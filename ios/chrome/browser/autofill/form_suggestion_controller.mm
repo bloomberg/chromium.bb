@@ -52,7 +52,8 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
   base::WeakNSProtocol<id<FormInputAccessoryViewDelegate>> _delegate;
 
   // Callback to update the accessory view.
-  base::mac::ScopedBlock<AccessoryViewReadyCompletion> completionHandler_;
+  base::mac::ScopedBlock<AccessoryViewReadyCompletion>
+      accessoryViewUpdateBlock_;
 
   // Autofill suggestion state.
   scoped_ptr<AutofillSuggestionState> _suggestionState;
@@ -261,17 +262,18 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
 
 - (void)updateKeyboard:(AutofillSuggestionState*)suggestionState {
   if (!_suggestionState) {
-    if (completionHandler_)
-      completionHandler_.get()(nil, self);
+    if (accessoryViewUpdateBlock_)
+      accessoryViewUpdateBlock_.get()(nil, self);
   } else {
     [self updateKeyboardWithSuggestions:_suggestionState->suggestions];
   }
 }
 
 - (void)updateKeyboardWithSuggestions:(NSArray*)suggestions {
-  if (completionHandler_)
-    completionHandler_.get()([self suggestionViewWithSuggestions:suggestions],
-                             self);
+  if (accessoryViewUpdateBlock_) {
+    accessoryViewUpdateBlock_.get()(
+        [self suggestionViewWithSuggestions:suggestions], self);
+  }
 }
 
 - (UIView*)suggestionViewWithSuggestions:(NSArray*)suggestions {
@@ -312,12 +314,13 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
   _delegate.reset(delegate);
 }
 
-- (void)checkIfAccessoryViewAvailableForFormNamed:(const std::string&)formName
-                                        fieldName:(const std::string&)fieldName
-                                         webState:(web::WebState*)webState
-                                completionHandler:
-                                    (AccessoryViewAvailableCompletion)
-                                        completionHandler {
+- (void)
+    checkIfAccessoryViewIsAvailableForFormNamed:(const std::string&)formName
+                                      fieldName:(const std::string&)fieldName
+                                       webState:(web::WebState*)webState
+                              completionHandler:
+                                  (AccessoryViewAvailableCompletion)
+                                      completionHandler {
   [self processPage:webState];
   completionHandler(YES);
 }
@@ -327,12 +330,12 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
                                     value:(const std::string&)value
                                      type:(const std::string&)type
                                  webState:(web::WebState*)webState
-                        completionHandler:
-                            (AccessoryViewReadyCompletion)completionHandler {
+                 accessoryViewUpdateBlock:
+                     (AccessoryViewReadyCompletion)accessoryViewUpdateBlock {
   _suggestionState.reset(
       new AutofillSuggestionState(formName, fieldName, value));
-  completionHandler([self suggestionViewWithSuggestions:@[]], self);
-  completionHandler_.reset([completionHandler copy]);
+  accessoryViewUpdateBlock([self suggestionViewWithSuggestions:@[]], self);
+  accessoryViewUpdateBlock_.reset([accessoryViewUpdateBlock copy]);
   [self retrieveSuggestionsForFormNamed:formName
                               fieldName:fieldName
                                    type:type
@@ -341,7 +344,7 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
 
 - (void)inputAccessoryViewControllerDidReset:
         (FormInputAccessoryViewController*)controller {
-  completionHandler_.reset();
+  accessoryViewUpdateBlock_.reset();
   [self resetSuggestionState];
 }
 

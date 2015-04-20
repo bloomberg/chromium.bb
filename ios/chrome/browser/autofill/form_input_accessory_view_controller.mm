@@ -433,10 +433,10 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
             return;
           id<FormInputAccessoryViewProvider> provider =
               strongSelf.get()->_providers[i];
-          [provider checkIfAccessoryViewAvailableForFormNamed:strongFormName
-                                                    fieldName:strongFieldName
-                                                     webState:webState
-                                            completionHandler:completion];
+          [provider checkIfAccessoryViewIsAvailableForFormNamed:strongFormName
+                                                      fieldName:strongFieldName
+                                                       webState:webState
+                                              completionHandler:completion];
         },
         base::scoped_policy::RETAIN);
     [findProviderBlocks addObject:block];
@@ -476,7 +476,7 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
                                         value:strongValue
                                          type:strongType
                                      webState:webState
-                            completionHandler:readyCompletion];
+                     accessoryViewUpdateBlock:readyCompletion];
       };
 
   // Run all the blocks in |findProviderBlocks| until one invokes its
