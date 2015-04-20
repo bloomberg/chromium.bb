@@ -44,6 +44,17 @@ static const char kReferenceFileRelativeUrl[] =
 static const char kWebRtcAudioTestHtmlPage[] =
     "/webrtc/webrtc_audio_quality_test.html";
 
+// For the AGC test, there are 6 speech segments split on silence. If one
+// segment is significantly different in length compared to the same segment in
+// the reference file, there's something fishy going on.
+const int kMaxAgcSegmentDiffMs =
+#if defined(OS_MACOSX)
+  // Something is different on Mac; http://crbug.com/477653.
+  600;
+#else
+  200;
+#endif
+
 #if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_WebRtcAudioQualityBrowserTest WebRtcAudioQualityBrowserTest
 #else
@@ -509,7 +520,9 @@ float AnalyzeOneSegment(const base::FilePath& ref_segment,
 
   base::TimeDelta difference_in_length = ref_parameters.GetBufferDuration() -
                                          actual_parameters.GetBufferDuration();
-  EXPECT_LE(difference_in_length, base::TimeDelta::FromMilliseconds(200))
+
+  EXPECT_LE(difference_in_length,
+            base::TimeDelta::FromMilliseconds(kMaxAgcSegmentDiffMs))
       << "Segments differ " << difference_in_length.InMilliseconds() << " ms "
       << "in length for segment " << segment_number << "; we're likely "
       << "comparing unrelated segments or silence splitting is busted.";
