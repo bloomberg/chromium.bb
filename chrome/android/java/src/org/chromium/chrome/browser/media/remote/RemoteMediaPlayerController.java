@@ -349,18 +349,13 @@ public class RemoteMediaPlayerController implements MediaRouteController.UiListe
         return mLockScreenControl;
     }
 
-    /**
-     *
-     */
     private void createLockScreen() {
         mLockScreenControl = LockScreenTransportControl.getOrCreate(
                 mChromeVideoActivity.get(), mCurrentRouteController);
-        if (mLockScreenControl != null) {
-            mLockScreenControl.setError(null);
-            mLockScreenControl.setScreenName(mCurrentRouteController.getRouteName());
-            mLockScreenControl.addListener(mCurrentRouteController);
-        }
-        if (mLockScreenControl != null) mLockScreenControl.setPosterBitmap(getPoster());
+        mLockScreenControl.setError(null);
+        mLockScreenControl.setScreenName(mCurrentRouteController.getRouteName());
+        mLockScreenControl.addListener(mCurrentRouteController);
+        mLockScreenControl.setPosterBitmap(getPoster());
     }
 
     @Override

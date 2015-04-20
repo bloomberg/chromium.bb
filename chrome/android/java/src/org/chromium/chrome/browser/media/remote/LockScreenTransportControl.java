@@ -106,11 +106,7 @@ public abstract class LockScreenTransportControl
                 // wallpaper (which we set to the poster of the current video) when the phone is
                 // locked. Also, once the minSdkVersion is updated in the manifest, get rid of the
                 // code for older SDK versions.
-                if (!enabled()) {
-                    return null;
-                } else if (android.os.Build.VERSION.SDK_INT < 16) {
-                    sInstance = new LockScreenTransportControlV14(context);
-                } else if (android.os.Build.VERSION.SDK_INT < 18) {
+                if (android.os.Build.VERSION.SDK_INT < 18) {
                     sInstance = new LockScreenTransportControlV16(context);
                 } else {
                     sInstance = new LockScreenTransportControlV18(context);
@@ -126,17 +122,6 @@ public abstract class LockScreenTransportControl
 
     protected MediaRouteController getMediaRouteController() {
         return mMediaRouteController;
-    }
-
-    /**
-     * TODO(aberent) From PlayMovies code. Either remove this and get V14/15 working or combine V14
-     * and V16 versions only and change getOrCreate to only support V16 or later.
-     *
-     * @return true if lock screen transport controls should be used on this device.
-     */
-    private static boolean enabled() {
-        // Lock screen controls don't work well prior to JB, see b/9101584
-        return android.os.Build.VERSION.SDK_INT >= 16;
     }
 
     /**

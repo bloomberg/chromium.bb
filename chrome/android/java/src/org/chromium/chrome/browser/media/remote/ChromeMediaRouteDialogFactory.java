@@ -4,11 +4,9 @@
 
 package org.chromium.chrome.browser.media.remote;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.MediaRouteChooserDialog;
 import android.support.v7.app.MediaRouteChooserDialogFragment;
@@ -24,15 +22,11 @@ import android.widget.FrameLayout;
  */
 public class ChromeMediaRouteDialogFactory extends MediaRouteDialogFactory {
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private static class SystemVisibilitySaver {
         private int mSystemVisibility;
         private boolean mRestoreSystemVisibility;
 
         void saveSystemVisibility(Activity activity) {
-            // The Android APIs don't exist on old versions.
-            // TODO(aberent) this can go once the minSdkVersion has been updated in the manifests.
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) return;
             // If we are in fullscreen we may have also have hidden the system UI. This
             // is overridden when we display the dialog. Save the system UI visibility
             // state so we can restore it.
