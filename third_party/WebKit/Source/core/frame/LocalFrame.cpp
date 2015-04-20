@@ -815,8 +815,6 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameO
     , m_pageZoomFactor(parentPageZoomFactor(this))
     , m_textZoomFactor(parentTextZoomFactor(this))
     , m_inViewSourceMode(false)
-    , m_shouldSendDPRHint(false)
-    , m_shouldSendRWHint(false)
 {
     if (isLocalRoot())
         m_instrumentingAgents = InstrumentingAgents::create();

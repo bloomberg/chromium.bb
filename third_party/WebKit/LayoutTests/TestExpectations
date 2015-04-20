@@ -2030,9 +2030,6 @@ crbug.com/463358 [ Debug ] svg/transforms/text-with-pattern-inside-transformed-h
 crbug.com/463358 transforms/2d/hindi-rotated.html [ Pass Failure ImageOnlyFailure ]
 crbug.com/463358 [ Mac ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ Failure NeedsManualRebaseline ]
 
-crbug.com/467450 http/tests/misc/client-hints-invalid-accept.php [ Failure ]
-crbug.com/467450 http/tests/misc/client-hints-no-accept.html [ Failure ]
-
 crbug.com/469657 fast/events/mouse-event-buttons-attribute.html [ Pass Failure ]
 crbug.com/469657 virtual/slimmingpaint/fast/events/mouse-event-buttons-attribute.html [ Pass Failure ]
 

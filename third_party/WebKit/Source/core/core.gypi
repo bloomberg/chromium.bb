@@ -3830,6 +3830,7 @@
             'style/OutlineValueTest.cpp',
             'style/ComputedStyleTest.cpp',
             'style/SVGComputedStyleTest.cpp',
+            'loader/AcceptClientHintsTest.cpp',
             'loader/FrameFetchContextTest.cpp',
             'loader/LinkHeaderTest.cpp',
             'loader/MixedContentCheckerTest.cpp',

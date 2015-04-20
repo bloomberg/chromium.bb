@@ -1,7 +1,7 @@
 <?php
     $dpr = $_SERVER["HTTP_DPR"];
 
-    if($dpr) {
+    if(isset($dpr)) {
         $fn = fopen("compass.jpg", "r");
         fpassthru($fn);
         fclose($fn);

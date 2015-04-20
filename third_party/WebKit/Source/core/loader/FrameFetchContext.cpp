@@ -245,7 +245,7 @@ void FrameFetchContext::dispatchDidReceiveResponse(unsigned long identifier, con
     MixedContentChecker::checkMixedPrivatePublic(frame(), response.remoteIPAddress());
     LinkLoader::loadLinkFromHeader(response.httpHeaderField("Link"), frame()->document());
     if (m_documentLoader == frame()->loader().provisionalDocumentLoader())
-        handleAcceptClientHintsHeader(response.httpHeaderField("accept-ch"), frame());
+        handleAcceptClientHintsHeader(response.httpHeaderField("accept-ch"), m_documentLoader->clientHintsPreferences());
 
     frame()->loader().progress().incrementProgress(identifier, response);
     frame()->loader().client()->dispatchDidReceiveResponse(m_documentLoader, identifier, response);
@@ -669,10 +669,10 @@ void FrameFetchContext::addClientHintsIfNecessary(FetchRequest& fetchRequest)
     if (!frame() || !RuntimeEnabledFeatures::clientHintsEnabled() || !m_document)
         return;
 
-    if (frame()->shouldSendDPRHint())
+    if (m_document->clientHintsPreferences().shouldSendDPR())
         fetchRequest.mutableResourceRequest().addHTTPHeaderField("DPR", AtomicString(String::number(m_document->devicePixelRatio())));
 
-    if (frame()->shouldSendRWHint() && frame()->view()) {
+    if (m_document->clientHintsPreferences().shouldSendRW() && frame()->view()) {
         FetchRequest::ResourceWidth resourceWidth = fetchRequest.resourceWidth();
         float usedResourceWidth = resourceWidth.isSet ? resourceWidth.width : frame()->view()->viewportWidth();
         fetchRequest.mutableResourceRequest().addHTTPHeaderField("RW", AtomicString(String::number(usedResourceWidth)));

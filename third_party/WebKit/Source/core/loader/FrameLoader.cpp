@@ -353,12 +353,17 @@ void FrameLoader::receivedFirstData()
 
 void FrameLoader::didBeginDocument(bool dispatch)
 {
+    ASSERT(m_frame);
+    ASSERT(m_frame->document());
+    ASSERT(m_frame->document()->fetcher());
     m_frame->document()->setReadyState(Document::Loading);
 
     if (dispatch)
         dispatchDidClearDocumentOfWindowObject();
 
     m_frame->document()->initContentSecurityPolicy(m_documentLoader ? m_documentLoader->releaseContentSecurityPolicy() : ContentSecurityPolicy::create());
+    if (m_documentLoader)
+        m_frame->document()->setClientHintsPreferences(m_documentLoader->clientHintsPreferences());
 
     Settings* settings = m_frame->document()->settings();
     if (settings) {

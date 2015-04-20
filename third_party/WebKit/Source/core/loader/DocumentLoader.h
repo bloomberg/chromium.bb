@@ -35,6 +35,7 @@
 #include "core/fetch/ResourcePtr.h"
 #include "core/fetch/SubstituteData.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/loader/AcceptClientHints.h"
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentWriter.h"
 #include "core/loader/FrameLoaderTypes.h"
@@ -124,6 +125,7 @@ namespace blink {
 
         PassRefPtr<ContentSecurityPolicy> releaseContentSecurityPolicy() { return m_contentSecurityPolicy.release(); }
 
+        ClientHintsPreferences& clientHintsPreferences() { return m_clientHintsPreferences; }
     protected:
         DocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&);
 
@@ -204,6 +206,7 @@ namespace blink {
         OwnPtrWillBePersistent<ApplicationCacheHost> m_applicationCacheHost;
 
         RefPtr<ContentSecurityPolicy> m_contentSecurityPolicy;
+        ClientHintsPreferences m_clientHintsPreferences;
     };
 }
 

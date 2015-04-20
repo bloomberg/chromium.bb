@@ -5,22 +5,20 @@
 #include "config.h"
 #include "core/loader/AcceptClientHints.h"
 
-#include "core/frame/LocalFrame.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/network/HTTPParsers.h"
 
 namespace blink {
 
-void handleAcceptClientHintsHeader(const String& headerValue, LocalFrame* frame)
+void handleAcceptClientHintsHeader(const String& headerValue, ClientHintsPreferences& preferences)
 {
-    ASSERT(frame);
     if (RuntimeEnabledFeatures::clientHintsEnabled()) {
         CommaDelimitedHeaderSet acceptCH;
         parseCommaDelimitedHeader(headerValue, acceptCH);
         if (acceptCH.contains("dpr"))
-            frame->setShouldSendDPRHint();
+            preferences.setShouldSendDPR(true);
         if (acceptCH.contains("rw"))
-            frame->setShouldSendRWHint();
+            preferences.setShouldSendRW(true);
     }
 }
 

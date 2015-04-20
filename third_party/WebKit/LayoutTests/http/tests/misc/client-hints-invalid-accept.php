@@ -6,9 +6,9 @@
 <script src="../resources/testharnessreport.js"></script>
 <body>
     <script>
-        var t = async_test('Client-Hints sent when Accept-CH header is present');
+        var t = async_test('Client-Hints not sent when Accept-CH header is present but invalid');
         var unreached = function() {
-            assert_unreached("Image should have loaded.");
+            assert_unreached("Image should not have loaded.");
         };
 
         var loadRWImage = function() {

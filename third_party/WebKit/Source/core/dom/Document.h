@@ -53,6 +53,7 @@
 #include "core/frame/OriginsUsingFeatures.h"
 #include "core/html/CollectionType.h"
 #include "core/html/parser/ParserSynchronizationPolicy.h"
+#include "core/loader/AcceptClientHints.h"
 #include "core/page/PageVisibilityState.h"
 #include "platform/Length.h"
 #include "platform/Timer.h"
@@ -1066,6 +1067,9 @@ public:
 
     bool isPrivilegedContext(String& errorMessage, const PrivilegeContextCheck = StandardPrivilegeCheck) override;
 
+    void setClientHintsPreferences(const ClientHintsPreferences& preferences) { m_clientHintsPreferences.set(preferences); }
+    const ClientHintsPreferences& clientHintsPreferences() const { return m_clientHintsPreferences; }
+
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
 
@@ -1413,6 +1417,8 @@ private:
     ParserSynchronizationPolicy m_parserSyncPolicy;
 
     OriginsUsingFeatures::Value m_originsUsingFeaturesValue;
+
+    ClientHintsPreferences m_clientHintsPreferences;
 };
 
 inline bool Document::shouldOverrideLegacyDescription(ViewportDescription::Type origin)

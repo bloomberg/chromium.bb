@@ -236,7 +236,9 @@ protected:
 TEST_F(FrameFetchContextHintsTest, MonitorDPRHints)
 {
     expectHeader("http://www.example.com/1.gif", "DPR", false, "");
-    dummyPageHolder->frame().setShouldSendDPRHint();
+    ClientHintsPreferences preferences;
+    preferences.setShouldSendDPR(true);
+    document->setClientHintsPreferences(preferences);
     expectHeader("http://www.example.com/1.gif", "DPR", true, "1");
     dummyPageHolder->page().setDeviceScaleFactor(2.5);
     expectHeader("http://www.example.com/1.gif", "DPR", true, "2.5");
@@ -246,7 +248,9 @@ TEST_F(FrameFetchContextHintsTest, MonitorDPRHints)
 TEST_F(FrameFetchContextHintsTest, MonitorRWHints)
 {
     expectHeader("http://www.example.com/1.gif", "RW", false, "");
-    dummyPageHolder->frame().setShouldSendRWHint();
+    ClientHintsPreferences preferences;
+    preferences.setShouldSendRW(true);
+    document->setClientHintsPreferences(preferences);
     expectHeader("http://www.example.com/1.gif", "RW", true, "500");
     dummyPageHolder->frameView().setLayoutSizeFixedToFrameSize(false);
     dummyPageHolder->frameView().setLayoutSize(IntSize(800, 800));
@@ -259,8 +263,10 @@ TEST_F(FrameFetchContextHintsTest, MonitorBothHints)
     expectHeader("http://www.example.com/1.gif", "DPR", false, "");
     expectHeader("http://www.example.com/1.gif", "RW", false, "");
 
-    dummyPageHolder->frame().setShouldSendDPRHint();
-    dummyPageHolder->frame().setShouldSendRWHint();
+    ClientHintsPreferences preferences;
+    preferences.setShouldSendDPR(true);
+    preferences.setShouldSendRW(true);
+    document->setClientHintsPreferences(preferences);
     expectHeader("http://www.example.com/1.gif", "DPR", true, "1");
     expectHeader("http://www.example.com/1.gif", "RW", true, "500");
 }
