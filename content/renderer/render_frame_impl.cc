@@ -1949,7 +1949,7 @@ void RenderFrameImpl::SetSelectedText(const base::string16& selection_text,
 
 void RenderFrameImpl::EnsureMojoBuiltinsAreAvailable(
     v8::Isolate* isolate,
-    v8::Handle<v8::Context> context) {
+    v8::Local<v8::Context> context) {
   gin::ModuleRegistry* registry = gin::ModuleRegistry::From(context);
   if (registry->available_modules().count(mojo::js::Core::kModuleName))
     return;

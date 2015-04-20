@@ -336,7 +336,7 @@ class CONTENT_EXPORT RenderFrameImpl
                        size_t offset,
                        const gfx::Range& range) override;
   void EnsureMojoBuiltinsAreAvailable(v8::Isolate* isolate,
-                                      v8::Handle<v8::Context> context) override;
+                                      v8::Local<v8::Context> context) override;
 
   // blink::WebFrameClient implementation:
   blink::WebPluginPlaceholder* createPluginPlaceholder(

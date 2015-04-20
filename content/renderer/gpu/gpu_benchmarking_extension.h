@@ -20,7 +20,6 @@ namespace v8 {
 class Function;
 class Isolate;
 class Object;
-template <typename T> class Handle;
 }
 
 namespace content {
