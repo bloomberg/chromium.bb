@@ -217,7 +217,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyWebkitAnimationTimingFunction: return 174;
     case CSSPropertyWebkitAppearance: return 175;
     // CSSPropertyWebkitAspectRatio was 176
-    case CSSPropertyWebkitBackfaceVisibility: return 177;
+    case CSSPropertyAliasWebkitBackfaceVisibility: return 177;
     case CSSPropertyWebkitBackgroundClip: return 178;
     case CSSPropertyWebkitBackgroundComposite: return 179;
     case CSSPropertyWebkitBackgroundOrigin: return 180;
@@ -252,7 +252,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyWebkitBoxOrient: return 209;
     case CSSPropertyWebkitBoxPack: return 210;
     case CSSPropertyWebkitBoxReflect: return 211;
-    case CSSPropertyWebkitBoxShadow: return 212;
+    case CSSPropertyAliasWebkitBoxShadow: return 212;
     // CSSPropertyWebkitColumnAxis was 214
     case CSSPropertyWebkitColumnBreakAfter: return 215;
     case CSSPropertyWebkitColumnBreakBefore: return 216;
@@ -340,7 +340,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyWebkitPaddingEnd: return 306;
     case CSSPropertyWebkitPaddingStart: return 307;
     case CSSPropertyWebkitPerspective: return 308;
-    case CSSPropertyWebkitPerspectiveOrigin: return 309;
+    case CSSPropertyAliasWebkitPerspectiveOrigin: return 309;
     case CSSPropertyWebkitPerspectiveOriginX: return 310;
     case CSSPropertyWebkitPerspectiveOriginY: return 311;
     case CSSPropertyWebkitPrintColorAdjust: return 312;
@@ -358,11 +358,11 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyWebkitTextStrokeColor: return 324;
     case CSSPropertyWebkitTextStrokeWidth: return 325;
     case CSSPropertyWebkitTransform: return 326;
-    case CSSPropertyWebkitTransformOrigin: return 327;
+    case CSSPropertyAliasWebkitTransformOrigin: return 327;
     case CSSPropertyWebkitTransformOriginX: return 328;
     case CSSPropertyWebkitTransformOriginY: return 329;
     case CSSPropertyWebkitTransformOriginZ: return 330;
-    case CSSPropertyWebkitTransformStyle: return 331;
+    case CSSPropertyAliasWebkitTransformStyle: return 331;
     case CSSPropertyWebkitTransition: return 332;
     case CSSPropertyWebkitTransitionDelay: return 333;
     case CSSPropertyWebkitTransitionDuration: return 334;

@@ -14,6 +14,6 @@ svg:rect[Attributes Style]  { ()
 
 [expanded] 
 *  { (user agent stylesheet)
-  -webkit-transform-origin: 0px 0px 0px;
+  transform-origin: 0px 0px 0px;
 
 

@@ -354,7 +354,6 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setBottom(animatableValueToLength(value, state));
         return;
     case CSSPropertyBoxShadow:
-    case CSSPropertyWebkitBoxShadow:
         style->setBoxShadow(toAnimatableShadow(value)->shadowList());
         return;
     case CSSPropertyClip:

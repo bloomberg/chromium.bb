@@ -113,7 +113,6 @@ rect: style.getPropertyValue(-webkit-animation-name) : none
 rect: style.getPropertyValue(-webkit-animation-play-state) : running
 rect: style.getPropertyValue(-webkit-animation-timing-function) : ease
 rect: style.getPropertyValue(-webkit-appearance) : none
-rect: style.getPropertyValue(-webkit-backface-visibility) : visible
 rect: style.getPropertyValue(-webkit-background-clip) : border-box
 rect: style.getPropertyValue(-webkit-background-composite) : source-over
 rect: style.getPropertyValue(-webkit-background-origin) : padding-box
@@ -131,7 +130,6 @@ rect: style.getPropertyValue(-webkit-box-ordinal-group) : 1
 rect: style.getPropertyValue(-webkit-box-orient) : horizontal
 rect: style.getPropertyValue(-webkit-box-pack) : start
 rect: style.getPropertyValue(-webkit-box-reflect) : none
-rect: style.getPropertyValue(-webkit-box-shadow) : none
 rect: style.getPropertyValue(-webkit-column-break-after) : auto
 rect: style.getPropertyValue(-webkit-column-break-before) : auto
 rect: style.getPropertyValue(-webkit-column-break-inside) : auto
@@ -172,7 +170,6 @@ rect: style.getPropertyValue(-webkit-mask-repeat) : repeat
 rect: style.getPropertyValue(-webkit-mask-size) : auto
 rect: style.getPropertyValue(order) : 0
 rect: style.getPropertyValue(-webkit-perspective) : none
-rect: style.getPropertyValue(-webkit-perspective-origin) : 0px 0px
 rect: style.getPropertyValue(-webkit-print-color-adjust) : economy
 rect: style.getPropertyValue(-webkit-rtl-ordering) : logical
 rect: style.getPropertyValue(-webkit-text-combine) : none
@@ -186,8 +183,6 @@ rect: style.getPropertyValue(-webkit-text-security) : none
 rect: style.getPropertyValue(-webkit-text-stroke-color) : rgb(0, 0, 0)
 rect: style.getPropertyValue(-webkit-text-stroke-width) : 0px
 rect: style.getPropertyValue(-webkit-transform) : none
-rect: style.getPropertyValue(-webkit-transform-origin) : 0px 0px
-rect: style.getPropertyValue(-webkit-transform-style) : flat
 rect: style.getPropertyValue(-webkit-transition-delay) : 0s
 rect: style.getPropertyValue(-webkit-transition-duration) : 0s
 rect: style.getPropertyValue(-webkit-transition-property) : all
@@ -346,7 +341,6 @@ g: style.getPropertyValue(-webkit-animation-name) : none
 g: style.getPropertyValue(-webkit-animation-play-state) : running
 g: style.getPropertyValue(-webkit-animation-timing-function) : ease
 g: style.getPropertyValue(-webkit-appearance) : none
-g: style.getPropertyValue(-webkit-backface-visibility) : visible
 g: style.getPropertyValue(-webkit-background-clip) : border-box
 g: style.getPropertyValue(-webkit-background-composite) : source-over
 g: style.getPropertyValue(-webkit-background-origin) : padding-box
@@ -364,7 +358,6 @@ g: style.getPropertyValue(-webkit-box-ordinal-group) : 1
 g: style.getPropertyValue(-webkit-box-orient) : horizontal
 g: style.getPropertyValue(-webkit-box-pack) : start
 g: style.getPropertyValue(-webkit-box-reflect) : none
-g: style.getPropertyValue(-webkit-box-shadow) : none
 g: style.getPropertyValue(-webkit-column-break-after) : auto
 g: style.getPropertyValue(-webkit-column-break-before) : auto
 g: style.getPropertyValue(-webkit-column-break-inside) : auto
@@ -405,7 +398,6 @@ g: style.getPropertyValue(-webkit-mask-repeat) : repeat
 g: style.getPropertyValue(-webkit-mask-size) : auto
 g: style.getPropertyValue(order) : 0
 g: style.getPropertyValue(-webkit-perspective) : none
-g: style.getPropertyValue(-webkit-perspective-origin) : 0px 0px
 g: style.getPropertyValue(-webkit-print-color-adjust) : economy
 g: style.getPropertyValue(-webkit-rtl-ordering) : logical
 g: style.getPropertyValue(-webkit-text-combine) : none
@@ -419,8 +411,6 @@ g: style.getPropertyValue(-webkit-text-security) : none
 g: style.getPropertyValue(-webkit-text-stroke-color) : rgb(0, 0, 0)
 g: style.getPropertyValue(-webkit-text-stroke-width) : 0px
 g: style.getPropertyValue(-webkit-transform) : none
-g: style.getPropertyValue(-webkit-transform-origin) : 0px 0px
-g: style.getPropertyValue(-webkit-transform-style) : flat
 g: style.getPropertyValue(-webkit-transition-delay) : 0s
 g: style.getPropertyValue(-webkit-transition-duration) : 0s
 g: style.getPropertyValue(-webkit-transition-property) : all

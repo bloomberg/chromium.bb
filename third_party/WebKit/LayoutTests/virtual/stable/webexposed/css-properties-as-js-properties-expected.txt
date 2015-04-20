@@ -239,7 +239,6 @@ webkitAnimationPlayState
 webkitAnimationTimingFunction
 webkitAppRegion
 webkitAppearance
-webkitBackfaceVisibility
 webkitBackgroundClip
 webkitBackgroundComposite
 webkitBackgroundOrigin
@@ -274,7 +273,6 @@ webkitBoxOrdinalGroup
 webkitBoxOrient
 webkitBoxPack
 webkitBoxReflect
-webkitBoxShadow
 webkitClipPath
 webkitColumnBreakAfter
 webkitColumnBreakBefore
@@ -336,7 +334,6 @@ webkitPaddingBefore
 webkitPaddingEnd
 webkitPaddingStart
 webkitPerspective
-webkitPerspectiveOrigin
 webkitPerspectiveOriginX
 webkitPerspectiveOriginY
 webkitPrintColorAdjust
@@ -356,11 +353,9 @@ webkitTextStroke
 webkitTextStrokeColor
 webkitTextStrokeWidth
 webkitTransform
-webkitTransformOrigin
 webkitTransformOriginX
 webkitTransformOriginY
 webkitTransformOriginZ
-webkitTransformStyle
 webkitTransition
 webkitTransitionDelay
 webkitTransitionDuration

@@ -5,6 +5,6 @@
 test(function(){
     var div = document.createElement('div');
     div.style.webkitPerspectiveOrigin = '20px 30px';
-    assert_equals(div.style.cssText, '-webkit-perspective-origin: 20px 30px;');
+    assert_equals(div.style.cssText, 'perspective-origin: 20px 30px;');
 }, "cssText behaves as expected with -webkit-perspective-origin");
 </script>

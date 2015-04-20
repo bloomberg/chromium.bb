@@ -196,7 +196,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitAnimationTimingFunction,
     CSSPropertyWebkitAppearance,
     CSSPropertyBackfaceVisibility,
-    CSSPropertyWebkitBackfaceVisibility,
     CSSPropertyWebkitBackgroundClip,
     CSSPropertyWebkitBackgroundComposite,
     CSSPropertyWebkitBackgroundOrigin,
@@ -214,7 +213,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitBoxOrient,
     CSSPropertyWebkitBoxPack,
     CSSPropertyWebkitBoxReflect,
-    CSSPropertyWebkitBoxShadow,
     CSSPropertyWebkitClipPath,
     CSSPropertyWebkitColumnBreakAfter,
     CSSPropertyWebkitColumnBreakBefore,
@@ -272,7 +270,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyPerspective,
     CSSPropertyWebkitPerspective,
     CSSPropertyPerspectiveOrigin,
-    CSSPropertyWebkitPerspectiveOrigin,
     CSSPropertyWebkitPrintColorAdjust,
     CSSPropertyWebkitRtlOrdering,
     CSSPropertyShapeOutside,
@@ -292,9 +289,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyTransform,
     CSSPropertyWebkitTransform,
     CSSPropertyTransformOrigin,
-    CSSPropertyWebkitTransformOrigin,
     CSSPropertyTransformStyle,
-    CSSPropertyWebkitTransformStyle,
     CSSPropertyWebkitTransitionDelay,
     CSSPropertyWebkitTransitionDuration,
     CSSPropertyWebkitTransitionProperty,
@@ -479,11 +474,9 @@ static bool isLayoutDependent(CSSPropertyID propertyID, const ComputedStyle* sty
     case CSSPropertyRight:
     case CSSPropertyTop:
     case CSSPropertyPerspectiveOrigin:
-    case CSSPropertyWebkitPerspectiveOrigin:
     case CSSPropertyTransform:
     case CSSPropertyWebkitTransform:
     case CSSPropertyTransformOrigin:
-    case CSSPropertyWebkitTransformOrigin:
     case CSSPropertyMotionPath:
     case CSSPropertyMotionOffset:
     case CSSPropertyMotionRotation:

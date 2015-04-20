@@ -1181,7 +1181,6 @@ static inline bool isValidFirstLetterStyleProperty(CSSPropertyID id)
     // box-shadox added in CSS3 backgrounds spec:
     // http://www.w3.org/TR/css3-background/#placement
     case CSSPropertyBoxShadow:
-    case CSSPropertyWebkitBoxShadow:
     // Properties that we currently support outside of spec.
     case CSSPropertyWebkitLineBoxContain:
     case CSSPropertyVisibility:

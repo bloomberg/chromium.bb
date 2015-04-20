@@ -252,8 +252,6 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const ComputedStyl
         return a.horizontalBorderSpacing() == b.horizontalBorderSpacing();
     case CSSPropertyWebkitBorderVerticalSpacing:
         return a.verticalBorderSpacing() == b.verticalBorderSpacing();
-    case CSSPropertyWebkitBoxShadow:
-        return dataEquivalent(a.boxShadow(), b.boxShadow());
     case CSSPropertyWebkitClipPath:
         return dataEquivalent(a.clipPath(), b.clipPath());
     case CSSPropertyWebkitColumnCount:

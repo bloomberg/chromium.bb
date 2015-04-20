@@ -114,7 +114,6 @@ zoom: 1
 -webkit-animation-play-state: running
 -webkit-animation-timing-function: ease
 -webkit-appearance: none
--webkit-backface-visibility: visible
 -webkit-background-clip: border-box
 -webkit-background-composite: source-over
 -webkit-background-origin: padding-box
@@ -132,7 +131,6 @@ zoom: 1
 -webkit-box-orient: horizontal
 -webkit-box-pack: start
 -webkit-box-reflect: none
--webkit-box-shadow: none
 -webkit-column-break-after: auto
 -webkit-column-break-before: auto
 -webkit-column-break-inside: auto
@@ -173,7 +171,6 @@ justify-content: start
 -webkit-mask-size: auto
 order: 0
 -webkit-perspective: none
--webkit-perspective-origin: 50% 50%
 -webkit-print-color-adjust: economy
 -webkit-rtl-ordering: logical
 -webkit-text-combine: none
@@ -187,8 +184,6 @@ order: 0
 -webkit-text-stroke-color: rgb(0, 0, 0)
 -webkit-text-stroke-width: 0px
 -webkit-transform: none
--webkit-transform-origin: 50% 50%
--webkit-transform-style: flat
 -webkit-transition-delay: 0s
 -webkit-transition-duration: 0s
 -webkit-transition-property: all

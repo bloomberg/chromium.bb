@@ -336,8 +336,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyfram
     }
 
     case CSSPropertyBoxShadow:
-    case CSSPropertyTextShadow:
-    case CSSPropertyWebkitBoxShadow: {
+    case CSSPropertyTextShadow: {
         RefPtrWillBeRawPtr<Interpolation> interpolation = ListStyleInterpolation<ShadowStyleInterpolation>::maybeCreateFromList(*fromCSSValue, *toCSSValue, property);
         if (interpolation)
             return interpolation.release();

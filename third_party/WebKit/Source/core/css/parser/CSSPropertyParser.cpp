@@ -1041,7 +1041,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         break;
     case CSSPropertyTextShadow: // CSS2 property, dropped in CSS2.1, back in CSS3, so treat as CSS3
     case CSSPropertyBoxShadow:
-    case CSSPropertyWebkitBoxShadow:
         if (id == CSSValueNone)
             validPrimitive = true;
         else {
@@ -1125,8 +1124,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
             return false;
         }
         break;
-    case CSSPropertyTransformOrigin:
-    case CSSPropertyWebkitTransformOrigin: {
+    case CSSPropertyTransformOrigin: {
         RefPtrWillBeRawPtr<CSSValueList> list = parseTransformOrigin();
         if (!list)
             return false;
@@ -1169,8 +1167,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         else
             return false;
         break;
-    case CSSPropertyPerspectiveOrigin:
-    case CSSPropertyWebkitPerspectiveOrigin: {
+    case CSSPropertyPerspectiveOrigin: {
         RefPtrWillBeRawPtr<CSSValueList> list = parseTransformOrigin();
         if (!list || list->length() == 3)
             return false;
@@ -5439,7 +5436,7 @@ public:
         , allowBlur(false)
         , allowSpread(false)
         , allowColor(true)
-        , allowStyle(prop == CSSPropertyWebkitBoxShadow || prop == CSSPropertyBoxShadow)
+        , allowStyle(prop == CSSPropertyBoxShadow)
         , allowBreak(true)
     {
     }
@@ -5471,7 +5468,7 @@ public:
         allowY = false;
         allowBlur = false;
         allowSpread = false;
-        allowStyle = property == CSSPropertyWebkitBoxShadow || property == CSSPropertyBoxShadow;
+        allowStyle = property == CSSPropertyBoxShadow;
     }
 
     void commitLength(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val)
@@ -5488,12 +5485,12 @@ public:
             allowY = false;
             allowBlur = true;
             allowColor = true;
-            allowStyle = property == CSSPropertyWebkitBoxShadow || property == CSSPropertyBoxShadow;
+            allowStyle = property == CSSPropertyBoxShadow;
             allowBreak = true;
         } else if (allowBlur) {
             blur = val;
             allowBlur = false;
-            allowSpread = property == CSSPropertyWebkitBoxShadow || property == CSSPropertyBoxShadow;
+            allowSpread = property == CSSPropertyBoxShadow;
         } else if (allowSpread) {
             spread = val;
             allowSpread = false;
@@ -5510,7 +5507,7 @@ public:
         } else {
             allowBlur = false;
             allowSpread = false;
-            allowStyle = property == CSSPropertyWebkitBoxShadow || property == CSSPropertyBoxShadow;
+            allowStyle = property == CSSPropertyBoxShadow;
         }
     }
 

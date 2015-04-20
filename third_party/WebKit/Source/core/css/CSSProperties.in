@@ -301,7 +301,6 @@ y animatable, svg, converter=convertLength
 -webkit-animation-timing-function custom_all
 -webkit-appearance type_name=ControlPart
 -webkit-app-region custom_all
--webkit-backface-visibility use_handlers_for=CSSPropertyBackfaceVisibility
 -webkit-background-clip use_handlers_for=CSSPropertyBackgroundClip
 -webkit-background-composite custom_all
 -webkit-background-origin use_handlers_for=CSSPropertyBackgroundOrigin
@@ -319,7 +318,6 @@ y animatable, svg, converter=convertLength
 -webkit-box-orient
 -webkit-box-pack
 -webkit-box-reflect converter=convertBoxReflect
--webkit-box-shadow use_handlers_for=CSSPropertyBoxShadow
 -webkit-clip-path animatable, custom_value
 -webkit-column-break-after type_name=EPageBreak, initial=initialPageBreak
 -webkit-column-break-before type_name=EPageBreak, initial=initialPageBreak
@@ -356,7 +354,6 @@ y animatable, svg, converter=convertLength
 -webkit-mask-repeat-y custom_all
 -webkit-mask-size animatable, custom_all
 -webkit-perspective use_handlers_for=CSSPropertyPerspective
--webkit-perspective-origin use_handlers_for=CSSPropertyPerspectiveOrigin
 -webkit-perspective-origin-x animatable, converter=convertLength
 -webkit-perspective-origin-y animatable, converter=convertLength
 -webkit-print-color-adjust inherited, type_name=PrintColorAdjust
@@ -372,11 +369,9 @@ y animatable, svg, converter=convertLength
 -webkit-text-stroke-color animatable, inherited, custom_all
 -webkit-text-stroke-width inherited, converter=convertTextStrokeWidth
 -webkit-transform use_handlers_for=CSSPropertyTransform
--webkit-transform-origin use_handlers_for=CSSPropertyTransformOrigin
 -webkit-transform-origin-x animatable, converter=convertLength
 -webkit-transform-origin-y animatable, converter=convertLength
 -webkit-transform-origin-z animatable, converter=convertComputedLength<float>
--webkit-transform-style name_for_methods=TransformStyle3D
 -webkit-transition-delay custom_all
 -webkit-transition-duration custom_all
 -webkit-transition-property custom_all
@@ -517,10 +512,12 @@ transition longhands=transition-property;transition-duration;transition-timing-f
 -webkit-align-content alias_for=align-content
 -webkit-align-items alias_for=align-items
 -webkit-align-self alias_for=align-self
+-webkit-backface-visibility alias_for=backface-visibility
 -webkit-border-bottom-left-radius alias_for=border-bottom-left-radius
 -webkit-border-bottom-right-radius alias_for=border-bottom-right-radius
 -webkit-border-top-left-radius alias_for=border-top-left-radius
 -webkit-border-top-right-radius alias_for=border-top-right-radius
+-webkit-box-shadow alias_for=box-shadow
 -webkit-box-sizing alias_for=box-sizing
 -webkit-flex alias_for=flex
 -webkit-flex-basis alias_for=flex-basis
@@ -532,6 +529,9 @@ transition longhands=transition-property;transition-duration;transition-timing-f
 -webkit-justify-content alias_for=justify-content
 -webkit-opacity alias_for=opacity
 -webkit-order alias_for=order
+-webkit-perspective-origin alias_for=perspective-origin
 -webkit-shape-image-threshold alias_for=shape-image-threshold
 -webkit-shape-margin alias_for=shape-margin
 -webkit-shape-outside alias_for=shape-outside
+-webkit-transform-origin alias_for=transform-origin
+-webkit-transform-style alias_for=transform-style

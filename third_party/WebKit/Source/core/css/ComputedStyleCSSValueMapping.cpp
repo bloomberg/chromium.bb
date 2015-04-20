@@ -1449,7 +1449,6 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyWebkitBoxReflect:
         return valueForReflection(style.boxReflect(), style);
     case CSSPropertyBoxShadow:
-    case CSSPropertyWebkitBoxShadow:
         return valueForShadowList(style.boxShadow(), style, true);
     case CSSPropertyCaptionSide:
         return cssValuePool().createValue(style.captionSide());
@@ -2106,7 +2105,6 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyWebkitAppearance:
         return cssValuePool().createValue(style.appearance());
     case CSSPropertyBackfaceVisibility:
-    case CSSPropertyWebkitBackfaceVisibility:
         return cssValuePool().createIdentifierValue((style.backfaceVisibility() == BackfaceVisibilityHidden) ? CSSValueHidden : CSSValueVisible);
     case CSSPropertyWebkitBorderImage:
         return valueForNinePieceImage(style.borderImage(), style);
@@ -2146,8 +2144,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         if (!style.hasPerspective())
             return cssValuePool().createIdentifierValue(CSSValueNone);
         return zoomAdjustedPixelValue(style.perspective(), style);
-    case CSSPropertyPerspectiveOrigin:
-    case CSSPropertyWebkitPerspectiveOrigin: {
+    case CSSPropertyPerspectiveOrigin: {
         RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
         if (renderer) {
             LayoutRect box;
@@ -2193,8 +2190,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyTransform:
     case CSSPropertyWebkitTransform:
         return computedTransform(renderer, style);
-    case CSSPropertyTransformOrigin:
-    case CSSPropertyWebkitTransformOrigin: {
+    case CSSPropertyTransformOrigin: {
         RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
         if (renderer) {
             LayoutRect box;
@@ -2214,7 +2210,6 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return list.release();
     }
     case CSSPropertyTransformStyle:
-    case CSSPropertyWebkitTransformStyle:
         return cssValuePool().createIdentifierValue((style.transformStyle3D() == TransformStyle3DPreserve3D) ? CSSValuePreserve3d : CSSValueFlat);
     case CSSPropertyTransitionDelay:
     case CSSPropertyWebkitTransitionDelay:
