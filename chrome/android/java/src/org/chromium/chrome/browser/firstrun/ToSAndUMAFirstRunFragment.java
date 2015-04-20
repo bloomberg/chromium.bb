@@ -87,7 +87,7 @@ public class ToSAndUMAFirstRunFragment extends FirstRunPage {
     }
 
     @Override
-    public boolean shouldSkipPageOnResume(Context appContext) {
+    public boolean shouldSkipPageOnCreate(Context appContext) {
         return PrefServiceBridge.getInstance().isFirstRunEulaAccepted();
     }
 }

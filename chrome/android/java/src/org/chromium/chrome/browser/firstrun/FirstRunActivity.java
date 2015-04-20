@@ -71,8 +71,7 @@ public class FirstRunActivity extends ActionBarActivity implements FirstRunPageD
     private String mResultSignInAccountName;
     private boolean mResultShowSyncSettings;
 
-    // TODO(aurimas): make this private once all of FirstRunActivity is upstreamed.
-    protected boolean mNativeSideIsInitialized;
+    private boolean mNativeSideIsInitialized;
 
     private ProfileDataCache mProfileDataCache;
     private ViewPager mPager;
@@ -170,11 +169,6 @@ public class FirstRunActivity extends ActionBarActivity implements FirstRunPageD
     protected void onPause() {
         super.onPause();
         flushPersistentData();
-    }
-
-    @Override
-    protected void onResumeFragments() {
-        skipPagesIfNecessary();
     }
 
     @Override
@@ -370,7 +364,7 @@ public class FirstRunActivity extends ActionBarActivity implements FirstRunPageD
         int currentPageIndex = mPager.getCurrentItem();
         while (currentPageIndex < mPagerAdapter.getCount()) {
             FirstRunPage currentPage = (FirstRunPage) mPagerAdapter.getItem(currentPageIndex);
-            if (!currentPage.shouldSkipPageOnResume(getApplicationContext())) return;
+            if (!currentPage.shouldSkipPageOnCreate(getApplicationContext())) return;
             if (!jumpToPage(currentPageIndex + 1, false)) return;
             currentPageIndex = mPager.getCurrentItem();
         }

@@ -33,10 +33,10 @@ public class FirstRunPage extends Fragment {
     }
 
     /**
-     * @return Whether this page should be skipped on the FRE resume.
+     * @return Whether this page should be skipped on the FRE creation.
      * @param appContext An application context.
      */
-    public boolean shouldSkipPageOnResume(Context appContext) {
+    public boolean shouldSkipPageOnCreate(Context appContext) {
         return false;
     }
 
