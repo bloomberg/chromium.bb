@@ -126,13 +126,7 @@ config("feature_flags") {
       defines += [ "USE_OPENSSL_CERTS=1" ]
     }
   } else if (use_nss_certs) {
-    defines += [
-      "USE_NSS_CERTS=1",
-
-      # TODO(davidben): USE_NSS is a deprecated alias for USE_NSS_CERTS and will
-      # be removed. See https://crbug.com/462040.
-      "USE_NSS=1",
-    ]
+    defines += [ "USE_NSS_CERTS=1" ]
   }
   if (use_ozone) {
     defines += [ "USE_OZONE=1" ]
