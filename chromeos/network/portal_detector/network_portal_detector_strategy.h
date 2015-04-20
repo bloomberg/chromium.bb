@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
 #include "net/base/backoff_entry.h"
@@ -23,9 +24,9 @@ class CHROMEOS_EXPORT PortalDetectorStrategy {
     STRATEGY_ID_SESSION
   };
 
-  class Delegate {
+  class Delegate : public base::TickClock {
    public:
-    virtual ~Delegate() {}
+    ~Delegate() override;
 
     // Returns number of attempts in a row with NO RESPONSE result.
     // If last detection attempt has different result, returns 0.
@@ -33,13 +34,11 @@ class CHROMEOS_EXPORT PortalDetectorStrategy {
 
     // Returns time when current attempt was started.
     virtual base::TimeTicks AttemptStartTime() = 0;
-
-    // Returns current TimeTicks.
-    virtual base::TimeTicks GetCurrentTimeTicks() = 0;
   };
 
   virtual ~PortalDetectorStrategy();
 
+  // Lifetime of delegate must enclose lifetime of PortalDetectorStrategy.
   static scoped_ptr<PortalDetectorStrategy> CreateById(StrategyId id,
                                                        Delegate* delegate);
 
@@ -65,8 +64,7 @@ class CHROMEOS_EXPORT PortalDetectorStrategy {
   void OnDetectionCompleted();
 
  protected:
-  class BackoffEntryImpl;
-
+  // Lifetime of delegate must enclose lifetime of PortalDetectorStrategy.
   explicit PortalDetectorStrategy(Delegate* delegate);
 
   // Interface for subclasses:
@@ -74,7 +72,7 @@ class CHROMEOS_EXPORT PortalDetectorStrategy {
 
   Delegate* delegate_;
   net::BackoffEntry::Policy policy_;
-  scoped_ptr<BackoffEntryImpl> backoff_entry_;
+  scoped_ptr<net::BackoffEntry> backoff_entry_;
 
  private:
   friend class NetworkPortalDetectorImplTest;

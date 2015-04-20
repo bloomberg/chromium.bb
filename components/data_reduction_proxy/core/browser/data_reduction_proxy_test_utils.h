@@ -11,6 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/time/clock.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
@@ -104,20 +106,20 @@ class TestDataReductionProxyConfigServiceClient
 
  protected:
   // Overrides of DataReductionProxyConfigServiceClient
-  base::Time Now() const override;
+  base::Time Now() override;
   net::BackoffEntry* GetBackoffEntry() override;
 
  private:
   // A clock which returns a fixed value in both base::Time and base::TimeTicks.
-  class TestTickClock {
+  class TestTickClock : public base::Clock, public base::TickClock {
    public:
     TestTickClock(const base::Time& initial_time);
 
-    // Returns the current base::TimeTicks
-    base::TimeTicks NowTicks() const;
+    // base::TickClock implementation.
+    base::TimeTicks NowTicks() override;
 
-    // Returns the current base::Time
-    base::Time Now() const;
+    // base::Clock implementation.
+    base::Time Now() override;
 
     // Sets the current time.
     void SetTime(const base::Time& time);
@@ -126,23 +128,8 @@ class TestDataReductionProxyConfigServiceClient
     base::Time time_;
   };
 
-  // A net::BackoffEntry which uses an injected base::TickClock to control
-  // the backoff expiration time.
-  class TestBackoffEntry : public net::BackoffEntry {
-   public:
-    TestBackoffEntry(const BackoffEntry::Policy* const policy,
-                     const TestTickClock* tick_clock);
-
-   protected:
-    // Override of net::BackoffEntry.
-    base::TimeTicks ImplGetTimeNow() const override;
-
-   private:
-    const TestTickClock* tick_clock_;
-  };
-
   TestTickClock tick_clock_;
-  TestBackoffEntry test_backoff_entry_;
+  net::BackoffEntry test_backoff_entry_;
 };
 
 // Test version of |DataReductionProxyService|, which permits mocking of various

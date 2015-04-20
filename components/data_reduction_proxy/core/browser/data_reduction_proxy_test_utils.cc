@@ -113,7 +113,7 @@ base::TimeDelta TestDataReductionProxyConfigServiceClient::GetDelay() const {
   return config_refresh_timer_.GetCurrentDelay();
 }
 
-base::Time TestDataReductionProxyConfigServiceClient::Now() const {
+base::Time TestDataReductionProxyConfigServiceClient::Now() {
   return tick_clock_.Now();
 }
 
@@ -128,31 +128,18 @@ TestDataReductionProxyConfigServiceClient::TestTickClock::TestTickClock(
 }
 
 base::TimeTicks
-TestDataReductionProxyConfigServiceClient::TestTickClock::NowTicks() const {
+TestDataReductionProxyConfigServiceClient::TestTickClock::NowTicks() {
   return base::TimeTicks::UnixEpoch() + (time_ - base::Time::UnixEpoch());
 }
 
 base::Time
-TestDataReductionProxyConfigServiceClient::TestTickClock::Now() const {
+TestDataReductionProxyConfigServiceClient::TestTickClock::Now() {
   return time_;
 }
 
 void TestDataReductionProxyConfigServiceClient::TestTickClock::SetTime(
     const base::Time& time) {
   time_ = time;
-}
-
-TestDataReductionProxyConfigServiceClient::TestBackoffEntry::TestBackoffEntry(
-    const net::BackoffEntry::Policy* const policy,
-    const TestTickClock* tick_clock)
-    : net::BackoffEntry(policy),
-      tick_clock_(tick_clock) {
-}
-
-base::TimeTicks
-TestDataReductionProxyConfigServiceClient::TestBackoffEntry::ImplGetTimeNow()
-    const {
-  return tick_clock_->NowTicks();
 }
 
 MockDataReductionProxyService::MockDataReductionProxyService(

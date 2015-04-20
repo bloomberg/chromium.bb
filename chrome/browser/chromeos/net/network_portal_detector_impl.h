@@ -86,7 +86,7 @@ class NetworkPortalDetectorImpl
   // PortalDetectorStrategy::Delegate implementation:
   int NoResponseResultCount() override;
   base::TimeTicks AttemptStartTime() override;
-  base::TimeTicks GetCurrentTimeTicks() override;
+  base::TimeTicks NowTicks() override;
 
  private:
   friend class ::NetworkingConfigTest;

@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_member.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/captive_portal/captive_portal_detector.h"
@@ -48,6 +49,7 @@ class CaptivePortalService : public KeyedService, public base::NonThreadSafe {
   };
 
   explicit CaptivePortalService(Profile* profile);
+  CaptivePortalService(Profile* profile, base::TickClock* clock_for_testing);
   ~CaptivePortalService() override;
 
   // Triggers a check for a captive portal.  If there's already a check in
@@ -78,10 +80,6 @@ class CaptivePortalService : public KeyedService, public base::NonThreadSafe {
  private:
   friend class CaptivePortalServiceTest;
   friend class CaptivePortalBrowserTest;
-
-  // Subclass of BackoffEntry that uses the CaptivePortalService's
-  // GetCurrentTime function, for unit testing.
-  class RecheckBackoffEntry;
 
   enum State {
     // No check is running or pending.
@@ -138,7 +136,6 @@ class CaptivePortalService : public KeyedService, public base::NonThreadSafe {
   //               Android, since it lacks the Browser class.
   void UpdateEnabledState();
 
-  // Returns the current TimeTicks.
   base::TimeTicks GetCurrentTimeTicks() const;
 
   bool DetectionInProgress() const;
@@ -151,16 +148,6 @@ class CaptivePortalService : public KeyedService, public base::NonThreadSafe {
   RecheckPolicy& recheck_policy() { return recheck_policy_; }
 
   void set_test_url(const GURL& test_url) { test_url_ = test_url; }
-
-  // Sets current test time ticks. Used by unit tests.
-  void set_time_ticks_for_testing(const base::TimeTicks& time_ticks) {
-    time_ticks_for_testing_ = time_ticks;
-  }
-
-  // Advances current test time ticks. Used by unit tests.
-  void advance_time_ticks_for_testing(const base::TimeDelta& delta) {
-    time_ticks_for_testing_ += delta;
-  }
 
   // The profile that owns this CaptivePortalService.
   Profile* profile_;
@@ -207,8 +194,8 @@ class CaptivePortalService : public KeyedService, public base::NonThreadSafe {
 
   static TestingState testing_state_;
 
-  // Test time ticks used by unit tests.
-  base::TimeTicks time_ticks_for_testing_;
+  // Test tick clock used by unit tests.
+  base::TickClock* tick_clock_for_testing_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalService);
 };

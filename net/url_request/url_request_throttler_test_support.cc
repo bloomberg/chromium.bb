@@ -8,19 +8,14 @@
 
 namespace net {
 
-MockBackoffEntry::MockBackoffEntry(const BackoffEntry::Policy* const policy)
-    : BackoffEntry(policy) {
-}
+TestTickClock::TestTickClock() {}
 
-MockBackoffEntry::~MockBackoffEntry() {
-}
+TestTickClock::TestTickClock(base::TimeTicks now) : now_ticks_(now) {}
 
-base::TimeTicks MockBackoffEntry::ImplGetTimeNow() const {
-  return fake_now_;
-}
+TestTickClock::~TestTickClock() {}
 
-void MockBackoffEntry::set_fake_now(const base::TimeTicks& now) {
-  fake_now_ = now;
+base::TimeTicks TestTickClock::NowTicks() {
+  return now_ticks_;
 }
 
 MockURLRequestThrottlerHeaderAdapter::MockURLRequestThrottlerHeaderAdapter(

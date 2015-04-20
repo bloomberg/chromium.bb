@@ -156,7 +156,7 @@ void DataReductionProxyConfigServiceClient::SetConfigRefreshTimer(
       &DataReductionProxyConfigServiceClient::RetrieveConfig);
 }
 
-base::Time DataReductionProxyConfigServiceClient::Now() const {
+base::Time DataReductionProxyConfigServiceClient::Now() {
   return base::Time::Now();
 }
 

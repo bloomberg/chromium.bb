@@ -92,25 +92,9 @@ class SessionStrategy : public PortalDetectorStrategy {
 
 }  // namespace
 
-// PortalDetectorStrategy::BackoffEntryImpl ------------------------------------
+// PortalDetectorStrategy::Delegate --------------------------------------------
 
-class PortalDetectorStrategy::BackoffEntryImpl : public net::BackoffEntry {
- public:
-  BackoffEntryImpl(const net::BackoffEntry::Policy* const policy,
-                   PortalDetectorStrategy::Delegate* delegate)
-      : net::BackoffEntry(policy), delegate_(delegate) {}
-  ~BackoffEntryImpl() override {}
-
-  // net::BackoffEntry overrides:
-  base::TimeTicks ImplGetTimeNow() const override {
-    return delegate_->GetCurrentTimeTicks();
-  }
-
- private:
-  PortalDetectorStrategy::Delegate* delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(BackoffEntryImpl);
-};
+PortalDetectorStrategy::Delegate::~Delegate() {}
 
 // PortalDetectorStrategy -----------------------------------------------------
 
@@ -142,7 +126,7 @@ PortalDetectorStrategy::PortalDetectorStrategy(Delegate* delegate)
   policy_.maximum_backoff_ms = 2 * 60 * 1000;
   policy_.entry_lifetime_ms = -1;
   policy_.always_use_initial_delay = true;
-  backoff_entry_.reset(new BackoffEntryImpl(&policy_, delegate_));
+  backoff_entry_.reset(new net::BackoffEntry(&policy_, delegate_));
 }
 
 PortalDetectorStrategy::~PortalDetectorStrategy() {
@@ -187,7 +171,7 @@ void PortalDetectorStrategy::Reset() {
 void PortalDetectorStrategy::SetPolicyAndReset(
     const net::BackoffEntry::Policy& policy) {
   policy_ = policy;
-  backoff_entry_.reset(new BackoffEntryImpl(&policy_, delegate_));
+  backoff_entry_.reset(new net::BackoffEntry(&policy_, delegate_));
 }
 
 void PortalDetectorStrategy::OnDetectionCompleted() {

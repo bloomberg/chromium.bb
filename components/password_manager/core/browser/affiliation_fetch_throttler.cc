@@ -15,30 +15,6 @@
 
 namespace password_manager {
 
-namespace {
-
-// Implementation of net::BackoffEntry that allows mocking its tick source.
-class BackoffEntryImpl : public net::BackoffEntry {
- public:
-  // |tick_clock| must outlive this instance.
-  explicit BackoffEntryImpl(const net::BackoffEntry::Policy* const policy,
-                            base::TickClock* tick_clock)
-      : BackoffEntry(policy), tick_clock_(tick_clock) {}
-  ~BackoffEntryImpl() override {}
-
- private:
-  // net::BackoffEntry:
-  base::TimeTicks ImplGetTimeNow() const override {
-    return tick_clock_->NowTicks();
-  }
-
-  base::TickClock* tick_clock_;
-
-  DISALLOW_COPY_AND_ASSIGN(BackoffEntryImpl);
-};
-
-}  // namespace
-
 // static
 const net::BackoffEntry::Policy AffiliationFetchThrottler::kBackoffPolicy = {
     // Number of initial errors (in sequence) to ignore before going into
@@ -82,7 +58,7 @@ AffiliationFetchThrottler::AffiliationFetchThrottler(
       state_(IDLE),
       has_network_connectivity_(false),
       is_fetch_scheduled_(false),
-      exponential_backoff_(new BackoffEntryImpl(&kBackoffPolicy, tick_clock_)),
+      exponential_backoff_(new net::BackoffEntry(&kBackoffPolicy, tick_clock_)),
       weak_ptr_factory_(this) {
   DCHECK(delegate);
   // Start observing before querying the current connectivity state, so that if

@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "components/domain_reliability/config.h"
 #include "components/domain_reliability/util.h"
+#include "net/base/backoff_entry.h"
 
 namespace {
 
@@ -92,7 +93,7 @@ DomainReliabilityScheduler::DomainReliabilityScheduler(
 
   for (size_t i = 0; i < num_collectors; ++i) {
     collectors_.push_back(
-      new MockableTimeBackoffEntry(&backoff_policy_, time_));
+      new net::BackoffEntry(&backoff_policy_, time_));
   }
 }
 

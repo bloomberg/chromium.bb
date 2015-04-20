@@ -9,6 +9,10 @@
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace net {
 
 // Provides the core logic needed for randomized exponential back-off
@@ -57,7 +61,11 @@ class NET_EXPORT BackoffEntry : NON_EXPORTED_BASE(public base::NonThreadSafe) {
 
   // Lifetime of policy must enclose lifetime of BackoffEntry. The
   // pointer must be valid but is not dereferenced during construction.
-  explicit BackoffEntry(const Policy* const policy);
+  explicit BackoffEntry(const Policy* policy);
+  // Lifetime of policy and clock must enclose lifetime of BackoffEntry.
+  // |policy| pointer must be valid but isn't dereferenced during construction.
+  // |clock| pointer may be null.
+  BackoffEntry(const Policy* policy, base::TickClock* clock);
   virtual ~BackoffEntry();
 
   // Inform this item that a request for the network resource it is
@@ -90,13 +98,12 @@ class NET_EXPORT BackoffEntry : NON_EXPORTED_BASE(public base::NonThreadSafe) {
   // Returns the failure count for this entry.
   int failure_count() const { return failure_count_; }
 
- protected:
-  // Equivalent to TimeTicks::Now(), virtual so unit tests can override.
-  virtual base::TimeTicks ImplGetTimeNow() const;
-
  private:
   // Calculates when requests should again be allowed through.
   base::TimeTicks CalculateReleaseTime() const;
+
+  // Equivalent to TimeTicks::Now(), using clock_ if provided.
+  base::TimeTicks GetTimeTicksNow() const;
 
   // Timestamp calculated by the exponential back-off algorithm at which we are
   // allowed to start sending requests again.
@@ -105,7 +112,9 @@ class NET_EXPORT BackoffEntry : NON_EXPORTED_BASE(public base::NonThreadSafe) {
   // Counts request errors; decremented on success.
   int failure_count_;
 
-  const Policy* const policy_;
+  const Policy* const policy_;  // Not owned.
+
+  base::TickClock* const clock_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(BackoffEntry);
 };

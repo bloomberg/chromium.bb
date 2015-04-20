@@ -61,7 +61,7 @@ class DataReductionProxyConfigServiceClient {
 
   // Returns the current time.
   // Virtual for testing.
-  virtual base::Time Now() const;
+  virtual base::Time Now();
 
   // Constructs a synthetic response based on |params_|.
   // Virtual for testing.

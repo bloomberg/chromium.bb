@@ -398,7 +398,7 @@ base::TimeTicks NetworkPortalDetectorImpl::AttemptStartTime() {
   return attempt_start_time_;
 }
 
-base::TimeTicks NetworkPortalDetectorImpl::GetCurrentTimeTicks() {
+base::TimeTicks NetworkPortalDetectorImpl::NowTicks() {
   if (time_ticks_for_testing_.is_null())
     return base::TimeTicks::Now();
   return time_ticks_for_testing_;
@@ -412,7 +412,7 @@ void NetworkPortalDetectorImpl::StartDetection() {
   DCHECK(is_idle());
 
   ResetStrategyAndCounters();
-  detection_start_time_ = GetCurrentTimeTicks();
+  detection_start_time_ = NowTicks();
   ScheduleAttempt(base::TimeDelta());
 }
 
@@ -450,7 +450,7 @@ void NetworkPortalDetectorImpl::StartAttempt() {
   DCHECK(is_portal_check_pending());
 
   state_ = STATE_CHECKING_FOR_PORTAL;
-  attempt_start_time_ = GetCurrentTimeTicks();
+  attempt_start_time_ = NowTicks();
 
   captive_portal_detector_->DetectCaptivePortal(
       test_url_,
@@ -511,7 +511,7 @@ void NetworkPortalDetectorImpl::OnAttemptCompleted(
 
   CaptivePortalState state;
   state.response_code = response_code;
-  state.time = GetCurrentTimeTicks();
+  state.time = NowTicks();
   switch (result) {
     case captive_portal::RESULT_NO_RESPONSE:
       if (state.response_code == net::HTTP_PROXY_AUTHENTICATION_REQUIRED) {
@@ -623,7 +623,7 @@ void NetworkPortalDetectorImpl::RecordDetectionStats(
     return;
 
   if (!detection_start_time_.is_null())
-    RecordDetectionDuration(GetCurrentTimeTicks() - detection_start_time_);
+    RecordDetectionDuration(NowTicks() - detection_start_time_);
   RecordDetectionResult(status);
 
   switch (status) {

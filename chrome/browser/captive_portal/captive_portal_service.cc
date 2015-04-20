@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "base/time/tick_clock.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -138,24 +139,6 @@ bool ShouldDeferToNativeCaptivePortalDetection() {
 CaptivePortalService::TestingState CaptivePortalService::testing_state_ =
     NOT_TESTING;
 
-class CaptivePortalService::RecheckBackoffEntry : public net::BackoffEntry {
- public:
-  explicit RecheckBackoffEntry(CaptivePortalService* captive_portal_service)
-      : net::BackoffEntry(
-            &captive_portal_service->recheck_policy().backoff_policy),
-        captive_portal_service_(captive_portal_service) {
-  }
-
- private:
-  base::TimeTicks ImplGetTimeNow() const override {
-    return captive_portal_service_->GetCurrentTimeTicks();
-  }
-
-  CaptivePortalService* captive_portal_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(RecheckBackoffEntry);
-};
-
 CaptivePortalService::RecheckPolicy::RecheckPolicy()
     : initial_backoff_no_portal_ms(600 * 1000),
       initial_backoff_portal_ms(20 * 1000) {
@@ -184,13 +167,19 @@ CaptivePortalService::RecheckPolicy::RecheckPolicy()
 }
 
 CaptivePortalService::CaptivePortalService(Profile* profile)
+    : CaptivePortalService(profile, nullptr) {
+}
+
+CaptivePortalService::CaptivePortalService(Profile* profile,
+                                           base::TickClock* clock_for_testing)
     : profile_(profile),
       state_(STATE_IDLE),
       captive_portal_detector_(profile->GetRequestContext()),
       enabled_(false),
       last_detection_result_(captive_portal::RESULT_INTERNET_CONNECTED),
       num_checks_with_same_result_(0),
-      test_url_(captive_portal::CaptivePortalDetector::kDefaultURL) {
+      test_url_(captive_portal::CaptivePortalDetector::kDefaultURL),
+      tick_clock_for_testing_(clock_for_testing) {
   // The order matters here:
   // |resolve_errors_with_web_service_| must be initialized and |backoff_entry_|
   // created before the call to UpdateEnabledState.
@@ -348,7 +337,8 @@ void CaptivePortalService::ResetBackoffEntry(CaptivePortalResult result) {
         recheck_policy_.initial_backoff_no_portal_ms;
   }
 
-  backoff_entry_.reset(new RecheckBackoffEntry(this));
+  backoff_entry_.reset(new net::BackoffEntry(&recheck_policy().backoff_policy,
+                                             tick_clock_for_testing_));
 }
 
 void CaptivePortalService::UpdateEnabledState() {
@@ -387,10 +377,10 @@ void CaptivePortalService::UpdateEnabledState() {
 }
 
 base::TimeTicks CaptivePortalService::GetCurrentTimeTicks() const {
-  if (time_ticks_for_testing_.is_null())
-    return base::TimeTicks::Now();
+  if (tick_clock_for_testing_)
+    return tick_clock_for_testing_->NowTicks();
   else
-    return time_ticks_for_testing_;
+    return base::TimeTicks::Now();
 }
 
 bool CaptivePortalService::DetectionInProgress() const {

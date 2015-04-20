@@ -80,28 +80,6 @@ void ReadContinuation(
 void WriteContinuation() {
 }
 
-class TestBackoffEntry : public net::BackoffEntry {
- public:
-  explicit TestBackoffEntry(base::SimpleTestTickClock* tick_clock);
-  ~TestBackoffEntry() override;
-
-  base::TimeTicks ImplGetTimeNow() const override;
-
- private:
-  base::SimpleTestTickClock* tick_clock_;
-};
-
-TestBackoffEntry::TestBackoffEntry(base::SimpleTestTickClock* tick_clock)
-    : BackoffEntry(&kTestBackoffPolicy),
-      tick_clock_(tick_clock) {
-}
-
-TestBackoffEntry::~TestBackoffEntry() {}
-
-base::TimeTicks TestBackoffEntry::ImplGetTimeNow() const {
-  return tick_clock_->NowTicks();
-}
-
 // A connection factory that stubs out network requests and overrides the
 // backoff policy.
 class TestConnectionFactoryImpl : public ConnectionFactoryImpl {
@@ -213,7 +191,8 @@ void TestConnectionFactoryImpl::InitHandler() {
 
 scoped_ptr<net::BackoffEntry> TestConnectionFactoryImpl::CreateBackoffEntry(
     const net::BackoffEntry::Policy* const policy) {
-  return scoped_ptr<net::BackoffEntry>(new TestBackoffEntry(&tick_clock_));
+  return make_scoped_ptr(new net::BackoffEntry(&kTestBackoffPolicy,
+                                               &tick_clock_));
 }
 
 scoped_ptr<ConnectionHandler>

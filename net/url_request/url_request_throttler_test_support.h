@@ -7,24 +7,26 @@
 
 #include <string>
 
+#include "base/macros.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "net/base/backoff_entry.h"
 #include "net/url_request/url_request_throttler_header_interface.h"
 
 namespace net {
 
-class MockBackoffEntry : public BackoffEntry {
+class TestTickClock : public base::TickClock {
  public:
-  explicit MockBackoffEntry(const BackoffEntry::Policy* const policy);
-  ~MockBackoffEntry() override;
+  TestTickClock();
+  explicit TestTickClock(base::TimeTicks now);
+  ~TestTickClock() override;
 
-  // BackoffEntry overrides.
-  base::TimeTicks ImplGetTimeNow() const override;
-
-  void set_fake_now(const base::TimeTicks& now);
+  base::TimeTicks NowTicks() override;
+  void set_now(base::TimeTicks now) { now_ticks_ = now; }
 
  private:
-  base::TimeTicks fake_now_;
+  base::TimeTicks now_ticks_;
+  DISALLOW_COPY_AND_ASSIGN(TestTickClock);
 };
 
 // Mocks the URLRequestThrottlerHeaderInterface, allowing testing code to

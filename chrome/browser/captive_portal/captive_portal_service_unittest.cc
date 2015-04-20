@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -101,8 +102,9 @@ class CaptivePortalServiceTest : public testing::Test,
     CaptivePortalService::set_state_for_testing(testing_state);
 
     profile_.reset(new TestingProfile());
-    service_.reset(new CaptivePortalService(profile_.get()));
-    service_->set_time_ticks_for_testing(base::TimeTicks::Now());
+    tick_clock_.reset(new base::SimpleTestTickClock());
+    tick_clock_->Advance(base::TimeTicks::Now() - tick_clock_->NowTicks());
+    service_.reset(new CaptivePortalService(profile_.get(), tick_clock_.get()));
 
     // Use no delays for most tests.
     set_initial_backoff_no_portal(base::TimeDelta());
@@ -226,7 +228,7 @@ class CaptivePortalServiceTest : public testing::Test,
   // Changes test time for the service and service's captive portal
   // detector.
   void AdvanceTime(const base::TimeDelta& delta) {
-    service()->advance_time_ticks_for_testing(delta);
+    tick_clock_->Advance(delta);
     CaptivePortalDetectorTestBase::AdvanceTime(delta);
   }
 
@@ -281,6 +283,7 @@ class CaptivePortalServiceTest : public testing::Test,
 
   // Note that the construction order of these matters.
   scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<base::SimpleTestTickClock> tick_clock_;
   scoped_ptr<CaptivePortalService> service_;
 };
 
