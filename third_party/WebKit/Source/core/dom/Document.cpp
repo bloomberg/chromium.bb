@@ -1271,10 +1271,11 @@ Element* Document::scrollingElement()
     if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
         if (inQuirksMode()) {
             updateLayoutIgnorePendingStylesheets();
-            if (body()->layoutBox() && body()->layoutBox()->hasOverflowClip())
+            HTMLElement* bodyElem = body();
+            if (bodyElem && bodyElem->layoutBox() && bodyElem->layoutBox()->hasOverflowClip())
                 return nullptr;
 
-            return body();
+            return bodyElem;
         }
 
         return documentElement();
