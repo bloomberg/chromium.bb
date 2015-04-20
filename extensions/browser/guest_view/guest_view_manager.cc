@@ -14,8 +14,14 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/browser/guest_view/app_view/app_view_guest.h"
+#include "extensions/browser/guest_view/extension_options/extension_options_guest.h"
+#include "extensions/browser/guest_view/extension_view/extension_view_guest.h"
 #include "extensions/browser/guest_view/guest_view_base.h"
 #include "extensions/browser/guest_view/guest_view_manager_factory.h"
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
+#include "extensions/browser/guest_view/surface_worker/surface_worker_guest.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/common/features/feature.h"
@@ -124,7 +130,7 @@ void GuestViewManager::CreateGuest(const std::string& view_type,
                                    content::WebContents* owner_web_contents,
                                    const base::DictionaryValue& create_params,
                                    const WebContentsCreatedCallback& callback) {
-  auto guest = GuestViewBase::Create(owner_web_contents, view_type);
+  GuestViewBase* guest = CreateGuestInternal(owner_web_contents, view_type);
   if (!guest) {
     callback.Run(nullptr);
     return;
@@ -136,7 +142,7 @@ content::WebContents* GuestViewManager::CreateGuestWithWebContentsParams(
     const std::string& view_type,
     content::WebContents* owner_web_contents,
     const content::WebContents::CreateParams& create_params) {
-  auto guest = GuestViewBase::Create(owner_web_contents, view_type);
+  auto guest = CreateGuestInternal(owner_web_contents, view_type);
   if (!guest)
     return nullptr;
   content::WebContents::CreateParams guest_create_params(create_params);
@@ -237,6 +243,31 @@ void GuestViewManager::RemoveGuest(int guest_instance_id) {
   } else {
     removed_instance_ids_.insert(guest_instance_id);
   }
+}
+
+GuestViewBase* GuestViewManager::CreateGuestInternal(
+    content::WebContents* owner_web_contents,
+    const std::string& view_type) {
+  if (guest_view_registry_.empty())
+    RegisterGuestViewTypes();
+
+  auto it = guest_view_registry_.find(view_type);
+  if (it == guest_view_registry_.end()) {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  return it->second.Run(owner_web_contents);
+}
+
+// static
+void GuestViewManager::RegisterGuestViewTypes() {
+  RegisterGuestViewType<AppViewGuest>();
+  RegisterGuestViewType<ExtensionOptionsGuest>();
+  RegisterGuestViewType<ExtensionViewGuest>();
+  RegisterGuestViewType<MimeHandlerViewGuest>();
+  RegisterGuestViewType<SurfaceWorkerGuest>();
+  RegisterGuestViewType<WebViewGuest>();
 }
 
 bool GuestViewManager::IsGuestAvailableToContext(

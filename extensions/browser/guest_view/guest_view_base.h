@@ -60,14 +60,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
     return nullptr;
   }
 
-  using GuestCreationCallback =
-      base::Callback<GuestViewBase*(content::WebContents*)>;
-  static void RegisterGuestViewType(const std::string& view_type,
-                                    const GuestCreationCallback& callback);
-
-  static GuestViewBase* Create(content::WebContents* owner_web_contents,
-                               const std::string& view_type);
-
   static GuestViewBase* FromWebContents(
       const content::WebContents* web_contents);
 
@@ -378,8 +370,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   void StartTrackingEmbedderZoomLevel();
   void StopTrackingEmbedderZoomLevel();
-
-  static void RegisterGuestViewTypes();
 
   // This guest tracks the lifetime of the WebContents specified by
   // |owner_web_contents_|. If |owner_web_contents_| is destroyed then this

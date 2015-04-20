@@ -16,14 +16,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
-#include "extensions/browser/guest_view/app_view/app_view_guest.h"
-#include "extensions/browser/guest_view/extension_options/extension_options_guest.h"
-#include "extensions/browser/guest_view/extension_view/extension_view_guest.h"
 #include "extensions/browser/guest_view/guest_view_event.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
-#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
-#include "extensions/browser/guest_view/surface_worker/surface_worker_guest.h"
-#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/common/guest_view/guest_view_constants.h"
 #include "extensions/common/guest_view/guest_view_messages.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -37,11 +31,6 @@ struct FrameNavigateParams;
 namespace extensions {
 
 namespace {
-
-using GuestViewCreationMap =
-    std::map<std::string, GuestViewBase::GuestCreationCallback>;
-static base::LazyInstance<GuestViewCreationMap> guest_view_registry =
-    LAZY_INSTANCE_INITIALIZER;
 
 using WebContentsGuestViewMap = std::map<const WebContents*, GuestViewBase*>;
 static base::LazyInstance<WebContentsGuestViewMap> webcontents_guestview_map =
@@ -325,30 +314,6 @@ void GuestViewBase::SetSize(const SetSizeParams& params) {
   }
 
   auto_size_enabled_ = enable_auto_size;
-}
-
-// static
-void GuestViewBase::RegisterGuestViewType(
-    const std::string& view_type,
-    const GuestCreationCallback& callback) {
-  auto it = guest_view_registry.Get().find(view_type);
-  DCHECK(it == guest_view_registry.Get().end());
-  guest_view_registry.Get()[view_type] = callback;
-}
-
-// static
-GuestViewBase* GuestViewBase::Create(
-    content::WebContents* owner_web_contents,
-    const std::string& view_type) {
-  if (guest_view_registry.Get().empty())
-    RegisterGuestViewTypes();
-
-  auto it = guest_view_registry.Get().find(view_type);
-  if (it == guest_view_registry.Get().end()) {
-    NOTREACHED();
-    return nullptr;
-  }
-  return it->second.Run(owner_web_contents);
 }
 
 // static
@@ -839,16 +804,6 @@ void GuestViewBase::StopTrackingEmbedderZoomLevel() {
   if (!embedder_zoom_controller)
     return;
   embedder_zoom_controller->RemoveObserver(this);
-}
-
-// static
-void GuestViewBase::RegisterGuestViewTypes() {
-  AppViewGuest::Register();
-  ExtensionOptionsGuest::Register();
-  ExtensionViewGuest::Register();
-  MimeHandlerViewGuest::Register();
-  SurfaceWorkerGuest::Register();
-  WebViewGuest::Register();
 }
 
 }  // namespace extensions

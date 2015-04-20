@@ -5,9 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_H_
 #define EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_H_
 
-#include "base/bind.h"
 #include "content/public/browser/render_frame_host.h"
 #include "extensions/browser/guest_view/guest_view_base.h"
+#include "extensions/browser/guest_view/guest_view_manager.h"
 
 namespace extensions {
 
@@ -17,10 +17,6 @@ namespace extensions {
 template <typename T>
 class GuestView : public GuestViewBase {
  public:
-  static void Register() {
-    GuestViewBase::RegisterGuestViewType(T::Type, base::Bind(&T::Create));
-  }
-
   static T* From(int embedder_process_id, int guest_instance_id) {
     auto guest = GuestViewBase::From(embedder_process_id, guest_instance_id);
     if (!guest)

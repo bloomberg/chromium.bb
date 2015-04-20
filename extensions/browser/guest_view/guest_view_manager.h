@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/bind.h"
 #include "base/gtest_prod_util.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
@@ -71,6 +72,13 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
       int owner_process_id,
       int element_instance_id);
 
+  template <typename T>
+  void RegisterGuestViewType() {
+    auto it = guest_view_registry_.find(T::Type);
+    DCHECK(it == guest_view_registry_.end());
+    guest_view_registry_[T::Type] = base::Bind(&T::Create);
+  }
+
   using WebContentsCreatedCallback =
       base::Callback<void(content::WebContents*)>;
   void CreateGuest(const std::string& view_type,
@@ -105,6 +113,13 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
 
   // Can be overriden in tests.
   virtual void RemoveGuest(int guest_instance_id);
+
+  // Creates a guest of the provided |view_type|.
+  GuestViewBase* CreateGuestInternal(content::WebContents* owner_web_contents,
+                                     const std::string& view_type);
+
+  // Adds GuestView types to the GuestView registry.
+  void RegisterGuestViewTypes();
 
   // Indicates whether the provided |guest| can be used in the context it has
   // been created.
@@ -154,6 +169,12 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
   // The reverse map of GuestInstanceIDMap.
   using GuestInstanceIDReverseMap = std::map<int, ElementInstanceKey>;
   GuestInstanceIDReverseMap reverse_instance_id_map_;
+
+  using GuestCreationCallback =
+      base::Callback<GuestViewBase*(content::WebContents*)>;
+  using GuestViewCreationMap =
+      std::map<std::string, GuestViewManager::GuestCreationCallback>;
+  GuestViewCreationMap guest_view_registry_;
 
   int current_instance_id_;
 
