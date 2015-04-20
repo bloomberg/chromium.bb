@@ -38,11 +38,17 @@ DistillerViewer::~DistillerViewer() {
 
 void DistillerViewer::OnArticleReady(
     const DistilledArticleProto* article_proto) {
-  const std::string html = viewer::GetUnsafeArticleHtml(
-      article_proto, distilled_page_prefs_->GetTheme(),
+  const std::string html = viewer::GetUnsafeArticleTemplateHtml(
+      &article_proto->pages(0), distilled_page_prefs_->GetTheme(),
       distilled_page_prefs_->GetFontFamily());
 
-  callback_.Run(url_, html);
+  std::string content_js = viewer::GetUnsafeArticleContentJs(article_proto);
+  // TODO(noyau): This can be done better with changes to the
+  // DistillationFinishedCallback. http://crbug.com/472805
+  std::string htmlAndScript(html);
+  htmlAndScript += "<script>" + content_js + "</script>";
+
+  callback_.Run(url_, htmlAndScript);
 
   // No need to hold on to the ViewerHandle now that distillation is complete.
   viewer_handle_.reset();
