@@ -21,12 +21,12 @@ class ServiceWorkerPageSet(page_set.PageSet):
     # 1st time: registration
     self.AddUserStory(page.Page(
         'https://jakearchibald.github.io/trained-to-thrill/', self,
-        make_javascript_deterministic=False))
+        name='first_load', make_javascript_deterministic=False))
     # 2st time: 1st onfetch with caching
     self.AddUserStory(page.Page(
         'https://jakearchibald.github.io/trained-to-thrill/', self,
-        make_javascript_deterministic=False))
+        name='second_load', make_javascript_deterministic=False))
     # 3rd time: 2nd onfetch from cache
     self.AddUserStory(page.Page(
         'https://jakearchibald.github.io/trained-to-thrill/', self,
-        make_javascript_deterministic=False))
+        name='third_load', make_javascript_deterministic=False))
