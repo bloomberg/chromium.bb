@@ -9,6 +9,7 @@ from integration_tests import chrome_proxy_metrics as metrics
 from integration_tests import network_metrics_unittest as network_unittest
 from telemetry.unittest_util import test_page_test_results
 
+TEST_EXTRA_VIA_HEADER = '1.1 EXTRA_VIA_HEADER'
 
 # Timeline events used in tests.
 # An HTML not via proxy.
@@ -29,6 +30,20 @@ EVENT_HTML_PROXY_VIA = (
         'Content-Encoding': 'gzip',
         'X-Original-Content-Length': str(len(network_unittest.HTML_BODY)),
         'Via': '1.1 ' + metrics.CHROME_PROXY_VIA_HEADER,
+        },
+    body=network_unittest.HTML_BODY,
+    remote_port=443))
+
+# An HTML via proxy with extra header.
+EVENT_HTML_PROXY_EXTRA_VIA = (
+    network_unittest.NetworkMetricTest.MakeNetworkTimelineEvent(
+    url='http://test.html2',
+    response_headers={
+        'Content-Type': 'text/html',
+        'Content-Encoding': 'gzip',
+        'X-Original-Content-Length': str(len(network_unittest.HTML_BODY)),
+        'Via': '1.1 ' + metrics.CHROME_PROXY_VIA_HEADER + ", " +
+        TEST_EXTRA_VIA_HEADER,
         },
     body=network_unittest.HTML_BODY,
     remote_port=443))
@@ -233,6 +248,26 @@ class ChromeProxyMetricTest(unittest.TestCase):
     except metrics.ChromeProxyMetricException:
       no_responses_exception = True
     self.assertTrue(no_responses_exception)
+
+  def testChromeProxyMetricForExtraViaHeader(self):
+    metric = metrics.ChromeProxyMetric()
+    metric.SetEvents([EVENT_HTML_DIRECT,
+                      EVENT_HTML_PROXY_EXTRA_VIA])
+    results = test_page_test_results.TestPageTestResults(self)
+    metric.AddResultsForExtraViaHeader(None, results, TEST_EXTRA_VIA_HEADER)
+    # The direct page should not count an extra via header, but should also not
+    # throw an exception.
+    results.AssertHasPageSpecificScalarValue('extra_via_header', 'count', 1)
+
+    metric.SetEvents([EVENT_HTML_PROXY_VIA])
+    exception_occurred = False
+    try:
+      metric.AddResultsForExtraViaHeader(None, results, TEST_EXTRA_VIA_HEADER)
+    except metrics.ChromeProxyMetricException:
+      exception_occurred = True
+    # The response had the chrome proxy via header, but not the extra expected
+    # via header.
+    self.assertTrue(exception_occurred)
 
   def testChromeProxyMetricForBypass(self):
     metric = metrics.ChromeProxyMetric()

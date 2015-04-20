@@ -94,7 +94,21 @@ class ChromeProxyHeaderValidation(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.header_validation.top_20'
 
 
-class ChromeProxyClientVersion(benchmark.Benchmark):
+class ChromeProxyBenchmark(benchmark.Benchmark):
+  @classmethod
+  def AddCommandLineArgs(cls, parser):
+    parser.add_option(
+        '--extra-chrome-proxy-via-header',
+        type='string', dest="extra_header",
+        help='Adds an expected Via header for the Chrome-Proxy tests.')
+
+  @classmethod
+  def ProcessCommandLineArgs(cls, parser, args):
+    if args.extra_header:
+      measurements.ChromeProxyValidation.extra_via_header = args.extra_header
+
+
+class ChromeProxyClientVersion(ChromeProxyBenchmark):
   tag = 'client_version'
   test = measurements.ChromeProxyClientVersion
   page_set = pagesets.SyntheticPageSet
@@ -104,7 +118,7 @@ class ChromeProxyClientVersion(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.client_version.synthetic'
 
 
-class ChromeProxyClientType(benchmark.Benchmark):
+class ChromeProxyClientType(ChromeProxyBenchmark):
   tag = 'client_type'
   test = measurements.ChromeProxyClientType
   page_set = pagesets.ClientTypePageSet
@@ -114,7 +128,7 @@ class ChromeProxyClientType(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.client_type.client_type'
 
 
-class ChromeProxyLoFi(benchmark.Benchmark):
+class ChromeProxyLoFi(ChromeProxyBenchmark):
   tag = 'lo_fi'
   test = measurements.ChromeProxyLoFi
   page_set = pagesets.LoFiPageSet
@@ -124,7 +138,7 @@ class ChromeProxyLoFi(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.lo_fi.lo_fi'
 
 
-class ChromeProxyExpDirective(benchmark.Benchmark):
+class ChromeProxyExpDirective(ChromeProxyBenchmark):
   tag = 'exp_directive'
   test = measurements.ChromeProxyExpDirective
   page_set = pagesets.ExpDirectivePageSet
@@ -134,7 +148,7 @@ class ChromeProxyExpDirective(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.exp_directive.exp_directive'
 
 
-class ChromeProxyBypass(benchmark.Benchmark):
+class ChromeProxyBypass(ChromeProxyBenchmark):
   tag = 'bypass'
   test = measurements.ChromeProxyBypass
   page_set = pagesets.BypassPageSet
@@ -144,7 +158,7 @@ class ChromeProxyBypass(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.bypass.bypass'
 
 
-class ChromeProxyCorsBypass(benchmark.Benchmark):
+class ChromeProxyCorsBypass(ChromeProxyBenchmark):
   tag = 'bypass'
   test = measurements.ChromeProxyCorsBypass
   page_set = pagesets.CorsBypassPageSet
@@ -154,7 +168,7 @@ class ChromeProxyCorsBypass(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.bypass.corsbypass'
 
 
-class ChromeProxyBlockOnce(benchmark.Benchmark):
+class ChromeProxyBlockOnce(ChromeProxyBenchmark):
   tag = 'block_once'
   test = measurements.ChromeProxyBlockOnce
   page_set = pagesets.BlockOncePageSet
@@ -166,7 +180,7 @@ class ChromeProxyBlockOnce(benchmark.Benchmark):
 
 @benchmark.Enabled(*ANDROID_CHROME_BROWSERS)
 # Safebrowsing is enabled for Android and iOS.
-class ChromeProxySafeBrowsingOn(benchmark.Benchmark):
+class ChromeProxySafeBrowsingOn(ChromeProxyBenchmark):
   tag = 'safebrowsing_on'
   test = measurements.ChromeProxySafebrowsingOn
   page_set = pagesets.SafebrowsingPageSet
@@ -178,7 +192,7 @@ class ChromeProxySafeBrowsingOn(benchmark.Benchmark):
 
 @benchmark.Disabled(*ANDROID_CHROME_BROWSERS)
 # Safebrowsing is switched off for Android Webview and all desktop platforms.
-class ChromeProxySafeBrowsingOff(benchmark.Benchmark):
+class ChromeProxySafeBrowsingOff(ChromeProxyBenchmark):
   tag = 'safebrowsing_off'
   test = measurements.ChromeProxySafebrowsingOff
   page_set = pagesets.SafebrowsingPageSet
@@ -187,7 +201,7 @@ class ChromeProxySafeBrowsingOff(benchmark.Benchmark):
   def Name(cls):
     return 'chrome_proxy_benchmark.safebrowsing_off.safebrowsing'
 
-class ChromeProxyHTTPFallbackProbeURL(benchmark.Benchmark):
+class ChromeProxyHTTPFallbackProbeURL(ChromeProxyBenchmark):
   tag = 'fallback_probe'
   test = measurements.ChromeProxyHTTPFallbackProbeURL
   page_set = pagesets.SyntheticPageSet
@@ -197,7 +211,7 @@ class ChromeProxyHTTPFallbackProbeURL(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.fallback_probe.synthetic'
 
 
-class ChromeProxyHTTPFallbackViaHeader(benchmark.Benchmark):
+class ChromeProxyHTTPFallbackViaHeader(ChromeProxyBenchmark):
   tag = 'fallback_viaheader'
   test = measurements.ChromeProxyHTTPFallbackViaHeader
   page_set = pagesets.FallbackViaHeaderPageSet
@@ -207,7 +221,7 @@ class ChromeProxyHTTPFallbackViaHeader(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.fallback_viaheader.fallback_viaheader'
 
 
-class ChromeProxyHTTPToDirectFallback(benchmark.Benchmark):
+class ChromeProxyHTTPToDirectFallback(ChromeProxyBenchmark):
   tag = 'http_to_direct_fallback'
   test = measurements.ChromeProxyHTTPToDirectFallback
   page_set = pagesets.HTTPToDirectFallbackPageSet
@@ -218,7 +232,7 @@ class ChromeProxyHTTPToDirectFallback(benchmark.Benchmark):
             'http_to_direct_fallback')
 
 
-class ChromeProxyReenableAfterBypass(benchmark.Benchmark):
+class ChromeProxyReenableAfterBypass(ChromeProxyBenchmark):
   tag = 'reenable_after_bypass'
   test = measurements.ChromeProxyReenableAfterBypass
   page_set = pagesets.ReenableAfterBypassPageSet
@@ -228,7 +242,7 @@ class ChromeProxyReenableAfterBypass(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.reenable_after_bypass.reenable_after_bypass'
 
 
-class ChromeProxySmoke(benchmark.Benchmark):
+class ChromeProxySmoke(ChromeProxyBenchmark):
   tag = 'smoke'
   test = measurements.ChromeProxySmoke
   page_set = pagesets.SmokePageSet

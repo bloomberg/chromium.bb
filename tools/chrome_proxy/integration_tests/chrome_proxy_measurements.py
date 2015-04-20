@@ -11,7 +11,6 @@ from metrics import loading
 from telemetry.core import exceptions
 from telemetry.page import page_test
 
-
 class ChromeProxyLatency(page_test.PageTest):
   """Chrome proxy latency measurement."""
 
@@ -54,6 +53,9 @@ class ChromeProxyDataSaving(page_test.PageTest):
 class ChromeProxyValidation(page_test.PageTest):
   """Base class for all chrome proxy correctness measurements."""
 
+  # Value of the extra via header. |None| if no extra via header is expected.
+  extra_via_header = None
+
   def __init__(self, restart_after_each_page=False):
     super(ChromeProxyValidation, self).__init__(
         needs_browser_restart_after_each_page=restart_after_each_page)
@@ -77,6 +79,9 @@ class ChromeProxyValidation(page_test.PageTest):
     tab.WaitForJavaScriptExpression('performance.timing.loadEventStart', 300)
     assert self._metrics
     self._metrics.Stop(page, tab)
+    if ChromeProxyValidation.extra_via_header:
+      self._metrics.AddResultsForExtraViaHeader(
+          tab, results, ChromeProxyValidation.extra_via_header)
     self.AddResults(tab, results)
 
   def AddResults(self, tab, results):

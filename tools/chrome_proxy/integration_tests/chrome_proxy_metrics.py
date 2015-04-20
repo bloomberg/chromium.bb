@@ -47,6 +47,13 @@ class ChromeProxyResponse(network_metrics.HTTPResponse):
     # the proxy name, for example, "1.1 Chrome-Compression-Proxy".
     return any(v[4:] == CHROME_PROXY_VIA_HEADER for v in vias)
 
+  def HasExtraViaHeader(self, extra_header):
+    via_header = self.response.GetHeader('Via')
+    if not via_header:
+      return False
+    vias = [v.strip(' ') for v in via_header.split(',')]
+    return any(v == extra_header for v in vias)
+
   def IsValidByViaHeader(self):
     return (not self.ShouldHaveChromeProxyViaHeader() or
             self.HasChromeProxyViaHeader())
@@ -212,6 +219,21 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'response_duration', 'ms', response_duration,
         important=False))
+
+  def AddResultsForExtraViaHeader(self, tab, results, extra_via_header):
+    extra_via_count = 0
+
+    for resp in self.IterResponses(tab):
+      if resp.HasChromeProxyViaHeader():
+        if resp.HasExtraViaHeader(extra_via_header):
+          extra_via_count += 1
+        else:
+          raise ChromeProxyMetricException, (
+              '%s: Should have via header %s.' % (resp.response.url,
+                                                  extra_via_header))
+
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'extra_via_header', 'count', extra_via_count))
 
   def AddResultsForClientVersion(self, tab, results):
     via_count = 0
