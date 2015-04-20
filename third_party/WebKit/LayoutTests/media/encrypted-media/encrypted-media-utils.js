@@ -269,3 +269,42 @@ function extractSingleKeyIdFromMessage(message)
         return new Uint8Array(message);
     }
 }
+
+// Create a MediaKeys object for Clear Key with 1 session. KeyId and key
+// required for the video are already known and provided. Returns a promise
+// that resolves to the MediaKeys object created.
+function createMediaKeys(keyId, key)
+{
+    var mediaKeys;
+    var mediaKeySession;
+    var request = stringToUint8Array(createKeyIDs(keyId));
+    var jwkSet = stringToUint8Array(createJWKSet(createJWK(keyId, key)));
+
+    return navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
+        return access.createMediaKeys();
+    }).then(function(result) {
+        mediaKeys = result;
+        mediaKeySession = mediaKeys.createSession();
+        return mediaKeySession.generateRequest('keyids', request);
+    }).then(function() {
+        return mediaKeySession.update(jwkSet);
+    }).then(function() {
+        return Promise.resolve(mediaKeys);
+    });
+}
+
+// Play the specified |content| on |video|. Returns a promise that is resolved
+// after the video plays for |duration| seconds.
+function playVideoAndWaitForTimeupdate(video, content, duration)
+{
+    video.src = content;
+    video.play();
+    return new Promise(function(resolve) {
+        video.addEventListener('timeupdate', function listener(event) {
+            if (event.target.currentTime < duration)
+                return;
+            video.removeEventListener(listener);
+            resolve('success');
+        });
+    });
+}
