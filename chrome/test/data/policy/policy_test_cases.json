@@ -2300,15 +2300,15 @@
     "official_only": true,
     "test_policy": { "DeviceMetricsReportingEnabled": true },
     "pref_mappings": [
-      { "pref": "cros.metrics.reportingEnabled",
+      { "pref": "spellcheck.use_spelling_service",
         "indicator_test_setup_js": "Preferences.getInstance().addEventListener('alternate_error_pages.enabled', function(event) { Preferences.prefsChangedCallback(['cros.metrics.reportingEnabled', {value: event.value.value, controlledBy: event.value.controlledBy, disabled: event.value.disabled}]); });",
         "indicator_tests": [
-          { "policy": { "AlternateErrorPagesEnabled": true } }
+          { "policy": { "SpellCheckServiceEnabled": true } }
         ]
       }
     ],
 
-    "note": "TODO(bartfab): The |indicator_test_setup_js| above is a hack that makes |cros.metrics.reportingEnabled| track the status of the entirely unrelated |alternate_error_pages.enabled| pref. This is because cros settings cannot currently be made policy-controlled in browser tests. Remove this hack once that restriction is lifted."
+    "note": "TODO(bartfab): The |indicator_test_setup_js| above is a hack that makes |cros.metrics.reportingEnabled| track the status of the entirely unrelated |spellcheck.use_spelling_service| pref. This is because cros settings cannot currently be made policy-controlled in browser tests. Remove this hack once that restriction is lifted."
   },
 
   "DeviceEphemeralUsersEnabled": {
