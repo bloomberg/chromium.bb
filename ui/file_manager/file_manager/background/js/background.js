@@ -106,6 +106,12 @@ function FileBrowserBackground() {
    */
   this.stringData = null;
 
+  /**
+   * Provides drive search to app launcher.
+   * @private {LauncherSearch}
+   */
+  this.launcherSearch_ = new LauncherSearch();
+
   // Initialize handlers.
   chrome.fileBrowserHandler.onExecute.addListener(this.onExecute_.bind(this));
   chrome.app.runtime.onLaunched.addListener(this.onLaunched_.bind(this));
