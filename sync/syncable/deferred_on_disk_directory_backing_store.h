@@ -7,7 +7,7 @@
 
 #include "base/files/file_path.h"
 #include "sync/base/sync_export.h"
-#include "sync/syncable/directory_backing_store.h"
+#include "sync/syncable/on_disk_directory_backing_store.h"
 
 namespace syncer {
 namespace syncable {
@@ -18,10 +18,10 @@ namespace syncable {
 // syncing backend is to be created. Thus we guarantee that user data is not
 // persisted until user is actually going to sync.
 class SYNC_EXPORT_PRIVATE DeferredOnDiskDirectoryBackingStore
-    : public DirectoryBackingStore {
+    : public OnDiskDirectoryBackingStore {
  public:
   DeferredOnDiskDirectoryBackingStore(const std::string& dir_name,
-                                      const base::FilePath& backing_filepath);
+                                      const base::FilePath& backing_file_path);
   ~DeferredOnDiskDirectoryBackingStore() override;
   DirOpenResult Load(Directory::MetahandlesMap* handles_map,
                      JournalIndex* delete_journals,
@@ -30,10 +30,12 @@ class SYNC_EXPORT_PRIVATE DeferredOnDiskDirectoryBackingStore
   bool SaveChanges(const Directory::SaveChangesSnapshot& snapshot) override;
 
  private:
-  base::FilePath backing_filepath_;
+  // Create an on-disk directory backing store. Returns true on success, false
+  // on error.
+  bool CreateOnDisk();
 
-  // Whether current DB is on disk.
-  bool db_is_on_disk_;
+  // Whether an on-disk directory backing store has been created.
+  bool created_on_disk_;
 
   DISALLOW_COPY_AND_ASSIGN(DeferredOnDiskDirectoryBackingStore);
 };

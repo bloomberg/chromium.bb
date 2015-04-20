@@ -18,7 +18,7 @@ class SYNC_EXPORT_PRIVATE OnDiskDirectoryBackingStore
     : public DirectoryBackingStore {
  public:
   OnDiskDirectoryBackingStore(const std::string& dir_name,
-                              const base::FilePath& backing_filepath);
+                              const base::FilePath& backing_file_path);
   ~OnDiskDirectoryBackingStore() override;
   DirOpenResult Load(Directory::MetahandlesMap* handles_map,
                      JournalIndex* delete_journals,
@@ -29,6 +29,9 @@ class SYNC_EXPORT_PRIVATE OnDiskDirectoryBackingStore
   // Subclasses may override this to avoid a possible DCHECK.
   virtual void ReportFirstTryOpenFailure();
 
+  // Returns the file path of the back store.
+  const base::FilePath& backing_file_path() const;
+
  private:
   // A helper function that will make one attempt to load the directory.
   // Unlike Load(), it does not attempt to recover from failure.
@@ -38,7 +41,7 @@ class SYNC_EXPORT_PRIVATE OnDiskDirectoryBackingStore
                         Directory::KernelLoadInfo* kernel_load_info);
 
   bool allow_failure_for_test_;
-  base::FilePath backing_filepath_;
+  base::FilePath backing_file_path_;
 
   DISALLOW_COPY_AND_ASSIGN(OnDiskDirectoryBackingStore);
 };

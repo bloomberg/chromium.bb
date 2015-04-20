@@ -254,10 +254,8 @@ bool DirectoryBackingStore::SaveChanges(
 
   // Back out early if there is nothing to write.
   bool save_info =
-    (Directory::KERNEL_SHARE_INFO_DIRTY == snapshot.kernel_info_status);
-  if (snapshot.dirty_metas.empty() && snapshot.metahandles_to_purge.empty() &&
-      snapshot.delete_journals.empty() &&
-      snapshot.delete_journals_to_purge.empty() && !save_info) {
+      (Directory::KERNEL_SHARE_INFO_DIRTY == snapshot.kernel_info_status);
+  if (!snapshot.HasUnsavedMetahandleChanges() && !save_info) {
     return true;
   }
 

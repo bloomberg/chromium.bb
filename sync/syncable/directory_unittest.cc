@@ -2006,6 +2006,30 @@ TEST_F(SyncableDirectoryTest, MutableEntry_ImplicitParentId_Siblings) {
   }
 }
 
+TEST_F(SyncableDirectoryTest, SaveChangesSnapshot_HasUnsavedMetahandleChanges) {
+  EntryKernel kernel;
+  Directory::SaveChangesSnapshot snapshot;
+  EXPECT_FALSE(snapshot.HasUnsavedMetahandleChanges());
+  snapshot.dirty_metas.insert(&kernel);
+  EXPECT_TRUE(snapshot.HasUnsavedMetahandleChanges());
+  snapshot.dirty_metas.clear();
+
+  EXPECT_FALSE(snapshot.HasUnsavedMetahandleChanges());
+  snapshot.metahandles_to_purge.insert(1);
+  EXPECT_TRUE(snapshot.HasUnsavedMetahandleChanges());
+  snapshot.metahandles_to_purge.clear();
+
+  EXPECT_FALSE(snapshot.HasUnsavedMetahandleChanges());
+  snapshot.delete_journals.insert(&kernel);
+  EXPECT_TRUE(snapshot.HasUnsavedMetahandleChanges());
+  snapshot.delete_journals.clear();
+
+  EXPECT_FALSE(snapshot.HasUnsavedMetahandleChanges());
+  snapshot.delete_journals_to_purge.insert(1);
+  EXPECT_TRUE(snapshot.HasUnsavedMetahandleChanges());
+  snapshot.delete_journals_to_purge.clear();
+}
+
 }  // namespace syncable
 
 }  // namespace syncer

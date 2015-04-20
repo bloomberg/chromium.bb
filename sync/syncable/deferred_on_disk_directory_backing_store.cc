@@ -13,10 +13,10 @@ namespace syncer {
 namespace syncable {
 
 DeferredOnDiskDirectoryBackingStore::DeferredOnDiskDirectoryBackingStore(
-    const std::string& dir_name, const base::FilePath& backing_filepath)
-    : DirectoryBackingStore(dir_name),
-      backing_filepath_(backing_filepath),
-      db_is_on_disk_(false) {
+    const std::string& dir_name,
+    const base::FilePath& backing_file_path)
+    : OnDiskDirectoryBackingStore(dir_name, backing_file_path),
+      created_on_disk_(false) {
 }
 
 DeferredOnDiskDirectoryBackingStore::~DeferredOnDiskDirectoryBackingStore() {}
@@ -26,25 +26,24 @@ bool DeferredOnDiskDirectoryBackingStore::SaveChanges(
   DCHECK(CalledOnValidThread());
 
   // Back out early if there is nothing to save.
-  if (snapshot.dirty_metas.empty() && snapshot.metahandles_to_purge.empty() &&
-      snapshot.delete_journals.empty() &&
-      snapshot.delete_journals_to_purge.empty()) {
+  if (!snapshot.HasUnsavedMetahandleChanges()) {
     return true;
   }
+  if (!created_on_disk_ && !CreateOnDisk())
+    return false;
+  return OnDiskDirectoryBackingStore::SaveChanges(snapshot);
+}
 
-  if (!db_is_on_disk_) {
-    if (!base::DeleteFile(backing_filepath_, false))
-      return false;
-
-    // Reopen DB on disk.
-    ResetAndCreateConnection();
-    if (!Open(backing_filepath_) || !InitializeTables())
-      return false;
-
-    db_is_on_disk_ = true;
-  }
-
-  return DirectoryBackingStore::SaveChanges(snapshot);
+bool DeferredOnDiskDirectoryBackingStore::CreateOnDisk() {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!created_on_disk_);
+  ResetAndCreateConnection();
+  if (!base::DeleteFile(backing_file_path(), false))
+    return false;
+  if (!Open(backing_file_path()) || !InitializeTables())
+    return false;
+  created_on_disk_ = true;
+  return true;
 }
 
 DirOpenResult DeferredOnDiskDirectoryBackingStore::Load(
@@ -52,6 +51,7 @@ DirOpenResult DeferredOnDiskDirectoryBackingStore::Load(
     JournalIndex* delete_journals,
     MetahandleSet* metahandles_to_purge,
     Directory::KernelLoadInfo* kernel_load_info) {
+  DCHECK(CalledOnValidThread());
   // Open an in-memory database at first to create initial sync data needed by
   // Directory.
   CHECK(!IsOpen());

@@ -75,6 +75,11 @@ Directory::SaveChangesSnapshot::~SaveChangesSnapshot() {
   STLDeleteElements(&delete_journals);
 }
 
+bool Directory::SaveChangesSnapshot::HasUnsavedMetahandleChanges() const {
+  return !dirty_metas.empty() || !metahandles_to_purge.empty() ||
+         !delete_journals.empty() || !delete_journals_to_purge.empty();
+}
+
 Directory::Kernel::Kernel(
     const std::string& name,
     const KernelLoadInfo& info,

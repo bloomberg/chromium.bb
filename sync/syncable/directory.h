@@ -137,6 +137,9 @@ class SYNC_EXPORT Directory {
     SaveChangesSnapshot();
     ~SaveChangesSnapshot();
 
+    // Returns true if this snapshot has any unsaved metahandle changes.
+    bool HasUnsavedMetahandleChanges() const;
+
     KernelShareInfoStatus kernel_info_status;
     PersistedKernelInfo kernel_info;
     EntryKernelSet dirty_metas;
