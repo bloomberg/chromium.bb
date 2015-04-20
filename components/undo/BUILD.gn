@@ -32,8 +32,8 @@ source_set("unit_tests") {
   ]
 
   deps = [
+    ":undo",
     "//components/bookmarks/test",
     "//testing/gtest",
-    ":undo",
   ]
 }
