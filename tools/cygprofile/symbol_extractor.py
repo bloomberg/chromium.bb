@@ -12,6 +12,8 @@ import re
 import subprocess
 import sys
 
+import cygprofile_utils
+
 sys.path.insert(
     0, os.path.join(os.path.dirname(__file__), os.pardir, os.pardir,
                     'third_party', 'android_platform', 'development',
@@ -137,18 +139,14 @@ def CreateNameToSymbolInfo(symbol_infos):
   """
   #TODO(azarchs): move the functionality in this method into check_orderfile.
   symbol_infos_by_name = {}
-  collision_count = 0
+  warnings = cygprofile_utils.WarningCollector(_MAX_WARNINGS_TO_PRINT)
   for infos in GroupSymbolInfosByName(symbol_infos).itervalues():
     first_symbol_info = min(infos, key=lambda x:x.offset)
     symbol_infos_by_name[first_symbol_info.name] = first_symbol_info
     if len(infos) > 1:
-      collision_count += 1
-      if collision_count <= _MAX_WARNINGS_TO_PRINT:
-        logging.warning('Symbol %s appears at %d offsets: %s' %
-                        (first_symbol_info.name,
-                         len(infos),
-                         ','.join([hex(x.offset) for x in infos])))
-  if collision_count > _MAX_WARNINGS_TO_PRINT:
-    logging.warning('%d symbols at multiple offsets.  First %d shown.' %
-                    (collision_count, _MAX_WARNINGS_TO_PRINT))
+      warnings.Write('Symbol %s appears at %d offsets: %s' %
+                     (first_symbol_info.name,
+                      len(infos),
+                      ','.join([hex(x.offset) for x in infos])))
+  warnings.WriteEnd('symbols at multiple offsets.')
   return symbol_infos_by_name

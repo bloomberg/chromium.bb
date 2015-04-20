@@ -16,6 +16,7 @@ import tempfile
 import string
 import sys
 
+import cygprofile_utils
 import symbol_extractor
 
 
@@ -101,23 +102,6 @@ def _FindSymbolInfosAtOffset(offset_to_symbol_infos, offset):
     raise SymbolNotFoundException(offset)
 
 
-class WarningCollector(object):
-  """Collect warnings, but limit the number printed to a set value."""
-  def __init__(self, max_warnings):
-    self._warnings = 0
-    self._max_warnings = max_warnings
-
-  def Write(self, message):
-    if self._warnings < self._max_warnings:
-      logging.warning(message)
-    self._warnings += 1
-
-  def WriteEnd(self, message):
-    if self._warnings > self._max_warnings:
-      logging.warning('%d more warnings for: %s' % (
-          self._warnings - self._max_warnings, message))
-
-
 def _GetObjectFileNames(obj_dir):
   """Returns the list of object files in a directory."""
   obj_files = []
@@ -147,7 +131,7 @@ def _GetSymbolToSectionMapFromObjectFiles(obj_dir):
   """
   object_files = _GetObjectFileNames(obj_dir)
   symbol_to_section_map = {}
-  symbol_warnings = WarningCollector(300)
+  symbol_warnings = cygprofile_utils.WarningCollector(300)
   symbol_infos = _AllSymbolInfos(object_files)
   for symbol_info in symbol_infos:
     symbol = symbol_info.name
@@ -199,8 +183,8 @@ def _OutputOrderfile(offsets, offset_to_symbol_infos, symbol_to_section_map,
     output_file: file-like object to write the results to
   """
   success = True
-  unknown_symbol_warnings = WarningCollector(300)
-  symbol_not_found_warnings = WarningCollector(300)
+  unknown_symbol_warnings = cygprofile_utils.WarningCollector(300)
+  symbol_not_found_warnings = cygprofile_utils.WarningCollector(300)
   output_sections = set()
   for offset in offsets:
     try:
@@ -227,10 +211,11 @@ def main():
   parser = optparse.OptionParser(usage=
       'usage: %prog [options] <merged_cyglog> <library> <output_filename>')
   parser.add_option('--target-arch', action='store', dest='arch',
-                    default='arm',
                     choices=['arm', 'arm64', 'x86', 'x86_64', 'x64', 'mips'],
                     help='The target architecture for libchrome.so')
   options, argv = parser.parse_args(sys.argv)
+  if not options.arch:
+    options.arch = cygprofile_utils.DetectArchitecture()
   if len(argv) != 4:
     parser.print_help()
     return 1

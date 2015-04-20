@@ -29,6 +29,7 @@ import logging
 import optparse
 import sys
 
+import cygprofile_utils
 import symbol_extractor
 
 # Prefixes for the symbols. We strip them from the incoming symbols, and add
@@ -208,10 +209,11 @@ def main(argv):
   parser = optparse.OptionParser(usage=
       'usage: %prog [options] <unpatched_orderfile> <library>')
   parser.add_option('--target-arch', action='store', dest='arch',
-                    default='arm',
                     choices=['arm', 'arm64', 'x86', 'x86_64', 'x64', 'mips'],
                     help='The target architecture for the library.')
   options, argv = parser.parse_args(argv)
+  if not options.arch:
+    options.arch = cygprofile_utils.DetectArchitecture()
   if len(argv) != 3:
     parser.print_help()
     return 1

@@ -10,6 +10,7 @@ import logging
 import optparse
 import sys
 
+import cygprofile_utils
 import patch_orderfile
 import symbol_extractor
 
@@ -63,12 +64,13 @@ def main():
   parser = optparse.OptionParser(usage=
       'usage: %prog [options] <binary> <orderfile>')
   parser.add_option('--target-arch', action='store', dest='arch',
-                    default='arm',
                     choices=['arm', 'arm64', 'x86', 'x86_64', 'x64', 'mips'],
                     help='The target architecture for the binary.')
   parser.add_option('--threshold', action='store', dest='threshold', default=0,
                     help='The maximum allowed number of out-of-order symbols.')
   options, argv = parser.parse_args(sys.argv)
+  if not options.arch:
+    options.arch = cygprofile_utils.DetectArchitecture()
   if len(argv) != 3:
     parser.print_help()
     return 1
