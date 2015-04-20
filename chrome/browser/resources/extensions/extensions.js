@@ -361,7 +361,6 @@ cr.define('extensions', function() {
       if (currentlyShowingOverlay == node)  // Already displayed.
         return;
       currentlyShowingOverlay.classList.remove('showing');
-      cr.dispatchSimpleEvent($('overlay'), 'cancelOverlay');
     }
 
     if (node) {
