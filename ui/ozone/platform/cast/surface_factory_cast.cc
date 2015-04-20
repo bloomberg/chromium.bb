@@ -27,6 +27,7 @@ SurfaceFactoryCast::SurfaceFactoryCast(scoped_ptr<CastEglPlatform> egl_platform)
     : state_(kUninitialized),
       destroy_window_pending_state_(kNoDestroyPending),
       display_type_(0),
+      have_display_type_(false),
       window_(0),
       display_size_(0, 0),
       new_display_size_(0, 0),
@@ -73,20 +74,15 @@ void SurfaceFactoryCast::CreateDisplayTypeAndWindowIfNeeded() {
     display_size_ = new_display_size_;
   }
   DCHECK_EQ(state_, kInitialized);
-  if (!display_type_) {
+  if (!have_display_type_) {
     CastEglPlatform::Size create_size = FromGfxSize(display_size_);
     display_type_ = egl_platform_->CreateDisplayType(create_size);
-    if (display_type_) {
-      window_ = egl_platform_->CreateWindow(display_type_, create_size);
-      if (!window_) {
-        DestroyDisplayTypeAndWindow();
-        state_ = kFailed;
-        LOG(FATAL) << "Create EGLNativeWindowType(" << display_size_.ToString()
-                   << ") failed.";
-      }
-    } else {
+    have_display_type_ = true;
+    window_ = egl_platform_->CreateWindow(display_type_, create_size);
+    if (!window_) {
+      DestroyDisplayTypeAndWindow();
       state_ = kFailed;
-      LOG(FATAL) << "Create EGLNativeDisplayType(" << display_size_.ToString()
+      LOG(FATAL) << "Create EGLNativeWindowType(" << display_size_.ToString()
                  << ") failed.";
     }
   }
@@ -100,7 +96,7 @@ intptr_t SurfaceFactoryCast::GetNativeWindow() {
 bool SurfaceFactoryCast::ResizeDisplay(gfx::Size size) {
   // set size to at least 1280x720 even if passed 1x1
   size.SetToMax(GetMinDisplaySize());
-  if (display_type_ && size != display_size_) {
+  if (have_display_type_ && size != display_size_) {
     DestroyDisplayTypeAndWindow();
   }
   display_size_ = size;
@@ -112,9 +108,10 @@ void SurfaceFactoryCast::DestroyDisplayTypeAndWindow() {
     egl_platform_->DestroyWindow(window_);
     window_ = 0;
   }
-  if (display_type_) {
+  if (have_display_type_) {
     egl_platform_->DestroyDisplayType(display_type_);
     display_type_ = 0;
+    have_display_type_ = false;
   }
 }
 

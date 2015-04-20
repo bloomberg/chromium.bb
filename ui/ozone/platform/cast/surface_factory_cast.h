@@ -61,6 +61,7 @@ class SurfaceFactoryCast : public SurfaceFactoryOzone {
   DestroyWindowPendingState destroy_window_pending_state_;
   base::Closure relinquish_display_callback_;
   void* display_type_;
+  bool have_display_type_;
   void* window_;
   gfx::Size display_size_;
   gfx::Size new_display_size_;
