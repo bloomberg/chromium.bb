@@ -20,7 +20,7 @@
       },
       'inputs': [
         'compile_js.gypi',
-        '<(CLOSURE_DIR)/checker.py',
+        '<(CLOSURE_DIR)/compile.py',
         '<(CLOSURE_DIR)/processor.py',
         '<(CLOSURE_DIR)/build/inputs.py',
         '<(CLOSURE_DIR)/build/outputs.py',
@@ -33,7 +33,7 @@
       ],
       'action': [
         'python',
-        '<(CLOSURE_DIR)/checker.py',
+        '<(CLOSURE_DIR)/compile.py',
         '<(source_file)',
         '--depends', '<@(depends)',
         '--externs', '<@(externs)',

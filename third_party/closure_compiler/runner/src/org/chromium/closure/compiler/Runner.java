@@ -19,6 +19,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -237,8 +238,29 @@ public class Runner {
         }
 
         private String[] prepareArgs() {
-            // FIXME: This does not support quoted arguments.
-            return descriptor.commandLine.split(" +");
+            Pattern quotedArgsPattern = Pattern.compile("(--\\S*=['\"][^'\"]*['\"])");
+            Matcher quotedArgsMatcher = quotedArgsPattern.matcher(descriptor.commandLine);
+
+            // Find all quoted args and add them to an ArrayList.
+            ArrayList<String> quotedArgs = new ArrayList<String>();
+            while (quotedArgsMatcher.find()) {
+                quotedArgs.add(quotedArgsMatcher.group());
+            }
+
+            // Remove all quoted args from the original descriptor.commandLine String.
+            String nonQuotedArgsString = quotedArgsMatcher.replaceAll("");
+
+            // Split the nonQuotedArgsString to create an ArrayList of the non-quoted args.
+            ArrayList<String> args = new ArrayList<String>(
+                    Arrays.asList(nonQuotedArgsString.split(" +")));
+
+            // Add the quotedArgs to the args ArrayList (consolidate).
+            args.addAll(quotedArgs);
+
+            // Transform the args ArrayList into a String[] and return.
+            String[] result = new String[args.size()];
+            args.toArray(result);
+            return result;
         }
     }
 

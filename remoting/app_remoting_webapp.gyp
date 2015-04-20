@@ -31,7 +31,7 @@
               '<(success_stamp)',
             ],
             'action': [
-              'python', '../third_party/closure_compiler/checker.py',
+              'python', '../third_party/closure_compiler/compile.py',
               '--strict',
               '--no-single-file',
               '--success-stamp', '<(success_stamp)',
@@ -54,7 +54,7 @@
               '<(success_stamp)',
             ],
             'action': [
-              'python', '../third_party/closure_compiler/checker.py',
+              'python', '../third_party/closure_compiler/compile.py',
               '--strict',
               '--no-single-file',
               '--success-stamp', '<(success_stamp)',
@@ -77,7 +77,7 @@
               '<(success_stamp)',
             ],
             'action': [
-              'python', '../third_party/closure_compiler/checker.py',
+              'python', '../third_party/closure_compiler/compile.py',
               '--strict',
               '--no-single-file',
               '--success-stamp', '<(success_stamp)',

@@ -3,7 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Runs Closure compiler on a JavaScript file to check for errors."""
+"""Runs Closure compiler on JavaScript files to check for errors and produce
+minified output."""
 
 import argparse
 import os
@@ -18,7 +19,8 @@ import error_filter
 
 
 class Checker(object):
-  """Runs the Closure compiler on a given source file to typecheck it."""
+  """Runs the Closure compiler on given source files to typecheck them
+  and produce minified output."""
 
   _COMMON_CLOSURE_ARGS = [
     "--accept_const_keyword",
@@ -228,12 +230,16 @@ class Checker(object):
       tmp_file.write(contents)
     return tmp_file.name
 
-  def _run_js_check(self, sources, out_file=None, externs=None):
+  def _run_js_check(self, sources, out_file=None, externs=None,
+                    output_wrapper=None):
     """Check |sources| for type errors.
 
     Args:
       sources: Files to check.
+      out_file: A file where the compiled output is written to.
       externs: @extern files that inform the compiler about custom globals.
+      output_wrapper: Wraps output into this string at the place denoted by the
+          marker token %output%.
 
     Returns:
       (errors, stderr) A parsed list of errors (strings) found by the compiler
@@ -247,6 +253,9 @@ class Checker(object):
 
     if externs:
       args += ["--externs=%s" % e for e in externs]
+
+    if output_wrapper:
+      args += ['--output_wrapper="%s"' % output_wrapper]
 
     args_file_content = " %s" % " ".join(self._common_args() + args)
     self._log_debug("Args: %s" % args_file_content.strip())
@@ -270,7 +279,8 @@ class Checker(object):
 
     return errors, stderr
 
-  def check(self, source_file, out_file=None, depends=None, externs=None):
+  def check(self, source_file, out_file=None, depends=None, externs=None,
+            output_wrapper=None):
     """Closure compiler |source_file| while checking for errors.
 
     Args:
@@ -278,6 +288,8 @@ class Checker(object):
       out_file: A file where the compiled output is written to.
       depends: Files that |source_file| requires to run (e.g. earlier <script>).
       externs: @extern files that inform the compiler about custom globals.
+      output_wrapper: Wraps output into this string at the place denoted by the
+          marker token %output%.
 
     Returns:
       (found_errors, stderr) A boolean indicating whether errors were found and
@@ -305,7 +317,8 @@ class Checker(object):
     self._log_debug("Expanded file: %s" % self._expanded_file)
 
     errors, stderr = self._run_js_check([self._expanded_file],
-                                        out_file=out_file, externs=externs)
+                                        out_file=out_file, externs=externs,
+                                        output_wrapper=output_wrapper)
     filtered_errors = self._filter_errors(errors)
     fixed_errors = map(self._fix_up_error, filtered_errors)
     output = self._format_errors(fixed_errors)
@@ -319,17 +332,21 @@ class Checker(object):
     self._clean_up()
     return bool(fixed_errors), stderr
 
-  def check_multiple(self, sources):
+  def check_multiple(self, sources, out_file=None, output_wrapper=None):
     """Closure compile a set of files and check for errors.
 
     Args:
       sources: An array of files to check.
+      out_file: A file where the compiled output is written to.
+      output_wrapper: Wraps output into this string at the place denoted by the
+          marker token %output%.
 
     Returns:
       (found_errors, stderr) A boolean indicating whether errors were found and
           the raw Closure Compiler stderr (as a string).
     """
-    errors, stderr = self._run_js_check(sources, [])
+    errors, stderr = self._run_js_check(sources, out_file=out_file,
+                                        output_wrapper=output_wrapper)
     self._clean_up()
     return bool(errors), stderr
 
@@ -350,6 +367,9 @@ if __name__ == "__main__":
   parser.add_argument("-e", "--externs", nargs=argparse.ZERO_OR_MORE)
   parser.add_argument("-o", "--out_file",
                       help="A file where the compiled output is written to")
+  parser.add_argument("-w", "--output_wrapper",
+                      help="Wraps output into this string at the place"
+                         + " denoted by the marker token %output%")
   parser.add_argument("-v", "--verbose", action="store_true",
                       help="Show more information as this script runs")
   parser.add_argument("--strict", action="store_true",
@@ -374,11 +394,15 @@ if __name__ == "__main__":
       depends, externs = build.inputs.resolve_recursive_dependencies(
           source, depends, externs)
       found_errors, _ = checker.check(source, out_file=opts.out_file,
-                                      depends=depends, externs=externs)
+                                      depends=depends, externs=externs,
+                                      output_wrapper=opts.output_wrapper)
       if found_errors:
         sys.exit(1)
   else:
-    found_errors, stderr = checker.check_multiple(opts.sources)
+    found_errors, stderr = checker.check_multiple(
+        opts.sources,
+        out_file=opts.out_file,
+        output_wrapper=opts.output_wrapper)
     if found_errors:
       print stderr
       sys.exit(1)
