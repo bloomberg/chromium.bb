@@ -74,11 +74,7 @@ public:
         v8::Local<v8::Function>,
         v8::Local<v8::Value>,
         int argc,
-#ifndef WEB_FRAME_USES_V8_LOCAL
-        v8::Handle<v8::Value> argv[]) override;
-#else
         v8::Local<v8::Value> argv[]) override;
-#endif
     virtual v8::Local<v8::Context> mainWorldScriptContext() const override;
     virtual void reload(bool ignoreCache) override;
     virtual void reloadWithOverrideURL(const WebURL& overrideUrl, bool ignoreCache) override;

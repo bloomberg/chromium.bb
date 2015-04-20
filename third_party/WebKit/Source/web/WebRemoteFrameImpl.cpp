@@ -285,11 +285,7 @@ v8::Local<v8::Value> WebRemoteFrameImpl::callFunctionEvenIfScriptDisabled(
     v8::Local<v8::Function>,
     v8::Local<v8::Value>,
     int argc,
-#ifndef WEB_FRAME_USES_V8_LOCAL
-    v8::Handle<v8::Value> argv[])
-#else
     v8::Local<v8::Value> argv[])
-#endif
 {
     ASSERT_NOT_REACHED();
     return v8::Local<v8::Value>();

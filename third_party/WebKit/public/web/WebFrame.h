@@ -51,9 +51,7 @@ class Function;
 class Object;
 class Value;
 // This will be cleaned up shortly.
-#ifndef WEB_FRAME_USES_V8_LOCAL
-template <class T> class Handle;
-#endif
+#define WEB_FRAME_USES_V8_LOCAL
 template <class T> class Local;
 }
 
@@ -336,11 +334,7 @@ public:
         v8::Local<v8::Function>,
         v8::Local<v8::Value>,
         int argc,
-#ifndef WEB_FRAME_USES_V8_LOCAL
-        v8::Handle<v8::Value> argv[]) = 0;
-#else
         v8::Local<v8::Value> argv[]) = 0;
-#endif
 
     // Returns the V8 context for associated with the main world and this
     // frame. There can be many V8 contexts associated with this frame, one for
