@@ -1013,7 +1013,7 @@ void DeprecatedPaintLayerCompositor::destroyRootLayer()
         m_layerForHorizontalScrollbar = nullptr;
         if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
             scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_layoutView.frameView(), HorizontalScrollbar);
-        if (Scrollbar* horizontalScrollbar = m_layoutView.frameView()->verticalScrollbar())
+        if (Scrollbar* horizontalScrollbar = m_layoutView.frameView()->horizontalScrollbar())
             m_layoutView.frameView()->invalidateScrollbar(horizontalScrollbar, IntRect(IntPoint(0, 0), horizontalScrollbar->frameRect().size()));
     }
 
