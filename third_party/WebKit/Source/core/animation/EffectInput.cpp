@@ -78,6 +78,7 @@ const QualifiedName* supportedSVGAttribute(const String& property, SVGElement* s
             &SVGNames::clipPathUnitsAttr,
             &SVGNames::edgeModeAttr,
             &SVGNames::orientAttr,
+            &SVGNames::pointsAttr,
             &XLinkNames::hrefAttr,
         };
         for (size_t i = 0; i < WTF_ARRAY_LENGTH(attributes); i++)

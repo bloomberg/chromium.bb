@@ -18,7 +18,9 @@
 #include "core/animation/LengthBoxStyleInterpolation.h"
 #include "core/animation/LengthPairStyleInterpolation.h"
 #include "core/animation/LengthStyleInterpolation.h"
+#include "core/animation/ListSVGInterpolation.h"
 #include "core/animation/ListStyleInterpolation.h"
+#include "core/animation/PointSVGInterpolation.h"
 #include "core/animation/SVGStrokeDasharrayStyleInterpolation.h"
 #include "core/animation/ShadowStyleInterpolation.h"
 #include "core/animation/VisibilityStyleInterpolation.h"
@@ -470,17 +472,23 @@ namespace {
 
 PassRefPtrWillBeRawPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fromValue, SVGPropertyBase* toValue, SVGAnimatedPropertyBase* attribute)
 {
+    RefPtrWillBeRawPtr<Interpolation> interpolation;
     ASSERT(fromValue->type() == toValue->type());
     switch (fromValue->type()) {
     case AnimatedAngle:
         if (AngleSVGInterpolation::canCreateFrom(fromValue) && AngleSVGInterpolation::canCreateFrom(toValue))
             return AngleSVGInterpolation::create(fromValue, toValue, attribute);
         break;
+    case AnimatedPoints:
+        interpolation = ListSVGInterpolation<PointSVGInterpolation>::maybeCreate(fromValue, toValue, attribute);
+        break;
 
     // FIXME: Support more animation types.
     default:
         break;
     }
+    if (interpolation)
+        return interpolation.release();
 
     return DefaultSVGInterpolation::create(fromValue, toValue, attribute);
 }

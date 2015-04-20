@@ -188,6 +188,16 @@
     return value;
   }
 
+  function serializeSVGPointList(pointList) {
+    var elements = [];
+    for (var index = 0; index < pointList.numberOfItems; ++index) {
+      var point = pointList.getItem(index);
+      elements.push(point.x);
+      elements.push(point.y);
+    }
+    return String(elements);
+  }
+
   var svgNamespace = 'http://www.w3.org/2000/svg';
   var xlinkNamespace = 'http://www.w3.org/1999/xlink';
 
@@ -210,7 +220,11 @@
       attributeName = 'orientAngle';
     }
 
-    var result = element[attributeName].animVal;
+    var result;
+    if (attributeName === 'points')
+      result = element['animatedPoints'];
+    else
+      result = element[attributeName].animVal;
 
     if (!result) {
       console.log('Unknown attribute, cannot get ' + element.className.baseVal + ' ' + attributeName);
@@ -219,6 +233,8 @@
 
     if (result instanceof SVGAngle)
       result = result.value;
+    else if (result instanceof SVGPointList)
+      result = serializeSVGPointList(result);
 
     if (typeof result !== 'string' && typeof result !== 'number' && typeof result !== 'boolean') {
       console.log('Attribute value has unexpected type: ' + result);
