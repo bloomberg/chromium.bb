@@ -43,7 +43,7 @@ namespace blink {
 
 namespace {
 
-int runHelper(TestSuite* testSuite, void (*preTestHook)(void), void (*postTestHook)(void))
+int runHelper(base::TestSuite* testSuite, void (*preTestHook)(void), void (*postTestHook)(void))
 {
     preTestHook();
     int result = testSuite->Run();
@@ -67,7 +67,7 @@ int runHelper(TestSuite* testSuite, void (*preTestHook)(void), void (*postTestHo
 
 int runWebTests(int argc, char** argv, void (*preTestHook)(void), void (*postTestHook)(void))
 {
-    TestSuite testSuite(argc, argv);
+    base::TestSuite testSuite(argc, argv);
     return base::LaunchUnitTests(argc, argv, base::Bind(&runHelper, base::Unretained(&testSuite), preTestHook, postTestHook));
 }
 
