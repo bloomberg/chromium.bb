@@ -481,7 +481,11 @@ void MediaInternals::OnMediaEvents(
     // Convert PipelineStatus to human readable string
     if (event->type == media::MediaLogEvent::PIPELINE_ERROR) {
       int status;
-      event->params.GetInteger("pipeline_error", &status);
+      if (!event->params.GetInteger("pipeline_error", &status) ||
+          status < static_cast<int>(media::PIPELINE_OK) ||
+          status > static_cast<int>(media::PIPELINE_STATUS_MAX)) {
+        continue;
+      }
       media::PipelineStatus error = static_cast<media::PipelineStatus>(status);
       dict.SetString("params.pipeline_error",
                      media::MediaLog::PipelineStatusToString(error));
