@@ -124,9 +124,9 @@ private:
     LayoutUnit endOfRowForChild(const LayoutBox& child) const;
     LayoutUnit centeredRowPositionForChild(const LayoutBox&) const;
     LayoutUnit rowPositionForChild(const LayoutBox&) const;
-    LayoutUnit contentPositionAndDistributionColumnOffset(LayoutUnit availableFreeSpace, ContentPosition, ContentDistributionType, OverflowAlignment, unsigned numberOfItems) const;
-    LayoutUnit contentPositionAndDistributionRowOffset(LayoutUnit availableFreeSpace, ContentPosition, ContentDistributionType, OverflowAlignment, unsigned numberOfItems) const;
-    LayoutPoint findChildLogicalPosition(const LayoutBox&, LayoutSize contentAlignmentOffset) const;
+    void computeContentPositionAndDistributionRowOffset(LayoutUnit availableFreeSpace, GridSizingData&) const;
+    void computeContentPositionAndDistributionColumnOffset(LayoutUnit availableFreeSpace, GridSizingData&) const;
+    LayoutPoint findChildLogicalPosition(const LayoutBox&, GridSizingData&) const;
     GridCoordinate cachedGridCoordinate(const LayoutBox&) const;
 
     LayoutUnit gridAreaBreadthForChild(const LayoutBox& child, GridTrackSizingDirection, const Vector<GridTrack>&) const;

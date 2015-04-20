@@ -236,6 +236,11 @@ public:
     Vector<GridTrack*> filteredTracks;
     Vector<GridItemWithSpan> itemsSortedByIncreasingSpan;
     Vector<GridTrack*> growBeyondGrowthLimitsTracks;
+
+    LayoutUnit rowsPositionOffset;
+    LayoutUnit rowsDistributionOffset;
+    LayoutUnit columnsPositionOffset;
+    LayoutUnit columnsDistributionOffset;
 };
 
 struct GridItemsSpanGroupRange {
@@ -435,6 +440,12 @@ void LayoutGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
         return;
 
     // 3. Grow all Grid tracks in GridTracks from their baseSize up to their growthLimit value until freeSpace is exhausted.
+    // Any 'auto-sized' (content based) track will be 'stretched' over their MaxBreadth if required
+    // and there is space available, except if there are flexible track, which will occupy the whole
+    // available space.
+    bool needToStretch = flexibleSizedTracksIndex.isEmpty() && !sizingData.contentSizedTracksIndex.isEmpty()
+        && ((direction == ForColumns && style()->justifyContentDistribution() == ContentDistributionStretch)
+            || (direction == ForRows && style()->alignContentDistribution() == ContentDistributionStretch));
     const size_t tracksSize = tracks.size();
     if (!hasUndefinedRemainingSpace) {
         Vector<GridTrack*> tracksForDistribution(tracksSize);
@@ -443,7 +454,15 @@ void LayoutGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
             tracksForDistribution[i]->m_plannedIncrease = 0;
         }
 
-        distributeSpaceToTracks(tracksForDistribution, nullptr, &GridTrack::baseSize, sizingData, freeSpace);
+        Vector<GridTrack*> tracksToStretch(sizingData.contentSizedTracksIndex.size());
+        if (needToStretch) {
+            unsigned i = 0;
+            for (const auto& trackIndex : sizingData.contentSizedTracksIndex) {
+                tracksToStretch[i++] = tracks.data() + trackIndex;
+            }
+        }
+
+        distributeSpaceToTracks(tracksForDistribution, needToStretch ? &tracksToStretch : nullptr, &GridTrack::baseSize, sizingData, freeSpace);
 
         for (auto* track : tracksForDistribution)
             track->growBaseSize(track->m_plannedIncrease);
@@ -1129,12 +1148,11 @@ void LayoutGrid::layoutGridItems()
     computeUsedBreadthOfGridTracks(ForRows, sizingData, availableSpaceForRows);
     ASSERT(tracksAreWiderThanMinTrackBreadth(ForRows, sizingData.rowTracks));
 
+    computeContentPositionAndDistributionColumnOffset(availableSpaceForColumns, sizingData);
+    computeContentPositionAndDistributionRowOffset(availableSpaceForRows, sizingData);
+
     populateGridPositions(sizingData);
     m_gridItemsOverflowingGridArea.resize(0);
-
-    LayoutUnit columnOffset = contentPositionAndDistributionColumnOffset(availableSpaceForColumns, style()->justifyContent(), style()->justifyContentDistribution(), style()->justifyContentOverflowAlignment(), m_columnPositions.size() - 1);
-    LayoutUnit rowOffset = contentPositionAndDistributionRowOffset(availableSpaceForRows, style()->alignContent(), style()->alignContentDistribution(), style()->alignContentOverflowAlignment(), m_rowPositions.size() - 1);
-    LayoutSize contentPositionOffset(columnOffset, rowOffset);
 
     for (LayoutBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
         if (child->isOutOfFlowPositioned()) {
@@ -1169,7 +1187,7 @@ void LayoutGrid::layoutGridItems()
         ASSERT(coordinate.columns.resolvedInitialPosition.toInt() < sizingData.columnTracks.size());
         ASSERT(coordinate.rows.resolvedInitialPosition.toInt() < sizingData.rowTracks.size());
 #endif
-        child->setLogicalLocation(findChildLogicalPosition(*child, contentPositionOffset));
+        child->setLogicalLocation(findChildLogicalPosition(*child, sizingData));
 
         // Keep track of children overflowing their grid area as we might need to paint them even if the grid-area is
         // not visible
@@ -1283,9 +1301,16 @@ LayoutUnit LayoutGrid::gridAreaBreadthForChild(const LayoutBox& child, GridTrack
 {
     const GridCoordinate& coordinate = cachedGridCoordinate(child);
     const GridSpan& span = (direction == ForColumns) ? coordinate.columns : coordinate.rows;
+    const Vector<LayoutUnit>& trackPositions = (direction == ForColumns) ? m_columnPositions : m_rowPositions;
+    if (span.resolvedFinalPosition.toInt() < trackPositions.size()) {
+        LayoutUnit startOftrack = trackPositions[span.resolvedInitialPosition.toInt()];
+        LayoutUnit endOfTrack = trackPositions[span.resolvedFinalPosition.toInt()];
+        return endOfTrack - startOftrack + tracks[span.resolvedFinalPosition.toInt()].baseSize();
+    }
     LayoutUnit gridAreaBreadth = 0;
     for (GridSpan::iterator trackPosition = span.begin(); trackPosition != span.end(); ++trackPosition)
         gridAreaBreadth += tracks[trackPosition.toInt()].baseSize();
+
     return gridAreaBreadth;
 }
 
@@ -1295,14 +1320,14 @@ void LayoutGrid::populateGridPositions(const GridSizingData& sizingData)
     unsigned numberOfRowTracks = sizingData.rowTracks.size();
 
     m_columnPositions.resize(numberOfColumnTracks + 1);
-    m_columnPositions[0] = borderAndPaddingStart();
+    m_columnPositions[0] = borderAndPaddingStart() + sizingData.columnsPositionOffset;
     for (unsigned i = 0; i < numberOfColumnTracks; ++i)
-        m_columnPositions[i + 1] = m_columnPositions[i] + sizingData.columnTracks[i].baseSize();
+        m_columnPositions[i + 1] = m_columnPositions[i] + sizingData.columnsDistributionOffset + sizingData.columnTracks[i].baseSize();
 
     m_rowPositions.resize(numberOfRowTracks + 1);
-    m_rowPositions[0] = borderAndPaddingBefore();
+    m_rowPositions[0] = borderAndPaddingBefore() + sizingData.rowsPositionOffset;
     for (unsigned i = 0; i < numberOfRowTracks; ++i)
-        m_rowPositions[i + 1] = m_rowPositions[i] + sizingData.rowTracks[i].baseSize();
+        m_rowPositions[i + 1] = m_rowPositions[i] + sizingData.rowsDistributionOffset + sizingData.rowTracks[i].baseSize();
 }
 
 static LayoutUnit computeOverflowAlignmentOffset(OverflowAlignment overflow, LayoutUnit startOfTrack, LayoutUnit endOfTrack, LayoutUnit childBreadth)
@@ -1664,97 +1689,149 @@ static inline LayoutUnit offsetToEndEdge(bool isLeftToRight, LayoutUnit availabl
     return !isLeftToRight ? LayoutUnit() : availableSpace;
 }
 
-LayoutUnit LayoutGrid::contentPositionAndDistributionColumnOffset(LayoutUnit availableFreeSpace, ContentPosition position, ContentDistributionType distribution, OverflowAlignment overflow, unsigned numberOfGridTracks) const
-{
-    if (overflow == OverflowAlignmentSafe && availableFreeSpace <= 0)
-        return 0;
 
-    // FIXME: for the time being, spec states that it will always fallback for Grids, but
-    // discussion is ongoing.
-    if (distribution != ContentDistributionDefault && position == ContentPositionAuto)
-        position = resolveContentDistributionFallback(distribution);
+static bool contentDistributionOffset(LayoutUnit availableFreeSpace, ContentPosition& fallbackPosition, ContentDistributionType distribution, unsigned numberOfGridTracks, LayoutUnit& positionOffset, LayoutUnit& distributionOffset)
+{
+    if (distribution != ContentDistributionDefault && fallbackPosition == ContentPositionAuto)
+        fallbackPosition = resolveContentDistributionFallback(distribution);
+
+    if (availableFreeSpace <= 0)
+        return false;
+
+    switch (distribution) {
+    case ContentDistributionSpaceBetween:
+        if (numberOfGridTracks < 2)
+            return false;
+        distributionOffset = availableFreeSpace / (numberOfGridTracks - 1);
+        positionOffset = 0;
+        return true;
+    case ContentDistributionSpaceAround:
+        if (numberOfGridTracks < 1)
+            return false;
+        distributionOffset = availableFreeSpace / numberOfGridTracks;
+        positionOffset = distributionOffset / 2;
+        return true;
+    case ContentDistributionSpaceEvenly:
+        distributionOffset = availableFreeSpace / (numberOfGridTracks + 1);
+        positionOffset = distributionOffset;
+        return true;
+    case ContentDistributionStretch:
+        distributionOffset = 0;
+        positionOffset = 0;
+        return true;
+    case ContentDistributionDefault:
+        distributionOffset = 0;
+        positionOffset = 0;
+        return false;
+    }
+
+    ASSERT_NOT_REACHED();
+    return false;
+}
+
+void LayoutGrid::computeContentPositionAndDistributionColumnOffset(LayoutUnit availableFreeSpace, GridSizingData& sizingData) const
+{
+    ContentPosition position = styleRef().justifyContent();
+    ContentDistributionType distribution = styleRef().justifyContentDistribution();
+    // If <content-distribution> value can't be applied, 'position' will become the associated
+    // <content-position> fallback value.
+    if (contentDistributionOffset(availableFreeSpace, position, distribution, sizingData.columnTracks.size(), sizingData.columnsPositionOffset, sizingData.columnsDistributionOffset))
+        return;
+
+    OverflowAlignment overflow = styleRef().justifyContentOverflowAlignment();
+    if (overflow == OverflowAlignmentSafe && availableFreeSpace <= 0)
+        return;
 
     switch (position) {
     case ContentPositionLeft:
-        return 0;
+        sizingData.columnsPositionOffset = 0;
+        return;
     case ContentPositionRight:
-        return availableFreeSpace;
+        sizingData.columnsPositionOffset = availableFreeSpace;
+        return;
     case ContentPositionCenter:
-        return availableFreeSpace / 2;
+        sizingData.columnsPositionOffset = availableFreeSpace / 2;
+        return;
     case ContentPositionFlexEnd:
         // Only used in flex layout, for other layout, it's equivalent to 'end'.
     case ContentPositionEnd:
-        return offsetToEndEdge(style()->isLeftToRightDirection(), availableFreeSpace);
+        sizingData.columnsPositionOffset = offsetToEndEdge(style()->isLeftToRightDirection(), availableFreeSpace);
+        return;
     case ContentPositionFlexStart:
         // Only used in flex layout, for other layout, it's equivalent to 'start'.
     case ContentPositionStart:
-        return offsetToStartEdge(style()->isLeftToRightDirection(), availableFreeSpace);
+        sizingData.columnsPositionOffset = offsetToStartEdge(style()->isLeftToRightDirection(), availableFreeSpace);
+        return;
     case ContentPositionBaseline:
     case ContentPositionLastBaseline:
         // FIXME: Implement the previous values. For now, we always 'start' align.
         // crbug.com/234191
-        return offsetToStartEdge(style()->isLeftToRightDirection(), availableFreeSpace);
+        sizingData.columnsPositionOffset = offsetToStartEdge(style()->isLeftToRightDirection(), availableFreeSpace);
+        return;
     case ContentPositionAuto:
         break;
     }
 
     ASSERT_NOT_REACHED();
-    return 0;
 }
 
-LayoutUnit LayoutGrid::contentPositionAndDistributionRowOffset(LayoutUnit availableFreeSpace, ContentPosition position, ContentDistributionType distribution, OverflowAlignment overflow, unsigned numberOfGridTracks) const
+void LayoutGrid::computeContentPositionAndDistributionRowOffset(LayoutUnit availableFreeSpace, GridSizingData& sizingData) const
 {
-    if (overflow == OverflowAlignmentSafe && availableFreeSpace <= 0)
-        return 0;
+    ContentPosition position = styleRef().alignContent();
+    ContentDistributionType distribution = styleRef().alignContentDistribution();
+    // If <content-distribution> value can't be applied, 'position' will become the associated
+    // <content-position> fallback value.
+    if (contentDistributionOffset(availableFreeSpace, position, distribution, sizingData.rowTracks.size(), sizingData.rowsPositionOffset, sizingData.rowsDistributionOffset))
+        return;
 
-    // FIXME: for the time being, spec states that it will always fallback for Grids, but
-    // discussion is ongoing.
-    if (distribution != ContentDistributionDefault && position == ContentPositionAuto)
-        position = resolveContentDistributionFallback(distribution);
+    OverflowAlignment overflow = styleRef().alignContentOverflowAlignment();
+    if (overflow == OverflowAlignmentSafe && availableFreeSpace <= 0)
+        return;
 
     switch (position) {
     case ContentPositionLeft:
         // The align-content's axis is always orthogonal to the inline-axis.
-        return 0;
+        sizingData.rowsPositionOffset = 0;
+        return;
     case ContentPositionRight:
         // The align-content's axis is always orthogonal to the inline-axis.
-        return 0;
+        sizingData.rowsPositionOffset = 0;
+        return;
     case ContentPositionCenter:
-        return availableFreeSpace / 2;
+        sizingData.rowsPositionOffset = availableFreeSpace / 2;
+        return;
     case ContentPositionFlexEnd:
         // Only used in flex layout, for other layout, it's equivalent to 'End'.
     case ContentPositionEnd:
-        return availableFreeSpace;
+        sizingData.rowsPositionOffset = availableFreeSpace;
+        return;
     case ContentPositionFlexStart:
         // Only used in flex layout, for other layout, it's equivalent to 'Start'.
     case ContentPositionStart:
-        return 0;
+        sizingData.rowsPositionOffset = 0;
+        return;
     case ContentPositionBaseline:
     case ContentPositionLastBaseline:
         // FIXME: Implement the previous values. For now, we always start align.
         // crbug.com/234191
-        return 0;
+        sizingData.rowsPositionOffset = 0;
+        return;
     case ContentPositionAuto:
         break;
     }
 
     ASSERT_NOT_REACHED();
-    return 0;
 }
 
-LayoutPoint LayoutGrid::findChildLogicalPosition(const LayoutBox& child, LayoutSize contentAlignmentOffset) const
+LayoutPoint LayoutGrid::findChildLogicalPosition(const LayoutBox& child, GridSizingData& sizingData) const
 {
     LayoutUnit columnPosition = columnPositionForChild(child);
     // We stored m_columnPositions's data ignoring the direction, hence we might need now
     // to translate positions from RTL to LTR, as it's more convenient for painting.
     if (!style()->isLeftToRightDirection())
-        columnPosition = (m_columnPositions[m_columnPositions.size() - 1] + borderAndPaddingLogicalLeft()) - columnPosition - child.logicalWidth();
+        columnPosition = (m_columnPositions[m_columnPositions.size() - 1] + borderAndPaddingLogicalLeft() + sizingData.columnsPositionOffset) - columnPosition - sizingData.columnsDistributionOffset - child.logicalWidth();
 
-    // The Content Alignment offset accounts for the RTL to LTR flip.
-    LayoutPoint childLocation(columnPosition, rowPositionForChild(child));
-    childLocation.move(contentAlignmentOffset);
-
-    return childLocation;
+    return LayoutPoint(columnPosition, rowPositionForChild(child));
 }
 
 void LayoutGrid::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
