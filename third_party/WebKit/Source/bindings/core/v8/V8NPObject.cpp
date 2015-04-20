@@ -427,8 +427,16 @@ static DOMWrapperMap<NPObject>& staticNPObjectMap()
 template <>
 inline void DOMWrapperMap<NPObject>::PersistentValueMapTraits::Dispose(
     v8::Isolate* isolate,
-    v8::UniquePersistent<v8::Object> value,
+    v8::Global<v8::Object> value,
     NPObject* npObject)
+{
+    ASSERT(npObject);
+    if (_NPN_IsAlive(npObject))
+        _NPN_ReleaseObject(npObject);
+}
+
+template <>
+inline void DOMWrapperMap<NPObject>::PersistentValueMapTraits::DisposeWeak(v8::Isolate* isolate, void* internalFields[v8::kInternalFieldsInWeakCallback], NPObject* npObject)
 {
     ASSERT(npObject);
     if (_NPN_IsAlive(npObject))
