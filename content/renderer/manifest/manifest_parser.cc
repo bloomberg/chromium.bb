@@ -127,6 +127,9 @@ void ManifestParser::Parse() {
   manifest_.display = ParseDisplay(*dictionary);
   manifest_.orientation = ParseOrientation(*dictionary);
   manifest_.icons = ParseIcons(*dictionary);
+  manifest_.related_applications = ParseRelatedApplications(*dictionary);
+  manifest_.prefer_related_applications =
+      ParsePreferRelatedApplications(*dictionary);
   manifest_.gcm_sender_id = ParseGCMSenderID(*dictionary);
   manifest_.gcm_user_visible_only = ParseGCMUserVisibleOnly(*dictionary);
 
@@ -332,6 +335,74 @@ std::vector<Manifest::Icon> ManifestParser::ParseIcons(
   }
 
   return icons;
+}
+
+base::NullableString16 ManifestParser::ParseRelatedApplicationPlatform(
+    const base::DictionaryValue& application) {
+  return ParseString(application, "platform", Trim);
+}
+
+GURL ManifestParser::ParseRelatedApplicationURL(
+    const base::DictionaryValue& application) {
+  return ParseURL(application, "url", manifest_url_);
+}
+
+base::NullableString16 ManifestParser::ParseRelatedApplicationId(
+    const base::DictionaryValue& application) {
+  return ParseString(application, "id", Trim);
+}
+
+std::vector<Manifest::RelatedApplication>
+ManifestParser::ParseRelatedApplications(
+    const base::DictionaryValue& dictionary) {
+  std::vector<Manifest::RelatedApplication> applications;
+  if (!dictionary.HasKey("related_applications"))
+    return applications;
+
+  const base::ListValue* applications_list = nullptr;
+  if (!dictionary.GetList("related_applications", &applications_list)) {
+    errors_.push_back(
+        GetErrorPrefix() +
+        "property 'related_applications' ignored, type array expected.");
+    return applications;
+  }
+
+  for (size_t i = 0; i < applications_list->GetSize(); ++i) {
+    const base::DictionaryValue* application_dictionary = nullptr;
+    if (!applications_list->GetDictionary(i, &application_dictionary))
+      continue;
+
+    Manifest::RelatedApplication application;
+    application.platform =
+        ParseRelatedApplicationPlatform(*application_dictionary);
+    // "If platform is undefined, move onto the next item if any are left."
+    if (application.platform.is_null()) {
+      errors_.push_back(
+          GetErrorPrefix() +
+          "'platform' is a required field, related application ignored.");
+      continue;
+    }
+
+    application.id = ParseRelatedApplicationId(*application_dictionary);
+    application.url = ParseRelatedApplicationURL(*application_dictionary);
+    // "If both id and url are undefined, move onto the next item if any are
+    // left."
+    if (application.url.is_empty() && application.id.is_null()) {
+      errors_.push_back(
+          GetErrorPrefix() +
+          "one of 'url' or 'id' is required, related application ignored.");
+      continue;
+    }
+
+    applications.push_back(application);
+  }
+
+  return applications;
+}
+
+bool ManifestParser::ParsePreferRelatedApplications(
+    const base::DictionaryValue& dictionary) {
+  return ParseBoolean(dictionary, "prefer_related_applications", false);
 }
 
 base::NullableString16 ManifestParser::ParseGCMSenderID(

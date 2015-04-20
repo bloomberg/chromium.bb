@@ -124,6 +124,37 @@ class CONTENT_EXPORT ManifestParser {
   std::vector<Manifest::Icon> ParseIcons(
       const base::DictionaryValue& dictionary);
 
+  // Parses the 'platform' field of a related application, as defined in:
+  // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-platform-member-of-an-application
+  // Returns the parsed string if any, a null string if the parsing failed.
+  base::NullableString16 ParseRelatedApplicationPlatform(
+      const base::DictionaryValue& application);
+
+  // Parses the 'url' field of a related application, as defined in:
+  // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-url-member-of-an-application
+  // Returns the paresed GURL if any, an empty GURL if the parsing failed.
+  GURL ParseRelatedApplicationURL(const base::DictionaryValue& application);
+
+  // Parses the 'id' field of a related application, as defined in:
+  // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-id-member-of-an-application
+  // Returns the parsed string if any, a null string if the parsing failed.
+  base::NullableString16 ParseRelatedApplicationId(
+      const base::DictionaryValue& application);
+
+  // Parses the 'related_applications' field of the manifest, as defined in:
+  // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-related_applications-member
+  // Returns a vector of Manifest::RelatedApplication with the successfully
+  // parsed applications, if any. An empty vector if the field was not present
+  // or empty.
+  std::vector<Manifest::RelatedApplication> ParseRelatedApplications(
+      const base::DictionaryValue& dictionary);
+
+  // Parses the 'prefer_related_applications' field on the manifest, as defined
+  // in:
+  // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-prefer_related_applications-member
+  // returns true iff the field could be parsed as the boolean true.
+  bool ParsePreferRelatedApplications(const base::DictionaryValue& dictionary);
+
   // Parses the 'gcm_sender_id' field of the manifest.
   // This is a proprietary extension of the Web Manifest specification.
   // Returns the parsed string if any, a null string if the parsing failed.

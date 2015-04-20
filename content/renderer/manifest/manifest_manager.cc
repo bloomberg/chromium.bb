@@ -61,16 +61,21 @@ void ManifestManager::OnRequestManifestComplete(
         ipc_manifest.short_name.string().substr(0,
                                                 Manifest::kMaxIPCStringLength),
         ipc_manifest.short_name.is_null());
-  for (size_t i = 0; i < ipc_manifest.icons.size(); ++i) {
-    ipc_manifest.icons[i].type = base::NullableString16(
-        ipc_manifest.icons[i].type.string().substr(
-            0, Manifest::kMaxIPCStringLength),
-        ipc_manifest.icons[i].type.is_null());
+  for (auto& icon : ipc_manifest.icons) {
+    icon.type = base::NullableString16(
+        icon.type.string().substr(0, Manifest::kMaxIPCStringLength),
+        icon.type.is_null());
   }
   ipc_manifest.gcm_sender_id = base::NullableString16(
         ipc_manifest.gcm_sender_id.string().substr(
             0, Manifest::kMaxIPCStringLength),
         ipc_manifest.gcm_sender_id.is_null());
+  for (auto& related_application : ipc_manifest.related_applications) {
+    related_application.id =
+        base::NullableString16(related_application.id.string().substr(
+                                   0, Manifest::kMaxIPCStringLength),
+                               related_application.id.is_null());
+  }
 
   Send(new ManifestManagerHostMsg_RequestManifestResponse(
       routing_id(), request_id, ipc_manifest));

@@ -117,18 +117,25 @@ void ManifestManagerHost::OnRequestManifestResponse(
         manifest.short_name.is_null());
   if (!manifest.start_url.is_valid())
     manifest.start_url = GURL();
-  for (size_t i = 0; i < manifest.icons.size(); ++i) {
-    if (!manifest.icons[i].src.is_valid())
-      manifest.icons[i].src = GURL();
-    manifest.icons[i].type = base::NullableString16(
-        manifest.icons[i].type.string().substr(0,
-                                               Manifest::kMaxIPCStringLength),
-        manifest.icons[i].type.is_null());
+  for (auto& icon : manifest.icons) {
+    if (!icon.src.is_valid())
+      icon.src = GURL();
+    icon.type = base::NullableString16(
+        icon.type.string().substr(0, Manifest::kMaxIPCStringLength),
+        icon.type.is_null());
   }
   manifest.gcm_sender_id = base::NullableString16(
         manifest.gcm_sender_id.string().substr(
             0, Manifest::kMaxIPCStringLength),
         manifest.gcm_sender_id.is_null());
+  for (auto& related_application : manifest.related_applications) {
+    if (!related_application.url.is_valid())
+      related_application.url = GURL();
+    related_application.id =
+        base::NullableString16(related_application.id.string().substr(
+                                   0, Manifest::kMaxIPCStringLength),
+                               related_application.id.is_null());
+  }
 
   callback->Run(manifest);
   callbacks->Remove(request_id);

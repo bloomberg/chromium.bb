@@ -797,6 +797,188 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
   }
 }
 
+TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
+  // If no application, empty list.
+  {
+    Manifest manifest = ParseManifest(
+        "{ \"related_applications\": []}");
+    EXPECT_EQ(manifest.related_applications.size(), 0u);
+    EXPECT_TRUE(manifest.IsEmpty());
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // If empty application, empty list.
+  {
+    Manifest manifest = ParseManifest(
+        "{ \"related_applications\": [{}]}");
+    EXPECT_EQ(manifest.related_applications.size(), 0u);
+    EXPECT_TRUE(manifest.IsEmpty());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("Manifest parsing error: 'platform' is a required field, "
+              "related application ignored.",
+              errors()[0]);
+  }
+
+  // If invalid platform, application is ignored.
+  {
+    Manifest manifest = ParseManifest(
+        "{ \"related_applications\": [{\"platform\": 123}]}");
+    EXPECT_EQ(manifest.related_applications.size(), 0u);
+    EXPECT_TRUE(manifest.IsEmpty());
+    EXPECT_EQ(2u, GetErrorCount());
+    EXPECT_EQ(
+        "Manifest parsing error: property 'platform' ignored, type string "
+        "expected.",
+        errors()[0]);
+    EXPECT_EQ("Manifest parsing error: 'platform' is a required field, "
+              "related application ignored.",
+              errors()[1]);
+  }
+
+  // If missing platform, application is ignored.
+  {
+    Manifest manifest = ParseManifest(
+        "{ \"related_applications\": [{\"id\": \"foo\"}]}");
+    EXPECT_EQ(manifest.related_applications.size(), 0u);
+    EXPECT_TRUE(manifest.IsEmpty());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("Manifest parsing error: 'platform' is a required field, "
+              "related application ignored.",
+              errors()[0]);
+  }
+
+  // If missing id and url, application is ignored.
+  {
+    Manifest manifest = ParseManifest(
+        "{ \"related_applications\": [{\"platform\": \"play\"}]}");
+    EXPECT_EQ(manifest.related_applications.size(), 0u);
+    EXPECT_TRUE(manifest.IsEmpty());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("Manifest parsing error: one of 'url' or 'id' is required, "
+              "related application ignored.",
+              errors()[0]);
+  }
+
+  // Valid application, with url.
+  {
+    Manifest manifest = ParseManifest(
+        "{ \"related_applications\": ["
+        "{\"platform\": \"play\", \"url\": \"http://www.foo.com\"}]}");
+    EXPECT_EQ(manifest.related_applications.size(), 1u);
+    EXPECT_TRUE(EqualsASCII(manifest.related_applications[0].platform.string(),
+                            "play"));
+    EXPECT_EQ(manifest.related_applications[0].url.spec(),
+              "http://www.foo.com/");
+    EXPECT_FALSE(manifest.IsEmpty());
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Valid application, with id.
+  {
+    Manifest manifest = ParseManifest(
+        "{ \"related_applications\": ["
+        "{\"platform\": \"itunes\", \"id\": \"foo\"}]}");
+    EXPECT_EQ(manifest.related_applications.size(), 1u);
+    EXPECT_TRUE(EqualsASCII(manifest.related_applications[0].platform.string(),
+                            "itunes"));
+    EXPECT_TRUE(EqualsASCII(manifest.related_applications[0].id.string(),
+                            "foo"));
+    EXPECT_FALSE(manifest.IsEmpty());
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // All valid applications are in list.
+  {
+    Manifest manifest = ParseManifest(
+        "{ \"related_applications\": ["
+        "{\"platform\": \"play\", \"id\": \"foo\"},"
+        "{\"platform\": \"itunes\", \"id\": \"bar\"}]}");
+    EXPECT_EQ(manifest.related_applications.size(), 2u);
+    EXPECT_TRUE(EqualsASCII(manifest.related_applications[0].platform.string(),
+                            "play"));
+    EXPECT_TRUE(EqualsASCII(manifest.related_applications[0].id.string(),
+                            "foo"));
+    EXPECT_TRUE(EqualsASCII(manifest.related_applications[1].platform.string(),
+                            "itunes"));
+    EXPECT_TRUE(EqualsASCII(manifest.related_applications[1].id.string(),
+                            "bar"));
+    EXPECT_FALSE(manifest.IsEmpty());
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Two invalid applications and one valid. Only the valid application should
+  // be in the list.
+  {
+    Manifest manifest = ParseManifest(
+        "{ \"related_applications\": ["
+        "{\"platform\": \"itunes\"},"
+        "{\"platform\": \"play\", \"id\": \"foo\"},"
+        "{}]}");
+    EXPECT_EQ(manifest.related_applications.size(), 1u);
+    EXPECT_TRUE(EqualsASCII(manifest.related_applications[0].platform.string(),
+                            "play"));
+    EXPECT_TRUE(EqualsASCII(manifest.related_applications[0].id.string(),
+                            "foo"));
+    EXPECT_FALSE(manifest.IsEmpty());
+    EXPECT_EQ(2u, GetErrorCount());
+    EXPECT_EQ("Manifest parsing error: one of 'url' or 'id' is required, "
+              "related application ignored.",
+              errors()[0]);
+    EXPECT_EQ("Manifest parsing error: 'platform' is a required field, "
+              "related application ignored.",
+              errors()[1]);
+  }
+}
+
+TEST_F(ManifestParserTest, ParsePreferRelatedApplicationsParseRules) {
+  // Smoke test.
+  {
+    Manifest manifest =
+        ParseManifest("{ \"prefer_related_applications\": true }");
+    EXPECT_TRUE(manifest.prefer_related_applications);
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Don't parse if the property isn't a boolean.
+  {
+    Manifest manifest =
+        ParseManifest("{ \"prefer_related_applications\": {} }");
+    EXPECT_FALSE(manifest.prefer_related_applications);
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(
+        "Manifest parsing error: property 'prefer_related_applications' "
+        "ignored, type boolean expected.",
+        errors()[0]);
+  }
+  {
+    Manifest manifest = ParseManifest(
+        "{ \"prefer_related_applications\": \"true\" }");
+    EXPECT_FALSE(manifest.prefer_related_applications);
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(
+        "Manifest parsing error: property 'prefer_related_applications' "
+        "ignored, type boolean expected.",
+        errors()[0]);
+  }
+  {
+    Manifest manifest = ParseManifest("{ \"prefer_related_applications\": 1 }");
+    EXPECT_FALSE(manifest.prefer_related_applications);
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(
+        "Manifest parsing error: property 'prefer_related_applications' "
+        "ignored, type boolean expected.",
+        errors()[0]);
+  }
+
+  // "False" should set the boolean false without throwing errors.
+  {
+    Manifest manifest =
+        ParseManifest("{ \"prefer_related_applications\": false }");
+    EXPECT_FALSE(manifest.prefer_related_applications);
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+}
+
 TEST_F(ManifestParserTest, GCMSenderIDParseRules) {
   // Smoke test.
   {
