@@ -47,6 +47,7 @@ source_set("browser") {
       "//components/onc",
       "//components/storage_monitor",
       "//components/update_client",
+      "//components/variations",
       "//crypto:platform",
       "//device/bluetooth",
       "//device/core",

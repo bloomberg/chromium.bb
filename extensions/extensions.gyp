@@ -132,6 +132,7 @@
         '../components/components.gyp:sessions_content',
         '../components/components.gyp:storage_monitor',
         '../components/components.gyp:ui_zoom',
+        '../components/components.gyp:variations',
         '../components/components.gyp:web_cache_browser',
         '../components/components.gyp:web_modal',
         '../content/content.gyp:content_browser',

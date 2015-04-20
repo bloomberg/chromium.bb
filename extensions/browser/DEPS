@@ -6,6 +6,7 @@ include_rules = [
   "+components/storage_monitor",
   "+components/ui/zoom",
   "+components/update_client",
+  "+components/variations",
   "+components/web_cache",
   "+components/web_modal",
   "+content/public/browser",
