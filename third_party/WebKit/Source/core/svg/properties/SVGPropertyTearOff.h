@@ -32,6 +32,7 @@
 #define SVGPropertyTearOff_h
 
 #include "core/dom/QualifiedName.h"
+#include "core/svg/SVGElement.h"
 #include "core/svg/properties/SVGProperty.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"

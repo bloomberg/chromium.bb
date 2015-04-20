@@ -7,6 +7,7 @@
 
 #include "core/animation/SVGInterpolation.h"
 #include "core/svg/SVGIntegerOptionalInteger.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 

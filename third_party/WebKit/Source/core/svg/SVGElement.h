@@ -24,7 +24,6 @@
 
 #include "core/SVGNames.h"
 #include "core/dom/Element.h"
-#include "core/svg/SVGAnimatedString.h"
 #include "core/svg/SVGParsingError.h"
 #include "core/svg/properties/SVGPropertyInfo.h"
 #include "platform/Timer.h"
@@ -39,6 +38,7 @@ class CSSCursorImageValue;
 class Document;
 class SVGAnimatedPropertyBase;
 class SubtreeLayoutScope;
+class SVGAnimatedString;
 class SVGCursorElement;
 class SVGDocumentExtensions;
 class SVGElement;

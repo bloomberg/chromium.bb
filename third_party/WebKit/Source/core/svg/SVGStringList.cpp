@@ -22,6 +22,8 @@
 #include "core/svg/SVGStringList.h"
 
 #include "bindings/core/v8/ExceptionMessages.h"
+#include "bindings/core/v8/ExceptionState.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "wtf/text/StringBuilder.h"
