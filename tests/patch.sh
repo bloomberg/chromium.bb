@@ -24,7 +24,7 @@ setup_gitsvn
   export GIT_EDITOR=$(which true)
 
   test_expect_success "upload succeeds (needs a server running on localhost)" \
-    "$GIT_CL upload -m test master | grep -q 'Issue created'"
+    "$GIT_CL upload --no-oauth2 -m test master | grep -q 'Issue created'"
 
   test_expect_success "git-cl status now knows the issue" \
     "$GIT_CL_STATUS | grep -q 'Issue number'"
@@ -33,7 +33,7 @@ setup_gitsvn
 
   git checkout -q -b test2 master
 
-  test_expect_success "$GIT_CL patch $ISSUE"
+  test_expect_success "$GIT_CL patch $ISSUE --no-oauth2"
 )
 SUCCESS=$?
 

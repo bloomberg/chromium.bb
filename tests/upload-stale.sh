@@ -23,7 +23,7 @@ setup_gitgit
   # Prevent the editor from coming up when you upload.
   export GIT_EDITOR=$(which true)
   test_expect_success "upload succeeds (needs a server running on localhost)" \
-    "$GIT_CL upload -m test | grep -q 'Issue created'"
+    "$GIT_CL upload --no-oauth2 -m test | grep -q 'Issue created'"
 
   test_expect_failure "description shouldn't contain unrelated commits" \
     "$GIT_CL_STATUS | grep -q 'second commit'"

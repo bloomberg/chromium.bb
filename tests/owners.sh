@@ -30,16 +30,16 @@ END
   git add OWNERS PRESUBMIT.py ; git commit -q -m "add OWNERS"
 
   test_expect_success "upload succeeds (needs a server running on localhost)" \
-    "$GIT_CL upload -m test master | grep -q 'Issue created'"
+    "$GIT_CL upload --no-oauth2 -m test master | grep -q 'Issue created'"
 
   test_expect_success "git-cl status has a suggested reviewer" \
     "$GIT_CL_STATUS | grep -q 'R=ben@chromium.org'"
 
   test_expect_failure "git-cl dcommit fails w/ missing LGTM" \
-    "$GIT_CL dcommit -f"
+    "$GIT_CL dcommit -f --no-oauth2"
 
   test_expect_success "git-cl dcommit --tbr succeeds" \
-    "$GIT_CL dcommit --tbr -f | grep -q -- '--tbr was specified'"
+    "$GIT_CL dcommit --tbr -f --no-oauth2 | grep -q -- '--tbr was specified'"
 )
 SUCCESS=$?
 

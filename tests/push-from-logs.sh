@@ -21,7 +21,7 @@ setup_gitgit
   git add test; git commit -q -m "branch work"
 
   test_expect_success "git-cl upload wants a server" \
-    "$GIT_CL upload 2>&1 | grep -q 'You must configure'"
+    "$GIT_CL upload --no-oauth2 2>&1 | grep -q 'You must configure'"
 
   git config rietveld.server localhost:10000
 
@@ -31,7 +31,7 @@ setup_gitgit
   # Prevent the editor from coming up when you upload.
   export EDITOR=$(which true)
   test_expect_success "upload succeeds (needs a server running on localhost)" \
-      "$GIT_CL upload -m test master | \
+      "$GIT_CL upload --no-oauth2 -m test master | \
       grep -q 'Issue created'"
 
   test_expect_success "git-cl status now knows the issue" \
@@ -41,13 +41,13 @@ setup_gitgit
   # Should contain 'branch work' x 2.
   test_expect_success "git-cl status has the right description for the log" \
       "$GIT_CL_STATUS --field desc | [ $( egrep -q '^branch work$' -c ) -eq 2 ]
-  
+
   test_expect_success "git-cl status has the right subject from message" \
       "$GIT_CL_STATUS --field desc | \
       [ $( egrep -q '^test$' --byte-offset) | grep '^0:' ]
 
   test_expect_success "git-cl push ok" \
-    "$GIT_CL push -f"
+    "$GIT_CL push -f --no-oauth2"
 
   git checkout -q master > /dev/null 2>&1
   git pull -q > /dev/null 2>&1

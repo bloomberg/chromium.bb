@@ -27,7 +27,7 @@ TBR=foo"
   git_diff=`git diff HEAD^ | sed -n '/^@@/,$p' | xargs`
 
   test_expect_success "dcommitted code" \
-      "$GIT_CL dcommit -f --bypass-hooks -m 'dcommit'"
+      "$GIT_CL dcommit --no-oauth2 -f --bypass-hooks -m 'dcommit'"
 
   cd ..
 

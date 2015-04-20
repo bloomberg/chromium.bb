@@ -21,7 +21,7 @@ setup_gitsvn
   git add test; git commit -q -m "branch work"
 
   test_expect_success "git-cl upload wants a server" \
-    "$GIT_CL upload 2>&1 | grep -q 'You must configure'"
+    "$GIT_CL upload --no-oauth2 2>&1 | grep -q 'You must configure'"
 
   git config rietveld.server localhost:10000
 
@@ -32,7 +32,7 @@ setup_gitsvn
   export GIT_EDITOR=$(which true)
 
   test_expect_success "upload succeeds (needs a server running on localhost)" \
-    "$GIT_CL upload -m test master | grep -q 'Issue created'"
+    "$GIT_CL upload --no-oauth2 -m test master | grep -q 'Issue created'"
 
   test_expect_success "git-cl status now knows the issue" \
     "$GIT_CL_STATUS | grep -q 'Issue number'"
@@ -46,7 +46,7 @@ setup_gitsvn
        $URL/edit
 
   test_expect_success "git-cl dcommits ok" \
-    "$GIT_CL dcommit -f"
+    "$GIT_CL dcommit -f --no-oauth2"
 
   git checkout -q master
   git svn -q rebase >/dev/null 2>&1

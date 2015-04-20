@@ -111,7 +111,7 @@ def make_auth_config(
   """
   default = lambda val, d: val if val is not None else d
   return AuthConfig(
-      default(use_oauth2, _should_use_oauth2()),
+      default(use_oauth2, True),
       default(save_cookies, True),
       default(use_local_webserver, not _is_headless()),
       default(webserver_port, 8090),
@@ -479,14 +479,6 @@ class Authenticator(object):
 
 
 ## Private functions.
-
-
-def _should_use_oauth2():
-  """Default value for use_oauth2 config option.
-
-  Used to selectively enable OAuth2 by default.
-  """
-  return os.path.exists(os.path.join(DEPOT_TOOLS_DIR, 'USE_OAUTH2'))
 
 
 def _is_headless():

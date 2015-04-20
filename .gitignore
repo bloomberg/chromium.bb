@@ -46,7 +46,3 @@
 /tests/subversion_config/servers
 /tests/svn/
 /tests/svnrepo/
-
-# Ignore "flag file" used by auth.py.
-# TODO(vadimsh): Remove this once OAuth2 is default.
-/USE_OAUTH2

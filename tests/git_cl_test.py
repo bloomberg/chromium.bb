@@ -96,7 +96,6 @@ class TestGitCl(TestCase):
     self.mock(git_cl.upload, 'RealMain', self.fail)
     self.mock(git_cl.watchlists, 'Watchlists', WatchlistsMock)
     self.mock(git_cl.auth, 'get_authenticator_for_host', AuthenticatorMock)
-    self.mock(git_cl.auth, '_should_use_oauth2', lambda: False)
     # It's important to reset settings to not have inter-tests interference.
     git_cl.settings = None
 
@@ -171,13 +170,13 @@ class TestGitCl(TestCase):
       ((['get_or_create_merge_base', 'master', 'master'],),
        'fake_ancestor_sha'),
       ((['git', 'config', 'gerrit.host'],), ''),
+      ((['git', 'config', 'branch.master.rietveldissue'],), ''),
       ] + cls._git_sanity_checks('fake_ancestor_sha', 'master') + [
       ((['git', 'rev-parse', '--show-cdup'],), ''),
       ((['git', 'rev-parse', 'HEAD'],), '12345'),
       ((['git', 'diff', '--name-status', '--no-renames', '-r',
          'fake_ancestor_sha...', '.'],),
         'M\t.gitignore\n'),
-      ((['git', 'config', 'branch.master.rietveldissue'],), ''),
       ((['git', 'config', 'branch.master.rietveldpatchset'],),
        ''),
       ((['git', 'log', '--pretty=format:%s%n%n%b',

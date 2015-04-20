@@ -28,7 +28,7 @@ _EOF
 TBR=foo"
 
   test_expect_success "dcommitted code" \
-      "$GIT_CL dcommit -f --bypass-hooks -m 'dcommit'"
+      "$GIT_CL dcommit --no-oauth2 -f --bypass-hooks -m 'dcommit'"
 
   test_expect_success "post-cl-dcommit hook executed" \
       "git symbolic-ref HEAD | grep -q COMMITTED"
