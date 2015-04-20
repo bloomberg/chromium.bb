@@ -16,6 +16,9 @@
   "bytes": {
     "improvement_direction": "down"
   },
+  "chars/s": {
+    "improvement_direction": "up"
+  },
   "Celsius": {
     "improvement_direction": "down",
     "why": "Colder machines are faster."
@@ -113,6 +116,9 @@
     "improvement_direction": "down",
     "why": "Used in many Telemetry measurements. Fewer ms of time means faster."
   },
+  "ms/1000 elements": {
+    "improvement_direction": "down"
+  },
   "milliseconds": {
     "improvement_direction": "down",
     "why": "Synonym for ms."
@@ -193,6 +199,9 @@
   },
   "tasks": {
     "improvement_direction": "down"
+  },
+  "tokens/s": {
+    "improvement_direction": "up"
   },
   "us": {
     "improvement_direction": "down"
