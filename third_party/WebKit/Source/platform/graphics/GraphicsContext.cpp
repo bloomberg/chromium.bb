@@ -1212,6 +1212,45 @@ void GraphicsContext::fillRoundedRect(const FloatRoundedRect& rrect, const Color
     drawRRect(rrect, paint);
 }
 
+namespace {
+
+bool isSimpleDRRect(const FloatRoundedRect& outer, const FloatRoundedRect& inner)
+{
+    // A DRRect is "simple" (i.e. can be drawn as a rrect stroke) if
+    //   1) all sides have the same width
+    const FloatSize strokeSize = inner.rect().minXMinYCorner() - outer.rect().minXMinYCorner();
+    if (!WebCoreFloatNearlyEqual(strokeSize.aspectRatio(), 1)
+        || !WebCoreFloatNearlyEqual(strokeSize.width(), outer.rect().maxX() - inner.rect().maxX())
+        || !WebCoreFloatNearlyEqual(strokeSize.height(), outer.rect().maxY() - inner.rect().maxY()))
+        return false;
+
+    // and
+    //   2) the inner radii are not constrained
+    const FloatRoundedRect::Radii& oRadii = outer.radii();
+    const FloatRoundedRect::Radii& iRadii = inner.radii();
+    if (!WebCoreFloatNearlyEqual(oRadii.topLeft().width() - strokeSize.width(), iRadii.topLeft().width())
+        || !WebCoreFloatNearlyEqual(oRadii.topLeft().height() - strokeSize.height(), iRadii.topLeft().height())
+        || !WebCoreFloatNearlyEqual(oRadii.topRight().width() - strokeSize.width(), iRadii.topRight().width())
+        || !WebCoreFloatNearlyEqual(oRadii.topRight().height() - strokeSize.height(), iRadii.topRight().height())
+        || !WebCoreFloatNearlyEqual(oRadii.bottomRight().width() - strokeSize.width(), iRadii.bottomRight().width())
+        || !WebCoreFloatNearlyEqual(oRadii.bottomRight().height() - strokeSize.height(), iRadii.bottomRight().height())
+        || !WebCoreFloatNearlyEqual(oRadii.bottomLeft().width() - strokeSize.width(), iRadii.bottomLeft().width())
+        || !WebCoreFloatNearlyEqual(oRadii.bottomLeft().height() - strokeSize.height(), iRadii.bottomLeft().height()))
+        return false;
+
+    // We also ignore DRRects with a very thick relative stroke (shapes which are mostly filled by
+    // the stroke): Skia's stroke outline can diverge significantly from the outer/inner contours
+    // in some edge cases, so we fall back to drawDRRect instead.
+    static float kMaxStrokeToSizeRatio = 0.75f;
+    if (2 * strokeSize.width() / outer.rect().width() > kMaxStrokeToSizeRatio
+        || 2 * strokeSize.height() / outer.rect().height() > kMaxStrokeToSizeRatio)
+        return false;
+
+    return true;
+}
+
+} // anonymous namespace
+
 void GraphicsContext::fillDRRect(const FloatRoundedRect& outer,
     const FloatRoundedRect& inner, const Color& color)
 {
@@ -1219,15 +1258,29 @@ void GraphicsContext::fillDRRect(const FloatRoundedRect& outer,
         return;
     ASSERT(m_canvas);
 
-    if (color == fillColor()) {
-        m_canvas->drawDRRect(outer, inner, immutableState()->fillPaint());
+    if (!isSimpleDRRect(outer, inner)) {
+        if (color == fillColor()) {
+            m_canvas->drawDRRect(outer, inner, immutableState()->fillPaint());
+        } else {
+            SkPaint paint(immutableState()->fillPaint());
+            paint.setColor(color.rgb());
+            m_canvas->drawDRRect(outer, inner, paint);
+        }
+
         return;
     }
 
-    SkPaint paint(immutableState()->fillPaint());
-    paint.setColor(color.rgb());
+    // We can draw this as a stroked rrect.
+    float strokeWidth = inner.rect().x() - outer.rect().x();
+    SkRRect strokeRRect = outer;
+    strokeRRect.inset(strokeWidth / 2, strokeWidth / 2);
 
-    m_canvas->drawDRRect(outer, inner, paint);
+    SkPaint strokePaint(immutableState()->fillPaint());
+    strokePaint.setColor(color.rgb());
+    strokePaint.setStyle(SkPaint::kStroke_Style);
+    strokePaint.setStrokeWidth(strokeWidth);
+
+    m_canvas->drawRRect(strokeRRect, strokePaint);
 }
 
 void GraphicsContext::fillEllipse(const FloatRect& ellipse)
