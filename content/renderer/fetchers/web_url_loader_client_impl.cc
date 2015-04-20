@@ -30,7 +30,10 @@ void WebURLLoaderClientImpl::didReceiveData(
     const char* data,
     int data_length,
     int encoded_data_length) {
-  DCHECK(!completed_);
+  // The AssociatedURLLoader will continue after a load failure.
+  // For example, for an Access Control error.
+  if (completed_)
+    return;
   DCHECK(data_length > 0);
 
   data_.append(data, data_length);
@@ -50,6 +53,10 @@ void WebURLLoaderClientImpl::didFinishLoading(
     blink::WebURLLoader* loader,
     double finishTime,
     int64_t total_encoded_data_length) {
+  // The AssociatedURLLoader will continue after a load failure.
+  // For example, for an Access Control error.
+  if (completed_)
+    return;
   OnLoadCompleteInternal(LOAD_SUCCEEDED);
 }
 

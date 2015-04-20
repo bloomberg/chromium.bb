@@ -248,6 +248,18 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, CORSManifest) {
   EXPECT_TRUE(manifest().IsEmpty());
 
   EXPECT_EQ(0u, console_error_count());
+
+  // The purpose of this second load is to make sure the first load is fully
+  // finished. The first load will fail because of Access Control error but the
+  // underlying Blink loader will continue fetching the file. There is no
+  // reliable way to know when the fetch is finished from the browser test
+  // except by fetching the same file from same origin, making it succeed when
+  // it is actually fully loaded.
+  manifest_url =
+      embedded_test_server()->GetURL("/manifest/dummy-manifest.json").spec();
+  ASSERT_TRUE(content::ExecuteScript(shell()->web_contents(),
+                                     "setManifestTo('" + manifest_url + "')"));
+  GetManifestAndWait();
 }
 
 // If a page's manifest lives in a different origin, it should be accessible if
