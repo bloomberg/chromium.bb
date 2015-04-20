@@ -15,13 +15,13 @@
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
-#include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/browser/plugins_field_trial.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/rappor/rappor_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -364,7 +364,7 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
                           plugin_metadata->identifier(), &plugin_setting,
                           &uses_default_content_setting, &is_managed);
 
-  plugin_setting = PluginsFieldTrial::EffectiveContentSetting(
+  plugin_setting = content_settings::PluginsFieldTrial::EffectiveContentSetting(
       CONTENT_SETTINGS_TYPE_PLUGINS, plugin_setting);
 
   DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);

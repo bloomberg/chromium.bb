@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/website_settings/permission_menu_model.h"
 
-#include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/content_settings/core/browser/plugins_field_trial.h"
 #include "ui/base/l10n/l10n_util.h"
 
 PermissionMenuModel::PermissionMenuModel(
@@ -19,8 +19,9 @@ PermissionMenuModel::PermissionMenuModel(
   ContentSetting effective_default_setting = permission_.default_setting;
 
 #if defined(ENABLE_PLUGINS)
-  effective_default_setting = PluginsFieldTrial::EffectiveContentSetting(
-      permission_.type, permission_.default_setting);
+  effective_default_setting =
+      content_settings::PluginsFieldTrial::EffectiveContentSetting(
+          permission_.type, permission_.default_setting);
 #endif  // defined(ENABLE_PLUGINS)
 
   switch (effective_default_setting) {
@@ -99,8 +100,8 @@ bool PermissionMenuModel::IsCommandIdChecked(int command_id) const {
   ContentSetting setting = permission_.setting;
 
 #if defined(ENABLE_PLUGINS)
-  setting = PluginsFieldTrial::EffectiveContentSetting(permission_.type,
-                                                       permission_.setting);
+  setting = content_settings::PluginsFieldTrial::EffectiveContentSetting(
+      permission_.type, permission_.setting);
 #endif  // defined(ENABLE_PLUGINS)
 
   return setting == command_id;

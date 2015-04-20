@@ -5,37 +5,55 @@
 {
   'targets': [
     {
-      # GN version: //components/plugins/renderer
-      'target_name': 'plugins_renderer',
+      # GN version: //components/plugins/common
+      'target_name': 'plugins_common',
       'type': 'static_library',
-      'dependencies': [
-        '../gin/gin.gyp:gin',
-        '../skia/skia.gyp:skia',
-        '../third_party/WebKit/public/blink.gyp:blink',
-        '../third_party/re2/re2.gyp:re2',
-        '../v8/tools/gyp/v8.gyp:v8',
-      ],
       'include_dirs': [
         '..',
       ],
       'sources': [
-        # Note: sources list duplicated in GN build.
-        'plugins/renderer/loadable_plugin_placeholder.cc',
-        'plugins/renderer/loadable_plugin_placeholder.h',
-        'plugins/renderer/plugin_placeholder.cc',
-        'plugins/renderer/plugin_placeholder.h',
-        'plugins/renderer/webview_plugin.cc',
-        'plugins/renderer/webview_plugin.h',
-      ],
-      'conditions' : [
-        ['OS=="android"', {
-          'sources': [
-            # Note: sources list duplicated in GN build.
-            'plugins/renderer/mobile_youtube_plugin.cc',
-            'plugins/renderer/mobile_youtube_plugin.h',
-          ]
-        }],
+        'plugins/common/plugins_switches.cc',
+        'plugins/common/plugins_switches.h',
       ],
     },
-  ]
+  ],
+  'conditions': [
+    ['OS!="ios"', {
+      'targets': [
+        {
+          # GN version: //components/plugins/renderer
+          'target_name': 'plugins_renderer',
+          'type': 'static_library',
+          'dependencies': [
+            '../gin/gin.gyp:gin',
+            '../skia/skia.gyp:skia',
+            '../third_party/WebKit/public/blink.gyp:blink',
+            '../third_party/re2/re2.gyp:re2',
+            '../v8/tools/gyp/v8.gyp:v8',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            # Note: sources list duplicated in GN build.
+            'plugins/renderer/loadable_plugin_placeholder.cc',
+            'plugins/renderer/loadable_plugin_placeholder.h',
+            'plugins/renderer/plugin_placeholder.cc',
+            'plugins/renderer/plugin_placeholder.h',
+            'plugins/renderer/webview_plugin.cc',
+            'plugins/renderer/webview_plugin.h',
+          ],
+          'conditions' : [
+            ['OS=="android"', {
+              'sources': [
+                # Note: sources list duplicated in GN build.
+                'plugins/renderer/mobile_youtube_plugin.cc',
+                'plugins/renderer/mobile_youtube_plugin.h',
+              ]
+            }],
+          ],
+        },
+      ],
+    }],
+  ],
 }

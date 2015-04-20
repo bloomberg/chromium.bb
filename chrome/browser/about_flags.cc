@@ -29,6 +29,7 @@
 #include "components/metrics/metrics_hashes.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/omnibox/omnibox_switches.h"
+#include "components/plugins/common/plugins_switches.h"
 #include "components/proximity_auth/switches.h"
 #include "components/search/search_switches.h"
 #include "content/public/browser/user_metrics.h"
@@ -2089,8 +2090,8 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_PLUGIN_POWER_SAVER_NAME,
     IDS_FLAGS_ENABLE_PLUGIN_POWER_SAVER_DESCRIPTION,
     kOsDesktop,
-    ENABLE_DISABLE_VALUE_TYPE(switches::kEnablePluginPowerSaver,
-                              switches::kDisablePluginPowerSaver)
+    ENABLE_DISABLE_VALUE_TYPE(plugins::switches::kEnablePluginPowerSaver,
+                              plugins::switches::kDisablePluginPowerSaver)
   },
 #endif
 #if defined(OS_CHROMEOS)

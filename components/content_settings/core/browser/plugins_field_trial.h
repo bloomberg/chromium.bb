@@ -2,27 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PLUGINS_PLUGINS_FIELD_TRIAL_H_
-#define CHROME_BROWSER_PLUGINS_PLUGINS_FIELD_TRIAL_H_
+#ifndef COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_H_
+#define COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_H_
 
 #include "base/macros.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 
+namespace content_settings {
+
 // This class manages the Plugins field trials.
 class PluginsFieldTrial {
  public:
+  static const char kFieldTrialName[];
+
   // Returns the effective content setting for plugins. Passes non-plugin
   // content settings through without modification.
   static ContentSetting EffectiveContentSetting(ContentSettingsType type,
                                                 ContentSetting setting);
 
-  // Returns true if the Plugin Power Saver feature is forced on, overriding
-  // the user's Content Settings.
-  static bool IsForcePluginPowerSaverEnabled();
+  // Returns true if the Plugin Power Saver feature is enabled.
+  static bool IsPluginPowerSaverEnabled();
+
+  // Get the default plugins content setting based on field trials/flags.
+  static ContentSetting GetDefaultPluginsContentSetting();
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PluginsFieldTrial);
 };
 
-#endif  // CHROME_BROWSER_PLUGINS_PLUGINS_FIELD_TRIAL_H_
+}  // namespace content_settings
+
+#endif  // COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_H_

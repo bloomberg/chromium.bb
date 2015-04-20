@@ -245,6 +245,7 @@ source_set("browser") {
       "//components/keyed_service/content",
       "//components/navigation_interception",
       "//components/password_manager/content/browser",
+      "//components/plugins/common",
       "//components/precache/content",
       "//components/sessions:sessions_content",
       "//components/storage_monitor",

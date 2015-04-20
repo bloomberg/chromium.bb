@@ -42,7 +42,6 @@ cr.define('options', function() {
    */
   function ContentSettings() {
     this.activeNavTab = null;
-    this.pluginsAllowOptionDisabled = false;
     Page.call(this, 'content',
               loadTimeData.getString('contentSettingsPageTabTitle'),
               'content-settings-page');
@@ -171,10 +170,6 @@ cr.define('options', function() {
         indicators[i].handlePrefChange(event);
       }
     }
-
-    if (this.pluginsAllowOptionDisabled) {
-      $('plugins-allow-radio').disabled = true;
-    }
   };
 
   /**
@@ -295,14 +290,6 @@ cr.define('options', function() {
    */
   ContentSettings.showMediaPepperFlashExceptionsLink = function(show) {
     $('media-pepper-flash-exceptions').hidden = !show;
-  };
-
-  /**
-   * Disable the 'allow' option in the Plugins section.
-   */
-  ContentSettings.disablePluginsAllowOption = function() {
-    this.pluginsAllowOptionDisabled = true;
-    $('plugins-allow-radio').disabled = true;
   };
 
   /**

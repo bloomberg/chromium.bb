@@ -34,12 +34,15 @@ static_library("browser") {
     "host_content_settings_map.cc",
     "host_content_settings_map.h",
     "local_shared_objects_counter.h",
+    "plugins_field_trial.cc",
+    "plugins_field_trial.h",
   ]
 
   deps = [
     "//base",
     "//base:prefs",
     "//components/content_settings/core/common",
+    "//components/plugins/common",
     "//components/pref_registry:pref_registry",
     "//net",
     "//url",
@@ -56,6 +59,7 @@ source_set("unit_tests") {
     "content_settings_provider_unittest.cc",
     "content_settings_rule_unittest.cc",
     "content_settings_utils_unittest.cc",
+    "plugins_field_trial_unittest.cc",
   ]
 
   deps = [

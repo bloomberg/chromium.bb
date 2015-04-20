@@ -14,6 +14,7 @@
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
         'content_settings_core_common',
+        'plugins_common',
         'pref_registry',
       ],
       'variables': { 'enable_wexit_time_destructors': 1, },
@@ -52,6 +53,8 @@
         'content_settings/core/browser/host_content_settings_map.cc',
         'content_settings/core/browser/host_content_settings_map.h',
         'content_settings/core/browser/local_shared_objects_counter.h',
+        'content_settings/core/browser/plugins_field_trial.cc',
+        'content_settings/core/browser/plugins_field_trial.h',
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],
