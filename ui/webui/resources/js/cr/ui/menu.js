@@ -221,12 +221,15 @@ cr.define('cr.ui', function() {
         case 'Enter':
         case 'U+0020': // Space
           if (item) {
+            // Store |contextElement| since it'll be removed when handling the
+            // 'activate' event.
+            var contextElement = this.contextElement;
             var activationEvent = cr.doc.createEvent('Event');
             activationEvent.initEvent('activate', true, true);
             activationEvent.originalEvent = e;
             if (item.dispatchEvent(activationEvent)) {
               if (item.command)
-                item.command.execute();
+                item.command.execute(contextElement);
             }
           }
           return true;

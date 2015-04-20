@@ -1018,10 +1018,12 @@ function computeParentFolderForNewItem() {
 
 /**
  * Callback for rename folder and edit command. This starts editing for
- * selected item.
+ * the passed in target, or the selected item.
+ * @param {EventTarget=} opt_target The target to start editing. If absent or
+ *     null, the selected item will be edited instead.
  */
-function editSelectedItem() {
-  if (document.activeElement == bmm.tree) {
+function editItem(opt_target) {
+  if ((opt_target || document.activeElement) == bmm.tree) {
     bmm.tree.selectedItem.editing = true;
   } else {
     var li = bmm.list.getListItem(bmm.list.selectedItem);
@@ -1306,7 +1308,7 @@ function handleCommand(e) {
       target = bmm.tree;
     case 'delete-command':
       recordUserAction('Delete');
-      deleteBookmarks(target);
+      deleteBookmarks(target || assertInstanceof(e.target, HTMLElement));
       break;
 
     case 'copy-from-folders-menu-command':
@@ -1346,16 +1348,16 @@ function handleCommand(e) {
       break;
 
     case 'rename-folder-command':
-      editSelectedItem();
+      editItem(assertInstanceof(e.target, HTMLElement));
       break;
 
     case 'rename-folder-from-folders-menu-command':
-      bmm.tree.selectedItem.editing = true;
+      editItem(bmm.tree);
       break;
 
     case 'edit-command':
       recordUserAction('Edit');
-      editSelectedItem();
+      editItem();
       break;
 
     case 'new-folder-from-folders-menu-command':
