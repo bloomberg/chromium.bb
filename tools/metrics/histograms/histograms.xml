@@ -64631,6 +64631,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="HungBrowserTerminated"/>
   <suffix name="KillProcess"/>
   <suffix name="LastWindowClose"/>
+  <suffix name="MessageWindowHung"/>
+  <suffix name="MessageWindowNotFound"/>
+  <suffix name="MessageWindowVanished"/>
   <suffix name="ProcessSingletonIsShuttingDown"/>
   <suffix name="RendezvousToHungBrowser"/>
   <suffix name="SessionEnding"/>
