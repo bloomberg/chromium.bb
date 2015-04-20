@@ -49,6 +49,7 @@ const char* const kContentSettingNames[] = {
   "block",
   "ask",
   "session_only",
+  "detect_important_content"
 };
 static_assert(arraysize(kContentSettingNames) <=
               CONTENT_SETTING_NUM_SETTINGS,

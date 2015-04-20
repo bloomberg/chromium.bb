@@ -24,7 +24,7 @@ var settings = {
   "cookies": "block",
   "images": "allow",
   "javascript": "block",
-  "plugins": "block",
+  "plugins": "detect_important_content",
   "popups": "allow",
   "location": "block",
   "notifications": "block",
