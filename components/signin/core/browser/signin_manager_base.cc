@@ -64,7 +64,18 @@ void SigninManagerBase::Initialize(PrefService* local_state) {
         client_->GetPrefs()->GetString(prefs::kGoogleServicesUsername);
     std::string pref_gaia_id =
         client_->GetPrefs()->GetString(prefs::kGoogleServicesUserAccountId);
-    DCHECK(pref_account_username.empty() || !pref_gaia_id.empty());
+
+    // If kGoogleServicesUserAccountId is empty, then this is either a chromeos
+    // machine or a really old profile on one of the other platforms.  However
+    // in this case the account tracker should have the gaia_id so fetch it
+    // from there.
+    if (!pref_account_username.empty() && pref_gaia_id.empty()) {
+      AccountTrackerService::AccountInfo info =
+          account_tracker_service_->GetAccountInfo(pref_account_username);
+      DCHECK(!info.gaia.empty());
+      pref_gaia_id = info.gaia;
+    }
+
     if (!pref_account_username.empty() && !pref_gaia_id.empty()) {
       account_id = account_tracker_service_->SeedAccountInfo(
           pref_gaia_id, pref_account_username);
