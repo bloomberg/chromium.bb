@@ -319,6 +319,20 @@ def DirectoryIterator(base_path):
       yield os.path.join(root, e)
 
 
+def IteratePaths(end_path):
+  """Generator that iterates down to |end_path| from root /.
+
+  Args:
+    end_path: The destination. If this is a relative path, it will be resolved
+        to absolute path. In all cases, it will be normalized.
+
+  Yields:
+    All the paths gradually constructed from / to |end_path|. For example:
+    IteratePaths("/this/path") yields "/", "/this", and "/this/path".
+  """
+  return reversed(list(IteratePathParents(end_path)))
+
+
 def IteratePathParents(start_path):
   """Generator that iterates through a directory's parents.
 
@@ -327,9 +341,12 @@ def IteratePathParents(start_path):
 
   Yields:
     The passed-in path, along with its parents.  i.e.,
-    IteratePathParents('/usr/local') would yield '/usr/local', '/usr/', and '/'.
+    IteratePathParents('/usr/local') would yield '/usr/local', '/usr', and '/'.
   """
   path = os.path.abspath(start_path)
+  # There's a bug that abspath('//') returns '//'. We need to renormalize it.
+  if path == '//':
+    path = '/'
   yield path
   while path.strip('/'):
     path = os.path.dirname(path)

@@ -14,6 +14,7 @@ import sys
 
 from chromite.cbuildbot import constants
 from chromite.cli import command
+from chromite.lib import bootstrap_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
@@ -390,19 +391,36 @@ class DetermineCheckoutTest(cros_test_lib.MockTempDirTestCase):
     self.RunTest(['a/.git/'], 'a', None,
                  commandline.CHECKOUT_TYPE_UNKNOWN, None)
 
+  def testSdkBootstrap(self):
+    self.rc_mock.AddCmdResult(
+        partial_mock.In('config'), output=constants.CHROMITE_URL)
+    dir_struct = [
+        'a/.git/',
+        'a/sdk_checkouts/1.0.0/.repo',
+        'a/sdk_checkouts/1.0.0/chromite/.git',
+    ]
+    self.RunTest(dir_struct, 'a', 'a',
+                 commandline.CHECKOUT_TYPE_SDK_BOOTSTRAP, None)
+    self.RunTest(dir_struct, 'a/b', 'a',
+                 commandline.CHECKOUT_TYPE_SDK_BOOTSTRAP, None)
+    self.RunTest(dir_struct, 'a/sdk_checkouts', 'a',
+                 commandline.CHECKOUT_TYPE_SDK_BOOTSTRAP, None)
+    self.RunTest(dir_struct, 'a/sdk_checkouts/1.0.0', 'a',
+                 commandline.CHECKOUT_TYPE_SDK_BOOTSTRAP, None)
+    self.RunTest(dir_struct, 'a/sdk_checkouts/1.0.0/chromite', 'a',
+                 commandline.CHECKOUT_TYPE_SDK_BOOTSTRAP, None)
 
-class CacheTest(cros_test_lib.MockTempDirTestCase):
+
+class CacheTest(cros_test_lib.WorkspaceTestCase):
   """Test cache dir specification and finding functionality."""
 
-  REPO_ROOT = '/fake/repo/root'
-  GCLIENT_ROOT = '/fake/gclient/root'
-  SUBMODULE_ROOT = '/fake/submodule/root'
   CACHE_DIR = '/fake/cache/dir'
 
   def setUp(self):
     self.PatchObject(commandline.ArgumentParser, 'ConfigureCacheDir')
     dir_struct = [
         'repo/.repo/',
+        'repo/manifest/',
         'gclient/.gclient',
         'submodule/.git/',
     ]
@@ -411,18 +429,23 @@ class CacheTest(cros_test_lib.MockTempDirTestCase):
     self.gclient_root = os.path.join(self.tempdir, 'gclient')
     self.submodule_root = os.path.join(self.tempdir, 'submodule')
     self.nocheckout_root = os.path.join(self.tempdir, 'nothing')
+    self.CreateBootstrap('1.0.0')
+    self.CreateWorkspace()
+    self.bootstrap_cache = os.path.join(
+        self.bootstrap_path, bootstrap_lib.SDK_CHECKOUTS,
+        commandline.BaseParser.GENERAL_CACHE_DIR)
 
     self.rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
-    self.rc_mock.AddCmdResult(
-        partial_mock.In('config'), output=constants.CHROMIUM_GOB_URL)
     self.cwd_mock = self.PatchObject(os, 'getcwd')
     self.parser = commandline.ArgumentParser(caching=True)
 
-  def _CheckCall(self, expected):
+  def _CheckCall(self, expected, assertFn=None):
     # pylint: disable=E1101
     f = self.parser.ConfigureCacheDir
     self.assertEquals(1, f.call_count)
-    self.assertTrue(f.call_args[0][0].startswith(expected))
+    if not assertFn:
+      assertFn = self.assertStartsWith
+    assertFn(f.call_args[0][0], expected)
 
   def testRepoRoot(self):
     """Test when we are inside a repo checkout."""
@@ -439,6 +462,8 @@ class CacheTest(cros_test_lib.MockTempDirTestCase):
   def testSubmoduleRoot(self):
     """Test when we are inside a git submodule Chrome checkout."""
     self.cwd_mock.return_value = self.submodule_root
+    self.rc_mock.AddCmdResult(
+        partial_mock.In('config'), output=constants.CHROMIUM_GOB_URL)
     self.parser.parse_args([])
     self._CheckCall(self.submodule_root)
 
@@ -453,6 +478,40 @@ class CacheTest(cros_test_lib.MockTempDirTestCase):
     self.cwd_mock.return_value = self.repo_root
     self.parser.parse_args(['--cache-dir', self.CACHE_DIR])
     self._CheckCall(self.CACHE_DIR)
+
+  def testBootstrap(self):
+    self.cwd_mock.return_value = self.bootstrap_path
+    self.rc_mock.AddCmdResult(
+        partial_mock.In('config'), output=constants.CHROMITE_URL)
+    self.parser.parse_args([])
+    self._CheckCall(self.bootstrap_cache, self.assertEquals)
+
+  def testSdkCheckoutsInsideBootstrap(self):
+    self.cwd_mock.return_value = os.path.join(
+        self.bootstrap_path, bootstrap_lib.SDK_CHECKOUTS)
+    self.rc_mock.AddCmdResult(
+        partial_mock.In('config'), output=constants.CHROMITE_URL)
+    self.parser.parse_args([])
+    self._CheckCall(self.bootstrap_cache, self.assertEquals)
+
+  def testSdkInsideBootstrap(self):
+    self.cwd_mock.return_value = os.path.join(
+        self.bootstrap_path, bootstrap_lib.SDK_CHECKOUTS, '1.0.0', 'chromite')
+    self.rc_mock.AddCmdResult(
+        partial_mock.In('config'), output=constants.CHROMITE_URL)
+    self.parser.parse_args([])
+    self._CheckCall(self.bootstrap_cache, self.assertEquals)
+
+  def testWorkspaceWithBootstrap(self):
+    self.cwd_mock.return_value = self.workspace_path
+    self.parser.parse_args([])
+    self._CheckCall(self.bootstrap_cache, self.assertEquals)
+
+  def testWorkspaceWithoutBootstrap(self):
+    self.cwd_mock.return_value = self.workspace_path
+    self.mock_bootstrap_path.return_value = None
+    self.parser.parse_args([])
+    self._CheckCall('/tmp')
 
 
 class ParseArgsTest(cros_test_lib.OutputTestCase):

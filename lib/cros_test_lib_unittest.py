@@ -28,6 +28,24 @@ from chromite.lib import workspace_lib
 Dir = cros_test_lib.Directory
 
 
+class CrosTestCaseTest(cros_test_lib.TestCase):
+  """Test the cros_test_lib.TestCase."""
+
+  def testAssertStartsWith(self):
+    s = "abcdef"
+    prefix = "abc"
+    self.assertStartsWith(s, prefix)
+    prefix = "def"
+    self.assertRaises(AssertionError, self.assertStartsWith, s, prefix)
+
+  def testAssertEndsWith(self):
+    s = "abcdef"
+    suffix = "abc"
+    self.assertRaises(AssertionError, self.assertEndsWith, s, suffix)
+    suffix = "def"
+    self.assertEndsWith(s, suffix)
+
+
 class TruthTableTest(cros_test_lib.TestCase):
   """Test TruthTable functionality."""
 

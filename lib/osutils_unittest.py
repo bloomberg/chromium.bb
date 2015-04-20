@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import collections
 import mock
 import os
 
@@ -314,6 +315,43 @@ class MountTests(cros_test_lib.TestCase):
         if not cleaned:
           cros_build_lib.SudoRunCommand(['umount', '-lf', tempdir],
                                         error_code_ok=True)
+
+
+class IteratePathsTest(cros_test_lib.TestCase):
+  """Test iterating through all segments of a path."""
+
+  def testType(self):
+    """Check that return value is an iterator."""
+    self.assertTrue(isinstance(osutils.IteratePaths('/'), collections.Iterator))
+
+  def testRoot(self):
+    """Test iterating from root directory."""
+    inp = '/'
+    exp = ['/']
+    self.assertEquals(list(osutils.IteratePaths(inp)), exp)
+
+  def testOneDir(self):
+    """Test iterating from a directory in a root directory."""
+    inp = '/abc'
+    exp = ['/', '/abc']
+    self.assertEquals(list(osutils.IteratePaths(inp)), exp)
+
+  def testTwoDirs(self):
+    """Test iterating two dirs down."""
+    inp = '/abc/def'
+    exp = ['/', '/abc', '/abc/def']
+    self.assertEquals(list(osutils.IteratePaths(inp)), exp)
+
+  def testNormalize(self):
+    """Test argument being normalized."""
+    cases = [
+        ('//', ['/']),
+        ('///', ['/']),
+        ('/abc/', ['/', '/abc']),
+        ('/abc//def', ['/', '/abc', '/abc/def']),
+    ]
+    for inp, exp in cases:
+      self.assertEquals(list(osutils.IteratePaths(inp)), exp)
 
 
 class IteratePathParentsTest(cros_test_lib.TestCase):

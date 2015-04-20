@@ -620,6 +620,24 @@ class TestCase(unittest.TestCase):
     if os.path.exists(path):
       raise self.failureException('path exists when it should not: %s' % path)
 
+  def assertStartsWith(self, s, prefix):
+    """Asserts that |s| starts with |prefix|.
+
+    This function should be preferred over assertTrue(s.startswith(prefix)) for
+    it produces better error failure message than the other.
+    """
+    if not s.startswith(prefix):
+      raise self.failureException('%s does not starts with %s' % (s, prefix))
+
+  def assertEndsWith(self, s, suffix):
+    """Asserts that |s| ends with |suffix|.
+
+    This function should be preferred over assertTrue(s.endswith(suffix)) for
+    it produces better error failure message than the other.
+    """
+    if not s.endswith(suffix):
+      raise self.failureException('%s does not starts with %s' % (s, suffix))
+
   def GetSequenceDiff(self, seq1, seq2):
     """Get a string describing the difference between two sequences.
 
@@ -1525,14 +1543,15 @@ class WorkspaceTestCase(MockTempDirTestCase):
     """
     # Create a bootstrap, inside our tempdir.
     self.bootstrap_path = os.path.join(self.tempdir, 'bootstrap')
-    osutils.SafeMakedirs(self.bootstrap_path)
+    osutils.SafeMakedirs(os.path.join(self.bootstrap_path, '.git'))
 
     # If a version is provided, fake it's existence in the bootstrap.
     if sdk_version is not None:
-      osutils.SafeMakedirs(
-          bootstrap_lib.ComputeSdkPath(self.bootstrap_path, sdk_version))
+      sdk_path = bootstrap_lib.ComputeSdkPath(self.bootstrap_path, sdk_version)
+      osutils.SafeMakedirs(os.path.join(sdk_path, '.repo'))
+      osutils.SafeMakedirs(os.path.join(sdk_path, 'chromite', '.git'))
 
-    # Fake out workspace lookups to find this path.
+    # Fake out bootstrap lookups to find this path.
     self.mock_bootstrap_path = self.PatchObject(
         bootstrap_lib, 'FindBootstrapPath', return_value=self.bootstrap_path)
 

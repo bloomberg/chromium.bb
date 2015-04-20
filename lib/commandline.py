@@ -24,6 +24,7 @@ import urlparse
 # TODO(build): sort the cbuildbot.constants/lib.constants issue;
 # lib shouldn't have to import from buildbot like this.
 from chromite.cbuildbot import constants
+from chromite.lib import bootstrap_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
@@ -37,6 +38,7 @@ CHECKOUT_TYPE_UNKNOWN = 'unknown'
 CHECKOUT_TYPE_GCLIENT = 'gclient'
 CHECKOUT_TYPE_REPO = 'repo'
 CHECKOUT_TYPE_SUBMODULE = 'submodule'
+CHECKOUT_TYPE_SDK_BOOTSTRAP = 'bootstrap'
 
 
 DEVICE_SCHEME_FILE = 'file'
@@ -96,8 +98,46 @@ class ExecRequiredError(Exception):
     self.cmd = cmd
 
 
+def _IsChromiumGobSubmodule(path):
+  """Return True if |path| is a git submodule from Chromium."""
+  submodule_git = os.path.join(path, '.git')
+  return git.IsSubmoduleCheckoutRoot(submodule_git, 'origin',
+                                     constants.CHROMIUM_GOB_URL)
+
+
+def _IsSdkBootstrapCheckout(path):
+  """Return True if |path| is an SDK bootstrap.
+
+  A bootstrap is a lone git checkout of chromite. It cannot be managed by repo.
+  Underneath this bootstrap chromite, there are several SDK checkouts, each
+  managed by repo.
+  """
+  submodule_git = os.path.join(path, '.git')
+  if not git.IsSubmoduleCheckoutRoot(submodule_git, 'origin',
+                                     constants.CHROMITE_URL):
+    # Not a git checkout of chromite.
+    return False
+
+  # This could be an SDK under sdk_checkouts or the parent bootstrap.
+  # It'll be an SDK checkout if it has a parent ".repo".
+  if git.FindRepoDir(path):
+    # It is managed by repo, therefore it is a child SDK checkout.
+    return False
+
+  return True
+
+
 def DetermineCheckout(cwd):
   """Gather information on the checkout we are in.
+
+  There are several checkout types, as defined by CHECKOUT_TYPE_XXX variables.
+  This function determines what checkout type |cwd| is in, for example, if |cwd|
+  belongs to a `repo` checkout.
+
+  There is a special case when |cwd| is a child SDK checkout of a bootstrap
+  chromite (e.g. something under chromite/sdk_checkouts/xxx.yyy.zzz/). This
+  case should report that |cwd| belongs to a bootstrap checkout instead of the
+  `repo` checkout of the "xxx.yyy.zzz" child SDK.
 
   Returns:
     A CheckoutInfo object with these attributes:
@@ -108,20 +148,28 @@ def DetermineCheckout(cwd):
   """
   checkout_type = CHECKOUT_TYPE_UNKNOWN
   root, path = None, None
-  for path in osutils.IteratePathParents(cwd):
-    repo_dir = os.path.join(path, '.repo')
-    if os.path.isdir(repo_dir):
-      checkout_type = CHECKOUT_TYPE_REPO
+
+  # Check for SDK bootstrap first because it goes top to bottom.
+  # If we do it bottom to top, we'll hit chromite/sdk_checkouts/*/.repo first
+  # and will wrongly conclude that this is a repo checkout. So we go top down
+  # to visit chromite/ first.
+  for path in osutils.IteratePaths(cwd):
+    if _IsSdkBootstrapCheckout(path):
+      checkout_type = CHECKOUT_TYPE_SDK_BOOTSTRAP
       break
-    gclient_file = os.path.join(path, '.gclient')
-    if os.path.exists(gclient_file):
-      checkout_type = CHECKOUT_TYPE_GCLIENT
-      break
-    submodule_git = os.path.join(path, '.git')
-    if (os.path.isdir(submodule_git) and
-        git.IsSubmoduleCheckoutRoot(cwd, 'origin', constants.CHROMIUM_GOB_URL)):
-      checkout_type = CHECKOUT_TYPE_SUBMODULE
-      break
+  else:
+    for path in osutils.IteratePathParents(cwd):
+      gclient_file = os.path.join(path, '.gclient')
+      if os.path.exists(gclient_file):
+        checkout_type = CHECKOUT_TYPE_GCLIENT
+        break
+      if _IsChromiumGobSubmodule(path):
+        checkout_type = CHECKOUT_TYPE_SUBMODULE
+        break
+      repo_dir = os.path.join(path, '.repo')
+      if os.path.isdir(repo_dir):
+        checkout_type = CHECKOUT_TYPE_REPO
+        break
 
   if checkout_type != CHECKOUT_TYPE_UNKNOWN:
     root = path
@@ -548,7 +596,7 @@ class BaseParser(object):
   DEFAULT_LOG_LEVEL = 'info'
   ALLOW_LOGGING = True
 
-  REPO_CACHE_DIR = '.cache'
+  GENERAL_CACHE_DIR = '.cache'
   CHROME_CACHE_DIR = '.cros_cache'
 
   def __init__(self, **kwargs):
@@ -696,14 +744,25 @@ class BaseParser(object):
   @classmethod
   def FindCacheDir(cls, _parser, _opts):
     logging.debug('Cache dir lookup.')
-    checkout = DetermineCheckout(os.getcwd())
+    cwd = os.getcwd()
+    checkout = DetermineCheckout(cwd)
     path = None
     if checkout.type == CHECKOUT_TYPE_REPO:
-      path = os.path.join(checkout.root, cls.REPO_CACHE_DIR)
+      path = os.path.join(checkout.root, cls.GENERAL_CACHE_DIR)
+    elif checkout.type == CHECKOUT_TYPE_SDK_BOOTSTRAP:
+      path = os.path.join(checkout.root, bootstrap_lib.SDK_CHECKOUTS,
+                          cls.GENERAL_CACHE_DIR)
     elif checkout.type in (CHECKOUT_TYPE_GCLIENT, CHECKOUT_TYPE_SUBMODULE):
       path = os.path.join(checkout.root, cls.CHROME_CACHE_DIR)
     elif checkout.type == CHECKOUT_TYPE_UNKNOWN:
-      path = os.path.join(tempfile.gettempdir(), 'chromeos-cache')
+      # We could be in a workspace.
+      if workspace_lib.WorkspacePath(cwd):
+        bootstrap_root = bootstrap_lib.FindBootstrapPath()
+        if bootstrap_root:
+          path = os.path.join(bootstrap_root, bootstrap_lib.SDK_CHECKOUTS,
+                              cls.GENERAL_CACHE_DIR)
+      if not path:
+        path = os.path.join(tempfile.gettempdir(), 'chromeos-cache')
     else:
       raise AssertionError('Unexpected type %s' % checkout.type)
 
