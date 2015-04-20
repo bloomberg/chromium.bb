@@ -64,6 +64,9 @@ class BrowserPolicyConnectorChromeOS
   // Returns the enterprise domain if device is managed.
   std::string GetEnterpriseDomain();
 
+  // Returns the device asset ID if it is set.
+  std::string GetDeviceAssetID();
+
   // Returns the device mode. For ChromeOS this function will return the mode
   // stored in the lockbox, or DEVICE_MODE_CONSUMER if the lockbox has been
   // locked empty, or DEVICE_MODE_UNKNOWN if the device has not been owned yet.

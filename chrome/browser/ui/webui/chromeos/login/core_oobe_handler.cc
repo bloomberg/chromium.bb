@@ -95,6 +95,10 @@ void CoreOobeHandler::DeclareLocalizedValues(
                IDS_ENTERPRISE_DEVICE_REQUISITION_REMORA_PROMPT_TEXT);
   builder->Add("deviceRequisitionSharkPromptText",
                IDS_ENTERPRISE_DEVICE_REQUISITION_SHARK_PROMPT_TEXT);
+
+  // Strings for Asset Identifier shown in version string.
+  builder->Add("assetIdLabel", IDS_OOBE_ASSET_ID_LABEL);
+  builder->Add("noneSpecified", IDS_OOBE_NONE_SPECIFIED);
 }
 
 void CoreOobeHandler::Initialize() {
@@ -366,8 +370,8 @@ void CoreOobeHandler::OnOSVersionLabelTextUpdated(
 }
 
 void CoreOobeHandler::OnEnterpriseInfoUpdated(
-    const std::string& message_text) {
-  CallJS("setEnterpriseInfo", message_text);
+    const std::string& message_text, const std::string& asset_id) {
+  CallJS("setEnterpriseInfo", message_text, asset_id);
 }
 
 void CoreOobeHandler::UpdateLabel(const std::string& id,

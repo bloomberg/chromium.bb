@@ -30,8 +30,8 @@ class VersionInfoUpdater : public policy::CloudPolicyStore::Observer {
         const std::string& os_version_label_text) = 0;
 
     // Called when the enterprise info notice should be updated.
-    virtual void OnEnterpriseInfoUpdated(
-        const std::string& enterprise_info) = 0;
+    virtual void OnEnterpriseInfoUpdated(const std::string& enterprise_info,
+                                         const std::string& asset_id) = 0;
   };
 
   explicit VersionInfoUpdater(Delegate* delegate);
@@ -55,8 +55,9 @@ class VersionInfoUpdater : public policy::CloudPolicyStore::Observer {
   // Check and update enterprise domain.
   void UpdateEnterpriseInfo();
 
-  // Set enterprise domain name.
-  void SetEnterpriseInfo(const std::string& domain_name);
+  // Set enterprise domain name and device asset ID.
+  void SetEnterpriseInfo(const std::string& domain_name,
+                         const std::string& asset_id);
 
   // Creates a serial number string.
   void UpdateSerialNumberInfo();

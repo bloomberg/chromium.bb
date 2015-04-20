@@ -1379,6 +1379,12 @@ Press any key to continue exploring.
   <message name="IDS_OOBE_LANGUAGE_SELECTION_MSG" desc="Chrome OS OOBE: label for language selection dropdown">
     What is your language?
   </message>
+  <message name="IDS_OOBE_ASSET_ID_LABEL" desc="Chrome OS OOBE: label for asset identifier.">
+    ID: <ph name="ASSET_ID">$1<ex>None specified</ex></ph>
+  </message>
+  <message name="IDS_OOBE_NONE_SPECIFIED" desc="Chrome OS OOBE: indicates that asset identifier has not specified.">
+    None specified
+  </message>
   <message name="IDS_NETWORK_SELECTION_SELECT" desc="Label for network selection dropdown">
     Select a network
   </message>

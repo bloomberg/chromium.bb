@@ -244,6 +244,16 @@ std::string BrowserPolicyConnectorChromeOS::GetEnterpriseDomain() {
   return install_attributes_ ? install_attributes_->GetDomain() : std::string();
 }
 
+std::string BrowserPolicyConnectorChromeOS::GetDeviceAssetID() {
+  if (device_cloud_policy_manager_) {
+    const enterprise_management::PolicyData* policy =
+        device_cloud_policy_manager_->device_store()->policy();
+    if (policy && policy->has_annotated_asset_id())
+      return policy->annotated_asset_id();
+  }
+  return std::string();
+}
+
 DeviceMode BrowserPolicyConnectorChromeOS::GetDeviceMode() {
   return install_attributes_ ? install_attributes_->GetMode()
                              : DEVICE_MODE_NOT_SET;

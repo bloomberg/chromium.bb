@@ -120,17 +120,19 @@ void VersionInfoUpdater::UpdateVersionLabel() {
 void VersionInfoUpdater::UpdateEnterpriseInfo() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  SetEnterpriseInfo(connector->GetEnterpriseDomain());
+  SetEnterpriseInfo(connector->GetEnterpriseDomain(),
+                    connector->GetDeviceAssetID());
 }
 
-void VersionInfoUpdater::SetEnterpriseInfo(const std::string& domain_name) {
+void VersionInfoUpdater::SetEnterpriseInfo(const std::string& domain_name,
+                                           const std::string& asset_id) {
   // Update the notification about device status reporting.
   if (delegate_ && !domain_name.empty()) {
     std::string enterprise_info;
     enterprise_info = l10n_util::GetStringFUTF8(
         IDS_DEVICE_OWNED_BY_NOTICE,
         base::UTF8ToUTF16(domain_name));
-    delegate_->OnEnterpriseInfoUpdated(enterprise_info);
+    delegate_->OnEnterpriseInfoUpdated(enterprise_info, asset_id);
   }
 }
 

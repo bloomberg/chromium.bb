@@ -230,8 +230,8 @@ cr.define('cr.ui', function() {
    * If the text is empty, the entire notification will be hidden.
    * @param {string} messageText The message text.
    */
-  Oobe.setEnterpriseInfo = function(messageText) {
-    DisplayManager.setEnterpriseInfo(messageText);
+  Oobe.setEnterpriseInfo = function(messageText, assetId) {
+    DisplayManager.setEnterpriseInfo(messageText, assetId);
   };
 
   /**

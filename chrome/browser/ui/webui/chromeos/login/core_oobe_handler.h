@@ -53,7 +53,8 @@ class CoreOobeHandler : public BaseScreenHandler,
   // VersionInfoUpdater::Delegate implementation:
   void OnOSVersionLabelTextUpdated(
       const std::string& os_version_label_text) override;
-  void OnEnterpriseInfoUpdated(const std::string& message_text) override;
+  void OnEnterpriseInfoUpdated(const std::string& message_text,
+                               const std::string& asset_id) override;
 
   // Show or hide OOBE UI.
   void ShowOobeUI(bool show);

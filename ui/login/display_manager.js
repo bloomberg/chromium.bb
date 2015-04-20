@@ -1041,15 +1041,21 @@ cr.define('cr.ui.login', function() {
   };
 
   /**
-   * Sets the text content of the enterprise info message.
+   * Sets the text content of the enterprise info message and asset ID.
    * @param {string} messageText The message text.
+   * @param {string} assetId The device asset ID.
    */
-  DisplayManager.setEnterpriseInfo = function(messageText) {
+  DisplayManager.setEnterpriseInfo = function(messageText, assetId) {
     $('newgaia-offline-login').enterpriseInfo = messageText;
     $('enterprise-info-message').textContent = messageText;
     if (messageText) {
       $('enterprise-info').hidden = false;
     }
+
+    var assetIdValue =
+        ((assetId == "") ? loadTimeData.getString('noneSpecified') : assetId);
+    $('asset-id').textContent =
+        loadTimeData.getStringF('assetIdLabel', assetIdValue);
   };
 
   /**
