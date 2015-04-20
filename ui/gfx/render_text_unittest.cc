@@ -70,6 +70,7 @@ void SetRTL(bool rtl) {
   EXPECT_EQ(rtl, base::i18n::IsRTL());
 }
 
+// TODO(asvitkine): RenderTextMac cursor movements. http://crbug.com/131618
 #if !defined(OS_MACOSX)
 // Ensure cursor movement in the specified |direction| yields |expected| values.
 void RunMoveCursorLeftRightTest(RenderText* render_text,
@@ -349,7 +350,7 @@ TEST_F(RenderTextTest, ApplyStyles) {
   expected_underline.push_back(std::pair<size_t, bool>(6, false));
   EXPECT_TRUE(render_text->styles()[UNDERLINE].EqualsForTesting(
       expected_underline));
-#endif  // OS_MACOSX
+#endif  // !defined(OS_MACOSX)
 }
 
 TEST_F(RenderTextTest, AppendTextKeepsStyles) {
@@ -385,9 +386,6 @@ TEST_F(RenderTextTest, AppendTextKeepsStyles) {
       render_text->styles()[UNDERLINE].EqualsForTesting(expected_style));
 }
 
-// TODO(asvitkine): Cursor movements tests disabled on Mac because RenderTextMac
-//                  does not implement this yet. http://crbug.com/131618
-#if !defined(OS_MACOSX)
 void TestVisualCursorMotionInObscuredField(RenderText* render_text,
                                            const base::string16& text,
                                            bool select) {
@@ -416,6 +414,8 @@ void TestVisualCursorMotionInObscuredField(RenderText* render_text,
   EXPECT_EQ(SelectionModel(0, CURSOR_BACKWARD), render_text->selection_model());
 }
 
+// TODO(asvitkine): RenderTextMac cursor movements. http://crbug.com/131618
+#if !defined(OS_MACOSX)
 TEST_F(RenderTextTest, ObscuredText) {
   const base::string16 seuss = ASCIIToUTF16("hop on pop");
   const base::string16 no_seuss = ASCIIToUTF16("**********");
@@ -478,6 +478,7 @@ TEST_F(RenderTextTest, ObscuredText) {
     TestVisualCursorMotionInObscuredField(render_text.get(), text, true);
   }
 }
+#endif  // !defined(OS_MACOSX)
 
 TEST_F(RenderTextTest, RevealObscuredText) {
   const base::string16 seuss = ASCIIToUTF16("hop on pop");
@@ -553,6 +554,8 @@ TEST_F(RenderTextTest, RevealObscuredText) {
   EXPECT_EQ(valid_expect_5_and_6, render_text->GetDisplayText());
 }
 
+// TODO(PORT): Fails for RenderTextMac.
+#if !defined(OS_MACOSX)
 TEST_F(RenderTextTest, ElidedText) {
   // TODO(skanuj) : Add more test cases for following
   // - RenderText styles.
@@ -641,6 +644,7 @@ TEST_F(RenderTextTest, ElidedObscuredText) {
   EXPECT_EQ(WideToUTF16(L"abcdef"), render_text->text());
   EXPECT_EQ(WideToUTF16(L"**\x2026"), render_text->GetDisplayText());
 }
+#endif  // !defined(OS_MACOSX)
 
 TEST_F(RenderTextTest, ElidedEmail) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
@@ -710,6 +714,8 @@ TEST_F(RenderTextTest, TruncatedObscuredText) {
   EXPECT_EQ(WideToUTF16(L"**\x2026"), render_text->GetDisplayText());
 }
 
+// TODO(asvitkine): RenderTextMac cursor movements. http://crbug.com/131618
+#if !defined(OS_MACOSX)
 TEST_F(RenderTextTest, TruncatedCursorMovementLTR) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->set_truncate_length(2);
@@ -765,6 +771,7 @@ TEST_F(RenderTextTest, TruncatedCursorMovementRTL) {
   expected.push_back(SelectionModel(0, CURSOR_BACKWARD));
   RunMoveCursorLeftRightTest(render_text.get(), expected, CURSOR_RIGHT);
 }
+#endif  // !defined(OS_MACOSX)
 
 TEST_F(RenderTextTest, GetDisplayTextDirection) {
   struct {
@@ -819,6 +826,8 @@ TEST_F(RenderTextTest, GetDisplayTextDirection) {
   EXPECT_EQ(render_text->GetDisplayTextDirection(), base::i18n::RIGHT_TO_LEFT);
 }
 
+// TODO(asvitkine): RenderTextMac cursor movements. http://crbug.com/131618
+#if !defined(OS_MACOSX)
 TEST_F(RenderTextTest, MoveCursorLeftRightInLtr) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
 
@@ -966,10 +975,6 @@ TEST_F(RenderTextTest, MoveCursorLeftRightInRtlLtrRtl) {
   RunMoveCursorLeftRightTest(render_text.get(), expected, CURSOR_RIGHT);
 }
 
-// TODO(xji): temporarily disable in platform Win since the complex script
-// characters turned into empty square due to font regression. So, not able
-// to test 2 characters belong to the same grapheme.
-#if defined(OS_LINUX)
 TEST_F(RenderTextTest, MoveCursorLeftRight_ComplexScript) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
 
@@ -993,10 +998,7 @@ TEST_F(RenderTextTest, MoveCursorLeftRight_ComplexScript) {
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, false);
   EXPECT_EQ(0U, render_text->cursor_position());
 }
-#endif
 
-// TODO(ckocagil): Enable for RenderTextHarfBuzz. http://crbug.com/383265
-#if defined(OS_MACOSX)
 TEST_F(RenderTextTest, MoveCursorLeftRight_MeiryoUILigatures) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   // Meiryo UI uses single-glyph ligatures for 'ff' and 'ffi', but each letter
@@ -1010,7 +1012,6 @@ TEST_F(RenderTextTest, MoveCursorLeftRight_MeiryoUILigatures) {
   }
   EXPECT_EQ(6U, render_text->cursor_position());
 }
-#endif  // defined(OS_MACOSX)
 
 TEST_F(RenderTextTest, GraphemePositions) {
   // LTR 2-character grapheme, LTR abc, LTR 2-character grapheme.
@@ -1106,9 +1107,7 @@ TEST_F(RenderTextTest, MidGraphemeSelectionBounds) {
     SCOPED_TRACE(base::StringPrintf("Testing cases[%" PRIuS "]", i));
     render_text->SetText(cases[i]);
     EXPECT_TRUE(render_text->IsValidLogicalIndex(1));
-#if !defined(OS_MACOSX)
     EXPECT_FALSE(render_text->IsValidCursorIndex(1));
-#endif
     EXPECT_TRUE(render_text->SelectRange(Range(2, 1)));
     EXPECT_EQ(Range(2, 1), render_text->selection());
     EXPECT_EQ(1U, render_text->cursor_position());
@@ -1136,6 +1135,7 @@ TEST_F(RenderTextTest, FindCursorPosition) {
     }
   }
 }
+#endif  // !defined(OS_MACOSX)
 
 TEST_F(RenderTextTest, EdgeSelectionModels) {
   // Simple Latin text.
@@ -1214,6 +1214,8 @@ TEST_F(RenderTextTest, SelectAll) {
   EXPECT_EQ(was_rtl, base::i18n::IsRTL());
 }
 
+// TODO(asvitkine): RenderTextMac cursor movements. http://crbug.com/131618
+#if !defined(OS_MACOSX)
 TEST_F(RenderTextTest, MoveCursorLeftRightWithSelection) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(WideToUTF16(L"abc\x05d0\x05d1\x05d2"));
@@ -1253,6 +1255,7 @@ TEST_F(RenderTextTest, MoveCursorLeftRightWithSelection) {
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
   EXPECT_EQ(Range(4), render_text->selection());
 }
+#endif  // !defined(OS_MACOSX)
 
 TEST_F(RenderTextTest, CenteredDisplayOffset) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
@@ -1276,6 +1279,8 @@ TEST_F(RenderTextTest, CenteredDisplayOffset) {
   render_text->SetDisplayRect(display_rect);
   EXPECT_EQ(display_rect.x(), render_text->GetUpdatedCursorBounds().x());
 
+// TODO(asvitkine): RenderTextMac cursor movements. http://crbug.com/131618
+#if !defined(OS_MACOSX)
   // Move the cursor to the end of the text and, by checking the cursor bounds,
   // make sure no empty space is to the right of the text.
   render_text->SetCursorPosition(render_text->text().length());
@@ -1288,11 +1293,9 @@ TEST_F(RenderTextTest, CenteredDisplayOffset) {
   render_text->SetDisplayRect(display_rect);
   EXPECT_EQ(display_rect.right(),
             render_text->GetUpdatedCursorBounds().right());
-}
 #endif  // !defined(OS_MACOSX)
+}
 
-// TODO(xji): Make these work on Windows.
-#if defined(OS_LINUX)
 void MoveLeftRightByWordVerifier(RenderText* render_text,
                                  const wchar_t* str) {
   render_text->SetText(WideToUTF16(str));
@@ -1355,6 +1358,10 @@ void MoveLeftRightByWordVerifier(RenderText* render_text,
   }
 }
 
+// TODO(asvitkine): RenderTextMac cursor movements. http://crbug.com/131618
+#if !defined(OS_MACOSX)
+// TODO(msw): Make these work on Windows.
+#if !defined(OS_WIN)
 TEST_F(RenderTextTest, MoveLeftRightByWordInBidiText) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
 
@@ -1434,6 +1441,7 @@ TEST_F(RenderTextTest, MoveLeftRightByWordInTextWithMultiSpaces) {
   render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, false);
   EXPECT_EQ(0U, render_text->cursor_position());
 }
+#endif  // !defined(OS_WIN)
 
 TEST_F(RenderTextTest, MoveLeftRightByWordInChineseText) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
@@ -1451,7 +1459,7 @@ TEST_F(RenderTextTest, MoveLeftRightByWordInChineseText) {
   render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, false);
   EXPECT_EQ(6U, render_text->cursor_position());
 }
-#endif
+#endif  // !defined(OS_MACOSX)
 
 TEST_F(RenderTextTest, StringSizeSanity) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
@@ -1945,8 +1953,7 @@ TEST_F(RenderTextTest, SelectMultipleWords) {
   EXPECT_TRUE(render_text->selection().is_reversed());
 }
 
-// TODO(asvitkine): Cursor movements tests disabled on Mac because RenderTextMac
-//                  does not implement this yet. http://crbug.com/131618
+// TODO(asvitkine): RenderTextMac cursor movements. http://crbug.com/131618
 #if !defined(OS_MACOSX)
 TEST_F(RenderTextTest, DisplayRectShowsCursorLTR) {
   ASSERT_FALSE(base::i18n::IsRTL());
@@ -2002,6 +2009,7 @@ TEST_F(RenderTextTest, DisplayRectShowsCursorLTR) {
   render_text->SetDisplayRect(Rect(width + 10, 1));
   EXPECT_EQ(width, render_text->GetUpdatedCursorBounds().x());
 }
+#endif  // !defined(OS_MACOSX)
 
 TEST_F(RenderTextTest, DisplayRectShowsCursorRTL) {
   // Set the application default text direction to RTL.
@@ -2062,7 +2070,6 @@ TEST_F(RenderTextTest, DisplayRectShowsCursorRTL) {
   SetRTL(was_rtl);
   EXPECT_EQ(was_rtl, base::i18n::IsRTL());
 }
-#endif  // !defined(OS_MACOSX)
 
 // Changing colors between or inside ligated glyphs should not break shaping.
 TEST_F(RenderTextTest, SelectionKeepsLigatures) {
@@ -2748,7 +2755,8 @@ TEST_F(RenderTextTest, HarfBuzz_UniscribeFallback) {
 // tried. Note this test assumes the font "Arial" doesn't provide a unicode
 // glyph for a particular character, and that there exists a system fallback
 // font which does.
-#if defined(OS_WIN) || defined(OS_MACOSX)
+// TODO(msw): Fallback doesn't find a glyph on Linux.
+#if !defined(OS_LINUX)
 TEST_F(RenderTextTest, HarfBuzz_UnicodeFallback) {
   RenderTextHarfBuzz render_text;
   render_text.SetFontList(FontList("Arial, 12px"));
@@ -2760,7 +2768,7 @@ TEST_F(RenderTextTest, HarfBuzz_UnicodeFallback) {
   ASSERT_EQ(1U, run_list->size());
   EXPECT_EQ(0U, run_list->runs()[0]->CountMissingGlyphs());
 }
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#endif  // !defined(OS_LINUX)
 
 // Ensure that the width reported by RenderText is sufficient for drawing. Draws
 // to a canvas and checks if any pixel beyond the bounding rectangle is colored.
