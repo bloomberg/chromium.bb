@@ -1,7 +1,6 @@
 <link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/polymer/layout.html">
 <link rel="import" href="chrome://resources/polymer/paper-input/paper-input-decorator.html">
-<link rel="import" href="chrome://resources/polymer/paper-button/paper-button.html">
 
 <!--
   A simple input form with a button. Being used for typing email or password.
@@ -38,10 +37,10 @@
              value="{{inputValue}}" required type="{{inputType}}">
     </paper-input-decorator>
     <div horizontal justified layout center reverse>
-      <paper-button raised class="blue-button" on-tap="{{onButtonClicked}}"
-                    self-end>
+      <gaia-paper-button raised class="blue-button"
+          on-tap="{{onButtonClicked}}" self-end tabindex="0">
         {{buttonText}}
-      </paper-button>
+      </gaia-paper-button>
       <content> </content>
     </div>
   </template>

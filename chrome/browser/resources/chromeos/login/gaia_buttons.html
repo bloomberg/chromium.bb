@@ -1,0 +1,22 @@
+<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/core-icon-button/core-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/paper-button/paper-button.html">
+
+<!--
+  Simple paper- and core-icon- buttons which also triggers 'tap' event on keys
+  'Enter' and 'Space'.
+-->
+<polymer-element name="gaia-paper-button" extends="paper-button"
+    on-keydown="onKeyDown">
+  <template>
+    <shadow></shadow>
+  </template>
+</polymer-element>
+
+<polymer-element name="gaia-core-icon-button" extends="core-icon-button"
+    on-keydown="onKeyDown">
+  <template>
+    <shadow></shadow>
+  </template>
+</polymer-element>
+

@@ -2,7 +2,6 @@
 <link rel="import" href="chrome://resources/polymer/polymer/layout.html">
 <link rel="import" href="chrome://resources/polymer/core-animated-pages/core-animated-pages.html">
 <link rel="import" href="chrome://resources/polymer/core-animated-pages/transitions/slide-from-right.html">
-<link rel="import" href="chrome://resources/polymer/core-icon-button/core-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/paper-dialog/paper-action-dialog.html">
 
@@ -34,8 +33,9 @@
 <polymer-element name="offline-gaia" vertical layout attributes="enterpriseInfo">
   <template>
     <link rel="stylesheet" href="offline_gaia.css">
-    <core-icon-button id="backButton" icon="arrow-back" on-tap="{{onBack}}">
-    </core-icon-button>
+    <gaia-core-icon-button id="backButton" icon="arrow-back" on-tap="{{onBack}}"
+        tabindex="0">
+    </gaia-core-icon-button>
     <core-animated-pages id="animatedPages" transitions="slide-from-right"
         on-core-animated-pages-transition-end="{{onTransitionEnd}}" flex>
       <section flex>
@@ -64,14 +64,17 @@
                            buttonText:offlineLoginNextBtn">
             <a href="#" class="newgaia-link"
                 on-tap="{{onForgotPasswordClicked}}"
+                on-keydown="{{onForgotPasswordKeyDown}}"
+                tabindex="0"
                 i18n-content="offlineLoginForgotPasswordBtn">
             </a>
             <paper-action-dialog id="forgotPasswordDlg" autoCloseDisabled
-                backdrop>
+                backdrop on-keydown="{{onKeyDownOnDialog}}">
               <p i18n-content="offlineLoginForgotPasswordDlg"></p>
-              <paper-button affirmative autofocus
+              <gaia-paper-button id="dialogCloseBtn" affirmative autofocus
+                  tabindex="0"
                   i18n-content="offlineLoginCloseBtn">
-              </paper-button>
+              </gaia-paper-button>
             </paper-action-dialog>
           </gaia-input-form>
         </gaia-card>

@@ -2,5 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+<include src="gaia_buttons.js">
 <include src="gaia_input_form.js">
 <include src="offline_gaia.js">

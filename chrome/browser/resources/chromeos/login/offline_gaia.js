@@ -20,6 +20,19 @@ Polymer('offline-gaia', (function() {
       this.$.forgotPasswordDlg.toggle();
     },
 
+    onForgotPasswordKeyDown: function(e) {
+      if (e.keyCode == 13 || e.keyCode == 32)
+        return this.onForgotPasswordClicked();
+    },
+
+    onKeyDownOnDialog: function(e) {
+      if (e.keyCode == 27) {
+        // Esc
+        this.$.forgotPasswordDlg.close();
+        e.preventDefault();
+      }
+    },
+
     ready: function() {
       var emailInput = this.$.emailInput;
       var passwordInput = this.$.passwordInput;

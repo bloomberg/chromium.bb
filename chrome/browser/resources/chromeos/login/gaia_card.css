@@ -31,7 +31,7 @@
   text-decoration: none;
 }
 
-::content /deep/ paper-button.blue-button {
+::content /deep/ gaia-paper-button.blue-button {
   background-color: rgb(66, 133, 244);
   color: rgb(255, 255, 255);
   min-width: 88px
