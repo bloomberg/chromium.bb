@@ -21,7 +21,9 @@ Correct mapping for <print>
 
 Running: commaBetweenStatementsFormatting
 ====== 8< ------
-rebuild(), show(), hasNew ? refresh() : noop();
+rebuild(),
+show(),
+hasNew ? refresh() : noop();
 
 ------ >8 ======
 Correct mapping for <noop>
