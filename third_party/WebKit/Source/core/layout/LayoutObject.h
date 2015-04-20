@@ -750,7 +750,7 @@ public:
 
     bool canContainFixedPositionObjects() const
     {
-        return isLayoutView() || (hasTransformRelatedProperty() && isLayoutBlock()) || isSVGForeignObject();
+        return isLayoutView() || hasTransformRelatedProperty() || isSVGForeignObject();
     }
 
     // Convert the given local point to absolute coordinates
