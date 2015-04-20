@@ -11,8 +11,6 @@
 <script>
 function test()
 {
-    setTimeout(InspectorTest.completeTest.bind(InspectorTest), 2000);
-
     var delegate = new WebInspector.SelectUISourceCodeDialog();
 
     InspectorTest.runTestSuite([
@@ -46,17 +44,20 @@ function test()
         InspectorTest.addResult("filter query: " + query);
         var titleElement = document.createElement("div");
         var subtitleElement = document.createElement("div");
+        var outputs = [];
         for (var i = 0; i < delegate.itemCount(); ++i) {
             delegate.renderItem(i, query, titleElement, subtitleElement);
             if (!subtitleElement.textContent.startsWith("test/"))
                 continue;
-            dumpRenderedElement(titleElement);
-            dumpRenderedElement(subtitleElement);
-            InspectorTest.addResult("--------------------");
+            var text = elementHighlightedText(titleElement);
+            text += "\n" + elementHighlightedText(subtitleElement);
+            outputs.push(text);
         }
+        outputs.sort();
+        InspectorTest.addResult(outputs.join("\n--------------------\n"));
     }
 
-    function dumpRenderedElement(element)
+    function elementHighlightedText(element)
     {
         var text = "";
         for (var i = 0; i < element.childNodes.length; ++i) {
@@ -66,7 +67,7 @@ function test()
             else
                 text += String.sprintf("[%s]", node.textContent);
         }
-        InspectorTest.addResult(text);
+        return text;
     }
 }
 </script>
