@@ -19,7 +19,7 @@ group("services") {
 
   if (!is_component_build) {
     deps += [
-      "//mojo/services/clipboard",
+      "//components/clipboard",
       "//mojo/services/html_viewer",
       "//mojo/services/kiosk_wm:window_manager",
       "//mojo/services/native_viewport",
@@ -73,7 +73,7 @@ group("apptests") {
   ]
   if (!is_component_build) {
     deps += [
-      "//mojo/services/clipboard:apptests",
+      "//components/clipboard:apptests",
       "//mojo/services/html_viewer:apptests",
       "//mojo/services/network:apptests",
       "//mojo/services/view_manager:apptests",

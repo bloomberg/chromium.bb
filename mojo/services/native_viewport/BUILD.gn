@@ -42,12 +42,12 @@ if (is_android) {
     deps = [
       ":lib",
       "//base",
+      "//components/gles2",
       "//mojo/application",
       "//mojo/common:tracing_impl",
       "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
       "//third_party/mojo_services/src/native_viewport/public/interfaces",
       "//third_party/mojo_services/src/native_viewport/public/cpp:args",
-      "//mojo/services/gles2",
       "//ui/events",
       "//ui/events/platform",
       "//ui/gl",
@@ -77,13 +77,13 @@ source_set("lib") {
 
   deps = [
     "//base",
+    "//components/gles2",
     "//gpu/command_buffer/service",
     "//mojo/application",
     "//mojo/common",
     "//mojo/converters/geometry",
     "//mojo/converters/input_events",
     "//mojo/environment:chromium",
-    "//mojo/services/gles2",
     "//third_party/mojo_services/src/geometry/public/interfaces",
     "//third_party/mojo_services/src/native_viewport/public/interfaces",
     "//ui/events",

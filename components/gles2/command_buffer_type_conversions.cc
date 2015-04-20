@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/gles2/command_buffer_type_conversions.h"
+#include "components/gles2/command_buffer_type_conversions.h"
 
 #include "third_party/mojo_services/src/gpu/public/interfaces/command_buffer.mojom.h"
 

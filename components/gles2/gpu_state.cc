@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 //
 
-#include "mojo/services/gles2/gpu_state.h"
+#include "components/gles2/gpu_state.h"
 
 namespace gles2 {
 

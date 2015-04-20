@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_GLES2_MOJO_BUFFER_BACKING_H_
-#define SERVICES_GLES2_MOJO_BUFFER_BACKING_H_
+#ifndef COMPONENTS_GLES2_MOJO_BUFFER_BACKING_H_
+#define COMPONENTS_GLES2_MOJO_BUFFER_BACKING_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -36,4 +36,4 @@ class MojoBufferBacking : public gpu::BufferBacking {
 
 }  // namespace gles2
 
-#endif  // SERVICES_GLES2_MOJO_BUFFER_BACKING_H_
+#endif  // COMPONENTS_GLES2_MOJO_BUFFER_BACKING_H_

@@ -4,9 +4,9 @@
 
 #include "mojo/services/native_viewport/onscreen_context_provider.h"
 
-#include "mojo/services/gles2/command_buffer_driver.h"
-#include "mojo/services/gles2/command_buffer_impl.h"
-#include "mojo/services/gles2/gpu_state.h"
+#include "components/gles2/command_buffer_driver.h"
+#include "components/gles2/command_buffer_impl.h"
+#include "components/gles2/gpu_state.h"
 
 namespace native_viewport {
 

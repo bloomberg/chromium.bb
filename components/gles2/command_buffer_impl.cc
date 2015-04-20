@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/gles2/command_buffer_impl.h"
+#include "components/gles2/command_buffer_impl.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "components/gles2/command_buffer_driver.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
-#include "mojo/services/gles2/command_buffer_driver.h"
 
 namespace gles2 {
 namespace {

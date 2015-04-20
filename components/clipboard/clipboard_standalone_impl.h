@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_CLIPBOARD_CLIPBOARD_STANDALONE_IMPL_H_
-#define SERVICES_CLIPBOARD_CLIPBOARD_STANDALONE_IMPL_H_
+#ifndef COMPONENTS_CLIPBOARD_CLIPBOARD_STANDALONE_IMPL_H_
+#define COMPONENTS_CLIPBOARD_CLIPBOARD_STANDALONE_IMPL_H_
 
 #include <base/memory/scoped_ptr.h>
 #include <string>
 
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/mojo_services/src/clipboard/public/interfaces/clipboard.mojom.h"
 
 namespace clipboard {
@@ -59,4 +59,4 @@ class ClipboardStandaloneImpl : public mojo::Clipboard {
 
 }  // namespace clipboard
 
-#endif  // SERVICES_CLIPBOARD_CLIPBOARD_STANDALONE_IMPL_H_
+#endif  // COMPONENTS_CLIPBOARD_CLIPBOARD_STANDALONE_IMPL_H_

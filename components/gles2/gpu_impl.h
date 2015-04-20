@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_GLES2_GPU_IMPL_H_
-#define SERVICES_GLES2_GPU_IMPL_H_
+#ifndef COMPONENTS_GLES2_GPU_IMPL_H_
+#define COMPONENTS_GLES2_GPU_IMPL_H_
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
-#include "mojo/services/gles2/gpu_state.h"
+#include "components/gles2/gpu_state.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/mojo_services/src/geometry/public/interfaces/geometry.mojom.h"
@@ -46,4 +46,4 @@ class GpuImpl : public mojo::Gpu {
 
 }  // namespace gles2
 
-#endif  // SERVICES_GLES2_GPU_IMPL_H_
+#endif  // COMPONENTS_GLES2_GPU_IMPL_H_

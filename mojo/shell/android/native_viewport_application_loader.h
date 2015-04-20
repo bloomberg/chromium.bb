@@ -5,10 +5,9 @@
 #ifndef MOJO_SHELL_ANDROID_NATIVE_VIEWPORT_APPLICATION_LOADER_H_
 #define MOJO_SHELL_ANDROID_NATIVE_VIEWPORT_APPLICATION_LOADER_H_
 
+#include "components/gles2/gpu_impl.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/interface_factory.h"
-#include "mojo/services/gles2/gpu_impl.h"
-#include "mojo/services/keyboard/public/interfaces/keyboard.mojom.h"
 #include "mojo/shell/application_manager/application_loader.h"
 #include "third_party/mojo_services/src/gpu/public/interfaces/gpu.mojom.h"
 #include "third_party/mojo_services/src/native_viewport/public/interfaces/native_viewport.mojom.h"
@@ -25,7 +24,6 @@ namespace shell {
 
 class NativeViewportApplicationLoader : public ApplicationLoader,
                                         public ApplicationDelegate,
-                                        public InterfaceFactory<Keyboard>,
                                         public InterfaceFactory<NativeViewport>,
                                         public InterfaceFactory<Gpu> {
  public:
@@ -47,10 +45,6 @@ class NativeViewportApplicationLoader : public ApplicationLoader,
   // InterfaceFactory<Gpu> implementation.
   void Create(ApplicationConnection* connection,
               InterfaceRequest<Gpu> request) override;
-
-  // InterfaceFactory<Keyboard> implementation.
-  void Create(ApplicationConnection* connection,
-              InterfaceRequest<Keyboard> request) override;
 
   scoped_refptr<gles2::GpuState> gpu_state_;
   scoped_ptr<ApplicationImpl> app_;

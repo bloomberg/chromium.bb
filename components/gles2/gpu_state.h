@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_GLES2_GPU_STATE_H_
-#define SERVICES_GLES2_GPU_STATE_H_
+#ifndef COMPONENTS_GLES2_GPU_STATE_H_
+#define COMPONENTS_GLES2_GPU_STATE_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
@@ -49,4 +49,4 @@ class GpuState : public base::RefCounted<GpuState> {
 
 }  // namespace gles2
 
-#endif  // SERVICES_GLES2_GPU_STATE_H_
+#endif  // COMPONENTS_GLES2_GPU_STATE_H_

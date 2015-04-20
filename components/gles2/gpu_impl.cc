@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/gles2/gpu_impl.h"
+#include "components/gles2/gpu_impl.h"
 
+#include "components/gles2/command_buffer_driver.h"
+#include "components/gles2/command_buffer_impl.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
-#include "mojo/services/gles2/command_buffer_driver.h"
-#include "mojo/services/gles2/command_buffer_impl.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
 

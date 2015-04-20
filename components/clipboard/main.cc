@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/clipboard/clipboard_standalone_impl.h"
 #include "mojo/application/application_runner_chromium.h"
-#include "mojo/public/c/system/main.h"
-#include "mojo/public/cpp/application/application_connection.h"
-#include "mojo/public/cpp/application/application_delegate.h"
-#include "mojo/public/cpp/application/interface_factory.h"
-#include "mojo/services/clipboard/clipboard_standalone_impl.h"
+#include "third_party/mojo/src/mojo/public/c/system/main.h"
+#include "third_party/mojo/src/mojo/public/cpp/application/application_connection.h"
+#include "third_party/mojo/src/mojo/public/cpp/application/application_delegate.h"
+#include "third_party/mojo/src/mojo/public/cpp/application/interface_factory.h"
 
 class Delegate : public mojo::ApplicationDelegate,
                  public mojo::InterfaceFactory<mojo::Clipboard> {

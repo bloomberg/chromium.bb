@@ -156,8 +156,6 @@ source_set("lib") {
       "android/android_handler_loader.h",
       "android/background_application_loader.cc",
       "android/background_application_loader.h",
-      "android/keyboard_impl.cc",
-      "android/keyboard_impl.h",
       "android/native_viewport_application_loader.cc",
       "android/native_viewport_application_loader.h",
       "android/ui_application_loader_android.cc",
@@ -167,9 +165,8 @@ source_set("lib") {
     deps += [
       ":jni_headers",
       ":run_android_application_function",
+      "//components/gles2",
       "//mojo/application:content_handler",
-      "//mojo/services/keyboard/public/interfaces",
-      "//mojo/services/gles2",
       "//mojo/services/native_viewport:lib",
     ]
   }
@@ -223,7 +220,6 @@ if (is_android) {
     sources = [
       "android/apk/src/org/chromium/mojo/shell/AndroidHandler.java",
       "android/apk/src/org/chromium/mojo/shell/Bootstrap.java",
-      "android/apk/src/org/chromium/mojo/shell/Keyboard.java",
       "android/apk/src/org/chromium/mojo/shell/ShellMain.java",
       "android/tests/src/org/chromium/mojo/shell/ShellTestBase.java",
     ]
@@ -267,7 +263,6 @@ if (is_android) {
     java_files = [
       "android/apk/src/org/chromium/mojo/shell/AndroidHandler.java",
       "android/apk/src/org/chromium/mojo/shell/FileHelper.java",
-      "android/apk/src/org/chromium/mojo/shell/Keyboard.java",
       "android/apk/src/org/chromium/mojo/shell/MojoShellActivity.java",
       "android/apk/src/org/chromium/mojo/shell/MojoShellApplication.java",
       "android/apk/src/org/chromium/mojo/shell/ShellMain.java",

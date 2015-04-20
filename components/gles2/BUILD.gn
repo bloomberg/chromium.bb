@@ -15,10 +15,10 @@ source_set("gles2") {
     "command_buffer_driver.h",
     "command_buffer_impl.cc",
     "command_buffer_impl.h",
-    "gpu_state.cc",
-    "gpu_state.h",
     "gpu_impl.cc",
     "gpu_impl.h",
+    "gpu_state.cc",
+    "gpu_state.h",
   ]
 
   public_deps = [

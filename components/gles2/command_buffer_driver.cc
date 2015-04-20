@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/gles2/command_buffer_driver.h"
+#include "components/gles2/command_buffer_driver.h"
 
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
+#include "components/gles2/command_buffer_type_conversions.h"
+#include "components/gles2/mojo_buffer_backing.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -18,8 +20,6 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
-#include "mojo/services/gles2/command_buffer_type_conversions.h"
-#include "mojo/services/gles2/mojo_buffer_backing.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_GLES2_COMMAND_BUFFER_DRIVER_H_
-#define SERVICES_GLES2_COMMAND_BUFFER_DRIVER_H_
+#ifndef COMPONENTS_GLES2_COMMAND_BUFFER_DRIVER_H_
+#define COMPONENTS_GLES2_COMMAND_BUFFER_DRIVER_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -100,4 +100,4 @@ class CommandBufferDriver {
 
 }  // namespace gles2
 
-#endif  // SERVICES_GLES2_COMMAND_BUFFER_DRIVER_H_
+#endif  // COMPONENTS_GLES2_COMMAND_BUFFER_DRIVER_H_

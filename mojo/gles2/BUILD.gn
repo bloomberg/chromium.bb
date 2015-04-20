@@ -16,9 +16,9 @@ source_set("gles2") {
   sources = [
     "command_buffer_client_impl.cc",
     "command_buffer_client_impl.h",
-    "gles2_impl.cc",
     "gles2_context.cc",
     "gles2_context.h",
+    "gles2_impl.cc",
   ]
 
   defines = [
@@ -36,6 +36,7 @@ source_set("gles2") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//components/gles2:lib",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_cmd_helper",
     "//gpu/command_buffer/client:gles2_implementation",
@@ -47,7 +48,6 @@ source_set("gles2") {
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/system",
     "//third_party/mojo_services/src/gpu/public/interfaces",
-    "//mojo/services/gles2:lib",
   ]
 
   include_dirs = [ ".." ]
