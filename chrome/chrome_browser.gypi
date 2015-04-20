@@ -522,6 +522,8 @@
       'browser/media/media_stream_devices_controller.h',
       'browser/media/media_stream_infobar_delegate.cc',
       'browser/media/media_stream_infobar_delegate.h',
+      'browser/media/media_url_constants.cc',
+      'browser/media/media_url_constants.h',
       'browser/media/midi_permission_context.cc',
       'browser/media/midi_permission_context.h',
       'browser/media/midi_permission_context_factory.cc',

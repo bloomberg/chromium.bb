@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/media/media_url_constants.h"
 #include "chrome/browser/media/webrtc_log_list.h"
 #include "chrome/browser/media/webrtc_log_util.h"
 #include "chrome/common/chrome_version_info.h"
@@ -29,7 +30,6 @@ const int kLogCountLimit = 5;
 const uint32 kIntermediateCompressionBufferBytes = 256 * 1024;  // 256 KB
 const int kLogListLimitLines = 50;
 
-const char kUploadURL[] = "https://clients2.google.com/cr/report";
 const char kUploadContentType[] = "multipart/form-data";
 const char kMultipartBoundary[] =
     "----**--yradnuoBgoLtrapitluMklaTelgooG--**----";
@@ -449,7 +449,8 @@ void WebRtcLogUploader::CreateAndStartURLFetcher(
   content_type.append(kMultipartBoundary);
 
   net::URLFetcher* url_fetcher =
-      net::URLFetcher::Create(GURL(kUploadURL), net::URLFetcher::POST, this);
+      net::URLFetcher::Create(GURL(chrome::kUploadURL),
+                              net::URLFetcher::POST, this);
   url_fetcher->SetRequestContext(g_browser_process->system_request_context());
   url_fetcher->SetUploadData(content_type, *post_data);
   url_fetcher->Start();
