@@ -88,7 +88,7 @@ private:
     AudioNodeOutput(AudioHandler*, unsigned numberOfChannels);
     // Can be called from any thread.
     AudioHandler& handler() const { return m_handler; }
-    DeferredTaskHandler& deferredTaskHandler() const { return m_handler.context()->handler(); }
+    DeferredTaskHandler& deferredTaskHandler() const { return m_handler.context()->deferredTaskHandler(); }
 
     // This reference is safe because the AudioHandler owns this AudioNodeOutput
     // object.

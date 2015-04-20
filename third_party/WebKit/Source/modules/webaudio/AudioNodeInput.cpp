@@ -33,7 +33,7 @@
 namespace blink {
 
 inline AudioNodeInput::AudioNodeInput(AudioHandler& handler)
-    : AudioSummingJunction(handler.context()->handler())
+    : AudioSummingJunction(handler.context()->deferredTaskHandler())
     , m_handler(handler)
 {
     // Set to mono by default.

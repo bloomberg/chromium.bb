@@ -313,19 +313,19 @@ public:
 
     unsigned connectionCount() const { return m_connectionCount; }
 
-    DeferredTaskHandler& handler() const { return *m_deferredTaskHandler; }
+    DeferredTaskHandler& deferredTaskHandler() const { return *m_deferredTaskHandler; }
     //
     // Thread Safety and Graph Locking:
     //
     // The following functions call corresponding functions of
     // DeferredTaskHandler.
-    bool isAudioThread() const { return handler().isAudioThread(); }
-    void lock() { handler().lock(); }
-    bool tryLock() { return handler().tryLock(); }
-    void unlock() { handler().unlock(); }
+    bool isAudioThread() const { return deferredTaskHandler().isAudioThread(); }
+    void lock() { deferredTaskHandler().lock(); }
+    bool tryLock() { return deferredTaskHandler().tryLock(); }
+    void unlock() { deferredTaskHandler().unlock(); }
 #if ENABLE(ASSERT)
     // Returns true if this thread owns the context's lock.
-    bool isGraphOwner() { return handler().isGraphOwner(); }
+    bool isGraphOwner() { return deferredTaskHandler().isGraphOwner(); }
 #endif
     using AutoLocker = DeferredTaskHandler::AutoLocker;
 

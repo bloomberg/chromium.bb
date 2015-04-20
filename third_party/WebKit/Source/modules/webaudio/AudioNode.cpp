@@ -101,8 +101,8 @@ void AudioHandler::dispose()
     ASSERT(isMainThread());
     ASSERT(context()->isGraphOwner());
 
-    context()->handler().removeChangedChannelCountMode(this);
-    context()->handler().removeAutomaticPullNode(this);
+    context()->deferredTaskHandler().removeChangedChannelCountMode(this);
+    context()->deferredTaskHandler().removeAutomaticPullNode(this);
     for (auto& output : m_outputs)
         output->dispose();
     m_node = nullptr;
@@ -259,7 +259,7 @@ void AudioHandler::setChannelCountMode(const String& mode, ExceptionState& excep
     }
 
     if (m_newChannelCountMode != oldMode)
-        context()->handler().addChangedChannelCountMode(this);
+        context()->deferredTaskHandler().addChangedChannelCountMode(this);
 }
 
 String AudioHandler::channelInterpretation()
@@ -455,7 +455,7 @@ void AudioHandler::breakConnection()
         // We were unable to get the lock, so put this in a list to finish up
         // later.
         ASSERT(context()->isAudioThread());
-        context()->handler().addDeferredBreakConnection(*this);
+        context()->deferredTaskHandler().addDeferredBreakConnection(*this);
     }
 }
 
@@ -515,7 +515,7 @@ void AudioNode::dispose()
     AudioContext::AutoLocker locker(context());
     handler().dispose();
     if (context()->contextState() == AudioContext::Running)
-        context()->handler().addRenderingOrphanHandler(m_handler.release());
+        context()->deferredTaskHandler().addRenderingOrphanHandler(m_handler.release());
 }
 
 void AudioNode::setHandler(PassRefPtr<AudioHandler> handler)

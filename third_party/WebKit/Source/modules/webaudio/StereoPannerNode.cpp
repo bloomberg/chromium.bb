@@ -135,7 +135,7 @@ void StereoPannerHandler::setChannelCountMode(const String& mode, ExceptionState
     }
 
     if (m_newChannelCountMode != oldMode)
-        context()->handler().addChangedChannelCountMode(this);
+        context()->deferredTaskHandler().addChangedChannelCountMode(this);
 }
 
 // ----------------------------------------------------------------

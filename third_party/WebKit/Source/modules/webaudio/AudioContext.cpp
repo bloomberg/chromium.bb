@@ -153,7 +153,7 @@ AudioContext::~AudioContext()
 #if DEBUG_AUDIONODE_REFERENCES
     fprintf(stderr, "%p: AudioContext::~AudioContext(): %u\n", this, m_contextId);
 #endif
-    handler().contextWillBeDestroyed();
+    deferredTaskHandler().contextWillBeDestroyed();
     // AudioNodes keep a reference to their context, so there should be no way to be in the destructor if there are still AudioNodes around.
 
     ASSERT(!m_isInitialized);
@@ -200,7 +200,7 @@ void AudioContext::clear()
     m_destinationNode.clear();
     // The audio rendering thread is dead.  Nobody will schedule AudioHandler
     // deletion.  Let's do it ourselves.
-    handler().clearHandlersToBeDeleted();
+    deferredTaskHandler().clearHandlersToBeDeleted();
     m_isCleared = true;
 }
 
@@ -964,7 +964,7 @@ void AudioContext::handlePreRenderTasks()
     // At the beginning of every render quantum, try to update the internal rendering graph state (from main thread changes).
     // It's OK if the tryLock() fails, we'll just take slightly longer to pick up the changes.
     if (tryLock()) {
-        handler().handleDeferredTasks();
+        deferredTaskHandler().handleDeferredTasks();
 
         resolvePromisesForResume();
 
@@ -987,13 +987,13 @@ void AudioContext::handlePostRenderTasks()
     // from the render graph (in which case they'll render silence).
     if (tryLock()) {
         // Take care of AudioNode tasks where the tryLock() failed previously.
-        handler().breakConnections();
+        deferredTaskHandler().breakConnections();
 
         // Dynamically clean up nodes which are no longer needed.
         derefFinishedSourceNodes();
 
-        handler().handleDeferredTasks();
-        handler().requestToDeleteHandlersOnMainThread();
+        deferredTaskHandler().handleDeferredTasks();
+        deferredTaskHandler().requestToDeleteHandlersOnMainThread();
 
         resolvePromisesForSuspend();
 
@@ -1220,7 +1220,7 @@ void AudioContext::stopRendering()
     if (m_contextState == Running) {
         destination()->audioDestinationHandler().stopRendering();
         setContextState(Suspended);
-        handler().clearHandlersToBeDeleted();
+        deferredTaskHandler().clearHandlersToBeDeleted();
     }
 }
 
@@ -1383,7 +1383,7 @@ void DeferredTaskHandler::contextWillBeDestroyed()
 }
 
 DeferredTaskHandler::AutoLocker::AutoLocker(AudioContext* context)
-    : m_handler(context->handler())
+    : m_handler(context->deferredTaskHandler())
 {
     m_handler.lock();
 }

@@ -101,7 +101,7 @@ public:
 
 private:
     AudioParamHandler(AudioContext& context, double defaultValue)
-        : AudioSummingJunction(context.handler())
+        : AudioSummingJunction(context.deferredTaskHandler())
         , m_value(defaultValue)
         , m_defaultValue(defaultValue)
         , m_smoothedValue(defaultValue)

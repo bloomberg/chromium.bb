@@ -577,7 +577,7 @@ void PannerHandler::setChannelCountMode(const String& mode, ExceptionState& exce
     }
 
     if (m_newChannelCountMode != oldMode)
-        context()->handler().addChangedChannelCountMode(this);
+        context()->deferredTaskHandler().addChangedChannelCountMode(this);
 }
 
 // ----------------------------------------------------------------
