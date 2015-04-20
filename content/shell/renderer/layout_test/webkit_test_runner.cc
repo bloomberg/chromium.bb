@@ -24,6 +24,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/public/renderer/renderer_gamepad_provider.h"
@@ -402,14 +403,16 @@ void WebKitTestRunner::ShowDevTools(const std::string& settings,
 
 void WebKitTestRunner::CloseDevTools() {
   Send(new ShellViewHostMsg_CloseDevTools(routing_id()));
-  WebDevToolsAgent* agent = render_view()->GetWebView()->devToolsAgent();
+  WebDevToolsAgent* agent =
+      render_view()->GetMainRenderFrame()->GetWebFrame()->devToolsAgent();
   if (agent)
     agent->detach();
 }
 
 void WebKitTestRunner::EvaluateInWebInspector(long call_id,
                                               const std::string& script) {
-  WebDevToolsAgent* agent = render_view()->GetWebView()->devToolsAgent();
+  WebDevToolsAgent* agent =
+      render_view()->GetMainRenderFrame()->GetWebFrame()->devToolsAgent();
   if (agent)
     agent->evaluateInWebInspector(call_id, WebString::fromUTF8(script));
 }
