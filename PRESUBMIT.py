@@ -250,6 +250,15 @@ _BANNED_CPP_FUNCTIONS = (
         r'extensions[\\\/]renderer[\\\/]safe_builtins\.*',
       ),
     ),
+    (
+      'MessageLoopProxy',
+      (
+        'MessageLoopProxy is deprecated. ',
+        'Please use SingleThreadTaskRunner or ThreadTaskRunnerHandle instead.'
+      ),
+      True,
+      (),
+    ),
 )
 
 _IPC_ENUM_TRAITS_DEPRECATED = (
