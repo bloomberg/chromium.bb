@@ -7,6 +7,7 @@ package org.chromium.net;
 import android.os.ConditionVariable;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 
 import java.nio.ByteBuffer;
@@ -24,31 +25,40 @@ import java.util.concurrent.ThreadFactory;
 class TestUrlRequestListener implements UrlRequestListener {
     public ArrayList<ResponseInfo> mRedirectResponseInfoList =
             new ArrayList<ResponseInfo>();
+    public ArrayList<String> mRedirectUrlList = new ArrayList<String>();
     public ResponseInfo mResponseInfo;
     public ExtendedResponseInfo mExtendedResponseInfo;
     public UrlRequestException mError;
 
     public ResponseStep mResponseStep = ResponseStep.NOTHING;
 
-    public boolean mOnRedirectCalled = false;
+    public int mRedirectCount = 0;
     public boolean mOnErrorCalled = false;
 
     public int mHttpResponseDataLength = 0;
     public byte[] mLastDataReceivedAsBytes;
     public String mResponseAsString = "";
 
+    private static final int READ_BUFFER_SIZE = 32 * 1024;
+
+    // When false, the consumer is responsible for all calls into the request
+    // that advance it.
+    private boolean mAutoAdvance = true;
+
     // Conditionally fail on certain steps.
     private FailureType mFailureType = FailureType.NONE;
     private ResponseStep mFailureStep = ResponseStep.NOTHING;
 
     // Signals when request is done either successfully or not.
-    private ConditionVariable mDone = new ConditionVariable();
-    private ConditionVariable mStepBlock = new ConditionVariable(true);
+    private final ConditionVariable mDone = new ConditionVariable();
+
+    // Signaled on each step when mAutoAdvance is false.
+    private final ConditionVariable mStepBlock = new ConditionVariable();
 
     // Executor for Cronet callbacks.
-    ExecutorService mExecutor = Executors.newSingleThreadExecutor(
+    private final ExecutorService mExecutor = Executors.newSingleThreadExecutor(
             new ExecutorThreadFactory());
-    Thread mExecutorThread;
+    private Thread mExecutorThread;
 
     private class ExecutorThreadFactory implements ThreadFactory {
         public Thread newThread(Runnable r) {
@@ -59,37 +69,38 @@ class TestUrlRequestListener implements UrlRequestListener {
 
     public enum ResponseStep {
         NOTHING,
-        ON_REDIRECT,
+        ON_RECEIVED_REDIRECT,
         ON_RESPONSE_STARTED,
-        ON_DATA_RECEIVED,
+        ON_READ_COMPLETED,
         ON_SUCCEEDED
     };
 
     public enum FailureType {
         NONE,
-        BLOCK,
         CANCEL_SYNC,
         CANCEL_ASYNC,
+        // Same as above, but continues to advance the request after posting
+        // the cancellation task.
+        CANCEL_ASYNC_WITHOUT_PAUSE,
         THROW_SYNC
     };
 
-    public TestUrlRequestListener() {
+    public void setAutoAdvance(boolean autoAdvance) {
+        mAutoAdvance = autoAdvance;
     }
 
     public void setFailure(FailureType failureType, ResponseStep failureStep) {
         mFailureStep = failureStep;
         mFailureType = failureType;
-        if (failureType == FailureType.BLOCK) {
-            mStepBlock.close();
-        }
     }
 
     public void blockForDone() {
         mDone.block();
     }
 
-    public void openBlockedStep() {
-        mStepBlock.open();
+    public void waitForNextStep() {
+        mStepBlock.block();
+        mStepBlock.close();
     }
 
     public Executor getExecutor() {
@@ -97,53 +108,76 @@ class TestUrlRequestListener implements UrlRequestListener {
     }
 
     @Override
-    public void onRedirect(UrlRequest request,
+    public void onReceivedRedirect(UrlRequest request,
             ResponseInfo info,
             String newLocationUrl) {
         assertEquals(mExecutorThread, Thread.currentThread());
         assertTrue(mResponseStep == ResponseStep.NOTHING
-                   || mResponseStep == ResponseStep.ON_REDIRECT);
+                   || mResponseStep == ResponseStep.ON_RECEIVED_REDIRECT);
+        assertNull(mError);
+
+        mResponseStep = ResponseStep.ON_RECEIVED_REDIRECT;
+        mRedirectUrlList.add(newLocationUrl);
         mRedirectResponseInfoList.add(info);
-        mResponseStep = ResponseStep.ON_REDIRECT;
-        mOnRedirectCalled = true;
-        maybeThrowOrCancel(request);
+        ++mRedirectCount;
+        if (maybeThrowCancelOrPause(request)) {
+            return;
+        }
+        request.followRedirect();
     }
 
     @Override
     public void onResponseStarted(UrlRequest request, ResponseInfo info) {
         assertEquals(mExecutorThread, Thread.currentThread());
         assertTrue(mResponseStep == ResponseStep.NOTHING
-                   || mResponseStep == ResponseStep.ON_REDIRECT);
+                   || mResponseStep == ResponseStep.ON_RECEIVED_REDIRECT);
+        assertNull(mError);
+
         mResponseStep = ResponseStep.ON_RESPONSE_STARTED;
         mResponseInfo = info;
-        maybeThrowOrCancel(request);
+        if (maybeThrowCancelOrPause(request)) {
+            return;
+        }
+        startNextRead(request);
     }
 
     @Override
-    public void onDataReceived(UrlRequest request,
+    public void onReadCompleted(UrlRequest request,
             ResponseInfo info,
             ByteBuffer byteBuffer) {
         assertEquals(mExecutorThread, Thread.currentThread());
+        assertTrue(byteBuffer.remaining() > 0);
         assertTrue(mResponseStep == ResponseStep.ON_RESPONSE_STARTED
-                   || mResponseStep == ResponseStep.ON_DATA_RECEIVED);
-        mResponseStep = ResponseStep.ON_DATA_RECEIVED;
+                   || mResponseStep == ResponseStep.ON_READ_COMPLETED);
+        assertNull(mError);
 
-        mHttpResponseDataLength += byteBuffer.capacity();
-        mLastDataReceivedAsBytes = new byte[byteBuffer.capacity()];
-        byteBuffer.get(mLastDataReceivedAsBytes);
+        mResponseStep = ResponseStep.ON_READ_COMPLETED;
+
+        // Make a slice of ByteBuffer, so can read from it without affecting
+        // position, which allows tests to check the state of the buffer.
+        ByteBuffer slice = byteBuffer.slice();
+        mHttpResponseDataLength += slice.remaining();
+        mLastDataReceivedAsBytes = new byte[slice.remaining()];
+        slice.get(mLastDataReceivedAsBytes);
         mResponseAsString += new String(mLastDataReceivedAsBytes);
-        maybeThrowOrCancel(request);
+
+        if (maybeThrowCancelOrPause(request)) {
+            return;
+        }
+        startNextRead(request);
     }
 
     @Override
     public void onSucceeded(UrlRequest request, ExtendedResponseInfo info) {
         assertEquals(mExecutorThread, Thread.currentThread());
         assertTrue(mResponseStep == ResponseStep.ON_RESPONSE_STARTED
-                   || mResponseStep == ResponseStep.ON_DATA_RECEIVED);
+                   || mResponseStep == ResponseStep.ON_READ_COMPLETED);
+        assertTrue(mError == null);
+
         mResponseStep = ResponseStep.ON_SUCCEEDED;
         mExtendedResponseInfo = info;
         openDone();
-        maybeThrowOrCancel(request);
+        maybeThrowCancelOrPause(request);
     }
 
     @Override
@@ -151,23 +185,42 @@ class TestUrlRequestListener implements UrlRequestListener {
             ResponseInfo info,
             UrlRequestException error) {
         assertEquals(mExecutorThread, Thread.currentThread());
+        // Shouldn't happen after success.
+        assertTrue(mResponseStep != ResponseStep.ON_SUCCEEDED);
+
         mOnErrorCalled = true;
         mError = error;
         openDone();
-        maybeThrowOrCancel(request);
+        maybeThrowCancelOrPause(request);
+    }
+
+    public void startNextRead(UrlRequest request) {
+        request.read(ByteBuffer.allocateDirect(READ_BUFFER_SIZE));
+    }
+
+    public boolean isDone() {
+        // It's not mentioned by the Android docs, but block(0) seems to block
+        // indefinitely, so have to block for one millisecond to get state
+        // without blocking.
+        return mDone.block(1);
     }
 
     protected void openDone() {
         mDone.open();
     }
 
-    private void maybeThrowOrCancel(final UrlRequest request) {
-        if (mResponseStep != mFailureStep) {
-            return;
+    /**
+     * Returns false if the listener should continue to advance the request.
+     */
+    private boolean maybeThrowCancelOrPause(final UrlRequest request) {
+        if (mResponseStep != mFailureStep || mFailureType == FailureType.NONE) {
+            if (!mAutoAdvance) {
+                mStepBlock.open();
+                return true;
+            }
+            return false;
         }
-        if (mFailureType == FailureType.NONE) {
-            return;
-        }
+
         if (mFailureType == FailureType.THROW_SYNC) {
             throw new IllegalStateException("Listener Exception.");
         }
@@ -177,11 +230,13 @@ class TestUrlRequestListener implements UrlRequestListener {
                 openDone();
             }
         };
-        if (mFailureType == FailureType.CANCEL_ASYNC) {
+        if (mFailureType == FailureType.CANCEL_ASYNC
+                || mFailureType == FailureType.CANCEL_ASYNC_WITHOUT_PAUSE) {
             mExecutor.execute(task);
         } else {
             task.run();
         }
+        return mFailureType != FailureType.CANCEL_ASYNC_WITHOUT_PAUSE;
     }
 }
 

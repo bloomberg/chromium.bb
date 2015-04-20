@@ -24,6 +24,8 @@ public final class MockUrlRequestJobFactory {
     public static final String FAILED_URL =
             "http://mock.failed.request/-2";
 
+    public static final String SUCCESS_BODY = "this is a text file\n";
+
     enum FailurePhase {
         START,
         READ_ASYNC,

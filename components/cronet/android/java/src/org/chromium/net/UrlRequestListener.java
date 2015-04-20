@@ -12,22 +12,33 @@ import java.nio.ByteBuffer;
  */
 public interface UrlRequestListener {
     /**
-     * Called before following redirects.  The redirect will automatically be
-     * followed, unless the request is paused or cancelled during this
-     * callback.  If the redirect response has a body, it will be ignored.
-     * This will only be called between start and onResponseStarted.
+     * Called whenever a redirect is encountered. This will only be called
+     * between the call to {@link UrlRequest#start} and
+     * {@link UrlRequestListener#onResponseStarted
+     * UrlRequestListener.onResponseStarted()}. The body of the redirect
+     * response, if it has one, will be ignored.
+     *
+     * The redirect will not be followed until the URLRequest's
+     * {@link UrlRequest#followRedirect} method is called, either synchronously
+     * or asynchronously.
      *
      * @param request Request being redirected.
      * @param info Response information.
      * @param newLocationUrl Location where request is redirected.
      */
-    public void onRedirect(UrlRequest request,
+    public void onReceivedRedirect(UrlRequest request,
             ResponseInfo info,
             String newLocationUrl);
 
     /**
-     * Called when the final set of headers, after all redirects,
-     * is received. Can only be called once for each request.
+     * Called when the final set of headers, after all redirects, is received.
+     * Will only be called once for each request.
+     *
+     * No other UrlRequestListener method will be called for the request,
+     * including {@link UrlRequestListener#onSucceeded onSucceeded()} and {@link
+     * UrlRequestListener#onFailed onFailed()}, until {@link UrlRequest#read
+     * UrlRequest.read()} is called to attempt to start reading the response
+     * body.
      *
      * @param request Request that started to get response.
      * @param info Response information.
@@ -35,16 +46,22 @@ public interface UrlRequestListener {
     public void onResponseStarted(UrlRequest request, ResponseInfo info);
 
     /**
-     * Called whenever data is received.  The ByteBuffer remains
-     * valid only for the duration of the callback.  Or if the callback
-     * pauses the request, it remains valid until the request is resumed.
-     * Cancelling the request also invalidates the buffer.
+     * Called whenever part of the response body has been read. Only part of
+     * the buffer may be populated, even if the entire response body has not yet
+     * been consumed.
+     *
+     * No other UrlRequestListener method will be called for the request,
+     * including {@link UrlRequestListener#onSucceeded onSucceeded()} and {@link
+     * UrlRequestListener#onFailed onFailed()}, until {@link
+     * UrlRequest#read UrlRequest.read()} is called to attempt to continue
+     * reading the response body.
      *
      * @param request Request that received data.
      * @param info Response information.
-     * @param byteBuffer Received data.
+     * @param byteBuffer The buffer that was passed in to
+     *     {@link UrlRequest#read}, now containing the received data.
      */
-    public void onDataReceived(UrlRequest request,
+    public void onReadCompleted(UrlRequest request,
             ResponseInfo info,
             ByteBuffer byteBuffer);
 

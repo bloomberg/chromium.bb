@@ -48,7 +48,6 @@ public class CronetHttpURLConnection extends HttpURLConnection {
     private CronetOutputStream mOutputStream;
     private ResponseInfo mResponseInfo;
     private UrlRequestException mException;
-    private ByteBuffer mResponseByteBuffer;
     private boolean mOnRedirectCalled = false;
     private boolean mHasResponse = false;
 
@@ -397,11 +396,12 @@ public class CronetHttpURLConnection extends HttpURLConnection {
      * Used by {@link CronetInputStream} to get more data from the network
      * stack. This should only be called after the request has started. Note
      * that this call might block if there isn't any more data to be read.
+     * Since byteBuffer is passed to the UrlRequest, it must be a direct
+     * ByteBuffer.
      */
-    ByteBuffer getMoreData() throws IOException {
-        mResponseByteBuffer = null;
+    void getMoreData(ByteBuffer byteBuffer) throws IOException {
+        mRequest.read(byteBuffer);
         mMessageLoop.loop();
-        return mResponseByteBuffer;
     }
 
     /**
@@ -430,17 +430,14 @@ public class CronetHttpURLConnection extends HttpURLConnection {
         }
 
         @Override
-        public void onDataReceived(UrlRequest request, ResponseInfo info,
+        public void onReadCompleted(UrlRequest request, ResponseInfo info,
                 ByteBuffer byteBuffer) {
             mResponseInfo = info;
-            mResponseByteBuffer = ByteBuffer.allocate(byteBuffer.capacity());
-            mResponseByteBuffer.put(byteBuffer);
-            mResponseByteBuffer.flip();
             mMessageLoop.postQuitTask();
         }
 
         @Override
-        public void onRedirect(UrlRequest request, ResponseInfo info,
+        public void onReceivedRedirect(UrlRequest request, ResponseInfo info,
                 String newLocationUrl) {
             mOnRedirectCalled = true;
             if (instanceFollowRedirects) {
@@ -449,6 +446,7 @@ public class CronetHttpURLConnection extends HttpURLConnection {
                 } catch (MalformedURLException e) {
                     // Ignored.
                 }
+                mRequest.followRedirect();
             } else {
                 mResponseInfo = info;
                 mRequest.cancel();

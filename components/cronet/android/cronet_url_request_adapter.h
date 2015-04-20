@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
@@ -24,7 +25,6 @@ class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace net {
-class GrowableIOBuffer;
 class HttpRequestHeaders;
 class HttpResponseHeaders;
 class UploadDataStream;
@@ -77,7 +77,10 @@ class CronetURLRequestAdapter : public net::URLRequest::Delegate {
   void FollowDeferredRedirect(JNIEnv* env, jobject jcaller);
 
   // Reads more data.
-  void ReadData(JNIEnv* env, jobject jcaller);
+  jboolean ReadData(JNIEnv* env, jobject jcaller,
+                    jobject jbyte_buffer,
+                    jint jposition,
+                    jint jcapacity);
 
   // Releases all resources for the request and deletes the object itself.
   void Destroy(JNIEnv* env, jobject jcaller);
@@ -118,9 +121,13 @@ class CronetURLRequestAdapter : public net::URLRequest::Delegate {
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
 
  private:
+  class IOBufferWithByteBuffer;
+
   void StartOnNetworkThread();
   void FollowDeferredRedirectOnNetworkThread();
-  void ReadDataOnNetworkThread();
+  void ReadDataOnNetworkThread(
+      scoped_refptr<IOBufferWithByteBuffer> read_buffer,
+      int buffer_size);
   void DestroyOnNetworkThread();
 
   // Checks status of the request_adapter, return false if |is_success()| is
@@ -139,7 +146,7 @@ class CronetURLRequestAdapter : public net::URLRequest::Delegate {
   net::HttpRequestHeaders initial_request_headers_;
   scoped_ptr<net::UploadDataStream> upload_;
 
-  scoped_refptr<net::IOBufferWithSize> read_buffer_;
+  scoped_refptr<IOBufferWithByteBuffer> read_buffer_;
   scoped_ptr<net::URLRequest> url_request_;
 
   DISALLOW_COPY_AND_ASSIGN(CronetURLRequestAdapter);

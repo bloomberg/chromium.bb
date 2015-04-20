@@ -4,6 +4,8 @@
 
 #include "cronet_url_request_adapter.h"
 
+#include <limits>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -22,8 +24,6 @@
 using base::android::ConvertUTF8ToJavaString;
 
 namespace cronet {
-
-static const int kReadBufferSize = 32768;
 
 // Explicitly register static JNI functions.
 bool CronetUrlRequestAdapterRegisterJni(JNIEnv* env) {
@@ -51,6 +51,37 @@ static jlong CreateRequestAdapter(JNIEnv* env,
 
   return reinterpret_cast<jlong>(adapter);
 }
+
+// IOBuffer subclass for a buffer owned by a Java ByteBuffer. Keeps the
+// ByteBuffer alive until destroyed.
+class CronetURLRequestAdapter::IOBufferWithByteBuffer : public net::IOBuffer {
+ public:
+  // Creates a buffer wrapping the Java ByteBuffer |jbyte_buffer|. |data| points
+  // to the memory backed by the ByteBuffer, and position is the location to
+  // start writing.
+  IOBufferWithByteBuffer(
+      JNIEnv* env,
+      jobject jbyte_buffer,
+      void* data,
+      int position)
+      : net::IOBuffer(static_cast<char*>(data) + position),
+        initial_position_(position) {
+    DCHECK(data);
+    DCHECK_EQ(env->GetDirectBufferAddress(jbyte_buffer), data);
+    byte_buffer_.Reset(env, jbyte_buffer);
+  }
+
+  int initial_position() const { return initial_position_; }
+
+  jobject byte_buffer() const { return byte_buffer_.obj(); }
+
+ private:
+  ~IOBufferWithByteBuffer() override {}
+
+  base::android::ScopedJavaGlobalRef<jobject> byte_buffer_;
+
+  const int initial_position_;
+};
 
 CronetURLRequestAdapter::CronetURLRequestAdapter(
     CronetURLRequestContextAdapter* context,
@@ -127,11 +158,27 @@ void CronetURLRequestAdapter::FollowDeferredRedirect(JNIEnv* env,
           base::Unretained(this)));
 }
 
-void CronetURLRequestAdapter::ReadData(JNIEnv* env, jobject jcaller) {
+jboolean CronetURLRequestAdapter::ReadData(
+    JNIEnv* env, jobject jcaller, jobject jbyte_buffer, jint jposition,
+    jint jcapacity) {
   DCHECK(!context_->IsOnNetworkThread());
+  DCHECK_LT(jposition, jcapacity);
+
+  void* data = env->GetDirectBufferAddress(jbyte_buffer);
+  if (!data)
+    return JNI_FALSE;
+
+  scoped_refptr<IOBufferWithByteBuffer> read_buffer(
+      new IOBufferWithByteBuffer(env, jbyte_buffer, data, jposition));
+
+  int remaining_capacity = jcapacity - jposition;
+
   context_->PostTaskToNetworkThread(
       FROM_HERE, base::Bind(&CronetURLRequestAdapter::ReadDataOnNetworkThread,
-                            base::Unretained(this)));
+                            base::Unretained(this),
+                            read_buffer,
+                            remaining_capacity));
+  return JNI_TRUE;
 }
 
 void CronetURLRequestAdapter::Destroy(JNIEnv* env, jobject jcaller) {
@@ -198,7 +245,7 @@ void CronetURLRequestAdapter::OnReceivedRedirect(
   DCHECK(context_->IsOnNetworkThread());
   DCHECK(request->status().is_success());
   JNIEnv* env = base::android::AttachCurrentThread();
-  cronet::Java_CronetUrlRequest_onRedirect(
+  cronet::Java_CronetUrlRequest_onReceivedRedirect(
       env, owner_.obj(),
       ConvertUTF8ToJavaString(env, redirect_info.new_url.spec()).obj(),
       redirect_info.status_code);
@@ -221,10 +268,12 @@ void CronetURLRequestAdapter::OnReadCompleted(net::URLRequest* request,
     return;
   if (bytes_read != 0) {
     JNIEnv* env = base::android::AttachCurrentThread();
-    base::android::ScopedJavaLocalRef<jobject> java_buffer(
-        env, env->NewDirectByteBuffer(read_buffer_->data(), bytes_read));
-    cronet::Java_CronetUrlRequest_onDataReceived(env, owner_.obj(),
-                                                 java_buffer.obj());
+    cronet::Java_CronetUrlRequest_onReadCompleted(
+        env, owner_.obj(), read_buffer_->byte_buffer(), bytes_read,
+        read_buffer_->initial_position());
+    // Free the read buffer. This lets the Java ByteBuffer be freed, if the
+    // embedder releases it, too.
+    read_buffer_ = nullptr;
   } else {
     JNIEnv* env = base::android::AttachCurrentThread();
     cronet::Java_CronetUrlRequest_onSucceeded(env, owner_.obj());
@@ -252,13 +301,17 @@ void CronetURLRequestAdapter::FollowDeferredRedirectOnNetworkThread() {
   url_request_->FollowDeferredRedirect();
 }
 
-void CronetURLRequestAdapter::ReadDataOnNetworkThread() {
+void CronetURLRequestAdapter::ReadDataOnNetworkThread(
+    scoped_refptr<IOBufferWithByteBuffer> read_buffer,
+    int buffer_size) {
   DCHECK(context_->IsOnNetworkThread());
-  if (!read_buffer_.get())
-    read_buffer_ = new net::IOBufferWithSize(kReadBufferSize);
+  DCHECK(read_buffer);
+  DCHECK(!read_buffer_);
+
+  read_buffer_ = read_buffer;
 
   int bytes_read = 0;
-  url_request_->Read(read_buffer_.get(), read_buffer_->size(), &bytes_read);
+  url_request_->Read(read_buffer_.get(), buffer_size, &bytes_read);
   // If IO is pending, wait for the URLRequest to call OnReadCompleted.
   if (url_request_->status().is_io_pending())
     return;

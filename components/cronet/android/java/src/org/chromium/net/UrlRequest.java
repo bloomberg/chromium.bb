@@ -4,6 +4,7 @@
 
 package org.chromium.net;
 
+import java.nio.ByteBuffer;
 import java.util.concurrent.Executor;
 
 /**
@@ -66,6 +67,38 @@ public interface UrlRequest {
     public void start();
 
     /**
+     * Follows a pending redirect. Must only be called at most once for each
+     * invocation of the {@link UrlRequestListener#onRedirect onRedirect} method
+     * of the {@link UrlRequestListener}.
+     */
+    public void followRedirect();
+
+    /**
+     * Attempts to read part of the response body into the provided buffer.
+     * Must only be called at most once in response to each invocation of the
+     * {@link UrlRequestListener#onResponseStarted onResponseStarted} and {@link
+     * UrlRequestListener#onReadCompleted onReadCompleted} methods of the {@link
+     * UrlRequestListener}. Each call will result in an asynchronous call to
+     * either the {@link UrlRequestListener UrlRequestListener's}
+     * {@link UrlRequestListener#onReadCompleted onReadCompleted} method if data
+     * is read, its {@link UrlRequestListener#onSucceeded onSucceeded} method if
+     * there's no more data to read, or its {@link UrlRequestListener#onFailed
+     * onFailed} method if there's an error.
+     *
+     * @param buffer {@link ByteBuffer} to write response body to. Must be a
+     *     direct ByteBuffer. The embedder must not read or modify buffer's
+     *     position, limit, or data between its position and capacity until the
+     *     request calls back into the {@link URLRequestListener}. If the
+     *     request is cancelled before such a call occurs, it's never safe to
+     *     use the buffer again.
+     */
+    // TODO(mmenke):  Should we add some ugliness to allow reclaiming the buffer
+    //     on cancellation?  If it's a C++-allocated buffer, then the consumer
+    //     can never safely free it, unless they put off cancelling a request
+    //     until a callback has been invoked.
+    public void read(ByteBuffer buffer);
+
+    /**
      * Cancels the request.
      *
      * Can be called at any time.  If the Executor passed to UrlRequest on
@@ -81,29 +114,6 @@ public interface UrlRequest {
      * False in all other cases (Including errors).
      */
     public boolean isCanceled();
-
-    /**
-     * Can be called at any time, but the request may continue behind the
-     * scenes, depending on when it's called.  None of the listener's methods
-     * will be called while paused, until and unless the request is resumed.
-     * (Note:  This allows us to have more than one ByteBuffer in flight,
-     * if we want, as well as allow pausing at any point).
-     *
-     * TBD: May need different pause behavior.
-     */
-    public void pause();
-
-    /**
-     * Returns True if paused. False if not paused or is cancelled.
-     * @return
-     */
-    public boolean isPaused();
-
-    /**
-     * When resuming, any pending callback to the listener will be called
-     * asynchronously.
-     */
-    public void resume();
 
     /**
      * Disables cache for the request. If context is not set up to use cache,

@@ -13,12 +13,9 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.PathUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.net.TestUrlRequestListener.FailureType;
 import org.chromium.net.TestUrlRequestListener.ResponseStep;
 
 import java.io.File;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 /**
  * Test CronetUrlRequestContext.
@@ -66,23 +63,6 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
      */
     class ShutdownTestUrlRequestListener extends TestUrlRequestListener {
         @Override
-        public void onDataReceived(UrlRequest request,
-                ResponseInfo info,
-                ByteBuffer byteBuffer) {
-            assertTrue(byteBuffer.capacity() != 0);
-            byte[] receivedDataBefore = new byte[byteBuffer.capacity()];
-            byteBuffer.get(receivedDataBefore);
-            // super will block if necessary.
-            super.onDataReceived(request, info, byteBuffer);
-            // |byteBuffer| is still accessible even if 'cancel' was called on
-            // another thread.
-            assertTrue(byteBuffer.capacity() != 0);
-            byte[] receivedDataAfter = new byte[byteBuffer.capacity()];
-            byteBuffer.get(receivedDataAfter);
-            assertTrue(Arrays.equals(receivedDataBefore, receivedDataAfter));
-        }
-
-        @Override
         public void onSucceeded(UrlRequest request, ExtendedResponseInfo info) {
             super.onSucceeded(request, info);
             mActivity.mUrlRequestContext.shutdown();
@@ -128,8 +108,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         TestUrlRequestListener listener = new ShutdownTestUrlRequestListener();
         // Block listener when response starts to verify that shutdown fails
         // if there are active requests.
-        listener.setFailure(FailureType.BLOCK,
-                ResponseStep.ON_RESPONSE_STARTED);
+        listener.setAutoAdvance(false);
         UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
                 TEST_URL, listener, listener.getExecutor());
         urlRequest.start();
@@ -140,7 +119,32 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
             assertEquals("Cannot shutdown with active requests.",
                          e.getMessage());
         }
-        listener.openBlockedStep();
+
+        listener.waitForNextStep();
+        assertEquals(ResponseStep.ON_RESPONSE_STARTED, listener.mResponseStep);
+        try {
+            mActivity.mUrlRequestContext.shutdown();
+            fail("Should throw an exception");
+        } catch (Exception e) {
+            assertEquals("Cannot shutdown with active requests.",
+                         e.getMessage());
+        }
+        listener.startNextRead(urlRequest);
+
+        listener.waitForNextStep();
+        assertEquals(ResponseStep.ON_READ_COMPLETED, listener.mResponseStep);
+        try {
+            mActivity.mUrlRequestContext.shutdown();
+            fail("Should throw an exception");
+        } catch (Exception e) {
+            assertEquals("Cannot shutdown with active requests.",
+                         e.getMessage());
+        }
+
+        // May not have read all the data, in theory. Just enable auto-advance
+        // and finish the request.
+        listener.setAutoAdvance(true);
+        listener.startNextRead(urlRequest);
         listener.blockForDone();
     }
 
@@ -244,8 +248,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         TestUrlRequestListener listener = new TestUrlRequestListener();
         // Block listener when response starts to verify that shutdown fails
         // if there are active requests.
-        listener.setFailure(FailureType.BLOCK,
-                ResponseStep.ON_RESPONSE_STARTED);
+        listener.setAutoAdvance(false);
         UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
                 TEST_URL, listener, listener.getExecutor());
         urlRequest.start();
@@ -256,38 +259,9 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
             assertEquals("Cannot shutdown with active requests.",
                          e.getMessage());
         }
+        listener.waitForNextStep();
+        assertEquals(ResponseStep.ON_RESPONSE_STARTED, listener.mResponseStep);
         urlRequest.cancel();
-        mActivity.mUrlRequestContext.shutdown();
-    }
-
-    @SmallTest
-    @Feature({"Cronet"})
-    public void testShutdownAfterCancelDuringOnDataReceived() throws Exception {
-        mActivity = launchCronetTestApp();
-        TestUrlRequestListener listener = new TestUrlRequestListener();
-        // Block listener when response starts to verify that shutdown fails
-        // if there are active requests.
-        listener.setFailure(FailureType.BLOCK, ResponseStep.ON_DATA_RECEIVED);
-        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
-                MOCK_CRONET_TEST_SUCCESS_URL, listener, listener.getExecutor());
-        urlRequest.start();
-        try {
-            mActivity.mUrlRequestContext.shutdown();
-            fail("Should throw an exception");
-        } catch (Exception e) {
-            assertEquals("Cannot shutdown with active requests.",
-                         e.getMessage());
-        }
-        // This cancel happens during 'onDataReceived' step, but cancel is
-        // delayed until listener call returns as it is accessing direct
-        // data buffer owned by request.
-        urlRequest.cancel();
-        assertTrue(urlRequest.isCanceled());
-        Thread.sleep(1000);
-        // Cancel happens when listener returns.
-        listener.openBlockedStep();
-        Thread.sleep(1000);
-
         mActivity.mUrlRequestContext.shutdown();
     }
 

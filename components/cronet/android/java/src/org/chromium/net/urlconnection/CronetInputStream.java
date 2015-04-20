@@ -18,6 +18,8 @@ class CronetInputStream extends InputStream {
     private boolean mResponseDataCompleted;
     private ByteBuffer mBuffer;
 
+    private static final int READ_BUFFER_SIZE = 32 * 1024;
+
     /**
      * Constructs a CronetInputStream.
      * @param httpURLConnection the CronetHttpURLConnection that is associated
@@ -59,12 +61,20 @@ class CronetInputStream extends InputStream {
      */
     void setResponseDataCompleted() {
         mResponseDataCompleted = true;
+        // Nothing else to read, so can free the buffer.
+        mBuffer = null;
     }
 
     private void getMoreDataIfNeeded() throws IOException {
         if (!mResponseDataCompleted && !hasUnreadData()) {
+            // Allocate read buffer if needed.
+            if (mBuffer == null) {
+                mBuffer = ByteBuffer.allocateDirect(READ_BUFFER_SIZE);
+            }
+            mBuffer.clear();
+
             // Requests more data from CronetHttpURLConnection.
-            mBuffer = mHttpURLConnection.getMoreData();
+            mHttpURLConnection.getMoreData(mBuffer);
         }
     }
 
