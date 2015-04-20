@@ -201,6 +201,11 @@
   var svgNamespace = 'http://www.w3.org/2000/svg';
   var xlinkNamespace = 'http://www.w3.org/1999/xlink';
 
+  var animatedNumberOptionalNumberAttributes = [
+    'filterRes',
+    'order',
+  ];
+
   function namespacedAttributeName(attributeName) {
     if (attributeName === 'href')
       return 'xlink:href';
@@ -208,6 +213,8 @@
   }
 
   function getAttributeValue(element, attributeName) {
+    if (animatedNumberOptionalNumberAttributes.indexOf(attributeName) !== -1)
+      return getAttributeValue(element, attributeName + 'X') + ', ' + getAttributeValue(element, attributeName + 'Y');
 
     // The attribute 'class' is exposed in IDL as 'className'
     if (attributeName === 'class')
@@ -227,6 +234,9 @@
       result = element[attributeName].animVal;
 
     if (!result) {
+      if (attributeName === 'filterResX' || attributeName === 'filterResY')
+        return null;
+
       console.log('Unknown attribute, cannot get ' + element.className.baseVal + ' ' + attributeName);
       return null;
     }
@@ -246,7 +256,8 @@
   function setAttributeValue(element, attributeName, expectation) {
     if (!element[attributeName]
         && attributeName !== 'class'
-        && (attributeName !== 'orient' || !element['orientType'])) {
+        && (attributeName !== 'orient' || !element['orientType'])
+        && (animatedNumberOptionalNumberAttributes.indexOf(attributeName) === -1 || !element[attributeName + 'X'])) {
       console.log('Unknown attribute, cannot set ' + element.className.baseVal + ' ' + attributeName);
       return;
     }
@@ -267,7 +278,15 @@
     }
   }
 
+  // The following collide with CSS properties.
+  var svgPrefixedAttributes = [
+    'order',
+  ];
+
   function makeKeyframes(target, attributeName, params) {
+    if (svgPrefixedAttributes.indexOf(attributeName) !== -1)
+      attributeName = 'svg' + attributeName[0].toUpperCase() + attributeName.slice(1);
+
     var keyframes = [{}, {}];
     if (attributeName === 'class') {
       // Preserve the existing classes as we use them to select elements.

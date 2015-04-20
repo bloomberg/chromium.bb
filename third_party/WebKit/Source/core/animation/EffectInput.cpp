@@ -77,6 +77,8 @@ const QualifiedName* supportedSVGAttribute(const String& property, SVGElement* s
             &HTMLNames::classAttr,
             &SVGNames::clipPathUnitsAttr,
             &SVGNames::edgeModeAttr,
+            &SVGNames::filterResAttr,
+            &SVGNames::orderAttr,
             &SVGNames::orientAttr,
             &SVGNames::pointsAttr,
             &XLinkNames::hrefAttr,

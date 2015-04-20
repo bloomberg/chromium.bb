@@ -897,6 +897,8 @@
             'animation/ImageStyleInterpolation.h',
             'animation/InertAnimation.cpp',
             'animation/InertAnimation.h',
+            'animation/IntegerOptionalIntegerSVGInterpolation.cpp',
+            'animation/IntegerOptionalIntegerSVGInterpolation.h',
             'animation/InterpolableValue.cpp',
             'animation/InterpolableValue.h',
             'animation/Interpolation.cpp',
