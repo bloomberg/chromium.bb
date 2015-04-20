@@ -970,7 +970,7 @@ page_flip_handler(int fd, unsigned int frame,
 static int set_plane(struct device *dev, struct plane_arg *p)
 {
 	drmModePlane *ovr;
-	uint32_t handles[4], pitches[4], offsets[4] = {0}; /* we only use [0] */
+	uint32_t handles[4] = {0}, pitches[4] = {0}, offsets[4] = {0};
 	uint32_t plane_id = 0;
 	struct bo *plane_bo;
 	uint32_t plane_flags = 0;
@@ -1052,7 +1052,7 @@ static int set_plane(struct device *dev, struct plane_arg *p)
 
 static void set_mode(struct device *dev, struct pipe_arg *pipes, unsigned int count)
 {
-	uint32_t handles[4], pitches[4], offsets[4] = {0}; /* we only use [0] */
+	uint32_t handles[4] = {0}, pitches[4] = {0}, offsets[4] = {0};
 	unsigned int fb_id;
 	struct bo *bo;
 	unsigned int i;
@@ -1131,7 +1131,7 @@ static void set_planes(struct device *dev, struct plane_arg *p, unsigned int cou
 
 static void set_cursors(struct device *dev, struct pipe_arg *pipes, unsigned int count)
 {
-	uint32_t handles[4], pitches[4], offsets[4] = {0}; /* we only use [0] */
+	uint32_t handles[4] = {0}, pitches[4] = {0}, offsets[4] = {0};
 	struct bo *bo;
 	unsigned int i;
 	int ret;
@@ -1171,7 +1171,7 @@ static void clear_cursors(struct device *dev)
 
 static void test_page_flip(struct device *dev, struct pipe_arg *pipes, unsigned int count)
 {
-	uint32_t handles[4], pitches[4], offsets[4] = {0}; /* we only use [0] */
+	uint32_t handles[4] = {0}, pitches[4] = {0}, offsets[4] = {0};
 	unsigned int other_fb_id;
 	struct bo *other_bo;
 	drmEventContext evctx;
