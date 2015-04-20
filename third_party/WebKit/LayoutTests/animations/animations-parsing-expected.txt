@@ -527,6 +527,7 @@ PASS style.animationFillMode is ''
 PASS computedStyle.animationFillMode is 'none'
 PASS style.webkitAnimationFillMode is ''
 PASS computedStyle.webkitAnimationFillMode is 'none'
+PASS style.animationFillMode is ''
 Valid animation shorthand values.
 PASS computedStyle.animation is 'none 0s ease 0s 1 normal none running'
 PASS computedStyle.webkitAnimation is 'none 0s ease 0s 1 normal none running'

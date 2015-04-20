@@ -827,6 +827,9 @@ shouldBe("computedStyle.animationFillMode", "'none'");
 shouldBe("style.webkitAnimationFillMode", "''");
 shouldBe("computedStyle.webkitAnimationFillMode", "'none'");
 
+style.animationFillMode = "forwards,";
+shouldBe("style.animationFillMode", "''");
+
 debug("Valid animation shorthand values.");
 style.animation = "";
 // Initial test.

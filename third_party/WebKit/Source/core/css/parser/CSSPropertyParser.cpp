@@ -3185,17 +3185,15 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationProperty(CSSPr
 PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseAnimationPropertyList(CSSPropertyID propId)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-    while (m_valueList->current()) {
+    while (true) {
         RefPtrWillBeRawPtr<CSSValue> value = parseAnimationProperty(propId);
         if (!value)
             return nullptr;
         list->append(value.release());
-        if (CSSParserValue* parserValue = m_valueList->current()) {
-            if (!isComma(parserValue))
-                return nullptr;
-            m_valueList->next();
-            ASSERT(m_valueList->current());
-        }
+        if (!m_valueList->current())
+            break;
+        if (!consumeComma(m_valueList) || !m_valueList->current())
+            return nullptr;
     }
     if ((propId == CSSPropertyTransitionProperty || propId == CSSPropertyWebkitTransitionProperty) && !isValidTransitionPropertyList(list.get()))
         return nullptr;
