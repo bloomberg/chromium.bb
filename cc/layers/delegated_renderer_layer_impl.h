@@ -67,6 +67,8 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
 
   void AppendRainbowDebugBorder(RenderPass* render_pass);
 
+  void TakeOwnershipOfResourcesIfOnActiveTree(
+      const ResourceProvider::ResourceIdSet& resources);
   void SetRenderPasses(RenderPassList* render_passes_in_draw_order);
   void ClearRenderPasses();
 

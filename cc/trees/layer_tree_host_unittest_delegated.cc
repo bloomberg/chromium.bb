@@ -243,6 +243,24 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
       output_surface()->ReturnResource(resources_to_return[i], &ack);
     host_impl->ReclaimResources(&ack);
   }
+
+  void ReturnAllResourcesFromParent(LayerTreeHostImpl* host_impl) {
+    DelegatedFrameData* delegated_frame_data =
+        output_surface()->last_sent_frame().delegated_frame_data.get();
+    if (!delegated_frame_data)
+      return;
+
+    const TransferableResourceArray& resources_held_by_parent =
+        output_surface()->resources_held_by_parent();
+
+    if (resources_held_by_parent.empty())
+      return;
+
+    CompositorFrameAck ack;
+    for (size_t i = 0; i < resources_held_by_parent.size(); ++i)
+      output_surface()->ReturnResource(resources_held_by_parent[i].id, &ack);
+    host_impl->ReclaimResources(&ack);
+  }
 };
 
 class LayerTreeHostDelegatedTestCaseSingleDelegatedLayer
@@ -1225,7 +1243,7 @@ class LayerTreeHostDelegatedTestBadFrame
 
     switch (host_impl->active_tree()->source_frame_number()) {
       case 1: {
-        // We have the first good frame with just 990 and 555 in it.
+        // We have the first good frame with just 999 and 555 in it.
         // layer.
         EXPECT_EQ(2u, map.size());
         EXPECT_EQ(1u, map.count(999));
@@ -1293,7 +1311,7 @@ class LayerTreeHostDelegatedTestUnnamedResource
  public:
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void DidCommit() override {
+  void DidCommitAndDrawFrame() override {
     scoped_ptr<DelegatedFrameData> frame;
     ReturnedResourceArray resources;
 
@@ -2164,6 +2182,82 @@ class LayerTreeHostDelegatedTestRemoveAndChangeResources
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostDelegatedTestRemoveAndChangeResources);
+
+class LayerTreeHostDelegatedTestActiveFrameIsValid
+    : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
+ public:
+  LayerTreeHostDelegatedTestActiveFrameIsValid()
+      : drew_with_pending_tree_(false) {}
+
+  void DidCommitAndDrawFrame() override {
+    scoped_ptr<DelegatedFrameData> frame;
+    switch (layer_tree_host()->source_frame_number()) {
+      case 1:
+        // This frame goes to the active tree.
+        frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
+        AddTextureQuad(frame.get(), 999);
+        AddTransferableResource(frame.get(), 999);
+        SetFrameData(frame.Pass());
+        break;
+      case 2:
+        // This frame stops in the pending tree while we redraw the active tree.
+        frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
+        AddTextureQuad(frame.get(), 555);
+        AddTransferableResource(frame.get(), 555);
+        SetFrameData(frame.Pass());
+        break;
+    }
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
+    if (host_impl->active_tree()->source_frame_number() < 1)
+      return;
+
+    LayerImpl* root_impl = host_impl->active_tree()->root_layer();
+    FakeDelegatedRendererLayerImpl* delegated_impl =
+        static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
+    const ResourceProvider::ResourceIdMap& map =
+        host_impl->resource_provider()->GetChildToParentMap(
+            delegated_impl->ChildId());
+
+    switch (host_impl->active_tree()->source_frame_number()) {
+      case 1:
+        if (!host_impl->pending_tree()) {
+          // Frame 2 is blocked from activating until another draw happens with
+          // Frame 1. This ensures we draw a different active frame from
+          // what's in the pending tree.
+          host_impl->BlockNotifyReadyToActivateForTesting(true);
+          host_impl->SetNeedsRedrawRect(gfx::Rect(1, 1));
+          break;
+        }
+
+        // The resources in the active tree should be valid.
+        EXPECT_EQ(1u, map.count(999));
+
+        host_impl->BlockNotifyReadyToActivateForTesting(false);
+        drew_with_pending_tree_ = true;
+        break;
+      case 2:
+        EXPECT_TRUE(drew_with_pending_tree_);
+
+        // The resources in the active tree should be valid.
+        EXPECT_EQ(1u, map.count(555));
+        EndTest();
+        break;
+    }
+  }
+
+  void SwapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) override {
+    // Return everything so that we can reliably delete resources that lose
+    // their references. This would happen if the tab was backgrounded or
+    // the parent decided to drop all resources for some reason.
+    ReturnAllResourcesFromParent(host_impl);
+  }
+
+  bool drew_with_pending_tree_;
+};
+
+MULTI_THREAD_IMPL_TEST_F(LayerTreeHostDelegatedTestActiveFrameIsValid);
 
 }  // namespace
 }  // namespace cc
