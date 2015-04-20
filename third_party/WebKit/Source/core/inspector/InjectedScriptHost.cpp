@@ -32,6 +32,7 @@
 #include "core/inspector/InjectedScriptHost.h"
 
 #include "bindings/core/v8/ScriptDebugServer.h"
+#include "core/inspector/EventListenerInfo.h"
 #include "core/inspector/InspectorConsoleAgent.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
@@ -86,7 +87,7 @@ void InjectedScriptHost::inspectImpl(PassRefPtr<JSONValue> object, PassRefPtr<JS
 
 void InjectedScriptHost::getEventListenersImpl(EventTarget* target, Vector<EventListenerInfo>& listenersArray)
 {
-    InspectorDOMAgent::getEventListeners(target, listenersArray, false);
+    EventListenerInfo::getEventListeners(target, listenersArray, false);
 }
 
 void InjectedScriptHost::clearConsoleMessages()

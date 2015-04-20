@@ -1578,6 +1578,8 @@
             'inspector/DOMPatchSupport.h',
             'inspector/DevToolsHost.cpp',
             'inspector/DevToolsHost.h',
+            'inspector/EventListenerInfo.cpp',
+            'inspector/EventListenerInfo.h',
             'inspector/IdentifiersFactory.cpp',
             'inspector/IdentifiersFactory.h',
             'inspector/InjectedScript.cpp',

@@ -74,20 +74,6 @@ struct InspectorHighlightConfig;
 
 typedef String ErrorString;
 
-
-struct EventListenerInfo {
-    EventListenerInfo(EventTarget* eventTarget, const AtomicString& eventType, const EventListenerVector& eventListenerVector)
-        : eventTarget(eventTarget)
-        , eventType(eventType)
-        , eventListenerVector(eventListenerVector)
-    {
-    }
-
-    EventTarget* eventTarget;
-    const AtomicString eventType;
-    const EventListenerVector eventListenerVector;
-};
-
 class InspectorDOMAgent final : public InspectorBaseAgent<InspectorDOMAgent, InspectorFrontend::DOM>, public InspectorBackendDispatcher::DOMCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorDOMAgent);
 public:
@@ -159,7 +145,6 @@ public:
     virtual void getNodeForLocation(ErrorString*, int x, int y, int* nodeId) override;
     virtual void getRelayoutBoundary(ErrorString*, int nodeId, int* relayoutBoundaryNodeId) override;
     virtual void getHighlightObjectForTest(ErrorString*, int nodeId, RefPtr<JSONObject>&) override;
-    static void getEventListeners(EventTarget*, Vector<EventListenerInfo>& listenersArray, bool includeAncestors);
 
     class Listener : public WillBeGarbageCollectedMixin {
     public:

@@ -54,6 +54,7 @@
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/events/EventTarget.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/inspector/EventListenerInfo.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InspectorDOMAgent.h"

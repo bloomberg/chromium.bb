@@ -104,17 +104,17 @@ static v8::MaybeLocal<v8::Function> eventListenerEffectiveFunction(v8::Isolate* 
     return v8::MaybeLocal<v8::Function>();
 }
 
-ScriptValue eventListenerHandler(Document* document, EventListener* listener)
+ScriptValue eventListenerHandler(ExecutionContext* executionContext, EventListener* listener)
 {
     if (listener->type() != EventListener::JSEventListenerType)
         return ScriptValue();
 
-    v8::Isolate* isolate = toIsolate(document);
+    v8::Isolate* isolate = toIsolate(executionContext);
     v8::HandleScope scope(isolate);
     V8AbstractEventListener* v8Listener = static_cast<V8AbstractEventListener*>(listener);
-    v8::Local<v8::Context> context = toV8Context(document, v8Listener->world());
+    v8::Local<v8::Context> context = toV8Context(executionContext, v8Listener->world());
     v8::Context::Scope contextScope(context);
-    v8::Local<v8::Object> function = v8Listener->getListenerObject(document);
+    v8::Local<v8::Object> function = v8Listener->getListenerObject(executionContext);
     if (function.IsEmpty())
         return ScriptValue();
     return ScriptValue(ScriptState::from(context), function);
@@ -130,16 +130,16 @@ ScriptState* eventListenerHandlerScriptState(LocalFrame* frame, EventListener* l
     return ScriptState::from(v8Context);
 }
 
-bool eventListenerHandlerLocation(Document* document, EventListener* listener, String& scriptId, int& lineNumber, int& columnNumber)
+bool eventListenerHandlerLocation(ExecutionContext* executionContext, EventListener* listener, String& scriptId, int& lineNumber, int& columnNumber)
 {
     if (listener->type() != EventListener::JSEventListenerType)
         return false;
 
-    v8::HandleScope scope(toIsolate(document));
+    v8::HandleScope scope(toIsolate(executionContext));
     V8AbstractEventListener* v8Listener = static_cast<V8AbstractEventListener*>(listener);
-    v8::Local<v8::Context> context = toV8Context(document, v8Listener->world());
+    v8::Local<v8::Context> context = toV8Context(executionContext, v8Listener->world());
     v8::Context::Scope contextScope(context);
-    v8::Local<v8::Object> object = v8Listener->getListenerObject(document);
+    v8::Local<v8::Object> object = v8Listener->getListenerObject(executionContext);
     if (object.IsEmpty())
         return false;
     v8::Local<v8::Function> function;

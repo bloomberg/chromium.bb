@@ -64,6 +64,7 @@
 #include "core/html/imports/HTMLImportLoader.h"
 #include "core/inspector/DOMEditor.h"
 #include "core/inspector/DOMPatchSupport.h"
+#include "core/inspector/EventListenerInfo.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
@@ -938,65 +939,15 @@ void InspectorDOMAgent::getEventListenersForNode(ErrorString* errorString, int n
     if (!node)
         return;
     Vector<EventListenerInfo> eventInformation;
-    getEventListeners(node, eventInformation, true);
-
-    // Get Capturing Listeners (in this order)
-    size_t eventInformationLength = eventInformation.size();
-    for (size_t i = 0; i < eventInformationLength; ++i) {
-        const EventListenerInfo& info = eventInformation[i];
-        const EventListenerVector& vector = info.eventListenerVector;
-        for (size_t j = 0; j < vector.size(); ++j) {
-            const RegisteredEventListener& listener = vector[j];
-            if (listener.useCapture) {
-                RefPtr<TypeBuilder::DOM::EventListener> listenerObject = buildObjectForEventListener(listener, info.eventType, info.eventTarget->toNode(), objectGroup);
-                if (listenerObject)
-                    listenersArray->addItem(listenerObject);
-            }
-        }
-    }
-
-    // Get Bubbling Listeners (reverse order)
-    for (size_t i = eventInformationLength; i; --i) {
-        const EventListenerInfo& info = eventInformation[i - 1];
-        const EventListenerVector& vector = info.eventListenerVector;
-        for (size_t j = 0; j < vector.size(); ++j) {
-            const RegisteredEventListener& listener = vector[j];
-            if (!listener.useCapture) {
-                RefPtr<TypeBuilder::DOM::EventListener> listenerObject = buildObjectForEventListener(listener, info.eventType, info.eventTarget->toNode(), objectGroup);
-                if (listenerObject)
-                    listenersArray->addItem(listenerObject);
-            }
-        }
-    }
-}
-
-void InspectorDOMAgent::getEventListeners(EventTarget* target, Vector<EventListenerInfo>& eventInformation, bool includeAncestors)
-{
-    // The Node's Ancestors including self.
-    Vector<EventTarget*> ancestors;
-    ancestors.append(target);
-    if (includeAncestors) {
-        Node* node = target->toNode();
-        for (ContainerNode* ancestor = node ? node->parentOrShadowHostNode() : nullptr; ancestor; ancestor = ancestor->parentOrShadowHostNode())
-            ancestors.append(ancestor);
-    }
-
-    // Nodes and their Listeners for the concerned event types (order is top to bottom)
-    for (size_t i = ancestors.size(); i; --i) {
-        EventTarget* ancestor = ancestors[i - 1];
-        Vector<AtomicString> eventTypes = ancestor->eventTypes();
-        for (size_t j = 0; j < eventTypes.size(); ++j) {
-            AtomicString& type = eventTypes[j];
-            const EventListenerVector& listeners = ancestor->getEventListeners(type);
-            EventListenerVector filteredListeners;
-            filteredListeners.reserveCapacity(listeners.size());
-            for (size_t k = 0; k < listeners.size(); ++k) {
-                if (listeners[k].listener->type() == EventListener::JSEventListenerType)
-                    filteredListeners.append(listeners[k]);
-            }
-            if (!filteredListeners.isEmpty())
-                eventInformation.append(EventListenerInfo(ancestor, type, filteredListeners));
-        }
+    EventListenerInfo::getEventListeners(node, eventInformation, true);
+    if (!eventInformation.size())
+        return;
+    RegisteredEventListenerIterator iterator(eventInformation);
+    while (const RegisteredEventListener* listener = iterator.nextRegisteredEventListener()) {
+        const EventListenerInfo& info = iterator.currentEventListenerInfo();
+        RefPtr<TypeBuilder::DOM::EventListener> listenerObject = buildObjectForEventListener(*listener, info.eventType, info.eventTarget->toNode(), objectGroup);
+        if (listenerObject)
+            listenersArray->addItem(listenerObject);
     }
 }
 
@@ -1776,22 +1727,8 @@ PassRefPtr<TypeBuilder::DOM::EventListener> InspectorDOMAgent::buildObjectForEve
         .setIsAttribute(eventListener->isAttribute())
         .setNodeId(pushNodePathToFrontend(node))
         .setLocation(location);
-    if (objectGroupId) {
-        ScriptValue functionValue = eventListenerHandler(&document, eventListener.get());
-        if (!functionValue.isEmpty()) {
-            LocalFrame* frame = document.frame();
-            if (frame) {
-                ScriptState* scriptState = eventListenerHandlerScriptState(frame, eventListener.get());
-                if (scriptState) {
-                    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(scriptState);
-                    if (!injectedScript.isEmpty()) {
-                        RefPtr<TypeBuilder::Runtime::RemoteObject> valueJson = injectedScript.wrapObject(functionValue, *objectGroupId);
-                        value->setHandler(valueJson);
-                    }
-                }
-            }
-        }
-    }
+    if (objectGroupId)
+        value->setHandler(eventHandlerObject(&document, eventListener.get(), m_injectedScriptManager, objectGroupId));
     return value.release();
 }
 

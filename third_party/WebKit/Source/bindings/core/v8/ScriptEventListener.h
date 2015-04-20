@@ -37,17 +37,17 @@
 
 namespace blink {
 
-class Document;
 class EventListener;
+class ExecutiionContext;
 class LocalFrame;
 class Node;
 class QualifiedName;
 
 PassRefPtr<V8LazyEventListener> createAttributeEventListener(Node*, const QualifiedName&, const AtomicString& value, const AtomicString& eventParameterName);
 PassRefPtr<V8LazyEventListener> createAttributeEventListener(LocalFrame*, const QualifiedName&, const AtomicString& value, const AtomicString& eventParameterName);
-ScriptValue eventListenerHandler(Document*, EventListener*);
+ScriptValue eventListenerHandler(ExecutionContext*, EventListener*);
 ScriptState* eventListenerHandlerScriptState(LocalFrame*, EventListener*);
-bool eventListenerHandlerLocation(Document*, EventListener*, String& scriptId, int& lineNumber, int& columnNumber);
+bool eventListenerHandlerLocation(ExecutionContext*, EventListener*, String& scriptId, int& lineNumber, int& columnNumber);
 
 } // namespace blink
 
