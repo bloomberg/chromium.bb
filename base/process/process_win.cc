@@ -32,6 +32,9 @@ Process::Process(RValue other)
   other.object->Close();
 }
 
+Process::~Process() {
+}
+
 Process& Process::operator=(RValue other) {
   if (this != other.object) {
     process_.Set(other.object->process_.Take());

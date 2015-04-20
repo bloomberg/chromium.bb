@@ -211,6 +211,9 @@ namespace base {
 Process::Process(ProcessHandle handle) : process_(handle) {
 }
 
+Process::~Process() {
+}
+
 Process::Process(RValue other)
     : process_(other.object->process_) {
   other.object->Close();

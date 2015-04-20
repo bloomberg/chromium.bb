@@ -41,7 +41,7 @@ class BASE_EXPORT Process {
   Process(RValue other);
 
   // The destructor does not terminate the process.
-  ~Process() {}
+  ~Process();
 
   // Move operator= for C++03 move emulation of this type.
   Process& operator=(RValue other);
