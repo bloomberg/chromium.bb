@@ -65,28 +65,29 @@ class MarkupAccumulator {
     WTF_MAKE_NONCOPYABLE(MarkupAccumulator);
     STACK_ALLOCATED();
 public:
+    static void appendComment(StringBuilder&, const String&);
+    static void appendCharactersReplacingEntities(StringBuilder&, const String&, unsigned, unsigned, EntityMask);
+    static size_t totalLength(const Vector<String>&);
+
     MarkupAccumulator(EAbsoluteURLs, SerializationType = AsOwnerDocument);
     virtual ~MarkupAccumulator();
 
     String serializeNodes(Node& targetNode, EChildrenOnly);
 
-    static void appendComment(StringBuilder&, const String&);
-
-    static void appendCharactersReplacingEntities(StringBuilder&, const String&, unsigned, unsigned, EntityMask);
-
     void appendString(const String&);
     virtual void appendStartTag(Node&, Namespaces* = nullptr);
     virtual void appendEndTag(const Element&);
-    static size_t totalLength(const Vector<String>&);
+    void appendStartMarkup(StringBuilder&, Node&, Namespaces*);
+    void appendEndMarkup(StringBuilder&, const Element&);
+
     size_t length() const { return m_markup.length(); }
     void concatenateMarkup(StringBuilder&);
+
+protected:
     void appendAttributeValue(StringBuilder&, const String&, bool);
     virtual void appendCustomAttributes(StringBuilder&, const Element&, Namespaces*);
-    bool shouldAddNamespaceElement(const Element&, Namespaces&);
-    bool shouldAddNamespaceAttribute(const Attribute&, const Element&);
 
     void appendNamespace(StringBuilder&, const AtomicString& prefix, const AtomicString& namespaceURI, Namespaces&);
-    EntityMask entityMaskForText(const Text&) const;
     virtual void appendText(StringBuilder&, Text&);
     void appendXMLDeclaration(StringBuilder&, const Document&);
     void appendDocumentType(StringBuilder&, const DocumentType&);
@@ -97,10 +98,12 @@ public:
     void appendCloseTag(StringBuilder&, const Element&);
     void appendAttribute(StringBuilder&, const Element&, const Attribute&, Namespaces*);
     void appendCDATASection(StringBuilder&, const String&);
-    void appendStartMarkup(StringBuilder&, Node&, Namespaces*);
-    bool shouldSelfClose(const Element&);
-    bool elementCannotHaveEndTag(const Node&);
-    void appendEndMarkup(StringBuilder&, const Element&);
+
+    bool shouldAddNamespaceElement(const Element&, Namespaces&) const;
+    bool shouldAddNamespaceAttribute(const Attribute&, const Element&) const;
+    EntityMask entityMaskForText(const Text&) const;
+    bool shouldSelfClose(const Element&) const;
+    bool elementCannotHaveEndTag(const Node&) const;
 
 private:
     String resolveURLIfNeeded(const Element&, const String&) const;
