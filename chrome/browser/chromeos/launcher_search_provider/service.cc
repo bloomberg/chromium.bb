@@ -84,6 +84,19 @@ void Service::OnQueryEnded() {
   is_query_running_ = false;
 }
 
+void Service::OnOpenResult(const ExtensionId& extension_id,
+                           const std::string& item_id) {
+  CHECK(ContainsValue(GetListenerExtensionIds(), extension_id));
+
+  extensions::EventRouter* event_router =
+      extensions::EventRouter::Get(profile_);
+  event_router->DispatchEventToExtension(
+      extension_id,
+      make_scoped_ptr(new extensions::Event(
+          api_launcher_search_provider::OnOpenResult::kEventName,
+          api_launcher_search_provider::OnOpenResult::Create(item_id))));
+}
+
 void Service::SetSearchResults(
     const extensions::Extension* extension,
     const std::string& query_id,
@@ -92,6 +105,10 @@ void Service::SetSearchResults(
   // If query is not running or query_id is different from current query id,
   // discard the results.
   if (!is_query_running_ || query_id != std::to_string(query_id_))
+    return;
+
+  // If |extension| is not in the listener extensions list, ignore it.
+  if (!ContainsValue(GetListenerExtensionIds(), extension->id()))
     return;
 
   // Set search results to provider.

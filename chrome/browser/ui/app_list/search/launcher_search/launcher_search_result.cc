@@ -7,7 +7,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/launcher_search_provider/service.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
+
+using chromeos::launcher_search_provider::Service;
 
 namespace {
 
@@ -52,6 +55,13 @@ scoped_ptr<SearchResult> LauncherSearchResult::Duplicate() const {
                                extension_, extension_icon_image_);
   duplicated_result->set_title(title());
   return make_scoped_ptr(duplicated_result);
+}
+
+void LauncherSearchResult::Open(int event_flags) {
+  RecordHistogram(LAUNCHER_SEARCH_PROVIDER_RESULT);
+
+  Service* service = Service::Get(profile_);
+  service->OnOpenResult(extension_->id(), item_id_);
 }
 
 void LauncherSearchResult::OnExtensionIconImageChanged(

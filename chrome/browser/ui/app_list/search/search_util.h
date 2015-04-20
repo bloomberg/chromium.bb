@@ -22,6 +22,8 @@ enum SearchResultType {
   SEARCH_PEOPLE_SEARCH_RESULT,
   // A result that opens a suggestion.
   SUGGESTIONS_SEARCH_RESULT,
+  // A result that is provided by the custom launcher search provider.
+  LAUNCHER_SEARCH_PROVIDER_RESULT,
   // Boundary is always last.
   SEARCH_RESULT_TYPE_BOUNDARY
 };

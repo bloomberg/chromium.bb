@@ -26,6 +26,7 @@ class LauncherSearchResult : public SearchResult,
                        const extensions::Extension* extension);
   ~LauncherSearchResult() override;
   scoped_ptr<SearchResult> Duplicate() const override;
+  void Open(int event_flags) override;
 
   void OnExtensionIconImageChanged(extensions::IconImage* image) override;
 

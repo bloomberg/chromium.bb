@@ -43,6 +43,10 @@ class Service : public KeyedService {
   // Dispatches onQueryEnded events to listener extensions.
   void OnQueryEnded();
 
+  // Dispatches onOpenResult event of |item_id| to |extension_id|.
+  void OnOpenResult(const extensions::ExtensionId& extension_id,
+                    const std::string& item_id);
+
   // Sets search results of a listener extension.
   void SetSearchResults(
       const extensions::Extension* extension,
