@@ -90,7 +90,6 @@ void OfflineAudioDestinationHandler::startRendering()
 
     if (!m_startedRendering) {
         m_startedRendering = true;
-        context()->notifyNodeStartedProcessing(node());
         m_renderThread = adoptPtr(blink::Platform::current()->createThread("Offline Audio Renderer"));
         m_renderThread->postTask(FROM_HERE, new Task(bind(&OfflineAudioDestinationHandler::offlineRender, PassRefPtr<OfflineAudioDestinationHandler>(this))));
     }
@@ -104,7 +103,6 @@ void OfflineAudioDestinationHandler::stopRendering()
 void OfflineAudioDestinationHandler::offlineRender()
 {
     offlineRenderInternal();
-    context()->notifyNodeFinishedProcessing(this);
     context()->handlePostRenderTasks();
 }
 

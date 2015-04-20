@@ -285,9 +285,6 @@ public:
     ScriptPromise suspendContext(ScriptState*);
     ScriptPromise resumeContext(ScriptState*);
 
-    // When a source node has started processing and needs to be protected,
-    // this method tells the context to protect the node.
-    void notifyNodeStartedProcessing(AudioNode*);
     // When a source node has no more processing to do (has finished playing),
     // this method tells the context to dereference the node.
     void notifyNodeFinishedProcessing(AudioHandler*);
