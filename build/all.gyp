@@ -85,6 +85,7 @@
               'dependencies': [
                 '../android_webview/android_webview.gyp:android_webview_apk',
                 '../android_webview/android_webview.gyp:system_webview_apk',
+                '../android_webview/android_webview_shell.gyp:android_webview_shell_apk',
                 '../android_webview/android_webview_telemetry_shell.gyp:android_webview_telemetry_shell_apk',
                 '../chrome/chrome.gyp:chrome_shell_apk',
                 '../chrome/chrome.gyp:chrome_sync_shell_apk',
