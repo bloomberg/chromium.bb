@@ -872,6 +872,7 @@
       'browser/indexed_db/indexed_db_pending_connection.h',
       'browser/indexed_db/indexed_db_quota_client.cc',
       'browser/indexed_db/indexed_db_quota_client.h',
+      'browser/indexed_db/indexed_db_response_value.h',
       'browser/indexed_db/indexed_db_transaction.cc',
       'browser/indexed_db/indexed_db_transaction.h',
       'browser/indexed_db/indexed_db_transaction_coordinator.cc',

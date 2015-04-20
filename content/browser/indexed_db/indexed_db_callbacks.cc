@@ -18,6 +18,7 @@
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
+#include "content/browser/indexed_db/indexed_db_return_value.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/common/indexed_db/indexed_db_constants.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
@@ -464,45 +465,14 @@ void IndexedDBCallbacks::OnSuccessWithPrefetch(
   dispatcher_host_ = NULL;
 }
 
-void IndexedDBCallbacks::OnSuccess(IndexedDBValue* value,
-                                   const IndexedDBKey& key,
-                                   const IndexedDBKeyPath& key_path) {
+void IndexedDBCallbacks::OnSuccess(IndexedDBReturnValue* value) {
   DCHECK(dispatcher_host_.get());
 
-  DCHECK_EQ(kNoCursor, ipc_cursor_id_);
-  DCHECK_EQ(kNoTransaction, host_transaction_id_);
-  DCHECK_EQ(kNoDatabase, ipc_database_id_);
-  DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
-  DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
-
-  scoped_ptr<IndexedDBMsg_CallbacksSuccessValueWithKey_Params> params(
-      new IndexedDBMsg_CallbacksSuccessValueWithKey_Params());
-  params->ipc_thread_id = ipc_thread_id_;
-  params->ipc_callbacks_id = ipc_callbacks_id_;
-  params->primary_key = key;
-  params->key_path = key_path;
-  if (value && !value->empty())
-    std::swap(params->value.bits, value->bits);
-  if (!value || value->blob_info.empty()) {
-    dispatcher_host_->Send(
-        new IndexedDBMsg_CallbacksSuccessValueWithKey(*params));
+  if (value && value->primary_key.IsValid()) {
+    DCHECK_EQ(kNoCursor, ipc_cursor_id_);
   } else {
-    IndexedDBMsg_CallbacksSuccessValueWithKey_Params* p = params.get();
-    FillInBlobData(value->blob_info, &p->value.blob_or_file_info);
-    RegisterBlobsAndSend(
-        value->blob_info,
-        base::Bind(
-            CreateBlobsAndSend<IndexedDBMsg_CallbacksSuccessValueWithKey_Params,
-                               IndexedDBMsg_CallbacksSuccessValueWithKey>,
-            base::Owned(params.release()), dispatcher_host_, value->blob_info,
-            base::Unretained(&p->value.blob_or_file_info)));
+    DCHECK(kNoCursor == ipc_cursor_id_ || value == NULL);
   }
-  dispatcher_host_ = NULL;
-}
-
-void IndexedDBCallbacks::OnSuccess(IndexedDBValue* value) {
-  DCHECK(dispatcher_host_.get());
-  DCHECK(kNoCursor == ipc_cursor_id_ || value == NULL);
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
   DCHECK_EQ(kNoDatabase, ipc_database_id_);
   DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
@@ -512,6 +482,10 @@ void IndexedDBCallbacks::OnSuccess(IndexedDBValue* value) {
       new IndexedDBMsg_CallbacksSuccessValue_Params());
   params->ipc_thread_id = ipc_thread_id_;
   params->ipc_callbacks_id = ipc_callbacks_id_;
+  if (value && value->primary_key.IsValid()) {
+    params->value.primary_key = value->primary_key;
+    params->value.key_path = value->key_path;
+  }
   if (value && !value->empty())
     std::swap(params->value.bits, value->bits);
   if (!value || value->blob_info.empty()) {

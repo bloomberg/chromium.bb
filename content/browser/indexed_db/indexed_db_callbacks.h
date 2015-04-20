@@ -26,6 +26,7 @@ class IndexedDBCursor;
 class IndexedDBDatabase;
 class IndexedDBDatabaseCallbacks;
 struct IndexedDBDatabaseMetadata;
+struct IndexedDBReturnValue;
 struct IndexedDBValue;
 
 class CONTENT_EXPORT IndexedDBCallbacks
@@ -85,13 +86,9 @@ class CONTENT_EXPORT IndexedDBCallbacks
       const std::vector<IndexedDBKey>& primary_keys,
       std::vector<IndexedDBValue>* values);
 
-  // IndexedDBDatabase::Get (with key injection)
-  virtual void OnSuccess(IndexedDBValue* value,
-                         const IndexedDBKey& key,
-                         const IndexedDBKeyPath& key_path);
-
   // IndexedDBDatabase::Get
-  virtual void OnSuccess(IndexedDBValue* value);
+  // IndexedDBCursor::Advance
+  virtual void OnSuccess(IndexedDBReturnValue* value);
 
   // IndexedDBDatabase::Put / IndexedDBCursor::Update
   virtual void OnSuccess(const IndexedDBKey& key);

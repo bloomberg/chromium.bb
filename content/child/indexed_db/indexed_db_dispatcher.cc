@@ -144,8 +144,6 @@ void IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessStringList,
                         OnSuccessStringList)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessValue, OnSuccessValue)
-    IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessValueWithKey,
-                        OnSuccessValueWithKey)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessInteger, OnSuccessInteger)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessUndefined,
                         OnSuccessUndefined)
@@ -560,25 +558,14 @@ void IndexedDBDispatcher::OnSuccessValue(
   WebData web_value;
   WebVector<WebBlobInfo> web_blob_info;
   PrepareWebValueAndBlobInfo(params.value, &web_value, &web_blob_info);
-  callbacks->onSuccess(web_value, web_blob_info);
-  pending_callbacks_.Remove(params.ipc_callbacks_id);
-  cursor_transaction_ids_.erase(params.ipc_callbacks_id);
-}
-
-void IndexedDBDispatcher::OnSuccessValueWithKey(
-    const IndexedDBMsg_CallbacksSuccessValueWithKey_Params& params) {
-  DCHECK_EQ(params.ipc_thread_id, CurrentWorkerId());
-  WebIDBCallbacks* callbacks =
-      pending_callbacks_.Lookup(params.ipc_callbacks_id);
-  if (!callbacks)
-    return;
-  WebData web_value;
-  WebVector<WebBlobInfo> web_blob_info;
-  PrepareWebValueAndBlobInfo(params.value, &web_value, &web_blob_info);
-  callbacks->onSuccess(web_value,
-                       web_blob_info,
-                       WebIDBKeyBuilder::Build(params.primary_key),
-                       WebIDBKeyPathBuilder::Build(params.key_path));
+  if (params.value.primary_key.IsValid()) {
+    callbacks->onSuccess(web_value, web_blob_info,
+                         WebIDBKeyBuilder::Build(params.value.primary_key),
+                         WebIDBKeyPathBuilder::Build(params.value.key_path));
+  } else {
+    callbacks->onSuccess(web_value, web_blob_info);
+    cursor_transaction_ids_.erase(params.ipc_callbacks_id);
+  }
   pending_callbacks_.Remove(params.ipc_callbacks_id);
 }
 

@@ -21,6 +21,7 @@
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_index_writer.h"
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
+#include "content/browser/indexed_db/indexed_db_return_value.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
@@ -588,7 +589,7 @@ void IndexedDBDatabase::GetOperation(
   scoped_ptr<IndexedDBKey> primary_key;
   if (index_id == IndexedDBIndexMetadata::kInvalidId) {
     // Object Store Retrieval Operation
-    IndexedDBValue value;
+    IndexedDBReturnValue value;
     s = backing_store_->GetRecord(transaction->BackingStoreTransaction(),
                                   id(),
                                   object_store_id,
@@ -612,8 +613,8 @@ void IndexedDBDatabase::GetOperation(
 
     if (object_store_metadata.auto_increment &&
         !object_store_metadata.key_path.IsNull()) {
-      callbacks->OnSuccess(&value, *key, object_store_metadata.key_path);
-      return;
+      value.primary_key = *key;
+      value.key_path = object_store_metadata.key_path;
     }
 
     callbacks->OnSuccess(&value);
@@ -648,7 +649,7 @@ void IndexedDBDatabase::GetOperation(
   }
 
   // Index Referenced Value Retrieval Operation
-  IndexedDBValue value;
+  IndexedDBReturnValue value;
   s = backing_store_->GetRecord(transaction->BackingStoreTransaction(),
                                 id(),
                                 object_store_id,
@@ -670,8 +671,8 @@ void IndexedDBDatabase::GetOperation(
   }
   if (object_store_metadata.auto_increment &&
       !object_store_metadata.key_path.IsNull()) {
-    callbacks->OnSuccess(&value, *primary_key, object_store_metadata.key_path);
-    return;
+    value.primary_key = *primary_key;
+    value.key_path = object_store_metadata.key_path;
   }
   callbacks->OnSuccess(&value);
 }
@@ -1110,7 +1111,7 @@ void IndexedDBDatabase::OpenCursorOperation(
 
   if (!backing_store_cursor) {
     // Why is Success being called?
-    params->callbacks->OnSuccess(static_cast<IndexedDBValue*>(NULL));
+    params->callbacks->OnSuccess(nullptr);
     return;
   }
 

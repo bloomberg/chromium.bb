@@ -143,6 +143,13 @@ IPC_STRUCT_BEGIN(IndexedDBMsg_Value)
   IPC_STRUCT_MEMBER(std::vector<IndexedDBMsg_BlobOrFileInfo>, blob_or_file_info)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN_WITH_PARENT(IndexedDBMsg_ReturnValue, IndexedDBMsg_Value)
+  IPC_STRUCT_TRAITS_PARENT(IndexedDBMsg_Value)
+  // Optional primary key & path used only when key generator specified.
+  IPC_STRUCT_MEMBER(content::IndexedDBKey, primary_key)
+  IPC_STRUCT_MEMBER(content::IndexedDBKeyPath, key_path)
+IPC_STRUCT_END()
+
 // Used to set a value in an object store.
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabasePut_Params)
   // The id any response should contain.
@@ -283,15 +290,7 @@ IPC_STRUCT_END()
 IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessValue_Params)
   IPC_STRUCT_MEMBER(int32, ipc_thread_id)
   IPC_STRUCT_MEMBER(int32, ipc_callbacks_id)
-  IPC_STRUCT_MEMBER(IndexedDBMsg_Value, value)
-IPC_STRUCT_END()
-
-IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessValueWithKey_Params)
-  IPC_STRUCT_MEMBER(int32, ipc_thread_id)
-  IPC_STRUCT_MEMBER(int32, ipc_callbacks_id)
-  IPC_STRUCT_MEMBER(IndexedDBMsg_Value, value)
-  IPC_STRUCT_MEMBER(content::IndexedDBKey, primary_key)
-  IPC_STRUCT_MEMBER(content::IndexedDBKeyPath, key_path)
+  IPC_STRUCT_MEMBER(IndexedDBMsg_ReturnValue, value)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(IndexedDBIndexMetadata)
@@ -363,9 +362,6 @@ IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessIndexedDBKey,
 
 IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessValue,
                      IndexedDBMsg_CallbacksSuccessValue_Params)
-
-IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessValueWithKey,
-                     IndexedDBMsg_CallbacksSuccessValueWithKey_Params)
 
 IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessInteger,
                      int32 /* ipc_thread_id */,
