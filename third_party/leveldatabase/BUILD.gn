@@ -66,10 +66,6 @@ static_library("leveldatabase") {
     "src/include/leveldb/table_builder.h",
     "src/include/leveldb/write_batch.h",
     "src/port/port.h",
-    "src/port/port_example.h",
-
-    #"src/port/port_posix.cc",  # We use the chromium port instead of this.
-    #"src/port/port_posix.h",
     "src/table/block.cc",
     "src/table/block.h",
     "src/table/block_builder.cc",
