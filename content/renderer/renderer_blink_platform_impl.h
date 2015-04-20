@@ -35,7 +35,6 @@ class WebDeviceMotionData;
 class WebDeviceOrientationData;
 class WebGraphicsContext3DProvider;
 class WebServiceWorkerCacheStorage;
-class WebScheduler;
 }
 
 namespace content {
@@ -52,7 +51,6 @@ class ThreadSafeSender;
 class WebClipboardImpl;
 class WebDatabaseObserverImpl;
 class WebFileSystemImpl;
-class WebSchedulerImpl;
 class WebThreadImplForRendererScheduler;
 
 class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
@@ -158,7 +156,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       blink::WebStorageQuotaCallbacks);
   virtual void vibrate(unsigned int milliseconds);
   virtual void cancelVibration();
-  virtual blink::WebScheduler* scheduler();
   virtual blink::WebThread* currentThread();
   virtual void recordRappor(const char* metric, const blink::WebString& sample);
   virtual void recordRapporURL(const char* metric, const blink::WebURL& url);
@@ -211,7 +208,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void SendFakeDeviceEventDataForTesting(blink::WebPlatformEventType type);
   device::VibrationManagerPtr& GetConnectedVibrationManagerService();
 
-  scoped_ptr<WebSchedulerImpl> web_scheduler_;
   scoped_ptr<WebThreadImplForRendererScheduler> main_thread_;
 
   scoped_ptr<RendererClipboardDelegate> clipboard_delegate_;

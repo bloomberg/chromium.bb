@@ -223,11 +223,6 @@ class RendererBlinkPlatformImpl::SandboxSupport
 RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
     RendererScheduler* renderer_scheduler)
     : BlinkPlatformImpl(renderer_scheduler->DefaultTaskRunner()),
-      web_scheduler_(
-          new WebSchedulerImpl(renderer_scheduler,
-                               renderer_scheduler->IdleTaskRunner(),
-                               renderer_scheduler->LoadingTaskRunner(),
-                               renderer_scheduler->TimerTaskRunner())),
       main_thread_(new WebThreadImplForRendererScheduler(renderer_scheduler)),
       clipboard_delegate_(new RendererClipboardDelegate),
       clipboard_(new WebClipboardImpl(clipboard_delegate_.get())),
@@ -261,10 +256,6 @@ RendererBlinkPlatformImpl::~RendererBlinkPlatformImpl() {
 }
 
 //------------------------------------------------------------------------------
-
-blink::WebScheduler* RendererBlinkPlatformImpl::scheduler() {
-  return web_scheduler_.get();
-}
 
 blink::WebThread* RendererBlinkPlatformImpl::currentThread() {
   if (main_thread_->isCurrentThread())
