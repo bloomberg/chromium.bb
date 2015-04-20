@@ -8,10 +8,10 @@
 #include <string>
 #include <vector>
 
+#include "base/stl_util.h"
 #include "base/tracked_objects.h"
 #include "components/metrics/metrics_log.h"
 #include "components/nacl/common/nacl_process_type.h"
-#include "components/variations/variations_associated_data.h"
 
 namespace metrics {
 
@@ -102,21 +102,13 @@ void WriteProfilerData(
   }
 }
 
-// Returns true if the user is assigned to the experiment group for enabled
-// cellular uploads.
-bool IsCellularEnabledByExperiment() {
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("UMA_EnableCellularLogUpload");
-  return group_name == "Enabled";
-}
-
 }  // namespace
 
 ProfilerMetricsProvider::ProfilerMetricsProvider() {
 }
 
 ProfilerMetricsProvider::ProfilerMetricsProvider(
-    const base::Callback<void(bool*)>& cellular_callback)
+    const base::Callback<bool(void)>& cellular_callback)
     : cellular_callback_(cellular_callback) {
 }
 
@@ -145,7 +137,7 @@ void ProfilerMetricsProvider::RecordProfilerData(
     base::TimeDelta phase_start,
     base::TimeDelta phase_finish,
     const ProfilerEvents& past_events) {
-  if (IsCellularConnection() && IsCellularEnabledByExperiment())
+  if (IsCellularLogicEnabled())
     return;
   if (tracked_objects::GetTimeSourceType() !=
       tracked_objects::TIME_SOURCE_TYPE_WALL_TIME) {
@@ -171,15 +163,13 @@ void ProfilerMetricsProvider::RecordProfilerData(
                     profiler_event);
 }
 
-bool ProfilerMetricsProvider::IsCellularConnection() {
-  bool is_cellular = false;
-// For android get current connection type from NetworkMetricsProvider if the
-// callback exists.
+bool ProfilerMetricsProvider::IsCellularLogicEnabled() {
+// For android get current connection type if the callback exists.
 #if defined(OS_ANDROID)
   if (!cellular_callback_.is_null())
-    cellular_callback_.Run(&is_cellular);
+    return cellular_callback_.Run();
 #endif
-  return is_cellular;
+  return false;
 }
 
 }  // namespace metrics

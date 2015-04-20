@@ -227,24 +227,4 @@ void NetworkMetricsProvider::WriteWifiAccessPointProto(
   }
 }
 
-bool NetworkMetricsProvider::IsCellularConnection() {
-  switch (GetConnectionType()) {
-    case SystemProfileProto_Network_ConnectionType_CONNECTION_2G:
-    case SystemProfileProto_Network_ConnectionType_CONNECTION_3G:
-    case SystemProfileProto_Network_ConnectionType_CONNECTION_4G:
-      return true;
-    default:
-      return false;
-  }
-}
-
-void NetworkMetricsProvider::GetIsCellularConnection(bool* is_cellular_out) {
-  *is_cellular_out = IsCellularConnection();
-}
-
-base::Callback<void(bool*)> NetworkMetricsProvider::GetConnectionCallback() {
-  return base::Bind(&NetworkMetricsProvider::GetIsCellularConnection,
-                 weak_ptr_factory_.GetWeakPtr());
-}
-
 }  // namespace metrics

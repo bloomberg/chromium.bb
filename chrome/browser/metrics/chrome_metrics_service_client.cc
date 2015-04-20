@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
@@ -39,6 +38,7 @@
 #include "components/metrics/profiler/profiler_metrics_provider.h"
 #include "components/metrics/profiler/tracking_synchronizer.h"
 #include "components/metrics/url_constants.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/notification_service.h"
@@ -89,15 +89,17 @@ const int kStandardUploadIntervalCellularSeconds = 15 * 60;  // Fifteen minutes.
 const int kStandardUploadIntervalSeconds = 30 * 60;  // Thirty minutes.
 #endif
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
-// Returns true if the user is assigned to the experiment group for enabled
-// cellular uploads.
-bool IsCellularEnabledByExperiment() {
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("UMA_EnableCellularLogUpload");
-  return group_name == "Enabled";
+// Returns true if current connection type is cellular and user is assigned to
+// experimental group for enabled cellular uploads.
+bool IsCellularLogicEnabled() {
+  if (variations::GetVariationParamValue("UMA_EnableCellularLogUpload",
+                                         "Enabled") != "true") {
+    return false;
+  }
+
+  return net::NetworkChangeNotifier::IsConnectionCellular(
+      net::NetworkChangeNotifier::GetConnectionType());
 }
-#endif
 
 }  // namespace
 
@@ -252,10 +254,7 @@ ChromeMetricsServiceClient::CreateUploader(
 
 base::TimeDelta ChromeMetricsServiceClient::GetStandardUploadInterval() {
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  bool is_cellular = false;
-  cellular_callback_.Run(&is_cellular);
-
-  if (is_cellular && IsCellularEnabledByExperiment())
+  if (IsCellularLogicEnabled())
     return base::TimeDelta::FromSeconds(kStandardUploadIntervalCellularSeconds);
 #endif
   return base::TimeDelta::FromSeconds(kStandardUploadIntervalSeconds);
@@ -288,11 +287,9 @@ void ChromeMetricsServiceClient::Initialize() {
       scoped_ptr<metrics::MetricsProvider>(
           new ExtensionsMetricsProvider(metrics_state_manager_)));
 #endif
-  scoped_ptr<metrics::NetworkMetricsProvider> network_metrics_provider(
-      new metrics::NetworkMetricsProvider(
-          content::BrowserThread::GetBlockingPool()));
-  cellular_callback_ = network_metrics_provider->GetConnectionCallback();
-  metrics_service_->RegisterMetricsProvider(network_metrics_provider.Pass());
+  metrics_service_->RegisterMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(new metrics::NetworkMetricsProvider(
+          content::BrowserThread::GetBlockingPool())));
 
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(new OmniboxMetricsProvider));
@@ -306,7 +303,7 @@ void ChromeMetricsServiceClient::Initialize() {
       scoped_ptr<metrics::MetricsProvider>(drive_metrics_provider_));
 
   profiler_metrics_provider_ =
-      new metrics::ProfilerMetricsProvider(cellular_callback_);
+      new metrics::ProfilerMetricsProvider(base::Bind(&IsCellularLogicEnabled));
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(profiler_metrics_provider_));
 

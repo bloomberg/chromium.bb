@@ -27,10 +27,6 @@ class NetworkMetricsProvider
   explicit NetworkMetricsProvider(base::TaskRunner* io_task_runner);
   ~NetworkMetricsProvider() override;
 
-  // Returns callback function bound to the weak pointer of the provider, which
-  // can be used to get whether current connection type is cellular.
-  base::Callback<void(bool*)> GetConnectionCallback();
-
  private:
   // MetricsProvider:
   void OnDidCreateMetricsLog() override;
@@ -55,13 +51,6 @@ class NetworkMetricsProvider
   void WriteWifiAccessPointProto(
       const WifiAccessPointInfoProvider::WifiAccessPointInfo& info,
       SystemProfileProto::Network* network_proto);
-
-  // Returns true if the connection type is 2G, 3G, or 4G.
-  bool IsCellularConnection();
-
-  // Assigns the passed |is_cellular_out| parameter based on whether current
-  // network connection is cellular.
-  void GetIsCellularConnection(bool* is_cellular_out);
 
   // Task runner used for blocking file I/O.
   base::TaskRunner* io_task_runner_;

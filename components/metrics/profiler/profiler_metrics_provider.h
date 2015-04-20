@@ -23,7 +23,7 @@ namespace metrics {
 class ProfilerMetricsProvider : public MetricsProvider {
  public:
   explicit ProfilerMetricsProvider(
-      const base::Callback<void(bool*)>& cellular_callback);
+      const base::Callback<bool(void)>& cellular_callback);
   // Creates profiler metrics provider with a null callback.
   ProfilerMetricsProvider();
   ~ProfilerMetricsProvider() override;
@@ -43,9 +43,10 @@ class ProfilerMetricsProvider : public MetricsProvider {
       const ProfilerEvents& past_events);
 
  private:
-  // Returns whether current connection is cellular or not according to the
-  // callback.
-  bool IsCellularConnection();
+  // Returns true if current connection type is cellular and user is assigned to
+  // experimental group for enabled cellular uploads according to
+  // |cellular_callback_|.
+  bool IsCellularLogicEnabled();
 
   // Saved cache of generated Profiler event protos, to be copied into the UMA
   // proto when ProvideGeneralMetrics() is called. The map is from a profiling
@@ -53,8 +54,9 @@ class ProfilerMetricsProvider : public MetricsProvider {
   // profiling phase.
   std::map<int, ProfilerEventProto> profiler_events_cache_;
 
-  // Callback function used to get current network connection type.
-  base::Callback<void(bool*)> cellular_callback_;
+  // Returns true if current connection type is cellular and user is assigned to
+  // experimental group for enabled cellular uploads.
+  base::Callback<bool(void)> cellular_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfilerMetricsProvider);
 };
