@@ -211,9 +211,10 @@ void InternetOptionsHandler::GetLocalizedValues(
   bool logged_in_as_owner = LoginState::Get()->GetLoggedInUserType() ==
                             LoginState::LOGGED_IN_USER_OWNER;
   localized_strings->SetBoolean(kLoggedInAsOwnerKey, logged_in_as_owner);
+  // TODO(anujsharma): Remove kShowCarrierSelectKey, as it is not
+  // required anymore.
   localized_strings->SetBoolean(
-      kShowCarrierSelectKey, base::CommandLine::ForCurrentProcess()->HasSwitch(
-                                 chromeos::switches::kEnableCarrierSwitching));
+      kShowCarrierSelectKey, false);
 
   base::DictionaryValue* network_dictionary = new base::DictionaryValue;
   FillNetworkInfo(network_dictionary);

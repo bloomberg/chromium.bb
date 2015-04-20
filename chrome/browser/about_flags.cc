@@ -1064,13 +1064,6 @@ const Experiment kExperiments[] = {
 #endif  // defined(USE_ASH)
 #if defined(OS_CHROMEOS)
   {
-    "enable-carrier-switching",
-    IDS_FLAGS_ENABLE_CARRIER_SWITCHING,
-    IDS_FLAGS_ENABLE_CARRIER_SWITCHING_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kEnableCarrierSwitching)
-  },
-  {
     "disable-cloud-import",
     IDS_FLAGS_DISABLE_CLOUD_IMPORT,
     IDS_FLAGS_DISABLE_CLOUD_IMPORT_DESCRIPTION,

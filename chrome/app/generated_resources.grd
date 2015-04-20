@@ -6266,12 +6266,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_ACCELERATED_VIDEO_DECODE_DESCRIPTION" desc="Description for the flag to disable accelerated video decode where available.">
         Disables hardware-accelerated video decode where available.
       </message>
-      <message name="IDS_FLAGS_ENABLE_CARRIER_SWITCHING" desc="Name for the flag to set to enable mobile carrier switching.">
-        Enable switching between mobile carriers.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_CARRIER_SWITCHING_DESCRIPTION" desc="Description for the flag to set to enable carrier switching.">
-        Allows the user to switch between mobile carriers from the UI. Warning: The Sprint carrier will ONLY work for users with an existing Sprint plan.
-      </message>
       <message name="IDS_FLAGS_DISABLE_CLOUD_IMPORT" desc="Name for the flag to disable cloud import feature.">
         Disable Cloud Import.
       </message>

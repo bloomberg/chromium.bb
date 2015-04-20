@@ -57,7 +57,6 @@ CHROMEOS_EXPORT extern const char kDisableVolumeAdjustSound[];
 CHROMEOS_EXPORT extern const char kDisableWakeOnWifi[];
 CHROMEOS_EXPORT extern const char kEafeUrl[];
 CHROMEOS_EXPORT extern const char kEafePath[];
-CHROMEOS_EXPORT extern const char kEnableCarrierSwitching[];
 CHROMEOS_EXPORT extern const char kEnableConsumerManagement[];
 CHROMEOS_EXPORT extern const char kEnableExtensionAssetsSharing[];
 CHROMEOS_EXPORT extern const char kEnableFirewallHolePunching[];
