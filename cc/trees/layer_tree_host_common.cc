@@ -2485,22 +2485,74 @@ static bool ApproximatelyEqual(const gfx::Transform& a,
   return true;
 }
 
-void LayerTreeHostCommon::CalculateDrawProperties(
-    CalcDrawPropsMainInputs* inputs) {
-  UpdateRenderSurfaces(inputs->root_layer,
-                       inputs->can_render_to_separate_surface, gfx::Transform(),
-                       false);
-  LayerList dummy_layer_list;
-  SubtreeGlobals<Layer> globals;
-  DataForRecursion<Layer> data_for_recursion;
-  ProcessCalcDrawPropsInputs(*inputs, &globals, &data_for_recursion);
+void VerifyPropertyTreeValues(
+    LayerTreeHostCommon::CalcDrawPropsMainInputs* inputs) {
+  LayerIterator<Layer> it, end;
+  for (it = LayerIterator<Layer>::Begin(inputs->render_surface_layer_list),
+      end = LayerIterator<Layer>::End(inputs->render_surface_layer_list);
+       it != end; ++it) {
+    Layer* current_layer = *it;
+    if (!it.represents_itself() || !current_layer->DrawsContent())
+      continue;
 
+    const bool visible_rects_match =
+        ApproximatelyEqual(current_layer->visible_content_rect(),
+                           current_layer->visible_rect_from_property_trees());
+    CHECK(visible_rects_match)
+        << "expected: " << current_layer->visible_content_rect().ToString()
+        << " actual: "
+        << current_layer->visible_rect_from_property_trees().ToString();
+
+    const bool draw_transforms_match = ApproximatelyEqual(
+        current_layer->draw_transform(),
+        DrawTransformFromPropertyTrees(current_layer,
+                                       inputs->property_trees->transform_tree));
+    CHECK(draw_transforms_match)
+        << "expected: " << current_layer->draw_transform().ToString()
+        << " actual: "
+        << DrawTransformFromPropertyTrees(
+               current_layer, inputs->property_trees->transform_tree)
+               .ToString();
+
+    const bool draw_opacities_match =
+        current_layer->draw_opacity() ==
+        DrawOpacityFromPropertyTrees(current_layer,
+                                     inputs->property_trees->opacity_tree);
+    CHECK(draw_opacities_match)
+        << "expected: " << current_layer->draw_opacity() << " actual: "
+        << DrawOpacityFromPropertyTrees(current_layer,
+                                        inputs->property_trees->opacity_tree);
+  }
+}
+
+void VerifyPropertyTreeValues(
+    LayerTreeHostCommon::CalcDrawPropsImplInputs* inputs) {
+  // TODO(enne): need to synchronize compositor thread changes
+  // for animation and scrolling to the property trees before these
+  // can be correct.
+}
+
+enum PropertyTreeOption {
+  BUILD_PROPERTY_TREES_IF_NEEDED,
+  DONT_BUILD_PROPERTY_TREES
+};
+
+template <typename LayerType, typename RenderSurfaceLayerListType>
+void CalculateDrawPropertiesAndVerify(LayerTreeHostCommon::CalcDrawPropsInputs<
+                                          LayerType,
+                                          RenderSurfaceLayerListType>* inputs,
+                                      PropertyTreeOption property_tree_option) {
+  typename LayerType::LayerListType dummy_layer_list;
+  SubtreeGlobals<LayerType> globals;
+  DataForRecursion<LayerType> data_for_recursion;
+
+  ProcessCalcDrawPropsInputs(*inputs, &globals, &data_for_recursion);
   PreCalculateMetaInformationRecursiveData recursive_data;
   PreCalculateMetaInformation(inputs->root_layer, &recursive_data);
 
   if (!inputs->verify_property_trees) {
-    std::vector<AccumulatedSurfaceState<Layer>> accumulated_surface_state;
-    CalculateDrawPropertiesInternal<Layer>(
+    std::vector<AccumulatedSurfaceState<LayerType>> accumulated_surface_state;
+    CalculateDrawPropertiesInternal<LayerType>(
         inputs->root_layer, globals, data_for_recursion,
         inputs->render_surface_layer_list, &dummy_layer_list,
         &accumulated_surface_state,
@@ -2509,57 +2561,43 @@ void LayerTreeHostCommon::CalculateDrawProperties(
     {
       TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
                    "LayerTreeHostCommon::CalculateDrawProperties");
-      std::vector<AccumulatedSurfaceState<Layer>> accumulated_surface_state;
-      CalculateDrawPropertiesInternal<Layer>(
+      std::vector<AccumulatedSurfaceState<LayerType>> accumulated_surface_state;
+      CalculateDrawPropertiesInternal<LayerType>(
           inputs->root_layer, globals, data_for_recursion,
           inputs->render_surface_layer_list, &dummy_layer_list,
           &accumulated_surface_state,
           inputs->current_render_surface_layer_list_id);
     }
 
-    // The translation from layer to property trees is an intermediate state. We
-    // will eventually get these data passed directly to the compositor.
-    {
-      TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
-                   "LayerTreeHostCommon::ComputeVisibleRectsWithPropertyTrees");
-      ComputeVisibleRectsUsingPropertyTrees(
-          inputs->root_layer, inputs->page_scale_application_layer,
-          inputs->page_scale_factor, inputs->device_scale_factor,
-          gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
-          inputs->property_trees);
+    // For testing purposes, sometimes property trees need to be built on the
+    // compositor thread, so this can't just switch on Layer vs LayerImpl,
+    // even though in practice only the main thread builds property trees.
+    switch (property_tree_option) {
+      case BUILD_PROPERTY_TREES_IF_NEEDED: {
+        // The translation from layer to property trees is an intermediate
+        // state. We will eventually get these data passed directly to the
+        // compositor.
+        TRACE_EVENT0(
+            TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
+            "LayerTreeHostCommon::ComputeVisibleRectsWithPropertyTrees");
+        BuildPropertyTreesAndComputeVisibleRects(
+            inputs->root_layer, inputs->page_scale_application_layer,
+            inputs->page_scale_factor, inputs->device_scale_factor,
+            gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
+            inputs->property_trees);
+        break;
+      }
+      case DONT_BUILD_PROPERTY_TREES: {
+        TRACE_EVENT0(
+            TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
+            "LayerTreeHostCommon::ComputeJustVisibleRectsWithPropertyTrees");
+        ComputeVisibleRectsUsingPropertyTrees(inputs->root_layer,
+                                              inputs->property_trees);
+        break;
+      }
     }
 
-    LayerIterator<Layer> it, end;
-    for (it = LayerIterator<Layer>::Begin(inputs->render_surface_layer_list),
-        end = LayerIterator<Layer>::End(inputs->render_surface_layer_list);
-         it != end; ++it) {
-      Layer* current_layer = *it;
-      if (!it.represents_itself() || !current_layer->DrawsContent())
-        continue;
-
-      const bool visible_rects_match =
-          ApproximatelyEqual(current_layer->visible_content_rect(),
-                             current_layer->visible_rect_from_property_trees());
-      CHECK(visible_rects_match)
-          << "expected: " << current_layer->visible_content_rect().ToString()
-          << " actual: "
-          << current_layer->visible_rect_from_property_trees().ToString();
-
-      const bool draw_transforms_match =
-          ApproximatelyEqual(current_layer->draw_transform(),
-                             current_layer->draw_transform_from_property_trees(
-                                 inputs->property_trees->transform_tree));
-      CHECK(draw_transforms_match);
-
-      const bool draw_opacities_match =
-          current_layer->draw_opacity() ==
-          current_layer->DrawOpacityFromPropertyTrees(
-              inputs->property_trees->opacity_tree);
-      CHECK(draw_opacities_match)
-          << "expected: " << current_layer->draw_opacity() << " actual: "
-          << current_layer->DrawOpacityFromPropertyTrees(
-                 inputs->property_trees->opacity_tree);
-    }
+    VerifyPropertyTreeValues(inputs);
   }
 
   // The dummy layer list should not have been used.
@@ -2570,29 +2608,21 @@ void LayerTreeHostCommon::CalculateDrawProperties(
 }
 
 void LayerTreeHostCommon::CalculateDrawProperties(
+    CalcDrawPropsMainInputs* inputs) {
+  UpdateRenderSurfaces(inputs->root_layer,
+                       inputs->can_render_to_separate_surface, gfx::Transform(),
+                       false);
+  CalculateDrawPropertiesAndVerify(inputs, BUILD_PROPERTY_TREES_IF_NEEDED);
+}
+
+void LayerTreeHostCommon::CalculateDrawProperties(
     CalcDrawPropsImplInputs* inputs) {
-  LayerImplList dummy_layer_list;
-  SubtreeGlobals<LayerImpl> globals;
-  DataForRecursion<LayerImpl> data_for_recursion;
-  ProcessCalcDrawPropsInputs(*inputs, &globals, &data_for_recursion);
+  CalculateDrawPropertiesAndVerify(inputs, DONT_BUILD_PROPERTY_TREES);
+}
 
-  PreCalculateMetaInformationRecursiveData recursive_data;
-  PreCalculateMetaInformation(inputs->root_layer, &recursive_data);
-  std::vector<AccumulatedSurfaceState<LayerImpl>> accumulated_surface_state;
-  CalculateDrawPropertiesInternal<LayerImpl>(
-      inputs->root_layer,
-      globals,
-      data_for_recursion,
-      inputs->render_surface_layer_list,
-      &dummy_layer_list,
-      &accumulated_surface_state,
-      inputs->current_render_surface_layer_list_id);
-
-  // The dummy layer list should not have been used.
-  DCHECK_EQ(0u, dummy_layer_list.size());
-  // A root layer render_surface should always exist after
-  // CalculateDrawProperties.
-  DCHECK(inputs->root_layer->render_surface());
+void LayerTreeHostCommon::CalculateDrawProperties(
+    CalcDrawPropsImplInputsForTesting* inputs) {
+  CalculateDrawPropertiesAndVerify(inputs, BUILD_PROPERTY_TREES_IF_NEEDED);
 }
 
 PropertyTrees* GetPropertyTrees(Layer* layer,

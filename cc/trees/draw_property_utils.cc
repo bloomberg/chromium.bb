@@ -8,6 +8,7 @@
 
 #include "cc/base/math_util.h"
 #include "cc/layers/layer.h"
+#include "cc/layers/layer_impl.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/property_tree_builder.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -16,12 +17,13 @@ namespace cc {
 
 namespace {
 
+template <typename LayerType>
 void CalculateVisibleRects(
-    const std::vector<Layer*>& layers_that_need_visible_rects,
+    const std::vector<LayerType*>& layers_that_need_visible_rects,
     const ClipTree& clip_tree,
     const TransformTree& transform_tree) {
   for (size_t i = 0; i < layers_that_need_visible_rects.size(); ++i) {
-    Layer* layer = layers_that_need_visible_rects[i];
+    LayerType* layer = layers_that_need_visible_rects[i];
 
     // TODO(ajuma): Compute content_scale rather than using it. Note that for
     // PictureLayer and PictureImageLayers, content_bounds == bounds and
@@ -134,36 +136,43 @@ void CalculateVisibleRects(
   }
 }
 
-static bool IsRootLayerOfNewRenderingContext(Layer* layer) {
+template <typename LayerType>
+static bool IsRootLayerOfNewRenderingContext(LayerType* layer) {
   if (layer->parent())
     return !layer->parent()->Is3dSorted() && layer->Is3dSorted();
   return layer->Is3dSorted();
 }
 
-static inline bool LayerIsInExisting3DRenderingContext(Layer* layer) {
+template <typename LayerType>
+static inline bool LayerIsInExisting3DRenderingContext(LayerType* layer) {
   return layer->Is3dSorted() && layer->parent() &&
          layer->parent()->Is3dSorted();
 }
 
-static bool TransformToScreenIsKnown(Layer* layer, const TransformTree& tree) {
+template <typename LayerType>
+static bool TransformToScreenIsKnown(LayerType* layer,
+                                     const TransformTree& tree) {
   const TransformNode* node = tree.Node(layer->transform_tree_index());
   return !node->data.to_screen_is_animated;
 }
 
-static bool IsLayerBackFaceExposed(Layer* layer, const TransformTree& tree) {
+template <typename LayerType>
+static bool IsLayerBackFaceExposed(LayerType* layer,
+                                   const TransformTree& tree) {
   if (!TransformToScreenIsKnown(layer, tree))
     return false;
   if (LayerIsInExisting3DRenderingContext(layer))
-    return layer->draw_transform_from_property_trees(tree).IsBackFaceVisible();
+    return DrawTransformFromPropertyTrees(layer, tree).IsBackFaceVisible();
   return layer->transform().IsBackFaceVisible();
 }
 
-static bool IsSurfaceBackFaceExposed(Layer* layer,
+template <typename LayerType>
+static bool IsSurfaceBackFaceExposed(LayerType* layer,
                                      const TransformTree& tree) {
   if (!TransformToScreenIsKnown(layer, tree))
     return false;
   if (LayerIsInExisting3DRenderingContext(layer))
-    return layer->draw_transform_from_property_trees(tree).IsBackFaceVisible();
+    return DrawTransformFromPropertyTrees(layer, tree).IsBackFaceVisible();
 
   if (IsRootLayerOfNewRenderingContext(layer))
     return layer->transform().IsBackFaceVisible();
@@ -174,13 +183,15 @@ static bool IsSurfaceBackFaceExposed(Layer* layer,
   return false;
 }
 
-static bool HasSingularTransform(Layer* layer, const TransformTree& tree) {
+template <typename LayerType>
+static bool HasSingularTransform(LayerType* layer, const TransformTree& tree) {
   const TransformNode* node = tree.Node(layer->transform_tree_index());
   return !node->data.is_invertible || !node->data.ancestors_are_invertible;
 }
 
-static bool IsBackFaceInvisible(Layer* layer, const TransformTree& tree) {
-  Layer* backface_test_layer = layer;
+template <typename LayerType>
+static bool IsBackFaceInvisible(LayerType* layer, const TransformTree& tree) {
+  LayerType* backface_test_layer = layer;
   if (layer->use_parent_backface_visibility()) {
     DCHECK(layer->parent());
     DCHECK(!layer->parent()->use_parent_backface_visibility());
@@ -190,25 +201,36 @@ static bool IsBackFaceInvisible(Layer* layer, const TransformTree& tree) {
          IsLayerBackFaceExposed(backface_test_layer, tree);
 }
 
-static bool IsAnimatingTransformToScreen(Layer* layer,
+template <typename LayerType>
+static bool IsAnimatingTransformToScreen(LayerType* layer,
                                          const TransformTree& tree) {
   const TransformNode* node = tree.Node(layer->transform_tree_index());
   return node->data.to_screen_is_animated;
 }
 
-static bool IsInvisibleDueToTransform(Layer* layer, const TransformTree& tree) {
+template <typename LayerType>
+static bool IsInvisibleDueToTransform(LayerType* layer,
+                                      const TransformTree& tree) {
   if (IsAnimatingTransformToScreen(layer, tree))
     return false;
   return HasSingularTransform(layer, tree) || IsBackFaceInvisible(layer, tree);
 }
 
-void FindLayersThatNeedVisibleRects(Layer* layer,
+bool LayerIsInvisible(const Layer* layer) {
+  return !layer->opacity() && !layer->OpacityIsAnimating() &&
+         !layer->OpacityCanAnimateOnImplThread();
+}
+
+bool LayerIsInvisible(const LayerImpl* layer) {
+  return !layer->opacity() && !layer->OpacityIsAnimating();
+}
+
+template <typename LayerType>
+void FindLayersThatNeedVisibleRects(LayerType* layer,
                                     const TransformTree& tree,
                                     bool subtree_is_visible_from_ancestor,
-                                    std::vector<Layer*>* layers_to_update) {
-  const bool layer_is_invisible =
-      (!layer->opacity() && !layer->OpacityIsAnimating() &&
-       !layer->OpacityCanAnimateOnImplThread());
+                                    std::vector<LayerType*>* layers_to_update) {
+  const bool layer_is_invisible = LayerIsInvisible(layer);
   const bool layer_is_backfacing =
       (layer->has_render_surface() && !layer->double_sided() &&
        IsSurfaceBackFaceExposed(layer, tree));
@@ -228,9 +250,7 @@ void FindLayersThatNeedVisibleRects(Layer* layer,
   }
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
-    FindLayersThatNeedVisibleRects(layer->children()[i].get(),
-                                   tree,
-                                   layer_is_drawn,
+    FindLayersThatNeedVisibleRects(layer->child_at(i), tree, layer_is_drawn,
                                    layers_to_update);
   }
 }
@@ -326,7 +346,23 @@ void ComputeTransforms(TransformTree* transform_tree) {
     transform_tree->UpdateTransforms(i);
 }
 
-void ComputeVisibleRectsUsingPropertyTrees(
+template <typename LayerType>
+void ComputeVisibleRectsUsingPropertyTreesInternal(
+    LayerType* root_layer,
+    PropertyTrees* property_trees) {
+  ComputeTransforms(&property_trees->transform_tree);
+  ComputeClips(&property_trees->clip_tree, property_trees->transform_tree);
+
+  std::vector<LayerType*> layers_to_update;
+  const bool subtree_is_visible_from_ancestor = true;
+  FindLayersThatNeedVisibleRects(root_layer, property_trees->transform_tree,
+                                 subtree_is_visible_from_ancestor,
+                                 &layers_to_update);
+  CalculateVisibleRects(layers_to_update, property_trees->clip_tree,
+                        property_trees->transform_tree);
+}
+
+void BuildPropertyTreesAndComputeVisibleRects(
     Layer* root_layer,
     const Layer* page_scale_layer,
     float page_scale_factor,
@@ -337,16 +373,145 @@ void ComputeVisibleRectsUsingPropertyTrees(
   PropertyTreeBuilder::BuildPropertyTrees(
       root_layer, page_scale_layer, page_scale_factor, device_scale_factor,
       viewport, device_transform, property_trees);
-  ComputeTransforms(&property_trees->transform_tree);
-  ComputeClips(&property_trees->clip_tree, property_trees->transform_tree);
+  ComputeVisibleRectsUsingPropertyTrees(root_layer, property_trees);
+}
 
-  std::vector<Layer*> layers_to_update;
-  const bool subtree_is_visible_from_ancestor = true;
-  FindLayersThatNeedVisibleRects(root_layer, property_trees->transform_tree,
-                                 subtree_is_visible_from_ancestor,
-                                 &layers_to_update);
-  CalculateVisibleRects(layers_to_update, property_trees->clip_tree,
-                        property_trees->transform_tree);
+void BuildPropertyTreesAndComputeVisibleRects(
+    LayerImpl* root_layer,
+    const LayerImpl* page_scale_layer,
+    float page_scale_factor,
+    float device_scale_factor,
+    const gfx::Rect& viewport,
+    const gfx::Transform& device_transform,
+    PropertyTrees* property_trees) {
+  PropertyTreeBuilder::BuildPropertyTrees(
+      root_layer, page_scale_layer, page_scale_factor, device_scale_factor,
+      viewport, device_transform, property_trees);
+  ComputeVisibleRectsUsingPropertyTrees(root_layer, property_trees);
+}
+
+void ComputeVisibleRectsUsingPropertyTrees(Layer* root_layer,
+                                           PropertyTrees* property_trees) {
+  ComputeVisibleRectsUsingPropertyTreesInternal(root_layer, property_trees);
+}
+
+void ComputeVisibleRectsUsingPropertyTrees(LayerImpl* root_layer,
+                                           PropertyTrees* property_trees) {
+  ComputeVisibleRectsUsingPropertyTreesInternal(root_layer, property_trees);
+}
+
+template <typename LayerType>
+gfx::Transform DrawTransformFromPropertyTreesInternal(
+    const LayerType* layer,
+    const TransformTree& tree) {
+  const TransformNode* node = tree.Node(layer->transform_tree_index());
+  // TODO(vollick): ultimately we'll need to find this information (whether or
+  // not we establish a render surface) somewhere other than the layer.
+  const TransformNode* target_node =
+      layer->render_surface() ? node : tree.Node(node->data.content_target_id);
+
+  gfx::Transform xform;
+  const bool owns_non_root_surface = layer->parent() && layer->render_surface();
+  if (!owns_non_root_surface) {
+    // If you're not the root, or you don't own a surface, you need to apply
+    // your local offset.
+    xform = node->data.to_target;
+    if (layer->should_flatten_transform_from_property_tree())
+      xform.FlattenTo2d();
+    xform.Translate(layer->offset_to_transform_parent().x(),
+                    layer->offset_to_transform_parent().y());
+    // A fixed-position layer does not necessarily have the same render target
+    // as its transform node. In particular, its transform node may be an
+    // ancestor of its render target's transform node. For example, given layer
+    // tree R->S->F, suppose F is fixed and S owns a render surface (e.g., say S
+    // has opacity 0.9 and both S and F draw content). Then F's transform node
+    // is the root node, so the target space transform from that node is defined
+    // with respect to the root render surface. But F will render to S's
+    // surface, so must apply a change of basis transform to the target space
+    // transform from its transform node.
+    if (layer->position_constraint().is_fixed_position()) {
+      gfx::Transform tree_target_to_render_target;
+      tree.ComputeTransform(node->data.content_target_id,
+                            layer->render_target()->transform_tree_index(),
+                            &tree_target_to_render_target);
+      xform.ConcatTransform(tree_target_to_render_target);
+    }
+  } else {
+    // Surfaces need to apply their sublayer scale.
+    xform.Scale(target_node->data.sublayer_scale.x(),
+                target_node->data.sublayer_scale.y());
+  }
+  xform.Scale(1.0 / layer->contents_scale_x(), 1.0 / layer->contents_scale_y());
+  return xform;
+}
+
+gfx::Transform DrawTransformFromPropertyTrees(const Layer* layer,
+                                              const TransformTree& tree) {
+  return DrawTransformFromPropertyTreesInternal(layer, tree);
+}
+
+gfx::Transform DrawTransformFromPropertyTrees(const LayerImpl* layer,
+                                              const TransformTree& tree) {
+  return DrawTransformFromPropertyTreesInternal(layer, tree);
+}
+
+template <typename LayerType>
+gfx::Transform ScreenSpaceTransformFromPropertyTreesInternal(
+    LayerType* layer,
+    const TransformTree& tree) {
+  gfx::Transform xform(1, 0, 0, 1, layer->offset_to_transform_parent().x(),
+                       layer->offset_to_transform_parent().y());
+  if (layer->transform_tree_index() >= 0) {
+    gfx::Transform ssxform =
+        tree.Node(layer->transform_tree_index())->data.to_screen;
+    xform.ConcatTransform(ssxform);
+    if (layer->should_flatten_transform_from_property_tree())
+      xform.FlattenTo2d();
+  }
+  xform.Scale(1.0 / layer->contents_scale_x(), 1.0 / layer->contents_scale_y());
+  return xform;
+}
+
+gfx::Transform ScreenSpaceTransformFromPropertyTrees(
+    const Layer* layer,
+    const TransformTree& tree) {
+  return ScreenSpaceTransformFromPropertyTreesInternal(layer, tree);
+}
+
+gfx::Transform ScreenSpaceTransformFromPropertyTrees(
+    const LayerImpl* layer,
+    const TransformTree& tree) {
+  return ScreenSpaceTransformFromPropertyTreesInternal(layer, tree);
+}
+
+template <typename LayerType>
+float DrawOpacityFromPropertyTreesInternal(LayerType layer,
+                                           const OpacityTree& tree) {
+  if (!layer->render_target())
+    return 0.f;
+
+  const OpacityNode* target_node =
+      tree.Node(layer->render_target()->opacity_tree_index());
+  const OpacityNode* node = tree.Node(layer->opacity_tree_index());
+  if (node == target_node)
+    return 1.f;
+
+  float draw_opacity = 1.f;
+  while (node != target_node) {
+    draw_opacity *= node->data;
+    node = tree.parent(node);
+  }
+  return draw_opacity;
+}
+
+float DrawOpacityFromPropertyTrees(const Layer* layer,
+                                   const OpacityTree& tree) {
+  return DrawOpacityFromPropertyTreesInternal(layer, tree);
+}
+
+float DrawOpacityFromPropertyTrees(const LayerImpl* layer,
+                                   const OpacityTree& tree) {
+  return DrawOpacityFromPropertyTreesInternal(layer, tree);
 }
 
 }  // namespace cc

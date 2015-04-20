@@ -58,6 +58,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       stacking_order_changed_(false),
       double_sided_(true),
       should_flatten_transform_(true),
+      should_flatten_transform_from_property_tree_(false),
       layer_property_changed_(false),
       masks_to_bounds_(false),
       contents_opaque_(false),
@@ -72,6 +73,9 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       opacity_(1.0),
       blend_mode_(SkXfermode::kSrcOver_Mode),
       num_descendants_that_draw_content_(0),
+      transform_tree_index_(-1),
+      opacity_tree_index_(-1),
+      clip_tree_index_(-1),
       draw_depth_(0.f),
       needs_push_properties_(false),
       num_dependents_need_push_properties_(0),
@@ -529,6 +533,8 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
       is_container_for_fixed_position_layers_);
   layer->SetPositionConstraint(position_constraint_);
   layer->SetShouldFlattenTransform(should_flatten_transform_);
+  layer->set_should_flatten_transform_from_property_tree(
+      should_flatten_transform_from_property_tree_);
   layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);
   layer->SetTransformAndInvertibility(transform_, transform_is_invertible_);
 
@@ -543,6 +549,11 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
   layer->Set3dSortingContextId(sorting_context_id_);
   layer->SetNumDescendantsThatDrawContent(num_descendants_that_draw_content_);
+
+  layer->set_transform_tree_index(transform_tree_index_);
+  layer->set_opacity_tree_index(opacity_tree_index_);
+  layer->set_clip_tree_index(clip_tree_index_);
+  layer->set_offset_to_transform_parent(offset_to_transform_parent_);
 
   LayerImpl* scroll_parent = nullptr;
   if (scroll_parent_) {

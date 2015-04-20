@@ -365,6 +365,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   }
 
   sync_tree->set_has_ever_been_drawn(false);
+  sync_tree->SetPropertyTrees(property_trees_);
 
   {
     TRACE_EVENT0("cc", "LayerTreeHost::PushProperties");

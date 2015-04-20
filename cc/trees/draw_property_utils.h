@@ -16,6 +16,7 @@ namespace cc {
 
 class ClipTree;
 class Layer;
+class LayerImpl;
 class OpacityTree;
 class TransformTree;
 class PropertyTrees;
@@ -35,13 +36,51 @@ void CC_EXPORT ComputeTransforms(TransformTree* transform_tree);
 // visible content rect is the clipped content space rect that will be used for
 // recording.
 void CC_EXPORT
+BuildPropertyTreesAndComputeVisibleRects(Layer* root_layer,
+                                         const Layer* page_scale_layer,
+                                         float page_scale_factor,
+                                         float device_scale_factor,
+                                         const gfx::Rect& viewport,
+                                         const gfx::Transform& device_transform,
+                                         PropertyTrees* property_trees);
+
+void CC_EXPORT
+BuildPropertyTreesAndComputeVisibleRects(LayerImpl* root_layer,
+                                         const LayerImpl* page_scale_layer,
+                                         float page_scale_factor,
+                                         float device_scale_factor,
+                                         const gfx::Rect& viewport,
+                                         const gfx::Transform& device_transform,
+                                         PropertyTrees* property_trees);
+
+void CC_EXPORT
 ComputeVisibleRectsUsingPropertyTrees(Layer* root_layer,
-                                      const Layer* page_scale_layer,
-                                      float page_scale_factor,
-                                      float device_scale_factor,
-                                      const gfx::Rect& viewport,
-                                      const gfx::Transform& device_transform,
                                       PropertyTrees* property_trees);
+
+void CC_EXPORT
+ComputeVisibleRectsUsingPropertyTrees(LayerImpl* root_layer,
+                                      PropertyTrees* property_trees);
+
+gfx::Transform CC_EXPORT
+DrawTransformFromPropertyTrees(const Layer* layer, const TransformTree& tree);
+
+gfx::Transform CC_EXPORT
+DrawTransformFromPropertyTrees(const LayerImpl* layer,
+                               const TransformTree& tree);
+
+gfx::Transform CC_EXPORT
+ScreenSpaceTransformFromPropertyTrees(const Layer* layer,
+                                      const TransformTree& tree);
+
+gfx::Transform CC_EXPORT
+ScreenSpaceTransformFromPropertyTrees(const LayerImpl* layer,
+                                      const TransformTree& tree);
+
+float CC_EXPORT
+DrawOpacityFromPropertyTrees(const Layer* layer, const OpacityTree& tree);
+
+float CC_EXPORT
+DrawOpacityFromPropertyTrees(const LayerImpl* layer, const OpacityTree& tree);
 
 }  // namespace cc
 

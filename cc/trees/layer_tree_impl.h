@@ -20,6 +20,7 @@
 #include "cc/output/swap_promise.h"
 #include "cc/resources/ui_resource_client.h"
 #include "cc/trees/layer_tree_host_impl.h"
+#include "cc/trees/property_tree.h"
 
 namespace base {
 namespace trace_event {
@@ -128,6 +129,10 @@ class CC_EXPORT LayerTreeImpl {
   LayerImpl* root_layer() const { return root_layer_.get(); }
   void SetRootLayer(scoped_ptr<LayerImpl>);
   scoped_ptr<LayerImpl> DetachLayerTree();
+
+  void SetPropertyTrees(const PropertyTrees& property_trees) {
+    property_trees_ = property_trees;
+  }
 
   void PushPropertiesTo(LayerTreeImpl* tree_impl);
 
@@ -360,6 +365,7 @@ class CC_EXPORT LayerTreeImpl {
   int source_frame_number_;
   scoped_ptr<LayerImpl> root_layer_;
   HeadsUpDisplayLayerImpl* hud_layer_;
+  PropertyTrees property_trees_;
   LayerImpl* currently_scrolling_layer_;
   LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate_;
   SkColor background_color_;

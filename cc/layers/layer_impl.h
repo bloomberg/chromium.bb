@@ -59,6 +59,7 @@ class MicroBenchmarkImpl;
 class Occlusion;
 template <typename LayerType>
 class OcclusionTracker;
+class OpacityTree;
 class RenderPass;
 class RenderPassId;
 class Renderer;
@@ -66,6 +67,7 @@ class ScrollbarAnimationController;
 class ScrollbarLayerImplBase;
 class SimpleEnclosedRegion;
 class Tile;
+class TransformTree;
 
 struct AppendQuadsData;
 
@@ -147,6 +149,48 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   const std::set<LayerImpl*>* scroll_children() const {
     return scroll_children_.get();
   }
+
+  void set_transform_tree_index(int index) {
+    transform_tree_index_ = index;
+    SetNeedsPushProperties();
+  }
+  void set_clip_tree_index(int index) {
+    clip_tree_index_ = index;
+    SetNeedsPushProperties();
+  }
+  void set_opacity_tree_index(int index) {
+    opacity_tree_index_ = index;
+    SetNeedsPushProperties();
+  }
+  int clip_tree_index() const { return clip_tree_index_; }
+  int transform_tree_index() const { return transform_tree_index_; }
+  int opacity_tree_index() const { return opacity_tree_index_; }
+
+  void set_offset_to_transform_parent(gfx::Vector2dF offset) {
+    offset_to_transform_parent_ = offset;
+    SetNeedsPushProperties();
+  }
+  gfx::Vector2dF offset_to_transform_parent() const {
+    return offset_to_transform_parent_;
+  }
+
+  const gfx::Rect& visible_rect_from_property_trees() const {
+    return visible_rect_from_property_trees_;
+  }
+  void set_visible_rect_from_property_trees(const gfx::Rect& rect) {
+    visible_rect_from_property_trees_ = rect;
+  }
+
+  void set_should_flatten_transform_from_property_tree(bool should_flatten) {
+    should_flatten_transform_from_property_tree_ = should_flatten;
+    SetNeedsPushProperties();
+  }
+  bool should_flatten_transform_from_property_tree() const {
+    return should_flatten_transform_from_property_tree_;
+  }
+
+  // For compatibility with Layer.
+  bool has_render_surface() const { return !!render_surface(); }
 
   void SetNumDescendantsThatDrawContent(int num_descendants);
   void SetClipParent(LayerImpl* ancestor);
@@ -666,6 +710,9 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   gfx::Point3F transform_origin_;
   gfx::Size bounds_;
   LayerImpl* scroll_clip_layer_;
+
+  gfx::Vector2dF offset_to_transform_parent_;
+
   bool scrollable_ : 1;
   bool should_scroll_on_main_thread_ : 1;
   bool have_wheel_event_handlers_ : 1;
@@ -680,6 +727,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // Whether the "back" of this layer should draw.
   bool double_sided_ : 1;
   bool should_flatten_transform_ : 1;
+  bool should_flatten_transform_from_property_tree_ : 1;
 
   // Tracks if drawing-related properties have changed since last redraw.
   bool layer_property_changed_ : 1;
@@ -697,6 +745,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   // Set for the layer that other layers are fixed to.
   bool is_container_for_fixed_position_layers_ : 1;
+
   Region non_fast_scrollable_region_;
   Region touch_event_handler_region_;
   SkColor background_color_;
@@ -711,6 +760,11 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   gfx::Vector2dF scroll_compensation_adjustment_;
 
   int num_descendants_that_draw_content_;
+
+  gfx::Rect visible_rect_from_property_trees_;
+  int transform_tree_index_;
+  int opacity_tree_index_;
+  int clip_tree_index_;
 
   // The global depth value of the center of the layer. This value is used
   // to sort layers from back to front.

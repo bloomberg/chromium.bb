@@ -192,6 +192,8 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   // The request queue should have been processed and does not require a push.
   DCHECK_EQ(ui_resource_request_queue_.size(), 0u);
 
+  target_tree->SetPropertyTrees(property_trees_);
+
   if (next_activation_forces_redraw_) {
     target_tree->ForceRedrawNextActivation();
     next_activation_forces_redraw_ = false;
@@ -540,9 +542,6 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
 
     ++render_surface_layer_list_id_;
 
-    // TODO(enne): Synchronize property trees to compositor thread and use
-    // them here.
-    PropertyTrees* property_trees = nullptr;
     LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
         root_layer(), DrawViewportSize(),
         layer_tree_host_impl_->DrawTransform(), device_scale_factor(),
@@ -553,7 +552,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
         can_render_to_separate_surface,
         settings().layer_transforms_should_scale_layer_contents,
         settings().verify_property_trees, &render_surface_layer_list_,
-        render_surface_layer_list_id_, property_trees);
+        render_surface_layer_list_id_, &property_trees_);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   }
 

@@ -476,15 +476,33 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void Set3dSortingContextId(int id);
   int sorting_context_id() const { return sorting_context_id_; }
 
-  void set_transform_tree_index(int index) { transform_tree_index_ = index; }
-  void set_clip_tree_index(int index) { clip_tree_index_ = index; }
-  void set_opacity_tree_index(int index) { opacity_tree_index_ = index; }
+  void set_transform_tree_index(int index) {
+    if (transform_tree_index_ == index)
+      return;
+    transform_tree_index_ = index;
+    SetNeedsPushProperties();
+  }
+  void set_clip_tree_index(int index) {
+    if (clip_tree_index_ == index)
+      return;
+    clip_tree_index_ = index;
+    SetNeedsPushProperties();
+  }
+  void set_opacity_tree_index(int index) {
+    if (opacity_tree_index_ == index)
+      return;
+    opacity_tree_index_ = index;
+    SetNeedsPushProperties();
+  }
   int clip_tree_index() const { return clip_tree_index_; }
   int transform_tree_index() const { return transform_tree_index_; }
   int opacity_tree_index() const { return opacity_tree_index_; }
 
   void set_offset_to_transform_parent(gfx::Vector2dF offset) {
+    if (offset_to_transform_parent_ == offset)
+      return;
     offset_to_transform_parent_ = offset;
+    SetNeedsPushProperties();
   }
   gfx::Vector2dF offset_to_transform_parent() const {
     return offset_to_transform_parent_;
@@ -500,17 +518,18 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
     return visible_rect_from_property_trees_;
   }
   void set_visible_rect_from_property_trees(const gfx::Rect& rect) {
+    // No push properties here, as this acts like a draw property.
     visible_rect_from_property_trees_ = rect;
   }
 
-  gfx::Transform screen_space_transform_from_property_trees(
-      const TransformTree& tree) const;
-  gfx::Transform draw_transform_from_property_trees(
-      const TransformTree& tree) const;
-  float DrawOpacityFromPropertyTrees(const OpacityTree& tree) const;
-
   void set_should_flatten_transform_from_property_tree(bool should_flatten) {
+    if (should_flatten_transform_from_property_tree_ == should_flatten)
+      return;
     should_flatten_transform_from_property_tree_ = should_flatten;
+    SetNeedsPushProperties();
+  }
+  bool should_flatten_transform_from_property_tree() const {
+    return should_flatten_transform_from_property_tree_;
   }
 
   // TODO(vollick): These values are temporary and will be removed as soon as

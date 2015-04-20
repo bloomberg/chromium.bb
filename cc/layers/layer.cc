@@ -1067,12 +1067,18 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
       IsContainerForFixedPositionLayers());
   layer->SetPositionConstraint(position_constraint_);
   layer->SetShouldFlattenTransform(should_flatten_transform_);
+  layer->set_should_flatten_transform_from_property_tree(
+      should_flatten_transform_from_property_tree_);
   layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);
   if (!layer->TransformIsAnimatingOnImplOnly() && !TransformIsAnimating())
     layer->SetTransformAndInvertibility(transform_, transform_is_invertible_);
   DCHECK(!(TransformIsAnimating() && layer->TransformIsAnimatingOnImplOnly()));
   layer->Set3dSortingContextId(sorting_context_id_);
   layer->SetNumDescendantsThatDrawContent(num_descendants_that_draw_content_);
+  layer->set_transform_tree_index(transform_tree_index_);
+  layer->set_opacity_tree_index(opacity_tree_index_);
+  layer->set_clip_tree_index(clip_tree_index_);
+  layer->set_offset_to_transform_parent(offset_to_transform_parent_);
 
   layer->SetScrollClipLayer(scroll_clip_layer_id_);
   layer->set_user_scrollable_horizontal(user_scrollable_horizontal_);
@@ -1441,81 +1447,6 @@ void Layer::RunMicroBenchmark(MicroBenchmark* benchmark) {
 
 bool Layer::HasDelegatedContent() const {
   return false;
-}
-
-gfx::Transform Layer::screen_space_transform_from_property_trees(
-    const TransformTree& tree) const {
-  gfx::Transform xform(1, 0, 0, 1, offset_to_transform_parent().x(),
-                       offset_to_transform_parent().y());
-  if (transform_tree_index() >= 0) {
-    gfx::Transform ssxform = tree.Node(transform_tree_index())->data.to_screen;
-    xform.ConcatTransform(ssxform);
-    if (should_flatten_transform_from_property_tree_)
-      xform.FlattenTo2d();
-  }
-  xform.Scale(1.0 / contents_scale_x(), 1.0 / contents_scale_y());
-  return xform;
-}
-
-gfx::Transform Layer::draw_transform_from_property_trees(
-    const TransformTree& tree) const {
-  const TransformNode* node = tree.Node(transform_tree_index());
-  // TODO(vollick): ultimately we'll need to find this information (whether or
-  // not we establish a render surface) somewhere other than the layer.
-  const TransformNode* target_node =
-      has_render_surface_ ? node : tree.Node(node->data.content_target_id);
-
-  gfx::Transform xform;
-  const bool owns_non_root_surface = parent() && render_surface();
-  if (!owns_non_root_surface) {
-    // If you're not the root, or you don't own a surface, you need to apply
-    // your local offset.
-    xform = node->data.to_target;
-    if (should_flatten_transform_from_property_tree_)
-      xform.FlattenTo2d();
-    xform.Translate(offset_to_transform_parent().x(),
-                    offset_to_transform_parent().y());
-    // A fixed-position layer does not necessarily have the same render target
-    // as its transform node. In particular, its transform node may be an
-    // ancestor of its render target's transform node. For example, given layer
-    // tree R->S->F, suppose F is fixed and S owns a render surface (e.g., say S
-    // has opacity 0.9 and both S and F draw content). Then F's transform node
-    // is the root node, so the target space transform from that node is defined
-    // with respect to the root render surface. But F will render to S's
-    // surface, so must apply a change of basis transform to the target space
-    // transform from its transform node.
-    if (position_constraint_.is_fixed_position()) {
-      gfx::Transform tree_target_to_render_target;
-      tree.ComputeTransform(node->data.content_target_id,
-                            render_target()->transform_tree_index(),
-                            &tree_target_to_render_target);
-      xform.ConcatTransform(tree_target_to_render_target);
-    }
-  } else {
-    // Surfaces need to apply their sublayer scale.
-    xform.Scale(target_node->data.sublayer_scale.x(),
-                target_node->data.sublayer_scale.y());
-  }
-  xform.Scale(1.0 / contents_scale_x(), 1.0 / contents_scale_y());
-  return xform;
-}
-
-float Layer::DrawOpacityFromPropertyTrees(const OpacityTree& tree) const {
-  if (!render_target())
-    return 0.f;
-
-  const OpacityNode* target_node =
-      tree.Node(render_target()->opacity_tree_index());
-  const OpacityNode* node = tree.Node(opacity_tree_index());
-  if (node == target_node)
-    return 1.f;
-
-  float draw_opacity = 1.f;
-  while (node != target_node) {
-    draw_opacity *= node->data;
-    node = tree.parent(node);
-  }
-  return draw_opacity;
 }
 
 void Layer::SetFrameTimingRequests(

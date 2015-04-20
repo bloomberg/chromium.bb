@@ -126,6 +126,8 @@ class CC_EXPORT LayerTreeHostCommon {
   typedef CalcDrawPropsInputsForTesting<LayerImpl, LayerImplList>
       CalcDrawPropsImplInputsForTesting;
   static void CalculateDrawProperties(CalcDrawPropsImplInputs* inputs);
+  static void CalculateDrawProperties(
+      CalcDrawPropsImplInputsForTesting* inputs);
 
   template <typename LayerType>
   static bool RenderSurfaceContributesToTarget(LayerType*,

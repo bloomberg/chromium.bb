@@ -3285,6 +3285,9 @@ class PushPropertiesCountingLayer : public Layer {
       needs_push_properties_ = true;
   }
 
+  // Something to make this layer push properties, but no other layer.
+  void MakePushProperties() { SetContentsOpaque(!contents_opaque()); }
+
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override {
     return PushPropertiesCountingLayerImpl::Create(tree_impl, id());
   }
@@ -3344,18 +3347,24 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
   }
 
   void DidCommitAndDrawFrame() override {
-    ++num_commits_;
-
-    EXPECT_EQ(expected_push_properties_root_, root_->push_properties_count());
-    EXPECT_EQ(expected_push_properties_child_, child_->push_properties_count());
+    EXPECT_EQ(expected_push_properties_root_, root_->push_properties_count())
+        << "num_commits: " << num_commits_;
+    EXPECT_EQ(expected_push_properties_child_, child_->push_properties_count())
+        << "num_commits: " << num_commits_;
     EXPECT_EQ(expected_push_properties_grandchild_,
-              grandchild_->push_properties_count());
+              grandchild_->push_properties_count())
+        << "num_commits: " << num_commits_;
     EXPECT_EQ(expected_push_properties_child2_,
-              child2_->push_properties_count());
+              child2_->push_properties_count())
+        << "num_commits: " << num_commits_;
     EXPECT_EQ(expected_push_properties_other_root_,
-              other_root_->push_properties_count());
+              other_root_->push_properties_count())
+        << "num_commits: " << num_commits_;
     EXPECT_EQ(expected_push_properties_leaf_layer_,
-              leaf_always_pushing_layer_->push_properties_count());
+              leaf_always_pushing_layer_->push_properties_count())
+        << "num_commits: " << num_commits_;
+
+    ++num_commits_;
 
     // The scrollbar layer always needs to be pushed.
     if (root_->layer_tree_host()) {
@@ -3445,12 +3454,12 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
         // No layers need commit.
         break;
       case 12:
-        child_->SetPosition(gfx::Point(1, 1));
+        child_->MakePushProperties();
         // The modified layer needs commit
         ++expected_push_properties_child_;
         break;
       case 13:
-        child2_->SetPosition(gfx::Point(1, 1));
+        child2_->MakePushProperties();
         // The modified layer needs commit
         ++expected_push_properties_child2_;
         break;
@@ -3462,7 +3471,7 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
         ++expected_push_properties_grandchild_;
         break;
       case 15:
-        grandchild_->SetPosition(gfx::Point(1, 1));
+        grandchild_->MakePushProperties();
         // The modified layer needs commit
         ++expected_push_properties_grandchild_;
         break;
