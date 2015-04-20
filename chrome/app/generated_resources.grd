@@ -15157,14 +15157,6 @@ After you create a new supervised user, you can manage their settings at any tim
          If enabled, EmbeddedSearch API will be used to submit search queries in the search results page.
         </message>
 
-        <!-- App install alerts strings -->
-        <message name="IDS_FLAGS_ENABLE_APP_INSTALL_ALERTS_NAME" desc="Title for the flag to allow app install alerts">
-          Enable app install alerts
-        </message>
-        <message name="IDS_FLAGS_ENABLE_APP_INSTALL_ALERTS_DESCRIPTION" desc="Description to allow app install alerts">
-          If enabled, websites will be parsed for app install alert meta tags.
-        </message>
-
         <!-- Flag strings for seccomp-bpf sandbox flag. -->
         <message name="IDS_FLAGS_ENABLE_SECCOMP_FILTER_SANDBOX_ANDROID_NAME" desc="Title for the flag to enable the seccomp-bpf sandbox on Android.">
           Enable seccomp-bpf renderer sandbox

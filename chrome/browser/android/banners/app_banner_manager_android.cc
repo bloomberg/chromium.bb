@@ -10,7 +10,6 @@
 #include "chrome/browser/android/banners/app_banner_data_fetcher_android.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
@@ -62,7 +61,7 @@ bool AppBannerManagerAndroid::OnMessageReceived(
 
 bool AppBannerManagerAndroid::OnInvalidManifest(AppBannerDataFetcher* fetcher) {
   DCHECK(data_fetcher() == fetcher);
-  if (web_contents()->IsBeingDestroyed() || !IsEnabledForNativeApps()) {
+  if (web_contents()->IsBeingDestroyed()) {
     return false;
   }
 
@@ -134,13 +133,6 @@ bool AppBannerManagerAndroid::OnAppDetailsRetrieved(JNIEnv* env,
 
 bool AppBannerManagerAndroid::IsFetcherActive(JNIEnv* env, jobject obj) {
   return AppBannerManager::IsFetcherActive();
-}
-
-
-// static
-bool AppBannerManagerAndroid::IsEnabledForNativeApps() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableAppInstallAlerts);
 }
 
 // static

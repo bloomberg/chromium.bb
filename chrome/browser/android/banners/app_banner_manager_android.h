@@ -59,9 +59,6 @@ class AppBannerManagerAndroid : public AppBannerManager {
       const int ideal_icon_size) override;
 
  private:
-  // Whether or not the banners should appear for native apps.
-  static bool IsEnabledForNativeApps();
-
   // Called when the renderer has returned information about the meta tag.
   // If there is some metadata for the play store tag, this kicks off the
   // process of showing a banner for the package designated by |tag_content| on

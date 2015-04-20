@@ -1889,13 +1889,6 @@ const Experiment kExperiments[] = {
     kOsAndroid,
     SINGLE_VALUE_TYPE(switches::kEnableEmbeddedSearchAPI)
   },
-  {
-    "enable-app-install-alerts",
-    IDS_FLAGS_ENABLE_APP_INSTALL_ALERTS_NAME,
-    IDS_FLAGS_ENABLE_APP_INSTALL_ALERTS_DESCRIPTION,
-    kOsAndroid,
-    SINGLE_VALUE_TYPE(switches::kEnableAppInstallAlerts)
-  },
 #endif
   {
     "distance-field-text",

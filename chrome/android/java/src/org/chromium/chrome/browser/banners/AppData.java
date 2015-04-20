@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.banners;
 
 import android.app.PendingIntent;
+import android.content.Intent;
 
 /**
  * Stores information about a particular app.
@@ -20,7 +21,7 @@ public class AppData {
     private float mRating;
     private String mInstallButtonText;
     private PendingIntent mDetailsIntent;
-    private PendingIntent mInstallIntent;
+    private Intent mInstallIntent;
 
     /**
      * Creates a new AppData for the given page and package.
@@ -90,11 +91,10 @@ public class AppData {
     }
 
     /**
-     * Returns the PendingIntent that triggers the install.
-     * The IntentSender stored inside dictates what package needs to be launched.
-     * @return PendingIntent used to trigger the install.
+     * Returns the Intent that triggers the install.
+     * @return Intent used to trigger the install.
      */
-    public PendingIntent installIntent() {
+    public Intent installIntent() {
         return mInstallIntent;
     }
 
@@ -108,7 +108,7 @@ public class AppData {
      * @param installIntent     Intent to fire to trigger the purchase/install process.
      */
     public void setPackageInfo(String title, String imageUrl, float rating,
-            String installButtonText, PendingIntent detailsIntent, PendingIntent installIntent) {
+            String installButtonText, PendingIntent detailsIntent, Intent installIntent) {
         mTitle = title;
         mImageUrl = imageUrl;
         mRating = rating;
