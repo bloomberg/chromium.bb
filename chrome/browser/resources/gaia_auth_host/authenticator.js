@@ -30,6 +30,7 @@ cr.define('cr.login', function() {
   var SERVICE_ID = 'chromeoslogin';
   var EMBEDDED_SETUP_CHROMEOS_ENDPOINT = 'embedded/setup/chromeos';
   var X_DEVICE_ID_HEADER = 'X-Device-ID';
+  var EPHEMERAL_DEVICE_ID_PREFIX = 't_';
 
   /**
    * The source URL parameter for the constrained signin flow.
@@ -80,10 +81,11 @@ cr.define('cr.login', function() {
                      // not called before dispatching |authCopleted|.
                      // Default is |true|.
     'flow',          // One of 'default', 'enterprise', or 'theftprotection'.
-    'enterpriseDomain',  // Domain in which hosting device is (or should be)
-                         // enrolled.
-    'emailDomain',       // Value used to prefill domain for email.
-    'deviceId',          // User device ID (sync Id).
+    'enterpriseDomain',    // Domain in which hosting device is (or should be)
+                           // enrolled.
+    'emailDomain',         // Value used to prefill domain for email.
+    'deviceId',            // User device ID (sync Id).
+    'sessionIsEphemeral',  // User session would be ephemeral.
   ];
 
   /**
@@ -112,6 +114,7 @@ cr.define('cr.login', function() {
     this.trusted_ = true;
     this.oauth_code_ = null;
     this.deviceId_ = null;
+    this.sessionIsEphemeral_ = null;
     this.onBeforeSetHeadersSet_ = false;
 
     this.samlHandler_ = new cr.login.SamlHandler(this.webview_);
@@ -245,6 +248,7 @@ cr.define('cr.login', function() {
       if (data.enterpriseDomain)
         url = appendParam(url, 'manageddomain', data.enterpriseDomain);
       this.setDeviceId(data.deviceId);
+      this.sessionIsEphemeral_ = data.sessionIsEphemeral;
     } else {
       url = appendParam(url, 'continue', this.continueUrl_);
       url = appendParam(url, 'service', data.service || SERVICE_ID);
@@ -396,16 +400,22 @@ cr.define('cr.login', function() {
     if (this.isNewGaiaFlowChromeOS && this.deviceId_) {
       var headers = details.requestHeaders;
       var found = false;
+      var deviceId;
+      if (this.sessionIsEphemeral_)
+        deviceId = EPHEMERAL_DEVICE_ID_PREFIX + this.deviceId_;
+      else
+        deviceId = this.deviceId_;
+
       for (var i = 0, l = headers.length; i < l; ++i) {
         if (headers[i].name == X_DEVICE_ID_HEADER) {
-          headers[i].value = this.deviceId_;
+          headers[i].value = deviceId;
           found = true;
           break;
         }
       }
       if (!found) {
         details.requestHeaders.push(
-            {name: X_DEVICE_ID_HEADER, value: this.deviceId_});
+            {name: X_DEVICE_ID_HEADER, value: deviceId});
       }
     }
     return {

@@ -112,9 +112,10 @@ class ChromeUserManagerImpl
 
   void StopPolicyObserverForTesting();
 
- protected:
   // UserManagerBase implementation:
   bool AreEphemeralUsersEnabled() const override;
+
+ protected:
   const std::string& GetApplicationLocale() const override;
   PrefService* GetLocalState() const override;
   void HandleUserOAuthTokenStatusChange(

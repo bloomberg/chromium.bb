@@ -58,6 +58,9 @@ struct GaiaContext {
 
   // Whether consumer management enrollment is in progress.
   bool is_enrolling_consumer_management;
+
+  // If user session would be ephemeral.
+  bool session_is_ephemeral;
 };
 
 // A class that handles WebUI hooks in Gaia screen.

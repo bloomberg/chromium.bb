@@ -151,7 +151,9 @@ GaiaContext::GaiaContext()
       password_changed(false),
       show_users(false),
       use_offline(false),
-      has_users(false) {}
+      has_users(false),
+      session_is_ephemeral(false) {
+}
 
 GaiaScreenHandler::GaiaScreenHandler(
     CoreOobeActor* core_oobe_actor,
@@ -202,6 +204,7 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
                     is_enrolling_consumer_management);
   if (StartupUtils::IsWebviewSigninEnabled()) {
     params.SetString("deviceId", context.device_id);
+    params.SetBoolean("sessionIsEphemeral", context.session_is_ephemeral);
   }
 
   UpdateAuthParams(&params,
@@ -921,6 +924,8 @@ void GaiaScreenHandler::LoadAuthExtension(bool force,
     context.device_id = base::GenerateGUID();
     DCHECK(!context.device_id.empty());
   }
+  context.session_is_ephemeral =
+      ChromeUserManager::Get()->AreEphemeralUsersEnabled();
 
   populated_email_.clear();
 

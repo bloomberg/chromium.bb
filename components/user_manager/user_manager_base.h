@@ -145,14 +145,14 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
                             std::vector<std::string>* users_vector,
                             std::set<std::string>* users_set);
 
+  // Returns true if trusted device policies have successfully been retrieved
+  // and ephemeral users are enabled.
+  virtual bool AreEphemeralUsersEnabled() const = 0;
+
  protected:
   // Adds |user| to users list, and adds it to front of LRU list. It is assumed
   // that there is no user with same id.
   virtual void AddUserRecord(User* user);
-
-  // Returns true if trusted device policies have successfully been retrieved
-  // and ephemeral users are enabled.
-  virtual bool AreEphemeralUsersEnabled() const = 0;
 
   // Returns true if user may be removed.
   virtual bool CanUserBeRemoved(const User* user) const;
