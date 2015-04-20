@@ -2456,7 +2456,14 @@ void LayerTreeHostCommon::UpdateRenderSurfaces(
 
 static bool ApproximatelyEqual(const gfx::Rect& r1, const gfx::Rect& r2) {
   // TODO(vollick): This tolerance should be lower: crbug.com/471786
-  static const int tolerance = 2;
+  static const int tolerance = 3;
+
+  if (r1.IsEmpty())
+    return std::min(r2.width(), r2.height()) < tolerance;
+
+  if (r2.IsEmpty())
+    return std::min(r1.width(), r1.height()) < tolerance;
+
   return std::abs(r1.x() - r2.x()) <= tolerance &&
          std::abs(r1.y() - r2.y()) <= tolerance &&
          std::abs(r1.right() - r2.right()) <= tolerance &&
