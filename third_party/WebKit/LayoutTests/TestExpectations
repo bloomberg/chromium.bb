@@ -2092,3 +2092,5 @@ crbug.com/477252 [ Win ] http/tests/fetch/window/stream-reader.html [ Pass Timeo
 crbug.com/473633 http/tests/inspector/service-workers/user-agent-override.html [ Pass Timeout ]
 
 crbug.com/472488 http/tests/inspector/service-workers/service-workers-redundant.html [ Skip ]
+
+crbug.com/478709 [ Mac ] fast/dom/Window/new-window-opener.html [ Crash ]
