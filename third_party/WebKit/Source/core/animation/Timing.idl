@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// http://www.w3.org/TR/web-animations/#the-animationtiming-interface
+
+// TODO(dstockwell): This interface does not exist in the latest spec, which
+// instead has a AnimationEffectTimingReadonly interface:
+// https://w3c.github.io/web-animations/#the-animationeffecttimingreadonly-interface
+
 [
     ImplementedAs=AnimationNodeTiming,
     RuntimeEnabled=WebAnimationsAPI,

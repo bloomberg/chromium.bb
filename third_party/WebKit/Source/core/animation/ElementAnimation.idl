@@ -28,9 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/web-animations/#idl-def-Element
-// FIXME: move to Animatable
-// http://dev.w3.org/fxtf/web-animations/#idl-def-Animatable
+// http://www.w3.org/TR/web-animations/#the-animatable-interface
+// http://www.w3.org/TR/web-animations/#extensions-to-the-element-interface
+
+// TODO(dstockwell): This should be an Animatable interface, where Element
+// implements Animatable. The interface also has several changes:
+// https://w3c.github.io/web-animations/#the-animatable-interface
 
 partial interface Element {
     // FIXME: Union types with dictionary type members doesn't work (yet).

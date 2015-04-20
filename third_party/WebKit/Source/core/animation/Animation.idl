@@ -28,7 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://dev.w3.org/fxtf/web-animations/#idl-def-Animation
+// http://www.w3.org/TR/web-animations/#the-animation-interface
+
+// TODO(dstockwell): This interface has been renamed to KeyframeEffect in the
+// latest spec:
+// https://w3c.github.io/web-animations/#the-keyframeeffect-interfaces
 
 [
     // FIXME: the third argument should be "optional (unrestricted double or AnimationTimingProperties) timing".

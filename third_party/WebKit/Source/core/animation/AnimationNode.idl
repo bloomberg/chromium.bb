@@ -28,6 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/web-animations/#the-animationnode-interface
+
+// TODO(dstockwell): This interface has been renamed to AnimationEffectReadonly
+// in the latest spec:
+// https://w3c.github.io/web-animations/#the-animationeffectreadonly-interface
+
 [
     RuntimeEnabled=WebAnimationsAPI,
     WillBeGarbageCollected,
