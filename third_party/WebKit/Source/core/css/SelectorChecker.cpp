@@ -928,6 +928,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
     case CSSSelector::PseudoSingleButton:
     case CSSSelector::PseudoNoButton:
     case CSSSelector::PseudoCornerPresent:
+    case CSSSelector::PseudoWindowInactive:
         return false;
     case CSSSelector::PseudoUnknown:
     case CSSSelector::PseudoNotParsed:
