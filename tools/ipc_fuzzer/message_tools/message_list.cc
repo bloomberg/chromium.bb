@@ -25,8 +25,7 @@ struct msginfo {
 };
 
 // Redefine macros to generate table
-#include "chrome/common/safe_browsing/ipc_protobuf_message_null_macros.h"
-#include "ipc/ipc_message_null_macros.h"
+#include "tools/ipc_fuzzer/message_lib/all_message_null_macros.h"
 #undef IPC_MESSAGE_DECL
 #define IPC_MESSAGE_DECL(kind, type, name, in, out, ilist, olist) \
   { #name, __FILE__, IPC_MESSAGE_ID(), in, out },

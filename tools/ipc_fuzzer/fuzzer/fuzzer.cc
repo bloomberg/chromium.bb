@@ -25,7 +25,7 @@
 
 // First include of all message files to provide basic types.
 #include "tools/ipc_fuzzer/message_lib/all_messages.h"
-#include "ipc/ipc_message_null_macros.h"
+#include "tools/ipc_fuzzer/message_lib/all_message_null_macros.h"
 
 #if defined(COMPILER_GCC)
 #define PRETTY_FUNCTION __PRETTY_FUNCTION__
@@ -1953,7 +1953,7 @@ struct FuzzTraits<webrtc::MouseCursor> {
 
 // Bring them into existence.
 #include "tools/ipc_fuzzer/message_lib/all_messages.h"
-#include "ipc/ipc_message_null_macros.h"
+#include "tools/ipc_fuzzer/message_lib/all_message_null_macros.h"
 
 // Redefine macros to generate generating funtions
 #undef IPC_MESSAGE_DECL
@@ -2068,7 +2068,7 @@ struct FuzzTraits<webrtc::MouseCursor> {
 #define IPC_MEMBERS_OUT_5() NULL, NULL, NULL, NULL, NULL
 
 #include "tools/ipc_fuzzer/message_lib/all_messages.h"
-#include "ipc/ipc_message_null_macros.h"
+#include "tools/ipc_fuzzer/message_lib/all_message_null_macros.h"
 
 void PopulateFuzzerFunctionVector(
     FuzzerFunctionVector* function_vector) {
@@ -2079,7 +2079,7 @@ void PopulateFuzzerFunctionVector(
 }
 
 // Redefine macros to register fuzzing functions into map.
-#include "ipc/ipc_message_null_macros.h"
+#include "tools/ipc_fuzzer/message_lib/all_message_null_macros.h"
 #undef IPC_MESSAGE_DECL
 #define IPC_MESSAGE_DECL(kind, type, name, in, out, ilist, olist) \
   (*map)[static_cast<uint32>(name::ID)] = fuzzer_for_##name;
