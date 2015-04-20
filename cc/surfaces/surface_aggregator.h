@@ -37,6 +37,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   SurfaceIndexMap& previous_contained_surfaces() {
     return previous_contained_surfaces_;
   }
+  void SetFullDamageForSurface(SurfaceId surface_id);
 
  private:
   struct ClipData {

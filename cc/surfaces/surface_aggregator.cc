@@ -541,4 +541,12 @@ void SurfaceAggregator::ReleaseResources(SurfaceId surface_id) {
   }
 }
 
+void SurfaceAggregator::SetFullDamageForSurface(SurfaceId surface_id) {
+  auto it = previous_contained_surfaces_.find(surface_id);
+  if (it == previous_contained_surfaces_.end())
+    return;
+  // Set the last drawn index as 0 to ensure full damage next time it's drawn.
+  it->second = 0;
+}
+
 }  // namespace cc

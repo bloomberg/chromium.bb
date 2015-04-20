@@ -223,7 +223,8 @@ void Display::SetTreeActivationCallback(const base::Closure& callback) {
 }
 
 void Display::SetFullRootLayerDamage() {
-  NOTREACHED();
+  if (aggregator_ && !current_surface_id_.is_null())
+    aggregator_->SetFullDamageForSurface(current_surface_id_);
 }
 
 void Display::OnSurfaceDamaged(SurfaceId surface_id, bool* changed) {

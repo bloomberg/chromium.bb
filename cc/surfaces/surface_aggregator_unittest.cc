@@ -1230,6 +1230,45 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
         gfx::Rect(SurfaceSize())));
   }
 
+  // No Surface changed, so no damage should be given.
+  {
+    scoped_ptr<CompositorFrame> aggregated_frame =
+        aggregator_.Aggregate(root_surface_id_);
+
+    ASSERT_TRUE(aggregated_frame);
+    ASSERT_TRUE(aggregated_frame->delegated_frame_data);
+
+    DelegatedFrameData* frame_data =
+        aggregated_frame->delegated_frame_data.get();
+
+    const RenderPassList& aggregated_pass_list = frame_data->render_pass_list;
+
+    ASSERT_EQ(2u, aggregated_pass_list.size());
+
+    EXPECT_TRUE(aggregated_pass_list[1]->damage_rect.IsEmpty());
+  }
+
+  // SetFullDamageRectForSurface should cause the entire output to be
+  // marked as damaged.
+  {
+    aggregator_.SetFullDamageForSurface(root_surface_id_);
+    scoped_ptr<CompositorFrame> aggregated_frame =
+        aggregator_.Aggregate(root_surface_id_);
+
+    ASSERT_TRUE(aggregated_frame);
+    ASSERT_TRUE(aggregated_frame->delegated_frame_data);
+
+    DelegatedFrameData* frame_data =
+        aggregated_frame->delegated_frame_data.get();
+
+    const RenderPassList& aggregated_pass_list = frame_data->render_pass_list;
+
+    ASSERT_EQ(2u, aggregated_pass_list.size());
+
+    EXPECT_TRUE(aggregated_pass_list[1]->damage_rect.Contains(
+        gfx::Rect(SurfaceSize())));
+  }
+
   factory_.Destroy(child_surface_id);
 }
 
