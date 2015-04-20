@@ -37,10 +37,16 @@ struct InProgressFrameEncode {
         frame_encoded_callback(callback) {}
 };
 
-base::ScopedCFTypeRef<CFDictionaryRef>
-DictionaryWithKeysAndValues(CFTypeRef* keys, CFTypeRef* values, size_t size) {
+base::ScopedCFTypeRef<CFDictionaryRef> DictionaryWithKeysAndValues(
+    CFTypeRef* keys,
+    CFTypeRef* values,
+    size_t size) {
   return base::ScopedCFTypeRef<CFDictionaryRef>(CFDictionaryCreate(
-      kCFAllocatorDefault, keys, values, size, &kCFTypeDictionaryKeyCallBacks,
+      kCFAllocatorDefault,
+      keys,
+      values,
+      size,
+      &kCFTypeDictionaryKeyCallBacks,
       &kCFTypeDictionaryValueCallBacks));
 }
 
@@ -203,102 +209,40 @@ void CopySampleBufferToAnnexBBuffer(CoreMediaGlue::CMSampleBufferRef sbuf,
   }
 }
 
-}  // namespace
-
-class H264VideoToolboxEncoder::VideoFrameFactoryImpl
-    : public base::RefCountedThreadSafe<VideoFrameFactoryImpl>,
-      public VideoFrameFactory {
+// Implementation of the VideoFrameFactory interface using |CVPixelBufferPool|.
+class VideoFrameFactoryCVPixelBufferPoolImpl : public VideoFrameFactory {
  public:
-  // Type that proxies the VideoFrameFactory interface to this class.
-  class Proxy;
+  VideoFrameFactoryCVPixelBufferPoolImpl(
+      const base::ScopedCFTypeRef<CVPixelBufferPoolRef>& pool,
+      const gfx::Size& frame_size)
+      : pool_(pool),
+        frame_size_(frame_size) {}
 
-  VideoFrameFactoryImpl(const base::WeakPtr<H264VideoToolboxEncoder>& encoder,
-                        const scoped_refptr<CastEnvironment>& cast_environment)
-      : encoder_(encoder), cast_environment_(cast_environment) {}
+  ~VideoFrameFactoryCVPixelBufferPoolImpl() override {}
 
   scoped_refptr<VideoFrame> MaybeCreateFrame(
-      const gfx::Size& frame_size,
-      base::TimeDelta timestamp) override {
-    base::AutoLock auto_lock(lock_);
+      const gfx::Size& frame_size, base::TimeDelta timestamp) override {
+    if (frame_size != frame_size_)
+      return nullptr;  // Buffer pool is not a match for requested frame size.
 
-    // If the pool size does not match, speculatively reset the encoder to use
-    // the new size and return null. Cache the new frame size right away and
-    // toss away the pixel buffer pool to avoid spurious tasks until the encoder
-    // is done resetting.
-    if (frame_size != pool_frame_size_) {
-      DVLOG(1) << "MaybeCreateFrame: Detected frame size change.";
-      cast_environment_->PostTask(
-          CastEnvironment::MAIN, FROM_HERE,
-          base::Bind(&H264VideoToolboxEncoder::UpdateFrameSize, encoder_,
-                     frame_size));
-      pool_frame_size_ = frame_size;
-      pool_.reset();
-      return nullptr;
-    }
-
-    if (!pool_) {
-      DVLOG(1) << "MaybeCreateFrame: No pixel buffer pool.";
-      return nullptr;
-    }
-
-    // Allocate a pixel buffer from the pool and return a wrapper VideoFrame.
     base::ScopedCFTypeRef<CVPixelBufferRef> buffer;
-    auto status = CVPixelBufferPoolCreatePixelBuffer(kCFAllocatorDefault, pool_,
-                                                     buffer.InitializeInto());
-    if (status != kCVReturnSuccess) {
-      DLOG(ERROR) << "CVPixelBufferPoolCreatePixelBuffer failed: " << status;
-      return nullptr;
-    }
-
+    if (CVPixelBufferPoolCreatePixelBuffer(kCFAllocatorDefault, pool_,
+                                           buffer.InitializeInto()) !=
+            kCVReturnSuccess)
+      return nullptr;  // Buffer pool has run out of pixel buffers.
     DCHECK(buffer);
+
     return VideoFrame::WrapCVPixelBuffer(buffer, timestamp);
   }
 
-  void Update(const base::ScopedCFTypeRef<CVPixelBufferPoolRef>& pool,
-              const gfx::Size& frame_size) {
-    base::AutoLock auto_lock(lock_);
-    pool_ = pool;
-    pool_frame_size_ = frame_size;
-  }
-
  private:
-  friend class base::RefCountedThreadSafe<VideoFrameFactoryImpl>;
-  ~VideoFrameFactoryImpl() override {}
+  const base::ScopedCFTypeRef<CVPixelBufferPoolRef> pool_;
+  const gfx::Size frame_size_;
 
-  base::Lock lock_;
-  base::ScopedCFTypeRef<CVPixelBufferPoolRef> pool_;
-  gfx::Size pool_frame_size_;
-
-  // Weak back reference to the encoder and the cast envrionment so we can
-  // message the encoder when the frame size changes.
-  const base::WeakPtr<H264VideoToolboxEncoder> encoder_;
-  const scoped_refptr<CastEnvironment> cast_environment_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoFrameFactoryImpl);
+  DISALLOW_COPY_AND_ASSIGN(VideoFrameFactoryCVPixelBufferPoolImpl);
 };
 
-class H264VideoToolboxEncoder::VideoFrameFactoryImpl::Proxy
-    : public VideoFrameFactory {
- public:
-  explicit Proxy(
-      const scoped_refptr<VideoFrameFactoryImpl>& video_frame_factory)
-      : video_frame_factory_(video_frame_factory) {
-    DCHECK(video_frame_factory_);
-  }
-
-  scoped_refptr<VideoFrame> MaybeCreateFrame(
-      const gfx::Size& frame_size,
-      base::TimeDelta timestamp) override {
-    return video_frame_factory_->MaybeCreateFrame(frame_size, timestamp);
-  }
-
- private:
-  ~Proxy() override {}
-
-  const scoped_refptr<VideoFrameFactoryImpl> video_frame_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(Proxy);
-};
+}  // namespace
 
 // static
 bool H264VideoToolboxEncoder::IsSupported(
@@ -309,46 +253,48 @@ bool H264VideoToolboxEncoder::IsSupported(
 H264VideoToolboxEncoder::H264VideoToolboxEncoder(
     const scoped_refptr<CastEnvironment>& cast_environment,
     const VideoSenderConfig& video_config,
+    const gfx::Size& frame_size,
+    uint32 first_frame_id,
     const StatusChangeCallback& status_change_cb)
     : cast_environment_(cast_environment),
       videotoolbox_glue_(VideoToolboxGlue::Get()),
-      video_config_(video_config),
+      frame_size_(frame_size),
       status_change_cb_(status_change_cb),
-      last_frame_id_(kStartFrameId),
-      encode_next_frame_as_keyframe_(false),
-      weak_factory_(this) {
-  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+      next_frame_id_(first_frame_id),
+      encode_next_frame_as_keyframe_(false) {
+  DCHECK(!frame_size_.IsEmpty());
   DCHECK(!status_change_cb_.is_null());
 
-  OperationalStatus operational_status =
-      H264VideoToolboxEncoder::IsSupported(video_config)
-          ? STATUS_INITIALIZED
-          : STATUS_UNSUPPORTED_CODEC;
-  cast_environment_->PostTask(
-      CastEnvironment::MAIN, FROM_HERE,
-      base::Bind(status_change_cb_, operational_status));
-
-  if (operational_status == STATUS_INITIALIZED) {
-    video_frame_factory_ =
-        scoped_refptr<VideoFrameFactoryImpl>(new VideoFrameFactoryImpl(
-            weak_factory_.GetWeakPtr(), cast_environment_));
+  OperationalStatus operational_status;
+  if (video_config.codec == CODEC_VIDEO_H264 && videotoolbox_glue_) {
+    operational_status = Initialize(video_config) ?
+        STATUS_INITIALIZED : STATUS_INVALID_CONFIGURATION;
+  } else {
+    operational_status = STATUS_UNSUPPORTED_CODEC;
   }
+  cast_environment_->PostTask(
+      CastEnvironment::MAIN,
+      FROM_HERE,
+      base::Bind(status_change_cb_, operational_status));
 }
 
 H264VideoToolboxEncoder::~H264VideoToolboxEncoder() {
-  DestroyCompressionSession();
+  Teardown();
 }
 
-void H264VideoToolboxEncoder::ResetCompressionSession() {
+bool H264VideoToolboxEncoder::Initialize(
+    const VideoSenderConfig& video_config) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!compression_session_);
 
-  // Notify that we're resetting the encoder.
-  cast_environment_->PostTask(
-      CastEnvironment::MAIN, FROM_HERE,
-      base::Bind(status_change_cb_, STATUS_CODEC_REINIT_PENDING));
-
-  // Destroy the current session, if any.
-  DestroyCompressionSession();
+  // Note that the encoder object is given to the compression session as the
+  // callback context using a raw pointer. The C API does not allow us to use
+  // a smart pointer, nor is this encoder ref counted. However, this is still
+  // safe, because we 1) we own the compression session and 2) we tear it down
+  // safely. When destructing the encoder, the compression session is flushed
+  // and invalidated. Internally, VideoToolbox will join all of its threads
+  // before returning to the client. Therefore, when control returns to us, we
+  // are guaranteed that the output callback will not execute again.
 
   // On OS X, allow the hardware encoder. Don't require it, it does not support
   // all configurations (some of which are used for testing).
@@ -363,22 +309,30 @@ void H264VideoToolboxEncoder::ResetCompressionSession() {
   // Certain encoders prefer kCVPixelFormatType_422YpCbCr8, which is not
   // supported through VideoFrame. We can force 420 formats to be used instead.
   const int formats[] = {
-      kCVPixelFormatType_420YpCbCr8Planar,
-      CoreVideoGlue::kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange};
+    kCVPixelFormatType_420YpCbCr8Planar,
+    CoreVideoGlue::kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange
+  };
   // Keep these attachment settings in-sync with those in ConfigureSession().
-  CFTypeRef attachments_keys[] = {kCVImageBufferColorPrimariesKey,
-                                  kCVImageBufferTransferFunctionKey,
-                                  kCVImageBufferYCbCrMatrixKey};
-  CFTypeRef attachments_values[] = {kCVImageBufferColorPrimaries_ITU_R_709_2,
-                                    kCVImageBufferTransferFunction_ITU_R_709_2,
-                                    kCVImageBufferYCbCrMatrix_ITU_R_709_2};
-  CFTypeRef buffer_attributes_keys[] = {kCVPixelBufferPixelFormatTypeKey,
-                                        kCVBufferPropagatedAttachmentsKey};
+  CFTypeRef attachments_keys[] = {
+    kCVImageBufferColorPrimariesKey,
+    kCVImageBufferTransferFunctionKey,
+    kCVImageBufferYCbCrMatrixKey
+  };
+  CFTypeRef attachments_values[] = {
+    kCVImageBufferColorPrimaries_ITU_R_709_2,
+    kCVImageBufferTransferFunction_ITU_R_709_2,
+    kCVImageBufferYCbCrMatrix_ITU_R_709_2
+  };
+  CFTypeRef buffer_attributes_keys[] = {
+    kCVPixelBufferPixelFormatTypeKey,
+    kCVBufferPropagatedAttachmentsKey
+  };
   CFTypeRef buffer_attributes_values[] = {
-      ArrayWithIntegers(formats, arraysize(formats)).release(),
-      DictionaryWithKeysAndValues(attachments_keys, attachments_values,
-                                  arraysize(attachments_keys))
-          .release()};
+    ArrayWithIntegers(formats, arraysize(formats)).release(),
+    DictionaryWithKeysAndValues(attachments_keys,
+                                attachments_values,
+                                arraysize(attachments_keys)).release()
+  };
   const base::ScopedCFTypeRef<CFDictionaryRef> buffer_attributes =
       DictionaryWithKeysAndValues(buffer_attributes_keys,
                                   buffer_attributes_values,
@@ -386,49 +340,26 @@ void H264VideoToolboxEncoder::ResetCompressionSession() {
   for (auto& v : buffer_attributes_values)
     CFRelease(v);
 
-  // Create the compression session.
-
-  // Note that the encoder object is given to the compression session as the
-  // callback context using a raw pointer. The C API does not allow us to use a
-  // smart pointer, nor is this encoder ref counted. However, this is still
-  // safe, because we 1) we own the compression session and 2) we tear it down
-  // safely. When destructing the encoder, the compression session is flushed
-  // and invalidated. Internally, VideoToolbox will join all of its threads
-  // before returning to the client. Therefore, when control returns to us, we
-  // are guaranteed that the output callback will not execute again.
+  VTCompressionSessionRef session;
   OSStatus status = videotoolbox_glue_->VTCompressionSessionCreate(
       kCFAllocatorDefault, frame_size_.width(), frame_size_.height(),
       CoreMediaGlue::kCMVideoCodecType_H264, encoder_spec, buffer_attributes,
       nullptr /* compressedDataAllocator */,
       &H264VideoToolboxEncoder::CompressionCallback,
-      reinterpret_cast<void*>(this), compression_session_.InitializeInto());
+      reinterpret_cast<void*>(this), &session);
   if (status != noErr) {
     DLOG(ERROR) << " VTCompressionSessionCreate failed: " << status;
-    // Notify that reinitialization has failed.
-    cast_environment_->PostTask(
-        CastEnvironment::MAIN, FROM_HERE,
-        base::Bind(status_change_cb_, STATUS_CODEC_INIT_FAILED));
-    return;
+    return false;
   }
+  compression_session_.reset(session);
 
-  // Configure the session (apply session properties based on the current state
-  // of the encoder, experimental tuning and requirements).
-  ConfigureCompressionSession();
+  ConfigureSession(video_config);
 
-  // Update the video frame factory.
-  base::ScopedCFTypeRef<CVPixelBufferPoolRef> pool(
-      videotoolbox_glue_->VTCompressionSessionGetPixelBufferPool(
-          compression_session_),
-      base::scoped_policy::RETAIN);
-  video_frame_factory_->Update(pool, frame_size_);
-
-  // Notify that reinitialization is done.
-  cast_environment_->PostTask(
-      CastEnvironment::MAIN, FROM_HERE,
-      base::Bind(status_change_cb_, STATUS_INITIALIZED));
+  return true;
 }
 
-void H264VideoToolboxEncoder::ConfigureCompressionSession() {
+void H264VideoToolboxEncoder::ConfigureSession(
+    const VideoSenderConfig& video_config) {
   SetSessionProperty(
       videotoolbox_glue_->kVTCompressionPropertyKey_ProfileLevel(),
       videotoolbox_glue_->kVTProfileLevel_H264_Main_AutoLevel());
@@ -447,10 +378,10 @@ void H264VideoToolboxEncoder::ConfigureCompressionSession() {
   //              https://crbug.com/425352
   SetSessionProperty(
       videotoolbox_glue_->kVTCompressionPropertyKey_AverageBitRate(),
-      (video_config_.min_bitrate + video_config_.max_bitrate) / 2);
+      (video_config.min_bitrate + video_config.max_bitrate) / 2);
   SetSessionProperty(
       videotoolbox_glue_->kVTCompressionPropertyKey_ExpectedFrameRate(),
-      video_config_.max_frame_rate);
+      video_config.max_frame_rate);
   // Keep these attachment settings in-sync with those in Initialize().
   SetSessionProperty(
       videotoolbox_glue_->kVTCompressionPropertyKey_ColorPrimaries(),
@@ -461,14 +392,14 @@ void H264VideoToolboxEncoder::ConfigureCompressionSession() {
   SetSessionProperty(
       videotoolbox_glue_->kVTCompressionPropertyKey_YCbCrMatrix(),
       kCVImageBufferYCbCrMatrix_ITU_R_709_2);
-  if (video_config_.max_number_of_video_buffers_used > 0) {
+  if (video_config.max_number_of_video_buffers_used > 0) {
     SetSessionProperty(
         videotoolbox_glue_->kVTCompressionPropertyKey_MaxFrameDelayCount(),
-        video_config_.max_number_of_video_buffers_used);
+        video_config.max_number_of_video_buffers_used);
   }
 }
 
-void H264VideoToolboxEncoder::DestroyCompressionSession() {
+void H264VideoToolboxEncoder::Teardown() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // If the compression session exists, invalidate it. This blocks until all
@@ -487,24 +418,13 @@ bool H264VideoToolboxEncoder::EncodeVideoFrame(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!frame_encoded_callback.is_null());
 
-  // Reject empty video frames.
-  const gfx::Size frame_size = video_frame->visible_rect().size();
-  if (frame_size.IsEmpty()) {
-    DVLOG(1) << "Rejecting empty video frame.";
-    return false;
-  }
-
-  // Handle frame size changes. This will reset the compression session.
-  if (frame_size != frame_size_) {
-    DVLOG(1) << "EncodeVideoFrame: Detected frame size change.";
-    UpdateFrameSize(frame_size);
-  }
-
-  // Need a compression session to continue.
   if (!compression_session_) {
-    DLOG(ERROR) << "No compression session.";
+    DLOG(ERROR) << " compression session is null";
     return false;
   }
+
+  if (video_frame->visible_rect().size() != frame_size_)
+    return false;
 
   // Wrap the VideoFrame in a CVPixelBuffer. In all cases, no data will be
   // copied. If the VideoFrame was created by this encoder's video frame
@@ -514,21 +434,16 @@ bool H264VideoToolboxEncoder::EncodeVideoFrame(
   // lifetime is extended for the lifetime of the returned CVPixelBuffer.
   auto pixel_buffer = media::WrapVideoFrameInCVPixelBuffer(*video_frame);
   if (!pixel_buffer) {
-    DLOG(ERROR) << "WrapVideoFrameInCVPixelBuffer failed.";
     return false;
   }
 
-  // Convert the frame timestamp to CMTime.
   auto timestamp_cm = CoreMediaGlue::CMTimeMake(
       (reference_time - base::TimeTicks()).InMicroseconds(), USEC_PER_SEC);
 
-  // Wrap information we'll need after the frame is encoded in a heap object.
-  // We'll get the pointer back from the VideoToolbox completion callback.
   scoped_ptr<InProgressFrameEncode> request(new InProgressFrameEncode(
       TimeDeltaToRtpDelta(video_frame->timestamp(), kVideoFrequency),
       reference_time, frame_encoded_callback));
 
-  // Build a suitable frame properties dictionary for keyframes.
   base::ScopedCFTypeRef<CFDictionaryRef> frame_props;
   if (encode_next_frame_as_keyframe_) {
     frame_props = DictionaryWithKeyValue(
@@ -537,53 +452,32 @@ bool H264VideoToolboxEncoder::EncodeVideoFrame(
     encode_next_frame_as_keyframe_ = false;
   }
 
-  // Submit the frame to the compression session. The function returns as soon
-  // as the frame has been enqueued.
+  VTEncodeInfoFlags info;
   OSStatus status = videotoolbox_glue_->VTCompressionSessionEncodeFrame(
       compression_session_, pixel_buffer, timestamp_cm,
       CoreMediaGlue::CMTime{0, 0, 0, 0}, frame_props,
-      reinterpret_cast<void*>(request.release()), nullptr);
+      reinterpret_cast<void*>(request.release()), &info);
   if (status != noErr) {
     DLOG(ERROR) << " VTCompressionSessionEncodeFrame failed: " << status;
+    return false;
+  }
+  if ((info & VideoToolboxGlue::kVTEncodeInfo_FrameDropped)) {
+    DLOG(ERROR) << " frame dropped";
     return false;
   }
 
   return true;
 }
 
-void H264VideoToolboxEncoder::UpdateFrameSize(const gfx::Size& size_needed) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // Our video frame factory posts a task to update the frame size when its
-  // cache of the frame size differs from what the client requested. To avoid
-  // spurious encoder resets, check again here.
-  if (size_needed == frame_size_) {
-    DCHECK(compression_session_);
-    return;
-  }
-
-  VLOG(1) << "Resetting compression session (for frame size change from "
-          << frame_size_.ToString() << " to " << size_needed.ToString() << ").";
-
-  // If there is an existing session, finish every pending frame.
-  if (compression_session_) {
-    EmitFrames();
-  }
-
-  // Store the new frame size.
-  frame_size_ = size_needed;
-
-  // Reset the compression session.
-  ResetCompressionSession();
-}
-
-void H264VideoToolboxEncoder::SetBitRate(int /*new_bit_rate*/) {
+void H264VideoToolboxEncoder::SetBitRate(int new_bit_rate) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // VideoToolbox does not seem to support bitrate reconfiguration.
 }
 
 void H264VideoToolboxEncoder::GenerateKeyFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(compression_session_);
+
   encode_next_frame_as_keyframe_ = true;
 }
 
@@ -593,15 +487,23 @@ void H264VideoToolboxEncoder::LatestFrameIdToReference(uint32 /*frame_id*/) {
 
 scoped_ptr<VideoFrameFactory>
 H264VideoToolboxEncoder::CreateVideoFrameFactory() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!videotoolbox_glue_ || !compression_session_)
+    return nullptr;
+  base::ScopedCFTypeRef<CVPixelBufferPoolRef> pool(
+      videotoolbox_glue_->VTCompressionSessionGetPixelBufferPool(
+          compression_session_),
+      base::scoped_policy::RETAIN);
   return scoped_ptr<VideoFrameFactory>(
-      new VideoFrameFactoryImpl::Proxy(video_frame_factory_));
+      new VideoFrameFactoryCVPixelBufferPoolImpl(pool, frame_size_));
 }
 
 void H264VideoToolboxEncoder::EmitFrames() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!compression_session_)
+
+  if (!compression_session_) {
+    DLOG(ERROR) << " compression session is null";
     return;
+  }
 
   OSStatus status = videotoolbox_glue_->VTCompressionSessionCompleteFrames(
       compression_session_, CoreMediaGlue::CMTime{0, 0, 0, 0});
@@ -644,13 +546,14 @@ void H264VideoToolboxEncoder::CompressionCallback(void* encoder_opaque,
   if (status != noErr) {
     DLOG(ERROR) << " encoding failed: " << status;
     encoder->cast_environment_->PostTask(
-        CastEnvironment::MAIN, FROM_HERE,
+        CastEnvironment::MAIN,
+        FROM_HERE,
         base::Bind(encoder->status_change_cb_, STATUS_CODEC_RUNTIME_ERROR));
   } else if ((info & VideoToolboxGlue::kVTEncodeInfo_FrameDropped)) {
     DVLOG(2) << " frame dropped";
   } else {
-    auto sample_attachments =
-        static_cast<CFDictionaryRef>(CFArrayGetValueAtIndex(
+    auto sample_attachments = static_cast<CFDictionaryRef>(
+        CFArrayGetValueAtIndex(
             CoreMediaGlue::CMSampleBufferGetSampleAttachmentsArray(sbuf, true),
             0));
 
@@ -658,14 +561,14 @@ void H264VideoToolboxEncoder::CompressionCallback(void* encoder_opaque,
     // keyframe (at least I think, VT documentation is, erm, sparse). Could
     // alternatively use kCMSampleAttachmentKey_DependsOnOthers == false.
     keyframe = !CFDictionaryContainsKey(
-                   sample_attachments,
-                   CoreMediaGlue::kCMSampleAttachmentKey_NotSync());
+        sample_attachments,
+        CoreMediaGlue::kCMSampleAttachmentKey_NotSync());
     has_frame_data = true;
   }
 
   // Increment the encoder-scoped frame id and assign the new value to this
   // frame. VideoToolbox calls the output callback serially, so this is safe.
-  const uint32 frame_id = ++encoder->last_frame_id_;
+  const uint32 frame_id = encoder->next_frame_id_++;
 
   scoped_ptr<EncodedFrame> encoded_frame(new EncodedFrame());
   encoded_frame->frame_id = frame_id;
@@ -695,6 +598,90 @@ void H264VideoToolboxEncoder::CompressionCallback(void* encoder_opaque,
       CastEnvironment::MAIN, FROM_HERE,
       base::Bind(request->frame_encoded_callback,
                  base::Passed(&encoded_frame)));
+}
+
+// A ref-counted structure that is shared to provide concurrent access to the
+// VideoFrameFactory instance for the current encoder.  OnEncoderReplaced() can
+// change |factory| whenever an encoder instance has been replaced, while users
+// of CreateVideoFrameFactory() may attempt to read/use |factory| by any thread
+// at any time.
+struct SizeAdaptableH264VideoToolboxVideoEncoder::FactoryHolder
+    : public base::RefCountedThreadSafe<FactoryHolder> {
+  base::Lock lock;
+  scoped_ptr<VideoFrameFactory> factory;
+
+ private:
+  friend class base::RefCountedThreadSafe<FactoryHolder>;
+  ~FactoryHolder() {}
+};
+
+SizeAdaptableH264VideoToolboxVideoEncoder::
+    SizeAdaptableH264VideoToolboxVideoEncoder(
+        const scoped_refptr<CastEnvironment>& cast_environment,
+        const VideoSenderConfig& video_config,
+        const StatusChangeCallback& status_change_cb)
+        : SizeAdaptableVideoEncoderBase(cast_environment,
+                                        video_config,
+                                        status_change_cb),
+          holder_(new FactoryHolder()) {}
+
+SizeAdaptableH264VideoToolboxVideoEncoder::
+    ~SizeAdaptableH264VideoToolboxVideoEncoder() {}
+
+// A proxy allowing SizeAdaptableH264VideoToolboxVideoEncoder to swap out the
+// VideoFrameFactory instance to match one appropriate for the current encoder
+// instance.
+class SizeAdaptableH264VideoToolboxVideoEncoder::VideoFrameFactoryProxy
+    : public VideoFrameFactory {
+ public:
+  explicit VideoFrameFactoryProxy(const scoped_refptr<FactoryHolder>& holder)
+      : holder_(holder) {}
+
+  ~VideoFrameFactoryProxy() override {}
+
+  scoped_refptr<VideoFrame> MaybeCreateFrame(
+      const gfx::Size& frame_size, base::TimeDelta timestamp) override {
+    base::AutoLock auto_lock(holder_->lock);
+    return holder_->factory ?
+        holder_->factory->MaybeCreateFrame(frame_size, timestamp) : nullptr;
+  }
+
+ private:
+  const scoped_refptr<FactoryHolder> holder_;
+
+  DISALLOW_COPY_AND_ASSIGN(VideoFrameFactoryProxy);
+};
+
+scoped_ptr<VideoFrameFactory>
+    SizeAdaptableH264VideoToolboxVideoEncoder::CreateVideoFrameFactory() {
+  return scoped_ptr<VideoFrameFactory>(new VideoFrameFactoryProxy(holder_));
+}
+
+scoped_ptr<VideoEncoder>
+    SizeAdaptableH264VideoToolboxVideoEncoder::CreateEncoder() {
+  return scoped_ptr<VideoEncoder>(new H264VideoToolboxEncoder(
+      cast_environment(),
+      video_config(),
+      frame_size(),
+      last_frame_id() + 1,
+      CreateEncoderStatusChangeCallback()));
+}
+
+void SizeAdaptableH264VideoToolboxVideoEncoder::OnEncoderReplaced(
+    VideoEncoder* replacement_encoder) {
+  scoped_ptr<VideoFrameFactory> current_factory(
+      replacement_encoder->CreateVideoFrameFactory());
+  base::AutoLock auto_lock(holder_->lock);
+  holder_->factory = current_factory.Pass();
+  SizeAdaptableVideoEncoderBase::OnEncoderReplaced(replacement_encoder);
+}
+
+void SizeAdaptableH264VideoToolboxVideoEncoder::DestroyEncoder() {
+  {
+    base::AutoLock auto_lock(holder_->lock);
+    holder_->factory.reset();
+  }
+  SizeAdaptableVideoEncoderBase::DestroyEncoder();
 }
 
 }  // namespace cast

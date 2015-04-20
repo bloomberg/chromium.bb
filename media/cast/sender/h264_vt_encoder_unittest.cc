@@ -208,6 +208,8 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
     encoder_.reset(new H264VideoToolboxEncoder(
         cast_environment_,
         video_sender_config_,
+        gfx::Size(kVideoWidth, kVideoHeight),
+        0u,
         base::Bind(&SaveOperationalStatus, &operational_status_)));
     message_loop_.RunUntilIdle();
     EXPECT_EQ(STATUS_INITIALIZED, operational_status_);
@@ -304,12 +306,10 @@ TEST_F(H264VideoToolboxEncoderTest, CheckFramesAreDecodable) {
 TEST_F(H264VideoToolboxEncoderTest, CheckVideoFrameFactory) {
   auto video_frame_factory = encoder_->CreateVideoFrameFactory();
   ASSERT_TRUE(video_frame_factory.get());
-  // The first call to |MaybeCreateFrame| will return null but post a task to
-  // the encoder to initialize for the specified frame size. We then drain the
-  // message loop. After that, the encoder should have initialized and we
-  // request a frame again.
-  ASSERT_FALSE(video_frame_factory->MaybeCreateFrame(
-      gfx::Size(kVideoWidth, kVideoHeight), base::TimeDelta()));
+  CreateFrameAndMemsetPlane(video_frame_factory.get());
+  // TODO(jfroy): Need to test that the encoder can encode VideoFrames provided
+  // by the VideoFrameFactory.
+  encoder_.reset();
   message_loop_.RunUntilIdle();
   CreateFrameAndMemsetPlane(video_frame_factory.get());
 }
