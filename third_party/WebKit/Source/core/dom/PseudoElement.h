@@ -46,6 +46,8 @@ public:
 
     static String pseudoElementNameForEvents(PseudoId);
 
+    Node* findAssociatedNode() const;
+
     virtual void dispose();
 
 protected:
