@@ -44,11 +44,12 @@ void AffiliationBackend::Initialize(const base::FilePath& db_path) {
   throttler_.reset(
       new AffiliationFetchThrottler(this, task_runner_, tick_clock_.get()));
 
+  // TODO(engedy): Currently, when Init() returns false, it always poisons the
+  // DB, so subsequent operations will silently fail. Consider either fully
+  // committing to this approach and making Init() a void, or handling the
+  // return value here. See: https://crbug.com/478831.
   cache_.reset(new AffiliationDatabase());
-  if (!cache_->Init(db_path)) {
-    // TODO(engedy): Implement this. crbug.com/437865.
-    NOTIMPLEMENTED();
-  }
+  cache_->Init(db_path);
 }
 
 void AffiliationBackend::GetAffiliations(
@@ -158,10 +159,14 @@ void AffiliationBackend::OnFetchSucceeded(
 
     // Cached data in contradiction with newly stored data automatically gets
     // removed from the DB, and will be stored into |obsoleted_affiliations|.
-    // Let facet managers know if data is removed from under them.
-    // TODO(engedy): Implement this. crbug.com/437865.
-    if (!obsoleted_affiliations.empty())
-      NOTIMPLEMENTED();
+    // TODO(engedy): Currently, handling this is entirely meaningless unless in
+    // the edge case when the user has credentials for two Android applications
+    // which are now being de-associated. But even in that case, nothing will
+    // explode and the only symptom will be that credentials for the Android
+    // application that is not being fetched right now, if any, will not be
+    // filled into affiliated applications until the next fetch. Still, this
+    // should be implemented at some point by letting facet managers know if
+    // data. See: https://crbug.com/478832.
 
     for (const auto& facet_uri : affiliated_facets) {
       if (!facet_managers_.contains(facet_uri))

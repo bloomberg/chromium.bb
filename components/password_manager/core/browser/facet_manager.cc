@@ -119,8 +119,8 @@ void FacetManager::GetAffiliations(
   if (IsCachedDataFresh()) {
     AffiliatedFacetsWithUpdateTime affiliation;
     if (!backend_->ReadAffiliationsFromDatabase(facet_uri_, &affiliation)) {
-      // TODO(engedy): Implement this. crbug.com/437865.
-      NOTIMPLEMENTED();
+      ServeRequestWithFailure(request_info);
+      return;
     }
     DCHECK_EQ(affiliation.last_update_time, last_update_time_) << facet_uri_;
     ServeRequestWithSuccess(request_info, affiliation.facets);

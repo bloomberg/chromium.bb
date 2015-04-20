@@ -34,19 +34,29 @@ bool AffiliationDatabase::Init(const base::FilePath& path) {
   if (!sql_connection_->Open(path))
     return false;
 
-  if (!sql_connection_->Execute("PRAGMA foreign_keys=1"))
-    return false;
-
-  sql::MetaTable metatable;
-  if (!metatable.Init(sql_connection_.get(), kVersion, kCompatibleVersion))
-    return false;
-
-  if (metatable.GetCompatibleVersionNumber() > kVersion) {
-    LOG(WARNING) << "AffiliationDatabase is too new.";
+  if (!sql_connection_->Execute("PRAGMA foreign_keys=1")) {
+    sql_connection_->Poison();
     return false;
   }
 
-  return CreateTablesAndIndicesIfNeeded();
+  sql::MetaTable metatable;
+  if (!metatable.Init(sql_connection_.get(), kVersion, kCompatibleVersion)) {
+    sql_connection_->Poison();
+    return false;
+  }
+
+  if (metatable.GetCompatibleVersionNumber() > kVersion) {
+    LOG(WARNING) << "AffiliationDatabase is too new.";
+    sql_connection_->Poison();
+    return false;
+  }
+
+  if (!CreateTablesAndIndicesIfNeeded()) {
+    sql_connection_->Poison();
+    return false;
+  }
+
+  return true;
 }
 
 bool AffiliationDatabase::GetAffiliationsForFacet(
