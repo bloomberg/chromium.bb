@@ -291,8 +291,11 @@ class ChromeLauncherController : public ash::ShelfDelegate,
 
   // Activates a |window|. If |allow_minimize| is true and the system allows
   // it, the the window will get minimized instead.
-  void ActivateWindowOrMinimizeIfActive(ui::BaseWindow* window,
-                                        bool allow_minimize);
+  // Returns the action performed. Should be one of kNoAction,
+  // kExistingWindowActivated, or kExistingWindowMinimized.
+  ash::ShelfItemDelegate::PerformedAction ActivateWindowOrMinimizeIfActive(
+      ui::BaseWindow* window,
+      bool allow_minimize);
 
   // ash::ShelfDelegate:
   void OnShelfCreated(ash::Shelf* shelf) override;

@@ -5,6 +5,7 @@
 #include "ash/shelf/shelf_view.h"
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "ash/root_window_controller.h"
@@ -134,9 +135,10 @@ class ShelfItemSelectionTracker : public TestShelfItemDelegate {
   }
 
   // TestShelfItemDelegate:
-  bool ItemSelected(const ui::Event& event) override {
+  ShelfItemDelegate::PerformedAction ItemSelected(
+      const ui::Event& event) override {
     selected_ = true;
-    return false;
+    return kNoAction;
   }
 
  private:

@@ -37,9 +37,11 @@ class BrowserShortcutLauncherItemController : public LauncherItemController {
   bool IsOpen() const override;
   bool IsVisible() const override;
   void Launch(ash::LaunchSource source, int event_flags) override;
-  bool Activate(ash::LaunchSource source) override;
+  ShelfItemDelegate::PerformedAction Activate(
+      ash::LaunchSource source) override;
   ChromeLauncherAppMenuItems GetApplicationList(int event_flags) override;
-  bool ItemSelected(const ui::Event& event) override;
+  ash::ShelfItemDelegate::PerformedAction ItemSelected(
+      const ui::Event& event) override;
   base::string16 GetTitle() override;
   ui::MenuModel* CreateContextMenu(aura::Window* root_window) override;
   ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
@@ -60,7 +62,9 @@ class BrowserShortcutLauncherItemController : public LauncherItemController {
   bool IsIncognito(content::WebContents* web_contents) const;
 
   // Activate a browser - or advance to the next one on the list.
-  void ActivateOrAdvanceToNextBrowser();
+  // Returns the action performed. Should be one of kNoAction,
+  // kExistingWindowActivated, or kNewWindowCreated.
+  PerformedAction ActivateOrAdvanceToNextBrowser();
 
   // Returns true when the given |browser| is listed in the browser application
   // list.

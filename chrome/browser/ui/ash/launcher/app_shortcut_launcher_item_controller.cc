@@ -101,7 +101,8 @@ void AppShortcutLauncherItemController::Launch(ash::LaunchSource source,
   launcher_controller()->LaunchApp(app_id(), source, event_flags);
 }
 
-bool AppShortcutLauncherItemController::Activate(ash::LaunchSource source) {
+ash::ShelfItemDelegate::PerformedAction
+AppShortcutLauncherItemController::Activate(ash::LaunchSource source) {
   content::WebContents* content = GetLRUApplication();
   if (!content) {
     if (IsV2App()) {
@@ -112,13 +113,12 @@ bool AppShortcutLauncherItemController::Activate(ash::LaunchSource source) {
       // detect if an app was started we suppress any further clicks within a
       // special time out.
       if (!AllowNextLaunchAttempt())
-        return false;
+        return kNoAction;
     }
     Launch(source, ui::EF_NONE);
-    return true;
+    return kNewWindowCreated;
   }
-  ActivateContent(content);
-  return false;
+  return ActivateContent(content);
 }
 
 void AppShortcutLauncherItemController::Close() {
@@ -192,12 +192,13 @@ AppShortcutLauncherItemController::GetRunningApplications() {
   return items;
 }
 
-bool AppShortcutLauncherItemController::ItemSelected(const ui::Event& event) {
+ash::ShelfItemDelegate::PerformedAction
+AppShortcutLauncherItemController::ItemSelected(const ui::Event& event) {
   // In case of a keyboard event, we were called by a hotkey. In that case we
   // activate the next item in line if an item of our list is already active.
   if (event.type() == ui::ET_KEY_RELEASED) {
     if (AdvanceToNextApp())
-      return false;
+      return kExistingWindowActivated;
   }
   return Activate(ash::LAUNCH_FROM_UNKNOWN);
 }
@@ -308,7 +309,8 @@ bool AppShortcutLauncherItemController::WebContentMatchesApp(
                                                                   app_id()));
 }
 
-void AppShortcutLauncherItemController::ActivateContent(
+ash::ShelfItemDelegate::PerformedAction
+AppShortcutLauncherItemController::ActivateContent(
     content::WebContents* content) {
   Browser* browser = chrome::FindBrowserWithWebContents(content);
   TabStripModel* tab_strip = browser->tab_strip_model();
@@ -318,7 +320,7 @@ void AppShortcutLauncherItemController::ActivateContent(
   int old_index = tab_strip->active_index();
   if (index != old_index)
     tab_strip->ActivateTabAt(index, false);
-  launcher_controller()->ActivateWindowOrMinimizeIfActive(
+  return launcher_controller()->ActivateWindowOrMinimizeIfActive(
       browser->window(),
       index == old_index && GetRunningApplications().size() == 1);
 }

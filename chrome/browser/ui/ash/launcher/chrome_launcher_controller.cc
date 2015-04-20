@@ -1075,7 +1075,8 @@ const Extension* ChromeLauncherController::GetExtensionForAppID(
       app_id, extensions::ExtensionRegistry::EVERYTHING);
 }
 
-void ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
+ash::ShelfItemDelegate::PerformedAction
+ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
     ui::BaseWindow* window,
     bool allow_minimize) {
   // In separated desktop mode we might have to teleport a window back to the
@@ -1092,7 +1093,7 @@ void ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
           ash::MultiProfileUMA::TELEPORT_WINDOW_RETURN_BY_LAUNCHER);
       manager->ShowWindowForUser(native_window, current_user);
       window->Activate();
-      return;
+      return ash::ShelfItemDelegate::kExistingWindowActivated;
     }
   }
 
@@ -1103,11 +1104,14 @@ void ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
                     wm::WINDOW_ANIMATION_TYPE_BOUNCE);
     } else {
       window->Minimize();
+      return ash::ShelfItemDelegate::kExistingWindowMinimized;
     }
   } else {
     window->Show();
     window->Activate();
+    return ash::ShelfItemDelegate::kExistingWindowActivated;
   }
+  return ash::ShelfItemDelegate::kNoAction;
 }
 
 void ChromeLauncherController::OnShelfCreated(ash::Shelf* shelf) {

@@ -224,9 +224,15 @@ class TestV2AppLauncherItemController : public LauncherItemController {
   bool IsOpen() const override { return true; }
   bool IsVisible() const override { return true; }
   void Launch(ash::LaunchSource source, int event_flags) override {}
-  bool Activate(ash::LaunchSource source) override { return false; }
+  ash::ShelfItemDelegate::PerformedAction Activate(
+      ash::LaunchSource source) override {
+    return kExistingWindowActivated;
+  }
   void Close() override {}
-  bool ItemSelected(const ui::Event& event) override { return false; }
+  ash::ShelfItemDelegate::PerformedAction ItemSelected(
+      const ui::Event& event) override {
+    return kExistingWindowActivated;
+  }
   base::string16 GetTitle() override { return base::string16(); }
   ChromeLauncherAppMenuItems GetApplicationList(int event_flags) override {
     ChromeLauncherAppMenuItems items;

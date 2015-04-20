@@ -164,7 +164,8 @@ void BrowserShortcutLauncherItemController::Launch(ash::LaunchSource source,
                                                    int event_flags) {
 }
 
-bool BrowserShortcutLauncherItemController::Activate(ash::LaunchSource source) {
+ash::ShelfItemDelegate::PerformedAction
+BrowserShortcutLauncherItemController::Activate(ash::LaunchSource source) {
   Browser* last_browser = chrome::FindTabbedBrowser(
       launcher_controller()->profile(),
       true,
@@ -172,12 +173,11 @@ bool BrowserShortcutLauncherItemController::Activate(ash::LaunchSource source) {
 
   if (!last_browser) {
     launcher_controller()->CreateNewWindow();
-    return true;
+    return kNewWindowCreated;
   }
 
-  launcher_controller()->ActivateWindowOrMinimizeIfActive(
+  return launcher_controller()->ActivateWindowOrMinimizeIfActive(
       last_browser->window(), GetApplicationList(0).size() == 2);
-  return false;
 }
 
 void BrowserShortcutLauncherItemController::Close() {
@@ -238,18 +238,17 @@ BrowserShortcutLauncherItemController::GetApplicationList(int event_flags) {
   return items.Pass();
 }
 
-bool BrowserShortcutLauncherItemController::ItemSelected(
-    const ui::Event& event) {
+ash::ShelfItemDelegate::PerformedAction
+BrowserShortcutLauncherItemController::ItemSelected(const ui::Event& event) {
   if (event.flags() & ui::EF_CONTROL_DOWN) {
     launcher_controller()->CreateNewWindow();
-    return true;
+    return kNewWindowCreated;
   }
 
   // In case of a keyboard event, we were called by a hotkey. In that case we
   // activate the next item in line if an item of our list is already active.
   if (event.type() & ui::ET_KEY_RELEASED) {
-    ActivateOrAdvanceToNextBrowser();
-    return false;
+    return ActivateOrAdvanceToNextBrowser();
   }
 
   return Activate(ash::LAUNCH_FROM_UNKNOWN);
@@ -302,7 +301,8 @@ bool BrowserShortcutLauncherItemController::IsIncognito(
   return profile->IsOffTheRecord() && !profile->IsGuestSession();
 }
 
-void BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
+ash::ShelfItemDelegate::PerformedAction
+BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
   // Create a list of all suitable running browsers.
   std::vector<Browser*> items;
   // We use the list in the order of how the browsers got created - not the LRU
@@ -318,7 +318,7 @@ void BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
   // If there are no suitable browsers we create a new one.
   if (items.empty()) {
     launcher_controller()->CreateNewWindow();
-    return;
+    return kNewWindowCreated;
   }
   Browser* browser = chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
   if (items.size() == 1) {
@@ -327,7 +327,7 @@ void BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
     if (browser == items[0]) {
       AnimateWindow(browser->window()->GetNativeWindow(),
                     wm::WINDOW_ANIMATION_TYPE_BOUNCE);
-      return;
+      return kNoAction;
     }
     browser = items[0];
   } else {
@@ -350,6 +350,7 @@ void BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
   DCHECK(browser);
   browser->window()->Show();
   browser->window()->Activate();
+  return kExistingWindowActivated;
 }
 
 bool BrowserShortcutLauncherItemController::IsBrowserRepresentedInBrowserList(

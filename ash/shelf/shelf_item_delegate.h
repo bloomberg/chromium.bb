@@ -24,6 +24,20 @@ class ShelfMenuModel;
 // Delegate for the ShelfItem.
 class ASH_EXPORT ShelfItemDelegate {
  public:
+  // The return type for the ShelfItemDelegate::ItemSelected method.
+  enum PerformedAction {
+    // No action was taken.
+    kNoAction,
+    // A new window was created.
+    kNewWindowCreated,
+    // An existing window which was not currently active was activated.
+    kExistingWindowActivated,
+    // The currently active window was minimized.
+    kExistingWindowMinimized,
+    // The app list launcher menu was shown.
+    kAppListMenuShown,
+  };
+
   virtual ~ShelfItemDelegate() {}
 
   // Invoked when the user clicks on a window entry in the launcher.
@@ -32,8 +46,8 @@ class ASH_EXPORT ShelfItemDelegate {
   // but not |aura::Window|. If the |event| is of type KeyEvent, it is assumed
   // that this was triggered by keyboard action (Alt+<number>) and special
   // handling might happen.
-  // Returns true if a new item was created.
-  virtual bool ItemSelected(const ui::Event& event) = 0;
+  // Returns the action performed by selecting the item.
+  virtual PerformedAction ItemSelected(const ui::Event& event) = 0;
 
   // Returns the title to display.
   virtual base::string16 GetTitle() = 0;

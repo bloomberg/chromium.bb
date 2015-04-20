@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_APP_SHORTCUT_LAUNCHER_ITEM_CONTROLLER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/time/time.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
@@ -40,9 +41,11 @@ class AppShortcutLauncherItemController : public LauncherItemController {
   bool IsOpen() const override;
   bool IsVisible() const override;
   void Launch(ash::LaunchSource source, int event_flags) override;
-  bool Activate(ash::LaunchSource source) override;
+  ash::ShelfItemDelegate::PerformedAction Activate(
+      ash::LaunchSource source) override;
   ChromeLauncherAppMenuItems GetApplicationList(int event_flags) override;
-  bool ItemSelected(const ui::Event& event) override;
+  ash::ShelfItemDelegate::PerformedAction ItemSelected(
+      const ui::Event& event) override;
   base::string16 GetTitle() override;
   ui::MenuModel* CreateContextMenu(aura::Window* root_window) override;
   ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
@@ -71,7 +74,9 @@ class AppShortcutLauncherItemController : public LauncherItemController {
                             Browser* browser);
 
   // Activate the browser with the given |content| and show the associated tab.
-  void ActivateContent(content::WebContents* content);
+  // Returns the action performed by activating the content.
+  ash::ShelfItemDelegate::PerformedAction ActivateContent(
+      content::WebContents* content);
 
   // Advance to the next item if an owned item is already active. The function
   // will return true if it has sucessfully advanced.

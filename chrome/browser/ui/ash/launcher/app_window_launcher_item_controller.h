@@ -56,9 +56,11 @@ class AppWindowLauncherItemController : public LauncherItemController,
   bool IsOpen() const override;
   bool IsVisible() const override;
   void Launch(ash::LaunchSource source, int event_flags) override;
-  bool Activate(ash::LaunchSource source) override;
+  ash::ShelfItemDelegate::PerformedAction Activate(
+      ash::LaunchSource source) override;
   ChromeLauncherAppMenuItems GetApplicationList(int event_flags) override;
-  bool ItemSelected(const ui::Event& eent) override;
+  ash::ShelfItemDelegate::PerformedAction ItemSelected(
+      const ui::Event& eent) override;
   base::string16 GetTitle() override;
   ui::MenuModel* CreateContextMenu(aura::Window* root_window) override;
   ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
@@ -84,11 +86,17 @@ class AppWindowLauncherItemController : public LauncherItemController,
  private:
   typedef std::list<extensions::AppWindow*> AppWindowList;
 
-  void ShowAndActivateOrMinimize(extensions::AppWindow* app_window);
+  // Returns the action performed. Should be one of kNoAction,
+  // kExistingWindowActivated, or kExistingWindowMinimized.
+  ash::ShelfItemDelegate::PerformedAction ShowAndActivateOrMinimize(
+      extensions::AppWindow* app_window);
 
   // Activate the given |window_to_show|, or - if already selected - advance to
   // the next window of similar type.
-  void ActivateOrAdvanceToNextAppWindow(extensions::AppWindow* window_to_show);
+  // Returns the action performed. Should be one of kNoAction,
+  // kExistingWindowActivated, or kExistingWindowMinimized.
+  ash::ShelfItemDelegate::PerformedAction ActivateOrAdvanceToNextAppWindow(
+      extensions::AppWindow* window_to_show);
 
   // List of associated app windows
   AppWindowList app_windows_;

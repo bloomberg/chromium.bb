@@ -22,13 +22,14 @@ WindowWatcherShelfItemDelegate::WindowWatcherShelfItemDelegate(
 WindowWatcherShelfItemDelegate::~WindowWatcherShelfItemDelegate() {
 }
 
-bool WindowWatcherShelfItemDelegate::ItemSelected(const ui::Event& event) {
+ShelfItemDelegate::PerformedAction WindowWatcherShelfItemDelegate::ItemSelected(
+    const ui::Event& event) {
   aura::Window* window = watcher_->GetWindowByID(id_);
   if (window->type() == ui::wm::WINDOW_TYPE_PANEL)
     wm::MoveWindowToEventRoot(window, event);
   window->Show();
   wm::ActivateWindow(window);
-  return false;
+  return kExistingWindowActivated;
 }
 
 base::string16 WindowWatcherShelfItemDelegate::GetTitle() {

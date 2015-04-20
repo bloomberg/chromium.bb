@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_ITEM_CONTROLLER_H_
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_ITEM_CONTROLLER_H_
 
+#include <string>
+
 #include "ash/shelf/shelf_item_delegate.h"
 #include "ash/shelf/shelf_item_types.h"
 #include "base/basictypes.h"
@@ -75,8 +77,8 @@ class LauncherItemController : public ash::ShelfItemDelegate {
 
   // Shows and activates the most-recently-active window associated with the
   // item, or launches the item if it is not currently open.
-  // Returns true when a new item got created.
-  virtual bool Activate(ash::LaunchSource source) = 0;
+  // Returns the action performed by activating the item.
+  virtual PerformedAction Activate(ash::LaunchSource source) = 0;
 
   // Called to retrieve the list of running applications.
   virtual ChromeLauncherAppMenuItems GetApplicationList(int event_flags) = 0;

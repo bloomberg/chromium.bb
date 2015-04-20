@@ -23,10 +23,11 @@ AppListShelfItemDelegate::~AppListShelfItemDelegate() {
   // ShelfItemDelegateManager owns and destroys this class.
 }
 
-bool AppListShelfItemDelegate::ItemSelected(const ui::Event& event) {
+ShelfItemDelegate::PerformedAction AppListShelfItemDelegate::ItemSelected(
+    const ui::Event& event) {
   // Pass NULL here to show the app list in the currently active RootWindow.
   Shell::GetInstance()->ToggleAppList(NULL);
-  return false;
+  return ShelfItemDelegate::kAppListMenuShown;
 }
 
 base::string16 AppListShelfItemDelegate::GetTitle() {

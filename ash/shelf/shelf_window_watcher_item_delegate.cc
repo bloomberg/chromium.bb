@@ -28,19 +28,21 @@ void ShelfWindowWatcherItemDelegate::Close() {
   views::Widget::GetWidgetForNativeWindow(window_)->Close();
 }
 
-bool ShelfWindowWatcherItemDelegate::ItemSelected(const ui::Event& event) {
+ShelfItemDelegate::PerformedAction ShelfWindowWatcherItemDelegate::ItemSelected(
+    const ui::Event& event) {
   wm::WindowState* window_state = wm::GetWindowState(window_);
   if (window_state->IsActive()) {
     if (event.type() & ui::ET_KEY_RELEASED) {
       ::wm::AnimateWindow(window_, ::wm::WINDOW_ANIMATION_TYPE_BOUNCE);
+      return kNoAction;
     } else {
       window_state->Minimize();
+      return kExistingWindowMinimized;
     }
   } else {
     window_state->Activate();
+    return kExistingWindowActivated;
   }
-
-  return false;
 }
 
 base::string16 ShelfWindowWatcherItemDelegate::GetTitle() {

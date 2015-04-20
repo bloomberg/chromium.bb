@@ -17,14 +17,16 @@ TestShelfItemDelegate::TestShelfItemDelegate(aura::Window* window)
 TestShelfItemDelegate::~TestShelfItemDelegate() {
 }
 
-bool TestShelfItemDelegate::ItemSelected(const ui::Event& event) {
+ShelfItemDelegate::PerformedAction TestShelfItemDelegate::ItemSelected(
+    const ui::Event& event) {
   if (window_) {
     if (window_->type() == ui::wm::WINDOW_TYPE_PANEL)
       wm::MoveWindowToEventRoot(window_, event);
     window_->Show();
     wm::ActivateWindow(window_);
+    return kExistingWindowActivated;
   }
-  return false;
+  return kNoAction;
 }
 
 base::string16 TestShelfItemDelegate::GetTitle() {

@@ -1754,13 +1754,18 @@ void ShelfView::ButtonPressed(views::Button* sender, const ui::Event& event) {
 
     RecordIconActivatedAction(event);
 
-    ShelfItemDelegate* item_delegate =
-        item_manager_->GetShelfItemDelegate(model_->items()[view_index].id);
-    if (!item_delegate->ItemSelected(event)) {
-      ShowListMenuForView(model_->items()[view_index], sender, event);
-    } else {
-      Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-          UMA_LAUNCHER_LAUNCH_TASK);
+    switch (item_manager_->GetShelfItemDelegate(model_->items()[view_index].id)
+                ->ItemSelected(event)) {
+      case ShelfItemDelegate::kNoAction:
+      case ShelfItemDelegate::kExistingWindowActivated:
+      case ShelfItemDelegate::kExistingWindowMinimized:
+      case ShelfItemDelegate::kAppListMenuShown:
+        ShowListMenuForView(model_->items()[view_index], sender, event);
+        break;
+      case ShelfItemDelegate::kNewWindowCreated:
+        Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+            UMA_LAUNCHER_LAUNCH_TASK);
+        break;
     }
   }
 }
