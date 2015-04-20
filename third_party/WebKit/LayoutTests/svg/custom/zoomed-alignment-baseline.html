@@ -42,6 +42,7 @@
         });
     });
     html.style.zoom = 1;
+    // Clean up to avoid being classified as a text test; avoids an -expected.txt file.
+    document.querySelector('text').remove();
   </script>
 </svg>
-<p>This test requires the Ahem font</p>
