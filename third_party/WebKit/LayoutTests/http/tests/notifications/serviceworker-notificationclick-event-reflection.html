@@ -26,7 +26,13 @@
               // FIXME: Relative URLs for the icon attribute currently get reflected as
               // an absolute URL, which should probably be the given relative URL.
               icon: 'https://example/icon.png',
-              silent: true
+              silent: true,
+              data: [
+                  { property: 'foobar',
+                    string: '\uDFFF\u0000\uDBFF',
+                    scalar: true },
+                  12.15
+              ]
           };
 
           testRunner.grantWebNotificationPermission(location.origin, true);
@@ -59,8 +65,13 @@
                   assert_equals(event.data.command, 'click', 'The notification was expected to be clicked.');
 
                   Object.keys(options).forEach(function(key) {
+                      if (key == 'data')
+                          return;  // Check "data" separately to avoid stringifying it.
+
                       assert_equals(event.data.notification[key], options[key], 'The ' + key + ' field must be the same.');
                   });
+
+                  assert_object_equals(event.data.notification.data, options.data, 'The data field must be the same.');
 
                   test.done();
               });
