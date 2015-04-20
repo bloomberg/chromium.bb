@@ -167,8 +167,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
   // typedef for callback parameters that are passed to AddDiscoverySession
   // and RemoveDiscoverySession. This is used to queue incoming requests while
   // a call to BlueZ is pending.
-  typedef std::pair<base::Closure, ErrorCallback> DiscoveryCallbackPair;
-  typedef std::queue<DiscoveryCallbackPair> DiscoveryCallbackQueue;
+  typedef std::tuple<device::BluetoothDiscoveryFilter*,
+                     base::Closure,
+                     ErrorCallback> DiscoveryParamTuple;
+  typedef std::queue<DiscoveryParamTuple> DiscoveryCallbackQueue;
 
   BluetoothAdapterChromeOS();
   ~BluetoothAdapterChromeOS() override;
@@ -290,6 +292,17 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
                             const std::string& error_name,
                             const std::string& error_message);
 
+  void OnPreSetDiscoveryFilter(const base::Closure& callback,
+                               const ErrorCallback& error_callback);
+  void OnPreSetDiscoveryFilterError(const base::Closure& callback,
+                                    const ErrorCallback& error_callback);
+  void OnSetDiscoveryFilter(const base::Closure& callback,
+                            const ErrorCallback& error_callback);
+  void OnSetDiscoveryFilterError(const base::Closure& callback,
+                                 const ErrorCallback& error_callback,
+                                 const std::string& error_name,
+                                 const std::string& error_message);
+
   // Called by dbus:: on completion of the D-Bus method to register a profile.
   void OnRegisterProfile(const device::BluetoothUUID& uuid,
                          scoped_ptr<BluetoothAdapterProfileChromeOS> profile);
@@ -307,7 +320,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
   // remain.
   void RemoveProfile(const device::BluetoothUUID& uuid);
 
-  // Processes the queued discovery requests. For each DiscoveryCallbackPair in
+  // Processes the queued discovery requests. For each DiscoveryParamTuple in
   // the queue, this method will try to add a new discovery session. This method
   // is called whenever a pending D-Bus call to start or stop discovery has
   // ended (with either success or failure).
@@ -357,6 +370,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
   // Queue of delegates waiting for a profile to register.
   std::map<device::BluetoothUUID, std::vector<RegisterProfileCompletionPair>*>
       profile_queues_;
+
+  scoped_ptr<device::BluetoothDiscoveryFilter> current_filter_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

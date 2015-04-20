@@ -62,6 +62,12 @@ class CHROMEOS_EXPORT FakeBluetoothAdapterClient
   // Sets the current simulation timeout interval.
   void SetSimulationIntervalMs(int interval_ms);
 
+  // Returns current discovery filter in use by this adapter.
+  DiscoveryFilter* GetDiscoveryFilter();
+
+  // Make SetDiscoveryFilter fail when called next time.
+  void MakeSetDiscoveryFilterFail();
+
   // Mark the adapter and second adapter as visible or invisible.
   void SetVisible(bool visible);
   void SetSecondVisible(bool visible);
@@ -96,6 +102,12 @@ class CHROMEOS_EXPORT FakeBluetoothAdapterClient
 
   // Number of times we've been asked to discover.
   int discovering_count_;
+
+  // Current discovery filter
+  scoped_ptr<DiscoveryFilter> discovery_filter_;
+
+  // When set, next call to SetDiscoveryFilter would fail.
+  bool set_discovery_filter_should_fail_;
 
   // Current timeout interval used when posting delayed tasks.
   int simulation_interval_ms_;

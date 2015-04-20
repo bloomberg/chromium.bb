@@ -22,14 +22,21 @@ namespace chromeos {
 // local Bluetooth Adapters.
 class CHROMEOS_EXPORT BluetoothAdapterClient : public DBusClient {
  public:
+  // A DiscoveryFilter represents a filter passed to the SetDiscoveryFilter
+  // method.
   struct DiscoveryFilter {
     DiscoveryFilter();
     ~DiscoveryFilter();
+
+    // Copy content of |filter| into this filter
+    void CopyFrom(const DiscoveryFilter& filter);
 
     scoped_ptr<std::vector<std::string>> uuids;
     scoped_ptr<int16_t> rssi;
     scoped_ptr<uint16_t> pathloss;
     scoped_ptr<std::string> transport;
+
+    DISALLOW_COPY_AND_ASSIGN(DiscoveryFilter);
   };
 
   // Structure of properties associated with bluetooth adapters.

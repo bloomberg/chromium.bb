@@ -20,6 +20,29 @@ BluetoothAdapterClient::DiscoveryFilter::DiscoveryFilter() {
 BluetoothAdapterClient::DiscoveryFilter::~DiscoveryFilter() {
 }
 
+void BluetoothAdapterClient::DiscoveryFilter::CopyFrom(
+    const DiscoveryFilter& filter) {
+  if (filter.rssi.get())
+    rssi.reset(new int16_t(*filter.rssi));
+  else
+    rssi.reset();
+
+  if (filter.pathloss.get())
+    pathloss.reset(new uint16_t(*filter.pathloss));
+  else
+    pathloss.reset();
+
+  if (filter.transport.get())
+    transport.reset(new std::string(*filter.transport));
+  else
+    transport.reset();
+
+  if (filter.uuids.get())
+    uuids.reset(new std::vector<std::string>(*filter.uuids));
+  else
+    uuids.reset();
+}
+
 const char BluetoothAdapterClient::kNoResponseError[] =
     "org.chromium.Error.NoResponse";
 const char BluetoothAdapterClient::kUnknownAdapterError[] =

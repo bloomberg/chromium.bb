@@ -75,6 +75,7 @@ FakeBluetoothAdapterClient::FakeBluetoothAdapterClient()
     : visible_(true),
       second_visible_(false),
       discovering_count_(0),
+      set_discovery_filter_should_fail_(false),
       simulation_interval_ms_(kSimulationIntervalMs) {
   properties_.reset(new Properties(base::Bind(
       &FakeBluetoothAdapterClient::OnPropertyChanged, base::Unretained(this))));
@@ -181,6 +182,7 @@ void FakeBluetoothAdapterClient::StopDiscovery(
           dbus::ObjectPath(kAdapterPath));
     }
 
+    discovery_filter_.reset();
     properties_->discovering.ReplaceValue(false);
   }
 }
@@ -205,6 +207,10 @@ void FakeBluetoothAdapterClient::RemoveDevice(
   device_client->RemoveDevice(dbus::ObjectPath(kAdapterPath), device_path);
 }
 
+void FakeBluetoothAdapterClient::MakeSetDiscoveryFilterFail() {
+  set_discovery_filter_should_fail_ = true;
+}
+
 void FakeBluetoothAdapterClient::SetDiscoveryFilter(
     const dbus::ObjectPath& object_path,
     const DiscoveryFilter& discovery_filter,
@@ -214,13 +220,26 @@ void FakeBluetoothAdapterClient::SetDiscoveryFilter(
     PostDelayedTask(base::Bind(error_callback, kNoResponseError, ""));
     return;
   }
-
   VLOG(1) << "SetDiscoveryFilter: " << object_path.value();
+
+  if (set_discovery_filter_should_fail_) {
+    PostDelayedTask(base::Bind(error_callback, kNoResponseError, ""));
+    set_discovery_filter_should_fail_ = false;
+    return;
+  }
+
+  discovery_filter_.reset(new DiscoveryFilter());
+  discovery_filter_->CopyFrom(discovery_filter);
   PostDelayedTask(callback);
 }
 
 void FakeBluetoothAdapterClient::SetSimulationIntervalMs(int interval_ms) {
   simulation_interval_ms_ = interval_ms;
+}
+
+BluetoothAdapterClient::DiscoveryFilter*
+FakeBluetoothAdapterClient::GetDiscoveryFilter() {
+  return discovery_filter_.get();
 }
 
 void FakeBluetoothAdapterClient::SetVisible(
