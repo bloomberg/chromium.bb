@@ -5,6 +5,7 @@
 #ifndef IOS_WEB_PUBLIC_WEB_STATE_WEB_STATE_USER_DATA_H_
 #define IOS_WEB_PUBLIC_WEB_STATE_WEB_STATE_USER_DATA_H_
 
+#include "base/logging.h"
 #include "base/supports_user_data.h"
 #include "ios/web/public/web_state/web_state.h"
 
@@ -32,6 +33,7 @@ class WebStateUserData : public base::SupportsUserData::Data {
   // Creates an object of type T, and attaches it to the specified WebState.
   // If an instance is already attached, does nothing.
   static void CreateForWebState(WebState* web_state) {
+    DCHECK(web_state);
     if (!FromWebState(web_state))
       web_state->SetUserData(UserDataKey(), new T(web_state));
   }
