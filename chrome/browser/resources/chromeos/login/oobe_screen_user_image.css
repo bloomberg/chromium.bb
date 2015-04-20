@@ -102,8 +102,8 @@
   width: 448px; /* Should be the same as #gaia-signin width. */
 }
 
-#user-image.loading {
-  height: 528px; /* Should be the same as #gaia-signin height. */
+.new-gaia-flow #user-image.loading {
+  min-height: 528px; /* Should be the same as #gaia-signin height. */
   width: 448px; /* Should be the same as #gaia-signin width. */
 }
 
