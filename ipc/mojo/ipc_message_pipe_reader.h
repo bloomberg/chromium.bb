@@ -79,6 +79,9 @@ class MessagePipeReader {
   void Close();
   // Close the mesage pipe with notifying the client with the error.
   void CloseWithError(MojoResult error);
+  void CloseWithErrorLater(MojoResult error);
+  void CloseWithErrorIfPending();
+
   // Return true if the MessagePipe is alive.
   bool IsValid() { return pipe_.is_valid(); }
 
@@ -100,6 +103,7 @@ class MessagePipeReader {
   // |delegate_| and |async_waiter_| are null once the message pipe is closed.
   Delegate* delegate_;
   scoped_ptr<AsyncHandleWaiter> async_waiter_;
+  MojoResult pending_send_error_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePipeReader);
 };

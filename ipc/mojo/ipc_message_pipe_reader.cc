@@ -21,14 +21,19 @@ MessagePipeReader::MessagePipeReader(mojo::ScopedMessagePipeHandle handle,
       delegate_(delegate),
       async_waiter_(
           new AsyncHandleWaiter(base::Bind(&MessagePipeReader::PipeIsReady,
-                                           base::Unretained(this)))) {
+                                           base::Unretained(this)))),
+      pending_send_error_(MOJO_RESULT_OK) {
 }
 
 MessagePipeReader::~MessagePipeReader() {
+  // The pipe should be closed before deletion.
   CHECK(!IsValid());
+  DCHECK_EQ(pending_send_error_, MOJO_RESULT_OK);
 }
 
 void MessagePipeReader::Close() {
+  // All pending errors should be signaled before Close().
+  DCHECK_EQ(pending_send_error_, MOJO_RESULT_OK);
   async_waiter_.reset();
   pipe_.reset();
   OnPipeClosed();
@@ -37,6 +42,19 @@ void MessagePipeReader::Close() {
 void MessagePipeReader::CloseWithError(MojoResult error) {
   OnPipeError(error);
   Close();
+}
+
+void MessagePipeReader::CloseWithErrorIfPending() {
+  if (pending_send_error_ == MOJO_RESULT_OK)
+    return;
+  MojoResult error = pending_send_error_;
+  pending_send_error_ = MOJO_RESULT_OK;
+  CloseWithError(error);
+  return;
+}
+
+void MessagePipeReader::CloseWithErrorLater(MojoResult error) {
+  pending_send_error_ = error;
 }
 
 bool MessagePipeReader::Send(scoped_ptr<Message> message) {
@@ -57,7 +75,11 @@ bool MessagePipeReader::Send(scoped_ptr<Message> message) {
 
   if (result != MOJO_RESULT_OK) {
     std::for_each(handles.begin(), handles.end(), &MojoClose);
-    CloseWithError(result);
+    // We cannot call CloseWithError() here as Send() is protected by
+    // ChannelMojo's lock and CloseWithError() could re-enter ChannelMojo. We
+    // cannot call CloseWithError() also because Send() can be called from
+    // non-UI thread while OnPipeError() expects to be called on IO thread.
+    CloseWithErrorLater(result);
     return false;
   }
 
@@ -173,6 +195,13 @@ void MessagePipeReader::ReadMessagesThenWait() {
 }
 
 void MessagePipeReader::PipeIsReady(MojoResult wait_result) {
+  CloseWithErrorIfPending();
+  if (!IsValid()) {
+    // There was a pending error and it closed the pipe.
+    // We cannot do the work anymore.
+    return;
+  }
+
   if (wait_result != MOJO_RESULT_OK) {
     if (wait_result != MOJO_RESULT_ABORTED) {
       // FAILED_PRECONDITION happens every time the peer is dead so

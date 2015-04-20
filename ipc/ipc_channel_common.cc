@@ -43,5 +43,9 @@ scoped_ptr<Channel> Channel::CreateServer(
 Channel::~Channel() {
 }
 
+bool Channel::IsSendThreadSafe() const {
+  return false;
+}
+
 }  // namespace IPC
 

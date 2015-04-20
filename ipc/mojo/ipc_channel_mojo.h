@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "base/synchronization/lock.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_factory.h"
 #include "ipc/ipc_export.h"
@@ -91,6 +92,7 @@ class IPC_MOJO_EXPORT ChannelMojo
   bool Connect() override;
   void Close() override;
   bool Send(Message* message) override;
+  bool IsSendThreadSafe() const override;
   base::ProcessId GetPeerPID() const override;
   base::ProcessId GetSelfPID() const override;
 
@@ -147,9 +149,16 @@ class IPC_MOJO_EXPORT ChannelMojo
   Mode mode_;
   Listener* listener_;
   base::ProcessId peer_pid_;
+  scoped_refptr<base::TaskRunner> io_runner_;
   scoped_ptr<mojo::embedder::ChannelInfo,
              ChannelInfoDeleter> channel_info_;
 
+  // Guards |message_reader_| and |pending_messages_|
+  //
+  // * The contents of |pending_messages_| can be modified from any thread.
+  // * |message_reader_| is modified only from the IO thread,
+  //   but they can be referenced from other threads.
+  base::Lock lock_;
   scoped_ptr<internal::MessagePipeReader, ReaderDeleter> message_reader_;
   ScopedVector<Message> pending_messages_;
 

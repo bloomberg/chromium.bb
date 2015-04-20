@@ -55,6 +55,14 @@ class SendCallbackHelper;
 // The consumer of IPC::ChannelProxy is responsible for allocating the Thread
 // instance where the IPC::Channel will be created and operated.
 //
+// Thread-safe send
+//
+// If a particular |Channel| implementation has a thread-safe |Send()| operation
+// then ChannelProxy skips the inter-thread hop and calls |Send()| directly. In
+// this case the |channel_| variable is touched by multiple threads so
+// |channel_lifetime_lock_| is used to protect it. The locking overhead is only
+// paid if the underlying channel supports thread-safe |Send|.
+//
 class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
  public:
 #if defined(ENABLE_IPC_FUZZER)
@@ -173,6 +181,9 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
     // Dispatches a message on the listener thread.
     void OnDispatchMessage(const Message& message);
 
+    // Sends |message| from appropriate thread.
+    void Send(Message* message);
+
    protected:
     friend class base::RefCountedThreadSafe<Context>;
     ~Context() override;
@@ -216,6 +227,9 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
     void OnDispatchError();
     void OnDispatchBadMessage(const Message& message);
 
+    void SendFromThisThread(Message* message);
+    void ClearChannel();
+
     scoped_refptr<base::SingleThreadTaskRunner> listener_task_runner_;
     Listener* listener_;
 
@@ -226,9 +240,17 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
     // Note, channel_ may be set on the Listener thread or the IPC thread.
     // But once it has been set, it must only be read or cleared on the IPC
     // thread.
+    // One exception is the thread-safe send. See the class comment.
     scoped_ptr<Channel> channel_;
     std::string channel_id_;
     bool channel_connected_called_;
+
+    // Lock for |channel_| value. This is only relevant in the context of
+    // thread-safe send.
+    base::Lock channel_lifetime_lock_;
+    // Indicates the thread-safe send availability. This is constant once
+    // |channel_| is set.
+    bool channel_send_thread_safe_;
 
     // Routes a given message to a proper subset of |filters_|, depending
     // on which message classes a filter might support.

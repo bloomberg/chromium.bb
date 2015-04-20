@@ -180,6 +180,10 @@ class IPC_EXPORT Channel : public Sender {
   // deleted once the contents of the Message have been sent.
   bool Send(Message* message) override = 0;
 
+  // IsSendThreadSafe returns true iff it's safe to call |Send| from non-IO
+  // threads. This is constant for the lifetime of the |Channel|.
+  virtual bool IsSendThreadSafe() const;
+
   // NaCl in Non-SFI mode runs on Linux directly, and the following functions
   // compiled on Linux are also needed. Please see also comments in
   // components/nacl_nonsfi.gyp for more details.
