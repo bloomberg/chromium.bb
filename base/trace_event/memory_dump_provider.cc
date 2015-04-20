@@ -5,11 +5,17 @@
 #include "base/trace_event/memory_dump_provider.h"
 
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
 
 namespace base {
 namespace trace_event {
 
 MemoryDumpProvider::MemoryDumpProvider() {
+}
+
+MemoryDumpProvider::MemoryDumpProvider(
+    const scoped_refptr<SingleThreadTaskRunner>& task_runner)
+    : task_runner_(task_runner) {
 }
 
 MemoryDumpProvider::~MemoryDumpProvider() {

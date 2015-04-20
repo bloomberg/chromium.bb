@@ -4,6 +4,11 @@
 
 #include "base/trace_event/memory_dump_manager.h"
 
+#include "base/bind_helpers.h"
+#include "base/memory/scoped_vector.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+#include "base/threading/thread.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -30,6 +35,7 @@ class MemoryDumpManagerDelegateForTesting : public MemoryDumpManagerDelegate {
 class MemoryDumpManagerTest : public testing::Test {
  public:
   void SetUp() override {
+    message_loop_.reset(new MessageLoop());
     mdm_.reset(new MemoryDumpManager());
     MemoryDumpManager::SetInstanceForTesting(mdm_.get());
     ASSERT_EQ(mdm_, MemoryDumpManager::GetInstance());
@@ -40,7 +46,15 @@ class MemoryDumpManagerTest : public testing::Test {
   void TearDown() override {
     MemoryDumpManager::SetInstanceForTesting(nullptr);
     mdm_.reset();
+    message_loop_.reset();
     TraceLog::DeleteForTesting();
+  }
+
+  void DumpCallbackAdapter(scoped_refptr<SingleThreadTaskRunner> task_runner,
+                           Closure closure,
+                           uint64 dump_guid,
+                           bool success) {
+    task_runner->PostTask(FROM_HERE, closure);
   }
 
  protected:
@@ -56,6 +70,7 @@ class MemoryDumpManagerTest : public testing::Test {
   scoped_ptr<MemoryDumpManager> mdm_;
 
  private:
+  scoped_ptr<MessageLoop> message_loop_;
   MemoryDumpManagerDelegateForTesting delegate_;
 
   // We want our singleton torn down after each test.
@@ -64,6 +79,9 @@ class MemoryDumpManagerTest : public testing::Test {
 
 class MockDumpProvider : public MemoryDumpProvider {
  public:
+  MockDumpProvider() {}
+  MockDumpProvider(const scoped_refptr<SingleThreadTaskRunner>& task_runner)
+      : MemoryDumpProvider(task_runner) {}
   MOCK_METHOD1(DumpInto, bool(ProcessMemoryDump* pmd));
 
   // DumpInto() override for the ActiveDumpProviderConsistency test.
@@ -71,6 +89,12 @@ class MockDumpProvider : public MemoryDumpProvider {
     EXPECT_EQ(
         this,
         MemoryDumpManager::GetInstance()->dump_provider_currently_active());
+    return true;
+  }
+
+  // DumpInto() override for the RespectTaskRunnerAffinity test.
+  bool DumpIntoAndCheckTaskRunner(ProcessMemoryDump* pmd) {
+    EXPECT_TRUE(task_runner()->RunsTasksOnCurrentThread());
     return true;
   }
 
@@ -104,21 +128,6 @@ TEST_F(MemoryDumpManagerTest, SingleDumper) {
   TraceLog::GetInstance()->SetDisabled();
 }
 
-TEST_F(MemoryDumpManagerTest, UnregisterDumperWhileTracing) {
-  MockDumpProvider mdp;
-  mdm_->RegisterDumpProvider(&mdp);
-
-  EnableTracing(kTraceCategory);
-  EXPECT_CALL(mdp, DumpInto(_)).Times(1).WillRepeatedly(Return(true));
-  mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
-
-  mdm_->UnregisterDumpProvider(&mdp);
-  EXPECT_CALL(mdp, DumpInto(_)).Times(0);
-  mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
-
-  DisableTracing();
-}
-
 TEST_F(MemoryDumpManagerTest, MultipleDumpers) {
   MockDumpProvider mdp1;
   MockDumpProvider mdp2;
@@ -146,6 +155,65 @@ TEST_F(MemoryDumpManagerTest, MultipleDumpers) {
   EXPECT_CALL(mdp1, DumpInto(_)).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(mdp2, DumpInto(_)).Times(1).WillRepeatedly(Return(true));
   mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
+  DisableTracing();
+}
+
+// Checks that the MemoryDumpManager respects the thread affinity when a
+// MemoryDumpProvider specifies a task_runner(). The test starts creating 8
+// threads and registering a MemoryDumpProvider on each of them. At each
+// iteration, one thread is removed, to check the live unregistration logic.
+TEST_F(MemoryDumpManagerTest, RespectTaskRunnerAffinity) {
+  const uint32 kNumInitialThreads = 8;
+
+  ScopedVector<Thread> threads;
+  ScopedVector<MockDumpProvider> mdps;
+
+  // Create the threads and setup the expectations. Given that at each iteration
+  // we will pop out one thread/MemoryDumpProvider, each MDP is supposed to be
+  // invoked a number of times equal to its index.
+  for (uint32 i = kNumInitialThreads; i > 0; --i) {
+    threads.push_back(new Thread("test thread"));
+    threads.back()->Start();
+    mdps.push_back(new MockDumpProvider(threads.back()->task_runner()));
+    MockDumpProvider* mdp = mdps.back();
+    mdm_->RegisterDumpProvider(mdp);
+    EXPECT_CALL(*mdp, DumpInto(_))
+        .Times(i)
+        .WillRepeatedly(
+            Invoke(mdp, &MockDumpProvider::DumpIntoAndCheckTaskRunner));
+  }
+
+  EnableTracing(kTraceCategory);
+
+  while (!threads.empty()) {
+    {
+      RunLoop run_loop;
+      MemoryDumpCallback callback =
+          Bind(&MemoryDumpManagerTest::DumpCallbackAdapter, Unretained(this),
+               MessageLoop::current()->task_runner(), run_loop.QuitClosure());
+      mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED, callback);
+      // This nested message loop (|run_loop|) will be quit if and only if
+      // the RequestGlobalDump callback is invoked.
+      run_loop.Run();
+    }
+
+    // Unregister a MDP and destroy one thread at each iteration to check the
+    // live unregistration logic. The unregistration needs to happen on the same
+    // thread the MDP belongs to.
+    {
+      RunLoop run_loop;
+      Closure unregistration =
+          Bind(&MemoryDumpManager::UnregisterDumpProvider,
+               Unretained(mdm_.get()), Unretained(mdps.back()));
+      threads.back()->task_runner()->PostTaskAndReply(FROM_HERE, unregistration,
+                                                      run_loop.QuitClosure());
+      run_loop.Run();
+    }
+    mdps.pop_back();
+    threads.back()->Stop();
+    threads.pop_back();
+  }
+
   DisableTracing();
 }
 

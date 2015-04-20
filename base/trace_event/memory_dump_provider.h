@@ -6,9 +6,13 @@
 #define BASE_TRACE_EVENT_MEMORY_DUMP_PROVIDER_H_
 
 #include "base/base_export.h"
+#include "base/memory/ref_counted.h"
 #include "base/trace_event/memory_allocator_attributes.h"
 
 namespace base {
+
+class SingleThreadTaskRunner;
+
 namespace trace_event {
 
 class ProcessMemoryDump;
@@ -26,8 +30,22 @@ class BASE_EXPORT MemoryDumpProvider {
     return allocator_attributes_;
   }
 
+  // The dump provider can specify an optional thread affinity (in its
+  // base constructor call). If |task_runner| is non empty, all the calls to
+  // DumpInto are guaranteed to be posted to that TaskRunner.
+  const scoped_refptr<SingleThreadTaskRunner>& task_runner() const {
+    return task_runner_;
+  }
+
  protected:
+  // Default ctor: the MDP is not bound to any thread (must be a singleton).
   MemoryDumpProvider();
+
+  // Use this ctor to ensure that DumpInto() is called always on the same thread
+  // specified by |task_runner|.
+  explicit MemoryDumpProvider(
+      const scoped_refptr<SingleThreadTaskRunner>& task_runner);
+
   virtual ~MemoryDumpProvider();
 
   void DeclareAllocatorAttribute(const MemoryAllocatorDeclaredAttribute& attr);
@@ -37,6 +55,9 @@ class BASE_EXPORT MemoryDumpProvider {
   // extra attributes that the MemoryAllocatorDump(s) produced by this
   // MemoryDumpProvider will have.
   MemoryAllocatorDeclaredAttributes allocator_attributes_;
+
+  // (Optional) TaskRunner on which the DumpInfo call should be posted.
+  const scoped_refptr<SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryDumpProvider);
 };

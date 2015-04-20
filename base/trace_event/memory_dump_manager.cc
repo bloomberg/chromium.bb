@@ -51,11 +51,23 @@ class ProcessMemoryDumpHolder
  public:
   ProcessMemoryDumpHolder(MemoryDumpRequestArgs req_args,
                           MemoryDumpCallback callback)
-      : req_args(req_args), callback(callback) {}
+      : req_args(req_args),
+        callback(callback),
+        task_runner(MessageLoop::current()->task_runner()),
+        num_pending_async_requests(0) {}
 
   ProcessMemoryDump process_memory_dump;
   const MemoryDumpRequestArgs req_args;
+
+  // Callback passed to the initial call to CreateProcessDump().
   MemoryDumpCallback callback;
+
+  // Thread on which FinalizeDumpAndAddToTrace() should be called, which is the
+  // same that invoked the initial CreateProcessDump().
+  const scoped_refptr<SingleThreadTaskRunner> task_runner;
+
+  // Number of pending ContinueAsyncProcessDump() calls.
+  int num_pending_async_requests;
 
  private:
   friend class RefCountedThreadSafe<ProcessMemoryDumpHolder>;
@@ -65,6 +77,14 @@ class ProcessMemoryDumpHolder
 
 void FinalizeDumpAndAddToTrace(
     const scoped_refptr<ProcessMemoryDumpHolder>& pmd_holder) {
+  DCHECK_EQ(0, pmd_holder->num_pending_async_requests);
+
+  if (!pmd_holder->task_runner->BelongsToCurrentThread()) {
+    pmd_holder->task_runner->PostTask(
+        FROM_HERE, Bind(&FinalizeDumpAndAddToTrace, pmd_holder));
+    return;
+  }
+
   scoped_refptr<ConvertableToTraceFormat> event_value(new TracedValue());
   pmd_holder->process_memory_dump.AsValueInto(
       static_cast<TracedValue*>(event_value.get()));
@@ -132,6 +152,19 @@ void MemoryDumpManager::RegisterDumpProvider(MemoryDumpProvider* mdp) {
 
 void MemoryDumpManager::UnregisterDumpProvider(MemoryDumpProvider* mdp) {
   AutoLock lock(lock_);
+
+  // Unregistration of a MemoryDumpProvider while tracing is ongoing is safe
+  // only if the MDP has specified a thread affinity (via task_runner()) AND
+  // the unregistration happens on the same thread (so the MDP cannot unregister
+  // and DumpInto() at the same time).
+  // Otherwise, it is not possible to guarantee that its unregistration is
+  // race-free. If you hit this DCHECK, your MDP has a bug.
+  DCHECK_IMPLIES(
+      subtle::NoBarrier_Load(&memory_tracing_enabled_),
+      mdp->task_runner() && mdp->task_runner()->BelongsToCurrentThread())
+      << "The MemoryDumpProvider " << mdp->GetFriendlyName() << " attempted to "
+      << "unregister itself in a racy way. Please file a crbug.";
+
   // Remove from the enabled providers list. This is to deal with the case that
   // UnregisterDumpProvider is called while the trace is enabled.
   dump_providers_enabled_.erase(mdp);
@@ -178,8 +211,15 @@ void MemoryDumpManager::CreateProcessDump(const MemoryDumpRequestArgs& args,
   ProcessMemoryDump* pmd = &pmd_holder->process_memory_dump;
   bool did_any_provider_dump = false;
 
-  // Serialize dump generation so that memory dump providers don't have to deal
-  // with thread safety.
+  // Iterate over the active dump providers and invoke DumpInto(pmd).
+  // The MDM guarantees linearity (at most one MDP is active within one
+  // process) and thread-safety (MDM enforces the right locking when entering /
+  // leaving the MDP.DumpInto() call). This is to simplify the clients' design
+  // and not let the MDPs worry about locking.
+  // As regards thread affinity, depending on the MDP configuration (see
+  // memory_dump_provider.h), the DumpInto() invocation can happen:
+  //  - Synchronousy on the MDM thread, when MDP.task_runner() is not set.
+  //  - Posted on MDP.task_runner(), when MDP.task_runner() is set.
   {
     AutoLock lock(lock_);
     for (auto dump_provider_iter = dump_providers_enabled_.begin();
@@ -187,19 +227,30 @@ void MemoryDumpManager::CreateProcessDump(const MemoryDumpRequestArgs& args,
       // InvokeDumpProviderLocked will remove the MDP from the set if it fails.
       MemoryDumpProvider* mdp = *dump_provider_iter;
       ++dump_provider_iter;
-      // Invoke the dump provider synchronously.
-      did_any_provider_dump |= InvokeDumpProviderLocked(mdp, pmd);
+      if (mdp->task_runner()) {
+        // The DumpInto() call must be posted.
+        bool did_post_async_task = mdp->task_runner()->PostTask(
+            FROM_HERE, Bind(&MemoryDumpManager::ContinueAsyncProcessDump,
+                            Unretained(this), Unretained(mdp), pmd_holder));
+        // The thread underlying the TaskRunner might have gone away.
+        if (did_post_async_task)
+          ++pmd_holder->num_pending_async_requests;
+      } else {
+        // Invoke the dump provider synchronously.
+        did_any_provider_dump |= InvokeDumpProviderLocked(mdp, pmd);
+      }
     }
   }  // AutoLock
 
-  // If at least one synchronous provider did dump, add the dump to the trace.
-  if (did_any_provider_dump)
+  // If at least one synchronous provider did dump and there are no pending
+  // asynchronous requests, add the dump to the trace and invoke the callback
+  // straight away (FinalizeDumpAndAddToTrace() takes care of the callback).
+  if (did_any_provider_dump && pmd_holder->num_pending_async_requests == 0)
     FinalizeDumpAndAddToTrace(pmd_holder);
 }
 
 // Invokes the MemoryDumpProvider.DumpInto(), taking care of the failsafe logic
-// which disables the dumper when failing (crbug.com/461788). The caller must
-// hold the |lock_| when invoking this.
+// which disables the dumper when failing (crbug.com/461788).
 bool MemoryDumpManager::InvokeDumpProviderLocked(MemoryDumpProvider* mdp,
                                                  ProcessMemoryDump* pmd) {
   lock_.AssertAcquired();
@@ -214,6 +265,36 @@ bool MemoryDumpManager::InvokeDumpProviderLocked(MemoryDumpProvider* mdp,
     dump_providers_enabled_.erase(mdp);
   }
   return dump_successful;
+}
+
+// This is posted to arbitrary threads as a continuation of CreateProcessDump(),
+// when one or more MemoryDumpProvider(s) require the DumpInto() call to happen
+// on a different thread.
+void MemoryDumpManager::ContinueAsyncProcessDump(
+    MemoryDumpProvider* mdp,
+    scoped_refptr<ProcessMemoryDumpHolder> pmd_holder) {
+  bool should_finalize_dump = false;
+  {
+    // The lock here is to guarantee that different asynchronous dumps on
+    // different threads are still serialized, so that the MemoryDumpProvider
+    // has a consistent view of the |pmd| argument passed.
+    AutoLock lock(lock_);
+    ProcessMemoryDump* pmd = &pmd_holder->process_memory_dump;
+
+    // Check if the MemoryDumpProvider is still there. It might have been
+    // destroyed and unregistered while hopping threads.
+    if (dump_providers_enabled_.count(mdp))
+      InvokeDumpProviderLocked(mdp, pmd);
+
+    // Finalize the dump appending it to the trace if this was the last
+    // asynchronous request pending.
+    --pmd_holder->num_pending_async_requests;
+    if (pmd_holder->num_pending_async_requests == 0)
+      should_finalize_dump = true;
+  }  // AutoLock(lock_)
+
+  if (should_finalize_dump)
+    FinalizeDumpAndAddToTrace(pmd_holder);
 }
 
 void MemoryDumpManager::OnTraceLogEnabled() {

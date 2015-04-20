@@ -18,6 +18,10 @@
 namespace base {
 namespace trace_event {
 
+namespace {
+class ProcessMemoryDumpHolder;
+}
+
 class MemoryDumpManagerDelegate;
 class MemoryDumpProvider;
 class ProcessMemoryDump;
@@ -78,13 +82,16 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
 
   // Internal, used only by MemoryDumpManagerDelegate.
   // Creates a memory dump for the current process and appends it to the trace.
-  // |callback| will be invoked upon completion on the same thread on which
-  // CreateProcessDump() was called.
+  // |callback| will be invoked asynchronously upon completion on the same
+  // thread on which CreateProcessDump() was called.
   void CreateProcessDump(const MemoryDumpRequestArgs& args,
                          const MemoryDumpCallback& callback);
 
   bool InvokeDumpProviderLocked(MemoryDumpProvider* mdp,
                                 ProcessMemoryDump* pmd);
+  void ContinueAsyncProcessDump(
+      MemoryDumpProvider* mdp,
+      scoped_refptr<ProcessMemoryDumpHolder> pmd_holder);
 
   hash_set<MemoryDumpProvider*> dump_providers_registered_;  // Not owned.
   hash_set<MemoryDumpProvider*> dump_providers_enabled_;     // Not owned.
