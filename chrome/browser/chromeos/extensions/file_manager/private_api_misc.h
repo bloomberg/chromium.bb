@@ -213,6 +213,23 @@ class FileManagerPrivateGetProvidingExtensionsFunction
   const ChromeExtensionFunctionDetails chrome_details_;
   DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateGetProvidingExtensionsFunction);
 };
+
+// Implements the chrome.fileManagerPrivate.addProvidedFileSystem method.
+class FileManagerPrivateAddProvidedFileSystemFunction
+    : public UIThreadExtensionFunction {
+ public:
+  FileManagerPrivateAddProvidedFileSystemFunction();
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.addProvidedFileSystem",
+                             FILEMANAGERPRIVATE_ADDPROVIDEDFILESYSTEM)
+ protected:
+  ~FileManagerPrivateAddProvidedFileSystemFunction() override {}
+
+ private:
+  ResponseAction Run() override;
+  const ChromeExtensionFunctionDetails chrome_details_;
+  DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateAddProvidedFileSystemFunction);
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_MISC_H_

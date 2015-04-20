@@ -909,6 +909,11 @@ interface Functions {
 
   // Returns list of available providing extensions.
   static void getProvidingExtensions(GetProvidingExtensionsCallback callback);
+
+  // Requests adding a new provided file system. If not possible, then an error
+  // via chrome.runtime.lastError is returned.
+  static void addProvidedFileSystem(DOMString extension_id,
+                                    SimpleCallback callback);
 };
 
 interface Events {

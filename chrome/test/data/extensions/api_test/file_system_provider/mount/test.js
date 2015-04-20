@@ -135,5 +135,48 @@ chrome.test.runTests([
       }
     };
     tryNextOne();
+  },
+
+  // Tests if fileManagerPrivate.addProvidedFileSystem() fails if the extension
+  // does not listen to onMountRequested() event.
+  function requestMountWithoutListener() {
+    chrome.fileManagerPrivate.getProvidingExtensions(
+        chrome.test.callbackPass(function(extensions) {
+          chrome.test.assertEq(extensions.length, 1);
+          chrome.test.assertEq(chrome.runtime.id, extensions[0].extensionId);
+          chrome.test.assertEq(
+              chrome.runtime.getManifest().name, extensions[0].name);
+          chrome.test.assertFalse(extensions[0].canConfigure);
+          chrome.test.assertFalse(extensions[0].canAdd);
+        }));
+    chrome.fileManagerPrivate.addProvidedFileSystem(
+        chrome.runtime.id,
+        chrome.test.callbackFail('Failed to request a new mount.'));
+  },
+
+  // Tests if fileManagerPrivate.addProvidedFileSystem() emits the
+  // onMountRequested() event.
+  function requestMountSuccess() {
+    var onMountRequested = chrome.test.callbackPass(
+        function(onSuccess, onError) {
+          chrome.fileSystemProvider.onMountRequested.removeListener(
+              onMountRequested);
+        });
+
+    chrome.fileSystemProvider.onMountRequested.addListener(
+        onMountRequested);
+    chrome.fileManagerPrivate.getProvidingExtensions(
+        chrome.test.callbackPass(function(extensions) {
+          chrome.test.assertEq(extensions.length, 1);
+          chrome.test.assertEq(chrome.runtime.id, extensions[0].extensionId);
+          chrome.test.assertEq(
+              chrome.runtime.getManifest().name, extensions[0].name);
+          chrome.test.assertFalse(extensions[0].canConfigure);
+          chrome.test.assertTrue(extensions[0].canAdd);
+        }));
+
+    chrome.fileManagerPrivate.addProvidedFileSystem(
+        chrome.runtime.id,
+        chrome.test.callbackPass(function() {}));
   }
 ]);

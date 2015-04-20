@@ -93,7 +93,6 @@ function massageArgumentsDefault(args, dispatch) {
   dispatch([options, onSuccessCallback, onErrorCallback]);
 }
 
-
 eventBindings.registerArgumentMassager(
     'fileSystemProvider.onUnmountRequested',
     massageArgumentsDefault);
@@ -256,5 +255,23 @@ eventBindings.registerArgumentMassager(
 eventBindings.registerArgumentMassager(
     'fileSystemProvider.onRemoveWatcherRequested',
     massageArgumentsDefault);
+
+eventBindings.registerArgumentMassager(
+    'fileSystemProvider.onConfigureRequested',
+    massageArgumentsDefault);
+
+eventBindings.registerArgumentMassager(
+    'fileSystemProvider.onMountRequested',
+    function(args, dispatch) {
+      var executionStart = Date.now();
+      var options = args[0];
+      var onSuccessCallback = function() {
+        // TODO(mtomasz): To be implemented.
+      };
+      var onErrorCallback = function(error) {
+        // TODO(mtomasz): To be implemented.
+      }
+      dispatch([onSuccessCallback, onErrorCallback]);
+    });
 
 exports.binding = binding.generate();

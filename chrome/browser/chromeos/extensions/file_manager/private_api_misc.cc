@@ -500,4 +500,25 @@ FileManagerPrivateGetProvidingExtensionsFunction::Run() {
           providing_extensions).Pass()));
 }
 
+FileManagerPrivateAddProvidedFileSystemFunction::
+    FileManagerPrivateAddProvidedFileSystemFunction()
+    : chrome_details_(this) {
+}
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateAddProvidedFileSystemFunction::Run() {
+  using extensions::api::file_manager_private::AddProvidedFileSystem::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  using chromeos::file_system_provider::Service;
+  using chromeos::file_system_provider::ProvidingExtensionInfo;
+  Service* const service = Service::Get(chrome_details_.GetProfile());
+
+  if (!service->RequestMount(params->extension_id))
+    return RespondNow(Error("Failed to request a new mount."));
+
+  return RespondNow(NoArguments());
+}
+
 }  // namespace extensions
