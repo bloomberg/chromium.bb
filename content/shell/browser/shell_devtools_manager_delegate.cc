@@ -12,8 +12,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/devtools_http_handler/devtools_http_handler.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/devtools_http_handler.h"
+#include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/devtools_target.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
@@ -23,6 +24,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/user_agent.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/common/shell_content_client.h"
 #include "grit/shell_resources.h"
 #include "net/base/net_errors.h"
 #include "net/socket/tcp_server_socket.h"
@@ -32,6 +34,8 @@
 #include "content/public/browser/android/devtools_auth.h"
 #include "net/socket/unix_domain_server_socket_posix.h"
 #endif
+
+using devtools_http_handler::DevToolsHttpHandler;
 
 namespace content {
 
@@ -187,15 +191,15 @@ bool Target::Close() const {
 
 // ShellDevToolsDelegate ----------------------------------------------------
 
-class ShellDevToolsDelegate : public DevToolsHttpHandlerDelegate {
+class ShellDevToolsDelegate :
+    public devtools_http_handler::DevToolsHttpHandlerDelegate {
  public:
   explicit ShellDevToolsDelegate(BrowserContext* browser_context);
   ~ShellDevToolsDelegate() override;
 
-  // DevToolsHttpHandlerDelegate implementation.
+  // devtools_http_handler::DevToolsHttpHandlerDelegate implementation.
   std::string GetDiscoveryPageHTML() override;
-  bool BundlesFrontendResources() override;
-  base::FilePath GetDebugFrontendDir() override;
+  std::string GetFrontendResource(const std::string& path) override;
 
  private:
   BrowserContext* browser_context_;
@@ -219,16 +223,9 @@ std::string ShellDevToolsDelegate::GetDiscoveryPageHTML() {
 #endif
 }
 
-bool ShellDevToolsDelegate::BundlesFrontendResources() {
-#if defined(OS_ANDROID)
-  return false;
-#else
-  return true;
-#endif
-}
-
-base::FilePath ShellDevToolsDelegate::GetDebugFrontendDir() {
-  return base::FilePath();
+std::string ShellDevToolsDelegate::GetFrontendResource(
+    const std::string& path) {
+  return content::DevToolsFrontendHost::GetFrontendResource(path).as_string();
 }
 
 }  // namespace
@@ -243,10 +240,15 @@ ShellDevToolsManagerDelegate::CreateHttpHandler(
 #if defined(OS_ANDROID)
   frontend_url = base::StringPrintf(kFrontEndURL, GetWebKitRevision().c_str());
 #endif
-  return DevToolsHttpHandler::Start(CreateSocketFactory(),
-                                    frontend_url,
-                                    new ShellDevToolsDelegate(browser_context),
-                                    base::FilePath());
+  return new DevToolsHttpHandler(
+      CreateSocketFactory(),
+      frontend_url,
+      new ShellDevToolsDelegate(browser_context),
+      new ShellDevToolsManagerDelegate(browser_context),
+      base::FilePath(),
+      base::FilePath(),
+      std::string(),
+      GetShellUserAgent());
 }
 
 ShellDevToolsManagerDelegate::ShellDevToolsManagerDelegate(

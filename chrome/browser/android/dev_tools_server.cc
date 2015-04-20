@@ -18,18 +18,21 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/android/dev_tools_manager_delegate_android.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
+#include "chrome/common/chrome_content_client.h"
+#include "chrome/common/chrome_version_info.h"
+#include "components/devtools_http_handler/devtools_http_handler.h"
+#include "components/devtools_http_handler/devtools_http_handler_delegate.h"
 #include "components/history/core/browser/top_sites.h"
 #include "content/public/browser/android/devtools_auth.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/devtools_http_handler.h"
-#include "content/public/browser/devtools_http_handler_delegate.h"
 #include "content/public/browser/devtools_target.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
@@ -50,6 +53,7 @@
 using content::DevToolsAgentHost;
 using content::RenderViewHost;
 using content::WebContents;
+using devtools_http_handler::DevToolsHttpHandler;
 
 namespace {
 
@@ -81,7 +85,8 @@ bool AuthorizeSocketAccessWithDebugPermission(
 
 // Delegate implementation for the devtools http handler on android. A new
 // instance of this gets created each time devtools is enabled.
-class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
+class DevToolsServerDelegate :
+    public devtools_http_handler::DevToolsHttpHandlerDelegate {
  public:
   DevToolsServerDelegate() {
   }
@@ -97,12 +102,8 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
         IDR_DEVTOOLS_DISCOVERY_PAGE_HTML).as_string();
   }
 
-  bool BundlesFrontendResources() override {
-    return false;
-  }
-
-  base::FilePath GetDebugFrontendDir() override {
-    return base::FilePath();
+  std::string GetFrontendResource(const std::string& path) override {
+    return std::string();
   }
 
  private:
@@ -121,7 +122,7 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
 // Factory for UnixDomainServerSocket. It tries a fallback socket when
 // original socket doesn't work.
 class UnixDomainServerSocketFactory
-    : public content::DevToolsHttpHandler::ServerSocketFactory {
+    : public DevToolsHttpHandler::ServerSocketFactory {
  public:
   UnixDomainServerSocketFactory(
       const std::string& socket_name,
@@ -187,28 +188,36 @@ DevToolsServer::~DevToolsServer() {
 }
 
 void DevToolsServer::Start(bool allow_debug_permission) {
-  if (protocol_handler_)
+  if (devtools_http_handler_)
     return;
 
   net::UnixDomainServerSocket::AuthCallback auth_callback =
       allow_debug_permission ?
           base::Bind(&AuthorizeSocketAccessWithDebugPermission) :
           base::Bind(&content::CanUserConnectToDevTools);
-  scoped_ptr<content::DevToolsHttpHandler::ServerSocketFactory> factory(
+  manager_delegate_.reset(new DevToolsManagerDelegateAndroid());
+  chrome::VersionInfo version_info;
+
+  scoped_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(
       new UnixDomainServerSocketFactory(socket_name_, auth_callback));
-  protocol_handler_.reset(content::DevToolsHttpHandler::Start(
+  devtools_http_handler_.reset(new DevToolsHttpHandler(
       factory.Pass(),
       base::StringPrintf(kFrontEndURL, content::GetWebKitRevision().c_str()),
       new DevToolsServerDelegate(),
-      base::FilePath()));
+      manager_delegate_.get(),
+      base::FilePath(),
+      base::FilePath(),
+      version_info.ProductNameAndVersionForUserAgent(),
+      ::GetUserAgent()));
 }
 
 void DevToolsServer::Stop() {
-  protocol_handler_.reset();
+  devtools_http_handler_.reset();
+  manager_delegate_.reset();
 }
 
 bool DevToolsServer::IsStarted() const {
-  return protocol_handler_;
+  return devtools_http_handler_;
 }
 
 bool RegisterDevToolsServer(JNIEnv* env) {

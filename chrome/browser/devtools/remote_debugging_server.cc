@@ -7,11 +7,22 @@
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/devtools/browser_list_tabcontents_provider.h"
+#include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
+#include "chrome/browser/history/top_sites_factory.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/public/browser/devtools_http_handler.h"
+#include "chrome/common/chrome_version_info.h"
+#include "components/devtools_http_handler/devtools_http_handler.h"
+#include "components/devtools_http_handler/devtools_http_handler_delegate.h"
+#include "components/history/core/browser/top_sites.h"
+#include "content/public/browser/devtools_frontend_host.h"
+#include "grit/browser_resources.h"
 #include "net/base/net_errors.h"
 #include "net/socket/tcp_server_socket.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 
@@ -22,7 +33,7 @@ const uint16 kMaxTetheringPort = 9444;
 const int kBackLog = 10;
 
 class TCPServerSocketFactory
-    : public content::DevToolsHttpHandler::ServerSocketFactory {
+    : public devtools_http_handler::DevToolsHttpHandler::ServerSocketFactory {
  public:
   TCPServerSocketFactory(const std::string& address, uint16 port)
       : address_(address),
@@ -31,7 +42,7 @@ class TCPServerSocketFactory
   }
 
  private:
-  // content::DevToolsHttpHandler::ServerSocketFactory.
+  // devtools_http_handler::DevToolsHttpHandler::ServerSocketFactory.
   scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
     scoped_ptr<net::ServerSocket> socket(
         new net::TCPServerSocket(nullptr, net::NetLog::Source()));
@@ -65,6 +76,49 @@ class TCPServerSocketFactory
   DISALLOW_COPY_AND_ASSIGN(TCPServerSocketFactory);
 };
 
+class ChromeDevToolsHttpHandlerDelegate
+    : public devtools_http_handler::DevToolsHttpHandlerDelegate {
+ public:
+  ChromeDevToolsHttpHandlerDelegate();
+  ~ChromeDevToolsHttpHandlerDelegate() override;
+
+  // devtools_http_handler::DevToolsHttpHandlerDelegate implementation.
+  std::string GetDiscoveryPageHTML() override;
+  std::string GetFrontendResource(const std::string& path) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChromeDevToolsHttpHandlerDelegate);
+};
+
+ChromeDevToolsHttpHandlerDelegate::ChromeDevToolsHttpHandlerDelegate() {
+}
+
+ChromeDevToolsHttpHandlerDelegate::~ChromeDevToolsHttpHandlerDelegate() {
+}
+
+std::string ChromeDevToolsHttpHandlerDelegate::GetDiscoveryPageHTML() {
+  std::set<Profile*> profiles;
+  for (chrome::BrowserIterator it; !it.done(); it.Next())
+    profiles.insert((*it)->profile());
+
+  for (std::set<Profile*>::iterator it = profiles.begin();
+       it != profiles.end(); ++it) {
+    scoped_refptr<history::TopSites> ts = TopSitesFactory::GetForProfile(*it);
+    if (ts) {
+      // TopSites updates itself after a delay. Ask TopSites to update itself
+      // when we're about to show the remote debugging landing page.
+      ts->SyncWithHistory();
+    }
+  }
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(
+      IDR_DEVTOOLS_DISCOVERY_PAGE_HTML).as_string();
+}
+
+std::string ChromeDevToolsHttpHandlerDelegate::GetFrontendResource(
+    const std::string& path) {
+  return content::DevToolsFrontendHost::GetFrontendResource(path).as_string();
+}
+
 }  // namespace
 
 // static
@@ -85,11 +139,24 @@ RemoteDebuggingServer::RemoteDebuggingServer(
     DCHECK(result);
   }
 
-  devtools_http_handler_.reset(content::DevToolsHttpHandler::Start(
+  manager_delegate_.reset(new ChromeDevToolsManagerDelegate());
+
+  base::FilePath debug_frontend_dir;
+#if defined(DEBUG_DEVTOOLS)
+  PathService::Get(chrome::DIR_INSPECTOR, &debug_frontend_dir);
+#endif
+
+  chrome::VersionInfo version_info;
+
+  devtools_http_handler_.reset(new devtools_http_handler::DevToolsHttpHandler(
       make_scoped_ptr(new TCPServerSocketFactory(ip, port)),
       std::string(),
-      new BrowserListTabContentsProvider(),
-      output_dir));
+      new ChromeDevToolsHttpHandlerDelegate(),
+      manager_delegate_.get(),
+      output_dir,
+      debug_frontend_dir,
+      version_info.ProductNameAndVersionForUserAgent(),
+      ::GetUserAgent()));
 }
 
 RemoteDebuggingServer::~RemoteDebuggingServer() {

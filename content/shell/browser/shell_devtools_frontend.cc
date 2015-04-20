@@ -11,8 +11,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/devtools_http_handler/devtools_http_handler.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -107,9 +107,10 @@ ShellDevToolsFrontend* ShellDevToolsFrontend::Show(
       shell,
       inspected_contents);
 
-  DevToolsHttpHandler* http_handler = ShellContentBrowserClient::Get()
-                                          ->shell_browser_main_parts()
-                                          ->devtools_http_handler();
+  devtools_http_handler::DevToolsHttpHandler* http_handler =
+      ShellContentBrowserClient::Get()
+          ->shell_browser_main_parts()
+          ->devtools_http_handler();
   shell->LoadURL(http_handler->GetFrontendURL("/devtools/devtools.html"));
 
   return devtools_frontend;

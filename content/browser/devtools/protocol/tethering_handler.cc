@@ -5,7 +5,6 @@
 #include "content/browser/devtools/protocol/tethering_handler.h"
 
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/devtools_http_handler.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/server_socket.h"

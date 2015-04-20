@@ -98,12 +98,9 @@ std::string CastDevToolsDelegate::GetDiscoveryPageHTML() {
 #endif  // defined(OS_ANDROID)
 }
 
-bool CastDevToolsDelegate::BundlesFrontendResources() {
-  return false;
-}
-
-base::FilePath CastDevToolsDelegate::GetDebugFrontendDir() {
-  return base::FilePath();
+std::string CastDevToolsDelegate::GetFrontendResource(
+    const std::string& path) {
+  return std::string();
 }
 
 // CastDevToolsManagerDelegate -----------------------------------------------

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -44,6 +45,11 @@ class DevToolsFrontendHost {
   CONTENT_EXPORT virtual ~DevToolsFrontendHost() {}
 
   CONTENT_EXPORT virtual void BadMessageRecieved() {}
+
+  // Returns bundled DevTools frontend resource by |path|. Returns empty string
+  // if |path| does not correspond to any frontend resource.
+  CONTENT_EXPORT static base::StringPiece GetFrontendResource(
+      const std::string& path);
 };
 
 }  // namespace content

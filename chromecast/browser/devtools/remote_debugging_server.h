@@ -8,12 +8,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_member.h"
 
-namespace content {
+namespace devtools_http_handler {
 class DevToolsHttpHandler;
-}  // namespace content
+}
 
 namespace chromecast {
 namespace shell {
+
+class CastDevToolsManagerDelegate;
 
 class RemoteDebuggingServer {
  public:
@@ -28,7 +30,9 @@ class RemoteDebuggingServer {
   // on device startup.
   bool ShouldStartImmediately();
 
-  scoped_ptr<content::DevToolsHttpHandler> devtools_http_handler_;
+  // TODO(dgozman): remove once devtools_discovery component is extracted.
+  scoped_ptr<CastDevToolsManagerDelegate> manager_delegate_;
+  scoped_ptr<devtools_http_handler::DevToolsHttpHandler> devtools_http_handler_;
 
   IntegerPrefMember pref_port_;
   uint16 port_;

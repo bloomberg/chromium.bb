@@ -3089,6 +3089,7 @@
             '../components/components.gyp:autofill_content_browser',
             '../components/components.gyp:browsing_data',
             '../components/components.gyp:data_reduction_proxy_content_browser',
+            '../components/components.gyp:devtools_http_handler',
             '../components/components.gyp:dom_distiller_content',
             '../components/components.gyp:favicon_content',
             '../components/components.gyp:history_content_browser',

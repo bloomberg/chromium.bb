@@ -249,6 +249,7 @@ static_library("content_shell_lib") {
     "//base/third_party/dynamic_annotations",
     "//cc",
     "//components/crash/app",
+    "//components/devtools_http_handler",
     "//components/web_cache/renderer",
     "//content:resources",
     "//content/app/resources",

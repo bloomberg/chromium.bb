@@ -11,11 +11,13 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 
-namespace content {
+namespace devtools_http_handler {
 class DevToolsHttpHandler;
 }
 
 namespace android_webview {
+
+class AwDevToolsManagerDelegate;
 
 // This class controls WebView-specific Developer Tools remote debugging server.
 class AwDevToolsServer {
@@ -32,7 +34,9 @@ class AwDevToolsServer {
   bool IsStarted() const;
 
  private:
-  scoped_ptr<content::DevToolsHttpHandler> protocol_handler_;
+  // TODO(dgozman): remove once devtools_discovery component is extracted.
+  scoped_ptr<AwDevToolsManagerDelegate> manager_delegate_;
+  scoped_ptr<devtools_http_handler::DevToolsHttpHandler> devtools_http_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AwDevToolsServer);
 };

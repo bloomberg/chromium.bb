@@ -68,6 +68,7 @@ static_library("devtools") {
       "//chrome:extra_resources",
       "//chrome:resources",
       "//chrome:strings",
+      "//components/devtools_http_handler",
       "//net:http_server",
       "//skia",
       "//third_party/icu",
@@ -76,8 +77,6 @@ static_library("devtools") {
       ":webrtc_device_provider_resources",
     ]
     sources += [
-      "browser_list_tabcontents_provider.cc",
-      "browser_list_tabcontents_provider.h",
       "chrome_devtools_manager_delegate.cc",
       "chrome_devtools_manager_delegate.h",
       "device/adb/adb_client_socket.cc",

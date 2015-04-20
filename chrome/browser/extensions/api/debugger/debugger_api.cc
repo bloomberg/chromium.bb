@@ -32,7 +32,6 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
@@ -54,7 +53,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using content::DevToolsAgentHost;
-using content::DevToolsHttpHandler;
 using content::RenderProcessHost;
 using content::RenderViewHost;
 using content::RenderWidgetHost;
@@ -581,7 +579,7 @@ bool DebuggerAttachFunction::RunAsync() {
   if (!InitAgentHost())
     return false;
 
-  if (!DevToolsHttpHandler::IsSupportedProtocolVersion(
+  if (!DevToolsAgentHost::IsSupportedProtocolVersion(
           params->required_version)) {
     error_ = ErrorUtils::FormatErrorMessage(
         keys::kProtocolVersionNotSupportedError,

@@ -4,6 +4,8 @@
 
 #include "android_webview/native/aw_dev_tools_server.h"
 
+#include "android_webview/browser/aw_dev_tools_manager_delegate.h"
+#include "android_webview/common/aw_content_client.h"
 #include "android_webview/native/aw_contents.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -11,10 +13,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/devtools_http_handler/devtools_http_handler.h"
+#include "components/devtools_http_handler/devtools_http_handler_delegate.h"
 #include "content/public/browser/android/devtools_auth.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/devtools_http_handler.h"
-#include "content/public/browser/devtools_http_handler_delegate.h"
 #include "content/public/browser/devtools_target.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/user_agent.h"
@@ -25,6 +27,7 @@
 using content::DevToolsAgentHost;
 using content::RenderViewHost;
 using content::WebContents;
+using devtools_http_handler::DevToolsHttpHandler;
 
 namespace {
 
@@ -37,23 +40,18 @@ const int kBackLog = 10;
 
 // Delegate implementation for the devtools http handler for WebView. A new
 // instance of this gets created each time web debugging is enabled.
-class AwDevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
+class AwDevToolsServerDelegate :
+    public devtools_http_handler::DevToolsHttpHandlerDelegate {
  public:
   AwDevToolsServerDelegate() {
   }
 
   ~AwDevToolsServerDelegate() override {}
 
-  // DevToolsHttpProtocolHandler::Delegate overrides.
+  // devtools_http_handler::DevToolsHttpHandlerDelegate implementation.
   std::string GetDiscoveryPageHTML() override;
+  std::string GetFrontendResource(const std::string& path) override;
 
-  bool BundlesFrontendResources() override {
-    return false;
-  }
-
-  base::FilePath GetDebugFrontendDir() override {
-    return base::FilePath();
-  }
  private:
 
   DISALLOW_COPY_AND_ASSIGN(AwDevToolsServerDelegate);
@@ -70,9 +68,14 @@ std::string AwDevToolsServerDelegate::GetDiscoveryPageHTML() {
   return html;
 }
 
+std::string AwDevToolsServerDelegate::GetFrontendResource(
+    const std::string& path) {
+  return std::string();
+}
+
 // Factory for UnixDomainServerSocket.
 class UnixDomainServerSocketFactory
-    : public content::DevToolsHttpHandler::ServerSocketFactory {
+    : public DevToolsHttpHandler::ServerSocketFactory {
  public:
   explicit UnixDomainServerSocketFactory(const std::string& socket_name)
       : socket_name_(socket_name),
@@ -80,7 +83,7 @@ class UnixDomainServerSocketFactory
   }
 
  private:
-  // content::DevToolsHttpHandler::ServerSocketFactory.
+  // devtools_http_handler::DevToolsHttpHandler::ServerSocketFactory.
   scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
     scoped_ptr<net::ServerSocket> socket(
         new net::UnixDomainServerSocket(
@@ -122,25 +125,31 @@ AwDevToolsServer::~AwDevToolsServer() {
 }
 
 void AwDevToolsServer::Start() {
-  if (protocol_handler_)
+  if (devtools_http_handler_)
     return;
 
-  scoped_ptr<content::DevToolsHttpHandler::ServerSocketFactory> factory(
+  scoped_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(
       new UnixDomainServerSocketFactory(
           base::StringPrintf(kSocketNameFormat, getpid())));
-  protocol_handler_.reset(content::DevToolsHttpHandler::Start(
+  manager_delegate_.reset(new AwDevToolsManagerDelegate());
+  devtools_http_handler_.reset(new DevToolsHttpHandler(
       factory.Pass(),
       base::StringPrintf(kFrontEndURL, content::GetWebKitRevision().c_str()),
       new AwDevToolsServerDelegate(),
-      base::FilePath()));
+      manager_delegate_.get(),
+      base::FilePath(),
+      base::FilePath(),
+      GetProduct(),
+      GetUserAgent()));
 }
 
 void AwDevToolsServer::Stop() {
-  protocol_handler_.reset();
+  devtools_http_handler_.reset();
+  manager_delegate_.reset();
 }
 
 bool AwDevToolsServer::IsStarted() const {
-  return protocol_handler_;
+  return devtools_http_handler_;
 }
 
 bool RegisterAwDevToolsServer(JNIEnv* env) {

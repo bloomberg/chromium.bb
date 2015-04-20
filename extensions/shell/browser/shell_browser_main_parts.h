@@ -17,8 +17,11 @@ class PrefService;
 
 namespace content {
 class BrowserContext;
-class DevToolsHttpHandler;
 struct MainFunctionParams;
+}
+
+namespace devtools_http_handler {
+class DevToolsHttpHandler;
 }
 
 namespace views {
@@ -88,7 +91,7 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   scoped_ptr<AppWindowClient> app_window_client_;
   scoped_ptr<ExtensionsClient> extensions_client_;
   scoped_ptr<ExtensionsBrowserClient> extensions_browser_client_;
-  scoped_ptr<content::DevToolsHttpHandler> devtools_http_handler_;
+  scoped_ptr<devtools_http_handler::DevToolsHttpHandler> devtools_http_handler_;
   scoped_ptr<ShellUpdateQueryParamsDelegate> update_query_params_delegate_;
   scoped_ptr<ShellOAuth2TokenService> oauth2_token_service_;
 

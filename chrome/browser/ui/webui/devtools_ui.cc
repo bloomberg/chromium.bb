@@ -10,7 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/devtools_http_handler.h"
+#include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -18,7 +18,6 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
 using content::WebContents;
@@ -184,17 +183,15 @@ void DevToolsDataSource::StartBundledDataRequest(
     int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
   std::string filename = PathWithoutParams(path);
+  base::StringPiece resource =
+      content::DevToolsFrontendHost::GetFrontendResource(filename);
 
-  int resource_id =
-      content::DevToolsHttpHandler::GetFrontendResourceId(filename);
-
-  DLOG_IF(WARNING, resource_id == -1)
+  DLOG_IF(WARNING, resource.empty())
       << "Unable to find dev tool resource: " << filename
       << ". If you compiled with debug_devtools=1, try running with "
          "--debug-devtools.";
-  const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  scoped_refptr<base::RefCountedStaticMemory> bytes(rb.LoadDataResourceBytes(
-      resource_id));
+  scoped_refptr<base::RefCountedStaticMemory> bytes(
+      new base::RefCountedStaticMemory(resource.data(), resource.length()));
   callback.Run(bytes.get());
 }
 

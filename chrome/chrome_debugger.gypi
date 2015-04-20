@@ -41,6 +41,7 @@
       'conditions': [
         ['OS!="android"', {
           'dependencies': [
+            '../components/components.gyp:devtools_http_handler',
             '../net/net.gyp:http_server',
             '../skia/skia.gyp:skia',
             '../third_party/icu/icu.gyp:icui18n',
@@ -56,8 +57,6 @@
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome/grit/webrtc_device_provider_resources_map.cc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/grit/webrtc_device_provider_resources_map.h',
-            'browser/devtools/browser_list_tabcontents_provider.cc',
-            'browser/devtools/browser_list_tabcontents_provider.h',
             'browser/devtools/chrome_devtools_manager_delegate.cc',
             'browser/devtools/chrome_devtools_manager_delegate.h',
             'browser/devtools/device/adb/adb_client_socket.cc',

@@ -11,10 +11,11 @@
 #include "base/strings/stringprintf.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/devtools/cast_dev_tools_delegate.h"
+#include "chromecast/common/cast_content_client.h"
 #include "chromecast/common/pref_names.h"
+#include "components/devtools_http_handler/devtools_http_handler.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/devtools_http_handler.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
 #include "net/base/net_errors.h"
@@ -24,6 +25,8 @@
 #include "content/public/browser/android/devtools_auth.h"
 #include "net/socket/unix_domain_server_socket_posix.h"
 #endif  // defined(OS_ANDROID)
+
+using devtools_http_handler::DevToolsHttpHandler;
 
 namespace chromecast {
 namespace shell {
@@ -38,13 +41,13 @@ const int kBackLog = 10;
 
 #if defined(OS_ANDROID)
 class UnixDomainServerSocketFactory
-    : public content::DevToolsHttpHandler::ServerSocketFactory {
+    : public DevToolsHttpHandler::ServerSocketFactory {
  public:
   explicit UnixDomainServerSocketFactory(const std::string& socket_name)
       : socket_name_(socket_name) {}
 
  private:
-  // content::DevToolsHttpHandler::ServerSocketFactory.
+  // devtools_http_handler::DevToolsHttpHandler::ServerSocketFactory.
   scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
     scoped_ptr<net::ServerSocket> socket(
         new net::UnixDomainServerSocket(
@@ -62,14 +65,14 @@ class UnixDomainServerSocketFactory
 };
 #else
 class TCPServerSocketFactory
-    : public content::DevToolsHttpHandler::ServerSocketFactory {
+    : public DevToolsHttpHandler::ServerSocketFactory {
  public:
   TCPServerSocketFactory(const std::string& address, uint16 port)
       : address_(address), port_(port) {
   }
 
  private:
-  // content::DevToolsHttpHandler::ServerSocketFactory.
+  // devtools_http_handler::DevToolsHttpHandler::ServerSocketFactory.
   scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
     scoped_ptr<net::ServerSocket> socket(
         new net::TCPServerSocket(nullptr, net::NetLog::Source()));
@@ -86,7 +89,7 @@ class TCPServerSocketFactory
 };
 #endif
 
-scoped_ptr<content::DevToolsHttpHandler::ServerSocketFactory>
+scoped_ptr<DevToolsHttpHandler::ServerSocketFactory>
 CreateSocketFactory(uint16 port) {
 #if defined(OS_ANDROID)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -95,10 +98,10 @@ CreateSocketFactory(uint16 port) {
     socket_name = command_line->GetSwitchValueASCII(
         switches::kRemoteDebuggingSocketName);
   }
-  return scoped_ptr<content::DevToolsHttpHandler::ServerSocketFactory>(
+  return scoped_ptr<DevToolsHttpHandler::ServerSocketFactory>(
       new UnixDomainServerSocketFactory(socket_name));
 #else
-  return scoped_ptr<content::DevToolsHttpHandler::ServerSocketFactory>(
+  return scoped_ptr<DevToolsHttpHandler::ServerSocketFactory>(
       new TCPServerSocketFactory("0.0.0.0", port));
 #endif
 }
@@ -145,11 +148,16 @@ void RemoteDebuggingServer::OnPortChanged() {
 
   port_ = new_port;
   if (port_ > 0) {
-    devtools_http_handler_.reset(content::DevToolsHttpHandler::Start(
+    manager_delegate_.reset(new CastDevToolsManagerDelegate());
+    devtools_http_handler_.reset(new DevToolsHttpHandler(
         CreateSocketFactory(port_),
         GetFrontendUrl(),
         new CastDevToolsDelegate(),
-        base::FilePath()));
+        manager_delegate_.get(),
+        base::FilePath(),
+        base::FilePath(),
+        std::string(),
+        GetUserAgent()));
     LOG(INFO) << "Devtools started: port=" << port_;
   }
 }

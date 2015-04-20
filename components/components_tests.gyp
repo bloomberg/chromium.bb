@@ -128,6 +128,9 @@
     'device_event_log_unittest_sources': [
       'device_event_log/device_event_log_impl_unittest.cc',
     ],
+    'devtools_http_handler_unittest_sources': [
+      'devtools_http_handler/devtools_http_handler_unittest.cc',
+    ],
     'dom_distiller_unittest_sources': [
       'dom_distiller/content/dom_distiller_viewer_source_unittest.cc',
       'dom_distiller/content/web_contents_main_frame_observer_unittest.cc',
@@ -807,6 +810,7 @@
         }],
         ['OS != "ios"', {
           'sources': [
+            '<@(devtools_http_handler_unittest_sources)',
             '<@(error_page_unittest_sources)',
             '<@(navigation_interception_unittest_sources)',
             '<@(network_hints_unittest_sources)',
@@ -824,6 +828,7 @@
             'components.gyp:autofill_content_renderer',
             'components.gyp:autofill_content_test_support',
             'components.gyp:data_reduction_proxy_content_browser',
+            'components.gyp:devtools_http_handler',
             'components.gyp:dom_distiller_content',
             'components.gyp:error_page_renderer',
             'components.gyp:favicon_content',

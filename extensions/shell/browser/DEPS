@@ -1,5 +1,6 @@
 include_rules = [
   "+chromeos",
+  "+components/devtools_http_handler",
   "+components/keyed_service",
   "+components/nacl/browser",
   "+components/nacl/common",

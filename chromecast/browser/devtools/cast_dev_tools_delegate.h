@@ -5,7 +5,7 @@
 #ifndef CHROMECAST_BROWSER_DEVTOOLS_CAST_DEV_TOOLS_DELEGATE_H_
 #define CHROMECAST_BROWSER_DEVTOOLS_CAST_DEV_TOOLS_DELEGATE_H_
 
-#include "content/public/browser/devtools_http_handler_delegate.h"
+#include "components/devtools_http_handler/devtools_http_handler_delegate.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 #include "net/socket/stream_listen_socket.h"
 
@@ -20,15 +20,15 @@ class BrowserContext;
 namespace chromecast {
 namespace shell {
 
-class CastDevToolsDelegate : public content::DevToolsHttpHandlerDelegate {
+class CastDevToolsDelegate :
+    public devtools_http_handler::DevToolsHttpHandlerDelegate {
  public:
   CastDevToolsDelegate();
   ~CastDevToolsDelegate() override;
 
-  // DevToolsHttpHandlerDelegate implementation.
+  // devtools_http_handler::DevToolsHttpHandlerDelegate implementation.
   std::string GetDiscoveryPageHTML() override;
-  bool BundlesFrontendResources() override;
-  base::FilePath GetDebugFrontendDir() override;
+  std::string GetFrontendResource(const std::string& path) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastDevToolsDelegate);

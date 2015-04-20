@@ -7,17 +7,20 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "content/public/browser/devtools_http_handler_delegate.h"
+#include "components/devtools_http_handler/devtools_http_handler_delegate.h"
 #include "content/public/browser/devtools_manager_delegate.h"
+
+namespace devtools_http_handler {
+class DevToolsHttpHandler;
+}
 
 namespace content {
 
 class BrowserContext;
-class DevToolsHttpHandler;
 
 class ShellDevToolsManagerDelegate : public DevToolsManagerDelegate {
  public:
-  static DevToolsHttpHandler* CreateHttpHandler(
+  static devtools_http_handler::DevToolsHttpHandler* CreateHttpHandler(
       BrowserContext* browser_context);
 
   explicit ShellDevToolsManagerDelegate(BrowserContext* browser_context);
