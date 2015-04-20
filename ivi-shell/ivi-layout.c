@@ -2459,6 +2459,34 @@ ivi_layout_surface_get_weston_surface(struct ivi_layout_surface *ivisurf)
 }
 
 static int32_t
+ivi_layout_surface_get_size(struct ivi_layout_surface *ivisurf,
+			    int32_t *width, int32_t *height,
+			    int32_t *stride)
+{
+	int32_t w;
+	int32_t h;
+	const size_t bytespp = 4; /* PIXMAN_a8b8g8r8 */
+
+	if (ivisurf == NULL || ivisurf->surface == NULL) {
+		weston_log("%s: invalid argument\n", __func__);
+		return IVI_FAILED;
+	}
+
+	weston_surface_get_content_size(ivisurf->surface, &w, &h);
+
+	if (width != NULL)
+		*width = w;
+
+	if (height != NULL)
+		*height = h;
+
+	if (stride != NULL)
+		*stride = w * bytespp;
+
+	return IVI_SUCCEEDED;
+}
+
+static int32_t
 ivi_layout_layer_add_notification(struct ivi_layout_layer *ivilayer,
 				  layer_property_notification_func callback,
 				  void *userdata)
@@ -2664,6 +2692,25 @@ ivi_layout_surface_set_transition(struct ivi_layout_surface *ivisurf,
 	prop->transition_type = type;
 	prop->transition_duration = duration;
 	return 0;
+}
+
+static int32_t
+ivi_layout_surface_dump(struct weston_surface *surface,
+			void *target, size_t size,int32_t x, int32_t y,
+			int32_t width, int32_t height)
+{
+	int result = 0;
+
+	if (surface == NULL) {
+		weston_log("%s: invalid argument\n", __func__);
+		return IVI_FAILED;
+	}
+
+	result = weston_surface_copy_content(
+		surface, target, size,
+		x, y, width, height);
+
+	return result == 0 ? IVI_SUCCEEDED : IVI_FAILED;
 }
 
 /**
@@ -2930,7 +2977,13 @@ static struct ivi_controller_interface ivi_controller_interface = {
 	 * animation
 	 */
 	.transition_move_layer_cancel	= ivi_layout_transition_move_layer_cancel,
-	.layer_set_fade_info		= ivi_layout_layer_set_fade_info
+	.layer_set_fade_info		= ivi_layout_layer_set_fade_info,
+
+	/**
+	 * surface content dumping for debugging
+	 */
+	.surface_get_size		= ivi_layout_surface_get_size,
+	.surface_dump			= ivi_layout_surface_dump,
 };
 
 int

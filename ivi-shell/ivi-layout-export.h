@@ -768,6 +768,18 @@ struct ivi_controller_interface {
 				       uint32_t is_fade_in,
 				       double start_alpha, double end_alpha);
 
+	/**
+	 * surface content dumping for debugging
+	 */
+	int32_t (*surface_get_size)(struct ivi_layout_surface *ivisurf,
+				    int32_t *width, int32_t *height,
+				    int32_t *stride);
+
+	int32_t (*surface_dump)(struct weston_surface *surface,
+				void *target, size_t size,
+				int32_t x, int32_t y,
+				int32_t width, int32_t height);
+
 };
 
 #ifdef __cplusplus
