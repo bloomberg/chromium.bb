@@ -29,8 +29,7 @@ IsolateHolder::IsolateHolder() {
   params.entry_hook = DebugImpl::GetFunctionEntryHook();
   params.code_event_handler = DebugImpl::GetJitCodeEventHandler();
   params.constraints.ConfigureDefaults(base::SysInfo::AmountOfPhysicalMemory(),
-                                       base::SysInfo::AmountOfVirtualMemory(),
-                                       base::SysInfo::NumberOfProcessors());
+                                       base::SysInfo::AmountOfVirtualMemory());
   isolate_ = v8::Isolate::New(params);
   isolate_data_.reset(new PerIsolateData(isolate_, allocator));
 #if defined(OS_WIN)
