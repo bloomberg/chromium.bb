@@ -2334,7 +2334,7 @@ void RenderFrameImpl::didAddMessageToConsole(
       log_severity = logging::LOG_ERROR;
       break;
     default:
-      NOTREACHED();
+      log_severity = logging::LOG_VERBOSE;
   }
 
   if (shouldReportDetailedMessageForSource(source_name)) {

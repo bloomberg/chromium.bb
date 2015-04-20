@@ -1297,6 +1297,8 @@ void WebTestProxyBase::DidAddMessageToConsole(
     case blink::WebConsoleMessage::LevelError:
       level = "ERROR";
       break;
+    default:
+      level = "MESSAGE";
   }
   delegate_->PrintMessage(std::string("CONSOLE ") + level + ": ");
   if (source_line) {
