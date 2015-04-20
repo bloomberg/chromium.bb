@@ -472,7 +472,7 @@ namespace {
 
 PassRefPtrWillBeRawPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fromValue, SVGPropertyBase* toValue, SVGAnimatedPropertyBase* attribute)
 {
-    RefPtrWillBeRawPtr<Interpolation> interpolation;
+    RefPtrWillBeRawPtr<Interpolation> interpolation = nullptr;
     ASSERT(fromValue->type() == toValue->type());
     switch (fromValue->type()) {
     case AnimatedAngle:
