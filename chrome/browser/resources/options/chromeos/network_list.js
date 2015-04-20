@@ -358,9 +358,9 @@ cr.define('options.network', function() {
       this.subtitle = null;
       if (this.data.iconType)
         this.iconType = this.data.iconType;
-      this.addEventListener('click', function() {
+      this.addEventListener('click', (function() {
         this.showMenu();
-      });
+      }).bind(this));
     },
 
     /**
@@ -381,6 +381,7 @@ cr.define('options.network', function() {
         menu.className = 'network-menu';
         menu.hidden = true;
         Menu.decorate(menu);
+        menu.menuItemSelector = '.network-menu-item';
         for (var i = 0; i < this.data.menu.length; i++) {
           var entry = this.data.menu[i];
           createCallback_(menu, null, entry.label, entry.command);
@@ -526,6 +527,7 @@ cr.define('options.network', function() {
       menu.className = 'network-menu';
       menu.hidden = true;
       Menu.decorate(menu);
+      menu.menuItemSelector = '.network-menu-item';
       var addendum = [];
       if (this.data_.key == 'WiFi') {
         addendum.push({
@@ -831,7 +833,7 @@ cr.define('options.network', function() {
       }
     }
     if (callback != null)
-      button.addEventListener('click', callback);
+      button.addEventListener('activate', callback);
     else
       buttonLabel.classList.add('network-disabled-control');
 
@@ -920,6 +922,35 @@ cr.define('options.network', function() {
     onBlur_: function() {
       this.selectionModel.unselectAll();
       closeMenu_();
+    },
+
+    /** @override */
+    handleKeyDown: function(e) {
+      if (activeMenu_) {
+        // keyIdentifier does not report 'Esc' correctly
+        if (e.keyCode == 27 /* Esc */) {
+          closeMenu_();
+          return;
+        }
+
+        if ($(activeMenu_).handleKeyDown(e)) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        return;
+      }
+
+      if (e.keyIdentifier == 'Enter' ||
+          e.keyIdentifier == 'U+0020' /* Space */) {
+        var selectedListItem = this.getListItemByIndex(
+            this.selectionModel.selectedIndex);
+        if (selectedListItem) {
+          selectedListItem.click();
+          return;
+        }
+      }
+
+      List.prototype.handleKeyDown.call(this, e);
     },
 
     /**

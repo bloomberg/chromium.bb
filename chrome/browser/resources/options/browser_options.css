@@ -411,7 +411,8 @@ list:not([disabled]) > .network-group[selected] {
     text-overflow: ellipsis;
 }
 
-.network-menu-item:hover {
+.network-menu-item:hover,
+.network-menu-item[selected] {
   background-color: #eee;
 }
 
