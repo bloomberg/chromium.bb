@@ -86,6 +86,11 @@ AC_ARG_ENABLE(radeon,
 	      [Enable support for radeon's KMS API (default: auto)]),
 	      [RADEON=$enableval], [RADEON=auto])
 
+AC_ARG_ENABLE(amdgpu,
+	      AS_HELP_STRING([--disable-amdgpu],
+	      [Enable support for amdgpu's KMS API (default: auto)]),
+	      [AMDGPU=$enableval], [AMDGPU=auto])
+
 AC_ARG_ENABLE(nouveau,
 	      AS_HELP_STRING([--disable-nouveau],
 	      [Enable support for nouveau's KMS API (default: auto)]),
@@ -248,6 +253,9 @@ if test "x$drm_cv_atomic_primitives" = "xnone"; then
 	LIBDRM_ATOMICS_NOT_FOUND_MSG($RADEON, radeon, Radeon, radeon)
 	RADEON=no
 
+	LIBDRM_ATOMICS_NOT_FOUND_MSG($AMDGPU, amdgpu, AMD, amdgpu)
+	AMDGPU=no
+
 	LIBDRM_ATOMICS_NOT_FOUND_MSG($NOUVEAU, nouveau, NVIDIA, nouveau)
 	NOUVEAU=no
 
@@ -268,6 +276,9 @@ else
 	fi
 	if test "x$RADEON" = xauto; then
 		RADEON=yes
+	fi
+	if test "x$AMDGPU" = xauto; then
+		AMDGPU=yes
 	fi
 	if test "x$NOUVEAU" = xauto; then
 		NOUVEAU=yes
@@ -346,6 +357,11 @@ fi
 AM_CONDITIONAL(HAVE_RADEON, [test "x$RADEON" = xyes])
 if test "x$RADEON" = xyes; then
 	AC_DEFINE(HAVE_RADEON, 1, [Have radeon support])
+fi
+
+AM_CONDITIONAL(HAVE_AMDGPU, [test "x$AMDGPU" = xyes])
+if test "x$AMDGPU" = xyes; then
+	AC_DEFINE(HAVE_AMDGPU, 1, [Have amdgpu support])
 fi
 
 AM_CONDITIONAL(HAVE_TEGRA, [test "x$TEGRA" = xyes])
@@ -446,6 +462,8 @@ AC_CONFIG_FILES([
 	intel/libdrm_intel.pc
 	radeon/Makefile
 	radeon/libdrm_radeon.pc
+	amdgpu/Makefile
+	amdgpu/libdrm_amdgpu.pc
 	nouveau/Makefile
 	nouveau/libdrm_nouveau.pc
 	omap/Makefile
@@ -477,6 +495,7 @@ echo "  libkms         $LIBKMS"
 echo "  Intel API      $INTEL"
 echo "  vmwgfx API     $VMWGFX"
 echo "  Radeon API     $RADEON"
+echo "  AMDGPU API     $AMDGPU"
 echo "  Nouveau API    $NOUVEAU"
 echo "  OMAP API       $OMAP"
 echo "  EXYNOS API     $EXYNOS"

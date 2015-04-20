@@ -28,6 +28,7 @@ LIBDRM_INCLUDE_H_FILES := \
 	include/drm/qxl_drm.h \
 	include/drm/r128_drm.h \
 	include/drm/radeon_drm.h \
+	include/drm/amdgpu_drm.h \
 	include/drm/savage_drm.h \
 	include/drm/sis_drm.h \
 	include/drm/tegra_drm.h \
