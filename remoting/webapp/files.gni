@@ -155,17 +155,16 @@ remoting_webapp_js_cast_extension_files = [ "crd/js/cast_extension_handler.js" ]
 # Client JavaScript files.
 remoting_webapp_js_client_files = [
   "crd/js/client_plugin.js",
-  "crd/js/client_plugin_impl.js",
   "crd/js/client_plugin_host_desktop_impl.js",
+  "crd/js/client_plugin_impl.js",
   "crd/js/client_session.js",
+  "crd/js/client_session_factory.js",
   "crd/js/clipboard.js",
   "crd/js/connected_view.js",
   "crd/js/connection_info.js",
   "crd/js/credentials_provider.js",
   "crd/js/desktop_connected_view.js",
   "crd/js/host_desktop.js",
-  "crd/js/session_connector.js",
-  "crd/js/session_connector_impl.js",
   "crd/js/smart_reconnector.js",
   "crd/js/video_frame_recorder.js",
 ]

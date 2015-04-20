@@ -5,7 +5,7 @@
 /**
  * @fileoverview
  * Interface abstracting the protocol extension functionality.
- * Instances of this class can be registered with the SessionConnector
+ * Instances of this class can be registered with the ProtocolExtensionManager
  * to enhance the communication protocol between the host and client.
  * Note that corresponding support on the host side is required.
  */
