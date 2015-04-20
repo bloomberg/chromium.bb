@@ -759,14 +759,6 @@ content.dll!content::RenderWidget::willBeginCompositorFrame
 cc.dll!base::internal::InvokeHelper<>::MakeItSo
 
 UNADDRESSABLE ACCESS
-name=http://crbug.com/473197
-*!blink::WebURLResponse::url
-*!content::ManifestManager::OnManifestFetchComplete
-*!base::internal::InvokeHelper<>::MakeItSo
-*!base::internal::Invoker<>::Run
-*!content::ManifestFetcher::OnLoadComplete
-
-UNADDRESSABLE ACCESS
 name=http://crbug.com/476586
 *!blink::WebFrameWidgetImpl::beginFrame
 *!content::RenderWidgetCompositor::BeginMainFrame
