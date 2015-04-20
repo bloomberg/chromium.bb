@@ -554,6 +554,10 @@ class ContentSettingBubbleWebContentsObserverBridge
         [[NSPopUpButton alloc] initWithFrame:buttonFrame]);
     [button setTarget:self];
 
+    // Set the map_entry's key value to |button| tag.
+    // MediaMenuPartsMap uses this value to order its elements.
+    [button setTag:static_cast<NSInteger>(map_entry.first)];
+
     // Store the |label| and |button| into MediaMenuParts struct and build
     // the popup menu from the menu model.
     content_setting_bubble::MediaMenuParts* menuParts =
