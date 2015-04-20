@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "modules/webaudio/AudioBasicProcessorNode.h"
+#include "modules/webaudio/AudioBasicProcessorHandler.h"
 
 #include "core/testing/DummyPageHolder.h"
 #include "modules/webaudio/OfflineAudioContext.h"
@@ -35,7 +35,7 @@ public:
     }
 };
 
-TEST(AudioBasicProcessorNodeTest, ProcessorFinalization)
+TEST(AudioBasicProcessorHandlerTest, ProcessorFinalization)
 {
     OwnPtr<DummyPageHolder> page = DummyPageHolder::create();
     OfflineAudioContext* context = OfflineAudioContext::create(&page->document(), 2, 1, 48000, ASSERT_NO_EXCEPTION);

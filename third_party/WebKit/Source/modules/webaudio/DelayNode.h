@@ -25,9 +25,7 @@
 #ifndef DelayNode_h
 #define DelayNode_h
 
-#include "modules/webaudio/AudioBasicProcessorNode.h"
-#include "modules/webaudio/DelayProcessor.h"
-#include "wtf/PassRefPtr.h"
+#include "modules/webaudio/AudioNode.h"
 
 namespace blink {
 

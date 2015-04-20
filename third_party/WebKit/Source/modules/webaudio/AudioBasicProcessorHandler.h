@@ -22,19 +22,19 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AudioBasicProcessorNode_h
-#define AudioBasicProcessorNode_h
+#ifndef AudioBasicProcessorHandler_h
+#define AudioBasicProcessorHandler_h
 
 #include "modules/webaudio/AudioNode.h"
 #include "wtf/Forward.h"
-#include "wtf/Threading.h"
 
 namespace blink {
 
 class AudioNodeInput;
 class AudioProcessor;
 
-// AudioBasicProcessorNode is an AudioNode with one input and one output where the input and output have the same number of channels.
+// AudioBasicProcessorHandler is an AudioHandler with one input and one output
+// where the input and output have the same number of channels.
 class AudioBasicProcessorHandler : public AudioHandler {
 public:
     static PassRefPtr<AudioBasicProcessorHandler> create(NodeType, AudioNode&, float sampleRate, PassOwnPtr<AudioProcessor>);
@@ -63,4 +63,4 @@ private:
 
 } // namespace blink
 
-#endif // AudioBasicProcessorNode_h
+#endif // AudioBasicProcessorHandler_h

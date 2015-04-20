@@ -24,7 +24,7 @@
 
 #include "config.h"
 #if ENABLE(WEB_AUDIO)
-#include "modules/webaudio/AudioBasicProcessorNode.h"
+#include "modules/webaudio/AudioBasicProcessorHandler.h"
 
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"

@@ -26,6 +26,8 @@
 #if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/BiquadFilterNode.h"
 
+#include "modules/webaudio/AudioBasicProcessorHandler.h"
+
 namespace blink {
 
 BiquadFilterNode::BiquadFilterNode(AudioContext& context, float sampleRate)

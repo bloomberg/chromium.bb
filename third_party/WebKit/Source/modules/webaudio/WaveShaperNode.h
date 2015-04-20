@@ -26,8 +26,7 @@
 #define WaveShaperNode_h
 
 #include "core/dom/DOMTypedArray.h"
-#include "modules/webaudio/AudioBasicProcessorNode.h"
-#include "modules/webaudio/BiquadProcessor.h"
+#include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/WaveShaperProcessor.h"
 
 namespace blink {
