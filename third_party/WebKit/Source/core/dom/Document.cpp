@@ -5668,8 +5668,6 @@ v8::Handle<v8::Object> Document::associateWithWrapper(v8::Isolate* isolate, cons
 
 bool Document::isPrivilegedContext(String& errorMessage, const PrivilegeContextCheck privilegeContextCheck)
 {
-    // TODO(estark): look at the responsible document for workers.
-
     if (securityContext().isSandboxed(SandboxOrigin)) {
         if (!SecurityOrigin::create(url())->isPotentiallyTrustworthy(errorMessage))
             return false;
@@ -5682,8 +5680,8 @@ bool Document::isPrivilegedContext(String& errorMessage, const PrivilegeContextC
         Document* context = parentDocument();
         while (context) {
             // Skip to the next ancestor if it's a srcdoc.
-            if (!isSrcdocDocument()) {
-                if (securityContext().isSandboxed(SandboxOrigin)) {
+            if (!context->isSrcdocDocument()) {
+                if (context->securityContext().isSandboxed(SandboxOrigin)) {
                     // For a sandboxed origin, use the document's URL.
                     RefPtr<SecurityOrigin> origin = SecurityOrigin::create(context->url());
                     if (!origin->isPotentiallyTrustworthy(errorMessage))
