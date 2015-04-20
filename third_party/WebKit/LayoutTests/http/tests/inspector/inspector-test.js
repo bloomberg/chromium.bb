@@ -741,8 +741,8 @@ WebInspector.targetManager.observeTargets({
         InspectorTest.networkLog = target.networkLog;
         InspectorTest.debuggerModel = target.debuggerModel;
         InspectorTest.runtimeModel = target.runtimeModel;
-        InspectorTest.domModel = target.domModel;
-        InspectorTest.cssModel = target.cssModel;
+        InspectorTest.domModel = WebInspector.DOMModel.fromTarget(target);
+        InspectorTest.cssModel = WebInspector.CSSStyleModel.fromTarget(target);
         InspectorTest.workerManager = target.workerManager;
         InspectorTest.powerProfiler = target.powerProfiler;
         InspectorTest.cpuProfilerModel = target.cpuProfilerModel;

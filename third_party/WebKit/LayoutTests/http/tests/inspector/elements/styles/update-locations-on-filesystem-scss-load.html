@@ -17,7 +17,7 @@ function test()
 
     function addMockHeader(sourceURL, sourceMapURL)
     {
-        target.cssModel._styleSheetAdded({
+        WebInspector.CSSStyleModel.fromTarget(target)._styleSheetAdded({
             styleSheetId: mockStyleSheetId,
             frameId: 1000,
             sourceURL: sourceURL,
@@ -68,7 +68,7 @@ function test()
     var namePrefix = "update-locations-on-filesystem-scss-load."
     var cssURL = resourcesURL + namePrefix + "css";
     var scssURL = resourcesURL + namePrefix + "scss";
-    var cssLocation = new WebInspector.CSSLocation(target, mockStyleSheetId, cssURL, 0, 1);
+    var cssLocation = new WebInspector.CSSLocation(WebInspector.CSSStyleModel.fromTarget(target), mockStyleSheetId, cssURL, 0, 1);
     var scssContent =
         ["a {",
         "  foo: bar;",

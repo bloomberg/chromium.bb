@@ -11,6 +11,7 @@ function test()
     var contentReceived;
     var finalMappedLocation;
     var target = InspectorTest.createWorkspaceWithTarget();
+    var cssModel = WebInspector.CSSStyleModel.fromTarget(target);
     WebInspector.cssWorkspaceBinding = InspectorTest.testCSSWorkspaceBinding;
 
     InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(cssUISourceCodeAdded);
@@ -20,11 +21,11 @@ function test()
     InspectorTest.addMockUISourceCodeToWorkspace(styleSheetURL, WebInspector.resourceTypes.Stylesheet, "");
 
     InspectorTest.addSniffer(WebInspector.CSSWorkspaceBinding.prototype, "updateLocations", locationsUpdated, true);
-    target.cssModel._styleSheetAdded(createMockStyleSheetHeader(styleSheetURL, sourceMapURL));
+    cssModel._styleSheetAdded(createMockStyleSheetHeader(styleSheetURL, sourceMapURL));
 
     function locationsUpdated()
     {
-        var uiLocation = InspectorTest.testCSSWorkspaceBinding.rawLocationToUILocation(new WebInspector.CSSLocation(target, styleSheetId, styleSheetURL, 2, 3));
+        var uiLocation = InspectorTest.testCSSWorkspaceBinding.rawLocationToUILocation(new WebInspector.CSSLocation(cssModel, styleSheetId, styleSheetURL, 2, 3));
         var networkURL = InspectorTest.testNetworkMapping.networkURL(uiLocation.uiSourceCode);
         if (networkURL.indexOf(".scss") === -1)
             return;
@@ -74,7 +75,7 @@ function test()
 
     function rawLocationToUILocation(line, column)
     {
-        return InspectorTest.testCSSWorkspaceBinding.rawLocationToUILocation(new WebInspector.CSSLocation(target, styleSheetId, styleSheetURL, line, column));
+        return InspectorTest.testCSSWorkspaceBinding.rawLocationToUILocation(new WebInspector.CSSLocation(cssModel, styleSheetId, styleSheetURL, line, column));
     }
 
     function afterStyleSheetAdded()

@@ -53,8 +53,7 @@ function test()
             if (nodeId)
                 nodesToRequest.add(nodeId);
         }
-        var domModel = WebInspector.targetManager.mainTarget().domModel;
-        WebInspector.targetManager.mainTarget().domModel.pushNodesByBackendIdsToFrontend(nodesToRequest, onNodesResolved.bind(this, log));
+        InspectorTest.domModel.pushNodesByBackendIdsToFrontend(nodesToRequest, onNodesResolved.bind(this, log));
     }
 
     function onNodesResolved(log, nodeMap)

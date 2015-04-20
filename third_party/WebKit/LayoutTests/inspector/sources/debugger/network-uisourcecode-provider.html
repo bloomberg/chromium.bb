@@ -143,13 +143,13 @@ function test()
     {
         createNetworkUISourceCodeProvider();
         InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
-        target.cssModel._styleSheetAdded(mockStyleSheetHeader);
+        WebInspector.CSSStyleModel.fromTarget(target)._styleSheetAdded(mockStyleSheetHeader);
 
         function uiSourceCodeAdded(uiSourceCode)
         {
             InspectorTest.addResult("Added uiSourceCode: " + InspectorTest.uiSourceCodeURL(uiSourceCode));
             InspectorTest.waitForWorkspaceUISourceCodeRemovedEvent(uiSourceCodeRemoved);
-            target.cssModel._styleSheetRemoved(mockStyleSheetHeader.styleSheetId);
+            WebInspector.CSSStyleModel.fromTarget(target)._styleSheetRemoved(mockStyleSheetHeader.styleSheetId);
         }
 
         function uiSourceCodeRemoved(uiSourceCode)
