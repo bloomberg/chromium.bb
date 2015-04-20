@@ -2,10 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-group("mandoline") {
+group("mandoline_all") {
   # Meta-target, don't link into production code.
   testonly = true
   deps = [
     "//mojo:mojo",
   ]
+
+  if (!is_component_build) {
+    deps += [ "//mandoline/app:mandoline" ]
+  }
 }

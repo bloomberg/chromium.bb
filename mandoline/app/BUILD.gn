@@ -1,0 +1,31 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/mojo/src/mojo/public/mojo.gni")
+
+if (is_android) {
+  import("//build/config/android/config.gni")
+  import("//build/config/android/rules.gni")
+}
+
+executable("mandoline") {
+  sources = []
+
+  deps = [
+    "//base",
+    "//build/config/sanitizers:deps",
+    "//mojo/common",
+    "//mojo/environment:chromium",
+    "//mojo/shell:init",
+    "//mojo/shell:lib",
+  ]
+
+  if (!is_android) {
+    sources += [
+      "desktop/launcher_process.cc",
+      "desktop/launcher_process.h",
+      "desktop/main.cc",
+    ]
+  }
+}
