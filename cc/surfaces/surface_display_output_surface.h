@@ -49,7 +49,6 @@ class CC_SURFACES_EXPORT SurfaceDisplayOutputSurface
   void SwapBuffersComplete(SurfaceDrawStatus drawn);
 
   OnscreenDisplayClient* display_client_;
-  SurfaceManager* surface_manager_;
   SurfaceFactory factory_;
   gfx::Size display_size_;
   SurfaceId surface_id_;

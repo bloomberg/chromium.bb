@@ -20,7 +20,6 @@ SurfaceDisplayOutputSurface::SurfaceDisplayOutputSurface(
     const scoped_refptr<ContextProvider>& context_provider)
     : OutputSurface(context_provider),
       display_client_(NULL),
-      surface_manager_(surface_manager),
       factory_(surface_manager, this),
       allocator_(allocator) {
   factory_.set_needs_sync_points(false);
