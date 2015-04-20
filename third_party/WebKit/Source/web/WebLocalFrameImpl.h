@@ -321,12 +321,6 @@ public:
     // Otherwise creates it and then returns.
     TextFinder& ensureTextFinder();
 
-    // Invalidates vertical scrollbar only.
-    void invalidateScrollbar() const;
-
-    // Invalidates both content area and the scrollbar.
-    void invalidateAll() const;
-
     // Returns a hit-tested VisiblePosition for the given point
     VisiblePosition visiblePositionForViewportPoint(const WebPoint&);
 

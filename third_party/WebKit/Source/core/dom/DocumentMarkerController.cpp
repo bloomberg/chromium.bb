@@ -33,6 +33,7 @@
 #include "core/dom/RenderedDocumentMarker.h"
 #include "core/dom/Text.h"
 #include "core/editing/iterators/TextIterator.h"
+#include "core/frame/FrameView.h"
 #include "core/layout/LayoutObject.h"
 
 #ifndef NDEBUG
@@ -115,6 +116,7 @@ void DocumentMarkerController::addTextMatchMarker(const Range* range, bool activ
     // Use a TextIterator to visit the potentially multiple nodes the range covers.
     for (TextIterator markedText(range->startPosition(), range->endPosition()); !markedText.atEnd(); markedText.advance())
         addMarker(markedText.currentContainer(), DocumentMarker(markedText.startOffsetInCurrentContainer(), markedText.endOffsetInCurrentContainer(), activeMatch));
+    // Don't invalidate tickmarks here. TextFinder invalidates tickmarks using a throttling algorithm. crbug.com/6819.
 }
 
 void DocumentMarkerController::prepareForDestruction()
@@ -177,7 +179,7 @@ static bool doesNotInclude(const OwnPtrWillBeMember<RenderedDocumentMarker>& mar
     return marker->endOffset() < startOffset;
 }
 
-static void updateMarkerRenderedRect(Node* node, RenderedDocumentMarker& marker)
+static bool updateMarkerRenderedRect(Node* node, RenderedDocumentMarker& marker)
 {
     RefPtrWillBeRawPtr<Range> range = Range::create(node->document());
     // The offsets of the marker may be out-dated, so check for exceptions.
@@ -185,12 +187,9 @@ static void updateMarkerRenderedRect(Node* node, RenderedDocumentMarker& marker)
     range->setStart(node, marker.startOffset(), exceptionState);
     if (!exceptionState.hadException())
         range->setEnd(node, marker.endOffset(), IGNORE_EXCEPTION);
-    if (exceptionState.hadException()) {
-        marker.invalidateRenderedRect();
-        return;
-    }
-
-    marker.setRenderedRect(LayoutRect(range->boundingBox()));
+    if (exceptionState.hadException())
+        return marker.invalidateRenderedRect();
+    return marker.setRenderedRect(LayoutRect(range->boundingBox()));
 }
 
 // Markers are stored in order sorted by their start offset.
@@ -491,6 +490,12 @@ Vector<IntRect> DocumentMarkerController::renderedRectsForMarkers(DocumentMarker
     return result;
 }
 
+static void invalidatePaintForTickmarks(const Node& node)
+{
+    if (FrameView* frameView = node.document().view())
+        frameView->invalidatePaintForTickmarks();
+}
+
 void DocumentMarkerController::updateRenderedRectsForMarkers()
 {
     for (auto& nodeMarkers : m_markers) {
@@ -498,8 +503,12 @@ void DocumentMarkerController::updateRenderedRectsForMarkers()
         for (auto& markerList : *nodeMarkers.value) {
             if (!markerList)
                 continue;
+            bool markersChanged = false;
             for (auto& marker : *markerList)
-                updateMarkerRenderedRect(const_cast<Node*>(node), *marker);
+                markersChanged |= updateMarkerRenderedRect(const_cast<Node*>(node), *marker);
+
+            if (markersChanged && markerList->first()->type() == DocumentMarker::TextMatch)
+                invalidatePaintForTickmarks(*node);
         }
     }
 }
@@ -524,19 +533,24 @@ void DocumentMarkerController::removeMarkers(Node* node, DocumentMarker::MarkerT
 
 void DocumentMarkerController::removeMarkers(const MarkerRemoverPredicate& shouldRemoveMarker)
 {
-    for (MarkerMap::iterator i = m_markers.begin(); i != m_markers.end(); ++i) {
-        MarkerLists* markers = i->value.get();
+    for (auto& nodeMarkers : m_markers) {
+        const Node& node = *nodeMarkers.key;
+        if (!node.isTextNode()) // MarkerRemoverPredicate requires a Text node.
+            continue;
+        MarkerLists& markers = *nodeMarkers.value;
         for (size_t markerListIndex = 0; markerListIndex < DocumentMarker::MarkerTypeIndexesCount; ++markerListIndex) {
-            OwnPtrWillBeMember<MarkerList>& list = (*markers)[markerListIndex];
-
-            WillBeHeapVector<RawPtrWillBeMember<RenderedDocumentMarker>> markersToBeRemoved;
-            for (size_t j = 0; list.get() && j < list->size(); ++j) {
-                if (i->key->isTextNode() && shouldRemoveMarker(*list->at(j).get(), static_cast<const Text&>(*i->key)))
-                    markersToBeRemoved.append(list->at(j).get());
+            OwnPtrWillBeMember<MarkerList>& list = markers[markerListIndex];
+            if (!list)
+                continue;
+            bool removedMarkers = false;
+            for (size_t j = list->size(); j > 0; --j) {
+                if (shouldRemoveMarker(*list->at(j - 1), static_cast<const Text&>(node))) {
+                    list->remove(j - 1);
+                    removedMarkers = true;
+                }
             }
-
-            for (size_t j = 0; j < markersToBeRemoved.size(); ++j)
-                list->remove(list->find(markersToBeRemoved[j].get()));
+            if (removedMarkers && markerListIndex == DocumentMarker::TextMatchMarkerIndex)
+                invalidatePaintForTickmarks(node);
         }
     }
 }
@@ -591,8 +605,10 @@ void DocumentMarkerController::removeMarkersFromList(MarkerMap::iterator iterato
     }
 
     if (needsRepainting) {
-        if (LayoutObject* renderer = iterator->key->layoutObject())
+        const Node& node = *iterator->key;
+        if (LayoutObject* renderer = node.layoutObject())
             renderer->setShouldDoFullPaintInvalidation();
+        invalidatePaintForTickmarks(node);
     }
 
     if (nodeCanBeRemoved) {

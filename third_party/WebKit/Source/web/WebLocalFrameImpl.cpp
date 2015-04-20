@@ -1505,7 +1505,6 @@ void WebLocalFrameImpl::setTickmarks(const WebVector<WebRect>& tickmarks)
         for (size_t i = 0; i < tickmarks.size(); ++i)
             tickmarksConverted[i] = tickmarks[i];
         frameView()->setTickmarks(tickmarksConverted);
-        invalidateScrollbar();
     }
 }
 
@@ -2093,24 +2092,6 @@ TextFinder& WebLocalFrameImpl::ensureTextFinder()
         m_textFinder = TextFinder::create(*this);
 
     return *m_textFinder;
-}
-
-void WebLocalFrameImpl::invalidateScrollbar() const
-{
-    ASSERT(frame() && frame()->view());
-    FrameView* view = frame()->view();
-    // Invalidate the vertical scroll bar region for the view.
-    Scrollbar* scrollbar = view->verticalScrollbar();
-    if (scrollbar)
-        scrollbar->invalidate();
-}
-
-void WebLocalFrameImpl::invalidateAll() const
-{
-    ASSERT(frame() && frame()->view());
-    FrameView* view = frame()->view();
-    view->invalidateRect(view->frameRect());
-    invalidateScrollbar();
 }
 
 void WebLocalFrameImpl::setFrameWidget(WebFrameWidgetImpl* frameWidget)

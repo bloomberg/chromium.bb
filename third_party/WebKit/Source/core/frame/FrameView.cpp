@@ -2228,6 +2228,12 @@ void FrameView::scrollTo(const DoublePoint& newPosition)
     frame().loader().client()->didChangeScrollOffset();
 }
 
+void FrameView::invalidatePaintForTickmarks() const
+{
+    if (Scrollbar* scrollbar = verticalScrollbar())
+        scrollbar->invalidate();
+}
+
 void FrameView::invalidateScrollbarRect(Scrollbar* scrollbar, const IntRect& rect)
 {
     // Add in our offset within the FrameView.

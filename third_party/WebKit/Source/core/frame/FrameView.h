@@ -340,7 +340,13 @@ public:
     // Sets the tickmarks for the FrameView, overriding the default behavior
     // which is to display the tickmarks corresponding to find results.
     // If |m_tickmarks| is empty, the default behavior is restored.
-    void setTickmarks(const Vector<IntRect>& tickmarks) { m_tickmarks = tickmarks; }
+    void setTickmarks(const Vector<IntRect>& tickmarks)
+    {
+        m_tickmarks = tickmarks;
+        invalidatePaintForTickmarks();
+    }
+
+    void invalidatePaintForTickmarks() const;
 
     // Since the compositor can resize the viewport due to top controls and
     // commit scroll offsets before a WebView::resize occurs, we need to adjust

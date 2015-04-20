@@ -151,7 +151,7 @@ bool TextFinder::find(int identifier, const WebString& searchText, const WebFind
         if (!options.findNext)
             clearFindMatchesCache();
 
-        ownerFrame().invalidateAll();
+        ownerFrame().frameView()->invalidatePaintForTickmarks();
         return false;
     }
 
@@ -206,8 +206,8 @@ void TextFinder::stopFindingAndClearSelection()
     ownerFrame().frame()->editor().setMarkedTextMatchesAreHighlighted(false);
     clearFindMatchesCache();
 
-    // Let the frame know that we don't want tickmarks or highlighting anymore.
-    ownerFrame().invalidateAll();
+    // Let the frame know that we don't want tickmarks anymore.
+    ownerFrame().frameView()->invalidatePaintForTickmarks();
 }
 
 void TextFinder::reportFindInPageResultToAccessibility(int identifier)
@@ -411,7 +411,7 @@ void TextFinder::finishCurrentScopingEffort(int identifier)
     m_lastFindRequestCompletedWithNoMatches = !m_lastMatchCount;
 
     // This frame is done, so show any scrollbar tickmarks we haven't drawn yet.
-    ownerFrame().invalidateScrollbar();
+    ownerFrame().frameView()->invalidatePaintForTickmarks();
 }
 
 void TextFinder::cancelPendingScopingEffort()
@@ -744,7 +744,7 @@ void TextFinder::invalidateIfNecessary()
     if (m_lastMatchCount <= m_nextInvalidateAfter)
         return;
 
-    // FIXME: (http://b/1088165) Optimize the drawing of the tickmarks and
+    // FIXME: (http://crbug.com/6819) Optimize the drawing of the tickmarks and
     // remove this. This calculation sets a milestone for when next to
     // invalidate the scrollbar and the content area. We do this so that we
     // don't spend too much time drawing the scrollbar over and over again.
@@ -756,7 +756,7 @@ void TextFinder::invalidateIfNecessary()
 
     int i = m_lastMatchCount / startSlowingDownAfter;
     m_nextInvalidateAfter += i * slowdown;
-    ownerFrame().invalidateScrollbar();
+    ownerFrame().frameView()->invalidatePaintForTickmarks();
 }
 
 void TextFinder::flushCurrentScoping()
