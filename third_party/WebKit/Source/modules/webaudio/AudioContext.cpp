@@ -1220,6 +1220,7 @@ void AudioContext::stopRendering()
     if (m_contextState == Running) {
         destination()->audioDestinationHandler().stopRendering();
         setContextState(Suspended);
+        handler().clearHandlersToBeDeleted();
     }
 }
 

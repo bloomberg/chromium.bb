@@ -243,6 +243,7 @@ public:
     float sampleRate() const { return m_destinationNode ? m_destinationNode->handler().sampleRate() : 0; }
 
     String state() const;
+    AudioContextState contextState() const { return m_contextState; }
 
     AudioBuffer* createBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);
 

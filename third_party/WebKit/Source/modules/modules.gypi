@@ -1362,6 +1362,7 @@
       'serviceworkers/testing/InternalsServiceWorker.idl',
       'speech/testing/InternalsSpeechSynthesis.idl',
       'vibration/testing/InternalsVibration.idl',
+      'webaudio/testing/InternalsWebAudio.idl',
     ],
     'modules_testing_files': [
       'geolocation/testing/GeolocationClientMock.cpp',
@@ -1380,6 +1381,8 @@
       'speech/testing/PlatformSpeechSynthesizerMock.h',
       'vibration/testing/InternalsVibration.cpp',
       'vibration/testing/InternalsVibration.h',
+      'webaudio/testing/InternalsWebAudio.h',
+      'webaudio/testing/InternalsWebAudio.cpp',
     ],
     'modules_unittest_files': [
       'accessibility/AXObjectTest.cpp',

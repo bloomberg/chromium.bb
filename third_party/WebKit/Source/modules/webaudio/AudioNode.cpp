@@ -514,7 +514,8 @@ void AudioNode::dispose()
     context()->unregisterLiveNode(*this);
     AudioContext::AutoLocker locker(context());
     handler().dispose();
-    context()->handler().addRenderingOrphanHandler(m_handler.release());
+    if (context()->contextState() == AudioContext::Running)
+        context()->handler().addRenderingOrphanHandler(m_handler.release());
 }
 
 void AudioNode::setHandler(PassRefPtr<AudioHandler> handler)
