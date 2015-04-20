@@ -9,5 +9,12 @@
   "escaped\"": "string\"isescaped",
   "more//": "\"more",
   "so\\many": "\\\\escapes\\\\\"whoa",
-  "comment//inmiddle": "of string"
+  "comment//inmiddle": "of string",
+  "comments": "yo",  /* Comments all have a /* in them. */
+  "strings": "yes",  /* Comment with "strings" and " character */
+  "more/*": "\"more",
+  /* SOMECOMMENT
+  "with": "anything\"" //inside
+  */
+  "and": /*can be anywhere */ "in string"
 }

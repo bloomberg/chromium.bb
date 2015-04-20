@@ -9,5 +9,10 @@
   "escaped\"": "string\"isescaped",
   "more//": "\"more",
   "so\\many": "\\\\escapes\\\\\"whoa",
-  "comment//inmiddle": "of string"
+  "comment//inmiddle": "of string",
+  "comments": "yo",  
+  "strings": "yes",  
+  "more/*": "\"more",
+  
+  "and":  "in string"
 }

@@ -50,11 +50,18 @@ def _ReadComment(input, start, output):
   output.append(eol_token)
   return eol_token_index + len(eol_token)
 
+def _ReadMultilineComment(input, start, output):
+  end_tokens = ('*/',)
+  end_token_index, end_token = _FindNextToken(input, end_tokens, start)
+  if end_token is None:
+    raise Exception("Multiline comment end token (*/) not found")
+  return end_token_index + len(end_token)
 
 def Nom(input):
   token_actions = {
     '"': _ReadString,
     '//': _ReadComment,
+    '/*': _ReadMultilineComment,
   }
   output = []
   pos = 0
