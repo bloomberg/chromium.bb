@@ -555,6 +555,7 @@ html[dir=rtl] .icon-ntp.dark .mv-page .mv-x {
 
 html[dir=rtl] .icon-ntp .mv-page .mv-x {
   left: 10px;
+  right: auto;
 }
 
 .mv-page-ready:hover .mv-x {
