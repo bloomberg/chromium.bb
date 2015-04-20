@@ -4,6 +4,8 @@
 
 package org.chromium.chromium_linker_test_apk;
 
+import android.content.Context;
+
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ResourceExtractor;
@@ -34,12 +36,12 @@ public class ChromiumLinkerTestApplication extends BaseChromiumApplication {
     @Override
     public void onCreate() {
         super.onCreate();
-        initializeApplicationParameters();
+        initializeApplicationParameters(this);
     }
 
-    public static void initializeApplicationParameters() {
+    public static void initializeApplicationParameters(Context context) {
         ResourceExtractor.setMandatoryPaksToExtract(MANDATORY_PAK_FILES);
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, context);
     }
 
 }

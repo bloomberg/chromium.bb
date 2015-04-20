@@ -71,7 +71,9 @@ public class HttpCacheTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testLegacyHttpCacheDirIsRemovedOnStartup() throws Exception {
-        PathUtils.setPrivateDataDirectorySuffix(AwBrowserProcess.PRIVATE_DATA_DIRECTORY_SUFFIX);
+        PathUtils.setPrivateDataDirectorySuffix(
+                AwBrowserProcess.PRIVATE_DATA_DIRECTORY_SUFFIX,
+                getInstrumentation().getTargetContext());
         File webViewLegacyCacheDir = new File(
                 PathUtils.getDataDirectory(getInstrumentation().getTargetContext()), "Cache");
         if (!webViewLegacyCacheDir.isDirectory()) {

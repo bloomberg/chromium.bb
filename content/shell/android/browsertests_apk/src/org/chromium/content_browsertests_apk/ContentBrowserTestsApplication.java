@@ -4,6 +4,8 @@
 
 package org.chromium.content_browsertests_apk;
 
+import android.content.Context;
+
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ResourceExtractor;
@@ -24,12 +26,12 @@ public class ContentBrowserTestsApplication extends BaseChromiumApplication {
     @Override
     public void onCreate() {
         super.onCreate();
-        initializeApplicationParameters();
+        initializeApplicationParameters(this);
     }
 
-    public static void initializeApplicationParameters() {
+    public static void initializeApplicationParameters(Context context) {
         ResourceExtractor.setMandatoryPaksToExtract(MANDATORY_PAK_FILES);
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, context);
     }
 
 }

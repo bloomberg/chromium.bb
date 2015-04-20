@@ -4,6 +4,7 @@
 
 package org.chromium.chromecast.shell;
 
+import android.content.Context;
 import android.os.Build;
 import android.util.Log;
 
@@ -35,12 +36,12 @@ public class CastApplication extends ContentApplication {
     @Override
     public void onCreate() {
         super.onCreate();
-        initializeApplicationParameters();
+        initializeApplicationParameters(this);
     }
 
-    public static void initializeApplicationParameters() {
+    public static void initializeApplicationParameters(Context context) {
         ResourceExtractor.setMandatoryPaksToExtract(MANDATORY_PAK_FILES);
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, context);
     }
 
     @Override

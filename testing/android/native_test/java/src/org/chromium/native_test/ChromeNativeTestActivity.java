@@ -43,7 +43,7 @@ public class ChromeNativeTestActivity extends Activity {
         CommandLine.init(new String[]{});
 
         // Needed by path_utils_unittest.cc
-        PathUtils.setPrivateDataDirectorySuffix("chrome");
+        PathUtils.setPrivateDataDirectorySuffix("chrome", getApplicationContext());
 
         ResourceExtractor resourceExtractor = ResourceExtractor.get(getApplicationContext());
         resourceExtractor.setExtractAllPaksAndV8SnapshotForTesting();

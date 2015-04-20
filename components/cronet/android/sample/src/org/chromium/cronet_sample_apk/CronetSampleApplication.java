@@ -5,6 +5,7 @@
 package org.chromium.cronet_sample_apk;
 
 import android.app.Application;
+import android.content.Context;
 import android.util.Log;
 
 import org.chromium.base.PathUtils;
@@ -20,12 +21,12 @@ public class CronetSampleApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        initializeApplicationParameters();
+        initializeApplicationParameters(this);
     }
 
-    public static void initializeApplicationParameters() {
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
-        Log.i(TAG, "CronetSampleApplication.initializeApplicationParameters()" +
-                   " success.");
+    public static void initializeApplicationParameters(Context context) {
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, context);
+        Log.i(TAG, "CronetSampleApplication.initializeApplicationParameters()"
+                + " success.");
     }
 }

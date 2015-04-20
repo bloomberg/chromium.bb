@@ -6,7 +6,10 @@ package org.chromium.base;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
+import android.os.AsyncTask;
 import android.os.Environment;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  * This class provides the path related methods for the native library.
@@ -15,17 +18,64 @@ public abstract class PathUtils {
 
     private static String sDataDirectorySuffix;
 
+    private static final int DATA_DIRECTORY = 0;
+    private static final int DATABASE_DIRECTORY = 1;
+    private static final int CACHE_DIRECTORY = 2;
+    private static final int NUM_DIRECTORIES = 3;
+    private static AsyncTask<String, Void, String[]> sDirPathFetchTask;
+
     // Prevent instantiation.
     private PathUtils() {}
 
     /**
      * Sets the suffix that should be used for the directory where private data is to be stored
      * by the application.
+     *
+     * TODO(wnwen): Remove this after all clients have migrated and add asserts for not null.
+     *
+     * @param suffix The private data directory suffix.
+     * @see Context#getDir(String, int)
+     * @deprecated
+     */
+    @Deprecated
+    public static void setPrivateDataDirectorySuffix(String suffix) {
+        sDirPathFetchTask = null;
+        sDataDirectorySuffix = suffix;
+    }
+
+    /**
+     * Starts an asynchronous task to fetch the path of the directory where private data is to be
+     * stored by the application.
+     *
      * @param suffix The private data directory suffix.
      * @see Context#getDir(String, int)
      */
-    public static void setPrivateDataDirectorySuffix(String suffix) {
-        sDataDirectorySuffix = suffix;
+    public static void setPrivateDataDirectorySuffix(String suffix, final Context appContext) {
+        sDataDirectorySuffix = null;
+        sDirPathFetchTask = new AsyncTask<String, Void, String[]>() {
+            @Override
+            protected String[] doInBackground(String... dataDirectorySuffix) {
+                String[] paths = new String[NUM_DIRECTORIES];
+                paths[DATA_DIRECTORY] =
+                        appContext.getDir(dataDirectorySuffix[0], Context.MODE_PRIVATE).getPath();
+                paths[DATABASE_DIRECTORY] = appContext.getDatabasePath("foo").getParent();
+                paths[CACHE_DIRECTORY] = appContext.getCacheDir().getPath();
+                return paths;
+            }
+        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, suffix);
+    }
+
+    /**
+     * @param index The index of the cached directory path.
+     * @return The directory path requested, or null if not available.
+     */
+    private static String getDirectoryPath(int index) {
+        try {
+            return sDirPathFetchTask.get()[index];
+        } catch (InterruptedException e) {
+        } catch (ExecutionException e) {
+        }
+        return null;
     }
 
     /**
@@ -33,11 +83,15 @@ public abstract class PathUtils {
      */
     @CalledByNative
     public static String getDataDirectory(Context appContext) {
-        if (sDataDirectorySuffix == null) {
+        if (sDataDirectorySuffix == null && sDirPathFetchTask == null) {
             throw new IllegalStateException(
                     "setDataDirectorySuffix must be called before getDataDirectory");
+        } else if (sDirPathFetchTask != null) {
+            return getDirectoryPath(DATA_DIRECTORY);
+        } else {
+            // Temporarily allow UI thread directory fetching until all callers have been migrated.
+            return appContext.getDir(sDataDirectorySuffix, Context.MODE_PRIVATE).getPath();
         }
-        return appContext.getDir(sDataDirectorySuffix, Context.MODE_PRIVATE).getPath();
     }
 
     /**
@@ -45,6 +99,9 @@ public abstract class PathUtils {
      */
     @CalledByNative
     public static String getDatabaseDirectory(Context appContext) {
+        if (sDirPathFetchTask != null) {
+            return getDirectoryPath(DATABASE_DIRECTORY);
+        }
         // Context.getDatabasePath() returns path for the provided filename.
         return appContext.getDatabasePath("foo").getParent();
     }
@@ -55,6 +112,9 @@ public abstract class PathUtils {
     @SuppressWarnings("unused")
     @CalledByNative
     public static String getCacheDirectory(Context appContext) {
+        if (sDirPathFetchTask != null) {
+            return getDirectoryPath(CACHE_DIRECTORY);
+        }
         return appContext.getCacheDir().getPath();
     }
 

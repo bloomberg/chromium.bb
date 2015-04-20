@@ -76,7 +76,7 @@ public class ChromeShellApplication extends ChromiumApplication {
     @Override
     protected void initializeLibraryDependencies() {
         ResourceExtractor.setMandatoryPaksToExtract(CHROME_MANDATORY_PAKS);
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, this);
     }
 
     @Override

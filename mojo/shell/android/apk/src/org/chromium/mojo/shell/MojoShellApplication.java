@@ -40,7 +40,7 @@ public class MojoShellApplication extends BaseChromiumApplication {
      * Initializes Java-side utils.
      */
     private void initializeJavaUtils() {
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, this);
     }
 
     /**
