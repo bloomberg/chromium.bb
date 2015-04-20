@@ -162,6 +162,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
 
   search_box_->SetBorder(views::Border::NullBorder());
   search_box_->SetTextColor(kSearchTextColor);
+  search_box_->SetBackgroundColor(kSearchBoxBackground);
   search_box_->set_placeholder_text_color(kHintTextColor);
   search_box_->set_controller(this);
   search_box_->SetTextInputType(ui::TEXT_INPUT_TYPE_SEARCH);
