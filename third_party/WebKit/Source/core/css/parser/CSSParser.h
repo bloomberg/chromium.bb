@@ -34,7 +34,7 @@ public:
     static void parseSelector(const CSSParserContext&, const String&, CSSSelectorList&);
     // TODO(timloh): Split into parseDeclarationList and parseDeclarationListForInspector
     static bool parseDeclarationList(const CSSParserContext&, MutableStylePropertySet*, const String&, CSSParserObserver*, StyleSheetContents* contextStyleSheet);
-    static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, CSSParserMode, StyleSheetContents*);
+    static bool parseValue(MutableStylePropertySet*, CSSPropertyID unresolvedProperty, const String&, bool important, CSSParserMode, StyleSheetContents*);
 
     // This is for non-shorthands only
     static PassRefPtrWillBeRawPtr<CSSValue> parseSingleValue(CSSPropertyID, const String&, const CSSParserContext& = strictCSSParserContext());
@@ -53,10 +53,12 @@ public:
     static StyleColor colorFromRGBColorString(const String&);
 
 private:
-    static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, const CSSParserContext&);
-    static bool parseFastPath(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, CSSParserMode);
+    static bool parseValue(MutableStylePropertySet*, CSSPropertyID unresolvedProperty, const String&, bool important, const CSSParserContext&);
+    static bool parseFastPath(MutableStylePropertySet*, CSSPropertyID unresolvedProperty, const String&, bool important, CSSParserMode);
 };
 
+// TODO(timloh): It's weird that these are declared here but defined in CSSPropertyParser.h
+CSSPropertyID unresolvedCSSPropertyID(const String&);
 CSSPropertyID cssPropertyID(const String&);
 
 } // namespace blink

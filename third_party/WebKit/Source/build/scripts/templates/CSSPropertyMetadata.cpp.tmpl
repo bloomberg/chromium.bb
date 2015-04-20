@@ -26,8 +26,9 @@ bool CSSPropertyMetadata::{{function_name}}(CSSPropertyID property)
 }
 {% endfor %}
 
-bool CSSPropertyMetadata::isEnabledProperty(CSSPropertyID property)
+bool CSSPropertyMetadata::isEnabledProperty(CSSPropertyID unresolvedProperty)
 {
+    CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
     static BitArray<numCSSProperties>* enabledProperties = 0;
     if (!enabledProperties) {
         enabledProperties = new BitArray<numCSSProperties>(true); // All bits sets to 1.

@@ -101,7 +101,7 @@ public:
     UChar32 unicodeRangeStart() const { ASSERT(m_type == UnicodeRangeToken); return m_unicodeRange.start; }
     UChar32 unicodeRangeEnd() const { ASSERT(m_type == UnicodeRangeToken); return m_unicodeRange.end; }
 
-    CSSPropertyID parseAsCSSPropertyID() const;
+    CSSPropertyID parseAsUnresolvedCSSPropertyID() const;
 
     void serialize(StringBuilder&) const;
 

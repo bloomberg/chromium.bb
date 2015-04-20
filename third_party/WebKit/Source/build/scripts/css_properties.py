@@ -49,10 +49,12 @@ class CSSProperties(in_generator.Writer):
 
         properties = self.in_file.name_dictionaries
 
-        self._aliases = {property['name']: property['alias_for'] for property in properties if property['alias_for']}
+        self._aliases = [property for property in properties if property['alias_for']]
         properties = [property for property in properties if not property['alias_for']]
 
-        assert len(properties) <= 1024, 'There are more than 1024 CSS Properties, you need to update CSSProperty.h/StylePropertyMetadata m_propertyID accordingly.'
+        # StylePropertyMetadata additionally assumes there are under 1024 properties.
+        assert len(properties) < 512, 'Property aliasing expects there are under 512 properties.'
+
         # We currently assign 0 to CSSPropertyInvalid
         self._first_enum_value = 1
         for offset, property in enumerate(properties):
@@ -62,8 +64,17 @@ class CSSProperties(in_generator.Writer):
             property['enum_value'] = self._first_enum_value + offset
             property['is_internal'] = property['name'].startswith('-internal-')
 
-        self._properties_list = properties
+        self._properties_including_aliases = properties
         self._properties = {property['property_id']: property for property in properties}
+
+        # The generated code will only work with at most one alias per property
+        assert len({property['alias_for'] for property in self._aliases}) == len(self._aliases)
+
+        for property in self._aliases:
+            property['property_id'] = css_alias_name_to_enum(property['name'])
+            aliased_property = self._properties[css_name_to_enum(property['alias_for'])]
+            property['enum_value'] = aliased_property['enum_value'] + 512
+        self._properties_including_aliases += self._aliases
 
 
 def camelcase_css_name(css_name):
@@ -76,3 +87,7 @@ def camelcase_css_name(css_name):
 
 def css_name_to_enum(css_name):
     return 'CSSProperty' + camelcase_css_name(css_name)
+
+
+def css_alias_name_to_enum(css_name):
+    return 'CSSPropertyAlias' + camelcase_css_name(css_name)

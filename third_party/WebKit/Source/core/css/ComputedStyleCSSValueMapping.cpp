@@ -960,7 +960,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> createTransitionPropertyValue(const CSST
     if (property.propertyType == CSSTransitionData::TransitionUnknown)
         return cssValuePool().createValue(property.propertyString, CSSPrimitiveValue::CSS_CUSTOM_IDENT);
     ASSERT(property.propertyType == CSSTransitionData::TransitionSingleProperty);
-    return cssValuePool().createValue(getPropertyNameString(property.propertyId), CSSPrimitiveValue::CSS_CUSTOM_IDENT);
+    return cssValuePool().createValue(getPropertyNameString(property.unresolvedProperty), CSSPrimitiveValue::CSS_CUSTOM_IDENT);
 }
 
 static PassRefPtrWillBeRawPtr<CSSValue> valueForTransitionProperty(const CSSTransitionData* transitionData)
@@ -2565,6 +2565,8 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
 
     case CSSPropertyAll:
         return nullptr;
+    default:
+        break;
     }
     ASSERT_NOT_REACHED();
     return nullptr;

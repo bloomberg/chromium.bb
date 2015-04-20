@@ -209,7 +209,7 @@ bool AbstractPropertySetCSSStyleDeclaration::isPropertyImplicit(const String& pr
 
 void AbstractPropertySetCSSStyleDeclaration::setProperty(const String& propertyName, const String& value, const String& priority, ExceptionState& exceptionState)
 {
-    CSSPropertyID propertyID = cssPropertyID(propertyName);
+    CSSPropertyID propertyID = unresolvedCSSPropertyID(propertyName);
     if (!propertyID)
         return;
 
@@ -249,12 +249,12 @@ String AbstractPropertySetCSSStyleDeclaration::getPropertyValueInternal(CSSPrope
     return propertySet().getPropertyValue(propertyID);
 }
 
-void AbstractPropertySetCSSStyleDeclaration::setPropertyInternal(CSSPropertyID propertyID, const String& value, bool important, ExceptionState&)
+void AbstractPropertySetCSSStyleDeclaration::setPropertyInternal(CSSPropertyID unresolvedProperty, const String& value, bool important, ExceptionState&)
 {
     StyleAttributeMutationScope mutationScope(this);
     willMutate();
 
-    bool changed = propertySet().setProperty(propertyID, value, important, contextStyleSheet());
+    bool changed = propertySet().setProperty(unresolvedProperty, value, important, contextStyleSheet());
 
     didMutate(changed ? PropertyChanged : NoChanges);
 

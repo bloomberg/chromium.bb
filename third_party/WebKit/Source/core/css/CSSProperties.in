@@ -4,13 +4,14 @@
 
 
 // - alias_for=other-property
-// Properties specifying alias_for do not get their own enum and instead map
-// directly onto the CSSPropertyID they alias. Currently this means that the
-// UseCounter will not pick up on these (crbug.com/304855)
+// Properties specifying alias_for should be virtually identical to the
+// properties they alias. Minor parsing differences are allowed as long as
+// the CSSValues created are of the same format of the aliased property.
 
 
 // - runtime_flag=CSSGridLayout
-// The flag on RuntimeEnabledFeatures conditionally enables the property
+// The flag on RuntimeEnabledFeatures conditionally enables the property.
+// This doesn't currently work with alias_for.
 
 
 // - longhands=property;other-property

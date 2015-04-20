@@ -57,33 +57,34 @@ void CSSParser::parseSheet(const CSSParserContext& context, StyleSheetContents* 
     BisonCSSParser(context).parseSheet(styleSheet, text, startPosition, observer, logErrors);
 }
 
-bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, CSSParserMode parserMode, StyleSheetContents* styleSheet)
+bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID unresolvedProperty, const String& string, bool important, CSSParserMode parserMode, StyleSheetContents* styleSheet)
 {
     if (string.isEmpty())
         return false;
-    if (parseFastPath(declaration, propertyID, string, important, parserMode))
+    if (parseFastPath(declaration, unresolvedProperty, string, important, parserMode))
         return true;
     CSSParserContext context(parserMode, 0);
     if (styleSheet) {
         context = styleSheet->parserContext();
         context.setMode(parserMode);
     }
-    return parseValue(declaration, propertyID, string, important, context);
+    return parseValue(declaration, unresolvedProperty, string, important, context);
 }
 
-bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, const CSSParserContext& context)
+bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID unresolvedProperty, const String& string, bool important, const CSSParserContext& context)
 {
     if (RuntimeEnabledFeatures::newCSSParserEnabled())
-        return CSSParserImpl::parseValue(declaration, propertyID, string, important, context);
-    return BisonCSSParser::parseValue(declaration, propertyID, string, important, context);
+        return CSSParserImpl::parseValue(declaration, unresolvedProperty, string, important, context);
+    return BisonCSSParser::parseValue(declaration, unresolvedProperty, string, important, context);
 }
 
-bool CSSParser::parseFastPath(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, CSSParserMode parserMode)
+bool CSSParser::parseFastPath(MutableStylePropertySet* declaration, CSSPropertyID unresolvedProperty, const String& string, bool important, CSSParserMode parserMode)
 {
-    RefPtrWillBeRawPtr<CSSValue> value = CSSParserFastPaths::maybeParseValue(propertyID, string, parserMode);
+    CSSPropertyID resolvedProperty = resolveCSSPropertyID(unresolvedProperty);
+    RefPtrWillBeRawPtr<CSSValue> value = CSSParserFastPaths::maybeParseValue(resolvedProperty, string, parserMode);
     if (!value)
         return false;
-    declaration->addParsedProperty(CSSProperty(propertyID, value.release(), important));
+    declaration->addParsedProperty(CSSProperty(resolvedProperty, value.release(), important));
     return true;
 }
 

@@ -377,7 +377,7 @@ private:
     RefPtrWillBeMember<CSSCalcValue> m_parsedCalculation;
 };
 
-CSSPropertyID cssPropertyID(const CSSParserString&);
+CSSPropertyID unresolvedCSSPropertyID(const CSSParserString&);
 CSSPropertyID cssPropertyID(const String&);
 CSSValueID cssValueKeywordID(const CSSParserString&);
 

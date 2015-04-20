@@ -559,7 +559,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
         for (size_t i = 0; i < transitionData->propertyList().size(); ++i) {
             const CSSTransitionData::TransitionProperty& transitionProperty = transitionData->propertyList()[i];
             CSSTransitionData::TransitionPropertyType mode = transitionProperty.propertyType;
-            CSSPropertyID property = transitionProperty.propertyId;
+            CSSPropertyID property = resolveCSSPropertyID(transitionProperty.unresolvedProperty);
             if (mode == CSSTransitionData::TransitionNone || mode == CSSTransitionData::TransitionUnknown)
                 continue;
 

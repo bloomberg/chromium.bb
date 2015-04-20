@@ -36,14 +36,14 @@ CSSParserImpl::CSSParserImpl(const CSSParserContext& context, StyleSheetContents
 {
 }
 
-bool CSSParserImpl::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, const CSSParserContext& context)
+bool CSSParserImpl::parseValue(MutableStylePropertySet* declaration, CSSPropertyID unresolvedProperty, const String& string, bool important, const CSSParserContext& context)
 {
     CSSParserImpl parser(context);
     StyleRule::Type ruleType = StyleRule::Style;
     if (declaration->cssParserMode() == CSSViewportRuleMode)
         ruleType = StyleRule::Viewport;
     CSSTokenizer::Scope scope(string);
-    parser.consumeDeclarationValue(scope.tokenRange(), propertyID, important, ruleType);
+    parser.consumeDeclarationValue(scope.tokenRange(), unresolvedProperty, important, ruleType);
     if (parser.m_parsedProperties.isEmpty())
         return false;
     declaration->addParsedProperties(parser.m_parsedProperties);
@@ -686,7 +686,7 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, StyleRule::Typ
     CSSParserTokenRange rangeCopy = range; // For inspector callbacks
 
     ASSERT(range.peek().type() == IdentToken);
-    CSSPropertyID id = range.consumeIncludingWhitespace().parseAsCSSPropertyID();
+    CSSPropertyID unresolvedProperty = range.consumeIncludingWhitespace().parseAsUnresolvedCSSPropertyID();
     if (range.consume().type() != ColonToken)
         return; // Parse error
 
@@ -708,8 +708,8 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, StyleRule::Typ
 
     if (m_observerWrapper && ruleType == StyleRule::Style) {
         size_t propertiesCount = m_parsedProperties.size();
-        if (id != CSSPropertyInvalid)
-            consumeDeclarationValue(range.makeSubRange(&range.peek(), declarationValueEnd), id, important, ruleType);
+        if (unresolvedProperty != CSSPropertyInvalid)
+            consumeDeclarationValue(range.makeSubRange(&range.peek(), declarationValueEnd), unresolvedProperty, important, ruleType);
         m_observerWrapper->observer().startProperty(m_observerWrapper->startOffset(rangeCopy));
         m_observerWrapper->observer().endProperty(important,
             m_parsedProperties.size() != propertiesCount,
@@ -717,13 +717,13 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, StyleRule::Typ
         return;
     }
 
-    if (id == CSSPropertyInvalid)
+    if (unresolvedProperty == CSSPropertyInvalid)
         return;
 
-    consumeDeclarationValue(range.makeSubRange(&range.peek(), declarationValueEnd), id, important, ruleType);
+    consumeDeclarationValue(range.makeSubRange(&range.peek(), declarationValueEnd), unresolvedProperty, important, ruleType);
 }
 
-void CSSParserImpl::consumeDeclarationValue(CSSParserTokenRange range, CSSPropertyID propertyID, bool important, StyleRule::Type ruleType)
+void CSSParserImpl::consumeDeclarationValue(CSSParserTokenRange range, CSSPropertyID unresolvedProperty, bool important, StyleRule::Type ruleType)
 {
     bool usesRemUnits;
     CSSParserValueList valueList(range, usesRemUnits);
@@ -732,7 +732,7 @@ void CSSParserImpl::consumeDeclarationValue(CSSParserTokenRange range, CSSProper
     if (usesRemUnits && m_styleSheet)
         m_styleSheet->parserSetUsesRemUnits(true);
     bool inViewport = ruleType == StyleRule::Viewport;
-    CSSPropertyParser::parseValue(propertyID, important, &valueList, m_context, inViewport, m_parsedProperties, ruleType);
+    CSSPropertyParser::parseValue(unresolvedProperty, important, &valueList, m_context, inViewport, m_parsedProperties, ruleType);
 }
 
 PassOwnPtr<Vector<double>> CSSParserImpl::consumeKeyframeKeyList(CSSParserTokenRange range)

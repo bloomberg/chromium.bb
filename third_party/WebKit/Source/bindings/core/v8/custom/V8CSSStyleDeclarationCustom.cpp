@@ -84,7 +84,7 @@ struct CSSPropertyInfo {
     CSSPropertyID propID;
 };
 
-static CSSPropertyID cssResolvedPropertyID(const String& propertyName, v8::Isolate* isolate)
+static CSSPropertyID parseCSSPropertyID(const String& propertyName, v8::Isolate* isolate)
 {
     unsigned length = propertyName.length();
     if (!length)
@@ -128,7 +128,7 @@ static CSSPropertyID cssResolvedPropertyID(const String& propertyName, v8::Isola
         return CSSPropertyInvalid;
 
     String propName = builder.toString();
-    return cssPropertyID(propName);
+    return unresolvedCSSPropertyID(propName);
 }
 
 // When getting properties on CSSStyleDeclarations, the name used from
@@ -148,7 +148,7 @@ static CSSPropertyInfo* cssPropertyInfo(v8::Local<v8::String> v8PropertyName, v8
     CSSPropertyInfo* propInfo = map.get(propertyName);
     if (!propInfo) {
         propInfo = new CSSPropertyInfo();
-        propInfo->propID = cssResolvedPropertyID(propertyName, isolate);
+        propInfo->propID = parseCSSPropertyID(propertyName, isolate);
         map.add(propertyName, propInfo);
     }
     if (!propInfo->propID)
@@ -203,15 +203,16 @@ void V8CSSStyleDeclaration::namedPropertyGetterCustom(v8::Local<v8::Name> name, 
     // Do not handle non-property names.
     if (!propInfo)
         return;
+    CSSPropertyID resolvedProperty = resolveCSSPropertyID(propInfo->propID);
 
     CSSStyleDeclaration* impl = V8CSSStyleDeclaration::toImpl(info.Holder());
-    RefPtrWillBeRawPtr<CSSValue> cssValue = impl->getPropertyCSSValueInternal(static_cast<CSSPropertyID>(propInfo->propID));
+    RefPtrWillBeRawPtr<CSSValue> cssValue = impl->getPropertyCSSValueInternal(resolvedProperty);
     if (cssValue) {
         v8SetReturnValueStringOrNull(info, cssValue->cssText(), info.GetIsolate());
         return;
     }
 
-    String result = impl->getPropertyValueInternal(static_cast<CSSPropertyID>(propInfo->propID));
+    String result = impl->getPropertyValueInternal(resolvedProperty);
     v8SetReturnValueString(info, result, info.GetIsolate());
 }
 
@@ -225,7 +226,7 @@ void V8CSSStyleDeclaration::namedPropertySetterCustom(v8::Local<v8::Name> name, 
         return;
 
     TOSTRING_VOID(V8StringResource<TreatNullAsNullString>, propertyValue, value);
-    ExceptionState exceptionState(ExceptionState::SetterContext, getPropertyName(static_cast<CSSPropertyID>(propInfo->propID)), "CSSStyleDeclaration", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::SetterContext, getPropertyName(resolveCSSPropertyID(propInfo->propID)), "CSSStyleDeclaration", info.Holder(), info.GetIsolate());
     impl->setPropertyInternal(static_cast<CSSPropertyID>(propInfo->propID), propertyValue, false, exceptionState);
 
     if (exceptionState.throwIfNeeded())

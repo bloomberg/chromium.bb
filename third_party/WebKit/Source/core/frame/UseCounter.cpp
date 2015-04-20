@@ -50,7 +50,7 @@ int UseCounter::m_muteCount = 0;
 //         https://code.google.com/p/chromium/issues/detail?id=234940
 int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
 {
-    CSSPropertyID cssPropertyID = convertToCSSPropertyID(id);
+    CSSPropertyID cssPropertyID = static_cast<CSSPropertyID>(id);
 
     switch (cssPropertyID) {
     // Begin at 2, because 1 is reserved for totalPagesMeasuredCSSSampleId.
@@ -502,6 +502,36 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyCx: return 466;
     case CSSPropertyCy: return 467;
     case CSSPropertyR: return 468;
+    case CSSPropertyAliasEpubCaptionSide: return 469;
+    case CSSPropertyAliasEpubTextCombine: return 470;
+    case CSSPropertyAliasEpubTextEmphasis: return 471;
+    case CSSPropertyAliasEpubTextEmphasisColor: return 472;
+    case CSSPropertyAliasEpubTextEmphasisStyle: return 473;
+    case CSSPropertyAliasEpubTextOrientation: return 474;
+    case CSSPropertyAliasEpubTextTransform: return 475;
+    case CSSPropertyAliasEpubWordBreak: return 476;
+    case CSSPropertyAliasEpubWritingMode: return 477;
+    case CSSPropertyAliasWebkitAlignContent: return 478;
+    case CSSPropertyAliasWebkitAlignItems: return 479;
+    case CSSPropertyAliasWebkitAlignSelf: return 480;
+    case CSSPropertyAliasWebkitBorderBottomLeftRadius: return 481;
+    case CSSPropertyAliasWebkitBorderBottomRightRadius: return 482;
+    case CSSPropertyAliasWebkitBorderTopLeftRadius: return 483;
+    case CSSPropertyAliasWebkitBorderTopRightRadius: return 484;
+    case CSSPropertyAliasWebkitBoxSizing: return 485;
+    case CSSPropertyAliasWebkitFlex: return 486;
+    case CSSPropertyAliasWebkitFlexBasis: return 487;
+    case CSSPropertyAliasWebkitFlexDirection: return 488;
+    case CSSPropertyAliasWebkitFlexFlow: return 489;
+    case CSSPropertyAliasWebkitFlexGrow: return 490;
+    case CSSPropertyAliasWebkitFlexShrink: return 491;
+    case CSSPropertyAliasWebkitFlexWrap: return 492;
+    case CSSPropertyAliasWebkitJustifyContent: return 493;
+    case CSSPropertyAliasWebkitOpacity: return 494;
+    case CSSPropertyAliasWebkitOrder: return 495;
+    case CSSPropertyAliasWebkitShapeImageThreshold: return 496;
+    case CSSPropertyAliasWebkitShapeMargin: return 497;
+    case CSSPropertyAliasWebkitShapeOutside: return 498;
 
     // 1. Add new features above this line (don't change the assigned numbers of the existing
     // items).
@@ -518,7 +548,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     return 0;
 }
 
-static int maximumCSSSampleId() { return 468; }
+static int maximumCSSSampleId() { return 498; }
 
 void UseCounter::muteForInspector()
 {
@@ -532,7 +562,7 @@ void UseCounter::unmuteForInspector()
 
 UseCounter::UseCounter()
 {
-    m_CSSFeatureBits.ensureSize(lastCSSProperty + 1);
+    m_CSSFeatureBits.ensureSize(lastUnresolvedCSSProperty + 1);
     m_CSSFeatureBits.clearAll();
 }
 
@@ -563,7 +593,7 @@ void UseCounter::updateMeasurements()
     //        bool guards against incrementing the page count when there are no CSS
     //        bits set. http://crbug.com/236262.
     bool needsPagesMeasuredUpdate = false;
-    for (int i = firstCSSProperty; i <= lastCSSProperty; ++i) {
+    for (int i = firstCSSProperty; i <= lastUnresolvedCSSProperty; ++i) {
         if (m_CSSFeatureBits.quickGet(i)) {
             int cssSampleId = mapCSSPropertyIdToCSSSampleIdForHistogram(i);
             blink::Platform::current()->histogramEnumeration("WebCore.FeatureObserver.CSSProperties", cssSampleId, maximumCSSSampleId());
@@ -878,7 +908,7 @@ String UseCounter::deprecationMessage(Feature feature)
 void UseCounter::count(CSSParserContext context, CSSPropertyID feature)
 {
     ASSERT(feature >= firstCSSProperty);
-    ASSERT(feature <= lastCSSProperty);
+    ASSERT(feature <= lastUnresolvedCSSProperty);
 
     if (!isUseCounterEnabledForMode(context.mode()))
         return;

@@ -98,18 +98,18 @@ CSSPropertyParser::CSSPropertyParser(CSSParserValueList* valueList,
 {
 }
 
-bool CSSPropertyParser::parseValue(CSSPropertyID property, bool important,
+bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool important,
     CSSParserValueList* valueList, const CSSParserContext& context, bool inViewport,
     WillBeHeapVector<CSSProperty, 256>& parsedProperties, StyleRule::Type ruleType)
 {
     int parsedPropertiesSize = parsedProperties.size();
 
     CSSPropertyParser parser(valueList, context, inViewport, parsedProperties, ruleType);
-    bool parseSuccess = parser.parseValue(property, important);
+    bool parseSuccess = parser.parseValue(unresolvedProperty, important);
 
     // This doesn't count UA style sheets
     if (parseSuccess && context.useCounter())
-        context.useCounter()->count(context, property);
+        context.useCounter()->count(context, unresolvedProperty);
 
     if (!parseSuccess)
         parser.rollbackLastProperties(parsedProperties.size() - parsedPropertiesSize);
@@ -138,6 +138,8 @@ void CSSPropertyParser::addPropertyWithPrefixingVariant(CSSPropertyID propId, Pa
 
 void CSSPropertyParser::addProperty(CSSPropertyID propId, PassRefPtrWillBeRawPtr<CSSValue> value, bool important, bool implicit)
 {
+    ASSERT(!isPropertyAlias(propId));
+
     int shorthandIndex = 0;
     bool setFromShorthand = false;
 
@@ -422,8 +424,10 @@ void CSSPropertyParser::addExpandedPropertyForValue(CSSPropertyID propId, PassRe
         addPropertyWithPrefixingVariant(longhands[i], value, important);
 }
 
-bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
+bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool important)
 {
+    CSSPropertyID propId = resolveCSSPropertyID(unresolvedProperty);
+
     if (!m_valueList)
         return false;
 
@@ -3013,7 +3017,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationProperty()
     // cssPropertyID check.
     if (value->id == CSSValueAll)
         return cssValuePool().createIdentifierValue(CSSValueAll);
-    CSSPropertyID property = cssPropertyID(value->string);
+    CSSPropertyID property = unresolvedCSSPropertyID(value->string);
     if (property) {
         ASSERT(CSSPropertyMetadata::isEnabledProperty(property));
         return cssValuePool().createIdentifierValue(property);
@@ -7156,14 +7160,14 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseWillChange()
         if (!currentValue || currentValue->unit != CSSPrimitiveValue::CSS_IDENT)
             return nullptr;
 
-        CSSPropertyID property = cssPropertyID(currentValue->string);
-        if (property) {
-            ASSERT(CSSPropertyMetadata::isEnabledProperty(property));
+        CSSPropertyID unresolvedProperty = unresolvedCSSPropertyID(currentValue->string);
+        if (unresolvedProperty) {
+            ASSERT(CSSPropertyMetadata::isEnabledProperty(unresolvedProperty));
             // Now "all" is used by both CSSValue and CSSPropertyValue.
             // Need to return nullptr when currentValue is CSSPropertyAll.
-            if (property == CSSPropertyWillChange || property == CSSPropertyAll)
+            if (unresolvedProperty == CSSPropertyWillChange || unresolvedProperty == CSSPropertyAll)
                 return nullptr;
-            values->append(cssValuePool().createIdentifierValue(property));
+            values->append(cssValuePool().createIdentifierValue(unresolvedProperty));
         } else {
             switch (currentValue->id) {
             case CSSValueNone:
@@ -7802,7 +7806,7 @@ bool CSSPropertyParser::parseViewportShorthand(CSSPropertyID propId, CSSProperty
 }
 
 template <typename CharacterType>
-static CSSPropertyID cssPropertyID(const CharacterType* propertyName, unsigned length)
+static CSSPropertyID unresolvedCSSPropertyID(const CharacterType* propertyName, unsigned length)
 {
     char buffer[maxCSSPropertyNameLength + 1]; // 1 for null character
 
@@ -7824,7 +7828,7 @@ static CSSPropertyID cssPropertyID(const CharacterType* propertyName, unsigned l
     return property;
 }
 
-CSSPropertyID cssPropertyID(const String& string)
+CSSPropertyID unresolvedCSSPropertyID(const String& string)
 {
     unsigned length = string.length();
 
@@ -7833,10 +7837,15 @@ CSSPropertyID cssPropertyID(const String& string)
     if (length > maxCSSPropertyNameLength)
         return CSSPropertyInvalid;
 
-    return string.is8Bit() ? cssPropertyID(string.characters8(), length) : cssPropertyID(string.characters16(), length);
+    return string.is8Bit() ? unresolvedCSSPropertyID(string.characters8(), length) : unresolvedCSSPropertyID(string.characters16(), length);
 }
 
-CSSPropertyID cssPropertyID(const CSSParserString& string)
+CSSPropertyID cssPropertyID(const String& string)
+{
+    return resolveCSSPropertyID(unresolvedCSSPropertyID(string));
+}
+
+CSSPropertyID unresolvedCSSPropertyID(const CSSParserString& string)
 {
     unsigned length = string.length();
 
@@ -7845,7 +7854,7 @@ CSSPropertyID cssPropertyID(const CSSParserString& string)
     if (length > maxCSSPropertyNameLength)
         return CSSPropertyInvalid;
 
-    return string.is8Bit() ? cssPropertyID(string.characters8(), length) : cssPropertyID(string.characters16(), length);
+    return string.is8Bit() ? unresolvedCSSPropertyID(string.characters8(), length) : unresolvedCSSPropertyID(string.characters16(), length);
 }
 
 template <typename CharacterType>

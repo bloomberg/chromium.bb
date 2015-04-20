@@ -105,10 +105,10 @@ double CSSParserToken::numericValue() const
     return m_numericValue;
 }
 
-CSSPropertyID CSSParserToken::parseAsCSSPropertyID() const
+CSSPropertyID CSSParserToken::parseAsUnresolvedCSSPropertyID() const
 {
     ASSERT(m_type == IdentToken);
-    return cssPropertyID(m_value);
+    return unresolvedCSSPropertyID(m_value);
 }
 
 void CSSParserToken::serialize(StringBuilder& builder) const
