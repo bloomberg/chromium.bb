@@ -120,6 +120,7 @@
 #include "components/translate/content/common/cld_data_source.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/variations/net/variations_http_header_provider.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -203,6 +204,7 @@
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/startup_helper.h"
 #include "extensions/browser/extension_protocols.h"
+#include "extensions/common/features/feature_provider.h"
 #include "extensions/components/javascript_dialog_extensions_client/javascript_dialog_extension_client_impl.h"
 #endif  // defined(ENABLE_EXTENSIONS)
 
@@ -1141,6 +1143,20 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreMainMessageLoopRunImpl");
   SCOPED_UMA_HISTOGRAM_LONG_TIMER("Startup.PreMainMessageLoopRunImplLongTime");
   const base::TimeTicks start_time_step1 = base::TimeTicks::Now();
+
+#if defined(ENABLE_EXTENSIONS)
+  if (!variations::GetVariationParamValue(
+      "LightSpeed", "EarlyInitStartup").empty()) {
+    // Try to compute this early on another thread so that we don't spend time
+    // during profile load initializing the extensions APIs.
+    BrowserThread::PostTask(
+        BrowserThread::FILE_USER_BLOCKING,
+        FROM_HERE,
+        base::Bind(
+            base::IgnoreResult(&extensions::FeatureProvider::GetAPIFeatures)));
+  }
+#endif
+
   // Android updates the metrics service dynamically depending on whether the
   // application is in the foreground or not. Do not start here.
 #if !defined(OS_ANDROID)
