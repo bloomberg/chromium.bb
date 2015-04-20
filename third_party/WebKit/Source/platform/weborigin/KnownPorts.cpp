@@ -40,15 +40,17 @@ bool isDefaultPortForProtocol(unsigned short port, const String& protocol)
     if (protocol.isEmpty())
         return false;
 
-    typedef HashMap<String, unsigned, CaseFoldingHash> DefaultPortsMap;
-    AtomicallyInitializedStaticReference(DefaultPortsMap, defaultPorts, new DefaultPortsMap());
-    if (defaultPorts.isEmpty()) {
-        defaultPorts.set("http", 80);
-        defaultPorts.set("https", 443);
-        defaultPorts.set("ftp", 21);
-        defaultPorts.set("ftps", 990);
+    switch (port) {
+    case 80:
+        return protocol == "http";
+    case 443:
+        return protocol == "https";
+    case 21:
+        return protocol == "ftp";
+    case 990:
+        return protocol == "ftps";
     }
-    return defaultPorts.get(protocol) == port;
+    return false;
 }
 
 }

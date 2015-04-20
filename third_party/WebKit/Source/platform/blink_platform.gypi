@@ -972,6 +972,7 @@
       'transforms/TransformTestHelper.h',
       'transforms/TransformationMatrixTest.cpp',
       'weborigin/DatabaseIdentifierTest.cpp',
+      'weborigin/KnownPortsTest.cpp',
       'weborigin/KURLTest.cpp',
       'weborigin/OriginAccessEntryTest.cpp',
       'weborigin/SchemeRegistryTest.cpp',
