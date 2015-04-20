@@ -50,6 +50,8 @@ function runTest() {
     shouldThrow("context.createBuffer(1, 0, context.sampleRate)");
     // 2-arg createBuffer not allowed.
     shouldThrow("context.createBuffer(new ArrayBuffer(100), true)");
+    // Invalid ArrayBuffer (unspecified error)
+    shouldThrow("context.decodeAudioData(null, function() {}, function () {})");
     // Invalid sources (unspecified error)
     shouldThrow("context.createMediaElementSource(null)");
     shouldThrow("context.createMediaStreamSource(null)");

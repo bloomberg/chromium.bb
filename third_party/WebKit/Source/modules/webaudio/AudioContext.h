@@ -248,7 +248,7 @@ public:
     AudioBuffer* createBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);
 
     // Asynchronous audio file data decoding.
-    ScriptPromise decodeAudioData(ScriptState*, DOMArrayBuffer*, AudioBufferCallback*, AudioBufferCallback*, ExceptionState&);
+    void decodeAudioData(DOMArrayBuffer*, AudioBufferCallback*, AudioBufferCallback*, ExceptionState&);
 
     AudioListener* listener() { return m_listener.get(); }
 
@@ -356,7 +356,6 @@ public:
     // Get the security origin for this audio context.
     SecurityOrigin* securityOrigin() const;
 
-    void removeAudioDecoderResolver(ScriptPromiseResolver*);
 protected:
     explicit AudioContext(Document*);
     AudioContext(Document*, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
@@ -442,19 +441,12 @@ private:
     void setContextState(AudioContextState);
 
     AsyncAudioDecoder m_audioDecoder;
-    // A vector of the ScriptPromiseResolvers the decodeAudioData method uses.
-    WillBeHeapVector<RefPtrWillBeMember<ScriptPromiseResolver>> m_audioDecoderResolvers;
 
     // The Promise that is returned by close();
     RefPtrWillBeMember<ScriptPromiseResolver> m_closeResolver;
 
     // Follows the destination's currentSampleFrame, but might be slightly behind due to locking.
     size_t m_cachedSampleFrame;
-
-    // When a context is closed, the sample rate is cleared.  But decodeAudioData can be called
-    // after the context has been closed and it needs the sample rate.  When the context is closed,
-    // the sample rate is saved here.
-    float m_closedContextSampleRate;
 
     // Tries to handle AudioBufferSourceNodes that were started but became disconnected or was never
     // connected. Because these never get pulled anymore, they will stay around forever. So if we

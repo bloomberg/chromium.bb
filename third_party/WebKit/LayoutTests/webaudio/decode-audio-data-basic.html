@@ -18,13 +18,12 @@ window.jsTestIsAsync = true;
 
 var context = new AudioContext();
 
-context.decodeAudioData(null,
-    function () {
-      testFailed("decodeAudioData(null) did not invoke errorCallback.");
-    },
-    function (e) {
-      testPassed("decodeAudioData(null) invoked errorCallback correctly: " + e);
-    });
+try {
+    context.decodeAudioData(null, function(){}, function(){});
+    testFailed("decodeAudioData should raise exception when arraybuffer parameter is null.");
+} catch(e) {
+    testPassed("decodeAudioData raises exception correctly when arraybuffer parameter is null.");
+}
 
 var decodeCaseArray = [{url: "resources/media/24bit-44khz.wav", result: true},
                        {url: "resources/media/invalid-audio-file.txt", result: false}];

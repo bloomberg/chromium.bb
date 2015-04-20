@@ -32,14 +32,12 @@
 namespace blink {
 
 class AudioBuffer;
-class DOMException;
 
 class AudioBufferCallback : public GarbageCollectedFinalized<AudioBufferCallback> {
 public:
     virtual ~AudioBufferCallback() { }
     DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual void handleEvent(AudioBuffer*) = 0;
-    virtual void handleEvent(DOMException*) = 0;
 };
 
 } // namespace

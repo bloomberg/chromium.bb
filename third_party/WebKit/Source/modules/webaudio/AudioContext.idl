@@ -56,7 +56,7 @@ enum AudioContextState {
     [RaisesException] AudioBuffer createBuffer(unsigned long numberOfChannels, unsigned long numberOfFrames, float sampleRate);
 
     // Asynchronous audio file data decoding.
-    [RaisesException, CallWith=ScriptState, MeasureAs=AudioContextDecodeAudioData] Promise<AudioBuffer> decodeAudioData(ArrayBuffer audioData, optional AudioBufferCallback successCallback, optional AudioBufferCallback errorCallback);
+    [RaisesException, MeasureAs=AudioContextDecodeAudioData] void decodeAudioData(ArrayBuffer audioData, AudioBufferCallback successCallback, optional AudioBufferCallback errorCallback);
 
     // Sources
     [RaisesException, MeasureAs=AudioContextCreateBufferSource] AudioBufferSourceNode createBufferSource();

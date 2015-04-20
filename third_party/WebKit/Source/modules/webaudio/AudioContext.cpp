@@ -115,7 +115,6 @@ AudioContext::AudioContext(Document* document)
     , m_isOfflineContext(false)
     , m_contextState(Suspended)
     , m_cachedSampleFrame(0)
-    , m_closedContextSampleRate(-1)
 {
     m_didInitializeContextGraphMutex = true;
     m_destinationNode = DefaultAudioDestinationNode::create(this);
@@ -137,7 +136,6 @@ AudioContext::AudioContext(Document* document, unsigned numberOfChannels, size_t
     , m_isOfflineContext(true)
     , m_contextState(Suspended)
     , m_cachedSampleFrame(0)
-    , m_closedContextSampleRate(-1)
 {
     m_didInitializeContextGraphMutex = true;
     // Create a new destination for offline rendering.
@@ -155,14 +153,12 @@ AudioContext::~AudioContext()
 #endif
     deferredTaskHandler().contextWillBeDestroyed();
     // AudioNodes keep a reference to their context, so there should be no way to be in the destructor if there are still AudioNodes around.
-
     ASSERT(!m_isInitialized);
     ASSERT(!m_referencedNodes.size());
     ASSERT(!m_finishedHandlers.size());
     ASSERT(!m_suspendResolvers.size());
     ASSERT(!m_isResolvingResumePromises);
     ASSERT(!m_resumeResolvers.size());
-    ASSERT(!m_audioDecoderResolvers.size());
 }
 
 void AudioContext::initialize()
@@ -240,14 +236,6 @@ void AudioContext::uninitialize()
     ASSERT(m_listener);
     m_listener->waitForHRTFDatabaseLoaderThreadCompletion();
 
-    // Reject any decodeAudioData promises that haven't been fulfilled yet.
-    for (auto& resolver : m_audioDecoderResolvers) {
-        resolver->reject(DOMException::create(InvalidStateError, "Audio context is going away"));
-    }
-    m_audioDecoderResolvers.clear();
-
-    // Uninitialization done, so clear flags to indicate that the AudioContext has no pending
-    // activity anymore.
     clear();
 }
 
@@ -284,30 +272,20 @@ AudioBuffer* AudioContext::createBuffer(unsigned numberOfChannels, size_t number
     return AudioBuffer::create(numberOfChannels, numberOfFrames, sampleRate, exceptionState);
 }
 
-ScriptPromise AudioContext::decodeAudioData(ScriptState* scriptState, DOMArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ExceptionState& exceptionState)
+void AudioContext::decodeAudioData(DOMArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ExceptionState& exceptionState)
 {
-    if (!audioData) {
-        RefPtrWillBeRawPtr<DOMException> error = DOMException::create(
-            NotSupportedError,
-            "invalid ArrayBuffer for audioData.");
-        if (errorCallback) {
-            errorCallback->handleEvent(error.get());
-        }
-        return ScriptPromise::rejectWithDOMException(scriptState, error);
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return;
     }
 
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
-
-    m_audioDecoderResolvers.append(resolver);
-
-    float rate = isContextClosed() ? m_closedContextSampleRate : sampleRate();
-
-    ASSERT(rate > 0);
-
-    m_audioDecoder.decodeAsync(audioData, rate, successCallback, errorCallback, resolver.get(), this);
-
-    return promise;
+    if (!audioData) {
+        exceptionState.throwDOMException(
+            SyntaxError,
+            "invalid ArrayBuffer for audioData.");
+        return;
+    }
+    m_audioDecoder.decodeAsync(audioData, sampleRate(), successCallback, errorCallback);
 }
 
 AudioBufferSourceNode* AudioContext::createBufferSource(ExceptionState& exceptionState)
@@ -939,19 +917,6 @@ void AudioContext::handleStoppableSourceNodes()
         }
     }
 }
-
-void AudioContext::removeAudioDecoderResolver(ScriptPromiseResolver* resolver)
-{
-    ASSERT(isMainThread());
-
-    for (size_t k = 0; k < m_audioDecoderResolvers.size(); ++k) {
-        if (resolver == m_audioDecoderResolvers.at(k)) {
-            m_audioDecoderResolvers.remove(k);
-            break;
-        }
-    }
-}
-
 void AudioContext::handlePreRenderTasks()
 {
     ASSERT(isAudioThread());
@@ -1170,7 +1135,8 @@ void AudioContext::rejectPendingResolvers()
 {
     ASSERT(isMainThread());
 
-    // Audio context is closing down so reject any promises that are still pending.
+    // Audio context is closing down so reject any suspend or resume promises that are still
+    // pending.
 
     for (auto& resolver : m_suspendResolvers) {
         resolver->reject(DOMException::create(InvalidStateError, "Audio context is going away"));
@@ -1245,7 +1211,6 @@ void AudioContext::fireCompletionEvent()
 
 DEFINE_TRACE(AudioContext)
 {
-    visitor->trace(m_audioDecoderResolvers);
     visitor->trace(m_closeResolver);
     visitor->trace(m_offlineResolver);
     visitor->trace(m_renderTarget);
@@ -1312,9 +1277,6 @@ ScriptPromise AudioContext::closeContext(ScriptState* scriptState)
             DOMException::create(InvalidStateError,
                 "Cannot close a context that is being closed or has already been closed."));
     }
-
-    // Save the current sample rate for any subsequent decodeAudioData calls.
-    m_closedContextSampleRate = sampleRate();
 
     m_closeResolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = m_closeResolver->promise();
