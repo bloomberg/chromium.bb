@@ -47950,6 +47950,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="4" label="D3D11CreateDevice returned other error"/>
   <int value="5" label="DXGI version not supported"/>
   <int value="6" label="Other initialization error"/>
+  <int value="7" label="D3D11CreateDevice returned E_FAIL"/>
+  <int value="8" label="D3D11CreateDevice returned E_NOTIMPL"/>
+  <int value="9" label="D3D11CreateDevice returned E_OUTOFMEMORY"/>
+  <int value="10" label="D3D11CreateDevice returned DXGI_ERROR_INVALID_CALL"/>
+  <int value="11"
+      label="D3D11CreateDevice returned DXGI_ERROR_SDK_COMPONENT_MISSING"/>
+  <int value="12"
+      label="D3D11CreateDevice returned DXGI_ERROR_WAS_STILL_DRAWING"/>
+  <int value="13"
+      label="D3D11CreateDevice returned DXGI_ERROR_NOT_CURRENTLY_AVAILABLE"/>
+  <int value="14" label="D3D11CreateDevice returned DXGI_ERROR_DEVICE_HUNG"/>
 </enum>
 
 <enum name="D3D9InitializeResult" type="int">
