@@ -7,7 +7,6 @@
 
 #include <sys/resource.h>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "sandbox/sandbox_export.h"

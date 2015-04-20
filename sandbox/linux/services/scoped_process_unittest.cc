@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "sandbox/linux/services/scoped_process.h"
+
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -9,7 +11,6 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
@@ -18,7 +19,6 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
-#include "sandbox/linux/services/scoped_process.h"
 #include "sandbox/linux/tests/unit_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
