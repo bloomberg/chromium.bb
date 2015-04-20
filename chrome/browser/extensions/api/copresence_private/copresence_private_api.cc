@@ -19,21 +19,16 @@
 using audio_modem::WhispernetClient;
 using content::BrowserThread;
 
+namespace extensions {
+
+namespace SendFound = api::copresence_private::SendFound;
+namespace SendSamples = api::copresence_private::SendSamples;
+namespace SendInitialized = api::copresence_private::SendInitialized;
+
 namespace {
 
-// TODO(ckehoe): Move these globals into a proper CopresencePrivateService.
-
-base::LazyInstance<std::map<std::string, WhispernetClient*>>
-g_whispernet_clients = LAZY_INSTANCE_INITIALIZER;
-
-// To avoid concurrency issues, only use this on the UI thread.
-static bool g_initialized = false;
-
-WhispernetClient* GetWhispernetClient(const std::string& id) {
-  WhispernetClient* client = g_whispernet_clients.Get()[id];
-  DCHECK(client);
-  return client;
-}
+base::LazyInstance<BrowserContextKeyedAPIFactory<CopresencePrivateService>>
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 void RunInitCallback(WhispernetClient* client, bool status) {
   DCHECK(client);
@@ -45,26 +40,52 @@ void RunInitCallback(WhispernetClient* client, bool status) {
 
 }  // namespace
 
-namespace extensions {
+CopresencePrivateService::CopresencePrivateService(
+    content::BrowserContext* context)
+    : initialized_(false) {}
 
-namespace SendFound = api::copresence_private::SendFound;
-namespace SendSamples = api::copresence_private::SendSamples;
-namespace SendInitialized = api::copresence_private::SendInitialized;
+CopresencePrivateService::~CopresencePrivateService() {}
 
-namespace copresence_private {
-
-const std::string RegisterWhispernetClient(WhispernetClient* client) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (g_initialized)
+const std::string CopresencePrivateService::RegisterWhispernetClient(
+    WhispernetClient* client) {
+  if (initialized_)
     RunInitCallback(client, true);
 
   std::string id = base::GenerateGUID();
-  g_whispernet_clients.Get()[id] = client;
+  whispernet_clients_[id] = client;
 
   return id;
 }
 
-}  // namespace copresence_private
+void CopresencePrivateService::OnWhispernetInitialized(bool success) {
+  if (success)
+    initialized_ = true;
+
+  DVLOG(2) << "Notifying " << whispernet_clients_.size()
+           << " clients that initialization is complete.";
+  for (auto client_entry : whispernet_clients_)
+    RunInitCallback(client_entry.second, success);
+}
+
+WhispernetClient* CopresencePrivateService::GetWhispernetClient(
+    const std::string& id) {
+  WhispernetClient* client = whispernet_clients_[id];
+  DCHECK(client);
+  return client;
+}
+
+// static
+BrowserContextKeyedAPIFactory<CopresencePrivateService>*
+CopresencePrivateService::GetFactoryInstance() {
+  return g_factory.Pointer();
+}
+
+template <>
+void BrowserContextKeyedAPIFactory<CopresencePrivateService>
+    ::DeclareFactoryDependencies() {
+  DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
+}
+
 
 // Copresence Private functions.
 
@@ -73,7 +94,9 @@ ExtensionFunction::ResponseAction CopresencePrivateSendFoundFunction::Run() {
   scoped_ptr<SendFound::Params> params(SendFound::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  WhispernetClient* whispernet_client = GetWhispernetClient(params->client_id);
+  WhispernetClient* whispernet_client =
+      CopresencePrivateService::GetFactoryInstance()->Get(browser_context())
+          ->GetWhispernetClient(params->client_id);
   if (whispernet_client->GetTokensCallback().is_null())
     return RespondNow(NoArguments());
 
@@ -91,7 +114,9 @@ ExtensionFunction::ResponseAction CopresencePrivateSendSamplesFunction::Run() {
   scoped_ptr<SendSamples::Params> params(SendSamples::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  WhispernetClient* whispernet_client = GetWhispernetClient(params->client_id);
+  WhispernetClient* whispernet_client =
+      CopresencePrivateService::GetFactoryInstance()->Get(browser_context())
+          ->GetWhispernetClient(params->client_id);
   if (whispernet_client->GetSamplesCallback().is_null())
     return RespondNow(NoArguments());
 
@@ -115,14 +140,8 @@ CopresencePrivateSendInitializedFunction::Run() {
       SendInitialized::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (params->success)
-    g_initialized = true;
-
-  DVLOG(2) << "Notifying " << g_whispernet_clients.Get().size()
-           << " clients that initialization is complete.";
-  for (auto client_entry : g_whispernet_clients.Get())
-    RunInitCallback(client_entry.second, params->success);
+  CopresencePrivateService::GetFactoryInstance()->Get(browser_context())
+      ->OnWhispernetInitialized(params->success);
 
   return RespondNow(NoArguments());
 }

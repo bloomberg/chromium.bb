@@ -80,6 +80,7 @@ class AudioModemAPI final : public BrowserContextKeyedAPI {
   std::map<std::string, base::OneShotTimer<AudioModemAPI>*> receive_timers_[2];
 
   // BrowserContextKeyedAPI implementation.
+  static const bool kServiceIsCreatedWithBrowserContext = false;
   static const char* service_name() { return "AudioModemAPI"; }
 
   DISALLOW_COPY_AND_ASSIGN(AudioModemAPI);

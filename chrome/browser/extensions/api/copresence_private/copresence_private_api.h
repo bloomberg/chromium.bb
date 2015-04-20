@@ -7,7 +7,10 @@
 
 #include <string>
 
+#include "base/macros.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
+#include "extensions/browser/extension_function_histogram_value.h"
 
 namespace audio_modem {
 class WhispernetClient;
@@ -15,13 +18,40 @@ class WhispernetClient;
 
 namespace extensions {
 
-namespace copresence_private {
+class CopresencePrivateService final : public BrowserContextKeyedAPI {
+ public:
+  explicit CopresencePrivateService(content::BrowserContext* context);
+  ~CopresencePrivateService() override;
 
-// Register a client to receive events from Whispernet.
-const std::string
-RegisterWhispernetClient(audio_modem::WhispernetClient* client);
+  // Registers a client to receive events from Whispernet.
+  const std::string
+  RegisterWhispernetClient(audio_modem::WhispernetClient* client);
 
-}  // namespace copresence_private
+  // Gets the whispernet client by ID.
+  audio_modem::WhispernetClient* GetWhispernetClient(const std::string& id);
+
+  // Called from the whispernet_proxy extension when it has initialized.
+  void OnWhispernetInitialized(bool success);
+
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<CopresencePrivateService>*
+  GetFactoryInstance();
+
+ private:
+  friend class BrowserContextKeyedAPIFactory<CopresencePrivateService>;
+
+  // BrowserContextKeyedAPI implementation.
+  static const char* service_name() { return "CopresencePrivateService"; }
+
+  bool initialized_;
+  std::map<std::string, audio_modem::WhispernetClient*> whispernet_clients_;
+
+  DISALLOW_COPY_AND_ASSIGN(CopresencePrivateService);
+};
+
+template<>
+void BrowserContextKeyedAPIFactory<CopresencePrivateService>
+    ::DeclareFactoryDependencies();
 
 class CopresencePrivateSendFoundFunction : public UIThreadExtensionFunction {
  public:

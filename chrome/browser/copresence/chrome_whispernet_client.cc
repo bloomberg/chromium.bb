@@ -40,7 +40,6 @@ namespace OnEncodeTokenRequest =
     extensions::api::copresence_private::OnEncodeTokenRequest;
 
 using extensions::Event;
-using extensions::copresence_private::RegisterWhispernetClient;
 
 namespace {
 
@@ -105,18 +104,20 @@ void ChromeWhispernetClient::Initialize(
   DCHECK(!init_callback.is_null());
   init_callback_ = init_callback;
 
-  extensions::ComponentLoader* loader =
-      extensions::ExtensionSystem::Get(browser_context_)
-          ->extension_service()->component_loader();
-  DCHECK(loader);
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(browser_context_)->extension_service();
+  CHECK(extension_service);
 
+  extensions::ComponentLoader* loader = extension_service->component_loader();
+  CHECK(loader);
   if (!loader->Exists(kWhispernetProxyExtensionId)) {
     DVLOG(3) << "Loading Whispernet proxy.";
     loader->Add(IDR_WHISPERNET_PROXY_MANIFEST,
                 base::FilePath(FILE_PATH_LITERAL("whispernet_proxy")));
   }
 
-  client_id_ = RegisterWhispernetClient(this);
+  client_id_ = extensions::CopresencePrivateService::GetFactoryInstance()
+      ->Get(browser_context_)->RegisterWhispernetClient(this);
   AudioConfiguration(GetDefaultAudioConfig());
 }
 
