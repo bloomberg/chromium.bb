@@ -369,7 +369,7 @@ void RenderFrameHostManager::OnCrossSiteResponse(
   // We should only get here for transfer navigations.  Most cross-process
   // navigations can just continue and wait to run the unload handler (by
   // swapping out) when the new navigation commits.
-  CHECK(cross_site_transferring_request.get());
+  CHECK(cross_site_transferring_request);
 
   // A transfer should only have come from our pending or current RFH.
   // TODO(creis): We need to handle the case that the pending RFH has changed
@@ -419,13 +419,13 @@ void RenderFrameHostManager::OnCrossSiteResponse(
 void RenderFrameHostManager::OnDeferredAfterResponseStarted(
     const GlobalRequestID& global_request_id,
     RenderFrameHostImpl* pending_render_frame_host) {
-  DCHECK(!response_started_id_.get());
+  DCHECK(!response_started_id_);
 
   response_started_id_.reset(new GlobalRequestID(global_request_id));
 }
 
 void RenderFrameHostManager::ResumeResponseDeferredAtStart() {
-  DCHECK(response_started_id_.get());
+  DCHECK(response_started_id_);
 
   RenderProcessHostImpl* process =
       static_cast<RenderProcessHostImpl*>(render_frame_host_->GetProcess());
@@ -1016,7 +1016,7 @@ bool RenderFrameHostManager::ShouldReuseWebUI(
     const GURL& new_url) const {
   NavigationControllerImpl& controller =
       delegate_->GetControllerForRenderManager();
-  return current_entry && web_ui_.get() &&
+  return current_entry && web_ui_ &&
       (WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
           controller.GetBrowserContext(), current_entry->GetURL()) ==
        WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
@@ -1513,7 +1513,7 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
           render_view_host->GetView()->Hide();
       } else if (!swapped_out) {
         // Init the RFH, so a RenderFrame is created in the renderer.
-        DCHECK(new_render_frame_host.get());
+        DCHECK(new_render_frame_host);
         success = InitRenderFrame(new_render_frame_host.get());
       }
     }
@@ -1882,7 +1882,7 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
     SetPendingWebUI(dest_url, bindings);
     CreatePendingRenderFrameHost(current_instance, new_instance.get(),
                                  frame_tree_node_->IsMainFrame());
-    if (!pending_render_frame_host_.get())
+    if (!pending_render_frame_host_)
       return nullptr;
 
     // Check if our current RFH is live before we set up a transition.
