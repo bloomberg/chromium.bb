@@ -3,5 +3,5 @@
 // found in the LICENSE file.
 
 dictionary BeforeInstallPromptEventInit : EventInit {
-    DOMString platform = "web";
+    sequence<DOMString> platforms;
 };

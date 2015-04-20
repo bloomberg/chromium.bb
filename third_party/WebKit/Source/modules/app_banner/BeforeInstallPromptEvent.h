@@ -23,9 +23,9 @@ public:
         return adoptRefWillBeNoop(new BeforeInstallPromptEvent());
     }
 
-    static PassRefPtrWillBeRawPtr<BeforeInstallPromptEvent> create(const AtomicString& name, const String& platform)
+    static PassRefPtrWillBeRawPtr<BeforeInstallPromptEvent> create(const AtomicString& name, const Vector<String>& platforms)
     {
-        return adoptRefWillBeNoop(new BeforeInstallPromptEvent(name, platform));
+        return adoptRefWillBeNoop(new BeforeInstallPromptEvent(name, platforms));
     }
 
     static PassRefPtrWillBeRawPtr<BeforeInstallPromptEvent> create(const AtomicString& name, const BeforeInstallPromptEventInit& init)
@@ -33,17 +33,17 @@ public:
         return adoptRefWillBeNoop(new BeforeInstallPromptEvent(name, init));
     }
 
-    String platform() const;
+    Vector<String> platforms() const;
     ScriptPromise userChoice(ScriptState*) const;
 
     virtual const AtomicString& interfaceName() const override;
 
 private:
     BeforeInstallPromptEvent();
-    BeforeInstallPromptEvent(const AtomicString& name, const String& platform);
+    BeforeInstallPromptEvent(const AtomicString& name, const Vector<String>& platforms);
     BeforeInstallPromptEvent(const AtomicString& name, const BeforeInstallPromptEventInit&);
 
-    String m_platform;
+    Vector<String> m_platforms;
 };
 
 DEFINE_TYPE_CASTS(BeforeInstallPromptEvent, Event, event, event->interfaceName() == EventNames::BeforeInstallPromptEvent, event.interfaceName() == EventNames::BeforeInstallPromptEvent);

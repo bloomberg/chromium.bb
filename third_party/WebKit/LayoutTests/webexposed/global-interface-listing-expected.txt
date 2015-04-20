@@ -269,7 +269,7 @@ interface BatteryManager
     setter ondischargingtimechange
     setter onlevelchange
 interface BeforeInstallPromptEvent
-    getter platform
+    getter platforms
     getter userChoice
     method constructor
 interface BeforeUnloadEvent

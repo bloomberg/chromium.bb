@@ -10,12 +10,13 @@ namespace blink {
 enum class WebAppBannerPromptReply;
 class LocalFrame;
 class WebString;
+template <typename T> class WebVector;
 
 // FIXME: unless userChoice ends up implemented, this class should not exist and
 // a regular static method could be used instead.
 class AppBannerController final {
 public:
-    static void willShowInstallBannerPrompt(LocalFrame*, const WebString& platform, WebAppBannerPromptReply*);
+    static void willShowInstallBannerPrompt(LocalFrame*, const WebVector<WebString>& platforms, WebAppBannerPromptReply*);
 
 private:
     AppBannerController() = delete;

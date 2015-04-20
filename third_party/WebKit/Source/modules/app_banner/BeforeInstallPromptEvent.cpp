@@ -16,15 +16,15 @@ BeforeInstallPromptEvent::BeforeInstallPromptEvent()
 {
 }
 
-BeforeInstallPromptEvent::BeforeInstallPromptEvent(const AtomicString& name, const String& platform)
+BeforeInstallPromptEvent::BeforeInstallPromptEvent(const AtomicString& name, const Vector<String>& platforms)
     : Event(name, false, true)
-    , m_platform(platform)
+    , m_platforms(platforms)
 {
 }
 
 BeforeInstallPromptEvent::BeforeInstallPromptEvent(const AtomicString& name, const BeforeInstallPromptEventInit& init)
     : Event(name, false, true)
-    , m_platform(init.platform())
+    , m_platforms(init.platforms())
 {
 }
 
@@ -32,9 +32,9 @@ BeforeInstallPromptEvent::~BeforeInstallPromptEvent()
 {
 }
 
-String BeforeInstallPromptEvent::platform() const
+Vector<String> BeforeInstallPromptEvent::platforms() const
 {
-    return m_platform;
+    return m_platforms;
 }
 
 ScriptPromise BeforeInstallPromptEvent::userChoice(ScriptState* scriptState) const

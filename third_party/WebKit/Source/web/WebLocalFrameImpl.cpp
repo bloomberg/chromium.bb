@@ -2033,12 +2033,19 @@ void WebLocalFrameImpl::sendOrientationChangeEvent()
         frame()->localDOMWindow()->sendOrientationChangeEvent();
 }
 
-void WebLocalFrameImpl::willShowInstallBannerPrompt(const WebString& platform, WebAppBannerPromptReply* reply)
+void WebLocalFrameImpl::willShowInstallBannerPrompt(const WebVector<WebString>& platforms, WebAppBannerPromptReply* reply)
 {
     if (!RuntimeEnabledFeatures::appBannerEnabled() || !frame())
         return;
 
-    AppBannerController::willShowInstallBannerPrompt(frame(), platform, reply);
+    AppBannerController::willShowInstallBannerPrompt(frame(), platforms, reply);
+}
+
+
+void WebLocalFrameImpl::willShowInstallBannerPrompt(const WebString& platform, WebAppBannerPromptReply* reply)
+{
+    WebVector<WebString> platforms(&platform, 1);
+    willShowInstallBannerPrompt(platforms, reply);
 }
 
 void WebLocalFrameImpl::requestRunTask(WebSuspendableTask* task) const
