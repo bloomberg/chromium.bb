@@ -37,6 +37,7 @@
 #include "core/InputTypeNames.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/MouseEvent.h"
+#include "core/events/ScopedEventQueue.h"
 #include "core/html/HTMLDataListElement.h"
 #include "core/html/HTMLDataListOptionsCollection.h"
 #include "core/html/HTMLDivElement.h"
@@ -205,6 +206,7 @@ void ColorInputType::didChooseColor(const Color& color)
 
 void ColorInputType::didEndChooser()
 {
+    EventQueueScope scope;
     if (LayoutTheme::theme().isModalColorChooser())
         element().dispatchFormControlChangeEvent();
     m_chooser.clear();
