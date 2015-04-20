@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/safe_browsing/srt_field_trial_win.h"
+
 #include "base/metrics/field_trial.h"
 #include "components/variations/variations_associated_data.h"
 
@@ -11,6 +13,7 @@ namespace {
 const char kSRTCanaryGroupName[] = "SRTCanary";
 const char kSRTPromptTrialName[] = "SRTPromptFieldTrial";
 const char kSRTPromptOnGroup[] = "On";
+const char kSRTPromptDefaultGroup[] = "Default";
 const char kSRTPromptSeedParamName[] = "Seed";
 
 // The download links of the Software Removal Tool.
@@ -26,8 +29,8 @@ const char kCanarySRTDownloadURL[] =
 namespace safe_browsing {
 
 bool IsInSRTPromptFieldTrialGroups() {
-  return base::FieldTrialList::FindFullName(kSRTPromptTrialName) ==
-         kSRTPromptOnGroup;
+  return base::FieldTrialList::FindFullName(kSRTPromptTrialName) !=
+         kSRTPromptDefaultGroup;
 }
 
 const char* GetSRTDownloadURL() {

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_SRT_FIELD_TRIAL_WIN_H_
 #define CHROME_BROWSER_SAFE_BROWSING_SRT_FIELD_TRIAL_WIN_H_
 
+#include <string>
+
 namespace safe_browsing {
 
 // Returns true if this Chrome is in a field trial group which shows the SRT
