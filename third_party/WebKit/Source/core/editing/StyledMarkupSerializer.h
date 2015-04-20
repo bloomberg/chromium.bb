@@ -32,50 +32,13 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Position.h"
 #include "core/editing/EditingStrategy.h"
-#include "core/editing/EditingStyle.h"
-#include "core/editing/MarkupAccumulator.h"
+#include "core/editing/StyledMarkupAccumulator.h"
 #include "wtf/Forward.h"
 
 namespace blink {
 
 class ContainerNode;
 class Node;
-class StylePropertySet;
-
-class StyledMarkupSerializer;
-
-class StyledMarkupAccumulator final : public MarkupAccumulator {
-    STACK_ALLOCATED();
-public:
-    enum RangeFullySelectsNode { DoesFullySelectNode, DoesNotFullySelectNode };
-
-    StyledMarkupAccumulator(EAbsoluteURLs, const Position& start, const Position& end, EAnnotateForInterchange, Node*);
-    virtual void appendText(StringBuilder&, Text&) override;
-    virtual void appendElement(StringBuilder&, Element&, Namespaces*) override;
-    void appendElement(StringBuilder&, Element&, bool, RangeFullySelectsNode);
-    void appendStyleNodeOpenTag(StringBuilder&, StylePropertySet*, bool isBlock = false);
-
-    // TODO(hajimehoshi): These functions are called from the serializer, but
-    // should not.
-    Node* highestNodeToBeSerialized() { return m_highestNodeToBeSerialized.get(); }
-    void setHighestNodeToBeSerialized(Node* highestNodeToBeSerialized) { m_highestNodeToBeSerialized = highestNodeToBeSerialized; }
-    void setWrappingStyle(PassRefPtrWillBeRawPtr<EditingStyle> wrappingStyle) { m_wrappingStyle = wrappingStyle; }
-    bool shouldAnnotate() const { return m_shouldAnnotate == AnnotateForInterchange || m_shouldAnnotate == AnnotateForNavigationTransition; }
-    bool shouldAnnotateForNavigationTransition() const { return m_shouldAnnotate == AnnotateForNavigationTransition; }
-    bool shouldAnnotateForInterchange() const { return m_shouldAnnotate == AnnotateForInterchange; }
-
-private:
-    String renderedText(Text&);
-    String stringValueForRange(const Node&);
-
-    bool shouldApplyWrappingStyle(const Node&) const;
-
-    const Position m_start;
-    const Position m_end;
-    const EAnnotateForInterchange m_shouldAnnotate;
-    RawPtrWillBeMember<Node> m_highestNodeToBeSerialized;
-    RefPtrWillBeMember<EditingStyle> m_wrappingStyle;
-};
 
 class StyledMarkupSerializer final {
     STACK_ALLOCATED();
