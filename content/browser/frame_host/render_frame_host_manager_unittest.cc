@@ -783,20 +783,25 @@ TEST_F(RenderFrameHostManagerTest,
 // EnableViewSourceMode message is sent on every navigation regardless
 // RenderView is being newly created or reused.
 TEST_F(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
-  const GURL kChromeUrl("chrome://foo");
-  const GURL kUrl("view-source:http://foo");
+  const GURL kChromeUrl("chrome://foo/");
+  const GURL kUrl("http://foo/");
+  const GURL kViewSourceUrl("view-source:http://foo/");
 
   // We have to navigate to some page at first since without this, the first
   // navigation will reuse the SiteInstance created by Init(), and the second
   // one will create a new SiteInstance. Because current_instance and
   // new_instance will be different, a new RenderViewHost will be created for
   // the second navigation. We have to avoid this in order to exercise the
-  // target code patch.
+  // target code path.
   NavigateActiveAndCommit(kChromeUrl);
 
-  // Navigate.
+  // Navigate. Note that "view source" URLs are implemented by putting the RFH
+  // into a view-source mode and then navigating to the inner URL, so that's why
+  // the bare URL is what's committed and returned by the last committed entry's
+  // GetURL() call.
   controller().LoadURL(
-      kUrl, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+      kViewSourceUrl, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+
   // Simulate response from RenderFrame for DispatchBeforeUnload.
   contents()->GetMainFrame()->PrepareForCommit();
   ASSERT_TRUE(contents()->GetPendingMainFrame())
@@ -805,9 +810,12 @@ TEST_F(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
   int32 new_id =
       contents()->GetMaxPageIDForSiteInstance(last_rfh->GetSiteInstance()) + 1;
   contents()->GetPendingMainFrame()->SendNavigate(new_id, kUrl);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 1);
-  ASSERT_TRUE(controller().GetLastCommittedEntry());
-  EXPECT_TRUE(kUrl == controller().GetLastCommittedEntry()->GetURL());
+
+  EXPECT_EQ(1, controller().GetLastCommittedEntryIndex());
+  NavigationEntry* last_committed = controller().GetLastCommittedEntry();
+  ASSERT_NE(nullptr, last_committed);
+  EXPECT_EQ(kUrl, last_committed->GetURL());
+  EXPECT_EQ(kViewSourceUrl, last_committed->GetVirtualURL());
   EXPECT_FALSE(controller().GetPendingEntry());
   // Because we're using TestWebContents and TestRenderViewHost in this
   // unittest, no one calls WebContentsImpl::RenderViewCreated(). So, we see no
@@ -815,17 +823,21 @@ TEST_F(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
 
   // Clear queued messages before load.
   process()->sink().ClearMessages();
+
   // Navigate, again.
   controller().LoadURL(
-      kUrl, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+      kViewSourceUrl, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   contents()->GetMainFrame()->PrepareForCommit();
+
   // The same RenderViewHost should be reused.
   EXPECT_FALSE(contents()->GetPendingMainFrame());
-  EXPECT_TRUE(last_rfh == contents()->GetMainFrame());
-  // Navigate using the returned page_id.
+  EXPECT_EQ(last_rfh, contents()->GetMainFrame());
+
+  // The renderer sends a commit.
   contents()->GetMainFrame()->SendNavigate(new_id, kUrl);
-  EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 1);
+  EXPECT_EQ(1, controller().GetLastCommittedEntryIndex());
   EXPECT_FALSE(controller().GetPendingEntry());
+
   // New message should be sent out to make sure to enter view-source mode.
   EXPECT_TRUE(process()->sink().GetUniqueMessageMatching(
       ViewMsg_EnableViewSourceMode::ID));
