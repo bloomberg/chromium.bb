@@ -24,6 +24,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/StyleEngine.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLStyleElement.h"
 #include "wtf/text/WTFString.h"
 
@@ -85,6 +86,8 @@ HTMLStyleElement* StyleSheetList::getNamedItem(const AtomicString& name) const
 
 CSSStyleSheet* StyleSheetList::anonymousNamedGetter(const AtomicString& name)
 {
+    if (document())
+        UseCounter::count(*document(), UseCounter::StyleSheetListAnonymousNamedGetter);
     HTMLStyleElement* item = getNamedItem(name);
     if (!item)
         return 0;

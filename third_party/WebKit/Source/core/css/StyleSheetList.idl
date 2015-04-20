@@ -25,7 +25,7 @@
     SetWrapperReferenceFrom=document,
     WillBeGarbageCollected
 ] interface StyleSheetList {
-    getter StyleSheet? item(unsigned long index);
+    [Measure] getter StyleSheet? item(unsigned long index);
     readonly attribute unsigned long length;
 
     // Non-standard APIs

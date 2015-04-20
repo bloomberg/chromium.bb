@@ -32,7 +32,7 @@
     // TODO(philipj): [TreatNullAs=EmptyString] stringifier attribute DOMString mediaText;
     attribute DOMString? mediaText;
     readonly attribute unsigned long length;
-    getter DOMString? item(unsigned long index);
+    [Measure] getter DOMString? item(unsigned long index);
     // TODO(philipj): appendMedium() and deleteMedium() should never throw.
     [RaisesException] void appendMedium(DOMString medium);
     [RaisesException] void deleteMedium(DOMString medium);

@@ -693,6 +693,10 @@ public:
         V8HTMLTextAreaElement_Autocapitalize_AttributeSetter = 757,
         SVGHrefBaseVal = 758,
         SVGHrefAnimVal = 759,
+        V8CSSRuleList_Item_Method = 760,
+        V8MediaList_Item_Method = 761,
+        V8StyleSheetList_Item_Method = 762,
+        StyleSheetListAnonymousNamedGetter = 763,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
