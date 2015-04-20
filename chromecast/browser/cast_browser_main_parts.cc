@@ -154,8 +154,6 @@ DefaultCommandLineSwitch g_default_switches[] = {
   { switches::kDisableInfobarForProtectedMediaIdentifier, ""},
   { switches::kDisableGestureRequirementForMediaPlayback, ""},
 #endif
-  // TODO(gunsch): Enable unprefixed EME on ATV. See http://crbug.com/471936.
-  { switches::kDisableEncryptedMedia, ""},
   // Always enable HTMLMediaElement logs.
   { switches::kBlinkPlatformLogChannels, "Media"},
 #if defined(DISABLE_DISPLAY)

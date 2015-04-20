@@ -19,6 +19,9 @@ import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.DeviceUtils;
 import org.chromium.content.common.ContentSwitches;
+import org.chromium.media.MediaDrmBridge;
+
+import java.util.UUID;
 
 /**
  * Static, one-time initialization for the browser process.
@@ -27,6 +30,10 @@ public class CastBrowserHelper {
     private static final String TAG = "CastBrowserHelper";
 
     public static final String COMMAND_LINE_ARGS_KEY = "commandLineArgs";
+
+    private static final String PLAYREADY_KEY_SYSTEM_NAME = "com.chromecast.playready";
+    private static final UUID PLAYREADY_UUID =
+            UUID.fromString("9A04F079-9840-4286-AB92-E65BE0885F95");
 
     private static boolean sIsBrowserInitialized = false;
 
@@ -69,6 +76,7 @@ public class CastBrowserHelper {
             BrowserStartupController.get(context, LibraryProcessType.PROCESS_BROWSER)
                     .startBrowserProcessesSync(false);
             sIsBrowserInitialized = true;
+            MediaDrmBridge.addKeySystemUuidMapping(PLAYREADY_KEY_SYSTEM_NAME, PLAYREADY_UUID);
             return true;
         } catch (ProcessInitException e) {
             Log.e(TAG, "Unable to launch browser process.", e);
