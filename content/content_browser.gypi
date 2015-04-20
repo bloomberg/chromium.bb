@@ -428,6 +428,8 @@
       'browser/appcache/chrome_appcache_service.h',
       'browser/appcache/view_appcache_internals_job.cc',
       'browser/appcache/view_appcache_internals_job.h',
+      'browser/background_sync/background_sync_context_impl.cc',
+      'browser/background_sync/background_sync_context_impl.h',
       'browser/background_sync/background_sync_manager.cc',
       'browser/background_sync/background_sync_manager.h',
       'browser/background_sync/background_sync_network_observer.cc',

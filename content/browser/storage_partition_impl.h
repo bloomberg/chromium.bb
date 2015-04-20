@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
+#include "content/browser/background_sync/background_sync_context_impl.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/host_zoom_level_context.h"
@@ -55,6 +56,7 @@ class StoragePartitionImpl : public StoragePartition {
   ZoomLevelDelegate* GetZoomLevelDelegate() override;
   NavigatorConnectContextImpl* GetNavigatorConnectContext() override;
   PlatformNotificationContextImpl* GetPlatformNotificationContext() override;
+  BackgroundSyncContextImpl* GetBackgroundSyncContext();
 
   void ClearDataForOrigin(uint32 remove_mask,
                           uint32 quota_storage_remove_mask,
@@ -137,7 +139,8 @@ class StoragePartitionImpl : public StoragePartition {
       GeofencingManager* geofencing_manager,
       HostZoomLevelContext* host_zoom_level_context,
       NavigatorConnectContextImpl* navigator_connect_context,
-      PlatformNotificationContextImpl* platform_notification_context);
+      PlatformNotificationContextImpl* platform_notification_context,
+      BackgroundSyncContextImpl* background_sync_context);
 
   void ClearDataImpl(uint32 remove_mask,
                      uint32 quota_storage_remove_mask,
@@ -182,6 +185,7 @@ class StoragePartitionImpl : public StoragePartition {
   scoped_refptr<HostZoomLevelContext> host_zoom_level_context_;
   scoped_refptr<NavigatorConnectContextImpl> navigator_connect_context_;
   scoped_refptr<PlatformNotificationContextImpl> platform_notification_context_;
+  scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;
 
   // Raw pointer that should always be valid. The BrowserContext owns the
   // StoragePartitionImplMap which then owns StoragePartitionImpl. When the

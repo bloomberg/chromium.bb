@@ -377,7 +377,8 @@ StoragePartitionImpl::StoragePartitionImpl(
     GeofencingManager* geofencing_manager,
     HostZoomLevelContext* host_zoom_level_context,
     NavigatorConnectContextImpl* navigator_connect_context,
-    PlatformNotificationContextImpl* platform_notification_context)
+    PlatformNotificationContextImpl* platform_notification_context,
+    BackgroundSyncContextImpl* background_sync_context)
     : partition_path_(partition_path),
       quota_manager_(quota_manager),
       appcache_service_(appcache_service),
@@ -393,6 +394,7 @@ StoragePartitionImpl::StoragePartitionImpl(
       host_zoom_level_context_(host_zoom_level_context),
       navigator_connect_context_(navigator_connect_context),
       platform_notification_context_(platform_notification_context),
+      background_sync_context_(background_sync_context),
       browser_context_(browser_context) {
 }
 
@@ -425,6 +427,9 @@ StoragePartitionImpl::~StoragePartitionImpl() {
 
   if (GetPlatformNotificationContext())
     GetPlatformNotificationContext()->Shutdown();
+
+  if (GetBackgroundSyncContext())
+    GetBackgroundSyncContext()->Shutdown();
 }
 
 StoragePartitionImpl* StoragePartitionImpl::Create(
@@ -516,6 +521,10 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
       new PlatformNotificationContextImpl(path, service_worker_context);
   platform_notification_context->Initialize();
 
+  scoped_refptr<BackgroundSyncContextImpl> background_sync_context =
+      new BackgroundSyncContextImpl();
+  background_sync_context->Init(service_worker_context);
+
   StoragePartitionImpl* storage_partition = new StoragePartitionImpl(
       context, partition_path, quota_manager.get(), appcache_service.get(),
       filesystem_context.get(), database_tracker.get(),
@@ -523,8 +532,8 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
       cache_storage_context.get(), service_worker_context.get(),
       webrtc_identity_store.get(), special_storage_policy.get(),
       geofencing_manager.get(), host_zoom_level_context.get(),
-      navigator_connect_context.get(),
-      platform_notification_context.get());
+      navigator_connect_context.get(), platform_notification_context.get(),
+      background_sync_context.get());
 
   service_worker_context->set_storage_partition(storage_partition);
 
@@ -602,6 +611,10 @@ StoragePartitionImpl::GetNavigatorConnectContext() {
 PlatformNotificationContextImpl*
 StoragePartitionImpl::GetPlatformNotificationContext() {
   return platform_notification_context_.get();
+}
+
+BackgroundSyncContextImpl* StoragePartitionImpl::GetBackgroundSyncContext() {
+  return background_sync_context_.get();
 }
 
 void StoragePartitionImpl::ClearDataImpl(

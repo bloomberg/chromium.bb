@@ -39,6 +39,8 @@ BackgroundSyncManager::BackgroundSyncRegistrations::
 // static
 scoped_ptr<BackgroundSyncManager> BackgroundSyncManager::Create(
     const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
   BackgroundSyncManager* sync_manager =
       new BackgroundSyncManager(service_worker_context);
   sync_manager->Init();
@@ -157,6 +159,8 @@ BackgroundSyncManager::BackgroundSyncManager(
     : service_worker_context_(service_worker_context),
       disabled_(false),
       weak_ptr_factory_(this) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
   service_worker_context_->AddObserver(this);
 
   network_observer_.reset(new BackgroundSyncNetworkObserver(
