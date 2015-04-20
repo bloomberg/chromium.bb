@@ -854,7 +854,7 @@ bool LayoutObject::canRenderBorderImage() const
     return borderImage && borderImage->canRender(*this, style()->effectiveZoom()) && borderImage->isLoaded();
 }
 
-bool LayoutObject::mustInvalidateFillLayersPaintOnWidthChange(const FillLayer& layer) const
+inline bool LayoutObject::mustInvalidateFillLayersPaintOnWidthChange(const FillLayer& layer) const
 {
     // Nobody will use multiple layers without wanting fancy positioning.
     if (layer.next())

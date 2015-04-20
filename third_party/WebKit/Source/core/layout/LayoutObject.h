@@ -552,7 +552,6 @@ public:
     bool canRenderBorderImage() const;
     bool mustInvalidateBackgroundOrBorderPaintOnWidthChange() const;
     bool mustInvalidateBackgroundOrBorderPaintOnHeightChange() const;
-    bool mustInvalidateFillLayersPaintOnWidthChange(const FillLayer&) const;
     bool mustInvalidateFillLayersPaintOnHeightChange(const FillLayer&) const;
     bool hasBackground() const { return style()->hasBackground(); }
     bool hasEntirelyFixedBackground() const;
@@ -1202,6 +1201,8 @@ protected:
     virtual void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const;
 
 private:
+    inline bool mustInvalidateFillLayersPaintOnWidthChange(const FillLayer&) const;
+
     // FIXME: This should be 'markContaingBoxChainForOverflowRecalc when we make LayoutBox
     // recomputeOverflow-capable. crbug.com/437012 and crbug.com/434700.
     inline void markContainingBlocksForOverflowRecalc();
