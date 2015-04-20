@@ -716,6 +716,7 @@ const char kBroadcastProperty[] = "Broadcast";
 const char kPeerAddressProperty[] = "PeerAddress";
 const char kGatewayProperty[] = "Gateway";
 const char kDomainNameProperty[] = "DomainName";
+const char kAcceptedHostnameProperty[] = "AcceptedHostname";
 const char kNameServersProperty[] = "NameServers";
 
 // IPConfig type options.
