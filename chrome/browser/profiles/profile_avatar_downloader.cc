@@ -13,7 +13,7 @@
 
 namespace {
 const char kHighResAvatarDownloadUrlPrefix[] =
-    "http://www.gstatic.com/chrome/profile_avatars/";
+    "https://www.gstatic.com/chrome/profile_avatars/";
 }
 
 ProfileAvatarDownloader::ProfileAvatarDownloader(
