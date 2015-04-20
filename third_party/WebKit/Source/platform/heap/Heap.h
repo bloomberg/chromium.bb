@@ -950,7 +950,7 @@ public:
         IdleGC,
         PreciseGC,
         ConservativeGC,
-        ForcedGCForTesting,
+        ForcedGC,
         NumberOfGCReason
     };
     static const char* gcReasonString(GCReason);

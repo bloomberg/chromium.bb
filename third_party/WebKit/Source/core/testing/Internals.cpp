@@ -2330,7 +2330,7 @@ void Internals::forcePluginPlaceholder(HTMLElement* element, const PluginPlaceho
 
 void Internals::forceBlinkGCWithoutV8GC()
 {
-    ThreadState::current()->setGCState(ThreadState::GCScheduledForTesting);
+    ThreadState::current()->setGCState(ThreadState::FullGCScheduled);
 }
 
 String Internals::selectedHTMLForClipboard()

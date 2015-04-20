@@ -700,7 +700,7 @@ void unexpectedGCState(ThreadState::GCState gcState)
         UNEXPECTED_GCSTATE(NoGCScheduled);
         UNEXPECTED_GCSTATE(IdleGCScheduled);
         UNEXPECTED_GCSTATE(PreciseGCScheduled);
-        UNEXPECTED_GCSTATE(GCScheduledForTesting);
+        UNEXPECTED_GCSTATE(FullGCScheduled);
         UNEXPECTED_GCSTATE(StoppingOtherThreads);
         UNEXPECTED_GCSTATE(GCRunning);
         UNEXPECTED_GCSTATE(EagerSweepScheduled);
@@ -729,14 +729,14 @@ void ThreadState::setGCState(GCState gcState)
         break;
     case IdleGCScheduled:
     case PreciseGCScheduled:
-    case GCScheduledForTesting:
+    case FullGCScheduled:
         checkThread();
-        VERIFY_STATE_TRANSITION(m_gcState == NoGCScheduled || m_gcState == IdleGCScheduled || m_gcState == PreciseGCScheduled || m_gcState == GCScheduledForTesting || m_gcState == StoppingOtherThreads || m_gcState == SweepingAndIdleGCScheduled || m_gcState == SweepingAndPreciseGCScheduled);
+        VERIFY_STATE_TRANSITION(m_gcState == NoGCScheduled || m_gcState == IdleGCScheduled || m_gcState == PreciseGCScheduled || m_gcState == FullGCScheduled || m_gcState == StoppingOtherThreads || m_gcState == SweepingAndIdleGCScheduled || m_gcState == SweepingAndPreciseGCScheduled);
         completeSweep();
         break;
     case StoppingOtherThreads:
         checkThread();
-        VERIFY_STATE_TRANSITION(m_gcState == NoGCScheduled || m_gcState == IdleGCScheduled || m_gcState == PreciseGCScheduled || m_gcState == GCScheduledForTesting || m_gcState == Sweeping || m_gcState == SweepingAndIdleGCScheduled || m_gcState == SweepingAndPreciseGCScheduled);
+        VERIFY_STATE_TRANSITION(m_gcState == NoGCScheduled || m_gcState == IdleGCScheduled || m_gcState == PreciseGCScheduled || m_gcState == FullGCScheduled || m_gcState == Sweeping || m_gcState == SweepingAndIdleGCScheduled || m_gcState == SweepingAndPreciseGCScheduled);
         completeSweep();
         break;
     case GCRunning:
@@ -788,7 +788,7 @@ void ThreadState::runScheduledGC(StackState stackState)
         return;
 
     switch (gcState()) {
-    case GCScheduledForTesting:
+    case FullGCScheduled:
         Heap::collectAllGarbage();
         break;
     case PreciseGCScheduled:

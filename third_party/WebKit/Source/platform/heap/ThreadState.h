@@ -186,7 +186,7 @@ public:
         NoGCScheduled,
         IdleGCScheduled,
         PreciseGCScheduled,
-        GCScheduledForTesting,
+        FullGCScheduled,
         StoppingOtherThreads,
         GCRunning,
         EagerSweepScheduled,

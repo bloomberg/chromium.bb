@@ -2207,7 +2207,7 @@ const char* Heap::gcReasonString(GCReason reason)
         STRINGIFY_REASON(IdleGC);
         STRINGIFY_REASON(PreciseGC);
         STRINGIFY_REASON(ConservativeGC);
-        STRINGIFY_REASON(ForcedGCForTesting);
+        STRINGIFY_REASON(ForcedGC);
 #undef STRINGIFY_REASON
     case NumberOfGCReason: ASSERT_NOT_REACHED();
     }
@@ -2398,7 +2398,7 @@ void Heap::collectAllGarbage()
     // pointing to other heap allocated objects.
     size_t previousLiveObjects = 0;
     for (int i = 0; i < 5; ++i) {
-        collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, ForcedGCForTesting);
+        collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, ForcedGC);
         size_t liveObjects = Heap::markedObjectSize();
         if (liveObjects == previousLiveObjects)
             break;

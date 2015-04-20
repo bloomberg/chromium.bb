@@ -47,7 +47,7 @@ WebHeap::SafePointScope::~SafePointScope()
 
 void WebHeap::collectGarbageForTesting()
 {
-    Heap::collectGarbage(ThreadState::HeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGCForTesting);
+    Heap::collectGarbage(ThreadState::HeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
 }
 
 void WebHeap::collectAllGarbageForTesting()

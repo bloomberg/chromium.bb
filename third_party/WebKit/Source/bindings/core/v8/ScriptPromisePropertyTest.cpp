@@ -149,7 +149,7 @@ public:
         m_page.clear();
         m_otherScriptState.clear();
         gc();
-        Heap::collectGarbage(ThreadState::HeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGCForTesting);
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
     }
 
     void gc() { V8GCController::collectGarbage(v8::Isolate::GetCurrent()); }
