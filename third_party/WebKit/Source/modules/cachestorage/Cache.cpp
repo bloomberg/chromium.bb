@@ -72,10 +72,10 @@ protected:
 };
 
 // FIXME: Consider using CallbackPromiseAdapter.
-class CacheAddOrPutCallbacks : public CacheWithResponsesCallbacks {
-    WTF_MAKE_NONCOPYABLE(CacheAddOrPutCallbacks);
+class CachePutCallbacks : public CacheWithResponsesCallbacks {
+    WTF_MAKE_NONCOPYABLE(CachePutCallbacks);
 public:
-    CacheAddOrPutCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
+    CachePutCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
         : CacheWithResponsesCallbacks(resolver) { }
 
     virtual void onSuccess(WebVector<WebServiceWorkerResponse>* webResponses) override
@@ -163,7 +163,7 @@ public:
         batchOperations[0].request = m_webRequest;
         batchOperations[0].response = m_webResponse;
         batchOperations[0].response.setBlobDataHandle(handle);
-        m_cache->webCache()->dispatchBatch(new CacheAddOrPutCallbacks(m_resolver.get()), batchOperations);
+        m_cache->webCache()->dispatchBatch(new CachePutCallbacks(m_resolver.get()), batchOperations);
         cleanup();
     }
     void didFail(PassRefPtrWillBeRawPtr<DOMException> exception) override
@@ -383,7 +383,7 @@ ScriptPromise Cache::putImpl(ScriptState* scriptState, Request* request, Respons
     request->populateWebServiceWorkerRequest(batchOperations[0].request);
     response->populateWebServiceWorkerResponse(batchOperations[0].response);
 
-    m_webCache->dispatchBatch(new CacheAddOrPutCallbacks(resolver), batchOperations);
+    m_webCache->dispatchBatch(new CachePutCallbacks(resolver), batchOperations);
     return promise;
 }
 
