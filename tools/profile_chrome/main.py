@@ -11,6 +11,7 @@ import sys
 import webbrowser
 
 from profile_chrome import chrome_controller
+from profile_chrome import ddms_controller
 from profile_chrome import flags
 from profile_chrome import perf_controller
 from profile_chrome import profiler
@@ -132,6 +133,11 @@ def _CreateOptionParser():
                          metavar='PERF_CATEGORIES', dest='perf_categories')
     parser.add_option_group(perf_opts)
 
+  ddms_options = optparse.OptionGroup(parser, 'Java tracing')
+  ddms_options.add_option('--ddms', help='Trace Java execution using DDMS '
+                          'sampling.', action='store_true')
+  parser.add_option_group(ddms_options)
+
   parser.add_option_group(flags.OutputOptions(parser))
 
   browsers = sorted(profiler.GetSupportedBrowsers().keys())
@@ -235,6 +241,11 @@ When in doubt, just try out --trace-frame-viewer.
     enabled_controllers.append(
         perf_controller.PerfProfilerController(device,
                                                perf_categories))
+
+  if options.ddms:
+    enabled_controllers.append(
+        ddms_controller.DdmsController(device,
+                                       package_info))
 
   if not enabled_controllers:
     ui.PrintMessage('No trace categories enabled.')
