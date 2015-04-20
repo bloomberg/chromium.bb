@@ -27,9 +27,7 @@ namespace cast {
 // Clients are responsible for serialzing access to a |VideoFrameFactory|.
 // Generally speaking, it is expected that a client will be using these objects
 // from a rendering thread or callback (which may execute on different threads
-// but never concurrently with itself). Forcing every implementation to take a
-// lock, even with no contention, is an unnecessary cost, especially on mobile
-// platforms.
+// but never concurrently with itself).
 class VideoFrameFactory {
  public:
   virtual ~VideoFrameFactory() {}
@@ -39,7 +37,10 @@ class VideoFrameFactory {
   // with the encoder. The format is guaranteed to be I420 or NV12.
   //
   // This can transiently return null if the encoder is not yet initialized or
-  // is re-initializing.
+  // is re-initializing. Note however that if an encoder does support optimized
+  // frames, its |VideoFrameFactory| must eventually return frames. In practice,
+  // this means that |MaybeCreateFrame| must somehow signal the encoder to
+  // perform whatever initialization is needed to eventually produce frames.
   virtual scoped_refptr<VideoFrame> MaybeCreateFrame(
       const gfx::Size& frame_size, base::TimeDelta timestamp) = 0;
 };
