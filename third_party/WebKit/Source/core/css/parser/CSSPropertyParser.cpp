@@ -713,7 +713,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyBackgroundPositionX:
     case CSSPropertyBackgroundPositionY:
     case CSSPropertyBackgroundSize:
-    case CSSPropertyWebkitBackgroundSize:
     case CSSPropertyBackgroundRepeat:
     case CSSPropertyWebkitMaskClip:
     case CSSPropertyWebkitMaskComposite:
@@ -731,7 +730,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         RefPtrWillBeRawPtr<CSSValue> val2 = nullptr;
         CSSPropertyID propId1, propId2;
         bool result = false;
-        if (parseFillProperty(propId, propId1, propId2, val1, val2)) {
+        if (parseFillProperty(unresolvedProperty, propId1, propId2, val1, val2)) {
             if (propId == CSSPropertyBackgroundPosition ||
                 propId == CSSPropertyBackgroundRepeat ||
                 propId == CSSPropertyWebkitMaskPosition ||
@@ -2697,7 +2696,7 @@ void CSSPropertyParser::parseFillRepeat(RefPtrWillBeRawPtr<CSSValue>& value1, Re
     value2 = cssValuePool().createIdentifierValue(toCSSPrimitiveValue(value1.get())->getValueID());
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseFillSize(CSSPropertyID propId)
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseFillSize(CSSPropertyID unresolvedProperty)
 {
     CSSParserValue* value = m_valueList->current();
     m_valueList->next();
@@ -2725,7 +2724,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseFillSize(CSSPropertyID 
             parsedValue2 = createPrimitiveNumericValue(value);
             m_valueList->next();
         }
-    } else if (propId == CSSPropertyWebkitBackgroundSize) {
+    } else if (unresolvedProperty == CSSPropertyAliasWebkitBackgroundSize) {
         // For backwards compatibility we set the second value to the first if it is omitted.
         // We only need to do this for -webkit-background-size. It should be safe to let masks match
         // the real property.
@@ -2735,10 +2734,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseFillSize(CSSPropertyID 
     if (!parsedValue2)
         return parsedValue1;
 
-    Pair::IdenticalValuesPolicy policy = propId == CSSPropertyWebkitBackgroundSize ?
-        Pair::DropIdenticalValues : Pair::KeepIdenticalValues;
-
-    return createPrimitiveValuePair(parsedValue1.release(), parsedValue2.release(), policy);
+    return createPrimitiveValuePair(parsedValue1.release(), parsedValue2.release(), Pair::KeepIdenticalValues);
 }
 
 bool CSSPropertyParser::parseFillProperty(CSSPropertyID propId, CSSPropertyID& propId1, CSSPropertyID& propId2,
@@ -2752,8 +2748,8 @@ bool CSSPropertyParser::parseFillProperty(CSSPropertyID propId, CSSPropertyID& p
     RefPtrWillBeRawPtr<CSSValue> value2 = nullptr;
 
     retValue1 = retValue2 = nullptr;
-    propId1 = propId;
-    propId2 = propId;
+    propId1 = resolveCSSPropertyID(propId);
+    propId2 = propId1;
     if (propId == CSSPropertyBackgroundPosition) {
         propId1 = CSSPropertyBackgroundPositionX;
         propId2 = CSSPropertyBackgroundPositionY;
@@ -2863,7 +2859,7 @@ bool CSSPropertyParser::parseFillProperty(CSSPropertyID propId, CSSPropertyID& p
             // parseFillRepeat advances the m_valueList pointer
             break;
         case CSSPropertyBackgroundSize:
-        case CSSPropertyWebkitBackgroundSize:
+        case CSSPropertyAliasWebkitBackgroundSize:
         case CSSPropertyWebkitMaskSize: {
             currValue = parseFillSize(propId);
             break;

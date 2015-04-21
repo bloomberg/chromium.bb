@@ -116,7 +116,6 @@ rect: style.getPropertyValue(-webkit-appearance) : none
 rect: style.getPropertyValue(-webkit-background-clip) : border-box
 rect: style.getPropertyValue(-webkit-background-composite) : source-over
 rect: style.getPropertyValue(-webkit-background-origin) : padding-box
-rect: style.getPropertyValue(-webkit-background-size) : auto
 rect: style.getPropertyValue(-webkit-border-horizontal-spacing) : 0px
 rect: style.getPropertyValue(-webkit-border-image) : none
 rect: style.getPropertyValue(-webkit-border-vertical-spacing) : 0px
@@ -344,7 +343,6 @@ g: style.getPropertyValue(-webkit-appearance) : none
 g: style.getPropertyValue(-webkit-background-clip) : border-box
 g: style.getPropertyValue(-webkit-background-composite) : source-over
 g: style.getPropertyValue(-webkit-background-origin) : padding-box
-g: style.getPropertyValue(-webkit-background-size) : auto
 g: style.getPropertyValue(-webkit-border-horizontal-spacing) : 0px
 g: style.getPropertyValue(-webkit-border-image) : none
 g: style.getPropertyValue(-webkit-border-vertical-spacing) : 0px

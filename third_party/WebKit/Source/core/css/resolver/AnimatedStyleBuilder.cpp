@@ -182,7 +182,6 @@ void setOnFillLayers(FillLayer& fillLayers, const AnimatableValue* value, StyleR
             fillLayer->setYPosition(animatableValueToLength(layerValue, state));
             break;
         case CSSPropertyBackgroundSize:
-        case CSSPropertyWebkitBackgroundSize:
         case CSSPropertyWebkitMaskSize:
             setFillSize(fillLayer, layerValue, state);
             break;
@@ -207,7 +206,6 @@ void setOnFillLayers(FillLayer& fillLayers, const AnimatableValue* value, StyleR
             fillLayer->clearYPosition();
             break;
         case CSSPropertyBackgroundSize:
-        case CSSPropertyWebkitBackgroundSize:
         case CSSPropertyWebkitMaskSize:
             fillLayer->clearSize();
             break;
@@ -520,9 +518,6 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         return;
     case CSSPropertyTop:
         style->setTop(animatableValueToLength(value, state));
-        return;
-    case CSSPropertyWebkitBackgroundSize:
-        setOnFillLayers<CSSPropertyWebkitBackgroundSize>(style->accessBackgroundLayers(), value, state);
         return;
     case CSSPropertyWebkitBorderHorizontalSpacing:
         style->setHorizontalBorderSpacing(animatableValueRoundClampTo<unsigned short>(value));

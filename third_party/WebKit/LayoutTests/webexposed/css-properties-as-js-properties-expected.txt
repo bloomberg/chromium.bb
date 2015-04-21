@@ -274,7 +274,6 @@ webkitAppearance
 webkitBackgroundClip
 webkitBackgroundComposite
 webkitBackgroundOrigin
-webkitBackgroundSize
 webkitBorderAfter
 webkitBorderAfterColor
 webkitBorderAfterStyle

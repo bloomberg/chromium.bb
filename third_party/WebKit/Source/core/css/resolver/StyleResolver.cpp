@@ -1133,7 +1133,6 @@ static inline bool isValidFirstLetterStyleProperty(CSSPropertyID id)
     case CSSPropertyWebkitBackgroundClip:
     case CSSPropertyWebkitBackgroundComposite:
     case CSSPropertyWebkitBackgroundOrigin:
-    case CSSPropertyWebkitBackgroundSize:
     case CSSPropertyWebkitBorderAfter:
     case CSSPropertyWebkitBorderAfterColor:
     case CSSPropertyWebkitBorderAfterStyle:

@@ -1307,7 +1307,6 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return list.release();
     }
     case CSSPropertyBackgroundSize:
-    case CSSPropertyWebkitBackgroundSize:
     case CSSPropertyWebkitMaskSize: {
         RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
         const FillLayer* currLayer = propertyID == CSSPropertyWebkitMaskSize ? &style.maskLayers() : &style.backgroundLayers();

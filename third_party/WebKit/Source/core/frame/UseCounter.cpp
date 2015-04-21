@@ -221,7 +221,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyWebkitBackgroundClip: return 178;
     case CSSPropertyWebkitBackgroundComposite: return 179;
     case CSSPropertyWebkitBackgroundOrigin: return 180;
-    case CSSPropertyWebkitBackgroundSize: return 181;
+    case CSSPropertyAliasWebkitBackgroundSize: return 181;
     case CSSPropertyWebkitBorderAfter: return 182;
     case CSSPropertyWebkitBorderAfterColor: return 183;
     case CSSPropertyWebkitBorderAfterStyle: return 184;

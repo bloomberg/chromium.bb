@@ -311,7 +311,6 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
     case CSSPropertyBackgroundPositionY:
         return createFromFillLayers<CSSPropertyBackgroundPositionY>(style.backgroundLayers(), style);
     case CSSPropertyBackgroundSize:
-    case CSSPropertyWebkitBackgroundSize:
         return createFromFillLayers<CSSPropertyBackgroundSize>(style.backgroundLayers(), style);
     case CSSPropertyBaselineShift:
         switch (style.svgStyle().baselineShift()) {

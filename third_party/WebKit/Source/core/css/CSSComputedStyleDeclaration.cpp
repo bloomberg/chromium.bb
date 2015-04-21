@@ -199,7 +199,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitBackgroundClip,
     CSSPropertyWebkitBackgroundComposite,
     CSSPropertyWebkitBackgroundOrigin,
-    CSSPropertyWebkitBackgroundSize,
     CSSPropertyWebkitBorderHorizontalSpacing,
     CSSPropertyWebkitBorderImage,
     CSSPropertyWebkitBorderVerticalSpacing,
