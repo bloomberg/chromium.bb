@@ -2557,25 +2557,27 @@ void CalculateDrawPropertiesAndVerify(LayerTreeHostCommon::CalcDrawPropsInputs<
   PreCalculateMetaInformationRecursiveData recursive_data;
   PreCalculateMetaInformation(inputs->root_layer, &recursive_data);
 
-  if (!inputs->verify_property_trees) {
-    std::vector<AccumulatedSurfaceState<LayerType>> accumulated_surface_state;
-    CalculateDrawPropertiesInternal<LayerType>(
-        inputs->root_layer, globals, data_for_recursion,
-        inputs->render_surface_layer_list, &dummy_layer_list,
-        &accumulated_surface_state,
-        inputs->current_render_surface_layer_list_id);
-  } else {
-    {
-      TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
-                   "LayerTreeHostCommon::CalculateDrawProperties");
-      std::vector<AccumulatedSurfaceState<LayerType>> accumulated_surface_state;
-      CalculateDrawPropertiesInternal<LayerType>(
-          inputs->root_layer, globals, data_for_recursion,
-          inputs->render_surface_layer_list, &dummy_layer_list,
-          &accumulated_surface_state,
-          inputs->current_render_surface_layer_list_id);
-    }
+  const bool should_measure_property_tree_performance =
+      inputs->verify_property_trees &&
+      (property_tree_option == BUILD_PROPERTY_TREES_IF_NEEDED);
 
+  if (should_measure_property_tree_performance) {
+    TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
+                       "LayerTreeHostCommon::CalculateDrawProperties");
+  }
+
+  std::vector<AccumulatedSurfaceState<LayerType>> accumulated_surface_state;
+  CalculateDrawPropertiesInternal<LayerType>(
+      inputs->root_layer, globals, data_for_recursion,
+      inputs->render_surface_layer_list, &dummy_layer_list,
+      &accumulated_surface_state, inputs->current_render_surface_layer_list_id);
+
+  if (should_measure_property_tree_performance) {
+    TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
+                     "LayerTreeHostCommon::CalculateDrawProperties");
+  }
+
+  if (inputs->verify_property_trees) {
     // For testing purposes, sometimes property trees need to be built on the
     // compositor thread, so this can't just switch on Layer vs LayerImpl,
     // even though in practice only the main thread builds property trees.
@@ -2584,14 +2586,24 @@ void CalculateDrawPropertiesAndVerify(LayerTreeHostCommon::CalcDrawPropsInputs<
         // The translation from layer to property trees is an intermediate
         // state. We will eventually get these data passed directly to the
         // compositor.
-        TRACE_EVENT0(
-            TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
-            "LayerTreeHostCommon::ComputeVisibleRectsWithPropertyTrees");
+        if (should_measure_property_tree_performance) {
+          TRACE_EVENT_BEGIN0(
+              TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
+              "LayerTreeHostCommon::ComputeVisibleRectsWithPropertyTrees");
+        }
+
         BuildPropertyTreesAndComputeVisibleRects(
             inputs->root_layer, inputs->page_scale_application_layer,
             inputs->page_scale_factor, inputs->device_scale_factor,
             gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
             inputs->property_trees);
+
+        if (should_measure_property_tree_performance) {
+          TRACE_EVENT_END0(
+              TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
+              "LayerTreeHostCommon::ComputeVisibleRectsWithPropertyTrees");
+        }
+
         break;
       }
       case DONT_BUILD_PROPERTY_TREES: {
