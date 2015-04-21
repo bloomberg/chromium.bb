@@ -174,8 +174,6 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
 
   void SetMirrorModeAfterAnimation(bool mirror);
 
-  void UpdateHostWindowNames();
-
   class DisplayChangeLimiter {
    public:
     DisplayChangeLimiter();

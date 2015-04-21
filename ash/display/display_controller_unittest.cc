@@ -361,23 +361,6 @@ float GetStoredUIScale(int64 id) {
       GetEffectiveUIScale();
 }
 
-#if defined(USE_X11)
-void GetPrimaryAndSeconary(aura::Window** primary,
-                           aura::Window** secondary) {
-  *primary = Shell::GetPrimaryRootWindow();
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  *secondary = root_windows[0] == *primary ? root_windows[1] : root_windows[0];
-}
-
-std::string GetXWindowName(aura::WindowTreeHost* host) {
-  char* name = NULL;
-  XFetchName(gfx::GetXDisplay(), host->GetAcceleratedWidget(), &name);
-  std::string ret(name);
-  XFree(name);
-  return ret;
-}
-#endif
-
 class TestMouseWatcherListener : public views::MouseWatcherListener {
  public:
   TestMouseWatcherListener() {}
@@ -1306,32 +1289,6 @@ TEST_F(DisplayControllerTest, ReplaceSwappedPrimary) {
 
   EXPECT_EQ(20, Shell::GetScreen()->GetPrimaryDisplay().id());
 }
-
-#if defined(USE_X11)
-TEST_F(DisplayControllerTest, XWidowNameForRootWindow) {
-  EXPECT_EQ("aura_root_0", GetXWindowName(
-      Shell::GetPrimaryRootWindow()->GetHost()));
-
-  // Multiple display.
-  UpdateDisplay("200x200,300x300");
-  aura::Window* primary, *secondary;
-  GetPrimaryAndSeconary(&primary, &secondary);
-  EXPECT_EQ("aura_root_0", GetXWindowName(primary->GetHost()));
-  EXPECT_EQ("aura_root_x", GetXWindowName(secondary->GetHost()));
-
-  // Swap primary.
-  primary = secondary = NULL;
-  Shell::GetInstance()->display_controller()->SwapPrimaryDisplay();
-  GetPrimaryAndSeconary(&primary, &secondary);
-  EXPECT_EQ("aura_root_0", GetXWindowName(primary->GetHost()));
-  EXPECT_EQ("aura_root_x", GetXWindowName(secondary->GetHost()));
-
-  // Switching back to single display.
-  UpdateDisplay("300x400");
-  EXPECT_EQ("aura_root_0", GetXWindowName(
-      Shell::GetPrimaryRootWindow()->GetHost()));
-}
-#endif
 
 TEST_F(DisplayControllerTest, UpdateMouseLocationAfterDisplayChange) {
   if (!SupportsMultipleDisplays())
