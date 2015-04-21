@@ -573,9 +573,14 @@
           'sources': [
             'app/cast_main.cc',
           ],
-          # TODO(dougsteed): remove when Chromecast moves to boringssl.
-          # Allow the cast shell to find the NSS module in the same directory.
           'ldflags': [
+            # Allow  OEMs to override default libraries that are shipped with
+            # cast receiver package by installed OEM-specific libraries in
+            # /oem_cast_shlib.
+            '-Wl,-rpath=/oem_cast_shlib',
+            # TODO(dougsteed): remove when Chromecast moves to boringssl.
+            # Allow the cast shell to find the NSS module in the same
+            # directory.
             '-Wl,-rpath=\$$ORIGIN'
           ],
         },
