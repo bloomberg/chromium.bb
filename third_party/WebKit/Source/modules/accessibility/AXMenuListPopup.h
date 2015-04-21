@@ -58,7 +58,7 @@ private:
     virtual bool press() const override;
     virtual void addChildren() override;
     virtual void updateChildrenIfNecessary() override;
-    virtual bool computeAccessibilityIsIgnored() const override;
+    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 
     AXMenuListOption* menuListOptionAXObject(HTMLElement*) const;
     int getSelectedIndex() const;

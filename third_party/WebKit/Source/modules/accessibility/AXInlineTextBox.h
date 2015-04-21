@@ -61,7 +61,7 @@ public:
 private:
     RefPtr<AbstractInlineTextBox> m_inlineTextBox;
 
-    virtual bool computeAccessibilityIsIgnored() const override;
+    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
 } // namespace blink

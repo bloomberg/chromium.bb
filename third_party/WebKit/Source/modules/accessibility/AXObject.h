@@ -30,6 +30,7 @@
 #ifndef AXObject_h
 #define AXObject_h
 
+#include "core/InspectorTypeBuilder.h"
 #include "core/editing/VisiblePosition.h"
 #include "modules/ModulesExport.h"
 #include "platform/geometry/FloatQuad.h"
@@ -304,6 +305,39 @@ enum AXDescriptionFrom {
     AXDescriptionFromRelatedElement
 };
 
+enum AXIgnoredReason {
+    AXActiveModalDialog,
+    AXAncestorDisallowsChild,
+    AXAncestorIsLeafNode,
+    AXAriaHidden,
+    AXAriaHiddenRoot,
+    AXEmptyAlt,
+    AXEmptyText,
+    AXInheritsPresentation,
+    AXLabelContainer,
+    AXLabelFor,
+    AXNotRendered,
+    AXNotVisible,
+    AXProbablyPresentational,
+    AXStaticTextUsedAsNameFor,
+    AXUninteresting
+};
+
+struct IgnoredReason {
+    AXIgnoredReason reason;
+    const AXObject* relatedObject;
+
+    explicit IgnoredReason(AXIgnoredReason reason)
+        : reason(reason)
+        , relatedObject(nullptr)
+    { }
+
+    IgnoredReason(AXIgnoredReason r, const AXObject* obj)
+        : reason(r)
+        , relatedObject(obj)
+    { }
+};
+
 class MODULES_EXPORT AXObject : public RefCounted<AXObject> {
 public:
     typedef Vector<RefPtr<AXObject>> AccessibilityChildrenVector;
@@ -443,12 +477,14 @@ public:
 
     // Whether objects are ignored, i.e. not included in the tree.
     bool accessibilityIsIgnored() const;
-    bool accessibilityIsIgnoredByDefault() const;
+    typedef Vector<IgnoredReason> IgnoredReasons;
+    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const { return true; }
+    bool accessibilityIsIgnoredByDefault(IgnoredReasons* = nullptr) const;
     AXObjectInclusion accessibilityPlatformIncludesObject() const;
-    virtual AXObjectInclusion defaultObjectInclusion() const;
+    virtual AXObjectInclusion defaultObjectInclusion(IgnoredReasons* = nullptr) const;
     bool isInertOrAriaHidden() const;
     const AXObject* ariaHiddenRoot() const;
-    bool computeIsInertOrAriaHidden() const;
+    bool computeIsInertOrAriaHidden(IgnoredReasons* = nullptr) const;
     bool isDescendantOfLeafNode() const;
     AXObject* leafNodeAncestor() const;
     bool isDescendantOfDisabledNode() const;
@@ -689,7 +725,6 @@ protected:
     AXObjectInclusion m_lastKnownIsIgnoredValue;
     LayoutRect m_explicitElementRect;
 
-    virtual bool computeAccessibilityIsIgnored() const { return true; }
     virtual const AXObject* inheritsPresentationalRoleFrom() const { return 0; }
 
     // If this object itself scrolls, return its ScrollableArea.

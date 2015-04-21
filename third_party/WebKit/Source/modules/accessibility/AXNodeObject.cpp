@@ -158,7 +158,7 @@ void AXNodeObject::ariaLabeledByElements(WillBeHeapVector<RawPtrWillBeMember<Ele
         elementsFromAttribute(elements, aria_labelledbyAttr);
 }
 
-bool AXNodeObject::computeAccessibilityIsIgnored() const
+bool AXNodeObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
 {
 #if ENABLE(ASSERT)
     // Double-check that an AXObject is never accessed before
@@ -232,6 +232,7 @@ static bool isRequiredOwnedElement(AXObject* parent, AccessibilityRole childRole
     // If it's just ignored because of presentation, we can't see any AX tree related to ListBoxOption.
     return false;
 }
+
 
 const AXObject* AXNodeObject::inheritsPresentationalRoleFrom() const
 {

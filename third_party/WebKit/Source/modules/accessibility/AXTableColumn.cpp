@@ -121,12 +121,18 @@ AXObject* AXTableColumn::headerObject()
     return headers[0].get();
 }
 
-bool AXTableColumn::computeAccessibilityIsIgnored() const
+bool AXTableColumn::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
 {
     if (!m_parent)
         return true;
 
-    return m_parent->accessibilityIsIgnored();
+    if (!m_parent->accessibilityIsIgnored())
+        return false;
+
+    if (ignoredReasons)
+        m_parent->computeAccessibilityIsIgnored(ignoredReasons);
+
+    return true;
 }
 
 void AXTableColumn::addChildren()

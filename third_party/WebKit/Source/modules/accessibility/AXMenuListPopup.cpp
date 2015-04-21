@@ -60,9 +60,9 @@ bool AXMenuListPopup::isEnabled() const
     return m_parent->isEnabled();
 }
 
-bool AXMenuListPopup::computeAccessibilityIsIgnored() const
+bool AXMenuListPopup::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
 {
-    return accessibilityIsIgnoredByDefault();
+    return accessibilityIsIgnoredByDefault(ignoredReasons);
 }
 
 AXMenuListOption* AXMenuListPopup::menuListOptionAXObject(HTMLElement* element) const

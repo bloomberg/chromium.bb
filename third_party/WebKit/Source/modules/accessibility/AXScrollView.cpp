@@ -144,7 +144,7 @@ void AXScrollView::clearChildren()
     m_horizontalScrollbar = nullptr;
 }
 
-bool AXScrollView::computeAccessibilityIsIgnored() const
+bool AXScrollView::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
 {
     // We just want to match whatever's returned by our web area, which is a child of this
     // object. Normally cached attribute values may only search up the tree. We can't just
@@ -157,8 +157,14 @@ bool AXScrollView::computeAccessibilityIsIgnored() const
     m_lastModificationCount = axObjectCache()->modificationCount();
 
     AXObject* webArea = webAreaObject();
-    if (webArea)
-        return webArea->accessibilityIsIgnored();
+    if (!webArea)
+        return true;
+
+    if (!webArea->accessibilityIsIgnored())
+        return false;
+
+    if (ignoredReasons)
+        return webArea->computeAccessibilityIsIgnored(ignoredReasons);
 
     return true;
 }

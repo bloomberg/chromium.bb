@@ -72,16 +72,16 @@ bool AXTableRow::isTableRow() const
     return true;
 }
 
-bool AXTableRow::computeAccessibilityIsIgnored() const
+bool AXTableRow::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
 {
-    AXObjectInclusion decision = defaultObjectInclusion();
+    AXObjectInclusion decision = defaultObjectInclusion(ignoredReasons);
     if (decision == IncludeObject)
         return false;
     if (decision == IgnoreObject)
         return true;
 
     if (!isTableRow())
-        return AXLayoutObject::computeAccessibilityIsIgnored();
+        return AXLayoutObject::computeAccessibilityIsIgnored(ignoredReasons);
 
     return false;
 }

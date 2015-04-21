@@ -53,12 +53,18 @@ LayoutRect AXTableHeaderContainer::elementRect() const
     return m_headerRect;
 }
 
-bool AXTableHeaderContainer::computeAccessibilityIsIgnored() const
+bool AXTableHeaderContainer::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
 {
     if (!m_parent)
         return true;
 
-    return m_parent->accessibilityIsIgnored();
+    if (!m_parent->accessibilityIsIgnored())
+        return false;
+
+    if (ignoredReasons)
+        m_parent->computeAccessibilityIsIgnored(ignoredReasons);
+
+    return true;
 }
 
 void AXTableHeaderContainer::addChildren()

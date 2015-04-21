@@ -45,7 +45,7 @@ private:
     AXProgressIndicator(LayoutProgress*, AXObjectCacheImpl*);
 
     HTMLProgressElement* element() const;
-    virtual bool computeAccessibilityIsIgnored() const override;
+    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
 

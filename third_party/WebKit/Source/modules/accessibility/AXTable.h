@@ -88,7 +88,7 @@ protected:
 
     bool hasARIARole() const;
     virtual bool isTableExposableThroughAccessibility() const;
-    virtual bool computeAccessibilityIsIgnored() const override final;
+    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override final;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXTable, isAXTable());

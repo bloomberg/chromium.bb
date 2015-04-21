@@ -150,12 +150,12 @@ String AccessibilityMediaControl::deprecatedHelpText() const
     }
 }
 
-bool AccessibilityMediaControl::computeAccessibilityIsIgnored() const
+bool AccessibilityMediaControl::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
 {
     if (!m_layoutObject || !m_layoutObject->style() || m_layoutObject->style()->visibility() != VISIBLE || controlType() == MediaTimelineContainer)
         return true;
 
-    return accessibilityIsIgnoredByDefault();
+    return accessibilityIsIgnoredByDefault(ignoredReasons);
 }
 
 AccessibilityRole AccessibilityMediaControl::roleValue() const
@@ -206,9 +206,9 @@ String AXMediaControlsContainer::deprecatedHelpText() const
     return queryString(isControllingVideoElement() ? WebLocalizedString::AXMediaVideoElementHelp : WebLocalizedString::AXMediaAudioElementHelp);
 }
 
-bool AXMediaControlsContainer::computeAccessibilityIsIgnored() const
+bool AXMediaControlsContainer::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
 {
-    return accessibilityIsIgnoredByDefault();
+    return accessibilityIsIgnoredByDefault(ignoredReasons);
 }
 
 //
@@ -259,7 +259,7 @@ PassRefPtr<AXObject> AccessibilityMediaTimeDisplay::create(LayoutObject* layoutO
     return adoptRef(new AccessibilityMediaTimeDisplay(layoutObject, axObjectCache));
 }
 
-bool AccessibilityMediaTimeDisplay::computeAccessibilityIsIgnored() const
+bool AccessibilityMediaTimeDisplay::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
 {
     if (!m_layoutObject || !m_layoutObject->style() || m_layoutObject->style()->visibility() != VISIBLE)
         return true;
@@ -267,7 +267,7 @@ bool AccessibilityMediaTimeDisplay::computeAccessibilityIsIgnored() const
     if (!m_layoutObject->style()->width().value())
         return true;
 
-    return accessibilityIsIgnoredByDefault();
+    return accessibilityIsIgnoredByDefault(ignoredReasons);
 }
 
 String AccessibilityMediaTimeDisplay::deprecatedAccessibilityDescription() const

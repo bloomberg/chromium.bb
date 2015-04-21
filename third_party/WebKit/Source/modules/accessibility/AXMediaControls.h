@@ -52,7 +52,7 @@ public:
 protected:
     AccessibilityMediaControl(LayoutObject*, AXObjectCacheImpl*);
     MediaControlElementType controlType() const;
-    virtual bool computeAccessibilityIsIgnored() const override;
+    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
 
@@ -85,7 +85,7 @@ public:
 private:
     AXMediaControlsContainer(LayoutObject*, AXObjectCacheImpl*);
     bool controllingVideoElement() const;
-    virtual bool computeAccessibilityIsIgnored() const override;
+    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
 
@@ -102,7 +102,7 @@ public:
 
 private:
     AccessibilityMediaTimeDisplay(LayoutObject*, AXObjectCacheImpl*);
-    virtual bool computeAccessibilityIsIgnored() const override;
+    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
 

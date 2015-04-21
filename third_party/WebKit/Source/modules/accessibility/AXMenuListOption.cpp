@@ -94,9 +94,9 @@ bool AXMenuListOption::canSetSelectedAttribute() const
     return isEnabled();
 }
 
-bool AXMenuListOption::computeAccessibilityIsIgnored() const
+bool AXMenuListOption::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
 {
-    return accessibilityIsIgnoredByDefault();
+    return accessibilityIsIgnoredByDefault(ignoredReasons);
 }
 
 LayoutRect AXMenuListOption::elementRect() const

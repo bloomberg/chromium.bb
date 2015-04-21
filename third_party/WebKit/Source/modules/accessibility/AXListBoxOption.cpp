@@ -112,12 +112,12 @@ bool AXListBoxOption::isSelectedOptionActive() const
     return listBoxParentNode->activeSelectionEndListIndex() == listBoxOptionIndex();
 }
 
-bool AXListBoxOption::computeAccessibilityIsIgnored() const
+bool AXListBoxOption::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
 {
     if (!node())
         return true;
 
-    if (accessibilityIsIgnoredByDefault())
+    if (accessibilityIsIgnoredByDefault(ignoredReasons))
         return true;
 
     return false;

@@ -39,9 +39,9 @@ AXMockObject::~AXMockObject()
 {
 }
 
-bool AXMockObject::computeAccessibilityIsIgnored() const
+bool AXMockObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
 {
-    return accessibilityIsIgnoredByDefault();
+    return accessibilityIsIgnoredByDefault(ignoredReasons);
 }
 
 }

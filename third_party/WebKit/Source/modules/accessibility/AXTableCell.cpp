@@ -68,16 +68,16 @@ bool AXTableCell::isColumnHeaderCell() const
     return equalIgnoringCase(scope, "col") || equalIgnoringCase(scope, "colgroup");
 }
 
-bool AXTableCell::computeAccessibilityIsIgnored() const
+bool AXTableCell::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
 {
-    AXObjectInclusion decision = defaultObjectInclusion();
+    AXObjectInclusion decision = defaultObjectInclusion(ignoredReasons);
     if (decision == IncludeObject)
         return false;
     if (decision == IgnoreObject)
         return true;
 
     if (!isTableCell())
-        return AXLayoutObject::computeAccessibilityIsIgnored();
+        return AXLayoutObject::computeAccessibilityIsIgnored(ignoredReasons);
 
     return false;
 }

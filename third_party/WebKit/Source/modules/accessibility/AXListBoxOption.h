@@ -59,7 +59,7 @@ public:
 
 private:
     virtual bool canHaveChildren() const override { return false; }
-    virtual bool computeAccessibilityIsIgnored() const override;
+    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 
     HTMLSelectElement* listBoxOptionParentNode() const;
     int listBoxOptionIndex() const;

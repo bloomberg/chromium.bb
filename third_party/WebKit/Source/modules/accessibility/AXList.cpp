@@ -51,9 +51,9 @@ PassRefPtr<AXList> AXList::create(LayoutObject* layoutObject, AXObjectCacheImpl*
     return adoptRef(new AXList(layoutObject, axObjectCache));
 }
 
-bool AXList::computeAccessibilityIsIgnored() const
+bool AXList::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
 {
-    return accessibilityIsIgnoredByDefault();
+    return accessibilityIsIgnoredByDefault(ignoredReasons);
 }
 
 bool AXList::isDescriptionList() const

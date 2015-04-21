@@ -65,7 +65,7 @@ protected:
 private:
     int m_rowIndex;
 
-    virtual bool computeAccessibilityIsIgnored() const override final;
+    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override final;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXTableRow, isTableRow());

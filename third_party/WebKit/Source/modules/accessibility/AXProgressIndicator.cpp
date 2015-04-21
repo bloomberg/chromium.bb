@@ -47,9 +47,9 @@ AccessibilityRole AXProgressIndicator::determineAccessibilityRole()
     return ProgressIndicatorRole;
 }
 
-bool AXProgressIndicator::computeAccessibilityIsIgnored() const
+bool AXProgressIndicator::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
 {
-    return accessibilityIsIgnoredByDefault();
+    return accessibilityIsIgnoredByDefault(ignoredReasons);
 }
 
 float AXProgressIndicator::valueForRange() const

@@ -503,9 +503,9 @@ void AXObject::updateCachedAttributeValuesIfNeeded() const
         (parentObjectIfExists() ? parentObjectIfExists()->liveRegionRoot() : 0);
 }
 
-bool AXObject::accessibilityIsIgnoredByDefault() const
+bool AXObject::accessibilityIsIgnoredByDefault(IgnoredReasons* ignoredReasons) const
 {
-    return defaultObjectInclusion() == IgnoreObject;
+    return defaultObjectInclusion(ignoredReasons) == IgnoreObject;
 }
 
 AXObjectInclusion AXObject::accessibilityPlatformIncludesObject() const
@@ -516,10 +516,13 @@ AXObjectInclusion AXObject::accessibilityPlatformIncludesObject() const
     return DefaultBehavior;
 }
 
-AXObjectInclusion AXObject::defaultObjectInclusion() const
+AXObjectInclusion AXObject::defaultObjectInclusion(IgnoredReasons* ignoredReasons) const
 {
-    if (isInertOrAriaHidden())
+    if (isInertOrAriaHidden()) {
+        if (ignoredReasons)
+            computeIsInertOrAriaHidden(ignoredReasons);
         return IgnoreObject;
+    }
 
     if (ancestorForWhichThisIsAPresentationalChild())
         return IgnoreObject;
@@ -533,18 +536,32 @@ bool AXObject::isInertOrAriaHidden() const
     return m_cachedIsInertOrAriaHidden;
 }
 
-bool AXObject::computeIsInertOrAriaHidden() const
+bool AXObject::computeIsInertOrAriaHidden(IgnoredReasons* ignoredReasons) const
 {
     if (node()) {
         if (node()->isInert())
             return true;
     } else {
         AXObject* parent = parentObject();
-        if (parent && parent->isInertOrAriaHidden())
+        if (parent && parent->isInertOrAriaHidden()) {
+            if (ignoredReasons)
+                parent->computeIsInertOrAriaHidden(ignoredReasons);
             return true;
+        }
     }
 
-    return ariaHiddenRoot() != 0;
+    const AXObject* hiddenRoot = ariaHiddenRoot();
+    if (hiddenRoot) {
+        if (ignoredReasons) {
+            if (hiddenRoot == this)
+                ignoredReasons->append(IgnoredReason(AXAriaHidden));
+            else
+                ignoredReasons->append(IgnoredReason(AXAriaHiddenRoot, hiddenRoot));
+        }
+        return true;
+    }
+
+    return false;
 }
 
 bool AXObject::isDescendantOfLeafNode() const

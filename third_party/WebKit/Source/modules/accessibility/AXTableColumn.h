@@ -67,7 +67,7 @@ private:
     LayoutRect m_columnRect;
 
     virtual bool isTableCol() const override { return true; }
-    virtual bool computeAccessibilityIsIgnored() const override;
+    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXTableColumn, isTableCol());

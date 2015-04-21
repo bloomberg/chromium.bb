@@ -57,7 +57,7 @@ private:
     virtual bool canSetSelectedAttribute() const override;
     virtual LayoutRect elementRect() const override;
     virtual String stringValue() const override;
-    virtual bool computeAccessibilityIsIgnored() const override;
+    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 
     HTMLOptionElement* m_element;
 };

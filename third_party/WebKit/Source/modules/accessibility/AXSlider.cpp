@@ -159,9 +159,9 @@ LayoutRect AXSliderThumb::elementRect() const
     return toElement(sliderLayoutObject->node())->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderThumb())->boundingBox();
 }
 
-bool AXSliderThumb::computeAccessibilityIsIgnored() const
+bool AXSliderThumb::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
 {
-    return accessibilityIsIgnoredByDefault();
+    return accessibilityIsIgnoredByDefault(ignoredReasons);
 }
 
 } // namespace blink

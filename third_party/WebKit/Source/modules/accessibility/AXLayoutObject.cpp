@@ -464,7 +464,7 @@ bool AXLayoutObject::isSelected() const
 // Whether objects are ignored, i.e. not included in the tree.
 //
 
-AXObjectInclusion AXLayoutObject::defaultObjectInclusion() const
+AXObjectInclusion AXLayoutObject::defaultObjectInclusion(IgnoredReasons* ignoredReasons) const
 {
     // The following cases can apply to any element that's a subclass of AXLayoutObject.
 
@@ -479,10 +479,10 @@ AXObjectInclusion AXLayoutObject::defaultObjectInclusion() const
         return IgnoreObject;
     }
 
-    return AXObject::defaultObjectInclusion();
+    return AXObject::defaultObjectInclusion(ignoredReasons);
 }
 
-bool AXLayoutObject::computeAccessibilityIsIgnored() const
+bool AXLayoutObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
 {
 #if ENABLE(ASSERT)
     ASSERT(m_initialized);
@@ -491,7 +491,7 @@ bool AXLayoutObject::computeAccessibilityIsIgnored() const
     // Check first if any of the common reasons cause this element to be ignored.
     // Then process other use cases that need to be applied to all the various roles
     // that AXLayoutObjects take on.
-    AXObjectInclusion decision = defaultObjectInclusion();
+    AXObjectInclusion decision = defaultObjectInclusion(ignoredReasons);
     if (decision == IncludeObject)
         return false;
     if (decision == IgnoreObject)

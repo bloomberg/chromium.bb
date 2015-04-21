@@ -67,7 +67,7 @@ private:
     // If a table cell is not exposed as a table cell, a TH element can serve as its title UI element.
     virtual AXObject* deprecatedTitleUIElement() const override final;
     virtual bool deprecatedExposesTitleUIElement() const override final { return true; }
-    virtual bool computeAccessibilityIsIgnored() const override final;
+    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override final;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXTableCell, isTableCell());

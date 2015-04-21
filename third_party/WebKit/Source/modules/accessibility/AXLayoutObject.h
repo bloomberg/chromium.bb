@@ -96,8 +96,8 @@ protected:
     virtual bool isSelected() const override;
 
     // Whether objects are ignored, i.e. not included in the tree.
-    virtual AXObjectInclusion defaultObjectInclusion() const override;
-    virtual bool computeAccessibilityIsIgnored() const override;
+    virtual AXObjectInclusion defaultObjectInclusion(IgnoredReasons* = nullptr) const override;
+    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 
     // Properties of static elements.
     virtual const AtomicString& accessKey() const override;
