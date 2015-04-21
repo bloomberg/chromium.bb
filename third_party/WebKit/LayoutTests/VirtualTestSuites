@@ -227,5 +227,10 @@
     "prefix": "smoothscrolling",
     "base": "fast/events/touch/gesture",
     "args": ["--enable-smooth-scrolling"]
+  },
+  {
+    "prefix": "pointerevent",
+    "base": "fast/events",
+    "args": ["--enable-blink-features=PointerEvent"]
   }
 ]

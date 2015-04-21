@@ -35,6 +35,7 @@ virtual/slimmingpaint/fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 # Chrome uses different keyboard accelerators from those used by Safari, so
 # this test will always fail.
 [ Linux Win ] fast/events/option-tab.html [ WontFix ]
+[ Linux Win ] virtual/pointerevent/fast/events/option-tab.html [ WontFix ]
 [ Linux Win ] virtual/slimmingpaint/fast/events/option-tab.html [ WontFix ]
 
 # This test only applies to overlay scrollbar platforms.
@@ -73,6 +74,14 @@ virtual/slimmingpaint/fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 [ Linux Mac ] fast/events/panScroll-nested-divs.html [ WontFix ]
 [ Linux Mac ] fast/events/panScroll-panIcon.html [ WontFix ]
 [ Linux Mac ] fast/events/panScroll-nested-divs-forbidden.html [ WontFix ]
+[ Linux Mac ] virtual/pointerevent/fast/events/panScroll-click.html [ WontFix ]
+[ Linux Mac ] virtual/pointerevent/fast/events/panScroll-click-hyperlink.html [ WontFix ]
+[ Linux Mac ] virtual/pointerevent/fast/events/panScroll-drag.html [ WontFix ]
+[ Linux Mac ] virtual/pointerevent/fast/events/panScroll-event-fired.html [ WontFix ]
+[ Linux Mac ] virtual/pointerevent/fast/events/panScroll-in-iframe.html [ WontFix ]
+[ Linux Mac ] virtual/pointerevent/fast/events/panScroll-nested-divs.html [ WontFix ]
+[ Linux Mac ] virtual/pointerevent/fast/events/panScroll-panIcon.html [ WontFix ]
+[ Linux Mac ] virtual/pointerevent/fast/events/panScroll-nested-divs-forbidden.html [ WontFix ]
 [ Linux Mac ] virtual/slimmingpaint/fast/events/panScroll-click.html [ WontFix ]
 [ Linux Mac ] virtual/slimmingpaint/fast/events/panScroll-click-hyperlink.html [ WontFix ]
 [ Linux Mac ] virtual/slimmingpaint/fast/events/panScroll-drag.html [ WontFix ]
