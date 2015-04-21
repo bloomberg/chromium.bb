@@ -603,6 +603,9 @@ void HTMLTextFormControlElement::scheduleSelectEvent()
 
 void HTMLTextFormControlElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
+    if (name == autocapitalizeAttr)
+        UseCounter::count(document(), UseCounter::AutocapitalizeAttribute);
+
     if (name == placeholderAttr) {
         updatePlaceholderVisibility(true);
         UseCounter::count(document(), UseCounter::PlaceholderAttribute);

@@ -697,6 +697,7 @@ public:
         V8MediaList_Item_Method = 761,
         V8StyleSheetList_Item_Method = 762,
         StyleSheetListAnonymousNamedGetter = 763,
+        AutocapitalizeAttribute = 764,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
