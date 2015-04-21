@@ -33,7 +33,7 @@ class EvdevThread : public base::Thread {
   ~EvdevThread() override { Stop(); }
 
   void Init() override {
-    TRACE_EVENT0("ozone", "EvdevThread::Init");
+    TRACE_EVENT0("evdev", "EvdevThread::Init");
     input_device_factory_ =
         new InputDeviceFactoryEvdev(dispatcher_.Pass(), cursor_);
 
@@ -46,7 +46,7 @@ class EvdevThread : public base::Thread {
   }
 
   void CleanUp() override {
-    TRACE_EVENT0("ozone", "EvdevThread::CleanUp");
+    TRACE_EVENT0("evdev", "EvdevThread::CleanUp");
     delete input_device_factory_;
   }
 
@@ -72,7 +72,7 @@ EventThreadEvdev::~EventThreadEvdev() {
 void EventThreadEvdev::Start(scoped_ptr<DeviceEventDispatcherEvdev> dispatcher,
                              CursorDelegateEvdev* cursor,
                              const EventThreadStartCallback& callback) {
-  TRACE_EVENT0("ozone", "EventThreadEvdev::Start");
+  TRACE_EVENT0("evdev", "EventThreadEvdev::Start");
   thread_.reset(new EvdevThread(dispatcher.Pass(), cursor, callback));
   if (!thread_->StartWithOptions(
           base::Thread::Options(base::MessageLoop::TYPE_UI, 0)))

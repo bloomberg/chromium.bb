@@ -134,7 +134,7 @@ void DeviceManagerUdev::RemoveObserver(DeviceEventObserver* observer) {
 void DeviceManagerUdev::OnFileCanReadWithoutBlocking(int fd) {
   // The netlink socket should never become disconnected. There's no need
   // to handle broken connections here.
-  TRACE_EVENT1("ozone", "UdevDeviceChange", "socket", fd);
+  TRACE_EVENT1("evdev", "UdevDeviceChange", "socket", fd);
 
   device::ScopedUdevDevicePtr device(
       device::udev_monitor_receive_device(monitor_.get()));

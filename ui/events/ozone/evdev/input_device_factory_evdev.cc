@@ -130,7 +130,7 @@ void OpenInputDevice(scoped_ptr<OpenInputDeviceParams> params,
   const base::FilePath& path = params->path;
   scoped_ptr<EventConverterEvdev> converter;
 
-  TRACE_EVENT1("ozone", "OpenInputDevice", "path", path.value());
+  TRACE_EVENT1("evdev", "OpenInputDevice", "path", path.value());
 
   int fd = open(path.value().c_str(), O_RDWR | O_NONBLOCK);
   if (fd < 0) {
@@ -170,7 +170,7 @@ void OpenInputDevice(scoped_ptr<OpenInputDeviceParams> params,
 // run it on the FILE thread.
 void CloseInputDevice(const base::FilePath& path,
                       scoped_ptr<EventConverterEvdev> converter) {
-  TRACE_EVENT1("ozone", "CloseInputDevice", "path", path.value());
+  TRACE_EVENT1("evdev", "CloseInputDevice", "path", path.value());
   converter.reset();
 }
 
@@ -232,7 +232,7 @@ void InputDeviceFactoryEvdev::AttachInputDevice(
   if (converter.get()) {
     const base::FilePath& path = converter->path();
 
-    TRACE_EVENT1("ozone", "AttachInputDevice", "path", path.value());
+    TRACE_EVENT1("evdev", "AttachInputDevice", "path", path.value());
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
     // If we have an existing device, detach it. We don't want two
@@ -255,7 +255,7 @@ void InputDeviceFactoryEvdev::AttachInputDevice(
 }
 
 void InputDeviceFactoryEvdev::DetachInputDevice(const base::FilePath& path) {
-  TRACE_EVENT1("ozone", "DetachInputDevice", "path", path.value());
+  TRACE_EVENT1("evdev", "DetachInputDevice", "path", path.value());
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   // Remove device from map.
