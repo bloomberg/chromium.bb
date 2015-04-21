@@ -2066,6 +2066,14 @@ void AXNodeObject::childrenChanged()
     if (!node() && !layoutObject())
         return;
 
+    // If this is not part of the accessibility tree because an ancestor
+    // has only presentational children, invalidate this object's children but
+    // skip sending a notification and skip walking up the ancestors.
+    if (ancestorForWhichThisIsAPresentationalChild()) {
+        setNeedsToUpdateChildren();
+        return;
+    }
+
     axObjectCache()->postNotification(this, AXObjectCacheImpl::AXChildrenChanged);
 
     // Go up the accessibility parent chain, but only if the element already exists. This method is

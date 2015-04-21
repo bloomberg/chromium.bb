@@ -1015,9 +1015,19 @@ bool AXLayoutObject::ariaRoleHasPresentationalChildren() const
 AXObject* AXLayoutObject::ancestorForWhichThisIsAPresentationalChild() const
 {
     // Walk the parent chain looking for a parent that has presentational children
-    AXObject* parent;
-    for (parent = parentObject(); parent && !parent->ariaRoleHasPresentationalChildren(); parent = parent->parentObject())
-    { }
+    AXObject* parent = parentObject();
+    while (parent) {
+        if (parent->ariaRoleHasPresentationalChildren())
+            break;
+
+        // The descendants of a AXMenuList that are AXLayoutObjects are all
+        // presentational. (The real descendants are a AXMenuListPopup and
+        // AXMenuListOptions, which are not AXLayoutObjects.)
+        if (parent->isMenuList())
+            break;
+
+        parent = parent->parentObjectIfExists();
+    }
 
     return parent;
 }

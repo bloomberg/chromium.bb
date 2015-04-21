@@ -491,6 +491,8 @@ public:
     const AXObject* disabledAncestor() const;
     bool lastKnownIsIgnoredValue();
     void setLastKnownIsIgnoredValue(bool);
+    bool hasInheritedPresentationalRole() const;
+    bool isPresentationalChild() const;
 
     //
     // Deprecated text alternative calculation API. All of these will be replaced
@@ -715,8 +717,6 @@ public:
     static const AtomicString& internalRoleName(AccessibilityRole);
     static bool isInsideFocusableElementOrARIAWidget(const Node&);
 
-    bool hasInheritedPresentationalRole() const { return m_cachedHasInheritedPresentationalRole; }
-
 protected:
     AXID m_id;
     AccessibilityChildrenVector m_children;
@@ -747,6 +747,7 @@ protected:
     mutable bool m_cachedIsDescendantOfLeafNode : 1;
     mutable bool m_cachedIsDescendantOfDisabledNode : 1;
     mutable bool m_cachedHasInheritedPresentationalRole : 1;
+    mutable bool m_cachedIsPresentationalChild : 1;
     mutable const AXObject* m_cachedLiveRegionRoot;
 
     AXObjectCacheImpl* m_axObjectCache;

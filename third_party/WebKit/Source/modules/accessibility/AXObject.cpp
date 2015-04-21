@@ -374,6 +374,7 @@ AXObject::AXObject(AXObjectCacheImpl* axObjectCache)
     , m_cachedIsDescendantOfLeafNode(false)
     , m_cachedIsDescendantOfDisabledNode(false)
     , m_cachedHasInheritedPresentationalRole(false)
+    , m_cachedIsPresentationalChild(false)
     , m_cachedLiveRegionRoot(0)
     , m_axObjectCache(axObjectCache)
 {
@@ -497,6 +498,7 @@ void AXObject::updateCachedAttributeValuesIfNeeded() const
     m_cachedIsDescendantOfLeafNode = (leafNodeAncestor() != 0);
     m_cachedIsDescendantOfDisabledNode = (disabledAncestor() != 0);
     m_cachedHasInheritedPresentationalRole = (inheritsPresentationalRoleFrom() != 0);
+    m_cachedIsPresentationalChild = (ancestorForWhichThisIsAPresentationalChild() != 0);
     m_cachedIsIgnored = computeAccessibilityIsIgnored();
     m_cachedLiveRegionRoot = isLiveRegion() ?
         this :
@@ -524,7 +526,7 @@ AXObjectInclusion AXObject::defaultObjectInclusion(IgnoredReasons* ignoredReason
         return IgnoreObject;
     }
 
-    if (ancestorForWhichThisIsAPresentationalChild())
+    if (isPresentationalChild())
         return IgnoreObject;
 
     return accessibilityPlatformIncludesObject();
@@ -623,6 +625,18 @@ bool AXObject::lastKnownIsIgnoredValue()
 void AXObject::setLastKnownIsIgnoredValue(bool isIgnored)
 {
     m_lastKnownIsIgnoredValue = isIgnored ? IgnoreObject : IncludeObject;
+}
+
+bool AXObject::hasInheritedPresentationalRole() const
+{
+    updateCachedAttributeValuesIfNeeded();
+    return m_cachedHasInheritedPresentationalRole;
+}
+
+bool AXObject::isPresentationalChild() const
+{
+    updateCachedAttributeValuesIfNeeded();
+    return m_cachedIsPresentationalChild;
 }
 
 // In ARIA 1.1, the default value for aria-orientation changed from horizontal to undefined.
