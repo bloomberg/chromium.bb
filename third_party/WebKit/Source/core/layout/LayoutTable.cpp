@@ -60,7 +60,7 @@ LayoutTable::LayoutTable(Element* element)
     , m_hasColElements(false)
     , m_needsSectionRecalc(false)
     , m_columnLogicalWidthChanged(false)
-    , m_columnRenderersValid(false)
+    , m_columnLayoutObjectsValid(false)
     , m_hasCellColspanThatDeterminesTableWidth(false)
     , m_hSpacing(0)
     , m_vSpacing(0)
@@ -203,7 +203,7 @@ void LayoutTable::addChild(LayoutObject* child, LayoutObject* beforeChild)
     if (beforeChild && !beforeChild->isTableSection() && needsTableSection(beforeChild))
         beforeChild = 0;
 
-    LayoutTableSection* section = LayoutTableSection::createAnonymousWithParentRenderer(this);
+    LayoutTableSection* section = LayoutTableSection::createAnonymousWithParent(this);
     addChild(section, beforeChild);
     section->addChild(child);
 }
@@ -211,8 +211,8 @@ void LayoutTable::addChild(LayoutObject* child, LayoutObject* beforeChild)
 void LayoutTable::addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild)
 {
     // We need to bypass the LayoutBlock implementation and instead do a normal addChild() (or we
-    // won't get there at all), so that any missing anonymous table part renderers are
-    // inserted. Otherwise we might end up with an insane render tree with inlines or blocks as
+    // won't get there at all), so that any missing anonymous table part layoutObjects are
+    // inserted. Otherwise we might end up with an insane layout tree with inlines or blocks as
     // direct children of a table, which will break assumptions made all over the code, which may
     // lead to crashers and security issues.
     addChild(newChild, beforeChild);
@@ -236,8 +236,8 @@ void LayoutTable::removeCaption(const LayoutTableCaption* oldCaption)
 
 void LayoutTable::invalidateCachedColumns()
 {
-    m_columnRenderersValid = false;
-    m_columnRenderers.resize(0);
+    m_columnLayoutObjectsValid = false;
+    m_columnLayoutObjects.resize(0);
 }
 
 void LayoutTable::addColumn(const LayoutTableCol*)
@@ -797,28 +797,28 @@ LayoutTableCol* LayoutTable::firstColumn() const
 void LayoutTable::updateColumnCache() const
 {
     ASSERT(m_hasColElements);
-    ASSERT(m_columnRenderers.isEmpty());
-    ASSERT(!m_columnRenderersValid);
+    ASSERT(m_columnLayoutObjects.isEmpty());
+    ASSERT(!m_columnLayoutObjectsValid);
 
-    for (LayoutTableCol* columnRenderer = firstColumn(); columnRenderer; columnRenderer = columnRenderer->nextColumn()) {
-        if (columnRenderer->isTableColumnGroupWithColumnChildren())
+    for (LayoutTableCol* columnLayoutObject = firstColumn(); columnLayoutObject; columnLayoutObject = columnLayoutObject->nextColumn()) {
+        if (columnLayoutObject->isTableColumnGroupWithColumnChildren())
             continue;
-        m_columnRenderers.append(columnRenderer);
+        m_columnLayoutObjects.append(columnLayoutObject);
     }
-    m_columnRenderersValid = true;
+    m_columnLayoutObjectsValid = true;
 }
 
 LayoutTableCol* LayoutTable::slowColElement(unsigned col, bool* startEdge, bool* endEdge) const
 {
     ASSERT(m_hasColElements);
 
-    if (!m_columnRenderersValid)
+    if (!m_columnLayoutObjectsValid)
         updateColumnCache();
 
     unsigned columnCount = 0;
-    for (unsigned i = 0; i < m_columnRenderers.size(); i++) {
-        LayoutTableCol* columnRenderer = m_columnRenderers[i];
-        unsigned span = columnRenderer->span();
+    for (unsigned i = 0; i < m_columnLayoutObjects.size(); i++) {
+        LayoutTableCol* columnLayoutObject = m_columnLayoutObjects[i];
+        unsigned span = columnLayoutObject->span();
         unsigned startCol = columnCount;
         ASSERT(span >= 1);
         unsigned endCol = columnCount + span - 1;
@@ -828,7 +828,7 @@ LayoutTableCol* LayoutTable::slowColElement(unsigned col, bool* startEdge, bool*
                 *startEdge = startCol == col;
             if (endEdge)
                 *endEdge = endCol == col;
-            return columnRenderer;
+            return columnLayoutObject;
         }
     }
     return 0;
@@ -1354,7 +1354,7 @@ bool LayoutTable::nodeAtPoint(HitTestResult& result, const HitTestLocation& loca
     return false;
 }
 
-LayoutTable* LayoutTable::createAnonymousWithParentRenderer(const LayoutObject* parent)
+LayoutTable* LayoutTable::createAnonymousWithParent(const LayoutObject* parent)
 {
     RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(), TABLE);
     LayoutTable* newTable = new LayoutTable(0);

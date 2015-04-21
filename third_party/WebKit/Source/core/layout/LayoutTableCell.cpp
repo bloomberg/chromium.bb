@@ -1026,12 +1026,12 @@ void LayoutTableCell::scrollbarsChanged(bool horizontalScrollbarChanged, bool ve
 
 LayoutTableCell* LayoutTableCell::createAnonymous(Document* document)
 {
-    LayoutTableCell* renderer = new LayoutTableCell(0);
-    renderer->setDocumentForAnonymous(document);
-    return renderer;
+    LayoutTableCell* layoutObject = new LayoutTableCell(0);
+    layoutObject->setDocumentForAnonymous(document);
+    return layoutObject;
 }
 
-LayoutTableCell* LayoutTableCell::createAnonymousWithParentRenderer(const LayoutObject* parent)
+LayoutTableCell* LayoutTableCell::createAnonymousWithParent(const LayoutObject* parent)
 {
     LayoutTableCell* newCell = LayoutTableCell::createAnonymous(&parent->document());
     RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(), TABLE_CELL);

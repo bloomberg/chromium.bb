@@ -325,7 +325,7 @@ void TableLayoutAlgorithmFixed::willChangeTableLayout()
     m_table->recalcSectionsIfNeeded();
     for (LayoutTableSection* section = m_table->topNonEmptySection(); section; section = m_table->sectionBelow(section)) {
         for (unsigned i = 0; i < section->numRows(); i++) {
-            LayoutTableRow* row = section->rowRendererAt(i);
+            LayoutTableRow* row = section->rowLayoutObjectAt(i);
             if (!row)
                 continue;
             for (LayoutTableCell* cell = row->firstCell(); cell; cell = cell->nextCell())

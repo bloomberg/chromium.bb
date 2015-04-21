@@ -397,7 +397,7 @@ void AXTable::addChildren()
         unsigned numRows = tableSection->numRows();
         for (unsigned rowIndex = 0; rowIndex < numRows; ++rowIndex) {
 
-            LayoutTableRow* layoutRow = tableSection->rowRendererAt(rowIndex);
+            LayoutTableRow* layoutRow = tableSection->rowLayoutObjectAt(rowIndex);
             if (!layoutRow)
                 continue;
 

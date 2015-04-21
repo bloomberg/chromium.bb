@@ -50,10 +50,10 @@ public:
     LayoutTable* table() const { return toLayoutTable(parent()->parent()); }
 
     static LayoutTableRow* createAnonymous(Document*);
-    static LayoutTableRow* createAnonymousWithParentRenderer(const LayoutObject*);
+    static LayoutTableRow* createAnonymousWithParent(const LayoutObject*);
     virtual LayoutBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override
     {
-        return createAnonymousWithParentRenderer(parent);
+        return createAnonymousWithParent(parent);
     }
 
     void setRowIndex(unsigned rowIndex)

@@ -117,13 +117,13 @@ public:
     struct RowStruct {
     public:
         RowStruct()
-            : rowRenderer(nullptr)
+            : rowLayoutObject(nullptr)
             , baseline()
         {
         }
 
         Row row;
-        LayoutTableRow* rowRenderer;
+        LayoutTableRow* rowLayoutObject;
         LayoutUnit baseline;
         Length logicalHeight;
     };
@@ -175,7 +175,7 @@ public:
         return c.primaryCell();
     }
 
-    LayoutTableRow* rowRendererAt(unsigned row) const { return m_grid[row].rowRenderer; }
+    LayoutTableRow* rowLayoutObjectAt(unsigned row) const { return m_grid[row].rowLayoutObject; }
 
     void appendColumn(unsigned pos);
     void splitColumn(unsigned pos, unsigned first);
@@ -215,10 +215,10 @@ public:
     // FIXME: We may want to introduce a structure holding the in-flux layout information.
     int distributeExtraLogicalHeightToRows(int extraLogicalHeight);
 
-    static LayoutTableSection* createAnonymousWithParentRenderer(const LayoutObject*);
+    static LayoutTableSection* createAnonymousWithParent(const LayoutObject*);
     virtual LayoutBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override
     {
-        return createAnonymousWithParentRenderer(parent);
+        return createAnonymousWithParent(parent);
     }
 
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
@@ -251,7 +251,7 @@ private:
 
     virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override;
 
-    int borderSpacingForRow(unsigned row) const { return m_grid[row].rowRenderer ? table()->vBorderSpacing() : 0; }
+    int borderSpacingForRow(unsigned row) const { return m_grid[row].rowLayoutObject ? table()->vBorderSpacing() : 0; }
 
     void ensureRows(unsigned);
 

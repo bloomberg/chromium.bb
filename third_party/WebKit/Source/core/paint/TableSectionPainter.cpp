@@ -93,7 +93,7 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo, const LayoutPo
             } else {
                 // Draw the dirty cells in the order that they appear.
                 for (unsigned r = dirtiedRows.start(); r < dirtiedRows.end(); r++) {
-                    LayoutTableRow* row = m_layoutTableSection.rowRendererAt(r);
+                    LayoutTableRow* row = m_layoutTableSection.rowLayoutObjectAt(r);
                     if (row && !row->hasSelfPaintingLayer())
                         TableRowPainter(*row).paintOutlineForRowIfNeeded(paintInfo, paintOffset);
                     for (unsigned c = dirtiedColumns.start(); c < dirtiedColumns.end(); c++) {
@@ -120,7 +120,7 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo, const LayoutPo
             HashSet<LayoutTableCell*> spanningCells;
 
             for (unsigned r = dirtiedRows.start(); r < dirtiedRows.end(); r++) {
-                LayoutTableRow* row = m_layoutTableSection.rowRendererAt(r);
+                LayoutTableRow* row = m_layoutTableSection.rowLayoutObjectAt(r);
                 if (row && !row->hasSelfPaintingLayer())
                     TableRowPainter(*row).paintOutlineForRowIfNeeded(paintInfo, paintOffset);
                 for (unsigned c = dirtiedColumns.start(); c < dirtiedColumns.end(); c++) {

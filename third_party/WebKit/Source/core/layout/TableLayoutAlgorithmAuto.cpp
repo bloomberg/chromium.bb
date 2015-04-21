@@ -333,7 +333,7 @@ int TableLayoutAlgorithmAuto::calcEffectiveLogicalWidth()
                 // fall through
             default:
                 // If the column is a percentage width, do not let the spanning cell overwrite the
-                // width value.  This caused a mis-rendering on amazon.com.
+                // width value.  This caused a mis-layout on amazon.com.
                 // Sample snippet:
                 // <table border=2 width=100%><
                 //   <tr><td>1</td><td colspan=2>2-3</tr>

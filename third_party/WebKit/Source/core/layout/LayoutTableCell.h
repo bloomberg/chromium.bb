@@ -161,10 +161,10 @@ public:
     void setCellWidthChanged(bool b = true) { m_cellWidthChanged = b; }
 
     static LayoutTableCell* createAnonymous(Document*);
-    static LayoutTableCell* createAnonymousWithParentRenderer(const LayoutObject*);
+    static LayoutTableCell* createAnonymousWithParent(const LayoutObject*);
     virtual LayoutBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override
     {
-        return createAnonymousWithParentRenderer(parent);
+        return createAnonymousWithParent(parent);
     }
 
     // This function is used to unify which table part's style we use for computing direction and

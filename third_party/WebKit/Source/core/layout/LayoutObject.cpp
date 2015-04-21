@@ -315,7 +315,7 @@ void LayoutObject::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
         if (afterChild && afterChild->isAnonymous() && afterChild->isTable() && !afterChild->isBeforeContent()) {
             table = toLayoutTable(afterChild);
         } else {
-            table = LayoutTable::createAnonymousWithParentRenderer(this);
+            table = LayoutTable::createAnonymousWithParent(this);
             addChild(table, beforeChild);
         }
         table->addChild(newChild);

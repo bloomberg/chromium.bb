@@ -47,8 +47,8 @@ static unsigned gMinTableSizeToUseFastPaintPathWithOverflowingCell = 75 * 75;
 
 static inline void setRowLogicalHeightToRowStyleLogicalHeight(LayoutTableSection::RowStruct& row)
 {
-    ASSERT(row.rowRenderer);
-    row.logicalHeight = row.rowRenderer->style()->logicalHeight();
+    ASSERT(row.rowLayoutObject);
+    row.logicalHeight = row.rowLayoutObject->style()->logicalHeight();
 }
 
 static inline void updateLogicalHeightForCell(LayoutTableSection::RowStruct&
@@ -149,7 +149,7 @@ void LayoutTableSection::addChild(LayoutObject* child, LayoutObject* beforeChild
             return;
         }
 
-        LayoutObject* row = LayoutTableRow::createAnonymousWithParentRenderer(this);
+        LayoutObject* row = LayoutTableRow::createAnonymousWithParent(this);
         addChild(row, beforeChild);
         row->addChild(child);
         return;
@@ -165,7 +165,7 @@ void LayoutTableSection::addChild(LayoutObject* child, LayoutObject* beforeChild
     ensureRows(m_cRow);
 
     LayoutTableRow* row = toLayoutTableRow(child);
-    m_grid[insertionRow].rowRenderer = row;
+    m_grid[insertionRow].rowLayoutObject = row;
     row->setRowIndex(insertionRow);
 
     if (!beforeChild)
@@ -218,7 +218,7 @@ void LayoutTableSection::addCell(LayoutTableCell* cell, LayoutTableRow* row)
 
     ensureRows(insertionRow + rSpan);
 
-    m_grid[insertionRow].rowRenderer = row;
+    m_grid[insertionRow].rowLayoutObject = row;
 
     unsigned col = m_cCol;
     // tell the cell where it is
@@ -817,10 +817,10 @@ void LayoutTableSection::layout()
             cell->setCellLogicalWidth(tableLayoutLogicalWidth, layouter);
         }
 
-        if (LayoutTableRow* rowRenderer = m_grid[r].rowRenderer) {
-            if (!rowRenderer->needsLayout())
-                rowRenderer->markForPaginationRelayoutIfNeeded(layouter);
-            rowRenderer->layoutIfNeeded();
+        if (LayoutTableRow* rowLayoutObject = m_grid[r].rowLayoutObject) {
+            if (!rowLayoutObject->needsLayout())
+                rowLayoutObject->markForPaginationRelayoutIfNeeded(layouter);
+            rowLayoutObject->layoutIfNeeded();
         }
     }
 
@@ -953,14 +953,14 @@ void LayoutTableSection::layoutRows()
 
     for (unsigned r = 0; r < totalRows; r++) {
         // Set the row's x/y position and width/height.
-        LayoutTableRow* rowRenderer = m_grid[r].rowRenderer;
-        if (rowRenderer) {
-            rowRenderer->setLocation(LayoutPoint(0, m_rowPos[r]));
-            rowRenderer->setLogicalWidth(logicalWidth());
-            rowRenderer->setLogicalHeight(m_rowPos[r + 1] - m_rowPos[r] - vspacing);
-            rowRenderer->updateLayerTransformAfterLayout();
-            rowRenderer->clearAllOverflows();
-            rowRenderer->addVisualEffectOverflow();
+        LayoutTableRow* rowLayoutObject = m_grid[r].rowLayoutObject;
+        if (rowLayoutObject) {
+            rowLayoutObject->setLocation(LayoutPoint(0, m_rowPos[r]));
+            rowLayoutObject->setLogicalWidth(logicalWidth());
+            rowLayoutObject->setLogicalHeight(m_rowPos[r + 1] - m_rowPos[r] - vspacing);
+            rowLayoutObject->updateLayerTransformAfterLayout();
+            rowLayoutObject->clearAllOverflows();
+            rowLayoutObject->addVisualEffectOverflow();
         }
 
         int rowHeightIncreaseForPagination = 0;
@@ -1051,8 +1051,8 @@ void LayoutTableSection::layoutRows()
                 cell->computeOverflow(oldLogicalHeight, false);
             }
 
-            if (rowRenderer)
-                rowRenderer->addOverflowFromCell(cell);
+            if (rowLayoutObject)
+                rowLayoutObject->addOverflowFromCell(cell);
 
             LayoutSize childOffset(cell->location() - oldCellRect.location());
             if (childOffset.width() || childOffset.height()) {
@@ -1399,7 +1399,7 @@ void LayoutTableSection::recalcCells()
         m_cCol = 0;
         ensureRows(m_cRow);
 
-        m_grid[insertionRow].rowRenderer = row;
+        m_grid[insertionRow].rowLayoutObject = row;
         row->setRowIndex(insertionRow);
         setRowLogicalHeightToRowStyleLogicalHeight(m_grid[insertionRow]);
 
@@ -1420,7 +1420,7 @@ void LayoutTableSection::rowLogicalHeightChanged(LayoutTableRow* row)
     unsigned rowIndex = row->rowIndex();
     setRowLogicalHeightToRowStyleLogicalHeight(m_grid[rowIndex]);
 
-    for (LayoutTableCell* cell = m_grid[rowIndex].rowRenderer->firstCell(); cell; cell = cell->nextCell())
+    for (LayoutTableCell* cell = m_grid[rowIndex].rowLayoutObject->firstCell(); cell; cell = cell->nextCell())
         updateLogicalHeightForCell(m_grid[rowIndex], cell);
 }
 
@@ -1603,7 +1603,7 @@ const CollapsedBorderValue& LayoutTableSection::cachedCollapsedBorder(const Layo
     return it->value;
 }
 
-LayoutTableSection* LayoutTableSection::createAnonymousWithParentRenderer(const LayoutObject* parent)
+LayoutTableSection* LayoutTableSection::createAnonymousWithParent(const LayoutObject* parent)
 {
     RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(), TABLE_ROW_GROUP);
     LayoutTableSection* newSection = new LayoutTableSection(0);
