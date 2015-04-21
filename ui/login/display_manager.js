@@ -990,6 +990,8 @@ cr.define('cr.ui.login', function() {
       error.appendChild(helpLink);
     }
 
+    error.setAttribute('aria-live', 'assertive');
+
     var currentScreen = Oobe.getInstance().currentScreen;
     if (currentScreen && typeof currentScreen.showErrorBubble === 'function') {
       currentScreen.showErrorBubble(loginAttempts, error);
