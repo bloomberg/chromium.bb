@@ -60,6 +60,9 @@ function overridenTimestampGeolocation()
 
 function test()
 {
+    if (window.testRunner)
+        window.testRunner.setPermission('geolocation', 'granted', location.origin, location.origin);
+
     InspectorTest.runTestSuite([
         function testGeolocationUnavailable(next)
         {
