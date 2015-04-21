@@ -25,6 +25,7 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_local.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "base/tracked_objects.h"
 #include "components/tracing/child_trace_message_filter.h"
 #include "content/child/bluetooth/bluetooth_message_filter.h"
@@ -418,6 +419,8 @@ void ChildThreadImpl::Init(const Options& options) {
       message_loop_->message_loop_proxy(), ::HeapProfilerWithPseudoStackStart,
       ::HeapProfilerStop, ::GetHeapProfile));
 #endif
+
+  base::trace_event::MemoryDumpManager::GetInstance()->Initialize();
 
   shared_bitmap_manager_.reset(
       new ChildSharedBitmapManager(thread_safe_sender()));

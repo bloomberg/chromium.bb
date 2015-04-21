@@ -26,7 +26,7 @@ namespace {
 
 // TODO(primiano): this should be smarter and should do something similar to
 // trace event synthetic delays.
-const char kTraceCategory[] = TRACE_DISABLED_BY_DEFAULT("memory-dumps");
+const char kTraceCategory[] = TRACE_DISABLED_BY_DEFAULT("memory-infra");
 
 MemoryDumpManager* g_instance_for_testing = nullptr;
 const int kDumpIntervalSeconds = 2;

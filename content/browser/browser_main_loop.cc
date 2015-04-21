@@ -20,6 +20,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/timer/hi_res_timer_manager.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/device_sensors/device_inertial_sensor_service.h"
@@ -572,6 +573,8 @@ void BrowserMainLoop::MainMessageLoopStart() {
     memory_observer_.reset(new MemoryObserver());
     base::MessageLoop::current()->AddTaskObserver(memory_observer_.get());
   }
+
+  base::trace_event::MemoryDumpManager::GetInstance()->Initialize();
 
 #if defined(TCMALLOC_TRACE_MEMORY_SUPPORTED)
   trace_memory_controller_.reset(new base::trace_event::TraceMemoryController(
