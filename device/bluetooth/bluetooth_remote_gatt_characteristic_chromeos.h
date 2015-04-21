@@ -70,6 +70,9 @@ class BluetoothRemoteGattCharacteristicChromeOS
  private:
   friend class BluetoothRemoteGattServiceChromeOS;
 
+  typedef std::pair<NotifySessionCallback, ErrorCallback>
+      PendingStartNotifyCall;
+
   BluetoothRemoteGattCharacteristicChromeOS(
       BluetoothRemoteGattServiceChromeOS* service,
       const dbus::ObjectPath& object_path);
@@ -121,8 +124,6 @@ class BluetoothRemoteGattCharacteristicChromeOS
 
   // Calls to StartNotifySession that are pending. This can happen during the
   // first remote call to start notifications.
-  typedef std::pair<NotifySessionCallback, ErrorCallback>
-      PendingStartNotifyCall;
   std::queue<PendingStartNotifyCall> pending_start_notify_calls_;
 
   // True, if a Start or Stop notify call to bluetoothd is currently pending.

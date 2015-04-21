@@ -96,6 +96,9 @@ class BluetoothRemoteGattServiceChromeOS
  private:
   friend class BluetoothDeviceChromeOS;
 
+  typedef std::map<dbus::ObjectPath, BluetoothRemoteGattCharacteristicChromeOS*>
+      CharacteristicMap;
+
   BluetoothRemoteGattServiceChromeOS(BluetoothAdapterChromeOS* adapter,
                                      BluetoothDeviceChromeOS* device,
                                      const dbus::ObjectPath& object_path);
@@ -127,8 +130,6 @@ class BluetoothRemoteGattServiceChromeOS
   // owned by this service. Since the Chrome OS implementation uses object
   // paths as unique identifiers, we also use this mapping to return
   // characteristics by identifier.
-  typedef std::map<dbus::ObjectPath, BluetoothRemoteGattCharacteristicChromeOS*>
-      CharacteristicMap;
   CharacteristicMap characteristics_;
 
   // Indicates whether or not the characteristics of this service are known to

@@ -97,6 +97,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
     ERROR_UNSUPPORTED_DEVICE
   };
 
+  typedef std::vector<BluetoothUUID> UUIDList;
+
   // Interface for negotiating pairing of bluetooth devices.
   class PairingDelegate {
    public:
@@ -254,7 +256,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // devices this data is collected from both the EIR data and SDP tables,
   // for Low Energy devices this data is collected from AD and GATT primary
   // services, for dual mode devices this may be collected from both./
-  typedef std::vector<BluetoothUUID> UUIDList;
   virtual UUIDList GetUUIDs() const = 0;
 
   // The ErrorCallback is used for methods that can fail in which case it

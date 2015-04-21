@@ -92,6 +92,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWin : public BluetoothDevice {
  private:
   friend class BluetoothAdapterWin;
 
+  typedef ScopedVector<BluetoothServiceRecordWin> ServiceRecordList;
+
   // Used by BluetoothAdapterWin to update the visible state during
   // discovery.
   void SetVisible(bool visible);
@@ -127,7 +129,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWin : public BluetoothDevice {
   UUIDList uuids_;
 
   // The service records retrieved from SDP.
-  typedef ScopedVector<BluetoothServiceRecordWin> ServiceRecordList;
   ServiceRecordList service_record_list_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDeviceWin);

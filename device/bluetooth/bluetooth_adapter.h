@@ -181,6 +181,17 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // initialization, if initialization is asynchronous on the platform.
   typedef base::Callback<void()> InitCallback;
 
+  typedef base::Callback<void(scoped_ptr<BluetoothDiscoverySession>)>
+      DiscoverySessionCallback;
+  typedef std::vector<BluetoothDevice*> DeviceList;
+  typedef std::vector<const BluetoothDevice*> ConstDeviceList;
+  typedef base::Callback<void(scoped_refptr<BluetoothSocket>)>
+      CreateServiceCallback;
+  typedef base::Callback<void(const std::string& message)>
+      CreateServiceErrorCallback;
+  typedef base::Callback<void(scoped_refptr<BluetoothAudioSink>)>
+      AcquiredCallback;
+
   // Returns a weak pointer to a new adapter.  For platforms with asynchronous
   // initialization, the returned adapter will run the |init_callback| once
   // asynchronous initialization is complete.
@@ -270,8 +281,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // that have been discovered so far. Otherwise, clients can be notified of all
   // new and lost devices by implementing the Observer methods "DeviceAdded" and
   // "DeviceRemoved".
-  typedef base::Callback<void(scoped_ptr<BluetoothDiscoverySession>)>
-      DiscoverySessionCallback;
   virtual void StartDiscoverySession(const DiscoverySessionCallback& callback,
                                      const ErrorCallback& error_callback);
   virtual void StartDiscoverySessionWithFilter(
@@ -291,9 +300,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // Requests the list of devices from the adapter. All devices are returned,
   // including those currently connected and those paired. Use the returned
   // device pointers to determine which they are.
-  typedef std::vector<BluetoothDevice*> DeviceList;
   virtual DeviceList GetDevices();
-  typedef std::vector<const BluetoothDevice*> ConstDeviceList;
   virtual ConstDeviceList GetDevices() const;
 
   // Returns a pointer to the device with the given address |address| or NULL if
@@ -335,10 +342,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // called on success with a BluetoothSocket instance that is to be owned by
   // the received.  |error_callback| will be called on failure with a message
   // indicating the cause.
-  typedef base::Callback<void(scoped_refptr<BluetoothSocket>)>
-      CreateServiceCallback;
-  typedef base::Callback<void(const std::string& message)>
-      CreateServiceErrorCallback;
   virtual void CreateRfcommService(
       const BluetoothUUID& uuid,
       const ServiceOptions& options,
@@ -363,8 +366,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // will be called on success with a BluetoothAudioSink which is to be owned by
   // the caller of this method. |error_callback| will be called on failure with
   // a message indicating the cause.
-  typedef base::Callback<void(scoped_refptr<BluetoothAudioSink>)>
-      AcquiredCallback;
   virtual void RegisterAudioSink(
       const BluetoothAudioSink::Options& options,
       const AcquiredCallback& callback,
@@ -375,6 +376,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
                                           BluetoothAdapterDeleter>;
   friend struct BluetoothAdapterDeleter;
   friend class BluetoothDiscoverySession;
+
+  typedef std::map<const std::string, BluetoothDevice*> DevicesMap;
+  typedef std::pair<BluetoothDevice::PairingDelegate*, PairingDelegatePriority>
+      PairingDelegatePair;
+
   BluetoothAdapter();
   virtual ~BluetoothAdapter();
 
@@ -452,12 +458,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // adapter. The key is the Bluetooth address of the device and the value is
   // the BluetoothDevice object whose lifetime is managed by the adapter
   // instance.
-  typedef std::map<const std::string, BluetoothDevice*> DevicesMap;
   DevicesMap devices_;
 
   // Default pairing delegates registered with the adapter.
-  typedef std::pair<BluetoothDevice::PairingDelegate*,
-                    PairingDelegatePriority> PairingDelegatePair;
   std::list<PairingDelegatePair> pairing_delegates_;
 
  private:
