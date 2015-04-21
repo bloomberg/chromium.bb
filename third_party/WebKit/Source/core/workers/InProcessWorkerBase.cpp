@@ -9,10 +9,12 @@
 #include "core/events/MessageEvent.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/workers/WorkerGlobalScopeProxy.h"
 #include "core/workers/WorkerScriptLoader.h"
 #include "core/workers/WorkerThread.h"
+#include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 #include "wtf/MainThread.h"
 
 namespace blink {
@@ -74,8 +76,18 @@ bool InProcessWorkerBase::hasPendingActivity() const
     return (m_contextProxy && m_contextProxy->hasPendingActivity()) || m_scriptLoader;
 }
 
-void InProcessWorkerBase::didReceiveResponse(unsigned long identifier, const ResourceResponse&)
+PassRefPtr<ContentSecurityPolicy> InProcessWorkerBase::contentSecurityPolicy()
 {
+    return m_contentSecurityPolicy;
+}
+
+void InProcessWorkerBase::didReceiveResponse(unsigned long identifier, const ResourceResponse& response)
+{
+    if (!response.url().protocolIs("blob") && !response.url().protocolIs("file") && !response.url().protocolIs("filesystem")) {
+        m_contentSecurityPolicy = ContentSecurityPolicy::create();
+        m_contentSecurityPolicy->setOverrideURLForSelf(response.url());
+        m_contentSecurityPolicy->didReceiveHeaders(ContentSecurityPolicyResponseHeaders(response));
+    }
     InspectorInstrumentation::didReceiveScriptResponse(executionContext(), identifier);
 }
 
