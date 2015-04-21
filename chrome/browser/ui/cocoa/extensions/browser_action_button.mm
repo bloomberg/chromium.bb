@@ -264,6 +264,7 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
   // events (i.e. using [NSWindow nextEventMatchingMask]), we can make this
   // work. The downside to that is that all other events are lost. Disable this
   // for now, and revisit it at a later date.
+
   if (NSPointInRect(location, [self bounds]) &&
       ![browserActionsController_ isOverflow]) {
     dragCouldStart_ = YES;
@@ -465,6 +466,19 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
 }
 
 - (NSMenu*)menu {
+  // Hack: Since Cocoa doesn't support menus-running-in-menus (see also comment
+  // in -rightMouseDown:), it doesn't launch the menu for an overflowed action
+  // on a Control-click. Even more unfortunate, it doesn't even pass us the
+  // mouseDown event for control clicks. However, it does call -menuForEvent:,
+  // which in turn calls -menu:, so we can tap in here and show the menu
+  // programmatically for the Control-click case.
+  if ([browserActionsController_ isOverflow] &&
+      ([NSEvent modifierFlags] & NSControlKeyMask)) {
+    [browserActionsController_ mainButtonForId:viewController_->GetId()]->
+        viewControllerDelegate_->ShowContextMenu();
+    return nil;
+  }
+
   if (testContextMenu_)
     return testContextMenu_;
 
