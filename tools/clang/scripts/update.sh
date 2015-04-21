@@ -543,6 +543,14 @@ if [ "${OS}" = "Linux" ]; then
   BINUTILS_INCDIR="${ABS_BINUTILS_DIR}/Linux_x64/Release/include"
 fi
 
+
+# If building at head, define a macro that plugins can use for #ifdefing
+# out code that builds at head, but not at CLANG_REVISION or vice versa.
+if [[ -n ${LLVM_FORCE_HEAD_REVISION:-''} ]]; then
+  CFLAGS="${CFLAGS} -DLLVM_FORCE_HEAD_REVISION"
+  CXXFLAGS="${CXXFLAGS} -DLLVM_FORCE_HEAD_REVISION"
+fi
+
 # Hook the Chromium tools into the LLVM build. Several Chromium tools have
 # dependencies on LLVM/Clang libraries. The LLVM build detects implicit tools
 # in the tools subdirectory, so install a shim CMakeLists.txt that forwards to
