@@ -39,7 +39,6 @@
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
-#include "platform/graphics/filters/SourceAlpha.h"
 
 namespace blink {
 
@@ -142,12 +141,7 @@ PassRefPtrWillBeRawPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* paren
 
     SVGFilterElement& filterElement = toSVGFilterElement(*filter);
 
-    // FIXME: Figure out what to do with SourceAlpha. Right now, we're
-    // using the alpha of the original input layer, which is obviously
-    // wrong. We should probably be extracting the alpha from the
-    // previousEffect, but this requires some more processing.
-    // This may need a spec clarification.
-    RefPtrWillBeRawPtr<SVGFilterBuilder> builder = SVGFilterBuilder::create(previousEffect, SourceAlpha::create(parentFilter));
+    RefPtrWillBeRawPtr<SVGFilterBuilder> builder = SVGFilterBuilder::create(previousEffect);
 
     ColorSpace filterColorSpace = ColorSpaceDeviceRGB;
     bool useFilterColorSpace = getSVGElementColorSpace(&filterElement, filterColorSpace);

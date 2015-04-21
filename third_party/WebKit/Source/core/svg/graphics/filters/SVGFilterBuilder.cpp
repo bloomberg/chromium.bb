@@ -25,10 +25,11 @@
 
 namespace blink {
 
-SVGFilterBuilder::SVGFilterBuilder(PassRefPtrWillBeRawPtr<FilterEffect> sourceGraphic, PassRefPtrWillBeRawPtr<FilterEffect> sourceAlpha)
+SVGFilterBuilder::SVGFilterBuilder(PassRefPtrWillBeRawPtr<FilterEffect> sourceGraphic)
 {
-    m_builtinEffects.add(SourceGraphic::effectName(), sourceGraphic);
-    m_builtinEffects.add(SourceAlpha::effectName(), sourceAlpha);
+    RefPtrWillBeRawPtr<FilterEffect> sourceGraphicRef = sourceGraphic;
+    m_builtinEffects.add(SourceGraphic::effectName(), sourceGraphicRef);
+    m_builtinEffects.add(SourceAlpha::effectName(), SourceAlpha::create(sourceGraphicRef.get()));
     addBuiltinEffects();
 }
 

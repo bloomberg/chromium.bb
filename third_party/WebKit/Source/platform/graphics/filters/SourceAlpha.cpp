@@ -21,10 +21,8 @@
 #include "config.h"
 #include "platform/graphics/filters/SourceAlpha.h"
 
-#include "platform/graphics/Color.h"
 #include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
-#include "platform/graphics/filters/SourceGraphic.h"
 #include "platform/text/TextStream.h"
 #include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
@@ -32,9 +30,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<SourceAlpha> SourceAlpha::create(Filter* filter)
+PassRefPtrWillBeRawPtr<SourceAlpha> SourceAlpha::create(FilterEffect* sourceEffect)
 {
-    return adoptRefWillBeNoop(new SourceAlpha(filter));
+    return adoptRefWillBeNoop(new SourceAlpha(sourceEffect));
 }
 
 const AtomicString& SourceAlpha::effectName()
@@ -43,17 +41,21 @@ const AtomicString& SourceAlpha::effectName()
     return s_effectName;
 }
 
+SourceAlpha::SourceAlpha(FilterEffect* sourceEffect)
+    : FilterEffect(sourceEffect->filter())
+{
+    setOperatingColorSpace(sourceEffect->operatingColorSpace());
+    inputEffects().append(sourceEffect);
+}
+
 FloatRect SourceAlpha::determineAbsolutePaintRect(const FloatRect& requestedRect)
 {
-    FloatRect srcRect = filter()->sourceImageRect();
-    srcRect.intersect(requestedRect);
-    addAbsolutePaintRect(srcRect);
-    return srcRect;
+    return inputEffect(0)->determineAbsolutePaintRect(requestedRect);
 }
 
 PassRefPtr<SkImageFilter> SourceAlpha::createImageFilter(SkiaImageFilterBuilder* builder)
 {
-    RefPtr<SkImageFilter> sourceGraphic(builder->build(builder->sourceGraphic(), operatingColorSpace()));
+    RefPtr<SkImageFilter> sourceGraphic(builder->build(inputEffect(0), operatingColorSpace()));
     SkScalar matrix[20] = {
         0, 0, 0, 0, 0,
         0, 0, 0, 0, 0,

@@ -27,7 +27,7 @@ namespace blink {
 
 class PLATFORM_EXPORT SourceAlpha : public FilterEffect {
 public:
-    static PassRefPtrWillBeRawPtr<SourceAlpha> create(Filter*);
+    static PassRefPtrWillBeRawPtr<SourceAlpha> create(FilterEffect*);
 
     static const AtomicString& effectName();
 
@@ -39,10 +39,7 @@ public:
     virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
 
 private:
-    SourceAlpha(Filter* filter)
-        : FilterEffect(filter)
-    {
-    }
+    explicit SourceAlpha(FilterEffect*);
 };
 
 } // namespace blink

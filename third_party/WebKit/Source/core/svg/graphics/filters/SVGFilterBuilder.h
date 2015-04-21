@@ -37,9 +37,9 @@ class SVGFilterBuilder final : public RefCountedWillBeGarbageCollectedFinalized<
 public:
     typedef WillBeHeapHashSet<RawPtrWillBeMember<FilterEffect>> FilterEffectSet;
 
-    static PassRefPtrWillBeRawPtr<SVGFilterBuilder> create(PassRefPtrWillBeRawPtr<FilterEffect> sourceGraphic, PassRefPtrWillBeRawPtr<FilterEffect> sourceAlpha)
+    static PassRefPtrWillBeRawPtr<SVGFilterBuilder> create(PassRefPtrWillBeRawPtr<FilterEffect> sourceGraphic)
     {
-        return adoptRefWillBeNoop(new SVGFilterBuilder(sourceGraphic, sourceAlpha));
+        return adoptRefWillBeNoop(new SVGFilterBuilder(sourceGraphic));
     }
 
     void add(const AtomicString& id, PassRefPtrWillBeRawPtr<FilterEffect>);
@@ -65,7 +65,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    SVGFilterBuilder(PassRefPtrWillBeRawPtr<FilterEffect> sourceGraphic, PassRefPtrWillBeRawPtr<FilterEffect> sourceAlpha);
+    SVGFilterBuilder(PassRefPtrWillBeRawPtr<FilterEffect> sourceGraphic);
 
     inline void addBuiltinEffects()
     {
