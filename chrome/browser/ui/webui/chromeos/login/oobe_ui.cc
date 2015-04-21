@@ -527,6 +527,10 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   localized_strings->SetString("newKioskUI", new_kiosk_ui ? "on" : "off");
 }
 
+scoped_ptr<ErrorScreen> OobeUI::GetErrorScreen() {
+  return error_screen_.Pass();
+}
+
 void OobeUI::InitializeScreenMaps() {
   screen_names_.resize(SCREEN_UNKNOWN);
   screen_names_[SCREEN_OOBE_HID_DETECTION] = kScreenOobeHIDDetection;

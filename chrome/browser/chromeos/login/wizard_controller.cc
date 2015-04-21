@@ -58,6 +58,7 @@
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
@@ -295,8 +296,10 @@ BaseScreen* WizardController::CreateScreen(const std::string& screen_name) {
     screen->Initialize(nullptr /* context */);
     return screen.release();
   } else if (screen_name == kErrorScreenName) {
-    scoped_ptr<ErrorScreen> screen(
-        new ErrorScreen(this, oobe_display_->GetNetworkErrorView()));
+    scoped_ptr<ErrorScreen> screen =
+        static_cast<OobeUI*>(oobe_display_)->GetErrorScreen();
+    if (!screen)
+      screen.reset(new ErrorScreen(this, oobe_display_->GetNetworkErrorView()));
     screen->Initialize(nullptr /* context */);
     return screen.release();
   } else if (screen_name == kUpdateScreenName) {

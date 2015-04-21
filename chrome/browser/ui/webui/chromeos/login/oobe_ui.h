@@ -168,6 +168,11 @@ class OobeUI : public OobeDisplay,
     return network_state_informer_.get();
   }
 
+  // If an error screen was created during initialization, then it may be
+  // fetched using this method, while also passing the ownership of
+  // |error_screen_|.
+  scoped_ptr<ErrorScreen> GetErrorScreen();
+
  private:
   // Initializes |screen_ids_| and |screen_names_| structures.
   void InitializeScreenMaps();
