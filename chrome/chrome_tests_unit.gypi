@@ -934,8 +934,6 @@
       'browser/signin/signin_error_notifier_ash_unittest.cc',
       'browser/sync/sync_error_notifier_ash_unittest.cc',
       # Ash implies the app list is enabled (only disabled on mobile).
-      'browser/ui/app_list/search/app_search_provider_unittest.cc',
-      'browser/ui/app_list/search/history_unittest.cc',
       'browser/ui/ash/accessibility/ax_tree_source_aura_unittest.cc',
       'browser/ui/ash/chrome_screenshot_grabber_unittest.cc',
       'browser/ui/ash/ime_controller_chromeos_unittest.cc',
@@ -1561,6 +1559,8 @@
       'browser/ui/app_list/extension_app_model_builder_unittest.cc',
       'browser/ui/app_list/model_pref_updater_unittest.cc',
       'browser/ui/app_list/profile_loader_unittest.cc',
+      'browser/ui/app_list/search/app_search_provider_unittest.cc',
+      'browser/ui/app_list/search/history_unittest.cc',
       'browser/ui/app_list/search/omnibox_result_unittest.cc',
       'browser/ui/app_list/search/suggestions/suggestions_search_provider_unittest.cc',
       'browser/ui/app_list/speech_auth_helper_unittest.cc',
