@@ -1195,6 +1195,7 @@ void RenderThreadImpl::IdleHandler() {
       --idle_notifications_to_skip_;
     } else {
       base::allocator::ReleaseFreeMemory();
+      discardable_shared_memory_manager()->ReleaseFreeMemory();
     }
     ScheduleIdleHandler(kLongIdleHandlerDelayMs);
     return;
@@ -1765,6 +1766,7 @@ void RenderThreadImpl::OnCreateNewSharedWorker(
 void RenderThreadImpl::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
   base::allocator::ReleaseFreeMemory();
+  discardable_shared_memory_manager()->ReleaseFreeMemory();
 
   // Do not call into blink if it is not initialized.
   if (blink_platform_impl_) {
