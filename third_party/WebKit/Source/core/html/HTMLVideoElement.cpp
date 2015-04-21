@@ -32,6 +32,7 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/Fullscreen.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLImageLoader.h"
@@ -239,13 +240,13 @@ void HTMLVideoElement::webkitEnterFullscreen(ExceptionState& exceptionState)
         return;
     }
 
-    enterFullscreen();
+    Fullscreen::from(document()).requestFullscreen(*this, Fullscreen::PrefixedRequest);
 }
 
 void HTMLVideoElement::webkitExitFullscreen()
 {
     if (isFullscreen())
-        exitFullscreen();
+        Fullscreen::from(document()).exitFullscreen();
 }
 
 bool HTMLVideoElement::webkitSupportsFullscreen()

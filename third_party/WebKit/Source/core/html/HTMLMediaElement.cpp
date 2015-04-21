@@ -2781,7 +2781,7 @@ void HTMLMediaElement::mediaPlayerRequestFullscreen()
     // user interaction or when it is technically required to play the video.
     UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
 
-    enterFullscreen();
+    Fullscreen::from(document()).requestFullscreen(*this, Fullscreen::InternalVideoRequest);
 }
 
 void HTMLMediaElement::mediaPlayerRequestSeek(double time)
@@ -3137,20 +3137,6 @@ void HTMLMediaElement::contextDestroyed()
 bool HTMLMediaElement::isFullscreen() const
 {
     return Fullscreen::isActiveFullScreenElement(*this);
-}
-
-void HTMLMediaElement::enterFullscreen()
-{
-    WTF_LOG(Media, "HTMLMediaElement::enterFullscreen(%p)", this);
-
-    Fullscreen::from(document()).requestFullscreen(*this, Fullscreen::PrefixedVideoRequest);
-}
-
-void HTMLMediaElement::exitFullscreen()
-{
-    WTF_LOG(Media, "HTMLMediaElement::exitFullscreen(%p)", this);
-
-    Fullscreen::from(document()).exitFullscreen();
 }
 
 void HTMLMediaElement::didBecomeFullscreenElement()
