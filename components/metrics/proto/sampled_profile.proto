@@ -5,6 +5,8 @@
 syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
+option java_outer_classname = "SampledProfileProtos";
+option java_package = "org.chromium.components.metrics";
 
 package metrics;
 

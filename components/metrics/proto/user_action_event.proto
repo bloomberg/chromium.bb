@@ -8,6 +8,8 @@
 syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
+option java_outer_classname = "UserActionEventProtos";
+option java_package = "org.chromium.components.metrics";
 
 package metrics;
 
