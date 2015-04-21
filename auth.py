@@ -245,6 +245,7 @@ class Authenticator(object):
     self._external_token = None
     if config.refresh_token_json:
       self._external_token = _read_refresh_token_json(config.refresh_token_json)
+    logging.debug('Using auth config %r', config)
 
   def login(self):
     """Performs interactive login flow if necessary.
@@ -306,6 +307,7 @@ class Authenticator(object):
     """
     with self._lock:
       if force_refresh:
+        logging.debug('Forcing access token refresh')
         self._access_token = self._create_access_token(allow_user_interaction)
         return self._access_token
 
@@ -381,6 +383,8 @@ class Authenticator(object):
       cache_key = '%s:refresh_tok:%s' % (self._token_cache_key, token_hash)
     else:
       cache_key = self._token_cache_key
+    logging.debug(
+        'Using token storage %r (cache key %r)', OAUTH_TOKENS_CACHE, cache_key)
     return multistore_file.get_credential_storage_custom_string_key(
         OAUTH_TOKENS_CACHE, cache_key)
 
@@ -388,6 +392,11 @@ class Authenticator(object):
     """Returns oauth2client.Credentials loaded from storage."""
     storage = self._get_storage()
     credentials = storage.get()
+
+    if not credentials:
+      logging.debug('No cached token')
+    else:
+      _log_credentials_info('cached token', credentials)
 
     # Is using --auth-refresh-token-json?
     if self._external_token:
@@ -400,10 +409,12 @@ class Authenticator(object):
           credentials.client_id == self._external_token.client_id and
           credentials.client_secret == self._external_token.client_secret)
       if valid:
+        logging.debug('Cached credentials match external refresh token')
         return credentials
       # Construct new credentials from externally provided refresh token,
       # associate them with cache storage (so that access_token will be placed
       # in the cache later too).
+      logging.debug('Putting external refresh token into the cache')
       credentials = client.OAuth2Credentials(
           access_token=None,
           client_id=self._external_token.client_id,
@@ -422,8 +433,10 @@ class Authenticator(object):
 
   def _load_access_token(self):
     """Returns cached AccessToken if it is not expired yet."""
+    logging.debug('Reloading access token from cache')
     creds = self._get_cached_credentials()
     if not creds or not creds.access_token or creds.access_token_expired:
+      logging.debug('Access token is missing or expired')
       return None
     return AccessToken(str(creds.access_token), creds.token_expiry)
 
@@ -446,13 +459,18 @@ class Authenticator(object):
       LoginRequiredError if user interaction is required, but
           allow_user_interaction is False.
     """
+    logging.debug(
+        'Making new access token (allow_user_interaction=%r)',
+        allow_user_interaction)
     credentials = self._get_cached_credentials()
 
     # 3-legged flow with (perhaps cached) refresh token.
     refreshed = False
     if credentials and not credentials.invalid:
       try:
+        logging.debug('Attempting to refresh access_token')
         credentials.refresh(httplib2.Http())
+        _log_credentials_info('refreshed token', credentials)
         refreshed = True
       except client.Error as err:
         logging.warning(
@@ -466,8 +484,11 @@ class Authenticator(object):
         raise AuthenticationError(
             'Token provided via --auth-refresh-token-json is no longer valid.')
       if not allow_user_interaction:
+        logging.debug('Requesting user to login')
         raise LoginRequiredError(self._token_cache_key)
+      logging.debug('Launching OAuth browser flow')
       credentials = _run_oauth_dance(self._config)
+      _log_credentials_info('new token', credentials)
 
     logging.info(
         'OAuth access_token refreshed. Expires in %s.',
@@ -511,6 +532,18 @@ def _needs_refresh(access_token):
     return now >= access_token.expires_at
   # Token without expiration time never expires.
   return False
+
+
+def _log_credentials_info(title, credentials):
+  """Dumps (non sensitive) part of client.Credentials object to debug log."""
+  if credentials:
+    logging.debug('%s info: %r', title, {
+        'access_token_expired': credentials.access_token_expired,
+        'has_access_token': bool(credentials.access_token),
+        'invalid': credentials.invalid,
+        'utcnow': datetime.datetime.utcnow(),
+        'token_expiry': credentials.token_expiry,
+    })
 
 
 def _run_oauth_dance(config):
