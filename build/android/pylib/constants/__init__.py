@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 """Defines a set of constants shared by test runners and other scripts."""
+
+# TODO(jbudorick): Split these constants into coherent modules.
+
 # pylint: disable=W0212
 
 import collections
@@ -13,7 +16,7 @@ import subprocess
 
 DIR_SOURCE_ROOT = os.environ.get('CHECKOUT_SOURCE_ROOT',
     os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                 os.pardir, os.pardir, os.pardir)))
+                                 os.pardir, os.pardir, os.pardir, os.pardir)))
 ISOLATE_DEPS_DIR = os.path.join(DIR_SOURCE_ROOT, 'isolate_deps_dir')
 
 CHROME_SHELL_HOST_DRIVEN_DIR = os.path.join(

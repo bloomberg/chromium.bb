@@ -10,7 +10,10 @@ import random
 from pylib import constants
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
+from pylib.device import device_errors
 from pylib.device import intent
+
+_CHROME_PACKAGE = constants.PACKAGE_INFO['chrome'].package
 
 class TestRunner(base_test_runner.BaseTestRunner):
   """A TestRunner instance runs a monkey test on a single device."""
@@ -87,9 +90,17 @@ class TestRunner(base_test_runner.BaseTestRunner):
           test_name, base_test_result.ResultType.FAIL, log=output)
       if 'chrome' in self._options.package:
         logging.warning('Starting MinidumpUploadService...')
+        # TODO(jbudorick): Update this after upstreaming.
+        minidump_intent = intent.Intent(
+            action='%s.crash.ACTION_FIND_ALL' % _CHROME_PACKAGE,
+            package=self._package,
+            activity='%s.crash.MinidumpUploadService' % _CHROME_PACKAGE)
         try:
-          self.device.old_interface.StartCrashUploadService(self._package)
-        except AssertionError as e:
-          logging.error('Failed to start MinidumpUploadService: %s', e)
+          self.device.RunShellCommand(
+              ['am', 'startservice'] + minidump_intent.am_args,
+              as_root=True, check_return=True)
+        except device_errors.CommandFailedError:
+          logging.exception('Failed to start MinidumpUploadService')
+
     results.AddResult(result)
     return results, False

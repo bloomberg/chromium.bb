@@ -3,11 +3,14 @@
 # found in the LICENSE file.
 
 import logging
+import re
 import time
 
 from pylib import flag_changer
 from pylib.base import base_test_result
 from pylib.base import test_run
+from pylib.constants import keyevent
+from pylib.device import device_errors
 from pylib.local.device import local_device_test_run
 
 
@@ -27,14 +30,34 @@ TIMEOUT_ANNOTATIONS = [
 def DidPackageCrashOnDevice(package_name, device):
   # Dismiss any error dialogs. Limit the number in case we have an error
   # loop or we are failing to dismiss.
-  for _ in xrange(10):
-    package = device.old_interface.DismissCrashDialogIfNeeded()
-    if not package:
-      return False
-    # Assume test package convention of ".test" suffix
-    if package in package_name:
-      return True
+  try:
+    for _ in xrange(10):
+      package = _DismissCrashDialog(device)
+      if not package:
+        return False
+      # Assume test package convention of ".test" suffix
+      if package in package_name:
+        return True
+  except device_errors.CommandFailedError:
+    logging.exception('Error while attempting to dismiss crash dialog.')
   return False
+
+
+_CURRENT_FOCUS_CRASH_RE = re.compile(
+    r'\s*mCurrentFocus.*Application (Error|Not Responding): (\S+)}')
+
+
+def _DismissCrashDialog(device):
+  for l in device.RunShellCommand(
+      ['dumpsys', 'window', 'windows'], check_return=True):
+    m = re.match(_CURRENT_FOCUS_CRASH_RE, l)
+    if m:
+      device.SendKeyEvent(keyevent.KEYCODE_DPAD_RIGHT)
+      device.SendKeyEvent(keyevent.KEYCODE_DPAD_RIGHT)
+      device.SendKeyEvent(keyevent.KEYCODE_ENTER)
+      return m.group(2)
+
+  return None
 
 
 class LocalDeviceInstrumentationTestRun(

@@ -288,11 +288,8 @@ class Forwarder(object):
         self._device_forwarder_path_on_host,
         Forwarder._DEVICE_FORWARDER_FOLDER)])
     cmd = '%s %s' % (tool.GetUtilWrapper(), Forwarder._DEVICE_FORWARDER_PATH)
-    (exit_code, output) = device.old_interface.GetAndroidToolStatusAndOutput(
-        cmd, lib_path=Forwarder._DEVICE_FORWARDER_FOLDER)
-    if exit_code != 0:
-      raise Exception(
-          'Failed to start device forwarder:\n%s' % '\n'.join(output))
+    device.RunShellCommand(
+        cmd, env={'LD_LIBRARY_PATH': Forwarder._DEVICE_FORWARDER_FOLDER})
     self._initialized_devices.add(device_serial)
 
   def _KillHostLocked(self):
@@ -328,5 +325,5 @@ class Forwarder(object):
 
     cmd = '%s %s --kill-server' % (tool.GetUtilWrapper(),
                                    Forwarder._DEVICE_FORWARDER_PATH)
-    device.old_interface.GetAndroidToolStatusAndOutput(
-        cmd, lib_path=Forwarder._DEVICE_FORWARDER_FOLDER)
+    device.RunShellCommand(
+        cmd, env={'LD_LIBRARY_PATH': Forwarder._DEVICE_FORWARDER_FOLDER})

@@ -19,6 +19,7 @@ from pylib import android_commands
 from pylib import cmd_helper
 from pylib import constants
 from pylib import pexpect
+from pylib.device import device_errors
 from pylib.device import device_utils
 from pylib.utils import time_profile
 
@@ -394,33 +395,30 @@ class Emulator(object):
     """
     seconds_waited = 0
     number_of_waits = 2  # Make sure we can wfd twice
-    # TODO(jbudorick) Un-handroll this in the implementation switch.
-    adb_cmd = "adb -s %s %s" % (self.device_serial, 'wait-for-device')
+
+    device = device_utils.DeviceUtils(self.device_serial)
     while seconds_waited < self._LAUNCH_TIMEOUT:
       try:
-        run_command.RunCommand(adb_cmd,
-                               timeout_time=self._WAITFORDEVICE_TIMEOUT,
-                               retry_count=1)
+        device.adb.WaitForDevice(
+            timeout=self._WAITFORDEVICE_TIMEOUT, retries=1)
         number_of_waits -= 1
         if not number_of_waits:
           break
-      except errors.WaitForResponseTimedOutError:
+      except device_errors.CommandTimeoutError:
         seconds_waited += self._WAITFORDEVICE_TIMEOUT
-        adb_cmd = "adb -s %s %s" % (self.device_serial, 'kill-server')
-        run_command.RunCommand(adb_cmd)
+        device.adb.KillServer()
       self.popen.poll()
       if self.popen.returncode != None:
         raise EmulatorLaunchException('EMULATOR DIED')
+
     if seconds_waited >= self._LAUNCH_TIMEOUT:
       raise EmulatorLaunchException('TIMEOUT with wait-for-device')
+
     logging.info('Seconds waited on wait-for-device: %d', seconds_waited)
     if wait_for_boot:
       # Now that we checked for obvious problems, wait for a boot complete.
       # Waiting for the package manager is sometimes problematic.
-      # TODO(jbudorick) Convert this once waiting for the package manager and
-      #                 the external storage is no longer problematic.
-      d = device_utils.DeviceUtils(self.device_serial)
-      d.old_interface.WaitForSystemBootCompleted(self._WAITFORBOOT_TIMEOUT)
+      device.WaitUntilFullyBooted(timeout=self._WAITFORBOOT_TIMEOUT)
 
   def Shutdown(self):
     """Shuts down the process started by launch."""
