@@ -11,7 +11,10 @@ v8::Local<v8::Object> v8IteratorResultValue(v8::Isolate* isolate, bool done, v8:
 {
     v8::Local<v8::Object> result = v8::Object::New(isolate);
     result->Set(v8String(isolate, "done"), v8Boolean(done, isolate));
-    result->Set(v8String(isolate, "value"), value);
+    if (value.IsEmpty())
+        result->Set(v8String(isolate, "value"), v8::Undefined(isolate));
+    else
+        result->Set(v8String(isolate, "value"), value);
     return result;
 }
 

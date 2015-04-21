@@ -83,6 +83,7 @@ void callNpObjectSetter(v8::Local<v8::Object> self, uint32_t index, v8::Local<v8
 template <typename ElementType, typename PropertyType>
 void setScriptableObjectProperty(PropertyType property, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    ASSERT(!value.IsEmpty());
     HTMLPlugInElement* impl = ElementType::toImpl(info.Holder());
     RefPtr<SharedPersistent<v8::Object>> wrapper = impl->pluginWrapper();
     if (!wrapper)

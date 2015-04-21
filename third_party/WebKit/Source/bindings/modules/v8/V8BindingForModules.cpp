@@ -97,8 +97,12 @@ v8::Local<v8::Value> toV8(const IDBKey* key, v8::Local<v8::Object> creationConte
     case IDBKey::ArrayType:
         {
             v8::Local<v8::Array> array = v8::Array::New(isolate, key->array().size());
-            for (size_t i = 0; i < key->array().size(); ++i)
-                array->Set(i, toV8(key->array()[i].get(), creationContext, isolate));
+            for (size_t i = 0; i < key->array().size(); ++i) {
+                v8::Local<v8::Value> value = toV8(key->array()[i].get(), creationContext, isolate);
+                if (value.IsEmpty())
+                    value = v8::Undefined(isolate);
+                array->Set(i, value);
+            }
             return array;
         }
     }
@@ -247,6 +251,7 @@ static bool get(v8::Isolate* isolate, v8::Local<v8::Value> value, const String& 
 
 static bool set(v8::Isolate* isolate, v8::Local<v8::Value> object, const String& name, v8::Local<v8::Value> v8Value)
 {
+    ASSERT(!v8Value.IsEmpty());
     // TODO(jsbell): Other "can set?" checks?
     if (!object->IsObject())
         return false;

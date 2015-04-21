@@ -815,6 +815,7 @@ v8::Handle<v8::Function> getBoundFunction(v8::Handle<v8::Function> function)
 
 void addHiddenValueToArray(v8::Isolate* isolate, v8::Handle<v8::Object> object, v8::Local<v8::Value> value, int arrayIndex)
 {
+    ASSERT(!value.IsEmpty());
     v8::Local<v8::Value> arrayValue = object->GetInternalField(arrayIndex);
     if (arrayValue->IsNull() || arrayValue->IsUndefined()) {
         arrayValue = v8::Array::New(isolate);

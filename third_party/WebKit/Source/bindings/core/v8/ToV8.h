@@ -200,8 +200,12 @@ inline v8::Handle<v8::Value> toV8SequenceInternal(const Sequence& sequence, v8::
     v8::Local<v8::Array> array = v8::Array::New(isolate, sequence.size());
     uint32_t index = 0;
     typename Sequence::const_iterator end = sequence.end();
-    for (typename Sequence::const_iterator iter = sequence.begin(); iter != end; ++iter)
-        array->Set(v8::Integer::New(isolate, index++), toV8(*iter, creationContext, isolate));
+    for (typename Sequence::const_iterator iter = sequence.begin(); iter != end; ++iter) {
+        v8::Local<v8::Value> value = toV8(*iter, creationContext, isolate);
+        if (value.IsEmpty())
+            value = v8::Undefined(isolate);
+        array->Set(v8::Integer::New(isolate, index++), value);
+    }
     return array;
 }
 
@@ -221,8 +225,12 @@ template<typename T>
 inline v8::Handle<v8::Value> toV8(const Vector<std::pair<String, T>>& value, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     v8::Local<v8::Object> object = v8::Object::New(isolate);
-    for (unsigned i = 0; i < value.size(); ++i)
-        object->Set(v8String(isolate, value[i].first), toV8(value[i].second, creationContext, isolate));
+    for (unsigned i = 0; i < value.size(); ++i) {
+        v8::Local<v8::Value> v8Value = toV8(value[i].second, creationContext, isolate);
+        if (v8Value.IsEmpty())
+            v8Value = v8::Undefined(isolate);
+        object->Set(v8String(isolate, value[i].first), v8Value);
+    }
     return object;
 }
 
