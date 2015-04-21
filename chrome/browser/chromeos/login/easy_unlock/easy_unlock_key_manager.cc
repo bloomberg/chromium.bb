@@ -59,7 +59,9 @@ void EasyUnlockKeyManager::RefreshKeys(const UserContext& user_context,
     return;
   }
 
-  if (tpm_key_manager->PrepareTpmKey(false /* check_private_key */,
+  // Private TPM key is needed only when adding new keys.
+  if (remote_devices.empty() ||
+      tpm_key_manager->PrepareTpmKey(false /* check_private_key */,
                                      do_refresh_keys)) {
     do_refresh_keys.Run();
   } else {

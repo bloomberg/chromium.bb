@@ -844,8 +844,10 @@ void EasyUnlockService::PrepareForSuspend() {
 }
 
 void EasyUnlockService::EnsureTpmKeyPresentIfNeeded() {
-  if (tpm_key_checked_ || GetType() != TYPE_REGULAR || GetUserEmail().empty())
+  if (tpm_key_checked_ || GetType() != TYPE_REGULAR || GetUserEmail().empty() ||
+      GetHardlockState() == EasyUnlockScreenlockStateHandler::NO_PAIRING) {
     return;
+  }
 
 #if defined(OS_CHROMEOS)
   // If this is called before the session is started, the chances are Chrome
