@@ -48,9 +48,6 @@ class LayoutTestPushMessagingService : public PushMessagingService {
                   const UnregisterCallback& callback) override;
 
  private:
-  // Map from origin to permission status.
-  std::map<GURL, blink::WebPushPermissionStatus> permission_map_;
-
   DISALLOW_COPY_AND_ASSIGN(LayoutTestPushMessagingService);
 };
 
