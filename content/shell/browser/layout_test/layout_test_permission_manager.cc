@@ -88,9 +88,9 @@ void LayoutTestPermissionManager::RequestPermission(
     return;
   }
 
-  callback.Run(GetPermissionStatus(permission,
-                                   requesting_origin,
-                                   web_contents->GetLastCommittedURL()));
+  callback.Run(GetPermissionStatus(
+      permission, requesting_origin,
+      web_contents->GetLastCommittedURL().GetOrigin()));
 }
 
 void LayoutTestPermissionManager::CancelPermissionRequest(
