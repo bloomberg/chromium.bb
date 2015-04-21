@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Invalid suborigin names</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+</head>
+
+<script>
+var test_suborigin_names = [
+    "",
+    "'foobar'",
+    "'foobar",
+    "foobar'",
+    "foo'bar",
+    "foob@r",
+    "foo bar",
+    ];
+
+var iframe;
+var i = 0;
+function next() {
+    name = test_suborigin_names[i];
+    i++;
+    iframe.src = "resources/childsuborigin.php?suborigin=" + name;
+}
+
+window.onmessage = function() {
+    if (i > test_suborigin_names.length)
+        done();
+
+    var secret = '';
+    try {
+        secret = iframe.contentWindow.secret;
+        assert_equals(secret, "I am a secret", "The parent frame should always be able to get the secret value from the child iframe.");
+    } catch(e) {
+        assert_unreached();
+    };
+    next();
+};
+
+window.onload = function() {; 
+    iframe = document.getElementById('iframe');
+    next();
+};
+</script>
+<iframe id="iframe"></iframe>

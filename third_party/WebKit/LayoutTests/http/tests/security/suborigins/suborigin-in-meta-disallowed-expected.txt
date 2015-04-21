@@ -1,0 +1,6 @@
+CONSOLE ERROR: line 7: Unrecognized Content-Security-Policy directive 'suborigin'.
+
+This is a testharness.js-based test.
+PASS Suborigin in <meta> disallowed 
+Harness: the test ran to completion.
+

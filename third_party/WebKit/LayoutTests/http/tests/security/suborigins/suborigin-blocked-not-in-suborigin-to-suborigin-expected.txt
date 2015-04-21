@@ -1,0 +1,7 @@
+CONSOLE ERROR: Unrecognized Content-Security-Policy directive 'suborigin'.
+
+
+This is a testharness.js-based test.
+FAIL Block frame not in suborigin from accessing a frame in a suborigin Uncaught assert_equals: The parent frame should not be able to get the secret value from the child iframe. expected (string) "" but got (undefined) undefined
+Harness: the test ran to completion.
+
