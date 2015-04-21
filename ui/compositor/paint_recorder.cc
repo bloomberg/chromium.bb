@@ -14,16 +14,20 @@
 namespace ui {
 
 PaintRecorder::PaintRecorder(const PaintContext& context)
-    : canvas_(context.canvas_),
-      list_(context.list_),
-      recorder_(context.recorder_.get()) {
-  if (list_) {
+    : context_(context), canvas_(context.canvas_) {
+#if DCHECK_IS_ON()
+  DCHECK(!context.inside_paint_recorder_);
+  context.inside_paint_recorder_ = true;
+#endif
+
+  if (context.list_) {
     SkRTreeFactory* no_factory = nullptr;
     // This SkCancas is shared with the recorder_ so no need to store a RefPtr
     // to it on this class.
-    skia::RefPtr<SkCanvas> skcanvas = skia::SharePtr(recorder_->beginRecording(
-        gfx::RectToSkRect(context.bounds_), no_factory,
-        SkPictureRecorder::kComputeSaveLayerInfo_RecordFlag));
+    skia::RefPtr<SkCanvas> skcanvas =
+        skia::SharePtr(context.recorder_->beginRecording(
+            gfx::RectToSkRect(context.bounds_), no_factory,
+            SkPictureRecorder::kComputeSaveLayerInfo_RecordFlag));
     owned_canvas_ = make_scoped_ptr(gfx::Canvas::CreateCanvasWithoutScaling(
         skcanvas.get(), context.device_scale_factor_));
     canvas_ = owned_canvas_.get();
@@ -31,9 +35,13 @@ PaintRecorder::PaintRecorder(const PaintContext& context)
 }
 
 PaintRecorder::~PaintRecorder() {
-  if (list_) {
-    list_->AppendItem(cc::DrawingDisplayItem::Create(
-        skia::AdoptRef(recorder_->endRecordingAsPicture())));
+#if DCHECK_IS_ON()
+  context_.inside_paint_recorder_ = false;
+#endif
+
+  if (context_.list_) {
+    context_.list_->AppendItem(cc::DrawingDisplayItem::Create(
+        skia::AdoptRef(context_.recorder_->endRecordingAsPicture())));
   }
 }
 

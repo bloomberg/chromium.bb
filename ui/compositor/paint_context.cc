@@ -17,6 +17,7 @@ PaintContext::PaintContext(gfx::Canvas* canvas, const gfx::Rect& invalidation)
       invalidation_(invalidation) {
 #if DCHECK_IS_ON()
   root_visited_ = nullptr;
+  inside_paint_recorder_ = false;
 #endif
 }
 
@@ -32,6 +33,7 @@ PaintContext::PaintContext(cc::DisplayItemList* list,
       invalidation_(invalidation) {
 #if DCHECK_IS_ON()
   root_visited_ = nullptr;
+  inside_paint_recorder_ = false;
 #endif
 }
 
@@ -52,6 +54,7 @@ PaintContext::PaintContext(const PaintContext& other)
       offset_(other.offset_) {
 #if DCHECK_IS_ON()
   root_visited_ = other.root_visited_;
+  inside_paint_recorder_ = other.inside_paint_recorder_;
 #endif
 }
 

@@ -112,6 +112,9 @@ class COMPOSITOR_EXPORT PaintContext {
   // Used to verify that the |invalidation_| is only used to compare against
   // rects in the same space.
   mutable void* root_visited_;
+  // Used to verify that paint recorders are not nested. True while a paint
+  // recorder is active.
+  mutable bool inside_paint_recorder_;
 #endif
 };
 

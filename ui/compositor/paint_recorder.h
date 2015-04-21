@@ -37,9 +37,8 @@ class COMPOSITOR_EXPORT PaintRecorder {
   gfx::Canvas* canvas() { return canvas_; }
 
  private:
+  const PaintContext& context_;
   gfx::Canvas* canvas_;
-  cc::DisplayItemList* list_;
-  SkPictureRecorder* recorder_;
   scoped_ptr<gfx::Canvas> owned_canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintRecorder);
