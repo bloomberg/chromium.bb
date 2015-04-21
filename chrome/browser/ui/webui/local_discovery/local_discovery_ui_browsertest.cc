@@ -20,7 +20,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/base/web_ui_browser_test.h"
-#include "chromeos/chromeos_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"
@@ -33,6 +32,7 @@
 #if defined(OS_CHROMEOS)
 #include "base/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_switches.h"
 #endif
 
 using testing::InvokeWithoutArgs;

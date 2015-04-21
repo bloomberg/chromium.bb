@@ -6,16 +6,13 @@
 #define BASE_CHROMEOS_MEMORY_PRESSURE_MONITOR_CHROMEOS_H_
 
 #include "base/base_export.h"
+#include "base/files/scoped_file.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-
-#if defined (OS_POSIX)
-#include "base/files/scoped_file.h"
-#endif
 
 namespace base {
 
@@ -103,10 +100,8 @@ class BASE_EXPORT MemoryPressureMonitorChromeOS : public MemoryPressureMonitor {
   const int moderate_pressure_threshold_percent_;
   const int critical_pressure_threshold_percent_;
 
-#if defined(OS_POSIX)
   // File descriptor used to detect low memory condition.
   ScopedFD low_mem_file_;
-#endif
 
   base::WeakPtrFactory<MemoryPressureMonitorChromeOS> weak_ptr_factory_;
 
