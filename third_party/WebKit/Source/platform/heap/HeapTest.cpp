@@ -5764,11 +5764,11 @@ TEST(HeapTest, HeapVectorPartObjects)
     }
 
     vector1.reserveCapacity(150);
-    EXPECT_EQ(150u, vector1.capacity());
+    EXPECT_LE(150u, vector1.capacity());
     EXPECT_EQ(10u, vector1.size());
 
     vector2.reserveCapacity(100);
-    EXPECT_EQ(100u, vector2.capacity());
+    EXPECT_LE(100u, vector2.capacity());
     EXPECT_EQ(10u, vector2.size());
 
     for (int i = 0; i < 4; ++i) {
