@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/render_widget_host_latency_tracker.h"
+#include "content/browser/renderer_host/input/render_widget_host_latency_tracker.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
