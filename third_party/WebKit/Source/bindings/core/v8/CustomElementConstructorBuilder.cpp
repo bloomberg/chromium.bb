@@ -199,13 +199,8 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
     if (!v8CallBoolean(m_constructor->ForceSet(context, prototypeKey, m_prototype, v8::PropertyAttribute(v8::ReadOnly | v8::DontEnum | v8::DontDelete))))
         return false;
 
-    v8::Local<v8::String> constructorKey = v8String(isolate, "constructor");
-    // The generated constructor should inherit from constructor.
-    if (!v8CallBoolean(m_constructor->SetPrototype(context, m_prototype->Get(constructorKey))))
-        return false;
-
     V8HiddenValue::setHiddenValue(isolate, m_prototype, V8HiddenValue::customElementIsInterfacePrototypeObject(isolate), v8::True(isolate));
-    if (!v8CallBoolean(m_prototype->ForceSet(context, constructorKey, m_constructor, v8::DontEnum)))
+    if (!v8CallBoolean(m_prototype->ForceSet(context, v8String(isolate, "constructor"), m_constructor, v8::DontEnum)))
         return false;
 
     return true;
