@@ -989,7 +989,6 @@ public class ContentViewCore
         if (mNativeContentViewCore != 0) {
             nativeOnJavaContentViewCoreDestroyed(mNativeContentViewCore);
         }
-        mSystemCaptioningBridge.destroy();
         mWebContentsObserver.destroy();
         mWebContentsObserver = null;
         setSmartClipDataListener(null);
@@ -1506,6 +1505,7 @@ public class ContentViewCore
         restoreSelectionPopupsIfNecessary();
         ScreenOrientationListener.getInstance().addObserver(this, mContext);
         GamepadList.onAttachedToWindow(mContext);
+        mSystemCaptioningBridge.registerBridge();
     }
 
     /**
@@ -1528,6 +1528,7 @@ public class ContentViewCore
         // locking and app switching.
         setTextHandlesTemporarilyHidden(true);
         hidePopupsAndPreserveSelection();
+        mSystemCaptioningBridge.unregisterBridge();
     }
 
     /**

@@ -12,10 +12,18 @@ public class EmptyCaptioningBridge implements SystemCaptioningBridge {
     /**
      * A no-op implementation of the syncToDelegate function.
      */
+    @Override
     public void syncToDelegate() {}
 
     /**
-     * A no-op implementation of the destroy function.
+     * No-op implementation of registerBridge.
      */
-    public void destroy() {}
+    @Override
+    public void registerBridge() {}
+
+    /**
+     * A no-op implementation of the unregisterBridge function.
+     */
+    @Override
+    public void unregisterBridge() {}
 }

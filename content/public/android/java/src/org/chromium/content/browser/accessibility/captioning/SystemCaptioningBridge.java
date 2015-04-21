@@ -14,8 +14,12 @@ public interface SystemCaptioningBridge {
     public void syncToDelegate();
 
     /**
-     * Removes any external listeners that were added. This implementation doesn't do anything.
-     * After destroy is called, this object should not be used again.
+     * Register this bridge for event changes with the system CaptioningManager.
      */
-    public void destroy();
+    public void registerBridge();
+
+    /**
+     * Unregister this bridge from system CaptionManager. Must be called to avoid leaks.
+     */
+    public void unregisterBridge();
 }
