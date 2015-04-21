@@ -50,9 +50,8 @@ def RunCommandInSubProcess(command):
     results = subprocess.check_output(cmd_line, stderr=subprocess.STDOUT,
                                       shell=True)
   except subprocess.CalledProcessError, e:
-    raise Exception('Exception %s running command %s\n' %
-                    (e, command))
-  else:
+    results = e.output
+  finally:
     print results
   return results
 
@@ -196,7 +195,7 @@ def main(args):
   # Was there any test failure?
   if TEST_FAILURE:
     print '++++++++++AT LEAST 1 TEST FAILED++++++++++'
-    print FAILING_TESTS
+    print FAILING_TESTS.rstrip('\n')
     print '++++++++++++++++++++++++++++++++++++++++++'
     raise Exception('At least one test failed.')
 
