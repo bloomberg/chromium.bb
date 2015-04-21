@@ -4335,16 +4335,17 @@ protected:
         blink::Node* layerOwnerNodeForStart = blink::V8Node::toImplWithTypeCheck(v8::Isolate::GetCurrent(), expectedResult.Get(0));
         ASSERT_TRUE(layerOwnerNodeForStart);
         EXPECT_EQ(layerOwnerNodeForStart->layoutObject()->enclosingLayer()->enclosingLayerForPaintInvalidation()->graphicsLayerBacking()->platformLayer()->id(), selectStart->layerId);
-        EXPECT_EQ(expectedResult.Get(1).As<v8::Int32>()->Value(), selectStart->edgeTopInLayer.x);
-        EXPECT_EQ(expectedResult.Get(2).As<v8::Int32>()->Value(), selectStart->edgeTopInLayer.y);
-        EXPECT_EQ(expectedResult.Get(3).As<v8::Int32>()->Value(), selectStart->edgeBottomInLayer.x);
+        v8::Local<v8::Context> context = v8::Isolate::GetCurrent()->GetCurrentContext();
+        EXPECT_EQ(expectedResult.Get(context, 1).ToLocalChecked().As<v8::Int32>()->Value(), selectStart->edgeTopInLayer.x);
+        EXPECT_EQ(expectedResult.Get(context, 2).ToLocalChecked().As<v8::Int32>()->Value(), selectStart->edgeTopInLayer.y);
+        EXPECT_EQ(expectedResult.Get(context, 3).ToLocalChecked().As<v8::Int32>()->Value(), selectStart->edgeBottomInLayer.x);
 
-        blink::Node* layerOwnerNodeForEnd = blink::V8Node::toImplWithTypeCheck(v8::Isolate::GetCurrent(), expectedResult.Get(5));
+        blink::Node* layerOwnerNodeForEnd = blink::V8Node::toImplWithTypeCheck(v8::Isolate::GetCurrent(), expectedResult.Get(context, 5).ToLocalChecked());
         ASSERT_TRUE(layerOwnerNodeForEnd);
         EXPECT_EQ(layerOwnerNodeForEnd->layoutObject()->enclosingLayer()->enclosingLayerForPaintInvalidation()->graphicsLayerBacking()->platformLayer()->id(), selectEnd->layerId);
-        EXPECT_EQ(expectedResult.Get(6).As<v8::Int32>()->Value(), selectEnd->edgeTopInLayer.x);
-        EXPECT_EQ(expectedResult.Get(7).As<v8::Int32>()->Value(), selectEnd->edgeTopInLayer.y);
-        EXPECT_EQ(expectedResult.Get(8).As<v8::Int32>()->Value(), selectEnd->edgeBottomInLayer.x);
+        EXPECT_EQ(expectedResult.Get(context, 6).ToLocalChecked().As<v8::Int32>()->Value(), selectEnd->edgeTopInLayer.x);
+        EXPECT_EQ(expectedResult.Get(context, 7).ToLocalChecked().As<v8::Int32>()->Value(), selectEnd->edgeTopInLayer.y);
+        EXPECT_EQ(expectedResult.Get(context, 8).ToLocalChecked().As<v8::Int32>()->Value(), selectEnd->edgeBottomInLayer.x);
 
         // Platform differences can introduce small stylistic deviations in
         // y-axis positioning, the details of which aren't relevant to
@@ -4352,14 +4353,14 @@ protected:
         // should be consistent for the corresponding y coordinates.
         int yBottomEpsilon = 0;
         if (expectedResult.Length() == 13)
-            yBottomEpsilon = expectedResult.Get(12)->Int32Value();
-        int yBottomDeviation = expectedResult.Get(4)->Int32Value() - selectStart->edgeBottomInLayer.y;
+            yBottomEpsilon = expectedResult.Get(context, 12).ToLocalChecked().As<v8::Int32>()->Value();
+        int yBottomDeviation = expectedResult.Get(context, 4).ToLocalChecked().As<v8::Int32>()->Value() - selectStart->edgeBottomInLayer.y;
         EXPECT_GE(yBottomEpsilon, std::abs(yBottomDeviation));
-        EXPECT_EQ(yBottomDeviation, expectedResult.Get(9)->Int32Value() - selectEnd->edgeBottomInLayer.y);
+        EXPECT_EQ(yBottomDeviation, expectedResult.Get(context, 9).ToLocalChecked().As<v8::Int32>()->Value() - selectEnd->edgeBottomInLayer.y);
 
         if (expectedResult.Length() >= 12) {
-            EXPECT_EQ(expectedResult.Get(10)->BooleanValue(), m_fakeSelectionLayerTreeView.selection()->isEditable());
-            EXPECT_EQ(expectedResult.Get(11)->BooleanValue(), m_fakeSelectionLayerTreeView.selection()->isEmptyTextFormControl());
+            EXPECT_EQ(expectedResult.Get(context, 10).ToLocalChecked().As<v8::Boolean>()->Value(), m_fakeSelectionLayerTreeView.selection()->isEditable());
+            EXPECT_EQ(expectedResult.Get(context, 11).ToLocalChecked().As<v8::Boolean>()->Value(), m_fakeSelectionLayerTreeView.selection()->isEmptyTextFormControl());
         }
     }
 

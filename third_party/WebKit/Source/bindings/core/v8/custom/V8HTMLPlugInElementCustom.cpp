@@ -58,7 +58,9 @@ void getScriptableObjectProperty(PropertyType property, const v8::PropertyCallba
     if (instance.IsEmpty())
         return;
 
-    TONATIVE_VOID(v8::Local<v8::Value>, value, instance->Get(property));
+    v8::Local<v8::Value> value;
+    if (!instance->Get(info.GetIsolate()->GetCurrentContext(), property).ToLocal(&value))
+        return;
 
     // We quit here to allow the binding code to look up general HTMLObjectElement properties
     // if they are not overriden by plugin.

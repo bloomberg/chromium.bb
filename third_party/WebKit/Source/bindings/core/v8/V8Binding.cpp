@@ -920,7 +920,10 @@ JSONValuePtr NativeValueTraits<JSONValuePtr>::nativeValue(v8::Isolate* isolate, 
             // FIXME(yurys): v8::Object should support GetOwnPropertyNames
             if (name->IsString() && !v8CallBoolean(object->HasRealNamedProperty(context, v8::Local<v8::String>::Cast(name))))
                 continue;
-            RefPtr<JSONValue> propertyValue = nativeValue(isolate, object->Get(name), exceptionState, maxDepth);
+            v8::Local<v8::Value> property;
+            if (!object->Get(context, name).ToLocal(&property))
+                return nullptr;
+            RefPtr<JSONValue> propertyValue = nativeValue(isolate, property, exceptionState, maxDepth);
             if (!propertyValue)
                 return nullptr;
             TOSTRING_DEFAULT(V8StringResource<TreatNullAsNullString>, nameString, name, nullptr);

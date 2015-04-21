@@ -63,10 +63,10 @@ v8::Local<v8::Function> V8EventListener::getListenerFunction(ScriptState* script
         return v8::Local<v8::Function>();
 
     if (listener->IsObject()) {
-        v8::Local<v8::Value> property = listener->Get(v8AtomicString(isolate(), "handleEvent"));
         // Check that no exceptions were thrown when getting the
         // handleEvent property and that the value is a function.
-        if (!property.IsEmpty() && property->IsFunction())
+        v8::Local<v8::Value> property;
+        if (listener->Get(scriptState->context(), v8AtomicString(isolate(), "handleEvent")).ToLocal(&property) && property->IsFunction())
             return v8::Local<v8::Function>::Cast(property);
     }
 

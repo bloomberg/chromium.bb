@@ -207,7 +207,9 @@ static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate, v8::Local<v8::Value> 
         IDBKey::KeyArray subkeys;
         uint32_t length = array->Length();
         for (uint32_t i = 0; i < length; ++i) {
-            v8::Local<v8::Value> item = array->Get(v8::Int32::New(isolate, i));
+            v8::Local<v8::Value> item;
+            if (!array->Get(isolate->GetCurrentContext(), v8::Int32::New(isolate, i)).ToLocal(&item))
+                return nullptr;
             IDBKey* subkey = createIDBKeyFromValue(isolate, item, stack, allowExperimentalTypes);
             if (!subkey)
                 subkeys.append(IDBKey::createInvalid());
@@ -245,7 +247,8 @@ static bool get(v8::Isolate* isolate, v8::Local<v8::Value> value, const String& 
     v8::Local<v8::String> key = v8String(isolate, name);
     if (!v8CallBoolean(object->Has(isolate->GetCurrentContext(), key)))
         return false;
-    result = object->Get(key);
+    if (!object->Get(isolate->GetCurrentContext(), key).ToLocal(&result))
+        return false;
     return true;
 }
 

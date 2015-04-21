@@ -60,8 +60,8 @@ AtomicString V8CustomXPathNSResolver::lookupNamespaceURI(const String& prefix)
     v8::Local<v8::String> lookupNamespaceURIName = v8AtomicString(m_isolate, "lookupNamespaceURI");
 
     // Check if the resolver has a function property named lookupNamespaceURI.
-    v8::Local<v8::Value> lookupNamespaceURI = m_resolver->Get(lookupNamespaceURIName);
-    if (!lookupNamespaceURI.IsEmpty() && lookupNamespaceURI->IsFunction())
+    v8::Local<v8::Value> lookupNamespaceURI;
+    if (m_resolver->Get(m_isolate->GetCurrentContext(), lookupNamespaceURIName).ToLocal(&lookupNamespaceURI) && lookupNamespaceURI->IsFunction())
         lookupNamespaceURIFunc = v8::Local<v8::Function>::Cast(lookupNamespaceURI);
 
     if (lookupNamespaceURIFunc.IsEmpty() && !m_resolver->IsFunction()) {

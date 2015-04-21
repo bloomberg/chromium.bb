@@ -42,6 +42,7 @@ namespace blink {
 // V8CustomXPathNSResolver does not create a persistent handle to the
 // given resolver object. So the lifetime of V8CustomXPathNSResolver
 // must not exceed the lifetime of the passed handle.
+// TODO(bashi): This class should maintain ScriptState.
 class V8CustomXPathNSResolver final : public XPathNSResolver {
 public:
     static PassRefPtrWillBeRawPtr<V8CustomXPathNSResolver> create(v8::Local<v8::Object> resolver, v8::Isolate*);

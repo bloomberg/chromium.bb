@@ -538,8 +538,10 @@ void V8InjectedScriptHost::callFunctionMethodCustom(const v8::FunctionCallbackIn
     v8::Local<v8::Array> arguments = v8::Local<v8::Array>::Cast(info[2]);
     size_t argc = arguments->Length();
     OwnPtr<v8::Local<v8::Value>[]> argv = adoptArrayPtr(new v8::Local<v8::Value>[argc]);
-    for (size_t i = 0; i < argc; ++i)
-        argv[i] = arguments->Get(i);
+    for (size_t i = 0; i < argc; ++i) {
+        if (!arguments->Get(info.GetIsolate()->GetCurrentContext(), v8::Integer::New(info.GetIsolate(), i)).ToLocal(&argv[i]))
+            return;
+    }
 
     v8::Local<v8::Value> result = function->Call(receiver, argc, argv.get());
     v8SetReturnValue(info, result);

@@ -37,6 +37,8 @@ namespace blink {
 // TO*_RETURNTYPE[_ARGTYPE]...
 // ...using _DEFAULT instead of _ANY..._ANY when returing a default value.
 
+// TODO(bashi): Remove TONATIVE_XXX.
+
 #define TONATIVE_VOID(type, var, value)        \
     type var;                                  \
     {                                          \
