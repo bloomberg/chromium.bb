@@ -1815,12 +1815,6 @@
         'browser/media/capture/desktop_capture_device_aura.h',
       ],
     }],
-    ['enable_webrtc==1 and (OS=="linux" or OS=="mac")', {
-      'sources': [
-        'browser/renderer_host/media/video_capture_texture_wrapper.cc',
-        'browser/renderer_host/media/video_capture_texture_wrapper.h',
-      ],
-    }],
     ['OS=="win"', {
       'dependencies': [
         # For accessibility

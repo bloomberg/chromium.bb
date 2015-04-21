@@ -86,7 +86,7 @@ class ThreadSafeCaptureOracle
   // Callback invoked on completion of all captures.
   void DidCaptureFrame(
       int frame_number,
-      const scoped_refptr<media::VideoCaptureDevice::Client::Buffer>& buffer,
+      scoped_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
       base::TimeTicks capture_begin_time,
       const scoped_refptr<media::VideoFrame>& frame,
       base::TimeTicks timestamp,

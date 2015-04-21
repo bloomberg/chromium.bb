@@ -29,6 +29,7 @@ enum VideoPixelFormat {
   PIXEL_FORMAT_ARGB,
   PIXEL_FORMAT_MJPEG,
   PIXEL_FORMAT_TEXTURE,  // Capture format as a GL texture.
+  PIXEL_FORMAT_GPUMEMORYBUFFER,
   PIXEL_FORMAT_UNKNOWN,  // Color format not set.
   PIXEL_FORMAT_MAX,
 };

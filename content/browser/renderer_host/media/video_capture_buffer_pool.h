@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/shared_memory.h"
 #include "base/process/process.h"
 #include "base/synchronization/lock.h"
@@ -17,13 +16,14 @@
 #include "media/base/video_capture_types.h"
 #include "media/base/video_frame.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace content {
 
 // A thread-safe class that does the bookkeeping and lifetime management for a
 // pool of pixel buffers cycled between an in-process producer (e.g. a
 // VideoCaptureDevice) and a set of out-of-process consumers. The pool is
-// intended to be orchestrated by a VideoCaptureController, but is designed
+// intended to be orchestrated by a VideoCaptureDevice::Client, but is designed
 // to outlive the controller if necessary. The pixel buffers may be backed by a
 // SharedMemory, but this is not compulsory.
 //
@@ -44,6 +44,16 @@ class CONTENT_EXPORT VideoCaptureBufferPool
     : public base::RefCountedThreadSafe<VideoCaptureBufferPool> {
  public:
   static const int kInvalidId;
+
+  // Abstraction of a pool's buffer data buffer and size for clients.
+  class BufferHandle {
+   public:
+    virtual ~BufferHandle() {}
+    virtual size_t size() const = 0;
+    virtual void* data() = 0;
+    virtual ClientBuffer AsClientBuffer() = 0;
+  };
+
   explicit VideoCaptureBufferPool(int count);
 
   // One-time (per client/per-buffer) initialization to share a particular
@@ -53,9 +63,8 @@ class CONTENT_EXPORT VideoCaptureBufferPool
                                           base::ProcessHandle process_handle,
                                           size_t* memory_size);
 
-  // Query the memory parameters of |buffer_id|. Fills in parameters in the
-  // pointer arguments, and returns true iff the buffer exists.
-  bool GetBufferInfo(int buffer_id, void** storage, size_t* size);
+  // Try and obtain a BufferHandle for |buffer_id|.
+  scoped_ptr<BufferHandle> GetBufferHandle(int buffer_id);
 
   // Reserve or allocate a buffer to support a packed frame of |dimensions| of
   // pixel |format| and return its id. This will fail (returning kInvalidId) if
@@ -90,35 +99,37 @@ class CONTENT_EXPORT VideoCaptureBufferPool
   void RelinquishConsumerHold(int buffer_id, int num_clients);
 
  private:
+  class GpuMemoryBufferTracker;
   class SharedMemTracker;
   // Generic class to keep track of the state of a given mappable resource.
   class Tracker {
    public:
-    static scoped_ptr<Tracker> CreateTracker();
+    static scoped_ptr<Tracker> CreateTracker(bool use_gmb);
 
-    Tracker() : held_by_producer_(false), consumer_hold_count_(0) {}
+    Tracker()
+        : pixel_count_(0), held_by_producer_(false), consumer_hold_count_(0) {}
     virtual bool Init(media::VideoFrame::Format format,
                       const gfx::Size& dimensions) = 0;
     virtual ~Tracker();
 
+    size_t pixel_count() const { return pixel_count_; }
+    void set_pixel_count(size_t count) { pixel_count_ = count; }
     bool held_by_producer() const { return held_by_producer_; }
     void set_held_by_producer(bool value) { held_by_producer_ = value; }
     int consumer_hold_count() const { return consumer_hold_count_; }
     void set_consumer_hold_count(int value) { consumer_hold_count_ = value; }
 
-    // Returns a void* to the underlying storage, be that a memory block for
-    // Shared Memory, or a GpuMemoryBuffer.
-    virtual void* storage() = 0;
-    // Amount of bytes requested when first created. Can be zero if it does not
-    // need RAM, e.g. is allocated in GPU memory.
-    virtual size_t requested_size() = 0;
+    // Returns a handle to the underlying storage, be that a block of Shared
+    // Memory, or a GpuMemoryBuffer.
+    virtual scoped_ptr<BufferHandle> GetBufferHandle() = 0;
     // The actual size of the underlying backing resource.
-    virtual size_t mapped_size() = 0;
+    virtual size_t mapped_size() const = 0;
 
     virtual bool ShareToProcess(base::ProcessHandle process_handle,
                                 base::SharedMemoryHandle* new_handle) = 0;
 
    private:
+    size_t pixel_count_;
     // Indicates whether this Tracker is currently referenced by the producer.
     bool held_by_producer_;
     // Number of consumer processes which hold this Tracker.

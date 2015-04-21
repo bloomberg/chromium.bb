@@ -24,25 +24,23 @@ namespace {
 static const FakeVideoCaptureDevice::FakeVideoCaptureDeviceType
 kCaptureTypes[] = {
   FakeVideoCaptureDevice::USING_OWN_BUFFERS,
-  FakeVideoCaptureDevice::USING_CLIENT_BUFFERS,
-  // TODO(mcasas): Add FakeVideoCaptureDevice::USING_GPU_MEMORY_BUFFERS when
-  // implemented.
+  FakeVideoCaptureDevice::USING_OWN_BUFFERS_TRIPLANAR,
+  FakeVideoCaptureDevice::USING_CLIENT_BUFFERS_I420,
+  FakeVideoCaptureDevice::USING_CLIENT_BUFFERS_GPU,
 };
 
 // This class is a Client::Buffer that allocates and frees the requested |size|.
 class MockBuffer : public VideoCaptureDevice::Client::Buffer {
  public:
   MockBuffer(int buffer_id, size_t size)
-      : id_(buffer_id),
-        size_(size),
-        data_(new uint8[size_]) {}
+      : id_(buffer_id), size_(size), data_(new uint8[size_]) {}
+  ~MockBuffer() override { delete[] data_; }
   int id() const override { return id_; }
-  void* data() const override { return static_cast<void*>(data_); }
   size_t size() const override { return size_; }
+  void* data() override { return data_; }
+  ClientBuffer AsClientBuffer() override { return nullptr; }
 
  private:
-  ~MockBuffer() override { delete[] data_; }
-
   const int id_;
   const size_t size_;
   uint8* const data_;
@@ -50,22 +48,12 @@ class MockBuffer : public VideoCaptureDevice::Client::Buffer {
 
 class MockClient : public VideoCaptureDevice::Client {
  public:
-  MOCK_METHOD9(OnIncomingCapturedYuvData,
-               void (const uint8* y_data,
-                     const uint8* u_data,
-                     const uint8* v_data,
-                     size_t y_stride,
-                     size_t u_stride,
-                     size_t v_stride,
-                     const VideoCaptureFormat& frame_format,
-                     int clockwise_rotation,
-                     const base::TimeTicks& timestamp));
   MOCK_METHOD1(OnError, void(const std::string& reason));
 
   explicit MockClient(base::Callback<void(const VideoCaptureFormat&)> frame_cb)
       : frame_cb_(frame_cb) {}
 
-  // Client virtual method for capturing using Device Buffers.
+  // Client virtual methods for capturing using Device Buffers.
   void OnIncomingCapturedData(const uint8* data,
                               int length,
                               const VideoCaptureFormat& format,
@@ -73,16 +61,35 @@ class MockClient : public VideoCaptureDevice::Client {
                               const base::TimeTicks& timestamp) {
     frame_cb_.Run(format);
   }
+  void OnIncomingCapturedYuvData(const uint8* y_data,
+                                 const uint8* u_data,
+                                 const uint8* v_data,
+                                 size_t y_stride,
+                                 size_t u_stride,
+                                 size_t v_stride,
+                                 const VideoCaptureFormat& frame_format,
+                                 int clockwise_rotation,
+                                 const base::TimeTicks& timestamp) {
+    frame_cb_.Run(frame_format);
+  }
 
   // Virtual methods for capturing using Client's Buffers.
-  scoped_refptr<Buffer> ReserveOutputBuffer(media::VideoPixelFormat format,
-                                            const gfx::Size& dimensions) {
-    EXPECT_EQ(format, PIXEL_FORMAT_I420);
+  scoped_ptr<Buffer> ReserveOutputBuffer(media::VideoPixelFormat format,
+                                         const gfx::Size& dimensions) {
+    EXPECT_TRUE(format == PIXEL_FORMAT_I420 ||
+                format == PIXEL_FORMAT_GPUMEMORYBUFFER);
     EXPECT_GT(dimensions.GetArea(), 0);
-    return make_scoped_refptr(new MockBuffer(0, dimensions.GetArea() * 3 / 2));
+    const VideoCaptureFormat frame_format(dimensions, 0.0, format);
+    return make_scoped_ptr(
+        new MockBuffer(0, frame_format.ImageAllocationSize()));
+  }
+  void OnIncomingCapturedBuffer(scoped_ptr<Buffer> buffer,
+                                const VideoCaptureFormat& frame_format,
+                                const base::TimeTicks& timestamp) {
+    frame_cb_.Run(frame_format);
   }
   void OnIncomingCapturedVideoFrame(
-      const scoped_refptr<Buffer>& buffer,
+      scoped_ptr<Buffer> buffer,
       const scoped_refptr<media::VideoFrame>& frame,
       const base::TimeTicks& timestamp) {
     VideoCaptureFormat format(frame->natural_size(), 30.0, PIXEL_FORMAT_I420);
@@ -125,8 +132,6 @@ class FakeVideoCaptureDeviceTest
   }
 
   void SetUp() override {
-    EXPECT_CALL(*client_, OnIncomingCapturedYuvData(_,_,_,_,_,_,_,_,_))
-               .Times(0);
     EXPECT_CALL(*client_, OnError(_)).Times(0);
   }
 

@@ -30,6 +30,7 @@
 #include "media/base/video_util.h"
 #include "media/base/yuv_convert.h"
 #include "skia/ext/platform_canvas.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/display.h"
@@ -315,27 +316,26 @@ class StubClient : public media::VideoCaptureDevice::Client {
   }
   ~StubClient() override {}
 
-  void OnIncomingCapturedData(const uint8* data,
-                              int length,
-                              const media::VideoCaptureFormat& frame_format,
-                              int rotation,
-                              const base::TimeTicks& timestamp) override {
-    FAIL();
-  }
+  MOCK_METHOD5(OnIncomingCapturedData,
+               void(const uint8* data,
+                    int length,
+                    const media::VideoCaptureFormat& frame_format,
+                    int rotation,
+                    const base::TimeTicks& timestamp));
+  MOCK_METHOD9(OnIncomingCapturedYuvData,
+               void (const uint8* y_data,
+                     const uint8* u_data,
+                     const uint8* v_data,
+                     size_t y_stride,
+                     size_t u_stride,
+                     size_t v_stride,
+                     const media::VideoCaptureFormat& frame_format,
+                     int clockwise_rotation,
+                     const base::TimeTicks& timestamp));
 
-  void OnIncomingCapturedYuvData(const uint8* y_data,
-                                 const uint8* u_data,
-                                 const uint8* v_data,
-                                 size_t y_stride,
-                                 size_t u_stride,
-                                 size_t v_stride,
-                                 const media::VideoCaptureFormat& frame_format,
-                                 int clockwise_rotation,
-                                 const base::TimeTicks& timestamp) override {
-    FAIL();
-  }
+  MOCK_METHOD0(DoOnIncomingCapturedBuffer, void(void));
 
-  scoped_refptr<media::VideoCaptureDevice::Client::Buffer> ReserveOutputBuffer(
+  scoped_ptr<media::VideoCaptureDevice::Client::Buffer> ReserveOutputBuffer(
       media::VideoPixelFormat format,
       const gfx::Size& dimensions) override {
     CHECK_EQ(format, media::PIXEL_FORMAT_I420);
@@ -344,15 +344,20 @@ class StubClient : public media::VideoCaptureDevice::Client {
                                                      &buffer_id_to_drop);
     if (buffer_id == VideoCaptureBufferPool::kInvalidId)
       return NULL;
-    void* data;
-    size_t size;
-    buffer_pool_->GetBufferInfo(buffer_id, &data, &size);
-    return scoped_refptr<media::VideoCaptureDevice::Client::Buffer>(
-        new AutoReleaseBuffer(buffer_pool_, buffer_id, data, size));
+
+    return scoped_ptr<media::VideoCaptureDevice::Client::Buffer>(
+        new AutoReleaseBuffer(
+            buffer_pool_, buffer_pool_->GetBufferHandle(buffer_id), buffer_id));
+  }
+  // Trampoline method to workaround GMOCK problems with scoped_ptr<>.
+  void OnIncomingCapturedBuffer(scoped_ptr<Buffer> buffer,
+                                const media::VideoCaptureFormat& frame_format,
+                                const base::TimeTicks& timestamp) override {
+    DoOnIncomingCapturedBuffer();
   }
 
   void OnIncomingCapturedVideoFrame(
-      const scoped_refptr<Buffer>& buffer,
+      scoped_ptr<Buffer> buffer,
       const scoped_refptr<media::VideoFrame>& frame,
       const base::TimeTicks& timestamp) override {
     EXPECT_EQ(gfx::Size(kTestWidth, kTestHeight), frame->visible_rect().size());
@@ -376,27 +381,26 @@ class StubClient : public media::VideoCaptureDevice::Client {
  private:
   class AutoReleaseBuffer : public media::VideoCaptureDevice::Client::Buffer {
    public:
-    AutoReleaseBuffer(const scoped_refptr<VideoCaptureBufferPool>& pool,
-               int buffer_id,
-               void* data,
-               size_t size)
-        : pool_(pool),
-          id_(buffer_id),
-          data_(data),
-          size_(size) {
+    AutoReleaseBuffer(
+        const scoped_refptr<VideoCaptureBufferPool>& pool,
+        scoped_ptr<VideoCaptureBufferPool::BufferHandle> buffer_handle,
+        int buffer_id)
+        : id_(buffer_id),
+          pool_(pool),
+          buffer_handle_(buffer_handle.Pass()) {
       DCHECK(pool_.get());
     }
     int id() const override { return id_; }
-    void* data() const override { return data_; }
-    size_t size() const override { return size_; }
+    size_t size() const override { return buffer_handle_->size(); }
+    void* data() override { return buffer_handle_->data(); }
+    ClientBuffer AsClientBuffer() override { return nullptr; }
 
    private:
     ~AutoReleaseBuffer() override { pool_->RelinquishProducerReservation(id_); }
 
-    const scoped_refptr<VideoCaptureBufferPool> pool_;
     const int id_;
-    void* const data_;
-    const size_t size_;
+    const scoped_refptr<VideoCaptureBufferPool> pool_;
+    const scoped_ptr<VideoCaptureBufferPool::BufferHandle> buffer_handle_;
   };
 
   scoped_refptr<VideoCaptureBufferPool> buffer_pool_;

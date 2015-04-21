@@ -64,23 +64,19 @@ namespace {
 
 class MockClient : public VideoCaptureDevice::Client {
  public:
-  MOCK_METHOD2(ReserveOutputBuffer,
-               scoped_refptr<Buffer>(media::VideoPixelFormat format,
-                 const gfx::Size& dimensions));
   MOCK_METHOD9(OnIncomingCapturedYuvData,
-               void (const uint8* y_data,
-                     const uint8* u_data,
-                     const uint8* v_data,
-                     size_t y_stride,
-                     size_t u_stride,
-                     size_t v_stride,
-                     const VideoCaptureFormat& frame_format,
-                     int clockwise_rotation,
-                     const base::TimeTicks& timestamp));
-  MOCK_METHOD3(OnIncomingCapturedVideoFrame,
-               void(const scoped_refptr<Buffer>& buffer,
-                    const scoped_refptr<VideoFrame>& frame,
+               void(const uint8* y_data,
+                    const uint8* u_data,
+                    const uint8* v_data,
+                    size_t y_stride,
+                    size_t u_stride,
+                    size_t v_stride,
+                    const VideoCaptureFormat& frame_format,
+                    int clockwise_rotation,
                     const base::TimeTicks& timestamp));
+  MOCK_METHOD0(DoReserveOutputBuffer, void(void));
+  MOCK_METHOD0(DoOnIncomingCapturedBuffer, void(void));
+  MOCK_METHOD0(DoOnIncomingCapturedVideoFrame, void(void));
   MOCK_METHOD1(OnError, void(const std::string& reason));
 
   explicit MockClient(base::Callback<void(const VideoCaptureFormat&)> frame_cb)
@@ -94,6 +90,23 @@ class MockClient : public VideoCaptureDevice::Client {
     ASSERT_GT(length, 0);
     ASSERT_TRUE(data != NULL);
     main_thread_->PostTask(FROM_HERE, base::Bind(frame_cb_, format));
+  }
+
+  // Trampoline methods to workaround GMOCK problems with scoped_ptr<>.
+  scoped_ptr<Buffer> ReserveOutputBuffer(VideoPixelFormat format,
+                                         const gfx::Size& dimensions) override {
+    DoReserveOutputBuffer();
+    return scoped_ptr<Buffer>();
+  }
+  void OnIncomingCapturedBuffer(scoped_ptr<Buffer> buffer,
+                                const VideoCaptureFormat& frame_format,
+                                const base::TimeTicks& timestamp) override {
+    DoOnIncomingCapturedBuffer();
+  }
+  void OnIncomingCapturedVideoFrame(scoped_ptr<Buffer> buffer,
+                                    const scoped_refptr<VideoFrame>& frame,
+                                    const base::TimeTicks& timestamp) override {
+    DoOnIncomingCapturedVideoFrame();
   }
 
  private:
@@ -139,8 +152,9 @@ class VideoCaptureDeviceTest : public testing::Test {
 #endif
     EXPECT_CALL(*client_, OnIncomingCapturedYuvData(_,_,_,_,_,_,_,_,_))
                .Times(0);
-    EXPECT_CALL(*client_, ReserveOutputBuffer(_,_)).Times(0);
-    EXPECT_CALL(*client_, OnIncomingCapturedVideoFrame(_,_,_)).Times(0);
+    EXPECT_CALL(*client_, DoReserveOutputBuffer()).Times(0);
+    EXPECT_CALL(*client_, DoOnIncomingCapturedBuffer()).Times(0);
+    EXPECT_CALL(*client_, DoOnIncomingCapturedVideoFrame()).Times(0);
   }
 
   void ResetWithNewClient() {

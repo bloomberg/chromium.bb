@@ -26,10 +26,12 @@ scoped_ptr<VideoCaptureDevice> FakeVideoCaptureDeviceFactory::Create(
   FakeVideoCaptureDevice::FakeVideoCaptureDeviceType fake_vcd_type;
   if (option.empty())
     fake_vcd_type = FakeVideoCaptureDevice::USING_OWN_BUFFERS;
+  else if (base:: strcasecmp(option.c_str(), "triplanar") == 0)
+    fake_vcd_type = FakeVideoCaptureDevice::USING_OWN_BUFFERS_TRIPLANAR;
   else if (base:: strcasecmp(option.c_str(), "gpu") == 0)
-    fake_vcd_type = FakeVideoCaptureDevice::USING_GPU_MEMORY_BUFFERS;
+    fake_vcd_type = FakeVideoCaptureDevice::USING_CLIENT_BUFFERS_GPU;
   else
-    fake_vcd_type = FakeVideoCaptureDevice::USING_CLIENT_BUFFERS;
+    fake_vcd_type = FakeVideoCaptureDevice::USING_CLIENT_BUFFERS_I420;
 
   for (int n = 0; n < number_of_devices_; ++n) {
     std::string possible_id = base::StringPrintf("/dev/video%d", n);
@@ -73,9 +75,8 @@ void FakeVideoCaptureDeviceFactory::GetDeviceSupportedFormats(
                                        gfx::Size(1920, 1080)};
   supported_formats->clear();
   for (const auto& size : supported_sizes) {
-    supported_formats->push_back(VideoCaptureFormat(size,
-                                                    frame_rate,
-                                                    media::PIXEL_FORMAT_I420));
+    supported_formats->push_back(
+        VideoCaptureFormat(size, frame_rate, media::PIXEL_FORMAT_I420));
   }
 }
 

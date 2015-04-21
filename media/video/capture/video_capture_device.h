@@ -23,6 +23,7 @@
 #include "media/base/media_export.h"
 #include "media/base/video_capture_types.h"
 #include "media/base/video_frame.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace media {
 
@@ -195,15 +196,13 @@ class MEDIA_EXPORT VideoCaptureDevice {
    class MEDIA_EXPORT Client {
    public:
     // Memory buffer returned by Client::ReserveOutputBuffer().
-    class Buffer : public base::RefCountedThreadSafe<Buffer> {
+    class MEDIA_EXPORT Buffer {
      public:
+      virtual ~Buffer() = 0;
       virtual int id() const = 0;
-      virtual void* data() const = 0;
       virtual size_t size() const = 0;
-
-     protected:
-      friend class base::RefCountedThreadSafe<Buffer>;
-      virtual ~Buffer() {}
+      virtual void* data() = 0;
+      virtual ClientBuffer AsClientBuffer() = 0;
     };
 
     virtual ~Client() {}
@@ -241,20 +240,25 @@ class MEDIA_EXPORT VideoCaptureDevice {
     // backing, but functions as a reservation for external input for the
     // purposes of buffer throttling.
     //
-    // The output buffer stays reserved for use until the Buffer object is
-    // destroyed.
-    virtual scoped_refptr<Buffer> ReserveOutputBuffer(
+    // The output buffer stays reserved and mapped for use until the Buffer
+    // object is destroyed or returned.
+    virtual scoped_ptr<Buffer> ReserveOutputBuffer(
         media::VideoPixelFormat format,
         const gfx::Size& dimensions) = 0;
 
-    // Captured a new video frame, held in |frame|.
+    // Captured new video data, held in |frame| or |buffer|, respectively for
+    // OnIncomingCapturedVideoFrame() and  OnIncomingCapturedBuffer().
     //
-    // As the frame is backed by a reservation returned by
+    // In both cases, as the frame is backed by a reservation returned by
     // ReserveOutputBuffer(), delivery is guaranteed and will require no
     // additional copies in the browser process.
+    virtual void OnIncomingCapturedBuffer(
+        scoped_ptr<Buffer> buffer,
+        const VideoCaptureFormat& frame_format,
+        const base::TimeTicks& timestamp) = 0;
     virtual void OnIncomingCapturedVideoFrame(
-        const scoped_refptr<Buffer>& buffer,
-        const scoped_refptr<media::VideoFrame>& frame,
+        scoped_ptr<Buffer> buffer,
+        const scoped_refptr<VideoFrame>& frame,
         const base::TimeTicks& timestamp) = 0;
 
     // An error has occurred that cannot be handled and VideoCaptureDevice must
