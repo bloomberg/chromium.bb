@@ -49,6 +49,10 @@ void MockIMEEngineHandler::Reset() {
   ++reset_call_count_;
 }
 
+bool MockIMEEngineHandler::IsInterestedInKeyEvent() const {
+  return true;
+}
+
 void MockIMEEngineHandler::ProcessKeyEvent(
     const ui::KeyEvent& key_event,
     const KeyEventDoneCallback& callback) {

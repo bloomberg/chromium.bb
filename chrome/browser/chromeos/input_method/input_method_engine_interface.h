@@ -150,6 +150,9 @@ class InputMethodEngineInterface : public IMEEngineHandlerInterface {
     // Called when an InputContext's properties change while it is focused.
     virtual void OnInputContextUpdate(const InputContext& context) = 0;
 
+    // Returns whether the observer is interested in key events.
+    virtual bool IsInterestedInKeyEvent() const = 0;
+
     // Called when the user pressed a key with a text field focused.
     virtual void OnKeyEvent(const std::string& engine_id,
                             const KeyboardEvent& event,

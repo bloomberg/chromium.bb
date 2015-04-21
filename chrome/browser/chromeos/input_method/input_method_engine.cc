@@ -596,6 +596,10 @@ void InputMethodEngine::Reset() {
   observer_->OnReset(active_component_id_);
 }
 
+bool InputMethodEngine::IsInterestedInKeyEvent() const {
+  return observer_->IsInterestedInKeyEvent();
+}
+
 void InputMethodEngine::ProcessKeyEvent(
     const ui::KeyEvent& key_event,
     const KeyEventDoneCallback& callback) {

@@ -93,6 +93,8 @@ class InputMethodEngine : public InputMethodEngineInterface {
 
   int GetCotextIdForTesting() { return context_id_; }
 
+  bool IsInterestedInKeyEvent() const override;
+
  private:
   // Converts MenuItem to InputMethodMenuItem.
   void MenuItemToProperty(const MenuItem& item,

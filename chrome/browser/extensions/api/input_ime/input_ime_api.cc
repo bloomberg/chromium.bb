@@ -199,6 +199,10 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
                              args.Pass());
   }
 
+  bool IsInterestedInKeyEvent() const override {
+    return ShouldForwardKeyEvent();
+  }
+
   void OnKeyEvent(const std::string& component_id,
                   const InputMethodEngineInterface::KeyboardEvent& event,
                   chromeos::input_method::KeyEventHandle* key_data) override {

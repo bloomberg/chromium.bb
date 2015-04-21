@@ -69,7 +69,7 @@ bool InputMethodChromeOS::OnUntranslatedIMEMessage(
   return false;
 }
 
-void InputMethodChromeOS::ProcessKeyEventDone(ui::KeyEvent* event,
+void InputMethodChromeOS::ProcessKeyEventDone(const ui::KeyEvent* event,
                                               bool is_handled) {
   DCHECK(event);
   if (event->type() == ET_KEY_PRESSED) {
@@ -129,13 +129,16 @@ bool InputMethodChromeOS::DispatchKeyEvent(const ui::KeyEvent& event) {
     return true;
   }
 
-  ui::KeyEvent* copied_event = new ui::KeyEvent(event);
-  GetEngine()->ProcessKeyEvent(
-      event,
-      base::Bind(&InputMethodChromeOS::ProcessKeyEventDone,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 // Pass the ownership of |copied_event|.
-                 base::Owned(copied_event)));
+  if (GetEngine()->IsInterestedInKeyEvent()) {
+    GetEngine()->ProcessKeyEvent(
+        event,
+        base::Bind(&InputMethodChromeOS::ProcessKeyEventDone,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   // Pass the ownership of the new copied event.
+                   base::Owned(new ui::KeyEvent(event))));
+  } else {
+    ProcessKeyEventDone(&event, false);
+  }
   return true;
 }
 

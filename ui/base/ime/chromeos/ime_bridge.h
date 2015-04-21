@@ -106,6 +106,10 @@ class UI_BASE_IME_EXPORT IMEEngineHandlerInterface {
   // Called when the composition bounds changed.
   virtual void SetCompositionBounds(const std::vector<gfx::Rect>& bounds) = 0;
 
+  // Returns whether the engine is interested in key events.
+  // If not, InputMethodChromeOS won't feed it with key events.
+  virtual bool IsInterestedInKeyEvent() const = 0;
+
  protected:
   IMEEngineHandlerInterface() {}
 };

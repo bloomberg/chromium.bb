@@ -79,6 +79,7 @@ class TestObserver : public InputMethodEngineInterface::Observer {
     calls_bitmap_ |= ONFOCUS;
   }
   void OnBlur(int context_id) override { calls_bitmap_ |= ONBLUR; }
+  bool IsInterestedInKeyEvent() const override { return true; }
   void OnKeyEvent(const std::string& engine_id,
                   const InputMethodEngineInterface::KeyboardEvent& event,
                   input_method::KeyEventHandle* key_data) override {}

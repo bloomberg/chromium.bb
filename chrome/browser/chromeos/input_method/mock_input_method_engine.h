@@ -74,6 +74,7 @@ class MockInputMethodEngine : public InputMethodEngineInterface {
   void Disable() override;
   void PropertyActivate(const std::string& property_name) override;
   void Reset() override;
+  bool IsInterestedInKeyEvent() const override;
   void ProcessKeyEvent(const ui::KeyEvent& key_event,
                        const KeyEventDoneCallback& callback) override;
   void CandidateClicked(uint32 index) override;
