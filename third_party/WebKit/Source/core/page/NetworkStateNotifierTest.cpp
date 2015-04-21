@@ -44,12 +44,12 @@ namespace blink {
 class StateObserver : public NetworkStateNotifier::NetworkStateObserver {
 public:
     StateObserver()
-        : m_observedType(blink::ConnectionTypeNone)
+        : m_observedType(ConnectionTypeNone)
         , m_callbackCount(0)
     {
     }
 
-    virtual void connectionTypeChange(blink::WebConnectionType type)
+    virtual void connectionTypeChange(WebConnectionType type)
     {
         m_observedType = type;
         m_callbackCount += 1;
@@ -58,7 +58,7 @@ public:
             (*m_closure)();
     }
 
-    blink::WebConnectionType observedType() const
+    WebConnectionType observedType() const
     {
         return m_observedType;
     }
@@ -75,7 +75,7 @@ public:
 
 private:
     OwnPtr<Closure> m_closure;
-    blink::WebConnectionType m_observedType;
+    WebConnectionType m_observedType;
     int m_callbackCount;
 };
 
@@ -98,7 +98,7 @@ public:
     }
 
 protected:
-    void setType(blink::WebConnectionType type)
+    void setType(WebConnectionType type)
     {
         m_notifier.setWebConnectionType(type);
         testing::runPendingTasks();
@@ -123,10 +123,10 @@ TEST_F(NetworkStateNotifierTest, AddObserver)
 {
     StateObserver observer;
     m_notifier.addObserver(&observer, executionContext());
-    EXPECT_EQ(observer.observedType(), blink::ConnectionTypeNone);
+    EXPECT_EQ(observer.observedType(), ConnectionTypeNone);
 
-    setType(blink::ConnectionTypeBluetooth);
-    EXPECT_EQ(observer.observedType(), blink::ConnectionTypeBluetooth);
+    setType(ConnectionTypeBluetooth);
+    EXPECT_EQ(observer.observedType(), ConnectionTypeBluetooth);
     EXPECT_EQ(observer.callbackCount(), 1);
 }
 
@@ -137,9 +137,9 @@ TEST_F(NetworkStateNotifierTest, RemoveObserver)
     m_notifier.removeObserver(&observer1, executionContext());
     m_notifier.addObserver(&observer2, executionContext());
 
-    setType(blink::ConnectionTypeBluetooth);
-    EXPECT_EQ(observer1.observedType(), blink::ConnectionTypeNone);
-    EXPECT_EQ(observer2.observedType(), blink::ConnectionTypeBluetooth);
+    setType(ConnectionTypeBluetooth);
+    EXPECT_EQ(observer1.observedType(), ConnectionTypeNone);
+    EXPECT_EQ(observer2.observedType(), ConnectionTypeBluetooth);
 }
 
 TEST_F(NetworkStateNotifierTest, RemoveSoleObserver)
@@ -148,8 +148,8 @@ TEST_F(NetworkStateNotifierTest, RemoveSoleObserver)
     m_notifier.addObserver(&observer1, executionContext());
     m_notifier.removeObserver(&observer1, executionContext());
 
-    setType(blink::ConnectionTypeBluetooth);
-    EXPECT_EQ(observer1.observedType(), blink::ConnectionTypeNone);
+    setType(ConnectionTypeBluetooth);
+    EXPECT_EQ(observer1.observedType(), ConnectionTypeNone);
 }
 
 TEST_F(NetworkStateNotifierTest, AddObserverWhileNotifying)
@@ -158,9 +158,9 @@ TEST_F(NetworkStateNotifierTest, AddObserverWhileNotifying)
     m_notifier.addObserver(&observer1, executionContext());
     addObserverOnNotification(&observer1, &observer2);
 
-    setType(blink::ConnectionTypeBluetooth);
-    EXPECT_EQ(observer1.observedType(), blink::ConnectionTypeBluetooth);
-    EXPECT_EQ(observer2.observedType(), blink::ConnectionTypeBluetooth);
+    setType(ConnectionTypeBluetooth);
+    EXPECT_EQ(observer1.observedType(), ConnectionTypeBluetooth);
+    EXPECT_EQ(observer2.observedType(), ConnectionTypeBluetooth);
 }
 
 TEST_F(NetworkStateNotifierTest, RemoveSoleObserverWhileNotifying)
@@ -169,11 +169,11 @@ TEST_F(NetworkStateNotifierTest, RemoveSoleObserverWhileNotifying)
     m_notifier.addObserver(&observer1, executionContext());
     removeObserverOnNotification(&observer1, &observer1);
 
-    setType(blink::ConnectionTypeBluetooth);
-    EXPECT_EQ(observer1.observedType(), blink::ConnectionTypeBluetooth);
+    setType(ConnectionTypeBluetooth);
+    EXPECT_EQ(observer1.observedType(), ConnectionTypeBluetooth);
 
-    setType(blink::ConnectionTypeEthernet);
-    EXPECT_EQ(observer1.observedType(), blink::ConnectionTypeBluetooth);
+    setType(ConnectionTypeEthernet);
+    EXPECT_EQ(observer1.observedType(), ConnectionTypeBluetooth);
 }
 
 TEST_F(NetworkStateNotifierTest, RemoveCurrentObserverWhileNotifying)
@@ -183,13 +183,13 @@ TEST_F(NetworkStateNotifierTest, RemoveCurrentObserverWhileNotifying)
     m_notifier.addObserver(&observer2, executionContext());
     removeObserverOnNotification(&observer1, &observer1);
 
-    setType(blink::ConnectionTypeBluetooth);
-    EXPECT_EQ(observer1.observedType(), blink::ConnectionTypeBluetooth);
-    EXPECT_EQ(observer2.observedType(), blink::ConnectionTypeBluetooth);
+    setType(ConnectionTypeBluetooth);
+    EXPECT_EQ(observer1.observedType(), ConnectionTypeBluetooth);
+    EXPECT_EQ(observer2.observedType(), ConnectionTypeBluetooth);
 
-    setType(blink::ConnectionTypeEthernet);
-    EXPECT_EQ(observer1.observedType(), blink::ConnectionTypeBluetooth);
-    EXPECT_EQ(observer2.observedType(), blink::ConnectionTypeEthernet);
+    setType(ConnectionTypeEthernet);
+    EXPECT_EQ(observer1.observedType(), ConnectionTypeBluetooth);
+    EXPECT_EQ(observer2.observedType(), ConnectionTypeEthernet);
 }
 
 TEST_F(NetworkStateNotifierTest, RemovePastObserverWhileNotifying)
@@ -199,13 +199,13 @@ TEST_F(NetworkStateNotifierTest, RemovePastObserverWhileNotifying)
     m_notifier.addObserver(&observer2, executionContext());
     removeObserverOnNotification(&observer2, &observer1);
 
-    setType(blink::ConnectionTypeBluetooth);
-    EXPECT_EQ(observer1.observedType(), blink::ConnectionTypeBluetooth);
-    EXPECT_EQ(observer2.observedType(), blink::ConnectionTypeBluetooth);
+    setType(ConnectionTypeBluetooth);
+    EXPECT_EQ(observer1.observedType(), ConnectionTypeBluetooth);
+    EXPECT_EQ(observer2.observedType(), ConnectionTypeBluetooth);
 
-    setType(blink::ConnectionTypeEthernet);
-    EXPECT_EQ(observer1.observedType(), blink::ConnectionTypeBluetooth);
-    EXPECT_EQ(observer2.observedType(), blink::ConnectionTypeEthernet);
+    setType(ConnectionTypeEthernet);
+    EXPECT_EQ(observer1.observedType(), ConnectionTypeBluetooth);
+    EXPECT_EQ(observer2.observedType(), ConnectionTypeEthernet);
 }
 
 TEST_F(NetworkStateNotifierTest, RemoveFutureObserverWhileNotifying)
@@ -216,11 +216,11 @@ TEST_F(NetworkStateNotifierTest, RemoveFutureObserverWhileNotifying)
     m_notifier.addObserver(&observer3, executionContext());
     removeObserverOnNotification(&observer1, &observer2);
 
-    setType(blink::ConnectionTypeBluetooth);
+    setType(ConnectionTypeBluetooth);
 
-    EXPECT_EQ(observer1.observedType(), blink::ConnectionTypeBluetooth);
-    EXPECT_EQ(observer2.observedType(), blink::ConnectionTypeNone);
-    EXPECT_EQ(observer3.observedType(), blink::ConnectionTypeBluetooth);
+    EXPECT_EQ(observer1.observedType(), ConnectionTypeBluetooth);
+    EXPECT_EQ(observer2.observedType(), ConnectionTypeNone);
+    EXPECT_EQ(observer3.observedType(), ConnectionTypeBluetooth);
 }
 
 TEST_F(NetworkStateNotifierTest, MultipleContextsAddObserver)
@@ -229,9 +229,9 @@ TEST_F(NetworkStateNotifierTest, MultipleContextsAddObserver)
     m_notifier.addObserver(&observer1, executionContext());
     m_notifier.addObserver(&observer2, executionContext2());
 
-    setType(blink::ConnectionTypeBluetooth);
-    EXPECT_EQ(observer1.observedType(), blink::ConnectionTypeBluetooth);
-    EXPECT_EQ(observer2.observedType(), blink::ConnectionTypeBluetooth);
+    setType(ConnectionTypeBluetooth);
+    EXPECT_EQ(observer1.observedType(), ConnectionTypeBluetooth);
+    EXPECT_EQ(observer2.observedType(), ConnectionTypeBluetooth);
 }
 
 TEST_F(NetworkStateNotifierTest, RemoveContext)
@@ -241,9 +241,9 @@ TEST_F(NetworkStateNotifierTest, RemoveContext)
     m_notifier.addObserver(&observer2, executionContext2());
     m_notifier.removeObserver(&observer2, executionContext2());
 
-    setType(blink::ConnectionTypeBluetooth);
-    EXPECT_EQ(observer1.observedType(), blink::ConnectionTypeBluetooth);
-    EXPECT_EQ(observer2.observedType(), blink::ConnectionTypeNone);
+    setType(ConnectionTypeBluetooth);
+    EXPECT_EQ(observer1.observedType(), ConnectionTypeBluetooth);
+    EXPECT_EQ(observer2.observedType(), ConnectionTypeNone);
 }
 
 TEST_F(NetworkStateNotifierTest, RemoveAllContexts)
@@ -254,9 +254,9 @@ TEST_F(NetworkStateNotifierTest, RemoveAllContexts)
     m_notifier.removeObserver(&observer1, executionContext());
     m_notifier.removeObserver(&observer2, executionContext2());
 
-    setType(blink::ConnectionTypeBluetooth);
-    EXPECT_EQ(observer1.observedType(), blink::ConnectionTypeNone);
-    EXPECT_EQ(observer2.observedType(), blink::ConnectionTypeNone);
+    setType(ConnectionTypeBluetooth);
+    EXPECT_EQ(observer1.observedType(), ConnectionTypeNone);
+    EXPECT_EQ(observer2.observedType(), ConnectionTypeNone);
 }
 
 } // namespace blink

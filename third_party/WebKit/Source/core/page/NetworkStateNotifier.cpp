@@ -58,7 +58,7 @@ void NetworkStateNotifier::setOnLine(bool onLine)
     Page::networkStateChanged(onLine);
 }
 
-void NetworkStateNotifier::setWebConnectionType(blink::WebConnectionType type)
+void NetworkStateNotifier::setWebConnectionType(WebConnectionType type)
 {
     ASSERT(isMainThread());
     if (m_testUpdatesOnly)
@@ -67,7 +67,7 @@ void NetworkStateNotifier::setWebConnectionType(blink::WebConnectionType type)
     setWebConnectionTypeImpl(type);
 }
 
-void NetworkStateNotifier::setWebConnectionTypeImpl(blink::WebConnectionType type)
+void NetworkStateNotifier::setWebConnectionTypeImpl(WebConnectionType type)
 {
     ASSERT(isMainThread());
 
@@ -122,14 +122,14 @@ void NetworkStateNotifier::setTestUpdatesOnly(bool updatesOnly)
     m_testUpdatesOnly = updatesOnly;
 }
 
-void NetworkStateNotifier::setWebConnectionTypeForTest(blink::WebConnectionType type)
+void NetworkStateNotifier::setWebConnectionTypeForTest(WebConnectionType type)
 {
     ASSERT(isMainThread());
     ASSERT(m_testUpdatesOnly);
     setWebConnectionTypeImpl(type);
 }
 
-void NetworkStateNotifier::notifyObserversOnContext(blink::WebConnectionType type, ExecutionContext* context)
+void NetworkStateNotifier::notifyObserversOnContext(WebConnectionType type, ExecutionContext* context)
 {
     ObserverList* observerList = lockAndFindObserverList(context);
 

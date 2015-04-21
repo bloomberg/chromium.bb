@@ -2211,21 +2211,21 @@ void Internals::setNetworkStateNotifierTestOnly(bool testOnly)
 
 void Internals::setNetworkConnectionInfo(const String& type, ExceptionState& exceptionState)
 {
-    blink::WebConnectionType webtype;
+    WebConnectionType webtype;
     if (type == "cellular") {
-        webtype = blink::ConnectionTypeCellular;
+        webtype = ConnectionTypeCellular;
     } else if (type == "bluetooth") {
-        webtype = blink::ConnectionTypeBluetooth;
+        webtype = ConnectionTypeBluetooth;
     } else if (type == "ethernet") {
-        webtype = blink::ConnectionTypeEthernet;
+        webtype = ConnectionTypeEthernet;
     } else if (type == "wifi") {
-        webtype = blink::ConnectionTypeWifi;
+        webtype = ConnectionTypeWifi;
     } else if (type == "other") {
-        webtype = blink::ConnectionTypeOther;
+        webtype = ConnectionTypeOther;
     } else if (type == "none") {
-        webtype = blink::ConnectionTypeNone;
+        webtype = ConnectionTypeNone;
     } else if (type == "unknown") {
-        webtype = blink::ConnectionTypeUnknown;
+        webtype = ConnectionTypeUnknown;
     } else {
         exceptionState.throwDOMException(NotFoundError, ExceptionMessages::failedToEnumerate("connection type", type));
         return;
