@@ -13,7 +13,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 
 if cros_build_lib.IsInsideChroot():
-  from chromite.scripts import cros_list_modified_packages as workon
+  from chromite.lib import workon_helper
 
 # pylint: disable=protected-access
 
@@ -40,7 +40,8 @@ class ChrootUtilTest(cros_test_lib.MockTempDirTestCase):
     """Tests correct invocation of emerge."""
 
     packages = ['foo-app/bar', 'sys-baz/clap']
-    self.PatchObject(workon, 'ListModifiedWorkonPackages',
+    self.PatchObject(workon_helper.WorkonHelper, '__init__', return_value=None)
+    self.PatchObject(workon_helper.WorkonHelper, 'ListAtoms',
                      return_value=[packages[0]])
 
     toolchain_packages = chroot_util._GetToolchainPackages()

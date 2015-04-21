@@ -13,6 +13,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
+from chromite.lib import workon_helper
 
 
 class MockBuildCommand(command_unittest.MockCommand):
@@ -30,6 +31,7 @@ class MockBuildCommand(command_unittest.MockCommand):
   def Run(self, inst):
     self.PatchObject(chroot_util, 'UpdateChroot',
                      side_effect=self.OnChrootUpdate)
+    self.PatchObject(workon_helper, 'WorkonHelper')
     with parallel_unittest.ParallelMock():
       command_unittest.MockCommand.Run(self, inst)
 
@@ -40,10 +42,10 @@ class BuildCommandTest(cros_test_lib.MockTempDirTestCase):
   def testSuccess(self):
     """Test that successful commands work."""
     cmds = [['--host', 'power_manager'],
-            ['--board=foo', 'power_manager'],
-            ['--board=foo', '--debug', 'power_manager'],
-            ['--board=foo', '--no-deps', 'power_manager'],
-            ['--board=foo', '--no-chroot-update', 'power_manager']]
+            ['--board=randomname', 'power_manager'],
+            ['--board=randomname', '--debug', 'power_manager'],
+            ['--board=randomname', '--no-deps', 'power_manager'],
+            ['--board=randomname', '--no-chroot-update', 'power_manager']]
     for cmd in cmds:
       update_chroot = not ('--no-deps' in cmd or '--no-chroot-update' in cmd)
       with MockBuildCommand(cmd) as build:
@@ -53,7 +55,7 @@ class BuildCommandTest(cros_test_lib.MockTempDirTestCase):
   def testFailedDeps(self):
     """Test that failures are detected correctly."""
     # pylint: disable=protected-access
-    args = ['--board=foo', 'power_manager']
+    args = ['--board=randomname', 'power_manager']
     with MockBuildCommand(args) as build:
       cmd = partial_mock.In('--backtrack=0')
       build.rc_mock.AddCmdResult(cmd=cmd, returncode=1, error='error\n')

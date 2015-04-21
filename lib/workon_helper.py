@@ -94,21 +94,27 @@ class WorkonHelper(object):
   This class assumes that we're executing in the build root.
   """
 
-  def __init__(self, sysroot, friendly_name, verbose=False,
+  def __init__(self, sysroot, friendly_name=None, verbose=False,
                src_root=constants.CHROOT_SOURCE_ROOT):
     """Construct an instance.
 
     Args:
       sysroot: path to sysroot to work on packages within.
       friendly_name: friendly name of the system
-          (e.g. 'host', <board name>, or a brick friendly name)
+          (e.g. 'host', <board name>, or a brick friendly name).
+          Defaults to 'host' if sysroot is '/' or the last component of the
+          sysroot path.
       verbose: boolean True iff we should print a lot more command output.
           This is intended for debugging, and you should never cause a script
           to depend on behavior enabled by this flag.
       src_root: path to source root inside chroot.
     """
     self._sysroot = sysroot
-    self._system = friendly_name
+    if friendly_name:
+      self._system = friendly_name
+    else:
+      self._system = ('host' if sysroot == '/'
+                      else os.path.basename(sysroot.rstrip('/')))
     self._verbose = verbose
     self._src_root = src_root
     self._cached_overlays = None

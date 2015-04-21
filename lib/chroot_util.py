@@ -16,8 +16,8 @@ from chromite.lib import sysroot_lib
 
 if cros_build_lib.IsInsideChroot():
   # These import libraries outside chromite. See brbug.com/472.
+  from chromite.lib import workon_helper
   from chromite.scripts import cros_setup_toolchains as toolchain
-  from chromite.scripts import cros_list_modified_packages as workon
 
 
 _HOST_PKGS = ('virtual/target-sdk', 'world',)
@@ -34,7 +34,7 @@ def _GetToolchainPackages():
 def GetEmergeCommand(sysroot=None):
   """Returns the emerge command to use for |sysroot| (host if None)."""
   cmd = [os.path.join(constants.CHROMITE_BIN_DIR, 'parallel_emerge')]
-  if sysroot is not None:
+  if sysroot and sysroot != '/':
     cmd += ['--sysroot=%s' % sysroot]
   return cmd
 
@@ -65,7 +65,8 @@ def Emerge(packages, brick=None, board=None, host=False, blueprint=None,
   # TODO(bsimonnet): Once cros_workon supports --sysroot, remove this case
   # distinction and accept only sysroot as parameter.
   if host:
-    brick = board = sysroot = None
+    brick = board = None
+    sysroot = '/'
   elif board:
     sysroot = cros_build_lib.GetSysroot(board)
   elif brick:
@@ -77,11 +78,8 @@ def Emerge(packages, brick=None, board=None, host=False, blueprint=None,
   cmd = GetEmergeCommand(sysroot)
   cmd.append('-uNv')
 
-  # Listing the cros workon packages that are modified does not work for
-  # blueprints yet: brbug.com/776.
-  if board or host:
-    modified_packages = list(workon.ListModifiedWorkonPackages(
-        None if brick else board, brick, host))
+  if not blueprint:
+    modified_packages = workon_helper.WorkonHelper(sysroot).ListAtoms()
     if modified_packages:
       mod_pkg_list = ' '.join(modified_packages)
       cmd += ['--reinstall-atoms=' + mod_pkg_list,

@@ -9,6 +9,7 @@ from __future__ import print_function
 import functools
 
 from chromite.lib import cros_test_lib
+from chromite.lib import sysroot_lib
 from chromite.scripts import cros_list_modified_packages
 
 
@@ -30,4 +31,4 @@ class ListModifiedWorkonPackagesTest(cros_test_lib.MockTestCase):
       # from it to get it to exercise the code, and we can do that by turning
       # it into a list.
       list(cros_list_modified_packages.ListModifiedWorkonPackages(
-          None, None, True))
+          sysroot=sysroot_lib.Sysroot('/')))

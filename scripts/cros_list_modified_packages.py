@@ -42,11 +42,8 @@ from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import portage_util
-
-
-def _AssertExactlyOneSet(*args):
-  if len(filter(None, args)) != 1:
-    raise ValueError("One and only one of board, brick, host can be set.")
+from chromite.lib import sysroot_lib
+from chromite.lib import workon_helper
 
 
 class ModificationTimeMonitor(object):
@@ -109,62 +106,41 @@ class WorkonPackageInfo(object):
     self.src_ebuild_mtime = src_ebuild_mtime
 
 
-def ListWorkonPackages(board=None, brick=None, host=False, all_opt=False):
+def ListWorkonPackages(sysroot, all_opt=False):
   """List the packages that are currently being worked on.
 
   Args:
-    board: The board to look at. If host is True, this should be set to None.
-    brick: The brick to look at. If host is True, this should be set to None.
-    host: Whether to look at workon packages for the host.
+    sysroot: sysroot_lib.Sysroot object.
     all_opt: Pass --all to cros_workon. For testing purposes.
   """
-  _AssertExactlyOneSet(board, brick, host)
-  cmd = [os.path.join(constants.CROSUTILS_DIR, 'cros_workon'), 'list']
-  cmd.extend(['--host'] if host else ['--board', board or brick.FriendlyName()])
-  if all_opt:
-    cmd.append('--all')
-  result = cros_build_lib.RunCommand(cmd, print_cmd=False, capture_output=True)
-  return result.output.split()
+  helper = workon_helper.WorkonHelper(sysroot.path)
+  return helper.ListAtoms(use_all=all_opt)
 
 
-def ListWorkonPackagesInfo(board=None, brick=None, host=False):
+def ListWorkonPackagesInfo(sysroot):
   """Find the specified workon packages for the specified board.
 
   Args:
-    board: The board to look at. If host is True, this should be set to None.
-    brick: The brick to look at. If host is True, this should be set to None.
-    host: Whether to look at workon packages for the host.
+    sysroot: sysroot_lib.Sysroot object.
 
   Returns:
     A list of WorkonPackageInfo objects for unique packages being worked on.
   """
-  _AssertExactlyOneSet(board, brick, host)
   # Import portage late so that this script can be imported outside the chroot.
   # pylint: disable=F0401
   import portage.const
-  packages = ListWorkonPackages(board, brick, host)
+  packages = ListWorkonPackages(sysroot)
   if not packages:
     return []
   results = {}
 
-  if brick:
-    install_root = cros_build_lib.GetSysroot(board=brick.FriendlyName())
-    brick_stack = brick.BrickStack()
-    overlays = [b.OverlayDir() for b in brick_stack]
-    if any([b.legacy for b in brick_stack]):
-      # Overlays in third_party/ are not supported by brick_lib. If one of the
-      # brick in the brick stack referers to a board overlay, we will be missing
-      # chromiumos overlay and its dependencies. Add chromiumos and  its
-      # dependencies to the overlay list here to compensate.
-      # TODO(bsimonnet): remove this when legacy overlays don't need to be
-      # supported (brbug.com/589).
-      overlays = portage_util.FindOverlays(
-          constants.PUBLIC_OVERLAYS, 'chromiumos') + overlays
+  if sysroot.path == '/':
+    overlays = portage_util.FindOverlays(constants.BOTH_OVERLAYS, None)
   else:
-    install_root = cros_build_lib.GetSysroot(board=board)
-    overlays = portage_util.FindOverlays(constants.BOTH_OVERLAYS, board)
+    overlays = sysroot.GetStandardField('PORTDIR_OVERLAY').splitlines()
 
-  vdb_path = os.path.join(install_root, portage.const.VDB_PATH)
+  vdb_path = os.path.join(sysroot.path, portage.const.VDB_PATH)
+
   for overlay in overlays:
     # Is this a brick overlay? Get its source base directory.
     brick_srcbase = ''
@@ -226,16 +202,13 @@ def WorkonSrcpathsMonitor(srcpaths):
   return ModificationTimeMonitor(zip(srcpaths, srcpaths))
 
 
-def ListModifiedWorkonPackages(board=None, brick=None, host=False):
+def ListModifiedWorkonPackages(sysroot):
   """List the workon packages that need to be rebuilt.
 
   Args:
-    board: The board to look at. If host is True, this should be set to None.
-    brick: The brick to look at. If host is True, this should be set to None.
-    host: Whether to look at workon packages for the host.
+    sysroot: sysroot_lib.Sysroot object.
   """
-  _AssertExactlyOneSet(board, brick, host)
-  packages = ListWorkonPackagesInfo(board, brick, host)
+  packages = ListWorkonPackagesInfo(sysroot)
   if not packages:
     return
 
@@ -261,6 +234,7 @@ def _ParseArguments(argv):
   target.add_argument('--brick', help='Brick locator')
   target.add_argument('--host', default=False, action='store_true',
                       help='Look at host packages instead of board packages')
+  target.add_argument('--sysroot', help='Sysroot path.')
 
   flags = parser.parse_args(argv)
   flags.Freeze()
@@ -270,11 +244,18 @@ def _ParseArguments(argv):
 def main(argv):
   logging.getLogger().setLevel(logging.INFO)
   flags = _ParseArguments(argv)
+  sysroot = None
   if flags.brick:
     try:
-      modified = ListModifiedWorkonPackages(brick=brick_lib.Brick(flags.brick))
+      sysroot = cros_build_lib.GetSysroot(brick_lib.Brick(flags.brick))
     except brick_lib.BrickNotFound:
       cros_build_lib.Die('Could not load brick %s.' % flags.brick)
+  elif flags.board:
+    sysroot = cros_build_lib.GetSysroot(flags.board)
+  elif flags.host:
+    sysroot = '/'
   else:
-    modified = ListModifiedWorkonPackages(board=flags.board, host=flags.host)
+    sysroot = flags.sysroot
+
+  modified = ListModifiedWorkonPackages(sysroot_lib.Sysroot(sysroot))
   print(' '.join(sorted(modified)))
