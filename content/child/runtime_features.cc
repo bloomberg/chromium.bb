@@ -116,9 +116,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::enableSharedWorker(false);
 
 #if defined(OS_ANDROID)
-  if (command_line.HasSwitch(switches::kDisableWebRTC))
-    WebRuntimeFeatures::enablePeerConnection(false);
-
   // WebAudio is enabled by default on ARM and X86, if the MediaCodec
   // API is available.
   WebRuntimeFeatures::enableWebAudio(
