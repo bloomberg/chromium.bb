@@ -52,9 +52,11 @@ static jlong CreateRequestAdapter(JNIEnv* env,
   return reinterpret_cast<jlong>(adapter);
 }
 
-// IOBuffer subclass for a buffer owned by a Java ByteBuffer. Keeps the
-// ByteBuffer alive until destroyed.
-class CronetURLRequestAdapter::IOBufferWithByteBuffer : public net::IOBuffer {
+// net::WrappedIOBuffer subclass for a buffer owned by a Java ByteBuffer. Keeps
+// the ByteBuffer alive until destroyed. Uses WrappedIOBuffer because data() is
+// owned by the embedder.
+class CronetURLRequestAdapter::IOBufferWithByteBuffer
+    : public net::WrappedIOBuffer {
  public:
   // Creates a buffer wrapping the Java ByteBuffer |jbyte_buffer|. |data| points
   // to the memory backed by the ByteBuffer, and position is the location to
@@ -64,7 +66,7 @@ class CronetURLRequestAdapter::IOBufferWithByteBuffer : public net::IOBuffer {
       jobject jbyte_buffer,
       void* data,
       int position)
-      : net::IOBuffer(static_cast<char*>(data) + position),
+      : net::WrappedIOBuffer(static_cast<char*>(data) + position),
         initial_position_(position) {
     DCHECK(data);
     DCHECK_EQ(env->GetDirectBufferAddress(jbyte_buffer), data);
