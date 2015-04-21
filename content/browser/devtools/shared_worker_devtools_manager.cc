@@ -4,7 +4,6 @@
 
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
 
-#include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/shared_worker_devtools_agent_host.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
 #include "content/public/browser/browser_thread.h"
@@ -44,7 +43,6 @@ bool SharedWorkerDevToolsManager::WorkerCreated(
       FindExistingWorkerAgentHost(instance);
   if (it == workers_.end()) {
     workers_[id] = new SharedWorkerDevToolsAgentHost(id, instance);
-    DevToolsManager::GetInstance()->AgentHostChanged(workers_[id]);
     return false;
   }
 
@@ -53,7 +51,6 @@ bool SharedWorkerDevToolsManager::WorkerCreated(
   agent_host->WorkerRestarted(id);
   workers_.erase(it);
   workers_[id] = agent_host;
-  DevToolsManager::GetInstance()->AgentHostChanged(agent_host);
   return true;
 }
 
@@ -76,7 +73,6 @@ void SharedWorkerDevToolsManager::WorkerDestroyed(
   DCHECK(it != workers_.end());
   scoped_refptr<SharedWorkerDevToolsAgentHost> agent_host(it->second);
   agent_host->WorkerDestroyed();
-  DevToolsManager::GetInstance()->AgentHostChanged(agent_host);
 }
 
 void SharedWorkerDevToolsManager::RemoveInspectedWorkerData(WorkerId id) {

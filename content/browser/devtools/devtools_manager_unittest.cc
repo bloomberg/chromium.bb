@@ -168,31 +168,6 @@ class ContentBrowserClientWithDevTools : public TestContentBrowserClient {
   }
 };
 
-class TestDevToolsManagerObserver : public DevToolsManager::Observer {
- public:
-  TestDevToolsManagerObserver()
-      : updates_count_(0) {}
-  ~TestDevToolsManagerObserver() override {}
-
-  int updates_count() { return updates_count_; }
-  const std::vector<scoped_refptr<DevToolsAgentHost>> hosts() {
-    return hosts_;
-  }
-
-  void TargetListChanged(const TargetList& targets) override {
-    updates_count_++;
-    hosts_.clear();
-    for (TargetList::const_iterator it = targets.begin();
-         it != targets.end(); ++it) {
-      hosts_.push_back((*it)->GetAgentHost());
-    }
-  }
-
- private:
-  int updates_count_;
-  std::vector<scoped_refptr<DevToolsAgentHost>> hosts_;
-};
-
 }  // namespace
 
 class DevToolsManagerTest : public RenderViewHostImplTestHarness {
@@ -205,12 +180,10 @@ class DevToolsManagerTest : public RenderViewHostImplTestHarness {
     RenderViewHostImplTestHarness::SetUp();
     TestDevToolsClientHost::ResetCounters();
     old_browser_client_ = SetBrowserClientForTesting(&browser_client_);
-    DevToolsManager::GetInstance()->SetUpForTest(DevToolsManager::Scheduler());
   }
 
   void TearDown() override {
     SetBrowserClientForTesting(old_browser_client_);
-    DevToolsManager::GetInstance()->SetUpForTest(DevToolsManager::Scheduler());
     RenderViewHostImplTestHarness::TearDown();
   }
 
@@ -355,111 +328,6 @@ TEST_F(DevToolsManagerTest, TestExternalProxy) {
   agent_host->DispatchProtocolMessage("message2");
 
   client_host.Close();
-}
-
-class TestDevToolsManagerScheduler {
- public:
-  DevToolsManager::Scheduler callback() {
-    return base::Bind(&TestDevToolsManagerScheduler::Schedule,
-                      base::Unretained(this));
-  }
-
-  void Run() {
-    ASSERT_FALSE(closure_.is_null());
-    base::Closure copy = closure_;
-    closure_.Reset();
-    copy.Run();
-  }
-
-  bool IsEmpty() {
-    return closure_.is_null();
-  }
-
- private:
-  void Schedule(base::Closure closure) {
-    EXPECT_TRUE(closure_.is_null());
-    closure_ = closure;
-  }
-
-  base::Closure closure_;
-};
-
-TEST_F(DevToolsManagerTest, TestObserver) {
-  GURL url1("data:text/html,<body>Body1</body>");
-  GURL url2("data:text/html,<body>Body2</body>");
-  GURL url3("data:text/html,<body>Body3</body>");
-
-  TestDevToolsManagerScheduler scheduler;
-  DevToolsManager* manager = DevToolsManager::GetInstance();
-  manager->SetUpForTest(scheduler.callback());
-
-  contents()->NavigateAndCommit(url1);
-  RunAllPendingInMessageLoop();
-
-  scoped_ptr<TestDevToolsManagerObserver> observer(
-      new TestDevToolsManagerObserver());
-  manager->AddObserver(observer.get());
-  // Added observer should get an update.
-  EXPECT_EQ(1, observer->updates_count());
-  ASSERT_EQ(1u, observer->hosts().size());
-  EXPECT_EQ(contents(), observer->hosts()[0]->GetWebContents());
-  EXPECT_EQ(url1.spec(), observer->hosts()[0]->GetURL().spec());
-
-  contents()->NavigateAndCommit(url2);
-  RunAllPendingInMessageLoop();
-  contents()->NavigateAndCommit(url3);
-  scheduler.Run();
-  // Updates should be coalesced.
-  EXPECT_EQ(2, observer->updates_count());
-  ASSERT_EQ(1u, observer->hosts().size());
-  EXPECT_EQ(contents(), observer->hosts()[0]->GetWebContents());
-  EXPECT_EQ(url3.spec(), observer->hosts()[0]->GetURL().spec());
-
-  // Check there were no extra updates.
-  scheduler.Run();
-  EXPECT_TRUE(scheduler.IsEmpty());
-  EXPECT_EQ(2, observer->updates_count());
-
-  scoped_ptr<WorkerStoragePartition> partition(new WorkerStoragePartition(
-      browser_context()->GetRequestContext(),
-      NULL, NULL, NULL, NULL, NULL, NULL, NULL));
-  WorkerStoragePartitionId partition_id(*partition.get());
-
-  GURL shared_worker_url("http://example.com/shared_worker.js");
-  SharedWorkerInstance shared_worker(
-      shared_worker_url,
-      base::string16(),
-      base::string16(),
-      blink::WebContentSecurityPolicyTypeReport,
-      browser_context()->GetResourceContext(),
-      partition_id);
-  SharedWorkerDevToolsManager::GetInstance()->WorkerCreated(
-      1, 1, shared_worker);
-  contents()->NavigateAndCommit(url2);
-
-  EXPECT_EQ(3, observer->updates_count());
-  ASSERT_EQ(2u, observer->hosts().size());
-  EXPECT_EQ(contents(), observer->hosts()[0]->GetWebContents());
-  EXPECT_EQ(url2.spec(), observer->hosts()[0]->GetURL().spec());
-  EXPECT_EQ(DevToolsAgentHost::TYPE_SHARED_WORKER,
-            observer->hosts()[1]->GetType());
-  EXPECT_EQ(shared_worker_url.spec(), observer->hosts()[1]->GetURL().spec());
-
-  SharedWorkerDevToolsManager::GetInstance()->WorkerDestroyed(1, 1);
-  scheduler.Run();
-  EXPECT_EQ(4, observer->updates_count());
-  ASSERT_EQ(1u, observer->hosts().size());
-  EXPECT_EQ(contents(), observer->hosts()[0]->GetWebContents());
-  EXPECT_EQ(url2.spec(), observer->hosts()[0]->GetURL().spec());
-
-  // Check there were no extra updates.
-  scheduler.Run();
-  EXPECT_TRUE(scheduler.IsEmpty());
-  EXPECT_EQ(4, observer->updates_count());
-
-  manager->RemoveObserver(observer.get());
-
-  EXPECT_TRUE(scheduler.IsEmpty());
 }
 
 }  // namespace content

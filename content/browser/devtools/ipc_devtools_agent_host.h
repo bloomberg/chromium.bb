@@ -30,7 +30,7 @@ class CONTENT_EXPORT IPCDevToolsAgentHost : public DevToolsAgentHostImpl {
   void ProcessChunkedMessageFromAgent(const DevToolsMessageChunk& chunk);
 
   virtual void SendMessageToAgent(IPC::Message* msg) = 0;
-  virtual void OnClientAttached() = 0;
+  virtual void OnClientAttached(bool reattached) = 0;
   virtual void OnClientDetached() = 0;
 
  private:

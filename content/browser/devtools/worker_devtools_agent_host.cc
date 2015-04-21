@@ -35,8 +35,9 @@ void WorkerDevToolsAgentHost::Attach() {
   IPCDevToolsAgentHost::Attach();
 }
 
-void WorkerDevToolsAgentHost::OnClientAttached() {
-  DevToolsAgentHostImpl::NotifyCallbacks(this, true);
+void WorkerDevToolsAgentHost::OnClientAttached(bool reattached) {
+  if (!reattached)
+    DevToolsAgentHostImpl::NotifyCallbacks(this, true);
 }
 
 void WorkerDevToolsAgentHost::OnClientDetached() {

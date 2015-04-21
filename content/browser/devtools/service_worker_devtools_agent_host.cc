@@ -92,8 +92,8 @@ void ServiceWorkerDevToolsAgentHost::UnregisterWorker() {
                   service_worker_->version_id()));
 }
 
-void ServiceWorkerDevToolsAgentHost::OnClientAttached() {
-  WorkerDevToolsAgentHost::OnClientAttached();
+void ServiceWorkerDevToolsAgentHost::OnClientAttached(bool reattached) {
+  WorkerDevToolsAgentHost::OnClientAttached(reattached);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       base::Bind(&SetDevToolsAttachedOnIO,
                   service_worker_->context_weak(),

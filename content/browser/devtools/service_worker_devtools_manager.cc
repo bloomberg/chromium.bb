@@ -4,7 +4,6 @@
 
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 
-#include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/ipc_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/public/browser/browser_thread.h"
@@ -78,7 +77,6 @@ bool ServiceWorkerDevToolsManager::WorkerCreated(
             id, service_worker_id);
     workers_[id] = host.get();
     FOR_EACH_OBSERVER(Observer, observer_list_, WorkerCreated(host.get()));
-    DevToolsManager::GetInstance()->AgentHostChanged(host.get());
     if (debug_service_worker_on_start_)
         host->PauseForDebugOnStart();
     return host->IsPausedForDebugOnStart();
@@ -89,7 +87,6 @@ bool ServiceWorkerDevToolsManager::WorkerCreated(
   agent_host->WorkerRestarted(id);
   workers_.erase(it);
   workers_[id] = agent_host;
-  DevToolsManager::GetInstance()->AgentHostChanged(agent_host);
 
   return agent_host->IsAttached();
 }
@@ -128,7 +125,6 @@ void ServiceWorkerDevToolsManager::WorkerDestroyed(int worker_process_id,
   DCHECK(it != workers_.end());
   scoped_refptr<WorkerDevToolsAgentHost> agent_host(it->second);
   agent_host->WorkerDestroyed();
-  DevToolsManager::GetInstance()->AgentHostChanged(agent_host);
   FOR_EACH_OBSERVER(Observer, observer_list_, WorkerDestroyed(it->second));
 }
 

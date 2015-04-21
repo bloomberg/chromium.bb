@@ -9,7 +9,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_frame_trace_recorder.h"
-#include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/protocol/devtools_protocol_handler.h"
 #include "content/browser/devtools/protocol/dom_handler.h"
 #include "content/browser/devtools/protocol/emulation_handler.h"
@@ -129,8 +128,7 @@ void RenderFrameDevToolsAgentHost::OnCancelPendingNavigation(
   RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(pending);
   if (!agent_host)
     return;
-  agent_host->DisconnectRenderFrameHost();
-  agent_host->ConnectRenderFrameHost(current);
+  agent_host->ReattachToRenderFrameHost(current);
 }
 
 RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(RenderFrameHost* rfh)
@@ -168,7 +166,6 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(RenderFrameHost* rfh)
   SetRenderFrameHost(rfh);
   g_instances.Get().push_back(this);
   AddRef();  // Balanced in RenderFrameHostDestroyed.
-  DevToolsManager::GetInstance()->AgentHostChanged(this);
 }
 
 BrowserContext* RenderFrameDevToolsAgentHost::GetBrowserContext() {
@@ -187,7 +184,7 @@ void RenderFrameDevToolsAgentHost::SendMessageToAgent(IPC::Message* msg) {
   render_frame_host_->Send(msg);
 }
 
-void RenderFrameDevToolsAgentHost::OnClientAttached() {
+void RenderFrameDevToolsAgentHost::OnClientAttached(bool reattached) {
   if (!render_frame_host_)
     return;
 
@@ -323,9 +320,10 @@ void RenderFrameDevToolsAgentHost::FrameDeleted(RenderFrameHost* rfh) {
 void RenderFrameDevToolsAgentHost::DestroyOnRenderFrameGone() {
   DCHECK(render_frame_host_);
   scoped_refptr<RenderFrameDevToolsAgentHost> protect(this);
+  if (IsAttached())
+    OnClientDetached();
   HostClosed();
   ClearRenderFrameHost();
-  DevToolsManager::GetInstance()->AgentHostChanged(this);
   Release();
 }
 
@@ -388,16 +386,6 @@ void RenderFrameDevToolsAgentHost::DidAttachInterstitialPage() {
 void RenderFrameDevToolsAgentHost::DidDetachInterstitialPage() {
   if (page_handler_)
     page_handler_->DidDetachInterstitialPage();
-}
-
-void RenderFrameDevToolsAgentHost::TitleWasSet(
-    NavigationEntry* entry, bool explicit_set) {
-  DevToolsManager::GetInstance()->AgentHostChanged(this);
-}
-
-void RenderFrameDevToolsAgentHost::NavigationEntryCommitted(
-    const LoadCommittedDetails& load_details) {
-  DevToolsManager::GetInstance()->AgentHostChanged(this);
 }
 
 void RenderFrameDevToolsAgentHost::DidCommitProvisionalLoadForFrame(

@@ -117,7 +117,6 @@ void DevToolsAgentHostImpl::AttachClient(DevToolsAgentHostClient* client) {
   }
   client_ = client;
   Attach();
-  DevToolsManager::GetInstance()->AgentHostChanged(this);
 }
 
 void DevToolsAgentHostImpl::DetachClient() {
@@ -127,7 +126,6 @@ void DevToolsAgentHostImpl::DetachClient() {
   scoped_refptr<DevToolsAgentHostImpl> protect(this);
   client_ = NULL;
   Detach();
-  DevToolsManager::GetInstance()->AgentHostChanged(this);
 }
 
 bool DevToolsAgentHostImpl::IsAttached() {
@@ -164,7 +162,6 @@ void DevToolsAgentHostImpl::HostClosed() {
   DevToolsAgentHostClient* client = client_;
   client_ = NULL;
   client->AgentHostClosed(this, false);
-  DevToolsManager::GetInstance()->AgentHostChanged(this);
 }
 
 void DevToolsAgentHostImpl::SendMessageToClient(const std::string& message) {
@@ -190,7 +187,6 @@ void DevToolsAgentHost::DetachAllClients() {
       agent_host->client_ = NULL;
       client->AgentHostClosed(agent_host, true);
       agent_host->Detach();
-      DevToolsManager::GetInstance()->AgentHostChanged(protect);
     }
   }
 }
@@ -219,6 +215,7 @@ void DevToolsAgentHostImpl::NotifyCallbacks(
     DevToolsAgentHostImpl* agent_host, bool attached) {
   AgentStateCallbacks copy(g_callbacks.Get());
   DevToolsManager* manager = DevToolsManager::GetInstance();
+  manager->AgentHostStateChanged(agent_host, attached);
   if (manager->delegate())
     manager->delegate()->DevToolsAgentStateChanged(agent_host, attached);
   for (AgentStateCallbacks::iterator it = copy.begin(); it != copy.end(); ++it)

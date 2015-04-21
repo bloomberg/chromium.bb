@@ -33,7 +33,7 @@ class ServiceWorkerDevToolsAgentHost : public WorkerDevToolsAgentHost {
   bool Close() override;
 
   // IPCDevToolsAgentHost override.
-  void OnClientAttached() override;
+  void OnClientAttached(bool reattached) override;
   void OnClientDetached() override;
 
   bool Matches(const ServiceWorkerIdentifier& other);

@@ -78,7 +78,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   // IPCDevToolsAgentHost overrides.
   void SendMessageToAgent(IPC::Message* msg) override;
-  void OnClientAttached() override;
+  void OnClientAttached(bool reattached) override;
   void OnClientDetached() override;
 
   // WebContentsObserver overrides.
@@ -93,9 +93,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   bool OnMessageReceived(const IPC::Message& message) override;
   void DidAttachInterstitialPage() override;
   void DidDetachInterstitialPage() override;
-  void TitleWasSet(NavigationEntry* entry, bool explicit_set) override;
-  void NavigationEntryCommitted(
-      const LoadCommittedDetails& load_details) override;
   void DidCommitProvisionalLoadForFrame(
       RenderFrameHost* render_frame_host,
       const GURL& url,

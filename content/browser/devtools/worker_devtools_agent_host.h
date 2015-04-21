@@ -24,7 +24,7 @@ class WorkerDevToolsAgentHost : public IPCDevToolsAgentHost,
   // IPCDevToolsAgentHost implementation.
   void SendMessageToAgent(IPC::Message* message) override;
   void Attach() override;
-  void OnClientAttached() override;
+  void OnClientAttached(bool reattached) override;
   void OnClientDetached() override;
 
   // IPC::Listener implementation.

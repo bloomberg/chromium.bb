@@ -8,7 +8,7 @@ namespace content {
 
 void IPCDevToolsAgentHost::Attach() {
   SendMessageToAgent(new DevToolsAgentMsg_Attach(MSG_ROUTING_NONE, GetId()));
-  OnClientAttached();
+  OnClientAttached(false);
 }
 
 void IPCDevToolsAgentHost::Detach() {
@@ -41,7 +41,7 @@ IPCDevToolsAgentHost::~IPCDevToolsAgentHost() {
 void IPCDevToolsAgentHost::Reattach() {
   SendMessageToAgent(new DevToolsAgentMsg_Reattach(
       MSG_ROUTING_NONE, GetId(), state_cookie_));
-  OnClientAttached();
+  OnClientAttached(true);
 }
 
 void IPCDevToolsAgentHost::ProcessChunkedMessageFromAgent(
