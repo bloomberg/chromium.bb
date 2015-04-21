@@ -46,11 +46,15 @@
               {{enterpriseInfo}}
             </p>
           </div>
-          <gaia-input-form class="footer" id="emailInput" inputType="email"
-              i18n-values="errorMsg:offlineLoginInvalidEmail;
-                           inputLabel:offlineLoginEmail;
-                           buttonText:offlineLoginNextBtn">
-          </gaia-input-form>
+          <div class="footer" flex vertical layout justified>
+            <gaia-input-form id="emailInput" inputType="email"
+                i18n-values="errorMsg:offlineLoginInvalidEmail;
+                             inputLabel:offlineLoginEmail;
+                             buttonText:offlineLoginNextBtn">
+            </gaia-input-form>
+            <img self-center src="chrome://theme/IDR_LOGO_GOOGLE_COLOR_90"
+                alt="">
+          </div>
         </gaia-card>
       </section>
       <section flex>
