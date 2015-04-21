@@ -1,0 +1,14 @@
+# Build arguments for Chromecast.
+# Copy the contents of this file to gn args.
+
+root_extra_deps = [ "//chromecast" ]
+
+# Flags set from build/common.gypi
+enable_mpeg2ts_stream_parser = true
+ffmpeg_branding = "ChromeOS"
+proprietary_codecs = true
+enable_browser_cdms = true
+# TODO(halliwell): look into supporting Cast Ozone with GN.
+# ozone_platform_cast = 1
+# TODO(gyp): Add support for blink_logging_always_on and enable it.
+# blink_logging_always_on = 1

@@ -80,6 +80,10 @@ declare_args() {
 
   # Enable hole punching for the protected video.
   enable_video_hole = is_android
+
+  # Enables browser side Content Decryption Modules. Required for embedders
+  # (e.g. Android and ChromeCast) that use a browser side CDM.
+  enable_browser_cdms = is_android
 }
 
 # Additional dependent variables -----------------------------------------------
@@ -101,8 +105,6 @@ use_udev = is_linux
 enable_spellcheck = !is_android
 
 enable_pepper_cdms = enable_plugins && (is_linux || is_mac || is_win)
-
-enable_browser_cdms = is_android
 
 # Enable basic printing support and UI.
 enable_basic_printing = !is_chromeos

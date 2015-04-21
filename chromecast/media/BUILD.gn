@@ -1,0 +1,53 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+group("media") {
+  deps = [
+    "//chromecast/media/base",
+    "//chromecast/media/cdm",
+    "//chromecast/media/cma",
+  ]
+}
+
+test("unittests") {
+  sources = [
+    "//media/base",
+    "cma/backend/audio_video_pipeline_device_unittest.cc",
+    "cma/base/balanced_media_task_runner_unittest.cc",
+    "cma/base/buffering_controller_unittest.cc",
+    "cma/base/buffering_frame_provider_unittest.cc",
+    "cma/filters/demuxer_stream_adapter_unittest.cc",
+    "cma/ipc/media_message_fifo_unittest.cc",
+    "cma/ipc/media_message_unittest.cc",
+    "cma/ipc_streamer/av_streamer_unittest.cc",
+    "cma/pipeline/audio_video_pipeline_impl_unittest.cc",
+    "cma/test/frame_generator_for_test.cc",
+    "cma/test/frame_generator_for_test.h",
+    "cma/test/frame_segmenter_for_test.cc",
+    "cma/test/frame_segmenter_for_test.h",
+    "cma/test/media_component_device_feeder_for_test.cc",
+    "cma/test/media_component_device_feeder_for_test.h",
+    "cma/test/mock_frame_consumer.cc",
+    "cma/test/mock_frame_consumer.h",
+    "cma/test/mock_frame_provider.cc",
+    "cma/test/mock_frame_provider.h",
+    "cma/test/run_all_unittests.cc",
+  ]
+
+  deps = [
+    ":media",
+    "//base",
+    "//base:i18n",
+    "//base/test:test_support",
+    "//chromecast/base/metrics:test_support",
+    "//media",
+    "//media/base:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  configs += [ "//chromecast:config" ]
+}

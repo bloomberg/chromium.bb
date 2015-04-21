@@ -4,6 +4,7 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/arm.gni")
+import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//media/media_options.gni")
@@ -241,9 +242,7 @@ source_set("base") {
     sources += [ "user_input_monitor_mac.cc" ]
 
     # Required by video_frame.cc.
-    libs = [
-      "CoreVideo.framework"
-    ]
+    libs = [ "CoreVideo.framework" ]
   } else if (is_win) {
     sources += [ "user_input_monitor_win.cc" ]
   } else {

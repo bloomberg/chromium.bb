@@ -45,10 +45,6 @@ declare_args() {
   # default since it's not available on the normal Web Platform and costs money.
   enable_mpeg2ts_stream_parser = false
 
-  # Enables browser side Content Decryption Modules. Required for embedders
-  # (e.g. Android and ChromeCast) that use a browser side CDM.
-  enable_browser_cdms = is_android
-
   # Experiment to enable mojo based media renderer: http://crbug.com/431776
   enable_media_mojo_renderer = false
 
