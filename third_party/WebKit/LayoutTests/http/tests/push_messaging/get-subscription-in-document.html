@@ -20,8 +20,10 @@ async_test(function(test) {
         })
         .then(function() {
             // If running manually, grant permission when prompted.
-            if (self.testRunner)
+            if (self.testRunner) {
                 testRunner.setPushMessagingPermission(location.origin, true);
+                testRunner.setPermission('push-messaging', 'granted', location.origin, location.origin);
+            }
 
             assert_inherits(swRegistration.pushManager, 'getSubscription',
                             'getSubscription() should be exposed on the PushManager object');

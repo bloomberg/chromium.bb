@@ -10,6 +10,9 @@
 <body>
 <script>
 async_test(function(test) {
+    if (window.testRunner)
+        testRunner.setPermission('push-messaging', 'prompt', location.origin, location.origin);
+
     var workerUrl = 'resources/empty_worker.js';
     var workerScope = 'resources/scope/' + location.pathname;
     service_worker_unregister_and_register(test, workerUrl, workerScope)

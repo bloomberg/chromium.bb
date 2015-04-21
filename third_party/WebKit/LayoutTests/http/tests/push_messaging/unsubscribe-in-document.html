@@ -21,8 +21,10 @@ async_test(function(test) {
         })
         .then(function() {
             // If running manually, grant permission when prompted.
-            if (window.testRunner)
+            if (window.testRunner) {
                 testRunner.setPushMessagingPermission(location.origin, true);
+                testRunner.setPermission('push-messaging', 'granted', location.origin, location.origin);
+            }
             return swRegistration.pushManager.subscribe();
         })
         .then(function(subscription) {

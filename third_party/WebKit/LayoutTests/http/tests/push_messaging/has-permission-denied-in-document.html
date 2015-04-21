@@ -15,8 +15,10 @@ async_test(function(test) {
     service_worker_unregister_and_register(test, workerUrl, workerScope)
         .then(function(serviceWorkerRegistration) {
             // If running manually, deny permission when prompted.
-            if (window.testRunner)
+            if (window.testRunner) {
                 testRunner.setPushMessagingPermission(location.origin, false);
+                testRunner.setPermission('push-messaging', 'denied', location.origin, location.origin);
+            }
             return serviceWorkerRegistration.pushManager.hasPermission();
         })
         .then(function(permissionStatus) {
