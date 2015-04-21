@@ -115,6 +115,7 @@ enum IPCMessageStart {
   NavigatorConnectMsgStart,
   CastMediaMsgStart,
   AwMessagePortMsgStart,
+  ExtensionsGuestViewMsgStart,
   GuestViewMsgStart,
   // Note: CastCryptoMsgStart and CastChannelMsgStart reserved for Chromecast
   // internal code. Contact gunsch@ before changing/removing.

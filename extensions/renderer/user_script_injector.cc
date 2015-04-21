@@ -11,7 +11,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/guest_view/guest_view_messages.h"
+#include "extensions/common/guest_view/extensions_guest_view_messages.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/renderer/injection_host.h"
 #include "extensions/renderer/script_context.h"
@@ -184,7 +184,7 @@ PermissionsData::AccessType UserScriptInjector::CanExecuteOnFrame(
     // webviews, and then only once per host.
     // TODO(hanxi): Find a more efficient way to do this.
     content::RenderThread::Get()->Send(
-        new GuestViewHostMsg_CanExecuteContentScriptSync(
+        new ExtensionsGuestViewHostMsg_CanExecuteContentScriptSync(
             routing_id, script_->id(), &allowed));
     map.insert(std::pair<RoutingInfoKey, bool>(key, allowed));
   }

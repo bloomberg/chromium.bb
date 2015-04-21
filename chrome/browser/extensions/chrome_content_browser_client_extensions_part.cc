@@ -34,6 +34,7 @@
 #include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"
 #include "extensions/browser/guest_view/guest_view_message_filter.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/io_thread_extension_message_filter.h"
@@ -378,6 +379,7 @@ void ChromeContentBrowserClientExtensionsPart::RenderProcessWillLaunch(
   host->AddFilter(new ChromeExtensionMessageFilter(id, profile));
   host->AddFilter(new ExtensionMessageFilter(id, profile));
   host->AddFilter(new IOThreadExtensionMessageFilter(id, profile));
+  host->AddFilter(new ExtensionsGuestViewMessageFilter(id, profile));
   host->AddFilter(new GuestViewMessageFilter(id, profile));
   extension_web_request_api_helpers::SendExtensionWebRequestStatusToHost(host);
 }

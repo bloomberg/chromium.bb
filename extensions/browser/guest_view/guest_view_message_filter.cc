@@ -10,11 +10,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "extensions/browser/guest_view/guest_view_base.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
-#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
-#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
-#include "extensions/browser/guest_view/web_view/web_view_content_script_manager.h"
-#include "extensions/browser/guest_view/web_view/web_view_guest.h"
-#include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/common/guest_view/guest_view_messages.h"
 #include "ipc/ipc_message_macros.h"
 
@@ -43,8 +38,6 @@ void GuestViewMessageFilter::OverrideThreadForMessage(
     BrowserThread::ID* thread) {
   switch (message.type()) {
     case GuestViewHostMsg_AttachGuest::ID:
-    case GuestViewHostMsg_CreateMimeHandlerViewGuest::ID:
-    case GuestViewHostMsg_ResizeGuest::ID:
       *thread = BrowserThread::UI;
       break;
     default:
@@ -62,11 +55,6 @@ bool GuestViewMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GuestViewMessageFilter, message)
     IPC_MESSAGE_HANDLER(GuestViewHostMsg_AttachGuest, OnAttachGuest)
-    IPC_MESSAGE_HANDLER(GuestViewHostMsg_CreateMimeHandlerViewGuest,
-                        OnCreateMimeHandlerViewGuest)
-    IPC_MESSAGE_HANDLER(GuestViewHostMsg_ResizeGuest, OnResizeGuest)
-    IPC_MESSAGE_HANDLER(GuestViewHostMsg_CanExecuteContentScriptSync,
-                        OnCanExecuteContentScript)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -88,104 +76,6 @@ void GuestViewMessageFilter::OnAttachGuest(
                        element_instance_id,
                        guest_instance_id,
                        params);
-}
-
-void GuestViewMessageFilter::OnCreateMimeHandlerViewGuest(
-    int render_frame_id,
-    const std::string& view_id,
-    int element_instance_id,
-    const gfx::Size& element_size) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Since we are creating a new guest, we will create a GuestViewManager
-  // if we don't already have one.
-  auto manager = GuestViewManager::FromBrowserContext(browser_context_);
-  DCHECK(manager);
-
-  auto rfh = RenderFrameHost::FromID(render_process_id_, render_frame_id);
-  auto embedder_web_contents = WebContents::FromRenderFrameHost(rfh);
-  if (!embedder_web_contents)
-    return;
-
-  GuestViewManager::WebContentsCreatedCallback callback =
-      base::Bind(&GuestViewMessageFilter::MimeHandlerViewGuestCreatedCallback,
-                 this,
-                 element_instance_id,
-                 render_process_id_,
-                 render_frame_id,
-                 element_size);
-
-  base::DictionaryValue create_params;
-  create_params.SetString(mime_handler_view::kViewId, view_id);
-  create_params.SetInteger(guestview::kElementWidth, element_size.width());
-  create_params.SetInteger(guestview::kElementHeight, element_size.height());
-  manager->CreateGuest(MimeHandlerViewGuest::Type,
-                       embedder_web_contents,
-                       create_params,
-                       callback);
-}
-
-void GuestViewMessageFilter::OnResizeGuest(int render_frame_id,
-                                           int element_instance_id,
-                                           const gfx::Size& new_size) {
-  auto manager =
-      GuestViewManager::FromBrowserContextIfAvailable(browser_context_);
-  // We should have a GuestViewManager at this point. If we don't then the
-  // embedder is misbehaving.
-  if (!manager)
-    return;
-
-  auto guest_web_contents =
-      manager->GetGuestByInstanceID(render_process_id_, element_instance_id);
-  auto mhvg = MimeHandlerViewGuest::FromWebContents(guest_web_contents);
-  if (!mhvg)
-    return;
-
-  SetSizeParams set_size_params;
-  set_size_params.enable_auto_size.reset(new bool(false));
-  set_size_params.normal_size.reset(new gfx::Size(new_size));
-  mhvg->SetSize(set_size_params);
-}
-
-void GuestViewMessageFilter::OnCanExecuteContentScript(int render_view_id,
-                                                       int script_id,
-                                                       bool* allowed) {
-  WebViewRendererState::WebViewInfo info;
-  WebViewRendererState::GetInstance()->GetInfo(render_process_id_,
-                                               render_view_id, &info);
-
-  *allowed =
-      info.content_script_ids.find(script_id) != info.content_script_ids.end();
-}
-
-void GuestViewMessageFilter::MimeHandlerViewGuestCreatedCallback(
-    int element_instance_id,
-    int embedder_render_process_id,
-    int embedder_render_frame_id,
-    const gfx::Size& element_size,
-    WebContents* web_contents) {
-  auto guest_view = MimeHandlerViewGuest::FromWebContents(web_contents);
-  if (!guest_view)
-    return;
-
-  int guest_instance_id = guest_view->guest_instance_id();
-  auto rfh = RenderFrameHost::FromID(embedder_render_process_id,
-                                     embedder_render_frame_id);
-  if (!rfh)
-    return;
-
-  base::DictionaryValue attach_params;
-  attach_params.SetInteger(guestview::kElementWidth, element_size.width());
-  attach_params.SetInteger(guestview::kElementHeight, element_size.height());
-  auto manager =
-      GuestViewManager::FromBrowserContextIfAvailable(browser_context_);
-  CHECK(manager);
-  manager->AttachGuest(embedder_render_process_id,
-                       element_instance_id,
-                       guest_instance_id,
-                       attach_params);
-
-  rfh->Send(
-      new GuestViewMsg_CreateMimeHandlerViewGuestACK(element_instance_id));
 }
 
 }  // namespace extensions

@@ -34,8 +34,6 @@ class GuestViewMessageFilter : public content::BrowserMessageFilter {
   GuestViewMessageFilter(int render_process_id,
                          content::BrowserContext* context);
 
-  int render_process_id() const { return render_process_id_; }
-
  private:
   friend class content::BrowserThread;
   friend class base::DeleteHelper<GuestViewMessageFilter>;
@@ -52,24 +50,6 @@ class GuestViewMessageFilter : public content::BrowserMessageFilter {
   void OnAttachGuest(int element_instance_id,
                      int guest_instance_id,
                      const base::DictionaryValue& attach_params);
-  void OnCreateMimeHandlerViewGuest(int render_frame_id,
-                                    const std::string& view_id,
-                                    int element_instance_id,
-                                    const gfx::Size& element_size);
-  void OnResizeGuest(int render_frame_id,
-                     int element_instance_id,
-                     const gfx::Size& new_size);
-
-  void OnCanExecuteContentScript(int render_view_id,
-                                 int script_id,
-                                 bool* allowed);
-
-  // Runs on UI thread.
-  void MimeHandlerViewGuestCreatedCallback(int element_instance_id,
-                                           int embedder_render_process_id,
-                                           int embedder_render_frame_id,
-                                           const gfx::Size& element_size,
-                                           content::WebContents* web_contents);
 
   const int render_process_id_;
 
