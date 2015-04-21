@@ -36,16 +36,15 @@ class MEDIA_EXPORT VideoCaptureDeviceMFWin
   static bool FormatFromGuid(const GUID& guid, VideoPixelFormat* format);
 
   explicit VideoCaptureDeviceMFWin(const Name& device_name);
-  virtual ~VideoCaptureDeviceMFWin();
+  ~VideoCaptureDeviceMFWin() override;
 
   // Opens the device driver for this device.
   bool Init(const base::win::ScopedComPtr<IMFMediaSource>& source);
 
   // VideoCaptureDevice implementation.
-  virtual void AllocateAndStart(const VideoCaptureParams& params,
-                                scoped_ptr<VideoCaptureDevice::Client> client)
-      override;
-  virtual void StopAndDeAllocate() override;
+  void AllocateAndStart(const VideoCaptureParams& params,
+                        scoped_ptr<VideoCaptureDevice::Client> client) override;
+  void StopAndDeAllocate() override;
 
   // Captured new video data.
   void OnIncomingCapturedData(const uint8* data,

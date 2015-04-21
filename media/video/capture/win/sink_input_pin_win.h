@@ -22,7 +22,7 @@ extern const REFERENCE_TIME kSecondsToReferenceTime;
 class SinkInputPin : public PinBase {
  public:
   SinkInputPin(IBaseFilter* filter, SinkFilterObserver* observer);
-  virtual ~SinkInputPin();
+  ~SinkInputPin() override;
 
   void SetRequestedMediaFormat(VideoPixelFormat pixel_format,
                                float frame_rate,
@@ -32,10 +32,10 @@ class SinkInputPin : public PinBase {
   const VideoCaptureFormat& ResultingFormat();
 
   // Implement PinBase.
-  virtual bool IsMediaTypeValid(const AM_MEDIA_TYPE* media_type);
-  virtual bool GetValidMediaType(int index, AM_MEDIA_TYPE* media_type);
+  bool IsMediaTypeValid(const AM_MEDIA_TYPE* media_type) override;
+  bool GetValidMediaType(int index, AM_MEDIA_TYPE* media_type) override;
 
-  STDMETHOD(Receive)(IMediaSample* media_sample);
+  STDMETHOD(Receive)(IMediaSample* media_sample) override;
 
  private:
   VideoPixelFormat requested_pixel_format_;

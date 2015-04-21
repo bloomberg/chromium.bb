@@ -64,15 +64,14 @@ class VideoCaptureDeviceWin
       const GUID& sub_type);
 
   explicit VideoCaptureDeviceWin(const Name& device_name);
-  virtual ~VideoCaptureDeviceWin();
+  ~VideoCaptureDeviceWin() override;
   // Opens the device driver for this device.
   bool Init();
 
   // VideoCaptureDevice implementation.
-  virtual void AllocateAndStart(
-      const VideoCaptureParams& params,
-      scoped_ptr<VideoCaptureDevice::Client> client) override;
-  virtual void StopAndDeAllocate() override;
+  void AllocateAndStart(const VideoCaptureParams& params,
+                        scoped_ptr<VideoCaptureDevice::Client> client) override;
+  void StopAndDeAllocate() override;
 
  private:
   enum InternalState {
@@ -83,7 +82,7 @@ class VideoCaptureDeviceWin
   };
 
   // Implements SinkFilterObserver.
-  virtual void FrameReceived(const uint8* buffer, int length);
+  void FrameReceived(const uint8* buffer, int length) override;
 
   bool CreateCapabilityMap();
   void SetAntiFlickerInCaptureFilter();

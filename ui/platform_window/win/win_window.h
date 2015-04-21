@@ -16,26 +16,26 @@ class WIN_WINDOW_EXPORT WinWindow : public NON_EXPORTED_BASE(PlatformWindow),
                                     public gfx::WindowImpl {
  public:
   WinWindow(PlatformWindowDelegate* delegate, const gfx::Rect& bounds);
-  virtual ~WinWindow();
+  ~WinWindow() override;
 
  private:
   void Destroy();
 
   // PlatformWindow:
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual void Close() override;
-  virtual void SetBounds(const gfx::Rect& bounds) override;
-  virtual gfx::Rect GetBounds() override;
-  virtual void SetCapture() override;
-  virtual void ReleaseCapture() override;
-  virtual void ToggleFullscreen() override;
-  virtual void Maximize() override;
-  virtual void Minimize() override;
-  virtual void Restore() override;
-  virtual void SetCursor(PlatformCursor cursor) override;
-  virtual void MoveCursorTo(const gfx::Point& location) override;
-  virtual void ConfineCursorToBounds(const gfx::Rect& bounds) override;
+  void Show() override;
+  void Hide() override;
+  void Close() override;
+  void SetBounds(const gfx::Rect& bounds) override;
+  gfx::Rect GetBounds() override;
+  void SetCapture() override;
+  void ReleaseCapture() override;
+  void ToggleFullscreen() override;
+  void Maximize() override;
+  void Minimize() override;
+  void Restore() override;
+  void SetCursor(PlatformCursor cursor) override;
+  void MoveCursorTo(const gfx::Point& location) override;
+  void ConfineCursorToBounds(const gfx::Rect& bounds) override;
 
   CR_BEGIN_MSG_MAP_EX(WinWindow)
     CR_MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)

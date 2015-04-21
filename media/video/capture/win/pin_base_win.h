@@ -40,59 +40,61 @@ class PinBase
 
   // Called when new media is received. Note that this is not on the same
   // thread as where the pin is created.
-  STDMETHOD(Receive)(IMediaSample* sample) = 0;
+  STDMETHOD(Receive)(IMediaSample* sample) override = 0;
 
-  STDMETHOD(Connect)(IPin* receive_pin, const AM_MEDIA_TYPE* media_type);
+  STDMETHOD(Connect)(IPin* receive_pin,
+                     const AM_MEDIA_TYPE* media_type) override;
 
   STDMETHOD(ReceiveConnection)(IPin* connector,
-                               const AM_MEDIA_TYPE* media_type);
+                               const AM_MEDIA_TYPE* media_type) override;
 
-  STDMETHOD(Disconnect)();
+  STDMETHOD(Disconnect)() override;
 
-  STDMETHOD(ConnectedTo)(IPin** pin);
+  STDMETHOD(ConnectedTo)(IPin** pin) override;
 
-  STDMETHOD(ConnectionMediaType)(AM_MEDIA_TYPE* media_type);
+  STDMETHOD(ConnectionMediaType)(AM_MEDIA_TYPE* media_type) override;
 
-  STDMETHOD(QueryPinInfo)(PIN_INFO* info);
+  STDMETHOD(QueryPinInfo)(PIN_INFO* info) override;
 
-  STDMETHOD(QueryDirection)(PIN_DIRECTION* pin_dir);
+  STDMETHOD(QueryDirection)(PIN_DIRECTION* pin_dir) override;
 
-  STDMETHOD(QueryId)(LPWSTR* id);
+  STDMETHOD(QueryId)(LPWSTR* id) override;
 
-  STDMETHOD(QueryAccept)(const AM_MEDIA_TYPE* media_type);
+  STDMETHOD(QueryAccept)(const AM_MEDIA_TYPE* media_type) override;
 
-  STDMETHOD(EnumMediaTypes)(IEnumMediaTypes** types);
+  STDMETHOD(EnumMediaTypes)(IEnumMediaTypes** types) override;
 
-  STDMETHOD(QueryInternalConnections)(IPin** pins, ULONG* no_pins);
+  STDMETHOD(QueryInternalConnections)(IPin** pins, ULONG* no_pins) override;
 
-  STDMETHOD(EndOfStream)();
+  STDMETHOD(EndOfStream)() override;
 
-  STDMETHOD(BeginFlush)();
+  STDMETHOD(BeginFlush)() override;
 
-  STDMETHOD(EndFlush)();
+  STDMETHOD(EndFlush)() override;
 
   STDMETHOD(NewSegment)(REFERENCE_TIME start,
                         REFERENCE_TIME stop,
-                        double dRate);
+                        double dRate) override;
 
   // Inherited from IMemInputPin.
-  STDMETHOD(GetAllocator)(IMemAllocator** allocator);
+  STDMETHOD(GetAllocator)(IMemAllocator** allocator) override;
 
-  STDMETHOD(NotifyAllocator)(IMemAllocator* allocator, BOOL read_only);
+  STDMETHOD(NotifyAllocator)(IMemAllocator* allocator, BOOL read_only) override;
 
-  STDMETHOD(GetAllocatorRequirements)(ALLOCATOR_PROPERTIES* properties);
+  STDMETHOD(GetAllocatorRequirements)(
+      ALLOCATOR_PROPERTIES* properties) override;
 
   STDMETHOD(ReceiveMultiple)(IMediaSample** samples,
                              long sample_count,
-                             long* processed);
-  STDMETHOD(ReceiveCanBlock)();
+                             long* processed) override;
+  STDMETHOD(ReceiveCanBlock)() override;
 
   // Inherited from IUnknown.
-  STDMETHOD(QueryInterface)(REFIID id, void** object_ptr);
+  STDMETHOD(QueryInterface)(REFIID id, void** object_ptr) override;
 
-  STDMETHOD_(ULONG, AddRef)();
+  STDMETHOD_(ULONG, AddRef)() override;
 
-  STDMETHOD_(ULONG, Release)();
+  STDMETHOD_(ULONG, Release)() override;
 
  private:
   AM_MEDIA_TYPE current_media_type_;

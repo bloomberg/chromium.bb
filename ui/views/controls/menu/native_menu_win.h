@@ -30,18 +30,18 @@ class VIEWS_EXPORT NativeMenuWin : public MenuWrapper {
   // is non-NULL, the NativeMenuWin wraps the system menu for that window.
   // The caller owns the model and the delegate.
   NativeMenuWin(ui::MenuModel* model, HWND system_menu_for);
-  virtual ~NativeMenuWin();
+  ~NativeMenuWin() override;
 
   // Overridden from MenuWrapper:
-  virtual void RunMenuAt(const gfx::Point& point, int alignment) override;
-  virtual void CancelMenu() override;
-  virtual void Rebuild(MenuInsertionDelegateWin* delegate) override;
-  virtual void UpdateStates() override;
-  virtual HMENU GetNativeMenu() const override;
-  virtual MenuAction GetMenuAction() const override;
-  virtual void AddMenuListener(MenuListener* listener) override;
-  virtual void RemoveMenuListener(MenuListener* listener) override;
-  virtual void SetMinimumWidth(int width) override;
+  void RunMenuAt(const gfx::Point& point, int alignment) override;
+  void CancelMenu() override;
+  void Rebuild(MenuInsertionDelegateWin* delegate) override;
+  void UpdateStates() override;
+  HMENU GetNativeMenu() const override;
+  MenuAction GetMenuAction() const override;
+  void AddMenuListener(MenuListener* listener) override;
+  void RemoveMenuListener(MenuListener* listener) override;
+  void SetMinimumWidth(int width) override;
 
  private:
   // IMPORTANT: Note about indices.

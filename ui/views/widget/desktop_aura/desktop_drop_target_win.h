@@ -29,26 +29,26 @@ class DesktopDropTargetWin : public ui::DropTargetWin,
                              public aura::WindowObserver {
  public:
   DesktopDropTargetWin(aura::Window* root_window, HWND window);
-  virtual ~DesktopDropTargetWin();
+  ~DesktopDropTargetWin() override;
 
  private:
   // ui::DropTargetWin implementation:
-  virtual DWORD OnDragEnter(IDataObject* data_object,
-                            DWORD key_state,
-                            POINT position,
-                            DWORD effect) override;
-  virtual DWORD OnDragOver(IDataObject* data_object,
-                           DWORD key_state,
-                           POINT position,
-                           DWORD effect) override;
-  virtual void OnDragLeave(IDataObject* data_object) override;
-  virtual DWORD OnDrop(IDataObject* data_object,
-                       DWORD key_state,
-                       POINT position,
-                       DWORD effect) override;
+  DWORD OnDragEnter(IDataObject* data_object,
+                    DWORD key_state,
+                    POINT position,
+                    DWORD effect) override;
+  DWORD OnDragOver(IDataObject* data_object,
+                   DWORD key_state,
+                   POINT position,
+                   DWORD effect) override;
+  void OnDragLeave(IDataObject* data_object) override;
+  DWORD OnDrop(IDataObject* data_object,
+               DWORD key_state,
+               POINT position,
+               DWORD effect) override;
 
   // aura::WindowObserver implementation:
-  virtual void OnWindowDestroyed(aura::Window* window) override;
+  void OnWindowDestroyed(aura::Window* window) override;
 
   // Common functionality for the ui::DropTargetWin methods to translate from
   // COM data types to Aura ones.

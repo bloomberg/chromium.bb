@@ -36,15 +36,17 @@ class MEDIA_EXPORT AudioDeviceListenerWin : public IMMNotificationClient {
   friend class AudioDeviceListenerWinTest;
 
   // IMMNotificationClient implementation.
-  STDMETHOD_(ULONG, AddRef)();
-  STDMETHOD_(ULONG, Release)();
-  STDMETHOD(QueryInterface)(REFIID iid, void** object);
-  STDMETHOD(OnPropertyValueChanged)(LPCWSTR device_id, const PROPERTYKEY key);
-  STDMETHOD(OnDeviceAdded)(LPCWSTR device_id);
-  STDMETHOD(OnDeviceRemoved)(LPCWSTR device_id);
-  STDMETHOD(OnDeviceStateChanged)(LPCWSTR device_id, DWORD new_state);
-  STDMETHOD(OnDefaultDeviceChanged)(EDataFlow flow, ERole role,
-                                    LPCWSTR new_default_device_id);
+  STDMETHOD_(ULONG, AddRef)() override;
+  STDMETHOD_(ULONG, Release)() override;
+  STDMETHOD(QueryInterface)(REFIID iid, void** object) override;
+  STDMETHOD(OnPropertyValueChanged)(LPCWSTR device_id,
+                                    const PROPERTYKEY key) override;
+  STDMETHOD(OnDeviceAdded)(LPCWSTR device_id) override;
+  STDMETHOD(OnDeviceRemoved)(LPCWSTR device_id) override;
+  STDMETHOD(OnDeviceStateChanged)(LPCWSTR device_id, DWORD new_state) override;
+  STDMETHOD(OnDefaultDeviceChanged)(EDataFlow flow,
+                                    ERole role,
+                                    LPCWSTR new_default_device_id) override;
 
   base::Closure listener_cb_;
   ScopedComPtr<IMMDeviceEnumerator> device_enumerator_;

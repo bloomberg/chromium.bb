@@ -33,15 +33,15 @@ namespace gfx {
 class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
  public:
   explicit NativeViewGLSurfaceOSMesa(gfx::AcceleratedWidget window);
-  virtual ~NativeViewGLSurfaceOSMesa();
+  ~NativeViewGLSurfaceOSMesa() override;
 
   // Implement subset of GLSurface.
-  virtual bool Initialize() override;
-  virtual void Destroy() override;
-  virtual bool IsOffscreen() override;
-  virtual bool SwapBuffers() override;
-  virtual bool SupportsPostSubBuffer() override;
-  virtual bool PostSubBuffer(int x, int y, int width, int height) override;
+  bool Initialize() override;
+  void Destroy() override;
+  bool IsOffscreen() override;
+  bool SwapBuffers() override;
+  bool SupportsPostSubBuffer() override;
+  bool PostSubBuffer(int x, int y, int width, int height) override;
 
  private:
   gfx::AcceleratedWidget window_;
@@ -58,9 +58,9 @@ class WinVSyncProvider : public VSyncProvider {
     use_dwm_ = (base::win::GetVersion() >= base::win::VERSION_WIN7);
   }
 
-  virtual ~WinVSyncProvider() {}
+  ~WinVSyncProvider() override {}
 
-  virtual void GetVSyncParameters(const UpdateVSyncCallback& callback) {
+  void GetVSyncParameters(const UpdateVSyncCallback& callback) override {
     TRACE_EVENT0("gpu", "WinVSyncProvider::GetVSyncParameters");
 
     base::TimeTicks timebase;

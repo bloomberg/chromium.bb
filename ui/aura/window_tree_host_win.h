@@ -21,40 +21,39 @@ class AURA_EXPORT WindowTreeHostWin
       public NON_EXPORTED_BASE(ui::PlatformWindowDelegate) {
  public:
   explicit WindowTreeHostWin(const gfx::Rect& bounds);
-  virtual ~WindowTreeHostWin();
+  ~WindowTreeHostWin() override;
 
   // WindowTreeHost:
-  virtual ui::EventSource* GetEventSource() override;
-  virtual gfx::AcceleratedWidget GetAcceleratedWidget() override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual gfx::Rect GetBounds() const override;
-  virtual void SetBounds(const gfx::Rect& bounds) override;
-  virtual gfx::Point GetLocationOnNativeScreen() const override;
-  virtual void SetCapture() override;
-  virtual void ReleaseCapture() override;
-  virtual void SetCursorNative(gfx::NativeCursor cursor) override;
-  virtual void MoveCursorToNative(const gfx::Point& location) override;
-  virtual void OnCursorVisibilityChangedNative(bool show) override;
+  ui::EventSource* GetEventSource() override;
+  gfx::AcceleratedWidget GetAcceleratedWidget() override;
+  void Show() override;
+  void Hide() override;
+  gfx::Rect GetBounds() const override;
+  void SetBounds(const gfx::Rect& bounds) override;
+  gfx::Point GetLocationOnNativeScreen() const override;
+  void SetCapture() override;
+  void ReleaseCapture() override;
+  void SetCursorNative(gfx::NativeCursor cursor) override;
+  void MoveCursorToNative(const gfx::Point& location) override;
+  void OnCursorVisibilityChangedNative(bool show) override;
 
   // ui::EventSource:
-  virtual ui::EventProcessor* GetEventProcessor() override;
+  ui::EventProcessor* GetEventProcessor() override;
 
  protected:
   gfx::AcceleratedWidget hwnd() const { return widget_; }
 
  private:
   // ui::PlatformWindowDelegate:
-  virtual void OnBoundsChanged(const gfx::Rect& new_bounds) override;
-  virtual void OnDamageRect(const gfx::Rect& damaged_region) override;
-  virtual void DispatchEvent(ui::Event* event) override;
-  virtual void OnCloseRequest() override;
-  virtual void OnClosed() override;
-  virtual void OnWindowStateChanged(ui::PlatformWindowState new_state) override;
-  virtual void OnLostCapture() override;
-  virtual void OnAcceleratedWidgetAvailable(
-      gfx::AcceleratedWidget widget) override;
-  virtual void OnActivationChanged(bool active) override;
+  void OnBoundsChanged(const gfx::Rect& new_bounds) override;
+  void OnDamageRect(const gfx::Rect& damaged_region) override;
+  void DispatchEvent(ui::Event* event) override;
+  void OnCloseRequest() override;
+  void OnClosed() override;
+  void OnWindowStateChanged(ui::PlatformWindowState new_state) override;
+  void OnLostCapture() override;
+  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override;
+  void OnActivationChanged(bool active) override;
 
   bool has_capture_;
   gfx::Rect bounds_;

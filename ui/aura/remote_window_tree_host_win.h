@@ -79,7 +79,7 @@ class AURA_EXPORT RemoteWindowTreeHostWin
 
  protected:
   RemoteWindowTreeHostWin();
-  virtual ~RemoteWindowTreeHostWin();
+  ~RemoteWindowTreeHostWin() override;
 
  private:
   // IPC message handing methods:
@@ -116,25 +116,25 @@ class AURA_EXPORT RemoteWindowTreeHostWin
   void OnImeInputSourceChanged(uint16 language_id, bool is_ime);
 
   // WindowTreeHost overrides:
-  virtual ui::EventSource* GetEventSource() override;
-  virtual gfx::AcceleratedWidget GetAcceleratedWidget() override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual gfx::Rect GetBounds() const override;
-  virtual void SetBounds(const gfx::Rect& bounds) override;
-  virtual gfx::Point GetLocationOnNativeScreen() const override;
-  virtual void SetCapture() override;
-  virtual void ReleaseCapture() override;
-  virtual void SetCursorNative(gfx::NativeCursor cursor) override;
-  virtual void MoveCursorToNative(const gfx::Point& location) override;
-  virtual void OnCursorVisibilityChangedNative(bool show) override;
+  ui::EventSource* GetEventSource() override;
+  gfx::AcceleratedWidget GetAcceleratedWidget() override;
+  void Show() override;
+  void Hide() override;
+  gfx::Rect GetBounds() const override;
+  void SetBounds(const gfx::Rect& bounds) override;
+  gfx::Point GetLocationOnNativeScreen() const override;
+  void SetCapture() override;
+  void ReleaseCapture() override;
+  void SetCursorNative(gfx::NativeCursor cursor) override;
+  void MoveCursorToNative(const gfx::Point& location) override;
+  void OnCursorVisibilityChangedNative(bool show) override;
 
   // ui::EventSource:
-  virtual ui::EventProcessor* GetEventProcessor() override;
+  ui::EventProcessor* GetEventProcessor() override;
 
   // ui::internal::RemoteInputMethodDelegateWin overrides:
-  virtual void CancelComposition() override;
-  virtual void OnTextInputClientUpdated(
+  void CancelComposition() override;
+  void OnTextInputClientUpdated(
       const std::vector<int32>& input_scopes,
       const std::vector<gfx::Rect>& composition_character_bounds) override;
 

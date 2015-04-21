@@ -30,50 +30,51 @@ class UIControlsWin : public UIControlsAura {
   UIControlsWin() {}
 
   // UIControlsAura overrides:
-  virtual bool SendKeyPress(gfx::NativeWindow native_window,
-                            ui::KeyboardCode key,
-                            bool control,
-                            bool shift,
-                            bool alt,
-                            bool command) {
+  bool SendKeyPress(gfx::NativeWindow native_window,
+                    ui::KeyboardCode key,
+                    bool control,
+                    bool shift,
+                    bool alt,
+                    bool command) override {
     DCHECK(!command);  // No command key on Aura
     HWND window =
         native_window->GetHost()->GetAcceleratedWidget();
     return SendKeyPressImpl(
         window, key, control, shift, alt, base::Closure());
   }
-  virtual bool SendKeyPressNotifyWhenDone(gfx::NativeWindow native_window,
-                                          ui::KeyboardCode key,
-                                          bool control,
-                                          bool shift,
-                                          bool alt,
-                                          bool command,
-                                          const base::Closure& task) {
+  bool SendKeyPressNotifyWhenDone(gfx::NativeWindow native_window,
+                                  ui::KeyboardCode key,
+                                  bool control,
+                                  bool shift,
+                                  bool alt,
+                                  bool command,
+                                  const base::Closure& task) override {
     DCHECK(!command);  // No command key on Aura
     HWND window =
         native_window->GetHost()->GetAcceleratedWidget();
     return SendKeyPressImpl(window, key, control, shift, alt, task);
   }
-  virtual bool SendMouseMove(long screen_x, long screen_y) {
+  bool SendMouseMove(long screen_x, long screen_y) override {
     return SendMouseMoveImpl(screen_x, screen_y, base::Closure());
   }
-  virtual bool SendMouseMoveNotifyWhenDone(long screen_x,
-                                           long screen_y,
-                                           const base::Closure& task) {
+  bool SendMouseMoveNotifyWhenDone(long screen_x,
+                                   long screen_y,
+                                   const base::Closure& task) override {
     return SendMouseMoveImpl(screen_x, screen_y, task);
   }
-  virtual bool SendMouseEvents(MouseButton type, int state) {
+  bool SendMouseEvents(MouseButton type, int state) override {
     return SendMouseEventsImpl(type, state, base::Closure());
   }
-  virtual bool SendMouseEventsNotifyWhenDone(MouseButton type,
-                                             int state,
-                                             const base::Closure& task) {
+  bool SendMouseEventsNotifyWhenDone(MouseButton type,
+                                     int state,
+                                     const base::Closure& task) override {
     return SendMouseEventsImpl(type, state, task);
   }
-  virtual bool SendMouseClick(MouseButton type) {
+  bool SendMouseClick(MouseButton type) override {
     return SendMouseEvents(type, UP | DOWN);
   }
-  virtual void RunClosureAfterAllPendingUIEvents(const base::Closure& closure) {
+  void RunClosureAfterAllPendingUIEvents(
+      const base::Closure& closure) override {
     // On windows, posting UI events is synchronous so just post the closure.
     base::MessageLoopForUI::current()->PostTask(FROM_HERE, closure);
   }

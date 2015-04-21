@@ -92,17 +92,17 @@ class MEDIA_EXPORT WASAPIAudioInputStream
 
   // The dtor is typically called by the AudioManager only and it is usually
   // triggered by calling AudioInputStream::Close().
-  virtual ~WASAPIAudioInputStream();
+  ~WASAPIAudioInputStream() override;
 
   // Implementation of AudioInputStream.
-  virtual bool Open() override;
-  virtual void Start(AudioInputCallback* callback) override;
-  virtual void Stop() override;
-  virtual void Close() override;
-  virtual double GetMaxVolume() override;
-  virtual void SetVolume(double volume) override;
-  virtual double GetVolume() override;
-  virtual bool IsMuted() override;
+  bool Open() override;
+  void Start(AudioInputCallback* callback) override;
+  void Stop() override;
+  void Close() override;
+  double GetMaxVolume() override;
+  void SetVolume(double volume) override;
+  double GetVolume() override;
+  bool IsMuted() override;
 
   bool started() const { return started_; }
 
@@ -111,7 +111,7 @@ class MEDIA_EXPORT WASAPIAudioInputStream
 
  private:
   // DelegateSimpleThread::Delegate implementation.
-  virtual void Run() override;
+  void Run() override;
 
   // Issues the OnError() callback to the |sink_|.
   void HandleError(HRESULT err);

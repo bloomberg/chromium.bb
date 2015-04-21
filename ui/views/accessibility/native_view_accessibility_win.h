@@ -13,7 +13,7 @@ namespace views {
 class NativeViewAccessibilityWin : public NativeViewAccessibility {
  public:
   NativeViewAccessibilityWin(View* view);
-  virtual ~NativeViewAccessibilityWin();
+  ~NativeViewAccessibilityWin() override;
 
   // NativeViewAccessibility.
   gfx::NativeViewAccessible GetParent() override;

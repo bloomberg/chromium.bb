@@ -38,15 +38,15 @@ class PCMWaveOutAudioOutputStream : public AudioOutputStream {
                               const AudioParameters& params,
                               int num_buffers,
                               UINT device_id);
-  virtual ~PCMWaveOutAudioOutputStream();
+  ~PCMWaveOutAudioOutputStream() override;
 
   // Implementation of AudioOutputStream.
-  virtual bool Open();
-  virtual void Close();
-  virtual void Start(AudioSourceCallback* callback);
-  virtual void Stop();
-  virtual void SetVolume(double volume);
-  virtual void GetVolume(double* volume);
+  bool Open() override;
+  void Close() override;
+  void Start(AudioSourceCallback* callback) override;
+  void Stop() override;
+  void SetVolume(double volume) override;
+  void GetVolume(double* volume) override;
 
   // Sends a buffer to the audio driver for playback.
   void QueueNextPacket(WAVEHDR* buffer);

@@ -19,11 +19,11 @@ namespace internal {
 class MenuMessagePumpDispatcher : public base::MessagePumpDispatcher {
  public:
   explicit MenuMessagePumpDispatcher(MenuController* menu_controller);
-  virtual ~MenuMessagePumpDispatcher();
+  ~MenuMessagePumpDispatcher() override;
 
  private:
   // base::MessagePumpDispatcher:
-  virtual uint32_t Dispatch(const base::NativeEvent& event) override;
+  uint32_t Dispatch(const base::NativeEvent& event) override;
 
   MenuController* menu_controller_;
 

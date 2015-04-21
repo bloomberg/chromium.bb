@@ -14,10 +14,10 @@ namespace gfx {
 class GLSurfaceWGL : public GLSurface {
  public:
   GLSurfaceWGL();
-  virtual ~GLSurfaceWGL();
+  ~GLSurfaceWGL() override;
 
   // Implement GLSurface.
-  virtual void* GetDisplay();
+  void* GetDisplay() override;
 
   static bool InitializeOneOff();
   static HDC GetDisplayDC();
@@ -30,15 +30,15 @@ class GLSurfaceWGL : public GLSurface {
 class NativeViewGLSurfaceWGL : public GLSurfaceWGL {
  public:
   explicit NativeViewGLSurfaceWGL(gfx::AcceleratedWidget window);
-  virtual ~NativeViewGLSurfaceWGL();
+  ~NativeViewGLSurfaceWGL() override;
 
   // Implement GLSurface.
-  virtual bool Initialize();
-  virtual void Destroy();
-  virtual bool IsOffscreen();
-  virtual bool SwapBuffers();
-  virtual gfx::Size GetSize();
-  virtual void* GetHandle();
+  bool Initialize() override;
+  void Destroy() override;
+  bool IsOffscreen() override;
+  bool SwapBuffers() override;
+  gfx::Size GetSize() override;
+  void* GetHandle() override;
 
  private:
   gfx::AcceleratedWidget window_;
@@ -53,15 +53,15 @@ class NativeViewGLSurfaceWGL : public GLSurfaceWGL {
 class PbufferGLSurfaceWGL : public GLSurfaceWGL {
  public:
   explicit PbufferGLSurfaceWGL(const gfx::Size& size);
-  virtual ~PbufferGLSurfaceWGL();
+  ~PbufferGLSurfaceWGL() override;
 
   // Implement GLSurface.
-  virtual bool Initialize();
-  virtual void Destroy();
-  virtual bool IsOffscreen();
-  virtual bool SwapBuffers();
-  virtual gfx::Size GetSize();
-  virtual void* GetHandle();
+  bool Initialize() override;
+  void Destroy() override;
+  bool IsOffscreen() override;
+  bool SwapBuffers() override;
+  gfx::Size GetSize() override;
+  void* GetHandle() override;
 
  private:
   gfx::Size size_;

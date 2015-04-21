@@ -15,10 +15,10 @@ namespace aura {
 class AURA_EXPORT InputStateLookupWin : public InputStateLookup {
  public:
   InputStateLookupWin();
-  virtual ~InputStateLookupWin();
+  ~InputStateLookupWin() override;
 
   // InputStateLookup overrides:
-  virtual bool IsMouseButtonDown() const override;
+  bool IsMouseButtonDown() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputStateLookupWin);

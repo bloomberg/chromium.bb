@@ -39,10 +39,10 @@ class UserInputMonitorWinCore
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       const scoped_refptr<UserInputMonitor::MouseListenerList>&
           mouse_listeners);
-  ~UserInputMonitorWinCore();
+  ~UserInputMonitorWinCore() override;
 
   // DestructionObserver overrides.
-  virtual void WillDestroyCurrentMessageLoop() override;
+  void WillDestroyCurrentMessageLoop() override;
 
   size_t GetKeyPressCount() const;
   void StartMonitor(EventBitMask type);
@@ -75,17 +75,17 @@ class UserInputMonitorWin : public UserInputMonitor {
  public:
   explicit UserInputMonitorWin(
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
-  virtual ~UserInputMonitorWin();
+  ~UserInputMonitorWin() override;
 
   // Public UserInputMonitor overrides.
-  virtual size_t GetKeyPressCount() const override;
+  size_t GetKeyPressCount() const override;
 
  private:
   // Private UserInputMonitor overrides.
-  virtual void StartKeyboardMonitoring() override;
-  virtual void StopKeyboardMonitoring() override;
-  virtual void StartMouseMonitoring() override;
-  virtual void StopMouseMonitoring() override;
+  void StartKeyboardMonitoring() override;
+  void StopKeyboardMonitoring() override;
+  void StartMouseMonitoring() override;
+  void StopMouseMonitoring() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   UserInputMonitorWinCore* core_;

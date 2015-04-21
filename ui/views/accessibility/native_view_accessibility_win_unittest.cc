@@ -22,7 +22,7 @@ namespace test {
 class NativeViewAcccessibilityWinTest : public ViewsTestBase {
  public:
   NativeViewAcccessibilityWinTest() {}
-  virtual ~NativeViewAcccessibilityWinTest() {}
+  ~NativeViewAcccessibilityWinTest() override {}
 
  protected:
   void GetIAccessible2InterfaceForView(View* view, IAccessible2_2** result) {

@@ -104,22 +104,22 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
                          bool draw_edges) const;
 
   // NativeTheme implementation:
-  virtual gfx::Size GetPartSize(Part part,
-                                State state,
-                                const ExtraParams& extra) const override;
-  virtual void Paint(SkCanvas* canvas,
-                     Part part,
-                     State state,
-                     const gfx::Rect& rect,
-                     const ExtraParams& extra) const override;
-  virtual SkColor GetSystemColor(ColorId color_id) const override;
+  gfx::Size GetPartSize(Part part,
+                        State state,
+                        const ExtraParams& extra) const override;
+  void Paint(SkCanvas* canvas,
+             Part part,
+             State state,
+             const gfx::Rect& rect,
+             const ExtraParams& extra) const override;
+  SkColor GetSystemColor(ColorId color_id) const override;
 
  private:
   NativeThemeWin();
-  ~NativeThemeWin();
+  ~NativeThemeWin() override;
 
   // gfx::SysColorChangeListener implementation:
-  virtual void OnSysColorChange() override;
+  void OnSysColorChange() override;
 
   // Update the locally cached set of system colors.
   void UpdateSystemColors();

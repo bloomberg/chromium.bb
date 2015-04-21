@@ -91,7 +91,7 @@ class MFReaderCallback final
     wait_event_ = event;
   }
 
-  STDMETHOD(QueryInterface)(REFIID riid, void** object) {
+  STDMETHOD(QueryInterface)(REFIID riid, void** object) override {
     if (riid != IID_IUnknown && riid != IID_IMFSourceReaderCallback)
       return E_NOINTERFACE;
     *object = static_cast<IMFSourceReaderCallback*>(this);
@@ -99,18 +99,21 @@ class MFReaderCallback final
     return S_OK;
   }
 
-  STDMETHOD_(ULONG, AddRef)() {
+  STDMETHOD_(ULONG, AddRef)() override {
     base::RefCountedThreadSafe<MFReaderCallback>::AddRef();
     return 1U;
   }
 
-  STDMETHOD_(ULONG, Release)() {
+  STDMETHOD_(ULONG, Release)() override {
     base::RefCountedThreadSafe<MFReaderCallback>::Release();
     return 1U;
   }
 
-  STDMETHOD(OnReadSample)(HRESULT status, DWORD stream_index,
-      DWORD stream_flags, LONGLONG time_stamp, IMFSample* sample) {
+  STDMETHOD(OnReadSample)(HRESULT status,
+                          DWORD stream_index,
+                          DWORD stream_flags,
+                          LONGLONG time_stamp,
+                          IMFSample* sample) override {
     base::TimeTicks stamp(base::TimeTicks::Now());
     if (!sample) {
       observer_->OnIncomingCapturedData(NULL, 0, 0, stamp);
@@ -134,7 +137,7 @@ class MFReaderCallback final
     return S_OK;
   }
 
-  STDMETHOD(OnFlush)(DWORD stream_index) {
+  STDMETHOD(OnFlush)(DWORD stream_index) override {
     if (wait_event_) {
       wait_event_->Signal();
       wait_event_ = NULL;
@@ -142,7 +145,7 @@ class MFReaderCallback final
     return S_OK;
   }
 
-  STDMETHOD(OnEvent)(DWORD stream_index, IMFMediaEvent* event) {
+  STDMETHOD(OnEvent)(DWORD stream_index, IMFMediaEvent* event) override {
     NOTIMPLEMENTED();
     return S_OK;
   }

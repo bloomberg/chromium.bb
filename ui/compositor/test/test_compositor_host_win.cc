@@ -24,17 +24,11 @@ class TestCompositorHostWin : public TestCompositorHost,
     compositor_->SetScaleAndSize(1.0f, GetSize());
   }
 
-  virtual ~TestCompositorHostWin() {
-    DestroyWindow(hwnd());
-  }
+  ~TestCompositorHostWin() override { DestroyWindow(hwnd()); }
 
   // Overridden from TestCompositorHost:
-  virtual void Show() override {
-    ShowWindow(hwnd(), SW_SHOWNORMAL);
-  }
-  virtual ui::Compositor* GetCompositor() override {
-    return compositor_.get();
-  }
+  void Show() override { ShowWindow(hwnd(), SW_SHOWNORMAL); }
+  ui::Compositor* GetCompositor() override { return compositor_.get(); }
 
  private:
   CR_BEGIN_MSG_MAP_EX(TestCompositorHostWin)

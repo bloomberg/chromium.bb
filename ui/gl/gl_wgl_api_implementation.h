@@ -28,7 +28,7 @@ class GL_EXPORT WGLApiBase : public WGLApi {
 
  protected:
   WGLApiBase();
-  virtual ~WGLApiBase();
+  ~WGLApiBase() override;
   void InitializeBase(DriverWGL* driver);
 
   DriverWGL* driver_;
@@ -37,7 +37,7 @@ class GL_EXPORT WGLApiBase : public WGLApi {
 class GL_EXPORT RealWGLApi : public WGLApiBase {
  public:
   RealWGLApi();
-  virtual ~RealWGLApi();
+  ~RealWGLApi() override;
   void Initialize(DriverWGL* driver);
 };
 
@@ -45,7 +45,7 @@ class GL_EXPORT RealWGLApi : public WGLApiBase {
 class GL_EXPORT TraceWGLApi : public WGLApi {
  public:
   TraceWGLApi(WGLApi* wgl_api) : wgl_api_(wgl_api) { }
-  virtual ~TraceWGLApi();
+  ~TraceWGLApi() override;
 
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in

@@ -30,36 +30,36 @@ class FilterBase
   virtual IPin* GetPin(int index) = 0;
 
   // Inherited from IUnknown.
-  STDMETHOD(QueryInterface)(REFIID id, void** object_ptr);
-  STDMETHOD_(ULONG, AddRef)();
-  STDMETHOD_(ULONG, Release)();
+  STDMETHOD(QueryInterface)(REFIID id, void** object_ptr) override;
+  STDMETHOD_(ULONG, AddRef)() override;
+  STDMETHOD_(ULONG, Release)() override;
 
   // Inherited from IBaseFilter.
-  STDMETHOD(EnumPins)(IEnumPins** enum_pins);
+  STDMETHOD(EnumPins)(IEnumPins** enum_pins) override;
 
-  STDMETHOD(FindPin)(LPCWSTR id, IPin** pin);
+  STDMETHOD(FindPin)(LPCWSTR id, IPin** pin) override;
 
-  STDMETHOD(QueryFilterInfo)(FILTER_INFO* info);
+  STDMETHOD(QueryFilterInfo)(FILTER_INFO* info) override;
 
-  STDMETHOD(JoinFilterGraph)(IFilterGraph* graph, LPCWSTR name);
+  STDMETHOD(JoinFilterGraph)(IFilterGraph* graph, LPCWSTR name) override;
 
-  STDMETHOD(QueryVendorInfo)(LPWSTR* vendor_info);
+  STDMETHOD(QueryVendorInfo)(LPWSTR* vendor_info) override;
 
   // Inherited from IMediaFilter.
-  STDMETHOD(Stop)();
+  STDMETHOD(Stop)() override;
 
-  STDMETHOD(Pause)();
+  STDMETHOD(Pause)() override;
 
-  STDMETHOD(Run)(REFERENCE_TIME start);
+  STDMETHOD(Run)(REFERENCE_TIME start) override;
 
-  STDMETHOD(GetState)(DWORD msec_timeout, FILTER_STATE* state);
+  STDMETHOD(GetState)(DWORD msec_timeout, FILTER_STATE* state) override;
 
-  STDMETHOD(SetSyncSource)(IReferenceClock* clock);
+  STDMETHOD(SetSyncSource)(IReferenceClock* clock) override;
 
-  STDMETHOD(GetSyncSource)(IReferenceClock** clock);
+  STDMETHOD(GetSyncSource)(IReferenceClock** clock) override;
 
   // Inherited from IPersistent.
-  STDMETHOD(GetClassID)(CLSID* class_id) = 0;
+  STDMETHOD(GetClassID)(CLSID* class_id) override = 0;
 
  private:
   FILTER_STATE state_;
