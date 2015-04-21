@@ -32,7 +32,9 @@ public abstract class TransportControl {
         void onStop();
     }
 
-    private final Set<Listener> mListeners = new CopyOnWriteArraySet<Listener>();
+    // Initialized lazily to simplify testing. Should only ever be accessed through getListeners to
+    // ensure correct initialization.
+    private Set<Listener> mListeners;
     private String mScreenName;
     private String mError;
     protected RemoteVideoInfo mVideoInfo;
@@ -49,11 +51,11 @@ public abstract class TransportControl {
      * Sets the name to display for the device on the TransportControl.
      */
     public final void setScreenName(String screenName) {
-        if (TextUtils.equals(this.mScreenName, screenName)) {
+        if (TextUtils.equals(mScreenName, screenName)) {
             return;
         }
 
-        this.mScreenName = screenName;
+        mScreenName = screenName;
         onScreenNameChanged();
     }
 
@@ -71,11 +73,12 @@ public abstract class TransportControl {
      * {@link #clearError()}
      */
     public final void setError(String message) {
-        if (TextUtils.equals(mError, message)) {
+        String newError = TextUtils.isEmpty(message) ? null : message;
+        if (TextUtils.equals(mError, newError)) {
             return;
         }
 
-        mError = TextUtils.isEmpty(message) ? null : message;
+        mError = newError;
         onErrorChanged();
     }
 
@@ -107,11 +110,11 @@ public abstract class TransportControl {
      * @param videoInfo the video information to use.
      */
     public final void setVideoInfo(RemoteVideoInfo videoInfo) {
-        if (equal(this.mVideoInfo, videoInfo)) {
+        if (equal(mVideoInfo, videoInfo)) {
             return;
         }
 
-        this.mVideoInfo = videoInfo;
+        mVideoInfo = videoInfo;
         onVideoInfoChanged();
     }
 
@@ -127,11 +130,13 @@ public abstract class TransportControl {
      * Sets the poster bitmap to display on the TransportControl.
      */
     public final void setPosterBitmap(Bitmap posterBitmap) {
-        if (equal(this.mPosterBitmap, posterBitmap)) {
+        // Note that equality of bitmaps is simply an object comparison, so a copy will be treated
+        // as a new bitmap
+        if (equal(mPosterBitmap, posterBitmap)) {
             return;
         }
 
-        this.mPosterBitmap = posterBitmap;
+        mPosterBitmap = posterBitmap;
         onPosterBitmapChanged();
     }
 
@@ -140,7 +145,7 @@ public abstract class TransportControl {
      * @param listener the Listener to be registered.
      */
     public void addListener(Listener listener) {
-        mListeners.add(listener);
+        getListeners().add(listener);
     }
 
     /**
@@ -148,7 +153,7 @@ public abstract class TransportControl {
      * @param listener the Listener to be removed.
      */
     public void removeListener(Listener listener) {
-        mListeners.remove(listener);
+        getListeners().remove(listener);
     }
 
     /**
@@ -171,6 +176,7 @@ public abstract class TransportControl {
      * @return the current list of listeners.
      */
     protected final Set<Listener> getListeners() {
+        if (mListeners == null) mListeners = new CopyOnWriteArraySet<Listener>();
         return mListeners;
     }
 
