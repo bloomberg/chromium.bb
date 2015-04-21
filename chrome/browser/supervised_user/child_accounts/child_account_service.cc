@@ -103,15 +103,19 @@ void ChildAccountService::RegisterProfilePrefs(
 
 void ChildAccountService::SetIsChildAccount(bool is_child_account) {
   PropagateChildStatusToUser(is_child_account);
-  if (profile_->IsChild() == is_child_account)
-    return;
-
-  if (is_child_account) {
-    profile_->GetPrefs()->SetString(prefs::kSupervisedUserId,
-                                    supervised_users::kChildAccountSUID);
-  } else {
-    profile_->GetPrefs()->ClearPref(prefs::kSupervisedUserId);
+  if (profile_->IsChild() != is_child_account) {
+    if (is_child_account) {
+      profile_->GetPrefs()->SetString(prefs::kSupervisedUserId,
+                                      supervised_users::kChildAccountSUID);
+    } else {
+      profile_->GetPrefs()->ClearPref(prefs::kSupervisedUserId);
+    }
   }
+  profile_->GetPrefs()->SetBoolean(prefs::kChildAccountStatusKnown, true);
+
+  for (const auto& callback : status_received_callback_list_)
+    callback.Run();
+  status_received_callback_list_.clear();
 }
 
 void ChildAccountService::Init() {
@@ -320,16 +324,6 @@ void ChildAccountService::OnFlagsFetched(
   bool is_child_account =
       std::find(flags.begin(), flags.end(),
                 kIsChildAccountServiceFlagName) != flags.end();
-
-  bool status_was_known = profile_->GetPrefs()->GetBoolean(
-      prefs::kChildAccountStatusKnown);
-  profile_->GetPrefs()->SetBoolean(prefs::kChildAccountStatusKnown, true);
-
-  if (!status_was_known) {
-    for (auto& callback : status_received_callback_list_)
-      callback.Run();
-    status_received_callback_list_.clear();
-  }
 
   SetIsChildAccount(is_child_account);
 
