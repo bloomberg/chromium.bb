@@ -115,6 +115,7 @@ def FetchGitRevision(directory):
       for line in reversed(output.splitlines()):
         if line.startswith('Cr-Commit-Position:'):
           pos = line.rsplit()[-1].strip()
+          break
   if not pos:
     return VersionInfo('git', hsh)
   return VersionInfo('git', '%s-%s' % (hsh, pos))
