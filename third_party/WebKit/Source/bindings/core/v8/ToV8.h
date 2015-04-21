@@ -5,6 +5,9 @@
 #ifndef ToV8_h
 #define ToV8_h
 
+// toV8() provides C++ -> V8 conversion. Note that toV8() can return an empty
+// handle. Call sites must check IsEmpty() before using return value.
+
 #include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
