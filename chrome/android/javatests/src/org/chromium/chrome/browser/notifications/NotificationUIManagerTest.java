@@ -154,6 +154,12 @@ public class NotificationUIManagerTest extends ChromeShellTestBase {
         assertEquals("Hello", notification.extras.getString(Notification.EXTRA_TEXT));
         assertEquals(getOrigin(), notification.extras.getString(Notification.EXTRA_SUB_TEXT));
 
+        // Verify that the ticker text contains the notification's title and body.
+        String tickerText = notification.tickerText.toString();
+
+        assertTrue(tickerText.contains("MyNotification"));
+        assertTrue(tickerText.contains("Hello"));
+
         // Validate the appearance style of the notification. The EXTRA_TEMPLATE was inroduced
         // in Android Lollipop, we cannot verify this in earlier versions.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

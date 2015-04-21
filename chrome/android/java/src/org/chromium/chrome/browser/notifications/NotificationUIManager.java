@@ -15,7 +15,10 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
+import android.text.style.StyleSpan;
 import android.util.Log;
 
 import org.chromium.base.CalledByNative;
@@ -345,6 +348,7 @@ public class NotificationUIManager {
                 .addAction(R.drawable.settings_cog,
                            res.getString(R.string.page_info_site_settings_button),
                            pendingSettingsIntent)
+                .setTicker(createTickerText(title, body))
                 .setSubText(origin);
 
         // Use the system's default ringtone, vibration and indicator lights unless the notification
@@ -353,6 +357,28 @@ public class NotificationUIManager {
 
         String platformTag = makePlatformTag(persistentNotificationId, origin, tag);
         mNotificationManager.notify(platformTag, PLATFORM_ID, notificationBuilder.build());
+    }
+
+    /**
+     * Creates the ticker text for a notification having |title| and |body|. The notification's
+     * title will be printed in bold, followed by the text of the body.
+     *
+     * @param title Title of the notification.
+     * @param body Textual contents of the notification.
+     * @return A character sequence containing the ticker's text.
+     */
+    private CharSequence createTickerText(String title, String body) {
+        SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder();
+
+        spannableStringBuilder.append(title);
+        spannableStringBuilder.append("\n");
+        spannableStringBuilder.append(body);
+
+        // Mark the title of the notification as being bold.
+        spannableStringBuilder.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
+                0, title.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+
+        return spannableStringBuilder;
     }
 
     /**
