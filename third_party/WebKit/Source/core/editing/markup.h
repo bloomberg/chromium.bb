@@ -29,6 +29,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/dom/ParserContentPolicy.h"
+#include "core/dom/Position.h"
 #include "core/editing/HTMLInterchange.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -61,6 +62,16 @@ bool isPlainTextMarkup(Node*);
 // children with respected fragment/text.
 void replaceChildrenWithFragment(ContainerNode*, PassRefPtrWillBeRawPtr<DocumentFragment>, ExceptionState&);
 void replaceChildrenWithText(ContainerNode*, const String&, ExceptionState&);
+
+template <typename Strategy>
+class CreateMarkupAlgorithm {
+public:
+    using PositionType = typename Strategy::PositionType;
+
+    static String createMarkup(const PositionType& startPosition, const PositionType& endPosition, EAnnotateForInterchange shouldAnnotate = DoNotAnnotateForInterchange, bool convertBlocksToInlines = false, EAbsoluteURLs shouldResolveURLs = DoNotResolveURLs, Node* constrainingAncestor = nullptr);
+};
+
+extern template class CORE_TEMPLATE_EXPORT CreateMarkupAlgorithm<EditingStrategy>;
 
 CORE_EXPORT String createMarkup(const Range*, EAnnotateForInterchange = DoNotAnnotateForInterchange, bool convertBlocksToInlines = false, EAbsoluteURLs = DoNotResolveURLs, Node* constrainingAncestor = nullptr);
 CORE_EXPORT String createMarkup(const Node*, EChildrenOnly = IncludeNode, EAbsoluteURLs = DoNotResolveURLs);

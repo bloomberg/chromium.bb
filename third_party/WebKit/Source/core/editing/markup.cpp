@@ -30,7 +30,6 @@
 #include "core/editing/markup.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -180,7 +179,8 @@ static bool isPresentationalHTMLElement(const Node* node)
         || element.hasTagName(iTag) || element.hasTagName(emTag) || element.hasTagName(bTag) || element.hasTagName(strongTag);
 }
 
-static bool areSameRanges(Node* node, const Position& startPosition, const Position& endPosition)
+template<typename PositionType>
+static bool areSameRanges(Node* node, const PositionType& startPosition, const PositionType& endPosition)
 {
     ASSERT(node);
     Position otherStartPosition;
@@ -189,12 +189,13 @@ static bool areSameRanges(Node* node, const Position& startPosition, const Posit
     return startPosition == otherStartPosition && endPosition == otherEndPosition;
 }
 
-static HTMLElement* highestAncestorToWrapMarkup(const Position& startPosition, const Position& endPosition, EAnnotateForInterchange shouldAnnotate, Node* constrainingAncestor)
+template<typename Strategy>
+static HTMLElement* highestAncestorToWrapMarkup(const typename Strategy::PositionType& startPosition, const typename Strategy::PositionType& endPosition, EAnnotateForInterchange shouldAnnotate, Node* constrainingAncestor)
 {
     Node* firstNode = startPosition.nodeAsRangeFirstNode();
     // For compatibility reason, we use container node of start and end
     // positions rather than first node and last node in selection.
-    Node* commonAncestor = NodeTraversal::commonAncestor(*startPosition.containerNode(), *endPosition.containerNode());
+    Node* commonAncestor = Strategy::commonAncestor(*startPosition.containerNode(), *endPosition.containerNode());
     ASSERT(commonAncestor);
     HTMLElement* specialCommonAncestor = nullptr;
     if (shouldAnnotate == AnnotateForInterchange) {
@@ -227,7 +228,7 @@ static HTMLElement* highestAncestorToWrapMarkup(const Position& startPosition, c
     // In either case, if there is a specialCommonAncestor already, it will necessarily be above
     // any tab span that needs to be included.
     if (!specialCommonAncestor && isTabHTMLSpanElementTextNode(commonAncestor))
-        specialCommonAncestor = toHTMLSpanElement(commonAncestor->parentNode());
+        specialCommonAncestor = toHTMLSpanElement(Strategy::parent(*commonAncestor));
     if (!specialCommonAncestor && isTabHTMLSpanElement(commonAncestor))
         specialCommonAncestor = toHTMLSpanElement(commonAncestor);
 
@@ -239,7 +240,8 @@ static HTMLElement* highestAncestorToWrapMarkup(const Position& startPosition, c
 
 // FIXME: Shouldn't we omit style info when annotate == DoNotAnnotateForInterchange?
 // FIXME: At least, annotation and style info should probably not be included in range.markupString()
-static String createMarkupInternal(const Position& startPosition, const Position& endPosition,
+template <typename Strategy>
+String CreateMarkupAlgorithm<Strategy>::createMarkup(const PositionType& startPosition, const PositionType& endPosition,
     EAnnotateForInterchange shouldAnnotate, bool convertBlocksToInlines, EAbsoluteURLs shouldResolveURLs, Node* constrainingAncestor)
 {
     ASSERT(startPosition.isNotNull());
@@ -249,15 +251,15 @@ static String createMarkupInternal(const Position& startPosition, const Position
     bool collapsed = startPosition == endPosition;
     if (collapsed)
         return emptyString();
-    Node* commonAncestor = NodeTraversal::commonAncestor(*startPosition.containerNode(), *endPosition.containerNode());
+    Node* commonAncestor = Strategy::commonAncestor(*startPosition.containerNode(), *endPosition.containerNode());
     if (!commonAncestor)
         return emptyString();
 
     Document* document = startPosition.document();
     document->updateLayoutIgnorePendingStylesheets();
 
-    HTMLElement* specialCommonAncestor = highestAncestorToWrapMarkup(startPosition, endPosition, shouldAnnotate, constrainingAncestor);
-    StyledMarkupSerializer<EditingStrategy> serializer(shouldResolveURLs, shouldAnnotate, startPosition, endPosition, specialCommonAncestor);
+    HTMLElement* specialCommonAncestor = highestAncestorToWrapMarkup<Strategy>(startPosition, endPosition, shouldAnnotate, constrainingAncestor);
+    StyledMarkupSerializer<Strategy> serializer(shouldResolveURLs, shouldAnnotate, startPosition, endPosition, specialCommonAncestor);
     return serializer.createMarkup(convertBlocksToInlines, specialCommonAncestor);
 }
 
@@ -266,7 +268,7 @@ String createMarkup(const Range* range, EAnnotateForInterchange shouldAnnotate, 
     if (!range)
         return emptyString();
 
-    return createMarkupInternal(range->startPosition(), range->endPosition(), shouldAnnotate, convertBlocksToInlines, shouldResolveURLs, constrainingAncestor);
+    return CreateMarkupAlgorithm<EditingStrategy>::createMarkup(range->startPosition(), range->endPosition(), shouldAnnotate, convertBlocksToInlines, shouldResolveURLs, constrainingAncestor);
 }
 
 PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromMarkup(Document& document, const String& markup, const String& baseURL, ParserContentPolicy parserContentPolicy)
@@ -707,5 +709,7 @@ String createStyledMarkupForNavigationTransition(Node* node)
     static const char* documentMarkup = "<!DOCTYPE html><meta name=\"viewport\" content=\"width=device-width, user-scalable=0\">";
     return documentMarkup + serializer.takeResults();
 }
+
+template class CORE_EXPORT CreateMarkupAlgorithm<EditingStrategy>;
 
 }
