@@ -37,8 +37,6 @@ public:
     void stop() override;
     bool hasPendingActivity() const override;
 
-    PassRefPtr<ContentSecurityPolicy> contentSecurityPolicy();
-
     DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 
     DECLARE_VIRTUAL_TRACE();
@@ -58,7 +56,6 @@ private:
 
     RefPtr<WorkerScriptLoader> m_scriptLoader;
     WorkerGlobalScopeProxy* m_contextProxy; // The proxy outlives the worker to perform thread shutdown.
-    RefPtr<ContentSecurityPolicy> m_contentSecurityPolicy;
 };
 
 } // namespace blink
