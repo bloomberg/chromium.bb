@@ -1331,11 +1331,8 @@ float AXNodeObject::valueForRange() const
     if (hasAttribute(aria_valuenowAttr))
         return getAttribute(aria_valuenowAttr).toFloat();
 
-    if (isHTMLInputElement(node())) {
-        HTMLInputElement& input = toHTMLInputElement(*node());
-        if (input.type() == InputTypeNames::range)
-            return input.valueAsNumber();
-    }
+    if (isNativeSlider())
+        return toHTMLInputElement(*node()).valueAsNumber();
 
     if (isHTMLMeterElement(node()))
         return toHTMLMeterElement(*node()).value();
