@@ -666,14 +666,14 @@ cr.define('extensions', function() {
                              !extension.optionsPage.openInTab);
 
       // The 'View in Web Store/View Web Site' link.
-      var siteLinkEnabled = !!extension.homepageUrl &&
+      var siteLinkEnabled = !!extension.homePage.url &&
                             !this.enableAppInfoDialog_;
       this.updateVisibility_(row, '.site-link', siteLinkEnabled,
                              function(item) {
-        item.href = extension.homepageUrl;
+        item.href = extension.homePage.url;
         item.textContent = loadTimeData.getString(
-            extension.homepageProvided ? 'extensionSettingsVisitWebsite' :
-                                         'extensionSettingsVisitWebStore');
+            extension.homePage.specified ? 'extensionSettingsVisitWebsite' :
+                                           'extensionSettingsVisitWebStore');
       });
 
       var isUnpacked =
