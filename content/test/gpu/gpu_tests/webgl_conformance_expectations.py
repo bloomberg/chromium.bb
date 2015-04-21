@@ -209,6 +209,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/more/functions/texSubImage2DHTML.html',
         ['linux', ('amd', 0x68f9)], bug=436212)
     # AMD Radeon 6450
+    self.Fail('conformance/extensions/angle-instanced-arrays.html',
+        ['linux', ('amd', 0x6779)], bug=479260)
     self.Fail('conformance/extensions/ext-texture-filter-anisotropic.html',
         ['linux', ('amd', 0x6779)], bug=436212)
     self.Fail('conformance/glsl/misc/shader-struct-scope.html',
