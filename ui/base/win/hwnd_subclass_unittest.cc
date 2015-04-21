@@ -15,18 +15,18 @@ namespace {
 class TestWindow : public gfx::WindowImpl {
  public:
   TestWindow() : saw_message(false) {}
-  virtual ~TestWindow() {}
+  ~TestWindow() override {}
 
   bool saw_message;
 
  private:
    // Overridden from gfx::WindowImpl:
-  virtual BOOL ProcessWindowMessage(HWND window,
-                                    UINT message,
-                                    WPARAM w_param,
-                                    LPARAM l_param,
-                                    LRESULT& result,
-                                    DWORD msg_map_id) override {
+  BOOL ProcessWindowMessage(HWND window,
+                            UINT message,
+                            WPARAM w_param,
+                            LPARAM l_param,
+                            LRESULT& result,
+                            DWORD msg_map_id) override {
     if (message == WM_NCHITTEST)
       saw_message = true;
 
@@ -39,7 +39,7 @@ class TestWindow : public gfx::WindowImpl {
 class TestMessageFilter : public HWNDMessageFilter {
  public:
   TestMessageFilter() : consume_messages(false), saw_message(false) {}
-  virtual ~TestMessageFilter() {}
+  ~TestMessageFilter() override {}
 
   // Setting to true causes the filter subclass to stop messages from reaching
   // the subclassed window procedure.
@@ -50,11 +50,11 @@ class TestMessageFilter : public HWNDMessageFilter {
 
  private:
   // Overridden from HWNDMessageFilter:
-  virtual bool FilterMessage(HWND hwnd,
-                             UINT message,
-                             WPARAM w_param,
-                             LPARAM l_param,
-                             LRESULT* l_result) override {
+  bool FilterMessage(HWND hwnd,
+                     UINT message,
+                     WPARAM w_param,
+                     LPARAM l_param,
+                     LRESULT* l_result) override {
     if (message == WM_NCHITTEST) {
       saw_message = true;
       return consume_messages;

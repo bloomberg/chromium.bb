@@ -15,16 +15,16 @@ namespace ui {
 class ResourceDataDLL : public ResourceHandle {
  public:
   explicit ResourceDataDLL(HINSTANCE module);
-  virtual ~ResourceDataDLL();
+  ~ResourceDataDLL() override;
 
   // ResourceHandle implementation:
-  virtual bool HasResource(uint16 resource_id) const override;
-  virtual bool GetStringPiece(uint16 resource_id,
-                              base::StringPiece* data) const override;
-  virtual base::RefCountedStaticMemory* GetStaticMemory(
+  bool HasResource(uint16 resource_id) const override;
+  bool GetStringPiece(uint16 resource_id,
+                      base::StringPiece* data) const override;
+  base::RefCountedStaticMemory* GetStaticMemory(
       uint16 resource_id) const override;
-  virtual TextEncodingType GetTextEncodingType() const override;
-  virtual ScaleFactor GetScaleFactor() const override;
+  TextEncodingType GetTextEncodingType() const override;
+  ScaleFactor GetScaleFactor() const override;
 
  private:
   const HINSTANCE module_;

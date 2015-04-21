@@ -217,8 +217,7 @@ class MockInputMethodObserver : public InputMethodObserver {
       : on_text_input_state_changed_(0),
         on_input_method_destroyed_changed_(0) {
   }
-  virtual ~MockInputMethodObserver() {
-  }
+  ~MockInputMethodObserver() override {}
   void Reset() {
     on_text_input_state_changed_ = 0;
     on_input_method_destroyed_changed_ = 0;

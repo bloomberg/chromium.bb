@@ -37,18 +37,18 @@ class GFX_EXPORT SingletonHwnd : public WindowImpl {
   void RemoveObserver(Observer* observer);
 
   // Windows callback for WM_* notifications.
-  virtual BOOL ProcessWindowMessage(HWND window,
-                                    UINT message,
-                                    WPARAM wparam,
-                                    LPARAM lparam,
-                                    LRESULT& result,
-                                    DWORD msg_map_id) override;
+  BOOL ProcessWindowMessage(HWND window,
+                            UINT message,
+                            WPARAM wparam,
+                            LPARAM lparam,
+                            LRESULT& result,
+                            DWORD msg_map_id) override;
 
  private:
   friend struct DefaultSingletonTraits<SingletonHwnd>;
 
   SingletonHwnd();
-  ~SingletonHwnd();
+  ~SingletonHwnd() override;
 
   // List of registered observers.
   ObserverList<Observer> observer_list_;

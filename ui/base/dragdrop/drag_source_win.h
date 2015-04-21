@@ -26,7 +26,7 @@ class UI_BASE_EXPORT DragSourceWin
           IDropSource> {
  public:
   DragSourceWin();
-  virtual ~DragSourceWin() {}
+  ~DragSourceWin() override {}
 
   // Stop the drag operation at the next chance we get.  This doesn't
   // synchronously stop the drag (since Windows is controlling that),
@@ -36,8 +36,9 @@ class UI_BASE_EXPORT DragSourceWin
   }
 
   // IDropSource implementation:
-  HRESULT __stdcall QueryContinueDrag(BOOL escape_pressed, DWORD key_state);
-  HRESULT __stdcall GiveFeedback(DWORD effect);
+  HRESULT __stdcall QueryContinueDrag(BOOL escape_pressed,
+                                      DWORD key_state) override;
+  HRESULT __stdcall GiveFeedback(DWORD effect) override;
 
   // Used to set the active data object for the current drag operation. The
   // caller must ensure that |data| is not destroyed before the nested drag loop

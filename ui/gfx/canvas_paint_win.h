@@ -37,7 +37,7 @@ class GFX_EXPORT CanvasSkiaPaint : public Canvas {
  public:
   // This constructor assumes the canvas is opaque.
   CanvasSkiaPaint(HWND hwnd, HDC dc, const PAINTSTRUCT& ps);
-  virtual ~CanvasSkiaPaint();
+  ~CanvasSkiaPaint() override;
 
   // Creates a CanvasSkiaPaint for the specified region that paints to the
   // specified dc.

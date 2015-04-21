@@ -56,17 +56,17 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
   Font DeriveFontWithHeight(int height, int style);
 
   // Overridden from PlatformFont:
-  virtual Font DeriveFont(int size_delta, int style) const override;
-  virtual int GetHeight() const override;
-  virtual int GetBaseline() const override;
-  virtual int GetCapHeight() const override;
-  virtual int GetExpectedTextWidth(int length) const override;
-  virtual int GetStyle() const override;
-  virtual std::string GetFontName() const override;
-  virtual std::string GetActualFontNameForTesting() const override;
-  virtual int GetFontSize() const override;
-  virtual const FontRenderParams& GetFontRenderParams() override;
-  virtual NativeFont GetNativeFont() const override;
+  Font DeriveFont(int size_delta, int style) const override;
+  int GetHeight() const override;
+  int GetBaseline() const override;
+  int GetCapHeight() const override;
+  int GetExpectedTextWidth(int length) const override;
+  int GetStyle() const override;
+  std::string GetFontName() const override;
+  std::string GetActualFontNameForTesting() const override;
+  int GetFontSize() const override;
+  const FontRenderParams& GetFontRenderParams() override;
+  NativeFont GetNativeFont() const override;
 
   // Called once during initialization if we should be retrieving font metrics
   // from skia and DirectWrite.
@@ -85,7 +85,7 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
   FRIEND_TEST_ALL_PREFIXES(PlatformFontWinTest, Metrics_SkiaVersusGDI);
   FRIEND_TEST_ALL_PREFIXES(PlatformFontWinTest, DirectWriteFontSubstitution);
 
-  virtual ~PlatformFontWin() {}
+  ~PlatformFontWin() override {}
 
   // Chrome text drawing bottoms out in the Windows GDI functions that take an
   // HFONT (an opaque handle into Windows). To avoid lots of GDI object

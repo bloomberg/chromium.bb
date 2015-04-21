@@ -44,43 +44,38 @@ class UI_BASE_EXPORT UIATextProvider
   //
   // IValueProvider methods.
   //
-  STDMETHOD(get_IsReadOnly)(BOOL* read_only);
+  STDMETHOD(get_IsReadOnly)(BOOL* read_only) override;
 
   //
   // IValueProvider methods not implemented.
   //
-  STDMETHOD(SetValue)(const wchar_t* val) {
-    return E_NOTIMPL;
-  }
+  STDMETHOD(SetValue)(const wchar_t* val) override { return E_NOTIMPL; }
 
-  STDMETHOD(get_Value)(BSTR* value);
+  STDMETHOD(get_Value)(BSTR* value) override;
 
   //
   // ITextProvider methods.
   //
-  STDMETHOD(GetSelection)(SAFEARRAY** ret) {
-    return E_NOTIMPL;
-  }
+  STDMETHOD(GetSelection)(SAFEARRAY** ret) override { return E_NOTIMPL; }
 
-  STDMETHOD(GetVisibleRanges)(SAFEARRAY** ret) {
-    return E_NOTIMPL;
-  }
+  STDMETHOD(GetVisibleRanges)(SAFEARRAY** ret) override { return E_NOTIMPL; }
 
   STDMETHOD(RangeFromChild)(IRawElementProviderSimple* child,
-                            ITextRangeProvider** ret) {
+                            ITextRangeProvider** ret) override {
     return E_NOTIMPL;
   }
 
   STDMETHOD(RangeFromPoint)(struct UiaPoint point,
-                            ITextRangeProvider** ret) {
+                            ITextRangeProvider** ret) override {
     return E_NOTIMPL;
   }
 
-  STDMETHOD(get_DocumentRange)(ITextRangeProvider** ret) {
+  STDMETHOD(get_DocumentRange)(ITextRangeProvider** ret) override {
     return E_NOTIMPL;
   }
 
-  STDMETHOD(get_SupportedTextSelection)(enum SupportedTextSelection* ret) {
+  STDMETHOD(get_SupportedTextSelection)(
+      enum SupportedTextSelection* ret) override {
     return E_NOTIMPL;
   }
 

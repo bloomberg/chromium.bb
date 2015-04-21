@@ -85,10 +85,10 @@ class CachedFontRenderParams : public gfx::SingletonHwnd::Observer {
     // been destroyed already (both singletons).
   }
 
-  virtual void OnWndProc(HWND hwnd,
-                         UINT message,
-                         WPARAM wparam,
-                         LPARAM lparam) override {
+  void OnWndProc(HWND hwnd,
+                 UINT message,
+                 WPARAM wparam,
+                 LPARAM lparam) override {
     if (message == WM_SETTINGCHANGE) {
       params_.reset();
       gfx::SingletonHwnd::GetInstance()->RemoveObserver(this);

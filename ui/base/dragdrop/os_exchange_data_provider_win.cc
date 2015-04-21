@@ -70,16 +70,17 @@ class FormatEtcEnumerator final : public IEnumFORMATETC {
   ~FormatEtcEnumerator();
 
   // IEnumFORMATETC implementation:
-  HRESULT __stdcall Next(
-      ULONG count, FORMATETC* elements_array, ULONG* elements_fetched);
-  HRESULT __stdcall Skip(ULONG skip_count);
-  HRESULT __stdcall Reset();
-  HRESULT __stdcall Clone(IEnumFORMATETC** clone);
+  HRESULT __stdcall Next(ULONG count,
+                         FORMATETC* elements_array,
+                         ULONG* elements_fetched) override;
+  HRESULT __stdcall Skip(ULONG skip_count) override;
+  HRESULT __stdcall Reset() override;
+  HRESULT __stdcall Clone(IEnumFORMATETC** clone) override;
 
   // IUnknown implementation:
-  HRESULT __stdcall QueryInterface(const IID& iid, void** object);
-  ULONG __stdcall AddRef();
-  ULONG __stdcall Release();
+  HRESULT __stdcall QueryInterface(const IID& iid, void** object) override;
+  ULONG __stdcall AddRef() override;
+  ULONG __stdcall Release() override;
 
  private:
   // This can only be called from |CloneFromOther|, since it initializes the

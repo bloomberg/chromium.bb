@@ -34,20 +34,20 @@ class UI_BASE_EXPORT DropTargetWin : public IDropTarget {
   HRESULT __stdcall DragEnter(IDataObject* data_object,
                               DWORD key_state,
                               POINTL cursor_position,
-                              DWORD* effect);
+                              DWORD* effect) override;
   HRESULT __stdcall DragOver(DWORD key_state,
                              POINTL cursor_position,
-                             DWORD* effect);
-  HRESULT __stdcall DragLeave();
+                             DWORD* effect) override;
+  HRESULT __stdcall DragLeave() override;
   HRESULT __stdcall Drop(IDataObject* data_object,
                          DWORD key_state,
                          POINTL cursor_position,
-                         DWORD* effect);
+                         DWORD* effect) override;
 
   // IUnknown implementation:
-  HRESULT __stdcall QueryInterface(const IID& iid, void** object);
-  ULONG __stdcall AddRef();
-  ULONG __stdcall Release();
+  HRESULT __stdcall QueryInterface(const IID& iid, void** object) override;
+  ULONG __stdcall AddRef() override;
+  ULONG __stdcall Release() override;
 
  protected:
   // Returns the hosting HWND.

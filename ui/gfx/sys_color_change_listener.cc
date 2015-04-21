@@ -62,10 +62,10 @@ class SysColorChangeObserver : public gfx::SingletonHwnd::Observer {
   SysColorChangeObserver();
   virtual ~SysColorChangeObserver();
 
-  virtual void OnWndProc(HWND hwnd,
-                         UINT message,
-                         WPARAM wparam,
-                         LPARAM lparam) override;
+  void OnWndProc(HWND hwnd,
+                 UINT message,
+                 WPARAM wparam,
+                 LPARAM lparam) override;
 
   ObserverList<SysColorChangeListener> listeners_;
 };

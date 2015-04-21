@@ -17,31 +17,27 @@ class GFX_EXPORT ScreenWin : public Screen,
                              public SingletonHwnd::Observer {
  public:
   ScreenWin();
-  virtual ~ScreenWin();
+  ~ScreenWin() override;
 
  protected:
   // Overridden from gfx::Screen:
-  virtual gfx::Point GetCursorScreenPoint() override;
-  virtual gfx::NativeWindow GetWindowUnderCursor() override;
-  virtual gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point)
-      override;
-  virtual int GetNumDisplays() const override;
-  virtual std::vector<gfx::Display> GetAllDisplays() const override;
-  virtual gfx::Display GetDisplayNearestWindow(
-      gfx::NativeView window) const override;
-  virtual gfx::Display GetDisplayNearestPoint(
-      const gfx::Point& point) const override;
-  virtual gfx::Display GetDisplayMatching(
-      const gfx::Rect& match_rect) const override;
-  virtual gfx::Display GetPrimaryDisplay() const override;
-  virtual void AddObserver(DisplayObserver* observer) override;
-  virtual void RemoveObserver(DisplayObserver* observer) override;
+  gfx::Point GetCursorScreenPoint() override;
+  gfx::NativeWindow GetWindowUnderCursor() override;
+  gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;
+  int GetNumDisplays() const override;
+  std::vector<gfx::Display> GetAllDisplays() const override;
+  gfx::Display GetDisplayNearestWindow(gfx::NativeView window) const override;
+  gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const override;
+  gfx::Display GetDisplayMatching(const gfx::Rect& match_rect) const override;
+  gfx::Display GetPrimaryDisplay() const override;
+  void AddObserver(DisplayObserver* observer) override;
+  void RemoveObserver(DisplayObserver* observer) override;
 
   // Overriden from gfx::SingletonHwnd::Observer.
-  virtual void OnWndProc(HWND hwnd,
-                         UINT message,
-                         WPARAM wparam,
-                         LPARAM lparam) override;
+  void OnWndProc(HWND hwnd,
+                 UINT message,
+                 WPARAM wparam,
+                 LPARAM lparam) override;
 
   // Returns the HWND associated with the NativeView.
   virtual HWND GetHWNDFromNativeView(NativeView window) const;
