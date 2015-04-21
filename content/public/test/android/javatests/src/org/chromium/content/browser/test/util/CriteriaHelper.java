@@ -61,15 +61,19 @@ public class CriteriaHelper {
     }
 
     /**
-     * Checks whether the given Criteria is satisfied polling at a default interval on the UI
-     * thread.
+     * Checks whether the given Criteria is satisfied polling at a given interval on the UI
+     * thread, until either the criteria is satisfied, or the maxTimeoutMs number of ms has elapsed.
+     *
      * @param criteria The Criteria that will be checked.
+     * @param maxTimeoutMs The maximum number of ms that this check will be performed for
+     * before timeout.
+     * @param checkIntervalMs The number of ms between checks.
      * @return iff checking has ended with the criteria being satisfied.
      * @throws InterruptedException
      * @see #pollForCriteria(Criteria)
      */
-    public static boolean pollForUIThreadCriteria(final Criteria criteria)
-            throws InterruptedException {
+    public static boolean pollForUIThreadCriteria(final Criteria criteria, long maxTimeoutMs,
+            long checkIntervalMs) throws InterruptedException {
         final Callable<Boolean> callable = new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
@@ -82,7 +86,21 @@ public class CriteriaHelper {
             public boolean isSatisfied() {
                 return ThreadUtils.runOnUiThreadBlockingNoException(callable);
             }
-        });
+        }, maxTimeoutMs, checkIntervalMs);
+    }
+
+    /**
+     * Checks whether the given Criteria is satisfied polling at a default interval on the UI
+     * thread.
+     * @param criteria The Criteria that will be checked.
+     * @return iff checking has ended with the criteria being satisfied.
+     * @throws InterruptedException
+     * @see #pollForCriteria(Criteria)
+     */
+    public static boolean pollForUIThreadCriteria(final Criteria criteria)
+            throws InterruptedException {
+        return pollForUIThreadCriteria(criteria, DEFAULT_MAX_TIME_TO_POLL,
+                DEFAULT_POLLING_INTERVAL);
     }
 
     /**
