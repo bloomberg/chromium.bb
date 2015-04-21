@@ -868,7 +868,6 @@ bool V4L2VideoEncodeAccelerator::SetOutputFormat(
   // Device might have adjusted the required output size.
   size_t adjusted_output_buffer_size =
       base::checked_cast<size_t>(format.fmt.pix_mp.plane_fmt[0].sizeimage);
-  DCHECK_GE(adjusted_output_buffer_size, output_buffer_byte_size_);
   output_buffer_byte_size_ = adjusted_output_buffer_size;
 
   return true;
