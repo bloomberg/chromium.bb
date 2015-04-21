@@ -64,6 +64,7 @@ DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(RejectedPromises);
 DEFINE_TRACE(RejectedPromises)
 {
     visitor->trace(m_queue);
+    visitor->trace(m_reportedAsErrors);
 }
 
 void RejectedPromises::rejectedWithNoHandler(ScriptState* scriptState, v8::PromiseRejectMessage data, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
