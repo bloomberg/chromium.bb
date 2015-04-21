@@ -10,6 +10,11 @@
   <include name="IDR_ISSUE_BANNER_HTML" file="resources\media_router\elements\issue_banner\issue_banner.html" type="BINDATA" />
   <include name="IDR_ISSUE_BANNER_JS" file="resources\media_router\elements\issue_banner\issue_banner.js" type="BINDATA" />
   <include name="IDR_ISSUE_BANNER_CSS" file="resources\media_router\elements\issue_banner\issue_banner.css" type="BINDATA" />
+  <include name="IDR_MEDIA_ROUTER_SINK_HTML" file="resources\media_router\elements\media_router_sink\media_router_sink.html" type="BINDATA" />
+  <include name="IDR_MEDIA_ROUTER_SINK_JS" file="resources\media_router\elements\media_router_sink\media_router_sink.js" type="BINDATA" />
+  <include name="IDR_MEDIA_ROUTER_SINK_CSS" file="resources\media_router\elements\media_router_sink\media_router_sink.css" type="BINDATA" />
+
+  <!-- Icons. -->
   <include name="IDR_MEDIA_ROUTER_CHROMECAST_ICON" file="resources\media_router\elements\icon\chromecast-icon.png" type="BINDATA" />
   <include name="IDR_MEDIA_ROUTER_CHROMECAST_2X_ICON" file="resources\media_router\elements\icon\chromecast-icon2x.png" type="BINDATA" />
   <include name="IDR_CLOSE_GRAY_ICON" file="resources\media_router\elements\icon\close-gray.png" type="BINDATA" />
