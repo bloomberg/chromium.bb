@@ -630,14 +630,6 @@ void TabStrip::StopAllHighlighting() {
 void TabStrip::AddTabAt(int model_index,
                         const TabRendererData& data,
                         bool is_active) {
-  // Stop dragging when a new tab is added and dragging a window. Doing
-  // otherwise results in a confusing state if the user attempts to reattach. We
-  // could allow this and make TabDragController update itself during the add,
-  // but this comes up infrequently enough that it's not work the complexity.
-  if (drag_controller_.get() && !drag_controller_->is_mutating() &&
-      drag_controller_->is_dragging_window()) {
-    EndDrag(END_DRAG_COMPLETE);
-  }
   Tab* tab = CreateTab();
   tab->SetData(data);
   UpdateTabsClosingMap(model_index, 1);
@@ -665,6 +657,20 @@ void TabStrip::AddTabAt(int model_index,
 
   FOR_EACH_OBSERVER(TabStripObserver, observers_,
                     TabStripAddedTabAt(this, model_index));
+
+  // Stop dragging when a new tab is added and dragging a window. Doing
+  // otherwise results in a confusing state if the user attempts to reattach. We
+  // could allow this and make TabDragController update itself during the add,
+  // but this comes up infrequently enough that it's not worth the complexity.
+  //
+  // At the start of AddTabAt() the model and tabs are out sync. Any queries to
+  // find a tab given a model index can go off the end of |tabs_|. As such, it
+  // is important that we complete the drag *after* adding the tab so that the
+  // model and tabstrip are in sync.
+  if (drag_controller_.get() && !drag_controller_->is_mutating() &&
+      drag_controller_->is_dragging_window()) {
+    EndDrag(END_DRAG_COMPLETE);
+  }
 }
 
 void TabStrip::MoveTab(int from_model_index,

@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -1325,8 +1326,14 @@ void CancelOnNewTabWhenDraggingStep2(
   ASSERT_TRUE(TabDragController::IsActive());
   ASSERT_EQ(2u, browser_list->size());
 
-  // Add another tab. This should trigger exiting the nested loop.
-  test->AddBlankTabAndShow(browser_list->GetLastActive());
+  // Add another tab. This should trigger exiting the nested loop. Add at the
+  // to exercise past crash when model/tabstrip got out of sync (474082).
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+  chrome::AddTabAt(browser_list->GetLastActive(), GURL(url::kAboutBlankURL),
+                   0, false);
+  observer.Wait();
 }
 
 }  // namespace
