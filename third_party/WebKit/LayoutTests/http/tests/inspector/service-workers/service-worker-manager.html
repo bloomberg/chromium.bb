@@ -27,7 +27,8 @@ function test()
         targetRemoved: function(target)
         {
             InspectorTest.addResult("Target removed: " + target.name() + " type: " + target._type);
-            setTimeout(InspectorTest.completeTest);
+            if (target.isServiceWorker())
+                setTimeout(InspectorTest.completeTest);
         }
     });
 }
