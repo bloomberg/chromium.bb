@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_HTML_VIEWER_WEBMEDIAPLAYER_FACTORY_H_
-#define MOJO_SERVICES_HTML_VIEWER_WEBMEDIAPLAYER_FACTORY_H_
+#ifndef MOJO_SERVICES_HTML_VIEWER_WEB_MEDIA_PLAYER_FACTORY_H_
+#define MOJO_SERVICES_HTML_VIEWER_WEB_MEDIA_PLAYER_FACTORY_H_
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -73,4 +73,4 @@ class WebMediaPlayerFactory {
 
 }  // namespace html_viewer
 
-#endif  // MOJO_SERVICES_HTML_VIEWER_WEBMEDIAPLAYER_FACTORY_H_
+#endif  // MOJO_SERVICES_HTML_VIEWER_WEB_MEDIA_PLAYER_FACTORY_H_

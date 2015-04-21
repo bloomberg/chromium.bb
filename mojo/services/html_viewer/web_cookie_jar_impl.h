@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_HTML_VIEWER_WEBCOOKIEJAR_IMPL_H_
-#define MOJO_SERVICES_HTML_VIEWER_WEBCOOKIEJAR_IMPL_H_
+#ifndef MOJO_SERVICES_HTML_VIEWER_WEB_COOKIE_JAR_IMPL_H_
+#define MOJO_SERVICES_HTML_VIEWER_WEB_COOKIE_JAR_IMPL_H_
 
 #include "mojo/services/network/public/interfaces/cookie_store.mojom.h"
 #include "third_party/WebKit/public/platform/WebCookieJar.h"
@@ -33,4 +33,4 @@ class WebCookieJarImpl : public blink::WebCookieJar {
 
 }  // namespace html_viewer
 
-#endif  // MOJO_SERVICES_HTML_VIEWER_WEBCOOKIEJAR_IMPL_H_
+#endif  // MOJO_SERVICES_HTML_VIEWER_WEB_COOKIE_JAR_IMPL_H_

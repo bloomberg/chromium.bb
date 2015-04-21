@@ -5,7 +5,7 @@
 // An implementation of WebThread in terms of base::MessageLoop and
 // base::Thread
 
-#include "mojo/services/html_viewer/webthread_impl.h"
+#include "mojo/services/html_viewer/web_thread_impl.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"

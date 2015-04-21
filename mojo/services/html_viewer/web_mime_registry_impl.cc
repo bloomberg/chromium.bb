@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/html_viewer/webmimeregistry_impl.h"
+#include "mojo/services/html_viewer/web_mime_registry_impl.h"
 
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"

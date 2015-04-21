@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/html_viewer/webcookiejar_impl.h"
+#include "mojo/services/html_viewer/web_cookie_jar_impl.h"
 
 #include "base/bind.h"
 #include "third_party/WebKit/public/platform/WebURL.h"

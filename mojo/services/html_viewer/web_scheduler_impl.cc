@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/tracked_objects.h"
-#include "mojo/services/html_viewer/webscheduler_impl.h"
+#include "mojo/services/html_viewer/web_scheduler_impl.h"
 
 namespace html_viewer {
 

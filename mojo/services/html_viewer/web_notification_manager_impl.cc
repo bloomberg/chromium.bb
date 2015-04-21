@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/html_viewer/webnotificationmanager_impl.h"
+#include "mojo/services/html_viewer/web_notification_manager_impl.h"
 
 #include "base/logging.h"
 

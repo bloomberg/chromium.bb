@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_HTML_VIEWER_WEBURLLOADER_IMPL_H_
-#define MOJO_SERVICES_HTML_VIEWER_WEBURLLOADER_IMPL_H_
+#ifndef MOJO_SERVICES_HTML_VIEWER_WEB_URL_LOADER_IMPL_H_
+#define MOJO_SERVICES_HTML_VIEWER_WEB_URL_LOADER_IMPL_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -66,4 +66,4 @@ class WebURLLoaderImpl : public blink::WebURLLoader {
 
 }  // namespace html_viewer
 
-#endif  // MOJO_SERVICES_HTML_VIEWER_WEBURLLOADER_IMPL_H_
+#endif  // MOJO_SERVICES_HTML_VIEWER_WEB_URL_LOADER_IMPL_H_

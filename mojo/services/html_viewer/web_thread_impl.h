@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_HTML_VIEWER_WEBTHREAD_IMPL_H_
-#define MOJO_SERVICES_HTML_VIEWER_WEBTHREAD_IMPL_H_
+#ifndef MOJO_SERVICES_HTML_VIEWER_WEB_THREAD_IMPL_H_
+#define MOJO_SERVICES_HTML_VIEWER_WEB_THREAD_IMPL_H_
 
 #include <map>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
-#include "mojo/services/html_viewer/webscheduler_impl.h"
+#include "mojo/services/html_viewer/web_scheduler_impl.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
 
 namespace html_viewer {
@@ -85,4 +85,4 @@ class WebThreadImplForMessageLoop : public WebThreadBase {
 
 }  // namespace html_viewer
 
-#endif  // MOJO_SERVICES_HTML_VIEWER_WEBTHREAD_IMPL_H_
+#endif  // MOJO_SERVICES_HTML_VIEWER_WEB_THREAD_IMPL_H_

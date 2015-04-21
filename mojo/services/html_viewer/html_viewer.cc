@@ -15,7 +15,7 @@
 #include "mojo/services/html_viewer/blink_platform_impl.h"
 #include "mojo/services/html_viewer/discardable_memory_allocator.h"
 #include "mojo/services/html_viewer/html_document.h"
-#include "mojo/services/html_viewer/webmediaplayer_factory.h"
+#include "mojo/services/html_viewer/web_media_player_factory.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/html_viewer/weblayertreeview_impl.h"
+#include "mojo/services/html_viewer/web_layer_tree_view_impl.h"
 
 #include "base/message_loop/message_loop_proxy.h"
 #include "cc/blink/web_layer_impl.h"

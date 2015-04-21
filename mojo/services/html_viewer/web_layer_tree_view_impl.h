@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_HTML_VIEWER_WEBLAYERTREEVIEW_IMPL_H_
-#define MOJO_SERVICES_HTML_VIEWER_WEBLAYERTREEVIEW_IMPL_H_
+#ifndef MOJO_SERVICES_HTML_VIEWER_WEB_LAYER_TREE_VIEW_IMPL_H_
+#define MOJO_SERVICES_HTML_VIEWER_WEB_LAYER_TREE_VIEW_IMPL_H_
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -133,4 +133,4 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
 
 }  // namespace html_viewer
 
-#endif  // MOJO_SERVICES_HTML_VIEWER_WEBLAYERTREEVIEW_IMPL_H_
+#endif  // MOJO_SERVICES_HTML_VIEWER_WEB_LAYER_TREE_VIEW_IMPL_H_

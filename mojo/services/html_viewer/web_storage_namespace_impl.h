@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_HTML_VIEWER_WEBSTORAGENAMESPACE_IMPL_H_
-#define MOJO_SERVICES_HTML_VIEWER_WEBSTORAGENAMESPACE_IMPL_H_
+#ifndef MOJO_SERVICES_HTML_VIEWER_WEB_STORAGE_NAMESPACE_IMPL_H_
+#define MOJO_SERVICES_HTML_VIEWER_WEB_STORAGE_NAMESPACE_IMPL_H_
 
 #include "base/macros.h"
 #include "third_party/WebKit/public/platform/WebStorageNamespace.h"
@@ -27,4 +27,4 @@ class WebStorageNamespaceImpl : public blink::WebStorageNamespace {
 
 }  // namespace html_viewer
 
-#endif  // MOJO_SERVICES_HTML_VIEWER_WEBSTORAGENAMESPACE_IMPL_H_
+#endif  // MOJO_SERVICES_HTML_VIEWER_WEB_STORAGE_NAMESPACE_IMPL_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/html_viewer/webthemeengine_impl.h"
+#include "mojo/services/html_viewer/web_theme_engine_impl.h"
 
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebRect.h"

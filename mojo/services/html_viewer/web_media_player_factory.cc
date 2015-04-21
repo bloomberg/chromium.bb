@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/html_viewer/webmediaplayer_factory.h"
+#include "mojo/services/html_viewer/web_media_player_factory.h"
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
