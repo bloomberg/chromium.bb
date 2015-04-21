@@ -15,7 +15,7 @@ clang=96b3da27dcefc9d152e51cf54280989b2206d789
 #
 # Three lines avoid merge conflicts.
 #
-llvm=888996b9c6159fb96428137c76401d15060bc667
+llvm=dcc76e52ebfedaeed374c97aab1bc46e6361e83c
 #
 # Three lines avoid merge conflicts.
 #
@@ -39,7 +39,7 @@ llvm_test_suite=6438a2b505fa29f82eb850aed1785db1738b971c
 #
 # Three lines avoid merge conflicts.
 #
-compiler_rt=f1de8d909f03ac2990dcd47a17a4dede61400699
+compiler_rt=d7e6ee8932d3905f1c9b2e06138546fcb15a8a67
 #
 # Three lines avoid merge conflicts.
 #

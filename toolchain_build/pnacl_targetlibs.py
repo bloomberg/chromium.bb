@@ -107,6 +107,15 @@ def BiasedBitcodeTargetFlag(bias_arch):
   return ['--target=%s' % flagmap[arch][0]] + flagmap[arch][1]
 
 
+def TranslatorArchToBiasArch(arch):
+  archmap = {'x86-32': 'i686',
+             'x86-32-nonsfi': 'i686',
+             'x86-64': 'x86_64',
+             'arm': 'arm',
+             'arm-nonsfi': 'arm',
+             'mips32': 'mips32'}
+  return archmap[arch]
+
 def TargetLibCflags(bias_arch):
   flags = '-g -O2'
   if IsBCArch(bias_arch):
@@ -327,7 +336,15 @@ def TargetLibs(bias_arch, is_canonical):
     return GSDJoin(component_name, bias_arch)
   target_triple = TripleFromArch(bias_arch)
   newlib_triple = target_triple if not IsBCArch(bias_arch) else 'le32-nacl'
-  newlib_cpp_flags = ' -DPNACL_BITCODE' if IsBCArch(bias_arch) else ''
+  newlib_cpp_flags = ''
+  if IsBCArch(bias_arch):
+    # This avoids putting the body of memcpy in libc for bitcode
+    newlib_cpp_flags = ' -DPNACL_BITCODE'
+  elif bias_arch == 'arm':
+    # This ensures that nacl gets the asm version of memcpy (gcc defines this
+    # macro for armv7a but clang does not)
+    newlib_cpp_flags = ' -D__ARM_FEATURE_UNALIGNED'
+
   clang_libdir = os.path.join(
       '%(output)s', 'lib', 'clang', CLANG_VER, 'lib', target_triple)
   libc_libdir = os.path.join('%(output)s', MultilibLibDir(bias_arch))
@@ -494,9 +511,13 @@ def TargetLibs(bias_arch, is_canonical):
                             'target_lib_compiler'],
           'inputs': { 'src': os.path.join(NACL_DIR, 'pnacl', 'support')},
           'commands': [
+              # Build compiler_rt which is now also used for the PNaCl
+              # translator.
               command.Command(MakeCommand() + [
                   '-C', '%(abs_compiler_rt_src)s', 'ProjObjRoot=%(cwd)s',
                   'VERBOSE=1',
+                  'AR=' + PnaclTool('ar', arch=bias_arch),
+                  'RANLIB=' + PnaclTool('ranlib', arch=bias_arch),
                   'CC=' + PnaclTool('clang', arch=bias_arch), 'clang_nacl',
                   'EXTRA_CFLAGS=' + NewlibIsystemCflags(bias_arch)]),
               command.Mkdir(clang_libdir, parents=True),
@@ -561,6 +582,9 @@ def TranslatorLibs(arch, is_canonical):
   setjmp_arch = arch
   if setjmp_arch.endswith('-nonsfi'):
     setjmp_arch = setjmp_arch[:-len('-nonsfi')]
+  bias_arch = TranslatorArchToBiasArch(arch)
+  translator_lib_dir = os.path.join('translator', arch, 'lib')
+  has_nacl_clang = arch in ['arm', 'x86-32', 'x86-64']
 
   arch_cmds = []
   if arch == 'arm':
@@ -576,14 +600,59 @@ def TranslatorLibs(arch, is_canonical):
         [BuildTargetTranslatorCmd('entry_linux.c', 'entry_linux.o', arch),
          BuildTargetTranslatorCmd('entry_linux_arm.S', 'entry_linux_asm.o',
                                   arch)])
-  translator_lib_dir = os.path.join('translator', arch, 'lib')
+
+  # For arches with nacl-clang, we take the native newlib implementation of
+  # these functions, which are optimized assembly. Otherwise we build a
+  # C implementation.
+  if has_nacl_clang:
+    def ClangLib(lib):
+      return GSDJoin(lib, bias_arch)
+    clang_deps = [ ClangLib('newlib'), ClangLib('libs_support') ]
+    # Extract the object files from the newlib archive into our working dir.
+    # libcrt_platform.a is later created by archiving all the object files
+    # there.
+    libcrt_platform_string_cmds = [command.Command([
+        PnaclTool('ar'), 'x',
+        os.path.join('%(' + ClangLib('newlib') + ')s',
+                     MultilibLibDir(bias_arch), 'libcrt_common.a'),
+        ] + ['lib_a-%s.o' % f
+             for f in ['memcpy', 'memset', 'memmove', 'memcmp']])]
+    # Copy compiler_rt from nacl-clang
+    clang_libdir = os.path.join(
+        'lib', 'clang', CLANG_VER, 'lib', TripleFromArch(bias_arch))
+    compiler_rt_cmds = [command.Copy(
+        os.path.join('%(' + ClangLib('libs_support') + ')s',
+                     clang_libdir, 'libgcc.a'),
+        os.path.join('%(output)s', 'libgcc.a'))]
+  else:
+    clang_deps = []
+    libcrt_platform_string_cmds = [BuildTargetTranslatorCmd(
+        'string.c', 'string.o', arch, ['-std=c99'],
+        source_dir='%(newlib_subset)s')]
+    # Build compiler_rt with PNaCl
+    compiler_rt_cmds = [
+        command.Command(MakeCommand() + [
+            '-C', '%(abs_compiler_rt_src)s', 'ProjObjRoot=%(cwd)s',
+            'VERBOSE=1',
+            'CC=' + PnaclTool('clang'), 'clang_nacl',
+            'EXTRA_CFLAGS=' + (
+                NewlibIsystemCflags('le32') +
+                ' --pnacl-allow-translate -arch ' + arch +
+                ' --pnacl-bias=' + arch + ' ' +
+                ' '.join(BiasedBitcodeTargetFlag(bias_arch)))]),
+        command.Copy(os.path.join(
+                'clang_nacl',
+                'full-' + bias_arch.replace('i686', 'i386'),
+                'libcompiler_rt.a'),
+            os.path.join('%(output)s', 'libgcc.a')),
+    ]
 
   libs = {
       GSDJoin('libs_support_translator', arch): {
           'type': TargetLibBuildType(is_canonical),
           'output_subdir': translator_lib_dir,
-          'dependencies': [ 'newlib_src', 'newlib_le32', 'subzero_src',
-                            'target_lib_compiler'],
+          'dependencies': [ 'newlib_src', 'compiler_rt_src', 'subzero_src',
+                            'target_lib_compiler', 'newlib_le32'] + clang_deps,
           # These libs include
           # arbitrary stuff from native_client/src/{include,untrusted,trusted}
           'inputs': { 'src': os.path.join(NACL_DIR, 'pnacl', 'support'),
@@ -605,9 +674,6 @@ def TranslatorLibs(arch, is_canonical):
               BuildTargetTranslatorCmd(
                   'setjmp_%s.S' % setjmp_arch.replace('-', '_'),
                   'setjmp.o', arch),
-              BuildTargetTranslatorCmd('string.c', 'string.o', arch,
-                                       ['-std=c99'],
-                                       source_dir='%(newlib_subset)s'),
               # Pull in non-errno __ieee754_fmod from newlib and rename it to
               # fmod. This is to support the LLVM frem instruction.
               BuildTargetTranslatorCmd(
@@ -620,7 +686,7 @@ def TranslatorLibs(arch, is_canonical):
                   ['-std=c99', '-I%(abs_newlib_src)s/newlib/libm/common/',
                    '-D__ieee754_fmodf=fmodf'],
                   source_dir='%(abs_newlib_src)s/newlib/libm/math')] +
-              arch_cmds + [
+              arch_cmds + libcrt_platform_string_cmds + [
               command.Command(' '.join([
                   PnaclTool('ar'), 'rc',
                   command.path.join('%(output)s', 'libcrt_platform.a'),
@@ -632,29 +698,10 @@ def TranslatorLibs(arch, is_canonical):
                                command.path.join('%(output)s',
                                                  'libpnacl_irt_shim_dummy.a'),
                                'dummy_shim_entry.o']),
-          ],
-      },
-      GSDJoin('compiler_rt_translator', arch): {
-          'type': TargetLibBuildType(is_canonical),
-          'output_subdir': translator_lib_dir,
-          'dependencies': ['compiler_rt_src', 'target_lib_compiler',
-                           'newlib_le32'],
-          'commands': [
-              command.Command(MakeCommand() + [
-                  '-f',
-                  command.path.join('%(compiler_rt_src)s', 'lib', 'builtins',
-                                    'Makefile-pnacl'),
-                  'libgcc.a', 'CC=' + PnaclTool('clang'),
-                  'AR=' + PnaclTool('ar')] +
-                  ['SRC_DIR=' + command.path.join('%(abs_compiler_rt_src)s',
-                                                  'lib', 'builtins'),
-                   'ARCH=' + arch,
-                   'CFLAGS=-arch ' + arch + ' --pnacl-allow-translate -O3 ' +
-                   NewlibIsystemCflags('le32')]),
-              command.Copy('libgcc.a', os.path.join('%(output)s', 'libgcc.a')),
-          ],
+          ] + compiler_rt_cmds,
       },
   }
+
   if not arch.endswith('-nonsfi'):
     libs.update({
       GSDJoin('libgcc_eh', arch): {
