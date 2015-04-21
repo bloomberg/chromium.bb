@@ -28,13 +28,15 @@ public:
     void dispose();
     DECLARE_TRACE();
 
-    void add(ScriptState*, v8::PromiseRejectMessage, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>);
+    void rejectedWithNoHandler(ScriptState*, v8::PromiseRejectMessage, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>);
+    void handlerAdded(v8::PromiseRejectMessage);
 
     void processQueue();
 
 private:
     class Message;
     WillBeHeapDeque<OwnPtrWillBeMember<Message>> m_queue;
+    WillBeHeapDeque<OwnPtrWillBeMember<Message>> m_reportedAsErrors;
 };
 
 } // namespace blink

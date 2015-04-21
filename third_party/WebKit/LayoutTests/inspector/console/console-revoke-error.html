@@ -1,0 +1,65 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+
+var p = [];
+
+function createPromises()
+{
+    for (var i = 0; i < 3; ++i)
+        p.push(Promise.reject(new Error("Handled error")));
+}
+
+function handleSomeRejections()
+{
+    p[0].catch(function() {});
+    p[2].catch(function() {});
+}
+
+function test()
+{
+    InspectorTest.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, messageAdded);
+
+    InspectorTest.addResult("Creating promise");
+    InspectorTest.evaluateInPageWithTimeout("createPromises()");
+
+    function messageAdded(event)
+    {
+        InspectorTest.addResult("");
+        InspectorTest.addResult("Message added: " + event.data.level + " " + event.data.type);
+        InspectorTest.addResult("errors: " + InspectorTest.consoleModel.errors());
+        InspectorTest.addResult("revokedErrors: " + InspectorTest.consoleModel.revokedErrors());
+
+        if (event.data.level === WebInspector.ConsoleMessage.MessageLevel.Error) {
+            InspectorTest.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.MessageAdded, messageAdded);
+            // Process array as a batch.
+            setTimeout(function() {
+                InspectorTest.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageUpdated, messageUpdated);
+                InspectorTest.dumpConsoleClassesBrief();
+                InspectorTest.addResult("");
+                InspectorTest.addResult("Handling promise");
+                InspectorTest.evaluateInPageWithTimeout("handleSomeRejections()");
+            });
+        }
+    }
+
+    function messageUpdated()
+    {
+        // Process array as a batch.
+        setTimeout(function() {
+            InspectorTest.dumpConsoleClassesBrief();
+            InspectorTest.completeTest();
+        });
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>Tests that console revokes lazily handled promise rejections.</p>
+
+</body>
+</html>

@@ -1,0 +1,57 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+
+var worker;
+
+function createPromise()
+{
+    worker = new Worker("resources/worker-with-defer-handled-promise.js");
+}
+
+function handlePromiseRejection()
+{
+    worker.postMessage("");
+}
+
+function test()
+{
+    WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, messageAdded);
+    WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageUpdated, messageUpdated);
+
+    InspectorTest.addResult("Creating worker with promise");
+    InspectorTest.evaluateInPageWithTimeout("createPromise()");
+
+    function messageAdded(event)
+    {
+        InspectorTest.addResult("");
+        InspectorTest.addResult("Message added: " + event.data.level + " " + event.data.type);
+        var counter = WebInspector.Main.WarningErrorCounter._instanceForTest;
+        for (var counter of counter._counters)
+            InspectorTest.addResult("    " + counter.title);
+
+        if (event.data.level === WebInspector.ConsoleMessage.MessageLevel.Error) {
+            InspectorTest.dumpConsoleClassesBrief();
+            InspectorTest.addResult("");
+            InspectorTest.addResult("Handling promise");
+            InspectorTest.evaluateInPageWithTimeout("handlePromiseRejection()");
+        }
+    }
+
+    function messageUpdated()
+    {
+        InspectorTest.dumpConsoleClassesBrief();
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>Tests that console revokes lazily handled promise rejections.</p>
+
+</body>
+</html>
