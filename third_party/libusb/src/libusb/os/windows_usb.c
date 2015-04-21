@@ -663,6 +663,12 @@ static int windows_assign_endpoints(struct libusb_device_handle *dev_handle, int
 		return r;
 	}
 
+	if (iface >= conf_desc->bNumInterfaces ||
+	    altsetting >= conf_desc->interface[iface].num_altsetting) {
+		usbi_dbg("interface %d, altsetting %d out of range", iface, altsetting);
+		return LIBUSB_ERROR_INVALID_PARAM;
+	}
+
 	if_desc = &conf_desc->interface[iface].altsetting[altsetting];
 	safe_free(priv->usb_interface[iface].endpoint);
 
