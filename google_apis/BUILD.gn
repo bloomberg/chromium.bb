@@ -67,13 +67,14 @@ config("key_defines") {
     defines += [ "USE_OFFICIAL_GOOGLE_API_KEYS=1" ]
   }
   if (google_api_key != "") {
-    defines += [ "GOOGLE_API_KEY=$google_api_key" ]
+    defines += [ "GOOGLE_API_KEY=\"$google_api_key\"" ]
   }
   if (google_default_client_id != "") {
-    defines += [ "GOOGLE_DEFAULT_CLIENT_ID=$google_default_client_id" ]
+    defines += [ "GOOGLE_DEFAULT_CLIENT_ID=\"$google_default_client_id\"" ]
   }
   if (google_default_client_secret != "") {
-    defines += [ "GOOGLE_DEFAULT_CLIENT_SECRET=$google_default_client_secret" ]
+    defines +=
+        [ "GOOGLE_DEFAULT_CLIENT_SECRET=\"$google_default_client_secret\"" ]
   }
 }
 
@@ -102,10 +103,10 @@ source_set("google_apis") {
     "gaia/oauth2_access_token_consumer.h",
     "gaia/oauth2_access_token_fetcher.cc",
     "gaia/oauth2_access_token_fetcher.h",
-    "gaia/oauth2_access_token_fetcher_impl.cc",
-    "gaia/oauth2_access_token_fetcher_impl.h",
     "gaia/oauth2_access_token_fetcher_immediate_error.cc",
     "gaia/oauth2_access_token_fetcher_immediate_error.h",
+    "gaia/oauth2_access_token_fetcher_impl.cc",
+    "gaia/oauth2_access_token_fetcher_impl.h",
     "gaia/oauth2_api_call_flow.cc",
     "gaia/oauth2_api_call_flow.h",
     "gaia/oauth2_mint_token_flow.cc",
