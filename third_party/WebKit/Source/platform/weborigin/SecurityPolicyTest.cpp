@@ -29,12 +29,14 @@
  */
 
 #include "config.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 
 #include "platform/weborigin/KURL.h"
 #include <gtest/gtest.h>
 
 using blink::KURL;
+using blink::SecurityOrigin;
 using blink::SecurityPolicy;
 
 namespace {
@@ -137,5 +139,57 @@ TEST(SecurityPolicyTest, GenerateReferrer)
     }
 }
 
-} // namespace
+TEST(SecurityPolicyTest, TrustworthyWhiteList)
+{
+    const char* insecureURLs[] = {
+        "http://a.test/path/to/file.html",
+        "http://b.test/path/to/file.html",
+        "blob:http://c.test/b3aae9c8-7f90-440d-8d7c-43aa20d72fde",
+        "filesystem:http://d.test/path/t/file.html",
+    };
 
+    for (const char* url : insecureURLs) {
+        String errorMessage;
+        RefPtr<SecurityOrigin> origin = SecurityOrigin::createFromString(url);
+        EXPECT_FALSE(origin->isPotentiallyTrustworthy(errorMessage));
+        SecurityPolicy::addOriginTrustworthyWhiteList(origin);
+        EXPECT_TRUE(origin->isPotentiallyTrustworthy(errorMessage));
+    }
+
+    // Tests that adding URLs that have inner-urls to the whitelist
+    // takes effect on the origins of the inner-urls (and vice versa).
+    struct TestCase {
+        const char* url;
+        const char* anotherUrlInOrigin;
+    };
+    TestCase insecureURLsWithInnerOrigin[] = {
+        {
+            "blob:http://e.test/b3aae9c8-7f90-440d-8d7c-43aa20d72fde",
+            "http://e.test/foo.html"
+        }, {
+            "filesystem:http://f.test/path/t/file.html",
+            "http://f.test/bar.html"
+        }, {
+            "http://g.test/foo.html",
+            "blob:http://g.test/b3aae9c8-7f90-440d-8d7c-43aa20d72fde"
+        }, {
+            "http://h.test/bar.html",
+            "filesystem:http://h.test/path/t/file.html"
+        },
+    };
+    for (const TestCase& test : insecureURLsWithInnerOrigin) {
+        String errorMessage;
+
+        // Actually origins of both URLs should be same.
+        RefPtr<SecurityOrigin> origin1 = SecurityOrigin::createFromString(test.url);
+        RefPtr<SecurityOrigin> origin2 = SecurityOrigin::createFromString(test.anotherUrlInOrigin);
+
+        EXPECT_FALSE(origin1->isPotentiallyTrustworthy(errorMessage));
+        EXPECT_FALSE(origin2->isPotentiallyTrustworthy(errorMessage));
+        SecurityPolicy::addOriginTrustworthyWhiteList(origin1);
+        EXPECT_TRUE(origin1->isPotentiallyTrustworthy(errorMessage));
+        EXPECT_TRUE(origin2->isPotentiallyTrustworthy(errorMessage));
+    }
+}
+
+} // namespace

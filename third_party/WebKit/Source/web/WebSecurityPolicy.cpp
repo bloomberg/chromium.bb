@@ -35,6 +35,7 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
+#include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 
@@ -115,6 +116,11 @@ void WebSecurityPolicy::removeOriginAccessWhitelistEntry(
 void WebSecurityPolicy::resetOriginAccessWhitelists()
 {
     SecurityPolicy::resetOriginAccessWhitelists();
+}
+
+void WebSecurityPolicy::addOriginTrustworthyWhiteList(const WebSecurityOrigin& origin)
+{
+    SecurityPolicy::addOriginTrustworthyWhiteList(origin);
 }
 
 WebString WebSecurityPolicy::generateReferrerHeader(WebReferrerPolicy referrerPolicy, const WebURL& url, const WebString& referrer)

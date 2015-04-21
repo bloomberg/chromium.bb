@@ -34,6 +34,7 @@
 #include "platform/weborigin/OriginAccessEntry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
 #include "wtf/MainThread.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -42,13 +43,20 @@
 
 namespace blink {
 
-typedef Vector<OriginAccessEntry> OriginAccessWhiteList;
-typedef HashMap<String, OwnPtr<OriginAccessWhiteList>> OriginAccessMap;
+using OriginAccessWhiteList = Vector<OriginAccessEntry>;
+using OriginAccessMap = HashMap<String, OwnPtr<OriginAccessWhiteList>>;
+using OriginSet = HashSet<String>;
 
 static OriginAccessMap& originAccessMap()
 {
     AtomicallyInitializedStaticReference(OriginAccessMap, originAccessMap, new OriginAccessMap);
     return originAccessMap;
+}
+
+static OriginSet& trustworthyOriginSet()
+{
+    DEFINE_STATIC_LOCAL(OriginSet, trustworthyOriginSet, ());
+    return trustworthyOriginSet;
 }
 
 bool SecurityPolicy::shouldHideReferrer(const KURL& url, const String& referrer)
@@ -114,6 +122,22 @@ Referrer SecurityPolicy::generateReferrer(ReferrerPolicy referrerPolicy, const K
     }
 
     return Referrer(shouldHideReferrer(url, referrer) ? String() : referrer, referrerPolicy);
+}
+
+void SecurityPolicy::addOriginTrustworthyWhiteList(PassRefPtr<SecurityOrigin> origin)
+{
+    // Must be called before we start other threads.
+    ASSERT(WTF::isBeforeThreadCreated());
+    if (origin->isUnique())
+        return;
+    trustworthyOriginSet().add(origin->toRawString());
+}
+
+bool SecurityPolicy::isOriginWhiteListedTrustworthy(const SecurityOrigin& origin)
+{
+    if (origin.isUnique())
+        return false;
+    return trustworthyOriginSet().contains(origin.toRawString());
 }
 
 bool SecurityPolicy::isAccessWhiteListed(const SecurityOrigin* activeOrigin, const SecurityOrigin* targetOrigin)

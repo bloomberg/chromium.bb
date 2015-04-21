@@ -36,6 +36,7 @@
 
 namespace blink {
 
+class WebSecurityOrigin;
 class WebString;
 class WebURL;
 
@@ -99,6 +100,9 @@ public:
         const WebURL& sourceOrigin, const WebString& destinationProtocol,
         const WebString& destinationHost, bool allowDestinationSubdomains);
     BLINK_EXPORT static void resetOriginAccessWhitelists();
+
+    // Support for whitelisting origins to treat them as trustworthy.
+    BLINK_EXPORT static void addOriginTrustworthyWhiteList(const WebSecurityOrigin&);
 
     // Returns the referrer modified according to the referrer policy for a
     // navigation to a given URL. If the referrer returned is empty, the

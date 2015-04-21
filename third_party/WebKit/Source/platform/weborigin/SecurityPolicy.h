@@ -57,6 +57,9 @@ public:
 
     static bool isAccessWhiteListed(const SecurityOrigin* activeOrigin, const SecurityOrigin* targetOrigin);
     static bool isAccessToURLWhiteListed(const SecurityOrigin* activeOrigin, const KURL&);
+
+    static void addOriginTrustworthyWhiteList(PassRefPtr<SecurityOrigin>);
+    static bool isOriginWhiteListedTrustworthy(const SecurityOrigin&);
 };
 
 } // namespace blink

@@ -381,6 +381,9 @@ bool SecurityOrigin::isPotentiallyTrustworthy(String& errorMessage) const
     if (SchemeRegistry::shouldTreatURLSchemeAsSecure(m_protocol) || isLocal() || isLocalhost())
         return true;
 
+    if (SecurityPolicy::isOriginWhiteListedTrustworthy(*this))
+        return true;
+
     errorMessage = "Only secure origins are allowed (see: https://goo.gl/Y0ZkNV).";
     return false;
 }
