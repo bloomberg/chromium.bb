@@ -423,22 +423,52 @@ void FindBadConstructsConsumer::CheckVirtualSpecifiers(
   // Complain if a method is an override and is not annotated with override or
   // final.
   if (is_override && !override_attr && !final_attr) {
-    SourceRange type_info_range =
-        method->getTypeSourceInfo()->getTypeLoc().getSourceRange();
-    FullSourceLoc loc(type_info_range.getBegin(), manager);
-
-    // Build the FixIt insertion point after the end of the method definition,
-    // including any const-qualifiers and attributes, and before the opening
-    // of the l-curly-brace (if inline) or the semi-color (if a declaration).
-    SourceLocation spelling_end =
-        manager.getSpellingLoc(type_info_range.getEnd());
-    if (spelling_end.isValid()) {
-      SourceLocation token_end =
-          Lexer::getLocForEndOfToken(spelling_end, 0, manager, LangOptions());
-      diagnostic().Report(token_end, diag_method_requires_override_)
-          << FixItHint::CreateInsertion(token_end, " override");
+    SourceRange range = method->getSourceRange();
+    SourceLocation loc;
+    if (method->hasInlineBody()) {
+      loc = method->getBody()->getSourceRange().getBegin();
     } else {
-      diagnostic().Report(loc, diag_method_requires_override_);
+      // TODO(dcheng): We should probably use ASTContext's LangOptions here.
+      LangOptions lang_options;
+      loc = Lexer::getLocForEndOfToken(
+          manager.getSpellingLoc(range.getEnd()), 0,
+          manager, lang_options);
+      // The original code used the ending source loc of TypeSourceInfo's
+      // TypeLoc. Unfortunately, this breaks down in the presence of attributes.
+      // Attributes often appear at the end of a TypeLoc, e.g.
+      //   virtual ULONG __stdcall AddRef()
+      // has a TypeSourceInfo that looks something like:
+      //   ULONG AddRef() __attribute(stdcall)
+      // so a fix-it insertion would be generated to insert 'override' after
+      // __stdcall in the code as written.
+      // While using the spelling loc of the CXXMethodDecl fixes attribute
+      // handling, it breaks handling of "= 0" and similar constructs.. To work
+      // around this, scan backwards in the source text for a '=' or ')' token
+      // and adjust the location as needed...
+      for (SourceLocation l = loc.getLocWithOffset(-1);
+           l != manager.getLocForStartOfFile(manager.getFileID(loc));
+           l = l.getLocWithOffset(-1)) {
+        l = Lexer::GetBeginningOfToken(l, manager, lang_options);
+        Token token;
+        // getRawToken() returns *true* on failure. In that case, just give up
+        // and don't bother generating a possibly incorrect fix-it.
+        if (Lexer::getRawToken(l, token, manager, lang_options, true)) {
+          loc = SourceLocation();
+          break;
+        }
+        if (token.is(tok::r_paren)) {
+          break;
+        } else if (token.is(tok::equal)) {
+          loc = l;
+          break;
+        }
+      }
+    }
+    if (loc.isValid()) {
+      diagnostic().Report(loc, diag_method_requires_override_)
+          << FixItHint::CreateInsertion(loc, " override");
+    } else {
+      diagnostic().Report(range.getBegin(), diag_method_requires_override_);
     }
   }
 
