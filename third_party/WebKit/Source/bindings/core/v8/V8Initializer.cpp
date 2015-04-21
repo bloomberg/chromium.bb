@@ -66,7 +66,7 @@
 
 namespace blink {
 
-static Frame* findFrame(v8::Local<v8::Object> host, v8::Local<v8::Value> data, v8::Isolate* isolate)
+static Frame* findFrame(v8::Isolate* isolate, v8::Local<v8::Object> host, v8::Local<v8::Value> data)
 {
     const WrapperTypeInfo* type = WrapperTypeInfo::unwrap(data);
 
@@ -295,7 +295,7 @@ static void promiseRejectHandlerInWorker(v8::PromiseRejectMessage data)
 static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host, v8::AccessType type, v8::Local<v8::Value> data)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    Frame* target = findFrame(host, data, isolate);
+    Frame* target = findFrame(isolate, host, data);
     if (!target)
         return;
     DOMWindow* targetWindow = target->domWindow();

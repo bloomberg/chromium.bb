@@ -234,7 +234,7 @@ V8TemplateMapTraits::MapType* V8TemplateMapTraits::MapFromWeakCallbackInfo(const
 }
 
 
-static v8::Local<v8::Value> npObjectGetProperty(v8::Local<v8::Object> self, NPIdentifier identifier, v8::Local<v8::Value> key, v8::Isolate* isolate)
+static v8::Local<v8::Value> npObjectGetProperty(v8::Isolate* isolate, v8::Local<v8::Object> self, NPIdentifier identifier, v8::Local<v8::Value> key)
 {
     NPObject* npObject = v8ObjectToNPObject(self);
 
@@ -290,31 +290,31 @@ static v8::Local<v8::Value> npObjectGetProperty(v8::Local<v8::Object> self, NPId
 void npObjectNamedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     NPIdentifier identifier = getStringIdentifier(name);
-    v8SetReturnValue(info, npObjectGetProperty(info.Holder(), identifier, name, info.GetIsolate()));
+    v8SetReturnValue(info, npObjectGetProperty(info.GetIsolate(), info.Holder(), identifier, name));
 }
 
 void npObjectIndexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     NPIdentifier identifier = _NPN_GetIntIdentifier(index);
-    v8SetReturnValue(info, npObjectGetProperty(info.Holder(), identifier, v8::Number::New(info.GetIsolate(), index), info.GetIsolate()));
+    v8SetReturnValue(info, npObjectGetProperty(info.GetIsolate(), info.Holder(), identifier, v8::Number::New(info.GetIsolate(), index)));
 }
 
 void npObjectGetNamedProperty(v8::Local<v8::Object> self, v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     NPIdentifier identifier = getStringIdentifier(name);
-    v8SetReturnValue(info, npObjectGetProperty(self, identifier, name, info.GetIsolate()));
+    v8SetReturnValue(info, npObjectGetProperty(info.GetIsolate(), self, identifier, name));
 }
 
 void npObjectGetIndexedProperty(v8::Local<v8::Object> self, uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     NPIdentifier identifier = _NPN_GetIntIdentifier(index);
-    v8SetReturnValue(info, npObjectGetProperty(self, identifier, v8::Number::New(info.GetIsolate(), index), info.GetIsolate()));
+    v8SetReturnValue(info, npObjectGetProperty(info.GetIsolate(), self, identifier, v8::Number::New(info.GetIsolate(), index)));
 }
 
 void npObjectQueryProperty(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
     NPIdentifier identifier = getStringIdentifier(name);
-    if (npObjectGetProperty(info.Holder(), identifier, name, info.GetIsolate()).IsEmpty())
+    if (npObjectGetProperty(info.GetIsolate(), info.Holder(), identifier, name).IsEmpty())
         return;
     v8SetReturnValueInt(info, 0);
 }

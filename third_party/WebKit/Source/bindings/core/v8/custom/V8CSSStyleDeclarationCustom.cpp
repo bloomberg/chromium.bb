@@ -84,7 +84,7 @@ struct CSSPropertyInfo {
     CSSPropertyID propID;
 };
 
-static CSSPropertyID parseCSSPropertyID(const String& propertyName, v8::Isolate* isolate)
+static CSSPropertyID parseCSSPropertyID(v8::Isolate* isolate, const String& propertyName)
 {
     unsigned length = propertyName.length();
     if (!length)
@@ -148,7 +148,7 @@ static CSSPropertyInfo* cssPropertyInfo(v8::Local<v8::String> v8PropertyName, v8
     CSSPropertyInfo* propInfo = map.get(propertyName);
     if (!propInfo) {
         propInfo = new CSSPropertyInfo();
-        propInfo->propID = parseCSSPropertyID(propertyName, isolate);
+        propInfo->propID = parseCSSPropertyID(isolate, propertyName);
         map.add(propertyName, propInfo);
     }
     if (!propInfo->propID)

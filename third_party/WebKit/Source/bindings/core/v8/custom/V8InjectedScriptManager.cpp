@@ -62,7 +62,7 @@ void InjectedScriptManager::removeCallbackData(InjectedScriptManager::CallbackDa
     m_callbackDataSet.remove(callbackData);
 }
 
-static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(PassRefPtrWillBeRawPtr<InjectedScriptHost> host, InjectedScriptManager* injectedScriptManager, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
+static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(v8::Isolate* isolate, PassRefPtrWillBeRawPtr<InjectedScriptHost> host, InjectedScriptManager* injectedScriptManager, v8::Local<v8::Object> creationContext)
 {
     ASSERT(host);
 
@@ -91,7 +91,7 @@ ScriptValue InjectedScriptManager::createInjectedScript(const String& scriptSour
     // instead of calling toV8() that would create the
     // wrapper in the current context.
     // FIXME: make it possible to use generic bindings factory for InjectedScriptHost.
-    v8::Local<v8::Object> scriptHostWrapper = createInjectedScriptHostV8Wrapper(m_injectedScriptHost, this, inspectedScriptState->context()->Global(), inspectedScriptState->isolate());
+    v8::Local<v8::Object> scriptHostWrapper = createInjectedScriptHostV8Wrapper(inspectedScriptState->isolate(), m_injectedScriptHost, this, inspectedScriptState->context()->Global());
     if (scriptHostWrapper.IsEmpty())
         return ScriptValue();
 

@@ -56,7 +56,7 @@ void V8DevToolsHost::platformMethodCustom(const v8::FunctionCallbackInfo<v8::Val
 #endif
 }
 
-static bool populateContextMenuItems(const v8::Local<v8::Array>& itemArray, ContextMenu& menu, v8::Isolate* isolate)
+static bool populateContextMenuItems(v8::Isolate* isolate, const v8::Local<v8::Array>& itemArray, ContextMenu& menu)
 {
     v8::Local<v8::Context> context = isolate->GetCurrentContext();
     for (size_t i = 0; i < itemArray->Length(); ++i) {
@@ -86,7 +86,7 @@ static bool populateContextMenuItems(const v8::Local<v8::Array>& itemArray, Cont
         } else if (typeString == "subMenu" && subItems->IsArray()) {
             ContextMenu subMenu;
             v8::Local<v8::Array> subItemsArray = v8::Local<v8::Array>::Cast(subItems);
-            if (!populateContextMenuItems(subItemsArray, subMenu, isolate))
+            if (!populateContextMenuItems(isolate, subItemsArray, subMenu))
                 return false;
             TOSTRING_DEFAULT(V8StringResource<TreatNullAsNullString>, labelString, label, false);
             ContextMenuItem item(SubmenuType,
@@ -127,7 +127,7 @@ void V8DevToolsHost::showContextMenuMethodCustom(const v8::FunctionCallbackInfo<
 
     v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(info[1]);
     ContextMenu menu;
-    if (!populateContextMenuItems(array, menu, info.GetIsolate()))
+    if (!populateContextMenuItems(info.GetIsolate(), array, menu))
         return;
 
     DevToolsHost* devtoolsHost = V8DevToolsHost::toImpl(info.Holder());
@@ -149,7 +149,7 @@ void V8DevToolsHost::showContextMenuAtPointMethodCustom(const v8::FunctionCallba
     if (!array->IsArray())
         return;
     ContextMenu menu;
-    if (!populateContextMenuItems(v8::Local<v8::Array>::Cast(array), menu, info.GetIsolate()))
+    if (!populateContextMenuItems(info.GetIsolate(), v8::Local<v8::Array>::Cast(array), menu))
         return;
 
     Document* document = nullptr;

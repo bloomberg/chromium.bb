@@ -58,7 +58,7 @@ StringCache::~StringCache()
     m_stringCache.Clear();
 }
 
-static v8::Local<v8::String> makeExternalString(const String& string, v8::Isolate* isolate)
+static v8::Local<v8::String> makeExternalString(v8::Isolate* isolate, const String& string)
 {
     if (string.is8Bit()) {
         WebCoreStringResource8* stringResource = new WebCoreStringResource8(string);
@@ -117,7 +117,7 @@ v8::Local<v8::String> StringCache::createStringAndInsertIntoCache(v8::Isolate* i
     ASSERT(!m_stringCache.Contains(stringImpl));
     ASSERT(stringImpl->length());
 
-    v8::Local<v8::String> newString = makeExternalString(String(stringImpl), isolate);
+    v8::Local<v8::String> newString = makeExternalString(isolate, String(stringImpl));
     ASSERT(!newString.IsEmpty());
     ASSERT(newString->Length());
 

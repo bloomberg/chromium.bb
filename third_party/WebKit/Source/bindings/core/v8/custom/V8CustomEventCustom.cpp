@@ -43,7 +43,7 @@
 
 namespace blink {
 
-static v8::Local<v8::Value> cacheState(v8::Local<v8::Object> customEvent, v8::Local<v8::Value> detail, v8::Isolate* isolate)
+static v8::Local<v8::Value> cacheState(v8::Isolate* isolate, v8::Local<v8::Object> customEvent, v8::Local<v8::Value> detail)
 {
     V8HiddenValue::setHiddenValue(isolate, customEvent, V8HiddenValue::detail(isolate), detail);
     return detail;
@@ -71,11 +71,11 @@ void V8CustomEvent::detailAttributeGetterCustom(const v8::PropertyCallbackInfo<v
 
     if (event->serializedDetail()) {
         result = event->serializedDetail()->deserialize();
-        v8SetReturnValue(info, cacheState(info.Holder(), result, info.GetIsolate()));
+        v8SetReturnValue(info, cacheState(info.GetIsolate(), info.Holder(), result));
         return;
     }
 
-    v8SetReturnValue(info, cacheState(info.Holder(), v8::Null(info.GetIsolate()), info.GetIsolate()));
+    v8SetReturnValue(info, cacheState(info.GetIsolate(), info.Holder(), v8::Null(info.GetIsolate())));
 }
 
 void V8CustomEvent::initCustomEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)

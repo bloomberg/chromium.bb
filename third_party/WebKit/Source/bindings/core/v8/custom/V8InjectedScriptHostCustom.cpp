@@ -287,7 +287,7 @@ void V8InjectedScriptHost::getInternalPropertiesMethodCustom(const v8::FunctionC
     v8SetReturnValue(info, debugServer.getInternalProperties(object));
 }
 
-static v8::Local<v8::Array> getJSListenerFunctions(ExecutionContext* executionContext, const EventListenerInfo& listenerInfo, v8::Isolate* isolate)
+static v8::Local<v8::Array> getJSListenerFunctions(v8::Isolate* isolate, ExecutionContext* executionContext, const EventListenerInfo& listenerInfo)
 {
     v8::Local<v8::Array> result = v8::Array::New(isolate);
     size_t handlersCount = listenerInfo.eventListenerVector.size();
@@ -341,7 +341,7 @@ void V8InjectedScriptHost::getEventListenersMethodCustom(const v8::FunctionCallb
 
     v8::Local<v8::Object> result = v8::Object::New(info.GetIsolate());
     for (size_t i = 0; i < listenersArray.size(); ++i) {
-        v8::Local<v8::Array> listeners = getJSListenerFunctions(target->executionContext(), listenersArray[i], info.GetIsolate());
+        v8::Local<v8::Array> listeners = getJSListenerFunctions(info.GetIsolate(), target->executionContext(), listenersArray[i]);
         if (!listeners->Length())
             continue;
         AtomicString eventType = listenersArray[i].eventType;

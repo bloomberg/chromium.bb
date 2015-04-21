@@ -97,7 +97,7 @@ static ScriptState* mainWorldScriptState(v8::Isolate* isolate, NPP npp, NPObject
     return ScriptState::from(context);
 }
 
-static PassOwnPtr<v8::Local<v8::Value>[]> createValueListFromVariantArgs(const NPVariant* arguments, uint32_t argumentCount, NPObject* owner, v8::Isolate* isolate)
+static PassOwnPtr<v8::Local<v8::Value>[]> createValueListFromVariantArgs(v8::Isolate* isolate, const NPVariant* arguments, uint32_t argumentCount, NPObject* owner)
 {
     OwnPtr<v8::Local<v8::Value>[]> argv = adoptArrayPtr(new v8::Local<v8::Value>[argumentCount]);
     for (uint32_t index = 0; index < argumentCount; index++) {
@@ -272,7 +272,7 @@ bool _NPN_Invoke(NPP npp, NPObject* npObject, NPIdentifier methodName, const NPV
 
     // Call the function object.
     v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(functionObject);
-    OwnPtr<v8::Local<v8::Value>[]> argv = createValueListFromVariantArgs(arguments, argumentCount, npObject, isolate);
+    OwnPtr<v8::Local<v8::Value>[]> argv = createValueListFromVariantArgs(isolate, arguments, argumentCount, npObject);
     v8::Local<v8::Value> resultObject = frame->script().callFunction(function, v8Object, argumentCount, argv.get());
 
     // If we had an error, return false.  The spec is a little unclear here, but says "Returns true if the method was
@@ -321,7 +321,7 @@ bool _NPN_InvokeDefault(NPP npp, NPObject* npObject, const NPVariant* arguments,
         LocalFrame* frame = v8NpObject->rootObject->frame();
         ASSERT(frame);
 
-        OwnPtr<v8::Local<v8::Value>[]> argv = createValueListFromVariantArgs(arguments, argumentCount, npObject, isolate);
+        OwnPtr<v8::Local<v8::Value>[]> argv = createValueListFromVariantArgs(isolate, arguments, argumentCount, npObject);
         resultObject = frame->script().callFunction(function, functionObject, argumentCount, argv.get());
     }
     // If we had an error, return false.  The spec is a little unclear here, but says "Returns true if the method was
@@ -609,7 +609,7 @@ bool _NPN_Construct(NPP npp, NPObject* npObject, const NPVariant* arguments, uin
 
         LocalFrame* frame = object->rootObject->frame();
         ASSERT(frame);
-        OwnPtr<v8::Local<v8::Value>[]> argv = createValueListFromVariantArgs(arguments, argumentCount, npObject, scriptState->isolate());
+        OwnPtr<v8::Local<v8::Value>[]> argv = createValueListFromVariantArgs(scriptState->isolate(), arguments, argumentCount, npObject);
         if (!V8ObjectConstructor::newInstanceInDocument(scriptState->isolate(), ctor, argumentCount, argv.get(), frame ? frame->document() : 0).ToLocal(&resultObject))
             return false;
 
