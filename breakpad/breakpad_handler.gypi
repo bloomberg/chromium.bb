@@ -39,6 +39,7 @@
     ['OS=="win"', {
       'targets': [
         {
+          # GN version: //breakpad:breakpad_handler
           'target_name': 'breakpad_handler',
           'type': 'static_library',
           'variables': {

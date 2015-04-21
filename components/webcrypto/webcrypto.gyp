@@ -21,8 +21,6 @@
       'export_dependent_settings': [
         '../../base/base.gyp:base',
       ],
-      # Disable c4267 warnings until we fix size_t to int truncations.
-      'msvs_disabled_warnings': [ 4267, ],
       'variables': {
         'webcrypto_sources': [
           'algorithm_dispatch.cc',

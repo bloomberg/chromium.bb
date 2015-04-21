@@ -119,7 +119,8 @@ void CompleteWithBufferOrError(const Status& status,
       // theoretically this could overflow.
       CompleteWithError(Status::ErrorUnexpected(), result);
     } else {
-      result->completeWithBuffer(vector_as_array(&buffer), buffer.size());
+      result->completeWithBuffer(vector_as_array(&buffer),
+                                 static_cast<unsigned int>(buffer.size()));
     }
   }
 }
@@ -468,7 +469,7 @@ void DoExportKeyReply(scoped_ptr<ExportKeyState> state) {
   } else {
     state->result.completeWithJson(
         reinterpret_cast<const char*>(vector_as_array(&state->buffer)),
-        state->buffer.size());
+        static_cast<unsigned int>(state->buffer.size()));
   }
 }
 

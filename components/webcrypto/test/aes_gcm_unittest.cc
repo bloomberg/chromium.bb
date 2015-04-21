@@ -24,10 +24,11 @@ blink::WebCryptoAlgorithm CreateAesGcmAlgorithm(
   EXPECT_TRUE(SupportsAesGcm());
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       blink::WebCryptoAlgorithmIdAesGcm,
-      new blink::WebCryptoAesGcmParams(vector_as_array(&iv), iv.size(), true,
-                                       vector_as_array(&additional_data),
-                                       additional_data.size(), true,
-                                       tag_length_bits));
+      new blink::WebCryptoAesGcmParams(
+          vector_as_array(&iv), static_cast<unsigned int>(iv.size()), true,
+          vector_as_array(&additional_data),
+          static_cast<unsigned int>(additional_data.size()), true,
+          tag_length_bits));
 }
 
 blink::WebCryptoAlgorithm CreateAesGcmKeyGenAlgorithm(
@@ -173,7 +174,8 @@ TEST(WebCryptoAesGcmTest, SampleSets) {
         GetBytesFromHexString(test, "plain_text");
     const std::vector<uint8_t> test_authentication_tag =
         GetBytesFromHexString(test, "authentication_tag");
-    const unsigned int test_tag_size_bits = test_authentication_tag.size() * 8;
+    const unsigned int test_tag_size_bits =
+        static_cast<unsigned int>(test_authentication_tag.size()) * 8;
     const std::vector<uint8_t> test_cipher_text =
         GetBytesFromHexString(test, "cipher_text");
 

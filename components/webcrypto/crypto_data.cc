@@ -15,17 +15,19 @@ CryptoData::CryptoData(const unsigned char* bytes, unsigned int byte_length)
 }
 
 CryptoData::CryptoData(const std::vector<unsigned char>& bytes)
-    : bytes_(vector_as_array(&bytes)), byte_length_(bytes.size()) {
+    : bytes_(vector_as_array(&bytes)),
+      byte_length_(static_cast<unsigned int>(bytes.size())) {
 }
 
 CryptoData::CryptoData(const std::string& bytes)
     : bytes_(bytes.size() ? reinterpret_cast<const unsigned char*>(bytes.data())
                           : NULL),
-      byte_length_(bytes.size()) {
+      byte_length_(static_cast<unsigned int>(bytes.size())) {
 }
 
 CryptoData::CryptoData(const blink::WebVector<unsigned char>& bytes)
-    : bytes_(bytes.data()), byte_length_(bytes.size()) {
+    : bytes_(bytes.data()),
+      byte_length_(static_cast<unsigned int>(bytes.size())) {
 }
 
 }  // namespace webcrypto

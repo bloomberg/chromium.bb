@@ -20,7 +20,7 @@ namespace webcrypto {
 
 namespace {
 
-const EVP_AEAD* GetAesKwAlgorithmFromKeySize(unsigned int key_size_bytes) {
+const EVP_AEAD* GetAesKwAlgorithmFromKeySize(size_t key_size_bytes) {
   switch (key_size_bytes) {
     case 16:
       return EVP_aead_aes_128_key_wrap();

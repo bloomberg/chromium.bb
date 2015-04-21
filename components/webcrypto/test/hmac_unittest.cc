@@ -90,7 +90,8 @@ TEST(WebCryptoHmacTest, HMACSampleSets) {
     // Ensure truncated signature does not verify by passing one less byte.
     EXPECT_EQ(Status::Success(),
               Verify(algorithm, key,
-                     CryptoData(vector_as_array(&output), output.size() - 1),
+                     CryptoData(vector_as_array(&output),
+                                static_cast<unsigned int>(output.size()) - 1),
                      CryptoData(test_message), &signature_match));
     EXPECT_FALSE(signature_match);
 

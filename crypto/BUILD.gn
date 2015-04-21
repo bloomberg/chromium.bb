@@ -205,53 +205,52 @@ if (false && is_win) {
   }
 }
 
-# TODO(GYP): Make this link on win as well.
-if (!is_win) {
-  test("crypto_unittests") {
-    sources = [
-      # Tests.
-      "curve25519_unittest.cc",
-      "ec_private_key_unittest.cc",
-      "ec_signature_creator_unittest.cc",
-      "encryptor_unittest.cc",
-      "ghash_unittest.cc",
-      "hkdf_unittest.cc",
-      "hmac_unittest.cc",
-      "nss_util_unittest.cc",
-      "openssl_bio_string_unittest.cc",
-      "p224_spake_unittest.cc",
-      "p224_unittest.cc",
-      "random_unittest.cc",
-      "rsa_private_key_nss_unittest.cc",
-      "rsa_private_key_unittest.cc",
-      "secure_hash_unittest.cc",
-      "sha2_unittest.cc",
-      "signature_creator_unittest.cc",
-      "signature_verifier_unittest.cc",
-      "symmetric_key_unittest.cc",
-    ]
+test("crypto_unittests") {
+  sources = [
+    # Tests.
+    "curve25519_unittest.cc",
+    "ec_private_key_unittest.cc",
+    "ec_signature_creator_unittest.cc",
+    "encryptor_unittest.cc",
+    "ghash_unittest.cc",
+    "hkdf_unittest.cc",
+    "hmac_unittest.cc",
+    "nss_util_unittest.cc",
+    "openssl_bio_string_unittest.cc",
+    "p224_spake_unittest.cc",
+    "p224_unittest.cc",
+    "random_unittest.cc",
+    "rsa_private_key_nss_unittest.cc",
+    "rsa_private_key_unittest.cc",
+    "secure_hash_unittest.cc",
+    "sha2_unittest.cc",
+    "signature_creator_unittest.cc",
+    "signature_verifier_unittest.cc",
+    "symmetric_key_unittest.cc",
+  ]
 
-    if (use_openssl || !is_linux) {
-      sources -= [ "rsa_private_key_nss_unittest.cc" ]
-    }
-
-    if (use_openssl) {
-      sources -= [ "nss_util_unittest.cc" ]
-    } else {
-      sources -= [ "openssl_bio_string_unittest.cc" ]
-    }
-
-    deps = [
-      ":crypto",
-      ":platform",
-      ":test_support",
-      "//base",
-      "//base/test:run_all_unittests",
-      "//base/test:test_support",
-      "//testing/gmock",
-      "//testing/gtest",
-    ]
+  if (use_openssl || !is_linux) {
+    sources -= [ "rsa_private_key_nss_unittest.cc" ]
   }
+
+  if (use_openssl) {
+    sources -= [ "nss_util_unittest.cc" ]
+  } else {
+    sources -= [ "openssl_bio_string_unittest.cc" ]
+  }
+
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
+  deps = [
+    ":crypto",
+    ":platform",
+    ":test_support",
+    "//base",
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
 }
 
 source_set("test_support") {

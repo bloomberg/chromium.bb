@@ -21,7 +21,7 @@ namespace webcrypto {
 
 namespace {
 
-const EVP_AEAD* GetAesGcmAlgorithmFromKeySize(unsigned int key_size_bytes) {
+const EVP_AEAD* GetAesGcmAlgorithmFromKeySize(size_t key_size_bytes) {
   switch (key_size_bytes) {
     case 16:
       return EVP_aead_aes_128_gcm();

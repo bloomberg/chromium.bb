@@ -47,7 +47,8 @@ Status CreateRsaHashedKeyAlgorithm(
     return Status::ErrorUnexpected();
 
   *key_algorithm = blink::WebCryptoKeyAlgorithm::createRsaHashed(
-      rsa_algorithm, modulus_length_bits, &e[0], e.size(), hash_algorithm);
+      rsa_algorithm, modulus_length_bits, &e[0],
+      static_cast<unsigned int>(e.size()), hash_algorithm);
 
   return Status::Success();
 }

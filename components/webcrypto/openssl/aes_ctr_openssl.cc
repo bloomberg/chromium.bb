@@ -23,7 +23,7 @@ namespace webcrypto {
 
 namespace {
 
-const EVP_CIPHER* GetAESCipherByKeyLength(unsigned int key_length_bytes) {
+const EVP_CIPHER* GetAESCipherByKeyLength(size_t key_length_bytes) {
   // BoringSSL does not support 192-bit AES keys.
   switch (key_length_bytes) {
     case 16:
@@ -119,7 +119,7 @@ std::vector<uint8_t> BlockWithZeroedCounter(const CryptoData& counter_block,
       counter_block.bytes(),
       counter_block.bytes() + counter_block.byte_length());
 
-  unsigned int index = new_counter_block.size() - counter_length_bytes;
+  size_t index = new_counter_block.size() - counter_length_bytes;
   memset(&new_counter_block.front() + index, 0, counter_length_bytes);
 
   if (counter_length_bits_remainder) {

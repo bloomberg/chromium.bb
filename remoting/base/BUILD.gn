@@ -29,6 +29,27 @@ source_set("base") {
   ]
 }
 
+source_set("breakpad") {
+  sources = [
+    "breakpad.h",
+    "breakpad_linux.cc",
+    "breakpad_mac.mm",
+    "breakpad_win.cc",
+  ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
+  deps = [
+    "//base",
+  ]
+
+  if (is_mac) {
+    deps += [ "//breakpad" ]
+  } else if (is_win) {
+    deps += [ "//breakpad:breakpad_handler" ]
+  }
+}
+
 source_set("unit_tests") {
   testonly = true
 
@@ -50,6 +71,7 @@ source_set("unit_tests") {
 
   deps = [
     ":base",
+    ":breakpad",
     "//base",
     "//net:test_support",
     "//testing/gmock",
@@ -62,5 +84,4 @@ source_set("unit_tests") {
     sources += [ "resources_unittest.cc" ]
     deps += [ "//breakpad:client" ]
   }
-
 }

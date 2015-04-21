@@ -1317,9 +1317,8 @@ executable("quic_server") {
 }
 
 # TODO(GYP) make this compile on Android, we need some native test deps done.
-# TODO(GYP) Also doesn't work on Windows; dependency on boringssl is wrong.
 # TODO(GYP) Also doesn't work on Mac, need to figure out why not.
-if (!is_android && !is_win && !is_mac) {
+if (!is_android && !is_mac) {
   test("net_unittests") {
     sources = gypi_values.net_test_sources
 
@@ -1328,11 +1327,11 @@ if (!is_android && !is_win && !is_mac) {
     defines = []
 
     deps = [
+      ":balsa",
       ":extras",
       ":http_server",
       ":net",
       ":net_quic_proto",
-      ":epoll_quic_tools",
       ":simple_quic_tools",
       ":test_support",
       "//base",
@@ -1352,6 +1351,9 @@ if (!is_android && !is_win && !is_mac) {
       "//url",
     ]
 
+    if (is_desktop_linux) {
+      deps += [ ":epoll_quic_tools" ]
+    }
     if (is_linux) {
       sources += gypi_values.net_linux_test_sources
       deps += [

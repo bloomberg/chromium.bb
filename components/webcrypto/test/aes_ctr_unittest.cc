@@ -29,8 +29,9 @@ blink::WebCryptoAlgorithm CreateAesCtrAlgorithm(
     uint8_t length_bits) {
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       blink::WebCryptoAlgorithmIdAesCtr,
-      new blink::WebCryptoAesCtrParams(length_bits, vector_as_array(&counter),
-                                       counter.size()));
+      new blink::WebCryptoAesCtrParams(
+          length_bits, vector_as_array(&counter),
+          static_cast<unsigned int>(counter.size())));
 }
 
 TEST(WebCryptoAesCtrTest, EncryptDecryptKnownAnswer) {

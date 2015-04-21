@@ -153,7 +153,7 @@ Status ReadSecretKeyJwk(const CryptoData& key_data,
 // Creates an AES algorithm name for the given key size (in bytes). For
 // instance "A128CBC" is the result of suffix="CBC", keylen_bytes=16.
 std::string MakeJwkAesAlgorithmName(const std::string& suffix,
-                                    unsigned int keylen_bytes);
+                                    size_t keylen_bytes);
 
 // This is very similar to ReadSecretKeyJwk(), except instead of specifying an
 // absolute "expected_alg", the suffix for an AES algorithm name is given

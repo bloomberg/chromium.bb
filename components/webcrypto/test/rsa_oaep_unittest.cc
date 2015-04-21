@@ -23,8 +23,9 @@ blink::WebCryptoAlgorithm CreateRsaOaepAlgorithm(
     const std::vector<uint8_t>& label) {
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       blink::WebCryptoAlgorithmIdRsaOaep,
-      new blink::WebCryptoRsaOaepParams(!label.empty(), vector_as_array(&label),
-                                        label.size()));
+      new blink::WebCryptoRsaOaepParams(
+          !label.empty(), vector_as_array(&label),
+          static_cast<unsigned int>(label.size())));
 }
 
 scoped_ptr<base::DictionaryValue> CreatePublicKeyJwkDict() {

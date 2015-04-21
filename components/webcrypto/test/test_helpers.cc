@@ -142,10 +142,10 @@ blink::WebCryptoAlgorithm CreateRsaHashedKeyGenAlgorithm(
     const std::vector<uint8_t>& public_exponent) {
   DCHECK(blink::WebCryptoAlgorithm::isHash(hash_id));
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
-      algorithm_id,
-      new blink::WebCryptoRsaHashedKeyGenParams(
-          CreateAlgorithm(hash_id), modulus_length,
-          vector_as_array(&public_exponent), public_exponent.size()));
+      algorithm_id, new blink::WebCryptoRsaHashedKeyGenParams(
+                        CreateAlgorithm(hash_id), modulus_length,
+                        vector_as_array(&public_exponent),
+                        static_cast<unsigned int>(public_exponent.size())));
 }
 
 std::vector<uint8_t> Corrupted(const std::vector<uint8_t>& input) {

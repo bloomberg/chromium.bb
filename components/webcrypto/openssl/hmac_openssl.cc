@@ -34,7 +34,7 @@ Status SignHmac(const std::vector<uint8_t>& raw_key,
   const EVP_MD* digest_algorithm = GetDigest(hash.id());
   if (!digest_algorithm)
     return Status::ErrorUnsupported();
-  unsigned int hmac_expected_length = EVP_MD_size(digest_algorithm);
+  size_t hmac_expected_length = EVP_MD_size(digest_algorithm);
 
   buffer->resize(hmac_expected_length);
   crypto::ScopedOpenSSLSafeSizeBuffer<EVP_MAX_MD_SIZE> hmac_result(

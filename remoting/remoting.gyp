@@ -84,6 +84,7 @@
 
   'targets': [
     {
+      # GN version: //remoting/base:breakpad
       'target_name': 'remoting_breakpad',
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },

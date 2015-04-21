@@ -416,7 +416,7 @@ Status ReadSecretKeyJwk(const CryptoData& key_data,
 }
 
 std::string MakeJwkAesAlgorithmName(const std::string& suffix,
-                                    unsigned int keylen_bytes) {
+                                    size_t keylen_bytes) {
   if (keylen_bytes == 16)
     return std::string("A128") + suffix;
   if (keylen_bytes == 24)

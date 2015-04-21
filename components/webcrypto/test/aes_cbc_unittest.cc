@@ -20,7 +20,8 @@ blink::WebCryptoAlgorithm CreateAesCbcAlgorithm(
     const std::vector<uint8_t>& iv) {
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       blink::WebCryptoAlgorithmIdAesCbc,
-      new blink::WebCryptoAesCbcParams(vector_as_array(&iv), iv.size()));
+      new blink::WebCryptoAesCbcParams(vector_as_array(&iv),
+                                       static_cast<unsigned int>(iv.size())));
 }
 
 blink::WebCryptoAlgorithm CreateAesCbcKeyGenAlgorithm(

@@ -22,7 +22,7 @@ namespace webcrypto {
 
 namespace {
 
-const EVP_CIPHER* GetAESCipherByKeyLength(unsigned int key_length_bytes) {
+const EVP_CIPHER* GetAESCipherByKeyLength(size_t key_length_bytes) {
   // BoringSSL does not support 192-bit AES keys.
   switch (key_length_bytes) {
     case 16:

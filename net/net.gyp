@@ -103,6 +103,7 @@
       ],
     },
     {
+      # GN version: //net
       'target_name': 'net',
       'dependencies': [
         '../base/base.gyp:base_i18n',
@@ -120,6 +121,7 @@
       'includes': [ 'net_common.gypi' ],
     },
     {
+      # GN version: //net:net_unittests
       'target_name': 'net_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [
@@ -741,7 +743,7 @@
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],
     },
-    {
+    { # GN version: //net:balsa
       'target_name': 'balsa',
       'type': 'static_library',
       'dependencies': [

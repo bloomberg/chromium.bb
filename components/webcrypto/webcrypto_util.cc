@@ -18,7 +18,7 @@ namespace {
 // Converts a (big-endian) WebCrypto BigInteger, with or without leading zeros,
 // to unsigned int.
 bool BigIntegerToUint(const uint8_t* data,
-                      unsigned int data_size,
+                      size_t data_size,
                       unsigned int* result) {
   if (data_size == 0)
     return false;

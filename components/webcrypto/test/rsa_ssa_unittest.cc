@@ -559,10 +559,11 @@ TEST(WebCryptoRsaSsaTest, SignVerifyFailures) {
             Sign(algorithm, private_key, CryptoData(data), &signature));
 
   // Ensure truncated signature does not verify by passing one less byte.
-  EXPECT_EQ(Status::Success(), Verify(algorithm, public_key,
-                                      CryptoData(vector_as_array(&signature),
-                                                 signature.size() - 1),
-                                      CryptoData(data), &signature_match));
+  EXPECT_EQ(Status::Success(),
+            Verify(algorithm, public_key,
+                   CryptoData(vector_as_array(&signature),
+                              static_cast<unsigned int>(signature.size()) - 1),
+                   CryptoData(data), &signature_match));
   EXPECT_FALSE(signature_match);
 
   // Ensure truncated signature does not verify by passing no bytes.
