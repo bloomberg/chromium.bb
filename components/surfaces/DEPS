@@ -2,6 +2,8 @@ include_rules = [
   "+cc",
   "+gpu",
   "+mojo/application",
+  "+mojo/common",
   "+mojo/converters",
+  "+third_party/mojo/src/mojo/public",
   "+third_party/mojo_services",
 ]

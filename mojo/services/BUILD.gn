@@ -21,12 +21,12 @@ group("services") {
     deps += [
       "//components/clipboard",
       "//components/kiosk_wm:window_manager",
+      "//components/native_viewport",
+      "//components/surfaces",
       "//components/view_manager",
       "//components/window_manager:lib",
       "//mojo/services/html_viewer",
-      "//mojo/services/native_viewport",
       "//mojo/services/network",
-      "//mojo/services/surfaces",
       "//mojo/services/tracing",
     ]
 
@@ -34,10 +34,10 @@ group("services") {
     if (is_mac) {
       deps -= [
         "//components/kiosk_wm:window_manager",
+        "//components/native_viewport",
         "//components/view_manager",
         "//components/window_manager:lib",
         "//mojo/services/html_viewer",
-        "//mojo/services/native_viewport",
       ]
     }
   }

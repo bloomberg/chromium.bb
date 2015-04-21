@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_SURFACES_SURFACES_SCHEDULER_H_
-#define MOJO_SERVICES_SURFACES_SURFACES_SCHEDULER_H_
+#ifndef COMPONENTS_SURFACES_SURFACES_SCHEDULER_H_
+#define COMPONENTS_SURFACES_SURFACES_SCHEDULER_H_
 
 #include <set>
 
@@ -56,4 +56,4 @@ class SurfacesScheduler : public cc::SchedulerClient {
 
 }  // namespace mojo
 
-#endif  // MOJO_SERVICES_SURFACES_SURFACES_SCHEDULER_H_
+#endif  // COMPONENTS_SURFACES_SURFACES_SCHEDULER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/native_viewport/onscreen_context_provider.h"
+#include "components/native_viewport/onscreen_context_provider.h"
 
 #include "components/gles2/command_buffer_driver.h"
 #include "components/gles2/command_buffer_impl.h"

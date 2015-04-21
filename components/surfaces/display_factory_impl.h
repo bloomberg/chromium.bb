@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_SURFACES_DISPLAY_FACTORY_IMPL_H_
-#define SERVICES_SURFACES_DISPLAY_FACTORY_IMPL_H_
+#ifndef COMPONENTS_SURFACES_DISPLAY_FACTORY_IMPL_H_
+#define COMPONENTS_SURFACES_DISPLAY_FACTORY_IMPL_H_
 
-#include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/services/surfaces/display_impl.h"
+#include "components/surfaces/display_impl.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/mojo_services/src/surfaces/public/interfaces/display.mojom.h"
 
 namespace cc {
@@ -41,4 +41,4 @@ class DisplayFactoryImpl : public mojo::DisplayFactory {
 
 }  // namespace surfaces
 
-#endif  // SERVICES_SURFACES_DISPLAY_FACTORY_IMPL_H_
+#endif  // COMPONENTS_SURFACES_DISPLAY_FACTORY_IMPL_H_

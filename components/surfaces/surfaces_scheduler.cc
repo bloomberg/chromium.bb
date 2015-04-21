@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/surfaces/surfaces_scheduler.h"
+#include "components/surfaces/surfaces_scheduler.h"
 
 #include "cc/surfaces/display.h"
 

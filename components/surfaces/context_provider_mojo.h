@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_SURFACES_CONTEXT_PROVIDER_MOJO_H_
-#define SERVICES_SURFACES_CONTEXT_PROVIDER_MOJO_H_
+#ifndef COMPONENTS_SURFACES_CONTEXT_PROVIDER_MOJO_H_
+#define COMPONENTS_SURFACES_CONTEXT_PROVIDER_MOJO_H_
 
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "cc/output/context_provider.h"
-#include "mojo/public/c/gles2/gles2.h"
-#include "mojo/public/cpp/system/core.h"
+#include "third_party/mojo/src/mojo/public/c/gles2/gles2.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 
 namespace mojo {
 
@@ -58,4 +58,4 @@ class ContextProviderMojo : public cc::ContextProvider {
 
 }  // namespace mojo
 
-#endif  // SERVICES_SURFACES_CONTEXT_PROVIDER_MOJO_H_
+#endif  // COMPONENTS_SURFACES_CONTEXT_PROVIDER_MOJO_H_

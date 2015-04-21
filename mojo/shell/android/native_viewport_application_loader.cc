@@ -5,8 +5,8 @@
 #include "mojo/shell/android/native_viewport_application_loader.h"
 
 #include "components/gles2/gpu_state.h"
+#include "components/native_viewport/native_viewport_impl.h"
 #include "mojo/public/cpp/application/application_impl.h"
-#include "mojo/services/native_viewport/native_viewport_impl.h"
 
 namespace mojo {
 namespace shell {

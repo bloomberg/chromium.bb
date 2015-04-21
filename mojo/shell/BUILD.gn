@@ -72,7 +72,7 @@ executable("mojo_shell") {
 
     deps += [
       ":jni_headers",
-      "//mojo/services/native_viewport:lib",
+      "//components/native_viewport:lib",
       "//mojo/shell/application_manager",
       "//ui/gl",
     ]
@@ -166,8 +166,8 @@ source_set("lib") {
       ":jni_headers",
       ":run_android_application_function",
       "//components/gles2",
+      "//components/native_viewport:lib",
       "//mojo/application:content_handler",
-      "//mojo/services/native_viewport:lib",
     ]
   }
 
@@ -324,7 +324,7 @@ if (is_android) {
       ":java",
       ":resources",
       "//base:base_java",
-      "//mojo/services/native_viewport:native_viewport_java",
+      "//components/native_viewport:native_viewport_java",
       "//third_party/android_tools:google_play_services_default_resources",
     ]
   }

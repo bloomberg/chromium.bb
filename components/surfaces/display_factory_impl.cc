@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/surfaces/display_factory_impl.h"
+#include "components/surfaces/display_factory_impl.h"
 
 #include "cc/surfaces/surface_id.h"
 

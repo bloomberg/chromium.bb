@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_SURFACES_SURFACES_OUTPUT_SURFACE_H_
-#define SERVICES_SURFACES_SURFACES_OUTPUT_SURFACE_H_
+#ifndef COMPONENTS_SURFACES_SURFACES_OUTPUT_SURFACE_H_
+#define COMPONENTS_SURFACES_SURFACES_OUTPUT_SURFACE_H_
 
 #include "cc/output/output_surface.h"
 
@@ -26,4 +26,4 @@ class DirectOutputSurface : public cc::OutputSurface {
 
 }  // namespace mojo
 
-#endif  // SERVICES_SURFACES_SURFACES_OUTPUT_SURFACE_H_
+#endif  // COMPONENTS_SURFACES_SURFACES_OUTPUT_SURFACE_H_

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/surfaces/context_provider_mojo.h"
+#include "components/surfaces/context_provider_mojo.h"
 
 #include "base/logging.h"
-#include "mojo/public/cpp/environment/environment.h"
+#include "third_party/mojo/src/mojo/public/cpp/environment/environment.h"
 
 namespace mojo {
 

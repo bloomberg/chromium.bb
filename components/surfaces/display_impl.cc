@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/surfaces/display_impl.h"
+#include "components/surfaces/display_impl.h"
 
 #include "cc/output/compositor_frame.h"
 #include "cc/surfaces/display.h"
+#include "components/surfaces/context_provider_mojo.h"
+#include "components/surfaces/surfaces_output_surface.h"
+#include "components/surfaces/surfaces_scheduler.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
-#include "mojo/services/surfaces/context_provider_mojo.h"
-#include "mojo/services/surfaces/surfaces_output_surface.h"
-#include "mojo/services/surfaces/surfaces_scheduler.h"
 
 namespace surfaces {
 namespace {

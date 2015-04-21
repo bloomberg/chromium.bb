@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_SURFACES_SURFACES_IMPL_H_
-#define SERVICES_SURFACES_SURFACES_IMPL_H_
+#ifndef COMPONENTS_SURFACES_SURFACES_IMPL_H_
+#define COMPONENTS_SURFACES_SURFACES_IMPL_H_
 
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "mojo/common/weak_binding_set.h"
-#include "mojo/public/cpp/application/application_connection.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/mojo/src/mojo/public/cpp/application/application_connection.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/mojo_services/src/gpu/public/interfaces/command_buffer.mojom.h"
 #include "third_party/mojo_services/src/gpu/public/interfaces/viewport_parameter_listener.mojom.h"
 #include "third_party/mojo_services/src/surfaces/public/interfaces/surfaces.mojom.h"
@@ -65,4 +65,4 @@ class SurfacesImpl : public mojo::Surface, public cc::SurfaceFactoryClient {
 
 }  // namespace surfaces
 
-#endif  // SERVICES_SURFACES_SURFACES_IMPL_H_
+#endif  // COMPONENTS_SURFACES_SURFACES_IMPL_H_

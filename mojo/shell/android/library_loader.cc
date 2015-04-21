@@ -7,7 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/bind.h"
-#include "mojo/services/native_viewport/platform_viewport_android.h"
+#include "components/native_viewport/platform_viewport_android.h"
 #include "mojo/shell/android/android_handler.h"
 #include "mojo/shell/android/main.h"
 

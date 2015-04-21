@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_SURFACES_SURFACES_SERVICE_APPLICATION_H_
-#define SERVICES_SURFACES_SURFACES_SERVICE_APPLICATION_H_
+#ifndef COMPONENTS_SURFACES_SURFACES_SERVICE_APPLICATION_H_
+#define COMPONENTS_SURFACES_SURFACES_SERVICE_APPLICATION_H_
 
 #include "base/macros.h"
 #include "cc/surfaces/surface_manager.h"
 #include "mojo/common/tracing_impl.h"
-#include "mojo/public/cpp/application/application_delegate.h"
-#include "mojo/public/cpp/application/interface_factory.h"
+#include "third_party/mojo/src/mojo/public/cpp/application/application_delegate.h"
+#include "third_party/mojo/src/mojo/public/cpp/application/interface_factory.h"
 #include "third_party/mojo_services/src/surfaces/public/interfaces/display.mojom.h"
 #include "third_party/mojo_services/src/surfaces/public/interfaces/surfaces.mojom.h"
 
@@ -52,4 +52,4 @@ class SurfacesServiceApplication
 
 }  // namespace surfaces
 
-#endif  //  SERVICES_SURFACES_SURFACES_SERVICE_APPLICATION_H_
+#endif  //  COMPONENTS_SURFACES_SURFACES_SERVICE_APPLICATION_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/native_viewport/platform_viewport_headless.h"
+#include "components/native_viewport/platform_viewport_headless.h"
 
 #include "mojo/converters/geometry/geometry_type_converters.h"
 

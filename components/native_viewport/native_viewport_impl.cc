@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/native_viewport/native_viewport_impl.h"
+#include "components/native_viewport/native_viewport_impl.h"
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -10,9 +10,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "components/gles2/gpu_state.h"
+#include "components/native_viewport/platform_viewport_headless.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
-#include "mojo/public/cpp/application/interface_factory.h"
-#include "mojo/services/native_viewport/platform_viewport_headless.h"
+#include "third_party/mojo/src/mojo/public/cpp/application/interface_factory.h"
 #include "ui/events/event.h"
 
 namespace native_viewport {

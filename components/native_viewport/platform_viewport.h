@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_H_
-#define SERVICES_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_H_
+#ifndef COMPONENTS_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_H_
+#define COMPONENTS_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "third_party/mojo_services/src/input_events/public/interfaces/input_events.mojom.h"
@@ -46,4 +46,4 @@ class PlatformViewport {
 
 }  // namespace native_viewport
 
-#endif  // SERVICES_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_H_
+#endif  // COMPONENTS_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_H_

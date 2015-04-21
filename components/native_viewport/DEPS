@@ -1,7 +1,10 @@
 include_rules = [
   "+components/gles2",
+  "+jni",
   "+mojo/application",
+  "+mojo/common",
   "+mojo/converters",
+  "+third_party/mojo/src/mojo/public",
   "+third_party/mojo_services",
   "+ui",
 ]
