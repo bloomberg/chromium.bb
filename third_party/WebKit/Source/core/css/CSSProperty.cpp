@@ -22,7 +22,6 @@
 #include "core/css/CSSProperty.h"
 
 #include "core/StylePropertyShorthand.h"
-#include "core/css/CSSValueList.h"
 #include "core/style/ComputedStyleConstants.h"
 
 namespace blink {
@@ -43,13 +42,6 @@ CSSPropertyID StylePropertyMetadata::shorthandID() const
     getMatchingShorthandsForLonghand(static_cast<CSSPropertyID>(m_propertyID), &shorthands);
     ASSERT(shorthands.size() && m_indexInShorthandsVector >= 0 && m_indexInShorthandsVector < shorthands.size());
     return shorthands.at(m_indexInShorthandsVector).id();
-}
-
-void CSSProperty::wrapValueInCommaSeparatedList()
-{
-    RefPtrWillBeRawPtr<CSSValue> value = m_value.release();
-    m_value = CSSValueList::createCommaSeparated();
-    toCSSValueList(m_value.get())->append(value.release());
 }
 
 enum LogicalBoxSide { BeforeSide, EndSide, AfterSide, StartSide };

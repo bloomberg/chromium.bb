@@ -76,8 +76,6 @@ public:
 
     CSSValue* value() const { return m_value.get(); }
 
-    void wrapValueInCommaSeparatedList();
-
     static CSSPropertyID resolveDirectionAwareProperty(CSSPropertyID, TextDirection, WritingMode);
     static bool isAffectedByAllProperty(CSSPropertyID);
 
