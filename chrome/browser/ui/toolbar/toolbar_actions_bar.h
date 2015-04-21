@@ -137,11 +137,6 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
 
   ToolbarActionsBarDelegate* delegate_for_test() { return delegate_; }
 
-  static void set_pop_out_actions_to_run_for_testing(
-      bool pop_out_actions_to_run) {
-    pop_out_actions_to_run_ = pop_out_actions_to_run;
-  }
-
   static void set_send_overflowed_action_changes_for_testing(
       bool send_overflowed_action_changes) {
     send_overflowed_action_changes_ = send_overflowed_action_changes;
@@ -153,8 +148,6 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
   static bool disable_animations_for_testing_;
 
  private:
-  class TabOrderHelper;
-
   using ToolbarActions = ScopedVector<ToolbarActionViewController>;
 
   // ExtensionToolbarModel::Observer:
@@ -214,10 +207,6 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
 
   // The toolbar actions.
   ToolbarActions toolbar_actions_;
-
-  // The TabOrderHelper that manages popping out actions that want to act.
-  // This is only non-null if |pop_out_actions_to_run| is true.
-  scoped_ptr<TabOrderHelper> tab_order_helper_;
 
   ScopedObserver<extensions::ExtensionToolbarModel,
                  extensions::ExtensionToolbarModel::Observer> model_observer_;
