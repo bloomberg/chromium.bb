@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/window_manager/basic_focus_rules.h"
 #include "mojo/services/kiosk_wm/merged_service_provider.h"
-#include "mojo/services/window_manager/basic_focus_rules.h"
 
 namespace kiosk_wm {
 

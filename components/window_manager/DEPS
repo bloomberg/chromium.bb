@@ -1,6 +1,8 @@
 include_rules = [
   "+mojo/application",
-  "+components/window_manager",
+  "+mojo/common",
+  "+mojo/converters",
+  "+third_party/mojo/src/mojo/public",
   "+third_party/mojo_services",
   "+ui",
 ]

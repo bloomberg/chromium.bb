@@ -6,13 +6,13 @@
 #define SERVICES_KIOSK_WM_KIOSK_WM_H_
 
 #include "base/memory/weak_ptr.h"
+#include "components/window_manager/window_manager_app.h"
+#include "components/window_manager/window_manager_delegate.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/connect.h"
 #include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/services/kiosk_wm/navigator_host_impl.h"
-#include "mojo/services/window_manager/window_manager_app.h"
-#include "mojo/services/window_manager/window_manager_delegate.h"
 #include "third_party/mojo_services/src/input_events/public/interfaces/input_events.mojom.h"
 #include "third_party/mojo_services/src/navigation/public/interfaces/navigation.mojom.h"
 #include "third_party/mojo_services/src/view_manager/public/cpp/view_manager.h"

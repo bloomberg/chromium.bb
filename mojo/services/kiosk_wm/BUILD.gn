@@ -21,6 +21,7 @@ mojo_native_application("window_manager") {
 
   deps = [
     "//base",
+    "//components/window_manager:lib",
     "//mojo/application",
     "//mojo/common:common",
     "//mojo/converters/geometry",
@@ -31,7 +32,6 @@ mojo_native_application("window_manager") {
     "//third_party/mojo_services/src/input_events/public/interfaces",
     "//third_party/mojo_services/src/navigation/public/interfaces",
     "//third_party/mojo_services/src/view_manager/public/cpp",
-    "//mojo/services/window_manager:lib",
     "//ui/base",
   ]
 }
