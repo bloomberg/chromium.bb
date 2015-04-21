@@ -108,7 +108,9 @@ Status ParseDeviceName(std::string device_name, Capabilities* capabilities) {
   }
 
   capabilities->device_metrics.reset(device->device_metrics.release());
-  capabilities->switches.SetSwitch("user-agent", device->user_agent);
+  // Don't override the user agent if blank (like for notebooks).
+  if (!device->user_agent.empty())
+    capabilities->switches.SetSwitch("user-agent", device->user_agent);
 
   return Status(kOk);
 }
@@ -139,13 +141,25 @@ Status ParseMobileEmulation(const base::Value& option,
     int width = 0;
     int height = 0;
     double device_scale_factor = 0;
+    bool touch = true;
+    bool mobile = true;
     if (!metrics->GetInteger("width", &width) ||
         !metrics->GetInteger("height", &height) ||
         !metrics->GetDouble("pixelRatio", &device_scale_factor))
       return Status(kUnknownError, "invalid 'deviceMetrics'");
 
+    if (metrics->HasKey("touch")) {
+      if (!metrics->GetBoolean("touch", &touch))
+        return Status(kUnknownError, "'touch' must be a boolean");
+    }
+
+    if (metrics->HasKey("mobile")) {
+      if (!metrics->GetBoolean("mobile", &mobile))
+        return Status(kUnknownError, "'mobile' must be a boolean");
+    }
+
     DeviceMetrics* device_metrics =
-        new DeviceMetrics(width, height, device_scale_factor);
+        new DeviceMetrics(width, height, device_scale_factor, touch, mobile);
     capabilities->device_metrics =
         scoped_ptr<DeviceMetrics>(device_metrics);
   }

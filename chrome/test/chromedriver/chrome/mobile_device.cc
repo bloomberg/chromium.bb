@@ -54,6 +54,8 @@ Status FindMobileDevice(std::string device_name,
       int width = 0;
       int height = 0;
       double device_scale_factor = 0.0;
+      bool touch = true;
+      bool mobile = true;
       if (!device->GetInteger("width",  &width)) {
         return Status(kUnknownError,
                       "malformed device width: should be an integer");
@@ -66,8 +68,16 @@ Status FindMobileDevice(std::string device_name,
         return Status(kUnknownError,
                       "malformed device scale factor: should be a double");
       }
+      if (!device->GetBoolean("touch", &touch)) {
+        return Status(kUnknownError,
+                      "malformed touch: should be a bool");
+      }
+      if (!device->GetBoolean("mobile", &mobile)) {
+        return Status(kUnknownError,
+                      "malformed mobile: should be a bool");
+      }
       tmp_mobile_device->device_metrics.reset(
-          new DeviceMetrics(width, height, device_scale_factor));
+          new DeviceMetrics(width, height, device_scale_factor, touch, mobile));
 
       *mobile_device = tmp_mobile_device.Pass();
       return Status(kOk);

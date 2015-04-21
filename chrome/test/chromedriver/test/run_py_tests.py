@@ -1231,9 +1231,9 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
     self.assertEqual(640, driver.ExecuteScript('return window.screen.height'))
     body_tag = driver.FindElement('tag name', 'body')
     self.assertEqual(
-        'Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Build/JOP40D) AppleW'
-        'ebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/53'
-        '5.19',
+        'Mozilla/5.0 (Linux; Android 4.4.4; en-us; Nexus 5 Build/JOP40D) '
+        'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2307.2 Mobile '
+        'Safari/537.36',
         body_tag.GetText())
 
   def testSendKeysToElement(self):

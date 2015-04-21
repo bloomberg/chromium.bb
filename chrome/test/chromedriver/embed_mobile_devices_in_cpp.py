@@ -50,6 +50,9 @@ def main():
         if 'WebInspector.OverridesUI._tablets = [' in line:
           devices += ','
           inside_list = True
+        if 'WebInspector.OverridesUI._notebooks = [' in line:
+          devices += ','
+          inside_list = True
       else:
         if line.strip() == '];':
           inside_list = False

@@ -36,9 +36,9 @@ void AssertDeviceMetricsCommand(const Command& command,
 
 }  // namespace
 
-TEST(MobileEmulationOverrideManager, SendsCommandOnConnect) {
+TEST(MobileEmulationOverrideManager, SendsCommandWithTouchOnConnect) {
   RecorderDevToolsClient client;
-  DeviceMetrics device_metrics(1, 2, 3.0);
+  DeviceMetrics device_metrics(1, 2, 3.0, true, true);
   MobileEmulationOverrideManager manager(&client, &device_metrics);
   ASSERT_EQ(0u, client.commands_.size());
   ASSERT_EQ(kOk, manager.OnConnected(&client).code());
@@ -50,9 +50,23 @@ TEST(MobileEmulationOverrideManager, SendsCommandOnConnect) {
       AssertDeviceMetricsCommand(client.commands_[2], device_metrics));
 }
 
+TEST(MobileEmulationOverrideManager, SendsCommandWithoutTouchOnConnect) {
+  RecorderDevToolsClient client;
+  DeviceMetrics device_metrics(1, 2, 3.0, false, true);
+  MobileEmulationOverrideManager manager(&client, &device_metrics);
+  ASSERT_EQ(0u, client.commands_.size());
+  ASSERT_EQ(kOk, manager.OnConnected(&client).code());
+
+  ASSERT_EQ(1u, client.commands_.size());
+  ASSERT_EQ(kOk, manager.OnConnected(&client).code());
+  ASSERT_EQ(2u, client.commands_.size());
+  ASSERT_NO_FATAL_FAILURE(
+      AssertDeviceMetricsCommand(client.commands_[1], device_metrics));
+}
+
 TEST(MobileEmulationOverrideManager, SendsCommandOnNavigation) {
   RecorderDevToolsClient client;
-  DeviceMetrics device_metrics(1, 2, 3.0);
+  DeviceMetrics device_metrics(1, 2, 3.0, true, true);
   MobileEmulationOverrideManager manager(&client, &device_metrics);
   base::DictionaryValue main_frame_params;
   ASSERT_EQ(kOk,

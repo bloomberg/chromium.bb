@@ -6,12 +6,14 @@
 #define CHROME_TEST_CHROMEDRIVER_CHROME_DEVICE_METRICS_H_
 
 struct DeviceMetrics {
-  DeviceMetrics(int width, int height, double device_scale_factor);
+  DeviceMetrics(int width, int height, double device_scale_factor, bool touch,
+                bool mobile);
   ~DeviceMetrics();
 
   int width;
   int height;
   double device_scale_factor;
+  bool touch;
   bool mobile;
   bool fit_window;
   bool text_autosizing;
