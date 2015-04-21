@@ -72,7 +72,7 @@ suspensionBehavior:NSNotificationSuspensionBehaviorCoalesce];
 }
 
 + (void)notifyPrefsChangedWithRedraw:(BOOL)redraw {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults synchronize];
 

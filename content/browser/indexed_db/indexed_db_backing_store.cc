@@ -2362,7 +2362,7 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
                                  const GURL& blob_url,
                                  const base::Time& last_modified,
                                  net::URLRequestContext* request_context) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     scoped_ptr<storage::FileStreamWriter> writer(
         storage::FileStreamWriter::CreateForLocalFile(
             task_runner_.get(),

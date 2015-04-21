@@ -41,7 +41,7 @@ void HistogramMessageFilter::OnChildHistogramData(
 void HistogramMessageFilter::OnGetBrowserHistogram(
     const std::string& name,
     std::string* histogram_json) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   // Security: Only allow access to browser histograms when running in the
   // context of a test.
   bool using_stats_collection_controller =
