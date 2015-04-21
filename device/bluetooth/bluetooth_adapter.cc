@@ -24,22 +24,20 @@ base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
 }
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_WIN) && !defined(OS_MACOSX)
 
+base::WeakPtr<BluetoothAdapter> BluetoothAdapter::GetWeakPtrForTesting() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 #if defined(OS_CHROMEOS)
 void BluetoothAdapter::Shutdown() {
   NOTIMPLEMENTED();
 }
 #endif
 
-BluetoothAdapter::BluetoothAdapter()
-    : weak_ptr_factory_(this) {
-}
-
-BluetoothAdapter::~BluetoothAdapter() {
-  STLDeleteValues(&devices_);
-}
-
-base::WeakPtr<BluetoothAdapter> BluetoothAdapter::GetWeakPtrForTesting() {
-  return weak_ptr_factory_.GetWeakPtr();
+void BluetoothAdapter::StartDiscoverySession(
+    const DiscoverySessionCallback& callback,
+    const ErrorCallback& error_callback) {
+  StartDiscoverySessionWithFilter(nullptr, callback, error_callback);
 }
 
 void BluetoothAdapter::StartDiscoverySessionWithFilter(
@@ -51,50 +49,6 @@ void BluetoothAdapter::StartDiscoverySessionWithFilter(
                                  weak_ptr_factory_.GetWeakPtr(),
                                  base::Passed(&discovery_filter), callback),
                       error_callback);
-}
-
-void BluetoothAdapter::StartDiscoverySession(
-    const DiscoverySessionCallback& callback,
-    const ErrorCallback& error_callback) {
-  StartDiscoverySessionWithFilter(nullptr, callback, error_callback);
-}
-
-scoped_ptr<BluetoothDiscoveryFilter>
-BluetoothAdapter::GetMergedDiscoveryFilterHelper(
-    const BluetoothDiscoveryFilter* masked_filter,
-    bool omit) const {
-  scoped_ptr<BluetoothDiscoveryFilter> result;
-  bool first_merge = true;
-
-  std::set<BluetoothDiscoverySession*> temp(discovery_sessions_);
-  for (const auto& iter : temp) {
-    const BluetoothDiscoveryFilter* curr_filter = iter->GetDiscoveryFilter();
-
-    if (!iter->IsActive())
-      continue;
-
-    if (omit && curr_filter == masked_filter) {
-      // if masked_filter is pointing to empty filter, and there are
-      // multiple empty filters in discovery_sessions_, make sure we'll
-      // process next empty sessions.
-      omit = false;
-      continue;
-    }
-
-    if (first_merge) {
-      first_merge = false;
-      if (curr_filter) {
-        result.reset(new BluetoothDiscoveryFilter(
-            BluetoothDiscoveryFilter::Transport::TRANSPORT_DUAL));
-        result->CopyFrom(*curr_filter);
-      }
-      continue;
-    }
-
-    result = BluetoothDiscoveryFilter::Merge(result.get(), curr_filter);
-  }
-
-  return result.Pass();
 }
 
 scoped_ptr<BluetoothDiscoveryFilter>
@@ -183,6 +137,13 @@ BluetoothDevice::PairingDelegate* BluetoothAdapter::DefaultPairingDelegate() {
   return pairing_delegates_.front().first;
 }
 
+BluetoothAdapter::BluetoothAdapter() : weak_ptr_factory_(this) {
+}
+
+BluetoothAdapter::~BluetoothAdapter() {
+  STLDeleteValues(&devices_);
+}
+
 void BluetoothAdapter::OnStartDiscoverySession(
     scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
     const DiscoverySessionCallback& callback) {
@@ -211,6 +172,44 @@ void BluetoothAdapter::DiscoverySessionBecameInactive(
     BluetoothDiscoverySession* discovery_session) {
   DCHECK(!discovery_session->IsActive());
   discovery_sessions_.erase(discovery_session);
+}
+
+scoped_ptr<BluetoothDiscoveryFilter>
+BluetoothAdapter::GetMergedDiscoveryFilterHelper(
+    const BluetoothDiscoveryFilter* masked_filter,
+    bool omit) const {
+  scoped_ptr<BluetoothDiscoveryFilter> result;
+  bool first_merge = true;
+
+  std::set<BluetoothDiscoverySession*> temp(discovery_sessions_);
+  for (const auto& iter : temp) {
+    const BluetoothDiscoveryFilter* curr_filter = iter->GetDiscoveryFilter();
+
+    if (!iter->IsActive())
+      continue;
+
+    if (omit && curr_filter == masked_filter) {
+      // if masked_filter is pointing to empty filter, and there are
+      // multiple empty filters in discovery_sessions_, make sure we'll
+      // process next empty sessions.
+      omit = false;
+      continue;
+    }
+
+    if (first_merge) {
+      first_merge = false;
+      if (curr_filter) {
+        result.reset(new BluetoothDiscoveryFilter(
+            BluetoothDiscoveryFilter::Transport::TRANSPORT_DUAL));
+        result->CopyFrom(*curr_filter);
+      }
+      continue;
+    }
+
+    result = BluetoothDiscoveryFilter::Merge(result.get(), curr_filter);
+  }
+
+  return result.Pass();
 }
 
 }  // namespace device
