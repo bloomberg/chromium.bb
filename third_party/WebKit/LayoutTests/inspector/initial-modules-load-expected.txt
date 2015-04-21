@@ -6,12 +6,12 @@ Loaded modules:
     bindings
     common
     components
+    emulation
     extensions
     host
     main
     platform
     sdk
-    toolbox
     ui
     workspace
 
@@ -21,12 +21,12 @@ Loaded modules:
     common
     components
     elements
+    emulation
     extensions
     host
     main
     platform
     sdk
-    toolbox
     ui
     workspace
 
@@ -37,6 +37,7 @@ Loaded modules:
     components
     components_lazy
     elements
+    emulation
     extensions
     host
     main
@@ -44,7 +45,6 @@ Loaded modules:
     platform
     sdk
     source_frame
-    toolbox
     ui
     ui_lazy
     workspace
@@ -56,6 +56,7 @@ Loaded modules:
     components
     components_lazy
     elements
+    emulation
     extensions
     host
     main
@@ -65,7 +66,6 @@ Loaded modules:
     snippets
     source_frame
     sources
-    toolbox
     ui
     ui_lazy
     workspace
@@ -77,6 +77,7 @@ Loaded modules:
     components
     components_lazy
     elements
+    emulation
     extensions
     host
     main
@@ -86,7 +87,6 @@ Loaded modules:
     snippets
     source_frame
     sources
-    toolbox
     ui
     ui_lazy
     workspace

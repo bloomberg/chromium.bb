@@ -4,12 +4,12 @@ Loaded modules:
     bindings
     common
     components
+    emulation
     extensions
     host
     main
     platform
     sdk
-    toolbox
     ui
     workspace
 
