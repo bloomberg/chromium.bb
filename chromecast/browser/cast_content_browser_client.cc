@@ -40,6 +40,7 @@
 #include "content/public/common/web_preferences.h"
 #include "gin/v8_initializer.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "ui/gl/gl_switches.h"
 
 #if defined(OS_ANDROID)
@@ -74,20 +75,41 @@ content::BrowserMainParts* CastContentBrowserClient::CreateBrowserMainParts(
 
 void CastContentBrowserClient::RenderProcessWillLaunch(
     content::RenderProcessHost* host) {
-  scoped_refptr<content::BrowserMessageFilter> network_hints_message_filter(
-      new network_hints::NetworkHintsMessageFilter(
-          url_request_context_factory_->host_resolver()));
-  host->AddFilter(network_hints_message_filter.get());
 #if !defined(OS_ANDROID)
   scoped_refptr<media::CmaMessageFilterHost> cma_message_filter(
       new media::CmaMessageFilterHost(host->GetID()));
   host->AddFilter(cma_message_filter.get());
 #endif  // !defined(OS_ANDROID)
 
+  // Forcibly trigger I/O-thread URLRequestContext initialization before
+  // getting HostResolver.
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&net::URLRequestContextGetter::GetURLRequestContext,
+                 base::Unretained(
+                    url_request_context_factory_->GetSystemGetter())),
+      base::Bind(&CastContentBrowserClient::AddNetworkHintsMessageFilter,
+                 base::Unretained(this), host->GetID()));
+
   auto extra_filters = PlatformGetBrowserMessageFilters();
   for (auto const& filter : extra_filters) {
     host->AddFilter(filter.get());
   }
+}
+
+void CastContentBrowserClient::AddNetworkHintsMessageFilter(
+    int render_process_id, net::URLRequestContext* context) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  content::RenderProcessHost* host =
+      content::RenderProcessHost::FromID(render_process_id);
+  if (!host)
+    return;
+
+  scoped_refptr<content::BrowserMessageFilter> network_hints_message_filter(
+      new network_hints::NetworkHintsMessageFilter(
+          url_request_context_factory_->host_resolver()));
+  host->AddFilter(network_hints_message_filter.get());
 }
 
 net::URLRequestContextGetter* CastContentBrowserClient::CreateRequestContext(

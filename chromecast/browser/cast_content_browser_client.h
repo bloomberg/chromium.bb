@@ -19,6 +19,10 @@ namespace content {
 class BrowserMessageFilter;
 }
 
+namespace net {
+class HostResolver;
+}
+
 namespace chromecast {
 namespace shell {
 
@@ -99,6 +103,9 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
 #endif  // defined(OS_ANDROID) && defined(VIDEO_HOLE)
 
  private:
+  void AddNetworkHintsMessageFilter(int render_process_id,
+                                    net::URLRequestContext* context);
+
   net::X509Certificate* SelectClientCertificateOnIOThread(
       GURL requesting_url,
       int render_process_id);
