@@ -72,7 +72,7 @@ net::URLRequestContextGetter* ShellBrowserContext::CreateRequestContext(
 }
 
 void ShellBrowserContext::InitURLRequestContextOnIOThread() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   // GetURLRequestContext() will create a URLRequestContext if it isn't
   // initialized.

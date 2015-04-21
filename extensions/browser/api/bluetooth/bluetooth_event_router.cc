@@ -42,7 +42,7 @@ BluetoothEventRouter::BluetoothEventRouter(content::BrowserContext* context)
       num_event_listeners_(0),
       extension_registry_observer_(this),
       weak_ptr_factory_(this) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(browser_context_);
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
@@ -51,7 +51,7 @@ BluetoothEventRouter::BluetoothEventRouter(content::BrowserContext* context)
 }
 
 BluetoothEventRouter::~BluetoothEventRouter() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (adapter_.get()) {
     adapter_->RemoveObserver(this);
     adapter_ = NULL;
@@ -225,7 +225,7 @@ void BluetoothEventRouter::RemovePairingDelegate(
 void BluetoothEventRouter::AdapterPresentChanged(
     device::BluetoothAdapter* adapter,
     bool present) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (adapter != adapter_.get()) {
     DVLOG(1) << "Ignoring event for adapter " << adapter->GetAddress();
     return;

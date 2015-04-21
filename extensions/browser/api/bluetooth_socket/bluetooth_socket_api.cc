@@ -37,7 +37,7 @@ const char kSocketNotFoundError[] = "Socket not found";
 
 linked_ptr<SocketInfo> CreateSocketInfo(int socket_id,
                                         BluetoothApiSocket* socket) {
-  DCHECK(BrowserThread::CurrentlyOn(BluetoothApiSocket::kThreadId));
+  DCHECK_CURRENTLY_ON(BluetoothApiSocket::kThreadId);
   linked_ptr<SocketInfo> socket_info(new SocketInfo());
   // This represents what we know about the socket, and does not call through
   // to the system.

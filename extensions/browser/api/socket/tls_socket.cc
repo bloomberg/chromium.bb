@@ -184,7 +184,7 @@ void TLSSocket::UpgradeSocketToTLS(
     const std::string& extension_id,
     core_api::socket::SecureOptions* options,
     const TLSSocket::SecureCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   TCPSocket* tcp_socket = static_cast<TCPSocket*>(socket);
   scoped_ptr<net::SSLClientSocket> null_sock;
 

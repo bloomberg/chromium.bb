@@ -457,7 +457,7 @@ SocketsTcpSecureFunction::~SocketsTcpSecureFunction() {
 }
 
 bool SocketsTcpSecureFunction::Prepare() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   params_ = core_api::sockets_tcp::Secure::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   url_request_getter_ = browser_context()->GetRequestContext();
@@ -467,7 +467,7 @@ bool SocketsTcpSecureFunction::Prepare() {
 // Override the regular implementation, which would call AsyncWorkCompleted
 // immediately after Work().
 void SocketsTcpSecureFunction::AsyncWorkStart() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   ResumableTCPSocket* socket = GetTcpSocket(params_->socket_id);
   if (!socket) {

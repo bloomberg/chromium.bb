@@ -164,7 +164,7 @@ void RemoveWebViewEventListenersOnIOThread(
     const std::string& extension_id,
     int embedder_process_id,
     int view_instance_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   ExtensionWebRequestEventRouter::GetInstance()->RemoveWebViewEventListeners(
       profile,
       extension_id,

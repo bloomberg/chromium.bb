@@ -23,13 +23,13 @@ ShellOAuth2TokenService::ShellOAuth2TokenService(
     : browser_context_(browser_context),
       account_id_(account_id),
       refresh_token_(refresh_token) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!g_instance);
   g_instance = this;
 }
 
 ShellOAuth2TokenService::~ShellOAuth2TokenService() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(g_instance);
   g_instance = nullptr;
 }
