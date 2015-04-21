@@ -340,7 +340,7 @@ void Connection::Preload() {
     preload_size = file_size;
 
   scoped_ptr<char[]> buf(new char[page_size]);
-  for (sqlite3_int64 pos = 0; pos < file_size; pos += page_size) {
+  for (sqlite3_int64 pos = 0; pos < preload_size; pos += page_size) {
     rc = file->pMethods->xRead(file, buf.get(), page_size, pos);
     if (rc != SQLITE_OK)
       return;
