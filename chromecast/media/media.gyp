@@ -25,6 +25,8 @@
         'base/key_systems_common.h',
         'base/media_caps.cc',
         'base/media_caps.h',
+        'base/media_codec_support.cc',
+        'base/media_codec_support.h',
         'base/switching_media_renderer.cc',
         'base/switching_media_renderer.h',
       ],
