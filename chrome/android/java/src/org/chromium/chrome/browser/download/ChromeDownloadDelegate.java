@@ -4,11 +4,8 @@
 
 package org.chromium.chrome.browser.download;
 
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
@@ -31,7 +28,6 @@ import org.chromium.content.browser.DownloadInfo;
 import org.chromium.content_public.browser.WebContents;
 
 import java.io.File;
-import java.util.List;
 
 /**
  * Chrome implementation of the ContentViewDownloadDelegate interface.
@@ -131,45 +127,10 @@ public class ChromeDownloadDelegate
             // Query the package manager to see if there's a registered handler that matches.
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setDataAndType(Uri.parse(downloadInfo.getUrl()), downloadInfo.getMimeType());
-            ResolveInfo info = mContext.getPackageManager().resolveActivity(intent,
-                    PackageManager.MATCH_DEFAULT_ONLY);
-            boolean activityResolved = false;
-            if (info != null) {
-                final String packageName = mContext.getPackageName();
-                if (info.match != 0) {
-                    // If we resolved to ourselves, we don't want to attempt to load the url only to
-                    // try and download it again.
-                    if (!packageName.equals(info.activityInfo.packageName)) {
-                        // Someone (other than us) knows how to handle this mime type with this
-                        // scheme, don't download.
-                        activityResolved = true;
-                    }
-                } else {
-                    // If we resolved to ResolverActivity, we should check if Chrome can be one of
-                    // options. If so, we don't want to show an intent picker.
-                    List<ResolveInfo> handlers = mContext.getPackageManager().queryIntentActivities(
-                            intent, PackageManager.MATCH_DEFAULT_ONLY);
-                    if (handlers != null && !handlers.isEmpty()) {
-                        activityResolved = true;
-                        for (ResolveInfo resolveInfo : handlers) {
-                            if (packageName.equals(resolveInfo.activityInfo.packageName)) {
-                                activityResolved = false;
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                if (activityResolved) {
-                    try {
-                        mContext.startActivity(intent);
-                        return;
-                    } catch (ActivityNotFoundException ex) {
-                        Log.d(LOGTAG, "activity not found for " + downloadInfo.getMimeType()
-                                + " over " + Uri.parse(downloadInfo.getUrl()).getScheme(), ex);
-                        // Best behavior is to fall back to a download in this case.
-                    }
-                }
+            // If the intent is resolved to ourselves, we don't want to attempt to load the url
+            // only to try and download it again.
+            if (DownloadManagerService.openIntent(mContext, intent, false)) {
+                return;
             }
         }
         onDownloadStartNoStream(downloadInfo);
