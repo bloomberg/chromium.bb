@@ -123,10 +123,9 @@ cr.define('cr.ui', function() {
           this.handleKeyDown(e);
           // If the menu is visible we let it handle all the keyboard events.
           if (this.isMenuShown() && e.currentTarget == this.ownerDocument) {
-            if (this.menu.handleKeyDown(e)) {
-              e.preventDefault();
-              e.stopPropagation();
-            }
+            this.menu.handleKeyDown(e);
+            e.preventDefault();
+            e.stopPropagation();
           }
 
           // Show the focus ring on keypress.
