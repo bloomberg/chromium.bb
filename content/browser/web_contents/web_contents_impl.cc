@@ -3076,6 +3076,15 @@ void WebContentsImpl::OnDidDownloadImage(
 
 void WebContentsImpl::OnUpdateFaviconURL(
     const std::vector<FaviconURL>& candidates) {
+  // We get updated favicon URLs after the page stops loading. If a cross-site
+  // navigation occurs while a page is still loading, the initial page
+  // may stop loading and send us updated favicon URLs after the navigation
+  // for the new page has committed.
+  RenderViewHostImpl* rvhi =
+      static_cast<RenderViewHostImpl*>(render_view_message_source_);
+  if (!rvhi->is_active())
+    return;
+
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidUpdateFaviconURL(candidates));
 }

@@ -489,7 +489,6 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
   TestRenderFrameHost* ntp_rfh = contents()->GetMainFrame();
 
   // Send an update favicon message and make sure it works.
-  const base::string16 ntp_title = base::ASCIIToUTF16("NTP Title");
   {
     PluginFaviconMessageObserver observer(contents());
     EXPECT_TRUE(ntp_rfh->GetRenderViewHost()->OnMessageReceived(
@@ -502,7 +501,6 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
   // site.
   ntp_rfh->GetSiteInstance()->increment_active_frame_count();
 
-
   // Navigate to a cross-site URL.
   NavigateActiveAndCommit(kDestUrl);
   TestRenderFrameHost* dest_rfh = contents()->GetMainFrame();
@@ -510,7 +508,6 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
   EXPECT_NE(ntp_rfh, dest_rfh);
 
   // The new RVH should be able to update its favicon.
-  const base::string16 dest_title = base::ASCIIToUTF16("Google");
   {
     PluginFaviconMessageObserver observer(contents());
     EXPECT_TRUE(
@@ -569,6 +566,61 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
   js_msg.EnableMessagePumping();
   EXPECT_TRUE(ntp_rfh->OnMessageReceived(js_msg));
   EXPECT_TRUE(ntp_process_host->sink().GetUniqueMessageMatching(IPC_REPLY_ID));
+}
+
+// Test that the ViewHostMsg_UpdateFaviconURL IPC message is ignored if the
+// renderer is in the STATE_PENDING_SWAP_OUT_STATE. The favicon code assumes
+// that it only gets ViewHostMsg_UpdateFaviconURL messages for the most recently
+// committed navigation for each WebContentsImpl.
+TEST_F(RenderFrameHostManagerTest, UpdateFaviconURLWhilePendingSwapOut) {
+  const GURL kChromeURL("chrome://foo");
+  const GURL kDestUrl("http://www.google.com/");
+  std::vector<FaviconURL> icons;
+
+  // Navigate our first tab to a chrome url and then to the destination.
+  NavigateActiveAndCommit(kChromeURL);
+  TestRenderFrameHost* rfh1 = contents()->GetMainFrame();
+
+  // Send an update favicon message and make sure it works.
+  {
+    PluginFaviconMessageObserver observer(contents());
+    EXPECT_TRUE(rfh1->GetRenderViewHost()->OnMessageReceived(
+                    ViewHostMsg_UpdateFaviconURL(
+                        rfh1->GetRenderViewHost()->GetRoutingID(), icons)));
+    EXPECT_TRUE(observer.favicon_received());
+  }
+
+  // Create one more frame in the same SiteInstance where |rfh1| exists so that
+  // it doesn't get deleted on navigation to another site.
+  rfh1->GetSiteInstance()->increment_active_frame_count();
+
+  // Navigate to a cross-site URL and commit the new page.
+  controller().LoadURL(
+      kDestUrl, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
+  contents()->GetMainFrame()->PrepareForCommit();
+  TestRenderFrameHost* rfh2 = contents()->GetPendingMainFrame();
+  contents()->TestDidNavigate(rfh2, 1, kDestUrl, ui::PAGE_TRANSITION_TYPED);
+  EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh2->rfh_state());
+  EXPECT_EQ(RenderFrameHostImpl::STATE_PENDING_SWAP_OUT, rfh1->rfh_state());
+
+  // The new RVH should be able to update its favicons.
+  {
+    PluginFaviconMessageObserver observer(contents());
+    EXPECT_TRUE(rfh2->GetRenderViewHost()->OnMessageReceived(
+        ViewHostMsg_UpdateFaviconURL(rfh2->GetRenderViewHost()->GetRoutingID(),
+                                     icons)));
+    EXPECT_TRUE(observer.favicon_received());
+  }
+
+  // The old renderer, being slow, now updates its favicons. The message should
+  // be ignored.
+  {
+    PluginFaviconMessageObserver observer(contents());
+    EXPECT_TRUE(rfh1->GetRenderViewHost()->OnMessageReceived(
+        ViewHostMsg_UpdateFaviconURL(rfh1->GetRenderViewHost()->GetRoutingID(),
+                                     icons)));
+    EXPECT_FALSE(observer.favicon_received());
+  }
 }
 
 // Ensure that frames aren't added to the frame tree, if the message is coming
