@@ -468,7 +468,8 @@ void OmniboxViewViews::UpdatePopup() {
 
   // Prevent inline autocomplete when the caret isn't at the end of the text.
   const gfx::Range sel = GetSelectedRange();
-  model()->StartAutocomplete(!sel.is_empty(), sel.GetMax() < text().length());
+  model()->StartAutocomplete(!sel.is_empty(), sel.GetMax() < text().length(),
+                             false);
 }
 
 void OmniboxViewViews::ApplyCaretVisibility() {

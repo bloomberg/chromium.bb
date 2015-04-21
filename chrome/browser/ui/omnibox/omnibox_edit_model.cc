@@ -560,7 +560,8 @@ void OmniboxEditModel::Revert() {
 
 void OmniboxEditModel::StartAutocomplete(
     bool has_selected_text,
-    bool prevent_inline_autocomplete) {
+    bool prevent_inline_autocomplete,
+    bool entering_keyword_mode) {
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
@@ -570,12 +571,17 @@ void OmniboxEditModel::StartAutocomplete(
     // Cursor position is equivalent to the current selection's end.
     size_t start;
     view_->GetSelectionBounds(&start, &cursor_position);
-    // Adjust cursor position taking into account possible keyword in the user
-    // text.  We rely on DisplayTextFromUserText() method which is consistent
-    // with keyword extraction done in KeywordProvider/SearchProvider.
-    const size_t cursor_offset =
-        user_text_.length() - DisplayTextFromUserText(user_text_).length();
-    cursor_position += cursor_offset;
+    // If we're in keyword mode, we're not displaying the full |user_text_|, so
+    // the cursor position we got from the view has to be adjusted later by the
+    // length of the undisplayed text.  If we're just entering keyword mode,
+    // though, we have to avoid making this adjustment, because we haven't
+    // actually hidden any text yet, but the caller has already cleared
+    // |is_keyword_hint_|, so DisplayTextFromUserText() will believe we are
+    // already in keyword mode, and will thus mis-adjust the cursor position.
+    if (!entering_keyword_mode) {
+      cursor_position +=
+          user_text_.length() - DisplayTextFromUserText(user_text_).length();
+    }
   } else {
     // There are some cases where StartAutocomplete() may be called
     // with non-empty |inline_autocomplete_text_|.  In such cases, we cannot
@@ -894,7 +900,7 @@ bool OmniboxEditModel::AcceptKeyword(EnteredKeywordModeMethod entered_method) {
   if (popup_model() && popup_model()->IsOpen())
     popup_model()->SetSelectedLineState(OmniboxPopupModel::KEYWORD);
   else
-    StartAutocomplete(false, true);
+    StartAutocomplete(false, true, true);
 
   // Ensure the current selection is saved before showing keyword mode
   // so that moving to another line and then reverting the text will restore
