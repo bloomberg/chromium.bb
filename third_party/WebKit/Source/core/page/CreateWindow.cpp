@@ -43,12 +43,14 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
+#include "public/platform/WebURLRequest.h"
 
 namespace blink {
 
 static LocalFrame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, const FrameLoadRequest& request, const WindowFeatures& features, NavigationPolicy policy, ShouldSendReferrer shouldSendReferrer, bool& created)
 {
     ASSERT(!features.dialog || request.frameName().isEmpty());
+    ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeAuxiliary);
 
     if (!request.frameName().isEmpty() && request.frameName() != "_blank" && policy == NavigationPolicyIgnore) {
         if (Frame* frame = lookupFrame.findFrameForNavigation(request.frameName(), openerFrame)) {
@@ -139,6 +141,7 @@ LocalFrame* createWindow(const String& urlString, const AtomicString& frameName,
     }
 
     FrameLoadRequest frameRequest(callingWindow.document(), completedURL, frameName);
+    frameRequest.resourceRequest().setFrameType(WebURLRequest::FrameTypeAuxiliary);
 
     // Normally, FrameLoader would take care of setting the referrer for a navigation that is
     // triggered from javascript. However, creating a window goes through sufficient processing

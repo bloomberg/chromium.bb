@@ -792,10 +792,12 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
     FrameLoadType newLoadType = determineFrameLoadType(request);
     NavigationPolicy policy = navigationPolicyForRequest(request);
     if (shouldOpenInNewWindow(targetFrame.get(), request, policy)) {
-        if (policy == NavigationPolicyDownload)
+        if (policy == NavigationPolicyDownload) {
             client()->loadURLExternally(request.resourceRequest(), NavigationPolicyDownload);
-        else
+        } else {
+            request.resourceRequest().setFrameType(WebURLRequest::FrameTypeAuxiliary);
             createWindowForRequest(request, *m_frame, policy, request.shouldSendReferrer());
+        }
         return;
     }
 
