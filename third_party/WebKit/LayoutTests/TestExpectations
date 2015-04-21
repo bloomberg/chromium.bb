@@ -88,7 +88,7 @@ crbug.com/432129 virtual/slimmingpaint/fast/html/marquee-scroll.html [ Pass Fail
 crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
 crbug.com/421283 virtual/slimmingpaint/fast/html/marquee-scrollamount.html [ Pass Failure ]
 
-crbug.com/437743 virtual/slimmingpaint/fast/block/float/overhanging-tall-block.html [ Skip ]
+crbug.com/427743 [ Mac ] virtual/slimmingpaint/fast/block/float/overhanging-tall-block.html [ Crash ]
 
 # Will be re-enabled and rebaselined once we remove the '--enable-file-cookies' flag.
 crbug.com/470482 fast/cookies/local-file-can-set-cookies.html [ Skip ]
