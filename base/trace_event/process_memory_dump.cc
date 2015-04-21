@@ -21,23 +21,21 @@ ProcessMemoryDump::~ProcessMemoryDump() {
 }
 
 MemoryAllocatorDump* ProcessMemoryDump::CreateAllocatorDump(
-    const std::string& name) {
-  return CreateAllocatorDump(name, nullptr);
-}
-
-MemoryAllocatorDump* ProcessMemoryDump::CreateAllocatorDump(
-    const std::string& name,
-    MemoryAllocatorDump* parent) {
-  DCHECK_EQ(0ul, allocator_dumps_.count(name));
-  MemoryAllocatorDump* mad = new MemoryAllocatorDump(name, parent);
+    const std::string& allocator_name,
+    const std::string& heap_name) {
+  MemoryAllocatorDump* mad =
+      new MemoryAllocatorDump(allocator_name, heap_name, this);
+  DCHECK_EQ(0ul, allocator_dumps_.count(mad->GetAbsoluteName()));
   allocator_dumps_storage_.push_back(mad);
-  allocator_dumps_[name] = mad;
+  allocator_dumps_[mad->GetAbsoluteName()] = mad;
   return mad;
 }
 
 MemoryAllocatorDump* ProcessMemoryDump::GetAllocatorDump(
-    const std::string& name) const {
-  auto it = allocator_dumps_.find(name);
+    const std::string& allocator_name,
+    const std::string& heap_name) const {
+  auto it = allocator_dumps_.find(
+      MemoryAllocatorDump::GetAbsoluteName(allocator_name, heap_name));
   return it == allocator_dumps_.end() ? nullptr : it->second;
 }
 

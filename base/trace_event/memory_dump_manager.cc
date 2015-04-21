@@ -311,7 +311,13 @@ void MemoryDumpManager::OnTraceLogEnabled() {
   AutoLock lock(lock_);
   dump_providers_enabled_.clear();
   if (enabled) {
+    // Merge the dictionary of allocator attributes from all dump providers
+    // into the session state.
     session_state_ = new MemoryDumpSessionState();
+    for (const MemoryDumpProvider* mdp : dump_providers_registered_) {
+      session_state_->allocators_attributes_type_info.Update(
+          mdp->allocator_attributes_type_info());
+    }
     dump_providers_enabled_ = dump_providers_registered_;
   }
   subtle::NoBarrier_Store(&memory_tracing_enabled_, 1);

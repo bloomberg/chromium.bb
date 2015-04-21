@@ -80,8 +80,16 @@ class MemoryDumpManagerTest : public testing::Test {
 class MockDumpProvider : public MemoryDumpProvider {
  public:
   MockDumpProvider() {}
-  MockDumpProvider(const scoped_refptr<SingleThreadTaskRunner>& task_runner)
+
+  explicit MockDumpProvider(
+      const scoped_refptr<SingleThreadTaskRunner>& task_runner)
       : MemoryDumpProvider(task_runner) {}
+
+  // Ctor for the SharedSessionState test.
+  explicit MockDumpProvider(const std::string& id) {
+    DeclareAllocatorAttribute("allocator" + id, "attr" + id, "type" + id);
+  }
+
   MOCK_METHOD1(DumpInto, bool(ProcessMemoryDump* pmd));
 
   // DumpInto() override for the ActiveDumpProviderConsistency test.
@@ -95,6 +103,16 @@ class MockDumpProvider : public MemoryDumpProvider {
   // DumpInto() override for the RespectTaskRunnerAffinity test.
   bool DumpIntoAndCheckTaskRunner(ProcessMemoryDump* pmd) {
     EXPECT_TRUE(task_runner()->RunsTasksOnCurrentThread());
+    return true;
+  }
+
+  // DumpInto() override for the SharedSessionState test.
+  bool DumpIntoAndCheckSessionState(ProcessMemoryDump* pmd) {
+    EXPECT_TRUE(pmd->session_state());
+    const auto& attrs_type_info =
+        pmd->session_state()->allocators_attributes_type_info;
+    EXPECT_TRUE(attrs_type_info.Exists("allocator1", "attr1"));
+    EXPECT_TRUE(attrs_type_info.Exists("allocator2", "attr2"));
     return true;
   }
 
@@ -126,6 +144,24 @@ TEST_F(MemoryDumpManagerTest, SingleDumper) {
   EXPECT_CALL(mdp, DumpInto(_)).Times(0);
   mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
   TraceLog::GetInstance()->SetDisabled();
+}
+
+TEST_F(MemoryDumpManagerTest, SharedSessionState) {
+  MockDumpProvider mdp1("1");  // Will declare an allocator property "attr1".
+  MockDumpProvider mdp2("2");  // Will declare an allocator property "attr2".
+  mdm_->RegisterDumpProvider(&mdp1);
+  mdm_->RegisterDumpProvider(&mdp2);
+
+  EnableTracing(kTraceCategory);
+  EXPECT_CALL(mdp1, DumpInto(_)).Times(2).WillRepeatedly(
+      Invoke(&mdp1, &MockDumpProvider::DumpIntoAndCheckSessionState));
+  EXPECT_CALL(mdp2, DumpInto(_)).Times(2).WillRepeatedly(
+      Invoke(&mdp2, &MockDumpProvider::DumpIntoAndCheckSessionState));
+
+  for (int i = 0; i < 2; ++i)
+    mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
+
+  DisableTracing();
 }
 
 TEST_F(MemoryDumpManagerTest, MultipleDumpers) {

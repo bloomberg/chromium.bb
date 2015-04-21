@@ -6,7 +6,6 @@
     'trace_event_sources' : [
       'trace_event/memory_allocator_attributes_type_info.cc',
       'trace_event/memory_allocator_attributes_type_info.h',
-      'trace_event/memory_allocator_attributes.h',
       'trace_event/memory_allocator_dump.cc',
       'trace_event/memory_allocator_dump.h',
       'trace_event/memory_dump_manager.cc',

@@ -7,7 +7,7 @@
 
 #include "base/base_export.h"
 #include "base/memory/ref_counted.h"
-#include "base/trace_event/memory_allocator_attributes.h"
+#include "base/trace_event/memory_allocator_attributes_type_info.h"
 
 namespace base {
 
@@ -26,8 +26,9 @@ class BASE_EXPORT MemoryDumpProvider {
 
   virtual const char* GetFriendlyName() const = 0;
 
-  const MemoryAllocatorDeclaredAttributes& allocator_attributes() const {
-    return allocator_attributes_;
+  const MemoryAllocatorAttributesTypeInfo& allocator_attributes_type_info()
+      const {
+    return allocator_attributes_type_info_;
   }
 
   // The dump provider can specify an optional thread affinity (in its
@@ -48,16 +49,17 @@ class BASE_EXPORT MemoryDumpProvider {
 
   virtual ~MemoryDumpProvider();
 
-  void DeclareAllocatorAttribute(const MemoryAllocatorDeclaredAttribute& attr);
+  void DeclareAllocatorAttribute(const std::string& allocator_name,
+                                 const std::string& attribute_name,
+                                 const std::string& attribute_type);
 
  private:
-  // The map (attribute name -> type) that specifies the semantic of the
-  // extra attributes that the MemoryAllocatorDump(s) produced by this
-  // MemoryDumpProvider will have.
-  MemoryAllocatorDeclaredAttributes allocator_attributes_;
+  // A map of attributes types (declared through DeclareAllocatorAttribute())
+  // emitted by this allocator dumper.
+  MemoryAllocatorAttributesTypeInfo allocator_attributes_type_info_;
 
   // (Optional) TaskRunner on which the DumpInfo call should be posted.
-  const scoped_refptr<SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryDumpProvider);
 };

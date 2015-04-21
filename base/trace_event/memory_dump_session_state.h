@@ -18,7 +18,7 @@ class BASE_EXPORT MemoryDumpSessionState
     : public RefCountedThreadSafe<MemoryDumpSessionState> {
  public:
   MemoryDumpSessionState();
-  MemoryAllocatorAttributesTypeInfo allocators_attributes_types;
+  MemoryAllocatorAttributesTypeInfo allocators_attributes_type_info;
 
  private:
   friend class RefCountedThreadSafe<MemoryDumpSessionState>;
