@@ -1404,7 +1404,7 @@ void LayoutFlexibleBox::applyStretchAlignmentToChild(LayoutBox& child, LayoutUni
 
             // FIXME: Can avoid laying out here in some cases. See https://webkit.org/b/87905.
             bool childNeedsRelayout = desiredLogicalHeight != child.logicalHeight();
-            if (childNeedsRelayout || !child.hasOverrideHeight())
+            if (childNeedsRelayout || !child.hasOverrideLogicalContentHeight())
                 child.setOverrideLogicalContentHeight(desiredLogicalHeight - child.borderAndPaddingLogicalHeight());
             if (childNeedsRelayout) {
                 child.setLogicalHeight(0);

@@ -753,7 +753,7 @@ int LayoutTableSection::calcRowLogicalHeight()
 
                 ASSERT(cell->rowSpan() == 1);
 
-                if (cell->hasOverrideHeight()) {
+                if (cell->hasOverrideLogicalContentHeight()) {
                     cell->clearIntrinsicPadding();
                     cell->clearOverrideSize();
                     cell->forceChildLayout();

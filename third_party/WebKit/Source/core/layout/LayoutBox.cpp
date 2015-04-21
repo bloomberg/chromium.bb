@@ -985,12 +985,12 @@ LayoutUnit LayoutBox::maxPreferredLogicalWidth() const
     return m_maxPreferredLogicalWidth;
 }
 
-bool LayoutBox::hasOverrideHeight() const
+bool LayoutBox::hasOverrideLogicalContentHeight() const
 {
     return m_rareData && m_rareData->m_overrideLogicalContentHeight != -1;
 }
 
-bool LayoutBox::hasOverrideWidth() const
+bool LayoutBox::hasOverrideLogicalContentWidth() const
 {
     return m_rareData && m_rareData->m_overrideLogicalContentWidth != -1;
 }
@@ -1027,13 +1027,13 @@ void LayoutBox::clearOverrideSize()
 
 LayoutUnit LayoutBox::overrideLogicalContentWidth() const
 {
-    ASSERT(hasOverrideWidth());
+    ASSERT(hasOverrideLogicalContentWidth());
     return m_rareData->m_overrideLogicalContentWidth;
 }
 
 LayoutUnit LayoutBox::overrideLogicalContentHeight() const
 {
-    ASSERT(hasOverrideHeight());
+    ASSERT(hasOverrideLogicalContentHeight());
     return m_rareData->m_overrideLogicalContentHeight;
 }
 
@@ -1571,7 +1571,7 @@ LayoutUnit LayoutBox::perpendicularContainingBlockLogicalHeight() const
         return overrideContainingBlockContentLogicalHeight();
 
     LayoutBlock* cb = containingBlock();
-    if (cb->hasOverrideHeight())
+    if (cb->hasOverrideLogicalContentHeight())
         return cb->overrideLogicalContentHeight();
 
     const ComputedStyle& containingBlockStyle = cb->styleRef();
@@ -1988,7 +1988,7 @@ void LayoutBox::computeLogicalWidth(LogicalExtentComputedValues& computedValues)
     // width.  Use the width from the style context.
     // FIXME: Account for writing-mode in flexible boxes.
     // https://bugs.webkit.org/show_bug.cgi?id=46418
-    if (hasOverrideWidth() && parent()->isFlexibleBoxIncludingDeprecated()) {
+    if (hasOverrideLogicalContentWidth() && parent()->isFlexibleBoxIncludingDeprecated()) {
         computedValues.m_extent = overrideLogicalContentWidth() + borderAndPaddingLogicalWidth();
         return;
     }
@@ -2330,7 +2330,7 @@ void LayoutBox::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logica
         // grab our cached flexible height.
         // FIXME: Account for writing-mode in flexible boxes.
         // https://bugs.webkit.org/show_bug.cgi?id=46418
-        if (hasOverrideHeight() && (parent()->isFlexibleBoxIncludingDeprecated() || parent()->isLayoutGrid())) {
+        if (hasOverrideLogicalContentHeight() && (parent()->isFlexibleBoxIncludingDeprecated() || parent()->isLayoutGrid())) {
             h = Length(overrideLogicalContentHeight(), Fixed);
         } else if (treatAsReplaced) {
             h = Length(computeReplacedLogicalHeight(), Fixed);
@@ -2499,7 +2499,7 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(const Length& height) const
             // Table cells violate what the CSS spec says to do with heights. Basically we
             // don't care if the cell specified a height or not. We just always make ourselves
             // be a percentage of the cell's current content height.
-            if (!cb->hasOverrideHeight()) {
+            if (!cb->hasOverrideLogicalContentHeight()) {
                 // Normally we would let the cell size intrinsically, but scrolling overflow has to be
                 // treated differently, since WinIE lets scrolled overflow regions shrink as needed.
                 // While we can't get all cases right, we can at least detect when the cell has a specified
@@ -2730,7 +2730,7 @@ LayoutUnit LayoutBox::availableLogicalHeightUsing(const Length& h, AvailableLogi
     // artificially.  We're going to rely on this cell getting expanded to some new
     // height, and then when we lay out again we'll use the calculation below.
     if (isTableCell() && (h.isAuto() || h.isPercent())) {
-        if (hasOverrideHeight())
+        if (hasOverrideLogicalContentHeight())
             return overrideLogicalContentHeight();
         return logicalHeight() - borderAndPaddingLogicalHeight();
     }

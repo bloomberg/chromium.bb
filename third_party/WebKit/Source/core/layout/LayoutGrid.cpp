@@ -645,7 +645,7 @@ LayoutUnit LayoutGrid::logicalHeightForChild(LayoutBox& child, Vector<GridTrack>
         child.setOverrideContainingBlockContentLogicalHeight(-1);
     child.layoutIfNeeded();
     // If the child was stretched we should use its intrinsic height.
-    return (child.hasOverrideHeight() ? childIntrinsicHeight(child) : child.logicalHeight()) + child.marginLogicalHeight();
+    return (child.hasOverrideLogicalContentHeight() ? childIntrinsicHeight(child) : child.logicalHeight()) + child.marginLogicalHeight();
 }
 
 LayoutUnit LayoutGrid::minContentForChild(LayoutBox& child, GridTrackSizingDirection direction, Vector<GridTrack>& columnTracks)
@@ -1582,7 +1582,7 @@ void LayoutGrid::applyStretchAlignmentToChildIfNeeded(LayoutBox& child, LayoutUn
 
             // FIXME: Can avoid laying out here in some cases. See https://webkit.org/b/87905.
             bool childNeedsRelayout = desiredLogicalHeight != child.logicalHeight();
-            if (childNeedsRelayout || !child.hasOverrideHeight())
+            if (childNeedsRelayout || !child.hasOverrideLogicalContentHeight())
                 child.setOverrideLogicalContentHeight(desiredLogicalHeight - child.borderAndPaddingLogicalHeight());
             if (childNeedsRelayout) {
                 child.setLogicalHeight(0);

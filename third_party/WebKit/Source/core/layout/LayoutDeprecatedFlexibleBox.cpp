@@ -163,14 +163,14 @@ static bool childDoesNotAffectWidthOrFlexing(LayoutObject* child)
 
 static LayoutUnit contentWidthForChild(LayoutBox* child)
 {
-    if (child->hasOverrideWidth())
+    if (child->hasOverrideLogicalContentWidth())
         return child->overrideLogicalContentWidth();
     return child->logicalWidth() - child->borderAndPaddingLogicalWidth();
 }
 
 static LayoutUnit contentHeightForChild(LayoutBox* child)
 {
-    if (child->hasOverrideHeight())
+    if (child->hasOverrideLogicalContentHeight())
         return child->overrideLogicalContentHeight();
     return child->logicalHeight() - child->borderAndPaddingLogicalHeight();
 }
