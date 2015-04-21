@@ -1383,7 +1383,11 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
       // have gotten here.
       CHECK(!result().empty());
       CHECK(popup_model()->selected_line() < result().size());
-      *match = result().match_at(popup_model()->selected_line());
+      const AutocompleteMatch& selected_match =
+          result().match_at(popup_model()->selected_line());
+      *match =
+          (popup_model()->selected_line_state() == OmniboxPopupModel::KEYWORD) ?
+              *selected_match.associated_keyword : selected_match;
     }
     if (alternate_nav_url &&
         (!popup_model() || popup_model()->manually_selected_match().empty()))

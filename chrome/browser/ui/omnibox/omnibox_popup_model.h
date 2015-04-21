@@ -87,8 +87,14 @@ class OmniboxPopupModel {
   void Move(int count);
 
   // If the selected line has both a normal match and a keyword match, this can
-  // be used to choose which to select. It is an error to call this when the
-  // selected line does not have both matches (or there is no selection).
+  // be used to choose which to select.  This allows the user to toggle between
+  // normal and keyword mode with tab/shift-tab without rerunning autocomplete
+  // or disturbing other popup state, which in turn is an important part of
+  // supporting the use of tab to do both tab-to-search and
+  // tab-to-traverse-dropdown.
+  //
+  // It is an error to call this when the selected line does not have both
+  // matches (or there is no selection).
   void SetSelectedLineState(LineState state);
 
   // Called when the user hits shift-delete.  This should determine if the item

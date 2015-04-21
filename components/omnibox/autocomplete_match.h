@@ -340,6 +340,11 @@ struct AutocompleteMatch {
   // Set with a keyword provider match if this match can show a keyword hint.
   // For example, if this is a SearchProvider match for "www.amazon.com",
   // |associated_keyword| could be a KeywordProvider match for "amazon.com".
+  //
+  // When this is set, the popup will show a ">" symbol at the right edge of the
+  // line for this match, and tab/shift-tab will toggle in and out of keyword
+  // mode without disturbing the rest of the popup.  See also
+  // OmniboxPopupModel::SetSelectedLineState().
   scoped_ptr<AutocompleteMatch> associated_keyword;
 
   // The keyword of the TemplateURL the match originated from.  This is nonempty
