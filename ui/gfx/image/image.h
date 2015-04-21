@@ -25,6 +25,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -186,7 +187,7 @@ class GFX_EXPORT Image {
       RepresentationType rep_type, bool must_exist) const;
 
   // Stores a representation into the map.
-  void AddRepresentation(internal::ImageRep* rep) const;
+  void AddRepresentation(scoped_ptr<internal::ImageRep> rep) const;
 
   // Internal class that holds all the representations. This allows the Image to
   // be cheaply copied.
