@@ -30,7 +30,6 @@ void OnlineAttemptHost::Check(net::URLRequestContextGetter* request_context,
     current_attempt_user_context_ = user_context;
 
     state_.reset(new AuthAttemptState(user_context,
-                                      user_manager::USER_TYPE_REGULAR,
                                       false,    // unlock
                                       false,    // online_complete
                                       false));  // user_is_new

@@ -11,7 +11,6 @@ namespace chromeos {
 TestAttemptState::TestAttemptState(const UserContext& credentials,
                                    const bool user_is_new)
     : AuthAttemptState(credentials,
-                       user_manager::USER_TYPE_REGULAR,
                        false,  // unlock
                        false,  // online_complete
                        user_is_new) {

@@ -11,7 +11,6 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/user_context.h"
-#include "components/user_manager/user_type.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -25,7 +24,6 @@ class CHROMEOS_EXPORT AuthAttemptState
  public:
   // Used to initialize for a login attempt.
   AuthAttemptState(const UserContext& user_context,
-                   user_manager::UserType user_type,
                    bool unlock,
                    bool online_complete,
                    bool user_is_new);
@@ -81,9 +79,6 @@ class CHROMEOS_EXPORT AuthAttemptState
   // These fields are saved so we can retry client login.
   const std::string login_token;
   const std::string login_captcha;
-
-  // The type of the user attempting to log in.
-  const user_manager::UserType user_type;
 
   const bool unlock;  // True if authenticating to unlock the computer.
 

@@ -387,9 +387,9 @@ CryptohomeAuthenticator::CryptohomeAuthenticator(
 void CryptohomeAuthenticator::AuthenticateToLogin(
     content::BrowserContext* context,
     const UserContext& user_context) {
+  DCHECK_EQ(user_manager::USER_TYPE_REGULAR, user_context.GetUserType());
   authentication_context_ = context;
   current_state_.reset(new AuthAttemptState(user_context,
-                                            user_manager::USER_TYPE_REGULAR,
                                             false,  // unlock
                                             false,  // online_complete
                                             !IsKnownUser(user_context)));
@@ -403,9 +403,9 @@ void CryptohomeAuthenticator::AuthenticateToLogin(
 
 void CryptohomeAuthenticator::CompleteLogin(content::BrowserContext* context,
                                             const UserContext& user_context) {
+  DCHECK_EQ(user_manager::USER_TYPE_REGULAR, user_context.GetUserType());
   authentication_context_ = context;
   current_state_.reset(new AuthAttemptState(user_context,
-                                            user_manager::USER_TYPE_REGULAR,
                                             true,   // unlock
                                             false,  // online_complete
                                             !IsKnownUser(user_context)));
@@ -427,8 +427,8 @@ void CryptohomeAuthenticator::CompleteLogin(content::BrowserContext* context,
 
 void CryptohomeAuthenticator::AuthenticateToUnlock(
     const UserContext& user_context) {
+  DCHECK_EQ(user_manager::USER_TYPE_REGULAR, user_context.GetUserType());
   current_state_.reset(new AuthAttemptState(user_context,
-                                            user_manager::USER_TYPE_REGULAR,
                                             true,     // unlock
                                             true,     // online_complete
                                             false));  // user_is_new
@@ -442,9 +442,10 @@ void CryptohomeAuthenticator::AuthenticateToUnlock(
 void CryptohomeAuthenticator::LoginAsSupervisedUser(
     const UserContext& user_context) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK_EQ(user_manager::USER_TYPE_SUPERVISED, user_context.GetUserType());
+
   // TODO(nkostylev): Pass proper value for |user_is_new| or remove (not used).
   current_state_.reset(new AuthAttemptState(user_context,
-                                            user_manager::USER_TYPE_SUPERVISED,
                                             false,    // unlock
                                             false,    // online_complete
                                             false));  // user_is_new
@@ -457,8 +458,8 @@ void CryptohomeAuthenticator::LoginAsSupervisedUser(
 void CryptohomeAuthenticator::LoginOffTheRecord() {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   current_state_.reset(
-      new AuthAttemptState(UserContext(chromeos::login::kGuestUserName),
-                           user_manager::USER_TYPE_GUEST,
+      new AuthAttemptState(UserContext(user_manager::USER_TYPE_GUEST,
+                                       chromeos::login::kGuestUserName),
                            false,    // unlock
                            false,    // online_complete
                            false));  // user_is_new
@@ -471,9 +472,10 @@ void CryptohomeAuthenticator::LoginOffTheRecord() {
 void CryptohomeAuthenticator::LoginAsPublicSession(
     const UserContext& user_context) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK_EQ(user_manager::USER_TYPE_PUBLIC_ACCOUNT, user_context.GetUserType());
+
   current_state_.reset(
       new AuthAttemptState(user_context,
-                           user_manager::USER_TYPE_PUBLIC_ACCOUNT,
                            false,    // unlock
                            false,    // online_complete
                            false));  // user_is_new
@@ -491,11 +493,11 @@ void CryptohomeAuthenticator::LoginAsKioskAccount(
 
   const std::string user_id =
       use_guest_mount ? chromeos::login::kGuestUserName : app_user_id;
-  current_state_.reset(new AuthAttemptState(UserContext(user_id),
-                                            user_manager::USER_TYPE_KIOSK_APP,
-                                            false,    // unlock
-                                            false,    // online_complete
-                                            false));  // user_is_new
+  current_state_.reset(new AuthAttemptState(
+      UserContext(user_manager::USER_TYPE_KIOSK_APP, user_id),
+      false,    // unlock
+      false,    // online_complete
+      false));  // user_is_new
 
   remove_user_data_on_failure_ = true;
   if (!use_guest_mount) {
@@ -839,13 +841,15 @@ CryptohomeAuthenticator::ResolveCryptohomeSuccessState() {
   if (check_key_attempted_)
     return UNLOCK;
 
-  if (current_state_->user_type == user_manager::USER_TYPE_GUEST)
+  const user_manager::UserType user_type =
+      current_state_->user_context.GetUserType();
+  if (user_type == user_manager::USER_TYPE_GUEST)
     return GUEST_LOGIN;
-  if (current_state_->user_type == user_manager::USER_TYPE_PUBLIC_ACCOUNT)
+  if (user_type == user_manager::USER_TYPE_PUBLIC_ACCOUNT)
     return PUBLIC_ACCOUNT_LOGIN;
-  if (current_state_->user_type == user_manager::USER_TYPE_KIOSK_APP)
+  if (user_type == user_manager::USER_TYPE_KIOSK_APP)
     return KIOSK_ACCOUNT_LOGIN;
-  if (current_state_->user_type == user_manager::USER_TYPE_SUPERVISED)
+  if (user_type == user_manager::USER_TYPE_SUPERVISED)
     return SUPERVISED_USER_LOGIN;
 
   if (!VerifyOwner())

@@ -9,12 +9,10 @@
 namespace chromeos {
 
 AuthAttemptState::AuthAttemptState(const UserContext& user_context,
-                                   user_manager::UserType user_type,
                                    bool unlock,
                                    bool online_complete,
                                    bool user_is_new)
     : user_context(user_context),
-      user_type(user_type),
       unlock(unlock),
       online_complete_(online_complete),
       online_outcome_(online_complete ? AuthFailure::UNLOCK_FAILED

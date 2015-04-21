@@ -176,6 +176,7 @@ void LoginPerformer::LoginAsSupervisedUser(const UserContext& user_context) {
             gaia::ExtractDomainName(user_context.GetUserID()));
 
   user_context_ = user_context;
+  user_context_.SetUserType(user_manager::USER_TYPE_SUPERVISED);
 
   if (RunTrustedCheck(base::Bind(&LoginPerformer::TrustedLoginAsSupervisedUser,
                                  weak_factory_.GetWeakPtr(),

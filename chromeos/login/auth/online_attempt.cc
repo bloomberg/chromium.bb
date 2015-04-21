@@ -32,7 +32,8 @@ OnlineAttempt::OnlineAttempt(AuthAttemptState* current_attempt,
       resolver_(callback),
       try_again_(true),
       weak_factory_(this) {
-  DCHECK(attempt_->user_type == user_manager::USER_TYPE_REGULAR);
+  DCHECK_EQ(user_manager::USER_TYPE_REGULAR,
+            attempt_->user_context.GetUserType());
 }
 
 OnlineAttempt::~OnlineAttempt() {
