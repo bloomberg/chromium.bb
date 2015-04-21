@@ -54,35 +54,17 @@
 
 namespace blink {
 
-class MessageWorkerGlobalScopeTask : public ExecutionContextTask {
-public:
-    static PassOwnPtr<MessageWorkerGlobalScopeTask> create(PassRefPtr<SerializedScriptValue> message, PassOwnPtr<MessagePortChannelArray> channels, WorkerObjectProxy& workerObjectProxy)
-    {
-        return adoptPtr(new MessageWorkerGlobalScopeTask(message, channels, workerObjectProxy));
-    }
+namespace {
 
-private:
-    MessageWorkerGlobalScopeTask(PassRefPtr<SerializedScriptValue> message, PassOwnPtr<MessagePortChannelArray> channels, WorkerObjectProxy& workerObjectProxy)
-        : m_message(message)
-        , m_channels(channels)
-        , m_workerObjectProxy(workerObjectProxy)
-    {
-    }
+void processMessageOnWorkerGlobalScope(PassRefPtr<SerializedScriptValue> message, PassOwnPtr<MessagePortChannelArray> channels, WorkerObjectProxy* workerObjectProxy, ExecutionContext* scriptContext)
+{
+    WorkerGlobalScope* globalScope = toWorkerGlobalScope(scriptContext);
+    OwnPtrWillBeRawPtr<MessagePortArray> ports = MessagePort::entanglePorts(*scriptContext, channels);
+    globalScope->dispatchEvent(MessageEvent::create(ports.release(), message));
+    workerObjectProxy->confirmMessageFromWorkerObject(scriptContext->hasPendingActivity());
+}
 
-    virtual void performTask(ExecutionContext* scriptContext)
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(scriptContext->isWorkerGlobalScope());
-        OwnPtrWillBeRawPtr<MessagePortArray> ports = MessagePort::entanglePorts(*scriptContext, m_channels.release());
-        WorkerGlobalScope* globalScope = static_cast<WorkerGlobalScope*>(scriptContext);
-        globalScope->dispatchEvent(MessageEvent::create(ports.release(), m_message));
-        m_workerObjectProxy.confirmMessageFromWorkerObject(scriptContext->hasPendingActivity());
-    }
-
-private:
-    RefPtr<SerializedScriptValue> m_message;
-    OwnPtr<MessagePortChannelArray> m_channels;
-    WorkerObjectProxy& m_workerObjectProxy;
-};
+} // namespace
 
 WorkerMessagingProxy::WorkerMessagingProxy(InProcessWorkerBase* workerObject, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
     : m_executionContext(workerObject->executionContext())
@@ -148,11 +130,12 @@ void WorkerMessagingProxy::postMessageToWorkerGlobalScope(PassRefPtr<SerializedS
     if (m_askedToTerminate)
         return;
 
+    OwnPtr<ExecutionContextTask> task = createCrossThreadTask(&processMessageOnWorkerGlobalScope, message, channels, AllowCrossThreadAccess(&workerObjectProxy()));
     if (m_workerThread) {
         ++m_unconfirmedMessageCount;
-        m_workerThread->postTask(FROM_HERE, MessageWorkerGlobalScopeTask::create(message, channels, workerObjectProxy()));
+        m_workerThread->postTask(FROM_HERE, task.release());
     } else {
-        m_queuedEarlyTasks.append(MessageWorkerGlobalScopeTask::create(message, channels, workerObjectProxy()));
+        m_queuedEarlyTasks.append(task.release());
     }
 }
 
