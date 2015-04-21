@@ -416,7 +416,7 @@ class GerritHelper(object):
                      'middle of the CQ run?',
                      change, exc_info=True)
 
-      # Rebase the branch.
+      # Rebase the branch and try again.
       try:
         git.SyncPushBranch(git_repo, remote_ref.remote, remote_ref.ref)
       except cros_build_lib.RunCommandError:

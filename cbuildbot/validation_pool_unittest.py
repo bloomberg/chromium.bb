@@ -637,7 +637,7 @@ class TestSubmitChange(MoxBase):
     self.mox.ReplayAll()
 
     # Verify results.
-    retval = validation_pool.ValidationPool._SubmitChange(
+    retval = validation_pool.ValidationPool._SubmitChangeUsingGerrit(
         pool, change, reason=mox.IgnoreArg())
     self.mox.VerifyAll()
     return retval
@@ -745,7 +745,7 @@ class TestCoreLogic(MoxBase):
     self.mox.StubOutWithMock(validation_pool.PatchSeries, 'Apply')
     self.mox.StubOutWithMock(validation_pool.PatchSeries, 'ApplyChange')
     self.patch_mock = self.StartPatcher(MockPatchSeries())
-    funcs = ['SendNotification', '_SubmitChange']
+    funcs = ['SendNotification', '_SubmitChangeUsingGerrit', '_SubmitChange']
     for func in funcs:
       self.mox.StubOutWithMock(validation_pool.ValidationPool, func)
     self.PatchObject(gerrit, 'GetGerritPatchInfoWithPatchQueries',
@@ -899,8 +899,8 @@ class TestCoreLogic(MoxBase):
     pool, patches, _failed = self._setUpSubmit()
     patch1, patch2, patch3 = patches
 
-    pool._SubmitChange(patch1, reason=None).AndReturn(True)
-    pool._SubmitChange(patch2, reason=None).AndReturn(False)
+    pool._SubmitChange(patch1, None, reason=None).AndReturn(True)
+    pool._SubmitChange(patch2, None, reason=None).AndReturn(False)
 
     pool._HandleCouldNotSubmit(patch2, mox.IgnoreArg()).InAnyOrder()
     pool._HandleCouldNotSubmit(patch3, mox.IgnoreArg()).InAnyOrder()
@@ -916,7 +916,7 @@ class TestCoreLogic(MoxBase):
     reason = 'fake reason'
 
     for patch in patches:
-      pool._SubmitChange(patch, reason=reason).AndReturn(True)
+      pool._SubmitChange(patch, mox.IgnoreArg(), reason=reason).AndReturn(True)
 
     pool._HandleApplyFailure(failed)
 
@@ -931,7 +931,7 @@ class TestCoreLogic(MoxBase):
     reason = 'fake reason'
 
     for patch in patches:
-      pool._SubmitChange(patch, reason=reason).AndReturn(True)
+      pool._SubmitChange(patch, None, reason=reason).AndReturn(True)
 
     self.mox.ReplayAll()
     pool.SubmitNonManifestChanges(reason=reason)
@@ -1506,7 +1506,7 @@ class MockValidationPool(partial_mock.PartialMock):
   """Mock out a ValidationPool instance."""
 
   TARGET = 'chromite.cbuildbot.validation_pool.ValidationPool'
-  ATTRS = ('RemoveReady', '_SubmitChange', 'SendNotification')
+  ATTRS = ('RemoveReady', '_SubmitChangeUsingGerrit', 'SendNotification')
 
   def __init__(self, manager):
     partial_mock.PartialMock.__init__(self)
@@ -1523,7 +1523,7 @@ class MockValidationPool(partial_mock.PartialMock):
     return list(self.submitted)
 
   # pylint: disable=unused-argument
-  def _SubmitChange(self, _inst, change, reason=None):
+  def _SubmitChangeUsingGerrit(self, _inst, change, reason=None):
     result = self.submit_results.get(change, True)
     self.submitted.append(change)
     if isinstance(result, Exception):

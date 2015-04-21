@@ -785,6 +785,28 @@ class GitRepoPatch(PatchQuery):
 
     return msg
 
+  def _PullData(self, rev, git_repo):
+    """Returns info about a commit object in the local repository.
+
+    Args:
+      rev: The commit to find information about
+      git_repo: The path of the local git repository.
+
+    Returns:
+      A 6-tuple of (sha1, tree_hash, commit subject, commit message,
+      committer email, committer name).
+    """
+    f = '%H%x00%T%x00%s%x00%B%x00%ce%x00%cn'
+    cmd = ['log', '--pretty=format:%s' % f, '-n1', rev]
+    ret = git.RunGit(git_repo, cmd, error_code_ok=True)
+    # TODO(phobbs): this should probably use a namedtuple...
+    if ret.returncode != 0:
+      return None, None, None, None, None, None
+    output = ret.output.split('\0')
+    if len(output) != 6:
+      return None, None, None, None, None, None
+    return [unicode(x.strip(), 'ascii', 'ignore') for x in output]
+
   def Fetch(self, git_repo):
     """Fetch this patch into the given git repository.
 
@@ -809,26 +831,16 @@ class GitRepoPatch(PatchQuery):
     if git_repo in self._is_fetched:
       return self.sha1
 
-    def _PullData(rev):
-      f = '%H%x00%T%x00%s%x00%B%x00%ce%x00%cn'
-      cmd = ['log', '--pretty=format:%s' % f, '-n1', rev]
-      ret = git.RunGit(git_repo, cmd, error_code_ok=True)
-      if ret.returncode != 0:
-        return None, None, None, None, None, None
-      output = ret.output.split('\0')
-      if len(output) != 6:
-        return None, None, None, None, None, None
-      return [unicode(x.strip(), 'ascii', 'ignore') for x in output]
-
     sha1 = None
     if self.sha1 is not None:
       # See if we've already got the object.
-      sha1, tree_hash, subject, msg, email, name = _PullData(self.sha1)
+      sha1, tree_hash, subject, msg, email, name = (
+          self._PullData(self.sha1, git_repo))
 
     if sha1 is None:
       git.RunGit(git_repo, ['fetch', '-f', self.project_url, self.ref],
                  print_cmd=True)
-      items = _PullData(self.sha1 or 'FETCH_HEAD')
+      items = self._PullData(self.sha1 or 'FETCH_HEAD', git_repo)
       sha1, tree_hash, subject, msg, email, name = items
 
     sha1 = ParseSHA1(sha1, error_ok=False)
@@ -882,6 +894,13 @@ class GitRepoPatch(PatchQuery):
     lines = lines.output.splitlines()
     return dict(line.split('\t', 1)[::-1] for line in lines)
 
+  def _AmendCommitMessage(self, git_repo):
+    """"Amend the commit and update our sha1 with the new commit."""
+    git.RunGit(git_repo, ['commit', '--amend', '-m', self.commit_message],
+               extra_env={'GIT_COMMITTER_NAME': self._committer_name or '',
+                          'GIT_COMMITTER_EMAIL': self._committer_email or ''})
+    self.sha1 = ParseSHA1(self._PullData('HEAD', git_repo)[0], error_ok=False)
+
   def CherryPick(self, git_repo, trivial=False, inflight=False,
                  leave_dirty=False):
     """Attempts to cherry-pick the given rev into branch.
@@ -905,9 +924,7 @@ class GitRepoPatch(PatchQuery):
     reset_target = None if leave_dirty else 'HEAD'
     try:
       git.RunGit(git_repo, cmd)
-      git.RunGit(git_repo, ['commit', '--amend', '-m', self.commit_message],
-                 extra_env={'GIT_COMMITTER_NAME': self._committer_name or '',
-                            'GIT_COMMITTER_EMAIL': self._committer_email or ''})
+      self._AmendCommitMessage(git_repo)
       reset_target = None
       return
     except cros_build_lib.RunCommandError as error:
