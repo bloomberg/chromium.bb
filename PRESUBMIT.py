@@ -257,7 +257,10 @@ _BANNED_CPP_FUNCTIONS = (
         'Please use SingleThreadTaskRunner or ThreadTaskRunnerHandle instead.'
       ),
       True,
-      (),
+      (
+        # Internal message_loop related code may still use it.
+        r'^base[\\\/]message_loop[\\\/].*',
+      ),
     ),
 )
 
