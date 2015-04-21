@@ -1008,27 +1008,6 @@ TEST_F(InputMethodChromeOSKeyEventTest, MultiKeyEventDelayResponseTest) {
   EXPECT_FALSE(ime_->process_key_event_post_ime_args().handled);
 }
 
-TEST_F(InputMethodChromeOSKeyEventTest, KeyEventDelayResponseResetTest) {
-  ScopedXI2Event xevent;
-  xevent.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_SHIFT_DOWN);
-  const ui::KeyEvent event(xevent);
-
-  // Do key event.
-  input_type_ = TEXT_INPUT_TYPE_TEXT;
-  ime_->OnTextInputTypeChanged(this);
-  ime_->DispatchKeyEvent(event);
-
-  // Check before state.
-  EXPECT_EQ(1, mock_ime_engine_handler_->process_key_event_call_count());
-  EXPECT_EQ(0, ime_->process_key_event_post_ime_call_count());
-
-  ime_->ResetContext();
-
-  // Do callback.
-  mock_ime_engine_handler_->last_passed_callback().Run(true);
-
-  EXPECT_EQ(0, ime_->process_key_event_post_ime_call_count());
-}
 // TODO(nona): Introduce ProcessKeyEventPostIME tests(crbug.com/156593).
 
 }  // namespace ui
