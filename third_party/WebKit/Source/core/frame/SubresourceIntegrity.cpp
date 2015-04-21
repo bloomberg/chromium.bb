@@ -20,6 +20,7 @@
 #include "public/platform/WebCrypto.h"
 #include "public/platform/WebCryptoAlgorithm.h"
 #include "wtf/ASCIICType.h"
+#include "wtf/Vector.h"
 #include "wtf/text/Base64.h"
 #include "wtf/text/StringUTF8Adaptor.h"
 #include "wtf/text/WTFString.h"
@@ -57,26 +58,6 @@ static bool DigestsEqual(const DigestValue& digest1, const DigestValue& digest2)
     return true;
 }
 
-static String algorithmToString(HashAlgorithm algorithm)
-{
-    static const struct {
-        HashAlgorithm algorithm;
-        const char* name;
-    } kAlgorithmToString[] = {
-        {  HashAlgorithmSha256, "SHA-256" },
-        {  HashAlgorithmSha384, "SHA-384" },
-        {  HashAlgorithmSha512, "SHA-512" }
-    };
-
-    for (const auto& algorithmToString : kAlgorithmToString) {
-        if (algorithmToString.algorithm == algorithm)
-            return algorithmToString.name;
-    }
-
-    ASSERT_NOT_REACHED();
-    return String();
-}
-
 static String digestToString(const DigestValue& digest)
 {
     // We always output base64url encoded data, even though we use base64 internally.
@@ -98,51 +79,48 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, con
         return false;
     }
 
-    String integrity;
-    HashAlgorithm algorithm;
-    String type;
+    WTF::Vector<IntegrityMetadata> metadataList;
     String attribute = element.fastGetAttribute(HTMLNames::integrityAttr);
-    IntegrityParseResult integrityParseResult = parseIntegrityAttribute(attribute, integrity, algorithm, type, document);
-    if (integrityParseResult != IntegrityParseErrorNone) {
-        // An error is logged to the console during parsing; we don't need to log one here.
-        UseCounter::count(document, UseCounter::SRIElementWithUnparsableIntegrityAttribute);
-        // For non-fatal errors, the integrity attribute is treated as
-        // if it weren't present.
-        return integrityParseResult == IntegrityParseErrorNonfatal;
-    }
-
-    if (!type.isEmpty() && !equalIgnoringCase(type, resourceType)) {
-        UseCounter::count(document, UseCounter::SRIElementWithNonMatchingIntegrityType);
-        logErrorToConsole("Subresource Integrity: The resource '" + resourceUrl.elidedString() + "' was delivered as type '" + resourceType + "', which does not match the expected type '" + type + "'. The resource has been blocked.", document);
+    IntegrityParseResult integrityParseResult = parseIntegrityAttribute(attribute, metadataList, document);
+    if (integrityParseResult != IntegrityParseValidResult)
         return false;
-    }
-
-    Vector<char> hashVector;
-    base64Decode(integrity, hashVector);
 
     StringUTF8Adaptor normalizedSource(source, StringUTF8Adaptor::Normalize, WTF::EntitiesForUnencodables);
 
-    DigestValue digest;
-    bool digestSuccess = computeDigest(algorithm, normalizedSource.data(), normalizedSource.length(), digest);
+    if (!metadataList.size())
+        return true;
 
-    if (digestSuccess) {
-        DigestValue convertedHashVector;
-        convertedHashVector.append(reinterpret_cast<uint8_t*>(hashVector.data()), hashVector.size());
-        if (DigestsEqual(digest, convertedHashVector)) {
-            UseCounter::count(document, UseCounter::SRIElementWithMatchingIntegrityAttribute);
-            return true;
-        } else {
-            // This message exposes the digest of the resource to the console.
-            // Because this is only to the console, that's okay for now, but we
-            // need to be very careful not to expose this in exceptions or
-            // JavaScript, otherwise it risks exposing information about the
-            // resource cross-origin.
-            logErrorToConsole("The computed " + algorithmToString(algorithm) + " integrity '" + digestToString(digest) + "' does not match the 'integrity' attribute '" + integrity + "' for resource '" + resourceUrl.elidedString() + "'.", document);
+    DigestValue digest;
+    for (IntegrityMetadata& metadata : metadataList) {
+        digest.clear();
+        bool digestSuccess = computeDigest(metadata.algorithm, normalizedSource.data(), normalizedSource.length(), digest);
+
+        if (digestSuccess) {
+            Vector<char> hashVector;
+            base64Decode(metadata.digest, hashVector);
+            DigestValue convertedHashVector;
+            convertedHashVector.append(reinterpret_cast<uint8_t*>(hashVector.data()), hashVector.size());
+
+            if (DigestsEqual(digest, convertedHashVector)) {
+                String& type = metadata.type;
+                if (!type.isEmpty() && !equalIgnoringCase(type, resourceType))
+                    UseCounter::count(document, UseCounter::SRIElementWithNonMatchingIntegrityType);
+                else
+                    return true;
+            }
         }
-    } else {
-        logErrorToConsole("There was an error computing an 'integrity' value for resource '" + resourceUrl.elidedString() + "'.", document);
     }
 
+    if (computeDigest(HashAlgorithmSha256, normalizedSource.data(), normalizedSource.length(), digest)) {
+        // This message exposes the digest of the resource to the console.
+        // Because this is only to the console, that's okay for now, but we
+        // need to be very careful not to expose this in exceptions or
+        // JavaScript, otherwise it risks exposing information about the
+        // resource cross-origin.
+        logErrorToConsole("Failed to find a valid digest with matching content-type in the 'integrity' attribute for resource '" + resourceUrl.elidedString() + "' with computed SHA-256 integrity '" + digestToString(digest) + "'. The resource has been blocked.", document);
+    } else {
+        logErrorToConsole("There was an error computing an integrity value for resource '" + resourceUrl.elidedString() + "'. The resource has been blocked.", document);
+    }
     UseCounter::count(document, UseCounter::SRIElementWithNonMatchingIntegrityAttribute);
     return false;
 }
@@ -153,12 +131,13 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, con
 // ^                 ^
 // position          end
 //
-// After (if successful: if the method returns false, we make no promises and the caller should exit early):
+// After (if successful: if the method does not return AlgorithmValid, we make
+// no promises and the caller should exit early):
 //
 // [algorithm]-[hash]
 //            ^      ^
 //     position    end
-bool SubresourceIntegrity::parseAlgorithm(const UChar*& position, const UChar* end, HashAlgorithm& algorithm)
+SubresourceIntegrity::AlgorithmParseResult SubresourceIntegrity::parseAlgorithm(const UChar*& position, const UChar* end, HashAlgorithm& algorithm)
 {
     // Any additions or subtractions from this struct should also modify the
     // respective entries in the kAlgorithmMap array in checkDigest() as well
@@ -175,14 +154,27 @@ bool SubresourceIntegrity::parseAlgorithm(const UChar*& position, const UChar* e
         { "sha-512", HashAlgorithmSha512 }
     };
 
+    const UChar* begin = position;
+
     for (auto& prefix : kSupportedPrefixes) {
         if (skipToken<UChar>(position, end, prefix.prefix)) {
+            if (!skipExactly<UChar>(position, end, '-')) {
+                position = begin;
+                continue;
+            }
             algorithm = prefix.algorithm;
-            return true;
+            return AlgorithmValid;
         }
     }
 
-    return false;
+    skipUntil<UChar>(position, end, '-');
+    if (position < end && *position == '-') {
+        position = begin;
+        return AlgorithmUnknown;
+    }
+
+    position = begin;
+    return AlgorithmUnparsable;
 }
 
 // Before:
@@ -252,38 +244,82 @@ bool SubresourceIntegrity::parseMimeType(const UChar*& position, const UChar* en
     return true;
 }
 
-SubresourceIntegrity::IntegrityParseResult SubresourceIntegrity::parseIntegrityAttribute(const String& attribute, String& digest, HashAlgorithm& algorithm, String& type, Document& document)
+SubresourceIntegrity::IntegrityParseResult SubresourceIntegrity::parseIntegrityAttribute(const WTF::String& attribute, WTF::Vector<IntegrityMetadata>& metadataList, Document& document)
 {
     Vector<UChar> characters;
     attribute.stripWhiteSpace().appendTo(characters);
     const UChar* position = characters.data();
     const UChar* end = characters.end();
+    const UChar* currentIntegrityEnd;
 
-    // Algorithm parsing errors are non-fatal (the subresource should
-    // still be loaded) because strong hash algorithms should be used
-    // without fear of breaking older user agents that don't support
-    // them.
-    if (!parseAlgorithm(position, end, algorithm)) {
-        logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute + "'). The specified hash algorithm must be one of 'sha256', 'sha384', or 'sha512'.", document);
-        return IntegrityParseErrorNonfatal;
+    metadataList.clear();
+    bool error = false;
+
+    // The integrity attribute takes the form:
+    //    *WSP hash-with-options *( 1*WSP hash-with-options ) *WSP / *WSP
+    // To parse this, break on whitespace, parsing each algorithm/digest/mime
+    // type in order.
+    while (position < end) {
+        WTF::String digest;
+        HashAlgorithm algorithm;
+        WTF::String type;
+
+        skipWhile<UChar, isASCIISpace>(position, end);
+        currentIntegrityEnd = position;
+        skipUntil<UChar, isASCIISpace>(currentIntegrityEnd, end);
+
+        // Algorithm parsing errors are non-fatal (the subresource should
+        // still be loaded) because strong hash algorithms should be used
+        // without fear of breaking older user agents that don't support
+        // them.
+        AlgorithmParseResult parseResult = parseAlgorithm(position, currentIntegrityEnd, algorithm);
+        if (parseResult == AlgorithmUnknown) {
+            // Unknown hash algorithms are treated as if they're not present,
+            // and thus are not marked as an error, they're just skipped.
+            logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute + "'). The specified hash algorithm must be one of 'sha256', 'sha384', or 'sha512'.", document);
+            skipUntil<UChar, isASCIISpace>(position, end);
+            UseCounter::count(document, UseCounter::SRIElementWithUnparsableIntegrityAttribute);
+            continue;
+        }
+
+        if (parseResult == AlgorithmUnparsable) {
+            logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute + "'). The hash algorithm must be one of 'sha256', 'sha384', or 'sha512', followed by a '-' character.", document);
+            error = true;
+            UseCounter::count(document, UseCounter::SRIElementWithUnparsableIntegrityAttribute);
+            skipUntil<UChar, isASCIISpace>(position, end);
+            continue;
+        }
+
+        ASSERT(parseResult == AlgorithmValid);
+
+        if (!parseDigest(position, currentIntegrityEnd, digest)) {
+            logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute + "'). The digest must be a valid, base64-encoded value.", document);
+            error = true;
+            skipUntil<UChar, isASCIISpace>(position, end);
+            UseCounter::count(document, UseCounter::SRIElementWithUnparsableIntegrityAttribute);
+            continue;
+        }
+
+        if (!parseMimeType(position, currentIntegrityEnd, type)) {
+            logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute + "'). The content type could not be parsed.", document);
+            error = true;
+            skipUntil<UChar, isASCIISpace>(position, end);
+            UseCounter::count(document, UseCounter::SRIElementWithUnparsableIntegrityAttribute);
+            continue;
+        }
+
+        IntegrityMetadata integrityMetadata = {
+            digest,
+            algorithm,
+            type
+        };
+        metadataList.append(integrityMetadata);
     }
 
-    if (!skipExactly<UChar>(position, end, '-')) {
-        logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute + "'). The hash algorithm must be followed by a '-' character.", document);
-        return IntegrityParseErrorFatal;
-    }
+    if (metadataList.size() == 0 && error)
+        return IntegrityParseNoValidResult;
 
-    if (!parseDigest(position, end, digest)) {
-        logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute + "'). The digest must be a valid, base64-encoded value.", document);
-        return IntegrityParseErrorFatal;
-    }
-
-    if (!parseMimeType(position, end, type)) {
-        logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute + "'). The content type could not be parsed.", document);
-        return IntegrityParseErrorFatal;
-    }
-
-    return IntegrityParseErrorNone;
+    return IntegrityParseValidResult;
 }
 
 } // namespace blink

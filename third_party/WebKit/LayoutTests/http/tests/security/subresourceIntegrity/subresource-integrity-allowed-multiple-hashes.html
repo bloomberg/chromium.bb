@@ -1,17 +1,15 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Basic allowed hashes</title>
+        <title>SRI allows multiple hash values, valid if any passes among strongest</title>
     </head>
     <body>
         <script src="/resources/testharness.js"></script>
         <script src="/resources/testharnessreport.js"></script>
         <script>
             var tests = [
-                "",
-                "sha256-B0/62fJSJFrdjEFR9ba04m/D+LHQ+zG6PGcaR0Trpxg=",
-                "sha384-Q9AACjOHyATwQh1VMd72WM0mL+U6ImQz+zXxPoUPst4G11y54bV22eL0H6/jTtq_",
-                "sha512-X32tT5fqyvxRgpWsMDFSo4MhhmPobFNqnaWEXMOxxyFKSCKvfHtJU1JA5wjvT6woWmkmybIULJgoI4wex5JD+w==",
+                "sha256-B0/62fJSJFrdjEFR9ba04m/D+LHQ+zG6PGcaR0Trpxg= sha256-deadbeef",
+                "sha256-B0/62fJSJFrdjEFR9ba04m/D+LHQ+zG6PGcaR0Trpxg= sha384-Q9AACjOHyATwQh1VMd72WM0mL+U6ImQz+zXxPoUPst4G11y54bV22eL0H6/jTtq/",
             ];
 
             function scriptError() {

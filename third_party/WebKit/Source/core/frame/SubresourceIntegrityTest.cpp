@@ -14,6 +14,8 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/dtoa/utils.h"
 #include "wtf/text/WTFString.h"
 #include <gtest/gtest.h>
 
@@ -25,6 +27,10 @@ static const char kSha256IntegrityLenientSyntax[] = "sha256-GAF48QOoxRvu0gZAmQiv
 static const char kSha384Integrity[] = "sha384-nep3XpvhUxpCMOVXIFPecThAqdY_uVeiD4kXSqXpx0YJUWU4fTTaFgciTuZk7fmE";
 static const char kSha512Integrity[] = "sha512-TXkJw18PqlVlEUXXjeXbGetop1TKB3wYQIp1_ihxCOFGUfG9TYOaA1MlkpTAqSV6yaevLO8Tj5pgH1JmZ--ItA==";
 static const char kSha384IntegrityLabeledAs256[] = "sha256-nep3XpvhUxpCMOVXIFPecThAqdY_uVeiD4kXSqXpx0YJUWU4fTTaFgciTuZk7fmE";
+static const char kSha256AndSha384Integrities[] = "sha256-GAF48QOoxRvu0gZAmQivUdJPyBacqznBAXwnkfpmQX4= sha384-nep3XpvhUxpCMOVXIFPecThAqdY_uVeiD4kXSqXpx0YJUWU4fTTaFgciTuZk7fmE";
+static const char kBadSha256AndGoodSha384Integrities[] = "sha256-deadbeef sha384-nep3XpvhUxpCMOVXIFPecThAqdY_uVeiD4kXSqXpx0YJUWU4fTTaFgciTuZk7fmE";
+static const char kGoodSha256AndBadSha384Integrities[] = "sha256-GAF48QOoxRvu0gZAmQivUdJPyBacqznBAXwnkfpmQX4= sha384-deadbeef";
+static const char kBadSha256AndBadSha384Integrities[] = "sha256-deadbeef sha384-deadbeef";
 static const char kUnsupportedHashFunctionIntegrity[] = "sha1-JfLW308qMPKfb4DaHpUBEESwuPc=";
 
 class SubresourceIntegrityTest : public ::testing::Test {
@@ -52,12 +58,12 @@ protected:
         const UChar* end = characters.end();
         HashAlgorithm algorithm;
 
-        EXPECT_TRUE(SubresourceIntegrity::parseAlgorithm(position, end, algorithm));
+        EXPECT_EQ(SubresourceIntegrity::AlgorithmValid, SubresourceIntegrity::parseAlgorithm(position, end, algorithm));
         EXPECT_EQ(expectedAlgorithm, algorithm);
-        EXPECT_EQ('-', *position);
+        EXPECT_EQ(end, position);
     }
 
-    void expectAlgorithmFailure(const String& text)
+    void expectAlgorithmFailure(const String& text, SubresourceIntegrity::AlgorithmParseResult expectedResult)
     {
         Vector<UChar> characters;
         text.appendTo(characters);
@@ -66,7 +72,7 @@ protected:
         const UChar* end = characters.end();
         HashAlgorithm algorithm;
 
-        EXPECT_FALSE(SubresourceIntegrity::parseAlgorithm(position, end, algorithm));
+        EXPECT_EQ(expectedResult, SubresourceIntegrity::parseAlgorithm(position, end, algorithm));
         EXPECT_EQ(begin, position);
     }
 
@@ -120,23 +126,46 @@ protected:
 
     void expectParse(const char* integrityAttribute, const char* expectedDigest, HashAlgorithm expectedAlgorithm, const char* expectedType)
     {
-        String digest;
-        HashAlgorithm algorithm;
-        String type;
+        Vector<SubresourceIntegrity::IntegrityMetadata> metadataList;
 
-        EXPECT_EQ(SubresourceIntegrity::IntegrityParseErrorNone, SubresourceIntegrity::parseIntegrityAttribute(integrityAttribute, digest, algorithm, type, *document));
-        EXPECT_EQ(expectedDigest, digest);
-        EXPECT_EQ(expectedAlgorithm, algorithm);
-        EXPECT_EQ(expectedType, type);
+        EXPECT_EQ(SubresourceIntegrity::IntegrityParseValidResult, SubresourceIntegrity::parseIntegrityAttribute(integrityAttribute, metadataList, *document));
+        EXPECT_EQ(1u, metadataList.size());
+        if (metadataList.size() > 0) {
+            EXPECT_EQ(expectedDigest, metadataList[0].digest);
+            EXPECT_EQ(expectedAlgorithm, metadataList[0].algorithm);
+            EXPECT_EQ(expectedType, metadataList[0].type);
+        }
     }
 
-    void expectParseFailure(const char* integrityAttribute, SubresourceIntegrity::IntegrityParseResult parseResult)
+    void expectParseMultipleHashes(const char* integrityAttribute, const SubresourceIntegrity::IntegrityMetadata expectedMetadatArray[], size_t expectedMetadataArraySize)
     {
-        String digest;
-        HashAlgorithm algorithm;
-        String type;
+        Vector<SubresourceIntegrity::IntegrityMetadata> expectedMetadataList;
+        expectedMetadataList.append(expectedMetadatArray, expectedMetadataArraySize);
+        Vector<SubresourceIntegrity::IntegrityMetadata> metadataList;
+        EXPECT_EQ(SubresourceIntegrity::IntegrityParseValidResult, SubresourceIntegrity::parseIntegrityAttribute(integrityAttribute, metadataList, *document));
+        EXPECT_EQ(expectedMetadataList.size(), metadataList.size());
+        if (expectedMetadataList.size() == metadataList.size()) {
+            for (size_t i = 0; i < metadataList.size(); i++) {
+                EXPECT_EQ(expectedMetadataList[i].digest, metadataList[i].digest);
+                EXPECT_EQ(expectedMetadataList[i].algorithm, metadataList[i].algorithm);
+                EXPECT_EQ(expectedMetadataList[i].type, metadataList[i].type);
+            }
+        }
+    }
 
-        EXPECT_EQ(parseResult, SubresourceIntegrity::parseIntegrityAttribute(integrityAttribute, digest, algorithm, type, *document));
+    void expectParseFailure(const char* integrityAttribute)
+    {
+        Vector<SubresourceIntegrity::IntegrityMetadata> metadataList;
+
+        EXPECT_EQ(SubresourceIntegrity::IntegrityParseNoValidResult, SubresourceIntegrity::parseIntegrityAttribute(integrityAttribute, metadataList, *document));
+    }
+
+    void expectEmptyParseResult(const char* integrityAttribute)
+    {
+        Vector<SubresourceIntegrity::IntegrityMetadata> metadataList;
+
+        EXPECT_EQ(SubresourceIntegrity::IntegrityParseValidResult, SubresourceIntegrity::parseIntegrityAttribute(integrityAttribute, metadataList, *document));
+        EXPECT_EQ(0u, metadataList.size());
     }
 
     enum CorsStatus {
@@ -188,8 +217,14 @@ TEST_F(SubresourceIntegrityTest, ParseAlgorithm)
     expectAlgorithm("sha-384-", HashAlgorithmSha384);
     expectAlgorithm("sha-512-", HashAlgorithmSha512);
 
-    expectAlgorithmFailure("sha1-");
-    expectAlgorithmFailure("sha-1-");
+    expectAlgorithmFailure("sha1-", SubresourceIntegrity::AlgorithmUnknown);
+    expectAlgorithmFailure("sha-1-", SubresourceIntegrity::AlgorithmUnknown);
+    expectAlgorithmFailure("foobarsha256-", SubresourceIntegrity::AlgorithmUnknown);
+    expectAlgorithmFailure("foobar-", SubresourceIntegrity::AlgorithmUnknown);
+    expectAlgorithmFailure("-", SubresourceIntegrity::AlgorithmUnknown);
+
+    expectAlgorithmFailure("sha256", SubresourceIntegrity::AlgorithmUnparsable);
+    expectAlgorithmFailure("", SubresourceIntegrity::AlgorithmUnparsable);
 }
 
 TEST_F(SubresourceIntegrityTest, ParseDigest)
@@ -226,14 +261,15 @@ TEST_F(SubresourceIntegrityTest, ParseMimeType)
 
 TEST_F(SubresourceIntegrityTest, Parsing)
 {
-    expectParseFailure("", SubresourceIntegrity::IntegrityParseErrorNonfatal);
-    expectParseFailure("not_really_a_valid_anything", SubresourceIntegrity::IntegrityParseErrorNonfatal);
-    expectParseFailure("foobar:///sha256-abcdefg", SubresourceIntegrity::IntegrityParseErrorNonfatal);
-    expectParseFailure("ni://sha256-abcdefg", SubresourceIntegrity::IntegrityParseErrorNonfatal);
-    expectParseFailure("ni:///sha256-abcdefg", SubresourceIntegrity::IntegrityParseErrorNonfatal);
-    expectParseFailure("not-sha256-at-all-abcdefg", SubresourceIntegrity::IntegrityParseErrorNonfatal);
-    expectParseFailure("sha256-&&&foobar&&&", SubresourceIntegrity::IntegrityParseErrorFatal);
-    expectParseFailure("sha256-\x01\x02\x03\x04", SubresourceIntegrity::IntegrityParseErrorFatal);
+    expectParseFailure("not_really_a_valid_anything");
+    expectParseFailure("sha256-&&&foobar&&&");
+    expectParseFailure("sha256-\x01\x02\x03\x04");
+    expectParseFailure("sha256-!!! sha256-!!!");
+
+    expectEmptyParseResult("foobar:///sha256-abcdefg");
+    expectEmptyParseResult("ni://sha256-abcdefg");
+    expectEmptyParseResult("ni:///sha256-abcdefg");
+    expectEmptyParseResult("notsha256atall-abcdefg");
 
     expectParse(
         "sha256-BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=",
@@ -276,6 +312,49 @@ TEST_F(SubresourceIntegrityTest, Parsing)
         "tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
         HashAlgorithmSha512,
         "");
+
+    expectParse(
+        "sha-512-tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ-07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==?ct=application/javascript",
+        "tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
+        HashAlgorithmSha512,
+        "application/javascript");
+
+    expectParseMultipleHashes("", 0, 0);
+    expectParseMultipleHashes("    ", 0, 0);
+
+    const SubresourceIntegrity::IntegrityMetadata kValidSha384AndSha512[] = {
+        {"XVVXBGoYw6AJOh9J+Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr", HashAlgorithmSha384, ""},
+        {"tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==", HashAlgorithmSha512, ""}
+    };
+    expectParseMultipleHashes(
+        "sha384-XVVXBGoYw6AJOh9J+Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr sha512-tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
+        kValidSha384AndSha512,
+        ARRAY_SIZE(kValidSha384AndSha512));
+
+    const SubresourceIntegrity::IntegrityMetadata kValidSha256AndSha256[] = {
+        {"BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=", HashAlgorithmSha256, ""},
+        {"deadbeef", HashAlgorithmSha256, ""}
+    };
+    expectParseMultipleHashes(
+        "sha256-BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE= sha256-deadbeef",
+        kValidSha256AndSha256,
+        ARRAY_SIZE(kValidSha256AndSha256));
+
+    const SubresourceIntegrity::IntegrityMetadata kValidSha256AndInvalidSha256[] = {
+        {"BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=", HashAlgorithmSha256, ""}
+    };
+    expectParseMultipleHashes(
+        "sha256-BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE= sha256-!!!!",
+        kValidSha256AndInvalidSha256,
+        ARRAY_SIZE(kValidSha256AndInvalidSha256));
+
+    const SubresourceIntegrity::IntegrityMetadata kInvalidSha256AndValidSha256[] = {
+        {"BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=", HashAlgorithmSha256, ""}
+    };
+    expectParseMultipleHashes(
+        "sha256-!!! sha256-BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=",
+        kInvalidSha256AndValidSha256,
+        ARRAY_SIZE(kInvalidSha256AndValidSha256));
 }
 
 TEST_F(SubresourceIntegrityTest, ParsingBase64)
@@ -301,8 +380,16 @@ TEST_F(SubresourceIntegrityTest, CheckSubresourceIntegrityInSecureOrigin)
     expectIntegrity(kSha384Integrity, kBasicScript, secureURL, secureURL);
     expectIntegrity(kSha512Integrity, kBasicScript, secureURL, secureURL);
 
+    // Verify multiple hashes in an attribute.
+    expectIntegrity(kSha256AndSha384Integrities, kBasicScript, secureURL, secureURL);
+    expectIntegrity(kBadSha256AndGoodSha384Integrities, kBasicScript, secureURL, secureURL);
+    expectIntegrity(kGoodSha256AndBadSha384Integrities, kBasicScript, secureURL, secureURL);
+
     // The hash label must match the hash value.
     expectIntegrityFailure(kSha384IntegrityLabeledAs256, kBasicScript, secureURL, secureURL);
+
+    // With multiple values, at least one must match.
+    expectIntegrityFailure(kBadSha256AndBadSha384Integrities, kBasicScript, secureURL, secureURL);
 
     // Unsupported hash functions should succeed.
     expectIntegrity(kUnsupportedHashFunctionIntegrity, kBasicScript, secureURL, secureURL);
@@ -324,6 +411,10 @@ TEST_F(SubresourceIntegrityTest, CheckSubresourceIntegrityInInsecureOrigin)
     expectIntegrity(kSha512Integrity, kBasicScript, secureURL, insecureURL);
     expectIntegrityFailure(kSha384IntegrityLabeledAs256, kBasicScript, secureURL, insecureURL);
     expectIntegrity(kUnsupportedHashFunctionIntegrity, kBasicScript, secureURL, insecureURL);
+
+    expectIntegrity(kSha256AndSha384Integrities, kBasicScript, secureURL, insecureURL);
+    expectIntegrity(kBadSha256AndGoodSha384Integrities, kBasicScript, secureURL, insecureURL);
+    expectIntegrity(kGoodSha256AndBadSha384Integrities, kBasicScript, secureURL, insecureURL);
 
     // This check should fail because, unlike in the
     // CheckSubresourceIntegrityInSecureOrigin case, this is cross origin
