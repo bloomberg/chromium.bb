@@ -931,10 +931,11 @@ void DeprecatedPaintLayerCompositor::updateOverflowControlsLayers()
     }
 
     if (requiresScrollCornerLayer()) {
-        if (!m_layerForScrollCorner) {
+        if (!m_layerForScrollCorner)
             m_layerForScrollCorner = GraphicsLayer::create(graphicsLayerFactory(), this);
+
+        if (m_layerForScrollCorner->parent() != controlsParent)
             controlsParent->addChild(m_layerForScrollCorner.get());
-        }
     } else if (m_layerForScrollCorner) {
         m_layerForScrollCorner->removeFromParent();
         m_layerForScrollCorner = nullptr;
