@@ -15,6 +15,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "content/child/scheduler/task_queue_selector.h"
+#include "content/child/scheduler/time_source.h"
 #include "content/common/content_export.h"
 
 namespace base {
@@ -24,17 +25,14 @@ class TracedValue;
 }
 }
 
-namespace cc {
-class TestNowSource;
-}
-
 namespace content {
 namespace internal {
 class LazyNow;
 class TaskQueue;
 }
-class TaskQueueSelector;
 class NestableSingleThreadTaskRunner;
+class TaskQueueSelector;
+class TimeSource;
 
 // The task queue manager provides N task queues and a selector interface for
 // choosing which task queue to service next. Each task queue consists of two
@@ -124,7 +122,7 @@ class CONTENT_EXPORT TaskQueueManager
   void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer);
   void RemoveTaskObserver(base::MessageLoop::TaskObserver* task_observer);
 
-  void SetTimeSourceForTesting(scoped_refptr<cc::TestNowSource> time_source);
+  void SetTimeSourceForTesting(scoped_ptr<TimeSource> time_source);
 
   // Returns a bitmap where a bit is set iff a task on the corresponding queue
   // was run since the last call to GetAndClearTaskWasRunOnQueueBitmap.
@@ -211,7 +209,7 @@ class CONTENT_EXPORT TaskQueueManager
 
   int work_batch_size_;
 
-  scoped_refptr<cc::TestNowSource> time_source_;
+  scoped_ptr<TimeSource> time_source_;
 
   ObserverList<base::MessageLoop::TaskObserver> task_observers_;
 

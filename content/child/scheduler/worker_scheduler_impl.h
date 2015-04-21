@@ -37,7 +37,7 @@ class CONTENT_EXPORT WorkerSchedulerImpl
   void Init() override;
   void Shutdown() override;
 
-  void SetTimeSourceForTesting(scoped_refptr<cc::TestNowSource> time_source);
+  SchedulerHelper* GetSchedulerHelperForTesting();
   void SetWorkBatchSizeForTesting(size_t work_batch_size);
   base::TimeTicks CurrentIdleTaskDeadlineForTesting() const;
 

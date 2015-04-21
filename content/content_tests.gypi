@@ -163,6 +163,8 @@
       'test/test_render_view_host.h',
       'test/test_render_view_host_factory.cc',
       'test/test_render_view_host_factory.h',
+      'test/test_time_source.cc',
+      'test/test_time_source.h',
       'test/test_web_contents.cc',
       'test/test_web_contents.h',
       'test/test_web_contents_factory.cc',

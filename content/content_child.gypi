@@ -209,6 +209,8 @@
       'child/scheduler/task_queue_selector.h',
       'child/scheduler/task_queue_manager.cc',
       'child/scheduler/task_queue_manager.h',
+      'child/scheduler/time_source.cc',
+      'child/scheduler/time_source.h',
       'child/scheduler/webthread_impl_for_worker_scheduler.cc',
       'child/scheduler/webthread_impl_for_worker_scheduler.h',
       'child/scheduler/web_scheduler_impl.cc',

@@ -7,8 +7,10 @@
 #include "base/callback.h"
 #include "base/strings/stringprintf.h"
 #include "cc/test/ordered_simple_task_runner.h"
+#include "cc/test/test_now_source.h"
 #include "content/child/scheduler/nestable_task_runner_for_test.h"
 #include "content/child/scheduler/scheduler_message_loop_delegate.h"
+#include "content/test/test_time_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -103,7 +105,11 @@ class WorkerSchedulerImplTest : public testing::Test {
         scheduler_(
             new WorkerSchedulerImplForTest(nestable_task_runner_, clock_)),
         timeline_(nullptr) {
-    scheduler_->SetTimeSourceForTesting(clock_);
+    scheduler_->GetSchedulerHelperForTesting()->SetTimeSourceForTesting(
+        make_scoped_ptr(new TestTimeSource(clock_)));
+    scheduler_->GetSchedulerHelperForTesting()
+        ->GetTaskQueueManagerForTesting()
+        ->SetTimeSourceForTesting(make_scoped_ptr(new TestTimeSource(clock_)));
   }
 
   ~WorkerSchedulerImplTest() override {}

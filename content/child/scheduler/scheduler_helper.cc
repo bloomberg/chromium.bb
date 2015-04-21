@@ -8,6 +8,7 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "content/child/scheduler/nestable_single_thread_task_runner.h"
 #include "content/child/scheduler/prioritizing_task_queue_selector.h"
+#include "content/child/scheduler/time_source.h"
 
 namespace content {
 
@@ -40,6 +41,7 @@ SchedulerHelper::SchedulerHelper(
           ~(1ull << QueueId::CONTROL_TASK_AFTER_WAKEUP_QUEUE)),
       required_quiescence_duration_before_long_idle_period_(
           required_quiescence_duration_before_long_idle_period),
+      time_source_(new TimeSource),
       tracing_category_(tracing_category),
       disabled_by_default_tracing_category_(
           disabled_by_default_tracing_category),
@@ -312,10 +314,9 @@ bool SchedulerHelper::CanExceedIdleDeadlineIfRequired() const {
 }
 
 void SchedulerHelper::SetTimeSourceForTesting(
-    scoped_refptr<cc::TestNowSource> time_source) {
+    scoped_ptr<TimeSource> time_source) {
   CheckOnValidThread();
-  time_source_ = time_source;
-  task_queue_manager_->SetTimeSourceForTesting(time_source);
+  time_source_ = time_source.Pass();
 }
 
 void SchedulerHelper::SetWorkBatchSizeForTesting(size_t work_batch_size) {
@@ -323,8 +324,13 @@ void SchedulerHelper::SetWorkBatchSizeForTesting(size_t work_batch_size) {
   task_queue_manager_->SetWorkBatchSize(work_batch_size);
 }
 
+TaskQueueManager* SchedulerHelper::GetTaskQueueManagerForTesting() {
+  CheckOnValidThread();
+  return task_queue_manager_.get();
+}
+
 base::TimeTicks SchedulerHelper::Now() const {
-  return UNLIKELY(time_source_) ? time_source_->Now() : base::TimeTicks::Now();
+  return time_source_->Now();
 }
 
 SchedulerHelper::IdlePeriodState

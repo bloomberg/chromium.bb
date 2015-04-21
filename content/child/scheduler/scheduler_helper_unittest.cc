@@ -6,8 +6,11 @@
 
 #include "base/callback.h"
 #include "cc/test/ordered_simple_task_runner.h"
+#include "cc/test/test_now_source.h"
 #include "content/child/scheduler/nestable_task_runner_for_test.h"
 #include "content/child/scheduler/scheduler_message_loop_delegate.h"
+#include "content/child/scheduler/task_queue_manager.h"
+#include "content/test/test_time_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -151,7 +154,10 @@ class BaseSchedulerHelperTest : public testing::Test {
             required_quiescence_duration_before_long_idle_period)),
         default_task_runner_(scheduler_helper_->DefaultTaskRunner()),
         idle_task_runner_(scheduler_helper_->IdleTaskRunner()) {
-    scheduler_helper_->SetTimeSourceForTesting(clock_);
+    scheduler_helper_->SetTimeSourceForTesting(
+        make_scoped_ptr(new TestTimeSource(clock_)));
+    scheduler_helper_->GetTaskQueueManagerForTesting()->SetTimeSourceForTesting(
+        make_scoped_ptr(new TestTimeSource(clock_)));
   }
 
   ~BaseSchedulerHelperTest() override {}

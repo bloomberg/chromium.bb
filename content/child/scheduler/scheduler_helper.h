@@ -5,10 +5,10 @@
 #ifndef CONTENT_CHILD_SCHEDULER_SCHEDULER_HELPER_H_
 #define CONTENT_CHILD_SCHEDULER_SCHEDULER_HELPER_H_
 
-#include "cc/test/test_now_source.h"
 #include "content/child/scheduler/cancelable_closure_holder.h"
 #include "content/child/scheduler/single_thread_idle_task_runner.h"
 #include "content/child/scheduler/task_queue_manager.h"
+#include "content/child/scheduler/time_source.h"
 
 namespace content {
 
@@ -165,8 +165,9 @@ class CONTENT_EXPORT SchedulerHelper {
   bool IsQueueEmpty(size_t queue_index) const;
 
   // Test helpers.
-  void SetTimeSourceForTesting(scoped_refptr<cc::TestNowSource> time_source);
+  void SetTimeSourceForTesting(scoped_ptr<TimeSource> time_source);
   void SetWorkBatchSizeForTesting(size_t work_batch_size);
+  TaskQueueManager* GetTaskQueueManagerForTesting();
 
  private:
   friend class SchedulerHelperTest;
@@ -196,7 +197,7 @@ class CONTENT_EXPORT SchedulerHelper {
   base::TimeDelta required_quiescence_duration_before_long_idle_period_;
 
   base::TimeTicks idle_period_deadline_;
-  scoped_refptr<cc::TestNowSource> time_source_;
+  scoped_ptr<TimeSource> time_source_;
 
   const char* tracing_category_;
   const char* disabled_by_default_tracing_category_;

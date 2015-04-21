@@ -10,6 +10,7 @@
 #include "content/child/scheduler/nestable_task_runner_for_test.h"
 #include "content/child/scheduler/scheduler_message_loop_delegate.h"
 #include "content/child/scheduler/task_queue_selector.h"
+#include "content/test/test_time_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::ElementsAre;
@@ -123,7 +124,8 @@ class TaskQueueManagerTest : public testing::Test {
     manager_ = make_scoped_ptr(new TaskQueueManager(
         num_queues, NestableTaskRunnerForTest::Create(test_task_runner_.get()),
         selector_.get(), "test.scheduler"));
-    manager_->SetTimeSourceForTesting(now_src_);
+    manager_->SetTimeSourceForTesting(
+        make_scoped_ptr(new TestTimeSource(now_src_)));
 
     EXPECT_EQ(num_queues, selector_->work_queues().size());
   }
@@ -223,7 +225,8 @@ TEST_F(TaskQueueManagerTest, NowNotCalledWhenThereAreNoDelayedTasks) {
   Initialize(3u, SelectorType::Explicit);
 
   scoped_refptr<cc::TestNowSource> now_src = cc::TestNowSource::Create(1000);
-  manager_->SetTimeSourceForTesting(now_src);
+  manager_->SetTimeSourceForTesting(
+      make_scoped_ptr(new TestTimeSource(now_src)));
 
   scoped_refptr<base::SingleThreadTaskRunner> runners[3] = {
       manager_->TaskRunnerForQueue(0),
@@ -987,7 +990,7 @@ TEST_F(TaskQueueManagerTest, ThreadCheckAfterTermination) {
 TEST_F(TaskQueueManagerTest, NextPendingDelayedTaskRunTime) {
   scoped_refptr<cc::TestNowSource> clock(cc::TestNowSource::Create());
   Initialize(2u, SelectorType::Explicit);
-  manager_->SetTimeSourceForTesting(clock);
+  manager_->SetTimeSourceForTesting(make_scoped_ptr(new TestTimeSource(clock)));
 
   scoped_refptr<base::SingleThreadTaskRunner> runners[2] = {
       manager_->TaskRunnerForQueue(0), manager_->TaskRunnerForQueue(1)};

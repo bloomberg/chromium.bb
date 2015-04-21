@@ -7,8 +7,10 @@
 #include "base/callback.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/test/ordered_simple_task_runner.h"
+#include "cc/test/test_now_source.h"
 #include "content/child/scheduler/nestable_task_runner_for_test.h"
 #include "content/child/scheduler/scheduler_message_loop_delegate.h"
+#include "content/test/test_time_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -136,7 +138,11 @@ class RendererSchedulerImplTest : public testing::Test {
         loading_task_runner_(scheduler_->LoadingTaskRunner()),
         idle_task_runner_(scheduler_->IdleTaskRunner()),
         timer_task_runner_(scheduler_->TimerTaskRunner()) {
-    scheduler_->SetTimeSourceForTesting(clock_);
+    scheduler_->GetSchedulerHelperForTesting()->SetTimeSourceForTesting(
+        make_scoped_ptr(new TestTimeSource(clock_)));
+    scheduler_->GetSchedulerHelperForTesting()
+        ->GetTaskQueueManagerForTesting()
+        ->SetTimeSourceForTesting(make_scoped_ptr(new TestTimeSource(clock_)));
   }
 
   RendererSchedulerImplTest(base::MessageLoop* message_loop)
@@ -150,7 +156,11 @@ class RendererSchedulerImplTest : public testing::Test {
         loading_task_runner_(scheduler_->LoadingTaskRunner()),
         idle_task_runner_(scheduler_->IdleTaskRunner()),
         timer_task_runner_(scheduler_->TimerTaskRunner()) {
-    scheduler_->SetTimeSourceForTesting(clock_);
+    scheduler_->GetSchedulerHelperForTesting()->SetTimeSourceForTesting(
+        make_scoped_ptr(new TestTimeSource(clock_)));
+    scheduler_->GetSchedulerHelperForTesting()
+        ->GetTaskQueueManagerForTesting()
+        ->SetTimeSourceForTesting(make_scoped_ptr(new TestTimeSource(clock_)));
   }
   ~RendererSchedulerImplTest() override {}
 
@@ -954,7 +964,11 @@ TEST_F(RendererSchedulerImplTest, OnePendingDelayedAndOneUrgentUpdatePolicy) {
   RendererSchedulerImplForTest* mock_scheduler =
       new RendererSchedulerImplForTest(nestable_task_runner_);
   scheduler_.reset(mock_scheduler);
-  scheduler_->SetTimeSourceForTesting(clock_);
+  scheduler_->GetSchedulerHelperForTesting()->SetTimeSourceForTesting(
+      make_scoped_ptr(new TestTimeSource(clock_)));
+  scheduler_->GetSchedulerHelperForTesting()
+      ->GetTaskQueueManagerForTesting()
+      ->SetTimeSourceForTesting(make_scoped_ptr(new TestTimeSource(clock_)));
   mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
 
   ScheduleDelayedPolicyUpdate(base::TimeDelta::FromMilliseconds(1));
@@ -970,7 +984,11 @@ TEST_F(RendererSchedulerImplTest, OneUrgentAndOnePendingDelayedUpdatePolicy) {
   RendererSchedulerImplForTest* mock_scheduler =
       new RendererSchedulerImplForTest(nestable_task_runner_);
   scheduler_.reset(mock_scheduler);
-  scheduler_->SetTimeSourceForTesting(clock_);
+  scheduler_->GetSchedulerHelperForTesting()->SetTimeSourceForTesting(
+      make_scoped_ptr(new TestTimeSource(clock_)));
+  scheduler_->GetSchedulerHelperForTesting()
+      ->GetTaskQueueManagerForTesting()
+      ->SetTimeSourceForTesting(make_scoped_ptr(new TestTimeSource(clock_)));
   mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
 
   EnsureUrgentPolicyUpdatePostedOnMainThread();
@@ -986,7 +1004,11 @@ TEST_F(RendererSchedulerImplTest, UpdatePolicyCountTriggeredByOneInputEvent) {
   RendererSchedulerImplForTest* mock_scheduler =
       new RendererSchedulerImplForTest(nestable_task_runner_);
   scheduler_.reset(mock_scheduler);
-  scheduler_->SetTimeSourceForTesting(clock_);
+  scheduler_->GetSchedulerHelperForTesting()->SetTimeSourceForTesting(
+      make_scoped_ptr(new TestTimeSource(clock_)));
+  scheduler_->GetSchedulerHelperForTesting()
+      ->GetTaskQueueManagerForTesting()
+      ->SetTimeSourceForTesting(make_scoped_ptr(new TestTimeSource(clock_)));
   mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
 
   scheduler_->DidReceiveInputEventOnCompositorThread(
@@ -1002,7 +1024,11 @@ TEST_F(RendererSchedulerImplTest, UpdatePolicyCountTriggeredByTwoInputEvents) {
   RendererSchedulerImplForTest* mock_scheduler =
       new RendererSchedulerImplForTest(nestable_task_runner_);
   scheduler_.reset(mock_scheduler);
-  scheduler_->SetTimeSourceForTesting(clock_);
+  scheduler_->GetSchedulerHelperForTesting()->SetTimeSourceForTesting(
+      make_scoped_ptr(new TestTimeSource(clock_)));
+  scheduler_->GetSchedulerHelperForTesting()
+      ->GetTaskQueueManagerForTesting()
+      ->SetTimeSourceForTesting(make_scoped_ptr(new TestTimeSource(clock_)));
   mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
 
   scheduler_->DidReceiveInputEventOnCompositorThread(
@@ -1020,7 +1046,11 @@ TEST_F(RendererSchedulerImplTest, EnsureUpdatePolicyNotTriggeredTooOften) {
   RendererSchedulerImplForTest* mock_scheduler =
       new RendererSchedulerImplForTest(nestable_task_runner_);
   scheduler_.reset(mock_scheduler);
-  scheduler_->SetTimeSourceForTesting(clock_);
+  scheduler_->GetSchedulerHelperForTesting()->SetTimeSourceForTesting(
+      make_scoped_ptr(new TestTimeSource(clock_)));
+  scheduler_->GetSchedulerHelperForTesting()
+      ->GetTaskQueueManagerForTesting()
+      ->SetTimeSourceForTesting(make_scoped_ptr(new TestTimeSource(clock_)));
   mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
 
   scheduler_->DidReceiveInputEventOnCompositorThread(

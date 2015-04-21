@@ -51,7 +51,7 @@ class CONTENT_EXPORT RendererSchedulerImpl
   void SuspendTimerQueue() override;
   void ResumeTimerQueue() override;
 
-  void SetTimeSourceForTesting(scoped_refptr<cc::TestNowSource> time_source);
+  SchedulerHelper* GetSchedulerHelperForTesting();
   void SetWorkBatchSizeForTesting(size_t work_batch_size);
   base::TimeTicks CurrentIdleTaskDeadlineForTesting() const;
 

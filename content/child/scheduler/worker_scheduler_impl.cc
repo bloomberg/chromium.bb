@@ -75,9 +75,8 @@ void WorkerSchedulerImpl::Shutdown() {
   helper_.Shutdown();
 }
 
-void WorkerSchedulerImpl::SetTimeSourceForTesting(
-    scoped_refptr<cc::TestNowSource> time_source) {
-  helper_.SetTimeSourceForTesting(time_source);
+SchedulerHelper* WorkerSchedulerImpl::GetSchedulerHelperForTesting() {
+  return &helper_;
 }
 
 void WorkerSchedulerImpl::SetWorkBatchSizeForTesting(size_t work_batch_size) {

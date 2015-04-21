@@ -10,9 +10,9 @@
 #include "base/bind.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "cc/test/test_now_source.h"
 #include "content/child/scheduler/nestable_single_thread_task_runner.h"
 #include "content/child/scheduler/task_queue_selector.h"
+#include "content/child/scheduler/time_source.h"
 
 namespace {
 const int64_t kMaxTimeTicks = std::numeric_limits<int64>::max();
@@ -461,7 +461,7 @@ TaskQueueManager::TaskQueueManager(
       task_was_run_bitmap_(0),
       pending_dowork_count_(0),
       work_batch_size_(1),
-      time_source_(nullptr),
+      time_source_(new TimeSource),
       disabled_by_default_tracing_category_(
           disabled_by_default_tracing_category),
       deletion_sentinel_(new DeletionSentinel()),
@@ -703,9 +703,9 @@ void TaskQueueManager::RemoveTaskObserver(
 }
 
 void TaskQueueManager::SetTimeSourceForTesting(
-    scoped_refptr<cc::TestNowSource> time_source) {
+    scoped_ptr<TimeSource> time_source) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  time_source_ = time_source;
+  time_source_ = time_source.Pass();
 }
 
 uint64 TaskQueueManager::GetAndClearTaskWasRunOnQueueBitmap() {
@@ -715,7 +715,7 @@ uint64 TaskQueueManager::GetAndClearTaskWasRunOnQueueBitmap() {
 }
 
 base::TimeTicks TaskQueueManager::Now() const {
-  return UNLIKELY(time_source_) ? time_source_->Now() : base::TimeTicks::Now();
+  return time_source_->Now();
 }
 
 scoped_refptr<base::trace_event::ConvertableToTraceFormat>
