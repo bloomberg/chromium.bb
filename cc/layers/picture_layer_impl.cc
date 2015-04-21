@@ -706,6 +706,7 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
     int viewport_width = gpu_raster_max_texture_size_.width();
     int viewport_height = gpu_raster_max_texture_size_.height();
     default_tile_width = viewport_width;
+
     // Also, increase the height proportionally as the width decreases, and
     // pad by our border texels to make the tiles exactly match the viewport.
     int divisor = 4;
@@ -714,7 +715,11 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
     if (content_bounds.width() <= viewport_width / 4)
       divisor = 1;
     default_tile_height = RoundUp(viewport_height, divisor) / divisor;
+
+    // Grow default sizes to account for overlapping border texels.
+    default_tile_width += 2 * PictureLayerTiling::kBorderTexels;
     default_tile_height += 2 * PictureLayerTiling::kBorderTexels;
+
     default_tile_height =
         std::max(default_tile_height, kMinHeightForGpuRasteredTile);
   } else {

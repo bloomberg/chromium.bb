@@ -299,6 +299,16 @@ class PictureLayerImplTest : public testing::Test {
     EXPECT_EQ(0u, active_layer_->tilings()->num_tilings());
   }
 
+  size_t NumberOfTilesRequired(PictureLayerTiling* tiling) {
+    size_t num_required = 0;
+    std::vector<Tile*> tiles = tiling->AllTilesForTesting();
+    for (size_t i = 0; i < tiles.size(); ++i) {
+      if (tiles[i]->required_for_activation())
+        num_required++;
+    }
+    return num_required;
+  }
+
   void AssertAllTilesRequired(PictureLayerTiling* tiling) {
     std::vector<Tile*> tiles = tiling->AllTilesForTesting();
     for (size_t i = 0; i < tiles.size(); ++i)
@@ -2508,6 +2518,30 @@ TEST_F(PictureLayerImplTest, NoLowResTilingWithGpuRasterization) {
   EXPECT_TRUE(host_impl_.use_gpu_rasterization());
   // Should only have the high-res tiling.
   EXPECT_EQ(1u, pending_layer_->tilings()->num_tilings());
+}
+
+TEST_F(PictureLayerImplTest, RequiredTilesWithGpuRasterization) {
+  host_impl_.SetUseGpuRasterization(true);
+
+  gfx::Size viewport_size(1000, 1000);
+  host_impl_.SetViewportSize(viewport_size);
+
+  gfx::Size layer_bounds(4000, 4000);
+  SetupDefaultTrees(layer_bounds);
+  EXPECT_TRUE(host_impl_.use_gpu_rasterization());
+
+  // Should only have the high-res tiling.
+  EXPECT_EQ(1u, pending_layer_->tilings()->num_tilings());
+
+  active_layer_->SetAllTilesReady();
+  pending_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
+
+  // High res tiling should have 64 tiles (4x16 tile grid).
+  EXPECT_EQ(64u, pending_layer_->HighResTiling()->AllTilesForTesting().size());
+
+  // Visible viewport should be covered by 4 tiles.  No other
+  // tiles should be required for activation.
+  EXPECT_EQ(4u, NumberOfTilesRequired(pending_layer_->HighResTiling()));
 }
 
 TEST_F(PictureLayerImplTest, NoTilingIfDoesNotDrawContent) {
@@ -4877,7 +4911,7 @@ TEST_F(TileSizeTest, TileSizes) {
 
   layer->set_gpu_raster_max_texture_size(host_impl_.device_viewport_size());
   result = layer->CalculateTileSize(gfx::Size(10000, 10000));
-  EXPECT_EQ(result.width(), 2000);
+  EXPECT_EQ(result.width(), 2000 + 2 * PictureLayerTiling::kBorderTexels);
   EXPECT_EQ(result.height(), 500 + 2);
 
   // Clamp and round-up, when smaller than viewport.
