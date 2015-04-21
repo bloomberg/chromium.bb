@@ -144,8 +144,11 @@ function _adjustWindowRectHorizontally(windowRect, availRect, anchorRect, minWid
     windowRect.width = Math.min(windowRect.width, availRect.width);
     windowRect.width = Math.max(windowRect.width, minWidth);
     windowRect.x = anchorRect.x;
-    if (global.params.isRTL)
-        windowRect.x += anchorRect.width - windowRect.width;
+    // If we are getting clipped, we want to switch alignment to the right side
+    // of the anchor rect as long as doing so will make the popup not clipped.
+    var rightAlignedX = windowRect.x + anchorRect.width - windowRect.width;
+    if (rightAlignedX >= availRect.x && (windowRect.maxX > availRect.maxX || global.params.isRTL))
+        windowRect.x = rightAlignedX;
 }
 
 /**

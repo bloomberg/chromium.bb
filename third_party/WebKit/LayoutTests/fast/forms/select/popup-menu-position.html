@@ -105,7 +105,7 @@ function test5() {
 
 function test6() {
     popupWindowRect = getPopupWindowRect();
-    shouldBe('popupWindowRect.x', 'screenWidth - menuWidth - 10');
+    shouldBe('popupWindowRect.x', 'screenWidth - 250 - 10');
     shouldBe('popupWindowRect.y', 'menuHeight');
 
     popupWindow.pagePopupController.closePopup();
