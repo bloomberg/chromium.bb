@@ -60,8 +60,9 @@ public class KitKatCaptioningBridge implements SystemCaptioningBridge {
      */
     public KitKatCaptioningBridge(ContentViewCore contenViewCore) {
         mCaptioningChangeDelegate = new CaptioningChangeDelegate(contenViewCore);
-        mCaptioningManager = (CaptioningManager) contenViewCore.getContext().getSystemService(
-                Context.CAPTIONING_SERVICE);
+        mCaptioningManager = (CaptioningManager) contenViewCore.getContext()
+                                     .getApplicationContext()
+                                     .getSystemService(Context.CAPTIONING_SERVICE);
         mCaptioningManager.addCaptioningChangeListener(mCaptioningChangeListener);
         syncToDelegate();
     }
