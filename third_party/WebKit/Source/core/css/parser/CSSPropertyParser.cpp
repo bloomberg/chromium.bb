@@ -1216,11 +1216,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyTransitionDelay:
     case CSSPropertyTransitionDuration:
     case CSSPropertyTransitionTimingFunction:
-    case CSSPropertyTransitionProperty:
-    case CSSPropertyWebkitTransitionDelay:
-    case CSSPropertyWebkitTransitionDuration:
-    case CSSPropertyWebkitTransitionTimingFunction:
-    case CSSPropertyWebkitTransitionProperty: {
+    case CSSPropertyTransitionProperty: {
         if (RefPtrWillBeRawPtr<CSSValueList> val = parseAnimationPropertyList(propId)) {
             addPropertyWithPrefixingVariant(propId, val.release(), important);
             return true;
@@ -1467,7 +1463,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitAnimation:
         return parseAnimationShorthand(propId, important);
     case CSSPropertyTransition:
-    case CSSPropertyWebkitTransition:
         return parseTransitionShorthand(propId, important);
     case CSSPropertyInvalid:
         return false;
@@ -1878,7 +1873,7 @@ bool CSSPropertyParser::parseTransitionShorthand(CSSPropertyID propId, bool impo
             return false;
     }
 
-    ASSERT(shorthand.properties()[3] == CSSPropertyTransitionProperty || shorthand.properties()[3] == CSSPropertyWebkitTransitionProperty);
+    ASSERT(shorthand.properties()[3] == CSSPropertyTransitionProperty);
     if (!isValidTransitionPropertyList(values[3].get()))
         return false;
 
@@ -3123,7 +3118,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationProperty(CSSPr
     case CSSPropertyAnimationDelay:
     case CSSPropertyWebkitAnimationDelay:
     case CSSPropertyTransitionDelay:
-    case CSSPropertyWebkitTransitionDelay:
         value = parseAnimationDelay();
         break;
     case CSSPropertyAnimationDirection:
@@ -3133,7 +3127,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationProperty(CSSPr
     case CSSPropertyAnimationDuration:
     case CSSPropertyWebkitAnimationDuration:
     case CSSPropertyTransitionDuration:
-    case CSSPropertyWebkitTransitionDuration:
         value = parseAnimationDuration();
         break;
     case CSSPropertyAnimationFillMode:
@@ -3155,13 +3148,11 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationProperty(CSSPr
         value = parseAnimationPlayState();
         break;
     case CSSPropertyTransitionProperty:
-    case CSSPropertyWebkitTransitionProperty:
         value = parseAnimationProperty();
         break;
     case CSSPropertyAnimationTimingFunction:
     case CSSPropertyWebkitAnimationTimingFunction:
     case CSSPropertyTransitionTimingFunction:
-    case CSSPropertyWebkitTransitionTimingFunction:
         value = parseAnimationTimingFunction();
         break;
     default:
@@ -3187,7 +3178,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseAnimationPropertyLi
         if (!consumeComma(m_valueList) || !m_valueList->current())
             return nullptr;
     }
-    if ((propId == CSSPropertyTransitionProperty || propId == CSSPropertyWebkitTransitionProperty) && !isValidTransitionPropertyList(list.get()))
+    if (propId == CSSPropertyTransitionProperty && !isValidTransitionPropertyList(list.get()))
         return nullptr;
     ASSERT(list->length());
     return list.release();

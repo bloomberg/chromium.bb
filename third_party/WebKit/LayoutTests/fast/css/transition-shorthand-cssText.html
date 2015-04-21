@@ -16,13 +16,13 @@ description("Test for Bug 310403: CssStyleDeclaration improperly sets transition
 
 var sheet = document.styleSheets[0];
 var rule = sheet.rules[0];
-shouldBe("rule.cssText","'#target { transition-duration: 1s; -webkit-transition-duration: 1s; }'");
+shouldBe("rule.cssText","'#target { transition-duration: 1s; }'");
 rule.style.setProperty('transition-delay', '0s');
-shouldBe("rule.cssText","'#target { transition-duration: 1s; -webkit-transition-duration: 1s; transition-delay: 0s; -webkit-transition-delay: 0s; }'");
+shouldBe("rule.cssText","'#target { transition-duration: 1s; transition-delay: 0s; }'");
 rule.style.setProperty('transition-property', 'all');
-shouldBe("rule.cssText","'#target { transition-duration: 1s; -webkit-transition-duration: 1s; transition-delay: 0s; -webkit-transition-delay: 0s; transition-property: all; -webkit-transition-property: all; }'");
+shouldBe("rule.cssText","'#target { transition-duration: 1s; transition-delay: 0s; transition-property: all; }'");
 rule.style.setProperty('transition-timing-function', 'ease');
-shouldBe("rule.cssText","'#target { transition: all 1s ease 0s; -webkit-transition: all 1s ease 0s; }'");
+shouldBe("rule.cssText","'#target { transition: all 1s ease 0s; }'");
 
 </script>
 

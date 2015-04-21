@@ -129,27 +129,6 @@ inline CSSPropertyID prefixingVariantForPropertyId(CSSPropertyID propId)
         return CSSPropertyAnimationPlayState;
     case CSSPropertyWebkitAnimationTimingFunction:
         return CSSPropertyAnimationTimingFunction;
-
-    case CSSPropertyTransitionDelay:
-        return CSSPropertyWebkitTransitionDelay;
-    case CSSPropertyTransitionDuration:
-        return CSSPropertyWebkitTransitionDuration;
-    case CSSPropertyTransitionProperty:
-        return CSSPropertyWebkitTransitionProperty;
-    case CSSPropertyTransitionTimingFunction:
-        return CSSPropertyWebkitTransitionTimingFunction;
-    case CSSPropertyTransition:
-        return CSSPropertyWebkitTransition;
-    case CSSPropertyWebkitTransitionDelay:
-        return CSSPropertyTransitionDelay;
-    case CSSPropertyWebkitTransitionDuration:
-        return CSSPropertyTransitionDuration;
-    case CSSPropertyWebkitTransitionProperty:
-        return CSSPropertyTransitionProperty;
-    case CSSPropertyWebkitTransitionTimingFunction:
-        return CSSPropertyTransitionTimingFunction;
-    case CSSPropertyWebkitTransition:
-        return CSSPropertyTransition;
     default:
         return propId;
     }

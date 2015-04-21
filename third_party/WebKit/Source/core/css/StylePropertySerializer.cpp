@@ -336,12 +336,6 @@ String StylePropertySerializer::asText() const
         case CSSPropertyWebkitMaskOrigin:
             shorthandPropertyID = CSSPropertyWebkitMask;
             break;
-        case CSSPropertyWebkitTransitionProperty:
-        case CSSPropertyWebkitTransitionDuration:
-        case CSSPropertyWebkitTransitionTimingFunction:
-        case CSSPropertyWebkitTransitionDelay:
-            shorthandPropertyID = CSSPropertyWebkitTransition;
-            break;
         case CSSPropertyAll:
             result.append(getPropertyText(propertyID, property.value()->cssText(), property.isImportant(), numDecls++));
             continue;
@@ -453,8 +447,6 @@ String StylePropertySerializer::getPropertyValue(CSSPropertyID propertyID) const
         return getShorthandValue(webkitTextEmphasisShorthand());
     case CSSPropertyWebkitTextStroke:
         return getShorthandValue(webkitTextStrokeShorthand());
-    case CSSPropertyWebkitTransition:
-        return getLayeredShorthandValue(webkitTransitionShorthand(), true);
     case CSSPropertyWebkitAnimation:
         return getLayeredShorthandValue(webkitAnimationShorthand(), true);
     case CSSPropertyMarker: {

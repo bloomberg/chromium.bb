@@ -2211,19 +2211,14 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyTransformStyle:
         return cssValuePool().createIdentifierValue((style.transformStyle3D() == TransformStyle3DPreserve3D) ? CSSValuePreserve3d : CSSValueFlat);
     case CSSPropertyTransitionDelay:
-    case CSSPropertyWebkitTransitionDelay:
         return valueForAnimationDelay(style.transitions());
     case CSSPropertyTransitionDuration:
-    case CSSPropertyWebkitTransitionDuration:
         return valueForAnimationDuration(style.transitions());
     case CSSPropertyTransitionProperty:
-    case CSSPropertyWebkitTransitionProperty:
         return valueForTransitionProperty(style.transitions());
     case CSSPropertyTransitionTimingFunction:
-    case CSSPropertyWebkitTransitionTimingFunction:
         return valueForAnimationTimingFunction(style.transitions());
-    case CSSPropertyTransition:
-    case CSSPropertyWebkitTransition: {
+    case CSSPropertyTransition: {
         const CSSTransitionData* transitionData = style.transitions();
         if (transitionData) {
             RefPtrWillBeRawPtr<CSSValueList> transitionsList = CSSValueList::createCommaSeparated();

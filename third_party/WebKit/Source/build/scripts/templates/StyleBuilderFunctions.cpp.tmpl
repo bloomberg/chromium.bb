@@ -115,10 +115,10 @@ namespace blink {
 {{apply_animation('CSSPropertyWebkitAnimationName', 'Name', 'Animation')}}
 {{apply_animation('CSSPropertyWebkitAnimationPlayState', 'PlayState', 'Animation')}}
 {{apply_animation('CSSPropertyWebkitAnimationTimingFunction', 'TimingFunction', 'Animation')}}
-{{apply_animation('CSSPropertyWebkitTransitionDelay', 'Delay', 'Transition')}}
-{{apply_animation('CSSPropertyWebkitTransitionDuration', 'Duration', 'Transition')}}
-{{apply_animation('CSSPropertyWebkitTransitionProperty', 'Property', 'Transition')}}
-{{apply_animation('CSSPropertyWebkitTransitionTimingFunction', 'TimingFunction', 'Transition')}}
+{{apply_animation('CSSPropertyTransitionDelay', 'Delay', 'Transition')}}
+{{apply_animation('CSSPropertyTransitionDuration', 'Duration', 'Transition')}}
+{{apply_animation('CSSPropertyTransitionProperty', 'Property', 'Transition')}}
+{{apply_animation('CSSPropertyTransitionTimingFunction', 'TimingFunction', 'Transition')}}
 
 {% macro apply_auto(property_id, auto_getter=none, auto_setter=none, auto_identity='CSSValueAuto') %}
 {% set property = properties[property_id] %}

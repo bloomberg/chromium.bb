@@ -354,11 +354,6 @@ webkitTransform
 webkitTransformOriginX
 webkitTransformOriginY
 webkitTransformOriginZ
-webkitTransition
-webkitTransitionDelay
-webkitTransitionDuration
-webkitTransitionProperty
-webkitTransitionTimingFunction
 webkitUserDrag
 webkitUserModify
 webkitUserSelect

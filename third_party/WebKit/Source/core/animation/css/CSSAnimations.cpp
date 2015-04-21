@@ -804,11 +804,6 @@ bool CSSAnimations::isAllowedAnimation(CSSPropertyID property)
     case CSSPropertyWebkitAnimationName:
     case CSSPropertyWebkitAnimationPlayState:
     case CSSPropertyWebkitAnimationTimingFunction:
-    case CSSPropertyWebkitTransition:
-    case CSSPropertyWebkitTransitionDelay:
-    case CSSPropertyWebkitTransitionDuration:
-    case CSSPropertyWebkitTransitionProperty:
-    case CSSPropertyWebkitTransitionTimingFunction:
         return false;
     default:
         return true;

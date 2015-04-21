@@ -363,11 +363,11 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyWebkitTransformOriginY: return 329;
     case CSSPropertyWebkitTransformOriginZ: return 330;
     case CSSPropertyAliasWebkitTransformStyle: return 331;
-    case CSSPropertyWebkitTransition: return 332;
-    case CSSPropertyWebkitTransitionDelay: return 333;
-    case CSSPropertyWebkitTransitionDuration: return 334;
-    case CSSPropertyWebkitTransitionProperty: return 335;
-    case CSSPropertyWebkitTransitionTimingFunction: return 336;
+    case CSSPropertyAliasWebkitTransition: return 332;
+    case CSSPropertyAliasWebkitTransitionDelay: return 333;
+    case CSSPropertyAliasWebkitTransitionDuration: return 334;
+    case CSSPropertyAliasWebkitTransitionProperty: return 335;
+    case CSSPropertyAliasWebkitTransitionTimingFunction: return 336;
     case CSSPropertyWebkitUserDrag: return 337;
     case CSSPropertyWebkitUserModify: return 338;
     case CSSPropertyWebkitUserSelect: return 339;
