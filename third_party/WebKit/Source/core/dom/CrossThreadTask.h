@@ -33,7 +33,7 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
-#include "platform/CrossThreadCopier.h"
+#include "platform/ThreadSafeFunctional.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/TypeTraits.h"
@@ -80,8 +80,9 @@ namespace blink {
 // ExecutionContext:
 //     |context| is supplied by the target thread.
 //
-// Deep copies by CrossThreadCopier:
-//     |p0|, |p1|, ..., |pn| are processed by CrossThreadCopier.
+// Deep copies by threadSafeBind():
+//     |p0|, |p1|, ..., |pn| are processed by threadSafeBind() and thus
+//     CrossThreadCopier.
 //     You don't have to call manually e.g. isolatedCopy().
 //     To pass things that cannot be copied by CrossThreadCopier
 //     (e.g. pointers), use AllowCrossThreadAccess() explicitly.
@@ -103,84 +104,6 @@ private:
     OwnPtr<Function<void(ExecutionContext*)>> m_closure;
 };
 
-// TaskClass is either CallClosureTask or CallClosureWithExecutionContextTask.
-// FreeVariableTypes is either empty or ExecutionContext*.
-template<typename TaskClass, typename... FreeVariableTypes, typename FunctionType>
-PassOwnPtr<ExecutionContextTask> createCrossThreadTaskInternal(
-    FunctionType function)
-{
-    return TaskClass::create(bind<FreeVariableTypes...>(function));
-}
-
-template<typename TaskClass, typename... FreeVariableTypes, typename FunctionType, typename P1>
-PassOwnPtr<ExecutionContextTask> createCrossThreadTaskInternal(
-    FunctionType function,
-    const P1& parameter1)
-{
-    return TaskClass::create(bind<FreeVariableTypes...>(function,
-        CrossThreadCopier<P1>::copy(parameter1)));
-}
-
-template<typename TaskClass, typename... FreeVariableTypes, typename FunctionType, typename P1, typename P2>
-PassOwnPtr<ExecutionContextTask> createCrossThreadTaskInternal(
-    FunctionType function,
-    const P1& parameter1, const P2& parameter2)
-{
-    return TaskClass::create(bind<FreeVariableTypes...>(function,
-        CrossThreadCopier<P1>::copy(parameter1),
-        CrossThreadCopier<P2>::copy(parameter2)));
-}
-
-template<typename TaskClass, typename... FreeVariableTypes, typename FunctionType, typename P1, typename P2, typename P3>
-PassOwnPtr<ExecutionContextTask> createCrossThreadTaskInternal(
-    FunctionType function,
-    const P1& parameter1, const P2& parameter2, const P3& parameter3)
-{
-    return TaskClass::create(bind<FreeVariableTypes...>(function,
-        CrossThreadCopier<P1>::copy(parameter1),
-        CrossThreadCopier<P2>::copy(parameter2),
-        CrossThreadCopier<P3>::copy(parameter3)));
-}
-
-template<typename TaskClass, typename... FreeVariableTypes, typename FunctionType, typename P1, typename P2, typename P3, typename P4>
-PassOwnPtr<ExecutionContextTask> createCrossThreadTaskInternal(
-    FunctionType function,
-    const P1& parameter1, const P2& parameter2, const P3& parameter3, const P4& parameter4)
-{
-    return TaskClass::create(bind<FreeVariableTypes...>(function,
-        CrossThreadCopier<P1>::copy(parameter1),
-        CrossThreadCopier<P2>::copy(parameter2),
-        CrossThreadCopier<P3>::copy(parameter3),
-        CrossThreadCopier<P4>::copy(parameter4)));
-}
-
-template<typename TaskClass, typename... FreeVariableTypes, typename FunctionType, typename P1, typename P2, typename P3, typename P4, typename P5>
-PassOwnPtr<ExecutionContextTask> createCrossThreadTaskInternal(
-    FunctionType function,
-    const P1& parameter1, const P2& parameter2, const P3& parameter3, const P4& parameter4, const P5& parameter5)
-{
-    return TaskClass::create(bind<FreeVariableTypes...>(function,
-        CrossThreadCopier<P1>::copy(parameter1),
-        CrossThreadCopier<P2>::copy(parameter2),
-        CrossThreadCopier<P3>::copy(parameter3),
-        CrossThreadCopier<P4>::copy(parameter4),
-        CrossThreadCopier<P5>::copy(parameter5)));
-}
-
-template<typename TaskClass, typename... FreeVariableTypes, typename FunctionType, typename P1, typename P2, typename P3, typename P4, typename P5, typename P6>
-PassOwnPtr<ExecutionContextTask> createCrossThreadTaskInternal(
-    FunctionType function,
-    const P1& parameter1, const P2& parameter2, const P3& parameter3, const P4& parameter4, const P5& parameter5, const P6& parameter6)
-{
-    return TaskClass::create(bind<FreeVariableTypes...>(function,
-        CrossThreadCopier<P1>::copy(parameter1),
-        CrossThreadCopier<P2>::copy(parameter2),
-        CrossThreadCopier<P3>::copy(parameter3),
-        CrossThreadCopier<P4>::copy(parameter4),
-        CrossThreadCopier<P5>::copy(parameter5),
-        CrossThreadCopier<P6>::copy(parameter6)));
-}
-
 } // namespace internal
 
 // RETTYPE, PS, and MPS are added as template parameters to circumvent MSVC 18.00.21005.1 (VS 2013) issues.
@@ -191,7 +114,7 @@ template<typename... P, typename... MP,
     typename RETTYPE = PassOwnPtr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
 typename WTF::EnableIf<PS + 1 == MPS, RETTYPE>::Type createCrossThreadTask(void (*function)(MP...), const P&... parameters)
 {
-    return internal::createCrossThreadTaskInternal<internal::CallClosureWithExecutionContextTask, ExecutionContext*>(function, parameters...);
+    return internal::CallClosureWithExecutionContextTask::create(threadSafeBind<ExecutionContext*>(function, parameters...));
 }
 
 // [2] createCrossThreadTask() for member functions of class C (with ExecutionContext* argument) + raw pointer (C*).
@@ -200,7 +123,7 @@ template<typename C, typename... P, typename... MP,
     typename RETTYPE = PassOwnPtr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
 typename WTF::EnableIf<PS + 1 == MPS, RETTYPE>::Type createCrossThreadTask(void (C::*function)(MP...), C* p, const P&... parameters)
 {
-    return internal::createCrossThreadTaskInternal<internal::CallClosureWithExecutionContextTask, ExecutionContext*>(function, AllowCrossThreadAccess(p), parameters...);
+    return internal::CallClosureWithExecutionContextTask::create(threadSafeBind<ExecutionContext*>(function, AllowCrossThreadAccess(p), parameters...));
 }
 
 // [3] createCrossThreadTask() for non-member functions
@@ -209,7 +132,7 @@ template<typename... P, typename... MP,
     typename RETTYPE = PassOwnPtr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
 typename WTF::EnableIf<PS == MPS, RETTYPE>::Type createCrossThreadTask(void (*function)(MP...), const P&... parameters)
 {
-    return internal::createCrossThreadTaskInternal<internal::CallClosureTask>(function, parameters...);
+    return internal::CallClosureTask::create(threadSafeBind(function, parameters...));
 }
 
 // [4] createCrossThreadTask() for member functions of class C + raw pointer (C*)
@@ -219,14 +142,14 @@ template<typename C, typename... P, typename... MP,
     typename RETTYPE = PassOwnPtr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
 typename WTF::EnableIf<PS == MPS, RETTYPE>::Type createCrossThreadTask(void (C::*function)(MP...), C* p, const P&... parameters)
 {
-    return internal::createCrossThreadTaskInternal<internal::CallClosureTask>(function, AllowCrossThreadAccess(p), parameters...);
+    return internal::CallClosureTask::create(threadSafeBind(function, AllowCrossThreadAccess(p), parameters...));
 }
 
 template<typename C, typename... P, typename... MP,
     typename RETTYPE = PassOwnPtr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
 typename WTF::EnableIf<PS == MPS, RETTYPE>::Type createCrossThreadTask(void (C::*function)(MP...), const WeakPtr<C>& p, const P&... parameters)
 {
-    return internal::createCrossThreadTaskInternal<internal::CallClosureTask>(function, AllowCrossThreadAccess(p), parameters...);
+    return internal::CallClosureTask::create(threadSafeBind(function, AllowCrossThreadAccess(p), parameters...));
 }
 
 // [6] createCrossThreadTask() for member functions + pointers to class C other than C* or const WeakPtr<C>&
@@ -235,7 +158,7 @@ template<typename C, typename... P, typename... MP,
     typename RETTYPE = PassOwnPtr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
 typename WTF::EnableIf<PS == MPS + 1, RETTYPE>::Type createCrossThreadTask(void (C::*function)(MP...), const P&... parameters)
 {
-    return internal::createCrossThreadTaskInternal<internal::CallClosureTask>(function, parameters...);
+    return internal::CallClosureTask::create(threadSafeBind(function, parameters...));
 }
 
 } // namespace blink
