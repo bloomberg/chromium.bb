@@ -364,6 +364,7 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
                           plugin_metadata->identifier(), &plugin_setting,
                           &uses_default_content_setting, &is_managed);
 
+  bool legacy_ask_user = plugin_setting == CONTENT_SETTING_ASK;
   plugin_setting = content_settings::PluginsFieldTrial::EffectiveContentSetting(
       CONTENT_SETTINGS_TYPE_PLUGINS, plugin_setting);
 
@@ -431,7 +432,9 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
   if (plugin_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT) {
     *status = ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent;
   } else if (plugin_setting == CONTENT_SETTING_BLOCK) {
-    *status = is_managed
+    // For managed users with the ASK policy, we allow manually running plugins
+    // via context menu. This is the closest to admin intent.
+    *status = is_managed && !legacy_ask_user
                   ? ChromeViewHostMsg_GetPluginInfo_Status::kBlockedByPolicy
                   : ChromeViewHostMsg_GetPluginInfo_Status::kBlocked;
   }
