@@ -66,7 +66,7 @@ const CGFloat kInset = 20.0;
   if ((self = [super initWithWindow:window
                        parentWindow:parentWindow
                          anchoredAt:NSZeroPoint])) {
-    [window setCanBecomeKeyWindow:NO];
+    [window setInfoBubbleCanBecomeKeyWindow:NO];
     bridge_.reset(bridge);
 
     ui::NativeTheme* nativeTheme = ui::NativeTheme::instance();

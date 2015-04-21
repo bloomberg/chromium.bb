@@ -122,7 +122,7 @@ const float kHideDuration = 0.7;
 - (void)showWindow {
   // Completes nib load.
   InfoBubbleWindow* info_bubble = static_cast<InfoBubbleWindow*>([self window]);
-  [info_bubble setCanBecomeKeyWindow:NO];
+  [info_bubble setInfoBubbleCanBecomeKeyWindow:NO];
   if (!exclusive_access_bubble::ShowButtonsForType(bubbleType_)) {
     [self hideSoon];
   }

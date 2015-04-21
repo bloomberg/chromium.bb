@@ -81,7 +81,7 @@
                        parentWindow:parentWindow
                          anchoredAt:anchorPoint])) {
     acknowledged_ = NO;
-    [window setCanBecomeKeyWindow:NO];
+    [window setInfoBubbleCanBecomeKeyWindow:NO];
     delegate_ = delegate.Pass();
 
     ui::NativeTheme* nativeTheme = ui::NativeTheme::instance();

@@ -83,7 +83,7 @@ const CGFloat kAnchorlessTopPadding = 10;
                        parentWindow:parentWindow
                          anchoredAt:NSZeroPoint])) {
     controller_ = controller;
-    [window setCanBecomeKeyWindow:NO];
+    [window setInfoBubbleCanBecomeKeyWindow:NO];
 
     ui::NativeTheme* nativeTheme = ui::NativeTheme::instance();
     [[self bubble] setBackgroundColor:

@@ -33,7 +33,7 @@ typedef NSUInteger AllowedAnimations;
 
   // If NO the window will never become key.
   // Default YES.
-  BOOL canBecomeKeyWindow_;
+  BOOL infoBubbleCanBecomeKeyWindow_;
 
   // If NO the window will not share key state with its parent. Defaults to YES.
   // Can be set both by external callers, but is also changed internally, in
@@ -45,8 +45,11 @@ typedef NSUInteger AllowedAnimations;
 }
 
 @property(nonatomic) info_bubble::AllowedAnimations allowedAnimations;
-@property(nonatomic) BOOL canBecomeKeyWindow;
+@property(nonatomic) BOOL infoBubbleCanBecomeKeyWindow;
 @property(nonatomic) BOOL allowShareParentKeyState;
+
+// Superclass override.
+- (BOOL)canBecomeKeyWindow;
 
 // Returns YES if the window is in the process of closing.
 // Can't use "windowWillClose" notification because that will be sent

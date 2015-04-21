@@ -96,7 +96,7 @@ class AppNotificationBridge : public content::NotificationObserver {
 @implementation InfoBubbleWindow
 
 @synthesize allowedAnimations = allowedAnimations_;
-@synthesize canBecomeKeyWindow = canBecomeKeyWindow_;
+@synthesize infoBubbleCanBecomeKeyWindow = infoBubbleCanBecomeKeyWindow_;
 @synthesize allowShareParentKeyState = allowShareParentKeyState_;
 
 - (id)initWithContentRect:(NSRect)contentRect
@@ -112,7 +112,7 @@ class AppNotificationBridge : public content::NotificationObserver {
     [self setAllowShareParentKeyState:YES];
     [self setOpaque:NO];
     [self setHasShadow:YES];
-    canBecomeKeyWindow_ = YES;
+    infoBubbleCanBecomeKeyWindow_ = YES;
     allowedAnimations_ = info_bubble::kAnimateOrderIn |
                          info_bubble::kAnimateOrderOut;
     notificationBridge_.reset(new AppNotificationBridge(self));
@@ -153,7 +153,7 @@ class AppNotificationBridge : public content::NotificationObserver {
 // case, this is not necessarily a desired behavior. As an example, the
 // bubble could have buttons.
 - (BOOL)canBecomeKeyWindow {
-  return canBecomeKeyWindow_;
+  return infoBubbleCanBecomeKeyWindow_;
 }
 
 // Lets the traffic light buttons on the browser window keep their "active"
