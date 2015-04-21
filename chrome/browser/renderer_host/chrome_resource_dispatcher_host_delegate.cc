@@ -372,7 +372,7 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME) {
       throttles->push_back(
           InterceptNavigationDelegate::CreateThrottleFor(request));
-    } else if (resource_type == content::RESOURCE_TYPE_XHR) {
+    } else {
       InterceptNavigationDelegate::UpdateUserGestureCarryoverInfo(request);
     }
   }

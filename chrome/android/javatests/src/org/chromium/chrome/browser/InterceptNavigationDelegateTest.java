@@ -34,6 +34,8 @@ public class InterceptNavigationDelegateTest extends ChromeShellTestBase {
             BASE_URL + "navigation_from_xhr_callback_and_short_timeout.html";
     private static final String NAVIGATION_FROM_XHR_CALLBACK_AND_LONG_TIMEOUT_PAGE =
             BASE_URL + "navigation_from_xhr_callback_and_long_timeout.html";
+    private static final String NAVIGATION_FROM_IMAGE_ONLOAD_PAGE =
+            BASE_URL + "navigation_from_image_onload.html";
 
     private static final long DEFAULT_MAX_TIME_TO_WAIT_IN_MS = 3000;
     private static final long LONG_MAX_TIME_TO_WAIT_IN_MS = 20000;
@@ -135,5 +137,16 @@ public class InterceptNavigationDelegateTest extends ChromeShellTestBase {
         waitTillExpectedCallsComplete(2, LONG_MAX_TIME_TO_WAIT_IN_MS);
         assertEquals(false, mHistory.get(1).hasUserGesture);
         assertEquals(false, mHistory.get(1).hasUserGestureCarryover);
+    }
+
+    @SmallTest
+    public void testNavigationFromImageOnLoad() throws InterruptedException {
+        loadUrlWithSanitization(TestHttpServerClient.getUrl(NAVIGATION_FROM_IMAGE_ONLOAD_PAGE));
+        assertEquals(1, mHistory.size());
+
+        TouchCommon.singleClickView(mActivity.getActiveTab().getView(), 25, 25);
+        waitTillExpectedCallsComplete(2, DEFAULT_MAX_TIME_TO_WAIT_IN_MS);
+        assertEquals(false, mHistory.get(1).hasUserGesture);
+        assertEquals(true, mHistory.get(1).hasUserGestureCarryover);
     }
 }
