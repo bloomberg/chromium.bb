@@ -417,6 +417,11 @@ html[dir='rtl'] .site-domain {
   border-radius: 2px;
 }
 
+.entry-box > div,
+.site-domain-row > div {
+  min-width: 0;
+}
+
 .active :-webkit-any(.entry-box, .site-domain-row) {
   background-color: rgba(0, 0, 0, .05);
 }
