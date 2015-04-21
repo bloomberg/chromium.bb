@@ -1034,8 +1034,8 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         validPrimitive = validUnit(value, FInteger | FLength | FNonNeg);
         break;
     case CSSPropertyBorderRadius:
-    case CSSPropertyWebkitBorderRadius:
-        return parseBorderRadius(propId, important);
+    case CSSPropertyAliasWebkitBorderRadius:
+        return parseBorderRadius(unresolvedProperty, important);
     case CSSPropertyOutlineOffset:
         validPrimitive = validUnit(value, FLength);
         break;
@@ -6190,13 +6190,13 @@ bool CSSPropertyParser::parseBorderImageOutset(RefPtrWillBeRawPtr<CSSPrimitiveVa
     return parseBorderImageQuad(FLength | FNumber | FNonNeg, result);
 }
 
-bool CSSPropertyParser::parseBorderRadius(CSSPropertyID propId, bool important)
+bool CSSPropertyParser::parseBorderRadius(CSSPropertyID unresolvedProperty, bool important)
 {
     unsigned num = m_valueList->size();
     if (num > 9)
         return false;
 
-    ShorthandScope scope(this, propId);
+    ShorthandScope scope(this, unresolvedProperty);
     RefPtrWillBeRawPtr<CSSPrimitiveValue> radii[2][4];
 #if ENABLE(OILPAN)
     // Zero initialize the array of raw pointers.
@@ -6230,7 +6230,7 @@ bool CSSPropertyParser::parseBorderRadius(CSSPropertyID propId, bool important)
             radii[0][i] = radius;
 
             // Legacy syntax: -webkit-border-radius: l1 l2; is equivalent to border-radius: l1 / l2;
-            if (num == 2 && propId == CSSPropertyWebkitBorderRadius) {
+            if (num == 2 && unresolvedProperty == CSSPropertyAliasWebkitBorderRadius) {
                 indexAfterSlash = 1;
                 completeBorderRadii(radii[0]);
             }

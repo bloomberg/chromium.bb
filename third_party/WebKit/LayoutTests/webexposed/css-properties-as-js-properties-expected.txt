@@ -289,7 +289,6 @@ webkitBorderEndStyle
 webkitBorderEndWidth
 webkitBorderHorizontalSpacing
 webkitBorderImage
-webkitBorderRadius
 webkitBorderStart
 webkitBorderStartColor
 webkitBorderStartStyle

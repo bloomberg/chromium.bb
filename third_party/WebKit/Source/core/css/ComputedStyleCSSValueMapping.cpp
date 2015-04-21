@@ -2415,7 +2415,6 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return nullptr;
 
     // Unimplemented -webkit- properties.
-    case CSSPropertyWebkitBorderRadius:
     case CSSPropertyWebkitMarginCollapse:
     case CSSPropertyWebkitMask:
     case CSSPropertyWebkitMaskRepeatX:

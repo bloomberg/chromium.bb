@@ -237,7 +237,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     // CSSPropertyWebkitBorderFit was 194
     case CSSPropertyWebkitBorderHorizontalSpacing: return 195;
     case CSSPropertyWebkitBorderImage: return 196;
-    case CSSPropertyWebkitBorderRadius: return 197;
+    case CSSPropertyAliasWebkitBorderRadius: return 197;
     case CSSPropertyWebkitBorderStart: return 198;
     case CSSPropertyWebkitBorderStartColor: return 199;
     case CSSPropertyWebkitBorderStartStyle: return 200;

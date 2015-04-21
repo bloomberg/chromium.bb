@@ -484,8 +484,6 @@ transition longhands=transition-property;transition-duration;transition-timing-f
 -webkit-border-after longhands=-webkit-border-after-width;-webkit-border-after-style;-webkit-border-after-color
 -webkit-border-before longhands=-webkit-border-before-width;-webkit-border-before-style;-webkit-border-before-color
 -webkit-border-end longhands=-webkit-border-end-width;-webkit-border-end-style;-webkit-border-end-color
-// "-webkit-border-radius: 1px 2px" behaves as "border-radius: 1px / 2px"
--webkit-border-radius longhands=border-top-left-radius;border-top-right-radius;border-bottom-right-radius;border-bottom-left-radius
 -webkit-border-start longhands=-webkit-border-start-width;-webkit-border-start-style;-webkit-border-start-color
 -webkit-column-rule longhands=-webkit-column-rule-width;-webkit-column-rule-style;-webkit-column-rule-color
 -webkit-columns longhands=-webkit-column-width;-webkit-column-count
@@ -515,6 +513,8 @@ transition longhands=transition-property;transition-duration;transition-timing-f
 -webkit-backface-visibility alias_for=backface-visibility
 -webkit-border-bottom-left-radius alias_for=border-bottom-left-radius
 -webkit-border-bottom-right-radius alias_for=border-bottom-right-radius
+// "-webkit-border-radius: 1px 2px" behaves as "border-radius: 1px / 2px"
+-webkit-border-radius alias_for=border-radius
 -webkit-border-top-left-radius alias_for=border-top-left-radius
 -webkit-border-top-right-radius alias_for=border-top-right-radius
 -webkit-box-shadow alias_for=box-shadow
