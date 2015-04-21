@@ -90,12 +90,6 @@ private:
     RefPtrWillBeMember<CSSValue> m_value;
 };
 
-// TODO(timloh): Remove all the prefixing variant code
-inline CSSPropertyID prefixingVariantForPropertyId(CSSPropertyID propId)
-{
-    return propId;
-}
-
 } // namespace blink
 
 WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::CSSProperty);

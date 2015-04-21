@@ -117,25 +117,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     return parseSuccess;
 }
 
-void CSSPropertyParser::addPropertyWithPrefixingVariant(CSSPropertyID propId, PassRefPtrWillBeRawPtr<CSSValue> value, bool important, bool implicit)
-{
-    RefPtrWillBeRawPtr<CSSValue> val = value.get();
-    addProperty(propId, value, important, implicit);
-
-    CSSPropertyID prefixingVariant = prefixingVariantForPropertyId(propId);
-    if (prefixingVariant == propId)
-        return;
-
-    if (m_currentShorthand) {
-        // We can't use ShorthandScope here as we can already be inside one (e.g we are parsing CSSTransition).
-        m_currentShorthand = prefixingVariantForPropertyId(m_currentShorthand);
-        addProperty(prefixingVariant, val.release(), important, implicit);
-        m_currentShorthand = prefixingVariantForPropertyId(m_currentShorthand);
-    } else {
-        addProperty(prefixingVariant, val.release(), important, implicit);
-    }
-}
-
 void CSSPropertyParser::addProperty(CSSPropertyID propId, PassRefPtrWillBeRawPtr<CSSValue> value, bool important, bool implicit)
 {
     ASSERT(!isPropertyAlias(propId));
@@ -413,7 +394,7 @@ void CSSPropertyParser::addExpandedPropertyForValue(CSSPropertyID propId, PassRe
     const StylePropertyShorthand& shorthand = shorthandForProperty(propId);
     unsigned shorthandLength = shorthand.length();
     if (!shorthandLength) {
-        addPropertyWithPrefixingVariant(propId, prpValue, important);
+        addProperty(propId, prpValue, important);
         return;
     }
 
@@ -421,7 +402,7 @@ void CSSPropertyParser::addExpandedPropertyForValue(CSSPropertyID propId, PassRe
     ShorthandScope scope(this, propId);
     const CSSPropertyID* longhands = shorthand.properties();
     for (unsigned i = 0; i < shorthandLength; ++i)
-        addPropertyWithPrefixingVariant(longhands[i], value, important);
+        addProperty(longhands[i], value, important);
 }
 
 bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool important)
@@ -1208,13 +1189,9 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyTransitionDelay:
     case CSSPropertyTransitionDuration:
     case CSSPropertyTransitionTimingFunction:
-    case CSSPropertyTransitionProperty: {
-        if (RefPtrWillBeRawPtr<CSSValueList> val = parseAnimationPropertyList(propId, unresolvedProperty == CSSPropertyAliasWebkitAnimationName)) {
-            addPropertyWithPrefixingVariant(propId, val.release(), important);
-            return true;
-        }
-        return false;
-    }
+    case CSSPropertyTransitionProperty:
+        parsedValue = parseAnimationPropertyList(propId, unresolvedProperty == CSSPropertyAliasWebkitAnimationName);
+        break;
 
     case CSSPropertyJustifyContent:
         parsedValue = parseContentDistributionOverflowPosition();
@@ -1816,7 +1793,7 @@ bool CSSPropertyParser::parseAnimationShorthand(CSSPropertyID propId, bool useLe
         if (!parsedProperty[i])
             values[i]->append(cssValuePool().createImplicitInitialValue());
 
-        addPropertyWithPrefixingVariant(animationProperties.properties()[i], values[i].release(), important);
+        addProperty(animationProperties.properties()[i], values[i].release(), important);
     }
 
     return true;
@@ -1872,7 +1849,7 @@ bool CSSPropertyParser::parseTransitionShorthand(CSSPropertyID propId, bool impo
     for (size_t i = 0; i < numProperties; ++i) {
         if (!parsedProperty[i])
             values[i]->append(cssValuePool().createImplicitInitialValue());
-        addPropertyWithPrefixingVariant(shorthand.properties()[i], values[i].release(), important);
+        addProperty(shorthand.properties()[i], values[i].release(), important);
     }
 
     return true;

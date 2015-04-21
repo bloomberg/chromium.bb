@@ -95,7 +95,6 @@ private:
 
     KURL completeURL(const String& url) const;
 
-    void addPropertyWithPrefixingVariant(CSSPropertyID, PassRefPtrWillBeRawPtr<CSSValue>, bool important, bool implicit = false);
     void addProperty(CSSPropertyID, PassRefPtrWillBeRawPtr<CSSValue>, bool important, bool implicit = false);
     void rollbackLastProperties(int num);
     void addExpandedPropertyForValue(CSSPropertyID propId, PassRefPtrWillBeRawPtr<CSSValue>, bool);
