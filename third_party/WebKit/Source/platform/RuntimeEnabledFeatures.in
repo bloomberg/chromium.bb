@@ -59,7 +59,6 @@ ComputedAccessibilityInfo status=experimental
 ExperimentalCanvasFeatures status=test
 ExperimentalContentSecurityPolicyFeatures status=experimental
 FastMobileScrolling
-FirstPartyIncludesAncestors status=experimental
 FileAPIBlobClose status=experimental
 FileSystem status=stable
 FormDataNewMethods status=experimental
