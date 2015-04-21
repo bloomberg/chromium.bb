@@ -8,7 +8,7 @@ from measurements import blink_style
 from measurements import smoothness
 import page_sets
 
-
+@benchmark.Disabled # http://crbug.com/479048
 class BlinkStyleTop25(benchmark.Benchmark):
   """Measures performance of Blink's style engine (CSS Parsing, Style Recalc,
   etc.) on the top 25 pages.
