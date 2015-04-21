@@ -17,7 +17,11 @@ namespace {
 
 // See http://dev.chromium.org/chromium-os/chromiumos-design-docs/
 // system-notifications for the reasoning.
-const char* kAlwaysShownNotifierIds[] = {
+
+// |kAlwaysShownSystemNotifierIds| is the list of system notification sources
+// which can appear regardless of the situation, such like login screen or lock
+// screen.
+const char* kAlwaysShownSystemNotifierIds[] = {
     kNotifierBattery,
     kNotifierDisplay,
     kNotifierDisplayError,
@@ -29,19 +33,17 @@ const char* kAlwaysShownNotifierIds[] = {
     // just add your stuff at the end!
     NULL};
 
+// |kAshSystemNotifiers| is the list of normal system notification sources for
+// ash events. These notifications can be hidden in some context.
 const char* kAshSystemNotifiers[] = {
   kNotifierBluetooth,
-  kNotifierDisplay,
-  kNotifierDisplayError,
   kNotifierDisplayResolutionChange,
   kNotifierLocale,
   kNotifierMultiProfileFirstRun,
 #if defined(OS_CHROMEOS)
   ui::NetworkStateNotifier::kNotifierNetwork,
-  ui::NetworkStateNotifier::kNotifierNetworkError,
 #endif
   kNotifierNetworkPortalDetector,
-  kNotifierPower,
   kNotifierScreenshot,
   kNotifierScreenCapture,
   kNotifierScreenShare,
@@ -82,11 +84,12 @@ const char kNotifierSessionLengthTimeout[] = "ash.session-length-timeout";
 const char kNotifierSupervisedUser[] = "ash.locally-managed-user";
 
 bool ShouldAlwaysShowPopups(const message_center::NotifierId& notifier_id) {
-  return MatchSystemNotifierId(notifier_id, kAlwaysShownNotifierIds);
+  return MatchSystemNotifierId(notifier_id, kAlwaysShownSystemNotifierIds);
 }
 
 bool IsAshSystemNotifier(const message_center::NotifierId& notifier_id) {
-  return MatchSystemNotifierId(notifier_id, kAshSystemNotifiers);
+  return ShouldAlwaysShowPopups(notifier_id) ||
+         MatchSystemNotifierId(notifier_id, kAshSystemNotifiers);
 }
 
 }  // namespace system_notifier
