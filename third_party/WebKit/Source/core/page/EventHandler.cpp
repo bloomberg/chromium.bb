@@ -2093,9 +2093,6 @@ bool EventHandler::slideFocusOnShadowHostIfNecessary(const Element& element)
         ASSERT(page);
         Node* next = page->focusController().findFocusableNode(WebFocusTypeForward, *element.shadowRoot());
         if (next && next->isElementNode() && element.containsIncludingShadowDOM(next)) {
-            if (doc != next->document())
-                doc->setFocusedElement(nullptr);
-            page->focusController().setFocusedFrame(next->document().frame());
             // Use WebFocusTypeForward instead of WebFocusTypeMouse here to mean the focus has slided.
             toElement(next)->focus(false, WebFocusTypeForward);
             return true;
