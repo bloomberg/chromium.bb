@@ -14,4 +14,4 @@
     android:layout_height="wrap_content"
     android:textColor="@color/fre_text_color"
     android:textSize="@dimen/fre_normal_text_size"
-    android:padding="@dimen/fre_button_padding" />
+    android:padding="12dp" />
