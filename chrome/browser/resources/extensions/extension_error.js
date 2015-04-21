@@ -37,7 +37,7 @@ cr.define('extensions', function() {
   function ExtensionError(error, boundary) {
     var div = cloneTemplate('extension-error-metadata');
     div.__proto__ = ExtensionError.prototype;
-    div.decorate(error, boundary);
+    div.decorateWithError_(error, boundary);
     return div;
   }
 
@@ -51,12 +51,12 @@ cr.define('extensions', function() {
 
     /**
      * @param {(RuntimeError|ManifestError)} error The error the element should
-     *     represent
+     *     represent.
      * @param {Element} boundary The boundary for the FocusGrid.
-     * @override
+     * @private
      */
-    decorate: function(error, boundary) {
-      cr.ui.FocusRow.prototype.decorate.call(this, boundary);
+    decorateWithError_: function(error, boundary) {
+      this.decorate(boundary);
 
       // Add an additional class for the severity level.
       if (error.type == chrome.developerPrivate.ErrorType.RUNTIME) {
