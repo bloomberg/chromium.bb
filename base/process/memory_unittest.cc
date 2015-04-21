@@ -128,10 +128,11 @@ TEST(ProcessMemoryTest, MacTerminateOnHeapCorruption) {
 
 // Android doesn't implement set_new_handler, so we can't use the
 // OutOfMemoryTest cases. OpenBSD does not support these tests either.
-// Don't test these on ASAN configurations: only test the real allocator.
+// Don't test these on ASan/TSan/MSan configurations: only test the real
+// allocator.
 // TODO(vandebo) make this work on Windows too.
 #if !defined(OS_ANDROID) && !defined(OS_OPENBSD) && !defined(OS_WIN) && \
-    !defined(ADDRESS_SANITIZER)
+    !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 
 #if defined(USE_TCMALLOC)
 extern "C" {
