@@ -33,9 +33,9 @@ interface SVGAnimationElement : SVGElement {
     attribute EventHandler onend;
     attribute EventHandler onrepeat;
 
-    float getStartTime();
+    [RaisesException] float getStartTime();
     float getCurrentTime();
-    float getSimpleDuration();
+    [RaisesException] float getSimpleDuration();
 
     void beginElement();
     void beginElementAt(float offset);

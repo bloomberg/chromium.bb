@@ -23,9 +23,9 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGAnimationElement.h"
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSPropertyNames.h"
 #include "core/SVGNames.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
@@ -236,9 +236,14 @@ void SVGAnimationElement::animationAttributeChanged()
     setInactive();
 }
 
-float SVGAnimationElement::getStartTime() const
+float SVGAnimationElement::getStartTime(ExceptionState& exceptionState) const
 {
-    return narrowPrecisionToFloat(intervalBegin().value());
+    SMILTime startTime = intervalBegin();
+    if (!startTime.isFinite()) {
+        exceptionState.throwDOMException(InvalidStateError, "No current interval.");
+        return 0;
+    }
+    return narrowPrecisionToFloat(startTime.value());
 }
 
 float SVGAnimationElement::getCurrentTime() const
@@ -246,9 +251,14 @@ float SVGAnimationElement::getCurrentTime() const
     return narrowPrecisionToFloat(elapsed().value());
 }
 
-float SVGAnimationElement::getSimpleDuration() const
+float SVGAnimationElement::getSimpleDuration(ExceptionState& exceptionState) const
 {
-    return narrowPrecisionToFloat(simpleDuration().value());
+    SMILTime duration = simpleDuration();
+    if (!duration.isFinite()) {
+        exceptionState.throwDOMException(NotSupportedError, "No simple duration defined.");
+        return 0;
+    }
+    return narrowPrecisionToFloat(duration.value());
 }
 
 void SVGAnimationElement::beginElement()

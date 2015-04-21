@@ -32,6 +32,8 @@
 
 namespace blink {
 
+class ExceptionState;
+
 enum AnimationMode {
     NoAnimation,
     FromToAnimation,
@@ -60,9 +62,9 @@ class SVGAnimationElement : public SVGSMILElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     // SVGAnimationElement
-    float getStartTime() const;
+    float getStartTime(ExceptionState&) const;
     float getCurrentTime() const;
-    float getSimpleDuration() const;
+    float getSimpleDuration(ExceptionState&) const;
 
     void beginElement();
     void beginElementAt(float offset);
