@@ -16,15 +16,14 @@ class TestLinkedFontsIterator : public internal::LinkedFontsIterator {
   explicit TestLinkedFontsIterator(Font font) : LinkedFontsIterator(font) {
   }
 
-  virtual ~TestLinkedFontsIterator() {
-  }
+  ~TestLinkedFontsIterator() override {}
 
   // Add a linked font to the mocked vector of linked fonts.
   void AddLinkedFontForTesting(Font font) {
     test_linked_fonts.push_back(font);
   }
 
-  virtual const std::vector<Font>* GetLinkedFonts() const override {
+  const std::vector<Font>* GetLinkedFonts() const override {
     return &test_linked_fonts;
   }
 
