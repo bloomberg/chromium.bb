@@ -156,23 +156,10 @@ struct FinalizerTrait<HeapHashTableBacking<Table>> {
     static void finalize(void* obj) { FinalizerTraitImpl<HeapHashTableBacking<Table>, nonTrivialFinalizer>::finalize(obj); }
 };
 
-// TODO(haraken): Replace this GCInfoTraits with FinalizerTraits.
 template<typename T, typename Traits>
-struct GCInfoTrait<HeapVectorBacking<T, Traits>> {
-    static size_t index()
-    {
-        using TargetType = HeapVectorBacking<T, Traits>;
-        static const GCInfo gcInfo = {
-            TraceTrait<TargetType>::trace,
-            FinalizerTrait<TargetType>::finalize,
-            Traits::needsDestruction,
-            false, // We don't support embedded objects in HeapVectors with vtables.
-#if ENABLE(GC_PROFILING)
-            TypenameStringTrait<TargetType>::get()
-#endif
-        };
-        RETURN_GCINFO_INDEX();
-    }
+struct FinalizerTrait<HeapVectorBacking<T, Traits>> {
+    static const bool nonTrivialFinalizer = Traits::needsDestruction;
+    static void finalize(void* obj) { FinalizerTraitImpl<HeapVectorBacking<T, Traits>, nonTrivialFinalizer>::finalize(obj); }
 };
 
 template<typename T, typename U, typename V, typename W, typename X> class HeapHashMap;

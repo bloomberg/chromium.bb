@@ -1501,7 +1501,11 @@ inline void Heap::increaseExternallyAllocatedBytes(size_t delta)
 }
 
 template<bool needsTracing, WTF::WeakHandlingFlag weakHandlingFlag, WTF::ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits> struct CollectionBackingTraceTrait;
-template<typename T, typename Traits = WTF::VectorTraits<T>> class HeapVectorBacking;
+template<typename T, typename Traits = WTF::VectorTraits<T>> class HeapVectorBacking {
+public:
+    static void finalize(void* pointer);
+    void finalizeGarbageCollectedObject() { finalize(this); }
+};
 template<typename Table> class HeapHashTableBacking {
 public:
     static void finalize(void* pointer);
@@ -2210,6 +2214,20 @@ struct TraceTrait<HeapHashTableBacking<Table>> {
 #endif
     }
 };
+
+template<typename T, typename Traits>
+void HeapVectorBacking<T, Traits>::finalize(void* pointer)
+{
+    ASSERT(!WTF::IsTriviallyDestructible<T>::value);
+    HeapObjectHeader* header = HeapObjectHeader::fromPayload(pointer);
+    // Use the payload size as recorded by the heap to determine how many
+    // elements to finalize.
+    size_t length = header->payloadSize() / sizeof(T);
+    T* array = reinterpret_cast<T*>(pointer);
+    for (unsigned i = 0; i < length; ++i) {
+        array[i].~T();
+    }
+}
 
 template<typename Table>
 void HeapHashTableBacking<Table>::finalize(void* pointer)

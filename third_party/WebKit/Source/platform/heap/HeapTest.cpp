@@ -3887,6 +3887,104 @@ TEST(HeapTest, EmbeddedInDeque)
     EXPECT_EQ(8, SimpleFinalizedObject::s_destructorCalls);
 }
 
+class InlinedVectorObject {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
+    InlinedVectorObject()
+    {
+    }
+    ~InlinedVectorObject()
+    {
+        s_destructorCalls++;
+    }
+    DEFINE_INLINE_TRACE()
+    {
+    }
+
+    static int s_destructorCalls;
+};
+
+int InlinedVectorObject::s_destructorCalls = 0;
+
+} // namespace blink
+
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::InlinedVectorObject);
+
+namespace blink {
+
+class InlinedVectorObjectWrapper final : public GarbageCollectedFinalized<InlinedVectorObjectWrapper> {
+public:
+    InlinedVectorObjectWrapper()
+    {
+        InlinedVectorObject i1, i2;
+        m_vector1.append(i1);
+        m_vector1.append(i2);
+        m_vector2.append(i1);
+        m_vector2.append(i2); // This allocates an out-of-line buffer.
+        m_vector3.append(i1);
+        m_vector3.append(i2);
+    }
+
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_vector1);
+        visitor->trace(m_vector2);
+        visitor->trace(m_vector3);
+    }
+
+private:
+    HeapVector<InlinedVectorObject> m_vector1;
+    HeapVector<InlinedVectorObject, 1> m_vector2;
+    HeapVector<InlinedVectorObject, 2> m_vector3;
+};
+
+TEST(HeapTest, VectorDestructors)
+{
+    clearOutOldGarbage();
+    InlinedVectorObject::s_destructorCalls = 0;
+    {
+        HeapVector<InlinedVectorObject> vector;
+        InlinedVectorObject i1, i2;
+        vector.append(i1);
+        vector.append(i2);
+    }
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    // This is not EXPECT_EQ but EXPECT_LE because a HeapVectorBacking calls
+    // destructors for all elements in (not the size but) the capacity of
+    // the vector. Thus the number of destructors called becomes larger
+    // than the actual number of objects in the vector.
+    EXPECT_LE(4, InlinedVectorObject::s_destructorCalls);
+
+    InlinedVectorObject::s_destructorCalls = 0;
+    {
+        HeapVector<InlinedVectorObject, 1> vector;
+        InlinedVectorObject i1, i2;
+        vector.append(i1);
+        vector.append(i2); // This allocates an out-of-line buffer.
+    }
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    EXPECT_LE(4, InlinedVectorObject::s_destructorCalls);
+
+    InlinedVectorObject::s_destructorCalls = 0;
+    {
+        HeapVector<InlinedVectorObject, 2> vector;
+        InlinedVectorObject i1, i2;
+        vector.append(i1);
+        vector.append(i2);
+    }
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    EXPECT_LE(4, InlinedVectorObject::s_destructorCalls);
+
+    InlinedVectorObject::s_destructorCalls = 0;
+    {
+        new InlinedVectorObjectWrapper();
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+        EXPECT_EQ(2, InlinedVectorObject::s_destructorCalls);
+    }
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    EXPECT_LE(8, InlinedVectorObject::s_destructorCalls);
+}
+
 template<typename Set>
 void rawPtrInHashHelper()
 {
@@ -5553,6 +5651,140 @@ TEST(HeapTest, DequeExpand)
         EXPECT_EQ(i + 50, intWrapper->value());
         i++;
     }
+}
+
+class SimpleRefValue : public RefCounted<SimpleRefValue> {
+public:
+    static PassRefPtr<SimpleRefValue> create(int i)
+    {
+        return adoptRef(new SimpleRefValue(i));
+    }
+
+    int value() const { return m_value; }
+private:
+    explicit SimpleRefValue(int value)
+        : m_value(value)
+    {
+    }
+
+    int m_value;
+};
+
+class PartObjectWithRef {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
+    PartObjectWithRef(int i)
+        : m_value(SimpleRefValue::create(i))
+    {
+    }
+
+    int value() const { return m_value->value(); }
+
+private:
+    RefPtr<SimpleRefValue> m_value;
+};
+
+} // namespace blink
+
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::PartObjectWithRef);
+
+namespace blink {
+
+TEST(HeapTest, DequePartObjectsExpand)
+{
+    // Test expansion of HeapDeque<PartObject>
+
+    using PartDeque = HeapDeque<PartObjectWithRef>;
+
+    Persistent<PartDeque> deque = new PartDeque();
+    // Auxillary Deque used to prevent 'inline' buffer expansion.
+    Persistent<PartDeque> dequeUnused = new PartDeque();
+
+    // Append a sequence, bringing about repeated expansions of the
+    // deque's buffer.
+    int i = 0;
+    for (; i < 60; ++i) {
+        deque->append(PartObjectWithRef(i));
+        dequeUnused->append(PartObjectWithRef(i));
+    }
+
+    EXPECT_EQ(60u, deque->size());
+    i = 0;
+    for (const PartObjectWithRef& part : *deque) {
+        EXPECT_EQ(i, part.value());
+        i++;
+    }
+
+    // Remove most of the queued objects and have the buffer's start index
+    // 'point' somewhere into the buffer, just behind the end index.
+    for (i = 0; i < 50; ++i)
+        deque->takeFirst();
+
+    EXPECT_EQ(10u, deque->size());
+    i = 0;
+    for (const PartObjectWithRef& part : *deque) {
+        EXPECT_EQ(50 + i, part.value());
+        i++;
+    }
+
+    // Append even more, eventually causing an expansion of the underlying
+    // buffer once the end index wraps around and reaches the start index.
+    for (i = 0; i < 70; ++i)
+        deque->append(PartObjectWithRef(60 + i));
+
+    // Verify that the final buffer expansion copied the start and end segments
+    // of the old buffer to both ends of the expanded buffer, along with
+    // re-adjusting both start&end indices in terms of that expanded buffer.
+    EXPECT_EQ(80u, deque->size());
+    i = 0;
+    for (const PartObjectWithRef& part : *deque) {
+        EXPECT_EQ(i + 50, part.value());
+        i++;
+    }
+
+    for (i = 0; i < 70; ++i)
+        deque->append(PartObjectWithRef(130 + i));
+
+    EXPECT_EQ(150u, deque->size());
+    i = 0;
+    for (const PartObjectWithRef& part : *deque) {
+        EXPECT_EQ(i + 50, part.value());
+        i++;
+    }
+}
+
+TEST(HeapTest, HeapVectorPartObjects)
+{
+    HeapVector<PartObjectWithRef> vector1;
+    HeapVector<PartObjectWithRef> vector2;
+
+    for (int i = 0; i < 10; ++i) {
+        vector1.append(PartObjectWithRef(i));
+        vector2.append(PartObjectWithRef(i));
+    }
+
+    vector1.reserveCapacity(150);
+    EXPECT_EQ(150u, vector1.capacity());
+    EXPECT_EQ(10u, vector1.size());
+
+    vector2.reserveCapacity(100);
+    EXPECT_EQ(100u, vector2.capacity());
+    EXPECT_EQ(10u, vector2.size());
+
+    for (int i = 0; i < 4; ++i) {
+        vector1.append(PartObjectWithRef(10 + i));
+        vector2.append(PartObjectWithRef(10 + i));
+        vector2.append(PartObjectWithRef(10 + i));
+    }
+
+    // Shrinking heap vector backing stores always succeeds,
+    // so these two will not currently exercise the code path
+    // where shrinking causes copying into a new, small buffer.
+    vector2.shrinkToReasonableCapacity();
+    EXPECT_EQ(18u, vector2.size());
+
+    vector1.shrinkToReasonableCapacity();
+    EXPECT_EQ(14u, vector1.size());
 }
 
 namespace {

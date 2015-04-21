@@ -338,17 +338,21 @@ namespace WTF {
             } else {
                 size_t newStart = m_buffer.capacity() - (oldCapacity - m_start);
                 TypeOperations::moveOverlapping(oldBuffer + m_start, oldBuffer + oldCapacity, m_buffer.buffer() + newStart);
+                m_buffer.clearUnusedSlots(oldBuffer + m_start, oldBuffer + std::min(oldCapacity, newStart));
                 m_start = newStart;
             }
             return;
         }
         m_buffer.allocateBuffer(newCapacity);
-        if (m_start <= m_end)
+        if (m_start <= m_end) {
             TypeOperations::move(oldBuffer + m_start, oldBuffer + m_end, m_buffer.buffer() + m_start);
-        else {
+            m_buffer.clearUnusedSlots(oldBuffer + m_start, oldBuffer + m_end);
+        } else {
             TypeOperations::move(oldBuffer, oldBuffer + m_end, m_buffer.buffer());
+            m_buffer.clearUnusedSlots(oldBuffer, oldBuffer + m_end);
             size_t newStart = m_buffer.capacity() - (oldCapacity - m_start);
             TypeOperations::move(oldBuffer + m_start, oldBuffer + oldCapacity, m_buffer.buffer() + newStart);
+            m_buffer.clearUnusedSlots(oldBuffer + m_start, oldBuffer + oldCapacity);
             m_start = newStart;
         }
         m_buffer.deallocateBuffer(oldBuffer);
