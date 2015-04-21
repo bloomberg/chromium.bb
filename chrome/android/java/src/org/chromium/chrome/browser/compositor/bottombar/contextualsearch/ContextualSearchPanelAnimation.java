@@ -174,6 +174,8 @@ abstract class ContextualSearchPanelAnimation extends ContextualSearchPanelBase
      * @param reason The reason for the change of panel state.
      */
     private void resizePanelToState(PanelState state, StateChangeReason reason) {
+        cancelHeightAnimation();
+
         final float height = getPanelHeightFromState(state);
         setPanelHeight(height);
         setPanelState(state, reason);
@@ -286,6 +288,13 @@ abstract class ContextualSearchPanelAnimation extends ContextualSearchPanelBase
         // we are multiplying by 2000 (2 * 1000) instead of 2.
         return MathUtils.clamp(Math.round(Math.abs(2000 * displacement / initialVelocity)),
                 MINIMUM_ANIMATION_DURATION_MS, MAXIMUM_ANIMATION_DURATION_MS);
+    }
+
+    /**
+     * Cancels any height animation in progress.
+     */
+    protected void cancelHeightAnimation() {
+        cancelAnimation(this, Property.PANEL_HEIGHT);
     }
 
     // ============================================================================================

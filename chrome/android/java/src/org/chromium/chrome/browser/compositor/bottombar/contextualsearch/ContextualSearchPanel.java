@@ -164,7 +164,7 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
      */
     public void handleSwipeStart() {
         if (animationIsRunning()) {
-            cancelAnimation(this, Property.PANEL_HEIGHT);
+            cancelHeightAnimation();
         }
 
         mHasDetectedTouchGesture = false;
