@@ -62,6 +62,9 @@ _CONFIGURATION_PATH = 'etc/make.conf.board_setup'
 
 _CACHE_PATH = 'var/cache/edb/chromeos'
 
+_CHROMIUMOS_OVERLAY = '/usr/local/portage/chromiumos'
+_ECLASS_OVERLAY = '/usr/local/portage/eclass-overlay'
+
 _CHROME_BINHOST_SUFFIX = '-LATEST_RELEASE_CHROME_BINHOST.conf'
 
 _INTERNAL_BINHOST_DIR = os.path.join(
@@ -264,6 +267,7 @@ class Sysroot(object):
     prefix = os.path.join(constants.SOURCE_ROOT, 'src', 'third_party')
     config['BOARD_OVERLAY'] = '\n'.join([o for o in overlay_list
                                          if not o.startswith(prefix)])
+    config['PORTDIR_OVERLAY'] = '\n'.join(overlay_list)
 
     config['MAKEOPTS'] = '-j%s' % str(multiprocessing.cpu_count())
     config['BOARD_USE'] = board
@@ -285,13 +289,18 @@ class Sysroot(object):
     if bsp:
       brick_list = bsp.BrickStack() + brick_list
 
+    board_overlay_list = [b.OverlayDir() for b in brick_list]
+    portdir_overlay_list = ([_CHROMIUMOS_OVERLAY, _ECLASS_OVERLAY] +
+                            board_overlay_list)
+
     base_brick = bsp or brick
     toolchains = toolchain.GetToolchainsForBrick(base_brick.brick_locator)
     config['CHOST'] = toolchain.FilterToolchains(toolchains, 'default',
                                                  True).keys()[0]
     config['ARCH'] = toolchain.GetArchForTarget(config['CHOST'])
 
-    config['BOARD_OVERLAY'] = '\n'.join([b.OverlayDir() for b in brick_list])
+    config['BOARD_OVERLAY'] = '\n'.join(board_overlay_list)
+    config['PORTDIR_OVERLAY'] = '\n'.join(portdir_overlay_list)
     config['MAKEOPTS'] = '-j%s' % str(multiprocessing.cpu_count())
     config['ROOT'] = self.path + '/'
     config['PKG_CONFIG'] = self._WrapperPath('pkg-config')
