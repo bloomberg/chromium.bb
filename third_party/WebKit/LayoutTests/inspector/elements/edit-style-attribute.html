@@ -41,21 +41,13 @@ function test()
 
         function testSetSameValue(next)
         {
-            InspectorTest.evaluateInPage("testSetSameValue()");
+            InspectorTest.evaluateInPage("testSetSameValue()", next);
 
             InspectorTest.domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, listener);
             function listener(event)
             {
                 InspectorTest.addResult("WebInspector.DOMModel.Events.AttrModified should not be issued");
                 InspectorTest.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, listener);
-            }
-
-            InspectorTest.addSniffer(WebInspector.DOMNode.prototype, "_setAttributesPayload", callback);
-            function callback()
-            {
-                InspectorTest.addResult("WebInspector.DOMNode.prototype._setAttributesPayload should be called");
-                InspectorTest.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, listener);
-                next();
             }
         }
     ]);

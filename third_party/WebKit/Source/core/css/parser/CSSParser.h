@@ -34,6 +34,7 @@ public:
     static void parseSelector(const CSSParserContext&, const String&, CSSSelectorList&);
     // TODO(timloh): Split into parseDeclarationList and parseDeclarationListForInspector
     static bool parseDeclarationList(const CSSParserContext&, MutableStylePropertySet*, const String&, CSSParserObserver*, StyleSheetContents* contextStyleSheet);
+    // Returns whether anything was changed.
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID unresolvedProperty, const String&, bool important, CSSParserMode, StyleSheetContents*);
 
     // This is for non-shorthands only

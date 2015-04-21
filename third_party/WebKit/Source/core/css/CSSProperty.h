@@ -81,6 +81,8 @@ public:
 
     const StylePropertyMetadata& metadata() const { return m_metadata; }
 
+    bool operator==(const CSSProperty& other) const;
+
     DEFINE_INLINE_TRACE() { visitor->trace(m_value); }
 
 private:

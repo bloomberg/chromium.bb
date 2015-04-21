@@ -195,8 +195,9 @@ public:
 
     unsigned propertyCount() const { return m_propertyVector.size(); }
 
-    void addParsedProperties(const WillBeHeapVector<CSSProperty, 256>&);
-    void addParsedProperty(const CSSProperty&);
+    // Returns whether this style set was changed.
+    bool addParsedProperties(const WillBeHeapVector<CSSProperty, 256>&);
+    bool addParsedProperty(const CSSProperty&);
 
     // These expand shorthand properties into multiple properties.
     bool setProperty(CSSPropertyID unresolvedProperty, const String& value, bool important = false, StyleSheetContents* contextStyleSheet = 0);
@@ -206,7 +207,7 @@ public:
     bool setProperty(CSSPropertyID, CSSValueID identifier, bool important = false);
     void appendPrefixingVariantProperty(const CSSProperty&);
     void setPrefixingVariantProperty(const CSSProperty&);
-    void setProperty(const CSSProperty&, CSSProperty* slot = 0);
+    bool setProperty(const CSSProperty&, CSSProperty* slot = 0);
 
     bool removeProperty(CSSPropertyID, String* returnText = 0);
     void removePrefixedOrUnprefixedProperty(CSSPropertyID);

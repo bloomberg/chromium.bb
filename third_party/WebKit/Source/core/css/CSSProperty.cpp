@@ -262,4 +262,9 @@ bool CSSProperty::isAffectedByAllProperty(CSSPropertyID propertyID)
     return propertyID != CSSPropertyUnicodeBidi && propertyID != CSSPropertyDirection;
 }
 
+bool CSSProperty::operator==(const CSSProperty& other) const
+{
+    return m_value->equals(*other.m_value) && isImportant() == other.isImportant();
+}
+
 } // namespace blink

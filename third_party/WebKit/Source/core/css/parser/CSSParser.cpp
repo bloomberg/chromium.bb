@@ -61,8 +61,10 @@ bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID u
 {
     if (string.isEmpty())
         return false;
-    if (parseFastPath(declaration, unresolvedProperty, string, important, parserMode))
-        return true;
+    CSSPropertyID resolvedProperty = resolveCSSPropertyID(unresolvedProperty);
+    RefPtrWillBeRawPtr<CSSValue> value = CSSParserFastPaths::maybeParseValue(resolvedProperty, string, parserMode);
+    if (value)
+        return declaration->addParsedProperty(CSSProperty(resolvedProperty, value.release(), important));
     CSSParserContext context(parserMode, 0);
     if (styleSheet) {
         context = styleSheet->parserContext();
@@ -93,9 +95,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSParser::parseSingleValue(CSSPropertyID prope
     if (string.isEmpty())
         return nullptr;
     RefPtrWillBeRawPtr<MutableStylePropertySet> stylePropertySet = MutableStylePropertySet::create();
-    bool success = parseFastPath(stylePropertySet.get(), propertyID, string, false, context.mode())
+    bool changed = parseFastPath(stylePropertySet.get(), propertyID, string, false, context.mode())
         || parseValue(stylePropertySet.get(), propertyID, string, false, context);
-    ASSERT_UNUSED(success, success == stylePropertySet->hasProperty(propertyID));
+    ASSERT_UNUSED(changed, !changed || stylePropertySet->hasProperty(propertyID));
     return stylePropertySet->getPropertyCSSValue(propertyID);
 }
 

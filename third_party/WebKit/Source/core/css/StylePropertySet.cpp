@@ -286,17 +286,20 @@ void MutableStylePropertySet::setProperty(CSSPropertyID propertyID, PassRefPtrWi
         m_propertyVector.append(CSSProperty(shorthand.properties()[i], value, important));
 }
 
-void MutableStylePropertySet::setProperty(const CSSProperty& property, CSSProperty* slot)
+bool MutableStylePropertySet::setProperty(const CSSProperty& property, CSSProperty* slot)
 {
     if (!removeShorthandProperty(property.id())) {
         CSSProperty* toReplace = slot ? slot : findCSSPropertyWithID(property.id());
+        if (toReplace && *toReplace == property)
+            return false;
         if (toReplace) {
             *toReplace = property;
             setPrefixingVariantProperty(property);
-            return;
+            return true;
         }
     }
     appendPrefixingVariantProperty(property);
+    return true;
 }
 
 unsigned getIndexInShorthandVectorForPrefixingVariant(const CSSProperty& property, CSSPropertyID prefixingVariant)
@@ -347,18 +350,21 @@ void MutableStylePropertySet::parseDeclarationList(const String& styleDeclaratio
     CSSParser::parseDeclarationList(context, this, styleDeclaration, 0, contextStyleSheet);
 }
 
-void MutableStylePropertySet::addParsedProperties(const WillBeHeapVector<CSSProperty, 256>& properties)
+bool MutableStylePropertySet::addParsedProperties(const WillBeHeapVector<CSSProperty, 256>& properties)
 {
+    bool changed = false;
     m_propertyVector.reserveCapacity(m_propertyVector.size() + properties.size());
     for (unsigned i = 0; i < properties.size(); ++i)
-        addParsedProperty(properties[i]);
+        changed |= addParsedProperty(properties[i]);
+    return changed;
 }
 
-void MutableStylePropertySet::addParsedProperty(const CSSProperty& property)
+bool MutableStylePropertySet::addParsedProperty(const CSSProperty& property)
 {
     // Only add properties that have no !important counterpart present
     if (!propertyIsImportant(property.id()) || property.isImportant())
-        setProperty(property);
+        return setProperty(property);
+    return false;
 }
 
 String StylePropertySet::asText() const

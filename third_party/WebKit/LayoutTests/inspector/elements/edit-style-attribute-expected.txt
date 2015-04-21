@@ -7,5 +7,4 @@ Running: testSetNewValue
 WebInspector.DOMModel.Events.AttrModified should be issued
 
 Running: testSetSameValue
-WebInspector.DOMNode.prototype._setAttributesPayload should be called
 
