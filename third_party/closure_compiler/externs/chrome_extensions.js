@@ -8605,7 +8605,7 @@ chrome.networkingPrivate.WiMAXStateProperties = function() {};
 /**
  * @type {number|undefined}
  */
-chrome.networkingPrivate.WiFiStateProperties.prototype.SignalStrength;
+chrome.networkingPrivate.WiMAXStateProperties.prototype.SignalStrength;
 
 
 /**

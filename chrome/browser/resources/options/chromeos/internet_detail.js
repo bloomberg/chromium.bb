@@ -235,6 +235,10 @@ cr.define('options.internet', function() {
     initializePage: function() {
       Page.prototype.initializePage.call(this);
       this.initializePageContents_();
+
+      chrome.networkingPrivate.onNetworksChanged.addListener(
+          this.onNetworksChanged_.bind(this));
+
       this.showNetworkDetails_();
     },
 
@@ -249,6 +253,22 @@ cr.define('options.internet', function() {
       chrome.send('loadVPNProviders');
       chrome.networkingPrivate.getManagedProperties(
           guid, DetailsInternetPage.initializeDetailsPage);
+    },
+
+    /**
+     * networkingPrivate callback when networks change.
+     * @param {Array<string>} changes List of GUIDs whose properties have
+     *     changed.
+     * @private
+     */
+    onNetworksChanged_: function(changes) {
+      if (!this.onc_)
+        return;
+      var guid = this.onc_.guid();
+      if (changes.indexOf(guid) != -1) {
+        chrome.networkingPrivate.getManagedProperties(
+          guid, DetailsInternetPage.updateConnectionData);
+      }
     },
 
     /**
@@ -1011,9 +1031,7 @@ cr.define('options.internet', function() {
      * Event Listener for the cellular-apn-cancel button.
      * @private
      */
-    cancelApn_: function() {
-      this.initializeApnList_();
-    },
+    cancelApn_: function() { this.initializeApnList_(); },
 
     /**
      * Event Listener for the select-apn button.
@@ -1420,9 +1438,6 @@ cr.define('options.internet', function() {
     detailsPage.populateHeader_();
     detailsPage.updateConnectionButtonVisibilty_();
     detailsPage.updateDetails_();
-
-    // Inform chrome which network to pass events for in InternetOptionsHandler.
-    chrome.send('setNetworkGuid', [detailsPage.onc_.guid()]);
 
     // TODO(stevenjb): Some of the setup below should be moved to
     // updateDetails_() so that updates are reflected in the UI.

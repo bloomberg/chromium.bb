@@ -1962,7 +1962,7 @@ Press any key to continue exploring.
     Connected
   </message>
   <message name="IDS_CHROMEOS_NETWORK_STATE_CONNECTING" desc="Displayed state for a network when connecting">
-    Not Connected
+    Connecting
   </message>
 
   <message name="IDS_OPTIONS_SETTINGS_NETWORK_DISABLED" desc="Message displayed when a type of network connection is disabled">

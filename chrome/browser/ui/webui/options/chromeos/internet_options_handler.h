@@ -10,18 +10,11 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
-#include "chromeos/network/network_state_handler_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
 class PrefService;
-
-namespace chromeos {
-class DeviceState;
-class NetworkState;
-class NetworkStateHandlerObserver;
-}
 
 namespace gfx {
 class ImageSkia;
@@ -36,7 +29,6 @@ namespace options {
 
 // ChromeOS internet options page UI handler.
 class InternetOptionsHandler : public ::options::OptionsPageUIHandler,
-                               public chromeos::NetworkStateHandlerObserver,
                                public extensions::ExtensionRegistryObserver {
  public:
   InternetOptionsHandler();
@@ -63,38 +55,8 @@ class InternetOptionsHandler : public ::options::OptionsPageUIHandler,
   void ShowMorePlanInfoCallback(const base::ListValue* args);
   void SimOperationCallback(const base::ListValue* args);
 
-  // Sets details_guid_ for event forwarding.
-  void SetNetworkGuidCallback(const base::ListValue* args);
-
-  // networkingPrvate callbacks
-  void GetManagedPropertiesCallback(const base::ListValue* args);
-
   // Updates the list of VPN providers enabled in the primary user's profile.
   void UpdateVPNProviders();
-
-  // Refreshes the display of network information.
-  void RefreshNetworkData();
-
-  // Updates the display of network connection information for the details page
-  // if visible.
-  void UpdateConnectionData(const std::string& service_path);
-
-  // Callback for ManagedNetworkConnectionHandler::GetManagedProperties.
-  // Calls the JS callback |js_callback_function| with the result.
-  void GetManagedPropertiesResult(const std::string& js_callback_function,
-                                  const std::string& service_path,
-                                  const base::DictionaryValue& onc_properties);
-
-  // NetworkStateHandlerObserver
-  void DeviceListChanged() override;
-  void NetworkListChanged() override;
-  void NetworkConnectionStateChanged(
-      const chromeos::NetworkState* network) override;
-  void NetworkPropertiesUpdated(const chromeos::NetworkState* network) override;
-  void DevicePropertiesUpdated(const chromeos::DeviceState* device) override;
-
-  // Updates the logged in user type.
-  void UpdateLoggedInUserType();
 
   // Gets the native window for hosting dialogs, etc.
   gfx::NativeWindow GetNativeWindow() const;
@@ -110,24 +72,6 @@ class InternetOptionsHandler : public ::options::OptionsPageUIHandler,
   // Requests that a list of VPN providers enabled in the primary user's
   // profile be sent to JavaScript.
   void LoadVPNProvidersCallback(const base::ListValue* args);
-
-  // Creates the map of wired networks.
-  base::ListValue* GetWiredList();
-
-  // Creates the map of wireless networks.
-  base::ListValue* GetWirelessList();
-
-  // Creates the map of virtual networks.
-  base::ListValue* GetVPNList();
-
-  // Creates the map of remembered networks.
-  base::ListValue* GetRememberedList();
-
-  // Fills network information into JS dictionary for displaying network lists.
-  void FillNetworkInfo(base::DictionaryValue* dictionary);
-
-  // Keep track of the service path for the network shown in the Details view.
-  std::string details_guid_;
 
   // Weak pointer factory so we can start connections at a later time
   // without worrying that they will actually try to happen after the lifetime

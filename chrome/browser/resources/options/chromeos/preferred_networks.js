@@ -5,7 +5,7 @@
 cr.exportPath('options');
 
 /**
- * @typedef {{Name: string, Type: string, GUID: string}}
+ * @typedef {{GUID: string, Name: string, Source: string, Type: string}}
  */
 options.PreferredNetwork;
 
@@ -83,8 +83,10 @@ cr.define('options', function() {
       DeletableItem.prototype.decorate.call(this);
       var label = this.ownerDocument.createElement('div');
       label.textContent = this.data.Name;
-      if (this.data.policyManaged)
+      if (this.data.Source == 'DevicePolicy' ||
+          this.data.Source == 'UserPolicy') {
         this.deletable = false;
+      }
       this.contentElement.appendChild(label);
     }
   };

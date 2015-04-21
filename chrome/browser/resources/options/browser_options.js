@@ -204,8 +204,6 @@ cr.define('options', function() {
           networkIndicator.setAttribute('controlled-by', 'shared');
           networkIndicator.location = cr.ui.ArrowLocation.TOP_START;
         }
-        options.network.NetworkList.refreshNetworkData(
-            loadTimeData.getValue('networkData'));
       }
 
       // On Startup section.

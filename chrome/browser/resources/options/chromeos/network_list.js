@@ -3,19 +3,23 @@
 // found in the LICENSE file.
 
 /**
- * This partially describes the network list entries passed to
- * refreshNetworkData. The contents of those lists actually match
- * chrome.networkingPrivate.NetworkStateProperties with the addition of the
- * policyManaged property. TODO(stevenjb): Use networkingPrivate.getNetworks.
+ * Partial definition of the result of networkingPrivate.getProperties()).
  * @typedef {{
  *   ConnectionState: string,
+ *   Cellular: {
+ *     Family: ?string,
+ *     SIMPresent: ?boolean,
+ *     SIMLockStatus: { LockType: ?string },
+ *     SupportNetworkScan: ?boolean
+ *   },
  *   GUID: string,
- *   Type: string,
- *   policyManaged: boolean
+ *   Name: string,
+ *   Source: string,
+ *   Type: string
  * }}
- * @see chrome/browser/ui/webui/options/chromeos/internet_options_handler.cc
+ * @see extensions/common/api/networking_private.idl
  */
-var NetworkInfo;
+var NetworkProperties;
 
 cr.define('options.network', function() {
   var ArrayDataModel = cr.ui.ArrayDataModel;
@@ -68,42 +72,35 @@ cr.define('options.network', function() {
    * @type {string|undefined}
    * @private
    */
-  var cellularState_ = undefined;
+  var cellularDeviceState_ = undefined;
 
   /**
-   * Indicates if cellular device supports network scanning.
-   * @type {boolean}
+   * The active cellular network or null if none.
+   * @type {?NetworkProperties}
    * @private
    */
-  var cellularSupportsScan_ = false;
+  var cellularNetwork_ = null;
 
   /**
-   * Indicates the current SIM lock type of the cellular device.
-   * @type {string}
+   * The active ethernet network or null if none.
+   * @type {?NetworkProperties}
    * @private
    */
-  var cellularSimLockType_ = '';
-
-  /**
-   * Indicates whether the SIM card is absent on the cellular device.
-   * @type {boolean}
-   * @private
-   */
-  var cellularSimAbsent_ = false;
+  var ethernetNetwork_ = null;
 
   /**
    * The state of the WiFi device or undefined if not available.
    * @type {string|undefined}
    * @private
    */
-  var wifiState_ = undefined;
+  var wifiDeviceState_ = undefined;
 
   /**
    * The state of the WiMAX device or undefined if not available.
    * @type {string|undefined}
    * @private
    */
-  var wimaxState_ = undefined;
+  var wimaxDeviceState_ = undefined;
 
   /**
    * Indicates if mobile data roaming is enabled.
@@ -113,36 +110,8 @@ cr.define('options.network', function() {
   var enableDataRoaming_ = false;
 
   /**
-   * List of wired networks.
-   * @type {Array<!NetworkInfo>}
-   * @private
-   */
-  var wiredList_ = [];
-
-  /**
-   * List of WiFi, Cellular, and WiMAX networks.
-   * @type {Array<!NetworkInfo>}
-   * @private
-   */
-  var wirelessList_ = [];
-
-  /**
-   * List of VPN networks.
-   * @type {Array<!NetworkInfo>}
-   * @private
-   */
-  var vpnList_ = [];
-
-  /**
-   * List of remembered (favorite) networks.
-   * @type {Array<!NetworkInfo>}
-   * @private
-   */
-  var rememberedList_ = [];
-
-  /**
    * Returns the display name for 'network'.
-   * @param {Object} data The network data dictionary.
+   * @param {NetworkProperties} data The network data dictionary.
    */
   function getNetworkName(data) {
     if (data.Type == 'Ethernet')
@@ -236,7 +205,7 @@ cr.define('options.network', function() {
 
     /**
      * Sets the icon based on a network state object.
-     * @param {!Object} data Object containing network state data.
+     * @param {!NetworkProperties} data Network state properties.
      */
     set iconData(data) {
       if (!isNetworkType(data.Type))
@@ -459,8 +428,8 @@ cr.define('options.network', function() {
   /**
    * Creates a control for selecting or configuring a network connection based
    * on the type of connection (e.g. wifi versus vpn).
-   * @param {{key: string, networkList: Array<NetworkInfo>}} data Description
-   *     of the network.
+   * @param {{key: string, networkList: Array<!NetworkProperties>}} data
+   *     An object containing the network type (key) and an array of networks.
    * @constructor
    * @extends {NetworkMenuItem}
    */
@@ -471,13 +440,59 @@ cr.define('options.network', function() {
     return el;
   }
 
+  /**
+   * Returns true if |source| is a policy managed source.
+   * @param {string} source The ONC source of a network.
+   * @return {boolean} Whether |source| is a managed source.
+   */
+  function isManaged(source) {
+    return (source == 'DevicePolicy' || source == 'UserPolicy');
+  }
+
+  /**
+   * Returns true if |network| is visible.
+   * @param {!chrome.networkingPrivate.NetworkStateProperties} network The
+   *     network state properties.
+   * @return {boolean} Whether |network| is visible.
+   */
+  function networkIsVisible(network) {
+    if (network.Type == 'WiFi')
+      return !!(network.WiFi && (network.WiFi.SignalStrength > 0));
+    if (network.Type == 'WiMAX')
+      return !!(network.WiMAX && (network.WiMAX.SignalStrength > 0));
+    // Other network types are always considered 'visible'.
+    return true;
+  }
+
+  /**
+   * Returns true if |cellular| is a GSM network with no sim present.
+   * @param {?NetworkProperties} cellular The network state properties.
+   * @return {boolean} Whether |network| is missing a SIM card.
+   */
+  function isCellularSimAbsent(cellular) {
+    if (!cellular || !cellular.Cellular)
+      return false;
+    return cellular.Cellular.Family == 'GSM' && !cellular.Cellular.SIMPresent;
+  }
+
+  /**
+   * Returns true if |cellular| has a locked SIM card.
+   * @param {?NetworkProperties} cellular The network state properties.
+   * @return {boolean} Whether |network| has a locked SIM card.
+   */
+  function isCellularSimLocked(cellular) {
+    if (!cellular || !cellular.Cellular)
+      return false;
+    var simLockStatus = cellular.Cellular.SIMLockStatus;
+    return !!(simLockStatus && simLockStatus.LockType);
+  }
+
   NetworkSelectorItem.prototype = {
     __proto__: NetworkMenuItem.prototype,
 
     /** @override */
     decorate: function() {
       // TODO(kevers): Generalize method of setting default label.
-      var policyManaged = false;
       this.subtitle = loadTimeData.getString('OncConnectionStateNotConnected');
       var list = this.data_.networkList;
       var candidateData = null;
@@ -487,7 +502,6 @@ cr.define('options.network', function() {
             networkDetails.ConnectionState == 'Connected') {
           this.subtitle = getNetworkName(networkDetails);
           this.setSubtitleDirection('ltr');
-          policyManaged = networkDetails.policyManaged;
           candidateData = networkDetails;
           // Only break when we see a connecting network as it is possible to
           // have a connected network and a connecting network at the same
@@ -503,7 +517,7 @@ cr.define('options.network', function() {
 
       this.showSelector();
 
-      if (policyManaged)
+      if (candidateData && isManaged(candidateData.Source))
         this.showManagedNetworkIndicator();
 
       if (activeMenu_ == this.getMenuName()) {
@@ -536,7 +550,9 @@ cr.define('options.network', function() {
           data: {}
         });
       } else if (this.data_.key == 'Cellular') {
-        if (cellularState_ == 'Enabled' && cellularSupportsScan_) {
+        if (cellularDeviceState_ == 'Enabled' &&
+            cellularNetwork_ && cellularNetwork_.Cellular &&
+            cellularNetwork_.Cellular.SupportNetworkScan) {
           addendum.push({
             label: loadTimeData.getString('otherCellularNetworks'),
             command: createAddNonVPNConnectionCallback_('Cellular'),
@@ -737,7 +753,7 @@ cr.define('options.network', function() {
     /**
      * Adds a menu item for showing network details.
      * @param {!Element} parent The parent element.
-     * @param {Object} data Description of the network.
+     * @param {NetworkProperties} data Description of the network.
      * @private
      */
     createNetworkOptionsCallback_: function(parent, data) {
@@ -745,7 +761,7 @@ cr.define('options.network', function() {
                                      data,
                                      getNetworkName(data),
                                      showDetails.bind(null, data.GUID));
-      if (data.policyManaged)
+      if (isManaged(data.Source))
         menuItem.appendChild(new ManagedNetworkIndicator());
       if (data.ConnectionState == 'Connected' ||
           data.ConnectionState == 'Connecting') {
@@ -785,7 +801,7 @@ cr.define('options.network', function() {
         this.iconData = this.data.iconData;
       else if (this.data.iconType)
         this.iconType = this.data.iconType;
-      if (this.data.policyManaged)
+      if (isManaged(this.data.Source))
         this.showManagedNetworkIndicator();
     },
   };
@@ -793,7 +809,7 @@ cr.define('options.network', function() {
   /**
    * Adds a command to a menu for modifying network settings.
    * @param {!Element} menu Parent menu.
-   * @param {Object} data Description of the network.
+   * @param {?NetworkProperties} data Description of the network.
    * @param {!string} label Display name for the menu item.
    * @param {!Function} command Callback function.
    * @return {!Element} The created menu item.
@@ -876,7 +892,27 @@ cr.define('options.network', function() {
           });
       this.endBatchUpdates();
 
+      this.onNetworkListChanged_();  // Trigger an initial network update
+
+      chrome.networkingPrivate.onNetworkListChanged.addListener(
+          this.onNetworkListChanged_.bind(this));
+
+      chrome.networkingPrivate.requestNetworkScan();
+
       options.VPNProviders.addObserver(this.onVPNProvidersChanged_.bind(this));
+    },
+
+    /**
+     * networkingPrivate event called when the network list has changed.
+     */
+    onNetworkListChanged_: function() {
+      var networkList = this;
+      chrome.networkingPrivate.getDeviceStates(function(deviceStates) {
+        var filter = { networkType: 'All' };
+        chrome.networkingPrivate.getNetworks(filter, function(networkStates) {
+          networkList.updateNetworkStates(deviceStates, networkStates);
+        });
+      });
     },
 
     /**
@@ -995,7 +1031,7 @@ cr.define('options.network', function() {
 
     /**
      * Updates a network control.
-     * @param {Object<string,string>} data Description of the entry.
+     * @param {Object} data Description of the entry.
      */
     update: function(data) {
       this.startBatchUpdates();
@@ -1043,8 +1079,8 @@ cr.define('options.network', function() {
     createItem: function(entry) {
       if (entry.networkList)
         return new NetworkSelectorItem(
-            /** @type {{key: string, networkList: Array<NetworkInfo>}} */(
-                entry));
+            /** @type {{key: string, networkList: Array<!NetworkProperties>}} */
+            (entry));
       if (entry.command)
         return new NetworkButtonItem(
             /** @type {{key: string, subtitle: string, command: Function}} */(
@@ -1076,105 +1112,122 @@ cr.define('options.network', function() {
         entry.iconType = active ? 'control-active' : 'control-inactive';
         this.update(entry);
       }
-    }
-  };
+    },
 
-  /**
-   * Chrome callback for updating network controls.
-   * @param {{cellularSimAbsent: boolean,
-   *          cellularSimLockType: string,
-   *          cellularSupportsScan: boolean,
-   *          rememberedList: Array<NetworkInfo>,
-   *          vpnList: Array<NetworkInfo>,
-   *          wiredList: Array<NetworkInfo>,
-   *          wirelessList: Array<NetworkInfo>}} data Description of available
-   *     network devices and their corresponding state.
-   */
-  NetworkList.refreshNetworkData = function(data) {
-    cellularSupportsScan_ = data.cellularSupportsScan;
-    cellularSimAbsent_ = data.cellularSimAbsent;
-    cellularSimLockType_ = data.cellularSimLockType;
-    wiredList_ = data.wiredList;
-    wirelessList_ = data.wirelessList;
-    vpnList_ = data.vpnList;
-    rememberedList_ = data.rememberedList;
+    /**
+     * Updates the state of network devices and services.
+     * @param {!Array<{State: string, Type: string}>} deviceStates The result
+     *     from networkingPrivate.getDeviceStates.
+     * @param {!Array<!chrome.networkingPrivate.NetworkStateProperties>}
+     *     networkStates The result from networkingPrivate.getNetworks.
+     */
+    updateNetworkStates: function(deviceStates, networkStates) {
+      // Update device states.
+      cellularDeviceState_ = undefined;
+      wifiDeviceState_ = undefined;
+      wimaxDeviceState_ = undefined;
+      for (var i = 0; i < deviceStates.length; ++i) {
+        var device = deviceStates[i];
+        var type = device.Type;
+        var state = device.State;
+        if (type == 'Cellular')
+          cellularDeviceState_ = cellularDeviceState_ || state;
+        else if (type == 'WiFi')
+          wifiDeviceState_ = wifiDeviceState_ || state;
+        else if (type == 'WiMAX')
+          wimaxDeviceState_ = wimaxDeviceState_ || state;
+      }
 
-    // Request device states.
-    chrome.networkingPrivate.getDeviceStates(
-        NetworkList.onGetDeviceStates.bind(this));
-  };
+      // Update active network states.
+      cellularNetwork_ = null;
+      ethernetNetwork_ = null;
+      for (var i = 0; i < networkStates.length; i++) {
+        // Note: This cast is valid since
+        // networkingPrivate.NetworkStateProperties is a subset of
+        // NetworkProperties and all missing properties are optional.
+        var entry = /** @type {NetworkProperties} */ (networkStates[i]);
+        switch (entry.Type) {
+          case 'Cellular':
+            cellularNetwork_ = cellularNetwork_ || entry;
+            break;
+          case 'Ethernet':
+            ethernetNetwork_ = ethernetNetwork_ || entry;
+            break;
+        }
+        if (cellularNetwork_ && ethernetNetwork_)
+          break;
+      }
 
-  /**
-   * Callback from getDeviceStates. Updates network controls.
-   * @param {Array<{State: string, Type: string}>} deviceStates The result
-   *     from getDeviceStates.
-   */
-  NetworkList.onGetDeviceStates = function(deviceStates) {
-    var networkList = $('network-list');
-    networkList.startBatchUpdates();
+      if (cellularNetwork_ && cellularNetwork_.GUID) {
+        // Get the complete set of cellular properties which includes SIM and
+        // Scan properties.
+        var networkList = this;
+        chrome.networkingPrivate.getProperties(
+            cellularNetwork_.GUID, function(cellular) {
+              cellularNetwork_ = /** @type {NetworkProperties} */ (cellular);
+              networkList.updateControls(networkStates);
+            });
+      } else {
+        this.updateControls(networkStates);
+      }
+    },
 
-    cellularState_ = undefined;
-    wifiState_ = undefined;
-    wimaxState_ = undefined;
-    for (var i = 0; i < deviceStates.length; ++i) {
-      var device = deviceStates[i];
-      var type = device.Type;
-      var state = device.State;
-      if (type == 'Cellular')
-        cellularState_ = cellularState_ || state;
-      else if (type == 'WiFi')
-        wifiState_ = wifiState_ || state;
-      else if (type == 'WiMAX')
-        wimaxState_ = wimaxState_ || state;
-    }
+    /**
+     * Updates network controls.
+     * @param {!Array<!chrome.networkingPrivate.NetworkStateProperties>}
+     *     networkStates The result from networkingPrivate.getNetworks.
+     */
+    updateControls: function(networkStates) {
+      this.startBatchUpdates();
 
-    // Only show Ethernet control if connected.
-    var ethernetConnection = getConnection_(wiredList_);
-    if (ethernetConnection) {
-      var type = String('Ethernet');
-      var ethernetOptions = showDetails.bind(null, ethernetConnection.GUID);
-      networkList.update(
+      // Only show Ethernet control if connected.
+      if (ethernetNetwork_ && ethernetNetwork_.ConnectionState == 'Connected') {
+        var ethernetOptions = showDetails.bind(null, ethernetNetwork_.GUID);
+        this.update(
           { key: 'Ethernet',
             subtitle: loadTimeData.getString('OncConnectionStateConnected'),
-            iconData: ethernetConnection,
+            iconData: ethernetNetwork_,
             command: ethernetOptions,
-            policyManaged: ethernetConnection.policyManaged }
-          );
-    } else {
-      networkList.deleteItem('Ethernet');
-    }
+            Source: ethernetNetwork_.Source }
+        );
+      } else {
+        this.deleteItem('Ethernet');
+      }
 
-    if (wifiState_ == 'Enabled')
-      loadData_('WiFi', wirelessList_, rememberedList_);
-    else
-      addEnableNetworkButton_('WiFi');
-
-    // Only show cellular control if available.
-    if (cellularState_) {
-      if (cellularState_ == 'Enabled')
-        loadData_('Cellular', wirelessList_, rememberedList_);
+      if (wifiDeviceState_ == 'Enabled')
+        loadData_('WiFi', networkStates);
       else
-        addEnableNetworkButton_('Cellular');
-    } else {
-      networkList.deleteItem('Cellular');
-    }
+        addEnableNetworkButton_('WiFi');
 
-    // Only show wimax control if available. Uses cellular icons.
-    if (wimaxState_) {
-      if (wimaxState_ == 'Enabled')
-        loadData_('WiMAX', wirelessList_, rememberedList_);
-      else
-        addEnableNetworkButton_('WiMAX');
-    } else {
-      networkList.deleteItem('WiMAX');
-    }
+      // Only show cellular control if available.
+      if (cellularDeviceState_) {
+        if (cellularDeviceState_ == 'Enabled' &&
+            !isCellularSimLocked(cellularNetwork_) &&
+            !isCellularSimAbsent(cellularNetwork_)) {
+          loadData_('Cellular', networkStates);
+        } else {
+          addEnableNetworkButton_('Cellular');
+        }
+      } else {
+        this.deleteItem('Cellular');
+      }
 
-    // Only show VPN control if there is at least one VPN configured.
-    if (vpnList_.length > 0)
-      loadData_('VPN', vpnList_, rememberedList_);
-    else
-      networkList.deleteItem('VPN');
-    networkList.endBatchUpdates();
+      // Only show wimax control if available. Uses cellular icons.
+      if (wimaxDeviceState_) {
+        if (wimaxDeviceState_ == 'Enabled')
+          loadData_('WiMAX', networkStates);
+        else
+          addEnableNetworkButton_('WiMAX');
+      } else {
+        this.deleteItem('WiMAX');
+      }
+
+      // Only show VPN control if there is at least one VPN configured.
+      if (loadData_('VPN', networkStates) == 0)
+        this.deleteItem('VPN');
+
+      this.endBatchUpdates();
+    }
   };
 
   /**
@@ -1188,10 +1241,10 @@ cr.define('options.network', function() {
       if (type == 'WiFi')
         sendChromeMetricsAction('Options_NetworkWifiToggle');
       if (type == 'Cellular') {
-        if (cellularSimLockType_) {
+        if (isCellularSimLocked(cellularNetwork_)) {
           chrome.send('simOperation', ['unlock']);
           return;
-        } else if (cellularState_ == 'Enabled' && cellularSimAbsent_) {
+        } else if (isCellularSimAbsent(cellularNetwork_)) {
           chrome.send('simOperation', ['configure']);
           return;
         }
@@ -1264,26 +1317,34 @@ cr.define('options.network', function() {
    * Updates the list of available networks and their status, filtered by
    * network type.
    * @param {string} type The type of network.
-   * @param {Array} available The list of available networks and their status.
-   * @param {Array} remembered The list of remmebered networks.
+   * @param {Array<!chrome.networkingPrivate.NetworkStateProperties>} networks
+   *     The list of network objects.
+   * @return {number} The number of visible networks matching |type|.
    */
-  function loadData_(type, available, remembered) {
-    var data = {key: type};
+  function loadData_(type, networks) {
+    var res = 0;
     var availableNetworks = [];
-    for (var i = 0; i < available.length; i++) {
-      if (available[i].Type == type)
-        availableNetworks.push(available[i]);
-    }
-    data.networkList = availableNetworks;
-    if (remembered) {
-      var rememberedNetworks = [];
-      for (var i = 0; i < remembered.length; i++) {
-        if (remembered[i].Type == type)
-          rememberedNetworks.push(remembered[i]);
+    var rememberedNetworks = [];
+    for (var i = 0; i < networks.length; i++) {
+      var network = networks[i];
+      if (network.Type != type)
+        continue;
+      if (networkIsVisible(network)) {
+        availableNetworks.push(network);
+        ++res;
       }
-      data.rememberedNetworks = rememberedNetworks;
+      if ((type == 'WiFi' || type == 'VPN') && network.Source &&
+          network.Source != 'None') {
+        rememberedNetworks.push(network);
+      }
     }
+    var data = {
+      key: type,
+      networkList: availableNetworks,
+      rememberedNetworks: rememberedNetworks
+    };
     $('network-list').update(data);
+    return res;
   }
 
   /**
@@ -1298,24 +1359,6 @@ cr.define('options.network', function() {
         menu.parentNode.removeChild(menu);
       activeMenu_ = null;
     }
-  }
-
-  /**
-   * Fetches the active connection.
-   * @param {Array<Object>} networkList List of networks.
-   * @return {Object}
-   * @private
-   */
-  function getConnection_(networkList) {
-    if (!networkList)
-      return null;
-    for (var i = 0; i < networkList.length; i++) {
-      var entry = networkList[i];
-      if (entry.ConnectionState == 'Connected' ||
-          entry.ConnectionState == 'Connecting')
-        return entry;
-    }
-    return null;
   }
 
   /**

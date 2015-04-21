@@ -775,6 +775,9 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     devices->SetDeviceProperty("/device/cellular1",
                                shill::kSupportedCarriersProperty,
                                carrier_list);
+    devices->SetDeviceProperty("/device/cellular1",
+                               shill::kSupportNetworkScanProperty,
+                               base::FundamentalValue(true));
     if (roaming_state_ == kRoamingRequired) {
       devices->SetDeviceProperty("/device/cellular1",
                                  shill::kProviderRequiresRoamingProperty,
@@ -1049,8 +1052,7 @@ bool FakeShillManagerClient::ParseOption(const std::string& arg0,
     base::DictionaryValue* simlock_dict = new base::DictionaryValue;
     simlock_dict->Set(shill::kSIMLockEnabledProperty,
                       new base::FundamentalValue(locked));
-    // TODO(stevenjb): Investigate why non-empty value breaks UI.
-    std::string lock_type = "";  // shill::kSIMLockPin
+    std::string lock_type = shill::kSIMLockPin;
     simlock_dict->SetString(shill::kSIMLockTypeProperty, lock_type);
     simlock_dict->SetInteger(shill::kSIMLockRetriesLeftProperty, 5);
 

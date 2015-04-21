@@ -5,6 +5,7 @@
 #include "extensions/browser/api/networking_private/networking_private_event_router.h"
 
 #include "base/json/json_writer.h"
+#include "chromeos/network/device_state.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -20,6 +21,7 @@
 #include "extensions/common/api/networking_private.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+using chromeos::DeviceState;
 using chromeos::NetworkHandler;
 using chromeos::NetworkPortalDetector;
 using chromeos::NetworkState;
@@ -47,6 +49,7 @@ class NetworkingPrivateEventRouterImpl
   void NetworkListChanged() override;
   void DeviceListChanged() override;
   void NetworkPropertiesUpdated(const NetworkState* network) override;
+  void DevicePropertiesUpdated(const DeviceState* device) override;
 
   // NetworkPortalDetector::Observer overrides:
   void OnPortalDetectionCompleted(
@@ -204,6 +207,21 @@ void NetworkingPrivateEventRouterImpl::NetworkPropertiesUpdated(
       new Event(core_api::networking_private::OnNetworksChanged::kEventName,
                 args.Pass()));
   event_router->BroadcastEvent(extension_event.Pass());
+}
+
+void NetworkingPrivateEventRouterImpl::DevicePropertiesUpdated(
+    const DeviceState* device) {
+  // DeviceState changes may affect Cellular networks.
+  if (device->type() != shill::kTypeCellular)
+    return;
+
+  NetworkStateHandler::NetworkStateList cellular_networks;
+  NetworkHandler::Get()->network_state_handler()->GetNetworkListByType(
+      chromeos::NetworkTypePattern::Cellular(), false /* configured_only */,
+      true /* visible_only */, -1 /* default limit */, &cellular_networks);
+  for (const NetworkState* network : cellular_networks) {
+    NetworkPropertiesUpdated(network);
+  }
 }
 
 void NetworkingPrivateEventRouterImpl::OnPortalDetectionCompleted(
