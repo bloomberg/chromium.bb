@@ -39689,17 +39689,35 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time taken during app association.</summary>
 </histogram>
 
+<histogram name="Sync.AppsConfigureFailure" enum="SyncConfigureResult">
+  <owner>zea@chromium.org</owner>
+  <summary>Enumeration of types of app configuration failures.</summary>
+</histogram>
+
 <histogram name="Sync.AppSettingsAssociationTime" units="milliseconds">
   <owner>zea@chromium.org</owner>
   <summary>Time taken during app settings association.</summary>
 </histogram>
 
+<histogram name="Sync.AppSettingsConfigureFailure" enum="SyncConfigureResult">
+  <owner>zea@chromium.org</owner>
+  <summary>
+    Enumeration of types of app settings configuration failures.
+  </summary>
+</histogram>
+
 <histogram name="Sync.AppSettingsStartFailure" enum="SyncStartResult">
+  <obsolete>
+    Replaced by AppSettingsConfigureFailure. See crbug.com/478226.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>Enumeration of types of app settings association failures.</summary>
 </histogram>
 
 <histogram name="Sync.AppsStartFailure" enum="SyncStartResult">
+  <obsolete>
+    Replaced by AppsConfigureFailure. See crbug.com/478226.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>Enumeration of types of app association failures.</summary>
 </histogram>
@@ -39796,6 +39814,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time taken during autofill association.</summary>
 </histogram>
 
+<histogram name="Sync.AutofillConfigureFailure" enum="SyncConfigureResult">
+  <owner>zea@chromium.org</owner>
+  <summary>Enumeration of types of autofill configuration failures.</summary>
+</histogram>
+
 <histogram name="Sync.AutofillProfileAssociationTime" units="milliseconds">
   <owner>zea@chromium.org</owner>
   <summary>
@@ -39821,7 +39844,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time taken during autofill profile association.</summary>
 </histogram>
 
+<histogram name="Sync.AutofillProfilesConfigureFailure"
+    enum="SyncConfigureResult">
+  <owner>zea@chromium.org</owner>
+  <summary>
+    Enumeration of types of autofill profile configuration failures.
+  </summary>
+</histogram>
+
 <histogram name="Sync.AutofillProfilesStartFailure" enum="SyncStartResult">
+  <obsolete>
+    Replaced by AutofillProfilesConfigureFailure. See crbug.com/478226.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Enumeration of types of autofill profile association failures.
@@ -39852,6 +39886,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Sync.AutofillStartFailure" enum="SyncStartResult">
+  <obsolete>
+    Replaced by AutofillConfigureFailure. See crbug.com/478226.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>Enumeration of types of autofill association failures.</summary>
 </histogram>
@@ -39935,7 +39972,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time taken during bookmark association.</summary>
 </histogram>
 
+<histogram name="Sync.BookmarksConfigureFailure" enum="SyncConfigureResult">
+  <owner>zea@chromium.org</owner>
+  <summary>Enumeration of types of bookmark configuration failures.</summary>
+</histogram>
+
 <histogram name="Sync.BookmarksStartFailure" enum="SyncStartResult">
+  <obsolete>
+    Replaced by BookmarksConfigureFailure. See crbug.com/478226.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>Enumeration of types of bookmark association failures.</summary>
 </histogram>
@@ -40142,7 +40187,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time taken during dictionary association.</summary>
 </histogram>
 
+<histogram name="Sync.DictionaryConfigureFailure" enum="SyncConfigureResult">
+  <owner>zea@chromium.org</owner>
+  <summary>Enumeration of types of dictionary configuration failures.</summary>
+</histogram>
+
 <histogram name="Sync.DictionaryStartFailure" enum="SyncStartResult">
+  <obsolete>
+    Replaced by DictionaryConfigureFailure. See crbug.com/478226.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>Enumeration of types of dictionary association failures.</summary>
 </histogram>
@@ -40223,12 +40276,28 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time taken during extension association.</summary>
 </histogram>
 
+<histogram name="Sync.ExtensionsConfigureFailure" enum="SyncConfigureResult">
+  <owner>zea@chromium.org</owner>
+  <summary>Enumeration of types of extension configuration failures.</summary>
+</histogram>
+
 <histogram name="Sync.ExtensionSettingsAssociationTime" units="milliseconds">
   <owner>zea@chromium.org</owner>
   <summary>Time taken during extension settings association.</summary>
 </histogram>
 
+<histogram name="Sync.ExtensionSettingsConfigureFailure"
+    enum="SyncConfigureResult">
+  <owner>zea@chromium.org</owner>
+  <summary>
+    Enumeration of types of extension settings configuration failures.
+  </summary>
+</histogram>
+
 <histogram name="Sync.ExtensionSettingsStartFailure" enum="SyncStartResult">
+  <obsolete>
+    Replaced by ExtensionSettingsConfigureFailure. See crbug.com/478226.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Enumeration of types of extension settings association failures.
@@ -40236,6 +40305,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Sync.ExtensionsStartFailure" enum="SyncStartResult">
+  <obsolete>
+    Replaced by ExtensionsConfigureFailure. See crbug.com/478226.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>Enumeration of types of extension association failures.</summary>
 </histogram>
@@ -40266,7 +40338,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time taken during favicon images association.</summary>
 </histogram>
 
+<histogram name="Sync.FaviconImagesConfigureFailure" enum="SyncConfigureResult">
+  <owner>zea@chromium.org</owner>
+  <summary>
+    Enumeration of types of favicon images configuration failures.
+  </summary>
+</histogram>
+
 <histogram name="Sync.FaviconImagesStartFailure" enum="SyncStartResult">
+  <obsolete>
+    Replaced by FaviconImagesConfigureFailure. See crbug.com/478226.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Enumeration of types of favicon images association failures.
@@ -40286,7 +40368,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time taken during favicon tracking association.</summary>
 </histogram>
 
+<histogram name="Sync.FaviconTrackingConfigureFailure"
+    enum="SyncConfigureResult">
+  <owner>zea@chromium.org</owner>
+  <summary>
+    Enumeration of types of favicon tracking configuration failures.
+  </summary>
+</histogram>
+
 <histogram name="Sync.FaviconTrackingStartFailure" enum="SyncStartResult">
+  <obsolete>
+    Replaced by FaviconTrackingConfigureFailure. See crbug.com/478226.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Enumeration of types of favicon tracking association failures.
@@ -40512,7 +40605,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time taken during password association.</summary>
 </histogram>
 
+<histogram name="Sync.PasswordsConfigureFailure" enum="SyncConfigureResult">
+  <owner>zea@chromium.org</owner>
+  <summary>Enumeration of types of password configuration failures.</summary>
+</histogram>
+
 <histogram name="Sync.PasswordsStartFailure" enum="SyncStartResult">
+  <obsolete>
+    Replaced by PasswordsConfigureFailure. See crbug.com/478226.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>Enumeration of types of password association failures.</summary>
 </histogram>
@@ -40552,7 +40653,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time taken during preference association.</summary>
 </histogram>
 
+<histogram name="Sync.PreferencesConfigureFailure" enum="SyncConfigureResult">
+  <owner>zea@chromium.org</owner>
+  <summary>Enumeration of types of preference configuration failures.</summary>
+</histogram>
+
 <histogram name="Sync.PreferencesStartFailure" enum="SyncStartResult">
+  <obsolete>
+    Replaced by PreferencesConfigureFailure. See crbug.com/478226.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>Enumeration of types of preference association failures.</summary>
 </histogram>
@@ -40623,7 +40732,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time taken during search engine association.</summary>
 </histogram>
 
+<histogram name="Sync.SearchEnginesConfigureFailure" enum="SyncConfigureResult">
+  <owner>zea@chromium.org</owner>
+  <summary>
+    Enumeration of types of search engine configuration failures.
+  </summary>
+</histogram>
+
 <histogram name="Sync.SearchEnginesStartFailure" enum="SyncStartResult">
+  <obsolete>
+    Replaced by SearchEnginesConfigureFailure. See crbug.com/478226.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>Enumeration of types of search engine association failures.</summary>
 </histogram>
@@ -40677,7 +40796,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time taken during session association.</summary>
 </histogram>
 
+<histogram name="Sync.SessionsConfigureFailure" enum="SyncConfigureResult">
+  <owner>zea@chromium.org</owner>
+  <summary>Enumeration of types of session configuration failures.</summary>
+</histogram>
+
 <histogram name="Sync.SessionsStartFailure" enum="SyncStartResult">
+  <obsolete>
+    Replaced by SessionsConfigureFailure. See crbug.com/478226.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>Enumeration of types of session association failures.</summary>
 </histogram>
@@ -40761,7 +40888,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time taken during synced notifications association.</summary>
 </histogram>
 
+<histogram name="Sync.SyncedNotificationsConfigureFailure"
+    enum="SyncConfigureResult">
+  <owner>zea@chromium.org</owner>
+  <summary>
+    Enumeration of types of synced notifications configuration failures.
+  </summary>
+</histogram>
+
 <histogram name="Sync.SyncedNotificationsStartFailure" enum="SyncStartResult">
+  <obsolete>
+    Replaced by SyncedNotificationsConfigureFailure. See crbug.com/478226.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Enumeration of types of synced notifications association failures.
@@ -40824,7 +40962,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time taken during theme association.</summary>
 </histogram>
 
+<histogram name="Sync.ThemesConfigureFailure" enum="SyncConfigureResult">
+  <owner>zea@chromium.org</owner>
+  <summary>Enumeration of types of theme configuration failures.</summary>
+</histogram>
+
 <histogram name="Sync.ThemesStartFailure" enum="SyncStartResult">
+  <obsolete>
+    Replaced by ThemesConfigureFailure. See crbug.com/478226.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>Enumeration of types of theme association failures.</summary>
 </histogram>
@@ -40882,7 +41028,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time taken during typed url association.</summary>
 </histogram>
 
+<histogram name="Sync.TypedUrlsConfigureFailure" enum="SyncConfigureResult">
+  <owner>zea@chromium.org</owner>
+  <summary>Enumeration of types of typed url configuration failures.</summary>
+</histogram>
+
 <histogram name="Sync.TypedUrlsStartFailure" enum="SyncStartResult">
+  <obsolete>
+    Replaced by TypedUrlsConfigureFailure. See crbug.com/478226.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>Enumeration of types of typed url association failures.</summary>
 </histogram>
@@ -40936,7 +41090,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time taken during WiFi credentials association.</summary>
 </histogram>
 
+<histogram name="Sync.WifiCredentialsConfigureFailure"
+    enum="SyncConfigureResult">
+  <owner>zea@chromium.org</owner>
+  <summary>
+    Enumeration of types of WiFi credentials configuration failures.
+  </summary>
+</histogram>
+
 <histogram name="Sync.WifiCredentialsStartFailure" enum="SyncStartResult">
+  <obsolete>
+    Replaced by WifiCredentialsConfigureFailure. See crbug.com/478226.
+  </obsolete>
   <owner>zea@chromium.org</owner>
   <summary>
     Enumeration of types of WiFi credentials association failures.
@@ -62549,6 +62714,20 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Expected restored types but found none"/>
   <int value="2" label="Did not expect restored types and found none"/>
   <int value="3" label="Did not expect restored types but found some"/>
+</enum>
+
+<enum name="SyncConfigureResult" type="int">
+  <summary>
+    Sync data type configure results. The codes are listed in
+    data_type_controller.h with more details.
+  </summary>
+  <int value="0" label="OK"/>
+  <int value="1" label="OK_FIRST_RUN"/>
+  <int value="2" label="ASSOCIATION_FAILED"/>
+  <int value="3" label="ABORTED"/>
+  <int value="4" label="UNRECOVERABLE_ERROR"/>
+  <int value="5" label="NEEDS_CRYPTO"/>
+  <int value="6" label="RUNTIME_ERROR"/>
 </enum>
 
 <enum name="SyncCryptographerPendingKeysState" type="int">

@@ -381,9 +381,9 @@ void UIDataTypeController::RecordStartFailure(ConfigureResult result) {
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures",
                             ModelTypeToHistogramInt(type()),
                             syncer::MODEL_TYPE_COUNT);
-#define PER_DATA_TYPE_MACRO(type_str) \
-    UMA_HISTOGRAM_ENUMERATION("Sync." type_str "StartFailure", result, \
-                              MAX_START_RESULT);
+#define PER_DATA_TYPE_MACRO(type_str)                                    \
+  UMA_HISTOGRAM_ENUMERATION("Sync." type_str "ConfigureFailure", result, \
+                            MAX_CONFIGURE_RESULT);
   SYNC_DATA_TYPE_HISTOGRAM(type());
 #undef PER_DATA_TYPE_MACRO
 }

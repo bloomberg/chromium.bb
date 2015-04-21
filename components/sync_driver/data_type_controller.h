@@ -51,6 +51,8 @@ class DataTypeController
                     // so it is disabled waiting for it to be stopped.
   };
 
+  // This enum is used for "Sync.*ConfigureFailre" histograms so the order
+  // of is important. Any changes need to be reflected in histograms.xml.
   enum ConfigureResult {
     OK,                   // The data type has started normally.
     OK_FIRST_RUN,         // Same as OK, but sent on first successful
@@ -62,7 +64,7 @@ class DataTypeController
     NEEDS_CRYPTO,         // The data type cannot be started yet because it
                           // depends on the cryptographer.
     RUNTIME_ERROR,        // After starting, a runtime error was encountered.
-    MAX_START_RESULT
+    MAX_CONFIGURE_RESULT
   };
 
   typedef base::Callback<void(ConfigureResult,
