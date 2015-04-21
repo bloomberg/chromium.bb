@@ -54,9 +54,6 @@
         # TODO(jungshik): Remove it once a fix for bug 384752 is in.
         'source/common/unicode/uvernum.h',
       ],
-      'dependencies': [
-        '../../native_client/tools.gyp:prep_toolchain',
-      ],
     },
     {
       'target_name': 'icui18n_nacl',
@@ -74,7 +71,6 @@
         'U_I18N_IMPLEMENTATION',
       ],
       'dependencies': [
-        '../../native_client/tools.gyp:prep_toolchain',
         'icuuc_nacl',
       ],
       'direct_dependent_settings': {
@@ -99,7 +95,6 @@
         'U_COMMON_IMPLEMENTATION',
       ],
       'dependencies': [
-        '../../native_client/tools.gyp:prep_toolchain',
         'icudata_nacl',
       ],
       'direct_dependent_settings': {
