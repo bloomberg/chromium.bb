@@ -48,12 +48,12 @@ OAUTH_CLIENT_SECRET = 'uBfbay2KCy9t4QveJ-dOqHtp'
 # use userinfo.email scope for authentication.
 OAUTH_SCOPES = 'https://www.googleapis.com/auth/userinfo.email'
 
-# Path to a file with cached OAuth2 credentials used by default. It should be
-# a safe location accessible only to a current user: knowing content of this
-# file is roughly equivalent to knowing account password. Single file can hold
-# multiple independent tokens identified by token_cache_key (see Authenticator).
-OAUTH_TOKENS_CACHE = os.path.join(
-    os.path.expanduser('~'), '.depot_tools_oauth2_tokens')
+# Path to a file with cached OAuth2 credentials used by default relative to the
+# home dir (see _get_token_cache_path). It should be a safe location accessible
+# only to a current user: knowing content of this file is roughly equivalent to
+# knowing account password. Single file can hold multiple independent tokens
+# identified by token_cache_key (see Authenticator).
+OAUTH_TOKENS_CACHE = '.depot_tools_oauth2_tokens'
 
 
 # Authentication configuration extracted from command line options.
@@ -383,10 +383,10 @@ class Authenticator(object):
       cache_key = '%s:refresh_tok:%s' % (self._token_cache_key, token_hash)
     else:
       cache_key = self._token_cache_key
-    logging.debug(
-        'Using token storage %r (cache key %r)', OAUTH_TOKENS_CACHE, cache_key)
+    path = _get_token_cache_path()
+    logging.debug('Using token storage %r (cache key %r)', path, cache_key)
     return multistore_file.get_credential_storage_custom_string_key(
-        OAUTH_TOKENS_CACHE, cache_key)
+        path, cache_key)
 
   def _get_cached_credentials(self):
     """Returns oauth2client.Credentials loaded from storage."""
@@ -500,6 +500,20 @@ class Authenticator(object):
 
 
 ## Private functions.
+
+
+def _get_token_cache_path():
+  # On non Win just use HOME.
+  if sys.platform != 'win32':
+    return os.path.join(os.path.expanduser('~'), OAUTH_TOKENS_CACHE)
+  # Prefer USERPROFILE over HOME, since HOME is overridden in
+  # git-..._bin/cmd/git.cmd to point to depot_tools. depot-tools-auth.py script
+  # (and all other scripts) doesn't use this override and thus uses another
+  # value for HOME. git.cmd doesn't touch USERPROFILE though, and usually
+  # USERPROFILE == HOME on Windows.
+  if 'USERPROFILE' in os.environ:
+    return os.path.join(os.environ['USERPROFILE'], OAUTH_TOKENS_CACHE)
+  return os.path.join(os.path.expanduser('~'), OAUTH_TOKENS_CACHE)
 
 
 def _is_headless():
