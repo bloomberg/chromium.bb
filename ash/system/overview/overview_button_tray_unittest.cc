@@ -4,8 +4,10 @@
 
 #include "ash/system/overview/overview_button_tray.h"
 
+#include "ash/ash_switches.h"
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
+#include "ash/rotator/screen_rotation_animator.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -15,7 +17,9 @@
 #include "ash/test/status_area_widget_test_helper.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "base/command_line.h"
 #include "base/time/time.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gestures/gesture_types.h"
@@ -42,6 +46,8 @@ class OverviewButtonTrayTest : public test::AshTestBase {
   OverviewButtonTrayTest() {}
   ~OverviewButtonTrayTest() override {}
 
+  void SetUp() override;
+
  protected:
   views::ImageView* GetImageView(OverviewButtonTray* tray) {
     return tray->icon_;
@@ -50,6 +56,14 @@ class OverviewButtonTrayTest : public test::AshTestBase {
  private:
   DISALLOW_COPY_AND_ASSIGN(OverviewButtonTrayTest);
 };
+
+void OverviewButtonTrayTest::SetUp() {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshUseFirstDisplayAsInternal);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshEnableScreenRotationAnimation);
+  AshTestBase::SetUp();
+}
 
 // Ensures that creation doesn't cause any crashes and adds the image icon.
 TEST_F(OverviewButtonTrayTest, BasicConstruction) {
@@ -154,6 +168,31 @@ TEST_F(OverviewButtonTrayTest, ActiveStateOnlyDuringOverviewMode) {
   EXPECT_FALSE(
       Shell::GetInstance()->window_selector_controller()->IsSelecting());
   EXPECT_FALSE(GetTray()->draw_background_as_active());
+}
+
+// Test that when a hide animation is aborted via deletion, that the
+// OverviewButton is still hidden.
+TEST_F(OverviewButtonTrayTest, HideAnimationAlwaysCompletes) {
+  Shell::GetInstance()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(true);
+
+  // Long duration for hide animation, to allow it to be interrupted.
+  scoped_ptr<ui::ScopedAnimationDurationScaleMode> hide_duration(
+      new ui::ScopedAnimationDurationScaleMode(
+          ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
+  GetTray()->SetVisible(false);
+
+  // ScreenRotationAnimator copies the current layers, and deletes them upon
+  // completion. Allow its animation to complete first.
+  scoped_ptr<ui::ScopedAnimationDurationScaleMode> rotate_duration(
+      new ui::ScopedAnimationDurationScaleMode(
+          ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
+  ash::ScreenRotationAnimator(gfx::Display::InternalDisplayId())
+      .Rotate(gfx::Display::ROTATE_270);
+
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(GetTray()->visible());
 }
 
 }  // namespace ash

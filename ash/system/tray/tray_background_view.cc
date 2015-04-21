@@ -256,6 +256,7 @@ TrayBackgroundView::TrayBackgroundView(StatusAreaWidget* status_area_widget)
 TrayBackgroundView::~TrayBackgroundView() {
   if (GetWidget())
     GetWidget()->RemoveObserver(widget_observer_.get());
+  StopObservingImplicitAnimations();
 }
 
 void TrayBackgroundView::Initialize() {
@@ -437,6 +438,15 @@ void TrayBackgroundView::OnImplicitAnimationsCompleted() {
      layer()->GetTargetVisibility())
     return;
   views::View::SetVisible(false);
+}
+
+bool TrayBackgroundView::RequiresNotificationWhenAnimatorDestroyed() const {
+  // This is needed so that OnImplicitAnimationsCompleted() is called even upon
+  // destruction of the animator. This can occure when parallel animations
+  // caused by ScreenRotationAnimator end before the animations of
+  // TrayBackgroundView. This allows for a proper update to the visual state of
+  // the view. (crbug.com/476667)
+  return true;
 }
 
 void TrayBackgroundView::HideTransformation() {

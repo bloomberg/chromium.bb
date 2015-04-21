@@ -158,6 +158,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
+  bool RequiresNotificationWhenAnimatorDestroyed() const override;
 
   // Applies transformations to the |layer()| to animate the view when
   // SetVisible(false) is called.
