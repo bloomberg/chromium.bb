@@ -205,6 +205,10 @@
     return String(elements);
   }
 
+  function serializeSVGPreserveAspectRatio(preserveAspectRatio) {
+    return String([preserveAspectRatio.align, preserveAspectRatio.meetOrSlice]);
+  }
+
   function serializeSVGRect(rect) {
     return String([rect.x, rect.y, rect.width, rect.height]);
   }
@@ -260,6 +264,8 @@
       result = serializeSVGNumberList(result);
     else if (result instanceof SVGPointList)
       result = serializeSVGPointList(result);
+    else if (result instanceof SVGPreserveAspectRatio)
+      result = serializeSVGPreserveAspectRatio(result);
     else if (result instanceof SVGRect)
       result = serializeSVGRect(result);
 

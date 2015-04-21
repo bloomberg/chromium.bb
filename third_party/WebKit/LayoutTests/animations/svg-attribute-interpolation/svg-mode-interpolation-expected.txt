@@ -1,0 +1,15 @@
+
+SVG SMIL:
+PASS: mode from [screen] to [lighten] was [screen] at 0
+PASS: mode from [screen] to [lighten] was [screen] at 0.2
+PASS: mode from [screen] to [lighten] was [lighten] at 0.6
+PASS: mode from [screen] to [lighten] was [lighten] at 1
+
+Web Animations API:
+PASS: mode from [screen] to [lighten] was [screen] at -2.4
+PASS: mode from [screen] to [lighten] was [screen] at 0
+PASS: mode from [screen] to [lighten] was [screen] at 0.2
+PASS: mode from [screen] to [lighten] was [lighten] at 0.6
+PASS: mode from [screen] to [lighten] was [lighten] at 1
+PASS: mode from [screen] to [lighten] was [lighten] at 3.4
+

@@ -1,0 +1,15 @@
+
+SVG SMIL:
+PASS: result from [foo] to [bar] was [foo] at 0
+PASS: result from [foo] to [bar] was [foo] at 0.2
+PASS: result from [foo] to [bar] was [bar] at 0.6
+PASS: result from [foo] to [bar] was [bar] at 1
+
+Web Animations API:
+PASS: result from [foo] to [bar] was [foo] at -0.4
+PASS: result from [foo] to [bar] was [foo] at 0
+PASS: result from [foo] to [bar] was [foo] at 0.2
+PASS: result from [foo] to [bar] was [bar] at 0.6
+PASS: result from [foo] to [bar] was [bar] at 1
+PASS: result from [foo] to [bar] was [bar] at 1.4
+
