@@ -32,6 +32,7 @@
 #define PerformanceTiming_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "core/frame/DOMWindowProperty.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
@@ -45,7 +46,7 @@ class DocumentTiming;
 class LocalFrame;
 class ResourceLoadTiming;
 
-class PerformanceTiming final : public RefCountedWillBeGarbageCollected<PerformanceTiming>, public ScriptWrappable, public DOMWindowProperty {
+class CORE_EXPORT PerformanceTiming final : public RefCountedWillBeGarbageCollected<PerformanceTiming>, public ScriptWrappable, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PerformanceTiming);
 public:

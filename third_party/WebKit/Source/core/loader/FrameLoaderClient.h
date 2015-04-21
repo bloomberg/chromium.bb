@@ -30,6 +30,7 @@
 #ifndef FrameLoaderClient_h
 #define FrameLoaderClient_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Document.h"
 #include "core/dom/IconURL.h"
 #include "core/fetch/ResourceLoaderOptions.h"
@@ -73,7 +74,7 @@ namespace blink {
     class SubstituteData;
     class Widget;
 
-    class FrameLoaderClient : public FrameClient {
+    class CORE_EXPORT FrameLoaderClient : public FrameClient {
     public:
         virtual ~FrameLoaderClient() { }
 

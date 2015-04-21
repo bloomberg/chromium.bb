@@ -850,6 +850,7 @@
       'text/TextBreakIteratorICU.cpp',
       'text/TextBreakIteratorInternalICU.cpp',
       'text/TextBreakIteratorInternalICU.h',
+      'text/TextCheckerClient.cpp',
       'text/TextCheckerClient.h',
       'text/TextChecking.h',
       'text/TextDecoration.h',

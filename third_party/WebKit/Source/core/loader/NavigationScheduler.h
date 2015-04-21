@@ -31,6 +31,7 @@
 #ifndef NavigationScheduler_h
 #define NavigationScheduler_h
 
+#include "core/CoreExport.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -67,7 +68,7 @@ private:
     static unsigned s_navigationDisableCount;
 };
 
-class NavigationScheduler final {
+class CORE_EXPORT NavigationScheduler final {
     WTF_MAKE_NONCOPYABLE(NavigationScheduler);
     DISALLOW_ALLOCATION();
 public:

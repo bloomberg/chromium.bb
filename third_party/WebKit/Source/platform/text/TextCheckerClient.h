@@ -28,6 +28,7 @@
 #ifndef TextCheckerClient_h
 #define TextCheckerClient_h
 
+#include "platform/PlatformExport.h"
 #include "platform/text/TextChecking.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
@@ -36,7 +37,7 @@
 
 namespace blink {
 
-class TextCheckerClient {
+class PLATFORM_EXPORT TextCheckerClient {
 public:
     virtual ~TextCheckerClient() { }
 

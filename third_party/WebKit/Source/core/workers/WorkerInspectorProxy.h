@@ -5,6 +5,7 @@
 #ifndef WorkerInspectorProxy_h
 #define WorkerInspectorProxy_h
 
+#include "core/CoreExport.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -16,7 +17,7 @@ class WorkerThread;
 
 // A proxy for talking to the worker inspector on the worker thread.
 // All of these methods should be called on the main thread.
-class WorkerInspectorProxy final {
+class CORE_EXPORT WorkerInspectorProxy final {
 public:
     static PassOwnPtr<WorkerInspectorProxy> create();
 

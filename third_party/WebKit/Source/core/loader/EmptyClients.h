@@ -29,6 +29,7 @@
 #ifndef EmptyClients_h
 #define EmptyClients_h
 
+#include "core/CoreExport.h"
 #include "core/editing/UndoStep.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/ChromeClient.h"
@@ -62,7 +63,7 @@
 
 namespace blink {
 
-class EmptyChromeClient : public ChromeClient {
+class CORE_EXPORT EmptyChromeClient : public ChromeClient {
     WTF_MAKE_FAST_ALLOCATED(EmptyChromeClient);
 public:
     virtual ~EmptyChromeClient() { }
@@ -155,7 +156,7 @@ public:
     virtual String acceptLanguages() override;
 };
 
-class EmptyFrameLoaderClient : public FrameLoaderClient {
+class CORE_EXPORT EmptyFrameLoaderClient : public FrameLoaderClient {
     WTF_MAKE_NONCOPYABLE(EmptyFrameLoaderClient); WTF_MAKE_FAST_ALLOCATED(EmptyFrameLoaderClient);
 public:
     EmptyFrameLoaderClient() { }
@@ -245,7 +246,7 @@ public:
     virtual PassOwnPtr<blink::WebApplicationCacheHost> createApplicationCacheHost(blink::WebApplicationCacheHostClient*) override;
 };
 
-class EmptyTextCheckerClient : public TextCheckerClient {
+class CORE_EXPORT EmptyTextCheckerClient : public TextCheckerClient {
 public:
     ~EmptyTextCheckerClient() { }
 
@@ -309,7 +310,7 @@ public:
     virtual void startDrag(DragImage*, const IntPoint&, const IntPoint&, DataTransfer*, LocalFrame*, bool) override { }
 };
 
-void fillWithEmptyClients(Page::PageClients&);
+CORE_EXPORT void fillWithEmptyClients(Page::PageClients&);
 
 }
 

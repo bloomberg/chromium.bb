@@ -76,7 +76,7 @@ public:
     static void platformColorsChanged();
 
     // It is up to the platform to ensure that non-null clients are provided where required.
-    struct PageClients {
+    struct CORE_EXPORT PageClients {
         WTF_MAKE_NONCOPYABLE(PageClients); WTF_MAKE_FAST_ALLOCATED(PageClients);
     public:
         PageClients();

@@ -28,6 +28,7 @@
 #ifndef WorkerScriptLoader_h
 #define WorkerScriptLoader_h
 
+#include "core/CoreExport.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "platform/network/ResourceRequest.h"
@@ -46,7 +47,7 @@ class ExecutionContext;
 class TextResourceDecoder;
 class WorkerScriptLoaderClient;
 
-class WorkerScriptLoader final : public RefCounted<WorkerScriptLoader>, public ThreadableLoaderClient {
+class CORE_EXPORT WorkerScriptLoader final : public RefCounted<WorkerScriptLoader>, public ThreadableLoaderClient {
     WTF_MAKE_FAST_ALLOCATED(WorkerScriptLoader);
 public:
     static PassRefPtr<WorkerScriptLoader> create()

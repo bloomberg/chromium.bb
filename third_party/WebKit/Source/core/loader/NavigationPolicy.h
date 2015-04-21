@@ -31,6 +31,8 @@
 #ifndef NavigationPolicy_h
 #define NavigationPolicy_h
 
+#include "core/CoreExport.h"
+
 namespace blink {
 
 enum NavigationPolicy {
@@ -43,7 +45,7 @@ enum NavigationPolicy {
     NavigationPolicyNewPopup,
 };
 
-bool navigationPolicyFromMouseEvent(unsigned short button, bool ctrl, bool shift, bool alt, bool meta, NavigationPolicy*);
+CORE_EXPORT bool navigationPolicyFromMouseEvent(unsigned short button, bool ctrl, bool shift, bool alt, bool meta, NavigationPolicy*);
 
 } // namespace blink
 

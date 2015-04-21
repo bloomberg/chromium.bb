@@ -30,6 +30,7 @@
 #ifndef SharedWorkerThread_h
 #define SharedWorkerThread_h
 
+#include "core/CoreExport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerThread.h"
 
@@ -37,7 +38,7 @@ namespace blink {
 
 class WorkerThreadStartupData;
 
-class SharedWorkerThread : public WorkerThread {
+class CORE_EXPORT SharedWorkerThread : public WorkerThread {
 public:
     static PassRefPtr<SharedWorkerThread> create(const String& name, PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&, PassOwnPtr<WorkerThreadStartupData>);
     virtual ~SharedWorkerThread();

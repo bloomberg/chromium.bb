@@ -72,7 +72,7 @@ inline RawResource* toRawResource(const ResourcePtr<Resource>& resource)
     return static_cast<RawResource*>(resource.get());
 }
 
-class RawResourceClient : public ResourceClient {
+class CORE_EXPORT RawResourceClient : public ResourceClient {
 public:
     virtual ~RawResourceClient() { }
     static ResourceClientType expectedType() { return RawResourceType; }

@@ -60,7 +60,7 @@ class SubstituteData;
 
 struct FrameLoadRequest;
 
-bool isBackForwardLoadType(FrameLoadType);
+CORE_EXPORT bool isBackForwardLoadType(FrameLoadType);
 
 class CORE_EXPORT FrameLoader final {
     WTF_MAKE_NONCOPYABLE(FrameLoader);

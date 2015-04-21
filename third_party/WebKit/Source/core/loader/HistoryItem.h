@@ -28,6 +28,7 @@
 #define HistoryItem_h
 
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "core/CoreExport.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/heap/Handle.h"
@@ -43,7 +44,7 @@ class FormData;
 class KURL;
 class ResourceRequest;
 
-class HistoryItem final : public RefCountedWillBeGarbageCollectedFinalized<HistoryItem> {
+class CORE_EXPORT HistoryItem final : public RefCountedWillBeGarbageCollectedFinalized<HistoryItem> {
 public:
     static PassRefPtrWillBeRawPtr<HistoryItem> create()
     {

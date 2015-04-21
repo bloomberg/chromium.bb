@@ -22,6 +22,7 @@
 #ifndef ChromeClient_h
 #define ChromeClient_h
 
+#include "core/CoreExport.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/loader/FrameLoader.h"
@@ -70,7 +71,7 @@ struct GraphicsDeviceAdapter;
 struct ViewportDescription;
 struct WindowFeatures;
 
-class ChromeClient {
+class CORE_EXPORT ChromeClient {
 public:
     virtual void chromeDestroyed() = 0;
 

@@ -31,6 +31,7 @@
 #ifndef WorkerGlobalScopeProxyProvider_h
 #define WorkerGlobalScopeProxyProvider_h
 
+#include "core/CoreExport.h"
 #include "platform/Supplementable.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
@@ -53,7 +54,7 @@ public:
     static const char* supplementName();
 };
 
-void provideWorkerGlobalScopeProxyProviderTo(Page&, PassOwnPtrWillBeRawPtr<WorkerGlobalScopeProxyProvider>);
+CORE_EXPORT void provideWorkerGlobalScopeProxyProviderTo(Page&, PassOwnPtrWillBeRawPtr<WorkerGlobalScopeProxyProvider>);
 
 } // namespace blink
 

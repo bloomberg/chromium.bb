@@ -5,6 +5,7 @@
 #ifndef LinkHeader_h
 #define LinkHeader_h
 
+#include "core/CoreExport.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -32,7 +33,7 @@ private:
     bool m_isValid;
 };
 
-class LinkHeaderSet {
+class CORE_EXPORT LinkHeaderSet {
 public:
     LinkHeaderSet(const String& header);
 

@@ -60,7 +60,7 @@ private:
     HeapInfo m_info;
 };
 
-size_t quantizeMemorySize(size_t);
+CORE_EXPORT size_t quantizeMemorySize(size_t);
 
 } // namespace blink
 
