@@ -5745,6 +5745,19 @@
                     }],
                   ],
                 }],
+                ['sanitizer_coverage!=0', {
+                  # TODO(asan/win): Move this down into the general
+                  # win-target_defaults section once the 64-bit asan runtime
+                  # exists.  See crbug.com/345874.
+                  'VCCLCompilerTool': {
+                    'AdditionalOptions': [
+                      '-fsanitize-coverage=<(sanitizer_coverage)',
+                    ],
+                    'defines': [
+                      'SANITIZER_COVERAGE',
+                    ],
+                  },
+                }],
               ],
             },
           },
