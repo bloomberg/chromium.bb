@@ -2208,3 +2208,7 @@ crbug.com/470326 [ XP ] svg/text/bidi-text-query.svg [ NeedsRebaseline ]
 crbug.com/479181 inspector-protocol/animation/animation-multiple-frames.html [ Pass Failure ]
 
 crbug.com/479202 [ Linux ] virtual/slimmingpaint/fast/forms/select/select-typeahead-with-spacekey.html [ Pass Failure ]
+
+crbug.com/479224 [ SnowLeopard ] ietestcenter/css3/text/textshadow-005.htm [ NeedsRebaseline ]
+crbug.com/479224 [ SnowLeopard ] ietestcenter/css3/text/textshadow-007.htm [ NeedsRebaseline ]
+crbug.com/479224 [ SnowLeopard ] ietestcenter/css3/text/textshadow-008.htm [ NeedsRebaseline ]
