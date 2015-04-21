@@ -162,6 +162,15 @@ struct NaClChromeMainArgs {
                                              size_t info_size);
 #endif
 
+  /*
+   * Callback to run when the initial module load status from a call to
+   * NaClChromeMainStart is known. The callback is run on the same thread
+   * that called NaClChromeMainStart. load_status is zero on success, or a
+   * non-zero error code (from the NaClErrorCode enumeration) on failure.
+   * Optional; may be NULL.
+   */
+  void (*load_status_handler_func)(int load_status);
+
 #if NACL_LINUX || NACL_OSX
   /*
    * The result of sysconf(_SC_NPROCESSORS_ONLN).  The Chrome
