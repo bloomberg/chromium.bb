@@ -132,6 +132,10 @@ void ActiveVerifier::InstallVerifier() {
   // This lock only protects against races in this module, which is fine.
   AutoNativeLock lock(g_lock.Get());
   g_active_verifier = verifier ? verifier : new ActiveVerifier(true);
+
+  // TODO(shrikant): Enable handle verifier after figuring out
+  // AppContainer/DuplicateHandle error.
+  g_active_verifier->Disable();
 #endif
 }
 
