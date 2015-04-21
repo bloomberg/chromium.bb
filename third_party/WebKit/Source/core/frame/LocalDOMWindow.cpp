@@ -932,29 +932,40 @@ int LocalDOMWindow::outerWidth() const
     return host->chrome().windowRect().width();
 }
 
+static FloatSize getViewportSize(LocalFrame* frame)
+{
+    FrameView* view = frame->view();
+    if (!view)
+        return FloatSize();
+
+    FrameHost* host = frame->host();
+    if (!host)
+        return FloatSize();
+
+    // The main frame's viewport size depends on the page scale. Since the
+    // initial page scale depends on the content width and is set after a
+    // layout, perform one now so queries during page load will use the up to
+    // date viewport.
+    if (host->settings().viewportEnabled() && frame->isMainFrame())
+        frame->document()->updateLayoutIgnorePendingStylesheets();
+
+    // FIXME: This is potentially too much work. We really only need to know the dimensions of the parent frame's renderer.
+    if (Frame* parent = frame->tree().parent()) {
+        if (parent && parent->isLocalFrame())
+            toLocalFrame(parent)->document()->updateLayoutIgnorePendingStylesheets();
+    }
+
+    return frame->isMainFrame()
+        ? host->pinchViewport().visibleRect().size()
+        : view->visibleContentRect(IncludeScrollbars).size();
+}
+
 int LocalDOMWindow::innerHeight() const
 {
     if (!frame())
         return 0;
 
-    FrameView* view = frame()->view();
-    if (!view)
-        return 0;
-
-    FrameHost* host = frame()->host();
-    if (!host)
-        return 0;
-
-    // FIXME: This is potentially too much work. We really only need to know the dimensions of the parent frame's renderer.
-    if (Frame* parent = frame()->tree().parent()) {
-        if (parent && parent->isLocalFrame())
-            toLocalFrame(parent)->document()->updateLayoutIgnorePendingStylesheets();
-    }
-
-    FloatSize viewportSize = frame()->isMainFrame()
-        ? host->pinchViewport().visibleRect().size()
-        : view->visibleContentRect(IncludeScrollbars).size();
-
+    FloatSize viewportSize = getViewportSize(frame());
     return adjustForAbsoluteZoom(expandedIntSize(viewportSize).height(), frame()->pageZoomFactor());
 }
 
@@ -963,24 +974,7 @@ int LocalDOMWindow::innerWidth() const
     if (!frame())
         return 0;
 
-    FrameView* view = frame()->view();
-    if (!view)
-        return 0;
-
-    FrameHost* host = frame()->host();
-    if (!host)
-        return 0;
-
-    // FIXME: This is potentially too much work. We really only need to know the dimensions of the parent frame's renderer.
-    if (Frame* parent = frame()->tree().parent()) {
-        if (parent && parent->isLocalFrame())
-            toLocalFrame(parent)->document()->updateLayoutIgnorePendingStylesheets();
-    }
-
-    FloatSize viewportSize = frame()->isMainFrame()
-        ? host->pinchViewport().visibleRect().size()
-        : view->visibleContentRect(IncludeScrollbars).size();
-
+    FloatSize viewportSize = getViewportSize(frame());
     return adjustForAbsoluteZoom(expandedIntSize(viewportSize).width(), frame()->pageZoomFactor());
 }
 

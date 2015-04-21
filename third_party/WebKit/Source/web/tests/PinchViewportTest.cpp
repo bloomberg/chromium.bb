@@ -33,6 +33,8 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <string>
+
 #define ASSERT_POINT_EQ(expected, actual) \
     do { \
         ASSERT_EQ((expected).x(), (actual).x()); \
@@ -1711,6 +1713,38 @@ TEST_F(PinchViewportTest, TestCoordinateTransforms)
     frameView.scrollTo(DoublePoint(100, 120));
     EXPECT_FLOAT_POINT_EQ(FloatPoint(50, 62), pinchViewport.viewportToRootFrame(FloatPoint(80, 100)));
     EXPECT_FLOAT_POINT_EQ(FloatPoint(80, 100), pinchViewport.rootFrameToViewport(FloatPoint(50, 62)));
+}
+
+// Tests that the window dimensions are available before a full layout occurs.
+// More specifically, it checks that the innerWidth and innerHeight window
+// properties will trigger a layout which will cause an update to viewport
+// constraints and a refreshed initial scale. crbug.com/466718
+TEST_F(PinchViewportTest, WindowDimensionsOnLoad)
+{
+    initializeWithAndroidSettings();
+    registerMockedHttpURLLoad("window_dimensions.html");
+    webViewImpl()->resize(IntSize(800, 600));
+    navigateTo(m_baseURL + "window_dimensions.html");
+
+    Element* output = frame()->document()->getElementById("output");
+    ASSERT(output);
+    EXPECT_EQ(std::string("1600x1200"), std::string(output->innerHTML().ascii().data()));
+}
+
+// Similar to above but make sure the initial scale is updated with the content
+// width for a very wide page. That is, make that innerWidth/Height actually
+// trigger a layout of the content, and not just an update of the viepwort.
+// crbug.com/466718
+TEST_F(PinchViewportTest, WindowDimensionsOnLoadWideContent)
+{
+    initializeWithAndroidSettings();
+    registerMockedHttpURLLoad("window_dimensions_wide_div.html");
+    webViewImpl()->resize(IntSize(800, 600));
+    navigateTo(m_baseURL + "window_dimensions_wide_div.html");
+
+    Element* output = frame()->document()->getElementById("output");
+    ASSERT(output);
+    EXPECT_EQ(std::string("2000x1500"), std::string(output->innerHTML().ascii().data()));
 }
 
 } // namespace
