@@ -32,14 +32,13 @@ class TranslateAcceptLanguages;
 // It is assumed that |prefs_| is alive while this instance is alive.
 class TranslatePrefs {
  public:
-  static const char kPrefTranslateLanguageBlacklist[];
   static const char kPrefTranslateSiteBlacklist[];
   static const char kPrefTranslateWhitelists[];
   static const char kPrefTranslateDeniedCount[];
   static const char kPrefTranslateAcceptedCount[];
   static const char kPrefTranslateBlockedLanguages[];
-  static const char kPrefTranslateLastDeniedTime[];
-  static const char kPrefTranslateTooOftenDenied[];
+  static const char kPrefTranslateLastDeniedTimeForLanguage[];
+  static const char kPrefTranslateTooOftenDeniedForLanguage[];
 
   // |preferred_languages_pref| is only used on Chrome OS, other platforms must
   // pass NULL.
@@ -93,10 +92,10 @@ class TranslatePrefs {
   void ResetTranslationAcceptedCount(const std::string& language);
 
   // Update the last time on closing the Translate UI without translation.
-  void UpdateLastDeniedTime();
+  void UpdateLastDeniedTime(const std::string& language);
 
   // Returns true if translation is denied too often.
-  bool IsTooOftenDenied() const;
+  bool IsTooOftenDenied(const std::string& language) const;
 
   // Resets the prefs of denial state. Only used internally for diagnostics.
   void ResetDenialState();

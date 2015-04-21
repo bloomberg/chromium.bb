@@ -180,9 +180,10 @@ void TranslateUIDelegate::RevertTranslation() {
 
 void TranslateUIDelegate::TranslationDeclined(bool explicitly_closed) {
   if (!translate_driver_->IsOffTheRecord()) {
-    prefs_->ResetTranslationAcceptedCount(GetOriginalLanguageCode());
-    prefs_->IncrementTranslationDeniedCount(GetOriginalLanguageCode());
-    prefs_->UpdateLastDeniedTime();
+    const std::string& language = GetOriginalLanguageCode();
+    prefs_->ResetTranslationAcceptedCount(language);
+    prefs_->IncrementTranslationDeniedCount(language);
+    prefs_->UpdateLastDeniedTime(language);
   }
 
   // Remember that the user declined the translation so as to prevent showing a

@@ -17,22 +17,31 @@
 
 namespace translate {
 
-const char TranslatePrefs::kPrefTranslateLanguageBlacklist[] =
-    "translate_language_blacklist";
 const char TranslatePrefs::kPrefTranslateSiteBlacklist[] =
     "translate_site_blacklist";
 const char TranslatePrefs::kPrefTranslateWhitelists[] =
     "translate_whitelists";
 const char TranslatePrefs::kPrefTranslateDeniedCount[] =
-    "translate_denied_count";
+    "translate_denied_count_for_language";
 const char TranslatePrefs::kPrefTranslateAcceptedCount[] =
     "translate_accepted_count";
 const char TranslatePrefs::kPrefTranslateBlockedLanguages[] =
     "translate_blocked_languages";
-const char TranslatePrefs::kPrefTranslateLastDeniedTime[] =
-    "translate_last_denied_time";
-const char TranslatePrefs::kPrefTranslateTooOftenDenied[] =
-    "translate_too_often_denied";
+const char TranslatePrefs::kPrefTranslateLastDeniedTimeForLanguage[] =
+    "translate_last_denied_time_for_language";
+const char TranslatePrefs::kPrefTranslateTooOftenDeniedForLanguage[] =
+    "translate_too_often_denied_for_language";
+
+// This property is deprecated but there is still some usages. Don't use this
+// for new code.
+static const char kPrefTranslateLanguageBlacklist[] =
+    "translate_language_blacklist";
+
+// The below properties used to be used but now are deprecated. Don't use them
+// since an old profile might have some values there.
+//
+// * translate_last_denied_time
+// * translate_too_often_denied
 
 namespace {
 
@@ -41,7 +50,7 @@ void GetBlacklistedLanguages(const PrefService* prefs,
   DCHECK(languages);
   DCHECK(languages->empty());
 
-  const char* key = TranslatePrefs::kPrefTranslateLanguageBlacklist;
+  const char* key = kPrefTranslateLanguageBlacklist;
   const base::ListValue* list = prefs->GetList(key);
   for (base::ListValue::const_iterator it = list->begin();
        it != list->end(); ++it) {
@@ -110,8 +119,8 @@ void TranslatePrefs::ResetToDefaults() {
     ResetTranslationDeniedCount(language);
   }
 
-  prefs_->ClearPref(kPrefTranslateLastDeniedTime);
-  prefs_->ClearPref(kPrefTranslateTooOftenDenied);
+  prefs_->ClearPref(kPrefTranslateLastDeniedTimeForLanguage);
+  prefs_->ClearPref(kPrefTranslateTooOftenDeniedForLanguage);
 }
 
 bool TranslatePrefs::IsBlockedLanguage(
@@ -264,25 +273,40 @@ void TranslatePrefs::ResetTranslationAcceptedCount(
   update.Get()->SetInteger(language, 0);
 }
 
-void TranslatePrefs::UpdateLastDeniedTime() {
-  if (IsTooOftenDenied())
+void TranslatePrefs::UpdateLastDeniedTime(const std::string& language) {
+  if (IsTooOftenDenied(language))
     return;
 
-  double time = prefs_->GetDouble(kPrefTranslateLastDeniedTime);
+  const base::DictionaryValue* last_denied_time_dict =
+      prefs_->GetDictionary(kPrefTranslateLastDeniedTimeForLanguage);
+  double time = 0;
+  bool denied_before = last_denied_time_dict->GetDouble(language, &time);
   base::Time last_closed_time = base::Time::FromJsTime(time);
   base::Time now = base::Time::Now();
-  prefs_->SetDouble(kPrefTranslateLastDeniedTime, now.ToJsTime());
-  if (now - last_closed_time <= base::TimeDelta::FromDays(1))
-    prefs_->SetBoolean(kPrefTranslateTooOftenDenied, true);
+
+  DictionaryPrefUpdate update(prefs_, kPrefTranslateLastDeniedTimeForLanguage);
+  update.Get()->SetDouble(language, now.ToJsTime());
+
+  if (!denied_before)
+    return;
+
+  if (now - last_closed_time <= base::TimeDelta::FromDays(1)) {
+    DictionaryPrefUpdate update(prefs_,
+                                kPrefTranslateTooOftenDeniedForLanguage);
+    update.Get()->SetBoolean(language, true);
+  }
 }
 
-bool TranslatePrefs::IsTooOftenDenied() const {
-  return prefs_->GetBoolean(kPrefTranslateTooOftenDenied);
+bool TranslatePrefs::IsTooOftenDenied(const std::string& language) const {
+  const base::DictionaryValue* dict =
+    prefs_->GetDictionary(kPrefTranslateTooOftenDeniedForLanguage);
+  bool result = false;
+  return dict->GetBoolean(language, &result) ? result : false;
 }
 
 void TranslatePrefs::ResetDenialState() {
-  prefs_->SetDouble(kPrefTranslateLastDeniedTime, 0);
-  prefs_->SetBoolean(kPrefTranslateTooOftenDenied, false);
+  prefs_->ClearPref(kPrefTranslateLastDeniedTimeForLanguage);
+  prefs_->ClearPref(kPrefTranslateTooOftenDeniedForLanguage);
 }
 
 void TranslatePrefs::GetLanguageList(std::vector<std::string>* languages) {
@@ -365,11 +389,11 @@ void TranslatePrefs::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterListPref(kPrefTranslateBlockedLanguages,
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterDoublePref(
-      kPrefTranslateLastDeniedTime, 0,
+  registry->RegisterDictionaryPref(
+      kPrefTranslateLastDeniedTimeForLanguage,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      kPrefTranslateTooOftenDenied, false,
+  registry->RegisterDictionaryPref(
+      kPrefTranslateTooOftenDeniedForLanguage,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 

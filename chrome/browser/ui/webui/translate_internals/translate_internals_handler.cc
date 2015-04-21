@@ -186,22 +186,18 @@ void TranslateInternalsHandler::SendPrefsToJs() {
 
   base::DictionaryValue dict;
 
-  std::vector<std::string> keys;
-  keys.push_back(prefs::kEnableTranslate);
-
-  keys.push_back(translate::TranslatePrefs::kPrefTranslateBlockedLanguages);
-  keys.push_back(translate::TranslatePrefs::kPrefTranslateLanguageBlacklist);
-  keys.push_back(translate::TranslatePrefs::kPrefTranslateSiteBlacklist);
-  keys.push_back(translate::TranslatePrefs::kPrefTranslateWhitelists);
-  keys.push_back(translate::TranslatePrefs::kPrefTranslateDeniedCount);
-  keys.push_back(translate::TranslatePrefs::kPrefTranslateAcceptedCount);
-  keys.push_back(translate::TranslatePrefs::kPrefTranslateLastDeniedTime);
-  keys.push_back(translate::TranslatePrefs::kPrefTranslateTooOftenDenied);
-
-  for (std::vector<std::string>::const_iterator it = keys.begin();
-       it != keys.end(); ++it) {
-    const std::string& key = *it;
-    const PrefService::Preference* pref = prefs->FindPreference(key.c_str());
+  static const char* keys[] = {
+    prefs::kEnableTranslate,
+    translate::TranslatePrefs::kPrefTranslateBlockedLanguages,
+    translate::TranslatePrefs::kPrefTranslateSiteBlacklist,
+    translate::TranslatePrefs::kPrefTranslateWhitelists,
+    translate::TranslatePrefs::kPrefTranslateDeniedCount,
+    translate::TranslatePrefs::kPrefTranslateAcceptedCount,
+    translate::TranslatePrefs::kPrefTranslateLastDeniedTimeForLanguage,
+    translate::TranslatePrefs::kPrefTranslateTooOftenDeniedForLanguage,
+  };
+  for (const char* key : keys) {
+    const PrefService::Preference* pref = prefs->FindPreference(key);
     if (pref)
       dict.Set(key, pref->GetValue()->DeepCopy());
   }
