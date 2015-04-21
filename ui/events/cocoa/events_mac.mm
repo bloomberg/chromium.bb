@@ -128,6 +128,8 @@ int GetChangedMouseButtonFlagsFromNative(
     case NSOtherMouseUp:
     case NSOtherMouseDragged:
       return EF_MIDDLE_MOUSE_BUTTON;
+    default:
+      break;
   }
   return 0;
 }
