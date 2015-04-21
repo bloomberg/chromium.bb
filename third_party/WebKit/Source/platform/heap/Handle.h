@@ -69,6 +69,8 @@ struct IsGarbageCollectedType {
     static FalseType listHashSetNodeIsHeapAllocated(...);
     static const bool isHeapAllocatedListHashSetNode = sizeof(TrueType) == sizeof(listHashSetNodeIsHeapAllocated(reinterpret_cast<NonConstType*>(0)));
 
+    static_assert(sizeof(T), "type must be complete");
+
     static const bool value =
         GarbageCollectedSubclass::value
         || GarbageCollectedMixinSubclass::value
