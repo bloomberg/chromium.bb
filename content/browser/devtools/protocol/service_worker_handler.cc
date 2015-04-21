@@ -458,7 +458,8 @@ void ServiceWorkerHandler::AgentHostClosed(
 void ServiceWorkerHandler::WorkerCreated(
     ServiceWorkerDevToolsAgentHost* host) {
   auto hosts = GetMatchingServiceWorkers(urls_);
-  if (hosts.find(host->GetId()) != hosts.end() && !host->IsAttached())
+  if (hosts.find(host->GetId()) != hosts.end() && !host->IsAttached() &&
+      !host->IsPausedForDebugOnStart())
     host->PauseForDebugOnStart();
 }
 
