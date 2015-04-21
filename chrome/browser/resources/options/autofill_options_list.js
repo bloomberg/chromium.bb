@@ -495,11 +495,9 @@ cr.define('options.autofillOptions', function() {
   AutofillValuesList.prototype = {
     __proto__: InlineEditableItemList.prototype,
 
-    /**
-     * @override
-     * @param {string} entry
-     */
+    /** @override */
     createItem: function(entry) {
+      assert(entry === null || typeof entry == 'string');
       return new ValuesListItem(this, entry);
     },
 
@@ -540,9 +538,10 @@ cr.define('options.autofillOptions', function() {
 
     /**
      * @override
-     * @param {Array<string>} entry
+     * @param {?string|Array<string>} entry
      */
     createItem: function(entry) {
+      if (entry !== null) assertInstanceof(entry, Array);
       return new NameListItem(this, entry);
     },
   };

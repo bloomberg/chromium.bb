@@ -815,7 +815,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Creates a new list item.
-     * @param {*} value The value to use for the item.
+     * @param {?} value The value to use for the item.
      * @return {!cr.ui.ListItem} The newly created list item.
      */
     createItem: function(value) {
