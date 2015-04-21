@@ -1261,13 +1261,13 @@ public:
     }
 
     // FIXME: Make load/store to traceSamplingState[] thread-safe and atomic.
-    static inline const char* current()
+    static const char* current()
     {
         return reinterpret_cast<const char*>(*blink::traceSamplingState[BucketNumber]);
     }
-    static inline void set(const char* categoryAndName)
+    static void set(const char* categoryAndName)
     {
-        *blink::traceSamplingState[BucketNumber] = reinterpret_cast<long>(const_cast<char*>(categoryAndName));
+        *blink::traceSamplingState[BucketNumber] = reinterpret_cast<TraceEventAPIAtomicWord>(categoryAndName);
     }
 
 private:

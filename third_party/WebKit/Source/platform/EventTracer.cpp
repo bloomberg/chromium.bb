@@ -39,11 +39,13 @@
 namespace blink {
 
 static_assert(sizeof(Platform::TraceEventHandle) == sizeof(TraceEvent::TraceEventHandle), "TraceEventHandle types must be compatible");
+static_assert(sizeof(Platform::TraceEventAPIAtomicWord) == sizeof(TraceEvent::TraceEventAPIAtomicWord), "TraceEventAPIAtomicWord types must be compatible");
+static_assert(sizeof(TraceEvent::TraceEventAPIAtomicWord) == sizeof(const char*), "TraceEventAPIAtomicWord must be pointer-sized.");
 
 // The dummy variable is needed to avoid a crash when someone updates the state variables
 // before EventTracer::initialize() is called.
-long dummyTraceSamplingState = 0;
-long* traceSamplingState[3] = {&dummyTraceSamplingState, &dummyTraceSamplingState, &dummyTraceSamplingState };
+TraceEvent::TraceEventAPIAtomicWord dummyTraceSamplingState = 0;
+TraceEvent::TraceEventAPIAtomicWord* traceSamplingState[3] = {&dummyTraceSamplingState, &dummyTraceSamplingState, &dummyTraceSamplingState };
 
 void EventTracer::initialize()
 {
