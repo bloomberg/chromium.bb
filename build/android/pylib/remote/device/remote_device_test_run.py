@@ -14,6 +14,7 @@ import zipfile
 
 from pylib import constants
 from pylib.base import test_run
+from pylib.remote.device import appurify_constants
 from pylib.remote.device import appurify_sanitized
 from pylib.remote.device import remote_device_helper
 from pylib.utils import zip_utils
@@ -230,7 +231,10 @@ class RemoteDeviceTestRun(test_run.TestRun):
       self._test_id = self._UploadTestToDevice('robotium', test_path)
 
     logging.info('Setting config: %s' % config)
-    self._SetTestConfig('robotium', config)
+    appurify_configs = {}
+    if self._env.network_config:
+      appurify_configs['network'] = self._env.network_config
+    self._SetTestConfig('robotium', config, **appurify_configs)
 
   def _UploadAppToDevice(self, app_path):
     """Upload app to device."""
@@ -259,21 +263,32 @@ class RemoteDeviceTestRun(test_run.TestRun):
           'Unable to upload %s.' % test_path)
       return upload_results.json()['response']['test_id']
 
-  def _SetTestConfig(self, runner_type, body):
+  def _SetTestConfig(self, runner_type, runner_configs,
+                     network=appurify_constants.NETWORK.WIFI_1_BAR,
+                     pcap=0, profiler=0, videocapture=0):
     """Generates and uploads config file for test.
     Args:
-      extras: Extra arguments to set in the config file.
+      runner_configs: Configs specific to the runner you are using.
+      network: Config to specify the network environment the devices running
+          the tests will be in.
+      pcap: Option to set the recording the of network traffic from the device.
+      profiler: Option to set the recording of CPU, memory, and network
+          transfer usage in the tests.
+      videocapture: Option to set video capture during the tests.
+
     """
     logging.info('Generating config file for test.')
     with tempfile.TemporaryFile() as config:
       config_data = [
-        '[appurify]',
-        'pcap=0',
-        'profiler=0',
-        'videocapture=0',
-        '[%s]' % runner_type
+          '[appurify]',
+          'network=%s' % network,
+          'pcap=%s' % pcap,
+          'profiler=%s' % profiler,
+          'videocapture=%s' % videocapture,
+          '[%s]' % runner_type
       ]
-      config_data.extend('%s=%s' % (k, v) for k, v in body.iteritems())
+      config_data.extend(
+          '%s=%s' % (k, v) for k, v in runner_configs.iteritems())
       config.write(''.join('%s\n' % l for l in config_data))
       config.flush()
       config.seek(0)

@@ -73,6 +73,7 @@ class RemoteDeviceEnvironment(environment.Environment):
     self._api_secret = device_json.get('api_secret', None)
     self._device_oem = device_json.get('device_oem', None)
     self._device_type = device_json.get('device_type', 'Android')
+    self._network_config = device_json.get('network_config', None)
     self._remote_device = device_json.get('remote_device', None)
     self._remote_device_minimum_os = device_json.get(
         'remote_device_minimum_os', None)
@@ -81,9 +82,7 @@ class RemoteDeviceEnvironment(environment.Environment):
     self._results_path = device_json.get('results_path', None)
     self._runner_package = device_json.get('runner_package', None)
     self._runner_type = device_json.get('runner_type', None)
-    if 'timeouts' in device_json:
-      for key in device_json['timeouts']:
-        self._timeouts[key] = device_json['timeouts'][key]
+    self._timeouts.update(device_json.get('timeouts', {}))
 
     def command_line_override(
         file_value, cmd_line_value, desc, print_value=True):
@@ -107,6 +106,8 @@ class RemoteDeviceEnvironment(environment.Environment):
         self._device_oem, args.device_oem, 'device_oem')
     self._device_type = command_line_override(
         self._device_type, args.device_type, 'device_type')
+    self._network_config = command_line_override(
+        self._network_config, args.network_config, 'network_config')
     self._remote_device = command_line_override(
         self._remote_device, args.remote_device, 'remote_device')
     self._remote_device_minimum_os = command_line_override(
@@ -323,6 +324,10 @@ class RemoteDeviceEnvironment(environment.Environment):
   @property
   def device_type_id(self):
     return self._device['device_type_id']
+
+  @property
+  def network_config(self):
+    return self._network_config
 
   @property
   def only_output_failures(self):
