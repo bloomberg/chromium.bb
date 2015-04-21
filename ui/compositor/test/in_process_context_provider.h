@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_COMMON_GPU_CONTEXT_PROVIDER_IN_PROCESS_H_
-#define WEBKIT_COMMON_GPU_CONTEXT_PROVIDER_IN_PROCESS_H_
+#ifndef UI_COMPOSITOR_TEST_IN_PROCESS_CONTEXT_PROVIDER_H_
+#define UI_COMPOSITOR_TEST_IN_PROCESS_CONTEXT_PROVIDER_H_
 
 #include <string>
 
@@ -86,4 +86,4 @@ class InProcessContextProvider : public cc::ContextProvider {
 
 }  // namespace ui
 
-#endif  // WEBKIT_COMMON_GPU_CONTEXT_PROVIDER_IN_PROCESS_H_
+#endif  // UI_COMPOSITOR_TEST_IN_PROCESS_CONTEXT_PROVIDER_H_
