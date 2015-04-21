@@ -15,6 +15,11 @@ scoped_refptr<base::MessageLoopProxy> CmaMessageLoop::GetMessageLoopProxy() {
 }
 
 // static
+scoped_refptr<base::SingleThreadTaskRunner> CmaMessageLoop::GetTaskRunner() {
+  return GetInstance()->thread_->task_runner();
+}
+
+// static
 CmaMessageLoop* CmaMessageLoop::GetInstance() {
   return Singleton<CmaMessageLoop>::get();
 }

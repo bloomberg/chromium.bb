@@ -11,6 +11,7 @@
 
 namespace base {
 class MessageLoopProxy;
+class SingleThreadTaskRunner;
 class Thread;
 }
 
@@ -19,7 +20,9 @@ namespace media {
 
 class CmaMessageLoop {
  public:
+  // TODO(gunsch): clean up references to deprecated Message*Loop*Proxy.
   static scoped_refptr<base::MessageLoopProxy> GetMessageLoopProxy();
+  static scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
 
  private:
   friend struct DefaultSingletonTraits<CmaMessageLoop>;

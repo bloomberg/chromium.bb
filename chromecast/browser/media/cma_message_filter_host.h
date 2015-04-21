@@ -63,9 +63,6 @@ class CmaMessageFilterHost
   void CreateMedia(int media_id, LoadType load_type);
   void DestroyMedia(int media_id);
   void SetCdm(int media_id, int render_frame_id, int cdm_id);
-  void SetCdmOnUiThread(MediaPipelineHost* media_pipeline,
-                        int render_frame_id,
-                        int cdm_id);
   void CreateAvPipe(int media_id, TrackId track_id, size_t shared_mem_size);
   void OnAvPipeSet(int media_id,
                    TrackId track_id,

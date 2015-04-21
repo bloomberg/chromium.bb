@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
@@ -37,16 +38,91 @@ namespace {
 
 const size_t kMaxSharedMem = 8 * 1024 * 1024;
 
-void DestroyMediaPipelineUi(
-    scoped_refptr<base::SingleThreadTaskRunner> cma_task_runner,
-    scoped_ptr<MediaPipelineHost> media_pipeline) {
-  // Note: the longest path that uses MediaPipelineHost from
-  // CmaMessageFilterHost is the "SetCdm" message, which travels:
-  //   IO thread (msg) --> UI thread (get BrowserCdm) --> CMA thread (SetCdm)
-  // Teardown follows the same path to avoid MediaPipelineHost being destroyed
-  // while SetCdm is on/waiting for the UI thread.
+typedef std::map<uint64_t, MediaPipelineHost*> MediaPipelineCmaMap;
+
+// Map of MediaPipelineHost instances that is accessed only from the CMA thread.
+// The existence of a MediaPipelineHost* in this map implies that the instance
+// is still valid.
+base::LazyInstance<MediaPipelineCmaMap> g_pipeline_map_cma =
+    LAZY_INSTANCE_INITIALIZER;
+
+uint64_t GetPipelineCmaId(int process_id, int media_id) {
+  return (static_cast<uint64>(process_id) << 32) +
+      static_cast<uint64>(media_id);
+}
+
+MediaPipelineHost* GetMediaPipeline(int process_id, int media_id) {
+  DCHECK(CmaMessageLoop::GetTaskRunner()->BelongsToCurrentThread());
+  MediaPipelineCmaMap::iterator it =
+      g_pipeline_map_cma.Get().find(GetPipelineCmaId(process_id, media_id));
+  if (it == g_pipeline_map_cma.Get().end())
+    return nullptr;
+  return it->second;
+}
+
+void SetMediaPipeline(int process_id, int media_id, MediaPipelineHost* host) {
+  DCHECK(CmaMessageLoop::GetTaskRunner()->BelongsToCurrentThread());
+  std::pair<MediaPipelineCmaMap::iterator, bool> ret =
+      g_pipeline_map_cma.Get().insert(
+          std::make_pair(GetPipelineCmaId(process_id, media_id), host));
+
+  // Check there is no other entry with the same ID.
+  DCHECK(ret.second != false);
+}
+
+void DestroyMediaPipeline(int process_id,
+                          int media_id,
+                          scoped_ptr<MediaPipelineHost> media_pipeline) {
+  DCHECK(CmaMessageLoop::GetTaskRunner()->BelongsToCurrentThread());
+  MediaPipelineCmaMap::iterator it =
+      g_pipeline_map_cma.Get().find(GetPipelineCmaId(process_id, media_id));
+  if (it != g_pipeline_map_cma.Get().end())
+    g_pipeline_map_cma.Get().erase(it);
+}
+
+void SetCdmOnCmaThread(int render_process_id, int media_id,
+                       BrowserCdmCast* cdm) {
+  MediaPipelineHost* pipeline = GetMediaPipeline(render_process_id, media_id);
+  if (!pipeline) {
+    LOG(WARNING) << "MediaPipelineHost not alive: " << render_process_id << ","
+                 << media_id;
+    return;
+  }
+
+  pipeline->SetCdm(cdm);
+}
+
+// BrowserCdm instance must be retrieved/accessed on the UI thread, then
+// passed to MediaPipelineHost on CMA thread.
+void SetCdmOnUiThread(
+    int render_process_id,
+    int render_frame_id,
+    int media_id,
+    int cdm_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  cma_task_runner->DeleteSoon(FROM_HERE, media_pipeline.release());
+
+  content::RenderProcessHost* host =
+      content::RenderProcessHost::FromID(render_process_id);
+  if (!host) {
+    LOG(ERROR) << "RenderProcessHost not alive for ID: " << render_process_id;
+    return;
+  }
+
+  ::media::BrowserCdm* cdm = host->GetBrowserCdm(render_frame_id, cdm_id);
+  if (!cdm) {
+    LOG(WARNING) << "Could not find BrowserCdm (" << render_frame_id << ","
+                 << cdm_id << ")";
+    return;
+  }
+
+  BrowserCdmCast* browser_cdm_cast =
+      static_cast<BrowserCdmCastUi*>(cdm)->browser_cdm_cast();
+  CmaMessageLoop::GetTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&SetCdmOnCmaThread,
+                 render_process_id,
+                 media_id,
+                 browser_cdm_cast));
 }
 
 void UpdateVideoSurfaceHost(int surface_id, const gfx::QuadF& quad) {
@@ -112,10 +188,9 @@ void CmaMessageFilterHost::DeleteEntries() {
        it != media_pipelines_.end(); ) {
     scoped_ptr<MediaPipelineHost> media_pipeline(it->second);
     media_pipelines_.erase(it++);
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI,
+    task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&DestroyMediaPipelineUi, task_runner_,
+        base::Bind(&DestroyMediaPipeline, process_id_, it->first,
                    base::Passed(&media_pipeline)));
   }
 }
@@ -144,6 +219,10 @@ void CmaMessageFilterHost::CreateMedia(int media_id, LoadType load_type) {
                  weak_this_, media_id, media::kNoTrackId));
   task_runner_->PostTask(
       FROM_HERE,
+      base::Bind(&SetMediaPipeline,
+                 process_id_, media_id, media_pipeline_host.get()));
+  task_runner_->PostTask(
+      FROM_HERE,
       base::Bind(&MediaPipelineHost::Initialize,
                  base::Unretained(media_pipeline_host.get()),
                  load_type, client));
@@ -164,10 +243,9 @@ void CmaMessageFilterHost::DestroyMedia(int media_id) {
 
   scoped_ptr<MediaPipelineHost> media_pipeline(it->second);
   media_pipelines_.erase(it);
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
+  task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DestroyMediaPipelineUi, task_runner_,
+      base::Bind(&DestroyMediaPipeline, process_id_, media_id,
                  base::Passed(&media_pipeline)));
 }
 
@@ -181,34 +259,10 @@ void CmaMessageFilterHost::SetCdm(int media_id,
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&CmaMessageFilterHost::SetCdmOnUiThread,
-                 this, media_pipeline, render_frame_id, cdm_id));
+      base::Bind(&SetCdmOnUiThread,
+                 process_id_, render_frame_id, media_id, cdm_id));
 }
 
-void CmaMessageFilterHost::SetCdmOnUiThread(
-    MediaPipelineHost* media_pipeline,
-    int render_frame_id,
-    int cdm_id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  content::RenderProcessHost* host =
-      content::RenderProcessHost::FromID(process_id_);
-  if (!host) {
-    LOG(ERROR) << "RenderProcessHost not alive for ID: " << process_id_;
-    return;
-  }
-
-  ::media::BrowserCdm* cdm = host->GetBrowserCdm(render_frame_id, cdm_id);
-  if (!cdm) {
-    LOG(ERROR) << "Could not find BrowserCdm (" << render_frame_id << ","
-               << cdm_id << ")";
-    return;
-  }
-
-  BrowserCdmCast* browser_cdm_cast =
-      static_cast<BrowserCdmCastUi*>(cdm)->browser_cdm_cast();
-  FORWARD_CALL(media_pipeline, SetCdm, browser_cdm_cast);
-}
 
 void CmaMessageFilterHost::CreateAvPipe(
     int media_id, TrackId track_id, size_t shared_mem_size) {
