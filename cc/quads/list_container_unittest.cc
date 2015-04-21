@@ -487,6 +487,87 @@ TEST(ListContainerTest, SimpleDeletion) {
   }
 }
 
+TEST(ListContainerTest, DeletionAllInAllocation) {
+  const size_t kReserve = 10;
+  ListContainer<DrawQuad> list(kLargestQuadSize, kReserve);
+  std::vector<SimpleDrawQuad*> sdq_list;
+  // Add enough quads to cause another allocation.
+  for (size_t i = 0; i < kReserve + 1; ++i) {
+    sdq_list.push_back(list.AllocateAndConstruct<SimpleDrawQuad>());
+    sdq_list.back()->set_value(static_cast<int>(i));
+  }
+  EXPECT_EQ(kReserve + 1, list.size());
+
+  // Remove everything in the first allocation.
+  for (size_t i = 0; i < kReserve; ++i)
+    list.EraseAndInvalidateAllPointers(list.begin());
+  EXPECT_EQ(1u, list.size());
+
+  // The last quad is left.
+  SimpleDrawQuad* quad = static_cast<SimpleDrawQuad*>(*list.begin());
+  EXPECT_EQ(static_cast<int>(kReserve), quad->get_value());
+
+  // Remove the quad from the 2nd allocation.
+  list.EraseAndInvalidateAllPointers(list.begin());
+  EXPECT_EQ(0u, list.size());
+}
+
+TEST(ListContainerTest, DeletionAllInAllocationReversed) {
+  const size_t kReserve = 10;
+  ListContainer<DrawQuad> list(kLargestQuadSize, kReserve);
+  std::vector<SimpleDrawQuad*> sdq_list;
+  // Add enough quads to cause another allocation.
+  for (size_t i = 0; i < kReserve + 1; ++i) {
+    sdq_list.push_back(list.AllocateAndConstruct<SimpleDrawQuad>());
+    sdq_list.back()->set_value(static_cast<int>(i));
+  }
+  EXPECT_EQ(kReserve + 1, list.size());
+
+  // Remove everything in the 2nd allocation.
+  auto it = list.begin();
+  for (size_t i = 0; i < kReserve; ++i)
+    ++it;
+  list.EraseAndInvalidateAllPointers(it);
+
+  // The 2nd-last quad is next, and the rest of the quads exist.
+  size_t i = kReserve - 1;
+  for (auto it = list.rbegin(); it != list.rend(); ++it) {
+    SimpleDrawQuad* quad = static_cast<SimpleDrawQuad*>(*it);
+    EXPECT_EQ(static_cast<int>(i), quad->get_value());
+    --i;
+  }
+
+  // Can forward iterate too.
+  i = 0;
+  for (auto it = list.begin(); it != list.end(); ++it) {
+    SimpleDrawQuad* quad = static_cast<SimpleDrawQuad*>(*it);
+    EXPECT_EQ(static_cast<int>(i), quad->get_value());
+    ++i;
+  }
+
+  // Remove the last thing from the 1st allocation.
+  it = list.begin();
+  for (size_t i = 0; i < kReserve - 1; ++i)
+    ++it;
+  list.EraseAndInvalidateAllPointers(it);
+
+  // The 2nd-last quad is next, and the rest of the quads exist.
+  i = kReserve - 2;
+  for (auto it = list.rbegin(); it != list.rend(); ++it) {
+    SimpleDrawQuad* quad = static_cast<SimpleDrawQuad*>(*it);
+    EXPECT_EQ(static_cast<int>(i), quad->get_value());
+    --i;
+  }
+
+  // Can forward iterate too.
+  i = 0;
+  for (auto it = list.begin(); it != list.end(); ++it) {
+    SimpleDrawQuad* quad = static_cast<SimpleDrawQuad*>(*it);
+    EXPECT_EQ(static_cast<int>(i), quad->get_value());
+    ++i;
+  }
+}
+
 TEST(ListContainerTest, SimpleIterationAndManipulation) {
   ListContainer<DrawQuad> list(kLargestQuadSize);
   std::vector<SimpleDrawQuad*> sdq_list;

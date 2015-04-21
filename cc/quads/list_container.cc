@@ -138,6 +138,26 @@ class ListContainer<BaseElementType>::ListContainerCharAllocator {
     return storage_[id];
   }
 
+  size_t FirstInnerListId() const {
+    // |size_| > 0 means that at least one vector in |storage_| will be
+    // non-empty.
+    DCHECK_GT(size_, 0u);
+    size_t id = 0;
+    while (storage_[id]->size == 0)
+      ++id;
+    return id;
+  }
+
+  size_t LastInnerListId() const {
+    // |size_| > 0 means that at least one vector in |storage_| will be
+    // non-empty.
+    DCHECK_GT(size_, 0u);
+    size_t id = list_count_ - 1;
+    while (storage_[id]->size == 0)
+      --id;
+    return id;
+  }
+
   void AllocateNewList(size_t list_size) {
     ++list_count_;
     scoped_ptr<InnerList> new_list(new InnerList);
@@ -210,12 +230,16 @@ ListContainer<
   typename ListContainerCharAllocator::InnerList* list =
       ptr_to_container->InnerListById(vector_index);
   if (item_iterator == list->LastElement()) {
-    if (vector_index < ptr_to_container->list_count() - 1) {
+    ++vector_index;
+    while (vector_index < ptr_to_container->list_count()) {
+      if (ptr_to_container->InnerListById(vector_index)->size != 0)
+        break;
       ++vector_index;
-      item_iterator = ptr_to_container->InnerListById(vector_index)->Begin();
-    } else {
-      item_iterator = NULL;
     }
+    if (vector_index < ptr_to_container->list_count())
+      item_iterator = ptr_to_container->InnerListById(vector_index)->Begin();
+    else
+      item_iterator = NULL;
   } else {
     item_iterator += list->step;
   }
@@ -229,8 +253,16 @@ ListContainer<
   typename ListContainerCharAllocator::InnerList* list =
       ptr_to_container->InnerListById(vector_index);
   if (item_iterator == list->Begin()) {
-    if (vector_index > 0) {
+    --vector_index;
+    // Since |vector_index| is unsigned, we compare < list_count() instead of
+    // comparing >= 0, as the variable will wrap around when it goes out of
+    // range (below 0).
+    while (vector_index < ptr_to_container->list_count()) {
+      if (ptr_to_container->InnerListById(vector_index)->size != 0)
+        break;
       --vector_index;
+    }
+    if (vector_index < ptr_to_container->list_count()) {
       item_iterator =
           ptr_to_container->InnerListById(vector_index)->LastElement();
     } else {
@@ -281,17 +313,18 @@ template <typename BaseElementType>
 typename ListContainer<BaseElementType>::ConstReverseIterator
 ListContainer<BaseElementType>::crbegin() const {
   if (data_->IsEmpty())
-    return ConstReverseIterator(data_.get(), 0, NULL, 0);
+    return crend();
 
-  size_t last_id = data_->list_count() - 1;
-  return ConstReverseIterator(
-      data_.get(), last_id, data_->InnerListById(last_id)->LastElement(), 0);
+  size_t id = data_->LastInnerListId();
+  return ConstReverseIterator(data_.get(), id,
+                              data_->InnerListById(id)->LastElement(), 0);
 }
 
 template <typename BaseElementType>
 typename ListContainer<BaseElementType>::ConstReverseIterator
 ListContainer<BaseElementType>::crend() const {
-  return ConstReverseIterator(data_.get(), 0, NULL, size());
+  return ConstReverseIterator(data_.get(), static_cast<size_t>(-1), NULL,
+                              size());
 }
 
 template <typename BaseElementType>
@@ -310,26 +343,27 @@ template <typename BaseElementType>
 typename ListContainer<BaseElementType>::ReverseIterator
 ListContainer<BaseElementType>::rbegin() {
   if (data_->IsEmpty())
-    return ReverseIterator(data_.get(), 0, NULL, 0);
+    return rend();
 
-  size_t last_id = data_->list_count() - 1;
-  return ReverseIterator(
-      data_.get(), last_id, data_->InnerListById(last_id)->LastElement(), 0);
+  size_t id = data_->LastInnerListId();
+  return ReverseIterator(data_.get(), id,
+                         data_->InnerListById(id)->LastElement(), 0);
 }
 
 template <typename BaseElementType>
 typename ListContainer<BaseElementType>::ReverseIterator
 ListContainer<BaseElementType>::rend() {
-  return ReverseIterator(data_.get(), 0, NULL, size());
+  return ReverseIterator(data_.get(), static_cast<size_t>(-1), NULL, size());
 }
 
 template <typename BaseElementType>
 typename ListContainer<BaseElementType>::ConstIterator
 ListContainer<BaseElementType>::cbegin() const {
   if (data_->IsEmpty())
-    return ConstIterator(data_.get(), 0, NULL, 0);
+    return cend();
 
-  return ConstIterator(data_.get(), 0, data_->InnerListById(0)->Begin(), 0);
+  size_t id = data_->FirstInnerListId();
+  return ConstIterator(data_.get(), id, data_->InnerListById(id)->Begin(), 0);
 }
 
 template <typename BaseElementType>
@@ -338,8 +372,8 @@ ListContainer<BaseElementType>::cend() const {
   if (data_->IsEmpty())
     return ConstIterator(data_.get(), 0, NULL, size());
 
-  size_t last_id = data_->list_count() - 1;
-  return ConstIterator(data_.get(), last_id, NULL, size());
+  size_t id = data_->list_count();
+  return ConstIterator(data_.get(), id, NULL, size());
 }
 
 template <typename BaseElementType>
@@ -358,9 +392,10 @@ template <typename BaseElementType>
 typename ListContainer<BaseElementType>::Iterator
 ListContainer<BaseElementType>::begin() {
   if (data_->IsEmpty())
-    return Iterator(data_.get(), 0, NULL, 0);
+    return end();
 
-  return Iterator(data_.get(), 0, data_->InnerListById(0)->Begin(), 0);
+  size_t id = data_->FirstInnerListId();
+  return Iterator(data_.get(), id, data_->InnerListById(id)->Begin(), 0);
 }
 
 template <typename BaseElementType>
@@ -369,8 +404,8 @@ ListContainer<BaseElementType>::end() {
   if (data_->IsEmpty())
     return Iterator(data_.get(), 0, NULL, size());
 
-  size_t last_id = data_->list_count() - 1;
-  return Iterator(data_.get(), last_id, NULL, size());
+  size_t id = data_->list_count();
+  return Iterator(data_.get(), id, NULL, size());
 }
 
 template <typename BaseElementType>
