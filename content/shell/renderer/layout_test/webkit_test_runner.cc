@@ -598,6 +598,30 @@ std::string WebKitTestRunner::DumpHistoryForWindow(WebTestProxyBase* proxy) {
                              current_entry_indexes_[pos]);
 }
 
+void WebKitTestRunner::SetPermission(const std::string& name,
+                                     const std::string& value,
+                                     const GURL& origin,
+                                     const GURL& embedding_origin) {
+  content::PermissionStatus status;
+  if (value == "granted")
+    status = PERMISSION_STATUS_GRANTED;
+  else if (value == "prompt")
+    status = PERMISSION_STATUS_ASK;
+  else if (value == "denied")
+    status = PERMISSION_STATUS_DENIED;
+  else {
+    NOTREACHED();
+    status = PERMISSION_STATUS_DENIED;
+  }
+
+  Send(new LayoutTestHostMsg_SetPermission(
+      routing_id(), name, status, origin, embedding_origin));
+}
+
+void WebKitTestRunner::ResetPermissions() {
+  Send(new LayoutTestHostMsg_ResetPermissions(routing_id()));
+}
+
 // RenderViewObserver  --------------------------------------------------------
 
 void WebKitTestRunner::DidClearWindowObject(WebLocalFrame* frame) {

@@ -313,6 +313,10 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetGeofencingMockProvider(bool service_available);
   void ClearGeofencingMockProvider();
   void SetGeofencingMockPosition(double latitude, double longitude);
+  void SetPermission(const std::string& name,
+                     const std::string& value,
+                     const std::string& origin,
+                     const std::string& embedding_origin);
 
   std::string PlatformName();
   std::string TooltipText();
@@ -572,6 +576,7 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::ClearGeofencingMockProvider)
       .SetMethod("setGeofencingMockPosition",
                  &TestRunnerBindings::SetGeofencingMockPosition)
+      .SetMethod("setPermission", &TestRunnerBindings::SetPermission)
 
       // Properties.
       .SetProperty("platformName", &TestRunnerBindings::PlatformName)
@@ -1463,6 +1468,17 @@ void TestRunnerBindings::SetGeofencingMockPosition(double latitude,
     runner_->SetGeofencingMockPosition(latitude, longitude);
 }
 
+void TestRunnerBindings::SetPermission(const std::string& name,
+                                       const std::string& value,
+                                       const std::string& origin,
+                                       const std::string& embedding_origin) {
+  if (!runner_)
+    return;
+
+  return runner_->SetPermission(
+      name, value, GURL(origin), GURL(embedding_origin));
+}
+
 std::string TestRunnerBindings::PlatformName() {
   if (runner_)
     return runner_->platform_name_;
@@ -1654,6 +1670,7 @@ void TestRunner::Reset() {
     delegate_->ResetScreenOrientation();
     delegate_->SetBluetoothMockDataSet("");
     delegate_->ClearGeofencingMockProvider();
+    delegate_->ResetPermissions();
     ResetBatteryStatus();
     ResetDeviceLight();
   }
@@ -2821,6 +2838,13 @@ void TestRunner::ClearGeofencingMockProvider() {
 
 void TestRunner::SetGeofencingMockPosition(double latitude, double longitude) {
   delegate_->SetGeofencingMockPosition(latitude, longitude);
+}
+
+void TestRunner::SetPermission(const std::string& name,
+                               const std::string& value,
+                               const GURL& origin,
+                               const GURL& embedding_origin) {
+  delegate_->SetPermission(name, value, origin, embedding_origin);
 }
 
 void TestRunner::SetPOSIXLocale(const std::string& locale) {

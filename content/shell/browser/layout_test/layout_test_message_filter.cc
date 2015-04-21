@@ -7,9 +7,11 @@
 #include "base/files/file_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/permission_type.h"
 #include "content/shell/browser/layout_test/layout_test_browser_context.h"
 #include "content/shell/browser/layout_test/layout_test_content_browser_client.h"
 #include "content/shell/browser/layout_test/layout_test_notification_manager.h"
+#include "content/shell/browser/layout_test/layout_test_permission_manager.h"
 #include "content/shell/browser/layout_test/layout_test_push_messaging_service.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
@@ -46,7 +48,9 @@ void LayoutTestMessageFilter::OverrideThreadForMessage(
     *thread = BrowserThread::FILE;
   if (message.type() == LayoutTestHostMsg_SimulateWebNotificationClick::ID ||
       message.type() == LayoutTestHostMsg_SetPushMessagingPermission::ID ||
-      message.type() == LayoutTestHostMsg_ClearPushMessagingPermissions::ID)
+      message.type() == LayoutTestHostMsg_ClearPushMessagingPermissions::ID ||
+      message.type() == LayoutTestHostMsg_SetPermission::ID ||
+      message.type() == LayoutTestHostMsg_ResetPermissions::ID)
     *thread = BrowserThread::UI;
 }
 
@@ -71,6 +75,8 @@ bool LayoutTestMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnClearPushMessagingPermissions)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_AcceptAllCookies, OnAcceptAllCookies)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_DeleteAllCookies, OnDeleteAllCookies)
+    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_SetPermission, OnSetPermission)
+    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_ResetPermissions, OnResetPermissions)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -162,6 +168,43 @@ void LayoutTestMessageFilter::OnDeleteAllCookies() {
   request_context_getter_->GetURLRequestContext()->cookie_store()
       ->GetCookieMonster()
       ->DeleteAllAsync(net::CookieMonster::DeleteCallback());
+}
+
+void LayoutTestMessageFilter::OnSetPermission(const std::string& name,
+                                              PermissionStatus status,
+                                              const GURL& origin,
+                                              const GURL& embedding_origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  content::PermissionType type;
+  if (name == "midi-sysex") {
+    type = PermissionType::MIDI_SYSEX;
+  } else if (name == "push-messaging") {
+    type = PermissionType::PUSH_MESSAGING;
+  } else if (name == "notifications") {
+    type = PermissionType::NOTIFICATIONS;
+  } else if (name == "geolocation") {
+    type = PermissionType::GEOLOCATION;
+  } else if (name == "protected-media-identifier") {
+    type = PermissionType::PROTECTED_MEDIA_IDENTIFIER;
+  } else {
+    NOTREACHED();
+    type = PermissionType::NOTIFICATIONS;
+  }
+
+  LayoutTestContentBrowserClient::Get()
+      ->GetLayoutTestBrowserContext()
+      ->GetLayoutTestPermissionManager()
+      ->SetPermission(type, status, origin, embedding_origin);
+}
+
+void LayoutTestMessageFilter::OnResetPermissions() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  LayoutTestContentBrowserClient::Get()
+      ->GetLayoutTestBrowserContext()
+      ->GetLayoutTestPermissionManager()
+      ->ResetPermissions();
 }
 
 }  // namespace content

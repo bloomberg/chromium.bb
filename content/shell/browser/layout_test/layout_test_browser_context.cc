@@ -81,4 +81,9 @@ PermissionManager* LayoutTestBrowserContext::GetPermissionManager() {
   return permission_manager_.get();
 }
 
+LayoutTestPermissionManager*
+LayoutTestBrowserContext::GetLayoutTestPermissionManager() {
+  return static_cast<LayoutTestPermissionManager*>(GetPermissionManager());
+}
+
 }  // namespace content

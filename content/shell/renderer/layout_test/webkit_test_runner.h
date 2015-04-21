@@ -114,6 +114,11 @@ class WebKitTestRunner : public RenderViewObserver,
                        const std::string& frame_name) override;
   bool AllowExternalPages() override;
   std::string DumpHistoryForWindow(WebTestProxyBase* proxy) override;
+  void SetPermission(const std::string& name,
+                     const std::string& value,
+                     const GURL& origin,
+                     const GURL& embedding_origin) override;
+  void ResetPermissions() override;
 
   void Reset();
 

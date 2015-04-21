@@ -534,6 +534,13 @@ class TestRunner : public WebTestRunner,
   // Set the mock geofencing position while running a layout test.
   void SetGeofencingMockPosition(double latitude, double longitude);
 
+  // Sets the permission's |name| to |value| for a given {origin, embedder}
+  // tuple.
+  void SetPermission(const std::string& name,
+                     const std::string& value,
+                     const GURL& origin,
+                     const GURL& embedding_origin);
+
   // Calls setlocale(LC_ALL, ...) for a specified locale.
   // Resets between tests.
   void SetPOSIXLocale(const std::string& locale);

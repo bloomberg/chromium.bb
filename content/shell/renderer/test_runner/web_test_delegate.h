@@ -201,6 +201,16 @@ class WebTestDelegate {
   // Returns a text dump the back/forward history for the WebView associated
   // with the given WebTestProxyBase.
   virtual std::string DumpHistoryForWindow(WebTestProxyBase* proxy) = 0;
+
+  // Sends a message to the LayoutTestPermissionManager in order for it to
+  // update its database.
+  virtual void SetPermission(const std::string& permission_name,
+                             const std::string& permission_value,
+                             const GURL& origin,
+                             const GURL& embedding_origin) = 0;
+
+  // Clear all the permissions set via SetPermission().
+  virtual void ResetPermissions() = 0;
 };
 
 }  // namespace content

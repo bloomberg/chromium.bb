@@ -15,6 +15,7 @@ class NetLog;
 namespace content {
 
 class DownloadManagerDelegate;
+class LayoutTestPermissionManager;
 class LayoutTestPushMessagingService;
 class PermissionManager;
 class PushMessagingService;
@@ -30,6 +31,7 @@ class LayoutTestBrowserContext : public ShellBrowserContext {
   PermissionManager* GetPermissionManager() override;
 
   LayoutTestPushMessagingService* GetLayoutTestPushMessagingService();
+  LayoutTestPermissionManager* GetLayoutTestPermissionManager();
 
  protected:
   ShellURLRequestContextGetter* CreateURLRequestContextGetter(
