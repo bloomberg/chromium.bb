@@ -20,12 +20,6 @@ PassRefPtrWillBeRawPtr<SVGInteger> toPositiveInteger(const InterpolableValue* nu
 
 } // namespace
 
-IntegerOptionalIntegerSVGInterpolation::IntegerOptionalIntegerSVGInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute)
-    : SVGInterpolation(start, end, attribute)
-    , m_min(&attributeName() == &SVGNames::orderAttr ? 1 : 0)
-{
-}
-
 PassOwnPtrWillBeRawPtr<InterpolableValue> IntegerOptionalIntegerSVGInterpolation::toInterpolableValue(SVGPropertyBase* value)
 {
     RefPtrWillBeRawPtr<SVGIntegerOptionalInteger> integerOptionalInteger = toSVGIntegerOptionalInteger(value);

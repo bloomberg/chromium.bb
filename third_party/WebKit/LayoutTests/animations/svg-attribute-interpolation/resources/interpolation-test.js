@@ -188,6 +188,13 @@
     return value;
   }
 
+  function serializeSVGNumberList(numberList) {
+    var elements = [];
+    for (var index = 0; index < numberList.numberOfItems; ++index)
+      elements.push(numberList.getItem(index).value);
+    return String(elements);
+  }
+
   function serializeSVGPointList(pointList) {
     var elements = [];
     for (var index = 0; index < pointList.numberOfItems; ++index) {
@@ -240,6 +247,8 @@
     if (!result) {
       if (attributeName === 'filterResX' || attributeName === 'filterResY')
         return null;
+      if (attributeName === 'pathLength')
+        return '0';
 
       console.log('Unknown attribute, cannot get ' + element.className.baseVal + ' ' + attributeName);
       return null;
@@ -247,6 +256,8 @@
 
     if (result instanceof SVGAngle)
       result = result.value;
+    else if (result instanceof SVGNumberList)
+      result = serializeSVGNumberList(result);
     else if (result instanceof SVGPointList)
       result = serializeSVGPointList(result);
     else if (result instanceof SVGRect)
@@ -284,8 +295,9 @@
     }
   }
 
-  // The following collide with CSS properties.
+  // The following collide with CSS properties or the Web Animations API (offset).
   var svgPrefixedAttributes = [
+    'offset',
     'order',
   ];
 

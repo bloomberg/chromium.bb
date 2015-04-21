@@ -15,9 +15,9 @@ class SVGIntegerOptionalInteger;
 
 class IntegerOptionalIntegerSVGInterpolation : public SVGInterpolation {
 public:
-    static PassRefPtrWillBeRawPtr<IntegerOptionalIntegerSVGInterpolation> create(SVGPropertyBase* start, SVGPropertyBase* end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute)
+    static PassRefPtrWillBeRawPtr<IntegerOptionalIntegerSVGInterpolation> create(SVGPropertyBase* start, SVGPropertyBase* end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute, int min)
     {
-        return adoptRefWillBeNoop(new IntegerOptionalIntegerSVGInterpolation(toInterpolableValue(start), toInterpolableValue(end), attribute));
+        return adoptRefWillBeNoop(new IntegerOptionalIntegerSVGInterpolation(toInterpolableValue(start), toInterpolableValue(end), attribute, min));
     }
 
     virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> interpolatedValue(SVGElement&) const override final
@@ -31,7 +31,11 @@ public:
     }
 
 private:
-    IntegerOptionalIntegerSVGInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute);
+    IntegerOptionalIntegerSVGInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute, int min)
+        : SVGInterpolation(start, end, attribute)
+        , m_min(min)
+    {
+    }
 
     static PassOwnPtrWillBeRawPtr<InterpolableValue> toInterpolableValue(SVGPropertyBase*);
 
