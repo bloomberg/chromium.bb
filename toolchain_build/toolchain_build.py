@@ -1188,7 +1188,8 @@ def GetPackageTargets():
       glibc_package_name = (package_prefix +
                             ('nacl_%s_glibc' %
                              pynacl.platform.GetArch(target_arch)))
-      package_target_dict.setdefault(glibc_package_name,
+      glibc_raw_package_name = glibc_package_name + '_raw'
+      package_target_dict.setdefault(glibc_raw_package_name,
                                      []).extend(glibc_packages)
 
   # GDB is a special and shared, we will inject it into various other packages.
