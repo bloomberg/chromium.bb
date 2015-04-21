@@ -247,9 +247,6 @@
         'build_newlib': 0,
       },
       'sources': ['<@(sources_for_nacl_extensions)'],
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-      ],
     },
     {
       'target_name': 'nacl_lib_newlib',
@@ -276,9 +273,6 @@
           }
         }],
       ],
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-      ],
     },
     {
       'target_name': 'nacl_dynacode_lib',
@@ -291,9 +285,6 @@
         'build_pnacl_newlib': 1,
       },
       'sources': ['dyncode.c'],
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-      ],
     },
     {
       'target_name': 'nacl_dyncode_private_lib',
@@ -305,9 +296,6 @@
         'build_pnacl_newlib': 1,
       },
       'sources': ['dyncode_private.c'],
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-      ],
     },
     {
       'target_name': 'nacl_exception_lib',
@@ -320,9 +308,6 @@
         'build_pnacl_newlib': 1,
       },
       'sources': ['nacl_exception.c'],
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-      ],
     },
     {
       'target_name': 'nacl_exception_private_lib',
@@ -334,9 +319,6 @@
         'build_pnacl_newlib': 1,
       },
       'sources': ['nacl_exception_private.c'],
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-      ],
     },
     {
       'target_name': 'nacl_list_mappings_lib',
@@ -349,9 +331,6 @@
         'build_pnacl_newlib': 1,
       },
       'sources': ['list_mappings.c'],
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-      ],
     },
     {
       'target_name': 'nacl_list_mappings_private_lib',
@@ -362,9 +341,6 @@
         'build_newlib': 1,
       },
       'sources': ['list_mappings_private.c'],
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-      ],
     },
     {
       'target_name': 'imc_syscalls_lib',
@@ -378,9 +354,6 @@
         'build_irt': 1,
       },
       'sources': ['<@(imc_syscalls)'],
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-      ],
     },
   ],
 }

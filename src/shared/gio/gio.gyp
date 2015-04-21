@@ -35,9 +35,6 @@
         'build_nonsfi_helper': 1,
         'sources': ['<@(common_sources)']
       },
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-      ],
     },
   ],
   'conditions': [

@@ -24,9 +24,6 @@
         'build_id.cc',
         'minidump_generator.cc',
       ],
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-      ],
     },
   ],
 }

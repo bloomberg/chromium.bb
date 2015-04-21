@@ -12,9 +12,6 @@
         {
           'target_name': 'valgrind_lib',
           'type': 'none',
-          'dependencies': [
-            '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-          ],
           'variables': {
             'nlib_target': 'libvalgrind.a',
             'nso_target': 'libvalgrind.so',
@@ -28,9 +25,6 @@
         {
           'target_name': 'dynamic_annotations_lib',
           'type': 'none',
-          'dependencies': [
-            '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-          ],
           'variables': {
             'nlib_target': 'libdynamic_annotations.a',
             'nso_target': 'libdynamic_annotations.so',

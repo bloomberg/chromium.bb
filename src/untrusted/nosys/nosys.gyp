@@ -18,9 +18,6 @@
         'build_pnacl_newlib': 1,
       },
       'sources': [],
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-      ],
     },
   ],
 }

@@ -13,7 +13,6 @@
       'target_name': 'hello_world_nexe',
       'type': 'none',
       'dependencies': [
-        'tools.gyp:prep_toolchain',
         'src/untrusted/nacl/nacl.gyp:nacl_lib',
         'src/untrusted/irt/irt.gyp:irt_core_nexe'
       ],
@@ -49,7 +48,6 @@
       'target_name': 'generated_hello_world_nexe',
       'type': 'none',
       'dependencies': [
-        'tools.gyp:prep_toolchain',
         'src/untrusted/nacl/nacl.gyp:nacl_lib',
         'src/untrusted/irt/irt.gyp:irt_core_nexe',
         'copy_hello_world',
@@ -74,7 +72,6 @@
       'target_name': 'simple_thread_test',
       'type': 'none',
       'dependencies': [
-        'tools.gyp:prep_toolchain',
         'src/untrusted/nacl/nacl.gyp:nacl_lib',
         'src/untrusted/irt/irt.gyp:irt_core_nexe'
       ],

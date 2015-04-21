@@ -53,9 +53,6 @@
         'build_pnacl_newlib': 1,
         'sources': ['weak_ref.cc'],
       },
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-      ],
     },
     {
       'target_name': 'weak_ref',

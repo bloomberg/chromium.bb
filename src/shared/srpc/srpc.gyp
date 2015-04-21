@@ -68,9 +68,6 @@
           'accept_threaded.c',
         ],
       },
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-      ],
     },
   ],
   'conditions': [

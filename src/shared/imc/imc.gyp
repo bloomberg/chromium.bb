@@ -78,9 +78,6 @@
         'build_pnacl_newlib': 1,
         'sources': ['nacl_imc_common.cc', 'nacl/nacl_imc.cc'],
       },
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-      ],
     },
   ],
   'conditions': [

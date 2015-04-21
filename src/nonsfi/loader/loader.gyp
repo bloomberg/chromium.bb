@@ -24,7 +24,6 @@
       'dependencies': [
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio_lib',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform_lib',
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
       ],
     },
     {
@@ -64,7 +63,6 @@
         'elf_loader',
         '<(DEPTH)/native_client/src/nonsfi/irt/irt.gyp:nacl_sys_private',
         '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib_newlib',
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
       ],
     },
   ],

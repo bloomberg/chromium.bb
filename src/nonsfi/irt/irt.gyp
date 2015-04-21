@@ -34,9 +34,6 @@
         'irt_interfaces.c',
         'irt_random.c',
       ],
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-      ],
     },
   ],
 }

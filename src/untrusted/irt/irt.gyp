@@ -78,7 +78,6 @@
         '<(DEPTH)/native_client/src/tools/tls_edit/tls_edit.gyp:tls_edit#host',
         '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:imc_syscalls_lib',
         '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib_newlib',
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
       ],
     },
     {
@@ -92,7 +91,6 @@
       },
       'sources': ['<@(irt_sources)'],
       'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
         '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib_newlib',
       ],
     },

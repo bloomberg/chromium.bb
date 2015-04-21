@@ -178,10 +178,7 @@
           'nacl_sync_checked.c',
           'refcount_base.cc',
         ]
-        },
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-      ],
+      },
     },
     # ----------------------------------------------------------------------
   ],
