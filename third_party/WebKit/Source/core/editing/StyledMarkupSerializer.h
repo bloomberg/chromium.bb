@@ -32,30 +32,27 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Position.h"
 #include "core/editing/EditingStrategy.h"
+#include "core/editing/EditingStyle.h"
 #include "core/editing/StyledMarkupAccumulator.h"
 #include "wtf/Forward.h"
 
 namespace blink {
 
-class ContainerNode;
-class Node;
-
+template<typename Strategy>
 class StyledMarkupSerializer final {
     STACK_ALLOCATED();
+    using PositionType = typename Strategy::PositionType;
 public:
-    StyledMarkupSerializer(EAbsoluteURLs, EAnnotateForInterchange, const Position& start, const Position& end, Node* highestNodeToBeSerialized = nullptr);
+    StyledMarkupSerializer(EAbsoluteURLs, EAnnotateForInterchange, const PositionType& start, const PositionType& end, Node* highestNodeToBeSerialized = nullptr);
 
-    String createMarkup(bool convertBlocksToInlines, Node* specialCommonAncestor);
+    String createMarkup(bool convertBlocksToInlines, Node*);
 
-    template<typename Strategy>
     Node* serializeNodes(Node* startNode, Node* pastEnd);
-
     String takeResults();
 
 private:
     enum NodeTraversalMode { EmitString, DoNotEmitString };
 
-    template<typename Strategy>
     Node* traverseNodesForSerialization(Node* startNode, Node* pastEnd, NodeTraversalMode);
 
     // TODO(hajimehoshi): These functions should be at the accumulator.
@@ -63,12 +60,12 @@ private:
     void wrapWithStyleNode(StylePropertySet*, bool isBlock = false);
 
     StyledMarkupAccumulator m_markupAccumulator;
-    const Position m_start;
-    const Position m_end;
+    const PositionType m_start;
+    const PositionType m_end;
     Vector<String> m_reversedPrecedingMarkup;
 };
 
-extern template Node* StyledMarkupSerializer::serializeNodes<EditingStrategy>(Node* startNode, Node* endNode);
+extern template class StyledMarkupSerializer<EditingStrategy>;
 
 } // namespace blink
 

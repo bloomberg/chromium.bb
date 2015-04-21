@@ -58,8 +58,14 @@ const String& styleNodeCloseTag(bool isBlock)
 
 using namespace HTMLNames;
 
-StyledMarkupSerializer::StyledMarkupSerializer(EAbsoluteURLs shouldResolveURLs, EAnnotateForInterchange shouldAnnotate, const Position& start, const Position& end, Node* highestNodeToBeSerialized)
-    : m_markupAccumulator(shouldResolveURLs, start, end, shouldAnnotate, highestNodeToBeSerialized)
+static Position toPositionInDOMTree(const Position& position)
+{
+    return position;
+}
+
+template<typename Strategy>
+StyledMarkupSerializer<Strategy>::StyledMarkupSerializer(EAbsoluteURLs shouldResolveURLs, EAnnotateForInterchange shouldAnnotate, const PositionType& start, const PositionType& end, Node* highestNodeToBeSerialized)
+    : m_markupAccumulator(shouldResolveURLs, toPositionInDOMTree(start), toPositionInDOMTree(end), shouldAnnotate, highestNodeToBeSerialized)
     , m_start(start)
     , m_end(end)
 {
@@ -81,13 +87,14 @@ static bool needInterchangeNewlineAt(const VisiblePosition& v)
     return needInterchangeNewlineAfter(v.previous());
 }
 
-static bool areSameRanges(Node* node, const Position& startPosition, const Position& endPosition)
+template<typename PositionType>
+static bool areSameRanges(Node* node, const PositionType& startPosition, const PositionType& endPosition)
 {
     ASSERT(node);
     Position otherStartPosition;
     Position otherEndPosition;
     VisibleSelection::selectionFromContentsOfNode(node).toNormalizedPositions(otherStartPosition, otherEndPosition);
-    return startPosition == otherStartPosition && endPosition == otherEndPosition;
+    return toPositionInDOMTree(startPosition) == otherStartPosition && toPositionInDOMTree(endPosition) == otherEndPosition;
 }
 
 static PassRefPtrWillBeRawPtr<EditingStyle> styleFromMatchedRulesAndInlineDecl(const HTMLElement* element)
@@ -99,15 +106,16 @@ static PassRefPtrWillBeRawPtr<EditingStyle> styleFromMatchedRulesAndInlineDecl(c
     return style.release();
 }
 
-String StyledMarkupSerializer::createMarkup(bool convertBlocksToInlines, Node* specialCommonAncestor)
+template<typename Strategy>
+String StyledMarkupSerializer<Strategy>::createMarkup(bool convertBlocksToInlines, Node* specialCommonAncestor)
 {
     DEFINE_STATIC_LOCAL(const String, interchangeNewlineString, ("<br class=\"" AppleInterchangeNewline "\">"));
 
     Node* pastEnd = m_end.nodeAsRangePastLastNode();
 
     Node* firstNode = m_start.nodeAsRangeFirstNode();
-    VisiblePosition visibleStart(m_start, VP_DEFAULT_AFFINITY);
-    VisiblePosition visibleEnd(m_end, VP_DEFAULT_AFFINITY);
+    VisiblePosition visibleStart(toPositionInDOMTree(m_start), VP_DEFAULT_AFFINITY);
+    VisiblePosition visibleEnd(toPositionInDOMTree(m_end), VP_DEFAULT_AFFINITY);
     if (m_markupAccumulator.shouldAnnotateForInterchange() && needInterchangeNewlineAfter(visibleStart)) {
         if (visibleStart == visibleEnd.previous())
             return interchangeNewlineString;
@@ -115,17 +123,17 @@ String StyledMarkupSerializer::createMarkup(bool convertBlocksToInlines, Node* s
         m_markupAccumulator.appendString(interchangeNewlineString);
         firstNode = visibleStart.next().deepEquivalent().deprecatedNode();
 
-        if (pastEnd && Position::beforeNode(firstNode).compareTo(Position::beforeNode(pastEnd)) >= 0) {
+        if (pastEnd && Strategy::PositionType::beforeNode(firstNode).compareTo(Strategy::PositionType::beforeNode(pastEnd)) >= 0) {
             // This condition hits in editing/pasteboard/copy-display-none.html.
             return interchangeNewlineString;
         }
     }
 
-    Node* lastClosed = serializeNodes<EditingStrategy>(firstNode, pastEnd);
+    Node* lastClosed = serializeNodes(firstNode, pastEnd);
 
     if (specialCommonAncestor && lastClosed) {
         // TODO(hajimehoshi): This is calculated at createMarkupInternal too.
-        Node* commonAncestor = NodeTraversal::commonAncestor(*m_start.containerNode(), *m_end.containerNode());
+        Node* commonAncestor = Strategy::commonAncestor(*m_start.containerNode(), *m_end.containerNode());
         ASSERT(commonAncestor);
         HTMLBodyElement* body = toHTMLBodyElement(enclosingElementWithTag(firstPositionInNode(commonAncestor), bodyTag));
         HTMLBodyElement* fullySelectedRoot = nullptr;
@@ -135,7 +143,7 @@ String StyledMarkupSerializer::createMarkup(bool convertBlocksToInlines, Node* s
 
         // Also include all of the ancestors of lastClosed up to this special ancestor.
         // FIXME: What is ancestor?
-        for (ContainerNode* ancestor = NodeTraversal::parent(*lastClosed); ancestor; ancestor = NodeTraversal::parent(*ancestor)) {
+        for (ContainerNode* ancestor = Strategy::parent(*lastClosed); ancestor; ancestor = Strategy::parent(*ancestor)) {
             if (ancestor == fullySelectedRoot && !convertBlocksToInlines) {
                 RefPtrWillBeRawPtr<EditingStyle> fullySelectedRootStyle = styleFromMatchedRulesAndInlineDecl(fullySelectedRoot);
 
@@ -173,7 +181,8 @@ String StyledMarkupSerializer::createMarkup(bool convertBlocksToInlines, Node* s
     return takeResults();
 }
 
-void StyledMarkupSerializer::wrapWithNode(ContainerNode& node, bool convertBlocksToInlines, StyledMarkupAccumulator::RangeFullySelectsNode rangeFullySelectsNode)
+template<typename Strategy>
+void StyledMarkupSerializer<Strategy>::wrapWithNode(ContainerNode& node, bool convertBlocksToInlines, typename StyledMarkupAccumulator::RangeFullySelectsNode rangeFullySelectsNode)
 {
     StringBuilder markup;
     if (node.isElementNode())
@@ -185,7 +194,8 @@ void StyledMarkupSerializer::wrapWithNode(ContainerNode& node, bool convertBlock
         m_markupAccumulator.appendEndTag(toElement(node));
 }
 
-void StyledMarkupSerializer::wrapWithStyleNode(StylePropertySet* style, bool isBlock)
+template<typename Strategy>
+void StyledMarkupSerializer<Strategy>::wrapWithStyleNode(StylePropertySet* style, bool isBlock)
 {
     StringBuilder openTag;
     m_markupAccumulator.appendStyleNodeOpenTag(openTag, style, isBlock);
@@ -193,7 +203,8 @@ void StyledMarkupSerializer::wrapWithStyleNode(StylePropertySet* style, bool isB
     m_markupAccumulator.appendString(styleNodeCloseTag(isBlock));
 }
 
-String StyledMarkupSerializer::takeResults()
+template<typename Strategy>
+String StyledMarkupSerializer<Strategy>::takeResults()
 {
     StringBuilder result;
     result.reserveCapacity(MarkupAccumulator::totalLength(m_reversedPrecedingMarkup) + m_markupAccumulator.length());
@@ -208,10 +219,10 @@ String StyledMarkupSerializer::takeResults()
 }
 
 template<typename Strategy>
-Node* StyledMarkupSerializer::serializeNodes(Node* startNode, Node* pastEnd)
+Node* StyledMarkupSerializer<Strategy>::serializeNodes(Node* startNode, Node* pastEnd)
 {
     if (!m_markupAccumulator.highestNodeToBeSerialized()) {
-        Node* lastClosed = traverseNodesForSerialization<Strategy>(startNode, pastEnd, DoNotEmitString);
+        Node* lastClosed = traverseNodesForSerialization(startNode, pastEnd, DoNotEmitString);
         m_markupAccumulator.setHighestNodeToBeSerialized(lastClosed);
     }
 
@@ -224,11 +235,11 @@ Node* StyledMarkupSerializer::serializeNodes(Node* startNode, Node* pastEnd)
         }
         m_markupAccumulator.setWrappingStyle(wrappingStyle.release());
     }
-    return traverseNodesForSerialization<Strategy>(startNode, pastEnd, EmitString);
+    return traverseNodesForSerialization(startNode, pastEnd, EmitString);
 }
 
 template<typename Strategy>
-Node* StyledMarkupSerializer::traverseNodesForSerialization(Node* startNode, Node* pastEnd, NodeTraversalMode traversalMode)
+Node* StyledMarkupSerializer<Strategy>::traverseNodesForSerialization(Node* startNode, Node* pastEnd, NodeTraversalMode traversalMode)
 {
     const bool shouldEmit = traversalMode == EmitString;
     WillBeHeapVector<RawPtrWillBeMember<ContainerNode>> ancestorsToClose;
@@ -311,6 +322,6 @@ Node* StyledMarkupSerializer::traverseNodesForSerialization(Node* startNode, Nod
     return lastClosed;
 }
 
-template Node* StyledMarkupSerializer::serializeNodes<EditingStrategy>(Node* startNode, Node* endNode);
+template class StyledMarkupSerializer<EditingStrategy>;
 
 } // namespace blink

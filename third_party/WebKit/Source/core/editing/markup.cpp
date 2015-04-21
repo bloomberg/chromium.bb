@@ -257,7 +257,7 @@ static String createMarkupInternal(const Position& startPosition, const Position
     document->updateLayoutIgnorePendingStylesheets();
 
     HTMLElement* specialCommonAncestor = highestAncestorToWrapMarkup(startPosition, endPosition, shouldAnnotate, constrainingAncestor);
-    StyledMarkupSerializer serializer(shouldResolveURLs, shouldAnnotate, startPosition, endPosition, specialCommonAncestor);
+    StyledMarkupSerializer<EditingStrategy> serializer(shouldResolveURLs, shouldAnnotate, startPosition, endPosition, specialCommonAncestor);
     return serializer.createMarkup(convertBlocksToInlines, specialCommonAncestor);
 }
 
@@ -701,8 +701,8 @@ String createStyledMarkupForNavigationTransition(Node* node)
 {
     node->document().updateLayoutIgnorePendingStylesheets();
 
-    StyledMarkupSerializer serializer(ResolveAllURLs, AnnotateForNavigationTransition, Position(), Position(), 0);
-    serializer.serializeNodes<EditingStrategy>(node, NodeTraversal::nextSkippingChildren(*node));
+    StyledMarkupSerializer<EditingStrategy> serializer(ResolveAllURLs, AnnotateForNavigationTransition, Position(), Position(), 0);
+    serializer.serializeNodes(node, NodeTraversal::nextSkippingChildren(*node));
 
     static const char* documentMarkup = "<!DOCTYPE html><meta name=\"viewport\" content=\"width=device-width, user-scalable=0\">";
     return documentMarkup + serializer.takeResults();
