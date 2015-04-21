@@ -120,16 +120,17 @@ DevicePermissionsDialogView::~DevicePermissionsDialogView() {
   RemoveAllChildViews(true);
 }
 
-bool DevicePermissionsDialogView::Cancel() {
+void DevicePermissionsDialogView::DeleteDelegate() {
+  // Calling prompt_->Dismissed() here ensures it will be called regardless of
+  // how the view is closed, including shutdown of the entire view hierarchy.
   prompt_->Dismissed();
-  return true;
+  delete this;
 }
 
 bool DevicePermissionsDialogView::Accept() {
   for (int index : table_view_->selection_model().selected_indices()) {
     prompt_->GrantDevicePermission(index);
   }
-  prompt_->Dismissed();
   return true;
 }
 
