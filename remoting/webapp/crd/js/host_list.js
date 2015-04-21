@@ -48,7 +48,7 @@ remoting.HostList = function(table, noHosts, errorMsg, errorButton,
   /** @private {HTMLElement} */
   this.loadingIndicator_ = loadingIndicator;
   /** @private */
-  this.onError_ = onError;
+  this.onError_ = remoting.Error.handler(onError);
   /** @private */
   this.handleConnect_ = handleConnect;
 
@@ -152,8 +152,11 @@ remoting.HostList.prototype.refresh = function(onDone) {
     that.lastError_ = error;
     onDone(false);
   };
-  remoting.hostListApi.get(this.onHostListResponse_.bind(this, onDone),
-                           onError);
+  remoting.hostListApi.get().then(function(hosts) {
+    onDone(that.onHostListResponse_(hosts));
+  }).catch(
+    remoting.Error.handler(onError)
+  );
 };
 
 /**
@@ -161,18 +164,17 @@ remoting.HostList.prototype.refresh = function(onDone) {
  * include a JSON-encoded list of host descriptions, which we display if we're
  * able to successfully parse it.
  *
- * @param {function(boolean):void} onDone The callback passed to |refresh|.
  * @param {Array<remoting.Host>} hosts The list of hosts for the user.
- * @return {void} Nothing.
+ * @return {boolean}
  * @private
  */
-remoting.HostList.prototype.onHostListResponse_ = function(onDone, hosts) {
+remoting.HostList.prototype.onHostListResponse_ = function(hosts) {
   this.lastError_ = remoting.Error.none();
   this.hosts_ = hosts;
   this.sortHosts_();
   this.save_();
   this.loadingIndicator_.classList.remove('loading');
-  onDone(true);
+  return true;
 };
 
 /**
@@ -304,8 +306,8 @@ remoting.HostList.prototype.deleteHost_ = function(hostTableEntry) {
   if (index != -1) {
     this.hostTableEntries_.splice(index, 1);
   }
-  remoting.hostListApi.remove(hostTableEntry.host.hostId, base.doNothing,
-                              this.onError_);
+  remoting.hostListApi.remove(hostTableEntry.host.hostId).
+      catch(this.onError_);
 };
 
 /**
@@ -324,9 +326,8 @@ remoting.HostList.prototype.renameHost = function(hostTableEntry) {
 
   remoting.hostListApi.put(hostTableEntry.host.hostId,
                            hostTableEntry.host.hostName,
-                           hostTableEntry.host.publicKey,
-                           function() {},
-                           this.onError_);
+                           hostTableEntry.host.publicKey).
+      catch(this.onError_);
 };
 
 /**
@@ -347,13 +348,14 @@ remoting.HostList.prototype.unregisterHostById = function(hostId, opt_onDone) {
     return;
   }
 
-  var onRemoved = function() {
-    that.refresh(function() {
-      that.display();
-      onDone();
-    });
-  };
-  remoting.hostListApi.remove(hostId, onRemoved, this.onError_);
+  remoting.hostListApi.remove(hostId).
+      then(function() {
+        that.refresh(function() {
+          that.display();
+          onDone();
+        });
+      }).
+      catch(this.onError_);
 };
 
 /**

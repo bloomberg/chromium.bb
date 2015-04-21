@@ -28,31 +28,28 @@ remoting.HostListApi.prototype.register;
 /**
  * Fetch the list of hosts for a user.
  *
- * @param {function(Array<remoting.Host>):void} onDone
- * @param {function(!remoting.Error):void} onError
+ * @return {!Promise<!Array<!remoting.Host>>}
  */
-remoting.HostListApi.prototype.get = function(onDone, onError) {
+remoting.HostListApi.prototype.get = function() {
 };
 
 /**
  * Update the information for a host.
  *
- * @param {function():void} onDone
- * @param {function(!remoting.Error):void} onError
  * @param {string} hostId
  * @param {string} hostName
  * @param {string} hostPublicKey
+ * @return {!Promise<void>}
  */
 remoting.HostListApi.prototype.put =
-    function(hostId, hostName, hostPublicKey, onDone, onError) {
+    function(hostId, hostName, hostPublicKey) {
 };
 
 /**
  * Delete a host.
  *
- * @param {function():void} onDone
- * @param {function(!remoting.Error):void} onError
  * @param {string} hostId
+ * @return {!Promise<void>}
  */
-remoting.HostListApi.prototype.remove = function(hostId, onDone, onError) {
+remoting.HostListApi.prototype.remove = function(hostId) {
 };
