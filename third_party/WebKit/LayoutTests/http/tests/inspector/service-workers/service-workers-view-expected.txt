@@ -1,9 +1,5 @@
 Tests ServiceWorkersView on resources panel.
 
-[page] registerServiceWorker success
-[page] registerServiceWorker success
-[page] unregisterServiceWorker success
-[page] unregisterServiceWorker success
 Select ServiceWorkers tree element.
 Register ServiceWorker for scope1
 ==== ServiceWorkersView ====

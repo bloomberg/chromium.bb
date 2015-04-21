@@ -2,40 +2,12 @@ var initialize_ServiceWorkersTest = function() {
 
 InspectorTest.registerServiceWorker = function(script, scope)
 {
-    return new Promise(function(resolve, reject){
-        var args = {script: script, scope: scope};
-        var jsonArgs = JSON.stringify(args).replace(/\"/g, "\\\"");
-        function innerCallback(msg)
-        {
-            if (msg.messageText.indexOf("registerServiceWorker success") !== -1)
-                resolve();
-            else if (msg.messageText.indexOf("registerServiceWorker fail") !== -1)
-                reject();
-            else
-                InspectorTest.addConsoleSniffer(innerCallback);
-        }
-        InspectorTest.addConsoleSniffer(innerCallback);
-        InspectorTest.evaluateInPage("registerServiceWorker(\"" + jsonArgs + "\")");
-    });
+    return InspectorTest.invokePageFunctionPromise("registerServiceWorker", [script, scope]);
 }
 
 InspectorTest.unregisterServiceWorker = function(scope)
 {
-    return new Promise(function(resolve, reject){
-        var args = {scope: scope};
-        var jsonArgs = JSON.stringify(args).replace(/\"/g, "\\\"");
-        function innerCallback(msg)
-        {
-            if (msg.messageText.indexOf("unregisterServiceWorker success") !== -1)
-                resolve();
-            else if (msg.messageText.indexOf("unregisterServiceWorker fail") !== -1)
-                reject();
-            else
-                InspectorTest.addConsoleSniffer(innerCallback);
-        }
-        InspectorTest.addConsoleSniffer(innerCallback);
-        InspectorTest.evaluateInPage("unregisterServiceWorker(\"" + jsonArgs + "\")");
-    });
+    return InspectorTest.invokePageFunctionPromise("unregisterServiceWorker", [scope]);
 }
 
 function replaceInnerTextAll(rootElement, selectors, replacementString)
@@ -88,32 +60,24 @@ InspectorTest.deleteServiceWorkerRegistration = function(scope)
 
 var registrations = {};
 
-function registerServiceWorker(jsonArgs)
+function registerServiceWorker(resolve, reject, script, scope)
 {
-    var args = JSON.parse(jsonArgs);
-
-    navigator.serviceWorker.register(args.script, {scope: args.scope})
-        .then(function(reg){
-            registrations[args.scope] = reg;
-            output("registerServiceWorker success");
-        }).catch(function() {
-            output("registerServiceWorker fail");
-        });
+    navigator.serviceWorker.register(script, {scope: scope})
+        .then(function(reg) {
+            registrations[scope] = reg;
+            resolve();
+        }, reject);
 }
 
-function unregisterServiceWorker(jsonArgs)
+function unregisterServiceWorker(resolve, reject, scope)
 {
-    var args = JSON.parse(jsonArgs);
-    var registration = registrations[args.scope];
+    var registration = registrations[scope];
     if (!registration) {
-        output("ServiceWorker for " + args.scope + " is not registered");
-        output("unregisterServiceWorker fail");
+        reject("ServiceWorker for " + scope + " is not registered");
         return;
     }
-    registration.unregister()
-        .then(function(){
-            output("unregisterServiceWorker success");
-        }).catch(function() {
-            output("unregisterServiceWorker fail");
-        });
+    registration.unregister().then(function() {
+            delete registrations[scope];
+            resolve();
+        }, reject);
 }
