@@ -553,18 +553,6 @@ class LoadCompleteListener : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(LoadCompleteListener);
 };
 
-base::StackSamplingProfiler::SamplingParams GetStartupSamplingParams() {
-  // Sample at 10Hz for 30 seconds.
-  base::StackSamplingProfiler::SamplingParams params;
-  params.initial_delay = base::TimeDelta::FromMilliseconds(0);
-  params.bursts = 1;
-  params.samples_per_burst = 300;
-  params.sampling_interval = base::TimeDelta::FromMilliseconds(100);
-  params.preserve_sample_ordering = false;
-  params.user_data = metrics::CallStackProfileMetricsProvider::PROCESS_STARTUP;
-  return params;
-}
-
 }  // namespace
 
 namespace chrome_browser {
@@ -593,14 +581,11 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
       startup_watcher_(new StartupTimeBomb()),
       shutdown_watcher_(new ShutdownWatcherHelper()),
       browser_field_trials_(parameters.command_line),
-      sampling_profiler_(base::PlatformThread::CurrentId(),
-                         GetStartupSamplingParams()),
       profile_(NULL),
       run_message_loop_(true),
       notify_result_(ProcessSingleton::PROCESS_NONE),
       local_state_(NULL),
       restart_last_session_(false) {
-  sampling_profiler_.Start();
   // If we're running tests (ui_task is non-null).
   if (parameters.ui_task)
     browser_defaults::enable_help_app = false;
