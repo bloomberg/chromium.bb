@@ -7,11 +7,12 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_histograms.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -360,7 +361,8 @@ AppCacheUpdateJob::AppCacheUpdateJob(AppCacheServiceImpl* service,
       manifest_fetcher_(NULL),
       manifest_has_valid_mime_type_(false),
       stored_state_(UNSTORED),
-      storage_(service->storage()) {
+      storage_(service->storage()),
+      weak_factory_(this) {
     service_->AddObserver(this);
 }
 
@@ -440,7 +442,10 @@ void AppCacheUpdateJob::StartUpdate(AppCacheHost* host,
                               is_new_pending_master_entry);
   }
 
-  FetchManifest(true);
+  BrowserThread::PostAfterStartupTask(
+      FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
+      base::Bind(&AppCacheUpdateJob::FetchManifest, weak_factory_.GetWeakPtr(),
+                 true));
 }
 
 AppCacheResponseWriter* AppCacheUpdateJob::CreateResponseWriter() {
