@@ -691,7 +691,11 @@ void BoxPainter::calculateBackgroundImageGeometry(LayoutBoxModelObject& obj, con
         // the background positioning area.
         if (obj.isDocumentElement()) {
             positioningAreaSize = pixelSnappedIntSize(toLayoutBox(&obj)->size() - LayoutSize(left + right, top + bottom), toLayoutBox(&obj)->location());
-            left += obj.marginLeft();
+            // The positioning area is right aligned in paintRect if RightToLeftWritingMode, or left aligned otherwise.
+            if (obj.style()->writingMode() == RightToLeftWritingMode)
+                left = paintRect.width() - positioningAreaSize.width() - right - obj.marginRight();
+            else
+                left += obj.marginLeft();
             top += obj.marginTop();
         } else {
             positioningAreaSize = pixelSnappedIntSize(paintRect.size() - LayoutSize(left + right, top + bottom), paintRect.location());
