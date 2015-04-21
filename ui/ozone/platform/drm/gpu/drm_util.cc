@@ -108,25 +108,6 @@ bool SameMode(const drmModeModeInfo& lhs, const drmModeModeInfo& rhs) {
          lhs.flags == rhs.flags && strcmp(lhs.name, rhs.name) == 0;
 }
 
-bool MapDumbBuffer(int fd, uint32_t handle, uint32_t size, void** pixels) {
-  struct drm_mode_map_dumb map_request;
-  memset(&map_request, 0, sizeof(map_request));
-  map_request.handle = handle;
-  if (drmIoctl(fd, DRM_IOCTL_MODE_MAP_DUMB, &map_request)) {
-    VPLOG(2) << "Cannot prepare dumb buffer for mapping";
-    return false;
-  }
-
-  *pixels =
-      mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, map_request.offset);
-  if (*pixels == MAP_FAILED) {
-    VPLOG(2) << "Cannot mmap dumb buffer";
-    return false;
-  }
-
-  return true;
-}
-
 void ForceInitializationOfPrimaryDisplay(const scoped_refptr<DrmDevice>& drm,
                                          ScreenManager* screen_manager) {
   VLOG(2) << "Forcing initialization of primary display.";

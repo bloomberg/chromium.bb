@@ -43,9 +43,6 @@ ScopedVector<HardwareDisplayControllerInfo> GetAvailableDisplayControllerInfos(
 
 bool SameMode(const drmModeModeInfo& lhs, const drmModeModeInfo& rhs);
 
-// Memory maps a DRM buffer.
-bool MapDumbBuffer(int fd, uint32_t handle, uint32_t size, void** pixels);
-
 void ForceInitializationOfPrimaryDisplay(const scoped_refptr<DrmDevice>& drm,
                                          ScreenManager* screen_manager);
 

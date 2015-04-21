@@ -196,27 +196,38 @@ bool MockDrmDevice::MoveCursor(uint32_t crtc_id, const gfx::Point& point) {
 
 bool MockDrmDevice::CreateDumbBuffer(const SkImageInfo& info,
                                      uint32_t* handle,
-                                     uint32_t* stride,
-                                     void** pixels) {
-  allocate_buffer_count_++;
+                                     uint32_t* stride) {
   if (!create_dumb_buffer_expectation_)
     return false;
 
-  *handle = allocate_buffer_count_;
+  *handle = allocate_buffer_count_++;
   *stride = info.minRowBytes();
-  *pixels = new char[info.getSafeSize(*stride)];
+  void* pixels = new char[info.getSafeSize(*stride)];
   buffers_.push_back(
-      skia::AdoptRef(SkSurface::NewRasterDirect(info, *pixels, *stride)));
-  buffers_.back()->getCanvas()->clear(SK_ColorBLACK);
+      skia::AdoptRef(SkSurface::NewRasterDirect(info, pixels, *stride)));
+  buffers_[*handle]->getCanvas()->clear(SK_ColorBLACK);
 
   return true;
 }
 
-void MockDrmDevice::DestroyDumbBuffer(const SkImageInfo& info,
-                                      uint32_t handle,
-                                      uint32_t stride,
-                                      void* pixels) {
-  delete[] static_cast<char*>(pixels);
+bool MockDrmDevice::DestroyDumbBuffer(uint32_t handle) {
+  if (handle >= buffers_.size() || !buffers_[handle])
+    return false;
+
+  buffers_[handle].clear();
+  return true;
+}
+
+bool MockDrmDevice::MapDumbBuffer(uint32_t handle, size_t size, void** pixels) {
+  if (handle >= buffers_.size() || !buffers_[handle])
+    return false;
+
+  *pixels = const_cast<void*>(buffers_[handle]->peekPixels(nullptr, nullptr));
+  return true;
+}
+
+bool MockDrmDevice::UnmapDumbBuffer(void* pixels, size_t size) {
+  return true;
 }
 
 bool MockDrmDevice::CloseBufferHandle(uint32_t handle) {

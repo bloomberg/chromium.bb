@@ -35,29 +35,38 @@ uint8_t GetColorDepth(SkColorType type) {
 }  // namespace
 
 DrmBuffer::DrmBuffer(const scoped_refptr<DrmDevice>& drm)
-    : drm_(drm), handle_(0), framebuffer_(0) {
+    : drm_(drm),
+      stride_(0),
+      handle_(0),
+      mmap_base_(0),
+      mmap_size_(0),
+      framebuffer_(0) {
 }
 
 DrmBuffer::~DrmBuffer() {
-  if (!surface_)
-    return;
+  surface_.clear();
 
-  if (framebuffer_)
-    drm_->RemoveFramebuffer(framebuffer_);
+  if (framebuffer_ && !drm_->RemoveFramebuffer(framebuffer_))
+    PLOG(ERROR) << "DrmBuffer: RemoveFramebuffer: fb " << framebuffer_;
 
-  SkImageInfo info;
-  void* pixels = const_cast<void*>(surface_->peekPixels(&info, NULL));
-  if (!pixels)
-    return;
+  if (mmap_base_ && !drm_->UnmapDumbBuffer(mmap_base_, mmap_size_))
+    PLOG(ERROR) << "DrmBuffer: UnmapDumbBuffer: handle " << handle_;
 
-  drm_->DestroyDumbBuffer(info, handle_, stride_, pixels);
+  if (handle_ && !drm_->DestroyDumbBuffer(handle_))
+    PLOG(ERROR) << "DrmBuffer: DestroyDumbBuffer: handle " << handle_;
 }
 
 bool DrmBuffer::Initialize(const SkImageInfo& info,
                            bool should_register_framebuffer) {
-  void* pixels = NULL;
-  if (!drm_->CreateDumbBuffer(info, &handle_, &stride_, &pixels)) {
-    VLOG(2) << "Cannot create drm dumb buffer";
+  if (!drm_->CreateDumbBuffer(info, &handle_, &stride_)) {
+    PLOG(ERROR) << "DrmBuffer: CreateDumbBuffer: width " << info.width()
+                << " height " << info.height();
+    return false;
+  }
+
+  mmap_size_ = info.getSafeSize(stride_);
+  if (!drm_->MapDumbBuffer(handle_, mmap_size_, &mmap_base_)) {
+    PLOG(ERROR) << "DrmBuffer: MapDumbBuffer: handle " << handle_;
     return false;
   }
 
@@ -65,13 +74,14 @@ bool DrmBuffer::Initialize(const SkImageInfo& info,
       !drm_->AddFramebuffer(
           info.width(), info.height(), GetColorDepth(info.colorType()),
           info.bytesPerPixel() << 3, stride_, handle_, &framebuffer_)) {
-    VPLOG(2) << "Failed to register framebuffer";
+    PLOG(ERROR) << "DrmBuffer: AddFramebuffer: handle " << handle_;
     return false;
   }
 
-  surface_ = skia::AdoptRef(SkSurface::NewRasterDirect(info, pixels, stride_));
+  surface_ =
+      skia::AdoptRef(SkSurface::NewRasterDirect(info, mmap_base_, stride_));
   if (!surface_) {
-    VLOG(2) << "Cannot install Skia pixels for drm buffer";
+    LOG(ERROR) << "DrmBuffer: Failed to create SkSurface: handle " << handle_;
     return false;
   }
 

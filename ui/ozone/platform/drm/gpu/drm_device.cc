@@ -66,11 +66,11 @@ bool DrmCreateDumbBuffer(int fd,
   return true;
 }
 
-void DrmDestroyDumbBuffer(int fd, uint32_t handle) {
+bool DrmDestroyDumbBuffer(int fd, uint32_t handle) {
   struct drm_mode_destroy_dumb destroy_request;
   memset(&destroy_request, 0, sizeof(destroy_request));
   destroy_request.handle = handle;
-  drmIoctl(fd, DRM_IOCTL_MODE_DESTROY_DUMB, &destroy_request);
+  return !drmIoctl(fd, DRM_IOCTL_MODE_DESTROY_DUMB, &destroy_request);
 }
 
 void HandlePageFlipEventOnIO(int fd,
@@ -451,31 +451,41 @@ bool DrmDevice::MoveCursor(uint32_t crtc_id, const gfx::Point& point) {
 
 bool DrmDevice::CreateDumbBuffer(const SkImageInfo& info,
                                  uint32_t* handle,
-                                 uint32_t* stride,
-                                 void** pixels) {
+                                 uint32_t* stride) {
   DCHECK(file_.IsValid());
 
   TRACE_EVENT0("drm", "DrmDevice::CreateDumbBuffer");
-  if (!DrmCreateDumbBuffer(file_.GetPlatformFile(), info, handle, stride))
-    return false;
+  return DrmCreateDumbBuffer(file_.GetPlatformFile(), info, handle, stride);
+}
 
-  if (!MapDumbBuffer(file_.GetPlatformFile(), *handle,
-                     info.getSafeSize(*stride), pixels)) {
-    DrmDestroyDumbBuffer(file_.GetPlatformFile(), *handle);
+bool DrmDevice::DestroyDumbBuffer(uint32_t handle) {
+  DCHECK(file_.IsValid());
+  TRACE_EVENT1("drm", "DrmDevice::DestroyDumbBuffer", "handle", handle);
+  return DrmDestroyDumbBuffer(file_.GetPlatformFile(), handle);
+}
+
+bool DrmDevice::MapDumbBuffer(uint32_t handle, size_t size, void** pixels) {
+  struct drm_mode_map_dumb map_request;
+  memset(&map_request, 0, sizeof(map_request));
+  map_request.handle = handle;
+  if (drmIoctl(file_.GetPlatformFile(), DRM_IOCTL_MODE_MAP_DUMB,
+               &map_request)) {
+    PLOG(ERROR) << "Cannot prepare dumb buffer for mapping";
+    return false;
+  }
+
+  *pixels = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED,
+                 file_.GetPlatformFile(), map_request.offset);
+  if (*pixels == MAP_FAILED) {
+    PLOG(ERROR) << "Cannot mmap dumb buffer";
     return false;
   }
 
   return true;
 }
 
-void DrmDevice::DestroyDumbBuffer(const SkImageInfo& info,
-                                  uint32_t handle,
-                                  uint32_t stride,
-                                  void* pixels) {
-  DCHECK(file_.IsValid());
-  TRACE_EVENT1("drm", "DrmDevice::DestroyDumbBuffer", "handle", handle);
-  munmap(pixels, info.getSafeSize(stride));
-  DrmDestroyDumbBuffer(file_.GetPlatformFile(), handle);
+bool DrmDevice::UnmapDumbBuffer(void* pixels, size_t size) {
+  return !munmap(pixels, size);
 }
 
 bool DrmDevice::CloseBufferHandle(uint32_t handle) {

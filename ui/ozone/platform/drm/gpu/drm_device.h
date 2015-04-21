@@ -146,13 +146,13 @@ class OZONE_EXPORT DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
 
   virtual bool CreateDumbBuffer(const SkImageInfo& info,
                                 uint32_t* handle,
-                                uint32_t* stride,
-                                void** pixels);
+                                uint32_t* stride);
 
-  virtual void DestroyDumbBuffer(const SkImageInfo& info,
-                                 uint32_t handle,
-                                 uint32_t stride,
-                                 void* pixels);
+  virtual bool DestroyDumbBuffer(uint32_t handle);
+
+  virtual bool MapDumbBuffer(uint32_t handle, size_t size, void** pixels);
+
+  virtual bool UnmapDumbBuffer(void* pixels, size_t size);
 
   virtual bool CloseBufferHandle(uint32_t handle);
 

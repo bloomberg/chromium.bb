@@ -9,7 +9,6 @@
 
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
-#include "ui/ozone/platform/drm/gpu/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/scoped_drm_types.h"
 
 namespace ui {
@@ -44,7 +43,7 @@ bool DrmConsoleBuffer::Initialize() {
 
   mmap_size_ = info.getSafeSize(stride_);
 
-  if (!MapDumbBuffer(drm_->get_fd(), fb->handle, mmap_size_, &mmap_base_)) {
+  if (!drm_->MapDumbBuffer(fb->handle, mmap_size_, &mmap_base_)) {
     mmap_base_ = NULL;
     return false;
   }

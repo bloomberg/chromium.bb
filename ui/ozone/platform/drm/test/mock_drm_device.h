@@ -100,13 +100,10 @@ class MockDrmDevice : public ui::DrmDevice {
   bool MoveCursor(uint32_t crtc_id, const gfx::Point& point) override;
   bool CreateDumbBuffer(const SkImageInfo& info,
                         uint32_t* handle,
-                        uint32_t* stride,
-                        void** pixels) override;
-  void DestroyDumbBuffer(const SkImageInfo& info,
-                         uint32_t handle,
-                         uint32_t stride,
-                         void* pixels) override;
-
+                        uint32_t* stride) override;
+  bool DestroyDumbBuffer(uint32_t handle) override;
+  bool MapDumbBuffer(uint32_t handle, size_t size, void** pixels) override;
+  bool UnmapDumbBuffer(void* pixels, size_t size) override;
   bool CloseBufferHandle(uint32_t handle) override;
   bool CommitProperties(drmModePropertySet* properties,
                         uint32_t flags,
