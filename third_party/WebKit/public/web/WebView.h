@@ -46,8 +46,6 @@ namespace blink {
 class WebAXObject;
 class WebAutofillClient;
 class WebCredentialManagerClient;
-class WebDevToolsAgent;
-class WebDevToolsAgentClient;
 class WebDragData;
 class WebFrame;
 class WebHitTestResult;
@@ -94,8 +92,6 @@ public:
 
     // Initializes the various client interfaces.
     virtual void setCredentialManagerClient(WebCredentialManagerClient*) = 0;
-    // TODO(dgozman): remove this one.
-    virtual void setDevToolsAgentClient(WebDevToolsAgentClient*) = 0;
     virtual void setPrerendererClient(WebPrerendererClient*) = 0;
     virtual void setSpellCheckClient(WebSpellCheckClient*) = 0;
 
@@ -375,10 +371,6 @@ public:
 
     // Cancel emulation started via |enableDeviceEmulation| call.
     virtual void disableDeviceEmulation() = 0;
-
-    // The embedder may optionally engage a WebDevToolsAgent.  This may only
-    // be set once per WebView.
-    virtual WebDevToolsAgent* devToolsAgent() = 0;
 
 
     // Accessibility -------------------------------------------------------

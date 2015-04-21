@@ -356,12 +356,6 @@ void WebViewImpl::setCredentialManagerClient(WebCredentialManagerClient* webCred
     provideCredentialManagerClientTo(*m_page, new CredentialManagerClient(webCredentialManagerClient));
 }
 
-void WebViewImpl::setDevToolsAgentClient(WebDevToolsAgentClient* devToolsClient)
-{
-    ASSERT(mainFrameImpl());
-    mainFrameImpl()->setDevToolsAgentClient(devToolsClient);
-}
-
 void WebViewImpl::setPrerendererClient(WebPrerendererClient* prerendererClient)
 {
     ASSERT(m_page);
@@ -467,7 +461,7 @@ WebViewImpl::~WebViewImpl()
     ASSERT(!m_page);
 }
 
-WebDevToolsAgentImpl* WebViewImpl::devToolsAgentImpl()
+WebDevToolsAgentImpl* WebViewImpl::mainFrameDevToolsAgentImpl()
 {
     WebLocalFrameImpl* mainFrame = mainFrameImpl();
     return mainFrame ? mainFrame->devToolsAgentImpl() : nullptr;
@@ -781,7 +775,7 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
         // Instead, assume that the page has been designed with big enough buttons and links.
         // Don't trigger a disambiguation popup when screencasting, since it's implemented outside of
         // compositor pipeline and is not being screencasted itself. This leads to bad user experience.
-        WebDevToolsAgentImpl* devTools = devToolsAgentImpl();
+        WebDevToolsAgentImpl* devTools = mainFrameDevToolsAgentImpl();
         bool screencastEnabled = devTools && devTools->screencastEnabled();
         if (event.data.tap.width > 0 && !shouldDisableDesktopWorkarounds() && !screencastEnabled) {
             IntRect boundingBox(page()->frameHost().pinchViewport().viewportToRootFrame(IntRect(
@@ -2103,7 +2097,7 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
     if (m_devToolsEmulator->handleInputEvent(inputEvent))
         return true;
 
-    WebDevToolsAgentImpl* devTools = devToolsAgentImpl();
+    WebDevToolsAgentImpl* devTools = mainFrameDevToolsAgentImpl();
     if (devTools && devTools->handleInputEvent(inputEvent))
         return true;
 
@@ -3755,12 +3749,6 @@ void WebViewImpl::enableDeviceEmulation(const WebDeviceEmulationParams& params)
 void WebViewImpl::disableDeviceEmulation()
 {
     m_devToolsEmulator->disableDeviceEmulation();
-}
-
-WebDevToolsAgent* WebViewImpl::devToolsAgent()
-{
-    WebLocalFrameImpl* mainFrame = mainFrameImpl();
-    return mainFrame ? mainFrame->devToolsAgent() : nullptr;
 }
 
 WebAXObject WebViewImpl::accessibilityObject()

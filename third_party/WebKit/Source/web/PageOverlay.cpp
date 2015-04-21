@@ -62,7 +62,7 @@ void PageOverlay::clear()
 
     if (m_layer) {
         m_layer->removeFromParent();
-        if (WebDevToolsAgentImpl* devTools = m_viewImpl->devToolsAgentImpl())
+        if (WebDevToolsAgentImpl* devTools = m_viewImpl->mainFrameDevToolsAgentImpl())
             devTools->didRemovePageOverlay(m_layer.get());
         m_layer = nullptr;
     }
@@ -76,7 +76,7 @@ void PageOverlay::update()
         m_layer = GraphicsLayer::create(m_viewImpl->graphicsLayerFactory(), this);
         m_layer->setDrawsContent(true);
 
-        if (WebDevToolsAgentImpl* devTools = m_viewImpl->devToolsAgentImpl())
+        if (WebDevToolsAgentImpl* devTools = m_viewImpl->mainFrameDevToolsAgentImpl())
             devTools->willAddPageOverlay(m_layer.get());
 
         // This is required for contents of overlay to stay in sync with the page while scrolling.

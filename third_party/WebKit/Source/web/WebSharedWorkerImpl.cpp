@@ -169,7 +169,7 @@ WebSharedWorkerImpl::~WebSharedWorkerImpl()
 {
     ASSERT(m_webView);
     // Detach the client before closing the view to avoid getting called back.
-    toWebLocalFrameImpl(m_mainFrame)->setClient(0);
+    m_mainFrame->setClient(0);
 
     m_webView->close();
     m_mainFrame->close();
@@ -207,9 +207,9 @@ void WebSharedWorkerImpl::initializeLoader()
     m_webView->settings()->setAcceleratedCompositingEnabled(false);
     // FIXME: Settings information should be passed to the Worker process from Browser process when the worker
     // is created (similar to RenderThread::OnCreateNewView).
-    m_mainFrame = WebLocalFrame::create(this);
+    m_mainFrame = toWebLocalFrameImpl(WebLocalFrame::create(this));
     m_webView->setMainFrame(m_mainFrame);
-    m_webView->setDevToolsAgentClient(this);
+    m_mainFrame->setDevToolsAgentClient(this);
 
     // If we were asked to pause worker context on start and wait for debugger then it is the good time to do that.
     client()->workerReadyForInspection();
@@ -229,13 +229,11 @@ WebApplicationCacheHost* WebSharedWorkerImpl::createApplicationCacheHost(WebLoca
 
 void WebSharedWorkerImpl::loadShadowPage()
 {
-    WebLocalFrameImpl* webFrame = toWebLocalFrameImpl(m_webView->mainFrame());
-
     // Construct substitute data source for the 'shadow page'. We only need it
     // to have same origin as the worker so the loading checks work correctly.
     CString content("");
     RefPtr<SharedBuffer> buffer(SharedBuffer::create(content.data(), content.length()));
-    webFrame->frame()->loader().load(FrameLoadRequest(0, ResourceRequest(m_url), SubstituteData(buffer, "text/html", "UTF-8", KURL())));
+    m_mainFrame->frame()->loader().load(FrameLoadRequest(0, ResourceRequest(m_url), SubstituteData(buffer, "text/html", "UTF-8", KURL())));
 }
 
 void WebSharedWorkerImpl::willSendRequest(
@@ -299,7 +297,7 @@ void WebSharedWorkerImpl::reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMes
 
 void WebSharedWorkerImpl::postMessageToPageInspector(const String& message)
 {
-    toWebLocalFrameImpl(m_mainFrame)->frame()->document()->postInspectorTask(FROM_HERE, createCrossThreadTask(&WebSharedWorkerImpl::postMessageToPageInspectorOnMainThread, this, message));
+    m_mainFrame->frame()->document()->postInspectorTask(FROM_HERE, createCrossThreadTask(&WebSharedWorkerImpl::postMessageToPageInspectorOnMainThread, this, message));
 }
 
 void WebSharedWorkerImpl::postMessageToPageInspectorOnMainThread(const String& message)
@@ -345,7 +343,7 @@ void WebSharedWorkerImpl::workerThreadTerminatedOnMainThread()
 
 void WebSharedWorkerImpl::postTaskToLoader(PassOwnPtr<ExecutionContextTask> task)
 {
-    toWebLocalFrameImpl(m_mainFrame)->frame()->document()->postTask(FROM_HERE, task);
+    m_mainFrame->frame()->document()->postTask(FROM_HERE, task);
 }
 
 bool WebSharedWorkerImpl::postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task)
@@ -403,7 +401,7 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
         return;
     }
 
-    Document* document = toWebLocalFrameImpl(m_mainFrame)->frame()->document();
+    Document* document = m_mainFrame->frame()->document();
     WorkerThreadStartMode startMode = DontPauseWorkerGlobalScopeOnStart;
     if (InspectorInstrumentation::shouldPauseDedicatedWorkerOnStart(document))
         startMode = PauseWorkerGlobalScopeOnStart;
@@ -444,14 +442,14 @@ void WebSharedWorkerImpl::pauseWorkerContextOnStart()
 
 void WebSharedWorkerImpl::attachDevTools(const WebString& hostId)
 {
-    WebDevToolsAgent* devtoolsAgent = m_webView->devToolsAgent();
+    WebDevToolsAgent* devtoolsAgent = m_mainFrame->devToolsAgent();
     if (devtoolsAgent)
         devtoolsAgent->attach(hostId);
 }
 
 void WebSharedWorkerImpl::reattachDevTools(const WebString& hostId, const WebString& savedState)
 {
-    WebDevToolsAgent* devtoolsAgent = m_webView->devToolsAgent();
+    WebDevToolsAgent* devtoolsAgent = m_mainFrame->devToolsAgent();
     if (devtoolsAgent)
         devtoolsAgent->reattach(hostId, savedState);
     resumeStartup();
@@ -459,7 +457,7 @@ void WebSharedWorkerImpl::reattachDevTools(const WebString& hostId, const WebStr
 
 void WebSharedWorkerImpl::detachDevTools()
 {
-    WebDevToolsAgent* devtoolsAgent = m_webView->devToolsAgent();
+    WebDevToolsAgent* devtoolsAgent = m_mainFrame->devToolsAgent();
     if (devtoolsAgent)
         devtoolsAgent->detach();
 }
@@ -468,7 +466,7 @@ void WebSharedWorkerImpl::dispatchDevToolsMessage(const WebString& message)
 {
     if (m_askedToTerminate)
         return;
-    WebDevToolsAgent* devtoolsAgent = m_webView->devToolsAgent();
+    WebDevToolsAgent* devtoolsAgent = m_mainFrame->devToolsAgent();
     if (devtoolsAgent)
         devtoolsAgent->dispatchOnInspectorBackend(message);
 }

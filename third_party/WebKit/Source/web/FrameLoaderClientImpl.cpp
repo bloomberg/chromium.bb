@@ -432,10 +432,9 @@ void FrameLoaderClientImpl::dispatchDidCommitLoad(HistoryItem* item, HistoryComm
     m_webFrame->viewImpl()->didCommitLoad(commitType == StandardCommit, false);
     if (m_webFrame->client())
         m_webFrame->client()->didCommitProvisionalLoad(m_webFrame, WebHistoryItem(item), static_cast<WebHistoryCommitType>(commitType));
-    // FIXME(dgozman): update this for out-of-process.
-    WebDevToolsAgent* devToolsAgent = m_webFrame->top()->isWebLocalFrame() ? toWebLocalFrameImpl(m_webFrame->top())->viewImpl()->devToolsAgent() : nullptr;
+    WebDevToolsAgentImpl* devToolsAgent = WebLocalFrameImpl::fromFrame(m_webFrame->frame()->localFrameRoot())->devToolsAgentImpl();
     if (devToolsAgent)
-        static_cast<WebDevToolsAgentImpl*>(devToolsAgent)->didCommitLoadForLocalFrame(m_webFrame->frame());
+        devToolsAgent->didCommitLoadForLocalFrame(m_webFrame->frame());
 }
 
 void FrameLoaderClientImpl::dispatchDidFailProvisionalLoad(

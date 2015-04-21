@@ -42,6 +42,7 @@
 namespace blink {
 
 class ServiceWorkerGlobalScopeProxy;
+class WebLocalFrameImpl;
 class WebServiceWorkerNetworkProvider;
 class WebView;
 class WorkerInspectorProxy;
@@ -121,7 +122,7 @@ private:
     // deref'ed) when this EmbeddedWorkerImpl is destructed, therefore they
     // are guaranteed to exist while this object is around.
     WebView* m_webView;
-    WebFrame* m_mainFrame;
+    WebLocalFrameImpl* m_mainFrame;
 
     bool m_askedToTerminate;
 

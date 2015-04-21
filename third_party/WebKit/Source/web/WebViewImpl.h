@@ -161,7 +161,6 @@ public:
     virtual bool isWebView() const { return true; }
     virtual void setMainFrame(WebFrame*) override;
     virtual void setCredentialManagerClient(WebCredentialManagerClient*) override;
-    virtual void setDevToolsAgentClient(WebDevToolsAgentClient*) override;
     virtual void setPrerendererClient(WebPrerendererClient*) override;
     virtual void setSpellCheckClient(WebSpellCheckClient*) override;
     virtual WebSettings* settings() override;
@@ -253,7 +252,6 @@ public:
     virtual unsigned long createUniqueIdentifierForRequest() override;
     void enableDeviceEmulation(const WebDeviceEmulationParams&) override;
     void disableDeviceEmulation() override;
-    virtual WebDevToolsAgent* devToolsAgent() override;
     virtual WebAXObject accessibilityObject() override;
     virtual void setSelectionColors(unsigned activeBackgroundColor,
                                     unsigned activeForegroundColor,
@@ -332,7 +330,7 @@ public:
         return m_page.get();
     }
 
-    WebDevToolsAgentImpl* devToolsAgentImpl();
+    WebDevToolsAgentImpl* mainFrameDevToolsAgentImpl();
 
     InspectorOverlay* inspectorOverlay();
 
