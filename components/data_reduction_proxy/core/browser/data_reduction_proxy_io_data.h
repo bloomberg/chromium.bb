@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_IO_DATA_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_IO_DATA_H_
 
+#include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_member.h"
@@ -42,7 +44,8 @@ class DataReductionProxyIOData {
       net::NetLog* net_log,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      bool enable_quic);
+      bool enable_quic,
+      const std::string& user_agent);
 
   virtual ~DataReductionProxyIOData();
 
@@ -131,6 +134,7 @@ class DataReductionProxyIOData {
 
  private:
   friend class TestDataReductionProxyIOData;
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyIODataTest, TestConstruction);
 
   // Used for testing.
   DataReductionProxyIOData();
@@ -191,6 +195,10 @@ class DataReductionProxyIOData {
 
   // The net::URLRequestContextGetter used for making URL requests.
   net::URLRequestContextGetter* url_request_context_getter_;
+
+  // A net::URLRequestContextGetter used for making secure proxy checks. It
+  // does not use alternate protocols.
+  scoped_refptr<net::URLRequestContextGetter> basic_url_request_context_getter_;
 
   base::WeakPtrFactory<DataReductionProxyIOData> weak_factory_;
 

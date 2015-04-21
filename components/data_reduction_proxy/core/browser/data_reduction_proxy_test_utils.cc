@@ -370,6 +370,7 @@ DataReductionProxyTestContext::Builder::Build() {
           task_runner, config.Pass(), event_store.Pass(),
           request_options.Pass(), configurator.Pass(), config_client.Pass()));
   io_data->InitOnUIThread(pref_service.get());
+  io_data->SetSimpleURLRequestContextGetter(request_context_getter);
 
   scoped_ptr<DataReductionProxyTestContext> test_context(
       new DataReductionProxyTestContext(

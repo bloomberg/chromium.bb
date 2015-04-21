@@ -14,7 +14,11 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "net/http/http_network_session.h"
 #include "net/log/net_log.h"
+#include "net/socket/next_proto.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -90,7 +94,22 @@ class DataReductionProxyIODataTest : public testing::Test {
 TEST_F(DataReductionProxyIODataTest, TestConstruction) {
   scoped_ptr<DataReductionProxyIOData> io_data(new DataReductionProxyIOData(
       Client::UNKNOWN, DataReductionProxyParams::kAllowed, net_log(),
-      message_loop_proxy(), message_loop_proxy(), false /* enable_quic */));
+      message_loop_proxy(), message_loop_proxy(), false /* enable_quic */,
+      std::string() /* user_agent */));
+
+  // Check that the SimpleURLRequestContextGetter uses vanilla HTTP.
+  net::URLRequestContext* request_context =
+      io_data->basic_url_request_context_getter_.get()->GetURLRequestContext();
+  const net::HttpNetworkSession::Params* http_params =
+      request_context->GetNetworkSessionParams();
+  EXPECT_TRUE(http_params->use_alternate_protocols);
+  EXPECT_FALSE(http_params->enable_quic);
+  net::NextProtoVector expected_protos =
+      net::NextProtosWithSpdyAndQuic(false, false);
+  EXPECT_EQ(expected_protos.size(), http_params->next_protos.size());
+  size_t proto_index = 0;
+  for (const auto& proto : expected_protos)
+    EXPECT_EQ(proto, http_params->next_protos[proto_index++]);
 
   // Check that io_data creates an interceptor. Such an interceptor is
   // thoroughly tested by DataReductionProxyInterceptoTest.

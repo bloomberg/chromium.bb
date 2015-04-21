@@ -5,6 +5,7 @@
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_io_data.h"
 
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/common/chrome_content_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 
@@ -52,7 +53,7 @@ CreateDataReductionProxyChromeIOData(
       data_reduction_proxy_io_data(
           new data_reduction_proxy::DataReductionProxyIOData(
               DataReductionProxyChromeSettings::GetClient(), flags, net_log,
-              io_task_runner, ui_task_runner, enable_quic));
+              io_task_runner, ui_task_runner, enable_quic, GetUserAgent()));
   data_reduction_proxy_io_data->InitOnUIThread(prefs);
 
 #if defined(ENABLE_DATA_REDUCTION_PROXY_DEBUGGING)

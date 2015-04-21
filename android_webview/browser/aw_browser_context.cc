@@ -12,6 +12,7 @@
 #include "android_webview/browser/jni_dependency_factory.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/browser/net/init_native_callback.h"
+#include "android_webview/common/aw_content_client.h"
 #include "base/base_paths_android.h"
 #include "base/bind.h"
 #include "base/path_service.h"
@@ -161,7 +162,8 @@ void AwBrowserContext::PreMainMessageLoopRun() {
           url_request_context_getter_->GetNetLog(),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-          false /* enable_quic */));
+          false /* enable_quic */,
+          GetUserAgent()));
   data_reduction_proxy_settings_.reset(
       new data_reduction_proxy::DataReductionProxySettings());
   data_reduction_proxy_service_.reset(

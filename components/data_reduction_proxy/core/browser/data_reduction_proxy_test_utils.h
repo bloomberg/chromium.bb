@@ -22,6 +22,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.h"
 #include "net/base/backoff_entry.h"
 #include "net/log/test_net_log.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class TestingPrefServiceSimple;
@@ -34,7 +35,6 @@ namespace net {
 class MockClientSocketFactory;
 class NetLog;
 class URLRequestContext;
-class URLRequestContextGetter;
 class URLRequestContextStorage;
 }
 
@@ -167,6 +167,11 @@ class TestDataReductionProxyIOData : public DataReductionProxyIOData {
 
   DataReductionProxyConfigServiceClient* config_client() const {
     return config_client_.get();
+  }
+
+  void SetSimpleURLRequestContextGetter(
+      const scoped_refptr<net::URLRequestContextGetter> context_getter) {
+    basic_url_request_context_getter_ = context_getter;
   }
 
   base::WeakPtr<DataReductionProxyIOData> GetWeakPtr() {

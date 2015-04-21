@@ -185,18 +185,6 @@ TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndSecureProxyCheck) {
             .SkipSettingsInitialization()
             .Build();
 
-    // Enabling QUIC should have no effect since secure proxy should not
-    // use QUIC. If secure proxy check incorrectly uses QUIC, the tests will
-    // fail because Mock sockets do not speak QUIC.
-    scoped_ptr<net::HttpNetworkSession::Params> params(
-        new net::HttpNetworkSession::Params());
-    params->use_alternate_protocols = true;
-    params->enable_quic = true;
-    params->origin_to_force_quic_on = net::HostPortPair::FromString(
-        TestDataReductionProxyParams::DefaultSecureProxyCheckURL());
-
-    context.set_http_network_session_params(params.Pass());
-
     context.set_net_log(drp_test_context->net_log());
     net::MockClientSocketFactory mock_socket_factory;
     context.set_client_socket_factory(&mock_socket_factory);

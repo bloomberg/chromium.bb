@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_member.h"
 #include "base/single_thread_task_runner.h"
@@ -25,8 +26,65 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "net/log/net_log.h"
+#include "net/url_request/http_user_agent_settings.h"
+#include "net/url_request/static_http_user_agent_settings.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_builder.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace data_reduction_proxy {
+
+// A |net::URLRequestContextGetter| which uses only vanilla HTTP/HTTPS for
+// performing requests. This is used by the secure proxy check to prevent the
+// use of SPDY and QUIC which may be used by the primary request contexts.
+class BasicHTTPURLRequestContextGetter : public net::URLRequestContextGetter {
+ public:
+  BasicHTTPURLRequestContextGetter(
+      const std::string& user_agent,
+      const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner);
+
+  // Overridden from net::URLRequestContextGetter:
+  net::URLRequestContext* GetURLRequestContext() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
+      const override;
+
+ private:
+  ~BasicHTTPURLRequestContextGetter() override;
+
+  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
+  scoped_ptr<net::HttpUserAgentSettings> user_agent_settings_;
+  scoped_ptr<net::URLRequestContext> url_request_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(BasicHTTPURLRequestContextGetter);
+};
+
+BasicHTTPURLRequestContextGetter::BasicHTTPURLRequestContextGetter(
+    const std::string& user_agent,
+    const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner)
+    : network_task_runner_(network_task_runner),
+      user_agent_settings_(
+          new net::StaticHttpUserAgentSettings(std::string(), user_agent)) {
+}
+
+net::URLRequestContext*
+BasicHTTPURLRequestContextGetter::GetURLRequestContext() {
+  if (!url_request_context_) {
+    net::URLRequestContextBuilder builder;
+    builder.set_proxy_service(net::ProxyService::CreateDirect());
+    builder.SetSpdyAndQuicEnabled(false, false);
+    url_request_context_.reset(builder.Build());
+  }
+
+  return url_request_context_.get();
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+BasicHTTPURLRequestContextGetter::GetNetworkTaskRunner() const {
+  return network_task_runner_;
+}
+
+BasicHTTPURLRequestContextGetter::~BasicHTTPURLRequestContextGetter() {
+}
 
 DataReductionProxyIOData::DataReductionProxyIOData(
     const Client& client,
@@ -34,13 +92,16 @@ DataReductionProxyIOData::DataReductionProxyIOData(
     net::NetLog* net_log,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    bool enable_quic)
+    bool enable_quic,
+    const std::string& user_agent)
     : client_(client),
       net_log_(net_log),
       io_task_runner_(io_task_runner),
       ui_task_runner_(ui_task_runner),
       shutdown_on_ui_(false),
       url_request_context_getter_(nullptr),
+      basic_url_request_context_getter_(
+          new BasicHTTPURLRequestContextGetter(user_agent, io_task_runner)),
       weak_factory_(this) {
   DCHECK(net_log);
   DCHECK(io_task_runner_);
@@ -124,7 +185,7 @@ void DataReductionProxyIOData::SetDataReductionProxyService(
 
 void DataReductionProxyIOData::InitializeOnIOThread() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  config_->InitializeOnIOThread(url_request_context_getter_);
+  config_->InitializeOnIOThread(basic_url_request_context_getter_.get());
   if (config_client_.get())
     config_client_->RetrieveConfig();
   ui_task_runner_->PostTask(

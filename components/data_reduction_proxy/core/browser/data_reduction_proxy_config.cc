@@ -15,7 +15,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/base/load_flags.h"
-#include "net/http/http_network_layer.h"
 #include "net/proxy/proxy_server.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -53,30 +52,10 @@ namespace data_reduction_proxy {
 // Checks if the secure proxy is allowed by the carrier by sending a probe.
 class SecureProxyChecker : public net::URLFetcherDelegate {
  public:
-  SecureProxyChecker(net::URLRequestContext* url_request_context,
-                     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-      : io_task_runner_(io_task_runner) {
-    DCHECK(io_task_runner_->BelongsToCurrentThread());
-
-    url_request_context_.reset(new net::URLRequestContext());
-    url_request_context_->CopyFrom(url_request_context);
-
-    net::HttpNetworkSession::Params params_modified =
-        *(url_request_context_->GetNetworkSessionParams());
-    params_modified.enable_quic = false;
-    params_modified.next_protos = net::NextProtosWithSpdyAndQuic(false, false);
-
-    http_network_layer_.reset(new net::HttpNetworkLayer(
-        new net::HttpNetworkSession(params_modified)));
-    url_request_context_->set_http_transaction_factory(
-        http_network_layer_.get());
-
-    url_request_context_getter_ = new net::TrivialURLRequestContextGetter(
-        url_request_context_.get(), io_task_runner_);
-  }
+  SecureProxyChecker(net::URLRequestContextGetter* url_request_context_getter)
+      : url_request_context_getter_(url_request_context_getter) {}
 
   void OnURLFetchComplete(const net::URLFetcher* source) override {
-    DCHECK(io_task_runner_->BelongsToCurrentThread());
     DCHECK_EQ(source, fetcher_.get());
     net::URLRequestStatus status = source->GetStatus();
 
@@ -88,7 +67,6 @@ class SecureProxyChecker : public net::URLFetcherDelegate {
 
   void CheckIfSecureProxyIsAllowed(const GURL& secure_proxy_check_url,
                                    FetcherResponseCallback fetcher_callback) {
-    DCHECK(io_task_runner_->BelongsToCurrentThread());
     fetcher_.reset(net::URLFetcher::Create(secure_proxy_check_url,
                                            net::URLFetcher::GET, this));
     fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_PROXY);
@@ -111,11 +89,7 @@ class SecureProxyChecker : public net::URLFetcherDelegate {
   ~SecureProxyChecker() override {}
 
  private:
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
-  scoped_ptr<net::URLRequestContext> url_request_context_;
-  scoped_ptr<net::HttpNetworkLayer> http_network_layer_;
 
   // The URLFetcher being used for the secure proxy check.
   scoped_ptr<net::URLFetcher> fetcher_;
@@ -515,9 +489,8 @@ void DataReductionProxyConfig::SecureProxyCheck(
   }
 
   if (!secure_proxy_checker_) {
-    DCHECK(url_request_context_getter_->GetURLRequestContext());
-    secure_proxy_checker_.reset(new SecureProxyChecker(
-        url_request_context_getter_->GetURLRequestContext(), io_task_runner_));
+    secure_proxy_checker_.reset(
+        new SecureProxyChecker(url_request_context_getter_));
   }
   secure_proxy_checker_->CheckIfSecureProxyIsAllowed(secure_proxy_check_url,
                                                      fetcher_callback);
