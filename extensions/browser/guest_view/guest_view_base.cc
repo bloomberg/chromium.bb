@@ -341,6 +341,13 @@ GuestViewBase* GuestViewBase::From(int owner_process_id,
 }
 
 // static
+WebContents* GuestViewBase::GetTopLevelWebContents(WebContents* web_contents) {
+  while (GuestViewBase* guest = FromWebContents(web_contents))
+    web_contents = guest->owner_web_contents();
+  return web_contents;
+}
+
+// static
 bool GuestViewBase::IsGuest(WebContents* web_contents) {
   return !!GuestViewBase::FromWebContents(web_contents);
 }

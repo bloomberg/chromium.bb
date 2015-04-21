@@ -21,17 +21,8 @@ class ChromeConstrainedWindowViewsClient
   // ConstrainedWindowViewsClient:
   content::WebContents* GetEmbedderWebContents(
       content::WebContents* initiator_web_contents) override {
-    // |initiator_web_contents| may be embedded within a chain of nested
-    // GuestViews. If it is, follow the chain of embedders to the outermost
-    // WebContents and return it.
-    while (extensions::GuestViewBase* guest_view =
-               extensions::GuestViewBase::FromWebContents(
-                   initiator_web_contents)) {
-      if (!guest_view->embedder_web_contents())
-        break;
-      initiator_web_contents = guest_view->embedder_web_contents();
-    }
-    return initiator_web_contents;
+    return extensions::GuestViewBase::GetTopLevelWebContents(
+        initiator_web_contents);
   }
   web_modal::ModalDialogHost* GetModalDialogHost(
       gfx::NativeWindow parent) override {

@@ -65,6 +65,12 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   static GuestViewBase* From(int owner_process_id, int instance_id);
 
+  // Given a |web_contents|, returns the top level owner WebContents. If
+  // |web_contents| does not belong to a GuestView, it will be returned
+  // unchanged.
+  static content::WebContents* GetTopLevelWebContents(
+      content::WebContents* web_contents);
+
   static bool IsGuest(content::WebContents* web_contents);
 
   virtual const char* GetViewType() const = 0;
