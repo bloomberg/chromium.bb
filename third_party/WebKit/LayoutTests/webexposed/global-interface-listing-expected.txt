@@ -301,8 +301,10 @@ interface BluetoothDevice
     getter uuids
     getter vendorID
     getter vendorIDSource
+    method connectGATT
     method constructor
 interface BluetoothGATTRemoteServer
+    getter connected
     method constructor
 interface Boolean
     method constructor

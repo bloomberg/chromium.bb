@@ -12,7 +12,9 @@
 
 namespace blink {
 
+class ScriptPromise;
 class ScriptPromiseResolver;
+class ScriptState;
 
 // BluetoothDevice represents a physical bluetooth device in the DOM. See IDL.
 //
@@ -28,6 +30,8 @@ public:
     BluetoothDevice(const WebBluetoothDevice&);
 
     static BluetoothDevice* create(const WebBluetoothDevice&);
+
+    ScriptPromise connectGATT(ScriptState*);
 
     // Interface required by CallbackPromiseAdapter:
     typedef WebBluetoothDevice WebType;

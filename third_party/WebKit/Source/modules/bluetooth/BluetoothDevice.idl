@@ -32,5 +32,5 @@ typedef DOMString UUID;
     readonly    attribute boolean                    paired;
 //    readonly    attribute BluetoothGATTRemoteServer? gattServer;
     readonly    attribute UUID[]                     uuids;
-//    Promise<BluetoothGATTRemoteServer> connectGATT ();
+    [CallWith=ScriptState] Promise<BluetoothGATTRemoteServer> connectGATT ();
 };

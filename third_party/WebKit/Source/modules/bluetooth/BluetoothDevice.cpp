@@ -5,6 +5,15 @@
 #include "config.h"
 #include "modules/bluetooth/BluetoothDevice.h"
 
+#include "bindings/core/v8/CallbackPromiseAdapter.h"
+#include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/dom/DOMException.h"
+#include "core/dom/ExceptionCode.h"
+#include "modules/bluetooth/BluetoothError.h"
+#include "modules/bluetooth/BluetoothGATTRemoteServer.h"
+#include "public/platform/Platform.h"
+#include "public/platform/modules/bluetooth/WebBluetooth.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
@@ -78,5 +87,15 @@ Vector<String> BluetoothDevice::uuids()
     return uuids;
 }
 
-} // namespace blink
+ScriptPromise BluetoothDevice::connectGATT(ScriptState* scriptState)
+{
+    WebBluetooth* webbluetooth = Platform::current()->bluetooth();
+    if (!webbluetooth)
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+    webbluetooth->connectGATT(instanceID(), new CallbackPromiseAdapter<BluetoothGATTRemoteServer, BluetoothError>(resolver));
+    return promise;
+}
 
+} // namespace blink
