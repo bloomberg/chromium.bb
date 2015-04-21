@@ -17,21 +17,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         bug=428845)
     self.Fail('conformance/uniforms/gl-uniform-arrays.html',
         bug=433385)
-    self.Fail(
-        'conformance/ogles/GL/biuDepthRange/biuDepthRange_001_to_002.html',
-        bug=478570)
-    self.Fail('conformance/ogles/GL/gl_FragCoord/gl_FragCoord_001_to_003.html',
-        bug=478570)
-    self.Fail('deqp/data/gles2/shaders/constant_expressions.html',
-        bug=478572)
-    self.Fail('deqp/data/gles2/shaders/fragdata.html',
-        bug=478572)
-    self.Fail('deqp/data/gles2/shaders/functions.html',
-        bug=478572)
-    self.Fail('deqp/data/gles2/shaders/preprocessor.html',
-        bug=478572)
-    self.Fail('deqp/data/gles2/shaders/scoping.html',
-        bug=478572)
 
     # Win failures
     self.Fail('conformance/glsl/misc/struct-equals.html',
