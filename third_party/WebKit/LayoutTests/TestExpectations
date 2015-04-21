@@ -2208,3 +2208,5 @@ crbug.com/479164 inspector/geolocation-emulation-tests.html [ Pass Failure ]
 crbug.com/470326 [ XP ] svg/text/bidi-text-query.svg [ NeedsRebaseline ]
 
 crbug.com/479181 inspector-protocol/animation/animation-multiple-frames.html [ Pass Failure ]
+
+crbug.com/479202 [ Linux ] virtual/slimmingpaint/fast/forms/select/select-typeahead-with-spacekey.html [ Pass Failure ]
