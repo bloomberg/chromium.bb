@@ -58,6 +58,62 @@ InspectorTest.evaluateInPageWithTimeout = function(code)
 var lastEvalId = 0;
 var pendingEvalRequests = {};
 
+var lastPromiseEvalId = 0;
+var pendingPromiseEvalRequests = {};
+
+/**
+ * The given function should take two callback paraters before the arguments:
+ *  * resolve - called when successful (with optional result)
+ *  * reject  - called when there was a failure (with optional error)
+ */
+InspectorTest.invokePageFunctionPromise = function(functionName, parameters)
+{
+    return new Promise(function(resolve, reject) {
+        var id = ++lastPromiseEvalId;
+        pendingPromiseEvalRequests[id] = { resolve: InspectorTest.safeWrap(resolve), reject: InspectorTest.safeWrap(reject) };
+
+        var jsonParameters = [];
+        for (var i = 0; i < parameters.length; ++i)
+            jsonParameters.push(JSON.stringify(parameters[i]));
+        var asyncEvalWrapper = function(callId, functionName, argumentsArray)
+        {
+            function evalCallbackResolve(result)
+            {
+                testRunner.evaluateInWebInspector(evalCallbackCallId, "InspectorTest.didInvokePageFunctionPromise(" + callId + ", " + JSON.stringify(result) + ", true);");
+            }
+
+            function evalCallbackReject(result)
+            {
+                testRunner.evaluateInWebInspector(evalCallbackCallId, "InspectorTest.didInvokePageFunctionPromise(" + callId + ", " + JSON.stringify(result) + ", false);");
+            }
+
+            var args = [evalCallbackResolve, evalCallbackReject].concat(argumentsArray.map(JSON.stringify));
+            var functionCall = functionName + ".call(null, " + args.join(", ") + ")";
+            try {
+                eval(functionCall);
+            } catch(e) {
+                InspectorTest.addResult("Error: " + e);
+                evalCallbackReject(e);
+            }
+        }
+        var pageRequest = "(" + asyncEvalWrapper.toString() + ")(" + id + ", unescape('" + escape(functionName) + "'), [" + jsonParameters.join(", ") + "])";
+        InspectorTest.evaluateInPage(pageRequest);
+    });
+}
+
+
+InspectorTest.didInvokePageFunctionPromise = function(callId, value, didResolve)
+{
+    var callbacks = pendingPromiseEvalRequests[callId];
+    if (!callbacks) {
+        InspectorTest.addResult("Missing callback for async eval " + callId + ", perhaps callback invoked twice?");
+        return;
+    }
+    var callback = didResolve ? callbacks.resolve : callbacks.reject;
+    delete pendingPromiseEvalRequests[callId];
+    callback(value);
+}
+
 InspectorTest.invokePageFunctionAsync = function(functionName, callback)
 {
     var id = ++lastEvalId;
@@ -68,10 +124,11 @@ InspectorTest.invokePageFunctionAsync = function(functionName, callback)
         {
             testRunner.evaluateInWebInspector(evalCallbackCallId, "InspectorTest.didInvokePageFunctionAsync(" + callId + ", " + JSON.stringify(result) + ");");
         }
+
         try {
             eval(functionName + "(" + evalCallback + ")");
         } catch(e) {
-            console.error(e);
+            InspectorTest.addResult("Error: " + e);
             evalCallback(String(e));
         }
     }
@@ -427,6 +484,33 @@ InspectorTest.addSniffer = function(receiver, methodName, override, opt_sticky)
         }
         return result;
     };
+}
+
+InspectorTest.addSnifferPromise = function(receiver, methodName)
+{
+    return new Promise(function (resolve, reject) {
+        var original = receiver[methodName];
+        if (typeof original !== "function") {
+            reject("Cannot find method to override: " + methodName);
+            return;
+        }
+
+        receiver[methodName] = function(var_args) {
+            try {
+                var result = original.apply(this, arguments);
+            } finally {
+                receiver[methodName] = original;
+            }
+            // In case of exception the override won't be called.
+            try {
+                Array.prototype.push.call(arguments, result);
+                resolve.apply(this, arguments);
+            } catch (e) {
+                reject("Exception in overriden method '" + methodName + "': " + e);
+            }
+            return result;
+        };
+    });
 }
 
 InspectorTest.addConsoleSniffer = function(override, opt_sticky)

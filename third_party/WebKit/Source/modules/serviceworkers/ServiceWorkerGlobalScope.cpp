@@ -99,7 +99,6 @@ ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(const KURL& url, const String
     , m_scriptTotalSize(0)
     , m_scriptCachedMetadataTotalSize(0)
 {
-    workerInspectorController()->registerModuleAgent(InspectorCacheStorageAgent::create(this));
 }
 
 ServiceWorkerGlobalScope::~ServiceWorkerGlobalScope()

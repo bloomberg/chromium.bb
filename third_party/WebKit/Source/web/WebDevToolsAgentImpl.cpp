@@ -70,6 +70,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "modules/accessibility/InspectorAccessibilityAgent.h"
+#include "modules/cachestorage/InspectorCacheStorageAgent.h"
 #include "modules/device_orientation/DeviceOrientationInspectorAgent.h"
 #include "modules/filesystem/InspectorFileSystemAgent.h"
 #include "modules/indexeddb/InspectorIndexedDBAgent.h"
@@ -268,6 +269,7 @@ PassOwnPtrWillBeRawPtr<WebDevToolsAgentImpl> WebDevToolsAgentImpl::create(WebLoc
     agent->registerAgent(InspectorIndexedDBAgent::create(view->page()));
     agent->registerAgent(InspectorAccessibilityAgent::create(view->page()));
     agent->registerAgent(InspectorDOMStorageAgent::create(view->page()));
+    agent->registerAgent(InspectorCacheStorageAgent::create());
     return adoptPtrWillBeNoop(agent);
 }
 

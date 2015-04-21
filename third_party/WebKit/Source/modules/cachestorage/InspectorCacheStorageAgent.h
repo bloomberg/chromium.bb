@@ -14,29 +14,25 @@ namespace blink {
 
 typedef String ErrorString;
 
-class ServiceWorkerGlobalScope;
-
-class InspectorCacheStorageAgent final : public InspectorBaseAgent<InspectorCacheStorageAgent, InspectorFrontend::ServiceWorkerCache>, public InspectorBackendDispatcher::ServiceWorkerCacheCommandHandler {
+class InspectorCacheStorageAgent final : public InspectorBaseAgent<InspectorCacheStorageAgent, InspectorFrontend::CacheStorage>, public InspectorBackendDispatcher::CacheStorageCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorCacheStorageAgent);
 
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorCacheStorageAgent> create(ServiceWorkerGlobalScope* workerGlobalScope)
+    static PassOwnPtrWillBeRawPtr<InspectorCacheStorageAgent> create()
     {
-        return adoptPtrWillBeNoop(new InspectorCacheStorageAgent(workerGlobalScope));
+        return adoptPtrWillBeNoop(new InspectorCacheStorageAgent());
     }
 
     virtual ~InspectorCacheStorageAgent();
 
     DECLARE_VIRTUAL_TRACE();
 
-    virtual void requestCacheNames(ErrorString*, PassRefPtrWillBeRawPtr<RequestCacheNamesCallback>) override;
-    virtual void requestEntries(ErrorString*, const String& cacheName, int skipCount, int pageSize, PassRefPtrWillBeRawPtr<RequestEntriesCallback>) override;
-    virtual void deleteCache(ErrorString*, const String& cacheName, PassRefPtrWillBeRawPtr<DeleteCacheCallback>) override;
+    virtual void requestCacheNames(ErrorString*, const String& securityOrigin, PassRefPtrWillBeRawPtr<RequestCacheNamesCallback>) override;
+    virtual void requestEntries(ErrorString*, const String& cacheId, int skipCount, int pageSize, PassRefPtrWillBeRawPtr<RequestEntriesCallback>) override;
+    virtual void deleteCache(ErrorString*, const String& cacheId, PassRefPtrWillBeRawPtr<DeleteCacheCallback>) override;
 
 private:
-    explicit InspectorCacheStorageAgent(ServiceWorkerGlobalScope*);
-
-    ServiceWorkerGlobalScope* m_globalScope;
+    explicit InspectorCacheStorageAgent();
 };
 
 } // namespace blink
