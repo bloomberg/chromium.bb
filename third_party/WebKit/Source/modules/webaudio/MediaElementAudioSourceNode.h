@@ -68,6 +68,9 @@ private:
     // Must be called only on the main thread.
     bool passesCurrentSrcCORSAccessCheck(const KURL& currentSrc);
 
+    // Print warning if CORS restrictions cause MediaElementAudioSource to output zeroes.
+    void printCORSMessage();
+
     // This Persistent doesn't make a reference cycle. The reference from
     // HTMLMediaElement to AudioSourceProvideClient, which
     // MediaElementAudioSourceNode implements, is weak.
@@ -85,6 +88,14 @@ private:
     // used in passesCORSAccessCheck() on the audio thread,
     // protected by |m_processLock|.
     bool m_passesCurrentSrcCORSAccessCheck;
+
+    // Indicates if we need to print a CORS message if the current source has changed and we have no
+    // access to it. Must be protected by |m_processLock|.
+    bool m_maybePrintCORSMessage;
+
+    // The value of mediaElement()->currentSrc() in the ctor and onCurrentSrcChanged().  Protected
+    // by |m_processLock|.
+    KURL m_currentSrc;
 };
 
 class MediaElementAudioSourceNode final : public AudioSourceNode, public AudioSourceProviderClient {
