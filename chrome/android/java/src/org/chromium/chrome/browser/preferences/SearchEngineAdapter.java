@@ -249,7 +249,6 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
         mCallback.currentSearchEngineDetermined(getSearchEngineNameAndDomain(
                 mContext.getResources(), templateUrl));
 
-        PrefServiceBridge.maybeCreatePermissionForDefaultSearchEngine(true, mContext);
         notifyDataSetChanged();
     }
 

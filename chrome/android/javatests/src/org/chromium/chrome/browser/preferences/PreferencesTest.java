@@ -100,11 +100,11 @@ public class PreferencesTest extends ChromeShellTestBase {
                 assertEquals("1", pref.getValueForTesting());
 
                 // Simulate selecting the third search engine, ensure that TemplateUrlService is
-                // updated, and location permission granted for the new engine.
+                // updated, but location permission not granted for the new engine.
                 pref.setValueForTesting("2");
                 TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
                 assertEquals(2, templateUrlService.getDefaultSearchEngineIndex());
-                assertEquals(ContentSetting.ALLOW, locationPermissionForSearchEngine(2));
+                assertEquals(ContentSetting.ASK, locationPermissionForSearchEngine(2));
 
                 // Simulate selecting the fourth search engine and but set a blocked permission
                 // first and ensure that location permission is NOT granted.
@@ -159,79 +159,6 @@ public class PreferencesTest extends ChromeShellTestBase {
 
                 TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
                 assertEquals(index, templateUrlService.getDefaultSearchEngineIndex());
-                assertEquals(ContentSetting.ASK, locationPermissionForSearchEngine(index));
-            }
-        });
-    }
-
-    /**
-     * Test migration path to creating a search engine permission.
-     */
-    @SmallTest
-    @Feature({"Preferences"})
-    public void testPrepopulateDoesNotCrash() throws Exception {
-        ensureTemplateUrlServiceLoaded();
-
-        // Create the default permission from the UI thread.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                PrefServiceBridge.maybeCreatePermissionForDefaultSearchEngine(
-                        true, getInstrumentation().getTargetContext());
-                assertEquals(ContentSetting.ALLOW, locationPermissionForSearchEngine(
-                        TemplateUrlService.getInstance().getDefaultSearchEngineIndex()));
-            }
-        });
-    }
-
-    /**
-     * Test that migration path does NOT create a search engine permission if one already exists.
-     */
-    @SmallTest
-    @Feature({"Preferences"})
-    public void testPrepopulateDoesNothing() throws Exception {
-        ensureTemplateUrlServiceLoaded();
-
-        // Create the default permission from the UI thread.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                // Create a Blocked record.
-                TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
-                String url = templateUrlService.getSearchEngineUrlFromTemplateUrl(
-                        templateUrlService.getDefaultSearchEngineIndex());
-                WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
-                        url, url, ContentSetting.BLOCK.toInt());
-
-                // See if it overwrites it with an Allowed record (spoiler-alert: it shouldn't).
-                PrefServiceBridge.maybeCreatePermissionForDefaultSearchEngine(
-                        true, getInstrumentation().getTargetContext());
-                assertEquals(ContentSetting.BLOCK, locationPermissionForSearchEngine(
-                        templateUrlService.getDefaultSearchEngineIndex()));
-            }
-        });
-    }
-
-    /**
-     * Test that migration path does NOT create a search engine permission for engines accessed
-     * over HTTP.
-     */
-    @SmallTest
-    @Feature({"Preferences"})
-    public void testPrepopulateDoesNotAddForHttp() throws Exception {
-        ensureTemplateUrlServiceLoaded();
-
-        // Create the default permission from the UI thread.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                // Set a search engine that uses HTTP as default.
-                int index = indexOfFirstHttpSearchEngine();
-                TemplateUrlService.getInstance().setSearchEngine(index);
-
-                // Make sure location permission wasn't populated since HTTP is present.
-                PrefServiceBridge.maybeCreatePermissionForDefaultSearchEngine(
-                        true, getInstrumentation().getTargetContext());
                 assertEquals(ContentSetting.ASK, locationPermissionForSearchEngine(index));
             }
         });
