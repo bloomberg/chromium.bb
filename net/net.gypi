@@ -1604,6 +1604,7 @@
       'socket/deterministic_socket_data_unittest.cc',
       'socket/mock_client_socket_pool_manager.cc',
       'socket/mock_client_socket_pool_manager.h',
+      'socket/sequenced_socket_data_unittest.cc',
       'socket/socks5_client_socket_unittest.cc',
       'socket/socks_client_socket_pool_unittest.cc',
       'socket/socks_client_socket_unittest.cc',
