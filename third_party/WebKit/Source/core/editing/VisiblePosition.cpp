@@ -555,6 +555,11 @@ static Position canonicalizeCandidate(const Position& candidate)
 
 Position VisiblePosition::canonicalPosition(const Position& passedPosition)
 {
+    // Sometimes updating selection positions can be extremely expensive and occur
+    // frequently.  Often calling preventDefault on mousedown events can avoid
+    // doing unnecessary text selection work.  http://crbug.com/472258.
+    TRACE_EVENT0("blink", "VisiblePosition::canonicalPosition");
+
     // The updateLayout call below can do so much that even the position passed
     // in to us might get changed as a side effect. Specifically, there are code
     // paths that pass selection endpoints, and updateLayout can change the selection.
