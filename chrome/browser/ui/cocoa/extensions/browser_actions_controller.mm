@@ -512,11 +512,18 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
   std::vector<ToolbarActionViewController*> toolbar_actions =
       toolbarActionsBar_->toolbar_actions();
   for (NSUInteger i = 0; i < [buttons_ count]; ++i) {
-    if ([[buttons_ objectAtIndex:i] viewController] != toolbar_actions[i]) {
+    auto controller = static_cast<ToolbarActionViewController*>(
+        [[buttons_ objectAtIndex:i] viewController]);
+    if (controller != toolbar_actions[i]) {
       size_t j = i + 1;
-      while (toolbar_actions[i] != [[buttons_ objectAtIndex:j] viewController])
+      while (true) {
+        auto other_controller = static_cast<ToolbarActionViewController*>(
+            [[buttons_ objectAtIndex:j] viewController]);
+        if (other_controller == toolbar_actions[i])
+          break;
         ++j;
-      [buttons_ exchangeObjectAtIndex:i withObjectAtIndex: j];
+      }
+      [buttons_ exchangeObjectAtIndex:i withObjectAtIndex:j];
     }
   }
 
@@ -889,8 +896,9 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
 - (ToolbarActionsBarBubbleMac*)createMessageBubble:
     (scoped_ptr<ToolbarActionsBarBubbleDelegate>)delegate {
   DCHECK_GE([buttons_ count], 0u);
-  NSPoint anchor = [self popupPointForId:[[buttons_ objectAtIndex:0]
-                                             viewController]->GetId()];
+  auto controller = static_cast<ToolbarActionViewController*>(
+      [[buttons_ objectAtIndex:0] viewController]);
+  NSPoint anchor = [self popupPointForId:controller->GetId()];
   anchor = [[containerView_ window] convertBaseToScreen:anchor];
   return [[ToolbarActionsBarBubbleMac alloc]
       initWithParentWindow:[containerView_ window]
