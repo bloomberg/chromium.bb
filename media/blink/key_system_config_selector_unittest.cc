@@ -124,15 +124,16 @@ class FakeKeySystems : public KeySystems {
   InitDataTypeMask init_data_types = kInitDataTypeMaskNone;
 
   // INVALID so that they must be set in any test that needs them.
-  EmeSessionTypeSupport persistent_license = EME_SESSION_TYPE_INVALID;
-  EmeSessionTypeSupport persistent_release_message = EME_SESSION_TYPE_INVALID;
+  EmeSessionTypeSupport persistent_license = EmeSessionTypeSupport::INVALID;
+  EmeSessionTypeSupport persistent_release_message =
+      EmeSessionTypeSupport::INVALID;
 
   // Every test implicitly requires these, so they must be set. They are set to
   // values that are likely to cause tests to fail if they are accidentally
   // depended on. Test cases explicitly depending on them should set them, as
   // the default values may be changed.
-  EmeFeatureSupport persistent_state = EME_FEATURE_NOT_SUPPORTED;
-  EmeFeatureSupport distinctive_identifier = EME_FEATURE_REQUESTABLE;
+  EmeFeatureSupport persistent_state = EmeFeatureSupport::NOT_SUPPORTED;
+  EmeFeatureSupport distinctive_identifier = EmeFeatureSupport::REQUESTABLE;
 };
 
 class FakeMediaPermission : public MediaPermission {
@@ -327,7 +328,7 @@ TEST_F(KeySystemConfigSelectorTest, InitDataTypes_SubsetSupported) {
 // --- distinctiveIdentifier ---
 
 TEST_F(KeySystemConfigSelectorTest, DistinctiveIdentifier_Default) {
-  key_systems_->distinctive_identifier = EME_FEATURE_REQUESTABLE;
+  key_systems_->distinctive_identifier = EmeFeatureSupport::REQUESTABLE;
 
   blink::WebMediaKeySystemConfiguration config;
   config.distinctiveIdentifier =
@@ -341,7 +342,7 @@ TEST_F(KeySystemConfigSelectorTest, DistinctiveIdentifier_Default) {
 
 TEST_F(KeySystemConfigSelectorTest, DistinctiveIdentifier_Forced) {
   media_permission_->is_granted = true;
-  key_systems_->distinctive_identifier = EME_FEATURE_ALWAYS_ENABLED;
+  key_systems_->distinctive_identifier = EmeFeatureSupport::ALWAYS_ENABLED;
 
   blink::WebMediaKeySystemConfiguration config;
   config.distinctiveIdentifier =
@@ -354,7 +355,7 @@ TEST_F(KeySystemConfigSelectorTest, DistinctiveIdentifier_Forced) {
 }
 
 TEST_F(KeySystemConfigSelectorTest, DistinctiveIdentifier_Blocked) {
-  key_systems_->distinctive_identifier = EME_FEATURE_NOT_SUPPORTED;
+  key_systems_->distinctive_identifier = EmeFeatureSupport::NOT_SUPPORTED;
 
   blink::WebMediaKeySystemConfiguration config;
   config.distinctiveIdentifier =
@@ -366,7 +367,7 @@ TEST_F(KeySystemConfigSelectorTest, DistinctiveIdentifier_Blocked) {
 
 TEST_F(KeySystemConfigSelectorTest, DistinctiveIdentifier_RequestsPermission) {
   media_permission_->is_granted = true;
-  key_systems_->distinctive_identifier = EME_FEATURE_REQUESTABLE;
+  key_systems_->distinctive_identifier = EmeFeatureSupport::REQUESTABLE;
 
   blink::WebMediaKeySystemConfiguration config;
   config.distinctiveIdentifier =
@@ -380,7 +381,7 @@ TEST_F(KeySystemConfigSelectorTest, DistinctiveIdentifier_RequestsPermission) {
 
 TEST_F(KeySystemConfigSelectorTest, DistinctiveIdentifier_RespectsPermission) {
   media_permission_->is_granted = false;
-  key_systems_->distinctive_identifier = EME_FEATURE_REQUESTABLE;
+  key_systems_->distinctive_identifier = EmeFeatureSupport::REQUESTABLE;
 
   blink::WebMediaKeySystemConfiguration config;
   config.distinctiveIdentifier =
@@ -393,7 +394,7 @@ TEST_F(KeySystemConfigSelectorTest, DistinctiveIdentifier_RespectsPermission) {
 // --- persistentState ---
 
 TEST_F(KeySystemConfigSelectorTest, PersistentState_Default) {
-  key_systems_->persistent_state = EME_FEATURE_REQUESTABLE;
+  key_systems_->persistent_state = EmeFeatureSupport::REQUESTABLE;
 
   blink::WebMediaKeySystemConfiguration config;
   config.persistentState =
@@ -406,7 +407,7 @@ TEST_F(KeySystemConfigSelectorTest, PersistentState_Default) {
 }
 
 TEST_F(KeySystemConfigSelectorTest, PersistentState_Forced) {
-  key_systems_->persistent_state = EME_FEATURE_ALWAYS_ENABLED;
+  key_systems_->persistent_state = EmeFeatureSupport::ALWAYS_ENABLED;
 
   blink::WebMediaKeySystemConfiguration config;
   config.persistentState =
@@ -419,7 +420,7 @@ TEST_F(KeySystemConfigSelectorTest, PersistentState_Forced) {
 }
 
 TEST_F(KeySystemConfigSelectorTest, PersistentState_Blocked) {
-  key_systems_->persistent_state = EME_FEATURE_ALWAYS_ENABLED;
+  key_systems_->persistent_state = EmeFeatureSupport::ALWAYS_ENABLED;
 
   blink::WebMediaKeySystemConfiguration config;
   config.persistentState =
@@ -442,8 +443,8 @@ TEST_F(KeySystemConfigSelectorTest, SessionTypes_Empty) {
 
 TEST_F(KeySystemConfigSelectorTest, SessionTypes_SubsetSupported) {
   // Allow persistent state, as it would be required to be successful.
-  key_systems_->persistent_state = EME_FEATURE_REQUESTABLE;
-  key_systems_->persistent_license = EME_SESSION_TYPE_NOT_SUPPORTED;
+  key_systems_->persistent_state = EmeFeatureSupport::REQUESTABLE;
+  key_systems_->persistent_license = EmeSessionTypeSupport::NOT_SUPPORTED;
 
   std::vector<blink::WebEncryptedMediaSessionType> session_types;
   session_types.push_back(blink::WebEncryptedMediaSessionType::Temporary);
@@ -460,8 +461,8 @@ TEST_F(KeySystemConfigSelectorTest, SessionTypes_SubsetSupported) {
 
 TEST_F(KeySystemConfigSelectorTest, SessionTypes_AllSupported) {
   // Allow persistent state, and expect it to be required.
-  key_systems_->persistent_state = EME_FEATURE_REQUESTABLE;
-  key_systems_->persistent_license = EME_SESSION_TYPE_SUPPORTED;
+  key_systems_->persistent_state = EmeFeatureSupport::REQUESTABLE;
+  key_systems_->persistent_license = EmeSessionTypeSupport::SUPPORTED;
 
   std::vector<blink::WebEncryptedMediaSessionType> session_types;
   session_types.push_back(blink::WebEncryptedMediaSessionType::Temporary);
@@ -487,9 +488,10 @@ TEST_F(KeySystemConfigSelectorTest, SessionTypes_AllSupported) {
 
 TEST_F(KeySystemConfigSelectorTest, SessionTypes_PermissionCanBeRequired) {
   media_permission_->is_granted = true;
-  key_systems_->distinctive_identifier = EME_FEATURE_REQUESTABLE;
-  key_systems_->persistent_state = EME_FEATURE_REQUESTABLE;
-  key_systems_->persistent_license = EME_SESSION_TYPE_SUPPORTED_WITH_IDENTIFIER;
+  key_systems_->distinctive_identifier = EmeFeatureSupport::REQUESTABLE;
+  key_systems_->persistent_state = EmeFeatureSupport::REQUESTABLE;
+  key_systems_->persistent_license =
+      EmeSessionTypeSupport::SUPPORTED_WITH_IDENTIFIER;
 
   std::vector<blink::WebEncryptedMediaSessionType> session_types;
   session_types.push_back(
@@ -636,7 +638,7 @@ TEST_F(KeySystemConfigSelectorTest, VideoCapabilities_Robustness_Unsupported) {
 TEST_F(KeySystemConfigSelectorTest,
        VideoCapabilities_Robustness_PermissionCanBeRequired) {
   media_permission_->is_granted = true;
-  key_systems_->distinctive_identifier = EME_FEATURE_REQUESTABLE;
+  key_systems_->distinctive_identifier = EmeFeatureSupport::REQUESTABLE;
 
   std::vector<blink::WebMediaKeySystemMediaCapability> video_capabilities(1);
   video_capabilities[0].contentType = "a";
@@ -656,7 +658,7 @@ TEST_F(KeySystemConfigSelectorTest,
 TEST_F(KeySystemConfigSelectorTest,
        VideoCapabilities_Robustness_PermissionCanBeRecommended) {
   media_permission_->is_granted = false;
-  key_systems_->distinctive_identifier = EME_FEATURE_REQUESTABLE;
+  key_systems_->distinctive_identifier = EmeFeatureSupport::REQUESTABLE;
 
   std::vector<blink::WebMediaKeySystemMediaCapability> video_capabilities(1);
   video_capabilities[0].contentType = "a";
@@ -725,7 +727,7 @@ TEST_F(KeySystemConfigSelectorTest, Configurations_SubsetSupported) {
 TEST_F(KeySystemConfigSelectorTest,
        Configurations_FirstRequiresPermission_Allowed) {
   media_permission_->is_granted = true;
-  key_systems_->distinctive_identifier = EME_FEATURE_REQUESTABLE;
+  key_systems_->distinctive_identifier = EmeFeatureSupport::REQUESTABLE;
 
   blink::WebMediaKeySystemConfiguration config1;
   config1.label = "a";
@@ -744,7 +746,7 @@ TEST_F(KeySystemConfigSelectorTest,
 TEST_F(KeySystemConfigSelectorTest,
        Configurations_FirstRequiresPermission_Rejected) {
   media_permission_->is_granted = false;
-  key_systems_->distinctive_identifier = EME_FEATURE_REQUESTABLE;
+  key_systems_->distinctive_identifier = EmeFeatureSupport::REQUESTABLE;
 
   blink::WebMediaKeySystemConfiguration config1;
   config1.label = "a";

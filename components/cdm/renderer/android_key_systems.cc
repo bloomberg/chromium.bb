@@ -62,18 +62,18 @@ void AddAndroidWidevine(std::vector<KeySystemInfo>* concrete_key_systems,
 
   // We are using MediaDrm API on Android and we cannot guarantee that API
   // doesn't use persistent storage on the device. Therefore always set
-  // persistent state to EME_FEATURE_ALWAYS_ENABLED to err on the safe side.
+  // persistent state to EmeFeatureSupport::ALWAYS_ENABLED to err on the
+  // safe side.
 
   if (codecs != media::EME_CODEC_NONE) {
     AddWidevineWithCodecs(
-        WIDEVINE,
-        codecs,
-        max_audio_robustness,
-        max_video_robustness,
-        media::EME_SESSION_TYPE_NOT_SUPPORTED,  // persistent-license.
-        media::EME_SESSION_TYPE_NOT_SUPPORTED,  // persistent-release-message.
-        media::EME_FEATURE_ALWAYS_ENABLED,      // Persistent state.
-        media::EME_FEATURE_ALWAYS_ENABLED,      // Distinctive identifier.
+        WIDEVINE, codecs, max_audio_robustness, max_video_robustness,
+        media::EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-license.
+        media::EmeSessionTypeSupport::
+            NOT_SUPPORTED,  // persistent-release-message.
+        media::EmeFeatureSupport::ALWAYS_ENABLED,  // Persistent state.
+        media::EmeFeatureSupport::ALWAYS_ENABLED,  // Distinctive
+                                                   // identifier.
         concrete_key_systems);
   }
 
@@ -84,14 +84,15 @@ void AddAndroidWidevine(std::vector<KeySystemInfo>* concrete_key_systems,
   // TODO(ddorwin): Remove with unprefixed. http://crbug.com/249976
   if (response.non_compositing_codecs != media::EME_CODEC_NONE) {
     AddWidevineWithCodecs(
-        WIDEVINE_HR_NON_COMPOSITING,
-        response.non_compositing_codecs,
-        EmeRobustness::HW_SECURE_CRYPTO,        // Max audio robustness.
-        EmeRobustness::HW_SECURE_ALL,           // Max video robustness.
-        media::EME_SESSION_TYPE_NOT_SUPPORTED,  // persistent-license.
-        media::EME_SESSION_TYPE_NOT_SUPPORTED,  // persistent-release-message.
-        media::EME_FEATURE_ALWAYS_ENABLED,      // Persistent state.
-        media::EME_FEATURE_ALWAYS_ENABLED,      // Distinctive identifier.
+        WIDEVINE_HR_NON_COMPOSITING, response.non_compositing_codecs,
+        EmeRobustness::HW_SECURE_CRYPTO,              // Max audio robustness.
+        EmeRobustness::HW_SECURE_ALL,                 // Max video robustness.
+        media::EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-license.
+        media::EmeSessionTypeSupport::
+            NOT_SUPPORTED,  // persistent-release-message.
+        media::EmeFeatureSupport::ALWAYS_ENABLED,  // Persistent state.
+        media::EmeFeatureSupport::ALWAYS_ENABLED,  // Distinctive
+                                                   // identifier.
         concrete_key_systems);
   }
 }
@@ -121,11 +122,13 @@ void AddAndroidPlatformKeySystems(
       info.max_audio_robustness = EmeRobustness::EMPTY;
       info.max_video_robustness = EmeRobustness::EMPTY;
       // Assume the worst case (from a user point of view).
-      info.persistent_license_support = media::EME_SESSION_TYPE_NOT_SUPPORTED;
+      info.persistent_license_support =
+          media::EmeSessionTypeSupport::NOT_SUPPORTED;
       info.persistent_release_message_support =
-          media::EME_SESSION_TYPE_NOT_SUPPORTED;
-      info.persistent_state_support = media::EME_FEATURE_ALWAYS_ENABLED;
-      info.distinctive_identifier_support = media::EME_FEATURE_ALWAYS_ENABLED;
+          media::EmeSessionTypeSupport::NOT_SUPPORTED;
+      info.persistent_state_support = media::EmeFeatureSupport::ALWAYS_ENABLED;
+      info.distinctive_identifier_support =
+          media::EmeFeatureSupport::ALWAYS_ENABLED;
       concrete_key_systems->push_back(info);
     }
   }

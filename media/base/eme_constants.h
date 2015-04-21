@@ -58,37 +58,30 @@ enum EmeCodec {
 
 typedef uint32_t SupportedCodecs;
 
-enum EmeSessionTypeSupport {
+enum class EmeSessionTypeSupport {
   // Invalid default value.
-  EME_SESSION_TYPE_INVALID,
+  INVALID,
   // The session type is not supported.
-  EME_SESSION_TYPE_NOT_SUPPORTED,
+  NOT_SUPPORTED,
   // The session type is supported if a distinctive identifier is available.
-  EME_SESSION_TYPE_SUPPORTED_WITH_IDENTIFIER,
+  SUPPORTED_WITH_IDENTIFIER,
   // The session type is always supported.
-  EME_SESSION_TYPE_SUPPORTED,
+  SUPPORTED,
 };
 
 // Used to declare support for distinctive identifier and persistent state.
 // These are purposefully limited to not allow one to require the other, so that
 // transitive requirements are not possible. Non-trivial refactoring would be
 // required to support transitive requirements.
-enum EmeFeatureSupport {
+enum class EmeFeatureSupport {
   // Invalid default value.
-  EME_FEATURE_INVALID,
+  INVALID,
   // Access to the feature is not supported at all.
-  EME_FEATURE_NOT_SUPPORTED,
+  NOT_SUPPORTED,
   // Access to the feature may be requested.
-  EME_FEATURE_REQUESTABLE,
+  REQUESTABLE,
   // Access to the feature cannot be blocked.
-  EME_FEATURE_ALWAYS_ENABLED,
-};
-
-// Used to query support for distinctive identifier and persistent state.
-enum EmeFeatureRequirement {
-  EME_FEATURE_NOT_ALLOWED,
-  EME_FEATURE_OPTIONAL,
-  EME_FEATURE_REQUIRED,
+  ALWAYS_ENABLED,
 };
 
 enum class EmeMediaType {

@@ -30,13 +30,13 @@ class TestContentRendererClient : public ContentRendererClient {
     key_system_info.max_audio_robustness = media::EmeRobustness::EMPTY;
     key_system_info.max_video_robustness = media::EmeRobustness::EMPTY;
     key_system_info.persistent_license_support =
-        media::EME_SESSION_TYPE_NOT_SUPPORTED;
+        media::EmeSessionTypeSupport::NOT_SUPPORTED;
     key_system_info.persistent_release_message_support =
-        media::EME_SESSION_TYPE_NOT_SUPPORTED;
+        media::EmeSessionTypeSupport::NOT_SUPPORTED;
     key_system_info.persistent_state_support =
-        media::EME_FEATURE_NOT_SUPPORTED;
+        media::EmeFeatureSupport::NOT_SUPPORTED;
     key_system_info.distinctive_identifier_support =
-        media::EME_FEATURE_NOT_SUPPORTED;
+        media::EmeFeatureSupport::NOT_SUPPORTED;
     key_systems_info->push_back(key_system_info);
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
     if (is_extra_key_system_enabled_) {
@@ -45,13 +45,13 @@ class TestContentRendererClient : public ContentRendererClient {
       wv_key_system_info.max_audio_robustness = media::EmeRobustness::EMPTY;
       wv_key_system_info.max_video_robustness = media::EmeRobustness::EMPTY;
       wv_key_system_info.persistent_license_support =
-          media::EME_SESSION_TYPE_NOT_SUPPORTED;
+          media::EmeSessionTypeSupport::NOT_SUPPORTED;
       wv_key_system_info.persistent_release_message_support =
-          media::EME_SESSION_TYPE_NOT_SUPPORTED;
+          media::EmeSessionTypeSupport::NOT_SUPPORTED;
       wv_key_system_info.persistent_state_support =
-          media::EME_FEATURE_NOT_SUPPORTED;
+          media::EmeFeatureSupport::NOT_SUPPORTED;
       wv_key_system_info.distinctive_identifier_support =
-          media::EME_FEATURE_NOT_SUPPORTED;
+          media::EmeFeatureSupport::NOT_SUPPORTED;
       key_systems_info->push_back(wv_key_system_info);
     }
 #endif

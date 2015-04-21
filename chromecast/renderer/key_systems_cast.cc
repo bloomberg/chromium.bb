@@ -27,11 +27,13 @@ void AddKeySystemWithCodecs(
       ::media::EME_CODEC_MP4_AAC | ::media::EME_CODEC_MP4_AVC1;
   info.max_audio_robustness = ::media::EmeRobustness::EMPTY;
   info.max_video_robustness = ::media::EmeRobustness::EMPTY;
-  info.persistent_license_support = ::media::EME_SESSION_TYPE_NOT_SUPPORTED;
+  info.persistent_license_support =
+      ::media::EmeSessionTypeSupport::NOT_SUPPORTED;
   info.persistent_release_message_support =
-      ::media::EME_SESSION_TYPE_NOT_SUPPORTED;
-  info.persistent_state_support = ::media::EME_FEATURE_ALWAYS_ENABLED;
-  info.distinctive_identifier_support = ::media::EME_FEATURE_ALWAYS_ENABLED;
+      ::media::EmeSessionTypeSupport::NOT_SUPPORTED;
+  info.persistent_state_support = ::media::EmeFeatureSupport::ALWAYS_ENABLED;
+  info.distinctive_identifier_support =
+      ::media::EmeFeatureSupport::ALWAYS_ENABLED;
   key_systems_info->push_back(info);
 }
 
@@ -39,15 +41,16 @@ void AddChromecastKeySystems(
     std::vector<::media::KeySystemInfo>* key_systems_info) {
 #if defined(WIDEVINE_CDM_AVAILABLE)
   AddWidevineWithCodecs(
-      cdm::WIDEVINE,
-      ::media::EME_CODEC_MP4_AAC | ::media::EME_CODEC_MP4_AVC1,
-      ::media::EmeRobustness::HW_SECURE_ALL,    // Max audio robustness.
-      ::media::EmeRobustness::HW_SECURE_ALL,    // Max video robustness.
-      ::media::EME_SESSION_TYPE_NOT_SUPPORTED,  // persistent-license.
-      ::media::EME_SESSION_TYPE_NOT_SUPPORTED,  // persistent-release-message.
+      cdm::WIDEVINE, ::media::EME_CODEC_MP4_AAC | ::media::EME_CODEC_MP4_AVC1,
+      ::media::EmeRobustness::HW_SECURE_ALL,          // Max audio robustness.
+      ::media::EmeRobustness::HW_SECURE_ALL,          // Max video robustness.
+      ::media::EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-license.
+      ::media::EmeSessionTypeSupport::
+          NOT_SUPPORTED,  // persistent-release-message.
       // Note: On Chromecast, all CDMs may have persistent state.
-      ::media::EME_FEATURE_ALWAYS_ENABLED,      // Persistent state.
-      ::media::EME_FEATURE_ALWAYS_ENABLED,      // Distinctive identifier.
+      ::media::EmeFeatureSupport::ALWAYS_ENABLED,  // Persistent state.
+      ::media::EmeFeatureSupport::ALWAYS_ENABLED,  // Distinctive
+                                                   // identifier.
       key_systems_info);
 #endif
 

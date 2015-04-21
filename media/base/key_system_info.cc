@@ -11,10 +11,10 @@ KeySystemInfo::KeySystemInfo()
       supported_codecs(EME_CODEC_NONE),
       max_audio_robustness(EmeRobustness::INVALID),
       max_video_robustness(EmeRobustness::INVALID),
-      persistent_license_support(EME_SESSION_TYPE_INVALID),
-      persistent_release_message_support(EME_SESSION_TYPE_INVALID),
-      persistent_state_support(EME_FEATURE_INVALID),
-      distinctive_identifier_support(EME_FEATURE_INVALID),
+      persistent_license_support(EmeSessionTypeSupport::INVALID),
+      persistent_release_message_support(EmeSessionTypeSupport::INVALID),
+      persistent_state_support(EmeFeatureSupport::INVALID),
+      distinctive_identifier_support(EmeFeatureSupport::INVALID),
       use_aes_decryptor(false) {
 }
 

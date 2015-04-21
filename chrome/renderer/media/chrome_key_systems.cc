@@ -87,11 +87,11 @@ static void AddExternalClearKey(
   info.max_video_robustness = media::EmeRobustness::EMPTY;
 
   // Persistent sessions are faked.
-  info.persistent_license_support = media::EME_SESSION_TYPE_SUPPORTED;
+  info.persistent_license_support = media::EmeSessionTypeSupport::SUPPORTED;
   info.persistent_release_message_support =
-      media::EME_SESSION_TYPE_NOT_SUPPORTED;
-  info.persistent_state_support = media::EME_FEATURE_REQUESTABLE;
-  info.distinctive_identifier_support = media::EME_FEATURE_NOT_SUPPORTED;
+      media::EmeSessionTypeSupport::NOT_SUPPORTED;
+  info.persistent_state_support = media::EmeFeatureSupport::REQUESTABLE;
+  info.distinctive_identifier_support = media::EmeFeatureSupport::NOT_SUPPORTED;
 
   info.pepper_type = kExternalClearKeyPepperType;
 
@@ -193,20 +193,22 @@ static void AddPepperBasedWidevine(
   cdm::AddWidevineWithCodecs(
       cdm::WIDEVINE, supported_codecs,
 #if defined(OS_CHROMEOS)
-      media::EmeRobustness::HW_SECURE_ALL,     // Maximum audio robustness.
-      media::EmeRobustness::HW_SECURE_ALL,     // Maximim video robustness.
-      // persistent-license.
-      media::EME_SESSION_TYPE_SUPPORTED_WITH_IDENTIFIER,
-      media::EME_SESSION_TYPE_NOT_SUPPORTED,   // persistent-release-message.
-      media::EME_FEATURE_REQUESTABLE,          // Persistent state.
-      media::EME_FEATURE_REQUESTABLE,          // Distinctive identifier.
+      media::EmeRobustness::HW_SECURE_ALL,  // Maximum audio robustness.
+      media::EmeRobustness::HW_SECURE_ALL,  // Maximim video robustness.
+      media::EmeSessionTypeSupport::
+          SUPPORTED_WITH_IDENTIFIER,  // Persistent-license.
+      media::EmeSessionTypeSupport::
+          NOT_SUPPORTED,                      // Persistent-release-message.
+      media::EmeFeatureSupport::REQUESTABLE,  // Persistent state.
+      media::EmeFeatureSupport::REQUESTABLE,  // Distinctive identifier.
 #else   // (Desktop)
-      media::EmeRobustness::SW_SECURE_CRYPTO,  // Maximum audio robustness.
-      media::EmeRobustness::SW_SECURE_DECODE,  // Maximum video robustness.
-      media::EME_SESSION_TYPE_NOT_SUPPORTED,   // persistent-license.
-      media::EME_SESSION_TYPE_NOT_SUPPORTED,   // persistent-release-message.
-      media::EME_FEATURE_REQUESTABLE,          // Persistent state.
-      media::EME_FEATURE_NOT_SUPPORTED,        // Distinctive identifier.
+      media::EmeRobustness::SW_SECURE_CRYPTO,       // Maximum audio robustness.
+      media::EmeRobustness::SW_SECURE_DECODE,       // Maximum video robustness.
+      media::EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-license.
+      media::EmeSessionTypeSupport::
+          NOT_SUPPORTED,                        // persistent-release-message.
+      media::EmeFeatureSupport::REQUESTABLE,    // Persistent state.
+      media::EmeFeatureSupport::NOT_SUPPORTED,  // Distinctive identifier.
 #endif  // defined(OS_CHROMEOS)
       concrete_key_systems);
 }

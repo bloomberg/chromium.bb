@@ -108,10 +108,11 @@ static void AddClearKey(std::vector<KeySystemInfo>* concrete_key_systems) {
 
   info.max_audio_robustness = EmeRobustness::EMPTY;
   info.max_video_robustness = EmeRobustness::EMPTY;
-  info.persistent_license_support = EME_SESSION_TYPE_NOT_SUPPORTED;
-  info.persistent_release_message_support = EME_SESSION_TYPE_NOT_SUPPORTED;
-  info.persistent_state_support = EME_FEATURE_NOT_SUPPORTED;
-  info.distinctive_identifier_support = EME_FEATURE_NOT_SUPPORTED;
+  info.persistent_license_support = EmeSessionTypeSupport::NOT_SUPPORTED;
+  info.persistent_release_message_support =
+      EmeSessionTypeSupport::NOT_SUPPORTED;
+  info.persistent_state_support = EmeFeatureSupport::NOT_SUPPORTED;
+  info.distinctive_identifier_support = EmeFeatureSupport::NOT_SUPPORTED;
 
   info.use_aes_decryptor = true;
 
@@ -400,31 +401,34 @@ void KeySystemsImpl::AddConcreteSupportedKeySystems(
     DCHECK(!info.key_system.empty());
     DCHECK(info.max_audio_robustness != EmeRobustness::INVALID);
     DCHECK(info.max_video_robustness != EmeRobustness::INVALID);
-    DCHECK(info.persistent_license_support != EME_SESSION_TYPE_INVALID);
-    DCHECK(info.persistent_release_message_support != EME_SESSION_TYPE_INVALID);
-    DCHECK(info.persistent_state_support != EME_FEATURE_INVALID);
-    DCHECK(info.distinctive_identifier_support != EME_FEATURE_INVALID);
+    DCHECK(info.persistent_license_support != EmeSessionTypeSupport::INVALID);
+    DCHECK(info.persistent_release_message_support !=
+           EmeSessionTypeSupport::INVALID);
+    DCHECK(info.persistent_state_support != EmeFeatureSupport::INVALID);
+    DCHECK(info.distinctive_identifier_support != EmeFeatureSupport::INVALID);
 
     // Supporting persistent state is a prerequsite for supporting persistent
     // sessions.
-    if (info.persistent_state_support == EME_FEATURE_NOT_SUPPORTED) {
-      DCHECK(info.persistent_license_support == EME_SESSION_TYPE_NOT_SUPPORTED);
+    if (info.persistent_state_support == EmeFeatureSupport::NOT_SUPPORTED) {
+      DCHECK(info.persistent_license_support ==
+             EmeSessionTypeSupport::NOT_SUPPORTED);
       DCHECK(info.persistent_release_message_support ==
-             EME_SESSION_TYPE_NOT_SUPPORTED);
+             EmeSessionTypeSupport::NOT_SUPPORTED);
     }
 
     // persistent-release-message sessions are not currently supported.
     // http://crbug.com/448888
     DCHECK(info.persistent_release_message_support ==
-           EME_SESSION_TYPE_NOT_SUPPORTED);
+           EmeSessionTypeSupport::NOT_SUPPORTED);
 
     // If distinctive identifiers are not supported, then no other features can
     // require them.
-    if (info.distinctive_identifier_support == EME_FEATURE_NOT_SUPPORTED) {
+    if (info.distinctive_identifier_support ==
+        EmeFeatureSupport::NOT_SUPPORTED) {
       DCHECK(info.persistent_license_support !=
-             EME_SESSION_TYPE_SUPPORTED_WITH_IDENTIFIER);
+             EmeSessionTypeSupport::SUPPORTED_WITH_IDENTIFIER);
       DCHECK(info.persistent_release_message_support !=
-             EME_SESSION_TYPE_SUPPORTED_WITH_IDENTIFIER);
+             EmeSessionTypeSupport::SUPPORTED_WITH_IDENTIFIER);
     }
 
     // Distinctive identifiers and persistent state can only be reliably blocked
@@ -438,8 +442,10 @@ void KeySystemsImpl::AddConcreteSupportedKeySystems(
       can_block = true;
 #endif
     if (!can_block) {
-      DCHECK(info.distinctive_identifier_support == EME_FEATURE_ALWAYS_ENABLED);
-      DCHECK(info.persistent_state_support == EME_FEATURE_ALWAYS_ENABLED);
+      DCHECK(info.distinctive_identifier_support ==
+             EmeFeatureSupport::ALWAYS_ENABLED);
+      DCHECK(info.persistent_state_support ==
+             EmeFeatureSupport::ALWAYS_ENABLED);
     }
 
     DCHECK(!IsSupportedKeySystem(info.key_system))
@@ -776,7 +782,7 @@ EmeSessionTypeSupport KeySystemsImpl::GetPersistentLicenseSessionSupport(
       concrete_key_system_map_.find(key_system);
   if (key_system_iter == concrete_key_system_map_.end()) {
     NOTREACHED();
-    return EME_SESSION_TYPE_INVALID;
+    return EmeSessionTypeSupport::INVALID;
   }
   return key_system_iter->second.persistent_license_support;
 }
@@ -789,7 +795,7 @@ EmeSessionTypeSupport KeySystemsImpl::GetPersistentReleaseMessageSessionSupport(
       concrete_key_system_map_.find(key_system);
   if (key_system_iter == concrete_key_system_map_.end()) {
     NOTREACHED();
-    return EME_SESSION_TYPE_INVALID;
+    return EmeSessionTypeSupport::INVALID;
   }
   return key_system_iter->second.persistent_release_message_support;
 }
@@ -802,7 +808,7 @@ EmeFeatureSupport KeySystemsImpl::GetPersistentStateSupport(
       concrete_key_system_map_.find(key_system);
   if (key_system_iter == concrete_key_system_map_.end()) {
     NOTREACHED();
-    return EME_FEATURE_INVALID;
+    return EmeFeatureSupport::INVALID;
   }
   return key_system_iter->second.persistent_state_support;
 }
@@ -815,7 +821,7 @@ EmeFeatureSupport KeySystemsImpl::GetDistinctiveIdentifierSupport(
       concrete_key_system_map_.find(key_system);
   if (key_system_iter == concrete_key_system_map_.end()) {
     NOTREACHED();
-    return EME_FEATURE_INVALID;
+    return EmeFeatureSupport::INVALID;
   }
   return key_system_iter->second.distinctive_identifier_support;
 }

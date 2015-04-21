@@ -20,33 +20,21 @@
 
 namespace media {
 
+using EmeFeatureRequirement =
+    blink::WebMediaKeySystemConfiguration::Requirement;
+
 namespace {
-
-static EmeFeatureRequirement ConvertRequirement(
-    blink::WebMediaKeySystemConfiguration::Requirement requirement) {
-  switch (requirement) {
-    case blink::WebMediaKeySystemConfiguration::Requirement::Required:
-      return EME_FEATURE_REQUIRED;
-    case blink::WebMediaKeySystemConfiguration::Requirement::Optional:
-      return EME_FEATURE_OPTIONAL;
-    case blink::WebMediaKeySystemConfiguration::Requirement::NotAllowed:
-      return EME_FEATURE_NOT_ALLOWED;
-  }
-
-  NOTREACHED();
-  return EME_FEATURE_NOT_ALLOWED;
-}
 
 static EmeConfigRule GetSessionTypeConfigRule(EmeSessionTypeSupport support) {
   switch (support) {
-    case EME_SESSION_TYPE_INVALID:
+    case EmeSessionTypeSupport::INVALID:
       NOTREACHED();
       return EmeConfigRule::NOT_SUPPORTED;
-    case EME_SESSION_TYPE_NOT_SUPPORTED:
+    case EmeSessionTypeSupport::NOT_SUPPORTED:
       return EmeConfigRule::NOT_SUPPORTED;
-    case EME_SESSION_TYPE_SUPPORTED_WITH_IDENTIFIER:
+    case EmeSessionTypeSupport::SUPPORTED_WITH_IDENTIFIER:
       return EmeConfigRule::IDENTIFIER_AND_PERSISTENCE_REQUIRED;
-    case EME_SESSION_TYPE_SUPPORTED:
+    case EmeSessionTypeSupport::SUPPORTED:
       return EmeConfigRule::PERSISTENCE_REQUIRED;
   }
   NOTREACHED();
@@ -56,7 +44,7 @@ static EmeConfigRule GetSessionTypeConfigRule(EmeSessionTypeSupport support) {
 static EmeConfigRule GetDistinctiveIdentifierConfigRule(
     EmeFeatureSupport support,
     EmeFeatureRequirement requirement) {
-  if (support == EME_FEATURE_INVALID) {
+  if (support == EmeFeatureSupport::INVALID) {
     NOTREACHED();
     return EmeConfigRule::NOT_SUPPORTED;
   }
@@ -70,24 +58,24 @@ static EmeConfigRule GetDistinctiveIdentifierConfigRule(
   //    NOT_SUPPORTED  I_NOT_ALLOWED  I_NOT_ALLOWED  NOT_SUPPORTED
   //      REQUESTABLE  I_NOT_ALLOWED  SUPPORTED      I_REQUIRED
   //   ALWAYS_ENABLED  NOT_SUPPORTED  I_REQUIRED     I_REQUIRED
-  DCHECK(support == EME_FEATURE_NOT_SUPPORTED ||
-         support == EME_FEATURE_REQUESTABLE ||
-         support == EME_FEATURE_ALWAYS_ENABLED);
-  DCHECK(requirement == EME_FEATURE_NOT_ALLOWED ||
-         requirement == EME_FEATURE_OPTIONAL ||
-         requirement == EME_FEATURE_REQUIRED);
-  if ((support == EME_FEATURE_NOT_SUPPORTED &&
-       requirement == EME_FEATURE_REQUIRED) ||
-      (support == EME_FEATURE_ALWAYS_ENABLED &&
-       requirement == EME_FEATURE_NOT_ALLOWED)) {
+  DCHECK(support == EmeFeatureSupport::NOT_SUPPORTED ||
+         support == EmeFeatureSupport::REQUESTABLE ||
+         support == EmeFeatureSupport::ALWAYS_ENABLED);
+  DCHECK(requirement == EmeFeatureRequirement::NotAllowed ||
+         requirement == EmeFeatureRequirement::Optional ||
+         requirement == EmeFeatureRequirement::Required);
+  if ((support == EmeFeatureSupport::NOT_SUPPORTED &&
+       requirement == EmeFeatureRequirement::Required) ||
+      (support == EmeFeatureSupport::ALWAYS_ENABLED &&
+       requirement == EmeFeatureRequirement::NotAllowed)) {
     return EmeConfigRule::NOT_SUPPORTED;
   }
-  if (support == EME_FEATURE_REQUESTABLE &&
-      requirement == EME_FEATURE_OPTIONAL) {
+  if (support == EmeFeatureSupport::REQUESTABLE &&
+      requirement == EmeFeatureRequirement::Optional) {
     return EmeConfigRule::SUPPORTED;
   }
-  if (support == EME_FEATURE_NOT_SUPPORTED ||
-      requirement == EME_FEATURE_NOT_ALLOWED) {
+  if (support == EmeFeatureSupport::NOT_SUPPORTED ||
+      requirement == EmeFeatureRequirement::NotAllowed) {
     return EmeConfigRule::IDENTIFIER_NOT_ALLOWED;
   }
   return EmeConfigRule::IDENTIFIER_REQUIRED;
@@ -96,7 +84,7 @@ static EmeConfigRule GetDistinctiveIdentifierConfigRule(
 static EmeConfigRule GetPersistentStateConfigRule(
     EmeFeatureSupport support,
     EmeFeatureRequirement requirement) {
-  if (support == EME_FEATURE_INVALID) {
+  if (support == EmeFeatureSupport::INVALID) {
     NOTREACHED();
     return EmeConfigRule::NOT_SUPPORTED;
   }
@@ -113,24 +101,24 @@ static EmeConfigRule GetPersistentStateConfigRule(
   //    NOT_SUPPORTED  P_NOT_ALLOWED  P_NOT_ALLOWED  NOT_SUPPORTED
   //      REQUESTABLE  P_NOT_ALLOWED  SUPPORTED      P_REQUIRED
   //   ALWAYS_ENABLED  NOT_SUPPORTED  P_REQUIRED     P_REQUIRED
-  DCHECK(support == EME_FEATURE_NOT_SUPPORTED ||
-         support == EME_FEATURE_REQUESTABLE ||
-         support == EME_FEATURE_ALWAYS_ENABLED);
-  DCHECK(requirement == EME_FEATURE_NOT_ALLOWED ||
-         requirement == EME_FEATURE_OPTIONAL ||
-         requirement == EME_FEATURE_REQUIRED);
-  if ((support == EME_FEATURE_NOT_SUPPORTED &&
-       requirement == EME_FEATURE_REQUIRED) ||
-      (support == EME_FEATURE_ALWAYS_ENABLED &&
-       requirement == EME_FEATURE_NOT_ALLOWED)) {
+  DCHECK(support == EmeFeatureSupport::NOT_SUPPORTED ||
+         support == EmeFeatureSupport::REQUESTABLE ||
+         support == EmeFeatureSupport::ALWAYS_ENABLED);
+  DCHECK(requirement == EmeFeatureRequirement::NotAllowed ||
+         requirement == EmeFeatureRequirement::Optional ||
+         requirement == EmeFeatureRequirement::Required);
+  if ((support == EmeFeatureSupport::NOT_SUPPORTED &&
+       requirement == EmeFeatureRequirement::Required) ||
+      (support == EmeFeatureSupport::ALWAYS_ENABLED &&
+       requirement == EmeFeatureRequirement::NotAllowed)) {
     return EmeConfigRule::NOT_SUPPORTED;
   }
-  if (support == EME_FEATURE_REQUESTABLE &&
-      requirement == EME_FEATURE_OPTIONAL) {
+  if (support == EmeFeatureSupport::REQUESTABLE &&
+      requirement == EmeFeatureRequirement::Optional) {
     return EmeConfigRule::SUPPORTED;
   }
-  if (support == EME_FEATURE_NOT_SUPPORTED ||
-      requirement == EME_FEATURE_NOT_ALLOWED) {
+  if (support == EmeFeatureSupport::NOT_SUPPORTED ||
+      requirement == EmeFeatureRequirement::NotAllowed) {
     return EmeConfigRule::PERSISTENCE_NOT_ALLOWED;
   }
   return EmeConfigRule::PERSISTENCE_REQUIRED;
@@ -426,7 +414,7 @@ KeySystemConfigSelector::GetSupportedConfiguration(
   // permission has already been denied. This would happen anyway at step 11.
   EmeConfigRule di_rule = GetDistinctiveIdentifierConfigRule(
       key_systems_->GetDistinctiveIdentifierSupport(key_system),
-      ConvertRequirement(candidate.distinctiveIdentifier));
+      candidate.distinctiveIdentifier);
   if (!config_state->IsRuleSupported(di_rule)) {
     DVLOG(2) << "Rejecting requested configuration because "
              << "the distinctiveIdentifier requirement was not supported.";
@@ -448,7 +436,7 @@ KeySystemConfigSelector::GetSupportedConfiguration(
   //        combination with accumulated configuration, return null.
   EmeConfigRule ps_rule = GetPersistentStateConfigRule(
       key_systems_->GetPersistentStateSupport(key_system),
-      ConvertRequirement(candidate.persistentState));
+      candidate.persistentState);
   if (!config_state->IsRuleSupported(ps_rule)) {
     DVLOG(2) << "Rejecting requested configuration because "
              << "the persistentState requirement was not supported.";
@@ -565,10 +553,10 @@ KeySystemConfigSelector::GetSupportedConfiguration(
       blink::WebMediaKeySystemConfiguration::Requirement::Optional) {
     EmeConfigRule not_allowed_rule = GetDistinctiveIdentifierConfigRule(
         key_systems_->GetDistinctiveIdentifierSupport(key_system),
-        EME_FEATURE_NOT_ALLOWED);
+        EmeFeatureRequirement::NotAllowed);
     EmeConfigRule required_rule = GetDistinctiveIdentifierConfigRule(
         key_systems_->GetDistinctiveIdentifierSupport(key_system),
-        EME_FEATURE_REQUIRED);
+        EmeFeatureRequirement::Required);
     bool not_allowed_supported =
         config_state->IsRuleSupported(not_allowed_rule);
     bool required_supported = config_state->IsRuleSupported(required_rule);
@@ -605,10 +593,10 @@ KeySystemConfigSelector::GetSupportedConfiguration(
       blink::WebMediaKeySystemConfiguration::Requirement::Optional) {
     EmeConfigRule not_allowed_rule = GetPersistentStateConfigRule(
         key_systems_->GetPersistentStateSupport(key_system),
-        EME_FEATURE_NOT_ALLOWED);
+        EmeFeatureRequirement::NotAllowed);
     EmeConfigRule required_rule = GetPersistentStateConfigRule(
         key_systems_->GetPersistentStateSupport(key_system),
-        EME_FEATURE_REQUIRED);
+        EmeFeatureRequirement::Required);
     // |distinctiveIdentifier| should not be affected after it is decided.
     DCHECK(not_allowed_rule == EmeConfigRule::NOT_SUPPORTED ||
            not_allowed_rule == EmeConfigRule::PERSISTENCE_NOT_ALLOWED);

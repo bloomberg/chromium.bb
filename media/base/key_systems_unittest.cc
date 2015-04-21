@@ -193,10 +193,11 @@ void TestMediaClient::AddUsesAesKeySystem(
   system.supported_init_data_types = kInitDataTypeMaskWebM;
   system.max_audio_robustness = EmeRobustness::EMPTY;
   system.max_video_robustness = EmeRobustness::EMPTY;
-  system.persistent_license_support = EME_SESSION_TYPE_NOT_SUPPORTED;
-  system.persistent_release_message_support = EME_SESSION_TYPE_NOT_SUPPORTED;
-  system.persistent_state_support = EME_FEATURE_NOT_SUPPORTED;
-  system.distinctive_identifier_support = EME_FEATURE_NOT_SUPPORTED;
+  system.persistent_license_support = EmeSessionTypeSupport::NOT_SUPPORTED;
+  system.persistent_release_message_support =
+      EmeSessionTypeSupport::NOT_SUPPORTED;
+  system.persistent_state_support = EmeFeatureSupport::NOT_SUPPORTED;
+  system.distinctive_identifier_support = EmeFeatureSupport::NOT_SUPPORTED;
   system.use_aes_decryptor = true;
   key_systems->push_back(system);
 }
@@ -210,10 +211,10 @@ void TestMediaClient::AddExternalKeySystem(
   ext.supported_init_data_types = kInitDataTypeMaskWebM;
   ext.max_audio_robustness = EmeRobustness::EMPTY;
   ext.max_video_robustness = EmeRobustness::EMPTY;
-  ext.persistent_license_support = EME_SESSION_TYPE_SUPPORTED;
-  ext.persistent_release_message_support = EME_SESSION_TYPE_NOT_SUPPORTED;
-  ext.persistent_state_support = EME_FEATURE_ALWAYS_ENABLED;
-  ext.distinctive_identifier_support = EME_FEATURE_ALWAYS_ENABLED;
+  ext.persistent_license_support = EmeSessionTypeSupport::SUPPORTED;
+  ext.persistent_release_message_support = EmeSessionTypeSupport::NOT_SUPPORTED;
+  ext.persistent_state_support = EmeFeatureSupport::ALWAYS_ENABLED;
+  ext.distinctive_identifier_support = EmeFeatureSupport::ALWAYS_ENABLED;
   ext.parent_key_system = kExternalParent;
 #if defined(ENABLE_PEPPER_CDMS)
   ext.pepper_type = "application/x-ppapi-external-cdm";
