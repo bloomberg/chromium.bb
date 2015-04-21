@@ -30,8 +30,8 @@ public abstract class AwBrowserProcess {
      * to run webview in this process. Does not create threads; safe to call from zygote.
      * Note: it is up to the caller to ensure this is only called once.
      */
-    public static void loadLibrary() {
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+    public static void loadLibrary(Context context) {
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, context);
         try {
             LibraryLoader libraryLoader = LibraryLoader.get(LibraryProcessType.PROCESS_WEBVIEW);
             libraryLoader.loadNow();

@@ -4,6 +4,8 @@
 
 package org.chromium.html_viewer;
 
+import android.content.Context;
+
 import org.chromium.base.CalledByNative;
 import org.chromium.base.PathUtils;
 
@@ -17,7 +19,7 @@ public final class Main {
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private static void init() {
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+    private static void init(Context context) {
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, context);
     }
 }

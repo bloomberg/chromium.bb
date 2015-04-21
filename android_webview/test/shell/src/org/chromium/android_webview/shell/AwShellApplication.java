@@ -39,7 +39,7 @@ public class AwShellApplication extends ContentApplication {
             Log.e(TAG, "Java debugger connected. Resuming execution.");
         }
 
-        AwBrowserProcess.loadLibrary();
+        AwBrowserProcess.loadLibrary(this);
 
         if (CommandLine.getInstance().hasSwitch(AwShellSwitches.ENABLE_ATRACE)) {
             Log.e(TAG, "Enabling Android trace.");

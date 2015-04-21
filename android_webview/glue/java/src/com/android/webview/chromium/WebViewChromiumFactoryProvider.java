@@ -125,7 +125,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
         ThreadUtils.setWillOverrideUiThread();
         // Load chromium library.
-        AwBrowserProcess.loadLibrary();
+        AwBrowserProcess.loadLibrary(getWrappedCurrentApplicationContext());
 
         final PackageInfo packageInfo = WebViewFactory.getLoadedPackageInfo();
 

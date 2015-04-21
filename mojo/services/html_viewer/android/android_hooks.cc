@@ -16,7 +16,7 @@ bool RegisterJNI(JNIEnv* env) {
 }
 
 bool Init() {
-  Java_Main_init(base::android::AttachCurrentThread());
+  Java_Main_init(base::android::AttachCurrentThread(), GetApplicationContext());
   return true;
 }
 }  // namespace
