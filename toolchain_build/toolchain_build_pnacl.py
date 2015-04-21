@@ -692,6 +692,7 @@ def HostTools(host, options):
                   '-DLLVM_EXTERNAL_SUBZERO_SOURCE_DIR=%(subzero_src)s',
                   '-DLLVM_INSTALL_UTILS=ON',
                   '-DLLVM_TARGETS_TO_BUILD=X86;ARM;Mips;JSBackend',
+                  '-DSUBZERO_TARGETS_TO_BUILD=X8632;ARM32',
                   '%(llvm_src)s'],
                   # Older CMake ignore CMAKE_*_LINKER_FLAGS during config step.
                   # https://public.kitware.com/Bug/view.php?id=14066
@@ -736,6 +737,7 @@ def HostTools(host, options):
                    '--enable-debug=' + ('yes' if HostIsDebug(options)
                                         else 'no'),
                    '--enable-targets=x86,arm,mips,js',
+                   '--enable-subzero-targets=X8632,ARM32',
                    '--enable-werror=' + ('yes' if llvm_do_werror else 'no'),
                    '--prefix=/',
                    '--program-prefix=',

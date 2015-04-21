@@ -304,12 +304,25 @@ llvm-sb-configure() {
   local objdir="${LLVM_SB_OBJDIR}"
   local installdir="$(GetTranslatorInstallDir ${arch})"
   local targets=""
+  local subzero_targets=""
   # For LLVM, "x86" brings in both i686 and x86_64.
   case ${arch} in
-    i686) targets=x86 ;;
-    x86_64) targets=x86 ;;
-    armv7) targets=arm ;;
-    universal) targets=x86,arm ;;
+    i686)
+      targets=x86
+      subzero_targets=X8632
+      ;;
+    x86_64)
+      targets=x86
+      subzero_targets=X8664
+      ;;
+    armv7)
+      targets=arm
+      subzero_targets=ARM32
+      ;;
+    universal)
+      targets=x86,arm
+      subzero_targets=X8632,ARM32
+      ;;
   esac
 
   spushd "${objdir}"
@@ -328,6 +341,7 @@ llvm-sb-configure() {
         --prefix=${installdir} \
         --host=nacl \
         --enable-targets=${targets} \
+        --enable-subzero-targets=${subzero_targets} \
         --disable-assertions \
         --enable-pic=no \
         --enable-static \
