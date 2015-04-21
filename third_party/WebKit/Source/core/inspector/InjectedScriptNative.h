@@ -5,7 +5,7 @@
 #ifndef InjectedScriptNative_h
 #define InjectedScriptNative_h
 
-#include "bindings/core/v8/V8PersistentValueMap.h"
+#include "bindings/core/v8/V8GlobalValueMap.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/RefCounted.h"
@@ -33,7 +33,7 @@ private:
 
     int m_lastBoundObjectId;
     v8::Isolate* m_isolate;
-    V8PersistentValueMap<int, v8::Value, false> m_idToWrappedObject;
+    V8GlobalValueMap<int, v8::Value, v8::kNotWeak> m_idToWrappedObject;
     typedef HashMap<int, String> IdToObjectGroupName;
     IdToObjectGroupName m_idToObjectGroupName;
     typedef HashMap<String, Vector<int>> NameToObjectGroup;

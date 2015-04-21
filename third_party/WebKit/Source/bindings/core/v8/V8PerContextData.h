@@ -33,7 +33,7 @@
 
 #include "bindings/core/v8/CustomElementBinding.h"
 #include "bindings/core/v8/ScopedPersistent.h"
-#include "bindings/core/v8/V8PersistentValueMap.h"
+#include "bindings/core/v8/V8GlobalValueMap.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "core/CoreExport.h"
 #include "gin/public/context_holder.h"
@@ -105,10 +105,10 @@ private:
 
     // For each possible type of wrapper, we keep a boilerplate object.
     // The boilerplate is used to create additional wrappers of the same type.
-    typedef V8PersistentValueMap<const WrapperTypeInfo*, v8::Object, false> WrapperBoilerplateMap;
+    typedef V8GlobalValueMap<const WrapperTypeInfo*, v8::Object, v8::kNotWeak> WrapperBoilerplateMap;
     WrapperBoilerplateMap m_wrapperBoilerplates;
 
-    typedef V8PersistentValueMap<const WrapperTypeInfo*, v8::Function, false> ConstructorMap;
+    typedef V8GlobalValueMap<const WrapperTypeInfo*, v8::Function, v8::kNotWeak> ConstructorMap;
     ConstructorMap m_constructorMap;
 
     V8NPObjectMap m_v8NPObjectMap;
@@ -124,7 +124,7 @@ private:
     // This is owned by a static hash map in V8DOMActivityLogger.
     V8DOMActivityLogger* m_activityLogger;
 
-    V8PersistentValueMap<String, v8::Value, false> m_compiledPrivateScript;
+    V8GlobalValueMap<String, v8::Value, v8::kNotWeak> m_compiledPrivateScript;
 };
 
 } // namespace blink

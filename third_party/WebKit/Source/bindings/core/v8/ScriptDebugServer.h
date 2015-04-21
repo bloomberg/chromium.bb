@@ -31,7 +31,7 @@
 #ifndef ScriptDebugServer_h
 #define ScriptDebugServer_h
 
-#include "bindings/core/v8/V8PersistentValueMap.h"
+#include "bindings/core/v8/V8GlobalValueMap.h"
 #include "core/CoreExport.h"
 #include "core/inspector/ScriptBreakpoint.h"
 #include "core/inspector/ScriptCallStack.h"
@@ -159,7 +159,7 @@ private:
 
     v8::Isolate* m_isolate;
     bool m_breakpointsActivated;
-    V8PersistentValueMap<String, v8::Script, false> m_compiledScripts;
+    V8GlobalValueMap<String, v8::Script, v8::kNotWeak> m_compiledScripts;
     v8::UniquePersistent<v8::FunctionTemplate> m_breakProgramCallbackTemplate;
     v8::UniquePersistent<v8::Object> m_debuggerScript;
     v8::Local<v8::Object> m_executionState;

@@ -34,12 +34,12 @@
 
 #include "bindings/core/v8/NPV8Object.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8GlobalValueMap.h"
 #include "bindings/core/v8/V8HTMLAppletElement.h"
 #include "bindings/core/v8/V8HTMLEmbedElement.h"
 #include "bindings/core/v8/V8HTMLObjectElement.h"
 #include "bindings/core/v8/V8NPUtils.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
-#include "bindings/core/v8/V8PersistentValueMap.h"
 #include "bindings/core/v8/npruntime_impl.h"
 #include "bindings/core/v8/npruntime_priv.h"
 #include "core/html/HTMLPlugInElement.h"
@@ -167,9 +167,9 @@ void npObjectInvokeDefaultHandler(const v8::FunctionCallbackInfo<v8::Value>& inf
     npObjectInvokeImpl(info, InvokeDefault);
 }
 
-class V8TemplateMapTraits : public V8PersistentValueMapTraits<PrivateIdentifier*, v8::FunctionTemplate, true> {
+class V8TemplateMapTraits : public V8GlobalValueMapTraits<PrivateIdentifier*, v8::FunctionTemplate, v8::kWeakWithParameter> {
 public:
-    typedef v8::PersistentValueMap<PrivateIdentifier*, v8::FunctionTemplate, V8TemplateMapTraits> MapType;
+    typedef v8::GlobalValueMap<PrivateIdentifier*, v8::FunctionTemplate, V8TemplateMapTraits> MapType;
     typedef PrivateIdentifier WeakCallbackDataType;
 
     static WeakCallbackDataType* WeakCallbackParameter(MapType* map, PrivateIdentifier* key, const v8::Local<v8::FunctionTemplate>& value)
@@ -179,24 +179,25 @@ public:
 
     static void DisposeCallbackData(WeakCallbackDataType* callbackData) { }
 
-    static MapType* MapFromWeakCallbackData(
-        const v8::WeakCallbackData<v8::FunctionTemplate, WeakCallbackDataType>&);
+    static MapType* MapFromWeakCallbackInfo(
+        const v8::WeakCallbackInfo<WeakCallbackDataType>&);
 
-    static PrivateIdentifier* KeyFromWeakCallbackData(
-        const v8::WeakCallbackData<v8::FunctionTemplate, WeakCallbackDataType>& data)
+    static PrivateIdentifier* KeyFromWeakCallbackInfo(
+        const v8::WeakCallbackInfo<WeakCallbackDataType>& data)
     {
         return data.GetParameter();
     }
 
     // Dispose traits:
-    static void Dispose(v8::Isolate* isolate, v8::UniquePersistent<v8::FunctionTemplate> value, PrivateIdentifier* key) { }
+    static void Dispose(v8::Isolate* isolate, v8::Global<v8::FunctionTemplate> value, PrivateIdentifier* key) { }
+    static void DisposeWeak(const v8::WeakCallbackInfo<WeakCallbackDataType>& data) { }
 };
 
 
 class V8NPTemplateMap {
 public:
     // NPIdentifier is PrivateIdentifier*.
-    typedef v8::PersistentValueMap<PrivateIdentifier*, v8::FunctionTemplate, V8TemplateMapTraits> MapType;
+    typedef v8::GlobalValueMap<PrivateIdentifier*, v8::FunctionTemplate, V8TemplateMapTraits> MapType;
 
     v8::Local<v8::FunctionTemplate> get(PrivateIdentifier* key)
     {
@@ -227,7 +228,7 @@ private:
     MapType m_map;
 };
 
-V8TemplateMapTraits::MapType* V8TemplateMapTraits::MapFromWeakCallbackData(const v8::WeakCallbackData<v8::FunctionTemplate, WeakCallbackDataType>& data)
+V8TemplateMapTraits::MapType* V8TemplateMapTraits::MapFromWeakCallbackInfo(const v8::WeakCallbackInfo<WeakCallbackDataType>& data)
 {
     return &V8NPTemplateMap::sharedInstance(data.GetIsolate()).m_map;
 }

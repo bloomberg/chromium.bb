@@ -161,7 +161,6 @@
             'V8PerContextData.h',
             'V8PerIsolateData.cpp',
             'V8PerIsolateData.h',
-            'V8PersistentValueMap.h',
             'V8PersistentValueVector.h',
             'V8RecursionScope.cpp',
             'V8RecursionScope.h',
