@@ -55,7 +55,7 @@ class InProcessTraceController {
   virtual ~InProcessTraceController() {}
 
   bool BeginTracing(const std::string& category_patterns) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     return content::TracingController::GetInstance()->EnableRecording(
         base::trace_event::CategoryFilter(category_patterns),
         base::trace_event::TraceOptions(),
@@ -66,7 +66,7 @@ class InProcessTraceController {
                              const std::string& category_name,
                              const std::string& event_name,
                              int num_occurrences) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(num_occurrences > 0);
     watch_notification_count_ = num_occurrences;
     if (!content::TracingController::GetInstance()->SetWatchEvent(
@@ -89,7 +89,7 @@ class InProcessTraceController {
   }
 
   bool WaitForWatchEvent(base::TimeDelta timeout) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (watch_notification_count_ == 0)
       return true;
 
@@ -107,7 +107,7 @@ class InProcessTraceController {
   }
 
   bool EndTracing(std::string* json_trace_output) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     using namespace base::debug;
 
     if (!content::TracingController::GetInstance()->DisableRecording(

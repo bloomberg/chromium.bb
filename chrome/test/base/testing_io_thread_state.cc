@@ -79,7 +79,7 @@ TestingIOThreadState::~TestingIOThreadState() {
 }
 
 void TestingIOThreadState::Initialize(const base::Closure& done) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   io_thread_state_->SetGlobalsForTesting(new IOThread::Globals());
 
@@ -87,7 +87,7 @@ void TestingIOThreadState::Initialize(const base::Closure& done) {
 }
 
 void TestingIOThreadState::Shutdown(const base::Closure& done) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   delete io_thread_state_->globals();
   io_thread_state_->SetGlobalsForTesting(NULL);
