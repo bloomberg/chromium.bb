@@ -67,6 +67,9 @@ To enable building a package from latest or stable ebuilds:
 
   def __init__(self, options):
     super(PackageCommand, self).__init__(options)
+    # Brick path/locator as specified by the user or CWD brick.
+    self.brick_path = None
+    # Brick object.
     self.brick = None
 
   @classmethod
@@ -114,7 +117,7 @@ To enable building a package from latest or stable ebuilds:
     ebuild_content = _SOURCE_EBUILD_TEMPLATE % {
         'src_path': src_path,
         'package_name': self.options.package_name,
-        'brick_name': self.options.brick,
+        'brick_name': self.brick_path,
     }
     try:
       osutils.WriteFile(ebuild_file, ebuild_content, makedirs=True)
@@ -139,7 +142,7 @@ To enable building a package from latest or stable ebuilds:
     to_latest = self.options.enable == 'latest'
     cmd = ['cros_workon',
            'start' if to_latest else 'stop',
-           '--brick=%s' % self.options.brick]
+           '--brick=%s' % self.brick_path]
 
     if self.options.package_name == self._GROUP_HAS_LATEST:
       cmd.append('--all')
@@ -156,19 +159,17 @@ To enable building a package from latest or stable ebuilds:
 
   def _ReadOptions(self):
     """Process arguments and set variables, then freeze options."""
-    if not self.options.brick:
-      if not self.curr_brick_locator:
-        cros_build_lib.Die('Brick not specified nor discovered')
-      self.options.brick = self.curr_brick_locator
+    self.brick_path = self.options.brick or self.curr_brick_locator
+    if not self.brick_path:
+      cros_build_lib.Die('Brick not specified nor discovered')
     try:
-      self.brick = brick_lib.Brick(self.options.brick)
+      self.brick = brick_lib.Brick(self.brick_path)
     except brick_lib.BrickNotFound:
-      cros_build_lib.Die('Could not find brick %s' % self.options.brick)
-
-    self.options.Freeze()
+      cros_build_lib.Die('Could not find brick %s' % self.brick_path)
 
   def Run(self):
     """Dispatch the call to the right handler."""
+    self.options.Freeze()
     self._ReadOptions()
     commandline.RunInsideChroot(self, auto_detect_brick=True)
     if self.options.create_source:
