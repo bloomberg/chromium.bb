@@ -244,12 +244,12 @@ class ASH_EXPORT DisplayManager
   size_t num_connected_displays() const { return num_connected_displays_; }
 
   // Returns the mirroring status.
-  bool IsMirrored() const;
-  int64 mirrored_display_id() const { return mirrored_display_id_; }
+  bool IsInMirrorMode() const;
+  int64 mirroring_display_id() const { return mirroring_display_id_; }
 
   // Returns the display used for software mirrroring.
-  const gfx::Display& mirroring_display() const {
-    return mirroring_display_;
+  const gfx::Display& software_mirroring_display() const {
+    return software_mirroring_display_;
   }
 
   // Retuns the display info associated with |display_id|.
@@ -316,16 +316,21 @@ private:
   friend class test::SystemGestureEventFilterTest;
 
   typedef std::vector<gfx::Display> DisplayList;
+  typedef std::vector<DisplayInfo> DisplayInfoList;
 
   void set_change_display_upon_host_resize(bool value) {
     change_display_upon_host_resize_ = value;
   }
 
+  // Creates software mirroring display related information. The display
+  // used to mirror the content is removed from the |display_info_list|.
+  void CreateSoftwareMirroringDisplay(DisplayInfoList* display_info_list);
+
   gfx::Display* FindDisplayForId(int64 id);
 
   // Add the mirror display's display info if the software based
   // mirroring is in use.
-  void AddMirrorDisplayInfoIfAny(std::vector<DisplayInfo>* display_info_list);
+  void AddMirrorDisplayInfoIfAny(DisplayInfoList* display_info_list);
 
   // Inserts and update the DisplayInfo according to the overscan
   // state. Note that The DisplayInfo stored in the |internal_display_info_|
@@ -390,8 +395,8 @@ private:
   bool change_display_upon_host_resize_;
 
   SecondDisplayMode second_display_mode_;
-  int64 mirrored_display_id_;
-  gfx::Display mirroring_display_;
+  int64 mirroring_display_id_;
+  gfx::Display software_mirroring_display_;
 
   // User preference for rotation lock of the internal display.
   bool registered_internal_display_rotation_lock_;

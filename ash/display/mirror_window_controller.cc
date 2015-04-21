@@ -125,7 +125,7 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   const DisplayInfo& source_display_info = display_manager->GetDisplayInfo(
       Shell::GetScreen()->GetPrimaryDisplay().id());
-  DCHECK(display_manager->IsMirrored());
+  DCHECK(display_manager->IsInMirrorMode());
   scoped_ptr<RootWindowTransformer> transformer(
       CreateRootWindowTransformerForMirroredDisplay(source_display_info,
                                                     display_info));
@@ -136,7 +136,7 @@ void MirrorWindowController::UpdateWindow() {
   if (ash_host_.get()) {
     DisplayManager* display_manager = Shell::GetInstance()->display_manager();
     const DisplayInfo& mirror_display_info = display_manager->GetDisplayInfo(
-        display_manager->mirrored_display_id());
+        display_manager->mirroring_display_id());
     UpdateWindow(mirror_display_info);
   }
 }
@@ -175,11 +175,11 @@ aura::Window* MirrorWindowController::GetWindow() {
 scoped_ptr<RootWindowTransformer>
 MirrorWindowController::CreateRootWindowTransformer() const {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  const DisplayInfo& mirror_display_info = display_manager->GetDisplayInfo(
-      display_manager->mirrored_display_id());
+  const DisplayInfo& mirror_display_info =
+      display_manager->GetDisplayInfo(display_manager->mirroring_display_id());
   const DisplayInfo& source_display_info = display_manager->GetDisplayInfo(
       Shell::GetScreen()->GetPrimaryDisplay().id());
-  DCHECK(display_manager->IsMirrored());
+  DCHECK(display_manager->IsInMirrorMode());
   return scoped_ptr<RootWindowTransformer>(
       CreateRootWindowTransformerForMirroredDisplay(source_display_info,
                                                     mirror_display_info));

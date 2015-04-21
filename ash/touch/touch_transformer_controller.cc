@@ -174,7 +174,7 @@ void TouchTransformerController::UpdateTouchTransformer() const {
   gfx::Size fb_size =
       Shell::GetInstance()->display_configurator()->framebuffer_size();
 
-  if (display_manager->IsMirrored()) {
+  if (display_manager->IsInMirrorMode()) {
     if (GetDisplayManager()->software_mirroring_enabled()) {
       // In extended but software mirroring mode, there is a WindowTreeHost for
       // each display, but all touches are forwarded to the primary root

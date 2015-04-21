@@ -260,7 +260,7 @@ void DisplayOptionsHandler::SendAllDisplayInfo() {
 void DisplayOptionsHandler::SendDisplayInfo(
     const std::vector<gfx::Display>& displays) {
   DisplayManager* display_manager = GetDisplayManager();
-  base::FundamentalValue mirroring(display_manager->IsMirrored());
+  base::FundamentalValue mirroring(display_manager->IsInMirrorMode());
 
   int64 primary_id = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
   base::ListValue js_displays;

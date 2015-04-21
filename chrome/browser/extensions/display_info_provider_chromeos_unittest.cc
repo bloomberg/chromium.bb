@@ -253,12 +253,12 @@ TEST_F(DisplayInfoProviderChromeosTest, GetMirroring) {
   ASSERT_TRUE(DisplayExists(display_id_secondary)) << display_id_secondary
                                                    << " not found";
 
-  ASSERT_FALSE(GetDisplayManager()->IsMirrored());
+  ASSERT_FALSE(GetDisplayManager()->IsInMirrorMode());
   EXPECT_TRUE(result[0]->mirroring_source_id.empty());
   EXPECT_TRUE(result[1]->mirroring_source_id.empty());
 
   GetDisplayManager()->SetMirrorMode(true);
-  ASSERT_TRUE(GetDisplayManager()->IsMirrored());
+  ASSERT_TRUE(GetDisplayManager()->IsInMirrorMode());
 
   result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
@@ -268,7 +268,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetMirroring) {
             result[0]->mirroring_source_id);
 
   GetDisplayManager()->SetMirrorMode(false);
-  ASSERT_FALSE(GetDisplayManager()->IsMirrored());
+  ASSERT_FALSE(GetDisplayManager()->IsInMirrorMode());
 
   result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 

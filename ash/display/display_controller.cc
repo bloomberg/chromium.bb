@@ -436,10 +436,9 @@ void DisplayController::ToggleMirrorMode() {
   Shell* shell = Shell::GetInstance();
   DisplayConfiguratorAnimation* animation =
       shell->display_configurator_animation();
-  animation->StartFadeOutAnimation(
-      base::Bind(&DisplayController::SetMirrorModeAfterAnimation,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 !display_manager->IsMirrored()));
+  animation->StartFadeOutAnimation(base::Bind(
+      &DisplayController::SetMirrorModeAfterAnimation,
+      weak_ptr_factory_.GetWeakPtr(), !display_manager->IsInMirrorMode()));
 #endif
 }
 
@@ -781,7 +780,7 @@ void DisplayController::PostDisplayConfigurationChange() {
   DisplayLayoutStore* layout_store = display_manager->layout_store();
   if (display_manager->num_connected_displays() > 1) {
     DisplayIdPair pair = display_manager->GetCurrentDisplayIdPair();
-    layout_store->UpdateMirrorStatus(pair, display_manager->IsMirrored());
+    layout_store->UpdateMirrorStatus(pair, display_manager->IsInMirrorMode());
     DisplayLayout layout = layout_store->GetRegisteredDisplayLayout(pair);
 
     if (Shell::GetScreen()->GetNumDisplays() > 1 ) {

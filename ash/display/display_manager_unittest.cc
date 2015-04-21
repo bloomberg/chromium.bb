@@ -487,7 +487,7 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
       CreateDisplayInfo(internal_display_id, gfx::Rect(0, 0, 500, 500));
   const DisplayInfo external_display_info =
       CreateDisplayInfo(external_id, gfx::Rect(1, 1, 100, 100));
-  const DisplayInfo mirrored_display_info =
+  const DisplayInfo mirroring_display_info =
       CreateDisplayInfo(mirror_id, gfx::Rect(0, 0, 500, 500));
 
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
@@ -502,7 +502,7 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
   EXPECT_EQ(default_bounds,
             display_manager()->GetDisplayAt(0).bounds().ToString());
   EXPECT_EQ(1U, display_manager()->num_connected_displays());
-  EXPECT_FALSE(display_manager()->IsMirrored());
+  EXPECT_FALSE(display_manager()->IsInMirrorMode());
 
   if (!SupportsMultipleDisplays())
     return;
@@ -516,7 +516,7 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
   EXPECT_EQ("1,1 100x100",
             GetDisplayInfoForId(external_id).bounds_in_native().ToString());
   EXPECT_EQ(1U, display_manager()->num_connected_displays());
-  EXPECT_FALSE(display_manager()->IsMirrored());
+  EXPECT_FALSE(display_manager()->IsInMirrorMode());
   EXPECT_EQ(external_id, Shell::GetScreen()->GetPrimaryDisplay().id());
 
   EXPECT_EQ(internal_display_id, gfx::Display::InternalDisplayId());
@@ -535,7 +535,7 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
   EXPECT_EQ("1,1 100x100",
             GetDisplayInfoForId(10).bounds_in_native().ToString());
   EXPECT_EQ(2U, display_manager()->num_connected_displays());
-  EXPECT_FALSE(display_manager()->IsMirrored());
+  EXPECT_FALSE(display_manager()->IsInMirrorMode());
   EXPECT_EQ(ToDisplayName(internal_display_id),
             display_manager()->GetDisplayNameForId(internal_display_id));
 
@@ -548,7 +548,7 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
   EXPECT_EQ("1,1 100x100",
             GetDisplayInfoForId(10).bounds_in_native().ToString());
   EXPECT_EQ(2U, display_manager()->num_connected_displays());
-  EXPECT_FALSE(display_manager()->IsMirrored());
+  EXPECT_FALSE(display_manager()->IsInMirrorMode());
   EXPECT_EQ(ToDisplayName(internal_display_id),
             display_manager()->GetDisplayNameForId(internal_display_id));
 
@@ -559,21 +559,21 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
   EXPECT_EQ("0,0 500x500",
             GetDisplayForId(internal_display_id).bounds().ToString());
   EXPECT_EQ(1U, display_manager()->num_connected_displays());
-  EXPECT_FALSE(display_manager()->IsMirrored());
+  EXPECT_FALSE(display_manager()->IsInMirrorMode());
 
   // External display was changed during suspend.
   display_info_list.push_back(external_display_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ(2U, display_manager()->num_connected_displays());
-  EXPECT_FALSE(display_manager()->IsMirrored());
+  EXPECT_FALSE(display_manager()->IsInMirrorMode());
 
   // suspend...
   display_info_list.clear();
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ(2U, display_manager()->num_connected_displays());
-  EXPECT_FALSE(display_manager()->IsMirrored());
+  EXPECT_FALSE(display_manager()->IsInMirrorMode());
 
   // and resume with different external display.
   display_info_list.push_back(internal_display_info);
@@ -581,20 +581,20 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ(2U, display_manager()->num_connected_displays());
-  EXPECT_FALSE(display_manager()->IsMirrored());
-  EXPECT_FALSE(display_manager()->IsMirrored());
+  EXPECT_FALSE(display_manager()->IsInMirrorMode());
+  EXPECT_FALSE(display_manager()->IsInMirrorMode());
 
   // mirrored...
   display_info_list.clear();
   display_info_list.push_back(internal_display_info);
-  display_info_list.push_back(mirrored_display_info);
+  display_info_list.push_back(mirroring_display_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0,0 500x500",
             GetDisplayForId(internal_display_id).bounds().ToString());
   EXPECT_EQ(2U, display_manager()->num_connected_displays());
-  EXPECT_EQ(11U, display_manager()->mirrored_display_id());
-  EXPECT_TRUE(display_manager()->IsMirrored());
+  EXPECT_EQ(11U, display_manager()->mirroring_display_id());
+  EXPECT_TRUE(display_manager()->IsInMirrorMode());
 
   // Test display name.
   EXPECT_EQ(ToDisplayName(internal_display_id),
@@ -612,7 +612,7 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ(2U, display_manager()->num_connected_displays());
-  EXPECT_FALSE(display_manager()->IsMirrored());
+  EXPECT_FALSE(display_manager()->IsInMirrorMode());
   EXPECT_EQ("0,0 500x500",
             GetDisplayForId(internal_display_id).bounds().ToString());
   EXPECT_EQ("500,0 100x100",
@@ -627,7 +627,7 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
   EXPECT_EQ("1,1 100x100",
             GetDisplayInfoForId(external_id).bounds_in_native().ToString());
   EXPECT_EQ(1U, display_manager()->num_connected_displays());
-  EXPECT_FALSE(display_manager()->IsMirrored());
+  EXPECT_FALSE(display_manager()->IsInMirrorMode());
 
   // Switched to another display
   display_info_list.clear();
@@ -638,7 +638,7 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
       "0,0 500x500",
       GetDisplayInfoForId(internal_display_id).bounds_in_native().ToString());
   EXPECT_EQ(1U, display_manager()->num_connected_displays());
-  EXPECT_FALSE(display_manager()->IsMirrored());
+  EXPECT_FALSE(display_manager()->IsInMirrorMode());
 }
 
 // Make sure crash does not happen if add and remove happens at the same time.
@@ -1217,13 +1217,13 @@ TEST_F(DisplayManagerTest, SoftwareMirroring) {
   EXPECT_EQ("400x500", test_api.GetHost()->GetBounds().size().ToString());
   EXPECT_EQ("300x400",
             test_api.GetHost()->window()->bounds().size().ToString());
-  EXPECT_TRUE(display_manager->IsMirrored());
+  EXPECT_TRUE(display_manager->IsInMirrorMode());
 
   display_manager->SetMirrorMode(false);
   EXPECT_TRUE(display_observer.changed_and_reset());
   EXPECT_EQ(NULL, test_api.GetHost());
   EXPECT_EQ(2U, display_manager->GetNumDisplays());
-  EXPECT_FALSE(display_manager->IsMirrored());
+  EXPECT_FALSE(display_manager->IsInMirrorMode());
 
   // Make sure the mirror window has the pixel size of the
   // source display.
@@ -1268,14 +1268,14 @@ TEST_F(DisplayManagerTest, SingleDisplayToSoftwareMirroring) {
   display_manager->SetSecondDisplayMode(DisplayManager::MIRRORING);
   UpdateDisplay("600x400,600x400");
 
-  EXPECT_TRUE(display_manager->IsMirrored());
+  EXPECT_TRUE(display_manager->IsInMirrorMode());
   EXPECT_EQ(1U, display_manager->GetNumDisplays());
   DisplayController* display_controller =
       ash::Shell::GetInstance()->display_controller();
   EXPECT_TRUE(display_controller->mirror_window_controller()->GetWindow());
 
   UpdateDisplay("600x400");
-  EXPECT_FALSE(display_manager->IsMirrored());
+  EXPECT_FALSE(display_manager->IsInMirrorMode());
   EXPECT_EQ(1U, display_manager->GetNumDisplays());
   EXPECT_FALSE(display_controller->mirror_window_controller()->GetWindow());
 }

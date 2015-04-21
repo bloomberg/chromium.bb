@@ -318,7 +318,7 @@ bool DisplayInfoProviderChromeOS::SetInfo(const std::string& display_id_str,
 
   // Process 'mirroringSourceId' parameter.
   if (info.mirroring_source_id &&
-      info.mirroring_source_id->empty() == display_manager->IsMirrored()) {
+      info.mirroring_source_id->empty() == display_manager->IsInMirrorMode()) {
     display_controller->ToggleMirrorMode();
   }
 
@@ -361,9 +361,9 @@ void DisplayInfoProviderChromeOS::UpdateDisplayUnitInfoForPlatform(
   ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   unit->name = display_manager->GetDisplayNameForId(display.id());
-  if (display_manager->IsMirrored()) {
+  if (display_manager->IsInMirrorMode()) {
     unit->mirroring_source_id =
-        base::Int64ToString(display_manager->mirrored_display_id());
+        base::Int64ToString(display_manager->mirroring_display_id());
   }
 
   // TODO(hshi): determine the DPI of the screen.
