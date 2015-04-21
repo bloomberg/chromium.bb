@@ -6,8 +6,8 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
@@ -16,6 +16,7 @@
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
 #include "content/browser/dom_storage/local_storage_database_adapter.h"
 #include "content/common/dom_storage/dom_storage_types.h"
+#include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -39,7 +40,20 @@ class DOMStorageAreaTest : public testing::Test {
   const base::string16 kValue2;
 
   // Method used in the CommitTasks test case.
-  void InjectedCommitSequencingTask(DOMStorageArea* area) {
+  void InjectedCommitSequencingTask1(
+      const scoped_refptr<DOMStorageArea>& area) {
+    // At this point the StartCommitTimer task has run and
+    // the OnCommitTimer task is queued. We want to inject after
+    // that.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&DOMStorageAreaTest::InjectedCommitSequencingTask2,
+                   base::Unretained(this),
+                   area));
+  }
+
+  void InjectedCommitSequencingTask2(
+      const scoped_refptr<DOMStorageArea>& area) {
     // At this point the OnCommitTimer has run.
     // Verify that it put a commit in flight.
     EXPECT_EQ(1, area->commit_batches_in_flight_);
@@ -261,13 +275,14 @@ TEST_F(DOMStorageAreaTest, CommitTasks) {
   // those will also get committed.
   EXPECT_TRUE(area->SetItem(kKey, kValue, &old_value));
   EXPECT_TRUE(area->HasUncommittedChanges());
-  // At this point the OnCommitTimer task has been posted. We inject
-  // another task in the queue that will execute after the timer task,
-  // but before the CommitChanges task. From within our injected task,
-  // we'll make an additional SetItem() call.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&DOMStorageAreaTest::InjectedCommitSequencingTask,
+  // At this point the StartCommitTimer task has been posted to the after
+  // startup task queue. We inject another task in the queue that will
+  // execute when the CommitChanges task is inflight. From within our
+  // injected task, we'll make an additional SetItem() call and verify
+  // that a new commit batch is created for that additional change.
+  BrowserThread::PostAfterStartupTask(
+      FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
+      base::Bind(&DOMStorageAreaTest::InjectedCommitSequencingTask1,
                  base::Unretained(this),
                  area));
   base::MessageLoop::current()->RunUntilIdle();

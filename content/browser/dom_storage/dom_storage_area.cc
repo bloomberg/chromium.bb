@@ -20,6 +20,7 @@
 #include "content/browser/dom_storage/session_storage_database_adapter.h"
 #include "content/common/dom_storage/dom_storage_map.h"
 #include "content/common/dom_storage/dom_storage_types.h"
+#include "content/public/browser/browser_thread.h"
 #include "storage/browser/database/database_util.h"
 #include "storage/common/database/database_identifier.h"
 #include "storage/common/fileapi/file_system_util.h"
@@ -364,17 +365,26 @@ DOMStorageArea::CommitBatch* DOMStorageArea::CreateCommitBatchIfNeeded() {
   DCHECK(!is_shutdown_);
   if (!commit_batch_) {
     commit_batch_.reset(new CommitBatch());
-
-    // Start a timer to commit any changes that accrue in the batch, but only if
-    // no commits are currently in flight. In that case the timer will be
-    // started after the commits have happened.
-    if (!commit_batches_in_flight_) {
-      task_runner_->PostDelayedTask(
-          FROM_HERE, base::Bind(&DOMStorageArea::OnCommitTimer, this),
-          ComputeCommitDelay());
-    }
+    BrowserThread::PostAfterStartupTask(
+        FROM_HERE, task_runner_,
+        base::Bind(&DOMStorageArea::StartCommitTimer, this));
   }
   return commit_batch_.get();
+}
+
+void DOMStorageArea::StartCommitTimer() {
+  if (is_shutdown_ || !commit_batch_)
+    return;
+
+  // Start a timer to commit any changes that accrue in the batch, but only if
+  // no commits are currently in flight. In that case the timer will be
+  // started after the commits have happened.
+  if (commit_batches_in_flight_)
+    return;
+
+  task_runner_->PostDelayedTask(
+      FROM_HERE, base::Bind(&DOMStorageArea::OnCommitTimer, this),
+      ComputeCommitDelay());
 }
 
 base::TimeDelta DOMStorageArea::ComputeCommitDelay() const {
