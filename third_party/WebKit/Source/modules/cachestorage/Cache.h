@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/modules/v8/UnionTypesModules.h"
 #include "core/dom/DOMException.h"
+#include "modules/ModulesExport.h"
 #include "modules/cachestorage/CacheQueryOptions.h"
 #include "public/platform/WebServiceWorkerCache.h"
 #include "public/platform/WebServiceWorkerCacheError.h"
@@ -27,7 +28,7 @@ class ScriptState;
 
 typedef RequestOrUSVString RequestInfo;
 
-class Cache final : public GarbageCollectedFinalized<Cache>, public ScriptWrappable {
+class MODULES_EXPORT Cache final : public GarbageCollectedFinalized<Cache>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(Cache);
 public:

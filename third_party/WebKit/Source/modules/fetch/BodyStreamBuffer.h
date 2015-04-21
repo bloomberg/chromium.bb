@@ -6,6 +6,7 @@
 #define BodyStreamBuffer_h
 
 #include "core/dom/DOMException.h"
+#include "modules/ModulesExport.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Heap.h"
 #include "wtf/Deque.h"
@@ -16,7 +17,7 @@ namespace blink {
 
 class DOMArrayBuffer;
 
-class BodyStreamBuffer final : public GarbageCollectedFinalized<BodyStreamBuffer> {
+class MODULES_EXPORT BodyStreamBuffer final : public GarbageCollectedFinalized<BodyStreamBuffer> {
 public:
     class Observer : public GarbageCollectedFinalized<Observer> {
     public:

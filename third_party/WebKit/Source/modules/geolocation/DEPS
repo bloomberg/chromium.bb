@@ -4,6 +4,7 @@ include_rules = [
     "+heap",
     "-modules",
     "+modules/EventModules.h",
+    "+modules/ModulesExport.h",
     "+modules/geolocation",
     "+platform",
     "+public/platform",

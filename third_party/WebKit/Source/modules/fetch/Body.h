@@ -12,6 +12,7 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
+#include "modules/ModulesExport.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
@@ -23,7 +24,7 @@ class BodyStreamSource;
 class ReadableByteStream;
 class ScriptState;
 
-class Body
+class MODULES_EXPORT Body
     : public GarbageCollectedFinalized<Body>
     , public ScriptWrappable
     , public ActiveDOMObject

@@ -8,6 +8,7 @@
 #include "bindings/core/v8/Iterable.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "modules/ModulesExport.h"
 #include "modules/fetch/FetchHeaderList.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
@@ -19,7 +20,7 @@ class ExceptionState;
 class Iterator;
 
 // http://fetch.spec.whatwg.org/#headers-class
-class Headers final : public GarbageCollected<Headers>, public ScriptWrappable, public PairIterable<String, String> {
+class MODULES_EXPORT Headers final : public GarbageCollected<Headers>, public ScriptWrappable, public PairIterable<String, String> {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum Guard { ImmutableGuard, RequestGuard, RequestNoCORSGuard, ResponseGuard, NoneGuard };

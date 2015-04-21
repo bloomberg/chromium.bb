@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/dom/ExceptionCode.h"
+#include "modules/ModulesExport.h"
 #include "platform/CryptoResult.h"
 #include "public/platform/WebCrypto.h"
 #include "wtf/Forward.h"
@@ -40,7 +41,7 @@
 namespace blink {
 
 class ScriptPromiseResolver;
-ExceptionCode webCryptoErrorToExceptionCode(WebCryptoErrorType);
+MODULES_EXPORT ExceptionCode webCryptoErrorToExceptionCode(WebCryptoErrorType);
 
 // Wrapper around a Promise to notify completion of the crypto operation.
 //

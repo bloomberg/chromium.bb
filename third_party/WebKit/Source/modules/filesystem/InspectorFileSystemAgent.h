@@ -33,6 +33,7 @@
 
 #include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
+#include "modules/ModulesExport.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 
@@ -42,7 +43,7 @@ class ExecutionContext;
 class Page;
 class SecurityOrigin;
 
-class InspectorFileSystemAgent final : public InspectorBaseAgent<InspectorFileSystemAgent, InspectorFrontend::FileSystem>, public InspectorBackendDispatcher::FileSystemCommandHandler {
+class MODULES_EXPORT InspectorFileSystemAgent final : public InspectorBaseAgent<InspectorFileSystemAgent, InspectorFrontend::FileSystem>, public InspectorBackendDispatcher::FileSystemCommandHandler {
 public:
     static PassOwnPtrWillBeRawPtr<InspectorFileSystemAgent> create(Page*);
     virtual ~InspectorFileSystemAgent();

@@ -8,6 +8,7 @@
 #include "core/EventTypeNames.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/events/EventTarget.h"
+#include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebEncryptedMediaTypes.h"
@@ -21,7 +22,7 @@ class MediaKeys;
 class ScriptPromise;
 class ScriptState;
 
-class HTMLMediaElementEncryptedMedia final : public NoBaseWillBeGarbageCollected<HTMLMediaElementEncryptedMedia>, public WillBeHeapSupplement<HTMLMediaElement> {
+class MODULES_EXPORT HTMLMediaElementEncryptedMedia final : public NoBaseWillBeGarbageCollected<HTMLMediaElementEncryptedMedia>, public WillBeHeapSupplement<HTMLMediaElement> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementEncryptedMedia);
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(HTMLMediaElementEncryptedMedia);
 public:

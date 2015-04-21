@@ -35,6 +35,7 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "modules/ModulesExport.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
 #include "modules/filesystem/EntriesCallback.h"
 #include "platform/heap/Handle.h"
@@ -47,7 +48,7 @@ class FileCallback;
 class FileEntry;
 class FileWriterCallback;
 
-class DOMFileSystem final : public DOMFileSystemBase, public ScriptWrappable, public ActiveDOMObject {
+class MODULES_EXPORT DOMFileSystem final : public DOMFileSystemBase, public ScriptWrappable, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMFileSystem);
 public:

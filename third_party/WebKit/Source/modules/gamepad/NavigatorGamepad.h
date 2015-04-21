@@ -29,6 +29,7 @@
 #include "core/frame/DOMWindowLifecycleObserver.h"
 #include "core/frame/DOMWindowProperty.h"
 #include "core/frame/PlatformEventController.h"
+#include "modules/ModulesExport.h"
 #include "platform/AsyncMethodRunner.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
@@ -41,7 +42,7 @@ class Gamepad;
 class GamepadList;
 class Navigator;
 
-class NavigatorGamepad final : public NoBaseWillBeGarbageCollectedFinalized<NavigatorGamepad>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty, public PlatformEventController, public DOMWindowLifecycleObserver {
+class MODULES_EXPORT NavigatorGamepad final : public NoBaseWillBeGarbageCollectedFinalized<NavigatorGamepad>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty, public PlatformEventController, public DOMWindowLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorGamepad);
 public:
     static NavigatorGamepad* from(Document&);

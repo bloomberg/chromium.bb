@@ -7,12 +7,13 @@
 
 #include "core/dom/DocumentSupplementable.h"
 #include "core/frame/DeviceSingleWindowEventController.h"
+#include "modules/ModulesExport.h"
 
 namespace blink {
 
 class Event;
 
-class DeviceMotionController final : public DeviceSingleWindowEventController, public DocumentSupplement {
+class MODULES_EXPORT DeviceMotionController final : public DeviceSingleWindowEventController, public DocumentSupplement {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DeviceMotionController);
 public:
     virtual ~DeviceMotionController();

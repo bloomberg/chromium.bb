@@ -7,13 +7,14 @@
 
 #include "core/dom/DocumentSupplementable.h"
 #include "core/frame/DeviceSingleWindowEventController.h"
+#include "modules/ModulesExport.h"
 
 namespace blink {
 
 class DeviceOrientationData;
 class Event;
 
-class DeviceOrientationController final : public DeviceSingleWindowEventController, public DocumentSupplement {
+class MODULES_EXPORT DeviceOrientationController final : public DeviceSingleWindowEventController, public DocumentSupplement {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DeviceOrientationController);
 public:
     virtual ~DeviceOrientationController();

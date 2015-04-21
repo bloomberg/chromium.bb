@@ -31,6 +31,7 @@
 #ifndef EntryBase_h
 #define EntryBase_h
 
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
@@ -40,7 +41,7 @@ class DOMFileSystemBase;
 class EntrySync;
 
 // A common base class for Entry and EntrySync.
-class EntryBase : public GarbageCollectedFinalized<EntryBase> {
+class MODULES_EXPORT EntryBase : public GarbageCollectedFinalized<EntryBase> {
 public:
     virtual ~EntryBase();
 

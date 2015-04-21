@@ -6,6 +6,7 @@
 #define GeofencingEvent_h
 
 #include "modules/EventModules.h"
+#include "modules/ModulesExport.h"
 #include "modules/geofencing/GeofencingRegion.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/AtomicString.h"
@@ -16,7 +17,7 @@ namespace blink {
 class GeofencingRegion;
 
 // FIXME: This should derive from ExtendableEvent.
-class GeofencingEvent final : public Event {
+class MODULES_EXPORT GeofencingEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<GeofencingEvent> create()

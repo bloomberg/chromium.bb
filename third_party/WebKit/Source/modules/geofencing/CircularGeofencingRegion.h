@@ -5,6 +5,7 @@
 #ifndef CircularGeofencingRegion_h
 #define CircularGeofencingRegion_h
 
+#include "modules/ModulesExport.h"
 #include "modules/geofencing/GeofencingRegion.h"
 #include "public/platform/WebCircularGeofencingRegion.h"
 
@@ -12,7 +13,7 @@ namespace blink {
 
 class CircularGeofencingRegionInit;
 
-class CircularGeofencingRegion final : public GeofencingRegion {
+class MODULES_EXPORT CircularGeofencingRegion final : public GeofencingRegion {
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(CircularGeofencingRegion);
 public:

@@ -6,6 +6,7 @@
 #define MediaKeysController_h
 
 #include "core/page/Page.h"
+#include "modules/ModulesExport.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -15,7 +16,7 @@ class MediaKeysClient;
 class WebContentDecryptionModule;
 class WebEncryptedMediaClient;
 
-class MediaKeysController final : public NoBaseWillBeGarbageCollected<MediaKeysController>, public WillBeHeapSupplement<Page> {
+class MODULES_EXPORT MediaKeysController final : public NoBaseWillBeGarbageCollected<MediaKeysController>, public WillBeHeapSupplement<Page> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaKeysController);
 public:
     WebEncryptedMediaClient* encryptedMediaClient(ExecutionContext*);

@@ -5,6 +5,8 @@
 #ifndef AppBannerController_h
 #define AppBannerController_h
 
+#include "modules/ModulesExport.h"
+
 namespace blink {
 
 enum class WebAppBannerPromptReply;
@@ -14,7 +16,7 @@ template <typename T> class WebVector;
 
 // FIXME: unless userChoice ends up implemented, this class should not exist and
 // a regular static method could be used instead.
-class AppBannerController final {
+class MODULES_EXPORT AppBannerController final {
 public:
     static void willShowInstallBannerPrompt(LocalFrame*, const WebVector<WebString>& platforms, WebAppBannerPromptReply*);
 

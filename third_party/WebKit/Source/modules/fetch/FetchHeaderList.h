@@ -5,6 +5,7 @@
 #ifndef FetchHeaderList_h
 #define FetchHeaderList_h
 
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -17,7 +18,7 @@ namespace blink {
 class Header;
 
 // http://fetch.spec.whatwg.org/#terminology-headers
-class FetchHeaderList final : public GarbageCollectedFinalized<FetchHeaderList> {
+class MODULES_EXPORT FetchHeaderList final : public GarbageCollectedFinalized<FetchHeaderList> {
 public:
     typedef std::pair<String, String> Header;
     static FetchHeaderList* create();

@@ -28,6 +28,7 @@
 
 #include "core/frame/LocalFrame.h"
 #include "core/page/PageLifecycleObserver.h"
+#include "modules/ModulesExport.h"
 #include "modules/geolocation/Geolocation.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
@@ -39,7 +40,7 @@ class GeolocationClient;
 class GeolocationError;
 class GeolocationPosition;
 
-class GeolocationController final : public NoBaseWillBeGarbageCollectedFinalized<GeolocationController>, public WillBeHeapSupplement<LocalFrame>, public PageLifecycleObserver {
+class MODULES_EXPORT GeolocationController final : public NoBaseWillBeGarbageCollectedFinalized<GeolocationController>, public WillBeHeapSupplement<LocalFrame>, public PageLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(GeolocationController);
     WTF_MAKE_NONCOPYABLE(GeolocationController);
 public:

@@ -31,6 +31,7 @@
 #ifndef DirectoryEntry_h
 #define DirectoryEntry_h
 
+#include "modules/ModulesExport.h"
 #include "modules/filesystem/Entry.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
@@ -44,7 +45,7 @@ class ErrorCallback;
 class FileSystemFlags;
 class VoidCallback;
 
-class DirectoryEntry final : public Entry {
+class MODULES_EXPORT DirectoryEntry final : public Entry {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static DirectoryEntry* create(DOMFileSystemBase* fileSystem, const String& fullPath)

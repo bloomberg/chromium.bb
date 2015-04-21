@@ -29,6 +29,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
+#include "modules/ModulesExport.h"
 #include "modules/geolocation/GeoNotifier.h"
 #include "modules/geolocation/GeolocationWatchers.h"
 #include "modules/geolocation/Geoposition.h"
@@ -46,7 +47,7 @@ class LocalFrame;
 class GeolocationError;
 class ExecutionContext;
 
-class Geolocation final
+class MODULES_EXPORT Geolocation final
     : public GarbageCollectedFinalized<Geolocation>
     , public ScriptWrappable
     , public ActiveDOMObject {

@@ -7,12 +7,13 @@
 
 #include "core/dom/DocumentSupplementable.h"
 #include "core/frame/DeviceSingleWindowEventController.h"
+#include "modules/ModulesExport.h"
 
 namespace blink {
 
 class Event;
 
-class DeviceLightController final : public DeviceSingleWindowEventController, public DocumentSupplement {
+class MODULES_EXPORT DeviceLightController final : public DeviceSingleWindowEventController, public DocumentSupplement {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DeviceLightController);
 public:
     virtual ~DeviceLightController();
