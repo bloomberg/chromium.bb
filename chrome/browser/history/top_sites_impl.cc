@@ -32,7 +32,6 @@
 #include "components/history/core/browser/top_sites_cache.h"
 #include "components/history/core/browser/url_utils.h"
 #include "components/history/core/common/thumbnail_score.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -44,7 +43,6 @@
 #include "ui/gfx/image/image_util.h"
 
 using base::DictionaryValue;
-using content::BrowserThread;
 using content::NavigationController;
 
 namespace history {
@@ -136,7 +134,7 @@ void TopSitesImpl::Init(
 bool TopSitesImpl::SetPageThumbnail(const GURL& url,
                                     const gfx::Image& thumbnail,
                                     const ThumbnailScore& score) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!loaded_) {
     // TODO(sky): I need to cache these and apply them after the load
@@ -175,7 +173,7 @@ bool TopSitesImpl::SetPageThumbnailToJPEGBytes(
     const GURL& url,
     const base::RefCountedMemory* memory,
     const ThumbnailScore& score) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!loaded_) {
     // TODO(sky): I need to cache these and apply them after the load
@@ -310,7 +308,7 @@ static int IndexOf(const MostVisitedURLList& urls, const GURL& url) {
 }
 
 void TopSitesImpl::SyncWithHistory() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (loaded_ && temp_images_.size()) {
     // If we have temporary thumbnails it means there isn't much data, and most
     // likely the user is first running Chrome. During this time we throttle
@@ -329,7 +327,7 @@ bool TopSitesImpl::HasBlacklistedItems() const {
 }
 
 void TopSitesImpl::AddBlacklistedURL(const GURL& url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   base::Value* dummy = base::Value::CreateNullValue();
   {
@@ -344,7 +342,7 @@ void TopSitesImpl::AddBlacklistedURL(const GURL& url) {
 }
 
 void TopSitesImpl::RemoveBlacklistedURL(const GURL& url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   {
     DictionaryPrefUpdate update(profile_->GetPrefs(),
                                 prefs::kNtpMostVisitedURLsBlacklist);
@@ -356,14 +354,14 @@ void TopSitesImpl::RemoveBlacklistedURL(const GURL& url) {
 }
 
 bool TopSitesImpl::IsBlacklisted(const GURL& url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   const base::DictionaryValue* blacklist =
       profile_->GetPrefs()->GetDictionary(prefs::kNtpMostVisitedURLsBlacklist);
   return blacklist && blacklist->HasKey(GetURLHash(url));
 }
 
 void TopSitesImpl::ClearBlacklistedURLs() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   {
     DictionaryPrefUpdate update(profile_->GetPrefs(),
                                 prefs::kNtpMostVisitedURLsBlacklist);
@@ -600,7 +598,7 @@ bool TopSitesImpl::loaded() const {
 }
 
 bool TopSitesImpl::AddForcedURL(const GURL& url, const base::Time& time) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   size_t num_forced = cache_->GetNumForcedURLs();
   MostVisitedURLList new_list(cache_->top_sites());
   MostVisitedURL new_url;
@@ -646,7 +644,7 @@ bool TopSitesImpl::AddPrepopulatedPages(MostVisitedURLList* urls,
 }
 
 size_t TopSitesImpl::MergeCachedForcedURLs(MostVisitedURLList* new_list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Add all the new URLs for quick lookup. Take that opportunity to count the
   // number of forced URLs in |new_list|.
   std::set<GURL> all_new_urls;
@@ -757,7 +755,7 @@ void TopSitesImpl::Observe(int type,
 
 void TopSitesImpl::SetTopSites(const MostVisitedURLList& new_top_sites,
                                const CallLocation location) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   MostVisitedURLList top_sites(new_top_sites);
   size_t num_forced_urls = MergeCachedForcedURLs(&top_sites);
@@ -826,7 +824,7 @@ void TopSitesImpl::SetTopSites(const MostVisitedURLList& new_top_sites,
 }
 
 int TopSitesImpl::num_results_to_request_from_history() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   const base::DictionaryValue* blacklist =
       profile_->GetPrefs()->GetDictionary(prefs::kNtpMostVisitedURLsBlacklist);
@@ -834,7 +832,7 @@ int TopSitesImpl::num_results_to_request_from_history() const {
 }
 
 void TopSitesImpl::MoveStateToLoaded() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   MostVisitedURLList filtered_urls_all;
   MostVisitedURLList filtered_urls_nonforced;
@@ -896,7 +894,7 @@ void TopSitesImpl::RestartQueryForTopSitesTimer(base::TimeDelta delta) {
 
 void TopSitesImpl::OnGotMostVisitedThumbnails(
     const scoped_refptr<MostVisitedThumbnails>& thumbnails) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // Set the top sites directly in the cache so that SetTopSites diffs
   // correctly.

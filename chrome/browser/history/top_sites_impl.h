@@ -18,6 +18,7 @@
 #include "base/scoped_observer.h"
 #include "base/synchronization/lock.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/history/core/browser/history_service.h"
@@ -243,6 +244,10 @@ class TopSitesImpl : public TopSites,
                      const URLRows& deleted_rows,
                      const std::set<GURL>& favicon_urls) override;
   void HistoryServiceBeingDeleted(HistoryService* history_service) override;
+
+
+  // Ensures that non thread-safe methods are called on the correct thread.
+  base::ThreadChecker thread_checker_;
 
   scoped_refptr<TopSitesBackend> backend_;
 
