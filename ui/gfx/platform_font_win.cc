@@ -116,6 +116,13 @@ HRESULT FindDirectWriteFontForLOGFONT(IDWriteFactory* factory,
   if (SUCCEEDED(hr))
     return hr;
 
+  base::win::ScopedComPtr<IDWriteFontCollection> font_collection;
+  hr = factory->GetSystemFontCollection(font_collection.Receive());
+  if (FAILED(hr)) {
+    CHECK(false);
+    return hr;
+  }
+
   // We try to find a matching font by triggering DirectWrite to substitute the
   // font passed in with a matching font (FontSubstitutes registry key)
   // If this succeeds we return the matched font.
@@ -131,11 +138,11 @@ HRESULT FindDirectWriteFontForLOGFONT(IDWriteFactory* factory,
   LOGFONT converted_font = {0};
   hr = gdi_interop->ConvertFontFaceToLOGFONT(font_face.get(), &converted_font);
   if (SUCCEEDED(hr)) {
-    wcscpy_s(font_info->lfFaceName, arraysize(font_info->lfFaceName),
-              converted_font.lfFaceName);
-    // This has to succeed.
-    hr = gdi_interop->CreateFontFromLOGFONT(font_info, dwrite_font);
-    CHECK(SUCCEEDED(hr));
+    hr = font_collection->GetFontFromFontFace(font_face.get(), dwrite_font);
+    if (SUCCEEDED(hr)) {
+      wcscpy_s(font_info->lfFaceName, arraysize(font_info->lfFaceName),
+               converted_font.lfFaceName);
+    }
   }
   return hr;
 }
