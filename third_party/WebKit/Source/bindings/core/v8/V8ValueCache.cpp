@@ -31,20 +31,24 @@
 
 namespace blink {
 
-StringCacheMapTraits::MapType* StringCacheMapTraits::MapFromWeakCallbackData(
-    const v8::WeakCallbackData<v8::String, WeakCallbackDataType>& data)
+StringCacheMapTraits::MapType* StringCacheMapTraits::MapFromWeakCallbackInfo(
+    const v8::WeakCallbackInfo<WeakCallbackDataType>& data)
 {
     return &(V8PerIsolateData::from(data.GetIsolate())->stringCache()->m_stringCache);
 }
 
-
 void StringCacheMapTraits::Dispose(
-    v8::Isolate* isolate, v8::UniquePersistent<v8::String> value, StringImpl* key)
+    v8::Isolate* isolate, v8::Global<v8::String> value, StringImpl* key)
 {
     V8PerIsolateData::from(isolate)->stringCache()->InvalidateLastString();
     key->deref();
 }
 
+void StringCacheMapTraits::DisposeWeak(const v8::WeakCallbackInfo<WeakCallbackDataType>& data)
+{
+    V8PerIsolateData::from(data.GetIsolate())->stringCache()->InvalidateLastString();
+    data.GetParameter()->deref();
+}
 
 StringCache::~StringCache()
 {
