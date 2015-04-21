@@ -26,15 +26,13 @@ namespace {
 
 chromecast::CrashHandler* g_crash_handler = NULL;
 
-// ExceptionHandler requires a HandlerCallback as a function pointer. This
-// function exists to proxy into the global CrashHandler instance.
-bool HandleCrash(const void* /* crash_context */,
-                 size_t /* crash_context_size */,
-                 void* /* context */) {
+bool HandleCrash(void* /* crash_context */) {
   DCHECK(g_crash_handler);
   g_crash_handler->UploadCrashDumps();
 
-  // Let the exception continue to propagate up to the system.
+  // TODO(gunsch): clean up the ATV crash handling code.
+  // Don't write another minidump. Chrome's default ExceptionHandler has already
+  // written a minidump by this point in the crash handling sequence.
   return false;
 }
 
@@ -100,8 +98,7 @@ void CrashHandler::Initialize(const std::string& process_type) {
     // Dummy MinidumpDescriptor just to start up another ExceptionHandler.
     google_breakpad::MinidumpDescriptor dummy(crash_dump_path_.value());
     crash_uploader_.reset(new google_breakpad::ExceptionHandler(
-        dummy, NULL, NULL, NULL, true, -1));
-    crash_uploader_->set_crash_handler(&::HandleCrash);
+        dummy, &HandleCrash, NULL, NULL, true, -1));
 
     breakpad::InitCrashReporter(process_type);
 
