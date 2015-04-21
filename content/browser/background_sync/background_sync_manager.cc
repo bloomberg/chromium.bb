@@ -262,15 +262,13 @@ void BackgroundSyncManager::RegisterImpl(
     return;
   }
 
-  BackgroundSyncRegistration existing_registration;
-  if (LookupRegistration(sw_registration_id, RegistrationKey(sync_registration),
-                         &existing_registration)) {
-    if (existing_registration.Equals(sync_registration)) {
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(callback, ERROR_TYPE_OK, existing_registration));
-      return;
-    }
+  const BackgroundSyncRegistration* existing_registration = LookupRegistration(
+      sw_registration_id, RegistrationKey(sync_registration));
+  if (existing_registration &&
+      existing_registration->Equals(sync_registration)) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, ERROR_TYPE_OK, *existing_registration));
+    return;
   }
 
   BackgroundSyncRegistration new_registration = sync_registration;
@@ -334,25 +332,22 @@ void BackgroundSyncManager::DisableAndClearManagerClearedOne(
                                          base::Bind(barrier_closure));
 }
 
-bool BackgroundSyncManager::LookupRegistration(
+BackgroundSyncManager::BackgroundSyncRegistration*
+BackgroundSyncManager::LookupRegistration(
     int64 sw_registration_id,
-    const RegistrationKey& registration_key,
-    BackgroundSyncRegistration* existing_registration) {
+    const RegistrationKey& registration_key) {
   SWIdToRegistrationsMap::iterator it =
       sw_to_registrations_map_.find(sw_registration_id);
   if (it == sw_to_registrations_map_.end())
-    return false;
+    return nullptr;
 
-  const BackgroundSyncRegistrations& registrations = it->second;
-  const auto key_and_registration_iter =
+  BackgroundSyncRegistrations& registrations = it->second;
+  auto key_and_registration_iter =
       registrations.registration_map.find(registration_key);
   if (key_and_registration_iter == registrations.registration_map.end())
-    return false;
+    return nullptr;
 
-  if (existing_registration)
-    *existing_registration = key_and_registration_iter->second;
-
-  return true;
+  return &key_and_registration_iter->second;
 }
 
 void BackgroundSyncManager::StoreRegistrations(
@@ -415,7 +410,7 @@ void BackgroundSyncManager::RegisterDidStore(
 void BackgroundSyncManager::RemoveRegistrationFromMap(
     int64 sw_registration_id,
     const RegistrationKey& registration_key) {
-  DCHECK(LookupRegistration(sw_registration_id, registration_key, nullptr));
+  DCHECK(LookupRegistration(sw_registration_id, registration_key));
 
   BackgroundSyncRegistrations* registrations =
       &sw_to_registrations_map_[sw_registration_id];
@@ -468,10 +463,10 @@ void BackgroundSyncManager::UnregisterImpl(
     return;
   }
 
-  BackgroundSyncRegistration existing_registration;
-  if (!LookupRegistration(sw_registration_id, registration_key,
-                          &existing_registration) ||
-      existing_registration.id != sync_registration_id) {
+  const BackgroundSyncRegistration* existing_registration =
+      LookupRegistration(sw_registration_id, registration_key);
+  if (!existing_registration ||
+      existing_registration->id != sync_registration_id) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, ERROR_TYPE_NOT_FOUND));
     return;
@@ -520,9 +515,9 @@ void BackgroundSyncManager::GetRegistrationImpl(
     return;
   }
 
-  BackgroundSyncRegistration out_registration;
-  if (!LookupRegistration(sw_registration_id, registration_key,
-                          &out_registration)) {
+  const BackgroundSyncRegistration* out_registration =
+      LookupRegistration(sw_registration_id, registration_key);
+  if (!out_registration) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, ERROR_TYPE_NOT_FOUND,
                               BackgroundSyncRegistration()));
@@ -530,7 +525,7 @@ void BackgroundSyncManager::GetRegistrationImpl(
   }
 
   base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(callback, ERROR_TYPE_OK, out_registration));
+      FROM_HERE, base::Bind(callback, ERROR_TYPE_OK, *out_registration));
 }
 
 void BackgroundSyncManager::OnRegistrationDeletedImpl(

@@ -56,7 +56,7 @@ class CONTENT_EXPORT BackgroundSyncManager
     static const RegistrationId kInitialId;
     BackgroundSyncRegistration() {}
 
-    bool Equals(const BackgroundSyncRegistration& other) {
+    bool Equals(const BackgroundSyncRegistration& other) const {
       return this->tag == other.tag && this->periodicity == other.periodicity &&
              this->min_period == other.min_period &&
              network_state == other.network_state &&
@@ -183,9 +183,9 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   // Returns the existing registration in |existing_registration| if it is not
   // null.
-  bool LookupRegistration(int64 sw_registration_id,
-                          const RegistrationKey& registration_key,
-                          BackgroundSyncRegistration* existing_registration);
+  BackgroundSyncRegistration* LookupRegistration(
+      int64 sw_registration_id,
+      const RegistrationKey& registration_key);
 
   // Store all registrations for a given |sw_registration_id|.
   void StoreRegistrations(const GURL& origin,
