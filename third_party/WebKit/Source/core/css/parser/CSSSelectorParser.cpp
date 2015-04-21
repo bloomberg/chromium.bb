@@ -101,36 +101,33 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeComplexSelector(CSSParse
 
 PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeCompoundSelector(CSSParserTokenRange& range)
 {
-    OwnPtr<CSSParserSelector> selector;
+    OwnPtr<CSSParserSelector> compoundSelector;
 
     AtomicString namespacePrefix;
     AtomicString elementName;
     bool hasNamespace;
     if (!consumeName(range, elementName, namespacePrefix, hasNamespace)) {
-        selector = consumeSimpleSelector(range);
-        if (!selector)
+        compoundSelector = consumeSimpleSelector(range);
+        if (!compoundSelector)
             return nullptr;
     }
     if (m_context.isHTMLDocument())
         elementName = elementName.lower();
 
-    while (OwnPtr<CSSParserSelector> nextSelector = consumeSimpleSelector(range)) {
-        if (selector)
-            selector = rewriteSpecifiers(selector.release(), nextSelector.release());
+    while (OwnPtr<CSSParserSelector> simpleSelector = consumeSimpleSelector(range)) {
+        if (compoundSelector)
+            compoundSelector = addSimpleSelectorToCompound(compoundSelector.release(), simpleSelector.release());
         else
-            selector = nextSelector.release();
+            compoundSelector = simpleSelector.release();
     }
 
-    if (!selector) {
+    if (!compoundSelector) {
         if (hasNamespace)
             return CSSParserSelector::create(determineNameInNamespace(namespacePrefix, elementName));
         return CSSParserSelector::create(QualifiedName(nullAtom, elementName, m_defaultNamespace));
     }
-    if (elementName.isNull())
-        rewriteSpecifiersWithNamespaceIfNeeded(selector.get());
-    else
-        rewriteSpecifiersWithElementName(namespacePrefix, elementName, selector.get());
-    return selector.release();
+    prependTypeSelectorIfNeeded(namespacePrefix, elementName, compoundSelector.get());
+    return compoundSelector.release();
 }
 
 PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeSimpleSelector(CSSParserTokenRange& range)
@@ -521,32 +518,29 @@ QualifiedName CSSSelectorParser::determineNameInNamespace(const AtomicString& pr
     return QualifiedName(prefix, localName, m_styleSheet->determineNamespace(prefix));
 }
 
-void CSSSelectorParser::rewriteSpecifiersWithNamespaceIfNeeded(CSSParserSelector* specifiers)
+void CSSSelectorParser::prependTypeSelectorIfNeeded(const AtomicString& namespacePrefix, const AtomicString& elementName, CSSParserSelector* compoundSelector)
 {
-    if (m_defaultNamespace != starAtom || specifiers->crossesTreeScopes())
-        rewriteSpecifiersWithElementName(nullAtom, starAtom, specifiers, /*tagIsForNamespaceRule*/true);
-}
+    if (elementName.isNull() && m_defaultNamespace == starAtom && !compoundSelector->crossesTreeScopes())
+        return;
 
-void CSSSelectorParser::rewriteSpecifiersWithElementName(const AtomicString& namespacePrefix, const AtomicString& elementName, CSSParserSelector* specifiers, bool tagIsForNamespaceRule)
-{
+    AtomicString determinedElementName = elementName.isNull() ? starAtom : elementName;
     AtomicString determinedNamespace = namespacePrefix != nullAtom && m_styleSheet ? m_styleSheet->determineNamespace(namespacePrefix) : m_defaultNamespace;
-    QualifiedName tag(namespacePrefix, elementName, determinedNamespace);
+    QualifiedName tag(namespacePrefix, determinedElementName, determinedNamespace);
 
-    if (specifiers->crossesTreeScopes())
-        return rewriteSpecifiersWithElementNameForCustomPseudoElement(tag, specifiers, tagIsForNamespaceRule);
+    if (compoundSelector->crossesTreeScopes())
+        return rewriteSpecifiersWithElementNameForCustomPseudoElement(tag, compoundSelector, elementName.isNull());
 
-    if (specifiers->isContentPseudoElement())
-        return rewriteSpecifiersWithElementNameForContentPseudoElement(tag, specifiers, tagIsForNamespaceRule);
+    if (compoundSelector->isContentPseudoElement())
+        return rewriteSpecifiersWithElementNameForContentPseudoElement(tag, compoundSelector, elementName.isNull());
 
     // *:host never matches, so we can't discard the * otherwise we can't tell the
     // difference between *:host and just :host.
-    if (tag == anyQName() && !specifiers->hasHostPseudoSelector())
+    if (tag == anyQName() && !compoundSelector->hasHostPseudoSelector())
         return;
-    if (specifiers->pseudoType() != CSSSelector::PseudoCue)
-        specifiers->prependTagSelector(tag, tagIsForNamespaceRule);
+    compoundSelector->prependTagSelector(tag, elementName.isNull());
 }
 
-void CSSSelectorParser::rewriteSpecifiersWithElementNameForCustomPseudoElement(const QualifiedName& tag, CSSParserSelector* specifiers, bool tagIsForNamespaceRule)
+void CSSSelectorParser::rewriteSpecifiersWithElementNameForCustomPseudoElement(const QualifiedName& tag, CSSParserSelector* specifiers, bool tagIsImplicit)
 {
     CSSParserSelector* lastShadowPseudo = specifiers;
     CSSParserSelector* history = specifiers;
@@ -558,18 +552,18 @@ void CSSSelectorParser::rewriteSpecifiersWithElementNameForCustomPseudoElement(c
 
     if (lastShadowPseudo->tagHistory()) {
         if (tag != anyQName())
-            lastShadowPseudo->tagHistory()->prependTagSelector(tag, tagIsForNamespaceRule);
+            lastShadowPseudo->tagHistory()->prependTagSelector(tag, tagIsImplicit);
         return;
     }
 
     // For shadow-ID pseudo-elements to be correctly matched, the ShadowPseudo combinator has to be used.
     // We therefore create a new Selector with that combinator here in any case, even if matching any (host) element in any namespace (i.e. '*').
-    OwnPtr<CSSParserSelector> elementNameSelector = adoptPtr(new CSSParserSelector(tag));
+    OwnPtr<CSSParserSelector> elementNameSelector = CSSParserSelector::create(tag);
     lastShadowPseudo->setTagHistory(elementNameSelector.release());
     lastShadowPseudo->setRelation(CSSSelector::ShadowPseudo);
 }
 
-void CSSSelectorParser::rewriteSpecifiersWithElementNameForContentPseudoElement(const QualifiedName& tag, CSSParserSelector* specifiers, bool tagIsForNamespaceRule)
+void CSSSelectorParser::rewriteSpecifiersWithElementNameForContentPseudoElement(const QualifiedName& tag, CSSParserSelector* specifiers, bool tagIsImplicit)
 {
     CSSParserSelector* last = specifiers;
     CSSParserSelector* history = specifiers;
@@ -581,38 +575,64 @@ void CSSSelectorParser::rewriteSpecifiersWithElementNameForContentPseudoElement(
 
     if (last->tagHistory()) {
         if (tag != anyQName())
-            last->tagHistory()->prependTagSelector(tag, tagIsForNamespaceRule);
+            last->tagHistory()->prependTagSelector(tag, tagIsImplicit);
         return;
     }
 
     // For shadow-ID pseudo-elements to be correctly matched, the ShadowPseudo combinator has to be used.
     // We therefore create a new Selector with that combinator here in any case, even if matching any (host) element in any namespace (i.e. '*').
-    OwnPtr<CSSParserSelector> elementNameSelector = adoptPtr(new CSSParserSelector(tag));
+    OwnPtr<CSSParserSelector> elementNameSelector = CSSParserSelector::create(tag);
     last->setTagHistory(elementNameSelector.release());
 }
 
-PassOwnPtr<CSSParserSelector> CSSSelectorParser::rewriteSpecifiers(PassOwnPtr<CSSParserSelector> specifiers, PassOwnPtr<CSSParserSelector> newSpecifier)
+PassOwnPtr<CSSParserSelector> CSSSelectorParser::addSimpleSelectorToCompound(PassOwnPtr<CSSParserSelector> compoundSelector, PassOwnPtr<CSSParserSelector> simpleSelector)
 {
-    if (newSpecifier->crossesTreeScopes()) {
-        // Unknown pseudo element always goes at the top of selector chain.
-        newSpecifier->appendTagHistory(CSSSelector::ShadowPseudo, specifiers);
-        return newSpecifier;
+    // The tagHistory is a linked list that stores combinator separated compound selectors
+    // from right-to-left. Yet, within a single compound selector, stores the simple selectors
+    // from left-to-right.
+    //
+    // ".a.b > div#id" is stored in a tagHistory as [div, #id, .a, .b], each element in the
+    // list stored with an associated relation (combinator or SubSelector).
+    //
+    // ::cue, ::shadow, and custom pseudo elements have an implicit ShadowPseudo combinator
+    // to their left, which really makes for a new compound selector, yet it's consumed by
+    // the selector parser as a single compound selector.
+    //
+    // Example: input#x::-webkit-clear-button -> [ ::-webkit-clear-button, input, #x ]
+    //
+    // ::content is kept at the end of the compound in order easily know when to call
+    // setRelationIsAffectedByPseudoContent.
+    //
+    // We are currently not dropping selectors containing multiple instances of ::content,
+    // ::shadow, ::cue, and custom pseudo elements in arbitrary order. There are known
+    // issues like crbug.com/478563
+    //
+    // TODO(rune@opera.com): We should try to remove the need for the re-ordering tricks
+    // below and in the remaining rewrite* methods by using a more suitable storage
+    // structure in CSSSelectorParser.
+    //
+    // The code below is to keep ::content at the end of the compound, and to keep the
+    // tagHistory order correct for implicit ShadowPseudo and juggling multiple (two?)
+    // compounds.
+
+    CSSSelector::Relation relation = CSSSelector::SubSelector;
+
+    if (simpleSelector->crossesTreeScopes() || simpleSelector->isContentPseudoElement()) {
+        if (simpleSelector->crossesTreeScopes())
+            relation = CSSSelector::ShadowPseudo;
+        simpleSelector->appendTagHistory(relation, compoundSelector);
+        return simpleSelector;
     }
-    if (newSpecifier->isContentPseudoElement()) {
-        newSpecifier->appendTagHistory(CSSSelector::SubSelector, specifiers);
-        return newSpecifier;
+    if (compoundSelector->crossesTreeScopes() || compoundSelector->isContentPseudoElement()) {
+        if (compoundSelector->crossesTreeScopes())
+            relation = CSSSelector::ShadowPseudo;
+        compoundSelector->insertTagHistory(CSSSelector::SubSelector, simpleSelector, relation);
+        return compoundSelector;
     }
-    if (specifiers->crossesTreeScopes()) {
-        // Specifiers for unknown pseudo element go right behind it in the chain.
-        specifiers->insertTagHistory(CSSSelector::SubSelector, newSpecifier, CSSSelector::ShadowPseudo);
-        return specifiers;
-    }
-    if (specifiers->isContentPseudoElement()) {
-        specifiers->insertTagHistory(CSSSelector::SubSelector, newSpecifier, CSSSelector::SubSelector);
-        return specifiers;
-    }
-    specifiers->appendTagHistory(CSSSelector::SubSelector, newSpecifier);
-    return specifiers;
+
+    // All other simple selectors are added to the end of the compound.
+    compoundSelector->appendTagHistory(CSSSelector::SubSelector, simpleSelector);
+    return compoundSelector;
 }
 
 void CSSSelectorParser::recordSelectorStats(const CSSParserContext& context, const CSSSelectorList& selectorList)

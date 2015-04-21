@@ -215,10 +215,10 @@ class CSSParserSelector {
     WTF_MAKE_NONCOPYABLE(CSSParserSelector); WTF_MAKE_FAST_ALLOCATED(CSSParserSelector);
 public:
     CSSParserSelector();
-    explicit CSSParserSelector(const QualifiedName&);
+    explicit CSSParserSelector(const QualifiedName&, bool isImplicit = false);
 
     static PassOwnPtr<CSSParserSelector> create() { return adoptPtr(new CSSParserSelector); }
-    static PassOwnPtr<CSSParserSelector> create(const QualifiedName& name) { return adoptPtr(new CSSParserSelector(name)); }
+    static PassOwnPtr<CSSParserSelector> create(const QualifiedName& name, bool isImplicit = false) { return adoptPtr(new CSSParserSelector(name, isImplicit)); }
 
     ~CSSParserSelector();
 
@@ -252,7 +252,7 @@ public:
     void clearTagHistory() { m_tagHistory.clear(); }
     void insertTagHistory(CSSSelector::Relation before, PassOwnPtr<CSSParserSelector>, CSSSelector::Relation after);
     void appendTagHistory(CSSSelector::Relation, PassOwnPtr<CSSParserSelector>);
-    void prependTagSelector(const QualifiedName&, bool tagIsForNamespaceRule = false);
+    void prependTagSelector(const QualifiedName&, bool tagIsImplicit = false);
 
 private:
     OwnPtr<CSSSelector> m_selector;

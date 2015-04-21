@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/css/parser/CSSSelectorParser.h"
 
+#include "core/css/CSSSelectorList.h"
 #include "core/css/parser/CSSTokenizer.h"
 #include <gtest/gtest.h>
 
@@ -109,6 +110,26 @@ TEST(CSSSelectorParserTest, InvalidANPlusB)
         CSSParserTokenRange range = scope.tokenRange();
         bool passed = CSSSelectorParser::consumeANPlusB(range, ab);
         EXPECT_FALSE(passed);
+    }
+}
+
+TEST(CSSSelectorParserTest, ContentPseudoInCompound)
+{
+    const char* testCases[][2] = {
+        { "::content", "*::content" }, // crbug.com/478969
+        { ".a::content", ".a::content" },
+        { "::content.a", ".a::content" },
+        { "::content.a.b", ".b.a::content" },
+        { ".a::content.b", ".b.a::content" },
+    };
+
+    for (unsigned i = 0; i < WTF_ARRAY_LENGTH(testCases); ++i) {
+        SCOPED_TRACE(testCases[i][0]);
+        CSSTokenizer::Scope scope(testCases[i][0]);
+        CSSParserTokenRange range = scope.tokenRange();
+        CSSSelectorList list;
+        CSSSelectorParser::parseSelector(range, CSSParserContext(HTMLStandardMode, nullptr), nullAtom, nullptr, list);
+        EXPECT_STREQ(testCases[i][1], list.selectorsText().ascii().data());
     }
 }
 

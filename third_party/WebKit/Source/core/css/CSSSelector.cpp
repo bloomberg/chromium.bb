@@ -592,7 +592,7 @@ String CSSSelector::selectorText(const String& rightSide) const
 {
     StringBuilder str;
 
-    if (m_match == Tag && !m_tagIsForNamespaceRule) {
+    if (m_match == Tag && !m_tagIsImplicit) {
         if (tagQName().prefix().isNull())
             str.append(tagQName().localName());
         else {

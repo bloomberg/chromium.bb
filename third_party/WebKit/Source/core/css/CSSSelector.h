@@ -84,7 +84,7 @@ namespace blink {
     public:
         CSSSelector();
         CSSSelector(const CSSSelector&);
-        explicit CSSSelector(const QualifiedName&, bool tagIsForNamespaceRule = false);
+        explicit CSSSelector(const QualifiedName&, bool tagIsImplicit = false);
 
         ~CSSSelector();
 
@@ -330,7 +330,7 @@ namespace blink {
         unsigned m_isLastInTagHistory     : 1;
         unsigned m_hasRareData            : 1;
         unsigned m_isForPage              : 1;
-        unsigned m_tagIsForNamespaceRule  : 1;
+        unsigned m_tagIsImplicit          : 1;
         unsigned m_relationIsAffectedByPseudoContent  : 1;
 
         unsigned specificityForOneSelector() const;
@@ -475,12 +475,12 @@ inline CSSSelector::CSSSelector()
     , m_isLastInTagHistory(true)
     , m_hasRareData(false)
     , m_isForPage(false)
-    , m_tagIsForNamespaceRule(false)
+    , m_tagIsImplicit(false)
     , m_relationIsAffectedByPseudoContent(false)
 {
 }
 
-inline CSSSelector::CSSSelector(const QualifiedName& tagQName, bool tagIsForNamespaceRule)
+inline CSSSelector::CSSSelector(const QualifiedName& tagQName, bool tagIsImplicit)
     : m_relation(SubSelector)
     , m_match(Tag)
     , m_pseudoType(PseudoNotParsed)
@@ -489,7 +489,7 @@ inline CSSSelector::CSSSelector(const QualifiedName& tagQName, bool tagIsForName
     , m_isLastInTagHistory(true)
     , m_hasRareData(false)
     , m_isForPage(false)
-    , m_tagIsForNamespaceRule(tagIsForNamespaceRule)
+    , m_tagIsImplicit(tagIsImplicit)
     , m_relationIsAffectedByPseudoContent(false)
 {
     m_data.m_tagQName = tagQName.impl();
@@ -505,7 +505,7 @@ inline CSSSelector::CSSSelector(const CSSSelector& o)
     , m_isLastInTagHistory(o.m_isLastInTagHistory)
     , m_hasRareData(o.m_hasRareData)
     , m_isForPage(o.m_isForPage)
-    , m_tagIsForNamespaceRule(o.m_tagIsForNamespaceRule)
+    , m_tagIsImplicit(o.m_tagIsImplicit)
     , m_relationIsAffectedByPseudoContent(o.m_relationIsAffectedByPseudoContent)
 {
     if (o.m_match == Tag) {
