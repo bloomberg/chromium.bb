@@ -367,9 +367,6 @@ WebContents* PrerenderManager::SwapInternal(
     return NULL;
   }
 
-  if (IsNoSwapInExperiment(prerender_data->contents()->experiment_id()))
-    return NULL;
-
   if (WebContents* new_web_contents =
       prerender_data->contents()->prerender_contents()) {
     if (web_contents == new_web_contents)
@@ -624,13 +621,12 @@ bool PrerenderManager::IsPrerenderingPossible() {
 
 // static
 bool PrerenderManager::ActuallyPrerendering() {
-  return IsPrerenderingPossible() && !IsControlGroup(kNoExperiment);
+  return IsPrerenderingPossible() && !IsControlGroup();
 }
 
 // static
-bool PrerenderManager::IsControlGroup(uint8 experiment_id) {
-  return GetMode() == PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP ||
-      IsControlGroupExperiment(experiment_id);
+bool PrerenderManager::IsControlGroup() {
+  return GetMode() == PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP;
 }
 
 // static
@@ -774,7 +770,7 @@ base::DictionaryValue* PrerenderManager::GetAsValue() const {
   dict_value->SetBoolean("omnibox_enabled", IsOmniboxEnabled(profile_));
   // If prerender is disabled via a flag this method is not even called.
   std::string enabled_note;
-  if (IsControlGroup(kNoExperiment))
+  if (IsControlGroup())
     enabled_note += "(Control group: Not actually prerendering) ";
   if (IsNoUseGroup())
     enabled_note += "(No-use group: Not swapping in prerendered pages) ";
@@ -797,13 +793,9 @@ void PrerenderManager::ClearData(int clear_flags) {
 
 void PrerenderManager::RecordFinalStatusWithMatchCompleteStatus(
     Origin origin,
-    uint8 experiment_id,
     PrerenderContents::MatchCompleteStatus mc_status,
     FinalStatus final_status) const {
-  histograms_->RecordFinalStatus(origin,
-                                 experiment_id,
-                                 mc_status,
-                                 final_status);
+  histograms_->RecordFinalStatus(origin, mc_status, final_status);
 }
 
 void PrerenderManager::RecordNavigation(const GURL& url) {
@@ -916,11 +908,8 @@ PrerenderHandle* PrerenderManager::AddPrerender(
 
   GURL url = url_arg;
   GURL alias_url;
-  uint8 experiment = GetQueryStringBasedExperiment(url_arg);
-  if (IsControlGroup(experiment) &&
-      MaybeGetQueryStringBasedAliasURL(url, &alias_url)) {
+  if (IsControlGroup() && MaybeGetQueryStringBasedAliasURL(url, &alias_url))
     url = alias_url;
-  }
 
   // From here on, we will record a FinalStatus so we need to register with the
   // histogram tracking.
@@ -929,7 +918,7 @@ PrerenderHandle* PrerenderManager::AddPrerender(
   if (PrerenderData* preexisting_prerender_data =
           FindPrerenderData(url, session_storage_namespace)) {
     RecordFinalStatusWithoutCreatingPrerenderContents(
-        url, origin, experiment, FINAL_STATUS_DUPLICATE);
+        url, origin, FINAL_STATUS_DUPLICATE);
     return new PrerenderHandle(preexisting_prerender_data);
   }
 
@@ -948,7 +937,7 @@ PrerenderHandle* PrerenderManager::AddPrerender(
           profile_, url) &&
       !content::RenderProcessHost::run_renderer_in_process()) {
     RecordFinalStatusWithoutCreatingPrerenderContents(
-        url, origin, experiment, FINAL_STATUS_TOO_MANY_PROCESSES);
+        url, origin, FINAL_STATUS_TOO_MANY_PROCESSES);
     return NULL;
   }
 
@@ -958,12 +947,12 @@ PrerenderHandle* PrerenderManager::AddPrerender(
     // this doesn't make sense as the next prerender request will be triggered
     // by a navigation and is unlikely to be the same site.
     RecordFinalStatusWithoutCreatingPrerenderContents(
-        url, origin, experiment, FINAL_STATUS_RATE_LIMIT_EXCEEDED);
+        url, origin, FINAL_STATUS_RATE_LIMIT_EXCEEDED);
     return NULL;
   }
 
-  PrerenderContents* prerender_contents = CreatePrerenderContents(
-      url, referrer, origin, experiment);
+  PrerenderContents* prerender_contents = CreatePrerenderContents(url, referrer,
+                                                                  origin);
   DCHECK(prerender_contents);
   active_prerenders_.push_back(
       new PrerenderData(this, prerender_contents,
@@ -989,8 +978,7 @@ PrerenderHandle* PrerenderManager::AddPrerender(
   prerender_contents->StartPrerendering(contents_size,
                                         session_storage_namespace);
 
-  DCHECK(IsControlGroup(experiment) ||
-         prerender_contents->prerendering_has_started());
+  DCHECK(IsControlGroup() || prerender_contents->prerendering_has_started());
 
   if (GetMode() == PRERENDER_MODE_EXPERIMENT_MULTI_PRERENDER_GROUP)
     histograms_->RecordConcurrency(active_prerenders_.size());
@@ -1092,11 +1080,10 @@ base::TimeTicks PrerenderManager::GetCurrentTimeTicks() const {
 PrerenderContents* PrerenderManager::CreatePrerenderContents(
     const GURL& url,
     const content::Referrer& referrer,
-    Origin origin,
-    uint8 experiment_id) {
+    Origin origin) {
   DCHECK(CalledOnValidThread());
   return prerender_contents_factory_->CreatePrerenderContents(
-      this, profile_, url, referrer, origin, experiment_id);
+      this, profile_, url, referrer, origin);
 }
 
 void PrerenderManager::SortActivePrerenders() {
@@ -1209,21 +1196,17 @@ void PrerenderManager::DestroyAndMarkMatchCompleteAsUsed(
   prerender_contents->set_match_complete_status(
       PrerenderContents::MATCH_COMPLETE_REPLACED);
   histograms_->RecordFinalStatus(prerender_contents->origin(),
-                                 prerender_contents->experiment_id(),
                                  PrerenderContents::MATCH_COMPLETE_REPLACEMENT,
                                  FINAL_STATUS_WOULD_HAVE_BEEN_USED);
   prerender_contents->Destroy(final_status);
 }
 
 void PrerenderManager::RecordFinalStatusWithoutCreatingPrerenderContents(
-    const GURL& url, Origin origin, uint8 experiment_id,
-    FinalStatus final_status) const {
+    const GURL& url, Origin origin, FinalStatus final_status) const {
   PrerenderHistory::Entry entry(url, final_status, origin, base::Time::Now());
   prerender_history_->AddEntry(entry);
   RecordFinalStatusWithMatchCompleteStatus(
-      origin, experiment_id,
-      PrerenderContents::MATCH_COMPLETE_DEFAULT,
-      final_status);
+      origin, PrerenderContents::MATCH_COMPLETE_DEFAULT, final_status);
 }
 
 void PrerenderManager::Observe(int type,

@@ -70,10 +70,9 @@ class PrerenderContentsFactoryImpl : public PrerenderContents::Factory {
       Profile* profile,
       const GURL& url,
       const content::Referrer& referrer,
-      Origin origin,
-      uint8 experiment_id) override {
-    return new PrerenderContents(prerender_manager, profile,
-                                 url, referrer, origin, experiment_id);
+      Origin origin) override {
+    return new PrerenderContents(prerender_manager, profile, url, referrer,
+                                 origin);
   }
 };
 
@@ -189,8 +188,7 @@ PrerenderContents::PrerenderContents(
     Profile* profile,
     const GURL& url,
     const content::Referrer& referrer,
-    Origin origin,
-    uint8 experiment_id)
+    Origin origin)
     : prerendering_has_started_(false),
       session_storage_namespace_id_(-1),
       prerender_manager_(prerender_manager),
@@ -206,14 +204,13 @@ PrerenderContents::PrerenderContents(
       child_id_(-1),
       route_id_(-1),
       origin_(origin),
-      experiment_id_(experiment_id),
       network_bytes_(0) {
   DCHECK(prerender_manager != NULL);
 }
 
 PrerenderContents* PrerenderContents::CreateMatchCompleteReplacement() {
   PrerenderContents* new_contents = prerender_manager_->CreatePrerenderContents(
-      prerender_url(), referrer(), origin(), experiment_id());
+      prerender_url(), referrer(), origin());
 
   new_contents->load_start_time_ = load_start_time_;
   new_contents->session_storage_namespace_id_ = session_storage_namespace_id_;
@@ -274,7 +271,7 @@ void PrerenderContents::StartPrerendering(
   // Everything after this point sets up the WebContents object and associated
   // RenderView for the prerender page. Don't do this for members of the
   // control group.
-  if (prerender_manager_->IsControlGroup(experiment_id()))
+  if (prerender_manager_->IsControlGroup())
     return;
 
   prerendering_has_started_ = true;
@@ -363,7 +360,7 @@ PrerenderContents::~PrerenderContents() {
   DCHECK_NE(ORIGIN_MAX, origin());
 
   prerender_manager_->RecordFinalStatusWithMatchCompleteStatus(
-      origin(), experiment_id(), match_complete_status(), final_status());
+      origin(), match_complete_status(), final_status());
 
   bool used = final_status() == FINAL_STATUS_USED ||
               final_status() == FINAL_STATUS_WOULD_HAVE_BEEN_USED;
@@ -633,7 +630,7 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
   // not reach the PrerenderHandle. Rather
   // OnPrerenderCreatedMatchCompleteReplacement will propogate that
   // information to the referer.
-  if (!prerender_manager_->IsControlGroup(experiment_id()) &&
+  if (!prerender_manager_->IsControlGroup() &&
       (prerendering_has_started() ||
        match_complete_status() == MATCH_COMPLETE_REPLACEMENT)) {
     NotifyPrerenderStop();

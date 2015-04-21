@@ -10,35 +10,16 @@
 
 namespace prerender {
 
-// ID indicating that no experiment is active.
-const uint8 kNoExperiment = 0;
-
 // Extracts a urlencoded URL stored in a url= query parameter from a URL
 // supplied, if available, and stores it in alias_url.  Returns whether or not
 // the operation succeeded (i.e. a valid URL was found).
 bool MaybeGetQueryStringBasedAliasURL(const GURL& url, GURL* alias_url);
-
-// Extracts an experiment stored in the query parameter
-// lpe= from the URL supplied, and returns it.
-// Returns kNoExperiment if no experiment ID is found, or if the ID
-// is not an integer in the range 1 to 9.
-uint8 GetQueryStringBasedExperiment(const GURL& url);
 
 // Indicates whether the URL provided has a Google domain
 bool IsGoogleDomain(const GURL& url);
 
 // Indicates whether the URL provided could be a Google search result page.
 bool IsGoogleSearchResultURL(const GURL& url);
-
-// The prerender contents of some experiments should never be swapped in
-// by pretending to never match on the URL.  This function will return true
-// iff this is the case for the experiment_id specified.
-bool IsNoSwapInExperiment(uint8 experiment_id);
-
-// The prerender contents of some experiments should behave identical to the
-// control group, regardless of the field trial.  This function will return true
-// iff this is the case for the experiment_id specified.
-bool IsControlGroupExperiment(uint8 experiment_id);
 
 // Report a URL was canceled due to trying to handle an external URL.
 void ReportPrerenderExternalURL();

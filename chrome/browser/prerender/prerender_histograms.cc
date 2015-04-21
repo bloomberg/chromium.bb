@@ -32,19 +32,9 @@ std::string ComposeHistogramName(const std::string& prefix_type,
   return std::string("Prerender.") + prefix_type + std::string("_") + name;
 }
 
-std::string GetHistogramName(Origin origin, uint8 experiment_id,
-                             bool is_wash, const std::string& name) {
+std::string GetHistogramName(Origin origin, bool is_wash,
+                             const std::string& name) {
   if (is_wash)
-    return ComposeHistogramName("wash", name);
-
-  if (origin == ORIGIN_GWS_PRERENDER) {
-    if (experiment_id == kNoExperiment)
-      return ComposeHistogramName("gws", name);
-    return ComposeHistogramName("exp" + std::string(1, experiment_id + '0'),
-                                name);
-  }
-
-  if (experiment_id != kNoExperiment)
     return ComposeHistogramName("wash", name);
 
   switch (origin) {
@@ -62,7 +52,8 @@ std::string GetHistogramName(Origin origin, uint8 experiment_id,
       return ComposeHistogramName("Instant", name);
     case ORIGIN_LINK_REL_NEXT:
       return ComposeHistogramName("webnext", name);
-    case ORIGIN_GWS_PRERENDER:  // Handled above.
+    case ORIGIN_GWS_PRERENDER:
+      return ComposeHistogramName("gws", name);
     default:
       NOTREACHED();
       break;
@@ -79,44 +70,27 @@ bool OriginIsOmnibox(Origin origin) {
 
 }  // namespace
 
-// Helper macros for experiment-based and origin-based histogram reporting.
-// All HISTOGRAM arguments must be UMA_HISTOGRAM... macros that contain an
-// argument "name" which these macros will eventually substitute for the
-// actual name used.
+// Helper macros for origin-based histogram reporting. All HISTOGRAM arguments
+// must be UMA_HISTOGRAM... macros that contain an argument "name" which these
+// macros will eventually substitute for the actual name used.
 #define PREFIXED_HISTOGRAM(histogram_name, origin, HISTOGRAM)           \
-  PREFIXED_HISTOGRAM_INTERNAL(origin, GetCurrentExperimentId(),         \
-                              IsOriginExperimentWash(), HISTOGRAM, \
-                              histogram_name)
+  PREFIXED_HISTOGRAM_INTERNAL(origin, IsOriginWash(), HISTOGRAM, histogram_name)
 
 #define PREFIXED_HISTOGRAM_ORIGIN_EXPERIMENT(histogram_name, origin, \
-                                             experiment, HISTOGRAM) \
-  PREFIXED_HISTOGRAM_INTERNAL(origin, experiment, false, HISTOGRAM, \
-                              histogram_name)
+                                             HISTOGRAM) \
+  PREFIXED_HISTOGRAM_INTERNAL(origin, false, HISTOGRAM, histogram_name)
 
-#define PREFIXED_HISTOGRAM_INTERNAL(origin, experiment, wash, HISTOGRAM, \
-                                    histogram_name) do { \
+#define PREFIXED_HISTOGRAM_INTERNAL(origin, wash, HISTOGRAM, histogram_name) \
+do { \
   { \
     /* Do not rename.  HISTOGRAM expects a local variable "name". */           \
     std::string name = ComposeHistogramName(std::string(), histogram_name);    \
     HISTOGRAM;                                                                 \
   } \
   /* Do not rename.  HISTOGRAM expects a local variable "name". */ \
-  std::string name = GetHistogramName(origin, experiment, wash, \
-                                      histogram_name); \
-  /* Usually, a browsing session should only have a single experiment. */ \
-  /* Therefore, when there is a second experiment ID other than the one */ \
-  /* being recorded, don't record anything. */ \
-  /* Furthermore, experiments only apply if the origin is GWS. Should there */ \
-  /* somehow be an experiment ID if the origin is not GWS, ignore the */ \
-  /* experiment ID. */ \
-  static uint8 recording_experiment = kNoExperiment; \
-  if (recording_experiment == kNoExperiment && experiment != kNoExperiment) \
-    recording_experiment = experiment; \
+  std::string name = GetHistogramName(origin, wash, histogram_name); \
   if (wash) { \
     HISTOGRAM; \
-  } else if (experiment != kNoExperiment && \
-             (origin != ORIGIN_GWS_PRERENDER || \
-              experiment != recording_experiment)) { \
   } else if (origin == ORIGIN_OMNIBOX) { \
     HISTOGRAM; \
   } else if (origin == ORIGIN_NONE) { \
@@ -131,41 +105,33 @@ bool OriginIsOmnibox(Origin origin) {
     HISTOGRAM; \
   } else if (origin == ORIGIN_LINK_REL_NEXT) { \
     HISTOGRAM; \
-  } else if (experiment != kNoExperiment) { \
-    HISTOGRAM; \
   } else { \
     HISTOGRAM; \
   } \
 } while (0)
 
 PrerenderHistograms::PrerenderHistograms()
-    : last_experiment_id_(kNoExperiment),
-      last_origin_(ORIGIN_MAX),
-      origin_experiment_wash_(false),
+    : last_origin_(ORIGIN_MAX),
+      origin_wash_(false),
       seen_any_pageload_(true),
       seen_pageload_started_after_prerender_(true) {
 }
 
 void PrerenderHistograms::RecordPrerender(Origin origin, const GURL& url) {
-  // Check if we are doing an experiment.
-  uint8 experiment = GetQueryStringBasedExperiment(url);
-
-  // We need to update last_experiment_id_, last_origin_, and
-  // origin_experiment_wash_.
+  // We need to update last_origin_ and origin_wash_.
   if (!WithinWindow()) {
     // If we are outside a window, this is a fresh start and we are fine,
     // and there is no mix.
-    origin_experiment_wash_ = false;
+    origin_wash_ = false;
   } else {
-    // If we are inside the last window, there is a mish mash of origins
-    // and experiments if either there was a mish mash before, or the current
-    // experiment/origin does not match the previous one.
-    if (experiment != last_experiment_id_ || origin != last_origin_)
-      origin_experiment_wash_ = true;
+    // If we are inside the last window, there is a mish mash of origins if
+    // either there was a mish mash before, or the current origin does not match
+    // the previous one.
+    if (origin != last_origin_)
+      origin_wash_ = true;
   }
 
   last_origin_ = origin;
-  last_experiment_id_ = experiment;
 
   // If we observe multiple tags within the 30 second window, we will still
   // reset the window to begin at the most recent occurrence, so that we will
@@ -374,7 +340,6 @@ void PrerenderHistograms::RecordTimeBetweenPrerenderRequests(
 
 void PrerenderHistograms::RecordFinalStatus(
     Origin origin,
-    uint8 experiment_id,
     PrerenderContents::MatchCompleteStatus mc_status,
     FinalStatus final_status) const {
   DCHECK(final_status != FINAL_STATUS_MAX);
@@ -382,14 +347,14 @@ void PrerenderHistograms::RecordFinalStatus(
   if (mc_status == PrerenderContents::MATCH_COMPLETE_DEFAULT ||
       mc_status == PrerenderContents::MATCH_COMPLETE_REPLACED) {
     PREFIXED_HISTOGRAM_ORIGIN_EXPERIMENT(
-        "FinalStatus", origin, experiment_id,
+        "FinalStatus", origin,
         UMA_HISTOGRAM_ENUMERATION(name, final_status, FINAL_STATUS_MAX));
   }
   if (mc_status == PrerenderContents::MATCH_COMPLETE_DEFAULT ||
       mc_status == PrerenderContents::MATCH_COMPLETE_REPLACEMENT ||
       mc_status == PrerenderContents::MATCH_COMPLETE_REPLACEMENT_PENDING) {
     PREFIXED_HISTOGRAM_ORIGIN_EXPERIMENT(
-        "FinalStatusMatchComplete", origin, experiment_id,
+        "FinalStatusMatchComplete", origin,
         UMA_HISTOGRAM_ENUMERATION(name, final_status, FINAL_STATUS_MAX));
   }
 }
@@ -426,16 +391,10 @@ void PrerenderHistograms::RecordNetworkBytes(Origin origin,
   }
 }
 
-uint8 PrerenderHistograms::GetCurrentExperimentId() const {
-  if (!WithinWindow())
-    return kNoExperiment;
-  return last_experiment_id_;
-}
-
-bool PrerenderHistograms::IsOriginExperimentWash() const {
+bool PrerenderHistograms::IsOriginWash() const {
   if (!WithinWindow())
     return false;
-  return origin_experiment_wash_;
+  return origin_wash_;
 }
 
 }  // namespace prerender

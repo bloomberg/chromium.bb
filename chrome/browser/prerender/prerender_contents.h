@@ -62,8 +62,7 @@ class PrerenderContents : public content::NotificationObserver,
         Profile* profile,
         const GURL& url,
         const content::Referrer& referrer,
-        Origin origin,
-        uint8 experiment_id) = 0;
+        Origin origin) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Factory);
@@ -183,7 +182,6 @@ class PrerenderContents : public content::NotificationObserver,
   FinalStatus final_status() const { return final_status_; }
 
   Origin origin() const { return origin_; }
-  uint8 experiment_id() const { return experiment_id_; }
 
   base::TimeTicks load_start_time() const { return load_start_time_; }
 
@@ -273,8 +271,7 @@ class PrerenderContents : public content::NotificationObserver,
                     Profile* profile,
                     const GURL& url,
                     const content::Referrer& referrer,
-                    Origin origin,
-                    uint8 experiment_id);
+                    Origin origin);
 
   // Set the final status for how the PrerenderContents was used. This
   // should only be called once, and should be called before the prerender
@@ -390,9 +387,6 @@ class PrerenderContents : public content::NotificationObserver,
 
   // Origin for this prerender.
   Origin origin_;
-
-  // Experiment during which this prerender is performed.
-  uint8 experiment_id_;
 
   // The size of the WebView from the launching page.
   gfx::Size size_;

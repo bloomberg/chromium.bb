@@ -83,8 +83,7 @@ class DummyPrerenderContentsFactory : public PrerenderContents::Factory {
       Profile* profile,
       const GURL& url,
       const Referrer& referrer,
-      Origin origin,
-      uint8 experiment_id) override;
+      Origin origin) override;
 
  private:
   bool call_did_finish_load_;
@@ -99,8 +98,7 @@ DummyPrerenderContents::DummyPrerenderContents(
     const Referrer& referrer,
     Origin origin,
     bool call_did_finish_load)
-    : PrerenderContents(prerender_manager, profile, url, referrer, origin,
-                        PrerenderManager::kNoExperiment),
+    : PrerenderContents(prerender_manager, profile, url, referrer, origin),
       profile_(profile),
       url_(url),
       call_did_finish_load_(call_did_finish_load) {
@@ -143,8 +141,7 @@ PrerenderContents* DummyPrerenderContentsFactory::CreatePrerenderContents(
     Profile* profile,
     const GURL& url,
     const Referrer& referrer,
-    Origin origin,
-    uint8 experiment_id) {
+    Origin origin) {
   return new DummyPrerenderContents(prerender_manager, profile, url, referrer,
                                     origin, call_did_finish_load_);
 }

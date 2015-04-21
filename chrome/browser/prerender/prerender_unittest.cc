@@ -232,8 +232,7 @@ class UnitTestPrerenderManager : public PrerenderManager {
 
   PrerenderContents* CreatePrerenderContents(const GURL& url,
                                              const Referrer& referrer,
-                                             Origin origin,
-                                             uint8 experiment_id) override {
+                                             Origin origin) override {
     CHECK(next_prerender_contents_.get());
     EXPECT_EQ(url, next_prerender_contents_->prerender_url());
     EXPECT_EQ(origin, next_prerender_contents_->origin());
@@ -269,8 +268,7 @@ DummyPrerenderContents::DummyPrerenderContents(
     Origin origin,
     FinalStatus expected_final_status)
     : PrerenderContents(test_prerender_manager,
-                        NULL, url, Referrer(), origin,
-                        PrerenderManager::kNoExperiment),
+                        NULL, url, Referrer(), origin),
       route_id_(g_next_route_id_++),
       test_prerender_manager_(test_prerender_manager),
       expected_final_status_(expected_final_status) {
@@ -289,7 +287,7 @@ void DummyPrerenderContents::StartPrerendering(
   // but it will early exit before actually creating a new RenderView if
   // |is_control_group| is true;
   load_start_time_ = test_prerender_manager_->GetCurrentTimeTicks();
-  if (!test_prerender_manager_->IsControlGroup(experiment_id())) {
+  if (!test_prerender_manager_->IsControlGroup()) {
     prerendering_has_started_ = true;
     test_prerender_manager_->DummyPrerenderContentsStarted(-1, route_id_, this);
     NotifyPrerenderStart();

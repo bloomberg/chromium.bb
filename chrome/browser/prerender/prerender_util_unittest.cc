@@ -35,29 +35,6 @@ TEST(PrerenderUtilTest, ExtractURLInQueryStringTest) {
   ASSERT_EQ(GURL("http://validURLSareGREAT.com").spec(), result.spec());
 }
 
-// Ensure that extracting an experiment in the lpe= query string component
-// works.
-TEST(PrerenderUtilTest, ExtractExperimentInQueryStringTest) {
-  EXPECT_EQ(
-      GetQueryStringBasedExperiment(GURL(
-          "http://www.google.com/url?sa=t&source=web&cd=1&ved=0CBcQFjAA&url=h"
-          "ttp%3A%2F%2Fwww.abercrombie.com%2Fwebapp%2Fwcs%2Fstores%2Fservlet%"
-          "2FStoreLocator%3FcatalogId%3D%26storeId%3D10051%26langId%3D-1&rct="
-          "j&q=allinurl%3A%26&ei=KLyUTYGSEdTWiAKUmLCdCQ&usg=AFQjCNF8nJ2MpBFfr"
-          "1ijO39_f22bcKyccw&sig2=2ymyGpO0unJwU1d4kdCUjQ&lpe=4&asdf=test")),
-      4);
-  EXPECT_EQ(GetQueryStringBasedExperiment(
-      GURL("http://www.google.com/test.php?a=b")), kNoExperiment);
-  EXPECT_EQ(GetQueryStringBasedExperiment(
-      GURL("http://www.google.com/test.php?lpe=5")), 5);
-  EXPECT_EQ(GetQueryStringBasedExperiment(
-      GURL("http://www.google.com/test.php?lpe=50")), kNoExperiment);
-  EXPECT_EQ(GetQueryStringBasedExperiment(
-      GURL("http://www.google.com/test.php?lpe=0")), kNoExperiment);
-  EXPECT_EQ(GetQueryStringBasedExperiment(
-      GURL("http://www.google.com/test.php?lpe=10")), kNoExperiment);
-}
-
 // Ensure that we detect Google search result URLs correctly.
 TEST(PrerenderUtilTest, DetectGoogleSearchREsultURLTest) {
   EXPECT_TRUE(IsGoogleSearchResultURL(GURL("http://www.google.com/#asdf")));

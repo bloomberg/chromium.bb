@@ -71,26 +71,6 @@ bool MaybeGetQueryStringBasedAliasURL(
   return false;
 }
 
-uint8 GetQueryStringBasedExperiment(const GURL& url) {
-  url::Parsed parsed;
-  url::ParseStandardURL(url.spec().c_str(), url.spec().length(), &parsed);
-  url::Component query = parsed.query;
-  url::Component key, value;
-  while (url::ExtractQueryKeyValue(url.spec().c_str(), &query, &key, &value)) {
-    if (key.len != 3 || strncmp(url.spec().c_str() + key.begin, "lpe", key.len))
-      continue;
-
-    // We found a lpe= query string component.
-    if (value.len != 1)
-      continue;
-    uint8 exp = *(url.spec().c_str() + value.begin) - '0';
-    if (exp < 1 || exp > 9)
-      continue;
-    return exp;
-  }
-  return kNoExperiment;
-}
-
 bool IsGoogleDomain(const GURL& url) {
   return StartsWithASCII(url.host(), std::string("www.google."), true);
 }
@@ -102,16 +82,6 @@ bool IsGoogleSearchResultURL(const GURL& url) {
           StartsWithASCII(url.path(), std::string("/search"), true) ||
           (url.path() == "/") ||
           StartsWithASCII(url.path(), std::string("/webhp"), true));
-}
-
-bool IsNoSwapInExperiment(uint8 experiment_id) {
-  // Currently, experiments 5 and 6 fall in this category.
-  return experiment_id == 5 || experiment_id == 6;
-}
-
-bool IsControlGroupExperiment(uint8 experiment_id) {
-  // Currently, experiments 7 and 8 fall in this category.
-  return experiment_id == 7 || experiment_id == 8;
 }
 
 void ReportPrerenderExternalURL() {

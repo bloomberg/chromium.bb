@@ -87,9 +87,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     CLEAR_MAX = 0x1 << 2
   };
 
-  // ID indicating that no experiment is active.
-  static const uint8 kNoExperiment = 0;
-
   // Owned by a Profile object for the lifetime of the profile.
   explicit PrerenderManager(Profile* profile);
 
@@ -178,7 +175,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   static const char* GetModeString();
   static bool IsPrerenderingPossible();
   static bool ActuallyPrerendering();
-  static bool IsControlGroup(uint8 experiment_id);
+  static bool IsControlGroup();
   static bool IsNoUseGroup();
 
   // Query the list of current prerender pages to see if the given web contents
@@ -243,7 +240,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // (necessary to flag MatchComplete dummies).
   void RecordFinalStatusWithMatchCompleteStatus(
       Origin origin,
-      uint8 experiment_id,
       PrerenderContents::MatchCompleteStatus mc_status,
       FinalStatus final_status) const;
 
@@ -419,8 +415,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   virtual PrerenderContents* CreatePrerenderContents(
       const GURL& url,
       const content::Referrer& referrer,
-      Origin origin,
-      uint8 experiment_id);
+      Origin origin);
 
   // Insures the |active_prerenders_| are sorted by increasing expiry time. Call
   // after every mutation of active_prerenders_ that can possibly make it
@@ -476,8 +471,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // This is a helper function which will ultimately call
   // RecordFinalStatusWthMatchCompleteStatus, using MATCH_COMPLETE_DEFAULT.
   void RecordFinalStatusWithoutCreatingPrerenderContents(
-      const GURL& url, Origin origin, uint8 experiment_id,
-      FinalStatus final_status) const;
+      const GURL& url, Origin origin, FinalStatus final_status) const;
 
 
   // Swaps a prerender |prerender_data| for |url| into the tab, replacing

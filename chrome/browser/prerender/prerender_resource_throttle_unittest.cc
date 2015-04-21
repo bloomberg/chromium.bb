@@ -38,8 +38,7 @@ class TestPrerenderContents : public PrerenderContents {
   TestPrerenderContents(PrerenderManager* prerender_manager,
                         int child_id, int route_id)
       : PrerenderContents(prerender_manager, static_cast<Profile*>(NULL),
-                          GURL(), content::Referrer(), ORIGIN_NONE,
-                          PrerenderManager::kNoExperiment),
+                          GURL(), content::Referrer(), ORIGIN_NONE),
         child_id_(child_id),
         route_id_(route_id) {
     PrerenderResourceThrottle::OverridePrerenderContentsForTesting(this);

@@ -434,8 +434,7 @@ class TestPrerenderContents : public PrerenderContents {
       const content::Referrer& referrer,
       Origin origin,
       FinalStatus expected_final_status)
-      : PrerenderContents(prerender_manager, profile, url,
-                          referrer, origin, PrerenderManager::kNoExperiment),
+      : PrerenderContents(prerender_manager, profile, url, referrer, origin),
         expected_final_status_(expected_final_status),
         new_render_view_host_(NULL),
         was_hidden_(false),
@@ -666,8 +665,7 @@ class TestPrerenderContentsFactory : public PrerenderContents::Factory {
       Profile* profile,
       const GURL& url,
       const content::Referrer& referrer,
-      Origin origin,
-      uint8 experiment_id) override {
+      Origin origin) override {
     ExpectedContents expected;
     if (!expected_contents_queue_.empty()) {
       expected = expected_contents_queue_.front();
