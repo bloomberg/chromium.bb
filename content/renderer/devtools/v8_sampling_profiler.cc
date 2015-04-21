@@ -542,7 +542,11 @@ void V8SamplingThread::HandleProfilerSignal(int signal,
   state.fp =
       reinterpret_cast<void*>(mcontext.gregs[REG_64_32(REG_RBP, REG_EBP)]);
 #endif  // OS_MACOS
-#endif  // ARCH_CPU_X86_FAMILY
+#elif defined(ARCH_CPU_MIPS_FAMILY)
+  state.pc = reinterpret_cast<void*>(mcontext.pc);
+  state.sp = reinterpret_cast<void*>(mcontext.gregs[29]);
+  state.fp = reinterpret_cast<void*>(mcontext.gregs[30]);
+#endif  // ARCH_CPU_MIPS_FAMILY
 
   Sampler::GetInstance()->DoSample(state);
 }
