@@ -114,10 +114,6 @@ public class MockSyncContentResolverDelegate implements SyncContentResolverDeleg
         synchronized (mSyncableMapLock) {
             switch (syncable) {
                 case 0:
-                    if (mSyncAutomaticallySet.contains(key)) {
-                        mSyncAutomaticallySet.remove(key);
-                    }
-
                     mIsSyncableMap.put(key, false);
                     break;
                 case 1:
@@ -141,7 +137,7 @@ public class MockSyncContentResolverDelegate implements SyncContentResolverDeleg
         String key = createKey(account, authority);
         synchronized (mSyncableMapLock) {
             if (mIsSyncableMap.containsKey(key)) {
-                return mIsSyncableMap.containsKey(key) ? 1 : 0;
+                return mIsSyncableMap.get(key) ? 1 : 0;
             } else {
                 return -1;
             }

@@ -160,6 +160,7 @@ public class AndroidSyncSettings {
     public void updateAccount(Account account) {
         synchronized (mLock) {
             mAccount = account;
+            updateSyncability();
         }
         if (updateCachedSettings()) {
             notifyObservers();
@@ -193,8 +194,8 @@ public class AndroidSyncSettings {
 
     private void setChromeSyncEnabled(boolean value) {
         synchronized (mLock) {
+            updateSyncability();
             if (value == mChromeSyncEnabled || mAccount == null) return;
-            ensureSyncable();
             mChromeSyncEnabled = value;
 
             StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
@@ -205,18 +206,22 @@ public class AndroidSyncSettings {
     }
 
     /**
-     * Ensure Chrome is registered with the Android Sync Manager.
+     * Ensure Chrome is registered with the Android Sync Manager iff signed in.
      *
      * This is what causes the "Chrome" option to appear in Settings -> Accounts -> Sync .
      * This function must be called within a synchronized block.
      */
-    private void ensureSyncable() {
-        if (mIsSyncable || mAccount == null) return;
+    private void updateSyncability() {
+        boolean shouldBeSyncable = mAccount != null;
+        if (mIsSyncable == shouldBeSyncable) return;
 
-        mIsSyncable = true;
+        mIsSyncable = shouldBeSyncable;
 
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
-        mSyncContentResolverDelegate.setIsSyncable(mAccount, mContractAuthority, 1);
+        // Make account syncable if there is one.
+        if (shouldBeSyncable) {
+            mSyncContentResolverDelegate.setIsSyncable(mAccount, mContractAuthority, 1);
+        }
 
         // Disable the syncability of Chrome for all other accounts. Don't use
         // our cache as we're touching many accounts that aren't signed in, so this saves

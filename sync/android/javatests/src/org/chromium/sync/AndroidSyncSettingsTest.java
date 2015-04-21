@@ -12,6 +12,9 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.sync.AndroidSyncSettings.AndroidSyncSettingsObserver;
+import org.chromium.sync.signin.AccountManagerHelper;
+import org.chromium.sync.test.util.AccountHolder;
+import org.chromium.sync.test.util.MockAccountManager;
 import org.chromium.sync.test.util.MockSyncContentResolverDelegate;
 
 /**
@@ -81,22 +84,38 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
     private Account mAccount;
     private Account mAlternateAccount;
     private MockSyncSettingsObserver mSyncSettingsObserver;
+    private MockAccountManager mAccountManager;
 
     @Override
     protected void setUp() throws Exception {
         mSyncContentResolverDelegate = new CountingMockSyncContentResolverDelegate();
         Context context = getInstrumentation().getTargetContext();
+        setupTestAccounts(context);
+
         AndroidSyncSettings.overrideForTests(context, mSyncContentResolverDelegate);
         mAndroid = AndroidSyncSettings.get(context);
         mAuthority = mAndroid.getContractAuthority();
-        mAccount = new Account("account@example.com", "com.google");
-        mAlternateAccount = new Account("alternateAccount@example.com", "com.google");
         mAndroid.updateAccount(mAccount);
 
         mSyncSettingsObserver = new MockSyncSettingsObserver();
         mAndroid.registerObserver(mSyncSettingsObserver);
 
         super.setUp();
+    }
+
+    private void setupTestAccounts(Context context) {
+        mAccountManager = new MockAccountManager(context, context);
+        AccountManagerHelper.overrideAccountManagerHelperForTests(context, mAccountManager);
+        mAccount = setupTestAccount("account@example.com");
+        mAlternateAccount = setupTestAccount("alternate@example.com");
+    }
+
+    private Account setupTestAccount(String accountName) {
+        Account account = AccountManagerHelper.createAccountFromName(accountName);
+        AccountHolder.Builder accountHolder =
+                AccountHolder.create().account(account).password("password").alwaysAccept(true);
+        mAccountManager.addAccountHolderExplicitly(accountHolder.build());
+        return account;
     }
 
     private void enableChromeSyncOnUiThread() {
@@ -293,5 +312,40 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
         mAndroid.disableChromeSync();
         assertFalse("disableChromeSync shouldn't observers",
                 mSyncSettingsObserver.receivedNotification());
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
+    public void testIsSyncableOnSigninAndNotOnSignout() throws InterruptedException {
+        assertTrue(mSyncContentResolverDelegate.getIsSyncable(mAccount, mAuthority) == 1);
+        mAndroid.updateAccount(null);
+        assertTrue(mSyncContentResolverDelegate.getIsSyncable(mAccount, mAuthority) == 0);
+        mAndroid.updateAccount(mAccount);
+        assertTrue(mSyncContentResolverDelegate.getIsSyncable(mAccount, mAuthority) == 1);
+    }
+
+    /**
+     * Regression test for crbug.com/475299.
+     */
+    @SmallTest
+    @Feature({"Sync"})
+    public void testSyncableIsAlwaysSetWhenEnablingSync() throws InterruptedException {
+        // Setup bad state.
+        mSyncContentResolverDelegate.setMasterSyncAutomatically(true);
+        mSyncContentResolverDelegate.waitForLastNotificationCompleted();
+        mSyncContentResolverDelegate.setIsSyncable(mAccount, mAuthority, 1);
+        mSyncContentResolverDelegate.waitForLastNotificationCompleted();
+        mSyncContentResolverDelegate.setSyncAutomatically(mAccount, mAuthority, true);
+        mSyncContentResolverDelegate.waitForLastNotificationCompleted();
+        mSyncContentResolverDelegate.setIsSyncable(mAccount, mAuthority, 0);
+        mSyncContentResolverDelegate.waitForLastNotificationCompleted();
+        assertTrue(mSyncContentResolverDelegate.getIsSyncable(mAccount, mAuthority) == 0);
+        assertTrue(mSyncContentResolverDelegate.getSyncAutomatically(mAccount, mAuthority));
+
+        // Ensure bug is fixed.
+        mAndroid.enableChromeSync();
+        assertTrue(mSyncContentResolverDelegate.getIsSyncable(mAccount, mAuthority) == 1);
+        // Should still be enabled.
+        assertTrue(mSyncContentResolverDelegate.getSyncAutomatically(mAccount, mAuthority));
     }
 }
