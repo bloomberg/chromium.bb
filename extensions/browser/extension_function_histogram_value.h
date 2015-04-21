@@ -1068,6 +1068,7 @@ enum HistogramValue {
   DEVELOPERPRIVATE_SHOWOPTIONS,
   DEVELOPERPRIVATE_SHOWPATH,
   FILEMANAGERPRIVATE_ADDPROVIDEDFILESYSTEM,
+  FILEMANAGERPRIVATE_CONFIGUREPROVIDEDFILESYSTEM,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

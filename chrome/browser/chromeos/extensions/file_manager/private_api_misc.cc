@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/app_installer.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
+#include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/file_manager/zip_file_creator.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -519,6 +520,54 @@ FileManagerPrivateAddProvidedFileSystemFunction::Run() {
     return RespondNow(Error("Failed to request a new mount."));
 
   return RespondNow(NoArguments());
+}
+
+FileManagerPrivateConfigureProvidedFileSystemFunction::
+    FileManagerPrivateConfigureProvidedFileSystemFunction()
+    : chrome_details_(this) {
+}
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateConfigureProvidedFileSystemFunction::Run() {
+  using extensions::api::file_manager_private::ConfigureProvidedFileSystem::
+      Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  using file_manager::VolumeManager;
+  using file_manager::Volume;
+  VolumeManager* const volume_manager =
+      VolumeManager::Get(chrome_details_.GetProfile());
+  LOG(ERROR) << "LOOKING FOR: " << params->volume_id;
+  base::WeakPtr<Volume> volume =
+      volume_manager->FindVolumeById(params->volume_id);
+  if (!volume.get())
+    return RespondNow(Error("Volume not found."));
+
+  using chromeos::file_system_provider::Service;
+  Service* const service = Service::Get(chrome_details_.GetProfile());
+  DCHECK(service);
+
+  using chromeos::file_system_provider::ProvidedFileSystemInterface;
+  ProvidedFileSystemInterface* const file_system =
+      service->GetProvidedFileSystem(volume->extension_id(),
+                                     volume->file_system_id());
+  DCHECK(file_system);
+
+  file_system->Configure(base::Bind(
+      &FileManagerPrivateConfigureProvidedFileSystemFunction::OnCompleted,
+      this));
+  return RespondLater();
+}
+
+void FileManagerPrivateConfigureProvidedFileSystemFunction::OnCompleted(
+    base::File::Error result) {
+  if (result != base::File::FILE_OK) {
+    Respond(Error("Failed to complete configuration."));
+    return;
+  }
+
+  Respond(NoArguments());
 }
 
 }  // namespace extensions

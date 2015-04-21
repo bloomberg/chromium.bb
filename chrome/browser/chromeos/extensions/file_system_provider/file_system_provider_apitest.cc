@@ -145,7 +145,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Notify) {
       << message_;
 }
 
-// TODO(mtomasz): Add a test for Notify() once it's wired to
-// chrome.fileManagerPrivate.
+IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Configure) {
+  ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/configure",
+                                          kFlagLoadAsComponent))
+      << message_;
+}
 
 }  // namespace extensions

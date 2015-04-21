@@ -25,6 +25,11 @@ test_util.FILE_SYSTEM_NAME = 'Vanilla';
 test_util.fileSystem = null;
 
 /**
+ * @type {?string}
+ */
+test_util.volumeId = null;
+
+/**
  * Default metadata. Used by onMetadataRequestedDefault(). The key is a full
  * path, and the value, a MetadataEntry object.
  *
@@ -96,10 +101,6 @@ test_util.mountFileSystem = function(callback, opt_options) {
         if (chrome.runtime.lastError)
           chrome.test.fail(chrome.runtime.lastError.message);
 
-        var volumeId =
-            'provided:' + chrome.runtime.id + '-' + options.fileSystemId +
-            '-user';
-
         test_util.getVolumeInfo(options.fileSystemId, function(volumeInfo) {
           chrome.test.assertTrue(!!volumeInfo);
           chrome.fileSystem.requestFileSystem(
@@ -110,6 +111,7 @@ test_util.mountFileSystem = function(callback, opt_options) {
               function(inFileSystem) {
                 chrome.test.assertTrue(!!inFileSystem);
                 test_util.fileSystem = inFileSystem;
+                test_util.volumeId = volumeInfo.volumeId;
                 callback();
               });
         });
