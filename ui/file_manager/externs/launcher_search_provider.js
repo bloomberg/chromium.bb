@@ -25,3 +25,8 @@ chrome.launcherSearchProvider.onQueryStarted;
  * @type {!ChromeEvent}
  */
 chrome.launcherSearchProvider.onQueryEnded;
+
+/**
+ * @type {!ChromeEvent}
+ */
+chrome.launcherSearchProvider.onOpenResult;

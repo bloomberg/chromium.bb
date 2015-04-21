@@ -34,6 +34,11 @@ function LauncherSearch() {
    */
   this.onQueryEndedBound_ = this.onQueryEnded_.bind(this);
 
+  /**
+   * @private {function(string)}
+   */
+  this.onOpenResultBound_ = this.onOpenResult_.bind(this);
+
   // This feature is disabled when drive is disabled.
   chrome.fileManagerPrivate.onPreferencesChanged.addListener(
       this.onPreferencesChanged_.bind(this));
@@ -69,6 +74,8 @@ LauncherSearch.prototype.initializeEventListeners_ = function(isDriveEnabled) {
         this.onQueryStartedBound_);
     chrome.launcherSearchProvider.onQueryEnded.removeListener(
         this.onQueryEndedBound_);
+    chrome.launcherSearchProvider.onOpenResult.removeListener(
+        this.onOpenResultBound_);
   }
 
   // Set queryId_ to null to prevent that on-going search returns search
@@ -82,7 +89,8 @@ LauncherSearch.prototype.initializeEventListeners_ = function(isDriveEnabled) {
         this.onQueryStartedBound_);
     chrome.launcherSearchProvider.onQueryEnded.addListener(
         this.onQueryEndedBound_);
-    // TODO(yawano): Adds listener to onOpenResult when it becomes available.
+    chrome.launcherSearchProvider.onOpenResult.addListener(
+        this.onOpenResultBound_);
   } else {
     this.enabled_ = false;
   }
@@ -130,4 +138,63 @@ LauncherSearch.prototype.onQueryStarted_ = function(queryId, query, limit) {
  */
 LauncherSearch.prototype.onQueryEnded_ = function(queryId) {
   this.queryId_ = null;
+};
+
+/**
+ * Handles onOpenResult event.
+ * @param {string} itemId
+ */
+LauncherSearch.prototype.onOpenResult_ = function(itemId) {
+  util.urlToEntry(itemId).then(function(entry) {
+    if (entry.isDirectory) {
+      // If it's directory, open the directory with file manager.
+      launchFileManager(
+          { currentDirectoryURL: entry.toURL() },
+          undefined, /* App ID */
+          LaunchType.FOCUS_SAME_OR_CREATE);
+    } else {
+      // If the file is not directory, try to execute default task.
+      chrome.fileManagerPrivate.getFileTasks([entry.toURL()], function(tasks) {
+        // Select default task.
+        var defaultTask = null;
+        for (var i = 0; i < tasks.length; i++) {
+          var task = tasks[i];
+          if (task.isDefault) {
+            defaultTask = task;
+            break;
+          }
+        }
+
+        if (defaultTask) {
+          // Execute default task.
+          chrome.fileManagerPrivate.executeTask(
+              defaultTask.taskId,
+              [entry.toURL()],
+              function(result) {
+                if (result === 'opened' || result === 'message_sent')
+                  return;
+                this.openFileManagerWithSelectionURL_(entry.toURL());
+              }.bind(this));
+        } else {
+          // If there is no default task for the url, open a file manager with
+          // selecting it.
+          // TODO(yawano): Add fallback to view-in-browser as file_tasks.js do.
+          this.openFileManagerWithSelectionURL_(entry.toURL());
+        }
+      }.bind(this));
+    }
+  }.bind(this));
+};
+
+/**
+ * Opens file manager with selecting a specified url.
+ * @param {string} selectionURL A url to be selected.
+ * @private
+ */
+LauncherSearch.prototype.openFileManagerWithSelectionURL_ = function(
+    selectionURL) {
+  launchFileManager(
+      { selectionURL: selectionURL },
+      undefined, /* App ID */
+      LaunchType.FOCUS_SAME_OR_CREATE);
 };
