@@ -352,6 +352,9 @@ public:
     // |useCounterId| must be one of the values from the UseCounter::Feature enum.
     bool isUseCounted(Document*, int useCounterId);
 
+    String unscopeableAttribute();
+    String unscopeableMethod();
+
 private:
     explicit Internals(Document*);
     Document* contextDocument() const;
