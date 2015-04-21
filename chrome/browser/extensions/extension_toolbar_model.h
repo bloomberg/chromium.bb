@@ -12,8 +12,6 @@
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
@@ -27,8 +25,7 @@ class ExtensionRegistry;
 class ExtensionSet;
 
 // Model for the browser actions toolbar.
-class ExtensionToolbarModel : public content::NotificationObserver,
-                              public ExtensionActionAPI::Observer,
+class ExtensionToolbarModel : public ExtensionActionAPI::Observer,
                               public ExtensionRegistryObserver,
                               public KeyedService {
  public:
@@ -160,11 +157,6 @@ class ExtensionToolbarModel : public content::NotificationObserver,
   bool RedesignIsShowingNewIcons() const;
 
  private:
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   // Callback when extensions are ready.
   void OnReady();
 
@@ -183,6 +175,8 @@ class ExtensionToolbarModel : public content::NotificationObserver,
       ExtensionAction* extension_action,
       content::WebContents* web_contents,
       content::BrowserContext* browser_context) override;
+  void OnExtensionActionVisibilityChanged(const std::string& extension_id,
+                                          bool is_now_visible) override;
 
   // To be called after the extension service is ready; gets loaded extensions
   // from the ExtensionRegistry and their saved order from the pref service
@@ -223,6 +217,9 @@ class ExtensionToolbarModel : public content::NotificationObserver,
   ExtensionPrefs* extension_prefs_;
   PrefService* prefs_;
 
+  // The ExtensionActionAPI object, cached for convenience.
+  ExtensionActionAPI* extension_action_api_;
+
   // True if we've handled the initial EXTENSIONS_READY notification.
   bool extensions_initialized_;
 
@@ -254,8 +251,6 @@ class ExtensionToolbarModel : public content::NotificationObserver,
   // TODO(devlin): Make a new variable to indicate that all icons should be
   // visible, instead of overloading this one.
   int visible_icon_count_;
-
-  content::NotificationRegistrar registrar_;
 
   ScopedObserver<ExtensionActionAPI, ExtensionActionAPI::Observer>
       extension_action_observer_;

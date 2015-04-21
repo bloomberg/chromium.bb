@@ -14,6 +14,7 @@ class BrowserContext;
 namespace extensions {
 class ErrorConsole;
 class Extension;
+class ExtensionActionAPI;
 class ExtensionPrefs;
 class ExtensionSystem;
 class WarningService;
@@ -46,6 +47,7 @@ class ExtensionInfoGenerator {
   content::BrowserContext* browser_context_;
   ExtensionSystem* extension_system_;
   ExtensionPrefs* extension_prefs_;
+  ExtensionActionAPI* extension_action_api_;
   WarningService* warning_service_;
   ErrorConsole* error_console_;
 

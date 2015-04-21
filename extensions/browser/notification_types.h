@@ -128,11 +128,6 @@ enum NotificationType {
   // are no details.
   NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
 
-  // Sent when a browser action's visibility has changed. The source is the
-  // ExtensionPrefs* that changed, and the details are a std::string with the
-  // extension's ID.
-  NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
-
   // Sent when an extension command has been removed. The source is the
   // BrowserContext* and the details is an ExtensionCommandRemovedDetails
   // consisting of std::strings representing an extension ID, the name of the

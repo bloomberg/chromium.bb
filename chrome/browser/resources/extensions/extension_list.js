@@ -245,6 +245,7 @@ cr.define('extensions', function() {
           case EventType.LOADED:
           case EventType.UNLOADED:
           case EventType.ERROR_ADDED:
+          case EventType.PREFS_CHANGED:
             if (eventData.extensionInfo)
               this.updateExtension_(eventData.extensionInfo);
             break;

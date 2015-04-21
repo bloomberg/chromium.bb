@@ -172,10 +172,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, ForceHide) {
   EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(0));
   // Force hide one of the extensions' browser action.
-  extensions::ExtensionActionAPI::SetBrowserActionVisibility(
-      extensions::ExtensionPrefs::Get(browser()->profile()),
-      extension_a()->id(),
-      false);
+  extensions::ExtensionActionAPI::Get(browser()->profile())->
+      SetBrowserActionVisibility(extension_a()->id(), false);
   // The browser action for Extension A should be removed.
   EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(0));

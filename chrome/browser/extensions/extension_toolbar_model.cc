@@ -42,6 +42,7 @@ ExtensionToolbarModel::ExtensionToolbarModel(Profile* profile,
     : profile_(profile),
       extension_prefs_(extension_prefs),
       prefs_(profile_->GetPrefs()),
+      extension_action_api_(ExtensionActionAPI::Get(profile_)),
       extensions_initialized_(false),
       include_all_extensions_(
           FeatureSwitch::extension_action_redesign()->IsEnabled()),
@@ -160,6 +161,47 @@ void ExtensionToolbarModel::OnExtensionActionUpdated(
   }
 }
 
+void ExtensionToolbarModel::OnExtensionActionVisibilityChanged(
+    const std::string& extension_id,
+    bool is_now_visible) {
+  const Extension* extension =
+      ExtensionRegistry::Get(profile_)->GetExtensionById(
+          extension_id, ExtensionRegistry::EVERYTHING);
+
+  // Hiding works differently with the new and old toolbars.
+  if (include_all_extensions_) {
+    // It's possible that we haven't added this extension yet, if its
+    // visibility was adjusted in the course of its initialization.
+    if (std::find(toolbar_items_.begin(), toolbar_items_.end(), extension) ==
+            toolbar_items_.end())
+      return;
+
+    int new_size = 0;
+    int new_index = 0;
+    if (is_now_visible) {
+      // If this action used to be hidden, we can't possibly be showing all.
+      DCHECK_LT(visible_icon_count(), toolbar_items_.size());
+      // Grow the bar by one and move the extension to the end of the visibles.
+      new_size = visible_icon_count() + 1;
+      new_index = new_size - 1;
+    } else {
+      // If we're hiding one, we must be showing at least one.
+      DCHECK_GE(visible_icon_count(), 0u);
+      // Shrink the bar by one and move the extension to the beginning of the
+      // overflow menu.
+      new_size = visible_icon_count() - 1;
+      new_index = new_size;
+    }
+    SetVisibleIconCount(new_size);
+    MoveExtensionIcon(extension->id(), new_index);
+  } else {  // Don't include all extensions.
+    if (is_now_visible)
+      AddExtension(extension);
+    else
+      RemoveExtension(extension);
+  }
+}
+
 void ExtensionToolbarModel::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
@@ -197,52 +239,6 @@ void ExtensionToolbarModel::OnExtensionUninstalled(
   }
 }
 
-void ExtensionToolbarModel::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED, type);
-  const Extension* extension =
-      ExtensionRegistry::Get(profile_)->GetExtensionById(
-          *content::Details<const std::string>(details).ptr(),
-          ExtensionRegistry::EVERYTHING);
-
-  bool visible = ExtensionActionAPI::GetBrowserActionVisibility(
-                     extension_prefs_, extension->id());
-  // Hiding works differently with the new and old toolbars.
-  if (include_all_extensions_) {
-    // It's possible that we haven't added this extension yet, if its
-    // visibility was adjusted in the course of its initialization.
-    if (std::find(toolbar_items_.begin(), toolbar_items_.end(), extension) ==
-            toolbar_items_.end())
-      return;
-
-    int new_size = 0;
-    int new_index = 0;
-    if (visible) {
-      // If this action used to be hidden, we can't possibly be showing all.
-      DCHECK_LT(visible_icon_count(), toolbar_items_.size());
-      // Grow the bar by one and move the extension to the end of the visibles.
-      new_size = visible_icon_count() + 1;
-      new_index = new_size - 1;
-    } else {
-      // If we're hiding one, we must be showing at least one.
-      DCHECK_GE(visible_icon_count(), 0u);
-      // Shrink the bar by one and move the extension to the beginning of the
-      // overflow menu.
-      new_size = visible_icon_count() - 1;
-      new_index = new_size;
-    }
-    SetVisibleIconCount(new_size);
-    MoveExtensionIcon(extension->id(), new_index);
-  } else {  // Don't include all extensions.
-    if (visible)
-      AddExtension(extension);
-    else
-      RemoveExtension(extension);
-  }
-}
-
 void ExtensionToolbarModel::OnReady() {
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
   InitializeExtensionList();
@@ -250,11 +246,7 @@ void ExtensionToolbarModel::OnReady() {
   // changes so that the toolbar buttons can be shown in their stable ordering
   // taken from prefs.
   extension_registry_observer_.Add(registry);
-  extension_action_observer_.Add(ExtensionActionAPI::Get(profile_));
-  registrar_.Add(
-      this,
-      extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
-      content::Source<ExtensionPrefs>(extension_prefs_));
+  extension_action_observer_.Add(extension_action_api_);
 }
 
 size_t ExtensionToolbarModel::FindNewPositionFromLastKnownGood(
@@ -299,8 +291,7 @@ bool ExtensionToolbarModel::ShouldAddExtension(const Extension* extension) {
   }
 
   return action_manager->GetBrowserAction(*extension) &&
-         ExtensionActionAPI::GetBrowserActionVisibility(
-             extension_prefs_, extension->id());
+         extension_action_api_->GetBrowserActionVisibility(extension->id());
 }
 
 void ExtensionToolbarModel::AddExtension(const Extension* extension) {
@@ -476,8 +467,7 @@ void ExtensionToolbarModel::Populate(ExtensionIdList* positions) {
   int hidden = 0;
   for (const scoped_refptr<const Extension>& extension : extensions) {
     if (!ShouldAddExtension(extension.get())) {
-      if (!ExtensionActionAPI::GetBrowserActionVisibility(extension_prefs_,
-                                                          extension->id()))
+      if (!extension_action_api_->GetBrowserActionVisibility(extension->id()))
         ++hidden;
       continue;
     }
@@ -570,27 +560,18 @@ void ExtensionToolbarModel::MaybeUpdateVisibilityPref(
   // overflow menu with the new toolbar design.
   if (include_all_extensions_ && !profile_->IsOffTheRecord()) {
     bool visible = index < visible_icon_count();
-    if (visible != ExtensionActionAPI::GetBrowserActionVisibility(
-                       extension_prefs_, extension->id())) {
+    if (visible != extension_action_api_->GetBrowserActionVisibility(
+                       extension->id())) {
       // Don't observe changes caused by ourselves.
       bool was_registered = false;
-      if (registrar_.IsRegistered(
-              this,
-              NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
-              content::Source<ExtensionPrefs>(extension_prefs_))) {
+      if (extension_action_observer_.IsObserving(extension_action_api_)) {
         was_registered = true;
-        registrar_.Remove(
-            this,
-            NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
-            content::Source<ExtensionPrefs>(extension_prefs_));
+        extension_action_observer_.RemoveAll();
       }
-      ExtensionActionAPI::SetBrowserActionVisibility(
-          extension_prefs_, extension->id(), visible);
-      if (was_registered) {
-        registrar_.Add(this,
-                       NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
-                       content::Source<ExtensionPrefs>(extension_prefs_));
-      }
+      extension_action_api_->SetBrowserActionVisibility(extension->id(),
+                                                       visible);
+      if (was_registered)
+        extension_action_observer_.Add(extension_action_api_);
     }
   }
 }

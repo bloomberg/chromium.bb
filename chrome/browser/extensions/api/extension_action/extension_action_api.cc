@@ -63,6 +63,11 @@ void ExtensionActionAPI::Observer::OnExtensionActionUpdated(
     content::BrowserContext* browser_context) {
 }
 
+void ExtensionActionAPI::Observer::OnExtensionActionVisibilityChanged(
+    const std::string& extension_id,
+    bool is_now_visible) {
+}
+
 void ExtensionActionAPI::Observer::OnPageActionsUpdated(
     content::WebContents* web_contents) {
 }
@@ -81,7 +86,8 @@ static base::LazyInstance<BrowserContextKeyedAPIFactory<ExtensionActionAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
 ExtensionActionAPI::ExtensionActionAPI(content::BrowserContext* context)
-    : browser_context_(context) {
+    : browser_context_(context),
+      extension_prefs_(nullptr) {
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();
 
@@ -123,11 +129,18 @@ ExtensionActionAPI* ExtensionActionAPI::Get(content::BrowserContext* context) {
   return BrowserContextKeyedAPIFactory<ExtensionActionAPI>::Get(context);
 }
 
-// static
+void ExtensionActionAPI::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ExtensionActionAPI::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 bool ExtensionActionAPI::GetBrowserActionVisibility(
-    const ExtensionPrefs* prefs,
     const std::string& extension_id) {
   bool visible = false;
+  ExtensionPrefs* prefs = GetExtensionPrefs();
   if (!prefs || !prefs->ReadPrefAsBoolean(extension_id,
                                           kBrowserActionVisible,
                                           &visible)) {
@@ -136,29 +149,17 @@ bool ExtensionActionAPI::GetBrowserActionVisibility(
   return visible;
 }
 
-// static
 void ExtensionActionAPI::SetBrowserActionVisibility(
-    ExtensionPrefs* prefs,
     const std::string& extension_id,
     bool visible) {
-  if (GetBrowserActionVisibility(prefs, extension_id) == visible)
+  if (GetBrowserActionVisibility(extension_id) == visible)
     return;
 
-  prefs->UpdateExtensionPref(extension_id,
-                             kBrowserActionVisible,
-                             new base::FundamentalValue(visible));
-  content::NotificationService::current()->Notify(
-      NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
-      content::Source<ExtensionPrefs>(prefs),
-      content::Details<const std::string>(&extension_id));
-}
-
-void ExtensionActionAPI::AddObserver(Observer* observer) {
-  observers_.AddObserver(observer);
-}
-
-void ExtensionActionAPI::RemoveObserver(Observer* observer) {
-  observers_.RemoveObserver(observer);
+  GetExtensionPrefs()->UpdateExtensionPref(extension_id,
+                                           kBrowserActionVisible,
+                                           new base::FundamentalValue(visible));
+  FOR_EACH_OBSERVER(Observer, observers_, OnExtensionActionVisibilityChanged(
+      extension_id, visible));
 }
 
 ExtensionAction::ShowAction ExtensionActionAPI::ExecuteExtensionAction(
@@ -282,6 +283,15 @@ void ExtensionActionAPI::ClearAllValuesForTab(
       NotifyChange(extension_action, web_contents, browser_context);
     }
   }
+}
+
+ExtensionPrefs* ExtensionActionAPI::GetExtensionPrefs() {
+  // This lazy initialization is more than just an optimization, because it
+  // allows tests to associate a new ExtensionPrefs with the browser context
+  // before we access it.
+  if (!extension_prefs_)
+    extension_prefs_ = ExtensionPrefs::Get(browser_context_);
+  return extension_prefs_;
 }
 
 void ExtensionActionAPI::DispatchEventToExtension(

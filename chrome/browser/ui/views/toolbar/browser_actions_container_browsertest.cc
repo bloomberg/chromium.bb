@@ -351,8 +351,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
   // Hide action A. This results in it being sent to overflow, and reducing the
   // visible size to 1, so the order should be C A B, with only C visible in the
   // main bar.
-  extensions::ExtensionActionAPI::SetBrowserActionVisibility(
-      extensions::ExtensionPrefs::Get(profile()),
+  extensions::ExtensionActionAPI::Get(profile())->SetBrowserActionVisibility(
       extension_a()->id(),
       false);
   overflow_bar()->Layout();  // Kick.

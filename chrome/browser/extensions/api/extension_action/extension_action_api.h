@@ -42,6 +42,11 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
         content::WebContents* web_contents,
         content::BrowserContext* browser_context);
 
+    // Called when there is a change to the extension action's visibility.
+    virtual void OnExtensionActionVisibilityChanged(
+        const std::string& extension_id,
+        bool is_now_visible);
+
     // Called when the page actions have been refreshed do to a possible change
     // in count or visibility.
     virtual void OnPageActionsUpdated(content::WebContents* web_contents);
@@ -60,13 +65,6 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
   // Convenience method to get the instance for a profile.
   static ExtensionActionAPI* Get(content::BrowserContext* context);
 
-  static bool GetBrowserActionVisibility(const ExtensionPrefs* prefs,
-                                         const std::string& extension_id);
-  static void SetBrowserActionVisibility(ExtensionPrefs* prefs,
-                                         const std::string& extension_id,
-                                         bool visible);
-
-  // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<ExtensionActionAPI>*
       GetFactoryInstance();
 
@@ -74,6 +72,11 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  bool GetBrowserActionVisibility(const std::string& extension_id);
+  void SetBrowserActionVisibility(const std::string& extension_id,
+                                  bool visible);
+
+  // BrowserContextKeyedAPI implementation.
   // Executes the action of the given |extension| on the |browser|'s active
   // web contents. If |grant_tab_permissions| is true, this will also grant
   // activeTab to the extension (so this should only be done if this is through
@@ -109,8 +112,15 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
   // changed, and signals the browser to update.
   void NotifyPageActionsChanged(content::WebContents* web_contents);
 
+  void set_prefs_for_testing(ExtensionPrefs* prefs) {
+    extension_prefs_ = prefs;
+  }
+
  private:
   friend class BrowserContextKeyedAPIFactory<ExtensionActionAPI>;
+
+  // Returns the associated extension prefs.
+  ExtensionPrefs* GetExtensionPrefs();
 
   // The DispatchEvent methods forward events to the |context|'s event router.
   void DispatchEventToExtension(content::BrowserContext* context,
@@ -131,6 +141,8 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
   ObserverList<Observer> observers_;
 
   content::BrowserContext* browser_context_;
+
+  ExtensionPrefs* extension_prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionAPI);
 };

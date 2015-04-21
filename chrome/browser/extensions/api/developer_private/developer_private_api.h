@@ -10,6 +10,7 @@
 #include "base/files/file.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/developer_private/entry_picker.h"
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
@@ -65,7 +66,8 @@ typedef std::vector<linked_ptr<developer::ItemInspectView> >
 class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
                                     public ErrorConsole::Observer,
                                     public ProcessManagerObserver,
-                                    public AppWindowRegistry::Observer {
+                                    public AppWindowRegistry::Observer,
+                                    public ExtensionActionAPI::Observer {
  public:
   explicit DeveloperPrivateEventRouter(Profile* profile);
   ~DeveloperPrivateEventRouter() override;
@@ -105,6 +107,10 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
   void OnAppWindowAdded(AppWindow* window) override;
   void OnAppWindowRemoved(AppWindow* window) override;
 
+  // ExtensionActionAPI::Observer:
+  void OnExtensionActionVisibilityChanged(const std::string& extension_id,
+                                          bool is_now_visible) override;
+
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
   ScopedObserver<ErrorConsole, ErrorConsole::Observer> error_console_observer_;
@@ -112,6 +118,8 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
       process_manager_observer_;
   ScopedObserver<AppWindowRegistry, AppWindowRegistry::Observer>
       app_window_registry_observer_;
+  ScopedObserver<ExtensionActionAPI, ExtensionActionAPI::Observer>
+      extension_action_api_observer_;
 
   Profile* profile_;
 

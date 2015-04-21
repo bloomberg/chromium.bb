@@ -11,8 +11,6 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "extensions/browser/extension_prefs_observer.h"
@@ -41,7 +39,6 @@ class ExtensionPrefs;
 // Extension Settings UI handler.
 class ExtensionSettingsHandler
     : public content::WebUIMessageHandler,
-      public content::NotificationObserver,
       public content::WebContentsObserver,
       public ExtensionManagement::Observer,
       public ExtensionPrefsObserver,
@@ -65,11 +62,6 @@ class ExtensionSettingsHandler
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
 
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   // ExtensionPrefsObserver implementation.
   void OnExtensionDisableReasonsChanged(const std::string& extension_id,
                                         int disable_reasons) override;
@@ -91,8 +83,6 @@ class ExtensionSettingsHandler
 
   // Our model.  Outlives us since it's owned by our containing profile.
   ExtensionService* extension_service_;
-
-  content::NotificationRegistrar registrar_;
 
   ScopedObserver<WarningService, WarningService::Observer>
       warning_service_observer_;

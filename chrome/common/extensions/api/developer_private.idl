@@ -284,7 +284,8 @@ namespace developerPrivate {
     VIEW_REGISTERED,
     // window / view closed.
     VIEW_UNREGISTERED,
-    ERROR_ADDED
+    ERROR_ADDED,
+    PREFS_CHANGED
   };
 
   dictionary PackDirectoryResponse {

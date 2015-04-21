@@ -16,7 +16,6 @@
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
-#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/test_management_policy.h"
 #include "extensions/common/extension_builder.h"
@@ -262,7 +261,6 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_HIDE_BUTTON);
   base::string16 show_string =
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_BUTTON);
-  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
 
   int index = GetCommandIndex(menu, visibility_command);
   // Without the toolbar redesign switch, page action menus shouldn't have a
@@ -286,13 +284,13 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
   index = GetCommandIndex(menu, visibility_command);
   // By default, browser actions should be visible (and therefore the button
   // should be to hide).
-  EXPECT_TRUE(ExtensionActionAPI::GetBrowserActionVisibility(
-                  prefs, browser_action->id()));
+  ExtensionActionAPI* extension_action_api = ExtensionActionAPI::Get(profile());
+  EXPECT_TRUE(extension_action_api->GetBrowserActionVisibility(
+                  browser_action->id()));
   EXPECT_EQ(hide_string, menu->GetLabelAt(index));
 
   // Hide the browser action. This should mean the string is "show".
-  ExtensionActionAPI::SetBrowserActionVisibility(
-      prefs, browser_action->id(), false);
+  extension_action_api->SetBrowserActionVisibility(browser_action->id(), false);
   menu = new ExtensionContextMenuModel(browser_action.get(), browser.get());
   index = GetCommandIndex(menu, visibility_command);
   EXPECT_NE(-1, index);

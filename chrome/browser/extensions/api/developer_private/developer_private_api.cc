@@ -245,11 +245,13 @@ DeveloperPrivateEventRouter::DeveloperPrivateEventRouter(Profile* profile)
       error_console_observer_(this),
       process_manager_observer_(this),
       app_window_registry_observer_(this),
+      extension_action_api_observer_(this),
       profile_(profile) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   error_console_observer_.Add(ErrorConsole::Get(profile));
   process_manager_observer_.Add(ProcessManager::Get(profile));
   app_window_registry_observer_.Add(AppWindowRegistry::Get(profile));
+  extension_action_api_observer_.Add(ExtensionActionAPI::Get(profile));
 }
 
 DeveloperPrivateEventRouter::~DeveloperPrivateEventRouter() {
@@ -336,6 +338,13 @@ void DeveloperPrivateEventRouter::OnAppWindowRemoved(AppWindow* window) {
   BroadcastItemStateChanged(profile_,
                             developer::EVENT_TYPE_VIEW_UNREGISTERED,
                             window->extension_id());
+}
+
+void DeveloperPrivateEventRouter::OnExtensionActionVisibilityChanged(
+    const std::string& extension_id,
+    bool is_now_visible) {
+  BroadcastItemStateChanged(
+       profile_, developer::EVENT_TYPE_PREFS_CHANGED, extension_id);
 }
 
 void DeveloperPrivateAPI::SetLastUnpackedDirectory(const base::FilePath& path) {
@@ -605,8 +614,7 @@ DeveloperPrivateUpdateExtensionConfigurationFunction::Run() {
         extension->id(), browser_context(), *update.run_on_all_urls);
   }
   if (update.show_action_button) {
-    ExtensionActionAPI::SetBrowserActionVisibility(
-        ExtensionPrefs::Get(browser_context()),
+    ExtensionActionAPI::Get(browser_context())->SetBrowserActionVisibility(
         extension->id(),
         *update.show_action_button);
   }

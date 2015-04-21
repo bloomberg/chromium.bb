@@ -35,9 +35,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
@@ -309,16 +306,6 @@ void ExtensionSettingsHandler::RegisterMessages() {
                  AsWeakPtr()));
 }
 
-void ExtensionSettingsHandler::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(
-      extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
-      type);
-  MaybeUpdateAfterNotification();
-}
-
 void ExtensionSettingsHandler::OnExtensionDisableReasonsChanged(
     const std::string& extension_id, int disable_reasons) {
   MaybeUpdateAfterNotification();
@@ -350,17 +337,12 @@ void ExtensionSettingsHandler::ReloadUnpackedExtensions() {
 
 void ExtensionSettingsHandler::HandleRegisterMessage(
     const base::ListValue* args) {
-  if (!registrar_.IsEmpty())
+  if (content::WebContentsObserver::web_contents())
     return;  // Only register once.
-
-  Profile* profile = Profile::FromWebUI(web_ui());
-  registrar_.Add(
-      this,
-      extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
-      content::Source<ExtensionPrefs>(ExtensionPrefs::Get(profile)));
 
   content::WebContentsObserver::Observe(web_ui()->GetWebContents());
 
+  Profile* profile = Profile::FromWebUI(web_ui());
   warning_service_observer_.Add(WarningService::Get(profile));
   extension_management_observer_.Add(
       ExtensionManagementFactory::GetForBrowserContext(profile));

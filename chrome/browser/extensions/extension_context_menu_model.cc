@@ -85,8 +85,8 @@ int GetVisibilityStringId(Profile* profile, const Extension* extension) {
   } else {
     // With the redesign, we display "show" or "hide" based on the icon's
     // visibility.
-    bool visible = ExtensionActionAPI::GetBrowserActionVisibility(
-                       ExtensionPrefs::Get(profile), extension->id());
+    bool visible = ExtensionActionAPI::Get(profile)->GetBrowserActionVisibility(
+                       extension->id());
     string_id =
         visible ? IDS_EXTENSIONS_HIDE_BUTTON : IDS_EXTENSIONS_SHOW_BUTTON;
   }
@@ -206,11 +206,9 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
       extensions::ExtensionTabUtil::OpenOptionsPage(extension, browser_);
       break;
     case TOGGLE_VISIBILITY: {
-      ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_);
-      bool visible = ExtensionActionAPI::GetBrowserActionVisibility(
-                         prefs, extension->id());
-      ExtensionActionAPI::SetBrowserActionVisibility(
-          prefs, extension->id(), !visible);
+      ExtensionActionAPI* api = ExtensionActionAPI::Get(profile_);
+      bool visible = api->GetBrowserActionVisibility(extension->id());
+      api->SetBrowserActionVisibility(extension->id(), !visible);
       break;
     }
     case UNINSTALL: {

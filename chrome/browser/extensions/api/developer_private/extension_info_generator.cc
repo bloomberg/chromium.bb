@@ -140,6 +140,7 @@ ExtensionInfoGenerator::ExtensionInfoGenerator(
     : browser_context_(browser_context),
       extension_system_(ExtensionSystem::Get(browser_context)),
       extension_prefs_(ExtensionPrefs::Get(browser_context)),
+      extension_action_api_(ExtensionActionAPI::Get(browser_context)),
       warning_service_(WarningService::Get(browser_context)),
       error_console_(ErrorConsole::Get(browser_context)) {
 }
@@ -155,8 +156,7 @@ ExtensionInfoGenerator::CreateExtensionInfo(const Extension& extension,
   // Don't consider the button hidden with the redesign, because "hidden"
   // buttons are now just hidden in the wrench menu.
   info->action_button_hidden =
-      !ExtensionActionAPI::GetBrowserActionVisibility(
-          extension_prefs_, extension.id()) &&
+      !extension_action_api_->GetBrowserActionVisibility(extension.id()) &&
       !FeatureSwitch::extension_action_redesign()->IsEnabled();
 
   // Blacklist text.
