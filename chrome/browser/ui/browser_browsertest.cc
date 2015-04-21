@@ -2074,9 +2074,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
 }
 #endif
 
-// TODO(schenney) Disable on Mac to enable a Blink roll.
-// Re-enable and fix after Blink rolls.
-#if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(BrowserTest, WindowOpenClose) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
@@ -2089,7 +2086,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, WindowOpenClose) {
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 2);
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
 }
-#endif
 
 // TODO(linux_aura) http://crbug.com/163931
 // Mac disabled: http://crbug.com/169820
