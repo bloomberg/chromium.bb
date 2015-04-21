@@ -130,4 +130,11 @@ remoting.DesktopRemotingActivity.prototype.getConnectedView = function() {
   return this.connectedView_;
 };
 
+/**
+ * @return {remoting.ClientSession}.
+ */
+remoting.DesktopRemotingActivity.prototype.getSession = function() {
+  return this.session_;
+};
+
 })();

@@ -54,7 +54,9 @@ remoting.ClientSession = function(plugin, signalStrategy, listener) {
 
   /** @private */
   this.hasReceivedFrame_ = false;
-  this.logToServer = new remoting.LogToServer(signalStrategy);
+
+  /** @private */
+  this.logToServer_ = new remoting.LogToServer(signalStrategy);
 
   /** @private */
   this.signalStrategy_ = signalStrategy;
@@ -303,7 +305,7 @@ remoting.ClientSession.prototype.disconnect = function(error) {
 
   // The plugin won't send a state change notification, so we explicitly log
   // the fact that the connection has closed.
-  this.logToServer.logClientSessionStateChange(state, error);
+  this.logToServer_.logClientSessionStateChange(state, error);
   this.error_ = error;
   this.setState_(state);
 };
@@ -325,6 +327,13 @@ remoting.ClientSession.prototype.dispose = function() {
  */
 remoting.ClientSession.prototype.getState = function() {
   return this.state_;
+};
+
+/**
+ * @return {remoting.LogToServer}.
+ */
+remoting.ClientSession.prototype.getLogger = function() {
+  return this.logToServer_;
 };
 
 /**
@@ -384,7 +393,7 @@ remoting.ClientSession.prototype.sendIq_ = function(message) {
  */
 remoting.ClientSession.prototype.onOutgoingIq = function(message) {
   this.sendIq_(message);
-}
+};
 
 /**
  * @param {string} msg
@@ -458,7 +467,7 @@ remoting.ClientSession.prototype.onRouteChanged =
     function(channel, connectionType) {
   console.log('plugin: Channel ' + channel + ' using ' +
               connectionType + ' connection.');
-  this.logToServer.setConnectionType(connectionType);
+  this.logToServer_.setConnectionType(connectionType);
 };
 
 /**
@@ -509,7 +518,7 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
   }
 
   this.notifyStateChanges_(oldState, this.state_);
-  this.logToServer.logClientSessionStateChange(this.state_, this.error_);
+  this.logToServer_.logClientSessionStateChange(this.state_, this.error_);
 };
 
 /**
@@ -600,7 +609,7 @@ remoting.ClientSession.prototype.translateState_ = function(previous, current) {
 
 /** @private */
 remoting.ClientSession.prototype.reportStatistics = function() {
-  this.logToServer.logStatistics(this.plugin_.getPerfStats());
+  this.logToServer_.logStatistics(this.plugin_.getPerfStats());
 };
 
 /**
