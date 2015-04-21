@@ -495,11 +495,6 @@ IntSize DeprecatedPaintLayerScrollableArea::contentsSize() const
     return IntSize(scrollWidth(), scrollHeight());
 }
 
-IntSize DeprecatedPaintLayerScrollableArea::overhangAmount() const
-{
-    return IntSize();
-}
-
 IntPoint DeprecatedPaintLayerScrollableArea::lastKnownMousePosition() const
 {
     return box().frame() ? box().frame()->eventHandler().lastKnownMousePosition() : IntPoint();

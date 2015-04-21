@@ -23,9 +23,6 @@ public:
 
 private:
     void paintScrollbar(GraphicsContext*, Scrollbar*, const IntRect&);
-    void paintOverhangAreas(GraphicsContext*, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect);
-    void calculateAndPaintOverhangAreas(GraphicsContext*, const IntRect& dirtyRect);
-    void paintOverhangAreasInternal(GraphicsContext*, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect);
 
     FrameView& m_frameView;
     static bool s_inPaintContents;

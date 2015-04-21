@@ -29,7 +29,6 @@ public:
     MOCK_CONST_METHOD0(minimumScrollPosition, IntPoint());
     MOCK_CONST_METHOD1(visibleContentRect, IntRect(IncludeScrollbarsInRect));
     MOCK_CONST_METHOD0(contentsSize, IntSize());
-    MOCK_CONST_METHOD0(overhangAmount, IntSize());
     MOCK_CONST_METHOD0(scrollbarsCanBeActive, bool());
     MOCK_CONST_METHOD0(scrollableAreaBoundingBox, IntRect());
 

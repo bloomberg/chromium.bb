@@ -699,14 +699,6 @@ void WebPluginContainerImpl::willEndLiveResize()
         m_scrollbarGroup->willEndLiveResize();
 }
 
-bool WebPluginContainerImpl::paintCustomOverhangArea(GraphicsContext* context, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect)
-{
-    Color fillColor(0xCC, 0xCC, 0xCC);
-    context->fillRect(intersection(horizontalOverhangArea, dirtyRect), fillColor);
-    context->fillRect(intersection(verticalOverhangArea, dirtyRect), fillColor);
-    return true;
-}
-
 // Private methods -------------------------------------------------------------
 
 WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement* element, WebPlugin* webPlugin)

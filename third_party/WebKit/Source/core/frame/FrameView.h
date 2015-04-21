@@ -458,8 +458,6 @@ public:
     int scrollX() const { return scrollPosition().x(); }
     int scrollY() const { return scrollPosition().y(); }
 
-    virtual IntSize overhangAmount() const override;
-
     void cacheCurrentScrollPosition() { m_cachedScrollPosition = scrollPositionDouble(); }
     DoublePoint cachedScrollPosition() const { return m_cachedScrollPosition; }
 
@@ -572,8 +570,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
     void notifyPageThatContentAreaWillPaint() const;
     FrameView* parentFrameView() const;
-
-    void calculateOverhangAreasForPainting(IntRect& horizontalOverhangRect, IntRect& verticalOverhangRect);
 
     // Returns the scrollable area for the frame.
     ScrollableArea* scrollableArea();
@@ -720,8 +716,6 @@ private:
     void setScrollOffsetFromUpdateScrollbars(const DoubleSize&);
 
     IntRect rectToCopyOnScroll() const;
-
-    void updateOverhangAreas();
 
     bool isFrameViewScrollbar(const Widget* child) const { return horizontalScrollbar() == child || verticalScrollbar() == child; }
 

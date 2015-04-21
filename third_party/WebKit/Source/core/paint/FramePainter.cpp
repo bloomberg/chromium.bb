@@ -46,8 +46,6 @@ void FramePainter::paint(GraphicsContext* context, const IntRect& rect)
         paintContents(context, documentDirtyRect);
     }
 
-    calculateAndPaintOverhangAreas(context, rect);
-
     // Now paint the scrollbars.
     if (!m_frameView.scrollbarsSuppressed() && (m_frameView.horizontalScrollbar() || m_frameView.verticalScrollbar())) {
         IntRect scrollViewDirtyRect = rect;
@@ -204,35 +202,6 @@ void FramePainter::paintScrollbar(GraphicsContext* context, Scrollbar* bar, cons
     }
 
     bar->paint(context, rect);
-}
-
-void FramePainter::paintOverhangAreas(GraphicsContext* context, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect)
-{
-    if (m_frameView.frame().document()->printing())
-        return;
-
-    if (m_frameView.frame().isMainFrame()) {
-        if (m_frameView.frame().page()->chrome().client().paintCustomOverhangArea(context, horizontalOverhangArea, verticalOverhangArea, dirtyRect))
-            return;
-    }
-
-    paintOverhangAreasInternal(context, horizontalOverhangArea, verticalOverhangArea, dirtyRect);
-}
-
-void FramePainter::paintOverhangAreasInternal(GraphicsContext* context, const IntRect& horizontalOverhangRect, const IntRect& verticalOverhangRect, const IntRect& dirtyRect)
-{
-    ScrollbarTheme::theme()->paintOverhangBackground(context, horizontalOverhangRect, verticalOverhangRect, dirtyRect);
-    ScrollbarTheme::theme()->paintOverhangShadows(context, m_frameView.scrollOffset(), horizontalOverhangRect, verticalOverhangRect, dirtyRect);
-}
-
-void FramePainter::calculateAndPaintOverhangAreas(GraphicsContext* context, const IntRect& dirtyRect)
-{
-    IntRect horizontalOverhangRect;
-    IntRect verticalOverhangRect;
-    m_frameView.calculateOverhangAreasForPainting(horizontalOverhangRect, verticalOverhangRect);
-
-    if (dirtyRect.intersects(horizontalOverhangRect) || dirtyRect.intersects(verticalOverhangRect))
-        paintOverhangAreas(context, horizontalOverhangRect, verticalOverhangRect, dirtyRect);
 }
 
 } // namespace blink

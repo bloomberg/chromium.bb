@@ -63,7 +63,6 @@ public:
     virtual int visibleHeight() const override;
     virtual int visibleWidth() const override;
     virtual IntSize contentsSize() const override;
-    virtual IntSize overhangAmount() const override;
     virtual IntPoint lastKnownMousePosition() const override;
     virtual bool shouldSuspendScrollAnimations() const override;
     virtual void scrollbarStyleChanged() override;

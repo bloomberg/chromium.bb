@@ -46,8 +46,6 @@ public:
     virtual double initialAutoscrollTimerDelay() override;
     virtual double autoscrollTimerDelay() override;
 
-    virtual void paintOverhangBackground(GraphicsContext*, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect) override;
-    virtual void paintOverhangShadows(GraphicsContext*, const IntSize& scrollOffset, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect) override;
     virtual void paintTickmarks(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
 
     static NSScrollerStyle recommendedScrollerStyle();

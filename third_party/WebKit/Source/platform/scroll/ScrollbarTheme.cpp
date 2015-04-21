@@ -221,15 +221,6 @@ void ScrollbarTheme::paintScrollCorner(GraphicsContext* context, const DisplayIt
 #endif
 }
 
-void ScrollbarTheme::paintOverhangBackground(GraphicsContext* context, const IntRect& horizontalOverhangRect, const IntRect& verticalOverhangRect, const IntRect& dirtyRect)
-{
-    context->setFillColor(Color::white);
-    if (!horizontalOverhangRect.isEmpty())
-        context->fillRect(intersection(horizontalOverhangRect, dirtyRect));
-    if (!verticalOverhangRect.isEmpty())
-        context->fillRect(intersection(verticalOverhangRect, dirtyRect));
-}
-
 bool ScrollbarTheme::shouldCenterOnThumb(ScrollbarThemeClient* scrollbar, const PlatformMouseEvent& evt)
 {
     return Platform::current()->scrollbarBehavior()->shouldCenterOnThumb(static_cast<WebScrollbarBehavior::Button>(evt.button()), evt.shiftKey(), evt.altKey());
@@ -242,20 +233,10 @@ bool ScrollbarTheme::shouldSnapBackToDragOrigin(ScrollbarThemeClient* scrollbar,
     return Platform::current()->scrollbarBehavior()->shouldSnapBackToDragOrigin(mousePosition, trackRect(scrollbar), scrollbar->orientation() == HorizontalScrollbar);
 }
 
-// Returns the size represented by track taking into account scrolling past
-// the end of the document.
-static float usedTotalSize(ScrollbarThemeClient* scrollbar)
-{
-    float overhangAtStart = -scrollbar->currentPos();
-    float overhangAtEnd = scrollbar->currentPos() + scrollbar->visibleSize() - scrollbar->totalSize();
-    float overhang = std::max(0.0f, std::max(overhangAtStart, overhangAtEnd));
-    return scrollbar->totalSize() + overhang;
-}
-
 int ScrollbarTheme::thumbPosition(ScrollbarThemeClient* scrollbar)
 {
     if (scrollbar->enabled()) {
-        float size = usedTotalSize(scrollbar) - scrollbar->visibleSize();
+        float size = scrollbar->totalSize() - scrollbar->visibleSize();
         // Avoid doing a floating point divide by zero and return 1 when usedTotalSize == visibleSize.
         if (!size)
             return 1;
@@ -270,19 +251,9 @@ int ScrollbarTheme::thumbLength(ScrollbarThemeClient* scrollbar)
     if (!scrollbar->enabled())
         return 0;
 
-    // It is safe to compute the overhang by adding the result from the main
-    // thread overscroll mode (first) and then adding the result from compositor
-    // thread overscroll (second) because the modes are mutually exclusive (and
-    // determining which mode is in use here will require lots of temporary
-    // plumbing, and the main thread mode is to be deleted).
-    float overhang = 0;
-    if (scrollbar->currentPos() < 0)
-        overhang = -scrollbar->currentPos();
-    else if (scrollbar->visibleSize() + scrollbar->currentPos() > scrollbar->totalSize())
-        overhang = scrollbar->currentPos() + scrollbar->visibleSize() - scrollbar->totalSize();
-    overhang += fabsf(scrollbar->elasticOverscroll());
+    float overhang = fabsf(scrollbar->elasticOverscroll());
     float proportion = 0.0f;
-    float totalSize = usedTotalSize(scrollbar);
+    float totalSize = scrollbar->totalSize();
     if (totalSize > 0.0f) {
         proportion = (scrollbar->visibleSize() - overhang) / totalSize;
     }

@@ -163,8 +163,6 @@ public:
     void willStartLiveResize();
     void willEndLiveResize();
 
-    bool paintCustomOverhangArea(GraphicsContext*, const IntRect&, const IntRect&, const IntRect&);
-
     DECLARE_VIRTUAL_TRACE();
     virtual void dispose() override;
 

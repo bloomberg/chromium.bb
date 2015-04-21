@@ -82,8 +82,6 @@ public:
 
     virtual void paintScrollCorner(GraphicsContext*, const DisplayItemClientWrapper&, const IntRect& cornerRect);
     virtual void paintTickmarks(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) { }
-    virtual void paintOverhangBackground(GraphicsContext*, const IntRect&, const IntRect&, const IntRect&);
-    virtual void paintOverhangShadows(GraphicsContext*, const IntSize&, const IntRect&, const IntRect&, const IntRect&) { }
 
     virtual bool shouldCenterOnThumb(ScrollbarThemeClient*, const PlatformMouseEvent&);
     virtual bool shouldSnapBackToDragOrigin(ScrollbarThemeClient*, const PlatformMouseEvent&);

@@ -152,7 +152,6 @@ public:
     virtual void didAssociateFormControls(const WillBeHeapVector<RefPtrWillBeMember<Element>>&, LocalFrame* frame) override { }
 
     virtual void annotatedRegionsChanged() override { }
-    virtual bool paintCustomOverhangArea(GraphicsContext*, const IntRect&, const IntRect&, const IntRect&) override { return false; }
     virtual String acceptLanguages() override;
 };
 

@@ -501,7 +501,6 @@ void FrameView::setContentsSize(const IntSize& size)
 
     m_contentsSize = size;
     updateScrollbars(scrollOffsetDouble());
-    updateOverhangAreas();
     ScrollableArea::contentsResized();
 
     Page* page = frame().page();
@@ -3275,27 +3274,6 @@ bool FrameView::scroll(ScrollDirection direction, ScrollGranularity granularity)
     return ScrollableArea::scroll(physicalDirection, granularity);
 }
 
-IntSize FrameView::overhangAmount() const
-{
-    IntSize stretch;
-
-    IntPoint currentScrollPosition = scrollPosition();
-    IntPoint minScrollPosition = minimumScrollPosition();
-    IntPoint maxScrollPosition = maximumScrollPosition();
-
-    if (currentScrollPosition.x() < minScrollPosition.x())
-        stretch.setWidth(currentScrollPosition.x() - minScrollPosition.x());
-    if (currentScrollPosition.x() > maxScrollPosition.x())
-        stretch.setWidth(currentScrollPosition.x() - maxScrollPosition.x());
-
-    if (currentScrollPosition.y() < minScrollPosition.y())
-        stretch.setHeight(currentScrollPosition.y() - minScrollPosition.y());
-    if (currentScrollPosition.y() > maxScrollPosition.y())
-        stretch.setHeight(currentScrollPosition.y() - maxScrollPosition.y());
-
-    return stretch;
-}
-
 void FrameView::windowResizerRectChanged()
 {
     updateScrollbars(scrollOffsetDouble());
@@ -3588,9 +3566,6 @@ void FrameView::scrollContents(const IntSize& scrollDelta)
     if (!scrollContentsFastPath(-scrollDelta))
         scrollContentsSlowPath(updateRect);
 
-    // Invalidate the overhang areas if they are visible.
-    updateOverhangAreas();
-
     // This call will move children with native widgets (plugins) and invalidate them as well.
     frameRectsChanged();
 }
@@ -3865,64 +3840,6 @@ void FrameView::paint(GraphicsContext* context, const IntRect& rect)
 void FrameView::paintContents(GraphicsContext* context, const IntRect& damageRect)
 {
     FramePainter(*this).paintContents(context, damageRect);
-}
-
-void FrameView::calculateOverhangAreasForPainting(IntRect& horizontalOverhangRect, IntRect& verticalOverhangRect)
-{
-    int verticalScrollbarWidth = (verticalScrollbar() && !verticalScrollbar()->isOverlayScrollbar())
-        ? verticalScrollbar()->width() : 0;
-    int horizontalScrollbarHeight = (horizontalScrollbar() && !horizontalScrollbar()->isOverlayScrollbar())
-        ? horizontalScrollbar()->height() : 0;
-
-    int physicalScrollY = scrollPosition().y() + scrollOrigin().y();
-    if (physicalScrollY < 0) {
-        horizontalOverhangRect = frameRect();
-        horizontalOverhangRect.setHeight(-physicalScrollY);
-        horizontalOverhangRect.setWidth(horizontalOverhangRect.width() - verticalScrollbarWidth);
-    } else if (physicalScrollY > 0 && contentsHeight() && physicalScrollY > contentsHeight() - visibleHeight()) {
-        int height = physicalScrollY - (contentsHeight() - visibleHeight());
-        horizontalOverhangRect = frameRect();
-        horizontalOverhangRect.setY(frameRect().maxY() - height - horizontalScrollbarHeight);
-        horizontalOverhangRect.setHeight(height);
-        horizontalOverhangRect.setWidth(horizontalOverhangRect.width() - verticalScrollbarWidth);
-    }
-
-    int physicalScrollX = scrollPosition().x() + scrollOrigin().x();
-    if (physicalScrollX < 0) {
-        verticalOverhangRect.setWidth(-physicalScrollX);
-        verticalOverhangRect.setHeight(frameRect().height() - horizontalOverhangRect.height() - horizontalScrollbarHeight);
-        verticalOverhangRect.setX(frameRect().x());
-        if (horizontalOverhangRect.y() == frameRect().y())
-            verticalOverhangRect.setY(frameRect().y() + horizontalOverhangRect.height());
-        else
-            verticalOverhangRect.setY(frameRect().y());
-    } else if (physicalScrollX > 0 && contentsWidth() && physicalScrollX > contentsWidth() - visibleWidth()) {
-        int width = physicalScrollX - (contentsWidth() - visibleWidth());
-        verticalOverhangRect.setWidth(width);
-        verticalOverhangRect.setHeight(frameRect().height() - horizontalOverhangRect.height() - horizontalScrollbarHeight);
-        verticalOverhangRect.setX(frameRect().maxX() - width - verticalScrollbarWidth);
-        if (horizontalOverhangRect.y() == frameRect().y())
-            verticalOverhangRect.setY(frameRect().y() + horizontalOverhangRect.height());
-        else
-            verticalOverhangRect.setY(frameRect().y());
-    }
-}
-
-void FrameView::updateOverhangAreas()
-{
-    HostWindow* window = hostWindow();
-    if (!window)
-        return;
-
-    TRACE_EVENT0("blink", "FrameView::updateOverhangAreas");
-
-    IntRect horizontalOverhangRect;
-    IntRect verticalOverhangRect;
-    calculateOverhangAreasForPainting(horizontalOverhangRect, verticalOverhangRect);
-    if (!horizontalOverhangRect.isEmpty())
-        window->invalidateRect(horizontalOverhangRect);
-    if (!verticalOverhangRect.isEmpty())
-        window->invalidateRect(verticalOverhangRect);
 }
 
 bool FrameView::isPointInScrollbarCorner(const IntPoint& windowPoint)

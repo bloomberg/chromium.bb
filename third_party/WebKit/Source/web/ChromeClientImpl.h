@@ -121,7 +121,6 @@ public:
     virtual void dispatchViewportPropertiesDidChange(const ViewportDescription&) const override;
     virtual void print(LocalFrame*) override;
     virtual void annotatedRegionsChanged() override;
-    virtual bool paintCustomOverhangArea(GraphicsContext*, const IntRect&, const IntRect&, const IntRect&) override;
     virtual PassOwnPtrWillBeRawPtr<ColorChooser> createColorChooser(LocalFrame*, ColorChooserClient*, const Color&) override;
     virtual PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) override;
     virtual void runOpenPanel(LocalFrame*, PassRefPtr<FileChooser>) override;
