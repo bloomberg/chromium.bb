@@ -31,6 +31,7 @@
 #ifndef ThreadableLoader_h
 #define ThreadableLoader_h
 
+#include "core/CoreExport.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "platform/CrossThreadCopier.h"
 #include "wtf/Noncopyable.h"
@@ -114,7 +115,7 @@ namespace blink {
 
     // Useful for doing loader operations from any thread (not threadsafe,
     // just able to run on threads other than the main thread).
-    class ThreadableLoader : public RefCounted<ThreadableLoader> {
+    class CORE_EXPORT ThreadableLoader : public RefCounted<ThreadableLoader> {
         WTF_MAKE_NONCOPYABLE(ThreadableLoader);
     public:
         // ThreadableLoaderOptions argument configures this ThreadableLoader's
