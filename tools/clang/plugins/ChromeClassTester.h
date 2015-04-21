@@ -37,6 +37,10 @@ class ChromeClassTester : public clang::ASTConsumer {
   // namespace.
   bool InBannedNamespace(const clang::Decl* record);
 
+  // Utility method for subclasses to check if the source location is in a
+  // directory the plugin should ignore.
+  bool InBannedDirectory(clang::SourceLocation loc);
+
   // Utility method for subclasses to determine the namespace of the
   // specified record, if any. Unnamed namespaces will be identified as
   // "<anonymous namespace>".
@@ -64,7 +68,6 @@ class ChromeClassTester : public clang::ASTConsumer {
   // deliberately ignore) in HandleTagDeclDefinition().
   std::string GetNamespaceImpl(const clang::DeclContext* context,
                                const std::string& candidate);
-  bool InBannedDirectory(clang::SourceLocation loc);
   bool IsIgnoredType(const std::string& base_name);
 
   // Attempts to determine the filename for the given SourceLocation.
