@@ -52,6 +52,11 @@ class DrmNativeDisplayDelegate : public NativeDisplayDelegate,
   void CreateFrameBuffer(const gfx::Size& size) override;
   bool GetHDCPState(const DisplaySnapshot& output, HDCPState* state) override;
   bool SetHDCPState(const DisplaySnapshot& output, HDCPState state) override;
+  void GetHDCPState(const DisplaySnapshot& output,
+                    const GetHDCPStateCallback& callback) override;
+  void SetHDCPState(const DisplaySnapshot& output,
+                    HDCPState state,
+                    const SetHDCPStateCallback& callback) override;
   std::vector<ColorCalibrationProfile> GetAvailableColorCalibrationProfiles(
       const DisplaySnapshot& output) override;
   bool SetColorCalibrationProfile(const DisplaySnapshot& output,

@@ -76,16 +76,31 @@ void NativeDisplayDelegateOzone::CreateFrameBuffer(const gfx::Size& size) {
   NOTIMPLEMENTED();
 }
 
-bool NativeDisplayDelegateOzone::GetHDCPState(const ui::DisplaySnapshot& output,
-                                              ui::HDCPState* state) {
+bool NativeDisplayDelegateOzone::GetHDCPState(const DisplaySnapshot& output,
+                                              HDCPState* state) {
   NOTIMPLEMENTED();
   return false;
 }
 
-bool NativeDisplayDelegateOzone::SetHDCPState(const ui::DisplaySnapshot& output,
-                                              ui::HDCPState state) {
+bool NativeDisplayDelegateOzone::SetHDCPState(const DisplaySnapshot& output,
+                                              HDCPState state) {
   NOTIMPLEMENTED();
   return false;
+}
+
+void NativeDisplayDelegateOzone::GetHDCPState(
+    const ui::DisplaySnapshot& output,
+    const GetHDCPStateCallback& callback) {
+  NOTIMPLEMENTED();
+  callback.Run(false, HDCP_STATE_UNDESIRED);
+}
+
+void NativeDisplayDelegateOzone::SetHDCPState(
+    const ui::DisplaySnapshot& output,
+    ui::HDCPState state,
+    const SetHDCPStateCallback& callback) {
+  NOTIMPLEMENTED();
+  callback.Run(false);
 }
 
 std::vector<ui::ColorCalibrationProfile>

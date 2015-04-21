@@ -196,6 +196,21 @@ bool DrmNativeDisplayDelegate::SetHDCPState(const DisplaySnapshot& output,
   return false;
 }
 
+void DrmNativeDisplayDelegate::GetHDCPState(
+    const ui::DisplaySnapshot& output,
+    const GetHDCPStateCallback& callback) {
+  NOTIMPLEMENTED();
+  callback.Run(false, HDCP_STATE_UNDESIRED);
+}
+
+void DrmNativeDisplayDelegate::SetHDCPState(
+    const ui::DisplaySnapshot& output,
+    ui::HDCPState state,
+    const SetHDCPStateCallback& callback) {
+  NOTIMPLEMENTED();
+  callback.Run(false);
+}
+
 std::vector<ColorCalibrationProfile>
 DrmNativeDisplayDelegate::GetAvailableColorCalibrationProfiles(
     const DisplaySnapshot& output) {

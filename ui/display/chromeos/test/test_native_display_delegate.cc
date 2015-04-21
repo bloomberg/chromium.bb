@@ -110,10 +110,24 @@ bool TestNativeDisplayDelegate::GetHDCPState(const DisplaySnapshot& output,
   return true;
 }
 
+void TestNativeDisplayDelegate::GetHDCPState(
+    const DisplaySnapshot& output,
+    const GetHDCPStateCallback& callback) {
+  callback.Run(true, hdcp_state_);
+}
+
 bool TestNativeDisplayDelegate::SetHDCPState(const DisplaySnapshot& output,
                                              HDCPState state) {
   log_->AppendAction(GetSetHDCPStateAction(output, state));
   return true;
+}
+
+void TestNativeDisplayDelegate::SetHDCPState(
+    const DisplaySnapshot& output,
+    HDCPState state,
+    const SetHDCPStateCallback& callback) {
+  log_->AppendAction(GetSetHDCPStateAction(output, state));
+  callback.Run(true);
 }
 
 std::vector<ui::ColorCalibrationProfile>
