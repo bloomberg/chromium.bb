@@ -258,6 +258,8 @@ void FindLayersThatNeedVisibleRects(LayerType* layer,
 }  // namespace
 
 void ComputeClips(ClipTree* clip_tree, const TransformTree& transform_tree) {
+  if (!clip_tree->needs_update())
+    return;
   for (int i = 0; i < static_cast<int>(clip_tree->size()); ++i) {
     ClipNode* clip_node = clip_tree->Node(i);
 
@@ -339,17 +341,23 @@ void ComputeClips(ClipTree* clip_tree, const TransformTree& transform_tree) {
 
     clip_node->data.combined_clip.Intersect(clip_node->data.clip);
   }
+  clip_tree->set_needs_update(false);
 }
 
 void ComputeTransforms(TransformTree* transform_tree) {
+  if (!transform_tree->needs_update())
+    return;
   for (int i = 1; i < static_cast<int>(transform_tree->size()); ++i)
     transform_tree->UpdateTransforms(i);
+  transform_tree->set_needs_update(false);
 }
 
 template <typename LayerType>
 void ComputeVisibleRectsUsingPropertyTreesInternal(
     LayerType* root_layer,
     PropertyTrees* property_trees) {
+  if (property_trees->transform_tree.needs_update())
+    property_trees->clip_tree.set_needs_update(true);
   ComputeTransforms(&property_trees->transform_tree);
   ComputeClips(&property_trees->clip_tree, property_trees->transform_tree);
 

@@ -414,6 +414,12 @@ void BuildPropertyTreesTopLevelInternal(LayerType* root_layer,
       data_for_recursion.clip_tree->Insert(root_clip, 0);
   BuildPropertyTreesInternal(root_layer, data_for_recursion);
   property_trees->needs_rebuild = false;
+
+  // The transform tree is kept up-to-date as it is built, but the
+  // combined_clips stored in the clip tree aren't computed during tree
+  // building.
+  property_trees->transform_tree.set_needs_update(false);
+  property_trees->clip_tree.set_needs_update(true);
 }
 
 void PropertyTreeBuilder::BuildPropertyTrees(

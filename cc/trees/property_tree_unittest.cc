@@ -109,6 +109,7 @@ TEST(PropertyTreeTest, TransformsWithFlattening) {
   tree.Node(grand_child)->data.flattens_inherited_transform = true;
   tree.Node(grand_child)->data.local = rotation_about_x;
 
+  tree.set_needs_update(true);
   ComputeTransforms(&tree);
 
   gfx::Transform flattened_rotation_about_x = rotation_about_x;
@@ -136,6 +137,7 @@ TEST(PropertyTreeTest, TransformsWithFlattening) {
 
   // Remove flattening at grand_child, and recompute transforms.
   tree.Node(grand_child)->data.flattens_inherited_transform = false;
+  tree.set_needs_update(true);
   ComputeTransforms(&tree);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(rotation_about_x * rotation_about_x,
@@ -341,6 +343,7 @@ TEST(PropertyTreeTest, FlatteningWhenDestinationHasOnlyFlatAncestors) {
   tree.Node(grand_child)->data.target_id = grand_child;
   tree.Node(grand_child)->data.flattens_inherited_transform = true;
 
+  tree.set_needs_update(true);
   ComputeTransforms(&tree);
 
   gfx::Transform flattened_rotation_about_x = rotation_about_x;

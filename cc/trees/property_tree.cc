@@ -12,7 +12,8 @@
 namespace cc {
 
 template <typename T>
-PropertyTree<T>::PropertyTree() {
+PropertyTree<T>::PropertyTree()
+    : needs_update_(false) {
   nodes_.push_back(T());
   back()->id = 0;
   back()->parent_id = -1;

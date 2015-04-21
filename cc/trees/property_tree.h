@@ -146,9 +146,14 @@ class CC_EXPORT PropertyTree {
   void clear();
   size_t size() const { return nodes_.size(); }
 
+  void set_needs_update(bool needs_update) { needs_update_ = needs_update; }
+  bool needs_update() const { return needs_update_; }
+
  private:
   // Copy and assign are permitted. This is how we do tree sync.
   std::vector<T> nodes_;
+
+  bool needs_update_;
 };
 
 class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
