@@ -68,6 +68,24 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
       const autofill::PasswordForm& observed_form,
       const AffiliatedRealmsCallback& result_callback);
 
+  // Retrieves realms of web sites affiliated with the Android application that
+  // |android_form| belongs to and invokes |result_callback| on the same thread;
+  // or yields the empty list if  |android_form| is not an Android credential.
+  // NOTE: This will issue an on-demand network request against the Affiliation
+  // API if affiliations of the Android application are not cached. However, as
+  // long as the |android_form| is from the PasswordStore, this should rarely
+  // happen as affiliation information for those applications are prefetched.
+  virtual void GetAffiliatedWebRealms(
+      const autofill::PasswordForm& android_form,
+      const AffiliatedRealmsCallback& result_callback);
+
+  // Returns whether or not |form| represents an Android credential.
+  static bool IsValidAndroidCredential(const autofill::PasswordForm& form);
+
+  // Returns whether or not |form| represents a valid Web credential for the
+  // purposes of affiliation-based matching.
+  static bool IsValidWebCredential(const autofill::PasswordForm& form);
+
   // Consumes a list of |android_credentials| corresponding to applications that
   // are affiliated with the realm of |observed_form|, and transforms them so
   // as to make them fillable into |observed_form|. This can be called from any
@@ -94,11 +112,22 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
   // observing the store for future changes.
   void DoDeferredInitialization();
 
-  // AffiliationService callback:
-  void OnGetAffiliationsResults(const FacetURI& original_facet_uri,
-                                const AffiliatedRealmsCallback& result_callback,
-                                const AffiliatedFacets& results,
-                                bool success);
+  // Called back by AffiliationService to supply the list of facets affiliated
+  // with |original_facet_uri| so that a GetAffiliatedAndroidRealms() call can
+  // be completed.
+  void CompleteGetAffiliatedAndroidRealms(
+      const FacetURI& original_facet_uri,
+      const AffiliatedRealmsCallback& result_callback,
+      const AffiliatedFacets& results,
+      bool success);
+
+  // Called back by AffiliationService to supply the list of facets affiliated
+  // with the Android application that GetAffiliatedWebRealms() was called with,
+  // so that the call can be completed.
+  void CompleteGetAffiliatedWebRealms(
+      const AffiliatedRealmsCallback& result_callback,
+      const AffiliatedFacets& results,
+      bool success);
 
   // PasswordStore::Observer:
   void OnLoginsChanged(const PasswordStoreChangeList& changes) override;

@@ -28,15 +28,15 @@ class PasswordStoreSync {
       WARN_UNUSED_RESULT = 0;
 
   // Synchronous implementation to add the given login.
-  virtual PasswordStoreChangeList AddLoginImpl(
+  virtual PasswordStoreChangeList AddLoginSync(
       const autofill::PasswordForm& form) = 0;
 
   // Synchronous implementation to update the given login.
-  virtual PasswordStoreChangeList UpdateLoginImpl(
+  virtual PasswordStoreChangeList UpdateLoginSync(
       const autofill::PasswordForm& form) = 0;
 
   // Synchronous implementation to remove the given login.
-  virtual PasswordStoreChangeList RemoveLoginImpl(
+  virtual PasswordStoreChangeList RemoveLoginSync(
       const autofill::PasswordForm& form) = 0;
 
   // Notifies observers that password store data may have been changed.

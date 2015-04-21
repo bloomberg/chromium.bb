@@ -103,6 +103,12 @@ bool ShouldAffiliationBasedMatchingBeActive(Profile* profile) {
          !profile_sync_service->IsUsingSecondaryPassphrase();
 }
 
+bool ShouldPropagatingPasswordChangesToWebCredentialsBeEnabled() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  return password_manager::IsPropagatingPasswordChangesToWebCredentialsEnabled(
+      *command_line);
+}
+
 void ActivateAffiliationBasedMatching(PasswordStore* password_store,
                                       Profile* profile) {
   DCHECK(password_store);
@@ -124,6 +130,8 @@ void ActivateAffiliationBasedMatching(PasswordStore* password_store,
                                                   affiliation_service.Pass()));
   affiliated_match_helper->Initialize();
   password_store->SetAffiliatedMatchHelper(affiliated_match_helper.Pass());
+  password_store->enable_propagating_password_changes_to_web_credentials(
+      ShouldPropagatingPasswordChangesToWebCredentialsBeEnabled());
 }
 
 }  // namespace

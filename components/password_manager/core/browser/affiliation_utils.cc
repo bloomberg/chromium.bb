@@ -13,6 +13,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
+#include "components/variations/variations_associated_data.h"
 #include "net/base/escape.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon_stdstring.h"
@@ -24,6 +25,9 @@ namespace {
 
 // The scheme used for identifying Android applications.
 const char kAndroidAppScheme[] = "android";
+
+// The name of the field trial controlling affiliation-based matching.
+const char kFieldTrialName[] = "AffiliationBasedMatching";
 
 // Returns a StringPiece corresponding to |component| in |uri|, or the empty
 // string in case there is no such component.
@@ -292,13 +296,28 @@ bool IsAffiliationBasedMatchingEnabled(const base::CommandLine& command_line) {
   // Note: It is important to always query the field trial state, to ensure that
   // UMA reports the correct group.
   const std::string group_name =
-      base::FieldTrialList::FindFullName("AffiliationBasedMatching");
+      base::FieldTrialList::FindFullName(kFieldTrialName);
 
   if (command_line.HasSwitch(switches::kDisableAffiliationBasedMatching))
     return false;
   if (command_line.HasSwitch(switches::kEnableAffiliationBasedMatching))
     return true;
   return StartsWithASCII(group_name, "Enabled", /*case_sensitive=*/false);
+}
+
+bool IsPropagatingPasswordChangesToWebCredentialsEnabled(
+    const base::CommandLine& command_line) {
+  // Note: It is important to always query the variation param first, which, in
+  // turn, queries the field trial state, which ensures that UMA reports the
+  // correct group if it is forced by a command line flag.
+  const std::string update_enabled = variations::GetVariationParamValue(
+      kFieldTrialName, "propagate_password_changes_to_web");
+
+  if (command_line.HasSwitch(switches::kDisableAffiliationBasedMatching))
+    return false;
+  if (command_line.HasSwitch(switches::kEnableAffiliationBasedMatching))
+    return true;
+  return LowerCaseEqualsASCII(update_enabled, "enabled");
 }
 
 bool IsValidAndroidFacetURI(const std::string& url) {

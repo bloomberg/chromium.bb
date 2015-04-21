@@ -7,12 +7,14 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
+#include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/url_constants.h"
 
 namespace password_manager {
 
 namespace {
+const char kFieldTrialName[] = "AffiliationBasedMatching";
 const char kTestFacetURI1[] = "https://alpha.example.com/";
 const char kTestFacetURI2[] = "https://beta.example.com/";
 const char kTestFacetURI3[] = "https://gamma.example.com/";
@@ -196,8 +198,6 @@ TEST(AffiliationUtilsTest, NotEqualEquivalenceClasses) {
 }
 
 TEST(AffiliationUtilsTest, IsAffiliationBasedMatchingEnabled) {
-  const char kFieldTrialName[] = "AffiliationBasedMatching";
-
   struct {
     const char* field_trial_group;
     const char* command_line_switch;
@@ -232,6 +232,51 @@ TEST(AffiliationUtilsTest, IsAffiliationBasedMatchingEnabled) {
     command_line.AppendSwitch(test_case.command_line_switch);
     EXPECT_EQ(test_case.expected_enabled,
               IsAffiliationBasedMatchingEnabled(command_line));
+  }
+}
+
+TEST(AffiliationUtilsTest,
+     IsPropagatingPasswordChangesToWebCredentialsEnabled) {
+  const char kExperimentName[] = "DoesNotMatter";
+
+  struct {
+    const char* variation_param;
+    const char* command_line_switch;
+    bool expected_enabled;
+  } kTestCases[] = {
+      {"", "", false},
+      {"", switches::kEnableAffiliationBasedMatching, true},
+      {"", switches::kDisableAffiliationBasedMatching, false},
+      {"garbage value", "", false},
+      {"disabled", "", false},
+      {"Disabled", "", false},
+      {"Disabled", switches::kDisableAffiliationBasedMatching, false},
+      {"Disabled", switches::kEnableAffiliationBasedMatching, true},
+      {"enabled", "", true},
+      {"Enabled", "", true},
+      {"Enabled", switches::kDisableAffiliationBasedMatching, false},
+      {"Enabled", switches::kEnableAffiliationBasedMatching, true}};
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(testing::Message("Command line = ")
+                 << test_case.command_line_switch);
+    SCOPED_TRACE(testing::Message("Variation param = ")
+                 << test_case.variation_param);
+
+    variations::testing::ClearAllVariationParams();
+    base::FieldTrialList field_trials(nullptr);
+    base::FieldTrialList::CreateFieldTrial(kFieldTrialName, kExperimentName);
+    std::map<std::string, std::string> variation_params;
+    variation_params["propagate_password_changes_to_web"] =
+        test_case.variation_param;
+    ASSERT_TRUE(variations::AssociateVariationParams(
+        kFieldTrialName, kExperimentName, variation_params));
+
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+    command_line.AppendSwitch(test_case.command_line_switch);
+    EXPECT_EQ(
+        test_case.expected_enabled,
+        IsPropagatingPasswordChangesToWebCredentialsEnabled(command_line));
   }
 }
 

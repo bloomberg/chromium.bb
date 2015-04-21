@@ -260,6 +260,7 @@ syncer::SyncError PasswordSyncableService::ProcessSyncChanges(
     AppendPasswordFromSpecifics(
         specifics.password().client_only_encrypted_data(), time_now, entries);
   }
+
   WriteToPasswordStore(sync_entries);
   return syncer::SyncError();
 }
@@ -335,15 +336,12 @@ bool PasswordSyncableService::ReadFromPasswordStore(
 
 void PasswordSyncableService::WriteToPasswordStore(const SyncEntries& entries) {
   PasswordStoreChangeList changes;
-  WriteEntriesToDatabase(&PasswordStoreSync::AddLoginImpl,
-                         entries.new_entries.get(),
-                         &changes);
-  WriteEntriesToDatabase(&PasswordStoreSync::UpdateLoginImpl,
-                         entries.updated_entries.get(),
-                         &changes);
-  WriteEntriesToDatabase(&PasswordStoreSync::RemoveLoginImpl,
-                         entries.deleted_entries.get(),
-                         &changes);
+  WriteEntriesToDatabase(&PasswordStoreSync::AddLoginSync,
+                         entries.new_entries.get(), &changes);
+  WriteEntriesToDatabase(&PasswordStoreSync::UpdateLoginSync,
+                         entries.updated_entries.get(), &changes);
+  WriteEntriesToDatabase(&PasswordStoreSync::RemoveLoginSync,
+                         entries.deleted_entries.get(), &changes);
 
   // We have to notify password store observers of the change by hand since
   // we use internal password store interfaces to make changes synchronously.

@@ -65,6 +65,7 @@ PasswordStore::PasswordStore(
     : main_thread_runner_(main_thread_runner),
       db_thread_runner_(db_thread_runner),
       observers_(new ObserverListThreadSafe<Observer>()),
+      is_propagating_password_changes_to_web_credentials_enabled_(false),
       shutdown_called_(false) {
 }
 
@@ -218,6 +219,36 @@ void PasswordStore::LogStatsForBulkDeletionDuringRollback(int num_deletions) {
                        num_deletions);
 }
 
+PasswordStoreChangeList PasswordStore::AddLoginSync(const PasswordForm& form) {
+  // There is no good way to check if the password is actually up-to-date, or
+  // at least to check if it was actually changed. Assume it is.
+  if (AffiliatedMatchHelper::IsValidAndroidCredential(form))
+    ScheduleFindAndUpdateAffiliatedWebLogins(form);
+  return AddLoginImpl(form);
+}
+
+PasswordStoreChangeList PasswordStore::UpdateLoginSync(
+    const PasswordForm& form) {
+  if (AffiliatedMatchHelper::IsValidAndroidCredential(form)) {
+    // Ideally, a |form| would not be updated in any way unless it was ensured
+    // that it, as a whole, can be used for a successful login. This, sadly, can
+    // not be guaranteed. It might be that |form| just contains updates to some
+    // meta-attribute, while it still has an out-of-date password. If such a
+    // password were to be propagated to affiliated credentials in that case, it
+    // may very well overwrite the actual, up-to-date password. Try to mitigate
+    // this risk by ignoring updates unless they actually update the password.
+    scoped_ptr<PasswordForm> old_form(GetLoginImpl(form));
+    if (old_form && form.password_value != old_form->password_value)
+      ScheduleFindAndUpdateAffiliatedWebLogins(form);
+  }
+  return UpdateLoginImpl(form);
+}
+
+PasswordStoreChangeList PasswordStore::RemoveLoginSync(
+    const PasswordForm& form) {
+  return RemoveLoginImpl(form);
+}
+
 void PasswordStore::NotifyLoginsChanged(
     const PasswordStoreChangeList& changes) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
@@ -299,6 +330,134 @@ void PasswordStore::ScheduleGetLoginsWithAffiliations(
   ScheduleTask(base::Bind(&PasswordStore::GetLoginsWithAffiliationsImpl, this,
                           form, prompt_policy, base::Passed(&request),
                           additional_android_realms));
+}
+
+scoped_ptr<PasswordForm> PasswordStore::GetLoginImpl(
+    const PasswordForm& primary_key) {
+  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  ScopedVector<PasswordForm> candidates(
+      FillMatchingLogins(primary_key, DISALLOW_PROMPT));
+  for (PasswordForm*& candidate : candidates) {
+    if (candidate->signon_realm == primary_key.signon_realm &&
+        candidate->username_element == primary_key.username_element &&
+        candidate->username_value == primary_key.username_value &&
+        candidate->password_element == primary_key.password_element &&
+        candidate->origin == primary_key.origin &&
+        !candidate->IsPublicSuffixMatch()) {
+      scoped_ptr<PasswordForm> result(candidate);
+      candidate = nullptr;
+      return result.Pass();
+    }
+  }
+  return make_scoped_ptr<PasswordForm>(nullptr);
+}
+
+void PasswordStore::FindAndUpdateAffiliatedWebLogins(
+    const PasswordForm& added_or_updated_android_form) {
+  if (!affiliated_match_helper_ ||
+      !is_propagating_password_changes_to_web_credentials_enabled_) {
+    return;
+  }
+  affiliated_match_helper_->GetAffiliatedWebRealms(
+      added_or_updated_android_form,
+      base::Bind(&PasswordStore::ScheduleUpdateAffiliatedWebLoginsImpl, this,
+                 added_or_updated_android_form));
+}
+
+void PasswordStore::ScheduleFindAndUpdateAffiliatedWebLogins(
+    const PasswordForm& added_or_updated_android_form) {
+  main_thread_runner_->PostTask(
+      FROM_HERE, base::Bind(&PasswordStore::FindAndUpdateAffiliatedWebLogins,
+                            this, added_or_updated_android_form));
+}
+
+void PasswordStore::UpdateAffiliatedWebLoginsImpl(
+    const PasswordForm& updated_android_form,
+    const std::vector<std::string>& affiliated_web_realms) {
+  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  PasswordStoreChangeList all_changes;
+  for (const std::string& affiliated_web_realm : affiliated_web_realms) {
+    PasswordForm web_form_template;
+    web_form_template.scheme = PasswordForm::SCHEME_HTML;
+    web_form_template.signon_realm = affiliated_web_realm;
+    ScopedVector<PasswordForm> web_logins(
+        FillMatchingLogins(web_form_template, DISALLOW_PROMPT));
+    for (PasswordForm* web_login : web_logins) {
+      // Do not update HTTP logins, logins saved under insecure conditions, and
+      // non-HTML login forms; PSL matches; logins with a different username;
+      // and logins with the same password (to avoid generating no-op updates).
+      if (!AffiliatedMatchHelper::IsValidWebCredential(*web_login) ||
+          web_login->IsPublicSuffixMatch() ||
+          web_login->username_value != updated_android_form.username_value ||
+          web_login->password_value == updated_android_form.password_value)
+        continue;
+
+      // If the |web_login| was updated in the same or a later chunk of Sync
+      // changes, assume that it is more recent and do not update it. Note that
+      // this check is far from perfect conflict resolution and mostly prevents
+      // long-dormant Sync clients doing damage when they wake up in the face
+      // of the following list of changes:
+      //
+      //   Time   Source     Change
+      //   ====   ======     ======
+      //   #1     Android    android_login.password_value = "A"
+      //   #2     Client A   web_login.password_value = "A" (propagation)
+      //   #3     Client A   web_login.password_value = "B" (manual overwrite)
+      //
+      // When long-dormant Sync client B wakes up, it will only get a distilled
+      // subset of not-yet-obsoleted changes {1, 3}. In this case, client B must
+      // not propagate password "A" to |web_login|. This is prevented as change
+      // #3 will arrive either in the same/later chunk of sync changes, so the
+      // |date_synced| of |web_login| value will be greater or equal.
+      //
+      // Note that this solution has several shortcomings:
+      //
+      //   (1) It will not prevent local changes to |web_login| from being
+      //       overwritten if they were made shortly after start-up, before
+      //       Sync changes are applied. This should be tolerable.
+      //
+      //   (2) It assumes that all Sync clients are fully capable of propagating
+      //       changes to web credentials on their own. If client C runs an
+      //       older version of Chrome and updates the password for |web_login|
+      //       around the time when the |android_login| is updated, the updated
+      //       password will not be propagated by client B to |web_login| when
+      //       it wakes up, regardless of the temporal order of the original
+      //       changes, as client B will see both credentials having the same
+      //       |data_synced|.
+      //
+      //   (2a) Above could be mitigated by looking not only at |data_synced|,
+      //        but also at the actual order of Sync changes.
+      //
+      //   (2b) However, (2a) is still not workable, as a Sync change is made
+      //        when any attribute of the credential is updated, not only the
+      //        password. Hence it is not possible for client B to distinguish
+      //        between two following two event orders:
+      //
+      //    #1     Android    android_login.password_value = "A"
+      //    #2     Client C   web_login.password_value = "B" (manual overwrite)
+      //    #3     Android    android_login.random_attribute = "..."
+      //
+      //    #1     Client C   web_login.password_value = "B" (manual overwrite)
+      //    #2     Android    android_login.password_value = "A"
+      //
+      //        And so it must assume that it is unsafe to update |web_login|.
+      if (web_login->date_synced >= updated_android_form.date_synced)
+        continue;
+
+      web_login->password_value = updated_android_form.password_value;
+
+      PasswordStoreChangeList changes = UpdateLoginImpl(*web_login);
+      all_changes.insert(all_changes.end(), changes.begin(), changes.end());
+    }
+  }
+  NotifyLoginsChanged(all_changes);
+}
+
+void PasswordStore::ScheduleUpdateAffiliatedWebLoginsImpl(
+    const PasswordForm& updated_android_form,
+    const std::vector<std::string>& affiliated_web_realms) {
+  ScheduleTask(base::Bind(&PasswordStore::UpdateAffiliatedWebLoginsImpl, this,
+                          updated_android_form, affiliated_web_realms));
 }
 
 void PasswordStore::InitSyncableService(
