@@ -121,6 +121,12 @@ IPC_MESSAGE_CONTROL3(BluetoothMsg_RequestDeviceError,
                      int /* request_id */,
                      content::BluetoothError /* result */)
 
+// Informs the renderer that the connection request |request_id| succeeded.
+IPC_MESSAGE_CONTROL3(BluetoothMsg_ConnectGATTSuccess,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     std::string /* device_instance_id */)
+
 // Messages sent from the renderer to the browser.
 
 // Requests a bluetooth device from the browser.
@@ -133,6 +139,12 @@ IPC_MESSAGE_CONTROL3(BluetoothMsg_RequestDeviceError,
 IPC_MESSAGE_CONTROL2(BluetoothHostMsg_RequestDevice,
                      int /* thread_id */,
                      int /* request_id */)
+
+// Connects to a bluetooth device.
+IPC_MESSAGE_CONTROL3(BluetoothHostMsg_ConnectGATT,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     std::string /* device_instance_id */)
 
 // Configures the mock data set in the browser used while under test.
 // TODO(scheib): Disable testing in non-test executables. crbug.com/436284.

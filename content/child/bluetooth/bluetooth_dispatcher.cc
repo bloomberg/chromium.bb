@@ -12,9 +12,12 @@
 #include "content/common/bluetooth/bluetooth_messages.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothDevice.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothError.h"
+#include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothGATTRemoteServer.h"
 
+using blink::WebBluetoothConnectGATTCallbacks;
 using blink::WebBluetoothDevice;
 using blink::WebBluetoothError;
+using blink::WebBluetoothGATTRemoteServer;
 using blink::WebBluetoothRequestDeviceCallbacks;
 using blink::WebString;
 using blink::WebVector;
@@ -95,6 +98,7 @@ void BluetoothDispatcher::OnMessageReceived(const IPC::Message& msg) {
   IPC_MESSAGE_HANDLER(BluetoothMsg_RequestDeviceSuccess,
                       OnRequestDeviceSuccess);
   IPC_MESSAGE_HANDLER(BluetoothMsg_RequestDeviceError, OnRequestDeviceError);
+  IPC_MESSAGE_HANDLER(BluetoothMsg_ConnectGATTSuccess, OnConnectGATTSuccess);
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << "Unhandled message:" << msg.type();
@@ -104,6 +108,14 @@ void BluetoothDispatcher::requestDevice(
     blink::WebBluetoothRequestDeviceCallbacks* callbacks) {
   int request_id = pending_requests_.Add(callbacks);
   Send(new BluetoothHostMsg_RequestDevice(CurrentWorkerId(), request_id));
+}
+
+void BluetoothDispatcher::connectGATT(
+    const blink::WebString& device_instance_id,
+    blink::WebBluetoothConnectGATTCallbacks* callbacks) {
+  int request_id = pending_connect_requests_.Add(callbacks);
+  Send(new BluetoothHostMsg_ConnectGATT(CurrentWorkerId(), request_id,
+                                        device_instance_id.utf8()));
 }
 
 void BluetoothDispatcher::SetBluetoothMockDataSetForTesting(
@@ -132,6 +144,17 @@ void BluetoothDispatcher::OnRequestDeviceSuccess(
           device.vendor_id, device.product_id, device.product_version,
           device.paired, uuids));
   pending_requests_.Remove(request_id);
+}
+
+void BluetoothDispatcher::OnConnectGATTSuccess(
+    int thread_id,
+    int request_id,
+    const std::string& device_instance_id) {
+  DCHECK(pending_connect_requests_.Lookup(request_id)) << request_id;
+  pending_connect_requests_.Lookup(request_id)
+      ->onSuccess(new WebBluetoothGATTRemoteServer(
+          WebString::fromUTF8(device_instance_id), true /* connected */));
+  pending_connect_requests_.Remove(request_id);
 }
 
 void BluetoothDispatcher::OnRequestDeviceError(int thread_id,

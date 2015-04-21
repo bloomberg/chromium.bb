@@ -48,6 +48,8 @@ class BluetoothDispatcher : public WorkerTaskRunner::Observer {
 
   // Corresponding to WebBluetoothImpl methods.
   void requestDevice(blink::WebBluetoothRequestDeviceCallbacks* callbacks);
+  void connectGATT(const blink::WebString& device_instance_id,
+                   blink::WebBluetoothConnectGATTCallbacks* callbacks);
   void SetBluetoothMockDataSetForTesting(const std::string& name);
 
   // WorkerTaskRunner::Observer implementation.
@@ -62,12 +64,20 @@ class BluetoothDispatcher : public WorkerTaskRunner::Observer {
                             int request_id,
                             BluetoothError error_type);
 
+  void OnConnectGATTSuccess(int thread_id,
+                            int request_id,
+                            const std::string& message);
+
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
-  // Tracks requests sent to browser to match replies with callbacks.
+  // Tracks device requests sent to browser to match replies with callbacks.
   // Owns callback objects.
   IDMap<blink::WebBluetoothRequestDeviceCallbacks, IDMapOwnPointer>
       pending_requests_;
+  // Tracks requests to connect to a device.
+  // Owns callback objects.
+  IDMap<blink::WebBluetoothConnectGATTCallbacks, IDMapOwnPointer>
+      pending_connect_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDispatcher);
 };
