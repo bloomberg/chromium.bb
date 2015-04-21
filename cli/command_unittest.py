@@ -60,7 +60,7 @@ class TestCommandTest(cros_test_lib.MockTestCase):
 
   def testCrosAddDeviceArgument(self):
     """Tests CliCommand.AddDeviceArgument() for `cros`."""
-    self.PatchObject(command, '_GetToolset', return_value='cros')
+    self.PatchObject(command, 'GetToolset', return_value='cros')
     parser = argparse.ArgumentParser()
     command.CliCommand.AddDeviceArgument(parser)
     # cros should have a positional device argument.
@@ -70,7 +70,7 @@ class TestCommandTest(cros_test_lib.MockTestCase):
 
   def testBrilloAddDeviceArgument(self):
     """Tests CliCommand.AddDeviceArgument() for `brillo`."""
-    self.PatchObject(command, '_GetToolset', return_value='brillo')
+    self.PatchObject(command, 'GetToolset', return_value='brillo')
     parser = argparse.ArgumentParser()
     command.CliCommand.AddDeviceArgument(parser)
     # brillo should have an optional device argument.

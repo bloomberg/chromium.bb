@@ -42,7 +42,7 @@ def UseProgressBar():
   return logging.getLogger().getEffectiveLevel() == logging.NOTICE
 
 
-def _GetToolset():
+def GetToolset():
   """Return the CLI toolset invoked by the user.
 
   For example, if the user is executing `cros flash`, this will return 'cros'.
@@ -99,7 +99,7 @@ def ListCommands(toolset=None):
   Returns:
     A dictionary mapping names (strings) to commands (classes).
   """
-  _ImportCommands(toolset or _GetToolset())
+  _ImportCommands(toolset or GetToolset())
   return _commands.copy()
 
 
@@ -182,7 +182,7 @@ class CliCommand(object):
         argument; None to auto-determine based on toolset.
     """
     if optional is None:
-      optional = (_GetToolset() == 'brillo')
+      optional = (GetToolset() == 'brillo')
     help_strings = []
     schemes = list(cros_build_lib.iflatten_instance(schemes))
     if commandline.DEVICE_SCHEME_SSH in schemes:

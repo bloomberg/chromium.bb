@@ -25,7 +25,11 @@ from chromite.lib import stats
 
 def GetOptions(my_commands):
   """Returns the argparse to use for commandline parsing."""
-  parser = commandline.ArgumentParser(caching=True)
+  if command.GetToolset() == 'brillo':
+    parser = commandline.ArgumentParser(caching=True,
+                                        default_log_level='notice')
+  else:
+    parser = commandline.ArgumentParser(caching=True)
   if not command:
     return parser
 
