@@ -44,43 +44,43 @@ template<typename>
 class FunctionWrapper;
 
 // Bound static functions:
-template<typename R, typename... P>
-class FunctionWrapper<R(*)(P...)> {
+template<typename R, typename... Params>
+class FunctionWrapper<R(*)(Params...)> {
 public:
     typedef R ResultType;
 
-    explicit FunctionWrapper(R(*function)(P...))
+    explicit FunctionWrapper(R(*function)(Params...))
         : m_function(function)
     {
     }
 
-    R operator()(P... params)
+    R operator()(Params... params)
     {
         return m_function(params...);
     }
 
 private:
-    R(*m_function)(P...);
+    R(*m_function)(Params...);
 };
 
 // Bound member functions:
 
-template<typename R, typename C, typename... P>
-class FunctionWrapper<R(C::*)(P...)> {
+template<typename R, typename C, typename... Params>
+class FunctionWrapper<R(C::*)(Params...)> {
 public:
     typedef R ResultType;
 
-    explicit FunctionWrapper(R(C::*function)(P...))
+    explicit FunctionWrapper(R(C::*function)(Params...))
         : m_function(function)
     {
     }
 
-    R operator()(C* c, P... params)
+    R operator()(C* c, Params... params)
     {
         return (c->*m_function)(params...);
     }
 
-    R operator()(const WeakPtr<C>& c, P... params)
+    R operator()(const WeakPtr<C>& c, Params... params)
     {
         C* obj = c.get();
         if (!obj)
@@ -89,7 +89,7 @@ public:
     }
 
 private:
-    R(C::*m_function)(P...);
+    R(C::*m_function)(Params...);
 };
 
 template<typename T> struct ParamStorageTraits {
@@ -132,25 +132,25 @@ public:
 template<typename>
 class FunctionImpl;
 
-template<typename R, typename... A>
-class FunctionImpl<R(A...)> : public FunctionImplBase {
+template<typename R, typename... Args>
+class FunctionImpl<R(Args...)> : public FunctionImplBase {
 public:
-    virtual R operator()(A... args) = 0;
+    virtual R operator()(Args... args) = 0;
 };
 
 template<int boundArgsCount, typename FunctionWrapper, typename FunctionType>
 class PartBoundFunctionImpl;
 
 // Specialization for unbound functions.
-template<typename FunctionWrapper, typename R, typename... P>
-class PartBoundFunctionImpl<0, FunctionWrapper, R(P...)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P...)> {
+template<typename FunctionWrapper, typename R, typename... UnboundParams>
+class PartBoundFunctionImpl<0, FunctionWrapper, R(UnboundParams...)> final : public FunctionImpl<typename FunctionWrapper::ResultType(UnboundParams...)> {
 public:
     PartBoundFunctionImpl(FunctionWrapper functionWrapper)
         : m_functionWrapper(functionWrapper)
     {
     }
 
-    typename FunctionWrapper::ResultType operator()(P... params) override
+    typename FunctionWrapper::ResultType operator()(UnboundParams... params) override
     {
         return m_functionWrapper(params...);
     }
@@ -159,8 +159,8 @@ private:
     FunctionWrapper m_functionWrapper;
 };
 
-template<typename FunctionWrapper, typename R, typename P1, typename... P>
-class PartBoundFunctionImpl<1, FunctionWrapper, R(P1, P...)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P...)> {
+template<typename FunctionWrapper, typename R, typename P1, typename... UnboundParams>
+class PartBoundFunctionImpl<1, FunctionWrapper, R(P1, UnboundParams...)> final : public FunctionImpl<typename FunctionWrapper::ResultType(UnboundParams...)> {
 public:
     PartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1)
         : m_functionWrapper(functionWrapper)
@@ -168,7 +168,7 @@ public:
     {
     }
 
-    typename FunctionWrapper::ResultType operator()(P... params) override
+    typename FunctionWrapper::ResultType operator()(UnboundParams... params) override
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), params...);
     }
@@ -178,8 +178,8 @@ private:
     typename ParamStorageTraits<P1>::StorageType m_p1;
 };
 
-template<typename FunctionWrapper, typename R, typename P1, typename P2, typename... P>
-class PartBoundFunctionImpl<2, FunctionWrapper, R(P1, P2, P...)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P...)> {
+template<typename FunctionWrapper, typename R, typename P1, typename P2, typename... UnboundParams>
+class PartBoundFunctionImpl<2, FunctionWrapper, R(P1, P2, UnboundParams...)> final : public FunctionImpl<typename FunctionWrapper::ResultType(UnboundParams...)> {
 public:
     PartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2)
         : m_functionWrapper(functionWrapper)
@@ -188,7 +188,7 @@ public:
     {
     }
 
-    typename FunctionWrapper::ResultType operator()(P... params) override
+    typename FunctionWrapper::ResultType operator()(UnboundParams... params) override
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), params...);
     }
@@ -199,8 +199,8 @@ private:
     typename ParamStorageTraits<P2>::StorageType m_p2;
 };
 
-template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename... P>
-class PartBoundFunctionImpl<3, FunctionWrapper, R(P1, P2, P3, P...)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P...)> {
+template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename... UnboundParams>
+class PartBoundFunctionImpl<3, FunctionWrapper, R(P1, P2, P3, UnboundParams...)> final : public FunctionImpl<typename FunctionWrapper::ResultType(UnboundParams...)> {
 public:
     PartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2, const P3& p3)
         : m_functionWrapper(functionWrapper)
@@ -210,7 +210,7 @@ public:
     {
     }
 
-    typename FunctionWrapper::ResultType operator()(P... params) override
+    typename FunctionWrapper::ResultType operator()(UnboundParams... params) override
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3), params...);
     }
@@ -222,8 +222,8 @@ private:
     typename ParamStorageTraits<P3>::StorageType m_p3;
 };
 
-template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename... P>
-class PartBoundFunctionImpl<4, FunctionWrapper, R(P1, P2, P3, P4, P...)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P...)> {
+template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename... UnboundParams>
+class PartBoundFunctionImpl<4, FunctionWrapper, R(P1, P2, P3, P4, UnboundParams...)> final : public FunctionImpl<typename FunctionWrapper::ResultType(UnboundParams...)> {
 public:
     PartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2, const P3& p3, const P4& p4)
         : m_functionWrapper(functionWrapper)
@@ -234,7 +234,7 @@ public:
     {
     }
 
-    typename FunctionWrapper::ResultType operator()(P... params) override
+    typename FunctionWrapper::ResultType operator()(UnboundParams... params) override
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3), ParamStorageTraits<P4>::unwrap(m_p4), params...);
     }
@@ -247,8 +247,8 @@ private:
     typename ParamStorageTraits<P4>::StorageType m_p4;
 };
 
-template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename P5, typename... P>
-class PartBoundFunctionImpl<5, FunctionWrapper, R(P1, P2, P3, P4, P5, P...)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P...)> {
+template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename P5, typename... UnboundParams>
+class PartBoundFunctionImpl<5, FunctionWrapper, R(P1, P2, P3, P4, P5, UnboundParams...)> final : public FunctionImpl<typename FunctionWrapper::ResultType(UnboundParams...)> {
 public:
     PartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2, const P3& p3, const P4& p4, const P5& p5)
         : m_functionWrapper(functionWrapper)
@@ -260,7 +260,7 @@ public:
     {
     }
 
-    typename FunctionWrapper::ResultType operator()(P... params) override
+    typename FunctionWrapper::ResultType operator()(UnboundParams... params) override
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3), ParamStorageTraits<P4>::unwrap(m_p4), ParamStorageTraits<P5>::unwrap(m_p5), params...);
     }
@@ -274,8 +274,8 @@ private:
     typename ParamStorageTraits<P5>::StorageType m_p5;
 };
 
-template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename P5, typename P6, typename... P>
-class PartBoundFunctionImpl<6, FunctionWrapper, R(P1, P2, P3, P4, P5, P6, P...)> final : public FunctionImpl<typename FunctionWrapper::ResultType(P...)> {
+template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename P5, typename P6, typename... UnboundParams>
+class PartBoundFunctionImpl<6, FunctionWrapper, R(P1, P2, P3, P4, P5, P6, UnboundParams...)> final : public FunctionImpl<typename FunctionWrapper::ResultType(UnboundParams...)> {
 public:
     PartBoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2, const P3& p3, const P4& p4, const P5& p5, const P6& p6)
         : m_functionWrapper(functionWrapper)
@@ -288,7 +288,7 @@ public:
     {
     }
 
-    typename FunctionWrapper::ResultType operator()(P... params) override
+    typename FunctionWrapper::ResultType operator()(UnboundParams... params) override
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3), ParamStorageTraits<P4>::unwrap(m_p4), ParamStorageTraits<P5>::unwrap(m_p5), ParamStorageTraits<P6>::unwrap(m_p6), params...);
     }
@@ -306,15 +306,15 @@ private:
 template<typename>
 class Function;
 
-template<typename R, typename... A>
-class Function<R(A...)>  {
+template<typename R, typename... Args>
+class Function<R(Args...)>  {
     WTF_MAKE_NONCOPYABLE(Function);
 public:
     Function()
     {
     }
 
-    explicit Function(PassRefPtr<FunctionImpl<R(A...)>> impl)
+    explicit Function(PassRefPtr<FunctionImpl<R(Args...)>> impl)
         : m_impl(impl)
     {
     }
@@ -324,22 +324,22 @@ public:
         return !m_impl;
     }
 
-    R operator()(A... args) const
+    R operator()(Args... args) const
     {
         ASSERT(m_impl);
         return m_impl->operator()(args...);
     }
 private:
-    RefPtr<FunctionImpl<R(A...)>> m_impl;
+    RefPtr<FunctionImpl<R(Args...)>> m_impl;
 };
 
-template<typename... FreeArgsTypes, typename FunctionType, typename... A>
-PassOwnPtr<Function<typename FunctionWrapper<FunctionType>::ResultType(FreeArgsTypes...)>> bind(FunctionType function, const A&... args)
+template<typename... UnboundArgs, typename FunctionType, typename... BoundArgs>
+PassOwnPtr<Function<typename FunctionWrapper<FunctionType>::ResultType(UnboundArgs...)>> bind(FunctionType function, const BoundArgs&... boundArgs)
 {
-    const int boundArgsCount = sizeof...(A);
-    using BoundFunctionType = PartBoundFunctionImpl<boundArgsCount, FunctionWrapper<FunctionType>, typename FunctionWrapper<FunctionType>::ResultType(A..., FreeArgsTypes...)>;
-    RefPtr<BoundFunctionType> boundFunction = adoptRef(new BoundFunctionType(FunctionWrapper<FunctionType>(function), args...));
-    return adoptPtr(new Function<typename FunctionWrapper<FunctionType>::ResultType(FreeArgsTypes...)>(boundFunction.release()));
+    const int boundArgsCount = sizeof...(BoundArgs);
+    using BoundFunctionType = PartBoundFunctionImpl<boundArgsCount, FunctionWrapper<FunctionType>, typename FunctionWrapper<FunctionType>::ResultType(BoundArgs..., UnboundArgs...)>;
+    RefPtr<BoundFunctionType> boundFunction = adoptRef(new BoundFunctionType(FunctionWrapper<FunctionType>(function), boundArgs...));
+    return adoptPtr(new Function<typename FunctionWrapper<FunctionType>::ResultType(UnboundArgs...)>(boundFunction.release()));
 }
 
 typedef Function<void()> Closure;
