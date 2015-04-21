@@ -84,6 +84,23 @@ struct WebScreenInfo {
         , isMonochrome(false)
         , orientationType(WebScreenOrientationUndefined)
         , orientationAngle(0) { }
+
+    bool operator==(const WebScreenInfo& other) const
+    {
+        return this->deviceScaleFactor == other.deviceScaleFactor
+            && this->depth == other.depth
+            && this->depthPerComponent == other.depthPerComponent
+            && this->isMonochrome == other.isMonochrome
+            && this->rect == other.rect
+            && this->availableRect == other.availableRect
+            && this->orientationType == other.orientationType
+            && this->orientationAngle == other.orientationAngle;
+    }
+
+    bool operator!=(const WebScreenInfo& other) const
+    {
+        return !this->operator==(other);
+    }
 };
 
 } // namespace blink

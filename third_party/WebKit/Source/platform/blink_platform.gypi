@@ -927,6 +927,7 @@
       'TestingPlatformSupport.cpp',
       'TestingPlatformSupport.h',
       'TracedValueTest.cpp',
+      'WebScreenInfoTest.cpp',
       'WebVectorTest.cpp',
       'animation/TimingFunctionTest.cpp',
       'animation/UnitBezierTest.cpp',
