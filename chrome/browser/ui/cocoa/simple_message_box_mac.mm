@@ -25,7 +25,7 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
   // Ignore the title; it's the window title on other platforms and ignorable.
   NSAlert* alert = [[[NSAlert alloc] init] autorelease];
   [alert setMessageText:base::SysUTF16ToNSString(message)];
-  NSUInteger style = (type == MESSAGE_BOX_TYPE_INFORMATION) ?
+  NSAlertStyle style = (type == MESSAGE_BOX_TYPE_INFORMATION) ?
       NSInformationalAlertStyle : NSWarningAlertStyle;
   [alert setAlertStyle:style];
   if (type == MESSAGE_BOX_TYPE_QUESTION) {

@@ -594,8 +594,8 @@ void WebContentsViewMac::CloseTab() {
     return;
 
   NSSelectionDirection direction =
-      [[[notification userInfo] objectForKey:kSelectionDirection]
-        unsignedIntegerValue];
+      static_cast<NSSelectionDirection>([[[notification userInfo]
+          objectForKey:kSelectionDirection] unsignedIntegerValue]);
   if (direction == NSDirectSelection)
     return;
 
