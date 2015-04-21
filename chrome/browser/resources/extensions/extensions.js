@@ -150,6 +150,9 @@ cr.define('extensions', function() {
         extensionList.updateFocusableElements();
         chrome.developerPrivate.updateProfileConfiguration(
             {inDeveloperMode: e.target.checked});
+        var suffix = $('toggle-dev-on').checked ? 'Enabled' : 'Disabled';
+        chrome.send('metricsHandler:recordAction',
+                    ['Options_ToggleDeveloperMode_' + suffix]);
       }.bind(this));
 
       window.addEventListener('resize', function() {
@@ -158,6 +161,8 @@ cr.define('extensions', function() {
 
       // Set up the three dev mode buttons (load unpacked, pack and update).
       $('load-unpacked').addEventListener('click', function(e) {
+        chrome.send('metricsHandler:recordAction',
+                    ['Options_LoadUnpackedExtension']);
         extensionLoader.loadUnpacked();
       });
       $('pack-extension').addEventListener('click',
@@ -186,6 +191,16 @@ cr.define('extensions', function() {
 
       extensions.ExtensionOptionsOverlay.getInstance().initializePage(
           extensions.ExtensionSettings.showOverlay);
+
+      // Add user action logging for bottom links.
+      var moreExtensionLink =
+          document.getElementsByClassName('more-extensions-link');
+      for (var i = 0; i < moreExtensionLink.length; i++) {
+        moreExtensionLink[i].addEventListener('click', function(e) {
+          chrome.send('metricsHandler:recordAction',
+                      ['Options_GetMoreExtensions']);
+        });
+      }
 
       // Initialize the kiosk overlay.
       if (cr.isChromeOS) {
@@ -304,6 +319,8 @@ cr.define('extensions', function() {
      */
     handleUpdateExtensionNow_: function(e) {
       chrome.developerPrivate.autoUpdate();
+      chrome.send('metricsHandler:recordAction',
+                  ['Options_UpdateExtensions']);
     },
 
     /**

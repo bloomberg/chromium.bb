@@ -343,6 +343,8 @@ cr.define('options', function() {
         profilesList.addEventListener('change',
             this.setProfileViewButtonsStatus_);
         $('profiles-create').onclick = function(event) {
+          chrome.send('metricsHandler:recordAction',
+                      ['Options_ShowCreateProfileDlg']);
           ManageProfileOverlay.showCreateDialog();
         };
         if (OptionsPage.isSettingsApp()) {
@@ -352,12 +354,17 @@ cr.define('options', function() {
           };
         }
         $('profiles-manage').onclick = function(event) {
+          chrome.send('metricsHandler:recordAction',
+                      ['Options_ShowEditProfileDlg']);
           ManageProfileOverlay.showManageDialog();
         };
         $('profiles-delete').onclick = function(event) {
           var selectedProfile = self.getSelectedProfileItem_();
-          if (selectedProfile)
+          if (selectedProfile) {
+            chrome.send('metricsHandler:recordAction',
+                        ['Options_ShowDeleteProfileDlg']);
             ManageProfileOverlay.showDeleteDialog(selectedProfile);
+          }
         };
         if (loadTimeData.getBoolean('profileIsSupervised')) {
           $('profiles-create').disabled = true;

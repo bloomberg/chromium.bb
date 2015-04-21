@@ -8469,6 +8469,20 @@ should be able to be added at any place in this file.
   <description>Settings: Accessibility: Enable tap dragging</description>
 </action>
 
+<action name="Options_AddPersonEnabled_Disable">
+  <owner>jwd@chromium.org</owner>
+  <description>
+    Settings: People: Disables allowing anyone to add a person to Chrome.
+  </description>
+</action>
+
+<action name="Options_AddPersonEnabled_Enable">
+  <owner>jwd@chromium.org</owner>
+  <description>
+    Settings: People: Enables anyone to add a person to Chrome.
+  </description>
+</action>
+
 <action name="Options_AllowAllUsers_Disable">
   <owner>stevenjb@chromium.org</owner>
   <description>
@@ -8599,6 +8613,16 @@ should be able to be added at any place in this file.
 <action name="Options_BluetoothShowAddDevice">
   <owner>stevenjb@chromium.org</owner>
   <description>Settings: Bluetooth: Add a device</description>
+</action>
+
+<action name="Options_BrowserGuestEnabled_Disable">
+  <owner>jwd@chromium.org</owner>
+  <description>Settings: People: Disable Guest browsing.</description>
+</action>
+
+<action name="Options_BrowserGuestEnabled_Enable">
+  <owner>jwd@chromium.org</owner>
+  <description>Settings: People: Allows guests to browse.</description>
 </action>
 
 <action name="Options_CaptivePortalBypassProxy_Disable">
@@ -8881,6 +8905,11 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Options_GetMoreExtensions">
+  <owner>jwd@chromium.org</owner>
+  <description>Extensions: Click on 'Get More Extensions' link.</description>
+</action>
+
 <action name="Options_GoogleGeolocationAccessCheckbox_Disable">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -9126,6 +9155,11 @@ should be able to be added at any place in this file.
 <action name="Options_LinkDoctorCheckbox_Enable">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="Options_LoadUnpackedExtension">
+  <owner>jwd@chromium.org</owner>
+  <description>Extensions: Loads an unpacked extension.</description>
 </action>
 
 <action name="Options_ManageAccounts">
@@ -9710,6 +9744,20 @@ should be able to be added at any place in this file.
   <description>Settings: Date and time: Timezone</description>
 </action>
 
+<action name="Options_ToggleDeveloperMode_Disabled">
+  <owner>jwd@chromium.org</owner>
+  <description>
+    Extensions: Disables developer mode for Chrome extensions.
+  </description>
+</action>
+
+<action name="Options_ToggleDeveloperMode_Enabled">
+  <owner>jwd@chromium.org</owner>
+  <description>
+    Extensions: Enables developer mode for Chrome extensions.
+  </description>
+</action>
+
 <action name="Options_TouchpadNaturalScroll_Disable">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -9738,6 +9786,11 @@ should be able to be added at any place in this file.
 <action name="Options_Translate_Enable">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="Options_UpdateExtensions">
+  <owner>jwd@chromium.org</owner>
+  <description>Extensions: Click on update extensions in settings.</description>
 </action>
 
 <action name="Options_Use24HourClockCheckbox_Disable">
