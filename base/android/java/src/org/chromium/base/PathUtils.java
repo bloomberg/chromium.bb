@@ -32,7 +32,8 @@ public abstract class PathUtils {
      * @param suffix The private data directory suffix.
      * @see Context#getDir(String, int)
      */
-    public static void setPrivateDataDirectorySuffix(String suffix, final Context appContext) {
+    public static void setPrivateDataDirectorySuffix(String suffix, Context context) {
+        final Context appContext = context.getApplicationContext();
         sDirPathFetchTask = new AsyncTask<String, Void, String[]>() {
             @Override
             protected String[] doInBackground(String... dataDirectorySuffix) {
