@@ -41,6 +41,7 @@ const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount] = {
   L"crdli.dll",                         // Linkury Inc.
   L"crdli64.dll",                       // Linkury Inc.
   L"datamngr.dll",                      // Unknown (suspected adware).
+  L"explorerex.dll",                    // Unknown (suspected adware).
   L"hk.dll",                            // Unknown (keystroke logger).
   L"libapi2hook.dll",                   // V-Bates.
   L"libinject.dll",                     // V-Bates.
