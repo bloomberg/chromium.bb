@@ -34,6 +34,7 @@ class BlinkStyleKeyMobileSites(benchmark.Benchmark):
     return 'blink_style.key_mobile_sites'
 
 
+@benchmark.Disabled('reference')  # http://crbug.com/479048
 class BlinkStylePolymer(benchmark.Benchmark):
   """Measures performance of Blink's style engine (CSS Parsing, Style Recalc,
   etc.) for Polymer cases.
