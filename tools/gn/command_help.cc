@@ -92,7 +92,11 @@ void PrintAllHelp() {
   const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   if (cmdline->HasSwitch(switches::kMarkdown)) {
     OutputString("# GN Reference\n\n");
-    OutputString("[TOC]\n\n");
+
+    // TODO: https://code.google.com/p/gitiles/issues/detail?id=75
+    // Gitiles crashes when rendering the table of contents, so we must omit
+    // it until the bug is fixed.
+    // OutputString("[TOC]\n\n");
     OutputString("*This page is automatically generated from* "
                  "`gn help --markdown all`.\n\n");
   } else {

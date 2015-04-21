@@ -1,7 +1,5 @@
 # GN Reference
 
-[TOC]
-
 *This page is automatically generated from* `gn help --markdown all`.
 
 ## **--args**: Specifies build arguments overrides.
@@ -565,7 +563,7 @@
 
 
 ```
-## **gn refs <out_dir> (<label_pattern>|<label>|<file>)* [--all]**
+## **gn refs <out_dir> (<label_pattern>|<label>|<file>|@<response_file>)* [--all]**
 ```
         [--all-toolchains] [--as=...] [--testonly=...] [--type=...]
 
@@ -586,6 +584,11 @@
      its "inputs", "sources", "public", or "data". Any input
      that does not contain wildcards and does not match a target or a
      config will be treated as a file.
+
+   - Response file: If the input starts with an "@", it will be
+     interpreted as a path to a file containing a list of labels or
+     file names, one per line. This allows us to handle long lists
+     of inputs without worrying about command line limits.
 
 ```
 
