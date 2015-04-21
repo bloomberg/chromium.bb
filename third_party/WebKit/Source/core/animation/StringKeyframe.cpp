@@ -22,6 +22,7 @@
 #include "core/animation/ListSVGInterpolation.h"
 #include "core/animation/ListStyleInterpolation.h"
 #include "core/animation/PointSVGInterpolation.h"
+#include "core/animation/RectSVGInterpolation.h"
 #include "core/animation/SVGStrokeDasharrayStyleInterpolation.h"
 #include "core/animation/ShadowStyleInterpolation.h"
 #include "core/animation/VisibilityStyleInterpolation.h"
@@ -484,6 +485,8 @@ PassRefPtrWillBeRawPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fr
     case AnimatedPoints:
         interpolation = ListSVGInterpolation<PointSVGInterpolation>::maybeCreate(fromValue, toValue, attribute);
         break;
+    case AnimatedRect:
+        return RectSVGInterpolation::create(fromValue, toValue, attribute);
 
     // TODO(ericwilligers): Support more animation types.
     default:

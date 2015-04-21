@@ -916,6 +916,8 @@
             'animation/LengthStyleInterpolation.h',
             'animation/PropertyHandle.cpp',
             'animation/PropertyHandle.h',
+            'animation/RectSVGInterpolation.cpp',
+            'animation/RectSVGInterpolation.h',
             'animation/SVGInterpolation.cpp',
             'animation/SVGInterpolation.h',
             'animation/SVGStrokeDasharrayStyleInterpolation.cpp',

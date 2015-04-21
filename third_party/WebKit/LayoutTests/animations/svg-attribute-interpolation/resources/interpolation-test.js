@@ -198,6 +198,10 @@
     return String(elements);
   }
 
+  function serializeSVGRect(rect) {
+    return String([rect.x, rect.y, rect.width, rect.height]);
+  }
+
   var svgNamespace = 'http://www.w3.org/2000/svg';
   var xlinkNamespace = 'http://www.w3.org/1999/xlink';
 
@@ -245,6 +249,8 @@
       result = result.value;
     else if (result instanceof SVGPointList)
       result = serializeSVGPointList(result);
+    else if (result instanceof SVGRect)
+      result = serializeSVGRect(result);
 
     if (typeof result !== 'string' && typeof result !== 'number' && typeof result !== 'boolean') {
       console.log('Attribute value has unexpected type: ' + result);
