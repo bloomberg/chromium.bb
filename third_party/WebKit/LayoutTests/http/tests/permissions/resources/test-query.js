@@ -69,17 +69,17 @@ async_test(function(test) {
 }, 'Test notifications permission in ' + get_current_scope() + ' scope.');
 
 async_test(function(test) {
-    navigator.permissions.query({name:'push'}).then(function(result) {
-        // By default, the permission is rejected if "userVisible" option isn't
-        // set or set to true.
-        assert_equals(result.status, "denied");
+    navigator.permissions.query({name:'push'}).catch(function(e) {
+        // By default, the permission query is rejected if "userVisible" option
+        // isn't set or set to true.
+        assert_equals(e.name, "NotSupportedError");
 
-        // Test for userVisible=true.
+        // Test for userVisible=false.
         return navigator.permissions.query({name:'push', userVisible: false});
-    }).then(function(result) {
-         // By default, the permission is rejected if "userVisible" option isn't
-        // set or set to true.
-        assert_equals(result.status, "denied");
+    }).catch(function(e) {
+        // By default, the permission query is rejected if "userVisible" option
+        // isn't set or set to true.
+        assert_equals(e.name, "NotSupportedError");
 
         // Test for userVisible=true.
         return navigator.permissions.query({name:'push', userVisible: true});
