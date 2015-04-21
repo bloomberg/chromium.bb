@@ -107,11 +107,11 @@ crbug.com/244481 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip 
 
 crbug.com/9798 [ Win ] http/tests/misc/redirect-with-quotes.php [ Pass Timeout ]
 
-crbug.com/451606 virtual/slimmingpaint/svg/filters/feComponentTransfer-subregion.svg [ Crash Pass ]
-crbug.com/451606 virtual/slimmingpaint/svg/filters/feImage-animated-transform-on-target-rect.svg [ Crash Pass ]
-crbug.com/451606 virtual/slimmingpaint/svg/filters/feImage-change-target-id.svg [ Crash Pass ]
-crbug.com/451606 virtual/slimmingpaint/svg/filters/feImage-filterUnits-objectBoundingBox-primitiveUnits-objectBoundingBox.svg [ Crash Pass ]
-crbug.com/451606 virtual/slimmingpaint/svg/filters/feImage-filterUnits-objectBoundingBox-primitiveUnits-userSpaceOnUse.svg [ Crash Pass ]
+crbug.com/451606 virtual/slimmingpaint/svg/filters/feComponentTransfer-subregion.svg [ Crash Pass Failure ]
+crbug.com/451606 virtual/slimmingpaint/svg/filters/feImage-animated-transform-on-target-rect.svg [ Crash Pass Failure ]
+crbug.com/451606 virtual/slimmingpaint/svg/filters/feImage-change-target-id.svg [ Crash Pass Failure ]
+crbug.com/451606 virtual/slimmingpaint/svg/filters/feImage-filterUnits-objectBoundingBox-primitiveUnits-objectBoundingBox.svg [ Crash Pass Failure ]
+crbug.com/451606 virtual/slimmingpaint/svg/filters/feImage-filterUnits-objectBoundingBox-primitiveUnits-userSpaceOnUse.svg [ Crash Pass Failure ]
 crbug.com/451606 virtual/slimmingpaint/svg/filters/feImage-filterUnits-userSpaceOnUse-primitiveUnits-objectBoundingBox.svg [ Crash Pass ]
 crbug.com/451606 virtual/slimmingpaint/svg/filters/feImage-filterUnits-userSpaceOnUse-primitiveUnits-userSpaceOnUse.svg [ Crash Pass ]
 crbug.com/451606 virtual/slimmingpaint/svg/filters/feImage-late-indirect-update.svg [ Crash Pass ]
