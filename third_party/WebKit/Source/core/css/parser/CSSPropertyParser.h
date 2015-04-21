@@ -143,10 +143,12 @@ private:
     PassRefPtrWillBeRawPtr<CSSValue> parseAnimationTimingFunction();
 
     bool parseCubicBezierTimingFunctionValue(CSSParserValueList*& args, double& result);
-    PassRefPtrWillBeRawPtr<CSSValue> parseAnimationProperty(CSSPropertyID);
-    PassRefPtrWillBeRawPtr<CSSValueList> parseAnimationPropertyList(CSSPropertyID);
+
+    // Legacy parsing allows <string>s for animation-name
+    PassRefPtrWillBeRawPtr<CSSValue> parseAnimationProperty(CSSPropertyID, bool useLegacyParsing);
+    PassRefPtrWillBeRawPtr<CSSValueList> parseAnimationPropertyList(CSSPropertyID, bool useLegacyParsing);
+    bool parseAnimationShorthand(CSSPropertyID, bool useLegacyParsing, bool important);
     bool parseTransitionShorthand(CSSPropertyID, bool important);
-    bool parseAnimationShorthand(CSSPropertyID, bool important);
 
     PassRefPtrWillBeRawPtr<CSSValue> parseColumnWidth();
     PassRefPtrWillBeRawPtr<CSSValue> parseColumnCount();

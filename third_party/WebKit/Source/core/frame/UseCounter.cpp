@@ -206,15 +206,15 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyWordSpacing: return 163;
     case CSSPropertyWordWrap: return 164;
     case CSSPropertyZIndex: return 165;
-    case CSSPropertyWebkitAnimation: return 166;
-    case CSSPropertyWebkitAnimationDelay: return 167;
-    case CSSPropertyWebkitAnimationDirection: return 168;
-    case CSSPropertyWebkitAnimationDuration: return 169;
-    case CSSPropertyWebkitAnimationFillMode: return 170;
-    case CSSPropertyWebkitAnimationIterationCount: return 171;
-    case CSSPropertyWebkitAnimationName: return 172;
-    case CSSPropertyWebkitAnimationPlayState: return 173;
-    case CSSPropertyWebkitAnimationTimingFunction: return 174;
+    case CSSPropertyAliasWebkitAnimation: return 166;
+    case CSSPropertyAliasWebkitAnimationDelay: return 167;
+    case CSSPropertyAliasWebkitAnimationDirection: return 168;
+    case CSSPropertyAliasWebkitAnimationDuration: return 169;
+    case CSSPropertyAliasWebkitAnimationFillMode: return 170;
+    case CSSPropertyAliasWebkitAnimationIterationCount: return 171;
+    case CSSPropertyAliasWebkitAnimationName: return 172;
+    case CSSPropertyAliasWebkitAnimationPlayState: return 173;
+    case CSSPropertyAliasWebkitAnimationTimingFunction: return 174;
     case CSSPropertyWebkitAppearance: return 175;
     // CSSPropertyWebkitAspectRatio was 176
     case CSSPropertyAliasWebkitBackfaceVisibility: return 177;

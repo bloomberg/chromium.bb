@@ -7,7 +7,7 @@ Valid animation-name values.
 PASS computedStyle.animationName is 'none'
 PASS computedStyle.webkitAnimationName is 'none'
 PASS Object.keys(style).indexOf('animationName') is not -1
-PASS Object.keys(style).indexOf('webkitAnimationName') is not -1
+PASS Object.keys(style).indexOf('webkitAnimationName') is -1
 PASS style.animationName is 'none'
 PASS computedStyle.animationName is 'none'
 PASS style.webkitAnimationName is 'none'
@@ -57,7 +57,7 @@ Valid animation-duration values.
 PASS computedStyle.animationDuration is '0s'
 PASS computedStyle.webkitAnimationDuration is '0s'
 PASS Object.keys(style).indexOf('animationDuration') is not -1
-PASS Object.keys(style).indexOf('webkitAnimationDuration') is not -1
+PASS Object.keys(style).indexOf('webkitAnimationDuration') is -1
 PASS style.animationDuration is '0s'
 PASS computedStyle.animationDuration is '0s'
 PASS style.webkitAnimationDuration is '0s'
@@ -107,7 +107,7 @@ Valid animation-timing-function values.
 PASS computedStyle.animationTimingFunction is 'ease'
 PASS computedStyle.webkitAnimationTimingFunction is 'ease'
 PASS Object.keys(style).indexOf('animationTimingFunction') is not -1
-PASS Object.keys(style).indexOf('webkitAnimationTimingFunction') is not -1
+PASS Object.keys(style).indexOf('webkitAnimationTimingFunction') is -1
 PASS style.animationTimingFunction is 'linear'
 PASS computedStyle.animationTimingFunction is 'linear'
 PASS style.webkitAnimationTimingFunction is 'linear'
@@ -261,7 +261,7 @@ Valid animation-delay values.
 PASS computedStyle.animationDelay is '0s'
 PASS computedStyle.webkitAnimationDelay is '0s'
 PASS Object.keys(style).indexOf('animationDelay') is not -1
-PASS Object.keys(style).indexOf('webkitAnimationDelay') is not -1
+PASS Object.keys(style).indexOf('webkitAnimationDelay') is -1
 PASS style.animationDelay is '0s'
 PASS computedStyle.animationDelay is '0s'
 PASS style.webkitAnimationDelay is '0s'
@@ -311,7 +311,7 @@ Valid animation-iteration-count values.
 PASS computedStyle.animationIterationCount is '1'
 PASS computedStyle.webkitAnimationIterationCount is '1'
 PASS Object.keys(style).indexOf('animationIterationCount') is not -1
-PASS Object.keys(style).indexOf('webkitAnimationIterationCount') is not -1
+PASS Object.keys(style).indexOf('webkitAnimationIterationCount') is -1
 PASS style.animationIterationCount is '4'
 PASS computedStyle.animationIterationCount is '4'
 PASS style.webkitAnimationIterationCount is '4'
@@ -365,7 +365,7 @@ Valid animation-direction values.
 PASS computedStyle.animationDirection is 'normal'
 PASS computedStyle.webkitAnimationDirection is 'normal'
 PASS Object.keys(style).indexOf('animationDirection') is not -1
-PASS Object.keys(style).indexOf('webkitAnimationDirection') is not -1
+PASS Object.keys(style).indexOf('webkitAnimationDirection') is -1
 PASS style.animationDirection is 'reverse'
 PASS computedStyle.animationDirection is 'reverse'
 PASS style.webkitAnimationDirection is 'reverse'
@@ -419,7 +419,7 @@ Valid animation-play-state values.
 PASS computedStyle.animationPlayState is 'running'
 PASS computedStyle.webkitAnimationPlayState is 'running'
 PASS Object.keys(style).indexOf('animationPlayState') is not -1
-PASS Object.keys(style).indexOf('webkitAnimationPlayState') is not -1
+PASS Object.keys(style).indexOf('webkitAnimationPlayState') is -1
 PASS style.animationPlayState is 'paused'
 PASS computedStyle.animationPlayState is 'paused'
 PASS style.webkitAnimationPlayState is 'paused'
@@ -473,7 +473,7 @@ Valid animation-fill-mode values.
 PASS computedStyle.animationFillMode is 'none'
 PASS computedStyle.webkitAnimationFillMode is 'none'
 PASS Object.keys(style).indexOf('animationFillMode') is not -1
-PASS Object.keys(style).indexOf('webkitAnimationFillMode') is not -1
+PASS Object.keys(style).indexOf('webkitAnimationFillMode') is -1
 PASS style.animationFillMode is 'forwards'
 PASS computedStyle.animationFillMode is 'forwards'
 PASS style.webkitAnimationFillMode is 'forwards'
@@ -532,14 +532,14 @@ Valid animation shorthand values.
 PASS computedStyle.animation is 'none 0s ease 0s 1 normal none running'
 PASS computedStyle.webkitAnimation is 'none 0s ease 0s 1 normal none running'
 PASS Object.keys(style).indexOf('animation') is not -1
-PASS Object.keys(style).indexOf('webkitAnimation') is not -1
+PASS Object.keys(style).indexOf('webkitAnimation') is -1
 PASS style.animation is 'myShorthandAnim'
 PASS computedStyle.animation is 'myShorthandAnim 0s ease 0s 1 normal none running'
 PASS style.webkitAnimation is 'myShorthandAnim'
 PASS computedStyle.webkitAnimation is 'myShorthandAnim 0s ease 0s 1 normal none running'
 PASS checkAnimationShorthandValue() is true
 PASS Object.keys(style).indexOf('animation') is not -1
-PASS Object.keys(style).indexOf('webkitAnimation') is not -1
+PASS Object.keys(style).indexOf('webkitAnimation') is -1
 PASS style.animation is 'none'
 PASS computedStyle.animation is 'none 0s ease 0s 1 normal none running'
 PASS style.webkitAnimation is 'none'

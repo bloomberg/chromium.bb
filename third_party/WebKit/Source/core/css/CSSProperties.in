@@ -104,6 +104,14 @@ align-content custom_all
 align-items custom_all
 alignment-baseline svg
 align-self custom_all
+animation-delay custom_all
+animation-direction custom_all
+animation-duration custom_all
+animation-fill-mode custom_all
+animation-iteration-count custom_all
+animation-name custom_all
+animation-play-state custom_all
+animation-timing-function custom_all
 backface-visibility
 background-attachment custom_all
 background-blend-mode custom_all
@@ -295,14 +303,6 @@ vertical-align animatable, custom_inherit, custom_value
 visibility animatable, inherited
 x animatable, svg, converter=convertLength
 y animatable, svg, converter=convertLength
--webkit-animation-delay custom_all
--webkit-animation-direction custom_all
--webkit-animation-duration custom_all
--webkit-animation-fill-mode custom_all
--webkit-animation-iteration-count custom_all
--webkit-animation-name custom_all
--webkit-animation-play-state custom_all
--webkit-animation-timing-function custom_all
 -webkit-appearance type_name=ControlPart
 -webkit-app-region custom_all
 -webkit-background-clip use_handlers_for=CSSPropertyBackgroundClip
@@ -418,19 +418,10 @@ z-index animatable, type_name=int, custom_all
 -webkit-max-logical-width direction_aware
 -webkit-max-logical-height direction_aware
 
-// Properties that we ignore in the StyleBuilder. Note that unprefixed
-// animation properties are here due to the way they have been unprefixed
-// FIXME: We should see if any of these should actually be unreachable
+// Properties that we ignore in the StyleBuilder.
+// TODO(timloh): This seems wrong, most of these shouldn't reach the StyleBuilder
 
 all builder_skip
-animation-delay builder_skip
-animation-direction builder_skip
-animation-duration builder_skip
-animation-fill-mode builder_skip
-animation-iteration-count builder_skip
-animation-name builder_skip
-animation-play-state builder_skip
-animation-timing-function builder_skip
 enable-background builder_skip
 max-zoom builder_skip
 min-zoom builder_skip
@@ -475,7 +466,6 @@ outline longhands=outline-color;outline-style;outline-width
 overflow longhands=overflow-x;overflow-y
 padding longhands=padding-top;padding-right;padding-bottom;padding-left
 transition longhands=transition-property;transition-duration;transition-timing-function;transition-delay
--webkit-animation longhands=-webkit-animation-name;-webkit-animation-duration;-webkit-animation-timing-function;-webkit-animation-delay;-webkit-animation-iteration-count;-webkit-animation-direction;-webkit-animation-fill-mode;-webkit-animation-play-state
 -webkit-border-after longhands=-webkit-border-after-width;-webkit-border-after-style;-webkit-border-after-color
 -webkit-border-before longhands=-webkit-border-before-width;-webkit-border-before-style;-webkit-border-before-color
 -webkit-border-end longhands=-webkit-border-end-width;-webkit-border-end-style;-webkit-border-end-color
@@ -504,6 +494,15 @@ transition longhands=transition-property;transition-duration;transition-timing-f
 -webkit-align-content alias_for=align-content
 -webkit-align-items alias_for=align-items
 -webkit-align-self alias_for=align-self
+-webkit-animation alias_for=animation
+-webkit-animation-delay alias_for=animation-delay
+-webkit-animation-direction alias_for=animation-direction
+-webkit-animation-duration alias_for=animation-duration
+-webkit-animation-fill-mode alias_for=animation-fill-mode
+-webkit-animation-iteration-count alias_for=animation-iteration-count
+-webkit-animation-name alias_for=animation-name
+-webkit-animation-play-state alias_for=animation-play-state
+-webkit-animation-timing-function alias_for=animation-timing-function
 -webkit-backface-visibility alias_for=backface-visibility
 // "-webkit-background-size: 10px" behaves as "background-size: 10px 10px"
 -webkit-background-size alias_for=background-size

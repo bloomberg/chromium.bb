@@ -31,7 +31,7 @@ shouldBe("computedStyle.webkitAnimationName", "'none'");
 
 style.animationName = "none";
 shouldNotBe("Object.keys(style).indexOf('animationName')", "-1");
-shouldNotBe("Object.keys(style).indexOf('webkitAnimationName')", "-1");
+shouldBe("Object.keys(style).indexOf('webkitAnimationName')", "-1");
 shouldBe("style.animationName", "'none'");
 shouldBe("computedStyle.animationName", "'none'");
 shouldBe("style.webkitAnimationName", "'none'");
@@ -109,7 +109,7 @@ shouldBe("computedStyle.webkitAnimationDuration", "'0s'");
 
 style.animationDuration = "0s";
 shouldNotBe("Object.keys(style).indexOf('animationDuration')", "-1");
-shouldNotBe("Object.keys(style).indexOf('webkitAnimationDuration')", "-1");
+shouldBe("Object.keys(style).indexOf('webkitAnimationDuration')", "-1");
 shouldBe("style.animationDuration", "'0s'");
 shouldBe("computedStyle.animationDuration", "'0s'");
 shouldBe("style.webkitAnimationDuration", "'0s'");
@@ -186,7 +186,7 @@ shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
 
 style.animationTimingFunction = "linear";
 shouldNotBe("Object.keys(style).indexOf('animationTimingFunction')", "-1");
-shouldNotBe("Object.keys(style).indexOf('webkitAnimationTimingFunction')", "-1");
+shouldBe("Object.keys(style).indexOf('webkitAnimationTimingFunction')", "-1");
 shouldBe("style.animationTimingFunction", "'linear'");
 shouldBe("computedStyle.animationTimingFunction", "'linear'");
 shouldBe("style.webkitAnimationTimingFunction", "'linear'");
@@ -421,7 +421,7 @@ shouldBe("computedStyle.webkitAnimationDelay", "'0s'");
 
 style.animationDelay = "0s";
 shouldNotBe("Object.keys(style).indexOf('animationDelay')", "-1");
-shouldNotBe("Object.keys(style).indexOf('webkitAnimationDelay')", "-1");
+shouldBe("Object.keys(style).indexOf('webkitAnimationDelay')", "-1");
 shouldBe("style.animationDelay", "'0s'");
 shouldBe("computedStyle.animationDelay", "'0s'");
 shouldBe("style.webkitAnimationDelay", "'0s'");
@@ -500,7 +500,7 @@ shouldBe("computedStyle.webkitAnimationIterationCount", "'1'");
 
 style.animationIterationCount = "4";
 shouldNotBe("Object.keys(style).indexOf('animationIterationCount')", "-1");
-shouldNotBe("Object.keys(style).indexOf('webkitAnimationIterationCount')", "-1");
+shouldBe("Object.keys(style).indexOf('webkitAnimationIterationCount')", "-1");
 shouldBe("style.animationIterationCount", "'4'");
 shouldBe("computedStyle.animationIterationCount", "'4'");
 shouldBe("style.webkitAnimationIterationCount", "'4'");
@@ -582,7 +582,7 @@ shouldBe("computedStyle.webkitAnimationDirection", "'normal'");
 
 style.animationDirection = "reverse";
 shouldNotBe("Object.keys(style).indexOf('animationDirection')", "-1");
-shouldNotBe("Object.keys(style).indexOf('webkitAnimationDirection')", "-1");
+shouldBe("Object.keys(style).indexOf('webkitAnimationDirection')", "-1");
 shouldBe("style.animationDirection", "'reverse'");
 shouldBe("computedStyle.animationDirection", "'reverse'");
 shouldBe("style.webkitAnimationDirection", "'reverse'");
@@ -664,7 +664,7 @@ shouldBe("computedStyle.webkitAnimationPlayState", "'running'");
 
 style.animationPlayState = "paused";
 shouldNotBe("Object.keys(style).indexOf('animationPlayState')", "-1");
-shouldNotBe("Object.keys(style).indexOf('webkitAnimationPlayState')", "-1");
+shouldBe("Object.keys(style).indexOf('webkitAnimationPlayState')", "-1");
 shouldBe("style.animationPlayState", "'paused'");
 shouldBe("computedStyle.animationPlayState", "'paused'");
 shouldBe("style.webkitAnimationPlayState", "'paused'");
@@ -746,7 +746,7 @@ shouldBe("computedStyle.webkitAnimationFillMode", "'none'");
 
 style.animationFillMode = "forwards";
 shouldNotBe("Object.keys(style).indexOf('animationFillMode')", "-1");
-shouldNotBe("Object.keys(style).indexOf('webkitAnimationFillMode')", "-1");
+shouldBe("Object.keys(style).indexOf('webkitAnimationFillMode')", "-1");
 shouldBe("style.animationFillMode", "'forwards'");
 shouldBe("computedStyle.animationFillMode", "'forwards'");
 shouldBe("style.webkitAnimationFillMode", "'forwards'");
@@ -838,7 +838,7 @@ shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none runnin
 
 style.animation = "myShorthandAnim";
 shouldNotBe("Object.keys(style).indexOf('animation')", "-1");
-shouldNotBe("Object.keys(style).indexOf('webkitAnimation')", "-1");
+shouldBe("Object.keys(style).indexOf('webkitAnimation')", "-1");
 shouldBe("style.animation", "'myShorthandAnim'");
 shouldBe("computedStyle.animation", "'myShorthandAnim 0s ease 0s 1 normal none running'");
 shouldBe("style.webkitAnimation", "'myShorthandAnim'");
@@ -847,7 +847,7 @@ shouldBe("checkAnimationShorthandValue()", "true");
 
 style.animation = "none";
 shouldNotBe("Object.keys(style).indexOf('animation')", "-1");
-shouldNotBe("Object.keys(style).indexOf('webkitAnimation')", "-1");
+shouldBe("Object.keys(style).indexOf('webkitAnimation')", "-1");
 shouldBe("style.animation", "'none'");
 shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
 shouldBe("style.webkitAnimation", "'none'");

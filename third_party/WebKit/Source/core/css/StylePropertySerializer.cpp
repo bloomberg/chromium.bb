@@ -307,14 +307,15 @@ String StylePropertySerializer::asText() const
         case CSSPropertyTransitionDelay:
             shorthandPropertyID = CSSPropertyTransition;
             break;
-        case CSSPropertyWebkitAnimationName:
-        case CSSPropertyWebkitAnimationDuration:
-        case CSSPropertyWebkitAnimationTimingFunction:
-        case CSSPropertyWebkitAnimationDelay:
-        case CSSPropertyWebkitAnimationIterationCount:
-        case CSSPropertyWebkitAnimationDirection:
-        case CSSPropertyWebkitAnimationFillMode:
-            shorthandPropertyID = CSSPropertyWebkitAnimation;
+        case CSSPropertyAnimationName:
+        case CSSPropertyAnimationDuration:
+        case CSSPropertyAnimationTimingFunction:
+        case CSSPropertyAnimationDelay:
+        case CSSPropertyAnimationIterationCount:
+        case CSSPropertyAnimationDirection:
+        case CSSPropertyAnimationFillMode:
+        case CSSPropertyAnimationPlayState:
+            shorthandPropertyID = CSSPropertyAnimation;
             break;
         case CSSPropertyFlexDirection:
         case CSSPropertyFlexWrap:
@@ -447,8 +448,6 @@ String StylePropertySerializer::getPropertyValue(CSSPropertyID propertyID) const
         return getShorthandValue(webkitTextEmphasisShorthand());
     case CSSPropertyWebkitTextStroke:
         return getShorthandValue(webkitTextStrokeShorthand());
-    case CSSPropertyWebkitAnimation:
-        return getLayeredShorthandValue(webkitAnimationShorthand(), true);
     case CSSPropertyMarker: {
         if (const CSSValue* value = m_propertySet.getPropertyCSSValue(CSSPropertyMarkerStart))
             return value->cssText();

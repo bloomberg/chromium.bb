@@ -61,31 +61,6 @@ const StylePropertyShorthand& animationShorthandForParsing()
     return webkitAnimationLonghandsForParsing;
 }
 
-const StylePropertyShorthand& webkitAnimationShorthandForParsing()
-{
-    // When we parse the animation shorthand we need to look for animation-name
-    // last because otherwise it might match against the keywords for fill mode,
-    // timing functions and infinite iteration. This means that animation names
-    // that are the same as keywords (e.g. 'forwards') won't always match in the
-    // shorthand. In that case the authors should be using longhands (or
-    // reconsidering their approach). This is covered by the animations spec
-    // bug: https://www.w3.org/Bugs/Public/show_bug.cgi?id=14790
-    // And in the spec (editor's draft) at:
-    // http://dev.w3.org/csswg/css3-animations/#animation-shorthand-property
-    static const CSSPropertyID animationPropertiesForParsing[] = {
-        CSSPropertyWebkitAnimationDuration,
-        CSSPropertyWebkitAnimationTimingFunction,
-        CSSPropertyWebkitAnimationDelay,
-        CSSPropertyWebkitAnimationIterationCount,
-        CSSPropertyWebkitAnimationDirection,
-        CSSPropertyWebkitAnimationFillMode,
-        CSSPropertyWebkitAnimationPlayState,
-        CSSPropertyWebkitAnimationName
-    };
-    DEFINE_STATIC_LOCAL(StylePropertyShorthand, webkitAnimationLonghandsForParsing, (CSSPropertyWebkitAnimation, animationPropertiesForParsing, WTF_ARRAY_LENGTH(animationPropertiesForParsing)));
-    return webkitAnimationLonghandsForParsing;
-}
-
 // Similar to animations, we have property after timing-function and delay after duration
 const StylePropertyShorthand& transitionShorthandForParsing()
 {
@@ -107,8 +82,6 @@ const StylePropertyShorthand& parsingShorthandForProperty(CSSPropertyID property
         return animationShorthandForParsing();
     case CSSPropertyBorder:
         return borderShorthandForParsing();
-    case CSSPropertyWebkitAnimation:
-        return webkitAnimationShorthandForParsing();
     case CSSPropertyTransition:
         return transitionShorthandForParsing();
     default:

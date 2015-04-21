@@ -2000,10 +2000,8 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyWebkitAppRegion:
         return cssValuePool().createIdentifierValue(style.getDraggableRegionMode() == DraggableRegionDrag ? CSSValueDrag : CSSValueNoDrag);
     case CSSPropertyAnimationDelay:
-    case CSSPropertyWebkitAnimationDelay:
         return valueForAnimationDelay(style.animations());
-    case CSSPropertyAnimationDirection:
-    case CSSPropertyWebkitAnimationDirection: {
+    case CSSPropertyAnimationDirection: {
         RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
         const CSSAnimationData* animationData = style.animations();
         if (animationData) {
@@ -2015,10 +2013,8 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return list.release();
     }
     case CSSPropertyAnimationDuration:
-    case CSSPropertyWebkitAnimationDuration:
         return valueForAnimationDuration(style.animations());
-    case CSSPropertyAnimationFillMode:
-    case CSSPropertyWebkitAnimationFillMode: {
+    case CSSPropertyAnimationFillMode: {
         RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
         const CSSAnimationData* animationData = style.animations();
         if (animationData) {
@@ -2029,8 +2025,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         }
         return list.release();
     }
-    case CSSPropertyAnimationIterationCount:
-    case CSSPropertyWebkitAnimationIterationCount: {
+    case CSSPropertyAnimationIterationCount: {
         RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
         const CSSAnimationData* animationData = style.animations();
         if (animationData) {
@@ -2041,8 +2036,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         }
         return list.release();
     }
-    case CSSPropertyAnimationName:
-    case CSSPropertyWebkitAnimationName: {
+    case CSSPropertyAnimationName: {
         RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
         const CSSAnimationData* animationData = style.animations();
         if (animationData) {
@@ -2053,8 +2047,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         }
         return list.release();
     }
-    case CSSPropertyAnimationPlayState:
-    case CSSPropertyWebkitAnimationPlayState: {
+    case CSSPropertyAnimationPlayState: {
         RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
         const CSSAnimationData* animationData = style.animations();
         if (animationData) {
@@ -2066,10 +2059,8 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return list.release();
     }
     case CSSPropertyAnimationTimingFunction:
-    case CSSPropertyWebkitAnimationTimingFunction:
         return valueForAnimationTimingFunction(style.animations());
-    case CSSPropertyAnimation:
-    case CSSPropertyWebkitAnimation: {
+    case CSSPropertyAnimation: {
         const CSSAnimationData* animationData = style.animations();
         if (animationData) {
             RefPtrWillBeRawPtr<CSSValueList> animationsList = CSSValueList::createCommaSeparated();

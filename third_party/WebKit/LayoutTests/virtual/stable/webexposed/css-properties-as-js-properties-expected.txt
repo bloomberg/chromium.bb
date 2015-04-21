@@ -228,15 +228,6 @@ userZoom
 vectorEffect
 verticalAlign
 visibility
-webkitAnimation
-webkitAnimationDelay
-webkitAnimationDirection
-webkitAnimationDuration
-webkitAnimationFillMode
-webkitAnimationIterationCount
-webkitAnimationName
-webkitAnimationPlayState
-webkitAnimationTimingFunction
 webkitAppRegion
 webkitAppearance
 webkitBackgroundClip
