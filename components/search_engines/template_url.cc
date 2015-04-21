@@ -1430,7 +1430,7 @@ bool TemplateURL::ReplaceSearchTermsInURL(
   }
 
   std::string new_params(old_params, 0, search_terms_position.begin);
-  new_params += base::UTF16ToUTF8(search_terms_args.search_terms);
+  new_params += base::UTF16ToUTF8(encoded_terms);
   new_params += old_params.substr(search_terms_position.end());
   GURL::Replacements replacements;
 

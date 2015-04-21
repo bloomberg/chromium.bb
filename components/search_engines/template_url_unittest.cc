@@ -1313,7 +1313,7 @@ TEST_F(TemplateURLTest, ReplaceSearchTermsInURL) {
   EXPECT_TRUE(url.ReplaceSearchTermsInURL(
       GURL("http://google.com/?q=something"), search_terms,
       search_terms_data_, &result));
-  EXPECT_EQ(GURL("http://google.com/?q=Bob%20Morane"), result);
+  EXPECT_EQ(GURL("http://google.com/?q=Bob+Morane"), result);
 
   result = GURL("http://should.not.change.com");
   EXPECT_FALSE(url.ReplaceSearchTermsInURL(
@@ -1328,7 +1328,7 @@ TEST_F(TemplateURLTest, ReplaceSearchTermsInURL) {
   EXPECT_TRUE(url.ReplaceSearchTermsInURL(
       GURL("https://google.com/?q=foo"), search_terms,
       search_terms_data_, &result));
-  EXPECT_EQ(GURL("https://google.com/?q=Bob%20Morane"), result);
+  EXPECT_EQ(GURL("https://google.com/?q=Bob+Morane"), result);
 
   EXPECT_FALSE(url.ReplaceSearchTermsInURL(
       GURL("http://google.com:8080/?q=foo"), search_terms,
@@ -1337,26 +1337,26 @@ TEST_F(TemplateURLTest, ReplaceSearchTermsInURL) {
   EXPECT_TRUE(url.ReplaceSearchTermsInURL(
       GURL("http://google.com/?q=1+2+3&b=456"), search_terms,
       search_terms_data_, &result));
-  EXPECT_EQ(GURL("http://google.com/?q=Bob%20Morane&b=456"), result);
+  EXPECT_EQ(GURL("http://google.com/?q=Bob+Morane&b=456"), result);
 
   // Note: Spaces in REF parameters are not escaped. See TryEncoding() in
   // template_url.cc for details.
   EXPECT_TRUE(url.ReplaceSearchTermsInURL(
       GURL("http://google.com/alt/?q=123#q=456"), search_terms,
       search_terms_data_, &result));
-  EXPECT_EQ(GURL("http://google.com/alt/?q=123#q=Bob Morane"), result);
+  EXPECT_EQ(GURL("http://google.com/alt/?q=123#q=Bob+Morane"), result);
 
   EXPECT_TRUE(url.ReplaceSearchTermsInURL(
       GURL("http://google.com/alt/?a=012&q=123&b=456#f=789"), search_terms,
       search_terms_data_, &result));
-  EXPECT_EQ(GURL("http://google.com/alt/?a=012&q=Bob%20Morane&b=456#f=789"),
+  EXPECT_EQ(GURL("http://google.com/alt/?a=012&q=Bob+Morane&b=456#f=789"),
             result);
 
   EXPECT_TRUE(url.ReplaceSearchTermsInURL(
       GURL("http://google.com/alt/?a=012&q=123&b=456#j=abc&q=789&h=def9"),
       search_terms, search_terms_data_, &result));
   EXPECT_EQ(GURL("http://google.com/alt/?a=012&q=123&b=456"
-                 "#j=abc&q=Bob Morane&h=def9"), result);
+                 "#j=abc&q=Bob+Morane&h=def9"), result);
 
   EXPECT_FALSE(url.ReplaceSearchTermsInURL(
       GURL("http://google.com/alt/?q="), search_terms,
@@ -1377,7 +1377,7 @@ TEST_F(TemplateURLTest, ReplaceSearchTermsInURL) {
   EXPECT_TRUE(url.ReplaceSearchTermsInURL(
       GURL("http://google.com/alt/?q=#q=123"), search_terms,
       search_terms_data_, &result));
-  EXPECT_EQ(GURL("http://google.com/alt/?q=#q=Bob Morane"), result);
+  EXPECT_EQ(GURL("http://google.com/alt/?q=#q=Bob+Morane"), result);
 }
 
 TEST_F(TemplateURLTest, ReplaceSearchTermsInURLPath) {
@@ -1402,6 +1402,75 @@ TEST_F(TemplateURLTest, ReplaceSearchTermsInURLPath) {
       GURL("http://term-in-path.com/about"), search_terms,
       search_terms_data_, &result));
   EXPECT_EQ(GURL("http://should.not.change.com"), result);
+}
+
+// Checks that the ReplaceSearchTermsInURL function works correctly
+// for search terms containing non-latin characters for a search engine
+// using UTF-8 input encoding.
+TEST_F(TemplateURLTest, ReplaceSearchTermsInUTF8URL) {
+  TemplateURLData data;
+  data.SetURL("http://utf-8.ru/?q={searchTerms}");
+  data.alternate_urls.push_back("http://utf-8.ru/#q={searchTerms}");
+  data.alternate_urls.push_back("http://utf-8.ru/path/{searchTerms}");
+  TemplateURL url(data);
+
+  // Russian text which will be encoded with UTF-8.
+  TemplateURLRef::SearchTermsArgs search_terms(base::WideToUTF16(
+      L"\x0442\x0435\x043A\x0441\x0442"));
+  GURL result;
+
+  EXPECT_TRUE(url.ReplaceSearchTermsInURL(
+      GURL("http://utf-8.ru/?q=a+b"), search_terms, search_terms_data_,
+      &result));
+  EXPECT_EQ(GURL("http://utf-8.ru/?q=%D1%82%D0%B5%D0%BA%D1%81%D1%82"),
+            result);
+
+  EXPECT_TRUE(url.ReplaceSearchTermsInURL(
+      GURL("http://utf-8.ru/#q=a+b"), search_terms, search_terms_data_,
+      &result));
+  EXPECT_EQ(GURL("http://utf-8.ru/#q=%D1%82%D0%B5%D0%BA%D1%81%D1%82"),
+            result);
+
+  EXPECT_TRUE(url.ReplaceSearchTermsInURL(
+      GURL("http://utf-8.ru/path/a%20b"), search_terms, search_terms_data_,
+      &result));
+  EXPECT_EQ(GURL("http://utf-8.ru/path/%D1%82%D0%B5%D0%BA%D1%81%D1%82"),
+            result);
+}
+
+// Checks that the ReplaceSearchTermsInURL function works correctly
+// for search terms containing non-latin characters for a search engine
+// using non UTF-8 input encoding.
+TEST_F(TemplateURLTest, ReplaceSearchTermsInNonUTF8URL) {
+  TemplateURLData data;
+  data.SetURL("http://windows-1251.ru/?q={searchTerms}");
+  data.alternate_urls.push_back("http://windows-1251.ru/#q={searchTerms}");
+  data.alternate_urls.push_back("http://windows-1251.ru/path/{searchTerms}");
+  data.input_encodings.push_back("windows-1251");
+  TemplateURL url(data);
+
+  // Russian text which will be encoded with Windows-1251.
+  TemplateURLRef::SearchTermsArgs search_terms(base::WideToUTF16(
+      L"\x0442\x0435\x043A\x0441\x0442"));
+  GURL result;
+
+  EXPECT_TRUE(url.ReplaceSearchTermsInURL(
+      GURL("http://windows-1251.ru/?q=a+b"), search_terms, search_terms_data_,
+      &result));
+  EXPECT_EQ(GURL("http://windows-1251.ru/?q=%F2%E5%EA%F1%F2"),
+            result);
+
+  EXPECT_TRUE(url.ReplaceSearchTermsInURL(
+      GURL("http://windows-1251.ru/#q=a+b"), search_terms, search_terms_data_,
+      &result));
+  EXPECT_EQ(GURL("http://windows-1251.ru/#q=%F2%E5%EA%F1%F2"),
+            result);
+
+  EXPECT_TRUE(url.ReplaceSearchTermsInURL(
+      GURL("http://windows-1251.ru/path/a%20b"), search_terms,
+      search_terms_data_, &result));
+  EXPECT_EQ(GURL("http://windows-1251.ru/path/%F2%E5%EA%F1%F2"),
+            result);
 }
 
 // Test the |suggest_query_params| field of SearchTermsArgs.
