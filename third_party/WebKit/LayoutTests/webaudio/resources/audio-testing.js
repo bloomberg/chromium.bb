@@ -101,6 +101,81 @@ function finishAudioTest(event) {
     testRunner.notifyDone();
 }
 
+// Compare two arrays (commonly extracted from buffer.getChannelData()) with
+// constraints:
+//   options.thresholdSNR: Minimum allowed SNR between the actual and expected
+//     signal. The default value is 10000.
+//   options.thresholdDiffULP: Maximum allowed difference between the actual
+//     and expected signal in ULP(Unit in the last place). The default is 0.
+//   options.thresholdDiffCount: Maximum allowed number of sample differences
+//     which exceeds the threshold. The default is 0.
+//   options.bitDepth: The expected result is assumed to come from an audio
+//     file with this number of bits of precision. The default is 16.
+function compareBuffersWithConstraints(actual, expected, options) {
+    if (!options)
+        options = {};
+
+    if (actual.length !== expected.length)
+        testFailed('Buffer length mismatches.');
+
+    var maxError = -1;
+    var diffCount = 0;
+    var errorPosition = -1;
+    var thresholdSNR = (options.thresholdSNR || 10000);
+
+    var thresholdDiffULP = (options.thresholdDiffULP || 0);
+    var thresholdDiffCount = (options.thresholdDiffCount || 0);
+
+    // By default, the bit depth is 16.
+    var bitDepth = (options.bitDepth || 16);
+    var scaleFactor = Math.pow(2, bitDepth - 1);
+
+    var noisePower = 0, signalPower = 0;
+
+    for (var i = 0; i < actual.length; i++) {
+        var diff = actual[i] - expected[i];
+        noisePower += diff * diff;
+        signalPower += expected[i] * expected[i];
+
+        if (Math.abs(diff) > maxError) {
+            maxError = Math.abs(diff);
+            errorPosition = i;
+        }
+
+        // The reference file is a 16-bit WAV file, so we will almost never get
+        // an exact match between it and the actual floating-point result.
+        if (Math.abs(diff) > scaleFactor)
+            diffCount++;
+    }
+
+    var snr = 10 * Math.log10(signalPower / noisePower);
+    var maxErrorULP = maxError * scaleFactor;
+
+    if (snr >= thresholdSNR) {
+        testPassed('Exceeded SNR threshold of ' + thresholdSNR + ' dB.');
+    } else {
+        testFailed('Expected SNR of ' + thresholdSNR + ' dB, but actual SNR is ' +
+        snr + ' dB.');
+    }
+
+    if (maxErrorULP <= thresholdDiffULP) {
+        testPassed('Maximum difference below threshold of ' +
+            thresholdDiffULP + ' ulp (' + bitDepth + '-bits).');
+    } else {
+        testFailed('Maximum difference of ' + maxErrorULP +
+            ' at the index ' + errorPosition + ' exceeded threshold of ' +
+            thresholdDiffULP + ' ulp (' + bitDepth + '-bits).');
+    }
+
+    if (diffCount <= thresholdDiffCount) {
+        testPassed('Number of differences between results is ' +
+            diffCount + ' out of ' + actual.length + '.');
+    } else {
+        testFailed(diffCount + ' differences found but expected no more than ' +
+            diffCount + ' out of ' + actual.length + '.');
+    }
+}
+
 // Create an impulse in a buffer of length sampleFrameLength
 function createImpulseBuffer(context, sampleFrameLength) {
     var audioBuffer = context.createBuffer(1, sampleFrameLength, context.sampleRate);

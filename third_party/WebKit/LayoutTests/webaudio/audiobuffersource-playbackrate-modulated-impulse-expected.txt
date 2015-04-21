@@ -1,0 +1,10 @@
+AudioBufferSourceNode: DC-driven playbackRate modulation.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS Doubling playbackRate decreased the interval between impulses to half.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

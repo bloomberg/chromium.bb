@@ -128,9 +128,11 @@ private:
     double m_grainDuration; // in seconds
     // True if grainDuration is given explicitly (via 3 arg start method).
     bool m_isDurationGiven;
-    // totalPitchRate() returns the instantaneous pitch rate (non-time preserving).
-    // It incorporates the base pitch rate, any sample-rate conversion factor from the buffer, and any doppler shift from an associated panner node.
-    double totalPitchRate();
+
+    // Compute playback rate (k-rate) by incorporating the sample rate conversion
+    // factor, the doppler shift from the associated panner node, and the value
+    // of playbackRate AudioParam.
+    double computePlaybackRate();
 
     // We optionally keep track of a panner node which has a doppler shift that
     // is incorporated into the pitch rate.
@@ -171,7 +173,6 @@ public:
 private:
     AudioBufferSourceNode(AudioContext&, float sampleRate);
 
-    // Used for the "playbackRate" attributes.
     Member<AudioParam> m_playbackRate;
 };
 

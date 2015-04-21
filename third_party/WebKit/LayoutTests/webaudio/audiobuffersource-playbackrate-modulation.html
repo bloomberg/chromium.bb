@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="../resources/js-test.js"></script>
+  <script src="resources/compatibility.js"></script>
+  <script src="resources/audio-testing.js"></script>
+  <script src="resources/buffer-loader.js"></script>
+</head>
+
+<body>
+  <script>
+    description('AudioBufferSourceNode: oscillator-driven playbackRate modulation.');
+    window.jsTestIsAsync = true;
+
+    var sampleRate = 44100;
+    var duration = 0.25;
+
+    var context = new OfflineAudioContext(1, sampleRate * duration, sampleRate);
+    var referenceBuffer;
+
+
+    function generateActual() {
+      // Create a low-frequency oscillator and a gain to modulate playbackRate
+      // parameter.
+      var lfo = context.createOscillator();
+      var amp = context.createGain();
+
+      // Create a sawtooth generator with the signal range of [0, 1].
+      var phasor = context.createBufferSource();
+      var phasorBuffer = context.createBuffer(1, sampleRate, sampleRate);
+      var phasorArray = phasorBuffer.getChannelData(0);
+      var phase = 0, phaseStep = 1 / sampleRate;
+      for (var i = 0; i < phasorArray.length; i++) {
+        phasorArray[i] = phase % 1.0;
+        phase += phaseStep;
+      }
+      phasor.buffer = phasorBuffer;
+      phasor.loop = true;
+
+      // With this setting, The playback rate will be changing continuously and
+      // repeatedly within the range of [0, 200] based on the input from the
+      // oscillator.
+      lfo.frequency.value = 1.0;
+      amp.gain.value = 100;
+      phasor.playbackRate.value = 100;
+
+      // Modulate playbackRate with amplified oscillator output.
+      lfo.connect(amp);
+      amp.connect(phasor.playbackRate);
+      phasor.connect(context.destination);
+
+      lfo.start();
+      phasor.start();
+    }
+
+
+    var audit = Audit.createTaskRunner();
+
+    // Task: Load the reference file asynchronously. In order to create a new
+    // reference file, use the task 'generate-reference' below.
+    audit.defineTask('load-reference', function (done) {
+      var loader = new BufferLoader(context, [
+        'audiobuffersource-playbackrate-modulation-expected.wav'
+        ], function (bufferList) {
+          referenceBuffer = bufferList[0];
+          done();
+        });
+
+      loader.load();
+    });
+
+
+    // Task: Render the actual buffer and compare with the reference.
+    audit.defineTask('generate-verify', function (done) {
+
+      generateActual();
+
+      context.startRendering().then(function (renderedBuffer) {
+        var actual = renderedBuffer.getChannelData(0);
+        var expected = referenceBuffer.getChannelData(0);
+
+        // Compare two buffers with arbitrary (yet reasonable) constraints.
+        // There parameters are determined by try bot experiments.
+        compareBuffersWithConstraints(actual, expected, {
+          thresholdSNR: 92.72,
+          thresholdDiffULP: 0.9766,
+          thresholdDiffCount: 0,
+          bitDepth: 16
+        });
+
+      }).then(done);
+    });
+
+    // Task: Create a new reference audio file. See .runTasks() below to run
+    // this task.
+    audit.defineTask('generate-reference', function (done) {
+      if (!window.testRunner) {
+        done();
+        return;
+      }
+
+      generateActual();
+
+      // |finishAudioTest| will automatically create a reference audio file from
+      // the OAC rendering if the reference file does not exist.
+      context.oncomplete = finishAudioTest;
+      context.startRendering();
+      testRunner.waitUntilDone();
+
+      done();
+    });
+
+    audit.defineTask('finish', function (done) {
+      finishJSTest();
+      done();
+    });
+
+    window.onload = function () {
+      audit.runTasks(
+        'load-reference',
+        'generate-verify',
+        'finish'
+      );
+    };
+
+    // Use this task to generate a new reference audio file. Make sure to
+    // comment out .runTasks() above before use this.
+    // audit.runTasks('generate-reference');
+
+    successfullyParsed = true;
+  </script>
+</body>
+
+</html>

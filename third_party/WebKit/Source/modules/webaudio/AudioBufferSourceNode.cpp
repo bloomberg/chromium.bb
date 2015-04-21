@@ -223,10 +223,10 @@ bool AudioBufferSourceHandler::renderFromBuffer(AudioBus* bus, unsigned destinat
     if (loop() && m_virtualReadIndex >= virtualEndFrame)
         m_virtualReadIndex = (m_loopStart < 0) ? 0 : (m_loopStart * buffer()->sampleRate());
 
-    double pitchRate = totalPitchRate();
+    double computedPlaybackRate = computePlaybackRate();
 
     // Sanity check that our playback rate isn't larger than the loop size.
-    if (pitchRate > virtualDeltaFrames)
+    if (computedPlaybackRate > virtualDeltaFrames)
         return false;
 
     // Get local copy.
@@ -242,9 +242,9 @@ bool AudioBufferSourceHandler::renderFromBuffer(AudioBus* bus, unsigned destinat
     ASSERT(virtualDeltaFrames >= 0);
     ASSERT(virtualEndFrame >= 0);
 
-    // Optimize for the very common case of playing back with pitchRate == 1.
+    // Optimize for the very common case of playing back with computedPlaybackRate == 1.
     // We can avoid the linear interpolation.
-    if (pitchRate == 1 && virtualReadIndex == floor(virtualReadIndex)
+    if (computedPlaybackRate == 1 && virtualReadIndex == floor(virtualReadIndex)
         && virtualDeltaFrames == floor(virtualDeltaFrames)
         && virtualEndFrame == floor(virtualEndFrame)) {
         unsigned readIndex = static_cast<unsigned>(virtualReadIndex);
@@ -308,7 +308,7 @@ bool AudioBufferSourceHandler::renderFromBuffer(AudioBus* bus, unsigned destinat
             }
             writeIndex++;
 
-            virtualReadIndex += pitchRate;
+            virtualReadIndex += computedPlaybackRate;
 
             // Wrap-around, retaining sub-sample position since virtualReadIndex is floating-point.
             if (virtualReadIndex >= virtualEndFrame) {
@@ -479,34 +479,36 @@ void AudioBufferSourceHandler::startSource(double when, double grainOffset, doub
     m_playbackState = SCHEDULED_STATE;
 }
 
-double AudioBufferSourceHandler::totalPitchRate()
+double AudioBufferSourceHandler::computePlaybackRate()
 {
     double dopplerRate = 1.0;
     if (m_pannerNode)
         dopplerRate = m_pannerNode->dopplerRate();
 
     // Incorporate buffer's sample-rate versus AudioContext's sample-rate.
-    // Normally it's not an issue because buffers are loaded at the AudioContext's sample-rate, but we can handle it in any case.
+    // Normally it's not an issue because buffers are loaded at the
+    // AudioContext's sample-rate, but we can handle it in any case.
     double sampleRateFactor = 1.0;
     if (buffer())
         sampleRateFactor = buffer()->sampleRate() / sampleRate();
 
-    double basePitchRate = m_playbackRate->value();
+    // Use finalValue() to incorporate changes of AudioParamTimeline and
+    // AudioSummingJunction from m_playbackRate AudioParam.
+    double basePlaybackRate = m_playbackRate->finalValue();
 
-    double totalRate = dopplerRate * sampleRateFactor * basePitchRate;
+    double finalPlaybackRate = dopplerRate * sampleRateFactor * basePlaybackRate;
 
-    // Sanity check the total rate.  It's very important that the resampler not get any bad rate values.
-    totalRate = std::max(0.0, totalRate);
-    if (!totalRate)
-        totalRate = 1; // zero rate is considered illegal
-    totalRate = std::min(MaxRate, totalRate);
+    // Sanity check the total rate.  It's very important that the resampler not
+    // get any bad rate values.
+    finalPlaybackRate = clampTo(finalPlaybackRate, 0.0, MaxRate);
 
-    bool isTotalRateValid = !std::isnan(totalRate) && !std::isinf(totalRate);
-    ASSERT(isTotalRateValid);
-    if (!isTotalRateValid)
-        totalRate = 1.0;
+    bool isPlaybackRateValid = !std::isnan(finalPlaybackRate) && !std::isinf(finalPlaybackRate);
+    ASSERT(isPlaybackRateValid);
 
-    return totalRate;
+    if (!isPlaybackRateValid)
+        finalPlaybackRate = 1.0;
+
+    return finalPlaybackRate;
 }
 
 bool AudioBufferSourceHandler::propagatesSilence() const
