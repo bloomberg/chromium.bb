@@ -11,7 +11,7 @@
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
-#include "third_party/WebKit/public/platform/WebPermissionCallbacks.h"
+#include "third_party/WebKit/public/platform/WebContentSettingCallbacks.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -30,6 +30,7 @@
 #include "extensions/renderer/dispatcher.h"
 #endif
 
+using blink::WebContentSettingCallbacks;
 using blink::WebDataSource;
 using blink::WebDocument;
 using blink::WebFrame;
@@ -290,6 +291,29 @@ void ContentSettingsObserver::requestFileSystemAccessAsync(
   if (frame->securityOrigin().isUnique() ||
       frame->top()->securityOrigin().isUnique()) {
     WebPermissionCallbacks permissionCallbacks(callbacks);
+    permissionCallbacks.doDeny();
+    return;
+  }
+  ++current_request_id_;
+  std::pair<PermissionRequestMap::iterator, bool> insert_result =
+      permission_requests_.insert(std::make_pair(current_request_id_,
+          reinterpret_cast<const WebContentSettingCallbacks&>(callbacks)));
+
+  // Verify there are no duplicate insertions.
+  DCHECK(insert_result.second);
+
+  Send(new ChromeViewHostMsg_RequestFileSystemAccessAsync(
+      routing_id(), current_request_id_,
+      GURL(frame->securityOrigin().toString()),
+      GURL(frame->top()->securityOrigin().toString())));
+}
+
+void ContentSettingsObserver::requestFileSystemAccessAsync(
+    const WebContentSettingCallbacks& callbacks) {
+  WebFrame* frame = render_frame()->GetWebFrame();
+  if (frame->securityOrigin().isUnique() ||
+      frame->top()->securityOrigin().isUnique()) {
+    WebContentSettingCallbacks permissionCallbacks(callbacks);
     permissionCallbacks.doDeny();
     return;
   }
@@ -628,7 +652,7 @@ void ContentSettingsObserver::OnRequestFileSystemAccessAsyncResponse(
   if (it == permission_requests_.end())
     return;
 
-  WebPermissionCallbacks callbacks = it->second;
+  WebContentSettingCallbacks callbacks = it->second;
   permission_requests_.erase(it);
 
   if (allowed) {
