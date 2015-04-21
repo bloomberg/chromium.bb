@@ -15,9 +15,6 @@
       <p id="paragraph2">Line 3</p>
     </div>
 
-    <p id="description"></p>
-    <div id="console"></div>
-
     <script>
         description("This tests that text selection is reported correctly for contenteditable elements.");
 
@@ -75,7 +72,7 @@
             shouldBeZero("textboxAccessible.selectionEndLineNumber");
 
 
-            // 3. Test the effect of textarea.setSelectionRange method.
+            // 3. Test the effect of the textarea.setSelectionRange method.
 
             // Select only the second line, that is, the one found in the textarea.
             var line2 = document.getElementById("contenteditable-line2");
@@ -100,23 +97,29 @@
             var line3 = document.getElementById('paragraph2');
             var contenteditableLines = [ line1, line2, line3 ];
 
-            for (var i = 0; i < contenteditableLines.length; ++i) {
-                var start = i * 7;
-                var end = i * 7 + 6;
-                if (i == 2) {
-                    // Paragraphs have a blank line between them.
-                    ++start;
-                    ++end;
+            for (var testCase = 0; testCase < 2; ++testCase) {
+
+                for (var i = 0; i < contenteditableLines.length; ++i) {
+                    var start = i * 7;
+                    var end = i * 7 + 6;
+                    if (i == 2) {
+                        // Paragraphs have a blank line between them.
+                        ++start;
+                        ++end;
+                    }
+
+                    selectionRange.selectNode(contenteditableLines[i]);
+                    selection.removeAllRanges();
+                    selection.addRange(selectionRange);
+
+                    shouldBeEqualToNumber("contenteditableAccessible.selectionStart", start);
+                    shouldBeEqualToNumber("contenteditableAccessible.selectionEnd", end);
+                    shouldBeEqualToNumber("contenteditableAccessible.selectionStartLineNumber", i);
+                    shouldBeEqualToNumber("contenteditableAccessible.selectionEndLineNumber", i);
                 }
 
-                selectionRange.selectNode(contenteditableLines[i]);
-                selection.removeAllRanges();
-                selection.addRange(selectionRange);
-
-                shouldBeEqualToNumber("contenteditableAccessible.selectionStart", start);
-                shouldBeEqualToNumber("contenteditableAccessible.selectionEnd", end);
-                shouldBeEqualToNumber("contenteditableAccessible.selectionStartLineNumber", i);
-                shouldBeEqualToNumber("contenteditableAccessible.selectionEndLineNumber", i);
+                // For a sanity check, try the same tests with contenteditable="false".
+                contenteditable.contenteditable = false;
             }
 
         }

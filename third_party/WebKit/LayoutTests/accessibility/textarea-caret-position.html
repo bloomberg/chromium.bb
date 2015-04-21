@@ -13,9 +13,6 @@ Line 3
 
     <textarea id="textarea-empty" rows="5" cols="40"></textarea>
 
-    <p id="description"></p>
-    <div id="console"></div>
-
     <script>
         description("This tests that caret position is reported correctly for textarea elements.");
 
@@ -26,21 +23,25 @@ Line 3
             var textareaAccessible =
                 accessibilityController.accessibleElementById('textarea');
 
-            for (var lineNumber = 0; lineNumber < 3; ++lineNumber) {
-                var caretPosition = lineNumber * 7;
-                textarea.selectionStart = caretPosition;
-                textarea.selectionEnd = caretPosition;
-                shouldBeEqualToNumber("textareaAccessible.selectionStart",
-                    caretPosition);
-                shouldBeEqualToNumber("textareaAccessible.selectionEnd",
-                    caretPosition);
+            for (var i = 0; i < 3; ++i) {
+                for (var j = 0; j < 7; ++j) {
+                    var caretPosition = i * 7 + j;
+                    textarea.selectionStart = caretPosition;
+                    textarea.selectionEnd = caretPosition;
+                    shouldBeEqualToNumber("textareaAccessible.selectionStart",
+                        caretPosition);
+                    shouldBeEqualToNumber("textareaAccessible.selectionEnd",
+                        caretPosition);
+                    shouldBeEqualToNumber("textareaAccessible.selectionStartLineNumber", i);
+                    shouldBeEqualToNumber("textareaAccessible.selectionEndLineNumber", i);
+                }
             }
 
             var emptyTextarea = document.getElementById('textarea-empty');
             emptyTextarea.focus();
             // Each textarea has its own independent caret.
-            shouldBeEqualToNumber("textareaAccessible.selectionStart", 14);
-            shouldBeEqualToNumber("textareaAccessible.selectionEnd", 14);
+            shouldBeEqualToNumber("textareaAccessible.selectionStart", 20);
+            shouldBeEqualToNumber("textareaAccessible.selectionEnd", 20);
 
             var emptyTextareaAccessible =
                 accessibilityController.accessibleElementById('textarea-empty');

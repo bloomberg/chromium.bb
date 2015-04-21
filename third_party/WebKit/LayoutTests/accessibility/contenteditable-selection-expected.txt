@@ -1,10 +1,3 @@
-Line 1
-
-Line 1
-Line 2
-
-Line 3
-
 This tests that text selection is reported correctly for contenteditable elements.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -40,7 +33,24 @@ PASS contenteditableAccessible.selectionStart is 15
 PASS contenteditableAccessible.selectionEnd is 21
 FAIL contenteditableAccessible.selectionStartLineNumber should be 2. Was 1.
 PASS contenteditableAccessible.selectionEndLineNumber is 2
+PASS contenteditableAccessible.selectionStart is 0
+PASS contenteditableAccessible.selectionEnd is 6
+PASS contenteditableAccessible.selectionStartLineNumber is 0
+PASS contenteditableAccessible.selectionEndLineNumber is 0
+PASS contenteditableAccessible.selectionStart is 7
+PASS contenteditableAccessible.selectionEnd is 13
+PASS contenteditableAccessible.selectionStartLineNumber is 1
+PASS contenteditableAccessible.selectionEndLineNumber is 1
+PASS contenteditableAccessible.selectionStart is 15
+PASS contenteditableAccessible.selectionEnd is 21
+FAIL contenteditableAccessible.selectionStartLineNumber should be 2. Was 1.
+PASS contenteditableAccessible.selectionEndLineNumber is 2
 PASS successfullyParsed is true
 
 TEST COMPLETE
+Line 1
 
+Line 1
+Line 2
+
+Line 3

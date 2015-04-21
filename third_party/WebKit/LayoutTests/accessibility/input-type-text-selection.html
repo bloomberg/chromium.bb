@@ -7,9 +7,6 @@
 
     <input type="text" id="input" value="Line 1">
 
-    <p id="description"></p>
-    <div id="console"></div>
-
     <script>
         description("This tests that text selection is reported correctly for text input elements.");
 
@@ -33,8 +30,8 @@
                     input.setSelectionRange(start, end);
                     shouldBeEqualToNumber("inputAccessible.selectionStart", start);
                     shouldBeEqualToNumber("inputAccessible.selectionEnd", end);
-                    shouldBeEqualToNumber("inputAccessible.selectionStartLineNumber", 0);
-                    shouldBeEqualToNumber("inputAccessible.selectionEndLineNumber", 0);
+                    shouldBeZero("inputAccessible.selectionStartLineNumber");
+                    shouldBeZero("inputAccessible.selectionEndLineNumber");
                 }
             }
 

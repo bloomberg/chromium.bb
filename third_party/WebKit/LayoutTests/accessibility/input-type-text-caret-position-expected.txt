@@ -1,4 +1,3 @@
-
 This tests that caret position is reported correctly for text input elements.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

@@ -15,9 +15,6 @@
       <p id="paragraph2">Line 3</p>
     </div>
 
-    <p id="description"></p>
-    <div id="console"></div>
-
     <script>
         description("This tests that caret position is reported correctly for contenteditable elements.");
 
@@ -66,21 +63,28 @@
                 'contenteditable-div');
 
             for (var lineNumber = 0; lineNumber < 3; ++lineNumber) {
-                // Place the caret at the end of each line.
-                var caretPosition = lineNumber * 7 + 6;
+                var lineOffset = lineNumber * 7;
                 // Paragraphs should have an extra blank line between them.
                 if (lineNumber == 2)
-                    caretPosition += 1;
+                    lineOffset += 1;
 
-                selectionRange.setStart(contenteditableLines[lineNumber], 6);
-                selectionRange.setEnd(contenteditableLines[lineNumber], 6);
-                selection.removeAllRanges();
-                selection.addRange(selectionRange);
+                for (var characterOffset = 0; characterOffset < 7; ++characterOffset) {
+                    caretPosition = lineOffset + characterOffset;
 
-                shouldBeEqualToNumber("contenteditableAccessible.selectionStart",
-                    caretPosition);
-                shouldBeEqualToNumber("contenteditableAccessible.selectionEnd",
-                    caretPosition);
+                    selectionRange.setStart(contenteditableLines[lineNumber], characterOffset);
+                    selectionRange.setEnd(contenteditableLines[lineNumber], characterOffset);
+                    selection.removeAllRanges();
+                    selection.addRange(selectionRange);
+
+                    shouldBeEqualToNumber("contenteditableAccessible.selectionStart",
+                        caretPosition);
+                    shouldBeEqualToNumber("contenteditableAccessible.selectionEnd",
+                        caretPosition);
+                    shouldBeEqualToNumber("contenteditableAccessible.selectionStartLineNumber",
+                        lineNumber);
+                    shouldBeEqualToNumber("contenteditableAccessible.selectionEndLineNumber",
+                        lineNumber);
+                }
             }
 
         }
