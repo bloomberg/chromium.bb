@@ -38,6 +38,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/procfs.h>
+#if defined(__mips__) && defined(__ANDROID__)
+// To get register definitions.
+#include <asm/reg.h>
+#endif
 
 #include "common/linux/linux_libc_support.h"
 
@@ -105,7 +109,7 @@ bool LinuxCoreDumper::GetThreadInfoByIndex(size_t index, ThreadInfo* info) {
   memcpy(&stack_pointer, &info->regs.sp, sizeof(info->regs.sp));
 #elif defined(__mips__)
   stack_pointer =
-      reinterpret_cast<uint8_t*>(info->regs.regs[MD_CONTEXT_MIPS_REG_SP]);
+      reinterpret_cast<uint8_t*>(info->mcontext.gregs[MD_CONTEXT_MIPS_REG_SP]);
 #else
 #error "This code hasn't been ported to your platform yet."
 #endif
@@ -191,18 +195,19 @@ bool LinuxCoreDumper::EnumerateThreads() {
         info.tgid = status->pr_pgrp;
         info.ppid = status->pr_ppid;
 #if defined(__mips__)
+#if defined(__ANDROID__)
+        for (int i = EF_R0; i <= EF_R31; i++)
+          info.mcontext.gregs[i - EF_R0] = status->pr_reg[i];
+#else  // __ANDROID__
         for (int i = EF_REG0; i <= EF_REG31; i++)
-          info.regs.regs[i - EF_REG0] = status->pr_reg[i];
-
-        info.regs.lo = status->pr_reg[EF_LO];
-        info.regs.hi = status->pr_reg[EF_HI];
-        info.regs.epc = status->pr_reg[EF_CP0_EPC];
-        info.regs.badvaddr = status->pr_reg[EF_CP0_BADVADDR];
-        info.regs.status = status->pr_reg[EF_CP0_STATUS];
-        info.regs.cause = status->pr_reg[EF_CP0_CAUSE];
-#else
+          info.mcontext.gregs[i - EF_REG0] = status->pr_reg[i];
+#endif  // __ANDROID__
+        info.mcontext.mdlo = status->pr_reg[EF_LO];
+        info.mcontext.mdhi = status->pr_reg[EF_HI];
+        info.mcontext.pc = status->pr_reg[EF_CP0_EPC];
+#else  // __mips__
         memcpy(&info.regs, status->pr_reg, sizeof(info.regs));
-#endif
+#endif  // __mips__
         if (first_thread) {
           crash_thread_ = pid;
           crash_signal_ = status->pr_info.si_signo;

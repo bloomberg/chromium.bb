@@ -30,6 +30,7 @@
 #include "client/linux/dump_writer_common/thread_info.h"
 
 #include <string.h>
+#include <assert.h>
 
 #include "common/linux/linux_libc_support.h"
 #include "google_breakpad/common/minidump_format.h"
@@ -230,37 +231,69 @@ void ThreadInfo::FillCPUContext(RawContextCPU* out) const {
 #elif defined(__mips__)
 
 uintptr_t ThreadInfo::GetInstructionPointer() const {
-  return regs.epc;
+  return mcontext.pc;
 }
 
 void ThreadInfo::FillCPUContext(RawContextCPU* out) const {
   out->context_flags = MD_CONTEXT_MIPS_FULL;
 
   for (int i = 0; i < MD_CONTEXT_MIPS_GPR_COUNT; ++i)
-    out->iregs[i] = regs.regs[i];
+    out->iregs[i] = mcontext.gregs[i];
 
-  out->mdhi = regs.hi;
-  out->mdlo = regs.lo;
+  out->mdhi = mcontext.mdhi;
+  out->mdlo = mcontext.mdlo;
+  out->dsp_control = mcontext.dsp;
 
-  for (int i = 0; i < MD_CONTEXT_MIPS_DSP_COUNT; ++i) {
-    out->hi[i] = hi[i];
-    out->lo[i] = lo[i];
-  }
-  out->dsp_control = dsp_control;
+  out->hi[0] = mcontext.hi1;
+  out->lo[0] = mcontext.lo1;
+  out->hi[1] = mcontext.hi2;
+  out->lo[1] = mcontext.lo2;
+  out->hi[2] = mcontext.hi3;
+  out->lo[2] = mcontext.lo3;
 
-  out->epc = regs.epc;
-  out->badvaddr = regs.badvaddr;
-  out->status = regs.status;
-  out->cause = regs.cause;
+  out->epc = mcontext.pc;
+  out->badvaddr = 0; // Not stored in mcontext
+  out->status = 0; // Not stored in mcontext
+  out->cause = 0; // Not stored in mcontext
 
   for (int i = 0; i < MD_FLOATINGSAVEAREA_MIPS_FPR_COUNT; ++i)
-    out->float_save.regs[i] = fpregs.regs[i];
+    out->float_save.regs[i] = mcontext.fpregs.fp_r.fp_fregs[i]._fp_fregs;
 
-  out->float_save.fpcsr = fpregs.fpcsr;
+  out->float_save.fpcsr = mcontext.fpc_csr;
 #if _MIPS_SIM == _ABIO32
-  out->float_save.fir = fpregs.fir;
+  out->float_save.fir = mcontext.fpc_eir;
 #endif
 }
+#endif  // __mips__
+
+void ThreadInfo::GetGeneralPurposeRegisters(void** gp_regs, size_t* size) {
+  assert(gp_regs || size);
+#if defined(__mips__)
+  if (gp_regs)
+    *gp_regs = mcontext.gregs;
+  if (size)
+    *size = sizeof(mcontext.gregs);
+#else
+  if (gp_regs)
+    *gp_regs = &regs;
+  if (size)
+    *size = sizeof(regs);
 #endif
+}
+
+void ThreadInfo::GetFloatingPointRegisters(void** fp_regs, size_t* size) {
+  assert(fp_regs || size);
+#if defined(__mips__)
+  if (fp_regs)
+    *fp_regs = &mcontext.fpregs;
+  if (size)
+    *size = sizeof(mcontext.fpregs);
+#else
+  if (fp_regs)
+    *fp_regs = &fpregs;
+  if (size)
+    *size = sizeof(fpregs);
+#endif
+}
 
 }  // namespace google_breakpad
