@@ -14,6 +14,8 @@
       'trace_event/memory_dump_provider.cc',
       'trace_event/memory_dump_provider.h',
       'trace_event/memory_dump_request_args.h',
+      'trace_event/memory_dump_session_state.cc',
+      'trace_event/memory_dump_session_state.h',
       'trace_event/process_memory_dump.cc',
       'trace_event/process_memory_dump.h',
       'trace_event/process_memory_maps.cc',

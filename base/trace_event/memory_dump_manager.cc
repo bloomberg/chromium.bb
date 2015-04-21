@@ -9,6 +9,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/compiler_specific.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "base/trace_event/memory_dump_session_state.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_argument.h"
 
@@ -49,9 +50,12 @@ const char* MemoryDumpTypeToString(const MemoryDumpType& dump_type) {
 class ProcessMemoryDumpHolder
     : public RefCountedThreadSafe<ProcessMemoryDumpHolder> {
  public:
-  ProcessMemoryDumpHolder(MemoryDumpRequestArgs req_args,
-                          MemoryDumpCallback callback)
-      : req_args(req_args),
+  ProcessMemoryDumpHolder(
+      MemoryDumpRequestArgs req_args,
+      const scoped_refptr<MemoryDumpSessionState>& session_state,
+      MemoryDumpCallback callback)
+      : process_memory_dump(session_state),
+        req_args(req_args),
         callback(callback),
         task_runner(MessageLoop::current()->task_runner()),
         num_pending_async_requests(0) {}
@@ -207,7 +211,7 @@ void MemoryDumpManager::RequestGlobalDump(MemoryDumpType dump_type) {
 void MemoryDumpManager::CreateProcessDump(const MemoryDumpRequestArgs& args,
                                           const MemoryDumpCallback& callback) {
   scoped_refptr<ProcessMemoryDumpHolder> pmd_holder(
-      new ProcessMemoryDumpHolder(args, callback));
+      new ProcessMemoryDumpHolder(args, session_state_, callback));
   ProcessMemoryDump* pmd = &pmd_holder->process_memory_dump;
   bool did_any_provider_dump = false;
 
@@ -305,10 +309,10 @@ void MemoryDumpManager::OnTraceLogEnabled() {
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(kTraceCategory, &enabled);
 
   AutoLock lock(lock_);
+  dump_providers_enabled_.clear();
   if (enabled) {
+    session_state_ = new MemoryDumpSessionState();
     dump_providers_enabled_ = dump_providers_registered_;
-  } else {
-    dump_providers_enabled_.clear();
   }
   subtle::NoBarrier_Store(&memory_tracing_enabled_, 1);
 }
@@ -317,6 +321,7 @@ void MemoryDumpManager::OnTraceLogDisabled() {
   AutoLock lock(lock_);
   dump_providers_enabled_.clear();
   subtle::NoBarrier_Store(&memory_tracing_enabled_, 0);
+  session_state_ = nullptr;
 }
 
 }  // namespace trace_event

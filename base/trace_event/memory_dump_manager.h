@@ -25,6 +25,7 @@ class ProcessMemoryDumpHolder;
 class MemoryDumpManagerDelegate;
 class MemoryDumpProvider;
 class ProcessMemoryDump;
+class MemoryDumpSessionState;
 
 // This is the interface exposed to the rest of the codebase to deal with
 // memory tracing. The main entry point for clients is represented by
@@ -69,6 +70,13 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
     return dump_provider_currently_active_;
   }
 
+  // Returns the MemoryDumpSessionState object, which is shared by all the
+  // ProcessMemoryDump and MemoryAllocatorDump instances through all the tracing
+  // session lifetime.
+  const scoped_refptr<MemoryDumpSessionState>& session_state() const {
+    return session_state_;
+  }
+
  private:
   friend struct DefaultDeleter<MemoryDumpManager>;  // For the testing instance.
   friend struct DefaultSingletonTraits<MemoryDumpManager>;
@@ -98,6 +106,9 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
 
   // TODO(primiano): this is required only until crbug.com/466121 gets fixed.
   MemoryDumpProvider* dump_provider_currently_active_;  // Not owned.
+
+  // Shared among all the PMDs to keep state scoped to the tracing session.
+  scoped_refptr<MemoryDumpSessionState> session_state_;
 
   MemoryDumpManagerDelegate* delegate_;  // Not owned.
 

@@ -5,6 +5,7 @@
 #include "base/trace_event/memory_allocator_dump.h"
 
 #include "base/trace_event/memory_dump_provider.h"
+#include "base/trace_event/memory_dump_session_state.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,7 +46,7 @@ class FakeMemoryAllocatorDumpProvider : public MemoryDumpProvider {
 
 TEST(MemoryAllocatorDumpTest, DumpIntoProcessMemoryDump) {
   FakeMemoryAllocatorDumpProvider fmadp;
-  ProcessMemoryDump pmd;
+  ProcessMemoryDump pmd(make_scoped_refptr(new MemoryDumpSessionState()));
 
   fmadp.DumpInto(&pmd);
 
@@ -84,7 +85,7 @@ TEST(MemoryAllocatorDumpTest, DumpIntoProcessMemoryDump) {
 #if !defined(NDEBUG) && !defined(OS_ANDROID) && !defined(OS_IOS)
 TEST(MemoryAllocatorDumpTest, ForbidDuplicatesDeathTest) {
   FakeMemoryAllocatorDumpProvider fmadp;
-  ProcessMemoryDump pmd;
+  ProcessMemoryDump pmd(nullptr /* session_state */);
   pmd.CreateAllocatorDump("dump_1");
   pmd.CreateAllocatorDump("dump_2");
   ASSERT_DEATH(pmd.CreateAllocatorDump("dump_1"), "");

@@ -10,8 +10,11 @@
 namespace base {
 namespace trace_event {
 
-ProcessMemoryDump::ProcessMemoryDump()
-    : has_process_totals_(false), has_process_mmaps_(false) {
+ProcessMemoryDump::ProcessMemoryDump(
+    const scoped_refptr<MemoryDumpSessionState>& session_state)
+    : has_process_totals_(false),
+      has_process_mmaps_(false),
+      session_state_(session_state) {
 }
 
 ProcessMemoryDump::~ProcessMemoryDump() {

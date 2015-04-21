@@ -114,7 +114,7 @@ TEST(ProcessMemoryMapsDumpProviderTest, ParseProcSmaps) {
   auto pmmdp = ProcessMemoryMapsDumpProvider::GetInstance();
 
   // Emulate a non-existent /proc/self/smaps.
-  ProcessMemoryDump pmd_invalid;
+  ProcessMemoryDump pmd_invalid(nullptr /* session_state */);
   std::ifstream non_existent_file("/tmp/does-not-exist");
   ProcessMemoryMapsDumpProvider::proc_smaps_for_testing = &non_existent_file;
   CHECK_EQ(false, non_existent_file.good());
@@ -129,7 +129,7 @@ TEST(ProcessMemoryMapsDumpProviderTest, ParseProcSmaps) {
   ASSERT_FALSE(pmd_invalid.has_process_mmaps());
 
   // Parse the 1st smaps file.
-  ProcessMemoryDump pmd_1;
+  ProcessMemoryDump pmd_1(nullptr /* session_state */);
   std::istringstream test_smaps_1(kTestSmaps1);
   ProcessMemoryMapsDumpProvider::proc_smaps_for_testing = &test_smaps_1;
   pmmdp->DumpInto(&pmd_1);
@@ -154,7 +154,7 @@ TEST(ProcessMemoryMapsDumpProviderTest, ParseProcSmaps) {
   EXPECT_EQ((60 + 8) * 1024UL, regions_1[1].byte_stats_private_resident);
 
   // Parse the 2nd smaps file.
-  ProcessMemoryDump pmd_2;
+  ProcessMemoryDump pmd_2(nullptr /* session_state */);
   std::istringstream test_smaps_2(kTestSmaps2);
   ProcessMemoryMapsDumpProvider::proc_smaps_for_testing = &test_smaps_2;
   pmmdp->DumpInto(&pmd_2);
