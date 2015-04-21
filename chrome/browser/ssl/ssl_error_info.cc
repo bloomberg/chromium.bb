@@ -60,8 +60,7 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
     case CERT_DATE_INVALID:
       if (cert->HasExpired()) {
         details = l10n_util::GetStringFUTF16(
-            IDS_CERT_ERROR_EXPIRED_DETAILS,
-            UTF8ToUTF16(request_url.host()),
+            IDS_CERT_ERROR_EXPIRED_DETAILS, UTF8ToUTF16(request_url.host()),
             base::IntToString16(
                 (base::Time::Now() - cert->valid_expiry()).InDays()),
             base::TimeFormatFriendlyDate(base::Time::Now()));
@@ -78,13 +77,13 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
       } else {
         // Two possibilities: (1) an intermediate or root certificate has
         // expired, or (2) the certificate has become valid since the error
-        // occurred. Since (1) is more likely, assume that's the case.
+        // occurred. Both are probably rare cases. To avoid giving the wrong
+        // date, remove the information.
         details = l10n_util::GetStringFUTF16(
-            IDS_CERT_ERROR_CHAIN_EXPIRED_DETAILS,
-            UTF8ToUTF16(request_url.host()),
-            base::TimeFormatFriendlyDate(base::Time::Now()));
-        short_description =
-            l10n_util::GetStringUTF16(IDS_CERT_ERROR_CHAIN_EXPIRED_DESCRIPTION);
+            IDS_CERT_ERROR_NOT_VALID_AT_THIS_TIME_DETAILS,
+            UTF8ToUTF16(request_url.host()));
+        short_description = l10n_util::GetStringUTF16(
+            IDS_CERT_ERROR_NOT_VALID_AT_THIS_TIME_DESCRIPTION);
       }
       break;
     case CERT_AUTHORITY_INVALID:
