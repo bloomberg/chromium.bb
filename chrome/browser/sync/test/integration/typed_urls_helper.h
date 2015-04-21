@@ -26,6 +26,11 @@ bool GetUrlFromClient(int index, const GURL& url, history::URLRow* row);
 // Gets the visits for a URL from a specific sync profile.
 history::VisitVector GetVisitsFromClient(int index, history::URLID id);
 
+// Gets the visits for a URL from a specific sync profile. Like above, but
+// takes a GURL instead of URLID. Returns empty vector if |url| is not returned
+// by GetUrlFromClient().
+history::VisitVector GetVisitsForURLFromClient(int index, const GURL& url);
+
 // Removes the passed |visits| from a specific sync profile.
 void RemoveVisitsFromClient(int index, const history::VisitVector& visits);
 

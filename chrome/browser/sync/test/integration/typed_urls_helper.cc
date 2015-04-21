@@ -251,6 +251,16 @@ history::VisitVector GetVisitsFromClient(int index, history::URLID id) {
   return GetVisitsFromHistoryService(service, id);
 }
 
+history::VisitVector GetVisitsForURLFromClient(int index, const GURL& url) {
+  history::HistoryService* service =
+      HistoryServiceFactory::GetForProfileWithoutCreating(
+          test()->GetProfile(index));
+  history::URLRow url_row;
+  if (!GetUrlFromHistoryService(service, url, &url_row))
+    return history::VisitVector();
+  return GetVisitsFromHistoryService(service, url_row.id());
+}
+
 void RemoveVisitsFromClient(int index, const history::VisitVector& visits) {
   history::HistoryService* service =
       HistoryServiceFactory::GetForProfileWithoutCreating(

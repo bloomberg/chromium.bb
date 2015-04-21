@@ -377,6 +377,52 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, UpdateToNonTypedURL) {
   ASSERT_EQ(2, GetVisitCountForFirstURL(0));
 }
 
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, SyncTypedRedirects) {
+  const base::string16 kHistoryUrl(ASCIIToUTF16("http://typed.google.com/"));
+  const base::string16 kRedirectedHistoryUrl(
+      ASCIIToUTF16("http://www.typed.google.com/"));
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  // Simulate a typed address that gets redirected by the server to a different
+  // address.
+  GURL initial_url(kHistoryUrl);
+  const ui::PageTransition initial_transition = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_CHAIN_START);
+  AddUrlToHistoryWithTransition(0, initial_url, initial_transition,
+                                history::SOURCE_BROWSED);
+
+  GURL redirected_url(kRedirectedHistoryUrl);
+  const ui::PageTransition redirected_transition = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_CHAIN_END |
+      ui::PAGE_TRANSITION_SERVER_REDIRECT);
+  // This address will have a typed_count == 0 because it's a redirection.
+  // It should still be synced.
+  AddUrlToHistoryWithTransition(0, redirected_url, redirected_transition,
+                                history::SOURCE_BROWSED);
+
+  // Both clients should have both URLs.
+  ASSERT_TRUE(AwaitCheckAllProfilesHaveSameURLsAsVerifier());
+
+  history::VisitVector visits =
+      typed_urls_helper::GetVisitsForURLFromClient(0, initial_url);
+  ASSERT_EQ(1U, visits.size());
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(visits[0].transition,
+                                           ui::PAGE_TRANSITION_TYPED));
+  visits = typed_urls_helper::GetVisitsForURLFromClient(0, redirected_url);
+  ASSERT_EQ(1U, visits.size());
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(visits[0].transition,
+                                           ui::PAGE_TRANSITION_TYPED));
+
+  visits = typed_urls_helper::GetVisitsForURLFromClient(1, initial_url);
+  ASSERT_EQ(1U, visits.size());
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(visits[0].transition,
+                                           ui::PAGE_TRANSITION_TYPED));
+  visits = typed_urls_helper::GetVisitsForURLFromClient(1, redirected_url);
+  ASSERT_EQ(1U, visits.size());
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(visits[0].transition,
+                                           ui::PAGE_TRANSITION_TYPED));
+}
+
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
                        SkipImportedVisits) {
 
