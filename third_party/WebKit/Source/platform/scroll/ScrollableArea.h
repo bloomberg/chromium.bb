@@ -252,9 +252,6 @@ public:
 
     void cancelProgrammaticScrollAnimation();
 
-    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
-    virtual String debugName() const { return "ScrollableArea"; }
-
 protected:
     ScrollableArea();
     virtual ~ScrollableArea();

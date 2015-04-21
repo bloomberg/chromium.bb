@@ -2215,12 +2215,9 @@ void CompositedDeprecatedPaintLayerMapping::paintContents(const GraphicsLayer* g
     } else if (graphicsLayer == layerForVerticalScrollbar()) {
         paintScrollbar(m_owningLayer.scrollableArea()->verticalScrollbar(), context, clip);
     } else if (graphicsLayer == layerForScrollCorner()) {
-        const IntRect& scrollCornerAndResizer = m_owningLayer.scrollableArea()->scrollCornerAndResizerRect();
-        TransformRecorder transformRecorder(context, *m_owningLayer.scrollableArea(), AffineTransform::translation(-scrollCornerAndResizer.x(), -scrollCornerAndResizer.y()));
-        IntRect transformedClip = clip;
-        transformedClip.moveBy(scrollCornerAndResizer.location());
-        ScrollableAreaPainter(*m_owningLayer.scrollableArea()).paintScrollCorner(&context, IntPoint(), transformedClip);
-        ScrollableAreaPainter(*m_owningLayer.scrollableArea()).paintResizer(&context, IntPoint(), transformedClip);
+        IntPoint scrollCornerAndResizerLocation = m_owningLayer.scrollableArea()->scrollCornerAndResizerRect().location();
+        ScrollableAreaPainter(*m_owningLayer.scrollableArea()).paintScrollCorner(&context, -scrollCornerAndResizerLocation, clip);
+        ScrollableAreaPainter(*m_owningLayer.scrollableArea()).paintResizer(&context, -scrollCornerAndResizerLocation, clip);
     }
     InspectorInstrumentation::didPaint(m_owningLayer.layoutObject(), graphicsLayer, &context, LayoutRect(clip));
 #if ENABLE(ASSERT)

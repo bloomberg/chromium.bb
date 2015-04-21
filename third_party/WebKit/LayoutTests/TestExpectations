@@ -75,6 +75,9 @@ crbug.com/316146 [ XP ] http/tests/cache/cached-main-resource.html [ Pass Timeou
 crbug.com/443596 [ Mac ] media/sources-fallback-codecs.html [ Failure Pass ]
 crbug.com/443596 [ Win ] media/sources-fallback-codecs.html [ Failure Pass ]
 
+crbug.com/478858 fast/repaint/resize-scrollable-iframe.html [ NeedsRebaseline ]
+crbug.com/478858 virtual/slimmingpaint/fast/repaint/resize-scrollable-iframe.html [ NeedsRebaseline ]
+
 crbug.com/364267 [ Win Mac ] http/tests/security/webgl-remote-read-remote-image-blocked-no-crossorigin.html [ Pass Timeout ]
 
 crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pass Failure ]
