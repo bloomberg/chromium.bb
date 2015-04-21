@@ -622,33 +622,39 @@ void DisplayConfigurator::UnregisterContentProtectionClient(
   ApplyProtections(protections);
 }
 
-bool DisplayConfigurator::QueryContentProtectionStatus(
+void DisplayConfigurator::QueryContentProtectionStatus(
     ContentProtectionClientId client_id,
     int64_t display_id,
-    uint32_t* link_mask,
-    uint32_t* protection_mask) {
-  if (!configure_display_ || display_externally_controlled_)
-    return false;
+    const QueryProtectionCallback& callback) {
+  QueryProtectionResponse response;
+  if (!configure_display_ || display_externally_controlled_) {
+    callback.Run(response);
+    return;
+  }
 
   uint32_t enabled = 0;
   uint32_t unfulfilled = 0;
-  *link_mask = 0;
+  uint32_t link_mask = 0;
   for (const DisplaySnapshot* display : cached_displays_) {
     // Query display if it is in mirror mode or client on the same display.
     if (!IsMirroring() && display->display_id() != display_id)
       continue;
 
-    *link_mask |= display->type();
+    link_mask |= display->type();
     switch (display->type()) {
       case DISPLAY_CONNECTION_TYPE_UNKNOWN:
-        return false;
+        callback.Run(response);
+        return;
       // DisplayPort, DVI, and HDMI all support HDCP.
       case DISPLAY_CONNECTION_TYPE_DISPLAYPORT:
       case DISPLAY_CONNECTION_TYPE_DVI:
       case DISPLAY_CONNECTION_TYPE_HDMI: {
         HDCPState state;
-        if (!native_display_delegate_->GetHDCPState(*display, &state))
-          return false;
+        if (!native_display_delegate_->GetHDCPState(*display, &state)) {
+          callback.Run(response);
+          return;
+        }
+
         if (state == HDCP_STATE_ENABLED)
           enabled |= CONTENT_PROTECTION_METHOD_HDCP;
         else
@@ -672,19 +678,23 @@ bool DisplayConfigurator::QueryContentProtectionStatus(
     uint32_t requested_mask = 0;
     if (it->second.find(display_id) != it->second.end())
       requested_mask = it->second[display_id];
-    *protection_mask = enabled & ~unfulfilled & requested_mask;
-  } else {
-    *protection_mask = 0;
+    response.protection_mask = enabled & ~unfulfilled & requested_mask;
   }
-  return true;
+
+  response.success = true;
+  response.link_mask = link_mask;
+  callback.Run(response);
 }
 
-bool DisplayConfigurator::EnableContentProtection(
+void DisplayConfigurator::EnableContentProtection(
     ContentProtectionClientId client_id,
     int64_t display_id,
-    uint32_t desired_method_mask) {
-  if (!configure_display_ || display_externally_controlled_)
-    return false;
+    uint32_t desired_method_mask,
+    const EnableProtectionCallback& callback) {
+  if (!configure_display_ || display_externally_controlled_) {
+    callback.Run(false);
+    return;
+  }
 
   ContentProtections protections;
   for (const auto& requests_pair : client_protection_requests_) {
@@ -698,8 +708,10 @@ bool DisplayConfigurator::EnableContentProtection(
   }
   protections[display_id] |= desired_method_mask;
 
-  if (!ApplyProtections(protections))
-    return false;
+  if (!ApplyProtections(protections)) {
+    callback.Run(false);
+    return;
+  }
 
   if (desired_method_mask == CONTENT_PROTECTION_METHOD_NONE) {
     if (client_protection_requests_.find(client_id) !=
@@ -712,7 +724,7 @@ bool DisplayConfigurator::EnableContentProtection(
     client_protection_requests_[client_id][display_id] = desired_method_mask;
   }
 
-  return true;
+  callback.Run(true);
 }
 
 std::vector<ui::ColorCalibrationProfile>

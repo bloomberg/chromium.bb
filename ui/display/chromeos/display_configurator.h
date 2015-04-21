@@ -42,6 +42,24 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
 
   typedef base::Callback<void(bool)> ConfigurationCallback;
 
+  typedef base::Callback<void(bool /* success */)> EnableProtectionCallback;
+
+  struct QueryProtectionResponse {
+    // True if the query succeeded, false otherwise.
+    bool success = false;
+
+    // The type of connected display links, which is a bitmask of
+    // DisplayConnectionType values.
+    uint32_t link_mask = 0;
+
+    // The desired protection methods, which is a bitmask of the
+    // ContentProtectionMethod values.
+    uint32_t protection_mask = 0;
+  };
+
+  typedef base::Callback<void(const QueryProtectionResponse&)>
+      QueryProtectionCallback;
+
   typedef std::vector<DisplaySnapshot*> DisplayStateList;
 
   class Observer {
@@ -240,23 +258,20 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   // Unregisters the client.
   void UnregisterContentProtectionClient(ContentProtectionClientId client_id);
 
-  // Queries link status and protection status.
-  // |link_mask| is the type of connected display links, which is a bitmask of
-  // DisplayConnectionType values. |protection_mask| is the desired protection
-  // methods, which is a bitmask of the ContentProtectionMethod values.
-  // Returns true on success.
-  bool QueryContentProtectionStatus(ContentProtectionClientId client_id,
+  // Queries link status and protection status. |callback| is used to respond
+  // to the query.
+  void QueryContentProtectionStatus(ContentProtectionClientId client_id,
                                     int64_t display_id,
-                                    uint32_t* link_mask,
-                                    uint32_t* protection_mask);
+                                    const QueryProtectionCallback& callback);
 
   // Requests the desired protection methods.
   // |protection_mask| is the desired protection methods, which is a bitmask
   // of the ContentProtectionMethod values.
   // Returns true when the protection request has been made.
-  bool EnableContentProtection(ContentProtectionClientId client_id,
+  void EnableContentProtection(ContentProtectionClientId client_id,
                                int64_t display_id,
-                               uint32_t desired_protection_mask);
+                               uint32_t protection_mask,
+                               const EnableProtectionCallback& callback);
 
   // Checks the available color profiles for |display_id| and fills the result
   // into |profiles|.

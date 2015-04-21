@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_RENDERER_HOST_PEPPER_PEPPER_OUTPUT_PROTECTION_MESSAGE_FILTER_H_
 #define CHROME_BROWSER_RENDERER_HOST_PEPPER_PEPPER_OUTPUT_PROTECTION_MESSAGE_FILTER_H_
 
+#include "base/memory/weak_ptr.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/host/resource_message_filter.h"
 
@@ -44,10 +45,21 @@ class PepperOutputProtectionMessageFilter
   int32_t OnEnableProtection(ppapi::host::HostMessageContext* context,
                              uint32_t desired_method_mask);
 
+  void OnQueryStatusComplete(ppapi::host::ReplyMessageContext reply_context,
+                             int32_t result,
+                             uint32_t link_mask,
+                             uint32_t protection_mask);
+
+  void OnEnableProtectionComplete(
+      ppapi::host::ReplyMessageContext reply_context,
+      int32_t result);
+
 #if defined(OS_CHROMEOS)
   // Delegator. Should be deleted in UI thread.
   Delegate* delegate_;
 #endif
+
+  base::WeakPtrFactory<PepperOutputProtectionMessageFilter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperOutputProtectionMessageFilter);
 };
