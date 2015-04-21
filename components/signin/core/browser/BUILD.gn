@@ -20,8 +20,6 @@ static_library("browser") {
     "profile_oauth2_token_service.h",
     "refresh_token_annotation_request.cc",
     "refresh_token_annotation_request.h",
-    "signin_account_id_helper.cc",
-    "signin_account_id_helper.h",
     "signin_client.h",
     "signin_error_controller.cc",
     "signin_error_controller.h",

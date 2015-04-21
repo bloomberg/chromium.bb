@@ -4,8 +4,8 @@
 
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "components/signin/core/browser/signin_account_id_helper.h"
 
 FakeProfileOAuth2TokenService::PendingRequest::PendingRequest() {
 }
@@ -16,11 +16,9 @@ FakeProfileOAuth2TokenService::PendingRequest::~PendingRequest() {
 FakeProfileOAuth2TokenService::FakeProfileOAuth2TokenService()
     : auto_post_fetch_response_on_message_loop_(false),
       weak_ptr_factory_(this) {
-  SigninAccountIdHelper::SetDisableForTest(true);
 }
 
 FakeProfileOAuth2TokenService::~FakeProfileOAuth2TokenService() {
-  SigninAccountIdHelper::SetDisableForTest(false);
 }
 
 bool FakeProfileOAuth2TokenService::RefreshTokenIsAvailable(
