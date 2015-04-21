@@ -1211,6 +1211,8 @@
       'webaudio/ConvolverNode.h',
       'webaudio/DefaultAudioDestinationNode.cpp',
       'webaudio/DefaultAudioDestinationNode.h',
+      'webaudio/DeferredTaskHandler.cpp',
+      'webaudio/DeferredTaskHandler.h',
       'webaudio/DelayDSPKernel.cpp',
       'webaudio/DelayDSPKernel.h',
       'webaudio/DelayNode.cpp',

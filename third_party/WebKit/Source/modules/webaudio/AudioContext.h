@@ -33,17 +33,14 @@
 #include "modules/EventTargetModules.h"
 #include "modules/webaudio/AsyncAudioDecoder.h"
 #include "modules/webaudio/AudioDestinationNode.h"
+#include "modules/webaudio/DeferredTaskHandler.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/MainThread.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
-#include "wtf/text/AtomicStringHash.h"
 
 namespace blink {
 
@@ -75,129 +72,6 @@ class ScriptState;
 class SecurityOrigin;
 class StereoPannerNode;
 class WaveShaperNode;
-
-// DeferredTaskHandler manages the major part of pre- and post- rendering tasks,
-// and provides a lock mechanism against the audio rendering graph. A
-// DeferredTaskHandler object is created when an AudioContext object is created.
-//
-// DeferredTaskHandler outlives the AudioContext only if all of the following
-// conditions match:
-// - An audio rendering thread is running,
-// - It is requested to stop,
-// - The audio rendering thread calls requestToDeleteHandlersOnMainThread(),
-// - It posts a task of deleteHandlersOnMainThread(), and
-// - GC happens and it collects the AudioContext before the task execution.
-//
-// TODO(tkent): Move this to its own files.
-class DeferredTaskHandler final : public ThreadSafeRefCounted<DeferredTaskHandler> {
-public:
-    static PassRefPtr<DeferredTaskHandler> create();
-    ~DeferredTaskHandler();
-
-    void handleDeferredTasks();
-    void contextWillBeDestroyed();
-
-    // AudioContext can pull node(s) at the end of each render quantum even when
-    // they are not connected to any downstream nodes.  These two methods are
-    // called by the nodes who want to add/remove themselves into/from the
-    // automatic pull lists.
-    void addAutomaticPullNode(AudioHandler*);
-    void removeAutomaticPullNode(AudioHandler*);
-    // Called right before handlePostRenderTasks() to handle nodes which need to
-    // be pulled even when they are not connected to anything.
-    void processAutomaticPullNodes(size_t framesToProcess);
-
-    // Keep track of AudioNode's that have their channel count mode changed. We
-    // process the changes in the post rendering phase.
-    void addChangedChannelCountMode(AudioHandler*);
-    void removeChangedChannelCountMode(AudioHandler*);
-
-    // Only accessed when the graph lock is held.
-    void markSummingJunctionDirty(AudioSummingJunction*);
-    // Only accessed when the graph lock is held. Must be called on the main thread.
-    void removeMarkedSummingJunction(AudioSummingJunction*);
-
-    void markAudioNodeOutputDirty(AudioNodeOutput*);
-    void removeMarkedAudioNodeOutput(AudioNodeOutput*);
-
-    // In AudioNode::breakConnection() and deref(), a tryLock() is used for
-    // calling actual processing, but if it fails keep track here.
-    void addDeferredBreakConnection(AudioHandler&);
-    void breakConnections();
-
-    void addRenderingOrphanHandler(PassRefPtr<AudioHandler>);
-    void requestToDeleteHandlersOnMainThread();
-    void clearHandlersToBeDeleted();
-
-    //
-    // Thread Safety and Graph Locking:
-    //
-    void setAudioThread(ThreadIdentifier thread) { m_audioThread = thread; } // FIXME: check either not initialized or the same
-    ThreadIdentifier audioThread() const { return m_audioThread; }
-    bool isAudioThread() const;
-
-    void lock();
-    bool tryLock();
-    void unlock();
-#if ENABLE(ASSERT)
-    // Returns true if this thread owns the context's lock.
-    bool isGraphOwner();
-#endif
-
-    class AutoLocker {
-        STACK_ALLOCATED();
-    public:
-        explicit AutoLocker(DeferredTaskHandler& handler)
-            : m_handler(handler)
-        {
-            m_handler.lock();
-        }
-        explicit AutoLocker(AudioContext*);
-
-        ~AutoLocker() { m_handler.unlock(); }
-
-    private:
-        DeferredTaskHandler& m_handler;
-    };
-
-private:
-    DeferredTaskHandler();
-    void updateAutomaticPullNodes();
-    void updateChangedChannelCountMode();
-    void handleDirtyAudioSummingJunctions();
-    void handleDirtyAudioNodeOutputs();
-    void deleteHandlersOnMainThread();
-
-    // For the sake of thread safety, we maintain a seperate Vector of automatic
-    // pull nodes for rendering in m_renderingAutomaticPullNodes.  It will be
-    // copied from m_automaticPullNodes by updateAutomaticPullNodes() at the
-    // very start or end of the rendering quantum.
-    HashSet<AudioHandler*> m_automaticPullNodes;
-    Vector<AudioHandler*> m_renderingAutomaticPullNodes;
-    // m_automaticPullNodesNeedUpdating keeps track if m_automaticPullNodes is modified.
-    bool m_automaticPullNodesNeedUpdating;
-
-    // Collection of nodes where the channel count mode has changed. We want the
-    // channel count mode to change in the pre- or post-rendering phase so as
-    // not to disturb the running audio thread.
-    HashSet<AudioHandler*> m_deferredCountModeChange;
-
-    // These two HashSet must be accessed only when the graph lock is held.
-    // These raw pointers are safe because their destructors unregister them.
-    HashSet<AudioSummingJunction*> m_dirtySummingJunctions;
-    HashSet<AudioNodeOutput*> m_dirtyAudioNodeOutputs;
-
-    // Only accessed in the audio thread.
-    Vector<AudioHandler*> m_deferredBreakConnectionList;
-
-    Vector<RefPtr<AudioHandler>> m_renderingOrphanHandlers;
-    Vector<RefPtr<AudioHandler>> m_deletableOrphanHandlers;
-
-    // Graph locking.
-    RecursiveMutex m_contextGraphMutex;
-    volatile ThreadIdentifier m_audioThread;
-};
-
 
 // AudioContext is the cornerstone of the web audio API and all AudioNodes are created from it.
 // For thread safety between the audio thread and the main thread, it has a rendering graph locking mechanism.
