@@ -5,8 +5,11 @@
 #ifndef NET_PROXY_PROXY_RESOLVER_FACTORY_H_
 #define NET_PROXY_PROXY_RESOLVER_FACTORY_H_
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
+#include "net/proxy/proxy_resolver_script_data.h"
 
 namespace net {
 
@@ -15,22 +18,53 @@ class ProxyResolver;
 // ProxyResolverFactory is an interface for creating ProxyResolver instances.
 class NET_EXPORT ProxyResolverFactory {
  public:
-  explicit ProxyResolverFactory(bool resolvers_expect_pac_bytes);
+  // A handle to a request. Deleting it will cancel the request.
+  class Request {
+   public:
+    virtual ~Request() {}
+  };
+
+  // See |expects_pac_bytes()| for the meaning of |expects_pac_bytes|.
+  explicit ProxyResolverFactory(bool expects_pac_bytes);
 
   virtual ~ProxyResolverFactory();
 
-  // Creates a new ProxyResolver. The caller is responsible for freeing this
-  // object.
-  virtual scoped_ptr<ProxyResolver> CreateProxyResolver() = 0;
+  // Creates a new ProxyResolver. If the request will complete asynchronously,
+  // it returns ERR_IO_PENDING and notifies the result by running |callback|.
+  // If the result is OK, then |resolver| contains the ProxyResolver. In the
+  // case of asynchronous completion |*request| is written to, and can be
+  // deleted to cancel the request.
+  virtual int CreateProxyResolver(
+      const scoped_refptr<ProxyResolverScriptData>& pac_script,
+      scoped_ptr<ProxyResolver>* resolver,
+      const net::CompletionCallback& callback,
+      scoped_ptr<Request>* request) = 0;
 
-  bool resolvers_expect_pac_bytes() const {
-    return resolvers_expect_pac_bytes_;
-  }
+  // The PAC script backend can be specified to the ProxyResolverFactory either
+  // via URL, or via the javascript text itself. If |expects_pac_bytes| is true,
+  // then the ProxyResolverScriptData passed to CreateProxyResolver() should
+  // contain the actual script bytes rather than just the URL.
+  bool expects_pac_bytes() const { return expects_pac_bytes_; }
 
  private:
-  bool resolvers_expect_pac_bytes_;
+  bool expects_pac_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverFactory);
+};
+
+class NET_EXPORT LegacyProxyResolverFactory : public ProxyResolverFactory {
+ public:
+  explicit LegacyProxyResolverFactory(bool expects_pac_bytes);
+
+  ~LegacyProxyResolverFactory() override;
+
+  int CreateProxyResolver(
+      const scoped_refptr<ProxyResolverScriptData>& pac_script,
+      scoped_ptr<ProxyResolver>* resolver,
+      const net::CompletionCallback& callback,
+      scoped_ptr<Request>* request) override;
+
+  virtual scoped_ptr<ProxyResolver> CreateProxyResolver() = 0;
 };
 
 }  // namespace net

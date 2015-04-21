@@ -20,7 +20,7 @@ class Thread;
 }  // namespace base
 
 namespace net {
-class ProxyResolverFactory;
+class LegacyProxyResolverFactory;
 
 // MultiThreadedProxyResolver is a ProxyResolver implementation that runs
 // synchronous ProxyResolver implementations on worker threads.
@@ -65,7 +65,7 @@ class NET_EXPORT_PRIVATE MultiThreadedProxyResolver
   // prior to destruction.
   //
   // The constructor takes ownership of |resolver_factory|.
-  MultiThreadedProxyResolver(ProxyResolverFactory* resolver_factory,
+  MultiThreadedProxyResolver(LegacyProxyResolverFactory* resolver_factory,
                              size_t max_num_threads);
 
   ~MultiThreadedProxyResolver() override;
@@ -109,7 +109,7 @@ class NET_EXPORT_PRIVATE MultiThreadedProxyResolver
   // Starts the next job from |pending_jobs_| if possible.
   void OnExecutorReady(Executor* executor);
 
-  const scoped_ptr<ProxyResolverFactory> resolver_factory_;
+  const scoped_ptr<LegacyProxyResolverFactory> resolver_factory_;
   const size_t max_num_threads_;
   PendingJobsQueue pending_jobs_;
   ExecutorList executors_;

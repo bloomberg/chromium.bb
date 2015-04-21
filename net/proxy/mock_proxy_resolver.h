@@ -127,11 +127,11 @@ class MockAsyncProxyResolverExpectsBytes : public MockAsyncProxyResolverBase {
 // This factory returns ProxyResolvers that forward all requests to
 // |resolver|. |resolver| must remain so long as any value returned from
 // CreateProxyResolver remains in use.
-class ForwardingProxyResolverFactory : public ProxyResolverFactory {
+class ForwardingProxyResolverFactory : public LegacyProxyResolverFactory {
  public:
   explicit ForwardingProxyResolverFactory(ProxyResolver* resolver);
 
-  // ProxyResolverFactory override.
+  // LegacyProxyResolverFactory override.
   scoped_ptr<ProxyResolver> CreateProxyResolver() override;
 
  private:

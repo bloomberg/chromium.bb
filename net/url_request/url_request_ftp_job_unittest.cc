@@ -33,8 +33,13 @@ namespace {
 class MockProxyResolverFactory : public ProxyResolverFactory {
  public:
   MockProxyResolverFactory() : ProxyResolverFactory(false) {}
-  scoped_ptr<ProxyResolver> CreateProxyResolver() override {
-    return make_scoped_ptr(new MockAsyncProxyResolver());
+  int CreateProxyResolver(
+      const scoped_refptr<ProxyResolverScriptData>& pac_script,
+      scoped_ptr<ProxyResolver>* resolver,
+      const net::CompletionCallback& callback,
+      scoped_ptr<Request>* request) override {
+    resolver->reset(new MockAsyncProxyResolver());
+    return OK;
   }
 };
 

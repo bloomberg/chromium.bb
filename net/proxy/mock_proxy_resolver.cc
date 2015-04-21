@@ -144,7 +144,8 @@ int ForwardingProxyResolver::SetPacScript(
 
 ForwardingProxyResolverFactory::ForwardingProxyResolverFactory(
     ProxyResolver* resolver)
-    : ProxyResolverFactory(resolver->expects_pac_bytes()), resolver_(resolver) {
+    : LegacyProxyResolverFactory(resolver->expects_pac_bytes()),
+      resolver_(resolver) {
 }
 
 scoped_ptr<ProxyResolver>

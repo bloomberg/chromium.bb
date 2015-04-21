@@ -15,17 +15,17 @@
 namespace net {
 namespace {
 
-class ProxyResolverFactoryForV8Resolver : public ProxyResolverFactory {
+class ProxyResolverFactoryForV8Resolver : public LegacyProxyResolverFactory {
  public:
   explicit ProxyResolverFactoryForV8Resolver(HostResolver* host_resolver,
                                              NetLog* net_log,
                                              NetworkDelegate* network_delegate)
-      : ProxyResolverFactory(true),
+      : LegacyProxyResolverFactory(true),
         host_resolver_(host_resolver),
         net_log_(net_log),
         network_delegate_(network_delegate) {}
 
-  // ProxyResolverFactory override.
+  // LegacyProxyResolverFactory override.
   scoped_ptr<ProxyResolver> CreateProxyResolver() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     ProxyResolverErrorObserver* error_observer =

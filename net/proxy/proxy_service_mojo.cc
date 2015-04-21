@@ -17,16 +17,16 @@
 namespace net {
 namespace {
 
-class ProxyResolverFactoryForMojoResolver : public ProxyResolverFactory {
+class ProxyResolverFactoryForMojoResolver : public LegacyProxyResolverFactory {
  public:
   ProxyResolverFactoryForMojoResolver(
       MojoProxyResolverFactory* mojo_proxy_factory,
       HostResolver* host_resolver)
-      : ProxyResolverFactory(true),
+      : LegacyProxyResolverFactory(true),
         mojo_proxy_factory_(mojo_proxy_factory),
         host_resolver_(host_resolver) {}
 
-  // ProxyResolverFactory override.
+  // LegacyProxyResolverFactory override.
   scoped_ptr<ProxyResolver> CreateProxyResolver() override {
     return make_scoped_ptr(
         new ProxyResolverMojo(mojo_proxy_factory_, host_resolver_));

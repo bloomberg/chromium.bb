@@ -356,9 +356,9 @@ MultiThreadedProxyResolver::Executor::~Executor() {
 // MultiThreadedProxyResolver --------------------------------------------------
 
 MultiThreadedProxyResolver::MultiThreadedProxyResolver(
-    ProxyResolverFactory* resolver_factory,
+    LegacyProxyResolverFactory* resolver_factory,
     size_t max_num_threads)
-    : ProxyResolver(resolver_factory->resolvers_expect_pac_bytes()),
+    : ProxyResolver(resolver_factory->expects_pac_bytes()),
       resolver_factory_(resolver_factory),
       max_num_threads_(max_num_threads) {
   DCHECK_GE(max_num_threads, 1u);

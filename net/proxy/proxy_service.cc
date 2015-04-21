@@ -237,10 +237,10 @@ class ProxyResolverFromPacString : public ProxyResolver {
 };
 
 // Creates ProxyResolvers using a platform-specific implementation.
-class ProxyResolverFactoryForSystem : public ProxyResolverFactory {
+class ProxyResolverFactoryForSystem : public LegacyProxyResolverFactory {
  public:
   explicit ProxyResolverFactoryForSystem(size_t max_num_threads)
-      : ProxyResolverFactory(false /*expects_pac_bytes*/),
+      : LegacyProxyResolverFactory(false /*expects_pac_bytes*/),
         max_num_threads_(max_num_threads) {}
 
   scoped_ptr<ProxyResolver> CreateProxyResolver() override {
@@ -277,9 +277,14 @@ class ProxyResolverFactoryForNullResolver : public ProxyResolverFactory {
  public:
   ProxyResolverFactoryForNullResolver() : ProxyResolverFactory(false) {}
 
-  // ProxyResolverFactory override.
-  scoped_ptr<ProxyResolver> CreateProxyResolver() override {
-    return make_scoped_ptr(new ProxyResolverNull());
+  // ProxyResolverFactory overrides.
+  int CreateProxyResolver(
+      const scoped_refptr<ProxyResolverScriptData>& pac_script,
+      scoped_ptr<ProxyResolver>* resolver,
+      const net::CompletionCallback& callback,
+      scoped_ptr<Request>* request) override {
+    resolver->reset(new ProxyResolverNull());
+    return OK;
   }
 
  private:
@@ -292,8 +297,13 @@ class ProxyResolverFactoryForPacResult : public ProxyResolverFactory {
       : ProxyResolverFactory(false), pac_string_(pac_string) {}
 
   // ProxyResolverFactory override.
-  scoped_ptr<ProxyResolver> CreateProxyResolver() override {
-    return make_scoped_ptr(new ProxyResolverFromPacString(pac_string_));
+  int CreateProxyResolver(
+      const scoped_refptr<ProxyResolverScriptData>& pac_script,
+      scoped_ptr<ProxyResolver>* resolver,
+      const net::CompletionCallback& callback,
+      scoped_ptr<Request>* request) override {
+    resolver->reset(new ProxyResolverFromPacString(pac_string_));
+    return OK;
   }
 
  private:
@@ -377,9 +387,6 @@ class ProxyService::InitProxyResolver {
   ~InitProxyResolver() {
     // Note that the destruction of ProxyScriptDecider will automatically cancel
     // any outstanding work.
-    if (next_state_ == STATE_SET_PAC_SCRIPT_COMPLETE) {
-      (*proxy_resolver_)->CancelSetPacScript();
-    }
   }
 
   // Begins initializing the proxy resolver; calls |callback| when done. A
@@ -430,7 +437,7 @@ class ProxyService::InitProxyResolver {
     if (decider_result != OK)
       return decider_result;
 
-    next_state_ = STATE_SET_PAC_SCRIPT;
+    next_state_ = STATE_CREATE_RESOLVER;
     return DoLoop(OK);
   }
 
@@ -465,8 +472,8 @@ class ProxyService::InitProxyResolver {
     STATE_NONE,
     STATE_DECIDE_PROXY_SCRIPT,
     STATE_DECIDE_PROXY_SCRIPT_COMPLETE,
-    STATE_SET_PAC_SCRIPT,
-    STATE_SET_PAC_SCRIPT_COMPLETE,
+    STATE_CREATE_RESOLVER,
+    STATE_CREATE_RESOLVER_COMPLETE,
   };
 
   int DoLoop(int result) {
@@ -483,12 +490,12 @@ class ProxyService::InitProxyResolver {
         case STATE_DECIDE_PROXY_SCRIPT_COMPLETE:
           rv = DoDecideProxyScriptComplete(rv);
           break;
-        case STATE_SET_PAC_SCRIPT:
+        case STATE_CREATE_RESOLVER:
           DCHECK_EQ(OK, rv);
-          rv = DoSetPacScript();
+          rv = DoCreateResolver();
           break;
-        case STATE_SET_PAC_SCRIPT_COMPLETE:
-          rv = DoSetPacScriptComplete(rv);
+        case STATE_CREATE_RESOLVER_COMPLETE:
+          rv = DoCreateResolverComplete(rv);
           break;
         default:
           NOTREACHED() << "bad state: " << state;
@@ -507,8 +514,7 @@ class ProxyService::InitProxyResolver {
     next_state_ = STATE_DECIDE_PROXY_SCRIPT_COMPLETE;
 
     return decider_->Start(
-        config_, wait_delay_,
-        proxy_resolver_factory_->resolvers_expect_pac_bytes(),
+        config_, wait_delay_, proxy_resolver_factory_->expects_pac_bytes(),
         base::Bind(&InitProxyResolver::OnIOCompletion, base::Unretained(this)));
   }
 
@@ -519,23 +525,21 @@ class ProxyService::InitProxyResolver {
     effective_config_ = decider_->effective_config();
     script_data_ = decider_->script_data();
 
-    next_state_ = STATE_SET_PAC_SCRIPT;
+    next_state_ = STATE_CREATE_RESOLVER;
     return OK;
   }
 
-  int DoSetPacScript() {
+  int DoCreateResolver() {
     DCHECK(script_data_.get());
     // TODO(eroman): Should log this latency to the NetLog.
-    next_state_ = STATE_SET_PAC_SCRIPT_COMPLETE;
-    *proxy_resolver_ = proxy_resolver_factory_->CreateProxyResolver();
-    DCHECK(*proxy_resolver_);
-    return (*proxy_resolver_)
-        ->SetPacScript(script_data_,
-                       base::Bind(&InitProxyResolver::OnIOCompletion,
-                                  base::Unretained(this)));
+    next_state_ = STATE_CREATE_RESOLVER_COMPLETE;
+    return proxy_resolver_factory_->CreateProxyResolver(
+        script_data_, proxy_resolver_,
+        base::Bind(&InitProxyResolver::OnIOCompletion, base::Unretained(this)),
+        &create_resolver_request_);
   }
 
-  int DoSetPacScriptComplete(int result) {
+  int DoCreateResolverComplete(int result) {
     if (result != OK)
       proxy_resolver_->reset();
     return result;
@@ -559,6 +563,7 @@ class ProxyService::InitProxyResolver {
   TimeDelta wait_delay_;
   scoped_ptr<ProxyScriptDecider> decider_;
   ProxyResolverFactory* proxy_resolver_factory_;
+  scoped_ptr<ProxyResolverFactory::Request> create_resolver_request_;
   scoped_ptr<ProxyResolver>* proxy_resolver_;
   CompletionCallback callback_;
   State next_state_;
@@ -1225,7 +1230,7 @@ void ProxyService::OnInitProxyResolverComplete(int result) {
   script_poller_.reset(new ProxyScriptDeciderPoller(
       base::Bind(&ProxyService::InitializeUsingDecidedConfig,
                  base::Unretained(this)),
-      fetched_config_, resolver_factory_->resolvers_expect_pac_bytes(),
+      fetched_config_, resolver_factory_->expects_pac_bytes(),
       proxy_script_fetcher_.get(), dhcp_proxy_script_fetcher_.get(), result,
       init_proxy_resolver_->script_data(), NULL));
   script_poller_->set_quick_check_enabled(quick_check_enabled_);

@@ -151,9 +151,9 @@ class BlockableProxyResolver : public MockProxyResolver {
 };
 
 // This factory returns new instances of BlockableProxyResolver.
-class BlockableProxyResolverFactory : public ProxyResolverFactory {
+class BlockableProxyResolverFactory : public LegacyProxyResolverFactory {
  public:
-  BlockableProxyResolverFactory() : ProxyResolverFactory(true) {}
+  BlockableProxyResolverFactory() : LegacyProxyResolverFactory(true) {}
 
   ~BlockableProxyResolverFactory() override { STLDeleteElements(&resolvers_); }
 
