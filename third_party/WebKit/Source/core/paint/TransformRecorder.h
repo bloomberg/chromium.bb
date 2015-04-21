@@ -5,6 +5,7 @@
 #ifndef TransformRecorder_h
 #define TransformRecorder_h
 
+#include "core/CoreExport.h"
 #include "platform/graphics/paint/DisplayItem.h"
 
 namespace blink {
@@ -12,7 +13,7 @@ namespace blink {
 class GraphicsContext;
 class AffineTransform;
 
-class TransformRecorder {
+class CORE_EXPORT TransformRecorder {
 public:
     TransformRecorder(GraphicsContext&, const DisplayItemClientWrapper&, const AffineTransform&);
     ~TransformRecorder();

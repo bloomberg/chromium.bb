@@ -22,6 +22,7 @@
 #ifndef HitTestLocation_h
 #define HitTestLocation_h
 
+#include "core/CoreExport.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
@@ -34,7 +35,7 @@ namespace blink {
 
 class FloatRoundedRect;
 
-class HitTestLocation {
+class CORE_EXPORT HitTestLocation {
 public:
 
     // Note that all points are in contents (aka "page") coordinate space for the

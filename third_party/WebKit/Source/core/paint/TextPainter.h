@@ -5,6 +5,7 @@
 #ifndef TextPainter_h
 #define TextPainter_h
 
+#include "core/CoreExport.h"
 #include "core/layout/line/FloatToLayoutUnit.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/fonts/TextBlob.h"
@@ -26,7 +27,7 @@ class ShadowList;
 class TextRun;
 struct TextRunPaintInfo;
 
-class TextPainter {
+class CORE_EXPORT TextPainter {
 public:
     struct Style;
 

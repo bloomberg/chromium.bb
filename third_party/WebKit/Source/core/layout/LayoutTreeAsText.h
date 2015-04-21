@@ -25,8 +25,9 @@
 
 #ifndef LayoutTreeAsText_h
 #define LayoutTreeAsText_h
-#include "platform/text/TextStream.h"
 
+#include "core/CoreExport.h"
+#include "platform/text/TextStream.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -54,8 +55,8 @@ enum LayoutAsTextBehaviorFlags {
 typedef unsigned LayoutAsTextBehavior;
 
 // You don't need pageWidthInPixels if you don't specify LayoutAsTextInPrintingMode.
-String externalRepresentation(LocalFrame*, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
-String externalRepresentation(Element*, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
+CORE_EXPORT String externalRepresentation(LocalFrame*, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
+CORE_EXPORT String externalRepresentation(Element*, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
 void write(TextStream&, const LayoutObject&, int indent = 0, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
 
 class LayoutTreeAsText {
@@ -70,11 +71,11 @@ static void writeLayers(TextStream&, const DeprecatedPaintLayer* rootLayer, Depr
 // Helper function shared with SVGLayoutTreeAsText
 String quoteAndEscapeNonPrintables(const String&);
 
-String counterValueForElement(Element*);
+CORE_EXPORT String counterValueForElement(Element*);
 
 String markerTextForListItem(Element*);
 
-String nodePositionAsStringForTesting(Node*);
+CORE_EXPORT String nodePositionAsStringForTesting(Node*);
 
 TextStream& operator<<(TextStream&, const Color&);
 

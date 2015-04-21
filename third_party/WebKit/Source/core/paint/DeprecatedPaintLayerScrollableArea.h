@@ -44,6 +44,7 @@
 #ifndef DeprecatedPaintLayerScrollableArea_h
 #define DeprecatedPaintLayerScrollableArea_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutBox.h"
 #include "core/paint/DeprecatedPaintLayerFragment.h"
 #include "platform/scroll/ScrollableArea.h"
@@ -60,7 +61,7 @@ class LayoutBox;
 class DeprecatedPaintLayer;
 class LayoutScrollbarPart;
 
-class DeprecatedPaintLayerScrollableArea final : public ScrollableArea {
+class CORE_EXPORT DeprecatedPaintLayerScrollableArea final : public ScrollableArea {
     friend class Internals;
 
 public:

@@ -5,6 +5,7 @@
 #ifndef DeprecatedPaintLayerPainter_h
 #define DeprecatedPaintLayerPainter_h
 
+#include "core/CoreExport.h"
 #include "core/paint/DeprecatedPaintLayerFragment.h"
 #include "core/paint/DeprecatedPaintLayerPaintingInfo.h"
 
@@ -14,7 +15,7 @@ class ClipRect;
 class DeprecatedPaintLayer;
 class LayoutPoint;
 
-class DeprecatedPaintLayerPainter {
+class CORE_EXPORT DeprecatedPaintLayerPainter {
 public:
     enum FragmentPolicy { AllowMultipleFragments, ForceSingleFragment };
 

@@ -23,6 +23,7 @@
 #ifndef SVGComputedStyle_h
 #define SVGComputedStyle_h
 
+#include "core/CoreExport.h"
 #include "core/style/DataRef.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "core/style/SVGComputedStyleDefs.h"
@@ -33,7 +34,7 @@
 
 namespace blink {
 
-class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
+class CORE_EXPORT SVGComputedStyle : public RefCounted<SVGComputedStyle> {
 public:
     static PassRefPtr<SVGComputedStyle> create() { return adoptRef(new SVGComputedStyle); }
     PassRefPtr<SVGComputedStyle> copy() const { return adoptRef(new SVGComputedStyle(*this));}

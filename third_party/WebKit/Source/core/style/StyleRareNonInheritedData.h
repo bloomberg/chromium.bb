@@ -25,6 +25,7 @@
 #ifndef StyleRareNonInheritedData_h
 #define StyleRareNonInheritedData_h
 
+#include "core/CoreExport.h"
 #include "core/css/StyleColor.h"
 #include "core/layout/ClipPathOperation.h"
 #include "core/style/BasicShapes.h"
@@ -71,7 +72,7 @@ enum PageSizeType {
 // This struct is for rarely used non-inherited CSS3, CSS2, and WebKit-specific properties.
 // By grouping them together, we save space, and only allocate this object when someone
 // actually uses one of these properties.
-class StyleRareNonInheritedData : public RefCounted<StyleRareNonInheritedData> {
+class CORE_EXPORT StyleRareNonInheritedData : public RefCounted<StyleRareNonInheritedData> {
 public:
     static PassRefPtr<StyleRareNonInheritedData> create() { return adoptRef(new StyleRareNonInheritedData); }
     PassRefPtr<StyleRareNonInheritedData> copy() const { return adoptRef(new StyleRareNonInheritedData(*this)); }

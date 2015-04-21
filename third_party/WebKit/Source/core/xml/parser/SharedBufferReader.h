@@ -31,6 +31,7 @@
 #ifndef SharedBufferReader_h
 #define SharedBufferReader_h
 
+#include "core/CoreExport.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
 #include "wtf/RefPtr.h"
@@ -40,7 +41,7 @@ namespace blink {
 class SharedBuffer;
 
 // Allows transfer of data in multiple chunks from a SharedBuffer to a provided buffer.
-class SharedBufferReader {
+class CORE_EXPORT SharedBufferReader {
     WTF_MAKE_FAST_ALLOCATED(SharedBufferReader);
 public:
     SharedBufferReader(PassRefPtr<SharedBuffer>);

@@ -28,6 +28,7 @@
 #ifndef SVGComputedStyleDefs_h
 #define SVGComputedStyleDefs_h
 
+#include "core/CoreExport.h"
 #include "platform/Length.h"
 #include "platform/graphics/Color.h"
 #include "wtf/OwnPtr.h"
@@ -157,7 +158,7 @@ private:
     Length m_length;
 };
 
-class StyleStrokeData : public RefCounted<StyleStrokeData> {
+class CORE_EXPORT StyleStrokeData : public RefCounted<StyleStrokeData> {
 public:
     static PassRefPtr<StyleStrokeData> create()
     {
@@ -214,7 +215,7 @@ private:
 };
 
 // Note: the rule for this class is, *no inheritance* of these props
-class StyleMiscData : public RefCounted<StyleMiscData> {
+class CORE_EXPORT StyleMiscData : public RefCounted<StyleMiscData> {
 public:
     static PassRefPtr<StyleMiscData> create() { return adoptRef(new StyleMiscData); }
     PassRefPtr<StyleMiscData> copy() const { return adoptRef(new StyleMiscData(*this)); }

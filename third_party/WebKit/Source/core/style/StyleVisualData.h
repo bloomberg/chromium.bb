@@ -25,6 +25,7 @@
 #ifndef StyleVisualData_h
 #define StyleVisualData_h
 
+#include "core/CoreExport.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/LengthBox.h"
 #include "wtf/PassRefPtr.h"
@@ -32,7 +33,7 @@
 
 namespace blink {
 
-class StyleVisualData : public RefCounted<StyleVisualData> {
+class CORE_EXPORT StyleVisualData : public RefCounted<StyleVisualData> {
 public:
     static PassRefPtr<StyleVisualData> create() { return adoptRef(new StyleVisualData); }
     PassRefPtr<StyleVisualData> copy() const { return adoptRef(new StyleVisualData(*this)); }

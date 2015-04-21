@@ -143,7 +143,7 @@ private:
 // List of all fragmentainer groups within a column set. There will always be at least one
 // group. Deleting the one group is not allowed (or possible). There will be more than one group if
 // the owning column set lives in multiple outer fragmentainers (e.g. multicol inside paged media).
-class MultiColumnFragmentainerGroupList {
+class CORE_EXPORT MultiColumnFragmentainerGroupList {
 public:
     MultiColumnFragmentainerGroupList(LayoutMultiColumnSet&);
 

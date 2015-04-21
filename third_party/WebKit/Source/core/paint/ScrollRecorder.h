@@ -5,6 +5,7 @@
 #ifndef ScrollRecorder_h
 #define ScrollRecorder_h
 
+#include "core/CoreExport.h"
 #include "core/layout/PaintPhase.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/paint/DisplayItem.h"
@@ -16,7 +17,7 @@ class GraphicsContext;
 
 // Emits display items which represent a region which is scrollable, so that it
 // can be translated by the scroll offset.
-class ScrollRecorder {
+class CORE_EXPORT ScrollRecorder {
     WTF_MAKE_FAST_ALLOCATED(ScrollRecorder);
 public:
     ScrollRecorder(GraphicsContext&, const DisplayItemClientWrapper&, PaintPhase, const IntSize& currentOffset);

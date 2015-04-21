@@ -25,6 +25,7 @@
 #ifndef StyleInheritedData_h
 #define StyleInheritedData_h
 
+#include "core/CoreExport.h"
 #include "platform/Length.h"
 #include "platform/fonts/Font.h"
 #include "platform/graphics/Color.h"
@@ -34,7 +35,7 @@
 
 namespace blink {
 
-class StyleInheritedData : public RefCounted<StyleInheritedData> {
+class CORE_EXPORT StyleInheritedData : public RefCounted<StyleInheritedData> {
 public:
     static PassRefPtr<StyleInheritedData> create() { return adoptRef(new StyleInheritedData); }
     PassRefPtr<StyleInheritedData> copy() const { return adoptRef(new StyleInheritedData(*this)); }

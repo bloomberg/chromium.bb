@@ -78,7 +78,7 @@ enum CompositingQueryMode {
 };
 
 // FIXME: remove this once the compositing query ASSERTS are no longer hit.
-class DisableCompositingQueryAsserts {
+class CORE_EXPORT DisableCompositingQueryAsserts {
     WTF_MAKE_NONCOPYABLE(DisableCompositingQueryAsserts);
 public:
     DisableCompositingQueryAsserts();

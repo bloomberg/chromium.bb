@@ -322,7 +322,7 @@ private:
 };
 
 // Returns the global cache.
-MemoryCache* memoryCache();
+CORE_EXPORT MemoryCache* memoryCache();
 
 // Sets the global cache, used to swap in a test instance. Returns the old
 // MemoryCache object.

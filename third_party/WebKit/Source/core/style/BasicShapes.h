@@ -30,6 +30,7 @@
 #ifndef BasicShapes_h
 #define BasicShapes_h
 
+#include "core/CoreExport.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/Length.h"
 #include "platform/LengthSize.h"
@@ -44,7 +45,7 @@ class FloatRect;
 class FloatSize;
 class Path;
 
-class BasicShape : public RefCounted<BasicShape> {
+class CORE_EXPORT BasicShape : public RefCounted<BasicShape> {
 public:
     virtual ~BasicShape() { }
 
@@ -149,7 +150,7 @@ private:
 
 };
 
-class BasicShapeCircle final : public BasicShape {
+class CORE_EXPORT BasicShapeCircle final : public BasicShape {
 public:
     static PassRefPtr<BasicShapeCircle> create() { return adoptRef(new BasicShapeCircle); }
 

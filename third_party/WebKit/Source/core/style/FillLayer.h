@@ -25,6 +25,7 @@
 #ifndef FillLayer_h
 #define FillLayer_h
 
+#include "core/CoreExport.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "core/style/StyleImage.h"
 #include "platform/Length.h"
@@ -59,7 +60,7 @@ struct FillSize {
     LengthSize size;
 };
 
-class FillLayer {
+class CORE_EXPORT FillLayer {
     WTF_MAKE_FAST_ALLOCATED(FillLayer);
 public:
     FillLayer(EFillLayerType, bool useInitialValues = false);

@@ -25,6 +25,7 @@
 #ifndef StyleRareInheritedData_h
 #define StyleRareInheritedData_h
 
+#include "core/CoreExport.h"
 #include "core/css/StyleColor.h"
 #include "core/style/DataRef.h"
 #include "platform/Length.h"
@@ -49,7 +50,7 @@ typedef RefVector<CursorData> CursorList;
 // This struct is for rarely used inherited CSS3, CSS2, and WebKit-specific properties.
 // By grouping them together, we save space, and only allocate this object when someone
 // actually uses one of these properties.
-class StyleRareInheritedData : public RefCounted<StyleRareInheritedData> {
+class CORE_EXPORT StyleRareInheritedData : public RefCounted<StyleRareInheritedData> {
 public:
     static PassRefPtr<StyleRareInheritedData> create() { return adoptRef(new StyleRareInheritedData); }
     PassRefPtr<StyleRareInheritedData> copy() const { return adoptRef(new StyleRareInheritedData(*this)); }
