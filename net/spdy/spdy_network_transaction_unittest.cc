@@ -18,6 +18,7 @@
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/request_priority.h"
+#include "net/base/test_data_directory.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_file_element_reader.h"
 #include "net/http/http_network_session_peer.h"
@@ -35,6 +36,7 @@
 #include "net/spdy/spdy_test_util_common.h"
 #include "net/spdy/spdy_test_utils.h"
 #include "net/ssl/ssl_connection_status_flags.h"
+#include "net/test/cert_test_util.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
@@ -92,9 +94,9 @@ void UpdateSpdySessionDependencies(SpdyNetworkTransactionTestParams test_params,
   session_deps->next_protos = SpdyNextProtos();
   if (test_params.ssl_type == HTTP_SPDY_VIA_ALT_SVC) {
     session_deps->http_server_properties.SetAlternativeService(
-        HostPortPair("www.google.com", 80),
+        HostPortPair("www.example.org", 80),
         AlternativeService(AlternateProtocolFromNextProto(test_params.protocol),
-                           "www.google.com", 443),
+                           "www.example.org", 443),
         1);
   }
 }
@@ -133,9 +135,9 @@ class SpdyNetworkTransactionTest
   }
 
   void SetUp() override {
-    google_get_request_initialized_ = false;
-    google_post_request_initialized_ = false;
-    google_chunked_post_request_initialized_ = false;
+    get_request_initialized_ = false;
+    post_request_initialized_ = false;
+    chunked_post_request_initialized_ = false;
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
@@ -313,6 +315,8 @@ class SpdyNetworkTransactionTest
     void AddData(StaticSocketDataProvider* data) {
       scoped_ptr<SSLSocketDataProvider> ssl_provider(
           new SSLSocketDataProvider(ASYNC, OK));
+      ssl_provider->cert =
+          ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
       AddDataWithSSLSocketDataProvider(data, ssl_provider.Pass());
     }
 
@@ -348,6 +352,8 @@ class SpdyNetworkTransactionTest
       SSLSocketDataProvider* ssl_provider =
           new SSLSocketDataProvider(ASYNC, OK);
       ssl_provider->SetNextProto(test_params_.protocol);
+      ssl_provider->cert =
+          ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
       ssl_vector_.push_back(ssl_provider);
       session_deps_->deterministic_socket_factory->AddSSLSocketDataProvider(
           ssl_provider);
@@ -413,51 +419,51 @@ class SpdyNetworkTransactionTest
   void ConnectStatusHelper(const MockRead& status);
 
   const HttpRequestInfo& CreateGetPushRequest() {
-    google_get_push_request_.method = "GET";
-    google_get_push_request_.url = GURL(GetDefaultUrlWithPath("/foo.dat"));
-    google_get_push_request_.load_flags = 0;
-    return google_get_push_request_;
+    get_push_request_.method = "GET";
+    get_push_request_.url = GURL(GetDefaultUrlWithPath("/foo.dat"));
+    get_push_request_.load_flags = 0;
+    return get_push_request_;
   }
 
   const HttpRequestInfo& CreateGetRequest() {
-    if (!google_get_request_initialized_) {
-      google_get_request_.method = "GET";
-      google_get_request_.url = GURL(GetDefaultUrl());
-      google_get_request_.load_flags = 0;
-      google_get_request_initialized_ = true;
+    if (!get_request_initialized_) {
+      get_request_.method = "GET";
+      get_request_.url = GURL(GetDefaultUrl());
+      get_request_.load_flags = 0;
+      get_request_initialized_ = true;
     }
-    return google_get_request_;
+    return get_request_;
   }
 
   const HttpRequestInfo& CreateGetRequestWithUserAgent() {
-    if (!google_get_request_initialized_) {
-      google_get_request_.method = "GET";
-      google_get_request_.url = GURL(GetDefaultUrl());
-      google_get_request_.load_flags = 0;
-      google_get_request_.extra_headers.SetHeader("User-Agent", "Chrome");
-      google_get_request_initialized_ = true;
+    if (!get_request_initialized_) {
+      get_request_.method = "GET";
+      get_request_.url = GURL(GetDefaultUrl());
+      get_request_.load_flags = 0;
+      get_request_.extra_headers.SetHeader("User-Agent", "Chrome");
+      get_request_initialized_ = true;
     }
-    return google_get_request_;
+    return get_request_;
   }
 
   const HttpRequestInfo& CreatePostRequest() {
-    if (!google_post_request_initialized_) {
+    if (!post_request_initialized_) {
       ScopedVector<UploadElementReader> element_readers;
       element_readers.push_back(
           new UploadBytesElementReader(kUploadData, kUploadDataSize));
       upload_data_stream_.reset(
           new ElementsUploadDataStream(element_readers.Pass(), 0));
 
-      google_post_request_.method = "POST";
-      google_post_request_.url = GURL(GetDefaultUrl());
-      google_post_request_.upload_data_stream = upload_data_stream_.get();
-      google_post_request_initialized_ = true;
+      post_request_.method = "POST";
+      post_request_.url = GURL(GetDefaultUrl());
+      post_request_.upload_data_stream = upload_data_stream_.get();
+      post_request_initialized_ = true;
     }
-    return google_post_request_;
+    return post_request_;
   }
 
   const HttpRequestInfo& CreateFilePostRequest() {
-    if (!google_post_request_initialized_) {
+    if (!post_request_initialized_) {
       base::FilePath file_path;
       CHECK(base::CreateTemporaryFileInDir(temp_dir_.path(), &file_path));
       CHECK_EQ(static_cast<int>(kUploadDataSize),
@@ -473,17 +479,17 @@ class SpdyNetworkTransactionTest
       upload_data_stream_.reset(
           new ElementsUploadDataStream(element_readers.Pass(), 0));
 
-      google_post_request_.method = "POST";
-      google_post_request_.url = GURL(GetDefaultUrl());
-      google_post_request_.upload_data_stream = upload_data_stream_.get();
-      google_post_request_initialized_ = true;
+      post_request_.method = "POST";
+      post_request_.url = GURL(GetDefaultUrl());
+      post_request_.upload_data_stream = upload_data_stream_.get();
+      post_request_initialized_ = true;
     }
-    return google_post_request_;
+    return post_request_;
   }
 
   const HttpRequestInfo& CreateUnreadableFilePostRequest() {
-    if (google_post_request_initialized_)
-      return google_post_request_;
+    if (post_request_initialized_)
+      return post_request_;
 
     base::FilePath file_path;
     CHECK(base::CreateTemporaryFileInDir(temp_dir_.path(), &file_path));
@@ -501,15 +507,15 @@ class SpdyNetworkTransactionTest
     upload_data_stream_.reset(
         new ElementsUploadDataStream(element_readers.Pass(), 0));
 
-    google_post_request_.method = "POST";
-    google_post_request_.url = GURL(GetDefaultUrl());
-    google_post_request_.upload_data_stream = upload_data_stream_.get();
-    google_post_request_initialized_ = true;
-    return google_post_request_;
+    post_request_.method = "POST";
+    post_request_.url = GURL(GetDefaultUrl());
+    post_request_.upload_data_stream = upload_data_stream_.get();
+    post_request_initialized_ = true;
+    return post_request_;
   }
 
   const HttpRequestInfo& CreateComplexPostRequest() {
-    if (!google_post_request_initialized_) {
+    if (!post_request_initialized_) {
       const int kFileRangeOffset = 1;
       const int kFileRangeLength = 3;
       CHECK_LT(kFileRangeOffset + kFileRangeLength, kUploadDataSize);
@@ -534,24 +540,24 @@ class SpdyNetworkTransactionTest
       upload_data_stream_.reset(
           new ElementsUploadDataStream(element_readers.Pass(), 0));
 
-      google_post_request_.method = "POST";
-      google_post_request_.url = GURL(GetDefaultUrl());
-      google_post_request_.upload_data_stream = upload_data_stream_.get();
-      google_post_request_initialized_ = true;
+      post_request_.method = "POST";
+      post_request_.url = GURL(GetDefaultUrl());
+      post_request_.upload_data_stream = upload_data_stream_.get();
+      post_request_initialized_ = true;
     }
-    return google_post_request_;
+    return post_request_;
   }
 
   const HttpRequestInfo& CreateChunkedPostRequest() {
-    if (!google_chunked_post_request_initialized_) {
+    if (!chunked_post_request_initialized_) {
       upload_chunked_data_stream_.reset(new ChunkedUploadDataStream(0));
-      google_chunked_post_request_.method = "POST";
-      google_chunked_post_request_.url = GURL(GetDefaultUrl());
-      google_chunked_post_request_.upload_data_stream =
+      chunked_post_request_.method = "POST";
+      chunked_post_request_.url = GURL(GetDefaultUrl());
+      chunked_post_request_.upload_data_stream =
           upload_chunked_data_stream_.get();
-      google_chunked_post_request_initialized_ = true;
+      chunked_post_request_initialized_ = true;
     }
-    return google_chunked_post_request_;
+    return chunked_post_request_;
   }
 
   // Read the result of a particular transaction, knowing that we've got
@@ -684,9 +690,9 @@ class SpdyNetworkTransactionTest
   const char* GetDefaultUrl() {
     switch (GetParam().ssl_type) {
       case HTTP_SPDY_VIA_ALT_SVC:
-        return "http://www.google.com";
+        return "http://www.example.org";
       case HTTPS_SPDY_VIA_NPN:
-        return "https://www.google.com";
+        return "https://www.example.org";
       default:
         NOTREACHED();
         return "";
@@ -702,13 +708,13 @@ class SpdyNetworkTransactionTest
  private:
   scoped_ptr<ChunkedUploadDataStream> upload_chunked_data_stream_;
   scoped_ptr<UploadDataStream> upload_data_stream_;
-  bool google_get_request_initialized_;
-  bool google_post_request_initialized_;
-  bool google_chunked_post_request_initialized_;
-  HttpRequestInfo google_get_request_;
-  HttpRequestInfo google_post_request_;
-  HttpRequestInfo google_chunked_post_request_;
-  HttpRequestInfo google_get_push_request_;
+  bool get_request_initialized_;
+  bool post_request_initialized_;
+  bool chunked_post_request_initialized_;
+  HttpRequestInfo get_request_;
+  HttpRequestInfo post_request_;
+  HttpRequestInfo chunked_post_request_;
+  HttpRequestInfo get_push_request_;
   base::ScopedTempDir temp_dir_;
 };
 
@@ -2414,7 +2420,7 @@ TEST_P(SpdyNetworkTransactionTest, DeleteSessionOnReadCallback) {
   helper.VerifyDataConsumed();
 }
 
-// Send a spdy request to www.google.com that gets redirected to www.foo.com.
+// Send a spdy request to www.example.org that gets redirected to www.foo.com.
 TEST_P(SpdyNetworkTransactionTest, DISABLED_RedirectGetRequest) {
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructGetHeaderBlock(GetDefaultUrl()));
@@ -2425,7 +2431,7 @@ TEST_P(SpdyNetworkTransactionTest, DISABLED_RedirectGetRequest) {
   (*headers2)["user-agent"] = "";
   (*headers2)["accept-encoding"] = "gzip, deflate";
 
-  // Setup writes/reads to www.google.com
+  // Setup writes/reads to www.example.org
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdySyn(1, *headers, LOWEST, false, true));
   scoped_ptr<SpdyFrame> req2(
@@ -2486,7 +2492,7 @@ TEST_P(SpdyNetworkTransactionTest, DISABLED_RedirectGetRequest) {
   EXPECT_TRUE(data2.at_write_eof());
 }
 
-// Send a spdy request to www.google.com. Get a pushed stream that redirects to
+// Send a spdy request to www.example.org. Get a pushed stream that redirects to
 // www.foo.com.
 TEST_P(SpdyNetworkTransactionTest, DISABLED_RedirectServerPush) {
   scoped_ptr<SpdyHeaderBlock> headers(
@@ -2494,7 +2500,7 @@ TEST_P(SpdyNetworkTransactionTest, DISABLED_RedirectServerPush) {
   (*headers)["user-agent"] = "";
   (*headers)["accept-encoding"] = "gzip, deflate";
 
-  // Setup writes/reads to www.google.com
+  // Setup writes/reads to www.example.org
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdySyn(1, *headers, LOWEST, false, true));
   scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
@@ -3705,7 +3711,8 @@ TEST_P(SpdyNetworkTransactionTest, NetLog) {
   ASSERT_TRUE(entries[pos].params->GetList("headers", &header_list));
 
   std::vector<std::string> expected;
-  expected.push_back(std::string(spdy_util_.GetHostKey()) + ": www.google.com");
+  expected.push_back(std::string(spdy_util_.GetHostKey()) +
+                     ": www.example.org");
   expected.push_back(std::string(spdy_util_.GetPathKey()) + ": /");
   expected.push_back(std::string(spdy_util_.GetSchemeKey()) + ": " +
                      spdy_util_.default_url().scheme());
@@ -4189,7 +4196,7 @@ TEST_P(SpdyNetworkTransactionTest, SettingsSaved) {
   helper.RunPreTestSetup();
 
   // Verify that no settings exist initially.
-  HostPortPair host_port_pair("www.google.com", helper.port());
+  HostPortPair host_port_pair("www.example.org", helper.port());
   SpdySessionPool* spdy_session_pool = helper.session()->spdy_session_pool();
   EXPECT_TRUE(spdy_session_pool->http_server_properties()->GetSpdySettings(
       host_port_pair).empty());
@@ -4302,7 +4309,7 @@ TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
   pool_peer.SetEnableSendingInitialData(true);
 
   // Verify that no settings exist initially.
-  HostPortPair host_port_pair("www.google.com", helper.port());
+  HostPortPair host_port_pair("www.example.org", helper.port());
   EXPECT_TRUE(spdy_session_pool->http_server_properties()->GetSpdySettings(
       host_port_pair).empty());
 
@@ -4498,7 +4505,7 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
 
   HttpRequestInfo request;
   request.method = "GET";
-  request.url = GURL(GetDefaultUrl());
+  request.url = GURL("https://www.example.org/");
   scoped_ptr<SpdySessionDependencies> session_deps(
       CreateSpdySessionDependencies(GetParam()));
   // Do not force SPDY so that second socket can negotiate HTTP/1.1.
@@ -4532,7 +4539,7 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
   // Second socket: falling back to HTTP/1.1.
   MockWrite writes1[] = {MockWrite(
       "GET / HTTP/1.1\r\n"
-      "Host: www.google.com\r\n"
+      "Host: www.example.org\r\n"
       "Connection: keep-alive\r\n\r\n")};
   MockRead reads1[] = {MockRead(
       "HTTP/1.1 200 OK\r\n"
@@ -4589,7 +4596,7 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
 
   HttpRequestInfo request;
   request.method = "GET";
-  request.url = GURL("https://www.google.com/");
+  request.url = GURL("https://www.example.org/");
   scoped_ptr<SpdySessionDependencies> session_deps(
       CreateSpdySessionDependencies(
           GetParam(),
@@ -4601,7 +4608,7 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
 
   // First socket: HTTP/2 CONNECT rejected with HTTP_1_1_REQUIRED.
   scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyConnect(
-      nullptr, 0, 1, LOWEST, HostPortPair("www.google.com", 443)));
+      nullptr, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
   MockWrite writes0[] = {CreateMockWrite(*req)};
   scoped_ptr<SpdyFrame> go_away(spdy_util_.ConstructSpdyGoAway(
       0, GOAWAY_HTTP_1_1_REQUIRED, "Try again using HTTP/1.1 please."));
@@ -4623,12 +4630,12 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
   // Second socket: retry using HTTP/1.1.
   MockWrite writes1[] = {
       MockWrite(ASYNC, 1,
-                "CONNECT www.google.com:443 HTTP/1.1\r\n"
-                "Host: www.google.com\r\n"
+                "CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
                 "Proxy-Connection: keep-alive\r\n\r\n"),
       MockWrite(ASYNC, 3,
                 "GET / HTTP/1.1\r\n"
-                "Host: www.google.com\r\n"
+                "Host: www.example.org\r\n"
                 "Connection: keep-alive\r\n\r\n"),
   };
 
@@ -4695,8 +4702,8 @@ TEST_P(SpdyNetworkTransactionTest, ProxyConnect) {
   HttpNetworkTransaction* trans = helper.trans();
 
   const char kConnect443[] = {
-      "CONNECT www.google.com:443 HTTP/1.1\r\n"
-      "Host: www.google.com\r\n"
+      "CONNECT www.example.org:443 HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
       "Proxy-Connection: keep-alive\r\n\r\n"};
   const char kHTTP200[] = {"HTTP/1.1 200 OK\r\n\r\n"};
   scoped_ptr<SpdyFrame> req(
@@ -4738,9 +4745,9 @@ TEST_P(SpdyNetworkTransactionTest, ProxyConnect) {
   helper.VerifyDataConsumed();
 }
 
-// Test to make sure we can correctly connect through a proxy to www.google.com,
-// if there already exists a direct spdy connection to www.google.com. See
-// http://crbug.com/49874
+// Test to make sure we can correctly connect through a proxy to
+// www.example.org, if there already exists a direct spdy connection to
+// www.example.org. See https://crbug.com/49874.
 TEST_P(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
   // When setting up the first transaction, we store the SpdySessionPool so that
   // we can use the same pool in the second transaction.
@@ -4799,7 +4806,7 @@ TEST_P(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
   EXPECT_EQ("hello!", out.response_data);
 
   // Check that the SpdySession is still in the SpdySessionPool.
-  HostPortPair host_port_pair("www.google.com", helper.port());
+  HostPortPair host_port_pair("www.example.org", helper.port());
   SpdySessionKey session_pool_key_direct(
       host_port_pair, ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
   EXPECT_TRUE(HasSpdySession(spdy_session_pool, session_pool_key_direct));
@@ -4810,9 +4817,10 @@ TEST_P(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
   EXPECT_FALSE(HasSpdySession(spdy_session_pool, session_pool_key_proxy));
 
   // Set up data for the proxy connection.
-  const char kConnect443[] = {"CONNECT www.google.com:443 HTTP/1.1\r\n"
-                           "Host: www.google.com\r\n"
-                           "Proxy-Connection: keep-alive\r\n\r\n"};
+  const char kConnect443[] = {
+      "CONNECT www.example.org:443 HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "Proxy-Connection: keep-alive\r\n\r\n"};
   const char kHTTP200[] = {"HTTP/1.1 200 OK\r\n\r\n"};
   scoped_ptr<SpdyFrame> req2(spdy_util_.ConstructSpdyGet(
       GetDefaultUrlWithPath("/foo.dat").c_str(), false, 1, LOWEST));
@@ -4833,7 +4841,7 @@ TEST_P(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
   scoped_ptr<OrderedSocketData> data_proxy(new OrderedSocketData(
       reads2, arraysize(reads2), writes2, arraysize(writes2)));
 
-  // Create another request to www.google.com, but this time through a proxy.
+  // Create another request to www.example.org, but this time through a proxy.
   HttpRequestInfo request_proxy;
   request_proxy.method = "GET";
   request_proxy.url = GURL(GetDefaultUrlWithPath("/foo.dat"));
@@ -5616,19 +5624,19 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushCrossOriginCorrectness) {
 
   // A list of the URL to fetch, followed by the URL being pushed.
   static const char* const kTestCases[] = {
-      "https://www.google.com/foo.html",
-      "https://www.google.com:81/foo.js",  // Bad port
+      "https://www.example.org/foo.html",
+      "https://www.example.org:81/foo.js",  // Bad port
 
-      "https://www.google.com/foo.html",
-      "http://www.google.com/foo.js",  // Bad protocol
+      "https://www.example.org/foo.html",
+      "http://www.example.org/foo.js",  // Bad protocol
 
-      "https://www.google.com/foo.html",
-      "ftp://www.google.com/foo.js",  // Invalid Protocol
+      "https://www.example.org/foo.html",
+      "ftp://www.example.org/foo.js",  // Invalid Protocol
 
-      "https://www.google.com/foo.html",
-      "https://blat.www.google.com/foo.js",  // Cross subdomain
+      "https://www.example.org/foo.html",
+      "https://blat.www.example.org/foo.js",  // Cross subdomain
 
-      "https://www.google.com/foo.html",
+      "https://www.example.org/foo.html",
       "https://www.foo.com/foo.js",  // Cross domain
   };
 
@@ -6536,7 +6544,7 @@ TEST_P(SpdyNetworkTransactionTest, GoAwayOnOddPushStreamId) {
     return;
 
   scoped_ptr<SpdyHeaderBlock> push_headers(new SpdyHeaderBlock);
-  spdy_util_.AddUrlToHeaderBlock("http://www.google.com/a.dat",
+  spdy_util_.AddUrlToHeaderBlock("http://www.example.org/a.dat",
                                  push_headers.get());
   scoped_ptr<SpdyFrame> push(
       spdy_util_.ConstructInitialSpdyPushFrame(push_headers.Pass(), 3, 1));
@@ -6612,7 +6620,7 @@ class SpdyNetworkTransactionNoTLSUsageCheckTest
         1, reads, arraysize(reads), writes, arraysize(writes));
     HttpRequestInfo request;
     request.method = "GET";
-    request.url = GURL("https://www.google.com/");
+    request.url = GURL("https://www.example.org/");
     NormalSpdyTransactionHelper helper(
         request, DEFAULT_PRIORITY, BoundNetLog(), GetParam(), NULL);
     helper.RunToCompletionWithSSLData(&data, ssl_provider.Pass());
@@ -6664,7 +6672,7 @@ class SpdyNetworkTransactionTLSUsageCheckTest
     DelayedSocketData data(1, NULL, 0, writes, arraysize(writes));
     HttpRequestInfo request;
     request.method = "GET";
-    request.url = GURL("https://www.google.com/");
+    request.url = GURL("https://www.example.org/");
     NormalSpdyTransactionHelper helper(
         request, DEFAULT_PRIORITY, BoundNetLog(), GetParam(), NULL);
     helper.RunToCompletionWithSSLData(&data, ssl_provider.Pass());

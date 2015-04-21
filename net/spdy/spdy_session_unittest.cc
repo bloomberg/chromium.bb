@@ -1192,13 +1192,13 @@ TEST_P(SpdySessionTest, DeleteExpiredPushStreams) {
       spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_REFUSED_STREAM));
 
   scoped_ptr<SpdyFrame> push_a(spdy_util_.ConstructSpdyPush(
-      NULL, 0, 2, 1, "http://www.google.com/a.dat"));
+      NULL, 0, 2, 1, "http://www.example.org/a.dat"));
   scoped_ptr<SpdyFrame> push_a_body(
       spdy_util_.ConstructSpdyBodyFrame(2, false));
   // In ascii "0" < "a". We use it to verify that we properly handle std::map
   // iterators inside. See http://crbug.com/443490
   scoped_ptr<SpdyFrame> push_b(spdy_util_.ConstructSpdyPush(
-      NULL, 0, 4, 1, "http://www.google.com/0.dat"));
+      NULL, 0, 4, 1, "http://www.example.org/0.dat"));
   MockWrite writes[] = {CreateMockWrite(*req, 0), CreateMockWrite(*rst, 4)};
   MockRead reads[] = {
       CreateMockRead(*push_a, 1), CreateMockRead(*push_a_body, 2),
@@ -1232,7 +1232,7 @@ TEST_P(SpdySessionTest, DeleteExpiredPushStreams) {
   EXPECT_EQ(1u, session->num_unclaimed_pushed_streams());
   SpdySession::PushedStreamMap::iterator iter =
       session->unclaimed_pushed_streams_.find(
-          GURL("http://www.google.com/a.dat"));
+          GURL("http://www.example.org/a.dat"));
   EXPECT_TRUE(session->unclaimed_pushed_streams_.end() != iter);
 
   if (session->flow_control_state_ ==
@@ -1252,7 +1252,7 @@ TEST_P(SpdySessionTest, DeleteExpiredPushStreams) {
   // Verify that the second pushed stream evicted the first pushed stream.
   EXPECT_EQ(1u, session->num_unclaimed_pushed_streams());
   iter = session->unclaimed_pushed_streams_.find(
-      GURL("http://www.google.com/0.dat"));
+      GURL("http://www.example.org/0.dat"));
   EXPECT_TRUE(session->unclaimed_pushed_streams_.end() != iter);
 
   if (session->flow_control_state_ ==
@@ -1787,7 +1787,7 @@ TEST_P(SpdySessionTest, SynCompressionHistograms) {
       break;
     case SPDY4:
       histogram_tester.ExpectBucketCount(
-          "Net.SpdySynStreamCompressionPercentage", 82, 1);
+          "Net.SpdySynStreamCompressionPercentage", 81, 1);
       break;
     default:
       NOTREACHED();
@@ -3303,7 +3303,7 @@ TEST_P(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
 TEST_P(SpdySessionTest, SpdySessionKeyPrivacyMode) {
   CreateDeterministicNetworkSession();
 
-  HostPortPair host_port_pair("www.google.com", 443);
+  HostPortPair host_port_pair("www.example.org", 443);
   SpdySessionKey key_privacy_enabled(host_port_pair, ProxyServer::Direct(),
                                      PRIVACY_MODE_ENABLED);
   SpdySessionKey key_privacy_disabled(host_port_pair, ProxyServer::Direct(),
@@ -3674,7 +3674,7 @@ TEST_P(SpdySessionTest, SessionFlowControlNoReceiveLeaks) {
   if (GetParam() < kProtoSPDY31)
     return;
 
-  const char kStreamUrl[] = "http://www.google.com/";
+  const char kStreamUrl[] = "http://www.example.org/";
 
   const int32 msg_data_size = 100;
   const std::string msg_data(msg_data_size, 'a');
@@ -3762,7 +3762,7 @@ TEST_P(SpdySessionTest, SessionFlowControlNoSendLeaks) {
   if (GetParam() < kProtoSPDY31)
     return;
 
-  const char kStreamUrl[] = "http://www.google.com/";
+  const char kStreamUrl[] = "http://www.example.org/";
 
   const int32 msg_data_size = 100;
   const std::string msg_data(msg_data_size, 'a');
@@ -3841,7 +3841,7 @@ TEST_P(SpdySessionTest, SessionFlowControlEndToEnd) {
   if (GetParam() < kProtoSPDY31)
     return;
 
-  const char kStreamUrl[] = "http://www.google.com/";
+  const char kStreamUrl[] = "http://www.example.org/";
 
   const int32 msg_data_size = 100;
   const std::string msg_data(msg_data_size, 'a');
@@ -3969,7 +3969,7 @@ void SpdySessionTest::RunResumeAfterUnstallTest(
     const base::Callback<void(SpdySession*, SpdyStream*)>& stall_function,
     const base::Callback<void(SpdySession*, SpdyStream*, int32)>&
         unstall_function) {
-  const char kStreamUrl[] = "http://www.google.com/";
+  const char kStreamUrl[] = "http://www.example.org/";
   GURL url(kStreamUrl);
 
   session_deps_.host_resolver->set_synchronous_mode(true);
@@ -4122,7 +4122,7 @@ TEST_P(SpdySessionTest, ResumeByPriorityAfterSendWindowSizeIncrease) {
   if (GetParam() < kProtoSPDY31)
     return;
 
-  const char kStreamUrl[] = "http://www.google.com/";
+  const char kStreamUrl[] = "http://www.example.org/";
   GURL url(kStreamUrl);
 
   session_deps_.host_resolver->set_synchronous_mode(true);
@@ -4276,7 +4276,7 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedStreams) {
   if (GetParam() < kProtoSPDY31)
     return;
 
-  const char kStreamUrl[] = "http://www.google.com/";
+  const char kStreamUrl[] = "http://www.example.org/";
   GURL url(kStreamUrl);
 
   session_deps_.host_resolver->set_synchronous_mode(true);
@@ -4438,7 +4438,7 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedSession) {
   if (GetParam() < kProtoSPDY31)
     return;
 
-  const char kStreamUrl[] = "http://www.google.com/";
+  const char kStreamUrl[] = "http://www.example.org/";
   GURL url(kStreamUrl);
 
   session_deps_.host_resolver->set_synchronous_mode(true);
@@ -4604,7 +4604,7 @@ TEST_P(SpdySessionTest, GoAwayOnSessionFlowControlError) {
 }
 
 TEST_P(SpdySessionTest, SplitHeaders) {
-  GURL kStreamUrl("http://www.google.com/foo.dat");
+  GURL kStreamUrl("http://www.example.org/foo.dat");
   SpdyHeaderBlock headers;
   spdy_util_.AddUrlToHeaderBlock(kStreamUrl.spec(), &headers);
   headers["alpha"] = "beta";
@@ -4634,7 +4634,7 @@ TEST_P(SpdySessionTest, PushedStreamShouldNotCountToClientConcurrencyLimit) {
   scoped_ptr<SpdyFrame> settings_frame(
       spdy_util_.ConstructSpdySettings(new_settings));
   scoped_ptr<SpdyFrame> pushed(spdy_util_.ConstructSpdyPush(
-      NULL, 0, 2, 1, "http://www.google.com/a.dat"));
+      NULL, 0, 2, 1, "http://www.example.org/a.dat"));
   MockRead reads[] = {
       CreateMockRead(*settings_frame), CreateMockRead(*pushed, 3),
       MockRead(ASYNC, 0, 4),
@@ -4712,9 +4712,9 @@ TEST_P(SpdySessionTest, PushedStreamShouldNotCountToClientConcurrencyLimit) {
 
 TEST_P(SpdySessionTest, RejectPushedStreamExceedingConcurrencyLimit) {
   scoped_ptr<SpdyFrame> push_a(spdy_util_.ConstructSpdyPush(
-      NULL, 0, 2, 1, "http://www.google.com/a.dat"));
+      NULL, 0, 2, 1, "http://www.example.org/a.dat"));
   scoped_ptr<SpdyFrame> push_b(spdy_util_.ConstructSpdyPush(
-      NULL, 0, 4, 1, "http://www.google.com/b.dat"));
+      NULL, 0, 4, 1, "http://www.example.org/b.dat"));
   MockRead reads[] = {
       CreateMockRead(*push_a, 1), CreateMockRead(*push_b, 2),
       MockRead(ASYNC, 0, 4),
@@ -4791,9 +4791,9 @@ TEST_P(SpdySessionTest, IgnoreReservedRemoteStreamsCount) {
     return;
 
   scoped_ptr<SpdyFrame> push_a(spdy_util_.ConstructSpdyPush(
-      NULL, 0, 2, 1, "http://www.google.com/a.dat"));
+      NULL, 0, 2, 1, "http://www.example.org/a.dat"));
   scoped_ptr<SpdyHeaderBlock> push_headers(new SpdyHeaderBlock);
-  spdy_util_.AddUrlToHeaderBlock("http://www.google.com/b.dat",
+  spdy_util_.AddUrlToHeaderBlock("http://www.example.org/b.dat",
                                  push_headers.get());
   scoped_ptr<SpdyFrame> push_b(
       spdy_util_.ConstructInitialSpdyPushFrame(push_headers.Pass(), 4, 1));
@@ -4882,7 +4882,7 @@ TEST_P(SpdySessionTest, CancelReservedStreamOnHeadersReceived) {
   if (spdy_util_.spdy_version() < SPDY4)
     return;
 
-  const char kPushedUrl[] = "http://www.google.com/a.dat";
+  const char kPushedUrl[] = "http://www.example.org/a.dat";
   scoped_ptr<SpdyHeaderBlock> push_headers(new SpdyHeaderBlock);
   spdy_util_.AddUrlToHeaderBlock(kPushedUrl, push_headers.get());
   scoped_ptr<SpdyFrame> push_promise(

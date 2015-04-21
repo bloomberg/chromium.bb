@@ -32,7 +32,7 @@ namespace test {
 
 namespace {
 
-const char kStreamUrl[] = "http://www.google.com/";
+const char kStreamUrl[] = "http://www.example.org/";
 const char kPostBody[] = "\0hello!\xff";
 const size_t kPostBodyLength = arraysize(kPostBody);
 const base::StringPiece kPostBodyStringPiece(kPostBody, kPostBodyLength);
@@ -51,9 +51,8 @@ class SpdyStreamTest : public ::testing::Test,
         offset_(0) {}
 
   base::WeakPtr<SpdySession> CreateDefaultSpdySession() {
-    SpdySessionKey key(HostPortPair("www.google.com", 80),
-                       ProxyServer::Direct(),
-                       PRIVACY_MODE_DISABLED);
+    SpdySessionKey key(HostPortPair("www.example.org", 80),
+                       ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
     return CreateInsecureSpdySession(session_, key, BoundNetLog());
   }
 

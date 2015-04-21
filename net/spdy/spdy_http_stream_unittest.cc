@@ -126,7 +126,7 @@ TEST_P(SpdyHttpStreamTest, GetUploadProgressBeforeInitialization) {
     MockRead(ASYNC, 0, 0)  // EOF
   };
 
-  HostPortPair host_port_pair("www.google.com", 80);
+  HostPortPair host_port_pair("www.example.org", 80);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED);
   InitSession(reads, arraysize(reads), NULL, 0, key);
@@ -151,14 +151,14 @@ TEST_P(SpdyHttpStreamTest, SendRequest) {
       CreateMockRead(*resp, 1), MockRead(SYNCHRONOUS, 0, 2)  // EOF
   };
 
-  HostPortPair host_port_pair("www.google.com", 80);
+  HostPortPair host_port_pair("www.example.org", 80);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED);
   InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
 
   HttpRequestInfo request;
   request.method = "GET";
-  request.url = GURL("http://www.google.com/");
+  request.url = GURL("http://www.example.org/");
   TestCompletionCallback callback;
   HttpResponseInfo response;
   HttpRequestHeaders headers;
@@ -224,14 +224,14 @@ TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
     MockRead(ASYNC, 0, 6)  // EOF
   };
 
-  HostPortPair host_port_pair("www.google.com", 80);
+  HostPortPair host_port_pair("www.example.org", 80);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED);
   InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
 
   HttpRequestInfo request1;
   request1.method = "GET";
-  request1.url = GURL("http://www.google.com/");
+  request1.url = GURL("http://www.example.org/");
   TestCompletionCallback callback1;
   HttpResponseInfo response1;
   HttpRequestHeaders headers1;
@@ -239,7 +239,7 @@ TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
 
   HttpRequestInfo request2;
   request2.method = "GET";
-  request2.url = GURL("http://www.google.com/");
+  request2.url = GURL("http://www.example.org/");
   TestCompletionCallback callback2;
   HttpResponseInfo response2;
   HttpRequestHeaders headers2;
@@ -311,7 +311,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
   reads.push_back(CreateMockRead(*body, seq++));
   reads.push_back(MockRead(SYNCHRONOUS, 0, seq++));  // EOF
 
-  HostPortPair host_port_pair("www.google.com", 80);
+  HostPortPair host_port_pair("www.example.org", 80);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED);
   InitSession(vector_as_array(&reads), reads.size(), vector_as_array(&writes),
@@ -326,7 +326,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
 
   HttpRequestInfo request;
   request.method = "POST";
-  request.url = GURL("http://www.google.com/");
+  request.url = GURL("http://www.example.org/");
   request.upload_data_stream = &upload_stream;
 
   ASSERT_EQ(OK, upload_stream.Init(TestCompletionCallback().callback()));
@@ -381,7 +381,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
     MockRead(ASYNC, 0, 8)  // EOF
   };
 
-  HostPortPair host_port_pair("www.google.com", 80);
+  HostPortPair host_port_pair("www.example.org", 80);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED);
   InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
@@ -390,7 +390,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
 
   HttpRequestInfo request;
   request.method = "POST";
-  request.url = GURL("http://www.google.com/");
+  request.url = GURL("http://www.example.org/");
   request.upload_data_stream = &upload_stream;
 
   ASSERT_EQ(OK, upload_stream.Init(TestCompletionCallback().callback()));
@@ -478,7 +478,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
     MockRead(ASYNC, 0, 6)  // EOF
   };
 
-  HostPortPair host_port_pair("www.google.com", 80);
+  HostPortPair host_port_pair("www.example.org", 80);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED);
   InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
@@ -487,7 +487,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
 
   HttpRequestInfo request;
   request.method = "POST";
-  request.url = GURL("http://www.google.com/");
+  request.url = GURL("http://www.example.org/");
   request.upload_data_stream = &upload_stream;
 
   ASSERT_EQ(OK, upload_stream.Init(TestCompletionCallback().callback()));
@@ -561,7 +561,7 @@ TEST_P(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
     MockRead(ASYNC, 0, 4)  // EOF
   };
 
-  HostPortPair host_port_pair("www.google.com", 80);
+  HostPortPair host_port_pair("www.example.org", 80);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED);
   InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
@@ -570,7 +570,7 @@ TEST_P(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
 
   HttpRequestInfo request;
   request.method = "POST";
-  request.url = GURL("http://www.google.com/");
+  request.url = GURL("http://www.example.org/");
   request.upload_data_stream = &upload_stream;
 
   ASSERT_EQ(OK, upload_stream.Init(TestCompletionCallback().callback()));
@@ -616,8 +616,8 @@ TEST_P(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
 
 // Test case for bug: http://code.google.com/p/chromium/issues/detail?id=50058
 TEST_P(SpdyHttpStreamTest, SpdyURLTest) {
-  const char * const full_url = "http://www.google.com/foo?query=what#anchor";
-  const char * const base_url = "http://www.google.com/foo?query=what";
+  const char* const full_url = "http://www.example.org/foo?query=what#anchor";
+  const char* const base_url = "http://www.example.org/foo?query=what";
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyGet(base_url, false, 1, LOWEST));
   MockWrite writes[] = {
@@ -628,7 +628,7 @@ TEST_P(SpdyHttpStreamTest, SpdyURLTest) {
       CreateMockRead(*resp, 1), MockRead(SYNCHRONOUS, 0, 2)  // EOF
   };
 
-  HostPortPair host_port_pair("www.google.com", 80);
+  HostPortPair host_port_pair("www.example.org", 80);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED);
   InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
@@ -681,7 +681,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
     MockRead(ASYNC, 0, 5)  // EOF
   };
 
-  HostPortPair host_port_pair("www.google.com", 80);
+  HostPortPair host_port_pair("www.example.org", 80);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED);
 
@@ -691,7 +691,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
 
   HttpRequestInfo request;
   request.method = "POST";
-  request.url = GURL("http://www.google.com/");
+  request.url = GURL("http://www.example.org/");
   request.upload_data_stream = &upload_stream;
 
   ASSERT_EQ(OK, upload_stream.Init(TestCompletionCallback().callback()));
