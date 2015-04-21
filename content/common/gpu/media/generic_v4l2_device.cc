@@ -29,9 +29,6 @@ using content_common_gpu_media::StubPathMap;
 
 static const base::FilePath::CharType kV4l2Lib[] =
     FILE_PATH_LITERAL("/usr/lib/libv4l2.so");
-#else
-#define v4l2_close close
-#define v4l2_ioctl ioctl
 #endif
 
 namespace content {
@@ -44,22 +41,22 @@ const char kImageProcessorDevice[] = "/dev/gsc0";
 
 GenericV4L2Device::GenericV4L2Device(Type type)
     : type_(type),
-      device_fd_(-1),
-      device_poll_interrupt_fd_(-1) {}
+      use_libv4l2_(false) {
+}
 
 GenericV4L2Device::~GenericV4L2Device() {
-  if (device_poll_interrupt_fd_ != -1) {
-    close(device_poll_interrupt_fd_);
-    device_poll_interrupt_fd_ = -1;
-  }
-  if (device_fd_ != -1) {
-    v4l2_close(device_fd_);
-    device_fd_ = -1;
-  }
+#if defined(USE_LIBV4L2)
+  if (use_libv4l2_ && device_fd_.is_valid())
+    v4l2_close(device_fd_.release());
+#endif
 }
 
 int GenericV4L2Device::Ioctl(int request, void* arg) {
-  return HANDLE_EINTR(v4l2_ioctl(device_fd_, request, arg));
+#if defined(USE_LIBV4L2)
+  if (use_libv4l2_)
+    return HANDLE_EINTR(v4l2_ioctl(device_fd_.get(), request, arg));
+#endif
+  return HANDLE_EINTR(ioctl(device_fd_.get(), request, arg));
 }
 
 bool GenericV4L2Device::Poll(bool poll_device, bool* event_pending) {
@@ -67,13 +64,13 @@ bool GenericV4L2Device::Poll(bool poll_device, bool* event_pending) {
   nfds_t nfds;
   int pollfd = -1;
 
-  pollfds[0].fd = device_poll_interrupt_fd_;
+  pollfds[0].fd = device_poll_interrupt_fd_.get();
   pollfds[0].events = POLLIN | POLLERR;
   nfds = 1;
 
   if (poll_device) {
     DVLOG(3) << "Poll(): adding device fd to poll() set";
-    pollfds[nfds].fd = device_fd_;
+    pollfds[nfds].fd = device_fd_.get();
     pollfds[nfds].events = POLLIN | POLLOUT | POLLERR | POLLPRI;
     pollfd = nfds;
     nfds++;
@@ -92,7 +89,7 @@ void* GenericV4L2Device::Mmap(void* addr,
                              int prot,
                              int flags,
                              unsigned int offset) {
-  return mmap(addr, len, prot, flags, device_fd_, offset);
+  return mmap(addr, len, prot, flags, device_fd_.get(), offset);
 }
 
 void GenericV4L2Device::Munmap(void* addr, unsigned int len) {
@@ -103,7 +100,8 @@ bool GenericV4L2Device::SetDevicePollInterrupt() {
   DVLOG(3) << "SetDevicePollInterrupt()";
 
   const uint64 buf = 1;
-  if (HANDLE_EINTR(write(device_poll_interrupt_fd_, &buf, sizeof(buf))) == -1) {
+  if (HANDLE_EINTR(write(device_poll_interrupt_fd_.get(), &buf, sizeof(buf))) ==
+      -1) {
     DPLOG(ERROR) << "SetDevicePollInterrupt(): write() failed";
     return false;
   }
@@ -114,7 +112,8 @@ bool GenericV4L2Device::ClearDevicePollInterrupt() {
   DVLOG(3) << "ClearDevicePollInterrupt()";
 
   uint64 buf;
-  if (HANDLE_EINTR(read(device_poll_interrupt_fd_, &buf, sizeof(buf))) == -1) {
+  if (HANDLE_EINTR(read(device_poll_interrupt_fd_.get(), &buf, sizeof(buf))) ==
+      -1) {
     if (errno == EAGAIN) {
       // No interrupt flag set, and we're reading nonblocking.  Not an error.
       return true;
@@ -148,19 +147,21 @@ bool GenericV4L2Device::Initialize() {
 
   DVLOG(2) << "Initialize(): opening device: " << device_path;
   // Open the video device.
-  device_fd_ = HANDLE_EINTR(open(device_path, O_RDWR | O_NONBLOCK | O_CLOEXEC));
-  if (device_fd_ == -1) {
+  device_fd_.reset(
+      HANDLE_EINTR(open(device_path, O_RDWR | O_NONBLOCK | O_CLOEXEC)));
+  if (!device_fd_.is_valid()) {
     return false;
   }
 #if defined(USE_LIBV4L2)
-  if (HANDLE_EINTR(v4l2_fd_open(device_fd_, V4L2_DISABLE_CONVERSION)) == -1) {
-    v4l2_close(device_fd_);
-    return false;
+  if (HANDLE_EINTR(v4l2_fd_open(device_fd_.get(), V4L2_DISABLE_CONVERSION)) !=
+      -1) {
+    DVLOG(2) << "Using libv4l2 for " << device_path;
+    use_libv4l2_ = true;
   }
 #endif
 
-  device_poll_interrupt_fd_ = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
-  if (device_poll_interrupt_fd_ == -1) {
+  device_poll_interrupt_fd_.reset(eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC));
+  if (!device_poll_interrupt_fd_.is_valid()) {
     return false;
   }
   return true;
