@@ -11,13 +11,6 @@ for more details about the presubmit API built into depot_tools.
 import os
 import sys
 
-PYLINT_BLACKLIST = []
-PYLINT_DISABLED_WARNINGS = [
-    'R0923',  # Interface not implemented
-    'R0201',  # Method could be a function
-    'E1101',  # Non-existent member is accessed.
-]
-
 
 def _CommonChecks(input_api, output_api):
   """Performs common checks, which includes running pylint."""
@@ -27,9 +20,7 @@ def _CommonChecks(input_api, output_api):
     # Modules in tools/perf depend on telemetry.
     sys.path = [os.path.join(os.pardir, 'telemetry')] + sys.path
     results.extend(input_api.canned_checks.RunPylint(
-        input_api, output_api,
-        black_list=PYLINT_BLACKLIST,
-        disabled_warnings=PYLINT_DISABLED_WARNINGS))
+        input_api, output_api, black_list=[], pylintrc='pylintrc'))
     results.extend(_CheckJson(input_api, output_api))
     results.extend(_CheckWprShaFiles(input_api, output_api))
   finally:
