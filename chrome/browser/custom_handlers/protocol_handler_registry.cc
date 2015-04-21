@@ -115,19 +115,19 @@ ProtocolHandlerRegistry::IOThreadDelegate::~IOThreadDelegate() {}
 
 bool ProtocolHandlerRegistry::IOThreadDelegate::IsHandledProtocol(
     const std::string& scheme) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return enabled_ && !LookupHandler(default_handlers_, scheme).IsEmpty();
 }
 
 void ProtocolHandlerRegistry::IOThreadDelegate::ClearDefault(
     const std::string& scheme) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   default_handlers_.erase(scheme);
 }
 
 void ProtocolHandlerRegistry::IOThreadDelegate::SetDefault(
     const ProtocolHandler& handler) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ClearDefault(handler.protocol());
   default_handlers_.insert(std::make_pair(handler.protocol(), handler));
 }
@@ -137,7 +137,7 @@ void ProtocolHandlerRegistry::IOThreadDelegate::SetDefault(
 // the url from |request|.
 net::URLRequestJob* ProtocolHandlerRegistry::IOThreadDelegate::MaybeCreateJob(
     net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   ProtocolHandler handler = LookupHandler(default_handlers_,
                                           request->url().scheme());
@@ -181,7 +181,7 @@ MaybeCreateJobWithProtocolHandler(
     const std::string& scheme,
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::URLRequestJob* job = io_thread_delegate_->MaybeCreateJob(
       request, network_delegate);
   if (job)
@@ -208,14 +208,14 @@ ProtocolHandlerRegistry::JobInterceptorFactory::MaybeInterceptResponse(
 
 bool ProtocolHandlerRegistry::JobInterceptorFactory::IsHandledProtocol(
     const std::string& scheme) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return io_thread_delegate_->IsHandledProtocol(scheme) ||
       job_factory_->IsHandledProtocol(scheme);
 }
 
 bool ProtocolHandlerRegistry::JobInterceptorFactory::IsHandledURL(
     const GURL& url) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return (url.is_valid() &&
       io_thread_delegate_->IsHandledProtocol(url.scheme())) ||
       job_factory_->IsHandledURL(url);
@@ -223,7 +223,7 @@ bool ProtocolHandlerRegistry::JobInterceptorFactory::IsHandledURL(
 
 bool ProtocolHandlerRegistry::JobInterceptorFactory::IsSafeRedirectTarget(
     const GURL& location) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return job_factory_->IsSafeRedirectTarget(location);
 }
 
@@ -350,7 +350,7 @@ bool ProtocolHandlerRegistry::SilentlyHandleRegisterHandlerRequest(
 
 void ProtocolHandlerRegistry::OnAcceptRegisterProtocolHandler(
     const ProtocolHandler& handler) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RegisterProtocolHandler(handler, USER);
   SetDefault(handler);
   Save();
@@ -359,7 +359,7 @@ void ProtocolHandlerRegistry::OnAcceptRegisterProtocolHandler(
 
 void ProtocolHandlerRegistry::OnDenyRegisterProtocolHandler(
     const ProtocolHandler& handler) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RegisterProtocolHandler(handler, USER);
   Save();
   NotifyChanged();
@@ -367,14 +367,14 @@ void ProtocolHandlerRegistry::OnDenyRegisterProtocolHandler(
 
 void ProtocolHandlerRegistry::OnIgnoreRegisterProtocolHandler(
     const ProtocolHandler& handler) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   IgnoreProtocolHandler(handler, USER);
   Save();
   NotifyChanged();
 }
 
 bool ProtocolHandlerRegistry::AttemptReplace(const ProtocolHandler& handler) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ProtocolHandler old_default = GetHandlerFor(handler.protocol());
   bool make_new_handler_default = handler.IsSameOrigin(old_default);
   ProtocolHandlerList to_replace(GetReplacedHandlers(handler));
@@ -410,7 +410,7 @@ ProtocolHandlerRegistry::GetReplacedHandlers(
 }
 
 void ProtocolHandlerRegistry::ClearDefault(const std::string& scheme) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   default_handlers_.erase(scheme);
   BrowserThread::PostTask(
@@ -423,7 +423,7 @@ void ProtocolHandlerRegistry::ClearDefault(const std::string& scheme) {
 
 bool ProtocolHandlerRegistry::IsDefault(
     const ProtocolHandler& handler) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return GetHandlerFor(handler.protocol()) == handler;
 }
 
@@ -444,7 +444,7 @@ void ProtocolHandlerRegistry::InstallDefaultsForChromeOS() {
 }
 
 void ProtocolHandlerRegistry::InitProtocolSettings() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Any further default additions to the table will get rejected from now on.
   is_loaded_ = true;
@@ -484,7 +484,7 @@ void ProtocolHandlerRegistry::InitProtocolSettings() {
 }
 
 int ProtocolHandlerRegistry::GetHandlerIndex(const std::string& scheme) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const ProtocolHandler& handler = GetHandlerFor(scheme);
   if (handler.IsEmpty())
     return -1;
@@ -504,7 +504,7 @@ int ProtocolHandlerRegistry::GetHandlerIndex(const std::string& scheme) const {
 ProtocolHandlerRegistry::ProtocolHandlerList
 ProtocolHandlerRegistry::GetHandlersFor(
     const std::string& scheme) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ProtocolHandlerMultiMap::const_iterator p = protocol_handlers_.find(scheme);
   if (p == protocol_handlers_.end()) {
     return ProtocolHandlerList();
@@ -519,7 +519,7 @@ ProtocolHandlerRegistry::GetIgnoredHandlers() {
 
 void ProtocolHandlerRegistry::GetRegisteredProtocols(
     std::vector<std::string>* output) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ProtocolHandlerMultiMap::const_iterator p;
   for (p = protocol_handlers_.begin(); p != protocol_handlers_.end(); ++p) {
     if (!p->second.empty())
@@ -529,7 +529,7 @@ void ProtocolHandlerRegistry::GetRegisteredProtocols(
 
 bool ProtocolHandlerRegistry::CanSchemeBeOverridden(
     const std::string& scheme) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const ProtocolHandlerList* handlers = GetHandlerList(scheme);
   // If we already have a handler for this scheme, we can add more.
   if (handlers != NULL && !handlers->empty())
@@ -540,7 +540,7 @@ bool ProtocolHandlerRegistry::CanSchemeBeOverridden(
 
 bool ProtocolHandlerRegistry::IsRegistered(
     const ProtocolHandler& handler) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const ProtocolHandlerList* handlers = GetHandlerList(handler.protocol());
   if (!handlers) {
     return false;
@@ -561,7 +561,7 @@ bool ProtocolHandlerRegistry::HasPolicyRegisteredHandler(
 }
 
 bool ProtocolHandlerRegistry::IsIgnored(const ProtocolHandler& handler) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ProtocolHandlerList::const_iterator i;
   for (i = ignored_protocol_handlers_.begin();
        i != ignored_protocol_handlers_.end(); ++i) {
@@ -574,7 +574,7 @@ bool ProtocolHandlerRegistry::IsIgnored(const ProtocolHandler& handler) const {
 
 bool ProtocolHandlerRegistry::HasRegisteredEquivalent(
     const ProtocolHandler& handler) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const ProtocolHandlerList* handlers = GetHandlerList(handler.protocol());
   if (!handlers) {
     return false;
@@ -590,7 +590,7 @@ bool ProtocolHandlerRegistry::HasRegisteredEquivalent(
 
 bool ProtocolHandlerRegistry::HasIgnoredEquivalent(
     const ProtocolHandler& handler) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ProtocolHandlerList::const_iterator i;
   for (i = ignored_protocol_handlers_.begin();
        i != ignored_protocol_handlers_.end(); ++i) {
@@ -603,7 +603,7 @@ bool ProtocolHandlerRegistry::HasIgnoredEquivalent(
 
 void ProtocolHandlerRegistry::RemoveIgnoredHandler(
     const ProtocolHandler& handler) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   bool should_notify = false;
   if (HandlerExists(handler, ignored_protocol_handlers_) &&
       HandlerExists(handler, user_ignored_protocol_handlers_)) {
@@ -620,13 +620,13 @@ void ProtocolHandlerRegistry::RemoveIgnoredHandler(
 
 bool ProtocolHandlerRegistry::IsHandledProtocol(
     const std::string& scheme) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return enabled_ && !GetHandlerFor(scheme).IsEmpty();
 }
 
 void ProtocolHandlerRegistry::RemoveHandler(
     const ProtocolHandler& handler) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ProtocolHandlerList& handlers = protocol_handlers_[handler.protocol()];
   bool erase_success = false;
   if (HandlerExists(handler, handlers) &&
@@ -661,7 +661,7 @@ void ProtocolHandlerRegistry::RemoveHandler(
 }
 
 void ProtocolHandlerRegistry::RemoveDefaultHandler(const std::string& scheme) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ProtocolHandler current_default = GetHandlerFor(scheme);
   if (!current_default.IsEmpty())
     RemoveHandler(current_default);
@@ -669,12 +669,12 @@ void ProtocolHandlerRegistry::RemoveDefaultHandler(const std::string& scheme) {
 
 const ProtocolHandler& ProtocolHandlerRegistry::GetHandlerFor(
     const std::string& scheme) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return LookupHandler(default_handlers_, scheme);
 }
 
 void ProtocolHandlerRegistry::Enable() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (enabled_) {
     return;
   }
@@ -693,7 +693,7 @@ void ProtocolHandlerRegistry::Enable() {
 }
 
 void ProtocolHandlerRegistry::Disable() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!enabled_) {
     return;
   }
@@ -712,7 +712,7 @@ void ProtocolHandlerRegistry::Disable() {
 }
 
 void ProtocolHandlerRegistry::Shutdown() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   delegate_.reset(NULL);
   // We free these now in case there are any outstanding workers running. If
   // we didn't free them they could respond to workers and try to update the
@@ -742,12 +742,12 @@ void ProtocolHandlerRegistry::RegisterProfilePrefs(
 }
 
 ProtocolHandlerRegistry::~ProtocolHandlerRegistry() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(default_client_observers_.empty());
 }
 
 void ProtocolHandlerRegistry::PromoteHandler(const ProtocolHandler& handler) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsRegistered(handler));
   ProtocolHandlerMultiMap::iterator p =
       protocol_handlers_.find(handler.protocol());
@@ -757,7 +757,7 @@ void ProtocolHandlerRegistry::PromoteHandler(const ProtocolHandler& handler) {
 }
 
 void ProtocolHandlerRegistry::Save() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (is_loading_) {
     return;
   }
@@ -776,7 +776,7 @@ void ProtocolHandlerRegistry::Save() {
 const ProtocolHandlerRegistry::ProtocolHandlerList*
 ProtocolHandlerRegistry::GetHandlerList(
     const std::string& scheme) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ProtocolHandlerMultiMap::const_iterator p = protocol_handlers_.find(scheme);
   if (p == protocol_handlers_.end()) {
     return NULL;
@@ -785,7 +785,7 @@ ProtocolHandlerRegistry::GetHandlerList(
 }
 
 void ProtocolHandlerRegistry::SetDefault(const ProtocolHandler& handler) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ProtocolHandlerMap::const_iterator p = default_handlers_.find(
       handler.protocol());
   // If we're not loading, and we are setting a default for a new protocol,
@@ -802,7 +802,7 @@ void ProtocolHandlerRegistry::SetDefault(const ProtocolHandler& handler) {
 }
 
 void ProtocolHandlerRegistry::InsertHandler(const ProtocolHandler& handler) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ProtocolHandlerMultiMap::iterator p =
       protocol_handlers_.find(handler.protocol());
 
@@ -817,7 +817,7 @@ void ProtocolHandlerRegistry::InsertHandler(const ProtocolHandler& handler) {
 }
 
 base::Value* ProtocolHandlerRegistry::EncodeRegisteredHandlers() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::ListValue* protocol_handlers = new base::ListValue();
   for (ProtocolHandlerMultiMap::iterator i = user_protocol_handlers_.begin();
        i != user_protocol_handlers_.end();
@@ -835,7 +835,7 @@ base::Value* ProtocolHandlerRegistry::EncodeRegisteredHandlers() {
 }
 
 base::Value* ProtocolHandlerRegistry::EncodeIgnoredHandlers() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::ListValue* handlers = new base::ListValue();
   for (ProtocolHandlerList::iterator i =
            user_ignored_protocol_handlers_.begin();
@@ -847,7 +847,7 @@ base::Value* ProtocolHandlerRegistry::EncodeIgnoredHandlers() {
 }
 
 void ProtocolHandlerRegistry::NotifyChanged() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
       content::Source<content::BrowserContext>(context_),
@@ -857,7 +857,7 @@ void ProtocolHandlerRegistry::NotifyChanged() {
 void ProtocolHandlerRegistry::RegisterProtocolHandler(
     const ProtocolHandler& handler,
     const HandlerSource source) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(CanSchemeBeOverridden(handler.protocol()));
   DCHECK(!handler.IsEmpty());
   ProtocolHandlerMultiMap& map =
@@ -875,7 +875,7 @@ void ProtocolHandlerRegistry::RegisterProtocolHandler(
 
 std::vector<const base::DictionaryValue*>
 ProtocolHandlerRegistry::GetHandlersFromPref(const char* pref_name) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::vector<const base::DictionaryValue*> result;
   PrefService* prefs = user_prefs::UserPrefs::Get(context_);
   if (!prefs->HasPrefPath(pref_name)) {
@@ -917,7 +917,7 @@ void ProtocolHandlerRegistry::RegisterProtocolHandlersFromPref(
 void ProtocolHandlerRegistry::IgnoreProtocolHandler(
     const ProtocolHandler& handler,
     const HandlerSource source) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ProtocolHandlerList& list = (source == POLICY)
                                   ? policy_ignored_protocol_handlers_
                                   : user_ignored_protocol_handlers_;
@@ -970,7 +970,7 @@ void ProtocolHandlerRegistry::AddPredefinedHandler(
 
 scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
 ProtocolHandlerRegistry::CreateJobInterceptorFactory() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // this is always created on the UI thread (in profile_io's
   // InitializeOnUIThread. Any method calls must be done
   // on the IO thread (this is checked).

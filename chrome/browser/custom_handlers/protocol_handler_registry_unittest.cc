@@ -34,7 +34,7 @@ namespace {
 void AssertInterceptedIO(
     const GURL& url,
     net::URLRequestJobFactory* interceptor) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::URLRequestContext context;
   scoped_ptr<net::URLRequest> request(context.CreateRequest(
       url, net::DEFAULT_PRIORITY, NULL));
@@ -47,7 +47,7 @@ void AssertInterceptedIO(
 void AssertIntercepted(
     const GURL& url,
     net::URLRequestJobFactory* interceptor) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
                           base::Bind(AssertInterceptedIO,
@@ -96,7 +96,7 @@ void AssertWillHandleIO(
     const std::string& scheme,
     bool expected,
     ProtocolHandlerRegistry::JobInterceptorFactory* interceptor) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   interceptor->Chain(scoped_ptr<net::URLRequestJobFactory>(
       new FakeURLRequestJobFactory()));
   ASSERT_EQ(expected, interceptor->IsHandledProtocol(scheme));
@@ -107,7 +107,7 @@ void AssertWillHandle(
     const std::string& scheme,
     bool expected,
     ProtocolHandlerRegistry::JobInterceptorFactory* interceptor) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
                           base::Bind(AssertWillHandleIO,
