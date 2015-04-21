@@ -47,16 +47,19 @@ void V8TestPermissiveDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Valu
 v8::Local<v8::Value> toV8(const TestPermissiveDictionary& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     v8::Local<v8::Object> v8Object = v8::Object::New(isolate);
-    toV8TestPermissiveDictionary(impl, v8Object, creationContext, isolate);
+    if (!toV8TestPermissiveDictionary(impl, v8Object, creationContext, isolate))
+        return v8::Local<v8::Value>();
     return v8Object;
 }
 
-void toV8TestPermissiveDictionary(const TestPermissiveDictionary& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
+bool toV8TestPermissiveDictionary(const TestPermissiveDictionary& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (impl.hasBooleanMember()) {
-        dictionary->Set(v8String(isolate, "booleanMember"), v8Boolean(impl.booleanMember(), isolate));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "booleanMember"), v8Boolean(impl.booleanMember(), isolate))))
+            return false;
     }
 
+    return true;
 }
 
 TestPermissiveDictionary NativeValueTraits<TestPermissiveDictionary>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)

@@ -546,142 +546,180 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
 v8::Local<v8::Value> toV8(const TestDictionary& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     v8::Local<v8::Object> v8Object = v8::Object::New(isolate);
-    toV8TestDictionary(impl, v8Object, creationContext, isolate);
+    if (!toV8TestDictionary(impl, v8Object, creationContext, isolate))
+        return v8::Local<v8::Value>();
     return v8Object;
 }
 
-void toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
+bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (impl.hasBooleanMember()) {
-        dictionary->Set(v8String(isolate, "booleanMember"), v8Boolean(impl.booleanMember(), isolate));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "booleanMember"), v8Boolean(impl.booleanMember(), isolate))))
+            return false;
     }
 
     if (impl.hasCreateMember()) {
-        dictionary->Set(v8String(isolate, "create"), v8Boolean(impl.createMember(), isolate));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "create"), v8Boolean(impl.createMember(), isolate))))
+            return false;
     }
 
     if (impl.hasCreateMember()) {
-        dictionary->Set(v8String(isolate, "deprecatedCreateMember"), v8Boolean(impl.createMember(), isolate));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "deprecatedCreateMember"), v8Boolean(impl.createMember(), isolate))))
+            return false;
     }
 
     if (impl.hasDoubleOrNullMember()) {
-        dictionary->Set(v8String(isolate, "doubleOrNullMember"), v8::Number::New(isolate, impl.doubleOrNullMember()));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "doubleOrNullMember"), v8::Number::New(isolate, impl.doubleOrNullMember()))))
+            return false;
     } else {
-        dictionary->Set(v8String(isolate, "doubleOrNullMember"), v8::Null(isolate));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "doubleOrNullMember"), v8::Null(isolate))))
+            return false;
     }
 
     if (impl.hasDoubleOrStringMember()) {
-        dictionary->Set(v8String(isolate, "doubleOrStringMember"), toV8(impl.doubleOrStringMember(), creationContext, isolate));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "doubleOrStringMember"), toV8(impl.doubleOrStringMember(), creationContext, isolate))))
+            return false;
     } else {
-        dictionary->Set(v8String(isolate, "doubleOrStringMember"), toV8(DoubleOrString::fromDouble(3.14), creationContext, isolate));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "doubleOrStringMember"), toV8(DoubleOrString::fromDouble(3.14), creationContext, isolate))))
+            return false;
     }
 
     if (impl.hasElementOrNullMember()) {
-        dictionary->Set(v8String(isolate, "elementOrNullMember"), toV8(impl.elementOrNullMember(), creationContext, isolate));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "elementOrNullMember"), toV8(impl.elementOrNullMember(), creationContext, isolate))))
+            return false;
     }
 
     if (impl.hasEnumMember()) {
-        dictionary->Set(v8String(isolate, "enumMember"), v8String(isolate, impl.enumMember()));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "enumMember"), v8String(isolate, impl.enumMember()))))
+            return false;
     } else {
-        dictionary->Set(v8String(isolate, "enumMember"), v8String(isolate, String("foo")));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "enumMember"), v8String(isolate, String("foo")))))
+            return false;
     }
 
     if (impl.hasEnumSequenceMember()) {
-        dictionary->Set(v8String(isolate, "enumSequenceMember"), toV8(impl.enumSequenceMember(), creationContext, isolate));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "enumSequenceMember"), toV8(impl.enumSequenceMember(), creationContext, isolate))))
+            return false;
     }
 
     if (impl.hasEventTargetMember()) {
-        dictionary->Set(v8String(isolate, "eventTargetMember"), toV8(impl.eventTargetMember(), creationContext, isolate));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "eventTargetMember"), toV8(impl.eventTargetMember(), creationContext, isolate))))
+            return false;
     }
 
     if (impl.hasInternalDictionarySequenceMember()) {
-        dictionary->Set(v8String(isolate, "internalDictionarySequenceMember"), toV8(impl.internalDictionarySequenceMember(), creationContext, isolate));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "internalDictionarySequenceMember"), toV8(impl.internalDictionarySequenceMember(), creationContext, isolate))))
+            return false;
     }
 
     if (impl.hasLongMember()) {
-        dictionary->Set(v8String(isolate, "longMember"), v8::Integer::New(isolate, impl.longMember()));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "longMember"), v8::Integer::New(isolate, impl.longMember()))))
+            return false;
     } else {
-        dictionary->Set(v8String(isolate, "longMember"), v8::Integer::New(isolate, 1));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "longMember"), v8::Integer::New(isolate, 1))))
+            return false;
     }
 
     if (impl.hasObjectMember()) {
         ASSERT(impl.objectMember().isObject());
-        dictionary->Set(v8String(isolate, "objectMember"), impl.objectMember().v8Value());
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "objectMember"), impl.objectMember().v8Value())))
+            return false;
     }
 
     if (impl.hasObjectOrNullMember()) {
         ASSERT(impl.objectOrNullMember().isObject());
-        dictionary->Set(v8String(isolate, "objectOrNullMember"), impl.objectOrNullMember().v8Value());
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "objectOrNullMember"), impl.objectOrNullMember().v8Value())))
+            return false;
     }
 
     if (impl.hasOtherDoubleOrStringMember()) {
-        dictionary->Set(v8String(isolate, "otherDoubleOrStringMember"), toV8(impl.otherDoubleOrStringMember(), creationContext, isolate));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "otherDoubleOrStringMember"), toV8(impl.otherDoubleOrStringMember(), creationContext, isolate))))
+            return false;
     } else {
-        dictionary->Set(v8String(isolate, "otherDoubleOrStringMember"), toV8(DoubleOrString::fromString(String("default string value")), creationContext, isolate));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "otherDoubleOrStringMember"), toV8(DoubleOrString::fromString(String("default string value")), creationContext, isolate))))
+            return false;
     }
 
     if (impl.hasRestrictedDoubleMember()) {
-        dictionary->Set(v8String(isolate, "restrictedDoubleMember"), v8::Number::New(isolate, impl.restrictedDoubleMember()));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "restrictedDoubleMember"), v8::Number::New(isolate, impl.restrictedDoubleMember()))))
+            return false;
     } else {
-        dictionary->Set(v8String(isolate, "restrictedDoubleMember"), v8::Number::New(isolate, 3.14));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "restrictedDoubleMember"), v8::Number::New(isolate, 3.14))))
+            return false;
     }
 
     if (impl.hasStringArrayMember()) {
-        dictionary->Set(v8String(isolate, "stringArrayMember"), toV8(impl.stringArrayMember(), creationContext, isolate));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "stringArrayMember"), toV8(impl.stringArrayMember(), creationContext, isolate))))
+            return false;
     }
 
     if (impl.hasStringMember()) {
-        dictionary->Set(v8String(isolate, "stringMember"), v8String(isolate, impl.stringMember()));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "stringMember"), v8String(isolate, impl.stringMember()))))
+            return false;
     }
 
     if (impl.hasStringOrNullMember()) {
-        dictionary->Set(v8String(isolate, "stringOrNullMember"), v8String(isolate, impl.stringOrNullMember()));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "stringOrNullMember"), v8String(isolate, impl.stringOrNullMember()))))
+            return false;
     } else {
-        dictionary->Set(v8String(isolate, "stringOrNullMember"), v8String(isolate, String("default string value")));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "stringOrNullMember"), v8String(isolate, String("default string value")))))
+            return false;
     }
 
     if (impl.hasStringSequenceMember()) {
-        dictionary->Set(v8String(isolate, "stringSequenceMember"), toV8(impl.stringSequenceMember(), creationContext, isolate));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "stringSequenceMember"), toV8(impl.stringSequenceMember(), creationContext, isolate))))
+            return false;
     }
 
     if (impl.hasTestInterface2OrUint8ArrayMember()) {
-        dictionary->Set(v8String(isolate, "testInterface2OrUint8ArrayMember"), toV8(impl.testInterface2OrUint8ArrayMember(), creationContext, isolate));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "testInterface2OrUint8ArrayMember"), toV8(impl.testInterface2OrUint8ArrayMember(), creationContext, isolate))))
+            return false;
     }
 
     if (impl.hasTestInterfaceGarbageCollectedMember()) {
-        dictionary->Set(v8String(isolate, "testInterfaceGarbageCollectedMember"), toV8(impl.testInterfaceGarbageCollectedMember(), creationContext, isolate));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceGarbageCollectedMember"), toV8(impl.testInterfaceGarbageCollectedMember(), creationContext, isolate))))
+            return false;
     }
 
     if (impl.hasTestInterfaceGarbageCollectedOrNullMember()) {
-        dictionary->Set(v8String(isolate, "testInterfaceGarbageCollectedOrNullMember"), toV8(impl.testInterfaceGarbageCollectedOrNullMember(), creationContext, isolate));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceGarbageCollectedOrNullMember"), toV8(impl.testInterfaceGarbageCollectedOrNullMember(), creationContext, isolate))))
+            return false;
     }
 
     if (impl.hasTestInterfaceMember()) {
-        dictionary->Set(v8String(isolate, "testInterfaceMember"), toV8(impl.testInterfaceMember(), creationContext, isolate));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceMember"), toV8(impl.testInterfaceMember(), creationContext, isolate))))
+            return false;
     }
 
     if (impl.hasTestInterfaceOrNullMember()) {
-        dictionary->Set(v8String(isolate, "testInterfaceOrNullMember"), toV8(impl.testInterfaceOrNullMember(), creationContext, isolate));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceOrNullMember"), toV8(impl.testInterfaceOrNullMember(), creationContext, isolate))))
+            return false;
     }
 
     if (impl.hasTestInterfaceWillBeGarbageCollectedMember()) {
-        dictionary->Set(v8String(isolate, "testInterfaceWillBeGarbageCollectedMember"), toV8(impl.testInterfaceWillBeGarbageCollectedMember(), creationContext, isolate));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceWillBeGarbageCollectedMember"), toV8(impl.testInterfaceWillBeGarbageCollectedMember(), creationContext, isolate))))
+            return false;
     }
 
     if (impl.hasTestInterfaceWillBeGarbageCollectedOrNullMember()) {
-        dictionary->Set(v8String(isolate, "testInterfaceWillBeGarbageCollectedOrNullMember"), toV8(impl.testInterfaceWillBeGarbageCollectedOrNullMember(), creationContext, isolate));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceWillBeGarbageCollectedOrNullMember"), toV8(impl.testInterfaceWillBeGarbageCollectedOrNullMember(), creationContext, isolate))))
+            return false;
     }
 
     if (impl.hasUint8ArrayMember()) {
-        dictionary->Set(v8String(isolate, "uint8ArrayMember"), toV8(impl.uint8ArrayMember(), creationContext, isolate));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "uint8ArrayMember"), toV8(impl.uint8ArrayMember(), creationContext, isolate))))
+            return false;
     }
 
     if (impl.hasUnrestrictedDoubleMember()) {
-        dictionary->Set(v8String(isolate, "unrestrictedDoubleMember"), v8::Number::New(isolate, impl.unrestrictedDoubleMember()));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "unrestrictedDoubleMember"), v8::Number::New(isolate, impl.unrestrictedDoubleMember()))))
+            return false;
     } else {
-        dictionary->Set(v8String(isolate, "unrestrictedDoubleMember"), v8::Number::New(isolate, 3.14));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "unrestrictedDoubleMember"), v8::Number::New(isolate, 3.14))))
+            return false;
     }
 
+    return true;
 }
 
 TestDictionary NativeValueTraits<TestDictionary>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)

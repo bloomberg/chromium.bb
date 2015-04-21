@@ -89,23 +89,27 @@ v8::Local<v8::Value> toV8(const {{cpp_class}}& impl, v8::Local<v8::Object> creat
 {
     v8::Local<v8::Object> v8Object = v8::Object::New(isolate);
     {% if parent_v8_class %}
-    toV8{{parent_cpp_class}}(impl, v8Object, creationContext, isolate);
+    if (!toV8{{parent_cpp_class}}(impl, v8Object, creationContext, isolate))
+        return v8::Local<v8::Value>();
     {% endif %}
-    toV8{{cpp_class}}(impl, v8Object, creationContext, isolate);
+    if (!toV8{{cpp_class}}(impl, v8Object, creationContext, isolate))
+        return v8::Local<v8::Value>();
     return v8Object;
 }
 
-void toV8{{cpp_class}}(const {{cpp_class}}& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
+bool toV8{{cpp_class}}(const {{cpp_class}}& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     {% for member in members %}
     if (impl.{{member.has_method_name}}()) {
         {% if member.is_object %}
         ASSERT(impl.{{member.cpp_name}}().isObject());
         {% endif %}
-        dictionary->Set(v8String(isolate, "{{member.name}}"), {{member.cpp_value_to_v8_value}});
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "{{member.name}}"), {{member.cpp_value_to_v8_value}})))
+            return false;
     {% if member.v8_default_value %}
     } else {
-        dictionary->Set(v8String(isolate, "{{member.name}}"), {{member.v8_default_value}});
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "{{member.name}}"), {{member.v8_default_value}})))
+            return false;
     {% elif member.is_required %}
     } else {
         ASSERT_NOT_REACHED();
@@ -113,6 +117,7 @@ void toV8{{cpp_class}}(const {{cpp_class}}& impl, v8::Local<v8::Object> dictiona
     }
 
     {% endfor %}
+    return true;
 }
 
 {{cpp_class}} NativeValueTraits<{{cpp_class}}>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)

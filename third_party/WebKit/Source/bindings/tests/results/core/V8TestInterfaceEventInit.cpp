@@ -52,17 +52,21 @@ void V8TestInterfaceEventInit::toImpl(v8::Isolate* isolate, v8::Local<v8::Value>
 v8::Local<v8::Value> toV8(const TestInterfaceEventInit& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     v8::Local<v8::Object> v8Object = v8::Object::New(isolate);
-    toV8EventInitDictionary(impl, v8Object, creationContext, isolate);
-    toV8TestInterfaceEventInit(impl, v8Object, creationContext, isolate);
+    if (!toV8EventInitDictionary(impl, v8Object, creationContext, isolate))
+        return v8::Local<v8::Value>();
+    if (!toV8TestInterfaceEventInit(impl, v8Object, creationContext, isolate))
+        return v8::Local<v8::Value>();
     return v8Object;
 }
 
-void toV8TestInterfaceEventInit(const TestInterfaceEventInit& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
+bool toV8TestInterfaceEventInit(const TestInterfaceEventInit& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (impl.hasStringMember()) {
-        dictionary->Set(v8String(isolate, "stringMember"), v8String(isolate, impl.stringMember()));
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "stringMember"), v8String(isolate, impl.stringMember()))))
+            return false;
     }
 
+    return true;
 }
 
 TestInterfaceEventInit NativeValueTraits<TestInterfaceEventInit>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)

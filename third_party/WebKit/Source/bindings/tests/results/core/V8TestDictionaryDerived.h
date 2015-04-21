@@ -23,7 +23,7 @@ public:
 };
 
 v8::Local<v8::Value> toV8(const TestDictionaryDerivedImplementedAs&, v8::Local<v8::Object>, v8::Isolate*);
-CORE_EXPORT void toV8TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplementedAs&, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate*);
+CORE_EXPORT bool toV8TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplementedAs&, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate*);
 
 template<class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestDictionaryDerivedImplementedAs& impl)
