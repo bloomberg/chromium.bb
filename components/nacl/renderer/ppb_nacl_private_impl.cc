@@ -14,6 +14,7 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/cpu.h"
 #include "base/files/file.h"
+#include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
@@ -61,8 +62,6 @@
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebURLLoaderOptions.h"
-#include "third_party/jsoncpp/source/include/json/reader.h"
-#include "third_party/jsoncpp/source/include/json/value.h"
 
 namespace nacl {
 namespace {
@@ -1179,43 +1178,41 @@ PP_Bool GetPNaClResourceInfo(PP_Instance instance,
   buffer.get()[rc] = 0;
 
   // Expect the JSON file to contain a top-level object (dictionary).
-  Json::Reader json_reader;
-  Json::Value json_data;
-  if (!json_reader.parse(buffer.get(), json_data)) {
+  base::JSONReader json_reader;
+  int json_read_error_code;
+  std::string json_read_error_msg;
+  base::Value* json_data = json_reader.ReadAndReturnError(
+      buffer.get(),
+      base::JSON_PARSE_RFC,
+      &json_read_error_code,
+      &json_read_error_msg);
+  if (json_data == NULL) {
     load_manager->ReportLoadError(
         PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
         std::string("Parsing resource info failed: JSON parse error: ") +
-            json_reader.getFormattedErrorMessages());
+            json_read_error_msg);
     return PP_FALSE;
   }
 
-  if (!json_data.isObject()) {
+  base::DictionaryValue* json_dict;
+  if (!json_data->GetAsDictionary(&json_dict)) {
     load_manager->ReportLoadError(
         PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
         "Parsing resource info failed: Malformed JSON dictionary");
     return PP_FALSE;
   }
 
-  if (json_data.isMember("pnacl-llc-name")) {
-    Json::Value json_name = json_data["pnacl-llc-name"];
-    if (json_name.isString()) {
-      *llc_tool_name = ppapi::StringVar::StringToPPVar(json_name.asString());
-    }
-  }
+  std::string pnacl_llc_name;
+  if (json_dict->GetString("pnacl-llc-name", &pnacl_llc_name))
+    *llc_tool_name = ppapi::StringVar::StringToPPVar(pnacl_llc_name);
 
-  if (json_data.isMember("pnacl-ld-name")) {
-    Json::Value json_name = json_data["pnacl-ld-name"];
-    if (json_name.isString()) {
-      *ld_tool_name = ppapi::StringVar::StringToPPVar(json_name.asString());
-    }
-  }
+  std::string pnacl_ld_name;
+  if (json_dict->GetString("pnacl-ld-name", &pnacl_ld_name))
+    *ld_tool_name = ppapi::StringVar::StringToPPVar(pnacl_ld_name);
 
-  if (json_data.isMember("pnacl-sz-name")) {
-    Json::Value json_name = json_data["pnacl-sz-name"];
-    if (json_name.isString()) {
-      *subzero_tool_name =
-          ppapi::StringVar::StringToPPVar(json_name.asString());
-    }
+  std::string pnacl_sz_name;
+  if (json_dict->GetString("pnacl-sz-name", &pnacl_sz_name)) {
+    *subzero_tool_name = ppapi::StringVar::StringToPPVar(pnacl_sz_name);
   } else {
     // TODO(jvoung): remove fallback after one chrome release
     // or when we bump the kMinPnaclVersion.
