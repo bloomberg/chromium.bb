@@ -51,20 +51,57 @@ public:
 
 namespace internal {
 
-class CallClosureTask final : public ExecutionContextTask {
+template<typename T>
+class CallClosureTaskBase : public ExecutionContextTask {
+protected:
+    CallClosureTaskBase(PassOwnPtr<Function<T>> closure, bool isSameThread)
+        : m_closure(closure)
+#if ENABLE(ASSERT)
+        , m_isSameThread(isSameThread)
+        , m_createdThread(currentThread())
+#endif
+    {
+    }
+
+    void checkThread()
+    {
+#if ENABLE(ASSERT)
+        if (m_isSameThread) {
+            RELEASE_ASSERT(m_createdThread == currentThread());
+        }
+#endif
+    }
+
+    OwnPtr<Function<T>> m_closure;
+
+private:
+#if ENABLE(ASSERT)
+    bool m_isSameThread;
+    ThreadIdentifier m_createdThread;
+#endif
+};
+
+class CallClosureTask final : public CallClosureTaskBase<void()> {
 public:
     // Do not use |create| other than in createCrossThreadTask and
     // createSameThreadTask.
     // See http://crbug.com/390851
-    static PassOwnPtr<CallClosureTask> create(PassOwnPtr<Closure> closure)
+    static PassOwnPtr<CallClosureTask> create(PassOwnPtr<Closure> closure, bool isSameThread = false)
     {
-        return adoptPtr(new CallClosureTask(closure));
+        return adoptPtr(new CallClosureTask(closure, isSameThread));
     }
-    virtual void performTask(ExecutionContext*) override { (*m_closure)(); }
+
+    virtual void performTask(ExecutionContext*) override
+    {
+        checkThread();
+        (*m_closure)();
+    }
 
 private:
-    explicit CallClosureTask(PassOwnPtr<Closure> closure) : m_closure(closure) { }
-    OwnPtr<Closure> m_closure;
+    CallClosureTask(PassOwnPtr<Closure> closure, bool isSameThread)
+        : CallClosureTaskBase<void()>(closure, isSameThread)
+    {
+    }
 };
 
 } // namespace internal
@@ -78,7 +115,7 @@ template<typename FunctionType, typename... P>
 PassOwnPtr<ExecutionContextTask> createSameThreadTask(
     FunctionType function, const P&... parameters)
 {
-    return internal::CallClosureTask::create(bind(function, parameters...));
+    return internal::CallClosureTask::create(bind(function, parameters...), true);
 }
 
 } // namespace

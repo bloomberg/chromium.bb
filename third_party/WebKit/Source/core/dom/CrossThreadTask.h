@@ -91,17 +91,27 @@ namespace blink {
 
 namespace internal {
 
-class CallClosureWithExecutionContextTask final : public ExecutionContextTask {
+class CallClosureWithExecutionContextTask final : public CallClosureTaskBase<void(ExecutionContext*)> {
 public:
-    static PassOwnPtr<CallClosureWithExecutionContextTask> create(PassOwnPtr<Function<void(ExecutionContext*)>> closure)
+    // Do not use |create| other than in createCrossThreadTask and
+    // createSameThreadTask.
+    // See http://crbug.com/390851
+    static PassOwnPtr<CallClosureWithExecutionContextTask> create(PassOwnPtr<Function<void(ExecutionContext*)>> closure, bool isSameThread = false)
     {
-        return adoptPtr(new CallClosureWithExecutionContextTask(closure));
+        return adoptPtr(new CallClosureWithExecutionContextTask(closure, isSameThread));
     }
-    virtual void performTask(ExecutionContext* context) override { (*m_closure)(context); }
+
+    virtual void performTask(ExecutionContext* context) override
+    {
+        checkThread();
+        (*m_closure)(context);
+    }
 
 private:
-    explicit CallClosureWithExecutionContextTask(PassOwnPtr<Function<void(ExecutionContext*)>> closure) : m_closure(closure) { }
-    OwnPtr<Function<void(ExecutionContext*)>> m_closure;
+    CallClosureWithExecutionContextTask(PassOwnPtr<Function<void(ExecutionContext*)>> closure, bool isSameThread)
+        : CallClosureTaskBase<void(ExecutionContext*)>(closure, isSameThread)
+    {
+    }
 };
 
 } // namespace internal
