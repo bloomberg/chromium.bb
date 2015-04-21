@@ -387,6 +387,13 @@ bool LayoutMultiColumnFlowThread::descendantIsValidColumnSpanner(LayoutObject* d
             // undesirable. The spec has nothing to say on the matter.
             return false; // Ignore nested spanners.
         }
+        if (ancestor->isFloatingOrOutOfFlowPositioned()) {
+            // TODO(mstensho): It could actually be nice to support this (although the usefulness is
+            // probably very limited), but currently our column balancing algorithm gets confused
+            // when a spanner is inside a float, because a float's position isn't always known until
+            // after layout. Similarly for absolutely positioned boxes.
+            return false;
+        }
         if (ancestor->isUnsplittableForPagination())
             return false;
     }
