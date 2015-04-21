@@ -117,7 +117,7 @@ void CSSKeyframesRule::setName(const String& name)
     m_keyframesRule->setName(name);
 }
 
-void CSSKeyframesRule::insertRule(const String& ruleText)
+void CSSKeyframesRule::appendRule(const String& ruleText)
 {
     ASSERT(m_childRuleCSSOMWrappers.size() == m_keyframesRule->keyframes().size());
 
