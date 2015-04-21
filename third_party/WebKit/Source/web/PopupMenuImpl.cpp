@@ -240,6 +240,14 @@ void PopupMenuImpl::setValueAndClosePopup(int numValue, const String& stringValu
     m_client->valueChanged(listIndex);
     if (m_popup)
         m_chromeClient->closePagePopup(m_popup);
+    // We dispatch events on the owner element to match the legacy behavior.
+    // Other browsers dispatch click events before and after showing the popup.
+    if (m_client) {
+        PlatformMouseEvent event;
+        RefPtrWillBeRawPtr<Element> owner = &ownerElement();
+        owner->dispatchMouseEvent(event, EventTypeNames::mouseup);
+        owner->dispatchMouseEvent(event, EventTypeNames::click);
+    }
 }
 
 void PopupMenuImpl::setValue(const String& value)

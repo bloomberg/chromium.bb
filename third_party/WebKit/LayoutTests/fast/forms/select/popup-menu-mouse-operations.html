@@ -14,6 +14,10 @@
 <script>
 var menuElement = document.getElementById('menu');
 var picker = null;
+var clickEventCounter = 0;
+menuElement.addEventListener('click', function() { clickEventCounter++; }, false);
+var mouseupEventCounter = 0;
+menuElement.addEventListener('mouseup', function() { mouseupEventCounter++; }, false);
 openPicker(menuElement, function () {
     picker = window.internals.pagePopupWindow.global.picker;
     shouldBeEqualToString('picker._selectElement.value', '1');
@@ -41,9 +45,15 @@ openPicker(menuElement, function () {
     shouldBeEqualToString('picker._selectElement.value', '0');
     shouldBeEqualToString('menuElement.value', 'bar');
 
+    shouldBe('clickEventCounter', '0');
+    shouldBe('mouseupEventCounter', '0');
+
     clickElement(picker._selectElement.children[2]);
     shouldBeNull('window.internals.pagePopupWindow');
     shouldBeEqualToString('menuElement.value', 'baz');
+
+    shouldBe('clickEventCounter', '1');
+    shouldBe('mouseupEventCounter', '1');
 
     finishJSTest();
 }, function () {
