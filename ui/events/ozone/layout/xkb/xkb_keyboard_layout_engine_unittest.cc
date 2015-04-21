@@ -6,8 +6,8 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/dom3/dom_code.h"
 #include "ui/events/keycodes/dom3/dom_key.h"
+#include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
-#include "ui/events/ozone/layout/layout_util.h"
 #include "ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h"
 
 namespace ui {
@@ -72,16 +72,21 @@ class VkTestXkbKeyboardLayoutEngine : public XkbKeyboardLayoutEngine {
     KeyboardCode key_code = DifficultKeyboardCode(
         dom_code, flags, key_code_converter_.DomCodeToXkbKeyCode(dom_code),
         flags, CharacterToKeySym(character), DomKey::CHARACTER, character);
-    if (key_code == VKEY_UNKNOWN)
-      key_code = DomCodeToNonLocatedKeyboardCode(dom_code);
+    if (key_code == VKEY_UNKNOWN) {
+      DomKey dummy_dom_key;
+      base::char16 dummy_character;
+      // If this fails, key_code remains VKEY_UNKNOWN.
+      ignore_result(DomCodeToUsLayoutMeaning(dom_code, EF_NONE, &dummy_dom_key,
+                                             &dummy_character, &key_code));
+    }
     return key_code;
   }
 
   // XkbKeyboardLayoutEngine overrides:
   bool XkbLookup(xkb_keycode_t xkb_keycode,
-                         xkb_mod_mask_t xkb_flags,
-                         xkb_keysym_t* xkb_keysym,
-                         base::char16* character) const override {
+                 xkb_mod_mask_t xkb_flags,
+                 xkb_keysym_t* xkb_keysym,
+                 base::char16* character) const override {
     if (!entry_ ||
         (xkb_keycode != static_cast<xkb_keycode_t>(entry_->dom_code)))
       return false;
@@ -731,14 +736,14 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
     if (e->shift_character) {
       // Test with predetermined shifted character.
       key_code = layout_engine_->GetKeyboardCode(e->dom_code, EF_SHIFT_DOWN,
-                                                e->shift_character);
+                                                 e->shift_character);
       EXPECT_EQ(e->key_code, key_code);
     }
 
     if (e->altgr_character) {
       // Test with predetermined AltGr character.
       key_code = layout_engine_->GetKeyboardCode(e->dom_code, EF_ALTGR_DOWN,
-          e->altgr_character);
+                                                 e->altgr_character);
       EXPECT_EQ(e->key_code, key_code);
     }
 

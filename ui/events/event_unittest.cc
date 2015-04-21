@@ -367,11 +367,10 @@ TEST(EventTest, KeyEventCode) {
     EXPECT_EQ(kCodeForSpace, key.GetCodeString());
   }
   {
-    // If the synthetic event is initialized without code, it returns
-    // an empty string.
-    // TODO(komatsu): Fill a fallback value assuming the US keyboard layout.
+    // If the synthetic event is initialized without code, the code is
+    // determined from the KeyboardCode assuming a US keyboard layout.
     KeyEvent key(ET_KEY_PRESSED, VKEY_SPACE, EF_NONE);
-    EXPECT_TRUE(key.GetCodeString().empty());
+    EXPECT_EQ(kCodeForSpace, key.GetCodeString());
   }
 #if defined(USE_X11)
   {

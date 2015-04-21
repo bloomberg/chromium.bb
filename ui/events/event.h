@@ -779,7 +779,7 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // TODO(kpschoedel): refactor so that key_ and character_ are not mutable.
   // This requires defining the KeyEvent completely at construction rather
   // than lazily under GetCharacter(), which likely also means removing
-  // the two 'incomplete' constructors.
+  // the two 'incomplete' constructors. crbug.com/444045
   //
   // DOM KeyboardEvent |key|
   // http://www.w3.org/TR/DOM-Level-3-Events-key/

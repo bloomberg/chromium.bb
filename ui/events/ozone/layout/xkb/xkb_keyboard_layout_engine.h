@@ -58,7 +58,8 @@ class EVENTS_OZONE_LAYOUT_EXPORT XkbKeyboardLayoutEngine
 
   // Determines the Windows-based KeyboardCode (VKEY) for a character key,
   // accounting for non-US layouts. May return VKEY_UNKNOWN, in which case the
-  // caller should use |DomCodeToNonLocatedKeyboardCode()| as a last resort.
+  // caller should, as a last resort, obtain a KeyboardCode using
+  // |DomCodeToUsLayoutMeaning()|.
   KeyboardCode DifficultKeyboardCode(DomCode dom_code,
                                      int ui_flags,
                                      xkb_keycode_t xkb_keycode,

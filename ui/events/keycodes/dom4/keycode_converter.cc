@@ -4,6 +4,7 @@
 
 #include "ui/events/keycodes/dom4/keycode_converter.h"
 
+#include "base/logging.h"
 #include "ui/events/keycodes/dom3/dom_code.h"
 #include "ui/events/keycodes/dom3/dom_key.h"
 
@@ -118,14 +119,17 @@ int KeycodeConverter::DomCodeToNativeKeycode(DomCode code) {
 
 // static
 DomCode KeycodeConverter::CodeStringToDomCode(const char* code) {
-  if (!code || !*code)
+  if (!code || !*code) {
+    LOG(WARNING) << "empty code string";
     return DomCode::NONE;
+  }
   for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
     if (usb_keycode_map[i].code &&
         strcmp(usb_keycode_map[i].code, code) == 0) {
       return static_cast<DomCode>(usb_keycode_map[i].usb_keycode);
     }
   }
+  LOG(WARNING) << "unrecognized code string '" << code << "'";
   return DomCode::NONE;
 }
 

@@ -697,7 +697,7 @@ KeyEvent::KeyEvent(EventType type,
                    int flags)
     : Event(type, EventTimeForNow(), flags),
       key_code_(key_code),
-      code_(DomCode::NONE),
+      code_(UsLayoutKeyboardCodeToDomCode(key_code)),
       is_char_(false),
       platform_keycode_(0),
       key_(DomKey::NONE),
@@ -786,34 +786,49 @@ void KeyEvent::ApplyLayout() const {
     key_ = DomKey::UNIDENTIFIED;
     return;
   }
+  ui::DomCode code = code_;
+  if (code == DomCode::NONE) {
+    // Catch old code that tries to do layout without a physical key, and try
+    // to recover using the KeyboardCode. Once key events are fully defined
+    // on construction (see TODO in event.h) this will go away.
+    LOG(WARNING) << "DomCode::NONE keycode=" << key_code_;
+    code = UsLayoutKeyboardCodeToDomCode(key_code_);
+    if (code == DomCode::NONE) {
+      key_ = DomKey::UNIDENTIFIED;
+      return;
+    }
+  }
+  KeyboardCode dummy_key_code;
 #if defined(OS_WIN)
-  // Native Windows character events always have is_char_ == true,
-  // so this is a synthetic or native keystroke event.
-  // Therefore, perform only the fallback action.
-  GetMeaningFromKeyCode(key_code_, flags(), &key_, &character_);
+// Native Windows character events always have is_char_ == true,
+// so this is a synthetic or native keystroke event.
+// Therefore, perform only the fallback action.
 #elif defined(USE_X11)
   // When a control key is held, prefer ASCII characters to non ASCII
   // characters in order to use it for shortcut keys.  GetCharacterFromKeyCode
   // returns 'a' for VKEY_A even if the key is actually bound to 'à' in X11.
   // GetCharacterFromXEvent returns 'à' in that case.
-  character_ = (IsControlDown() || !native_event()) ?
-      GetCharacterFromKeyCode(key_code_, flags()) :
-      GetCharacterFromXEvent(native_event());
-  // TODO(kpschoedel): set key_ field for X11.
+  if (!IsControlDown() && native_event()) {
+    character_ = GetCharacterFromXEvent(native_event());
+    // TODO(kpschoedel): set key_ field for X11.
+    return;
+  }
 #elif defined(USE_OZONE)
-  KeyboardCode key_code;
-  if (!KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()->Lookup(
-      code_, flags(), &key_, &character_, &key_code, &platform_keycode_)) {
-    GetMeaningFromKeyCode(key_code_, flags(), &key_, &character_);
+  if (KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()->Lookup(
+          code, flags(), &key_, &character_, &dummy_key_code,
+          &platform_keycode_)) {
+    return;
   }
 #else
   if (native_event()) {
     DCHECK(EventTypeFromNative(native_event()) == ET_KEY_PRESSED ||
            EventTypeFromNative(native_event()) == ET_KEY_RELEASED);
   }
-  // TODO(kpschoedel): revise to use DOM code_ instead of Windows key_code_
-  GetMeaningFromKeyCode(key_code_, flags(), &key_, &character_);
 #endif
+  if (!DomCodeToUsLayoutMeaning(code, flags(), &key_, &character_,
+                                &dummy_key_code)) {
+    key_ = DomKey::UNIDENTIFIED;
+  }
 }
 
 DomKey KeyEvent::GetDomKey() const {
@@ -832,9 +847,11 @@ base::char16 KeyEvent::GetCharacter() const {
 
 base::char16 KeyEvent::GetText() const {
   if ((flags() & EF_CONTROL_DOWN) != 0) {
-    // TODO(kpschoedel): revise to use DOM code_ instead of Windows key_code_
-    return GetControlCharacterForKeycode(key_code_,
-                                         (flags() & EF_SHIFT_DOWN) != 0);
+    base::char16 character;
+    ui::DomKey key;
+    ui::KeyboardCode key_code;
+    if (DomCodeToControlCharacter(code_, flags(), &key, &character, &key_code))
+      return character;
   }
   return GetUnmodifiedText();
 }

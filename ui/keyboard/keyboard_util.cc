@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -18,7 +19,11 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event_processor.h"
+#include "ui/events/event_utils.h"
+#include "ui/events/keycodes/dom3/dom_code.h"
+#include "ui/events/keycodes/dom3/dom_key.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
+#include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_controller_proxy.h"
 #include "ui/keyboard/keyboard_switches.h"
@@ -31,7 +36,8 @@ const char kKeyUp[] = "keyup";
 
 void SendProcessKeyEvent(ui::EventType type,
                          aura::WindowTreeHost* host) {
-  ui::KeyEvent event(type, ui::VKEY_PROCESSKEY, ui::EF_NONE);
+  ui::KeyEvent event(type, ui::VKEY_PROCESSKEY, ui::DomCode::NONE, ui::EF_NONE,
+                     ui::DomKey::PROCESS, 0, ui::EventTimeForNow());
   event.SetTranslated(true);
   ui::EventDispatchDetails details =
       host->event_processor()->OnEventFromSource(&event);
@@ -191,36 +197,54 @@ bool MoveCursor(int swipe_direction,
                 aura::WindowTreeHost* host) {
   if (!host)
     return false;
-  ui::KeyboardCode codex = ui::VKEY_UNKNOWN;
-  ui::KeyboardCode codey = ui::VKEY_UNKNOWN;
+  ui::DomCode domcodex = ui::DomCode::NONE;
+  ui::DomCode domcodey = ui::DomCode::NONE;
   if (swipe_direction & kCursorMoveRight)
-    codex = ui::VKEY_RIGHT;
+    domcodex = ui::DomCode::ARROW_RIGHT;
   else if (swipe_direction & kCursorMoveLeft)
-    codex = ui::VKEY_LEFT;
+    domcodex = ui::DomCode::ARROW_LEFT;
 
   if (swipe_direction & kCursorMoveUp)
-    codey = ui::VKEY_UP;
+    domcodey = ui::DomCode::ARROW_UP;
   else if (swipe_direction & kCursorMoveDown)
-    codey = ui::VKEY_DOWN;
+    domcodey = ui::DomCode::ARROW_DOWN;
 
   // First deal with the x movement.
-  if (codex != ui::VKEY_UNKNOWN) {
-    ui::KeyEvent press_event(ui::ET_KEY_PRESSED, codex, modifier_flags);
+  if (domcodex != ui::DomCode::NONE) {
+    ui::KeyboardCode codex = ui::VKEY_UNKNOWN;
+    ui::DomKey domkeyx = ui::DomKey::NONE;
+    base::char16 cx;
+    ignore_result(DomCodeToUsLayoutMeaning(domcodex, ui::EF_NONE, &domkeyx,
+                                           &cx, &codex));
+    ui::KeyEvent press_event(ui::ET_KEY_PRESSED, codex, domcodex,
+                             modifier_flags, domkeyx, cx,
+                             ui::EventTimeForNow());
     ui::EventDispatchDetails details =
         host->event_processor()->OnEventFromSource(&press_event);
     CHECK(!details.dispatcher_destroyed);
-    ui::KeyEvent release_event(ui::ET_KEY_RELEASED, codex, modifier_flags);
+    ui::KeyEvent release_event(ui::ET_KEY_RELEASED, codex, domcodex,
+                               modifier_flags, domkeyx, cx,
+                               ui::EventTimeForNow());
     details = host->event_processor()->OnEventFromSource(&release_event);
     CHECK(!details.dispatcher_destroyed);
   }
 
   // Then deal with the y movement.
-  if (codey != ui::VKEY_UNKNOWN) {
-    ui::KeyEvent press_event(ui::ET_KEY_PRESSED, codey, modifier_flags);
+  if (domcodey != ui::DomCode::NONE) {
+    ui::KeyboardCode codey = ui::VKEY_UNKNOWN;
+    ui::DomKey domkeyy = ui::DomKey::NONE;
+    base::char16 cy;
+    ignore_result(DomCodeToUsLayoutMeaning(domcodey, ui::EF_NONE, &domkeyy,
+                                           &cy, &codey));
+    ui::KeyEvent press_event(ui::ET_KEY_PRESSED, codey, domcodey,
+                             modifier_flags, domkeyy, cy,
+                             ui::EventTimeForNow());
     ui::EventDispatchDetails details =
         host->event_processor()->OnEventFromSource(&press_event);
     CHECK(!details.dispatcher_destroyed);
-    ui::KeyEvent release_event(ui::ET_KEY_RELEASED, codey, modifier_flags);
+    ui::KeyEvent release_event(ui::ET_KEY_RELEASED, codey, domcodey,
+                               modifier_flags, domkeyy, cy,
+                               ui::EventTimeForNow());
     details = host->event_processor()->OnEventFromSource(&release_event);
     CHECK(!details.dispatcher_destroyed);
   }
@@ -274,10 +298,16 @@ bool SendKeyEvent(const std::string type,
       }
     }
 
+    ui::DomCode dom_code = ui::DomCode::NONE;
+    if (!key_name.empty())
+      dom_code = ui::KeycodeConverter::CodeStringToDomCode(key_name.c_str());
+    if (dom_code == ui::DomCode::NONE)
+      dom_code = ui::UsLayoutKeyboardCodeToDomCode(code);
+    CHECK(dom_code != ui::DomCode::NONE);
     ui::KeyEvent event(
         event_type,
         code,
-        ui::KeycodeConverter::CodeStringToDomCode(key_name.c_str()),
+        dom_code,
         modifiers);
     ui::EventDispatchDetails details =
         host->event_processor()->OnEventFromSource(&event);

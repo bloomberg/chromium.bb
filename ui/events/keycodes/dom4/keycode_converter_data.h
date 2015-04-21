@@ -399,6 +399,12 @@ USB_KEYMAP_DECLARATION {
   USB_KEYMAP(0x0c0075, 0x00fc, 0x0000, 0xffff, NULL, BRIGHTNESS_AUTO),
 
   //            USB      XKB     Win     Mac
+  //USB_KEYMAP(0x0c00b0, 0x00d7, 0x????, 0x????, "MediaPlay", MEDIA_PLAY),
+  //USB_KEYMAP(0x0c00b1, 0x007f, 0x????, 0x????, "MediaPause", MEDIA_PAUSE),
+  //USB_KEYMAP(0x0c00b2, 0x00af, 0x????, 0x????, "MediaRecord", MEDIA_RECORD),
+  //USB_KEYMAP(0x0c00b3, 0x00d8, 0x????, 0x????, "MediaFastForward",
+  //           MEDIA_FAST_FORWARD),
+  //USB_KEYMAP(0x0c00b4, 0x00b0, 0x????, 0x????, "MediaRewind", MEDIA_REWIND),
   USB_KEYMAP(0x0c00b5, 0x0000, 0xe019, 0xffff, "MediaTrackNext",
              MEDIA_TRACK_NEXT),
   USB_KEYMAP(0x0c00b6, 0x0000, 0xe010, 0xffff, "MediaTrackPrevious",
@@ -441,6 +447,8 @@ USB_KEYMAP_DECLARATION {
   USB_KEYMAP(0x0c01b4, 0x0098, 0x0000, 0xffff, NULL, LAUNCH_FILE_BROWSER),
   // USB#0x0c01b7: AL Audio Browser
   //USB_KEYMAP(0x0c01b7, 0x0190, 0x0000, 0xffff, NULL, LAUNCH_AUDIO_BROWSER),
+  // USB#0x0c0208: AC Print
+  //USB_KEYMAP(0x0c0208, 0x00da, 0x0000, 0xffff, NULL, PRINT),
   // USB#0x0c0221:  AC_Search
   USB_KEYMAP(0x0c0221, 0x0000, 0xe065, 0xffff, "BrowserSearch", BROWSER_SEARCH),
   // USB#0x0c0223:  AC_Home

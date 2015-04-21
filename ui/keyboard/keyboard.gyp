@@ -59,6 +59,7 @@
         '../compositor/compositor.gyp:compositor',
         '../events/events.gyp:dom4_keycode_converter',
         '../events/events.gyp:events',
+        '../events/events.gyp:events_base',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
         '../wm/wm.gyp:wm',

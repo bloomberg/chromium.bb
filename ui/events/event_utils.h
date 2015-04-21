@@ -84,13 +84,10 @@ EVENTS_EXPORT KeyboardCode KeyboardCodeFromNative(
 // keyboard) from a native event.
 EVENTS_EXPORT DomCode CodeFromNative(const base::NativeEvent& native_event);
 
-// Returns the platform related key code. For X11, it is xksym value.
+// Returns the platform related key code (interpretation, not scan code).
+// For X11 and xkbcommon, this is the KeySym value.
 EVENTS_EXPORT uint32 PlatformKeycodeFromNative(
     const base::NativeEvent& native_event);
-
-// Returns a control character sequences from a |windows_key_code|.
-EVENTS_EXPORT base::char16 GetControlCharacterForKeycode(int windows_key_code,
-                                                         bool shift);
 
 // Returns true if the keyboard event is a character event rather than
 // a keystroke event.

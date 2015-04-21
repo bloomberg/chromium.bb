@@ -43,6 +43,7 @@ component("keyboard") {
     "//ui/compositor",
     "//ui/events",
     "//ui/events:dom4_keycode_converter",
+    "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/wm",
