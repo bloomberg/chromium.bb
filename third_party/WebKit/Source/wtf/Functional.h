@@ -122,6 +122,8 @@ template<typename T> struct ParamStorageTraits<RetainPtr<T>> {
     static typename RetainPtr<T>::PtrType unwrap(const StorageType& value) { return value.get(); }
 };
 
+// This class helps to reduce binary size: ThreadSafeRefCounted methods are not duplicated
+// within multiple instantiations of FunctionImpl<> classes.
 class FunctionImplBase : public ThreadSafeRefCounted<FunctionImplBase> {
 public:
     virtual ~FunctionImplBase() { }
@@ -148,7 +150,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P... params) override
+    typename FunctionWrapper::ResultType operator()(P... params) override
     {
         return m_functionWrapper(params...);
     }
@@ -166,7 +168,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P... params) override
+    typename FunctionWrapper::ResultType operator()(P... params) override
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), params...);
     }
@@ -186,7 +188,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P... params) override
+    typename FunctionWrapper::ResultType operator()(P... params) override
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), params...);
     }
@@ -208,7 +210,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P... params) override
+    typename FunctionWrapper::ResultType operator()(P... params) override
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3), params...);
     }
@@ -232,7 +234,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P... params) override
+    typename FunctionWrapper::ResultType operator()(P... params) override
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3), ParamStorageTraits<P4>::unwrap(m_p4), params...);
     }
@@ -258,7 +260,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P... params) override
+    typename FunctionWrapper::ResultType operator()(P... params) override
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3), ParamStorageTraits<P4>::unwrap(m_p4), ParamStorageTraits<P5>::unwrap(m_p5), params...);
     }
@@ -286,7 +288,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()(P... params) override
+    typename FunctionWrapper::ResultType operator()(P... params) override
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3), ParamStorageTraits<P4>::unwrap(m_p4), ParamStorageTraits<P5>::unwrap(m_p5), ParamStorageTraits<P6>::unwrap(m_p6), params...);
     }
@@ -301,53 +303,34 @@ private:
     typename ParamStorageTraits<P6>::StorageType m_p6;
 };
 
-class FunctionBase {
-    WTF_MAKE_NONCOPYABLE(FunctionBase);
-public:
-    bool isNull() const
-    {
-        return !m_impl;
-    }
-
-protected:
-    FunctionBase()
-    {
-    }
-
-    explicit FunctionBase(PassRefPtr<FunctionImplBase> impl)
-        : m_impl(impl)
-    {
-    }
-
-    template<typename FunctionType> FunctionImpl<FunctionType>* impl() const
-    {
-        return static_cast<FunctionImpl<FunctionType>*>(m_impl.get());
-    }
-
-private:
-    RefPtr<FunctionImplBase> m_impl;
-};
-
 template<typename>
 class Function;
 
 template<typename R, typename... A>
-class Function<R(A...)> : public FunctionBase {
+class Function<R(A...)>  {
+    WTF_MAKE_NONCOPYABLE(Function);
 public:
     Function()
     {
     }
 
-    Function(PassRefPtr<FunctionImpl<R(A...)>> impl)
-        : FunctionBase(impl)
+    explicit Function(PassRefPtr<FunctionImpl<R(A...)>> impl)
+        : m_impl(impl)
     {
+    }
+
+    bool isNull() const
+    {
+        return !m_impl;
     }
 
     R operator()(A... args) const
     {
-        ASSERT(!isNull());
-        return impl<R(A...)>()->operator()(args...);
+        ASSERT(m_impl);
+        return m_impl->operator()(args...);
     }
+private:
+    RefPtr<FunctionImpl<R(A...)>> m_impl;
 };
 
 template<typename... FreeArgsTypes, typename FunctionType, typename... A>
