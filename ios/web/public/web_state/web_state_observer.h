@@ -32,6 +32,9 @@ class WebStateObserver {
   // Returns the web state associated with this observer.
   WebState* web_state() const { return web_state_; }
 
+  // This method is invoked when a load request is registered.
+  virtual void ProvisionalNavigationStarted(const GURL& url) {}
+
   // This method is invoked when a new non-pending navigation item is created.
   // This corresponds to one NavigationManager item being created
   // (in the case of new navigations) or renavigated to (for back/forward

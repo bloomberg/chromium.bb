@@ -18,6 +18,11 @@ class GURL;
 // web::WebStateObserver, wrap in a web::WebStateObserverBridge.
 @protocol CRWWebStateObserver<NSObject>
 @optional
+
+// Invoked by WebStateObserverBridge::ProvisionalNavigationStarted.
+- (void)webState:(web::WebState*)webState
+    didStartProvisionalNavigationForURL:(const GURL&)URL;
+
 // Invoked by WebStateObserverBridge::NavigationItemCommitted.
 - (void)webState:(web::WebState*)webState
     didCommitNavigationWithDetails:
@@ -82,6 +87,7 @@ class WebStateObserverBridge : public web::WebStateObserver {
   ~WebStateObserverBridge() override;
 
   // web::WebStateObserver methods.
+  void ProvisionalNavigationStarted(const GURL& url) override;
   void NavigationItemCommitted(
       const LoadCommittedDetails& load_details) override;
   void PageLoaded(
