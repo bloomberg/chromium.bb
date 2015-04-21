@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
+#include "base/debug/profiler.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -139,6 +140,7 @@ class SuicideOnChannelErrorFilter : public IPC::MessageFilter {
     //
     // So, we install a filter on the sender so that we can process this event
     // here and kill the process.
+    base::debug::StopProfiling();
 #if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) || \
     defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER) || \
     defined(UNDEFINED_SANITIZER)
