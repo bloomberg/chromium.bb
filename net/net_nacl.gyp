@@ -23,7 +23,6 @@
       },
       'dependencies': [
         '../crypto/crypto_nacl.gyp:crypto_nacl',
-        '../native_client/tools.gyp:prep_toolchain',
         '../native_client_sdk/native_client_sdk_untrusted.gyp:nacl_io_untrusted',
         '../third_party/boringssl/boringssl_nacl.gyp:boringssl_nacl',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',

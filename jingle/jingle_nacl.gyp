@@ -31,7 +31,6 @@
       ],
       'dependencies': [
         '../base/base_nacl.gyp:base_nacl',
-        '../native_client/tools.gyp:prep_toolchain',
         '../net/net_nacl.gyp:net_nacl',
         '../third_party/libjingle/libjingle_nacl.gyp:libjingle_nacl',
       ],

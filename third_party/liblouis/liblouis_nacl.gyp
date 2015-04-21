@@ -65,9 +65,6 @@
             'src/liblouis/transcommon.ci',
             'src/liblouis/wrappers.c',
           ],
-          'dependencies': [
-            '../../native_client/tools.gyp:prep_toolchain',
-          ],
         },
         {
           'target_name': 'liblouis_nacl_wrapper_nacl',
@@ -119,7 +116,6 @@
           ],
           'dependencies': [
             '../../native_client/src/untrusted/nacl/nacl.gyp:nacl_lib',
-            '../../native_client/tools.gyp:prep_toolchain',
             '../../native_client_sdk/native_client_sdk_untrusted.gyp:nacl_io_untrusted',
             '../../ppapi/native_client/native_client.gyp:ppapi_lib',
             '../../ppapi/ppapi_nacl.gyp:ppapi_cpp_lib',

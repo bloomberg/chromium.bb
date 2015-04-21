@@ -24,9 +24,6 @@
             # overrides/src/lib_json/json_value.cpp:38.
             '-fno-strict-aliasing',
           ],
-          'dependencies': [
-            '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-          ],
         },
       ],
     }],

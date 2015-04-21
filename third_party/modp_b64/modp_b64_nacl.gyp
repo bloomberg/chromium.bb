@@ -16,9 +16,6 @@
         'build_newlib': 1,
         'build_pnacl_newlib': 1,
       },
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-      ],
       'sources': [
         'modp_b64.cc',
         'modp_b64.h',

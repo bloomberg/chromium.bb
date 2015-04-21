@@ -26,7 +26,6 @@
           },
           'dependencies': [
             '../base/base_nacl.gyp:base_nacl',
-            '../native_client/tools.gyp:prep_toolchain',
           ],
         },
         {
@@ -56,7 +55,6 @@
           ],
           'dependencies': [
             '../base/base_nacl.gyp:base_nacl_nonsfi',
-            '../native_client/tools.gyp:prep_toolchain',
           ],
         },
       ],

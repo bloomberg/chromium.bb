@@ -31,7 +31,6 @@
             '..',
           ],
           'dependencies': [
-            '../native_client/tools.gyp:prep_toolchain',
             '../base/base_nacl.gyp:base_nacl',
             '../base/base_nacl.gyp:base_nacl_nonsfi',
             '../gpu/command_buffer/command_buffer_nacl.gyp:gles2_utils_nacl',

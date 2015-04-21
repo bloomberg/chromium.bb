@@ -51,9 +51,6 @@
           '-DPNACL_SHIM_AOT',
         ],
       },
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-      ],
     },
     # Smaller shim library for PNaCl in-browser translation.
     # Uses an unstable IRT hook interface to get the shim from the IRT itself.
@@ -87,9 +84,6 @@
           '--strip-debug',
         ],
       },
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-      ],
     },
     {
       # Second half of shim library for PNaCl in-browser translation.
@@ -109,9 +103,6 @@
           'pnacl_shim.c',
         ],
       },
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-      ],
     },
   ],
 }

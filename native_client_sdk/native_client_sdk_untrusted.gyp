@@ -35,7 +35,6 @@
             '>!@pymod_do_main(dsc_info -s -l src/libraries/nacl_io nacl_io)',
           ],
           'dependencies': [
-            '../native_client/tools.gyp:prep_toolchain',
             '../ppapi/native_client/native_client.gyp:ppapi_lib',
           ],
         },

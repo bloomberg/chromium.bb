@@ -23,7 +23,6 @@
             '../../base/base_nacl.gyp:base_nacl_nonsfi',
             '../../ipc/ipc_nacl.gyp:ipc_nacl',
             '../../ipc/ipc_nacl.gyp:ipc_nacl_nonsfi',
-            '../../native_client/tools.gyp:prep_toolchain'
           ],
           'variables': {
             'nacl_untrusted_build': 1,

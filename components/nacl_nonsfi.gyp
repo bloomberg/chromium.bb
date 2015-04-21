@@ -140,7 +140,6 @@
             '../native_client/src/nonsfi/irt/irt.gyp:nacl_sys_private',
             '../native_client/src/nonsfi/loader/loader.gyp:elf_loader',
             '../native_client/src/untrusted/nacl/nacl.gyp:nacl_lib_newlib',
-            '../native_client/tools.gyp:prep_toolchain',
             '../ppapi/ppapi_proxy_nacl.gyp:ppapi_proxy_nacl',
             '../sandbox/sandbox_nacl_nonsfi.gyp:sandbox_nacl_nonsfi',
           ],

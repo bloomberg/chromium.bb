@@ -27,9 +27,6 @@
           'cpp/ppp_entrypoints.cc',
         ],
       },
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-      ],
     },
     {
       'target_name': 'ppapi_gles2_lib',
@@ -49,15 +46,11 @@
           'lib/gl/gles2/gles2.c',
         ],
       },
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-      ],
     },
     {
       'target_name': 'ppapi_nacl_tests',
       'type': 'none',
       'dependencies': [
-         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
          '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib',
          '<(DEPTH)/native_client/src/untrusted/pthread/pthread.gyp:pthread_lib',
          'ppapi_cpp_lib',

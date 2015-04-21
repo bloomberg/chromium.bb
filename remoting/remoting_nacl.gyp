@@ -74,7 +74,6 @@
         'GOOGLE_PROTOBUF_HOST_ARCH_64_BIT=1'
       ],
       'dependencies': [
-        '../native_client/tools.gyp:prep_toolchain',
         '../third_party/protobuf/protobuf_nacl.gyp:protobuf_lite_nacl',
         'proto/chromotocol.gyp:chromotocol_proto_lib',
       ],
@@ -101,7 +100,6 @@
       'dependencies': [
         '../base/base_nacl.gyp:base_nacl',
         '../jingle/jingle_nacl.gyp:jingle_glue_nacl',
-        '../native_client/tools.gyp:prep_toolchain',
         '../native_client_sdk/native_client_sdk_untrusted.gyp:nacl_io_untrusted',
         '../net/net_nacl.gyp:net_nacl',
         '../third_party/boringssl/boringssl_nacl.gyp:boringssl_nacl',
@@ -181,7 +179,6 @@
         '../crypto/crypto_nacl.gyp:crypto_nacl',
         '../jingle/jingle_nacl.gyp:jingle_glue_nacl',
         '../media/media_nacl.gyp:media_yuv_nacl',
-        '../native_client/tools.gyp:prep_toolchain',
         '../native_client_sdk/native_client_sdk_untrusted.gyp:nacl_io_untrusted',
         '../net/net_nacl.gyp:net_nacl',
         '../ppapi/native_client/native_client.gyp:ppapi_lib',

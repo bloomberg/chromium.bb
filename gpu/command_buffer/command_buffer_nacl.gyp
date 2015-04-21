@@ -27,7 +27,6 @@
             'build_nonsfi_helper': 1,
           },
           'dependencies': [
-            '../../native_client/tools.gyp:prep_toolchain',
             '../../base/base_nacl.gyp:base_nacl',
             '../../base/base_nacl.gyp:base_nacl_nonsfi',
             '../../third_party/khronos/khronos.gyp:khronos_headers',

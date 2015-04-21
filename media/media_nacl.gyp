@@ -27,7 +27,6 @@
           'dependencies': [
             '../base/base_nacl.gyp:base_nacl',
             '../base/base_nacl.gyp:base_nacl_nonsfi',
-            '../native_client/tools.gyp:prep_toolchain',
           ],
           'defines': [
             'MEDIA_IMPLEMENTATION',
@@ -51,9 +50,6 @@
             'build_newlib': 0,
             'build_pnacl_newlib': 1,
           },
-          'dependencies': [
-            '../native_client/tools.gyp:prep_toolchain',
-          ],
           'sources': [
             'base/media.cc',
             'base/media.h',

@@ -40,9 +40,6 @@
             'build_pnacl_newlib': 0,
             'build_nonsfi_helper': 1,
           },
-          'dependencies': [
-            '../../native_client/tools.gyp:prep_toolchain',
-          ],
         },
       ],
     }],

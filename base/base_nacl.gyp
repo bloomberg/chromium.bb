@@ -39,9 +39,6 @@
               '-fno-strict-aliasing',
             ],
           },
-          'dependencies': [
-            '../native_client/tools.gyp:prep_toolchain',
-          ],
         },
         {
           'target_name': 'base_i18n_nacl',
@@ -63,7 +60,6 @@
             ],
           },
           'dependencies': [
-            '../native_client/tools.gyp:prep_toolchain',
             '../third_party/icu/icu_nacl.gyp:icudata_nacl',
             '../third_party/icu/icu_nacl.gyp:icui18n_nacl',
             '../third_party/icu/icu_nacl.gyp:icuuc_nacl',
@@ -113,7 +109,6 @@
             'rand_util_nacl.cc',
           ],
           'dependencies': [
-            '../native_client/tools.gyp:prep_toolchain',
             '../third_party/libevent/libevent_nacl_nonsfi.gyp:event_nacl_nonsfi',
           ],
         },

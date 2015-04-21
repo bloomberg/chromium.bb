@@ -25,9 +25,6 @@
         'ppapi_plugin_start.c',
         'thread_creator.c'
       ],
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-      ],
     },
   ],
 }
