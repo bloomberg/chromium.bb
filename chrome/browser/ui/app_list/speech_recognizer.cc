@@ -26,6 +26,9 @@ namespace app_list {
 // Length of timeout to cancel recognition if there's no speech heard.
 static const int kNoSpeechTimeoutInSeconds = 5;
 
+// Length of timeout to cancel recognition if no different results are received.
+static const int kNoNewSpeechTimeoutInSeconds = 3;
+
 // Invalid speech session.
 static const int kInvalidSessionId = -1;
 
@@ -56,7 +59,9 @@ class SpeechRecognizer::EventListener
 
   void NotifyRecognitionStateChanged(SpeechRecognitionState new_state);
 
-  void StartSpeechTimeout();
+  // Starts a timer for |timeout_seconds|. When the timer expires, will stop
+  // capturing audio and get a final utterance from the recognition manager.
+  void StartSpeechTimeout(int timeout_seconds);
   void StopSpeechTimeout();
   void SpeechTimeout();
 
@@ -85,6 +90,7 @@ class SpeechRecognizer::EventListener
   std::string locale_;
   base::Timer speech_timeout_;
   int session_;
+  base::string16 last_result_str_;
 
   base::WeakPtrFactory<EventListener> weak_factory_;
 
@@ -161,11 +167,11 @@ void SpeechRecognizer::EventListener::NotifyRecognitionStateChanged(
                  new_state));
 }
 
-void SpeechRecognizer::EventListener::StartSpeechTimeout() {
+void SpeechRecognizer::EventListener::StartSpeechTimeout(int timeout_seconds) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   speech_timeout_.Start(
       FROM_HERE,
-      base::TimeDelta::FromSeconds(kNoSpeechTimeoutInSeconds),
+      base::TimeDelta::FromSeconds(timeout_seconds),
       base::Bind(&SpeechRecognizer::EventListener::SpeechTimeout, this));
 }
 
@@ -192,12 +198,14 @@ void SpeechRecognizer::EventListener::OnRecognitionResults(
     int session_id, const content::SpeechRecognitionResults& results) {
   base::string16 result_str;
   size_t final_count = 0;
+  // The number of results with |is_provisional| false. If |final_count| ==
+  // results.size(), then all results are non-provisional and the recognition is
+  // complete.
   for (const auto& result : results) {
     if (!result.is_provisional)
       final_count++;
     result_str += result.hypotheses[0].utterance;
   }
-  StopSpeechTimeout();
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
@@ -206,9 +214,15 @@ void SpeechRecognizer::EventListener::OnRecognitionResults(
                  result_str,
                  final_count == results.size()));
 
-  // Stop the moment we have a final result.
+  // Stop the moment we have a final result. If we receive any new or changed
+  // text, restart the timer to give the user more time to speak. (The timer is
+  // recording the amount of time since the most recent utterance.)
   if (final_count == results.size())
     StopOnIOThread();
+  else if (result_str != last_result_str_)
+    StartSpeechTimeout(kNoNewSpeechTimeoutInSeconds);
+
+  last_result_str_ = result_str;
 }
 
 void SpeechRecognizer::EventListener::OnRecognitionError(
@@ -221,7 +235,7 @@ void SpeechRecognizer::EventListener::OnRecognitionError(
 }
 
 void SpeechRecognizer::EventListener::OnSoundStart(int session_id) {
-  StartSpeechTimeout();
+  StartSpeechTimeout(kNoSpeechTimeoutInSeconds);
   NotifyRecognitionStateChanged(SPEECH_RECOGNITION_IN_SPEECH);
 }
 
