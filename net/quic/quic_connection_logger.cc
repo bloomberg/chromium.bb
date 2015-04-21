@@ -772,8 +772,9 @@ void QuicConnectionLogger::AddTo21CumulativeHistogram(
 float QuicConnectionLogger::ReceivedPacketLossRate() const {
   if (largest_received_packet_sequence_number_ <= num_packets_received_)
     return 0.0f;
-  return (largest_received_packet_sequence_number_ - num_packets_received_) /
-         largest_received_packet_sequence_number_;
+  float num_received =
+      largest_received_packet_sequence_number_ - num_packets_received_;
+  return num_received / largest_received_packet_sequence_number_;
 }
 
 void QuicConnectionLogger::RecordAggregatePacketLossRate() const {

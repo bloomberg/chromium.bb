@@ -16,6 +16,17 @@ class QuicConnectionLoggerPeer {
   static size_t num_truncated_acks_sent(const QuicConnectionLogger& logger) {
     return logger.num_truncated_acks_sent_;
   }
+
+  static void set_num_packets_received(QuicConnectionLogger& logger,
+                                       int value) {
+    logger.num_packets_received_ = value;
+  }
+
+  static void set_largest_received_packet_sequence_number(
+      QuicConnectionLogger& logger,
+      int value) {
+    logger.largest_received_packet_sequence_number_ = value;
+  }
 };
 
 class QuicConnectionLoggerTest : public ::testing::Test {
@@ -48,6 +59,13 @@ TEST_F(QuicConnectionLoggerTest, TruncatedAcksSent) {
   }
   logger_.OnFrameAddedToPacket(QuicFrame(&frame));
   EXPECT_EQ(1u, QuicConnectionLoggerPeer::num_truncated_acks_sent(logger_));
+}
+
+TEST_F(QuicConnectionLoggerTest, ReceivedPacketLossRate) {
+  QuicConnectionLoggerPeer::set_num_packets_received(logger_, 1);
+  QuicConnectionLoggerPeer::set_largest_received_packet_sequence_number(logger_,
+                                                                        2);
+  EXPECT_EQ(0.5f, logger_.ReceivedPacketLossRate());
 }
 
 }  // namespace test
