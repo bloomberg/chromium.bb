@@ -901,8 +901,10 @@ bool OmniboxEditModel::AcceptKeyword(EnteredKeywordModeMethod entered_method) {
   // the current state properly.
   bool save_original_selection = !has_temporary_text_;
   has_temporary_text_ = true;
+  const AutocompleteMatch& match = CurrentMatch(NULL);
+  original_url_ = match.destination_url;
   view_->OnTemporaryTextMaybeChanged(
-      DisplayTextFromUserText(CurrentMatch(NULL).fill_into_edit),
+      DisplayTextFromUserText(match.fill_into_edit),
       save_original_selection, true);
 
   view_->UpdatePlaceholderText();
