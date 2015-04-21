@@ -937,6 +937,10 @@ void TracingControllerImpl::RequestGlobalMemoryDump(
     tmf->SendProcessMemoryDumpRequest(args);
 }
 
+bool TracingControllerImpl::IsCoordinatorProcess() const {
+  return true;
+}
+
 void TracingControllerImpl::OnProcessMemoryDumpResponse(
     TraceMessageFilter* trace_message_filter,
     uint64 dump_guid,

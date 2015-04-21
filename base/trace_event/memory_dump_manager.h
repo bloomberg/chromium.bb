@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
+#include "base/timer/timer.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "base/trace_event/trace_event.h"
 
@@ -120,6 +121,12 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   // dump_providers_enabled_ list) when tracing is not enabled.
   subtle::AtomicWord memory_tracing_enabled_;
 
+  // For time-triggered periodic dumps.
+  RepeatingTimer<MemoryDumpManager> periodic_dump_timer_;
+
+  // Skips the auto-registration of the core dumpers during Initialize().
+  bool skip_core_dumpers_auto_registration_for_testing_;
+
   DISALLOW_COPY_AND_ASSIGN(MemoryDumpManager);
 };
 
@@ -129,6 +136,10 @@ class BASE_EXPORT MemoryDumpManagerDelegate {
  public:
   virtual void RequestGlobalMemoryDump(const MemoryDumpRequestArgs& args,
                                        const MemoryDumpCallback& callback) = 0;
+
+  // Determines whether the MemoryDumpManager instance should be the master
+  // (the ones which initiates and coordinates the multiprocess dumps) or not.
+  virtual bool IsCoordinatorProcess() const = 0;
 
  protected:
   MemoryDumpManagerDelegate() {}

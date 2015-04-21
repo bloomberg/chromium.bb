@@ -68,4 +68,8 @@ void ChildMemoryDumpManagerDelegateImpl::RequestGlobalMemoryDump(
   ctmf_->SendGlobalMemoryDumpRequest(args, callback);
 }
 
+bool ChildMemoryDumpManagerDelegateImpl::IsCoordinatorProcess() const {
+  return false;
+}
+
 }  // namespace tracing

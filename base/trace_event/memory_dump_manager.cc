@@ -13,6 +13,12 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_argument.h"
 
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+#include "base/trace_event/malloc_dump_provider.h"
+#include "base/trace_event/process_memory_maps_dump_provider.h"
+#include "base/trace_event/process_memory_totals_dump_provider.h"
+#endif
+
 namespace base {
 namespace trace_event {
 
@@ -23,6 +29,7 @@ namespace {
 const char kTraceCategory[] = TRACE_DISABLED_BY_DEFAULT("memory-dumps");
 
 MemoryDumpManager* g_instance_for_testing = nullptr;
+const int kDumpIntervalSeconds = 2;
 const int kTraceEventNumArgs = 1;
 const char* kTraceEventArgNames[] = {"dumps"};
 const unsigned char kTraceEventArgTypes[] = {TRACE_VALUE_TYPE_CONVERTABLE};
@@ -108,6 +115,11 @@ void FinalizeDumpAndAddToTrace(
   }
 }
 
+void RequestPeriodicGlobalDump() {
+  MemoryDumpManager::GetInstance()->RequestGlobalDump(
+      MemoryDumpType::PERIODIC_INTERVAL);
+}
+
 }  // namespace
 
 // static
@@ -124,13 +136,16 @@ MemoryDumpManager* MemoryDumpManager::GetInstance() {
 
 // static
 void MemoryDumpManager::SetInstanceForTesting(MemoryDumpManager* instance) {
+  if (instance)
+    instance->skip_core_dumpers_auto_registration_for_testing_ = true;
   g_instance_for_testing = instance;
 }
 
 MemoryDumpManager::MemoryDumpManager()
     : dump_provider_currently_active_(nullptr),
       delegate_(nullptr),
-      memory_tracing_enabled_(0) {
+      memory_tracing_enabled_(0),
+      skip_core_dumpers_auto_registration_for_testing_(false) {
   g_next_guid.GetNext();  // Make sure that first guid is not zero.
 }
 
@@ -141,6 +156,16 @@ MemoryDumpManager::~MemoryDumpManager() {
 void MemoryDumpManager::Initialize() {
   TRACE_EVENT0(kTraceCategory, "init");  // Add to trace-viewer category list.
   trace_event::TraceLog::GetInstance()->AddEnabledStateObserver(this);
+
+  if (skip_core_dumpers_auto_registration_for_testing_)
+    return;
+
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  // Enable the core dump providers.
+  RegisterDumpProvider(ProcessMemoryTotalsDumpProvider::GetInstance());
+  RegisterDumpProvider(ProcessMemoryMapsDumpProvider::GetInstance());
+  RegisterDumpProvider(MallocDumpProvider::GetInstance());
+#endif
 }
 
 void MemoryDumpManager::SetDelegate(MemoryDumpManagerDelegate* delegate) {
@@ -309,22 +334,33 @@ void MemoryDumpManager::OnTraceLogEnabled() {
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(kTraceCategory, &enabled);
 
   AutoLock lock(lock_);
-  dump_providers_enabled_.clear();
-  if (enabled) {
-    // Merge the dictionary of allocator attributes from all dump providers
-    // into the session state.
-    session_state_ = new MemoryDumpSessionState();
-    for (const MemoryDumpProvider* mdp : dump_providers_registered_) {
-      session_state_->allocators_attributes_type_info.Update(
-          mdp->allocator_attributes_type_info());
-    }
-    dump_providers_enabled_ = dump_providers_registered_;
+
+  // There is no point starting the tracing without a delegate.
+  if (!enabled || !delegate_) {
+    dump_providers_enabled_.clear();
+    return;
   }
+
+  // Merge the dictionary of allocator attributes from all dump providers
+  // into the session state.
+  session_state_ = new MemoryDumpSessionState();
+  for (const MemoryDumpProvider* mdp : dump_providers_registered_) {
+    session_state_->allocators_attributes_type_info.Update(
+        mdp->allocator_attributes_type_info());
+  }
+  dump_providers_enabled_ = dump_providers_registered_;
   subtle::NoBarrier_Store(&memory_tracing_enabled_, 1);
+
+  if (delegate_->IsCoordinatorProcess()) {
+    periodic_dump_timer_.Start(FROM_HERE,
+                               TimeDelta::FromSeconds(kDumpIntervalSeconds),
+                               base::Bind(&RequestPeriodicGlobalDump));
+  }
 }
 
 void MemoryDumpManager::OnTraceLogDisabled() {
   AutoLock lock(lock_);
+  periodic_dump_timer_.Stop();
   dump_providers_enabled_.clear();
   subtle::NoBarrier_Store(&memory_tracing_enabled_, 0);
   session_state_ = nullptr;

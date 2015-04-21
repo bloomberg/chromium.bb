@@ -30,6 +30,8 @@ class MemoryDumpManagerDelegateForTesting : public MemoryDumpManagerDelegate {
       const MemoryDumpCallback& callback) override {
     CreateProcessDump(args, callback);
   }
+
+  bool IsCoordinatorProcess() const override { return false; }
 };
 
 class MemoryDumpManagerTest : public testing::Test {

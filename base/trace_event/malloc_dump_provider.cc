@@ -33,7 +33,6 @@ MallocDumpProvider::~MallocDumpProvider() {
 // the current process.
 bool MallocDumpProvider::DumpInto(ProcessMemoryDump* pmd) {
   struct mallinfo info = mallinfo();
-  DCHECK(info.uordblks > 0);
   DCHECK_GE(info.arena + info.hblkhd, info.uordblks);
 
   MemoryAllocatorDump* dump =

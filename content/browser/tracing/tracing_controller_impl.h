@@ -61,6 +61,7 @@ class TracingControllerImpl
   void RequestGlobalMemoryDump(
       const base::trace_event::MemoryDumpRequestArgs& args,
       const base::trace_event::MemoryDumpCallback& callback) override;
+  bool IsCoordinatorProcess() const override;
 
  private:
   typedef std::set<scoped_refptr<TraceMessageFilter> > TraceMessageFilterSet;
