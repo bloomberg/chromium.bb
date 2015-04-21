@@ -3,24 +3,9 @@
 
 <polymer-element name="throbber-notice" attributes="text" noscript>
   <template>
-    <style>
-      paper-spinner::shadow .circle {
-        border-color: #4285f4;
-      }
-
-      paper-spinner {
-        height: 36px;
-        width: 36px;
-      }
-      #spinner-container {
-        margin-bottom: 25px;
-      }
-      #spinner-comment {
-        color: grey;
-      }
-    </style>
+    <link rel="stylesheet" href="throbber_notice.css">
     <div id="spinner-container" vertical layout center>
-      <paper-spinner active></paper-spinner>
+      <paper-spinner dir="ltr" active></paper-spinner>
     </div>
     <div id="spinner-comment">{{text}}</div>
   </template>
