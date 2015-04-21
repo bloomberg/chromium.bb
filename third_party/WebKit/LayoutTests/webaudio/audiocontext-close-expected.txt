@@ -9,6 +9,7 @@ PASS osc = context.createOscillator() did not throw exception.
 PASS gain = context.createGain() did not throw exception.
 PASS gain.connect(context.destination) did not throw exception.
 PASS context.close() was correctly resolved
+PASS gain.disconnect(destination) did not throw exception.
 PASS context.createAnalyser() threw exception InvalidStateError: Failed to execute 'createAnalyser' on 'AudioContext': AudioContext has been closed..
 PASS context.createBiquadFilter() threw exception InvalidStateError: Failed to execute 'createBiquadFilter' on 'AudioContext': AudioContext has been closed..
 PASS context.createBuffer(1, 1, 48000) did not throw exception.

@@ -298,9 +298,6 @@ public:
     // Called periodically at the end of each render quantum to dereference finished source nodes.
     void derefFinishedSourceNodes();
 
-    void registerLiveNode(AudioNode&);
-    void unregisterLiveNode(AudioNode&);
-
     // Keeps track of the number of connections made.
     void incrementConnectionCount()
     {
@@ -418,13 +415,6 @@ private:
     // time and the audio context process loop is very fast, so we don't want to call resolve an
     // excessive number of times.
     bool m_isResolvingResumePromises;
-
-    // Conceptually, this should be HeapHashSet<WeakMember<AudioNode>>. However
-    // AudioNode also registers its pre-finalizer to the GC system, and having
-    // another weak set would make the GC system slower. The AudioNode
-    // pre-finalizer removes a member of this HashSet.
-    GC_PLUGIN_IGNORE("http://crbug.com/404527")
-    HashSet<AudioNode*> m_liveNodes;
 
     unsigned m_connectionCount;
 

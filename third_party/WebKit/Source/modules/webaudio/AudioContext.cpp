@@ -192,7 +192,6 @@ void AudioContext::initialize()
 
 void AudioContext::clear()
 {
-    m_liveNodes.clear();
     m_destinationNode.clear();
     // The audio rendering thread is dead.  Nobody will schedule AudioHandler
     // deletion.  Let's do it ourselves.
@@ -971,18 +970,6 @@ void DeferredTaskHandler::breakConnections()
     m_deferredBreakConnectionList.clear();
 }
 
-void AudioContext::registerLiveNode(AudioNode& node)
-{
-    ASSERT(isMainThread());
-    m_liveNodes.add(&node);
-}
-
-void AudioContext::unregisterLiveNode(AudioNode& node)
-{
-    ASSERT(isMainThread());
-    m_liveNodes.remove(&node);
-}
-
 void DeferredTaskHandler::markSummingJunctionDirty(AudioSummingJunction* summingJunction)
 {
     ASSERT(isGraphOwner());
@@ -1280,18 +1267,6 @@ ScriptPromise AudioContext::closeContext(ScriptState* scriptState)
 
     m_closeResolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = m_closeResolver->promise();
-
-    // Before closing the context go and disconnect all nodes, allowing them to be collected. This
-    // will also break any connections to the destination node. Any unfinished sourced nodes will
-    // get stopped when the context is unitialized.
-    // TODO(tkent): We don't need to disconnect everything to collect
-    // AudioNodes.  This was a workaround of crbug.com/455993.
-    for (auto& node : m_liveNodes) {
-        if (node) {
-            for (unsigned k = 0; k < node->numberOfOutputs(); ++k)
-                node->disconnectWithoutException(k);
-        }
-    }
 
     // Stop the audio context. This will stop the destination node from pulling audio anymore. And
     // since we have disconnected the destination from the audio graph, and thus has no references,

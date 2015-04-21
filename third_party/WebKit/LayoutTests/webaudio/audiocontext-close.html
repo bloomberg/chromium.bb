@@ -13,6 +13,7 @@
     window.jsTestIsAsync = true;
 
     var context;
+    var destination;
     var offline;
     var osc;
     var gain;
@@ -34,6 +35,7 @@
       // Create gain and oscillator for testing later.
       shouldNotThrow("osc = context.createOscillator()");
       shouldNotThrow("gain = context.createGain()");
+      destination = context.destination;
       shouldNotThrow("gain.connect(context.destination)");
 
       // Close the context.  When the promise is resolved, continue the next
@@ -41,6 +43,7 @@
       context.close().then(
         function () {
           testPassed("context.close() was correctly resolved");
+          shouldNotThrow("gain.disconnect(destination)");
         },
         function () {
           testFailed("context.close() was erroneously rejected");

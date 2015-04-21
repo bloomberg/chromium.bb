@@ -504,14 +504,12 @@ AudioNode::AudioNode(AudioContext& context)
     : m_context(context)
     , m_handler(nullptr)
 {
-    m_context->registerLiveNode(*this);
     ThreadState::current()->registerPreFinalizer(*this);
 }
 
 void AudioNode::dispose()
 {
     ASSERT(isMainThread());
-    context()->unregisterLiveNode(*this);
     AudioContext::AutoLocker locker(context());
     handler().dispose();
     if (context()->contextState() == AudioContext::Running)
