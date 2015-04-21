@@ -14,16 +14,17 @@
       'variables': {
         'headers_root_path': 'source/libvpx',
         'header_filenames': [
-          'vpx/vpx_codec_impl_bottom.h',
-          'vpx/vpx_image.h',
-          'vpx/vpx_decoder.h',
           'vpx/vp8.h',
-          'vpx/vpx_codec.h',
-          'vpx/vpx_codec_impl_top.h',
           'vpx/vp8cx.h',
-          'vpx/vpx_integer.h',
           'vpx/vp8dx.h',
+          'vpx/vpx_codec.h',
+          'vpx/vpx_codec_impl_bottom.h',
+          'vpx/vpx_codec_impl_top.h',
+          'vpx/vpx_decoder.h',
           'vpx/vpx_encoder.h',
+          'vpx/vpx_frame_buffer.h',
+          'vpx/vpx_image.h',
+          'vpx/vpx_integer.h',
         ],
       },
       'includes': [
