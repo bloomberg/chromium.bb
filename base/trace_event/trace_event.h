@@ -144,11 +144,11 @@
 //   class MyData : public base::trace_event::ConvertableToTraceFormat {
 //    public:
 //     MyData() {}
-//     virtual void AppendAsTraceFormat(std::string* out) const override {
+//     void AppendAsTraceFormat(std::string* out) const override {
 //       out->append("{\"foo\":1}");
 //     }
 //    private:
-//     virtual ~MyData() {}
+//     ~MyData() override {}
 //     DISALLOW_COPY_AND_ASSIGN(MyData);
 //   };
 //

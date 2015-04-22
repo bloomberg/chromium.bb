@@ -21,17 +21,17 @@ struct TestResult;
 class XmlUnitTestResultPrinter : public testing::EmptyTestEventListener {
  public:
   XmlUnitTestResultPrinter();
-  virtual ~XmlUnitTestResultPrinter();
+  ~XmlUnitTestResultPrinter() override;
 
   // Must be called before adding as a listener. Returns true on success.
   bool Initialize(const FilePath& output_file_path) WARN_UNUSED_RESULT;
 
  private:
   // testing::EmptyTestEventListener:
-  virtual void OnTestCaseStart(const testing::TestCase& test_case) override;
-  virtual void OnTestStart(const testing::TestInfo& test_info) override;
-  virtual void OnTestEnd(const testing::TestInfo& test_info) override;
-  virtual void OnTestCaseEnd(const testing::TestCase& test_case) override;
+  void OnTestCaseStart(const testing::TestCase& test_case) override;
+  void OnTestStart(const testing::TestInfo& test_info) override;
+  void OnTestEnd(const testing::TestInfo& test_info) override;
+  void OnTestCaseEnd(const testing::TestCase& test_case) override;
 
   FILE* output_file_;
 

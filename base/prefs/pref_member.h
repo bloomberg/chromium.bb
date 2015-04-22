@@ -264,9 +264,9 @@ class PrefMember : public subtle::PrefMemberBase {
     }
 
    protected:
-    virtual ~Internal() {}
+    ~Internal() override {}
 
-    virtual BASE_PREFS_EXPORT bool UpdateValueInternal(
+    BASE_PREFS_EXPORT bool UpdateValueInternal(
         const base::Value& value) const override;
 
     // We cache the value of the pref so we don't have to keep walking the pref
@@ -277,8 +277,8 @@ class PrefMember : public subtle::PrefMemberBase {
     DISALLOW_COPY_AND_ASSIGN(Internal);
   };
 
-  virtual Internal* internal() const override { return internal_.get(); }
-  virtual void CreateInternal() const override { internal_ = new Internal(); }
+  Internal* internal() const override { return internal_.get(); }
+  void CreateInternal() const override { internal_ = new Internal(); }
 
   // This method is used to do the actual sync with pref of the specified type.
   void BASE_PREFS_EXPORT UpdatePref(const ValueType& value);

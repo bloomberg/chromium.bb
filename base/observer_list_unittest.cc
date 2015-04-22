@@ -71,7 +71,7 @@ class AddInObserve : public Foo {
         adder(1) {
   }
 
-  virtual void Observe(int x) override {
+  void Observe(int x) override {
     if (!added) {
       added = true;
       observer_list->AddObserver(&adder);

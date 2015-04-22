@@ -174,12 +174,12 @@ TEST_F(TaskObserverPerfTest, TaskPingPong) {
 template <typename WaitableEventType>
 class EventPerfTest : public ThreadPerfTest {
  public:
-  virtual void Init() override {
+  void Init() override {
     for (size_t i = 0; i < threads_.size(); i++)
       events_.push_back(new WaitableEventType(false, false));
   }
 
-  virtual void Reset() override { events_.clear(); }
+  void Reset() override { events_.clear(); }
 
   void WaitAndSignalOnThread(size_t event) {
     size_t next_event = (event + 1) % events_.size();
@@ -195,7 +195,7 @@ class EventPerfTest : public ThreadPerfTest {
       FinishMeasurement();
   }
 
-  virtual void PingPong(int hops) override {
+  void PingPong(int hops) override {
     remaining_hops_ = hops;
     for (size_t i = 0; i < threads_.size(); i++) {
       threads_[i]->message_loop_proxy()->PostTask(

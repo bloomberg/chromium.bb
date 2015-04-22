@@ -55,7 +55,7 @@ namespace {
 
 class MaybeTestDisabler : public testing::EmptyTestEventListener {
  public:
-  virtual void OnTestStart(const testing::TestInfo& test_info) override {
+  void OnTestStart(const testing::TestInfo& test_info) override {
     ASSERT_FALSE(TestSuite::IsMarkedMaybe(test_info))
         << "Probably the OS #ifdefs don't include all of the necessary "
            "platforms.\nPlease ensure that no tests have the MAYBE_ prefix "
@@ -69,11 +69,11 @@ class TestClientInitializer : public testing::EmptyTestEventListener {
       : old_command_line_(base::CommandLine::NO_PROGRAM) {
   }
 
-  virtual void OnTestStart(const testing::TestInfo& test_info) override {
+  void OnTestStart(const testing::TestInfo& test_info) override {
     old_command_line_ = *base::CommandLine::ForCurrentProcess();
   }
 
-  virtual void OnTestEnd(const testing::TestInfo& test_info) override {
+  void OnTestEnd(const testing::TestInfo& test_info) override {
     *base::CommandLine::ForCurrentProcess() = old_command_line_;
   }
 
