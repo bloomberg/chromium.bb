@@ -2,12 +2,49 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Keep in sync with 'remoting_webapp_html' target in
-# remoting/remoting_client.gypi.
+# Keep in sync with targets in remoting/remoting_client.gypi.
 
-import("//remoting/webapp/files.gni")
+import("//build/config/features.gni")
+import("//remoting/webapp/build_template.gni")
 
-action("html") {
+group("webapp") {
+  deps = [
+    ":webapp_v1",
+  ]
+
+  if (enable_nacl) {
+    deps += [ ":webapp_v2" ]
+  }
+}
+
+remoting_webapp("webapp_v1") {
+  webapp_type = "v1"
+  output_dir = "remoting.webapp"
+  zip_path = "remoting-webapp.zip"
+  extra_files = []
+}
+
+remoting_webapp("webapp_v2") {
+  webapp_type = "v2_pnacl"
+  output_dir = "remoting.webapp.v2"
+  zip_path = "remoting-webapp.v2.zip"
+  extra_files = [
+    "crd/remoting_client_pnacl.nmf.jinja2",
+    # TODO(garykac): Get correct path to this.
+    #"<(PRODUCT_DIR)/remoting_client_plugin_newlib.pexe",
+  ]
+}
+
+group("html") {
+  deps = [
+    ":background_html",
+    ":main_html",
+    ":message_window_html",
+    ":wcs_sandbox_html",
+  ]
+}
+
+action("main_html") {
   script = "build-html.py"
 
   inputs = [ remoting_webapp_template_main ] + remoting_webapp_template_files +
@@ -17,23 +54,72 @@ action("html") {
     "$target_gen_dir/main.html",
   ]
 
-  # Template files are relative to this directory. This passes some template
-  # files to the script, and the script reads templates from the files on disk.
-  # They all have to be relative to the same directory. The GYP build made all
-  # of these relative to the remoting directory, so this does the same.
-  template_rel_dir = "//remoting"
-
   args = [
     rebase_path("$target_gen_dir/main.html", root_build_dir),
     rebase_path(remoting_webapp_template_main, root_build_dir),
   ]
   args += [
     "--template-dir",
-    rebase_path(template_rel_dir, root_build_dir),
+    rebase_path(remoting_dir, root_build_dir),
   ]
   args += [ "--templates" ] +
-          rebase_path(remoting_webapp_template_files, template_rel_dir)
-  args += [ "--js" ] + rebase_path(remoting_webapp_crd_main_html_all_js_files,
-                                   template_rel_dir)
+          rebase_path(remoting_webapp_template_files, remoting_dir)
+  args += [ "--js" ] +
+          rebase_path(remoting_webapp_crd_main_html_all_js_files, remoting_dir)
 }
-# TODO(GYP) wcs_sandbox.html, background.html, message_window.html
+
+action("wcs_sandbox_html") {
+  script = "build-html.py"
+
+  inputs = [ remoting_webapp_template_wcs_sandbox ] +
+           remoting_webapp_wcs_sandbox_html_all_js_files
+
+  outputs = [
+    "$target_gen_dir/wcs_sandbox.html",
+  ]
+
+  args = [
+    rebase_path("$target_gen_dir/wcs_sandbox.html", root_build_dir),
+    rebase_path(remoting_webapp_template_wcs_sandbox, root_build_dir),
+  ]
+  args +=
+      [ "--js" ] +
+      rebase_path(remoting_webapp_wcs_sandbox_html_all_js_files, remoting_dir)
+}
+
+action("background_html") {
+  script = "build-html.py"
+
+  inputs = [ remoting_webapp_template_background ] +
+           remoting_webapp_background_html_all_js_files
+
+  outputs = [
+    "$target_gen_dir/background.html",
+  ]
+
+  args = [
+    rebase_path("$target_gen_dir/background.html", root_build_dir),
+    rebase_path(remoting_webapp_template_background, root_build_dir),
+  ]
+  args += [ "--js" ] + rebase_path(remoting_webapp_background_html_all_js_files,
+                                   remoting_dir)
+}
+
+action("message_window_html") {
+  script = "build-html.py"
+
+  inputs = [ remoting_webapp_template_message_window ] +
+           remoting_webapp_message_window_html_all_js_files
+
+  outputs = [
+    "$target_gen_dir/message_window.html",
+  ]
+
+  args = [
+    rebase_path("$target_gen_dir/message_window.html", root_build_dir),
+    rebase_path(remoting_webapp_template_message_window, root_build_dir),
+  ]
+  args +=
+      [ "--js" ] + rebase_path(remoting_webapp_message_window_html_all_js_files,
+                               remoting_dir)
+}

@@ -59,7 +59,7 @@ if (false) {
            ] + rebase_path(sources_to_verify, root_build_dir)
 
     deps = [
-      "//remoting/webapp:html",
+      "//remoting/webapp:main_html",
     ]  # Generates main.html.
   }
 }  # if false

@@ -1,0 +1,95 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Keep in sync with 'remoting_webapp' target in remoting/remoting_client.gypi.
+
+import("//remoting/remoting_locales.gni")
+import("//remoting/remoting_options.gni")
+import("//remoting/remoting_version.gni")
+import("//remoting/webapp/files.gni")
+
+# The base remoting directory that is used as the root directory for file
+# references. Many of the scripts rely on the files being specified relative
+# to this directory.
+remoting_dir = "//remoting"
+
+template("remoting_webapp") {
+  locales_listfile = target_name + "_locales"
+  listfile = "$target_gen_dir/${target_name}_locales.txt"
+  listfile_rel = rebase_path(listfile, root_build_dir)
+
+  action(locales_listfile) {
+    script = "../tools/build/remoting_localize.py"
+
+    inputs = []
+    outputs = [
+      listfile,
+    ]
+
+    args = [
+      "--locale_output",
+      rebase_path(webapp_locale_dir, root_build_dir) +
+          "/@{json_suffix}/messages.json",
+      "--locales_listfile",
+      listfile_rel,
+    ]
+    args += remoting_locales
+  }
+
+  action(target_name) {
+    script = "build-webapp.py"
+
+    webapp_type = invoker.webapp_type
+    output_dir = invoker.output_dir
+    zip_path = invoker.zip_path
+    extra_files = invoker.extra_files
+
+    inputs = []
+    outputs = [
+      "$target_gen_dir/$zip_path",
+    ]
+
+    deps = [
+      ":html",
+      ":$locales_listfile",
+      "//remoting/resources",
+    ]
+
+    buildtype = "Dev"
+    if (!is_debug) {
+      if (is_official_build) {
+        buildtype = "Official"
+      } else {
+        buildtype = "Release"
+      }
+    }
+
+    generated_html_files = [
+      "$target_gen_dir/background.html",
+      "$target_gen_dir/main.html",
+      "$target_gen_dir/message_window.html",
+      "$target_gen_dir/wcs_sandbox.html",
+    ]
+
+    args = [
+      buildtype,
+      version_full,
+      output_dir,
+      zip_path,
+      rebase_path("crd/manifest.json.jinja2", root_build_dir),
+      webapp_type,
+    ]
+    args += rebase_path(generated_html_files, root_build_dir)
+    args += rebase_path(remoting_webapp_crd_files, root_build_dir)
+    args += rebase_path(extra_files, root_build_dir)
+    args += [
+      "--locales_listfile",
+      listfile_rel,
+    ]
+    args += [
+      "--use_gcd",
+      "$remoting_use_gcd",
+    ]
+  }
+}

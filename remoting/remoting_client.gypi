@@ -49,11 +49,12 @@
     },  # end of target 'remoting_client'
 
     {
+      # GN version: //remoting/webapp:html
       'target_name': 'remoting_webapp_html',
       'type': 'none',
       'actions': [
         {
-          # GN version: //remoting/webapp:html
+          # GN version: //remoting/webapp:main_html
           'action_name': 'Build Remoting Webapp main.html',
           'inputs': [
             'webapp/build-html.py',
@@ -74,6 +75,7 @@
           ],
         },
         {
+          # GN version: //remoting/webapp:wcs_sandbox_html
           'action_name': 'Build Remoting Webapp wcs_sandbox.html',
           'inputs': [
             'webapp/build-html.py',
@@ -90,6 +92,7 @@
           ],
         },
         {
+          # GN version: //remoting/webapp:background_html
           'action_name': 'Build Remoting Webapp background.html',
           'inputs': [
             'webapp/build-html.py',
