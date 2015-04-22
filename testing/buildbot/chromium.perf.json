@@ -192,7 +192,7 @@
         "args": [
           "performance_browser_tests",
           "--test-launcher-print-test-stdio=always",
-          "--gtest_filter=TabCapturePerformanceTest.*",
+          "--gtest_filter=TabCapturePerformanceTest.*:CastV2PerformanceTest.*",
           "--test-launcher-jobs=1",
           "--enable-gpu"
         ],
@@ -227,7 +227,37 @@
         "args": [
           "performance_browser_tests",
           "--test-launcher-print-test-stdio=always",
-          "--gtest_filter=TabCapturePerformanceTest.*",
+          "--gtest_filter=TabCapturePerformanceTest.*:CastV2PerformanceTest.*",
+          "--test-launcher-jobs=1",
+          "--enable-gpu"
+        ],
+        "name": "performance_browser_tests",
+        "script": "gtest_perf_test.py"
+      }
+    ]
+  },
+  "Win 7 ATI GPU Perf": {
+    "scripts": [
+      {
+        "args": [
+          "performance_browser_tests",
+          "--test-launcher-print-test-stdio=always",
+          "--gtest_filter=TabCapturePerformanceTest.*:CastV2PerformanceTest.*",
+          "--test-launcher-jobs=1",
+          "--enable-gpu"
+        ],
+        "name": "performance_browser_tests",
+        "script": "gtest_perf_test.py"
+      }
+    ]
+  },
+  "Win 7 Intel GPU Perf": {
+    "scripts": [
+      {
+        "args": [
+          "performance_browser_tests",
+          "--test-launcher-print-test-stdio=always",
+          "--gtest_filter=TabCapturePerformanceTest.*:CastV2PerformanceTest.*",
           "--test-launcher-jobs=1",
           "--enable-gpu"
         ],
@@ -242,7 +272,7 @@
         "args": [
           "performance_browser_tests",
           "--test-launcher-print-test-stdio=always",
-          "--gtest_filter=TabCapturePerformanceTest.*",
+          "--gtest_filter=TabCapturePerformanceTest.*:CastV2PerformanceTest.*",
           "--test-launcher-jobs=1",
           "--enable-gpu"
         ],
@@ -262,6 +292,17 @@
         ],
         "name": "angle_perftests",
         "script": "gtest_perf_test.py"
+      },
+      {
+        "args": [
+          "performance_browser_tests",
+          "--test-launcher-print-test-stdio=always",
+          "--gtest_filter=TabCapturePerformanceTest.*:CastV2PerformanceTest.*",
+          "--test-launcher-jobs=1",
+          "--enable-gpu"
+        ],
+        "name": "performance_browser_tests",
+        "script": "gtest_perf_test.py"
       }
     ]
   },
@@ -271,7 +312,7 @@
         "args": [
           "performance_browser_tests",
           "--test-launcher-print-test-stdio=always",
-          "--gtest_filter=TabCapturePerformanceTest.*",
+          "--gtest_filter=TabCapturePerformanceTest.*:CastV2PerformanceTest.*",
           "--test-launcher-jobs=1",
           "--enable-gpu"
         ],
@@ -286,7 +327,7 @@
         "args": [
           "performance_browser_tests",
           "--test-launcher-print-test-stdio=always",
-          "--gtest_filter=TabCapturePerformanceTest.*",
+          "--gtest_filter=TabCapturePerformanceTest.*:CastV2PerformanceTest.*",
           "--test-launcher-jobs=1",
           "--enable-gpu"
         ],
@@ -296,6 +337,18 @@
     ]
   },
   "Win 8 Perf (2)": {
-    "scripts": []
+    "scripts": [
+      {
+        "args": [
+          "performance_browser_tests",
+          "--test-launcher-print-test-stdio=always",
+          "--gtest_filter=TabCapturePerformanceTest.*:CastV2PerformanceTest.*",
+          "--test-launcher-jobs=1",
+          "--enable-gpu"
+        ],
+        "name": "performance_browser_tests",
+        "script": "gtest_perf_test.py"
+      }
+    ]
   }
 }
