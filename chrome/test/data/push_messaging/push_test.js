@@ -5,7 +5,7 @@
 'use strict';
 
 var resultQueue = new ResultQueue();
-var pushRegistration = null;
+var pushSubscription = null;
 
 // Sends data back to the test. This must be in response to an earlier
 // request, but it's ok to respond asynchronously. The request blocks until
@@ -57,7 +57,7 @@ ResultQueue.prototype.popImmediately = function() {
 };
 
 // Notification permission has been coalesced with Push permission. After
-// this is granted, Push API registration can succeed.
+// this is granted, Push API subscription can succeed.
 function requestNotificationPermission() {
   Notification.requestPermission(function(permission) {
     sendResultToTest('permission status - ' + permission);
@@ -92,15 +92,13 @@ function removeManifest() {
   }
 }
 
-function registerPush() {
+function subscribePush() {
   navigator.serviceWorker.ready.then(function(swRegistration) {
-    var registerMethodName =
-        swRegistration.pushManager.register ? 'register' : 'subscribe';
-    return swRegistration.pushManager[registerMethodName]()
-        .then(function(registration) {
-          pushRegistration = registration;
-          sendResultToTest(registration.endpoint + ' - ' +
-              (registration.registrationId || registration.subscriptionId));
+    return swRegistration.pushManager.subscribe()
+        .then(function(subscription) {
+          pushSubscription = subscription;
+          sendResultToTest(
+              subscription.endpoint + ' - ' + subscription.subscriptionId);
         });
   }).catch(sendErrorToTest);
 }
@@ -122,27 +120,25 @@ function isControlled() {
   }
 }
 
-function unregister() {
-  if (!pushRegistration) {
-    sendResultToTest('unregister error: no registration');
+function unsubscribePush() {
+  if (!pushSubscription) {
+    sendResultToTest('unsubscribe error: no subscription');
     return;
   }
 
-  var unregisterMethodName =
-      pushRegistration.unregister ? 'unregister' : 'unsubscribe';
-  pushRegistration[unregisterMethodName]().then(function(result) {
-    sendResultToTest('unregister result: ' + result);
+  pushSubscription.unsubscribe().then(function(result) {
+    sendResultToTest('unsubscribe result: ' + result);
   }, function(error) {
-    sendResultToTest('unregister error: ' + error.name + ': ' + error.message);
+    sendResultToTest('unsubscribe error: ' + error.name + ': ' + error.message);
   });
 }
 
-function hasRegistration() {
+function hasSubscription() {
   navigator.serviceWorker.ready.then(function(swRegistration) {
     return swRegistration.pushManager.getSubscription();
   }).then(function(subscription) {
-    sendResultToTest(subscription ? 'true - registered'
-                                  : 'false - not registered');
+    sendResultToTest(subscription ? 'true - subscribed'
+                                  : 'false - not subscribed');
   }).catch(sendErrorToTest);
 }
 
