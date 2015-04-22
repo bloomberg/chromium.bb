@@ -97,7 +97,8 @@ void WebSchedulerImpl::postTimerTask(
   scoped_ptr<blink::WebThread::Task> scoped_task(task);
   tracked_objects::Location location(web_location.functionName(),
                                      web_location.fileName(), -1, nullptr);
-  timer_task_runner_->PostDelayedTask(
+  // Timer tasks should not run in a nested messageloop.
+  timer_task_runner_->PostNonNestableDelayedTask(
       location,
       base::Bind(&WebSchedulerImpl::runTask, base::Passed(&scoped_task)),
       base::TimeDelta::FromMilliseconds(delayMs));
