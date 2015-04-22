@@ -38,6 +38,7 @@
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
+#include "net/base/net_errors.h"
 
 namespace content {
 
@@ -728,6 +729,12 @@ void NavigatorImpl::FailedNavigation(FrameTreeNode* frame_tree_node,
 
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
   DCHECK(navigation_request);
+
+  // If the request was canceled by the user do not show an error page.
+  if (error_code == net::ERR_ABORTED) {
+    frame_tree_node->ResetNavigationRequest(false);
+    return;
+  }
 
   // Select an appropriate renderer to show the error page.
   RenderFrameHostImpl* render_frame_host =
