@@ -1552,6 +1552,8 @@
       'browser/favicon/favicon_helper.h',
       'browser/favicon/favicon_service_factory.cc',
       'browser/favicon/favicon_service_factory.h',
+      'browser/favicon/large_icon_service_factory.cc',
+      'browser/favicon/large_icon_service_factory.h',
     ],
     'chrome_browser_gnome_keyring_sources': [
       'browser/password_manager/native_backend_gnome_x.cc',

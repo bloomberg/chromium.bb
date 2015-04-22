@@ -36,6 +36,8 @@
         'favicon/core/favicon_service.h',
         'favicon/core/favicon_url.cc',
         'favicon/core/favicon_url.h',
+        'favicon/core/large_icon_service.cc',
+        'favicon/core/large_icon_service.h',
       ],
       'include_dirs': [
         '..',

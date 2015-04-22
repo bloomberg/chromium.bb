@@ -4,6 +4,9 @@
 
 #include "components/favicon_base/fallback_icon_style.h"
 
+#include <algorithm>
+
+#include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
 
 namespace favicon_base {
@@ -12,14 +15,19 @@ namespace {
 
 // Luminance threshold for background color determine whether to use dark or
 // light text color.
-int kDarkTextLuminanceThreshold = 190;
+const int kDarkTextLuminanceThreshold = 190;
+
+// The maximum luminance of the background color to ensure light text is
+// readable.
+const double kMaxBackgroundColorLuminance = 0.67;
 
 // Default values for FallbackIconStyle.
-SkColor kDefaultBackgroundColor = SkColorSetRGB(0x80, 0x80, 0x80);
-SkColor kDefaultTextColorDark = SK_ColorBLACK;
-SkColor kDefaultTextColorLight = SK_ColorWHITE;
-double kDefaultFontSizeRatio = 0.8;
-double kDefaultRoundness = 0.125;  // 1 / 8.
+const SkColor kDefaultBackgroundColor = SkColorSetRGB(0x78, 0x78, 0x78);
+const SkColor kDefaultTextColorDark = SK_ColorBLACK;
+const SkColor kDefaultTextColorLight = SK_ColorWHITE;
+const double kDefaultFontSizeRatio = 0.44;
+const double kDefaultRoundness = 0;  // Square. Round corners are applied
+                                     // externally (Javascript or Java).
 
 }  // namespace
 
@@ -43,6 +51,20 @@ void MatchFallbackIconTextColorAgainstBackgroundColor(
 bool ValidateFallbackIconStyle(const FallbackIconStyle& style) {
   return style.font_size_ratio >= 0.0 && style.font_size_ratio <= 1.0 &&
       style.roundness >= 0.0 && style.roundness <= 1.0;
+}
+
+void SetDominantColorAsBackground(
+    const scoped_refptr<base::RefCountedMemory>& bitmap_data,
+    FallbackIconStyle* style) {
+  SkColor dominant_color =
+      color_utils::CalculateKMeanColorOfPNG(bitmap_data);
+  // Assumes |style.text_color| is light, and clamps luminance down to a
+  // reasonable maximum value so text is readable.
+  color_utils::HSL color_hsl;
+  color_utils::SkColorToHSL(dominant_color, &color_hsl);
+  color_hsl.l = std::min(color_hsl.l, kMaxBackgroundColorLuminance);
+  style->background_color =
+      color_utils::HSLToSkColor(color_hsl, SK_AlphaOPAQUE);
 }
 
 }  // namespace favicon_base

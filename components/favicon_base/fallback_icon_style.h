@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_FAVICON_BASE_FALLBACK_ICON_STYLE_H_
 #define COMPONENTS_FAVICON_BASE_FALLBACK_ICON_STYLE_H_
 
+#include "base/memory/ref_counted_memory.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace favicon_base {
@@ -36,6 +37,13 @@ void MatchFallbackIconTextColorAgainstBackgroundColor(FallbackIconStyle* style);
 
 // Returns whether |style| values are within bounds.
 bool ValidateFallbackIconStyle(const FallbackIconStyle& style);
+
+// Set |style|'s background color to the dominant color of |bitmap_data|,
+// clamping luminance down to a reasonable maximum value so that light text is
+// readable.
+void SetDominantColorAsBackground(
+    const scoped_refptr<base::RefCountedMemory>& bitmap_data,
+    FallbackIconStyle* style);
 
 }  // namespace favicon_base
 

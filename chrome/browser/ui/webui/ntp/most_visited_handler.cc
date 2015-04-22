@@ -21,7 +21,7 @@
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "chrome/browser/favicon/fallback_icon_service_factory.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/thumbnails/thumbnail_list_source.h"
@@ -38,7 +38,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/favicon/core/fallback_icon_service.h"
-#include "components/favicon/core/favicon_service.h"
+#include "components/favicon/core/large_icon_service.h"
 #include "components/history/core/browser/page_usage_data.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -86,21 +86,22 @@ void MostVisitedHandler::RegisterMessages() {
   // Set up our sources for top-sites data.
   content::URLDataSource::Add(profile, new ThumbnailListSource(profile));
 
-  favicon::FaviconService* favicon_service =
-      FaviconServiceFactory::GetForProfile(profile,
-                                           ServiceAccessType::EXPLICIT_ACCESS);
   favicon::FallbackIconService* fallback_icon_service =
       FallbackIconServiceFactory::GetForBrowserContext(profile);
+  favicon::LargeIconService* large_icon_service =
+      LargeIconServiceFactory::GetForBrowserContext(profile);
 
-  // Register chrome://large-icon as a data source for large icons.
-  content::URLDataSource::Add(profile,
-      new LargeIconSource(favicon_service, fallback_icon_service));
+  // Register chrome://fallback-icon as a data source for fallback icons.
   content::URLDataSource::Add(profile,
                               new FallbackIconSource(fallback_icon_service));
 
   // Register chrome://favicon as a data source for favicons.
   content::URLDataSource::Add(
       profile, new FaviconSource(profile, FaviconSource::FAVICON));
+
+  // Register chrome://large-icon as a data source for large icons.
+  content::URLDataSource::Add(
+      profile, new LargeIconSource(fallback_icon_service, large_icon_service));
 
   scoped_refptr<history::TopSites> top_sites =
       TopSitesFactory::GetForProfile(profile);

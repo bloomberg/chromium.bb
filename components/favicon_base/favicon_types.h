@@ -6,11 +6,14 @@
 #define COMPONENTS_FAVICON_BASE_FAVICON_TYPES_H_
 
 #include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
 namespace favicon_base {
+
+struct FallbackIconStyle;
 
 typedef int64 FaviconID;
 
@@ -71,6 +74,22 @@ struct FaviconRawBitmapResult {
 // Define type with same structure as FaviconRawBitmapResult for passing data to
 // HistoryBackend::SetFavicons().
 typedef FaviconRawBitmapResult FaviconRawBitmapData;
+
+// Result returned by LargeIconService::GetLargeIconOrFallbackStyle(). Contains
+// either the bitmap data if the favicon database has a sufficiently large
+// favicon bitmap and the style of the fallback icon otherwise.
+struct LargeIconResult {
+  LargeIconResult();
+  ~LargeIconResult();
+
+  // The bitmap from the favicon database if the database has a sufficiently
+  // large one.
+  FaviconRawBitmapResult bitmap;
+
+  // The fallback icon style if a sufficiently large icon isn't available. This
+  // uses the dominant color of a smaller icon as the background if available.
+  scoped_ptr<FallbackIconStyle> fallback_icon_style;
+};
 
 }  // namespace favicon_base
 

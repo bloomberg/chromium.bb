@@ -20,11 +20,11 @@ namespace {
 
 // Default values for FallbackIconStyle, from
 // /components/favicon_base/fallback_icon_style.h
-SkColor kDefaultBackgroundColor = SkColorSetRGB(0x80, 0x80, 0x80);
-SkColor kDefaultTextColorDark = SK_ColorBLACK;
-SkColor kDefaultTextColorLight = SK_ColorWHITE;
-double kDefaultFontSizeRatio = 0.8;
-double kDefaultRoundness = 0.125;  // 1 / 8.
+const SkColor kDefaultBackgroundColor = SkColorSetRGB(0x78, 0x78, 0x78);
+const SkColor kDefaultTextColorDark = SK_ColorBLACK;
+const SkColor kDefaultTextColorLight = SK_ColorWHITE;
+const double kDefaultFontSizeRatio = 0.44;
+const double kDefaultRoundness = 0;
 
 const char kTestUrlStr[] = "https://www.google.ca/imghp?hl=en&tab=wi";
 
