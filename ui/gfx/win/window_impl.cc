@@ -41,7 +41,8 @@ struct ClassInfo {
 
   // Compares two ClassInfos. Returns true if all members match.
   bool Equals(const ClassInfo& other) const {
-    return (other.style == style && other.icon == icon);
+    return (other.style == style && other.icon == icon &&
+            other.small_icon == small_icon);
   }
 };
 

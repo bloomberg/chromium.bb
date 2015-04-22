@@ -29,16 +29,18 @@ int GetAppIconResourceId() {
 
 HICON GetAppIcon() {
   const int icon_id = GetAppIconResourceId();
+  // HICON returned from LoadIcon do not leak and do not have to be destroyed.
   return LoadIcon(GetModuleHandle(chrome::kBrowserResourcesDll),
                   MAKEINTRESOURCE(icon_id));
 }
 
 HICON GetSmallAppIcon() {
   const int icon_id = GetAppIconResourceId();
+  // HICON returned from LoadImage must be released using DestroyIcon.
   return static_cast<HICON>(LoadImage(
       GetModuleHandle(chrome::kBrowserResourcesDll), MAKEINTRESOURCE(icon_id),
       IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON),
-      LR_DEFAULTCOLOR));
+      LR_DEFAULTCOLOR | LR_SHARED));
 }
 
 scoped_ptr<SkBitmap> GetAppIconForSize(int size) {
