@@ -75,9 +75,9 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   const gfx::Size coded_size((visible_size.width() + 15) & ~15,
                              (visible_size.height() + 15) & ~15);
 
-  scoped_refptr<media::VideoCaptureDevice::Client::Buffer> output_buffer =
+  scoped_ptr<media::VideoCaptureDevice::Client::Buffer> output_buffer(
       client_->ReserveOutputBuffer(params_.requested_format.pixel_format,
-                                   coded_size);
+                                   coded_size));
   const bool should_capture =
       oracle_.ObserveEventAndDecideCapture(event, damage_rect, event_time);
   const char* event_name =
@@ -134,7 +134,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   *callback = base::Bind(&ThreadSafeCaptureOracle::DidCaptureFrame,
                          this,
                          frame_number,
-                         output_buffer,
+                         base::Passed(&output_buffer),
                          capture_begin_time);
   return true;
 }
@@ -180,7 +180,7 @@ void ThreadSafeCaptureOracle::ReportError(const std::string& reason) {
 
 void ThreadSafeCaptureOracle::DidCaptureFrame(
     int frame_number,
-    const scoped_refptr<media::VideoCaptureDevice::Client::Buffer>& buffer,
+    scoped_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
     base::TimeTicks capture_begin_time,
     const scoped_refptr<media::VideoFrame>& frame,
     base::TimeTicks timestamp,
@@ -202,7 +202,7 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
           media::VideoFrameMetadata::CAPTURE_BEGIN_TIME, capture_begin_time);
       frame->metadata()->SetTimeTicks(
           media::VideoFrameMetadata::CAPTURE_END_TIME, base::TimeTicks::Now());
-      client_->OnIncomingCapturedVideoFrame(buffer, frame, timestamp);
+      client_->OnIncomingCapturedVideoFrame(buffer.Pass(), frame, timestamp);
     }
   }
 }

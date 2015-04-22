@@ -7,12 +7,23 @@
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/compositor/image_transport_factory.h"
+#include "content/browser/gpu/browser_gpu_channel_host_factory.h"
+#include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/media/video_capture_buffer_pool.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
+#include "content/common/gpu/client/context_provider_command_buffer.h"
+#include "content/common/gpu/client/gl_helper.h"
+#include "content/common/gpu/client/gpu_channel_host.h"
+#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
+#include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/public/browser/browser_thread.h"
+#include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_capture_types.h"
 #include "media/base/video_frame.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/libyuv/include/libyuv.h"
 
 using media::VideoCaptureFormat;
@@ -20,39 +31,173 @@ using media::VideoFrame;
 
 namespace content {
 
+namespace {
+
+#if !defined(OS_ANDROID)
+// Modelled after GpuProcessTransportFactory::CreateContextCommon().
+scoped_ptr<content::WebGraphicsContext3DCommandBufferImpl> CreateContextCommon(
+    scoped_refptr<content::GpuChannelHost> gpu_channel_host,
+    int surface_id) {
+  if (!content::GpuDataManagerImpl::GetInstance()->
+        CanUseGpuBrowserCompositor()) {
+    DLOG(ERROR) << "No accelerated graphics found. Check chrome://gpu";
+    return scoped_ptr<content::WebGraphicsContext3DCommandBufferImpl>();
+  }
+  blink::WebGraphicsContext3D::Attributes attrs;
+  attrs.shareResources = true;
+  attrs.depth = false;
+  attrs.stencil = false;
+  attrs.antialias = false;
+  attrs.noAutomaticFlushes = true;
+
+  if (!gpu_channel_host.get()) {
+    DLOG(ERROR) << "Failed to establish GPU channel.";
+    return scoped_ptr<content::WebGraphicsContext3DCommandBufferImpl>();
+  }
+  GURL url("chrome://gpu/GpuProcessTransportFactory::CreateCaptureContext");
+  return make_scoped_ptr(
+      new WebGraphicsContext3DCommandBufferImpl(
+          surface_id,
+          url,
+          gpu_channel_host.get(),
+          attrs,
+          true  /* lose_context_when_out_of_memory */,
+          content::WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
+          NULL));
+}
+
+// Modelled after
+// GpuProcessTransportFactory::CreateOffscreenCommandBufferContext().
+scoped_ptr<content::WebGraphicsContext3DCommandBufferImpl>
+CreateOffscreenCommandBufferContext() {
+  content::CauseForGpuLaunch cause = content::CAUSE_FOR_GPU_LAUNCH_CANVAS_2D;
+  // Android does not support synchronous opening of GPU channels. Should use
+  // EstablishGpuChannel() instead.
+  if (!content::BrowserGpuChannelHostFactory::instance())
+    return scoped_ptr<content::WebGraphicsContext3DCommandBufferImpl>();
+  scoped_refptr<content::GpuChannelHost> gpu_channel_host(
+      content::BrowserGpuChannelHostFactory::instance()->
+          EstablishGpuChannelSync(cause));
+  DCHECK(gpu_channel_host);
+  return CreateContextCommon(gpu_channel_host, 0);
+}
+#endif
+
+typedef base::Callback<void(scoped_refptr<ContextProviderCommandBuffer>)>
+    ProcessContextCallback;
+
+void CreateContextOnUIThread(ProcessContextCallback bottom_half) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+#if !defined(OS_ANDROID)
+  bottom_half.Run(ContextProviderCommandBuffer::Create(
+      CreateOffscreenCommandBufferContext(), "Offscreen-CaptureThread"));
+  return;
+#endif
+}
+
+void ResetLostContextCallback(
+    const scoped_refptr<ContextProviderCommandBuffer>& capture_thread_context) {
+  capture_thread_context->SetLostContextCallback(
+      cc::ContextProvider::LostContextCallback());
+}
+
+}  // anonymous namespace
+
 // Class combining a Client::Buffer interface implementation and a pool buffer
 // implementation to guarantee proper cleanup on destruction on our side.
 class AutoReleaseBuffer : public media::VideoCaptureDevice::Client::Buffer {
  public:
   AutoReleaseBuffer(const scoped_refptr<VideoCaptureBufferPool>& pool,
-                    int buffer_id,
-                    void* data,
-                    size_t size)
-      : pool_(pool),
-        id_(buffer_id),
-        data_(data),
-        size_(size) {
+                    int buffer_id)
+      : id_(buffer_id),
+        pool_(pool),
+        buffer_handle_(pool_->GetBufferHandle(buffer_id).Pass()) {
     DCHECK(pool_.get());
   }
   int id() const override { return id_; }
-  void* data() const override { return data_; }
-  size_t size() const override { return size_; }
+  size_t size() const override { return buffer_handle_->size(); }
+  void* data() override { return buffer_handle_->data(); }
+  ClientBuffer AsClientBuffer() override {
+    return buffer_handle_->AsClientBuffer();
+  }
 
  private:
   ~AutoReleaseBuffer() override { pool_->RelinquishProducerReservation(id_); }
 
-  const scoped_refptr<VideoCaptureBufferPool> pool_;
   const int id_;
-  void* const data_;
-  const size_t size_;
+  const scoped_refptr<VideoCaptureBufferPool> pool_;
+  const scoped_ptr<VideoCaptureBufferPool::BufferHandle> buffer_handle_;
+};
+
+// Internal ref-counted class wrapping an incoming GpuMemoryBuffer into a
+// Texture backed VideoFrame. This VideoFrame creation is balanced by a waiting
+// on the associated |sync_point|. After VideoFrame consumption the inserted
+// ReleaseCallback() will be called, where the Texture is destroyed.
+//
+// This class jumps between threads due to GPU-related thread limitations, i.e.
+// some objects cannot be accessed from IO Thread whereas others need to be
+// constructed on UI Thread. For this reason most of the operations are carried
+// out on Capture Thread (|capture_task_runner_|).
+class VideoCaptureDeviceClient::TextureWrapHelper final
+    : public base::RefCountedThreadSafe<TextureWrapHelper> {
+ public:
+  TextureWrapHelper(
+      const base::WeakPtr<VideoCaptureController>& controller,
+      const scoped_refptr<base::SingleThreadTaskRunner>& capture_task_runner);
+
+  // Wraps the GpuMemoryBuffer-backed |buffer| into a Texture, and sends it to
+  // |controller_| wrapped in a VideoFrame.
+  void OnIncomingCapturedGpuMemoryBuffer(
+      scoped_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
+      const media::VideoCaptureFormat& frame_format,
+      const base::TimeTicks& timestamp);
+
+ private:
+  friend class base::RefCountedThreadSafe<TextureWrapHelper>;
+  ~TextureWrapHelper();
+
+  // Creates some necessary members in |capture_task_runner_|.
+  void Init();
+  // Runs the bottom half of the GlHelper creation.
+  void CreateGlHelper(
+      scoped_refptr<ContextProviderCommandBuffer> capture_thread_context);
+
+  // Recycles |memory_buffer|, deletes Image and Texture on VideoFrame release.
+  void ReleaseCallback(GLuint image_id,
+                       GLuint texture_id,
+                       uint32 sync_point);
+
+  // The Command Buffer lost the GL context, f.i. GPU process crashed. Signal
+  // error to our owner so the capture can be torn down.
+  void LostContextCallback();
+
+  // Prints the error |message| and notifies |controller_| of an error.
+  void OnError(const std::string& message);
+
+  // |controller_| should only be used on IO thread.
+  const base::WeakPtr<VideoCaptureController> controller_;
+  const scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner_;
+
+  // Command buffer reference, needs to be destroyed when unused. It is created
+  // on UI Thread and bound to Capture Thread. In particular, it cannot be used
+  // from IO Thread.
+  scoped_refptr<ContextProviderCommandBuffer> capture_thread_context_;
+  // Created and used from Capture Thread. Cannot be used from IO Thread.
+  scoped_ptr<GLHelper> gl_helper_;
+
+  DISALLOW_COPY_AND_ASSIGN(TextureWrapHelper);
 };
 
 VideoCaptureDeviceClient::VideoCaptureDeviceClient(
     const base::WeakPtr<VideoCaptureController>& controller,
-    const scoped_refptr<VideoCaptureBufferPool>& buffer_pool)
+    const scoped_refptr<VideoCaptureBufferPool>& buffer_pool,
+    const scoped_refptr<base::SingleThreadTaskRunner>& capture_task_runner)
     : controller_(controller),
       buffer_pool_(buffer_pool),
-      last_captured_pixel_format_(media::PIXEL_FORMAT_UNKNOWN) {}
+      capture_task_runner_(capture_task_runner),
+      last_captured_pixel_format_(media::PIXEL_FORMAT_UNKNOWN) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+}
 
 VideoCaptureDeviceClient::~VideoCaptureDeviceClient() {}
 
@@ -105,8 +250,8 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     return;
   }
 
-  scoped_refptr<Buffer> buffer =
-      ReserveOutputBuffer(media::PIXEL_FORMAT_I420, dimensions);
+  scoped_ptr<Buffer> buffer(
+      ReserveOutputBuffer(media::PIXEL_FORMAT_I420, dimensions));
   if (!buffer.get())
     return;
 
@@ -201,31 +346,12 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
                          frame_format.pixel_format);
     return;
   }
-  scoped_refptr<VideoFrame> frame =
-      VideoFrame::WrapExternalPackedMemory(
-          VideoFrame::I420,
-          dimensions,
-          gfx::Rect(dimensions),
-          dimensions,
-          yplane,
-          VideoFrame::AllocationSize(VideoFrame::I420, dimensions),
-          base::SharedMemory::NULLHandle(),
-          0,
-          base::TimeDelta(),
-          base::Closure());
-  DCHECK(frame.get());
-  frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
-                               frame_format.frame_rate);
 
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread,
-          controller_,
-          buffer,
-          frame,
-          timestamp));
+  OnIncomingCapturedBuffer(buffer.Pass(),
+                           media::VideoCaptureFormat(dimensions,
+                                                     frame_format.frame_rate,
+                                                     media::PIXEL_FORMAT_I420),
+                           timestamp);
 }
 
 void
@@ -243,8 +369,8 @@ VideoCaptureDeviceClient::OnIncomingCapturedYuvData(
   DCHECK_EQ(frame_format.pixel_format, media::PIXEL_FORMAT_I420);
   DCHECK_EQ(clockwise_rotation, 0) << "Rotation not supported";
 
-  scoped_refptr<Buffer> buffer =
-      ReserveOutputBuffer(frame_format.pixel_format, frame_format.frame_size);
+  scoped_ptr<Buffer> buffer(
+      ReserveOutputBuffer(frame_format.pixel_format, frame_format.frame_size));
   if (!buffer.get())
     return;
 
@@ -280,46 +406,31 @@ VideoCaptureDeviceClient::OnIncomingCapturedYuvData(
     return;
   }
 
-  scoped_refptr<VideoFrame> video_frame = VideoFrame::WrapExternalYuvData(
-      VideoFrame::I420, frame_format.frame_size,
-      gfx::Rect(frame_format.frame_size), frame_format.frame_size, y_stride,
-      u_stride, v_stride, dst_y, dst_u, dst_v, base::TimeDelta(),
-      base::Closure());
-  DCHECK(video_frame.get());
-  video_frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
-                                     frame_format.frame_rate);
-
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread,
-          controller_,
-          buffer,
-          video_frame,
-          timestamp));
+  OnIncomingCapturedBuffer(buffer.Pass(), frame_format, timestamp);
 };
 
-scoped_refptr<media::VideoCaptureDevice::Client::Buffer>
+scoped_ptr<media::VideoCaptureDevice::Client::Buffer>
 VideoCaptureDeviceClient::ReserveOutputBuffer(media::VideoPixelFormat format,
                                               const gfx::Size& dimensions) {
-  DCHECK(format == media::PIXEL_FORMAT_TEXTURE ||
-         format == media::PIXEL_FORMAT_I420 ||
-         format == media::PIXEL_FORMAT_ARGB);
+  DCHECK(format == media::PIXEL_FORMAT_I420 ||
+         format == media::PIXEL_FORMAT_TEXTURE ||
+         format == media::PIXEL_FORMAT_GPUMEMORYBUFFER);
   DCHECK_GT(dimensions.width(), 0);
   DCHECK_GT(dimensions.height(), 0);
+
+  if (format == media::PIXEL_FORMAT_GPUMEMORYBUFFER && !texture_wrap_helper_) {
+    texture_wrap_helper_ =
+        new TextureWrapHelper(controller_, capture_task_runner_);
+  }
 
   int buffer_id_to_drop = VideoCaptureBufferPool::kInvalidId;
   const int buffer_id =
       buffer_pool_->ReserveForProducer(format, dimensions, &buffer_id_to_drop);
   if (buffer_id == VideoCaptureBufferPool::kInvalidId)
     return NULL;
-  void* data;
-  size_t size;
-  buffer_pool_->GetBufferInfo(buffer_id, &data, &size);
 
-  scoped_refptr<media::VideoCaptureDevice::Client::Buffer> output_buffer(
-      new AutoReleaseBuffer(buffer_pool_, buffer_id, data, size));
+  scoped_ptr<media::VideoCaptureDevice::Client::Buffer> output_buffer(
+      new AutoReleaseBuffer(buffer_pool_, buffer_id));
 
   if (buffer_id_to_drop != VideoCaptureBufferPool::kInvalidId) {
     BrowserThread::PostTask(BrowserThread::IO,
@@ -328,12 +439,45 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(media::VideoPixelFormat format,
                    controller_, buffer_id_to_drop));
   }
 
-  return output_buffer;
+  return output_buffer.Pass();
 }
 
-void
-VideoCaptureDeviceClient::OnIncomingCapturedVideoFrame(
-    const scoped_refptr<Buffer>& buffer,
+void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
+    scoped_ptr<Buffer> buffer,
+    const media::VideoCaptureFormat& frame_format,
+    const base::TimeTicks& timestamp) {
+  if (frame_format.pixel_format == media::PIXEL_FORMAT_GPUMEMORYBUFFER) {
+    capture_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&TextureWrapHelper::OnIncomingCapturedGpuMemoryBuffer,
+                   texture_wrap_helper_,
+                   base::Passed(&buffer),
+                   frame_format,
+                   timestamp));
+  } else {
+    DCHECK_EQ(frame_format.pixel_format, media::PIXEL_FORMAT_I420);
+    scoped_refptr<VideoFrame> video_frame =
+        VideoFrame::WrapExternalPackedMemory(
+            VideoFrame::I420,
+            frame_format.frame_size,
+            gfx::Rect(frame_format.frame_size),
+            frame_format.frame_size,
+            reinterpret_cast<uint8*>(buffer->data()),
+            VideoFrame::AllocationSize(VideoFrame::I420,
+                                       frame_format.frame_size),
+            base::SharedMemory::NULLHandle(),
+            0  /* shared_memory_offset */,
+            base::TimeDelta(),
+            base::Closure());
+    DCHECK(video_frame.get());
+    video_frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
+                                       frame_format.frame_rate);
+    OnIncomingCapturedVideoFrame(buffer.Pass(), video_frame, timestamp);
+  }
+}
+
+void VideoCaptureDeviceClient::OnIncomingCapturedVideoFrame(
+    scoped_ptr<Buffer> buffer,
     const scoped_refptr<VideoFrame>& frame,
     const base::TimeTicks& timestamp) {
   BrowserThread::PostTask(
@@ -342,7 +486,7 @@ VideoCaptureDeviceClient::OnIncomingCapturedVideoFrame(
       base::Bind(
           &VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread,
           controller_,
-          buffer,
+          base::Passed(&buffer),
           frame,
           timestamp));
 }
@@ -366,6 +510,164 @@ void VideoCaptureDeviceClient::OnLog(
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&VideoCaptureController::DoLogOnIOThread,
                                      controller_, message));
+}
+
+VideoCaptureDeviceClient::TextureWrapHelper::TextureWrapHelper(
+    const base::WeakPtr<VideoCaptureController>& controller,
+    const scoped_refptr<base::SingleThreadTaskRunner>& capture_task_runner)
+  : controller_(controller),
+    capture_task_runner_(capture_task_runner) {
+  capture_task_runner_->PostTask(FROM_HERE,
+      base::Bind(&TextureWrapHelper::Init, this));
+}
+
+void
+VideoCaptureDeviceClient::TextureWrapHelper::OnIncomingCapturedGpuMemoryBuffer(
+        scoped_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
+        const media::VideoCaptureFormat& frame_format,
+        const base::TimeTicks& timestamp) {
+  DCHECK(capture_task_runner_->BelongsToCurrentThread());
+  DCHECK_EQ(frame_format.pixel_format, media::PIXEL_FORMAT_GPUMEMORYBUFFER);
+  if (!gl_helper_) {
+    // |gl_helper_| might not exist due to asynchronous initialization not
+    // finished or due to termination in process after a context loss.
+    DVLOG(1) << " Skipping ingress frame, no GL context.";
+    return;
+  }
+
+  gpu::gles2::GLES2Interface* gl = capture_thread_context_->ContextGL();
+  GLuint image_id = gl->CreateImageCHROMIUM(buffer->AsClientBuffer(),
+                                            frame_format.frame_size.width(),
+                                            frame_format.frame_size.height(),
+                                            GL_BGRA_EXT);
+  DCHECK(image_id);
+
+  GLuint texture_id = gl_helper_->CreateTexture();
+  DCHECK(texture_id);
+  {
+    content::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl, texture_id);
+    gl->BindTexImage2DCHROMIUM(GL_TEXTURE_2D, image_id);
+  }
+
+  scoped_ptr<gpu::MailboxHolder> mailbox_holder(new gpu::MailboxHolder(
+      gl_helper_->ProduceMailboxHolderFromTexture(texture_id)));
+  DCHECK(!mailbox_holder->mailbox.IsZero());
+  DCHECK(mailbox_holder->mailbox.Verify());
+  DCHECK(mailbox_holder->texture_target);
+  DCHECK(mailbox_holder->sync_point);
+
+  scoped_refptr<media::VideoFrame> video_frame =
+      media::VideoFrame::WrapNativeTexture(
+          mailbox_holder.Pass(),
+          media::BindToCurrentLoop(
+              base::Bind(&VideoCaptureDeviceClient::TextureWrapHelper::
+                             ReleaseCallback,
+                         this, image_id, texture_id)),
+          frame_format.frame_size,
+          gfx::Rect(frame_format.frame_size),
+          frame_format.frame_size,
+          base::TimeDelta(),
+          true /* allow_overlay */);
+  video_frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
+                                     frame_format.frame_rate);
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(
+          &VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread,
+          controller_, base::Passed(&buffer), video_frame, timestamp));
+}
+
+VideoCaptureDeviceClient::TextureWrapHelper::~TextureWrapHelper() {
+  // Might not be running on capture_task_runner_'s thread. Ensure owned objects
+  // are destroyed on the correct threads.
+  if (gl_helper_)
+    capture_task_runner_->DeleteSoon(FROM_HERE, gl_helper_.release());
+
+  if (capture_thread_context_) {
+    capture_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&ResetLostContextCallback, capture_thread_context_));
+    capture_thread_context_->AddRef();
+    ContextProviderCommandBuffer* raw_capture_thread_context =
+        capture_thread_context_.get();
+    capture_thread_context_ = nullptr;
+    capture_task_runner_->ReleaseSoon(FROM_HERE, raw_capture_thread_context);
+  }
+}
+
+void VideoCaptureDeviceClient::TextureWrapHelper::Init() {
+  DCHECK(capture_task_runner_->BelongsToCurrentThread());
+
+  // In threaded compositing mode, we have to create our own context for Capture
+  // to avoid using the GPU command queue from multiple threads. Context
+  // creation must happen on UI thread; then the context needs to be bound to
+  // the appropriate thread, which is done in CreateGlHelper().
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          &CreateContextOnUIThread,
+          media::BindToCurrentLoop(base::Bind(
+              &VideoCaptureDeviceClient::TextureWrapHelper::CreateGlHelper,
+              this))));
+}
+
+void VideoCaptureDeviceClient::TextureWrapHelper::CreateGlHelper(
+    scoped_refptr<ContextProviderCommandBuffer> capture_thread_context) {
+  DCHECK(capture_task_runner_->BelongsToCurrentThread());
+
+  if (!capture_thread_context.get()) {
+    DLOG(ERROR) << "No offscreen GL Context!";
+    return;
+  }
+  // This may not happen in IO Thread. The destructor resets the context lost
+  // callback, so base::Unretained is safe; otherwise it'd be a circular ref
+  // counted dependency.
+  capture_thread_context->SetLostContextCallback(media::BindToCurrentLoop(
+      base::Bind(
+          &VideoCaptureDeviceClient::TextureWrapHelper::LostContextCallback,
+          base::Unretained(this))));
+  if (!capture_thread_context->BindToCurrentThread()) {
+    capture_thread_context = NULL;
+    DLOG(ERROR) << "Couldn't bind the Capture Context to the Capture Thread.";
+    return;
+  }
+  DCHECK(capture_thread_context);
+  capture_thread_context_ = capture_thread_context;
+
+  // At this point, |capture_thread_context| is a cc::ContextProvider. Creation
+  // of our GLHelper should happen on Capture Thread.
+  gl_helper_.reset(new GLHelper(capture_thread_context->ContextGL(),
+                                capture_thread_context->ContextSupport()));
+  DCHECK(gl_helper_);
+}
+
+void VideoCaptureDeviceClient::TextureWrapHelper::ReleaseCallback(
+    GLuint image_id,
+    GLuint texture_id,
+    uint32 sync_point) {
+  DCHECK(capture_task_runner_->BelongsToCurrentThread());
+
+  if (gl_helper_) {
+    gl_helper_->DeleteTexture(texture_id);
+    capture_thread_context_->ContextGL()->DestroyImageCHROMIUM(image_id);
+  }
+}
+
+void VideoCaptureDeviceClient::TextureWrapHelper::LostContextCallback() {
+  DCHECK(capture_task_runner_->BelongsToCurrentThread());
+  // Prevent incoming frames from being processed while OnError gets groked.
+  gl_helper_.reset();
+  OnError("GLContext lost");
+}
+
+void VideoCaptureDeviceClient::TextureWrapHelper::OnError(
+    const std::string& message) {
+  DCHECK(capture_task_runner_->BelongsToCurrentThread());
+  DLOG(ERROR) << message;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&VideoCaptureController::DoErrorOnIOThread, controller_));
 }
 
 }  // namespace content

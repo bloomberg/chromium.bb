@@ -72,8 +72,7 @@ class CONTENT_EXPORT VideoCaptureController {
   // instance. Some device clients need to allocate resources for the given
   // capture |format| and/or work on Capture Thread (|capture_task_runner|).
   scoped_ptr<media::VideoCaptureDevice::Client> NewDeviceClient(
-      const scoped_refptr<base::SingleThreadTaskRunner>& capture_task_runner,
-      const media::VideoCaptureFormat& format);
+      const scoped_refptr<base::SingleThreadTaskRunner>& capture_task_runner);
 
   // Start video capturing and try to use the resolution specified in |params|.
   // Buffers will be shared to the client as necessary. The client will continue
@@ -121,7 +120,7 @@ class CONTENT_EXPORT VideoCaptureController {
 
   // Worker functions on IO thread. Called by the VideoCaptureDeviceClient.
   void DoIncomingCapturedVideoFrameOnIOThread(
-      const scoped_refptr<media::VideoCaptureDevice::Client::Buffer>& buffer,
+      scoped_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
       const scoped_refptr<media::VideoFrame>& frame,
       const base::TimeTicks& timestamp);
   void DoErrorOnIOThread();

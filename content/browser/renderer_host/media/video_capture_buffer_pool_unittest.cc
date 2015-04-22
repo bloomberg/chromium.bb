@@ -9,139 +9,245 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/test/test_context_provider.h"
+#include "cc/test/test_web_graphics_context_3d.h"
+#include "content/browser/compositor/buffer_queue.h"
+#include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
-class VideoCaptureBufferPoolTest : public testing::Test {
+static const media::VideoPixelFormat kCaptureFormats[] = {
+  media::PIXEL_FORMAT_I420,
+  media::PIXEL_FORMAT_TEXTURE,
+#if !defined(OS_ANDROID)
+  media::PIXEL_FORMAT_GPUMEMORYBUFFER
+#endif
+};
+
+class VideoCaptureBufferPoolTest
+    : public testing::TestWithParam<media::VideoPixelFormat> {
  protected:
+  // A GpuMemoryBuffer Mock to provide a trivial RGBA buffer as Map() backing.
+  // We need to allocate on ctor and deallocate on dtor so that consecutive
+  // Map()-Unmap() cycles yield the same underlying data pointer.
+  class MockGpuMemoryBuffer : public gfx::GpuMemoryBuffer {
+   public:
+    explicit MockGpuMemoryBuffer(const gfx::Size& size)
+        : size_(size), data_(new uint8[size_.GetArea() * 4]), mapped_(false) {}
+    ~MockGpuMemoryBuffer() override { delete[] data_; }
+
+    bool Map(void** data) override {
+      EXPECT_EQ(mapped_, false);
+      mapped_ = true;
+      data[0] = static_cast<void*>(data_);
+      return true;
+    }
+    void Unmap() override {
+      EXPECT_EQ(mapped_, true);
+      mapped_ = false;
+    }
+    bool IsMapped() const override { return mapped_; }
+    Format GetFormat() const override { return BGRA_8888; }
+    void GetStride(int* stride) const override {
+      *stride = size_.width() * 4;
+      return;
+    }
+    gfx::GpuMemoryBufferHandle GetHandle() const override {
+      return gfx::GpuMemoryBufferHandle();
+    }
+    ClientBuffer AsClientBuffer() override { return nullptr; }
+
+   private:
+    const gfx::Size size_;
+    uint8* const data_;
+    bool mapped_;
+  };
+
+#if !defined(OS_ANDROID)
+  // The next two classes are needed to replicate the GpuMemoryBuffer allocation
+  // on Browser side.
+  class StubBrowserGpuMemoryBufferManager
+      : public BrowserGpuMemoryBufferManager {
+   public:
+    StubBrowserGpuMemoryBufferManager()
+        : BrowserGpuMemoryBufferManager(nullptr, 1) {}
+
+    scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
+        const gfx::Size& size,
+        gfx::GpuMemoryBuffer::Format format,
+        gfx::GpuMemoryBuffer::Usage usage) override {
+      return make_scoped_ptr(new MockGpuMemoryBuffer(size));
+    }
+  };
+  class MockBufferQueue : public BufferQueue {
+   public:
+    MockBufferQueue(scoped_refptr<cc::ContextProvider> context_provider,
+                    BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager,
+                    unsigned int internalformat)
+        : BufferQueue(context_provider,
+                      internalformat,
+                      nullptr,
+                      gpu_memory_buffer_manager,
+                      1) {}
+    MOCK_METHOD4(CopyBufferDamage,
+                 void(int, int, const gfx::Rect&, const gfx::Rect&));
+  };
+#endif
+
+  // This is a generic Buffer tracker
   class Buffer {
    public:
     Buffer(const scoped_refptr<VideoCaptureBufferPool> pool,
-           int id,
-           void* data,
-           size_t size)
-        : pool_(pool), id_(id), data_(data), size_(size) {}
+           scoped_ptr<VideoCaptureBufferPool::BufferHandle> buffer_handle,
+           int id)
+        : id_(id), pool_(pool), buffer_handle_(buffer_handle.Pass()) {}
     ~Buffer() { pool_->RelinquishProducerReservation(id()); }
     int id() const { return id_; }
-    void* data() const { return data_; }
-    size_t size() const { return size_; }
+    size_t size() { return buffer_handle_->size(); }
+    void* data() { return buffer_handle_->data(); }
 
    private:
-    const scoped_refptr<VideoCaptureBufferPool> pool_;
     const int id_;
-    void* const data_;
-    const size_t size_;
+    const scoped_refptr<VideoCaptureBufferPool> pool_;
+    const scoped_ptr<VideoCaptureBufferPool::BufferHandle> buffer_handle_;
   };
+
   VideoCaptureBufferPoolTest()
       : expected_dropped_id_(0),
         pool_(new VideoCaptureBufferPool(3)) {}
+
+#if !defined(OS_ANDROID)
+  void SetUp() override {
+    scoped_refptr<cc::TestContextProvider> context_provider =
+        cc::TestContextProvider::Create(cc::TestWebGraphicsContext3D::Create());
+    context_provider->BindToCurrentThread();
+    gpu_memory_buffer_manager_.reset(new StubBrowserGpuMemoryBufferManager);
+    output_surface_.reset(new MockBufferQueue(
+        context_provider, gpu_memory_buffer_manager_.get(), GL_RGBA));
+    output_surface_->Initialize();
+  }
+#endif
 
   void ExpectDroppedId(int expected_dropped_id) {
     expected_dropped_id_ = expected_dropped_id;
   }
 
-  scoped_ptr<Buffer> ReserveI420Buffer(const gfx::Size& dimensions) {
-    // To verify that ReserveI420Buffer always sets |buffer_id_to_drop|,
+  scoped_ptr<Buffer> ReserveBuffer(const gfx::Size& dimensions,
+                                   media::VideoPixelFormat pixel_format) {
+    // To verify that ReserveBuffer always sets |buffer_id_to_drop|,
     // initialize it to something different than the expected value.
     int buffer_id_to_drop = ~expected_dropped_id_;
-    int buffer_id = pool_->ReserveForProducer(media::PIXEL_FORMAT_I420,
-                                              dimensions, &buffer_id_to_drop);
+    DVLOG(1) << media::VideoCaptureFormat::PixelFormatToString(pixel_format)
+             << " " << dimensions.ToString();
+    int buffer_id =
+        pool_->ReserveForProducer(pixel_format, dimensions, &buffer_id_to_drop);
     if (buffer_id == VideoCaptureBufferPool::kInvalidId)
       return scoped_ptr<Buffer>();
-
-    void* memory;
-    size_t size;
-    pool_->GetBufferInfo(buffer_id, &memory, &size);
     EXPECT_EQ(expected_dropped_id_, buffer_id_to_drop);
-    return scoped_ptr<Buffer>(new Buffer(pool_, buffer_id, memory, size));
+
+    scoped_ptr<VideoCaptureBufferPool::BufferHandle> buffer_handle =
+        pool_->GetBufferHandle(buffer_id);
+    return scoped_ptr<Buffer>(
+        new Buffer(pool_, buffer_handle.Pass(), buffer_id));
   }
 
   int expected_dropped_id_;
   scoped_refptr<VideoCaptureBufferPool> pool_;
 
  private:
+#if !defined(OS_ANDROID)
+  scoped_ptr<StubBrowserGpuMemoryBufferManager> gpu_memory_buffer_manager_;
+  scoped_ptr<MockBufferQueue> output_surface_;
+#endif
+
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureBufferPoolTest);
 };
 
-TEST_F(VideoCaptureBufferPoolTest, BufferPool) {
-  const gfx::Size size_lo = gfx::Size(640, 480);
-  const gfx::Size size_hi = gfx::Size(1024, 768);
-  scoped_refptr<media::VideoFrame> non_pool_frame =
-      media::VideoFrame::CreateFrame(media::VideoFrame::YV12, size_lo,
-                                     gfx::Rect(size_lo), size_lo,
-                                     base::TimeDelta());
+TEST_P(VideoCaptureBufferPoolTest, BufferPool) {
+  const gfx::Size size_lo = gfx::Size(10, 10);
+  const gfx::Size size_hi = gfx::Size(21, 33);
+  const media::VideoCaptureFormat format_lo(size_lo, 0.0, GetParam());
+  const media::VideoCaptureFormat format_hi(size_hi, 0.0, GetParam());
 
   // Reallocation won't happen for the first part of the test.
   ExpectDroppedId(VideoCaptureBufferPool::kInvalidId);
 
-  scoped_ptr<Buffer> buffer1 = ReserveI420Buffer(size_lo);
-  ASSERT_TRUE(NULL != buffer1.get());
-  ASSERT_LE(media::VideoFrame::AllocationSize(media::VideoFrame::I420, size_lo),
-            buffer1->size());
-  scoped_ptr<Buffer> buffer2 = ReserveI420Buffer(size_lo);
-  ASSERT_TRUE(NULL != buffer2.get());
-  ASSERT_LE(media::VideoFrame::AllocationSize(media::VideoFrame::I420, size_lo),
-            buffer2->size());
-  scoped_ptr<Buffer> buffer3 = ReserveI420Buffer(size_lo);
-  ASSERT_TRUE(NULL != buffer3.get());
-  ASSERT_LE(media::VideoFrame::AllocationSize(media::VideoFrame::I420, size_lo),
-            buffer3->size());
+  scoped_ptr<Buffer> buffer1 = ReserveBuffer(size_lo, GetParam());
+  ASSERT_NE(nullptr, buffer1.get());
+  ASSERT_LE(format_lo.ImageAllocationSize(), buffer1->size());
+  scoped_ptr<Buffer> buffer2 = ReserveBuffer(size_lo, GetParam());
+  ASSERT_NE(nullptr, buffer2.get());
+  ASSERT_LE(format_lo.ImageAllocationSize(), buffer2->size());
+  scoped_ptr<Buffer> buffer3 = ReserveBuffer(size_lo, GetParam());
+  ASSERT_NE(nullptr, buffer3.get());
+  ASSERT_LE(format_lo.ImageAllocationSize(), buffer3->size());
 
+  // Texture backed Frames cannot be manipulated via mapping.
+  if (GetParam() != media::PIXEL_FORMAT_TEXTURE) {
+    ASSERT_NE(nullptr, buffer1->data());
+    ASSERT_NE(nullptr, buffer2->data());
+    ASSERT_NE(nullptr, buffer3->data());
+
+  }
   // Touch the memory.
-  memset(buffer1->data(), 0x11, buffer1->size());
-  memset(buffer2->data(), 0x44, buffer2->size());
-  memset(buffer3->data(), 0x77, buffer3->size());
+  if (buffer1->data() != nullptr)
+    memset(buffer1->data(), 0x11, buffer1->size());
+  if (buffer2->data() != nullptr)
+    memset(buffer2->data(), 0x44, buffer2->size());
+  if (buffer3->data() != nullptr)
+    memset(buffer3->data(), 0x77, buffer3->size());
 
   // Fourth buffer should fail.
-  ASSERT_FALSE(ReserveI420Buffer(size_lo)) << "Pool should be empty";
+  ASSERT_FALSE(ReserveBuffer(size_lo, GetParam())) << "Pool should be empty";
 
   // Release 1st buffer and retry; this should succeed.
   buffer1.reset();
-  scoped_ptr<Buffer> buffer4 = ReserveI420Buffer(size_lo);
-  ASSERT_TRUE(NULL != buffer4.get());
+  scoped_ptr<Buffer> buffer4 = ReserveBuffer(size_lo, GetParam());
+  ASSERT_NE(nullptr, buffer4.get());
 
-  ASSERT_FALSE(ReserveI420Buffer(size_lo)) << "Pool should be empty";
-  ASSERT_FALSE(ReserveI420Buffer(size_hi)) << "Pool should be empty";
+  ASSERT_FALSE(ReserveBuffer(size_lo, GetParam())) << "Pool should be empty";
+  ASSERT_FALSE(ReserveBuffer(size_hi, GetParam())) << "Pool should be empty";
 
   // Validate the IDs
   int buffer_id2 = buffer2->id();
   ASSERT_EQ(1, buffer_id2);
-  int buffer_id3 = buffer3->id();
+  const int buffer_id3 = buffer3->id();
   ASSERT_EQ(2, buffer_id3);
-  void* const memory_pointer3 = buffer3->data();
-  int buffer_id4 = buffer4->id();
+  const int buffer_id4 = buffer4->id();
   ASSERT_EQ(0, buffer_id4);
+  void* const memory_pointer3 = buffer3->data();
 
   // Deliver a buffer.
   pool_->HoldForConsumers(buffer_id3, 2);
 
-  ASSERT_FALSE(ReserveI420Buffer(size_lo)) << "Pool should be empty";
+  ASSERT_FALSE(ReserveBuffer(size_lo, GetParam())) << "Pool should be empty";
 
   buffer3.reset();  // Old producer releases buffer. Should be a noop.
-  ASSERT_FALSE(ReserveI420Buffer(size_lo)) << "Pool should be empty";
-  ASSERT_FALSE(ReserveI420Buffer(size_hi)) << "Pool should be empty";
+  ASSERT_FALSE(ReserveBuffer(size_lo, GetParam())) << "Pool should be empty";
+  ASSERT_FALSE(ReserveBuffer(size_hi, GetParam())) << "Pool should be empty";
 
   buffer2.reset();  // Active producer releases buffer. Should free a buffer.
 
-  buffer1 = ReserveI420Buffer(size_lo);
-  ASSERT_TRUE(NULL != buffer1.get());
-  ASSERT_FALSE(ReserveI420Buffer(size_lo)) << "Pool should be empty";
+  buffer1 = ReserveBuffer(size_lo, GetParam());
+  ASSERT_NE(nullptr, buffer1.get());
+  ASSERT_FALSE(ReserveBuffer(size_lo, GetParam())) << "Pool should be empty";
 
   // First consumer finishes.
   pool_->RelinquishConsumerHold(buffer_id3, 1);
-  ASSERT_FALSE(ReserveI420Buffer(size_lo)) << "Pool should be empty";
+  ASSERT_FALSE(ReserveBuffer(size_lo, GetParam())) << "Pool should be empty";
 
   // Second consumer finishes. This should free that buffer.
   pool_->RelinquishConsumerHold(buffer_id3, 1);
-  buffer3 = ReserveI420Buffer(size_lo);
-  ASSERT_TRUE(NULL != buffer3.get());
+  buffer3 = ReserveBuffer(size_lo, GetParam());
+  ASSERT_NE(nullptr, buffer3.get());
   ASSERT_EQ(buffer_id3, buffer3->id()) << "Buffer ID should be reused.";
   ASSERT_EQ(memory_pointer3, buffer3->data());
-  ASSERT_FALSE(ReserveI420Buffer(size_lo)) << "Pool should be empty";
+  ASSERT_FALSE(ReserveBuffer(size_lo, GetParam())) << "Pool should be empty";
 
   // Now deliver & consume buffer1, but don't release the buffer.
   int buffer_id1 = buffer1->id();
@@ -153,35 +259,33 @@ TEST_F(VideoCaptureBufferPoolTest, BufferPool) {
   // be re-allocated to the producer, because |buffer1| still references it. But
   // when |buffer1| goes away, we should be able to re-reserve the buffer (and
   // the ID ought to be the same).
-  ASSERT_FALSE(ReserveI420Buffer(size_lo)) << "Pool should be empty";
+  ASSERT_FALSE(ReserveBuffer(size_lo, GetParam())) << "Pool should be empty";
   buffer1.reset();  // Should free the buffer.
-  buffer2 = ReserveI420Buffer(size_lo);
-  ASSERT_TRUE(NULL != buffer2.get());
+  buffer2 = ReserveBuffer(size_lo, GetParam());
+  ASSERT_NE(nullptr, buffer2.get());
   ASSERT_EQ(buffer_id1, buffer2->id());
   buffer_id2 = buffer_id1;
-  ASSERT_FALSE(ReserveI420Buffer(size_lo)) << "Pool should be empty";
+  ASSERT_FALSE(ReserveBuffer(size_lo, GetParam())) << "Pool should be empty";
 
   // Now try reallocation with different resolutions. We expect reallocation
   // to occur only when the old buffer is too small.
   buffer2.reset();
   ExpectDroppedId(buffer_id2);
-  buffer2 = ReserveI420Buffer(size_hi);
-  ASSERT_TRUE(NULL != buffer2.get());
-  ASSERT_LE(media::VideoFrame::AllocationSize(media::VideoFrame::I420, size_hi),
-            buffer2->size());
+  buffer2 = ReserveBuffer(size_hi, GetParam());
+  ASSERT_NE(nullptr, buffer2.get());
+  ASSERT_LE(format_hi.ImageAllocationSize(), buffer2->size());
   ASSERT_EQ(3, buffer2->id());
   void* const memory_pointer_hi = buffer2->data();
   buffer2.reset();  // Frees it.
   ExpectDroppedId(VideoCaptureBufferPool::kInvalidId);
-  buffer2 = ReserveI420Buffer(size_lo);
+  buffer2 = ReserveBuffer(size_lo, GetParam());
   void* const memory_pointer_lo = buffer2->data();
   ASSERT_EQ(memory_pointer_hi, memory_pointer_lo)
       << "Decrease in resolution should not reallocate buffer";
-  ASSERT_TRUE(NULL != buffer2.get());
+  ASSERT_NE(nullptr, buffer2.get());
   ASSERT_EQ(3, buffer2->id());
-  ASSERT_LE(media::VideoFrame::AllocationSize(media::VideoFrame::I420, size_lo),
-            buffer2->size());
-  ASSERT_FALSE(ReserveI420Buffer(size_lo)) << "Pool should be empty";
+  ASSERT_LE(format_lo.ImageAllocationSize(), buffer2->size());
+  ASSERT_FALSE(ReserveBuffer(size_lo, GetParam())) << "Pool should be empty";
 
   // Tear down the pool_, writing into the buffers. The buffer should preserve
   // the lifetime of the underlying memory.
@@ -189,13 +293,19 @@ TEST_F(VideoCaptureBufferPoolTest, BufferPool) {
   pool_ = NULL;
 
   // Touch the memory.
-  memset(buffer2->data(), 0x22, buffer2->size());
-  memset(buffer4->data(), 0x55, buffer4->size());
-
+  if (buffer2->data() != nullptr)
+    memset(buffer2->data(), 0x22, buffer2->size());
+  if (buffer4->data() != nullptr)
+    memset(buffer4->data(), 0x55, buffer4->size());
   buffer2.reset();
 
-  memset(buffer4->data(), 0x77, buffer4->size());
+  if (buffer4->data() != nullptr)
+    memset(buffer4->data(), 0x77, buffer4->size());
   buffer4.reset();
 }
+
+INSTANTIATE_TEST_CASE_P(,
+                        VideoCaptureBufferPoolTest,
+                        testing::ValuesIn(kCaptureFormats));
 
 } // namespace content

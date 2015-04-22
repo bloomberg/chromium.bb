@@ -49,6 +49,9 @@ size_t VideoCaptureFormat::ImageAllocationSize() const {
       break;
     case PIXEL_FORMAT_RGB32:
     case PIXEL_FORMAT_ARGB:
+    // GpuMemoryBuffer is an endianness-agnostic 32bpp pixel format until
+    // http://crbug.com/439520 is closed.
+    case PIXEL_FORMAT_GPUMEMORYBUFFER:
       result_frame_size *= 4;
       break;
     case PIXEL_FORMAT_MJPEG:
@@ -95,6 +98,8 @@ std::string VideoCaptureFormat::PixelFormatToString(VideoPixelFormat format) {
     return "YV12";
   case PIXEL_FORMAT_TEXTURE:
     return "TEXTURE";
+  case PIXEL_FORMAT_GPUMEMORYBUFFER:
+    return "GPUMEMORYBUFFER";
   case PIXEL_FORMAT_MAX:
     break;
   }

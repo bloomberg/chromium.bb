@@ -101,26 +101,25 @@ void FakeVideoCaptureDevice::AllocateAndStart(
   else
     capture_format_.frame_size.SetSize(320, 240);
 
-  switch (device_type_) {
-    case USING_OWN_BUFFERS:
-      fake_frame_.reset(new uint8[VideoFrame::AllocationSize(
-          VideoFrame::I420, capture_format_.frame_size)]);
-      BeepAndScheduleNextCapture(
-          base::Bind(&FakeVideoCaptureDevice::CaptureUsingOwnBuffers,
-                     weak_factory_.GetWeakPtr()));
-      break;
-    case USING_CLIENT_BUFFERS:
-      BeepAndScheduleNextCapture(
-          base::Bind(&FakeVideoCaptureDevice::CaptureUsingClientBuffers,
-                     weak_factory_.GetWeakPtr()));
-      break;
-    case USING_GPU_MEMORY_BUFFERS:
-      BeepAndScheduleNextCapture(
-          base::Bind(&FakeVideoCaptureDevice::CaptureUsingGpuMemoryBuffers,
-                     weak_factory_.GetWeakPtr()));
-      break;
-    default:
-      client_->OnError("Unknown Fake Video Capture Device type.");
+  if (device_type_ == USING_OWN_BUFFERS ||
+      device_type_ == USING_OWN_BUFFERS_TRIPLANAR) {
+    fake_frame_.reset(new uint8[VideoFrame::AllocationSize(
+        VideoFrame::I420, capture_format_.frame_size)]);
+    BeepAndScheduleNextCapture(
+        base::Bind(&FakeVideoCaptureDevice::CaptureUsingOwnBuffers,
+                   weak_factory_.GetWeakPtr()));
+  } else if (device_type_ == USING_CLIENT_BUFFERS_I420 ||
+             device_type_ == USING_CLIENT_BUFFERS_GPU) {
+    DVLOG(1) << "starting with " << (device_type_ == USING_CLIENT_BUFFERS_I420
+                                         ? "Client buffers"
+                                         : "GpuMemoryBuffers");
+    BeepAndScheduleNextCapture(base::Bind(
+        &FakeVideoCaptureDevice::CaptureUsingClientBuffers,
+        weak_factory_.GetWeakPtr(), (device_type_ == USING_CLIENT_BUFFERS_I420
+                                         ? PIXEL_FORMAT_I420
+                                         : PIXEL_FORMAT_GPUMEMORYBUFFER)));
+  } else {
+    client_->OnError("Unknown Fake Video Capture Device type.");
   }
 }
 
@@ -131,8 +130,7 @@ void FakeVideoCaptureDevice::StopAndDeAllocate() {
 
 void FakeVideoCaptureDevice::CaptureUsingOwnBuffers() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  const size_t frame_size =
-      VideoFrame::AllocationSize(VideoFrame::I420, capture_format_.frame_size);
+  const size_t frame_size = capture_format_.ImageAllocationSize();
   memset(fake_frame_.get(), 0, frame_size);
 
   DrawPacman(false  /* use_argb */,
@@ -142,62 +140,60 @@ void FakeVideoCaptureDevice::CaptureUsingOwnBuffers() {
              capture_format_.frame_size);
 
   // Give the captured frame to the client.
-  client_->OnIncomingCapturedData(fake_frame_.get(),
-                                  frame_size,
-                                  capture_format_,
-                                  0,
-                                  base::TimeTicks::Now());
+  if (device_type_ == USING_OWN_BUFFERS) {
+    client_->OnIncomingCapturedData(fake_frame_.get(),
+                                    frame_size,
+                                    capture_format_,
+                                    0  /* rotation */,
+                                    base::TimeTicks::Now());
+  } else if (device_type_ == USING_OWN_BUFFERS_TRIPLANAR) {
+    client_->OnIncomingCapturedYuvData(
+        fake_frame_.get(),
+        fake_frame_.get() + capture_format_.frame_size.GetArea(),
+        fake_frame_.get() + capture_format_.frame_size.GetArea() * 5 / 4,
+        capture_format_.frame_size.width(),
+        capture_format_.frame_size.width() / 2,
+        capture_format_.frame_size.width() / 2,
+        capture_format_,
+        0  /* rotation */,
+        base::TimeTicks::Now());
+  }
   BeepAndScheduleNextCapture(
       base::Bind(&FakeVideoCaptureDevice::CaptureUsingOwnBuffers,
                  weak_factory_.GetWeakPtr()));
 }
 
-void FakeVideoCaptureDevice::CaptureUsingClientBuffers() {
+void FakeVideoCaptureDevice::CaptureUsingClientBuffers(
+    VideoPixelFormat pixel_format) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  const scoped_refptr<VideoCaptureDevice::Client::Buffer> capture_buffer =
-      client_->ReserveOutputBuffer(capture_format_.pixel_format,
-                                   capture_format_.frame_size);
+  scoped_ptr<VideoCaptureDevice::Client::Buffer> capture_buffer(
+      client_->ReserveOutputBuffer(pixel_format, capture_format_.frame_size));
   DLOG_IF(ERROR, !capture_buffer) << "Couldn't allocate Capture Buffer";
-  if (!capture_buffer)
-    return;
 
-  uint8_t* const data_ptr = static_cast<uint8_t*>(capture_buffer->data());
-  memset(data_ptr, 0, capture_buffer->size());
-  DCHECK(data_ptr) << "Buffer has NO backing memory";
+  if (capture_buffer.get()) {
+    uint8_t* const data_ptr = static_cast<uint8_t*>(capture_buffer->data());
+    DCHECK(data_ptr) << "Buffer has NO backing memory";
+    memset(data_ptr, 0, capture_buffer->size());
 
-  DrawPacman(false  /* use_argb */,
-             data_ptr,
-             frame_count_,
-             kFakeCapturePeriodMs,
-             capture_format_.frame_size);
+    DrawPacman(
+        (pixel_format == media::PIXEL_FORMAT_GPUMEMORYBUFFER), /* use_argb */
+        data_ptr,
+        frame_count_,
+        kFakeCapturePeriodMs,
+        capture_format_.frame_size);
 
-  scoped_refptr<VideoFrame> video_frame =
-      VideoFrame::WrapExternalPackedMemory(
-          VideoFrame::I420,
-          capture_format_.frame_size,
-          gfx::Rect(capture_format_.frame_size),
-          capture_format_.frame_size,
-          static_cast<uint8*>(capture_buffer->data()),
-          capture_buffer->size(),
-          base::SharedMemory::NULLHandle(),
-          0,
-          base::TimeDelta(),
-          base::Closure());
+    // Give the captured frame to the client.
+    const VideoCaptureFormat format(capture_format_.frame_size,
+                                    capture_format_.frame_rate,
+                                    pixel_format);
+    client_->OnIncomingCapturedBuffer(capture_buffer.Pass(), format,
+                                      base::TimeTicks::Now());
+  }
 
-  // Give the captured frame to the client.
-  client_->OnIncomingCapturedVideoFrame(capture_buffer,
-                                        video_frame,
-                                        base::TimeTicks::Now());
   BeepAndScheduleNextCapture(
       base::Bind(&FakeVideoCaptureDevice::CaptureUsingClientBuffers,
-                 weak_factory_.GetWeakPtr()));
-}
-
-void FakeVideoCaptureDevice::CaptureUsingGpuMemoryBuffers() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  NOTIMPLEMENTED();
+                 weak_factory_.GetWeakPtr(), pixel_format));
 }
 
 void FakeVideoCaptureDevice::BeepAndScheduleNextCapture(

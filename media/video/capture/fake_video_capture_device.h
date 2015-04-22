@@ -23,8 +23,9 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
  public:
   enum FakeVideoCaptureDeviceType {
     USING_OWN_BUFFERS,
-    USING_CLIENT_BUFFERS,
-    USING_GPU_MEMORY_BUFFERS,
+    USING_OWN_BUFFERS_TRIPLANAR,
+    USING_CLIENT_BUFFERS_I420,
+    USING_CLIENT_BUFFERS_GPU,
   };
 
   static int FakeCapturePeriodMs() { return kFakeCapturePeriodMs; }
@@ -41,8 +42,7 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
   static const int kFakeCapturePeriodMs = 50;
 
   void CaptureUsingOwnBuffers();
-  void CaptureUsingClientBuffers();
-  void CaptureUsingGpuMemoryBuffers();
+  void CaptureUsingClientBuffers(VideoPixelFormat pixel_format);
   void BeepAndScheduleNextCapture(const base::Closure& next_capture);
 
   // |thread_checker_| is used to check that all methods are called in the

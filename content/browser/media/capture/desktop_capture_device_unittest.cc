@@ -69,14 +69,28 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
                      const media::VideoCaptureFormat& frame_format,
                      int clockwise_rotation,
                      const base::TimeTicks& timestamp));
-  MOCK_METHOD2(ReserveOutputBuffer,
-               scoped_refptr<Buffer>(media::VideoPixelFormat format,
-                                     const gfx::Size& dimensions));
-  MOCK_METHOD3(OnIncomingCapturedVideoFrame,
-               void(const scoped_refptr<Buffer>& buffer,
-                    const scoped_refptr<media::VideoFrame>& frame,
-                    const base::TimeTicks& timestamp));
+  MOCK_METHOD0(DoReserveOutputBuffer, void(void));
+  MOCK_METHOD0(DoOnIncomingCapturedBuffer, void(void));
+  MOCK_METHOD0(DoOnIncomingCapturedVideoFrame, void(void));
   MOCK_METHOD1(OnError, void(const std::string& reason));
+
+  // Trampoline methods to workaround GMOCK problems with scoped_ptr<>.
+  scoped_ptr<Buffer> ReserveOutputBuffer(media::VideoPixelFormat format,
+                                         const gfx::Size& dimensions) override {
+    DoReserveOutputBuffer();
+    return scoped_ptr<Buffer>();
+  }
+  void OnIncomingCapturedBuffer(scoped_ptr<Buffer> buffer,
+                                const media::VideoCaptureFormat& frame_format,
+                                const base::TimeTicks& timestamp) override {
+    DoOnIncomingCapturedBuffer();
+  }
+  void OnIncomingCapturedVideoFrame(
+      scoped_ptr<Buffer> buffer,
+      const scoped_refptr<media::VideoFrame>& frame,
+      const base::TimeTicks& timestamp) override {
+    DoOnIncomingCapturedVideoFrame();
+  }
 };
 
 // Creates a DesktopFrame that has the first pixel bytes set to
