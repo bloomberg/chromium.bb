@@ -582,7 +582,10 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
             &sync_child_node, parent_node, bookmark_model_, profile_, index);
         if (!child_node) {
           return unrecoverable_error_handler_->CreateAndUploadError(
-              FROM_HERE, "Failed to create bookmark node.", model_type());
+              FROM_HERE, "Failed to create bookmark node with title " +
+                             sync_child_node.GetTitle() + " and url " +
+                             sync_child_node.GetBookmarkSpecifics().url(),
+              model_type());
         }
         Associate(child_node, sync_child_id);
         local_merge_result->set_num_items_added(
