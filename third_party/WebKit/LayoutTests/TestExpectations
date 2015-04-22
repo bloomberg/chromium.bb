@@ -280,6 +280,7 @@ crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-loca
 crbug.com/360889 fast/sub-pixel/cssom-subpixel-precision.html [ ImageOnlyFailure ]
 crbug.com/360889 virtual/slimmingpaint/fast/sub-pixel/cssom-subpixel-precision.html [ ImageOnlyFailure ]
 crbug.com/360889 fast/dom/HTMLDialogElement/dialog-scrolled-viewport.html [ Failure ]
+crbug.com/360889 virtual/slimmingpaint/fast/dom/HTMLDialogElement/dialog-scrolled-viewport.html [ Failure ]
 crbug.com/360889 crbug.com/399417 media/video-scales-in-media-document.html [ Failure Crash ]
 crbug.com/360889 [ Win ] fast/css/css3-ch-unit.html [ Pass Failure ]
 crbug.com/444591 [ Win ] virtual/slimmingpaint/fast/css/css3-ch-unit.html [ Pass Failure ]
@@ -312,6 +313,7 @@ crbug.com/229207 [ Win ] virtual/deferred/fast/images/2-dht.html [ ImageOnlyFail
 # Linux Aura doesn't support NPAPI plugins (yet?)
 crbug.com/318978 [ Linux ] compositing/plugins/invalidate_rect.html [ Skip ]
 crbug.com/318978 [ Linux ] fast/dom/Window/Plug-ins.html [ Skip ]
+crbug.com/318978 [ Linux ] virtual/slimmingpaint/fast/dom/Window/Plug-ins.html [ Skip ]
 crbug.com/318978 [ Linux ] fast/frames/sandboxed-iframe-about-blank.html [ Skip ]
 crbug.com/318978 [ Linux ] fast/frames/sandboxed-iframe-navigation-allowed.html [ Skip ]
 crbug.com/318978 [ Linux ] fast/frames/sandboxed-iframe-plugins.html [ Skip ]
@@ -355,9 +357,6 @@ crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-out
 crbug.com/382491 virtual/slimmingpaint/fast/replaced/border-radius-clip.html [ Skip ]
 crbug.com/382491 virtual/slimmingpaint/fast/clip/nested-rounded-rect.html [ Skip ]
 crbug.com/382491 virtual/slimmingpaint/fast/clip/nestedTransparencyClip.html [ Skip ]
-crbug.com/472806 virtual/slimmingpaint/fast/dom/HTMLDialogElement/dialog-scrolled-viewport.html [ Skip ]
-crbug.com/472806 virtual/slimmingpaint/fast/dom/Window/Plug-ins.html [ Skip ]
-crbug.com/472806 virtual/slimmingpaint/fast/dom/vertical-scrollbar-in-rtl.html [ Skip ]
 crbug.com/382491 virtual/slimmingpaint/fast/transforms/diamond.html [ Skip ]
 crbug.com/382491 virtual/slimmingpaint/fast/transforms/rotated-transform-affects-scrolling-1.html [ Skip ]
 crbug.com/382491 virtual/slimmingpaint/fast/transforms/rotated-transform-affects-scrolling-2.html [ Skip ]
@@ -1090,6 +1089,7 @@ crbug.com/302529 svg/custom/js-late-clipPath-and-object-creation.svg [ Failure P
 
 crbug.com/255714 [ Linux ] editing/execCommand/switch-list-type-with-orphaned-li.html [ Failure Pass ]
 crbug.com/231910 fast/dom/vertical-scrollbar-in-rtl.html [ Failure Pass ]
+crbug.com/231910 virtual/slimmingpaint/fast/dom/vertical-scrollbar-in-rtl.html [ Failure Pass ]
 
 crbug.com/310323 http/tests/pointer-lock/iframe-sandboxed-allow-pointer-lock.html [ Crash Pass ]
 crbug.com/469190 [ XP Release ] fast/transforms/transformed-document-element.html [ Pass ImageOnlyFailure ]
