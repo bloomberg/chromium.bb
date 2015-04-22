@@ -329,6 +329,25 @@ void CreateLicenseRequest(const KeyIdList& key_ids,
   license->swap(result);
 }
 
+void CreateKeyIdsInitData(const KeyIdList& key_ids,
+                          std::vector<uint8>* init_data) {
+  // Create the init_data.
+  scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue());
+  scoped_ptr<base::ListValue> list(new base::ListValue());
+  for (const auto& key_id : key_ids)
+    list->AppendString(EncodeBase64Url(&key_id[0], key_id.size()));
+  dictionary->Set(kKeyIdsTag, list.release());
+
+  // Serialize the dictionary as a string.
+  std::string json;
+  JSONStringValueSerializer serializer(&json);
+  serializer.Serialize(*dictionary);
+
+  // Convert the serialized data into std::vector and return it.
+  std::vector<uint8> result(json.begin(), json.end());
+  init_data->swap(result);
+}
+
 bool ExtractFirstKeyIdFromLicenseRequest(const std::vector<uint8>& license,
                                          std::vector<uint8>* first_key) {
   const std::string license_as_str(

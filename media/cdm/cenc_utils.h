@@ -12,6 +12,10 @@
 
 namespace media {
 
+// Validate that |input| is a set of concatenated 'pssh' boxes and the sizes
+// match. Returns true if |input| looks valid, false otherwise.
+MEDIA_EXPORT bool ValidatePsshInput(const uint8* input, size_t input_length);
+
 // Gets the Key Ids from a 'pssh' box for the Common SystemID among one or
 // more concatenated 'pssh' boxes. If |input| looks valid, then true is
 // returned and |key_ids| is updated to contain the values found. Otherwise

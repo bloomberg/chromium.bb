@@ -81,6 +81,11 @@ MEDIA_EXPORT void CreateLicenseRequest(const KeyIdList& key_ids,
                                        MediaKeys::SessionType session_type,
                                        std::vector<uint8>* license);
 
+// Creates a keyIDs init_data message for the |key_ids| specified.
+// |key_ids_init_data| is updated to contain the resulting JSON string.
+MEDIA_EXPORT void CreateKeyIdsInitData(const KeyIdList& key_ids,
+                                       std::vector<uint8>* key_ids_init_data);
+
 // Extract the first key from the license request message. Returns true if
 // |license| is a valid license request and contains at least one key,
 // otherwise false and |first_key| is not touched.

@@ -36,13 +36,6 @@ using media::MediaKeys;
 
 namespace {
 
-// Maximum lengths for various EME API parameters. These are checks to
-// prevent unnecessarily large parameters from being passed around, and the
-// lengths are somewhat arbitrary as the EME spec doesn't specify any limits.
-const size_t kMaxInitDataLength = 64 * 1024;  // 64 KB
-const size_t kMaxSessionResponseLength = 64 * 1024;  // 64 KB
-const size_t kMaxKeySystemLength = 256;
-
 // The ID used in this class is a concatenation of |render_frame_id| and
 // |cdm_id|, i.e. (render_frame_id << 32) + cdm_id.
 
@@ -300,7 +293,7 @@ void BrowserCdmManager::OnInitializeCdm(int render_frame_id,
                                         int cdm_id,
                                         const std::string& key_system,
                                         const GURL& security_origin) {
-  if (key_system.size() > kMaxKeySystemLength) {
+  if (key_system.size() > media::limits::kMaxKeySystemLength) {
     // This failure will be discovered and reported by OnCreateSession()
     // as GetCdm() will return null.
     NOTREACHED() << "Invalid key system: " << key_system;
@@ -346,7 +339,7 @@ void BrowserCdmManager::OnCreateSessionAndGenerateRequest(
   scoped_ptr<NewSessionPromise> promise(
       new NewSessionPromise(this, render_frame_id, cdm_id, promise_id));
 
-  if (init_data.size() > kMaxInitDataLength) {
+  if (init_data.size() > media::limits::kMaxInitDataLength) {
     LOG(WARNING) << "InitData for ID: " << cdm_id
                  << " too long: " << init_data.size();
     promise->reject(MediaKeys::INVALID_ACCESS_ERROR, 0, "Init data too long.");
@@ -400,7 +393,7 @@ void BrowserCdmManager::OnUpdateSession(int render_frame_id,
     return;
   }
 
-  if (response.size() > kMaxSessionResponseLength) {
+  if (response.size() > media::limits::kMaxSessionResponseLength) {
     LOG(WARNING) << "Response for ID " << cdm_id
                  << " is too long: " << response.size();
     promise->reject(MediaKeys::INVALID_ACCESS_ERROR, 0, "Response too long.");

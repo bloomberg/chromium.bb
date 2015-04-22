@@ -70,6 +70,52 @@ static bool IsCommonSystemID(BitReader* reader) {
   return true;
 }
 
+// Checks that |reader| contains a valid 'ppsh' box header. |reader| is updated
+// to point to the content immediately following the box header. Returns true
+// if the header looks valid and |reader| contains enough data for the size of
+// header. |size| is updated as the computed size of the box header. Otherwise
+// false is returned.
+static bool ValidBoxHeader(BitReader* reader, uint32* size) {
+  // Enough data for a miniumum size 'pssh' box?
+  uint32 available_bytes = reader->bits_available() / 8;
+  RCHECK(available_bytes >= kMinimumBoxSizeInBytes);
+
+  *size = ReadBits(reader, 32);
+
+  // Must be a 'pssh' box or else fail.
+  RCHECK(ReadBits(reader, 8) == 'p');
+  RCHECK(ReadBits(reader, 8) == 's');
+  RCHECK(ReadBits(reader, 8) == 's');
+  RCHECK(ReadBits(reader, 8) == 'h');
+
+  if (*size == 1) {
+    // If largesize > 2**32 it is too big.
+    RCHECK(ReadBits(reader, 32) == 0);
+    *size = ReadBits(reader, 32);
+  } else if (*size == 0) {
+    *size = available_bytes;
+  }
+
+  // Check that the buffer contains at least size bytes.
+  return available_bytes >= *size;
+}
+
+bool ValidatePsshInput(const uint8* input, size_t input_length) {
+  size_t offset = 0;
+  while (offset < input_length) {
+    // Create a BitReader over the remaining part of the buffer.
+    BitReader reader(input + offset, input_length - offset);
+    uint32 size;
+    RCHECK(ValidBoxHeader(&reader, &size));
+
+    // Update offset to point at the next 'pssh' box (may not be one).
+    offset += size;
+  }
+
+  // Only valid if this contains 0 or more 'pssh' boxes.
+  return offset == input_length;
+}
+
 bool GetKeyIdsForCommonSystemId(const uint8* input,
                                 int input_length,
                                 std::vector<std::vector<uint8>>* key_ids) {
@@ -77,29 +123,10 @@ bool GetKeyIdsForCommonSystemId(const uint8* input,
   std::vector<std::vector<uint8>> result;
 
   while (offset < input_length) {
+    // Create a BitReader over the remaining part of the buffer.
     BitReader reader(input + offset, input_length - offset);
-
-    // Enough data for a miniumum size 'pssh' box?
-    RCHECK(reader.bits_available() >= kMinimumBoxSizeInBytes * 8);
-
-    uint32 size = ReadBits(&reader, 32);
-
-    // Must be a 'pssh' box or else fail.
-    RCHECK(ReadBits(&reader, 8) == 'p');
-    RCHECK(ReadBits(&reader, 8) == 's');
-    RCHECK(ReadBits(&reader, 8) == 's');
-    RCHECK(ReadBits(&reader, 8) == 'h');
-
-    if (size == 1) {
-      // If largesize > 2**32 it is too big.
-      RCHECK(ReadBits(&reader, 32) == 0);
-      size = ReadBits(&reader, 32);
-    } else if (size == 0) {
-      size = input_length - offset;
-    }
-
-    // Check that the buffer contains at least size bytes.
-    RCHECK(static_cast<uint32>(input_length - offset) >= size);
+    uint32 size;
+    RCHECK(ValidBoxHeader(&reader, &size));
 
     // Update offset to point at the next 'pssh' box (may not be one).
     offset += size;

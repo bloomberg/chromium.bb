@@ -52,6 +52,9 @@ enum {
   kMinKeyIdLength = 1,
   kMaxKeyIdLength = 512,
   kMaxKeyIds = 128,
+  kMaxInitDataLength = 64 * 1024,         // 64 KB
+  kMaxSessionResponseLength = 64 * 1024,  // 64 KB
+  kMaxKeySystemLength = 256,
 };
 
 }  // namespace limits

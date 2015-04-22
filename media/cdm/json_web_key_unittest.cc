@@ -576,5 +576,34 @@ TEST_F(JSONWebKeyTest, ExtractKeyIds) {
             "'kids'[1] is not valid base64url encoded. Value: AQI/");
 }
 
+TEST_F(JSONWebKeyTest, CreateInitData) {
+  const uint8 data1[] = { 0x01, 0x02 };
+  const uint8 data2[] = { 0x01, 0x02, 0x03, 0x04 };
+  const uint8 data3[] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+                          0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10 };
+
+  KeyIdList key_ids;
+  std::string error_message;
+
+  key_ids.push_back(std::vector<uint8>(data1, data1 + arraysize(data1)));
+  std::vector<uint8> init_data1;
+  CreateKeyIdsInitData(key_ids, &init_data1);
+  std::string result1(init_data1.begin(), init_data1.end());
+  EXPECT_EQ(result1, "{\"kids\":[\"AQI\"]}");
+
+  key_ids.push_back(std::vector<uint8>(data2, data2 + arraysize(data2)));
+  std::vector<uint8> init_data2;
+  CreateKeyIdsInitData(key_ids, &init_data2);
+  std::string result2(init_data2.begin(), init_data2.end());
+  EXPECT_EQ(result2, "{\"kids\":[\"AQI\",\"AQIDBA\"]}");
+
+  key_ids.push_back(std::vector<uint8>(data3, data3 + arraysize(data3)));
+  std::vector<uint8> init_data3;
+  CreateKeyIdsInitData(key_ids, &init_data3);
+  std::string result3(init_data3.begin(), init_data3.end());
+  EXPECT_EQ(result3,
+            "{\"kids\":[\"AQI\",\"AQIDBA\",\"AQIDBAUGBwgJCgsMDQ4PEA\"]}");
+}
+
 }  // namespace media
 

@@ -38,12 +38,6 @@ class WebContentDecryptionModuleSessionImpl
       size_t initDataLength,
       blink::WebEncryptedMediaSessionType session_type,
       blink::WebContentDecryptionModuleResult result);
-  virtual void initializeNewSession(
-      const blink::WebString& init_data_type,
-      const uint8* init_data,
-      size_t init_data_length,
-      const blink::WebString& session_type,
-      blink::WebContentDecryptionModuleResult result);
   virtual void load(const blink::WebString& session_id,
                     blink::WebContentDecryptionModuleResult result);
   virtual void update(const uint8* response,

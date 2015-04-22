@@ -168,6 +168,7 @@ class CencUtilsTest : public testing::Test {
 
 TEST_F(CencUtilsTest, EmptyPSSH) {
   std::vector<std::vector<uint8>> key_ids;
+  EXPECT_TRUE(ValidatePsshInput(nullptr, 0));
   EXPECT_TRUE(GetKeyIdsForCommonSystemId(nullptr, 0, &key_ids));
   EXPECT_EQ(0u, key_ids.size());
 }
@@ -175,6 +176,7 @@ TEST_F(CencUtilsTest, EmptyPSSH) {
 TEST_F(CencUtilsTest, PSSHVersion0) {
   std::vector<uint8> box = MakePSSHBox(0);
   std::vector<std::vector<uint8>> key_ids;
+  EXPECT_TRUE(ValidatePsshInput(&box[0], box.size()));
   EXPECT_TRUE(GetKeyIdsForCommonSystemId(&box[0], box.size(), &key_ids));
   EXPECT_EQ(0u, key_ids.size());
 }
@@ -182,6 +184,7 @@ TEST_F(CencUtilsTest, PSSHVersion0) {
 TEST_F(CencUtilsTest, PSSHVersion1WithNoKeys) {
   std::vector<uint8> box = MakePSSHBox(1);
   std::vector<std::vector<uint8>> key_ids;
+  EXPECT_TRUE(ValidatePsshInput(&box[0], box.size()));
   EXPECT_TRUE(GetKeyIdsForCommonSystemId(&box[0], box.size(), &key_ids));
   EXPECT_EQ(0u, key_ids.size());
 }
@@ -189,6 +192,7 @@ TEST_F(CencUtilsTest, PSSHVersion1WithNoKeys) {
 TEST_F(CencUtilsTest, PSSHVersion1WithOneKey) {
   std::vector<uint8> box = MakePSSHBox(1, Key1());
   std::vector<std::vector<uint8>> key_ids;
+  EXPECT_TRUE(ValidatePsshInput(&box[0], box.size()));
   EXPECT_TRUE(GetKeyIdsForCommonSystemId(&box[0], box.size(), &key_ids));
   EXPECT_EQ(1u, key_ids.size());
   EXPECT_EQ(key_ids[0], Key1());
@@ -197,6 +201,7 @@ TEST_F(CencUtilsTest, PSSHVersion1WithOneKey) {
 TEST_F(CencUtilsTest, PSSHVersion1WithTwoKeys) {
   std::vector<uint8> box = MakePSSHBox(1, Key1(), Key2());
   std::vector<std::vector<uint8>> key_ids;
+  EXPECT_TRUE(ValidatePsshInput(&box[0], box.size()));
   EXPECT_TRUE(GetKeyIdsForCommonSystemId(&box[0], box.size(), &key_ids));
   EXPECT_EQ(2u, key_ids.size());
   EXPECT_EQ(key_ids[0], Key1());
@@ -212,6 +217,7 @@ TEST_F(CencUtilsTest, PSSHVersion0Plus1) {
     box0.push_back(value);
 
   std::vector<std::vector<uint8>> key_ids;
+  EXPECT_TRUE(ValidatePsshInput(&box0[0], box0.size()));
   EXPECT_TRUE(GetKeyIdsForCommonSystemId(&box0[0], box0.size(), &key_ids));
   EXPECT_EQ(1u, key_ids.size());
   EXPECT_EQ(key_ids[0], Key1());
@@ -226,6 +232,7 @@ TEST_F(CencUtilsTest, PSSHVersion1Plus0) {
     box1.push_back(value);
 
   std::vector<std::vector<uint8>> key_ids;
+  EXPECT_TRUE(ValidatePsshInput(&box1[0], box1.size()));
   EXPECT_TRUE(GetKeyIdsForCommonSystemId(&box1[0], box1.size(), &key_ids));
   EXPECT_EQ(1u, key_ids.size());
   EXPECT_EQ(key_ids[0], Key1());
@@ -244,6 +251,7 @@ TEST_F(CencUtilsTest, MultiplePSSHVersion1) {
     box.push_back(value);
 
   std::vector<std::vector<uint8>> key_ids;
+  EXPECT_TRUE(ValidatePsshInput(&box[0], box.size()));
   EXPECT_TRUE(GetKeyIdsForCommonSystemId(&box[0], box.size(), &key_ids));
   EXPECT_EQ(4u, key_ids.size());
   EXPECT_EQ(key_ids[0], Key1());
@@ -257,8 +265,10 @@ TEST_F(CencUtilsTest, InvalidPSSH) {
   std::vector<std::vector<uint8>> key_ids;
   for (uint32 i = 1; i < box.size(); ++i) {
     // Modify size of data passed to be less than real size.
+    EXPECT_FALSE(ValidatePsshInput(&box[0], i));
     EXPECT_FALSE(GetKeyIdsForCommonSystemId(&box[0], i, &key_ids));
     // Modify starting point.
+    EXPECT_FALSE(ValidatePsshInput(&box[i], box.size() - i));
     EXPECT_FALSE(GetKeyIdsForCommonSystemId(&box[i], box.size() - i, &key_ids));
   }
 }
@@ -304,6 +314,7 @@ TEST_F(CencUtilsTest, LongSize) {
   };
 
   std::vector<std::vector<uint8>> key_ids;
+  EXPECT_TRUE(ValidatePsshInput(data, arraysize(data)));
   EXPECT_TRUE(GetKeyIdsForCommonSystemId(data, arraysize(data), &key_ids));
   EXPECT_EQ(2u, key_ids.size());
 }
@@ -325,6 +336,7 @@ TEST_F(CencUtilsTest, NoSize) {
   };
 
   std::vector<std::vector<uint8>> key_ids;
+  EXPECT_TRUE(ValidatePsshInput(data, arraysize(data)));
   EXPECT_TRUE(GetKeyIdsForCommonSystemId(data, arraysize(data), &key_ids));
   EXPECT_EQ(2u, key_ids.size());
 }
@@ -347,6 +359,7 @@ TEST_F(CencUtilsTest, HugeSize) {
   };
 
   std::vector<std::vector<uint8>> key_ids;
+  EXPECT_FALSE(ValidatePsshInput(data, arraysize(data)));
   EXPECT_FALSE(GetKeyIdsForCommonSystemId(data, arraysize(data), &key_ids));
 }
 
