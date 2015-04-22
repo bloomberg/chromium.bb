@@ -254,9 +254,9 @@ class UserSessionManager
   // Used when restoring user sessions after crash.
   void OnProfilePrepared(Profile* profile, bool browser_launched) override;
 
-  void ChildAccountStatusReceivedCallback();
+  void ChildAccountStatusReceivedCallback(Profile* profile);
 
-  void StopChildStatusObserving();
+  void StopChildStatusObserving(Profile* profile);
 
   void CreateUserSession(const UserContext& user_context,
                          bool has_auth_cookies);

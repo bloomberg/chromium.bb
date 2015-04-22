@@ -788,15 +788,16 @@ void UserSessionManager::OnProfilePrepared(Profile* profile,
   RestorePendingUserSessions();
 }
 
-void UserSessionManager::ChildAccountStatusReceivedCallback() {
-  StopChildStatusObserving();
+void UserSessionManager::ChildAccountStatusReceivedCallback(Profile* profile) {
+  StopChildStatusObserving(profile);
 }
 
-void UserSessionManager::StopChildStatusObserving() {
-  if (!waiting_for_child_account_status_) {
+void UserSessionManager::StopChildStatusObserving(Profile* profile) {
+  if (!waiting_for_child_account_status_ &&
+      !SessionStartupPref::TypeIsManaged(profile->GetPrefs())) {
     InitializeStartUrls();
-    waiting_for_child_account_status_ = false;
   }
+  waiting_for_child_account_status_ = false;
 }
 
 void UserSessionManager::CreateUserSession(const UserContext& user_context,
@@ -1149,13 +1150,12 @@ void UserSessionManager::InitializeStartUrls() const {
 bool UserSessionManager::InitializeUserSession(Profile* profile) {
   ChildAccountService* child_service =
       ChildAccountServiceFactory::GetForProfile(profile);
-  child_service->AddChildStatusReceivedCallback(base::Bind(
-      &UserSessionManager::ChildAccountStatusReceivedCallback,
-      weak_factory_.GetWeakPtr()));
+  child_service->AddChildStatusReceivedCallback(
+      base::Bind(&UserSessionManager::ChildAccountStatusReceivedCallback,
+                 weak_factory_.GetWeakPtr(), profile));
   base::MessageLoopProxy::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&UserSessionManager::StopChildStatusObserving,
-                 weak_factory_.GetWeakPtr()),
+      FROM_HERE, base::Bind(&UserSessionManager::StopChildStatusObserving,
+                            weak_factory_.GetWeakPtr(), profile),
       base::TimeDelta::FromMilliseconds(kFlagsFetchingLoginTimeoutMs));
 
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
