@@ -163,11 +163,9 @@ static bool HasCoreAudioAndInputDevices(AudioManager* audio_man) {
 class AudioInputStreamWrapper {
  public:
   explicit AudioInputStreamWrapper(AudioManager* audio_manager)
-      : com_init_(ScopedCOMInitializer::kMTA),
-        audio_man_(audio_manager),
-        default_params_(
-            audio_manager->GetInputStreamParameters(
-                  AudioManagerBase::kDefaultDeviceId)) {
+      : audio_man_(audio_manager),
+        default_params_(audio_man_->GetInputStreamParameters(
+            AudioManagerBase::kDefaultDeviceId)) {
     EXPECT_EQ(format(), AudioParameters::AUDIO_PCM_LOW_LATENCY);
     frames_per_buffer_ = default_params_.frames_per_buffer();
     // We expect the default buffer size to be a 10ms buffer.
@@ -207,7 +205,6 @@ class AudioInputStreamWrapper {
     return ais;
   }
 
-  ScopedCOMInitializer com_init_;
   AudioManager* audio_man_;
   const AudioParameters default_params_;
   int frames_per_buffer_;
@@ -254,17 +251,24 @@ class ScopedAudioInputStream {
   DISALLOW_COPY_AND_ASSIGN(ScopedAudioInputStream);
 };
 
+class WinAudioInputTest : public testing::Test {
+ public:
+  WinAudioInputTest() : audio_manager_(AudioManager::CreateForTesting()) {}
+  ~WinAudioInputTest() override {}
+
+ protected:
+  ScopedCOMInitializer com_init_;
+  scoped_ptr<AudioManager> audio_manager_;
+};
+
 // Verify that we can retrieve the current hardware/mixing sample rate
 // for all available input devices.
-TEST(WinAudioInputTest, WASAPIAudioInputStreamHardwareSampleRate) {
-  scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager.get()));
-
-  ScopedCOMInitializer com_init(ScopedCOMInitializer::kMTA);
+TEST_F(WinAudioInputTest, WASAPIAudioInputStreamHardwareSampleRate) {
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager_.get()));
 
   // Retrieve a list of all available input devices.
   media::AudioDeviceNames device_names;
-  audio_manager->GetAudioInputDeviceNames(&device_names);
+  audio_manager_->GetAudioInputDeviceNames(&device_names);
 
   // Scan all available input devices and repeat the same test for all of them.
   for (media::AudioDeviceNames::const_iterator it = device_names.begin();
@@ -277,30 +281,27 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamHardwareSampleRate) {
 }
 
 // Test Create(), Close() calling sequence.
-TEST(WinAudioInputTest, WASAPIAudioInputStreamCreateAndClose) {
-  scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager.get()));
+TEST_F(WinAudioInputTest, WASAPIAudioInputStreamCreateAndClose) {
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager_.get()));
   ScopedAudioInputStream ais(
-      CreateDefaultAudioInputStream(audio_manager.get()));
+      CreateDefaultAudioInputStream(audio_manager_.get()));
   ais.Close();
 }
 
 // Test Open(), Close() calling sequence.
-TEST(WinAudioInputTest, WASAPIAudioInputStreamOpenAndClose) {
-  scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager.get()));
+TEST_F(WinAudioInputTest, WASAPIAudioInputStreamOpenAndClose) {
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager_.get()));
   ScopedAudioInputStream ais(
-      CreateDefaultAudioInputStream(audio_manager.get()));
+      CreateDefaultAudioInputStream(audio_manager_.get()));
   EXPECT_TRUE(ais->Open());
   ais.Close();
 }
 
 // Test Open(), Start(), Close() calling sequence.
-TEST(WinAudioInputTest, WASAPIAudioInputStreamOpenStartAndClose) {
-  scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager.get()));
+TEST_F(WinAudioInputTest, WASAPIAudioInputStreamOpenStartAndClose) {
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager_.get()));
   ScopedAudioInputStream ais(
-      CreateDefaultAudioInputStream(audio_manager.get()));
+      CreateDefaultAudioInputStream(audio_manager_.get()));
   EXPECT_TRUE(ais->Open());
   MockAudioInputCallback sink;
   ais->Start(&sink);
@@ -308,11 +309,10 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamOpenStartAndClose) {
 }
 
 // Test Open(), Start(), Stop(), Close() calling sequence.
-TEST(WinAudioInputTest, WASAPIAudioInputStreamOpenStartStopAndClose) {
-  scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager.get()));
+TEST_F(WinAudioInputTest, WASAPIAudioInputStreamOpenStartStopAndClose) {
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager_.get()));
   ScopedAudioInputStream ais(
-      CreateDefaultAudioInputStream(audio_manager.get()));
+      CreateDefaultAudioInputStream(audio_manager_.get()));
   EXPECT_TRUE(ais->Open());
   MockAudioInputCallback sink;
   ais->Start(&sink);
@@ -321,11 +321,10 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamOpenStartStopAndClose) {
 }
 
 // Test some additional calling sequences.
-TEST(WinAudioInputTest, WASAPIAudioInputStreamMiscCallingSequences) {
-  scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager.get()));
+TEST_F(WinAudioInputTest, WASAPIAudioInputStreamMiscCallingSequences) {
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager_.get()));
   ScopedAudioInputStream ais(
-      CreateDefaultAudioInputStream(audio_manager.get()));
+      CreateDefaultAudioInputStream(audio_manager_.get()));
   WASAPIAudioInputStream* wais =
       static_cast<WASAPIAudioInputStream*>(ais.get());
 
@@ -349,9 +348,8 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamMiscCallingSequences) {
   ais.Close();
 }
 
-TEST(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
-  scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager.get()));
+TEST_F(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager_.get()));
 
   int count = 0;
   base::MessageLoopForUI loop;
@@ -360,7 +358,7 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
 
   // Create default WASAPI input stream which records in stereo using
   // the shared mixing rate. The default buffer size is 10ms.
-  AudioInputStreamWrapper aisw(audio_manager.get());
+  AudioInputStreamWrapper aisw(audio_manager_.get());
   ScopedAudioInputStream ais(aisw.Create());
   EXPECT_TRUE(ais->Open());
 
@@ -419,21 +417,20 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
 }
 
 // Test that we can capture a stream in loopback.
-TEST(WinAudioInputTest, WASAPIAudioInputStreamLoopback) {
-  scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  ABORT_AUDIO_TEST_IF_NOT(audio_manager->HasAudioOutputDevices() &&
+TEST_F(WinAudioInputTest, WASAPIAudioInputStreamLoopback) {
+  ABORT_AUDIO_TEST_IF_NOT(audio_manager_->HasAudioOutputDevices() &&
                           CoreAudioUtil::IsSupported());
 
-  AudioParameters params = audio_manager->GetInputStreamParameters(
+  AudioParameters params = audio_manager_->GetInputStreamParameters(
       AudioManagerBase::kLoopbackInputDeviceId);
   EXPECT_EQ(params.effects(), 0);
 
   AudioParameters output_params =
-      audio_manager->GetOutputStreamParameters(std::string());
+      audio_manager_->GetOutputStreamParameters(std::string());
   EXPECT_EQ(params.sample_rate(), output_params.sample_rate());
   EXPECT_EQ(params.channel_layout(), output_params.channel_layout());
 
-  ScopedAudioInputStream stream(audio_manager->MakeAudioInputStream(
+  ScopedAudioInputStream stream(audio_manager_->MakeAudioInputStream(
       params, AudioManagerBase::kLoopbackInputDeviceId));
   ASSERT_TRUE(stream->Open());
   FakeAudioInputCallback sink;
@@ -453,16 +450,15 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamLoopback) {
 // To include disabled tests in test execution, just invoke the test program
 // with --gtest_also_run_disabled_tests or set the GTEST_ALSO_RUN_DISABLED_TESTS
 // environment variable to a value greater than 0.
-TEST(WinAudioInputTest, DISABLED_WASAPIAudioInputStreamRecordToFile) {
-  scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
-  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager.get()));
+TEST_F(WinAudioInputTest, DISABLED_WASAPIAudioInputStreamRecordToFile) {
+  ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager_.get()));
 
   // Name of the output PCM file containing captured data. The output file
   // will be stored in the directory containing 'media_unittests.exe'.
   // Example of full name: \src\build\Debug\out_stereo_10sec.pcm.
   const char* file_name = "out_stereo_10sec.pcm";
 
-  AudioInputStreamWrapper aisw(audio_manager.get());
+  AudioInputStreamWrapper aisw(audio_manager_.get());
   ScopedAudioInputStream ais(aisw.Create());
   EXPECT_TRUE(ais->Open());
 

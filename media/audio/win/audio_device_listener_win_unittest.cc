@@ -25,9 +25,7 @@ static const char kSecondTestDevice[] = "test_device_1";
 
 class AudioDeviceListenerWinTest : public testing::Test {
  public:
-  AudioDeviceListenerWinTest()
-      : com_init_(ScopedCOMInitializer::kMTA) {
-  }
+  AudioDeviceListenerWinTest() {}
 
   virtual void SetUp() {
     if (!CoreAudioUtil::IsSupported())

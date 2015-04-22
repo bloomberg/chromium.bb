@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
+#include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
 #include "media/audio/fake_audio_log_factory.h"
 
@@ -157,7 +158,19 @@ AudioManager* AudioManager::CreateWithHangTimer(
 
 // static
 AudioManager* AudioManager::CreateForTesting() {
-  return Create(g_helper.Pointer()->fake_log_factory());
+  AudioManager* manager = Create(g_helper.Pointer()->fake_log_factory());
+
+  // When created for testing, always ensure all methods are ready to run (even
+  // if they end up called from other threads.
+  if (!manager->GetTaskRunner()->BelongsToCurrentThread()) {
+    base::WaitableEvent event(false, false);
+    manager->GetTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&base::WaitableEvent::Signal, base::Unretained(&event)));
+    event.Wait();
+  }
+
+  return manager;
 }
 
 // static

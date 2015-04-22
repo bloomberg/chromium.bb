@@ -19,13 +19,10 @@ namespace media {
 
 class CoreAudioUtilWinTest : public ::testing::Test {
  protected:
-  // The test runs on a COM thread in the multithreaded apartment (MTA).
+  // The test runs on a COM thread in the singlethreaded apartment (STA).
   // If we don't initialize the COM library on a thread before using COM,
   // all function calls will return CO_E_NOTINITIALIZED.
-  CoreAudioUtilWinTest()
-      : com_init_(ScopedCOMInitializer::kMTA) {
-    DCHECK(com_init_.succeeded());
-  }
+  CoreAudioUtilWinTest() { DCHECK(com_init_.succeeded()); }
   virtual ~CoreAudioUtilWinTest() {}
 
   bool DevicesAvailable() {

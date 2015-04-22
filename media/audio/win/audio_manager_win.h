@@ -64,9 +64,7 @@ class MEDIA_EXPORT AudioManagerWin : public AudioManagerBase {
 
   EnumerationType enumeration_type_;
   EnumerationType enumeration_type() { return enumeration_type_; }
-  void SetEnumerationType(EnumerationType type) {
-    enumeration_type_ = type;
-  }
+  void set_enumeration_type(EnumerationType type) { enumeration_type_ = type; }
 
   inline bool core_audio_supported() const {
     return enumeration_type_ == kMMDeviceEnumeration;

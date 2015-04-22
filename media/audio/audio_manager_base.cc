@@ -83,7 +83,10 @@ AudioManagerBase::AudioManagerBase(AudioLogFactory* audio_log_factory)
       audio_thread_("AudioThread"),
       audio_log_factory_(audio_log_factory) {
 #if defined(OS_WIN)
-  audio_thread_.init_com_with_mta(true);
+  // Do not use MTA mode initalization as it causes hangs for a significant
+  // population of users and is not supported on Windows 8 for audio capture
+  // and rendering.  See http://crbug.com/422522.
+  audio_thread_.init_com_with_mta(false);
 #elif defined(OS_MACOSX)
   // CoreAudio calls must occur on the main thread of the process, which in our
   // case is sadly the browser UI thread.  Failure to execute calls on the right

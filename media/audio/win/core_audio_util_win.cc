@@ -178,10 +178,12 @@ static ScopedComPtr<IMMDeviceEnumerator> CreateDeviceEnumeratorInternal() {
     // fail with CO_E_NOTINITIALIZED in combination with certain 3rd party
     // modules. Calling CoInitializeEx is an attempt to resolve the reported
     // issues. See http://crbug.com/378465 for details.
-    hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+    hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
     if (SUCCEEDED(hr)) {
-      hr = device_enumerator.CreateInstance(__uuidof(MMDeviceEnumerator),
-                                            NULL, CLSCTX_INPROC_SERVER);
+      hr = device_enumerator.CreateInstance(__uuidof(MMDeviceEnumerator), NULL,
+                                            CLSCTX_INPROC_SERVER);
+    } else {
+      LOG(ERROR) << "CoCreateInstance still failed! " << std::hex << hr;
     }
   }
   return device_enumerator;

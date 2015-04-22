@@ -33,19 +33,7 @@ namespace media {
 // Windows.
 class AudioManagerTest : public ::testing::Test {
  protected:
-  AudioManagerTest()
-      : audio_manager_(AudioManager::CreateForTesting())
-#if defined(OS_WIN)
-      , com_init_(base::win::ScopedCOMInitializer::kMTA)
-#endif
-  {
-    // Wait for audio thread initialization to complete.  Otherwise the
-    // enumeration type may not have been set yet.
-    base::WaitableEvent event(false, false);
-    audio_manager_->GetTaskRunner()->PostTask(FROM_HERE, base::Bind(
-        &base::WaitableEvent::Signal, base::Unretained(&event)));
-    event.Wait();
-  }
+  AudioManagerTest() : audio_manager_(AudioManager::CreateForTesting()) {}
 
 #if defined(OS_WIN)
   bool SetMMDeviceEnumeration() {
@@ -55,13 +43,13 @@ class AudioManagerTest : public ::testing::Test {
     if (amw->enumeration_type() == AudioManagerWin::kWaveEnumeration)
       return false;
 
-    amw->SetEnumerationType(AudioManagerWin::kMMDeviceEnumeration);
+    amw->set_enumeration_type(AudioManagerWin::kMMDeviceEnumeration);
     return true;
   }
 
   void SetWaveEnumeration() {
     AudioManagerWin* amw = static_cast<AudioManagerWin*>(audio_manager_.get());
-    amw->SetEnumerationType(AudioManagerWin::kWaveEnumeration);
+    amw->set_enumeration_type(AudioManagerWin::kWaveEnumeration);
   }
 
   std::string GetDeviceIdFromPCMWaveInAudioInputStream(
