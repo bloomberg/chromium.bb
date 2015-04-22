@@ -18,6 +18,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -2042,6 +2043,35 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RFPHDestruction) {
       "             +--Site A\n"
       "Where A = http://127.0.0.1/",
       DepictFrameTree(root));
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       PageTransitionForSecondaryIframeNavigation) {
+  GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  TestNavigationObserver observer(shell()->web_contents());
+
+  // Load same-site page into iframe.
+  FrameTreeNode* child = root->child_at(0);
+  GURL http_url(embedded_test_server()->GetURL("/title1.html"));
+  NavigateFrameToURL(child, http_url);
+  EXPECT_EQ(http_url, observer.last_navigation_url());
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+
+  // Load cross-site page into iframe.
+  TestFrameNavigationObserver frame_observer(child, 1);
+  GURL url = embedded_test_server()->GetURL("foo.com", "/title2.html");
+  NavigateIframeToURL(shell()->web_contents(), "test", url);
+  frame_observer.Wait();
+
+  EXPECT_EQ(NAVIGATION_TYPE_NEW_SUBFRAME,
+            frame_observer.load_committed_details().type);
 }
 
 }  // namespace content

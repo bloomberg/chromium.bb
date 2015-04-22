@@ -1672,8 +1672,14 @@ void RenderFrameHostImpl::OpenURL(const FrameHostMsg_OpenURL_Params& params,
 
   TRACE_EVENT1("navigation", "RenderFrameHostImpl::OpenURL", "url",
                validated_url.possibly_invalid_spec());
+  ui::PageTransition transition = ui::PAGE_TRANSITION_LINK;
+  if (frame_tree_node_->parent()) {
+    transition = params.should_replace_current_entry
+                     ? ui::PAGE_TRANSITION_AUTO_SUBFRAME
+                     : ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
+  }
   frame_tree_node_->navigator()->RequestOpenURL(
-      this, validated_url, source_site_instance, params.referrer,
+      this, validated_url, source_site_instance, params.referrer, transition,
       params.disposition, params.should_replace_current_entry,
       params.user_gesture);
 }

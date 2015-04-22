@@ -57,6 +57,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                       const GURL& url,
                       SiteInstance* source_site_instance,
                       const Referrer& referrer,
+                      ui::PageTransition page_transition,
                       WindowOpenDisposition disposition,
                       bool should_replace_current_entry,
                       bool user_gesture) override;
