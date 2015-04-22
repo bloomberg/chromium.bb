@@ -57,7 +57,6 @@ struct SkRect;
 
 namespace blink {
 
-class ClipRecorderStack;
 class DisplayItemList;
 class ImageBuffer;
 class KURL;
@@ -89,9 +88,6 @@ public:
     const SkCanvas* canvas() const { return m_canvas; }
 
     DisplayItemList* displayItemList() { return m_displayItemList; }
-
-    ClipRecorderStack* clipRecorderStack() const { return m_clipRecorderStack; }
-    void setClipRecorderStack(ClipRecorderStack* clipRecorderStack) { m_clipRecorderStack = clipRecorderStack; }
 
     void resetCanvas(SkCanvas*);
 
@@ -429,8 +425,6 @@ private:
 
     // This being null indicates not to paint into a DisplayItemList, and instead directly into the canvas.
     DisplayItemList* m_displayItemList;
-
-    ClipRecorderStack* m_clipRecorderStack;
 
     // Paint states stack. Enables local drawing state change with save()/restore() calls.
     // This state controls the appearance of drawn content.

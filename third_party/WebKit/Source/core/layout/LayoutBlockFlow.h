@@ -44,6 +44,7 @@
 
 namespace blink {
 
+class ClipScope;
 class MarginInfo;
 class LineBreaker;
 class LineInfo;
@@ -188,7 +189,8 @@ public:
     virtual LayoutRect selectionRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer) const override final;
     GapRects selectionGapRectsForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer) const;
     GapRects selectionGaps(const LayoutBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
-        LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight, const PaintInfo* = 0) const;
+        LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight,
+        const PaintInfo* = 0, ClipScope* = 0) const;
     GapRects inlineSelectionGaps(const LayoutBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
         LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight, const PaintInfo*) const;
     GapRects blockSelectionGaps(const LayoutBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
@@ -300,7 +302,7 @@ private:
     virtual void invalidatePaintForOverflow() override final;
     virtual void paintFloats(const PaintInfo&, const LayoutPoint&, bool preservePhase = false) override final;
     virtual void paintSelection(const PaintInfo&, const LayoutPoint&) override final;
-    virtual void clipOutFloatingObjects(const LayoutBlock*, const PaintInfo*, const LayoutPoint&, const LayoutSize&) const override;
+    virtual void clipOutFloatingObjects(const LayoutBlock*, ClipScope&, const LayoutPoint&, const LayoutSize&) const;
     void clearFloats(EClear);
 
     LayoutUnit logicalRightFloatOffsetForLine(LayoutUnit logicalTop, LayoutUnit fixedOffset, LayoutUnit logicalHeight) const;

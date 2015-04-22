@@ -639,8 +639,6 @@
       'graphics/paint/ClipPathRecorder.h',
       'graphics/paint/ClipRecorder.cpp',
       'graphics/paint/ClipRecorder.h',
-      'graphics/paint/ClipRecorderStack.cpp',
-      'graphics/paint/ClipRecorderStack.h',
       'graphics/paint/DisplayItem.cpp',
       'graphics/paint/DisplayItem.h',
       'graphics/paint/DisplayItemClient.h',

@@ -48,10 +48,10 @@
 #include "core/layout/line/LineBreaker.h"
 #include "core/layout/line/LineWidth.h"
 #include "core/paint/BlockFlowPainter.h"
+#include "core/paint/ClipScope.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "platform/geometry/TransformState.h"
-#include "platform/graphics/paint/ClipRecorderStack.h"
 #include "platform/text/BidiTextRun.h"
 
 namespace blink {
@@ -2149,7 +2149,8 @@ void LayoutBlockFlow::paintSelection(const PaintInfo& paintInfo, const LayoutPoi
     BlockFlowPainter(*this).paintSelection(paintInfo, paintOffset);
 }
 
-void LayoutBlockFlow::clipOutFloatingObjects(const LayoutBlock* rootBlock, const PaintInfo* paintInfo, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock) const
+void LayoutBlockFlow::clipOutFloatingObjects(const LayoutBlock* rootBlock, ClipScope& clipScope,
+    const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock) const
 {
     if (!m_floatingObjects)
         return;
@@ -2163,9 +2164,7 @@ void LayoutBlockFlow::clipOutFloatingObjects(const LayoutBlock* rootBlock, const
         rootBlock->flipForWritingMode(floatBox);
         floatBox.move(rootBlockPhysicalPosition.x(), rootBlockPhysicalPosition.y());
 
-        ASSERT(paintInfo->context->clipRecorderStack());
-        paintInfo->context->clipRecorderStack()->addClipRecorder(adoptPtr(new ClipRecorder(
-            *paintInfo->context, *this, paintInfo->displayItemTypeForClipping(), floatBox, SkRegion::kDifference_Op)));
+        clipScope.clip(floatBox, SkRegion::kDifference_Op);
     }
 }
 
@@ -2725,7 +2724,7 @@ GapRects LayoutBlockFlow::selectionGapRectsForPaintInvalidation(const LayoutBoxM
     return selectionGaps(this, offsetFromPaintInvalidationContainer, LayoutSize(), lastTop, lastLeft, lastRight);
 }
 
-static void clipOutPositionedObjects(const PaintInfo& paintInfo, const LayoutPoint& offset, TrackedLayoutBoxListHashSet* positionedObjects)
+static void clipOutPositionedObjects(ClipScope& clipScope, const LayoutPoint& offset, TrackedLayoutBoxListHashSet* positionedObjects)
 {
     if (!positionedObjects)
         return;
@@ -2733,27 +2732,25 @@ static void clipOutPositionedObjects(const PaintInfo& paintInfo, const LayoutPoi
     TrackedLayoutBoxListHashSet::const_iterator end = positionedObjects->end();
     for (TrackedLayoutBoxListHashSet::const_iterator it = positionedObjects->begin(); it != end; ++it) {
         LayoutBox* r = *it;
-        ASSERT(paintInfo.context->clipRecorderStack());
-        paintInfo.context->clipRecorderStack()->addClipRecorder(adoptPtr(new ClipRecorder(
-            *paintInfo.context, *r, paintInfo.displayItemTypeForClipping(),
-            LayoutRect(flooredIntPoint(r->location() + offset), flooredIntSize(r->size())), SkRegion::kDifference_Op)));
+        clipScope.clip(LayoutRect(flooredIntPoint(r->location() + offset), flooredIntSize(r->size())), SkRegion::kDifference_Op);
     }
 }
 
-GapRects LayoutBlockFlow::selectionGaps(const LayoutBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
-    LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight, const PaintInfo* paintInfo) const
+GapRects LayoutBlockFlow::selectionGaps(const LayoutBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition,
+    const LayoutSize& offsetFromRootBlock, LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight,
+    const PaintInfo* paintInfo, ClipScope* clipScope) const
 {
     // IMPORTANT: Callers of this method that intend for painting to happen need to do a save/restore.
-    if (paintInfo) {
+    if (clipScope) {
         // Note that we don't clip out overflow for positioned objects.  We just stick to the border box.
         LayoutRect flippedBlockRect(LayoutPoint(offsetFromRootBlock), size());
         rootBlock->flipForWritingMode(flippedBlockRect);
         flippedBlockRect.moveBy(rootBlockPhysicalPosition);
-        clipOutPositionedObjects(*paintInfo, flippedBlockRect.location(), positionedObjects());
+        clipOutPositionedObjects(*clipScope, flippedBlockRect.location(), positionedObjects());
         if (isBody() || isDocumentElement()) // The <body> must make sure to examine its containingBlock's positioned objects.
             for (LayoutBlock* cb = containingBlock(); cb && !cb->isLayoutView(); cb = cb->containingBlock())
-                clipOutPositionedObjects(*paintInfo, cb->location(), cb->positionedObjects()); // FIXME: Not right for flipped writing modes.
-        clipOutFloatingObjects(rootBlock, paintInfo, rootBlockPhysicalPosition, offsetFromRootBlock);
+                clipOutPositionedObjects(*clipScope, cb->location(), cb->positionedObjects()); // FIXME: Not right for flipped writing modes.
+        clipOutFloatingObjects(rootBlock, *clipScope, rootBlockPhysicalPosition, offsetFromRootBlock);
     }
 
     GapRects result;

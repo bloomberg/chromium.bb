@@ -1825,6 +1825,8 @@
             'paint/BoxDecorationData.h',
             'paint/BoxPainter.cpp',
             'paint/BoxPainter.h',
+            'paint/ClipScope.cpp',
+            'paint/ClipScope.h',
             'paint/CompositingRecorder.cpp',
             'paint/CompositingRecorder.h',
             'paint/DeprecatedPaintLayer.cpp',

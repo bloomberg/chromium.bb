@@ -383,9 +383,6 @@ private:
 
     bool isSelectionRoot() const;
 
-    // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to LayoutBlockFlow
-    virtual void clipOutFloatingObjects(const LayoutBlock*, const PaintInfo*, const LayoutPoint&, const LayoutSize&) const { };
-
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const override;
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;
 

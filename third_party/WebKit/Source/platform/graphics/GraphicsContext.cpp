@@ -93,7 +93,6 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas, DisplayItemList* displayItemL
     : m_canvas(canvas)
     , m_originalCanvas(canvas)
     , m_displayItemList(displayItemList)
-    , m_clipRecorderStack(0)
     , m_paintStateStack()
     , m_paintStateIndex(0)
     , m_annotationMode(0)
