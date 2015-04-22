@@ -1,0 +1,119 @@
+# -*- python -*-
+# Copyright (c) 2015 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+if env.Bit('bitcode'):
+  Return()
+
+# elf_loader requires some IRT interfaces.
+if not env.Bit('tests_use_irt'):
+  Return()
+
+# The builds here don't make sense for dynamic linking.
+if not env.Bit('nacl_static_link'):
+  Return()
+
+# elf_loader only handles ELFCLASS32, not ELFCLASS64.
+# TODO(mcgrathr): Remove this check when x86-64 switches to ELFCLASS32.
+if env.Bit('build_x86_64'):
+  Return()
+
+nacl_env = env['NACL_ENV']
+loader_nexe = nacl_env.File('${STAGING_DIR}/elf_loader.nexe')
+
+golden_file = env.File('echo.stdout')
+echo_args = open(str(golden_file)).read().splitlines()
+
+def BuildWithFlags(name, source, link_flags, c_flags=[]):
+  prog_env = env.Clone()
+  prog_env.Append(LINKFLAGS=link_flags)
+  prog_env.Append(CCFLAGS=c_flags)
+  obj = prog_env.ComponentObject(name + '.o', source)
+  prog = prog_env.ComponentProgram(name, obj)
+  return prog
+
+# These are arbitrary, but should be different from each, and positive.
+dyn_exit_status = 17
+pie_exit_status = 23
+
+# Build a tiny standalone ET_DYN object that will stand in for
+# a dynamic linker.  Test loading that as the main program.
+interp_nexe = BuildWithFlags('interp', 'interp.c',
+                             ['-nostdlib', '-shared'],
+                              ['-fPIC', '-fno-asynchronous-unwind-tables',
+                               '-DTEST_EXIT=%d' % dyn_exit_status])
+node = env.CommandSelLdrTestNacl('elf_loader_dyn_test.out',
+                                 loader_nexe,
+                                 sel_ldr_flags=['-a'],
+                                 args=[interp_nexe],
+                                 exit_status=dyn_exit_status)
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_elf_loader_dyn_test')
+
+# nacl-clang fails to grok -pie. See:
+#       https://code.google.com/p/nativeclient/issues/detail?id=4148
+# TODO(mcgrathr): Remove the conditional when that's fixed.
+if not env.Bit('nacl_clang'):
+  # Build a tiny PIE that uses 'interp' (above) as its "dynamic linker".
+  # Test loading an ET_DYN object with a PT_INTERP.
+  pie_nexe = BuildWithFlags('pie', 'interp.c',
+                            ['-nostdlib', '-pie',
+                             '-Wl,-dynamic-linker=%s' % interp_nexe.abspath],
+                            ['-fPIE', '-fno-asynchronous-unwind-tables',
+                             '-DTEST_EXIT=%d' % pie_exit_status])
+  node = env.CommandSelLdrTestNacl('elf_loader_pie_test.out',
+                                   loader_nexe,
+                                   sel_ldr_flags=['-a'],
+                                   args=[pie_nexe],
+                                   exit_status=pie_exit_status)
+  env.AddNodeToTestSuite(node,
+                         ['small_tests', 'sel_ldr_tests'],
+                         'run_elf_loader_pie_test')
+
+# elf_loader itself loads at the canonical "main nexe" address of 0x20000.
+# This address just needs to be high enough above that to leave space for
+# elf_loader's own code segment.
+text_start = '-Ttext-segment=0x100000'
+
+# Build a normal executable both with and without a PT_INTERP.
+def EchoTest(name, link_flags=[]):
+  nexe_name = 'echo_' + name
+  test_name = 'elf_loader_' + nexe_name + '_test'
+  nexe = BuildWithFlags(nexe_name, 'echo.c',
+                        ['-Wl,' + ','.join([text_start] + link_flags)])
+  node = env.CommandSelLdrTestNacl(test_name + '.out',
+                                   loader_nexe,
+                                   sel_ldr_flags=['-a'],
+                                   args=[nexe] + echo_args,
+                                   stdout_golden=golden_file)
+  env.AddNodeToTestSuite(node,
+                         ['small_tests', 'sel_ldr_tests'],
+                         'run_' + test_name)
+
+EchoTest('plain')
+EchoTest('interp', ['-dynamic-linker=%s' % interp_nexe.abspath])
+
+onlycode_obj = env.ComponentObject('onlycode.o', 'onlycode.S')
+# Newer toolchains include an allocated SHT_NOTE section (.note.NaCl.ABI.*)
+# in every object file, that just contributes to RODATA.  We do not want
+# any RODATA at all for this test.
+onlycode_text_obj = env.Command('onlycode_text.o', onlycode_obj,
+                                '${OBJCOPY} -j .text ${SOURCES} ${TARGET}')
+onlycode_env = env.Clone()
+onlycode_env.Append(LINKFLAGS=[
+    '-nostdlib',
+    '-Wl,--build-id=none',  # A build ID is just more RODATA we don't want.
+    '-Wl,--section-start=.text=0x100000',
+    ])
+nexe = onlycode_env.ComponentProgram('onlycode', onlycode_text_obj)
+node = env.CommandSelLdrTestNacl('elf_loader_onlycode_test.out',
+                                 loader_nexe,
+                                 sel_ldr_flags=['-a'],
+                                 args=[nexe])
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_elf_loader_onlycode_test')

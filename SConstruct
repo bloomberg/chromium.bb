@@ -3247,6 +3247,7 @@ if not nacl_env.Bit('nacl_glibc'):
   nacl_env.Append(
       BUILD_SCONSCRIPTS = [
         ####  ALPHABETICALLY SORTED ####
+        'src/untrusted/elf_loader/nacl.scons',
         'src/untrusted/pthread/nacl.scons',
         'src/untrusted/stubs/nacl.scons',
         'src/untrusted/nosys/nacl.scons',
@@ -3279,6 +3280,7 @@ nacl_env.AddChromeFilesFromGroup('untrusted_scons_files')
 # These are tests that are worthwhile to run in IRT variant only.
 irt_only_tests = [
     #### ALPHABETICALLY SORTED ####
+    'tests/elf_loader/nacl.scons',
     'tests/irt/nacl.scons',
     'tests/irt_compatibility/nacl.scons',
     'tests/irt_ext/nacl.scons',
@@ -3695,6 +3697,7 @@ nacl_irt_test_env = nacl_env.Clone(
     BUILD_TYPE = 'nacl_irt_test',
     BUILD_TYPE_DESCRIPTION = 'NaCl tests build with IRT',
     NACL_BUILD_FAMILY = 'UNTRUSTED_IRT_TESTS',
+    NACL_ENV = nacl_env,
 
     INCLUDE_DIR = nacl_env.Dir('${INCLUDE_DIR}'),
     LIB_DIR = nacl_env.Dir('${LIB_DIR}'),

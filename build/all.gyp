@@ -23,6 +23,7 @@
         '../src/trusted/platform_qualify/platform_qualify.gyp:*',
         '../src/trusted/sel_universal/sel_universal.gyp:*',
         '../src/trusted/service_runtime/service_runtime.gyp:*',
+        '../src/untrusted/elf_loader/elf_loader.gyp:*',
         '../src/untrusted/irt/irt.gyp:irt_core_nexe',
         '../src/untrusted/minidump_generator/minidump_generator.gyp:*',
         '../src/untrusted/nacl/nacl.gyp:*',

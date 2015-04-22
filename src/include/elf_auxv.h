@@ -18,6 +18,9 @@
 /* Keys for auxiliary vector (auxv). */
 #define AT_NULL         0   /* Terminating item in auxv array */
 #define AT_IGNORE       1   /* Entry should be ignored */
+#define AT_PHDR         3   /* Program headers for program */
+#define AT_PHENT        4   /* Size of program header entry */
+#define AT_PHNUM        5   /* Number of program headers */
 #define AT_BASE         7   /* Base address of interpreter
                                (overloaded for dynamic text start) */
 #define AT_ENTRY        9   /* Entry point of the executable */
