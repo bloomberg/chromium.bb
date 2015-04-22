@@ -8,11 +8,13 @@
 
 description("Test if various kinds of MIDI messages can be validated.");
 
+shouldBeDefined("testRunner.setPermission");
 shouldBeDefined("testRunner.setMIDISysexPermission");
 shouldBeDefined("navigator.requestMIDIAccess");
 
 window.jsTestIsAsync = true;
 
+testRunner.setPermission('midi-sysex', 'granted', location.origin, location.origin);
 testRunner.setMIDISysexPermission(true);
 
 navigator.requestMIDIAccess({sysex: true}).then(function (a) {

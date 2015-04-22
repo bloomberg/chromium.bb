@@ -8,6 +8,7 @@
 
 description("Test if sysex permission request is handled.");
 
+shouldBeDefined("testRunner.setPermission");
 shouldBeDefined("testRunner.setMIDISysexPermission");
 shouldBeDefined("navigator.requestMIDIAccess");
 
@@ -19,6 +20,7 @@ var finishSuccessfully = function () {
 }
 
 var rejectSysex = function (next) {
+    testRunner.setPermission('midi-sysex', 'denied', location.origin, location.origin);
     testRunner.setMIDISysexPermission(false);
     promise = navigator.requestMIDIAccess({sysex: true});
     shouldBeDefined("promise");
@@ -36,6 +38,7 @@ var rejectSysex = function (next) {
 }
 
 var acceptSysex = function (next) {
+    testRunner.setPermission('midi-sysex', 'granted', location.origin, location.origin);
     testRunner.setMIDISysexPermission(true);
     promise = navigator.requestMIDIAccess({sysex: true});
     shouldBeDefined("promise");
