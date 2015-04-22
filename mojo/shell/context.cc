@@ -84,6 +84,23 @@ bool ConfigureURLMappings(const base::CommandLine& command_line,
     resolver->AddOriginMapping(GURL(origin_mapping.origin),
                                GURL(origin_mapping.base_url));
 
+  if (command_line.HasSwitch(switches::kURLMappings)) {
+    const std::string mappings =
+        command_line.GetSwitchValueASCII(switches::kURLMappings);
+
+    base::StringPairs pairs;
+    if (!base::SplitStringIntoKeyValuePairs(mappings, '=', ',', &pairs))
+      return false;
+    using StringPair = std::pair<std::string, std::string>;
+    for (const StringPair& pair : pairs) {
+      const GURL from(pair.first);
+      const GURL to = context->ResolveCommandLineURL(pair.second);
+      if (!from.is_valid() || !to.is_valid())
+        return false;
+      resolver->AddURLMapping(from, to);
+    }
+  }
+
   return true;
 }
 

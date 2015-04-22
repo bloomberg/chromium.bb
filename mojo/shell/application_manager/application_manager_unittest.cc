@@ -487,6 +487,33 @@ TEST_F(ApplicationManagerTest, NoArgs) {
   EXPECT_EQ(0U, app_args.size());
 }
 
+// Confirm that url mappings are respected.
+TEST_F(ApplicationManagerTest, URLMapping) {
+  ApplicationManager am(&test_delegate_);
+  GURL test_url("test:test");
+  GURL test_url2("test:test2");
+  test_delegate_.AddMapping(test_url, test_url2);
+  TestApplicationLoader* loader = new TestApplicationLoader;
+  loader->set_context(&context_);
+  am.SetLoaderForURL(scoped_ptr<ApplicationLoader>(loader), test_url2);
+  {
+    // Connext to the mapped url
+    TestServicePtr test_service;
+    am.ConnectToService(test_url, &test_service);
+    TestClient test_client(test_service.Pass());
+    test_client.Test("test");
+    loop_.Run();
+  }
+  {
+    // Connext to the target url
+    TestServicePtr test_service;
+    am.ConnectToService(test_url2, &test_service);
+    TestClient test_client(test_service.Pass());
+    test_client.Test("test");
+    loop_.Run();
+  }
+}
+
 TEST_F(ApplicationManagerTest, ClientError) {
   test_client_->Test("test");
   EXPECT_TRUE(HasFactoryForTestURL());

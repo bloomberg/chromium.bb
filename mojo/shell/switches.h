@@ -23,6 +23,7 @@ extern const char kMapOrigin[];
 extern const char kOrigin[];
 extern const char kPredictableAppFilenames[];
 extern const char kTraceStartup[];
+extern const char kURLMappings[];
 
 }  // namespace switches
 
