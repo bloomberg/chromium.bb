@@ -59,7 +59,7 @@ AppShimHostManager::AppShimHostManager()
     : did_init_(false) {}
 
 void AppShimHostManager::Init() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!did_init_);
   did_init_ = true;
   apps::AppShimHandler::SetDefaultHandler(&extension_app_shim_handler_);
@@ -90,7 +90,7 @@ AppShimHostManager::~AppShimHostManager() {
 }
 
 void AppShimHostManager::InitOnFileThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   base::FilePath user_data_dir;
   if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
     return;
@@ -144,7 +144,7 @@ void AppShimHostManager::InitOnFileThread() {
 }
 
 void AppShimHostManager::ListenOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!acceptor_->Listen()) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -154,7 +154,7 @@ void AppShimHostManager::ListenOnIOThread() {
 
 void AppShimHostManager::OnClientConnected(
     const IPC::ChannelHandle& handle) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&CreateAppShimHost, handle));
