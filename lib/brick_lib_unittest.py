@@ -6,7 +6,6 @@
 
 from __future__ import print_function
 
-import mock
 import os
 
 from chromite.cbuildbot import constants
@@ -96,45 +95,6 @@ class BrickLibTest(cros_test_lib.MockTempDirTestCase,
     with osutils.ChdirContext(subdir):
       self.assertEqual(expected_name,
                        brick_lib.FindBrickInPath().config['name'])
-
-  def testBrickByNameExact(self):
-    """Test that we can get the brick for a given name."""
-    first = os.path.join(self.tempdir, 'foo')
-    osutils.WriteFile(os.path.join(first, 'make.conf'), 'hello', makedirs=True)
-
-    second = os.path.join(self.tempdir, 'bar')
-    brick_lib.Brick(second, initial_config={'name': 'bar'})
-
-    hello = os.path.join(self.tempdir, 'hello')
-    hello_brick = brick_lib.Brick(hello, initial_config={'name': 'hello'})
-
-    hello_private = os.path.join(self.tempdir, 'hello-private')
-    brick_lib.Brick(hello_private, initial_config={'name': 'hello-private'})
-
-    missing_overlay = os.path.join(self.tempdir, 'does', 'not', 'exist')
-    with mock.patch('chromite.lib.portage_util.FindOverlays',
-                    return_value=[missing_overlay, first, second,
-                                  hello_brick.OverlayDir(), hello_private]):
-      self.assertEquals(hello, brick_lib.FindBrickByName('hello').brick_dir)
-
-  def testBrickByNamePrivate(self):
-    """Test that we can get the brick even if the overlay is private."""
-    first = os.path.join(self.tempdir, 'foo')
-    osutils.WriteFile(os.path.join(first, 'make.conf'), 'hello', makedirs=True)
-
-    second = os.path.join(self.tempdir, 'bar')
-    brick_lib.Brick(second, initial_config={'name': 'bar'})
-
-    # Use a name with 'p' and 'r' at the end. It is tempting to use
-    # rstrip('-private') to strip the -private but it will result in the wrong
-    # result (hello instead of hellopr in this case.)
-    hello_private = os.path.join(self.tempdir, 'hellopr-private')
-    brick_lib.Brick(hello_private, initial_config={'name': 'hellopr-private'})
-
-    with mock.patch('chromite.lib.portage_util.FindOverlays',
-                    return_value=[first, second, hello_private]):
-      self.assertEquals(hello_private,
-                        brick_lib.FindBrickByName('hellopr').brick_dir)
 
   def testBrickCreation(self):
     """Test that brick initialization throws the right errors."""

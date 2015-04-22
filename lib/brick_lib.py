@@ -10,7 +10,6 @@ import json
 import os
 
 from chromite.lib import osutils
-from chromite.lib import portage_util
 from chromite.lib import workspace_lib
 
 _DEFAULT_LAYOUT_CONF = {'profile_eapi_when_unspecified': '5-progress',
@@ -272,49 +271,6 @@ class Brick(object):
     return _stack(self)
 
 
-def _FindBrickInOverlays(name, base=None):
-  """Returns the parent brick of |base| that matches |name|.
-
-  Will prefer an exact match, but if one does not exist then it would settle
-  for the private repo name. This is needed for backward compatibility with
-  Chrome OS repo naming convention and should be adapted accordingly.
-
-  Args:
-    name: Overlay/brick name to look for.
-    base: Base brick/overlay name to scan from; if None, uses |name|.
-
-  Returns:
-    The brick associated to |name| if one exists, otherwise None.
-  """
-  if not name:
-    return None
-  if base is None:
-    base = name
-
-  private_proj = None
-  try:
-    for overlay in portage_util.FindOverlays('both', base):
-      try:
-        try:
-          # portage_util.FindOverlay will return an overlay list instead of a
-          # brick list.
-          # Use the parent directory if it is a Brick.
-          proj = Brick(os.path.dirname(overlay), allow_legacy=False)
-        except BrickNotFound:
-          proj = Brick(overlay)
-        proj_name = proj.config.get('name')
-        if proj_name == name:
-          return proj
-        if proj_name == name + '-private':
-          private_proj = proj
-      except BrickNotFound:
-        pass
-  except portage_util.MissingOverlayException:
-    pass
-
-  return private_proj
-
-
 def FindBrickInPath(path=None):
   """Returns the root directory of the brick containing a path.
 
@@ -335,15 +291,3 @@ def FindBrickInPath(path=None):
       pass
 
   return None
-
-
-def FindBrickByName(name):
-  """Returns the brick associated to |name|.
-
-  Args:
-    name: A brick name.
-
-  Returns:
-    The brick associated to |name| if one exists, otherwise None.
-  """
-  return _FindBrickInOverlays(name)

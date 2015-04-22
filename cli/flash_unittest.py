@@ -40,19 +40,6 @@ class RemoteDeviceUpdaterMock(partial_mock.PartialCmdMock):
     """Mock out SetupRootfsUpdate."""
 
 
-class BrickMock(partial_mock.PartialMock):
-  """Mock out brick_lib.Brick."""
-  TARGET = 'chromite.lib.brick_lib.Brick'
-  ATTRS = ('Inherits')
-
-  def __init__(self):
-    partial_mock.PartialMock.__init__(self)
-
-  def Inherits(self, _inst, *_args, **_kwargs):
-    """Mock out Inherits."""
-    return True
-
-
 class RemoteDeviceUpdaterTest(cros_test_lib.MockTempDirTestCase):
   """Test the flow of flash.Flash() with RemoteDeviceUpdater."""
 
@@ -74,33 +61,24 @@ class RemoteDeviceUpdaterTest(cros_test_lib.MockTempDirTestCase):
 
   def testUpdateAll(self):
     """Tests that update methods are called correctly."""
-    proj = BrickMock()
     with mock.patch('os.path.exists', return_value=True):
-      with mock.patch('chromite.lib.brick_lib.FindBrickByName',
-                      return_value=proj):
-        flash.Flash(self.DEVICE, self.IMAGE)
-        self.assertTrue(self.updater_mock.patched['UpdateStateful'].called)
-        self.assertTrue(self.updater_mock.patched['UpdateRootfs'].called)
+      flash.Flash(self.DEVICE, self.IMAGE)
+      self.assertTrue(self.updater_mock.patched['UpdateStateful'].called)
+      self.assertTrue(self.updater_mock.patched['UpdateRootfs'].called)
 
   def testUpdateStateful(self):
     """Tests that update methods are called correctly."""
-    proj = BrickMock()
     with mock.patch('os.path.exists', return_value=True):
-      with mock.patch('chromite.lib.brick_lib.FindBrickByName',
-                      return_value=proj):
-        flash.Flash(self.DEVICE, self.IMAGE, rootfs_update=False)
-        self.assertTrue(self.updater_mock.patched['UpdateStateful'].called)
-        self.assertFalse(self.updater_mock.patched['UpdateRootfs'].called)
+      flash.Flash(self.DEVICE, self.IMAGE, rootfs_update=False)
+      self.assertTrue(self.updater_mock.patched['UpdateStateful'].called)
+      self.assertFalse(self.updater_mock.patched['UpdateRootfs'].called)
 
   def testUpdateRootfs(self):
     """Tests that update methods are called correctly."""
-    proj = BrickMock()
     with mock.patch('os.path.exists', return_value=True):
-      with mock.patch('chromite.lib.brick_lib.FindBrickByName',
-                      return_value=proj):
-        flash.Flash(self.DEVICE, self.IMAGE, stateful_update=False)
-        self.assertFalse(self.updater_mock.patched['UpdateStateful'].called)
-        self.assertTrue(self.updater_mock.patched['UpdateRootfs'].called)
+      flash.Flash(self.DEVICE, self.IMAGE, stateful_update=False)
+      self.assertFalse(self.updater_mock.patched['UpdateStateful'].called)
+      self.assertTrue(self.updater_mock.patched['UpdateRootfs'].called)
 
   def testMissingPayloads(self):
     """Tests we raise FlashError when payloads are missing."""
@@ -109,18 +87,15 @@ class RemoteDeviceUpdaterTest(cros_test_lib.MockTempDirTestCase):
 
   def testProjectSdk(self):
     """Tests that Project SDK flashing invoked as expected."""
-    proj = BrickMock()
     with mock.patch('os.path.exists', return_value=True):
-      with mock.patch('chromite.lib.brick_lib.FindBrickByName',
-                      return_value=proj):
-        with mock.patch('chromite.lib.project_sdk.FindVersion',
-                        return_value='1.2.3'):
-          flash.Flash(self.DEVICE, self.IMAGE, project_sdk_image=True)
-          dev_server_wrapper.GetImagePathWithXbuddy.assert_called_with(
-              'project_sdk', mock.ANY, version='1.2.3', static_dir=mock.ANY,
-              lookup_only=True)
-          self.assertTrue(self.updater_mock.patched['UpdateStateful'].called)
-          self.assertTrue(self.updater_mock.patched['UpdateRootfs'].called)
+      with mock.patch('chromite.lib.project_sdk.FindVersion',
+                      return_value='1.2.3'):
+        flash.Flash(self.DEVICE, self.IMAGE, project_sdk_image=True)
+        dev_server_wrapper.GetImagePathWithXbuddy.assert_called_with(
+            'project_sdk', mock.ANY, version='1.2.3', static_dir=mock.ANY,
+            lookup_only=True)
+        self.assertTrue(self.updater_mock.patched['UpdateStateful'].called)
+        self.assertTrue(self.updater_mock.patched['UpdateRootfs'].called)
 
 
 class USBImagerMock(partial_mock.PartialCmdMock):
