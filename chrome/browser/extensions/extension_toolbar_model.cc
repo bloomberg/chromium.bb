@@ -701,9 +701,8 @@ bool ExtensionToolbarModel::HighlightExtensions(
     if (visible_icon_count() < extension_ids.size())
       SetVisibleIconCount(extension_ids.size());
 
-    // It's important that is_highlighting_ is changed right immediately before
-    // the observers are notified since it changes the result of
-    // toolbar_items().
+    // It's important that is_highlighting_ is changed immediately before the
+    // observers are notified since it changes the result of toolbar_items().
     is_highlighting_ = true;
     FOR_EACH_OBSERVER(Observer, observers_,
                       OnToolbarHighlightModeChanged(true));
@@ -719,16 +718,17 @@ bool ExtensionToolbarModel::HighlightExtensions(
 
 void ExtensionToolbarModel::StopHighlighting() {
   if (is_highlighting_) {
-    highlighted_items_.clear();
     if (old_visible_icon_count_ != visible_icon_count_)
       SetVisibleIconCount(old_visible_icon_count_);
 
-    // It's important that is_highlighting_ is changed right immediately before
-    // the observers are notified since it changes the result of
-    // toolbar_items().
+    // It's important that is_highlighting_ is changed immediately before the
+    // observers are notified since it changes the result of toolbar_items().
     is_highlighting_ = false;
     FOR_EACH_OBSERVER(Observer, observers_,
                       OnToolbarHighlightModeChanged(false));
+    // For the same reason, we don't clear highlighted_items_ until after the
+    // mode changed.
+    highlighted_items_.clear();
   }
 }
 

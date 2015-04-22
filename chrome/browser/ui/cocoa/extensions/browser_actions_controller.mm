@@ -111,6 +111,10 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 // Returns the frame that the button with the given |index| should have.
 - (NSRect)frameForIndex:(NSUInteger)index;
 
+// Returns the popup point for the given |view| with |bounds|.
+- (NSPoint)popupPointForView:(NSView*)view
+                  withBounds:(NSRect)bounds;
+
 // Moves the given button both visually and within the toolbar model to the
 // specified index.
 - (void)moveButton:(BrowserActionButton*)button
@@ -148,6 +152,10 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 // overflow menu, if no actions are present).
 - (ToolbarActionsBarBubbleMac*)createMessageBubble:
     (scoped_ptr<ToolbarActionsBarBubbleDelegate>)delegate;
+
+// Called when the window for the active bubble is closing, and sets the active
+// bubble to nil.
+- (void)bubbleWindowClosing:(NSNotification*)notification;
 
 @end
 
@@ -281,6 +289,7 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
 @synthesize containerView = containerView_;
 @synthesize browser = browser_;
 @synthesize isOverflow = isOverflow_;
+@synthesize activeBubble = activeBubble_;
 
 #pragma mark -
 #pragma mark Public Methods
@@ -403,17 +412,7 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
                         fromView:[button superview]];
   }
 
-  // Anchor point just above the center of the bottom.
-  DCHECK([referenceButton isFlipped]);
-  NSPoint anchor = NSMakePoint(NSMidX(bounds),
-                               NSMaxY(bounds) - kBrowserActionBubbleYOffset);
-  // Convert the point to the container view's frame, and adjust for animation.
-  NSPoint anchorInContainer =
-      [containerView_ convertPoint:anchor fromView:referenceButton];
-  anchorInContainer.x -= NSMinX([containerView_ frame]) -
-      NSMinX([containerView_ animationEndFrame]);
-
-  return [containerView_ convertPoint:anchorInContainer toView:nil];
+  return [self popupPointForView:referenceButton withBounds:bounds];
 }
 
 - (BOOL)chevronIsHidden {
@@ -698,7 +697,8 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
 }
 
 - (void)containerMouseEntered:(NSNotification*)notification {
-  if (ExtensionToolbarIconSurfacingBubbleDelegate::ShouldShowForProfile(
+  if (!activeBubble_ &&  // only show one bubble at a time
+      ExtensionToolbarIconSurfacingBubbleDelegate::ShouldShowForProfile(
           browser_->profile())) {
     ToolbarActionsBarBubbleMac* bubble =
         [self createMessageBubble:scoped_ptr<ToolbarActionsBarBubbleDelegate>(
@@ -771,6 +771,21 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
                     yOffset,
                     ToolbarActionsBar::IconWidth(false),
                     ToolbarActionsBar::IconHeight());
+}
+
+- (NSPoint)popupPointForView:(NSView*)view
+                  withBounds:(NSRect)bounds {
+  // Anchor point just above the center of the bottom.
+  DCHECK([view isFlipped]);
+  NSPoint anchor = NSMakePoint(NSMidX(bounds),
+                               NSMaxY(bounds) - kBrowserActionBubbleYOffset);
+  // Convert the point to the container view's frame, and adjust for animation.
+  NSPoint anchorInContainer =
+      [containerView_ convertPoint:anchor fromView:view];
+  anchorInContainer.x -= NSMinX([containerView_ frame]) -
+      NSMinX([containerView_ animationEndFrame]);
+
+  return [containerView_ convertPoint:anchorInContainer toView:nil];
 }
 
 - (void)moveButton:(BrowserActionButton*)button
@@ -896,16 +911,33 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
 - (ToolbarActionsBarBubbleMac*)createMessageBubble:
     (scoped_ptr<ToolbarActionsBarBubbleDelegate>)delegate {
   DCHECK_GE([buttons_ count], 0u);
-  auto controller = static_cast<ToolbarActionViewController*>(
-      [[buttons_ objectAtIndex:0] viewController]);
-  NSPoint anchor = [self popupPointForId:controller->GetId()];
+  NSPoint anchor;
+  if ([buttons_ count] > 0) {
+    auto controller = static_cast<ToolbarActionViewController*>(
+        [[buttons_ objectAtIndex:0] viewController]);
+    anchor = [self popupPointForId:controller->GetId()];
+  } else {
+    NSView* wrenchButton = [[self toolbarController] wrenchButton];
+    anchor = [self popupPointForView:wrenchButton
+                          withBounds:[wrenchButton bounds]];
+  }
+
   anchor = [[containerView_ window] convertBaseToScreen:anchor];
-  return [[ToolbarActionsBarBubbleMac alloc]
+  activeBubble_ = [[ToolbarActionsBarBubbleMac alloc]
       initWithParentWindow:[containerView_ window]
                anchorPoint:anchor
                   delegate:delegate.Pass()];
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(bubbleWindowClosing:)
+             name:NSWindowWillCloseNotification
+           object:[activeBubble_ window]];
+  return activeBubble_;
 }
 
+- (void)bubbleWindowClosing:(NSNotification*)notification {
+  activeBubble_ = nil;
+}
 
 #pragma mark -
 #pragma mark Testing Methods

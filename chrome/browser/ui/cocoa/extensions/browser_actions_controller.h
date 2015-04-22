@@ -16,6 +16,7 @@ class Browser;
 @class BrowserActionsContainerView;
 @class MenuButton;
 class ToolbarActionsBar;
+@class ToolbarActionsBarBubbleMac;
 class ToolbarActionsBarDelegate;
 
 namespace content {
@@ -60,11 +61,15 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 
   // The Browser Actions overflow menu.
   base::scoped_nsobject<NSMenu> overflowMenu_;
+
+  // The bubble that is actively showing, if any.
+  ToolbarActionsBarBubbleMac* activeBubble_;
 }
 
 @property(readonly, nonatomic) BrowserActionsContainerView* containerView;
 @property(readonly, nonatomic) Browser* browser;
 @property(readonly, nonatomic) BOOL isOverflow;
+@property(readonly, nonatomic) ToolbarActionsBarBubbleMac* activeBubble;
 
 // Initializes the controller given the current browser and container view that
 // will hold the browser action buttons. If |mainController| is nil, the created

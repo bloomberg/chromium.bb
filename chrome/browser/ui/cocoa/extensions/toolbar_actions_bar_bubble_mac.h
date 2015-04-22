@@ -39,6 +39,9 @@ class ToolbarActionsBarBubbleDelegate;
                   delegate:(scoped_ptr<ToolbarActionsBarBubbleDelegate>)
                                delegate;
 
+// Toggles animation for testing purposes.
++ (void)setAnimationEnabledForTesting:(BOOL)enabled;
+
 @property(readonly, nonatomic) NSButton* actionButton;
 @property(readonly, nonatomic) NSButton* dismissButton;
 @property(readonly, nonatomic) NSButton* learnMoreButton;

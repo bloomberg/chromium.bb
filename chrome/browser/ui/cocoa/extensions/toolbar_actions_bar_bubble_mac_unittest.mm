@@ -8,7 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/extensions/toolbar_actions_bar_bubble_mac.h"
-#import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/run_loop_testing.h"
 #include "chrome/browser/ui/toolbar/test_toolbar_actions_bar_bubble_delegate.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
@@ -59,6 +58,8 @@ class ToolbarActionsBarBubbleMacTest : public CocoaTest {
   ToolbarActionsBarBubbleMacTest() {}
   ~ToolbarActionsBarBubbleMacTest() override {}
 
+  void SetUp() override;
+
   // Create and display a new bubble with the given |delegate|.
   ToolbarActionsBarBubbleMac* CreateAndShowBubble(
       TestToolbarActionsBarBubbleDelegate* delegate);
@@ -78,6 +79,11 @@ class ToolbarActionsBarBubbleMacTest : public CocoaTest {
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBarBubbleMacTest);
 };
 
+void ToolbarActionsBarBubbleMacTest::SetUp() {
+  CocoaTest::SetUp();
+  [ToolbarActionsBarBubbleMac setAnimationEnabledForTesting:NO];
+}
+
 ToolbarActionsBarBubbleMac* ToolbarActionsBarBubbleMacTest::CreateAndShowBubble(
     TestToolbarActionsBarBubbleDelegate* delegate) {
   ToolbarActionsBarBubbleMac* bubble =
@@ -87,8 +93,6 @@ ToolbarActionsBarBubbleMac* ToolbarActionsBarBubbleMacTest::CreateAndShowBubble(
                       delegate:delegate->GetDelegate()];
   EXPECT_FALSE(delegate->shown());
   [bubble showWindow:nil];
-  [base::mac::ObjCCastStrict<InfoBubbleWindow>([bubble window])
-      setAllowedAnimations:info_bubble::kAnimateNone];
   chrome::testing::NSRunLoopRunAllPending();
   EXPECT_FALSE(delegate->close_action());
   EXPECT_TRUE(delegate->shown());
