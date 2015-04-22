@@ -87,6 +87,10 @@ class TestDisplayLayoutManager
     return DisplayConfigurator::DisplayStateList();
   }
 
+  bool IsMirroring() const override {
+    return display_state_ == MULTIPLE_DISPLAY_STATE_DUAL_MIRROR;
+  }
+
  private:
   const DisplayMode* FindMirrorMode(
       const std::vector<DisplaySnapshot*>& displays) const {

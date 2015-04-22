@@ -137,6 +137,8 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
         gfx::Size* framebuffer_size) const = 0;
 
     virtual DisplayStateList GetDisplayStates() const = 0;
+
+    virtual bool IsMirroring() const = 0;
   };
 
   // Helper class used by tests.

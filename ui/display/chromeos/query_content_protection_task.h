@@ -36,9 +36,6 @@ class DISPLAY_EXPORT QueryContentProtectionTask {
   // Callback for NativeDisplayDelegate::GetHDCPState()
   void OnHDCPStateUpdate(bool success, HDCPState state);
 
-  // Returns true if in mirror mode (hardware or software), false otherwise.
-  bool IsMirroring() const;
-
   DisplayConfigurator::DisplayLayoutManager* layout_manager_;  // Not owned.
 
   NativeDisplayDelegate* native_display_delegate_;  // Not owned.

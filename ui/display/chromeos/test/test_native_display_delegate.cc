@@ -15,6 +15,7 @@ namespace test {
 TestNativeDisplayDelegate::TestNativeDisplayDelegate(ActionLogger* log)
     : max_configurable_pixels_(0),
       get_hdcp_expectation_(true),
+      set_hdcp_expectation_(true),
       hdcp_state_(HDCP_STATE_UNDESIRED),
       run_async_(false),
       log_(log) {
@@ -120,7 +121,7 @@ void TestNativeDisplayDelegate::GetHDCPState(
 bool TestNativeDisplayDelegate::SetHDCPState(const DisplaySnapshot& output,
                                              HDCPState state) {
   log_->AppendAction(GetSetHDCPStateAction(output, state));
-  return true;
+  return set_hdcp_expectation_;
 }
 
 void TestNativeDisplayDelegate::SetHDCPState(
@@ -128,7 +129,7 @@ void TestNativeDisplayDelegate::SetHDCPState(
     HDCPState state,
     const SetHDCPStateCallback& callback) {
   log_->AppendAction(GetSetHDCPStateAction(output, state));
-  callback.Run(true);
+  callback.Run(set_hdcp_expectation_);
 }
 
 std::vector<ui::ColorCalibrationProfile>

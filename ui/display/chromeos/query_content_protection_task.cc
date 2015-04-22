@@ -29,7 +29,7 @@ void QueryContentProtectionTask::Run() {
   std::vector<DisplaySnapshot*> hdcp_capable_displays;
   for (DisplaySnapshot* display : layout_manager_->GetDisplayStates()) {
     // Query display if it is in mirror mode or client on the same display.
-    if (!IsMirroring() && display->display_id() != display_id_)
+    if (!layout_manager_->IsMirroring() && display->display_id() != display_id_)
       continue;
 
     response_.link_mask |= display->type();
@@ -65,15 +65,6 @@ void QueryContentProtectionTask::Run() {
   } else {
     callback_.Run(response_);
   }
-}
-
-bool QueryContentProtectionTask::IsMirroring() const {
-  if (layout_manager_->GetDisplayState() == MULTIPLE_DISPLAY_STATE_DUAL_MIRROR)
-    return true;
-
-  return layout_manager_->GetSoftwareMirroringController() &&
-         layout_manager_->GetSoftwareMirroringController()
-             ->SoftwareMirroringEnabled();
 }
 
 void QueryContentProtectionTask::OnHDCPStateUpdate(bool success,

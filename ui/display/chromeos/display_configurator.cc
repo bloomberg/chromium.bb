@@ -82,6 +82,7 @@ class DisplayConfigurator::DisplayLayoutManagerImpl
                         std::vector<DisplayConfigureRequest>* requests,
                         gfx::Size* framebuffer_size) const override;
   DisplayStateList GetDisplayStates() const override;
+  bool IsMirroring() const override;
 
  private:
   // Parses the |displays| into a list of DisplayStates. This effectively adds
@@ -333,6 +334,14 @@ bool DisplayConfigurator::DisplayLayoutManagerImpl::GetDisplayLayout(
 DisplayConfigurator::DisplayStateList
 DisplayConfigurator::DisplayLayoutManagerImpl::GetDisplayStates() const {
   return configurator_->cached_displays();
+}
+
+bool DisplayConfigurator::DisplayLayoutManagerImpl::IsMirroring() const {
+  if (GetDisplayState() == MULTIPLE_DISPLAY_STATE_DUAL_MIRROR)
+    return true;
+
+  return GetSoftwareMirroringController() &&
+         GetSoftwareMirroringController()->SoftwareMirroringEnabled();
 }
 
 const DisplayMode*

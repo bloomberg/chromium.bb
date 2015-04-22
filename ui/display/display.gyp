@@ -45,6 +45,8 @@
       ],
       'sources': [
         # Note: file list duplicated in GN build.
+        'chromeos/apply_content_protection_task.cc',
+        'chromeos/apply_content_protection_task.h',
         'chromeos/configure_displays_task.cc',
         'chromeos/configure_displays_task.h',
         'chromeos/display_configurator.cc',
@@ -175,6 +177,8 @@
         'chromeos/test/action_logger.h',
         'chromeos/test/action_logger_util.cc',
         'chromeos/test/action_logger_util.h',
+        'chromeos/test/test_display_layout_manager.cc',
+        'chromeos/test/test_display_layout_manager.h',
         'chromeos/test/test_native_display_delegate.cc',
         'chromeos/test/test_native_display_delegate.h',
       ],
@@ -193,6 +197,7 @@
         '../..',
       ],
       'sources': [
+        'chromeos/apply_content_protection_task_unittest.cc',
         'chromeos/configure_displays_task_unittest.cc',
         'chromeos/display_configurator_unittest.cc',
         'chromeos/query_content_protection_task_unittest.cc',

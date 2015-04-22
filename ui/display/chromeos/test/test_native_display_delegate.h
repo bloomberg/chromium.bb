@@ -38,6 +38,11 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
   void set_get_hdcp_state_expectation(bool success) {
     get_hdcp_expectation_ = success;
   }
+
+  void set_set_hdcp_state_expectation(bool success) {
+    set_hdcp_expectation_ = success;
+  }
+
   void set_hdcp_state(HDCPState state) { hdcp_state_ = state; }
 
   void set_run_async(bool run_async) { run_async_ = run_async; }
@@ -90,6 +95,7 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
   int max_configurable_pixels_;
 
   bool get_hdcp_expectation_;
+  bool set_hdcp_expectation_;
 
   // Result value of GetHDCPState().
   HDCPState hdcp_state_;

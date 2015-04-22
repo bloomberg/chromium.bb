@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/memory/scoped_vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/chromeos/query_content_protection_task.h"
 #include "ui/display/chromeos/test/action_logger_util.h"
+#include "ui/display/chromeos/test/test_display_layout_manager.h"
 #include "ui/display/chromeos/test/test_display_snapshot.h"
 #include "ui/display/chromeos/test/test_native_display_delegate.h"
 
@@ -14,53 +14,6 @@ namespace ui {
 namespace test {
 
 namespace {
-
-class TestDisplayLayoutManager
-    : public DisplayConfigurator::DisplayLayoutManager {
- public:
-  TestDisplayLayoutManager(ScopedVector<DisplaySnapshot> displays,
-                           MultipleDisplayState display_state)
-      : displays_(displays.Pass()), display_state_(display_state) {}
-  ~TestDisplayLayoutManager() override {}
-
-  // DisplayConfigurator::DisplayLayoutManager:
-  DisplayConfigurator::StateController* GetStateController() const override {
-    return nullptr;
-  }
-
-  DisplayConfigurator::SoftwareMirroringController*
-  GetSoftwareMirroringController() const override {
-    return nullptr;
-  }
-
-  MultipleDisplayState GetDisplayState() const override {
-    return display_state_;
-  }
-
-  chromeos::DisplayPowerState GetPowerState() const override {
-    NOTREACHED();
-    return chromeos::DISPLAY_POWER_ALL_ON;
-  }
-
-  bool GetDisplayLayout(const std::vector<DisplaySnapshot*>& displays,
-                        MultipleDisplayState new_display_state,
-                        chromeos::DisplayPowerState new_power_state,
-                        std::vector<DisplayConfigureRequest>* requests,
-                        gfx::Size* framebuffer_size) const override {
-    NOTREACHED();
-    return false;
-  }
-
-  std::vector<DisplaySnapshot*> GetDisplayStates() const override {
-    return displays_.get();
-  }
-
- private:
-  ScopedVector<DisplaySnapshot> displays_;
-  MultipleDisplayState display_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDisplayLayoutManager);
-};
 
 scoped_ptr<DisplaySnapshot> CreateDisplaySnapshot(int64_t id,
                                                   DisplayConnectionType type) {
