@@ -52,6 +52,8 @@ class BlinkPlatformImpl : public blink::Platform {
   virtual void callOnMainThread(void (*func)(void*), void* context);
   virtual bool isThreadedCompositingEnabled();
   virtual blink::WebCompositorSupport* compositorSupport();
+  void createMessageChannel(blink::WebMessagePortChannel** channel1,
+                            blink::WebMessagePortChannel** channel2) override;
   virtual blink::WebURLLoader* createURLLoader();
   virtual blink::WebSocketHandle* createWebSocketHandle();
   virtual blink::WebString userAgent();

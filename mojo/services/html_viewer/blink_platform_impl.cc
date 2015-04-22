@@ -15,6 +15,7 @@
 #include "mojo/services/html_viewer/blink_resource_constants.h"
 #include "mojo/services/html_viewer/web_clipboard_impl.h"
 #include "mojo/services/html_viewer/web_cookie_jar_impl.h"
+#include "mojo/services/html_viewer/web_message_port_channel_impl.h"
 #include "mojo/services/html_viewer/web_socket_handle_impl.h"
 #include "mojo/services/html_viewer/web_thread_impl.h"
 #include "mojo/services/html_viewer/web_url_loader_impl.h"
@@ -167,6 +168,12 @@ bool BlinkPlatformImpl::isThreadedCompositingEnabled() {
 
 blink::WebCompositorSupport* BlinkPlatformImpl::compositorSupport() {
   return &compositor_support_;
+}
+
+void BlinkPlatformImpl::createMessageChannel(
+    blink::WebMessagePortChannel** channel1,
+    blink::WebMessagePortChannel** channel2) {
+  WebMessagePortChannelImpl::CreatePair(channel1, channel2);
 }
 
 blink::WebScrollbarBehavior* BlinkPlatformImpl::scrollbarBehavior() {
