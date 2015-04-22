@@ -14,6 +14,9 @@ enum SpeechRecognitionErrorCode {
   // There was no error.
   SPEECH_RECOGNITION_ERROR_NONE,
 
+  // No speech heard before timeout.
+  SPEECH_RECOGNITION_ERROR_NO_SPEECH,
+
   // The user or a script aborted speech input.
   SPEECH_RECOGNITION_ERROR_ABORTED,
 
@@ -26,15 +29,19 @@ enum SpeechRecognitionErrorCode {
   // Not allowed for privacy or security reasons.
   SPEECH_RECOGNITION_ERROR_NOT_ALLOWED,
 
-  // No speech heard before timeout.
-  SPEECH_RECOGNITION_ERROR_NO_SPEECH,
+  // Speech service is not allowed for privacy or security reasons.
+  SPEECH_RECOGNITION_ERROR_SERVICE_NOT_ALLOWED,
+
+  // There was an error in the speech recognition grammar.
+  SPEECH_RECOGNITION_ERROR_BAD_GRAMMAR,
+
+  // The language was not supported.
+  SPEECH_RECOGNITION_ERROR_LANGUAGE_NOT_SUPPORTED,
 
   // Speech was heard, but could not be interpreted.
   SPEECH_RECOGNITION_ERROR_NO_MATCH,
 
-  // There was an error in the speech recognition grammar.
-  SPEECH_RECOGNITION_ERROR_BAD_GRAMMAR,
-  SPEECH_RECOGNITION_ERROR_LAST = SPEECH_RECOGNITION_ERROR_BAD_GRAMMAR,
+  SPEECH_RECOGNITION_ERROR_LAST = SPEECH_RECOGNITION_ERROR_NO_MATCH,
 };
 
 // Error details for the SPEECH_RECOGNITION_ERROR_AUDIO error.

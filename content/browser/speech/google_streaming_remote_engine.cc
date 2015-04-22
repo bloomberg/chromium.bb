@@ -449,16 +449,13 @@ GoogleStreamingRemoteEngine::ProcessDownstreamResponse(
       case proto::SpeechRecognitionEvent::STATUS_NETWORK:
         return Abort(SPEECH_RECOGNITION_ERROR_NETWORK);
       case proto::SpeechRecognitionEvent::STATUS_NOT_ALLOWED:
-        // TODO(hans): We need a better error code for this.
-        return Abort(SPEECH_RECOGNITION_ERROR_ABORTED);
+        return Abort(SPEECH_RECOGNITION_ERROR_NOT_ALLOWED);
       case proto::SpeechRecognitionEvent::STATUS_SERVICE_NOT_ALLOWED:
-        // TODO(hans): We need a better error code for this.
-        return Abort(SPEECH_RECOGNITION_ERROR_ABORTED);
+        return Abort(SPEECH_RECOGNITION_ERROR_SERVICE_NOT_ALLOWED);
       case proto::SpeechRecognitionEvent::STATUS_BAD_GRAMMAR:
         return Abort(SPEECH_RECOGNITION_ERROR_BAD_GRAMMAR);
       case proto::SpeechRecognitionEvent::STATUS_LANGUAGE_NOT_SUPPORTED:
-        // TODO(hans): We need a better error code for this.
-        return Abort(SPEECH_RECOGNITION_ERROR_ABORTED);
+        return Abort(SPEECH_RECOGNITION_ERROR_LANGUAGE_NOT_SUPPORTED);
     }
   }
 

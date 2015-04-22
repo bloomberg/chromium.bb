@@ -164,6 +164,8 @@ static WebSpeechRecognizerClient::ErrorCode WebKitErrorCode(
     case SPEECH_RECOGNITION_ERROR_NONE:
       NOTREACHED();
       return WebSpeechRecognizerClient::OtherError;
+    case SPEECH_RECOGNITION_ERROR_NO_SPEECH:
+      return WebSpeechRecognizerClient::NoSpeechError;
     case SPEECH_RECOGNITION_ERROR_ABORTED:
       return WebSpeechRecognizerClient::AbortedError;
     case SPEECH_RECOGNITION_ERROR_AUDIO:
@@ -172,13 +174,15 @@ static WebSpeechRecognizerClient::ErrorCode WebKitErrorCode(
       return WebSpeechRecognizerClient::NetworkError;
     case SPEECH_RECOGNITION_ERROR_NOT_ALLOWED:
       return WebSpeechRecognizerClient::NotAllowedError;
-    case SPEECH_RECOGNITION_ERROR_NO_SPEECH:
-      return WebSpeechRecognizerClient::NoSpeechError;
+    case SPEECH_RECOGNITION_ERROR_SERVICE_NOT_ALLOWED:
+      return WebSpeechRecognizerClient::ServiceNotAllowedError;
+    case SPEECH_RECOGNITION_ERROR_BAD_GRAMMAR:
+      return WebSpeechRecognizerClient::BadGrammarError;
+    case SPEECH_RECOGNITION_ERROR_LANGUAGE_NOT_SUPPORTED:
+      return WebSpeechRecognizerClient::LanguageNotSupportedError;
     case SPEECH_RECOGNITION_ERROR_NO_MATCH:
       NOTREACHED();
       return WebSpeechRecognizerClient::OtherError;
-    case SPEECH_RECOGNITION_ERROR_BAD_GRAMMAR:
-      return WebSpeechRecognizerClient::BadGrammarError;
   }
   NOTREACHED();
   return WebSpeechRecognizerClient::OtherError;
