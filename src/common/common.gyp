@@ -141,6 +141,7 @@
         'mac/scoped_task_suspend-inl.h',
         'mac/string_utilities.cc',
         'mac/string_utilities.h',
+        'mac/super_fat_arch.h',
         'md5.cc',
         'md5.h',
         'memory.h',

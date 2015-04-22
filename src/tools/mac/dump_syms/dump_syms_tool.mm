@@ -126,14 +126,14 @@ static bool Start(const Options &options) {
       fprintf(stderr, "%s: no architecture '%s' is present in file.\n",
               [primary_file fileSystemRepresentation], options.arch->name);
       size_t available_size;
-      const struct fat_arch *available =
+      const SuperFatArch *available =
         dump_symbols.AvailableArchitectures(&available_size);
       if (available_size == 1)
         fprintf(stderr, "the file's architecture is: ");
       else
         fprintf(stderr, "architectures present in the file are:\n");
       for (size_t i = 0; i < available_size; i++) {
-        const struct fat_arch *arch = &available[i];
+        const SuperFatArch *arch = &available[i];
         const NXArchInfo *arch_info =
           google_breakpad::BreakpadGetArchInfoFromCpuType(
               arch->cputype, arch->cpusubtype);
