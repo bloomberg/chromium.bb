@@ -56,8 +56,8 @@ class BASE_EXPORT DiscardableMemory {
   virtual void* data() const = 0;
 
   // Handy method to simplify calling data() with a reinterpret_cast.
-  template<typename T> const T* data_as() const {
-    return reinterpret_cast<const T*>(data());
+  template<typename T> T* data_as() const {
+    return reinterpret_cast<T*>(data());
   }
 };
 
