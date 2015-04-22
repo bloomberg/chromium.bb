@@ -369,6 +369,7 @@ void Body::readAsyncFromBlob(PassRefPtr<BlobDataHandle> handle)
             } else {
                 m_resolver->resolve(Blob::create(blobHandle));
             }
+            m_stream->close();
             m_resolver.clear();
             return;
         }

@@ -525,10 +525,9 @@ promise_test(function(t) {
       .then(function(blob) {
           assert_equals(blob.type, 'text/plain');
           assert_equals(req.headers.get('Content-Type'), 'text/plain');
-// TODO(yhirano): Currently blob() calling sets |bodyUsed| parmanently. Fix it.
-//          return new Request(req).blob();
-//        }).then(function(blob) {
-//          assert_equals(blob.type, 'text/plain');
+          return new Request(req).blob();
+        }).then(function(blob) {
+          assert_equals(blob.type, 'text/plain');
         });
   }, 'MIME type for Blob with non-empty type');
 

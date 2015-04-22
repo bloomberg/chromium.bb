@@ -308,10 +308,18 @@ promise_test(function(t) {
   }, 'MIME type for Blob');
 
 promise_test(function(t) {
-    var res = new Response(new Blob([''], {type: 'Text/Plain'}));
+    var res = new Response(new Blob(['hello'], {type: 'Text/Plain'}));
     return res.blob()
       .then(function(blob) {
           assert_equals(blob.type, 'text/plain');
+          assert_equals(blob.size, 5);
+          assert_equals(res.headers.get('Content-Type'), 'text/plain');
+          return res.blob();
+        }).then(function(blob) {
+          // When we read from a response twice, it returns an empty contents.
+          // But the type should remain.
+          assert_equals(blob.type, 'text/plain');
+          assert_equals(blob.size, 0);
           assert_equals(res.headers.get('Content-Type'), 'text/plain');
         });
   }, 'MIME type for Blob with non-empty type');
