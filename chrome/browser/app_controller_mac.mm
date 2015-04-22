@@ -893,8 +893,13 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   // to the old profile.
   // In a browser test, the application is not brought to the front, so
   // |lastProfile_| might be null.
-  if (!lastProfile_ || profilePath == lastProfile_->GetPath())
-    lastProfile_ = g_browser_process->profile_manager()->GetLastUsedProfile();
+  if (!lastProfile_ || profilePath == lastProfile_->GetPath()) {
+    // Force windowChangedToProfile: to set the lastProfile_ and also update the
+    // relevant menuBridge objects.
+    lastProfile_ = nullptr;
+    [self windowChangedToProfile:g_browser_process->profile_manager()->
+        GetLastUsedProfile()];
+  }
 
   auto it = profileBookmarkMenuBridgeMap_.find(profilePath);
   if (it != profileBookmarkMenuBridgeMap_.end()) {
@@ -1547,6 +1552,10 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 
 - (BookmarkMenuBridge*)bookmarkMenuBridge {
   return bookmarkMenuBridge_;
+}
+
+- (HistoryMenuBridge*)historyMenuBridge {
+  return historyMenuBridge_.get();
 }
 
 - (void)addObserverForWorkAreaChange:(ui::WorkAreaWatcherObserver*)observer {
