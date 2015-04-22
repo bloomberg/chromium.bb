@@ -20,10 +20,8 @@ async_test(function(test) {
         })
         .then(function() {
             // If running manually, deny permission when prompted.
-            if (window.testRunner) {
-                testRunner.setPushMessagingPermission(location.origin, false);
+            if (window.testRunner)
                 testRunner.setPermission('push-messaging', 'denied', location.origin, location.origin);
-            }
             return swRegistration.pushManager.subscribe();
         })
         .then(function(pushSubscription) {

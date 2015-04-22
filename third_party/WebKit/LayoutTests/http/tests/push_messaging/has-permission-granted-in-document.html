@@ -15,10 +15,8 @@ async_test(function(test) {
     service_worker_unregister_and_register(test, workerUrl, workerScope)
         .then(function(serviceWorkerRegistration) {
             // If running manually, grant permission when prompted.
-            if (window.testRunner) {
-                testRunner.setPushMessagingPermission(location.origin, true);
+            if (window.testRunner)
                 testRunner.setPermission('push-messaging', 'granted', location.origin, location.origin);
-            }
             return serviceWorkerRegistration.pushManager.hasPermission();
         })
         .then(function(permissionStatus) {

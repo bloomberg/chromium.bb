@@ -19,10 +19,8 @@ async_test(function(test) {
             assert_not_equals(swRegistration.installing, null, 'The worker should be installing');
             assert_equals(swRegistration.active, null, 'The worker should not be active yet');
             // If running manually, grant permission when prompted.
-            if (window.testRunner) {
-                testRunner.setPushMessagingPermission(location.origin, true);
+            if (window.testRunner)
                 testRunner.setPermission('push-messaging', 'granted', location.origin, location.origin);
-            }
             return swRegistration.pushManager.subscribe();
         })
         .then(function(pushRegistration) {
