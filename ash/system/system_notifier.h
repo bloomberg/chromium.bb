@@ -24,6 +24,7 @@ ASH_EXPORT extern const char kNotifierMultiProfileFirstRun[];
 ASH_EXPORT extern const char kNotifierNetwork[];
 ASH_EXPORT extern const char kNotifierNetworkError[];
 ASH_EXPORT extern const char kNotifierNetworkPortalDetector[];
+ASH_EXPORT extern const char kNotifierOobeScreen[];
 ASH_EXPORT extern const char kNotifierPower[];
 ASH_EXPORT extern const char kNotifierScreenshot[];
 ASH_EXPORT extern const char kNotifierScreenCapture[];

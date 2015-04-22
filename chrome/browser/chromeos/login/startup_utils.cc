@@ -61,6 +61,7 @@ void StartupUtils::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kInitialLocale, "en-US");
   registry->RegisterBooleanPref(prefs::kNewOobe, false);
   registry->RegisterBooleanPref(prefs::kWebviewSigninDisabled, false);
+  registry->RegisterBooleanPref(prefs::kNewLoginUIPopup, false);
 }
 
 // static

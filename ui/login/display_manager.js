@@ -52,6 +52,7 @@
     'app_launch_network_config';
 /** @const */ var ACCELERATOR_NEW_OOBE = 'new_oobe';
 /** @const */ var ACCELERATOR_TOGGLE_WEBVIEW_SIGNIN = 'toggle_webview_signin';
+/** @const */ var ACCELERATOR_TOGGLE_NEW_LOGIN_UI = 'toggle_new_login_ui';
 
 /* Signin UI state constants. Used to control header bar UI. */
 /** @const */ var SIGNIN_UI_STATE = {
@@ -408,6 +409,9 @@ cr.define('cr.ui.login', function() {
         if (currentStepId == SCREEN_GAIA_SIGNIN ||
             currentStepId == SCREEN_OOBE_ENROLLMENT)
           chrome.send('toggleWebviewSignin');
+      } else if (name == ACCELERATOR_TOGGLE_NEW_LOGIN_UI) {
+        if (currentStepId == SCREEN_OOBE_NETWORK)
+          chrome.send('toggleNewLoginUI');
       } else if (name == ACCELERATOR_TOGGLE_EASY_BOOTSTRAP) {
         if (currentStepId == SCREEN_GAIA_SIGNIN)
           chrome.send('toggleEasyBootstrap');
