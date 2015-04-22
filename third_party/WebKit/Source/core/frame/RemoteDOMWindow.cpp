@@ -12,11 +12,6 @@
 
 namespace blink {
 
-const AtomicString& RemoteDOMWindow::interfaceName() const
-{
-    return emptyAtom;
-}
-
 ExecutionContext* RemoteDOMWindow::executionContext() const
 {
     return nullptr;

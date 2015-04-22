@@ -32,6 +32,25 @@ DOMWindow::~DOMWindow()
 {
 }
 
+v8::Handle<v8::Object> DOMWindow::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*)
+{
+    // DOMWindow must never be wrapped with wrap method.  The wrappers must be
+    // created at WindowProxy::installDOMWindow().
+    RELEASE_ASSERT_NOT_REACHED();
+    return v8::Handle<v8::Object>();
+}
+
+v8::Handle<v8::Object> DOMWindow::associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Handle<v8::Object> wrapper)
+{
+    RELEASE_ASSERT_NOT_REACHED(); // same as wrap method
+    return v8::Handle<v8::Object>();
+}
+
+const AtomicString& DOMWindow::interfaceName() const
+{
+    return EventTargetNames::DOMWindow;
+}
+
 Location* DOMWindow::location() const
 {
     if (!m_location)
