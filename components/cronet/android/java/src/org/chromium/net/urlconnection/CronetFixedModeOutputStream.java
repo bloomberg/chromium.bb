@@ -151,7 +151,7 @@ final class CronetFixedModeOutputStream extends CronetOutputStream {
             // Reuse this buffer.
             mBuffer.clear();
             // Quit message loop so embedder can write more data.
-            mMessageLoop.postQuitTask();
+            mMessageLoop.quit();
         }
         uploadDataSink.onReadSucceeded(false);
     }

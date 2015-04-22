@@ -426,14 +426,14 @@ public class CronetHttpURLConnection extends HttpURLConnection {
         public void onResponseStarted(UrlRequest request, ResponseInfo info) {
             mResponseInfo = info;
             // Quits the message loop since we have the headers now.
-            mMessageLoop.postQuitTask();
+            mMessageLoop.quit();
         }
 
         @Override
         public void onReadCompleted(UrlRequest request, ResponseInfo info,
                 ByteBuffer byteBuffer) {
             mResponseInfo = info;
-            mMessageLoop.postQuitTask();
+            mMessageLoop.quit();
         }
 
         @Override
@@ -480,7 +480,7 @@ public class CronetHttpURLConnection extends HttpURLConnection {
             if (mInputStream != null) {
                 mInputStream.setResponseDataCompleted();
             }
-            mMessageLoop.postQuitTask();
+            mMessageLoop.quit();
         }
     }
 

@@ -16,9 +16,6 @@ import java.util.concurrent.RejectedExecutionException;
 class MessageLoop implements Executor {
     private final BlockingQueue<Runnable> mQueue;
 
-    // A reusable runnable to quit the message loop.
-    private final Runnable mQuitTask;
-
     // Indicates whether this message loop is currently running.
     private boolean mLoopRunning = false;
 
@@ -28,23 +25,30 @@ class MessageLoop implements Executor {
     // task enqueued.
     private boolean mLoopFailed = false;
 
+    // Used when assertions are enabled to enforce single-threaded use.
+    private static final long INVALID_THREAD_ID = -1;
+    private long mThreadId = INVALID_THREAD_ID;
+
     MessageLoop() {
         mQueue = new LinkedBlockingQueue<Runnable>();
-        mQuitTask = new Runnable() {
-            @Override
-            public void run() {
-                mLoopRunning = false;
-            }
-        };
+    }
+
+    private boolean calledOnValidThread() {
+        if (mThreadId == INVALID_THREAD_ID) {
+            mThreadId = Thread.currentThread().getId();
+            return true;
+        }
+        return mThreadId == Thread.currentThread().getId();
     }
 
     /**
-     * Runs the message loop. Be sure to call {@link MessageLoop#postQuitTask()}
+     * Runs the message loop. Be sure to call {@link MessageLoop#quit()}
      * to end the loop. If an interruptedException occurs, the loop cannot be
      * started again (see {@link #mLoopFailed}).
      * @throws IOException
      */
     public void loop() throws IOException {
+        assert calledOnValidThread();
         if (mLoopFailed) {
             throw new IllegalStateException(
                     "Cannot run loop as an exception has occurred previously.");
@@ -71,12 +75,13 @@ class MessageLoop implements Executor {
     }
 
     /**
-     * Posts a reusable runnable, {@link #mQuitTask} to quit the loop. This
-     * causes the {@link #loop()} to stop after processing all currently
-     * enqueued messages.
+     * This causes {@link #loop()} to stop executing messages after the current
+     * message being executed.  Should only be called from the currently
+     * executing message.
      */
-    public void postQuitTask() {
-        execute(mQuitTask);
+    public void quit() {
+        assert calledOnValidThread();
+        mLoopRunning = false;
     }
 
     /**
