@@ -154,6 +154,14 @@ cr.define('cr.ui', function() {
         case 'resize':
           this.hideMenu();
           break;
+        case 'contextmenu':
+          if ((!this.menu || !this.menu.contains(e.target)) &&
+              (!this.hideTimestamp_ || Date.now() - this.hideTimestamp_ > 50))
+            this.showMenu(true);
+          e.preventDefault();
+          // Don't allow elements further up in the DOM to show their menus.
+          e.stopPropagation();
+          break;
       }
     },
 
@@ -186,6 +194,7 @@ cr.define('cr.ui', function() {
       this.showingEvents_.add(doc, 'scroll', this, true);
       this.showingEvents_.add(win, 'popstate', this);
       this.showingEvents_.add(win, 'resize', this);
+      this.showingEvents_.add(this.menu, 'contextmenu', this);
       this.showingEvents_.add(this.menu, 'activate', this);
       this.positionMenu_();
 
@@ -212,6 +221,11 @@ cr.define('cr.ui', function() {
 
       this.showingEvents_.removeAll();
       this.focus();
+
+      // On windows we might hide the menu in a right mouse button up and if
+      // that is the case we wait some short period before we allow the menu
+      // to be shown again.
+      this.hideTimestamp_ = cr.isWindows ? Date.now() : 0;
     },
 
     /**
