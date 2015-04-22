@@ -1729,6 +1729,7 @@
         'browser/devtools/devtools.gyp:devtools_protocol_handler',
         '../cc/cc.gyp:cc',
         '../cc/cc.gyp:cc_surfaces',
+        '../components/scheduler/scheduler.gyp:scheduler_common',
         '../device/bluetooth/bluetooth.gyp:device_bluetooth',
         '../net/net.gyp:http_server',
         '../storage/storage_browser.gyp:storage',

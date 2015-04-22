@@ -1,0 +1,15 @@
+include_rules = [
+  "+components/scheduler/child",
+  "+components/scheduler/common",
+  "+components/scheduler/scheduler_export.h",
+  "+cc/output",
+  "+ui/gfx",
+  "+third_party/WebKit/public/platform",
+  "+third_party/WebKit/public/web",
+]
+
+specific_include_rules = {
+  ".*test\.cc": [
+    "+cc/test",
+  ],
+}

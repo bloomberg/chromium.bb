@@ -23,8 +23,11 @@ namespace gpu {
 class GpuMemoryBufferManager;
 }
 
-namespace content {
+namespace scheduler {
 class RendererScheduler;
+}
+
+namespace content {
 
 class CompositorDependencies {
  public:
@@ -48,7 +51,7 @@ class CompositorDependencies {
   GetCompositorImplThreadTaskRunner() = 0;
   virtual cc::SharedBitmapManager* GetSharedBitmapManager() = 0;
   virtual gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() = 0;
-  virtual RendererScheduler* GetRendererScheduler() = 0;
+  virtual scheduler::RendererScheduler* GetRendererScheduler() = 0;
   virtual cc::ContextProvider* GetSharedMainThreadContextProvider() = 0;
   virtual scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id) = 0;

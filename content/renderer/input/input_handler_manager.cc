@@ -8,11 +8,11 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/input/input_handler.h"
+#include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/renderer/input/input_event_filter.h"
 #include "content/renderer/input/input_handler_manager_client.h"
 #include "content/renderer/input/input_handler_wrapper.h"
 #include "content/renderer/input/input_scroll_elasticity_controller.h"
-#include "content/renderer/scheduler/renderer_scheduler.h"
 
 using blink::WebInputEvent;
 
@@ -39,7 +39,7 @@ InputEventAckState InputEventDispositionToAck(
 InputHandlerManager::InputHandlerManager(
     const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy,
     InputHandlerManagerClient* client,
-    RendererScheduler* renderer_scheduler)
+    scheduler::RendererScheduler* renderer_scheduler)
     : message_loop_proxy_(message_loop_proxy),
       client_(client),
       renderer_scheduler_(renderer_scheduler) {

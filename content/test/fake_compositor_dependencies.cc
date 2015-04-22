@@ -80,7 +80,8 @@ FakeCompositorDependencies::GetGpuMemoryBufferManager() {
   return &gpu_memory_buffer_manager_;
 }
 
-RendererScheduler* FakeCompositorDependencies::GetRendererScheduler() {
+scheduler::RendererScheduler*
+FakeCompositorDependencies::GetRendererScheduler() {
   return &renderer_scheduler_;
 }
 

@@ -15,6 +15,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "cc/blink/context_provider_web_context.h"
+#include "components/scheduler/child/web_scheduler_impl.h"
+#include "components/scheduler/renderer/renderer_scheduler.h"
+#include "components/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 #include "content/child/database_util.h"
 #include "content/child/file_info_util.h"
 #include "content/child/fileapi/webfilesystem_impl.h"
@@ -22,7 +25,6 @@
 #include "content/child/npapi/npobject_util.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/child/quota_message_filter.h"
-#include "content/child/scheduler/web_scheduler_impl.h"
 #include "content/child/simple_webmimeregistry_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/web_database_observer_impl.h"
@@ -52,8 +54,6 @@
 #include "content/renderer/media/renderer_webmidiaccessor_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_clipboard_delegate.h"
-#include "content/renderer/scheduler/renderer_scheduler.h"
-#include "content/renderer/scheduler/webthread_impl_for_renderer_scheduler.h"
 #include "content/renderer/screen_orientation/screen_orientation_observer.h"
 #include "content/renderer/webclipboard_impl.h"
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
@@ -221,9 +221,10 @@ class RendererBlinkPlatformImpl::SandboxSupport
 //------------------------------------------------------------------------------
 
 RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
-    RendererScheduler* renderer_scheduler)
+    scheduler::RendererScheduler* renderer_scheduler)
     : BlinkPlatformImpl(renderer_scheduler->DefaultTaskRunner()),
-      main_thread_(new WebThreadImplForRendererScheduler(renderer_scheduler)),
+      main_thread_(
+          new scheduler::WebThreadImplForRendererScheduler(renderer_scheduler)),
       clipboard_delegate_(new RendererClipboardDelegate),
       clipboard_(new WebClipboardImpl(clipboard_delegate_.get())),
       mime_registry_(new RendererBlinkPlatformImpl::MimeRegistry),

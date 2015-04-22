@@ -116,6 +116,7 @@ exec_script_whitelist = [
   "//clank/native/framework/BUILD.gn",
 
   "//components/domain_reliability/BUILD.gn",
+  "//components/scheduler/scheduler.gni",
   "//components/webui_generator/generator/wug.gni",
   "//content/browser/browser.gni",
   "//content/child/child.gni",

@@ -24,8 +24,11 @@ namespace blink {
 class WebLayerTreeView;
 }
 
-namespace content {
+namespace scheduler {
 class RendererScheduler;
+}
+
+namespace content {
 
 // An implementation of blink::WebUnitTestSupport and BlinkPlatformImpl for
 // tests.
@@ -94,7 +97,7 @@ class TestBlinkWebUnitTestSupport : public blink::WebUnitTestSupport,
   base::ScopedTempDir file_system_root_;
   scoped_ptr<WebURLLoaderMockFactory> url_loader_factory_;
   cc_blink::WebCompositorSupportImpl compositor_support_;
-  scoped_ptr<RendererScheduler> renderer_scheduler_;
+  scoped_ptr<scheduler::RendererScheduler> renderer_scheduler_;
   scoped_ptr<blink::WebThread> web_thread_;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)

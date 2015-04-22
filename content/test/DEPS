@@ -1,4 +1,8 @@
 include_rules = [
+  # Allow inclusion of specific components that we depend on. We may only
+  # depend on components which we share with the mojo html_viewer.
+  "+components/scheduler/renderer",
+
   "+cc/blink",
   "+chromeos/audio", # For WebRTC tests.
   # Testing utilities can access anything in content/

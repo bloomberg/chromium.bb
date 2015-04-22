@@ -25,12 +25,15 @@ class WebInputEvent;
 class WebMouseWheelEvent;
 }
 
+namespace scheduler {
+class RendererScheduler;
+}
+
 namespace content {
 
 class InputHandlerWrapper;
 class InputHandlerManagerClient;
 struct DidOverscrollParams;
-class RendererScheduler;
 
 // InputHandlerManager class manages InputHandlerProxy instances for
 // the WebViews in this renderer.
@@ -43,7 +46,7 @@ class InputHandlerManager {
   InputHandlerManager(
       const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy,
       InputHandlerManagerClient* client,
-      RendererScheduler* renderer_scheduler);
+      scheduler::RendererScheduler* renderer_scheduler);
   ~InputHandlerManager();
 
   // Callable from the main thread only.
@@ -96,7 +99,7 @@ class InputHandlerManager {
 
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   InputHandlerManagerClient* client_;
-  RendererScheduler* renderer_scheduler_;  // Not owned.
+  scheduler::RendererScheduler* renderer_scheduler_;  // Not owned.
 };
 
 }  // namespace content

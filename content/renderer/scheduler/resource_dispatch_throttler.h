@@ -13,9 +13,11 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_sender.h"
 
-namespace content {
-
+namespace scheduler {
 class RendererScheduler;
+}
+
+namespace content {
 
 // Utility class for throttling a stream of resource requests targetted to a
 // specific IPC sender. The throttling itself is very basic:
@@ -31,7 +33,7 @@ class CONTENT_EXPORT ResourceDispatchThrottler : public IPC::Sender {
   // |flush_period| and |max_requests_per_flush| must be strictly positive
   // in duration/value.
   ResourceDispatchThrottler(IPC::Sender* proxied_sender,
-                            RendererScheduler* scheduler,
+                            scheduler::RendererScheduler* scheduler,
                             base::TimeDelta flush_period,
                             uint32 max_requests_per_flush);
   ~ResourceDispatchThrottler() override;
@@ -53,7 +55,7 @@ class CONTENT_EXPORT ResourceDispatchThrottler : public IPC::Sender {
   base::ThreadChecker thread_checker_;
 
   IPC::Sender* const proxied_sender_;
-  RendererScheduler* const scheduler_;
+  scheduler::RendererScheduler* const scheduler_;
   const base::TimeDelta flush_period_;
   const uint32 max_requests_per_flush_;
 

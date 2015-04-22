@@ -629,7 +629,7 @@
     },
     'scheduler': {
       'filepath': 'cc/scheduler'\
-                  '|content/child/scheduler'\
+                  '|components/scheduler'\
                   '|content/renderer/scheduler'
     },
     'search': {

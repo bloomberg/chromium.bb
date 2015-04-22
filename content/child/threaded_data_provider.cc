@@ -4,10 +4,10 @@
 
 #include "content/child/threaded_data_provider.h"
 
+#include "components/scheduler/child/webthread_impl_for_worker_scheduler.h"
 #include "content/child/child_process.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/resource_dispatcher.h"
-#include "content/child/scheduler/webthread_impl_for_worker_scheduler.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/resource_messages.h"
 #include "ipc/ipc_sync_channel.h"
@@ -23,7 +23,7 @@ class DataProviderMessageFilter : public IPC::MessageFilter {
   DataProviderMessageFilter(
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
-      const WebThreadImplForWorkerScheduler& background_thread,
+      const scheduler::WebThreadImplForWorkerScheduler& background_thread,
       const base::WeakPtr<ThreadedDataProvider>&
           background_thread_resource_provider,
       const base::WeakPtr<ThreadedDataProvider>& main_thread_resource_provider,
@@ -41,7 +41,7 @@ class DataProviderMessageFilter : public IPC::MessageFilter {
 
   const scoped_refptr<base::MessageLoopProxy> io_message_loop_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-  const WebThreadImplForWorkerScheduler& background_thread_;
+  const scheduler::WebThreadImplForWorkerScheduler& background_thread_;
   // This weakptr can only be dereferenced on the background thread.
   base::WeakPtr<ThreadedDataProvider>
       background_thread_resource_provider_;
@@ -54,7 +54,7 @@ class DataProviderMessageFilter : public IPC::MessageFilter {
 DataProviderMessageFilter::DataProviderMessageFilter(
     const scoped_refptr<base::MessageLoopProxy>& io_message_loop,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
-    const WebThreadImplForWorkerScheduler& background_thread,
+    const scheduler::WebThreadImplForWorkerScheduler& background_thread,
     const base::WeakPtr<ThreadedDataProvider>&
         background_thread_resource_provider,
     const base::WeakPtr<ThreadedDataProvider>& main_thread_resource_provider,
@@ -126,8 +126,9 @@ ThreadedDataProvider::ThreadedDataProvider(
     : request_id_(request_id),
       shm_buffer_(shm_buffer),
       shm_size_(shm_size),
-      background_thread_(static_cast<WebThreadImplForWorkerScheduler&>(
-          *threaded_data_receiver->backgroundThread())),
+      background_thread_(
+          static_cast<scheduler::WebThreadImplForWorkerScheduler&>(
+              *threaded_data_receiver->backgroundThread())),
       ipc_channel_(ChildThreadImpl::current()->channel()),
       threaded_data_receiver_(threaded_data_receiver),
       resource_filter_active_(false),
@@ -186,7 +187,8 @@ void ThreadedDataProvider::Stop() {
     // We should never end up with a different parser thread than from when the
     // ThreadedDataProvider gets created.
     DCHECK(current_background_thread ==
-           static_cast<WebThreadImplForWorkerScheduler*>(&background_thread_));
+           static_cast<scheduler::WebThreadImplForWorkerScheduler*>(
+               &background_thread_));
     background_thread_.TaskRunner()->PostTask(
         FROM_HERE, base::Bind(&ThreadedDataProvider::StopOnBackgroundThread,
                               base::Unretained(this)));

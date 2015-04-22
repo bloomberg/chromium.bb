@@ -91,10 +91,6 @@ const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
 // features.
 const char kDisableBlinkFeatures[]          = "disable-blink-features";
 
-// Disable the Blink Scheduler. Ensures there's no reordering of blink tasks.
-// This switch is intended only for performance tests.
-const char kDisableBlinkScheduler[]         = "disable-blink-scheduler";
-
 // Disable the creation of compositing layers when it would prevent LCD text.
 const char kDisablePreferCompositingToLCDText[] =
     "disable-prefer-compositing-to-lcd-text";

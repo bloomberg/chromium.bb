@@ -6,8 +6,8 @@
 
 #include "base/auto_reset.h"
 #include "base/trace_event/trace_event.h"
+#include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/common/resource_messages.h"
-#include "content/renderer/scheduler/renderer_scheduler.h"
 #include "ipc/ipc_message_macros.h"
 
 namespace content {
@@ -21,7 +21,7 @@ bool IsResourceRequest(const IPC::Message& msg) {
 
 ResourceDispatchThrottler::ResourceDispatchThrottler(
     IPC::Sender* proxied_sender,
-    RendererScheduler* scheduler,
+    scheduler::RendererScheduler* scheduler,
     base::TimeDelta flush_period,
     uint32 max_requests_per_flush)
     : proxied_sender_(proxied_sender),

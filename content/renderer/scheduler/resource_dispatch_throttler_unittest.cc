@@ -65,7 +65,7 @@ class RendererSchedulerForTest : public FakeRendererScheduler {
 class ResourceDispatchThrottlerForTest : public ResourceDispatchThrottler {
  public:
   ResourceDispatchThrottlerForTest(IPC::Sender* sender,
-                                   RendererScheduler* scheduler)
+                                   scheduler::RendererScheduler* scheduler)
       : ResourceDispatchThrottler(
             sender,
             scheduler,

@@ -27,7 +27,7 @@ FakeRendererScheduler::LoadingTaskRunner() {
   return nullptr;
 }
 
-scoped_refptr<SingleThreadIdleTaskRunner>
+scoped_refptr<scheduler::SingleThreadIdleTaskRunner>
 FakeRendererScheduler::IdleTaskRunner() {
   return nullptr;
 }

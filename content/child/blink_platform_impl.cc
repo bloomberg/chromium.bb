@@ -27,6 +27,7 @@
 #include "base/time/time.h"
 #include "blink/public/resources/grit/blink_image_resources.h"
 #include "blink/public/resources/grit/blink_resources.h"
+#include "components/scheduler/child/webthread_impl_for_worker_scheduler.h"
 #include "content/app/resources/grit/content_resources.h"
 #include "content/app/strings/grit/content_strings.h"
 #include "content/child/bluetooth/web_bluetooth_impl.h"
@@ -40,7 +41,6 @@
 #include "content/child/permissions/permission_dispatcher_thread_proxy.h"
 #include "content/child/push_messaging/push_dispatcher.h"
 #include "content/child/push_messaging/push_provider.h"
-#include "content/child/scheduler/webthread_impl_for_worker_scheduler.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/web_discardable_memory_impl.h"
 #include "content/child/web_url_loader_impl.h"
@@ -519,8 +519,8 @@ bool BlinkPlatformImpl::portAllowed(const blink::WebURL& url) const {
 }
 
 blink::WebThread* BlinkPlatformImpl::createThread(const char* name) {
-  WebThreadImplForWorkerScheduler* thread =
-      new WebThreadImplForWorkerScheduler(name);
+  scheduler::WebThreadImplForWorkerScheduler* thread =
+      new scheduler::WebThreadImplForWorkerScheduler(name);
   thread->TaskRunner()->PostTask(
       FROM_HERE, base::Bind(&BlinkPlatformImpl::UpdateWebThreadTLS,
                             base::Unretained(this), thread));

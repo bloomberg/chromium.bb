@@ -110,6 +110,7 @@ source_set("child") {
     sources = []
   } else {
     deps += [
+      "//components/scheduler:scheduler",
       "//content/app/resources",
       "//content/app/strings",
       "//crypto:platform",

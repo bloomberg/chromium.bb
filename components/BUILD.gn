@@ -224,6 +224,7 @@ group("all_components") {
     deps += [
       "//components/app_modal",
       "//components/browsing_data",
+      "//components/scheduler",
     ]
   }
 
@@ -306,6 +307,10 @@ test("components_unittests") {
   if (is_ios) {
     deps -= [ "//components/devtools_http_handler:unit_tests" ]
   }
+
+  if (!is_ios) {
+    deps += [ "//components/scheduler:unit_tests" ]
+  }
 }
 
 repack("components_tests_pak") {
@@ -379,6 +384,7 @@ test("components_browsertests") {
 
 test("components_perftests") {
   sources = [
+    "scheduler/child/task_queue_manager_perftest.cc",
     "visitedlink/test/visitedlink_perftest.cc",
   ]
 
@@ -389,6 +395,7 @@ test("components_perftests") {
     "//base",
     "//base/test:test_support_perf",
     "//testing/gtest",
+    "//testing/perf",
     "//content/test:test_support",
     "//components/visitedlink/browser",
   ]

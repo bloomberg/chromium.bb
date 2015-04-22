@@ -54,6 +54,7 @@ static_library("test_support") {
 
     public_deps += [ "//third_party/WebKit/public:blink" ]
     deps += [
+      "//components/scheduler:scheduler",
       "//content/browser/speech/proto",
       "//content/public/child:child_sources",
       "//content/gpu",

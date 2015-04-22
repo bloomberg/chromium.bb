@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_split.h"
+#include "components/scheduler/common/scheduler_switches.h"
 #include "content/common/content_switches_internal.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
@@ -96,7 +97,7 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisableDatabases))
     WebRuntimeFeatures::enableDatabase(false);
 
-  if (command_line.HasSwitch(switches::kDisableBlinkScheduler))
+  if (command_line.HasSwitch(scheduler::switches::kDisableBlinkScheduler))
     WebRuntimeFeatures::enableBlinkScheduler(false);
 
   if (command_line.HasSwitch(switches::kDisableLocalStorage))

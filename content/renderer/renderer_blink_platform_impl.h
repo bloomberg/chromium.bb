@@ -37,6 +37,11 @@ class WebGraphicsContext3DProvider;
 class WebServiceWorkerCacheStorage;
 }
 
+namespace scheduler {
+class RendererScheduler;
+class WebThreadImplForRendererScheduler;
+}
+
 namespace content {
 class BatteryStatusDispatcher;
 class DeviceLightEventPump;
@@ -45,17 +50,16 @@ class DeviceOrientationEventPump;
 class PlatformEventObserverBase;
 class QuotaMessageFilter;
 class RendererClipboardDelegate;
-class RendererScheduler;
 class RenderView;
 class ThreadSafeSender;
 class WebClipboardImpl;
 class WebDatabaseObserverImpl;
 class WebFileSystemImpl;
-class WebThreadImplForRendererScheduler;
 
 class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
  public:
-  explicit RendererBlinkPlatformImpl(RendererScheduler* renderer_scheduler);
+  explicit RendererBlinkPlatformImpl(
+      scheduler::RendererScheduler* renderer_scheduler);
   virtual ~RendererBlinkPlatformImpl();
 
   void set_plugin_refresh_allowed(bool plugin_refresh_allowed) {
@@ -208,7 +212,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void SendFakeDeviceEventDataForTesting(blink::WebPlatformEventType type);
   device::VibrationManagerPtr& GetConnectedVibrationManagerService();
 
-  scoped_ptr<WebThreadImplForRendererScheduler> main_thread_;
+  scoped_ptr<scheduler::WebThreadImplForRendererScheduler> main_thread_;
 
   scoped_ptr<RendererClipboardDelegate> clipboard_delegate_;
   scoped_ptr<WebClipboardImpl> clipboard_;

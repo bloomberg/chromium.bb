@@ -5,6 +5,7 @@
 #include "content/public/test/render_view_test.h"
 
 #include "base/run_loop.h"
+#include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
@@ -21,7 +22,6 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
-#include "content/renderer/scheduler/renderer_scheduler.h"
 #include "content/test/fake_compositor_dependencies.h"
 #include "content/test/mock_render_process.h"
 #include "content/test/test_content_client.h"
@@ -63,7 +63,8 @@ namespace content {
 class RendererBlinkPlatformImplNoSandboxImpl
     : public RendererBlinkPlatformImpl {
  public:
-  RendererBlinkPlatformImplNoSandboxImpl(RendererScheduler* scheduler)
+  RendererBlinkPlatformImplNoSandboxImpl(
+      scheduler::RendererScheduler* scheduler)
       : RendererBlinkPlatformImpl(scheduler) {}
 
   virtual blink::WebSandboxSupport* sandboxSupport() {
@@ -73,7 +74,7 @@ class RendererBlinkPlatformImplNoSandboxImpl
 
 RenderViewTest::RendererBlinkPlatformImplNoSandbox::
     RendererBlinkPlatformImplNoSandbox() {
-  renderer_scheduler_ = RendererScheduler::Create();
+  renderer_scheduler_ = scheduler::RendererScheduler::Create();
   blink_platform_impl_.reset(
       new RendererBlinkPlatformImplNoSandboxImpl(renderer_scheduler_.get()));
 }

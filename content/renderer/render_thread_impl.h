@@ -70,6 +70,10 @@ class AudioHardwareConfig;
 class GpuVideoAcceleratorFactories;
 }
 
+namespace scheduler {
+class RendererScheduler;
+}
+
 namespace v8 {
 class Extension;
 }
@@ -102,7 +106,6 @@ class PeerConnectionTracker;
 class RenderProcessObserver;
 class RendererBlinkPlatformImpl;
 class RendererDemuxerAndroid;
-class RendererScheduler;
 class ResourceDispatchThrottler;
 class ResourceSchedulingFilter;
 class V8SamplingProfiler;
@@ -197,7 +200,7 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorImplThreadTaskRunner() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
-  RendererScheduler* GetRendererScheduler() override;
+  scheduler::RendererScheduler* GetRendererScheduler() override;
   cc::ContextProvider* GetSharedMainThreadContextProvider() override;
   scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id) override;
@@ -480,7 +483,7 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_ptr<AppCacheDispatcher> appcache_dispatcher_;
   scoped_ptr<DomStorageDispatcher> dom_storage_dispatcher_;
   scoped_ptr<IndexedDBDispatcher> main_thread_indexed_db_dispatcher_;
-  scoped_ptr<RendererScheduler> renderer_scheduler_;
+  scoped_ptr<scheduler::RendererScheduler> renderer_scheduler_;
   scoped_ptr<RendererBlinkPlatformImpl> blink_platform_impl_;
   scoped_ptr<ResourceDispatchThrottler> resource_dispatch_throttler_;
   scoped_ptr<CacheStorageDispatcher> main_thread_cache_storage_dispatcher_;
