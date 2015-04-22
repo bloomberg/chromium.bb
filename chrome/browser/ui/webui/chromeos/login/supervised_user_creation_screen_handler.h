@@ -56,6 +56,7 @@ class SupervisedUserCreationScreenHandler : public BaseScreenHandler {
 
     virtual void AbortFlow() = 0;
     virtual void FinishFlow() = 0;
+    virtual void HideFlow() = 0;
 
     virtual void OnPhotoTaken(const std::string& raw_data) = 0;
     virtual void OnImageSelected(const std::string& image_url,
@@ -110,6 +111,7 @@ class SupervisedUserCreationScreenHandler : public BaseScreenHandler {
 
   void HandleFinishLocalSupervisedUserCreation();
   void HandleAbortLocalSupervisedUserCreation();
+  void HandleHideLocalSupervisedUserCreation();
   void HandleRetryLocalSupervisedUserCreation(const base::ListValue* args);
   void HandleCurrentSupervisedUserPage(const std::string& current_page);
 

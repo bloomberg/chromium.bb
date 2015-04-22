@@ -212,6 +212,10 @@ void SupervisedUserCreationScreen::FinishFlow() {
   controller_->FinishCreation();
 }
 
+void SupervisedUserCreationScreen::HideFlow() {
+  Hide();
+}
+
 void SupervisedUserCreationScreen::AuthenticateManager(
     const std::string& manager_id,
     const std::string& manager_password) {

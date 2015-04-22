@@ -92,6 +92,7 @@ class SupervisedUserCreationScreen
                            const std::string& manager_password) override;
   void AbortFlow() override;
   void FinishFlow() override;
+  void HideFlow() override;
   bool FindUserByDisplayName(const base::string16& display_name,
                              std::string* out_id) const override;
   void OnPageSelected(const std::string& page) override;

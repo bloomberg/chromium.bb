@@ -1342,6 +1342,8 @@ login.createScreen('SupervisedUserCreationScreen',
       var notSignedInPages = ['intro', 'manager'];
       var postCreationPages = ['created'];
       if (notSignedInPages.indexOf(this.currentPage_) >= 0) {
+        chrome.send('hideLocalSupervisedUserCreation');
+
         // Make sure no manager password is kept:
         this.managerList_.clearPods();
 

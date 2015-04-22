@@ -165,6 +165,9 @@ void SupervisedUserCreationScreenHandler::RegisterMessages() {
   AddCallback("abortLocalSupervisedUserCreation",
               &SupervisedUserCreationScreenHandler::
                   HandleAbortLocalSupervisedUserCreation);
+  AddCallback("hideLocalSupervisedUserCreation",
+              &SupervisedUserCreationScreenHandler::
+                  HandleHideLocalSupervisedUserCreation);
   AddCallback("checkSupervisedUserName",
               &SupervisedUserCreationScreenHandler::
                   HandleCheckSupervisedUserName);
@@ -284,6 +287,11 @@ void SupervisedUserCreationScreenHandler::
 void SupervisedUserCreationScreenHandler::
     HandleAbortLocalSupervisedUserCreation() {
   delegate_->AbortFlow();
+}
+
+void SupervisedUserCreationScreenHandler::
+    HandleHideLocalSupervisedUserCreation() {
+  delegate_->HideFlow();
 }
 
 void SupervisedUserCreationScreenHandler::HandleManagerSelected(
