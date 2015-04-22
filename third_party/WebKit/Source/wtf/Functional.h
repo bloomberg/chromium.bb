@@ -38,6 +38,9 @@ namespace WTF {
 // Functional.h provides a very simple way to bind a function pointer and arguments together into a function object
 // that can be stored, copied and invoked, similar to how boost::bind and std::bind in C++11.
 
+// Use threadSafeBind() or createCrossThreadTask() if the function/task is
+// called on a (potentially) different thread from the current thread.
+
 // A FunctionWrapper is a class template that can wrap a function pointer or a member function pointer and
 // provide a unified interface for calling that function.
 template<typename>
