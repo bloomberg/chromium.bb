@@ -71,7 +71,6 @@ using extensions::Extension;
 using extensions::ExtensionPrefs;
 using extensions::ExtensionRegistry;
 using extensions::ExtensionSet;
-using extensions::UnloadedExtensionInfo;
 
 namespace {
 
@@ -104,7 +103,9 @@ AppLauncherHandler::AppLauncherHandler(ExtensionService* extension_service)
     RecordAppLauncherPromoHistogram(apps::APP_LAUNCHER_PROMO_SHOWN);
 }
 
-AppLauncherHandler::~AppLauncherHandler() {}
+AppLauncherHandler::~AppLauncherHandler() {
+  ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))->RemoveObserver(this);
+}
 
 void AppLauncherHandler::CreateAppInfo(
     const Extension* extension,
@@ -261,71 +262,6 @@ void AppLauncherHandler::Observe(int type,
     return;
 
   switch (type) {
-    case extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
-      const Extension* extension =
-          content::Details<const Extension>(details).ptr();
-      if (!extension->is_app())
-        return;
-
-      if (!extensions::ui_util::ShouldDisplayInNewTabPage(
-              extension, Profile::FromWebUI(web_ui()))) {
-        return;
-      }
-
-      scoped_ptr<base::DictionaryValue> app_info(GetAppInfo(extension));
-      if (app_info.get()) {
-        visible_apps_.insert(extension->id());
-
-        ExtensionPrefs* prefs =
-            ExtensionPrefs::Get(extension_service_->profile());
-        base::FundamentalValue highlight(
-            prefs->IsFromBookmark(extension->id()) &&
-            attempted_bookmark_app_install_);
-        attempted_bookmark_app_install_ = false;
-        web_ui()->CallJavascriptFunction("ntp.appAdded", *app_info, highlight);
-      }
-
-      break;
-    }
-    case extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
-    case extensions::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED: {
-      const Extension* extension = NULL;
-      bool uninstalled = false;
-      if (type == extensions::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED) {
-        extension = content::Details<const Extension>(details).ptr();
-        uninstalled = true;
-      } else {  // NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED
-        if (content::Details<UnloadedExtensionInfo>(details)->reason ==
-            UnloadedExtensionInfo::REASON_UNINSTALL) {
-          // Uninstalls are tracked by
-          // NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED.
-          return;
-        }
-        extension = content::Details<extensions::UnloadedExtensionInfo>(
-            details)->extension;
-        uninstalled = false;
-      }
-      if (!extension->is_app())
-        return;
-
-      if (!extensions::ui_util::ShouldDisplayInNewTabPage(
-              extension, Profile::FromWebUI(web_ui()))) {
-        return;
-      }
-
-      scoped_ptr<base::DictionaryValue> app_info(GetAppInfo(extension));
-      if (app_info.get()) {
-        if (uninstalled)
-          visible_apps_.erase(extension->id());
-
-        web_ui()->CallJavascriptFunction(
-            "ntp.appRemoved",
-            *app_info,
-            base::FundamentalValue(uninstalled),
-            base::FundamentalValue(!extension_id_prompting_.empty()));
-      }
-      break;
-    }
     case chrome::NOTIFICATION_APP_LAUNCHER_REORDERED: {
       const std::string* id =
           content::Details<const std::string>(details).ptr();
@@ -362,6 +298,38 @@ void AppLauncherHandler::Observe(int type,
     default:
       NOTREACHED();
   }
+}
+
+void AppLauncherHandler::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  if (!ShouldShow(extension))
+    return;
+
+  scoped_ptr<base::DictionaryValue> app_info(GetAppInfo(extension));
+  if (!app_info.get())
+    return;
+
+  visible_apps_.insert(extension->id());
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(extension_service_->profile());
+  base::FundamentalValue highlight(prefs->IsFromBookmark(extension->id()) &&
+                                   attempted_bookmark_app_install_);
+  attempted_bookmark_app_install_ = false;
+  web_ui()->CallJavascriptFunction("ntp.appAdded", *app_info, highlight);
+}
+
+void AppLauncherHandler::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    extensions::UnloadedExtensionInfo::Reason reason) {
+  AppRemoved(extension, false);
+}
+
+void AppLauncherHandler::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    extensions::UninstallReason reason) {
+  AppRemoved(extension, true);
 }
 
 void AppLauncherHandler::FillAppDictionary(base::DictionaryValue* dictionary) {
@@ -462,15 +430,7 @@ void AppLauncherHandler::HandleGetApps(const base::ListValue* args) {
         extensions::pref_names::kExtensions, callback);
     extension_pref_change_registrar_.Add(prefs::kNtpAppPageNames, callback);
 
-    registrar_.Add(this,
-                   extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                   content::Source<Profile>(profile));
-    registrar_.Add(this,
-                   extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                   content::Source<Profile>(profile));
-    registrar_.Add(this,
-                   extensions::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
-                   content::Source<Profile>(profile));
+    ExtensionRegistry::Get(profile)->AddObserver(this);
     registrar_.Add(this,
                    chrome::NOTIFICATION_APP_LAUNCHER_REORDERED,
                    content::Source<AppSorting>(
@@ -874,4 +834,26 @@ AppLauncherHandler::GetExtensionUninstallDialog() {
             this));
   }
   return extension_uninstall_dialog_.get();
+}
+
+void AppLauncherHandler::AppRemoved(const Extension* extension,
+                                    bool is_uninstall) {
+  if (!ShouldShow(extension))
+    return;
+
+  scoped_ptr<base::DictionaryValue> app_info(GetAppInfo(extension));
+  if (!app_info.get())
+    return;
+
+  web_ui()->CallJavascriptFunction(
+      "ntp.appRemoved", *app_info, base::FundamentalValue(is_uninstall),
+      base::FundamentalValue(!extension_id_prompting_.empty()));
+}
+
+bool AppLauncherHandler::ShouldShow(const Extension* extension) const {
+  if (ignore_changes_ || !has_loaded_apps_ || !extension->is_app())
+    return false;
+
+  Profile* profile = Profile::FromWebUI(web_ui());
+  return extensions::ui_util::ShouldDisplayInNewTabPage(extension, profile);
 }

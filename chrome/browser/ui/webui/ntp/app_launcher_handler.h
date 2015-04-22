@@ -19,6 +19,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "sync/api/string_ordinal.h"
 
@@ -36,7 +37,8 @@ class AppLauncherHandler
     : public content::WebUIMessageHandler,
       public extensions::ExtensionUninstallDialog::Delegate,
       public ExtensionEnableFlowDelegate,
-      public content::NotificationObserver {
+      public content::NotificationObserver,
+      public extensions::ExtensionRegistryObserver {
  public:
   explicit AppLauncherHandler(ExtensionService* extension_service);
   ~AppLauncherHandler() override;
@@ -47,13 +49,24 @@ class AppLauncherHandler
       ExtensionService* service,
       base::DictionaryValue* value);
 
-  // WebUIMessageHandler implementation.
+  // WebUIMessageHandler:
   void RegisterMessages() override;
 
-  // content::NotificationObserver
+  // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
+
+  // extensions::ExtensionRegistryObserver:
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const extensions::Extension* extension) override;
+  void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const extensions::Extension* extension,
+                              extensions::UninstallReason reason) override;
 
   // Populate the given dictionary with all installed app info.
   void FillAppDictionary(base::DictionaryValue* value);
@@ -148,6 +161,12 @@ class AppLauncherHandler
   void OnExtensionPreferenceChanged();
 
   void OnLocalStatePreferenceChanged();
+
+  // Called when an app is removed (unloaded or uninstalled). Updates the UI.
+  void AppRemoved(const extensions::Extension* extension, bool is_uninstall);
+
+  // True if the extension should be displayed.
+  bool ShouldShow(const extensions::Extension* extension) const;
 
   // The apps are represented in the extensions model, which
   // outlives us since it's owned by our containing profile.
