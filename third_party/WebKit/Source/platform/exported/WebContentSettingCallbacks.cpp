@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "public/platform/WebPermissionCallbacks.h"
+#include "public/platform/WebContentSettingCallbacks.h"
 
 #include "platform/ContentSettingCallbacks.h"
 
@@ -24,29 +24,29 @@ private:
     OwnPtr<ContentSettingCallbacks> m_callbacks;
 };
 
-WebPermissionCallbacks::WebPermissionCallbacks(const PassOwnPtr<ContentSettingCallbacks>& callbacks)
+WebContentSettingCallbacks::WebContentSettingCallbacks(const PassOwnPtr<ContentSettingCallbacks>& callbacks)
 {
     m_private = WebContentSettingCallbacksPrivate::create(callbacks);
 }
 
-void WebPermissionCallbacks::reset()
+void WebContentSettingCallbacks::reset()
 {
     m_private.reset();
 }
 
-void WebPermissionCallbacks::assign(const WebPermissionCallbacks& other)
+void WebContentSettingCallbacks::assign(const WebContentSettingCallbacks& other)
 {
     m_private = other.m_private;
 }
 
-void WebPermissionCallbacks::doAllow()
+void WebContentSettingCallbacks::doAllow()
 {
     ASSERT(!m_private.isNull());
     m_private->callbacks()->onAllowed();
     m_private.reset();
 }
 
-void WebPermissionCallbacks::doDeny()
+void WebContentSettingCallbacks::doDeny()
 {
     ASSERT(!m_private.isNull());
     m_private->callbacks()->onDenied();
