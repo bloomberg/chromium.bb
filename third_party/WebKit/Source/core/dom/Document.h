@@ -633,6 +633,8 @@ public:
     void setActiveHoverElement(PassRefPtrWillBeRawPtr<Element>);
     Element* activeHoverElement() const { return m_activeHoverElement.get(); }
 
+    Node* hoverNode() const { return m_hoverNode.get(); }
+
     void removeFocusedElementOfSubtree(Node*, bool amongChildrenOnly = false);
     void hoveredNodeDetached(Node*);
     void activeChainNodeDetached(Node*);
@@ -1175,7 +1177,6 @@ private:
     bool haveStylesheetsLoaded() const;
 
     void setHoverNode(PassRefPtrWillBeRawPtr<Node>);
-    Node* hoverNode() const { return m_hoverNode.get(); }
 
     using EventFactorySet = HashSet<OwnPtr<EventFactoryBase>>;
     static EventFactorySet& eventFactories();

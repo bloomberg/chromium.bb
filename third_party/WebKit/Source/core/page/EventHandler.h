@@ -144,6 +144,9 @@ public:
     bool handleGestureEvent(const PlatformGestureEvent&);
     bool handleGestureEvent(const GestureEventWithHitTestResults&);
 
+    // Clear the old hover/active state within frames before moving the hover state to the another frame
+    void updateGestureHoverActiveState(const HitTestRequest&, Element*);
+
     // Hit-test the provided (non-scroll) gesture event, applying touch-adjustment and updating
     // hover/active state across all frames if necessary. This should be called at most once
     // per gesture event, and called on the local root frame.
