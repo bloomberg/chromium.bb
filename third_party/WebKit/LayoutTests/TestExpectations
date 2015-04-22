@@ -358,10 +358,6 @@ crbug.com/382491 virtual/slimmingpaint/fast/clip/nestedTransparencyClip.html [ S
 crbug.com/472806 virtual/slimmingpaint/fast/dom/HTMLDialogElement/dialog-scrolled-viewport.html [ Skip ]
 crbug.com/472806 virtual/slimmingpaint/fast/dom/Window/Plug-ins.html [ Skip ]
 crbug.com/472806 virtual/slimmingpaint/fast/dom/vertical-scrollbar-in-rtl.html [ Skip ]
-crbug.com/472812 virtual/slimmingpaint/fast/js/getOwnPropertyDescriptor.html [ Skip ]
-crbug.com/472812 virtual/slimmingpaint/fast/js/mozilla/strict/15.3.5.1.html [ Skip ]
-crbug.com/472812 virtual/slimmingpaint/fast/js/mozilla/strict/assign-to-callee-name.html [ Skip ]
-crbug.com/472812 virtual/slimmingpaint/fast/js/reserved-words-as-property.html [ Skip ]
 crbug.com/382491 virtual/slimmingpaint/fast/transforms/diamond.html [ Skip ]
 crbug.com/382491 virtual/slimmingpaint/fast/transforms/rotated-transform-affects-scrolling-1.html [ Skip ]
 crbug.com/382491 virtual/slimmingpaint/fast/transforms/rotated-transform-affects-scrolling-2.html [ Skip ]
@@ -714,7 +710,9 @@ crbug.com/268588 [ Release ] http/tests/w3c/webperf/submission/Google/HighResolu
 crbug.com/443242 http/tests/w3c/webperf/submission/Google/HighResolutionTime/worker-dedicated-basic.html [ Failure Pass ]
 
 crbug.com/465864 fast/js/getOwnPropertyDescriptor.html [ Pass Failure ]
+crbug.com/465864 virtual/slimmingpaint/fast/js/getOwnPropertyDescriptor.html [ Pass Failure ]
 crbug.com/465864 fast/js/mozilla/strict/15.3.5.1.html [ Pass Failure ]
+crbug.com/465864 virtual/slimmingpaint/fast/js/mozilla/strict/15.3.5.1.html [ Pass Failure ]
 crbug.com/465864 http/tests/w3c/webperf/approved/navigation-timing/html/idlharness.html [ Pass Failure ]
 
 crbug.com/316148 crbug.com/465864 http/tests/w3c/webperf/approved/UserTiming/idlharness.html [ Pass Failure Crash ]
@@ -1526,6 +1524,7 @@ crbug.com/247716 [ Mac XP ] editing/spelling/inline-spelling-markers-hidpi-compo
 crbug.com/381730 http/tests/navigation/pending-location-change-assert.html [ Pass Failure ]
 
 crbug.com/436477 fast/js/mozilla/strict/assign-to-callee-name.html [ NeedsManualRebaseline ]
+crbug.com/436477 virtual/slimmingpaint/fast/js/mozilla/strict/assign-to-callee-name.html [ NeedsManualRebaseline ]
 
 crbug.com/361729 [ MountainLion ] printing/return-from-printing-mode.html [ Failure ImageOnlyFailure ]
 
@@ -2091,6 +2090,7 @@ crbug.com/457137 [ Win ] webaudio/osc-sine-sweep-snr.html [ Pass Failure ]
 
 # These need a manual rebaseline after crbug.com/459555
 crbug.com/459555 fast/js/reserved-words-as-property.html [ NeedsManualRebaseline ]
+crbug.com/459555 virtual/slimmingpaint/fast/js/reserved-words-as-property.html [ NeedsManualRebaseline ]
 
 crbug.com/459575 [ XP ] virtual/slimmingpaint/fast/text/emoticons.html [ Failure ]
 
