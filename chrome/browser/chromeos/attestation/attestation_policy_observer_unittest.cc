@@ -10,9 +10,7 @@
 #include "chrome/browser/chromeos/attestation/attestation_key_payload.pb.h"
 #include "chrome/browser/chromeos/attestation/attestation_policy_observer.h"
 #include "chrome/browser/chromeos/attestation/fake_certificate.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chromeos/attestation/mock_attestation_flow.h"
 #include "chromeos/dbus/mock_cryptohome_client.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -80,21 +78,9 @@ class AttestationPolicyObserverTest : public ::testing::Test {
  public:
   AttestationPolicyObserverTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_) {
-    // Remove the real DeviceSettingsProvider and replace it with a stub.
-    CrosSettings* cros_settings = CrosSettings::Get();
-    device_settings_provider_ =
-        cros_settings->GetProvider(kDeviceAttestationEnabled);
-    cros_settings->RemoveSettingsProvider(device_settings_provider_);
-    cros_settings->AddSettingsProvider(&stub_settings_provider_);
-    cros_settings->SetBoolean(kDeviceAttestationEnabled, true);
+    settings_helper_.ReplaceProvider(kDeviceAttestationEnabled);
+    settings_helper_.SetBoolean(kDeviceAttestationEnabled, true);
     policy_client_.SetDMToken("fake_dm_token");
-  }
-
-  virtual ~AttestationPolicyObserverTest() {
-    // Restore the real DeviceSettingsProvider.
-    CrosSettings* cros_settings = CrosSettings::Get();
-    cros_settings->RemoveSettingsProvider(&stub_settings_provider_);
-    cros_settings->AddSettingsProvider(device_settings_provider_);
   }
 
  protected:
@@ -168,18 +154,14 @@ class AttestationPolicyObserverTest : public ::testing::Test {
 
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
-  ScopedTestDeviceSettingsService test_device_settings_service_;
-  ScopedTestCrosSettings test_cros_settings_;
-  CrosSettingsProvider* device_settings_provider_;
-  StubCrosSettingsProvider stub_settings_provider_;
+  ScopedCrosSettingsTestHelper settings_helper_;
   StrictMock<MockCryptohomeClient> cryptohome_client_;
   StrictMock<MockAttestationFlow> attestation_flow_;
   StrictMock<policy::MockCloudPolicyClient> policy_client_;
 };
 
 TEST_F(AttestationPolicyObserverTest, FeatureDisabled) {
-  CrosSettings* cros_settings = CrosSettings::Get();
-  cros_settings->SetBoolean(kDeviceAttestationEnabled, false);
+  settings_helper_.SetBoolean(kDeviceAttestationEnabled, false);
   Run();
 }
 

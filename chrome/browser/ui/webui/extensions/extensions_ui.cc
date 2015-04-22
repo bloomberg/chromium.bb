@@ -18,6 +18,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/ui/webui/extensions/chromeos/kiosk_apps_handler.h"
 #endif
 
@@ -65,7 +66,9 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
 #if defined(OS_CHROMEOS)
   chromeos::KioskAppsHandler* kiosk_app_handler =
-      new chromeos::KioskAppsHandler();
+      new chromeos::KioskAppsHandler(
+          chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
+              profile));
   kiosk_app_handler->GetLocalizedValues(source);
   web_ui->AddMessageHandler(kiosk_app_handler);
 #endif

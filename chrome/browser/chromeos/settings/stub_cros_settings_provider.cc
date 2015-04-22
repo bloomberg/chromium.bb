@@ -37,17 +37,27 @@ const base::Value* StubCrosSettingsProvider::Get(
 
 CrosSettingsProvider::TrustedStatus
     StubCrosSettingsProvider::PrepareTrustedValues(const base::Closure& cb) {
-  // We don't have a trusted store so all values are available immediately.
-  return TRUSTED;
+  return trusted_status_;
 }
 
 bool StubCrosSettingsProvider::HandlesSetting(const std::string& path) const {
   return DeviceSettingsProvider::IsDeviceSetting(path);
 }
 
+void StubCrosSettingsProvider::SetTrustedStatus(TrustedStatus status) {
+  trusted_status_ = status;
+}
+
+void StubCrosSettingsProvider::SetCurrentUserIsOwner(bool owner) {
+  current_user_is_owner_ = owner;
+}
+
 void StubCrosSettingsProvider::DoSet(const std::string& path,
                                      const base::Value& value) {
-  values_.SetValue(path, value.DeepCopy());
+  if (current_user_is_owner_)
+    values_.SetValue(path, value.DeepCopy());
+  else
+    LOG(WARNING) << "Changing settings from non-owner, setting=" << path;
   NotifyObservers(path);
 }
 

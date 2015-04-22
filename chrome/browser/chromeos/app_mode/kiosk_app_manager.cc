@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_external_loader.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_external_updater.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -183,20 +184,20 @@ std::string KioskAppManager::GetAutoLaunchApp() const {
   return auto_launch_app_id_;
 }
 
-void KioskAppManager::SetAutoLaunchApp(const std::string& app_id) {
+void KioskAppManager::SetAutoLaunchApp(const std::string& app_id,
+                                       OwnerSettingsServiceChromeOS* service) {
   SetAutoLoginState(AUTOLOGIN_REQUESTED);
   // Clean first, so the proper change callbacks are triggered even
   // if we are only changing AutoLoginState here.
   if (!auto_launch_app_id_.empty()) {
-    CrosSettings::Get()->SetString(kAccountsPrefDeviceLocalAccountAutoLoginId,
-                                   std::string());
+    service->SetString(kAccountsPrefDeviceLocalAccountAutoLoginId,
+                       std::string());
   }
 
-  CrosSettings::Get()->SetString(
+  service->SetString(
       kAccountsPrefDeviceLocalAccountAutoLoginId,
       app_id.empty() ? std::string() : GenerateKioskAppAccountId(app_id));
-  CrosSettings::Get()->SetInteger(
-      kAccountsPrefDeviceLocalAccountAutoLoginDelay, 0);
+  service->SetInteger(kAccountsPrefDeviceLocalAccountAutoLoginDelay, 0);
 }
 
 void KioskAppManager::SetAppWasAutoLaunchedWithZeroDelay(
@@ -332,7 +333,8 @@ bool KioskAppManager::IsAutoLaunchEnabled() const {
   return GetAutoLoginState() == AUTOLOGIN_APPROVED;
 }
 
-void KioskAppManager::AddApp(const std::string& app_id) {
+void KioskAppManager::AddApp(const std::string& app_id,
+                             OwnerSettingsServiceChromeOS* service) {
   std::vector<policy::DeviceLocalAccount> device_local_accounts =
       policy::GetDeviceLocalAccounts(CrosSettings::Get());
 
@@ -353,13 +355,14 @@ void KioskAppManager::AddApp(const std::string& app_id) {
       app_id,
       std::string()));
 
-  policy::SetDeviceLocalAccounts(CrosSettings::Get(), device_local_accounts);
+  policy::SetDeviceLocalAccounts(service, device_local_accounts);
 }
 
-void KioskAppManager::RemoveApp(const std::string& app_id) {
+void KioskAppManager::RemoveApp(const std::string& app_id,
+                                OwnerSettingsServiceChromeOS* service) {
   // Resets auto launch app if it is the removed app.
   if (auto_launch_app_id_ == app_id)
-    SetAutoLaunchApp(std::string());
+    SetAutoLaunchApp(std::string(), service);
 
   std::vector<policy::DeviceLocalAccount> device_local_accounts =
       policy::GetDeviceLocalAccounts(CrosSettings::Get());
@@ -377,7 +380,7 @@ void KioskAppManager::RemoveApp(const std::string& app_id) {
     }
   }
 
-  policy::SetDeviceLocalAccounts(CrosSettings::Get(), device_local_accounts);
+  policy::SetDeviceLocalAccounts(service, device_local_accounts);
 }
 
 void KioskAppManager::GetApps(Apps* apps) const {

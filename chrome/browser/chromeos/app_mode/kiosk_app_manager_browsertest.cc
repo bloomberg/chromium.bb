@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -15,9 +16,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/fake_cws.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
+#include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -165,7 +167,7 @@ class AppDataLoadWaiter : public KioskAppManagerObserver {
 
 class KioskAppManagerTest : public InProcessBrowserTest {
  public:
-  KioskAppManagerTest() : fake_cws_(new FakeCWS()) {}
+  KioskAppManagerTest() : settings_helper_(false), fake_cws_(new FakeCWS()) {}
   ~KioskAppManagerTest() override {}
 
   // InProcessBrowserTest overrides:
@@ -195,7 +197,13 @@ class KioskAppManagerTest : public InProcessBrowserTest {
 
     // Restart the thread as the sandbox host process has already been spawned.
     embedded_test_server()->RestartThreadAndListen();
+
+    settings_helper_.ReplaceProvider(kAccountsPrefDeviceLocalAccounts);
+    owner_settings_service_ =
+        settings_helper_.CreateOwnerSettingsService(browser()->profile());
   }
+
+  void TearDownOnMainThread() override { settings_helper_.RestoreProvider(); }
 
   void SetUpInProcessBrowserTestFixture() override {
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
@@ -270,8 +278,8 @@ class KioskAppManagerTest : public InProcessBrowserTest {
         kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
         app_id);
     device_local_accounts.Append(entry.release());
-    CrosSettings::Get()->Set(kAccountsPrefDeviceLocalAccounts,
-                             device_local_accounts);
+    owner_settings_service_->Set(kAccountsPrefDeviceLocalAccounts,
+                                 device_local_accounts);
   }
 
   bool GetCachedCrx(const std::string& app_id,
@@ -289,7 +297,7 @@ class KioskAppManagerTest : public InProcessBrowserTest {
     fake_cws_->SetUpdateCrx(id, crx_file_name, version);
 
     AppDataLoadWaiter waiter(manager(), 3);
-    manager()->AddApp(id);
+    manager()->AddApp(id, owner_settings_service_.get());
     waiter.Wait();
     EXPECT_TRUE(waiter.loaded());
 
@@ -342,6 +350,10 @@ class KioskAppManagerTest : public InProcessBrowserTest {
   KioskAppManager* manager() const { return KioskAppManager::Get(); }
   FakeCWS* fake_cws() { return fake_cws_.get(); }
 
+ protected:
+  ScopedCrosSettingsTestHelper settings_helper_;
+  scoped_ptr<FakeOwnerSettingsService> owner_settings_service_;
+
  private:
   base::ScopedTempDir temp_dir_;
   scoped_ptr<FakeCWS> fake_cws_;
@@ -353,12 +365,12 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, Basic) {
   // Add a couple of apps. Use "fake_app_x" that do not have data on the test
   // server to avoid pending data loads that could be lingering on tear down and
   // cause DCHECK failure in utility_process_host_impl.cc.
-  manager()->AddApp("fake_app_1");
-  manager()->AddApp("fake_app_2");
+  manager()->AddApp("fake_app_1", owner_settings_service_.get());
+  manager()->AddApp("fake_app_2", owner_settings_service_.get());
   EXPECT_EQ("fake_app_1,fake_app_2", GetAppIds());
 
   // Set an auto launch app.
-  manager()->SetAutoLaunchApp("fake_app_1");
+  manager()->SetAutoLaunchApp("fake_app_1", owner_settings_service_.get());
   EXPECT_EQ("fake_app_1", manager()->GetAutoLaunchApp());
 
   // Make sure that if an app was auto launched with zero delay, it is reflected
@@ -372,7 +384,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, Basic) {
   EXPECT_TRUE(app.was_auto_launched_with_zero_delay);
 
   // Clear the auto launch app.
-  manager()->SetAutoLaunchApp("");
+  manager()->SetAutoLaunchApp("", owner_settings_service_.get());
   EXPECT_EQ("", manager()->GetAutoLaunchApp());
   EXPECT_FALSE(manager()->IsAutoLaunchEnabled());
 
@@ -382,7 +394,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, Basic) {
   EXPECT_TRUE(app.was_auto_launched_with_zero_delay);
 
   // Set another auto launch app.
-  manager()->SetAutoLaunchApp("fake_app_2");
+  manager()->SetAutoLaunchApp("fake_app_2", owner_settings_service_.get());
   EXPECT_EQ("fake_app_2", manager()->GetAutoLaunchApp());
 
   // Check auto launch permissions.
@@ -391,24 +403,24 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, Basic) {
   EXPECT_TRUE(manager()->IsAutoLaunchEnabled());
 
   // Remove the auto launch app.
-  manager()->RemoveApp("fake_app_2");
+  manager()->RemoveApp("fake_app_2", owner_settings_service_.get());
   EXPECT_EQ("fake_app_1", GetAppIds());
   EXPECT_EQ("", manager()->GetAutoLaunchApp());
 
   // Add the just removed auto launch app again and it should no longer be
   // the auto launch app.
-  manager()->AddApp("fake_app_2");
+  manager()->AddApp("fake_app_2", owner_settings_service_.get());
   EXPECT_EQ("", manager()->GetAutoLaunchApp());
-  manager()->RemoveApp("fake_app_2");
+  manager()->RemoveApp("fake_app_2", owner_settings_service_.get());
   EXPECT_EQ("fake_app_1", GetAppIds());
 
   // Set a none exist app as auto launch.
-  manager()->SetAutoLaunchApp("none_exist_app");
+  manager()->SetAutoLaunchApp("none_exist_app", owner_settings_service_.get());
   EXPECT_EQ("", manager()->GetAutoLaunchApp());
   EXPECT_FALSE(manager()->IsAutoLaunchEnabled());
 
   // Add an existing app again.
-  manager()->AddApp("fake_app_1");
+  manager()->AddApp("fake_app_1", owner_settings_service_.get());
   EXPECT_EQ("fake_app_1", GetAppIds());
 }
 
@@ -473,7 +485,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateAppDataFromProfile) {
 
 IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, BadApp) {
   AppDataLoadWaiter waiter(manager(), 2);
-  manager()->AddApp("unknown_app");
+  manager()->AddApp("unknown_app", owner_settings_service_.get());
   waiter.Wait();
   EXPECT_FALSE(waiter.loaded());
   EXPECT_EQ("", GetAppIds());
@@ -484,7 +496,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, GoodApp) {
   //   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/detail/app_1
   fake_cws()->SetNoUpdate("app_1");
   AppDataLoadWaiter waiter(manager(), 2);
-  manager()->AddApp("app_1");
+  manager()->AddApp("app_1", owner_settings_service_.get());
   waiter.Wait();
   EXPECT_TRUE(waiter.loaded());
 
@@ -533,7 +545,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, RemoveApp) {
   EXPECT_EQ("1.0.0", version);
 
   // Remove the app now.
-  manager()->RemoveApp(kTestLocalFsKioskApp);
+  manager()->RemoveApp(kTestLocalFsKioskApp, owner_settings_service_.get());
   content::RunAllBlockingPoolTasksUntilIdle();
   manager()->GetApps(&apps);
   ASSERT_EQ(0u, apps.size());
@@ -615,7 +627,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateAndRemoveApp) {
   EXPECT_TRUE(base::PathExists(v2_crx_path));
 
   // Remove the app now.
-  manager()->RemoveApp(kTestLocalFsKioskApp);
+  manager()->RemoveApp(kTestLocalFsKioskApp, owner_settings_service_.get());
   content::RunAllBlockingPoolTasksUntilIdle();
   manager()->GetApps(&apps);
   ASSERT_EQ(0u, apps.size());

@@ -10,14 +10,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/extensions/updater/chromeos_extension_cache_delegate.h"
 #include "chrome/browser/extensions/updater/extension_cache_impl.h"
 #include "chrome/browser/extensions/updater/local_extension_cache.h"
 #include "chromeos/settings/cros_settings_names.h"
-#include "chromeos/settings/cros_settings_provider.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -58,39 +55,14 @@ static base::FilePath CreateExtensionFile(const base::FilePath& dir,
 }  // namespace
 
 class ExtensionCacheTest : public testing::Test {
- public:
-  void SetUp() override {
-    // Swap out the DeviceSettingsProvider with our stub settings provider
-    // so we can set values for maximum extension cache size.
-    chromeos::CrosSettings* const cros_settings = chromeos::CrosSettings::Get();
-    device_settings_provider_ =
-        cros_settings->GetProvider(chromeos::kExtensionCacheSize);
-    EXPECT_TRUE(device_settings_provider_);
-    EXPECT_TRUE(
-        cros_settings->RemoveSettingsProvider(device_settings_provider_));
-    cros_settings->AddSettingsProvider(&stub_settings_provider_);
-  }
-
-  void TearDown() override {
-    // Restore the real DeviceSettingsProvider.
-    chromeos::CrosSettings* const cros_settings = chromeos::CrosSettings::Get();
-    EXPECT_TRUE(
-        cros_settings->RemoveSettingsProvider(&stub_settings_provider_));
-    cros_settings->AddSettingsProvider(device_settings_provider_);
-  }
-
-  // Helpers used to mock out cros settings.
-  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
-  chromeos::ScopedTestCrosSettings test_cros_settings_;
-  chromeos::CrosSettingsProvider* device_settings_provider_ = nullptr;
-  chromeos::StubCrosSettingsProvider stub_settings_provider_;
-
+ protected:
   content::TestBrowserThreadBundle thread_bundle_;
+  chromeos::ScopedCrosSettingsTestHelper settings_helper_;
 };
 
 TEST_F(ExtensionCacheTest, SizePolicy) {
-  chromeos::CrosSettings::Get()->SetInteger(chromeos::kExtensionCacheSize,
-                                            kMaxCacheSize);
+  settings_helper_.ReplaceProvider(chromeos::kExtensionCacheSize);
+  settings_helper_.SetInteger(chromeos::kExtensionCacheSize, kMaxCacheSize);
 
   // Create and initialize local cache.
   const base::Time now = base::Time::Now();

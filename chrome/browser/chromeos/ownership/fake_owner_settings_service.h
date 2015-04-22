@@ -17,11 +17,15 @@ class OwnerKeyUtil;
 
 namespace chromeos {
 
+class StubCrosSettingsProvider;
+
 class FakeOwnerSettingsService : public OwnerSettingsServiceChromeOS {
  public:
+  explicit FakeOwnerSettingsService(Profile* profile);
   FakeOwnerSettingsService(
       Profile* profile,
-      const scoped_refptr<ownership::OwnerKeyUtil>& owner_key_util);
+      const scoped_refptr<ownership::OwnerKeyUtil>& owner_key_util,
+      StubCrosSettingsProvider* provider);
   ~FakeOwnerSettingsService() override;
 
   void set_set_management_settings_result(bool success) {
@@ -36,10 +40,12 @@ class FakeOwnerSettingsService : public OwnerSettingsServiceChromeOS {
   void SetManagementSettings(
       const ManagementSettings& settings,
       const OnManagementSettingsSetCallback& callback) override;
+  bool Set(const std::string& setting, const base::Value& value) override;
 
  private:
   bool set_management_settings_result_;
   ManagementSettings last_settings_;
+  StubCrosSettingsProvider* settings_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeOwnerSettingsService);
 };

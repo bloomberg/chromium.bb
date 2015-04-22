@@ -58,6 +58,8 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/profiles/multiprofiles_intro_dialog.h"
@@ -1018,8 +1020,17 @@ void SystemTrayDelegateChromeOS::UpdateClockType() {
   GetSystemTrayNotifier()->NotifyDateFormatChanged();
   // This also works for enterprise-managed devices because they never have
   // local owner.
-  if (user_manager::UserManager::Get()->IsCurrentUserOwner())
-    CrosSettings::Get()->SetBoolean(kSystemUse24HourClock, use_24_hour_clock);
+  if (user_manager::UserManager::Get()->IsCurrentUserOwner()) {
+    user_manager::User* const user =
+        user_manager::UserManager::Get()->GetActiveUser();
+    CHECK(user);
+    Profile* const profile = ProfileHelper::Get()->GetProfileByUser(user);
+    CHECK(profile);
+    OwnerSettingsServiceChromeOS* const service =
+        OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(profile);
+    CHECK(service);
+    service->SetBoolean(kSystemUse24HourClock, use_24_hour_clock);
+  }
 }
 
 void SystemTrayDelegateChromeOS::UpdateShowLogoutButtonInTray() {
@@ -1120,8 +1131,15 @@ void SystemTrayDelegateChromeOS::LoggedInStateChanged() {
   // user's profile has actually been loaded (http://crbug.com/317745). The
   // system tray's time format is updated at login via SetProfile().
   if (user_manager::UserManager::Get()->IsCurrentUserOwner()) {
-    CrosSettings::Get()->SetBoolean(kSystemUse24HourClock,
-                                    ShouldUse24HourClock());
+    user_manager::User* const user =
+        user_manager::UserManager::Get()->GetActiveUser();
+    CHECK(user);
+    Profile* const profile = ProfileHelper::Get()->GetProfileByUser(user);
+    CHECK(profile);
+    OwnerSettingsServiceChromeOS* const service =
+        OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(profile);
+    CHECK(service);
+    service->SetBoolean(kSystemUse24HourClock, ShouldUse24HourClock());
   }
 }
 

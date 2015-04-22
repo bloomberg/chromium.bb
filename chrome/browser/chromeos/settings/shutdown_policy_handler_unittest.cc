@@ -6,15 +6,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
-#include "base/values.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chromeos/chromeos_switches.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
-#include "chromeos/settings/cros_settings_provider.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,29 +25,21 @@ class ShutdownPolicyHandlerTest : public testing::Test,
 
  protected:
   ShutdownPolicyHandlerTest()
-      : cros_settings_(nullptr),
-        callback_called_(false),
+      : callback_called_(false),
         reboot_on_shutdown_(false),
-        delegate_invocations_count_(0) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kStubCrosSettings);
-    test_cros_settings_.reset(new ScopedTestCrosSettings);
-}
+        delegate_invocations_count_(0) {}
 
   // testing::Test:
-void SetUp() override {
+  void SetUp() override {
     testing::Test::SetUp();
-    cros_settings_ = CrosSettings::Get();
     DBusThreadManager::Initialize();
+    settings_helper_.ReplaceProvider(kRebootOnShutdown);
   }
 
   void TearDown() override { DBusThreadManager::Shutdown(); }
 
   void SetRebootOnShutdown(bool reboot_on_shutdown) {
-    const base::FundamentalValue reboot_on_shutdown_value(reboot_on_shutdown);
-    CrosSettings::Get()
-        ->GetProvider(kRebootOnShutdown)
-        ->Set(kRebootOnShutdown, reboot_on_shutdown_value);
+    settings_helper_.SetBoolean(kRebootOnShutdown, reboot_on_shutdown);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -64,20 +51,14 @@ void SetUp() override {
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
-
-  CrosSettings* cros_settings_;
-  scoped_ptr<CrosSettingsProvider> device_settings_provider_;
-
-  ScopedTestDeviceSettingsService test_device_settings_service_;
-  scoped_ptr<ScopedTestCrosSettings> test_cros_settings_;
-
+  ScopedCrosSettingsTestHelper settings_helper_;
   bool callback_called_;
   bool reboot_on_shutdown_;
   int delegate_invocations_count_;
 };
 
 TEST_F(ShutdownPolicyHandlerTest, RetrieveTrustedDevicePolicies) {
-  ShutdownPolicyHandler shutdown_policy_observer(cros_settings_, this);
+  ShutdownPolicyHandler shutdown_policy_observer(CrosSettings::Get(), this);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, delegate_invocations_count_);
 
@@ -100,7 +81,7 @@ TEST_F(ShutdownPolicyHandlerTest, RetrieveTrustedDevicePolicies) {
 }
 
 TEST_F(ShutdownPolicyHandlerTest, CheckIfRebootOnShutdown) {
-  ShutdownPolicyHandler shutdown_policy_observer(cros_settings_, this);
+  ShutdownPolicyHandler shutdown_policy_observer(CrosSettings::Get(), this);
   base::RunLoop().RunUntilIdle();
 
   // Allow shutdown.

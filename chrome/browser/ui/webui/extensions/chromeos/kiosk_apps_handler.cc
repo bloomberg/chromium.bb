@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -94,11 +95,12 @@ bool ExtractsAppIdFromInput(const std::string& input,
 
 }  // namespace
 
-KioskAppsHandler::KioskAppsHandler()
+KioskAppsHandler::KioskAppsHandler(OwnerSettingsServiceChromeOS* service)
     : kiosk_app_manager_(KioskAppManager::Get()),
       initialized_(false),
       is_kiosk_enabled_(false),
       is_auto_launch_enabled_(false),
+      owner_settings_service_(service),
       weak_ptr_factory_(this) {
   kiosk_app_manager_->AddObserver(this);
 }
@@ -281,7 +283,7 @@ void KioskAppsHandler::HandleAddKioskApp(const base::ListValue* args) {
     return;
   }
 
-  kiosk_app_manager_->AddApp(app_id);
+  kiosk_app_manager_->AddApp(app_id, owner_settings_service_);
 }
 
 void KioskAppsHandler::HandleRemoveKioskApp(const base::ListValue* args) {
@@ -291,7 +293,7 @@ void KioskAppsHandler::HandleRemoveKioskApp(const base::ListValue* args) {
   std::string app_id;
   CHECK(args->GetString(0, &app_id));
 
-  kiosk_app_manager_->RemoveApp(app_id);
+  kiosk_app_manager_->RemoveApp(app_id, owner_settings_service_);
 }
 
 void KioskAppsHandler::HandleEnableKioskAutoLaunch(
@@ -302,7 +304,7 @@ void KioskAppsHandler::HandleEnableKioskAutoLaunch(
   std::string app_id;
   CHECK(args->GetString(0, &app_id));
 
-  kiosk_app_manager_->SetAutoLaunchApp(app_id);
+  kiosk_app_manager_->SetAutoLaunchApp(app_id, owner_settings_service_);
 }
 
 void KioskAppsHandler::HandleDisableKioskAutoLaunch(
@@ -317,7 +319,7 @@ void KioskAppsHandler::HandleDisableKioskAutoLaunch(
   if (startup_app_id != app_id)
     return;
 
-  kiosk_app_manager_->SetAutoLaunchApp("");
+  kiosk_app_manager_->SetAutoLaunchApp("", owner_settings_service_);
 }
 
 void KioskAppsHandler::HandleSetDisableBailoutShortcut(
@@ -328,7 +330,7 @@ void KioskAppsHandler::HandleSetDisableBailoutShortcut(
   bool disable_bailout_shortcut;
   CHECK(args->GetBoolean(0, &disable_bailout_shortcut));
 
-  CrosSettings::Get()->SetBoolean(
+  owner_settings_service_->SetBoolean(
       kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled,
       !disable_bailout_shortcut);
 }
@@ -350,7 +352,7 @@ void KioskAppsHandler::ShowError(const std::string& app_id) {
   web_ui()->CallJavascriptFunction("extensions.KioskAppsOverlay.showError",
                                    app_id_value);
 
-  kiosk_app_manager_->RemoveApp(app_id);
+  kiosk_app_manager_->RemoveApp(app_id, owner_settings_service_);
 }
 
 }  // namespace chromeos

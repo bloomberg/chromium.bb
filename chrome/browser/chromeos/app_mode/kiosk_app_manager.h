@@ -38,6 +38,7 @@ class KioskAppData;
 class KioskAppExternalLoader;
 class KioskAppManagerObserver;
 class KioskExternalUpdater;
+class OwnerSettingsServiceChromeOS;
 
 // KioskAppManager manages cached app data.
 class KioskAppManager : public KioskAppDataDelegate,
@@ -121,7 +122,8 @@ class KioskAppManager : public KioskAppDataDelegate,
   std::string GetAutoLaunchApp() const;
 
   // Sets |app_id| as the app to auto launch at start up.
-  void SetAutoLaunchApp(const std::string& app_id);
+  void SetAutoLaunchApp(const std::string& app_id,
+                        OwnerSettingsServiceChromeOS* service);
 
   // Returns true if there is a pending auto-launch request.
   bool IsAutoLaunchRequested() const;
@@ -134,8 +136,9 @@ class KioskAppManager : public KioskAppDataDelegate,
 
   // Adds/removes a kiosk app by id. When removed, all locally cached data
   // will be removed as well.
-  void AddApp(const std::string& app_id);
-  void RemoveApp(const std::string& app_id);
+  void AddApp(const std::string& app_id, OwnerSettingsServiceChromeOS* service);
+  void RemoveApp(const std::string& app_id,
+                 OwnerSettingsServiceChromeOS* service);
 
   // Gets info of all apps that have no meta data load error.
   void GetApps(Apps* apps) const;

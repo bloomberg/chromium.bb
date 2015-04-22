@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 
-#include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -31,13 +30,14 @@ DevicePolicyCrosTestHelper::DevicePolicyCrosTestHelper() {}
 
 DevicePolicyCrosTestHelper::~DevicePolicyCrosTestHelper() {}
 
-void DevicePolicyCrosTestHelper::MarkAsEnterpriseOwned() {
+// static
+void DevicePolicyCrosTestHelper::MarkAsEnterpriseOwnedBy(
+    const std::string& user_name) {
   OverridePaths();
 
   const std::string install_attrs_blob(
       EnterpriseInstallAttributes::
-          GetEnterpriseOwnedInstallAttributesBlobForTesting(
-              device_policy_.policy_data().username()));
+          GetEnterpriseOwnedInstallAttributesBlobForTesting(user_name));
 
   base::FilePath install_attrs_file;
   ASSERT_TRUE(
@@ -46,6 +46,10 @@ void DevicePolicyCrosTestHelper::MarkAsEnterpriseOwned() {
             base::WriteFile(install_attrs_file,
                             install_attrs_blob.c_str(),
                             install_attrs_blob.size()));
+}
+
+void DevicePolicyCrosTestHelper::MarkAsEnterpriseOwned() {
+  MarkAsEnterpriseOwnedBy(device_policy_.policy_data().username());
 }
 
 void DevicePolicyCrosTestHelper::InstallOwnerKey() {
@@ -63,6 +67,7 @@ void DevicePolicyCrosTestHelper::InstallOwnerKey() {
       static_cast<int>(owner_key_bits.size()));
 }
 
+// static
 void DevicePolicyCrosTestHelper::OverridePaths() {
   // This is usually done by ChromeBrowserMainChromeOS, but some tests
   // use the overridden paths before ChromeBrowserMain starts. Make sure that

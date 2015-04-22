@@ -1301,6 +1301,8 @@
       'browser/chromeos/settings/device_oauth2_token_service_unittest.cc',
       'browser/chromeos/settings/device_settings_provider_unittest.cc',
       'browser/chromeos/settings/device_settings_service_unittest.cc',
+      'browser/chromeos/settings/scoped_cros_settings_test_helper.cc',
+      'browser/chromeos/settings/scoped_cros_settings_test_helper.h',
       'browser/chromeos/settings/session_manager_operation_unittest.cc',
       'browser/chromeos/settings/shutdown_policy_handler_unittest.cc',
       'browser/chromeos/settings/stub_cros_settings_provider_unittest.cc',

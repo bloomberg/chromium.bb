@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/login/user_names.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -91,9 +92,8 @@ bool IsDeviceLocalAccountUser(const std::string& user_id,
   return true;
 }
 
-void SetDeviceLocalAccounts(
-    chromeos::CrosSettings* cros_settings,
-    const std::vector<DeviceLocalAccount>& accounts) {
+void SetDeviceLocalAccounts(chromeos::OwnerSettingsServiceChromeOS* service,
+                            const std::vector<DeviceLocalAccount>& accounts) {
   base::ListValue list;
   for (std::vector<DeviceLocalAccount>::const_iterator it = accounts.begin();
        it != accounts.end(); ++it) {
@@ -117,7 +117,7 @@ void SetDeviceLocalAccounts(
     list.Append(entry.release());
   }
 
-  cros_settings->Set(chromeos::kAccountsPrefDeviceLocalAccounts, list);
+  service->Set(chromeos::kAccountsPrefDeviceLocalAccounts, list);
 }
 
 std::vector<DeviceLocalAccount> GetDeviceLocalAccounts(

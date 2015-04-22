@@ -174,6 +174,7 @@ bool CheckManagementModeTransition(policy::ManagementMode current_mode,
   NOTREACHED();
   return false;
 }
+
 }  // namespace
 
 OwnerSettingsServiceChromeOS::ManagementSettings::ManagementSettings() {

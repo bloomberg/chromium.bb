@@ -25,11 +25,12 @@ class WebUIDataSource;
 namespace chromeos {
 
 class KioskAppManager;
+class OwnerSettingsServiceChromeOS;
 
 class KioskAppsHandler : public content::WebUIMessageHandler,
                          public KioskAppManagerObserver {
  public:
-  KioskAppsHandler();
+  explicit KioskAppsHandler(OwnerSettingsServiceChromeOS* service);
   ~KioskAppsHandler() override;
 
   void GetLocalizedValues(content::WebUIDataSource* source);
@@ -69,6 +70,7 @@ class KioskAppsHandler : public content::WebUIMessageHandler,
   bool initialized_;
   bool is_kiosk_enabled_;
   bool is_auto_launch_enabled_;
+  OwnerSettingsServiceChromeOS* const owner_settings_service_;  // not owned
   base::WeakPtrFactory<KioskAppsHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskAppsHandler);

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_controller_observer.h"
 #include "ash/shell.h"
@@ -14,11 +16,9 @@
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
-#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/fake_cws.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
@@ -35,13 +35,13 @@
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
+#include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
-#include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -410,68 +410,6 @@ class AppDataLoadWaiter : public KioskAppManagerObserver {
   DISALLOW_COPY_AND_ASSIGN(AppDataLoadWaiter);
 };
 
-class CrosSettingsPermanentlyUntrustedMaker :
-    public DeviceSettingsService::Observer {
- public:
-  CrosSettingsPermanentlyUntrustedMaker();
-
-  // DeviceSettingsService::Observer:
-  void OwnershipStatusChanged() override;
-  void DeviceSettingsUpdated() override;
-  void OnDeviceSettingsServiceShutdown() override;
-
- private:
-  bool untrusted_check_running_;
-  base::RunLoop run_loop_;
-
-  void CheckIfUntrusted();
-
-  DISALLOW_COPY_AND_ASSIGN(CrosSettingsPermanentlyUntrustedMaker);
-};
-
-CrosSettingsPermanentlyUntrustedMaker::CrosSettingsPermanentlyUntrustedMaker()
-    : untrusted_check_running_(false) {
-  DeviceSettingsService::Get()->AddObserver(this);
-
-  policy::DevicePolicyCrosTestHelper().InstallOwnerKey();
-  DeviceSettingsService::Get()->OwnerKeySet(true);
-
-  run_loop_.Run();
-}
-
-void CrosSettingsPermanentlyUntrustedMaker::OwnershipStatusChanged() {
-  if (untrusted_check_running_)
-    return;
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&CrosSettingsPermanentlyUntrustedMaker::CheckIfUntrusted,
-                 base::Unretained(this)));
-}
-
-void CrosSettingsPermanentlyUntrustedMaker::DeviceSettingsUpdated() {
-}
-
-void CrosSettingsPermanentlyUntrustedMaker::OnDeviceSettingsServiceShutdown() {
-}
-
-void CrosSettingsPermanentlyUntrustedMaker::CheckIfUntrusted() {
-  untrusted_check_running_ = true;
-  const CrosSettingsProvider::TrustedStatus trusted_status =
-      CrosSettings::Get()->PrepareTrustedValues(
-          base::Bind(&CrosSettingsPermanentlyUntrustedMaker::CheckIfUntrusted,
-                     base::Unretained(this)));
-  if (trusted_status == CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
-    return;
-  untrusted_check_running_ = false;
-
-  if (trusted_status == CrosSettingsProvider::TRUSTED)
-    return;
-
-  DeviceSettingsService::Get()->RemoveObserver(this);
-  run_loop_.Quit();
-}
-
 }  // namespace
 
 // Boolean parameter is used to run this test for webview (true) and for
@@ -479,8 +417,10 @@ void CrosSettingsPermanentlyUntrustedMaker::CheckIfUntrusted() {
 class KioskTest : public OobeBaseTest,
                   public testing::WithParamInterface<bool> {
  public:
-  KioskTest() : use_consumer_kiosk_mode_(true),
-                fake_cws_(new FakeCWS) {
+  KioskTest()
+      : settings_helper_(false),
+        use_consumer_kiosk_mode_(true),
+        fake_cws_(new FakeCWS) {
     set_use_webview(GetParam());
     set_exit_when_last_browser_closes(false);
   }
@@ -511,9 +451,13 @@ class KioskTest : public OobeBaseTest,
     // Needed to avoid showing Gaia screen instead of owner signin for
     // consumer network down test cases.
     StartupUtils::MarkDeviceRegistered(base::Closure());
+    settings_helper_.ReplaceProvider(kAccountsPrefDeviceLocalAccounts);
+    owner_settings_service_ = settings_helper_.CreateOwnerSettingsService(
+        ProfileManager::GetPrimaryUserProfile());
   }
 
   void TearDownOnMainThread() override {
+    settings_helper_.RestoreProvider();
     AppLaunchController::SetNetworkTimeoutCallbackForTesting(NULL);
     AppLaunchSigninScreen::SetUserManagerForTesting(NULL);
 
@@ -541,8 +485,9 @@ class KioskTest : public OobeBaseTest,
     SetupTestAppUpdateCheck();
 
     // Remove then add to ensure NOTIFICATION_KIOSK_APPS_LOADED fires.
-    KioskAppManager::Get()->RemoveApp(test_app_id_);
-    KioskAppManager::Get()->AddApp(test_app_id_);
+    KioskAppManager::Get()->RemoveApp(test_app_id_,
+                                      owner_settings_service_.get());
+    KioskAppManager::Get()->AddApp(test_app_id_, owner_settings_service_.get());
   }
 
   void FireKioskAppSettingsChanged() {
@@ -559,8 +504,9 @@ class KioskTest : public OobeBaseTest,
   void ReloadAutolaunchKioskApps() {
     SetupTestAppUpdateCheck();
 
-    KioskAppManager::Get()->AddApp(test_app_id_);
-    KioskAppManager::Get()->SetAutoLaunchApp(test_app_id_);
+    KioskAppManager::Get()->AddApp(test_app_id_, owner_settings_service_.get());
+    KioskAppManager::Get()->SetAutoLaunchApp(test_app_id_,
+                                             owner_settings_service_.get());
   }
 
   void StartUIForAppLaunch() {
@@ -804,6 +750,9 @@ class KioskTest : public OobeBaseTest,
     use_consumer_kiosk_mode_ = use;
   }
 
+  ScopedCrosSettingsTestHelper settings_helper_;
+  scoped_ptr<FakeOwnerSettingsService> owner_settings_service_;
+
  private:
   bool use_consumer_kiosk_mode_;
   std::string test_app_id_;
@@ -994,7 +943,7 @@ IN_PROC_BROWSER_TEST_P(KioskTest, LaunchAppUserCancel) {
   OobeScreenWaiter splash_waiter(OobeDisplay::SCREEN_APP_LAUNCH_SPLASH);
   splash_waiter.Wait();
 
-  CrosSettings::Get()->SetBoolean(
+  settings_helper_.SetBoolean(
       kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled, true);
   content::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_APP_TERMINATING,
@@ -1218,7 +1167,8 @@ IN_PROC_BROWSER_TEST_P(KioskTest, DoNotLaunchWhenUntrusted) {
   SimulateNetworkOnline();
 
   // Make cros settings untrusted.
-  CrosSettingsPermanentlyUntrustedMaker();
+  settings_helper_.SetTrustedStatus(
+      CrosSettingsProvider::PERMANENTLY_UNTRUSTED);
 
   // Check that the attempt to start a kiosk app fails with an error.
   LaunchApp(test_app_id(), false);
@@ -1257,7 +1207,8 @@ IN_PROC_BROWSER_TEST_P(KioskTest, NoConsumerAutoLaunchWhenUntrusted) {
       base::FundamentalValue(true));
 
   // Make cros settings untrusted.
-  CrosSettingsPermanentlyUntrustedMaker();
+  settings_helper_.SetTrustedStatus(
+      CrosSettingsProvider::PERMANENTLY_UNTRUSTED);
 
   // Check that the attempt to auto-launch a kiosk app fails with an error.
   OobeScreenWaiter(OobeDisplay::SCREEN_ERROR_MESSAGE).Wait();
@@ -1281,7 +1232,8 @@ IN_PROC_BROWSER_TEST_P(KioskTest, NoEnterpriseAutoLaunchWhenUntrusted) {
   SimulateNetworkOnline();
 
   // Make cros settings untrusted.
-  CrosSettingsPermanentlyUntrustedMaker();
+  settings_helper_.SetTrustedStatus(
+      CrosSettingsProvider::PERMANENTLY_UNTRUSTED);
 
   // Trigger the code that handles auto-launch on enterprise devices. This would
   // normally be called from ShowLoginWizard(), which runs so early that it is
@@ -1313,7 +1265,19 @@ class KioskUpdateTest : public KioskTest {
     KioskTest::TearDown();
   }
 
-  void SetUpOnMainThread() override { KioskTest::SetUpOnMainThread(); }
+  void SetUpOnMainThread() override {
+    // For update tests, we cache the app in the PRE part, and then we load it
+    // in the test, so we need to both store the apps list on teardown (so that
+    // the app manager would accept existing files in its extension cache on the
+    // next startup) and copy the list to our stub settings provider as well.
+    settings_helper_.CopyStoredValue(kAccountsPrefDeviceLocalAccounts);
+    KioskTest::SetUpOnMainThread();
+  }
+
+  void TearDownOnMainThread() override {
+    settings_helper_.StoreCachedDeviceSetting(kAccountsPrefDeviceLocalAccounts);
+    KioskTest::TearDownOnMainThread();
+  }
 
   void PreCacheApp(const std::string& app_id,
                    const std::string& version,
@@ -1755,8 +1719,9 @@ class KioskEnterpriseTest : public KioskTest {
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    device_policy_test_helper_.MarkAsEnterpriseOwned();
-    device_policy_test_helper_.InstallOwnerKey();
+    policy::DevicePolicyCrosTestHelper::MarkAsEnterpriseOwnedBy(
+        kTestOwnerEmail);
+    settings_helper_.SetCurrentUserIsOwner(false);
 
     KioskTest::SetUpInProcessBrowserTestFixture();
   }
@@ -1799,41 +1764,21 @@ class KioskEnterpriseTest : public KioskTest {
     base::RunLoop().RunUntilIdle();
   }
 
-  static void StorePolicyCallback(const base::Closure& callback, bool result) {
-    ASSERT_TRUE(result);
-    callback.Run();
-  }
-
   void ConfigureKioskAppInPolicy(const std::string& account_id,
                                  const std::string& app_id,
                                  const std::string& update_url) {
-    em::DeviceLocalAccountsProto* accounts =
-        device_policy_test_helper_.device_policy()->payload()
-            .mutable_device_local_accounts();
-    em::DeviceLocalAccountInfoProto* account = accounts->add_account();
-    account->set_account_id(account_id);
-    account->set_type(
-        em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_KIOSK_APP);
-    account->mutable_kiosk_app()->set_app_id(app_id);
-    if (!update_url.empty())
-      account->mutable_kiosk_app()->set_update_url(update_url);
-    accounts->set_auto_login_id(account_id);
-    em::PolicyData& policy_data =
-        device_policy_test_helper_.device_policy()->policy_data();
-    policy_data.set_service_account_identity(kTestEnterpriseServiceAccountId);
-    device_policy_test_helper_.device_policy()->Build();
-
-    base::RunLoop run_loop;
-    DBusThreadManager::Get()->GetSessionManagerClient()->StoreDevicePolicy(
-        device_policy_test_helper_.device_policy()->GetBlob(),
-        base::Bind(&KioskEnterpriseTest::StorePolicyCallback,
-                   run_loop.QuitClosure()));
-    run_loop.Run();
-
-    DeviceSettingsService::Get()->Load();
+    settings_helper_.SetCurrentUserIsOwner(true);
+    std::vector<policy::DeviceLocalAccount> accounts;
+    accounts.push_back(
+        policy::DeviceLocalAccount(policy::DeviceLocalAccount::TYPE_KIOSK_APP,
+                                   account_id, app_id, update_url));
+    policy::SetDeviceLocalAccounts(owner_settings_service_.get(), accounts);
+    settings_helper_.SetString(kAccountsPrefDeviceLocalAccountAutoLoginId,
+                               account_id);
+    settings_helper_.SetString(kServiceAccountIdentity,
+                               kTestEnterpriseServiceAccountId);
+    settings_helper_.SetCurrentUserIsOwner(false);
   }
-
-  policy::DevicePolicyCrosTestHelper device_policy_test_helper_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KioskEnterpriseTest);

@@ -7,8 +7,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/status_uploader.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
@@ -46,35 +45,18 @@ class MockDeviceStatusCollector : public policy::DeviceStatusCollector {
 namespace policy {
 class StatusUploaderTest : public testing::Test {
  public:
-  StatusUploaderTest()
-      : task_runner_(new base::TestSimpleTaskRunner()),
-        device_settings_provider_(nullptr) {
+  StatusUploaderTest() : task_runner_(new base::TestSimpleTaskRunner()) {
     DeviceStatusCollector::RegisterPrefs(prefs_.registry());
   }
 
   void SetUp() override {
     client_.SetDMToken("dm_token");
     collector_.reset(new MockDeviceStatusCollector(&prefs_));
-
-    // Swap out the DeviceSettingsProvider with our stub settings provider
-    // so we can set values for the upload frequency.
-    chromeos::CrosSettings* cros_settings = chromeos::CrosSettings::Get();
-    device_settings_provider_ =
-        cros_settings->GetProvider(chromeos::kReportDeviceVersionInfo);
-    EXPECT_TRUE(device_settings_provider_);
-    EXPECT_TRUE(
-        cros_settings->RemoveSettingsProvider(device_settings_provider_));
-    cros_settings->AddSettingsProvider(&stub_settings_provider_);
-
+    settings_helper_.ReplaceProvider(chromeos::kReportUploadFrequency);
   }
 
   void TearDown() override {
     content::RunAllBlockingPoolTasksUntilIdle();
-    // Restore the real DeviceSettingsProvider.
-    chromeos::CrosSettings* cros_settings = chromeos::CrosSettings::Get();
-    EXPECT_TRUE(cros_settings->RemoveSettingsProvider(
-        &stub_settings_provider_));
-    cros_settings->AddSettingsProvider(device_settings_provider_);
   }
 
   // Given a pending task to upload status, mocks out a server response.
@@ -114,11 +96,8 @@ class StatusUploaderTest : public testing::Test {
 
   base::MessageLoop loop_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
-  chromeos::ScopedTestCrosSettings test_cros_settings_;
+  chromeos::ScopedCrosSettingsTestHelper settings_helper_;
   scoped_ptr<MockDeviceStatusCollector> collector_;
-  chromeos::CrosSettingsProvider* device_settings_provider_;
-  chromeos::StubCrosSettingsProvider stub_settings_provider_;
   MockCloudPolicyClient client_;
   MockDeviceManagementService device_management_service_;
   TestingPrefServiceSimple prefs_;
@@ -137,8 +116,7 @@ TEST_F(StatusUploaderTest, DifferentFrequencyAtStart) {
   // when it is passed to the StatusUploader constructor below.
   MockDeviceStatusCollector* const mock_collector = collector_.get();
   const int new_delay = StatusUploader::kDefaultUploadDelayMs * 2;
-  chromeos::CrosSettings::Get()->SetInteger(chromeos::kReportUploadFrequency,
-                                            new_delay);
+  settings_helper_.SetInteger(chromeos::kReportUploadFrequency, new_delay);
   const base::TimeDelta expected_delay = base::TimeDelta::FromMilliseconds(
       new_delay);
   EXPECT_TRUE(task_runner_->GetPendingTasks().empty());
@@ -202,8 +180,7 @@ TEST_F(StatusUploaderTest, ChangeFrequency) {
   // Change the frequency. The new frequency should be reflected in the timing
   // used for the next callback.
   const int new_delay = StatusUploader::kDefaultUploadDelayMs * 2;
-  chromeos::CrosSettings::Get()->SetInteger(chromeos::kReportUploadFrequency,
-                                            new_delay);
+  settings_helper_.SetInteger(chromeos::kReportUploadFrequency, new_delay);
   const base::TimeDelta expected_delay = base::TimeDelta::FromMilliseconds(
       new_delay);
   RunPendingUploadTaskAndCheckNext(uploader, expected_delay);

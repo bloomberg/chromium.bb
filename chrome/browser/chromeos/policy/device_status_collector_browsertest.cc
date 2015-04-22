@@ -18,12 +18,11 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
+#include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/stub_enterprise_install_attributes.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/dbus/cros_disks_client.h"
@@ -37,7 +36,6 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/settings/cros_settings_names.h"
-#include "chromeos/settings/cros_settings_provider.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/geolocation_provider.h"
@@ -230,20 +228,20 @@ namespace policy {
 class DeviceStatusCollectorTest : public testing::Test {
  public:
   DeviceStatusCollectorTest()
-    : ui_thread_(content::BrowserThread::UI, &message_loop_),
-      file_thread_(content::BrowserThread::FILE, &message_loop_),
-      io_thread_(content::BrowserThread::IO, &message_loop_),
-      install_attributes_("managed.com",
-                          "user@managed.com",
-                          "device_id",
-                          DEVICE_MODE_ENTERPRISE),
-      user_manager_(new chromeos::MockUserManager()),
-      user_manager_enabler_(user_manager_),
-      fake_device_local_account_(
-          policy::DeviceLocalAccount::TYPE_KIOSK_APP,
-          kKioskAccountId,
-          kKioskAppId,
-          std::string() /* kiosk_app_update_url */) {
+      : ui_thread_(content::BrowserThread::UI, &message_loop_),
+        file_thread_(content::BrowserThread::FILE, &message_loop_),
+        io_thread_(content::BrowserThread::IO, &message_loop_),
+        install_attributes_("managed.com",
+                            "user@managed.com",
+                            "device_id",
+                            DEVICE_MODE_ENTERPRISE),
+        settings_helper_(false),
+        user_manager_(new chromeos::MockUserManager()),
+        user_manager_enabler_(user_manager_),
+        fake_device_local_account_(policy::DeviceLocalAccount::TYPE_KIOSK_APP,
+                                   kKioskAccountId,
+                                   kKioskAppId,
+                                   std::string() /* kiosk_app_update_url */) {
     // Run this test with a well-known timezone so that Time::LocalMidnight()
     // returns the same values on all machines.
     scoped_ptr<base::Environment> env(base::Environment::Create());
@@ -274,14 +272,9 @@ class DeviceStatusCollectorTest : public testing::Test {
     DiskMountManager::InitializeForTesting(mock_disk_mount_manager.release());
     TestingDeviceStatusCollector::RegisterPrefs(prefs_.registry());
 
-    // Remove the real DeviceSettingsProvider and replace it with a stub.
-    cros_settings_ = chromeos::CrosSettings::Get();
-    device_settings_provider_ =
-        cros_settings_->GetProvider(chromeos::kReportDeviceVersionInfo);
-    EXPECT_TRUE(device_settings_provider_ != NULL);
-    EXPECT_TRUE(
-        cros_settings_->RemoveSettingsProvider(device_settings_provider_));
-    cros_settings_->AddSettingsProvider(&stub_settings_provider_);
+    settings_helper_.ReplaceProvider(chromeos::kReportDeviceActivityTimes);
+    owner_settings_service_ =
+        settings_helper_.CreateOwnerSettingsService(nullptr);
 
     RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo),
                            base::Bind(&GetEmptyCPUStatistics));
@@ -301,17 +294,15 @@ class DeviceStatusCollectorTest : public testing::Test {
     message_loop_.RunUntilIdle();
     storage::ExternalMountPoints::GetSystemInstance()->RevokeAllFileSystems();
     DiskMountManager::Shutdown();
-
-    // Restore the real DeviceSettingsProvider.
-    EXPECT_TRUE(
-        cros_settings_->RemoveSettingsProvider(&stub_settings_provider_));
-    cros_settings_->AddSettingsProvider(device_settings_provider_);
   }
 
   void SetUp() override {
     // Disable network interface reporting since it requires additional setup.
-    cros_settings_->SetBoolean(chromeos::kReportDeviceNetworkInterfaces, false);
+    settings_helper_.SetBoolean(chromeos::kReportDeviceNetworkInterfaces,
+                                false);
   }
+
+  void TearDown() override { settings_helper_.RestoreProvider(); }
 
   void RestartStatusCollector(
       const policy::DeviceStatusCollector::VolumeInfoFetcher& volume_info,
@@ -370,7 +361,7 @@ class DeviceStatusCollectorTest : public testing::Test {
   void MockRunningKioskApp(const DeviceLocalAccount& account) {
     std::vector<DeviceLocalAccount> accounts;
     accounts.push_back(account);
-    SetDeviceLocalAccounts(cros_settings_, accounts);
+    SetDeviceLocalAccounts(owner_settings_service_.get(), accounts);
     user_manager_->CreateKioskAppUser(account.user_id);
     EXPECT_CALL(*user_manager_, IsLoggedInAsKioskApp()).WillRepeatedly(
         Return(true));
@@ -396,9 +387,8 @@ class DeviceStatusCollectorTest : public testing::Test {
   DiskMountManager::MountPointMap mount_point_map_;
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
-  chromeos::CrosSettings* cros_settings_;
-  chromeos::CrosSettingsProvider* device_settings_provider_;
-  chromeos::StubCrosSettingsProvider stub_settings_provider_;
+  chromeos::ScopedCrosSettingsTestHelper settings_helper_;
+  scoped_ptr<chromeos::FakeOwnerSettingsService> owner_settings_service_;
   chromeos::MockUserManager* user_manager_;
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
   em::DeviceStatusReportRequest status_;
@@ -412,7 +402,7 @@ TEST_F(DeviceStatusCollectorTest, AllIdle) {
     ui::IDLE_STATE_IDLE,
     ui::IDLE_STATE_IDLE
   };
-  cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, true);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, true);
 
   // Test reporting with no data.
   GetStatus();
@@ -439,7 +429,7 @@ TEST_F(DeviceStatusCollectorTest, AllActive) {
     ui::IDLE_STATE_ACTIVE,
     ui::IDLE_STATE_ACTIVE
   };
-  cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, true);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, true);
 
   // Test a single active sample.
   status_collector_->Simulate(test_states, 1);
@@ -466,7 +456,7 @@ TEST_F(DeviceStatusCollectorTest, MixedStates) {
     ui::IDLE_STATE_IDLE,
     ui::IDLE_STATE_ACTIVE
   };
-  cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, true);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, true);
   status_collector_->Simulate(test_states,
                               sizeof(test_states) / sizeof(ui::IdleState));
   GetStatus();
@@ -482,7 +472,7 @@ TEST_F(DeviceStatusCollectorTest, StateKeptInPref) {
     ui::IDLE_STATE_IDLE,
     ui::IDLE_STATE_IDLE
   };
-  cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, true);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, true);
   status_collector_->Simulate(test_states,
                               sizeof(test_states) / sizeof(ui::IdleState));
 
@@ -507,7 +497,7 @@ TEST_F(DeviceStatusCollectorTest, Times) {
     ui::IDLE_STATE_IDLE,
     ui::IDLE_STATE_IDLE
   };
-  cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, true);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, true);
   status_collector_->Simulate(test_states,
                               sizeof(test_states) / sizeof(ui::IdleState));
   GetStatus();
@@ -521,7 +511,7 @@ TEST_F(DeviceStatusCollectorTest, MaxStoredPeriods) {
   };
   const int kMaxDays = 10;
 
-  cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, true);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, true);
   status_collector_->set_max_stored_past_activity_days(kMaxDays - 1);
   status_collector_->set_max_stored_future_activity_days(1);
   Time baseline = Time::Now().LocalMidnight();
@@ -576,7 +566,7 @@ TEST_F(DeviceStatusCollectorTest, ActivityTimesEnabledByDefault) {
 
 TEST_F(DeviceStatusCollectorTest, ActivityTimesOff) {
   // Device activity times should not be reported if explicitly disabled.
-  cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, false);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, false);
 
   ui::IdleState test_states[] = {
     ui::IDLE_STATE_ACTIVE,
@@ -594,7 +584,7 @@ TEST_F(DeviceStatusCollectorTest, ActivityCrossingMidnight) {
   ui::IdleState test_states[] = {
     ui::IDLE_STATE_ACTIVE
   };
-  cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, true);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, true);
 
   // Set the baseline time to 10 seconds after midnight.
   status_collector_->SetBaselineTime(
@@ -626,7 +616,7 @@ TEST_F(DeviceStatusCollectorTest, ActivityTimesKeptUntilSubmittedSuccessfully) {
     ui::IDLE_STATE_ACTIVE,
     ui::IDLE_STATE_ACTIVE,
   };
-  cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, true);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, true);
 
   status_collector_->Simulate(test_states, 2);
   GetStatus();
@@ -654,14 +644,14 @@ TEST_F(DeviceStatusCollectorTest, DevSwitchBootMode) {
   EXPECT_EQ("Verified", status_.boot_mode());
 
   // Test that boot mode data is not reported if the pref turned off.
-  cros_settings_->SetBoolean(chromeos::kReportDeviceBootMode, false);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceBootMode, false);
 
   GetStatus();
   EXPECT_FALSE(status_.has_boot_mode());
 
   // Turn the pref on, and check that the status is reported iff the
   // statistics provider returns valid data.
-  cros_settings_->SetBoolean(chromeos::kReportDeviceBootMode, true);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceBootMode, true);
 
   fake_statistics_provider_.SetMachineStatistic(
       chromeos::system::kDevSwitchBootKey, "(error)");
@@ -695,13 +685,13 @@ TEST_F(DeviceStatusCollectorTest, VersionInfo) {
 
   // When the pref to collect this data is not enabled, expect that none of
   // the fields are present in the protobuf.
-  cros_settings_->SetBoolean(chromeos::kReportDeviceVersionInfo, false);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceVersionInfo, false);
   GetStatus();
   EXPECT_FALSE(status_.has_browser_version());
   EXPECT_FALSE(status_.has_os_version());
   EXPECT_FALSE(status_.has_firmware_version());
 
-  cros_settings_->SetBoolean(chromeos::kReportDeviceVersionInfo, true);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceVersionInfo, true);
   GetStatus();
   EXPECT_TRUE(status_.has_browser_version());
   EXPECT_TRUE(status_.has_os_version());
@@ -733,7 +723,7 @@ TEST_F(DeviceStatusCollectorTest, Location) {
   // Check that when device location reporting is enabled and a valid fix is
   // available, the location is reported and is stored in local state.
   SetMockPositionToReturnNext(valid_fix);
-  cros_settings_->SetBoolean(chromeos::kReportDeviceLocation, true);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceLocation, true);
   EXPECT_FALSE(prefs_.GetDictionary(prefs::kDeviceLocation)->empty());
   CheckThatAValidLocationIsReported();
 
@@ -748,7 +738,7 @@ TEST_F(DeviceStatusCollectorTest, Location) {
   // Check that after disabling location reporting again, the last known
   // location has been cleared from local state and is no longer reported.
   SetMockPositionToReturnNext(valid_fix);
-  cros_settings_->SetBoolean(chromeos::kReportDeviceLocation, false);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceLocation, false);
   // Allow the new pref to propagate to the status collector.
   message_loop_.RunUntilIdle();
   EXPECT_TRUE(prefs_.GetDictionary(prefs::kDeviceLocation)->empty());
@@ -757,7 +747,7 @@ TEST_F(DeviceStatusCollectorTest, Location) {
   // Check that after enabling location reporting again, an error is reported
   // if no valid fix is available.
   SetMockPositionToReturnNext(invalid_fix);
-  cros_settings_->SetBoolean(chromeos::kReportDeviceLocation, true);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceLocation, true);
   // Allow the new pref to propagate to the status collector.
   message_loop_.RunUntilIdle();
   CheckThatALocationErrorIsReported();
@@ -777,7 +767,7 @@ TEST_F(DeviceStatusCollectorTest, ReportUsers) {
   EXPECT_EQ(6, status_.user_size());
 
   // Verify that users are reported after enabling the setting.
-  cros_settings_->SetBoolean(chromeos::kReportDeviceUsers, true);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceUsers, true);
   GetStatus();
   EXPECT_EQ(6, status_.user_size());
   EXPECT_EQ(em::DeviceUser::USER_TYPE_MANAGED, status_.user(0).type());
@@ -794,7 +784,7 @@ TEST_F(DeviceStatusCollectorTest, ReportUsers) {
   EXPECT_EQ("user5@managed.com", status_.user(5).email());
 
   // Verify that users are no longer reported if setting is disabled.
-  cros_settings_->SetBoolean(chromeos::kReportDeviceUsers, false);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceUsers, false);
   GetStatus();
   EXPECT_EQ(0, status_.user_size());
 }
@@ -843,7 +833,7 @@ TEST_F(DeviceStatusCollectorTest, TestVolumeInfo) {
   }
 
   // Now turn off hardware status reporting - should have no data.
-  cros_settings_->SetBoolean(chromeos::kReportDeviceHardwareStatus, false);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceHardwareStatus, false);
   GetStatus();
   EXPECT_EQ(0, status_.volume_info_size());
 }
@@ -903,21 +893,21 @@ TEST_F(DeviceStatusCollectorTest, DISABLED_TestCPUSamples) {
     EXPECT_EQ(0, utilization);
 
   // Turning off hardware reporting should not report CPU utilization.
-  cros_settings_->SetBoolean(chromeos::kReportDeviceHardwareStatus, false);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceHardwareStatus, false);
   GetStatus();
   EXPECT_EQ(0, status_.cpu_utilization_pct().size());
 }
 
 TEST_F(DeviceStatusCollectorTest, NoSessionStatusIfNotKioskMode) {
   // Should not report session status if we don't have an active kiosk app.
-  cros_settings_->SetBoolean(chromeos::kReportDeviceSessionStatus, true);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceSessionStatus, true);
   em::SessionStatusReportRequest session_status;
   EXPECT_FALSE(status_collector_->GetDeviceSessionStatus(&session_status));
 }
 
 TEST_F(DeviceStatusCollectorTest, NoSessionStatusIfSessionReportingDisabled) {
   // Should not report session status if session status reporting is disabled.
-  cros_settings_->SetBoolean(chromeos::kReportDeviceSessionStatus, false);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceSessionStatus, false);
   status_collector_->set_kiosk_account(make_scoped_ptr(
       new policy::DeviceLocalAccount(fake_device_local_account_)).Pass());
   // Set up a device-local account for single-app kiosk mode.
@@ -928,7 +918,7 @@ TEST_F(DeviceStatusCollectorTest, NoSessionStatusIfSessionReportingDisabled) {
 }
 
 TEST_F(DeviceStatusCollectorTest, ReportSessionStatus) {
-  cros_settings_->SetBoolean(chromeos::kReportDeviceSessionStatus, true);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceSessionStatus, true);
   status_collector_->set_kiosk_account(make_scoped_ptr(
       new policy::DeviceLocalAccount(fake_device_local_account_)).Pass());
 
@@ -1164,13 +1154,13 @@ TEST_F(DeviceStatusCollectorNetworkInterfacesTest, NetworkInterfaces) {
   EXPECT_LT(0, status_.network_state_size());
 
   // No interfaces should be reported if the policy is off.
-  cros_settings_->SetBoolean(chromeos::kReportDeviceNetworkInterfaces, false);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceNetworkInterfaces, false);
   GetStatus();
   EXPECT_EQ(0, status_.network_interface_size());
   EXPECT_EQ(0, status_.network_state_size());
 
   // Switch the policy on and verify the interface list is present.
-  cros_settings_->SetBoolean(chromeos::kReportDeviceNetworkInterfaces, true);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceNetworkInterfaces, true);
   GetStatus();
 
   int count = 0;

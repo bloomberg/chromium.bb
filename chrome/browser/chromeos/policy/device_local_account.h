@@ -10,6 +10,7 @@
 
 namespace chromeos {
 class CrosSettings;
+class OwnerSettingsServiceChromeOS;
 }
 
 namespace policy {
@@ -64,12 +65,11 @@ std::string GenerateDeviceLocalAccountUserId(const std::string& account_id,
 bool IsDeviceLocalAccountUser(const std::string& user_id,
                               DeviceLocalAccount::Type* type);
 
-// Stores a list of device-local accounts in |cros_settings|. The accounts are
-// stored as a list of dictionaries with each dictionary containing the
-// information about one |DeviceLocalAccount|.
-void SetDeviceLocalAccounts(
-    chromeos::CrosSettings* cros_settings,
-    const std::vector<DeviceLocalAccount>& accounts);
+// Stores a list of device-local accounts in |service|. The accounts are stored
+// as a list of dictionaries with each dictionary containing the information
+// about one |DeviceLocalAccount|.
+void SetDeviceLocalAccounts(chromeos::OwnerSettingsServiceChromeOS* service,
+                            const std::vector<DeviceLocalAccount>& accounts);
 
 // Retrieves a list of device-local accounts from |cros_settings|.
 std::vector<DeviceLocalAccount> GetDeviceLocalAccounts(

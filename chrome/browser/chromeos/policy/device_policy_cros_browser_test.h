@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_POLICY_CROS_BROWSER_TEST_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_POLICY_CROS_BROWSER_TEST_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
@@ -25,6 +27,7 @@ class DevicePolicyCrosTestHelper {
   // Marks the device as enterprise-owned. Must be called to make device
   // policies apply Chrome-wide. If this is not called, device policies will
   // affect CrosSettings only.
+  static void MarkAsEnterpriseOwnedBy(const std::string& user_name);
   void MarkAsEnterpriseOwned();
 
   // Writes the owner key to disk. To be called before installing a policy.
@@ -33,7 +36,7 @@ class DevicePolicyCrosTestHelper {
   DevicePolicyBuilder* device_policy() { return &device_policy_; }
 
  private:
-  void OverridePaths();
+  static void OverridePaths();
 
   // Carries Chrome OS device policies for tests.
   DevicePolicyBuilder device_policy_;

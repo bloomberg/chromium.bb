@@ -56,10 +56,14 @@ const char* const kKnownSettings[] = {
     kAllowedConnectionTypesForUpdate,
     kAttestationForContentProtectionEnabled,
     kDeviceAttestationEnabled,
+    kDeviceDisabled,
+    kDeviceDisabledMessage,
     kDeviceOwner,
+    kExtensionCacheSize,
     kHeartbeatEnabled,
     kHeartbeatFrequency,
     kPolicyMissingMitigationMode,
+    kRebootOnShutdown,
     kReleaseChannel,
     kReleaseChannelDelegated,
     kReportDeviceActivityTimes,
@@ -79,10 +83,6 @@ const char* const kKnownSettings[] = {
     kSystemUse24HourClock,
     kUpdateDisabled,
     kVariationsRestrictParameter,
-    kDeviceDisabled,
-    kDeviceDisabledMessage,
-    kRebootOnShutdown,
-    kExtensionCacheSize,
 };
 
 bool HasOldMetricsFile() {

@@ -59,9 +59,8 @@ class ConsumerUnenrollmentHandlerTest
         base::ThreadTaskRunnerHandle::Get()));
 
     // Set up FakeOwnerSettingsService.
-    fake_owner_settings_service_.reset(
-        new chromeos::FakeOwnerSettingsService(
-            profile_.get(), owner_key_util_));
+    fake_owner_settings_service_.reset(new chromeos::FakeOwnerSettingsService(
+        profile_.get(), owner_key_util_, nullptr));
     chromeos::OwnerSettingsServiceChromeOS::ManagementSettings settings;
     settings.management_mode = policy::MANAGEMENT_MODE_CONSUMER_MANAGED;
     settings.request_token = "fake_request_token";

@@ -12,8 +12,7 @@
 #include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/network/fake_network_device_handler.h"
 #include "chromeos/network/mock_managed_network_configuration_handler.h"
@@ -287,10 +286,7 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
   StrictMock<chromeos::MockManagedNetworkConfigurationHandler>
       network_config_handler_;
   FakeNetworkDeviceHandler network_device_handler_;
-
-  // Not used directly. Required for CrosSettings.
-  chromeos::ScopedTestDeviceSettingsService scoped_device_settings_service_;
-  chromeos::ScopedTestCrosSettings scoped_cros_settings_;
+  chromeos::ScopedCrosSettingsTestHelper settings_helper_;
 
   // Ownership of certificate_importer_owned_ is passed to the
   // NetworkConfigurationUpdater. When that happens, |certificate_importer_|
@@ -313,28 +309,16 @@ TEST_F(NetworkConfigurationUpdaterTest, CellularAllowRoaming) {
   // Ignore network config updates.
   EXPECT_CALL(network_config_handler_, SetPolicy(_, _, _, _)).Times(AtLeast(1));
 
-  // Setup the DataRoaming device setting.
-  chromeos::CrosSettings* cros_settings = chromeos::CrosSettings::Get();
-  chromeos::CrosSettingsProvider* device_settings_provider =
-      cros_settings->GetProvider(chromeos::kSignedDataRoamingEnabled);
-  cros_settings->RemoveSettingsProvider(device_settings_provider);
-  delete device_settings_provider;
-  chromeos::StubCrosSettingsProvider* stub_settings_provider =
-      new chromeos::StubCrosSettingsProvider;
-  cros_settings->AddSettingsProvider(stub_settings_provider);
-
-  chromeos::CrosSettings::Get()->Set(chromeos::kSignedDataRoamingEnabled,
-                                     base::FundamentalValue(false));
+  settings_helper_.ReplaceProvider(chromeos::kSignedDataRoamingEnabled);
+  settings_helper_.SetBoolean(chromeos::kSignedDataRoamingEnabled, false);
   EXPECT_FALSE(network_device_handler_.allow_roaming_);
 
   CreateNetworkConfigurationUpdaterForDevicePolicy();
   MarkPolicyProviderInitialized();
-  chromeos::CrosSettings::Get()->Set(chromeos::kSignedDataRoamingEnabled,
-                                     base::FundamentalValue(true));
+  settings_helper_.SetBoolean(chromeos::kSignedDataRoamingEnabled, true);
   EXPECT_TRUE(network_device_handler_.allow_roaming_);
 
-  chromeos::CrosSettings::Get()->Set(chromeos::kSignedDataRoamingEnabled,
-                                     base::FundamentalValue(false));
+  settings_helper_.SetBoolean(chromeos::kSignedDataRoamingEnabled, false);
   EXPECT_FALSE(network_device_handler_.allow_roaming_);
 }
 

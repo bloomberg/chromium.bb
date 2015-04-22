@@ -22,7 +22,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
-#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -434,15 +434,9 @@ TEST_F(CryptohomeAuthenticatorTest, ResolveOwnerNeededFailedMount) {
   // and succeeded but we are in safe mode and the current user is not owner.
   state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
   SetOwnerState(false, false);
-  // Remove the real DeviceSettingsProvider and replace it with a stub.
-  CrosSettingsProvider* device_settings_provider =
-      CrosSettings::Get()->GetProvider(chromeos::kReportDeviceVersionInfo);
-  EXPECT_TRUE(device_settings_provider != NULL);
-  EXPECT_TRUE(
-      CrosSettings::Get()->RemoveSettingsProvider(device_settings_provider));
-  StubCrosSettingsProvider stub_settings_provider;
-  CrosSettings::Get()->AddSettingsProvider(&stub_settings_provider);
-  CrosSettings::Get()->SetBoolean(kPolicyMissingMitigationMode, true);
+  ScopedCrosSettingsTestHelper settings_helper(false);
+  settings_helper.ReplaceProvider(kPolicyMissingMitigationMode);
+  settings_helper.SetBoolean(kPolicyMissingMitigationMode, true);
 
   // Initialize login state for this test to verify the login state is changed
   // to SAFE_MODE.
@@ -468,9 +462,6 @@ TEST_F(CryptohomeAuthenticatorTest, ResolveOwnerNeededFailedMount) {
   // Unset global objects used by this test.
   fake_cryptohome_client_->set_unmount_result(true);
   LoginState::Shutdown();
-  EXPECT_TRUE(
-      CrosSettings::Get()->RemoveSettingsProvider(&stub_settings_provider));
-  CrosSettings::Get()->AddSettingsProvider(device_settings_provider);
 }
 
 // Test the case that login switches to SafeMode and the Owner logs in, which
@@ -493,15 +484,9 @@ TEST_F(CryptohomeAuthenticatorTest, ResolveOwnerNeededSuccess) {
   // and succeeded but we are in safe mode and the current user is not owner.
   state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
   SetOwnerState(false, false);
-  // Remove the real DeviceSettingsProvider and replace it with a stub.
-  CrosSettingsProvider* device_settings_provider =
-      CrosSettings::Get()->GetProvider(chromeos::kReportDeviceVersionInfo);
-  EXPECT_TRUE(device_settings_provider != NULL);
-  EXPECT_TRUE(
-      CrosSettings::Get()->RemoveSettingsProvider(device_settings_provider));
-  StubCrosSettingsProvider stub_settings_provider;
-  CrosSettings::Get()->AddSettingsProvider(&stub_settings_provider);
-  CrosSettings::Get()->SetBoolean(kPolicyMissingMitigationMode, true);
+  ScopedCrosSettingsTestHelper settings_helper(false);
+  settings_helper.ReplaceProvider(kPolicyMissingMitigationMode);
+  settings_helper.SetBoolean(kPolicyMissingMitigationMode, true);
 
   // Initialize login state for this test to verify the login state is changed
   // to SAFE_MODE.
@@ -526,9 +511,6 @@ TEST_F(CryptohomeAuthenticatorTest, ResolveOwnerNeededSuccess) {
   // Unset global objects used by this test.
   fake_cryptohome_client_->set_unmount_result(true);
   LoginState::Shutdown();
-  EXPECT_TRUE(
-      CrosSettings::Get()->RemoveSettingsProvider(&stub_settings_provider));
-  CrosSettings::Get()->AddSettingsProvider(device_settings_provider);
 }
 
 TEST_F(CryptohomeAuthenticatorTest, DriveFailedMount) {

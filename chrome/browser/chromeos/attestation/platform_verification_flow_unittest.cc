@@ -11,9 +11,7 @@
 #include "chrome/browser/chromeos/attestation/fake_certificate.h"
 #include "chrome/browser/chromeos/attestation/platform_verification_flow.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/attestation/mock_attestation_flow.h"
@@ -153,20 +151,8 @@ class PlatformVerificationFlowTest : public ::testing::Test {
     callback_ = base::Bind(&PlatformVerificationFlowTest::FakeChallengeCallback,
                            base::Unretained(this));
 
-    // Configure the global cros_settings.
-    CrosSettings* cros_settings = CrosSettings::Get();
-    device_settings_provider_ =
-        cros_settings->GetProvider(kAttestationForContentProtectionEnabled);
-    cros_settings->RemoveSettingsProvider(device_settings_provider_);
-    cros_settings->AddSettingsProvider(&stub_settings_provider_);
-    cros_settings->SetBoolean(kAttestationForContentProtectionEnabled, true);
-  }
-
-  void TearDown() {
-    // Restore the real DeviceSettingsProvider.
-    CrosSettings* cros_settings = CrosSettings::Get();
-    cros_settings->RemoveSettingsProvider(&stub_settings_provider_);
-    cros_settings->AddSettingsProvider(device_settings_provider_);
+    settings_helper_.ReplaceProvider(kAttestationForContentProtectionEnabled);
+    settings_helper_.SetBoolean(kAttestationForContentProtectionEnabled, true);
   }
 
   void ExpectAttestationFlow() {
@@ -239,10 +225,7 @@ class PlatformVerificationFlowTest : public ::testing::Test {
   cryptohome::MockAsyncMethodCaller mock_async_caller_;
   CustomFakeCryptohomeClient fake_cryptohome_client_;
   FakeDelegate fake_delegate_;
-  CrosSettingsProvider* device_settings_provider_;
-  StubCrosSettingsProvider stub_settings_provider_;
-  ScopedTestDeviceSettingsService test_device_settings_service_;
-  ScopedTestCrosSettings test_cros_settings_;
+  ScopedCrosSettingsTestHelper settings_helper_;
   scoped_refptr<PlatformVerificationFlow> verifier_;
 
   // Controls result of FakeGetCertificate.
@@ -279,8 +262,7 @@ TEST_F(PlatformVerificationFlowTest, NotPermittedByUser) {
 }
 
 TEST_F(PlatformVerificationFlowTest, FeatureDisabledByPolicy) {
-  CrosSettings::Get()->SetBoolean(kAttestationForContentProtectionEnabled,
-                                  false);
+  settings_helper_.SetBoolean(kAttestationForContentProtectionEnabled, false);
   verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(PlatformVerificationFlow::POLICY_REJECTED, result_);

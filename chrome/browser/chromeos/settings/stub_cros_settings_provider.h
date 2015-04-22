@@ -24,6 +24,9 @@ class StubCrosSettingsProvider : public CrosSettingsProvider {
   TrustedStatus PrepareTrustedValues(const base::Closure& callback) override;
   bool HandlesSetting(const std::string& path) const override;
 
+  void SetTrustedStatus(TrustedStatus status);
+  void SetCurrentUserIsOwner(bool owner);
+
  private:
   // CrosSettingsProvider implementation:
   void DoSet(const std::string& path, const base::Value& value) override;
@@ -33,6 +36,14 @@ class StubCrosSettingsProvider : public CrosSettingsProvider {
 
   // In-memory settings storage.
   PrefValueMap values_;
+
+  // Some tests imply that calling Set() as non-owner doesn't change the actual
+  // value but still trigger a notification. For such cases, it is possible to
+  // emulate this behavior by changing the ownership status to non-owner with
+  // |SetCurrentUserIsOwner(false)|.
+  bool current_user_is_owner_ = true;
+
+  TrustedStatus trusted_status_ = CrosSettingsProvider::TRUSTED;
 
   DISALLOW_COPY_AND_ASSIGN(StubCrosSettingsProvider);
 };
