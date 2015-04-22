@@ -139,30 +139,49 @@ uint32 PartialCircularBuffer::Read(void* buffer, uint32 buffer_size) {
 
 void PartialCircularBuffer::Write(const void* buffer, uint32 buffer_size) {
   DCHECK(buffer_data_);
-  uint32 position_before_write = position_;
+  const uint8* input = static_cast<const uint8*>(buffer);
+  uint32 wrap_position = buffer_data_->wrap_position;
+  uint32 cycle_size = data_size_ - wrap_position;
 
-  uint32 to_eof = data_size_ - position_;
-  uint32 to_write = std::min(buffer_size, to_eof);
-  DoWrite(buffer_data_->data + position_, buffer, to_write);
-  if (position_ >= data_size_) {
-    DCHECK_EQ(position_, data_size_);
-    position_ = buffer_data_->wrap_position;
+  // First write the non-wrapping part.
+  if (position_ < wrap_position) {
+    uint32 space_left = wrap_position - position_;
+    uint32 write_size = std::min(buffer_size, space_left);
+    DoWrite(input, write_size);
+    input += write_size;
+    buffer_size -= write_size;
   }
 
-  if (to_write < buffer_size) {
-    uint32 remainder_to_write = buffer_size - to_write;
-    DCHECK_LT(position_, position_before_write);
-    DCHECK_LE(position_ + remainder_to_write, position_before_write);
-    DoWrite(buffer_data_->data + position_,
-            reinterpret_cast<const uint8*>(buffer) + to_write,
-            remainder_to_write);
+  // Skip the part that would overlap.
+  if (buffer_size > cycle_size) {
+    uint32 skip = buffer_size - cycle_size;
+    input += skip;
+    buffer_size -= skip;
+    position_ = wrap_position + (position_ - wrap_position + skip) % cycle_size;
   }
+
+  // Finally write the wrapping part.
+  DoWrite(input, buffer_size);
 }
 
-void PartialCircularBuffer::DoWrite(void* dest, const void* src, uint32 num) {
-  memcpy(dest, src, num);
-  position_ += num;
+void PartialCircularBuffer::DoWrite(const uint8* input, uint32 input_size) {
+  DCHECK_LT(position_, data_size_);
   buffer_data_->total_written =
-      std::min(buffer_data_->total_written + num, data_size_);
+      std::min(buffer_data_->total_written + input_size, data_size_);
+
+  // Write() skips any overlapping part, so this loop will run at most twice.
+  while (input_size > 0) {
+    uint32 space_left = data_size_ - position_;
+    uint32 write_size = std::min(input_size, space_left);
+    memcpy(buffer_data_->data + position_, input, write_size);
+    input += write_size;
+    input_size -= write_size;
+    position_ += write_size;
+    if (position_ >= data_size_) {
+      DCHECK_EQ(position_, data_size_);
+      position_ = buffer_data_->wrap_position;
+    }
+  }
+
   buffer_data_->end_position = position_;
 }

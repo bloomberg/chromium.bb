@@ -52,7 +52,7 @@ class PartialCircularBuffer {
   };
 #pragma pack(pop)
 
-  void DoWrite(void* dest, const void* src, uint32 num);
+  void DoWrite(const uint8* input, uint32 input_size);
 
   // Used for reading and writing.
   BufferData* buffer_data_;

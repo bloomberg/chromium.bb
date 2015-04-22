@@ -189,3 +189,24 @@ TEST_F(PartialCircularBufferTest, WrapOnceThenOverwriteWithNoWrap) {
 
   EXPECT_EQ(0u, pcb_read_->Read(output_data, sizeof(output_data)));
 }
+
+TEST_F(PartialCircularBufferTest, WrapTwiceWithSingleWrite) {
+  const size_t kInputSize = sizeof(kInputData);
+  const size_t kLargeSize = kInputSize * 7;
+  uint8 large_input[kLargeSize] = {0};
+  for (size_t offset = 0; offset < kLargeSize; offset += kInputSize)
+    memcpy(large_input + offset, kInputData, kInputSize);
+
+  InitWriteBuffer(false);
+  pcb_write_->Write(large_input, kLargeSize);
+  InitReadBuffer();
+
+  uint8 output_data[sizeof(kOutputRefDataWrap)] = {0};
+  EXPECT_EQ(sizeof(output_data),
+            pcb_read_->Read(output_data, sizeof(output_data)));
+
+  EXPECT_EQ(0, memcmp(kOutputRefDataWrap, output_data, sizeof(output_data)));
+
+  EXPECT_EQ(0u, pcb_read_->Read(output_data, sizeof(output_data)));
+}
+
