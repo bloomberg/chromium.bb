@@ -319,6 +319,11 @@ struct input {
 	int current_cursor;
 	uint32_t cursor_anim_start;
 	struct wl_callback *cursor_frame_cb;
+	uint32_t cursor_timer_start;
+	uint32_t cursor_anim_current;
+	int cursor_delay_fd;
+	bool cursor_timer_running;
+	struct task cursor_task;
 	struct wl_surface *pointer_surface;
 	uint32_t modifiers;
 	uint32_t pointer_enter_serial;
@@ -2641,6 +2646,30 @@ input_ungrab(struct input *input)
 }
 
 static void
+cursor_delay_timer_reset(struct input *input, uint32_t duration)
+{
+	struct itimerspec its;
+
+	if (!duration)
+		input->cursor_timer_running = false;
+	else
+		input->cursor_timer_running = true;
+
+	its.it_interval.tv_sec = 0;
+	its.it_interval.tv_nsec = 0;
+	its.it_value.tv_sec = duration / 1000;
+	its.it_value.tv_nsec = (duration % 1000) * 1000 * 1000;
+	if (timerfd_settime(input->cursor_delay_fd, 0, &its, NULL) < 0)
+		fprintf(stderr, "could not set cursor timerfd\n: %m");
+}
+
+static void cancel_pointer_image_update(struct input *input)
+{
+	if (input->cursor_timer_running)
+		cursor_delay_timer_reset(input, 0);
+}
+
+static void
 input_remove_pointer_focus(struct input *input)
 {
 	struct window *window = input->pointer_focus;
@@ -2652,6 +2681,7 @@ input_remove_pointer_focus(struct input *input)
 
 	input->pointer_focus = NULL;
 	input->current_cursor = CURSOR_UNSET;
+	cancel_pointer_image_update(input);
 }
 
 static void
@@ -3541,17 +3571,59 @@ input_set_pointer_special(struct input *input)
 }
 
 static void
+schedule_pointer_image_update(struct input *input,
+			      struct wl_cursor *cursor,
+			      uint32_t duration,
+			      bool force_frame)
+{
+	/* Some silly cursor sets have enormous pauses in them.  In these
+	 * cases it's better to use a timer even if it results in less
+	 * accurate presentation, since it will save us having to set the
+	 * same cursor image over and over again.
+	 *
+	 * This is really not the way we're supposed to time any kind of
+	 * animation, but we're pretending it's OK here because we don't
+	 * want animated cursors with long delays to needlessly hog CPU.
+	 *
+	 * We use force_frame to ensure we don't accumulate large timing
+	 * errors by running off the wrong clock.
+	 */
+	if (!force_frame && duration > 100) {
+		struct timespec tp;
+
+		clock_gettime(CLOCK_MONOTONIC, &tp);
+		input->cursor_timer_start = tp.tv_sec * 1000
+					  + tp.tv_nsec / 1000000;
+		cursor_delay_timer_reset(input, duration);
+		return;
+	}
+
+	/* for short durations we'll just spin on frame callbacks for
+	 * accurate timing - the way any kind of timing sensitive animation
+	 * should really be done. */
+	input->cursor_frame_cb = wl_surface_frame(input->pointer_surface);
+	wl_callback_add_listener(input->cursor_frame_cb,
+				 &pointer_surface_listener, input);
+
+}
+
+static void
 pointer_surface_frame_callback(void *data, struct wl_callback *callback,
 			       uint32_t time)
 {
 	struct input *input = data;
 	struct wl_cursor *cursor;
 	int i;
+	uint32_t duration;
+	bool force_frame = true;
+
+	cancel_pointer_image_update(input);
 
 	if (callback) {
 		assert(callback == input->cursor_frame_cb);
 		wl_callback_destroy(callback);
 		input->cursor_frame_cb = NULL;
+		force_frame = false;
 	}
 
 	if (!input->pointer)
@@ -3571,19 +3643,46 @@ pointer_surface_frame_callback(void *data, struct wl_callback *callback,
 	else if (input->cursor_anim_start == 0)
 		input->cursor_anim_start = time;
 
-	if (time == 0 || input->cursor_anim_start == 0)
-		i = 0;
-	else
-		i = wl_cursor_frame(cursor, time - input->cursor_anim_start);
+	input->cursor_anim_current = time;
 
-	if (cursor->image_count > 1) {
-		input->cursor_frame_cb =
-			wl_surface_frame(input->pointer_surface);
-		wl_callback_add_listener(input->cursor_frame_cb,
-					 &pointer_surface_listener, input);
-	}
+	if (time == 0 || input->cursor_anim_start == 0) {
+		duration = 0;
+		i = 0;
+	} else
+		i = wl_cursor_frame_and_duration(
+					cursor,
+					time - input->cursor_anim_start,
+					&duration);
+
+	if (cursor->image_count > 1)
+		schedule_pointer_image_update(input, cursor, duration,
+					      force_frame);
 
 	input_set_pointer_image_index(input, i);
+}
+
+static void
+cursor_timer_func(struct task *task, uint32_t events)
+{
+	struct input *input = container_of(task, struct input, cursor_task);
+	struct timespec tp;
+	struct wl_cursor *cursor;
+	uint32_t time;
+	uint64_t exp;
+
+	if (!input->cursor_timer_running)
+		return;
+
+	if (read(input->cursor_delay_fd, &exp, sizeof (uint64_t)) != sizeof (uint64_t))
+		return;
+
+	cursor = input->display->cursors[input->current_cursor];
+	if (!cursor)
+		return;
+
+	clock_gettime(CLOCK_MONOTONIC, &tp);
+	time = tp.tv_sec * 1000 + tp.tv_nsec / 1000000 - input->cursor_timer_start;
+	pointer_surface_frame_callback(input, NULL, input->cursor_anim_current + time);
 }
 
 static const struct wl_callback_listener pointer_surface_listener = {
@@ -5169,7 +5268,12 @@ display_add_input(struct display *d, uint32_t id)
 	}
 
 	input->pointer_surface = wl_compositor_create_surface(d->compositor);
+	input->cursor_task.run = cursor_timer_func;
 
+	input->cursor_delay_fd = timerfd_create(CLOCK_MONOTONIC,
+						TFD_CLOEXEC | TFD_NONBLOCK);
+	display_watch_fd(d, input->cursor_delay_fd, EPOLLIN,
+			 &input->cursor_task);
 	set_repeat_info(input, 40, 400);
 
 	input->repeat_timer_fd = timerfd_create(CLOCK_MONOTONIC,
@@ -5211,6 +5315,7 @@ input_destroy(struct input *input)
 	wl_list_remove(&input->link);
 	wl_seat_destroy(input->seat);
 	close(input->repeat_timer_fd);
+	close(input->cursor_delay_fd);
 	free(input);
 }
 
