@@ -153,10 +153,10 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     gcm_service_ = static_cast<gcm::FakeGCMProfileService*>(
         gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-            browser()->profile(), &gcm::FakeGCMProfileService::Build));
+            GetBrowser()->profile(), &gcm::FakeGCMProfileService::Build));
     gcm_service_->set_collect(true);
     push_service_ =
-        PushMessagingServiceFactory::GetForProfile(browser()->profile());
+        PushMessagingServiceFactory::GetForProfile(GetBrowser()->profile());
 
     LoadTestPage();
 
@@ -173,7 +173,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   }
 
   void LoadTestPage(const std::string& path) {
-    ui_test_utils::NavigateToURL(browser(), https_server_->GetURL(path));
+    ui_test_utils::NavigateToURL(GetBrowser(), https_server_->GetURL(path));
   }
 
   void LoadTestPage() {
@@ -187,7 +187,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   bool RunScript(const std::string& script, std::string* result,
                  content::WebContents* web_contents) {
     if (!web_contents)
-      web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+      web_contents = GetBrowser()->tab_strip_model()->GetActiveWebContents();
     return content::ExecuteScriptAndExtractString(web_contents->GetMainFrame(),
                                                   script,
                                                   result);
@@ -219,6 +219,8 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   virtual std::string GetTestURL() {
     return "files/push_messaging/test.html";
   }
+
+  virtual Browser* GetBrowser() const { return browser(); }
 
  private:
   scoped_ptr<net::SpawnedTestServer> https_server_;
@@ -253,7 +255,7 @@ void PushMessagingBrowserTest::TryToRegisterSuccessfully(
   EXPECT_TRUE(RunScript("registerServiceWorker()", &script_result));
   EXPECT_EQ("ok - service worker registered", script_result);
 
-  InfoBarResponder accepting_responder(browser(), true);
+  InfoBarResponder accepting_responder(GetBrowser(), true);
   EXPECT_TRUE(RunScript("requestNotificationPermission()", &script_result));
   EXPECT_EQ("permission status - granted", script_result);
 
@@ -266,7 +268,7 @@ PushMessagingApplicationId PushMessagingBrowserTest::GetServiceWorkerAppId(
     int64 service_worker_registration_id) {
   GURL origin = https_server()->GetURL(std::string()).GetOrigin();
   PushMessagingApplicationId application_id = PushMessagingApplicationId::Get(
-      browser()->profile(), origin, service_worker_registration_id);
+      GetBrowser()->profile(), origin, service_worker_registration_id);
   EXPECT_TRUE(application_id.IsValid());
   return application_id;
 }
@@ -287,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
   ASSERT_EQ("ok - service worker registered", script_result);
 
-  InfoBarResponder accepting_responder(browser(), true);
+  InfoBarResponder accepting_responder(GetBrowser(), true);
   ASSERT_TRUE(RunScript("registerPush()", &script_result));
   EXPECT_EQ(std::string(kPushMessagingEndpoint) + " - 1-0", script_result);
 
@@ -303,7 +305,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
   ASSERT_EQ("ok - service worker registered", script_result);
 
-  InfoBarResponder cancelling_responder(browser(), false);
+  InfoBarResponder cancelling_responder(GetBrowser(), false);
   ASSERT_TRUE(RunScript("requestNotificationPermission();", &script_result));
   ASSERT_EQ("permission status - denied", script_result);
 
@@ -318,7 +320,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, RegisterFailureNoManifest) {
   ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
   ASSERT_EQ("ok - service worker registered", script_result);
 
-  InfoBarResponder accepting_responder(browser(), true);
+  InfoBarResponder accepting_responder(GetBrowser(), true);
   ASSERT_TRUE(RunScript("requestNotificationPermission();", &script_result));
   ASSERT_EQ("permission status - granted", script_result);
 
@@ -476,7 +478,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   // We'll need to specify the web_contents in which to eval script, since we're
   // going to run script in a background tab.
   content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+      GetBrowser()->tab_strip_model()->GetActiveWebContents();
 
   // If the site is visible in an active tab, we should not force a notification
   // to be shown. Try it twice, since we allow one mistake per 10 push events.
@@ -492,7 +494,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
   // Open a blank foreground tab so site is no longer visible.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL("about:blank"), NEW_FOREGROUND_TAB,
+      GetBrowser(), GURL("about:blank"), NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
 
   // If the Service Worker push event handler does not show a notification, we
@@ -552,7 +554,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
                        PushEventNotificationWithoutEventWaitUntil) {
   std::string script_result;
   content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+      GetBrowser()->tab_strip_model()->GetActiveWebContents();
 
   TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
 
@@ -608,7 +610,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, HasPermissionSaysGranted) {
   ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
   ASSERT_EQ("ok - service worker registered", script_result);
 
-  InfoBarResponder accepting_responder(browser(), true);
+  InfoBarResponder accepting_responder(GetBrowser(), true);
   ASSERT_TRUE(RunScript("requestNotificationPermission();", &script_result));
   EXPECT_EQ("permission status - granted", script_result);
 
@@ -625,7 +627,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, HasPermissionSaysDenied) {
   ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
   ASSERT_EQ("ok - service worker registered", script_result);
 
-  InfoBarResponder cancelling_responder(browser(), false);
+  InfoBarResponder cancelling_responder(GetBrowser(), false);
   ASSERT_TRUE(RunScript("requestNotificationPermission();", &script_result));
   EXPECT_EQ("permission status - denied", script_result);
 
@@ -696,7 +698,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   push_service()->SetContentSettingChangedCallbackForTesting(
       message_loop_runner->QuitClosure());
 
-  browser()->profile()->GetHostContentSettingsMap()->
+  GetBrowser()->profile()->GetHostContentSettingsMap()->
       ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
 
   message_loop_runner->Run();
@@ -726,7 +728,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
       message_loop_runner->QuitClosure());
 
   GURL origin = https_server()->GetURL(std::string()).GetOrigin();
-  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
+  GetBrowser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
       ContentSettingsPattern::FromURLNoWildcard(origin),
       ContentSettingsPattern::FromURLNoWildcard(origin),
       CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
@@ -760,7 +762,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
       message_loop_runner->QuitClosure());
 
   GURL origin = https_server()->GetURL(std::string()).GetOrigin();
-  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
+  GetBrowser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
       ContentSettingsPattern::FromURLNoWildcard(origin),
       ContentSettingsPattern::FromURLNoWildcard(origin),
       CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
@@ -793,7 +795,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   push_service()->SetContentSettingChangedCallbackForTesting(
       message_loop_runner->QuitClosure());
 
-  browser()->profile()->GetHostContentSettingsMap()->
+  GetBrowser()->profile()->GetHostContentSettingsMap()->
       ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 
   message_loop_runner->Run();
@@ -823,7 +825,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
       message_loop_runner->QuitClosure());
 
   GURL origin = https_server()->GetURL(std::string()).GetOrigin();
-  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
+  GetBrowser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
       ContentSettingsPattern::FromURLNoWildcard(origin),
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
@@ -857,7 +859,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
       message_loop_runner->QuitClosure());
 
   GURL origin = https_server()->GetURL(std::string()).GetOrigin();
-  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
+  GetBrowser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
       ContentSettingsPattern::FromURLNoWildcard(origin),
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
@@ -891,13 +893,13 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
       base::BarrierClosure(2, message_loop_runner->QuitClosure()));
 
   GURL origin = https_server()->GetURL(std::string()).GetOrigin();
-  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
+  GetBrowser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
       ContentSettingsPattern::FromURLNoWildcard(origin),
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
       std::string(),
       CONTENT_SETTING_ALLOW);
-  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
+  GetBrowser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
       ContentSettingsPattern::FromURLNoWildcard(origin),
       ContentSettingsPattern::FromURLNoWildcard(origin),
       CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
@@ -935,25 +937,25 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
       base::BarrierClosure(4, message_loop_runner->QuitClosure()));
 
   GURL origin = https_server()->GetURL(std::string()).GetOrigin();
-  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
+  GetBrowser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
       ContentSettingsPattern::Wildcard(),
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
       std::string(),
       CONTENT_SETTING_ALLOW);
-  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
+  GetBrowser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
       ContentSettingsPattern::FromString("https://*"),
       ContentSettingsPattern::FromString("https://*"),
       CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
       std::string(),
       CONTENT_SETTING_ALLOW);
-  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
+  GetBrowser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
       ContentSettingsPattern::FromURLNoWildcard(origin),
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
       std::string(),
       CONTENT_SETTING_DEFAULT);
-  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
+  GetBrowser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
       ContentSettingsPattern::FromURLNoWildcard(origin),
       ContentSettingsPattern::FromURLNoWildcard(origin),
       CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
@@ -985,12 +987,12 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   PushMessagingApplicationId app_id = GetServiceWorkerAppId(0LL);
   EXPECT_EQ(app_id.app_id_guid(), gcm_service()->last_registered_app_id());
   PushMessagingApplicationId stored_app_id = PushMessagingApplicationId::Get(
-      browser()->profile(), app_id.app_id_guid());
+      GetBrowser()->profile(), app_id.app_id_guid());
   EXPECT_TRUE(stored_app_id.IsValid());
 
   // Simulate a user clearing site data (including Service Workers, crucially).
   BrowsingDataRemover* remover =
-      BrowsingDataRemover::CreateForUnboundedRange(browser()->profile());
+      BrowsingDataRemover::CreateForUnboundedRange(GetBrowser()->profile());
   BrowsingDataRemoverCompletionObserver observer(remover);
   remover->Remove(BrowsingDataRemover::REMOVE_SITE_DATA,
                   BrowsingDataHelper::UNPROTECTED_WEB);
@@ -1004,13 +1006,45 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   // This shouldn't (asynchronously) cause a DCHECK.
   // TODO(johnme): Get this test running on Android, which has a different
   // codepath due to sender_id being required for unregistering there.
-  browser()->profile()->GetHostContentSettingsMap()->
+  GetBrowser()->profile()->GetHostContentSettingsMap()->
       ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
 
   run_loop.Run();
 
   // app_id should no longer be stored in prefs
   PushMessagingApplicationId stored_app_id2 = PushMessagingApplicationId::Get(
-      browser()->profile(), app_id.app_id_guid());
+      GetBrowser()->profile(), app_id.app_id_guid());
   EXPECT_FALSE(stored_app_id2.IsValid());
+}
+
+class PushMessagingIncognitoBrowserTest : public PushMessagingBrowserTest {
+ public:
+  ~PushMessagingIncognitoBrowserTest() override {}
+
+  // PushMessagingBrowserTest:
+  void SetUpOnMainThread() override {
+    incognito_browser_ = CreateIncognitoBrowser();
+    PushMessagingBrowserTest::SetUpOnMainThread();
+  }
+
+  Browser* GetBrowser() const override { return incognito_browser_; }
+
+ private:
+  Browser* incognito_browser_ = nullptr;
+};
+
+// Regression test for https://crbug.com/476474
+IN_PROC_BROWSER_TEST_F(PushMessagingIncognitoBrowserTest,
+                       IncognitoGetSubscriptionDoesNotHang) {
+  ASSERT_TRUE(GetBrowser()->profile()->IsOffTheRecord());
+
+  std::string script_result;
+
+  ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
+  ASSERT_EQ("ok - service worker registered", script_result);
+
+  // In Incognito mode the promise returned by getSubscription should not hang,
+  // it should just fulfill with null.
+  ASSERT_TRUE(RunScript("hasRegistration()", &script_result));
+  ASSERT_EQ("false - not registered", script_result);
 }
