@@ -17,14 +17,14 @@ import org.chromium.content_shell_apk.ContentShellApplication;
 public class ContentCommandLineTest extends NativeLibraryTestBase {
     // A reference command line. Note that switch2 is [brea\d], switch3 is [and "butter"],
     // and switch4 is [a "quoted" 'food'!]
-    static final String INIT_SWITCHES[] = { "init_command", "--SWITCH", "Arg",
+    static final String INIT_SWITCHES[] = { "init_command", "--switch", "Arg",
         "--switch2=brea\\d", "--switch3=and \"butter\"",
         "--switch4=a \"quoted\" 'food'!",
         "--", "--actually_an_arg" };
 
     // The same command line, but in quoted string format.
     static final char INIT_SWITCHES_BUFFER[] =
-        ("init_command --SWITCH Arg --switch2=brea\\d --switch3=\"and \\\"butt\"er\\\"   "
+        ("init_command --switch Arg --switch2=brea\\d --switch3=\"and \\\"butt\"er\\\"   "
         + "--switch4='a \"quoted\" \\'food\\'!' "
         + "-- --actually_an_arg").toCharArray();
 
@@ -46,15 +46,14 @@ public class ContentCommandLineTest extends NativeLibraryTestBase {
     void checkInitSwitches() {
         CommandLine cl = CommandLine.getInstance();
         assertFalse(cl.hasSwitch("init_command"));
-        assertFalse(cl.hasSwitch("switch"));
-        assertTrue(cl.hasSwitch("SWITCH"));
-        assertFalse(cl.hasSwitch("--SWITCH"));
-        assertFalse(cl.hasSwitch("Arg"));
+        assertTrue(cl.hasSwitch("switch"));
+        assertFalse(cl.hasSwitch("--switch"));
+        assertFalse(cl.hasSwitch("arg"));
         assertFalse(cl.hasSwitch("actually_an_arg"));
         assertEquals("brea\\d", cl.getSwitchValue("switch2"));
         assertEquals("and \"butter\"", cl.getSwitchValue("switch3"));
         assertEquals("a \"quoted\" 'food'!", cl.getSwitchValue("switch4"));
-        assertNull(cl.getSwitchValue("SWITCH"));
+        assertNull(cl.getSwitchValue("switch"));
         assertNull(cl.getSwitchValue("non-existant"));
     }
 
