@@ -218,11 +218,10 @@ void WebPopupMenuImpl::paintContents(WebCanvas* canvas, const WebRect& rect, Web
         return;
 
     OwnPtr<GraphicsContext> context;
-    GraphicsContext::DisabledMode disabledMode;
-    if (paintingControl == PaintingControlSetting::DisplayListConstructionDisabled)
+    GraphicsContext::DisabledMode disabledMode = GraphicsContext::NothingDisabled;
+    if (paintingControl == PaintingControlSetting::DisplayListPaintingDisabled
+        || paintingControl == PaintingControlSetting::DisplayListConstructionDisabled)
         disabledMode = GraphicsContext::FullyDisabled;
-    else
-        disabledMode = GraphicsContext::NothingDisabled;
 
     if (displayItemList())
         context = adoptPtr(new GraphicsContext(displayItemList(), disabledMode));
@@ -239,7 +238,7 @@ void WebPopupMenuImpl::paintContents(WebDisplayItemList* webDisplayItemList, con
     if (!m_widget)
         return;
 
-    if (paintingControl == WebContentLayerClient::DisplayListCachingDisabled && m_displayItemList)
+    if (paintingControl != WebContentLayerClient::PaintDefaultBehavior && m_displayItemList)
         m_displayItemList->invalidateAll();
 
     paintContents(static_cast<WebCanvas*>(nullptr), clip, paintingControl);

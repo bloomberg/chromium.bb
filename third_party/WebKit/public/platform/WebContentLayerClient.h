@@ -36,25 +36,12 @@ struct WebRect;
 
 class BLINK_PLATFORM_EXPORT WebContentLayerClient {
 public:
-    enum GraphicsContextStatus { GraphicsContextEnabled, GraphicsContextDisabled };
-    enum PaintingControlSetting { PaintDefaultBehavior, DisplayListConstructionDisabled, DisplayListCachingDisabled };
-
-    // Temporary until we rename the GraphicsContextStatus on the chromium side.
-    void paintContents(WebCanvas* canvas, const WebRect& clip, GraphicsContextStatus status = GraphicsContextEnabled)
-    {
-        paintContents(canvas, clip,
-            status == GraphicsContextEnabled ? PaintDefaultBehavior : DisplayListConstructionDisabled);
-    }
-
-    // Temporary until we rename the GraphicsContextStatus on the chromium side.
-    void paintContents(
-        WebDisplayItemList* itemList,
-        const WebRect& clip,
-        GraphicsContextStatus status = GraphicsContextEnabled)
-    {
-        paintContents(itemList, clip,
-            status == GraphicsContextEnabled ? PaintDefaultBehavior : DisplayListConstructionDisabled);
-    }
+    enum PaintingControlSetting {
+        PaintDefaultBehavior,
+        DisplayListConstructionDisabled,
+        DisplayListCachingDisabled,
+        DisplayListPaintingDisabled
+    };
 
     // Paints the content area for the layer, typically dirty rects submitted
     // through WebContentLayer::setNeedsDisplay, submitting drawing commands

@@ -74,12 +74,12 @@ public:
         FullyDisabled = 1 // Do absolutely minimal work to remove the cost of the context from performance tests.
     };
 
-    // A 0 canvas is allowed, but in such cases the context must only have canvas
-    // related commands called when within a beginRecording/endRecording block.
-    // Furthermore, save/restore calls must be balanced any time the canvas is 0.
     explicit GraphicsContext(DisplayItemList*, DisabledMode = NothingDisabled);
 
     // TODO(chrishtr): Once Slimming Paint launches this should be removed (crbug.com/471333).
+    // A 0 canvas is allowed, but in such cases the context must only have canvas
+    // related commands called when within a beginRecording/endRecording block.
+    // Furthermore, save/restore calls must be balanced any time the canvas is 0.
     static PassOwnPtr<GraphicsContext> deprecatedCreateWithCanvas(SkCanvas*, DisabledMode = NothingDisabled);
 
     ~GraphicsContext();
