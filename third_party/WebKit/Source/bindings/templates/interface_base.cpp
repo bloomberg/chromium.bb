@@ -418,14 +418,6 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
     {% endfilter %}{# per_context_enabled() #}
     {% endif %}
     {# End special operations #}
-    {% if unscopeables %}
-    v8::Local<v8::Context> context(isolate->GetCurrentContext());
-    v8::Local<v8::Object> unscopeables(v8::Object::New(isolate));
-    {% for name in unscopeables %}
-    unscopeables->ForceSet(context, v8AtomicString(isolate, "{{name}}"), v8::True(isolate)).FromJust();
-    {% endfor %}
-    prototypeTemplate->Set(v8::Symbol::GetUnscopables(isolate), unscopeables);
-    {% endif %}
     {% if has_custom_legacy_call_as_function %}
     functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler({{v8_class}}::legacyCallCustom);
     {% endif %}

@@ -105,5 +105,4 @@ TreatUndefinedAs=NullString
 TypeChecking=Interface
 URL
 Unforgeable
-Unscopeable
 WillBeGarbageCollected

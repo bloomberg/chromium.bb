@@ -2358,14 +2358,5 @@ bool Internals::isUseCounted(Document* document, int useCounterId)
     return UseCounter::isCounted(*document, static_cast<UseCounter::Feature>(useCounterId));
 }
 
-String Internals::unscopeableAttribute()
-{
-    return "unscopeableAttribute";
-}
-
-String Internals::unscopeableMethod()
-{
-    return "unscopeableMethod";
-}
 
 } // namespace blink

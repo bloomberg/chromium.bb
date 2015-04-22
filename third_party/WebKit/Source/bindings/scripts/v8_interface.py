@@ -243,15 +243,6 @@ def interface_context(interface):
         includes.add('bindings/core/v8/V8ObjectConstructor.h')
         includes.add('core/frame/LocalDOMWindow.h')
 
-    # [Unscopeable] attributes and methods
-    unscopeables = []
-    for attribute in interface.attributes:
-        if 'Unscopeable' in attribute.extended_attributes:
-            unscopeables.append(attribute.name)
-    for method in interface.operations:
-        if 'Unscopeable' in method.extended_attributes:
-            unscopeables.append(method.name)
-
     context.update({
         'any_type_attributes': any_type_attributes,
         'constructors': constructors,
@@ -261,7 +252,6 @@ def interface_context(interface):
             interface_length(interface, constructors + custom_constructors),
         'is_constructor_raises_exception': extended_attributes.get('RaisesException') == 'Constructor',  # [RaisesException=Constructor]
         'named_constructor': named_constructor,
-        'unscopeables': sorted(unscopeables),
     })
 
     constants = [constant_context(constant, interface) for constant in interface.constants]

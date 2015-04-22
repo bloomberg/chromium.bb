@@ -310,7 +310,4 @@
     boolean isUseCounted(Document document, long useCounterId);
 
     iterable<long>;
-
-    [Unscopeable] readonly attribute DOMString unscopeableAttribute;
-    [Unscopeable] DOMString unscopeableMethod();
 };
