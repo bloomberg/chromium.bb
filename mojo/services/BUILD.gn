@@ -20,12 +20,12 @@ group("services") {
   if (!is_component_build) {
     deps += [
       "//components/clipboard",
+      "//components/html_viewer",
       "//components/kiosk_wm:window_manager",
       "//components/native_viewport",
       "//components/surfaces",
       "//components/view_manager",
       "//components/window_manager:lib",
-      "//mojo/services/html_viewer",
       "//mojo/services/network",
       "//mojo/services/tracing",
     ]
@@ -33,11 +33,11 @@ group("services") {
     # TODO(GYP): Make this work.
     if (is_mac) {
       deps -= [
+        "//components/html_viewer",
         "//components/kiosk_wm:window_manager",
         "//components/native_viewport",
         "//components/view_manager",
         "//components/window_manager:lib",
-        "//mojo/services/html_viewer",
       ]
     }
   }
@@ -50,17 +50,17 @@ group("tests") {
   ]
   if (!is_component_build) {
     deps += [
+      "//components/html_viewer:tests",
       "//components/view_manager:view_manager_service_unittests",
       "//components/window_manager:window_manager_unittests",
-      "//mojo/services/html_viewer:tests",
     ]
 
     # TODO(GYP): Make this work.
     if (is_mac) {
       deps -= [
+        "//components/html_viewer:tests",
         "//components/view_manager:view_manager_service_unittests",
         "//components/window_manager:window_manager_unittests",
-        "//mojo/services/html_viewer:tests",
       ]
     }
   }
@@ -74,18 +74,18 @@ group("apptests") {
   if (!is_component_build) {
     deps += [
       "//components/clipboard:apptests",
+      "//components/html_viewer:apptests",
       "//components/view_manager:apptests",
       "//components/window_manager:apptests",
-      "//mojo/services/html_viewer:apptests",
       "//mojo/services/network:apptests",
     ]
 
     # TODO(GYP): Make this work.
     if (is_mac) {
       deps -= [
+        "//components/html_viewer:apptests",
         "//components/view_manager:apptests",
         "//components/window_manager:apptests",
-        "//mojo/services/html_viewer:apptests",
       ]
     }
   }
