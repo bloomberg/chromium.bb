@@ -257,6 +257,13 @@ Node* InjectedScript::nodeForObjectId(const String& objectId)
     return InjectedScriptHost::scriptValueAsNode(scriptState(), resultValue);
 }
 
+EventTarget* InjectedScript::eventTargetForObjectId(const String& objectId)
+{
+    if (isEmpty() || !canAccessInspectedWindow())
+        return nullptr;
+    return InjectedScriptHost::scriptValueAsEventTarget(scriptState(), findObjectById(objectId));
+}
+
 void InjectedScript::releaseObject(const String& objectId)
 {
     RefPtr<JSONValue> parsedObjectId = parseJSON(objectId);
