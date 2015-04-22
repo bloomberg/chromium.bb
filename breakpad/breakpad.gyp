@@ -846,6 +846,11 @@
             'src/client/mac/Framework',
             'src/common/mac',
           ],
+          'direct_dependent_settings': {
+            'include_dirs': [
+              'src',
+            ],
+          },
         }
       ]
     }],
