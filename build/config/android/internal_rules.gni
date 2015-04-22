@@ -226,7 +226,8 @@ template("write_build_config") {
       dep_name = get_label_info(d, "name")
       possible_deps_configs += [ "$dep_gen_dir/$dep_name.build_config" ]
     }
-    rebase_possible_deps_configs = rebase_path(possible_deps_configs)
+    rebase_possible_deps_configs =
+        rebase_path(possible_deps_configs, root_build_dir)
 
     outputs = [
       depfile,
@@ -286,6 +287,19 @@ template("write_build_config") {
     if (defined(invoker.bypass_platform_checks) &&
         invoker.bypass_platform_checks) {
       args += [ "--bypass-platform-checks" ]
+    }
+
+    if (defined(invoker.apk_under_test)) {
+      deps += [ invoker.apk_under_test ]
+      apk_under_test_gen_dir =
+          get_label_info(invoker.apk_under_test, "target_gen_dir")
+      apk_under_test_name = get_label_info(invoker.apk_under_test, "name")
+      apk_under_test_config =
+          "$apk_under_test_gen_dir/$apk_under_test_name.build_config"
+      args += [
+        "--tested-apk-config",
+        rebase_path(apk_under_test_config, root_build_dir),
+      ]
     }
 
     if (is_android_resources || is_apk) {

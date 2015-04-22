@@ -88,6 +88,10 @@ def main(argv):
   parser.add_option('--native-libs', help='List of top-level native libs.')
   parser.add_option('--readelf-path', help='Path to toolchain\'s readelf.')
 
+  parser.add_option('--tested-apk-config',
+      help='Path to the build config of the tested apk (for an instrumentation '
+      'test apk).')
+
   options, args = parser.parse_args(argv)
 
   if args:
@@ -217,13 +221,26 @@ def main(argv):
         c['package_name'] for c in all_resources_deps if 'package_name' in c]
 
 
+  deps_dex_files = [c['dex_path'] for c in all_library_deps]
+  # An instrumentation test apk should exclude the dex files that are in the apk
+  # under test.
+  if options.type == 'android_apk' and options.tested_apk_config:
+    tested_apk_config_paths = GetAllDepsConfigsInOrder(
+        [options.tested_apk_config])
+    tested_apk_configs = [GetDepConfig(p) for p in tested_apk_config_paths]
+    tested_apk_library_deps = DepsOfType('java_library', tested_apk_configs)
+    tested_apk_deps_dex_files = [c['dex_path'] for c in tested_apk_library_deps]
+    deps_dex_files = [
+        p for p in deps_dex_files if not p in tested_apk_deps_dex_files]
+
+
   # Dependencies for the final dex file of an apk or a 'deps_dex'.
   if options.type in ['android_apk', 'deps_dex']:
     config['final_dex'] = {}
     dex_config = config['final_dex']
     # TODO(cjhopman): proguard version
-    dex_deps_files = [c['dex_path'] for c in all_library_deps]
-    dex_config['dependency_dex_files'] = dex_deps_files
+    dex_config['dependency_dex_files'] = deps_dex_files
+
 
   if options.type == 'android_apk':
     config['dist_jar'] = {

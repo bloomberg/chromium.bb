@@ -157,6 +157,7 @@ android_apk("content_shell_test_apk") {
   datadeps = [
     ":content_shell_apk",
   ]
+  apk_under_test = ":content_shell_apk"
   apk_name = "ContentShellTest"
   android_manifest = "javatests/AndroidManifest.xml"
 }
