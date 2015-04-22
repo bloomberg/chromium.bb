@@ -287,7 +287,7 @@ TEST(SurfaceLibTest, RenderPass) {
 
   PassPtr mojo_pass = Pass::From(*pass);
   ASSERT_FALSE(mojo_pass.is_null());
-  EXPECT_EQ(6, mojo_pass->id);
+  EXPECT_EQ(6, mojo_pass->id->index);
   EXPECT_EQ(Rect::From(output_rect), mojo_pass->output_rect);
   EXPECT_EQ(Rect::From(damage_rect), mojo_pass->damage_rect);
   EXPECT_EQ(Transform::From(transform_to_root_target),

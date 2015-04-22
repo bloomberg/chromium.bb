@@ -86,7 +86,6 @@ source_set("view_manager_lib") {
     "//third_party/mojo_services/src/geometry/public/interfaces",
     "//third_party/mojo_services/src/input_events/public/interfaces",
     "//third_party/mojo_services/src/native_viewport/public/interfaces",
-    "//third_party/mojo_services/src/surfaces/public/cpp",
     "//third_party/mojo_services/src/surfaces/public/interfaces",
     "//third_party/mojo_services/src/view_manager/public/interfaces",
     "//third_party/mojo_services/src/view_manager/public/cpp:common",

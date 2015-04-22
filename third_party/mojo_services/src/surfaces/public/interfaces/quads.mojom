@@ -202,7 +202,7 @@ struct SharedQuadState {
 };
 
 struct Pass {
-  int32 id;
+  RenderPassId id;
   Rect output_rect;
   Rect damage_rect;
   Transform transform_to_root_target;

@@ -363,7 +363,7 @@ TypeConverter<SharedQuadStatePtr, cc::SharedQuadState>::Convert(
 PassPtr TypeConverter<PassPtr, cc::RenderPass>::Convert(
     const cc::RenderPass& input) {
   PassPtr pass = Pass::New();
-  pass->id = input.id.index;
+  pass->id = RenderPassId::From(input.id);
   pass->output_rect = Rect::From(input.output_rect);
   pass->damage_rect = Rect::From(input.damage_rect);
   pass->transform_to_root_target =
@@ -402,7 +402,7 @@ TypeConverter<scoped_ptr<cc::RenderPass>, PassPtr>::Convert(
     const PassPtr& input) {
   scoped_ptr<cc::RenderPass> pass = cc::RenderPass::Create(
       input->shared_quad_states.size(), input->quads.size());
-  pass->SetAll(cc::RenderPassId(1, input->id),
+  pass->SetAll(input->id.To<cc::RenderPassId>(),
                input->output_rect.To<gfx::Rect>(),
                input->damage_rect.To<gfx::Rect>(),
                input->transform_to_root_target.To<gfx::Transform>(),

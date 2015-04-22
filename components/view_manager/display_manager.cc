@@ -10,11 +10,11 @@
 #include "components/view_manager/view_coordinate_conversions.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
+#include "mojo/converters/surfaces/surfaces_utils.h"
 #include "mojo/converters/transform/transform_type_converters.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/application_connection.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
 #include "third_party/mojo_services/src/gpu/public/interfaces/gpu.mojom.h"
-#include "third_party/mojo_services/src/surfaces/public/cpp/surfaces_utils.h"
 #include "third_party/mojo_services/src/surfaces/public/interfaces/quads.mojom.h"
 #include "third_party/mojo_services/src/surfaces/public/interfaces/surfaces.mojom.h"
 
@@ -61,7 +61,7 @@ void DrawViewTree(mojo::Pass* pass,
       base::saturated_cast<int32_t>(pass->shared_quad_states.size());
   surface_quad->surface_quad_state = surface_quad_state.Pass();
 
-  auto sqs = CreateDefaultSQS(*Size::From(view->bounds().size()));
+  auto sqs = mojo::CreateDefaultSQS(view->bounds().size());
   sqs->blend_mode = mojo::SK_XFERMODE_kSrcOver_Mode;
   sqs->opacity = combined_opacity;
   sqs->content_to_target_transform = mojo::Transform::From(node_transform);
@@ -135,10 +135,8 @@ const mojo::ViewportMetrics& DefaultDisplayManager::GetViewportMetrics() {
 }
 
 void DefaultDisplayManager::Draw() {
-  Rect rect;
-  rect.width = metrics_.size->width;
-  rect.height = metrics_.size->height;
-  auto pass = CreateDefaultPass(1, rect);
+  gfx::Rect rect(metrics_.size->width, metrics_.size->height);
+  auto pass = mojo::CreateDefaultPass(1, rect);
   pass->damage_rect = Rect::From(dirty_rect_);
 
   DrawViewTree(pass.get(), connection_manager_->root(), gfx::Vector2d(), 1.0f);
