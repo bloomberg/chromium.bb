@@ -103,9 +103,6 @@
         "test": "media_unittests"
       },
       {
-        "test": "midi_unittests"
-      },
-      {
         "test": "mojo_common_unittests"
       },
       {
@@ -270,9 +267,6 @@
         "test": "media_unittests"
       },
       {
-        "test": "midi_unittests"
-      },
-      {
         "test": "mojo_common_unittests"
       },
       {
@@ -431,9 +425,6 @@
       },
       {
         "test": "media_unittests"
-      },
-      {
-        "test": "midi_unittests"
       },
       {
         "test": "mojo_common_unittests"

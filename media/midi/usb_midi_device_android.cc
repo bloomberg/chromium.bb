@@ -17,19 +17,19 @@ UsbMidiDeviceAndroid::UsbMidiDeviceAndroid(ObjectRef raw_device,
                                            UsbMidiDeviceDelegate* delegate)
     : raw_device_(raw_device), delegate_(delegate) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  midi::Java_UsbMidiDeviceAndroid_registerSelf(
+  Java_UsbMidiDeviceAndroid_registerSelf(
       env, raw_device_.obj(), reinterpret_cast<jlong>(this));
 }
 
 UsbMidiDeviceAndroid::~UsbMidiDeviceAndroid() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  midi::Java_UsbMidiDeviceAndroid_close(env, raw_device_.obj());
+  Java_UsbMidiDeviceAndroid_close(env, raw_device_.obj());
 }
 
 std::vector<uint8> UsbMidiDeviceAndroid::GetDescriptor() {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jbyteArray> descriptors =
-      midi::Java_UsbMidiDeviceAndroid_getDescriptors(env, raw_device_.obj());
+      Java_UsbMidiDeviceAndroid_getDescriptors(env, raw_device_.obj());
 
   std::vector<uint8> ret;
   base::android::JavaByteArrayToByteVector(env, descriptors.obj(), &ret);
@@ -43,7 +43,7 @@ void UsbMidiDeviceAndroid::Send(int endpoint_number,
   ScopedJavaLocalRef<jbyteArray> data_to_pass =
       base::android::ToJavaByteArray(env, head, data.size());
 
-  midi::Java_UsbMidiDeviceAndroid_send(
+  Java_UsbMidiDeviceAndroid_send(
       env, raw_device_.obj(), endpoint_number, data_to_pass.obj());
 }
 
@@ -60,7 +60,7 @@ void UsbMidiDeviceAndroid::OnData(JNIEnv* env,
 }
 
 bool UsbMidiDeviceAndroid::RegisterUsbMidiDevice(JNIEnv* env) {
-  return midi::RegisterNativesImpl(env);
+  return RegisterNativesImpl(env);
 }
 
 }  // namespace media

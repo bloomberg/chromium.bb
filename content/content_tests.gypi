@@ -866,7 +866,6 @@
             '../ipc/mojo/ipc_mojo.gyp:*',
             '../media/blink/media_blink.gyp:media_blink',
             '../media/media.gyp:media',
-            '../media/midi/midi.gyp:midi',
             '../ppapi/ppapi_internal.gyp:ppapi_host',
             '../ppapi/ppapi_internal.gyp:ppapi_proxy',
             '../ppapi/ppapi_internal.gyp:ppapi_shared',
