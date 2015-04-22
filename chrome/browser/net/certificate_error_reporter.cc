@@ -48,7 +48,7 @@ void CertificateErrorReporter::SendReport(ReportType type,
       break;
     case REPORT_TYPE_EXTENDED_REPORTING:
       // TODO(estark): Encrypt the report if not sending over HTTPS.
-      DCHECK(upload_url_.SchemeUsesTLS());
+      DCHECK(upload_url_.SchemeIsCryptographic());
       SendCertLoggerRequest(request);
       break;
     default:

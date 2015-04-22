@@ -93,7 +93,7 @@ void CaptivePortalTabHelper::DidStartProvisionalLoadForFrame(
   provisional_render_view_host_ = render_view_host;
   pending_error_code_ = net::OK;
 
-  tab_reloader_->OnLoadStart(validated_url.SchemeUsesTLS());
+  tab_reloader_->OnLoadStart(validated_url.SchemeIsCryptographic());
 }
 
 void CaptivePortalTabHelper::DidCommitProvisionalLoadForFrame(
@@ -115,7 +115,7 @@ void CaptivePortalTabHelper::DidCommitProvisionalLoadForFrame(
     OnLoadAborted();
 
     // Send information about the new load.
-    tab_reloader_->OnLoadStart(url.SchemeUsesTLS());
+    tab_reloader_->OnLoadStart(url.SchemeIsCryptographic());
     tab_reloader_->OnLoadCommitted(net::OK);
   }
 
@@ -239,7 +239,7 @@ void CaptivePortalTabHelper::OnRedirect(int child_id,
     return;
   }
 
-  tab_reloader_->OnRedirect(new_url.SchemeUsesTLS());
+  tab_reloader_->OnRedirect(new_url.SchemeIsCryptographic());
 }
 
 void CaptivePortalTabHelper::OnCaptivePortalResults(

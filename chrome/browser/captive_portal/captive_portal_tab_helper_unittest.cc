@@ -87,7 +87,8 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
   // Simulates a successful load of |url|.
   void SimulateSuccess(const GURL& url,
                        content::RenderViewHost* render_view_host) {
-    EXPECT_CALL(mock_reloader(), OnLoadStart(url.SchemeUsesTLS())).Times(1);
+    EXPECT_CALL(mock_reloader(), OnLoadStart(url.SchemeIsCryptographic()))
+        .Times(1);
     tab_helper().DidStartProvisionalLoadForFrame(
         render_view_host->GetMainFrame(), url, false, false);
 
@@ -101,7 +102,8 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
   // Simulates a connection timeout while requesting |url|.
   void SimulateTimeout(const GURL& url,
                        content::RenderViewHost* render_view_host) {
-    EXPECT_CALL(mock_reloader(), OnLoadStart(url.SchemeUsesTLS())).Times(1);
+    EXPECT_CALL(mock_reloader(), OnLoadStart(url.SchemeIsCryptographic()))
+        .Times(1);
     tab_helper().DidStartProvisionalLoadForFrame(
         render_view_host->GetMainFrame(), url, false, false);
 
@@ -125,7 +127,8 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
   void SimulateAbort(const GURL& url,
                      content::RenderViewHost* render_view_host,
                      NavigationType navigation_type) {
-    EXPECT_CALL(mock_reloader(), OnLoadStart(url.SchemeUsesTLS())).Times(1);
+    EXPECT_CALL(mock_reloader(), OnLoadStart(url.SchemeIsCryptographic()))
+        .Times(1);
     tab_helper().DidStartProvisionalLoadForFrame(
         render_view_host->GetMainFrame(), url, false, false);
 
@@ -151,7 +154,8 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
   void SimulateAbortTimeout(const GURL& url,
                             content::RenderViewHost* render_view_host,
                             NavigationType navigation_type) {
-    EXPECT_CALL(mock_reloader(), OnLoadStart(url.SchemeUsesTLS())).Times(1);
+    EXPECT_CALL(mock_reloader(), OnLoadStart(url.SchemeIsCryptographic()))
+        .Times(1);
     tab_helper().DidStartProvisionalLoadForFrame(
         render_view_host->GetMainFrame(), url, false, false);
 
@@ -334,7 +338,7 @@ TEST_F(CaptivePortalTabHelperTest, UnexpectedProvisionalLoad) {
 
   // A same-site load for the original RenderViewHost starts.
   EXPECT_CALL(mock_reloader(),
-              OnLoadStart(same_site_url.SchemeUsesTLS())).Times(1);
+              OnLoadStart(same_site_url.SchemeIsCryptographic())).Times(1);
   tab_helper().DidStartProvisionalLoadForFrame(
       main_render_frame1(), same_site_url, false, false);
 
@@ -343,7 +347,7 @@ TEST_F(CaptivePortalTabHelperTest, UnexpectedProvisionalLoad) {
   // for the old navigation.
   EXPECT_CALL(mock_reloader(), OnAbort()).Times(1);
   EXPECT_CALL(mock_reloader(),
-              OnLoadStart(cross_process_url.SchemeUsesTLS())).Times(1);
+              OnLoadStart(cross_process_url.SchemeIsCryptographic())).Times(1);
   tab_helper().DidStartProvisionalLoadForFrame(
       main_render_frame2(), cross_process_url, false, false);
 
@@ -378,7 +382,7 @@ TEST_F(CaptivePortalTabHelperTest, UnexpectedCommit) {
 
   // A same-site load for the original RenderViewHost starts.
   EXPECT_CALL(mock_reloader(),
-              OnLoadStart(same_site_url.SchemeUsesTLS())).Times(1);
+              OnLoadStart(same_site_url.SchemeIsCryptographic())).Times(1);
   tab_helper().DidStartProvisionalLoadForFrame(
       main_render_frame1(), same_site_url, false, false);
 
@@ -387,7 +391,7 @@ TEST_F(CaptivePortalTabHelperTest, UnexpectedCommit) {
   // for the old navigation.
   EXPECT_CALL(mock_reloader(), OnAbort()).Times(1);
   EXPECT_CALL(mock_reloader(),
-              OnLoadStart(cross_process_url.SchemeUsesTLS())).Times(1);
+              OnLoadStart(cross_process_url.SchemeIsCryptographic())).Times(1);
   tab_helper().DidStartProvisionalLoadForFrame(
       main_render_frame2(), cross_process_url, false, false);
 
@@ -400,7 +404,7 @@ TEST_F(CaptivePortalTabHelperTest, UnexpectedCommit) {
   // The same-site navigation succeeds.
   EXPECT_CALL(mock_reloader(), OnAbort()).Times(1);
   EXPECT_CALL(mock_reloader(),
-              OnLoadStart(same_site_url.SchemeUsesTLS())).Times(1);
+              OnLoadStart(same_site_url.SchemeIsCryptographic())).Times(1);
   EXPECT_CALL(mock_reloader(), OnLoadCommitted(net::OK)).Times(1);
   tab_helper().DidCommitProvisionalLoadForFrame(
       main_render_frame1(), same_site_url, ui::PAGE_TRANSITION_LINK);
@@ -450,7 +454,8 @@ TEST_F(CaptivePortalTabHelperTest, HttpsSubframeParallelError) {
           ->AppendChild("subframe");
 
   // Loads start.
-  EXPECT_CALL(mock_reloader(), OnLoadStart(url.SchemeUsesTLS())).Times(1);
+  EXPECT_CALL(mock_reloader(), OnLoadStart(url.SchemeIsCryptographic()))
+      .Times(1);
   tab_helper().DidStartProvisionalLoadForFrame(
       main_render_frame1(), url, false, false);
   tab_helper().DidStartProvisionalLoadForFrame(subframe, url, false, false);
@@ -505,13 +510,14 @@ TEST_F(CaptivePortalTabHelperTest, HttpToHttpsRedirectTimeout) {
 // Simulates an HTTPS to HTTP redirect.
 TEST_F(CaptivePortalTabHelperTest, HttpsToHttpRedirect) {
   GURL https_url(kHttpsUrl);
-  EXPECT_CALL(mock_reloader(),
-              OnLoadStart(https_url.SchemeUsesTLS())).Times(1);
+  EXPECT_CALL(mock_reloader(), OnLoadStart(https_url.SchemeIsCryptographic()))
+      .Times(1);
   tab_helper().DidStartProvisionalLoadForFrame(
       main_render_frame1(), https_url, false, false);
 
   GURL http_url(kHttpUrl);
-  EXPECT_CALL(mock_reloader(), OnRedirect(http_url.SchemeUsesTLS())).Times(1);
+  EXPECT_CALL(mock_reloader(), OnRedirect(http_url.SchemeIsCryptographic()))
+      .Times(1);
   OnRedirect(content::RESOURCE_TYPE_MAIN_FRAME, http_url,
              render_view_host1()->GetProcess()->GetID());
 
@@ -523,12 +529,13 @@ TEST_F(CaptivePortalTabHelperTest, HttpsToHttpRedirect) {
 // Simulates an HTTPS to HTTPS redirect.
 TEST_F(CaptivePortalTabHelperTest, HttpToHttpRedirect) {
   GURL http_url(kHttpUrl);
-  EXPECT_CALL(mock_reloader(),
-              OnLoadStart(http_url.SchemeUsesTLS())).Times(1);
+  EXPECT_CALL(mock_reloader(), OnLoadStart(http_url.SchemeIsCryptographic()))
+      .Times(1);
   tab_helper().DidStartProvisionalLoadForFrame(
       main_render_frame1(), http_url, false, false);
 
-  EXPECT_CALL(mock_reloader(), OnRedirect(http_url.SchemeUsesTLS())).Times(1);
+  EXPECT_CALL(mock_reloader(), OnRedirect(http_url.SchemeIsCryptographic()))
+      .Times(1);
   OnRedirect(content::RESOURCE_TYPE_MAIN_FRAME, http_url,
              render_view_host1()->GetProcess()->GetID());
 

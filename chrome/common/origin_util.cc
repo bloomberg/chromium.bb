@@ -10,7 +10,7 @@
 #include "url/gurl.h"
 
 bool IsOriginSecure(const GURL& url) {
-  if (url.SchemeUsesTLS() || url.SchemeIsFile())
+  if (url.SchemeIsCryptographic() || url.SchemeIsFile())
     return true;
 
   if (url.SchemeIsFileSystem() && url.inner_url() &&

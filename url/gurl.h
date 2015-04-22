@@ -225,12 +225,13 @@ class URL_EXPORT GURL {
 
   // Returns true if the scheme indicates a secure connection.
   //
-  // NOTE: This function is deprecated. You probably want |SchemeUsesTLS| (if
-  // you just want to know if a scheme uses TLS for network transport) or
-  // Chromium's |IsOriginSecure| for a higher-level test about an origin's
-  // security. See those functions' documentation for more detail.
+  // NOTE: This function is deprecated. You probably want
+  // |SchemeIsCryptographic| (if you just want to know if a scheme uses TLS for
+  // network transport) or Chromium's |IsOriginSecure| for a higher-level test
+  // about an origin's security. See those functions' documentation for more
+  // detail.
   //
-  // TODO(palmer): Audit callers and change them to |SchemeUsesTLS| or
+  // TODO(palmer): Audit callers and change them to |SchemeIsCryptographic| or
   // |IsOriginSecure|, as appropriate. Then remove |SchemeIsSecure|.
   // crbug.com/362214
   bool SchemeIsSecure() const {
@@ -239,14 +240,14 @@ class URL_EXPORT GURL {
             inner_url()->SchemeIsSecure());
   }
 
-  // Returns true if the scheme indicates a network connection that uses TLS for
-  // security.
+  // Returns true if the scheme indicates a network connection that uses TLS or
+  // some other cryptographic protocol (e.g. QUIC) for security.
   //
   // This function is a not a complete test of whether or not an origin's code
   // is minimally trustworthy. For that, see Chromium's |IsOriginSecure| for a
   // higher-level and more complete semantics. See that function's documentation
   // for more detail.
-  bool SchemeUsesTLS() const {
+  bool SchemeIsCryptographic() const {
     return SchemeIs(url::kHttpsScheme) || SchemeIs(url::kWssScheme);
   }
 

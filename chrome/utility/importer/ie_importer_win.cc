@@ -634,7 +634,7 @@ void IEImporter::ImportPasswordsIE6() {
     // import a password from IE whose scheme is https, we give it the benefit
     // of the doubt and DON'T auto-fill it unless the form appears under
     // valid TLS conditions.
-    form.ssl_valid = url.SchemeUsesTLS();
+    form.ssl_valid = url.SchemeIsCryptographic();
 
     // Goes through the list to find out the username field
     // of the web page.

@@ -202,7 +202,7 @@ void NSSDecryptor::ParseSignons(
     form.signon_realm = form.origin.GetOrigin().spec();
     if (!realm.empty())
       form.signon_realm += realm;
-    form.ssl_valid = form.origin.SchemeUsesTLS();
+    form.ssl_valid = form.origin.SchemeIsCryptographic();
     ++begin;
 
     // There may be multiple username/password pairs for this site.
@@ -296,7 +296,7 @@ bool NSSDecryptor::ReadAndParseSignons(const base::FilePath& sqlite_file,
       // digest_auth entry, so let's assume basic_auth.
       form.scheme = autofill::PasswordForm::SCHEME_BASIC;
     }
-    form.ssl_valid = form.origin.SchemeUsesTLS();
+    form.ssl_valid = form.origin.SchemeIsCryptographic();
     // The user name, password and action.
     form.username_element = s2.ColumnString16(3);
     form.username_value = Decrypt(s2.ColumnString(5));
