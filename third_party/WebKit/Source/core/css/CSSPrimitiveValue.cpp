@@ -1174,9 +1174,9 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
     case CSS_FR:
         return m_value.num == other.m_value.num;
     case CSS_PROPERTY_ID:
-        return propertyName(m_value.propertyID) == propertyName(other.m_value.propertyID);
+        return m_value.propertyID == other.m_value.propertyID;
     case CSS_VALUE_ID:
-        return valueName(m_value.valueID) == valueName(other.m_value.valueID);
+        return m_value.valueID == other.m_value.valueID;
     case CSS_CUSTOM_IDENT:
     case CSS_STRING:
     case CSS_URI:
