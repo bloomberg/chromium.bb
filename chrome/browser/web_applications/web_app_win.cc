@@ -287,7 +287,7 @@ void GetShortcutLocationsAndDeleteShortcuts(
     const base::string16& title,
     bool* was_pinned_to_taskbar,
     std::vector<base::FilePath>* shortcut_paths) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK(content::BrowserThread::FILE);
 
   // Get all possible locations for shortcuts.
   web_app::ShortcutLocations all_shortcut_locations;
@@ -584,7 +584,7 @@ bool CreatePlatformShortcuts(
     const extensions::FileHandlersInfo& file_handlers_info,
     const ShortcutLocations& creation_locations,
     ShortcutCreationReason creation_reason) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
   // Nothing to do on Windows for hidden apps.
   if (creation_locations.applications_menu_location == APP_MENU_LOCATION_HIDDEN)
@@ -636,7 +636,7 @@ void UpdatePlatformShortcuts(
     const base::string16& old_app_title,
     scoped_ptr<ShortcutInfo> shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
   // Generates file name to use with persisted ico and shortcut file.
   base::FilePath file_name =

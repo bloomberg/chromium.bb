@@ -221,7 +221,7 @@ bool HasSameUserDataDir(const base::FilePath& bundle_path) {
 
 void LaunchShimOnFileThread(scoped_ptr<web_app::ShortcutInfo> shortcut_info,
                             bool launched_after_rebuild) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   base::FilePath shim_path = web_app::GetAppInstallPath(*shortcut_info);
 
   if (shim_path.empty() ||
@@ -258,7 +258,7 @@ void UpdatePlatformShortcutsInternal(
     const base::string16& old_app_title,
     const web_app::ShortcutInfo& shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   if (AppShimsDisabledForTest() &&
       !g_app_shims_allow_update_and_launch_in_tests) {
     return;
@@ -1153,7 +1153,7 @@ bool CreatePlatformShortcuts(
     const extensions::FileHandlersInfo& file_handlers_info,
     const ShortcutLocations& creation_locations,
     ShortcutCreationReason creation_reason) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   if (AppShimsDisabledForTest())
     return true;
 
@@ -1164,7 +1164,7 @@ bool CreatePlatformShortcuts(
 
 void DeletePlatformShortcuts(const base::FilePath& app_data_path,
                              scoped_ptr<ShortcutInfo> shortcut_info) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   WebAppShortcutCreator shortcut_creator(app_data_path, shortcut_info.get(),
                                          extensions::FileHandlersInfo());
   shortcut_creator.DeleteShortcuts();

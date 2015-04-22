@@ -25,7 +25,7 @@ bool CreatePlatformShortcuts(
     const ShortcutLocations& creation_locations,
     ShortcutCreationReason /*creation_reason*/) {
 #if !defined(OS_CHROMEOS)
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   return shell_integration_linux::CreateDesktopShortcut(*shortcut_info,
                                                         creation_locations);
 #else
@@ -46,7 +46,7 @@ void UpdatePlatformShortcuts(
     const base::string16& /*old_app_title*/,
     scoped_ptr<ShortcutInfo> shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
 

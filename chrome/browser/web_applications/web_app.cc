@@ -383,7 +383,7 @@ void CreateShortcutsWithInfo(
     const ShortcutLocations& locations,
     scoped_ptr<ShortcutInfo> shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // If the shortcut is for an application shortcut with the new bookmark app
   // flow disabled, there will be no corresponding extension.
@@ -419,7 +419,7 @@ void CreateShortcuts(ShortcutCreationReason reason,
                      const ShortcutLocations& locations,
                      Profile* profile,
                      const extensions::Extension* app) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!ShouldCreateShortcutFor(reason, profile, app))
     return;
@@ -429,7 +429,7 @@ void CreateShortcuts(ShortcutCreationReason reason,
 }
 
 void DeleteAllShortcuts(Profile* profile, const extensions::Extension* app) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   scoped_ptr<ShortcutInfo> shortcut_info(
       ShortcutInfoForExtensionAndProfile(app, profile));
@@ -443,7 +443,7 @@ void DeleteAllShortcuts(Profile* profile, const extensions::Extension* app) {
 void UpdateAllShortcuts(const base::string16& old_app_title,
                         Profile* profile,
                         const extensions::Extension* app) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   GetInfoForApp(app,
                 profile,
