@@ -51,7 +51,7 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   int FillBuffer(AudioBus* dest,
                  int dest_offset,
                  int requested_frames,
-                 float playback_rate);
+                 double playback_rate);
 
   // Clears |audio_buffer_|.
   void FlushBuffers();
@@ -101,15 +101,15 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // Run one iteration of WSOLA, if there are sufficient frames. This will
   // overlap-and-add one block to |wsola_output_|, hence, |num_complete_frames_|
   // is incremented by |ola_hop_size_|.
-  bool RunOneWsolaIteration(float playback_rate);
+  bool RunOneWsolaIteration(double playback_rate);
 
   // Seek |audio_buffer_| forward to remove frames from input that are not used
   // any more. State of the WSOLA will be updated accordingly.
-  void RemoveOldInputFrames(float playback_rate);
+  void RemoveOldInputFrames(double playback_rate);
 
   // Update |output_time_| by |time_change|. In turn |search_block_index_| is
   // updated.
-  void UpdateOutputTime(float playback_rate, double time_change);
+  void UpdateOutputTime(double playback_rate, double time_change);
 
   // Is |target_block_| fully within |search_block_|? If so, we don't need to
   // perform the search.

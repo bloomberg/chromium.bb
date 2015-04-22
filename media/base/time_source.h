@@ -27,7 +27,7 @@ class MEDIA_EXPORT TimeSource {
   // Updates the current playback rate. It is expected that values from
   // CurrentMediaTime() will eventually reflect the new playback rate (e.g., the
   // media time will advance at half speed if the rate was set to 0.5f).
-  virtual void SetPlaybackRate(float playback_rate) = 0;
+  virtual void SetPlaybackRate(double playback_rate) = 0;
 
   // Sets the media time to start ticking from. Only valid to call while the
   // time source is not ticking.

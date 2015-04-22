@@ -189,11 +189,11 @@ void BufferedDataSource::Abort() {
   frame_ = NULL;
 }
 
-void BufferedDataSource::MediaPlaybackRateChanged(float playback_rate) {
+void BufferedDataSource::MediaPlaybackRateChanged(double playback_rate) {
   DCHECK(render_task_runner_->BelongsToCurrentThread());
   DCHECK(loader_.get());
 
-  if (playback_rate < 0.0f)
+  if (playback_rate < 0.0)
     return;
 
   playback_rate_ = playback_rate;

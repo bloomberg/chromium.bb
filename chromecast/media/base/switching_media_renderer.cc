@@ -78,7 +78,7 @@ void SwitchingMediaRenderer::StartPlayingFrom(base::TimeDelta time) {
   GetRenderer()->StartPlayingFrom(time);
 }
 
-void SwitchingMediaRenderer::SetPlaybackRate(float playback_rate)  {
+void SwitchingMediaRenderer::SetPlaybackRate(double playback_rate)  {
   GetRenderer()->SetPlaybackRate(playback_rate);
 }
 

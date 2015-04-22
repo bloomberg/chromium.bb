@@ -44,7 +44,7 @@ class MojoRendererImpl : public Renderer, public mojo::MediaRendererClient {
               const CdmAttachedCB& cdm_attached_cb) override;
   void Flush(const base::Closure& flush_cb) override;
   void StartPlayingFrom(base::TimeDelta time) override;
-  void SetPlaybackRate(float playback_rate) override;
+  void SetPlaybackRate(double playback_rate) override;
   void SetVolume(float volume) override;
   base::TimeDelta GetMediaTime() override;
   bool HasAudio() override;

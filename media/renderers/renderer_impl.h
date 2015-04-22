@@ -55,7 +55,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
               const CdmAttachedCB& cdm_attached_cb) final;
   void Flush(const base::Closure& flush_cb) final;
   void StartPlayingFrom(base::TimeDelta time) final;
-  void SetPlaybackRate(float playback_rate) final;
+  void SetPlaybackRate(double playback_rate) final;
   void SetVolume(float volume) final;
   base::TimeDelta GetMediaTime() final;
   bool HasAudio() final;
@@ -152,7 +152,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   TimeSource* time_source_;
   scoped_ptr<WallClockTimeSource> wall_clock_time_source_;
   bool time_ticking_;
-  float playback_rate_;
+  double playback_rate_;
 
   // The time to start playback from after starting/seeking has completed.
   base::TimeDelta start_time_;

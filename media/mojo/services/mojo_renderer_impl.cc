@@ -103,7 +103,7 @@ void MojoRendererImpl::StartPlayingFrom(base::TimeDelta time) {
   remote_media_renderer_->StartPlayingFrom(time.InMicroseconds());
 }
 
-void MojoRendererImpl::SetPlaybackRate(float playback_rate) {
+void MojoRendererImpl::SetPlaybackRate(double playback_rate) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   remote_media_renderer_->SetPlaybackRate(playback_rate);

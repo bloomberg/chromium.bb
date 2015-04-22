@@ -85,7 +85,7 @@ class MEDIA_EXPORT BufferedResourceLoader
       int64 last_byte_position,
       DeferStrategy strategy,
       int bitrate,
-      float playback_rate,
+      double playback_rate,
       MediaLog* media_log);
   virtual ~BufferedResourceLoader();
 
@@ -179,7 +179,7 @@ class MEDIA_EXPORT BufferedResourceLoader
 
   // Sets the playback rate to the given value and updates buffer window
   // accordingly.
-  void SetPlaybackRate(float playback_rate);
+  void SetPlaybackRate(double playback_rate);
 
   // Sets the bitrate to the given value and updates buffer window
   // accordingly.
@@ -314,7 +314,7 @@ class MEDIA_EXPORT BufferedResourceLoader
   int bitrate_;
 
   // Playback rate of the media.
-  float playback_rate_;
+  double playback_rate_;
 
   scoped_refptr<MediaLog> media_log_;
 

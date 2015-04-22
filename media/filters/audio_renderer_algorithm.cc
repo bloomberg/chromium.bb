@@ -49,8 +49,8 @@ namespace media {
 // Max/min supported playback rates for fast/slow audio. Audio outside of these
 // ranges are muted.
 // Audio at these speeds would sound better under a frequency domain algorithm.
-static const float kMinPlaybackRate = 0.5f;
-static const float kMaxPlaybackRate = 4.0f;
+static const double kMinPlaybackRate = 0.5;
+static const double kMaxPlaybackRate = 4.0;
 
 // Overlap-and-add window size in milliseconds.
 static const int kOlaWindowSizeMs = 20;
@@ -144,7 +144,7 @@ void AudioRendererAlgorithm::Initialize(const AudioParameters& params) {
 int AudioRendererAlgorithm::FillBuffer(AudioBus* dest,
                                        int dest_offset,
                                        int requested_frames,
-                                       float playback_rate) {
+                                       double playback_rate) {
   if (playback_rate == 0)
     return 0;
 
@@ -237,7 +237,7 @@ bool AudioRendererAlgorithm::CanPerformWsola() const {
       search_block_index_ + search_block_size <= frames;
 }
 
-bool AudioRendererAlgorithm::RunOneWsolaIteration(float playback_rate) {
+bool AudioRendererAlgorithm::RunOneWsolaIteration(double playback_rate) {
   if (!CanPerformWsola())
     return false;
 
@@ -263,7 +263,7 @@ bool AudioRendererAlgorithm::RunOneWsolaIteration(float playback_rate) {
   return true;
 }
 
-void AudioRendererAlgorithm::UpdateOutputTime(float playback_rate,
+void AudioRendererAlgorithm::UpdateOutputTime(double playback_rate,
                                               double time_change) {
   output_time_ += time_change;
   // Center of the search region, in frames.
@@ -272,7 +272,7 @@ void AudioRendererAlgorithm::UpdateOutputTime(float playback_rate,
   search_block_index_ = search_block_center_index - search_block_center_offset_;
 }
 
-void AudioRendererAlgorithm::RemoveOldInputFrames(float playback_rate) {
+void AudioRendererAlgorithm::RemoveOldInputFrames(double playback_rate) {
   const int earliest_used_index = std::min(target_block_index_,
                                            search_block_index_);
   if (earliest_used_index <= 0)

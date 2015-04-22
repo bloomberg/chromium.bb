@@ -37,7 +37,7 @@ Pipeline::Pipeline(
       running_(false),
       did_loading_progress_(false),
       volume_(1.0f),
-      playback_rate_(0.0f),
+      playback_rate_(0.0),
       status_(PIPELINE_OK),
       state_(kCreated),
       renderer_ended_(false),
@@ -121,13 +121,13 @@ bool Pipeline::IsRunning() const {
   return running_;
 }
 
-float Pipeline::GetPlaybackRate() const {
+double Pipeline::GetPlaybackRate() const {
   base::AutoLock auto_lock(lock_);
   return playback_rate_;
 }
 
-void Pipeline::SetPlaybackRate(float playback_rate) {
-  if (playback_rate < 0.0f)
+void Pipeline::SetPlaybackRate(double playback_rate) {
+  if (playback_rate < 0.0)
     return;
 
   base::AutoLock auto_lock(lock_);
@@ -552,7 +552,7 @@ void Pipeline::ErrorChangedTask(PipelineStatus error) {
   DoStop(base::Bind(&Pipeline::OnStopCompleted, weak_factory_.GetWeakPtr()));
 }
 
-void Pipeline::PlaybackRateChangedTask(float playback_rate) {
+void Pipeline::PlaybackRateChangedTask(double playback_rate) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Playback rate changes are only carried out while playing.

@@ -57,7 +57,7 @@ class MediaPipeline {
   virtual void Stop() = 0;
 
   // Set the playback rate.
-  virtual void SetPlaybackRate(float playback_rate) = 0;
+  virtual void SetPlaybackRate(double playback_rate) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaPipeline);

@@ -42,7 +42,7 @@ class MEDIA_EXPORT TimeDeltaInterpolator {
   // Sets a new rate at which to interpolate.
   //
   // |tick_clock| will be queried for a new reference time value.
-  void SetPlaybackRate(float playback_rate);
+  void SetPlaybackRate(double playback_rate);
 
   // Sets the two timestamps to interpolate between at |playback_rate_|.
   // |upper_bound| must be greater or equal to |lower_bound|.
@@ -72,7 +72,7 @@ class MEDIA_EXPORT TimeDeltaInterpolator {
   // |lower_bound_| and |upper_bound_|.
   base::TimeTicks reference_;
 
-  float playback_rate_;
+  double playback_rate_;
 
   DISALLOW_COPY_AND_ASSIGN(TimeDeltaInterpolator);
 };

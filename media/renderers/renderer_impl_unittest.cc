@@ -217,7 +217,7 @@ class RendererImplTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void SetPlaybackRate(float playback_rate) {
+  void SetPlaybackRate(double playback_rate) {
     EXPECT_CALL(time_source_, SetPlaybackRate(playback_rate));
     renderer_impl_->SetPlaybackRate(playback_rate);
     base::RunLoop().RunUntilIdle();
@@ -227,7 +227,7 @@ class RendererImplTest : public ::testing::Test {
     return renderer_impl_->GetMediaTime().InMilliseconds();
   }
 
-  bool IsMediaTimeAdvancing(float playback_rate) {
+  bool IsMediaTimeAdvancing(double playback_rate) {
     int64 start_time_ms = GetMediaTimeMs();
     const int64 time_to_advance_ms = 100;
 
@@ -242,7 +242,7 @@ class RendererImplTest : public ::testing::Test {
   }
 
   bool IsMediaTimeAdvancing() {
-    return IsMediaTimeAdvancing(1.0f);
+    return IsMediaTimeAdvancing(1.0);
   }
 
   // Fixture members.
@@ -377,8 +377,8 @@ TEST_F(RendererImplTest, FlushAfterUnderflow) {
 
 TEST_F(RendererImplTest, SetPlaybackRate) {
   InitializeWithAudioAndVideo();
-  SetPlaybackRate(1.0f);
-  SetPlaybackRate(2.0f);
+  SetPlaybackRate(1.0);
+  SetPlaybackRate(2.0);
 }
 
 TEST_F(RendererImplTest, SetVolume) {

@@ -234,9 +234,9 @@ class BufferedDataSourceTest : public testing::Test {
     return loader()->defer_strategy_;
   }
   int data_source_bitrate() { return data_source_->bitrate_; }
-  int data_source_playback_rate() { return data_source_->playback_rate_; }
+  double data_source_playback_rate() { return data_source_->playback_rate_; }
   int loader_bitrate() { return loader()->bitrate_; }
-  int loader_playback_rate() { return loader()->playback_rate_; }
+  double loader_playback_rate() { return loader()->playback_rate_; }
   bool is_local_source() { return data_source_->assume_fully_buffered(); }
   void set_might_be_reused_from_cache_in_future(bool value) {
     loader()->might_be_reused_from_cache_in_future_ = value;
@@ -560,9 +560,9 @@ TEST_F(BufferedDataSourceTest, DefaultValues) {
   EXPECT_EQ(BufferedResourceLoader::kCapacityDefer, defer_strategy());
 
   EXPECT_EQ(0, data_source_bitrate());
-  EXPECT_EQ(0.0f, data_source_playback_rate());
+  EXPECT_EQ(0.0, data_source_playback_rate());
   EXPECT_EQ(0, loader_bitrate());
-  EXPECT_EQ(0.0f, loader_playback_rate());
+  EXPECT_EQ(0.0, loader_playback_rate());
 
   EXPECT_TRUE(data_source_->loading());
   Stop();
@@ -594,10 +594,10 @@ TEST_F(BufferedDataSourceTest, SetBitrate) {
 TEST_F(BufferedDataSourceTest, MediaPlaybackRateChanged) {
   InitializeWith206Response();
 
-  data_source_->MediaPlaybackRateChanged(2.0f);
+  data_source_->MediaPlaybackRateChanged(2.0);
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(2.0f, data_source_playback_rate());
-  EXPECT_EQ(2.0f, loader_playback_rate());
+  EXPECT_EQ(2.0, data_source_playback_rate());
+  EXPECT_EQ(2.0, loader_playback_rate());
 
   // Read so far ahead to cause the loader to get recreated.
   BufferedResourceLoader* old_loader = loader();

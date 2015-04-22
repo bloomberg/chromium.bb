@@ -34,7 +34,7 @@ class MediaPipelineProxyInternal {
   void StartPlayingFrom(const base::TimeDelta& time);
   void Flush(const ::media::PipelineStatusCB& status_cb);
   void Stop();
-  void SetPlaybackRate(float playback_rate);
+  void SetPlaybackRate(double playback_rate);
 
  private:
   void Shutdown();
@@ -135,7 +135,7 @@ void MediaPipelineProxyInternal::StartPlayingFrom(const base::TimeDelta& time) {
     client_.error_cb.Run(::media::PIPELINE_ERROR_ABORT);
 }
 
-void MediaPipelineProxyInternal::SetPlaybackRate(float playback_rate) {
+void MediaPipelineProxyInternal::SetPlaybackRate(double playback_rate) {
   DCHECK(thread_checker_.CalledOnValidThread());
   media_channel_proxy_->Send(scoped_ptr<IPC::Message>(
       new CmaHostMsg_SetPlaybackRate(
@@ -274,7 +274,7 @@ void MediaPipelineProxy::Stop() {
   FORWARD_ON_IO_THREAD(Stop);
 }
 
-void MediaPipelineProxy::SetPlaybackRate(float playback_rate) {
+void MediaPipelineProxy::SetPlaybackRate(double playback_rate) {
   DCHECK(thread_checker_.CalledOnValidThread());
   FORWARD_ON_IO_THREAD(SetPlaybackRate, playback_rate);
 }

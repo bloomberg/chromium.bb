@@ -25,7 +25,7 @@ class MEDIA_EXPORT WallClockTimeSource : public TimeSource {
   // TimeSource implementation.
   void StartTicking() override;
   void StopTicking() override;
-  void SetPlaybackRate(float playback_rate) override;
+  void SetPlaybackRate(double playback_rate) override;
   void SetMediaTime(base::TimeDelta time) override;
   base::TimeDelta CurrentMediaTime() override;
   base::TimeTicks GetWallClockTime(base::TimeDelta time) override;

@@ -41,7 +41,7 @@ IPC_MESSAGE_CONTROL1(CmaHostMsg_Stop,
                      int /* Media pipeline ID */)
 IPC_MESSAGE_CONTROL2(CmaHostMsg_SetPlaybackRate,
                      int /* Media pipeline ID */,
-                     float /* Playback rate */)
+                     double /* Playback rate */)
 
 IPC_MESSAGE_CONTROL3(CmaHostMsg_CreateAvPipe,
                      int /* Media pipeline ID */,

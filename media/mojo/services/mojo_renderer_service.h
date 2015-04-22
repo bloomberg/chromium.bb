@@ -44,7 +44,7 @@ class MEDIA_EXPORT MojoRendererService
                   const mojo::Closure& callback) override;
   void Flush(const mojo::Closure& callback) override;
   void StartPlayingFrom(int64_t time_delta_usec) override;
-  void SetPlaybackRate(float playback_rate) override;
+  void SetPlaybackRate(double playback_rate) override;
   void SetVolume(float volume) override;
 
  private:

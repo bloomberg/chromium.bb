@@ -239,7 +239,7 @@ class AudioRendererAlgorithmTest : public testing::Test {
     EXPECT_NEAR(playback_rate, actual_playback_rate, playback_rate / 100.0);
   }
 
-  void WsolaTest(float playback_rate) {
+  void WsolaTest(double playback_rate) {
     const int kSampleRateHz = 48000;
     const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_STEREO;
     const int kBytesPerSample = 2;
@@ -640,11 +640,11 @@ TEST_F(AudioRendererAlgorithmTest, QuadraticInterpolation_Colinear) {
 }
 
 TEST_F(AudioRendererAlgorithmTest, WsolaSlowdown) {
-  WsolaTest(0.6f);
+  WsolaTest(0.6);
 }
 
 TEST_F(AudioRendererAlgorithmTest, WsolaSpeedup) {
-  WsolaTest(1.6f);
+  WsolaTest(1.6);
 }
 
 TEST_F(AudioRendererAlgorithmTest, FillBufferOffset) {

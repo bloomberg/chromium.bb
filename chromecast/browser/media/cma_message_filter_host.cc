@@ -442,7 +442,7 @@ void CmaMessageFilterHost::Stop(int media_id) {
 }
 
 void CmaMessageFilterHost::SetPlaybackRate(
-    int media_id, float playback_rate) {
+    int media_id, double playback_rate) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   MediaPipelineHost* media_pipeline = LookupById(media_id);
   if (!media_pipeline)

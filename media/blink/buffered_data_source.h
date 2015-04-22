@@ -100,7 +100,7 @@ class MEDIA_EXPORT BufferedDataSource : public DataSource {
 
   // Notifies changes in playback state for controlling media buffering
   // behavior.
-  void MediaPlaybackRateChanged(float playback_rate);
+  void MediaPlaybackRateChanged(double playback_rate);
   void MediaIsPlaying();
   void MediaIsPaused();
   bool media_has_played() const { return media_has_played_; }
@@ -229,7 +229,7 @@ class MEDIA_EXPORT BufferedDataSource : public DataSource {
   int bitrate_;
 
   // Current playback rate.
-  float playback_rate_;
+  double playback_rate_;
 
   scoped_refptr<MediaLog> media_log_;
 

@@ -68,7 +68,7 @@ class MEDIA_EXPORT AudioRendererImpl
   // TimeSource implementation.
   void StartTicking() override;
   void StopTicking() override;
-  void SetPlaybackRate(float rate) override;
+  void SetPlaybackRate(double rate) override;
   void SetMediaTime(base::TimeDelta time) override;
   base::TimeDelta CurrentMediaTime() override;
   base::TimeTicks GetWallClockTime(base::TimeDelta time) override;

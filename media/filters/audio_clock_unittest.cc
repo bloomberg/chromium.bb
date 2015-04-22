@@ -19,7 +19,7 @@ class AudioClockTest : public testing::Test {
   void WroteAudio(int frames_written,
                   int frames_requested,
                   int delay_frames,
-                  float playback_rate) {
+                  double playback_rate) {
     clock_.WroteAudio(
         frames_written, frames_requested, delay_frames, playback_rate);
   }

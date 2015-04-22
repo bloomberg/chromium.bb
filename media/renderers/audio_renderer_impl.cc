@@ -52,7 +52,7 @@ AudioRendererImpl::AudioRendererImpl(
       audio_buffer_stream_(
           new AudioBufferStream(task_runner, decoders.Pass(), media_log)),
       hardware_config_(hardware_config),
-      playback_rate_(0),
+      playback_rate_(0.0),
       state_(kUninitialized),
       buffering_state_(BUFFERING_HAVE_NOTHING),
       rendering_(false),
@@ -100,7 +100,7 @@ void AudioRendererImpl::StartRendering_Locked() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kPlaying);
   DCHECK(!sink_playing_);
-  DCHECK_NE(playback_rate_, 0);
+  DCHECK_NE(playback_rate_, 0.0);
   lock_.AssertAcquired();
 
   sink_playing_ = true;
@@ -535,7 +535,7 @@ bool AudioRendererImpl::CanRead_Locked() {
       !algorithm_->IsQueueFull();
 }
 
-void AudioRendererImpl::SetPlaybackRate(float playback_rate) {
+void AudioRendererImpl::SetPlaybackRate(double playback_rate) {
   DVLOG(1) << __FUNCTION__ << "(" << playback_rate << ")";
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_GE(playback_rate, 0);
@@ -546,7 +546,7 @@ void AudioRendererImpl::SetPlaybackRate(float playback_rate) {
   // We have two cases here:
   // Play: current_playback_rate == 0 && playback_rate != 0
   // Pause: current_playback_rate != 0 && playback_rate == 0
-  float current_playback_rate = playback_rate_;
+  double current_playback_rate = playback_rate_;
   playback_rate_ = playback_rate;
 
   if (!rendering_)

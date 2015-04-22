@@ -65,7 +65,7 @@ class MEDIA_EXPORT Renderer {
   virtual void StartPlayingFrom(base::TimeDelta time) = 0;
 
   // Updates the current playback rate. The default playback rate should be 1.
-  virtual void SetPlaybackRate(float playback_rate) = 0;
+  virtual void SetPlaybackRate(double playback_rate) = 0;
 
   // Sets the output volume. The default volume should be 1.
   virtual void SetVolume(float volume) = 0;

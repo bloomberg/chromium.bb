@@ -122,7 +122,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       opaque_(false),
       paused_(true),
       seeking_(false),
-      playback_rate_(0.0f),
+      playback_rate_(0.0),
       ended_(false),
       pending_seek_(false),
       pending_seek_seconds_(0.0f),
@@ -269,7 +269,7 @@ void WebMediaPlayerImpl::pause() {
 
   const bool was_already_paused = paused_ || playback_rate_ == 0;
   paused_ = true;
-  pipeline_.SetPlaybackRate(0.0f);
+  pipeline_.SetPlaybackRate(0.0);
   if (data_source_)
     data_source_->MediaIsPaused();
   UpdatePausedTime();

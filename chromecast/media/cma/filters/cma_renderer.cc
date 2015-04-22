@@ -55,7 +55,7 @@ CmaRenderer::CmaRenderer(scoped_ptr<MediaPipeline> media_pipeline,
       initial_video_hole_created_(false),
       time_interpolator_(
           new ::media::TimeDeltaInterpolator(&default_tick_clock_)),
-      playback_rate_(1.0f),
+      playback_rate_(1.0),
       weak_factory_(this) {
   weak_this_ = weak_factory_.GetWeakPtr();
   thread_checker_.DetachFromThread();
@@ -185,7 +185,7 @@ void CmaRenderer::StartPlayingFrom(base::TimeDelta time) {
   CompleteStateTransition(kPlaying);
 }
 
-void CmaRenderer::SetPlaybackRate(float playback_rate) {
+void CmaRenderer::SetPlaybackRate(double playback_rate) {
   CMALOG(kLogControl) << __FUNCTION__ << ": " << playback_rate;
   DCHECK(thread_checker_.CalledOnValidThread());
   media_pipeline_->SetPlaybackRate(playback_rate);

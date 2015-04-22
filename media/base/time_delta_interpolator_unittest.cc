@@ -40,7 +40,7 @@ TEST_F(TimeDeltaInterpolatorTest, StartInterpolating_DoubleSpeed) {
   const base::TimeDelta kZero;
   const base::TimeDelta kTimeToAdvance = base::TimeDelta::FromSeconds(5);
 
-  interpolator_.SetPlaybackRate(2.0f);
+  interpolator_.SetPlaybackRate(2.0);
   EXPECT_EQ(kZero, interpolator_.StartInterpolating());
   AdvanceSystemTime(kTimeToAdvance);
   EXPECT_EQ(2 * kTimeToAdvance, interpolator_.GetInterpolatedTime());
@@ -50,7 +50,7 @@ TEST_F(TimeDeltaInterpolatorTest, StartInterpolating_HalfSpeed) {
   const base::TimeDelta kZero;
   const base::TimeDelta kTimeToAdvance = base::TimeDelta::FromSeconds(4);
 
-  interpolator_.SetPlaybackRate(0.5f);
+  interpolator_.SetPlaybackRate(0.5);
   EXPECT_EQ(kZero, interpolator_.StartInterpolating());
   AdvanceSystemTime(kTimeToAdvance);
   EXPECT_EQ(kTimeToAdvance / 2, interpolator_.GetInterpolatedTime());
@@ -68,9 +68,9 @@ TEST_F(TimeDeltaInterpolatorTest, StartInterpolating_ZeroSpeed) {
   EXPECT_EQ(kZero, interpolator_.StartInterpolating());
 
   AdvanceSystemTime(kPlayDuration1);
-  interpolator_.SetPlaybackRate(0.0f);
+  interpolator_.SetPlaybackRate(0.0);
   AdvanceSystemTime(kPlayDuration2);
-  interpolator_.SetPlaybackRate(1.0f);
+  interpolator_.SetPlaybackRate(1.0);
   AdvanceSystemTime(kPlayDuration3);
 
   EXPECT_EQ(kExpected, interpolator_.GetInterpolatedTime());
@@ -86,14 +86,14 @@ TEST_F(TimeDeltaInterpolatorTest, StartInterpolating_MultiSpeed) {
   const base::TimeDelta kExpected =
       kPlayDuration1 / 2 + kPlayDuration2 + 2 * kPlayDuration3;
 
-  interpolator_.SetPlaybackRate(0.5f);
+  interpolator_.SetPlaybackRate(0.5);
   EXPECT_EQ(kZero, interpolator_.StartInterpolating());
   AdvanceSystemTime(kPlayDuration1);
 
-  interpolator_.SetPlaybackRate(1.0f);
+  interpolator_.SetPlaybackRate(1.0);
   AdvanceSystemTime(kPlayDuration2);
 
-  interpolator_.SetPlaybackRate(2.0f);
+  interpolator_.SetPlaybackRate(2.0);
   AdvanceSystemTime(kPlayDuration3);
   EXPECT_EQ(kExpected, interpolator_.GetInterpolatedTime());
 }

@@ -93,7 +93,7 @@ void MojoRendererService::StartPlayingFrom(int64_t time_delta_usec) {
   SchedulePeriodicMediaTimeUpdates();
 }
 
-void MojoRendererService::SetPlaybackRate(float playback_rate) {
+void MojoRendererService::SetPlaybackRate(double playback_rate) {
   DVLOG(2) << __FUNCTION__ << ": " << playback_rate;
   DCHECK_EQ(state_, STATE_PLAYING);
   renderer_->SetPlaybackRate(playback_rate);

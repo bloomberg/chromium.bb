@@ -142,7 +142,7 @@ void MediaPipelineHost::Stop() {
   media_pipeline_->Stop();
 }
 
-void MediaPipelineHost::SetPlaybackRate(float playback_rate) {
+void MediaPipelineHost::SetPlaybackRate(double playback_rate) {
   DCHECK(thread_checker_.CalledOnValidThread());
   media_pipeline_->SetPlaybackRate(playback_rate);
 }

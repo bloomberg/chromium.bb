@@ -209,7 +209,7 @@ class PipelineTest : public ::testing::Test {
 
     if (start_status == PIPELINE_OK) {
       EXPECT_CALL(callbacks_, OnMetadata(_)).WillOnce(SaveArg<0>(&metadata_));
-      EXPECT_CALL(*renderer_, SetPlaybackRate(0.0f));
+      EXPECT_CALL(*renderer_, SetPlaybackRate(0.0));
       EXPECT_CALL(*renderer_, SetVolume(1.0f));
       EXPECT_CALL(*renderer_, StartPlayingFrom(start_time_))
           .WillOnce(SetBufferingState(&buffering_state_cb_,
@@ -337,9 +337,9 @@ TEST_F(PipelineTest, NotStarted) {
 
   // Setting should still work.
   EXPECT_EQ(0.0f, pipeline_->GetPlaybackRate());
-  pipeline_->SetPlaybackRate(-1.0f);
+  pipeline_->SetPlaybackRate(-1.0);
   EXPECT_EQ(0.0f, pipeline_->GetPlaybackRate());
-  pipeline_->SetPlaybackRate(1.0f);
+  pipeline_->SetPlaybackRate(1.0);
   EXPECT_EQ(1.0f, pipeline_->GetPlaybackRate());
 
   // Setting should still work.
@@ -640,7 +640,7 @@ TEST_F(PipelineTest, ErrorDuringSeek) {
   SetRendererExpectations();
   StartPipelineAndExpect(PIPELINE_OK);
 
-  float playback_rate = 1.0f;
+  double playback_rate = 1.0;
   EXPECT_CALL(*renderer_, SetPlaybackRate(playback_rate));
   pipeline_->SetPlaybackRate(playback_rate);
   message_loop_.RunUntilIdle();
@@ -675,7 +675,7 @@ static void TestNoCallsAfterError(
   EXPECT_TRUE(message_loop->IsIdleForTesting());
 
   // Make calls on pipeline after error has occurred.
-  pipeline->SetPlaybackRate(0.5f);
+  pipeline->SetPlaybackRate(0.5);
   pipeline->SetVolume(0.5f);
 
   // No additional tasks should be queued as a result of these calls.
@@ -877,7 +877,7 @@ class PipelineTeardownTest : public PipelineTest {
     EXPECT_CALL(callbacks_, OnMetadata(_));
 
     // If we get here it's a successful initialization.
-    EXPECT_CALL(*renderer_, SetPlaybackRate(0.0f));
+    EXPECT_CALL(*renderer_, SetPlaybackRate(0.0));
     EXPECT_CALL(*renderer_, SetVolume(1.0f));
     EXPECT_CALL(*renderer_, StartPlayingFrom(base::TimeDelta()))
         .WillOnce(SetBufferingState(&buffering_state_cb_,

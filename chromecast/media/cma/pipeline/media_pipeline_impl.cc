@@ -263,7 +263,7 @@ void MediaPipelineImpl::Stop() {
     video_pipeline_->Stop();
 }
 
-void MediaPipelineImpl::SetPlaybackRate(float rate) {
+void MediaPipelineImpl::SetPlaybackRate(double rate) {
   CMALOG(kLogControl) << __FUNCTION__ << " rate=" << rate;
   DCHECK(thread_checker_.CalledOnValidThread());
   target_playback_rate_ = rate;

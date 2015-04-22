@@ -212,7 +212,7 @@ class AudioRendererImplTest : public ::testing::Test {
 
   void StartTicking() {
     renderer_->StartTicking();
-    renderer_->SetPlaybackRate(1.0f);
+    renderer_->SetPlaybackRate(1.0);
   }
 
   void StopTicking() { renderer_->StopTicking(); }
@@ -721,18 +721,18 @@ TEST_F(AudioRendererImplTest, SetPlaybackRate) {
 
   // Rendering hasn't started. Sink should always be paused.
   EXPECT_EQ(FakeAudioRendererSink::kPaused, sink_->state());
-  renderer_->SetPlaybackRate(0.0f);
+  renderer_->SetPlaybackRate(0.0);
   EXPECT_EQ(FakeAudioRendererSink::kPaused, sink_->state());
-  renderer_->SetPlaybackRate(1.0f);
+  renderer_->SetPlaybackRate(1.0);
   EXPECT_EQ(FakeAudioRendererSink::kPaused, sink_->state());
 
   // Rendering has started with non-zero rate. Rate changes will affect sink
   // state.
   renderer_->StartTicking();
   EXPECT_EQ(FakeAudioRendererSink::kPlaying, sink_->state());
-  renderer_->SetPlaybackRate(0.0f);
+  renderer_->SetPlaybackRate(0.0);
   EXPECT_EQ(FakeAudioRendererSink::kPaused, sink_->state());
-  renderer_->SetPlaybackRate(1.0f);
+  renderer_->SetPlaybackRate(1.0);
   EXPECT_EQ(FakeAudioRendererSink::kPlaying, sink_->state());
 
   // Rendering has stopped. Sink should be paused.
@@ -741,10 +741,10 @@ TEST_F(AudioRendererImplTest, SetPlaybackRate) {
 
   // Start rendering with zero playback rate. Sink should be paused until
   // non-zero rate is set.
-  renderer_->SetPlaybackRate(0.0f);
+  renderer_->SetPlaybackRate(0.0);
   renderer_->StartTicking();
   EXPECT_EQ(FakeAudioRendererSink::kPaused, sink_->state());
-  renderer_->SetPlaybackRate(1.0f);
+  renderer_->SetPlaybackRate(1.0);
   EXPECT_EQ(FakeAudioRendererSink::kPlaying, sink_->state());
 }
 

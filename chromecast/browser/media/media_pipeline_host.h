@@ -59,7 +59,7 @@ class MediaPipelineHost {
   void Flush(const ::media::PipelineStatusCB& status_cb);
   void Stop();
 
-  void SetPlaybackRate(float playback_rate);
+  void SetPlaybackRate(double playback_rate);
   void SetVolume(TrackId track_id, float playback_rate);
   void SetCdm(BrowserCdmCast* cdm);
 

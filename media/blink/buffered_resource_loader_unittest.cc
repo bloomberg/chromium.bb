@@ -1068,7 +1068,7 @@ TEST_F(BufferedResourceLoaderTest, BufferWindow_PlaybackRate_Zero) {
 TEST_F(BufferedResourceLoaderTest, BufferWindow_PlaybackRate_BelowLowerBound) {
   Initialize(kHttpUrl, -1, -1);
   Start();
-  loader_->SetPlaybackRate(0.1f);
+  loader_->SetPlaybackRate(0.1);
   CheckBufferWindowBounds();
   StopWhenLoad();
 }

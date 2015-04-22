@@ -51,7 +51,7 @@ class MediaPipelineImpl : public MediaPipeline {
   void StartPlayingFrom(base::TimeDelta time) override;
   void Flush(const ::media::PipelineStatusCB& status_cb) override;
   void Stop() override;
-  void SetPlaybackRate(float playback_rate) override;
+  void SetPlaybackRate(double playback_rate) override;
 
   AudioPipelineImpl* GetAudioPipelineImpl() const;
   VideoPipelineImpl* GetVideoPipelineImpl() const;

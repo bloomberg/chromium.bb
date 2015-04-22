@@ -50,7 +50,7 @@ class CmaRenderer : public ::media::Renderer {
       const base::Closure& waiting_for_decryption_key_cb) override;
   void Flush(const base::Closure& flush_cb) override;
   void StartPlayingFrom(base::TimeDelta time) override;
-  void SetPlaybackRate(float playback_rate) override;
+  void SetPlaybackRate(double playback_rate) override;
   void SetVolume(float volume) override;
   base::TimeDelta GetMediaTime() override;
   bool HasAudio() override;
@@ -137,7 +137,7 @@ class CmaRenderer : public ::media::Renderer {
   // as playback progresses.
   scoped_ptr< ::media::TimeDeltaInterpolator> time_interpolator_;
 
-  float playback_rate_;
+  double playback_rate_;
 
   base::WeakPtr<CmaRenderer> weak_this_;
   base::WeakPtrFactory<CmaRenderer> weak_factory_;

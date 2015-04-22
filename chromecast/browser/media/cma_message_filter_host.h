@@ -77,7 +77,7 @@ class CmaMessageFilterHost
   void StartPlayingFrom(int media_id, base::TimeDelta time);
   void Flush(int media_id);
   void Stop(int media_id);
-  void SetPlaybackRate(int media_id, float playback_rate);
+  void SetPlaybackRate(int media_id, double playback_rate);
   void SetVolume(int media_id, TrackId track_id, float volume);
   void NotifyPipeWrite(int media_id, TrackId track_id);
   void NotifyExternalSurface(int surface_id,

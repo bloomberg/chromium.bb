@@ -12,7 +12,7 @@ namespace media {
 WallClockTimeSource::WallClockTimeSource()
     : tick_clock_(new base::DefaultTickClock()),
       ticking_(false),
-      playback_rate_(1.0f) {
+      playback_rate_(1.0) {
 }
 
 WallClockTimeSource::~WallClockTimeSource() {
@@ -35,7 +35,7 @@ void WallClockTimeSource::StopTicking() {
   reference_wall_ticks_ = tick_clock_->NowTicks();
 }
 
-void WallClockTimeSource::SetPlaybackRate(float playback_rate) {
+void WallClockTimeSource::SetPlaybackRate(double playback_rate) {
   DVLOG(1) << __FUNCTION__ << "(" << playback_rate << ")";
   base::AutoLock auto_lock(lock_);
   // Estimate current media time using old rate to use as a new base time for

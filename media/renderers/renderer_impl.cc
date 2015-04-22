@@ -35,7 +35,7 @@ RendererImpl::RendererImpl(
       video_renderer_(video_renderer.Pass()),
       time_source_(NULL),
       time_ticking_(false),
-      playback_rate_(0),
+      playback_rate_(0.0),
       audio_buffering_state_(BUFFERING_HAVE_NOTHING),
       video_buffering_state_(BUFFERING_HAVE_NOTHING),
       audio_ended_(false),
@@ -166,7 +166,7 @@ void RendererImpl::StartPlayingFrom(base::TimeDelta time) {
     video_renderer_->StartPlayingFrom(time);
 }
 
-void RendererImpl::SetPlaybackRate(float playback_rate) {
+void RendererImpl::SetPlaybackRate(double playback_rate) {
   DVLOG(1) << __FUNCTION__ << "(" << playback_rate << ")";
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -176,7 +176,7 @@ void RendererImpl::SetPlaybackRate(float playback_rate) {
 
   time_source_->SetPlaybackRate(playback_rate);
 
-  const float old_rate = playback_rate_;
+  const double old_rate = playback_rate_;
   playback_rate_ = playback_rate;
   if (!time_ticking_ || !video_renderer_)
     return;
