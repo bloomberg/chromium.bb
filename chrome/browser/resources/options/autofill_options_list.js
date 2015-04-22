@@ -541,8 +541,8 @@ cr.define('options.autofillOptions', function() {
      * @param {?string|Array<string>} entry
      */
     createItem: function(entry) {
-      if (entry !== null) assertInstanceof(entry, Array);
-      return new NameListItem(this, entry);
+      var arrayOrNull = entry ? assertInstanceof(entry, Array) : null;
+      return new NameListItem(this, arrayOrNull);
     },
   };
 
