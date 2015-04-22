@@ -104,7 +104,7 @@ input[type='checkbox']:checked {
   pointer-events: none;
   position: absolute;
   /* Duration and timing function are set in Javascript. */
-  transition-property: -webkit-transform, opacity;
+  transition-property: transform, opacity;
 }
 
 .gallery .image-container > .image[fade] {
@@ -113,7 +113,8 @@ input[type='checkbox']:checked {
 
 /* Full resolution image is invisible unless printing. */
 .gallery .image-container > canvas.fullres {
-  display: none;
+  opacity: 0;
+  position: absolute;
 }
 
 @media print {
@@ -138,8 +139,13 @@ input[type='checkbox']:checked {
   /* Print the full resolution image instead. */
   .gallery .image-container > canvas.fullres {
     display: block !important;
+    height: auto !important;
     max-height: 100%;
     max-width: 100%;
+    position: static !important;
+    transform: none !important;
+    visibility: visible !important;
+    width: auto !important;
   }
 }
 
@@ -392,7 +398,7 @@ input[type='checkbox']:checked {
 }
 
 .gallery .filename-spacer .saved[highlighted] {
-  -webkit-transform: scaleX(1.1) scaleY(1.1) rotate(0);
+  transform: scaleX(1.1) scaleY(1.1) rotate(0);
   opacity: 1;
 }
 
@@ -1152,7 +1158,7 @@ input[type='checkbox']:checked {
   top: 0;
 
   /* transition-duration is set in Javascript. */
-  transition-property: -webkit-transform;
+  transition-property: transform;
   transition-timing-function: linear;
 }
 
@@ -1172,7 +1178,7 @@ input[type='checkbox']:checked {
   position: absolute;
   /* Tile's zoom factor is animated on hover. We apply the transform to
   the entire tile so that the image outline is included into the animation. */
-  transition: -webkit-transform 150ms linear;
+  transition: transform 150ms linear;
   z-index: 50;
 }
 

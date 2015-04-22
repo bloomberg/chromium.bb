@@ -711,9 +711,9 @@ Mosaic.prototype.loadVisibleTiles_ = function() {
  */
 Mosaic.prototype.transform = function(tileRect, imageRect, opt_instant) {
   if (opt_instant) {
-    this.style.webkitTransitionDuration = '0';
+    this.style.transitionDuration = '0';
   } else {
-    this.style.webkitTransitionDuration =
+    this.style.transitionDuration =
         ImageView.MODE_TRANSITION_DURATION + 'ms';
   }
 
@@ -724,11 +724,11 @@ Mosaic.prototype.transform = function(tileRect, imageRect, opt_instant) {
         (tileRect.left + tileRect.width / 2);
     var shiftY = (imageRect.top + imageRect.height / 2) -
         (tileRect.top + tileRect.height / 2);
-    this.style.webkitTransform =
+    this.style.transform =
         'translate(' + shiftX * scaleX + 'px, ' + shiftY * scaleY + 'px)' +
         'scaleX(' + scaleX + ') scaleY(' + scaleY + ')';
   } else {
-    this.style.webkitTransform = '';
+    this.style.transform = '';
   }
 };
 
