@@ -5,6 +5,7 @@
 #ifndef DOMWindowStorageController_h
 #define DOMWindowStorageController_h
 
+#include "core/dom/Document.h"
 #include "core/frame/DOMWindowLifecycleObserver.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"

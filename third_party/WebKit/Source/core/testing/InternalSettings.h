@@ -28,6 +28,7 @@
 #define InternalSettings_h
 
 #include "core/editing/EditingBehaviorTypes.h"
+#include "core/page/Page.h"
 #include "core/testing/InternalSettingsGenerated.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/ImageAnimationPolicy.h"

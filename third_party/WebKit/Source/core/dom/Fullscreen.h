@@ -46,7 +46,7 @@ class ComputedStyle;
 
 class CORE_EXPORT Fullscreen final
     : public NoBaseWillBeGarbageCollectedFinalized<Fullscreen>
-    , public DocumentSupplement
+    , public WillBeHeapSupplement<Document>
     , public DocumentLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Fullscreen);
 public:

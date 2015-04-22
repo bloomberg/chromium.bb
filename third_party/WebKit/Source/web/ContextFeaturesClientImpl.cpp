@@ -39,7 +39,7 @@
 
 namespace blink {
 
-class ContextFeaturesCache final : public NoBaseWillBeGarbageCollectedFinalized<ContextFeaturesCache>, public DocumentSupplement {
+class ContextFeaturesCache final : public NoBaseWillBeGarbageCollectedFinalized<ContextFeaturesCache>, public WillBeHeapSupplement<Document> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ContextFeaturesCache);
 public:
     class Entry {
@@ -91,7 +91,7 @@ public:
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
-        DocumentSupplement::trace(visitor);
+        WillBeHeapSupplement<Document>::trace(visitor);
     }
 
 private:
@@ -106,10 +106,10 @@ const char* ContextFeaturesCache::supplementName()
 
 ContextFeaturesCache& ContextFeaturesCache::from(Document& document)
 {
-    ContextFeaturesCache* cache = static_cast<ContextFeaturesCache*>(DocumentSupplement::from(document, supplementName()));
+    ContextFeaturesCache* cache = static_cast<ContextFeaturesCache*>(WillBeHeapSupplement<Document>::from(document, supplementName()));
     if (!cache) {
         cache = new ContextFeaturesCache();
-        DocumentSupplement::provideTo(document, supplementName(), adoptPtrWillBeNoop(cache));
+        WillBeHeapSupplement<Document>::provideTo(document, supplementName(), adoptPtrWillBeNoop(cache));
     }
 
     return *cache;

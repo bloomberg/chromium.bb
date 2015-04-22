@@ -28,6 +28,7 @@
 #define ContextFeatures_h
 
 #include "core/CoreExport.h"
+#include "core/page/Page.h"
 #include "platform/RefCountedSupplement.h"
 
 namespace blink {

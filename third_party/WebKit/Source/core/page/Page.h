@@ -27,6 +27,7 @@
 #include "core/frame/OriginsUsingFeatures.h"
 #include "core/frame/SettingsDelegate.h"
 #include "core/frame/UseCounter.h"
+#include "core/page/Page.h"
 #include "core/page/PageAnimator.h"
 #include "core/page/PageLifecycleNotifier.h"
 #include "core/page/PageLifecycleObserver.h"
@@ -268,6 +269,8 @@ private:
     // FIXME: Most of the members of Page should move onto FrameHost.
     OwnPtrWillBeMember<FrameHost> m_frameHost;
 };
+
+extern template class CORE_TEMPLATE_EXPORT WillBeHeapSupplement<Page>;
 
 } // namespace blink
 

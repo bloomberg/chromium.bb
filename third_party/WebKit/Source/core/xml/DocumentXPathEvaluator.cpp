@@ -36,17 +36,17 @@ DocumentXPathEvaluator::DocumentXPathEvaluator()
 {
 }
 
-DocumentXPathEvaluator& DocumentXPathEvaluator::from(DocumentSupplementable& document)
+DocumentXPathEvaluator& DocumentXPathEvaluator::from(WillBeHeapSupplementable<Document>& document)
 {
-    DocumentXPathEvaluator* cache = static_cast<DocumentXPathEvaluator*>(DocumentSupplement::from(document, supplementName()));
+    DocumentXPathEvaluator* cache = static_cast<DocumentXPathEvaluator*>(WillBeHeapSupplement<Document>::from(document, supplementName()));
     if (!cache) {
         cache = new DocumentXPathEvaluator();
-        DocumentSupplement::provideTo(document, supplementName(), adoptPtrWillBeNoop(cache));
+        WillBeHeapSupplement<Document>::provideTo(document, supplementName(), adoptPtrWillBeNoop(cache));
     }
     return *cache;
 }
 
-PassRefPtrWillBeRawPtr<XPathExpression> DocumentXPathEvaluator::createExpression(DocumentSupplementable& document,
+PassRefPtrWillBeRawPtr<XPathExpression> DocumentXPathEvaluator::createExpression(WillBeHeapSupplementable<Document>& document,
     const String& expression, PassRefPtrWillBeRawPtr<XPathNSResolver> resolver, ExceptionState& exceptionState)
 {
     DocumentXPathEvaluator& suplement = from(document);
@@ -55,7 +55,7 @@ PassRefPtrWillBeRawPtr<XPathExpression> DocumentXPathEvaluator::createExpression
     return suplement.m_xpathEvaluator->createExpression(expression, resolver, exceptionState);
 }
 
-PassRefPtrWillBeRawPtr<XPathNSResolver> DocumentXPathEvaluator::createNSResolver(DocumentSupplementable& document, Node* nodeResolver)
+PassRefPtrWillBeRawPtr<XPathNSResolver> DocumentXPathEvaluator::createNSResolver(WillBeHeapSupplementable<Document>& document, Node* nodeResolver)
 {
     DocumentXPathEvaluator& suplement = from(document);
     if (!suplement.m_xpathEvaluator)
@@ -63,7 +63,7 @@ PassRefPtrWillBeRawPtr<XPathNSResolver> DocumentXPathEvaluator::createNSResolver
     return suplement.m_xpathEvaluator->createNSResolver(nodeResolver);
 }
 
-PassRefPtrWillBeRawPtr<XPathResult> DocumentXPathEvaluator::evaluate(DocumentSupplementable& document, const String& expression,
+PassRefPtrWillBeRawPtr<XPathResult> DocumentXPathEvaluator::evaluate(WillBeHeapSupplementable<Document>& document, const String& expression,
     Node* contextNode, PassRefPtrWillBeRawPtr<XPathNSResolver> resolver, unsigned short type,
     const ScriptValue&, ExceptionState& exceptionState)
 {
@@ -76,7 +76,7 @@ PassRefPtrWillBeRawPtr<XPathResult> DocumentXPathEvaluator::evaluate(DocumentSup
 DEFINE_TRACE(DocumentXPathEvaluator)
 {
     visitor->trace(m_xpathEvaluator);
-    DocumentSupplement::trace(visitor);
+    WillBeHeapSupplement<Document>::trace(visitor);
 }
 
 } // namespace blink

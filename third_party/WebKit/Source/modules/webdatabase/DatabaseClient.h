@@ -31,6 +31,7 @@
 #ifndef DatabaseClient_h
 #define DatabaseClient_h
 
+#include "core/page/Page.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"

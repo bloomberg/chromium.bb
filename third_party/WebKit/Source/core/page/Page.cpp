@@ -603,4 +603,6 @@ Page::PageClients::~PageClients()
 {
 }
 
+template class WillBeHeapSupplement<Page>;
+
 } // namespace blink

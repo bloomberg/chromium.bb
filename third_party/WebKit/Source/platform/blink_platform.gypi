@@ -115,6 +115,7 @@
       'SharedTimer.cpp',
       'SharedTimer.h',
       'StorageQuotaCallbacks.h',
+      'Supplementable.cpp',
       'Supplementable.h',
       'Task.h',
       'TaskSynchronizer.cpp',

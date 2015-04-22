@@ -5,7 +5,7 @@
 #ifndef ServiceWorkerContainerClient_h
 #define ServiceWorkerContainerClient_h
 
-#include "core/dom/DocumentSupplementable.h"
+#include "core/dom/Document.h"
 #include "core/workers/WorkerClients.h"
 #include "wtf/Forward.h"
 
@@ -18,7 +18,7 @@ class WebServiceWorkerProvider;
 // Owned by Document (or WorkerClients).
 class ServiceWorkerContainerClient final
     : public NoBaseWillBeGarbageCollectedFinalized<ServiceWorkerContainerClient>
-    , public DocumentSupplement
+    , public WillBeHeapSupplement<Document>
     , public WillBeHeapSupplement<WorkerClients> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerContainerClient);
     WTF_MAKE_NONCOPYABLE(ServiceWorkerContainerClient);
@@ -33,7 +33,7 @@ public:
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
-        DocumentSupplement::trace(visitor);
+        WillBeHeapSupplement<Document>::trace(visitor);
         WillBeHeapSupplement<WorkerClients>::trace(visitor);
     }
 

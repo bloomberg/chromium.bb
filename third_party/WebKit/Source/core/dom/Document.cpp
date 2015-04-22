@@ -5753,6 +5753,8 @@ DEFINE_TRACE(Document)
     DocumentLifecycleNotifier::trace(visitor);
 }
 
+template class WillBeHeapSupplement<Document>;
+
 } // namespace blink
 
 #ifndef NDEBUG

@@ -5,7 +5,7 @@
 #ifndef DocumentXSLT_h
 #define DocumentXSLT_h
 
-#include "core/dom/DocumentSupplementable.h"
+#include "core/dom/Document.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 
@@ -14,7 +14,7 @@ namespace blink {
 class Document;
 class ProcessingInstruction;
 
-class DocumentXSLT final : public NoBaseWillBeGarbageCollected<DocumentXSLT>, public DocumentSupplement {
+class DocumentXSLT final : public NoBaseWillBeGarbageCollected<DocumentXSLT>, public WillBeHeapSupplement<Document> {
     WTF_MAKE_NONCOPYABLE(DocumentXSLT);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DocumentXSLT);
 public:
@@ -29,7 +29,7 @@ public:
         m_transformSourceDocument = document;
     }
 
-    static DocumentXSLT& from(DocumentSupplementable&);
+    static DocumentXSLT& from(WillBeHeapSupplementable<Document>&);
     static const char* supplementName();
 
     // The following static methods don't use any instance of DocumentXSLT.

@@ -33,6 +33,7 @@
 #define PrerendererClient_h
 
 #include "core/CoreExport.h"
+#include "core/page/Page.h"
 #include "platform/Supplementable.h"
 
 namespace blink {

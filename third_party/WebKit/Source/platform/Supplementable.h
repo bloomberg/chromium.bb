@@ -26,6 +26,7 @@
 #ifndef Supplementable_h
 #define Supplementable_h
 
+#include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
@@ -115,7 +116,7 @@ template<>
 class SupplementTracing<true> : public GarbageCollectedMixin { };
 
 template<>
-class GC_PLUGIN_IGNORE("crbug.com/476419") SupplementTracing<false> {
+class GC_PLUGIN_IGNORE("crbug.com/476419") PLATFORM_EXPORT SupplementTracing<false> {
 public:
     virtual ~SupplementTracing() { }
     // FIXME: Oilpan: this trace() method is only provided to minimize

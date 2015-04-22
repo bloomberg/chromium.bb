@@ -5,6 +5,7 @@
 #ifndef CredentialManagerClient_h
 #define CredentialManagerClient_h
 
+#include "core/page/Page.h"
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
 #include "public/platform/WebCredentialManagerClient.h"
