@@ -2396,8 +2396,6 @@ crbug.com/475244 media/video-durationchange-on-ended.html [ Pass Failure ]
 crbug.com/476913 [ Debug SnowLeopard ] virtual/antialiasedtext/fast/text/unicode-fallback-font.html [ Crash ]
 crbug.com/476913 [ Debug SnowLeopard ] fast/text/unicode-fallback-font.html [ Crash ]
 
-crbug.com/450271 [ Win ] compositing/repaint/end-of-opacity-transition.html [ Pass Failure ]
-
 crbug.com/477244 inspector-protocol/debugger/debugger-setVariableValue.html [ Skip ]
 crbug.com/477244 inspector/sources/debugger/live-edit-breakpoints.html [ Skip ]
 
