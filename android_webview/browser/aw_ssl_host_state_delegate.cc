@@ -86,4 +86,15 @@ SSLHostStateDelegate::CertJudgment AwSSLHostStateDelegate::QueryPolicy(
              : SSLHostStateDelegate::DENIED;
 }
 
+void AwSSLHostStateDelegate::RevokeUserAllowExceptions(
+    const std::string& host) {
+  cert_policy_for_host_.erase(host);
+}
+
+bool AwSSLHostStateDelegate::HasAllowException(const std::string& host) const {
+  auto policy_iterator = cert_policy_for_host_.find(host);
+  return policy_iterator != cert_policy_for_host_.end() &&
+         policy_iterator->second.HasAllowException();
+}
+
 }  // namespace android_webview

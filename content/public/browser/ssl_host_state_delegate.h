@@ -54,6 +54,16 @@ class SSLHostStateDelegate {
   virtual bool DidHostRunInsecureContent(const std::string& host,
                                          int pid) const = 0;
 
+  // Revokes all SSL certificate error allow exceptions made by the user for
+  // |host|.
+  virtual void RevokeUserAllowExceptions(const std::string& host) = 0;
+
+  // Returns whether the user has allowed a certificate error exception for
+  // |host|. This does not mean that *all* certificate errors are allowed, just
+  // that there exists an exception. To see if a particular certificate and
+  // error combination exception is allowed, use QueryPolicy().
+  virtual bool HasAllowException(const std::string& host) const = 0;
+
  protected:
   virtual ~SSLHostStateDelegate() {}
 };

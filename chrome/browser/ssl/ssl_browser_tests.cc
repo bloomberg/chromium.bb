@@ -21,6 +21,7 @@
 #include "chrome/browser/safe_browsing/ping_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -41,6 +42,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -50,13 +52,19 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_renderer_host.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/cert_status_flags.h"
+#include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
+#include "net/dns/host_resolver.h"
+#include "net/dns/mock_host_resolver.h"
+#include "net/http/http_transaction_factory.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 
 #if defined(USE_NSS_CERTS)
 #include "chrome/browser/net/nss_context.h"
@@ -265,6 +273,33 @@ class MockSSLCertReporter : public SSLCertReporter {
 
 }  // namespace CertificateReporting
 
+void RootCertsChangedOnIOThread(
+    const scoped_refptr<net::URLRequestContextGetter> context_getter) {
+  net::CertDatabase::GetInstance()->NotifyObserversOfCACertChanged(NULL);
+  context_getter->GetURLRequestContext()
+      ->http_transaction_factory()
+      ->GetSession()
+      ->CloseAllConnections();
+}
+
+// Alerts the URLRequestContext for the given WebContents that a root
+// certificate has changed state or been removed. This, in turn, clears any
+// cached certificate validation in the cert verifier. This will also close all
+// connections in the socket pool of |contents|, so calls to this should be made
+// with care.
+void RootCertsChanged(WebContents* contents) {
+  scoped_refptr<net::URLRequestContextGetter> url_request_context =
+      contents->GetBrowserContext()->GetRequestContextForRenderProcess(
+          contents->GetRenderProcessHost()->GetID());
+  base::RunLoop run_loop;
+  content::BrowserThread::PostTaskAndReply(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&RootCertsChangedOnIOThread, url_request_context),
+      run_loop.QuitClosure());
+  run_loop.Run();
+  base::RunLoop().RunUntilIdle();
+}
+
 }  // namespace
 
 class SSLUITest : public InProcessBrowserTest {
@@ -438,11 +473,11 @@ class SSLUITest : public InProcessBrowserTest {
   }
 
   static bool GetPageWithUnsafeWorkerPath(
-      const net::SpawnedTestServer& expired_https_server,
+      const net::SpawnedTestServer& https_server,
       std::string* page_with_unsafe_worker_path) {
     // Get the "imported.js" URL from the expired https server and
     // substitute it into the unsafe_worker.js file.
-    GURL imported_js_url = expired_https_server.GetURL("files/ssl/imported.js");
+    GURL imported_js_url = https_server.GetURL("files/ssl/imported.js");
     std::vector<net::SpawnedTestServer::StringPair>
         replacement_text_for_unsafe_worker;
     replacement_text_for_unsafe_worker.push_back(
@@ -2032,32 +2067,93 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsInWorkerFiltered) {
   CheckAuthenticatedState(tab, AuthState::NONE);
 }
 
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsInWorker) {
+// This test, and the related test TestUnsafeContentsWithUserException, verify
+// that if unsafe content is loaded but the host of that unsafe content has a
+// user exception, the content runs and the security style remains
+// authenticated. This is not necessarily the behavior that should exist, but it
+// is verification that it does behave that way. See https://crbug.com/477868
+// for more inforamtion on this.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsInWorkerWithUserException) {
   ASSERT_TRUE(https_server_.Start());
-  ASSERT_TRUE(https_server_expired_.Start());
+  // Note that it is necessary to user https_server_mismatched_ here over the
+  // other invalid cert servers. This is because the test relies on the two
+  // servers having different hosts since SSL exceptions are per-host, not per
+  // origin, and https_server_mismatched_ uses 'localhost' rather than
+  // '127.0.0.1'.
+  ASSERT_TRUE(https_server_mismatched_.Start());
 
   // Navigate to an unsafe site. Proceed with interstitial page to indicate
   // the user approves the bad certificate.
-  ui_test_utils::NavigateToURL(browser(),
-      https_server_expired_.GetURL("files/ssl/blank_page.html"));
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_mismatched_.GetURL("files/ssl/blank_page.html"));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  CheckAuthenticationBrokenState(
-      tab, net::CERT_STATUS_DATE_INVALID, AuthState::SHOWING_INTERSTITIAL);
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
+                                 AuthState::SHOWING_INTERSTITIAL);
   ProceedThroughInterstitial(tab);
-  CheckAuthenticationBrokenState(
-      tab, net::CERT_STATUS_DATE_INVALID, AuthState::NONE);
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
+                                 AuthState::NONE);
 
   // Navigate to safe page that has Worker loading unsafe content.
   // Expect content to load but be marked as auth broken due to running insecure
   // content.
   std::string page_with_unsafe_worker_path;
-  ASSERT_TRUE(GetPageWithUnsafeWorkerPath(https_server_expired_,
+  ASSERT_TRUE(GetPageWithUnsafeWorkerPath(https_server_mismatched_,
                                           &page_with_unsafe_worker_path));
-  ui_test_utils::NavigateToURL(browser(), https_server_.GetURL(
-      page_with_unsafe_worker_path));
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(page_with_unsafe_worker_path));
   CheckWorkerLoadResult(tab, true);  // Worker loads insecure content
-  CheckAuthenticationBrokenState(
-      tab, CertError::NONE, AuthState::RAN_INSECURE_CONTENT);
+  CheckAuthenticatedState(tab, CertError::NONE);
+}
+
+// Visits a page with unsafe content and makes sure that if a user exception to
+// the certificate error is present, the image is loaded and script executes.
+//
+// See the comment above SSLUITest.TestUnsafeContentsInWorkerWithUserException
+// for a discussion about the desired behavior.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsWithUserException) {
+  ASSERT_TRUE(https_server_.Start());
+  // Note that it is necessary to user https_server_mismatched_ here over the
+  // other invalid cert servers. This is because the test relies on the two
+  // servers having different hosts since SSL exceptions are per-host, not per
+  // origin, and https_server_mismatched_ uses 'localhost' rather than
+  // '127.0.0.1'.
+  ASSERT_TRUE(https_server_mismatched_.Start());
+
+  // Navigate to an unsafe site. Proceed with interstitial page to indicate
+  // the user approves the bad certificate.
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_mismatched_.GetURL("files/ssl/blank_page.html"));
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
+                                 AuthState::SHOWING_INTERSTITIAL);
+  ProceedThroughInterstitial(tab);
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
+                                 AuthState::NONE);
+
+  std::string replacement_path;
+  ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
+      "files/ssl/page_with_unsafe_contents.html",
+      https_server_mismatched_.host_port_pair(), &replacement_path));
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL(replacement_path));
+
+  // When the bad content is filtered, the state is expected to be
+  // authenticated.
+  CheckAuthenticatedState(tab, AuthState::NONE);
+
+  int img_width;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+      tab, "window.domAutomationController.send(ImageWidth());", &img_width));
+  // In order to check that the image was loaded, we check its width.
+  // The actual image (Google logo) is 114 pixels wide, so we assume a good
+  // image is greater than 100.
+  EXPECT_GT(img_width, 100);
+
+  bool js_result = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      tab, "window.domAutomationController.send(IsFooSet());", &js_result));
+  EXPECT_TRUE(js_result);
+  CheckAuthenticatedState(tab, CertError::NONE);
 }
 
 // Test that when the browser blocks displaying insecure content (images), the
@@ -2246,6 +2342,40 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, InterstitialNotAffectedByHideShow) {
 
   browser()->tab_strip_model()->ActivateTabAt(1, true);
   EXPECT_TRUE(tab->GetRenderWidgetHostView()->IsShowing());
+}
+
+// Verifies that if a bad certificate is seen for a host and the user proceeds
+// through the interstitial, the decision to proceed is initially remembered.
+// However, if this is followed by another visit, and a good certificate
+// is seen for the same host, the original exception is forgotten.
+IN_PROC_BROWSER_TEST_F(SSLUITest, BadCertFollowedByGoodCert) {
+  ASSERT_TRUE(https_server_.Start());
+  std::string https_server_host =
+      https_server_.GetURL("files/ssl/google.html").host();
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  net::TestRootCerts* root_certs = net::TestRootCerts::GetInstance();
+
+  ASSERT_TRUE(root_certs);
+  root_certs->Clear();
+
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
+  ChromeSSLHostStateDelegate* state =
+      reinterpret_cast<ChromeSSLHostStateDelegate*>(
+          profile->GetSSLHostStateDelegate());
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("files/ssl/google.html"));
+
+  ProceedThroughInterstitial(tab);
+  EXPECT_TRUE(state->HasAllowException(https_server_host));
+
+  ASSERT_TRUE(https_server_.LoadTestRootCert());
+  RootCertsChanged(tab);
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("files/ssl/google.html"));
+  ASSERT_FALSE(tab->GetInterstitialPage());
+  EXPECT_FALSE(state->HasAllowException(https_server_host));
 }
 
 class SSLBlockingPageIDNTest : public SecurityInterstitialIDNTest {

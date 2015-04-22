@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
@@ -25,6 +26,16 @@
 
 
 namespace content {
+
+namespace {
+
+// Events for UMA. Do not reorder or change!
+enum SSLGoodCertSeenEvent {
+  NO_PREVIOUS_EXCEPTION = 0,
+  HAD_PREVIOUS_EXCEPTION = 1,
+  SSL_GOOD_CERT_SEEN_EVENT_MAX = 2
+};
+}
 
 SSLPolicy::SSLPolicy(SSLPolicyBackend* backend)
     : backend_(backend) {
@@ -110,8 +121,20 @@ void SSLPolicy::OnRequestStarted(SSLRequestInfo* info) {
   // this information back through WebKit and out some FrameLoaderClient
   // methods.
 
-  if (net::IsCertStatusError(info->ssl_cert_status()))
+  if (net::IsCertStatusError(info->ssl_cert_status())) {
     backend_->HostRanInsecureContent(info->url().host(), info->child_id());
+  } else {
+    SSLGoodCertSeenEvent event = NO_PREVIOUS_EXCEPTION;
+    if (backend_->HasAllowException(info->url().host())) {
+      // If there's no certificate error, a good certificate has been seen, so
+      // clear out any exceptions that were made by the user for bad
+      // certificates.
+      backend_->RevokeUserAllowExceptions(info->url().host());
+      event = HAD_PREVIOUS_EXCEPTION;
+    }
+    UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.good_cert_seen", event,
+                              SSL_GOOD_CERT_SEEN_EVENT_MAX);
+  }
 }
 
 void SSLPolicy::UpdateEntry(NavigationEntryImpl* entry,

@@ -310,6 +310,24 @@ bool BaseTestServer::GetFilePathWithReplacements(
   return true;
 }
 
+bool BaseTestServer::LoadTestRootCert() const {
+  TestRootCerts* root_certs = TestRootCerts::GetInstance();
+  if (!root_certs)
+    return false;
+
+  // Should always use absolute path to load the root certificate.
+  base::FilePath root_certificate_path = certificates_dir_;
+  if (!certificates_dir_.IsAbsolute()) {
+    base::FilePath src_dir;
+    if (!PathService::Get(base::DIR_SOURCE_ROOT, &src_dir))
+      return false;
+    root_certificate_path = src_dir.Append(certificates_dir_);
+  }
+
+  return root_certs->AddFromFile(
+      root_certificate_path.AppendASCII("root_ca_cert.pem"));
+}
+
 void BaseTestServer::Init(const std::string& host) {
   host_port_pair_ = HostPortPair(host, 0);
 
@@ -350,24 +368,6 @@ bool BaseTestServer::ParseServerData(const std::string& server_data) {
   host_port_pair_.set_port(port);
 
   return true;
-}
-
-bool BaseTestServer::LoadTestRootCert() const {
-  TestRootCerts* root_certs = TestRootCerts::GetInstance();
-  if (!root_certs)
-    return false;
-
-  // Should always use absolute path to load the root certificate.
-  base::FilePath root_certificate_path = certificates_dir_;
-  if (!certificates_dir_.IsAbsolute()) {
-    base::FilePath src_dir;
-    if (!PathService::Get(base::DIR_SOURCE_ROOT, &src_dir))
-      return false;
-    root_certificate_path = src_dir.Append(certificates_dir_);
-  }
-
-  return root_certs->AddFromFile(
-      root_certificate_path.AppendASCII("root_ca_cert.pem"));
 }
 
 bool BaseTestServer::SetupWhenServerStarted() {

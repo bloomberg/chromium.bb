@@ -30,6 +30,10 @@ class CertPolicy {
   // remember the user's choice.
   void Allow(const net::X509Certificate& cert, net::CertStatus error);
 
+  // Returns true if and only if there exists a user allow exception for some
+  // certificate.
+  bool HasAllowException() const { return allowed_.size() > 0; }
+
  private:
   // The set of fingerprints of allowed certificates.
   std::map<net::SHA256HashValue, net::CertStatus, net::SHA256HashValueLessThan>
@@ -64,6 +68,16 @@ class AwSSLHostStateDelegate : public content::SSLHostStateDelegate {
   // Returns whether the specified host ran insecure content.
   bool DidHostRunInsecureContent(const std::string& host,
                                  int pid) const override;
+
+  // Revokes all SSL certificate error allow exceptions made by the user for
+  // |host|.
+  void RevokeUserAllowExceptions(const std::string& host) override;
+
+  // Returns whether the user has allowed a certificate error exception for
+  // |host|. This does not mean that *all* certificate errors are allowed, just
+  // that there exists an exception. To see if a particular certificate and
+  // error combination exception is allowed, use QueryPolicy().
+  bool HasAllowException(const std::string& host) const override;
 
  private:
   // Certificate policies for each host.

@@ -262,6 +262,10 @@ class BaseTestServer {
     ws_basic_auth_ = ws_basic_auth;
   }
 
+  // Marks the root certificate of an HTTPS test server as trusted for
+  // the duration of tests.
+  bool LoadTestRootCert() const WARN_UNUSED_RESULT;
+
  protected:
   virtual ~BaseTestServer();
   Type type() const { return type_; }
@@ -299,10 +303,6 @@ class BaseTestServer {
 
  private:
   void Init(const std::string& host);
-
-  // Marks the root certificate of an HTTPS test server as trusted for
-  // the duration of tests.
-  bool LoadTestRootCert() const WARN_UNUSED_RESULT;
 
   // Document root of the test server.
   base::FilePath document_root_;

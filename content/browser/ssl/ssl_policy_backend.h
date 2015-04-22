@@ -27,6 +27,13 @@ class SSLPolicyBackend {
   // Returns whether the specified host ran insecure content.
   bool DidHostRunInsecureContent(const std::string& host, int pid) const;
 
+  // Revokes all allow exceptions by the user for |host|.
+  void RevokeUserAllowExceptions(const std::string& host);
+
+  // Returns true if and only if a user exception has previously been made for
+  // |host|.
+  bool HasAllowException(const std::string& host);
+
   // Records that |cert| is permitted to be used for |host| in the future, for
   // a specific error type.
   void AllowCertForHost(const net::X509Certificate& cert,

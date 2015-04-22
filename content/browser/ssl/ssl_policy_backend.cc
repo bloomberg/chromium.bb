@@ -31,6 +31,20 @@ bool SSLPolicyBackend::DidHostRunInsecureContent(const std::string& host,
   return ssl_host_state_delegate_->DidHostRunInsecureContent(host, pid);
 }
 
+void SSLPolicyBackend::RevokeUserAllowExceptions(const std::string& host) {
+  if (!ssl_host_state_delegate_)
+    return;
+
+  ssl_host_state_delegate_->RevokeUserAllowExceptions(host);
+}
+
+bool SSLPolicyBackend::HasAllowException(const std::string& host) {
+  if (!ssl_host_state_delegate_)
+    return false;
+
+  return ssl_host_state_delegate_->HasAllowException(host);
+}
+
 void SSLPolicyBackend::AllowCertForHost(const net::X509Certificate& cert,
                                         const std::string& host,
                                         net::CertStatus error) {

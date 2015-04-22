@@ -13096,6 +13096,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="interstitial.ssl.good_cert_seen" enum="SSLGoodCertSeenEvent">
+  <owner>jww@chromium.org</owner>
+  <summary>
+    Emitted when a good certificate is seen, specifying whether the user already
+    gave an exception for a bad certificate for the same host.
+  </summary>
+</histogram>
+
 <histogram name="interstitial.ssl.severity_score.authority_invalid" units="%">
   <obsolete>
     Deprecated Jan 2015 (M42).
@@ -62452,6 +62460,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="7" label="CERT_WEAK_SIGNATURE_ALGORITHM"/>
   <int value="8" label="CERT_WEAK_KEY"/>
   <int value="9" label="UNKNOWN"/>
+</enum>
+
+<enum name="SSLGoodCertSeenEvent" type="int">
+  <int value="0" label="NO_PREVIOUS_EXCEPTION"/>
+  <int value="1" label="HAD_PREVIOUS_EXCEPTION"/>
 </enum>
 
 <enum name="SSLIsExpiredAndDecision" type="int">

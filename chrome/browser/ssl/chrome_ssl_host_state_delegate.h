@@ -41,7 +41,7 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
 
   // Revokes all SSL certificate error allow exceptions made by the user for
   // |host| in the given Profile.
-  virtual void RevokeUserAllowExceptions(const std::string& host);
+  void RevokeUserAllowExceptions(const std::string& host) override;
 
   // RevokeUserAllowExceptionsHard is the same as RevokeUserAllowExceptions but
   // additionally may close idle connections in the process. This should be used
@@ -53,7 +53,7 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
   // |host|. This does not mean that *all* certificate errors are allowed, just
   // that there exists an exception. To see if a particular certificate and
   // error combination exception is allowed, use QueryPolicy().
-  virtual bool HasAllowException(const std::string& host) const;
+  bool HasAllowException(const std::string& host) const override;
 
  protected:
   // SetClock takes ownership of the passed in clock.
