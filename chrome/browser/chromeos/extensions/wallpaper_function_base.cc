@@ -45,9 +45,7 @@ class WallpaperFunctionBase::UnsafeWallpaperDecoder
     : public ImageDecoder::ImageRequest {
  public:
   explicit UnsafeWallpaperDecoder(scoped_refptr<WallpaperFunctionBase> function)
-      : ImageRequest(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
-        function_(function) {}
+      : function_(function) {}
 
   void Start(const std::vector<char>& image_data) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);

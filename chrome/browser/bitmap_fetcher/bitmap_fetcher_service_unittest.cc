@@ -6,6 +6,7 @@
 
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -27,7 +28,10 @@ class TestObserver : public BitmapFetcherService::Observer {
     target_->OnImageChanged();
   }
 
+ private:
   TestNotificationInterface* target_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
 class TestService : public BitmapFetcherService {
@@ -48,30 +52,33 @@ class TestService : public BitmapFetcherService {
 class BitmapFetcherServiceTest : public testing::Test,
                                  public TestNotificationInterface {
  public:
+  BitmapFetcherServiceTest()
+      : url1_(GURL("http://example.org/sample-image-1.png")),
+        url2_(GURL("http://example.org/sample-image-2.png")) {
+  }
+
   void SetUp() override {
     service_.reset(new TestService(&profile_));
-    requestsFinished_ = 0;
-    imagesChanged_ = 0;
-    url1_ = GURL("http://example.org/sample-image-1.png");
-    url2_ = GURL("http://example.org/sample-image-2.png");
+    requests_finished_ = 0;
+    images_changed_ = 0;
   }
 
-  const ScopedVector<BitmapFetcherRequest>& requests() {
+  const ScopedVector<BitmapFetcherRequest>& requests() const {
     return service_->requests_;
   }
-  const ScopedVector<chrome::BitmapFetcher>& active_fetchers() {
+  const ScopedVector<chrome::BitmapFetcher>& active_fetchers() const {
     return service_->active_fetchers_;
   }
-  size_t cache_size() { return service_->cache_.size(); }
+  size_t cache_size() const { return service_->cache_.size(); }
 
-  void OnImageChanged() override { imagesChanged_++; }
+  void OnImageChanged() override { images_changed_++; }
 
-  void OnRequestFinished() override { requestsFinished_++; }
+  void OnRequestFinished() override { requests_finished_++; }
 
   // Simulate finishing a URL fetch and decode for the given fetcher.
   void CompleteFetch(const GURL& url) {
     const chrome::BitmapFetcher* fetcher = service_->FindFetcherForUrl(url);
-    ASSERT_TRUE(NULL != fetcher);
+    ASSERT_TRUE(fetcher);
 
     // Create a non-empty bitmap.
     SkBitmap image;
@@ -83,20 +90,21 @@ class BitmapFetcherServiceTest : public testing::Test,
 
   void FailFetch(const GURL& url) {
     const chrome::BitmapFetcher* fetcher = service_->FindFetcherForUrl(url);
-    ASSERT_TRUE(NULL != fetcher);
+    ASSERT_TRUE(fetcher);
     const_cast<chrome::BitmapFetcher*>(fetcher)->OnImageDecoded(SkBitmap());
   }
 
  protected:
   scoped_ptr<BitmapFetcherService> service_;
 
-  int imagesChanged_;
-  int requestsFinished_;
+  int images_changed_;
+  int requests_finished_;
 
-  GURL url1_;
-  GURL url2_;
+  const GURL url1_;
+  const GURL url2_;
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
 };
 
@@ -135,8 +143,8 @@ TEST_F(BitmapFetcherServiceTest, CompletedFetchNotifiesAllObservers) {
   EXPECT_EQ(4U, requests().size());
 
   CompleteFetch(url1_);
-  EXPECT_EQ(4, imagesChanged_);
-  EXPECT_EQ(4, requestsFinished_);
+  EXPECT_EQ(4, images_changed_);
+  EXPECT_EQ(4, requests_finished_);
 }
 
 TEST_F(BitmapFetcherServiceTest, CancelRequest) {
@@ -152,10 +160,10 @@ TEST_F(BitmapFetcherServiceTest, CancelRequest) {
   EXPECT_EQ(4U, requests().size());
 
   CompleteFetch(url2_);
-  EXPECT_EQ(0, imagesChanged_);
+  EXPECT_EQ(0, images_changed_);
 
   CompleteFetch(url1_);
-  EXPECT_EQ(4, imagesChanged_);
+  EXPECT_EQ(4, images_changed_);
 }
 
 TEST_F(BitmapFetcherServiceTest, FailedRequestsDontEnterCache) {

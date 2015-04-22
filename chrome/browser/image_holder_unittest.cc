@@ -5,6 +5,7 @@
 #include <string>
 
 #include "chrome/browser/image_holder.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -15,11 +16,20 @@ const char kIconUrl2[] = "http://www.google.com/icon2.jpg";
 class TestDelegate : public chrome::ImageHolderDelegate {
  public:
   TestDelegate() : on_fetch_complete_called_(false) {}
+
+  bool on_fetch_complete_called() const { return on_fetch_complete_called_; }
+
+  // chrome::ImageHolderDelegate
   void OnFetchComplete() override { on_fetch_complete_called_ = true; }
+
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
   bool on_fetch_complete_called_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDelegate);
 };
 
-}  // namespace.
+}  // namespace
 
 namespace chrome {
 
@@ -27,22 +37,23 @@ typedef testing::Test ImageHolderTest;
 
 TEST_F(ImageHolderTest, CreateBitmapFetcherTest) {
   TestDelegate delegate;
-  ImageHolder image_holder(GURL(kIconUrl1), GURL(kIconUrl2), NULL, &delegate);
+  ImageHolder image_holder(GURL(kIconUrl1), GURL(kIconUrl2), nullptr,
+                           &delegate);
 
+  ASSERT_EQ(2U, image_holder.fetchers_.size());
   EXPECT_EQ(GURL(kIconUrl1), image_holder.fetchers_[0]->url());
   EXPECT_EQ(GURL(kIconUrl2), image_holder.fetchers_[1]->url());
-  EXPECT_EQ(static_cast<unsigned int>(2), image_holder.fetchers_.size());
 
   // Adding a dup of an existing URL shouldn't change anything.
   image_holder.CreateBitmapFetcher(GURL(kIconUrl2));
+  ASSERT_EQ(2U, image_holder.fetchers_.size());
   EXPECT_EQ(GURL(kIconUrl1), image_holder.fetchers_[0]->url());
   EXPECT_EQ(GURL(kIconUrl2), image_holder.fetchers_[1]->url());
-  EXPECT_EQ(static_cast<unsigned int>(2), image_holder.fetchers_.size());
 }
 
 TEST_F(ImageHolderTest, OnFetchCompleteTest) {
   TestDelegate delegate;
-  ImageHolder image_holder(GURL(kIconUrl1), GURL(), NULL, &delegate);
+  ImageHolder image_holder(GURL(kIconUrl1), GURL(), nullptr, &delegate);
 
   // Put a real bitmap into "bitmap".  2x2 bitmap of green 32 bit pixels.
   SkBitmap bitmap;
@@ -55,15 +66,16 @@ TEST_F(ImageHolderTest, OnFetchCompleteTest) {
   EXPECT_FALSE(image_holder.low_dpi_image().IsEmpty());
 
   // Expect that we reported the fetch done to the delegate.
-  EXPECT_TRUE(delegate.on_fetch_complete_called_);
+  EXPECT_TRUE(delegate.on_fetch_complete_called());
 }
 
 TEST_F(ImageHolderTest, IsFetchingDoneTest) {
   TestDelegate delegate;
-  ImageHolder image_holder1(GURL(kIconUrl1), GURL(kIconUrl2), NULL, &delegate);
-  ImageHolder image_holder2(GURL(kIconUrl1), GURL(), NULL, &delegate);
-  ImageHolder image_holder3(GURL(), GURL(kIconUrl2), NULL, &delegate);
-  ImageHolder image_holder4(GURL(), GURL(), NULL, &delegate);
+  ImageHolder image_holder1(GURL(kIconUrl1), GURL(kIconUrl2), nullptr,
+                            &delegate);
+  ImageHolder image_holder2(GURL(kIconUrl1), GURL(), nullptr, &delegate);
+  ImageHolder image_holder3(GURL(), GURL(kIconUrl2), nullptr, &delegate);
+  ImageHolder image_holder4(GURL(), GURL(), nullptr, &delegate);
 
   // Initially, image holder 4 with no URLs should report done, but no others.
   EXPECT_FALSE(image_holder1.IsFetchingDone());

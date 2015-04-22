@@ -66,8 +66,6 @@ UserImageScreen* UserImageScreen::Get(ScreenManager* manager) {
 UserImageScreen::UserImageScreen(BaseScreenDelegate* base_screen_delegate,
                                  UserImageView* view)
     : UserImageModel(base_screen_delegate),
-      ImageRequest(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
       view_(view),
       accept_photo_after_decoding_(false),
       selected_image_(user_manager::User::USER_IMAGE_INVALID),

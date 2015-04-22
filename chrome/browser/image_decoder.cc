@@ -5,6 +5,7 @@
 #include "chrome/browser/image_decoder.h"
 
 #include "base/bind.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/grit/generated_resources.h"
@@ -36,12 +37,19 @@ ImageDecoder::ImageDecoder()
 ImageDecoder::~ImageDecoder() {
 }
 
+ImageDecoder::ImageRequest::ImageRequest()
+    : task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+}
+
 ImageDecoder::ImageRequest::ImageRequest(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : task_runner_(task_runner) {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 }
 
 ImageDecoder::ImageRequest::~ImageRequest() {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   ImageDecoder::Cancel(this);
 }
 
@@ -56,13 +64,29 @@ void ImageDecoder::StartWithOptions(ImageRequest* image_request,
                                     const std::string& image_data,
                                     ImageCodec image_codec,
                                     bool shrink_to_fit) {
+  g_decoder.Pointer()->StartWithOptionsImpl(image_request, image_data,
+                                            image_codec, shrink_to_fit);
+}
+
+void ImageDecoder::StartWithOptionsImpl(ImageRequest* image_request,
+                                        const std::string& image_data,
+                                        ImageCodec image_codec,
+                                        bool shrink_to_fit) {
   DCHECK(image_request);
   DCHECK(image_request->task_runner());
+
+  int request_id;
+  {
+    base::AutoLock lock(map_lock_);
+    request_id = image_request_id_counter_++;
+    image_request_id_map_.insert(std::make_pair(request_id, image_request));
+  }
+
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
           &ImageDecoder::DecodeImageInSandbox,
-          g_decoder.Pointer(), image_request,
+          g_decoder.Pointer(), request_id,
           std::vector<unsigned char>(image_data.begin(), image_data.end()),
           image_codec, shrink_to_fit));
 }
@@ -74,11 +98,17 @@ void ImageDecoder::Cancel(ImageRequest* image_request) {
 }
 
 void ImageDecoder::DecodeImageInSandbox(
-    ImageRequest* image_request,
+    int request_id,
     const std::vector<unsigned char>& image_data,
     ImageCodec image_codec,
     bool shrink_to_fit) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  base::AutoLock lock(map_lock_);
+  const auto it = image_request_id_map_.find(request_id);
+  if (it == image_request_id_map_.end())
+    return;
+
+  ImageRequest* image_request = it->second;
   if (!utility_process_host_) {
     StartBatchMode();
   }
@@ -88,28 +118,23 @@ void ImageDecoder::DecodeImageInSandbox(
     // investigation is needed to determine why the utility process
     // is failing to start. See crbug.com/472272
     image_request->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&ImageRequest::OnDecodeImageFailed,
-                              base::Unretained(image_request)));
+        FROM_HERE,
+        base::Bind(&ImageDecoder::RunOnDecodeImageFailed, this, request_id));
     return;
   }
 
   last_request_ = base::TimeTicks::Now();
-  base::AutoLock lock(map_lock_);
-  image_request_id_map_.insert(
-      std::make_pair(image_request_id_counter_, image_request));
 
   switch (image_codec) {
     case ROBUST_JPEG_CODEC:
       utility_process_host_->Send(new ChromeUtilityMsg_RobustJPEGDecodeImage(
-          image_data, image_request_id_counter_));
+          image_data, request_id));
       break;
     case DEFAULT_CODEC:
       utility_process_host_->Send(new ChromeUtilityMsg_DecodeImage(
-          image_data, shrink_to_fit, image_request_id_counter_));
+          image_data, shrink_to_fit, request_id));
       break;
   }
-
-  ++image_request_id_counter_;
 }
 
 void ImageDecoder::CancelImpl(ImageRequest* image_request) {
@@ -173,26 +198,58 @@ void ImageDecoder::OnDecodeImageSucceeded(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::AutoLock lock(map_lock_);
   auto it = image_request_id_map_.find(request_id);
-  if (it != image_request_id_map_.end()) {
-    ImageRequest* image_request = it->second;
-    image_request->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&ImageRequest::OnImageDecoded,
-                              base::Unretained(image_request), decoded_image));
+  if (it == image_request_id_map_.end())
+    return;
 
-    image_request_id_map_.erase(it);
-  }
+  ImageRequest* image_request = it->second;
+  image_request->task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&ImageDecoder::RunOnImageDecoded,
+                 this,
+                 decoded_image,
+                 request_id));
 }
 
 void ImageDecoder::OnDecodeImageFailed(int request_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::AutoLock lock(map_lock_);
   auto it = image_request_id_map_.find(request_id);
-  if (it != image_request_id_map_.end()) {
-    ImageRequest* image_request = it->second;
-    image_request->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&ImageRequest::OnDecodeImageFailed,
-                              base::Unretained(image_request)));
+  if (it == image_request_id_map_.end())
+    return;
 
+  ImageRequest* image_request = it->second;
+  image_request->task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&ImageDecoder::RunOnDecodeImageFailed, this, request_id));
+}
+
+void ImageDecoder::RunOnImageDecoded(const SkBitmap& decoded_image,
+                                     int request_id) {
+  ImageRequest* image_request;
+  {
+    base::AutoLock lock(map_lock_);
+    auto it = image_request_id_map_.find(request_id);
+    if (it == image_request_id_map_.end())
+      return;
+    image_request = it->second;
     image_request_id_map_.erase(it);
   }
+
+  DCHECK(image_request->task_runner()->RunsTasksOnCurrentThread());
+  image_request->OnImageDecoded(decoded_image);
+}
+
+void ImageDecoder::RunOnDecodeImageFailed(int request_id) {
+  ImageRequest* image_request;
+  {
+    base::AutoLock lock(map_lock_);
+    auto it = image_request_id_map_.find(request_id);
+    if (it == image_request_id_map_.end())
+      return;
+    image_request = it->second;
+    image_request_id_map_.erase(it);
+  }
+
+  DCHECK(image_request->task_runner()->RunsTasksOnCurrentThread());
+  image_request->OnDecodeImageFailed();
 }

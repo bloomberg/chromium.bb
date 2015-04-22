@@ -207,9 +207,13 @@ void ChromeContentUtilityClient::PreSandboxStartup() {
 // static
 SkBitmap ChromeContentUtilityClient::DecodeImage(
     const std::vector<unsigned char>& encoded_data, bool shrink_to_fit) {
-  SkBitmap decoded_image = content::DecodeImage(&encoded_data[0],
-                                                gfx::Size(),
-                                                encoded_data.size());
+  SkBitmap decoded_image;
+  if (encoded_data.empty())
+    return decoded_image;
+
+  decoded_image = content::DecodeImage(&encoded_data[0],
+                                       gfx::Size(),
+                                       encoded_data.size());
 
   int64_t struct_size = sizeof(ChromeUtilityHostMsg_DecodeImage_Succeeded);
   int64_t image_size = decoded_image.computeSize64();

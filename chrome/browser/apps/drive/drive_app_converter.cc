@@ -37,9 +37,7 @@ class DriveAppConverter::IconFetcher : public net::URLFetcherDelegate,
   IconFetcher(DriveAppConverter* converter,
               const GURL& icon_url,
               int expected_size)
-      : ImageRequest(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
-        converter_(converter),
+      : converter_(converter),
         icon_url_(icon_url),
         expected_size_(expected_size) {}
   ~IconFetcher() override {}

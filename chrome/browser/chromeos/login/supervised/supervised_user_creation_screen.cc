@@ -100,8 +100,6 @@ SupervisedUserCreationScreen::SupervisedUserCreationScreen(
     BaseScreenDelegate* base_screen_delegate,
     SupervisedUserCreationScreenHandler* actor)
     : BaseScreen(base_screen_delegate),
-      ImageRequest(content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::UI)),
       actor_(actor),
       on_error_screen_(false),
       manager_signin_in_progress_(false),

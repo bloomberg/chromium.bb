@@ -52,9 +52,7 @@ class ImageDecoderDelegateAdapter : public ImageDecoder::ImageRequest {
   ImageDecoderDelegateAdapter(
       scoped_ptr<std::string> data,
       const storage::CopyOrMoveFileValidator::ResultCallback& callback)
-      : ImageRequest(content::BrowserThread::GetMessageLoopProxyForThread(
-            BrowserThread::IO)),
-        data_(data.Pass()),
+      : data_(data.Pass()),
         callback_(callback) {
     DCHECK(data_);
   }

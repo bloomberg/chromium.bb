@@ -22,9 +22,7 @@ UrlIconSource::UrlIconSource(const IconLoadedCallback& icon_loaded_callback,
                              const GURL& icon_url,
                              int icon_size,
                              int default_icon_resource_id)
-    : ImageRequest(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
-      icon_loaded_callback_(icon_loaded_callback),
+    : icon_loaded_callback_(icon_loaded_callback),
       context_getter_(context_getter),
       icon_url_(icon_url),
       icon_size_(icon_size),

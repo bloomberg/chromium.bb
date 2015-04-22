@@ -12,9 +12,7 @@
 namespace chrome {
 
 BitmapFetcher::BitmapFetcher(const GURL& url, BitmapFetcherDelegate* delegate)
-    : ImageRequest(content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::UI)),
-      url_(url),
+    : url_(url),
       delegate_(delegate) {
 }
 

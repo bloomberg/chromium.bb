@@ -292,6 +292,7 @@
       'browser/history/history_browsertest.cc',
       'browser/history/redirect_browsertest.cc',
       'browser/iframe_browsertest.cc',
+      'browser/image_decoder_browsertest.cc',
       'browser/importer/firefox_importer_browsertest.cc',
       'browser/importer/ie_importer_browsertest_win.cc',
       'browser/importer/importer_unittest_utils.cc',

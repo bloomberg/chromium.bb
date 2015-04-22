@@ -44,8 +44,7 @@ bool AreImagesEqual(const gfx::ImageSkia& first, const gfx::ImageSkia& second) {
   return true;
 }
 
-ImageLoader::ImageLoader(const base::FilePath& path)
-    : ImageRequest(base::MessageLoopProxy::current()), path_(path) {
+ImageLoader::ImageLoader(const base::FilePath& path) : path_(path) {
 }
 
 ImageLoader::~ImageLoader() {

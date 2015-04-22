@@ -40,8 +40,7 @@ class LogoDecoderDelegate : public ImageDecoder::ImageRequest {
  public:
   LogoDecoderDelegate(
       const base::Callback<void(const SkBitmap&)>& image_decoded_callback)
-      : ImageRequest(base::MessageLoopProxy::current()),
-        image_decoded_callback_(image_decoded_callback),
+      : image_decoded_callback_(image_decoded_callback),
         weak_ptr_factory_(this) {
     // If the ImageDecoder crashes or otherwise never completes, call
     // OnImageDecodeTimedOut() eventually to ensure that image_decoded_callback_
