@@ -67,7 +67,7 @@ DEFINE_TRACE(FetchEvent)
 {
     visitor->trace(m_request);
     visitor->trace(m_observer);
-    Event::trace(visitor);
+    ExtendableEvent::trace(visitor);
 }
 
 } // namespace blink
