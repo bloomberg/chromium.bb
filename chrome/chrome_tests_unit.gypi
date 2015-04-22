@@ -94,6 +94,7 @@
       'browser/download/download_ui_controller_unittest.cc',
       'browser/enumerate_modules_model_unittest_win.cc',
       'browser/external_protocol/external_protocol_handler_unittest.cc',
+      'browser/favicon/chrome_fallback_icon_client_unittest.cc',
       'browser/file_select_helper_unittest.cc',
       'browser/geolocation/geolocation_permission_context_unittest.cc',
       'browser/global_keyboard_shortcuts_mac_unittest.mm',

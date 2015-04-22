@@ -11,6 +11,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
+namespace {
+const char* kFallbackIconTextForIP = "IP";
+}  // namespace
+
 ChromeFallbackIconClient::ChromeFallbackIconClient() {
 #if defined(OS_CHROMEOS)
   font_list_.push_back("Noto Sans");
@@ -33,9 +37,17 @@ const std::vector<std::string>& ChromeFallbackIconClient::GetFontNameList()
 // letter in a domain's name and make it upper case.
 base::string16 ChromeFallbackIconClient::GetFallbackIconText(const GURL& url)
     const {
-  // TODO(huangs): Handle non-ASCII ("xn--") domain names.
+  if (url.is_empty())
+    return base::string16();
   std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
       url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-  return domain.empty() ? base::string16() :
-      base::i18n::ToUpper(base::ASCIIToUTF16(domain.substr(0, 1)));
+  if (domain.empty()) {  // E.g., http://localhost/ or http://192.168.0.1/
+    if (url.HostIsIPAddress())
+      return base::ASCIIToUTF16(kFallbackIconTextForIP);
+    domain = url.host();
+  }
+  if (domain.empty())
+    return base::string16();
+  // TODO(huangs): Handle non-ASCII ("xn--") domain names.
+  return base::i18n::ToUpper(base::ASCIIToUTF16(domain.substr(0, 1)));
 }
