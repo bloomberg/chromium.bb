@@ -615,6 +615,9 @@ bool H264Decoder::ModifyReferencePicList(media::H264SliceHeader* slice_hdr,
 void H264Decoder::OutputPic(scoped_refptr<H264Picture> pic) {
   DCHECK(!pic->outputted);
   pic->outputted = true;
+
+  DVLOG_IF(1, pic->pic_order_cnt < last_output_poc_)
+      << "Outputting out of order, likely a broken stream";
   last_output_poc_ = pic->pic_order_cnt;
 
   DVLOG(4) << "Posting output task for POC: " << pic->pic_order_cnt;
@@ -895,16 +898,25 @@ bool H264Decoder::FinishPicture() {
   // to remain in the DPB and can be removed.
   H264Picture::Vector::iterator output_candidate = not_outputted.begin();
   size_t num_remaining = not_outputted.size();
-  while (num_remaining > max_num_reorder_frames_) {
-    int poc = (*output_candidate)->pic_order_cnt;
-    DCHECK_GE(poc, last_output_poc_);
+  while (num_remaining > max_num_reorder_frames_ ||
+         // If the condition below is used, this is an invalid stream. We should
+         // not be forced to output beyond max_num_reorder_frames in order to
+         // make room in DPB to store the current picture (if we need to do so).
+         // However, if this happens, ignore max_num_reorder_frames and try
+         // to output more. This may cause out-of-order output, but is not
+         // fatal, and better than failing instead.
+         ((dpb_.IsFull() && (!pic->outputted || pic->ref)) && num_remaining)) {
+    DVLOG_IF(1, num_remaining <= max_num_reorder_frames_)
+        << "Invalid stream: max_num_reorder_frames not preserved";
+
     OutputPic(*output_candidate);
 
     if (!(*output_candidate)->ref) {
       // Current picture hasn't been inserted into DPB yet, so don't remove it
       // if we managed to output it immediately.
-      if ((*output_candidate)->pic_order_cnt != pic->pic_order_cnt)
-        dpb_.DeleteByPOC(poc);
+      int outputted_poc = (*output_candidate)->pic_order_cnt;
+      if (outputted_poc != pic->pic_order_cnt)
+        dpb_.DeleteByPOC(outputted_poc);
     }
 
     ++output_candidate;
