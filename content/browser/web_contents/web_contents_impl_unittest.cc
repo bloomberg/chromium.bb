@@ -2700,14 +2700,12 @@ TEST_F(WebContentsImplTest, ActiveContentsCountChangeBrowsingInstance) {
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
 
   // Navigate to a URL with WebUI. This will change BrowsingInstances.
-  contents->GetController().LoadURL(GURL(kTestWebUIUrl),
+  const GURL kWebUIUrl = GURL(kTestWebUIUrl);
+  contents->GetController().LoadURL(kWebUIUrl,
                                     Referrer(),
                                     ui::PAGE_TRANSITION_TYPED,
                                     std::string());
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
-    contents->GetMainFrame()->PrepareForCommit();
-  }
+  contents->GetMainFrame()->PrepareForCommit();
   EXPECT_TRUE(contents->CrossProcessNavigationPending());
   scoped_refptr<SiteInstance> instance_webui(
       contents->GetPendingMainFrame()->GetSiteInstance());
@@ -2718,7 +2716,7 @@ TEST_F(WebContentsImplTest, ActiveContentsCountChangeBrowsingInstance) {
   EXPECT_EQ(0u, instance_webui->GetRelatedActiveContentsCount());
 
   // Commit and contents counts for the new one.
-  contents->CommitPendingNavigation();
+  contents->GetPendingMainFrame()->SendNavigate(1, kWebUIUrl);
   EXPECT_EQ(0u, instance->GetRelatedActiveContentsCount());
   EXPECT_EQ(1u, instance_webui->GetRelatedActiveContentsCount());
 
