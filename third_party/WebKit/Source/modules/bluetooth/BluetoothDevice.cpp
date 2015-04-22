@@ -92,7 +92,7 @@ ScriptPromise BluetoothDevice::connectGATT(ScriptState* scriptState)
     WebBluetooth* webbluetooth = Platform::current()->bluetooth();
     if (!webbluetooth)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     webbluetooth->connectGATT(instanceID(), new CallbackPromiseAdapter<BluetoothGATTRemoteServer, BluetoothError>(resolver));
     return promise;
