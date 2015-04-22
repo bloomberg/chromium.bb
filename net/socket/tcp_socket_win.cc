@@ -801,30 +801,25 @@ int TCPSocketWin::DoConnect() {
     result = connect(socket_, storage.addr, storage.addr_len);
   }
 
-  if (!result) {
-    // Connected without waiting!
-    //
-    // The MSDN page for connect says:
-    //   With a nonblocking socket, the connection attempt cannot be completed
-    //   immediately. In this case, connect will return SOCKET_ERROR, and
-    //   WSAGetLastError will return WSAEWOULDBLOCK.
-    // which implies that for a nonblocking socket, connect never returns 0.
-    // It's not documented whether the event object will be signaled or not
-    // if connect does return 0.  So the code below is essentially dead code
-    // and we don't know if it's correct.
-    NOTREACHED();
+  // The MSDN page for connect says:
+  //   With a nonblocking socket, the connection attempt cannot be completed
+  //   immediately. In this case, connect will return SOCKET_ERROR, and
+  //   WSAGetLastError will return WSAEWOULDBLOCK.
+  // which implies that for a nonblocking socket, connect never returns 0.
+  // It's not clear what the correct thing to do is if connect()
+  // returns 0. It's not clear whether this ever happens in practice.
+  // This CHECK() is here to verify that it doesn't.
+  // TODO(ricea): If the CHECK() fires in canary or dev, revert this
+  // CL. If it doesn't, reconsider what we want to do here long-term.
+  CHECK(result);
 
-    if (ResetEventIfSignaled(core_->read_overlapped_.hEvent))
-      return OK;
-  } else {
-    int os_error = WSAGetLastError();
-    if (os_error != WSAEWOULDBLOCK) {
-      LOG(ERROR) << "connect failed: " << os_error;
-      connect_os_error_ = os_error;
-      int rv = MapConnectError(os_error);
-      CHECK_NE(ERR_IO_PENDING, rv);
-      return rv;
-    }
+  int os_error = WSAGetLastError();
+  if (os_error != WSAEWOULDBLOCK) {
+    LOG(ERROR) << "connect failed: " << os_error;
+    connect_os_error_ = os_error;
+    int rv = MapConnectError(os_error);
+    CHECK_NE(ERR_IO_PENDING, rv);
+    return rv;
   }
 
   // TODO(ricea): Remove ScopedTracker below once crbug.com/436634 is fixed.
