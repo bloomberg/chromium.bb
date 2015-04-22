@@ -55,7 +55,6 @@ public:
 
 private:
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID unresolvedProperty, const String&, bool important, const CSSParserContext&);
-    static bool parseFastPath(MutableStylePropertySet*, CSSPropertyID unresolvedProperty, const String&, bool important, CSSParserMode);
 };
 
 // TODO(timloh): It's weird that these are declared here but defined in CSSPropertyParser.h

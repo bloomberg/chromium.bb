@@ -80,24 +80,15 @@ bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID u
     return BisonCSSParser::parseValue(declaration, unresolvedProperty, string, important, context);
 }
 
-bool CSSParser::parseFastPath(MutableStylePropertySet* declaration, CSSPropertyID unresolvedProperty, const String& string, bool important, CSSParserMode parserMode)
-{
-    CSSPropertyID resolvedProperty = resolveCSSPropertyID(unresolvedProperty);
-    RefPtrWillBeRawPtr<CSSValue> value = CSSParserFastPaths::maybeParseValue(resolvedProperty, string, parserMode);
-    if (!value)
-        return false;
-    declaration->addParsedProperty(CSSProperty(resolvedProperty, value.release(), important));
-    return true;
-}
-
 PassRefPtrWillBeRawPtr<CSSValue> CSSParser::parseSingleValue(CSSPropertyID propertyID, const String& string, const CSSParserContext& context)
 {
     if (string.isEmpty())
         return nullptr;
+    if (RefPtrWillBeRawPtr<CSSValue> value = CSSParserFastPaths::maybeParseValue(propertyID, string, context.mode()))
+        return value;
     RefPtrWillBeRawPtr<MutableStylePropertySet> stylePropertySet = MutableStylePropertySet::create();
-    bool changed = parseFastPath(stylePropertySet.get(), propertyID, string, false, context.mode())
-        || parseValue(stylePropertySet.get(), propertyID, string, false, context);
-    ASSERT_UNUSED(changed, !changed || stylePropertySet->hasProperty(propertyID));
+    bool changed = parseValue(stylePropertySet.get(), propertyID, string, false, context);
+    ASSERT_UNUSED(changed, changed == stylePropertySet->hasProperty(propertyID));
     return stylePropertySet->getPropertyCSSValue(propertyID);
 }
 
