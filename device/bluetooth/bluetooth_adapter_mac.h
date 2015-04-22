@@ -41,8 +41,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   static base::WeakPtr<BluetoothAdapter> CreateAdapter();
 
   // BluetoothAdapter:
-  void AddObserver(BluetoothAdapter::Observer* observer) override;
-  void RemoveObserver(BluetoothAdapter::Observer* observer) override;
   std::string GetAddress() const override;
   std::string GetName() const override;
   void SetName(const std::string& name,
@@ -128,9 +126,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   scoped_ptr<BluetoothDiscoveryManagerMac> classic_discovery_manager_;
 
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
-
-  // List of observers interested in event notifications from us.
-  ObserverList<BluetoothAdapter::Observer> observers_;
 
   base::WeakPtrFactory<BluetoothAdapterMac> weak_ptr_factory_;
 

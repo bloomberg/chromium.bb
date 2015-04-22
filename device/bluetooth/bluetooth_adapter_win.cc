@@ -53,16 +53,6 @@ BluetoothAdapterWin::~BluetoothAdapterWin() {
   }
 }
 
-void BluetoothAdapterWin::AddObserver(BluetoothAdapter::Observer* observer) {
-  DCHECK(observer);
-  observers_.AddObserver(observer);
-}
-
-void BluetoothAdapterWin::RemoveObserver(BluetoothAdapter::Observer* observer) {
-  DCHECK(observer);
-  observers_.RemoveObserver(observer);
-}
-
 std::string BluetoothAdapterWin::GetAddress() const {
   return address_;
 }

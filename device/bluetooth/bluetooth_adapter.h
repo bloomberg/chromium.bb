@@ -215,9 +215,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // Adds and removes observers for events on this bluetooth adapter. If
   // monitoring multiple adapters, check the |adapter| parameter of observer
   // methods to determine which adapter is issuing the event.
-  virtual void AddObserver(BluetoothAdapter::Observer* observer) = 0;
-  virtual void RemoveObserver(
-      BluetoothAdapter::Observer* observer) = 0;
+  virtual void AddObserver(BluetoothAdapter::Observer* observer);
+  virtual void RemoveObserver(BluetoothAdapter::Observer* observer);
 
   // The address of this adapter. The address format is "XX:XX:XX:XX:XX:XX",
   // where each XX is a hexadecimal number.
@@ -453,6 +452,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // inactive.
   void DiscoverySessionBecameInactive(
       BluetoothDiscoverySession* discovery_session);
+
+  // Observers of BluetoothAdapter, notified from implementation subclasses.
+  ObserverList<device::BluetoothAdapter::Observer> observers_;
 
   // Devices paired with, connected to, discovered by, or visible to the
   // adapter. The key is the Bluetooth address of the device and the value is

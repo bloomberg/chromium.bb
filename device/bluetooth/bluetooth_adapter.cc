@@ -34,6 +34,16 @@ void BluetoothAdapter::Shutdown() {
 }
 #endif
 
+void BluetoothAdapter::AddObserver(BluetoothAdapter::Observer* observer) {
+  DCHECK(observer);
+  observers_.AddObserver(observer);
+}
+
+void BluetoothAdapter::RemoveObserver(BluetoothAdapter::Observer* observer) {
+  DCHECK(observer);
+  observers_.RemoveObserver(observer);
+}
+
 void BluetoothAdapter::StartDiscoverySession(
     const DiscoverySessionCallback& callback,
     const ErrorCallback& error_callback) {

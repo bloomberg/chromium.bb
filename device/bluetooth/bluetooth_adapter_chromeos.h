@@ -66,8 +66,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
   // BluetoothAdapter:
   void Shutdown() override;
   void DeleteOnCorrectThread() const override;
-  void AddObserver(device::BluetoothAdapter::Observer* observer) override;
-  void RemoveObserver(device::BluetoothAdapter::Observer* observer) override;
   std::string GetAddress() const override;
   std::string GetName() const override;
   void SetName(const std::string& name,
@@ -352,9 +350,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
 
   // Object path of the adapter we track.
   dbus::ObjectPath object_path_;
-
-  // List of observers interested in event notifications from us.
-  ObserverList<device::BluetoothAdapter::Observer> observers_;
 
   // Instance of the D-Bus agent object used for pairing, initialized with
   // our own class as its delegate.

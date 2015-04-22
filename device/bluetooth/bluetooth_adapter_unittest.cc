@@ -19,10 +19,6 @@ class TestBluetoothAdapter : public BluetoothAdapter {
   TestBluetoothAdapter() {
   }
 
-  void AddObserver(BluetoothAdapter::Observer* observer) override {}
-
-  void RemoveObserver(BluetoothAdapter::Observer* observer) override {}
-
   std::string GetAddress() const override { return ""; }
 
   std::string GetName() const override { return ""; }

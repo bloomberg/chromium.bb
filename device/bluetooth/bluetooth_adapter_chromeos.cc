@@ -144,18 +144,6 @@ void BluetoothAdapterChromeOS::DeleteOnCorrectThread() const {
     delete this;
 }
 
-void BluetoothAdapterChromeOS::AddObserver(
-    BluetoothAdapter::Observer* observer) {
-  DCHECK(observer);
-  observers_.AddObserver(observer);
-}
-
-void BluetoothAdapterChromeOS::RemoveObserver(
-    BluetoothAdapter::Observer* observer) {
-  DCHECK(observer);
-  observers_.RemoveObserver(observer);
-}
-
 std::string BluetoothAdapterChromeOS::GetAddress() const {
   if (!IsPresent())
     return std::string();

@@ -64,16 +64,6 @@ BluetoothAdapterMac::BluetoothAdapterMac()
 BluetoothAdapterMac::~BluetoothAdapterMac() {
 }
 
-void BluetoothAdapterMac::AddObserver(BluetoothAdapter::Observer* observer) {
-  DCHECK(observer);
-  observers_.AddObserver(observer);
-}
-
-void BluetoothAdapterMac::RemoveObserver(BluetoothAdapter::Observer* observer) {
-  DCHECK(observer);
-  observers_.RemoveObserver(observer);
-}
-
 std::string BluetoothAdapterMac::GetAddress() const {
   return address_;
 }

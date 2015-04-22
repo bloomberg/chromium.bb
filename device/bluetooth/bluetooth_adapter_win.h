@@ -41,8 +41,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWin
       const InitCallback& init_callback);
 
   // BluetoothAdapter:
-  virtual void AddObserver(BluetoothAdapter::Observer* observer) override;
-  virtual void RemoveObserver(BluetoothAdapter::Observer* observer) override;
   virtual std::string GetAddress() const override;
   virtual std::string GetName() const override;
   virtual void SetName(const std::string& name,
@@ -151,9 +149,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWin
   scoped_refptr<BluetoothTaskManagerWin> task_manager_;
 
   base::ThreadChecker thread_checker_;
-
-  // List of observers interested in event notifications from us.
-  ObserverList<BluetoothAdapter::Observer> observers_;
 
   // NOTE: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
