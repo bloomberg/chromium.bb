@@ -48,7 +48,7 @@ class BrickLibTest(cros_test_lib.MockTempDirTestCase,
 
     expected_lines = ['repo-name = hello',
                       'bar = foo',
-                      'profile-formats = portage-2']
+                      'profile-formats = portage-2 profile-default-eapi']
     for line in expected_lines:
       self.assertTrue(line in layout_conf)
 

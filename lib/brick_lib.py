@@ -13,7 +13,8 @@ from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import workspace_lib
 
-_DEFAULT_LAYOUT_CONF = {'profile-formats': 'portage-2',
+_DEFAULT_LAYOUT_CONF = {'profile_eapi_when_unspecified': '5-progress',
+                        'profile-formats': 'portage-2 profile-default-eapi',
                         'thin-manifests': 'true',
                         'use-manifests': 'true'}
 
