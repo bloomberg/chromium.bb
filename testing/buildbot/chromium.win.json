@@ -476,6 +476,26 @@
       }
     ]
   },
+  "Win x64 GN": {
+    "additional_compile_targets": [
+      "net_unittests"
+    ],
+    "gtest_tests": [
+      {
+        "test": "base_unittests"
+      }
+    ]
+  },
+  "Win x64 GN (dbg)": {
+    "additional_compile_targets": [
+      "net_unittests"
+    ],
+    "gtest_tests": [
+      {
+        "test": "base_unittests"
+      }
+    ]
+  },
   "Win7 Tests (1)": {
     "gtest_tests": [
       {

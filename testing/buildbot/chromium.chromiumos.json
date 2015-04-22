@@ -9,6 +9,16 @@
       }
     ]
   },
+  "Linux ChromiumOS GN (dbg)": {
+    "additional_compile_targets": [
+      "net_unittests"
+    ],
+    "gtest_tests": [
+      {
+        "test": "base_unittests"
+      }
+    ]
+  },
   "Linux ChromiumOS Ozone Tests (1)": {
     "gtest_tests": [
       {
