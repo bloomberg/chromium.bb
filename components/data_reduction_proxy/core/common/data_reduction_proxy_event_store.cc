@@ -123,6 +123,17 @@ base::Value* UrlBypassTypeCallback(
   return dict;
 }
 
+base::Value* EndCanaryRequestCallback(int net_error,
+                                      int http_response_code,
+                                      bool succeeded,
+                                      net::NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  dict->SetInteger("net_error", net_error);
+  dict->SetInteger("http_response_code", http_response_code);
+  dict->SetBoolean("check_succeeded", succeeded);
+  return dict;
+}
+
 }  // namespace
 
 namespace data_reduction_proxy {
@@ -229,9 +240,11 @@ void DataReductionProxyEventStore::BeginSecureProxyCheck(
 
 void DataReductionProxyEventStore::EndSecureProxyCheck(
     const net::BoundNetLog& net_log,
-    int net_error) {
-  const net::NetLog::ParametersCallback& parameters_callback =
-      net::NetLog::IntegerCallback("net_error", net_error);
+    int net_error,
+    int http_response_code,
+    bool succeeded) {
+  const net::NetLog::ParametersCallback& parameters_callback = base::Bind(
+      &EndCanaryRequestCallback, net_error, http_response_code, succeeded);
   PostBoundNetLogSecureProxyCheckEvent(
       net_log,
       net::NetLog::TYPE_DATA_REDUCTION_PROXY_CANARY_REQUEST,

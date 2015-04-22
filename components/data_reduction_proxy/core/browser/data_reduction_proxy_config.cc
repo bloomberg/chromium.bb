@@ -62,7 +62,7 @@ class SecureProxyChecker : public net::URLFetcherDelegate {
     std::string response;
     source->GetResponseAsString(&response);
 
-    fetcher_callback_.Run(response, status);
+    fetcher_callback_.Run(response, status, source->GetResponseCode());
   }
 
   void CheckIfSecureProxyIsAllowed(const GURL& secure_proxy_check_url,
@@ -370,10 +370,14 @@ void DataReductionProxyConfig::LogProxyState(bool enabled,
 }
 
 void DataReductionProxyConfig::HandleSecureProxyCheckResponse(
-    const std::string& response, const net::URLRequestStatus& status) {
+    const std::string& response,
+    const net::URLRequestStatus& status,
+    int http_response_code) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
+  bool success_response = ("OK" == response.substr(0, 2));
   if (event_store_) {
-    event_store_->EndSecureProxyCheck(bound_net_log_, status.error());
+    event_store_->EndSecureProxyCheck(bound_net_log_, status.error(),
+                                      http_response_code, success_response);
   }
 
   if (status.status() == net::URLRequestStatus::FAILED) {
@@ -388,7 +392,7 @@ void DataReductionProxyConfig::HandleSecureProxyCheckResponse(
                                 std::abs(status.error()));
   }
 
-  if ("OK" == response.substr(0, 2)) {
+  if (success_response) {
     DVLOG(1) << "The data reduction proxy is unrestricted.";
 
     if (enabled_by_user_) {

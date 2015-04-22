@@ -125,12 +125,6 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
                           bool alternative_enabled,
                           bool restricted,
                           bool at_startup) override;
-
-  // HandleSecureProxyCheckResponse should always call
-  // RecordSecureProxyCheckFetchResult exactly once.
-  void HandleSecureProxyCheckResponse(
-      const std::string& response,
-      const net::URLRequestStatus& status) override;
 };
 
 }  // namespace data_reduction_proxy

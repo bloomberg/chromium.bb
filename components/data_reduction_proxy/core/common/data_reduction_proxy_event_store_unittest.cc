@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
+#include "net/http/http_status_code.h"
 #include "net/log/net_log.h"
 #include "net/log/test_net_log.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -125,7 +126,7 @@ TEST_F(DataReductionProxyEventStoreTest, TestBeginSecureProxyCheck) {
 TEST_F(DataReductionProxyEventStoreTest, TestEndSecureProxyCheck) {
   EXPECT_EQ(0u, proxy()->stored_events_.size());
   EXPECT_EQ(CHECK_UNKNOWN, proxy()->secure_proxy_check_state_);
-  proxy()->EndSecureProxyCheck(bound_net_log(), 0);
+  proxy()->EndSecureProxyCheck(bound_net_log(), 0, net::HTTP_OK, true);
   task_runner()->RunPendingTasks();
   EXPECT_EQ(1u, proxy()->stored_events_.size());
   EXPECT_EQ(1u, net_log()->GetSize());

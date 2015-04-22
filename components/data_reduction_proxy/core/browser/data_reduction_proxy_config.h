@@ -38,8 +38,9 @@ class URLRequestStatus;
 
 namespace data_reduction_proxy {
 
-typedef base::Callback<void(const std::string&, const net::URLRequestStatus&)>
-    FetcherResponseCallback;
+typedef base::Callback<void(const std::string&,
+                            const net::URLRequestStatus&,
+                            int)> FetcherResponseCallback;
 
 class DataReductionProxyConfigValues;
 class DataReductionProxyConfigurator;
@@ -229,8 +230,9 @@ class DataReductionProxyConfig
 
   // Parses the secure proxy check responses and appropriately configures the
   // Data Reduction Proxy rules.
-  virtual void HandleSecureProxyCheckResponse(
-      const std::string& response, const net::URLRequestStatus& status);
+  void HandleSecureProxyCheckResponse(const std::string& response,
+                                      const net::URLRequestStatus& status,
+                                      int http_response_code);
 
   // Adds the default proxy bypass rules for the Data Reduction Proxy.
   void AddDefaultProxyBypassRules();

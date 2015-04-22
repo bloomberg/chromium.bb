@@ -88,7 +88,10 @@ class DataReductionProxyEventStore {
 
   // Adds a DATA_REDUCTION_PROXY_CANARY_REQUEST event to the event store
   // when the secure proxy request has ended.
-  void EndSecureProxyCheck(const net::BoundNetLog& net_log, int net_error);
+  void EndSecureProxyCheck(const net::BoundNetLog& net_log,
+                           int net_error,
+                           int http_response_code,
+                           bool succeeded);
 
   // Creates a Value summary of Data Reduction Proxy related information:
   // - Whether the proxy is enabled
