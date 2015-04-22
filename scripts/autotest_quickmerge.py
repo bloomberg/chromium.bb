@@ -61,36 +61,6 @@ class PortagePackageAPIError(Exception):
   """Exception thrown when unable to retrieve a portage package API."""
 
 
-def GetNewestFileTime(path, ignore_subdirs=[]):
-  # pylint: disable=dangerous-default-value
-  """Recursively determine the newest file modification time.
-
-  Args:
-    path: The absolute path of the directory to recursively search.
-    ignore_subdirs: list of names of subdirectores of given path, to be
-                    ignored by recursive search. Useful as a speed
-                    optimization, to ignore directories full of many
-                    files.
-
-  Returns:
-    The modification time of the most recently modified file recursively
-    contained within the specified directory. Returned as seconds since
-    Jan. 1, 1970, 00:00 GMT, with fractional part (floating point number).
-  """
-  command = ['find', path]
-  for ignore in ignore_subdirs:
-    command.extend(['-path', os.path.join(path, ignore), '-prune', '-o'])
-  command.extend(['-printf', r'%T@\n'])
-
-  command_result = cros_build_lib.RunCommand(command, error_code_ok=True,
-                                             capture_output=True)
-  float_times = [float(str_time) for str_time in
-                 command_result.output.split('\n')
-                 if str_time != '']
-
-  return max(float_times)
-
-
 def GetStalePackageNames(change_list, autotest_sysroot):
   """Given a rsync change report, returns the names of stale test packages.
 
@@ -339,8 +309,7 @@ def ParseArguments(argv):
   parser.add_argument('--overwrite', action='store_true',
                       help='Overwrite existing files even if newer.')
   parser.add_argument('--force', action='store_true',
-                      help='Do not check whether destination tree is newer '
-                      'than source tree, always perform quickmerge.')
+                      help=argparse.SUPPRESS)
   parser.add_argument('--verbose', action='store_true',
                       help='Print detailed change report.')
 
@@ -383,14 +352,6 @@ def main(argv):
   if args.legacy_path:
     sysroot_autotest_path = os.path.join(sysroot_path, 'usr/local/autotest',
                                          '')
-
-  if not args.force:
-    newest_dest_time = GetNewestFileTime(sysroot_autotest_path, IGNORE_SUBDIRS)
-    newest_source_time = GetNewestFileTime(source_path, IGNORE_SUBDIRS)
-    if newest_dest_time >= newest_source_time:
-      logging.info('The sysroot appears to be newer than the source tree, '
-                   'doing nothing and exiting now.')
-      return 0
 
   rsync_output = RsyncQuickmerge(source_path, sysroot_autotest_path,
                                  include_pattern_file, args.pretend,
