@@ -36,12 +36,6 @@
 #include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_client.h"
 
-#if defined(USE_X11)
-#include <X11/Xlib.h>
-#include "ui/gfx/x/x11_types.h"
-#undef RootWindow
-#endif
-
 namespace ash {
 namespace {
 
