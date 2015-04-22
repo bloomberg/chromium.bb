@@ -48,9 +48,8 @@ bool SimplePlatformSharedBuffer::InitFromPlatformHandle(
     ScopedPlatformHandle platform_handle) {
   DCHECK(!handle_.is_valid());
 
-  // TODO(vtl): Implement.
-  NOTIMPLEMENTED();
-  return false;
+  handle_ = platform_handle.Pass();
+  return true;
 }
 
 scoped_ptr<PlatformSharedBufferMapping> SimplePlatformSharedBuffer::MapImpl(

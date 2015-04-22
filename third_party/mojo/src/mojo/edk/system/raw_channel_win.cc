@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/process/process.h"
 #include "base/synchronization/lock.h"
 #include "base/win/windows_version.h"
 #include "mojo/edk/embedder/platform_handle.h"
@@ -360,8 +361,7 @@ RawChannelWin::~RawChannelWin() {
 }
 
 size_t RawChannelWin::GetSerializedPlatformHandleSize() const {
-  // TODO(vtl): Implement.
-  return 0;
+  return sizeof(DWORD) + sizeof(HANDLE);
 }
 
 RawChannel::IOResult RawChannelWin::Read(size_t* bytes_read) {
@@ -437,9 +437,37 @@ RawChannel::IOResult RawChannelWin::ScheduleRead() {
 embedder::ScopedPlatformHandleVectorPtr RawChannelWin::GetReadPlatformHandles(
     size_t num_platform_handles,
     const void* platform_handle_table) {
-  // TODO(vtl): Implement.
-  NOTIMPLEMENTED();
-  return embedder::ScopedPlatformHandleVectorPtr();
+  // TODO(jam): this code will have to be updated once it's used in a sandbox
+  // and the receiving process doesn't have duplicate permission for the
+  // receiver. Once there's a broker and we have a connection to it (possibly
+  // through ConnectionManager), then we can make a sync IPC to it here to get a
+  // token for this handle, and it will duplicate the handle to is process. Then
+  // we pass the token to the receiver, which will then make a sync call to the
+  // broker to get a duplicated handle. This will also allow us to avoid leaks
+  // of the handle if the receiver dies, since the broker can notice that.
+  DCHECK_GT(num_platform_handles, 0u);
+  embedder::ScopedPlatformHandleVectorPtr rv(
+      new embedder::PlatformHandleVector());
+
+  const char* serialization_data =
+      static_cast<const char*>(platform_handle_table);
+  for (size_t i = 0; i < num_platform_handles; i++) {
+    DWORD pid = *reinterpret_cast<const DWORD*>(serialization_data);
+    serialization_data += sizeof(DWORD);
+    HANDLE source_handle = *reinterpret_cast<const HANDLE*>(serialization_data);
+    serialization_data += sizeof(HANDLE);
+    base::Process sender =
+        base::Process::OpenWithAccess(pid, PROCESS_DUP_HANDLE);
+    DCHECK(sender.IsValid());
+    HANDLE target_handle = NULL;
+    BOOL dup_result =
+        DuplicateHandle(sender.Handle(), source_handle,
+                        base::GetCurrentProcessHandle(), &target_handle, 0,
+                        FALSE, DUPLICATE_SAME_ACCESS | DUPLICATE_CLOSE_SOURCE);
+    DCHECK(dup_result);
+    rv->push_back(embedder::PlatformHandle(target_handle));
+  }
+  return rv.Pass();
 }
 
 RawChannel::IOResult RawChannelWin::WriteNoLock(
@@ -450,9 +478,28 @@ RawChannel::IOResult RawChannelWin::WriteNoLock(
   DCHECK(io_handler_);
   DCHECK(!io_handler_->pending_write_no_lock());
 
+  size_t num_platform_handles = 0;
   if (write_buffer_no_lock()->HavePlatformHandlesToSend()) {
-    // TODO(vtl): Implement.
-    NOTIMPLEMENTED();
+    // Since we're not sure which process might ultimately deserialize this
+    // message, we can't duplicate the handle now. Instead, write the process ID
+    // and handle now and let the receiver duplicate it.
+    embedder::PlatformHandle* platform_handles;
+    void* serialization_data_temp;
+    write_buffer_no_lock()->GetPlatformHandlesToSend(
+        &num_platform_handles, &platform_handles, &serialization_data_temp);
+    char* serialization_data = static_cast<char*>(serialization_data_temp);
+    DCHECK_GT(num_platform_handles, 0u);
+    DCHECK(platform_handles);
+
+    DWORD current_process_id = base::GetCurrentProcId();
+    for (size_t i = 0; i < num_platform_handles; i++) {
+      *reinterpret_cast<DWORD*>(serialization_data) = current_process_id;
+      serialization_data += sizeof(DWORD);
+      *reinterpret_cast<HANDLE*>(serialization_data) =
+          platform_handles[i].handle;
+      serialization_data += sizeof(HANDLE);
+      platform_handles[i] = embedder::PlatformHandle();
+    }
   }
 
   std::vector<WriteBuffer::Buffer> buffers;
@@ -476,7 +523,7 @@ RawChannel::IOResult RawChannelWin::WriteNoLock(
   }
 
   if (result && skip_completion_port_on_success_) {
-    *platform_handles_written = 0;
+    *platform_handles_written = num_platform_handles;
     *bytes_written = bytes_written_dword;
     return IO_SUCCEEDED;
   }
