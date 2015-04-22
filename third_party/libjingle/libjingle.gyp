@@ -130,7 +130,6 @@
         }],
         ['os_posix==1', {
           'defines': [
-            'POSIX',
             'WEBRTC_POSIX',
           ],
         }],
@@ -241,7 +240,6 @@
       }],
       ['os_posix == 1', {
         'defines': [
-          'POSIX',
           'WEBRTC_POSIX',
         ],
       }],

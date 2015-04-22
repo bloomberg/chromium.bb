@@ -99,10 +99,7 @@ config("jingle_public_configs") {
     defines += [ "ANDROID" ]
   }
   if (is_posix) {
-    defines += [
-      "POSIX",
-      "WEBRTC_POSIX",
-    ]
+    defines += [ "WEBRTC_POSIX" ]
   }
 
   # TODO(GYP): Support these in GN.
