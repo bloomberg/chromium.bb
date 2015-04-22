@@ -64,6 +64,8 @@ void OmniboxPopupModel::ComputeMatchMaxWidths(int contents_width,
   if (!description_width)
     return;
 
+  // If we want to display the description, we need to reserve enough space for
+  // the separator.
   available_width -= separator_width;
 
   if (contents_width + description_width > available_width) {

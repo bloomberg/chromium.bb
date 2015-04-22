@@ -544,7 +544,7 @@ scoped_ptr<gfx::RenderText> OmniboxResultView::CreateClassifiedRenderText(
 
 int OmniboxResultView::GetMatchContentsWidth() const {
   InitContentsRenderTextIfNecessary();
-  return contents_rendertext_ ? contents_rendertext_->GetContentWidth() : 0;
+  return contents_rendertext_->GetContentWidth();
 }
 
 void OmniboxResultView::SetAnswerImage(const gfx::ImageSkia& image) {

@@ -736,7 +736,7 @@ bool OmniboxViewMac::OnDoCommandBySelector(SEL cmd) {
     if (cmd == @selector(insertBacktab:)) {
       if (model()->popup_model()->selected_line_state() ==
             OmniboxPopupModel::KEYWORD) {
-        model()->ClearKeyword(GetText());
+        model()->ClearKeyword();
         return true;
       } else {
         model()->OnUpOrDownKeyPressed(-1);
@@ -987,7 +987,7 @@ bool OmniboxViewMac::OnBackspacePressed() {
 
   // We're showing a keyword and the user pressed backspace at the
   // beginning of the text.  Delete the selected keyword.
-  model()->ClearKeyword(GetText());
+  model()->ClearKeyword();
   return true;
 }
 

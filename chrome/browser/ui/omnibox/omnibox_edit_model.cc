@@ -930,29 +930,26 @@ void OmniboxEditModel::AcceptTemporaryTextAsUserText() {
     delegate_->OnInputStateChanged();
 }
 
-void OmniboxEditModel::ClearKeyword(const base::string16& visible_text) {
+void OmniboxEditModel::ClearKeyword() {
   autocomplete_controller()->Stop(false);
   omnibox_controller_->ClearPopupKeywordMode();
 
-  const base::string16 window_text(keyword_ + visible_text);
+  const base::string16 window_text(keyword_ + view_->GetText());
 
   // Only reset the result if the edit text has changed since the
   // keyword was accepted, or if the popup is closed.
-  if (just_deleted_text_ || !visible_text.empty() ||
-      !(popup_model() && popup_model()->IsOpen())) {
+  if (!just_deleted_text_ && view_->GetText().empty() && popup_model() &&
+      popup_model()->IsOpen()) {
+    is_keyword_hint_ = true;
+    view_->SetWindowTextAndCaretPos(window_text.c_str(), keyword_.length(),
+        false, true);
+  } else {
     view_->OnBeforePossibleChange();
     view_->SetWindowTextAndCaretPos(window_text.c_str(), keyword_.length(),
         false, false);
     keyword_.clear();
     is_keyword_hint_ = false;
     view_->OnAfterPossibleChange();
-    just_deleted_text_ = true;  // OnAfterPossibleChange() fails to clear this
-                                // since the edit contents have actually grown
-                                // longer.
-  } else {
-    is_keyword_hint_ = true;
-    view_->SetWindowTextAndCaretPos(window_text.c_str(), keyword_.length(),
-        false, true);
   }
 
   view_->UpdatePlaceholderText();
@@ -1414,7 +1411,7 @@ void OmniboxEditModel::RevertTemporaryText(bool revert_popup) {
 bool OmniboxEditModel::MaybeAcceptKeywordBySpace(
     const base::string16& new_text) {
   size_t keyword_length = new_text.length() - 1;
-  return (paste_state_ == NONE) && is_keyword_hint_ && !keyword_.empty() &&
+  return (paste_state_ == NONE) && is_keyword_hint_ &&
       inline_autocomplete_text_.empty() &&
       (keyword_.length() == keyword_length) &&
       IsSpaceCharForAcceptingKeyword(new_text[keyword_length]) &&
