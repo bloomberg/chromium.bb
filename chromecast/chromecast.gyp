@@ -188,6 +188,7 @@
         '../components/components.gyp:cdm_renderer',
         '../components/components.gyp:component_metrics_proto',
         '../components/components.gyp:crash_component',
+        '../components/components.gyp:devtools_discovery',
         '../components/components.gyp:devtools_http_handler',
         '../components/components.gyp:network_hints_browser',
         '../components/components.gyp:network_hints_renderer',

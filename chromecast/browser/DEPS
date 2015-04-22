@@ -4,6 +4,7 @@ include_rules = [
   "+cc/base/switches.h",
   "+chromecast",
   "+components/crash",
+  "+components/devtools_discovery",
   "+components/devtools_http_handler",
   "+components/network_hints/browser",
   "+content/public/browser",

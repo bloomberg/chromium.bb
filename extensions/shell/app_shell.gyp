@@ -22,6 +22,7 @@
         'app_shell_version_header',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:base_prefs',
+        '<(DEPTH)/components/components.gyp:devtools_discovery',
         '<(DEPTH)/components/components.gyp:devtools_http_handler',
         '<(DEPTH)/components/components.gyp:pref_registry',
         '<(DEPTH)/components/components.gyp:update_client',

@@ -88,6 +88,7 @@
         'app_modal.gypi',
         'browsing_data.gypi',
         'cdm.gypi',
+        'devtools_discovery.gypi',
         'devtools_http_handler.gypi',
         'navigation_interception.gypi',
         'power.gypi',

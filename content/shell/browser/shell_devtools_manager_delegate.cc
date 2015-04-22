@@ -12,6 +12,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/devtools_discovery/basic_target_descriptor.h"
+#include "components/devtools_discovery/devtools_discovery_manager.h"
 #include "components/devtools_http_handler/devtools_http_handler.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_frontend_host.h"
@@ -45,9 +47,6 @@ namespace {
 const char kFrontEndURL[] =
     "http://chrome-devtools-frontend.appspot.com/serve_rev/%s/inspector.html";
 #endif
-const char kTargetTypePage[] = "page";
-const char kTargetTypeServiceWorker[] = "service_worker";
-const char kTargetTypeOther[] = "other";
 
 const int kBackLog = 10;
 
@@ -131,62 +130,6 @@ CreateSocketFactory() {
   return scoped_ptr<DevToolsHttpHandler::ServerSocketFactory>(
       new TCPServerSocketFactory("127.0.0.1", port));
 #endif
-}
-
-class Target : public DevToolsTarget {
- public:
-  explicit Target(scoped_refptr<DevToolsAgentHost> agent_host);
-
-  std::string GetId() const override { return agent_host_->GetId(); }
-  std::string GetParentId() const override { return std::string(); }
-  std::string GetType() const override {
-    switch (agent_host_->GetType()) {
-      case DevToolsAgentHost::TYPE_WEB_CONTENTS:
-        return kTargetTypePage;
-      case DevToolsAgentHost::TYPE_SERVICE_WORKER:
-        return kTargetTypeServiceWorker;
-      default:
-        break;
-    }
-    return kTargetTypeOther;
-  }
-  std::string GetTitle() const override { return agent_host_->GetTitle(); }
-  std::string GetDescription() const override { return std::string(); }
-  GURL GetURL() const override { return agent_host_->GetURL(); }
-  GURL GetFaviconURL() const override { return favicon_url_; }
-  base::TimeTicks GetLastActivityTime() const override {
-    return last_activity_time_;
-  }
-  bool IsAttached() const override { return agent_host_->IsAttached(); }
-  scoped_refptr<DevToolsAgentHost> GetAgentHost() const override {
-    return agent_host_;
-  }
-  bool Activate() const override;
-  bool Close() const override;
-
- private:
-  scoped_refptr<DevToolsAgentHost> agent_host_;
-  GURL favicon_url_;
-  base::TimeTicks last_activity_time_;
-};
-
-Target::Target(scoped_refptr<DevToolsAgentHost> agent_host)
-    : agent_host_(agent_host) {
-  if (WebContents* web_contents = agent_host_->GetWebContents()) {
-    NavigationController& controller = web_contents->GetController();
-    NavigationEntry* entry = controller.GetActiveEntry();
-    if (entry != NULL && entry->GetURL().is_valid())
-      favicon_url_ = entry->GetFavicon().url;
-    last_activity_time_ = web_contents->GetLastActiveTime();
-  }
-}
-
-bool Target::Activate() const {
-  return agent_host_->Activate();
-}
-
-bool Target::Close() const {
-  return agent_host_->Close();
 }
 
 // ShellDevToolsDelegate ----------------------------------------------------
@@ -277,14 +220,16 @@ ShellDevToolsManagerDelegate::CreateNewTarget(const GURL& url) {
                                         NULL,
                                         gfx::Size());
   return scoped_ptr<DevToolsTarget>(
-      new Target(DevToolsAgentHost::GetOrCreateFor(shell->web_contents())));
+      new devtools_discovery::BasicTargetDescriptor(
+          DevToolsAgentHost::GetOrCreateFor(shell->web_contents())));
 }
 
 void ShellDevToolsManagerDelegate::EnumerateTargets(TargetCallback callback) {
   TargetList targets;
-  for (const auto& agent_host : DevToolsAgentHost::GetOrCreateAll()) {
-    targets.push_back(new Target(agent_host));
-  }
+  devtools_discovery::DevToolsDiscoveryManager* discovery_manager =
+      devtools_discovery::DevToolsDiscoveryManager::GetInstance();
+  for (const auto& descriptor : discovery_manager->GetDescriptors())
+    targets.push_back(descriptor);
   callback.Run(targets);
 }
 

@@ -24,6 +24,7 @@ include_rules = [
   "+ui/views",
 
   "+components/crash",
+  "+components/devtools_discovery",
   "+components/devtools_http_handler",
 
   # For enabling media related features.

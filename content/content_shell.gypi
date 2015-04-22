@@ -47,6 +47,7 @@
         '../cc/blink/cc_blink.gyp:cc_blink',
         '../cc/cc.gyp:cc',
         '../components/components.gyp:crash_component_breakpad_mac_to_be_deleted',
+        '../components/components.gyp:devtools_discovery',
         '../components/components.gyp:devtools_http_handler',
         '../components/components.gyp:web_cache_renderer',
         '../device/bluetooth/bluetooth.gyp:device_bluetooth',
