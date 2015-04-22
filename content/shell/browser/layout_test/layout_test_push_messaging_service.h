@@ -19,9 +19,6 @@ class LayoutTestPushMessagingService : public PushMessagingService {
   LayoutTestPushMessagingService();
   ~LayoutTestPushMessagingService() override;
 
-  void SetPermission(const GURL& origin, bool allowed);
-  void ClearPermissions();
-
   // PushMessagingService implementation:
   GURL GetPushEndpoint() override;
   void RegisterFromDocument(

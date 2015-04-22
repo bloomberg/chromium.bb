@@ -592,12 +592,6 @@ class TestRunner : public WebTestRunner,
   void CopyImageAtAndCapturePixelsAsyncThen(
       int x, int y, const v8::Handle<v8::Function> callback);
 
-  // Sets the origin's permission to use the Push API to granted or denied.
-  void SetPushMessagingPermission(const GURL& origin, bool allowed);
-
-  // Clears all previously granted Push API permissions.
-  void ClearPushMessagingPermissions();
-
   void GetManifestThen(v8::Handle<v8::Function> callback);
 
   ///////////////////////////////////////////////////////////////////////////

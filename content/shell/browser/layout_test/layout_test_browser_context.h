@@ -30,7 +30,6 @@ class LayoutTestBrowserContext : public ShellBrowserContext {
   PushMessagingService* GetPushMessagingService() override;
   PermissionManager* GetPermissionManager() override;
 
-  LayoutTestPushMessagingService* GetLayoutTestPushMessagingService();
   LayoutTestPermissionManager* GetLayoutTestPermissionManager();
 
  protected:

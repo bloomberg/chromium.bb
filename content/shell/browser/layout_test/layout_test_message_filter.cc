@@ -12,7 +12,6 @@
 #include "content/shell/browser/layout_test/layout_test_content_browser_client.h"
 #include "content/shell/browser/layout_test/layout_test_notification_manager.h"
 #include "content/shell/browser/layout_test/layout_test_permission_manager.h"
-#include "content/shell/browser/layout_test/layout_test_push_messaging_service.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_network_delegate.h"
@@ -47,8 +46,6 @@ void LayoutTestMessageFilter::OverrideThreadForMessage(
   if (message.type() == LayoutTestHostMsg_ClearAllDatabases::ID)
     *thread = BrowserThread::FILE;
   if (message.type() == LayoutTestHostMsg_SimulateWebNotificationClick::ID ||
-      message.type() == LayoutTestHostMsg_SetPushMessagingPermission::ID ||
-      message.type() == LayoutTestHostMsg_ClearPushMessagingPermissions::ID ||
       message.type() == LayoutTestHostMsg_SetPermission::ID ||
       message.type() == LayoutTestHostMsg_ResetPermissions::ID)
     *thread = BrowserThread::UI;
@@ -69,10 +66,6 @@ bool LayoutTestMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnClearWebNotificationPermissions)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_SimulateWebNotificationClick,
                         OnSimulateWebNotificationClick)
-    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_SetPushMessagingPermission,
-                        OnSetPushMessagingPermission)
-    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_ClearPushMessagingPermissions,
-                        OnClearPushMessagingPermissions)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_AcceptAllCookies, OnAcceptAllCookies)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_DeleteAllCookies, OnDeleteAllCookies)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_SetPermission, OnSetPermission)
@@ -141,23 +134,6 @@ void LayoutTestMessageFilter::OnSimulateWebNotificationClick(
       LayoutTestContentBrowserClient::Get()->GetLayoutTestNotificationManager();
   if (manager)
     manager->SimulateClick(title);
-}
-
-void LayoutTestMessageFilter::OnSetPushMessagingPermission(const GURL& origin,
-                                                           bool allowed) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  LayoutTestContentBrowserClient::Get()
-      ->GetLayoutTestBrowserContext()
-      ->GetLayoutTestPushMessagingService()
-      ->SetPermission(origin, allowed);
-}
-
-void LayoutTestMessageFilter::OnClearPushMessagingPermissions() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  LayoutTestContentBrowserClient::Get()
-      ->GetLayoutTestBrowserContext()
-      ->GetLayoutTestPushMessagingService()
-      ->ClearPermissions();
 }
 
 void LayoutTestMessageFilter::OnAcceptAllCookies(bool accept) {

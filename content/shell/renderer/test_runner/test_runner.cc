@@ -307,8 +307,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
                                             v8::Handle<v8::Function> callback);
   void SetCustomTextOutput(std::string output);
   void SetViewSourceForFrame(const std::string& name, bool enabled);
-  void SetPushMessagingPermission(const std::string& origin, bool allowed);
-  void ClearPushMessagingPermissions();
   void SetBluetoothMockDataSet(const std::string& dataset_name);
   void SetGeofencingMockProvider(bool service_available);
   void ClearGeofencingMockProvider();
@@ -562,10 +560,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetCustomTextOutput)
       .SetMethod("setViewSourceForFrame",
                  &TestRunnerBindings::SetViewSourceForFrame)
-      .SetMethod("setPushMessagingPermission",
-                 &TestRunnerBindings::SetPushMessagingPermission)
-      .SetMethod("clearPushMessagingPermissions",
-                 &TestRunnerBindings::ClearPushMessagingPermissions)
       .SetMethod("setBluetoothMockDataSet",
                  &TestRunnerBindings::SetBluetoothMockDataSet)
       .SetMethod("forceNextWebGLContextCreationToFail",
@@ -1439,17 +1433,6 @@ void TestRunnerBindings::SetViewSourceForFrame(const std::string& name,
     if (target_frame)
       target_frame->enableViewSourceMode(enabled);
   }
-}
-
-void TestRunnerBindings::SetPushMessagingPermission(const std::string& origin,
-                                                    bool allowed) {
-  if (runner_)
-    runner_->SetPushMessagingPermission(GURL(origin), allowed);
-}
-
-void TestRunnerBindings::ClearPushMessagingPermissions() {
-  if (runner_)
-    runner_->ClearPushMessagingPermissions();
 }
 
 void TestRunnerBindings::SetGeofencingMockProvider(bool service_available) {
@@ -3008,14 +2991,6 @@ void TestRunner::CapturePixelsCallback(scoped_ptr<InvokeCallbackTask> task,
 
   task->SetArguments(3, argv);
   InvokeCallback(task.Pass());
-}
-
-void TestRunner::SetPushMessagingPermission(const GURL& origin, bool allowed) {
-  delegate_->SetPushMessagingPermission(origin, allowed);
-}
-
-void TestRunner::ClearPushMessagingPermissions() {
-  delegate_->ClearPushMessagingPermissions();
 }
 
 void TestRunner::LocationChangeDone() {

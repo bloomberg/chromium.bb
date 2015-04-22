@@ -38,15 +38,6 @@ LayoutTestPushMessagingService::LayoutTestPushMessagingService() {
 LayoutTestPushMessagingService::~LayoutTestPushMessagingService() {
 }
 
-void LayoutTestPushMessagingService::SetPermission(const GURL& origin,
-                                                   bool allowed) {
-  // TODO(mlamouri): remove when calls are removed from Blink.
-}
-
-void LayoutTestPushMessagingService::ClearPermissions() {
-  // TODO(mlamouri): remove when calls are removed from Blink.
-}
-
 GURL LayoutTestPushMessagingService::GetPushEndpoint() {
   return GURL("https://example.com/LayoutTestEndpoint");
 }

@@ -69,12 +69,6 @@ PushMessagingService* LayoutTestBrowserContext::GetPushMessagingService() {
   return push_messaging_service_.get();
 }
 
-LayoutTestPushMessagingService*
-LayoutTestBrowserContext::GetLayoutTestPushMessagingService() {
-  return static_cast<LayoutTestPushMessagingService*>(
-      GetPushMessagingService());
-}
-
 PermissionManager* LayoutTestBrowserContext::GetPermissionManager() {
   if (!permission_manager_.get())
     permission_manager_.reset(new LayoutTestPermissionManager());
