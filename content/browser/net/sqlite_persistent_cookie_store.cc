@@ -139,6 +139,10 @@ class SQLitePersistentCookieStore::Backend
   ~Backend() {
     DCHECK(!db_.get()) << "Close should have already been called.";
     DCHECK(num_pending_ == 0 && pending_.empty());
+
+    for (net::CanonicalCookie* cookie : cookies_) {
+      delete cookie;
+    }
   }
 
   // Database upgrade statements.
@@ -249,6 +253,8 @@ class SQLitePersistentCookieStore::Backend
   // Temporary buffer for cookies loaded from DB. Accumulates cookies to reduce
   // the number of messages sent to the client runner. Sent back in response to
   // individual load requests for domain keys or when all loading completes.
+  // Ownership of the cookies in this vector is transferred to the client in
+  // response to individual load requests or when all loading completes.
   std::vector<net::CanonicalCookie*> cookies_;
 
   // Map of domain keys(eTLD+1) to domains/hosts that are to be loaded from DB.
