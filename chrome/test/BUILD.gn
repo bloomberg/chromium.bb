@@ -380,6 +380,10 @@ if (!is_android) {
         "//third_party/wtl",
         "//ui/resources",
       ]
+
+      configs -= [ "//build/config/win:default_incremental_linking" ]
+      configs +=
+          [ "//build/config/win:default_large_module_incremental_linking" ]
     }
 
     if (is_mac) {
@@ -1070,6 +1074,10 @@ if (!is_android) {
         "//third_party/wtl",
         "//ui/resources",
       ]
+
+      configs -= [ "//build/config/win:default_incremental_linking" ]
+      configs +=
+          [ "//build/config/win:default_large_module_incremental_linking" ]
     } else {
       sources -= [ "../app/chrome_version.rc.version" ]
     }
@@ -1603,6 +1611,10 @@ if (!is_android) {
         "//third_party/isimpledom",
         "//third_party/wtl",
       ]
+
+      configs -= [ "//build/config/win:default_incremental_linking" ]
+      configs +=
+          [ "//build/config/win:default_large_module_incremental_linking" ]
 
       libs = [
         "comsupp.lib",
