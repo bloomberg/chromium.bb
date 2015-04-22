@@ -44,7 +44,7 @@ OobeBaseTest::OobeBaseTest()
       network_portal_detector_(NULL),
       needs_background_networking_(false),
       gaia_frame_parent_("signin-frame"),
-      use_webview_(false),
+      use_webview_(true),
       initialize_fake_merge_session_(true) {
   set_exit_when_last_browser_closes(false);
   set_chromeos_user_ = false;

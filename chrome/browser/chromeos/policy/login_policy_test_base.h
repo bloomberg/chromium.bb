@@ -23,7 +23,10 @@ class LocalPolicyTestServer;
 
 // This class can be used to implement tests which need policy to be set prior
 // to login.
-class LoginPolicyTestBase : public chromeos::OobeBaseTest {
+// Boolean parameter is used to run this test for webview (true) and for
+// iframe (false) GAIA sign in.
+class LoginPolicyTestBase : public chromeos::OobeBaseTest,
+                            public testing::WithParamInterface<bool> {
  protected:
   LoginPolicyTestBase();
   ~LoginPolicyTestBase() override;

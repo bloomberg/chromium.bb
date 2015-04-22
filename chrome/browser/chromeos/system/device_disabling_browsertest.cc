@@ -48,9 +48,12 @@ void ErrorCallbackFunction(const std::string& error_name,
 
 }  // namespace
 
+// Boolean parameter is used to run this test for webview (true) and for
+// iframe (false) GAIA sign in.
 class DeviceDisablingTest
     : public OobeBaseTest,
-      public NetworkStateInformer::NetworkStateInformerObserver {
+      public NetworkStateInformer::NetworkStateInformerObserver,
+      public testing::WithParamInterface<bool> {
  public:
   DeviceDisablingTest();
 
@@ -80,6 +83,7 @@ class DeviceDisablingTest
 
 DeviceDisablingTest::DeviceDisablingTest()
     : fake_session_manager_client_(new FakeSessionManagerClient) {
+  set_use_webview(GetParam());
 }
 
 void DeviceDisablingTest::MarkDisabledAndWaitForPolicyFetch() {
@@ -135,8 +139,7 @@ void DeviceDisablingTest::UpdateState(NetworkError::ErrorReason reason) {
   network_state_change_wait_run_loop_.Quit();
 }
 
-
-IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableDuringNormalOperation) {
+IN_PROC_BROWSER_TEST_P(DeviceDisablingTest, DisableDuringNormalOperation) {
   // Mark the device as disabled and wait until cros settings update.
   MarkDisabledAndWaitForPolicyFetch();
 
@@ -155,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableDuringNormalOperation) {
 // causes the UI to try and show the login screen after some delay. It must
 // be ensured that the login screen does not show and does not clobber the
 // disabled screen.
-IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableWithEphemeralUsers) {
+IN_PROC_BROWSER_TEST_P(DeviceDisablingTest, DisableWithEphemeralUsers) {
   // Connect to the fake Ethernet network. This ensures that Chrome OS will not
   // try to show the offline error screen.
   base::RunLoop connect_run_loop;
@@ -218,6 +221,10 @@ IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableWithEphemeralUsers) {
   // screen is still being shown instead.
   EXPECT_EQ(OobeUI::kScreenDeviceDisabled, GetCurrentScreenName(web_contents));
 }
+
+INSTANTIATE_TEST_CASE_P(DeviceDisablingSuite,
+                        DeviceDisablingTest,
+                        testing::Bool());
 
 }  // namespace system
 }  // namespace chromeos

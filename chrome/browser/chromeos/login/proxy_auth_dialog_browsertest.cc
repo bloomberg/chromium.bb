@@ -68,9 +68,7 @@ class ProxyAuthOnUserBoardScreenTest
         proxy_server_(net::SpawnedTestServer::TYPE_BASIC_AUTH_PROXY,
                       net::SpawnedTestServer::kLocalhost,
                       base::FilePath()) {
-    // TODO(paulmeyer): Re-enable webview version of this test
-    // (uncomment this line) once http://crbug.com/452452 is fixed.
-    // set_use_webview(GetParam());
+    set_use_webview(GetParam());
   }
 
   ~ProxyAuthOnUserBoardScreenTest() override {}
@@ -128,8 +126,10 @@ IN_PROC_BROWSER_TEST_P(ProxyAuthOnUserBoardScreenTest,
   }
 }
 
+// TODO(paulmeyer): Re-enable webview version of this test
+// (once http://crbug.com/452452 is fixed.
 INSTANTIATE_TEST_CASE_P(ProxyAuthOnUserBoardScreenTestSuite,
                         ProxyAuthOnUserBoardScreenTest,
-                        testing::Bool());
+                        testing::Values(false));
 
 }  // namespace chromeos

@@ -33,7 +33,7 @@
 namespace chromeos {
 
 LoginManagerTest::LoginManagerTest(bool should_launch_browser)
-    : use_webview_(false),
+    : use_webview_(true),
       should_launch_browser_(should_launch_browser),
       web_contents_(NULL) {
   set_exit_when_last_browser_closes(false);

@@ -1012,11 +1012,6 @@ class WizardControllerProxyAuthOnSigninTest
       if (!GetParam())
         local_state_dict.SetBoolean(prefs::kWebviewSigninDisabled, true);
 
-      // TODO(paulmeyer): Re-enable webview version of this test
-      // (drop this condition) once http://crbug.com/452452 is fixed.
-      if (GetParam())
-        local_state_dict.SetBoolean(prefs::kWebviewSigninDisabled, true);
-
       CHECK(JSONFileValueSerializer(local_state_path)
                 .Serialize(local_state_dict));
     }
@@ -1044,9 +1039,11 @@ IN_PROC_BROWSER_TEST_P(WizardControllerProxyAuthOnSigninTest,
   auth_needed_waiter.Wait();
 }
 
+// TODO(paulmeyer): Re-enable webview version of this test
+// (drop this condition) once http://crbug.com/452452 is fixed.
 INSTANTIATE_TEST_CASE_P(WizardControllerProxyAuthOnSigninSuite,
                         WizardControllerProxyAuthOnSigninTest,
-                        testing::Bool());
+                        testing::Values(false));
 
 class WizardControllerKioskFlowTest : public WizardControllerFlowTest {
  protected:

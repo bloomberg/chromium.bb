@@ -57,8 +57,13 @@ ScopedCompleteCallbackForTesting::~ScopedCompleteCallbackForTesting() {
 
 }  // namespace
 
-class BootstrapTest : public OobeBaseTest {
+// Boolean parameter is used to run this test for webview (true) and for
+// iframe (false) GAIA sign in.
+class BootstrapTest : public OobeBaseTest,
+                      public testing::WithParamInterface<bool> {
  public:
+  BootstrapTest() { set_use_webview(GetParam()); }
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     OobeBaseTest::SetUpCommandLine(command_line);
 
@@ -129,7 +134,7 @@ class BootstrapTest : public OobeBaseTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(BootstrapTest, Basic) {
+IN_PROC_BROWSER_TEST_P(BootstrapTest, Basic) {
   ScopedCompleteCallbackForTesting scoped_bootstrap_initialized(base::Bind(
       &BootstrapTest::OnBootstrapInitialized, base::Unretained(this)));
 
@@ -142,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(BootstrapTest, Basic) {
       content::NotificationService::AllSources()).Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(BootstrapTest, PRE_CleanUpFailedUser) {
+IN_PROC_BROWSER_TEST_P(BootstrapTest, PRE_CleanUpFailedUser) {
   ScopedCompleteCallbackForTesting scoped_bootstrap_initialized(base::Bind(
       &BootstrapTest::OnBootstrapInitialized, base::Unretained(this)));
 
@@ -154,8 +159,13 @@ IN_PROC_BROWSER_TEST_F(BootstrapTest, PRE_CleanUpFailedUser) {
   content::RunMessageLoop();
 }
 
-IN_PROC_BROWSER_TEST_F(BootstrapTest, CleanUpFailedUser) {
+IN_PROC_BROWSER_TEST_P(BootstrapTest, CleanUpFailedUser) {
   EXPECT_FALSE(user_manager::UserManager::Get()->IsKnownUser(kFakeUser));
 }
+
+// TODO(nkostylev): Fix this test for webview. http://crbug.com/477402
+INSTANTIATE_TEST_CASE_P(BootstrapTestSuite,
+                        BootstrapTest,
+                        testing::Values(false));
 
 }  // namespace chromeos

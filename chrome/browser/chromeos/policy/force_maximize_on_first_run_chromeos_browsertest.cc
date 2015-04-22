@@ -64,7 +64,7 @@ class ForceMaximizeOnFirstRunTest : public LoginPolicyTestBase {
   DISALLOW_COPY_AND_ASSIGN(ForceMaximizeOnFirstRunTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ForceMaximizeOnFirstRunTest, PRE_TwoRuns) {
+IN_PROC_BROWSER_TEST_P(ForceMaximizeOnFirstRunTest, PRE_TwoRuns) {
   SetUpResolution();
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword);
@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(ForceMaximizeOnFirstRunTest, PRE_TwoRuns) {
   EXPECT_FALSE(browser1->window()->IsMaximized());
 }
 
-IN_PROC_BROWSER_TEST_F(ForceMaximizeOnFirstRunTest, TwoRuns) {
+IN_PROC_BROWSER_TEST_P(ForceMaximizeOnFirstRunTest, TwoRuns) {
   SetUpResolution();
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
@@ -114,7 +114,7 @@ class ForceMaximizetPolicyFalseTest : public ForceMaximizeOnFirstRunTest {
   DISALLOW_COPY_AND_ASSIGN(ForceMaximizetPolicyFalseTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ForceMaximizetPolicyFalseTest, GeneralFirstRun) {
+IN_PROC_BROWSER_TEST_P(ForceMaximizetPolicyFalseTest, GeneralFirstRun) {
   SetUpResolution();
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword);
@@ -126,5 +126,14 @@ IN_PROC_BROWSER_TEST_F(ForceMaximizetPolicyFalseTest, GeneralFirstRun) {
   ASSERT_TRUE(browser);
   EXPECT_FALSE(browser->window()->IsMaximized());
 }
+
+// TODO(nkostylev): Fix this test for webview. http://crbug.com/477402
+INSTANTIATE_TEST_CASE_P(ForceMaximizeOnFirstRunTestSuite,
+                        ForceMaximizeOnFirstRunTest,
+                        testing::Values(false));
+
+INSTANTIATE_TEST_CASE_P(ForceMaximizetPolicyFalseTestSuite,
+                        ForceMaximizetPolicyFalseTest,
+                        testing::Bool());
 
 }  // namespace policy

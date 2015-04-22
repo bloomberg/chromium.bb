@@ -85,7 +85,10 @@ class BlockingLoginTest
       public content::NotificationObserver,
       public testing::WithParamInterface<BlockingLoginTestParam> {
  public:
-  BlockingLoginTest() : profile_added_(NULL) {}
+  BlockingLoginTest() : profile_added_(NULL) {
+    // TODO(nkostylev): Fix this test for webview. http://crbug.com/477402
+    set_use_webview(false);
+  }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     OobeBaseTest::SetUpCommandLine(command_line);

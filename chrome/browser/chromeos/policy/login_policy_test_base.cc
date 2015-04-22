@@ -66,6 +66,7 @@ const char LoginPolicyTestBase::kAccountPassword[] = "letmein";
 const char LoginPolicyTestBase::kAccountId[] = "user@example.com";
 
 LoginPolicyTestBase::LoginPolicyTestBase() {
+  set_use_webview(GetParam());
   set_open_about_blank_on_browser_launch(false);
 }
 
