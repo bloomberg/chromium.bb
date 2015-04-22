@@ -103,8 +103,6 @@ public:
 
     BLINK_EXPORT static void enablePagePopup(bool);
 
-    BLINK_EXPORT static void enablePeerConnection(bool);
-
     BLINK_EXPORT static void enableRequestAutocomplete(bool);
 
     BLINK_EXPORT static void enableScreenOrientation(bool);

@@ -106,7 +106,6 @@ OverlayFullscreenVideo
 OverlayScrollbars
 PagePopup status=stable
 PathOpsSVGClipping
-PeerConnection status=stable
 Permissions status=stable
 PointerEvent
 Picture status=stable

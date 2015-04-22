@@ -7,5 +7,5 @@
 ] partial interface Window {
     attribute MediaStreamConstructor webkitMediaStream;
 
-    [RuntimeEnabled=PeerConnection] attribute RTCPeerConnectionConstructor webkitRTCPeerConnection;
+    attribute RTCPeerConnectionConstructor webkitRTCPeerConnection;
 };
