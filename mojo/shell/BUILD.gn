@@ -18,22 +18,15 @@ group("shell") {
   deps = [
     ":mojo_shell",
     ":tests",
+    "//mojo/shell/application_manager:tests",
   ]
 
   if (is_android) {
     deps += [
       ":mojo_shell_apk",
-      ":mojo_shell_tests_apk",
+      ":tests_apk",
     ]
   }
-}
-
-group("tests") {
-  testonly = true
-  deps = [
-    ":mojo_shell_tests",
-    "//mojo/shell/application_manager:mojo_application_manager_unittests",
-  ]
 }
 
 if (is_android) {
@@ -45,7 +38,6 @@ executable("mojo_shell") {
   sources = []
 
   deps = [
-    ":init",
     ":lib",
     "//base",
     "//build/config/sanitizers:deps",
@@ -79,17 +71,6 @@ executable("mojo_shell") {
   }
 }
 
-source_set("init") {
-  sources = [
-    "init.cc",
-    "init.h",
-  ]
-
-  deps = [
-    "//base",
-  ]
-}
-
 source_set("in_process_native_runner") {
   sources = [
     "in_process_native_runner.cc",
@@ -116,6 +97,8 @@ source_set("lib") {
     "context.h",
     "filename_util.cc",
     "filename_util.h",
+    "init.cc",
+    "init.h",
     "out_of_process_native_runner.cc",
     "out_of_process_native_runner.h",
     "task_runners.cc",
@@ -126,7 +109,6 @@ source_set("lib") {
 
   deps = [
     ":child_process_bindings",
-    ":init",
     ":in_process_native_runner",
     ":native_application_support",
     "//base",
@@ -350,8 +332,9 @@ mojom("child_process_bindings") {
   ]
 }
 
-# GYP version: mojo/mojo.gyp:mojo_shell_tests
-test("mojo_shell_tests") {
+test("tests") {
+  output_name = "mojo_shell_unittests"
+
   sources = [
     "child_process_host_unittest.cc",
     "data_pipe_peek_unittest.cc",
@@ -398,22 +381,6 @@ test("mojo_shell_tests") {
 
     apk_asset_location = mojo_shell_test_assets_dir
   }
-}
-
-# GYP version: mojo/mojo.gyp:mojo_shell_test_support
-source_set("test_support") {
-  sources = [
-    "shell_test_helper.cc",
-    "shell_test_helper.h",
-  ]
-
-  deps = [
-    ":init",
-    ":lib",
-    "//base",
-    "//third_party/mojo/src/mojo/edk/system",
-    "//mojo/shell/application_manager",
-  ]
 }
 
 mojo_native_application("apptests") {

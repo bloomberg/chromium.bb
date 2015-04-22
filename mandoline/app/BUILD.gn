@@ -17,7 +17,6 @@ executable("mandoline") {
     "//build/config/sanitizers:deps",
     "//mojo/common",
     "//mojo/environment:chromium",
-    "//mojo/shell:init",
     "//mojo/shell:lib",
   ]
 
