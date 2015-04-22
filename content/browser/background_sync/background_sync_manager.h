@@ -157,12 +157,11 @@ class CONTENT_EXPORT BackgroundSyncManager
         std::map<RegistrationKey, BackgroundSyncRegistration>;
 
     BackgroundSyncRegistrations();
-    explicit BackgroundSyncRegistrations(
-        BackgroundSyncRegistration::RegistrationId next_id);
     ~BackgroundSyncRegistrations();
 
     RegistrationMap registration_map;
     BackgroundSyncRegistration::RegistrationId next_id;
+    GURL origin;
   };
 
   using PermissionStatusCallback = base::Callback<void(bool)>;
@@ -188,8 +187,7 @@ class CONTENT_EXPORT BackgroundSyncManager
       const RegistrationKey& registration_key);
 
   // Store all registrations for a given |sw_registration_id|.
-  void StoreRegistrations(const GURL& origin,
-                          int64 sw_registration_id,
+  void StoreRegistrations(int64 sw_registration_id,
                           const ServiceWorkerStorage::StatusCallback& callback);
 
   // Removes the registration if it is in the map.
@@ -198,6 +196,7 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   void AddRegistrationToMap(
       int64 sw_registration_id,
+      const GURL& origin,
       const BackgroundSyncRegistration& sync_registration);
 
   void InitImpl(const base::Closure& callback);

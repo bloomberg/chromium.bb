@@ -28,10 +28,7 @@ BackgroundSyncManager::BackgroundSyncRegistrations::
     BackgroundSyncRegistrations()
     : next_id(BackgroundSyncRegistration::kInitialId) {
 }
-BackgroundSyncManager::BackgroundSyncRegistrations::BackgroundSyncRegistrations(
-    BackgroundSyncRegistration::RegistrationId next_id)
-    : next_id(next_id) {
-}
+
 BackgroundSyncManager::BackgroundSyncRegistrations::
     ~BackgroundSyncRegistrations() {
 }
@@ -206,10 +203,10 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
   for (const std::pair<int64, std::string>& data : user_data) {
     BackgroundSyncRegistrationsProto registrations_proto;
     if (registrations_proto.ParseFromString(data.second)) {
-      sw_to_registrations_map_[data.first] = BackgroundSyncRegistrations(
-          registrations_proto.next_registration_id());
       BackgroundSyncRegistrations* registrations =
           &sw_to_registrations_map_[data.first];
+      registrations->next_id = registrations_proto.next_registration_id();
+      registrations->origin = GURL(registrations_proto.origin());
 
       for (int i = 0, max = registrations_proto.registration_size(); i < max;
            ++i) {
@@ -276,10 +273,10 @@ void BackgroundSyncManager::RegisterImpl(
       &sw_to_registrations_map_[sw_registration_id];
   new_registration.id = registrations->next_id++;
 
-  AddRegistrationToMap(sw_registration_id, new_registration);
+  AddRegistrationToMap(sw_registration_id, origin, new_registration);
 
   StoreRegistrations(
-      origin, sw_registration_id,
+      sw_registration_id,
       base::Bind(&BackgroundSyncManager::RegisterDidStore,
                  weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
                  new_registration, callback));
@@ -342,6 +339,9 @@ BackgroundSyncManager::LookupRegistration(
     return nullptr;
 
   BackgroundSyncRegistrations& registrations = it->second;
+  DCHECK_LE(BackgroundSyncRegistration::kInitialId, registrations.next_id);
+  DCHECK(!registrations.origin.is_empty());
+
   auto key_and_registration_iter =
       registrations.registration_map.find(registration_key);
   if (key_and_registration_iter == registrations.registration_map.end())
@@ -351,7 +351,6 @@ BackgroundSyncManager::LookupRegistration(
 }
 
 void BackgroundSyncManager::StoreRegistrations(
-    const GURL& origin,
     int64 sw_registration_id,
     const ServiceWorkerStorage::StatusCallback& callback) {
   // Serialize the data.
@@ -359,6 +358,7 @@ void BackgroundSyncManager::StoreRegistrations(
       sw_to_registrations_map_[sw_registration_id];
   BackgroundSyncRegistrationsProto registrations_proto;
   registrations_proto.set_next_registration_id(registrations.next_id);
+  registrations_proto.set_origin(registrations.origin.spec());
 
   for (const auto& key_and_registration : registrations.registration_map) {
     const BackgroundSyncRegistration& registration =
@@ -376,8 +376,8 @@ void BackgroundSyncManager::StoreRegistrations(
   bool success = registrations_proto.SerializeToString(&serialized);
   DCHECK(success);
 
-  StoreDataInBackend(sw_registration_id, origin, kBackgroundSyncUserDataKey,
-                     serialized, callback);
+  StoreDataInBackend(sw_registration_id, registrations.origin,
+                     kBackgroundSyncUserDataKey, serialized, callback);
 }
 
 void BackgroundSyncManager::RegisterDidStore(
@@ -420,12 +420,14 @@ void BackgroundSyncManager::RemoveRegistrationFromMap(
 
 void BackgroundSyncManager::AddRegistrationToMap(
     int64 sw_registration_id,
+    const GURL& origin,
     const BackgroundSyncRegistration& sync_registration) {
   DCHECK_NE(BackgroundSyncRegistration::kInvalidRegistrationId,
             sw_registration_id);
 
   BackgroundSyncRegistrations* registrations =
       &sw_to_registrations_map_[sw_registration_id];
+  registrations->origin = origin;
 
   RegistrationKey registration_key(sync_registration);
   registrations->registration_map[registration_key] = sync_registration;
@@ -475,7 +477,7 @@ void BackgroundSyncManager::UnregisterImpl(
   RemoveRegistrationFromMap(sw_registration_id, registration_key);
 
   StoreRegistrations(
-      origin, sw_registration_id,
+      sw_registration_id,
       base::Bind(&BackgroundSyncManager::UnregisterDidStore,
                  weak_ptr_factory_.GetWeakPtr(), sw_registration_id, callback));
 }

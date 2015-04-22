@@ -36,4 +36,5 @@ message BackgroundSyncRegistrationProto {
 message BackgroundSyncRegistrationsProto {
   repeated BackgroundSyncRegistrationProto registration = 1;
   required int64 next_registration_id = 2;
+  required string origin = 3;
 }
