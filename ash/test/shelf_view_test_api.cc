@@ -118,6 +118,15 @@ void ShelfViewTestAPI::ButtonPressed(views::Button* sender,
   return shelf_view_->ButtonPressed(sender, event);
 }
 
+void ShelfViewTestAPI::RecordIconActivatedSource(const ui::Event& event) {
+  shelf_view_->RecordIconActivatedSource(event);
+}
+
+void ShelfViewTestAPI::RecordIconActivatedAction(
+    ShelfItemDelegate::PerformedAction performed_action) {
+  shelf_view_->RecordIconActivatedAction(performed_action);
+}
+
 bool ShelfViewTestAPI::SameDragType(ShelfItemType typea,
                                     ShelfItemType typeb) const {
   return shelf_view_->SameDragType(typea, typeb);

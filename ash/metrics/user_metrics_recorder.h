@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_USER_METRICS_RECORDER_H_
-#define ASH_USER_METRICS_RECORDER_H_
+#ifndef ASH_METRICS_USER_METRICS_RECORDER_H_
+#define ASH_METRICS_USER_METRICS_RECORDER_H_
 
 #include "ash/ash_export.h"
 #include "base/timer/timer.h"
@@ -30,6 +30,7 @@ enum UserMetricsAction {
   UMA_LAUNCHER_CLICK_ON_APP,
   UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON,
   UMA_LAUNCHER_LAUNCH_TASK,
+  UMA_LAUNCHER_SWITCH_TASK,
   UMA_MAXIMIZE_MODE_DISABLED,
   UMA_MAXIMIZE_MODE_ENABLED,
   UMA_MAXIMIZE_MODE_INITIALLY_DISABLED,
@@ -139,4 +140,4 @@ class ASH_EXPORT UserMetricsRecorder {
 
 }  // namespace ash
 
-#endif  // ASH_USER_METRICS_RECORDER_H_
+#endif  // ASH_METRICS_USER_METRICS_RECORDER_H_

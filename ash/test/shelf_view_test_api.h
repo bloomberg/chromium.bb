@@ -5,6 +5,7 @@
 #ifndef ASH_TEST_SHELF_VIEW_TEST_API_H_
 #define ASH_TEST_SHELF_VIEW_TEST_API_H_
 
+#include "ash/shelf/shelf_item_delegate.h"
 #include "ash/shelf/shelf_item_types.h"
 #include "base/basictypes.h"
 
@@ -80,6 +81,14 @@ class ShelfViewTestAPI {
 
   // Wrapper for ShelfView::ButtonPressed.
   void ButtonPressed(views::Button* sender, const ui::Event& event);
+
+  // Wrapper for ShelfView::RecordIconActivatedSource(const ui::Event&).
+  void RecordIconActivatedSource(const ui::Event& event);
+
+  // Wrapper for ShelfView::RecordIconActivatedAction(
+  // ShelfItemDelegate::PerformedAction).
+  void RecordIconActivatedAction(
+      ShelfItemDelegate::PerformedAction performed_action);
 
   // Wrapper for ShelfView::SameDragType.
   bool SameDragType(ShelfItemType typea, ShelfItemType typeb) const;

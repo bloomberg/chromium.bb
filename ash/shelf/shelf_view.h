@@ -5,10 +5,12 @@
 #ifndef ASH_SHELF_SHELF_VIEW_H_
 #define ASH_SHELF_SHELF_VIEW_H_
 
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "ash/shelf/shelf_button_host.h"
+#include "ash/shelf/shelf_item_delegate.h"
 #include "ash/shelf/shelf_model_observer.h"
 #include "ash/wm/gestures/shelf_gesture_handler.h"
 #include "base/observer_list.h"
@@ -275,6 +277,13 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // Records UMA statistics for the input source when an icon was activated.
+  void RecordIconActivatedSource(const ui::Event& event);
+
+  // Records UMA statistics for the action performed by activating an icon.
+  void RecordIconActivatedAction(
+      ShelfItemDelegate::PerformedAction performed_action);
 
   // Show the list of all running items for this |item|. It will return true
   // when the menu was shown and false if there were no possible items to

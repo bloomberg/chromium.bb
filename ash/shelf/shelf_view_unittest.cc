@@ -34,6 +34,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/user_action_tester.h"
+#include "base/time/time.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -43,6 +45,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/views/view_model.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -121,13 +124,20 @@ class ShelfViewIconObserverTest : public AshTestBase {
 // TestShelfItemDelegate which tracks whether it gets selected.
 class ShelfItemSelectionTracker : public TestShelfItemDelegate {
  public:
-  ShelfItemSelectionTracker() : TestShelfItemDelegate(NULL), selected_(false) {
-  }
+  ShelfItemSelectionTracker()
+      : TestShelfItemDelegate(NULL),
+        selected_(false),
+        item_selected_action_(kNoAction) {}
 
   ~ShelfItemSelectionTracker() override {}
 
   // Resets to the initial state.
   void Reset() { selected_ = false; }
+
+  void set_item_selected_action(
+      ShelfItemDelegate::PerformedAction item_selected_action) {
+    item_selected_action_ = item_selected_action;
+  }
 
   // Returns true if the delegate was selected.
   bool WasSelected() {
@@ -138,11 +148,14 @@ class ShelfItemSelectionTracker : public TestShelfItemDelegate {
   ShelfItemDelegate::PerformedAction ItemSelected(
       const ui::Event& event) override {
     selected_ = true;
-    return kNoAction;
+    return item_selected_action_;
   }
 
  private:
   bool selected_;
+
+  // The action returned from ItemSelected(const ui::Event&).
+  ShelfItemDelegate::PerformedAction item_selected_action_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfItemSelectionTracker);
 };
@@ -1760,6 +1773,82 @@ TEST_F(ShelfViewTest, AppListButtonTouchFeedbackCancellation) {
   generator.ReleaseTouch();
   EXPECT_FALSE(app_list_button->draw_background_as_active());
   EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());
+}
+
+// Verifies that Launcher_ButtonPressed_* UMA user actions are recorded when an
+// item is selected.
+TEST_F(ShelfViewTest,
+       Launcher_ButtonPressedUserActionsRecordedWhenItemSelected) {
+  base::UserActionTester user_action_tester;
+
+  ShelfID browser_shelf_id = model_->items()[browser_index_].id;
+  ShelfItemSelectionTracker* selection_tracker = new ShelfItemSelectionTracker;
+  item_manager_->SetShelfItemDelegate(
+      browser_shelf_id,
+      scoped_ptr<ShelfItemDelegate>(selection_tracker).Pass());
+
+  SimulateClick(browser_index_);
+  EXPECT_EQ(1,
+            user_action_tester.GetActionCount("Launcher_ButtonPressed_Mouse"));
+}
+
+// Verifies that Launcher_*Task UMA user actions are recorded when an item is
+// selected.
+TEST_F(ShelfViewTest, Launcher_TaskUserActionsRecordedWhenItemSelected) {
+  base::UserActionTester user_action_tester;
+
+  ShelfID browser_shelf_id = model_->items()[browser_index_].id;
+  ShelfItemSelectionTracker* selection_tracker = new ShelfItemSelectionTracker;
+  selection_tracker->set_item_selected_action(
+      ShelfItemDelegate::kNewWindowCreated);
+  item_manager_->SetShelfItemDelegate(
+      browser_shelf_id,
+      scoped_ptr<ShelfItemDelegate>(selection_tracker).Pass());
+
+  SimulateClick(browser_index_);
+  EXPECT_EQ(1, user_action_tester.GetActionCount("Launcher_LaunchTask"));
+}
+
+// Verifies that a Launcher_ButtonPressed_Mouse UMA user action is recorded when
+// an icon is activated by a mouse event.
+TEST_F(ShelfViewTest,
+       Launcher_ButtonPressed_MouseIsRecordedWhenIconActivatedByMouse) {
+  base::UserActionTester user_action_tester;
+  ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                             base::TimeDelta(), 0, 0);
+  test_api_->RecordIconActivatedSource(mouse_event);
+  EXPECT_EQ(1,
+            user_action_tester.GetActionCount("Launcher_ButtonPressed_Mouse"));
+}
+
+// Verifies that a Launcher_ButtonPressed_Touch UMA user action is recorded when
+// an icon is activated by a touch event.
+TEST_F(ShelfViewTest,
+       Launcher_ButtonPressed_MouseIsRecordedWhenIconActivatedByTouch) {
+  base::UserActionTester user_action_tester;
+  ui::TouchEvent touch_event(ui::ET_GESTURE_TAP, gfx::Point(), 0,
+                             base::TimeDelta());
+  test_api_->RecordIconActivatedSource(touch_event);
+  EXPECT_EQ(1,
+            user_action_tester.GetActionCount("Launcher_ButtonPressed_Touch"));
+}
+
+// Verifies that a Launcher_LaunchTask UMA user action is recorded when
+// selecting an icon causes a new window to be created.
+TEST_F(ShelfViewTest, Launcher_LaunchTaskIsRecordedWhenNewWindowIsCreated) {
+  base::UserActionTester user_action_tester;
+  test_api_->RecordIconActivatedAction(ShelfItemDelegate::kNewWindowCreated);
+  EXPECT_EQ(1, user_action_tester.GetActionCount("Launcher_LaunchTask"));
+}
+
+// Verifies that a Launcher_SwitchTask UMA user action is recorded when
+// selecting an icon causes an existing window to be activated.
+TEST_F(ShelfViewTest,
+       Launcher_SwitchTaskIsRecordedWhenExistingWindowIsActivated) {
+  base::UserActionTester user_action_tester;
+  test_api_->RecordIconActivatedAction(
+      ShelfItemDelegate::kExistingWindowActivated);
+  EXPECT_EQ(1, user_action_tester.GetActionCount("Launcher_SwitchTask"));
 }
 
 class ShelfViewVisibleBoundsTest : public ShelfViewTest,
