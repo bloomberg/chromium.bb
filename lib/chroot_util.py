@@ -173,9 +173,8 @@ def InitializeSysroots(blueprint):
   bricks = [brick_lib.Brick(b) for b in blueprint.GetBricks()]
 
   # Regenerate the portage configuration for all bricks used by this blueprint.
-  for b in bricks + [bsp]:
-    for dep in b.BrickStack():
-      dep.GeneratePortageConfig()
+  for b in blueprint.GetUsedBricks():
+    b.GeneratePortageConfig()
 
   sysroot_path = cros_build_lib.GetSysroot(blueprint.FriendlyName())
 
