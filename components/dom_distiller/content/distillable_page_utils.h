@@ -15,6 +15,7 @@ class DistillablePageDetector;
 // Checks if the page appears to be distillable based on whichever heuristics
 // are configured to be used (see dom_distiller::GetDistillerHeuristicsType).
 void IsDistillablePage(content::WebContents* web_contents,
+                       bool is_mobile_optimized,
                        base::Callback<void(bool)> callback);
 
 // Checks if the web_contents is has opengraph type=article markup.

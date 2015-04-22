@@ -20,9 +20,9 @@ public final class DistillablePageUtils {
         public void onIsPageDistillableResult(boolean isDistillable);
     }
 
-    public static void isPageDistillable(
-            WebContents webContents, PageDistillableCallback callback) {
-        nativeIsPageDistillable(webContents, callback);
+    public static void isPageDistillable(WebContents webContents, boolean isMobileOptimized,
+            PageDistillableCallback callback) {
+        nativeIsPageDistillable(webContents, isMobileOptimized, callback);
     }
 
     @CalledByNative
@@ -32,6 +32,6 @@ public final class DistillablePageUtils {
     }
 
     private static native void nativeIsPageDistillable(
-            WebContents webContents, PageDistillableCallback callback);
+            WebContents webContents, boolean isMobileOptimized, PageDistillableCallback callback);
 }
 

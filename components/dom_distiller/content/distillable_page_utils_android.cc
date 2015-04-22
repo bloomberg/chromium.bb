@@ -27,6 +27,7 @@ void OnIsPageDistillableResult(
 static void IsPageDistillable(JNIEnv* env,
                               jclass jcaller,
                               jobject webContents,
+                              jboolean is_mobile_optimized,
                               jobject callback) {
   content::WebContents* web_contents(
       content::WebContents::FromJavaWebContents(webContents));
@@ -40,8 +41,9 @@ static void IsPageDistillable(JNIEnv* env,
                               base::Passed(&callback_holder), false));
     return;
   }
-  IsDistillablePage(web_contents, base::Bind(OnIsPageDistillableResult,
-                                             base::Passed(&callback_holder)));
+  IsDistillablePage(
+      web_contents, is_mobile_optimized,
+      base::Bind(OnIsPageDistillableResult, base::Passed(&callback_holder)));
 }
 
 bool RegisterDistillablePageUtils(JNIEnv* env) {

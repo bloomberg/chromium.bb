@@ -49,6 +49,7 @@ void IsOpenGraphArticle(content::WebContents* web_contents,
 }
 
 void IsDistillablePage(content::WebContents* web_contents,
+                       bool is_mobile_optimized,
                        base::Callback<void(bool)> callback) {
   switch (GetDistillerHeuristicsType()) {
     case DistillerHeuristicsType::ALWAYS_TRUE:
@@ -59,6 +60,12 @@ void IsDistillablePage(content::WebContents* web_contents,
       IsOpenGraphArticle(web_contents, callback);
       return;
     case DistillerHeuristicsType::ADABOOST_MODEL:
+      // The adaboost model is only applied to non-mobile pages.
+      if (is_mobile_optimized) {
+        base::MessageLoop::current()->PostTask(FROM_HERE,
+                                               base::Bind(callback, false));
+        return;
+      }
       IsDistillablePageForDetector(
           web_contents, DistillablePageDetector::GetDefault(), callback);
       return;
