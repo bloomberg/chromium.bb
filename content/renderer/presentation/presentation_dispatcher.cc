@@ -172,9 +172,10 @@ void PresentationDispatcher::OnDefaultSessionStarted(
       &PresentationDispatcher::OnDefaultSessionStarted,
       base::Unretained(this)));
 
-  DCHECK(!session_info.is_null());
-  controller_->didStartDefaultSession(
-      new PresentationSessionClient(session_info.Pass()));
+  if (!session_info.is_null()) {
+    controller_->didStartDefaultSession(
+        new PresentationSessionClient(session_info.Pass()));
+  }
 }
 
 void PresentationDispatcher::OnSessionCreated(
