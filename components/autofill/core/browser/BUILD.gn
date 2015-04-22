@@ -120,10 +120,8 @@ static_library("browser") {
   ]
 
   # Controls whether Wallet cards can be saved to the local instance of chrome.
-  if (is_desktop_linux) {
-    defines = [ "ENABLE_SAVE_WALLET_CARDS_LOCALLY=0" ]
-  } else {
-    defines = [ "ENABLE_SAVE_WALLET_CARDS_LOCALLY=1" ]
+  if (!is_desktop_linux) {
+    defines = [ "ENABLE_SAVE_WALLET_CARDS_LOCALLY" ]
   }
 
   deps = [

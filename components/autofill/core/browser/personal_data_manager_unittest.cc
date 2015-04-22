@@ -15,6 +15,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/form_structure.h"
@@ -494,6 +495,16 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCards) {
   base::MessageLoop::current()->Run();
 
   ASSERT_EQ(3U, personal_data_->GetCreditCards().size());
+
+  if (!OfferStoreUnmaskedCards()) {
+    for (CreditCard* card : personal_data_->GetCreditCards()) {
+      EXPECT_EQ(CreditCard::MASKED_SERVER_CARD, card->record_type());
+    }
+    // The rest of this test doesn't work if we're force-masking all unmasked
+    // cards.
+    return;
+  }
+
   // The GUIDs will be different, so just compare the data.
   for (size_t i = 0; i < 3; ++i)
     EXPECT_EQ(0, server_cards[i].Compare(*personal_data_->GetCreditCards()[i]));
@@ -3143,6 +3154,16 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
   base::MessageLoop::current()->Run();
 
   ASSERT_EQ(3U, personal_data_->GetCreditCards().size());
+
+  if (!OfferStoreUnmaskedCards()) {
+    for (CreditCard* card : personal_data_->GetCreditCards()) {
+      EXPECT_EQ(CreditCard::MASKED_SERVER_CARD, card->record_type());
+    }
+    // The rest of this test doesn't work if we're force-masking all unmasked
+    // cards.
+    return;
+  }
+
   // The GUIDs will be different, so just compare the data.
   for (size_t i = 0; i < 3; ++i)
     EXPECT_EQ(0, server_cards[i].Compare(*personal_data_->GetCreditCards()[i]));
