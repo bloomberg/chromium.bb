@@ -404,6 +404,12 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
 
   // Initialize the startup information from the policy.
   base::win::StartupInformation startup_info;
+  // The liftime of |mitigations| and |inherit_handle_list| have to be at least
+  // as long as |startup_info| because |UpdateProcThreadAttribute| requires that
+  // its |lpValue| parameter persist until |DeleteProcThreadAttributeList| is
+  // called; StartupInformation's destructor makes such a call.
+  DWORD64 mitigations;
+  HANDLE inherit_handle_list[2];
   base::string16 desktop = policy_base->GetAlternateDesktop();
   if (!desktop.empty()) {
     startup_info.startup_info()->lpDesktop =
@@ -418,7 +424,6 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
     if (app_container)
       ++attribute_count;
 
-    DWORD64 mitigations;
     size_t mitigations_size;
     ConvertProcessMitigationsToPolicy(policy->GetProcessMitigations(),
                                       &mitigations, &mitigations_size);
@@ -427,7 +432,6 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
 
     HANDLE stdout_handle = policy_base->GetStdoutHandle();
     HANDLE stderr_handle = policy_base->GetStderrHandle();
-    HANDLE inherit_handle_list[2];
     int inherit_handle_count = 0;
     if (stdout_handle != INVALID_HANDLE_VALUE)
       inherit_handle_list[inherit_handle_count++] = stdout_handle;
