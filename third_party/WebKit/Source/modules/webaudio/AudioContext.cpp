@@ -63,6 +63,7 @@
 #include "modules/webaudio/ScriptProcessorNode.h"
 #include "modules/webaudio/StereoPannerNode.h"
 #include "modules/webaudio/WaveShaperNode.h"
+#include "platform/ThreadSafeFunctional.h"
 #include "public/platform/Platform.h"
 #include "wtf/text/WTFString.h"
 
@@ -932,7 +933,7 @@ void AudioContext::resolvePromisesForResume()
     // promises in the main thread.
     if (!m_isResolvingResumePromises && m_resumeResolvers.size() > 0) {
         m_isResolvingResumePromises = true;
-        Platform::current()->mainThread()->postTask(FROM_HERE, bind(&AudioContext::resolvePromisesForResumeOnMainThread, this));
+        Platform::current()->mainThread()->postTask(FROM_HERE, threadSafeBind(&AudioContext::resolvePromisesForResumeOnMainThread, this));
     }
 }
 
@@ -965,7 +966,7 @@ void AudioContext::resolvePromisesForSuspend()
 
     // Resolve any pending promises created by suspend()
     if (m_suspendResolvers.size() > 0)
-        Platform::current()->mainThread()->postTask(FROM_HERE, bind(&AudioContext::resolvePromisesForSuspendOnMainThread, this));
+        Platform::current()->mainThread()->postTask(FROM_HERE, threadSafeBind(&AudioContext::resolvePromisesForSuspendOnMainThread, this));
 }
 
 void AudioContext::rejectPendingResolvers()

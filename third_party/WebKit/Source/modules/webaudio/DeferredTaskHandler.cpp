@@ -29,6 +29,7 @@
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/AudioNodeOutput.h"
+#include "platform/ThreadSafeFunctional.h"
 #include "public/platform/Platform.h"
 #include "wtf/MainThread.h"
 
@@ -252,7 +253,7 @@ void DeferredTaskHandler::requestToDeleteHandlersOnMainThread()
         return;
     m_deletableOrphanHandlers.appendVector(m_renderingOrphanHandlers);
     m_renderingOrphanHandlers.clear();
-    Platform::current()->mainThread()->postTask(FROM_HERE, bind(&DeferredTaskHandler::deleteHandlersOnMainThread, PassRefPtr<DeferredTaskHandler>(this)));
+    Platform::current()->mainThread()->postTask(FROM_HERE, threadSafeBind(&DeferredTaskHandler::deleteHandlersOnMainThread, PassRefPtr<DeferredTaskHandler>(this)));
 }
 
 void DeferredTaskHandler::deleteHandlersOnMainThread()
