@@ -77,7 +77,7 @@ private:
 template <typename T>
 void SVGViewSpec::inheritViewAttributesFromElement(T* inheritFromElement)
 {
-    if (inheritFromElement->hasAttribute(SVGNames::viewBoxAttr))
+    if (!inheritFromElement->hasEmptyViewBox())
         viewBox()->baseValue()->setValue(inheritFromElement->viewBox()->currentValue()->value());
 
     if (inheritFromElement->hasAttribute(SVGNames::preserveAspectRatioAttr)) {
