@@ -67,6 +67,10 @@
 #include "ui/accessibility/ax_tree_update.h"
 #include "url/gurl.h"
 
+#if defined(OS_ANDROID)
+#include "content/browser/mojo/service_registrar_android.h"
+#endif
+
 #if defined(OS_MACOSX)
 #include "content/browser/frame_host/popup_menu_helper_mac.h"
 #endif
@@ -1830,6 +1834,8 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
 #if defined(OS_ANDROID)
   service_registry_android_.reset(
       new ServiceRegistryAndroid(service_registry_.get()));
+  ServiceRegistrarAndroid::RegisterFrameHostServices(
+      service_registry_android_.get());
 #endif
 }
 

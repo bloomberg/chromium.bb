@@ -17,6 +17,7 @@ class ServiceRegistrarAndroid {
  public:
   static bool Register(JNIEnv* env);
   static void RegisterProcessHostServices(ServiceRegistryAndroid* registry);
+  static void RegisterFrameHostServices(ServiceRegistryAndroid* registry);
 };
 
 }  // namespace content

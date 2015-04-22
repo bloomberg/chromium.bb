@@ -23,4 +23,11 @@ void ServiceRegistrarAndroid::RegisterProcessHostServices(
       env, registry->GetObj().obj(), base::android::GetApplicationContext());
 }
 
+// static
+void ServiceRegistrarAndroid::RegisterFrameHostServices(
+    ServiceRegistryAndroid* registry) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_ServiceRegistrar_registerFrameHostServices(
+      env, registry->GetObj().obj(), base::android::GetApplicationContext());
+}
 }  // namespace content
