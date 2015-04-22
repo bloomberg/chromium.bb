@@ -220,6 +220,7 @@ var BandwidthView = (function() {
      */
     updateDataReductionProxyConfig_: function() {
       $(BandwidthView.PROXY_CONFIG_ID).innerHTML = '';
+      $(BandwidthView.BYPASS_STATE_ID).innerHTML = '';
       setNodeDisplay($(BandwidthView.BYPASS_STATE_CONTAINER_ID), false);
 
       if (this.data_reduction_proxy_config_) {
@@ -257,8 +258,6 @@ var BandwidthView = (function() {
         if (hasBypassedProxy) {
           this.createEventTable_(this.last_bypass_.params,
                                  $(BandwidthView.BYPASS_STATE_ID));
-        } else {
-          $(BandwidthView.BYPASS_STATE_ID).innerHtml = '';
         }
 
         this.createEventTable_(this.data_reduction_proxy_config_,
