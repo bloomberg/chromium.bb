@@ -1041,14 +1041,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
 // Disabled under MSAN, ASAN, and LSAN as well. http://crbug.com/479757.
-#if !defined(NDEBUG) || defined(MEMORY_SANITIZER) \
-    || defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
-#define MAYBE_SuggestAppDialog DISABLED_SuggestAppDialog
-#else
-#define MAYBE_SuggestAppDialog SuggestAppDialog
-#endif
+// Flakes often: http://crbug.com/479757
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_SuggestAppDialog,
+    DISABLED_SuggestAppDialog,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "suggestAppDialog")));
 
