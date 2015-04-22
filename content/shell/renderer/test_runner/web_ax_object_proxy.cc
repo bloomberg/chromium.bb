@@ -492,9 +492,6 @@ WebAXObjectProxy::GetObjectTemplateBuilder(v8::Isolate* isolate) {
                    &WebAXObjectProxy::SelectionStartLineNumber)
       .SetProperty("selectionEndLineNumber",
                    &WebAXObjectProxy::SelectionEndLineNumber)
-      .SetProperty("insertionPointLineNumber",
-                   &WebAXObjectProxy::InsertionPointLineNumber)
-      .SetProperty("selectedTextRange", &WebAXObjectProxy::SelectedTextRange)
       .SetProperty("isEnabled", &WebAXObjectProxy::IsEnabled)
       .SetProperty("isRequired", &WebAXObjectProxy::IsRequired)
       .SetProperty("isFocused", &WebAXObjectProxy::IsFocused)
@@ -743,23 +740,6 @@ int WebAXObjectProxy::SelectionStartLineNumber() {
 int WebAXObjectProxy::SelectionEndLineNumber() {
   accessibility_object_.updateLayoutAndCheckValidity();
   return accessibility_object_.selectionEndLineNumber();
-}
-
-// TODO(nektar): Remove this function after updating tests.
-int WebAXObjectProxy::InsertionPointLineNumber() {
-  accessibility_object_.updateLayoutAndCheckValidity();
-  if (!accessibility_object_.isFocused())
-    return -1;
-  return accessibility_object_.selectionEndLineNumber();
-}
-
-// TODO(nektar): Remove this function after updating tests.
-std::string WebAXObjectProxy::SelectedTextRange() {
-  accessibility_object_.updateLayoutAndCheckValidity();
-  unsigned selection_start = accessibility_object_.selectionStart();
-  unsigned selection_end = accessibility_object_.selectionEnd();
-  return base::StringPrintf("{%d, %d}",
-                            selection_start, selection_end - selection_start);
 }
 
 bool WebAXObjectProxy::IsEnabled() {
