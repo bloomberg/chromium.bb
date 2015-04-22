@@ -581,12 +581,21 @@ void GlassBrowserFrameView::StopThrobber() {
     // This will reset the icon which we set in the throbber code.
     // WM_SETICON with null icon restores the icon for title bar but not
     // for taskbar. See http://crbug.com/29996
-    SendMessage(views::HWNDForWidget(frame()), WM_SETICON,
-                static_cast<WPARAM>(ICON_SMALL),
-                reinterpret_cast<LPARAM>(small_icon));
-    SendMessage(views::HWNDForWidget(frame()), WM_SETICON,
-                static_cast<WPARAM>(ICON_BIG),
-                reinterpret_cast<LPARAM>(big_icon));
+    HICON previous_small_icon = reinterpret_cast<HICON>(
+        SendMessage(views::HWNDForWidget(frame()), WM_SETICON,
+                    static_cast<WPARAM>(ICON_SMALL),
+                    reinterpret_cast<LPARAM>(small_icon)));
+
+    HICON previous_big_icon = reinterpret_cast<HICON>(
+        SendMessage(views::HWNDForWidget(frame()), WM_SETICON,
+                    static_cast<WPARAM>(ICON_BIG),
+                    reinterpret_cast<LPARAM>(big_icon)));
+
+    if (previous_small_icon)
+      ::DestroyIcon(previous_small_icon);
+
+    if (previous_big_icon)
+      ::DestroyIcon(previous_big_icon);
   }
 }
 
