@@ -118,7 +118,7 @@ public:
     public:
         RowStruct()
             : rowLayoutObject(nullptr)
-            , baseline()
+            , baseline(-1)
         {
         }
 

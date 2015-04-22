@@ -378,7 +378,10 @@ LayoutUnit LayoutTableCell::cellBaselinePosition() const
     LayoutUnit firstLineBaseline = firstLineBoxBaseline();
     if (firstLineBaseline != -1)
         return firstLineBaseline;
-    return paddingBefore() + borderBefore() + contentLogicalHeight();
+    LayoutUnit contentHeight = contentLogicalHeight();
+    if (contentHeight)
+        return borderBefore() + paddingBefore() + contentHeight;
+    return max(logicalHeightFromStyle() - computedCSSPaddingAfter() - borderAfter(), borderBefore() + paddingBefore());
 }
 
 void LayoutTableCell::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)

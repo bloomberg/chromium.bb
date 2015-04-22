@@ -717,7 +717,7 @@ int LayoutTableSection::calcRowLogicalHeight()
 #endif
 
     for (unsigned r = 0; r < m_grid.size(); r++) {
-        m_grid[r].baseline = 0;
+        m_grid[r].baseline = -1;
         LayoutUnit baselineDescent = 0;
 
         // Our base size is the biggest logical height from our cells' styles (excluding row spanning cells).
@@ -1244,17 +1244,15 @@ int LayoutTableSection::firstLineBoxBaseline() const
         return -1;
 
     int firstLineBaseline = m_grid[0].baseline;
-    if (firstLineBaseline)
+    if (firstLineBaseline >= 0)
         return firstLineBaseline + m_rowPos[0];
 
-    firstLineBaseline = -1;
     const Row& firstRow = m_grid[0].row;
     for (size_t i = 0; i < firstRow.size(); ++i) {
         const CellStruct& cs = firstRow.at(i);
         const LayoutTableCell* cell = cs.primaryCell();
-        // Only cells with content have a baseline
-        if (cell && cell->contentLogicalHeight())
-            firstLineBaseline = std::max<int>(firstLineBaseline, cell->logicalTop() + cell->paddingBefore() + cell->borderBefore() + cell->contentLogicalHeight());
+        if (cell)
+            firstLineBaseline = std::max<int>(firstLineBaseline, cell->logicalTop() + cell->borderBefore() + cell->paddingBefore() + cell->contentLogicalHeight());
     }
 
     return firstLineBaseline;

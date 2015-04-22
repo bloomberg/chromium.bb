@@ -1296,10 +1296,14 @@ int LayoutTable::firstLineBoxBaseline() const
         return -1;
 
     int baseline = topNonEmptySection->firstLineBoxBaseline();
-    if (baseline > 0)
+    if (baseline >= 0)
         return topNonEmptySection->logicalTop() + baseline;
 
-    // FIXME: A table row always has a baseline per CSS 2.1. Will this return the right value?
+    // FF, Presto and IE use the top of the section as the baseline if its first row is empty of cells or content.
+    // The baseline of an empty row isn't specified by CSS 2.1.
+    if (topNonEmptySection->firstRow() && !topNonEmptySection->firstRow()->firstCell())
+        return topNonEmptySection->logicalTop();
+
     return -1;
 }
 

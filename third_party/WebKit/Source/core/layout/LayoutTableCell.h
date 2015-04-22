@@ -98,15 +98,21 @@ public:
         return styleWidth;
     }
 
-    int logicalHeightForRowSizing() const
+    int logicalHeightFromStyle() const
     {
-        // FIXME: This function does too much work, and is very hot during table layout!
-        int adjustedLogicalHeight = pixelSnappedLogicalHeight() - (intrinsicPaddingBefore() + intrinsicPaddingAfter());
         int styleLogicalHeight = valueForLength(style()->logicalHeight(), 0);
         // In strict mode, box-sizing: content-box do the right thing and actually add in the border and padding.
         // Call computedCSSPadding* directly to avoid including implicitPadding.
         if (!document().inQuirksMode() && style()->boxSizing() != BORDER_BOX)
             styleLogicalHeight += (computedCSSPaddingBefore() + computedCSSPaddingAfter()).floor() + borderBefore() + borderAfter();
+        return styleLogicalHeight;
+    }
+
+    int logicalHeightForRowSizing() const
+    {
+        // FIXME: This function does too much work, and is very hot during table layout!
+        int adjustedLogicalHeight = pixelSnappedLogicalHeight() - (intrinsicPaddingBefore() + intrinsicPaddingAfter());
+        int styleLogicalHeight = logicalHeightFromStyle();
         return max(styleLogicalHeight, adjustedLogicalHeight);
     }
 
