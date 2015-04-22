@@ -3,7 +3,22 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'chromium_code': 1
+  },
   'targets': [
+    {
+      'target_name': 'cast_base_unittests',
+      'type': '<(gtest_target_type)',
+      'dependencies': [
+        'chromecast.gyp:cast_base',
+        '../testing/gtest.gyp:gtest',
+        '../testing/gtest.gyp:gtest_main',
+      ],
+      'sources': [
+        'base/serializers_unittest.cc',
+      ],
+    },
     {
       'target_name': 'cast_tests',
       'type': 'none',
@@ -23,8 +38,8 @@
       'target_name': 'cast_test_generator',
       'type': 'none',
       'dependencies': [
+        'cast_base_unittests',
         '../base/base.gyp:base_unittests',
-        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
         '../content/content_shell_and_tests.gyp:content_unittests',
         '../crypto/crypto.gyp:crypto_unittests',
         '../ipc/ipc.gyp:ipc_tests',
@@ -34,6 +49,7 @@
         '../sandbox/sandbox.gyp:sandbox_linux_unittests',
         '../sql/sql.gyp:sql_unittests',
         '../sync/sync.gyp:sync_unit_tests',
+        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
         '../ui/base/ui_base_tests.gyp:ui_base_unittests',
         '../url/url.gyp:url_unittests',
       ],

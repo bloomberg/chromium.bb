@@ -59,7 +59,9 @@
         'base/metrics/cast_metrics_helper.cc',
         'base/metrics/cast_metrics_helper.h',
         'base/metrics/grouped_histogram.cc',
-        'base/metrics/grouped_histogram.h'
+        'base/metrics/grouped_histogram.h',
+        'base/serializers.cc',
+        'base/serializers.h'
       ],
     },  # end of target 'cast_base'
     {
