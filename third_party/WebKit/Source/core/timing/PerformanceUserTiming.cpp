@@ -76,9 +76,8 @@ UserTiming::UserTiming(Performance* performance)
 {
 }
 
-static void insertPerformanceEntry(PerformanceEntryMap& performanceEntryMap, PassRefPtrWillBeRawPtr<PerformanceEntry> performanceEntry)
+static void insertPerformanceEntry(PerformanceEntryMap& performanceEntryMap, PerformanceEntry* entry)
 {
-    RefPtrWillBeRawPtr<PerformanceEntry> entry = performanceEntry;
     PerformanceEntryMap::iterator it = performanceEntryMap.find(entry->name());
     if (it != performanceEntryMap.end())
         it->value.append(entry);
@@ -219,11 +218,9 @@ PerformanceEntryVector UserTiming::getMeasures(const String& name) const
 
 DEFINE_TRACE(UserTiming)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_performance);
     visitor->trace(m_marksMap);
     visitor->trace(m_measuresMap);
-#endif
 }
 
 } // namespace blink

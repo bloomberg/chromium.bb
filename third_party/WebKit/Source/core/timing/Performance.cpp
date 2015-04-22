@@ -36,9 +36,13 @@
 #include "core/events/Event.h"
 #include "core/frame/LocalFrame.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/timing/ResourceTimingInfo.h"
+#include "core/timing/MemoryInfo.h"
+#include "core/timing/PerformanceEntry.h"
+#include "core/timing/PerformanceNavigation.h"
 #include "core/timing/PerformanceResourceTiming.h"
+#include "core/timing/PerformanceTiming.h"
 #include "core/timing/PerformanceUserTiming.h"
+#include "core/timing/ResourceTimingInfo.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
 
@@ -70,9 +74,11 @@ ExecutionContext* Performance::executionContext() const
     return frame()->document();
 }
 
-PassRefPtrWillBeRawPtr<MemoryInfo> Performance::memory() const
+MemoryInfo* Performance::memory()
 {
-    return MemoryInfo::create();
+    if (!m_memoryInfo)
+        m_memoryInfo = MemoryInfo::create();
+    return m_memoryInfo.get();
 }
 
 PerformanceNavigation* Performance::navigation() const
@@ -209,7 +215,7 @@ void Performance::addResourceTiming(const ResourceTimingInfo& info, Document* in
     double startTime = info.initialTime();
 
     if (info.redirectChain().isEmpty()) {
-        RefPtrWillBeRawPtr<PerformanceEntry> entry = PerformanceResourceTiming::create(info, initiatorDocument, startTime, allowTimingDetails);
+        PerformanceEntry* entry = PerformanceResourceTiming::create(info, initiatorDocument, startTime, allowTimingDetails);
         addResourceTimingBuffer(entry);
         return;
     }
@@ -228,11 +234,11 @@ void Performance::addResourceTiming(const ResourceTimingInfo& info, Document* in
     ASSERT(lastRedirectTiming);
     double lastRedirectEndTime = lastRedirectTiming->receiveHeadersEnd();
 
-    RefPtrWillBeRawPtr<PerformanceEntry> entry = PerformanceResourceTiming::create(info, initiatorDocument, startTime, lastRedirectEndTime, allowTimingDetails, allowRedirectDetails);
+    PerformanceEntry* entry = PerformanceResourceTiming::create(info, initiatorDocument, startTime, lastRedirectEndTime, allowTimingDetails, allowRedirectDetails);
     addResourceTimingBuffer(entry);
 }
 
-void Performance::addResourceTimingBuffer(PassRefPtrWillBeRawPtr<PerformanceEntry> entry)
+void Performance::addResourceTimingBuffer(PerformanceEntry* entry)
 {
     m_resourceTimingBuffer.append(entry);
 
@@ -283,6 +289,7 @@ DEFINE_TRACE(Performance)
     visitor->trace(m_navigation);
     visitor->trace(m_timing);
     visitor->trace(m_resourceTimingBuffer);
+    visitor->trace(m_memoryInfo);
     visitor->trace(m_userTiming);
     EventTargetWithInlineData::trace(visitor);
     DOMWindowProperty::trace(visitor);

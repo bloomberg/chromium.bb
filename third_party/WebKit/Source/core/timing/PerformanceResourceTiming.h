@@ -34,8 +34,7 @@
 
 #include "core/timing/PerformanceEntry.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
+#include "wtf/Forward.h"
 
 namespace blink {
 
@@ -46,14 +45,14 @@ class ResourceTimingInfo;
 class PerformanceResourceTiming final : public PerformanceEntry {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<PerformanceResourceTiming> create(const ResourceTimingInfo& info, Document* requestingDocument, double startTime, double lastRedirectEndTime, bool m_allowTimingDetails, bool m_allowRedirectDetails)
+    static PerformanceResourceTiming* create(const ResourceTimingInfo& info, Document* requestingDocument, double startTime, double lastRedirectEndTime, bool m_allowTimingDetails, bool m_allowRedirectDetails)
     {
-        return adoptRefWillBeNoop(new PerformanceResourceTiming(info, requestingDocument, startTime, lastRedirectEndTime, m_allowTimingDetails, m_allowRedirectDetails));
+        return new PerformanceResourceTiming(info, requestingDocument, startTime, lastRedirectEndTime, m_allowTimingDetails, m_allowRedirectDetails);
     }
 
-    static PassRefPtrWillBeRawPtr<PerformanceResourceTiming> create(const ResourceTimingInfo& info, Document* requestingDocument, double startTime, bool m_allowTimingDetails)
+    static PerformanceResourceTiming* create(const ResourceTimingInfo& info, Document* requestingDocument, double startTime, bool m_allowTimingDetails)
     {
-        return adoptRefWillBeNoop(new PerformanceResourceTiming(info, requestingDocument, startTime, 0.0, m_allowTimingDetails, false));
+        return new PerformanceResourceTiming(info, requestingDocument, startTime, 0.0, m_allowTimingDetails, false);
     }
 
     AtomicString initiatorType() const;
@@ -79,13 +78,13 @@ private:
     virtual ~PerformanceResourceTiming();
 
     AtomicString m_initiatorType;
+    RefPtrWillBeMember<Document> m_requestingDocument;
     RefPtr<ResourceLoadTiming> m_timing;
     double m_lastRedirectEndTime;
     double m_finishTime;
     bool m_didReuseConnection;
     bool m_allowTimingDetails;
     bool m_allowRedirectDetails;
-    RefPtrWillBeMember<Document> m_requestingDocument;
 };
 
 } // namespace blink

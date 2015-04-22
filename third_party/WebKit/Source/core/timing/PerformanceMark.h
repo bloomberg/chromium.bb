@@ -28,7 +28,6 @@
 
 #include "core/timing/PerformanceEntry.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -36,9 +35,9 @@ namespace blink {
 class PerformanceMark final : public PerformanceEntry {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<PerformanceMark> create(const String& name, double startTime)
+    static PerformanceMark* create(const String& name, double startTime)
     {
-        return adoptRefWillBeNoop(new PerformanceMark(name, startTime));
+        return new PerformanceMark(name, startTime);
     }
 
     virtual bool isMark() override { return true; }

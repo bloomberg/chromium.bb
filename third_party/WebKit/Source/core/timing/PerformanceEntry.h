@@ -34,13 +34,11 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class PerformanceEntry : public RefCountedWillBeGarbageCollectedFinalized<PerformanceEntry>, public ScriptWrappable {
+class PerformanceEntry : public GarbageCollectedFinalized<PerformanceEntry>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~PerformanceEntry();
@@ -54,7 +52,7 @@ public:
     virtual bool isMark() { return false; }
     virtual bool isMeasure() { return false; }
 
-    static bool startTimeCompareLessThan(PassRefPtrWillBeRawPtr<PerformanceEntry> a, PassRefPtrWillBeRawPtr<PerformanceEntry> b)
+    static bool startTimeCompareLessThan(PerformanceEntry* a, PerformanceEntry* b)
     {
         return a->startTime() < b->startTime();
     }

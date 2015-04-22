@@ -35,17 +35,15 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
-class CORE_EXPORT MemoryInfo final : public RefCountedWillBeGarbageCollected<MemoryInfo>, public ScriptWrappable {
+class CORE_EXPORT MemoryInfo final : public GarbageCollected<MemoryInfo>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<MemoryInfo> create()
+    static MemoryInfo* create()
     {
-        return adoptRefWillBeNoop(new MemoryInfo());
+        return new MemoryInfo();
     }
 
     size_t totalJSHeapSize() const { return m_info.totalJSHeapSize; }

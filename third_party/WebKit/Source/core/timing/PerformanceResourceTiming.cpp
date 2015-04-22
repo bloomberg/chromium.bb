@@ -50,13 +50,13 @@ static double monotonicTimeToDocumentMilliseconds(Document* document, double sec
 PerformanceResourceTiming::PerformanceResourceTiming(const ResourceTimingInfo& info, Document* requestingDocument, double startTime, double lastRedirectEndTime, bool allowTimingDetails, bool allowRedirectDetails)
     : PerformanceEntry(info.initialRequest().url().string(), "resource", monotonicTimeToDocumentMilliseconds(requestingDocument, startTime), monotonicTimeToDocumentMilliseconds(requestingDocument, info.loadFinishTime()))
     , m_initiatorType(info.initiatorType())
+    , m_requestingDocument(requestingDocument)
     , m_timing(info.finalResponse().resourceLoadTiming())
     , m_lastRedirectEndTime(lastRedirectEndTime)
     , m_finishTime(info.loadFinishTime())
     , m_didReuseConnection(info.finalResponse().connectionReused())
     , m_allowTimingDetails(allowTimingDetails)
     , m_allowRedirectDetails(allowRedirectDetails)
-    , m_requestingDocument(requestingDocument)
 {
 }
 

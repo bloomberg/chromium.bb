@@ -50,12 +50,14 @@ public:
     }
 
     double now(ExecutionContext*) const;
-    PassRefPtrWillBeRawPtr<MemoryInfo> memory() const;
+    MemoryInfo* memory();
 
-    DEFINE_INLINE_TRACE() { }
+    DECLARE_TRACE();
 
 private:
     WorkerPerformance();
+
+    Member<MemoryInfo> m_memoryInfo;
 };
 
 } // namespace blink

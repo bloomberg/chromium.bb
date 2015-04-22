@@ -42,6 +42,11 @@ WorkerPerformance::WorkerPerformance()
 {
 }
 
+DEFINE_TRACE(WorkerPerformance)
+{
+    visitor->trace(m_memoryInfo);
+}
+
 double WorkerPerformance::now(ExecutionContext* context) const
 {
     ASSERT(context);
@@ -50,10 +55,12 @@ double WorkerPerformance::now(ExecutionContext* context) const
     return 1000.0 * (monotonicallyIncreasingTime() - workerGlobalScope->timeOrigin());
 }
 
-PassRefPtrWillBeRawPtr<MemoryInfo> WorkerPerformance::memory() const
+MemoryInfo* WorkerPerformance::memory()
 {
-    // FIXME: We shall not create a new object every time.
-    return MemoryInfo::create();
+    if (!m_memoryInfo)
+        m_memoryInfo = MemoryInfo::create();
+
+    return m_memoryInfo.get();
 }
 
 } // namespace blink

@@ -26,7 +26,7 @@ private:
     static const char* supplementName() { return "ConsoleMemory"; }
     MemoryInfo* memory();
 
-    RefPtrWillBeMember<MemoryInfo> m_memory;
+    PersistentWillBeMember<MemoryInfo> m_memory;
 };
 
 } // namespace blink

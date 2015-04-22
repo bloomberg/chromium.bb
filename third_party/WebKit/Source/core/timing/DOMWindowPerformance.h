@@ -32,8 +32,9 @@ private:
 
     Performance* performance();
 
-    LocalDOMWindow& m_window;
-    RefPtrWillBeMember<Performance> m_performance;
+    // TODO(sof): try to move this direct reference and instead rely on frame().
+    RawPtrWillBeMember<LocalDOMWindow> m_window;
+    PersistentWillBeMember<Performance> m_performance;
 };
 
 } // namespace blink

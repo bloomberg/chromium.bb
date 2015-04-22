@@ -40,7 +40,6 @@
 #include "core/timing/PerformanceNavigation.h"
 #include "core/timing/PerformanceTiming.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
@@ -52,23 +51,23 @@ class ExceptionState;
 class ResourceTimingInfo;
 class UserTiming;
 
-using PerformanceEntryVector = WillBeHeapVector<RefPtrWillBeMember<PerformanceEntry>>;
+using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
 
-class CORE_EXPORT Performance final : public EventTargetWithInlineData, public RefCountedWillBeNoBase<Performance>, public DOMWindowProperty {
+class CORE_EXPORT Performance final : public RefCountedGarbageCollectedEventTargetWithInlineData<Performance>, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
-    REFCOUNTED_EVENT_TARGET(Performance);
+    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<Performance>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Performance);
 public:
-    static PassRefPtrWillBeRawPtr<Performance> create(LocalFrame* frame)
+    static Performance* create(LocalFrame* frame)
     {
-        return adoptRefWillBeNoop(new Performance(frame));
+        return new Performance(frame);
     }
     virtual ~Performance();
 
     virtual const AtomicString& interfaceName() const override;
     virtual ExecutionContext* executionContext() const override;
 
-    PassRefPtrWillBeRawPtr<MemoryInfo> memory() const;
+    MemoryInfo* memory();
     PerformanceNavigation* navigation() const;
     PerformanceTiming* timing() const;
     double now() const;
@@ -96,7 +95,7 @@ private:
     explicit Performance(LocalFrame*);
 
     bool isResourceTimingBufferFull();
-    void addResourceTimingBuffer(PassRefPtrWillBeRawPtr<PerformanceEntry>);
+    void addResourceTimingBuffer(PerformanceEntry*);
 
     mutable RefPtrWillBeMember<PerformanceNavigation> m_navigation;
     mutable RefPtrWillBeMember<PerformanceTiming> m_timing;
@@ -105,7 +104,8 @@ private:
     unsigned m_resourceTimingBufferSize;
     double m_referenceTime;
 
-    RefPtrWillBeMember<UserTiming> m_userTiming;
+    Member<MemoryInfo> m_memoryInfo;
+    Member<UserTiming> m_userTiming;
 };
 
 } // namespace blink

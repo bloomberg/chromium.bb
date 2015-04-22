@@ -29,10 +29,6 @@
 #include "core/timing/Performance.h"
 #include "core/timing/PerformanceTiming.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashMap.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -41,13 +37,13 @@ class ExceptionState;
 class Performance;
 
 typedef unsigned long long (PerformanceTiming::*NavigationTimingFunction)() const;
-using PerformanceEntryMap = WillBeHeapHashMap<String, PerformanceEntryVector>;
+using PerformanceEntryMap = HeapHashMap<String, PerformanceEntryVector>;
 
-class UserTiming : public RefCountedWillBeGarbageCollected<UserTiming> {
+class UserTiming final : public GarbageCollected<UserTiming> {
 public:
-    static PassRefPtrWillBeRawPtr<UserTiming> create(Performance* performance)
+    static UserTiming* create(Performance* performance)
     {
-        return adoptRefWillBeNoop(new UserTiming(performance));
+        return new UserTiming(performance);
     }
 
     void mark(const String& markName, ExceptionState&);
@@ -68,11 +64,12 @@ private:
     explicit UserTiming(Performance*);
 
     double findExistingMarkStartTime(const String& markName, ExceptionState&);
-    RawPtrWillBeMember<Performance> m_performance;
+
+    Member<Performance> m_performance;
     PerformanceEntryMap m_marksMap;
     PerformanceEntryMap m_measuresMap;
 };
 
-}
+} // namespace blink
 
 #endif // !defined(PerformanceUserTiming_h)

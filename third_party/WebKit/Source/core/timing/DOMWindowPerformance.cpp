@@ -13,7 +13,7 @@ namespace blink {
 
 DOMWindowPerformance::DOMWindowPerformance(LocalDOMWindow& window)
     : DOMWindowProperty(window.frame())
-    , m_window(window)
+    , m_window(&window)
 {
 }
 
@@ -21,6 +21,7 @@ DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowPerformance);
 
 DEFINE_TRACE(DOMWindowPerformance)
 {
+    visitor->trace(m_window);
     visitor->trace(m_performance);
     WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);
     DOMWindowProperty::trace(visitor);
@@ -52,7 +53,7 @@ Performance* DOMWindowPerformance::performance(DOMWindow& window)
 Performance* DOMWindowPerformance::performance()
 {
     if (!m_performance)
-        m_performance = Performance::create(m_window.frame());
+        m_performance = Performance::create(m_window->frame());
     return m_performance.get();
 }
 
