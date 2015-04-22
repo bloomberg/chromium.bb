@@ -1123,7 +1123,7 @@ login.createScreen('SupervisedUserCreationScreen',
       var pagesWithCancel = ['intro', 'manager', 'username', 'import-password',
           'error', 'import'];
       $('login-header-bar').allowCancel =
-          pagesWithCancel.indexOf(visiblePage) > 0;
+          pagesWithCancel.indexOf(visiblePage) > -1;
       $('cancel-add-user-button').disabled = false;
 
       this.getScreenElement('import-link').hidden = true;
@@ -1139,6 +1139,7 @@ login.createScreen('SupervisedUserCreationScreen',
             'password-error');
         if (this.managerList_.pods.length > 0)
           this.managerList_.selectPod(this.managerList_.pods[0]);
+        $('login-header-bar').updateUI_();
       }
 
       if (visiblePage == 'username' || visiblePage == 'import-password') {
