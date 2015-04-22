@@ -159,9 +159,19 @@ public:
     ScriptPromise suspendContext(ScriptState*);
     ScriptPromise resumeContext(ScriptState*);
 
+    // When a source node has started processing and needs to be protected,
+    // this method tells the context to protect the node.
+    //
+    // The context itself keeps a reference to all source nodes.  The source
+    // nodes, then reference all nodes they're connected to.  In turn, these
+    // nodes reference all nodes they're connected to.  All nodes are ultimately
+    // connected to the AudioDestinationNode.  When the context release a source
+    // node, it will be deactivated from the rendering graph along with all
+    // other nodes it is uniquely connected to.
+    void notifySourceNodeStartedProcessing(AudioNode*);
     // When a source node has no more processing to do (has finished playing),
-    // this method tells the context to dereference the node.
-    void notifyNodeFinishedProcessing(AudioHandler*);
+    // this method tells the context to release the corresponding node.
+    void notifySourceNodeFinishedProcessing(AudioHandler*);
 
     // Called at the start of each render quantum.
     void handlePreRenderTasks();
@@ -169,8 +179,9 @@ public:
     // Called at the end of each render quantum.
     void handlePostRenderTasks();
 
-    // Called periodically at the end of each render quantum to dereference finished source nodes.
-    void derefFinishedSourceNodes();
+    // Called periodically at the end of each render quantum to release finished
+    // source nodes.
+    void releaseFinishedSourceNodes();
 
     // Keeps track of the number of connections made.
     void incrementConnectionCount()
@@ -211,12 +222,6 @@ public:
     void fireCompletionEvent();
     void notifyStateChange();
 
-    // The context itself keeps a reference to all source nodes.  The source nodes, then reference all nodes they're connected to.
-    // In turn, these nodes reference all nodes they're connected to.  All nodes are ultimately connected to the AudioDestinationNode.
-    // When the context dereferences a source node, it will be deactivated from the rendering graph along with all other nodes it is
-    // uniquely connected to.  See the AudioNode::ref() and AudioNode::deref() methods for more details.
-    void refNode(AudioNode*);
-
     // A context is considered closed if closeContext() has been called, even if the audio HW has
     // not yet been stopped.  It will be stopped eventually.
     bool isContextClosed() const { return m_closeResolver; }
@@ -247,26 +252,25 @@ private:
     // Set to true when the destination node has been initialized and is ready to process data.
     bool m_isInitialized;
 
-    void derefNodeFor(AudioHandler*);
-
-    // When the context goes away, there might still be some sources which haven't finished playing.
-    // Make sure to dereference them here.
-    void derefUnfinishedSourceNodes();
+    // When the context goes away, there might still be some sources which
+    // haven't finished playing.  Make sure to release them here.
+    void releaseActiveSourceNodes();
 
     Member<AudioDestinationNode> m_destinationNode;
     Member<AudioListener> m_listener;
 
     // Only accessed in the audio thread.
-    // These raw pointers are safe because AudioNodes in m_referencedNodes own
-    // them.
-    Vector<AudioHandler*> m_finishedHandlers;
+    // These raw pointers are safe because AudioSourceNodes in
+    // m_activeSourceNodes own them.
+    Vector<AudioHandler*> m_finishedSourceHandlers;
 
     // List of source nodes. This is either accessed when the graph lock is
     // held, or on the main thread when the audio thread has finished.
     // Oilpan: This Vector holds connection references. We must call
-    // AudioNode::makeConnection when we add an AudioNode to this, and must call
-    // AudioNode::breakConnection() when we remove an AudioNode from this.
-    HeapVector<Member<AudioNode>> m_referencedNodes;
+    // AudioHandler::makeConnection when we add an AudioNode to this, and must
+    // call AudioHandler::breakConnection() when we remove an AudioNode from
+    // this.
+    HeapVector<Member<AudioNode>> m_activeSourceNodes;
 
     // Stop rendering the audio graph.
     void stopRendering();
