@@ -23,7 +23,7 @@ class BuildRow(collections.MutableMapping):
   """A database "view" that collects all relevant stats about a build."""
 
   def __init__(self, build_entry, build_stage_entries,
-               cl_action_entries, failure_entries, annotations_qs):
+               cl_action_entries, failure_entries, annotations):
     """Initialize a BuildRow.
 
     Do not use QuerySets as arguments. All query sets must have been evaluated
@@ -76,7 +76,7 @@ class BuildRow(collections.MutableMapping):
         ba_models.ClActionTable.KICKED_OUT)
 
     # Annotations are treated specially. They are not availabe via the dict API.
-    self.annotations = annotations_qs
+    self.annotations = annotations
     self['annotation_summary'] = self._SummaryAnnotations()
 
   def __getitem__(self, *args, **kwargs):
@@ -174,11 +174,14 @@ class BuildRowController(object):
       failure_entries = []
       for entry in build_stage_entries:
         failure_entries += [x for x in entry.failuretable_set.all()]
-      annotations_qs = build_entry.annotationstable_set.all().filter(
-          deleted=False)
+      # Filter in python, filter'ing the queryset changes the queryset, and we
+      # end up hitting the database again.
+      annotations = [a for a in build_entry.annotationstable_set.all() if
+                     a.deleted == False]
 
       build_row = BuildRow(build_entry, build_stage_entries, cl_action_entries,
-                           failure_entries, annotations_qs)
+                           failure_entries, annotations)
+
       self._build_rows_map[build_entry.id] = build_row
       build_rows.append(build_row)
 

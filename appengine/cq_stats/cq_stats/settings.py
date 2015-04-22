@@ -177,7 +177,7 @@ TEMPLATE_LOADERS = (
     # 'django.template.loaders.eggs.Loader',
 )
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE_CLASSES = [
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -185,7 +185,10 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
-)
+]
+if DEBUG:
+  MIDDLEWARE_CLASSES.append('cq_stats.middleware.SqlPrintingMiddleware')
+MIDDLEWARE_CLASSES = tuple(MIDDLEWARE_CLASSES)
 
 ROOT_URLCONF = 'cq_stats.urls'
 
