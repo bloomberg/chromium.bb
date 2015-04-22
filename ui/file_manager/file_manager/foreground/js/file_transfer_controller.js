@@ -16,7 +16,7 @@ var DRAG_AND_DROP_GLOBAL_DATA = '__drag_and_drop_global_data';
 var FileAsyncData;
 
 /**
- * @param {!HTMLDocument} doc Owning document.
+ * @param {!Document} doc Owning document.
  * @param {!DirectoryTree} directoryTree Directory tree.
  * @param {!ListContainer} listContainer List container.
  * @param {!MultiProfileShareDialog} multiProfileShareDialog Share dialog to be
@@ -44,7 +44,7 @@ function FileTransferController(doc,
                                 volumeManager,
                                 selectionHandler) {
   /**
-   * @type {!HTMLDocument}
+   * @type {!Document}
    * @private
    * @const
    */

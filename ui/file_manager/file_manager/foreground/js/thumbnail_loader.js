@@ -188,7 +188,7 @@ ThumbnailLoader.prototype.load = function(box, fillMode, opt_optimizationMode,
   this.canvasUpToDate_ = false;
   this.image_ = new Image();
   this.image_.onload = function() {
-    this.attachImage(box, fillMode);
+    this.attachImage(assert(box), fillMode);
     if (opt_onSuccess)
       opt_onSuccess(this.image_, this.transform_);
   }.bind(this);

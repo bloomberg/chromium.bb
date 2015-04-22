@@ -247,7 +247,7 @@ function FileManager() {
 
   /**
    * The document object of this app.
-   * @type {HTMLDocument}
+   * @type {Document}
    * @private
    */
   this.document_ = null;
@@ -297,7 +297,7 @@ FileManager.prototype = /** @struct */ {
     return this.ui_.directoryTree;
   },
   /**
-   * @return {HTMLDocument}
+   * @return {Document}
    */
   get document() {
     return this.document_;
@@ -450,9 +450,9 @@ FileManager.prototype = /** @struct */ {
             this.importController_ = new importer.ImportController(
                 new importer.RuntimeControllerEnvironment(
                     this,
-                    this.selectionHandler_),
-                this.mediaScanner_,
-                this.mediaImportHandler_,
+                    assert(this.selectionHandler_)),
+                assert(this.mediaScanner_),
+                assert(this.mediaImportHandler_),
                 new importer.RuntimeCommandWidget(),
                 assert(this.tracker_));
           }

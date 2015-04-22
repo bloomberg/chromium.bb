@@ -978,7 +978,7 @@ DirectoryModel.prototype.changeDirectoryEntry = function(
           event.volumeChanged = previousVolumeInfo !== currentVolumeInfo;
 
           if (event.volumeChanged) {
-            promises.push(this.onVolumeChanged_(currentVolumeInfo));
+            promises.push(this.onVolumeChanged_(assert(currentVolumeInfo)));
           }
 
           this.dispatchEvent(event);
