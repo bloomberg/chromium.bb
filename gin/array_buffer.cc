@@ -73,10 +73,10 @@ class ArrayBuffer::Private : public base::RefCounted<ArrayBuffer::Private> {
   Private(v8::Isolate* isolate, v8::Handle<v8::ArrayBuffer> array);
   ~Private();
 
-  static void WeakCallback(
-      const v8::WeakCallbackData<v8::ArrayBuffer, Private>& data);
+  static void FirstWeakCallback(const v8::WeakCallbackInfo<Private>& data);
+  static void SecondWeakCallback(const v8::WeakCallbackInfo<Private>& data);
 
-  v8::Persistent<v8::ArrayBuffer> array_buffer_;
+  v8::Global<v8::ArrayBuffer> array_buffer_;
   scoped_refptr<Private> self_reference_;
   v8::Isolate* isolate_;
   void* buffer_;
@@ -108,18 +108,25 @@ ArrayBuffer::Private::Private(v8::Isolate* isolate,
                                           &g_array_buffer_wrapper_info);
   array->SetAlignedPointerInInternalField(kEncodedValueIndex, this);
 
-  self_reference_ = this;  // Cleared in WeakCallback.
-  array_buffer_.SetWeak(this, WeakCallback);
+  self_reference_ = this;  // Cleared in SecondWeakCallback.
+  array_buffer_.SetWeak(this, FirstWeakCallback,
+                        v8::WeakCallbackType::kParameter);
 }
 
 ArrayBuffer::Private::~Private() {
   PerIsolateData::From(isolate_)->allocator()->Free(buffer_, length_);
 }
 
-void ArrayBuffer::Private::WeakCallback(
-    const v8::WeakCallbackData<v8::ArrayBuffer, Private>& data) {
+void ArrayBuffer::Private::FirstWeakCallback(
+    const v8::WeakCallbackInfo<Private>& data) {
   Private* parameter = data.GetParameter();
   parameter->array_buffer_.Reset();
+  data.SetSecondPassCallback(SecondWeakCallback);
+}
+
+void ArrayBuffer::Private::SecondWeakCallback(
+    const v8::WeakCallbackInfo<Private>& data) {
+  Private* parameter = data.GetParameter();
   parameter->self_reference_ = NULL;
 }
 

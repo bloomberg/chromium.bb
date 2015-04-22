@@ -68,10 +68,12 @@ class GIN_EXPORT WrappableBase {
                                         WrapperInfo* wrapper_info);
 
  private:
-  static void WeakCallback(
-      const v8::WeakCallbackData<v8::Object, WrappableBase>& data);
+  static void FirstWeakCallback(
+      const v8::WeakCallbackInfo<WrappableBase>& data);
+  static void SecondWeakCallback(
+      const v8::WeakCallbackInfo<WrappableBase>& data);
 
-  v8::Persistent<v8::Object> wrapper_;  // Weak
+  v8::Global<v8::Object> wrapper_;  // Weak
 
   DISALLOW_COPY_AND_ASSIGN(WrappableBase);
 };

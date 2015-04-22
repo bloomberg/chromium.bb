@@ -51,10 +51,12 @@ class GIN_EXPORT CallbackHolderBase {
   virtual ~CallbackHolderBase();
 
  private:
-  static void WeakCallback(
-      const v8::WeakCallbackData<v8::External, CallbackHolderBase>& data);
+  static void FirstWeakCallback(
+      const v8::WeakCallbackInfo<CallbackHolderBase>& data);
+  static void SecondWeakCallback(
+      const v8::WeakCallbackInfo<CallbackHolderBase>& data);
 
-  v8::Persistent<v8::External> v8_ref_;
+  v8::Global<v8::External> v8_ref_;
 
   DISALLOW_COPY_AND_ASSIGN(CallbackHolderBase);
 };

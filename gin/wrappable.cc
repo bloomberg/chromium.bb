@@ -22,10 +22,16 @@ ObjectTemplateBuilder WrappableBase::GetObjectTemplateBuilder(
   return ObjectTemplateBuilder(isolate);
 }
 
-void WrappableBase::WeakCallback(
-    const v8::WeakCallbackData<v8::Object, WrappableBase>& data) {
+void WrappableBase::FirstWeakCallback(
+    const v8::WeakCallbackInfo<WrappableBase>& data) {
   WrappableBase* wrappable = data.GetParameter();
   wrappable->wrapper_.Reset();
+  data.SetSecondPassCallback(SecondWeakCallback);
+}
+
+void WrappableBase::SecondWeakCallback(
+    const v8::WeakCallbackInfo<WrappableBase>& data) {
+  WrappableBase* wrappable = data.GetParameter();
   delete wrappable;
 }
 
@@ -55,7 +61,7 @@ v8::Handle<v8::Object> WrappableBase::GetWrapperImpl(v8::Isolate* isolate,
   wrapper->SetAlignedPointerInInternalField(kWrapperInfoIndex, info);
   wrapper->SetAlignedPointerInInternalField(kEncodedValueIndex, this);
   wrapper_.Reset(isolate, wrapper);
-  wrapper_.SetWeak(this, WeakCallback);
+  wrapper_.SetWeak(this, FirstWeakCallback, v8::WeakCallbackType::kParameter);
   return wrapper;
 }
 
