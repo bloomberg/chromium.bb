@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "mojo/common/handle_watcher.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
+#include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 
@@ -55,6 +56,7 @@ class WebURLLoaderImpl : public blink::WebURLLoader {
 
   blink::WebURLLoaderClient* client_;
   GURL url_;
+  blink::WebReferrerPolicy referrer_policy_;
   mojo::URLLoaderPtr url_loader_;
   mojo::ScopedDataPipeConsumerHandle response_body_stream_;
   mojo::common::HandleWatcher handle_watcher_;

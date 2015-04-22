@@ -129,6 +129,10 @@ void URLLoaderImpl::Start(URLRequestPtr request,
   url_request_ = context_->url_request_context()->CreateRequest(
       GURL(request->url), net::DEFAULT_PRIORITY, this);
   url_request_->set_method(request->method);
+  url_request_->SetReferrer(request->referrer);
+  // TODO(jam): need to specify this policy.
+  url_request_->set_referrer_policy(
+      net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE);
   if (request->headers) {
     net::HttpRequestHeaders headers;
     for (size_t i = 0; i < request->headers.size(); ++i)
@@ -207,6 +211,7 @@ void URLLoaderImpl::OnReceivedRedirect(net::URLRequest* url_request,
   URLResponsePtr response = MakeURLResponse(url_request);
   response->redirect_method = redirect_info.new_method;
   response->redirect_url = String::From(redirect_info.new_url);
+  response->redirect_referrer = redirect_info.new_referrer;
 
   SendResponse(response.Pass());
 

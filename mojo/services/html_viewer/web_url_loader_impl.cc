@@ -18,6 +18,7 @@
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 
+using blink::WebString;
 using mojo::URLResponsePtr;
 
 namespace html_viewer {
@@ -80,7 +81,9 @@ WebURLRequestExtraData::~WebURLRequestExtraData() {
 }
 
 WebURLLoaderImpl::WebURLLoaderImpl(mojo::NetworkService* network_service)
-    : client_(NULL), weak_factory_(this) {
+    : client_(NULL),
+      referrer_policy_(blink::WebReferrerPolicyDefault),
+      weak_factory_(this) {
   network_service->CreateURLLoader(GetProxy(&url_loader_));
 }
 
@@ -102,6 +105,10 @@ void WebURLLoaderImpl::loadAsynchronously(const blink::WebURLRequest& request,
 
   mojo::URLRequestPtr url_request = mojo::URLRequest::From(request);
   url_request->auto_follow_redirects = false;
+  referrer_policy_ = request.referrerPolicy();
+  GURL referrer_url(
+      request.httpHeaderField(WebString::fromUTF8("Referer")).latin1());
+  url_request->referrer = referrer_url.spec();
 
   if (request.extraData()) {
     WebURLRequestExtraData* extra_data =
@@ -187,6 +194,9 @@ void WebURLLoaderImpl::OnReceivedRedirect(const blink::WebURLRequest& request,
   new_request.setSkipServiceWorker(request.skipServiceWorker());
   new_request.setFetchRequestMode(request.fetchRequestMode());
   new_request.setFetchCredentialsMode(request.fetchCredentialsMode());
+  new_request.setHTTPReferrer(
+      WebString::fromUTF8(url_response->redirect_referrer),
+      referrer_policy_);
 
   std::string old_method = request.httpMethod().utf8();
   new_request.setHTTPMethod(

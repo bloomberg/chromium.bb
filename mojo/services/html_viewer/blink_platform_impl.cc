@@ -36,7 +36,7 @@ const char kUserAgentSwitch[] = "user-agent";
 // TODO(darin): Figure out what our UA should really be.
 const char kDefaultUserAgentString[] =
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
-    "Chrome/35.0.1916.153 Safari/537.36";
+    "Chrome/42.0.2311.68 Safari/537.36";
 
 class WebWaitableEventImpl : public blink::WebWaitableEvent {
  public:

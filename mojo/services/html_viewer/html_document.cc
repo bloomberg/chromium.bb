@@ -98,6 +98,12 @@ bool CanNavigateLocally(blink::WebFrame* frame,
   if (EqualsASCII(request.httpMethod(), "POST"))
     return true;
 
+  // Logging into Gmail fails when the referrer isn't sent with a request.
+  // TODO(jam): pass referrer and other HTTP data to NavigatorHost so we can
+  // use a new process in this case.
+  if (!request.httpHeaderField(blink::WebString::fromUTF8("Referer")).isEmpty())
+    return true;
+
   // Otherwise we don't know if we're the right app to handle this request. Ask
   // host to do the navigation for us.
   return false;

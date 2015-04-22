@@ -34,6 +34,9 @@ struct URLRequest {
   // servers to also not satisfy the request from their cache.  This has the
   // effect of forcing a full end-to-end fetch.
   bool bypass_cache = false;
+
+  // The referrer request header.
+  string? referrer;
 };
 
 struct URLResponse {
@@ -67,6 +70,7 @@ struct URLResponse {
   // follow this redirect.
   string? redirect_method;
   string? redirect_url;
+  string? redirect_referrer;
 };
 
 struct URLLoaderStatus {
