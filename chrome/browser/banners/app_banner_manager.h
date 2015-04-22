@@ -43,9 +43,6 @@ class AppBannerManager : public content::WebContentsObserver,
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
 
-  // AppBannerDataFetcher::Delegate overrides.
-  bool OnInvalidManifest(AppBannerDataFetcher* fetcher) override;
-
  protected:
   void ReplaceWebContents(content::WebContents* web_contents);
 
@@ -61,6 +58,11 @@ class AppBannerManager : public content::WebContentsObserver,
   int ideal_icon_size() { return ideal_icon_size_; }
 
  private:
+  // AppBannerDataFetcher::Delegate overrides.
+  bool HandleNonWebApp(const std::string& platform,
+                       const GURL& url,
+                       const std::string& id) override;
+
   // Called after the manager sends a message to the renderer regarding its
   // intention to show a prompt. The renderer will send a message back with the
   // opportunity to cancel.

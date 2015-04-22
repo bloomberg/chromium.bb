@@ -59,7 +59,9 @@ void AppBannerManager::DidFinishLoad(
 }
 
 
-bool AppBannerManager::OnInvalidManifest(AppBannerDataFetcher* fetcher) {
+bool AppBannerManager::HandleNonWebApp(const std::string& platform,
+                                       const GURL& url,
+                                       const std::string& id) {
   return false;
 }
 

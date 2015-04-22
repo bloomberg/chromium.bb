@@ -54,8 +54,7 @@ class TestObserver : public AppBannerDataFetcher::Observer {
 class AppBannerDataFetcherBrowserTest : public InProcessBrowserTest,
                                         public AppBannerDataFetcher::Delegate {
  public:
-  AppBannerDataFetcherBrowserTest() : manifest_was_invalid_(false),
-                                      weak_factory_(this) {
+  AppBannerDataFetcherBrowserTest() : weak_factory_(this) {
   }
 
   void SetUpOnMainThread() override {
@@ -63,9 +62,11 @@ class AppBannerDataFetcherBrowserTest : public InProcessBrowserTest,
     InProcessBrowserTest::SetUpOnMainThread();
   }
 
-  bool OnInvalidManifest(AppBannerDataFetcher* fetcher) override {
+  bool HandleNonWebApp(const std::string& platform,
+                       const GURL& url,
+                       const std::string& id) override {
     base::MessageLoop::current()->PostTask(FROM_HERE, quit_closure_);
-    manifest_was_invalid_ = true;
+    non_web_platform_ = platform;
     return false;
   }
 
@@ -76,7 +77,7 @@ class AppBannerDataFetcherBrowserTest : public InProcessBrowserTest,
 
  protected:
   void RunFetcher(const GURL& url,
-                  bool expected_manifest_valid,
+                  const std::string& expected_non_web_platform,
                   bool expected_to_show) {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
@@ -91,7 +92,7 @@ class AppBannerDataFetcherBrowserTest : public InProcessBrowserTest,
     fetcher->Start(url);
     run_loop.Run();
 
-    EXPECT_EQ(expected_manifest_valid, !manifest_was_invalid_);
+    EXPECT_EQ(expected_non_web_platform, non_web_platform_);
     EXPECT_EQ(expected_to_show, observer->will_show());
     ASSERT_FALSE(fetcher->is_active());
   }
@@ -106,54 +107,69 @@ class AppBannerDataFetcherBrowserTest : public InProcessBrowserTest,
   }
 
  private:
-  bool manifest_was_invalid_;
+  std::string non_web_platform_;
   base::Closure quit_closure_;
   base::WeakPtrFactory<AppBannerDataFetcherBrowserTest> weak_factory_;
 };
 
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, WebAppBannerCreated) {
-  std::string valid_page = "/banners/manifest_test_page.html";
+  std::string valid_page("/banners/manifest_test_page.html");
   GURL test_url = embedded_test_server()->GetURL(valid_page);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
   LoadURLAndWaitForServiceWorker(test_url);
-  RunFetcher(web_contents->GetURL(), true, false);
+  RunFetcher(web_contents->GetURL(), std::string(), false);
 
   // Advance by a day, then visit the page again to trigger the banner.
   AppBannerDataFetcher::SetTimeDeltaForTesting(1);
   LoadURLAndWaitForServiceWorker(test_url);
-  RunFetcher(web_contents->GetURL(), true, true);
+  RunFetcher(web_contents->GetURL(), std::string(), true);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, PlayAppManifest) {
+  std::string valid_page("/banners/play_app_test_page.html");
+  GURL test_url = embedded_test_server()->GetURL(valid_page);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Native banners do not require the SW, so we can just load the URL.
+  ui_test_utils::NavigateToURL(browser(), test_url);
+  std::string play_platform("play");
+  RunFetcher(web_contents->GetURL(), play_platform, false);
+
+  // The logic to get the details for a play app banner are only on android
+  // builds, so this test does not check that the banner is shown.
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, NoManifest) {
-  std::string valid_page = "/banners/no_manifest_test_page.html";
+  std::string valid_page("/banners/no_manifest_test_page.html");
   GURL test_url = embedded_test_server()->GetURL(valid_page);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
   LoadURLAndWaitForServiceWorker(test_url);
-  RunFetcher(web_contents->GetURL(), false, false);
+  RunFetcher(web_contents->GetURL(), std::string(), false);
 
   // Advance by a day, then visit the page again.  Still shouldn't see a banner.
   AppBannerDataFetcher::SetTimeDeltaForTesting(1);
   LoadURLAndWaitForServiceWorker(test_url);
-  RunFetcher(web_contents->GetURL(), false, false);
+  RunFetcher(web_contents->GetURL(), std::string(), false);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, CancelBanner) {
-  std::string valid_page = "/banners/cancel_test_page.html";
+  std::string valid_page("/banners/cancel_test_page.html");
   GURL test_url = embedded_test_server()->GetURL(valid_page);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
   LoadURLAndWaitForServiceWorker(test_url);
-  RunFetcher(web_contents->GetURL(), true, false);
+  RunFetcher(web_contents->GetURL(), std::string(), false);
 
   // Advance by a day, then visit the page again.  Still shouldn't see a banner.
   AppBannerDataFetcher::SetTimeDeltaForTesting(1);
   LoadURLAndWaitForServiceWorker(test_url);
-  RunFetcher(web_contents->GetURL(), true, false);
+  RunFetcher(web_contents->GetURL(), std::string(), false);
 }
 
 }  // namespace banners

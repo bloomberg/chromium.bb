@@ -33,7 +33,7 @@ class AppBannerDataFetcherUnitTest : public testing::Test {
   }
 
   static bool IsManifestValid(const content::Manifest& manifest) {
-    return AppBannerDataFetcher::IsManifestValid(manifest);
+    return AppBannerDataFetcher::IsManifestValidForWebApp(manifest);
   }
 };
 

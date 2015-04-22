@@ -43,9 +43,11 @@ class AppBannerDataFetcher
 
   class Delegate {
    public:
-    // Called when no valid manifest was found.  Returns |true| if the fetcher
-    // needs to remain active and wait for a callback.
-    virtual bool OnInvalidManifest(AppBannerDataFetcher* fetcher) = 0;
+    // Called to handle a non-web app. Returns |true| if the non-web app can be
+    // handled, and the fetcher needs to remain active and wait for a callback.
+    virtual bool HandleNonWebApp(const std::string& platform,
+                                 const GURL& url,
+                                 const std::string& id) = 0;
   };
 
   // Returns the current time.
@@ -137,7 +139,7 @@ class AppBannerDataFetcher
 
   // Returns whether the given Manifest is following the requirements to show
   // a web app banner.
-  static bool IsManifestValid(const content::Manifest& manifest);
+  static bool IsManifestValidForWebApp(const content::Manifest& manifest);
 
   const int ideal_icon_size_;
   const base::WeakPtr<Delegate> weak_delegate_;

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
@@ -231,14 +232,23 @@ void AppBannerDataFetcher::RecordDidShowBanner(const std::string& event_name) {
 void AppBannerDataFetcher::OnDidGetManifest(
     const content::Manifest& manifest) {
   content::WebContents* web_contents = GetWebContents();
-  if (!is_active_ || !web_contents) {
+  if (!is_active_ || !web_contents || manifest.IsEmpty()) {
     Cancel();
     return;
   }
 
-  if (!IsManifestValid(manifest)) {
-    if (!weak_delegate_.get()->OnInvalidManifest(this))
-      Cancel();
+  if (manifest.prefer_related_applications &&
+      manifest.related_applications.size()) {
+    for (const auto& application : manifest.related_applications) {
+      std::string platform = base::UTF16ToUTF8(application.platform.string());
+      std::string id = base::UTF16ToUTF8(application.id.string());
+      if (weak_delegate_->HandleNonWebApp(platform, application.url, id))
+        return;
+    }
+  }
+
+  if (!IsManifestValidForWebApp(manifest)) {
+    Cancel();
     return;
   }
 
@@ -336,7 +346,7 @@ bool AppBannerDataFetcher::CheckIfShouldShowBanner() {
 }
 
 // static
-bool AppBannerDataFetcher::IsManifestValid(
+bool AppBannerDataFetcher::IsManifestValidForWebApp(
     const content::Manifest& manifest) {
   if (manifest.IsEmpty())
     return false;
