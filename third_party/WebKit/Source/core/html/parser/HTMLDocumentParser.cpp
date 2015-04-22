@@ -43,13 +43,13 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/SharedBuffer.h"
+#include "platform/ThreadSafeFunctional.h"
 #include "platform/ThreadedDataReceiver.h"
 #include "platform/TraceEvent.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
-#include "wtf/Functional.h"
 #include "wtf/RefCounted.h"
 #include "wtf/TemporaryChange.h"
 
@@ -435,7 +435,7 @@ void HTMLDocumentParser::discardSpeculationsAndResumeFrom(PassOwnPtr<ParsedChunk
     m_input.current().clear(); // FIXME: This should be passed in instead of cleared.
 
     ASSERT(checkpoint->unparsedInput.isSafeToSendToAnotherThread());
-    HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::resumeFrom, m_backgroundParser, checkpoint.release()));
+    HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::resumeFrom, AllowCrossThreadAccess(m_backgroundParser), checkpoint.release()));
 }
 
 size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<ParsedChunk> popChunk)
@@ -460,7 +460,7 @@ size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<Par
     OwnPtr<CompactHTMLTokenStream> tokens = chunk->tokens.release();
     size_t elementTokenCount = 0;
 
-    HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::startedChunkWithCheckpoint, m_backgroundParser, chunk->inputCheckpoint));
+    HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::startedChunkWithCheckpoint, AllowCrossThreadAccess(m_backgroundParser), chunk->inputCheckpoint));
 
     for (const auto& xssInfo : chunk->xssInfos) {
         m_textPosition = xssInfo->m_textPosition;
@@ -585,7 +585,7 @@ void HTMLDocumentParser::forcePlaintextForTextDocument()
         if (!m_haveBackgroundParser)
             startBackgroundParser();
 
-        HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::forcePlaintextForTextDocument, m_backgroundParser));
+        HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::forcePlaintextForTextDocument, AllowCrossThreadAccess(m_backgroundParser)));
     } else
         m_tokenizer->setState(HTMLTokenizer::PLAINTEXTState);
 }
@@ -787,8 +787,8 @@ void HTMLDocumentParser::startBackgroundParser()
 
     ASSERT(config->xssAuditor->isSafeToSendToAnotherThread());
     ASSERT(config->preloadScanner->isSafeToSendToAnotherThread());
-    HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::start, reference.release(), config.release(),
-        Platform::current()->currentThread()->scheduler()));
+    HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::start, reference.release(), config.release(),
+        AllowCrossThreadAccess(Platform::current()->currentThread()->scheduler())));
 }
 
 void HTMLDocumentParser::stopBackgroundParser()
@@ -797,7 +797,7 @@ void HTMLDocumentParser::stopBackgroundParser()
     ASSERT(m_haveBackgroundParser);
     m_haveBackgroundParser = false;
 
-    HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::stop, m_backgroundParser));
+    HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::stop, AllowCrossThreadAccess(m_backgroundParser)));
     m_weakFactory.revokeAll();
 }
 
@@ -910,7 +910,7 @@ void HTMLDocumentParser::finish()
     if (m_haveBackgroundParser) {
         if (!m_input.haveSeenEndOfFile())
             m_input.closeWithoutMarkingEndOfFile();
-        HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::finish, m_backgroundParser));
+        HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::finish, AllowCrossThreadAccess(m_backgroundParser)));
         return;
     }
 
@@ -1087,7 +1087,7 @@ void HTMLDocumentParser::appendBytes(const char* data, size_t length)
         memcpy(buffer->data(), data, length);
         TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.debug"), "HTMLDocumentParser::appendBytes", "size", (unsigned)length);
 
-        HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::appendRawBytesFromMainThread, m_backgroundParser, buffer.release()));
+        HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::appendRawBytesFromMainThread, AllowCrossThreadAccess(m_backgroundParser), buffer.release()));
         return;
     }
 
@@ -1101,7 +1101,7 @@ void HTMLDocumentParser::flush()
         return;
 
     if (m_haveBackgroundParser)
-        HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::flush, m_backgroundParser));
+        HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::flush, AllowCrossThreadAccess(m_backgroundParser)));
     else
         DecodedDataDocumentParser::flush();
 }
@@ -1112,7 +1112,7 @@ void HTMLDocumentParser::setDecoder(PassOwnPtr<TextResourceDecoder> decoder)
     DecodedDataDocumentParser::setDecoder(decoder);
 
     if (m_haveBackgroundParser)
-        HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::setDecoder, m_backgroundParser, takeDecoder()));
+        HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::setDecoder, AllowCrossThreadAccess(m_backgroundParser), takeDecoder()));
 }
 
 }

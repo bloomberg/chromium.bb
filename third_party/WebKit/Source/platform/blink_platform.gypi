@@ -772,8 +772,6 @@
       'plugins/PluginListBuilder.h',
       'scheduler/CancellableTaskFactory.cpp',
       'scheduler/CancellableTaskFactory.h',
-      'scheduler/ClosureRunnerTask.cpp',
-      'scheduler/ClosureRunnerTask.h',
       'scroll/ProgrammaticScrollAnimator.cpp',
       'scroll/ProgrammaticScrollAnimator.h',
       'scroll/ScrollAnimator.cpp',

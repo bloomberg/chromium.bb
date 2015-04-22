@@ -30,7 +30,8 @@
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/parser/XSSAuditor.h"
-#include "platform/scheduler/ClosureRunnerTask.h"
+#include "platform/Task.h"
+#include "platform/ThreadSafeFunctional.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "wtf/text/TextPosition.h"
@@ -274,7 +275,7 @@ void BackgroundHTMLParser::sendTokensToMainThread()
 
     m_scheduler->postLoadingTask(
         FROM_HERE,
-        new ClosureRunnerTask(bind(&HTMLDocumentParser::didReceiveParsedChunkFromBackgroundParser, m_parser, chunk.release())));
+        new Task(threadSafeBind(&HTMLDocumentParser::didReceiveParsedChunkFromBackgroundParser, AllowCrossThreadAccess(m_parser), chunk.release())));
 
     m_pendingTokens = adoptPtr(new CompactHTMLTokenStream);
 }
