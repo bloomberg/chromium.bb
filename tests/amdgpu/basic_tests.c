@@ -306,15 +306,19 @@ static void amdgpu_sdma_test_exec_cs(amdgpu_context_handle context_handle,
 	ibs_request->ring = instance;
 	ibs_request->number_of_ibs = 1;
 	ibs_request->ibs = ib_info;
-	ibs_request->number_of_resources = res_cnt;
-	ibs_request->resources = resources;
 
+	r = amdgpu_bo_list_create(device_handle, res_cnt, resources,
+				  NULL, &ibs_request->resources);
+	CU_ASSERT_EQUAL(r, 0);
 
 	CU_ASSERT_NOT_EQUAL(ibs_request, NULL);
 
 	/* submit CS */
 	r = amdgpu_cs_submit(context_handle, 0,
 			 ibs_request, 1, &fence_status.fence);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_bo_list_destroy(ibs_request->resources);
 	CU_ASSERT_EQUAL(r, 0);
 
 	fence_status.ip_type = AMDGPU_HW_IP_DMA;

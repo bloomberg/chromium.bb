@@ -611,73 +611,6 @@ int amdgpu_cs_ctx_free(amdgpu_context_handle context)
 	return r;
 }
 
-static int amdgpu_cs_create_bo_list(amdgpu_context_handle context,
-				    struct amdgpu_cs_request *request,
-				    amdgpu_ib_handle fence_ib,
-				    uint32_t *handle)
-{
-	struct drm_amdgpu_bo_list_entry *list;
-	union drm_amdgpu_bo_list args;
-	unsigned num_resources;
-	unsigned i;
-	int r;
-
-	num_resources = request->number_of_resources;
-
-	if (!num_resources) {
-		*handle = 0;
-		return 0;
-	}
-
-	if (fence_ib)
-		++num_resources;
-
-	list = alloca(sizeof(struct drm_amdgpu_bo_list_entry) * num_resources);
-
-	memset(&args, 0, sizeof(args));
-	args.in.operation = AMDGPU_BO_LIST_OP_CREATE;
-	args.in.bo_number = num_resources;
-	args.in.bo_info_size = sizeof(struct drm_amdgpu_bo_list_entry);
-	args.in.bo_info_ptr = (uint64_t)(uintptr_t)list;
-
-	for (i = 0; i < request->number_of_resources; i++) {
-		list[i].bo_handle = request->resources[i]->handle;
-		if (request->resource_flags)
-			list[i].bo_priority = request->resource_flags[i];
-		else
-			list[i].bo_priority = 0;
-	}
-
-	if (fence_ib)
-		list[i].bo_handle = fence_ib->buf_handle->handle;
-
-	r = drmCommandWriteRead(context->dev->fd, DRM_AMDGPU_BO_LIST,
-				&args, sizeof(args));
-	if (r)
-		return r;
-
-	*handle = args.out.list_handle;
-	return 0;
-}
-
-static int amdgpu_cs_free_bo_list(amdgpu_context_handle context, uint32_t handle)
-{
-	union drm_amdgpu_bo_list args;
-	int r;
-
-	if (!handle)
-		return 0;
-
-	memset(&args, 0, sizeof(args));
-	args.in.operation = AMDGPU_BO_LIST_OP_DESTROY;
-	args.in.list_handle = handle;
-
-	r = drmCommandWriteRead(context->dev->fd, DRM_AMDGPU_BO_LIST,
-				&args, sizeof(args));
-
-	return r;
-}
-
 static uint32_t amdgpu_cs_fence_index(unsigned ip, unsigned ring)
 {
 	return ip * AMDGPU_CS_MAX_RINGS + ring;
@@ -703,7 +636,6 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 	uint64_t *chunk_array;
 	struct drm_amdgpu_cs_chunk *chunks;
 	struct drm_amdgpu_cs_chunk_data *chunk_data;
-	uint32_t bo_list_handle;
 
 	if (ibs_request->ip_type >= AMDGPU_HW_IP_NUM)
 		return -EINVAL;
@@ -712,11 +644,10 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 	if (ibs_request->number_of_ibs > AMDGPU_CS_MAX_IBS_PER_SUBMIT)
 		return -EINVAL;
 
-	size = (ibs_request->number_of_ibs + 1) * ((sizeof(uint64_t) +
+	size = (ibs_request->number_of_ibs + 1) * (
+		sizeof(uint64_t) +
 		sizeof(struct drm_amdgpu_cs_chunk) +
-		sizeof(struct drm_amdgpu_cs_chunk_data)) +
-	       ibs_request->number_of_resources + 1) *
-	       sizeof(struct drm_amdgpu_bo_list_entry);
+		sizeof(struct drm_amdgpu_cs_chunk_data));
 	chunk_array = malloc(size);
 	if (NULL == chunk_array)
 		return -ENOMEM;
@@ -728,6 +659,7 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 	memset(&cs, 0, sizeof(cs));
 	cs.in.chunks = (uint64_t)(uintptr_t)chunk_array;
 	cs.in.ctx_id = context->id;
+	cs.in.bo_list_handle = ibs_request->resources->handle;
 	cs.in.num_chunks = ibs_request->number_of_ibs;
 	/* IB chunks */
 	for (i = 0; i < ibs_request->number_of_ibs; i++) {
@@ -750,12 +682,6 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 			chunk_data[i].ib_data.flags = AMDGPU_IB_FLAG_CE;
 	}
 
-	r = amdgpu_cs_create_bo_list(context, ibs_request, NULL,
-				     &bo_list_handle);
-	if (r)
-		goto error_unlock;
-
-	cs.in.bo_list_handle = bo_list_handle;
 	pthread_mutex_lock(&context->sequence_mutex);
 
 	if (ibs_request->ip_type != AMDGPU_HW_IP_UVD &&
@@ -803,17 +729,11 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 
 	pthread_mutex_unlock(&context->sequence_mutex);
 
-	r = amdgpu_cs_free_bo_list(context, bo_list_handle);
-	if (r)
-		goto error_free;
-
 	free(chunk_array);
 	return 0;
 
 error_unlock:
 	pthread_mutex_unlock(&context->sequence_mutex);
-
-error_free:
 	free(chunk_array);
 	return r;
 }

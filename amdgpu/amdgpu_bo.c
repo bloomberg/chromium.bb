@@ -636,3 +636,59 @@ int amdgpu_create_bo_from_user_mem(amdgpu_device_handle dev,
 
 	return r;
 }
+
+int amdgpu_bo_list_create(amdgpu_device_handle dev,
+			  uint32_t number_of_resources,
+			  amdgpu_bo_handle *resources,
+			  uint8_t *resource_prios,
+			  amdgpu_bo_list_handle *result)
+{
+	struct drm_amdgpu_bo_list_entry *list;
+	union drm_amdgpu_bo_list args;
+	unsigned i;
+	int r;
+
+	list = alloca(sizeof(struct drm_amdgpu_bo_list_entry) * number_of_resources);
+
+	memset(&args, 0, sizeof(args));
+	args.in.operation = AMDGPU_BO_LIST_OP_CREATE;
+	args.in.bo_number = number_of_resources;
+	args.in.bo_info_size = sizeof(struct drm_amdgpu_bo_list_entry);
+	args.in.bo_info_ptr = (uint64_t)(uintptr_t)list;
+
+	for (i = 0; i < number_of_resources; i++) {
+		list[i].bo_handle = resources[i]->handle;
+		if (resource_prios)
+			list[i].bo_priority = resource_prios[i];
+		else
+			list[i].bo_priority = 0;
+	}
+
+	r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_BO_LIST,
+				&args, sizeof(args));
+	if (r)
+		return r;
+
+	*result = calloc(1, sizeof(struct amdgpu_bo_list));
+	(*result)->dev = dev;
+	(*result)->handle = args.out.list_handle;
+	return 0;
+}
+
+int amdgpu_bo_list_destroy(amdgpu_bo_list_handle list)
+{
+	union drm_amdgpu_bo_list args;
+	int r;
+
+	memset(&args, 0, sizeof(args));
+	args.in.operation = AMDGPU_BO_LIST_OP_DESTROY;
+	args.in.list_handle = list->handle;
+
+	r = drmCommandWriteRead(list->dev->fd, DRM_AMDGPU_BO_LIST,
+				&args, sizeof(args));
+
+	if (!r)
+		free(list);
+
+	return r;
+}

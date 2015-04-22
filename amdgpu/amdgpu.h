@@ -166,6 +166,11 @@ typedef struct amdgpu_context *amdgpu_context_handle;
 typedef struct amdgpu_bo *amdgpu_bo_handle;
 
 /**
+ * Define handle for list of BOs
+ */
+typedef struct amdgpu_bo_list *amdgpu_bo_list_handle;
+
+/**
  * Define handle to be used when dealing with command
  * buffers (a.k.a. ibs)
  *
@@ -400,17 +405,9 @@ struct amdgpu_cs_request {
 	uint32_t           ring;
 
 	/**
-	 * Specify number of resource handles passed.
-	 * Size of 'handles' array
-	 *
+	 * List handle with resources used by this request.
 	 */
-	uint32_t number_of_resources;
-
-	/** Array of resources used by submission. */
-	amdgpu_bo_handle   *resources;
-
-	/** Array of resources flags. This is optional and can be NULL. */
-	uint8_t *resource_flags;
+	amdgpu_bo_list_handle resources;
 
 	/** Number of IBs to submit in the field ibs. */
 	uint32_t number_of_ibs;
@@ -788,6 +785,40 @@ int amdgpu_bo_wait_for_idle(amdgpu_bo_handle buf_handle,
 			    uint64_t timeout_ns,
 			    bool *buffer_busy);
 
+/**
+ * Creates a BO list handle for command submission.
+ *
+ * \param   dev			- \c [in] Device handle.
+ *				   See #amdgpu_device_initialize()
+ * \param   number_of_resources	- \c [in] Number of BOs in the list
+ * \param   resources		- \c [in] List of BO handles
+ * \param   resource_prios	- \c [in] Optional priority for each handle
+ * \param   result		- \c [out] Created BO list handle
+ *
+ * \return   0 on success\n
+ *          >0 - AMD specific error code\n
+ *          <0 - Negative POSIX Error code
+ *
+ * \sa amdgpu_bo_list_destroy()
+*/
+int amdgpu_bo_list_create(amdgpu_device_handle dev,
+			  uint32_t number_of_resources,
+			  amdgpu_bo_handle *resources,
+			  uint8_t *resource_prios,
+			  amdgpu_bo_list_handle *result);
+
+/**
+ * Destroys a BO list handle.
+ *
+ * \param   handle	- \c [in] BO list handle.
+ *
+ * \return   0 on success\n
+ *          >0 - AMD specific error code\n
+ *          <0 - Negative POSIX Error code
+ *
+ * \sa amdgpu_bo_list_create()
+*/
+int amdgpu_bo_list_destroy(amdgpu_bo_list_handle handle);
 
 /*
  * Special GPU Resources

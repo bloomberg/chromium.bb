@@ -115,13 +115,21 @@ static int submit(unsigned ndw, unsigned ip)
 	ib_info.size = ndw;
 
 	ibs_request.ip_type = ip;
-	ibs_request.number_of_resources = num_resources;
-	ibs_request.resources = resources;
+
+	r = amdgpu_bo_list_create(device_handle, num_resources, resources,
+				  NULL, &ibs_request.resources);
+	if (r)
+		return r;
+
 	ibs_request.number_of_ibs = 1;
 	ibs_request.ibs = &ib_info;
 
 	r = amdgpu_cs_submit(context_handle, 0,
 			     &ibs_request, 1, &fence_status.fence);
+	if (r)
+		return r;
+
+	r = amdgpu_bo_list_destroy(ibs_request.resources);
 	if (r)
 		return r;
 

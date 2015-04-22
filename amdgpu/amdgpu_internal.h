@@ -88,6 +88,12 @@ struct amdgpu_bo {
 	int cpu_map_count;
 };
 
+struct amdgpu_bo_list {
+	struct amdgpu_device *dev;
+
+	uint32_t handle;
+};
+
 /*
  * There are three mutexes.
  * To avoid deadlock, only hold the mutexes in this order:
