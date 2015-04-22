@@ -733,19 +733,10 @@ bool LocalFrame::applyScrollDelta(const FloatSize& delta, bool isScrollBegin)
     if (!view() || delta.isZero())
         return false;
 
-    // If this is main frame, allow top controls to scroll first.
-    bool giveToTopControls = false;
-    if (isMainFrame()) {
-        // Always give the delta to the top controls if the scroll is in
-        // the direction to show the top controls. If it's in the
-        // direction to hide the top controls, only give the delta to the
-        // top controls when the frame can scroll.
-        giveToTopControls = delta.height() > 0
-            || view()->scrollPosition().y() < view()->maximumScrollPosition().y();
-    }
-
     FloatSize remainingDelta = delta;
-    if (giveToTopControls)
+
+    // If this is main frame, allow top controls to scroll first.
+    if (shouldScrollTopControls(delta))
         remainingDelta = host()->topControls().scrollBy(remainingDelta);
 
     if (remainingDelta.isZero())
@@ -760,10 +751,27 @@ bool LocalFrame::applyScrollDelta(const FloatSize& delta, bool isScrollBegin)
     if (!isMainFrame())
         return consumed;
 
-    if (scrollAreaOnBothAxes(remainingDelta, page()->frameHost().pinchViewport()))
+    if (scrollAreaOnBothAxes(remainingDelta, host()->pinchViewport()))
         return true;
 
     return consumed;
+}
+
+bool LocalFrame::shouldScrollTopControls(const FloatSize& delta) const
+{
+    if (!isMainFrame())
+        return false;
+
+    // Always give the delta to the top controls if the scroll is in
+    // the direction to show the top controls. If it's in the
+    // direction to hide the top controls, only give the delta to the
+    // top controls when the frame can scroll.
+    DoublePoint maximumScrollPosition =
+        host()->pinchViewport().maximumScrollPositionDouble() +
+        toDoubleSize(view()->maximumScrollPositionDouble());
+    DoublePoint scrollPosition = host()->pinchViewport()
+        .visibleRectInDocument().location();
+    return delta.height() > 0 || scrollPosition.y() < maximumScrollPosition.y();
 }
 
 #if ENABLE(OILPAN)

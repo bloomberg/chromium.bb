@@ -165,6 +165,7 @@ namespace blink {
         // FIXME: once scroll customization is enabled everywhere
         // (crbug.com/416862), this should take a ScrollState object.
         bool applyScrollDelta(const FloatSize& delta, bool isScrollBegin);
+        bool shouldScrollTopControls(const FloatSize& delta) const;
 
 #if ENABLE(OILPAN)
         void registerPluginElement(HTMLPlugInElement*);

@@ -47,16 +47,18 @@ FloatSize TopControls::scrollBy(FloatSize pendingDelta)
         return pendingDelta;
 
     float oldOffset = contentOffset();
+    float pageScale = m_frameHost->pinchViewport().scale();
 
     // Update accumulated vertical scroll and apply it to top controls
-    m_accumulatedScrollDelta += pendingDelta.height();
+    // Compute scroll delta in viewport space by applying page scale
+    m_accumulatedScrollDelta += pendingDelta.height() * pageScale;
     setShownRatio((m_baselineContentOffset + m_accumulatedScrollDelta) / m_height);
 
     // Reset baseline when controls are fully visible
     if (m_shownRatio == 1)
         resetBaseline();
 
-    FloatSize appliedDelta(0, contentOffset() - oldOffset);
+    FloatSize appliedDelta(0, (contentOffset() - oldOffset) / pageScale);
     return pendingDelta - appliedDelta;
 }
 
