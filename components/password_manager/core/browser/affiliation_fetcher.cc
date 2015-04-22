@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/affiliation_fetcher.h"
 
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "components/password_manager/core/browser/affiliation_api.pb.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/test_affiliation_fetcher_factory.h"
@@ -16,6 +18,37 @@
 #include "url/gurl.h"
 
 namespace password_manager {
+
+namespace {
+
+// Enumeration listing the possible outcomes of fetching affiliation information
+// from the Affiliation API. This is used in UMA histograms, so do not change
+// existing values, only add new values at the end.
+enum AffiliationFetchResult {
+  AFFILIATION_FETCH_RESULT_SUCCESS,
+  AFFILIATION_FETCH_RESULT_FAILURE,
+  AFFILIATION_FETCH_RESULT_MALFORMED,
+  AFFILIATION_FETCH_RESULT_MAX
+};
+
+// Records the given fetch |result| into the respective UMA histogram, as well
+// as the response and error codes of |fetcher| if it is non-null.
+void ReportStatistics(AffiliationFetchResult result,
+                      const net::URLFetcher* fetcher) {
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.AffiliationFetcher.FetchResult",
+                            result, AFFILIATION_FETCH_RESULT_MAX);
+  if (fetcher) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+        "PasswordManager.AffiliationFetcher.FetchHttpResponseCode",
+        fetcher->GetResponseCode());
+    // Network error codes are negative. See: src/net/base/net_error_list.h.
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+        "PasswordManager.AffiliationFetcher.FetchErrorCode",
+        -fetcher->GetStatus().error());
+  }
+}
+
+}  // namespace
 
 static TestAffiliationFetcherFactory* g_testing_factory = nullptr;
 
@@ -161,15 +194,21 @@ bool AffiliationFetcher::ParseResponse(
 void AffiliationFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK_EQ(source, fetcher_.get());
 
-  scoped_ptr<AffiliationFetcherDelegate::Result> result(
+  // Note that invoking the |delegate_| may destroy |this| synchronously, so the
+  // invocation must happen last.
+  scoped_ptr<AffiliationFetcherDelegate::Result> result_data(
       new AffiliationFetcherDelegate::Result);
   if (fetcher_->GetStatus().status() == net::URLRequestStatus::SUCCESS &&
       fetcher_->GetResponseCode() == net::HTTP_OK) {
-    if (ParseResponse(result.get()))
-      delegate_->OnFetchSucceeded(result.Pass());
-    else
+    if (ParseResponse(result_data.get())) {
+      ReportStatistics(AFFILIATION_FETCH_RESULT_SUCCESS, nullptr);
+      delegate_->OnFetchSucceeded(result_data.Pass());
+    } else {
+      ReportStatistics(AFFILIATION_FETCH_RESULT_MALFORMED, nullptr);
       delegate_->OnMalformedResponse();
+    }
   } else {
+    ReportStatistics(AFFILIATION_FETCH_RESULT_FAILURE, fetcher_.get());
     delegate_->OnFetchFailed();
   }
 }

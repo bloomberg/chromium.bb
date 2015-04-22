@@ -110,6 +110,10 @@ class AffiliationBackend : public FacetManagerHost,
   // Returns the number of in-memory FacetManagers. Used only for testing.
   size_t facet_manager_count_for_testing() { return facet_managers_.size(); }
 
+  // Reports the |requested_facet_uri_count| in a single fetch; and the elapsed
+  // time before the first fetch, and in-between subsequent fetches.
+  void ReportStatistics(size_t requested_facet_uri_count);
+
   // To be called after Initialize() to use |throttler| instead of the default
   // one. Used only for testing.
   void SetThrottlerForTesting(scoped_ptr<AffiliationFetchThrottler> throttler);
@@ -126,6 +130,9 @@ class AffiliationBackend : public FacetManagerHost,
   scoped_ptr<AffiliationDatabase> cache_;
   scoped_ptr<AffiliationFetcher> fetcher_;
   scoped_ptr<AffiliationFetchThrottler> throttler_;
+
+  base::Time construction_time_;
+  base::Time last_request_time_;
 
   // Contains a FacetManager for each facet URI that need ongoing attention. To
   // save memory, managers are discarded as soon as they become redundant.

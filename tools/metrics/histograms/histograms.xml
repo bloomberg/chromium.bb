@@ -25456,6 +25456,81 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.AffiliationBackend.FetchSize" units="facets">
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    The number of facets for which affiliation information was requested in a
+    network fetch. Recorded for each network fetch.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.AffiliationBackend.FirstFetchDelay"
+    units="milliseconds">
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    The time elapsed between creation of the AffiliationBackend and the first
+    time it needed to issue a network fetch.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.AffiliationBackend.SubsequentFetchDelay"
+    units="milliseconds">
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    The elapsed time between subsequent network fetches. Recorded whenever the
+    AffiliationBackend initiated a network fetch, regardless of success or
+    failure.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.AffiliationDummyData.RequestResultCount"
+    units="results">
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    The number of facets affiliated with a dummy Web facet, according to the
+    affiliation information retrieved from the cache. Recorded for each dummy
+    Web facet, once shortly after start-up, and then periodically every hour;
+    but only if getting affiliations succeeded for the Web facet.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.AffiliationDummyData.RequestSuccess"
+    enum="BooleanSuccess">
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    Whether or not affiliations of a dummy Web facet could be successfully
+    retrieved from the cache. Recorded for each dummy Web facet, once shortly
+    after start-up, and then periodically every hour.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.AffiliationFetcher.FetchErrorCode"
+    enum="NetErrorCodes">
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    The network error code, as reported by the underlying URLFetcher. Recorded
+    only for each network fetch that failed due to network/server errors.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.AffiliationFetcher.FetchHttpResponseCode"
+    enum="HttpResponseCode">
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    The HTTP response code, as reported by the underlying URLFetcher. Recorded
+    only for each network fetch that failed due to network/server errors.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.AffiliationFetcher.FetchResult"
+    enum="AffiliationFetchResult">
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    Whether the network fetch succeeded, failed due to network/server errors, or
+    contained malformed data. Recorded for each network fetch.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.AllowToCollectURLBubble.UIDismissalReason"
     enum="PasswordManagerAllowToCollectURLBubble.UIDismissalReason">
   <obsolete>
@@ -45896,6 +45971,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="2" label="IPv6"/>
 </enum>
 
+<enum name="AffiliationFetchResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Network/server error"/>
+  <int value="2" label="Malformed response"/>
+</enum>
+
 <enum name="AlternateProtocolUsage" type="int">
   <int value="0" label="ALTERNATE_PROTOCOL_USAGE_NO_RACE"/>
   <int value="1" label="ALTERNATE_PROTOCOL_USAGE_WON_RACE"/>
@@ -64105,6 +64186,17 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="network manager thinks that the active network is behind portal"/>
   <affected-histogram name="CaptivePortal.OOBE.DiscrepancyWithShill"/>
   <affected-histogram name="CaptivePortal.Session.DiscrepancyWithShill"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="AffiliationDummyData" separator=".">
+  <suffix name="OnStartup"
+      label="with the dummy data being requested shortly after start-up"/>
+  <suffix name="Periodic"
+      label="with the dummy data being requested periodically later"/>
+  <affected-histogram
+      name="PasswordManager.AffiliationDummyData.RequestResultCount"/>
+  <affected-histogram
+      name="PasswordManager.AffiliationDummyData.RequestSuccess"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="AlternateProtocol">
