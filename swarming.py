@@ -1080,7 +1080,7 @@ def CMDcollect(parser, args):
         tasks = sorted(
             json.load(f)['tasks'].itervalues(), key=lambda x: x['shard_index'])
         args = [t['task_id'] for t in tasks]
-    except (KeyError, IOError, ValueError):
+    except (KeyError, IOError, TypeError, ValueError):
       parser.error('Failed to parse %s' % options.json)
   else:
     valid = frozenset('0123456789abcdef')
