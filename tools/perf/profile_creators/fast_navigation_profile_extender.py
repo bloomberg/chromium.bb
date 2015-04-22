@@ -4,8 +4,6 @@
 import time
 
 from profile_creators import profile_extender
-from telemetry.core import browser_finder
-from telemetry.core import browser_finder_exceptions
 from telemetry.core import exceptions
 
 
@@ -21,14 +19,14 @@ class FastNavigationProfileExtender(profile_extender.ProfileExtender):
       with the number of batches, but does not scale with the size of the
       batch.
   """
-  def __init__(self, maximum_batch_size):
+  def __init__(self, finder_options, maximum_batch_size):
     """Initializer.
 
     Args:
       maximum_batch_size: A positive integer indicating the number of tabs to
       simultaneously perform navigations.
     """
-    super(FastNavigationProfileExtender, self).__init__()
+    super(FastNavigationProfileExtender, self).__init__(finder_options)
 
     # The instance keeps a list of Tabs that can be navigated successfully.
     # This means that the Tab is not crashed, and is processing JavaScript in a
@@ -44,19 +42,13 @@ class FastNavigationProfileExtender(profile_extender.ProfileExtender):
     # The default amount of time to wait for the retrieval of the URL of a tab.
     self._TAB_URL_RETRIEVAL_TIMEOUT_IN_SECONDS = 1
 
-  def Run(self, finder_options):
-    """Extends the profile.
-
-    Args:
-      finder_options: An instance of BrowserFinderOptions that contains the
-      directory of the input profile, the directory to place the output
-      profile, and sufficient information to choose a specific browser binary.
-    """
+  def Run(self):
+    """Superclass override."""
     try:
-      self.SetUp(finder_options)
+      self.SetUpBrowser()
       self._PerformNavigations()
     finally:
-      self.TearDown()
+      self.TearDownBrowser()
 
   def GetUrlIterator(self):
     """Gets URLs for the browser to navigate to.
@@ -82,10 +74,6 @@ class FastNavigationProfileExtender(profile_extender.ProfileExtender):
     Can be overridden by subclasses.
     """
     pass
-
-  @property
-  def profile_path(self):
-    return self._profile_path
 
   def _AddNewTab(self):
     """Adds a new tab to the browser."""
@@ -123,18 +111,6 @@ class FastNavigationProfileExtender(profile_extender.ProfileExtender):
     self._navigation_tabs. The tab is not removed from self.browser.tabs,
     since there is no guarantee that the tab can be safely removed."""
     self._navigation_tabs.remove(tab)
-
-  def _GetPossibleBrowser(self, finder_options):
-    """Return a possible_browser with the given options."""
-    possible_browser = browser_finder.FindBrowser(finder_options)
-    if not possible_browser:
-      raise browser_finder_exceptions.BrowserFinderException(
-          'No browser found.\n\nAvailable browsers:\n%s\n' %
-          '\n'.join(browser_finder.GetAllAvailableBrowserTypes(finder_options)))
-    finder_options.browser_options.browser_type = (
-        possible_browser.browser_type)
-
-    return possible_browser
 
   def _RetrieveTabUrl(self, tab, timeout):
     """Retrives the URL of the tab."""

@@ -14,13 +14,14 @@ class HistoryProfileExtender(
   files. It continues running until the history DB becomes full."""
   _HISTORY_DB_MAX_SIZE_IN_MB = 10
 
-  def __init__(self):
+  def __init__(self, finder_options):
     # The rate limiting factors are the speed of page navigation, and the speed
     # of python bindings. The former is larger than the latter, so having a
     # large batch size skews the amortized average time per page load towards
     # the latter.
     maximum_batch_size = multiprocessing.cpu_count() * 2
-    super(HistoryProfileExtender, self).__init__(maximum_batch_size)
+    super(HistoryProfileExtender, self).__init__(
+        finder_options, maximum_batch_size)
 
     # A list of paths of temporary files. The instance is responsible for
     # making sure that the files are deleted before they are removed from this
@@ -64,9 +65,9 @@ class HistoryProfileExtender(
     """Superclass override."""
     return self._IsHistoryDBAtMaxSize()
 
-  def TearDown(self):
+  def TearDownBrowser(self):
     """Superclass override."""
-    super(HistoryProfileExtender, self).TearDown()
+    super(HistoryProfileExtender, self).TearDownBrowser()
     for path in self._generated_temp_files:
       os.remove(path)
     self._generated_temp_files = []

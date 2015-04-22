@@ -21,7 +21,9 @@ class HistoryProfileExtenderTest(unittest.TestCase):
   # The profile extender does not work on Android or ChromeOS.
   @decorators.Disabled('android', 'chromeos')
   def testFullFunctionality(self):
-    extender = HistoryProfileExtender()
+    options = options_for_unittests.GetCopy()
+    options.output_profile_path = tempfile.mkdtemp()
+    extender = HistoryProfileExtender(options)
 
     # Stop the extender at the earliest possible opportunity.
     extender.ShouldExitAfterBatchNavigation = mock.MagicMock(return_value=True)
@@ -29,11 +31,8 @@ class HistoryProfileExtenderTest(unittest.TestCase):
     # static, small number to increase the speed of the test.
     extender._NUM_TABS = 3
 
-    options = options_for_unittests.GetCopy()
-    options.output_profile_path = tempfile.mkdtemp()
-
     try:
-      extender.Run(options)
+      extender.Run()
       self.assertEquals(extender.profile_path, options.output_profile_path)
       self.assertTrue(os.path.exists(extender.profile_path))
       history_db_path = os.path.join(extender.profile_path, "Default",

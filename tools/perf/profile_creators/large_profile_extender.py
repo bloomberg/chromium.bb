@@ -9,9 +9,11 @@ from profile_creators import profile_extender
 class LargeProfileExtender(profile_extender.ProfileExtender):
   """This class creates a large profile by performing a large number of url
   navigations."""
-  def Run(self, options):
-    extender = history_profile_extender.HistoryProfileExtender()
-    extender.Run(options)
+  def Run(self):
+    extender = history_profile_extender.HistoryProfileExtender(
+        self.finder_options)
+    extender.Run()
 
-    extender = cookie_profile_extender.CookieProfileExtender()
-    extender.Run(options)
+    extender = cookie_profile_extender.CookieProfileExtender(
+        self.finder_options)
+    extender.Run()

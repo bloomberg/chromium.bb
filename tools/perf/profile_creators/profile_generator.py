@@ -70,9 +70,9 @@ def GenerateProfiles(profile_extender_class, profile_creator_name, options):
   temp_output_directory = tempfile.mkdtemp()
   options.output_profile_path = temp_output_directory
 
-  profile_creator_instance = profile_extender_class()
+  profile_creator_instance = profile_extender_class(options)
   try:
-    profile_creator_instance.Run(options)
+    profile_creator_instance.Run()
   except Exception as e:
     logging.exception('Profile creation failed.')
     shutil.rmtree(temp_output_directory)
