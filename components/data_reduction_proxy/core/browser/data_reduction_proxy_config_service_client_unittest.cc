@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/tick_clock.h"
 #include "base/values.h"
@@ -15,9 +16,28 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_client_config_parser.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
+#include "net/socket/socket_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+
+namespace {
+
+const char kSuccessResponse[] =
+    "{ \"sessionKey\": \"SecretSessionKey\", "
+    "\"expireTime\": \"1970-01-01T00:01:00.000Z\", "
+    "\"proxyConfig\": { \"httpProxyServers\": ["
+    "{ \"scheme\": \"HTTPS\", \"host\": \"origin.net\", \"port\": 443 },"
+    "{ \"scheme\": \"HTTP\", \"host\": \"fallback.net\", \"port\": 80 }"
+    "] } }";
+// The following values should match the ones in the response above.
+const char kSuccessOrigin[] = "https://origin.net:443";
+const char kSuccessFallback[] = "fallback.net:80";
+const char kSuccessSessionKey[] = "SecretSessionKey";
+
+}  // namespace
 
 namespace data_reduction_proxy {
 
@@ -50,6 +70,8 @@ void PopulateResponseFailure(base::DictionaryValue* response) {
 
 class DataReductionProxyConfigServiceClientTest : public testing::Test {
  protected:
+  DataReductionProxyConfigServiceClientTest() : context_(true) {}
+
   void SetUp() override {
     test_context_ =
         DataReductionProxyTestContext::Builder()
@@ -57,12 +79,15 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
                              DataReductionProxyParams::kFallbackAllowed |
                              DataReductionProxyParams::kPromoAllowed)
             .WithParamsDefinitions(TestDataReductionProxyParams::HAS_EVERYTHING)
+            .WithURLRequestContext(&context_)
+            .WithMockClientSocketFactory(&mock_socket_factory_)
             .WithTestConfigurator()
             .WithMockRequestOptions()
             .WithTestConfigClient()
             .Build();
-    test_context_->test_config_client()->SetCustomReleaseTime(
-        base::TimeTicks::UnixEpoch());
+    context_.set_client_socket_factory(&mock_socket_factory_);
+    context_.Init();
+    ResetBackoffEntryReleaseTime();
     test_context_->test_config_client()->SetNow(base::Time::UnixEpoch());
   }
 
@@ -82,6 +107,18 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
             params.Pass(), GetBackoffPolicy(), request_options_.get(),
             test_context_->mutable_config_values(),
             test_context_->io_data()->config()));
+  }
+
+  void ResetBackoffEntryReleaseTime() {
+    config_client()->SetCustomReleaseTime(base::TimeTicks::UnixEpoch());
+  }
+
+  void VerifyRemoteSuccess() {
+    EXPECT_EQ(base::TimeDelta::FromMinutes(1), config_client()->GetDelay());
+    EXPECT_EQ(kSuccessOrigin, configurator()->origin());
+    EXPECT_EQ(kSuccessFallback, configurator()->fallback_origin());
+    EXPECT_TRUE(configurator()->ssl_origin().empty());
+    EXPECT_EQ(kSuccessSessionKey, request_options()->GetSecureSession());
   }
 
   DataReductionProxyParams* params() {
@@ -104,7 +141,14 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     test_context_->RunUntilIdle();
   }
 
+  net::MockClientSocketFactory* mock_socket_factory() {
+    return &mock_socket_factory_;
+  }
+
  private:
+  net::TestURLRequestContext context_;
+  net::MockClientSocketFactory mock_socket_factory_;
+
   scoped_ptr<DataReductionProxyTestContext> test_context_;
   scoped_ptr<DataReductionProxyRequestOptions> request_options_;
 };
@@ -118,6 +162,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest, TestConstructStaticResponse) {
 }
 
 TEST_F(DataReductionProxyConfigServiceClientTest, SuccessfulLoop) {
+  // Use a local/static config.
+  config_client()->SetConfigServiceURL(GURL());
   RequestOptionsPopulator populator(
       base::Time::UnixEpoch() + base::TimeDelta::FromDays(1),
       base::TimeDelta::FromDays(1));
@@ -148,6 +194,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest, SuccessfulLoop) {
 }
 
 TEST_F(DataReductionProxyConfigServiceClientTest, SuccessfulLoopShortDuration) {
+  // Use a local/static config.
+  config_client()->SetConfigServiceURL(GURL());
   RequestOptionsPopulator populator(
       base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1),
       base::TimeDelta::FromSeconds(1));
@@ -168,6 +216,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest, SuccessfulLoopShortDuration) {
 }
 
 TEST_F(DataReductionProxyConfigServiceClientTest, EnsureBackoff) {
+  // Use a local/static config.
+  config_client()->SetConfigServiceURL(GURL());
   SetDataReductionProxyEnabled(true);
   EXPECT_TRUE(configurator()->origin().empty());
   EXPECT_TRUE(configurator()->fallback_origin().empty());
@@ -188,6 +238,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest, EnsureBackoff) {
 }
 
 TEST_F(DataReductionProxyConfigServiceClientTest, ConfigDisabled) {
+  // Use a local/static config.
+  config_client()->SetConfigServiceURL(GURL());
   RequestOptionsPopulator populator(
       base::Time::UnixEpoch() + base::TimeDelta::FromDays(1),
       base::TimeDelta::FromDays(1));
@@ -204,6 +256,135 @@ TEST_F(DataReductionProxyConfigServiceClientTest, ConfigDisabled) {
   EXPECT_TRUE(configurator()->fallback_origin().empty());
   EXPECT_TRUE(configurator()->ssl_origin().empty());
   EXPECT_EQ(base::TimeDelta::FromDays(1), config_client()->GetDelay());
+}
+
+TEST_F(DataReductionProxyConfigServiceClientTest, GetConfigServiceURL) {
+  const struct {
+    std::string flag_value;
+    GURL expected;
+  } tests[] = {
+      {
+       "", GURL(),
+      },
+      {
+       "http://configservice.chrome-test.com",
+       GURL("http://configservice.chrome-test.com"),
+      },
+  };
+
+  for (const auto& test : tests) {
+    // Reset all flags.
+    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kDataReductionProxyConfigURL, test.flag_value);
+    EXPECT_EQ(test.expected,
+              DataReductionProxyConfigServiceClient::GetConfigServiceURL(
+                  *base::CommandLine::ForCurrentProcess()));
+  }
+}
+
+TEST_F(DataReductionProxyConfigServiceClientTest, RemoteConfigSuccess) {
+  net::MockRead mock_reads[] = {
+      net::MockRead("HTTP/1.1 200 OK\r\n\r\n"),
+      net::MockRead(kSuccessResponse),
+      net::MockRead(net::SYNCHRONOUS, net::OK),
+  };
+  net::StaticSocketDataProvider socket_data_provider(
+      mock_reads, arraysize(mock_reads), nullptr, 0);
+  mock_socket_factory()->AddSocketDataProvider(&socket_data_provider);
+  config_client()->SetConfigServiceURL(GURL("http://configservice.com"));
+  SetDataReductionProxyEnabled(true);
+  EXPECT_TRUE(configurator()->origin().empty());
+  EXPECT_TRUE(configurator()->fallback_origin().empty());
+  EXPECT_TRUE(configurator()->ssl_origin().empty());
+  EXPECT_CALL(*request_options(), PopulateConfigResponse(testing::_)).Times(0);
+  config_client()->RetrieveConfig();
+  RunUntilIdle();
+  VerifyRemoteSuccess();
+}
+
+TEST_F(DataReductionProxyConfigServiceClientTest,
+       RemoteConfigSuccessAfterFailure) {
+  net::MockRead mock_reads_array[][3] = {
+      {
+       // Failure due to 404 error.
+       net::MockRead("HTTP/1.1 404 Not found\r\n\r\n"),
+       net::MockRead(""),
+       net::MockRead(net::SYNCHRONOUS, net::OK),
+      },
+      {
+       // Success.
+       net::MockRead("HTTP/1.1 200 OK\r\n\r\n"),
+       net::MockRead(kSuccessResponse),
+       net::MockRead(net::SYNCHRONOUS, net::OK),
+      },
+  };
+
+  ScopedVector<net::SocketDataProvider> socket_data_providers;
+  for (net::MockRead* mock_reads : mock_reads_array) {
+    socket_data_providers.push_back(
+        new net::StaticSocketDataProvider(mock_reads, 3, nullptr, 0));
+    mock_socket_factory()->AddSocketDataProvider(socket_data_providers.back());
+  }
+
+  config_client()->SetConfigServiceURL(GURL("http://configservice.com"));
+  SetDataReductionProxyEnabled(true);
+  EXPECT_TRUE(configurator()->origin().empty());
+  EXPECT_TRUE(configurator()->fallback_origin().empty());
+  EXPECT_TRUE(configurator()->ssl_origin().empty());
+  EXPECT_CALL(*request_options(), PopulateConfigResponse(testing::_)).Times(0);
+  config_client()->RetrieveConfig();
+  RunUntilIdle();
+  EXPECT_EQ(base::TimeDelta::FromSeconds(20), config_client()->GetDelay());
+  EXPECT_TRUE(configurator()->origin().empty());
+  EXPECT_TRUE(configurator()->fallback_origin().empty());
+  EXPECT_TRUE(configurator()->ssl_origin().empty());
+  EXPECT_TRUE(request_options()->GetSecureSession().empty());
+  config_client()->RetrieveConfig();
+  RunUntilIdle();
+  VerifyRemoteSuccess();
+}
+
+TEST_F(DataReductionProxyConfigServiceClientTest, OnIPAddressChange) {
+  config_client()->SetConfigServiceURL(GURL("http://configservice.com"));
+  SetDataReductionProxyEnabled(true);
+  config_client()->RetrieveConfig();
+  EXPECT_CALL(*request_options(), PopulateConfigResponse(testing::_)).Times(0);
+
+  static const int kFailureCount = 5;
+
+  net::MockRead failure_reads[] = {
+      net::MockRead("HTTP/1.1 404 Not found\r\n\r\n"),
+      net::MockRead(""),
+      net::MockRead(net::SYNCHRONOUS, net::OK),
+  };
+
+  ScopedVector<net::SocketDataProvider> socket_data_providers;
+  for (int i = 0; i < kFailureCount; ++i) {
+    socket_data_providers.push_back(
+        new net::StaticSocketDataProvider(failure_reads, 3, nullptr, 0));
+    mock_socket_factory()->AddSocketDataProvider(socket_data_providers.back());
+    config_client()->RetrieveConfig();
+    RunUntilIdle();
+  }
+
+  EXPECT_EQ(base::TimeDelta::FromSeconds(320), config_client()->GetDelay());
+  EXPECT_EQ(kFailureCount, config_client()->GetBackoffErrorCount());
+  config_client()->OnIPAddressChanged();
+  EXPECT_EQ(0, config_client()->GetBackoffErrorCount());
+  ResetBackoffEntryReleaseTime();
+
+  net::MockRead success_reads[] = {
+      net::MockRead("HTTP/1.1 200 OK\r\n\r\n"),
+      net::MockRead(kSuccessResponse),
+      net::MockRead(net::SYNCHRONOUS, net::OK),
+  };
+  net::StaticSocketDataProvider socket_data_provider(
+      success_reads, arraysize(success_reads), nullptr, 0);
+  mock_socket_factory()->AddSocketDataProvider(&socket_data_provider);
+  config_client()->RetrieveConfig();
+  RunUntilIdle();
+  VerifyRemoteSuccess();
 }
 
 }  // namespace data_reduction_proxy

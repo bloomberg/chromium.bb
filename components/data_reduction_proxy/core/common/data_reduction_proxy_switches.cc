@@ -74,5 +74,8 @@ const char kClearDataReductionProxyDataSavings[] =
 const char kEnableDataReductionProxyConfigClient[] =
     "enable-data-reduction-proxy-config-client";
 
+// The URL from which to retrieve the Data Reduction Proxy configuration.
+const char kDataReductionProxyConfigURL[] = "data-reduction-proxy-config-url";
+
 }  // namespace switches
 }  // namespace data_reduction_proxy

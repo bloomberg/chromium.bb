@@ -187,7 +187,7 @@ void DataReductionProxyIOData::InitializeOnIOThread() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   config_->InitializeOnIOThread(basic_url_request_context_getter_.get());
   if (config_client_.get())
-    config_client_->RetrieveConfig();
+    config_client_->InitializeOnIOThread(url_request_context_getter_);
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DataReductionProxyService::SetIOData,
@@ -199,6 +199,12 @@ bool DataReductionProxyIOData::IsEnabled() const {
   return enabled_.GetValue() ||
          base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kEnableDataReductionProxy);
+}
+
+void DataReductionProxyIOData::RetrieveConfig() {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  if (config_client_)
+    config_client_->RetrieveConfig();
 }
 
 scoped_ptr<net::URLRequestInterceptor>

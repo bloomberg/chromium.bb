@@ -81,6 +81,7 @@ class DataReductionProxyService : public base::NonThreadSafe {
   virtual void SetProxyPrefs(bool enabled,
                              bool alternative_enabled,
                              bool at_startup);
+  void RetrieveConfig();
 
   // Methods for adding/removing observers on |this|.
   void AddObserver(DataReductionProxyServiceObserver* observer);

@@ -83,6 +83,13 @@ void DataReductionProxyService::SetProxyPrefs(bool enabled,
                  io_data_, enabled, alternative_enabled, at_startup));
 }
 
+void DataReductionProxyService::RetrieveConfig() {
+  DCHECK(CalledOnValidThread());
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DataReductionProxyIOData::RetrieveConfig, io_data_));
+}
+
 void DataReductionProxyService::AddObserver(
     DataReductionProxyServiceObserver* observer) {
   DCHECK(CalledOnValidThread());

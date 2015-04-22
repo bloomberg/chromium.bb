@@ -60,6 +60,8 @@ class DataReductionProxyIOData {
   void SetDataReductionProxyService(
       base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service);
 
+  void RetrieveConfig();
+
   // Creates an interceptor suitable for following the Data Reduction Proxy
   // bypass protocol.
   scoped_ptr<net::URLRequestInterceptor> CreateInterceptor();
@@ -104,6 +106,10 @@ class DataReductionProxyIOData {
 
   DataReductionProxyRequestOptions* request_options() const {
     return request_options_.get();
+  }
+
+  DataReductionProxyConfigServiceClient* config_client() const {
+    return config_client_.get();
   }
 
   net::ProxyDelegate* proxy_delegate() const {

@@ -35,6 +35,8 @@ const char kTestKey2[] = "test-key2";
 const char kExpectedCredentials2[] = "c911fdb402f578787562cf7f00eda972";
 const char kExpectedSession2[] = "0-1633771873-1633771873-1633771873";
 const char kDataReductionProxyKey[] = "12345";
+
+const char kSecureSession[] = "TestSecureSessionKey";
 }  // namespace
 
 
@@ -78,6 +80,7 @@ const char kClientStr[] = "";
 
 void SetHeaderExpectations(const std::string& session,
                            const std::string& credentials,
+                           const std::string& secure_session,
                            const std::string& client,
                            const std::string& build,
                            const std::string& patch,
@@ -92,6 +95,10 @@ void SetHeaderExpectations(const std::string& session,
   if (!credentials.empty()) {
     expected_options.push_back(
         std::string(kCredentialsHeaderOption) + "=" + credentials);
+  }
+  if (!secure_session.empty()) {
+    expected_options.push_back(std::string(kSecureSessionHeaderOption) + "=" +
+                               secure_session);
   }
   if (!client.empty()) {
     expected_options.push_back(
@@ -182,15 +189,17 @@ TEST_F(DataReductionProxyRequestOptionsTest, AuthHashForSalt) {
 
 TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationOnIOThread) {
   std::string expected_header;
-  SetHeaderExpectations(kExpectedSession2, kExpectedCredentials2, kClientStr,
-                        kExpectedBuild, kExpectedPatch, std::string(),
-                        std::vector<std::string>(), &expected_header);
+  SetHeaderExpectations(kExpectedSession2, kExpectedCredentials2, std::string(),
+                        kClientStr, kExpectedBuild, kExpectedPatch,
+                        std::string(), std::vector<std::string>(),
+                        &expected_header);
 
   std::string expected_header2;
   SetHeaderExpectations("86401-1633771873-1633771873-1633771873",
-                        "d7c1c34ef6b90303b01c48a6c1db6419", kClientStr,
-                        kExpectedBuild, kExpectedPatch, std::string(),
-                        std::vector<std::string>(), &expected_header2);
+                        "d7c1c34ef6b90303b01c48a6c1db6419", std::string(),
+                        kClientStr, kExpectedBuild, kExpectedPatch,
+                        std::string(), std::vector<std::string>(),
+                        &expected_header2);
 
   CreateRequestOptions(kVersion);
   test_context_->RunUntilIdle();
@@ -233,9 +242,10 @@ TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationOnIOThread) {
 
 TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationIgnoresEmptyKey) {
   std::string expected_header;
-  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, kClientStr,
-                        kExpectedBuild, kExpectedPatch, std::string(),
-                        std::vector<std::string>(), &expected_header);
+  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
+                        kClientStr, kExpectedBuild, kExpectedPatch,
+                        std::string(), std::vector<std::string>(),
+                        &expected_header);
   CreateRequestOptions(kVersion);
   VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
 
@@ -247,8 +257,8 @@ TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationIgnoresEmptyKey) {
 
 TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationBogusVersion) {
   std::string expected_header;
-  SetHeaderExpectations(kExpectedSession2, kExpectedCredentials2, kClientStr,
-                        std::string(), std::string(), std::string(),
+  SetHeaderExpectations(kExpectedSession2, kExpectedCredentials2, std::string(),
+                        kClientStr, std::string(), std::string(), std::string(),
                         std::vector<std::string>(), &expected_header);
 
   CreateRequestOptions(kBogusVersion);
@@ -260,8 +270,8 @@ TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationBogusVersion) {
 
 TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationLoFi) {
   std::string expected_header;
-  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, kClientStr,
-                        std::string(), std::string(), "low",
+  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
+                        kClientStr, std::string(), std::string(), "low",
                         std::vector<std::string>(), &expected_header);
 
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -277,11 +287,22 @@ TEST_F(DataReductionProxyRequestOptionsTest, LoFiOn) {
       data_reduction_proxy::switches::kEnableDataReductionProxyLoFi);
 
   std::string expected_header;
-  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, kClientStr,
-                        std::string(), std::string(), "low",
+  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
+                        kClientStr, std::string(), std::string(), "low",
                         std::vector<std::string>(), &expected_header);
 
   CreateRequestOptions(kBogusVersion);
+  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+}
+
+TEST_F(DataReductionProxyRequestOptionsTest, SecureSession) {
+  std::string expected_header;
+  SetHeaderExpectations(std::string(), std::string(), kSecureSession,
+                        kClientStr, std::string(), std::string(), std::string(),
+                        std::vector<std::string>(), &expected_header);
+
+  CreateRequestOptions(kBogusVersion);
+  request_options()->SetSecureSession(kSecureSession);
   VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
 }
 
@@ -293,8 +314,8 @@ TEST_F(DataReductionProxyRequestOptionsTest, ParseExperiments) {
   expected_experiments.push_back("staging");
   expected_experiments.push_back("\"foo,bar\"");
   std::string expected_header;
-  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, kClientStr,
-                        std::string(), std::string(), std::string(),
+  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
+                        kClientStr, std::string(), std::string(), std::string(),
                         expected_experiments, &expected_header);
 
   CreateRequestOptions(kBogusVersion);

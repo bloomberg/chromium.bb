@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/single_thread_task_runner.h"
@@ -40,6 +42,7 @@ std::string FormatOption(const std::string& name, const std::string& value) {
 
 const char kSessionHeaderOption[] = "ps";
 const char kCredentialsHeaderOption[] = "sid";
+const char kSecureSessionHeaderOption[] = "s";
 const char kBuildNumberHeaderOption[] = "b";
 const char kPatchNumberHeaderOption[] = "p";
 const char kClientHeaderOption[] = "c";
@@ -300,6 +303,19 @@ void DataReductionProxyRequestOptions::SetCredentials(
   DCHECK(thread_checker_.CalledOnValidThread());
   session_ = session;
   credentials_ = credentials;
+  secure_session_.clear();
+  // Force skipping of credential regeneration. It should be handled by the
+  // caller.
+  use_assigned_credentials_ = true;
+  RegenerateRequestHeaderValue();
+}
+
+void DataReductionProxyRequestOptions::SetSecureSession(
+    const std::string& secure_session) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  session_.clear();
+  credentials_.clear();
+  secure_session_ = secure_session;
   // Force skipping of credential regeneration. It should be handled by the
   // caller.
   use_assigned_credentials_ = true;
@@ -326,6 +342,10 @@ std::string DataReductionProxyRequestOptions::GetDefaultKey() const {
   return key;
 }
 
+const std::string& DataReductionProxyRequestOptions::GetSecureSession() const {
+  return secure_session_;
+}
+
 void DataReductionProxyRequestOptions::MaybeAddRequestHeaderImpl(
     const net::HostPortPair& proxy_server,
     bool expect_ssl,
@@ -341,18 +361,27 @@ void DataReductionProxyRequestOptions::MaybeAddRequestHeaderImpl(
 }
 
 void DataReductionProxyRequestOptions::RegenerateRequestHeaderValue() {
-  header_value_ = FormatOption(kSessionHeaderOption, session_)
-                + ", " + FormatOption(kCredentialsHeaderOption, credentials_)
-                + (client_.empty() ?
-                       "" : ", " + FormatOption(kClientHeaderOption, client_))
-                + (build_.empty() || patch_.empty() ?
-                       "" :
-                       ", " + FormatOption(kBuildNumberHeaderOption, build_)
-                       + ", " + FormatOption(kPatchNumberHeaderOption, patch_))
-                + (lofi_.empty() ?
-                       "" : ", " + FormatOption(kLoFiHeaderOption, lofi_));
+  std::vector<std::string> headers;
+  if (!session_.empty())
+    headers.push_back(FormatOption(kSessionHeaderOption, session_));
+  if (!credentials_.empty())
+    headers.push_back(FormatOption(kCredentialsHeaderOption, credentials_));
+  if (!secure_session_.empty()) {
+    headers.push_back(
+        FormatOption(kSecureSessionHeaderOption, secure_session_));
+  }
+  if (!client_.empty())
+    headers.push_back(FormatOption(kClientHeaderOption, client_));
+  if (!build_.empty() && !patch_.empty()) {
+    headers.push_back(FormatOption(kBuildNumberHeaderOption, build_));
+    headers.push_back(FormatOption(kPatchNumberHeaderOption, patch_));
+  }
+  if (!lofi_.empty())
+    headers.push_back(FormatOption(kLoFiHeaderOption, lofi_));
   for (const auto& experiment : experiments_)
-    header_value_ += ", " + FormatOption(kExperimentsOption, experiment);
+    headers.push_back(FormatOption(kExperimentsOption, experiment));
+
+  header_value_ = JoinString(headers, ", ");
 }
 
 }  // namespace data_reduction_proxy

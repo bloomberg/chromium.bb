@@ -23,6 +23,7 @@
 #include "net/url_request/url_request_intercepting_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -71,11 +72,16 @@ void TestDataReductionProxyRequestOptions::set_offset(
   now_offset_ = now_offset;
 }
 
+const std::string& TestDataReductionProxyRequestOptions::GetSecureSession()
+    const {
+  return DataReductionProxyRequestOptions::GetSecureSession();
+}
+
 MockDataReductionProxyRequestOptions::MockDataReductionProxyRequestOptions(
     Client client,
     const std::string& version,
     DataReductionProxyConfig* config)
-    : DataReductionProxyRequestOptions(client, version, config) {
+    : TestDataReductionProxyRequestOptions(client, version, config) {
 }
 
 MockDataReductionProxyRequestOptions::~MockDataReductionProxyRequestOptions() {
@@ -111,6 +117,16 @@ void TestDataReductionProxyConfigServiceClient::SetCustomReleaseTime(
 
 base::TimeDelta TestDataReductionProxyConfigServiceClient::GetDelay() const {
   return config_refresh_timer_.GetCurrentDelay();
+}
+
+int TestDataReductionProxyConfigServiceClient::GetBackoffErrorCount() {
+  return test_backoff_entry_.failure_count();
+}
+
+void TestDataReductionProxyConfigServiceClient::SetConfigServiceURL(
+    const GURL& service_url) {
+  config_service_url_ = service_url;
+  use_local_config_ = !config_service_url_.is_valid();
 }
 
 base::Time TestDataReductionProxyConfigServiceClient::Now() {
@@ -426,6 +442,9 @@ void DataReductionProxyTestContext::InitSettingsWithoutCheck() {
       CreateDataReductionProxyServiceInternal());
   io_data_->SetDataReductionProxyService(
       settings_->data_reduction_proxy_service()->GetWeakPtr());
+  if (io_data_->config_client())
+    io_data_->config_client()->InitializeOnIOThread(
+        request_context_getter_.get());
   settings_->data_reduction_proxy_service()->SetIOData(io_data_->GetWeakPtr());
 }
 

@@ -29,6 +29,7 @@ namespace data_reduction_proxy {
 
 extern const char kSessionHeaderOption[];
 extern const char kCredentialsHeaderOption[];
+extern const char kSecureSessionHeaderOption[];
 extern const char kBuildNumberHeaderOption[];
 extern const char kPatchNumberHeaderOption[];
 extern const char kClientHeaderOption[];
@@ -126,6 +127,9 @@ class DataReductionProxyRequestOptions {
   void SetCredentials(const std::string& session,
                       const std::string& credentials);
 
+  // Sets the credentials for sending to the Data Reduction Proxy.
+  void SetSecureSession(const std::string& secure_session);
+
  protected:
   void SetHeader(net::HttpRequestHeaders* headers);
 
@@ -145,6 +149,9 @@ class DataReductionProxyRequestOptions {
   DataReductionProxyRequestOptions(Client client,
                                    const std::string& version,
                                    DataReductionProxyConfig* config);
+
+  // Visible for testing.
+  virtual const std::string& GetSecureSession() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyRequestOptionsTest,
@@ -201,6 +208,7 @@ class DataReductionProxyRequestOptions {
   std::string version_;
   std::string session_;
   std::string credentials_;
+  std::string secure_session_;
   std::string build_;
   std::string patch_;
   std::string lofi_;

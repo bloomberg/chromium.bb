@@ -25,6 +25,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+class GURL;
 class TestingPrefServiceSimple;
 
 namespace base {
@@ -67,13 +68,16 @@ class TestDataReductionProxyRequestOptions
   // Time after the unix epoch that Now() reports.
   void set_offset(const base::TimeDelta& now_offset);
 
+  // Visible for testing.
+  const std::string& GetSecureSession() const override;
+
  private:
   base::TimeDelta now_offset_;
 };
 
 // Mock version of |DataReductionProxyRequestOptions|.
 class MockDataReductionProxyRequestOptions
-    : public DataReductionProxyRequestOptions {
+    : public TestDataReductionProxyRequestOptions {
  public:
   MockDataReductionProxyRequestOptions(Client client,
                                        const std::string& version,
@@ -103,6 +107,10 @@ class TestDataReductionProxyConfigServiceClient
   void SetCustomReleaseTime(const base::TimeTicks& release_time);
 
   base::TimeDelta GetDelay() const;
+
+  int GetBackoffErrorCount();
+
+  void SetConfigServiceURL(const GURL& service_url);
 
  protected:
   // Overrides of DataReductionProxyConfigServiceClient
