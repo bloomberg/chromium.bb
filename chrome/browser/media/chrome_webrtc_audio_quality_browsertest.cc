@@ -482,7 +482,7 @@ base::FilePath CreateTemporaryWaveFile() {
 
 void DeleteFileUnlessTestFailed(const base::FilePath& path, bool recursive) {
   if (::testing::Test::HasFailure())
-    printf("Test failed; keeping recording(s) at\n\t%s.\n",
+    printf("Test failed; keeping recording(s) at\n\t%" PRFilePath ".\n",
            path.value().c_str());
   else
     EXPECT_TRUE(base::DeleteFile(path, recursive));
