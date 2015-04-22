@@ -361,7 +361,6 @@ crbug.com/472812 virtual/slimmingpaint/fast/js/getOwnPropertyDescriptor.html [ S
 crbug.com/472812 virtual/slimmingpaint/fast/js/mozilla/strict/15.3.5.1.html [ Skip ]
 crbug.com/472812 virtual/slimmingpaint/fast/js/mozilla/strict/assign-to-callee-name.html [ Skip ]
 crbug.com/472812 virtual/slimmingpaint/fast/js/reserved-words-as-property.html [ Skip ]
-crbug.com/472822 virtual/slimmingpaint/fast/text-autosizing/first-line-scale-factor.html [ Skip ]
 crbug.com/382491 virtual/slimmingpaint/fast/transforms/diamond.html [ Skip ]
 crbug.com/382491 virtual/slimmingpaint/fast/transforms/rotated-transform-affects-scrolling-1.html [ Skip ]
 crbug.com/382491 virtual/slimmingpaint/fast/transforms/rotated-transform-affects-scrolling-2.html [ Skip ]
@@ -971,6 +970,7 @@ crbug.com/343892 [ Linux Mac ] fast/workers/shared-worker-name.html [ Pass Crash
 crbug.com/368560 [ Win ] http/tests/svg/image-fetch-fail.svg [ Timeout Pass ]
 
 crbug.com/253763 fast/text-autosizing/first-line-scale-factor.html [ ImageOnlyFailure ]
+crbug.com/253763 virtual/slimmingpaint/fast/text-autosizing/first-line-scale-factor.html [ ImageOnlyFailure ]
 
 crbug.com/374643 [ Mac ] fast/text-autosizing/supercluster-multiple-layout.html [ Failure ]
 crbug.com/374643 [ Mac ] fast/text-autosizing/tables/table-with-inline-block.html [ Failure ]
