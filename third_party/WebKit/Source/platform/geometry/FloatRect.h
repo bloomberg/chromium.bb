@@ -166,11 +166,6 @@ public:
 
     FloatRect transposedRect() const { return FloatRect(m_location.transposedPoint(), m_size.transposedSize()); }
 
-    // Re-initializes this rectangle to fit the sets of passed points.
-    void fitToPoints(const FloatPoint& p0, const FloatPoint& p1);
-    void fitToPoints(const FloatPoint& p0, const FloatPoint& p1, const FloatPoint& p2);
-    void fitToPoints(const FloatPoint& p0, const FloatPoint& p1, const FloatPoint& p2, const FloatPoint& p3);
-
 #if OS(MACOSX)
     FloatRect(const CGRect&);
     operator CGRect() const;
