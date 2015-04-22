@@ -855,8 +855,10 @@ void NativeAppWindowCocoa::WindowDidDeminiaturize() {
 }
 
 void NativeAppWindowCocoa::WindowDidEnterFullscreen() {
-  is_fullscreen_ = true;
-  app_window_->OSFullscreen();
+  if (!is_fullscreen_) {
+    is_fullscreen_ = true;
+    app_window_->OSFullscreen();
+  }
   app_window_->OnNativeWindowChanged();
 }
 
