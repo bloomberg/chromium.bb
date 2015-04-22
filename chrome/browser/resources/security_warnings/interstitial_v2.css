@@ -338,10 +338,10 @@ input[type=checkbox]:checked ~ .checkbox::before {
        (min-height: 401px) and (orientation:portrait),
        (min-width: 421px) and (max-width: 736px) and (min-height: 240px) and
        (max-height: 420px) and (orientation:landscape) {
-
   body .nav-wrapper {
     background: #f7f7f7;
     bottom: 0;
+    box-shadow: 0 -22px 40px rgb(247, 247, 247);
     left: 0;
     margin: 0;
     max-width: 736px;
@@ -351,10 +351,16 @@ input[type=checkbox]:checked ~ .checkbox::before {
 
   body.safe-browsing .nav-wrapper {
     background: rgb(206, 52, 38);
+    box-shadow: 0 -22px 40px rgb(206, 52, 38);
   }
 
   .interstitial-wrapper {
     max-width: 736px;
+  }
+
+  #details,
+  #main-content {
+    padding-bottom: 30px;
   }
 }
 
@@ -637,6 +643,7 @@ input[type=checkbox]:checked ~ .checkbox::before {
   .extended-reporting-has-checkbox #main-content {
     flex: 1 1 auto;
     order: 0;
+    padding-bottom: 0;
   }
 
   .extended-reporting-has-checkbox #extended-reporting-opt-in {
@@ -651,5 +658,12 @@ input[type=checkbox]:checked ~ .checkbox::before {
     padding-right: 0;
     position: relative;
     width: 100%;
+  }
+}
+
+@media (max-width: 239px) and (orientation: portrait) {
+  .nav-wrapper {
+    padding-left: 0;
+    padding-right: 0;
   }
 }
