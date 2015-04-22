@@ -115,39 +115,6 @@ MarkupAccumulator::~MarkupAccumulator()
 {
 }
 
-String MarkupAccumulator::serializeNodes(Node& targetNode, EChildrenOnly childrenOnly)
-{
-    Namespaces* namespaces = nullptr;
-    Namespaces namespaceHash;
-    if (!serializeAsHTMLDocument(targetNode)) {
-        // Add pre-bound namespaces for XML fragments.
-        namespaceHash.set(xmlAtom, XMLNames::xmlNamespaceURI);
-        namespaces = &namespaceHash;
-    }
-
-    serializeNodesWithNamespaces(targetNode, childrenOnly, namespaces);
-    return m_markup.toString();
-}
-
-void MarkupAccumulator::serializeNodesWithNamespaces(Node& targetNode, EChildrenOnly childrenOnly, const Namespaces* namespaces)
-{
-    Namespaces namespaceHash;
-    if (namespaces)
-        namespaceHash = *namespaces;
-
-    if (!childrenOnly)
-        appendStartTag(targetNode, &namespaceHash);
-
-    if (!(serializeAsHTMLDocument(targetNode) && elementCannotHaveEndTag(targetNode))) {
-        Node* current = isHTMLTemplateElement(targetNode) ? toHTMLTemplateElement(targetNode).content()->firstChild() : targetNode.firstChild();
-        for ( ; current; current = current->nextSibling())
-            serializeNodesWithNamespaces(*current, IncludeNode, &namespaceHash);
-    }
-
-    if (!childrenOnly && targetNode.isElementNode())
-        appendEndTag(toElement(targetNode));
-}
-
 String MarkupAccumulator::resolveURLIfNeeded(const Element& element, const String& urlString) const
 {
     switch (m_resolveURLsMethod) {
@@ -210,6 +177,18 @@ void MarkupAccumulator::appendStartMarkup(StringBuilder& result, Node& node, Nam
         ASSERT_NOT_REACHED();
         break;
     }
+}
+
+static bool elementCannotHaveEndTag(const Node& node)
+{
+    if (!node.isHTMLElement())
+        return false;
+
+    // FIXME: ieForbidsInsertHTML may not be the right function to call here
+    // ieForbidsInsertHTML is used to disallow setting innerHTML/outerHTML
+    // or createContextualFragment.  It does not necessarily align with
+    // which elements should be serialized w/o end tags.
+    return toHTMLElement(node).ieForbidsInsertHTML();
 }
 
 void MarkupAccumulator::appendEndMarkup(StringBuilder& result, const Element& element)
@@ -533,23 +512,48 @@ bool MarkupAccumulator::shouldSelfClose(const Element& element) const
     return true;
 }
 
-bool MarkupAccumulator::elementCannotHaveEndTag(const Node& node) const
-{
-    if (!node.isHTMLElement())
-        return false;
-
-    // FIXME: ieForbidsInsertHTML may not be the right function to call here
-    // ieForbidsInsertHTML is used to disallow setting innerHTML/outerHTML
-    // or createContextualFragment.  It does not necessarily align with
-    // which elements should be serialized w/o end tags.
-    return toHTMLElement(node).ieForbidsInsertHTML();
-}
-
 bool MarkupAccumulator::serializeAsHTMLDocument(const Node& node) const
 {
     if (m_serializationType == ForcedXML)
         return false;
     return node.document().isHTMLDocument();
 }
+
+template<typename Strategy>
+static void serializeNodesWithNamespaces(MarkupAccumulator& accumulator, Node& targetNode, EChildrenOnly childrenOnly, const Namespaces* namespaces)
+{
+    Namespaces namespaceHash;
+    if (namespaces)
+        namespaceHash = *namespaces;
+
+    if (!childrenOnly)
+        accumulator.appendStartTag(targetNode, &namespaceHash);
+
+    if (!(accumulator.serializeAsHTMLDocument(targetNode) && elementCannotHaveEndTag(targetNode))) {
+        Node* current = isHTMLTemplateElement(targetNode) ? Strategy::firstChild(*toHTMLTemplateElement(targetNode).content()) : Strategy::firstChild(targetNode);
+        for ( ; current; current = Strategy::nextSibling(*current))
+            serializeNodesWithNamespaces<Strategy>(accumulator, *current, IncludeNode, &namespaceHash);
+    }
+
+    if (!childrenOnly && targetNode.isElementNode())
+        accumulator.appendEndTag(toElement(targetNode));
+}
+
+template<typename Strategy>
+String serializeNodes(MarkupAccumulator& accumulator, Node& targetNode, EChildrenOnly childrenOnly)
+{
+    Namespaces* namespaces = nullptr;
+    Namespaces namespaceHash;
+    if (!accumulator.serializeAsHTMLDocument(targetNode)) {
+        // Add pre-bound namespaces for XML fragments.
+        namespaceHash.set(xmlAtom, XMLNames::xmlNamespaceURI);
+        namespaces = &namespaceHash;
+    }
+
+    serializeNodesWithNamespaces<Strategy>(accumulator, targetNode, childrenOnly, namespaces);
+    return accumulator.toString();
+}
+
+template String serializeNodes<EditingStrategy>(MarkupAccumulator&, Node&, EChildrenOnly);
 
 }

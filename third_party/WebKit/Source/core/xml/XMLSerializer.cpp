@@ -30,7 +30,7 @@ String XMLSerializer::serializeToString(Node* root)
 {
     ASSERT(root);
     MarkupAccumulator accumulator(DoNotResolveURLs, ForcedXML);
-    return accumulator.serializeNodes(*root, IncludeNode);
+    return serializeNodes<EditingStrategy>(accumulator, *root, IncludeNode);
 }
 
 } // namespace blink

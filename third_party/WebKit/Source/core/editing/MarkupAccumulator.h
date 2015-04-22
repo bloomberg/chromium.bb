@@ -26,6 +26,7 @@
 #ifndef MarkupAccumulator_h
 #define MarkupAccumulator_h
 
+#include "core/editing/EditingStrategy.h"
 #include "core/editing/markup.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
@@ -72,8 +73,6 @@ public:
     MarkupAccumulator(EAbsoluteURLs, SerializationType = AsOwnerDocument);
     virtual ~MarkupAccumulator();
 
-    String serializeNodes(Node& targetNode, EChildrenOnly);
-
     void appendString(const String&);
     virtual void appendStartTag(Node&, Namespaces* = nullptr);
     virtual void appendEndTag(const Element&);
@@ -82,6 +81,9 @@ public:
 
     size_t length() const { return m_markup.length(); }
     void concatenateMarkup(StringBuilder&);
+
+    bool serializeAsHTMLDocument(const Node&) const;
+    String toString() { return m_markup.toString(); }
 
 protected:
     void appendAttributeValue(StringBuilder&, const String&, bool);
@@ -103,13 +105,10 @@ protected:
     bool shouldAddNamespaceAttribute(const Attribute&, const Element&) const;
     EntityMask entityMaskForText(const Text&) const;
     bool shouldSelfClose(const Element&) const;
-    bool elementCannotHaveEndTag(const Node&) const;
 
 private:
     String resolveURLIfNeeded(const Element&, const String&) const;
     void appendQuotedURLAttributeValue(StringBuilder&, const Element&, const Attribute&);
-    void serializeNodesWithNamespaces(Node& targetNode, EChildrenOnly, const Namespaces*);
-    bool serializeAsHTMLDocument(const Node&) const;
 
     // FIXME: |PageSerializer| uses |m_nodes| for collecting nodes in document
     // included into serialized text then extracts image, object, etc. The size
@@ -121,6 +120,11 @@ private:
     const EAbsoluteURLs m_resolveURLsMethod;
     SerializationType m_serializationType;
 };
+
+template<typename Strategy>
+String serializeNodes(MarkupAccumulator&, Node&, EChildrenOnly);
+
+extern template String serializeNodes<EditingStrategy>(MarkupAccumulator&, Node&, EChildrenOnly);
 
 }
 

@@ -376,7 +376,7 @@ String createMarkup(const Node* node, EChildrenOnly childrenOnly, EAbsoluteURLs 
         return "";
 
     MarkupAccumulator accumulator(shouldResolveURLs);
-    return accumulator.serializeNodes(const_cast<Node&>(*node), childrenOnly);
+    return serializeNodes<EditingStrategy>(accumulator, const_cast<Node&>(*node), childrenOnly);
 }
 
 static void fillContainerFromString(ContainerNode* paragraph, const String& string)

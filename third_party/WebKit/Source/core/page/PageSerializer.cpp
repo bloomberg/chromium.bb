@@ -235,7 +235,7 @@ void PageSerializer::serializeFrame(LocalFrame* frame)
 
     WillBeHeapVector<RawPtrWillBeMember<Node>> serializedNodes;
     SerializerMarkupAccumulator accumulator(this, document, &serializedNodes);
-    String text = accumulator.serializeNodes(document, IncludeNode);
+    String text = serializeNodes<EditingStrategy>(accumulator, document, IncludeNode);
     CString frameHTML = textEncoding.normalizeAndEncode(text, WTF::EntitiesForUnencodables);
     m_resources->append(SerializedResource(url, document.suggestedMIMEType(), SharedBuffer::create(frameHTML.data(), frameHTML.length())));
     m_resourceURLs.add(url);
