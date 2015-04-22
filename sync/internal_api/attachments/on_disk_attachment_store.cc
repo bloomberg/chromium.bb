@@ -132,6 +132,17 @@ bool DropReferenceInRecordMetadata(
   return component_removed;
 }
 
+bool AttachmentHasReferenceFromComponent(
+    const attachment_store_pb::RecordMetadata& record_metadata,
+    attachment_store_pb::RecordMetadata::Component proto_component) {
+  for (const auto& reference_component : record_metadata.component()) {
+    if (reference_component == proto_component) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 OnDiskAttachmentStore::OnDiskAttachmentStore(
@@ -153,6 +164,7 @@ void OnDiskAttachmentStore::Init(
 }
 
 void OnDiskAttachmentStore::Read(
+    AttachmentStore::Component component,
     const AttachmentIdList& ids,
     const AttachmentStore::ReadCallback& callback) {
   DCHECK(CalledOnValidThread());
@@ -164,15 +176,13 @@ void OnDiskAttachmentStore::Read(
 
   if (db_) {
     result_code = AttachmentStore::SUCCESS;
-    AttachmentIdList::const_iterator iter = ids.begin();
-    const AttachmentIdList::const_iterator end = ids.end();
-    for (; iter != end; ++iter) {
+    for (const auto& id : ids) {
       scoped_ptr<Attachment> attachment;
-      attachment = ReadSingleAttachment(*iter);
+      attachment = ReadSingleAttachment(id, component);
       if (attachment) {
-        result_map->insert(std::make_pair(*iter, *attachment));
+        result_map->insert(std::make_pair(id, *attachment));
       } else {
-        unavailable_attachments->push_back(*iter);
+        unavailable_attachments->push_back(id);
       }
     }
     result_code = unavailable_attachments->empty()
@@ -262,7 +272,8 @@ void OnDiskAttachmentStore::DropReference(
   PostCallback(base::Bind(callback, result_code));
 }
 
-void OnDiskAttachmentStore::ReadMetadata(
+void OnDiskAttachmentStore::ReadMetadataById(
+    AttachmentStore::Component component,
     const AttachmentIdList& ids,
     const AttachmentStore::ReadMetadataCallback& callback) {
   DCHECK(CalledOnValidThread());
@@ -272,21 +283,24 @@ void OnDiskAttachmentStore::ReadMetadata(
       new AttachmentMetadataList());
   if (db_) {
     result_code = AttachmentStore::SUCCESS;
-    // TODO(pavely): ReadMetadata should only return attachments with component
-    // reference similarly to ReadAllMetadata behavior.
     for (const auto& id : ids) {
       attachment_store_pb::RecordMetadata record_metadata;
-      if (ReadSingleRecordMetadata(id, &record_metadata)) {
-        metadata_list->push_back(MakeAttachmentMetadata(id, record_metadata));
-      } else {
+      if (!ReadSingleRecordMetadata(id, &record_metadata)) {
         result_code = AttachmentStore::UNSPECIFIED_ERROR;
+        continue;
       }
+      if (!AttachmentHasReferenceFromComponent(record_metadata,
+                                               ComponentToProto(component))) {
+        result_code = AttachmentStore::UNSPECIFIED_ERROR;
+        continue;
+      }
+      metadata_list->push_back(MakeAttachmentMetadata(id, record_metadata));
     }
   }
   PostCallback(base::Bind(callback, result_code, base::Passed(&metadata_list)));
 }
 
-void OnDiskAttachmentStore::ReadAllMetadata(
+void OnDiskAttachmentStore::ReadMetadata(
     AttachmentStore::Component component,
     const AttachmentStore::ReadMetadataCallback& callback) {
   DCHECK(CalledOnValidThread());
@@ -320,15 +334,8 @@ void OnDiskAttachmentStore::ReadAllMetadata(
         result_code = AttachmentStore::UNSPECIFIED_ERROR;
         continue;
       }
-      // Check if attachment has reference from component.
-      bool has_reference_from_component = false;
-      for (const auto& reference_component : record_metadata.component()) {
-        if (reference_component == proto_component) {
-          has_reference_from_component = true;
-          break;
-        }
-      }
-      if (has_reference_from_component)
+      DCHECK(record_metadata.component_size() > 0);
+      if (AttachmentHasReferenceFromComponent(record_metadata, proto_component))
         metadata_list->push_back(MakeAttachmentMetadata(id, record_metadata));
     }
 
@@ -393,12 +400,17 @@ AttachmentStore::Result OnDiskAttachmentStore::OpenOrCreate(
 }
 
 scoped_ptr<Attachment> OnDiskAttachmentStore::ReadSingleAttachment(
-    const AttachmentId& attachment_id) {
+    const AttachmentId& attachment_id,
+    AttachmentStore::Component component) {
   scoped_ptr<Attachment> attachment;
   attachment_store_pb::RecordMetadata record_metadata;
   if (!ReadSingleRecordMetadata(attachment_id, &record_metadata)) {
     return attachment.Pass();
   }
+  if (!AttachmentHasReferenceFromComponent(record_metadata,
+                                           ComponentToProto(component)))
+    return attachment.Pass();
+
   const std::string key = MakeDataKeyFromAttachmentId(attachment_id);
   std::string data_str;
   leveldb::Status status = db_->Get(
@@ -484,6 +496,7 @@ bool OnDiskAttachmentStore::ReadSingleRecordMetadata(
     DVLOG(1) << "RecordMetadata::ParseFromString failed";
     return false;
   }
+  DCHECK(record_metadata->component_size() > 0);
   return true;
 }
 

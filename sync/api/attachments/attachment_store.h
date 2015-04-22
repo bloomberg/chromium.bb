@@ -110,15 +110,15 @@ class SYNC_EXPORT AttachmentStore {
   // read metadata for all attachments specified in ids. If any of the
   // metadata entries do not exist or could not be read, |callback|'s Result
   // will be UNSPECIFIED_ERROR.
-  void ReadMetadata(const AttachmentIdList& ids,
-                    const ReadMetadataCallback& callback);
+  void ReadMetadataById(const AttachmentIdList& ids,
+                        const ReadMetadataCallback& callback);
 
   // Asynchronously reads metadata for all attachments with |component_|
   // reference in the store.
   //
   // |callback| will be invoked when finished. If any of the metadata entries
   // could not be read, |callback|'s Result will be UNSPECIFIED_ERROR.
-  void ReadAllMetadata(const ReadMetadataCallback& callback);
+  void ReadMetadata(const ReadMetadataCallback& callback);
 
   // Given current AttachmentStore (this) creates separate AttachmentStore that
   // will be used by sync components (AttachmentService). Resulting
@@ -152,6 +152,7 @@ class SYNC_EXPORT AttachmentStore {
                   Component component);
 
   const scoped_refptr<AttachmentStoreFrontend>& frontend() { return frontend_; }
+  Component component() const { return component_; }
 
  private:
   scoped_refptr<AttachmentStoreFrontend> frontend_;
@@ -174,6 +175,11 @@ class SYNC_EXPORT_PRIVATE AttachmentStoreForSync : public AttachmentStore {
   // Asynchronously adds reference from sync to attachments.
   void SetSyncReference(const AttachmentIdList& ids);
 
+  // Asynchronously adds reference from model type to attachments.
+  // Needed in GetOrDownloadAttachments when attachment is in local store but
+  // doesn't have model type reference.
+  void SetModelTypeReference(const AttachmentIdList& ids);
+
   // Asynchronously drops sync reference from attachments.
   void DropSyncReference(const AttachmentIdList& ids);
 
@@ -182,7 +188,7 @@ class SYNC_EXPORT_PRIVATE AttachmentStoreForSync : public AttachmentStore {
   //
   // |callback| will be invoked when finished. If any of the metadata entries
   // could not be read, |callback|'s Result will be UNSPECIFIED_ERROR.
-  void ReadSyncMetadata(const ReadMetadataCallback& callback);
+  void ReadMetadataForSync(const ReadMetadataCallback& callback);
 
  private:
   friend class AttachmentStore;

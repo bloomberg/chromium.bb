@@ -164,6 +164,10 @@ void AttachmentServiceImpl::GetOrDownloadAttachments(
   DCHECK(CalledOnValidThread());
   scoped_refptr<GetOrDownloadState> state(
       new GetOrDownloadState(attachment_ids, callback));
+  // SetModelTypeReference() makes attachments visible for model type.
+  // Needed when attachment doesn't have model type reference, but still
+  // available in local store.
+  attachment_store_->SetModelTypeReference(attachment_ids);
   attachment_store_->Read(attachment_ids,
                           base::Bind(&AttachmentServiceImpl::ReadDone,
                                      weak_ptr_factory_.GetWeakPtr(), state));

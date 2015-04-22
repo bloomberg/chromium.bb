@@ -37,7 +37,8 @@ class SYNC_EXPORT AttachmentStoreFrontend
 
   void Init(const AttachmentStore::InitCallback& callback);
 
-  void Read(const AttachmentIdList& ids,
+  void Read(AttachmentStore::Component component,
+            const AttachmentIdList& ids,
             const AttachmentStore::ReadCallback& callback);
 
   void Write(AttachmentStore::Component component,
@@ -49,11 +50,12 @@ class SYNC_EXPORT AttachmentStoreFrontend
                      const AttachmentIdList& ids,
                      const AttachmentStore::DropCallback& callback);
 
-  void ReadMetadata(const AttachmentIdList& ids,
-                    const AttachmentStore::ReadMetadataCallback& callback);
+  void ReadMetadataById(AttachmentStore::Component component,
+                        const AttachmentIdList& ids,
+                        const AttachmentStore::ReadMetadataCallback& callback);
 
-  void ReadAllMetadata(AttachmentStore::Component component,
-                       const AttachmentStore::ReadMetadataCallback& callback);
+  void ReadMetadata(AttachmentStore::Component component,
+                    const AttachmentStore::ReadMetadataCallback& callback);
 
  private:
   friend class base::RefCounted<AttachmentStoreFrontend>;

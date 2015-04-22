@@ -47,12 +47,14 @@ void AttachmentStoreFrontend::Init(
 }
 
 void AttachmentStoreFrontend::Read(
+    AttachmentStore::Component component,
     const AttachmentIdList& ids,
     const AttachmentStore::ReadCallback& callback) {
   DCHECK(CalledOnValidThread());
   backend_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AttachmentStoreBackend::Read,
-                            base::Unretained(backend_.get()), ids, callback));
+      FROM_HERE,
+      base::Bind(&AttachmentStoreBackend::Read,
+                 base::Unretained(backend_.get()), component, ids, callback));
 }
 
 void AttachmentStoreFrontend::Write(
@@ -85,22 +87,24 @@ void AttachmentStoreFrontend::DropReference(
                  base::Unretained(backend_.get()), component, ids, callback));
 }
 
-void AttachmentStoreFrontend::ReadMetadata(
+void AttachmentStoreFrontend::ReadMetadataById(
+    AttachmentStore::Component component,
     const AttachmentIdList& ids,
     const AttachmentStore::ReadMetadataCallback& callback) {
   DCHECK(CalledOnValidThread());
   backend_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AttachmentStoreBackend::ReadMetadata,
-                            base::Unretained(backend_.get()), ids, callback));
+      FROM_HERE,
+      base::Bind(&AttachmentStoreBackend::ReadMetadataById,
+                 base::Unretained(backend_.get()), component, ids, callback));
 }
 
-void AttachmentStoreFrontend::ReadAllMetadata(
+void AttachmentStoreFrontend::ReadMetadata(
     AttachmentStore::Component component,
     const AttachmentStore::ReadMetadataCallback& callback) {
   DCHECK(CalledOnValidThread());
   backend_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&AttachmentStoreBackend::ReadAllMetadata,
+      base::Bind(&AttachmentStoreBackend::ReadMetadata,
                  base::Unretained(backend_.get()), component, callback));
 }
 

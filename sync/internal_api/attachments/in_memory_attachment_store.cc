@@ -39,6 +39,7 @@ void InMemoryAttachmentStore::Init(
 }
 
 void InMemoryAttachmentStore::Read(
+    AttachmentStore::Component component,
     const AttachmentIdList& ids,
     const AttachmentStore::ReadCallback& callback) {
   DCHECK(CalledOnValidThread());
@@ -47,9 +48,10 @@ void InMemoryAttachmentStore::Read(
   scoped_ptr<AttachmentIdList> unavailable_attachments(new AttachmentIdList);
 
   for (const auto& id : ids) {
-    AttachmentEntryMap::iterator attachment_iter = attachments_.find(id);
-    if (attachment_iter != attachments_.end()) {
-      const Attachment& attachment = attachment_iter->second.attachment;
+    AttachmentEntryMap::iterator iter = attachments_.find(id);
+    if (iter != attachments_.end() &&
+        iter->second.components.count(component) > 0) {
+      const Attachment& attachment = iter->second.attachment;
       result_map->insert(std::make_pair(id, attachment));
     } else {
       unavailable_attachments->push_back(id);
@@ -104,7 +106,8 @@ void InMemoryAttachmentStore::DropReference(
   PostCallback(base::Bind(callback, result));
 }
 
-void InMemoryAttachmentStore::ReadMetadata(
+void InMemoryAttachmentStore::ReadMetadataById(
+    AttachmentStore::Component component,
     const AttachmentIdList& ids,
     const AttachmentStore::ReadMetadataCallback& callback) {
   DCHECK(CalledOnValidThread());
@@ -113,19 +116,22 @@ void InMemoryAttachmentStore::ReadMetadata(
       new AttachmentMetadataList());
 
   for (const auto& id : ids) {
-    // TODO(pavely): ReadMetadata should only return attachments with component
-    // reference similarly to ReadAllMetadata behavior.
-    AttachmentEntryMap::iterator attachments_iter = attachments_.find(id);
-    if (attachments_iter != attachments_.end()) {
-      AppendMetadata(metadata_list.get(), attachments_iter->second.attachment);
-    } else {
+    AttachmentEntryMap::iterator iter = attachments_.find(id);
+    if (iter == attachments_.end()) {
       result_code = AttachmentStore::UNSPECIFIED_ERROR;
+      continue;
     }
+    DCHECK(iter->second.components.size() > 0);
+    if (iter->second.components.count(component) == 0) {
+      result_code = AttachmentStore::UNSPECIFIED_ERROR;
+      continue;
+    }
+    AppendMetadata(metadata_list.get(), iter->second.attachment);
   }
   PostCallback(base::Bind(callback, result_code, base::Passed(&metadata_list)));
 }
 
-void InMemoryAttachmentStore::ReadAllMetadata(
+void InMemoryAttachmentStore::ReadMetadata(
     AttachmentStore::Component component,
     const AttachmentStore::ReadMetadataCallback& callback) {
   DCHECK(CalledOnValidThread());
@@ -135,6 +141,7 @@ void InMemoryAttachmentStore::ReadAllMetadata(
 
   for (AttachmentEntryMap::const_iterator iter = attachments_.begin();
        iter != attachments_.end(); ++iter) {
+    DCHECK(iter->second.components.size() > 0);
     if (iter->second.components.count(component) > 0) {
       AppendMetadata(metadata_list.get(), iter->second.attachment);
     }

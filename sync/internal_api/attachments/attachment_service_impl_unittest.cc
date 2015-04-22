@@ -33,7 +33,8 @@ class MockAttachmentStoreBackend
 
   void Init(const AttachmentStore::InitCallback& callback) override {}
 
-  void Read(const AttachmentIdList& ids,
+  void Read(AttachmentStore::Component component,
+            const AttachmentIdList& ids,
             const AttachmentStore::ReadCallback& callback) override {
     read_ids.push_back(ids);
     read_callbacks.push_back(callback);
@@ -48,7 +49,7 @@ class MockAttachmentStoreBackend
 
   void SetReference(AttachmentStore::Component component,
                     const AttachmentIdList& ids) override {
-    set_reference_ids.push_back(ids);
+    set_reference_ids.push_back(std::make_pair(component, ids));
   }
 
   void DropReference(AttachmentStore::Component component,
@@ -58,13 +59,14 @@ class MockAttachmentStoreBackend
     drop_ids.push_back(ids);
   }
 
-  void ReadMetadata(
+  void ReadMetadataById(
+      AttachmentStore::Component component,
       const AttachmentIdList& ids,
       const AttachmentStore::ReadMetadataCallback& callback) override {
     NOTREACHED();
   }
 
-  void ReadAllMetadata(
+  void ReadMetadata(
       AttachmentStore::Component component,
       const AttachmentStore::ReadMetadataCallback& callback) override {
     NOTREACHED();
@@ -116,7 +118,8 @@ class MockAttachmentStoreBackend
   std::vector<AttachmentStore::ReadCallback> read_callbacks;
   std::vector<AttachmentList> write_attachments;
   std::vector<AttachmentStore::WriteCallback> write_callbacks;
-  std::vector<AttachmentIdList> set_reference_ids;
+  std::vector<std::pair<AttachmentStore::Component, AttachmentIdList>>
+      set_reference_ids;
   std::vector<AttachmentIdList> drop_ids;
 
  private:
@@ -339,6 +342,8 @@ TEST_F(AttachmentServiceImplTest, GetOrDownload_Local) {
   AttachmentIdSet local_attachments;
   local_attachments.insert(attachment_ids[0]);
   RunLoop();
+  EXPECT_EQ(1U, store()->set_reference_ids.size());
+  EXPECT_EQ(AttachmentStore::MODEL_TYPE, store()->set_reference_ids[0].first);
   store()->RespondToRead(local_attachments);
 
   RunLoop();
@@ -443,7 +448,8 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_Success) {
   }
   attachment_service()->UploadAttachments(attachment_ids);
   RunLoop();
-  EXPECT_FALSE(store()->set_reference_ids.empty());
+  ASSERT_EQ(1U, store()->set_reference_ids.size());
+  EXPECT_EQ(AttachmentStore::SYNC, store()->set_reference_ids[0].first);
   for (unsigned i = 0; i < num_attachments; ++i) {
     RunLoopAndFireTimer();
     // See that the service has issued a read for at least one of the

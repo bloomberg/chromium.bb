@@ -41,7 +41,8 @@ class SYNC_EXPORT OnDiskAttachmentStore : public AttachmentStoreBackend,
 
   // AttachmentStoreBackend implementation.
   void Init(const AttachmentStore::InitCallback& callback) override;
-  void Read(const AttachmentIdList& ids,
+  void Read(AttachmentStore::Component component,
+            const AttachmentIdList& ids,
             const AttachmentStore::ReadCallback& callback) override;
   void Write(AttachmentStore::Component component,
              const AttachmentList& attachments,
@@ -51,10 +52,11 @@ class SYNC_EXPORT OnDiskAttachmentStore : public AttachmentStoreBackend,
   void DropReference(AttachmentStore::Component component,
                      const AttachmentIdList& ids,
                      const AttachmentStore::DropCallback& callback) override;
-  void ReadMetadata(
+  void ReadMetadataById(
+      AttachmentStore::Component component,
       const AttachmentIdList& ids,
       const AttachmentStore::ReadMetadataCallback& callback) override;
-  void ReadAllMetadata(
+  void ReadMetadata(
       AttachmentStore::Component component,
       const AttachmentStore::ReadMetadataCallback& callback) override;
 
@@ -67,7 +69,8 @@ class SYNC_EXPORT OnDiskAttachmentStore : public AttachmentStoreBackend,
   AttachmentStore::Result OpenOrCreate(const base::FilePath& path);
   // Reads single attachment from store. Returns nullptr in case of errors.
   scoped_ptr<Attachment> ReadSingleAttachment(
-      const AttachmentId& attachment_id);
+      const AttachmentId& attachment_id,
+      AttachmentStore::Component component);
   // Writes single attachment to store. Returns false in case of errors.
   bool WriteSingleAttachment(const Attachment& attachment,
                              AttachmentStore::Component component);

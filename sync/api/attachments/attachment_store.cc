@@ -33,7 +33,7 @@ AttachmentStore::~AttachmentStore() {
 
 void AttachmentStore::Read(const AttachmentIdList& ids,
                            const ReadCallback& callback) {
-  frontend_->Read(ids, callback);
+  frontend_->Read(component_, ids, callback);
 }
 
 void AttachmentStore::Write(const AttachmentList& attachments,
@@ -46,13 +46,13 @@ void AttachmentStore::Drop(const AttachmentIdList& ids,
   frontend_->DropReference(component_, ids, callback);
 }
 
-void AttachmentStore::ReadMetadata(const AttachmentIdList& ids,
-                                   const ReadMetadataCallback& callback) {
-  frontend_->ReadMetadata(ids, callback);
+void AttachmentStore::ReadMetadataById(const AttachmentIdList& ids,
+                                       const ReadMetadataCallback& callback) {
+  frontend_->ReadMetadataById(component_, ids, callback);
 }
 
-void AttachmentStore::ReadAllMetadata(const ReadMetadataCallback& callback) {
-  frontend_->ReadAllMetadata(component_, callback);
+void AttachmentStore::ReadMetadata(const ReadMetadataCallback& callback) {
+  frontend_->ReadMetadata(component_, callback);
 }
 
 scoped_ptr<AttachmentStoreForSync>
@@ -124,14 +124,19 @@ void AttachmentStoreForSync::SetSyncReference(const AttachmentIdList& ids) {
   frontend()->SetReference(sync_component_, ids);
 }
 
+void AttachmentStoreForSync::SetModelTypeReference(
+    const AttachmentIdList& ids) {
+  frontend()->SetReference(component(), ids);
+}
+
 void AttachmentStoreForSync::DropSyncReference(const AttachmentIdList& ids) {
   frontend()->DropReference(sync_component_, ids,
                             base::Bind(&NoOpDropCallback));
 }
 
-void AttachmentStoreForSync::ReadSyncMetadata(
+void AttachmentStoreForSync::ReadMetadataForSync(
     const ReadMetadataCallback& callback) {
-  frontend()->ReadAllMetadata(sync_component_, callback);
+  frontend()->ReadMetadata(sync_component_, callback);
 }
 
 }  // namespace syncer

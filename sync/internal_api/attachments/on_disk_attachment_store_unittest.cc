@@ -442,7 +442,7 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, OpsAfterInitializationFailed) {
 
 // Ensure that attachment store handles the case of having an unexpected
 // record at the end without crashing.
-TEST_F(OnDiskAttachmentStoreSpecificTest, ReadAllMetadataWithUnexpectedRecord) {
+TEST_F(OnDiskAttachmentStoreSpecificTest, ReadMetadataWithUnexpectedRecord) {
   // Write a bogus entry at the end of the database.
   UpdateRecord("zzz", "foobar");
 
@@ -455,7 +455,7 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, ReadAllMetadataWithUnexpectedRecord) {
   // Read all metadata. Should be getting no error and zero entries.
   AttachmentStore::Result metadata_result = AttachmentStore::UNSPECIFIED_ERROR;
   scoped_ptr<AttachmentMetadataList> metadata_list;
-  store_->ReadAllMetadata(
+  store_->ReadMetadata(
       base::Bind(&OnDiskAttachmentStoreSpecificTest::CopyResultMetadata,
                  base::Unretained(this), &metadata_result, &metadata_list));
   RunLoop();
@@ -479,7 +479,7 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, ReadAllMetadataWithUnexpectedRecord) {
                            base::Unretained(this), &write_result));
 
   // Read all metadata back. We should be getting 3 entries.
-  store_->ReadAllMetadata(
+  store_->ReadMetadata(
       base::Bind(&OnDiskAttachmentStoreSpecificTest::CopyResultMetadata,
                  base::Unretained(this), &metadata_result, &metadata_list));
   RunLoop();
@@ -506,7 +506,7 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, ReadAllMetadataWithUnexpectedRecord) {
 
   // Read all metadata back. We should be getting a failure and
   // only 2 entries now.
-  store_->ReadAllMetadata(
+  store_->ReadMetadata(
       base::Bind(&OnDiskAttachmentStoreSpecificTest::CopyResultMetadata,
                  base::Unretained(this), &metadata_result, &metadata_list));
   RunLoop();
