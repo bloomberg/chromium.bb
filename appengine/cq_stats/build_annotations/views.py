@@ -31,6 +31,8 @@ class ListBuildsView(generic.list.ListView):
     self._search_form = None
     self._controller = None
     self._session = None
+    self._builds_list = None
+    self._hist = None
 
   def get_queryset(self):
     self._EnsureSessionInitialized()
@@ -39,11 +41,15 @@ class ListBuildsView(generic.list.ListView):
     if self._build_config is not None:
       build_config_q = self._controller.GetQRestrictToBuildConfig(
           self._build_config)
-
-    return self._controller.GetStructuredBuilds(
+    self._builds_list = self._controller.GetStructuredBuilds(
         latest_build_id=self._session['latest_build_id'],
         num_builds=self._session['num_builds'],
         extra_filter_q=build_config_q)
+    self._hist = self._controller.GetHandlingTimeHistogram(
+        latest_build_id=self._session['latest_build_id'],
+        num_builds=self._session['num_builds'],
+        extra_filter_q=build_config_q)
+    return self._builds_list
 
   def get_context_object_name(self, _):
     return 'builds_list'
@@ -54,6 +60,7 @@ class ListBuildsView(generic.list.ListView):
     context['search_form'] = self._GetSearchForm()
     context['latest_build_id_cached'] = self._GetLatestBuildId()
     context['build_config'] = self._build_config
+    context['histogram_data'] = self._hist
     return context
 
   # pylint: disable=arguments-differ

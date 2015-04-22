@@ -18,6 +18,10 @@ from django.db.models import query
 
 from build_annotations import models as ba_models
 
+# We need to fake out some system modules before importing chromite modules.
+from cq_stats import fake_system_modules  # pylint: disable=unused-import
+from chromite.lib import clactions
+
 
 class BuildRow(collections.MutableMapping):
   """A database "view" that collects all relevant stats about a build."""
@@ -189,6 +193,68 @@ class BuildRowController(object):
       self._latest_build_id = build_entries[0].id
 
     return build_rows
+
+  def GetHandlingTimeHistogram(self, latest_build_id=None,
+                               num_builds=DEFAULT_NUM_BUILDS,
+                               extra_filter_q=None):
+    """Get CL handling time histogram."""
+    # If we're not given any latest_build_id, we fetch the latest builds
+    if latest_build_id is not None:
+      build_qs = ba_models.BuildTable.objects.filter(id__lte=latest_build_id)
+    else:
+      build_qs = ba_models.BuildTable.objects.all()
+
+    if extra_filter_q is not None:
+      build_qs = build_qs.filter(extra_filter_q)
+    build_qs = build_qs.order_by('-id')
+    build_qs = build_qs[:num_builds]
+
+    # Hit the database.
+    build_entries = list(build_qs)
+    claction_qs = ba_models.ClActionTable.objects.select_related('build_id')
+    claction_qs = claction_qs.filter(
+        build_id__in=set(b.id for b in build_entries))
+    # Hit the database.
+    claction_entries = [c for c in claction_qs]
+
+    claction_history = clactions.CLActionStats(
+        self._JoinBuildTableClActionTable(build_entries, claction_entries))
+    # Convert times seconds -> minutes.
+    return {k: v / 60.0
+            for k, v in claction_history.GetPatchHandlingTimes().iteritems()}
+
+  def _JoinBuildTableClActionTable(self, build_entries, claction_entries):
+    """Perform the join operation in python.
+
+    Args:
+      build_entries: A list of buildTable entries.
+      claction_entries: A list of claction_entries.
+
+    Returns:
+      A list fo claction.CLAction objects created by joining the list of builds
+      and list of claction entries.
+    """
+    claction_entries_by_build_id = {}
+    for entry in claction_entries:
+      entries = claction_entries_by_build_id.setdefault(entry.build_id.id, [])
+      entries.append(entry)
+
+    claction_list = []
+    for build_entry in build_entries:
+      for claction_entry in claction_entries_by_build_id.get(build_entry.id,
+                                                             []):
+        claction_list.append(clactions.CLAction(
+            id=claction_entry.id,
+            build_id=build_entry.id,
+            action=claction_entry.action,
+            reason=claction_entry.reason,
+            build_config=build_entry.build_config,
+            change_number=claction_entry.change_number,
+            patch_number=claction_entry.patch_number,
+            change_source=claction_entry.change_source,
+            timestamp=claction_entry.timestamp))
+
+    return claction_list
 
   ############################################################################
   # GetQ* methods are intended to be used in nifty search expressions to search

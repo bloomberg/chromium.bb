@@ -90,3 +90,11 @@ a.external_link:after {
   height: 15px;
   background: transparent url("images/popup_link.png") no-repeat;
 }
+
+div.centered_div_container {
+  text-align: center;
+}
+div.centered_div_block {
+  display: inline-block;
+  margin: auto;
+}

@@ -1,5 +1,43 @@
 {% extends 'build_annotations/base.html' %}
 
+{% block template-private-imports %}
+  <!-- Call this once on every web page. -->
+  <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+  <script type="text/javascript">
+    // Load the Google Charts "core" charts (bar, line, pie...)
+    google.load("visualization", '1', {packages:['corechart']});
+    // When the page loads call the drawChart() function.
+    google.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+      var data = google.visualization.arrayToDataTable([          // The chart data.
+        ['CL', 'Handling Time (minutes)'],
+        {% for key, value in histogram_data.items %}
+        ['{{ key }}', {{ value }}],
+        {% endfor %}
+      ]);
+
+      var options = {      // Customize a few of Google Charts' hundreds of options.
+        title: 'Histogram: Patch handling times',
+        width: 600,
+        height: 400,
+        hAxis: { title: 'Patch handling time', },
+        vAxis: { title: '# Patches', },
+      };
+
+      // Create and draw a Google Column Chart.
+      // To experiment with different types of charts, replace "ColumnChart" with
+      // the desired chart type (e.g., "PieChart", "LineChart").
+      var chart = new google.visualization.Histogram(document.getElementById('chart_div'));
+      google.visualization.events.addListener(chart, 'ready', function() {
+        document.getElementById('chart_img_div').innerHTML = '<a href="' + chart.getImageURI() + '">Save Chart</a>'
+      })
+      chart.draw(data, options);
+    }
+  </script>
+
+{% endblock %}  <!-- template-private-impots -->
 {% block content %}
 <h1> {{ build_config|title }} Builds</h1>
 <ul class="navbar">
@@ -33,6 +71,11 @@
   </table>
   <input type="submit" value="Update List"/>
 </form>
+
+<div id='chart_div_container' class='centered_div_container'>
+  <div id='chart_div' class='centered_div_block'></div>
+  <div id='chart_img_div' class='centered_div_block'></div>
+</div>
 
 <table class="build_list">
   <tr>
