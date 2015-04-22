@@ -28,6 +28,7 @@ ServiceWorkerVersionBrowserTest.TimeoutStartingWorker
 
 # http://crbug.com/456131
 BrowserSideNavigationBrowserTest.BrowserInitiatedNavigations
+BrowserSideNavigationBrowserTest.FailedNavigation
 
 # http://crbug.com/464029
 WebRtcBrowserTest.CallAndModifyStream
