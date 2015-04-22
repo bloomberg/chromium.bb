@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/synchronization/cancellation_flag.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -113,8 +114,11 @@ ChangeList::ChangeList(const google_apis::FileList& file_list)
 
 ChangeList::~ChangeList() {}
 
-ChangeListProcessor::ChangeListProcessor(ResourceMetadata* resource_metadata)
-    : resource_metadata_(resource_metadata), changed_files_(new FileChange) {
+ChangeListProcessor::ChangeListProcessor(ResourceMetadata* resource_metadata,
+                                         base::CancellationFlag* in_shutdown)
+    : resource_metadata_(resource_metadata),
+      in_shutdown_(in_shutdown),
+      changed_files_(new FileChange) {
 }
 
 ChangeListProcessor::~ChangeListProcessor() {
@@ -230,6 +234,9 @@ FileError ChangeListProcessor::ApplyEntryMap(
   // Apply all entries except deleted ones to the metadata.
   std::vector<std::string> deleted_resource_ids;
   while (!entry_map_.empty()) {
+    if (in_shutdown_ && in_shutdown_->IsSet())
+      return FILE_ERROR_ABORT;
+
     ResourceEntryMap::iterator it = entry_map_.begin();
 
     // Process deleted entries later to avoid deleting moved entries under it.

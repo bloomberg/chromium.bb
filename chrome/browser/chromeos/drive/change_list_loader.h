@@ -20,6 +20,7 @@
 class GURL;
 
 namespace base {
+class CancellationFlag;
 class ScopedClosureRunner;
 class SequencedTaskRunner;
 class Time;
@@ -213,6 +214,7 @@ class ChangeListLoader {
 
   EventLogger* logger_;  // Not owned.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+  scoped_ptr<base::CancellationFlag> in_shutdown_;
   ResourceMetadata* resource_metadata_;  // Not owned.
   JobScheduler* scheduler_;  // Not owned.
   AboutResourceLoader* about_resource_loader_;  // Not owned.

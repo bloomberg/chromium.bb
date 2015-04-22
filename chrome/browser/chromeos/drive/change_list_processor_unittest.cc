@@ -126,7 +126,7 @@ class ChangeListProcessorTest : public testing::Test {
     about_resource->set_largest_change_id(kBaseResourceListChangestamp);
     about_resource->set_root_folder_id(kRootId);
 
-    ChangeListProcessor processor(metadata_.get());
+    ChangeListProcessor processor(metadata_.get(), nullptr);
     return processor.Apply(about_resource.Pass(),
                            changes.Pass(),
                            false /* is_delta_update */);
@@ -141,7 +141,7 @@ class ChangeListProcessorTest : public testing::Test {
     about_resource->set_largest_change_id(kBaseResourceListChangestamp);
     about_resource->set_root_folder_id(kRootId);
 
-    ChangeListProcessor processor(metadata_.get());
+    ChangeListProcessor processor(metadata_.get(), nullptr);
     FileError error = processor.Apply(about_resource.Pass(),
                                       changes.Pass(),
                                       true /* is_delta_update */);

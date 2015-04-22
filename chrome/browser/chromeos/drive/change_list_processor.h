@@ -16,11 +16,15 @@
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "url/gurl.h"
 
+namespace base {
+class CancellationFlag;
+}  // namespace base
+
 namespace google_apis {
 class AboutResource;
 class ChangeList;
 class FileList;
-}  // google_apis
+}  // namespace google_apis
 
 namespace drive {
 
@@ -103,7 +107,8 @@ class ChangeList {
 // updates the resource metadata stored locally.
 class ChangeListProcessor {
  public:
-  explicit ChangeListProcessor(ResourceMetadata* resource_metadata);
+  ChangeListProcessor(ResourceMetadata* resource_metadata,
+                      base::CancellationFlag* in_shutdown);
   ~ChangeListProcessor();
 
   // Applies change lists or full resource lists to |resource_metadata_|.
@@ -151,6 +156,7 @@ class ChangeListProcessor {
   void UpdateChangedDirs(const ResourceEntry& entry);
 
   ResourceMetadata* resource_metadata_;  // Not owned.
+  base::CancellationFlag* in_shutdown_;  // Not owned.
 
   ResourceEntryMap entry_map_;
   ParentResourceIdMap parent_resource_id_map_;
