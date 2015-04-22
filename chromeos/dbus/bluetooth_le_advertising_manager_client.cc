@@ -27,8 +27,12 @@ class BluetoothAdvertisementManagerClientImpl
       : object_manager_(NULL), weak_ptr_factory_(this) {}
 
   ~BluetoothAdvertisementManagerClientImpl() override {
-    object_manager_->UnregisterInterface(
-        bluetooth_advertising_manager::kBluetoothAdvertisingManagerInterface);
+    // TODO(rkc): object_manager_ should not be NULL, just a hot fix till
+    // http://crbug.com/479430 is properly fixed.
+    if (object_manager_) {
+      object_manager_->UnregisterInterface(
+          bluetooth_advertising_manager::kBluetoothAdvertisingManagerInterface);
+    }
   }
 
   // BluetoothAdapterClient override.

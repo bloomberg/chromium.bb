@@ -90,6 +90,8 @@ class OAuth2LoginManager : public KeyedService,
   // RESTORE_FROM_AUTH_CODE, respectively
   // parameters |oauth2_refresh_token| or |auth_code| need to have non-empty
   // value.
+  // For |restore_strategy| with values RESTORE_FROM_COOKIE_JAR or
+  // RESTORE_FROM_AUTH_CODE |auth_request_context| must be initialized.
   void RestoreSession(
       net::URLRequestContextGetter* auth_request_context,
       SessionRestoreStrategy restore_strategy,

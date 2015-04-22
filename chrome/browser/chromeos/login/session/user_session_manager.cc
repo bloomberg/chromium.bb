@@ -1254,8 +1254,14 @@ void UserSessionManager::RestoreAuthSessionImpl(
 
   // Authentication request context may not be available if user was not
   // signing in with GAIA webview (i.e. webview instance hasn't been
-  // initialized at all). Use fallback request context.
-  if (!auth_request_context) {
+  // initialized at all). Use fallback request context if authenticator was
+  // provided.
+  // Authenticator instance may not be initialized for session
+  // restore case when Chrome is restarting after crash or to apply custom user
+  // flags. In that case auth_request_context will be nullptr which is accepted
+  // by RestoreSession() for session restore case.
+  if (!auth_request_context &&
+      (authenticator_.get() && authenticator_->authentication_context())) {
     auth_request_context =
         authenticator_->authentication_context()->GetRequestContext();
   }
