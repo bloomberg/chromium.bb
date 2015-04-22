@@ -17,6 +17,7 @@
 #include "components/translate/core/browser/translate_step.h"
 #include "ios/chrome/browser/infobars/infobar.h"
 #include "ios/chrome/browser/infobars/infobar_controller.h"
+#include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/translate/after_translate_infobar_controller.h"
 #import "ios/chrome/browser/translate/before_translate_infobar_controller.h"
@@ -26,7 +27,6 @@
 #include "ios/chrome/browser/translate/translate_service_ios.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "url/gurl.h"
@@ -103,7 +103,7 @@ void ChromeIOSTranslateClient::ShowTranslateUI(
   translate::TranslateInfoBarDelegate::Create(
       step != translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
       translate_manager_->GetWeakPtr(),
-      ios::GetChromeBrowserProvider()->GetInfoBarManager(web_state()),
+      InfoBarManagerImpl::FromWebState(web_state()),
       web_state()->GetBrowserState()->IsOffTheRecord(), step, source_language,
       target_language, error_type, triggered_from_menu);
 }

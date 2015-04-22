@@ -39,11 +39,6 @@ InfoBarViewPlaceholder* ChromeBrowserProvider::CreateInfoBarView() {
   return nullptr;
 }
 
-infobars::InfoBarManager* ChromeBrowserProvider::GetInfoBarManager(
-    web::WebState* web_state) {
-  return nullptr;
-}
-
 StringProvider* ChromeBrowserProvider::GetStringProvider() {
   return nullptr;
 }
