@@ -50,12 +50,6 @@ class FakeHostPairingController
 
   // HostPairingController::Observer:
   void PairingStageChanged(Stage new_stage) override;
-  void ConfigureHost(bool accepted_eula,
-                     const std::string& lang,
-                     const std::string& timezone,
-                     bool send_reports,
-                     const std::string& keyboard_layout) override;
-  void EnrollHost(const std::string& auth_token) override;
 
   ObserverList<Observer> observers_;
   Stage current_stage_;

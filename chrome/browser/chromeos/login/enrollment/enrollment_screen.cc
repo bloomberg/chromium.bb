@@ -141,14 +141,7 @@ void EnrollmentScreen::PairingStageChanged(Stage new_stage) {
   }
 }
 
-void EnrollmentScreen::ConfigureHost(bool accepted_eula,
-                                     const std::string& lang,
-                                     const std::string& timezone,
-                                     bool send_reports,
-                                     const std::string& keyboard_layout) {
-}
-
-void EnrollmentScreen::EnrollHost(const std::string& auth_token) {
+void EnrollmentScreen::EnrollHostRequested(const std::string& auth_token) {
   actor_->Show();
   actor_->ShowEnrollmentSpinnerScreen();
   CreateEnrollmentHelper();

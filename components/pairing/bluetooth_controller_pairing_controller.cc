@@ -417,6 +417,11 @@ void BluetoothControllerPairingController::OnErrorMessage(
   ChangeStage(STAGE_HOST_ENROLLMENT_ERROR);
 }
 
+void BluetoothControllerPairingController::OnAddNetworkMessage(
+    const pairing_api::AddNetwork& message) {
+  NOTREACHED();
+}
+
 void BluetoothControllerPairingController::DeviceAdded(
     device::BluetoothAdapter* adapter,
     device::BluetoothDevice* device) {

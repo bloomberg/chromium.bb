@@ -248,11 +248,12 @@ class WizardController : public BaseScreenDelegate,
   void SetHostConfiguration() override;
 
   // Override from HostPairingScreen::Delegate:
-  void ConfigureHost(bool accepted_eula,
-                     const std::string& lang,
-                     const std::string& timezone,
-                     bool send_reports,
-                     const std::string& keyboard_layout) override;
+  void ConfigureHostRequested(bool accepted_eula,
+                              const std::string& lang,
+                              const std::string& timezone,
+                              bool send_reports,
+                              const std::string& keyboard_layout) override;
+  void AddNetworkRequested(const std::string& onc_spec) override;
 
   // Override from NetworkScreen::Delegate:
   void OnEnableDebuggingScreenRequested() override;

@@ -15,6 +15,7 @@ enum {
   MESSAGE_PAIR_DEVICES,
   MESSAGE_COMPLETE_SETUP,
   MESSAGE_ERROR,
+  MESSAGE_ADD_NETWORK,
   NUM_MESSAGES,
 };
 }
@@ -105,9 +106,15 @@ bool ProtoDecoder::DecodeIOBuffer(int size,
         observer_->OnErrorMessage(message);
       }
       break;
+    case MESSAGE_ADD_NETWORK: {
+        pairing_api::AddNetwork message;
+        message.ParseFromArray(&buffer[0], buffer.size());
+        observer_->OnAddNetworkMessage(message);
+      }
+      break;
 
     default:
-      NOTREACHED();
+      LOG(WARNING) << "Skipping unknown message type: " << next_message_type_;
       break;
   }
 

@@ -30,12 +30,6 @@ class SharkConnectionListener : public HostPairingController::Observer {
 
   // HostPairingController::Observer overrides:
   void PairingStageChanged(Stage new_stage) override;
-  void ConfigureHost(bool accepted_eula,
-                     const std::string& lang,
-                     const std::string& timezone,
-                     bool send_reports,
-                     const std::string& keyboard_layout) override;
-  void EnrollHost(const std::string& auth_token) override;
 
   OnConnectedCallback callback_;
   scoped_ptr<HostPairingController> controller_;

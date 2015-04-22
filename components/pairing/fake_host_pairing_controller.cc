@@ -169,15 +169,4 @@ void FakeHostPairingController::PairingStageChanged(Stage new_stage) {
   }
 }
 
-void FakeHostPairingController::ConfigureHost(
-    bool accepted_eula,
-    const std::string& lang,
-    const std::string& timezone,
-    bool send_reports,
-    const std::string& keyboard_layout) {
-}
-
-void FakeHostPairingController::EnrollHost(const std::string& auth_token) {
-}
-
 }  // namespace pairing_chromeos

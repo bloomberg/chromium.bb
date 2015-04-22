@@ -84,24 +84,30 @@ void HostPairingScreen::PairingStageChanged(Stage new_stage) {
   CommitContextChanges();
 }
 
-void HostPairingScreen::ConfigureHost(bool accepted_eula,
-                                      const std::string& lang,
-                                      const std::string& timezone,
-                                      bool send_reports,
-                                      const std::string& keyboard_layout) {
+void HostPairingScreen::ConfigureHostRequested(
+    bool accepted_eula,
+    const std::string& lang,
+    const std::string& timezone,
+    bool send_reports,
+    const std::string& keyboard_layout) {
   VLOG(1) << "ConfigureHostMessage language=" << lang
           << ", timezone=" << timezone
           << ", keyboard_layout=" << keyboard_layout;
 
   remora_controller_->RemoveObserver(this);
   if (delegate_) {
-    delegate_->ConfigureHost(
+    delegate_->ConfigureHostRequested(
         accepted_eula, lang, timezone, send_reports, keyboard_layout);
   }
   Finish(WizardController::HOST_PAIRING_FINISHED);
 }
 
-void HostPairingScreen::EnrollHost(const std::string& auth_token) {
+void HostPairingScreen::AddNetworkRequested(const std::string& onc_spec) {
+  if (delegate_)
+    delegate_->AddNetworkRequested(onc_spec);
+}
+
+void HostPairingScreen::EnrollHostRequested(const std::string& auth_token) {
   NOTREACHED();
 }
 

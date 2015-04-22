@@ -49,14 +49,17 @@ class HostPairingController {
     virtual void PairingStageChanged(Stage new_stage) = 0;
 
     // Called when the controller has sent a configuration to apply.
-    virtual void ConfigureHost(bool accepted_eula,
-                               const std::string& lang,
-                               const std::string& timezone,
-                               bool send_reports,
-                               const std::string& keyboard_layout) = 0;
+    virtual void ConfigureHostRequested(bool accepted_eula,
+                                        const std::string& lang,
+                                        const std::string& timezone,
+                                        bool send_reports,
+                                        const std::string& keyboard_layout) {}
+
+    // Called when the controller has sent a network to add.
+    virtual void AddNetworkRequested(const std::string& onc_spec) {}
 
     // Called when the controller has provided an |auth_token| for enrollment.
-    virtual void EnrollHost(const std::string& auth_token) = 0;
+    virtual void EnrollHostRequested(const std::string& auth_token) {}
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Observer);

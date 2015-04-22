@@ -86,3 +86,12 @@ message Error {
   optional int32 api_version = 1;
   optional ErrorParameters parameters = 2;
 }
+
+message AddNetworkParameters {
+  optional string onc_spec = 1;
+}
+
+message AddNetwork {
+  optional int32 api_version = 1;
+  optional AddNetworkParameters parameters = 2;
+}

@@ -18,6 +18,7 @@ class IOBuffer;
 }
 
 namespace pairing_api {
+class AddNetwork;
 class CompleteSetup;
 class ConfigureHost;
 class Error;
@@ -47,6 +48,8 @@ class ProtoDecoder {
         const pairing_api::CompleteSetup& message) = 0;
     virtual void OnErrorMessage(
         const pairing_api::Error& message) = 0;
+    virtual void OnAddNetworkMessage(
+        const pairing_api::AddNetwork& message) = 0;
 
    protected:
     Observer() {}

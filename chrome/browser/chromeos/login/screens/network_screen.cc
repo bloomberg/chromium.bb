@@ -224,6 +224,10 @@ std::string NetworkScreen::GetTimezone() const {
   return timezone_;
 }
 
+void NetworkScreen::CreateNetworkFromOnc(const std::string& onc_spec) {
+  network_state_helper_->CreateNetworkFromOnc(onc_spec);
+}
+
 void NetworkScreen::AddObserver(Observer* observer) {
   if (observer)
     observers_.AddObserver(observer);

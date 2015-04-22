@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/json/json_reader.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -131,18 +133,50 @@ base::string16 NetworkStateHelper::GetCurrentNetworkName() const {
   return base::string16();
 }
 
+void NetworkStateHelper::CreateNetworkFromOnc(
+    const std::string& onc_spec) const {
+  std::string error;
+  scoped_ptr<base::Value> root(base::JSONReader::ReadAndReturnError(
+      onc_spec, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error));
+
+  base::DictionaryValue* toplevel_onc = nullptr;
+  if (!root || !root->GetAsDictionary(&toplevel_onc)) {
+    LOG(ERROR) << "Invalid JSON Dictionary: " << error;
+    return;
+  }
+
+  NetworkHandler::Get()->managed_network_configuration_handler()->
+      CreateConfiguration(
+          "", *toplevel_onc,
+          base::Bind(&NetworkStateHelper::OnCreateConfiguration,
+                     base::Unretained(this)),
+          base::Bind(&NetworkStateHelper::OnCreateConfigurationFailed,
+                     base::Unretained(this)));
+}
+
+void NetworkStateHelper::OnCreateConfiguration(
+    const std::string& service_path) const {
+  // Do Nothing.
+}
+
+void NetworkStateHelper::OnCreateConfigurationFailed(
+    const std::string& error_name,
+    scoped_ptr<base::DictionaryValue> error_data) const {
+  LOG(ERROR) << "Failed to create network configuration: " << error_name;
+}
+
 bool NetworkStateHelper::IsConnected() const {
   chromeos::NetworkStateHandler* nsh =
       chromeos::NetworkHandler::Get()->network_state_handler();
   return nsh->ConnectedNetworkByType(chromeos::NetworkTypePattern::Default()) !=
-         NULL;
+         nullptr;
 }
 
 bool NetworkStateHelper::IsConnecting() const {
   chromeos::NetworkStateHandler* nsh =
       chromeos::NetworkHandler::Get()->network_state_handler();
   return nsh->ConnectingNetworkByType(
-      chromeos::NetworkTypePattern::Default()) != NULL;
+      chromeos::NetworkTypePattern::Default()) != nullptr;
 }
 
 content::StoragePartition* GetSigninPartition() {

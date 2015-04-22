@@ -68,12 +68,7 @@ class EnrollmentScreen
 
   // pairing_chromeos::HostPairingController::Observer:
   void PairingStageChanged(Stage new_stage) override;
-  void ConfigureHost(bool accepted_eula,
-                     const std::string& lang,
-                     const std::string& timezone,
-                     bool send_reports,
-                     const std::string& keyboard_layout) override;
-  void EnrollHost(const std::string& auth_token) override;
+  void EnrollHostRequested(const std::string& auth_token) override;
 
   // EnrollmentScreenActor::Controller implementation:
   void OnLoginDone(const std::string& user,

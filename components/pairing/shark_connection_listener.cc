@@ -30,17 +30,4 @@ void SharkConnectionListener::PairingStageChanged(Stage new_stage) {
   }
 }
 
-void SharkConnectionListener::ConfigureHost(
-    bool accepted_eula,
-    const std::string& lang,
-    const std::string& timezone,
-    bool send_reports,
-    const std::string& keyboard_layout) {
-  NOTREACHED();
-}
-
-void SharkConnectionListener::EnrollHost(const std::string& auth_token) {
-  NOTREACHED();
-}
-
 }  // namespace pairing_chromeos

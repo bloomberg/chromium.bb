@@ -1054,11 +1054,12 @@ void WizardController::SetHostConfiguration() {
   }
 }
 
-void WizardController::ConfigureHost(bool accepted_eula,
-                                     const std::string& lang,
-                                     const std::string& timezone,
-                                     bool send_reports,
-                                     const std::string& keyboard_layout) {
+void WizardController::ConfigureHostRequested(
+    bool accepted_eula,
+    const std::string& lang,
+    const std::string& timezone,
+    bool send_reports,
+    const std::string& keyboard_layout) {
   VLOG(1) << "ConfigureHost locale=" << lang << ", timezone=" << timezone
           << ", keyboard_layout=" << keyboard_layout;
   if (accepted_eula)  // Always true.
@@ -1069,6 +1070,11 @@ void WizardController::ConfigureHost(bool accepted_eula,
   network_screen->SetApplicationLocale(lang);
   network_screen->SetTimezone(timezone);
   network_screen->SetInputMethod(keyboard_layout);
+}
+
+void WizardController::AddNetworkRequested(const std::string& onc_spec) {
+  NetworkScreen* network_screen = NetworkScreen::Get(this);
+  network_screen->CreateNetworkFromOnc(onc_spec);
 }
 
 void WizardController::OnEnableDebuggingScreenRequested() {

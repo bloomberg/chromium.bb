@@ -21,11 +21,18 @@ class HostPairingScreen
   class Delegate {
    public:
     virtual ~Delegate() {}
-    virtual void ConfigureHost(bool accepted_eula,
-                               const std::string& lang,
-                               const std::string& timezone,
-                               bool send_reports,
-                               const std::string& keyboard_layout) = 0;
+
+    // Called when a configuration has been received, and should be applied to
+    // this device.
+    virtual void ConfigureHostRequested(bool accepted_eula,
+                                        const std::string& lang,
+                                        const std::string& timezone,
+                                        bool send_reports,
+                                        const std::string& keyboard_layout) = 0;
+
+    // Called when a network configuration has been received, and should be
+    // used on this device.
+    virtual void AddNetworkRequested(const std::string& onc_spec) = 0;
   };
 
   HostPairingScreen(BaseScreenDelegate* base_screen_delegate,
@@ -47,12 +54,13 @@ class HostPairingScreen
 
   // pairing_chromeos::HostPairingController::Observer:
   void PairingStageChanged(Stage new_stage) override;
-  void ConfigureHost(bool accepted_eula,
-                     const std::string& lang,
-                     const std::string& timezone,
-                     bool send_reports,
-                     const std::string& keyboard_layout) override;
-  void EnrollHost(const std::string& auth_token) override;
+  void ConfigureHostRequested(bool accepted_eula,
+                              const std::string& lang,
+                              const std::string& timezone,
+                              bool send_reports,
+                              const std::string& keyboard_layout) override;
+  void AddNetworkRequested(const std::string& onc_spec) override;
+  void EnrollHostRequested(const std::string& auth_token) override;
 
   // Overridden from ControllerPairingView::Delegate:
   void OnActorDestroyed(HostPairingScreenActor* actor) override;
