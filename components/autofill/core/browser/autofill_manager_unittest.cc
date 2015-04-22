@@ -35,6 +35,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "grit/components_strings.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -50,6 +51,19 @@ namespace autofill {
 namespace {
 
 const int kDefaultPageID = 137;
+
+class MockAutofillClient : public TestAutofillClient {
+ public:
+  MockAutofillClient() {}
+
+  ~MockAutofillClient() override {}
+
+  MOCK_METHOD1(ConfirmSaveCreditCard,
+               void(const base::Closure& save_card_callback));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockAutofillClient);
+};
 
 class TestPersonalDataManager : public PersonalDataManager {
  public:
@@ -627,6 +641,9 @@ class AutofillManagerTest : public testing::Test {
     personal_data_.set_database(autofill_client_.GetDatabase());
     personal_data_.SetPrefService(autofill_client_.GetPrefs());
     autofill_driver_.reset(new MockAutofillDriver());
+    request_context_ =
+        new net::TestURLRequestContextGetter(base::MessageLoopProxy::current());
+    autofill_driver_->SetURLRequestContext(request_context_.get());
     autofill_manager_.reset(new TestAutofillManager(
         autofill_driver_.get(), &autofill_client_, &personal_data_));
 
@@ -646,6 +663,8 @@ class AutofillManagerTest : public testing::Test {
     // need to care about removing self as an observer in destruction.
     personal_data_.set_database(scoped_refptr<AutofillWebDataService>(NULL));
     personal_data_.SetPrefService(NULL);
+
+    request_context_ = nullptr;
   }
 
   void GetAutofillSuggestions(int query_id,
@@ -714,10 +733,11 @@ class AutofillManagerTest : public testing::Test {
 
  protected:
   base::MessageLoop message_loop_;
-  TestAutofillClient autofill_client_;
+  MockAutofillClient autofill_client_;
   scoped_ptr<MockAutofillDriver> autofill_driver_;
   scoped_ptr<TestAutofillManager> autofill_manager_;
   scoped_ptr<TestAutofillExternalDelegate> external_delegate_;
+  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   TestPersonalDataManager personal_data_;
 };
 
@@ -3036,35 +3056,6 @@ TEST_F(AutofillManagerTest, AccessAddressBookPrompt) {
 }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
-namespace {
-
-class MockAutofillClient : public TestAutofillClient {
- public:
-  MockAutofillClient() {}
-
-  ~MockAutofillClient() override {}
-
-  void ShowRequestAutocompleteDialog(const FormData& form,
-                                     content::RenderFrameHost* rfh,
-                                     const ResultCallback& callback) override {
-    callback.Run(user_supplied_data_ ? AutocompleteResultSuccess :
-                                       AutocompleteResultErrorDisabled,
-                 base::string16(),
-                 user_supplied_data_.get());
-  }
-
-  void SetUserSuppliedData(scoped_ptr<FormStructure> user_supplied_data) {
-    user_supplied_data_.reset(user_supplied_data.release());
-  }
-
- private:
-  scoped_ptr<FormStructure> user_supplied_data_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockAutofillClient);
-};
-
-}  // namespace
-
 // Test our external delegate is called at the right time.
 TEST_F(AutofillManagerTest, TestExternalDelegate) {
   FormData form;
@@ -3137,6 +3128,50 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsForNumberSpitAcrossFields) {
           "Visa\xC2\xA0\xE2\x8B\xAF"
           "3456",
           "04/12", kVisaCard, autofill_manager_->GetPackedCreditCardID(4)));
+}
+
+TEST_F(AutofillManagerTest, DontOfferToSaveWalletCard) {
+  // This line silences the warning from RealPanWalletClient about matching
+  // sync and wallet server types.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "sync-url", "https://google.com");
+
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  CreditCard card(CreditCard::MASKED_SERVER_CARD, "a123");
+  test::SetCreditCardInfo(&card, "John Dillinger", "1881" /* Visa */, "01",
+                          "2017");
+  card.SetTypeForMaskedCard(kVisaCard);
+
+  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCard(_)).Times(0);
+  EXPECT_CALL(*autofill_driver_, SendFormDataToRenderer(_, _, _));
+  autofill_manager_->FillOrPreviewCreditCardForm(
+      AutofillDriver::FORM_DATA_ACTION_FILL, kDefaultPageID, form,
+      form.fields[0], card, 0);
+
+  // Manually fill out |form| so we can use it in OnFormSubmitted.
+  for (size_t i = 0; i < form.fields.size(); ++i) {
+    if (form.fields[i].name == ASCIIToUTF16("cardnumber"))
+      form.fields[i].value = ASCIIToUTF16("4012888888881881");
+    else if (form.fields[i].name == ASCIIToUTF16("nameoncard"))
+      form.fields[i].value = ASCIIToUTF16("John H Dillinger");
+    else if (form.fields[i].name == ASCIIToUTF16("ccmonth"))
+      form.fields[i].value = ASCIIToUTF16("01");
+    else if (form.fields[i].name == ASCIIToUTF16("ccyear"))
+      form.fields[i].value = ASCIIToUTF16("2017");
+  }
+
+  AutofillManager::UnmaskResponse response;
+  response.should_store_pan = false;
+  response.cvc = ASCIIToUTF16("123");
+  autofill_manager_->OnUnmaskResponse(response);
+  autofill_manager_->OnDidGetRealPan(AutofillClient::SUCCESS,
+                                     "4012888888881881");
+  autofill_manager_->OnFormSubmitted(form);
 }
 
 }  // namespace autofill

@@ -917,8 +917,8 @@ TEST_F(PersonalDataManagerTest, ImportFormMinimumAddressUSA) {
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
   scoped_ptr<CreditCard> imported_credit_card;
-  EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
-                                              &imported_credit_card));
+  EXPECT_TRUE(
+      personal_data_->ImportFormData(form_structure, &imported_credit_card));
   const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
   ASSERT_EQ(1U, profiles.size());
 }
@@ -3251,6 +3251,69 @@ TEST_F(PersonalDataManagerTest, ClearAllServerData) {
   ResetPersonalDataManager(USER_MODE_NORMAL);
   EXPECT_TRUE(personal_data_->GetCreditCards().empty());
   EXPECT_TRUE(personal_data_->GetProfiles().empty());
+}
+
+TEST_F(PersonalDataManagerTest, DontDuplicateServerCard) {
+  EnableWalletCardImport();
+
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
+  test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
+                          "1881" /* Visa */, "01", "2017");
+  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+
+  server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "c789"));
+  test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
+                          "347666888555" /* American Express */, "04", "2015");
+
+  test::SetServerCreditCards(autofill_table_, server_cards);
+  personal_data_->Refresh();
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  // A valid credit card form. A user re-types one of their masked cards.
+  // We should offer to save.
+  FormData form1;
+  FormFieldData field;
+  test::CreateTestFormField("Name on card:", "name_on_card", "John Dillinger",
+                            "text", &field);
+  form1.fields.push_back(field);
+  test::CreateTestFormField("Card Number:", "card_number", "4012888888881881",
+                            "text", &field);
+  form1.fields.push_back(field);
+  test::CreateTestFormField("Exp Month:", "exp_month", "01", "text", &field);
+  form1.fields.push_back(field);
+  test::CreateTestFormField("Exp Year:", "exp_year", "2017", "text", &field);
+  form1.fields.push_back(field);
+
+  FormStructure form_structure1(form1);
+  form_structure1.DetermineHeuristicTypes();
+  scoped_ptr<CreditCard> imported_credit_card;
+  EXPECT_TRUE(
+      personal_data_->ImportFormData(form_structure1, &imported_credit_card));
+  EXPECT_TRUE(imported_credit_card);
+  imported_credit_card.reset();
+
+  // A user re-types (or fills with) an unmasked card. Don't offer to save
+  // again.
+  FormData form2;
+  test::CreateTestFormField("Name on card:", "name_on_card", "Clyde Barrow",
+                            "text", &field);
+  form2.fields.push_back(field);
+  test::CreateTestFormField("Card Number:", "card_number", "347666888555",
+                            "text", &field);
+  form2.fields.push_back(field);
+  test::CreateTestFormField("Exp Month:", "exp_month", "04", "text", &field);
+  form2.fields.push_back(field);
+  test::CreateTestFormField("Exp Year:", "exp_year", "2015", "text", &field);
+  form2.fields.push_back(field);
+
+  FormStructure form_structure2(form2);
+  form_structure2.DetermineHeuristicTypes();
+  EXPECT_FALSE(
+      personal_data_->ImportFormData(form_structure2, &imported_credit_card));
+  EXPECT_FALSE(imported_credit_card);
 }
 
 }  // namespace autofill

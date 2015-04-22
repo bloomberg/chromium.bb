@@ -419,6 +419,10 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   // Time when we requested the last real pan
   base::Time real_pan_request_timestamp_;
 
+  // Masked copies of recently unmasked cards, to help avoid double-asking to
+  // save the card (in the prompt and in the infobar after submit).
+  std::vector<CreditCard> recently_unmasked_cards_;
+
   // SuggestionBackendID to ID mapping. We keep two maps to convert back and
   // forth. These should be used only by BackendIDToInt and IntToBackendID.
   // Note that the integers are not frontend IDs.
@@ -470,6 +474,7 @@ class AutofillManager : public AutofillDownloadManager::Observer,
                            FormSubmittedAutocompleteEnabled);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            AutocompleteOffRespectedForAutocomplete);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, DontOfferToSaveWalletCard);
   DISALLOW_COPY_AND_ASSIGN(AutofillManager);
 };
 

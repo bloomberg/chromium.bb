@@ -397,6 +397,8 @@ bool AutofillManager::OnFormSubmitted(const FormData& form) {
   if (submitted_form->IsAutofillable())
     ImportFormData(*submitted_form);
 
+  recently_unmasked_cards_.clear();
+
   return true;
 }
 
@@ -799,6 +801,7 @@ void AutofillManager::OnDidGetRealPan(AutofillClient::GetRealPanResult result,
   if (!real_pan.empty()) {
     DCHECK_EQ(AutofillClient::SUCCESS, result);
     credit_card_form_event_logger_->OnDidFillSuggestion(unmasking_card_);
+    recently_unmasked_cards_.push_back(unmasking_card_);
     unmasking_card_.set_record_type(CreditCard::FULL_SERVER_CARD);
     unmasking_card_.SetNumber(base::UTF8ToUTF16(real_pan));
     if (unmask_response_.should_store_pan)
@@ -823,6 +826,17 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
   scoped_ptr<CreditCard> imported_credit_card;
   if (!personal_data_->ImportFormData(submitted_form, &imported_credit_card))
     return;
+
+  // Don't offer to save any cards that were recently unmasked.
+  if (recently_unmasked_cards_.end() !=
+      std::find_if(recently_unmasked_cards_.begin(),
+                   recently_unmasked_cards_.end(),
+                   [&imported_credit_card](const CreditCard& unmasked) -> bool {
+                     return unmasked.TypeAndLastFourDigits() ==
+                            imported_credit_card->TypeAndLastFourDigits();
+                   })) {
+    return;
+  }
 
   // If credit card information was submitted, we need to confirm whether to
   // save it.

@@ -490,8 +490,9 @@ bool PersonalDataManager::ImportFormData(
   }
 
   // Also don't offer to save if we already have this stored as a full wallet
-  // card. (In particular this comes up just after filling and submitting a
-  // Wallet card.)
+  // card. Note that we will offer to save masked server cards, as long as
+  // the user re-typed the info by hand. See AutofillManager's
+  // |recently_unmasked_cards_|.
   if (local_imported_credit_card) {
     for (CreditCard* card : server_credit_cards_) {
       if (card->record_type() == CreditCard::FULL_SERVER_CARD &&
