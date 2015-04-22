@@ -754,9 +754,11 @@ ImageBuffer* HTMLCanvasElement::buffer() const
     return m_imageBuffer.get();
 }
 
-void HTMLCanvasElement::createImageBufferUsingSurface(PassOwnPtr<ImageBufferSurface> surface)
+void HTMLCanvasElement::createImageBufferUsingSurfaceForTesting(PassOwnPtr<ImageBufferSurface> surface)
 {
     discardImageBuffer();
+    setWidth(surface->size().width());
+    setHeight(surface->size().height());
     createImageBufferInternal(surface);
 }
 

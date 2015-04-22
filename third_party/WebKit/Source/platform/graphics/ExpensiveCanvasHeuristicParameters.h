@@ -35,6 +35,11 @@ enum {
 
     BlurredShadowsAreExpensive = 1,
 
+    // Heuristic: When drawing a source image that has more pixels than
+    // the destination canvas by the following factor or more, the draw
+    // is considered expensive.
+    ExpensiveImageSizeRatio = 4,
+
     // Display list fallback heuristic parameters
     //============================================
 

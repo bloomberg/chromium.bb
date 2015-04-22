@@ -7,6 +7,7 @@
 #include "core/html/canvas/CanvasRenderingContext2D.h"
 
 #include "core/frame/FrameView.h"
+#include "core/frame/ImageBitmap.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/ImageData.h"
 #include "core/html/canvas/CanvasGradient.h"
@@ -174,7 +175,7 @@ public:
 #define TEST_OVERDRAW_SETUP(EXPECTED_OVERDRAWS) \
         OwnPtr<MockImageBufferSurfaceForOverwriteTesting> mockSurface = adoptPtr(new MockImageBufferSurfaceForOverwriteTesting(IntSize(10, 10), NonOpaque)); \
         MockImageBufferSurfaceForOverwriteTesting* surfacePtr = mockSurface.get(); \
-        canvasElement().createImageBufferUsingSurface(mockSurface.release()); \
+        canvasElement().createImageBufferUsingSurfaceForTesting(mockSurface.release()); \
         EXPECT_CALL(*surfacePtr, willOverwriteCanvas()).Times(EXPECTED_OVERDRAWS); \
         context2d()->save();
 
@@ -362,7 +363,7 @@ TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionByDefault)
 {
     createContext(NonOpaque);
     OwnPtr<RecordingImageBufferSurface> surface = adoptPtr(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
-    canvasElement().createImageBufferUsingSurface(surface.release());
+    canvasElement().createImageBufferUsingSurfaceForTesting(surface.release());
 
     EXPECT_FALSE(canvasElement().shouldBeDirectComposited());
 }
@@ -371,7 +372,7 @@ TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionUnderOverdrawLimit)
 {
     createContext(NonOpaque);
     OwnPtr<RecordingImageBufferSurface> surface = adoptPtr(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
-    canvasElement().createImageBufferUsingSurface(surface.release());
+    canvasElement().createImageBufferUsingSurfaceForTesting(surface.release());
 
     context2d()->setGlobalAlpha(0.5f); // To prevent overdraw optimization
     for (int i = 0; i < ExpensiveCanvasHeuristicParameters::ExpensiveOverdrawThreshold - 1; i++) {
@@ -385,7 +386,7 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionOverOverdrawLimit)
 {
     createContext(NonOpaque);
     OwnPtr<RecordingImageBufferSurface> surface = adoptPtr(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
-    canvasElement().createImageBufferUsingSurface(surface.release());
+    canvasElement().createImageBufferUsingSurfaceForTesting(surface.release());
 
     context2d()->setGlobalAlpha(0.5f); // To prevent overdraw optimization
     for (int i = 0; i < ExpensiveCanvasHeuristicParameters::ExpensiveOverdrawThreshold; i++) {
@@ -395,11 +396,57 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionOverOverdrawLimit)
     EXPECT_TRUE(canvasElement().shouldBeDirectComposited());
 }
 
+TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionUnderImageSizeRatioLimit)
+{
+    createContext(NonOpaque);
+    OwnPtr<RecordingImageBufferSurface> surface = adoptPtr(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
+    canvasElement().createImageBufferUsingSurfaceForTesting(surface.release());
+
+    NonThrowableExceptionState exceptionState;
+    RefPtrWillBeRawPtr<Element> sourceCanvasElement = document().createElement("canvas", exceptionState);
+    EXPECT_FALSE(exceptionState.hadException());
+    HTMLCanvasElement* sourceCanvas = static_cast<HTMLCanvasElement*>(sourceCanvasElement.get());
+    IntSize sourceSize(10, 10 * ExpensiveCanvasHeuristicParameters::ExpensiveImageSizeRatio);
+    OwnPtr<UnacceleratedImageBufferSurface> sourceSurface = adoptPtr(new UnacceleratedImageBufferSurface(sourceSize, NonOpaque));
+    sourceCanvas->createImageBufferUsingSurfaceForTesting(sourceSurface.release());
+
+    // Go through an ImageBitmap to avoid triggering a display list fallback
+    RefPtrWillBeRawPtr<ImageBitmap> sourceImageBitmap = ImageBitmap::create(sourceCanvas, IntRect(IntPoint(0, 0), sourceSize));
+
+    context2d()->drawImage(sourceImageBitmap.get(), 0, 0, 1, 1, 0, 0, 1, 1, exceptionState);
+    EXPECT_FALSE(exceptionState.hadException());
+
+    EXPECT_FALSE(canvasElement().shouldBeDirectComposited());
+}
+
+TEST_F(CanvasRenderingContext2DTest, LayerPromotionOverImageSizeRatioLimit)
+{
+    createContext(NonOpaque);
+    OwnPtr<RecordingImageBufferSurface> surface = adoptPtr(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
+    canvasElement().createImageBufferUsingSurfaceForTesting(surface.release());
+
+    NonThrowableExceptionState exceptionState;
+    RefPtrWillBeRawPtr<Element> sourceCanvasElement = document().createElement("canvas", exceptionState);
+    EXPECT_FALSE(exceptionState.hadException());
+    HTMLCanvasElement* sourceCanvas = static_cast<HTMLCanvasElement*>(sourceCanvasElement.get());
+    IntSize sourceSize(10, 10 * ExpensiveCanvasHeuristicParameters::ExpensiveImageSizeRatio + 1);
+    OwnPtr<UnacceleratedImageBufferSurface> sourceSurface = adoptPtr(new UnacceleratedImageBufferSurface(sourceSize, NonOpaque));
+    sourceCanvas->createImageBufferUsingSurfaceForTesting(sourceSurface.release());
+
+    // Go through an ImageBitmap to avoid triggering a display list fallback
+    RefPtrWillBeRawPtr<ImageBitmap> sourceImageBitmap = ImageBitmap::create(sourceCanvas, IntRect(IntPoint(0, 0), sourceSize));
+
+    context2d()->drawImage(sourceImageBitmap.get(), 0, 0, 1, 1, 0, 0, 1, 1, exceptionState);
+    EXPECT_FALSE(exceptionState.hadException());
+
+    EXPECT_TRUE(canvasElement().shouldBeDirectComposited());
+}
+
 TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionUnderExpensivePathPointCount)
 {
     createContext(NonOpaque);
     OwnPtr<RecordingImageBufferSurface> surface = adoptPtr(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
-    canvasElement().createImageBufferUsingSurface(surface.release());
+    canvasElement().createImageBufferUsingSurfaceForTesting(surface.release());
 
     context2d()->beginPath();
     context2d()->moveTo(7, 5);
@@ -416,7 +463,7 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionOverExpensivePathPointCount)
 {
     createContext(NonOpaque);
     OwnPtr<RecordingImageBufferSurface> surface = adoptPtr(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
-    canvasElement().createImageBufferUsingSurface(surface.release());
+    canvasElement().createImageBufferUsingSurfaceForTesting(surface.release());
 
     context2d()->beginPath();
     context2d()->moveTo(7, 5);
@@ -433,7 +480,7 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionWhenPathIsConcave)
 {
     createContext(NonOpaque);
     OwnPtr<RecordingImageBufferSurface> surface = adoptPtr(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
-    canvasElement().createImageBufferUsingSurface(surface.release());
+    canvasElement().createImageBufferUsingSurfaceForTesting(surface.release());
 
     context2d()->beginPath();
     context2d()->moveTo(1, 1);
@@ -453,7 +500,7 @@ TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionWithRectangleClip)
 {
     createContext(NonOpaque);
     OwnPtr<RecordingImageBufferSurface> surface = adoptPtr(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
-    canvasElement().createImageBufferUsingSurface(surface.release());
+    canvasElement().createImageBufferUsingSurfaceForTesting(surface.release());
 
     context2d()->beginPath();
     context2d()->rect(1, 1, 2, 2);
@@ -467,7 +514,7 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionWithComplexClip)
 {
     createContext(NonOpaque);
     OwnPtr<RecordingImageBufferSurface> surface = adoptPtr(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
-    canvasElement().createImageBufferUsingSurface(surface.release());
+    canvasElement().createImageBufferUsingSurfaceForTesting(surface.release());
 
     context2d()->beginPath();
     context2d()->moveTo(1, 1);
@@ -488,7 +535,7 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionWithBlurredShadow)
 {
     createContext(NonOpaque);
     OwnPtr<RecordingImageBufferSurface> surface = adoptPtr(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
-    canvasElement().createImageBufferUsingSurface(surface.release());
+    canvasElement().createImageBufferUsingSurfaceForTesting(surface.release());
 
     context2d()->setShadowColor(String("red"));
     context2d()->setShadowBlur(1.0f);
@@ -505,7 +552,7 @@ TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionWithSharpShadow)
 {
     createContext(NonOpaque);
     OwnPtr<RecordingImageBufferSurface> surface = adoptPtr(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
-    canvasElement().createImageBufferUsingSurface(surface.release());
+    canvasElement().createImageBufferUsingSurfaceForTesting(surface.release());
 
     context2d()->setShadowColor(String("red"));
     context2d()->setShadowOffsetX(1.0f);
@@ -518,7 +565,7 @@ TEST_F(CanvasRenderingContext2DTest, NoFallbackWithSmallState)
 {
     createContext(NonOpaque);
     OwnPtr<RecordingImageBufferSurface> surface = adoptPtr(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
-    canvasElement().createImageBufferUsingSurface(surface.release());
+    canvasElement().createImageBufferUsingSurfaceForTesting(surface.release());
 
     context2d()->fillRect(0, 0, 1, 1); // To have a non-empty dirty rect
     for (int i = 0; i < ExpensiveCanvasHeuristicParameters::ExpensiveRecordingStackDepth - 2; ++i) {
@@ -532,7 +579,7 @@ TEST_F(CanvasRenderingContext2DTest, FallbackWithLargeState)
 {
     createContext(NonOpaque);
     OwnPtr<RecordingImageBufferSurface> surface = adoptPtr(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectFallback), NonOpaque));
-    canvasElement().createImageBufferUsingSurface(surface.release());
+    canvasElement().createImageBufferUsingSurfaceForTesting(surface.release());
 
     context2d()->fillRect(0, 0, 1, 1); // To have a non-empty dirty rect
     for (int i = 0; i < ExpensiveCanvasHeuristicParameters::ExpensiveRecordingStackDepth - 1; ++i) {

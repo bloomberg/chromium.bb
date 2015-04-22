@@ -167,8 +167,7 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-    // Methods used for testing
-    void createImageBufferUsingSurface(PassOwnPtr<ImageBufferSurface>);
+    void createImageBufferUsingSurfaceForTesting(PassOwnPtr<ImageBufferSurface>);
 
 protected:
     virtual void didMoveToNewDocument(Document& oldDocument) override;

@@ -1405,7 +1405,15 @@ void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
 
     validateStateStack();
 
-    if (ExpensiveCanvasHeuristicParameters::SVGImageSourcesAreExpensive && image && image->isSVGImage()) {
+    bool isExpensive = false;
+
+    if (ExpensiveCanvasHeuristicParameters::SVGImageSourcesAreExpensive && image && image->isSVGImage())
+        isExpensive = true;
+
+    if (imageSource->elementSize().width() * imageSource->elementSize().height() > canvas()->width() * canvas()->height() * ExpensiveCanvasHeuristicParameters::ExpensiveImageSizeRatio)
+        isExpensive = true;
+
+    if (isExpensive) {
         ImageBuffer* buffer = canvas()->buffer();
         if (buffer)
             buffer->setHasExpensiveOp();
