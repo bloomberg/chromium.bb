@@ -1010,8 +1010,6 @@ LayoutUnit LayoutDeprecatedFlexibleBox::allowedChildFlex(LayoutBox* child, bool 
 
 const char* LayoutDeprecatedFlexibleBox::name() const
 {
-    if (isFloating())
-        return "LayoutDeprecatedFlexibleBox (floating)";
     if (isAnonymous())
         return "LayoutDeprecatedFlexibleBox (anonymous)";
     if (isRelPositioned())

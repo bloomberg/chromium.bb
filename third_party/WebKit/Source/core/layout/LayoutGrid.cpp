@@ -1841,8 +1841,6 @@ void LayoutGrid::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& pa
 
 const char* LayoutGrid::name() const
 {
-    if (isFloating())
-        return "LayoutGrid (floating)";
     if (isAnonymous())
         return "LayoutGrid (anonymous)";
     if (isRelPositioned())

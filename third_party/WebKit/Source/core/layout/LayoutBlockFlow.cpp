@@ -3152,9 +3152,6 @@ void LayoutBlockFlow::positionDialog()
 
 const char* LayoutBlockFlow::name() const
 {
-    if (isFloating())
-        return "LayoutBlockFlow (floating)";
-
     if (style()) {
         if (isAnonymousColumnsBlock())
             return "LayoutBlockFlow (anonymous multi-column)";

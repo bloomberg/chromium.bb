@@ -1091,6 +1091,9 @@ String LayoutObject::decoratedName() const
     name.append(this->name());
     if (isOutOfFlowPositioned())
         name.append(" (positioned)");
+    if (isFloating())
+        name.append(" (floating)");
+
     return name.toString();
 }
 
