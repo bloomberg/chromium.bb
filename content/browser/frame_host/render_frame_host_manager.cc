@@ -352,6 +352,13 @@ void RenderFrameHostManager::OnBeforeUnloadACK(
         CancelPending();
       }
 
+      // PlzNavigate: clean up the speculative RenderFrameHost if there is one.
+      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kEnableBrowserSideNavigation) &&
+          speculative_render_frame_host_) {
+        CleanUpNavigation();
+      }
+
       // This is not a cross-process navigation; the tab is being closed.
       render_frame_host_->render_view_host()->ClosePage();
     }
