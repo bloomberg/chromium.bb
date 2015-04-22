@@ -17,7 +17,7 @@ namespace views {
 class ImageView;
 class Label;
 class Checkbox;
-class CheckmarkThrobber;
+class MaterialThrobber;
 }
 
 namespace autofill {
@@ -135,7 +135,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   views::Checkbox* storage_checkbox_;
 
   FadeOutView* progress_overlay_;
-  views::CheckmarkThrobber* progress_throbber_;
+  views::MaterialThrobber* progress_throbber_;
   views::Label* progress_label_;
 
   gfx::SlideAnimation overlay_animation_;

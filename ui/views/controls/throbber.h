@@ -41,12 +41,15 @@ class VIEWS_EXPORT Throbber : public View {
   void OnPaint(gfx::Canvas* canvas) override;
 
  protected:
+  bool running() const { return running_; }
+  base::Time start_time() const { return start_time_; }
+
   // Specifies whether the throbber is currently animating or not
-  bool running_;
 
  private:
   void Run();
 
+  bool running_;
   bool paint_while_stopped_;
   int frame_count_;  // How many frames we have.
   base::Time start_time_;  // Time when Start was called.
@@ -94,32 +97,37 @@ class VIEWS_EXPORT SmoothedThrobber : public Throbber {
   DISALLOW_COPY_AND_ASSIGN(SmoothedThrobber);
 };
 
-// A CheckmarkThrobber is a special variant of throbber that has three states:
-//   1. not yet completed (which paints nothing)
-//   2. working (which paints the throbber animation)
-//   3. completed (which paints a checkmark)
-//
-class VIEWS_EXPORT CheckmarkThrobber : public Throbber {
+// A throbber that follows material design guidelines. This is a specialization
+// of Throbber for now, but should probably be folded into/replace Throbber
+// eventually.
+class VIEWS_EXPORT MaterialThrobber : public Throbber {
  public:
-  CheckmarkThrobber();
+  MaterialThrobber();
+  ~MaterialThrobber() override;
 
-  // If checked is true, the throbber stops spinning and displays a checkmark.
-  // If checked is false, the throbber stops spinning and displays nothing.
+  // Stop spinning and, if checked is true, display a checkmark.
   void SetChecked(bool checked);
 
-  // Overridden from Throbber:
+  void set_preferred_diameter(int diameter) { preferred_diameter_ = diameter; }
+
+  // View implementation.
+  gfx::Size GetPreferredSize() const override;
+  int GetHeightForWidth(int w) const override;
   void OnPaint(gfx::Canvas* canvas) override;
 
  private:
-  static const int kFrameTimeMs = 30;
+  // The preferred width and height for this view. Zero indicates the size is
+  // set by the parent class (i.e. matches the size of the pre-material
+  // sprites).
+  int preferred_diameter_;
 
   // Whether or not we should display a checkmark.
   bool checked_;
 
-  // The checkmark image.
+  // The checkmark image. Will be null until it's used (if ever).
   const gfx::ImageSkia* checkmark_;
 
-  DISALLOW_COPY_AND_ASSIGN(CheckmarkThrobber);
+  DISALLOW_COPY_AND_ASSIGN(MaterialThrobber);
 };
 
 }  // namespace views
