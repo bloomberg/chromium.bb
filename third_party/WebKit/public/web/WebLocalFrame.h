@@ -132,10 +132,6 @@ public:
     // The implementation can request the embedder to cancel the call by setting
     // |cancel| to true.
     virtual void willShowInstallBannerPrompt(const WebVector<WebString>& platforms, WebAppBannerPromptReply*) = 0;
-
-    // Version of the above which takes a single platform.
-    // TODO(benwells): remove this once the chrome side has been updated.
-    virtual void willShowInstallBannerPrompt(const WebString& platform, WebAppBannerPromptReply*) = 0;
 };
 
 } // namespace blink

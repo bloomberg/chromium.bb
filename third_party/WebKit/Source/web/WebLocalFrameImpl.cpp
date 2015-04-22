@@ -2038,13 +2038,6 @@ void WebLocalFrameImpl::willShowInstallBannerPrompt(const WebVector<WebString>& 
     AppBannerController::willShowInstallBannerPrompt(frame(), platforms, reply);
 }
 
-
-void WebLocalFrameImpl::willShowInstallBannerPrompt(const WebString& platform, WebAppBannerPromptReply* reply)
-{
-    WebVector<WebString> platforms(&platform, 1);
-    willShowInstallBannerPrompt(platforms, reply);
-}
-
 void WebLocalFrameImpl::requestRunTask(WebSuspendableTask* task) const
 {
     ASSERT(frame());
