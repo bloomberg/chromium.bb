@@ -2202,8 +2202,6 @@ crbug.com/477244 inspector/sources/debugger/live-edit-breakpoints.html [ Skip ]
 
 crbug.com/477252 [ Win ] http/tests/fetch/window/stream-reader.html [ Pass Timeout ]
 
-crbug.com/472488 http/tests/inspector/service-workers/service-workers-redundant.html [ Skip ]
-
 crbug.com/479164 inspector/geolocation-emulation-tests.html [ Pass Failure ]
 
 crbug.com/470326 [ XP ] svg/text/bidi-text-query.svg [ NeedsRebaseline ]

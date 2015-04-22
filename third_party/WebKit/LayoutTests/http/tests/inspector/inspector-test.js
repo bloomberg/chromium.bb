@@ -882,7 +882,7 @@ function closeFrontend(callback)
 function openFrontendAndIncrement()
 {
     frontendReopeningCount++;
-    testRunner.showWebInspector();
+    testRunner.showWebInspector(JSON.stringify({testPath: '"' + location.href + '"'}).replace(/\"/g,"%22"));
     setTimeout(runTest, 1);
 }
 

@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: line 98: registerServiceWorker success
 ServiceWorkers must be shown correctly even if there is a redundant worker.
 
 The first ServiceWorker is activated.
