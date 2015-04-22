@@ -14,6 +14,7 @@ namespace test {
 
 TestNativeDisplayDelegate::TestNativeDisplayDelegate(ActionLogger* log)
     : max_configurable_pixels_(0),
+      get_hdcp_expectation_(true),
       hdcp_state_(HDCP_STATE_UNDESIRED),
       run_async_(false),
       log_(log) {
@@ -107,13 +108,13 @@ void TestNativeDisplayDelegate::CreateFrameBuffer(const gfx::Size& size) {
 bool TestNativeDisplayDelegate::GetHDCPState(const DisplaySnapshot& output,
                                              HDCPState* state) {
   *state = hdcp_state_;
-  return true;
+  return get_hdcp_expectation_;
 }
 
 void TestNativeDisplayDelegate::GetHDCPState(
     const DisplaySnapshot& output,
     const GetHDCPStateCallback& callback) {
-  callback.Run(true, hdcp_state_);
+  callback.Run(get_hdcp_expectation_, hdcp_state_);
 }
 
 bool TestNativeDisplayDelegate::SetHDCPState(const DisplaySnapshot& output,

@@ -82,6 +82,11 @@ class TestDisplayLayoutManager
     return true;
   }
 
+  DisplayConfigurator::DisplayStateList GetDisplayStates() const override {
+    NOTREACHED();
+    return DisplayConfigurator::DisplayStateList();
+  }
+
  private:
   const DisplayMode* FindMirrorMode(
       const std::vector<DisplaySnapshot*>& displays) const {

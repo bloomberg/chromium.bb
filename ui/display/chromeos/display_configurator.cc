@@ -81,6 +81,7 @@ class DisplayConfigurator::DisplayLayoutManagerImpl
                         chromeos::DisplayPowerState new_power_state,
                         std::vector<DisplayConfigureRequest>* requests,
                         gfx::Size* framebuffer_size) const override;
+  DisplayStateList GetDisplayStates() const override;
 
  private:
   // Parses the |displays| into a list of DisplayStates. This effectively adds
@@ -327,6 +328,11 @@ bool DisplayConfigurator::DisplayLayoutManagerImpl::GetDisplayLayout(
          !size.IsEmpty());
   *framebuffer_size = size;
   return true;
+}
+
+DisplayConfigurator::DisplayStateList
+DisplayConfigurator::DisplayLayoutManagerImpl::GetDisplayStates() const {
+  return configurator_->cached_displays();
 }
 
 const DisplayMode*

@@ -1,0 +1,237 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "base/bind.h"
+#include "base/memory/scoped_vector.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/chromeos/query_content_protection_task.h"
+#include "ui/display/chromeos/test/action_logger_util.h"
+#include "ui/display/chromeos/test/test_display_snapshot.h"
+#include "ui/display/chromeos/test/test_native_display_delegate.h"
+
+namespace ui {
+namespace test {
+
+namespace {
+
+class TestDisplayLayoutManager
+    : public DisplayConfigurator::DisplayLayoutManager {
+ public:
+  TestDisplayLayoutManager(ScopedVector<DisplaySnapshot> displays,
+                           MultipleDisplayState display_state)
+      : displays_(displays.Pass()), display_state_(display_state) {}
+  ~TestDisplayLayoutManager() override {}
+
+  // DisplayConfigurator::DisplayLayoutManager:
+  DisplayConfigurator::StateController* GetStateController() const override {
+    return nullptr;
+  }
+
+  DisplayConfigurator::SoftwareMirroringController*
+  GetSoftwareMirroringController() const override {
+    return nullptr;
+  }
+
+  MultipleDisplayState GetDisplayState() const override {
+    return display_state_;
+  }
+
+  chromeos::DisplayPowerState GetPowerState() const override {
+    NOTREACHED();
+    return chromeos::DISPLAY_POWER_ALL_ON;
+  }
+
+  bool GetDisplayLayout(const std::vector<DisplaySnapshot*>& displays,
+                        MultipleDisplayState new_display_state,
+                        chromeos::DisplayPowerState new_power_state,
+                        std::vector<DisplayConfigureRequest>* requests,
+                        gfx::Size* framebuffer_size) const override {
+    NOTREACHED();
+    return false;
+  }
+
+  std::vector<DisplaySnapshot*> GetDisplayStates() const override {
+    return displays_.get();
+  }
+
+ private:
+  ScopedVector<DisplaySnapshot> displays_;
+  MultipleDisplayState display_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDisplayLayoutManager);
+};
+
+scoped_ptr<DisplaySnapshot> CreateDisplaySnapshot(int64_t id,
+                                                  DisplayConnectionType type) {
+  scoped_ptr<TestDisplaySnapshot> display(new TestDisplaySnapshot());
+  display->set_display_id(id);
+  display->set_type(type);
+
+  return display.Pass();
+}
+
+}  // namespace
+
+class QueryContentProtectionTaskTest : public testing::Test {
+ public:
+  QueryContentProtectionTaskTest()
+      : display_delegate_(&log_), has_response_(false) {}
+  ~QueryContentProtectionTaskTest() override {}
+
+  void ResponseCallback(QueryContentProtectionTask::Response response) {
+    has_response_ = true;
+    response_ = response;
+  }
+
+ protected:
+  ActionLogger log_;
+  TestNativeDisplayDelegate display_delegate_;
+
+  bool has_response_;
+  QueryContentProtectionTask::Response response_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(QueryContentProtectionTaskTest);
+};
+
+TEST_F(QueryContentProtectionTaskTest, QueryWithNoHDCPCapableDisplay) {
+  ScopedVector<DisplaySnapshot> displays;
+  displays.push_back(
+      CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_INTERNAL));
+  TestDisplayLayoutManager layout_manager(displays.Pass(),
+                                          MULTIPLE_DISPLAY_STATE_SINGLE);
+
+  QueryContentProtectionTask task(
+      &layout_manager, &display_delegate_, 1,
+      base::Bind(&QueryContentProtectionTaskTest::ResponseCallback,
+                 base::Unretained(this)));
+  task.Run();
+
+  EXPECT_TRUE(has_response_);
+  EXPECT_TRUE(response_.success);
+  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_INTERNAL, response_.link_mask);
+  EXPECT_EQ(0u, response_.enabled);
+  EXPECT_EQ(0u, response_.unfulfilled);
+}
+
+TEST_F(QueryContentProtectionTaskTest, QueryWithUnknownDisplay) {
+  ScopedVector<DisplaySnapshot> displays;
+  displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_UNKNOWN));
+  TestDisplayLayoutManager layout_manager(displays.Pass(),
+                                          MULTIPLE_DISPLAY_STATE_SINGLE);
+
+  QueryContentProtectionTask task(
+      &layout_manager, &display_delegate_, 1,
+      base::Bind(&QueryContentProtectionTaskTest::ResponseCallback,
+                 base::Unretained(this)));
+  task.Run();
+
+  EXPECT_TRUE(has_response_);
+  EXPECT_FALSE(response_.success);
+  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_UNKNOWN, response_.link_mask);
+  EXPECT_EQ(0u, response_.enabled);
+  EXPECT_EQ(0u, response_.unfulfilled);
+}
+
+TEST_F(QueryContentProtectionTaskTest, FailQueryWithHDMIDisplay) {
+  ScopedVector<DisplaySnapshot> displays;
+  displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_HDMI));
+  TestDisplayLayoutManager layout_manager(displays.Pass(),
+                                          MULTIPLE_DISPLAY_STATE_SINGLE);
+  display_delegate_.set_get_hdcp_state_expectation(false);
+
+  QueryContentProtectionTask task(
+      &layout_manager, &display_delegate_, 1,
+      base::Bind(&QueryContentProtectionTaskTest::ResponseCallback,
+                 base::Unretained(this)));
+  task.Run();
+
+  EXPECT_TRUE(has_response_);
+  EXPECT_FALSE(response_.success);
+  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_HDMI, response_.link_mask);
+}
+
+TEST_F(QueryContentProtectionTaskTest, QueryWithHDMIDisplayAndUnfulfilled) {
+  ScopedVector<DisplaySnapshot> displays;
+  displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_HDMI));
+  TestDisplayLayoutManager layout_manager(displays.Pass(),
+                                          MULTIPLE_DISPLAY_STATE_SINGLE);
+
+  QueryContentProtectionTask task(
+      &layout_manager, &display_delegate_, 1,
+      base::Bind(&QueryContentProtectionTaskTest::ResponseCallback,
+                 base::Unretained(this)));
+  task.Run();
+
+  EXPECT_TRUE(has_response_);
+  EXPECT_TRUE(response_.success);
+  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_HDMI, response_.link_mask);
+  EXPECT_EQ(0u, response_.enabled);
+  EXPECT_EQ(CONTENT_PROTECTION_METHOD_HDCP, response_.unfulfilled);
+}
+
+TEST_F(QueryContentProtectionTaskTest, QueryWithHDMIDisplayAndFulfilled) {
+  ScopedVector<DisplaySnapshot> displays;
+  displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_HDMI));
+  TestDisplayLayoutManager layout_manager(displays.Pass(),
+                                          MULTIPLE_DISPLAY_STATE_SINGLE);
+  display_delegate_.set_hdcp_state(HDCP_STATE_ENABLED);
+
+  QueryContentProtectionTask task(
+      &layout_manager, &display_delegate_, 1,
+      base::Bind(&QueryContentProtectionTaskTest::ResponseCallback,
+                 base::Unretained(this)));
+  task.Run();
+
+  EXPECT_TRUE(has_response_);
+  EXPECT_TRUE(response_.success);
+  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_HDMI, response_.link_mask);
+  EXPECT_EQ(CONTENT_PROTECTION_METHOD_HDCP, response_.enabled);
+  EXPECT_EQ(0u, response_.unfulfilled);
+}
+
+TEST_F(QueryContentProtectionTaskTest, QueryWith2HDCPDisplays) {
+  ScopedVector<DisplaySnapshot> displays;
+  displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_HDMI));
+  displays.push_back(CreateDisplaySnapshot(2, DISPLAY_CONNECTION_TYPE_DVI));
+  TestDisplayLayoutManager layout_manager(displays.Pass(),
+                                          MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
+
+  QueryContentProtectionTask task(
+      &layout_manager, &display_delegate_, 1,
+      base::Bind(&QueryContentProtectionTaskTest::ResponseCallback,
+                 base::Unretained(this)));
+  task.Run();
+
+  EXPECT_TRUE(has_response_);
+  EXPECT_TRUE(response_.success);
+  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_HDMI, response_.link_mask);
+  EXPECT_EQ(0u, response_.enabled);
+  EXPECT_EQ(CONTENT_PROTECTION_METHOD_HDCP, response_.unfulfilled);
+}
+
+TEST_F(QueryContentProtectionTaskTest, QueryWithMirrorHDCPDisplays) {
+  ScopedVector<DisplaySnapshot> displays;
+  displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_HDMI));
+  displays.push_back(CreateDisplaySnapshot(2, DISPLAY_CONNECTION_TYPE_DVI));
+  TestDisplayLayoutManager layout_manager(displays.Pass(),
+                                          MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
+
+  QueryContentProtectionTask task(
+      &layout_manager, &display_delegate_, 1,
+      base::Bind(&QueryContentProtectionTaskTest::ResponseCallback,
+                 base::Unretained(this)));
+  task.Run();
+
+  EXPECT_TRUE(has_response_);
+  EXPECT_TRUE(response_.success);
+  EXPECT_EQ(static_cast<uint32_t>(DISPLAY_CONNECTION_TYPE_HDMI |
+                                  DISPLAY_CONNECTION_TYPE_DVI),
+            response_.link_mask);
+  EXPECT_EQ(0u, response_.enabled);
+  EXPECT_EQ(CONTENT_PROTECTION_METHOD_HDCP, response_.unfulfilled);
+}
+
+}  // namespace test
+}  // namespace ui

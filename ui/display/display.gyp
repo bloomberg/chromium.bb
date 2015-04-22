@@ -52,6 +52,8 @@
         'chromeos/display_util.cc',
         'chromeos/display_util.h',
         'chromeos/ozone/display_configurator_ozone.cc',
+        'chromeos/query_content_protection_task.cc',
+        'chromeos/query_content_protection_task.h',
         'chromeos/update_display_configuration_task.cc',
         'chromeos/update_display_configuration_task.h',
         'chromeos/x11/display_configurator_x11.cc',
@@ -193,6 +195,7 @@
       'sources': [
         'chromeos/configure_displays_task_unittest.cc',
         'chromeos/display_configurator_unittest.cc',
+        'chromeos/query_content_protection_task_unittest.cc',
         'chromeos/update_display_configuration_task_unittest.cc',
         'chromeos/x11/display_util_x11_unittest.cc',
         'chromeos/x11/native_display_event_dispatcher_x11_unittest.cc',

@@ -62,6 +62,9 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
 
   typedef std::vector<DisplaySnapshot*> DisplayStateList;
 
+  // Mapping a display_id to a protection request bitmask.
+  typedef std::map<int64_t, uint32_t> ContentProtections;
+
   class Observer {
    public:
     virtual ~Observer() {}
@@ -132,6 +135,8 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
         chromeos::DisplayPowerState new_power_state,
         std::vector<DisplayConfigureRequest>* requests,
         gfx::Size* framebuffer_size) const = 0;
+
+    virtual DisplayStateList GetDisplayStates() const = 0;
   };
 
   // Helper class used by tests.
@@ -285,8 +290,6 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
  private:
   class DisplayLayoutManagerImpl;
 
-  // Mapping a display_id to a protection request bitmask.
-  typedef std::map<int64_t, uint32_t> ContentProtections;
   // Mapping a client to its protection request.
   typedef std::map<ContentProtectionClientId, ContentProtections>
       ProtectionRequests;
