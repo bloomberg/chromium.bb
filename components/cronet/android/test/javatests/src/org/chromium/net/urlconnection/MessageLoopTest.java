@@ -10,18 +10,32 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestBase;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * Tests the MessageLoop implementation.
  */
 public class MessageLoopTest extends CronetTestBase {
+    private Thread mTestThread;
+    private final ExecutorService mExecutorService =
+            Executors.newSingleThreadExecutor(new ExecutorThreadFactory());
+    private class ExecutorThreadFactory implements ThreadFactory {
+        public Thread newThread(Runnable r) {
+            mTestThread = new Thread(r);
+            return mTestThread;
+        }
+    }
+    private boolean mFailed = false;
 
     @SmallTest
     @Feature({"Cronet"})
     public void testInterrupt() throws Exception {
         final MessageLoop loop = new MessageLoop();
         assertFalse(loop.isRunning());
-        TestThread thread = new TestThread() {
+        Future future = mExecutorService.submit(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -31,23 +45,29 @@ public class MessageLoopTest extends CronetTestBase {
                     // Expected interrupt.
                 }
             }
-        };
-        thread.start();
+        });
         Thread.sleep(1000);
         assertTrue(loop.isRunning());
         assertFalse(loop.hasLoopFailed());
-        thread.interrupt();
-        Thread.sleep(1000);
+        mTestThread.interrupt();
+        future.get();
         assertFalse(loop.isRunning());
         assertTrue(loop.hasLoopFailed());
-        assertFalse(thread.mFailed);
+        assertFalse(mFailed);
         // Re-spinning the message loop is not allowed after interrupt.
-        try {
-            loop.loop();
-            fail();
-        } catch (IllegalStateException e) {
-            // Expected.
-        }
+        mExecutorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    loop.loop();
+                    fail();
+                } catch (Exception e) {
+                    if (!(e instanceof IllegalStateException)) {
+                        fail();
+                    }
+                }
+            }
+        }).get();
     }
 
     @SmallTest
@@ -55,7 +75,7 @@ public class MessageLoopTest extends CronetTestBase {
     public void testTaskFailed() throws Exception {
         final MessageLoop loop = new MessageLoop();
         assertFalse(loop.isRunning());
-        TestThread thread = new TestThread() {
+        Future future = mExecutorService.submit(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -67,44 +87,34 @@ public class MessageLoopTest extends CronetTestBase {
                     }
                 }
             }
-        };
+        });
         Runnable failedTask = new Runnable() {
             @Override
             public void run() {
                 throw new NullPointerException();
             }
         };
-        thread.start();
         Thread.sleep(1000);
         assertTrue(loop.isRunning());
         assertFalse(loop.hasLoopFailed());
         loop.execute(failedTask);
-        Thread.sleep(1000);
+        future.get();
         assertFalse(loop.isRunning());
         assertTrue(loop.hasLoopFailed());
-        assertFalse(thread.mFailed);
+        assertFalse(mFailed);
         // Re-spinning the message loop is not allowed after exception.
-        try {
-            loop.loop();
-            fail();
-        } catch (IllegalStateException e) {
-            // Expected.
-        }
-    }
-
-    /**
-     * A Thread class to move assertion to the main thread, so findbug
-     * won't complain.
-     */
-    private class TestThread extends Thread {
-        boolean mFailed = false;
-
-        public TestThread() {
-        }
-
-        @Override
-        public void run() {
-            throw new IllegalStateException();
-        }
+        mExecutorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    loop.loop();
+                    fail();
+                } catch (Exception e) {
+                    if (!(e instanceof IllegalStateException)) {
+                        fail();
+                    }
+                }
+            }
+        }).get();
     }
 }
