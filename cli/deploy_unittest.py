@@ -71,8 +71,8 @@ class BrilloDeployOperationFake(deploy.BrilloDeployOperation):
     super(BrilloDeployOperationFake, self).__init__(pkg_count, emerge)
     self._queue = queue
 
-  def ParseOutput(self):
-    super(BrilloDeployOperationFake, self).ParseOutput()
+  def ParseOutput(self, output=None):
+    super(BrilloDeployOperationFake, self).ParseOutput(output)
     self._queue.put('advance')
 
 

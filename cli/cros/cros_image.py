@@ -14,10 +14,114 @@ from chromite.lib import blueprint_lib
 from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
+from chromite.lib import operation
 from chromite.lib import workspace_lib
 
 
 IMAGE_TYPES = ['base', 'dev', 'test', 'factory_test', 'factory_install', []]
+
+
+class BrilloImageOperation(operation.ParallelEmergeOperation):
+  """Progress bar for brillo image.
+
+  Since brillo image is a long running operation, we divide it into stages.
+  For each stage, we display a different progress bar.
+  """
+  BASE_STAGE = 'base'
+  DEV_STAGE = 'dev'
+  TEST_STAGE = 'test'
+
+  def __init__(self):
+    super(BrilloImageOperation, self).__init__()
+    self._stage_name = None
+    self._done = False
+
+  def _StageEnter(self, output):
+    """Return stage's name if we are entering a stage, else False."""
+    events = ['operation: creating base image',
+              'operation: creating developer image',
+              'operation: creating test image']
+    stages = [self.BASE_STAGE, self.DEV_STAGE, self.TEST_STAGE]
+    for event, stage in zip(events, stages):
+      if event in output:
+        return stage
+    return None
+
+  def _StageExit(self, output):
+    """Determine if we are exiting a stage."""
+    events = ['operation: done creating base image',
+              'operation: done creating developer image',
+              'operation: done creating test image']
+    for event in events:
+      if event in output:
+        return True
+    return False
+
+  def _StageStatus(self, output):
+    "Returns stage name if we are entering that stage and if exiting a stage."""
+    return self._StageEnter(output), self._StageExit(output)
+
+  def _PrintEnterStageMessages(self):
+    """Messages to indicate the start of a new stage.
+
+    As the base image is always created, we display a message then. For the
+    other stages, messages are only displayed if those stages will have a
+    progress bar.
+
+    Returns:
+      A message that is to be displayed before the progress bar is shown (if
+      needed). If the progress bar is not shown, then the message should not be
+      displayed.
+    """
+    if self._stage_name == self.BASE_STAGE:
+      logging.notice('Creating disk layout')
+      return 'Building base image.'
+    elif self._stage_name == self.DEV_STAGE:
+      return 'Building developer image.'
+    else:
+      return 'Building test image.'
+
+  def _PrintEndStageMessages(self):
+    """Messages to be shown at the end of a stage."""
+    logging.notice('Unmounting image. This may take a while.')
+
+  def ParseOutput(self, output=None):
+    """Display progress bars for brillo image."""
+
+    stdout = self._stdout.read()
+    stderr = self._stderr.read()
+    output = stdout + stderr
+    stage_name, stage_exit = self._StageStatus(output)
+
+    # If we are in a stage, then we update the progress bar accordingly.
+    if self._stage_name is not None and not self._done:
+      progress = super(BrilloImageOperation, self).ParseOutput(output)
+      # If we are done displaying a progress bar for a stage, then we display
+      # progress bar operation (parallel emerge).
+      if progress == 1:
+        self._done = True
+        self.Cleanup()
+        # Do not display a 100% progress in exit because it has already been
+        # done.
+        self._progress_bar_displayed = False
+        self._PrintEndStageMessages()
+
+    # Perform cleanup when exiting a stage.
+    if stage_exit:
+      self._stage_name = None
+      self._total = None
+      self._done = False
+      self._completed = 0
+      self._printed_no_packages = False
+      self.Cleanup()
+      self._progress_bar_displayed = False
+
+    # When entering a stage, print stage appropriate entry messages.
+    if stage_name is not None:
+      self._stage_name = stage_name
+      msg = self._PrintEnterStageMessages()
+      self.SetProgressBarMessage(msg)
 
 
 @command.CommandDecorator('image')
@@ -118,4 +222,9 @@ class ImageCommand(command.CliCommand):
     if self.options.image_types:
       cmd.extend(self.options.image_types)
 
-    cros_build_lib.RunCommand(cmd)
+    if command.UseProgressBar():
+      cmd.append('--progress_bar')
+      op = BrilloImageOperation()
+      op.Run(cros_build_lib.RunCommand, cmd, log_level=logging.DEBUG)
+    else:
+      cros_build_lib.RunCommand(cmd)

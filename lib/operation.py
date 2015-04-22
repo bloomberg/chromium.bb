@@ -117,7 +117,7 @@ class ProgressBarOperation(object):
       sys.stdout.write('\n')
       sys.stdout.flush()
 
-  def ParseOutput(self):
+  def ParseOutput(self, output=None):
     """Method to parse output and update progress bar.
 
     This method should be overridden to read and parse the lines in _stdout and
@@ -130,6 +130,10 @@ class ProgressBarOperation(object):
       stdout = self._stdout.read()
       if 'foo' in stdout:
         # Increment progress bar.
+
+    Args:
+      output: Pass in output to parse instead of reading from self._stdout and
+        self._stderr.
     """
     raise NotImplementedError('Subclass must override this method.')
 
@@ -211,13 +215,22 @@ class ParallelEmergeOperation(ProgressBarOperation):
     self._completed = 0
     self._printed_no_packages = False
     self._events = ['Fetched ', 'Completed ']
+    self._msg = None
 
   def _GetTotal(self, output):
     """Get total packages by looking for Total: digits packages."""
     match = re.search(r'Total: (\d+) packages', output)
     return int(match.group(1)) if match else None
 
-  def ParseOutput(self):
+  def SetProgressBarMessage(self, msg):
+    """Message to be shown before the progress bar is displayed with 0%.
+
+       The message is not displayed if the progress bar is not going to be
+       displayed.
+    """
+    self._msg = msg
+
+  def ParseOutput(self, output=None):
     """Parse the output of emerge to determine how to update progress bar.
 
     1) Figure out how many packages exist. If the total number of packages to be
@@ -225,15 +238,26 @@ class ParallelEmergeOperation(ProgressBarOperation):
     2) Whenever a package is downloaded or built, 'Fetched' and 'Completed' are
     printed respectively. By counting counting 'Fetched's and 'Completed's, we
     can determine how much to update the progress bar by.
+
+    Args:
+      output: Pass in output to parse instead of reading from self._stdout and
+        self._stderr.
+
+    Returns:
+      A fraction between 0 and 1 indicating the level of the progress bar. If
+      the progress bar isn't displayed, then the return value is -1.
     """
-    stdout = self._stdout.read()
-    stderr = self._stderr.read()
-    output = stdout + stderr
+    if output is None:
+      stdout = self._stdout.read()
+      stderr = self._stderr.read()
+      output = stdout + stderr
 
     if self._total is None:
       temp = self._GetTotal(output)
       if temp is not None:
         self._total = temp * len(self._events)
+        if self._msg is not None:
+          logging.notice(self._msg)
 
     for event in self._events:
       self._completed += output.count(event)
@@ -243,7 +267,11 @@ class ParallelEmergeOperation(ProgressBarOperation):
       self._printed_no_packages = True
 
     if self._total:
-      self.ProgressBar(float(self._completed) / self._total)
+      progress = float(self._completed) / self._total
+      self.ProgressBar(progress)
+      return progress
+    else:
+      return -1
 
 
 # TODO(sjg): When !isatty(), keep stdout and stderr separate so they can be

@@ -66,7 +66,7 @@ class BrilloDeployOperation(operation.ProgressBarOperation):
     self._total = pkg_count * len(self._events)
     self._completed = 0
 
-  def ParseOutput(self):
+  def ParseOutput(self, output=None):
     """Parse the output of brillo deploy to update a progress bar."""
     stdout = self._stdout.read()
     stderr = self._stderr.read()

@@ -6,14 +6,17 @@
 
 from __future__ import print_function
 
+import multiprocessing
 import os
 
 from chromite.cbuildbot import constants
+from chromite.cli import command
 from chromite.cli import command_unittest
 from chromite.cli.cros import cros_image
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
+from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 
 
@@ -86,6 +89,23 @@ class ImageCommandTest(cros_test_lib.WorkspaceTestCase):
                                                        'images'),
                      '--loglevel=7']
     self.rc_mock.assertCommandContains(expected_args)
+
+  def testProgressBar(self):
+    """Test that RunCommand is called with --progress_bar."""
+    self.PatchObject(command, 'UseProgressBar', return_value=True)
+    op = self.PatchObject(cros_image.BrilloImageOperation, 'Run')
+    self.SetupCommandMock([])
+    self.cmd_mock.inst.Run()
+
+    expected_args = [os.path.join(constants.CROSUTILS_DIR, 'build_image'),
+                     '--noenable_bootcache', '--enable_rootfs_verification',
+                     '--output_root=%s' % os.path.join(self.workspace_path,
+                                                       'build/images'),
+                     '--loglevel=7', '--progress_bar']
+
+    # Test that BrilloImageOperation.Run is called with the correct arguments.
+    op.assert_called_once_with(cros_build_lib.RunCommand, expected_args,
+                               log_level=logging.DEBUG)
 
 
 class ImageCommandParserTest(cros_test_lib.TestCase):
@@ -222,3 +242,112 @@ class ImageCommandParserTest(cros_test_lib.TestCase):
     self.assertFalse(instance.options.enable_bootcache)
     self.assertTrue(instance.options.enable_rootfs_verification)
     self.assertEqual(instance.options.image_types, ['dev', 'test'])
+
+
+class BrilloImageOperationFake(cros_image.BrilloImageOperation):
+  """Fake of BrilloImageOperation,"""
+
+  def __init__(self, queue):
+    super(BrilloImageOperationFake, self).__init__()
+    self._queue = queue
+
+  def ParseOutput(self, output=None):
+    super(BrilloImageOperationFake, self).ParseOutput(output)
+    self._queue.put('advance')
+
+
+# TODO(ralphnathan): Inherit from cros_test_lib.ProgressBarTestCase.
+# Implemented in CL:267026
+class BrilloImageOperationTest(cros_test_lib.ProgressBarTestCase,
+                               cros_test_lib.LoggingTestCase):
+  """Test class for cros_image.BrilloImageOperation."""
+
+  def BrilloImageFake(self, events, queue):
+    """Test function to emulate brillo image."""
+    for event in events:
+      queue.get()
+      print(event)
+
+  def testParseOutputBaseImageStage(self):
+    """Test Base Image Creation Stage."""
+    events = ['operation: creating base image',
+              'Total: 1 packages',
+              'Fetched ',
+              'Completed ',
+              'operation: done creating base image',
+              'operation: creating developer image',
+              'operation: done creating developer image',
+              'operation: creating test image',
+              'operation: done creating test image']
+
+    queue = multiprocessing.Queue()
+    op = BrilloImageOperationFake(queue)
+    with cros_test_lib.LoggingCapturer() as logs:
+      with self.OutputCapturer():
+        op.Run(self.BrilloImageFake, events, queue)
+
+    # Check that output display progress bars for 1 package being built.
+    self.AssertProgressBarAllEvents(2)
+
+    # Check the logs to make sure only the base image creation is logged.
+    self.AssertLogsContain(logs, 'Creating disk layout')
+    self.AssertLogsContain(logs, 'Building base image')
+    self.AssertLogsContain(logs, 'Building developer image', inverted=True)
+    self.AssertLogsContain(logs, 'Building test image', inverted=True)
+
+  def testParseOutputTestImageStage(self):
+    """Test Test Image Creation Stage."""
+    events = ['operation: creating base image',
+              'operation: done creating base image',
+              'operation: creating developer image',
+              'operation: done creating developer image',
+              'operation: creating test image',
+              'Total: 2 packages',
+              'Fetched ',
+              'Fetched ',
+              'Completed ',
+              'operation: done creating test image']
+
+    queue = multiprocessing.Queue()
+    op = BrilloImageOperationFake(queue)
+    with cros_test_lib.LoggingCapturer() as logs:
+      with self.OutputCapturer():
+        op.Run(self.BrilloImageFake, events, queue)
+
+    # Check that output display progress bars for 2 packages.
+    self.AssertProgressBarAllEvents(4)
+
+    # Check the logs to make sure only the base image creation is logged.
+    self.AssertLogsContain(logs, 'Creating disk layout')
+    self.AssertLogsContain(logs, 'Building base image', inverted=True)
+    self.AssertLogsContain(logs, 'Building developer image', inverted=True)
+    self.AssertLogsContain(logs, 'Building test image')
+
+  def testParseOutputDeveloperImageStage(self):
+    """Test Developer Image Creation Stage."""
+    events = ['operation: creating base image',
+              'operation: done creating base image',
+              'operation: creating developer image',
+              'Total: 2 packages',
+              'Fetched ',
+              'Fetched ',
+              'Completed ',
+              'Completed ',
+              'operation: done creating developer image',
+              'operation: creating test image',
+              'operation: done creating test image']
+
+    queue = multiprocessing.Queue()
+    op = BrilloImageOperationFake(queue)
+    with cros_test_lib.LoggingCapturer() as logs:
+      with self.OutputCapturer():
+        op.Run(self.BrilloImageFake, events, queue)
+
+    # Check that output display progress bars for 2 packages.
+    self.AssertProgressBarAllEvents(4)
+
+    # Check the logs to make sure only the base image creation is logged.
+    self.AssertLogsContain(logs, 'Creating disk layout')
+    self.AssertLogsContain(logs, 'Building base image', inverted=True)
+    self.AssertLogsContain(logs, 'Building developer image')
+    self.AssertLogsContain(logs, 'Building test image', inverted=True)
