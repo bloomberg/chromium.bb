@@ -8,15 +8,17 @@ from telemetry.page import page_set as page_set_module
 class ToughFiltersCasesPage(page_module.Page):
 
   def RunPageInteractions(self, action_runner):
-    action_runner.Wait(10)
+    with action_runner.CreateInteraction('Filter'):
+      action_runner.Wait(10)
 
 
 class PirateMarkPage(page_module.Page):
 
   def RunPageInteractions(self, action_runner):
-    action_runner.EvaluateJavaScript(
-        'document.getElementById("benchmarkButtonText").click()')
-    action_runner.Wait(10)
+    with action_runner.CreateInteraction('Filter'):
+      action_runner.EvaluateJavaScript(
+          'document.getElementById("benchmarkButtonText").click()')
+      action_runner.Wait(10)
 
 class ToughFiltersCasesPageSet(page_set_module.PageSet):
 

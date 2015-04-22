@@ -293,7 +293,8 @@ class Page19(ToughSchedulingCasesPage):
         page_set=page_set)
 
   def RunPageInteractions(self, action_runner):
-    action_runner.Wait(3)
+    with action_runner.CreateInteraction('SplitAnimation'):
+      action_runner.Wait(3)
 
 
 class Page20(ToughSchedulingCasesPage):

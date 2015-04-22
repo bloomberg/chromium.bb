@@ -4,12 +4,22 @@
 
 from telemetry.core import wpr_modes
 from telemetry import decorators
+from telemetry.page import page
 from telemetry.unittest_util import options_for_unittests
 from telemetry.unittest_util import page_test_test_case
 
-from measurements import smoothness_unittest
 from measurements import thread_times
 from metrics import timeline
+
+
+class AnimatedPage(page.Page):
+  def __init__(self, page_set):
+    super(AnimatedPage, self).__init__(
+      url='file://animated_page.html',
+      page_set=page_set, base_dir=page_set.base_dir)
+
+  def RunPageInteractions(self, action_runner):
+    action_runner.Wait(.2)
 
 
 class ThreadTimesUnitTest(page_test_test_case.PageTestTestCase):
@@ -32,7 +42,7 @@ class ThreadTimesUnitTest(page_test_test_case.PageTestTestCase):
 
   def testBasicForPageWithNoGesture(self):
     ps = self.CreateEmptyPageSet()
-    ps.AddUserStory(smoothness_unittest.AnimatedPage(ps))
+    ps.AddUserStory(AnimatedPage(ps))
 
     measurement = thread_times.ThreadTimes()
     timeline_options = self._options

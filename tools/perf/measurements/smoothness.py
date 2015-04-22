@@ -8,7 +8,7 @@ from measurements import smoothness_controller
 
 
 class Smoothness(page_test.PageTest):
-  def __init__(self, enable_auto_issuing_marker=True):
+  def __init__(self, enable_auto_issuing_marker=False):
     super(Smoothness, self).__init__()
     self._smoothness_controller = None
     self._enable_auto_issuing_marker = enable_auto_issuing_marker

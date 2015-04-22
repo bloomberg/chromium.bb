@@ -27,7 +27,8 @@ class ToughWebglCasesPage(page_module.Page):
     action_runner.Wait(2)
 
   def RunPageInteractions(self, action_runner):
-    action_runner.Wait(5)
+    with action_runner.CreateInteraction('WebGLAnimation'):
+      action_runner.Wait(5)
 
 
 class ToughWebglCasesPageSet(page_set_module.PageSet):

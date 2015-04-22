@@ -17,7 +17,8 @@ class ToughCanvasCasesPage(page_module.Page):
         "document.readyState == 'complete'")
 
   def RunPageInteractions(self, action_runner):
-    action_runner.Wait(5)
+    with action_runner.CreateInteraction('CanvasAnimation'):
+      action_runner.Wait(5)
 
 
 class MicrosofFirefliesPage(ToughCanvasCasesPage):

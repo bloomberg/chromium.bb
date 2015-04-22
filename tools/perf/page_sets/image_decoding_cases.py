@@ -10,7 +10,8 @@ class ImageDecodingCasesPage(page_module.Page):
     super(ImageDecodingCasesPage, self).__init__(url=url, page_set=page_set)
 
   def RunPageInteractions(self, action_runner):
-    action_runner.Wait(5)
+    with action_runner.CreateInteraction('DecodeImage'):
+      action_runner.Wait(5)
 
 class ImageDecodingCasesPageSet(page_set_module.PageSet):
 
