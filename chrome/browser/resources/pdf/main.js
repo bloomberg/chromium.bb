@@ -29,56 +29,26 @@ var viewer;
 
   /**
    * Initialize the global PDFViewer and pass any outstanding messages to it.
-   * @param {Object} streamDetails The stream object which points to the data
-   *     contained in the PDF.
+   * @param {Object} browserApi An object providing an API to the browser.
    */
-  function initViewer(streamDetails) {
+  function initViewer(browserApi) {
     // PDFViewer will handle any messages after it is created.
     window.removeEventListener('message', handleScriptingMessage, false);
-    viewer = new PDFViewer(streamDetails);
+    viewer = new PDFViewer(browserApi);
     while (pendingMessages.length > 0)
       viewer.handleScriptingMessage(pendingMessages.shift());
   }
 
-  function generateStreamDetailsAndInitViewer() {
-    var url = window.location.search.substring(1);
-    var streamDetails = {
-      streamUrl: url,
-      originalUrl: url,
-      responseHeaders: '',
-      embedded: window.parent != window,
-      tabId: -1
-    };
-    if (!chrome.tabs) {
-      initViewer(streamDetails);
-      return;
-    }
-    chrome.tabs.getCurrent(function(tab) {
-      streamDetails.tabId = tab.id;
-      initViewer(streamDetails);
-    });
-  }
-
   /**
-   * Entrypoint for starting the PDF viewer. This function obtains the details
-   * of the PDF 'stream' (the data that points to the PDF) and constructs a
-   * PDFViewer object with it.
+   * Entrypoint for starting the PDF viewer. This function obtains the browser
+   * API for the PDF and constructs a PDFViewer object with it.
    */
   function main() {
     // Set up an event listener to catch scripting messages which are sent prior
     // to the PDFViewer being created.
     window.addEventListener('message', handleScriptingMessage, false);
 
-    if (window.location.search) {
-      generateStreamDetailsAndInitViewer();
-      return;
-    }
-
-    // If the viewer is started from the browser plugin, getStreamInfo will
-    // return the details of the stream.
-    chrome.mimeHandlerPrivate.getStreamInfo(function(streamDetails) {
-      initViewer(streamDetails);
-    });
+    createBrowserApi().then(initViewer);
   };
 
   main();

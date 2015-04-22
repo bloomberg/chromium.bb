@@ -24,13 +24,15 @@ function getIntersectionHeight(rect1, rect2) {
  * @param {Function} beforeZoomCallback is run before a change in zoom
  * @param {Function} afterZoomCallback is run after a change in zoom
  * @param {number} scrollbarWidth the width of scrollbars on the page
+ * @param {number} defaultZoom The default zoom level.
  */
 function Viewport(window,
                   sizer,
                   viewportChangedCallback,
                   beforeZoomCallback,
                   afterZoomCallback,
-                  scrollbarWidth) {
+                  scrollbarWidth,
+                  defaultZoom) {
   this.window_ = window;
   this.sizer_ = sizer;
   this.viewportChangedCallback_ = viewportChangedCallback;
@@ -42,6 +44,7 @@ function Viewport(window,
   this.pageDimensions_ = [];
   this.scrollbarWidth_ = scrollbarWidth;
   this.fittingType_ = Viewport.FittingType.NONE;
+  this.defaultZoom_ = defaultZoom;
 
   window.addEventListener('scroll', this.updateViewport_.bind(this));
   window.addEventListener('resize', this.resize_.bind(this));
@@ -498,10 +501,9 @@ Viewport.prototype = {
       this.documentDimensions_ = documentDimensions;
       this.pageDimensions_ = this.documentDimensions_.pageDimensions;
       if (initialDimensions) {
-        this.setZoomInternal_(this.computeFittingZoom_(this.documentDimensions_,
-                                                       true));
-        if (this.zoom_ > 1)
-          this.setZoomInternal_(1);
+        this.setZoomInternal_(
+            Math.min(this.defaultZoom_,
+                     this.computeFittingZoom_(this.documentDimensions_, true)));
         this.window_.scrollTo(0, 0);
       }
       this.contentSizeChanged_();

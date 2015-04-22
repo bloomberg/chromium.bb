@@ -61,18 +61,17 @@ PDFViewer.MIN_TOOLBAR_OFFSET = 15;
  * Creates a new PDFViewer. There should only be one of these objects per
  * document.
  * @constructor
- * @param {Object} streamDetails The stream object which points to the data
- *     contained in the PDF.
+ * @param {!BrowserApi} browserApi An object providing an API to the browser.
  */
-function PDFViewer(streamDetails) {
-  this.streamDetails_ = streamDetails;
+function PDFViewer(browserApi) {
+  this.browserApi_ = browserApi;
   this.loaded_ = false;
   this.parentWindow_ = null;
 
   this.delayedScriptingMessages_ = [];
 
-  this.isPrintPreview_ =
-      this.streamDetails_.originalUrl.indexOf('chrome://print') == 0;
+  this.isPrintPreview_ = this.browserApi_.getStreamInfo().originalUrl.indexOf(
+                             'chrome://print') == 0;
   this.isMaterial_ = location.pathname.substring(1) === 'index-material.html';
 
   // The sizer element is placed behind the plugin element to cause scrollbars
@@ -93,7 +92,8 @@ function PDFViewer(streamDetails) {
                                 this.viewportChanged_.bind(this),
                                 this.beforeZoom_.bind(this),
                                 this.afterZoom_.bind(this),
-                                getScrollbarWidth());
+                                getScrollbarWidth(),
+                                this.browserApi_.getDefaultZoom());
 
   // Create the plugin object dynamically so we can set its src. The plugin
   // element is sized to fill the entire window and is set to be fixed
@@ -113,20 +113,23 @@ function PDFViewer(streamDetails) {
   window.addEventListener('message', this.handleScriptingMessage.bind(this),
                           false);
 
-  document.title = getFilenameFromURL(this.streamDetails_.originalUrl);
-  this.plugin_.setAttribute('src', this.streamDetails_.originalUrl);
-  this.plugin_.setAttribute('stream-url', this.streamDetails_.streamUrl);
+  document.title =
+      getFilenameFromURL(this.browserApi_.getStreamInfo().originalUrl);
+  this.plugin_.setAttribute('src',
+                            this.browserApi_.getStreamInfo().originalUrl);
+  this.plugin_.setAttribute('stream-url',
+                            this.browserApi_.getStreamInfo().streamUrl);
   var headers = '';
-  for (var header in this.streamDetails_.responseHeaders) {
+  for (var header in this.browserApi_.getStreamInfo().responseHeaders) {
     headers += header + ': ' +
-        this.streamDetails_.responseHeaders[header] + '\n';
+        this.browserApi_.getStreamInfo().responseHeaders[header] + '\n';
   }
   this.plugin_.setAttribute('headers', headers);
 
   if (this.isMaterial_)
     this.plugin_.setAttribute('is-material', '');
 
-  if (!this.streamDetails_.embedded)
+  if (!this.browserApi_.getStreamInfo().embedded)
     this.plugin_.setAttribute('full-frame', '');
   document.body.appendChild(this.plugin_);
 
@@ -176,19 +179,12 @@ function PDFViewer(streamDetails) {
                                     [this.bookmarksPane_]);
   }
 
-  // Set up the zoom API.
-  if (this.shouldManageZoom_()) {
-    chrome.tabs.setZoomSettings(this.streamDetails_.tabId,
-                                {mode: 'manual', scope: 'per-tab'}, function() {
-      this.zoomManager_ =
-          new ZoomManager(this.viewport_, this.setZoom_.bind(this));
-      chrome.tabs.onZoomChange.addListener(function(zoomChangeInfo) {
-        if (zoomChangeInfo.tabId != this.streamDetails_.tabId)
-          return;
-        this.zoomManager_.onBrowserZoomChange(zoomChangeInfo.newZoomFactor);
-      }.bind(this));
-    }.bind(this));
-  }
+  // Set up the ZoomManager.
+  this.zoomManager_ = new ZoomManager(
+      this.viewport_, this.browserApi_.setZoom.bind(this.browserApi_),
+      this.browserApi_.getDefaultZoom());
+  this.browserApi_.addZoomEventListener(
+      this.zoomManager_.onBrowserZoomChange.bind(this.zoomManager_));
 
   // Setup the keyboard event listener.
   document.onkeydown = this.handleKeyEvent_.bind(this);
@@ -196,7 +192,7 @@ function PDFViewer(streamDetails) {
   // Parse open pdf parameters.
   this.paramsParser_ =
       new OpenPDFParamsParser(this.getNamedDestination_.bind(this));
-  this.navigator_ = new Navigator(this.streamDetails_.originalUrl,
+  this.navigator_ = new Navigator(this.browserApi_.getStreamInfo().originalUrl,
                                   this.viewport_, this.paramsParser_,
                                   onNavigateInCurrentTab, onNavigateInNewTab);
   this.viewportScroller_ =
@@ -425,7 +421,8 @@ PDFViewer.prototype = {
       if (this.lastViewportPosition_)
         this.viewport_.position = this.lastViewportPosition_;
       this.paramsParser_.getViewportFromUrlParams(
-          this.streamDetails_.originalUrl, this.handleURLParams_.bind(this));
+          this.browserApi_.getStreamInfo().originalUrl,
+          this.handleURLParams_.bind(this));
       this.loaded_ = true;
       this.sendScriptingMessage_({
         type: 'documentLoaded'
@@ -571,14 +568,7 @@ PDFViewer.prototype = {
       xOffset: position.x,
       yOffset: position.y
     });
-    if (this.zoomManager_)
-      this.zoomManager_.onPdfZoomChange();
-  },
-
-  setZoom_: function(zoom) {
-    return new Promise(function(resolve, reject) {
-      chrome.tabs.setZoom(this.streamDetails_.tabId, zoom, resolve);
-    }.bind(this));
+    this.zoomManager_.onPdfZoomChange();
   },
 
   /**
@@ -749,16 +739,6 @@ PDFViewer.prototype = {
       this.parentWindow_.postMessage(message, '*');
   },
 
-  /**
-   * @private
-   * Return whether this PDFViewer should manage zoom for its containing page.
-   * @return {boolean} Whether this PDFViewer should manage zoom for its
-   *     containing page.
-   */
-  shouldManageZoom_: function() {
-    return !!(chrome.tabs && !this.streamDetails_.embedded &&
-              this.streamDetails_.tabId != -1);
-  },
 
   /**
    * @type {Viewport} the viewport of the PDF viewer.

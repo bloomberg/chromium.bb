@@ -13,13 +13,13 @@ class ZoomManager {
    * @param {!Viewport} viewport A Viewport for which to manage zoom.
    * @param {Function} setBrowserZoomFunction A function that sets the browser
    *     zoom to the provided value.
+   * @param {number} defaultZoom The default browser zoom level.
    */
-  constructor(viewport, setBrowserZoomFunction) {
+  constructor(viewport, setBrowserZoomFunction, defaultZoom) {
     this.viewport_ = viewport;
     this.setBrowserZoomFunction_ = setBrowserZoomFunction;
-    this.browserZoom_ = 1;
+    this.browserZoom_ = defaultZoom;
     this.changingBrowserZoom_ = null;
-    this.onPdfZoomChange();
   }
 
   /**

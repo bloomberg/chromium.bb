@@ -174,6 +174,7 @@
         <include name="IDR_PDF_VIEWPORT_SCROLLER_JS" file="pdf/viewport_scroller.js" type="BINDATA" />
         <include name="IDR_PDF_PDF_SCRIPTING_API_JS" file="pdf/pdf_scripting_api.js" type="BINDATA" />
         <include name="IDR_PDF_ZOOM_MANAGER_JS" file="pdf/zoom_manager.js" type="BINDATA" />
+        <include name="IDR_PDF_BROWSER_API_JS" file="pdf/browser_api.js" type="BINDATA" />
         <include name="IDR_PDF_CONTENT_SCRIPT_JS" file="pdf/content_script.js" type="BINDATA" />
 
         <include name="IDR_PDF_VIEWER_BOOKMARK_CSS" file="pdf/elements/viewer-bookmark/viewer-bookmark.css" type="BINDATA" />

@@ -54,7 +54,8 @@ chrome.test.runTests(function() {
       let viewport = new MockViewport();
       let browserZoomSetter = new MockBrowserZoomSetter();
       let zoomManager = new ZoomManager(
-          viewport, browserZoomSetter.setBrowserZoom.bind(browserZoomSetter));
+          viewport, browserZoomSetter.setBrowserZoom.bind(browserZoomSetter),
+          1);
       viewport.zoom = 2;
       zoomManager.onPdfZoomChange();
       chrome.test.assertEq(2, browserZoomSetter.zoom);
@@ -62,21 +63,9 @@ chrome.test.runTests(function() {
       chrome.test.succeed();
     },
 
-    function testZoomChangedBeforeConstruction() {
-      let viewport = new MockViewport();
-      viewport.zoom = 2;
-      let browserZoomSetter = new MockBrowserZoomSetter();
-      let zoomManager = new ZoomManager(
-          viewport, browserZoomSetter.setBrowserZoom.bind(browserZoomSetter));
-      chrome.test.assertEq(2, browserZoomSetter.zoom);
-      chrome.test.assertTrue(browserZoomSetter.started);
-      chrome.test.succeed();
-    },
-
     function testBrowserZoomChange() {
       let viewport = new MockViewport();
-      let zoomManager = new ZoomManager(viewport, Promise.resolve.bind(Promise),
-                                        chrome.test.fail);
+      let zoomManager = new ZoomManager(viewport, chrome.test.fail, 1);
       zoomManager.onBrowserZoomChange(3);
       chrome.test.assertEq(1, viewport.zooms.length);
       chrome.test.assertEq(3, viewport.zooms[0]);
@@ -88,8 +77,9 @@ chrome.test.runTests(function() {
       let viewport = new MockViewport();
       let browserZoomSetter = new MockBrowserZoomSetter();
       let zoomManager = new ZoomManager(
-          viewport, browserZoomSetter.setBrowserZoom.bind(browserZoomSetter));
-      viewport.zoom = 1.0001;
+          viewport, browserZoomSetter.setBrowserZoom.bind(browserZoomSetter),
+          2);
+      viewport.zoom = 2.0001;
       zoomManager.onPdfZoomChange();
       chrome.test.assertEq(1, browserZoomSetter.zoom);
       chrome.test.assertFalse(browserZoomSetter.started);
@@ -98,8 +88,7 @@ chrome.test.runTests(function() {
 
     function testSmallBrowserZoomChange() {
       let viewport = new MockViewport();
-      let zoomManager = new ZoomManager(viewport, Promise.resolve.bind(Promise),
-                                        chrome.test.fail);
+      let zoomManager = new ZoomManager(viewport, chrome.test.fail, 1);
       zoomManager.onBrowserZoomChange(0.999);
       chrome.test.assertEq(0, viewport.zooms.length);
       chrome.test.assertEq(1, viewport.zoom);
@@ -110,7 +99,8 @@ chrome.test.runTests(function() {
       let viewport = new MockViewport();
       let browserZoomSetter = new MockBrowserZoomSetter();
       let zoomManager = new ZoomManager(
-          viewport, browserZoomSetter.setBrowserZoom.bind(browserZoomSetter));
+          viewport, browserZoomSetter.setBrowserZoom.bind(browserZoomSetter),
+          1);
       viewport.zoom = 2;
       zoomManager.onPdfZoomChange();
       viewport.zoom = 3;
@@ -127,8 +117,7 @@ chrome.test.runTests(function() {
 
     function testMultipleBrowserZoomChanges() {
       let viewport = new MockViewport();
-      let zoomManager = new ZoomManager(viewport, Promise.resolve.bind(Promise),
-                                        chrome.test.fail);
+      let zoomManager = new ZoomManager(viewport, chrome.test.fail, 1);
       zoomManager.onBrowserZoomChange(2);
       zoomManager.onBrowserZoomChange(3);
       chrome.test.assertEq(2, viewport.zooms.length);
