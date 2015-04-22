@@ -27,8 +27,7 @@ void ScreenshotTestingMixin::SetUpInProcessBrowserTestFixture() {
 void ScreenshotTestingMixin::SetUpCommandLine(base::CommandLine* command_line) {
   if (enable_test_screenshots_) {
     command_line->AppendSwitch(switches::kEnablePixelOutputInTests);
-  } else {
-    command_line->AppendSwitch(switches::kUIDisableImplSidePainting);
+    command_line->AppendSwitch(switches::kUIEnableImplSidePainting);
   }
 }
 
