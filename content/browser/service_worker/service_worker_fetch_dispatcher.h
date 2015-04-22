@@ -20,7 +20,9 @@ class ServiceWorkerFetchDispatcher {
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode,
                               ServiceWorkerFetchEventResult,
-                              const ServiceWorkerResponse&)> FetchCallback;
+                              const ServiceWorkerResponse&,
+                              scoped_refptr<ServiceWorkerVersion>)>
+      FetchCallback;
 
   ServiceWorkerFetchDispatcher(scoped_ptr<ServiceWorkerFetchRequest> request,
                                ServiceWorkerVersion* version,

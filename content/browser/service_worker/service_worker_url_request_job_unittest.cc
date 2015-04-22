@@ -235,6 +235,39 @@ TEST_F(ServiceWorkerURLRequestJobTest, Simple) {
   TestRequest(200, "OK", std::string());
 }
 
+class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
+ public:
+  ProviderDeleteHelper(int mock_render_process_id)
+      : EmbeddedWorkerTestHelper(base::FilePath(), mock_render_process_id) {}
+  ~ProviderDeleteHelper() override {}
+
+ protected:
+  void OnFetchEvent(int embedded_worker_id,
+                    int request_id,
+                    const ServiceWorkerFetchRequest& request) override {
+    context()->RemoveProviderHost(kProcessID, kProviderID);
+    SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
+        embedded_worker_id, request_id,
+        SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
+        ServiceWorkerResponse(
+            GURL(), 200, "OK", blink::WebServiceWorkerResponseTypeDefault,
+            ServiceWorkerHeaderMap(), std::string(), 0, GURL())));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ProviderDeleteHelper);
+};
+
+TEST_F(ServiceWorkerURLRequestJobTest, DeletedProviderHost) {
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  // Shouldn't crash if the ProviderHost is deleted prior to completion of
+  // the fetch event.
+  SetUpWithHelper(new ProviderDeleteHelper(kProcessID));
+
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  TestRequest(200, "OK", std::string());
+}
+
 // Responds to fetch events with a blob.
 class BlobResponder : public EmbeddedWorkerTestHelper {
  public:

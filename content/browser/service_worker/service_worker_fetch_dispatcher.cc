@@ -86,7 +86,7 @@ void ServiceWorkerFetchDispatcher::DidFinish(
       request_.get());
   DCHECK(!fetch_callback_.is_null());
   FetchCallback fetch_callback = fetch_callback_;
-  fetch_callback.Run(status, fetch_result, response);
+  fetch_callback.Run(status, fetch_result, response, version_);
 }
 
 }  // namespace content

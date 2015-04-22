@@ -477,7 +477,8 @@ void ServiceWorkerURLRequestJob::DidPrepareFetchEvent() {
 void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
     ServiceWorkerStatusCode status,
     ServiceWorkerFetchEventResult fetch_result,
-    const ServiceWorkerResponse& response) {
+    const ServiceWorkerResponse& response,
+    scoped_refptr<ServiceWorkerVersion> version) {
   fetch_dispatcher_.reset();
 
   // Check if we're not orphaned.
@@ -529,16 +530,16 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   // TODO(horo): When we support mixed-content (HTTP) no-cors requests from a
   // ServiceWorker, we have to check the security level of the responses.
   DCHECK(!http_response_info_);
+  DCHECK(version);
   const net::HttpResponseInfo* main_script_http_info =
-      provider_host_->active_version()->GetMainScriptHttpResponseInfo();
+      version->GetMainScriptHttpResponseInfo();
   DCHECK(main_script_http_info);
   http_response_info_.reset(new net::HttpResponseInfo(*main_script_http_info));
 
   // Set up a request for reading the stream.
   if (response.stream_url.is_valid()) {
     DCHECK(response.blob_uuid.empty());
-    DCHECK(provider_host_->active_version());
-    streaming_version_ = provider_host_->active_version();
+    streaming_version_ = version;
     streaming_version_->AddStreamingURLRequestJob(this);
     response_url_ = response.url;
     service_worker_response_type_ = response.response_type;

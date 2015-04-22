@@ -144,7 +144,8 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   void DidPrepareFetchEvent();
   void DidDispatchFetchEvent(ServiceWorkerStatusCode status,
                              ServiceWorkerFetchEventResult fetch_result,
-                             const ServiceWorkerResponse& response);
+                             const ServiceWorkerResponse& response,
+                             scoped_refptr<ServiceWorkerVersion> version);
 
   // Populates |http_response_headers_|.
   void CreateResponseHeader(int status_code,
