@@ -320,6 +320,17 @@ bool IsPropagatingPasswordChangesToWebCredentialsEnabled(
   return LowerCaseEqualsASCII(update_enabled, "enabled");
 }
 
+bool IsAffiliationRequestsForDummyFacetsEnabled(
+    const base::CommandLine& command_line) {
+  const std::string synthesizing_enabled = variations::GetVariationParamValue(
+      kFieldTrialName, "affiliation_requests_for_dummy_facets");
+  if (command_line.HasSwitch(switches::kDisableAffiliationBasedMatching))
+    return false;
+  if (command_line.HasSwitch(switches::kEnableAffiliationBasedMatching))
+    return true;
+  return LowerCaseEqualsASCII(synthesizing_enabled, "enabled");
+}
+
 bool IsValidAndroidFacetURI(const std::string& url) {
   FacetURI facet = FacetURI::FromPotentiallyInvalidSpec(url);
   return facet.IsValidAndroidFacetURI();

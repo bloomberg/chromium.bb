@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/clock.h"
@@ -30,6 +31,7 @@ AffiliationBackend::AffiliationBackend(
       task_runner_(task_runner),
       clock_(time_source.Pass()),
       tick_clock_(time_tick_source.Pass()),
+      construction_time_(clock_->Now()),
       weak_ptr_factory_(this) {
   DCHECK_LT(base::Time(), clock_->Now());
 }
@@ -225,7 +227,26 @@ bool AffiliationBackend::OnCanSendNetworkRequest() {
   fetcher_.reset(AffiliationFetcher::Create(request_context_getter_.get(),
                                             requested_facet_uris, this));
   fetcher_->StartRequest();
+  ReportStatistics(requested_facet_uris.size());
   return true;
+}
+
+void AffiliationBackend::ReportStatistics(size_t requested_facet_uri_count) {
+  UMA_HISTOGRAM_COUNTS_100("PasswordManager.AffiliationBackend.FetchSize",
+                           requested_facet_uri_count);
+
+  if (last_request_time_.is_null()) {
+    base::TimeDelta delay = clock_->Now() - construction_time_;
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "PasswordManager.AffiliationBackend.FirstFetchDelay", delay,
+        base::TimeDelta::FromSeconds(1), base::TimeDelta::FromDays(3), 50);
+  } else {
+    base::TimeDelta delay = clock_->Now() - last_request_time_;
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "PasswordManager.AffiliationBackend.SubsequentFetchDelay", delay,
+        base::TimeDelta::FromSeconds(1), base::TimeDelta::FromDays(3), 50);
+  }
+  last_request_time_ = clock_->Now();
 }
 
 void AffiliationBackend::SetThrottlerForTesting(
