@@ -537,7 +537,7 @@ void UsbServiceImpl::AddDevice(PlatformUsbDevice platform_device,
   scoped_refptr<UsbDeviceImpl> device(
       new UsbDeviceImpl(context_, platform_device, vendor_id, product_id,
                         unique_id, manufacturer_string, product_string,
-                        serial_number, blocking_task_runner_));
+                        serial_number, device_node, blocking_task_runner_));
 
   platform_devices_[platform_device] = device;
   devices_[unique_id] = device;

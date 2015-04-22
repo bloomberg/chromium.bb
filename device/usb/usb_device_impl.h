@@ -56,6 +56,7 @@ class UsbDeviceImpl : public UsbDevice {
                 const base::string16& manufacturer_string,
                 const base::string16& product_string,
                 const base::string16& serial_number,
+                const std::string& device_node,
                 scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
   ~UsbDeviceImpl() override;

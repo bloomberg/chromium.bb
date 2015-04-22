@@ -99,6 +99,7 @@ UsbDeviceImpl::UsbDeviceImpl(
     const base::string16& manufacturer_string,
     const base::string16& product_string,
     const base::string16& serial_number,
+    const std::string& device_node,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
     : UsbDevice(vendor_id,
                 product_id,
@@ -107,6 +108,9 @@ UsbDeviceImpl::UsbDeviceImpl(
                 product_string,
                 serial_number),
       platform_device_(platform_device),
+#if defined(OS_CHROMEOS)
+      devnode_(device_node),
+#endif  // defined(OS_CHROMEOS)
       context_(context),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       blocking_task_runner_(blocking_task_runner) {
