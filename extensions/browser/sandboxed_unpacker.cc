@@ -322,6 +322,9 @@ void SandboxedUnpacker::Start() {
 }
 
 SandboxedUnpacker::~SandboxedUnpacker() {
+  // To avoid blocking shutdown, don't delete temporary directory here if it
+  // hasn't been cleaned up or passed on to another owner yet.
+  temp_dir_.Take();
 }
 
 bool SandboxedUnpacker::OnMessageReceived(const IPC::Message& message) {
