@@ -69,7 +69,7 @@ static bool isSeparator(UChar c)
     return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '=' || c == ',' || c == '\0';
 }
 
-void HTMLMetaElement::parseContentAttribute(const String& content, KeyValuePairCallback callback, void* data)
+void HTMLMetaElement::parseContentAttribute(const String& content, void* data, Document* document, bool viewportMetaZeroValuesQuirk)
 {
     bool error = false;
 
@@ -126,11 +126,11 @@ void HTMLMetaElement::parseContentAttribute(const String& content, KeyValuePairC
 
         String keyString = buffer.substring(keyBegin, keyEnd - keyBegin);
         String valueString = buffer.substring(valueBegin, valueEnd - valueBegin);
-        (this->*callback)(keyString, valueString, data);
+        processViewportKeyValuePair(document, keyString, valueString, viewportMetaZeroValuesQuirk, data);
     }
-    if (error) {
+    if (error && document) {
         String message = "Error parsing a meta element's content: ';' is not a valid key-value pair separator. Please use ',' instead.";
-        document().addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, WarningMessageLevel, message));
+        document->addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, WarningMessageLevel, message));
     }
 }
 
@@ -150,7 +150,7 @@ static inline float clampScaleValue(float value)
     return value;
 }
 
-float HTMLMetaElement::parsePositiveNumber(const String& keyString, const String& valueString, bool* ok)
+float HTMLMetaElement::parsePositiveNumber(Document* document, const String& keyString, const String& valueString, bool* ok)
 {
     size_t parsedLength;
     float value;
@@ -159,19 +159,19 @@ float HTMLMetaElement::parsePositiveNumber(const String& keyString, const String
     else
         value = charactersToFloat(valueString.characters16(), valueString.length(), parsedLength);
     if (!parsedLength) {
-        reportViewportWarning(UnrecognizedViewportArgumentValueError, valueString, keyString);
+        reportViewportWarning(document, UnrecognizedViewportArgumentValueError, valueString, keyString);
         if (ok)
             *ok = false;
         return 0;
     }
     if (parsedLength < valueString.length())
-        reportViewportWarning(TruncatedViewportArgumentValueError, valueString, keyString);
+        reportViewportWarning(document, TruncatedViewportArgumentValueError, valueString, keyString);
     if (ok)
         *ok = true;
     return value;
 }
 
-Length HTMLMetaElement::parseViewportValueAsLength(const String& keyString, const String& valueString)
+Length HTMLMetaElement::parseViewportValueAsLength(Document* document, const String& keyString, const String& valueString)
 {
     // 1) Non-negative number values are translated to px lengths.
     // 2) Negative number values are translated to auto.
@@ -189,7 +189,7 @@ Length HTMLMetaElement::parseViewportValueAsLength(const String& keyString, cons
         }
     }
 
-    float value = parsePositiveNumber(keyString, valueString);
+    float value = parsePositiveNumber(document, keyString, valueString);
 
     if (value < 0)
         return Length(); // auto
@@ -197,7 +197,7 @@ Length HTMLMetaElement::parseViewportValueAsLength(const String& keyString, cons
     return Length(clampLengthValue(value), Fixed);
 }
 
-float HTMLMetaElement::parseViewportValueAsZoom(const String& keyString, const String& valueString, bool& computedValueMatchesParsedValue)
+float HTMLMetaElement::parseViewportValueAsZoom(Document* document, const String& keyString, const String& valueString, bool& computedValueMatchesParsedValue, bool viewportMetaZeroValuesQuirk)
 {
     // 1) Non-negative number values are translated to <number> values.
     // 2) Negative number values are translated to auto.
@@ -223,15 +223,15 @@ float HTMLMetaElement::parseViewportValueAsZoom(const String& keyString, const S
         }
     }
 
-    float value = parsePositiveNumber(keyString, valueString);
+    float value = parsePositiveNumber(document, keyString, valueString);
 
     if (value < 0)
         return ViewportDescription::ValueAuto;
 
     if (value > 10.0)
-        reportViewportWarning(MaximumScaleTooLargeError, String(), String());
+        reportViewportWarning(document, MaximumScaleTooLargeError, String(), String());
 
-    if (!value && document().settings() && document().settings()->viewportMetaZeroValuesQuirk())
+    if (!value && viewportMetaZeroValuesQuirk)
         return ViewportDescription::ValueAuto;
 
     float clampedValue = clampScaleValue(value);
@@ -241,7 +241,7 @@ float HTMLMetaElement::parseViewportValueAsZoom(const String& keyString, const S
     return clampedValue;
 }
 
-bool HTMLMetaElement::parseViewportValueAsUserZoom(const String& keyString, const String& valueString, bool& computedValueMatchesParsedValue)
+bool HTMLMetaElement::parseViewportValueAsUserZoom(Document* document, const String& keyString, const String& valueString, bool& computedValueMatchesParsedValue)
 {
     // yes and no are used as keywords.
     // Numbers >= 1, numbers <= -1, device-width and device-height are mapped to yes.
@@ -267,14 +267,14 @@ bool HTMLMetaElement::parseViewportValueAsUserZoom(const String& keyString, cons
         }
     }
 
-    float value = parsePositiveNumber(keyString, valueString);
+    float value = parsePositiveNumber(document, keyString, valueString);
     if (fabs(value) < 1)
         return false;
 
     return true;
 }
 
-float HTMLMetaElement::parseViewportValueAsDPI(const String& keyString, const String& valueString)
+float HTMLMetaElement::parseViewportValueAsDPI(Document* document, const String& keyString, const String& valueString)
 {
     unsigned length = valueString.length();
     DEFINE_ARRAY_FOR_MATCHING(characters, valueString, 10);
@@ -294,14 +294,14 @@ float HTMLMetaElement::parseViewportValueAsDPI(const String& keyString, const St
     }
 
     bool ok;
-    float value = parsePositiveNumber(keyString, valueString, &ok);
+    float value = parsePositiveNumber(document, keyString, valueString, &ok);
     if (!ok || value < 70 || value > 400)
         return ViewportDescription::ValueAuto;
 
     return value;
 }
 
-void HTMLMetaElement::processViewportKeyValuePair(const String& keyString, const String& valueString, void* data)
+void HTMLMetaElement::processViewportKeyValuePair(Document* document, const String& keyString, const String& valueString, bool viewportMetaZeroValuesQuirk, void* data)
 {
     ViewportDescription* description = static_cast<ViewportDescription*>(data);
 
@@ -310,7 +310,7 @@ void HTMLMetaElement::processViewportKeyValuePair(const String& keyString, const
     DEFINE_ARRAY_FOR_MATCHING(characters, keyString, 17);
     SWITCH(characters, length) {
         CASE("width") {
-            const Length& width = parseViewportValueAsLength(keyString, valueString);
+            const Length& width = parseViewportValueAsLength(document, keyString, valueString);
             if (width.isAuto())
                 return;
             description->minWidth = Length(ExtendToZoom);
@@ -318,7 +318,7 @@ void HTMLMetaElement::processViewportKeyValuePair(const String& keyString, const
             return;
         }
         CASE("height") {
-            const Length& height = parseViewportValueAsLength(keyString, valueString);
+            const Length& height = parseViewportValueAsLength(document, keyString, valueString);
             if (height.isAuto())
                 return;
             description->minHeight = Length(ExtendToZoom);
@@ -326,24 +326,24 @@ void HTMLMetaElement::processViewportKeyValuePair(const String& keyString, const
             return;
         }
         CASE("initial-scale") {
-            description->zoom = parseViewportValueAsZoom(keyString, valueString, description->zoomIsExplicit);
+            description->zoom = parseViewportValueAsZoom(document, keyString, valueString, description->zoomIsExplicit, viewportMetaZeroValuesQuirk);
             return;
         }
         CASE("minimum-scale") {
-            description->minZoom = parseViewportValueAsZoom(keyString, valueString, description->minZoomIsExplicit);
+            description->minZoom = parseViewportValueAsZoom(document, keyString, valueString, description->minZoomIsExplicit, viewportMetaZeroValuesQuirk);
             return;
         }
         CASE("maximum-scale") {
-            description->maxZoom = parseViewportValueAsZoom(keyString, valueString, description->maxZoomIsExplicit);
+            description->maxZoom = parseViewportValueAsZoom(document, keyString, valueString, description->maxZoomIsExplicit, viewportMetaZeroValuesQuirk);
             return;
         }
         CASE("user-scalable") {
-            description->userZoom = parseViewportValueAsUserZoom(keyString, valueString, description->userZoomIsExplicit);
+            description->userZoom = parseViewportValueAsUserZoom(document, keyString, valueString, description->userZoomIsExplicit);
             return;
         }
         CASE("target-densitydpi") {
-            description->deprecatedTargetDensityDPI = parseViewportValueAsDPI(keyString, valueString);
-            reportViewportWarning(TargetDensityDpiUnsupported, String(), String());
+            description->deprecatedTargetDensityDPI = parseViewportValueAsDPI(document, keyString, valueString);
+            reportViewportWarning(document, TargetDensityDpiUnsupported, String(), String());
             return;
         }
         CASE("minimal-ui") {
@@ -351,7 +351,7 @@ void HTMLMetaElement::processViewportKeyValuePair(const String& keyString, const
             return;
         }
     }
-    reportViewportWarning(UnrecognizedViewportArgumentKeyError, keyString, String());
+    reportViewportWarning(document, UnrecognizedViewportArgumentKeyError, keyString, String());
 }
 
 static const char* viewportErrorMessageTemplate(ViewportErrorCode errorCode)
@@ -382,9 +382,9 @@ static MessageLevel viewportErrorMessageLevel(ViewportErrorCode errorCode)
     return ErrorMessageLevel;
 }
 
-void HTMLMetaElement::reportViewportWarning(ViewportErrorCode errorCode, const String& replacement1, const String& replacement2)
+void HTMLMetaElement::reportViewportWarning(Document* document, ViewportErrorCode errorCode, const String& replacement1, const String& replacement2)
 {
-    if (!document().frame())
+    if (!document || !document->frame())
         return;
 
     String message = viewportErrorMessageTemplate(errorCode);
@@ -394,9 +394,21 @@ void HTMLMetaElement::reportViewportWarning(ViewportErrorCode errorCode, const S
         message.replace("%replacement2", replacement2);
 
     // FIXME: This message should be moved off the console once a solution to https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
-    document().addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, viewportErrorMessageLevel(errorCode), message));
+    document->addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, viewportErrorMessageLevel(errorCode), message));
 }
 
+void HTMLMetaElement::getViewportDescriptionFromContentAttribute(const String& content, ViewportDescription::Type origin, ViewportDescription& description, Document* document, bool viewportMetaZeroValuesQuirk)
+{
+    parseContentAttribute(content, (void*)&description, document, viewportMetaZeroValuesQuirk);
+
+    if (description.minZoom == ViewportDescription::ValueAuto)
+        description.minZoom = 0.25;
+
+    if (description.maxZoom == ViewportDescription::ValueAuto) {
+        description.maxZoom = 5;
+        description.minZoom = std::min(description.minZoom, float(5));
+    }
+}
 void HTMLMetaElement::processViewportContentAttribute(const String& content, ViewportDescription::Type origin)
 {
     ASSERT(!content.isNull());
@@ -408,15 +420,7 @@ void HTMLMetaElement::processViewportContentAttribute(const String& content, Vie
     if (document().shouldMergeWithLegacyDescription(origin))
         descriptionFromLegacyTag = document().viewportDescription();
 
-    parseContentAttribute(content, &HTMLMetaElement::processViewportKeyValuePair, (void*)&descriptionFromLegacyTag);
-
-    if (descriptionFromLegacyTag.minZoom == ViewportDescription::ValueAuto)
-        descriptionFromLegacyTag.minZoom = 0.25;
-
-    if (descriptionFromLegacyTag.maxZoom == ViewportDescription::ValueAuto) {
-        descriptionFromLegacyTag.maxZoom = 5;
-        descriptionFromLegacyTag.minZoom = std::min(descriptionFromLegacyTag.minZoom, float(5));
-    }
+    getViewportDescriptionFromContentAttribute(content, origin, descriptionFromLegacyTag, &document(), document().settings() && document().settings()->viewportMetaZeroValuesQuirk());
 
     document().setViewportDescription(descriptionFromLegacyTag);
 }

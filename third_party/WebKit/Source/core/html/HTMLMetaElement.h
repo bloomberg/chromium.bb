@@ -42,6 +42,8 @@ class CORE_EXPORT HTMLMetaElement final : public HTMLElement {
 public:
     DECLARE_NODE_FACTORY(HTMLMetaElement);
 
+    void getViewportDescriptionFromContentAttribute(const String& content, ViewportDescription::Type origin, ViewportDescription&, Document*, bool viewportMetaZeroValuesQuirk);
+
     const AtomicString& content() const;
     const AtomicString& httpEquiv() const;
     const AtomicString& name() const;
@@ -49,22 +51,21 @@ public:
 private:
     explicit HTMLMetaElement(Document&);
 
-    typedef void (HTMLMetaElement::*KeyValuePairCallback)(const String& key, const String& value, void* data);
-    void processViewportKeyValuePair(const String& key, const String& value, void* data);
-    void parseContentAttribute(const String& content, KeyValuePairCallback, void* data);
+    static void processViewportKeyValuePair(Document*, const String& key, const String& value, bool viewportMetaZeroValuesQuirk, void* data);
+    static void parseContentAttribute(const String& content, void* data, Document*, bool viewportMetaZeroValuesQuirk);
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
     virtual void didNotifySubtreeInsertionsToDocument() override;
 
-    float parsePositiveNumber(const String& key, const String& value, bool* ok = 0);
+    static float parsePositiveNumber(Document*, const String& key, const String& value, bool* ok = 0);
 
-    Length parseViewportValueAsLength(const String& key, const String& value);
-    float parseViewportValueAsZoom(const String& key, const String& value, bool& computedValueMatchesParsedValue);
-    bool parseViewportValueAsUserZoom(const String& key, const String& value, bool& computedValueMatchesParsedValue);
-    float parseViewportValueAsDPI(const String& key, const String& value);
+    static Length parseViewportValueAsLength(Document*, const String& key, const String& value);
+    static float parseViewportValueAsZoom(Document*, const String& key, const String& value, bool& computedValueMatchesParsedValue, bool viewportMetaZeroValuesQuirk);
+    static bool parseViewportValueAsUserZoom(Document*, const String& key, const String& value, bool& computedValueMatchesParsedValue);
+    static float parseViewportValueAsDPI(Document*, const String& key, const String& value);
 
-    void reportViewportWarning(ViewportErrorCode, const String& replacement1, const String& replacement2);
+    static void reportViewportWarning(Document*, ViewportErrorCode, const String& replacement1, const String& replacement2);
 
     void process();
     void processViewportContentAttribute(const String& content, ViewportDescription::Type origin);
