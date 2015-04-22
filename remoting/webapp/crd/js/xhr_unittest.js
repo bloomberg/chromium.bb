@@ -172,6 +172,17 @@ QUnit.test('invalid auth parameters', function(assert) {
   });
 });
 
+
+QUnit.test('unexpected parameters', function(assert) {
+  assert.throws(function() {
+    new remoting.Xhr({
+      method: 'POST',
+      url: 'http://foo.com',
+      xyzzy: 'not a real parameter'
+    });
+  });
+});
+
 //
 // The typical case.
 //

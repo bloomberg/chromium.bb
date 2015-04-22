@@ -9,10 +9,12 @@
  * Note: a mock version of this API exists in mock_xhr.js.
  */
 
-'use strict';
-
 /** @suppress {duplicate} */
 var remoting = remoting || {};
+
+(function() {
+
+'use strict';
 
 /**
  * @constructor
@@ -78,54 +80,6 @@ remoting.Xhr = function(params) {
 };
 
 /**
- * Parameters for the 'start' function.  Unless otherwise noted, all
- * parameters are optional.
- *
- * method: (required) The HTTP method to use.
- *
- * url: (required) The URL to request.
- *
- * urlParams: Parameters to be appended to the URL.  Null-valued
- *     parameters are omitted.
- *
- * textContent: Text to be sent as the request body.
- *
- * formContent: Data to be URL-encoded and sent as the request body.
- *     Causes Content-type header to be set appropriately.
- *
- * jsonContent: Data to be JSON-encoded and sent as the request body.
- *     Causes Content-type header to be set appropriately.
- *
- * headers: Additional request headers to be sent.  Null-valued
- *     headers are omitted.
- *
- * withCredentials: Value of the XHR's withCredentials field.
- *
- * oauthToken: An OAuth2 token used to construct an Authentication
- *     header.
- *
- * useIdentity: Use identity API to get an OAuth2 token.
- *
- * acceptJson: If true, send an Accept header indicating that a JSON
- *     response is expected.
- *
- * @typedef {{
- *   method: string,
- *   url:string,
- *   urlParams:(string|Object<string,?string>|undefined),
- *   textContent:(string|undefined),
- *   formContent:(Object|undefined),
- *   jsonContent:(*|undefined),
- *   headers:(Object<string,?string>|undefined),
- *   withCredentials:(boolean|undefined),
- *   oauthToken:(string|undefined),
- *   useIdentity:(boolean|undefined),
- *   acceptJson:(boolean|undefined)
- * }}
- */
-remoting.Xhr.Params;
-
-/**
  * Starts and HTTP request and gets a promise that is resolved when
  * the request completes.
  *
@@ -160,11 +114,37 @@ remoting.Xhr.prototype.start = function() {
 };
 
 /**
+ * The set of possible fields in remoting.Xhr.Params.
+ * @const
+ */
+var ALLOWED_PARAMS = [
+  'method',
+  'url',
+  'urlParams',
+  'textContent',
+  'formContent',
+  'jsonContent',
+  'headers',
+  'withCredentials',
+  'oauthToken',
+  'useIdentity',
+  'acceptJson'
+];
+
+/**
  * @param {remoting.Xhr.Params} params
  * @throws {Error} if params are invalid
  * @private
  */
 remoting.Xhr.checkParams_ = function(params) {
+  // Provide a sensible error message when the user misspells a
+  // parameter name, since the compiler won't catch it.
+  for (var field in params) {
+    if (ALLOWED_PARAMS.indexOf(field) == -1) {
+      throw new Error('unknow parameter: ' + field);
+    }
+  }
+
   if (params.urlParams) {
     if (params.url.indexOf('?') != -1) {
       throw new Error('URL may not contain "?" when urlParams is set');
@@ -363,3 +343,53 @@ remoting.Xhr.urlencodeParamHash = function(paramHash) {
   }
   return '';
 };
+
+})();
+
+/**
+ * Parameters for the 'start' function.  Unless otherwise noted, all
+ * parameters are optional.
+ *
+ * method: (required) The HTTP method to use.
+ *
+ * url: (required) The URL to request.
+ *
+ * urlParams: Parameters to be appended to the URL.  Null-valued
+ *     parameters are omitted.
+ *
+ * textContent: Text to be sent as the request body.
+ *
+ * formContent: Data to be URL-encoded and sent as the request body.
+ *     Causes Content-type header to be set appropriately.
+ *
+ * jsonContent: Data to be JSON-encoded and sent as the request body.
+ *     Causes Content-type header to be set appropriately.
+ *
+ * headers: Additional request headers to be sent.  Null-valued
+ *     headers are omitted.
+ *
+ * withCredentials: Value of the XHR's withCredentials field.
+ *
+ * oauthToken: An OAuth2 token used to construct an Authentication
+ *     header.
+ *
+ * useIdentity: Use identity API to get an OAuth2 token.
+ *
+ * acceptJson: If true, send an Accept header indicating that a JSON
+ *     response is expected.
+ *
+ * @typedef {{
+ *   method: string,
+ *   url:string,
+ *   urlParams:(string|Object<string,?string>|undefined),
+ *   textContent:(string|undefined),
+ *   formContent:(Object|undefined),
+ *   jsonContent:(*|undefined),
+ *   headers:(Object<string,?string>|undefined),
+ *   withCredentials:(boolean|undefined),
+ *   oauthToken:(string|undefined),
+ *   useIdentity:(boolean|undefined),
+ *   acceptJson:(boolean|undefined)
+ * }}
+ */
+remoting.Xhr.Params;
