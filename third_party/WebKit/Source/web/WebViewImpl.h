@@ -738,6 +738,9 @@ private:
     GraphicsLayer* m_rootGraphicsLayer;
     GraphicsLayer* m_rootTransformLayer;
     OwnPtr<GraphicsLayerFactory> m_graphicsLayerFactory;
+    bool m_isAcceleratedCompositingActive;
+    bool m_layerTreeViewCommitsDeferred;
+    bool m_layerTreeViewClosed;
     bool m_matchesHeuristicsForGpuRasterization;
     // If true, the graphics context is being restored.
     bool m_recreatingGraphicsContext;
@@ -753,7 +756,10 @@ private:
     OwnPtrWillBePersistent<FullscreenController> m_fullscreenController;
 
     bool m_showFPSCounter;
+    bool m_showPaintRects;
+    bool m_showDebugBorders;
     bool m_continuousPaintingEnabled;
+    bool m_showScrollBottleneckRects;
     WebColor m_baseBackgroundColor;
     WebColor m_backgroundColorOverride;
     float m_zoomFactorOverride;
