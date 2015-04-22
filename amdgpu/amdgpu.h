@@ -882,7 +882,6 @@ int amdgpu_cs_ctx_create(amdgpu_device_handle dev,
  *
  * Destroy GPU execution context when not needed any more
  *
- * \param   dev	    - \c [in] Device handle. See #amdgpu_device_initialize()
  * \param   context - \c [in] GPU Context handle
  *
  * \return   0 on success\n
@@ -892,13 +891,11 @@ int amdgpu_cs_ctx_create(amdgpu_device_handle dev,
  * \sa amdgpu_cs_ctx_create()
  *
 */
-int amdgpu_cs_ctx_free(amdgpu_device_handle dev,
-		       amdgpu_context_handle context);
+int amdgpu_cs_ctx_free(amdgpu_context_handle context);
 
 /**
  * Query reset state for the specific GPU Context
  *
- * \param   dev	    - \c [in] Device handle. See #amdgpu_device_initialize()
  * \param   context - \c [in]  GPU Context handle
  * \param   state   - \c [out] Reset state status
  *
@@ -909,8 +906,7 @@ int amdgpu_cs_ctx_free(amdgpu_device_handle dev,
  * \sa amdgpu_cs_ctx_create()
  *
 */
-int amdgpu_cs_query_reset_state(amdgpu_device_handle dev,
-				amdgpu_context_handle context,
+int amdgpu_cs_query_reset_state(amdgpu_context_handle context,
 				enum amdgpu_cs_ctx_reset_state *state);
 
 
@@ -924,7 +920,6 @@ int amdgpu_cs_query_reset_state(amdgpu_device_handle dev,
  * Allocate memory to be filled with PM4 packets and be served as the first
  * entry point of execution (a.k.a. Indirect Buffer)
  *
- * \param   dev	    - \c [in] Device handle. See #amdgpu_device_initialize()
  * \param   context - \c [in]  GPU Context which will use IB
  * \param   ib_size - \c [in]  Size of allocation
  * \param   output  - \c [out] Pointer to structure to get information about
@@ -937,8 +932,7 @@ int amdgpu_cs_query_reset_state(amdgpu_device_handle dev,
  * \sa amdgpu_cs_free_ib()
  *
 */
-int amdgpu_cs_alloc_ib(amdgpu_device_handle dev,
-		       amdgpu_context_handle context,
+int amdgpu_cs_alloc_ib(amdgpu_context_handle context,
 		       enum amdgpu_cs_ib_size ib_size,
 		       struct amdgpu_cs_ib_alloc_result *output);
 
@@ -946,8 +940,6 @@ int amdgpu_cs_alloc_ib(amdgpu_device_handle dev,
  * If UMD has allocates IBs which doesn’t need any more than those IBs must
  * be explicitly freed
  *
- * \param   dev	    - \c [in] Device handle. See #amdgpu_device_initialize()
- * \param   context - \c [in] GPU Context containing IB
  * \param   handle  - \c [in] IB handle
  *
  * \return   0 on success\n
@@ -960,9 +952,7 @@ int amdgpu_cs_alloc_ib(amdgpu_device_handle dev,
  * \sa amdgpu_cs_alloc_ib()
  *
 */
-int amdgpu_cs_free_ib(amdgpu_device_handle dev,
-		      amdgpu_context_handle context,
-		      amdgpu_ib_handle handle);
+int amdgpu_cs_free_ib(amdgpu_ib_handle handle);
 
 /**
  * Send request to submit command buffers to hardware.
@@ -1011,8 +1001,7 @@ int amdgpu_cs_free_ib(amdgpu_device_handle dev,
  *     amdgpu_cs_query_fence_status()
  *
 */
-int amdgpu_cs_submit(amdgpu_device_handle  dev,
-		     amdgpu_context_handle context,
+int amdgpu_cs_submit(amdgpu_context_handle context,
 		     uint64_t flags,
 		     struct amdgpu_cs_request *ibs_request,
 		     uint32_t number_of_requests,
@@ -1038,8 +1027,7 @@ int amdgpu_cs_submit(amdgpu_device_handle  dev,
  *
  * \sa amdgpu_cs_submit()
 */
-int amdgpu_cs_query_fence_status(amdgpu_device_handle dev,
-				 struct amdgpu_cs_query_fence *fence,
+int amdgpu_cs_query_fence_status(struct amdgpu_cs_query_fence *fence,
 				 uint32_t *expired);
 
 

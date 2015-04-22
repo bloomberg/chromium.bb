@@ -73,8 +73,7 @@ int suite_cs_tests_init(void)
 	if (r)
 		return CUE_SINIT_FAILED;
 
-        r = amdgpu_cs_alloc_ib(device_handle, context_handle,
-                               IB_SIZE, &ib_result);
+        r = amdgpu_cs_alloc_ib(context_handle, IB_SIZE, &ib_result);
 	if (r)
 		return CUE_SINIT_FAILED;
 
@@ -88,11 +87,11 @@ int suite_cs_tests_clean(void)
 {
 	int r;
 
-	r = amdgpu_cs_free_ib(device_handle, context_handle, ib_handle);
+	r = amdgpu_cs_free_ib(ib_handle);
 	if (r)
 		return CUE_SCLEAN_FAILED;
 
-	r = amdgpu_cs_ctx_free(device_handle, context_handle);
+	r = amdgpu_cs_ctx_free(context_handle);
 	if (r)
 		return CUE_SCLEAN_FAILED;
 
@@ -121,13 +120,12 @@ static int submit(unsigned ndw, unsigned ip)
 	ibs_request.number_of_ibs = 1;
 	ibs_request.ibs = &ib_info;
 
-	r = amdgpu_cs_submit(device_handle, context_handle, 0,
+	r = amdgpu_cs_submit(context_handle, 0,
 			     &ibs_request, 1, &fence_status.fence);
 	if (r)
 		return r;
 
-	r = amdgpu_cs_alloc_ib(device_handle, context_handle,
-			       IB_SIZE, &ib_result);
+	r = amdgpu_cs_alloc_ib(context_handle, IB_SIZE, &ib_result);
 	if (r)
 		return r;
 
@@ -138,7 +136,7 @@ static int submit(unsigned ndw, unsigned ip)
 	fence_status.timeout_ns = AMDGPU_TIMEOUT_INFINITE;
 	fence_status.ip_type = ip;
 
-	r = amdgpu_cs_query_fence_status(device_handle, &fence_status, &expired);
+	r = amdgpu_cs_query_fence_status(&fence_status, &expired);
 	if (r)
 		return r;
 

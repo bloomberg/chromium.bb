@@ -94,6 +94,7 @@ struct amdgpu_bo {
  * sequence_mutex -> pendings_mutex -> pool_mutex.
 */
 struct amdgpu_context {
+	struct amdgpu_device *dev;
 	/** Mutex for accessing fences and to maintain command submissions
 	    and pending lists in good sequence. */
 	pthread_mutex_t sequence_mutex;
@@ -116,6 +117,7 @@ struct amdgpu_context {
 };
 
 struct amdgpu_ib {
+	amdgpu_context_handle context;
 	struct list_head list_node;
 	amdgpu_bo_handle buf_handle;
 	void *cpu;

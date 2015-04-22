@@ -42,8 +42,7 @@
  *
  * \return  0 on success otherwise POSIX Error code
 */
-static int amdgpu_cs_create_ib(amdgpu_device_handle dev,
-			       amdgpu_context_handle context,
+static int amdgpu_cs_create_ib(amdgpu_context_handle context,
 			       enum amdgpu_cs_ib_size ib_size,
 			       amdgpu_ib_handle *ib)
 {
@@ -79,7 +78,7 @@ static int amdgpu_cs_create_ib(amdgpu_device_handle dev,
 
 	alloc_buffer.preferred_heap = AMDGPU_GEM_DOMAIN_GTT;
 
-	r = amdgpu_bo_alloc(dev,
+	r = amdgpu_bo_alloc(context->dev,
 			    &alloc_buffer,
 			    &info);
 	if (r)
@@ -98,6 +97,7 @@ static int amdgpu_cs_create_ib(amdgpu_device_handle dev,
 		return -ENOMEM;
 	}
 
+	new_ib->context = context;
 	new_ib->buf_handle = info.buf_handle;
 	new_ib->cpu = cpu;
 	new_ib->virtual_mc_base_address = info.virtual_mc_base_address;
@@ -114,10 +114,10 @@ static int amdgpu_cs_create_ib(amdgpu_device_handle dev,
  *
  * \return  0 on success otherwise POSIX Error code
 */
-static int amdgpu_cs_destroy_ib(amdgpu_device_handle dev,
-				amdgpu_ib_handle ib)
+static int amdgpu_cs_destroy_ib(amdgpu_ib_handle ib)
 {
 	int r;
+
 	r = amdgpu_bo_cpu_unmap(ib->buf_handle);
 	if (r)
 		return r;
@@ -162,8 +162,7 @@ static int amdgpu_cs_init_ib_pool(amdgpu_context_handle context)
  *
  * \return  0 on success otherwise POSIX Error code
 */
-static int amdgpu_cs_alloc_from_ib_pool(amdgpu_device_handle dev,
-					amdgpu_context_handle context,
+static int amdgpu_cs_alloc_from_ib_pool(amdgpu_context_handle context,
 					enum amdgpu_cs_ib_size ib_size,
 					amdgpu_ib_handle *ib)
 {
@@ -210,21 +209,19 @@ static void amdgpu_cs_free_to_ib_pool(amdgpu_context_handle context,
  *
  * \return  0 on success otherwise POSIX Error code
 */
-static int amdgpu_cs_destroy_ib_pool(amdgpu_device_handle dev,
-				     amdgpu_context_handle context)
+static int amdgpu_cs_destroy_ib_pool(amdgpu_context_handle context)
 {
-	int i;
-	int r;
 	struct list_head *head;
 	struct amdgpu_ib *next;
 	struct amdgpu_ib *storage;
+	int i, r;
 
 	r = 0;
 	pthread_mutex_lock(&context->pool_mutex);
 	for (i = 0; i < AMDGPU_CS_IB_SIZE_NUM; i++) {
 		head = &context->ib_pools[i];
 		LIST_FOR_EACH_ENTRY_SAFE(next, storage, head, list_node) {
-			r = amdgpu_cs_destroy_ib(dev, next);
+			r = amdgpu_cs_destroy_ib(next);
 			if (r)
 				break;
 		}
@@ -268,8 +265,7 @@ static int amdgpu_cs_init_pendings(amdgpu_context_handle context)
  *
  * \return  0 on success otherwise POSIX Error code
 */
-static int amdgpu_cs_destroy_pendings(amdgpu_device_handle dev,
-				      amdgpu_context_handle context)
+static int amdgpu_cs_destroy_pendings(amdgpu_context_handle context)
 {
 	int ip, inst;
 	uint32_t ring;
@@ -285,7 +281,7 @@ static int amdgpu_cs_destroy_pendings(amdgpu_device_handle dev,
 			for (ring = 0; ring < AMDGPU_CS_MAX_RINGS; ring++) {
 				head = &context->pendings[ip][inst][ring];
 				LIST_FOR_EACH_ENTRY_SAFE(next, s, head, list_node) {
-					r = amdgpu_cs_destroy_ib(dev, next);
+					r = amdgpu_cs_destroy_ib(next);
 					if (r)
 						break;
 				}
@@ -293,7 +289,7 @@ static int amdgpu_cs_destroy_pendings(amdgpu_device_handle dev,
 
 	head = &context->freed;
 	LIST_FOR_EACH_ENTRY_SAFE(next, s, head, list_node) {
-		r = amdgpu_cs_destroy_ib(dev, next);
+		r = amdgpu_cs_destroy_ib(next);
 		if (r)
 			break;
 	}
@@ -441,39 +437,35 @@ static void amdgpu_cs_all_pending_gc(amdgpu_context_handle context)
  *
  * \return  0 on success otherwise POSIX Error code
 */
-static int amdgpu_cs_alloc_ib_local(amdgpu_device_handle dev,
-				    amdgpu_context_handle context,
+static int amdgpu_cs_alloc_ib_local(amdgpu_context_handle context,
 				    enum amdgpu_cs_ib_size ib_size,
 				    amdgpu_ib_handle *ib)
 {
 	int r;
 
-	r = amdgpu_cs_alloc_from_ib_pool(dev, context, ib_size, ib);
+	r = amdgpu_cs_alloc_from_ib_pool(context, ib_size, ib);
 	if (!r)
 		return r;
 
 	amdgpu_cs_all_pending_gc(context);
 
 	/* Retry to allocate from free IB pools after garbage collector. */
-	r = amdgpu_cs_alloc_from_ib_pool(dev, context, ib_size, ib);
+	r = amdgpu_cs_alloc_from_ib_pool(context, ib_size, ib);
 	if (!r)
 		return r;
 
 	/* There is no suitable IB in free pools. Create one. */
-	r = amdgpu_cs_create_ib(dev, context, ib_size, ib);
+	r = amdgpu_cs_create_ib(context, ib_size, ib);
 	return r;
 }
 
-int amdgpu_cs_alloc_ib(amdgpu_device_handle dev,
-		       amdgpu_context_handle context,
+int amdgpu_cs_alloc_ib(amdgpu_context_handle context,
 		       enum amdgpu_cs_ib_size ib_size,
 		       struct amdgpu_cs_ib_alloc_result *output)
 {
 	int r;
 	amdgpu_ib_handle ib;
 
-	if (NULL == dev)
-		return -EINVAL;
 	if (NULL == context)
 		return -EINVAL;
 	if (NULL == output)
@@ -481,7 +473,7 @@ int amdgpu_cs_alloc_ib(amdgpu_device_handle dev,
 	if (ib_size >= AMDGPU_CS_IB_SIZE_NUM)
 		return -EINVAL;
 
-	r = amdgpu_cs_alloc_ib_local(dev, context, ib_size, &ib);
+	r = amdgpu_cs_alloc_ib_local(context, ib_size, &ib);
 	if (!r) {
 		output->handle = ib;
 		output->cpu = ib->cpu;
@@ -491,17 +483,14 @@ int amdgpu_cs_alloc_ib(amdgpu_device_handle dev,
 	return r;
 }
 
-int amdgpu_cs_free_ib(amdgpu_device_handle dev,
-		      amdgpu_context_handle context,
-		      amdgpu_ib_handle handle)
+int amdgpu_cs_free_ib(amdgpu_ib_handle handle)
 {
-	if (NULL == dev)
-		return -EINVAL;
-	if (NULL == context)
-		return -EINVAL;
+	amdgpu_context_handle context;
+
 	if (NULL == handle)
 		return -EINVAL;
 
+	context = handle->context;
 	pthread_mutex_lock(&context->pendings_mutex);
 	LIST_ADD(&handle->list_node, &context->freed);
 	pthread_mutex_unlock(&context->pendings_mutex);
@@ -532,6 +521,8 @@ int amdgpu_cs_ctx_create(amdgpu_device_handle dev,
 	if (NULL == gpu_context)
 		return -ENOMEM;
 
+	gpu_context->dev = dev;
+
 	r = pthread_mutex_init(&gpu_context->sequence_mutex, NULL);
 	if (r)
 		goto error_mutex;
@@ -544,7 +535,7 @@ int amdgpu_cs_ctx_create(amdgpu_device_handle dev,
 	if (r)
 		goto error_pendings;
 
-	r = amdgpu_cs_alloc_ib_local(dev, gpu_context, amdgpu_cs_ib_size_4K,
+	r = amdgpu_cs_alloc_ib_local(gpu_context, amdgpu_cs_ib_size_4K,
 				     &gpu_context->fence_ib);
 	if (r)
 		goto error_fence_ib;
@@ -562,13 +553,13 @@ int amdgpu_cs_ctx_create(amdgpu_device_handle dev,
 	return 0;
 
 error_kernel:
-	amdgpu_cs_free_ib(dev, gpu_context, gpu_context->fence_ib);
+	amdgpu_cs_free_ib(gpu_context->fence_ib);
 
 error_fence_ib:
-	amdgpu_cs_destroy_pendings(dev, gpu_context);
+	amdgpu_cs_destroy_pendings(gpu_context);
 
 error_pendings:
-	amdgpu_cs_destroy_ib_pool(dev, gpu_context);
+	amdgpu_cs_destroy_ib_pool(gpu_context);
 
 error_pool:
 	pthread_mutex_destroy(&gpu_context->sequence_mutex);
@@ -586,26 +577,23 @@ error_mutex:
  *
  * \return  0 on success otherwise POSIX Error code
 */
-int amdgpu_cs_ctx_free(amdgpu_device_handle dev,
-		       amdgpu_context_handle context)
+int amdgpu_cs_ctx_free(amdgpu_context_handle context)
 {
-	int r;
 	union drm_amdgpu_ctx args;
+	int r;
 
-	if (NULL == dev)
-		return -EINVAL;
 	if (NULL == context)
 		return -EINVAL;
 
-	r = amdgpu_cs_free_ib(dev, context, context->fence_ib);
+	r = amdgpu_cs_free_ib(context->fence_ib);
 	if (r)
 		return r;
 
-	r = amdgpu_cs_destroy_pendings(dev, context);
+	r = amdgpu_cs_destroy_pendings(context);
 	if (r)
 		return r;
 
-	r = amdgpu_cs_destroy_ib_pool(dev, context);
+	r = amdgpu_cs_destroy_ib_pool(context);
 	if (r)
 		return r;
 
@@ -615,15 +603,15 @@ int amdgpu_cs_ctx_free(amdgpu_device_handle dev,
 	memset(&args, 0, sizeof(args));
 	args.in.op = AMDGPU_CTX_OP_FREE_CTX;
 	args.in.ctx_id = context->id;
-	r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_CTX, &args, sizeof(args));
+	r = drmCommandWriteRead(context->dev->fd, DRM_AMDGPU_CTX,
+				&args, sizeof(args));
 
 	free(context);
 
 	return r;
 }
 
-static int amdgpu_cs_create_bo_list(amdgpu_device_handle dev,
-				    amdgpu_context_handle context,
+static int amdgpu_cs_create_bo_list(amdgpu_context_handle context,
 				    struct amdgpu_cs_request *request,
 				    amdgpu_ib_handle fence_ib,
 				    uint32_t *handle)
@@ -663,7 +651,7 @@ static int amdgpu_cs_create_bo_list(amdgpu_device_handle dev,
 	if (fence_ib)
 		list[i].bo_handle = fence_ib->buf_handle->handle;
 
-	r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_BO_LIST,
+	r = drmCommandWriteRead(context->dev->fd, DRM_AMDGPU_BO_LIST,
 				&args, sizeof(args));
 	if (r)
 		return r;
@@ -672,7 +660,7 @@ static int amdgpu_cs_create_bo_list(amdgpu_device_handle dev,
 	return 0;
 }
 
-static int amdgpu_cs_free_bo_list(amdgpu_device_handle dev, uint32_t handle)
+static int amdgpu_cs_free_bo_list(amdgpu_context_handle context, uint32_t handle)
 {
 	union drm_amdgpu_bo_list args;
 	int r;
@@ -684,7 +672,7 @@ static int amdgpu_cs_free_bo_list(amdgpu_device_handle dev, uint32_t handle)
 	args.in.operation = AMDGPU_BO_LIST_OP_DESTROY;
 	args.in.list_handle = handle;
 
-	r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_BO_LIST,
+	r = drmCommandWriteRead(context->dev->fd, DRM_AMDGPU_BO_LIST,
 				&args, sizeof(args));
 
 	return r;
@@ -705,8 +693,7 @@ static uint32_t amdgpu_cs_fence_index(unsigned ip, unsigned ring)
  * \return  0 on success otherwise POSIX Error code
  * \sa amdgpu_cs_submit()
 */
-static int amdgpu_cs_submit_one(amdgpu_device_handle dev,
-				amdgpu_context_handle context,
+static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 				struct amdgpu_cs_request *ibs_request,
 				uint64_t *fence)
 {
@@ -763,7 +750,7 @@ static int amdgpu_cs_submit_one(amdgpu_device_handle dev,
 			chunk_data[i].ib_data.flags = AMDGPU_IB_FLAG_CE;
 	}
 
-	r = amdgpu_cs_create_bo_list(dev, context, ibs_request, NULL,
+	r = amdgpu_cs_create_bo_list(context, ibs_request, NULL,
 				     &bo_list_handle);
 	if (r)
 		goto error_unlock;
@@ -789,7 +776,7 @@ static int amdgpu_cs_submit_one(amdgpu_device_handle dev,
 		chunk_data[i].fence_data.offset *= sizeof(uint64_t);
 	}
 
-	r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_CS,
+	r = drmCommandWriteRead(context->dev->fd, DRM_AMDGPU_CS,
 				&cs, sizeof(cs));
 	if (r)
 		goto error_unlock;
@@ -816,7 +803,7 @@ static int amdgpu_cs_submit_one(amdgpu_device_handle dev,
 
 	pthread_mutex_unlock(&context->sequence_mutex);
 
-	r = amdgpu_cs_free_bo_list(dev, bo_list_handle);
+	r = amdgpu_cs_free_bo_list(context, bo_list_handle);
 	if (r)
 		goto error_free;
 
@@ -831,18 +818,15 @@ error_free:
 	return r;
 }
 
-int amdgpu_cs_submit(amdgpu_device_handle  dev,
-		     amdgpu_context_handle context,
+int amdgpu_cs_submit(amdgpu_context_handle context,
 		     uint64_t flags,
 		     struct amdgpu_cs_request *ibs_request,
 		     uint32_t number_of_requests,
 		     uint64_t *fences)
 {
-	int r;
 	uint32_t i;
+	int r;
 
-	if (NULL == dev)
-		return -EINVAL;
 	if (NULL == context)
 		return -EINVAL;
 	if (NULL == ibs_request)
@@ -852,7 +836,7 @@ int amdgpu_cs_submit(amdgpu_device_handle  dev,
 
 	r = 0;
 	for (i = 0; i < number_of_requests; i++) {
-		r = amdgpu_cs_submit_one(dev, context, ibs_request, fences);
+		r = amdgpu_cs_submit_one(context, ibs_request, fences);
 		if (r)
 			break;
 		fences++;
@@ -915,8 +899,7 @@ static int amdgpu_ioctl_wait_cs(amdgpu_device_handle dev,
 	return 0;
 }
 
-int amdgpu_cs_query_fence_status(amdgpu_device_handle dev,
-				 struct amdgpu_cs_query_fence *fence,
+int amdgpu_cs_query_fence_status(struct amdgpu_cs_query_fence *fence,
 				 uint32_t *expired)
 {
 	amdgpu_context_handle context;
@@ -927,8 +910,6 @@ int amdgpu_cs_query_fence_status(amdgpu_device_handle dev,
 	bool busy = true;
 	int r;
 
-	if (NULL == dev)
-		return -EINVAL;
 	if (NULL == fence)
 		return -EINVAL;
 	if (NULL == expired)
@@ -969,7 +950,7 @@ int amdgpu_cs_query_fence_status(amdgpu_device_handle dev,
 
 	pthread_mutex_unlock(&context->sequence_mutex);
 
-	r = amdgpu_ioctl_wait_cs(dev, ip_type, ip_instance, ring,
+	r = amdgpu_ioctl_wait_cs(context->dev, ip_type, ip_instance, ring,
 				 fence->fence, fence->timeout_ns, &busy);
 	if (!r && !busy) {
 		*expired = true;

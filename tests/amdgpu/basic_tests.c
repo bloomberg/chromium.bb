@@ -168,11 +168,11 @@ static void amdgpu_command_submission_gfx(void)
 	r = amdgpu_cs_ctx_create(device_handle, &context_handle);
 	CU_ASSERT_EQUAL(r, 0);
 
-	r = amdgpu_cs_alloc_ib(device_handle, context_handle,
+	r = amdgpu_cs_alloc_ib(context_handle,
 			       amdgpu_cs_ib_size_4K, &ib_result);
 	CU_ASSERT_EQUAL(r, 0);
 
-	r = amdgpu_cs_alloc_ib(device_handle, context_handle,
+	r = amdgpu_cs_alloc_ib(context_handle,
 			       amdgpu_cs_ib_size_4K, &ib_result_ce);
 	CU_ASSERT_EQUAL(r, 0);
 
@@ -199,7 +199,7 @@ static void amdgpu_command_submission_gfx(void)
 	ibs_request.number_of_ibs = 2;
 	ibs_request.ibs = ib_info;
 
-	r = amdgpu_cs_submit(device_handle, context_handle, 0,
+	r = amdgpu_cs_submit(context_handle, 0,
 			     &ibs_request, 1, &fence_status.fence);
 	CU_ASSERT_EQUAL(r, 0);
 
@@ -207,10 +207,10 @@ static void amdgpu_command_submission_gfx(void)
 	fence_status.timeout_ns = AMDGPU_TIMEOUT_INFINITE;
 	fence_status.ip_type = AMDGPU_HW_IP_GFX;
 
-	r = amdgpu_cs_query_fence_status(device_handle, &fence_status, &expired);
+	r = amdgpu_cs_query_fence_status(&fence_status, &expired);
 	CU_ASSERT_EQUAL(r, 0);
 
-	r = amdgpu_cs_ctx_free(device_handle, context_handle);
+	r = amdgpu_cs_ctx_free(context_handle);
 	CU_ASSERT_EQUAL(r, 0);
 }
 
@@ -230,7 +230,7 @@ static void amdgpu_command_submission_compute(void)
 
 	for (instance = 0; instance < 8; instance++) {
 		memset(&ib_result, 0, sizeof(struct amdgpu_cs_ib_alloc_result));
-		r = amdgpu_cs_alloc_ib(device_handle, context_handle,
+		r = amdgpu_cs_alloc_ib(context_handle,
 				       amdgpu_cs_ib_size_4K, &ib_result);
 		CU_ASSERT_EQUAL(r, 0);
 
@@ -249,7 +249,7 @@ static void amdgpu_command_submission_compute(void)
 		ibs_request.ibs = &ib_info;
 
 		memset(&fence_status, 0, sizeof(struct amdgpu_cs_query_fence));
-		r = amdgpu_cs_submit(device_handle, context_handle, 0,
+		r = amdgpu_cs_submit(context_handle, 0,
 				     &ibs_request, 1, &fence_status.fence);
 		CU_ASSERT_EQUAL(r, 0);
 
@@ -258,11 +258,11 @@ static void amdgpu_command_submission_compute(void)
 		fence_status.ip_type = AMDGPU_HW_IP_COMPUTE;
 		fence_status.ring = instance;
 
-		r = amdgpu_cs_query_fence_status(device_handle, &fence_status, &expired);
+		r = amdgpu_cs_query_fence_status(&fence_status, &expired);
 		CU_ASSERT_EQUAL(r, 0);
 	}
 
-	r = amdgpu_cs_ctx_free(device_handle, context_handle);
+	r = amdgpu_cs_ctx_free(context_handle);
 	CU_ASSERT_EQUAL(r, 0);
 }
 
@@ -291,7 +291,7 @@ static void amdgpu_sdma_test_exec_cs(amdgpu_context_handle context_handle,
 	CU_ASSERT_TRUE(pm4_dw <= 1024);
 
 	/* allocate IB */
-	r = amdgpu_cs_alloc_ib(device_handle, context_handle,
+	r = amdgpu_cs_alloc_ib(context_handle,
 			   amdgpu_cs_ib_size_4K, &ib_result);
 	CU_ASSERT_EQUAL(r, 0);
 
@@ -313,7 +313,7 @@ static void amdgpu_sdma_test_exec_cs(amdgpu_context_handle context_handle,
 	CU_ASSERT_NOT_EQUAL(ibs_request, NULL);
 
 	/* submit CS */
-	r = amdgpu_cs_submit(device_handle, context_handle, 0,
+	r = amdgpu_cs_submit(context_handle, 0,
 			 ibs_request, 1, &fence_status.fence);
 	CU_ASSERT_EQUAL(r, 0);
 
@@ -323,8 +323,7 @@ static void amdgpu_sdma_test_exec_cs(amdgpu_context_handle context_handle,
 	fence_status.timeout_ns = AMDGPU_TIMEOUT_INFINITE;
 
 	/* wait for IB accomplished */
-	r = amdgpu_cs_query_fence_status(device_handle, &fence_status,
-					&expired);
+	r = amdgpu_cs_query_fence_status(&fence_status, &expired);
 	CU_ASSERT_EQUAL(r, 0);
 	CU_ASSERT_EQUAL(expired, true);
 }
@@ -408,7 +407,7 @@ static void amdgpu_command_submission_sdma_write_linear(void)
 	free(pm4);
 
 	/* end of test */
-	r = amdgpu_cs_ctx_free(device_handle, context_handle);
+	r = amdgpu_cs_ctx_free(context_handle);
 	CU_ASSERT_EQUAL(r, 0);
 }
 
@@ -489,7 +488,7 @@ static void amdgpu_command_submission_sdma_const_fill(void)
 	free(pm4);
 
 	/* end of test */
-	r = amdgpu_cs_ctx_free(device_handle, context_handle);
+	r = amdgpu_cs_ctx_free(context_handle);
 	CU_ASSERT_EQUAL(r, 0);
 }
 
@@ -590,7 +589,7 @@ static void amdgpu_command_submission_sdma_copy_linear(void)
 	free(pm4);
 
 	/* end of test */
-	r = amdgpu_cs_ctx_free(device_handle, context_handle);
+	r = amdgpu_cs_ctx_free(context_handle);
 	CU_ASSERT_EQUAL(r, 0);
 }
 
@@ -664,6 +663,6 @@ static void amdgpu_userptr_test(void)
 	CU_ASSERT_EQUAL(r, 0);
 	free(ptr);
 
-	r = amdgpu_cs_ctx_free(device_handle, context_handle);
+	r = amdgpu_cs_ctx_free(context_handle);
 	CU_ASSERT_EQUAL(r, 0);
 }
