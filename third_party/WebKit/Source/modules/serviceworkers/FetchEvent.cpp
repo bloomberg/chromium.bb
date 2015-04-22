@@ -16,9 +16,16 @@ PassRefPtrWillBeRawPtr<FetchEvent> FetchEvent::create()
     return adoptRefWillBeNoop(new FetchEvent());
 }
 
-PassRefPtrWillBeRawPtr<FetchEvent> FetchEvent::create(RespondWithObserver* observer, Request* request)
+PassRefPtrWillBeRawPtr<FetchEvent> FetchEvent::create(const AtomicString& type, FetchEventInit& initializer)
 {
-    return adoptRefWillBeNoop(new FetchEvent(observer, request));
+    initializer.setCancelable(true);
+    return adoptRefWillBeNoop(new FetchEvent(type, initializer, nullptr));
+}
+
+PassRefPtrWillBeRawPtr<FetchEvent> FetchEvent::create(const AtomicString& type, FetchEventInit& initializer, RespondWithObserver* observer)
+{
+    initializer.setCancelable(true);
+    return adoptRefWillBeNoop(new FetchEvent(type, initializer, observer));
 }
 
 Request* FetchEvent::request() const
@@ -42,22 +49,18 @@ const AtomicString& FetchEvent::interfaceName() const
     return EventNames::FetchEvent;
 }
 
-void FetchEvent::setIsReload(bool isReload)
-{
-    m_isReload = isReload;
-}
-
 FetchEvent::FetchEvent()
     : m_isReload(false)
 {
 }
 
-FetchEvent::FetchEvent(RespondWithObserver* observer, Request* request)
-    : Event(EventTypeNames::fetch, /*canBubble=*/false, /*cancelable=*/true)
+FetchEvent::FetchEvent(const AtomicString& type, const FetchEventInit& initializer, RespondWithObserver* observer)
+    : ExtendableEvent(type, initializer)
     , m_observer(observer)
-    , m_request(request)
-    , m_isReload(false)
 {
+    if (initializer.hasRequest())
+        m_request = initializer.request();
+    m_isReload = initializer.isReload();
 }
 
 DEFINE_TRACE(FetchEvent)

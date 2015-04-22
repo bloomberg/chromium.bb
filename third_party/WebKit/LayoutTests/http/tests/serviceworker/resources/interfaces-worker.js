@@ -71,5 +71,32 @@ promise_test(function(t) {
   }, 'Cache');
 
 test(function() {
-    assert_equals(new ExtendableEvent('ExtendableEvent').type, 'ExtendableEvent');
+    assert_equals(
+      new ExtendableEvent('ExtendableEvent').type,
+      'ExtendableEvent', 'Type of ExtendableEvent should be ExtendableEvent');
+    assert_equals(
+      new FetchEvent('FetchEvent').type,
+      'FetchEvent', 'Type of FetchEvent should be FetchEvent');
+    assert_equals(
+      new FetchEvent('FetchEvent').cancelable,
+      true, 'Default FetchEvent.cancelable should be true');
+    assert_equals(
+      new FetchEvent('FetchEvent').bubbles,
+      false, 'Default FetchEvent.bubbles should be true');
+    assert_equals(
+      new FetchEvent('FetchEvent').isReload,
+      false, 'Default FetchEvent.isReload should be false');
+    assert_equals(
+      new FetchEvent('FetchEvent', {cancelable: false}).cancelable,
+      true, 'FetchEvent.cancelable should be true');
+    assert_equals(
+      new FetchEvent('FetchEvent', {isReload : true}).isReload, true,
+      'FetchEvent.isReload with option {isReload : true} should be true');
+    var req = new Request('http://localhost/',
+                          {method: 'POST',
+                           headers: [['Content-Type', 'Text/Html']]});
+    assert_equals(
+      new FetchEvent('FetchEvent', {request : req, isReload : true}).request.url,
+      'http://localhost/',
+      'FetchEvent.request.url should return the value it was initialized to');
   }, 'Event constructors');

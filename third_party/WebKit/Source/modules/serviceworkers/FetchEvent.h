@@ -7,6 +7,8 @@
 
 #include "modules/EventModules.h"
 #include "modules/fetch/Request.h"
+#include "modules/serviceworkers/ExtendableEvent.h"
+#include "modules/serviceworkers/FetchEventInit.h"
 #include "modules/serviceworkers/RespondWithObserver.h"
 #include "platform/heap/Handle.h"
 
@@ -19,11 +21,12 @@ class RespondWithObserver;
 // A fetch event is dispatched by the client to a service worker's script
 // context. RespondWithObserver can be used to notify the client about the
 // service worker's response.
-class FetchEvent final : public Event {
+class FetchEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<FetchEvent> create();
-    static PassRefPtrWillBeRawPtr<FetchEvent> create(RespondWithObserver*, Request*);
+    static PassRefPtrWillBeRawPtr<FetchEvent> create(const AtomicString& type, FetchEventInit&);
+    static PassRefPtrWillBeRawPtr<FetchEvent> create(const AtomicString& type, FetchEventInit&, RespondWithObserver*);
 
     Request* request() const;
     bool isReload() const;
@@ -32,13 +35,11 @@ public:
 
     virtual const AtomicString& interfaceName() const override;
 
-    void setIsReload(bool);
-
     DECLARE_VIRTUAL_TRACE();
 
 protected:
     FetchEvent();
-    FetchEvent(RespondWithObserver*, Request*);
+    FetchEvent(const AtomicString& type, const FetchEventInit&, RespondWithObserver*);
 
 private:
     PersistentWillBeMember<RespondWithObserver> m_observer;
