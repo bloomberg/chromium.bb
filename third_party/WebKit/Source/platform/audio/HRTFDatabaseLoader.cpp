@@ -34,6 +34,7 @@
 
 #include "platform/Task.h"
 #include "platform/TaskSynchronizer.h"
+#include "platform/ThreadSafeFunctional.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/MainThread.h"
@@ -98,7 +99,7 @@ void HRTFDatabaseLoader::loadAsynchronously()
     if (!m_hrtfDatabase && !m_thread) {
         // Start the asynchronous database loading process.
         m_thread = adoptPtr(Platform::current()->createThread("HRTF database loader"));
-        m_thread->postTask(FROM_HERE, new Task(WTF::bind(&HRTFDatabaseLoader::loadTask, this)));
+        m_thread->postTask(FROM_HERE, new Task(threadSafeBind(&HRTFDatabaseLoader::loadTask, AllowCrossThreadAccess(this))));
     }
 }
 
@@ -121,7 +122,7 @@ void HRTFDatabaseLoader::waitForLoaderThreadCompletion()
         return;
 
     TaskSynchronizer sync;
-    m_thread->postTask(FROM_HERE, new Task(WTF::bind(&HRTFDatabaseLoader::cleanupTask, this, &sync)));
+    m_thread->postTask(FROM_HERE, new Task(threadSafeBind(&HRTFDatabaseLoader::cleanupTask, AllowCrossThreadAccess(this), AllowCrossThreadAccess(&sync))));
     sync.waitForTaskCompletion();
     m_thread.clear();
 }
