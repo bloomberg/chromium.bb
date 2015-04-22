@@ -2530,6 +2530,10 @@
       'browser/services/gcm/gcm_profile_service.h',
       'browser/services/gcm/gcm_profile_service_factory.cc',
       'browser/services/gcm/gcm_profile_service_factory.h',
+      'browser/services/gcm/instance_id/instance_id_profile_service.cc',
+      'browser/services/gcm/instance_id/instance_id_profile_service.h',
+      'browser/services/gcm/instance_id/instance_id_profile_service_factory.cc',
+      'browser/services/gcm/instance_id/instance_id_profile_service_factory.h',
     ],
     'chrome_browser_session_sources': [
       'browser/sessions/base_session_service_delegate.h',

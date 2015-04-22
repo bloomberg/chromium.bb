@@ -1,0 +1,55 @@
+// Copyright (c) 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/services/gcm/instance_id/instance_id_profile_service_factory.h"
+
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
+#include "chrome/browser/services/gcm/instance_id/instance_id_profile_service.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
+
+namespace instance_id {
+
+// static
+InstanceIDProfileService* InstanceIDProfileServiceFactory::GetForProfile(
+    content::BrowserContext* profile) {
+  // Instance ID is not supported in incognito mode.
+  if (profile->IsOffTheRecord())
+    return NULL;
+
+  return static_cast<InstanceIDProfileService*>(
+      GetInstance()->GetServiceForBrowserContext(profile, true));
+}
+
+// static
+InstanceIDProfileServiceFactory*
+InstanceIDProfileServiceFactory::GetInstance() {
+  return Singleton<InstanceIDProfileServiceFactory>::get();
+}
+
+InstanceIDProfileServiceFactory::InstanceIDProfileServiceFactory()
+    : BrowserContextKeyedServiceFactory(
+        "InstanceIDProfileService",
+        BrowserContextDependencyManager::GetInstance()) {
+  // GCM is needed for device ID.
+  DependsOn(gcm::GCMProfileServiceFactory::GetInstance());
+}
+
+InstanceIDProfileServiceFactory::~InstanceIDProfileServiceFactory() {
+}
+
+KeyedService* InstanceIDProfileServiceFactory::BuildServiceInstanceFor(
+    content::BrowserContext* context) const {
+  return new InstanceIDProfileService(Profile::FromBrowserContext(context));
+}
+
+content::BrowserContext*
+InstanceIDProfileServiceFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
+}
+
+}  // namespace instance_id
