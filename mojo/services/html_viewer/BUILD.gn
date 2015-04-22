@@ -62,6 +62,8 @@ source_set("lib") {
     "discardable_memory_allocator.h",
     "html_document.cc",
     "html_document.h",
+    "mock_web_blob_registry_impl.cc",
+    "mock_web_blob_registry_impl.h",
     "touch_handler.cc",
     "touch_handler.h",
     "web_clipboard_impl.cc",

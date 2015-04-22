@@ -12,6 +12,7 @@
 #include "cc/blink/web_compositor_support_impl.h"
 #include "components/webcrypto/webcrypto_impl.h"
 #include "mojo/services/html_viewer/blink_resource_map.h"
+#include "mojo/services/html_viewer/mock_web_blob_registry_impl.h"
 #include "mojo/services/html_viewer/web_mime_registry_impl.h"
 #include "mojo/services/html_viewer/web_notification_manager_impl.h"
 #include "mojo/services/html_viewer/web_scheduler_impl.h"
@@ -42,6 +43,7 @@ class BlinkPlatformImpl : public blink::Platform {
   virtual blink::WebThemeEngine* themeEngine();
   virtual blink::WebScheduler* scheduler();
   virtual blink::WebString defaultLocale();
+  virtual blink::WebBlobRegistry* blobRegistry();
   virtual double currentTime();
   virtual double monotonicallyIncreasingTime();
   virtual void cryptographicallyRandomValues(unsigned char* buffer,
@@ -106,6 +108,7 @@ class BlinkPlatformImpl : public blink::Platform {
   blink::WebScrollbarBehavior scrollbar_behavior_;
   BlinkResourceMap blink_resource_map_;
   mojo::NetworkServicePtr network_service_;
+  MockWebBlobRegistryImpl blob_registry_;
   scoped_ptr<WebCookieJarImpl> cookie_jar_;
   scoped_ptr<WebClipboardImpl> clipboard_;
 

@@ -105,6 +105,10 @@ blink::WebString BlinkPlatformImpl::defaultLocale() {
   return blink::WebString::fromUTF8("en-US");
 }
 
+blink::WebBlobRegistry* BlinkPlatformImpl::blobRegistry() {
+  return &blob_registry_;
+}
+
 double BlinkPlatformImpl::currentTime() {
   return base::Time::Now().ToDoubleT();
 }
@@ -201,7 +205,7 @@ blink::WebData BlinkPlatformImpl::loadResource(const char* resource) {
 }
 
 blink::WebURLLoader* BlinkPlatformImpl::createURLLoader() {
-  return new WebURLLoaderImpl(network_service_.get());
+  return new WebURLLoaderImpl(network_service_.get(), &blob_registry_);
 }
 
 blink::WebSocketHandle* BlinkPlatformImpl::createWebSocketHandle() {

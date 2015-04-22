@@ -8,7 +8,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/common/handle_watcher.h"
+#include "mojo/services/html_viewer/mock_web_blob_registry_impl.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
+#include "third_party/WebKit/public/platform/WebBlobData.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -30,7 +32,8 @@ class WebURLRequestExtraData : public blink::WebURLRequest::ExtraData {
 
 class WebURLLoaderImpl : public blink::WebURLLoader {
  public:
-  explicit WebURLLoaderImpl(mojo::NetworkService* network_service);
+  explicit WebURLLoaderImpl(mojo::NetworkService* network_service,
+                            MockWebBlobRegistryImpl* web_blob_registry);
 
  private:
   virtual ~WebURLLoaderImpl();
@@ -50,11 +53,15 @@ class WebURLLoaderImpl : public blink::WebURLLoader {
   void OnReceivedError(mojo::URLResponsePtr response);
   void OnReceivedRedirect(const blink::WebURLRequest& request,
                           mojo::URLResponsePtr response);
+  void OnReceiveWebBlobData(
+      const blink::WebURLRequest& request,
+      const blink::WebVector<blink::WebBlobData::Item*>& items);
   void ReadMore();
   void WaitToReadMore();
   void OnResponseBodyStreamReady(MojoResult result);
 
   blink::WebURLLoaderClient* client_;
+  MockWebBlobRegistryImpl* web_blob_registry_;
   GURL url_;
   blink::WebReferrerPolicy referrer_policy_;
   mojo::URLLoaderPtr url_loader_;

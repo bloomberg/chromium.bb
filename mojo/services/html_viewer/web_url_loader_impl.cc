@@ -80,8 +80,10 @@ WebURLRequestExtraData::WebURLRequestExtraData() {
 WebURLRequestExtraData::~WebURLRequestExtraData() {
 }
 
-WebURLLoaderImpl::WebURLLoaderImpl(mojo::NetworkService* network_service)
+WebURLLoaderImpl::WebURLLoaderImpl(mojo::NetworkService* network_service,
+                                   MockWebBlobRegistryImpl* web_blob_registry)
     : client_(NULL),
+      web_blob_registry_(web_blob_registry),
       referrer_policy_(blink::WebReferrerPolicyDefault),
       weak_factory_(this) {
   network_service->CreateURLLoader(GetProxy(&url_loader_));
@@ -119,12 +121,24 @@ void WebURLLoaderImpl::loadAsynchronously(const blink::WebURLRequest& request,
                    weak_factory_.GetWeakPtr(),
                    request,
                    base::Passed(&extra_data->synthetic_response)));
-  } else {
-    url_loader_->Start(url_request.Pass(),
-                       base::Bind(&WebURLLoaderImpl::OnReceivedResponse,
-                                  weak_factory_.GetWeakPtr(),
-                                  request));
+    return;
   }
+
+  blink::WebString uuid;
+  if (web_blob_registry_->GetUUIDForURL(url_, &uuid)) {
+    blink::WebVector<blink::WebBlobData::Item*> items;
+    if (web_blob_registry_->GetBlobItems(uuid, &items)) {
+      // The blob data exists in our service, and we don't want to create a
+      // data pipe just to do a funny dance where at the end, we stuff data
+      // from memory into data pipes so we can read back the data.
+      OnReceiveWebBlobData(request, items);
+      return;
+    }
+  }
+
+  url_loader_->Start(url_request.Pass(),
+                     base::Bind(&WebURLLoaderImpl::OnReceivedResponse,
+                                weak_factory_.GetWeakPtr(), request));
 }
 
 void WebURLLoaderImpl::cancel() {
@@ -216,6 +230,34 @@ void WebURLLoaderImpl::OnReceivedRedirect(const blink::WebURLRequest& request,
       base::Bind(&WebURLLoaderImpl::OnReceivedResponse,
                  weak_factory_.GetWeakPtr(),
                  request));
+}
+
+void WebURLLoaderImpl::OnReceiveWebBlobData(
+    const blink::WebURLRequest& request,
+    const blink::WebVector<blink::WebBlobData::Item*>& items) {
+  blink::WebURLResponse result;
+  result.initialize();
+  result.setURL(url_);
+  result.setHTTPStatusCode(200);
+  result.setExpectedContentLength(-1);  // Not available.
+
+  base::WeakPtr<WebURLLoaderImpl> self(weak_factory_.GetWeakPtr());
+  client_->didReceiveResponse(this, result);
+
+  // We may have been deleted during didReceiveResponse.
+  if (!self)
+    return;
+
+  // Send a receive data for each blob item.
+  for (size_t i = 0; i < items.size(); ++i) {
+    client_->didReceiveData(this, items[i]->data.data(), items[i]->data.size(),
+                            -1);
+  }
+
+  // Send a closing finish.
+  double finish_time = base::Time::Now().ToDoubleT();
+  client_->didFinishLoading(
+      this, finish_time, blink::WebURLLoaderClient::kUnknownEncodedDataLength);
 }
 
 void WebURLLoaderImpl::ReadMore() {
