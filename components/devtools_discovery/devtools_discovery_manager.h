@@ -15,9 +15,17 @@ namespace devtools_discovery {
 
 class DevToolsDiscoveryManager {
  public:
+  class Provider {
+   public:
+    virtual ~Provider() {}
+    virtual DevToolsTargetDescriptor::List GetDescriptors() = 0;
+  };
+
   // Returns single instance of this class. The instance is destroyed on the
   // browser main loop exit so this method MUST NOT be called after that point.
   static DevToolsDiscoveryManager* GetInstance();
+
+  void AddProvider(scoped_ptr<Provider> provider);
 
   DevToolsTargetDescriptor::List GetDescriptors();
 
@@ -26,6 +34,9 @@ class DevToolsDiscoveryManager {
 
   DevToolsDiscoveryManager();
   ~DevToolsDiscoveryManager();
+  DevToolsTargetDescriptor::List GetDescriptorsFromProviders();
+
+  std::vector<Provider*> providers_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsDiscoveryManager);
 };

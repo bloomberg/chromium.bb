@@ -10,6 +10,8 @@
 
 namespace android_webview {
 
+// TODO(dgozman): remove this class after componentization of devtools_discovery
+// is finished.
 class AwDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
  public:
   AwDevToolsManagerDelegate();

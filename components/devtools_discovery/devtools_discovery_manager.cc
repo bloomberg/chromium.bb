@@ -4,6 +4,7 @@
 
 #include "components/devtools_discovery/devtools_discovery_manager.h"
 
+#include "base/stl_util.h"
 #include "components/devtools_discovery/basic_target_descriptor.h"
 #include "content/public/browser/devtools_agent_host.h"
 
@@ -20,14 +21,32 @@ DevToolsDiscoveryManager::DevToolsDiscoveryManager() {
 }
 
 DevToolsDiscoveryManager::~DevToolsDiscoveryManager() {
+  STLDeleteElements(&providers_);
+}
+
+void DevToolsDiscoveryManager::AddProvider(scoped_ptr<Provider> provider) {
+  providers_.push_back(provider.release());
 }
 
 DevToolsTargetDescriptor::List DevToolsDiscoveryManager::GetDescriptors() {
+  if (providers_.size())
+    return GetDescriptorsFromProviders();
+
   DevToolsAgentHost::List agent_hosts = DevToolsAgentHost::GetOrCreateAll();
   DevToolsTargetDescriptor::List result;
   result.reserve(agent_hosts.size());
   for (const auto& agent_host : agent_hosts)
     result.push_back(new BasicTargetDescriptor(agent_host));
+  return result;
+}
+
+DevToolsTargetDescriptor::List
+DevToolsDiscoveryManager::GetDescriptorsFromProviders() {
+  DevToolsTargetDescriptor::List result;
+  for (const auto& provider : providers_) {
+    DevToolsTargetDescriptor::List partial = provider->GetDescriptors();
+    result.insert(result.begin(), partial.begin(), partial.end());
+  }
   return result;
 }
 

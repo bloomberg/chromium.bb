@@ -5,6 +5,7 @@
 #include "android_webview/browser/aw_browser_main_parts.h"
 
 #include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/aw_dev_tools_discovery_provider.h"
 #include "android_webview/browser/aw_result_codes.h"
 #include "android_webview/native/public/aw_assets.h"
 #include "base/android/build_info.h"
@@ -12,6 +13,7 @@
 #include "base/android/memory_pressure_listener_android.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "components/devtools_discovery/devtools_discovery_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -92,6 +94,12 @@ int AwBrowserMainParts::PreCreateThreads() {
 
 void AwBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_->PreMainMessageLoopRun();
+
+  devtools_discovery::DevToolsDiscoveryManager* discovery_manager =
+      devtools_discovery::DevToolsDiscoveryManager::GetInstance();
+  discovery_manager->AddProvider(make_scoped_ptr(
+      new AwDevToolsDiscoveryProvider()));
+
   // This is needed for WebView Classic backwards compatibility
   // See crbug.com/298495
   content::SetMaxURLChars(20 * 1024 * 1024);
