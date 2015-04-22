@@ -26,8 +26,7 @@ base::Thread* g_quic_server_thread = nullptr;
 net::tools::QuicSimpleServer* g_quic_server = nullptr;
 
 void ServeFilesFromDirectory(
-    const base::FilePath& directory,
-    base::android::ScopedJavaGlobalRef<jobject>* callback) {
+    const base::FilePath& directory) {
   DCHECK(g_quic_server_thread->task_runner()->BelongsToCurrentThread());
   DCHECK(!g_quic_server);
   base::FilePath file_dir = directory.Append("quic_data");
@@ -41,7 +40,7 @@ void ServeFilesFromDirectory(
   int rv = g_quic_server->Listen(net::IPEndPoint(ip, kServerPort));
   CHECK_GE(rv, 0) << "Quic server fails to start";
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_QuicTestServer_onServerStarted(env, callback->obj());
+  Java_QuicTestServer_onServerStarted(env);
 }
 
 void ShutdownOnServerThread() {
@@ -55,7 +54,7 @@ void ShutdownOnServerThread() {
 // Quic server is currently hardcoded to run on port 6121 of the localhost on
 // the device.
 void StartQuicTestServer(JNIEnv* env,
-                         jclass jcaller,
+                         jclass /*jcaller*/,
                          jstring jtest_files_root) {
   DCHECK(!g_quic_server_thread);
   g_quic_server_thread = new base::Thread("quic server thread");
@@ -65,26 +64,22 @@ void StartQuicTestServer(JNIEnv* env,
   DCHECK(started);
   base::FilePath test_files_root(
       base::android::ConvertJavaStringToUTF8(env, jtest_files_root));
-  base::android::ScopedJavaGlobalRef<jobject>* callback =
-      new base::android::ScopedJavaGlobalRef<jobject>();
-  callback->Reset(env, jcaller);
   g_quic_server_thread->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&ServeFilesFromDirectory, test_files_root,
-                            base::Owned(callback)));
+      FROM_HERE, base::Bind(&ServeFilesFromDirectory, test_files_root));
 }
 
-void ShutdownQuicTestServer(JNIEnv* env, jclass jcaller) {
+void ShutdownQuicTestServer(JNIEnv* env, jclass /*jcaller*/) {
   DCHECK(!g_quic_server_thread->task_runner()->BelongsToCurrentThread());
   g_quic_server_thread->task_runner()->PostTask(
       FROM_HERE, base::Bind(&ShutdownOnServerThread));
   delete g_quic_server_thread;
 }
 
-jstring GetServerHost(JNIEnv* env, jclass jcaller) {
+jstring GetServerHost(JNIEnv* env, jclass /*jcaller*/) {
   return base::android::ConvertUTF8ToJavaString(env, kServerHost).Release();
 }
 
-int GetServerPort(JNIEnv* env, jclass jcaller) {
+int GetServerPort(JNIEnv* env, jclass /*jcaller*/) {
   return kServerPort;
 }
 

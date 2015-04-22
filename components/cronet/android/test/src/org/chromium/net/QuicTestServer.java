@@ -40,7 +40,7 @@ public final class QuicTestServer {
     }
 
     @CalledByNative
-    private void onServerStarted() {
+    private static void onServerStarted() {
         sBlock.open();
     }
 
