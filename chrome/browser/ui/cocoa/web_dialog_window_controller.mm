@@ -199,8 +199,7 @@ void WebDialogWindowDelegateBridge::OnDialogClosed(
 
 void WebDialogWindowDelegateBridge::OnCloseContents(WebContents* source,
                                                     bool* out_close_dialog) {
-  if (out_close_dialog)
-    *out_close_dialog = true;
+  *out_close_dialog = true;
 }
 
 void WebDialogWindowDelegateBridge::CloseContents(WebContents* source) {

@@ -98,6 +98,7 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   // away. Only relevant if your dialog hosts code that calls
   // windows.close() and you've allowed that.  If the output parameter
   // is set to true, then the dialog is closed.  The default is false.
+  // |out_close_dialog| is never NULL.
   virtual void OnCloseContents(content::WebContents* source,
                                bool* out_close_dialog) = 0;
 

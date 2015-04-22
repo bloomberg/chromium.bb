@@ -94,8 +94,7 @@ void NetworkPortalWebDialog::OnDialogClosed(const std::string& json_retval) {
 
 void NetworkPortalWebDialog::OnCloseContents(content::WebContents* /* source */,
                                              bool* out_close_dialog) {
-  if (out_close_dialog)
-    *out_close_dialog = true;
+  *out_close_dialog = true;
 }
 
 bool NetworkPortalWebDialog::ShouldShowDialogTitle() const {

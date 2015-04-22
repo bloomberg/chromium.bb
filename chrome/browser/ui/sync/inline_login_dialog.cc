@@ -48,8 +48,7 @@ void InlineLoginDialog::OnDialogClosed(const std::string& json_retval) {
 
 void InlineLoginDialog::OnCloseContents(
     content::WebContents* source, bool* out_close_dialog) {
-  if (out_close_dialog)
-    *out_close_dialog = true;
+  *out_close_dialog = true;
 }
 
 bool InlineLoginDialog::ShouldShowDialogTitle() const {

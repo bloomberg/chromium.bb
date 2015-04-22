@@ -60,9 +60,8 @@ void TestWebDialogDelegate::OnDialogClosed(const std::string& json_retval) {
 }
 
 void TestWebDialogDelegate::OnCloseContents(WebContents* source,
-    bool* out_close_dialog) {
-  if (out_close_dialog)
-    *out_close_dialog = true;
+                                            bool* out_close_dialog) {
+  *out_close_dialog = true;
 }
 
 bool TestWebDialogDelegate::ShouldShowDialogTitle() const {

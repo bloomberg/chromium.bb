@@ -247,6 +247,7 @@ void WebDialogView::OnDialogCloseFromWebUI(const std::string& json_retval) {
 
 void WebDialogView::OnCloseContents(WebContents* source,
                                     bool* out_close_dialog) {
+  DCHECK(out_close_dialog);
   if (delegate_)
     delegate_->OnCloseContents(source, out_close_dialog);
 }

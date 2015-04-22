@@ -86,8 +86,7 @@ void BluetoothPairingDialog::OnDialogClosed(const std::string& json_retval) {
 
 void BluetoothPairingDialog::OnCloseContents(WebContents* source,
                                              bool* out_close_dialog) {
-  if (out_close_dialog)
-    *out_close_dialog = true;
+  *out_close_dialog = true;
 }
 
 bool BluetoothPairingDialog::ShouldShowDialogTitle() const {

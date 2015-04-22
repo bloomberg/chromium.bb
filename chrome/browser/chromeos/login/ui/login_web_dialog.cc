@@ -137,8 +137,7 @@ void LoginWebDialog::OnDialogClosed(const std::string& json_retval) {
 
 void LoginWebDialog::OnCloseContents(WebContents* source,
                                      bool* out_close_dialog) {
-  if (out_close_dialog)
-    *out_close_dialog = true;
+  *out_close_dialog = true;
 
   if (g_web_contents_stack.Pointer()->size() &&
       source == g_web_contents_stack.Pointer()->front()) {
