@@ -2,9 +2,24 @@
 # This must be a valid python dictionary.
 [
   {
+    "test": "mojo:clipboard_apptests",
+  },
+  # TODO(msw): Fix and enable the html_viewer_apptests: http://crbug.com/479298
+  #{
+  #  "test": "mojo:html_viewer_apptests",
+  #},
+  {
     "test": "mojo:network_service_apptests",
   },
+  # TODO(msw|jam): Fix and enable the shell_apptests: http://crbug.com/479316
+  #{
+  #  "test": "mojo:shell_apptests",
+  #},
   {
-    "test": "mojo:html_viewer_apptests",
+    "test": "mojo:view_manager_apptests",
+    "shell-args": ["--url-mappings=mojo:window_manager=mojo:test_window_manager"]
+  },
+  {
+    "test": "mojo:window_manager_apptests",
   },
 ]
