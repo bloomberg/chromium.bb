@@ -88,6 +88,10 @@ bool ServiceRuntime::StartModule() {
     // the plugin.
     load_status = LOAD_OK;
   } else {
+    // We invoke start_module to unblock NaClWaitForStartModuleCommand in
+    // sel_main_chrome.c on the NaCl side, but the load_status is obtained by
+    // a different hook. Remove this once NaClWaitForStartModuleCommand is no
+    // longer needed.
     NaClSrpcResultCodes rpc_result =
         NaClSrpcInvokeBySignature(&command_channel_,
                                   "start_module::i",
@@ -103,23 +107,7 @@ bool ServiceRuntime::StartModule() {
   }
 
   NaClLog(4, "ServiceRuntime::StartModule (load_status=%d)\n", load_status);
-  if (main_service_runtime_) {
-    if (load_status < 0 || load_status > NACL_ERROR_CODE_MAX)
-      load_status = LOAD_STATUS_UNKNOWN;
-    GetNaClInterface()->ReportSelLdrStatus(pp_instance_,
-                                           load_status,
-                                           NACL_ERROR_CODE_MAX);
-  }
-
-  if (LOAD_OK != load_status) {
-    ErrorInfo error_info;
-    error_info.SetReport(
-        PP_NACL_ERROR_SEL_LDR_START_STATUS,
-        NaClErrorString(static_cast<NaClErrorCode>(load_status)));
-    ReportLoadError(error_info);
-    return false;
-  }
-  return true;
+  return LOAD_OK == load_status;
 }
 
 void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
@@ -208,8 +196,6 @@ void ServiceRuntime::StartNexe() {
   bool ok = StartNexeInternal();
   if (ok) {
     NaClLog(4, "ServiceRuntime::StartNexe (success)\n");
-  } else {
-    ReapLogs();
   }
   // This only matters if a background thread is waiting, but we signal in all
   // cases to simplify the code.
@@ -220,24 +206,6 @@ bool ServiceRuntime::StartNexeInternal() {
   if (!SetupCommandChannel())
     return false;
   return StartModule();
-}
-
-void ServiceRuntime::ReapLogs() {
-  // TODO(teravest): We should allow the NaCl process to crash itself when a
-  // module fails to start, and remove the call to RemoteLog() here. The
-  // reverse channel is no longer needed for crash reporting.
-  //
-  // The reasoning behind the current code behavior follows:
-  // On a load failure the NaCl process does not crash itself to
-  // avoid a race where the no-more-senders error on the reverse
-  // channel service thread might cause the crash-detection logic to
-  // kick in before the start_module RPC reply has been received. So
-  // we induce a NaCl process crash here.
-  RemoteLog(LOG_FATAL, "reap logs\n");
-
-  // TODO(teravest): Release subprocess_ here since it's no longer needed. It
-  // was previously kept around to collect crash log output from the bootstrap
-  // channel.
 }
 
 void ServiceRuntime::ReportLoadError(const ErrorInfo& error_info) {
@@ -262,15 +230,6 @@ SrpcClient* ServiceRuntime::SetupAppChannel() {
     delete connect_desc;
     return srpc_client;
   }
-}
-
-bool ServiceRuntime::RemoteLog(int severity, const std::string& msg) {
-  NaClSrpcResultCodes rpc_result =
-      NaClSrpcInvokeBySignature(&command_channel_,
-                                "log:is:",
-                                severity,
-                                strdup(msg.c_str()));
-  return (NACL_SRPC_RESULT_OK == rpc_result);
 }
 
 void ServiceRuntime::Shutdown() {

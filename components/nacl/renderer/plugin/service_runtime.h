@@ -85,7 +85,6 @@ class ServiceRuntime {
   // Starts the application channel to the nexe.
   SrpcClient* SetupAppChannel();
 
-  bool RemoteLog(int severity, const std::string& msg);
   Plugin* plugin() const { return plugin_; }
   void Shutdown();
 
@@ -97,7 +96,6 @@ class ServiceRuntime {
 
   bool SetupCommandChannel();
   bool StartModule();
-  void ReapLogs();
 
   void ReportLoadError(const ErrorInfo& error_info);
 

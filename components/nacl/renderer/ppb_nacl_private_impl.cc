@@ -500,13 +500,13 @@ void LaunchSelLdr(PP_Instance instance,
 
   // Create the trusted plugin channel.
   if (IsValidChannelHandle(launch_result.trusted_ipc_channel_handle)) {
-    bool report_exit_status = PP_ToBool(main_service_runtime);
+    bool is_helper_nexe = !PP_ToBool(main_service_runtime);
     scoped_ptr<TrustedPluginChannel> trusted_plugin_channel(
         new TrustedPluginChannel(
             load_manager,
             launch_result.trusted_ipc_channel_handle,
             content::RenderThread::Get()->GetShutdownEvent(),
-            report_exit_status));
+            is_helper_nexe));
     load_manager->set_trusted_plugin_channel(trusted_plugin_channel.Pass());
   } else {
     PostPPCompletionCallback(callback, PP_ERROR_FAILED);
@@ -1484,22 +1484,6 @@ void DownloadFile(PP_Instance instance,
   file_downloader->Load(url_request);
 }
 
-void ReportSelLdrStatus(PP_Instance instance,
-                        int32_t load_status,
-                        int32_t max_status) {
-  HistogramEnumerate("NaCl.LoadStatus.SelLdr", load_status, max_status);
-  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
-  DCHECK(load_manager);
-  if (!load_manager)
-    return;
-
-  // Gather data to see if being installed changes load outcomes.
-  const char* name = load_manager->is_installed() ?
-      "NaCl.LoadStatus.SelLdr.InstalledApp" :
-      "NaCl.LoadStatus.SelLdr.NotInstalledApp";
-  HistogramEnumerate(name, load_status, max_status);
-}
-
 void LogTranslateTime(const char* histogram_name,
                       int64_t time_in_us) {
   ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
@@ -1717,7 +1701,6 @@ const PPB_NaCl_Private nacl_interface = {
   &GetPNaClResourceInfo,
   &GetCpuFeatureAttrs,
   &DownloadNexe,
-  &ReportSelLdrStatus,
   &LogTranslateTime,
   &LogBytesCompiledVsDowloaded,
   &SetPNaClStartTime,

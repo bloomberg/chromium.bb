@@ -1,6 +1,8 @@
 include_rules = [
   "+content/public/renderer",
   "+native_client/src/public/imc_types.h",  # for NaClHandle
+  # for NaClErrorCode
+  "+native_client/src/trusted/service_runtime/nacl_error_code.h",
   "+net",
   "+ppapi/c",
   "+ppapi/proxy",

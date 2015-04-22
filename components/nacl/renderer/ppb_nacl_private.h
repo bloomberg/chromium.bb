@@ -326,13 +326,6 @@ struct PPB_NaCl_Private {
                        const char* url,
                        struct PP_NaClFileInfo* file_info,
                        struct PP_CompletionCallback callback);
-  /* Reports the status of sel_ldr for UMA reporting.
-   * |max_status| has to be provided because the implementation of this
-   * interface can't access the NaClErrorCode enum.
-   */
-  void (*ReportSelLdrStatus)(PP_Instance instance,
-                             int32_t load_status,
-                             int32_t max_status);
   /* Logs time taken by an operation to UMA histograms.
    * This function is safe to call on any thread.
    */
@@ -365,4 +358,3 @@ struct PPB_NaCl_Private {
  */
 
 #endif  /* COMPONENTS_NACL_RENDERER_PPB_NACL_PRIVATE_H_ */
-

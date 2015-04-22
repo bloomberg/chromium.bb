@@ -69,6 +69,12 @@ void FatalLogHandler(const char* data, size_t bytes) {
          copy_bytes);
 }
 
+void LoadStatusCallback(int load_status) {
+  g_listener->trusted_listener()->Send(
+      new NaClRendererMsg_ReportLoadStatus(
+          static_cast<NaClErrorCode>(load_status)));
+}
+
 #if defined(OS_MACOSX)
 
 // On Mac OS X, shm_open() works in the sandbox but does not give us
@@ -420,6 +426,7 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
   args->debug_stub_server_port_selected_handler_func =
       DebugStubPortSelectedHandler;
 #endif
+  args->load_status_handler_func = LoadStatusCallback;
 #if defined(OS_LINUX)
   args->prereserved_sandbox_size = prereserved_sandbox_size_;
 #endif

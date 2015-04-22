@@ -48,6 +48,10 @@ class NaClListener : public IPC::Listener {
 
   void* crash_info_shmem_memory() const { return crash_info_shmem_->memory(); }
 
+  NaClTrustedListener* trusted_listener() const {
+    return trusted_listener_.get();
+  }
+
   typedef base::Callback<void(IPC::PlatformFileForTransit, base::FilePath)>
       ResolveFileTokenCallback;
   void ResolveFileToken(uint64_t token_lo,
