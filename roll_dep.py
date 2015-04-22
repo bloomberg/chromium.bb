@@ -3,8 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""This scripts takes the path to a dep and an svn revision, and updates the
-parent repo's DEPS file with the corresponding git revision.  Sample invocation:
+"""This scripts takes the path to a dep and a git or svn revision, and updates
+the parent repo's DEPS file with the corresponding git revision.  Sample
+invocation:
 
 [chromium/src]$ roll-dep third_party/WebKit 12345
 
@@ -297,6 +298,7 @@ def generate_commit_message(deps_section, dep_path, dep_name, new_rev):
     'revlog_url': url,
   })
 
+
 def update_deps_entry(deps_lines, deps_ast, value_node, new_rev, comment):
   line_idx = update_node(deps_lines, deps_ast, value_node, new_rev)
   (content, _, _) = deps_lines[line_idx].partition('#')
@@ -304,6 +306,7 @@ def update_deps_entry(deps_lines, deps_ast, value_node, new_rev, comment):
     deps_lines[line_idx] = '%s # %s' % (content.rstrip(), comment)
   else:
     deps_lines[line_idx] = content.rstrip()
+
 
 def update_deps(deps_file, dep_path, dep_name, new_rev, comment):
   """Update the DEPS file with the new git revision."""
@@ -337,39 +340,38 @@ def update_deps(deps_file, dep_path, dep_name, new_rev, comment):
           update_deps_entry(deps_lines, deps_ast, value_node, new_rev, comment)
           commit_msg = generate_commit_message(
               deps_locals['deps_os'][os_name.s], dep_path, dep_name, new_rev)
-  if commit_msg:
-    print 'Pinning %s' % dep_name
-    print 'to revision %s' % new_rev
-    print 'in %s' % deps_file
-    with open(deps_file, 'w') as fh:
-      for line in deps_lines:
-        print >> fh, line
-    deps_file_dir = os.path.normpath(os.path.dirname(deps_file))
-    deps_file_root = Popen(
-        ['git', 'rev-parse', '--show-toplevel'],
-        cwd=deps_file_dir, stdout=PIPE).communicate()[0].strip()
-    with open(os.path.join(deps_file_root, '.git', 'MERGE_MSG'), 'w') as fh:
-      fh.write(commit_msg)
-  else:
+  if not commit_msg:
     print 'Could not find an entry in %s to update.' % deps_file
-  return 0 if commit_msg else 1
+    return 1
+
+  print 'Pinning %s' % dep_name
+  print 'to revision %s' % new_rev
+  print 'in %s' % deps_file
+  with open(deps_file, 'w') as fh:
+    for line in deps_lines:
+      print >> fh, line
+  deps_file_dir = os.path.normpath(os.path.dirname(deps_file))
+  deps_file_root = Popen(
+      ['git', 'rev-parse', '--show-toplevel'],
+      cwd=deps_file_dir, stdout=PIPE).communicate()[0].strip()
+  with open(os.path.join(deps_file_root, '.git', 'MERGE_MSG'), 'w') as fh:
+    fh.write(commit_msg)
+  return 0
 
 
 def main(argv):
-  parser = optparse.OptionParser()
+  usage = 'Usage: roll_dep.py [options] <dep path> <rev> [ <DEPS file> ]'
+  parser = optparse.OptionParser(usage=usage, description=__doc__)
   parser.add_option('--no-verify-revision',
                     help='Don\'t verify the revision passed in. This '
                          'also skips adding an svn revision comment '
                          'for git dependencies and requires the passed '
                          'revision to be a git hash.',
                     default=False, action='store_true')
-  (options, argv) = parser.parse_args(argv)
-  if len(argv) not in (2, 3):
-    print >> sys.stderr, (
-        'Usage: roll_dep.py [options] <dep path> <svn revision> '
-        '[ <DEPS file> ]')
-    return 1
-  (arg_dep_path, revision) = argv[0:2]
+  options, args = parser.parse_args(argv)
+  if len(args) not in (2, 3):
+    parser.error('Expected either 2 or 3 positional parameters.')
+  arg_dep_path, revision = args[:2]
   gclient_root = find_gclient_root()
   dep_path = platform_path(arg_dep_path)
   if not os.path.exists(dep_path):
@@ -377,25 +379,32 @@ def main(argv):
   if not options.no_verify_revision:
     # Only require the path to exist if the revision should be verified. A path
     # to e.g. os deps might not be checked out.
-    assert os.path.isdir(dep_path), 'No such directory: %s' % arg_dep_path
-  if len(argv) > 2:
-    deps_file = argv[2]
+    if not os.path.isdir(dep_path):
+      print >> sys.stderr, 'No such directory: %s' % arg_dep_path
+      return 1
+  if len(args) > 2:
+    deps_file = args[2]
   else:
     soln = get_solution(gclient_root, dep_path)
     soln_path = os.path.relpath(os.path.join(gclient_root, soln['name']))
     deps_file = os.path.join(soln_path, 'DEPS')
   dep_name = posix_path(os.path.relpath(dep_path, gclient_root))
   if options.no_verify_revision:
-    assert is_git_hash(revision), (
-        'The passed revision %s must be a git hash when skipping revision '
-        'verification.' % revision)
+    if not is_git_hash(revision):
+      print >> sys.stderr, (
+          'The passed revision %s must be a git hash when skipping revision '
+          'verification.' % revision)
+      return 1
     git_rev = revision
     comment = None
   else:
-    (git_rev, svn_rev) = get_git_revision(dep_path, revision)
+    git_rev, svn_rev = get_git_revision(dep_path, revision)
     comment = ('from svn revision %s' % svn_rev) if svn_rev else None
-    assert git_rev, 'Could not find git revision matching %s.' % revision
+    if not git_rev:
+      print >> sys.stderr, 'Could not find git revision matching %s.' % revision
+      return 1
   return update_deps(deps_file, dep_path, dep_name, git_rev, comment)
+
 
 if __name__ == '__main__':
   try:
