@@ -34,12 +34,6 @@ PassRefPtr<RemoteSecurityContext> RemoteSecurityContext::create()
 
 void RemoteSecurityContext::setReplicatedOrigin(PassRefPtr<SecurityOrigin> origin)
 {
-    // FIXME: Currently, replicated security origins are passed only at
-    // RemoteFrame creation time.  Eventually, this class will also need to
-    // handle origin updates to handle cases like setting document.domain, but
-    // for now, check that this is the first and only time we are setting the
-    // origin.
-    ASSERT(!haveInitializedSecurityOrigin());
     setSecurityOrigin(origin);
 }
 
