@@ -11394,6 +11394,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="GPU.ANGLE.D3D11CreateDeviceMS" units="milliseconds">
+  <owner>jmadill@chromium.org</owner>
+  <summary>
+    The time that elapses for the initial call to D3D11CreateDevice on D3D11
+    ANGLE. A pure system call, with no ANGLE or Chromium code, called once every
+    GPU process startup.
+  </summary>
+</histogram>
+
 <histogram name="GPU.ANGLE.D3D11InitializeResult" enum="D3D11InitializeResult">
   <owner>jmadill@chromium.org</owner>
   <summary>

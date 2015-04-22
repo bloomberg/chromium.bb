@@ -16,6 +16,10 @@ ANGLEPlatformImpl::ANGLEPlatformImpl() {
 ANGLEPlatformImpl::~ANGLEPlatformImpl() {
 }
 
+double ANGLEPlatformImpl::currentTime() {
+  return base::Time::Now().ToDoubleT();
+}
+
 double ANGLEPlatformImpl::monotonicallyIncreasingTime() {
   return base::TimeTicks::Now().ToInternalValue() /
          static_cast<double>(base::Time::kMicrosecondsPerSecond);

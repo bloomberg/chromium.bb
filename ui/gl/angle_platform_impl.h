@@ -20,6 +20,7 @@ class ANGLEPlatformImpl : public angle::Platform {
   ~ANGLEPlatformImpl() override;
 
   // angle::Platform:
+  double currentTime() override;
   double monotonicallyIncreasingTime() override;
   const unsigned char* getTraceCategoryEnabledFlag(
       const char* category_group) override;
