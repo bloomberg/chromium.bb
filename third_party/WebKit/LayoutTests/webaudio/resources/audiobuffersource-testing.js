@@ -79,3 +79,45 @@ function checkAllTests(event) {
 
     finishJSTest();
 }
+
+
+// Create the actual result by modulating playbackRate or detune AudioParam of
+// ABSN. |modTarget| is a string of AudioParam name, |modOffset| is the offset
+// (anchor) point of modulation, and |modRange| is the range of modulation.
+//
+//   createSawtoothWithModulation(context, 'detune', 440, 1200);
+//
+// The above will perform a modulation on detune within the range of
+// [1200, -1200] around the sawtooth waveform on 440Hz.
+function createSawtoothWithModulation(context, modTarget, modOffset, modRange) {
+  var lfo = context.createOscillator();
+  var amp = context.createGain();
+
+  // Create a sawtooth generator with the signal range of [0, 1].
+  var phasor = context.createBufferSource();
+  var phasorBuffer = context.createBuffer(1, sampleRate, sampleRate);
+  var phasorArray = phasorBuffer.getChannelData(0);
+  var phase = 0, phaseStep = 1 / sampleRate;
+  for (var i = 0; i < phasorArray.length; i++) {
+    phasorArray[i] = phase % 1.0;
+    phase += phaseStep;
+  }
+  phasor.buffer = phasorBuffer;
+  phasor.loop = true;
+
+  // 1Hz for audible (human-perceivable) parameter modulation by LFO.
+  lfo.frequency.value = 1.0;
+
+  amp.gain.value = modRange;
+  phasor.playbackRate.value = modOffset;
+
+  // The oscillator output should be amplified accordingly to drive the
+  // modulation within the desired range.
+  lfo.connect(amp);
+  amp.connect(phasor[modTarget]);
+
+  phasor.connect(context.destination);
+
+  lfo.start();
+  phasor.start();
+}

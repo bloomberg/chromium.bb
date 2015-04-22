@@ -47,10 +47,11 @@ const double DefaultGrainDuration = 0.020; // 20ms
 // to minimize linear interpolation aliasing.
 const double MaxRate = 1024;
 
-AudioBufferSourceHandler::AudioBufferSourceHandler(AudioNode& node, float sampleRate, AudioParamHandler& playbackRate)
+AudioBufferSourceHandler::AudioBufferSourceHandler(AudioNode& node, float sampleRate, AudioParamHandler& playbackRate, AudioParamHandler& detune)
     : AudioScheduledSourceHandler(NodeTypeAudioBufferSource, node, sampleRate)
     , m_buffer(nullptr)
     , m_playbackRate(playbackRate)
+    , m_detune(detune)
     , m_isLooping(false)
     , m_loopStart(0)
     , m_loopEnd(0)
@@ -66,9 +67,9 @@ AudioBufferSourceHandler::AudioBufferSourceHandler(AudioNode& node, float sample
     initialize();
 }
 
-PassRefPtr<AudioBufferSourceHandler> AudioBufferSourceHandler::create(AudioNode& node, float sampleRate, AudioParamHandler& playbackRate)
+PassRefPtr<AudioBufferSourceHandler> AudioBufferSourceHandler::create(AudioNode& node, float sampleRate, AudioParamHandler& playbackRate, AudioParamHandler& detune)
 {
-    return adoptRef(new AudioBufferSourceHandler(node, sampleRate, playbackRate));
+    return adoptRef(new AudioBufferSourceHandler(node, sampleRate, playbackRate, detune));
 }
 
 AudioBufferSourceHandler::~AudioBufferSourceHandler()
@@ -481,7 +482,7 @@ void AudioBufferSourceHandler::startSource(double when, double grainOffset, doub
 
 double AudioBufferSourceHandler::computePlaybackRate()
 {
-    double dopplerRate = 1.0;
+    double dopplerRate = 1;
     if (m_pannerNode)
         dopplerRate = m_pannerNode->dopplerRate();
 
@@ -497,6 +498,9 @@ double AudioBufferSourceHandler::computePlaybackRate()
     double basePlaybackRate = m_playbackRate->finalValue();
 
     double finalPlaybackRate = dopplerRate * sampleRateFactor * basePlaybackRate;
+
+    // Take the detune value into account for the final playback rate.
+    finalPlaybackRate *= pow(2, m_detune->finalValue() / 1200);
 
     // Sanity check the total rate.  It's very important that the resampler not
     // get any bad rate values.
@@ -562,8 +566,9 @@ void AudioBufferSourceHandler::finish()
 AudioBufferSourceNode::AudioBufferSourceNode(AudioContext& context, float sampleRate)
     : AudioScheduledSourceNode(context)
     , m_playbackRate(AudioParam::create(context, 1.0))
+    , m_detune(AudioParam::create(context, 0.0))
 {
-    setHandler(AudioBufferSourceHandler::create(*this, sampleRate, m_playbackRate->handler()));
+    setHandler(AudioBufferSourceHandler::create(*this, sampleRate, m_playbackRate->handler(), m_detune->handler()));
 }
 
 AudioBufferSourceNode* AudioBufferSourceNode::create(AudioContext& context, float sampleRate)
@@ -574,6 +579,7 @@ AudioBufferSourceNode* AudioBufferSourceNode::create(AudioContext& context, floa
 DEFINE_TRACE(AudioBufferSourceNode)
 {
     visitor->trace(m_playbackRate);
+    visitor->trace(m_detune);
     AudioScheduledSourceNode::trace(visitor);
 }
 
@@ -595,6 +601,11 @@ void AudioBufferSourceNode::setBuffer(AudioBuffer* newBuffer, ExceptionState& ex
 AudioParam* AudioBufferSourceNode::playbackRate() const
 {
     return m_playbackRate;
+}
+
+AudioParam* AudioBufferSourceNode::detune() const
+{
+    return m_detune;
 }
 
 bool AudioBufferSourceNode::loop() const

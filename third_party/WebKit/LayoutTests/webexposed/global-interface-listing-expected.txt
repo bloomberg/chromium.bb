@@ -148,6 +148,7 @@ interface AudioBuffer
     method getChannelData
 interface AudioBufferSourceNode
     getter buffer
+    getter detune
     getter loop
     getter loopEnd
     getter loopStart

@@ -11,7 +11,7 @@
 
 <body>
   <script>
-    description('AudioBufferSourceNode: oscillator-driven playbackRate modulation.');
+    description('AudioBufferSourceNode: oscillator-driven detune modulation.');
     window.jsTestIsAsync = true;
 
     var sampleRate = 44100;
@@ -26,7 +26,7 @@
     // reference file, use the task 'generate-reference' below.
     audit.defineTask('load-reference', function (done) {
       var loader = new BufferLoader(context, [
-        'audiobuffersource-playbackrate-modulation-expected.wav'
+        'audiobuffersource-detune-modulation-expected.wav'
         ], function (bufferList) {
           referenceBuffer = bufferList[0];
           done();
@@ -38,11 +38,11 @@
 
     // Task: Render the actual buffer and compare with the reference.
     audit.defineTask('generate-verify', function (done) {
-      
-      // With this setting, the playback rate will be changing continuously and
-      // repeatedly within the range of [0, 200] around 100Hz, based on the
+
+      // With this setting, the detune will be changing continuously and
+      // repeatedly within the range of [-1200, 1200] around 440Hz, based on the
       // input from the oscillator.
-      createSawtoothWithModulation(context, 'playbackRate', 100, 100);
+      createSawtoothWithModulation(context, 'detune', 440, 1200);
 
       context.startRendering().then(function (renderedBuffer) {
         var actual = renderedBuffer.getChannelData(0);
@@ -51,8 +51,8 @@
         // Compare two buffers with arbitrary (yet reasonable) constraints.
         // There parameters are determined by try bot experiments.
         compareBuffersWithConstraints(actual, expected, {
-          thresholdSNR: 92.72,
-          thresholdDiffULP: 0.9766,
+          thresholdSNR: 93.31,
+          thresholdDiffULP: 1.01,
           thresholdDiffCount: 0,
           bitDepth: 16
         });
@@ -68,10 +68,10 @@
         return;
       }
 
-      // With this setting, the playback rate will be changing continuously and
-      // repeatedly within the range of [0, 200] around 100Hz, based on the
+      // With this setting, the detune will be changing continuously and
+      // repeatedly within the range of [-1200, 1200] around 440Hz, based on the
       // input from the oscillator.
-      createSawtoothWithModulation(context, 'playbackRate', 100, 100);
+      createSawtoothWithModulation(context, 'detune', 440, 1200);
 
       // |finishAudioTest| will automatically create a reference audio file from
       // the OAC rendering if the reference file does not exist.

@@ -1,0 +1,10 @@
+AudioBufferSourceNode: DC-driven detune modulation.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS Increasing detune to 1200 decreased the interval between impulses to half.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

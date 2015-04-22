@@ -44,7 +44,7 @@ class AudioContext;
 
 class AudioBufferSourceHandler final : public AudioScheduledSourceHandler {
 public:
-    static PassRefPtr<AudioBufferSourceHandler> create(AudioNode&, float sampleRate, AudioParamHandler& playbackRate);
+    static PassRefPtr<AudioBufferSourceHandler> create(AudioNode&, float sampleRate, AudioParamHandler& playbackRate, AudioParamHandler& detune);
     virtual ~AudioBufferSourceHandler();
 
     // AudioHandler
@@ -88,7 +88,7 @@ public:
     void handleStoppableSourceNode();
 
 private:
-    AudioBufferSourceHandler(AudioNode&, float sampleRate, AudioParamHandler& playbackRate);
+    AudioBufferSourceHandler(AudioNode&, float sampleRate, AudioParamHandler& playbackRate, AudioParamHandler& detune);
     void startSource(double when, double grainOffset, double grainDuration, bool isDurationGiven, ExceptionState&);
 
     // Returns true on success.
@@ -110,6 +110,7 @@ private:
     OwnPtr<float*[]> m_destinationChannels;
 
     RefPtr<AudioParamHandler> m_playbackRate;
+    RefPtr<AudioParamHandler> m_detune;
 
     // If m_isLooping is false, then this node will be done playing and become inactive after it reaches the end of the sample data in the buffer.
     // If true, it will wrap around to the start of the buffer each time it reaches the end.
@@ -131,7 +132,7 @@ private:
 
     // Compute playback rate (k-rate) by incorporating the sample rate conversion
     // factor, the doppler shift from the associated panner node, and the value
-    // of playbackRate AudioParam.
+    // of playbackRate and detune AudioParams.
     double computePlaybackRate();
 
     // We optionally keep track of a panner node which has a doppler shift that
@@ -158,6 +159,7 @@ public:
     AudioBuffer* buffer() const;
     void setBuffer(AudioBuffer*, ExceptionState&);
     AudioParam* playbackRate() const;
+    AudioParam* detune() const;
     bool loop() const;
     void setLoop(bool);
     double loopStart() const;
@@ -174,6 +176,7 @@ private:
     AudioBufferSourceNode(AudioContext&, float sampleRate);
 
     Member<AudioParam> m_playbackRate;
+    Member<AudioParam> m_detune;
 };
 
 } // namespace blink
