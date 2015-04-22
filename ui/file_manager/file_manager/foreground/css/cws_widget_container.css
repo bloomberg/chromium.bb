@@ -12,24 +12,28 @@
   position: relative;
 }
 
-.cws-widget-webview-container.cws-widget-show-spinner webview {
-  pointer-events: none;
-}
-
-.cws-widget-webview-container:not(.cws-widget-show-spinner)
-    .cws-widget-spinner-layer {
-  display: none;
-}
-
 .cws-widget-spinner-layer {
   background: url(../images/common/spinner.svg) center / 16px no-repeat;
   background-color: rgba(255, 255, 255, 0.7);
   bottom: 0;
   left: 0;
+  outline: none;
   position: absolute;
   right: 0;
   top: 0;
+  transition: opacity 500ms;
   z-index: 525;
+}
+
+.cws-widget-spinner-layer:not(.cws-widget-show-spinner) {
+  background: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cws-widget-spinner-layer.cws-widget-hiding-spinner {
+  /* Transition end event would not fire if opacity was set to 0. */
+  opacity: 0.01;
 }
 
 .cws-widget-buttons {

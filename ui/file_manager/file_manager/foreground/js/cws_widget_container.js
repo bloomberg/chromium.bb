@@ -75,7 +75,14 @@ function CWSWidgetContainer(document, parentNode, state) {
    */
   var spinnerLayer = document.createElement('div');
   spinnerLayer.className = 'cws-widget-spinner-layer';
-  this.webviewContainer_.appendChild(spinnerLayer);
+  spinnerLayer.setAttribute('role', 'img');
+  // TODO(tbarzic): Set something meaningfull.
+  spinnerLayer.setAttribute('alt', '');
+  parentNode.appendChild(spinnerLayer);
+
+  /** @private {!CWSWidgetContainer.SpinnerLayerController} */
+  this.spinnerLayerController_ =
+      new CWSWidgetContainer.SpinnerLayerController(spinnerLayer);
 
   /**
    * The widget container's button strip.
@@ -376,7 +383,8 @@ CWSWidgetContainer.prototype.start = function(options,  webStoreUrl) {
     });
     this.webviewContainer_.appendChild(this.webview_);
 
-    this.webviewContainer_.classList.add('cws-widget-show-spinner');
+    this.spinnerLayerController_.setElementToFocusOnHide(this.webview_);
+    this.spinnerLayerController_.setVisible(true);
 
     this.webviewClient_ = new CWSContainerClient(
         this.webview_,
@@ -436,9 +444,9 @@ CWSWidgetContainer.prototype.onWidgetLoaded_ = function(event) {
   CWSWidgetContainer.Metrics.recordLoad(
       CWSWidgetContainer.Metrics.LOAD.SUCCEEDED);
 
-  this.webviewContainer_.classList.remove('cws-widget-show-spinner');
   this.state_ = CWSWidgetContainer.State.INITIALIZED;
 
+  this.spinnerLayerController_.setVisible(false);
   this.webview_.focus();
 };
 
@@ -450,7 +458,7 @@ CWSWidgetContainer.prototype.onWidgetLoaded_ = function(event) {
 CWSWidgetContainer.prototype.onWidgetLoadFailed_ = function(event) {
   CWSWidgetContainer.Metrics.recordLoad(CWSWidgetContainer.Metrics.LOAD.FAILED);
 
-  this.webviewContainer_.classList.remove('cws-widget-show-spinner');
+  this.spinnerLayerController_.setVisible(false);
   this.state_ = CWSWidgetContainer.State.INITIALIZE_FAILED_CLOSING;
   this.reportDone_();
 };
@@ -477,7 +485,7 @@ CWSWidgetContainer.prototype.onInstallRequest_ = function(e) {
   this.appInstaller_ = new AppInstaller(itemId);
   this.appInstaller_.install(this.onItemInstalled_.bind(this));
 
-  this.webviewContainer_.classList.add('cws-widget-show-spinner');
+  this.spinnerLayerController_.setVisible(true);
   this.state_ = CWSWidgetContainer.State.INSTALLING;
 };
 
@@ -488,7 +496,7 @@ CWSWidgetContainer.prototype.onInstallRequest_ = function(e) {
  * @private
  */
 CWSWidgetContainer.prototype.onInstallDone_ = function(e) {
-  this.webviewContainer_.classList.remove('cws-widget-show-spinner');
+  this.spinnerLayerController_.setVisible(false);
   this.state_ = CWSWidgetContainer.State.INSTALLED_CLOSING;
   this.reportDone_();
 };
@@ -505,7 +513,7 @@ CWSWidgetContainer.prototype.onItemInstalled_ = function(result, error) {
   // If install succeeded, the spinner will be removed once
   // |this.webviewClient_| dispatched INSTALL_DONE event.
   if (!success)
-    this.webviewContainer_.classList.remove('cws-widget-show-spinner');
+    this.spinnerLayerController_.setVisible(false);
 
   this.state_ = success ?
                 CWSWidgetContainer.State.WAITING_FOR_CONFIRMATION :
@@ -640,6 +648,8 @@ CWSWidgetContainer.prototype.reset_ = function () {
     this.resolveStart_ = null;
   }
 
+  this.spinnerLayerController_.reset();
+
   if (this.webviewClient_) {
     this.webviewClient_.dispose();
     this.webviewClient_ = null;
@@ -655,6 +665,138 @@ CWSWidgetContainer.prototype.reset_ = function () {
 
   if (this.errorDialog_.shown())
     this.errorDialog_.hide();
+};
+
+/**
+ * Controls showing and hiding spinner layer.
+ * @param {!Element} spinnerLayer The spinner layer element.
+ * @constructor
+ */
+CWSWidgetContainer.SpinnerLayerController = function(spinnerLayer) {
+  /** @private {!Element} */
+  this.spinnerLayer_ = spinnerLayer;
+
+  /** @private {boolean} */
+  this.visible_ = false;
+
+  /**
+   * Set only if spinner is transitioning between visible and hidden states.
+   * Calling the function clears event handlers set for handling the transition,
+   * and updates spinner layer class list to its final state.
+   * @type {?function()}
+   * @private
+   */
+  this.clearTransition_ = null;
+
+  /**
+   * Reference to the timeout set to ensure {@code this.clearTransision_} gets
+   * called even if 'transitionend' event does not fire.
+   * @type {?number}
+   * @private
+   */
+  this.clearTransitionTimeout_ = null;
+
+  /**
+   * Element to be focused when the layer is hidden.
+   * @type {Element}
+   * @private
+   */
+  this.focusOnHide_ = null;
+
+  spinnerLayer.tabIndex = -1;
+
+  // Prevent default Tab key handling in order to prevent the widget from
+  // taking the focus while the spinner layer is active.
+  // NOTE: This assumes that there are no elements allowed to become active
+  // while the spinner is shown. Something smarter would be needed if this
+  // assumption becomes invalid.
+  spinnerLayer.addEventListener('keydown', this.handleKeyDown_.bind(this));
+};
+
+/**
+ * Sets element to be focused when the layer is hidden.
+ * @param {!Element} el
+ */
+CWSWidgetContainer.SpinnerLayerController.prototype.setElementToFocusOnHide =
+    function(el) {
+  this.focusOnHide_ = el;
+};
+
+/**
+ * Prevents default Tab key handling in order to prevent spinner layer from
+ * losing focus.
+ * @param {Event} e The key down event.
+ * @private
+ */
+CWSWidgetContainer.SpinnerLayerController.prototype.handleKeyDown_ =
+    function(e) {
+  if (!this.visible_)
+    return;
+  if (e.keyCode === 9 /* Tab */)
+    e.preventDefault();
+};
+
+/**
+ * Resets the spinner layer controllers state, and makes sure the spinner
+ * layre gets hidden.
+ */
+CWSWidgetContainer.SpinnerLayerController.prototype.reset = function() {
+  this.visible_ = false;
+  this.focusOnHide_ = null;
+  if (this.clearTransision_)
+    this.clearTransition_();
+};
+
+/**
+ * Shows or hides the spinner layer and handles the layer's opacity transition.
+ * @param {boolean} visible Whether the layer should become visible.
+ */
+CWSWidgetContainer.SpinnerLayerController.prototype.setVisible =
+    function(visible) {
+  if (this.visible_ === visible)
+    return;
+
+  if (this.clearTransition_)
+    this.clearTransition_();
+
+  this.visible_ = visible;
+
+  // Spinner should be shown during transition.
+  if (!this.spinnerLayer_.classList.contains('cws-widget-show-spinner'))
+    this.spinnerLayer_.classList.add('cws-widget-show-spinner');
+
+  if (this.visible_) {
+    this.spinnerLayer_.focus();
+   } else if (this.focusOnHide_) {
+        this.focusOnHide_.focus();
+   }
+
+  if (!this.visible_)
+    this.spinnerLayer_.classList.add('cws-widget-hiding-spinner');
+
+  this.clearTransition_ = function() {
+    if (this.clearTransitionTimeout_)
+      clearTimeout(this.clearTransitionTimeout_);
+    this.clearTransitionTimeout_ = null;
+
+    this.spinnerLayer_.removeEventListener(
+        'transitionend', this.clearTransition_);
+    this.clearTransition_ = null;
+
+    if (!this.visible_) {
+      this.spinnerLayer_.classList.remove('cws-widget-hiding-spinner');
+      this.spinnerLayer_.classList.remove('cws-widget-show-spinner');
+    }
+  }.bind(this);
+
+  this.spinnerLayer_.addEventListener('transitionend', this.clearTransition_);
+
+  // Ensure the transition state gets cleared, even if transitionend is not
+  // fired.
+  this.clearTransitionTimeout_ = setTimeout(function() {
+    this.clearTransitionTimeout_ = null;
+    this.clearTransition_();
+  }.bind(this), 550 /* ms */);
 };
 
 /**
