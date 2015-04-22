@@ -17,7 +17,7 @@ class TestMetroViewerProcessHost : public win8::MetroViewerProcessHost {
  public:
   TestMetroViewerProcessHost(
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
-  virtual ~TestMetroViewerProcessHost();
+  ~TestMetroViewerProcessHost() override;
 
   bool closed_unexpectedly() { return closed_unexpectedly_; }
 
@@ -27,13 +27,12 @@ class TestMetroViewerProcessHost : public win8::MetroViewerProcessHost {
 
  private:
   // win8::MetroViewerProcessHost implementation
-  virtual void OnChannelError() override;
-  virtual void OnSetTargetSurface(gfx::NativeViewId target_surface,
-                                  float device_scale) override;
-  virtual void OnOpenURL(const base::string16& url) override;
-  virtual void OnHandleSearchRequest(
-      const base::string16& search_string) override;
-  virtual void OnWindowSizeChanged(uint32 width, uint32 height) override;
+  void OnChannelError() override;
+  void OnSetTargetSurface(gfx::NativeViewId target_surface,
+                          float device_scale) override;
+  void OnOpenURL(const base::string16& url) override;
+  void OnHandleSearchRequest(const base::string16& search_string) override;
+  void OnWindowSizeChanged(uint32 width, uint32 height) override;
 
   bool closed_unexpectedly_;
 

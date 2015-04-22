@@ -28,11 +28,11 @@ class AshWindowTreeHostWin : public AshWindowTreeHost,
         saved_window_style_(0),
         saved_window_ex_style_(0),
         transformer_helper_(this) {}
-  virtual ~AshWindowTreeHostWin() {}
+  ~AshWindowTreeHostWin() override {}
 
  private:
   // AshWindowTreeHost:
-  virtual void ToggleFullScreen() override {
+  void ToggleFullScreen() override {
     gfx::Rect target_rect;
     if (!fullscreen_) {
       fullscreen_ = true;
@@ -66,19 +66,18 @@ class AshWindowTreeHostWin : public AshWindowTreeHost,
                  target_rect.height(),
                  SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
   }
-  virtual bool ConfineCursorToRootWindow() override { return false; }
-  virtual void UnConfineCursor() override { NOTIMPLEMENTED(); }
-  virtual void SetRootWindowTransformer(
-      scoped_ptr<RootWindowTransformer> transformer) {
+  bool ConfineCursorToRootWindow() override { return false; }
+  void UnConfineCursor() override { NOTIMPLEMENTED(); }
+  void SetRootWindowTransformer(scoped_ptr<RootWindowTransformer> transformer) {
     transformer_helper_.SetRootWindowTransformer(transformer.Pass());
   }
-  virtual gfx::Insets GetHostInsets() const override {
+  gfx::Insets GetHostInsets() const override {
     return transformer_helper_.GetHostInsets();
   }
-  virtual aura::WindowTreeHost* AsWindowTreeHost() override { return this; }
+  aura::WindowTreeHost* AsWindowTreeHost() override { return this; }
 
   // WindowTreeHostWin:
-  virtual void SetBounds(const gfx::Rect& bounds) override {
+  void SetBounds(const gfx::Rect& bounds) override {
     if (fullscreen_) {
       saved_window_rect_.right = saved_window_rect_.left + bounds.width();
       saved_window_rect_.bottom = saved_window_rect_.top + bounds.height();
@@ -86,16 +85,16 @@ class AshWindowTreeHostWin : public AshWindowTreeHost,
     }
     WindowTreeHostWin::SetBounds(bounds);
   }
-  virtual void SetRootTransform(const gfx::Transform& transform) override {
+  void SetRootTransform(const gfx::Transform& transform) override {
     transformer_helper_.SetTransform(transform);
   }
   gfx::Transform GetRootTransform() const {
     return transformer_helper_.GetTransform();
   }
-  virtual gfx::Transform GetInverseRootTransform() const override {
+  gfx::Transform GetInverseRootTransform() const override {
     return transformer_helper_.GetInverseTransform();
   }
-  virtual void UpdateRootWindowSize(const gfx::Size& host_size) override {
+  void UpdateRootWindowSize(const gfx::Size& host_size) override {
     transformer_helper_.UpdateWindowSize(host_size);
   }
 
