@@ -13,8 +13,7 @@ MojoResult MojoMain(MojoHandle handle) {
   // An AtExitManager instance is needed to construct message loops.
   base::AtExitManager at_exit;
 
-  // Initialize test timeouts, which requires CommandLine::ForCurrentProcess().
-  // TODO(msw): Plumb relevant command line args before initializing timeouts.
+  // Initialize the current process Commandline and test timeouts.
   mojo::ApplicationRunnerChromium::InitBaseCommandLine();
   TestTimeouts::Initialize();
 
