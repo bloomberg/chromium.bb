@@ -3880,6 +3880,8 @@ struct kernel_statfs {
                          loff_t,         o)
     LSS_INLINE _syscall3(int,     readahead,      int,         f,
                          loff_t,         o, unsigned, c)
+    LSS_INLINE _syscall6(void *, mmap, void *, addr, size_t, length, int, prot,
+                         int, flags, int, fd, int64_t, offset)
   #else
     #define __NR__pread64   __NR_pread64
     #define __NR__pwrite64  __NR_pwrite64
