@@ -615,13 +615,13 @@ IntSize LayoutBoxModelObject::calculateImageIntrinsicDimensions(StyleImage* imag
     if (image->isGeneratedImage() && image->usesImageContainerSize())
         return IntSize(positioningAreaSize.width(), positioningAreaSize.height());
 
-    Length intrinsicWidth;
-    Length intrinsicHeight;
+    Length intrinsicWidth(Fixed);
+    Length intrinsicHeight(Fixed);
     FloatSize intrinsicRatio;
     image->computeIntrinsicDimensions(this, intrinsicWidth, intrinsicHeight, intrinsicRatio);
 
-    ASSERT(!intrinsicWidth.isPercent());
-    ASSERT(!intrinsicHeight.isPercent());
+    ASSERT(intrinsicWidth.isFixed());
+    ASSERT(intrinsicHeight.isFixed());
 
     IntSize resolvedSize(intrinsicWidth.value(), intrinsicHeight.value());
     IntSize minimumSize(resolvedSize.width() > 0 ? 1 : 0, resolvedSize.height() > 0 ? 1 : 0);
