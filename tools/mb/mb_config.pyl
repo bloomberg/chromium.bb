@@ -162,6 +162,10 @@
       'Linux GN': 'gn_release_bot',
       'Linux GN (dbg)': 'gn_debug_bot'
     },
+    'client.v8': {
+      'V8 Linux GN': 'gn_release_bot',
+      'V8 Android GN (dbg)': 'android_gn_debug_bot',
+    },
     'tryserver.blink': {
       'android_chromium_gn_compile_rel': 'android_gn_release_bot',
       'linux_chromium_gn_rel': 'gn_release_bot',
@@ -187,6 +191,10 @@
       'win8_chromium_gn_dbg': 'gn_debug_static_bot_x86',
       'win8_chromium_gn_rel': 'gn_release_trybot_x86',
       'win8_chromium_gn_upload': 'gn_release_bot',
+    },
+    'tryserver.v8': {
+      'v8_linux_chromium_gn_rel': 'gn_release_trybot',
+      'v8_android_chromium_gn_dbg': 'android_gn_debug_bot',
     },
   },
 }
