@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/views/apps/app_window_easy_resize_window_targeter.h"
 #include "chrome/browser/ui/views/apps/shaped_app_window_targeter.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "ui/aura/client/aura_constants.h"
@@ -28,7 +29,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/easy_resize_window_targeter.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/shell_window_ids.h"
@@ -180,11 +180,11 @@ ChromeNativeAppWindowViewsAura::CreateNonStandardAppFrame() {
     int resize_inside = frame->resize_inside_bounds_size();
     gfx::Insets inset(resize_inside, resize_inside, resize_inside,
                       resize_inside);
-    // Add the EasyResizeWindowTargeter on the window, not its root window. The
-    // root window does not have a delegate, which is needed to handle the event
-    // in Linux.
+    // Add the AppWindowEasyResizeWindowTargeter on the window, not its root
+    // window. The root window does not have a delegate, which is needed to
+    // handle the event in Linux.
     window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
-        new wm::EasyResizeWindowTargeter(window, inset, inset)));
+        new AppWindowEasyResizeWindowTargeter(window, inset, this)));
   }
 #endif
 

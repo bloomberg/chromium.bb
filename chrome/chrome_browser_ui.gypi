@@ -1979,6 +1979,8 @@
       'browser/ui/views/apps/app_window_desktop_native_widget_aura_win.h',
       'browser/ui/views/apps/app_window_desktop_window_tree_host_win.cc',
       'browser/ui/views/apps/app_window_desktop_window_tree_host_win.h',
+      'browser/ui/views/apps/app_window_easy_resize_window_targeter.cc',
+      'browser/ui/views/apps/app_window_easy_resize_window_targeter.h',
       'browser/ui/views/apps/chrome_app_window_client_views_win.cc',
       'browser/ui/views/apps/chrome_native_app_window_views_aura.cc',
       'browser/ui/views/apps/chrome_native_app_window_views_aura.h',
