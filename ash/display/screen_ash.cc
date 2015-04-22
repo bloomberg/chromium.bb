@@ -146,7 +146,7 @@ int ScreenAsh::GetNumDisplays() const {
 }
 
 std::vector<gfx::Display> ScreenAsh::GetAllDisplays() const {
-  return GetDisplayManager()->displays();
+  return GetDisplayManager()->active_display_list();
 }
 
 gfx::Display ScreenAsh::GetDisplayNearestWindow(gfx::NativeView window) const {
@@ -178,14 +178,15 @@ gfx::Display ScreenAsh::GetDisplayNearestPoint(const gfx::Point& point) const {
   // Fallback to the display that has the shortest Manhattan distance from
   // the |point|. This is correct in the only areas that matter, namely in the
   // corners between the physical screens.
-  return FindDisplayNearestPoint(GetDisplayManager()->displays(), point);
+  return FindDisplayNearestPoint(GetDisplayManager()->active_display_list(),
+                                 point);
 }
 
 gfx::Display ScreenAsh::GetDisplayMatching(const gfx::Rect& match_rect) const {
   if (match_rect.IsEmpty())
     return GetDisplayNearestPoint(match_rect.origin());
-  const gfx::Display* matching =
-      FindDisplayMatching(GetDisplayManager()->displays(), match_rect);
+  const gfx::Display* matching = FindDisplayMatching(
+      GetDisplayManager()->active_display_list(), match_rect);
   // Fallback to the primary display if there is no matching display.
   return matching ? *matching : GetPrimaryDisplay();
 }

@@ -82,7 +82,7 @@ void DisplayManagerTestApi::UpdateDisplay(
 }
 
 int64 DisplayManagerTestApi::SetFirstDisplayAsInternalDisplay() {
-  const gfx::Display& internal = display_manager_->displays_[0];
+  const gfx::Display& internal = display_manager_->active_display_list_[0];
   SetInternalDisplayId(internal.id());
   return gfx::Display::InternalDisplayId();
 }

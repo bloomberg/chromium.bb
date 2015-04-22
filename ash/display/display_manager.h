@@ -68,6 +68,8 @@ class ASH_EXPORT DisplayManager
     virtual void PostDisplayConfigurationChange() = 0;
   };
 
+  typedef std::vector<gfx::Display> DisplayList;
+
   // How the second display will be used.
   // 1) EXTENDED mode extends the desktop to the second dislpay.
   // 2) MIRRORING mode copies the content of the primary display to
@@ -237,7 +239,9 @@ class ASH_EXPORT DisplayManager
   // when displays are mirrored.
   size_t GetNumDisplays() const;
 
-  const std::vector<gfx::Display>& displays() const { return displays_; }
+  const DisplayList& active_display_list() const {
+    return active_display_list_;
+  }
 
   // Returns the number of connected displays. This returns 2
   // when displays are mirrored.
@@ -315,7 +319,6 @@ private:
   friend class test::DisplayManagerTestApi;
   friend class test::SystemGestureEventFilterTest;
 
-  typedef std::vector<gfx::Display> DisplayList;
   typedef std::vector<DisplayInfo> DisplayInfoList;
 
   void set_change_display_upon_host_resize(bool value) {
@@ -357,7 +360,7 @@ private:
 
   void CreateMirrorWindowIfAny();
 
-  bool HasSoftwareMirroringDisplay();
+  void RunPendingTasksForTest();
 
   static void UpdateDisplayBoundsForLayout(
       const DisplayLayout& layout,
@@ -375,7 +378,7 @@ private:
   int64 first_display_id_;
 
   // List of current active displays.
-  DisplayList displays_;
+  DisplayList active_display_list_;
 
   int num_connected_displays_;
 

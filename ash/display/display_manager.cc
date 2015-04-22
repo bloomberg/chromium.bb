@@ -20,6 +20,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -186,7 +187,7 @@ void DisplayManager::RefreshFontParams() {
   // internal display may have bigger scale factor in case the external display
   // is an 4K display.
   float largest_device_scale_factor = 1.0f;
-  for (const gfx::Display& display : displays_) {
+  for (const gfx::Display& display : active_display_list_) {
     const ash::DisplayInfo& info = display_info_[display.id()];
     largest_device_scale_factor = std::max(
         largest_device_scale_factor, info.GetEffectiveDeviceScaleFactor());
@@ -196,8 +197,8 @@ void DisplayManager::RefreshFontParams() {
 }
 
 bool DisplayManager::IsActiveDisplay(const gfx::Display& display) const {
-  for (DisplayList::const_iterator iter = displays_.begin();
-       iter != displays_.end(); ++iter) {
+  for (DisplayList::const_iterator iter = active_display_list_.begin();
+       iter != active_display_list_.end(); ++iter) {
     if ((*iter).id() == display.id())
       return true;
   }
@@ -227,7 +228,7 @@ DisplayLayout DisplayManager::GetCurrentDisplayLayout() {
   // On release build, just fallback to default instead of blowing up.
   DisplayLayout layout =
       layout_store_->default_display_layout();
-  layout.primary_id = displays_[0].id();
+  layout.primary_id = active_display_list_[0].id();
   return layout;
 }
 
@@ -237,17 +238,17 @@ DisplayIdPair DisplayManager::GetCurrentDisplayIdPair() const {
       CHECK_EQ(2u, num_connected_displays());
       // This comment is to make it easy to distinguish the crash
       // between two checks.
-      CHECK_EQ(1u, displays_.size());
+      CHECK_EQ(1u, active_display_list_.size());
     }
-    return std::make_pair(displays_[0].id(), mirroring_display_id_);
+    return std::make_pair(active_display_list_[0].id(), mirroring_display_id_);
   } else {
-    CHECK_LE(2u, displays_.size());
-    int64 id_at_zero = displays_[0].id();
+    CHECK_LE(2u, active_display_list_.size());
+    int64 id_at_zero = active_display_list_[0].id();
     if (id_at_zero == gfx::Display::InternalDisplayId() ||
         id_at_zero == first_display_id()) {
-      return std::make_pair(id_at_zero, displays_[1].id());
+      return std::make_pair(id_at_zero, active_display_list_[1].id());
     } else {
-      return std::make_pair(displays_[1].id(), id_at_zero);
+      return std::make_pair(active_display_list_[1].id(), id_at_zero);
     }
   }
 }
@@ -297,8 +298,8 @@ const gfx::Display& DisplayManager::GetDisplayForId(int64 id) const {
 
 const gfx::Display& DisplayManager::FindDisplayContainingPoint(
     const gfx::Point& point_in_screen) const {
-  for (DisplayList::const_iterator iter = displays_.begin();
-       iter != displays_.end(); ++iter) {
+  for (DisplayList::const_iterator iter = active_display_list_.begin();
+       iter != active_display_list_.end(); ++iter) {
     const gfx::Display& display = *iter;
     if (display.bounds().Contains(point_in_screen))
       return display;
@@ -319,8 +320,8 @@ void DisplayManager::SetOverscanInsets(int64 display_id,
                                        const gfx::Insets& insets_in_dip) {
   bool update = false;
   DisplayInfoList display_info_list;
-  for (DisplayList::const_iterator iter = displays_.begin();
-       iter != displays_.end(); ++iter) {
+  for (DisplayList::const_iterator iter = active_display_list_.begin();
+       iter != active_display_list_.end(); ++iter) {
     DisplayInfo info = GetDisplayInfo(iter->id());
     if (info.id() == display_id) {
       if (insets_in_dip.empty()) {
@@ -344,8 +345,8 @@ void DisplayManager::SetOverscanInsets(int64 display_id,
 void DisplayManager::SetDisplayRotation(int64 display_id,
                                         gfx::Display::Rotation rotation) {
   DisplayInfoList display_info_list;
-  for (DisplayList::const_iterator iter = displays_.begin();
-       iter != displays_.end(); ++iter) {
+  for (DisplayList::const_iterator iter = active_display_list_.begin();
+       iter != active_display_list_.end(); ++iter) {
     DisplayInfo info = GetDisplayInfo(iter->id());
     if (info.id() == display_id) {
       if (info.rotation() == rotation)
@@ -367,8 +368,8 @@ bool DisplayManager::SetDisplayUIScale(int64 display_id,
   bool found = false;
   // TODO(mukai): merge this implementation into SetDisplayMode().
   DisplayInfoList display_info_list;
-  for (DisplayList::const_iterator iter = displays_.begin();
-       iter != displays_.end(); ++iter) {
+  for (DisplayList::const_iterator iter = active_display_list_.begin();
+       iter != active_display_list_.end(); ++iter) {
     DisplayInfo info = GetDisplayInfo(iter->id());
     if (info.id() == display_id) {
       found = true;
@@ -422,8 +423,8 @@ bool DisplayManager::SetDisplayMode(int64 display_id,
   DisplayInfoList display_info_list;
   bool display_property_changed = false;
   bool resolution_changed = false;
-  for (DisplayList::const_iterator iter = displays_.begin();
-       iter != displays_.end(); ++iter) {
+  for (DisplayList::const_iterator iter = active_display_list_.begin();
+       iter != active_display_list_.end(); ++iter) {
     DisplayInfo info = GetDisplayInfo(iter->id());
     if (info.id() == display_id) {
       const std::vector<DisplayMode>& modes = info.display_modes();
@@ -570,11 +571,11 @@ void DisplayManager::OnNativeDisplaysChanged(
     const std::vector<DisplayInfo>& updated_displays) {
   if (updated_displays.empty()) {
     VLOG(1) << "OnNativeDisplaysChanged(0): # of current displays="
-            << displays_.size();
+            << active_display_list_.size();
     // If the device is booted without display, or chrome is started
     // without --ash-host-window-bounds on linux desktop, use the
     // default display.
-    if (displays_.empty()) {
+    if (active_display_list_.empty()) {
       std::vector<DisplayInfo> init_displays;
       init_displays.push_back(DisplayInfo::CreateFromSpec(std::string()));
       MaybeInitInternalDisplay(&init_displays[0]);
@@ -658,8 +659,8 @@ void DisplayManager::OnNativeDisplaysChanged(
 
 void DisplayManager::UpdateDisplays() {
   DisplayInfoList display_info_list;
-  for (DisplayList::const_iterator iter = displays_.begin();
-       iter != displays_.end(); ++iter) {
+  for (DisplayList::const_iterator iter = active_display_list_.begin();
+       iter != active_display_list_.end(); ++iter) {
     display_info_list.push_back(GetDisplayInfo(iter->id()));
   }
   AddMirrorDisplayInfoIfAny(&display_info_list);
@@ -675,10 +676,15 @@ void DisplayManager::UpdateDisplays(
 #endif
 
   DisplayInfoList new_display_info_list = updated_display_info_list;
-  std::sort(displays_.begin(), displays_.end(), DisplaySortFunctor());
+  std::sort(active_display_list_.begin(), active_display_list_.end(),
+            DisplaySortFunctor());
   std::sort(new_display_info_list.begin(),
             new_display_info_list.end(),
             DisplayInfoSortFunctor());
+  // Close the mirroring window if any here to avoid creating two compositor on
+  // one display.
+  if (delegate_)
+    delegate_->CloseMirroringDisplay();
 
   if (second_display_mode_ == MIRRORING && new_display_info_list.size() == 2)
     CreateSoftwareMirroringDisplay(&new_display_info_list);
@@ -688,12 +694,12 @@ void DisplayManager::UpdateDisplays(
   std::map<size_t, uint32_t> display_changes;
   std::vector<size_t> added_display_indices;
 
-  DisplayList::iterator curr_iter = displays_.begin();
+  DisplayList::iterator curr_iter = active_display_list_.begin();
   DisplayInfoList::const_iterator new_info_iter = new_display_info_list.begin();
 
-  while (curr_iter != displays_.end() ||
+  while (curr_iter != active_display_list_.end() ||
          new_info_iter != new_display_info_list.end()) {
-    if (curr_iter == displays_.end()) {
+    if (curr_iter == active_display_list_.end()) {
       // more displays in new list.
       added_display_indices.push_back(new_displays.size());
       InsertAndUpdateDisplayInfo(*new_info_iter);
@@ -792,31 +798,25 @@ void DisplayManager::UpdateDisplays(
     }
   }
 
-  displays_ = new_displays;
+  active_display_list_ = new_displays;
 
   RefreshFontParams();
   base::AutoReset<bool> resetter(&change_display_upon_host_resize_, false);
 
   // Temporarily add displays to be removed because display object
   // being removed are accessed during shutting down the root.
-  displays_.insert(displays_.end(), removed_displays.begin(),
-                   removed_displays.end());
+  active_display_list_.insert(active_display_list_.end(),
+                              removed_displays.begin(), removed_displays.end());
 
   for (DisplayList::const_reverse_iterator iter = removed_displays.rbegin();
        iter != removed_displays.rend(); ++iter) {
-    screen_ash_->NotifyDisplayRemoved(displays_.back());
-    displays_.pop_back();
+    screen_ash_->NotifyDisplayRemoved(active_display_list_.back());
+    active_display_list_.pop_back();
   }
-
-  bool has_mirroring_display = HasSoftwareMirroringDisplay();
-  // Close the mirroring window here to avoid creating two compositor on
-  // one display.
-  if (!has_mirroring_display && delegate_)
-    delegate_->CloseMirroringDisplay();
 
   for (std::vector<size_t>::iterator iter = added_display_indices.begin();
        iter != added_display_indices.end(); ++iter) {
-    screen_ash_->NotifyDisplayAdded(displays_[*iter]);
+    screen_ash_->NotifyDisplayAdded(active_display_list_[*iter]);
   }
 
   bool notify_primary_change =
@@ -826,7 +826,7 @@ void DisplayManager::UpdateDisplays(
        iter != display_changes.end();
        ++iter) {
     uint32_t metrics = iter->second;
-    const gfx::Display& updated_display = displays_[iter->first];
+    const gfx::Display& updated_display = active_display_list_[iter->first];
 
     if (notify_primary_change &&
         updated_display.id() == screen_->GetPrimaryDisplay().id()) {
@@ -868,20 +868,20 @@ void DisplayManager::UpdateDisplays(
 }
 
 const gfx::Display& DisplayManager::GetDisplayAt(size_t index) const {
-  DCHECK_LT(index, displays_.size());
-  return displays_[index];
+  DCHECK_LT(index, active_display_list_.size());
+  return active_display_list_[index];
 }
 
 const gfx::Display& DisplayManager::GetPrimaryDisplayCandidate() const {
   if (GetNumDisplays() != 2)
-    return displays_[0];
+    return active_display_list_[0];
   DisplayLayout layout = layout_store_->GetRegisteredDisplayLayout(
       GetCurrentDisplayIdPair());
   return GetDisplayForId(layout.primary_id);
 }
 
 size_t DisplayManager::GetNumDisplays() const {
-  return displays_.size();
+  return active_display_list_.size();
 }
 
 bool DisplayManager::IsInMirrorMode() const {
@@ -949,9 +949,10 @@ void DisplayManager::SetMirrorMode(bool mirrored) {
 }
 
 void DisplayManager::AddRemoveDisplay() {
-  DCHECK(!displays_.empty());
+  DCHECK(!active_display_list_.empty());
   std::vector<DisplayInfo> new_display_info_list;
-  const DisplayInfo& first_display = GetDisplayInfo(displays_[0].id());
+  const DisplayInfo& first_display =
+      GetDisplayInfo(active_display_list_[0].id());
   new_display_info_list.push_back(first_display);
   // Add if there is only one display connected.
   if (num_connected_displays() == 1) {
@@ -968,10 +969,10 @@ void DisplayManager::AddRemoveDisplay() {
 }
 
 void DisplayManager::ToggleDisplayScaleFactor() {
-  DCHECK(!displays_.empty());
+  DCHECK(!active_display_list_.empty());
   std::vector<DisplayInfo> new_display_info_list;
-  for (DisplayList::const_iterator iter = displays_.begin();
-       iter != displays_.end(); ++iter) {
+  for (DisplayList::const_iterator iter = active_display_list_.begin();
+       iter != active_display_list_.end(); ++iter) {
     DisplayInfo display_info = GetDisplayInfo(iter->id());
     display_info.set_device_scale_factor(
         display_info.device_scale_factor() == 1.0f ? 2.0f : 1.0f);
@@ -1017,7 +1018,7 @@ void DisplayManager::CreateMirrorWindowAsyncIfAny() {
   // Do not post a task if the software mirroring doesn't exist, or
   // during initialization when compositor's init task isn't posted yet.
   // ash::Shell::Init() will call this after the compositor is initialized.
-  if (!HasSoftwareMirroringDisplay() || !delegate_)
+  if (!software_mirroring_display_.is_valid() || !delegate_)
     return;
   base::MessageLoopForUI::current()->PostTask(
       FROM_HERE,
@@ -1072,8 +1073,8 @@ void DisplayManager::CreateSoftwareMirroringDisplay(
 }
 
 gfx::Display* DisplayManager::FindDisplayForId(int64 id) {
-  for (DisplayList::iterator iter = displays_.begin();
-       iter != displays_.end(); ++iter) {
+  for (DisplayList::iterator iter = active_display_list_.begin();
+       iter != active_display_list_.end(); ++iter) {
     if ((*iter).id() == id)
       return &(*iter);
   }
@@ -1185,15 +1186,10 @@ bool DisplayManager::UpdateNonPrimaryDisplayBoundsForLayout(
 }
 
 void DisplayManager::CreateMirrorWindowIfAny() {
-  if (HasSoftwareMirroringDisplay() && delegate_) {
+  if (software_mirroring_display_.is_valid() && delegate_) {
     DisplayInfo display_info = GetDisplayInfo(software_mirroring_display_.id());
     delegate_->CreateOrUpdateMirroringDisplay(display_info);
   }
-}
-
-bool DisplayManager::HasSoftwareMirroringDisplay() {
-  return second_display_mode_ != DisplayManager::EXTENDED &&
-         software_mirroring_display_.is_valid();
 }
 
 // static
@@ -1241,6 +1237,11 @@ void DisplayManager::UpdateDisplayBoundsForLayout(
   secondary_display->set_bounds(
       gfx::Rect(new_secondary_origin, secondary_bounds.size()));
   secondary_display->UpdateWorkAreaFromInsets(insets);
+}
+
+void DisplayManager::RunPendingTasksForTest() {
+  if (software_mirroring_display_.is_valid())
+    base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace ash

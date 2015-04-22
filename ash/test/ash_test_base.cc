@@ -214,8 +214,7 @@ void AshTestBase::UpdateDisplay(const std::string& display_specs) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   DisplayManagerTestApi display_manager_test_api(display_manager);
   display_manager_test_api.UpdateDisplay(display_specs);
-  if (display_manager->HasSoftwareMirroringDisplay())
-    RunAllPendingInMessageLoop();
+  display_manager->RunPendingTasksForTest();
 }
 
 aura::Window* AshTestBase::CurrentContext() {
