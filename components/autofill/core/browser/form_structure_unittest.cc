@@ -11,10 +11,12 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/rappor/test_rappor_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 using base::ASCIIToUTF16;
+using rappor::TestRapporService;
 
 namespace autofill {
 
@@ -2379,7 +2381,9 @@ TEST(FormStructureTest, PossibleValues) {
 }
 
 TEST(FormStructureTest, ParseQueryResponse) {
+  TestRapporService rappor_service;
   FormData form;
+  form.origin = GURL("http://foo.com");
   FormFieldData field;
   field.form_control_type = "text";
 
@@ -2420,7 +2424,7 @@ TEST(FormStructureTest, ParseQueryResponse) {
       "<field autofilltype=\"0\" />"
       "</autofillqueryresponse>";
 
-  FormStructure::ParseQueryResponse(response, forms.get());
+  FormStructure::ParseQueryResponse(response, forms.get(), &rappor_service);
 
   ASSERT_GE(forms[0]->field_count(), 2U);
   ASSERT_GE(forms[1]->field_count(), 2U);
@@ -2428,11 +2432,17 @@ TEST(FormStructureTest, ParseQueryResponse) {
   EXPECT_EQ(30, forms[0]->field(1)->server_type());
   EXPECT_EQ(9, forms[1]->field(0)->server_type());
   EXPECT_EQ(0, forms[1]->field(1)->server_type());
+
+  // No RAPPOR metrics are logged in the case there is server data available for
+  // all forms.
+  EXPECT_EQ(0, rappor_service.GetReportsCount());
 }
 
 // If user defined types are present, only parse password fields.
 TEST(FormStructureTest, ParseQueryResponseAuthorDefinedTypes) {
+  TestRapporService rappor_service;
   FormData form;
+  form.origin = GURL("http://foo.com");
   FormFieldData field;
 
   field.label = ASCIIToUTF16("email");
@@ -2457,11 +2467,159 @@ TEST(FormStructureTest, ParseQueryResponseAuthorDefinedTypes) {
       "<field autofilltype=\"76\" />"
       "</autofillqueryresponse>";
 
-  FormStructure::ParseQueryResponse(response, forms.get());
+  FormStructure::ParseQueryResponse(response, forms.get(), &rappor_service);
 
   ASSERT_GE(forms[0]->field_count(), 2U);
   EXPECT_EQ(NO_SERVER_DATA, forms[0]->field(0)->server_type());
   EXPECT_EQ(76, forms[0]->field(1)->server_type());
+}
+
+// If the server returns NO_SERVER_DATA for one of the forms, expect RAPPOR
+// logging.
+TEST(FormStructureTest, ParseQueryResponse_RapporLogging_OneFormNoServerData) {
+  TestRapporService rappor_service;
+  FormData form;
+  form.origin = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("fullname");
+  field.name = ASCIIToUTF16("fullname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("address");
+  field.name = ASCIIToUTF16("address");
+  form.fields.push_back(field);
+
+  ScopedVector<FormStructure> forms;
+  forms.push_back(new FormStructure(form));
+
+  field.label = ASCIIToUTF16("email");
+  field.name = ASCIIToUTF16("email");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("password");
+  field.name = ASCIIToUTF16("password");
+  field.form_control_type = "password";
+  form.fields.push_back(field);
+
+  forms.push_back(new FormStructure(form));
+
+  std::string response =
+      "<autofillqueryresponse>"
+      "<field autofilltype=\"0\" />"
+      "<field autofilltype=\"0\" />"
+      "<field autofilltype=\"9\" />"
+      "<field autofilltype=\"0\" />"
+      "</autofillqueryresponse>";
+
+  FormStructure::ParseQueryResponse(response, forms.get(), &rappor_service);
+
+  EXPECT_EQ(1, rappor_service.GetReportsCount());
+  std::string sample;
+  rappor::RapporType type;
+  EXPECT_TRUE(rappor_service.GetRecordedSampleForMetric(
+      "Autofill.QueryResponseHasNoServerDataForForm", &sample, &type));
+  EXPECT_EQ("foo.com", sample);
+  EXPECT_EQ(rappor::ETLD_PLUS_ONE_RAPPOR_TYPE, type);
+}
+
+// If the server returns NO_SERVER_DATA for both of the forms, expect RAPPOR
+// logging.
+TEST(FormStructureTest, ParseQueryResponse_RapporLogging_AllFormsNoServerData) {
+  TestRapporService rappor_service;
+  FormData form;
+  form.origin = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("fullname");
+  field.name = ASCIIToUTF16("fullname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("address");
+  field.name = ASCIIToUTF16("address");
+  form.fields.push_back(field);
+
+  ScopedVector<FormStructure> forms;
+  forms.push_back(new FormStructure(form));
+
+  field.label = ASCIIToUTF16("email");
+  field.name = ASCIIToUTF16("email");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("password");
+  field.name = ASCIIToUTF16("password");
+  field.form_control_type = "password";
+  form.fields.push_back(field);
+
+  forms.push_back(new FormStructure(form));
+
+  std::string response =
+      "<autofillqueryresponse>"
+      "<field autofilltype=\"0\" />"
+      "<field autofilltype=\"0\" />"
+      "<field autofilltype=\"0\" />"
+      "<field autofilltype=\"0\" />"
+      "</autofillqueryresponse>";
+
+  FormStructure::ParseQueryResponse(response, forms.get(), &rappor_service);
+
+  // Even though both forms are logging to RAPPOR, there is only one sample for
+  // a given eTLD+1.
+  EXPECT_EQ(1, rappor_service.GetReportsCount());
+  std::string sample;
+  rappor::RapporType type;
+  EXPECT_TRUE(rappor_service.GetRecordedSampleForMetric(
+      "Autofill.QueryResponseHasNoServerDataForForm", &sample, &type));
+  EXPECT_EQ("foo.com", sample);
+  EXPECT_EQ(rappor::ETLD_PLUS_ONE_RAPPOR_TYPE, type);
+}
+
+// If the server returns NO_SERVER_DATA for only some of the fields, expect no
+// RAPPOR logging.
+TEST(FormStructureTest, ParseQueryResponse_RapporLogging_PartialNoServerData) {
+  TestRapporService rappor_service;
+  FormData form;
+  form.origin = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("fullname");
+  field.name = ASCIIToUTF16("fullname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("address");
+  field.name = ASCIIToUTF16("address");
+  form.fields.push_back(field);
+
+  ScopedVector<FormStructure> forms;
+  forms.push_back(new FormStructure(form));
+
+  field.label = ASCIIToUTF16("email");
+  field.name = ASCIIToUTF16("email");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("password");
+  field.name = ASCIIToUTF16("password");
+  field.form_control_type = "password";
+  form.fields.push_back(field);
+
+  forms.push_back(new FormStructure(form));
+
+  std::string response =
+      "<autofillqueryresponse>"
+      "<field autofilltype=\"0\" />"
+      "<field autofilltype=\"10\" />"
+      "<field autofilltype=\"0\" />"
+      "<field autofilltype=\"11\" />"
+      "</autofillqueryresponse>";
+
+  FormStructure::ParseQueryResponse(response, forms.get(), &rappor_service);
+
+  // No RAPPOR metrics are logged in the case there is at least some server data
+  // available for all forms.
+  EXPECT_EQ(0, rappor_service.GetReportsCount());
 }
 
 }  // namespace autofill

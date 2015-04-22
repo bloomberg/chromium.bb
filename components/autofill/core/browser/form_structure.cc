@@ -550,9 +550,9 @@ bool FormStructure::EncodeQueryRequest(
 }
 
 // static
-void FormStructure::ParseQueryResponse(
-    const std::string& response_xml,
-    const std::vector<FormStructure*>& forms) {
+void FormStructure::ParseQueryResponse(const std::string& response_xml,
+                                       const std::vector<FormStructure*>& forms,
+                                       rappor::RapporService* rappor_service) {
   AutofillMetrics::LogServerQueryMetric(
       AutofillMetrics::QUERY_RESPONSE_RECEIVED);
 
@@ -579,6 +579,7 @@ void FormStructure::ParseQueryResponse(
     FormStructure* form = *iter;
     form->upload_required_ = upload_required;
 
+    bool query_response_has_no_server_data = true;
     for (std::vector<AutofillField*>::iterator field = form->fields_.begin();
          field != form->fields_.end(); ++field) {
       if (form->ShouldSkipField(**field))
@@ -588,6 +589,9 @@ void FormStructure::ParseQueryResponse(
       // Quit the update of the types then.
       if (current_info == field_infos.end())
         break;
+
+      query_response_has_no_server_data &=
+          current_info->field_type == NO_SERVER_DATA;
 
       // If |form->has_author_specified_types| only password fields should be
       // updated.
@@ -610,6 +614,12 @@ void FormStructure::ParseQueryResponse(
       }
 
       ++current_info;
+    }
+
+    if (query_response_has_no_server_data && form->source_url().is_valid()) {
+      rappor::SampleDomainAndRegistryFromGURL(
+          rappor_service, "Autofill.QueryResponseHasNoServerDataForForm",
+          form->source_url());
     }
 
     form->UpdateAutofillCount();

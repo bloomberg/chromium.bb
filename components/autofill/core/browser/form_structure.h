@@ -77,8 +77,10 @@ class FormStructure {
 
   // Parses the field types from the server query response. |forms| must be the
   // same as the one passed to EncodeQueryRequest when constructing the query.
+  // |rappor_service| may be null.
   static void ParseQueryResponse(const std::string& response_xml,
-                                 const std::vector<FormStructure*>& forms);
+                                 const std::vector<FormStructure*>& forms,
+                                 rappor::RapporService* rappor_service);
 
   // Returns predictions using the details from the given |form_structures| and
   // their fields' predicted types.

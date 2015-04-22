@@ -767,7 +767,8 @@ void AutofillManager::OnSetDataList(const std::vector<base::string16>& values,
 void AutofillManager::OnLoadedServerPredictions(
     const std::string& response_xml) {
   // Parse and store the server predictions.
-  FormStructure::ParseQueryResponse(response_xml, form_structures_.get());
+  FormStructure::ParseQueryResponse(response_xml, form_structures_.get(),
+                                    client_->GetRapporService());
 
   // Forward form structures to the password generation manager to detect
   // account creation forms.

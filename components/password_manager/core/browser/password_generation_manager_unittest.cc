@@ -186,7 +186,7 @@ TEST_F(PasswordGenerationManagerTest, DetectAccountCreationForms) {
       "<field autofilltype=\"76\" />"
       "<field autofilltype=\"75\" />"
       "</autofillqueryresponse>";
-  autofill::FormStructure::ParseQueryResponse(kServerResponse, forms);
+  autofill::FormStructure::ParseQueryResponse(kServerResponse, forms, NULL);
 
   DetectAccountCreationForms(forms);
   EXPECT_EQ(1u, GetTestDriver()->GetFoundAccountCreationForms().size());
