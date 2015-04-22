@@ -558,13 +558,13 @@ xdg_mime_get_mime_type_for_file (const char  *file_name,
   mime_type = _xdg_mime_magic_lookup_data (global_magic, data, bytes_read, NULL,
 					   mime_types, n);
 
-  free (data);
   fclose (file);
 
-  if (mime_type)
-    return mime_type;
+  if (!mime_type)
+    mime_type = _xdg_binary_or_text_fallback(data, bytes_read);
 
-  return _xdg_binary_or_text_fallback(data, bytes_read);
+  free (data);
+  return mime_type;
 }
 
 const char *
