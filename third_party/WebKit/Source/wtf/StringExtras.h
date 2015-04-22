@@ -47,6 +47,8 @@
 #if COMPILER(MSVC)
 // FIXME: why a COMPILER check instead of OS? also, these should be HAVE checks
 
+#if _MSC_VER < 1900
+// snprintf is implemented in VS 2015
 inline int snprintf(char* buffer, size_t count, const char* format, ...)
 {
     int result;
@@ -76,8 +78,10 @@ inline double wtf_vsnprintf(char* buffer, size_t count, const char* format, va_l
 }
 
 // Work around a difference in Microsoft's implementation of vsnprintf, where
-// vsnprintf does not null terminate the buffer. WebKit can rely on the null termination.
+// vsnprintf does not null terminate the buffer. WebKit can rely on the null
+// termination. Microsoft's implementation is fixed in VS 2015.
 #define vsnprintf(buffer, count, format, args) wtf_vsnprintf(buffer, count, format, args)
+#endif
 
 inline int strncasecmp(const char* s1, const char* s2, size_t len)
 {
