@@ -515,37 +515,6 @@
         'formats/webm/webm_video_client.cc',
         'formats/webm/webm_video_client.h',
         'formats/webm/webm_webvtt_parser.cc',
-        'midi/midi_manager.cc',
-        'midi/midi_manager.h',
-        'midi/midi_manager_alsa.cc',
-        'midi/midi_manager_alsa.h',
-        'midi/midi_manager_android.cc',
-        'midi/midi_manager_mac.cc',
-        'midi/midi_manager_mac.h',
-        'midi/midi_manager_usb.cc',
-        'midi/midi_manager_usb.h',
-        'midi/midi_manager_win.cc',
-        'midi/midi_manager_win.h',
-        'midi/midi_message_queue.cc',
-        'midi/midi_message_queue.h',
-        'midi/midi_message_util.cc',
-        'midi/midi_message_util.h',
-        'midi/midi_port_info.cc',
-        'midi/midi_port_info.h',
-        'midi/midi_scheduler.cc',
-        'midi/midi_scheduler.h',
-        'midi/usb_midi_descriptor_parser.cc',
-        'midi/usb_midi_descriptor_parser.h',
-        'midi/usb_midi_device.h',
-        'midi/usb_midi_device_android.cc',
-        'midi/usb_midi_device_android.h',
-        'midi/usb_midi_device_factory_android.cc',
-        'midi/usb_midi_device_factory_android.h',
-        'midi/usb_midi_input_stream.cc',
-        'midi/usb_midi_input_stream.h',
-        'midi/usb_midi_jack.h',
-        'midi/usb_midi_output_stream.cc',
-        'midi/usb_midi_output_stream.h',
         'ozone/media_ozone_platform.cc',
         'ozone/media_ozone_platform.h',
         'renderers/audio_renderer_impl.cc',
@@ -959,7 +928,6 @@
               '$(SDKROOT)/System/Library/Frameworks/AudioToolbox.framework',
               '$(SDKROOT)/System/Library/Frameworks/AudioUnit.framework',
               '$(SDKROOT)/System/Library/Frameworks/CoreAudio.framework',
-              '$(SDKROOT)/System/Library/Frameworks/CoreMIDI.framework',
               '$(SDKROOT)/System/Library/Frameworks/CoreVideo.framework',
               '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
               '$(SDKROOT)/System/Library/Frameworks/QTKit.framework',
@@ -967,9 +935,6 @@
           },
         }],
         ['OS=="win"', {
-          'dependencies': [
-            '../device/usb/usb.gyp:device_usb',
-          ],
           'link_settings':  {
             'libraries': [
               '-lmf.lib',
@@ -1095,11 +1060,6 @@
             'filters/source_buffer_platform.cc',
             'filters/source_buffer_platform.h',
           ]
-        }],
-        ['use_udev==1', {
-          'dependencies': [
-            '../device/udev_linux/udev.gyp:udev_linux',
-          ],
         }],
       ],  # conditions
       'target_conditions': [
@@ -1272,13 +1232,6 @@
         'formats/webm/webm_parser_unittest.cc',
         'formats/webm/webm_tracks_parser_unittest.cc',
         'formats/webm/webm_webvtt_parser_unittest.cc',
-        'midi/midi_manager_unittest.cc',
-        'midi/midi_manager_usb_unittest.cc',
-        'midi/midi_message_queue_unittest.cc',
-        'midi/midi_message_util_unittest.cc',
-        'midi/usb_midi_descriptor_parser_unittest.cc',
-        'midi/usb_midi_input_stream_unittest.cc',
-        'midi/usb_midi_output_stream_unittest.cc',
         'renderers/audio_renderer_impl_unittest.cc',
         'renderers/renderer_impl_unittest.cc',
         'renderers/video_renderer_impl_unittest.cc',
@@ -1411,13 +1364,7 @@
         }],
         ['OS=="mac"', {
           'sources': [
-            'midi/midi_manager_mac_unittest.cc',
             'video/capture/mac/video_capture_device_factory_mac_unittest.mm',
-          ]
-        }],
-	['use_alsa==1', {
-          'sources': [
-            'midi/midi_manager_alsa_unittest.cc',
           ]
         }],
         ['use_x11==1', {
@@ -1706,8 +1653,6 @@
             'base/android/java/src/org/chromium/media/MediaDrmBridge.java',
             'base/android/java/src/org/chromium/media/MediaPlayerBridge.java',
             'base/android/java/src/org/chromium/media/MediaPlayerListener.java',
-            'base/android/java/src/org/chromium/media/UsbMidiDeviceAndroid.java',
-            'base/android/java/src/org/chromium/media/UsbMidiDeviceFactoryAndroid.java',
             'base/android/java/src/org/chromium/media/WebAudioMediaCodecBridge.java',
           ],
           'variables': {

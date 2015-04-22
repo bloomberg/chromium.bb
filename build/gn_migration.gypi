@@ -99,6 +99,7 @@
         '../media/media.gyp:ffmpeg_regression_tests',  # TODO(GYP) this should be conditional on media_use_ffmpeg
         '../media/media.gyp:media_perftests',
         '../media/media.gyp:media_unittests',
+        '../media/midi/midi.gyp:midi_unittests',
         '../media/cast/cast.gyp:cast_benchmarks',
         '../media/cast/cast.gyp:cast_unittests',
         '../media/cast/cast.gyp:generate_barcode_video',
@@ -522,6 +523,7 @@
             '../gpu/gpu.gyp:gpu_unittests_run',
             '../media/cast/cast.gyp:cast_unittests_run',
             '../media/media.gyp:media_unittests_run',
+            '../media/midi/midi.gyp:midi_unittests_run',
             '../net/net.gyp:net_unittests_run',
             '../sql/sql.gyp:sql_unittests_run',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests_run',

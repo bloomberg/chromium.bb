@@ -178,6 +178,7 @@
         '../gpu/gpu.gyp:gles2_implementation',
         '../gpu/gpu.gyp:gl_in_process_context',
         '../media/media.gyp:media',
+        '../media/midi/midi.gyp:midi',
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
         '../third_party/WebKit/public/blink.gyp:blink',

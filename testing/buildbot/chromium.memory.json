@@ -90,6 +90,9 @@
         "test": "media_unittests"
       },
       {
+        "test": "midi_unittests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 4
@@ -265,6 +268,9 @@
         "test": "message_center_unittests"
       },
       {
+        "test": "midi_unittests"
+      },
+      {
         "test": "nacl_loader_unittests"
       },
       {
@@ -391,6 +397,9 @@
         "test": "media_unittests"
       },
       {
+        "test": "midi_unittests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -493,6 +502,9 @@
       },
       {
         "test": "media_unittests"
+      },
+      {
+        "test": "midi_unittests"
       },
       {
         "swarming": {

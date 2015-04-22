@@ -6,10 +6,5 @@ scherkus@chromium.org
 wolenetz@chromium.org
 xhwang@chromium.org
 
-# Build rules for Web MIDI
-per-file BUILD.gn=toyoshim@chromium.org
-per-file *.gyp=toyoshim@chromium.org
-per-file *.gypi=toyoshim@chromium.org
-
 per-file *.isolate=csharp@chromium.org
 per-file *.isolate=maruel@chromium.org

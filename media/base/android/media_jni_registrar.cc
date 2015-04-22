@@ -15,8 +15,6 @@
 #include "media/base/android/media_player_bridge.h"
 #include "media/base/android/media_player_listener.h"
 #include "media/base/android/webaudio_media_codec_bridge.h"
-#include "media/midi/usb_midi_device_android.h"
-#include "media/midi/usb_midi_device_factory_android.h"
 #include "media/video/capture/android/video_capture_device_android.h"
 #include "media/video/capture/android/video_capture_device_factory_android.h"
 
@@ -35,10 +33,6 @@ static base::android::RegistrationMethod kMediaRegisteredMethods[] = {
     MediaPlayerBridge::RegisterMediaPlayerBridge },
   { "MediaPlayerListener",
     MediaPlayerListener::RegisterMediaPlayerListener },
-  { "UsbMidiDevice",
-    UsbMidiDeviceAndroid::RegisterUsbMidiDevice },
-  { "UsbMidiDeviceFactory",
-    UsbMidiDeviceFactoryAndroid::RegisterUsbMidiDeviceFactory },
   { "VideoCaptureDevice",
     VideoCaptureDeviceAndroid::RegisterVideoCaptureDevice },
   { "VideoCaptureDeviceFactory",
