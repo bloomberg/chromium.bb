@@ -2413,3 +2413,5 @@ crbug.com/479202 virtual/slimmingpaint/fast/forms/select/select-typeahead-with-s
 crbug.com/479224 [ SnowLeopard ] ietestcenter/css3/text/textshadow-005.htm [ NeedsRebaseline ]
 crbug.com/479224 [ SnowLeopard ] ietestcenter/css3/text/textshadow-007.htm [ NeedsRebaseline ]
 crbug.com/479224 [ SnowLeopard ] ietestcenter/css3/text/textshadow-008.htm [ NeedsRebaseline ]
+
+crbug.com/479823 svg/animations/viewspec-animated-viewbox.html [ Pass Failure ]
