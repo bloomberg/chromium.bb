@@ -4,6 +4,8 @@
 
 #include "net/socket/client_socket_pool_base.h"
 
+#include <algorithm>
+
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
@@ -573,13 +575,8 @@ LoadState ClientSocketPoolBaseHelper::GetLoadState(
 
   const Group& group = *group_it->second;
   if (group.HasConnectJobForHandle(handle)) {
-    // Just return the state of the farthest along ConnectJob for the first
-    // group.jobs().size() pending requests.
-    LoadState max_state = LOAD_STATE_IDLE;
-    for (const auto& job : group.jobs()) {
-      max_state = std::max(max_state, job->GetLoadState());
-    }
-    return max_state;
+    // Just return the state of the oldest ConnectJob.
+    return (*group.jobs().begin())->GetLoadState();
   }
 
   if (group.CanUseAdditionalSocketSlot(max_sockets_per_group_))
@@ -629,7 +626,7 @@ base::DictionaryValue* ClientSocketPoolBaseHelper::GetInfoAsValue(
     group_dict->Set("idle_sockets", idle_socket_list);
 
     base::ListValue* connect_jobs_list = new base::ListValue();
-    std::set<ConnectJob*>::const_iterator job = group->jobs().begin();
+    std::list<ConnectJob*>::const_iterator job = group->jobs().begin();
     for (job = group->jobs().begin(); job != group->jobs().end(); job++) {
       int source_id = (*job)->net_log().source().id;
       connect_jobs_list->Append(new base::FundamentalValue(source_id));
@@ -1197,19 +1194,16 @@ void ClientSocketPoolBaseHelper::Group::AddJob(scoped_ptr<ConnectJob> job,
 
   if (is_preconnect)
     ++unassigned_job_count_;
-  jobs_.insert(job.release());
+  jobs_.push_back(job.release());
 }
 
 void ClientSocketPoolBaseHelper::Group::RemoveJob(ConnectJob* job) {
   scoped_ptr<ConnectJob> owned_job(job);
   SanityCheck();
 
-  std::set<ConnectJob*>::iterator it = jobs_.find(job);
-  if (it != jobs_.end()) {
-    jobs_.erase(it);
-  } else {
-    NOTREACHED();
-  }
+  // Check that |job| is in the list.
+  DCHECK_EQ(*std::find(jobs_.begin(), jobs_.end(), job), job);
+  jobs_.remove(job);
   size_t job_count = jobs_.size();
   if (job_count < unassigned_job_count_)
     unassigned_job_count_ = job_count;

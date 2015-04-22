@@ -1955,48 +1955,63 @@ TEST_F(ClientSocketPoolBaseTest, LoadStateOneRequest) {
 }
 
 // Test GetLoadState in the case there are two socket requests.
+// Only the first connection in the pool should affect the pool's load status.
 TEST_F(ClientSocketPoolBaseTest, LoadStateTwoRequests) {
   CreatePool(2, 2);
   connect_job_factory_->set_job_type(TestConnectJob::kMockWaitingJob);
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  int rv = handle.Init("a",
-                       params_,
-                       DEFAULT_PRIORITY,
-                       callback.callback(),
-                       pool_.get(),
-                       BoundNetLog());
+  int rv = handle.Init("a", params_, DEFAULT_PRIORITY, callback.callback(),
+                       pool_.get(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  client_socket_factory_.SetJobLoadState(0, LOAD_STATE_RESOLVING_HOST);
+
+  ClientSocketHandle handle2;
+  TestCompletionCallback callback2;
+  rv = handle2.Init("a", params_, DEFAULT_PRIORITY, callback2.callback(),
+                    pool_.get(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  client_socket_factory_.SetJobLoadState(1, LOAD_STATE_RESOLVING_HOST);
+
+  // Check that both handles report the state of the first job.
+  EXPECT_EQ(LOAD_STATE_RESOLVING_HOST, handle.GetLoadState());
+  EXPECT_EQ(LOAD_STATE_RESOLVING_HOST, handle2.GetLoadState());
+
+  client_socket_factory_.SetJobLoadState(0, LOAD_STATE_CONNECTING);
+
+  // Check that both handles change to LOAD_STATE_CONNECTING.
+  EXPECT_EQ(LOAD_STATE_CONNECTING, handle.GetLoadState());
+  EXPECT_EQ(LOAD_STATE_CONNECTING, handle2.GetLoadState());
+}
+
+// Test that the second connection request does not affect the pool's load
+// status.
+TEST_F(ClientSocketPoolBaseTest, LoadStateTwoRequestsChangeSecondRequestState) {
+  CreatePool(2, 2);
+  connect_job_factory_->set_job_type(TestConnectJob::kMockWaitingJob);
+
+  ClientSocketHandle handle;
+  TestCompletionCallback callback;
+  int rv = handle.Init("a", params_, DEFAULT_PRIORITY, callback.callback(),
+                       pool_.get(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   ClientSocketHandle handle2;
   TestCompletionCallback callback2;
-  rv = handle2.Init("a",
-                    params_,
-                    DEFAULT_PRIORITY,
-                    callback2.callback(),
-                    pool_.get(),
-                    BoundNetLog());
+  rv = handle2.Init("a", params_, DEFAULT_PRIORITY, callback2.callback(),
+                    pool_.get(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
+  client_socket_factory_.SetJobLoadState(1, LOAD_STATE_RESOLVING_HOST);
 
-  // If the first Job is in an earlier state than the second, the state of
-  // the second job should be used for both handles.
-  client_socket_factory_.SetJobLoadState(0, LOAD_STATE_RESOLVING_HOST);
   EXPECT_EQ(LOAD_STATE_CONNECTING, handle.GetLoadState());
   EXPECT_EQ(LOAD_STATE_CONNECTING, handle2.GetLoadState());
 
-  // If the second Job is in an earlier state than the second, the state of
-  // the first job should be used for both handles.
-  client_socket_factory_.SetJobLoadState(0, LOAD_STATE_SSL_HANDSHAKE);
-  // One request is farther
-  EXPECT_EQ(LOAD_STATE_SSL_HANDSHAKE, handle.GetLoadState());
-  EXPECT_EQ(LOAD_STATE_SSL_HANDSHAKE, handle2.GetLoadState());
-
-  // Farthest along job connects and the first request gets the socket.  The
+  // First job connects and the first request gets the socket.  The
   // second handle switches to the state of the remaining ConnectJob.
   client_socket_factory_.SignalJob(0);
   EXPECT_EQ(OK, callback.WaitForResult());
-  EXPECT_EQ(LOAD_STATE_CONNECTING, handle2.GetLoadState());
+  EXPECT_EQ(LOAD_STATE_RESOLVING_HOST, handle2.GetLoadState());
 }
 
 // Test GetLoadState in the case the per-group limit is reached.
