@@ -20,13 +20,13 @@ typedef std::set<RenderWidgetHostID> SingleTabIDSet;
 base::LazyInstance<SingleTabIDSet> g_blocked_ids = LAZY_INSTANCE_INITIALIZER;
 
 void AddPairOnIOThread(int32 process_id, int32 routing_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   RenderWidgetHostID single_tab_pair(process_id, routing_id);
   g_blocked_ids.Get().insert(single_tab_pair);
 }
 
 void RemovePairOnIOThread(int32 process_id, int32 routing_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   RenderWidgetHostID single_tab_pair(process_id, routing_id);
   SingleTabIDSet::iterator itr = g_blocked_ids.Get().find(single_tab_pair);
   DCHECK(itr != g_blocked_ids.Get().end());
@@ -87,7 +87,7 @@ void SingleTabModeTabHelper::PermanentlyBlockAllNewWindows() {
 
 bool SingleTabModeTabHelper::IsRegistered(int32 process_id,
                                           int32 routing_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   RenderWidgetHostID single_tab_pair(process_id, routing_id);
   SingleTabIDSet::iterator itr = g_blocked_ids.Get().find(single_tab_pair);
   return itr != g_blocked_ids.Get().end();

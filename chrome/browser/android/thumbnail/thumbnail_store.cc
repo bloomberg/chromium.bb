@@ -128,7 +128,7 @@ ThumbnailStore::ThumbnailStore(const std::string& disk_cache_path_str,
       approximation_cache_(approximation_cache_size),
       ui_resource_provider_(NULL),
       weak_factory_(this) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 ThumbnailStore::~ThumbnailStore() {

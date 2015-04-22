@@ -73,7 +73,7 @@ void ChromeDownloadManagerOverwriteInfoBarDelegate::InfoBarDismissed() {
 void ChromeDownloadManagerOverwriteInfoBarDelegate::CreateNewFileInternal(
     const base::FilePath& suggested_download_path,
     const DownloadTargetDeterminerDelegate::FileSelectedCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   int uniquifier = base::GetUniquePathNumber(suggested_download_path,
                                              base::FilePath::StringType());
   base::FilePath new_path = suggested_download_path;

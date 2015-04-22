@@ -49,7 +49,7 @@ void CookiesFetcher::PersistCookies(JNIEnv* env, jobject obj) {
 
 void CookiesFetcher::PersistCookiesInternal(
     net::URLRequestContextGetter* getter) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   net::CookieStore* store = getter->GetURLRequestContext()->cookie_store();
 
@@ -142,7 +142,7 @@ void CookiesFetcher::RestoreCookies(JNIEnv* env,
 void CookiesFetcher::RestoreToCookieJarInternal(
     net::URLRequestContextGetter* getter,
     const net::CanonicalCookie& cookie) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   net::CookieStore* store = getter->GetURLRequestContext()->cookie_store();
 

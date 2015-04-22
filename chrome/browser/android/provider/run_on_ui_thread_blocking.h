@@ -30,7 +30,7 @@ class RunOnUIThreadBlocking {
   template <typename Signature>
   static void RunOnUIThread(base::Callback<Signature> runnable,
                             base::WaitableEvent* finished) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     runnable.Run();
     finished->Signal();
   }

@@ -12,6 +12,6 @@ void BlockingUIThreadAsyncRequest::RequestCompleted() {
   // Currently all our use cases receive their request response in the UI
   // thread (the same thread that made the request). However this is not
   // a design constraint and can be changed if ever needed.
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   request_completed_.Signal();
 }
