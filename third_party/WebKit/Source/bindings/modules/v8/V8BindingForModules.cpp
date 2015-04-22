@@ -162,6 +162,8 @@ v8::Local<v8::Value> toV8(const IDBAny* impl, v8::Local<v8::Object> creationCont
         v8::Local<v8::Value> value = deserializeIDBValue(isolate, impl->value());
         if (impl->value()->primaryKey()) {
             v8::Local<v8::Value> key = toV8(impl->value()->primaryKey(), creationContext, isolate);
+            if (key.IsEmpty())
+                return v8::Local<v8::Value>();
             bool injected = injectV8KeyIntoV8Value(isolate, key, value, impl->value()->keyPath());
             ASSERT_UNUSED(injected, injected);
         }
