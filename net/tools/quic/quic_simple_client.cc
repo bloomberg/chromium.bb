@@ -15,6 +15,7 @@
 #include "net/quic/quic_default_packet_writer.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_server_id.h"
+#include "net/quic/spdy_utils.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/udp/udp_client_socket.h"
 
@@ -188,8 +189,10 @@ void QuicSimpleClient::SendRequest(const HttpRequestInfo& headers,
     return;
   }
   SpdyHeaderBlock header_block;
-  CreateSpdyHeadersFromHttpRequest(headers, headers.extra_headers, SPDY3, true,
-                                   &header_block);
+  SpdyMajorVersion spdy_version =
+      SpdyUtils::GetSpdyVersionForQuicVersion(stream->version());
+  CreateSpdyHeadersFromHttpRequest(headers, headers.extra_headers, spdy_version,
+                                   true, &header_block);
   stream->SendRequest(header_block, body, fin);
   stream->set_visitor(this);
 }
@@ -249,7 +252,9 @@ void QuicSimpleClient::OnClose(QuicDataStream* stream) {
   QuicSpdyClientStream* client_stream =
       static_cast<QuicSpdyClientStream*>(stream);
   HttpResponseInfo response;
-  SpdyHeadersToHttpResponse(client_stream->headers(), SPDY3, &response);
+  SpdyMajorVersion spdy_version =
+      SpdyUtils::GetSpdyVersionForQuicVersion(client_stream->version());
+  SpdyHeadersToHttpResponse(client_stream->headers(), spdy_version, &response);
   if (response_listener_.get() != nullptr) {
     response_listener_->OnCompleteResponse(
         stream->id(), *response.headers, client_stream->data());
