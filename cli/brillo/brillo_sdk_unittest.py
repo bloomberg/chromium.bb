@@ -34,12 +34,6 @@ class MockSdkCommand(command_unittest.MockCommand):
   TARGET_CLASS = brillo_sdk.SdkCommand
   COMMAND = 'sdk'
 
-  def __init__(self, *args, **kwargs):
-    command_unittest.MockCommand.__init__(self, *args, **kwargs)
-
-  def Run(self, inst):
-    return command_unittest.MockCommand.Run(self, inst)
-
 
 class BrilloSdkTest(cros_test_lib.MockTempDirTestCase):
   """Test class for our BuildCommand class."""
@@ -76,12 +70,14 @@ class BrilloSdkTest(cros_test_lib.MockTempDirTestCase):
         output=self.latest_version)
 
   def testResolveLatest(self):
+    """Tests _ResolveLatest()."""
     result = brillo_sdk._ResolveLatest(gs.GSContext())
     self.assertEqual(self.latest_version, result)
 
   def testUpdateWorkspaceSdk(self):
+    """Tests _UpdateWorkspaceSdk() with a numeric version."""
     brillo_sdk._UpdateWorkspaceSdk(
-        gs.GSContext(), self.bootstrap_path, self.workspace_path, '1.2.3')
+        self.bootstrap_path, self.workspace_path, '1.2.3')
 
     # Given the explicit path and version, sync what we expect, and where.
     expected = [mock.call(mock.ANY,
@@ -95,13 +91,30 @@ class BrilloSdkTest(cros_test_lib.MockTempDirTestCase):
 
     # Update a second time, to ensure it does nothing the second time.
     brillo_sdk._UpdateWorkspaceSdk(
-        gs.GSContext(), self.bootstrap_path, self.workspace_path, '1.2.3')
+        self.bootstrap_path, self.workspace_path, '1.2.3')
 
     self.assertEqual(expected, self.mock_repo.mock_calls)
 
-  def testUpdateWorkspaceTot(self):
+  def testUpdateWorkspaceSdkLatest(self):
+    """Tests _UpdateWorkspaceSdk() with 'latest'."""
+    brillo_sdk._UpdateWorkspaceSdk(self.bootstrap_path, self.workspace_path,
+                                   'latest')
+
+    # Given the explicit path and version, sync what we expect, and where.
+    expected = [mock.call(mock.ANY,
+                          os.path.join(self.tempdir,
+                                       'bootstrap/sdk_checkouts',
+                                       self.latest_version),
+                          depth=1,
+                          repo_cmd=mock.ANY),
+                mock.call().Sync()]
+
+    self.assertEqual(expected, self.mock_repo.mock_calls)
+
+  def testUpdateWorkspaceSdkTot(self):
+    """Tests _UpdateWorkspaceSdk() with 'tot'."""
     brillo_sdk._UpdateWorkspaceSdk(
-        gs.GSContext(), self.bootstrap_path, self.workspace_path, 'tot')
+        self.bootstrap_path, self.workspace_path, 'tot')
 
     # Given the explicit path and version, sync what we expect, and where.
     expected = [mock.call(constants.MANIFEST_URL,
@@ -115,21 +128,13 @@ class BrilloSdkTest(cros_test_lib.MockTempDirTestCase):
 
     # Update a second time, to ensure it DOES update.
     brillo_sdk._UpdateWorkspaceSdk(
-        gs.GSContext(), self.bootstrap_path, self.workspace_path, 'tot')
-
-    # Given the explicit path and version, sync what we expect, and where.
-    expected = [mock.call(constants.MANIFEST_URL,
-                          os.path.join(self.tempdir,
-                                       'bootstrap/sdk_checkouts/tot'),
-                          groups='project_sdk',
-                          repo_cmd=mock.ANY),
-                mock.call().Sync()]
+        self.bootstrap_path, self.workspace_path, 'tot')
 
     self.assertEqual(2 * expected, self.mock_repo.mock_calls)
 
-
-  def testUpdateSdk(self):
-    brillo_sdk._UpdateSdk(gs.GSContext(), self.sdk_path, '1.2.3')
+  def testDownloadSdk(self):
+    """Tests DownloadSdk() with a numeric version."""
+    brillo_sdk._DownloadSdk(gs.GSContext(), self.sdk_path, '1.2.3')
 
     # Given the explicit path and version, sync what we expect, and where.
     expected = [mock.call(mock.ANY,
@@ -145,108 +150,10 @@ class BrilloSdkTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual('1.2.3', osutils.ReadFile(sdk_version_file))
 
 
-  def testHandleExplicitUpdate(self):
-    brillo_sdk._HandleUpdate(
-        self.bootstrap_path, None, self.sdk_path, '1.2.3')
+class BrilloSdkTestUpdateBootstrap(cros_test_lib.MockTempDirTestCase):
+  """Test the bootstrap update functionality of brillo_sdk.
 
-    # Given the explicit path and version, sync what we expect, and where.
-    expected = [mock.call(mock.ANY,
-                          self.sdk_path,
-                          depth=1,
-                          repo_cmd=mock.ANY),
-                mock.call().Sync()]
-
-    self.assertEqual(expected, self.mock_repo.mock_calls)
-
-  def testHandleLatestUpdate(self):
-    brillo_sdk._HandleUpdate(
-        self.bootstrap_path, None, self.sdk_path, 'latest')
-
-    # Given the explicit path and version, sync what we expect, and where.
-    expected = [mock.call(mock.ANY,
-                          self.sdk_path,
-                          depth=1,
-                          repo_cmd=mock.ANY),
-                mock.call().Sync()]
-
-    self.assertEqual(expected, self.mock_repo.mock_calls)
-
-  def testHandleTotUpdate(self):
-    brillo_sdk._HandleUpdate(
-        self.bootstrap_path, None, self.sdk_path, 'tot')
-
-    # Given the explicit path and version, sync what we expect, and where.
-    expected = [mock.call(constants.MANIFEST_URL,
-                          self.sdk_path,
-                          groups='project_sdk',
-                          repo_cmd=mock.ANY),
-                mock.call().Sync()]
-
-    self.assertEqual(expected, self.mock_repo.mock_calls)
-
-  def testHandleWorkspaceUpdate(self):
-    brillo_sdk._HandleUpdate(
-        self.bootstrap_path, self.workspace_path, None, '1.2.3')
-
-    # Given the explicit path and version, sync what we expect, and where.
-    expected = [mock.call(mock.ANY,
-                          os.path.join(self.tempdir,
-                                       'bootstrap/sdk_checkouts/1.2.3'),
-                          depth=1,
-                          repo_cmd=mock.ANY),
-                mock.call().Sync()]
-
-    self.assertEqual(expected, self.mock_repo.mock_calls)
-
-  def testFindVersion(self):
-    # Fake out the workspace version.
-    workspace_version = 'work_version'
-    self.PatchObject(workspace_lib, 'GetActiveSdkVersion',
-                     return_value=workspace_version)
-
-    # Check that a non-existent directory doesn't have a version.
-    self.assertEqual(
-        None,
-        brillo_sdk._FindVersion(None, self.sdk_path))
-
-    osutils.SafeMakedirs(self.sdk_path)
-
-    # Check that a empty directory doesn't have a version.
-    self.assertEqual(
-        None,
-        brillo_sdk._FindVersion(None, self.sdk_path))
-
-    osutils.SafeMakedirs(os.path.join(self.sdk_path, 'chromite'))
-    osutils.SafeMakedirs(os.path.join(self.sdk_path, 'src'))
-
-    # If it sorta looks like an SDK, ensure treated as unofficial.
-    self.assertEqual(
-        'Unofficial SDK',
-        brillo_sdk._FindVersion(None, self.sdk_path))
-
-    # Fake out the SDK version.
-    sdk_version = 'sdk version'
-    sdk_version_file = project_sdk.VersionFile(self.sdk_path)
-    osutils.WriteFile(sdk_version_file, sdk_version)
-
-    # If we only know the workspace, use the workspace version.
-    self.assertEqual(
-        workspace_version,
-        brillo_sdk._FindVersion(self.workspace_path, None))
-
-    # If we have an explicit sdk path, use it's version.
-    self.assertEqual(
-        sdk_version,
-        brillo_sdk._FindVersion(None, self.sdk_path))
-
-    self.assertEqual(
-        sdk_version,
-        brillo_sdk._FindVersion(self.workspace_path, self.sdk_path))
-
-class BrilloSdkTestSelfUpdate(cros_test_lib.MockTempDirTestCase):
-  """Test the self-update functionality of brillo_sdk.
-
-  This is a new class, to avoid mocks interferring with each other.
+  This is a new class, to avoid mocks interfering with each other.
   """
   def setUp(self):
     if brillo_sdk._BRILLO_SDK_NO_UPDATE in os.environ:
@@ -257,9 +164,10 @@ class BrilloSdkTestSelfUpdate(cros_test_lib.MockTempDirTestCase):
     self.rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
     self.rc_mock.SetDefaultCmdResult()
 
-  def testSelfUpdate(self):
+  def testUpdateBootstrap(self):
+    """Tests _UpdateBootstrap()."""
     with self.assertRaises(commandline.ExecRequiredError):
-      brillo_sdk._SelfUpdate(self.bootstrap_path)
+      brillo_sdk._UpdateBootstrap(self.bootstrap_path)
 
     # Test we did the git pull before raising....
     self.rc_mock.assertCommandContains(
@@ -268,19 +176,21 @@ class BrilloSdkTestSelfUpdate(cros_test_lib.MockTempDirTestCase):
     # Test we updated our env before raising....
     self.assertIn(brillo_sdk._BRILLO_SDK_NO_UPDATE, os.environ)
 
-  def testSelfAlreadyUpdated(self):
+  def testBootstrapAlreadyUpdated(self):
+    """Tests _UpdateBootstrap() doesn't run if already updated."""
     # Mark that we already updated.
     os.environ[brillo_sdk._BRILLO_SDK_NO_UPDATE] = '1'
 
     # Try to update again (no exception raised).
-    brillo_sdk._SelfUpdate(self.bootstrap_path)
+    brillo_sdk._UpdateBootstrap(self.bootstrap_path)
 
     # Test we didn't run a git pull.
     self.assertEquals(0, self.rc_mock.call_count)
 
 
 class BrilloSdkCommandTest(cros_test_lib.MockTempDirTestCase,
-                           cros_test_lib.OutputTestCase):
+                           cros_test_lib.OutputTestCase,
+                           cros_test_lib.WorkspaceTestCase):
   """Test class for our BuildCommand class."""
 
   def setUp(self):
@@ -290,6 +200,7 @@ class BrilloSdkCommandTest(cros_test_lib.MockTempDirTestCase,
     self.cmd_mock = None
 
     # Workspace is supposed to exist in advance.
+    self.SetupFakeWorkspace()
     self.sdk_path = os.path.join(self.tempdir, 'sdk')
 
     # Pretend we are outside the chroot, since this command only runs there.
@@ -313,55 +224,49 @@ class BrilloSdkCommandTest(cros_test_lib.MockTempDirTestCase,
     self.StartPatcher(self.cmd_mock)
 
   def testHandleSelfUpdateAndRestart(self):
-    self.SetupCommandMock(['--update', 'latest', '--sdk-dir', self.sdk_path])
-
+    """Tests that --update causes a re-exec."""
+    self.SetupCommandMock(['--update', 'latest'])
     with self.assertRaises(commandline.ExecRequiredError):
       self.cmd_mock.inst.Run()
 
   def testHandleVersionOnlyNoUpdate(self):
-    self.SetupCommandMock(['--sdk-dir', self.sdk_path])
+    """Tests that `cros sdk` logs a version and doesn't re-exec."""
+    self.SetupCommandMock([])
+    workspace_lib.SetActiveSdkVersion(self.tempdir, '1.2.3')
 
-    # Write out a version to find.
-    osutils.SafeMakedirs(self.sdk_path)
-    sdk_version_file = project_sdk.VersionFile(self.sdk_path)
-    osutils.WriteFile(sdk_version_file, 'test version')
-
-    # Make sure no exec assertion is raised if we aren't updating.
-    self.cmd_mock.inst.Run()
-
-  def testHandleSelfUpdateAfterRestart(self):
-    os.environ[brillo_sdk._BRILLO_SDK_NO_UPDATE] = '1'
-    self.SetupCommandMock(['--update', 'latest', '--sdk-dir', self.sdk_path])
-
-    # Make sure no exec assertion is raised.
-    self.cmd_mock.inst.Run()
-
-  def testVersionOptionSdkDir(self):
-    self.PatchObject(project_sdk, 'FindVersion', return_value='foo')
-    self.SetupCommandMock(['--version', '--sdk-dir', 'bar'])
     with self.OutputCapturer():
       self.cmd_mock.inst.Run()
+    self.AssertOutputContainsLine('1.2.3', check_stderr=True)
 
-    # Check that the version is 'foo'.
+  def testHandleSelfUpdateAfterRestart(self):
+    """Tests that --update doesn't re-exec a second time."""
+    os.environ[brillo_sdk._BRILLO_SDK_NO_UPDATE] = '1'
+    self.SetupCommandMock(['--update', 'latest'])
+    self.cmd_mock.inst.Run()
+
+  def testVerifyEnvironmentAfterSelfUpdate(self):
+    """Tests that environment verification happens after self-update."""
+    update_bootstrap_mock = self.PatchObject(brillo_sdk, '_UpdateBootstrap')
+    self.PatchObject(project_sdk, 'VerifyEnvironment',
+                     side_effect=lambda: update_bootstrap_mock.called)
+    self.SetupCommandMock(['--update', 'latest'])
+    self.cmd_mock.inst.Run()
+
+  def testVersionOption(self):
+    """Tests that --version prints to stdout."""
+    self.SetupCommandMock(['--version'])
+    workspace_lib.SetActiveSdkVersion(self.tempdir, 'foo')
+
+    with self.OutputCapturer():
+      self.cmd_mock.inst.Run()
     self.AssertOutputContainsLine('foo')
 
   def testVersionOptionSdkNotFound(self):
-    self.PatchObject(brillo_sdk, '_FindVersion', return_value=None)
+    """Tests that --version errors out if a version can't be found."""
     self.SetupCommandMock(['--version'])
-    with self.OutputCapturer():
-      self.cmd_mock.inst.Run()
 
-    # Check that the version was not found.
-    self.AssertOutputContainsLine('foo', invert=True)
-    self.AssertOutputContainsLine('Please specify a valid SDK location.',
+    with self.OutputCapturer():
+      with self.assertRaises(cros_build_lib.DieSystemExit):
+        self.cmd_mock.inst.Run()
+    self.AssertOutputContainsLine('This workspace does not have an SDK.',
                                   check_stderr=True, check_stdout=False)
-
-  def testVersionOptionWithWorkspace(self):
-    self.PatchObject(workspace_lib, 'WorkspacePath', return_value='.')
-    self.PatchObject(workspace_lib, 'GetActiveSdkVersion', return_value='foo')
-    self.SetupCommandMock(['--version'])
-    with self.OutputCapturer():
-      self.cmd_mock.inst.Run()
-
-    # Check that the version is 'foo'.
-    self.AssertOutputContainsLine('foo')
