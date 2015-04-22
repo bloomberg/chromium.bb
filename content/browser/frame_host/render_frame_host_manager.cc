@@ -826,6 +826,17 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
                         MSG_ROUTING_NONE, frame_tree_node_->IsMainFrame())) {
       return nullptr;
     }
+
+    if (navigation_rfh == render_frame_host_) {
+      // TODO(nasko): This is a very ugly hack. The Chrome extensions process
+      // manager still uses NotificationService and expects to see a
+      // RenderViewHost changed notification after WebContents and
+      // RenderFrameHostManager are completely initialized. This should be
+      // removed once the process manager moves away from NotificationService.
+      // See https://crbug.com/462682.
+      delegate_->NotifyMainFrameSwappedFromRenderManager(
+          nullptr, render_frame_host_->render_view_host());
+    }
   }
 
   return navigation_rfh;
