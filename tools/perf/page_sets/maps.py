@@ -24,7 +24,7 @@ class MapsPage(page_module.Page):
     action_runner.Wait(3)
 
   def RunPageInteractions(self, action_runner):
-    with action_runner.RunPageInteractions('MapAnimation'):
+    with action_runner.CreateInteraction('MapAnimation'):
       action_runner.WaitForJavaScriptCondition('window.testDone', 120)
 
 
