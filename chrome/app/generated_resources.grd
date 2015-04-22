@@ -6787,6 +6787,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_TAB_AUDIO_MUTING_DESCRIPTION" desc="Description of the flag that enables the tab audio muting UI experiment in chrome://extensions.">
         When enabled, the audio indicators in the tab strip double as tab audio mute controls.  This also adds commands in the tab context menu for quickly muting multiple selected tabs.
       </message>
+      <message name="IDS_FLAGS_ENABLE_EASY_UNLOCK_BLUETOOTH_LOW_ENERGY_DISCOVERY_NAME" desc="Title for the flag to enable Smart Lock to discover phones over Bluetooth Low Energy in order to unlock the Chromebook.">
+        Enable Smart Lock Bluetooth Low Energy Discovery.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_EASY_UNLOCK_BLUETOOTH_LOW_ENERGY_DISCOVERY_DESCRIPTION" desc="Description for the flag to enable Smart Lock to discover phones over Bluetooth Low Energy in order to unlock the Chromebook.">
+        Enables a Smart Lock setting that allows Chromebook to discover phones over Bleutooth Low Energy in order to unlock the Chromebook when the phone is in its proximity.
+      </message>
       <message name="IDS_FLAGS_ENABLE_EASY_UNLOCK_PROXIMITY_DETECTION_NAME" desc="Title for the flag to enable Smart Lock to require close proximity between the phone and the Chromebook in order to unlock the Chromebook.">
         Enable Smart Lock proximity detection.
       </message>
@@ -9199,9 +9205,9 @@ I don't think this site should be blocked!
         from accessing the network.
       </message>
       <message name="IDS_ERRORPAGES_SUMMARY_ICANN_NAME_COLLISION" desc="Summary in the error page when a dns look up fails due to having contained 127.0.53.53.">
-        This site is using a 
+        This site is using a
         <ph name="BEGIN_LINK">&lt;a href="https://support.google.com/chrome/?p=top_level_domain&amp;hl=[GRITLANGCODE]"&gt;</ph>new generic top-level domain<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
-        (gTLD). If you have used 
+        (gTLD). If you have used
         <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph>
         to access an internal site in the past, contact your network
         administrator.

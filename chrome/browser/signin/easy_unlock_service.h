@@ -35,6 +35,10 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
+namespace proximity_auth {
+class ProximityAuthBleSystem;
+}
+
 class EasyUnlockAppManager;
 class EasyUnlockServiceObserver;
 class Profile;
@@ -328,6 +332,11 @@ class EasyUnlockService : public KeyedService {
   scoped_ptr<EasyUnlockAuthAttempt> auth_attempt_;
 
   scoped_ptr<BluetoothDetector> bluetooth_detector_;
+
+  // The proximity auth over Bluetooth Low Energy system. This is main entry
+  // point to bootstap Smart Lock to discover phones over Bluetooth Low
+  // Energy.
+  scoped_ptr<proximity_auth::ProximityAuthBleSystem> proximity_auth_ble_system_;
 
 #if defined(OS_CHROMEOS)
   // Monitors suspend and wake state of ChromeOS.

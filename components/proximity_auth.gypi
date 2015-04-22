@@ -23,6 +23,8 @@
         "proximity_auth/bluetooth_util.cc",
         "proximity_auth/bluetooth_util.h",
         "proximity_auth/bluetooth_util_chromeos.cc",
+        "proximity_auth/ble/proximity_auth_ble_system.cc",
+        "proximity_auth/ble/proximity_auth_ble_system.h",
         "proximity_auth/client.cc",
         "proximity_auth/client.h",
         "proximity_auth/client_observer.h",

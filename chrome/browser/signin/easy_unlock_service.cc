@@ -27,6 +27,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/proximity_auth/ble/proximity_auth_ble_system.h"
 #include "components/proximity_auth/switches.h"
 #include "components/user_manager/user.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -646,6 +647,13 @@ void EasyUnlockService::UpdateAppState() {
     app_manager_->LoadApp();
     NotifyUserUpdated();
 
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery) &&
+        !proximity_auth_ble_system_) {
+      proximity_auth_ble_system_.reset(
+          new proximity_auth::ProximityAuthBleSystem());
+    }
+
 #if defined(OS_CHROMEOS)
     if (!power_monitor_)
       power_monitor_.reset(new PowerMonitor(this));
@@ -664,6 +672,7 @@ void EasyUnlockService::UpdateAppState() {
     if (!bluetooth_waking_up) {
       app_manager_->DisableAppIfLoaded();
       ResetScreenlockState();
+      proximity_auth_ble_system_.reset();
 #if defined(OS_CHROMEOS)
       power_monitor_.reset();
 #endif

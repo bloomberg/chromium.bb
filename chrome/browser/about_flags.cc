@@ -955,6 +955,14 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(proximity_auth::switches::kEnableProximityDetection)
   },
+  {
+    "enable-easy-unlock-bluetooth-low-energy-detection",
+    IDS_FLAGS_ENABLE_EASY_UNLOCK_BLUETOOTH_LOW_ENERGY_DISCOVERY_NAME,
+    IDS_FLAGS_ENABLE_EASY_UNLOCK_BLUETOOTH_LOW_ENERGY_DISCOVERY_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(
+        proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery)
+  },
 #endif
 #if defined(USE_ASH)
   {

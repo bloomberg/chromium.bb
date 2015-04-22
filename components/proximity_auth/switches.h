@@ -12,6 +12,7 @@ namespace switches {
 // alongside the definition of their values in the .cc file.
 extern const char kCryptAuthHTTPHost[];
 extern const char kDisableEasyUnlock[];
+extern const char kEnableBluetoothLowEnergyDiscovery[];
 extern const char kEnableProximityDetection[];
 extern const char kForceLoadEasyUnlockAppInTests[];
 
