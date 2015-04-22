@@ -38,7 +38,7 @@ class UserCloudPolicyManagerTest : public LoginPolicyTestBase {
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerTest);
 };
 
-IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest, StartSession) {
+IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerTest, StartSession) {
   const char* const kStartupURLs[] = {"chrome://policy", "chrome://about"};
 
   SkipToLoginScreen();
@@ -60,10 +60,5 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest, StartSession) {
               tabs->GetWebContentsAt(i)->GetVisibleURL());
   }
 }
-
-// TODO(nkostylev): Fix this test for webview. http://crbug.com/477402
-INSTANTIATE_TEST_CASE_P(UserCloudPolicyManagerTestSuite,
-                        UserCloudPolicyManagerTest,
-                        testing::Values(false));
 
 }  // namespace policy
