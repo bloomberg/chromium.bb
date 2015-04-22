@@ -186,15 +186,21 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
                      v8::Handle<v8::Function> callback,
                      v8::Isolate* isolate) {
       GCCallback* cb = new GCCallback(object, callback, isolate);
-      cb->object_.SetWeak(cb, NearDeathCallback);
+      cb->object_.SetWeak(cb, FirstWeakCallback,
+                          v8::WeakCallbackType::kParameter);
     }
 
    private:
-    static void NearDeathCallback(
-        const v8::WeakCallbackData<v8::Object, GCCallback>& data) {
+    static void FirstWeakCallback(
+        const v8::WeakCallbackInfo<GCCallback>& data) {
       // v8 says we need to explicitly reset weak handles from their callbacks.
       // It's not implicit as one might expect.
       data.GetParameter()->object_.Reset();
+      data.SetSecondPassCallback(SecondWeakCallback);
+    }
+
+    static void SecondWeakCallback(
+        const v8::WeakCallbackInfo<GCCallback>& data) {
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&GCCallback::RunCallback,
