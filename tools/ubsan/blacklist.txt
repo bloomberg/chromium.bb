@@ -107,3 +107,7 @@ type:*v8*internal*OFStream*
 
 # static_cast<StartPageService*> in StartPageServiceFactory::GetForProfile.
 type:*StartPageService*
+
+# Remove once function attribute level blacklisting is implemented.
+# See crbug.com/476063.
+fun:*forbidGCDuringConstruction*
