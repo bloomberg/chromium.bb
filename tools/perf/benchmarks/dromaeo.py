@@ -226,7 +226,9 @@ class DromaeoJslibEventPrototype(_DromaeoBenchmark):
     return 'dromaeo.jslibeventprototype'
 
 
-@benchmark.Disabled('xp')  # crbug.com/389731
+# xp: crbug.com/389731
+# win7: http://crbug.com/479796
+@benchmark.Disabled('xp', 'win7')
 class DromaeoJslibModifyJquery(_DromaeoBenchmark):
   """Dromaeo JSLib modify jquery JavaScript benchmark.
 
