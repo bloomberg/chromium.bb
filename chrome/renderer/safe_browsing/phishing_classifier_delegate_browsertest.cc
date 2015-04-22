@@ -407,7 +407,14 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest, Navigation) {
   EXPECT_CALL(*classifier_, CancelPendingClassification());
 }
 
-IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest, NoScorer) {
+// Flaky: crbug.com/479757
+#if defined(LEAK_SANITIZER)
+#define MAYBE_NoScorer DISABLED_NoScorer
+#else
+#define MAYBE_NoScorer NoScorer
+#endif
+
+IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest, MAYBE_NoScorer) {
   // For this test, we'll create the delegate with no scorer available yet.
   ASSERT_FALSE(classifier_->is_ready());
 
