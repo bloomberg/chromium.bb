@@ -148,14 +148,13 @@ v8::Handle<v8::Object> ImageData::associateWithWrapper(v8::Isolate* isolate, con
 {
     ScriptWrappable::associateWithWrapper(isolate, wrapperType, wrapper);
 
-    if (!wrapper.IsEmpty()) {
-        // Create a V8 Uint8ClampedArray object.
+    if (!wrapper.IsEmpty() && m_data.get()) {
+        // Create a V8 Uint8ClampedArray object and set the "data" property
+        // of the ImageData object to the created v8 object, eliminating the
+        // C++ callback when accessing the "data" property.
         v8::Handle<v8::Value> pixelArray = toV8(m_data.get(), wrapper, isolate);
-        // Set the "data" property of the ImageData object to
-        // the created v8 object, eliminating the C++ callback
-        // when accessing the "data" property.
-        if (!pixelArray.IsEmpty())
-            wrapper->ForceSet(v8AtomicString(isolate, "data"), pixelArray, v8::ReadOnly);
+        if (pixelArray.IsEmpty() || !v8CallBoolean(wrapper->ForceSet(isolate->GetCurrentContext(), v8AtomicString(isolate, "data"), pixelArray, v8::ReadOnly)))
+            return v8::Handle<v8::Object>();
     }
     return wrapper;
 }
