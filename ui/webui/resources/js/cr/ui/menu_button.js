@@ -44,6 +44,7 @@ cr.define('cr.ui', function() {
     decorate: function() {
       this.addEventListener('mousedown', this);
       this.addEventListener('keydown', this);
+      this.addEventListener('dblclick', this);
 
       // Adding the 'custom-appearance' class prevents widgets.css from changing
       // the appearance of this element.
@@ -160,6 +161,11 @@ cr.define('cr.ui', function() {
             this.showMenu(true);
           e.preventDefault();
           // Don't allow elements further up in the DOM to show their menus.
+          e.stopPropagation();
+          break;
+        case 'dblclick':
+          // Don't allow double click events to propagate.
+          e.preventDefault();
           e.stopPropagation();
           break;
       }
