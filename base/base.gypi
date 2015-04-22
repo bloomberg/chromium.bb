@@ -45,6 +45,8 @@
           'android/important_file_writer_android.h',
           'android/java_handler_thread.cc',
           'android/java_handler_thread.h',
+          'android/java_runtime.cc',
+          'android/java_runtime.h',
           'android/jni_android.cc',
           'android/jni_android.h',
           'android/jni_array.cc',
