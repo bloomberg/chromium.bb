@@ -353,6 +353,8 @@ public class CronetBufferedOutputStreamTest extends CronetTestBase {
         try {
             // Write remaining bytes.
             out.write(UPLOAD_DATA, 3, UPLOAD_DATA.length - 3);
+            // On Lollipop, default implementation only triggers the error when reading response.
+            connection.getInputStream();
             fail();
         } catch (ProtocolException e) {
             assertEquals("exceeded content-length limit of "
@@ -381,6 +383,8 @@ public class CronetBufferedOutputStreamTest extends CronetTestBase {
             for (int i = 0; i < UPLOAD_DATA.length; i++) {
                 out.write(UPLOAD_DATA[i]);
             }
+            // On Lollipop, default implementation only triggers the error when reading response.
+            connection.getInputStream();
             fail();
         } catch (java.net.ProtocolException e) {
             assertEquals("exceeded content-length limit of "

@@ -133,6 +133,8 @@ public class CronetFixedModeOutputStreamTest extends CronetTestBase {
         OutputStream out = connection.getOutputStream();
         try {
             out.write(UPLOAD_DATA);
+            // On Lollipop, default implementation only triggers the error when reading response.
+            connection.getInputStream();
             fail();
         } catch (ProtocolException e) {
             // Expected.
@@ -162,10 +164,16 @@ public class CronetFixedModeOutputStreamTest extends CronetTestBase {
         try {
             // Try upload an extra byte.
             out.write(UPLOAD_DATA[UPLOAD_DATA.length - 1]);
+            // On Lollipop, default implementation only triggers the error when reading response.
+            connection.getInputStream();
             fail();
         } catch (ProtocolException e) {
             // Expected.
-            assertEquals("expected 0 bytes but received 1", e.getMessage());
+            String expectedVariant = "expected 0 bytes but received 1";
+            String expectedVariantOnLollipop = "expected " + (UPLOAD_DATA.length - 1)
+                    + " bytes but received " + UPLOAD_DATA.length;
+            assertTrue(expectedVariant.equals(e.getMessage())
+                    || expectedVariantOnLollipop.equals(e.getMessage()));
         }
         connection.disconnect();
     }
