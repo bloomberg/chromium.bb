@@ -251,7 +251,7 @@ _BANNED_CPP_FUNCTIONS = (
       ),
     ),
     (
-      'MessageLoopProxy',
+      '\<MessageLoopProxy\>',
       (
         'MessageLoopProxy is deprecated. ',
         'Please use SingleThreadTaskRunner or ThreadTaskRunnerHandle instead.'
