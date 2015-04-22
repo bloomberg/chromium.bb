@@ -726,4 +726,33 @@ TEST_F(CertNetFetcherImplTest, CancelWithinCallback) {
   EXPECT_FALSE(callback[2].HasResult());
 }
 
+// Cancel the final request while executing a callback for the same job. Ensure
+// that the job is not deleted twice.
+TEST_F(CertNetFetcherImplTest, CancelLastRequestWithinCallback) {
+  ASSERT_TRUE(test_server_.Start());
+
+  CertNetFetcherImpl fetcher(&context_);
+
+  GURL url = test_server_.GetURL("files/cert.crt");
+
+  TestFetchCallback callback1;
+  scoped_ptr<CertNetFetcher::Request> request1 =
+      StartRequest(&fetcher, url, callback1);
+
+  TestFetchCallback callback2;
+  scoped_ptr<CertNetFetcher::Request> request2 =
+      StartRequest(&fetcher, url, callback1);
+
+  // Cancel request2 when the callback for request1 runs.
+  callback1.set_extra_closure(base::Bind(CancelRequest, &request2));
+
+  EXPECT_EQ(1, network_delegate_.created_requests());
+
+  scoped_ptr<FetchResult> result = callback1.WaitForResult();
+  result->VerifySuccess("-cert.crt-\n");
+
+  // request2 was cancelled.
+  EXPECT_FALSE(callback2.HasResult());
+}
+
 }  // namespace net

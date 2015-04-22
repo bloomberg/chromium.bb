@@ -272,7 +272,7 @@ void CertNetFetcherImpl::Job::DetachRequest(RequestImpl* request) {
 
   // If there are no longer any requests attached to the job then
   // cancel and delete it.
-  if (requests_.empty())
+  if (requests_.empty() && !parent_->IsCurrentlyCompletingJob(this))
     delete_this = parent_->RemoveJob(this);
 }
 
@@ -532,7 +532,7 @@ CertNetFetcherImpl::Job* CertNetFetcherImpl::FindJob(
 scoped_ptr<CertNetFetcherImpl::Job> CertNetFetcherImpl::RemoveJob(Job* job) {
   DCHECK(thread_checker_.CalledOnValidThread());
   bool erased_job = jobs_.erase(job) == 1;
-  DCHECK(erased_job);
+  CHECK(erased_job);
   return make_scoped_ptr(job);
 }
 
@@ -545,6 +545,10 @@ void CertNetFetcherImpl::SetCurrentlyCompletingJob(Job* job) {
 void CertNetFetcherImpl::ClearCurrentlyCompletingJob(Job* job) {
   DCHECK_EQ(currently_completing_job_, job);
   currently_completing_job_ = nullptr;
+}
+
+bool CertNetFetcherImpl::IsCurrentlyCompletingJob(Job* job) {
+  return job == currently_completing_job_;
 }
 
 }  // namespace net

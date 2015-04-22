@@ -84,6 +84,7 @@ class NET_EXPORT CertNetFetcherImpl : public CertNetFetcher {
   // Indicates which Job is currently executing inside of OnJobCompleted().
   void SetCurrentlyCompletingJob(Job* job);
   void ClearCurrentlyCompletingJob(Job* job);
+  bool IsCurrentlyCompletingJob(Job* job);
 
   // The in-progress jobs. This set does not contain the job which is actively
   // invoking callbacks (OnJobCompleted). Instead that is tracked by
