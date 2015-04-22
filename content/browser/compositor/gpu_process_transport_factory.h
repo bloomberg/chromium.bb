@@ -68,8 +68,10 @@ class GpuProcessTransportFactory
   void RemoveObserver(ImageTransportFactoryObserver* observer) override;
 #if defined(OS_MACOSX)
   void OnSurfaceDisplayed(int surface_id) override;
-  void OnCompositorRecycled(ui::Compositor* compositor) override;
-  bool SurfaceShouldNotShowFramesAfterRecycle(int surface_id) const override;
+  void SetCompositorSuspendedForRecycle(ui::Compositor* compositor,
+                                        bool suspended) override;
+  bool SurfaceShouldNotShowFramesAfterSuspendForRecycle(
+      int surface_id) const override;
 #endif
 
  private:

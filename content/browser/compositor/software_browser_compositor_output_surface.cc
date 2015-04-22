@@ -60,11 +60,12 @@ void SoftwareBrowserCompositorOutputSurface::OnSurfaceDisplayed() {
   NOTREACHED() << "Not expected for software surfaces.";
 }
 
-void SoftwareBrowserCompositorOutputSurface::OnSurfaceRecycled() {
+void SoftwareBrowserCompositorOutputSurface::SetSurfaceSuspendedForRecycle(
+    bool suspended) {
 }
 
-bool SoftwareBrowserCompositorOutputSurface::ShouldNotShowFramesAfterRecycle()
-    const {
+bool SoftwareBrowserCompositorOutputSurface::
+    SurfaceShouldNotShowFramesAfterSuspendForRecycle() const {
   return false;
 }
 #endif

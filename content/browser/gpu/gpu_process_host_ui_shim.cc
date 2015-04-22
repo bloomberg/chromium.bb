@@ -288,7 +288,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
   // it to the GPU process immediately, so we can proceed to the next frame.
   bool should_not_show_frame =
       content::ImageTransportFactory::GetInstance()
-          ->SurfaceShouldNotShowFramesAfterRecycle(params.surface_id);
+          ->SurfaceShouldNotShowFramesAfterSuspendForRecycle(params.surface_id);
   if (should_not_show_frame) {
     OnSurfaceDisplayedCallback(params.surface_id);
   } else {

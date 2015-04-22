@@ -7,6 +7,7 @@
 
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/compositor/compositor.h"
+#include "ui/compositor/compositor_observer.h"
 
 namespace content {
 
@@ -14,9 +15,9 @@ namespace content {
 // into. This structure is used to efficiently recycle these structures across
 // tabs (because creating a new ui::Compositor for each tab would be expensive
 // in terms of time and resources).
-class BrowserCompositorMac {
+class BrowserCompositorMac : public ui::CompositorObserver {
  public:
-  ~BrowserCompositorMac();
+  virtual ~BrowserCompositorMac();
 
   // Create a compositor, or recycle a preexisting one.
   static scoped_ptr<BrowserCompositorMac> Create();
@@ -41,6 +42,15 @@ class BrowserCompositorMac {
 
  private:
   BrowserCompositorMac();
+
+  // ui::CompositorObserver implementation:
+  void OnCompositingDidCommit(ui::Compositor* compositor) override;
+  void OnCompositingStarted(ui::Compositor* compositor,
+                            base::TimeTicks start_time) override {}
+  void OnCompositingEnded(ui::Compositor* compositor) override {}
+  void OnCompositingAborted(ui::Compositor* compositor) override {}
+  void OnCompositingLockStateChanged(ui::Compositor* compositor) override {}
+  void OnCompositingShuttingDown(ui::Compositor* compositor) override {}
 
   scoped_ptr<ui::AcceleratedWidgetMac> accelerated_widget_mac_;
   ui::Compositor compositor_;

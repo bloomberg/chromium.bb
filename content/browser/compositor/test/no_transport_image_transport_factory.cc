@@ -61,8 +61,8 @@ void NoTransportImageTransportFactory::RemoveObserver(
 }
 
 #if defined(OS_MACOSX)
-bool NoTransportImageTransportFactory::SurfaceShouldNotShowFramesAfterRecycle(
-    int surface_id) const {
+bool NoTransportImageTransportFactory::
+    SurfaceShouldNotShowFramesAfterSuspendForRecycle(int surface_id) const {
   return false;
 }
 #endif

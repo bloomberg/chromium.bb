@@ -25,7 +25,7 @@ GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
                                      vsync_manager,
                                      overlay_candidate_validator.Pass()),
 #if defined(OS_MACOSX)
-      should_not_show_frames_(false),
+      should_show_frames_state_(SHOULD_SHOW_FRAMES),
 #endif
       swap_buffers_completion_callback_(
           base::Bind(&GpuBrowserCompositorOutputSurface::OnSwapBuffersCompleted,
@@ -85,8 +85,10 @@ void GpuBrowserCompositorOutputSurface::SwapBuffers(
   client_->DidSwapBuffers();
 
 #if defined(OS_MACOSX)
-  if (should_not_show_frames_)
-    should_not_show_frames_ = false;
+  if (should_show_frames_state_ ==
+      SHOULD_NOT_SHOW_FRAMES_NO_SWAP_AFTER_SUSPENDED) {
+    should_show_frames_state_ = SHOULD_SHOW_FRAMES;
+  }
 #endif
 }
 
@@ -114,25 +116,34 @@ void GpuBrowserCompositorOutputSurface::OnSurfaceDisplayed() {
   cc::OutputSurface::OnSwapBuffersComplete();
 }
 
-void GpuBrowserCompositorOutputSurface::OnSurfaceRecycled() {
-  // Discard the backbuffer immediately. This is necessary only when using a
-  // ImageTransportSurfaceFBO with a CALayerStorageProvider. Discarding the
-  // backbuffer results in the next frame using a new CALayer and CAContext,
-  // which guarantees that the browser will not flash stale content when adding
-  // the remote CALayer to the NSView hierarchy (it could flash stale content
-  // because the system window server is not synchronized with any signals we
-  // control or observe).
-  DiscardBackbuffer();
-  // It may be that there are frames in-flight from the GPU process back to the
-  // browser. Make sure that these frames are not displayed by ignoring them in
-  // GpuProcessHostUIShim, until the browser issues a SwapBuffers for the new
-  // content.
-  should_not_show_frames_ = true;
+void GpuBrowserCompositorOutputSurface::SetSurfaceSuspendedForRecycle(
+    bool suspended) {
+  if (suspended) {
+    // It may be that there are frames in-flight from the GPU process back to
+    // the browser. Make sure that these frames are not displayed by ignoring
+    // them in GpuProcessHostUIShim, until the browser issues a SwapBuffers for
+    // the new content.
+    should_show_frames_state_ = SHOULD_NOT_SHOW_FRAMES_SUSPENDED;
+  } else {
+    // Discard the backbuffer before drawing the new frame. This is necessary
+    // only when using a ImageTransportSurfaceFBO with a
+    // CALayerStorageProvider. Discarding the backbuffer results in the next
+    // frame using a new CALayer and CAContext, which guarantees that the
+    // browser will not flash stale content when adding the remote CALayer to
+    // the NSView hierarchy (it could flash stale content because the system
+    // window server is not synchronized with any signals we control or
+    // observe).
+    if (should_show_frames_state_ == SHOULD_NOT_SHOW_FRAMES_SUSPENDED) {
+      DiscardBackbuffer();
+      should_show_frames_state_ =
+          SHOULD_NOT_SHOW_FRAMES_NO_SWAP_AFTER_SUSPENDED;
+    }
+  }
 }
 
-bool GpuBrowserCompositorOutputSurface::ShouldNotShowFramesAfterRecycle()
-    const {
-  return should_not_show_frames_;
+bool GpuBrowserCompositorOutputSurface::
+    SurfaceShouldNotShowFramesAfterSuspendForRecycle() const {
+  return should_show_frames_state_ != SHOULD_SHOW_FRAMES;
 }
 #endif
 

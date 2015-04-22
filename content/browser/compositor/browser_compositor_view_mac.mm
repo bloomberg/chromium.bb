@@ -48,9 +48,12 @@ BrowserCompositorMac::BrowserCompositorMac()
           RenderWidgetResizeHelper::Get()->task_runner()) {
   compositor_.SetLocksWillTimeOut(false);
   Suspend();
+  compositor_.AddObserver(this);
 }
 
-BrowserCompositorMac::~BrowserCompositorMac() {}
+BrowserCompositorMac::~BrowserCompositorMac() {
+  compositor_.RemoveObserver(this);
+}
 
 void BrowserCompositorMac::Suspend() {
   compositor_suspended_lock_ = compositor_.GetCompositorLock();
@@ -58,6 +61,13 @@ void BrowserCompositorMac::Suspend() {
 
 void BrowserCompositorMac::Unsuspend() {
   compositor_suspended_lock_ = nullptr;
+}
+
+void BrowserCompositorMac::OnCompositingDidCommit(
+    ui::Compositor* compositor_that_did_commit) {
+  DCHECK_EQ(compositor_that_did_commit, compositor());
+  content::ImageTransportFactory::GetInstance()
+      ->SetCompositorSuspendedForRecycle(compositor(), false);
 }
 
 // static
@@ -71,8 +81,8 @@ scoped_ptr<BrowserCompositorMac> BrowserCompositorMac::Create() {
 void BrowserCompositorMac::Recycle(
     scoped_ptr<BrowserCompositorMac> compositor) {
   DCHECK(compositor);
-  content::ImageTransportFactory::GetInstance()->OnCompositorRecycled(
-      compositor->compositor());
+  content::ImageTransportFactory::GetInstance()
+      ->SetCompositorSuspendedForRecycle(compositor->compositor(), true);
 
   // It is an error to have a browser compositor continue to exist after
   // shutdown.

@@ -37,9 +37,20 @@ class GpuBrowserCompositorOutputSurface
 
 #if defined(OS_MACOSX)
   void OnSurfaceDisplayed() override;
-  void OnSurfaceRecycled() override;
-  bool ShouldNotShowFramesAfterRecycle() const override;
-  bool should_not_show_frames_;
+  void SetSurfaceSuspendedForRecycle(bool suspended) override;
+  bool SurfaceShouldNotShowFramesAfterSuspendForRecycle() const override;
+  enum ShouldShowFramesState {
+    // Frames that come from the GPU process should appear on-screen.
+    SHOULD_SHOW_FRAMES,
+    // The compositor has been suspended. Any frames that come from the GPU
+    // process are for the pre-suspend content and should not be displayed.
+    SHOULD_NOT_SHOW_FRAMES_SUSPENDED,
+    // The compositor has been un-suspended, but has not yet issued a swap
+    // since being un-suspended, so any frames that come from the GPU process
+    // are for pre-suspend content and should not be displayed.
+    SHOULD_NOT_SHOW_FRAMES_NO_SWAP_AFTER_SUSPENDED,
+  };
+  ShouldShowFramesState should_show_frames_state_;
 #endif
 
   CommandBufferProxyImpl* GetCommandBufferProxy();

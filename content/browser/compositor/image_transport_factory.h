@@ -85,13 +85,18 @@ class CONTENT_EXPORT ImageTransportFactory {
 
 #if defined(OS_MACOSX)
   virtual void OnSurfaceDisplayed(int surface_id) = 0;
-  // Called when the ui::Compositor has been disconnected from an NSView and
-  // may be attached to another one. This ensures that content and frames
-  // intended for the old NSView will not appear in the new NSView.
-  virtual void OnCompositorRecycled(ui::Compositor* compositor) = 0;
+  // Called with |suspended| as true when the ui::Compositor has been
+  // disconnected from an NSView and may be attached to another one. Called
+  // with |suspended| as false after the ui::Compositor has been connected to
+  // a new NSView and the first commit targeted at the new NSView has
+  // completed. This ensures that content and frames intended for the old
+  // NSView will not flash in the new NSView.
+  virtual void SetCompositorSuspendedForRecycle(ui::Compositor* compositor,
+                                                bool suspended) = 0;
   // Used by GpuProcessHostUIShim to determine if a frame should not be
   // displayed because it is targetted to an NSView that has been disconnected.
-  virtual bool SurfaceShouldNotShowFramesAfterRecycle(int surface_id) const = 0;
+  virtual bool SurfaceShouldNotShowFramesAfterSuspendForRecycle(
+      int surface_id) const = 0;
 #endif
 };
 

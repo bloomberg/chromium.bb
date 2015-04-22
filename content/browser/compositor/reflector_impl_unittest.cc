@@ -82,8 +82,10 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
 
 #if defined(OS_MACOSX)
   void OnSurfaceDisplayed() override {}
-  void OnSurfaceRecycled() override {}
-  bool ShouldNotShowFramesAfterRecycle() const override { return false; }
+  void SetSurfaceSuspendedForRecycle(bool suspended) override {}
+  bool SurfaceShouldNotShowFramesAfterSuspendForRecycle() const override {
+    return false;
+  }
 #endif
 
   gfx::Size SurfaceSize() const override { return gfx::Size(256, 256); }
