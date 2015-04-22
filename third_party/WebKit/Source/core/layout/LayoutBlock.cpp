@@ -1096,8 +1096,11 @@ void LayoutBlock::removeAnonymousWrappersIfRequired()
     ASSERT(isLayoutBlockFlow());
     Vector<LayoutBox*, 16> blocksToRemove;
     for (LayoutBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
+        if (child->isFloatingOrOutOfFlowPositioned())
+            continue;
+
         // There are still block children in the container, so any anonymous wrappers are still needed.
-        if (!child->isAnonymousBlock() && !child->isFloatingOrOutOfFlowPositioned())
+        if (!child->isAnonymousBlock())
             return;
         // We can't remove anonymous wrappers if they contain continuations as this means there are block children present.
         if (child->isLayoutBlock() && toLayoutBlock(child)->continuation())
@@ -1105,6 +1108,7 @@ void LayoutBlock::removeAnonymousWrappersIfRequired()
         // We are only interested in removing anonymous wrappers if there are inline siblings underneath them.
         if (!child->childrenInline())
             return;
+
         if (child->isAnonymousBlock())
             blocksToRemove.append(child);
     }
