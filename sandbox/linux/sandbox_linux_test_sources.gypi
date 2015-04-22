@@ -53,6 +53,7 @@
         'seccomp-bpf/errorcode_unittest.cc',
         'seccomp-bpf/sandbox_bpf_unittest.cc',
         'seccomp-bpf/syscall_unittest.cc',
+        'seccomp-bpf/trap_unittest.cc',
       ],
     }],
     [ 'compile_credentials==1', {
