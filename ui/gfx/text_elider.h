@@ -28,19 +28,26 @@ GFX_EXPORT extern const char kEllipsis[];
 GFX_EXPORT extern const base::char16 kEllipsisUTF16[];
 GFX_EXPORT extern const base::char16 kForwardSlash;
 
-// Helper class to split + elide text, while respecting UTF16 surrogate pairs.
-class StringSlicer {
+// Helper class to split + elide text, while respecting UTF-16 surrogate pairs
+// and combining character sequences.
+class GFX_EXPORT StringSlicer {
  public:
+  // Warning: Retains a reference to |text| and |ellipsis|. They must have a
+  // longer lifetime than the StringSlicer.
   StringSlicer(const base::string16& text,
                const base::string16& ellipsis,
                bool elide_in_middle,
                bool elide_at_beginning);
 
-  // Cuts |text_| to be |length| characters long. If |elide_in_middle_| is true,
-  // the middle of the string is removed to leave equal-length pieces from the
-  // beginning and end of the string; otherwise, the end of the string is
-  // removed and only the beginning remains. If |insert_ellipsis| is true,
-  // then an ellipsis character will be inserted at the cut point.
+  // Cuts |text_| to be at most |length| UTF-16 code units long. If
+  // |elide_in_middle_| is true, the middle of the string is removed to leave
+  // equal-length pieces from the beginning and end of the string; otherwise,
+  // the end of the string is removed and only the beginning remains. If
+  // |insert_ellipsis| is true, then an ellipsis character will be inserted at
+  // the cut point (note that the ellipsis will does not count towards the
+  // |length| limit).
+  // Note: Characters may still be omitted even if |length| is the full string
+  // length, if surrogate pairs fall on the split boundary.
   base::string16 CutString(size_t length, bool insert_ellipsis);
 
  private:
