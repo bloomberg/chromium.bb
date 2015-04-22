@@ -132,7 +132,11 @@ ProfileImplIOData::Handle::~Handle() {
   if (io_data_->http_server_properties_manager_)
     io_data_->http_server_properties_manager_->ShutdownOnPrefThread();
 
-  io_data_->data_reduction_proxy_io_data()->ShutdownOnUIThread();
+  // io_data_->data_reduction_proxy_io_data() might be NULL if Init() was
+  // never called.
+  if (io_data_->data_reduction_proxy_io_data())
+    io_data_->data_reduction_proxy_io_data()->ShutdownOnUIThread();
+
   io_data_->ShutdownOnUIThread(GetAllContextGetters().Pass());
 }
 
