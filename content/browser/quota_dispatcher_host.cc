@@ -118,8 +118,7 @@ class QuotaDispatcherHost::RequestQuotaDispatcher
     DCHECK(dispatcher_host());
 
     DCHECK(params_.storage_type == storage::kStorageTypeTemporary ||
-           params_.storage_type == storage::kStorageTypePersistent ||
-           params_.storage_type == storage::kStorageTypeSyncable);
+           params_.storage_type == storage::kStorageTypePersistent);
     if (params_.storage_type == storage::kStorageTypePersistent) {
       quota_manager()->GetUsageAndQuotaForWebApps(
           params_.origin_url, params_.storage_type,
