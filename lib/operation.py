@@ -28,8 +28,8 @@ import struct
 import sys
 import termios
 
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib.terminal import Color
@@ -157,8 +157,8 @@ class ProgressBarOperation(object):
     restore_log_level = logging.getLogger().getEffectiveLevel()
     logging.getLogger().setLevel(log_level)
     try:
-      with cros_test_lib.OutputCapturer(stdout_path=self._stdout_path,
-                                        stderr_path=self._stderr_path):
+      with cros_build_lib.OutputCapturer(stdout_path=self._stdout_path,
+                                         stderr_path=self._stderr_path):
         func(*args, **kwargs)
     finally:
       self._queue.put(_BackgroundTaskComplete())

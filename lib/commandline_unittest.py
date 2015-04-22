@@ -36,7 +36,7 @@ class TestShutDownException(cros_test_lib.TestCase):
     self.assertEqual(ex.message, ex2.message)
 
 
-class GSPathTest(cros_test_lib.TestCase):
+class GSPathTest(cros_test_lib.OutputTestCase):
   """Test type=gs_path normalization functionality."""
 
   GS_REL_PATH = 'bucket/path/to/artifacts'
@@ -82,7 +82,7 @@ class GSPathTest(cros_test_lib.TestCase):
 
   def testInvalidPath(self):
     """Path cannot be normalized."""
-    with cros_test_lib.OutputCapturer():
+    with self.OutputCapturer():
       self.assertRaises2(
           SystemExit, self._RunGSPathTestCase, 'http://badhost.com/path', '',
           check_attrs={'code': 2})
@@ -119,7 +119,7 @@ class BoolTest(cros_test_lib.TestCase):
     self._RunBoolTestCase('FaLse', False)
 
 
-class DeviceParseTest(cros_test_lib.TestCase):
+class DeviceParseTest(cros_test_lib.OutputTestCase):
   """Test device parsing functionality."""
 
   _ALL_SCHEMES = (commandline.DEVICE_SCHEME_FILE,
@@ -156,7 +156,7 @@ class DeviceParseTest(cros_test_lib.TestCase):
     """
     parser = commandline.ArgumentParser()
     parser.add_argument('device', type=commandline.DeviceParser(schemes))
-    with cros_test_lib.OutputCapturer():
+    with self.OutputCapturer():
       self.assertRaises2(SystemExit, parser.parse_args, [device_input])
 
   def testNoDevice(self):

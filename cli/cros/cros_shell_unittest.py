@@ -37,7 +37,8 @@ def _KeyMismatchError():
       '(test) REMOTE HOST IDENTIFICATION HAS CHANGED')
 
 
-class ShellTest(cros_test_lib.MockTempDirTestCase):
+class ShellTest(cros_test_lib.MockTempDirTestCase,
+                cros_test_lib.OutputTestCase):
   """Test the flow of ShellCommand.run with the SSH methods mocked out."""
 
   DEVICE = '1.1.1.1'
@@ -112,7 +113,7 @@ class ShellTest(cros_test_lib.MockTempDirTestCase):
     self.remote_sh_function.side_effect = [_KeyMismatchError(), None]
     # User chooses to continue.
     self.prompt_function.return_value = True
-    with cros_test_lib.OutputCapturer():
+    with self.OutputCapturer():
       self.cmd_mock.inst.Run()
     self.assertTrue(self.prompt_function.called)
     self.assertEqual(self.remote_sh_function.call_count, 2)
@@ -128,7 +129,7 @@ class ShellTest(cros_test_lib.MockTempDirTestCase):
     self.remote_sh_function.side_effect = _KeyMismatchError()
     # User chooses to abort.
     self.prompt_function.return_value = False
-    with cros_test_lib.OutputCapturer():
+    with self.OutputCapturer():
       self.cmd_mock.inst.Run()
     self.assertTrue(self.prompt_function.called)
     self.assertEqual(self.remote_sh_function.call_count, 1)
@@ -142,7 +143,7 @@ class ShellTest(cros_test_lib.MockTempDirTestCase):
     """
     self.SetupCommandMock([self.DEVICE])
     self.remote_sh_function.side_effect = _SshConnectError()
-    with cros_test_lib.OutputCapturer():
+    with self.OutputCapturer():
       self.cmd_mock.inst.Run()
     self.assertFalse(self.prompt_function.called)
     self.assertEqual(self.remote_sh_function.call_count, 1)
