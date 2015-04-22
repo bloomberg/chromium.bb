@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/rlz/rlz.h"
@@ -42,39 +43,10 @@ void GetAccessPointRlzInBackgroundThread(rlz_lib::AccessPoint point,
 
 }  // namespace
 
-class LoginUtilsTest : public InProcessBrowserTest {
+class LoginUtilsTest : public OobeBaseTest,
+                       public testing::WithParamInterface<bool> {
  public:
-  LoginUtilsTest() {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Initialize the test server early, so that we can use its base url for
-    // the command line flags.
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-
-    // Use the login manager screens and the gaia auth extension.
-    command_line->AppendSwitch(switches::kLoginManager);
-    command_line->AppendSwitch(switches::kForceLoginManagerInTests);
-    command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
-    command_line->AppendSwitchASCII(::switches::kAuthExtensionPath,
-                                    "gaia_auth");
-
-    // Redirect requests to gaia and the policy server to the test server.
-    command_line->AppendSwitchASCII(::switches::kGaiaUrl,
-                                    embedded_test_server()->base_url().spec());
-    command_line->AppendSwitchASCII(::switches::kLsoUrl,
-                                    embedded_test_server()->base_url().spec());
-  }
-
-  void SetUpOnMainThread() override {
-    fake_gaia_.Initialize();
-    embedded_test_server()->RegisterRequestHandler(
-        base::Bind(&FakeGaia::HandleRequest, base::Unretained(&fake_gaia_)));
-  }
-
-  void TearDownOnMainThread() override {
-    RunUntilIdle();
-    EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
-  }
+  LoginUtilsTest() { set_use_webview(GetParam()); }
 
   void RunUntilIdle() {
     base::RunLoop().RunUntilIdle();
@@ -104,23 +76,12 @@ class LoginUtilsTest : public InProcessBrowserTest {
   }
 
  private:
-  FakeGaia fake_gaia_;
-
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsTest);
 };
 
 #if defined(ENABLE_RLZ)
-IN_PROC_BROWSER_TEST_F(LoginUtilsTest, RlzInitialized) {
-  // Skip to the signin screen.
-  WizardController::SkipPostLoginScreensForTesting();
-  WizardController* wizard_controller = WizardController::default_controller();
-  ASSERT_TRUE(wizard_controller);
-  wizard_controller->SkipToLoginForTesting(LoginScreenContext());
-
-  content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-      content::NotificationService::AllSources()).Wait();
-  RunUntilIdle();
+IN_PROC_BROWSER_TEST_P(LoginUtilsTest, RlzInitialized) {
+  WaitForSigninScreen();
 
   // No RLZ brand code set initially.
   EXPECT_FALSE(local_state()->HasPrefPath(prefs::kRLZBrand));
@@ -154,6 +115,9 @@ IN_PROC_BROWSER_TEST_F(LoginUtilsTest, RlzInitialized) {
     EXPECT_EQ(base::string16(), rlz_string);
   }
 }
+
+INSTANTIATE_TEST_CASE_P(LoginUtilsTestSuite, LoginUtilsTest, testing::Bool());
+
 #endif
 
 }  // namespace chromeos
