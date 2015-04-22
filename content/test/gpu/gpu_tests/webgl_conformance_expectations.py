@@ -9,32 +9,16 @@ from gpu_test_expectations import GpuTestExpectations
 class WebGLConformanceExpectations(GpuTestExpectations):
   def SetExpectations(self):
     # Fails on all platforms
-    self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
-        bug=421710)
-    self.Fail('conformance/glsl/bugs/essl3-shaders-with-webgl1.html',
-        bug=428845)
-    self.Fail('conformance/glsl/misc/expression-list-in-declarator-initializer.html',
-        bug=428845)
-    self.Fail('conformance/uniforms/gl-uniform-arrays.html',
-        bug=433385)
     self.Fail(
         'conformance/ogles/GL/biuDepthRange/biuDepthRange_001_to_002.html',
         bug=478570)
     self.Fail('conformance/ogles/GL/gl_FragCoord/gl_FragCoord_001_to_003.html',
         bug=478570)
-    self.Fail('deqp/data/gles2/shaders/constants.html',
-        bug=478572)
     self.Fail('deqp/data/gles2/shaders/constant_expressions.html',
-        bug=478572)
-    self.Fail('deqp/data/gles2/shaders/conversions.html',
-        bug=478572)
-    self.Fail('deqp/data/gles2/shaders/declarations.html',
         bug=478572)
     self.Fail('deqp/data/gles2/shaders/fragdata.html',
         bug=478572)
     self.Fail('deqp/data/gles2/shaders/functions.html',
-        bug=478572)
-    self.Fail('deqp/data/gles2/shaders/linkage.html',
         bug=478572)
     self.Fail('deqp/data/gles2/shaders/preprocessor.html',
         bug=478572)
@@ -42,23 +26,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         bug=478572)
 
     # Win failures
-    self.Fail('conformance/glsl/misc/struct-equals.html',
-        ['win'], bug=391957)
-    self.Fail('conformance/glsl/bugs/conditional-discard-in-loop.html',
-        ['win'], bug=402195)
     self.Fail('conformance/glsl/misc/ternary-operators-in-global-initializers.html',
         ['win'], bug=415694)
     self.Fail('conformance/glsl/misc/struct-specifiers-in-uniforms.html',
         ['win'], bug=433412)
-    # This test still causes itself and any tests afterwards to time out
-    # in Win Debug bots.
-    self.Skip('conformance/textures/texture-copying-feedback-loops.html',
-        ['Win'], bug=421695)
-
-    self.Fail('conformance/rendering/framebuffer-switch.html',
-        ['win'], bug=428849)
-    self.Fail('conformance/rendering/framebuffer-texture-switch.html',
-        ['win'], bug=428849)
 
     # Win7 / Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
@@ -90,6 +61,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'd3d9'], bug=896) # angle bug ID
     self.Skip('conformance/extensions/oes-texture-half-float-with-canvas.html',
         ['win', 'd3d9'], bug=896) # angle bug ID
+
+    # Mac failures
+    self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
+        ['mac'], bug=421710)
 
     # Mac / Intel failures
     # Radar 13499466
@@ -125,6 +100,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail(
         'conformance/glsl/bugs/array-of-struct-with-int-first-position.html',
         ['mac', ('nvidia', 0xfd5), ('nvidia', 0xfe9)], bug=368912)
+
+    # Mac / AMD Failures
+    self.Fail('deqp/data/gles2/shaders/conversions.html',
+        ['mac', 'amd'], bug=478572)
 
     # Mac 10.8 / ATI failures
     self.Fail(
@@ -225,6 +204,15 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['linux', ('amd', 0x6779)], bug=436212)
 
     # Android failures
+    self.Fail('deqp/data/gles2/shaders/constants.html',
+        ['android'], bug=478572)
+    self.Fail('deqp/data/gles2/shaders/conversions.html',
+        ['android'], bug=478572)
+    self.Fail('deqp/data/gles2/shaders/declarations.html',
+        ['android'], bug=478572)
+    self.Fail('deqp/data/gles2/shaders/linkage.html',
+        ['android'], bug=478572)
+
     # The following test is very slow and therefore times out on Android bot.
     self.Skip('conformance/rendering/multisample-corruption.html',
         ['android'])
