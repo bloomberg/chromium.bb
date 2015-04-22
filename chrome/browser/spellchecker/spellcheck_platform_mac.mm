@@ -195,14 +195,19 @@ bool CheckSpelling(const base::string16& word_to_check, int tag) {
 
 void FillSuggestionList(const base::string16& wrong_word,
                         std::vector<base::string16>* optional_suggestions) {
-  NSString* NS_wrong_word = base::SysUTF16ToNSString(wrong_word);
+  NSString* ns_wrong_word = base::SysUTF16ToNSString(wrong_word);
   // The suggested words for |wrong_word|.
-  NSArray* guesses = [SharedSpellChecker() guessesForWord:NS_wrong_word];
-  for (int i = 0; i < static_cast<int>([guesses count]); ++i) {
-    if (i < chrome::spellcheck_common::kMaxSuggestions) {
-      optional_suggestions->push_back(base::SysNSStringToUTF16(
-                                      [guesses objectAtIndex:i]));
-    }
+  // TODO(groby): guessesForWord: has been deprecated since OSX 10.6.
+  // http://www.crbug.com/479014.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+  NSArray* guesses = [SharedSpellChecker() guessesForWord:ns_wrong_word];
+#pragma clang diagnostic pop
+  int i = 0;
+  for (NSString* guess in guesses) {
+    optional_suggestions->push_back(base::SysNSStringToUTF16(guess));
+    if (++i >= chrome::spellcheck_common::kMaxSuggestions)
+      break;
   }
 }
 
