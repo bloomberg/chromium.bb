@@ -75,7 +75,7 @@ X11DesktopHandler::~X11DesktopHandler() {
 }
 
 void X11DesktopHandler::ActivateWindow(::Window window) {
-  if (current_window_ == window &&
+  if ((current_window_ == None || current_window_ == window) &&
       current_window_active_state_ == NOT_ACTIVE) {
     // |window| is most likely still active wrt to the X server. Undo the
     // changes made in DeactivateWindow().

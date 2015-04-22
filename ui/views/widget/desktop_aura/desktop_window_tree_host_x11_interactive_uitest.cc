@@ -23,6 +23,8 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/ime/input_method.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/x11_property_change_waiter.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
@@ -249,6 +251,31 @@ TEST_F(DesktopWindowTreeHostX11Test, CaptureEventForwarding) {
   // Cleanup
   window1->RemovePreTargetHandler(&recorder1);
   window2->RemovePreTargetHandler(&recorder2);
+}
+
+TEST_F(DesktopWindowTreeHostX11Test, InputMethodFocus) {
+  scoped_ptr<Widget> widget(CreateWidget(gfx::Rect(100, 100, 100, 100)));
+  scoped_ptr<Textfield> textfield(new Textfield);
+  textfield->SetBounds(0, 0, 200, 20);
+  widget->GetRootView()->AddChildView(textfield.get());
+  widget->Show();
+  textfield->RequestFocus();
+
+  EXPECT_FALSE(widget->IsActive());
+  EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE,
+            widget->GetInputMethod()->GetTextInputType());
+
+  widget->Activate();
+
+  EXPECT_TRUE(widget->IsActive());
+  EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT,
+            widget->GetInputMethod()->GetTextInputType());
+
+  widget->Deactivate();
+
+  EXPECT_FALSE(widget->IsActive());
+  EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE,
+            widget->GetInputMethod()->GetTextInputType());
 }
 
 }  // namespace views

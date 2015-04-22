@@ -38,12 +38,10 @@ void InputMethodBase::Init(bool focused) {
 }
 
 void InputMethodBase::OnFocus() {
-  DCHECK(!system_toplevel_window_focused_);
   system_toplevel_window_focused_ = true;
 }
 
 void InputMethodBase::OnBlur() {
-  DCHECK(system_toplevel_window_focused_);
   system_toplevel_window_focused_ = false;
 }
 
