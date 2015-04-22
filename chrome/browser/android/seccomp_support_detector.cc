@@ -36,7 +36,7 @@ void SeccompSupportDetector::StartDetection() {
       base::Bind(&SeccompSupportDetector::DetectKernelVersion, detector));
 }
 
-SeccompSupportDetector::SeccompSupportDetector() : prctl_detected_(false) {
+SeccompSupportDetector::SeccompSupportDetector() {
 }
 
 SeccompSupportDetector::~SeccompSupportDetector() {
@@ -64,8 +64,6 @@ void SeccompSupportDetector::DetectKernelVersion() {
 #else
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       base::Bind(&SeccompSupportDetector::OnDetectPrctl, this, false));
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      base::Bind(&SeccompSupportDetector::OnDetectSyscall, this, false));
 #endif
 }
 
@@ -82,17 +80,9 @@ void SeccompSupportDetector::DetectSeccomp() {
 
 void SeccompSupportDetector::OnProcessCrashed(int exit_code) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // The process crashed. Since prctl detection happens first, report which
-  // probe failed.
-  if (prctl_detected_) {
-    UMA_HISTOGRAM_ENUMERATION("Android.SeccompStatus.Syscall",
-                              DETECTION_FAILED,
-                              LAST_STATUS);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("Android.SeccompStatus.Prctl",
-                              DETECTION_FAILED,
-                              LAST_STATUS);
-  }
+  UMA_HISTOGRAM_ENUMERATION("Android.SeccompStatus.Prctl",
+                            DETECTION_FAILED,
+                            LAST_STATUS);
 }
 
 bool SeccompSupportDetector::OnMessageReceived(const IPC::Message& message) {
@@ -100,8 +90,6 @@ bool SeccompSupportDetector::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(SeccompSupportDetector, message)
     IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_DetectSeccompSupport_ResultPrctl,
                         OnDetectPrctl)
-    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_DetectSeccompSupport_ResultSyscall,
-                        OnDetectSyscall)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -109,21 +97,9 @@ bool SeccompSupportDetector::OnMessageReceived(const IPC::Message& message) {
 
 void SeccompSupportDetector::OnDetectPrctl(bool prctl_supported) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!prctl_detected_);
-
-  prctl_detected_ = true;
 
   UMA_HISTOGRAM_ENUMERATION("Android.SeccompStatus.Prctl",
                             prctl_supported ? SUPPORTED : NOT_SUPPORTED,
-                            LAST_STATUS);
-}
-
-void SeccompSupportDetector::OnDetectSyscall(bool syscall_supported) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(prctl_detected_);
-
-  UMA_HISTOGRAM_ENUMERATION("Android.SeccompStatus.Syscall",
-                            syscall_supported ? SUPPORTED : NOT_SUPPORTED,
                             LAST_STATUS);
 
   // The utility process will shutdown after this, and this object will

@@ -284,6 +284,4 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_BuildDirectWriteFontCache,
 // of kernel support for seccomp-bpf.
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_DetectSeccompSupport_ResultPrctl,
                      bool /* seccomp prctl supported */)
-IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_DetectSeccompSupport_ResultSyscall,
-                     bool /* seccomp syscall supported */)
 #endif

@@ -298,10 +298,9 @@ void ChromeContentUtilityClient::OnDetectSeccompSupport() {
   Send(new ChromeUtilityHostMsg_DetectSeccompSupport_ResultPrctl(
       supports_prctl));
 
-  bool supports_syscall = sandbox::SandboxBPF::SupportsSeccompSandbox(
-      sandbox::SandboxBPF::SeccompLevel::MULTI_THREADED);
-  Send(new ChromeUtilityHostMsg_DetectSeccompSupport_ResultSyscall(
-      supports_syscall));
+  // Probing for the seccomp syscall can provoke kernel panics in certain LGE
+  // devices. For now, this data will not be collected. In the future, this
+  // should detect SeccompLevel::MULTI_THREADED. http://crbug.com/478478
 
   ReleaseProcessIfNeeded();
 }

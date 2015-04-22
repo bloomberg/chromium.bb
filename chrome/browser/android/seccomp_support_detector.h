@@ -33,12 +33,7 @@ class SeccompSupportDetector : public content::UtilityProcessHostClient {
   void OnProcessCrashed(int exit_code) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  // OnDetectPrctl is always received before OnDetectSyscall.
   void OnDetectPrctl(bool prctl_supported);
-  void OnDetectSyscall(bool syscall_supported);
-
-  // Whether OnDetectPrctl was received.
-  bool prctl_detected_;
 
   DISALLOW_COPY_AND_ASSIGN(SeccompSupportDetector);
 };
