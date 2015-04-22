@@ -84,6 +84,9 @@
     shouldBeFalse('CSS.supports("content", "!important")');
     shouldBeFalse('CSS.supports("(display: none)", undefined)');
 
+    // Test that __qem is internal
+    shouldBeFalse('CSS.supports("margin", "1__qem")');
+
     // shorthands and CSS wide keywords
     shouldBeTrue('CSS.supports("border", "1px solid #000")');
     shouldBeTrue('CSS.supports("border", "inherit")');

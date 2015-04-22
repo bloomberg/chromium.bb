@@ -61,6 +61,7 @@ PASS CSS.supports("z-index", 1) is true
 PASS CSS.supports("content", []) is false
 PASS CSS.supports("content", "!important") is false
 PASS CSS.supports("(display: none)", undefined) is false
+PASS CSS.supports("margin", "1__qem") is false
 PASS CSS.supports("border", "1px solid #000") is true
 PASS CSS.supports("border", "inherit") is true
 PASS CSS.supports("border", "1px solid inherit") is false

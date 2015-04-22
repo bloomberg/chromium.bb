@@ -247,8 +247,10 @@ bool CSSPropertyParser::validUnit(CSSParserValue* value, Units unitflags, CSSPar
         return false;
     case CSSPrimitiveValue::CSS_PERCENTAGE:
         return unitflags & FPercent;
-    // TODO(timloh): Restrict usage of __qem to UA sheets
     case CSSParserValue::Q_EMS:
+        if (cssParserMode != UASheetMode)
+            return false;
+    /* fallthrough intentional */
     case CSSPrimitiveValue::CSS_EMS:
     case CSSPrimitiveValue::CSS_REMS:
     case CSSPrimitiveValue::CSS_CHS:
