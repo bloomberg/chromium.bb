@@ -70,7 +70,10 @@
           # certificates, use_openssl_certs must be set.
           'use_openssl%': 0,
 
-          # Typedef X509Certificate::OSCertHandle to OpenSSL's struct X509*.
+          # Use OpenSSL for representing certificates. When targeting Android,
+          # the platform certificate library is used for certificate
+          # verification. On other targets, this flag also enables OpenSSL for
+          # certificate verification, but this configuration is unsupported.
           'use_openssl_certs%': 0,
 
           # Disable viewport meta tag by default.
@@ -681,18 +684,10 @@
         }],
 
         # NSS usage.
-        ['(OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris") and use_openssl==0', {
+        ['(OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris")', {
           'use_nss_certs%': 1,
         }, {
           'use_nss_certs%': 0,
-        }],
-
-        # When OpenSSL is used for SSL and crypto on Unix-like systems, use
-        # OpenSSL's certificate definition.
-        ['(OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris") and use_openssl==1', {
-          'use_openssl_certs%': 1,
-        }, {
-          'use_openssl_certs%': 0,
         }],
 
         # libudev usage.  This currently only affects the content layer.

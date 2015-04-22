@@ -19,6 +19,14 @@ scoped_ptr<crypto::RSAPrivateKey> ImportSensitiveKeyFromFile(
     const base::FilePath& dir,
     const std::string& key_filename,
     PK11SlotInfo* slot) {
+#if defined(USE_OPENSSL)
+  // TODO(davidben): Port RSAPrivateKey::CreateSensitiveFromPrivateKeyInfo away
+  // from RSAPrivateKey so it doesn't make assumptions about the internal crypto
+  // library. Instead, return a ScopedSECKEYPrivateKey or have this function
+  // just return bool. https://crbug.com/478777
+  NOTIMPLEMENTED();
+  return nullptr;
+#else
   base::FilePath key_path = dir.AppendASCII(key_filename);
   std::string key_pkcs8;
   bool success = base::ReadFileToString(key_path, &key_pkcs8);
@@ -38,6 +46,7 @@ scoped_ptr<crypto::RSAPrivateKey> ImportSensitiveKeyFromFile(
   LOG_IF(ERROR, !private_key) << "Could not create key from file "
                               << key_path.value();
   return private_key.Pass();
+#endif
 }
 
 bool ImportClientCertToSlot(const scoped_refptr<X509Certificate>& cert,

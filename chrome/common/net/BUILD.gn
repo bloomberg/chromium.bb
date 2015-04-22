@@ -30,31 +30,25 @@ static_library("net") {
   ]
 
   if (is_ios) {
-    sources -= [
-      "net_resource_provider.cc",
-      "x509_certificate_model.cc",
-    ]
+    sources -= [ "net_resource_provider.cc" ]
   } else {
     deps += [ "//gpu/ipc" ]
   }
 
-  if (is_win || is_mac || is_ios) {
-    sources -= [
-      "x509_certificate_model_nss.cc",
-      "x509_certificate_model_openssl.cc",
-    ]
-  } else if (use_openssl) {
-    sources -= [ "x509_certificate_model_nss.cc" ]
+  if (is_android || is_ios) {
+    sources -= [ "x509_certificate_model.cc" ]
+  }
+
+  if (use_openssl_certs && !is_android) {
+    deps += [ "//third_party/boringssl" ]
   } else {
     sources -= [ "x509_certificate_model_openssl.cc" ]
   }
 
-  if (is_android) {
-    sources -= [
-      "x509_certificate_model.cc",
-      "x509_certificate_model_openssl.cc",
-    ]
-    deps += [ "//third_party/boringssl" ]
+  if (use_nss_certs) {
+    deps += [ "//crypto:platform" ]
+  } else {
+    sources -= [ "x509_certificate_model_nss.cc" ]
   }
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]

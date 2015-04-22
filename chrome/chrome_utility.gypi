@@ -133,26 +133,21 @@
             },
           },
         }],
-        ['OS!="win" and OS!="mac" and use_openssl==1', {
-          'sources!': [
-            'utility/importer/nss_decryptor.cc',
-          ]
-        }],
-        ['OS!="win" and OS!="mac" and use_openssl==0', {
-          'dependencies': [
-            '../crypto/crypto.gyp:crypto',
-          ],
-          'sources': [
-            'utility/importer/nss_decryptor_system_nss.cc',
-            'utility/importer/nss_decryptor_system_nss.h',
-          ],
-        }],
         ['OS!="android"', {
           'dependencies': [
             '../net/net.gyp:net_utility_services',
           ],
           'sources': [
             '<@(chrome_utility_importer_sources)',
+          ],
+        }],
+        ['use_nss_certs==1', {
+          'dependencies': [
+            '../crypto/crypto.gyp:crypto',
+          ],
+          'sources': [
+            'utility/importer/nss_decryptor_system_nss.cc',
+            'utility/importer/nss_decryptor_system_nss.h',
           ],
         }],
         ['OS=="android" and use_seccomp_bpf==1', {

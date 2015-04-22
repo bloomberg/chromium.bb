@@ -13,6 +13,10 @@
 
 namespace crypto {
 
+// TODO(davidben): These tests assume NSS is used for both the internal crypto
+// library and the platform key store. See https://crbug.com/478777.
+#if defined(USE_NSS_CERTS)
+
 class RSAPrivateKeyNSSTest : public testing::Test {
  public:
   RSAPrivateKeyNSSTest() {}
@@ -56,5 +60,7 @@ TEST_F(RSAPrivateKeyNSSTest, FailedFindFromPublicKey) {
 
   EXPECT_EQ(NULL, crypto::RSAPrivateKey::FindFromPublicKeyInfo(public_key));
 }
+
+#endif  // USE_NSS_CERTS
 
 }  // namespace crypto

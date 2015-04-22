@@ -180,7 +180,22 @@ class CRYPTO_EXPORT RSAPrivateKey {
   static RSAPrivateKey* CreateFromPrivateKeyInfo(
       const std::vector<uint8>& input);
 
-#if defined(USE_NSS_CERTS)
+#if defined(USE_OPENSSL)
+  // Create a new instance from an existing EVP_PKEY, taking a
+  // reference to it. |key| must be an RSA key. Returns NULL on
+  // failure.
+  static RSAPrivateKey* CreateFromKey(EVP_PKEY* key);
+#else
+  // Create a new instance by referencing an existing private key
+  // structure.  Does not import the key.
+  static RSAPrivateKey* CreateFromKey(SECKEYPrivateKey* key);
+#endif
+
+  // TODO(davidben): These functions are used when NSS is the platform key
+  // store, but they also assume that the internal crypto library is NSS. Split
+  // out the convenience NSS platform key methods from the logic which expects
+  // an RSAPrivateKey. See https://crbug.com/478777.
+#if defined(USE_NSS_CERTS) && !defined(USE_OPENSSL)
   // Create a new random instance in |slot|. Can return NULL if initialization
   // fails.  The created key is permanent and is not exportable in plaintext
   // form.
@@ -193,10 +208,6 @@ class CRYPTO_EXPORT RSAPrivateKey {
   static RSAPrivateKey* CreateSensitiveFromPrivateKeyInfo(
       PK11SlotInfo* slot,
       const std::vector<uint8>& input);
-
-  // Create a new instance by referencing an existing private key
-  // structure.  Does not import the key.
-  static RSAPrivateKey* CreateFromKey(SECKEYPrivateKey* key);
 
   // Import an existing public key, and then search for the private
   // half in the key database. The format of the public key blob is is
@@ -216,13 +227,7 @@ class CRYPTO_EXPORT RSAPrivateKey {
   static RSAPrivateKey* FindFromPublicKeyInfoInSlot(
       const std::vector<uint8>& input,
       PK11SlotInfo* slot);
-#elif defined(USE_OPENSSL)
-  // Create a new instance from an existing EVP_PKEY, taking a
-  // reference to it. |key| must be an RSA key. Returns NULL on
-  // failure.
-  static RSAPrivateKey* CreateFromKey(EVP_PKEY* key);
-
-#endif
+#endif  // USE_NSS_CERTS && !USE_OPENSSL
 
 #if defined(USE_OPENSSL)
   EVP_PKEY* key() { return key_; }

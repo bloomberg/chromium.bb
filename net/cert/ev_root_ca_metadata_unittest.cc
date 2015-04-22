@@ -9,6 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(USE_NSS_CERTS)
+#include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
 #endif
 
@@ -63,6 +64,7 @@ EVOidData::EVOidData()
 }
 
 bool EVOidData::Init() {
+  crypto::EnsureNSSInit();
   crypto::ScopedPLArenaPool pool(PORT_NewArena(DER_DEFAULT_CHUNKSIZE));
   if (!pool.get())
     return false;

@@ -445,9 +445,6 @@ TEST(RSAPrivateKeyUnitTest, ShortIntegers) {
                           input2.size()));
 }
 
-// The following test can run if either USE_NSS_CERTS or USE_OPENSSL is defined,
-// but not otherwise (since it uses crypto::RSAPrivateKey::CreateFromKey).
-#if defined(USE_NSS_CERTS) || defined(USE_OPENSSL)
 TEST(RSAPrivateKeyUnitTest, CreateFromKeyTest) {
   scoped_ptr<crypto::RSAPrivateKey> key_pair(
       crypto::RSAPrivateKey::Create(256));
@@ -469,5 +466,4 @@ TEST(RSAPrivateKeyUnitTest, CreateFromKeyTest) {
   ASSERT_EQ(privkey, privkey_copy);
   ASSERT_EQ(pubkey, pubkey_copy);
 }
-#endif
 

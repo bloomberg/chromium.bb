@@ -108,9 +108,6 @@
               'ec_signature_creator_nss.cc',
               'encryptor_nss.cc',
               'hmac_nss.cc',
-              'nss_util.cc',
-              'nss_util.h',
-              'nss_util_internal.h',
               'rsa_private_key_nss.cc',
               'secure_hash_default.cc',
               'signature_creator_nss.cc',
@@ -141,6 +138,15 @@
               'signature_creator_openssl.cc',
               'signature_verifier_openssl.cc',
               'symmetric_key_openssl.cc',
+            ],
+        },],
+        [ 'use_openssl==1 and use_nss_certs==0', {
+            # NSS is used for neither the internal crypto library nor the
+            # platform certificate library.
+            'sources!': [
+              'nss_util.cc',
+              'nss_util.h',
+              'nss_util_internal.h',
             ],
         },],
       ],
@@ -182,7 +188,7 @@
         '../testing/gtest.gyp:gtest',
       ],
       'conditions': [
-        [ 'os_posix == 1 and OS != "mac" and OS != "android" and OS != "ios"', {
+        [ 'use_nss_certs == 1', {
           'conditions': [
             [ 'use_allocator!="none"', {
                 'dependencies': [
@@ -194,10 +200,13 @@
           'dependencies': [
             '../build/linux/system.gyp:ssl',
           ],
-        }, {  # os_posix != 1 or OS == "mac" or OS == "android" or OS == "ios"
+        }],
+        [ 'use_openssl == 1 and use_nss_certs == 0', {
+          # nss_util is built if NSS is used for either the internal crypto
+          # library or the platform certificate library.
           'sources!': [
-            'rsa_private_key_nss_unittest.cc',
-          ]
+            'nss_util_unittest.cc',
+          ],
         }],
         [ 'use_openssl == 0 and (OS == "mac" or OS == "ios" or OS == "win")', {
           'dependencies': [
@@ -213,7 +222,6 @@
             '../third_party/boringssl/boringssl.gyp:boringssl',
           ],
           'sources!': [
-            'nss_util_unittest.cc',
             'rsa_private_key_nss_unittest.cc',
           ],
         }, {

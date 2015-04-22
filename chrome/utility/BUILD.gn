@@ -83,21 +83,15 @@ static_library("utility") {
     }
   }
 
-  if (use_openssl) {
-    if (!is_win && !is_mac && !is_android) {
-      sources -= [ "importer/nss_decryptor.cc" ]
-    }
-  } else {  # !use_openssl
-    if (!is_win && !is_mac) {
-      sources += [
-        "importer/nss_decryptor_system_nss.cc",
-        "importer/nss_decryptor_system_nss.h",
-      ]
-      deps += [
-        "//crypto",
-        "//crypto:platform",
-      ]
-    }
+  if (use_nss_certs) {
+    sources += [
+      "importer/nss_decryptor_system_nss.cc",
+      "importer/nss_decryptor_system_nss.h",
+    ]
+    deps += [
+      "//crypto",
+      "//crypto:platform",
+    ]
   }
 
   if (!enable_print_preview) {

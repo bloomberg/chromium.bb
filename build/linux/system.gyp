@@ -1180,8 +1180,7 @@
               'dependencies': [
                 '../../third_party/boringssl/boringssl.gyp:boringssl',
               ],
-            }],
-            ['use_openssl==0', {
+            }, {
               'dependencies': [
                 '../../net/third_party/nss/ssl.gyp:libssl',
               ],
@@ -1191,6 +1190,13 @@
                   # before other includes, as we are shadowing system headers.
                   '<(DEPTH)/net/third_party/nss/ssl',
                 ],
+              },
+            }],
+            # Link in the system NSS if it is used for either the internal
+            # crypto library (use_openssl==0) or platform certificate
+            # library (use_nss_certs==1).
+            ['use_openssl==0 or use_nss_certs==1', {
+              'direct_dependent_settings': {
                 'cflags': [
                   '<!@(<(pkg-config) --cflags nss)',
                 ],
@@ -1203,15 +1209,17 @@
                   '<!@(<(pkg-config) --libs-only-l nss | sed -e "s/-lssl3//")',
                 ],
               },
-            }],
-            ['use_openssl==0 and clang==1', {
-              'direct_dependent_settings': {
-                'cflags': [
-                  # There is a broken header guard in /usr/include/nss/secmod.h:
-                  # https://bugzilla.mozilla.org/show_bug.cgi?id=884072
-                  '-Wno-header-guard',
-                ],
-              },
+              'conditions': [
+                ['clang==1', {
+                  'direct_dependent_settings': {
+                    'cflags': [
+                      # There is a broken header guard in /usr/include/nss/secmod.h:
+                      # https://bugzilla.mozilla.org/show_bug.cgi?id=884072
+                      '-Wno-header-guard',
+                    ],
+                  },
+                }],
+              ],
             }],
           ]
         }],

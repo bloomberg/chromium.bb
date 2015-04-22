@@ -14,10 +14,13 @@ declare_args() {
   use_openssl = is_android || is_mac || is_nacl || is_win
 }
 
-# True when we're using OpenSSL for certificate verification and storage. We
-# only do this when we're using OpenSSL on desktop Linux systems. For other
-# systems (Mac/Win/Android) we use the system certificate features.
-use_openssl_certs = use_openssl && (is_linux || is_android)
+# True when we're using OpenSSL for representing certificates. When targeting
+# Android, the platform certificate library is used for certificate
+# verification. On other targets, this flag also enables OpenSSL for certificate
+# verification, but this configuration is unsupported.
+use_openssl_certs = is_android
 
-# Same meaning as use_openssl_certs but for NSS.
-use_nss_certs = !use_openssl && is_linux
+# True if NSS is used for certificate verification. Note that this is
+# independent from use_openssl. It is possible to use OpenSSL for the crypto
+# library, but NSS for the platform certificate library.
+use_nss_certs = is_linux

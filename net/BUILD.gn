@@ -194,11 +194,7 @@ component("net") {
       "cert/ct_objects_extractor_nss.cc",
       "cert/jwk_serializer_nss.cc",
       "cert/scoped_nss_types.h",
-      "cert/test_root_certs_nss.cc",
       "cert/x509_util_nss.cc",
-      "cert/x509_util_nss.h",
-      "cert_net/nss_ocsp.cc",
-      "cert_net/nss_ocsp.h",
       "quic/crypto/aead_base_decrypter_nss.cc",
       "quic/crypto/aead_base_encrypter_nss.cc",
       "quic/crypto/aes_128_gcm_12_decrypter_nss.cc",
@@ -214,31 +210,6 @@ component("net") {
       "socket/ssl_server_socket_nss.cc",
       "socket/ssl_server_socket_nss.h",
     ]
-    if (is_chromeos) {
-      sources -= [
-        "cert/nss_cert_database_chromeos.cc",
-        "cert/nss_cert_database_chromeos.h",
-        "cert/nss_profile_filter_chromeos.cc",
-        "cert/nss_profile_filter_chromeos.h",
-      ]
-    }
-    if (is_linux) {
-      # These are always removed for non-Linux cases below.
-      sources -= [
-        "base/crypto_module_nss.cc",
-        "base/keygen_handler_nss.cc",
-        "cert/cert_database_nss.cc",
-        "cert/nss_cert_database.cc",
-        "cert/nss_cert_database.h",
-        "cert/x509_certificate_nss.cc",
-        "third_party/mozilla_security_manager/nsKeygenHandler.cpp",
-        "third_party/mozilla_security_manager/nsKeygenHandler.h",
-        "third_party/mozilla_security_manager/nsNSSCertificateDB.cpp",
-        "third_party/mozilla_security_manager/nsNSSCertificateDB.h",
-        "third_party/mozilla_security_manager/nsPKCS12Blob.cpp",
-        "third_party/mozilla_security_manager/nsPKCS12Blob.h",
-      ]
-    }
     if (is_ios) {
       # Always removed for !ios below.
       sources -= [
@@ -249,9 +220,11 @@ component("net") {
     if (is_win) {
       sources -= [ "cert/sha256_legacy_support_nss_win.cc" ]
     }
+    if (!use_nss_certs && !is_ios) {
+      sources -= [ "cert/x509_util_nss.h" ]
+    }
   } else {
     sources -= [
-      "base/crypto_module_openssl.cc",
       "cert/ct_log_verifier_openssl.cc",
       "cert/ct_objects_extractor_openssl.cc",
       "cert/jwk_serializer_openssl.cc",
@@ -272,6 +245,7 @@ component("net") {
       "socket/ssl_server_socket_openssl.cc",
       "socket/ssl_server_socket_openssl.h",
       "ssl/openssl_platform_key.h",
+      "ssl/openssl_platform_key_nss.cc",
       "ssl/openssl_ssl_util.cc",
       "ssl/openssl_ssl_util.h",
       "ssl/ssl_client_session_cache_openssl.cc",
@@ -290,6 +264,7 @@ component("net") {
 
   if (!use_openssl_certs) {
     sources -= [
+      "base/crypto_module_openssl.cc",
       "base/keygen_handler_openssl.cc",
       "base/openssl_private_key_store.h",
       "base/openssl_private_key_store_memory.cc",
@@ -321,7 +296,9 @@ component("net") {
 
   if (is_linux) {
     configs += [ "//build/config/linux:libresolv" ]
-  } else {
+  }
+
+  if (!use_nss_certs) {
     sources -= [
       "base/crypto_module_nss.cc",
       "base/keygen_handler_nss.cc",
@@ -329,6 +306,8 @@ component("net") {
       "cert/nss_cert_database.cc",
       "cert/nss_cert_database.h",
       "cert/x509_certificate_nss.cc",
+      "ssl/client_cert_store_nss.cc",
+      "ssl/client_cert_store_nss.h",
       "third_party/mozilla_security_manager/nsKeygenHandler.cpp",
       "third_party/mozilla_security_manager/nsKeygenHandler.h",
       "third_party/mozilla_security_manager/nsNSSCertificateDB.cpp",
@@ -336,38 +315,37 @@ component("net") {
       "third_party/mozilla_security_manager/nsPKCS12Blob.cpp",
       "third_party/mozilla_security_manager/nsPKCS12Blob.h",
     ]
-
-    if (!is_ios && !use_openssl) {
-      # These files are part of the partial implementation of NSS on iOS so
-      # keep them in that case.
-      sources -= [
-        "cert/test_root_certs_nss.cc",
-        "cert_net/nss_ocsp.cc",
-        "cert_net/nss_ocsp.h",
-      ]
-    }
-  }
-
-  if (!use_nss_certs) {
-    sources -= [
-      "ssl/client_cert_store_nss.cc",
-      "ssl/client_cert_store_nss.h",
-    ]
     if (!is_ios) {
       # These files are part of the partial implementation of NSS on iOS so
       # keep them in that case (even though use_nss_certs is not set).
       sources -= [
         "cert/cert_verify_proc_nss.cc",
         "cert/cert_verify_proc_nss.h",
+        "cert/test_root_certs_nss.cc",
+        "cert/x509_util_nss_certs.cc",
+        "cert_net/nss_ocsp.cc",
+        "cert_net/nss_ocsp.h",
       ]
     }
     if (is_chromeos) {
       # These were already removed on non-ChromeOS.
       sources -= [
+        "cert/nss_cert_database_chromeos.cc",
+        "cert/nss_cert_database_chromeos.h",
+        "cert/nss_profile_filter_chromeos.cc",
+        "cert/nss_profile_filter_chromeos.h",
         "ssl/client_cert_store_chromeos.cc",
         "ssl/client_cert_store_chromeos.h",
       ]
     }
+    if (use_openssl) {
+      sources -= [ "ssl/openssl_platform_key_nss.cc" ]
+    }
+  } else if (use_openssl) {
+    # client_cert_store_nss.c requires NSS_CmpCertChainWCANames from NSS's
+    # libssl, but our bundled copy is not built in OpenSSL ports. Pull that file
+    # in directly.
+    sources += [ "third_party/nss/ssl/cmpcert.c" ]
   }
 
   if (!enable_websockets) {
@@ -460,8 +438,8 @@ component("net") {
   }
 
   if (is_ios) {
-    # Add back some sources that were otherwise filtered out. iOS additionally
-    # doesn't set USE_NSS_CERTS but needs some of the files.
+    # Add back some sources that were otherwise filtered out. iOS needs some Mac
+    # files.
     set_sources_assignment_filter([])
     sources += [
       "base/net_util_mac.cc",
@@ -469,13 +447,6 @@ component("net") {
       "base/network_change_notifier_mac.cc",
       "base/network_config_watcher_mac.cc",
       "base/platform_mime_util_mac.mm",
-      "cert/cert_verify_proc_nss.cc",
-      "cert/cert_verify_proc_nss.h",
-      "cert/test_root_certs_nss.cc",
-      "cert/x509_util_nss.cc",
-      "cert/x509_util_nss.h",
-      "cert_net/nss_ocsp.cc",
-      "cert_net/nss_ocsp.h",
       "proxy/proxy_resolver_mac.cc",
       "proxy/proxy_server_mac.cc",
     ]
@@ -1392,9 +1363,16 @@ if (!is_android && !is_mac) {
     }
 
     if (!use_nss_certs) {
-      sources -= [ "ssl/client_cert_store_nss_unittest.cc" ]
+      sources -= [
+        "cert/nss_cert_database_unittest.cc",
+        "ssl/client_cert_store_nss_unittest.cc",
+      ]
       if (is_chromeos) {  # Already removed for all non-ChromeOS builds.
-        sources -= [ "ssl/client_cert_store_chromeos_unittest.cc" ]
+        sources -= [
+          "cert/nss_cert_database_chromeos_unittest.cc",
+          "cert/nss_profile_filter_chromeos_unittest.cc",
+          "ssl/client_cert_store_chromeos_unittest.cc",
+        ]
       }
     }
 
@@ -1404,17 +1382,9 @@ if (!is_android && !is_mac) {
       # TODO(bulach): Add equivalent tests when the underlying
       #               functionality is ported to OpenSSL.
       sources -= [
-        "cert/nss_cert_database_unittest.cc",
         "cert/x509_util_nss_unittest.cc",
         "quic/test_tools/crypto_test_utils_nss.cc",
       ]
-      if (is_chromeos) {
-        # These were already removed in the non-ChromeOS case.
-        sources -= [
-          "cert/nss_cert_database_chromeos_unittest.cc",
-          "cert/nss_profile_filter_chromeos_unittest.cc",
-        ]
-      }
     } else {
       sources -= [
         "cert/x509_util_openssl_unittest.cc",
@@ -1422,9 +1392,6 @@ if (!is_android && !is_mac) {
         "socket/ssl_client_socket_openssl_unittest.cc",
         "ssl/ssl_client_session_cache_openssl_unittest.cc",
       ]
-      if (!is_desktop_linux && !is_chromeos) {
-        sources -= [ "cert/nss_cert_database_unittest.cc" ]
-      }
     }
 
     if (use_kerberos) {

@@ -1196,6 +1196,8 @@ void SSLClientSocketOpenSSL::UpdateServerCert() {
                 << GetLastError();
       }
 #else
+      // TODO(davidben): Support OCSP stapling when NSS is the system
+      // certificate verifier. https://crbug.com/479034.
       NOTREACHED();
 #endif
     }

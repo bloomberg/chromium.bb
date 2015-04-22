@@ -27,7 +27,7 @@
 #include "net/cert/x509_util.h"
 #include "url/gurl.h"
 
-#if defined(USE_NSS_CERTS)
+#if !defined(USE_OPENSSL)
 #include <private/pprthred.h>  // PR_DetachThread
 #endif
 
@@ -246,7 +246,7 @@ class ChannelIDServiceWorker {
     scoped_ptr<ChannelIDStore::ChannelID> cert =
         GenerateChannelID(server_identifier_, serial_number_, &error);
     DVLOG(1) << "GenerateCert " << server_identifier_ << " returned " << error;
-#if defined(USE_NSS_CERTS)
+#if !defined(USE_OPENSSL)
     // Detach the thread from NSPR.
     // Calling NSS functions attaches the thread to NSPR, which stores
     // the NSPR thread ID in thread-specific data.

@@ -104,6 +104,22 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
       false /* not sensitive */);
 }
 
+// static
+RSAPrivateKey* RSAPrivateKey::CreateFromKey(SECKEYPrivateKey* key) {
+  DCHECK(key);
+  if (SECKEY_GetPrivateKeyType(key) != rsaKey)
+    return NULL;
+  RSAPrivateKey* copy = new RSAPrivateKey();
+  copy->key_ = SECKEY_CopyPrivateKey(key);
+  copy->public_key_ = SECKEY_ConvertToPublicKey(key);
+  if (!copy->key_ || !copy->public_key_) {
+    NOTREACHED();
+    delete copy;
+    return NULL;
+  }
+  return copy;
+}
+
 #if defined(USE_NSS_CERTS)
 // static
 RSAPrivateKey* RSAPrivateKey::CreateSensitive(PK11SlotInfo* slot,
@@ -122,22 +138,6 @@ RSAPrivateKey* RSAPrivateKey::CreateSensitiveFromPrivateKeyInfo(
                                             input,
                                             true /* permanent */,
                                             true /* sensitive */);
-}
-
-// static
-RSAPrivateKey* RSAPrivateKey::CreateFromKey(SECKEYPrivateKey* key) {
-  DCHECK(key);
-  if (SECKEY_GetPrivateKeyType(key) != rsaKey)
-    return NULL;
-  RSAPrivateKey* copy = new RSAPrivateKey();
-  copy->key_ = SECKEY_CopyPrivateKey(key);
-  copy->public_key_ = SECKEY_ConvertToPublicKey(key);
-  if (!copy->key_ || !copy->public_key_) {
-    NOTREACHED();
-    delete copy;
-    return NULL;
-  }
-  return copy;
 }
 
 // static
