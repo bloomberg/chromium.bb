@@ -205,7 +205,6 @@ class SmoothnessSimpleMobilePages(benchmark.Benchmark):
 class SmoothnessFlingSimpleMobilePages(benchmark.Benchmark):
   """Measures rendering statistics for flinging a simple mobile sites page set.
   """
-  test = smoothness.Smoothness
   page_set = page_sets.SimpleMobileSitesFlingPageSet
 
   def CustomizeBrowserOptions(self, options):
@@ -218,40 +217,50 @@ class SmoothnessFlingSimpleMobilePages(benchmark.Benchmark):
   def Name(cls):
     return 'smoothness.fling.simple_mobile_sites'
 
+  def CreatePageTest(self, options):  # pylint: disable=unused-argument
+    return smoothness.Smoothness(enable_auto_issuing_marker=False)
+
+
 @benchmark.Enabled('android', 'chromeos')
 class SmoothnessToughPinchZoomCases(benchmark.Benchmark):
   """Measures rendering statistics for pinch-zooming into the tough pinch zoom
   cases.
   """
-  test = smoothness.Smoothness
   page_set = page_sets.ToughPinchZoomCasesPageSet
 
   @classmethod
   def Name(cls):
     return 'smoothness.tough_pinch_zoom_cases'
 
+  def CreatePageTest(self, options):  # pylint: disable=unused-argument
+    return smoothness.Smoothness(enable_auto_issuing_marker=False)
+
 
 @benchmark.Enabled('chromeos')
 class SmoothnessToughScrollingWhileZoomedInCases(benchmark.Benchmark):
   """Measures rendering statistics for pinch-zooming then diagonal scrolling"""
-  test = smoothness.Smoothness
   page_set = page_sets.ToughScrollingWhileZoomedInCasesPageSet
 
   @classmethod
   def Name(cls):
     return 'smoothness.tough_scrolling_while_zoomed_in_cases'
 
+  def CreatePageTest(self, options):  # pylint: disable=unused-argument
+    return smoothness.Smoothness(enable_auto_issuing_marker=False)
+
 
 @benchmark.Enabled('android')
 class SmoothnessPolymer(benchmark.Benchmark):
   """Measures rendering statistics for Polymer cases.
   """
-  test = smoothness.Smoothness
   page_set = page_sets.PolymerPageSet
 
   @classmethod
   def Name(cls):
     return 'smoothness.polymer'
+
+  def CreatePageTest(self, options):  # pylint: disable=unused-argument
+    return smoothness.Smoothness(enable_auto_issuing_marker=False)
 
 
 @benchmark.Enabled('android')
@@ -259,7 +268,6 @@ class SmoothnessGpuRasterizationPolymer(benchmark.Benchmark):
   """Measures rendering statistics for the Polymer cases with GPU rasterization.
   """
   tag = 'gpu_rasterization'
-  test = smoothness.Smoothness
   page_set = page_sets.PolymerPageSet
 
   def CustomizeBrowserOptions(self, options):
@@ -268,6 +276,9 @@ class SmoothnessGpuRasterizationPolymer(benchmark.Benchmark):
   @classmethod
   def Name(cls):
     return 'smoothness.gpu_rasterization.polymer'
+
+  def CreatePageTest(self, options):  # pylint: disable=unused-argument
+    return smoothness.Smoothness(enable_auto_issuing_marker=False)
 
 
 class SmoothnessToughFastScrollingCases(benchmark.Benchmark):
@@ -316,12 +327,14 @@ class SmoothnessGpuImageDecodingCases(benchmark.Benchmark):
 class SmoothnessPathologicalMobileSites(benchmark.Benchmark):
   """Measures task execution statistics while scrolling pathological sites.
   """
-  test = smoothness.Smoothness
   page_set = page_sets.PathologicalMobileSitesPageSet
 
   @classmethod
   def Name(cls):
     return 'smoothness.pathological_mobile_sites'
+
+  def CreatePageTest(self, options):  # pylint: disable=unused-argument
+    return smoothness.Smoothness(enable_auto_issuing_marker=False)
 
 
 @benchmark.Enabled('android')
@@ -329,7 +342,6 @@ class SmoothnessSyncScrollPathologicalMobileSites(benchmark.Benchmark):
   """Measures task execution statistics while sync-scrolling pathological sites.
   """
   tag = 'sync_scroll'
-  test = smoothness.Smoothness
   page_set = page_sets.PathologicalMobileSitesPageSet
 
   def CustomizeBrowserOptions(self, options):
@@ -338,6 +350,10 @@ class SmoothnessSyncScrollPathologicalMobileSites(benchmark.Benchmark):
   @classmethod
   def Name(cls):
     return 'smoothness.sync_scroll.pathological_mobile_sites'
+
+  def CreatePageTest(self, options):  # pylint: disable=unused-argument
+    return smoothness.Smoothness(enable_auto_issuing_marker=False)
+
 
 class SmoothnessToughAnimatedImageCases(benchmark.Benchmark):
   test = smoothness.Smoothness

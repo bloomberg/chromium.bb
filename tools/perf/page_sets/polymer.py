@@ -97,13 +97,14 @@ class PolymerShadowPage(PolymerPage):
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
   def PerformPageInteractions(self, action_runner):
-    action_runner.ExecuteJavaScript(
-        "document.getElementById('fab').scrollIntoView()")
-    action_runner.Wait(5)
-    self.AnimateShadow(action_runner, 'card')
-    #FIXME(wiltzius) disabling until this issue is fixed:
-    # https://github.com/Polymer/paper-shadow/issues/12
-    #self.AnimateShadow(action_runner, 'fab')
+    with action_runner.CreateInteraction('ScrollAndShadowAnimation'):
+      action_runner.ExecuteJavaScript(
+          "document.getElementById('fab').scrollIntoView()")
+      action_runner.Wait(5)
+      self.AnimateShadow(action_runner, 'card')
+      #FIXME(wiltzius) disabling until this issue is fixed:
+      # https://github.com/Polymer/paper-shadow/issues/12
+      #self.AnimateShadow(action_runner, 'fab')
 
   def AnimateShadow(self, action_runner, eid):
     for i in range(1, 6):
