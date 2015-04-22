@@ -77,7 +77,12 @@ message SystemProfileProto {
 
   // Information on the user's operating system.
   message OS {
-    // The user's operating system.
+    // The user's operating system. This should be one of:
+    // - Android
+    // - Windows NT
+    // - Linux (includes ChromeOS)
+    // - iPhone OS
+    // - Mac OS X
     optional string name = 1;
 
     // The version of the OS.  The meaning of this field is OS-dependent.
