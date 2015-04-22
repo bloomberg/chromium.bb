@@ -128,6 +128,8 @@ class WebLayerImpl : public blink::WebLayer, public cc::LayerClient {
   virtual blink::WebScrollBlocksOn scrollBlocksOn() const;
   virtual void setFrameTimingRequests(
       const blink::WebVector<std::pair<int64_t, blink::WebRect>>& requests);
+  virtual blink::WebVector<std::pair<int64_t, blink::WebRect>>
+  frameTimingRequests() const;
   virtual void setIsContainerForFixedPositionLayers(bool is_container);
   virtual bool isContainerForFixedPositionLayers() const;
   virtual void setPositionConstraint(

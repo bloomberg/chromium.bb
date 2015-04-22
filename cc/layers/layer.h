@@ -546,6 +546,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // Sets new frame timing requests for this layer.
   void SetFrameTimingRequests(const std::vector<FrameTimingRequest>& requests);
 
+  // Accessor for unit tests
+  const std::vector<FrameTimingRequest>& FrameTimingRequests() const {
+    return frame_timing_requests_;
+  }
+
   void DidBeginTracing();
 
  protected:
