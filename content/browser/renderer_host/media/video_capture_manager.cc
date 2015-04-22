@@ -332,7 +332,7 @@ void VideoCaptureManager::HandleQueuedStartRequest() {
           entry->stream_type,
           request->params(),
           base::Passed(entry->video_capture_controller()->NewDeviceClient(
-              device_task_runner_))),
+              device_task_runner_, request->params().requested_format))),
       base::Bind(&VideoCaptureManager::OnDeviceStarted, this,
                  request->serial_id()));
 }

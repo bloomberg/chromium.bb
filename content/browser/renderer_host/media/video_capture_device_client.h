@@ -24,18 +24,12 @@ class VideoCaptureController;
 // often be called on some auxiliary thread depending on the platform and the
 // device type; including, for example, the DirectShow thread on Windows, the
 // v4l2_thread on Linux, and the UI thread for tab capture.
-//
-// It has an internal ref counted TextureWrapHelper class used to wrap incoming
-// GpuMemoryBuffers into Texture backed VideoFrames. This class creates and
-// manages the necessary entities to interact with the GPU process, notably an
-// offscreen Context to avoid janking the UI thread.
 class CONTENT_EXPORT VideoCaptureDeviceClient
     : public media::VideoCaptureDevice::Client {
  public:
   VideoCaptureDeviceClient(
       const base::WeakPtr<VideoCaptureController>& controller,
-      const scoped_refptr<VideoCaptureBufferPool>& buffer_pool,
-      const scoped_refptr<base::SingleThreadTaskRunner>& capture_task_runner);
+      const scoped_refptr<VideoCaptureBufferPool>& buffer_pool);
   ~VideoCaptureDeviceClient() override;
 
   // VideoCaptureDevice::Client implementation.
@@ -53,13 +47,11 @@ class CONTENT_EXPORT VideoCaptureDeviceClient
                                  const media::VideoCaptureFormat& frame_format,
                                  int clockwise_rotation,
                                  const base::TimeTicks& timestamp) override;
-  scoped_ptr<Buffer> ReserveOutputBuffer(media::VideoPixelFormat format,
-                                         const gfx::Size& dimensions) override;
-  void OnIncomingCapturedBuffer(scoped_ptr<Buffer> buffer,
-                                const media::VideoCaptureFormat& frame_format,
-                                const base::TimeTicks& timestamp) override;
+  scoped_refptr<Buffer> ReserveOutputBuffer(
+      media::VideoPixelFormat format,
+      const gfx::Size& dimensions) override;
   void OnIncomingCapturedVideoFrame(
-      scoped_ptr<Buffer> buffer,
+      const scoped_refptr<Buffer>& buffer,
       const scoped_refptr<media::VideoFrame>& frame,
       const base::TimeTicks& timestamp) override;
   void OnError(const std::string& reason) override;
@@ -71,13 +63,6 @@ class CONTENT_EXPORT VideoCaptureDeviceClient
 
   // The pool of shared-memory buffers used for capturing.
   const scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
-
-  // Internal delegate for GpuMemoryBuffer-into-VideoFrame wrapping.
-  class TextureWrapHelper;
-  scoped_refptr<TextureWrapHelper> texture_wrap_helper_;
-  // Reference to Capture Thread task runner, where |texture_wrap_helper_|
-  // lives.
-  const scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner_;
 
   media::VideoPixelFormat last_captured_pixel_format_;
 

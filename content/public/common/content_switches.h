@@ -252,6 +252,9 @@ CONTENT_EXPORT extern const char kDisableWebRtcHWEncoding[];
 CONTENT_EXPORT extern const char kEnableWebRtcHWH264Encoding[];
 CONTENT_EXPORT extern const char kEnableWebRtcStunOrigin[];
 extern const char kWebRtcMaxCaptureFramerate[];
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+CONTENT_EXPORT extern const char kEnableWebRtcCaptureToTexture[];
+#endif
 #endif
 
 #if defined(OS_ANDROID)

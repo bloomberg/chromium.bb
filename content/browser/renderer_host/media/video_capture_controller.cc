@@ -26,6 +26,10 @@
 #include "content/browser/compositor/image_transport_factory.h"
 #endif
 
+#if defined(ENABLE_WEBRTC) && (defined(OS_LINUX) || defined(OS_MACOSX))
+#include "content/browser/renderer_host/media/video_capture_texture_wrapper.h"
+#endif
+
 using media::VideoCaptureFormat;
 using media::VideoFrame;
 
@@ -137,10 +141,21 @@ VideoCaptureController::GetWeakPtrForIOThread() {
 
 scoped_ptr<media::VideoCaptureDevice::Client>
 VideoCaptureController::NewDeviceClient(
-    const scoped_refptr<base::SingleThreadTaskRunner>& capture_task_runner) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& capture_task_runner,
+    const media::VideoCaptureFormat& format) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return make_scoped_ptr(new VideoCaptureDeviceClient(
-      this->GetWeakPtrForIOThread(), buffer_pool_, capture_task_runner));
+#if defined(ENABLE_WEBRTC) && (defined(OS_LINUX) || defined(OS_MACOSX))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWebRtcCaptureToTexture)) {
+    return make_scoped_ptr(new VideoCaptureTextureWrapper(
+        this->GetWeakPtrForIOThread(), buffer_pool_, capture_task_runner,
+        format));
+    DVLOG(1) << "TextureWrapper, format " << format.ToString();
+  }
+#endif
+  return make_scoped_ptr(
+      new VideoCaptureDeviceClient(this->GetWeakPtrForIOThread(),
+                                   buffer_pool_));
 }
 
 void VideoCaptureController::AddClient(
@@ -272,12 +287,11 @@ VideoCaptureController::~VideoCaptureController() {
 }
 
 void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
-    scoped_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
+    const scoped_refptr<media::VideoCaptureDevice::Client::Buffer>& buffer,
     const scoped_refptr<VideoFrame>& frame,
     const base::TimeTicks& timestamp) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  const int buffer_id = buffer->id();
-  DCHECK_NE(buffer_id, VideoCaptureBufferPool::kInvalidId);
+  DCHECK_NE(buffer->id(), VideoCaptureBufferPool::kInvalidId);
 
   int count = 0;
   if (state_ == VIDEO_CAPTURE_STATE_STARTED) {
@@ -302,24 +316,24 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
         DCHECK(frame->coded_size() == frame->visible_rect().size())
             << "Textures are always supposed to be tightly packed.";
         client->event_handler->OnMailboxBufferReady(client->controller_id,
-                                                    buffer_id,
+                                                    buffer->id(),
                                                     *frame->mailbox_holder(),
                                                     frame->coded_size(),
                                                     timestamp,
                                                     copy_of_metadata.Pass());
       } else if (frame->format() == media::VideoFrame::I420) {
-        bool is_new_buffer = client->known_buffers.insert(buffer_id).second;
+        bool is_new_buffer = client->known_buffers.insert(buffer->id()).second;
         if (is_new_buffer) {
           // On the first use of a buffer on a client, share the memory handle.
           size_t memory_size = 0;
           base::SharedMemoryHandle remote_handle = buffer_pool_->ShareToProcess(
-              buffer_id, client->render_process_handle, &memory_size);
+              buffer->id(), client->render_process_handle, &memory_size);
           client->event_handler->OnBufferCreated(
-              client->controller_id, remote_handle, memory_size, buffer_id);
+              client->controller_id, remote_handle, memory_size, buffer->id());
         }
 
         client->event_handler->OnBufferReady(
-            client->controller_id, buffer_id, frame->coded_size(),
+            client->controller_id, buffer->id(), frame->coded_size(),
             frame->visible_rect(), timestamp, copy_of_metadata.Pass());
       } else {
         // VideoFrame format not supported.
@@ -328,9 +342,9 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
       }
 
       bool inserted =
-          client->active_buffers.insert(std::make_pair(buffer_id, frame))
+          client->active_buffers.insert(std::make_pair(buffer->id(), frame))
               .second;
-      DCHECK(inserted) << "Unexpected duplicate buffer: " << buffer_id;
+      DCHECK(inserted) << "Unexpected duplicate buffer: " << buffer->id();
       count++;
     }
   }
@@ -351,7 +365,7 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
     has_received_frames_ = true;
   }
 
-  buffer_pool_->HoldForConsumers(buffer_id, count);
+  buffer_pool_->HoldForConsumers(buffer->id(), count);
 }
 
 void VideoCaptureController::DoErrorOnIOThread() {

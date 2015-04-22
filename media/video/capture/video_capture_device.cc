@@ -128,8 +128,6 @@ const char* VideoCaptureDevice::Name::GetCaptureApiTypeString() const {
 }
 #endif
 
-VideoCaptureDevice::Client::Buffer::~Buffer() {}
-
 VideoCaptureDevice::~VideoCaptureDevice() {}
 
 int VideoCaptureDevice::GetPowerLineFrequencyForLocation() const {
