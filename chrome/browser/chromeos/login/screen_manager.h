@@ -22,7 +22,7 @@ class ScreenManager {
   virtual ~ScreenManager();
 
   // Getter for screen with lazy initialization.
-  BaseScreen* GetScreen(const std::string& screen_name);
+  virtual BaseScreen* GetScreen(const std::string& screen_name);
 
   // Factory for screen instances.
   virtual BaseScreen* CreateScreen(const std::string& screen_name) = 0;

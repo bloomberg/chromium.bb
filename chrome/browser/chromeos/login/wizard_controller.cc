@@ -286,20 +286,19 @@ void WizardController::Init(const std::string& first_screen_name) {
 }
 
 ErrorScreen* WizardController::GetErrorScreen() {
-  return static_cast<ErrorScreen*>(GetScreen(kErrorScreenName));
+  return oobe_display_->GetErrorScreen();
+}
+
+BaseScreen* WizardController::GetScreen(const std::string& screen_name) {
+  if (screen_name == kErrorScreenName)
+    return GetErrorScreen();
+  return ScreenManager::GetScreen(screen_name);
 }
 
 BaseScreen* WizardController::CreateScreen(const std::string& screen_name) {
   if (screen_name == kNetworkScreenName) {
     scoped_ptr<NetworkScreen> screen(
         new NetworkScreen(this, this, oobe_display_->GetNetworkView()));
-    screen->Initialize(nullptr /* context */);
-    return screen.release();
-  } else if (screen_name == kErrorScreenName) {
-    scoped_ptr<ErrorScreen> screen =
-        static_cast<OobeUI*>(oobe_display_)->GetErrorScreen();
-    if (!screen)
-      screen.reset(new ErrorScreen(this, oobe_display_->GetNetworkErrorView()));
     screen->Initialize(nullptr /* context */);
     return screen.release();
   } else if (screen_name == kUpdateScreenName) {

@@ -19,6 +19,7 @@ class CoreOobeActor;
 class DeviceDisabledScreenActor;
 class EnableDebuggingScreenActor;
 class EnrollmentScreenActor;
+class ErrorScreen;
 class EulaView;
 class GaiaScreenHandler;
 class HIDDetectionView;
@@ -84,7 +85,7 @@ class OobeDisplay {
   virtual KioskEnableScreenActor* GetKioskEnableScreenActor() = 0;
   virtual TermsOfServiceScreenActor* GetTermsOfServiceScreenActor() = 0;
   virtual UserImageView* GetUserImageView() = 0;
-  virtual NetworkErrorView* GetNetworkErrorView() = 0;
+  virtual ErrorScreen* GetErrorScreen() = 0;
   virtual WrongHWIDScreenActor* GetWrongHWIDScreenActor() = 0;
   virtual AutoEnrollmentCheckScreenActor*
       GetAutoEnrollmentCheckScreenActor() = 0;

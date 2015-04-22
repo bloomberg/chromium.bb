@@ -133,6 +133,7 @@ class WizardController : public BaseScreenDelegate,
   bool login_screen_started() const { return login_screen_started_; }
 
   // ScreenManager implementation.
+  BaseScreen* GetScreen(const std::string& screen_name) override;
   BaseScreen* CreateScreen(const std::string& screen_name) override;
 
   static const char kNetworkScreenName[];

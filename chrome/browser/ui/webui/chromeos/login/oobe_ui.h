@@ -110,7 +110,7 @@ class OobeUI : public OobeDisplay,
   KioskEnableScreenActor* GetKioskEnableScreenActor() override;
   TermsOfServiceScreenActor* GetTermsOfServiceScreenActor() override;
   UserImageView* GetUserImageView() override;
-  NetworkErrorView* GetNetworkErrorView() override;
+  ErrorScreen* GetErrorScreen() override;
   WrongHWIDScreenActor* GetWrongHWIDScreenActor() override;
   AutoEnrollmentCheckScreenActor* GetAutoEnrollmentCheckScreenActor() override;
   SupervisedUserCreationScreenHandler* GetSupervisedUserCreationScreenActor()
@@ -167,11 +167,6 @@ class OobeUI : public OobeDisplay,
   NetworkStateInformer* network_state_informer_for_test() const {
     return network_state_informer_.get();
   }
-
-  // If an error screen was created during initialization, then it may be
-  // fetched using this method, while also passing the ownership of
-  // |error_screen_|.
-  scoped_ptr<ErrorScreen> GetErrorScreen();
 
  private:
   // Initializes |screen_ids_| and |screen_names_| structures.

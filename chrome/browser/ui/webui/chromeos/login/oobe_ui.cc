@@ -294,18 +294,8 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   error_screen_handler_ = new ErrorScreenHandler();
   AddScreenHandler(error_screen_handler_);
 
-  // Initialize ErrorScreen if it hasn't initialized so that NetworkErrorModel
-  // is binded properly.
-  NetworkErrorModel* network_error_model = nullptr;
-  if (WizardController::default_controller()) {
-    network_error_model = static_cast<NetworkErrorModel*>(
-        WizardController::default_controller()->GetScreen(
-            WizardController::kErrorScreenName));
-    CHECK(network_error_model);
-  } else {
-    error_screen_.reset(new ErrorScreen(nullptr, error_screen_handler_));
-    network_error_model = error_screen_.get();
-  }
+  error_screen_.reset(new ErrorScreen(nullptr, error_screen_handler_));
+  NetworkErrorModel* network_error_model = error_screen_.get();
 
   EnrollmentScreenHandler* enrollment_screen_handler =
       new EnrollmentScreenHandler(network_state_informer_, network_error_model);
@@ -468,8 +458,8 @@ UserImageView* OobeUI::GetUserImageView() {
   return user_image_view_;
 }
 
-NetworkErrorView* OobeUI::GetNetworkErrorView() {
-  return error_screen_handler_;
+ErrorScreen* OobeUI::GetErrorScreen() {
+  return error_screen_.get();
 }
 
 SupervisedUserCreationScreenHandler*
@@ -525,10 +515,6 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
 
   bool new_kiosk_ui = KioskAppMenuHandler::EnableNewKioskUI();
   localized_strings->SetString("newKioskUI", new_kiosk_ui ? "on" : "off");
-}
-
-scoped_ptr<ErrorScreen> OobeUI::GetErrorScreen() {
-  return error_screen_.Pass();
 }
 
 void OobeUI::InitializeScreenMaps() {

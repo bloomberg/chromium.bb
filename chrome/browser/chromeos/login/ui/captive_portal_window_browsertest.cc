@@ -218,18 +218,17 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalWindowCtorDtorTest, OpenPortalDialog) {
   ASSERT_TRUE(host);
   OobeUI* oobe = host->GetOobeUI();
   ASSERT_TRUE(oobe);
-  NetworkErrorView* network_error_view = oobe->GetNetworkErrorView();
-  ASSERT_TRUE(network_error_view);
 
   // Error screen asks portal detector to change detection strategy.
-  ErrorScreen error_screen(NULL, network_error_view);
+  ErrorScreen* error_screen = oobe->GetErrorScreen();
+  ASSERT_TRUE(error_screen);
 
   ASSERT_EQ(PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN, strategy_id());
   network_portal_detector()->NotifyObserversForTesting();
   OobeScreenWaiter(OobeDisplay::SCREEN_ERROR_MESSAGE).Wait();
   ASSERT_EQ(PortalDetectorStrategy::STRATEGY_ID_ERROR_SCREEN, strategy_id());
 
-  error_screen.ShowCaptivePortal();
+  error_screen->ShowCaptivePortal();
 }
 
 }  // namespace chromeos
