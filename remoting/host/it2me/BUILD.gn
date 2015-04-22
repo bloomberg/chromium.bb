@@ -45,6 +45,7 @@ if (!is_win && enable_remoting_host) {
       "//remoting/host",
       "//remoting/host/native_messaging",
       "//remoting/proto",
+      "//ui/gfx",
     ]
 
     if (enable_webrtc) {

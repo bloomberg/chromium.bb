@@ -184,6 +184,7 @@ if (!is_mac) {
       deps += [
         "//remoting/codec:unit_tests",
         "//remoting/host:unit_tests",
+        "//ui/gfx",
       ]
     }
 

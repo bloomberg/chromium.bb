@@ -741,6 +741,9 @@ if (!is_android) {
         deps += [
           #'chrome.gyp:chrome_nacl_win64',  TODO(GYP)
         ]
+        configs -= [ "//build/config/win:default_incremental_linking" ]
+        configs +=
+            [ "//build/config/win:default_large_module_incremental_linking" ]
       }
       if (is_linux) {
         deps += [
@@ -1143,6 +1146,9 @@ if (!is_android) {
         "//third_party/wtl",
         "//ui/resources",
       ]
+      configs -= [ "//build/config/win:default_incremental_linking" ]
+      configs +=
+          [ "//build/config/win:default_large_module_incremental_linking" ]
     } else {
       sources -= [ "../app/chrome_version.rc.version" ]
     }
@@ -1730,7 +1736,11 @@ if (!is_android) {
         "//testing/perf",
       ]
 
-      if (!is_win) {
+      if (is_win) {
+        configs -= [ "//build/config/win:default_incremental_linking" ]
+        configs +=
+            [ "//build/config/win:default_large_module_incremental_linking" ]
+      } else {
         sources -= [
           "../app/chrome_command_ids.h",
 
