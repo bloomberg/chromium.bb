@@ -104,8 +104,13 @@ remoting.Me2MeActivity.prototype.createCredentialsProvider_ = function() {
    * @param {function(string):void} onPinFetched
    */
   var requestPin = function(supportsPairing, onPinFetched) {
+    // Set time when PIN was requested.
+    var authStartTime = new Date().getTime();
     that.pinDialog_.show(supportsPairing).then(function(/** string */ pin) {
       remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
+      // Done obtaining PIN information. Log time taken for PIN entry.
+      var logToServer = that.desktopActivity_.getSession().getLogger();
+      logToServer.setAuthTotalTime(new Date().getTime() - authStartTime);
       onPinFetched(pin);
     }).catch(function(/** remoting.Error */ error) {
       base.debug.assert(error.hasTag(remoting.Error.Tag.CANCELLED));

@@ -29,6 +29,8 @@ remoting.LogToServer = function(signalStrategy) {
   this.signalStrategy_ = signalStrategy;
   /** @private {string} */
   this.connectionType_ = '';
+  /** @private */
+  this.authTotalTime_ = 0;
 
   this.setSessionId_();
   signalStrategy.sendConnectionSetupResults(this);
@@ -171,8 +173,10 @@ remoting.LogToServer.prototype.logAccumulatedStatistics_ = function() {
  */
 remoting.LogToServer.prototype.log_ = function(entry) {
   // Log the time taken to get to this point from the time this session started.
+  // Exclude time taken for authorization.
   var sessionDurationInSeconds =
-      (new Date().getTime() - this.sessionStartTime_) / 1000.0;
+      (new Date().getTime() - this.sessionStartTime_ -
+          this.authTotalTime_) / 1000.0;
   entry.addSessionDuration(sessionDurationInSeconds);
 
   // Send the stanza to the debug log.
@@ -247,3 +251,12 @@ remoting.LogToServer.generateSessionId_ = function() {
   }
   return idArray.join('');
 };
+
+/**
+ * @param {number} totalTime The value of time taken to complete authorization.
+ * @return {void} Nothing.
+ */
+remoting.LogToServer.prototype.setAuthTotalTime = function(totalTime) {
+  this.authTotalTime_ = totalTime;
+};
+
