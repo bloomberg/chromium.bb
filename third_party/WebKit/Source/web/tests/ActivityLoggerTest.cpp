@@ -115,7 +115,7 @@ TEST_F(ActivityLoggerTest, EventHandler)
         "blinkAddEventListener | A | click\n"
         "blinkAddElement | a | \n"
         "blinkAddEventListener | BODY | change\n"
-        "blinkAddEventListener | DOMWindow | focus\n"
+        "blinkAddEventListener | LocalDOMWindow | focus\n"
         "blinkAddEventListener | BODY | onload";
     executeScriptInMainWorld(code);
     ASSERT_TRUE(verifyActivities(""));

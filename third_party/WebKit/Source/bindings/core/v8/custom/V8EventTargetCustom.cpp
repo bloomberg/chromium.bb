@@ -42,7 +42,7 @@ v8::Handle<v8::Value> toV8(EventTarget* impl, v8::Handle<v8::Object> creationCon
         return v8::Null(isolate);
 
     // FIXME: This naming seems broken.
-    if (impl->interfaceName() == EventTargetNames::DOMWindow)
+    if (impl->interfaceName() == EventTargetNames::LocalDOMWindow)
         return toV8(static_cast<DOMWindow*>(impl), creationContext, isolate);
 
     v8::Local<v8::Value> wrapper = DOMDataStore::getWrapper(impl, isolate);

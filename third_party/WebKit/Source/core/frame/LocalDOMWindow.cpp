@@ -477,6 +477,11 @@ void LocalDOMWindow::dispose()
     removeAllEventListeners();
 }
 
+const AtomicString& LocalDOMWindow::interfaceName() const
+{
+    return EventTargetNames::LocalDOMWindow;
+}
+
 ExecutionContext* LocalDOMWindow::executionContext() const
 {
     return m_document.get();
