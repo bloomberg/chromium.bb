@@ -4,6 +4,7 @@
 
 #include "chrome/browser/download/download_commands.h"
 
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_item_model.h"
@@ -15,7 +16,9 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/google/core/browser/google_util.h"
 #include "grit/theme_resources.h"
+#include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -29,7 +32,7 @@ DownloadCommands::DownloadCommands(content::DownloadItem* download_item)
   DCHECK(download_item);
 }
 
-int DownloadCommands::GetCommandIconId(Command command) {
+int DownloadCommands::GetCommandIconId(Command command) const {
   switch (command) {
     case PAUSE:
       return IDR_DOWNLOAD_NOTIFICATION_MENU_PAUSE;
@@ -56,6 +59,16 @@ int DownloadCommands::GetCommandIconId(Command command) {
   }
   NOTREACHED();
   return -1;
+}
+
+GURL DownloadCommands::GetLearnMoreURLForInterruptedDownload() const {
+  GURL learn_more_url(chrome::kDownloadInterruptedLearnMoreURL);
+  learn_more_url = google_util::AppendGoogleLocaleParam(
+      learn_more_url, g_browser_process->GetApplicationLocale());
+  return net::AppendQueryParameter(
+      learn_more_url, "ctx",
+      base::StringPrintf("%d",
+                         static_cast<int>(download_item_->GetLastReason())));
 }
 
 gfx::Image DownloadCommands::GetCommandIcon(Command command) {
@@ -194,7 +207,7 @@ void DownloadCommands::ExecuteCommand(Command command) {
     }
     case LEARN_MORE_INTERRUPTED:
       GetBrowser()->OpenURL(content::OpenURLParams(
-          GURL(chrome::kDownloadInterruptedLearnMoreURL), content::Referrer(),
+          GetLearnMoreURLForInterruptedDownload(), content::Referrer(),
           NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK, false));
       break;
     case PAUSE:
