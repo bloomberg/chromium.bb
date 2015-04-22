@@ -54,14 +54,14 @@ public:
 
         // Returns the rect damaged by scrolling within |scrollRect| by
         // |scrollDelta|. This rect must be repainted.
-        blink::IntRect calculateScrollDamage() const;
+        IntRect calculateScrollDamage() const;
 
         // Returns the smallest rect containing all paint rects.
-        blink::IntRect calculatePaintBounds() const;
+        IntRect calculatePaintBounds() const;
 
-        blink::IntPoint scrollDelta;
-        blink::IntRect scrollRect;
-        WTF::Vector<blink::IntRect> paintRects;
+        IntPoint scrollDelta;
+        IntRect scrollRect;
+        WTF::Vector<IntRect> paintRects;
     };
 
     // There is a PendingUpdate if invalidateRect or scrollRect were called and
@@ -73,14 +73,14 @@ public:
     void popPendingUpdate(PendingUpdate*);
 
     // The given rect should be repainted.
-    void invalidateRect(const blink::IntRect&);
+    void invalidateRect(const IntRect&);
 
     // The given rect should be scrolled by the given amounts.
-    void scrollRect(int dx, int dy, const blink::IntRect& clipRect);
+    void scrollRect(int dx, int dy, const IntRect& clipRect);
 
 private:
-    blink::IntRect scrollPaintRect(const blink::IntRect& paintRect, int dx, int dy) const;
-    bool shouldInvalidateScrollRect(const blink::IntRect&) const;
+    IntRect scrollPaintRect(const IntRect& paintRect, int dx, int dy) const;
+    bool shouldInvalidateScrollRect(const IntRect&) const;
     void invalidateScrollRect();
     void combinePaintRects();
 

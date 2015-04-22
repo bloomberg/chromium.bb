@@ -13,22 +13,24 @@
 
 namespace {
 
-String connectionTypeToString(blink::WebConnectionType type)
+using namespace blink;
+
+String connectionTypeToString(WebConnectionType type)
 {
     switch (type) {
-    case blink::ConnectionTypeCellular:
+    case ConnectionTypeCellular:
         return "cellular";
-    case blink::ConnectionTypeBluetooth:
+    case ConnectionTypeBluetooth:
         return "bluetooth";
-    case blink::ConnectionTypeEthernet:
+    case ConnectionTypeEthernet:
         return "ethernet";
-    case blink::ConnectionTypeWifi:
+    case ConnectionTypeWifi:
         return "wifi";
-    case blink::ConnectionTypeOther:
+    case ConnectionTypeOther:
         return "other";
-    case blink::ConnectionTypeNone:
+    case ConnectionTypeNone:
         return "none";
-    case blink::ConnectionTypeUnknown:
+    case ConnectionTypeUnknown:
         return "unknown";
     }
     ASSERT_NOT_REACHED();

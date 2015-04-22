@@ -64,7 +64,7 @@ namespace blink {
 
 namespace {
 
-class NodeDispatchEventTask: public blink::SuspendableTask {
+class NodeDispatchEventTask: public SuspendableTask {
     WTF_MAKE_NONCOPYABLE(NodeDispatchEventTask);
 public:
     NodeDispatchEventTask(const WebPrivatePtr<Node>& node, WebDOMEvent event)
@@ -87,7 +87,7 @@ private:
     WebDOMEvent m_event;
 };
 
-class NodeDispatchSimulatedClickTask: public blink::SuspendableTask {
+class NodeDispatchSimulatedClickTask: public SuspendableTask {
     WTF_MAKE_NONCOPYABLE(NodeDispatchSimulatedClickTask);
 public:
     NodeDispatchSimulatedClickTask(const WebPrivatePtr<Node>& node)

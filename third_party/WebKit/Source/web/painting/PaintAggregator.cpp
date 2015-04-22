@@ -237,7 +237,7 @@ void PaintAggregator::invalidateRect(const IntRect& rect)
     // with all existing paints, which means that tracking the size of
     // paintRects at the time when popPendingUpdate() is called may mask
     // certain performance problems.
-    blink::Platform::current()->histogramCustomCounts("MPArch.RW_IntermediatePaintRectCount",
+    Platform::current()->histogramCustomCounts("MPArch.RW_IntermediatePaintRectCount",
                                           m_update.paintRects.size(), 1, 100, 50);
 }
 

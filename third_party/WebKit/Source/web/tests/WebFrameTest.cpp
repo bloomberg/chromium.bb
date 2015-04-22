@@ -4295,7 +4295,7 @@ protected:
     CompositedSelectionBoundsTest()
         : m_fakeSelectionLayerTreeView(m_fakeSelectionWebViewClient.selectionLayerTreeView())
     {
-        blink::RuntimeEnabledFeatures::setCompositedSelectionUpdateEnabled(true);
+        RuntimeEnabledFeatures::setCompositedSelectionUpdateEnabled(true);
         registerMockedHttpURLLoad("Ahem.ttf");
 
         m_webViewHelper.initialize(true, 0, &m_fakeSelectionWebViewClient);
@@ -4333,7 +4333,7 @@ protected:
         v8::Array& expectedResult = *v8::Array::Cast(*result);
         ASSERT_GE(expectedResult.Length(), 10u);
 
-        blink::Node* layerOwnerNodeForStart = blink::V8Node::toImplWithTypeCheck(v8::Isolate::GetCurrent(), expectedResult.Get(0));
+        blink::Node* layerOwnerNodeForStart = V8Node::toImplWithTypeCheck(v8::Isolate::GetCurrent(), expectedResult.Get(0));
         ASSERT_TRUE(layerOwnerNodeForStart);
         EXPECT_EQ(layerOwnerNodeForStart->layoutObject()->enclosingLayer()->enclosingLayerForPaintInvalidation()->graphicsLayerBacking()->platformLayer()->id(), selectStart->layerId);
         v8::Local<v8::Context> context = v8::Isolate::GetCurrent()->GetCurrentContext();
@@ -4341,7 +4341,8 @@ protected:
         EXPECT_EQ(expectedResult.Get(context, 2).ToLocalChecked().As<v8::Int32>()->Value(), selectStart->edgeTopInLayer.y);
         EXPECT_EQ(expectedResult.Get(context, 3).ToLocalChecked().As<v8::Int32>()->Value(), selectStart->edgeBottomInLayer.x);
 
-        blink::Node* layerOwnerNodeForEnd = blink::V8Node::toImplWithTypeCheck(v8::Isolate::GetCurrent(), expectedResult.Get(context, 5).ToLocalChecked());
+        blink::Node* layerOwnerNodeForEnd = V8Node::toImplWithTypeCheck(v8::Isolate::GetCurrent(), expectedResult.Get(context, 5).ToLocalChecked());
+
         ASSERT_TRUE(layerOwnerNodeForEnd);
         EXPECT_EQ(layerOwnerNodeForEnd->layoutObject()->enclosingLayer()->enclosingLayerForPaintInvalidation()->graphicsLayerBacking()->platformLayer()->id(), selectEnd->layerId);
         EXPECT_EQ(expectedResult.Get(context, 6).ToLocalChecked().As<v8::Int32>()->Value(), selectEnd->edgeTopInLayer.x);

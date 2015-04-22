@@ -426,7 +426,7 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
             document->contentSecurityPolicy()->deprecatedHeaderType(),
             starterOrigin,
             workerClients.release(),
-            static_cast<blink::V8CacheOptions>(m_workerStartData.v8CacheOptions));
+            static_cast<V8CacheOptions>(m_workerStartData.v8CacheOptions));
 
     m_mainScriptLoader.clear();
 
