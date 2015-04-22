@@ -52,7 +52,6 @@
         '../chrome/chrome.gyp:interactive_ui_tests',
         '../chrome/chrome.gyp:load_library_perf_tests',
         '../chrome/chrome.gyp:performance_browser_tests',
-        '../chrome/chrome.gyp:service_discovery_sniffer',
         '../chrome/chrome.gyp:sync_integration_tests',
         '../chrome/chrome.gyp:sync_performance_tests',
         '../chrome/chrome.gyp:unit_tests',
@@ -199,7 +198,6 @@
         '../ui/display/display.gyp:display_unittests',
         '../ui/events/events.gyp:events_unittests',
         '../ui/gfx/gfx_tests.gyp:gfx_unittests',
-        '../ui/keyboard/keyboard.gyp:keyboard_unittests',
         '../ui/message_center/message_center.gyp:message_center_unittests',
         '../ui/snapshot/snapshot.gyp:snapshot_unittests',
         '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests',
@@ -224,6 +222,11 @@
             '../extensions/shell/app_shell.gyp:app_shell',
             '../extensions/shell/app_shell.gyp:app_shell_unittests',
           ],
+        }],
+        ['enable_mdns==1', {
+          'dependencies': [
+            '../chrome/chrome.gyp:service_discovery_sniffer',
+          ]
         }],
         ['remoting==1', {
           'dependencies': [
@@ -259,6 +262,7 @@
             '../ui/aura/aura.gyp:aura_bench',
             '../ui/aura/aura.gyp:aura_demo',
             '../ui/aura/aura.gyp:aura_unittests',
+            '../ui/keyboard/keyboard.gyp:keyboard_unittests',
             '../ui/wm/wm.gyp:wm_unittests',
           ],
         }],
@@ -365,6 +369,16 @@
             '../rlz/rlz.gyp:rlz_unittests',
           ],
         }],
+        ['OS=="android" or OS=="linux" or os_bsd==1', {
+          'dependencies': [
+            '../breakpad/breakpad.gyp:core-2-minidump',
+            '../breakpad/breakpad.gyp:microdump_stackwalk',
+            '../breakpad/breakpad.gyp:minidump_dump',
+            '../breakpad/breakpad.gyp:minidump_stackwalk',
+            '../breakpad/breakpad.gyp:symupload',
+            '../third_party/codesighs/codesighs.gyp:nm2tsv',
+          ],
+        }],
         ['OS=="linux"', {
           'dependencies': [
             '../breakpad/breakpad.gyp:breakpad_unittests',
@@ -462,15 +476,6 @@
             '../third_party/codesighs/codesighs.gyp:msmap2tsv',
             '../third_party/pdfium/samples/samples.gyp:pdfium_diff',
             '../win8/win8.gyp:metro_viewer',
-          ],
-        }, {
-          'dependencies': [
-            '../breakpad/breakpad.gyp:core-2-minidump',
-            '../breakpad/breakpad.gyp:microdump_stackwalk',
-            '../breakpad/breakpad.gyp:minidump_dump',
-            '../breakpad/breakpad.gyp:minidump_stackwalk',
-            '../breakpad/breakpad.gyp:symupload',
-            '../third_party/codesighs/codesighs.gyp:nm2tsv',
           ],
         }],
       ],
@@ -669,7 +674,6 @@
       'type': 'none',
       'dependencies': [
         'All',
-        'aura_builder',
         'blink_tests',
         'chromium_builder_asan',
         'chromium_builder_chromedriver',
@@ -680,6 +684,11 @@
         'chromium_gpu_debug_builder',
       ],
       'conditions': [
+        ['use_aura==1', {
+          'dependencies': [
+            'aura_builder',
+          ]
+        }],
         ['OS=="win"', {
           'dependencies': [
             'chromium_builder',
