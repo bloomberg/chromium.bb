@@ -26,6 +26,9 @@
         "test": "cacheinvalidation_unittests"
       },
       {
+        "test": "cast_base_unittests"
+      },
+      {
         "test": "cast_media_unittests"
       },
       {
