@@ -54,7 +54,7 @@
       }, {
         'ffmpeg_config%': '<(target_arch)',
       }],
-      ['OS == "mac" or OS == "win" or OS == "openbsd"', {
+      ['OS == "mac" or OS == "win" or OS == "openbsd" or OS == "android"', {
         'os_config%': '<(OS)',
       }, {  # all other Unix OS's use the linux config
         'conditions': [
@@ -292,11 +292,17 @@
               'link_settings': {
                 'libraries': [
                   '-lm',
-                  '-lrt',
                   '-lz',
                 ],
               },
               'conditions': [
+                ['OS != "android"', {
+                  'link_settings': {
+                    'libraries': [
+                      '-lrt',
+                    ],
+                  },
+                }],
                 ['component == "shared_library"', {
                   # Export all symbols when building as component.
                   'cflags!': [

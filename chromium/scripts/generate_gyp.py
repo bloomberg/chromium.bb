@@ -103,7 +103,7 @@ GN_SOURCE_END = """]
 SUPPORTED_ARCHITECTURES = ['ia32', 'arm', 'arm-neon', 'x64', 'mipsel']
 SUPPORTED_TARGETS = ['Chromium', 'Chrome', 'ChromiumOS', 'ChromeOS']
 # Mac doesn't have any platform specific files, so just use linux and win.
-SUPPORTED_PLATFORMS = ['linux', 'win']
+SUPPORTED_PLATFORMS = ['android', 'linux', 'win']
 
 
 def NormalizeFilename(name):

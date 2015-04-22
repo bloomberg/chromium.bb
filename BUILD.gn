@@ -228,9 +228,12 @@ component("ffmpeg") {
       ]
       libs = [
         "m",
-        "rt",  # for clock_gettime on precise
         "z",
       ]
+      if (!is_android) {
+        # for clock_gettime on precise
+        libs += [ "rt" ]
+      }
       if (is_component_build) {
         # Export all symbols when building as component.
         configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
