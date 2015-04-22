@@ -5745,7 +5745,7 @@ DEFINE_TRACE(Document)
     visitor->trace(m_compositorPendingAnimations);
     visitor->trace(m_contextDocument);
     visitor->template registerWeakMembers<Document, &Document::clearWeakMembers>(this);
-    DocumentSupplementable::trace(visitor);
+    WillBeHeapSupplementable<Document>::trace(visitor);
 #endif
     TreeScope::trace(visitor);
     ContainerNode::trace(visitor);

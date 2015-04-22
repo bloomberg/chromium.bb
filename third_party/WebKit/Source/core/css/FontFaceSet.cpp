@@ -584,7 +584,7 @@ DEFINE_TRACE(FontFaceSet)
     visitor->trace(m_loadedFonts);
     visitor->trace(m_failedFonts);
     visitor->trace(m_nonCSSConnectedFaces);
-    DocumentSupplement::trace(visitor);
+    WillBeHeapSupplement<Document>::trace(visitor);
 #endif
     EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
