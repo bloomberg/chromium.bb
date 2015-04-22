@@ -83,11 +83,12 @@ remoting.ClientPluginImpl = function(container,
 
   /** @type {remoting.ClientPluginImpl} */
   var that = this;
-  /** @param {Event} event Message event from the plugin. */
-  this.plugin_.addEventListener('message', function(event) {
-      that.handleMessage_(
-          /** @type {remoting.ClientPluginMessage} */ (event.data));
-    }, false);
+  this.plugin_.addEventListener('message',
+        /** @param {Event} event Message event from the plugin. */
+        function(event) {
+          that.handleMessage_(
+              /** @type {remoting.ClientPluginMessage} */ (event.data));
+        }, false);
 
   if (remoting.settings.CLIENT_PLUGIN_TYPE == 'native') {
     window.setTimeout(this.showPluginForClickToPlay_.bind(this), 500);

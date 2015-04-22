@@ -34,31 +34,32 @@ browserTest.Predicate.prototype.description = function() {};
  * @return {Promise}
  */
 browserTest.waitFor = function(predicate, opt_timeout) {
-  /**
-   * @param {function():void} fulfill
-   * @param {function(Error):void} reject
-   */
-  return new Promise(function (fulfill, reject) {
-    if (opt_timeout === undefined) {
-      opt_timeout = browserTest.Timeout.DEFAULT;
-    }
+  return new Promise(
+      /**
+       * @param {function(boolean):void} fulfill
+       * @param {function(Error):void} reject
+       */
+      function (fulfill, reject) {
+        if (opt_timeout === undefined) {
+          opt_timeout = browserTest.Timeout.DEFAULT;
+        }
 
-    var timeout = /** @type {number} */ (opt_timeout);
-    var end = Number(Date.now()) + timeout;
-    var testPredicate = function() {
-      if (predicate.evaluate()) {
-        console.log(predicate.description() + ' satisfied.');
-        fulfill(true);
-      } else if (Date.now() >= end) {
-        reject(new Error('Timed out (' + opt_timeout + 'ms) waiting for ' +
-                         predicate.description()));
-      } else {
-        console.log(predicate.description() + ' not yet satisfied.');
-        window.setTimeout(testPredicate, 500);
-      }
-    };
-    testPredicate();
-  });
+        var timeout = /** @type {number} */ (opt_timeout);
+        var end = Number(Date.now()) + timeout;
+        var testPredicate = function() {
+          if (predicate.evaluate()) {
+            console.log(predicate.description() + ' satisfied.');
+            fulfill(true);
+          } else if (Date.now() >= end) {
+            reject(new Error('Timed out (' + opt_timeout + 'ms) waiting for ' +
+                             predicate.description()));
+          } else {
+            console.log(predicate.description() + ' not yet satisfied.');
+            window.setTimeout(testPredicate, 500);
+          }
+        };
+        testPredicate();
+      });
 };
 
 /**

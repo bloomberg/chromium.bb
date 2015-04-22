@@ -47,31 +47,32 @@ remoting.HostInstaller.isInstalled = function() {
   // Always do a fresh check as we don't get notified when the host is
   // uninstalled.
 
-  /** @param {function(*=):void} resolve */
-  return new Promise(function(resolve) {
-    // TODO(kelvinp): Use different native messaging ports for the Me2me host
-    // vs It2MeHost.
-    /** @type {chrome.runtime.Port} */
-    var port =
-        chrome.runtime.connectNative('com.google.chrome.remote_assistance');
+  return new Promise(
+      /** @param {function(*=):void} resolve */
+      function(resolve) {
+        // TODO(kelvinp): Use different native messaging ports for the Me2me
+        // host vs It2MeHost.
+        /** @type {chrome.runtime.Port} */
+        var port =
+            chrome.runtime.connectNative('com.google.chrome.remote_assistance');
 
-    function onMessage() {
-      port.onDisconnect.removeListener(onDisconnected);
-      port.onMessage.removeListener(onMessage);
-      port.disconnect();
-      resolve(true);
-    }
+        function onMessage() {
+          port.onDisconnect.removeListener(onDisconnected);
+          port.onMessage.removeListener(onMessage);
+          port.disconnect();
+          resolve(true);
+        }
 
-    function onDisconnected() {
-      port.onDisconnect.removeListener(onDisconnected);
-      port.onMessage.removeListener(onMessage);
-      resolve(false);
-    }
+        function onDisconnected() {
+          port.onDisconnect.removeListener(onDisconnected);
+          port.onMessage.removeListener(onMessage);
+          resolve(false);
+        }
 
-    port.onDisconnect.addListener(onDisconnected);
-    port.onMessage.addListener(onMessage);
-    port.postMessage({type: 'hello'});
-  });
+        port.onDisconnect.addListener(onDisconnected);
+        port.onMessage.addListener(onMessage);
+        port.postMessage({type: 'hello'});
+      });
 };
 
 /** @type {Object<string,string>} */

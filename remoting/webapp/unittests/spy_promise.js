@@ -245,7 +245,7 @@ base.SpyPromise.activate = function() {
   if (Promise === base.SpyPromise) {
     throw Error('base.SpyPromise is already active');
   }
-  Promise = base.SpyPromise;
+  Promise = /** @type {function(new:Promise)} */(base.SpyPromise);
 };
 
 /**
