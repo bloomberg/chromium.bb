@@ -65,6 +65,10 @@ class MockBluetoothAdapter : public BluetoothAdapter {
                void(const BluetoothDiscoveryFilter*,
                     const DiscoverySessionCallback& callback,
                     const ErrorCallback& error_callback));
+  MOCK_METHOD3(SetDiscoveryFilterRaw,
+               void(const BluetoothDiscoveryFilter*,
+                    const base::Closure& callback,
+                    const ErrorCallback& error_callback));
   MOCK_CONST_METHOD0(GetDevices, BluetoothAdapter::ConstDeviceList());
   MOCK_METHOD1(GetDevice, BluetoothDevice*(const std::string& address));
   MOCK_CONST_METHOD1(GetDevice,

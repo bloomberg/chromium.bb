@@ -20,6 +20,15 @@ class MockBluetoothDiscoverySession : public BluetoothDiscoverySession {
   MOCK_METHOD2(Stop,
                void(const base::Closure& callback,
                     const ErrorCallback& error_callback));
+  MOCK_METHOD3(SetDiscoveryFilterRaw,
+               void(BluetoothDiscoveryFilter* discovery_filter,
+                    const base::Closure& callback,
+                    const ErrorCallback& error_callback));
+
+ protected:
+  void SetDiscoveryFilter(scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+                          const base::Closure& callback,
+                          const ErrorCallback& error_callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockBluetoothDiscoverySession);

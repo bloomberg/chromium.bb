@@ -39,6 +39,7 @@ void MockBluetoothAdapter::SetDiscoveryFilter(
     scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
+  SetDiscoveryFilterRaw(discovery_filter.get(), callback, error_callback);
 }
 
 void MockBluetoothAdapter::StartDiscoverySessionWithFilter(

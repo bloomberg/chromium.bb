@@ -56,7 +56,6 @@
       {
         "name": "setDiscoveryFilter",
         "type": "function",
-        "platforms" : ["chromeos"],
         "description": "Set or clear discovery filter",
         "parameters": [
           {

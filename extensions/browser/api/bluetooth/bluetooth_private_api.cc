@@ -9,13 +9,13 @@
 #include "base/strings/string_util.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "device/bluetooth/bluetooth_discovery_session.h"
 #include "extensions/browser/api/bluetooth/bluetooth_api.h"
 #include "extensions/browser/api/bluetooth/bluetooth_event_router.h"
 #include "extensions/common/api/bluetooth_private.h"
 
 namespace bt_private = extensions::core_api::bluetooth_private;
-namespace SetDiscoveryFilter =
-    extensions::core_api::bluetooth_private::SetDiscoveryFilter;
+namespace SetDiscoveryFilter = bt_private::SetDiscoveryFilter;
 
 namespace extensions {
 
@@ -347,16 +347,71 @@ void BluetoothPrivateDisconnectAllFunction::OnErrorCallback(
   SendResponse(false);
 }
 
+void BluetoothPrivateSetDiscoveryFilterFunction::OnSuccessCallback() {
+  SendResponse(true);
+}
+
+void BluetoothPrivateSetDiscoveryFilterFunction::OnErrorCallback() {
+  SetError(kSetDiscoveryFilterFailed);
+  SendResponse(false);
+}
+
 bool BluetoothPrivateSetDiscoveryFilterFunction::DoWork(
     scoped_refptr<device::BluetoothAdapter> adapter) {
   scoped_ptr<SetDiscoveryFilter::Params> params(
       SetDiscoveryFilter::Params::Create(*args_));
+  auto& df_param = params->discovery_filter;
 
-  // TODO(jpawlowski): parse arguments, and call event router when method is
-  // implemented.
+  scoped_ptr<device::BluetoothDiscoveryFilter> discovery_filter;
 
-  SetError(kSetDiscoveryFilterFailed);
-  SendResponse(false);
+  // If all filter fields are empty, we are clearing filter. If any field is
+  // set, then create proper filter.
+  if (df_param.uuids.get() || df_param.rssi.get() || df_param.pathloss.get() ||
+      df_param.transport != bt_private::TransportType::TRANSPORT_TYPE_NONE) {
+    uint8_t transport;
+
+    switch (df_param.transport) {
+      case bt_private::TransportType::TRANSPORT_TYPE_LE:
+        transport = device::BluetoothDiscoveryFilter::Transport::TRANSPORT_LE;
+        break;
+      case bt_private::TransportType::TRANSPORT_TYPE_BREDR:
+        transport =
+            device::BluetoothDiscoveryFilter::Transport::TRANSPORT_CLASSIC;
+        break;
+      default:  // TRANSPORT_TYPE_NONE is included here
+        transport = device::BluetoothDiscoveryFilter::Transport::TRANSPORT_DUAL;
+        break;
+    }
+
+    discovery_filter.reset(new device::BluetoothDiscoveryFilter(transport));
+
+    if (df_param.uuids.get()) {
+      std::vector<device::BluetoothUUID> uuids;
+      if (df_param.uuids->as_string.get()) {
+        discovery_filter->AddUUID(
+            device::BluetoothUUID(*df_param.uuids->as_string));
+      } else if (df_param.uuids->as_strings.get()) {
+        for (const auto& iter : *df_param.uuids->as_strings) {
+          discovery_filter->AddUUID(device::BluetoothUUID(iter));
+        }
+      }
+    }
+
+    if (df_param.rssi.get())
+      discovery_filter->SetRSSI(*df_param.rssi);
+
+    if (df_param.pathloss.get())
+      discovery_filter->SetPathloss(*df_param.pathloss);
+  }
+
+  BluetoothAPI::Get(browser_context())->event_router()->SetDiscoveryFilter(
+          discovery_filter.Pass(), adapter.get(), extension_id(),
+          base::Bind(
+              &BluetoothPrivateSetDiscoveryFilterFunction::OnSuccessCallback,
+              this),
+          base::Bind(
+              &BluetoothPrivateSetDiscoveryFilterFunction::OnErrorCallback,
+              this));
   return true;
 }
 
