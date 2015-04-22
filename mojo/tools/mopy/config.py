@@ -6,8 +6,6 @@
 "defines" the schema and provides some wrappers."""
 
 
-import json
-import os.path
 import platform
 import sys
 

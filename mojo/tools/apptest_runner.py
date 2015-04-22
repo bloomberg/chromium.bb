@@ -1,80 +1,90 @@
 #!/usr/bin/env python
-# Copyright 2015 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """A test runner for gtest application tests."""
 
 import argparse
-import ast
 import logging
-import os
 import sys
 
-_logging = logging.getLogger()
+from mopy import dart_apptest
+from mopy import gtest
+# TODO(msw): Mojo's script pulls in android.py via mojo/devtools/common/pylib.
+from mopy.android import AndroidShell
+from mopy.config import Config
+from mopy.gn import ConfigForGNArgs, ParseGNConfig
+from mopy.log import InitLogging
+from mopy.paths import Paths
 
-import gtest
+
+_logger = logging.getLogger()
 
 
 def main():
-  logging.basicConfig()
-  # Uncomment to debug:
-  #_logging.setLevel(logging.DEBUG)
+  parser = argparse.ArgumentParser(description="A test runner for application "
+                                               "tests.")
 
-  parser = argparse.ArgumentParser(description='A test runner for gtest '
-                                   'application tests.')
-
-  parser.add_argument('apptest_list_file', type=file,
-                      help='A file listing apptests to run.')
-  parser.add_argument('build_dir', type=str,
-                      help='The build output directory.')
+  parser.add_argument("--verbose", help="be verbose (multiple times for more)",
+                      default=0, dest="verbose_count", action="count")
+  parser.add_argument("test_list_file", type=file,
+                      help="a file listing apptests to run")
+  parser.add_argument("build_dir", type=str,
+                      help="the build output directory")
   args = parser.parse_args()
 
-  apptest_list = ast.literal_eval(args.apptest_list_file.read())
-  _logging.debug("Test list: %s" % apptest_list)
+  InitLogging(args.verbose_count)
+  config = ConfigForGNArgs(ParseGNConfig(args.build_dir))
+
+  _logger.debug("Test list file: %s", args.test_list_file)
+  execution_globals = {"config": config}
+  exec args.test_list_file in execution_globals
+  test_list = execution_globals["tests"]
+  _logger.debug("Test list: %s" % test_list)
+
+  extra_args = []
+  if config.target_os == Config.OS_ANDROID:
+    paths = Paths(config)
+    shell = AndroidShell(paths.target_mojo_shell_path, paths.build_dir,
+                         paths.adb_path)
+    extra_args.extend(shell.PrepareShellRun(fixed_port=False))
+  else:
+    shell = None
 
   gtest.set_color()
-  mojo_shell_path = os.path.join(args.build_dir, "mojo_shell")
 
   exit_code = 0
-  for apptest_dict in apptest_list:
-    if apptest_dict.get("disabled"):
-      continue
+  for test_dict in test_list:
+    test = test_dict["test"]
+    test_name = test_dict.get("name", test)
+    test_type = test_dict.get("type", "gtest")
+    test_args = test_dict.get("test-args", [])
+    shell_args = test_dict.get("shell-args", []) + extra_args
 
-    apptest = apptest_dict["test"]
-    apptest_args = apptest_dict.get("test-args", [])
-    shell_args = apptest_dict.get("shell-args", [])
-
-    print "Running " + apptest + "...",
+    _logger.info("Will start: %s" % test_name)
+    print "Running %s...." % test_name,
     sys.stdout.flush()
 
-    # List the apptest fixtures so they can be run independently for isolation.
-    # TODO(msw): Run some apptests without fixture isolation?
-    fixtures = gtest.get_fixtures(mojo_shell_path, apptest)
+    if test_type == "dart":
+      apptest_result = dart_apptest.run_test(config, shell, test_dict,
+                                             shell_args, {test: test_args})
+    elif test_type == "gtest":
+      apptest_result = gtest.run_fixtures(config, shell, test_dict,
+                                          test, False,
+                                          test_args, shell_args)
+    elif test_type == "gtest_isolated":
+      apptest_result = gtest.run_fixtures(config, shell, test_dict,
+                                          test, True, test_args, shell_args)
+    else:
+      apptest_result = "Invalid test type in %r" % test_dict
 
-    if not fixtures:
-      print "Failed with no tests found."
+    if apptest_result != "Succeeded":
       exit_code = 1
-      continue
-
-    apptest_result = "Succeeded"
-    for fixture in fixtures:
-      args_for_apptest = " ".join(["--gtest_filter=" + fixture] + apptest_args)
-
-      success = RunApptestInShell(mojo_shell_path, apptest,
-                                  shell_args + [args_for_apptest])
-
-      if not success:
-        apptest_result = "Failed test(s) in %r" % apptest_dict
-        exit_code = 1
-
     print apptest_result
+    _logger.info("Completed: %s" % test_name)
 
   return exit_code
-
-
-def RunApptestInShell(mojo_shell_path, apptest, shell_args):
-  return gtest.run_test([mojo_shell_path, apptest] + shell_args)
 
 
 if __name__ == '__main__':

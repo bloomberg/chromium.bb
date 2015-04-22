@@ -132,4 +132,10 @@ def ParseGNConfig(build_dir):
         key = result.group(1)
         value = result.group(2)
         values[key] = ast.literal_eval(TRANSLATIONS.get(value, value))
+
+  # TODO(msw): Mojo's script uses GN's is_debug arg to determine the build dir.
+  #            It should probably just use the argument build_dir instead.
+  if not "is_debug" in values:
+    values["is_debug"] = "Debug" in build_dir
+
   return values

@@ -16,6 +16,8 @@ class Paths(object):
     self.src_root = os.path.abspath(os.path.join(__file__,
       os.pardir, os.pardir, os.pardir, os.pardir))
     self.mojo_dir = os.path.join(self.src_root, "mojo")
+    self.adb_path = os.path.join(self.src_root, 'third_party', 'android_tools',
+                                 'sdk', 'platform-tools', 'adb')
 
     if config:
       self.build_dir = BuildDirectoryForConfig(config, self.src_root)
@@ -25,13 +27,11 @@ class Paths(object):
       self.build_dir = None
 
     if self.build_dir is not None:
-      self.mojo_launcher_path = os.path.join(self.build_dir, "mojo_launcher")
       self.mojo_shell_path = os.path.join(self.build_dir, "mojo_shell")
       # TODO(vtl): Use the host OS here, since |config| may not be available.
       # In any case, if the target is Windows, but the host isn't, using
       # |os.path| isn't correct....
       if Config.GetHostOS() == Config.OS_WINDOWS:
-        self.mojo_launcher_path += ".exe"
         self.mojo_shell_path += ".exe"
       if config and config.target_os == Config.OS_ANDROID:
         self.target_mojo_shell_path = os.path.join(self.build_dir,
@@ -40,7 +40,6 @@ class Paths(object):
       else:
         self.target_mojo_shell_path = self.mojo_shell_path
     else:
-      self.mojo_launcher_path = None
       self.mojo_shell_path = None
       self.target_mojo_shell_path = None
 

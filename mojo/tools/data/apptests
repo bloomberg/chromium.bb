@@ -1,6 +1,30 @@
 # This file contains a list of Mojo gtest unit tests.
-# This must be a valid python dictionary.
-[
+#
+# This must be valid Python. It may use the |config| global that will be a
+# mopy.config.Config object, and must set a |tests| global that will contain the
+# list of tests to run.
+#
+# The entries in |tests| are dictionaries of the following form:
+#   {
+#     # Required URL for apptest.
+#     "test": "mojo:test_app_url",
+#     # Optional display name (otherwise the entry for "test" above is used).
+#     "name": "mojo:test_app_url (more details)",
+#     # Optional test type. Valid values:
+#     #   * "gtest" (default)
+#     #   * "gtest_isolated": like "gtest", but run with fixture isolation,
+#     #      i.e., each test in a fresh mojo_shell)
+#     #   * "dart".
+#     "type": "gtest",
+#     # Optional arguments for the apptest.
+#     "test-args": ["--an_arg", "another_arg"],
+#     # Optional arguments for the shell.
+#     "shell-args": ["--some-flag-for-the-shell", "--another-flag"],
+#   }
+#
+# TODO(vtl|msw): Add a way of specifying data dependencies.
+
+tests = [
   {
     "test": "mojo:clipboard_apptests",
   },
@@ -17,6 +41,7 @@
   #},
   {
     "test": "mojo:view_manager_apptests",
+    "type": "gtest_isolated",
     "shell-args": ["--url-mappings=mojo:window_manager=mojo:test_window_manager"]
   },
   {
