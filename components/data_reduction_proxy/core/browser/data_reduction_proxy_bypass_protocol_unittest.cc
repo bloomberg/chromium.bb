@@ -116,7 +116,7 @@ class DataReductionProxyProtocolTest : public testing::Test {
     DataReductionProxyInterceptor* interceptor =
         new DataReductionProxyInterceptor(test_context_->config(),
                                           bypass_stats_.get(),
-                                          test_context_->event_store());
+                                          test_context_->event_creator());
     scoped_ptr<net::URLRequestJobFactoryImpl> job_factory_impl(
         new net::URLRequestJobFactoryImpl());
     job_factory_.reset(new net::URLRequestInterceptingJobFactory(

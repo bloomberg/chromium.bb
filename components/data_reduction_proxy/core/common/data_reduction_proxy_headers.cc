@@ -12,7 +12,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 
@@ -111,13 +111,14 @@ bool ParseHeadersAndSetBypassDuration(const net::HttpResponseHeaders* headers,
   return false;
 }
 
-bool ParseHeadersAndSetProxyInfo(const net::HttpResponseHeaders* headers,
-                                 const GURL& url,
-                                 const net::BoundNetLog& bound_net_log,
-                                 DataReductionProxyInfo* proxy_info,
-                                 DataReductionProxyEventStore* event_store) {
+bool ParseHeadersAndSetProxyInfo(
+    const net::HttpResponseHeaders* headers,
+    const GURL& url,
+    const net::BoundNetLog& bound_net_log,
+    DataReductionProxyInfo* proxy_info,
+    DataReductionProxyEventCreator* event_creator) {
   DCHECK(proxy_info);
-  DCHECK(event_store);
+  DCHECK(event_creator);
 
   // Support header of the form Chrome-Proxy: bypass|block=<duration>, where
   // <duration> is the number of seconds to wait before retrying
@@ -134,8 +135,8 @@ bool ParseHeadersAndSetProxyInfo(const net::HttpResponseHeaders* headers,
           headers, kChromeProxyActionBlock, &proxy_info->bypass_duration)) {
     proxy_info->bypass_all = true;
     proxy_info->mark_proxies_as_bad = true;
-    event_store->AddBypassActionEvent(bound_net_log, kChromeProxyActionBlock,
-                                      url, proxy_info->bypass_duration);
+    event_creator->AddBypassActionEvent(bound_net_log, kChromeProxyActionBlock,
+                                        url, proxy_info->bypass_duration);
     return true;
   }
 
@@ -144,8 +145,8 @@ bool ParseHeadersAndSetProxyInfo(const net::HttpResponseHeaders* headers,
           headers, kChromeProxyActionBypass, &proxy_info->bypass_duration)) {
     proxy_info->bypass_all = false;
     proxy_info->mark_proxies_as_bad = true;
-    event_store->AddBypassActionEvent(bound_net_log, kChromeProxyActionBypass,
-                                      url, proxy_info->bypass_duration);
+    event_creator->AddBypassActionEvent(bound_net_log, kChromeProxyActionBypass,
+                                        url, proxy_info->bypass_duration);
     return true;
   }
 
@@ -159,9 +160,9 @@ bool ParseHeadersAndSetProxyInfo(const net::HttpResponseHeaders* headers,
     proxy_info->bypass_all = true;
     proxy_info->mark_proxies_as_bad = false;
     proxy_info->bypass_duration = TimeDelta();
-    event_store->AddBypassActionEvent(bound_net_log,
-                                      kChromeProxyActionBlockOnce, url,
-                                      proxy_info->bypass_duration);
+    event_creator->AddBypassActionEvent(bound_net_log,
+                                        kChromeProxyActionBlockOnce, url,
+                                        proxy_info->bypass_duration);
     return true;
   }
 
@@ -198,14 +199,11 @@ DataReductionProxyBypassType GetDataReductionProxyBypassType(
     const GURL& url,
     const net::BoundNetLog& bound_net_log,
     DataReductionProxyInfo* data_reduction_proxy_info,
-    DataReductionProxyEventStore* event_store,
+    DataReductionProxyEventCreator* event_creator,
     bool* event_logged) {
   DCHECK(data_reduction_proxy_info);
-  if (ParseHeadersAndSetProxyInfo(headers,
-                                  url,
-                                  bound_net_log,
-                                  data_reduction_proxy_info,
-                                  event_store)) {
+  if (ParseHeadersAndSetProxyInfo(headers, url, bound_net_log,
+                                  data_reduction_proxy_info, event_creator)) {
     *event_logged = true;
 
     // A chrome-proxy response header is only present in a 502. For proper

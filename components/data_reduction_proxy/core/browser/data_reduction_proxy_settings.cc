@@ -49,7 +49,6 @@ DataReductionProxySettings::DataReductionProxySettings()
       alternative_allowed_(false),
       promo_allowed_(false),
       prefs_(NULL),
-      event_store_(NULL),
       config_(nullptr) {
 }
 
@@ -88,11 +87,9 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
   DCHECK(prefs);
   DCHECK(io_data);
   DCHECK(io_data->config());
-  DCHECK(io_data->event_store());
   DCHECK(data_reduction_proxy_service.get());
   prefs_ = prefs;
   config_ = io_data->config();
-  event_store_ = io_data->event_store();
   data_reduction_proxy_service_ = data_reduction_proxy_service.Pass();
   data_reduction_proxy_service_->AddObserver(this);
   InitPrefMembers();
@@ -250,6 +247,14 @@ void DataReductionProxySettings::MaybeActivateDataReductionProxy(
     deferred_initialization_ = true;
   else
     UpdateIOData(at_startup);
+}
+
+DataReductionProxyEventStore* DataReductionProxySettings::GetEventStore()
+    const {
+  if (data_reduction_proxy_service_)
+    return data_reduction_proxy_service_->event_store();
+
+  return nullptr;
 }
 
 // Metrics methods

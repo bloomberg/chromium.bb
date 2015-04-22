@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate.h"
 
 class GURL;
 class PrefService;
@@ -21,6 +22,7 @@ class PrefService;
 namespace base {
 class SequencedTaskRunner;
 class TimeDelta;
+class Value;
 }
 
 namespace net {
@@ -30,13 +32,16 @@ class URLRequestContextGetter;
 namespace data_reduction_proxy {
 
 class DataReductionProxyCompressionStats;
+class DataReductionProxyEventStore;
 class DataReductionProxyIOData;
 class DataReductionProxyServiceObserver;
 class DataReductionProxySettings;
 
 // Contains and initializes all Data Reduction Proxy objects that have a
 // lifetime based on the UI thread.
-class DataReductionProxyService : public base::NonThreadSafe {
+class DataReductionProxyService
+    : public base::NonThreadSafe,
+      public DataReductionProxyEventStorageDelegate {
  public:
   // The caller must ensure that |settings| and |request_context| remain alive
   // for the lifetime of the |DataReductionProxyService| instance. This instance
@@ -73,6 +78,13 @@ class DataReductionProxyService : public base::NonThreadSafe {
                             bool data_reduction_proxy_enabled,
                             DataReductionProxyRequestType request_type);
 
+  // Overrides of DataReductionProxyEventStorageDelegate.
+  void AddEnabledEvent(scoped_ptr<base::Value> entry, bool enabled) override;
+  void AddEventAndSecureProxyCheckState(scoped_ptr<base::Value> entry,
+                                        SecureProxyCheckState state) override;
+  void AddAndSetLastBypassEvent(scoped_ptr<base::Value> entry,
+                                int64 expiration_ticks) override;
+
   // Records whether the Data Reduction Proxy is unreachable or not.
   void SetUnreachable(bool unreachable);
 
@@ -96,6 +108,10 @@ class DataReductionProxyService : public base::NonThreadSafe {
     return settings_;
   }
 
+  DataReductionProxyEventStore* event_store() const {
+    return event_store_.get();
+  }
+
   net::URLRequestContextGetter* url_request_context_getter() const {
     return url_request_context_getter_;
   }
@@ -107,6 +123,8 @@ class DataReductionProxyService : public base::NonThreadSafe {
 
   // Tracks compression statistics to be displayed to the user.
   scoped_ptr<DataReductionProxyCompressionStats> compression_stats_;
+
+  scoped_ptr<DataReductionProxyEventStore> event_store_;
 
   DataReductionProxySettings* settings_;
 

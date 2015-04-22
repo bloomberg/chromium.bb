@@ -22,7 +22,8 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "net/log/net_log.h"
@@ -109,9 +110,9 @@ DataReductionProxyIOData::DataReductionProxyIOData(
   scoped_ptr<DataReductionProxyParams> params(
       new DataReductionProxyParams(param_flags));
   params->EnableQuic(enable_quic);
-  event_store_.reset(new DataReductionProxyEventStore(ui_task_runner));
+  event_creator_.reset(new DataReductionProxyEventCreator(this));
   configurator_.reset(
-      new DataReductionProxyConfigurator(net_log, event_store_.get()));
+      new DataReductionProxyConfigurator(net_log, event_creator_.get()));
   bool use_config_client = DataReductionProxyParams::IsConfigClientEnabled();
   DataReductionProxyMutableConfigValues* raw_mutable_config = nullptr;
   if (use_config_client) {
@@ -120,11 +121,11 @@ DataReductionProxyIOData::DataReductionProxyIOData(
     raw_mutable_config = mutable_config.get();
     config_.reset(new DataReductionProxyConfig(
         io_task_runner_, net_log, mutable_config.Pass(), configurator_.get(),
-        event_store_.get()));
+        event_creator_.get()));
   } else {
-    config_.reset(
-        new DataReductionProxyConfig(io_task_runner_, net_log, params.Pass(),
-                                     configurator_.get(), event_store_.get()));
+    config_.reset(new DataReductionProxyConfig(
+        io_task_runner_, net_log, params.Pass(), configurator_.get(),
+        event_creator_.get()));
   }
 
   // It is safe to use base::Unretained here, since it gets executed
@@ -211,7 +212,7 @@ scoped_ptr<net::URLRequestInterceptor>
 DataReductionProxyIOData::CreateInterceptor() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   return make_scoped_ptr(new DataReductionProxyInterceptor(
-      config_.get(), bypass_stats_.get(), event_store_.get()));
+      config_.get(), bypass_stats_.get(), event_creator_.get()));
 }
 
 scoped_ptr<DataReductionProxyNetworkDelegate>
@@ -246,6 +247,34 @@ void DataReductionProxyIOData::UpdateContentLengths(
       base::Bind(&DataReductionProxyService::UpdateContentLengths,
                  service_, received_content_length, original_content_length,
                  data_reduction_proxy_enabled, request_type));
+}
+
+void DataReductionProxyIOData::AddEnabledEvent(scoped_ptr<base::Value> entry,
+                                               bool enabled) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&DataReductionProxyService::AddEnabledEvent,
+                            service_, base::Passed(&entry), enabled));
+}
+
+void DataReductionProxyIOData::AddEventAndSecureProxyCheckState(
+    scoped_ptr<base::Value> entry,
+    SecureProxyCheckState state) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DataReductionProxyService::AddEventAndSecureProxyCheckState,
+                 service_, base::Passed(&entry), state));
+}
+
+void DataReductionProxyIOData::AddAndSetLastBypassEvent(
+    scoped_ptr<base::Value> entry,
+    int64 expiration_ticks) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DataReductionProxyService::AddAndSetLastBypassEvent, service_,
+                 base::Passed(&entry), expiration_ticks));
 }
 
 void DataReductionProxyIOData::SetUnreachable(bool unreachable) {

@@ -15,6 +15,11 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate.h"
+
+namespace base {
+class Value;
+}
 
 namespace net {
 class NetLog;
@@ -28,12 +33,12 @@ class DataReductionProxyBypassStats;
 class DataReductionProxyConfig;
 class DataReductionProxyConfigServiceClient;
 class DataReductionProxyConfigurator;
-class DataReductionProxyEventStore;
+class DataReductionProxyEventCreator;
 class DataReductionProxyService;
 
 // Contains and initializes all Data Reduction Proxy objects that operate on
 // the IO thread.
-class DataReductionProxyIOData {
+class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
  public:
   // Constructs a DataReductionProxyIOData object. |param_flags| is used to
   // set information about the DNS names used by the proxy, and allowable
@@ -88,6 +93,14 @@ class DataReductionProxyIOData {
                             bool data_reduction_proxy_enabled,
                             DataReductionProxyRequestType request_type);
 
+  // Overrides of DataReductionProxyEventStorageDelegate. Bridges to the UI
+  // thread objects.
+  void AddEnabledEvent(scoped_ptr<base::Value> entry, bool enabled) override;
+  void AddEventAndSecureProxyCheckState(scoped_ptr<base::Value> entry,
+                                        SecureProxyCheckState state) override;
+  void AddAndSetLastBypassEvent(scoped_ptr<base::Value> entry,
+                                int64 expiration_ticks) override;
+
   // Returns true if the Data Reduction Proxy is enabled and false otherwise.
   bool IsEnabled() const;
 
@@ -100,8 +113,8 @@ class DataReductionProxyIOData {
     return config_.get();
   }
 
-  DataReductionProxyEventStore* event_store() const {
-    return event_store_.get();
+  DataReductionProxyEventCreator* event_creator() const {
+    return event_creator_.get();
   }
 
   DataReductionProxyRequestOptions* request_options() const {
@@ -163,8 +176,8 @@ class DataReductionProxyIOData {
   // interstitials.
   mutable scoped_ptr<DataReductionProxyDebugUIService> debug_ui_service_;
 
-  // Tracker of Data Reduction Proxy-related events, e.g., for logging.
-  scoped_ptr<DataReductionProxyEventStore> event_store_;
+  // Creates Data Reduction Proxy-related events for logging.
+  scoped_ptr<DataReductionProxyEventCreator> event_creator_;
 
   // Setter of the Data Reduction Proxy-specific proxy configuration.
   scoped_ptr<DataReductionProxyConfigurator> configurator_;

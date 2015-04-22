@@ -42,7 +42,7 @@ class URLRequestContextStorage;
 namespace data_reduction_proxy {
 
 class DataReductionProxyConfigurator;
-class DataReductionProxyEventStore;
+class DataReductionProxyEventCreator;
 class DataReductionProxyMutableConfigValues;
 class DataReductionProxyRequestOptions;
 class DataReductionProxySettings;
@@ -50,6 +50,7 @@ class DataReductionProxyCompressionStats;
 class MockDataReductionProxyConfig;
 class TestDataReductionProxyConfig;
 class TestDataReductionProxyConfigurator;
+class TestDataReductionProxyEventStorageDelegate;
 class TestDataReductionProxyParams;
 
 // Test version of |DataReductionProxyRequestOptions|.
@@ -163,7 +164,7 @@ class TestDataReductionProxyIOData : public DataReductionProxyIOData {
   TestDataReductionProxyIOData(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       scoped_ptr<DataReductionProxyConfig> config,
-      scoped_ptr<DataReductionProxyEventStore> event_store,
+      scoped_ptr<DataReductionProxyEventCreator> event_creator,
       scoped_ptr<DataReductionProxyRequestOptions> request_options,
       scoped_ptr<DataReductionProxyConfigurator> configurator,
       scoped_ptr<DataReductionProxyConfigServiceClient> config_client);
@@ -343,8 +344,8 @@ class DataReductionProxyTestContext {
     return request_context_getter_.get();
   }
 
-  DataReductionProxyEventStore* event_store() const {
-    return io_data_->event_store();
+  DataReductionProxyEventCreator* event_creator() const {
+    return io_data_->event_creator();
   }
 
   DataReductionProxyConfigurator* configurator() const {
@@ -393,6 +394,7 @@ class DataReductionProxyTestContext {
       net::MockClientSocketFactory* mock_socket_factory,
       scoped_ptr<TestDataReductionProxyIOData> io_data,
       scoped_ptr<DataReductionProxySettings> settings,
+      scoped_ptr<TestDataReductionProxyEventStorageDelegate> storage_delegate,
       TestDataReductionProxyParams* params,
       unsigned int test_context_flags);
 
@@ -415,6 +417,7 @@ class DataReductionProxyTestContext {
 
   scoped_ptr<TestDataReductionProxyIOData> io_data_;
   scoped_ptr<DataReductionProxySettings> settings_;
+  scoped_ptr<TestDataReductionProxyEventStorageDelegate> storage_delegate_;
 
   TestDataReductionProxyParams* params_;
 

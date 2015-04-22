@@ -8,8 +8,8 @@ namespace data_reduction_proxy {
 
 TestDataReductionProxyConfigurator::TestDataReductionProxyConfigurator(
     net::NetLog* net_log,
-    DataReductionProxyEventStore* event_store)
-    : DataReductionProxyConfigurator(net_log, event_store),
+    DataReductionProxyEventCreator* event_creator)
+    : DataReductionProxyConfigurator(net_log, event_creator),
       enabled_(false),
       restricted_(false),
       fallback_restricted_(false) {

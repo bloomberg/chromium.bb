@@ -15,6 +15,8 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
@@ -173,7 +175,7 @@ MockDataReductionProxyService::~MockDataReductionProxyService() {
 TestDataReductionProxyIOData::TestDataReductionProxyIOData(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     scoped_ptr<DataReductionProxyConfig> config,
-    scoped_ptr<DataReductionProxyEventStore> event_store,
+    scoped_ptr<DataReductionProxyEventCreator> event_creator,
     scoped_ptr<DataReductionProxyRequestOptions> request_options,
     scoped_ptr<DataReductionProxyConfigurator> configurator,
     scoped_ptr<DataReductionProxyConfigServiceClient> config_client)
@@ -181,7 +183,7 @@ TestDataReductionProxyIOData::TestDataReductionProxyIOData(
   io_task_runner_ = task_runner;
   ui_task_runner_ = task_runner;
   config_ = config.Pass();
-  event_store_ = event_store.Pass();
+  event_creator_ = event_creator.Pass();
   request_options_ = request_options.Pass();
   configurator_ = configurator.Pass();
   config_client_ = config_client.Pass();
@@ -313,16 +315,18 @@ DataReductionProxyTestContext::Builder::Build() {
         task_runner, test_request_context.Pass());
   }
 
-  scoped_ptr<DataReductionProxyEventStore> event_store(
-      new DataReductionProxyEventStore(task_runner));
+  scoped_ptr<TestDataReductionProxyEventStorageDelegate> storage_delegate(
+      new TestDataReductionProxyEventStorageDelegate());
+  scoped_ptr<DataReductionProxyEventCreator> event_creator(
+      new DataReductionProxyEventCreator(storage_delegate.get()));
   scoped_ptr<DataReductionProxyConfigurator> configurator;
   if (use_test_configurator_) {
     test_context_flags |= USE_TEST_CONFIGURATOR;
     configurator.reset(new TestDataReductionProxyConfigurator(
-        net_log.get(), event_store.get()));
+        net_log.get(), event_creator.get()));
   } else {
     configurator.reset(
-        new DataReductionProxyConfigurator(net_log.get(), event_store.get()));
+        new DataReductionProxyConfigurator(net_log.get(), event_creator.get()));
   }
 
   scoped_ptr<TestDataReductionProxyConfig> config;
@@ -338,16 +342,16 @@ DataReductionProxyTestContext::Builder::Build() {
     raw_mutable_config = mutable_config.get();
     config.reset(new TestDataReductionProxyConfig(
         mutable_config.Pass(), task_runner, net_log.get(), configurator.get(),
-        event_store.get()));
+        event_creator.get()));
   } else if (use_mock_config_) {
     test_context_flags |= USE_MOCK_CONFIG;
     config.reset(new MockDataReductionProxyConfig(
         params.Pass(), task_runner, net_log.get(), configurator.get(),
-        event_store.get()));
+        event_creator.get()));
   } else {
     config.reset(new TestDataReductionProxyConfig(
         params.Pass(), task_runner, net_log.get(), configurator.get(),
-        event_store.get()));
+        event_creator.get()));
   }
 
   scoped_ptr<DataReductionProxyRequestOptions> request_options;
@@ -383,7 +387,7 @@ DataReductionProxyTestContext::Builder::Build() {
 
   scoped_ptr<TestDataReductionProxyIOData> io_data(
       new TestDataReductionProxyIOData(
-          task_runner, config.Pass(), event_store.Pass(),
+          task_runner, config.Pass(), event_creator.Pass(),
           request_options.Pass(), configurator.Pass(), config_client.Pass()));
   io_data->InitOnUIThread(pref_service.get());
   io_data->SetSimpleURLRequestContextGetter(request_context_getter);
@@ -392,7 +396,8 @@ DataReductionProxyTestContext::Builder::Build() {
       new DataReductionProxyTestContext(
           loop.Pass(), task_runner, pref_service.Pass(), net_log.Pass(),
           request_context_getter, mock_socket_factory_, io_data.Pass(),
-          settings.Pass(), raw_params, test_context_flags));
+          settings.Pass(), storage_delegate.Pass(), raw_params,
+          test_context_flags));
 
   if (!skip_settings_initialization_)
     test_context->InitSettingsWithoutCheck();
@@ -409,6 +414,7 @@ DataReductionProxyTestContext::DataReductionProxyTestContext(
     net::MockClientSocketFactory* mock_socket_factory,
     scoped_ptr<TestDataReductionProxyIOData> io_data,
     scoped_ptr<DataReductionProxySettings> settings,
+    scoped_ptr<TestDataReductionProxyEventStorageDelegate> storage_delegate,
     TestDataReductionProxyParams* params,
     unsigned int test_context_flags)
     : test_context_flags_(test_context_flags),
@@ -420,6 +426,7 @@ DataReductionProxyTestContext::DataReductionProxyTestContext(
       mock_socket_factory_(mock_socket_factory),
       io_data_(io_data.Pass()),
       settings_(settings.Pass()),
+      storage_delegate_(storage_delegate.Pass()),
       params_(params) {
 }
 
@@ -440,6 +447,8 @@ void DataReductionProxyTestContext::InitSettingsWithoutCheck() {
   settings_->InitDataReductionProxySettings(
       simple_pref_service_.get(), io_data_.get(),
       CreateDataReductionProxyServiceInternal());
+  storage_delegate_->SetStorageDelegate(
+      settings_->data_reduction_proxy_service()->event_store());
   io_data_->SetDataReductionProxyService(
       settings_->data_reduction_proxy_service()->GetWeakPtr());
   if (io_data_->config_client())

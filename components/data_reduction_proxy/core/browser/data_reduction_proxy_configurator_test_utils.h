@@ -15,14 +15,14 @@ class NetLog;
 
 namespace data_reduction_proxy {
 
-class DataReductionProxyEventStore;
+class DataReductionProxyEventCreator;
 
 class TestDataReductionProxyConfigurator
     : public DataReductionProxyConfigurator {
  public:
   TestDataReductionProxyConfigurator(
       net::NetLog* net_log,
-      DataReductionProxyEventStore* event_store);
+      DataReductionProxyEventCreator* event_creator);
   ~TestDataReductionProxyConfigurator() override;
 
   // Overrides of DataReductionProxyConfigurator

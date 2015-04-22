@@ -8,7 +8,7 @@
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/base/load_flags.h"
@@ -70,10 +70,10 @@ namespace data_reduction_proxy {
 
 DataReductionProxyBypassProtocol::DataReductionProxyBypassProtocol(
     DataReductionProxyConfig* config,
-    DataReductionProxyEventStore* event_store)
-    : config_(config), event_store_(event_store) {
+    DataReductionProxyEventCreator* event_creator)
+    : config_(config), event_creator_(event_creator) {
   DCHECK(config_);
-  DCHECK(event_store_);
+  DCHECK(event_creator_);
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
 }
 
@@ -128,10 +128,9 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
   // command was sent via the data reduction proxy headers
   bool event_logged = false;
   DataReductionProxyInfo data_reduction_proxy_info;
-  DataReductionProxyBypassType bypass_type =
-      GetDataReductionProxyBypassType(
-          response_headers, request->url(), request->net_log(),
-          &data_reduction_proxy_info, event_store_, &event_logged);
+  DataReductionProxyBypassType bypass_type = GetDataReductionProxyBypassType(
+      response_headers, request->url(), request->net_log(),
+      &data_reduction_proxy_info, event_creator_, &event_logged);
 
   if (bypass_type == BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER) {
     if (DataReductionProxyParams::
@@ -155,7 +154,7 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
     return false;
 
   if (!event_logged) {
-    event_store_->AddBypassTypeEvent(
+    event_creator_->AddBypassTypeEvent(
         request->net_log(), bypass_type, request->url(),
         data_reduction_proxy_info.bypass_duration);
   }

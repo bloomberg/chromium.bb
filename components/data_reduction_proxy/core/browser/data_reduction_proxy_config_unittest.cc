@@ -10,7 +10,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "net/http/http_status_code.h"
@@ -163,7 +163,7 @@ class DataReductionProxyConfigTest : public testing::Test {
     params->EnableQuic(false);
     return make_scoped_ptr(new DataReductionProxyConfig(
         test_context_->task_runner(), test_context_->net_log(), params.Pass(),
-        test_context_->configurator(), test_context_->event_store()));
+        test_context_->configurator(), test_context_->event_creator()));
   }
 
   MockDataReductionProxyConfig* config() {

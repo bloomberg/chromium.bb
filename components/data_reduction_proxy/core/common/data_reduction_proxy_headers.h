@@ -21,7 +21,7 @@ class HttpResponseHeaders;
 
 namespace data_reduction_proxy {
 
-class DataReductionProxyEventStore;
+class DataReductionProxyEventCreator;
 
 // Values of the UMA DataReductionProxy.BypassType{Primary|Fallback} and
 // DataReductionProxy.BlockType{Primary|Fallback} histograms. This enum must
@@ -61,7 +61,7 @@ bool ParseHeadersAndSetProxyInfo(const net::HttpResponseHeaders* headers,
                                  const GURL& url,
                                  const net::BoundNetLog& bound_net_log,
                                  DataReductionProxyInfo* proxy_info,
-                                 DataReductionProxyEventStore* event_store);
+                                 DataReductionProxyEventCreator* event_creator);
 
 // Returns true if the response contains the data reduction proxy Via header
 // value. If non-NULL, sets |has_intermediary| to true if another server added
@@ -79,7 +79,7 @@ DataReductionProxyBypassType GetDataReductionProxyBypassType(
     const GURL& url,
     const net::BoundNetLog& bound_net_log,
     DataReductionProxyInfo* proxy_info,
-    DataReductionProxyEventStore* event_store,
+    DataReductionProxyEventCreator* event_creator,
     bool* event_logged);
 
 // Searches for the specified Chrome-Proxy action, and if present saves its

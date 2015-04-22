@@ -126,9 +126,7 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
 
   // Returns the event store being used. May be null if
   // InitDataReductionProxySettings has not been called.
-  DataReductionProxyEventStore* GetEventStore() const {
-    return event_store_;
-  }
+  DataReductionProxyEventStore* GetEventStore() const;
 
   // Returns true if the data reduction proxy configuration may be used.
   bool Allowed() const {
@@ -252,9 +250,6 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   scoped_ptr<DataReductionProxyService> data_reduction_proxy_service_;
 
   PrefService* prefs_;
-
-  // The caller must ensure that the |event_store_| outlives this instance.
-  DataReductionProxyEventStore* event_store_;
 
   // The caller must ensure that the |config_| outlives this instance.
   DataReductionProxyConfig* config_;

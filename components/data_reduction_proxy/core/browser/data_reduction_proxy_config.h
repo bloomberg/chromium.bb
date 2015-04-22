@@ -44,7 +44,7 @@ typedef base::Callback<void(const std::string&,
 
 class DataReductionProxyConfigValues;
 class DataReductionProxyConfigurator;
-class DataReductionProxyEventStore;
+class DataReductionProxyEventCreator;
 class DataReductionProxyService;
 class SecureProxyChecker;
 struct DataReductionProxyTypeInfo;
@@ -82,14 +82,19 @@ class DataReductionProxyConfig
     : public net::NetworkChangeNotifier::IPAddressObserver {
  public:
   // The caller must ensure that all parameters remain alive for the lifetime
-  // of the |DataReductionProxyConfig| instance, with the exception of |params|
-  // which this instance will own.
+  // of the |DataReductionProxyConfig| instance, with the exception of
+  // |config_values| which is owned by |this|. |io_task_runner| is used to
+  // validate calls on the correct thread. |event_creator| is used for logging
+  // the start and end of a secure proxy check; |net_log| is used to create a
+  // net::BoundNetLog for correlating the start and end of the check.
+  // |config_values| contains the Data Reduction Proxy configuration values.
+  // |configurator| is the target for a configuration update.
   DataReductionProxyConfig(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       net::NetLog* net_log,
       scoped_ptr<DataReductionProxyConfigValues> config_values,
       DataReductionProxyConfigurator* configurator,
-      DataReductionProxyEventStore* event_store);
+      DataReductionProxyEventCreator* event_creator);
   ~DataReductionProxyConfig() override;
 
   // Performs initialization on the IO thread.
@@ -280,8 +285,8 @@ class DataReductionProxyConfig
   // The caller must ensure that the |configurator_| outlives this instance.
   DataReductionProxyConfigurator* configurator_;
 
-  // The caller must ensure that the |event_store_| outlives this instance.
-  DataReductionProxyEventStore* event_store_;
+  // The caller must ensure that the |event_creator_| outlives this instance.
+  DataReductionProxyEventCreator* event_creator_;
 
   // Used for performing the secure proxy check.
   net::URLRequestContextGetter* url_request_context_getter_;

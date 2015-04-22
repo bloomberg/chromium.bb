@@ -22,16 +22,15 @@ class PrefService;
 
 namespace data_reduction_proxy {
 
-class DataReductionProxyEventStore;
+class DataReductionProxyEventCreator;
 
 class DataReductionProxyConfigurator {
  public:
-  // Constructs a configurator. |net_log| and |event_store| are used to
+  // Constructs a configurator. |net_log| and |event_creator| are used to
   // track network and Data Reduction Proxy events respectively, must not be
   // null, and must outlive this instance.
-  DataReductionProxyConfigurator(
-      net::NetLog* net_log,
-      DataReductionProxyEventStore* event_store);
+  DataReductionProxyConfigurator(net::NetLog* net_log,
+                                 DataReductionProxyEventCreator* event_creator);
 
   virtual ~DataReductionProxyConfigurator();
 
@@ -76,7 +75,7 @@ class DataReductionProxyConfigurator {
 
   // Used for logging of network- and Data Reduction Proxy-related events.
   net::NetLog* net_log_;
-  DataReductionProxyEventStore* data_reduction_proxy_event_store_;
+  DataReductionProxyEventCreator* data_reduction_proxy_event_creator_;
 
   // Enforce usage on the IO thread.
   base::ThreadChecker thread_checker_;

@@ -6,13 +6,15 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_config_values.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/base/load_flags.h"
 #include "net/proxy/proxy_server.h"
@@ -103,7 +105,7 @@ DataReductionProxyConfig::DataReductionProxyConfig(
     net::NetLog* net_log,
     scoped_ptr<DataReductionProxyConfigValues> config_values,
     DataReductionProxyConfigurator* configurator,
-    DataReductionProxyEventStore* event_store)
+    DataReductionProxyEventCreator* event_creator)
     : restricted_by_carrier_(false),
       disabled_on_vpn_(false),
       unreachable_(false),
@@ -113,11 +115,11 @@ DataReductionProxyConfig::DataReductionProxyConfig(
       io_task_runner_(io_task_runner),
       net_log_(net_log),
       configurator_(configurator),
-      event_store_(event_store),
+      event_creator_(event_creator),
       url_request_context_getter_(nullptr) {
   DCHECK(io_task_runner);
   DCHECK(configurator);
-  DCHECK(event_store);
+  DCHECK(event_creator);
 }
 
 DataReductionProxyConfig::~DataReductionProxyConfig() {
@@ -375,10 +377,9 @@ void DataReductionProxyConfig::HandleSecureProxyCheckResponse(
     int http_response_code) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   bool success_response = ("OK" == response.substr(0, 2));
-  if (event_store_) {
-    event_store_->EndSecureProxyCheck(bound_net_log_, status.error(),
-                                      http_response_code, success_response);
-  }
+  if (event_creator_)
+    event_creator_->EndSecureProxyCheck(bound_net_log_, status.error(),
+                                        http_response_code, success_response);
 
   if (status.status() == net::URLRequestStatus::FAILED) {
     if (status.error() == net::ERR_INTERNET_DISCONNECTED) {
@@ -486,9 +487,8 @@ void DataReductionProxyConfig::SecureProxyCheck(
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   bound_net_log_ = net::BoundNetLog::Make(
       net_log_, net::NetLog::SOURCE_DATA_REDUCTION_PROXY);
-
-  if (event_store_) {
-    event_store_->BeginSecureProxyCheck(
+  if (event_creator_) {
+    event_creator_->BeginSecureProxyCheck(
         bound_net_log_, config_values_->secure_proxy_check_url());
   }
 

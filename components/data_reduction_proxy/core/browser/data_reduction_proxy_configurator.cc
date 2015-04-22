@@ -6,17 +6,17 @@
 
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "net/proxy/proxy_config.h"
 
 namespace data_reduction_proxy {
 
 DataReductionProxyConfigurator::DataReductionProxyConfigurator(
     net::NetLog* net_log,
-    DataReductionProxyEventStore* event_store)
-    : net_log_(net_log), data_reduction_proxy_event_store_(event_store) {
+    DataReductionProxyEventCreator* event_creator)
+    : net_log_(net_log), data_reduction_proxy_event_creator_(event_creator) {
   DCHECK(net_log);
-  DCHECK(event_store);
+  DCHECK(event_creator);
   // Constructed on the UI thread, but should be checked on the IO thread.
   thread_checker_.DetachFromThread();
 }
@@ -63,7 +63,7 @@ void DataReductionProxyConfigurator::Enable(
   // config will return invalid.
   net::ProxyConfig::ID unused_id = 1;
   config.set_id(unused_id);
-  data_reduction_proxy_event_store_->AddProxyEnabledEvent(
+  data_reduction_proxy_event_creator_->AddProxyEnabledEvent(
       net_log_, primary_restricted, fallback_restricted, primary_origin,
       fallback_origin, ssl_origin);
   config_ = config;
@@ -72,7 +72,7 @@ void DataReductionProxyConfigurator::Enable(
 void DataReductionProxyConfigurator::Disable() {
   DCHECK(thread_checker_.CalledOnValidThread());
   net::ProxyConfig config = net::ProxyConfig::CreateDirect();
-  data_reduction_proxy_event_store_->AddProxyDisabledEvent(net_log_);
+  data_reduction_proxy_event_creator_->AddProxyDisabledEvent(net_log_);
   config_ = config;
 }
 
