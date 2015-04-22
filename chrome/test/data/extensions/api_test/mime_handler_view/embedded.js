@@ -86,6 +86,15 @@ var tests = [
     });
   },
 
+  function testNonAsciiHeaders() {
+    checkStreamDetails('testNonAsciiHeaders.csv', false);
+    chrome.test.assertEq(undefined,
+                         streamDetails.responseHeaders['Content-Disposition']);
+    chrome.test.assertEq(undefined,
+                         streamDetails.responseHeaders['ü']);
+    chrome.test.succeed();
+  },
+
   function testPostMessage() {
     var expectedMessages = ['hey', 100, 25.0];
     var messagesReceived = 0;

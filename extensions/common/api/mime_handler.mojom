@@ -22,7 +22,7 @@ struct StreamInfo {
   // The HTTP response headers of the intercepted request stored as a dictionary
   // mapping header name to header value. If a header name appears multiple
   // times, the header values are merged in the dictionary and separated by a
-  // ",".
+  // ",". Non-ASCII headers are dropped.
   map<string, string> response_headers;
 
   // Whether the stream is embedded within another document.

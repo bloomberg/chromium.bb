@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/mime_handler_private/mime_handler_private.h"
 
+#include "base/strings/string_util.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/stream_info.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
@@ -24,6 +25,15 @@ mojo::Map<mojo::String, mojo::String> CreateResponseHeadersMap(
   std::string header_name;
   std::string header_value;
   while (headers->EnumerateHeaderLines(&iter, &header_name, &header_value)) {
+    // mojo strings must be UTF-8 and headers might not be, so drop any headers
+    // that aren't ASCII. The PDF plugin does not use any headers with non-ASCII
+    // names and non-ASCII values are never useful for the headers the plugin
+    // does use.
+    //
+    // TODO(sammc): Send as bytes instead of a string and let the client decide
+    // how to decode.
+    if (!base::IsStringASCII(header_name) || !base::IsStringASCII(header_value))
+      continue;
     auto& current_value = result[header_name];
     if (!current_value.empty())
       current_value += ", ";

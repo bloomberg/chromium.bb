@@ -21,7 +21,7 @@
     // The HTTP response headers of the intercepted request stored as a
     // dictionary mapping header name to header value. If a header name appears
     // multiple times, the header values are merged in the dictionary and
-    // separated by a ", ".
+    // separated by a ", ". Non-ASCII headers are dropped.
     object responseHeaders;
 
     // Whether the stream is embedded within another document.
