@@ -11,6 +11,11 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
   // lazy portal check should be fired.
   /** @const */ var GAIA_LOADING_PORTAL_SUSSPECT_TIME_SEC = 7;
 
+  // GAIA animation guard timer. Started when GAIA page is loaded
+  // (Authenticator 'ready' event) and is intended to guard against edge cases
+  // when 'showView' message is not generated/received.
+  /** @const */ var GAIA_ANIMATION_GUARD_MILLISEC = 300;
+
   // Maximum Gaia loading time in seconds.
   /** @const */ var MAX_GAIA_LOADING_TIME_SEC = 60;
 
@@ -76,6 +81,22 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @private
      */
     loadingTimer_: undefined,
+
+    /**
+     * Timer id of a guard timer that is fired in case 'showView' message
+     * is not received from GAIA.
+     * @type {number}
+     * @private
+     */
+    loadAnimationGuardTimer_: undefined,
+
+    /**
+     * Whether we've processed 'showView' message - either from GAIA or from
+     * guard timer.
+     * @type {boolean}
+     * @private
+     */
+    showViewProcessed_: undefined,
 
     /**
      * Whether user can cancel Gaia screen.
@@ -220,6 +241,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       $('enterprise-info-container').hidden = show;
       $('gaia-signin-divider').hidden = show;
       this.classList.toggle('loading', show);
+      $('signin-frame').classList.remove('show');
       if (!show)
         this.classList.remove('auth-completed');
     },
@@ -232,7 +254,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       if (this != Oobe.getInstance().currentScreen)
         return;
       chrome.send('showLoadingTimeoutError');
-      this.loadingTimer_ = window.setTimeout(
+      this.loadingTimer_ = setTimeout(
           this.onLoadingTimeOut_.bind(this),
           (MAX_GAIA_LOADING_TIME_SEC - GAIA_LOADING_PORTAL_SUSSPECT_TIME_SEC) *
           1000);
@@ -253,7 +275,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     clearLoadingTimer_: function() {
       if (this.loadingTimer_) {
-        window.clearTimeout(this.loadingTimer_);
+        clearTimeout(this.loadingTimer_);
         this.loadingTimer_ = undefined;
       }
     },
@@ -264,9 +286,40 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     startLoadingTimer_: function() {
       this.clearLoadingTimer_();
-      this.loadingTimer_ = window.setTimeout(
+      this.loadingTimer_ = setTimeout(
           this.onLoadingSuspiciouslyLong_.bind(this),
           GAIA_LOADING_PORTAL_SUSSPECT_TIME_SEC * 1000);
+    },
+
+    /**
+     * Handler for GAIA animation guard timer.
+     * @private
+     */
+    onLoadAnimationGuardTimer_: function() {
+      this.loadAnimationGuardTimer_ = undefined;
+      this.onShowView_();
+    },
+
+    /**
+     * Clears GAIA animation guard timer.
+     * @private
+     */
+    clearLoadAnimationGuardTimer_: function() {
+      if (this.loadAnimationGuardTimer_) {
+        clearTimeout(this.loadAnimationGuardTimer_);
+        this.loadAnimationGuardTimer_ = undefined;
+      }
+    },
+
+    /**
+     * Sets up GAIA animation guard timer.
+     * @private
+     */
+    startLoadAnimationGuardTimer_: function() {
+      this.clearLoadAnimationGuardTimer_();
+      this.loadAnimationGuardTimer_ = setTimeout(
+          this.onLoadAnimationGuardTimer_.bind(this),
+          GAIA_ANIMATION_GUARD_MILLISEC);
     },
 
     /**
@@ -496,17 +549,15 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @private
      */
     onAuthReady_: function() {
-      this.loading = false;
+      showViewProcessed_ = false;
+      if (this.isNewGaiaFlow)
+        this.startLoadAnimationGuardTimer_();
+
       this.clearLoadingTimer_();
+      this.loading = false;
 
-      // Show deferred error bubble.
-      if (this.errorBubble_) {
-        this.showErrorBubble(this.errorBubble_[0], this.errorBubble_[1]);
-        this.errorBubble_ = undefined;
-      }
-
-      chrome.send('loginWebuiReady');
-      chrome.send('loginVisible', ['gaia-signin']);
+      if (!this.isNewGaiaFlow)
+        this.onLoginUIVisible_();
 
       // Warm up the user images screen.
       Oobe.getInstance().preloadScreen({id: SCREEN_USER_IMAGE_PICKER});
@@ -540,11 +591,33 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
-     * Invoked when the auth host emits 'showView' event.
+     * Invoked when the auth host emits 'showView' event or when corresponding
+     * guard time fires.
      * @private
      */
     onShowView_: function(e) {
+      if (showViewProcessed_)
+        return;
+
+      showViewProcessed_ = true;
+      this.clearLoadAnimationGuardTimer_();
       $('signin-frame').classList.add('show');
+      this.onLoginUIVisible_();
+    },
+
+    /**
+     * Called when UI is shown.
+     * @private
+     */
+    onLoginUIVisible_: function() {
+      // Show deferred error bubble.
+      if (this.errorBubble_) {
+        this.showErrorBubble(this.errorBubble_[0], this.errorBubble_[1]);
+        this.errorBubble_ = undefined;
+      }
+
+      chrome.send('loginWebuiReady');
+      chrome.send('loginVisible', ['gaia-signin']);
     },
 
     /**
