@@ -1251,8 +1251,7 @@ crbug.com/392640 [ Debug ] svg/as-object/sizing/svg-in-object-placeholder-height
 crbug.com/392640 [ Release ] svg/as-object/sizing/svg-in-object-placeholder-height-fixed.html [ Pass Timeout ]
 crbug.com/392640 [ Release ] svg/as-object/sizing/svg-in-object-placeholder-height-percentage.html [ Pass Timeout ]
 
-# Temporary disabled for rebaeline of crbug.com/394619
-# crbug.com/393087 [ Win ] svg/custom/resource-client-removal.svg [ Pass Failure ]
+crbug.com/393087 [ Win ] svg/custom/resource-client-removal.svg [ Pass Failure ]
 
 crbug.com/440511 fast/text-autosizing/hackernews-comments.html [ Pass Failure ]
 
