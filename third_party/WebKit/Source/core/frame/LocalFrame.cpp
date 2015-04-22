@@ -293,8 +293,7 @@ void LocalFrame::printNavigationErrorMessage(const Frame& targetFrame, const cha
     const LocalFrame& targetLocalFrame = toLocalFrameTemporary(targetFrame);
     String message = "Unsafe JavaScript attempt to initiate navigation for frame with URL '" + targetLocalFrame.document()->url().string() + "' from frame with URL '" + document()->url().string() + "'. " + reason + "\n";
 
-    // FIXME: should we print to the console of the document performing the navigation instead?
-    targetLocalFrame.localDOMWindow()->printErrorMessage(message);
+    localDOMWindow()->printErrorMessage(message);
 }
 
 bool LocalFrame::isLoadingAsChild() const

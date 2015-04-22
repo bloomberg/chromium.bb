@@ -1563,7 +1563,7 @@ bool LocalDOMWindow::isInsecureScriptAccess(DOMWindow& callingWindow, const Stri
         return false;
 
     if (callingWindow.isLocalDOMWindow())
-        printErrorMessage(crossDomainAccessErrorMessage(static_cast<LocalDOMWindow*>(&callingWindow)));
+        toLocalDOMWindow(&callingWindow)->printErrorMessage(crossDomainAccessErrorMessage(toLocalDOMWindow(&callingWindow)));
     return true;
 }
 

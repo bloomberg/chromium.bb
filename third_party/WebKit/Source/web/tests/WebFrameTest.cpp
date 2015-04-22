@@ -93,6 +93,7 @@
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"
 #include "public/web/WebCache.h"
+#include "public/web/WebConsoleMessage.h"
 #include "public/web/WebDataSource.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebFindOptions.h"
@@ -7185,6 +7186,54 @@ TEST_F(WebFrameTest, DetachRemoteFrame)
     WebRemoteFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createRemoteChild("", WebSandboxFlags::None, &childFrameClient);
     childFrame->detach();
     view->close();
+}
+
+class TestConsoleMessageWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
+public:
+    virtual void didAddMessageToConsole(const WebConsoleMessage& message, const WebString& sourceName, unsigned sourceLine, const WebString& stackTrace)
+    {
+        messages.push_back(message);
+    }
+
+    std::vector<WebConsoleMessage> messages;
+};
+
+TEST_F(WebFrameTest, CrossDomainAccessErrorsUseCallingWindow)
+{
+    registerMockedHttpURLLoad("hidden_frames.html");
+    registerMockedChromeURLLoad("hello_world.html");
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    TestConsoleMessageWebFrameClient webFrameClient;
+    FrameTestHelpers::TestWebViewClient webViewClient;
+    webViewHelper.initializeAndLoad(m_baseURL + "hidden_frames.html", true, &webFrameClient, &webViewClient);
+
+    // Create another window with a cross-origin page, and point its opener to
+    // first window.
+    FrameTestHelpers::WebViewHelper popupWebViewHelper;
+    TestConsoleMessageWebFrameClient popupWebFrameClient;
+    WebView* popupView = popupWebViewHelper.initializeAndLoad(m_chromeURL + "hello_world.html", true, &popupWebFrameClient);
+    popupView->mainFrame()->setOpener(webViewHelper.webView()->mainFrame());
+
+    // Attempt a blocked navigation of an opener's subframe, and ensure that
+    // the error shows up on the popup (calling) window's console, rather than
+    // the target window.
+    popupView->mainFrame()->executeScript(WebScriptSource("opener.frames[1].location.href='data:text/html,foo'"));
+    EXPECT_TRUE(webFrameClient.messages.empty());
+    ASSERT_EQ(1u, popupWebFrameClient.messages.size());
+    EXPECT_TRUE(std::string::npos != popupWebFrameClient.messages[0].text.utf8().find("Unsafe JavaScript attempt to initiate navigation"));
+
+    // Try setting a cross-origin iframe element's source to a javascript: URL,
+    // and check that this error is also printed on the calling window.
+    popupView->mainFrame()->executeScript(WebScriptSource("opener.document.querySelectorAll('iframe')[1].src='javascript:alert()'"));
+    EXPECT_TRUE(webFrameClient.messages.empty());
+    ASSERT_EQ(2u, popupWebFrameClient.messages.size());
+    EXPECT_TRUE(std::string::npos != popupWebFrameClient.messages[1].text.utf8().find("Blocked a frame"));
+
+    // Manually reset to break WebViewHelpers' dependencies on the stack
+    // allocated WebFrameClients.
+    webViewHelper.reset();
+    popupWebViewHelper.reset();
 }
 
 } // namespace blink
