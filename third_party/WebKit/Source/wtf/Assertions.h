@@ -130,7 +130,7 @@ using WTF::FrameToNameScope;
 #if COMPILER(GCC)
 #define IMMEDIATE_CRASH() __builtin_trap()
 #else
-#define IMMEDIATE_CRASH() ((void(*)())0)()
+#define IMMEDIATE_CRASH() (*(volatile char*)0 = 0)
 #endif
 #endif
 
