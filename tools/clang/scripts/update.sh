@@ -11,7 +11,7 @@
 CLANG_REVISION=233105
 
 # This is incremented when pushing a new build of Clang at the same revision.
-CLANG_SUB_REVISION=1
+CLANG_SUB_REVISION=2
 
 PACKAGE_VERSION="${CLANG_REVISION}-${CLANG_SUB_REVISION}"
 
@@ -314,6 +314,7 @@ for i in \
       "${CLANG_DIR}/test/SemaCXX/typo-correction-delayed.cpp" \
       "${COMPILER_RT_DIR}/lib/sanitizer_common/sanitizer_stoptheworld_linux_libcdep.cc" \
       "${COMPILER_RT_DIR}/test/tsan/signal_segv_handler.cc" \
+      "${COMPILER_RT_DIR}/lib/sanitizer_common/sanitizer_coverage_libcdep.cc" \
       ; do
   if [[ -e "${i}" ]]; then
     rm -f "${i}"  # For unversioned files.
@@ -394,6 +395,27 @@ cat << 'EOF' |
    const char *MFile = "#include \"HeaderFile.h\"\nint main() {"
 EOF
   patch -p0
+  popd
+
+  # Cherry-pick r234010 [sancov] Shrink pc array on Android back to 2**24."
+  pushd "${COMPILER_RT_DIR}"
+  cat << 'EOF' |
+diff --git a/lib/sanitizer_common/sanitizer_coverage_libcdep.cc b/lib/sanitizer_common/sanitizer_coverage_libcdep.cc
+index 4b976fc..cfd9e7e 100644
+--- a/lib/sanitizer_common/sanitizer_coverage_libcdep.cc
++++ b/lib/sanitizer_common/sanitizer_coverage_libcdep.cc
+@@ -109,7 +109,8 @@ class CoverageData {
+ 
+   // Maximal size pc array may ever grow.
+   // We MmapNoReserve this space to ensure that the array is contiguous.
+-  static const uptr kPcArrayMaxSize = FIRST_32_SECOND_64(1 << 26, 1 << 27);
++  static const uptr kPcArrayMaxSize =
++      FIRST_32_SECOND_64(1 << (SANITIZER_ANDROID ? 24 : 26), 1 << 27);
+   // The amount file mapping for the pc array is grown by.
+   static const uptr kPcArrayMmapSize = 64 * 1024;
+
+EOF
+  patch -p1
   popd
 
   # This Go bindings test doesn't work after the bootstrap build on Linux. (PR21552)
