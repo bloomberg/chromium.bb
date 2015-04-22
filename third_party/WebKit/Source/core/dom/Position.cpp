@@ -30,6 +30,7 @@
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/dom/PositionIterator.h"
 #include "core/dom/Text.h"
+#include "core/dom/shadow/ElementShadow.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
@@ -369,6 +370,18 @@ PassRefPtrWillBeRawPtr<CSSComputedStyleDeclaration> PositionAlgorithm<Strategy>:
     if (!elem)
         return nullptr;
     return CSSComputedStyleDeclaration::create(elem);
+}
+
+int comparePositions(const PositionInComposedTree& positionA, const PositionInComposedTree& positionB)
+{
+    ASSERT(positionA.isNotNull());
+    ASSERT(positionB.isNotNull());
+
+    Node* containerA = positionA.containerNode();
+    Node* containerB = positionB.containerNode();
+    int offsetA = positionA.computeOffsetInContainerNode();
+    int offsetB = positionB.computeOffsetInContainerNode();
+    return EditingInComposedTreeStrategy::comparePositions(containerA, offsetA, containerB, offsetB);
 }
 
 template <typename Strategy>
@@ -1374,6 +1387,63 @@ void PositionAlgorithm<Strategy>::debugPosition(const char* msg) const
     fprintf(stderr, "Position [%s]: %s%s [%p] %s at %d\n", msg, m_isLegacyEditingPosition ? "LEGACY, " : "", deprecatedNode()->nodeName().utf8().data(), deprecatedNode(), anchorType, m_offset);
 }
 
+PositionInComposedTree toPositionInComposedTree(const Position& pos)
+{
+    if (pos.isNull())
+        return PositionInComposedTree();
+
+    PositionInComposedTree position;
+    if (pos.anchorType() == Position::PositionIsOffsetInAnchor) {
+        Node* anchor = pos.anchorNode();
+        if (anchor->offsetInCharacters())
+            return PositionInComposedTree(anchor, pos.computeOffsetInContainerNode(), PositionInComposedTree::PositionIsOffsetInAnchor);
+        Node* child = NodeTraversal::childAt(*anchor, pos.computeOffsetInContainerNode());
+        if (!child)
+            return PositionInComposedTree(anchor, PositionInComposedTree::PositionIsAfterChildren);
+        child->updateDistribution();
+        return PositionInComposedTree(ComposedTreeTraversal::parent(*child), ComposedTreeTraversal::index(*child), PositionInComposedTree::PositionIsOffsetInAnchor);
+    }
+
+    return PositionInComposedTree(pos.anchorNode(), static_cast<PositionInComposedTree::AnchorType>(pos.anchorType()));
+}
+
+Position toPositionInDOMTree(const PositionInComposedTree& position)
+{
+    if (position.isNull())
+        return Position();
+
+    Node* anchorNode = position.anchorNode();
+
+    switch (position.anchorType()) {
+    case PositionInComposedTree::PositionIsAfterChildren:
+        // FIXME: When anchorNode is <img>, assertion fails in the constructor.
+        return Position(anchorNode, Position::PositionIsAfterChildren);
+    case PositionInComposedTree::PositionIsAfterAnchor:
+        return positionAfterNode(anchorNode);
+    case PositionInComposedTree::PositionIsBeforeChildren:
+        return Position(anchorNode, Position::PositionIsBeforeChildren);
+    case PositionInComposedTree::PositionIsBeforeAnchor:
+        return positionBeforeNode(anchorNode);
+    case PositionInComposedTree::PositionIsOffsetInAnchor: {
+        int offset = position.offsetInContainerNode();
+        if (anchorNode->offsetInCharacters())
+            return Position(anchorNode, offset, Position::PositionIsOffsetInAnchor);
+        Node* child = ComposedTreeTraversal::childAt(*anchorNode, offset);
+        if (child)
+            return Position(child->parentNode(), child->nodeIndex(), Position::PositionIsOffsetInAnchor);
+        if (!position.offsetInContainerNode())
+            return Position(anchorNode, Position::PositionIsBeforeChildren);
+
+        // |child| is null when the position is at the end of the children.
+        // <div>foo|</div>
+        return Position(anchorNode, Position::PositionIsAfterChildren);
+    }
+    default:
+        ASSERT_NOT_REACHED();
+        return Position();
+    }
+}
+
 #ifndef NDEBUG
 
 template <typename Strategy>
@@ -1423,15 +1493,25 @@ void PositionAlgorithm<Strategy>::showAnchorTypeAndOffset() const
 template <typename Strategy>
 void PositionAlgorithm<Strategy>::showTreeForThis() const
 {
-    if (anchorNode()) {
-        anchorNode()->showTreeForThis();
-        showAnchorTypeAndOffset();
-    }
+    if (!anchorNode())
+        return;
+    anchorNode()->showTreeForThis();
+    showAnchorTypeAndOffset();
+}
+
+template <typename Strategy>
+void PositionAlgorithm<Strategy>::showTreeForThisInComposedTree() const
+{
+    if (!anchorNode())
+        return;
+    anchorNode()->showTreeForThisInComposedTree();
+    showAnchorTypeAndOffset();
 }
 
 #endif
 
 template class CORE_EXPORT PositionAlgorithm<EditingStrategy>;
+template class CORE_EXPORT PositionAlgorithm<EditingInComposedTreeStrategy>;
 
 } // namespace blink
 

@@ -35,7 +35,21 @@ public:
     using PositionType = PositionAlgorithm<EditingStrategy>;
 };
 
+// Composed tree version of editing algorithm
+class EditingInComposedTreeStrategy : public EditingAlgorithm<ComposedTreeTraversal> {
+public:
+    using PositionIteratorType = PositionIteratorAlgorithm<EditingInComposedTreeStrategy>;
+    using PositionType = PositionAlgorithm<EditingInComposedTreeStrategy>;
+
+    // Don't use |parentOrShadowHostNode()| in composed tree specific algorithm.
+    // This function is provided here for sharing algorithm with
+    // |TextIteratorAlgorithm|, which handles shadow tree within in
+    // DOM traversal.
+    static ContainerNode* parentOrShadowHostNode(const Node&);
+};
+
 extern template class EditingAlgorithm<NodeTraversal>;
+extern template class EditingAlgorithm<ComposedTreeTraversal>;
 
 } // namespace blink
 

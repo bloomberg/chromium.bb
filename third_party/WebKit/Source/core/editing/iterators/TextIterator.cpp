@@ -61,6 +61,21 @@ using namespace HTMLNames;
 
 namespace {
 
+template <typename Strategy>
+TextIteratorBehaviorFlags adjustBehaviorFlags(TextIteratorBehaviorFlags);
+
+template <>
+TextIteratorBehaviorFlags adjustBehaviorFlags<EditingStrategy>(TextIteratorBehaviorFlags flags)
+{
+    return flags;
+}
+
+template <>
+TextIteratorBehaviorFlags adjustBehaviorFlags<EditingInComposedTreeStrategy>(TextIteratorBehaviorFlags flags)
+{
+    return flags & ~(TextIteratorEntersOpenShadowRoots | TextIteratorEntersTextControls);
+}
+
 // This function is like Range::pastLastNode, except for the fact that it can
 // climb up out of shadow trees.
 template <typename Strategy>
@@ -93,6 +108,12 @@ int shadowDepthOf<EditingStrategy>(const Node& startContainer, const Node& endCo
     return shadowDepth;
 }
 
+template <>
+int shadowDepthOf<EditingInComposedTreeStrategy>(const Node& startContainer, const Node& endContainer)
+{
+    return 0;
+}
+
 } // namespace
 
 template<typename Strategy>
@@ -109,7 +130,7 @@ TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(const typename Strategy::
     , m_lastTextNode(nullptr)
     , m_lastTextNodeEndedWithCollapsedSpace(false)
     , m_sortedTextBoxesPosition(0)
-    , m_behavior(behavior)
+    , m_behavior(adjustBehaviorFlags<Strategy>(behavior))
     , m_handledFirstLetter(false)
     , m_shouldStop(false)
     // The call to emitsOriginalText() must occur after m_behavior is initialized.
@@ -117,7 +138,7 @@ TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(const typename Strategy::
 {
     ASSERT(start.isNotNull());
     ASSERT(end.isNotNull());
-    if (comparePositions(start, end) > 0) {
+    if (start.compareTo(end) > 0) {
         initialize(end.containerNode(), end.computeOffsetInContainerNode(), start.containerNode(), start.computeOffsetInContainerNode());
         return;
     }
@@ -1046,8 +1067,10 @@ void TextIteratorAlgorithm<Strategy>::subrange(Position& start, Position& end, i
 
 // --------
 
-static String createPlainText(TextIterator& it)
+template <typename Strategy>
+static String createPlainText(const typename Strategy::PositionType& start, const typename Strategy::PositionType& end, TextIteratorBehaviorFlags behavior)
 {
+    TextIteratorAlgorithm<Strategy> it(start, end, behavior);
     // The initial buffer size can be critical for performance: https://bugs.webkit.org/show_bug.cgi?id=81192
     static const unsigned initialCapacity = 1 << 15;
 
@@ -1068,16 +1091,20 @@ static String createPlainText(TextIterator& it)
 
 String plainText(const Range* r, TextIteratorBehaviorFlags behavior)
 {
-    TextIterator it(r->startPosition(), r->endPosition(), behavior);
-    return createPlainText(it);
+    return createPlainText<EditingStrategy>(r->startPosition(), r->endPosition(), behavior);
 }
 
 String plainText(const Position& start, const Position& end, TextIteratorBehaviorFlags behavior)
 {
-    TextIterator it(start, end, behavior);
-    return createPlainText(it);
+    return createPlainText<EditingStrategy>(start, end, behavior);
+}
+
+String plainTextInComposedTree(const PositionInComposedTree& start, const PositionInComposedTree& end, TextIteratorBehaviorFlags behavior)
+{
+    return createPlainText<EditingInComposedTreeStrategy>(start, end, behavior);
 }
 
 template class CORE_EXPORT TextIteratorAlgorithm<EditingStrategy>;
+template class CORE_EXPORT TextIteratorAlgorithm<EditingInComposedTreeStrategy>;
 
 } // namespace blink

@@ -26,8 +26,6 @@
 #include "config.h"
 #include "core/dom/PositionIterator.h"
 
-#include "core/dom/Position.h"
-
 namespace blink {
 
 template <typename Strategy>
@@ -211,5 +209,6 @@ bool PositionIteratorAlgorithm<Strategy>::isCandidate() const
 }
 
 template class PositionIteratorAlgorithm<EditingStrategy>;
+template class PositionIteratorAlgorithm<EditingInComposedTreeStrategy>;
 
 } // namespace blink

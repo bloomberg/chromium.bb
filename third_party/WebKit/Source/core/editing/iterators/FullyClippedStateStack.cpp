@@ -88,5 +88,6 @@ void FullyClippedStateStackAlgorithm<Strategy>::setUpFullyClippedStack(Node* nod
 }
 
 template class FullyClippedStateStackAlgorithm<EditingStrategy>;
+template class FullyClippedStateStackAlgorithm<EditingInComposedTreeStrategy>;
 
 } // namespace blink

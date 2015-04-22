@@ -21,6 +21,7 @@ public:
 };
 
 extern template class FullyClippedStateStackAlgorithm<EditingStrategy>;
+extern template class FullyClippedStateStackAlgorithm<EditingInComposedTreeStrategy>;
 
 using FullyClippedStateStack = FullyClippedStateStackAlgorithm<EditingStrategy>;
 

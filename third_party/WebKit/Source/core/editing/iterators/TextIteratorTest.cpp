@@ -60,6 +60,11 @@ struct DOMTree : NodeTraversal {
     using TextIteratorType = TextIterator;
 };
 
+struct ComposedTree : ComposedTreeTraversal {
+    using PositionType = PositionInComposedTree;
+    using TextIteratorType = TextIteratorInComposedTree;
+};
+
 class TextIteratorTest : public ::testing::Test {
 protected:
     virtual void SetUp() override;
@@ -159,6 +164,7 @@ TEST_F(TextIteratorTest, BasicIteration)
     static const char* input = "<p>Hello, \ntext</p><p>iterator.</p>";
     setBodyInnerHTML(input);
     EXPECT_EQ("[Hello, ][text][\n][\n][iterator.]", iterate<DOMTree>());
+    EXPECT_EQ("[Hello, ][text][\n][\n][iterator.]", iterate<ComposedTree>());
 }
 
 TEST_F(TextIteratorTest, IgnoreAltTextInTextControls)
@@ -166,6 +172,7 @@ TEST_F(TextIteratorTest, IgnoreAltTextInTextControls)
     static const char* input = "<p>Hello <input type='text' value='value'>!</p>";
     setBodyInnerHTML(input);
     EXPECT_EQ("[Hello ][][!]", iterate<DOMTree>(TextIteratorEmitsImageAltText));
+    EXPECT_EQ("[Hello ][][\n][value][\n][!]", iterate<ComposedTree>(TextIteratorEmitsImageAltText));
 }
 
 TEST_F(TextIteratorTest, DisplayAltTextInImageControls)
@@ -173,6 +180,7 @@ TEST_F(TextIteratorTest, DisplayAltTextInImageControls)
     static const char* input = "<p>Hello <input type='image' alt='alt'>!</p>";
     setBodyInnerHTML(input);
     EXPECT_EQ("[Hello ][alt][!]", iterate<DOMTree>(TextIteratorEmitsImageAltText));
+    EXPECT_EQ("[Hello ][alt][!]", iterate<ComposedTree>(TextIteratorEmitsImageAltText));
 }
 
 TEST_F(TextIteratorTest, NotEnteringTextControls)
@@ -180,6 +188,7 @@ TEST_F(TextIteratorTest, NotEnteringTextControls)
     static const char* input = "<p>Hello <input type='text' value='input'>!</p>";
     setBodyInnerHTML(input);
     EXPECT_EQ("[Hello ][][!]", iterate<DOMTree>());
+    EXPECT_EQ("[Hello ][][\n][input][\n][!]", iterate<ComposedTree>());
 }
 
 TEST_F(TextIteratorTest, EnteringTextControlsWithOption)
@@ -187,6 +196,7 @@ TEST_F(TextIteratorTest, EnteringTextControlsWithOption)
     static const char* input = "<p>Hello <input type='text' value='input'>!</p>";
     setBodyInnerHTML(input);
     EXPECT_EQ("[Hello ][\n][input][!]", iterate<DOMTree>(TextIteratorEntersTextControls));
+    EXPECT_EQ("[Hello ][][\n][input][\n][!]", iterate<ComposedTree>(TextIteratorEntersTextControls));
 }
 
 TEST_F(TextIteratorTest, EnteringTextControlsWithOptionComplex)
@@ -194,6 +204,7 @@ TEST_F(TextIteratorTest, EnteringTextControlsWithOptionComplex)
     static const char* input = "<input type='text' value='Beginning of range'><div><div><input type='text' value='Under DOM nodes'></div></div><input type='text' value='End of range'>";
     setBodyInnerHTML(input);
     EXPECT_EQ("[\n][Beginning of range][\n][Under DOM nodes][\n][End of range]", iterate<DOMTree>(TextIteratorEntersTextControls));
+    EXPECT_EQ("[][\n][Beginning of range][\n][][\n][Under DOM nodes][\n][][\n][End of range]", iterate<ComposedTree>(TextIteratorEntersTextControls));
 }
 
 TEST_F(TextIteratorTest, NotEnteringTextControlHostingShadowTreeEvenWithOption)
@@ -206,6 +217,7 @@ TEST_F(TextIteratorTest, NotEnteringTextControlHostingShadowTreeEvenWithOption)
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "input", shadowContent);
     // FIXME: Why is an empty string emitted here?
     EXPECT_EQ("[Hello, ][][ iterator.]", iterate<DOMTree>());
+    EXPECT_EQ("[Hello, ][][shadow][ iterator.]", iterate<ComposedTree>());
 }
 
 TEST_F(TextIteratorTest, NotEnteringShadowTree)
@@ -216,6 +228,7 @@ TEST_F(TextIteratorTest, NotEnteringShadowTree)
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
     // TextIterator doesn't emit "text" since its renderer is not created. The shadow tree is ignored.
     EXPECT_EQ("[Hello, ][ iterator.]", iterate<DOMTree>());
+    EXPECT_EQ("[Hello, ][shadow][ iterator.]", iterate<ComposedTree>());
 }
 
 TEST_F(TextIteratorTest, NotEnteringShadowTreeWithMultipleShadowTrees)
@@ -227,6 +240,7 @@ TEST_F(TextIteratorTest, NotEnteringShadowTreeWithMultipleShadowTrees)
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent1);
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent2);
     EXPECT_EQ("[Hello, ][ iterator.]", iterate<DOMTree>());
+    EXPECT_EQ("[Hello, ][second shadow][ iterator.]", iterate<ComposedTree>());
 }
 
 TEST_F(TextIteratorTest, NotEnteringShadowTreeWithNestedShadowTrees)
@@ -238,6 +252,7 @@ TEST_F(TextIteratorTest, NotEnteringShadowTreeWithNestedShadowTrees)
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot1 = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host-in-document", shadowContent1);
     createShadowRootForElementWithIDAndSetInnerHTML(*shadowRoot1, "host-in-shadow", shadowContent2);
     EXPECT_EQ("[Hello, ][ iterator.]", iterate<DOMTree>());
+    EXPECT_EQ("[Hello, ][first ][second shadow][ iterator.]", iterate<ComposedTree>());
 }
 
 TEST_F(TextIteratorTest, NotEnteringShadowTreeWithContentInsertionPoint)
@@ -248,6 +263,7 @@ TEST_F(TextIteratorTest, NotEnteringShadowTreeWithContentInsertionPoint)
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
     // In this case a renderer for "text" is created, so it shows up here.
     EXPECT_EQ("[Hello, ][text][ iterator.]", iterate<DOMTree>());
+    EXPECT_EQ("[Hello, ][shadow ][text][ iterator.]", iterate<ComposedTree>());
 }
 
 TEST_F(TextIteratorTest, EnteringShadowTreeWithOption)
@@ -258,6 +274,7 @@ TEST_F(TextIteratorTest, EnteringShadowTreeWithOption)
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
     // TextIterator emits "shadow" since TextIteratorEntersOpenShadowRoots is specified.
     EXPECT_EQ("[Hello, ][shadow][ iterator.]", iterate<DOMTree>(TextIteratorEntersOpenShadowRoots));
+    EXPECT_EQ("[Hello, ][shadow][ iterator.]", iterate<ComposedTree>(TextIteratorEntersOpenShadowRoots));
 }
 
 TEST_F(TextIteratorTest, EnteringShadowTreeWithMultipleShadowTreesWithOption)
@@ -270,6 +287,7 @@ TEST_F(TextIteratorTest, EnteringShadowTreeWithMultipleShadowTreesWithOption)
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent2);
     // The first isn't emitted because a renderer for the first is not created.
     EXPECT_EQ("[Hello, ][second shadow][ iterator.]", iterate<DOMTree>(TextIteratorEntersOpenShadowRoots));
+    EXPECT_EQ("[Hello, ][second shadow][ iterator.]", iterate<ComposedTree>(TextIteratorEntersOpenShadowRoots));
 }
 
 TEST_F(TextIteratorTest, EnteringShadowTreeWithNestedShadowTreesWithOption)
@@ -281,6 +299,7 @@ TEST_F(TextIteratorTest, EnteringShadowTreeWithNestedShadowTreesWithOption)
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot1 = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host-in-document", shadowContent1);
     createShadowRootForElementWithIDAndSetInnerHTML(*shadowRoot1, "host-in-shadow", shadowContent2);
     EXPECT_EQ("[Hello, ][first ][second shadow][ iterator.]", iterate<DOMTree>(TextIteratorEntersOpenShadowRoots));
+    EXPECT_EQ("[Hello, ][first ][second shadow][ iterator.]", iterate<ComposedTree>(TextIteratorEntersOpenShadowRoots));
 }
 
 TEST_F(TextIteratorTest, EnteringShadowTreeWithContentInsertionPointWithOption)
@@ -293,6 +312,7 @@ TEST_F(TextIteratorTest, EnteringShadowTreeWithContentInsertionPointWithOption)
     setBodyInnerHTML(bodyContent);
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
     EXPECT_EQ("[Hello, ][ shadow][text][ iterator.]", iterate<DOMTree>(TextIteratorEntersOpenShadowRoots));
+    EXPECT_EQ("[Hello, ][text][ shadow][ iterator.]", iterate<ComposedTree>(TextIteratorEntersOpenShadowRoots));
 }
 
 TEST_F(TextIteratorTest, StartingAtNodeInShadowRoot)
@@ -306,6 +326,10 @@ TEST_F(TextIteratorTest, StartingAtNodeInShadowRoot)
     Position start(spanInShadow, Position::PositionIsBeforeChildren);
     Position end(outerDiv, Position::PositionIsAfterChildren);
     EXPECT_EQ("[ shadow][text][ iterator.]", iteratePartial<DOMTree>(start, end, TextIteratorEntersOpenShadowRoots));
+
+    PositionInComposedTree startInComposedTree(spanInShadow, PositionInComposedTree::PositionIsBeforeChildren);
+    PositionInComposedTree endInComposedTree(outerDiv, PositionInComposedTree::PositionIsAfterChildren);
+    EXPECT_EQ("[text][ shadow][ iterator.]", iteratePartial<ComposedTree>(startInComposedTree, endInComposedTree, TextIteratorEntersOpenShadowRoots));
 }
 
 TEST_F(TextIteratorTest, FinishingAtNodeInShadowRoot)
@@ -319,6 +343,10 @@ TEST_F(TextIteratorTest, FinishingAtNodeInShadowRoot)
     Position start(outerDiv, Position::PositionIsBeforeChildren);
     Position end(spanInShadow, Position::PositionIsAfterChildren);
     EXPECT_EQ("[Hello, ][ shadow]", iteratePartial<DOMTree>(start, end, TextIteratorEntersOpenShadowRoots));
+
+    PositionInComposedTree startInComposedTree(outerDiv, PositionInComposedTree::PositionIsBeforeChildren);
+    PositionInComposedTree endInComposedTree(spanInShadow, PositionInComposedTree::PositionIsAfterChildren);
+    EXPECT_EQ("[Hello, ][text][ shadow]", iteratePartial<ComposedTree>(startInComposedTree, endInComposedTree, TextIteratorEntersOpenShadowRoots));
 }
 
 TEST_F(TextIteratorTest, FullyClipsContents)
@@ -329,6 +357,7 @@ TEST_F(TextIteratorTest, FullyClipsContents)
         "</div>";
     setBodyInnerHTML(bodyContent);
     EXPECT_EQ("", iterate<DOMTree>());
+    EXPECT_EQ("", iterate<ComposedTree>());
 }
 
 TEST_F(TextIteratorTest, IgnoresContainerClip)
@@ -342,6 +371,7 @@ TEST_F(TextIteratorTest, IgnoresContainerClip)
         "</div>";
     setBodyInnerHTML(bodyContent);
     EXPECT_EQ("[but I am!]", iterate<DOMTree>());
+    EXPECT_EQ("[but I am!]", iterate<ComposedTree>());
 }
 
 TEST_F(TextIteratorTest, FullyClippedContentsDistributed)
@@ -358,6 +388,7 @@ TEST_F(TextIteratorTest, FullyClippedContentsDistributed)
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
     // FIXME: The text below is actually invisible but TextIterator currently thinks it's visible.
     EXPECT_EQ("[\n][Am I visible?]", iterate<DOMTree>(TextIteratorEntersOpenShadowRoots));
+    EXPECT_EQ("", iterate<ComposedTree>(TextIteratorEntersOpenShadowRoots));
 }
 
 TEST_F(TextIteratorTest, IgnoresContainersClipDistributed)
@@ -375,6 +406,7 @@ TEST_F(TextIteratorTest, IgnoresContainersClipDistributed)
     // FIXME: The text below is actually visible but TextIterator currently thinks it's invisible.
     // [\n][Nobody can find me!]
     EXPECT_EQ("", iterate<DOMTree>(TextIteratorEntersOpenShadowRoots));
+    EXPECT_EQ("[Nobody can find me!]", iterate<ComposedTree>(TextIteratorEntersOpenShadowRoots));
 }
 
 TEST_F(TextIteratorTest, FindPlainTextInvalidTarget)
@@ -421,6 +453,7 @@ TEST_F(TextIteratorTest, EmitsReplacementCharForInput)
         "</div>";
     setBodyInnerHTML(bodyContent);
     EXPECT_EQ("[Before][\xEF\xBF\xBC][After]", iterate<DOMTree>(TextIteratorEmitsObjectReplacementCharacter));
+    EXPECT_EQ("[Before][\xEF\xBF\xBC][After]", iterate<ComposedTree>(TextIteratorEmitsObjectReplacementCharacter));
 }
 
 TEST_F(TextIteratorTest, RangeLengthWithReplacedElements)

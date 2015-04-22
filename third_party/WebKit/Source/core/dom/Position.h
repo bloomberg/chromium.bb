@@ -236,6 +236,7 @@ public:
     void formatForDebugger(char* buffer, unsigned length) const;
     void showAnchorTypeAndOffset() const;
     void showTreeForThis() const;
+    void showTreeForThisInComposedTree() const;
 #endif
 
     DEFINE_INLINE_TRACE()
@@ -260,6 +261,7 @@ private:
 };
 
 using Position = PositionAlgorithm<EditingStrategy>;
+using PositionInComposedTree = PositionAlgorithm<EditingInComposedTreeStrategy>;
 
 template <typename Strategy>
 typename Strategy::PositionType PositionAlgorithm<Strategy>::createLegacyEditingPosition(PassRefPtrWillBeRawPtr<Node> node, int offset)
@@ -278,9 +280,17 @@ bool operator==(const PositionAlgorithm<Strategy>& a, const PositionAlgorithm<St
     if (a.isNull())
         return b.isNull();
 
+    if (a.anchorNode() != b.anchorNode() || a.anchorType() != b.anchorType())
+        return false;
+
+    if (a.anchorType() != PositionAlgorithm<Strategy>::PositionIsOffsetInAnchor) {
+        // Note: |m_offset| only has meaning when |PositionIsOffsetInAnchor|.
+        return true;
+    }
+
     // FIXME: In <div><img></div> [div, 0] != [img, 0] even though most of the
     // editing code will treat them as identical.
-    return a.anchorNode() == b.anchorNode() && a.deprecatedEditingOffset() == b.deprecatedEditingOffset() && a.anchorType() == b.anchorType();
+    return a.offsetInContainerNode() == b.offsetInContainerNode();
 }
 
 template <typename Strategy>
@@ -436,6 +446,10 @@ typename Strategy::PositionType PositionAlgorithm<Strategy>::lastPositionInOrAft
 }
 
 extern template class CORE_TEMPLATE_EXPORT PositionAlgorithm<EditingStrategy>;
+extern template class CORE_TEMPLATE_EXPORT PositionAlgorithm<EditingInComposedTreeStrategy>;
+
+PositionInComposedTree toPositionInComposedTree(const Position&);
+Position toPositionInDOMTree(const PositionInComposedTree&);
 
 } // namespace blink
 

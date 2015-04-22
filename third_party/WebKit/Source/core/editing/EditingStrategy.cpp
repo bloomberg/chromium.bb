@@ -145,6 +145,12 @@ short EditingAlgorithm<Traversal>::comparePositions(Node* containerA, int offset
     return 0;
 }
 
+ContainerNode* EditingInComposedTreeStrategy::parentOrShadowHostNode(const Node& node)
+{
+    return parent(node);
+}
+
 template class EditingAlgorithm<NodeTraversal>;
+template class EditingAlgorithm<ComposedTreeTraversal>;
 
 } // namespace blink
