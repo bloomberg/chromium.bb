@@ -7,6 +7,7 @@ package org.chromium.net;
 import android.os.ConditionVariable;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 
@@ -172,7 +173,7 @@ class TestUrlRequestListener implements UrlRequestListener {
         assertEquals(mExecutorThread, Thread.currentThread());
         assertTrue(mResponseStep == ResponseStep.ON_RESPONSE_STARTED
                    || mResponseStep == ResponseStep.ON_READ_COMPLETED);
-        assertTrue(mError == null);
+        assertNull(mError);
 
         mResponseStep = ResponseStep.ON_SUCCEEDED;
         mExtendedResponseInfo = info;
@@ -187,6 +188,9 @@ class TestUrlRequestListener implements UrlRequestListener {
         assertEquals(mExecutorThread, Thread.currentThread());
         // Shouldn't happen after success.
         assertTrue(mResponseStep != ResponseStep.ON_SUCCEEDED);
+        // Should happen at most once for a single request.
+        assertFalse(mOnErrorCalled);
+        assertNull(mError);
 
         mOnErrorCalled = true;
         mError = error;

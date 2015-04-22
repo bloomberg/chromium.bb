@@ -191,6 +191,32 @@ public class CronetUrlRequestTest extends CronetTestBase {
         assertEquals(listener.mResponseStep, ResponseStep.ON_SUCCEEDED);
     }
 
+    // Checks that UrlRequestListener.onFailed is only called once in the case
+    // of ERR_CONTENT_LENGTH_MISMATCH, which has an unusual failure path.
+    // See http://crbug.com/468803.
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testContentLengthMismatchFailsOnce() throws Exception {
+        String url = NativeTestServer.getFileURL(
+                "/content_length_mismatch.html");
+        TestUrlRequestListener listener = startAndWaitForComplete(url);
+        assertEquals(200, listener.mResponseInfo.getHttpStatusCode());
+        // The entire response body will be read before the error is returned.
+        // This is because the network stack returns data as it's read from the
+        // socket, and the socket close message which tiggers the error will
+        // only be passed along after all data has been read.
+        assertEquals("Response that lies about content length.",
+                listener.mResponseAsString);
+        assertNotNull(listener.mError);
+        assertEquals(
+                "Exception in CronetUrlRequest: net::ERR_CONTENT_LENGTH_MISMATCH",
+                listener.mError.getMessage());
+        // Wait for a couple round trips to make sure there are no pending
+        // onFailed messages. This test relies on checks in
+        // TestUrlRequestListener catching a second onFailed call.
+        testSimpleGet();
+    }
+
     @SmallTest
     @Feature({"Cronet"})
     public void testSetHttpMethod() throws Exception {
