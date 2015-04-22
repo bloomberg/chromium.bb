@@ -273,11 +273,10 @@ bool _NPN_Invoke(NPP npp, NPObject* npObject, NPIdentifier methodName, const NPV
     // Call the function object.
     v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(functionObject);
     OwnPtr<v8::Local<v8::Value>[]> argv = createValueListFromVariantArgs(isolate, arguments, argumentCount, npObject);
-    v8::Local<v8::Value> resultObject = frame->script().callFunction(function, v8Object, argumentCount, argv.get());
-
     // If we had an error, return false.  The spec is a little unclear here, but says "Returns true if the method was
     // successfully invoked".  If we get an error return value, was that successfully invoked?
-    if (resultObject.IsEmpty())
+    v8::Local<v8::Value> resultObject;
+    if (!frame->script().callFunction(function, v8Object, argumentCount, argv.get()).ToLocal(&resultObject))
         return false;
 
     convertV8ObjectToNPVariant(isolate, resultObject, npObject, result);
@@ -315,18 +314,18 @@ bool _NPN_InvokeDefault(NPP npp, NPObject* npObject, const NPVariant* arguments,
     if (!functionObject->IsFunction())
         return false;
 
-    v8::Local<v8::Value> resultObject;
     v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(functionObject);
-    if (!function->IsNull()) {
-        LocalFrame* frame = v8NpObject->rootObject->frame();
-        ASSERT(frame);
+    if (function->IsNull())
+        return false;
 
-        OwnPtr<v8::Local<v8::Value>[]> argv = createValueListFromVariantArgs(isolate, arguments, argumentCount, npObject);
-        resultObject = frame->script().callFunction(function, functionObject, argumentCount, argv.get());
-    }
+    LocalFrame* frame = v8NpObject->rootObject->frame();
+    ASSERT(frame);
+
+    OwnPtr<v8::Local<v8::Value>[]> argv = createValueListFromVariantArgs(isolate, arguments, argumentCount, npObject);
     // If we had an error, return false.  The spec is a little unclear here, but says "Returns true if the method was
     // successfully invoked".  If we get an error return value, was that successfully invoked?
-    if (resultObject.IsEmpty())
+    v8::Local<v8::Value> resultObject;
+    if (!frame->script().callFunction(function, functionObject, argumentCount, argv.get()).ToLocal(&resultObject))
         return false;
 
     convertV8ObjectToNPVariant(isolate, resultObject, npObject, result);

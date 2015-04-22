@@ -69,16 +69,16 @@ bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction, SQLEr
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
 
-    v8::Local<v8::Value> result = ScriptController::callFunction(executionContext(), m_callback.newLocal(isolate), m_scriptState->context()->Global(), WTF_ARRAY_LENGTH(argv), argv, isolate);
-
+    v8::Local<v8::Value> result;
     // FIXME: This comment doesn't make much sense given what the code is actually doing.
     //
     // Step 6: If the error callback returns false, then move on to the next
     // statement, if any, or onto the next overall step otherwise. Otherwise,
     // the error callback did not return false, or there was no error callback.
     // Jump to the last step in the overall steps.
-    if (exceptionCatcher.HasCaught())
+    if (!ScriptController::callFunction(executionContext(), m_callback.newLocal(isolate), m_scriptState->context()->Global(), WTF_ARRAY_LENGTH(argv), argv, isolate).ToLocal(&result))
         return true;
+
     bool value;
     V8_CALL(value, result, BooleanValue(isolate->GetCurrentContext()), return true);
     return value;

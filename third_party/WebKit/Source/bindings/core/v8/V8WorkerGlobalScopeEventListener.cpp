@@ -79,11 +79,14 @@ v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(Scri
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willCallFunction(scriptState->executionContext(), DevToolsFunctionInfo(handlerFunction));
 
     v8::Local<v8::Value> parameters[1] = { jsEvent };
-    v8::Local<v8::Value> result = V8ScriptRunner::callFunction(handlerFunction, scriptState->executionContext(), receiver, WTF_ARRAY_LENGTH(parameters), parameters, isolate());
+    v8::MaybeLocal<v8::Value> maybeResult = V8ScriptRunner::callFunction(handlerFunction, scriptState->executionContext(), receiver, WTF_ARRAY_LENGTH(parameters), parameters, isolate());
 
     InspectorInstrumentation::didCallFunction(cookie);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
 
+    v8::Local<v8::Value> result;
+    if (!maybeResult.ToLocal(&result))
+        return v8::Local<v8::Value>();
     return result;
 }
 

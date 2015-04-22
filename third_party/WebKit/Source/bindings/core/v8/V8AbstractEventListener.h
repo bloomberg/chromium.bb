@@ -128,6 +128,8 @@ private:
     // Implementation of EventListener function.
     virtual bool virtualisAttribute() const override { return m_isAttribute; }
 
+    // This could return an empty handle and callers need to check return value.
+    // We don't use v8::MaybeLocal because it can fail without exception.
     virtual v8::Local<v8::Value> callListenerFunction(ScriptState*, v8::Local<v8::Value> jsevent, Event*) = 0;
 
     virtual bool shouldPreventDefault(v8::Local<v8::Value> returnValue);

@@ -57,26 +57,32 @@ v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ScriptState* scriptSta
         return v8::Null(isolate());
 
     v8::Local<v8::Object> listener = getListenerObject(scriptState->executionContext());
-    v8::Local<v8::Value> returnValue;
-    if (!listener.IsEmpty() && listener->IsFunction()) {
-        v8::Local<v8::Function> callFunction = v8::Local<v8::Function>::Cast(listener);
-        v8::Local<v8::Object> thisValue = scriptState->context()->Global();
+    if (listener.IsEmpty() || !listener->IsFunction())
+        return v8::Null(isolate());
 
-        v8::Local<v8::Object> eventObject;
-        if (!jsEvent->ToObject(scriptState->context()).ToLocal(&eventObject))
-            return v8::Null(isolate());
-        v8::Local<v8::Value> error = V8HiddenValue::getHiddenValue(isolate(), eventObject, V8HiddenValue::error(isolate()));
-        if (error.IsEmpty())
-            error = v8::Null(isolate());
+    v8::Local<v8::Function> callFunction = v8::Local<v8::Function>::Cast(listener);
+    v8::Local<v8::Object> thisValue = scriptState->context()->Global();
 
-        v8::Local<v8::Value> parameters[5] = { v8String(isolate(), errorEvent->message()), v8String(isolate(), errorEvent->filename()), v8::Integer::New(isolate(), errorEvent->lineno()), v8::Integer::New(isolate(), errorEvent->colno()), error };
-        v8::TryCatch tryCatch;
-        tryCatch.SetVerbose(true);
-        if (scriptState->executionContext()->isWorkerGlobalScope())
-            returnValue = V8ScriptRunner::callFunction(callFunction, scriptState->executionContext(), thisValue, WTF_ARRAY_LENGTH(parameters), parameters, isolate());
-        else
-            returnValue = ScriptController::callFunction(scriptState->executionContext(), callFunction, thisValue, WTF_ARRAY_LENGTH(parameters), parameters, isolate());
+    v8::Local<v8::Object> eventObject;
+    if (!jsEvent->ToObject(scriptState->context()).ToLocal(&eventObject))
+        return v8::Null(isolate());
+    v8::Local<v8::Value> error = V8HiddenValue::getHiddenValue(isolate(), eventObject, V8HiddenValue::error(isolate()));
+    if (error.IsEmpty())
+        error = v8::Null(isolate());
+
+    v8::Local<v8::Value> parameters[5] = { v8String(isolate(), errorEvent->message()), v8String(isolate(), errorEvent->filename()), v8::Integer::New(isolate(), errorEvent->lineno()), v8::Integer::New(isolate(), errorEvent->colno()), error };
+    v8::TryCatch tryCatch;
+    tryCatch.SetVerbose(true);
+    v8::MaybeLocal<v8::Value> result;
+    if (scriptState->executionContext()->isWorkerGlobalScope()) {
+        result = V8ScriptRunner::callFunction(callFunction, scriptState->executionContext(), thisValue, WTF_ARRAY_LENGTH(parameters), parameters, isolate());
+    } else {
+        result = ScriptController::callFunction(scriptState->executionContext(), callFunction, thisValue, WTF_ARRAY_LENGTH(parameters), parameters, isolate());
     }
+    v8::Local<v8::Value> returnValue;
+    if (!result.ToLocal(&returnValue))
+        return v8::Null(isolate());
+
     return returnValue;
 }
 

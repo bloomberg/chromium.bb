@@ -91,7 +91,10 @@ v8::Local<v8::Value> V8EventListener::callListenerFunction(ScriptState* scriptSt
         return v8::Local<v8::Value>();
 
     v8::Local<v8::Value> parameters[1] = { jsEvent };
-    return frame->script().callFunction(handlerFunction, receiver, WTF_ARRAY_LENGTH(parameters), parameters);
+    v8::Local<v8::Value> result;
+    if (!frame->script().callFunction(handlerFunction, receiver, WTF_ARRAY_LENGTH(parameters), parameters).ToLocal(&result))
+        return v8::Local<v8::Value>();
+    return result;
 }
 
 } // namespace blink

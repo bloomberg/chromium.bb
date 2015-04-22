@@ -65,9 +65,8 @@ public:
             args[0] = toV8(value, creationContext, isolate);
             args[1] = toV8(key, creationContext, isolate);
 
-            V8ScriptRunner::callFunction(v8Callback, scriptState->executionContext(), v8ThisArg, 3, args, isolate);
-
-            if (tryCatch.HasCaught()) {
+            v8::Local<v8::Value> result;
+            if (!V8ScriptRunner::callFunction(v8Callback, scriptState->executionContext(), v8ThisArg, 3, args, isolate).ToLocal(&result)) {
                 exceptionState.rethrowV8Exception(tryCatch.Exception());
                 return;
             }
