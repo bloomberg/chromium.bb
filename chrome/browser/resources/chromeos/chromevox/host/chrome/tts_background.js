@@ -414,7 +414,10 @@ cvox.TtsBackground.prototype.onTtsEvent_ = function(event, utteranceId) {
     case 'interrupted':
       this.cancelUtterance_(utterance);
       this.currentUtterance_ = null;
-      this.startSpeakingNextItemInQueue_();
+      for (var i = 0; i < this.utteranceQueue_.length; i++) {
+        this.cancelUtterance_(this.utteranceQueue_[i]);
+      }
+      this.utteranceQueue_.length = 0;
       break;
     case 'error':
       this.onError_(event['errorMessage']);
