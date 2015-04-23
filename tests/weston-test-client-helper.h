@@ -132,15 +132,19 @@ struct surface {
 	void *data;
 };
 
+void *
+fail_on_null(void *p);
+
 static inline void *
-xzalloc(size_t size)
+xzalloc(size_t s)
 {
-        void *p;
+	return fail_on_null(calloc(1, s));
+}
 
-        p = calloc(1, size);
-        assert(p);
-
-        return p;
+static inline void *
+xmalloc(size_t s)
+{
+	return fail_on_null(malloc(s));
 }
 
 struct client *

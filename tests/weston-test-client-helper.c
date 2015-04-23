@@ -32,6 +32,17 @@
 #include "../shared/os-compatibility.h"
 #include "weston-test-client-helper.h"
 
+void *
+fail_on_null(void *p)
+{
+	if (p == NULL) {
+		fprintf(stderr, "out of memory\n");
+		exit(EXIT_FAILURE);
+	}
+	return p;
+}
+
+
 int
 surface_contains(struct surface *surface, int x, int y)
 {
