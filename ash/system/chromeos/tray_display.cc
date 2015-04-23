@@ -334,10 +334,9 @@ bool TrayDisplay::GetDisplayMessageForNotification(
 
     if (iter->second.configured_ui_scale() !=
         old_iter->second.configured_ui_scale()) {
-      *message_out = l10n_util::GetStringFUTF16(
+      *additional_message_out = l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
-          GetDisplayName(iter->first),
-          GetDisplaySize(iter->first));
+          GetDisplayName(iter->first), GetDisplaySize(iter->first));
       return true;
     }
     if (iter->second.GetActiveRotation() !=
@@ -357,9 +356,8 @@ bool TrayDisplay::GetDisplayMessageForNotification(
           rotation_text_id = IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_270;
           break;
       }
-      *message_out = l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED,
-          GetDisplayName(iter->first),
+      *additional_message_out = l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED, GetDisplayName(iter->first),
           l10n_util::GetStringUTF16(rotation_text_id));
       return true;
     }
@@ -377,7 +375,7 @@ void TrayDisplay::CreateOrUpdateNotification(
   message_center::MessageCenter::Get()->RemoveNotification(
       kNotificationId, false /* by_user */);
 
-  if (message.empty())
+  if (message.empty() && additional_message.empty())
     return;
 
   // Don't display notifications for accelerometer triggered screen rotations.
