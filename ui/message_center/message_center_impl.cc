@@ -58,20 +58,28 @@ class ChangeQueue {
     scoped_ptr<Notification> PassNotification();
 
     Notification* notification() const { return notification_.get(); }
+    // Returns the post-update ID. It means:
+    // - ADD event: ID of the notification to be added.
+    // - UPDATE event: ID of the notification after the change. If the change
+    //   doesn't update its ID, this value is same as |notification_list_id|.
+    // - DELETE event: ID of the notification to be deleted.
     const std::string& id() const { return id_; }
     ChangeType type() const { return type_; }
     bool by_user() const { return by_user_; }
     void set_by_user(bool by_user) { by_user_ = by_user; }
+    // Returns the ID which is used in the notification list. In other word, it
+    // means the ID before the change.
     const std::string& notification_list_id() const {
       return notification_list_id_;
     }
-    void set_notification_list_id(const std::string& id) {
-      notification_list_id_ = id;
+    void set_type(const ChangeType new_type) {
+      type_ = new_type;
     }
+    void ReplaceNotification(scoped_ptr<Notification> new_notification);
 
    private:
-    const ChangeType type_;
-    const std::string id_;
+    ChangeType type_;
+    std::string id_;
     std::string notification_list_id_;
     bool by_user_;
     scoped_ptr<Notification> notification_;
@@ -107,8 +115,6 @@ class ChangeQueue {
   Notification* GetLatestNotification(const std::string& id) const;
 
  private:
-  void Replace(const std::string& id, scoped_ptr<Change> change);
-
   ScopedVector<Change> changes_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangeQueue);
@@ -131,18 +137,25 @@ ChangeQueue::Change::Change(ChangeType type,
                             const std::string& id,
                             scoped_ptr<Notification> notification)
     : type_(type),
-      id_(id),
       notification_list_id_(id),
       by_user_(false),
       notification_(notification.Pass()) {
   DCHECK(!id.empty());
   DCHECK(type != CHANGE_TYPE_DELETE || notification_.get() == NULL);
+
+  id_ = notification_ ? notification_->id() : notification_list_id_;
 }
 
 ChangeQueue::Change::~Change() {}
 
 scoped_ptr<Notification> ChangeQueue::Change::PassNotification() {
   return notification_.Pass();
+}
+
+void ChangeQueue::Change::ReplaceNotification(
+    scoped_ptr<Notification> new_notification) {
+  id_ = new_notification ? new_notification->id() : notification_list_id_;
+  notification_.swap(new_notification);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -180,24 +193,88 @@ void ChangeQueue::ApplyChanges(MessageCenter* message_center) {
 
 void ChangeQueue::AddNotification(scoped_ptr<Notification> notification) {
   std::string id = notification->id();
-
-  scoped_ptr<Change> change(
+  changes_.push_back(
       new Change(CHANGE_TYPE_ADD, id, notification.Pass()));
-  Replace(id, change.Pass());
 }
 
 void ChangeQueue::UpdateNotification(const std::string& old_id,
                                      scoped_ptr<Notification> notification) {
-  std::string new_id = notification->id();
-  scoped_ptr<Change> change(
-      new Change(CHANGE_TYPE_UPDATE, new_id, notification.Pass()));
-  Replace(old_id, change.Pass());
+  ScopedVector<Change>::reverse_iterator iter =
+    std::find_if(changes_.rbegin(), changes_.rend(), ChangeFinder(old_id));
+  if (iter == changes_.rend()) {
+    changes_.push_back(
+        new Change(CHANGE_TYPE_UPDATE, old_id, notification.Pass()));
+    return;
+  }
+
+  Change* change = *iter;
+  switch (change->type()) {
+    case CHANGE_TYPE_ADD: {
+      std::string id = notification->id();
+      // Needs to add the change at the last, because if this change updates
+      // its ID, some previous changes may affect new ID.
+      // (eg. Add A, Update B->C, and This update A->B).
+      changes_.erase(--(iter.base()));
+      changes_.push_back(
+          new Change(CHANGE_TYPE_ADD, id, notification.Pass()));
+      break;
+    }
+    case CHANGE_TYPE_UPDATE:
+      if (notification->id() == old_id) {
+        // Safe to place the change at the previous place.
+        change->ReplaceNotification(notification.Pass());
+      } else if (change->id() == change->notification_list_id()) {
+        std::string id = notification->id();
+        // Safe to place the change at the last.
+        changes_.erase(--(iter.base()));
+        changes_.push_back(new Change(
+            CHANGE_TYPE_ADD, id, notification.Pass()));
+      } else {
+        // Complex case: gives up to optimize.
+        changes_.push_back(
+            new Change(CHANGE_TYPE_UPDATE, old_id, notification.Pass()));
+      }
+      break;
+    case CHANGE_TYPE_DELETE:
+      // DELETE -> UPDATE. Something is wrong. Treats the UPDATE as ADD.
+      changes_.push_back(
+          new Change(CHANGE_TYPE_ADD, old_id, notification.Pass()));
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 void ChangeQueue::EraseNotification(const std::string& id, bool by_user) {
-  scoped_ptr<Change> change(new Change(CHANGE_TYPE_DELETE, id, nullptr));
-  change->set_by_user(by_user);
-  Replace(id, change.Pass());
+  ScopedVector<Change>::reverse_iterator iter =
+    std::find_if(changes_.rbegin(), changes_.rend(), ChangeFinder(id));
+  if (iter == changes_.rend()) {
+    scoped_ptr<Change> change(new Change(CHANGE_TYPE_DELETE, id, nullptr));
+    change->set_by_user(by_user);
+    changes_.push_back(change.release());
+    return;
+  }
+
+  Change* change = *iter;
+  switch (change->type()) {
+    case CHANGE_TYPE_ADD:
+      // ADD -> DELETE. Just removes both.
+      changes_.erase(--(iter.base()));
+      break;
+    case CHANGE_TYPE_UPDATE:
+      // UPDATE -> DELETE. Changes the previous UPDATE to DELETE.
+      change->set_type(CHANGE_TYPE_DELETE);
+      change->set_by_user(by_user);
+      change->ReplaceNotification(nullptr);
+      break;
+    case CHANGE_TYPE_DELETE:
+      // DELETE -> DELETE. Something is wrong. Combines them with overriding
+      // the |by_user| flag.
+      change->set_by_user(!change->by_user() && by_user);
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 bool ChangeQueue::Has(const std::string& id) const {
@@ -213,21 +290,6 @@ Notification* ChangeQueue::GetLatestNotification(const std::string& id) const {
     return NULL;
 
   return (*iter)->notification();
-}
-
-void ChangeQueue::Replace(const std::string& changed_id,
-                          scoped_ptr<Change> new_change) {
-  ScopedVector<Change>::iterator iter =
-      std::find_if(changes_.begin(), changes_.end(), ChangeFinder(changed_id));
-  if (iter != changes_.end()) {
-    Change* old_change = *iter;
-    new_change->set_notification_list_id(old_change->notification_list_id());
-    changes_.erase(iter);
-  } else {
-    new_change->set_notification_list_id(changed_id);
-  }
-
-  changes_.push_back(new_change.release());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
