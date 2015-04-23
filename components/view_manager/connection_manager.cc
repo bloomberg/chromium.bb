@@ -602,14 +602,16 @@ void ConnectionManager::OnFocusChanged(ServerView* old_focused_view,
     }
   }
 
-  // Window manager should always be notified of focus change.
-  ViewManagerServiceImpl* wm_connection =
-      window_manager_client_connection_->service();
-  if (wm_connection != owning_connection_old &&
-      wm_connection != embedded_connection_old &&
-      wm_connection != owning_connection_new &&
-      wm_connection != embedded_connection_new) {
-    wm_connection->ProcessFocusChanged(old_focused_view, new_focused_view);
+  if (has_window_manager_client_connection()) {
+    // Window manager should always be notified of focus change.
+    ViewManagerServiceImpl* wm_connection =
+        window_manager_client_connection_->service();
+    if (wm_connection != owning_connection_old &&
+        wm_connection != embedded_connection_old &&
+        wm_connection != owning_connection_new &&
+        wm_connection != embedded_connection_new) {
+      wm_connection->ProcessFocusChanged(old_focused_view, new_focused_view);
+    }
   }
 }
 
