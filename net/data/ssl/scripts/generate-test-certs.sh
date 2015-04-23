@@ -150,6 +150,13 @@ SUBJECT_NAME="req_dn" \
     -config ../scripts/ee.cnf -newkey rsa:2048 -text \
     -out ../certificates/reject_intranet_hosts.pem
 
+## Leaf certificate with a large key; Apple's certificate verifier rejects with
+## a fatal error if the key is bigger than 4096 bits.
+try openssl req -x509 -days 3650 \
+    -config ../scripts/ee.cnf -newkey rsa:4104 -text \
+    -sha256 \
+    -out ../certificates/large_key.pem
+
 ## Validity too long unit test support.
 try openssl req -config ../scripts/ee.cnf \
   -newkey rsa:2048 -text -out ../certificates/10_year_validity.req

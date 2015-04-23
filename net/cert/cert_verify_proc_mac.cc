@@ -178,13 +178,14 @@ OSStatus CreateTrustPolicies(const std::string& hostname,
 // Stores the constructed certificate chain |cert_chain| and information about
 // the signature algorithms used into |*verify_result|. If the leaf cert in
 // |cert_chain| contains a weak (MD2, MD4, MD5, SHA-1) signature, stores that
-// in |*leaf_is_weak|.
+// in |*leaf_is_weak|. |cert_chain| must not be empty.
 void GetCertChainInfo(CFArrayRef cert_chain,
                       CSSM_TP_APPLE_EVIDENCE_INFO* chain_info,
                       CertVerifyResult* verify_result,
                       bool* leaf_is_weak) {
+  DCHECK_LT(0, CFArrayGetCount(cert_chain));
+
   *leaf_is_weak = false;
-  verify_result->verified_cert = nullptr;
   verify_result->has_md2 = false;
   verify_result->has_md4 = false;
   verify_result->has_md5 = false;
@@ -253,8 +254,10 @@ void GetCertChainInfo(CFArrayRef cert_chain,
         *leaf_is_weak = true;
     }
   }
-  if (!verified_cert)
+  if (!verified_cert) {
+    NOTREACHED();
     return;
+  }
 
   verify_result->verified_cert =
       X509Certificate::CreateFromHandle(verified_cert, verified_chain);
@@ -561,17 +564,23 @@ int CertVerifyProcMac::VerifyInternal(
     if (rv != OK)
       return rv;
 
-    CertVerifyResult temp_verify_result;
-    bool leaf_is_weak = false;
-    GetCertChainInfo(temp_chain, temp_chain_info, &temp_verify_result,
-                     &leaf_is_weak);
-
     bool untrusted = (temp_trust_result != kSecTrustResultUnspecified &&
                       temp_trust_result != kSecTrustResultProceed);
-    bool weak_chain =
-        !leaf_is_weak &&
-        (temp_verify_result.has_md2 || temp_verify_result.has_md4 ||
-         temp_verify_result.has_md5 || temp_verify_result.has_sha1);
+    bool weak_chain = false;
+    if (CFArrayGetCount(temp_chain) == 0) {
+      // If the chain is empty, it cannot be trusted or have recoverable
+      // errors.
+      DCHECK(untrusted);
+      DCHECK_NE(kSecTrustResultRecoverableTrustFailure, temp_trust_result);
+    } else {
+      CertVerifyResult temp_verify_result;
+      bool leaf_is_weak = false;
+      GetCertChainInfo(temp_chain, temp_chain_info, &temp_verify_result,
+                       &leaf_is_weak);
+      weak_chain = !leaf_is_weak &&
+                   (temp_verify_result.has_md2 || temp_verify_result.has_md4 ||
+                    temp_verify_result.has_md5 || temp_verify_result.has_sha1);
+    }
     // Set the result to the current chain if:
     // - This is the first verification attempt. This ensures that if
     //   everything is awful (e.g. it may just be an untrusted cert), that
@@ -609,9 +618,11 @@ int CertVerifyProcMac::VerifyInternal(
   if (crl_set && !CheckRevocationWithCRLSet(completed_chain, crl_set))
     verify_result->cert_status |= CERT_STATUS_REVOKED;
 
-  bool leaf_is_weak_unused = false;
-  GetCertChainInfo(completed_chain, chain_info, verify_result,
-                   &leaf_is_weak_unused);
+  if (CFArrayGetCount(completed_chain) > 0) {
+    bool leaf_is_weak_unused = false;
+    GetCertChainInfo(completed_chain, chain_info, verify_result,
+                     &leaf_is_weak_unused);
+  }
 
   // As of Security Update 2012-002/OS X 10.7.4, when an RSA key < 1024 bits
   // is encountered, CSSM returns CSSMERR_TP_VERIFY_ACTION_FAILED and adds

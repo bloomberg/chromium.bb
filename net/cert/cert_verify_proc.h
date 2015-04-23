@@ -76,7 +76,9 @@ class NET_EXPORT CertVerifyProc
   FRIEND_TEST_ALL_PREFIXES(CertVerifyProcTest, TestHasTooLongValidity);
 
   // Performs the actual verification using the desired underlying
-  // cryptographic library.
+  // cryptographic library. On entry, |verify_result->verified_cert|
+  // is set to |cert|, the unverified chain. If no chain is built, the
+  // value must be left untouched.
   virtual int VerifyInternal(X509Certificate* cert,
                              const std::string& hostname,
                              int flags,

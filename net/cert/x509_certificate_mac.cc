@@ -497,7 +497,9 @@ void X509Certificate::GetPublicKeyInfo(OSCertHandle cert_handle,
   SecKeyRef key;
   OSStatus status = SecCertificateCopyPublicKey(cert_handle, &key);
   if (status) {
-    NOTREACHED() << "SecCertificateCopyPublicKey failed: " << status;
+    // SecCertificateCopyPublicKey may fail if the certificate has an invalid
+    // key. See https://crbug.com/472291.
+    LOG(WARNING) << "SecCertificateCopyPublicKey failed: " << status;
     return;
   }
   ScopedCFTypeRef<SecKeyRef> scoped_key(key);
