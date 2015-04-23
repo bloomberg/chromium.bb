@@ -45,6 +45,9 @@ KNOWN_HOSTS_PATH = os.path.expanduser('~/.ssh/known_hosts')
 # Dev/test packages are installed in these paths.
 DEV_BIN_PATHS = '/usr/local/bin:/usr/local/sbin'
 
+# Path to the lsb-release file on the device.
+LSB_RELEASE_PATH = '/etc/lsb-release'
+
 # Brillo device.
 BRILLO_DEBUG_LINK_SERVICE_NAME = '_brdebug._tcp.local'
 BRILLO_DEVICE_PROPERTY_DIR = '/var/lib/brillo-device'
@@ -79,6 +82,10 @@ class DeviceNotPingableError(RemoteAccessException):
 
 class DefaultDeviceError(RemoteAccessException):
   """Raised when a default ChromiumOSDevice can't be found."""
+
+
+class CatFileError(RemoteAccessException):
+  """Raised when error occurs while trying to cat a remote file."""
 
 
 class RunningPidsError(RemoteAccessException):
@@ -742,6 +749,52 @@ class RemoteDevice(object):
                                  capture_output=True)
     return result.returncode == 0
 
+  def GetSize(self, path):
+    """Gets the size of the given file on the device.
+
+    Args:
+      path: full path to the file on the device.
+
+    Returns:
+      Size of the file in number of bytes.
+
+    Raises:
+      ValueError if failed to get file size from the remote output.
+      cros_build_lib.RunCommandError if |path| does not exist or the remote
+      command to get file size has failed.
+    """
+    cmd = ['du', '-Lb', '--max-depth=0', path]
+    result = self.BaseRunCommand(cmd, remote_sudo=True, capture_output=True)
+    return int(result.output.split()[0])
+
+  def CatFile(self, path, max_size=1000000):
+    """Reads the file on device to string if its size is less than |max_size|.
+
+    Args:
+      path: The full path to the file on the device to read.
+      max_size: Read the file only if its size is less than |max_size| in bytes.
+        The default is 1,000,000(~1MB).
+
+    Returns:
+      A string of the file content.
+
+    Raises:
+      CatFileError if failed to read the remote file or the file size is larger
+      than |max_size|.
+    """
+    try:
+      file_size = self.GetSize(path)
+    except (ValueError, cros_build_lib.RunCommandError) as e:
+      raise CatFileError('Failed to get size of file "%s": %s' % (path, e))
+    if file_size > max_size:
+      raise CatFileError('File "%s" is larger than %d bytes' % (path, max_size))
+
+    result = self.BaseRunCommand(['cat', path], remote_sudo=True,
+                                 error_code_ok=True, capture_output=True)
+    if result.returncode:
+      raise CatFileError('Failed to read file "%s" on the device' % path)
+    return result.output
+
   def PipeOverSSH(self, filepath, cmd, **kwargs):
     """Cat a file and pipe over SSH."""
     producer_cmd = ['cat', filepath]
@@ -878,13 +931,17 @@ class ChromiumOSDevice(RemoteDevice):
     """
     if not self._lsb_release:
       try:
-        result = self.BaseRunCommand(['cat', '/etc/lsb-release'])
-        self._lsb_release = dict(e.split('=', 1)
-                                 for e in reversed(result.output.splitlines()))
-      except Exception as e:
-        logging.error('Failed to read "/etc/lsb-release" on the device or the '
-                      'file may be corrupted: %s', e.result.error)
-
+        content = self.CatFile(LSB_RELEASE_PATH)
+      except CatFileError as e:
+        logging.debug(
+            'Failed to read "%s" on the device: %s', LSB_RELEASE_PATH, e)
+      else:
+        try:
+          self._lsb_release = dict(e.split('=', 1)
+                                   for e in reversed(content.splitlines()))
+        except ValueError:
+          logging.error('File "%s" on the device is mal-formatted.',
+                        LSB_RELEASE_PATH)
     return self._lsb_release
 
   @property
@@ -904,10 +961,13 @@ class ChromiumOSDevice(RemoteDevice):
     if not self._alias:
       alias_file_path = os.path.join(BRILLO_DEVICE_PROPERTY_DIR,
                                      BRILLO_DEVICE_PROPERTY_ALIAS)
-      result = self.RunCommand(['cat', alias_file_path], capture_output=True,
-                               error_code_ok=True)
-      if not result.returncode:
-        self._alias = result.output.strip()
+      try:
+        self._alias = self.CatFile(alias_file_path,
+                                   BRILLO_DEVICE_PROPERTY_MAX_LEN+1)
+      except CatFileError as e:
+        logging.debug('Unable to read alias of the device: %s', e)
+      else:
+        self._alias = self._alias.strip()
 
     return self._alias
 
