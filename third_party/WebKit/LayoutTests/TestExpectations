@@ -2432,4 +2432,4 @@ crbug.com/479224 [ SnowLeopard ] ietestcenter/css3/text/textshadow-005.htm [ Nee
 crbug.com/479224 [ SnowLeopard ] ietestcenter/css3/text/textshadow-007.htm [ NeedsRebaseline ]
 crbug.com/479224 [ SnowLeopard ] ietestcenter/css3/text/textshadow-008.htm [ NeedsRebaseline ]
 
-crbug.com/479823 svg/animations/viewspec-animated-viewbox.html [ Pass Failure ]
+crbug.com/479823 svg/animations/viewspec-animated-viewbox.html [ Pass ImageOnlyFailure ]
