@@ -174,7 +174,7 @@ def GetBotStepMap():
                       '--coverage-bucket', CHROMIUM_COVERAGE_BUCKET,
                       '--cleanup'])),
       B('user-build-fyi-tests-dbg', H(std_test_steps),
-        T(telemetry_tests_user_build)),
+        T(telemetry_tests_user_build + ['components_browsertests'])),
       B('fyi-component-builder-tests-dbg',
         H(compile_step, extra_gyp='component=shared_library'),
         T(std_tests, ['--experimental', flakiness_server])),
