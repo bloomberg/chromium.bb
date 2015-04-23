@@ -387,7 +387,7 @@ public:
     inline bool isPositionedContainer() const
     {
         // FIXME: This is not in sync with containingBlock.
-        // LayoutObject::canContainFixedPositionObjects() should probably be used
+        // LayoutObject::canContainFixedPositionedObject() should probably be used
         // instead.
         LayoutBoxModelObject* layerlayoutObject = layoutObject();
         return isRootLayer() || layerlayoutObject->isPositioned() || hasTransformRelatedProperty();

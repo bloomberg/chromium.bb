@@ -409,7 +409,6 @@ void LayoutTable::simplifiedNormalFlowLayout()
         section->layoutIfNeeded();
         section->layoutRows();
         section->computeOverflowFromCells();
-        section->updateLayerTransformAfterLayout();
     }
 
     recalcCollapsedBordersIfNeeded();
@@ -553,8 +552,6 @@ void LayoutTable::layout()
                 section->setMayNeedPaintInvalidation();
 
             setLogicalHeight(logicalHeight() + section->logicalHeight());
-
-            section->updateLayerTransformAfterLayout();
 
             section = sectionBelow(section);
         }
