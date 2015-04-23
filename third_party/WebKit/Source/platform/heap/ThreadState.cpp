@@ -516,9 +516,10 @@ bool ThreadState::shouldScheduleIdleGC()
     // Heap::markedObjectSize() may be underestimated if any thread has not
     // finished completeSweep().
     size_t currentObjectSize = allocatedObjectSize + Heap::markedObjectSize() + WTF::Partitions::totalSizeOfCommittedPages();
-    // Schedule an idle GC if the current memory usage is >1MB
-    // and is >50% larger than the estimated live memory usage.
-    return currentObjectSize >= 1024 * 1024 && currentObjectSize > estimatedLiveObjectSize * 3 / 2;
+    // Schedule an idle GC if Oilpan has allocated more than 1 MB since
+    // the last GC and the current memory usage is >50% larger than
+    // the estimated live memory usage.
+    return allocatedObjectSize >= 1024 * 1024 && currentObjectSize > estimatedLiveObjectSize * 3 / 2;
 #else
     return false;
 #endif
@@ -541,9 +542,10 @@ bool ThreadState::shouldSchedulePreciseGC()
     // Heap::markedObjectSize() may be underestimated if any thread has not
     // finished completeSweep().
     size_t currentObjectSize = allocatedObjectSize + Heap::markedObjectSize() + WTF::Partitions::totalSizeOfCommittedPages();
-    // Schedule a precise GC if the current memory usage is >1MB
-    // and is >50% larger than the estimated live memory usage.
-    return currentObjectSize >= 1024 * 1024 && currentObjectSize > estimatedLiveObjectSize * 3 / 2;
+    // Schedule a precise GC if Oilpan has allocated more than 1 MB since
+    // the last GC and the current memory usage is >50% larger than
+    // the estimated live memory usage.
+    return allocatedObjectSize >= 1024 * 1024 && currentObjectSize > estimatedLiveObjectSize * 3 / 2;
 #endif
 }
 
@@ -567,10 +569,11 @@ bool ThreadState::shouldForceConservativeGC()
         // aggressively. This is a safe guard to avoid OOM.
         return currentObjectSize > estimatedLiveObjectSize * 3 / 2;
     }
-    // Schedule a conservative GC if the current memory usage is >32MB
-    // and is >400% larger than the estimated live memory usage.
+    // Schedule a conservative GC if Oilpan has allocated more than 32 MB since
+    // the last GC and the current memory usage is >400% larger than
+    // the estimated live memory usage.
     // TODO(haraken): 400% is too large. Lower the heap growing factor.
-    return currentObjectSize >= 32 * 1024 * 1024 && currentObjectSize > 5 * estimatedLiveObjectSize;
+    return allocatedObjectSize >= 32 * 1024 * 1024 && currentObjectSize > 5 * estimatedLiveObjectSize;
 }
 
 void ThreadState::scheduleGCIfNeeded()
