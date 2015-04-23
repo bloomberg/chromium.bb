@@ -49,6 +49,12 @@ function Banners(
             parseInt(values[WELCOME_HEADER_COUNTER_KEY], 10) || 0;
         this.warningDismissedCounter_ =
             parseInt(values[WARNING_DISMISSED_KEY], 10) || 0;
+
+        // If it's in test, override the counter to show the header by force.
+        if (window.IN_TEST) {
+          this.welcomeHeaderCounter_ = 0;
+          this.warningDismissedCounter_ = 0;
+        }
       }.bind(this));
 
   // Authentication failed banner.
