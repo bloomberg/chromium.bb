@@ -2961,9 +2961,8 @@
    fun:_Znw*
    fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
    fun:_ZN4base10WorkerPool16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_b
-   fun:_ZN3net16HostResolverImpl16LoopbackProbeJobC1ERKN4base7WeakPtrIS0_EE
-   fun:_ZN3net16HostResolverImplC1ERKNS_12HostResolver7OptionsEPNS_6NetLogE
-   fun:_ZN8chromeos24HostResolverImplChromeOSC1E13*
+   fun:_ZN3net16HostResolverImpl16LoopbackProbeJob*
+   fun:_ZN3net16HostResolverImplC*
 }
 {
    bug_387993
@@ -3023,18 +3022,6 @@
    fun:_ZNK6SkDraw8drawPathERK6SkPathRK7SkPaintPK8SkMatrixbbP9SkBlitter
    fun:_ZNK6SkDraw8drawPathERK6SkPathRK7SkPaintPK8SkMatrixb
    fun:_ZN14SkBitmapDevice8drawPathERK6SkDrawRK6SkPathRK7SkPaintPK8SkMatrixb
-}
-{
-   bug_392936
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
-   fun:_ZN4base10WorkerPool16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_b
-   fun:_ZN3net16HostResolverImpl16LoopbackProbeJobC2ERKN4base7WeakPtrIS0_EE
-   fun:_ZN3net16HostResolverImplC1ERKNS_12HostResolver7OptionsEPNS_6NetLogE
-   fun:_ZN8chromeos24HostResolverImplChromeOSC1E13scoped_refptrIN4base16MessageLoopProxyEEPNS_19NetworkStateHandlerERKN3net12HostResolver7OptionsEPNS7_6NetLogE
-   fun:_ZN8chromeos24HostResolverImplChromeOS25CreateHostResolverForTestE13scoped_refptrIN4base16MessageLoopProxyEEPNS_19NetworkStateHandlerE
-   fun:_ZN28HostResolverImplChromeOSTest22InitializeHostResolverEv
 }
 {
    bug_394558
