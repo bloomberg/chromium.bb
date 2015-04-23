@@ -917,11 +917,7 @@ function populatePortStatus(devicesStatusMap) {
       var portIcon = document.createElement('div');
       portIcon.className = 'port-icon';
       // status === 0 is the default (connected) state.
-      // Positive values correspond to the tunnelling connection count
-      // (in DEBUG_DEVTOOLS mode).
-      if (status > 0)
-        portIcon.classList.add('connected');
-      else if (status === -1 || status === -2)
+      if (status === -1 || status === -2)
         portIcon.classList.add('transient');
       else if (status < 0)
         portIcon.classList.add('error');
@@ -930,8 +926,6 @@ function populatePortStatus(devicesStatusMap) {
       var portNumber = document.createElement('div');
       portNumber.className = 'port-number';
       portNumber.textContent = ':' + port;
-      if (status > 0)
-        portNumber.textContent += '(' + status + ')';
       devicePorts.appendChild(portNumber);
     }
 

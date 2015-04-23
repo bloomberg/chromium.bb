@@ -39,7 +39,6 @@ enum {
   kStatusDisconnecting = -2,
   kStatusConnecting = -1,
   kStatusOK = 0,
-  // Positive values are used to count open connections.
 };
 
 namespace tethering = ::chrome::devtools::Tethering;
@@ -48,40 +47,29 @@ static const char kDevToolsRemoteBrowserTarget[] = "/devtools/browser";
 
 class SocketTunnel : public base::NonThreadSafe {
  public:
-  typedef base::Callback<void(int)> CounterCallback;
-
   static void StartTunnel(const std::string& host,
                           int port,
-                          const CounterCallback& callback,
                           int result,
                           scoped_ptr<net::StreamSocket> socket) {
-    if (result < 0)
-      return;
-    SocketTunnel* tunnel = new SocketTunnel(callback);
-    tunnel->Start(socket.Pass(), host, port);
+    if (result == net::OK)
+      new SocketTunnel(socket.Pass(), host, port);
   }
 
  private:
-  explicit SocketTunnel(const CounterCallback& callback)
-      : pending_writes_(0),
-        pending_destruction_(false),
-        callback_(callback),
-        about_to_destroy_(false) {
-    callback_.Run(1);
-  }
-
-  void Start(scoped_ptr<net::StreamSocket> socket,
-             const std::string& host, int port) {
-    remote_socket_.swap(socket);
-
-    host_resolver_ = net::HostResolver::CreateDefaultResolver(NULL);
+  SocketTunnel(scoped_ptr<net::StreamSocket> socket,
+               const std::string& host,
+               int port)
+      : remote_socket_(socket.Pass()),
+        pending_writes_(0),
+        pending_destruction_(false) {
+    host_resolver_ = net::HostResolver::CreateDefaultResolver(nullptr);
     net::HostResolver::RequestInfo request_info(net::HostPortPair(host, port));
     int result = host_resolver_->Resolve(
         request_info,
         net::DEFAULT_PRIORITY,
         &address_list_,
         base::Bind(&SocketTunnel::OnResolved, base::Unretained(this)),
-        NULL,
+        nullptr,
         net::BoundNetLog());
     if (result != net::ERR_IO_PENDING)
       OnResolved(result);
@@ -93,21 +81,12 @@ class SocketTunnel : public base::NonThreadSafe {
       return;
     }
 
-    host_socket_.reset(new net::TCPClientSocket(address_list_, NULL,
+    host_socket_.reset(new net::TCPClientSocket(address_list_, nullptr,
                                                 net::NetLog::Source()));
     result = host_socket_->Connect(base::Bind(&SocketTunnel::OnConnected,
                                               base::Unretained(this)));
     if (result != net::ERR_IO_PENDING)
       OnConnected(result);
-  }
-
-  ~SocketTunnel() {
-    about_to_destroy_ = true;
-    if (host_socket_)
-      host_socket_->Disconnect();
-    if (remote_socket_)
-      remote_socket_->Disconnect();
-    callback_.Run(-1);
   }
 
   void OnConnected(int result) {
@@ -195,11 +174,6 @@ class SocketTunnel : public base::NonThreadSafe {
   }
 
   void SelfDestruct() {
-    // In case one of the connections closes, we could get here
-    // from another one due to Disconnect firing back on all
-    // read callbacks.
-    if (about_to_destroy_)
-      return;
     if (pending_writes_ > 0) {
       pending_destruction_ = true;
       return;
@@ -213,8 +187,6 @@ class SocketTunnel : public base::NonThreadSafe {
   net::AddressList address_list_;
   int pending_writes_;
   bool pending_destruction_;
-  CounterCallback callback_;
-  bool about_to_destroy_;
 };
 
 }  // namespace
@@ -254,10 +226,6 @@ class PortForwardingController::Connection
   void ProcessBindResponse(int port, PortStatus status);
   void ProcessUnbindResponse(int port, PortStatus status);
 
-  static void UpdateSocketCountOnHandlerThread(
-      base::WeakPtr<Connection> weak_connection, int port, int increment);
-  void UpdateSocketCount(int port, int increment);
-
   // DevToolsAndroidBridge::AndroidWebSocket::Delegate implementation:
   void OnSocketOpened() override;
   void OnFrameRead(const std::string& message) override;
@@ -271,7 +239,6 @@ class PortForwardingController::Connection
   ForwardingMap forwarding_map_;
   CommandCallbackMap pending_responses_;
   PortStatusMap port_status_;
-  base::WeakPtrFactory<Connection> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Connection);
 };
@@ -284,8 +251,7 @@ PortForwardingController::Connection::Connection(
       browser_(browser),
       command_id_(0),
       connected_(false),
-      forwarding_map_(forwarding_map),
-      weak_factory_(this) {
+      forwarding_map_(forwarding_map) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   controller_->registry_[browser->serial()] = this;
   scoped_refptr<AndroidDeviceManager::Device> device(
@@ -403,27 +369,6 @@ void PortForwardingController::Connection::ProcessUnbindResponse(
     port_status_.erase(it);
 }
 
-// static
-void PortForwardingController::Connection::UpdateSocketCountOnHandlerThread(
-    base::WeakPtr<Connection> weak_connection, int port, int increment) {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-     base::Bind(&Connection::UpdateSocketCount,
-                weak_connection, port, increment));
-}
-
-void PortForwardingController::Connection::UpdateSocketCount(
-    int port, int increment) {
-#if defined(DEBUG_DEVTOOLS)
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  PortStatusMap::iterator it = port_status_.find(port);
-  if (it == port_status_.end())
-    return;
-  if (it->second < 0 || (it->second == 0 && increment < 0))
-    return;
-  it->second += increment;
-#endif  // defined(DEBUG_DEVTOOLS)
-}
-
 const PortForwardingController::PortStatusMap&
 PortForwardingController::Connection::GetPortStatusMap() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -473,10 +418,6 @@ void PortForwardingController::Connection::OnFrameRead(
     return;
   std::string destination_host = tokens[0];
 
-  SocketTunnel::CounterCallback callback =
-      base::Bind(&Connection::UpdateSocketCountOnHandlerThread,
-                 weak_factory_.GetWeakPtr(), port);
-
   scoped_refptr<AndroidDeviceManager::Device> device(
       controller_->bridge_->FindDevice(browser_->serial()));
   DCHECK(device.get());
@@ -484,8 +425,7 @@ void PortForwardingController::Connection::OnFrameRead(
       connection_id.c_str(),
       base::Bind(&SocketTunnel::StartTunnel,
                  destination_host,
-                 destination_port,
-                 callback));
+                 destination_port));
 }
 
 PortForwardingController::PortForwardingController(

@@ -138,11 +138,6 @@ img {
   background-color: rgb(224, 32, 32);
 }
 
-.port-icon.connected {
-  -webkit-transform: scale(1.2);
-  background-color: rgb(0, 255, 0);
-}
-
 .port-icon.transient {
   -webkit-transform: scale(1.2);
   background-color: orange;
