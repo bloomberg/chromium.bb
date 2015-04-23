@@ -5,4 +5,5 @@
 LIBRARY "verifier_test_dll_2.dll"
 
 EXPORTS
+  DllMain
   DummyExport

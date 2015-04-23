@@ -437,6 +437,10 @@ VerificationResult NewVerifyModule(
   if (!mem_peimage.VerifyMagic() || !state.disk_peimage.VerifyMagic())
     return result;
 
+  // Get the list of exports and sort them by address for efficient lookups.
+  mem_peimage.EnumExports(EnumExportsCallback, &state.exports);
+  std::sort(state.exports.begin(), state.exports.end());
+
   // Get the addresses of the code sections then calculate |code_section_delta|
   // and |image_base_delta|.
   if (!GetCodeAddrsAndSize(mem_peimage,

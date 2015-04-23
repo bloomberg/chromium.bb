@@ -18,6 +18,9 @@ extern const size_t kTestDllNamesCount;
 // A function exported by the test dlls in |kTestDllNames|.
 extern const char kTestExportName[];
 
+// The DllMain function exported by the test dlls in |kTestDllNames|.
+extern const char kTestDllMainExportName[];
+
 }  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_MODULE_INTEGRITY_UNITTEST_UTIL_WIN_H_

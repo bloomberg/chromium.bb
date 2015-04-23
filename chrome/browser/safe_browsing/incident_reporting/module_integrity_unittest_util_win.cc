@@ -17,4 +17,6 @@ const size_t kTestDllNamesCount = arraysize(kTestDllNames);
 
 const char kTestExportName[] = "DummyExport";
 
+const char kTestDllMainExportName[] = "DllMain";
+
 }  // namespace safe_browsing
