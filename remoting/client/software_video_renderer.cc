@@ -325,7 +325,8 @@ SoftwareVideoRenderer::SoftwareVideoRenderer(
 
 SoftwareVideoRenderer::~SoftwareVideoRenderer() {
   DCHECK(CalledOnValidThread());
-  decode_task_runner_->DeleteSoon(FROM_HERE, core_.release());
+  bool result = decode_task_runner_->DeleteSoon(FROM_HERE, core_.release());
+  DCHECK(result);
 }
 
 void SoftwareVideoRenderer::OnSessionConfig(

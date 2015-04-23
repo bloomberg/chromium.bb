@@ -450,10 +450,10 @@ void ChromotingJniInstance::DisconnectFromHostOnNetworkThread() {
   // |client_| must be torn down before |signaling_|.
   client_.reset();
   client_status_logger_.reset();
-  client_context_.reset();
   video_renderer_.reset();
   authenticator_.reset();
   signaling_.reset();
+  client_context_.reset();
 }
 
 void ChromotingJniInstance::FetchSecret(
