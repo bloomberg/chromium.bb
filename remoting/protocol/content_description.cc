@@ -25,7 +25,6 @@ const char kDefaultNs[] = "";
 
 // Following constants are used to format session description in XML.
 const char kDescriptionTag[] = "description";
-const char kStandardIceTag[] = "standard-ice";
 const char kControlTag[] = "control";
 const char kEventTag[] = "event";
 const char kVideoTag[] = "video";
@@ -122,10 +121,17 @@ ContentDescription::ContentDescription(
 
 ContentDescription::~ContentDescription() { }
 
+ContentDescription* ContentDescription::Copy() const {
+  if (!candidate_config_.get() || !authenticator_message_.get()) {
+    return nullptr;
+  }
+  scoped_ptr<XmlElement> message(new XmlElement(*authenticator_message_));
+  return new ContentDescription(candidate_config_->Clone(), message.Pass());
+}
+
 // ToXml() creates content description for chromoting session. The
 // description looks as follows:
 //   <description xmlns="google:remoting">
-//     <standard-ice/>
 //     <control transport="stream" version="1" />
 //     <event transport="datagram" version="1" />
 //     <video transport="stream" codec="vp8" version="1" />
@@ -139,25 +145,27 @@ XmlElement* ContentDescription::ToXml() const {
   XmlElement* root = new XmlElement(
       QName(kChromotingXmlNamespace, kDescriptionTag), true);
 
-  if (config()->standard_ice()) {
-    root->AddElement(
-        new buzz::XmlElement(QName(kChromotingXmlNamespace, kStandardIceTag)));
+  std::list<ChannelConfig>::const_iterator it;
+
+  for (it = config()->control_configs().begin();
+       it != config()->control_configs().end(); ++it) {
+    root->AddElement(FormatChannelConfig(*it, kControlTag));
   }
 
-  for (const ChannelConfig& channel_config : config()->control_configs()) {
-    root->AddElement(FormatChannelConfig(channel_config, kControlTag));
+  for (it = config()->event_configs().begin();
+       it != config()->event_configs().end(); ++it) {
+    root->AddElement(FormatChannelConfig(*it, kEventTag));
   }
 
-  for (const ChannelConfig& channel_config : config()->event_configs()) {
-    root->AddElement(FormatChannelConfig(channel_config, kEventTag));
+  for (it = config()->video_configs().begin();
+       it != config()->video_configs().end(); ++it) {
+    root->AddElement(FormatChannelConfig(*it, kVideoTag));
   }
 
-  for (const ChannelConfig& channel_config : config()->video_configs()) {
-    root->AddElement(FormatChannelConfig(channel_config, kVideoTag));
-  }
-
-  for (const ChannelConfig& channel_config : config()->audio_configs()) {
-    root->AddElement(FormatChannelConfig(channel_config, kAudioTag));
+  for (it = config()->audio_configs().begin();
+       it != config()->audio_configs().end(); ++it) {
+    ChannelConfig config = *it;
+    root->AddElement(FormatChannelConfig(config, kAudioTag));
   }
 
   // Older endpoints require an initial-resolution tag, but otherwise ignore it.
@@ -184,6 +192,7 @@ bool ContentDescription::ParseChannelConfigs(
     bool codec_required,
     bool optional,
     std::list<ChannelConfig>* const configs) {
+
   QName tag(kChromotingXmlNamespace, tag_name);
   const XmlElement* child = element->FirstNamed(tag);
   while (child) {
@@ -209,11 +218,6 @@ scoped_ptr<ContentDescription> ContentDescription::ParseXml(
   }
   scoped_ptr<CandidateSessionConfig> config(
       CandidateSessionConfig::CreateEmpty());
-
-  config->set_standard_ice(
-      element->FirstNamed(QName(kChromotingXmlNamespace, kStandardIceTag)) !=
-      nullptr);
-
   if (!ParseChannelConfigs(element, kControlTag, false, false,
                            config->mutable_control_configs()) ||
       !ParseChannelConfigs(element, kEventTag, false, false,
