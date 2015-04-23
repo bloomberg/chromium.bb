@@ -34,6 +34,7 @@ public class DocumentMetricIds {
     public static final int STARTED_BY_EXTERNAL_APP_NEWS = 408;
     public static final int STARTED_BY_EXTERNAL_APP_LINE = 409;
     public static final int STARTED_BY_EXTERNAL_APP_WHATSAPP = 410;
+    public static final int STARTED_BY_EXTERNAL_APP_GSA = 411;
     public static final int STARTED_BY_CONTEXTUAL_SEARCH = 500;
 
     // DocumentActivity.OptOutDecision (enumerated)
