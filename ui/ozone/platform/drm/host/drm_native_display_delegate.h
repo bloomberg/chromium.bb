@@ -50,8 +50,6 @@ class DrmNativeDisplayDelegate : public NativeDisplayDelegate,
                  const gfx::Point& origin,
                  const ConfigureCallback& callback) override;
   void CreateFrameBuffer(const gfx::Size& size) override;
-  bool GetHDCPState(const DisplaySnapshot& output, HDCPState* state) override;
-  bool SetHDCPState(const DisplaySnapshot& output, HDCPState state) override;
   void GetHDCPState(const DisplaySnapshot& output,
                     const GetHDCPStateCallback& callback) override;
   void SetHDCPState(const DisplaySnapshot& output,

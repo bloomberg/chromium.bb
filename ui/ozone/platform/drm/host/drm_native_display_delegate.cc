@@ -184,18 +184,6 @@ void DrmNativeDisplayDelegate::Configure(const DisplaySnapshot& output,
 void DrmNativeDisplayDelegate::CreateFrameBuffer(const gfx::Size& size) {
 }
 
-bool DrmNativeDisplayDelegate::GetHDCPState(const DisplaySnapshot& output,
-                                            HDCPState* state) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-bool DrmNativeDisplayDelegate::SetHDCPState(const DisplaySnapshot& output,
-                                            HDCPState state) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void DrmNativeDisplayDelegate::GetHDCPState(
     const DisplaySnapshot& output,
     const GetHDCPStateCallback& callback) {

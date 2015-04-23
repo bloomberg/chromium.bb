@@ -106,22 +106,10 @@ void TestNativeDisplayDelegate::CreateFrameBuffer(const gfx::Size& size) {
                            outputs_.size() >= 2 ? outputs_[1] : NULL));
 }
 
-bool TestNativeDisplayDelegate::GetHDCPState(const DisplaySnapshot& output,
-                                             HDCPState* state) {
-  *state = hdcp_state_;
-  return get_hdcp_expectation_;
-}
-
 void TestNativeDisplayDelegate::GetHDCPState(
     const DisplaySnapshot& output,
     const GetHDCPStateCallback& callback) {
   callback.Run(get_hdcp_expectation_, hdcp_state_);
-}
-
-bool TestNativeDisplayDelegate::SetHDCPState(const DisplaySnapshot& output,
-                                             HDCPState state) {
-  log_->AppendAction(GetSetHDCPStateAction(output, state));
-  return set_hdcp_expectation_;
 }
 
 void TestNativeDisplayDelegate::SetHDCPState(

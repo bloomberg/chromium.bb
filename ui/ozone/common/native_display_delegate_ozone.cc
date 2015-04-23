@@ -76,18 +76,6 @@ void NativeDisplayDelegateOzone::CreateFrameBuffer(const gfx::Size& size) {
   NOTIMPLEMENTED();
 }
 
-bool NativeDisplayDelegateOzone::GetHDCPState(const DisplaySnapshot& output,
-                                              HDCPState* state) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-bool NativeDisplayDelegateOzone::SetHDCPState(const DisplaySnapshot& output,
-                                              HDCPState state) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void NativeDisplayDelegateOzone::GetHDCPState(
     const ui::DisplaySnapshot& output,
     const GetHDCPStateCallback& callback) {
