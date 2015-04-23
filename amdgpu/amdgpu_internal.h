@@ -35,6 +35,9 @@
 #include "util_double_list.h"
 
 #define AMDGPU_CS_MAX_RINGS 8
+/* do not use below macro if b is not power of 2 aligned value */
+#define ROUND_DOWN(a,b) ((a) & (~((b)-1)))
+#define ROUND_UP(a,b) (((a)+((b)-1)) & (~((b)-1)))
 
 struct amdgpu_bo_va_hole {
 	struct list_head list;

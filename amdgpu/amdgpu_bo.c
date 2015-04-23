@@ -587,9 +587,17 @@ int amdgpu_create_bo_from_user_mem(amdgpu_device_handle dev,
 	struct amdgpu_bo *bo;
 	struct drm_amdgpu_gem_userptr args;
 	union drm_amdgpu_gem_va va;
+	uintptr_t cpu0;
+	uint32_t ps, off;
 
 	memset(&args, 0, sizeof(args));
-	args.addr = (uint64_t)cpu;
+	ps = getpagesize();
+
+	cpu0 = ROUND_DOWN((uintptr_t)cpu, ps);
+	off = (uintptr_t)cpu - cpu0;
+	size = ROUND_UP(size + off, ps);
+
+	args.addr = cpu0;
 	args.flags = AMDGPU_GEM_USERPTR_ANONONLY | AMDGPU_GEM_USERPTR_REGISTER;
 	args.size = size;
 	r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_GEM_USERPTR,
@@ -622,5 +630,7 @@ int amdgpu_create_bo_from_user_mem(amdgpu_device_handle dev,
 			    (void*)(uintptr_t)bo->virtual_mc_base_address, bo);
 	info->buf_handle = bo;
 	info->virtual_mc_base_address = bo->virtual_mc_base_address;
+	info->virtual_mc_base_address += off;
+
 	return r;
 }
